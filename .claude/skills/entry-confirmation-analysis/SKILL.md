@@ -23,7 +23,7 @@ actually a valid trade here."
 
 `entry_confirmation/` (`evaluate_entry_confirmation()`) is the deterministic backing for
 this skill's structure-shift, liquidity-reclaim, displacement, and rejection-candle
-claims. Full contract: `ENTRY_CONFIRMATION_V1_SPEC.md`. Use it whenever a claim in this
+claims. Full contract: `docs/specs/ENTRY_CONFIRMATION_V1_SPEC.md`. Use it whenever a claim in this
 skill's scope needs to be traceable to a fact rather than a qualitative read.
 
 Call shape: build an `EntryConfirmationRequest` (symbol, timeframe, `candidate_direction`

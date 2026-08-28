@@ -1,6 +1,6 @@
 # Operating-mode config for execution/. Consumed by execution/mt5_gateway.py and
 # execution/executor.py as of the 2026-08-28 Execution authority restructure (see
-# TRADE_ASSISTANT_ARCHITECTURE.md). These flags gate order_send but are never
+# docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md). These flags gate order_send but are never
 # sufficient on their own: execution/executor.py::execute() additionally requires a
 # separate, non-defaulted user_confirmed=True from an explicit user command every call
 # -- no config value can substitute for that.

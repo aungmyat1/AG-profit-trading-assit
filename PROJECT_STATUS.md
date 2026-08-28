@@ -4,6 +4,22 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. Git history has the how-we-got-here; this file is
 current state only.
 
+## Repository reorganization (2026-08-28)
+
+All 11 Python packages + `session_clock.py` moved from repo root into `src/` (flat --
+package names unchanged, so no import statement anywhere needed to change; see
+`pyproject.toml`'s `pythonpath`/packaging config). 14 of 17 root-level `.md` docs moved
+into `docs/{architecture,specs,status,setup}/`; `README.md`/`AGENTS.md`/
+`PROJECT_STATUS.md` stay at root. `cleanup_mbt.ps1`/`setup_mbt.ps1` moved into
+`scripts/`. Fixed three real `__file__`-relative config-path bugs this move exposed
+(`execution/mt5_gateway.py`, `mt5/management_gateway.py`, `session_clock.py` all
+assumed a fixed distance to repo root that changed by one level) plus five hardcoded
+test-fixture paths (`tests/test_five_skill_runtime.py`,
+`tests/test_entry_confirmation.py`, `tests/test_trade_management_pretrade.py`).
+`config/`, `scripts/`, `tests/`, `strategies/`, `journal/`, `.claude/`, `.agents/` are
+unchanged in place. First-ever git commits made as part of this pass (repo previously
+had zero history). 448 passed / 0 failed, unchanged from pre-move baseline.
+
 ## Authority order (permanent project principle)
 
 ```
@@ -98,7 +114,7 @@ deal-history-confirmed -> config restored. Full suite: 427 passed (412 + 15 new)
 `SESSION_TRADE_V1` / `ASIAN_LONDON` end-to-end in three explicit modes (`ANALYZE_ONLY`
 live-verified; `SHADOW_DEMO`/`DEMO_EXECUTION` gating unit-tested, not yet exercised
 live). `LONDON_NEWYORK` and `LIVE` both hard-blocked, independent of any flag. Full
-architecture: `ASSISTANT_RUNTIME_V1.md`; live evidence: `ASSISTANT_RUNTIME_V1_STATUS.md`.
+architecture: `docs/status/ASSISTANT_RUNTIME_V1.md`; live evidence: `docs/status/ASSISTANT_RUNTIME_V1_STATUS.md`.
 278 passed / 0 failed (was 252 before this pass).
 
 ## SMC foundational skills validation pass (2026-08-27)
@@ -109,7 +125,7 @@ A dedicated validation pass added external/internal structure tiers
 detection (`liquidity/hierarchy.py`), and engineered/retail liquidity classification
 (`liquidity/proxies.py`) on top of Phases 2-4 below — all additive, nothing here changed
 or broke the frozen `analyze_structure()`/`AG_ORDER_BLOCK_V1`/existing `liquidity/`
-behavior. Full results, capability matrix, and verdicts: `SMC_SKILL_VALIDATION.md`.
+behavior. Full results, capability matrix, and verdicts: `docs/status/SMC_SKILL_VALIDATION.md`.
 252 passed / 0 failed (was 213 before this pass).
 
 ## Trading Assistant capability roadmap
@@ -165,7 +181,7 @@ DEMO trade" controlled-progression requirement) -- `allow_live_management` stays
 until that's explicitly run. Netting-vs-hedging broker mechanics
 (`mt5.account.Account.is_hedging_account`) is wired but not yet exercised live.
 
-See `PHASE_1_4_FREEZE_STATUS.md` for the 2026-08-27 stabilization pass: root-caused and
+See `docs/status/PHASE_1_4_FREEZE_STATUS.md` for the 2026-08-27 stabilization pass: root-caused and
 fixed a generic (not symbol-specific) tie-break defect in `mt5.broker_time`'s weekly-
 reopen-gap detection, established `AG_TIME_NORMALIZATION_V1` (`mt5/time_contract.py`),
 and validated all four phases as a regression baseline (154 passed / 1 skipped / 0
@@ -387,7 +403,7 @@ decisions, not something to invent while building the Assistant.
 ## Next owner decision
 
 AG_ORDER_BLOCK_V1 and AG_LIQUIDITY_V1 are both implemented, validated, and now FROZEN
-(see `PHASE_1_4_FREEZE_STATUS.md`, 2026-08-27). Remaining open items (not blocking, but
+(see `docs/status/PHASE_1_4_FREEZE_STATUS.md`, 2026-08-27). Remaining open items (not blocking, but
 unresolved): confirm/replace the PIVOT/SHADOW body-ratio split interpretation; decide
 FLIP_OB's identification rule (lookback + proximity to a prior failed zone); L1/L2 and
 inside-bar D2S/S2D remain explicitly UNSIGNED, not to be inferred; liquidity's

@@ -285,7 +285,7 @@ def test_five_skill_runtime_module_does_not_import_strategy_manager():
     import pathlib
 
     for name in ("five_skill_runtime.py", "analysis_models.py", "assessment.py"):
-        path = pathlib.Path(__file__).resolve().parent.parent / "assistant" / name
+        path = pathlib.Path(__file__).resolve().parent.parent / "src" / "assistant" / name
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
@@ -306,7 +306,7 @@ def test_five_skill_runtime_module_has_no_execution_imports_or_broker_write_call
     forbidden_import = {"execution"}
     forbidden_calls = {"order_send", "order_check"}
     for name in ("five_skill_runtime.py", "analysis_models.py", "assessment.py"):
-        path = pathlib.Path(__file__).resolve().parent.parent / "assistant" / name
+        path = pathlib.Path(__file__).resolve().parent.parent / "src" / "assistant" / name
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):

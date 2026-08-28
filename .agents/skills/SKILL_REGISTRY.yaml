@@ -4,8 +4,8 @@
 # top-level Trade Assistant skill families. This is documentation/discoverability,
 # not a runtime loader -- nothing currently reads this file programmatically, mirroring
 # the same "data file, not speculative infrastructure" reasoning as
-# strategies/registry.yaml. See TRADE_ASSISTANT_ARCHITECTURE.md's
-# "Assistant skill taxonomy" section and SKILL_OPTIMIZATION_STATUS.md for the audit
+# strategies/registry.yaml. See docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md's
+# "Assistant skill taxonomy" section and docs/status/SKILL_OPTIMIZATION_STATUS.md for the audit
 # this was produced from.
 #
 # No skill directory was physically moved or renamed by this registry. Registration
@@ -15,7 +15,7 @@
 # FIVE_SKILL_ASSISTANT_RUNTIME_V1 (2026-08-28): assistant.analyze_market() now
 # orchestrates market-structure/supply-demand/liquidity/entry-confirmation/
 # trade-management directly via their Python packages (imports, not this YAML file --
-# still not a runtime loader). See FIVE_SKILL_ASSISTANT_RUNTIME_V1_SPEC.md.
+# still not a runtime loader). See docs/specs/FIVE_SKILL_ASSISTANT_RUNTIME_V1_SPEC.md.
 
 logical_families:
 
@@ -61,7 +61,7 @@ logical_families:
       structure_shift and liquidity_reclaim are fully signed (consume market_structure
       and liquidity verbatim). displacement and rejection measurement is signed and
       implemented; their qualification thresholds remain UNSIGNED -- see
-      entry_confirmation/contract.py and ENTRY_CONFIRMATION_V1_SPEC.md.
+      entry_confirmation/contract.py and docs/specs/ENTRY_CONFIRMATION_V1_SPEC.md.
 
   trade-management:
     category: core
@@ -81,7 +81,7 @@ logical_families:
       trade_management/ now covers two independent products: Phase 6 (manual-entry,
       already-open positions) and TRADE_MANAGEMENT_V1 (pre-trade geometry/sizing/RR for
       a proposed trade, generic across strategy or manual use). See
-      TRADE_MANAGEMENT_V1_SPEC.md. risk-position-sizing's skill text remains framed for
+      docs/specs/TRADE_MANAGEMENT_V1_SPEC.md. risk-position-sizing's skill text remains framed for
       backtest/research portfolio sizing (unchanged) -- the live/production sizing path
       is trade_management.evaluate_sizing(), not that skill.
 
@@ -142,7 +142,7 @@ strategy_specific_implementations:
     algorithm_id: ER_ONLY_V2
     source: strategy_engine/session/classifier.py
     verified: >
-      ARCHITECTURE_CONFLICT_AUDIT.md row "Trend/Range classifier: ER_ONLY_V2" --
+      docs/architecture/ARCHITECTURE_CONFLICT_AUDIT.md row "Trend/Range classifier: ER_ONLY_V2" --
       confirmed against strategies/registry.yaml (ST_ASIAN_SWEEP_5R_V1.engine =
       strategy_engine) and strategy_engine/session/classifier.py's own docstring.
     not_owner: SESSION_TRADE_V1   # has its own separate classify_session(), different thresholds

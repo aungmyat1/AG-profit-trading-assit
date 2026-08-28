@@ -364,7 +364,7 @@ def test_trade_management_package_has_no_execution_imports():
     import ast
     import pathlib
 
-    pkg_dir = pathlib.Path(__file__).resolve().parent.parent / "trade_management"
+    pkg_dir = pathlib.Path(__file__).resolve().parent.parent / "src" / "trade_management"
     forbidden = {"execution"}
     for path in pkg_dir.glob("*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -385,7 +385,7 @@ def test_trade_management_package_has_no_order_send_or_check_calls():
     import ast
     import pathlib
 
-    pkg_dir = pathlib.Path(__file__).resolve().parent.parent / "trade_management"
+    pkg_dir = pathlib.Path(__file__).resolve().parent.parent / "src" / "trade_management"
     forbidden_calls = {"order_send", "order_check"}
     for path in pkg_dir.glob("*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))

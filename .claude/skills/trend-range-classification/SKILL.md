@@ -8,8 +8,8 @@ description: Classify a validated frozen M15 session as Trend or Range with cano
 > (`strategy_engine/session/classifier.py`), not a universal Trade Assistant
 > definition of trend/range. `SESSION_TRADE_V1` uses its own, differently-thresholded
 > `classify_session()` (in `Session Trade Codex`) — the two are not interchangeable.
-> See `TRADE_ASSISTANT_ARCHITECTURE.md`'s "Strategy-specific skill ownership" section
-> and `ARCHITECTURE_CONFLICT_AUDIT.md`. Do not present this classifier as the generic
+> See `docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md`'s "Strategy-specific skill ownership" section
+> and `docs/architecture/ARCHITECTURE_CONFLICT_AUDIT.md`. Do not present this classifier as the generic
 > `market-structure` trend/range answer.
 
 # ER_ONLY_V2 Trend/Range Classification

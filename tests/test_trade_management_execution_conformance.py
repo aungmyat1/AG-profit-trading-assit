@@ -1,7 +1,7 @@
 """TRADE_MANAGEMENT_V1 vs execution/ conformance tests (FIVE_SKILL_ASSISTANT_RUNTIME_V1
 mission section 40-45). trade_management/ deliberately reimplements (does not import)
 execution/risk.py::size_position() and overlaps with execution/validator.py's geometry
-sign checks -- see trade_management/sizing.py's and TRADE_MANAGEMENT_V1_SPEC.md's own
+sign checks -- see trade_management/sizing.py's and docs/specs/TRADE_MANAGEMENT_V1_SPEC.md's own
 audit table for why. These tests prove the two implementations have not silently
 drifted apart. All synthetic data -- no live MT5/terminal/account required.
 """
@@ -92,7 +92,7 @@ def test_sizing_conformance_invalid_stop_distance():
     exec_volume, exec_risk_amount, exec_reason = size_position(1.17000, 1.17000, 10000.0, 1.0, meta)
     assert exec_reason == "INVALID_STOP_DISTANCE"
     # trade_management's own geometry layer catches this before sizing is ever attempted --
-    # semantic difference documented in TRADE_MANAGEMENT_V1_SPEC.md's audit table, not drift.
+    # semantic difference documented in docs/specs/TRADE_MANAGEMENT_V1_SPEC.md's audit table, not drift.
 
 
 # --------------------------------------------------------------------------- geometry conformance
@@ -145,7 +145,7 @@ def test_geometry_conformance_pass_fail_classification_agrees(direction, entry, 
     assert tm_valid == expect_valid
     # Both implementations must agree on PASS/FAIL classification even though their
     # reason-code vocabularies differ by design (execution/'s predates trade_management/'s
-    # more granular LONG/SHORT-specific codes) -- see TRADE_MANAGEMENT_V1_SPEC.md.
+    # more granular LONG/SHORT-specific codes) -- see docs/specs/TRADE_MANAGEMENT_V1_SPEC.md.
     assert exec_valid == tm_valid
 
 

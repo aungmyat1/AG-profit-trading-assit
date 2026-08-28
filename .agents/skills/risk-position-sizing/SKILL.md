@@ -10,7 +10,7 @@ Sizing transforms signals into portfolio risk. Treat it as a separate, testable 
 **Research/backtest scope only.** For a live/production sizing question (given account
 equity, a proposed entry/SL, and broker symbol metadata, what is the deterministic
 position size), use `trade_management.evaluate_sizing()` /
-`evaluate_trade_management()` instead (`TRADE_MANAGEMENT_V1_SPEC.md`) — that path is
+`evaluate_trade_management()` instead (`docs/specs/TRADE_MANAGEMENT_V1_SPEC.md`) — that path is
 tick_size/tick_value-based and broker-normalized, not a portfolio backtest sizing model.
 
 ## Inputs

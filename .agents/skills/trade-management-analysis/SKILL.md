@@ -13,7 +13,7 @@ not invent discretionary management logic.
 ## Deterministic capability (TRADE_MANAGEMENT_V1, added 2026-08-28)
 
 `trade_management/` now covers two independent, deterministic products (full contract:
-`TRADE_MANAGEMENT_V1_SPEC.md`):
+`docs/specs/TRADE_MANAGEMENT_V1_SPEC.md`):
 
 1. **Pre-trade** (`evaluate_trade_management()`, `pretrade_engine.py`) — geometry
    validation, broker-realistic position sizing (tick_size/tick_value based, never a
@@ -69,4 +69,4 @@ policy, it validates geometry/sizing only and reports `position_state` as
   it as unresolved rather than guessing which side it fell on.
 - Never silently round a volume up past a risk budget, or cap a size above broker
   `volume_max`, to force a trade through — report `VOLUME_BELOW_MIN`/`VOLUME_ABOVE_MAX`/
-  `SIZE_UNAVAILABLE` instead. See `TRADE_MANAGEMENT_V1_SPEC.md`'s "broker normalization" section.
+  `SIZE_UNAVAILABLE` instead. See `docs/specs/TRADE_MANAGEMENT_V1_SPEC.md`'s "broker normalization" section.

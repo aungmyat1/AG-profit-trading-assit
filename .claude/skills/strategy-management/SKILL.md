@@ -6,7 +6,7 @@ description: Resolve and invoke a registered deterministic strategy (list/inspec
 # Strategy Management
 
 Strategy tooling skill (assistant use case, not core trading intelligence -- see
-`TRADE_ASSISTANT_ARCHITECTURE.md`'s "Assistant skill taxonomy"). This is the thin,
+`docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md`'s "Assistant skill taxonomy"). This is the thin,
 existing orchestration layer already implemented as `strategy_manager/` +
 `assistant/runtime.py` + `scripts/trade_assistant.py` (`ASSISTANT_RUNTIME_V1`). This
 skill file documents when/how to invoke that code -- it does not implement or
@@ -67,5 +67,5 @@ request matching the mode's own gating requirements.
 
 Report the `AssistantDecision` fields as-is (`status`, `setup`, `direction`, `entry`,
 `stop_loss`, `target`, `reason_codes`) -- these are copied verbatim from the strategy's
-own result, never recomputed or rounded differently. See `ASSISTANT_RUNTIME_V1.md` for
-the full status-mapping table and `ASSISTANT_RUNTIME_V1_STATUS.md` for live evidence.
+own result, never recomputed or rounded differently. See `docs/status/ASSISTANT_RUNTIME_V1.md` for
+the full status-mapping table and `docs/status/ASSISTANT_RUNTIME_V1_STATUS.md` for live evidence.

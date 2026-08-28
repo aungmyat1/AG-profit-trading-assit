@@ -302,7 +302,7 @@ def test_entry_confirmation_package_has_no_execution_imports():
     import ast
     import pathlib
 
-    pkg_dir = pathlib.Path(__file__).resolve().parent.parent / "entry_confirmation"
+    pkg_dir = pathlib.Path(__file__).resolve().parent.parent / "src" / "entry_confirmation"
     forbidden = {"execution", "mt5"}
     for path in pkg_dir.glob("*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))

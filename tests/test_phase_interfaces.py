@@ -1,7 +1,7 @@
 """Lightweight cross-layer interface freeze checks (Phase 1-4 stabilization pass,
 2026-08-27). These protect the externally-consumed field names each phase hands to the
 next -- Phase 5 (and any future consumer) is expected to read these fields rather than
-recompute the underlying analysis (see PHASE_1_4_FREEZE_STATUS.md's interface section).
+recompute the underlying analysis (see docs/status/PHASE_1_4_FREEZE_STATUS.md's interface section).
 Not a test of implementation internals: only that the field a downstream module already
 depends on still exists with its documented name.
 """

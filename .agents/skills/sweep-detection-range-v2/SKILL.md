@@ -10,7 +10,7 @@ description: Detect a qualified Sweep inside a completed frozen M15 reference se
 > (`session_strategy/engine.py::detect_sweep()` in `Session Trade Codex`) — the two are
 > not the same contract. Use the `liquidity` skill for generic sweep/reclaim facts; use
 > this skill only when qualifying an `ST_ASIAN_SWEEP_5R_V1` RANGE setup. See
-> `TRADE_ASSISTANT_ARCHITECTURE.md`'s "Strategy-specific skill ownership" section.
+> `docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md`'s "Strategy-specific skill ownership" section.
 
 # RANGE Reference-Session Sweep Detection V2 Simple
 

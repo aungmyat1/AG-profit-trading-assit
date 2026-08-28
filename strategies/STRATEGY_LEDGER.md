@@ -49,12 +49,12 @@ from canonical session windows or other repo conventions at the time of registra
   code copy. The signed implementation, its own execution ledger, and its own test suite live in
   the separate repository `D:\ddev\Session Trade Codex` (`config/strategy.yaml`,
   `strategy_id: ASIAN_SESSION_V1`, `session_strategy/engine.py`). See
-  `SESSION_TRADE_V1_SPEC.md` for the full frozen spec and
+  `docs/specs/SESSION_TRADE_V1_SPEC.md` for the full frozen spec and
   `Session Trade Codex\SESSION_PAIR_STABILIZATION_STATUS.md` for that repo's own
   test/authority verification (313 passed / 4 failed there, independently maintained).
 - **Status:** demo-authorized for one of its two execution cycles; see spec for exact gates.
 - **Family:** Session reference-box trend-continuation / sweep / range-rejection (own classifier,
-  NOT `ER_ONLY_V2` -- see `ARCHITECTURE_CONFLICT_AUDIT.md` for why these are two legitimately
+  NOT `ER_ONLY_V2` -- see `docs/architecture/ARCHITECTURE_CONFLICT_AUDIT.md` for why these are two legitimately
   distinct classifiers, not a duplication bug).
 - **Instruments:** EURUSD, GBPUSD, USDJPY, XAUUSD.crp
 - **Timeframe:** M15

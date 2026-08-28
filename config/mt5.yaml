@@ -10,6 +10,6 @@ server: null
 default_deviation_points: 10
 
 symbol_suffixes:
-  # Broker-specific Market Watch suffixes (MT5_MCP_SETUP.md 'Operating notes': gold is
+  # Broker-specific Market Watch suffixes (docs/setup/MT5_MCP_SETUP.md 'Operating notes': gold is
   # XAUUSD.crp on some brokers). Empty until a real broker/account is wired up.
   XAUUSD: ""

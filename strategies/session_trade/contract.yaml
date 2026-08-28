@@ -4,7 +4,7 @@
 # alongside ST_ASIAN_SWEEP_5R_V1 (strategies/ST_ASIAN_SWEEP_5R_V1.yaml). It is NOT the
 # implementation and NOT the signed contract -- both live in a separate repository. This repo
 # does not duplicate the strategy's classifier/setup/risk logic; see source_of_truth below.
-# Full field-by-field spec: ../../SESSION_TRADE_V1_SPEC.md
+# Full field-by-field spec: ../../docs/specs/SESSION_TRADE_V1_SPEC.md
 
 strategy_id: SESSION_TRADE_V1
 version: 1
