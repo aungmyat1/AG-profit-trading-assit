@@ -1,0 +1,10 @@
+# AG_ORDER_BLOCK_V1 parameters (owner-frozen contract; see supply_demand/ob_contract.py).
+#
+# pivot_shadow_body_ratio_threshold: the origin candle's body/range ratio boundary used
+# to split PIVOT_OB (body-dominant -- "last opposing closed candle") from SHADOW_OB
+# (wick-dominant rejection/sweep candle). The owner froze WHAT distinguishes PIVOT from
+# SHADOW in words, not this specific number -- 0.5 (the natural body-vs-wick midpoint)
+# is an explicit, configurable AG_ORDER_BLOCK_V1 parameter pending owner confirmation,
+# not a hidden magic constant embedded in code. body_ratio >= this value -> PIVOT_OB;
+# below it -> SHADOW_OB.
+pivot_shadow_body_ratio_threshold: 0.5

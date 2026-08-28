@@ -1,0 +1,101 @@
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+strategy_name: Asian Session Liquidity Sweep 5R
+strategy_family: Liquidity_Sweep
+version: 1.1.0
+status: ACTIVE_INCUBATION
+registered_utc: "2026-08-26"
+updated_utc: "2026-08-26"
+
+# v1.1.0: added a second reference/trade session pair so the same sweep logic also runs
+# off the London range during the New York session, not only off the Asian range during
+# London Open. Both pairs share identical entry, risk, sizing, and invalidation rules --
+# only the reference/trade session windows differ per pair.
+
+instruments: [EURUSD, GBPUSD, USDJPY, AUDUSD, XAUUSD]
+timeframe: M15
+magic_number: 777001
+
+# Session-window conformance vs ../config/canonical_sessions.yaml:
+#   ASIAN_LONDON pair  -- reference_session (00:00-06:00) matches canonical `asian` exactly.
+#                          trade_session (London_Open, 07:00-11:00) does NOT match canonical
+#                          `london_am` (06:00-11:00) -- starts one hour later. Recorded as a
+#                          deviation in canonical_sessions.yaml legacy_session_windows.
+#   LONDON_NEWYORK pair -- reference_session (06:00-11:00) matches canonical `london_am` exactly.
+#                          trade_session (New_York_Open, 12:00-15:00) matches canonical
+#                          `new_york_am` exactly. No deviation.
+session_pairs:
+  - pair_id: ASIAN_LONDON
+    reference_session:
+      name: Asian
+      start_time_gmt: "00:00"
+      end_time_gmt: "06:00"
+      metrics_tracked: [High, Low, Midline, RangePips]
+    trade_session:
+      name: London_Open
+      start_time_gmt: "07:00"
+      end_time_gmt: "11:00"
+      max_entries_per_session: 1
+  - pair_id: LONDON_NEWYORK
+    reference_session:
+      name: London
+      start_time_gmt: "06:00"
+      end_time_gmt: "11:00"
+      metrics_tracked: [High, Low, Midline, RangePips]
+    trade_session:
+      name: New_York_Open
+      start_time_gmt: "12:00"
+      end_time_gmt: "15:00"
+      max_entries_per_session: 1
+
+# Applies independently to each session_pairs entry, evaluated against that pair's own
+# reference_session.
+regime_classification:
+  trend_bias_filter:
+    indicator: EMA_50
+    bullish_condition: "Price > EMA_50"
+    bearish_condition: "Price < EMA_50"
+  range_session_check:
+    condition: "Reference_Session_Range_Pips <= Max_Allowed_Pips"
+    max_range_pips_eurusd: 25.0
+    # ASSUMPTION: the same 25-pip EURUSD ceiling is applied to the London reference range as
+    # to the Asian one, even though London ranges are typically wider. Not separately tuned --
+    # revisit if LONDON_NEWYORK setups rarely qualify as range.
+
+# "Reference" below means whichever session_pairs[].reference_session is in play for that pair.
+entry_rules:
+  long_setup:
+    trigger: SWEEP_REFERENCE_LOW
+    condition: "Price wick breaches Reference Session Low and candle closes back inside Reference Range"
+    entry_order_type: MARKET_OR_LIMIT
+    entry_level: Sweep_Candle_Body_Close
+  short_setup:
+    trigger: SWEEP_REFERENCE_HIGH
+    condition: "Price wick breaches Reference Session High and candle closes back inside Reference Range"
+    entry_order_type: MARKET_OR_LIMIT
+    entry_level: Sweep_Candle_Body_Close
+
+risk_and_money_management:
+  risk_mode: FIXED_PERCENT_OR_CONTRACT
+  stop_loss_mode: PERCENT_OF_SESSION_RANGE
+  stop_loss_range_pct: 0.25
+  max_spread_allowed_pips: 2.0
+  slippage_limit_points: 10
+
+position_split_and_targets:
+  total_target_r: 5.0
+  legs:
+    - leg_id: 1
+      volume_pct: 0.75
+      target_type: OPPOSITE_SESSION_BOUNDARY
+      action_on_fill: MOVE_RUNNER_SL_TO_BREAKEVEN
+    - leg_id: 2
+      volume_pct: 0.25
+      target_type: FIXED_R_MULTIPLE
+      fixed_r_multiple: 5.0
+      trailing_rule: NONE_OR_MANUAL_BE
+
+invalidation_rules:
+  # 15:00 GMT is the end of the later (New_York_Open) trade_session, so it still functions as
+  # a single global cutoff covering both session_pairs.
+  time_invalidation: "15:00 GMT (New York Open Pre-market)"
+  structural_invalidation: "M15 Candle Close fully outside the sweep wick low/high with expansion volume"

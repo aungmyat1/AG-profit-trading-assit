@@ -1,0 +1,15 @@
+# No existing project authority defines an equal-high/equal-low tolerance or a
+# "how far back to look" window for liquidity -- these are conservative, explicit,
+# documented defaults (see liquidity/equal_levels.py, liquidity/analyzer.py), not
+# invented ad hoc at call time. "points" here means the symbol's own tick_size unit
+# (mt5.symbol_resolver.get_symbol_meta) -- generic across FX/metals/anything else,
+# same convention as execution/risk.py's tick-size-based sizing.
+#
+# Also reused as the cross-source deduplication tolerance (liquidity/dedup.py): two
+# LiquidityLevel objects on the same side within this same distance are merged into one
+# level with combined provenance. Reusing this value rather than adding a second
+# tolerance is a documented choice, not an assumption -- see
+# liquidity/contract.py's LIQUIDITY_CONTRACT_GAPS if a distinct value is ever wanted.
+equal_level_tolerance_points: 5
+local_extremum_window: 2   # a candle's high/low must be the max/min within +/- this many candles to count as a raw local extreme, before tolerance clustering
+lookback_bars: 100

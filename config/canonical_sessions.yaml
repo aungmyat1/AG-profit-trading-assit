@@ -1,0 +1,65 @@
+version: CANONICAL_SESSION_WINDOWS_V1
+status: CANONICAL
+timezone: UTC
+boundary_policy: half_open   # [start, end) -- the end timestamp itself belongs to the NEXT window
+dst_policy: fixed_utc        # fixed UTC clock; do not shift for BST/EDT unless a strategy source requires it
+timeframe: M15
+
+# Source: trader-supplied narrative-bias reference table (1. NARRATIVE BIAS), 2026-08-26.
+# This file is the single source of truth for fixed session windows. Strategies should read
+# from here rather than hardcoding their own start/end times. Any strategy config that still
+# defines its own Asian/London/NY window and disagrees with this file is LEGACY_SESSION_WINDOW
+# (kept for reproducibility of past backtests, not treated as current) -- see legacy_session_windows
+# below for the known list.
+#
+# Folder structure: this `config/` directory holds shared, cross-strategy configuration only
+# (canonical session windows, and similar repo-wide settings). Per-strategy definitions live
+# under `strategies/<STRATEGY_ID>.yaml`, indexed in `strategies/STRATEGY_LEDGER.md`. Agent
+# skills (the reusable workflows Claude Code loads, e.g. strategy-specification,
+# backtest-engineering) live under `.claude/skills/` (and its `.agents/skills/` mirror) --
+# they are tooling, not strategy or session config, and are not registered in this file.
+sessions:
+  asian:
+    start: "00:00"
+    end: "06:00"
+    expected_m15_bars: 24
+  london_am:
+    start: "06:00"
+    end: "11:00"
+    expected_m15_bars: 20
+  new_york_am:
+    start: "12:00"
+    end: "15:00"
+    expected_m15_bars: 12
+
+# Known configs whose session windows predate this contract and were NOT rewritten to match it,
+# to avoid silently invalidating already-run backtests. Recorded here so a conflict is a documented
+# fact, not a rediscovered surprise. See STRATEGY_LEDGER.md for per-strategy history.
+legacy_session_windows:
+  - config: config/strategy.yaml
+    strategy_id: ASIAN_SESSION_V1
+    asian_window_utc: ["00:00", "07:00"]
+    note: live/demo-authorized engine; execution window 07:00-16:00 has no separate London/NY boxes
+  - config: config/session_flow_v2.yaml
+    strategy_id: SESSION_FLOW_V2_SIMPLE
+    asian_window_utc: ["00:00", "08:00"]
+    london_window_utc: ["07:00", "12:00"]
+  - config: config/session_strategy_v2_research.yaml
+    strategy_id: SESSION_STRATEGY_V2_RESEARCH
+    asian_window_utc: ["00:00", "07:00"]
+    london_window_utc: ["07:00", "12:00"]
+  - config: config/source_v1.yaml
+    strategy_id: SESSION_SOURCE_V1
+    asian_window_utc: ["22:00 (prior day)", "07:00"]
+  - config: config/source_v2_agent.yaml
+    strategy_id: SESSION_USER_RESOLVED_V2_AGENT
+    asian_window_local: ["00:00", "08:00"]
+    local_timezone: Europe/London
+  - config: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
+    strategy_id: ST_ASIAN_SWEEP_5R_V1
+    asian_window_utc: ["00:00", "06:00"]
+    note: >
+      asian_session matches canonical `asian` exactly. trade_session (London_Open,
+      07:00-11:00) is a strategy-specific execution window and does NOT match canonical
+      `london_am` (06:00-11:00) -- starts one hour later. Recorded here, not treated as
+      a redefinition of the canonical london_am box.

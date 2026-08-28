@@ -1,0 +1,16 @@
+# ASSISTANT_RUNTIME_V1 config. Independent of execution/'s (paused, entry-side) and
+# trade_management/'s (manual-entry) own mode gates -- see AGENTS.md 'Authority order'.
+# Runtime mode does not override the strategy's own signed cycle/execution authority
+# (strategies/session_trade/contract.yaml) -- both must agree; this file cannot make an
+# UNSIGNED cycle executable.
+assistant_runtime:
+  default_mode: ANALYZE_ONLY
+
+  allowed_modes:
+    - ANALYZE_ONLY
+    - SHADOW_DEMO
+    - DEMO_EXECUTION
+    # LIVE intentionally absent -- see assistant/runtime.py, hard-blocked in code,
+    # not just by omission here.
+
+  live_enabled: false

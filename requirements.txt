@@ -1,0 +1,8 @@
+# No dependency mechanism existed before this file (packages were only present via the
+# system Python install). Versions below are what was verified against on 2026-08-26.
+PyYAML==6.0.3
+pandas==2.3.3
+MetaTrader5==5.0.5735
+smartmoneyconcepts==0.0.27
+pytest==8.3.5
+matplotlib==3.11.0

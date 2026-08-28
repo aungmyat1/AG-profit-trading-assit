@@ -1,0 +1,15 @@
+# MT5 terminal/connection config. NOT YET CONSUMED BY CODE -- mt5/connection.py is still
+# scaffolding (see PROJECT_STATUS.md).
+#
+# Do NOT put login, password, or investor password here or in any committed file. This
+# repo has no .env/secrets convention yet -- decide one (e.g. environment variables read
+# by mt5/connection.py) before wiring this file up for real, and add it to .gitignore.
+terminal_path: null       # e.g. "C:/Program Files/MetaTrader 5/terminal64.exe"
+account_login: null       # read from env var at connect time, not from here
+server: null
+default_deviation_points: 10
+
+symbol_suffixes:
+  # Broker-specific Market Watch suffixes (MT5_MCP_SETUP.md 'Operating notes': gold is
+  # XAUUSD.crp on some brokers). Empty until a real broker/account is wired up.
+  XAUUSD: ""

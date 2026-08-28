@@ -1,0 +1,7 @@
+# Market Structure (Phase 2) analysis config. Config-driven so swing_length/close_break
+# aren't frozen just because they appeared in an example -- see market_structure/config.py.
+# Not a strategy authority: this is general structure analysis, separate from the
+# session-specific ER_ONLY_V2 regime classifier in strategy_engine/session/classifier.py.
+swing_length: 5
+close_break: true
+default_analysis_count: 200

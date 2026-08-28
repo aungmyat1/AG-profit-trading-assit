@@ -1,0 +1,154 @@
+# Skill taxonomy registry -- data only (2026-08-27).
+#
+# Maps every existing agent-skill directory to its LOGICAL owner among the nine
+# top-level Trade Assistant skill families. This is documentation/discoverability,
+# not a runtime loader -- nothing currently reads this file programmatically, mirroring
+# the same "data file, not speculative infrastructure" reasoning as
+# strategies/registry.yaml. See TRADE_ASSISTANT_ARCHITECTURE.md's
+# "Assistant skill taxonomy" section and SKILL_OPTIMIZATION_STATUS.md for the audit
+# this was produced from.
+#
+# No skill directory was physically moved or renamed by this registry. Registration
+# is by reference: `implementation` points at the actual advisory skill folder(s) and/or
+# deterministic Python package backing that family.
+#
+# FIVE_SKILL_ASSISTANT_RUNTIME_V1 (2026-08-28): assistant.analyze_market() now
+# orchestrates market-structure/supply-demand/liquidity/entry-confirmation/
+# trade-management directly via their Python packages (imports, not this YAML file --
+# still not a runtime loader). See FIVE_SKILL_ASSISTANT_RUNTIME_V1_SPEC.md.
+
+logical_families:
+
+  # ---- Core Trading Intelligence (the five-layer pyramid) ----
+
+  market-structure:
+    category: core
+    status: ready
+    implementation:
+      skill: market-structure-analysis
+      package: market_structure/
+    decides: "objective structural facts (BOS/CHoCH/direction) -- never a trade"
+
+  supply-demand:
+    category: core
+    status: ready
+    implementation:
+      skill: supply-demand-analysis
+      package: supply_demand/
+    frozen_contracts: [AG_ORDER_BLOCK_V1]
+    decides: "zone/OB/FVG facts -- never a trade"
+
+  liquidity:
+    category: core
+    status: ready
+    implementation:
+      skill: liquidity-analysis
+      package: liquidity/
+    decides: "generic sweep/reclaim/pool facts -- never a trade"
+    note: >
+      Distinct from any strategy's own qualified-Sweep rule. See
+      strategy_specific_implementations.sweep-detection-range-v2 below.
+
+  entry-confirmation:
+    category: core
+    status: partial   # deterministic package READY; two of four primitives (displacement,
+                       # rejection) report UNSIGNED_RULE qualification pending owner signoff
+    implementation:
+      skill: entry-confirmation-analysis
+      package: entry_confirmation/   # ENTRY_CONFIRMATION_V1, added 2026-08-27
+    decides: "PASS/FAIL/UNSIGNED_RULE per requested confirmation type -- never sufficiency judgment"
+    note: >
+      structure_shift and liquidity_reclaim are fully signed (consume market_structure
+      and liquidity verbatim). displacement and rejection measurement is signed and
+      implemented; their qualification thresholds remain UNSIGNED -- see
+      entry_confirmation/contract.py and ENTRY_CONFIRMATION_V1_SPEC.md.
+
+  trade-management:
+    category: core
+    status: ready   # TRADE_MANAGEMENT_V1 (pre-trade) + Phase 6 (manual-entry) both deterministic and tested
+    implementation:
+      skills:
+        - trade-management-analysis        # generic open-position status (advisory) + TRADE_MANAGEMENT_V1 pointer
+        - trade_management/breakeven-manager
+        - trade_management/exit-manager
+        - trade_management/partial-profit-manager
+        - trade_management/position-monitor
+        - trade_management/risk-manager
+        - risk-position-sizing              # research/backtest sizing concepts -- NOT the live path, see its own skill note
+      package: trade_management/            # Phase 6 (manual-entry, READY) + TRADE_MANAGEMENT_V1 (pre-trade, READY, added 2026-08-28)
+    decides: "geometry/risk/size/R/rule-trigger facts -- never opens a position, never touches execution/"
+    note: >
+      trade_management/ now covers two independent products: Phase 6 (manual-entry,
+      already-open positions) and TRADE_MANAGEMENT_V1 (pre-trade geometry/sizing/RR for
+      a proposed trade, generic across strategy or manual use). See
+      TRADE_MANAGEMENT_V1_SPEC.md. risk-position-sizing's skill text remains framed for
+      backtest/research portfolio sizing (unchanged) -- the live/production sizing path
+      is trade_management.evaluate_sizing(), not that skill.
+
+  # ---- Foundation ----
+
+  market-context:
+    category: foundation
+    status: ready
+    implementation:
+      skills:
+        - market-data
+        - market-data-quality
+        - multi-asset-conventions
+        - session-box-drawing
+      package: mt5/
+    decides: "what market/data/session we're looking at, and whether it's trustworthy"
+
+  # ---- Strategy Tooling ----
+
+  strategy-development:
+    category: strategy_tooling
+    status: ready
+    implementation:
+      skill: strategy-specification
+    decides: "PROPOSED/RESEARCH/UNSIGNED specs -- never runtime strategy authority"
+
+  strategy-validation:
+    category: strategy_tooling
+    status: ready
+    implementation:
+      skills:
+        - performance-analysis
+        - backtest-engineering
+        - robustness-validation
+    decides: "evaluation of a strategy's historical behavior -- never trade logic itself"
+
+  strategy-management:
+    category: strategy_tooling
+    status: ready
+    implementation:
+      skill: strategy-management   # new this pass -- see .claude/skills/strategy-management/SKILL.md
+      package: strategy_manager/
+      entrypoint: scripts/trade_assistant.py
+    decides: "which registered strategy to invoke and with what capabilities -- never redefines strategy rules"
+
+# ---- Strategy-specific implementations (NOT universal assistant skills) ----
+#
+# These skill directories exist as top-level folders for historical reasons but their
+# rules are signed for one specific strategy only. Kept in place (reference-based
+# ownership) rather than physically relocated under strategies/, per the mission's
+# "prefer reference-based ownership if safer" guidance -- moving them would not change
+# any behavior and risks breaking existing callers for no benefit.
+
+strategy_specific_implementations:
+
+  trend-range-classification:
+    owner_strategy: ST_ASIAN_SWEEP_5R_V1
+    algorithm_id: ER_ONLY_V2
+    source: strategy_engine/session/classifier.py
+    verified: >
+      ARCHITECTURE_CONFLICT_AUDIT.md row "Trend/Range classifier: ER_ONLY_V2" --
+      confirmed against strategies/registry.yaml (ST_ASIAN_SWEEP_5R_V1.engine =
+      strategy_engine) and strategy_engine/session/classifier.py's own docstring.
+    not_owner: SESSION_TRADE_V1   # has its own separate classify_session(), different thresholds
+
+  sweep-detection-range-v2:
+    owner_strategy: ST_ASIAN_SWEEP_5R_V1
+    algorithm_id: SESSION_FLOW_V2_SIMPLE / entry_2_sweep
+    source: strategy_engine/session/setups.py
+    not_owner: SESSION_TRADE_V1   # has its own separate detect_sweep(), different thresholds

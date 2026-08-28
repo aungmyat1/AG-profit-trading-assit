@@ -1,0 +1,42 @@
+# Operating-mode config for execution/. Consumed by execution/mt5_gateway.py and
+# execution/executor.py as of the 2026-08-28 Execution authority restructure (see
+# TRADE_ASSISTANT_ARCHITECTURE.md). These flags gate order_send but are never
+# sufficient on their own: execution/executor.py::execute() additionally requires a
+# separate, non-defaulted user_confirmed=True from an explicit user command every call
+# -- no config value can substitute for that.
+#
+# Three modes, strictly nested in capability:
+#   ANALYSIS  -- MT5 -> strategy -> report. No execution subsystem touched at all.
+#   DRY_RUN   -- MT5 -> strategy -> risk -> validation -> order_check -> STOP. No real order.
+#   TRADING   -- MT5 -> strategy -> risk -> validation -> order_check -> order_send.
+#
+# allow_live_trading is a second, independent gate: enabling order_send (mode: TRADING)
+# must NOT by itself be enough to trade a real account. Both flags must be true, AND
+# (see execution/mt5_gateway.py::_account_authorized_for_send) the live-connected
+# account must itself read as demo unless allow_live_trading is explicitly true.
+mode: ANALYSIS
+
+execution:
+  allow_order_check: false
+  allow_order_send: false
+
+account:
+  allow_live_trading: false
+
+# ASSUMPTION: strategies/ST_ASIAN_SWEEP_5R_V1.yaml's risk_and_money_management declares
+# risk_mode: FIXED_PERCENT_OR_CONTRACT but never states the actual percentage or contract
+# size -- see strategies/STRATEGY_LEDGER.md. Until a strategy defines its own value, this
+# uniform default applies account-wide. Not read by any code yet except execution/risk.py.
+risk:
+  risk_per_trade_pct: 1.0
+
+# Phase 6 -- Trade Management (manual-entry only, see PROJECT_STATUS.md). Independent
+# gate from `mode`/`execution`/`account` above: those control the (still paused)
+# entry-side execution/ pipeline; this block controls mt5.management_gateway, which
+# only ever modifies/partial-closes/closes a position the user already opened by hand
+# and explicitly claimed via scripts/manage_trade.py. Both values must be set for any
+# real order_send from the gateway -- default is fail-closed DRY_RUN.
+trade_management:
+  mode: DRY_RUN  # DRY_RUN | LIVE
+  allow_live_management: false
+

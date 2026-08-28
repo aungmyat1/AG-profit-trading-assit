@@ -1,0 +1,69 @@
+# SESSION_TRADE_V1 -- registry entry, BY REFERENCE.
+#
+# This file registers the strategy with this repo's Trade Assistant so it can be discovered
+# alongside ST_ASIAN_SWEEP_5R_V1 (strategies/ST_ASIAN_SWEEP_5R_V1.yaml). It is NOT the
+# implementation and NOT the signed contract -- both live in a separate repository. This repo
+# does not duplicate the strategy's classifier/setup/risk logic; see source_of_truth below.
+# Full field-by-field spec: ../../SESSION_TRADE_V1_SPEC.md
+
+strategy_id: SESSION_TRADE_V1
+version: 1
+registered_utc: "2026-08-27"
+
+source_of_truth:
+  repository: "D:\\ddev\\Session Trade Codex"
+  strategy_id_in_source: ASIAN_SESSION_V1
+  config_file: config/strategy.yaml
+  engine_module: session_strategy/engine.py
+  note: >
+    This repo's strategy_engine/ implements a DIFFERENT strategy (ST_ASIAN_SWEEP_5R_V1,
+    ER_ONLY_V2 classifier) that happens to share the session_router migration lineage. It does
+    not implement SESSION_TRADE_V1's rules. Do not port SESSION_TRADE_V1's logic into
+    strategy_engine/ -- that would create a second, divergent implementation of the same
+    strategy, which is exactly the duplicate-authority problem this registration is meant to
+    prevent.
+
+status: PARTIAL_DEMO_AUTHORIZED   # one of two cycles signed and demo-authorized, the other UNSIGNED
+
+required_capabilities:
+  - MARKET_DATA        # MT5 candles/tick, via the source repo's own mt5/ (not this repo's)
+  - SESSION_BOX         # completed reference-box OHLC/mid/range
+  - LIQUIDITY            # strategy-specific Sweep qualification (see spec -- narrower than
+                          # this repo's generic liquidity.liquidity_result())
+  - TRADE_MANAGEMENT     # risk sizing, duplicate/quota protection, order lifecycle
+
+supported_symbols: [EURUSD, GBPUSD, USDJPY, XAUUSD.crp]
+supported_timeframes: [M15]
+
+supported_cycles:
+  ASIAN_LONDON:
+    status: ACTIVE
+    reference_window_utc: ["00:00", "07:00"]
+    execution_window_utc: ["07:00", "16:00"]
+    magic: 123456
+    execution_authority: SIGNED
+
+  LONDON_NEWYORK:
+    status: UNSIGNED
+    reference_window_utc: UNSIGNED
+    execution_window_utc: UNSIGNED
+    magic: 123457
+    execution_authority: UNSIGNED
+    note: >
+      config/canonical_sessions.yaml (source repo) states explicitly that ASIAN_SESSION_V1's
+      "execution window 07:00-16:00 has no separate London/NY boxes." Do not infer a window
+      from the SessionBoxes_V1 MT5 indicator's display defaults, historical tests, or this
+      repo's own canonical London AM (06:00-11:00) / NY AM (12:00-15:00) windows -- none of
+      those are strategy authority for this specific strategy. Remains blocked for execution
+      until the owner signs an explicit window the same way ASIAN_LONDON's was signed.
+
+execution:
+  demo: true    # ASIAN_LONDON only; LONDON_NEWYORK stays analysis/order_check-only
+  live: false   # hard-blocked, both cycles, unconditionally
+
+owned_by_strategy_not_capability_layer:
+  - session regime classification (own efficiency-ratio + close-location rule, NOT ER_ONLY_V2)
+  - setup routing (SWEEP > RANGE_REJECTION > TREND_CONTINUATION priority)
+  - direction / entry / stop / target formulas
+  - risk-per-trade sizing (0.5%) and daily/drawdown limits
+  - one-trade-per-symbol-per-cycle quota

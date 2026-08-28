@@ -1,0 +1,52 @@
+# Strategy registry -- data only (2026-08-27). Lists every strategy the Trade Assistant is
+# aware of, distinct from EXECUTION PERMISSION for any of them. See TRADE_ASSISTANT_ARCHITECTURE.md
+# for why this is a data file rather than a running orchestrator: nothing in this repo currently
+# calls a strategy-manager runtime, and building one with no caller would be speculative
+# infrastructure, not a real boundary. Add a manager/loader when a real caller needs one.
+#
+# registered   -- the assistant knows this strategy exists
+# active       -- currently the strategy being run/tracked (vs. dormant/archived)
+# research     -- no execution authority anywhere, analysis only
+# demo_authorized / live_authorized -- set independently; never conflate registration with permission
+
+strategies:
+  ST_ASIAN_SWEEP_5R_V1:
+    registered: true
+    active: true
+    research: true
+    demo_authorized: false   # execution/ is project-wide PAUSED (PROJECT_STATUS.md); also blocked
+    live_authorized: false   #   independently by strategies/STRATEGY_LEDGER.md's own open gaps
+                              #   (entry_order_type undefined, risk_per_trade_pct unspecified)
+    config_source: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
+    engine: strategy_engine (this repo)
+
+  SESSION_TRADE_V1:
+    registered: true
+    active: true
+    research: false
+    demo_authorized: true    # ASIAN_LONDON cycle only -- see contract.yaml, LONDON_NEWYORK is false
+    live_authorized: false
+    config_source: strategies/session_trade/contract.yaml
+    engine: "session_strategy (D:\\ddev\\Session Trade Codex -- separate repository, referenced not vendored)"
+
+  SMC_3R_V1:
+    registered: true
+    active: false
+    research: true
+    demo_authorized: false
+    live_authorized: false
+    config_source: "SMC_3R_V1_SPEC.md (D:\\ddev\\Session Trade Codex)"
+    engine: "smc_3r_v1 (D:\\ddev\\Session Trade Codex)"
+    note: independence preserved; not merged into SESSION_TRADE_V1's rules.
+
+  R8_OBM_V1:
+    registered: true
+    active: false
+    research: false
+    demo_authorized: false   # its .ex5/.mq5 were removed from the MT5 terminal's Experts folder
+                              # by the owner (2026-08-27); an orphaned position from its prior
+                              # runs may still exist on the demo account -- see chat history, not
+                              # tracked by this registry
+    live_authorized: false
+    config_source: "R8_OBM_V1_SPEC.md (D:\\ddev\\Session Trade Codex)"
+    engine: "compiled MQL5 EA, external to both Python repos"
