@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Optional
 
-from assistant.market_data import session_snapshot
 from mt5.market_data import MarketDataError, get_latest_candles, get_tick
 
 from .models import ZoneDirection, ZoneFamily, ZoneRole, ZoneResult, ZoneStatus
@@ -22,7 +21,15 @@ __all__ = ["session_zone", "previous_day_high_low", "dealing_range_zones",
 def session_zone(symbol: str, session_name: str, session_date: Optional[date] = None) -> ZoneResult:
     """Reuses assistant.market_data.session_snapshot() -- no new session math here.
     Status is deliberately UNKNOWN: whether a session box has since been swept/reclaimed
-    is a Liquidity-phase question, not modeled here."""
+    is a Liquidity-phase question, not modeled here.
+
+    Import is deferred to call time (not module load time): assistant.market_data sits
+    above supply_demand in assistant/__init__.py's own import chain (assistant ->
+    entry_confirmation -> liquidity -> supply_demand -> assistant), so importing it
+    eagerly here re-enters assistant mid-init. See docs/specs/ENTRY_CONFIRMATION_V1_SPEC.md
+    circular-import repair note."""
+    from assistant.market_data import session_snapshot
+
     snap = session_snapshot(symbol, session_name, session_date)
     if snap.status != "OK":
         return ZoneResult(symbol=symbol, timeframe="M15", family=ZoneFamily.SESSION, role=ZoneRole.REFERENCE,

@@ -136,7 +136,7 @@ PHASE 2 — STRUCTURE            COMPLETE / FROZEN
 PHASE 3 — SUPPLY & DEMAND      COMPLETE / FROZEN (AG_ORDER_BLOCK_V1, frozen 2026-08-26, verified 2026-08-27)
 ORDER BLOCK CONTRACT           AG_ORDER_BLOCK_V1 FROZEN -- L1/L2 + inside-bar still UNSIGNED
 PHASE 4 — LIQUIDITY            COMPLETE / FROZEN (AG_LIQUIDITY_V1, frozen 2026-08-27)
-PHASE 5 — ENTRY & CONFIRMATION NOT STARTED
+PHASE 5 — ENTRY & CONFIRMATION VERIFIED / FROZEN (AG_ENTRY_CONFIRMATION_V1, frozen 2026-08-28)
 PHASE 6 — TRADE MANAGEMENT     BUILT (manual-entry only, 2026-08-27) -- see below      <- current
 ```
 
@@ -190,6 +190,26 @@ failed) before Phase 5 begins. `FROZEN` means no silent semantic changes to
 contract version or explicit owner instruction.
 
 Each phase implemented bottom-up; owner approves before the next one starts.
+
+### PHASE 5 — ENTRY & CONFIRMATION: VERIFIED / FROZEN (2026-08-28)
+
+`AG_ENTRY_CONFIRMATION_V1` (`entry_confirmation/`) consumes `market_structure.StructureResult`
+and `liquidity.LiquidityResult` verbatim -- no redetection of pivots, CHoCH, BOS, sweeps,
+or reclaims. Canonical chain: `LIQUIDITY EVENT -> STRUCTURE_SHIFT (CHoCH) -> DISPLACEMENT
+-> EVENT_SEQUENCE -> CONFIRMATION_STATE` (`CONFIRMED` / `PARTIAL` / `NOT_CONFIRMED` /
+`INDETERMINATE`, no numeric score). Displacement is now signed as
+`AG_ENTRY_DISPLACEMENT_V1`: `body_ratio >= 0.60 AND body >= 1.30 x median_body_20 AND`
+direction matches the candidate. `event_sequence` enforces
+`liquidity_time < structure_time <= displacement_time` (same-candle structure/displacement
+allowed). `rejection` qualification, POI alignment, FVG-as-entry-trigger, and
+BOS-as-structure_shift remain explicitly DEFERRED, not missing. See
+`docs/status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md` for full evidence: fixed a
+circular import (`entry_confirmation <-> liquidity <-> supply_demand <-> assistant`,
+rooted in `supply_demand/native_zones.py` importing `assistant.market_data`), added 19
+focused tests, ran read-only live MT5 validation on EURUSD (both examples correctly
+resolved to `INDETERMINATE`/`NOT_CONFIRMED`-shaped evidence, not manufactured). Full
+suite: 467 passed, 0 failed. `order_send` not used; `REAL_MONEY_TRADING` /
+`AUTONOMOUS_TRADING` remain `DISABLED`, untouched by this phase.
 
 ### PHASE 1 — MARKET DATA: COMPLETE
 
@@ -409,4 +429,8 @@ FLIP_OB's identification rule (lookback + proximity to a prior failed zone); L1/
 inside-bar D2S/S2D remain explicitly UNSIGNED, not to be inferred; liquidity's
 SWING_HIGH/SWING_LOW scope (latest-only) and its reuse of `equal_level_tolerance_points`
 as the cross-source dedup tolerance are documented, non-blocking V1 gaps. Phase 5 — Entry
-& Confirmation is the current phase, not yet started.
+& Confirmation is now `VERIFIED` / `FROZEN` (`AG_ENTRY_CONFIRMATION_V1`, 2026-08-28; see
+`docs/status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md`). Next phase:
+`AG_TRADE_MANAGEMENT_V1`'s entry-side dependency on Phase 5 (Phase 6's manual-entry-only
+subsystem already ships independently of Phase 5 -- see PHASE 6 above) -- not started
+in this pass.

@@ -35,14 +35,17 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from entry_confirmation import (
+    DISPLACEMENT,
     CandidateDirection,
     ConfirmationState,
     EntryConfirmationRequest,
     OverallState,
     evaluate_entry_confirmation,
 )
+from entry_confirmation.displacement import MEDIAN_LOOKBACK
 from liquidity import liquidity_result as _liquidity_result
 from market_structure import analyze_structure
+from mt5.market_data import MarketDataError, get_latest_candles
 from supply_demand import fair_value_gaps_for, validated_order_blocks_for
 from trade_management import TradeManagementRequest, evaluate_trade_management
 
@@ -151,11 +154,25 @@ def analyze_market(request: AssistantAnalysisRequest) -> FiveSkillAnalysisResult
             candidate_direction = (
                 CandidateDirection(request.candidate.direction) if request.candidate else CandidateDirection.NONE
             )
+            candle_history = ()
+            if DISPLACEMENT in request.requested_confirmations:
+                # AG_ENTRY_DISPLACEMENT_V1's median_body_20 reference -- fetched here (not
+                # inside entry_confirmation, which never calls MT5 itself) using the same
+                # get_latest_candles() market_structure/analyzer.py already reuses.
+                # "oldest first, most recent CLOSED bars" -> [:-1] drops the bar that is
+                # snapshot.latest_closed_candle, leaving the MEDIAN_LOOKBACK prior to it.
+                try:
+                    candle_history = tuple(
+                        get_latest_candles(request.symbol, request.timeframe, MEDIAN_LOOKBACK + 1)[:-1]
+                    )
+                except MarketDataError:
+                    candle_history = ()  # displacement reports INSUFFICIENT_DATA, not a crash
             ec_request = EntryConfirmationRequest(
                 symbol=request.symbol, timeframe=request.timeframe,
                 candidate_direction=candidate_direction,
                 requested_confirmations=request.requested_confirmations,
                 candidate_candle=snapshot.latest_closed_candle,
+                candle_history=candle_history,
                 structure_result=structure, liquidity_result=liquidity,
             )
             entry_confirmation = evaluate_entry_confirmation(ec_request)

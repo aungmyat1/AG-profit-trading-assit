@@ -32,8 +32,10 @@ from .analysis_models import (
 )
 from .assessment import AssistantAssessment, build_assistant_assessment
 from .five_skill_runtime import analyze_market
+from .technique_router import TECHNIQUE_DAYTRADING, TECHNIQUE_SMC, TECHNIQUES, analyze_by_technique
 
 __all__ = [
     "analyze_market", "AssistantAnalysisRequest", "FiveSkillAnalysisResult", "TradeCandidate",
     "TradeProposal", "build_assistant_assessment", "AssistantAssessment",
+    "analyze_by_technique", "TECHNIQUE_SMC", "TECHNIQUE_DAYTRADING", "TECHNIQUES",
 ]

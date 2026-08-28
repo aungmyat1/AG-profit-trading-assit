@@ -221,10 +221,61 @@ This demonstrates confirmation facts != an automatic SHORT signal — `PARTIAL` 
 
 ## Known gaps
 
-1. `displacement` and `rejection` qualification thresholds are `UNSIGNED` — an owner
-   needs to sign a generic candle-level threshold (or explicitly authorize reusing an
-   existing strategy/capability-specific one) before these can report `PASS`/`FAIL`.
+1. `rejection` qualification threshold is `UNSIGNED` — deliberately deferred/optional
+   for V1 (displacement was signed instead; see addendum below). An owner needs to sign
+   a generic wick-dominance threshold before it can report `PASS`/`FAIL`.
 2. `structure_shift` is scoped to CHoCH only; BOS-based alignment is not implemented as
    its own primitive (available directly from `StructureResult.latest_bos` if needed later).
 3. FVG/order-block/breaker/mitigation confirmation primitives are not implemented —
    no signed definition found, and out of the mission's V1 scope.
+4. POI alignment is not implemented — confirmation does not check proximity to a
+   supply_demand zone. Deliberately deferred; see addendum.
+
+## Addendum — 2026-08-28: circular import repair, AG_ENTRY_DISPLACEMENT_V1, event_sequence
+
+**Circular import fix.** `assistant/__init__.py`'s eager import chain
+(`analysis_models` → `assessment` → `five_skill_runtime`, each importing
+`entry_confirmation`) collided with `entry_confirmation`'s own import of `liquidity`
+(→ `supply_demand` → `assistant.market_data`, imported eagerly by
+`supply_demand/native_zones.py`). Fixed by: (1) `entry_confirmation/models.py` moving
+its `LiquidityResult`/`StructureResult` imports under `TYPE_CHECKING` (annotation-only,
+safe under `from __future__ import annotations`); (2) `assistant/analysis_models.py`
+and `assistant/assessment.py` importing real runtime symbols (`ALL_CONFIRMATIONS`,
+`ConfirmationState`) from `entry_confirmation.models` directly rather than the package
+`__init__`; (3) `supply_demand/native_zones.py` deferring its
+`assistant.market_data.session_snapshot` import to call time (the actual backwards
+edge — a lower layer reaching into the top orchestration layer). No public API removed.
+
+**`displacement` is now signed: `AG_ENTRY_DISPLACEMENT_V1`.**
+
+```
+body_ratio >= 0.60
+AND body_size >= 1.30 * median_body_20
+AND candle direction matches candidate_direction (BULLISH for LONG, BEARISH for SHORT)
+
+median_body_20 = median(|close - open|) over the 20 completed candles strictly
+preceding the evaluated candle (candle_history, caller-supplied, never fetched by
+this package). The evaluated candle never contaminates its own reference sample.
+```
+
+Reports `INSUFFICIENT_DATA` (not `PASS`/`FAIL`) when: `candidate_direction` is `NONE`,
+range is zero, fewer than 20 valid prior candles are supplied, or `median_body_20`
+resolves to zero. `DisplacementEvidence` gained `median_body` and `relative_body`
+fields; `EntryConfirmationRequest` gained `candle_history: Tuple[Candle, ...]`.
+`rejection` remains `UNSIGNED_RULE` — deliberately not extended in this pass.
+
+**New derived primitive: `event_sequence`.** Not independently requestable — computed
+only when `structure_shift`, `liquidity_reclaim`, and `displacement` are all requested,
+using their own timestamps (`liquidity_reclaim.reclaim_time`,
+`structure_shift.event_time`, `displacement.candle_timestamp`):
+
+```
+liquidity_time < structure_time <= displacement_time   -> PASS
+otherwise                                               -> FAIL
+any timestamp missing                                   -> INSUFFICIENT_DATA
+```
+
+`structure_time == displacement_time` is explicitly allowed (the structural break and
+its confirming displacement may be the same candle); `structure_time < liquidity_time`
+is never valid. Folded into `overall_state` aggregation like any other requested
+primitive. See `entry_confirmation/sequence.py`.

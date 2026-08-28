@@ -16,14 +16,23 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
-from entry_confirmation import ALL_CONFIRMATIONS, EntryConfirmationResult
-from liquidity import LiquidityResult
-from market_structure import StructureResult
-from mt5.symbol_resolver import SymbolMeta
-from supply_demand import ValidatedOrderBlock, ZoneQueryResult
-from trade_management import ManagementPolicy, TradeManagementResult
+from entry_confirmation.models import ALL_CONFIRMATIONS
+
+if TYPE_CHECKING:
+    # Type-only: avoids assistant/analysis_models.py importing liquidity/supply_demand/
+    # trade_management at runtime, which re-enters this module mid-init via
+    # liquidity -> supply_demand -> assistant (supply_demand/native_zones.py imports
+    # assistant.market_data). Safe because `from __future__ import annotations` (above)
+    # makes every annotation in this file a lazy string, never evaluated at class-
+    # definition time -- unlike ALL_CONFIRMATIONS above, which is a real default value.
+    from entry_confirmation.models import EntryConfirmationResult
+    from liquidity import LiquidityResult
+    from market_structure import StructureResult
+    from mt5.symbol_resolver import SymbolMeta
+    from supply_demand import ValidatedOrderBlock, ZoneQueryResult
+    from trade_management import ManagementPolicy, TradeManagementResult
 
 # Skill identifiers -- match the logical taxonomy in .claude/skills/SKILL_REGISTRY.yaml
 # and docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md's "Assistant skill taxonomy" verbatim.

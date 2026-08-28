@@ -36,12 +36,14 @@ from .models import (
     DisplacementEvidence,
     EntryConfirmationRequest,
     EntryConfirmationResult,
+    EventSequenceEvidence,
     LiquidityAlignment,
     OverallState,
     RejectionEvidence,
     StructureAlignment,
 )
 from .rejection import evaluate_rejection
+from .sequence import evaluate_event_sequence
 from .structure_alignment import evaluate_structure_alignment
 
 _INCOMPLETE_STATES = {
@@ -60,7 +62,7 @@ def evaluate_entry_confirmation(request: EntryConfirmationRequest) -> EntryConfi
     requested = set(request.requested_confirmations)
 
     displacement = (
-        evaluate_displacement(request.candidate_candle)
+        evaluate_displacement(request.candidate_candle, request.candidate_direction, request.candle_history)
         if DISPLACEMENT in requested
         else DisplacementEvidence(status=ConfirmationState.NOT_REQUESTED)
     )
@@ -97,7 +99,20 @@ def evaluate_entry_confirmation(request: EntryConfirmationRequest) -> EntryConfi
         if by_key[k] in (ConfirmationState.UNAVAILABLE, ConfirmationState.INSUFFICIENT_DATA)
     )
 
-    overall_state = _aggregate(requested_states)
+    # event_sequence is derived, not independently requestable: only evaluated once its
+    # three inputs were all requested (their timestamps are what gets compared).
+    sequence_inputs_requested = {STRUCTURE_SHIFT, LIQUIDITY_RECLAIM, DISPLACEMENT} <= requested
+    event_sequence = (
+        evaluate_event_sequence(liquidity_reclaim, structure_shift, displacement)
+        if sequence_inputs_requested
+        else EventSequenceEvidence(status=ConfirmationState.NOT_REQUESTED)
+    )
+
+    aggregation_states = list(requested_states)
+    if sequence_inputs_requested:
+        aggregation_states.append(event_sequence.status)
+
+    overall_state = _aggregate(aggregation_states)
 
     rule_versions = tuple(sorted({
         rv for rv in (displacement.rule_version, rejection.rule_version) if rv
@@ -112,6 +127,7 @@ def evaluate_entry_confirmation(request: EntryConfirmationRequest) -> EntryConfi
         structure_shift=structure_shift,
         liquidity_reclaim=liquidity_reclaim,
         rejection=rejection,
+        event_sequence=event_sequence,
         overall_state=overall_state,
         requested_confirmations=tuple(request.requested_confirmations),
         missing_requirements=missing_requirements,

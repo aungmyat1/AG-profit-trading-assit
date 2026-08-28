@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Tuple
 
-from entry_confirmation import ConfirmationState
+from entry_confirmation.models import ConfirmationState
 
 from .analysis_models import FiveSkillAnalysisResult, SKILL_NOT_REQUESTED, SKILL_NO_CANDIDATE
 
@@ -96,7 +96,7 @@ def _entry_confirmation_lines(result: FiveSkillAnalysisResult):
     if ec is None:
         return [_status_line(result, "entry-confirmation")]
     lines = []
-    for key in ("displacement", "structure_shift", "liquidity_reclaim", "rejection"):
+    for key in ("displacement", "structure_shift", "liquidity_reclaim", "rejection", "event_sequence"):
         primitive = getattr(ec, key)
         if primitive.status == ConfirmationState.NOT_REQUESTED:
             continue

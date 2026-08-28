@@ -195,13 +195,20 @@ def test_no_candidate_mode_does_not_fail_analysis(monkeypatch):
 
 # --------------------------------------------------------------------------- partial entry confirmation survives
 
-def test_unsigned_displacement_survives_to_result_and_report(monkeypatch):
+def test_unsigned_rejection_survives_to_result_and_report(monkeypatch):
+    # rejection qualification is deliberately deferred/optional in this mission (see
+    # displacement.py's module docstring) -- it stays UNSIGNED_RULE. displacement itself
+    # is now signed (AG_ENTRY_DISPLACEMENT_V1) but has no candidate/history here (no
+    # TradeCandidate supplied -> candidate_direction=NONE, and get_latest_candles() isn't
+    # monkeypatched in this test -> no MT5 connection -> empty history), so it reports
+    # INSUFFICIENT_DATA rather than PASS/FAIL -- also a real, visible limitation.
     _patch_common(monkeypatch)
     req = AssistantAnalysisRequest(symbol="EURUSD", requested_skills=(SKILL_ENTRY_CONFIRMATION,),
                                     requested_confirmations=ALL_CONFIRMATIONS)
     result = analyze_market(req)
 
-    assert result.entry_confirmation.displacement.status.value == "UNSIGNED_RULE"
+    assert result.entry_confirmation.displacement.status.value == "INSUFFICIENT_DATA"
+    assert result.entry_confirmation.rejection.status.value == "UNSIGNED_RULE"
     assert result.skill_statuses[SKILL_ENTRY_CONFIRMATION] == SKILL_PARTIAL
     assert result.overall_status == OVERALL_PARTIAL
 

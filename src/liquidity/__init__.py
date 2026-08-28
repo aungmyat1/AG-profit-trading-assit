@@ -17,11 +17,42 @@ Contract: AG_LIQUIDITY_V1 (contract.py) -- documents which sources are session-d
 structure-dependent, or always-available, and records the cross-source deduplication
 (dedup.py) added to preserve source provenance when multiple detectors agree on one price.
 """
+from .affinity import (
+    AFFINITY_INVALIDATED,
+    AFFINITY_RULE_VERSION,
+    BEARISH_INTERNAL_TO_EXTERNAL,
+    BULLISH_INTERNAL_TO_EXTERNAL,
+    EXTERNAL_LIQUIDITY_REACHED,
+    EXTERNAL_TO_INTERNAL,
+    INDETERMINATE as AFFINITY_INDETERMINATE,
+    INTERNAL_REBALANCING,
+    LiquidityAffinityResult,
+    evaluate_liquidity_affinity,
+    liquidity_affinity_result,
+)
 from .analyzer import liquidity_result
 from .contract import CONTRACT_VERSION, LIQUIDITY_CONTRACT_GAPS, LiquidityContractGap
+from .hierarchy import (
+    SCOPE_EXTERNAL,
+    SCOPE_INTERNAL,
+    InducementCandidate,
+    ScopedLiquidityLevel,
+    classify_roles,
+    external_swing_liquidity,
+    find_inducement_candidates,
+    level_id,
+    scope_liquidity_levels,
+)
 from .models import LiquidityLevel, LiquidityResult, LiquiditySide, LiquidityStatus
 
 __all__ = [
     "liquidity_result", "LiquidityLevel", "LiquidityResult", "LiquiditySide", "LiquidityStatus",
     "CONTRACT_VERSION", "LIQUIDITY_CONTRACT_GAPS", "LiquidityContractGap",
+    "SCOPE_EXTERNAL", "SCOPE_INTERNAL", "ScopedLiquidityLevel", "InducementCandidate",
+    "external_swing_liquidity", "scope_liquidity_levels", "find_inducement_candidates",
+    "classify_roles", "level_id",
+    "LiquidityAffinityResult", "evaluate_liquidity_affinity", "liquidity_affinity_result",
+    "AFFINITY_RULE_VERSION", "BULLISH_INTERNAL_TO_EXTERNAL", "BEARISH_INTERNAL_TO_EXTERNAL",
+    "EXTERNAL_TO_INTERNAL", "INTERNAL_REBALANCING", "EXTERNAL_LIQUIDITY_REACHED",
+    "AFFINITY_INVALIDATED", "AFFINITY_INDETERMINATE",
 ]
