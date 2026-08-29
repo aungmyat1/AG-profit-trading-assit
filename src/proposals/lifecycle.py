@@ -20,7 +20,7 @@ from typing import Dict, Tuple
 from entry_confirmation.entry_models_v1 import EntryModelState, SMCConditionalEntryAnalysis
 
 from .gate import generate_proposals
-from .identity import proposal_id_for, setup_id as _setup_id
+from .identity import proposal_id_for, reference_key_for, setup_id as _setup_id
 from .models import (
     LIFECYCLE_CREATED,
     LIFECYCLE_EXPIRED,
@@ -91,7 +91,12 @@ def update_proposal_lifecycle(analysis: SMCConditionalEntryAnalysis, store) -> T
     for combo in analysis.combinations:
         if combo.state not in (EntryModelState.INVALIDATED.value, EntryModelState.EXPIRED.value):
             continue
-        setup = _setup_id(analysis.symbol, combo.combination, combo.direction)
+        e_condition = analysis.e_conditions.get(combo.entry_condition)
+        reference_key = reference_key_for(
+            getattr(e_condition, "reference_type", None), getattr(e_condition, "reference_low", None),
+            getattr(e_condition, "reference_high", None), getattr(e_condition, "reference_level", None),
+        )
+        setup = _setup_id(analysis.symbol, combo.combination, combo.direction, reference_key)
         if setup in seen_setup_ids:
             continue
         prior = store.get(setup)

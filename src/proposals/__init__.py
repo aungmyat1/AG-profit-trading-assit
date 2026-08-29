@@ -4,7 +4,7 @@ DETECTION != PROPOSAL != EXECUTION boundary this module preserves.
 """
 from .explain import explain
 from .gate import generate_proposals
-from .identity import proposal_id_for, setup_id, snapshot_id
+from .identity import proposal_id_for, reference_key_for, setup_id, snapshot_id
 from .lifecycle import ProposalLifecycleUpdate, update_proposal_lifecycle
 from .models import (
     LIFECYCLE_CREATED,
@@ -20,7 +20,7 @@ from .models import (
 
 __all__ = [
     "generate_proposals", "explain", "update_proposal_lifecycle", "ProposalLifecycleUpdate",
-    "setup_id", "proposal_id_for", "snapshot_id",
+    "setup_id", "proposal_id_for", "snapshot_id", "reference_key_for",
     "SMCTradeProposal", "SMC_TRADE_PROPOSAL_V1",
     "STATUS_ENTRY_CANDIDATE_READY", "STATUS_ENTRY_CANDIDATE_INVALIDATED",
     "LIFECYCLE_CREATED", "LIFECYCLE_STILL_VALID", "LIFECYCLE_UPDATED", "LIFECYCLE_INVALIDATED", "LIFECYCLE_EXPIRED",

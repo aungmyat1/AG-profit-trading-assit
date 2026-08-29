@@ -13,7 +13,7 @@ from entry_confirmation.entry_models_v1 import EntryModelState, SMCConditionalEn
 from entry_confirmation.m1_character_change_inducement import M1Result
 from entry_confirmation.m2_supply_demand_shift import M2Result
 
-from .identity import proposal_id_for, setup_id as _setup_id, snapshot_id as _snapshot_id
+from .identity import proposal_id_for, reference_key_for, setup_id as _setup_id, snapshot_id as _snapshot_id
 from .models import STATUS_ENTRY_CANDIDATE_READY, SMCTradeProposal
 
 
@@ -55,7 +55,12 @@ def generate_proposals(analysis: SMCConditionalEntryAnalysis,
         m_result = _matching_m_result(analysis, combo)
         entry_low, entry_high = _entry_range(m_result) if m_result is not None else (None, None)
 
-        setup = _setup_id(analysis.symbol, combo.combination, combo.direction)
+        e_condition = analysis.e_conditions.get(combo.entry_condition)
+        reference_key = reference_key_for(
+            getattr(e_condition, "reference_type", None), getattr(e_condition, "reference_low", None),
+            getattr(e_condition, "reference_high", None), getattr(e_condition, "reference_level", None),
+        )
+        setup = _setup_id(analysis.symbol, combo.combination, combo.direction, reference_key)
 
         proposals.append(SMCTradeProposal(
             proposal_id=proposal_id_for(setup), setup_id=setup,
