@@ -64,6 +64,30 @@ from .models_v2_1 import (
     StructureShiftQualityStatus,
 )
 from .sweep_shift import classify_wick_or_close, evaluate_pivot_context, evaluate_structure_shift_quality
+from .entry_models_v1 import (
+    CHECK_TIMEFRAME,
+    COMBINATIONS,
+    CONFIRMATION_TIMEFRAME,
+    ENTRY_CONDITIONS,
+    EXECUTION_TIMEFRAME,
+    H1_REACTION_V1,
+    MANEUVERS,
+    REFERENCE_TIMEFRAME_E1,
+    REFERENCE_TIMEFRAME_E2,
+    SMC_CONDITIONAL_ENTRY_V2,
+    SMC_ENTRY_MODELS_V1,
+    EConditionResult,
+    EntryModelState,
+    SMCConditionalEntryAnalysis,
+    SMCEntryCombinationResult,
+)
+from .e1_daily_gap_reaction import E1Result, e1_to_econdition, evaluate_e1_daily_gap_reaction
+from .m1_character_change_inducement import M1Result, evaluate_m1_character_change_with_inducement
+from .e2_h1_poi_reaction import E2PoiReactionRequest, E2Result, e2_to_econdition, evaluate_e2_h1_poi_reaction
+from .m2_supply_demand_shift import M2Result, evaluate_m2_supply_demand_shift
+from .e3_liquidity_sweep import E3Result, e3_to_econdition, evaluate_e3_htf_liquidity_sweep
+from .m3_sweep_drop_pump import M3_INVERTED_GAP_POLICY, M3Result, evaluate_m3_sweep_drop_pump
+from .composer import compose, evaluate_entry_combinations
 from .models import (
     ALL_CONFIRMATIONS,
     DISPLACEMENT,
@@ -108,4 +132,17 @@ __all__ = [
     "DisplacementLeg", "EntryArrayContext",
     "classify_wick_or_close", "evaluate_pivot_context", "evaluate_structure_shift_quality",
     "evaluate_entry_array", "fvg_associated_with_leg", "ob_associated_with_shift",
+    # SMC_CONDITIONAL_ENTRY_V2 -- 3 E-conditions x 3 M-maneuvers, 9 combinations (see entry_models_v1.py)
+    "SMC_CONDITIONAL_ENTRY_V2", "SMC_ENTRY_MODELS_V1",
+    "ENTRY_CONDITIONS", "MANEUVERS", "COMBINATIONS",
+    "CHECK_TIMEFRAME", "CONFIRMATION_TIMEFRAME", "EXECUTION_TIMEFRAME",
+    "REFERENCE_TIMEFRAME_E1", "REFERENCE_TIMEFRAME_E2", "H1_REACTION_V1",
+    "EntryModelState", "EConditionResult", "SMCEntryCombinationResult", "SMCConditionalEntryAnalysis",
+    "E1Result", "evaluate_e1_daily_gap_reaction", "e1_to_econdition",
+    "M1Result", "evaluate_m1_character_change_with_inducement",
+    "E2Result", "E2PoiReactionRequest", "evaluate_e2_h1_poi_reaction", "e2_to_econdition",
+    "M2Result", "evaluate_m2_supply_demand_shift",
+    "E3Result", "evaluate_e3_htf_liquidity_sweep", "e3_to_econdition",
+    "M3Result", "evaluate_m3_sweep_drop_pump", "M3_INVERTED_GAP_POLICY",
+    "compose", "evaluate_entry_combinations",
 ]
