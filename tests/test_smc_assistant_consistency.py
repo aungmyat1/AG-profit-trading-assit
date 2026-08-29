@@ -40,10 +40,14 @@ def _snapshot():
     e1 = EConditionResult(entry_condition="E1", symbol="EURUSD")
 
     m1 = M1Result(symbol="EURUSD", entry_condition="E2", direction="SHORT", state="READY",
-                   entry_array_low=1.0980, entry_array_high=1.0995, entry_array_type="FVG")
+                   entry_array_low=1.0980, entry_array_high=1.0995, entry_array_type="FVG",
+                   invalidation_price=1.1060, invalidation_source_type="INDUCEMENT_LEVEL",
+                   invalidation_trigger="LIVE_PRICE")
     combo = SMCEntryCombinationResult(combination="E2M1", entry_condition="E2", maneuver="M1", symbol="EURUSD",
                                        direction="SHORT", confirmation_timeframe="M5",
-                                       entry_array="FVG", entry_price=1.09875, state="READY")
+                                       entry_array="FVG", entry_price=1.09875, state="READY",
+                                       invalidation_price=1.1060, invalidation_source_type="INDUCEMENT_LEVEL",
+                                       invalidation_trigger="LIVE_PRICE")
 
     return SMCConditionalEntryAnalysis(
         symbol="EURUSD", snapshot_time=dt.datetime(2026, 1, 5, 10, 0, tzinfo=UTC),
@@ -76,6 +80,9 @@ def test_surveillance_proposal_and_visual_explanation_agree_on_the_ready_combina
 
     poi_annotation = next(a for a in visual.annotations if a.semantic_role == "POI")
     assert poi_annotation.low == 1.0990 and poi_annotation.high == 1.1010
+
+    invalidation_annotation = next(a for a in visual.annotations if a.semantic_role == "INVALIDATION")
+    assert invalidation_annotation.price == proposal.invalidation_price == 1.1060
 
 
 def test_no_ready_combination_means_no_proposal_and_surveillance_reports_it():

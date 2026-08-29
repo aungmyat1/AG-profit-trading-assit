@@ -120,3 +120,28 @@ def test_deterministic_repeated_evaluation():
     first = evaluate_entry_combinations(e_conditions, m_results)
     second = evaluate_entry_combinations(e_conditions, m_results)
     assert first == second
+
+
+# --------------------------------------------------------------------------- invalidation propagation
+
+def test_invalidation_fields_copied_verbatim_from_underlying_m_result():
+    m1 = M1Result(symbol="EURUSD", entry_condition=None, direction="SHORT", state="READY",
+                   invalidation_price=1.1060, invalidation_source_type="INDUCEMENT_LEVEL",
+                   invalidation_reason="not yet breached", invalidation_trigger="LIVE_PRICE")
+    combos = evaluate_entry_combinations([_e("E1")], [m1])
+    combo = next(c for c in combos if c.combination == "E1M1")
+    assert combo.invalidation_price == 1.1060
+    assert combo.invalidation_source_type == "INDUCEMENT_LEVEL"
+    assert combo.invalidation_trigger == "LIVE_PRICE"
+    assert combo.invalidation is None  # not INVALIDATED/EXPIRED yet
+
+
+def test_invalidated_m_result_still_composes_with_invalidation_state_and_price():
+    m2 = M2Result(symbol="EURUSD", entry_condition=None, direction="SHORT", state="INVALIDATED",
+                   invalidation_price=1.1075, invalidation_source_type="NEW_CONTROLLING_ZONE_BOUNDARY",
+                   invalidation_trigger="CLOSED_CANDLE_CLOSE")
+    combos = evaluate_entry_combinations([_e("E2")], [m2])
+    combo = next(c for c in combos if c.combination == "E2M2")
+    assert combo.state == "INVALIDATED"
+    assert combo.invalidation == "INVALIDATED"
+    assert combo.invalidation_price == 1.1075

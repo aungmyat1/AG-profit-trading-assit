@@ -39,15 +39,20 @@ def _liquidity_evidence(symbol: str, timeframe: str, levels: Sequence[LiquidityL
 
 
 def _structure_evidence(symbol: str, timeframe: str, structure) -> Dict[str, object]:
+    """Indexes EVERY confirmed swing and BOS/CHoCH event per tier (`tier.swings`,
+    `tier.events` -- market_structure/tiers.py's own full, chronological lists), not
+    only the latest of each -- so a raw-evidence annotation builder can trace back to
+    any historical structure point, not just the newest one. Same evidence_id scheme as
+    OB/FVG/liquidity (kind + symbol + timeframe + origin time + price), so a duplicate
+    object (e.g. a swing that is also the tier's own `latest_swing_high`) collapses to
+    the same id rather than being indexed twice under different keys."""
     index: Dict[str, object] = {}
     if structure is None or structure.status != "VALID":
         return index
     for tier in (structure.external, structure.internal):
         if tier is None:
             continue
-        for point in (tier.latest_swing_high, tier.latest_swing_low, tier.latest_bos, tier.latest_choch):
-            if point is None:
-                continue
+        for point in (*tier.swings, *tier.events):
             eid = evidence_id(f"STRUCT-{tier.tier}", symbol, timeframe, point.time_utc, point.price)
             index[eid] = point
     return index

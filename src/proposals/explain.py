@@ -43,7 +43,20 @@ def explain(proposal: SMCTradeProposal) -> str:
     lines.append("")
 
     lines.append("INVALIDATION")
-    lines.append(proposal.invalidation_state or "no invalidation level defined by the underlying M-model yet")
+    if proposal.invalidation_price is not None:
+        lines.append(f"Price: {proposal.invalidation_price:.5f}")
+        lines.append(f"Source: {proposal.invalidation_source_type}")
+        lines.append(f"Trigger: {proposal.invalidation_trigger}")
+        if proposal.invalidation_reason:
+            lines.append(f"Reason: {proposal.invalidation_reason}")
+    else:
+        lines.append("no invalidation level defined by the underlying M-model yet")
+    lines.append("")
+
+    lines.append("LIFECYCLE")
+    lines.append(proposal.lifecycle)
+    if proposal.changed_fields:
+        lines.append(f"changed: {', '.join(proposal.changed_fields)}")
     lines.append("")
 
     lines.append("STATUS")

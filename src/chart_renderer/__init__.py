@@ -4,6 +4,6 @@ for the "no recomputation" rule.
 """
 from __future__ import annotations
 
-from .renderer import RenderResult, render_chart
+from .renderer import RenderResult, render_annotations, render_chart
 
-__all__ = ["RenderResult", "render_chart"]
+__all__ = ["RenderResult", "render_chart", "render_annotations"]

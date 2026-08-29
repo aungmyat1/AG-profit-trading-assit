@@ -158,7 +158,17 @@ class SMCEntryCombinationResult:
 
     entry_array: Optional[str] = None
     entry_price: Optional[float] = None
-    invalidation: Optional[str] = None
+    invalidation: Optional[str] = None  # None, or the state name ("INVALIDATED"/"EXPIRED") once triggered
+
+    # Deterministic invalidation reference (task: SMC operational completion phase) --
+    # copied verbatim from the underlying M-result's own invalidation fields
+    # (entry_confirmation.invalidation), never recomputed here. Populated whenever the
+    # M-model has an invalidation reference at all (even before it's breached), so a
+    # READY combination can answer "what would invalidate this" in advance.
+    invalidation_price: Optional[float] = None
+    invalidation_source_type: Optional[str] = None
+    invalidation_reason: Optional[str] = None
+    invalidation_trigger: Optional[str] = None
 
     state: str = EntryModelState.NOT_APPLICABLE.value
 

@@ -71,6 +71,21 @@ def _entry_array_annotation(m_result, timeframe: Optional[str], snapshot_time: O
     return None
 
 
+def _invalidation_annotation(combo, timeframe: Optional[str], snapshot_time: Optional[str]) -> Optional[Annotation]:
+    """Reads combo.invalidation_price/source_type/trigger verbatim (copied from the
+    underlying M-result's own entry_confirmation.invalidation fields, composer.py) --
+    never recomputed here. Present whenever the M-model has an invalidation reference at
+    all, not only once actually breached, so a READY setup's chart can show where it
+    would invalidate in advance."""
+    if combo.invalidation_price is None:
+        return None
+    return Annotation(
+        type=ANNOTATION_LINE, timeframe=timeframe, timestamp=snapshot_time, price=combo.invalidation_price,
+        label=combo.invalidation_source_type or "invalidation", semantic_role="INVALIDATION",
+        developing=combo.state != EntryModelState.INVALIDATED.value,
+    )
+
+
 def build_visual_explanation(analysis: SMCConditionalEntryAnalysis, combination: str) -> SMCVisualExplanation:
     snapshot_time = analysis.snapshot_time.isoformat() if analysis.snapshot_time is not None else None
     combo = _find_combination(analysis, combination)
@@ -90,6 +105,10 @@ def build_visual_explanation(analysis: SMCConditionalEntryAnalysis, combination:
         entry = _entry_array_annotation(m_result, combo.confirmation_timeframe, snapshot_time)
         if entry is not None:
             annotations.append(entry)
+
+    invalidation = _invalidation_annotation(combo, combo.confirmation_timeframe, snapshot_time)
+    if invalidation is not None:
+        annotations.append(invalidation)
 
     annotations.append(Annotation(
         type=ANNOTATION_LABEL, timeframe=combo.confirmation_timeframe, timestamp=snapshot_time,

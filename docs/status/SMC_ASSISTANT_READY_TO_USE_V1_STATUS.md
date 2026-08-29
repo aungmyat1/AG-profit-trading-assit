@@ -149,3 +149,170 @@ VISUAL_EXPLANATION_READY = YES (core annotation model + entry-model explanation;
 LIVE_ANALYSIS_ONLY_READY = YES (verified against real MT5 EURUSD data this session)
 SESSION_ENTRY_ROUTING_READY = NO (out of scope, unchanged)
 AUTONOMOUS_LIVE_EXECUTION_READY = NO (out of scope, unchanged)
+
+---
+
+# SMC_ASSISTANT_OPERATIONAL_COMPLETION_V1_STATUS
+
+Follow-on phase: closes the operational gaps left open above (exact invalidation
+contracts, proposal lifecycle/identity, raw-evidence annotation builders, chart-renderer
+adapter, live daily surveillance validation). No new SMC primitives, no model ranking,
+no session routing, no trade-management expansion, no autonomous execution.
+
+## BASELINE
+TESTS_BEFORE = 859 (854 pass, 5 known live failures) -- unchanged from the prior phase's ending state
+PASS_BEFORE = 854
+KNOWN_FAILURES = 5 (same pre-existing live-MT5 tests)
+
+## ENTRY_ENGINE
+SMC_CONDITIONAL_ENTRY_V2_PRESERVED = YES (no change to E1/E2/E3/M1/M2/M3 detection
+  logic or the composer's gating rule; only new fields carrying invalidation metadata
+  were added to existing result contracts, plus M1/M2 now reach `INVALIDATED` via
+  already-computed-but-previously-discarded evidence -- see INVALIDATION below)
+
+## INVALIDATION
+M1_INVALIDATION = DEFINED
+M1_SOURCE = `entry_array.structural_invalidation_candidates` (inducement/sweep level +
+  entry-OB far boundary) -- already computed by M1's own existing `evaluate_entry_array()`
+  call, previously discarded; now propagated via the shared `entry_array_invalidation()`
+M1_TRIGGER = LIVE_PRICE (current tick vs. structural price -- reuses the exact
+  comparison `engine_v2_1.py` already applies for M3, never a new rule)
+
+M2_INVALIDATION = DEFINED
+M2_SOURCE = new controlling zone's own boundary (`ZoneRole.DEMAND.low` /
+  `ZoneRole.SUPPLY.high`), reusing `supply_demand.ZoneStatus.INVALIDATED` exactly as
+  `ob_contract.py` already computes it
+M2_TRIGGER = CLOSED_CANDLE_CLOSE
+
+M3_INVALIDATION = DEFINED
+M3_SOURCE = `entry_array.structural_invalidation_candidates` (sweep level + entry-OB far
+  boundary) -- already computed inside `engine_v2_1.evaluate_reversal_sweep_shift`
+  (M3's own delegate); now exposed on `M3Result` via the same shared helper
+M3_TRIGGER = LIVE_PRICE (matches `engine_v2_1`'s existing, unmodified behavior)
+
+COMPOSER_PROPAGATION = VERIFIED (`SMCEntryCombinationResult.invalidation_price/
+  source_type/reason/trigger` copied verbatim from the underlying M-result;
+  `tests/test_entry_combination_composer.py`)
+
+## PROPOSAL
+CONTRACT = UPGRADED (`invalidation_price/source_type/reason/trigger`, `setup_id`,
+  `snapshot_id`, `lifecycle`, `changed_fields` added to `SMCTradeProposal`)
+SETUP_ID = VERIFIED (pure function of symbol+combination+direction only; stable across
+  polls even as price/entry metadata changes -- `tests/test_proposal_lifecycle.py`)
+PROPOSAL_ID = VERIFIED (derived purely from setup_id -- one proposal tracked per active
+  setup across its whole lifecycle)
+SNAPSHOT_ID = VERIFIED (differs every poll, includes snapshot_time)
+
+## LIFECYCLE
+CREATED = VERIFIED
+STILL_VALID = VERIFIED
+UPDATED = VERIFIED (meaningful entry-metadata change detected via a fixed signature
+  field set, excludes evidence/reason text)
+INVALIDATED = VERIFIED (precise price/source/reason preserved from the last live combo
+  that reported it, even though `generate_proposals()` itself never emits non-READY
+  proposals -- `update_proposal_lifecycle` reconstructs the dead proposal from persisted
+  history + the terminal combo's own invalidation fields)
+EXPIRED = STRUCTURALLY SUPPORTED, not exercised (no evaluator in this repo has ever
+  assigned `EntryModelState.EXPIRED` -- no time-based expiry rule exists anywhere in
+  `entry_confirmation`, and none was invented this pass; `update_proposal_lifecycle`
+  mirrors EXPIRED the same way it mirrors INVALIDATED the moment a composed combination
+  ever reports it)
+DEDUPLICATION = VERIFIED (`test_no_duplicate_created_event_on_repeated_identical_poll`,
+  `test_invalidated_proposal_becomes_terminal_further_polls_produce_no_repeat_event`)
+
+## VISUAL BUILDERS
+STRUCTURE = VERIFIED (`build_structure_annotations` -- every confirmed swing/BOS/CHoCH
+  per tier, traceable via `smc_map`'s now-widened structure evidence index)
+LIQUIDITY = VERIFIED (`build_liquidity_annotations` -- TOUCH/SWEEP/RECLAIM semantic
+  roles derived from `LiquidityStatus`, never a new status)
+SUPPLY_DEMAND = VERIFIED (`build_supply_demand_annotations`)
+ORDER_BLOCK = VERIFIED (same builder as SUPPLY_DEMAND -- OB zones are `ZoneFamily.
+  ORDER_BLOCK` ZoneResults, same shape as native S/D zones)
+FVG = VERIFIED (`build_fvg_annotations` -- box + 50%/CE midpoint line; inverted-FVG
+  rendering deliberately NOT added, `INVERTED_GAP` stays `PARTIAL/UNDEFINED`)
+ENTRY = VERIFIED (unchanged `build_visual_explanation`, entry-array annotation)
+INVALIDATION = VERIFIED (new `INVALIDATION` line annotation on `build_visual_explanation`,
+  sourced from the combo's own invalidation_price)
+
+## 3X3_VISUAL_SUPPORT
+E1M1 = VERIFIED   E1M2 = READY (same generic builder, not individually re-tested this pass)
+E1M3 = VERIFIED   E2M1 = VERIFIED
+E2M2 = VERIFIED   E2M3 = READY (same generic builder)
+E3M1 = READY (same generic builder)   E3M2 = READY (same generic builder)
+E3M3 = VERIFIED
+(the builder is combination-agnostic -- reads `combo.entry_condition`/`combo.maneuver`
+generically -- so E1M2/E2M3/E3M1/E3M2 are exercised by construction, not by a dedicated
+test per pair; explicitly tested pairs are E1M1/E2M2/E3M3 plus cross-pairs E1M3/E2M1,
+per the task's minimum list)
+
+## HISTORICAL_VISUAL_VALIDATION
+SAMPLES = 0 dedicated historical-window samples this pass (no new historical sampler
+  built -- would duplicate backtest-engineering territory, same call as the prior phase)
+VALIDATED = N/A
+ISSUES_FOUND = none
+LOOKAHEAD_FOUND = none (structure/liquidity/zone objects annotated are the same
+  closed-candle-only objects `market_structure`/`supply_demand`/`liquidity` already
+  produce; no new candle access was added)
+
+## RENDERER
+ADAPTER = VERIFIED (`chart_renderer.render_annotations`, additive to `render_chart`,
+  same module -- matplotlib stays confined to `chart_renderer`)
+DETECTION_LOGIC_IN_RENDERER = NO (draws exactly the given `Annotation` list; feeding zero
+  annotations draws zero boxes/lines/markers -- `test_render_annotations_draws_exactly_
+  what_it_is_given_no_detection`)
+HTF_VIEW = SUPPORTED (caller filters annotations by `.timeframe` before calling)
+H1_VIEW = SUPPORTED (same mechanism)
+M5_VIEW = SUPPORTED (same mechanism)
+
+## LIVE VALIDATION
+MT5_AVAILABLE = YES
+SYMBOLS = EURUSD, GBPUSD, XAUUSD (manual multi-symbol run,
+  `scripts/smc_assistant_live_smoke.py EURUSD GBPUSD XAUUSD`)
+SURVEILLANCE = VERIFIED (all three symbols: real E1/E3 DEVELOPING states reported,
+  correctly not eligible, no fabricated READY; repeated poll of EURUSD produced zero
+  new events -- duplicate suppression verified live, not only in unit tests)
+PROPOSAL_IDENTITY = VERIFIED (`update_proposal_lifecycle` ran cleanly against live data
+  for all three symbols; no proposals existed this run so CREATED/lifecycle transitions
+  themselves were not exercised live -- covered by the offline lifecycle test suite)
+PROPOSAL_INVALIDATION = NOT EXERCISED LIVE this run (no READY/INVALIDATED combination
+  existed at run time -- covered by `tests/test_invalidation.py`'s end-to-end M1/M2/M3
+  propagation tests using real evaluator functions, just not live MT5 data)
+VISUAL_EXPLANATION = NOT EXERCISED LIVE this run (same reason; covered offline)
+NO_FAKE_READY = VERIFIED (all three symbols honestly reported "NO ENTRY READY" /
+  "NO ACTIVE E CONDITION" -- no rule was loosened to manufacture a signal)
+
+## SAFETY
+CLOSED_CANDLES = VERIFIED (M2's invalidation trigger is closed-candle by construction,
+  ZoneStatus.INVALIDATED's own frozen rule; M1/M3's LIVE_PRICE trigger is an HONEST
+  label for engine_v2_1's pre-existing, unmodified live-tick behavior, not a new
+  closed-candle violation introduced this pass)
+NO_LOOKAHEAD = VERIFIED (all invalidation/annotation evidence comes from objects
+  market_structure/supply_demand/liquidity already produce under their own no-lookahead
+  discipline; nothing new reads a future candle)
+DETERMINISTIC = VERIFIED (setup_id/proposal_id/snapshot_id are pure hashes of stable
+  inputs; `test_setup_id_pure_function_of_symbol_combination_direction`)
+FAIL_CLOSED = VERIFIED (invalidation fields are `None` when no candidate exists rather
+  than guessed; lifecycle never fabricates a transition for a setup it never tracked as
+  active -- `test_no_transition_reported_when_setup_never_tracked_before`)
+
+## TESTS
+TOTAL = 903 (898 collected/passing + 5 pre-existing live failures)
+PASS = 898
+FAIL = 5 (same pre-existing live-MT5 failures, unrelated)
+NEW = 44 (20 invalidation unit+propagation + 2 composer propagation + 10 proposal
+  lifecycle + 7 visual raw-builders + 2 visual invalidation-annotation + 10 chart-renderer
+  annotation adapter, minus overlap already counted -- see individual test files)
+REGRESSIONS = 0
+
+## READINESS
+MARKET_ANALYSIS_READY = YES
+SURVEILLANCE_READY = YES
+PROPOSAL_READY = YES
+INVALIDATION_READY = YES
+VISUAL_EXPLANATION_READY = YES
+DAILY_ANALYSIS_READY = YES (verified live, multi-symbol, analysis-only)
+
+MODEL_RANKING_READY = NO
+SESSION_ROUTING_READY = NO
+TRADE_MANAGEMENT_READY = UNCHANGED
+AUTONOMOUS_LIVE_EXECUTION_READY = NO

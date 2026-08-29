@@ -46,6 +46,7 @@ from .displacement import evaluate_displacement
 from .entry_array import evaluate_entry_array
 from .entry_models_v1 import EConditionResult, EntryModelState
 from .gap import evaluate_gap_context
+from .invalidation import m2_invalidation
 from .models import CandidateDirection
 
 M2_SUPPLY_DEMAND_SHIFT_V1 = "M2_SUPPLY_DEMAND_SHIFT_V1"
@@ -94,6 +95,11 @@ class M2Result:
     entry_fvg: Optional[ZoneResult] = None
     entry_ob: Optional[ValidatedOrderBlock] = None
     retrace: bool = False
+
+    invalidation_price: Optional[float] = None
+    invalidation_source_type: Optional[str] = None
+    invalidation_reason: Optional[str] = None
+    invalidation_trigger: Optional[str] = None
 
     evidence: Tuple[str, ...] = field(default_factory=tuple)
     reason: Optional[str] = None
@@ -233,6 +239,10 @@ def evaluate_m2_supply_demand_shift(
     else:
         state = EntryModelState.WAITING_M5_ENTRY.value
 
+    invalidation = m2_invalidation(new_zone)
+    if invalidation is not None and invalidation.triggered:
+        state = EntryModelState.INVALIDATED.value
+
     return M2Result(
         symbol=symbol, entry_condition=entry_condition, direction=direction.value, state=state,
         pre_shift_flow=pre_shift_flow, opposing_zone=opposing_zone,
@@ -240,9 +250,13 @@ def evaluate_m2_supply_demand_shift(
         structural_break=choch_point.price, structural_break_time=choch_point.time_utc, displacement_confirmed=True,
         new_zone=new_zone, new_zone_type=new_zone.family.value if new_zone is not None else None,
         entry_fvg=fvg_zone, entry_ob=order_block, retrace=entry_array.entry_status == "ENTRY_REFERENCE_AVAILABLE",
+        invalidation_price=invalidation.price if invalidation is not None else None,
+        invalidation_source_type=invalidation.source_type if invalidation is not None else None,
+        invalidation_reason=invalidation.reason if invalidation is not None else None,
+        invalidation_trigger=invalidation.trigger if invalidation is not None else None,
         evidence=(
             f"opposing_zone_failed@{zone_failure_time}", f"structural_break@{choch_point.time_utc}",
             f"entry_array={entry_array.entry_array_type}",
         ),
-        reason=entry_array.reason,
+        reason=invalidation.reason if (invalidation is not None and invalidation.triggered) else entry_array.reason,
     )

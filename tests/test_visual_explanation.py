@@ -137,3 +137,29 @@ def test_combination_not_present_is_reported_not_fabricated():
     result = build_visual_explanation(_analysis({"E1": e1}, ()), "E1M1")
     assert result.annotations == ()
     assert "COMBINATION_NOT_PRESENT_IN_ANALYSIS" in result.reason_codes
+
+
+# --------------------------------------------------------------------------- invalidation annotation
+
+def test_invalidation_annotation_present_when_combo_carries_invalidation_price():
+    e2 = _e("E2", "H1", ref_type="H1_OB")
+    m1 = M1Result(symbol="EURUSD", entry_condition="E2", direction="SHORT", state="READY",
+                   entry_array_low=1.0960, entry_array_high=1.0975)
+    combo = SMCEntryCombinationResult(combination="E2M1", entry_condition="E2", maneuver="M1", symbol="EURUSD",
+                                       direction="SHORT", confirmation_timeframe="M5", state="READY",
+                                       invalidation_price=1.1060, invalidation_source_type="INDUCEMENT_LEVEL",
+                                       invalidation_trigger="LIVE_PRICE")
+    result = build_visual_explanation(_analysis({"E2": e2}, (combo,), m1=(m1,)), "E2M1")
+    invalidation = next(a for a in result.annotations if a.semantic_role == "INVALIDATION")
+    assert invalidation.price == pytest.approx(1.1060)
+    assert invalidation.label == "INDUCEMENT_LEVEL"
+    assert invalidation.developing is True  # not yet actually INVALIDATED
+
+
+def test_no_invalidation_annotation_when_combo_has_no_invalidation_price():
+    e1 = _e("E1", "D1")
+    m1 = M1Result(symbol="EURUSD", entry_condition="E1", direction="SHORT", state="READY",
+                   entry_array_low=1.0980, entry_array_high=1.0995)
+    combo = _combo("E1", "M1")
+    result = build_visual_explanation(_analysis({"E1": e1}, (combo,), m1=(m1,)), "E1M1")
+    assert not any(a.semantic_role == "INVALIDATION" for a in result.annotations)

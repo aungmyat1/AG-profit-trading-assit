@@ -62,6 +62,7 @@ from .displacement import evaluate_displacement
 from .engine_v2_1 import SweepShiftArrayRequest, evaluate_reversal_sweep_shift
 from .entry_models_v1 import EConditionResult, EntryModelState
 from .gap import evaluate_gap_context, evaluate_inverted_gap_context
+from .invalidation import SOURCE_LIQUIDITY_SWEEP_LEVEL, entry_array_invalidation
 from .models import CandidateDirection
 from .structure_alignment import evaluate_structure_alignment
 
@@ -114,6 +115,11 @@ class M3Result:
     inverted_gap_policy: str = "PARTIAL"  # spec section 16/31 -- no signed inversion definition exists
     pullback_percent: Optional[float] = None
     entry_level: Optional[float] = None
+
+    invalidation_price: Optional[float] = None
+    invalidation_source_type: Optional[str] = None
+    invalidation_reason: Optional[str] = None
+    invalidation_trigger: Optional[str] = None
 
     evidence: Tuple[str, ...] = field(default_factory=tuple)
     reason: Optional[str] = None
@@ -213,6 +219,13 @@ def evaluate_m3_sweep_drop_pump(
     entry_reference = result.entry_array.entry_reference
     pullback_percent = 50.0 if entry_reference is not None else None
 
+    # Recomputes via the SAME shared helper `engine_v2_1.evaluate_reversal_sweep_shift`
+    # already used internally to decide `result.status == "INVALIDATED"` (never a
+    # second/different rule) -- this just exposes price/source/reason alongside the
+    # state that delegate already produced.
+    invalidation = entry_array_invalidation(result.entry_array, direction, current_price,
+                                             liquidity_level.price, SOURCE_LIQUIDITY_SWEEP_LEVEL)
+
     return M3Result(
         symbol=symbol, entry_condition=entry_condition, direction=direction.value, state=state,
         sweep_level=liquidity_level.price, sweep_type=liquidity_level.source, reclaim=True,
@@ -221,6 +234,10 @@ def evaluate_m3_sweep_drop_pump(
         gap=result.entry_array.entry_array_type,
         inverted_gap_policy=inverted_gap.status if inverted_gap is not None else "UNAVAILABLE",
         pullback_percent=pullback_percent, entry_level=entry_reference,
+        invalidation_price=invalidation.price if invalidation is not None else None,
+        invalidation_source_type=invalidation.source_type if invalidation is not None else None,
+        invalidation_reason=invalidation.reason if invalidation is not None else None,
+        invalidation_trigger=invalidation.trigger if invalidation is not None else None,
         evidence=(f"sweep_reclaim@{reclaim_time}", f"choch@{choch_point.time_utc}",
                   f"aggregation_status={result.aggregation_status}"),
         reason=result.reason,

@@ -7,20 +7,14 @@ section 65: multiple simultaneous READY combinations are all returned, unranked)
 """
 from __future__ import annotations
 
-import hashlib
-from datetime import datetime
-from typing import Dict, Optional, Sequence, Tuple
+from typing import Optional, Tuple
 
 from entry_confirmation.entry_models_v1 import EntryModelState, SMCConditionalEntryAnalysis, SMCEntryCombinationResult
 from entry_confirmation.m1_character_change_inducement import M1Result
 from entry_confirmation.m2_supply_demand_shift import M2Result
 
+from .identity import proposal_id_for, setup_id as _setup_id, snapshot_id as _snapshot_id
 from .models import STATUS_ENTRY_CANDIDATE_READY, SMCTradeProposal
-
-
-def _proposal_id(symbol: str, combination: str, snapshot_time: Optional[str]) -> str:
-    digest = hashlib.blake2b(f"{symbol}|{combination}|{snapshot_time}".encode("utf-8"), digest_size=6).hexdigest()
-    return f"PROPOSAL-{symbol}-{combination}-{digest}"
 
 
 def _matching_m_result(analysis: SMCConditionalEntryAnalysis, combo: SMCEntryCombinationResult):
@@ -61,8 +55,11 @@ def generate_proposals(analysis: SMCConditionalEntryAnalysis,
         m_result = _matching_m_result(analysis, combo)
         entry_low, entry_high = _entry_range(m_result) if m_result is not None else (None, None)
 
+        setup = _setup_id(analysis.symbol, combo.combination, combo.direction)
+
         proposals.append(SMCTradeProposal(
-            proposal_id=_proposal_id(analysis.symbol, combo.combination, snapshot_time),
+            proposal_id=proposal_id_for(setup), setup_id=setup,
+            snapshot_id=_snapshot_id(analysis.symbol, analysis.snapshot_time),
             snapshot_time=snapshot_time, symbol=analysis.symbol,
             combination=combo.combination, entry_condition=combo.entry_condition, maneuver=combo.maneuver,
             direction=combo.direction,
@@ -71,6 +68,8 @@ def generate_proposals(analysis: SMCConditionalEntryAnalysis,
             entry_type=combo.entry_array, entry_low=entry_low, entry_high=entry_high,
             entry_reference=combo.entry_price,
             invalidation_state=combo.invalidation,
+            invalidation_price=combo.invalidation_price, invalidation_source_type=combo.invalidation_source_type,
+            invalidation_reason=combo.invalidation_reason, invalidation_trigger=combo.invalidation_trigger,
             evidence=dict(combo.evidence), missing_conditions=combo.missing_conditions,
             market_map_snapshot_id=market_map_snapshot_id, status=STATUS_ENTRY_CANDIDATE_READY,
         ))

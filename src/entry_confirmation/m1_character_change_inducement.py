@@ -47,6 +47,7 @@ from .displacement import evaluate_displacement
 from .entry_array import evaluate_entry_array
 from .entry_models_v1 import EConditionResult, EntryModelState
 from .gap import evaluate_gap_context
+from .invalidation import SOURCE_INDUCEMENT_LEVEL, entry_array_invalidation
 from .models import CandidateDirection
 
 M1_CHARACTER_CHANGE_WITH_INDUCEMENT_V1 = "M1_CHARACTER_CHANGE_WITH_INDUCEMENT_V1"
@@ -92,6 +93,11 @@ class M1Result:
     entry_array_low: Optional[float] = None
     entry_array_high: Optional[float] = None
     entry_retrace_confirmed: bool = False
+
+    invalidation_price: Optional[float] = None
+    invalidation_source_type: Optional[str] = None
+    invalidation_reason: Optional[str] = None
+    invalidation_trigger: Optional[str] = None
 
     evidence: Tuple[str, ...] = field(default_factory=tuple)
     reason: Optional[str] = None
@@ -221,6 +227,11 @@ def evaluate_m1_character_change_with_inducement(
     else:
         state = EntryModelState.WAITING_M5_ENTRY.value
 
+    invalidation = entry_array_invalidation(entry_array, direction, current_price,
+                                             inducement_level, SOURCE_INDUCEMENT_LEVEL)
+    if invalidation is not None and invalidation.triggered:
+        state = EntryModelState.INVALIDATED.value
+
     return M1Result(
         symbol=symbol, entry_condition=entry_condition, direction=direction.value, state=state,
         inducement_level=inducement_level, inducement_type=inducement_type, inducement_taken=True,
@@ -229,9 +240,13 @@ def evaluate_m1_character_change_with_inducement(
         entry_array_low=min(order_block.low, order_block.high) if order_block is not None else (fvg_zone.low if fvg_zone else None),
         entry_array_high=max(order_block.low, order_block.high) if order_block is not None else (fvg_zone.high if fvg_zone else None),
         entry_retrace_confirmed=entry_array.entry_status == "ENTRY_REFERENCE_AVAILABLE",
+        invalidation_price=invalidation.price if invalidation is not None else None,
+        invalidation_source_type=invalidation.source_type if invalidation is not None else None,
+        invalidation_reason=invalidation.reason if invalidation is not None else None,
+        invalidation_trigger=invalidation.trigger if invalidation is not None else None,
         evidence=(
             f"inducement={inducement_type}@{inducement_level}", f"choch@{choch_point.time_utc}",
             f"entry_array={entry_array.entry_array_type}",
         ),
-        reason=entry_array.reason,
+        reason=invalidation.reason if (invalidation is not None and invalidation.triggered) else entry_array.reason,
     )

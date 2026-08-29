@@ -147,6 +147,77 @@ def _draw_zones(ax, zones: List[ZoneResult], chart_end) -> int:
     return count
 
 
+_ANNOTATION_ROLE_COLORS = {
+    "POI": "tab:red", "REFERENCE": "tab:gray", "ENTRY_ARRAY": "tab:green", "INVALIDATION": "tab:orange",
+    "LIQUIDITY_LEVEL": "tab:cyan", "LIQUIDITY_SWEEP": "tab:pink", "LIQUIDITY_RECLAIM": "tab:purple",
+    "SUPPLY": "tab:red", "DEMAND": "tab:green", "FVG_MIDPOINT": "tab:blue",
+    "BOS_MARKER": "tab:purple", "CHOCH_MARKER": "tab:orange", "STRUCTURE_LEVEL": "tab:blue",
+    "DIRECTION": "black",
+}
+
+
+def render_annotations(candles: Sequence[Candle], annotations: Sequence, out_path: str,
+                        title: Optional[str] = None) -> RenderResult:
+    """Additive to render_chart() (same module -- matplotlib stays confined here): draws
+    candles plus a `visual_explanation.Annotation` list (BOX/LINE/MARKER/LABEL) directly.
+    Never performs SMC detection -- every coordinate is read verbatim off the annotation
+    objects (spec: "the renderer must consume structured annotations, it must not
+    independently reinterpret the market"), which are themselves already sourced from
+    normalized market-map / entry-model evidence (visual_explanation.build_*). Caller
+    picks which timeframe's candles + annotations to pass (spec section 33's HTF/H1/M5
+    "separate views" -- filter `annotations` to one `.timeframe` before calling, once
+    per desired view, rather than overcrowding a single chart)."""
+    fig, ax = plt.subplots(figsize=(12, 6))
+    candle_count = _draw_candles(ax, candles)
+    chart_end = candles[-1].time if candles else None
+    chart_start = candles[0].time if candles else None
+
+    box_count = line_count = marker_count = label_count = 0
+    for a in annotations:
+        color = _ANNOTATION_ROLE_COLORS.get(a.semantic_role, "tab:gray")
+        style = dict(linestyle="--" if a.developing else "-", alpha=0.6 if a.developing else 0.9)
+
+        if a.type == "BOX" and a.low is not None and a.high is not None and chart_end is not None:
+            start = mdates.date2num(_parse_iso(a.time_start) or chart_start)
+            end = mdates.date2num(_parse_iso(a.time_end) if a.time_end else chart_end)
+            ax.add_patch(Rectangle((start, a.low), max(end - start, 1e-9), a.high - a.low,
+                                    color=color, alpha=0.25 if a.developing else 0.4, label=a.label))
+            box_count += 1
+        elif a.type == "LINE" and a.price is not None and chart_start is not None and chart_end is not None:
+            x0 = mdates.date2num(_parse_iso(a.timestamp) or chart_start)
+            x1 = mdates.date2num(chart_end)
+            ax.plot([x0, x1], [a.price, a.price], color=color, linewidth=1.2, label=a.label, **style)
+            line_count += 1
+        elif a.type == "MARKER" and a.price is not None and a.timestamp is not None:
+            t = mdates.date2num(_parse_iso(a.timestamp))
+            ax.plot(t, a.price, marker="^", color=color, markersize=6, alpha=0.6 if a.developing else 1.0)
+            ax.annotate(a.label, (t, a.price), fontsize=7, color=color, xytext=(4, -10), textcoords="offset points")
+            marker_count += 1
+        elif a.type == "LABEL":
+            label_count += 1  # placed in the legend only (no fixed chart coordinate) -- see below
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d %H:%M"))
+    fig.autofmt_xdate()
+    label_lines = [a.label for a in annotations if a.type == "LABEL"]
+    if title or label_lines:
+        ax.set_title(" | ".join([t for t in (title, *label_lines) if t]))
+    if box_count or line_count:
+        ax.legend(loc="upper left", fontsize=8)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=100)
+    plt.close(fig)
+
+    return RenderResult(out_path=out_path, candle_count=candle_count, swing_label_count=marker_count,
+                         event_marker_count=marker_count, zone_rect_count=box_count, liquidity_line_count=line_count)
+
+
+def _parse_iso(value):
+    if not value:
+        return None
+    import datetime as _dt
+    return _dt.datetime.fromisoformat(value)
+
+
 def _draw_liquidity(ax, levels: List[LiquidityLevel], candles: Sequence[Candle], roles: Optional[dict] = None) -> int:
     if not candles:
         return 0
