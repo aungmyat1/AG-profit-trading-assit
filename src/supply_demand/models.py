@@ -15,6 +15,7 @@ class ZoneFamily(str, Enum):
     FVG = "FVG"
     SESSION = "SESSION"
     PREVIOUS_DAY = "PREVIOUS_DAY"
+    PREVIOUS_WEEK = "PREVIOUS_WEEK"
     DEALING_RANGE = "DEALING_RANGE"
 
 

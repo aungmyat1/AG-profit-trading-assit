@@ -12,7 +12,7 @@ from mt5.market_data import MarketDataError, get_latest_candles, get_tick
 
 from .models import ZoneDirection, ZoneFamily, ZoneRole, ZoneResult, ZoneStatus
 
-__all__ = ["session_zone", "previous_day_high_low", "dealing_range_zones",
+__all__ = ["session_zone", "previous_day_high_low", "previous_week_high_low", "dealing_range_zones",
            "premium_discount_from_previous_day", "premium_discount_from_session"]
 
 
@@ -74,6 +74,67 @@ def previous_day_high_low(symbol: str) -> ZoneResult:
     return ZoneResult(
         symbol=symbol, timeframe="D1", family=ZoneFamily.PREVIOUS_DAY, role=ZoneRole.REFERENCE,
         direction=ZoneDirection.NONE, low=prev.low, high=prev.high, origin_time=prev.time,
+        status=status, source="mt5 D1 candles", reason_codes=reason_codes,
+    )
+
+
+# --------------------------------------------------------------------------- 4b. Previous Week High/Low
+
+def previous_week_high_low(symbol: str) -> ZoneResult:
+    """Project-owned, no smc: the high/low of the last fully CLOSED ISO calendar week,
+    built from D1 candles only (mirrors previous_day_high_low's closed-period discipline).
+
+    Deliberately does not reuse smc.previous_high_low(time_frame="1W") -- that path
+    resamples internally and (per market_structure/smc_adapter.py's own documented
+    bookend-artifact caveat on this smc version) is not something this pass wants to
+    trust for a liquidity level's exact price. Instead: fetch a window of closed D1
+    candles, group by ISO (year, week), exclude the week containing the most recent
+    closed D1 candle (which may still be in progress broker-side), and take the most
+    recent COMPLETE week that remains. No lookahead: only candles get_latest_candles
+    already reports as closed are used, and the in-progress week is always excluded."""
+    try:
+        candles = get_latest_candles(symbol, "D1", 15)  # ~2-3 weeks of D1 bars, buffer for holidays/gaps
+    except MarketDataError as exc:
+        return ZoneResult(symbol=symbol, timeframe="D1", family=ZoneFamily.PREVIOUS_WEEK, role=ZoneRole.REFERENCE,
+                           direction=ZoneDirection.NONE, status=ZoneStatus.UNKNOWN,
+                           source="mt5 D1 candles", reason_codes=(exc.reason_code,))
+    if not candles:
+        return ZoneResult(symbol=symbol, timeframe="D1", family=ZoneFamily.PREVIOUS_WEEK, role=ZoneRole.REFERENCE,
+                           direction=ZoneDirection.NONE, status=ZoneStatus.UNKNOWN,
+                           source="mt5 D1 candles", reason_codes=("NO_D1_CANDLES",))
+
+    def _iso_week(c):
+        iso = c.time.isocalendar()
+        return (iso[0], iso[1])
+
+    current_week = _iso_week(candles[-1])
+    prior_candles = [c for c in candles if _iso_week(c) != current_week]
+    if not prior_candles:
+        return ZoneResult(symbol=symbol, timeframe="D1", family=ZoneFamily.PREVIOUS_WEEK, role=ZoneRole.REFERENCE,
+                           direction=ZoneDirection.NONE, status=ZoneStatus.UNKNOWN,
+                           source="mt5 D1 candles", reason_codes=("INSUFFICIENT_WEEK_HISTORY",))
+
+    last_complete_week = max(_iso_week(c) for c in prior_candles)
+    week_candles = [c for c in prior_candles if _iso_week(c) == last_complete_week]
+    high = max(c.high for c in week_candles)
+    low = min(c.low for c in week_candles)
+    origin = week_candles[-1].time  # last closed candle of that completed week
+
+    status = ZoneStatus.FRESH
+    reason_codes = ()
+    try:
+        tick = get_tick(symbol)
+        if tick.bid > high or tick.ask < low:
+            status = ZoneStatus.TOUCHED
+        else:
+            reason_codes = ("TOUCHED_CHECKS_CURRENT_PRICE_ONLY_NOT_INTRADAY_PATH",)
+    except MarketDataError:
+        status = ZoneStatus.UNKNOWN
+        reason_codes = ("CURRENT_TICK_UNAVAILABLE_FOR_TOUCH_CHECK",)
+
+    return ZoneResult(
+        symbol=symbol, timeframe="D1", family=ZoneFamily.PREVIOUS_WEEK, role=ZoneRole.REFERENCE,
+        direction=ZoneDirection.NONE, low=low, high=high, origin_time=origin,
         status=status, source="mt5 D1 candles", reason_codes=reason_codes,
     )
 

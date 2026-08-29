@@ -197,7 +197,7 @@ def test_liquidity_result_live_eurusd_smoke(timeframe):
 
     assert result.status in ("LIQUIDITY_OK", "NO_LIQUIDITY_LEVELS")
     valid_sources = {"SWING_HIGH", "SWING_LOW", "ASIAN_HIGH", "ASIAN_LOW", "LONDON_HIGH", "LONDON_LOW",
-                      "NEW_YORK_HIGH", "NEW_YORK_LOW", "PDH", "PDL", "EQUAL_HIGHS", "EQUAL_LOWS"}
+                      "NEW_YORK_HIGH", "NEW_YORK_LOW", "PDH", "PDL", "PWH", "PWL", "EQUAL_HIGHS", "EQUAL_LOWS"}
     for level in result.levels:
         assert level.symbol == "EURUSD"
         assert level.timeframe == timeframe

@@ -12,7 +12,7 @@ import session_clock as sc
 from market_structure import analyze_structure
 from mt5.market_data import MarketDataError, get_latest_candles, get_tick
 from mt5.symbol_resolver import SymbolMetaError, get_symbol_meta
-from supply_demand import previous_day_high_low, session_zone
+from supply_demand import previous_day_high_low, previous_week_high_low, session_zone
 
 from .config import load_liquidity_config
 from .dedup import merge_duplicate_levels
@@ -51,6 +51,7 @@ def liquidity_result(symbol: str, timeframe: str, count: Optional[int] = None) -
     levels += _structural_levels(symbol, timeframe, candles, live_bid, live_ask)
     levels += _session_levels(symbol, timeframe, candles, live_bid, live_ask)
     levels += _previous_day_levels(symbol, timeframe, candles, live_bid, live_ask)
+    levels += _previous_week_levels(symbol, timeframe, candles, live_bid, live_ask)
     if tolerance_price is not None:
         levels += detect_equal_highs(symbol, timeframe, candles, tolerance_price,
                                       config.local_extremum_window, live_bid, live_ask)
@@ -109,6 +110,17 @@ def _previous_day_levels(symbol, timeframe, candles, live_bid, live_ask) -> List
     return [
         _level(symbol, timeframe, LiquiditySide.BUY_SIDE, "PDH", zone.high, origin, candles, live_bid, live_ask),
         _level(symbol, timeframe, LiquiditySide.SELL_SIDE, "PDL", zone.low, origin, candles, live_bid, live_ask),
+    ]
+
+
+def _previous_week_levels(symbol, timeframe, candles, live_bid, live_ask) -> List[LiquidityLevel]:
+    zone = previous_week_high_low(symbol)
+    if zone.low is None or zone.high is None:
+        return []
+    origin = zone.origin_time + timedelta(days=1)  # the level is "live" from the day after the closed week onward
+    return [
+        _level(symbol, timeframe, LiquiditySide.BUY_SIDE, "PWH", zone.high, origin, candles, live_bid, live_ask),
+        _level(symbol, timeframe, LiquiditySide.SELL_SIDE, "PWL", zone.low, origin, candles, live_bid, live_ask),
     ]
 
 

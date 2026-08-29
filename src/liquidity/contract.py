@@ -38,6 +38,13 @@ SOURCES (frozen at the set already implemented; see liquidity/analyzer.py):
         Available whenever a prior D1 candle exists; not tied to intraday session
         completion.
 
+    PWH / PWL                   IMPLEMENTED, NOT SESSION-DEPENDENT
+        High/low of the last fully CLOSED ISO calendar week via
+        supply_demand.previous_week_high_low() -- built from D1 candles (no smc
+        resample), excludes whatever week contains the most recently closed D1
+        candle so an in-progress week can never leak in. Available whenever at
+        least one D1 candle exists from a prior, fully-elapsed ISO week.
+
     EQUAL_HIGHS / EQUAL_LOWS     IMPLEMENTED
         Own tolerance-based clustering of raw local candle extremes (liquidity/
         equal_levels.py) -- independent of market_structure's swing detection by

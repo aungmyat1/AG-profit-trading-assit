@@ -34,7 +34,7 @@ class LiquidityLevel:
     side: LiquiditySide
     source: str  # first-detected source, kept for backward compatibility -- see `sources`
                  # "SWING_HIGH" / "SWING_LOW" / "ASIAN_HIGH" / "ASIAN_LOW" / "LONDON_HIGH" / "LONDON_LOW" /
-                 # "NEW_YORK_HIGH" / "NEW_YORK_LOW" / "PDH" / "PDL" / "EQUAL_HIGHS" / "EQUAL_LOWS"
+                 # "NEW_YORK_HIGH" / "NEW_YORK_LOW" / "PDH" / "PDL" / "PWH" / "PWL" / "EQUAL_HIGHS" / "EQUAL_LOWS"
     price: float
     origin_time: Optional[datetime]
     status: LiquidityStatus

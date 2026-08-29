@@ -22,6 +22,7 @@ from .native_zones import (
     premium_discount_from_previous_day,
     premium_discount_from_session,
     previous_day_high_low,
+    previous_week_high_low,
     session_zone,
 )
 from .ob_config import AGOrderBlockConfig, load_ag_order_block_config
@@ -40,7 +41,7 @@ from .ob_contract import (
 
 __all__ = [
     "order_blocks_for", "fair_value_gaps_for", "validated_order_blocks_for",
-    "session_zone", "previous_day_high_low", "dealing_range_zones",
+    "session_zone", "previous_day_high_low", "previous_week_high_low", "dealing_range_zones",
     "premium_discount_from_previous_day", "premium_discount_from_session",
     "DealingRangeZones",
     "ZoneResult", "ZoneQueryResult", "ZoneFamily", "ZoneRole", "ZoneDirection", "ZoneStatus",

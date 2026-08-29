@@ -111,6 +111,62 @@ def test_order_block_mapping_bullish_fresh_and_bearish_mitigated():
     assert bearish.status == ZoneStatus.MITIGATED
 
 
+# --------------------------------------------------------------------------- Previous Week High/Low
+
+def test_previous_week_high_low_excludes_in_progress_week(monkeypatch):
+    """D1 candles spanning parts of two ISO weeks: 2026-01-05 (Mon) .. 2026-01-09 (Fri)
+    is the completed week; 2026-01-12 (Mon) .. 2026-01-14 (Wed) is the in-progress week
+    (the most recent closed D1 candle is still inside it). Only the completed week's
+    high/low may be reported -- the in-progress week's own high/low must never leak in,
+    even though 2026-01-14's high (1.1500) is the overall maximum in the fixture."""
+    import supply_demand.native_zones as native_zones_mod
+
+    week1 = [
+        _candle(dt.datetime(2026, 1, 5, tzinfo=UTC), 1.10, 1.1050, 1.0950, 1.10),
+        _candle(dt.datetime(2026, 1, 6, tzinfo=UTC), 1.10, 1.1080, 1.0900, 1.10),  # week1 low
+        _candle(dt.datetime(2026, 1, 7, tzinfo=UTC), 1.10, 1.1120, 1.0980, 1.10),  # week1 high
+        _candle(dt.datetime(2026, 1, 8, tzinfo=UTC), 1.10, 1.1060, 1.0990, 1.10),
+        _candle(dt.datetime(2026, 1, 9, tzinfo=UTC), 1.10, 1.1040, 1.1000, 1.10),
+    ]
+    week2_in_progress = [
+        _candle(dt.datetime(2026, 1, 12, tzinfo=UTC), 1.10, 1.1200, 1.1000, 1.10),
+        _candle(dt.datetime(2026, 1, 13, tzinfo=UTC), 1.10, 1.1300, 1.1000, 1.10),
+        _candle(dt.datetime(2026, 1, 14, tzinfo=UTC), 1.10, 1.1500, 1.1000, 1.10),  # overall max, must be excluded
+    ]
+    candles = week1 + week2_in_progress
+    monkeypatch.setattr(native_zones_mod, "get_latest_candles", lambda symbol, timeframe, count: candles)
+    monkeypatch.setattr(native_zones_mod, "get_tick", _raise_market_data_error)
+
+    zone = native_zones_mod.previous_week_high_low("EURUSD")
+
+    assert zone.family == ZoneFamily.PREVIOUS_WEEK
+    assert zone.high == pytest.approx(1.1120)
+    assert zone.low == pytest.approx(1.0900)
+    assert zone.origin_time == dt.datetime(2026, 1, 9, tzinfo=UTC)
+
+
+def test_previous_week_high_low_no_prior_week_is_unknown(monkeypatch):
+    """All candles fall in the same (single) ISO week as the latest one -- no prior
+    completed week exists yet, so the result must be UNKNOWN, never a fabricated range."""
+    import supply_demand.native_zones as native_zones_mod
+
+    candles = [
+        _candle(dt.datetime(2026, 1, 12, tzinfo=UTC), 1.10, 1.1050, 1.0950, 1.10),
+        _candle(dt.datetime(2026, 1, 13, tzinfo=UTC), 1.10, 1.1080, 1.0900, 1.10),
+    ]
+    monkeypatch.setattr(native_zones_mod, "get_latest_candles", lambda symbol, timeframe, count: candles)
+
+    zone = native_zones_mod.previous_week_high_low("EURUSD")
+    assert zone.status == ZoneStatus.UNKNOWN
+    assert zone.low is None and zone.high is None
+    assert "INSUFFICIENT_WEEK_HISTORY" in zone.reason_codes
+
+
+def _raise_market_data_error(symbol):
+    from mt5.market_data import MarketDataError
+    raise MarketDataError("TICK_UNAVAILABLE", "no live tick in this deterministic test")
+
+
 # --------------------------------------------------------------------------- Premium/Equilibrium/Discount (pure)
 
 def test_dealing_range_zones_classifies_premium_discount_equilibrium():
@@ -154,13 +210,18 @@ def test_order_blocks_and_fvg_live_eurusd(timeframe):
 @pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
 def test_session_zone_and_previous_day_live():
     from mt5.connection import connect
-    from supply_demand import previous_day_high_low, session_zone
+    from supply_demand import previous_day_high_low, previous_week_high_low, session_zone
 
     connect()
     prev = previous_day_high_low("EURUSD")
     assert prev.status in (ZoneStatus.FRESH, ZoneStatus.TOUCHED, ZoneStatus.UNKNOWN)
     if prev.low is not None:
         assert prev.high >= prev.low
+
+    prev_week = previous_week_high_low("EURUSD")
+    assert prev_week.status in (ZoneStatus.FRESH, ZoneStatus.TOUCHED, ZoneStatus.UNKNOWN)
+    if prev_week.low is not None:
+        assert prev_week.high >= prev_week.low
 
     session = session_zone("EURUSD", "asian")
     if session.low is not None:

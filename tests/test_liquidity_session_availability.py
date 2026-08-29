@@ -73,6 +73,8 @@ def _patch_defaults(monkeypatch, base_candles):
     monkeypatch.setattr(analyzer_mod, "session_zone", lambda symbol, name, session_date=None: _empty_zone(symbol))
     monkeypatch.setattr(analyzer_mod, "previous_day_high_low",
                          lambda symbol: _empty_zone(symbol, family=ZoneFamily.PREVIOUS_DAY, reason="DATA_MISSING"))
+    monkeypatch.setattr(analyzer_mod, "previous_week_high_low",
+                         lambda symbol: _empty_zone(symbol, family=ZoneFamily.PREVIOUS_WEEK, reason="DATA_MISSING"))
 
 
 def _raise_market_data_error(symbol):
@@ -196,6 +198,27 @@ def test_previous_day_unavailable_produces_no_pdh_pdl():
     result = analyzer_mod.liquidity_result("EURUSD", "M15")
     sources = {l.source for l in result.levels}
     assert "PDH" not in sources and "PDL" not in sources
+
+
+# --------------------------------------------------------------------------- PWH/PWL
+
+def test_previous_week_high_low_available(monkeypatch):
+    zone = ZoneResult(symbol="EURUSD", timeframe="D1", family=ZoneFamily.PREVIOUS_WEEK, role=ZoneRole.REFERENCE,
+                       direction=ZoneDirection.NONE, status=ZoneStatus.FRESH, source="test",
+                       low=1.0700, high=1.1300, origin_time=dt.datetime(2025, 12, 28, tzinfo=UTC))
+    monkeypatch.setattr(analyzer_mod, "previous_week_high_low", lambda symbol: zone)
+    result = analyzer_mod.liquidity_result("EURUSD", "M15")
+
+    pwh = next(l for l in result.levels if l.source == "PWH")
+    pwl = next(l for l in result.levels if l.source == "PWL")
+    assert pwh.price == 1.1300 and pwh.side == LiquiditySide.BUY_SIDE
+    assert pwl.price == 1.0700 and pwl.side == LiquiditySide.SELL_SIDE
+
+
+def test_previous_week_unavailable_produces_no_pwh_pwl():
+    result = analyzer_mod.liquidity_result("EURUSD", "M15")
+    sources = {l.source for l in result.levels}
+    assert "PWH" not in sources and "PWL" not in sources
 
 
 # --------------------------------------------------------------------------- equal highs/lows
