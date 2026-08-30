@@ -16,7 +16,7 @@ live exchange-fetched fact (no exchange integration in this task, per spec).
 """
 from __future__ import annotations
 
-from mt5.symbol_resolver import SymbolMeta
+from mt5.symbol_resolver import METADATA_SOURCE_SYNTHETIC_RESEARCH, SymbolMeta
 
 CRYPTO_TICK_SIZE = {
     "BTCUSDT": 0.1,
@@ -37,6 +37,10 @@ def crypto_symbol_meta(
         symbol=symbol, tick_size=tick, tick_value=tick, contract_size=1.0,
         volume_min=volume_min, volume_max=volume_max, volume_step=volume_step,
         digits=digits, point=tick,
+        # RESEARCH ONLY (module docstring) -- explicitly tagged, never EXCHANGE_VERIFIED,
+        # so a real-execution code path cannot mistake this for broker-fetched metadata.
+        # See execution.adapter.require_exchange_verified_metadata().
+        metadata_source=METADATA_SOURCE_SYNTHETIC_RESEARCH,
     )
 
 

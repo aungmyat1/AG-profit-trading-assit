@@ -15,6 +15,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
+from mt5.symbol_resolver import METADATA_SOURCE_EXCHANGE_VERIFIED, SymbolMeta
 from strategy_engine.sweep_retest.models import STATE_ENTRY_READY, SetupState
 from strategy_engine.sweep_retest.profile import PROFILE_CRYPTO_PERP, PROFILE_FOREX
 
@@ -45,6 +46,29 @@ class TradeProposal:
             profile_id=state.profile_id, direction=state.direction, entry=state.entry,
             stop_loss=state.stop_loss, tp1=state.tp1, tp2=state.tp2,
             volume=state.volume, risk_amount=state.risk_amount,
+        )
+
+
+class SyntheticMetadataError(RuntimeError):
+    """Raised when code attempts to use RESEARCH-ONLY synthetic symbol metadata (see
+    strategy_engine.sweep_retest.crypto_symbols.crypto_symbol_meta()) as the basis for a
+    real order. There is no live crypto execution path in this repo -- this guard exists
+    so that if one is ever added, it fails closed BY CONSTRUCTION the moment it is wired
+    to call require_exchange_verified_metadata() first (the mandatory pattern every other
+    real-money code path in this repo follows, e.g. executor.py's stale-proposal/broker-
+    reconciliation checks), rather than merely by a docstring warning."""
+
+
+def require_exchange_verified_metadata(symbol_meta: SymbolMeta) -> None:
+    """Fail closed: raises SyntheticMetadataError unless symbol_meta.metadata_source ==
+    EXCHANGE_VERIFIED. Any future real order-sending code path (Forex or Crypto) MUST call
+    this on its SymbolMeta before constructing a broker/exchange request -- it is the one
+    place "was this metadata actually fetched from a live venue" is decided."""
+    if symbol_meta.metadata_source != METADATA_SOURCE_EXCHANGE_VERIFIED:
+        raise SyntheticMetadataError(
+            f"{symbol_meta.symbol!r} metadata_source={symbol_meta.metadata_source!r} is not "
+            f"{METADATA_SOURCE_EXCHANGE_VERIFIED!r} -- refusing to use RESEARCH-ONLY synthetic "
+            "metadata as the basis for a real order."
         )
 
 
@@ -80,7 +104,13 @@ class MT5ExecutionAdapter(ExecutionAdapter):
 class CryptoExecutionAdapter(ExecutionAdapter):
     """No exchange integration in this task (spec). submit() always returns
     NOT_IMPLEMENTED -- proposal-only posture, matching the Forex side's own execution
-    safety contract (demo/explicit-confirmation authority, no live order path)."""
+    safety contract (demo/explicit-confirmation authority, no live order path).
+
+    No network/exchange call is reachable from this method at all -- it does not import
+    an HTTP/websocket/exchange SDK, take credentials, or call out anywhere; it is a pure
+    function of its arguments. A future concrete live-crypto submit() would additionally
+    need to call require_exchange_verified_metadata() on its SymbolMeta before ever
+    building a real order -- see that function's docstring."""
 
     def submit(self, proposal: TradeProposal, user_confirmed: bool) -> AdapterSubmitResult:
         return AdapterSubmitResult(status="NOT_IMPLEMENTED", reason_code="CRYPTO_EXECUTION_NOT_IMPLEMENTED")
