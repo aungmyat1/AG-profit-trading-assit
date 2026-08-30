@@ -1,0 +1,160 @@
+{
+  "STATUS": "REPLAY_COMPLETE",
+  "DATA": {
+    "SOURCE": "D:\\EURUSD_M5_202504211715_202607310000.csv",
+    "SYMBOL": "EURUSD",
+    "RANGE": [
+      "2025-09-22T00:00:00",
+      "2025-09-27T00:00:00"
+    ],
+    "FULL_DATASET_RANGE": [
+      "2025-04-21T14:15:00+00:00",
+      "2026-07-30T21:00:00+00:00"
+    ]
+  },
+  "REPLAY": {
+    "STEPS": 1404,
+    "WARMUP_STEPS": 0,
+    "VALID_STEPS": 1404,
+    "LOAD_SECONDS": 21.4,
+    "REPLAY_SECONDS": 1015.6
+  },
+  "IDENTITY": {
+    "COLLISIONS": 0
+  },
+  "SETUP_LEDGER": {
+    "ROWS": 9,
+    "UNIQUE_SETUPS": 9,
+    "READY": 1,
+    "ENTRY_ARRAYS": 1,
+    "ARTIFACT": "artifacts/backtests/revision_check_sep22_27_setup_ledger.parquet"
+  },
+  "PER_COMBINATION": {
+    "E1M1": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 1,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E1M2": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 1,
+      "M_CONFIRMED": 1,
+      "ENTRY_ARRAY_CREATED": 1,
+      "READY": 1
+    },
+    "E1M3": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 1,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E2M1": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 0,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E2M2": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 0,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E2M3": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 0,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E3M1": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 2,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E3M2": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 2,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E3M3": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 2,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    }
+  },
+  "PER_E": {
+    "E1": {
+      "REFERENCE_FOUND": 2,
+      "E_QUALIFIED": 1
+    },
+    "E2": {
+      "REFERENCE_FOUND": 6,
+      "E_QUALIFIED": 0
+    },
+    "E3": {
+      "REFERENCE_FOUND": 77,
+      "E_QUALIFIED": 2
+    }
+  },
+  "PER_M": {
+    "M1": {
+      "M_STARTED": 3,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "M2": {
+      "M_STARTED": 3,
+      "M_CONFIRMED": 1,
+      "ENTRY_ARRAY_CREATED": 1,
+      "READY": 1
+    },
+    "M3": {
+      "M_STARTED": 3,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    }
+  },
+  "FAILURE_REASONS": {
+    "WAITING_M5_CONFIRMATION": 4,
+    "WAITING_HTF_TOUCH": 3,
+    "WAITING_H1_REACTION": 1
+  },
+  "NEAR_READY": {
+    "COUNT": 0,
+    "SAMPLE": []
+  },
+  "MONTHLY": {
+    "2025-09": {
+      "setups": 9,
+      "arrays": 1,
+      "ready": 1
+    }
+  },
+  "PNL": {
+    "STATUS": "BLOCKED",
+    "REASON": "EXIT_POLICY_NOT_FROZEN"
+  }
+}

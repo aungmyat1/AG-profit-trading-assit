@@ -71,6 +71,7 @@ _PATCHED_CANDLE_TARGETS = (
     "supply_demand.native_zones.get_latest_candles",
     "liquidity.analyzer.get_latest_candles",
     "daytrading_runtime.conditional_entry_snapshot.get_latest_candles",
+    "historical_replay.stage2.get_latest_candles",
     "mt5.market_data.get_latest_candles",  # covers liquidity.affinity's per-call local import
 )
 
@@ -79,6 +80,7 @@ _PATCHED_TICK_TARGETS = (
     "liquidity.analyzer.get_tick",
     "smc_map.builder.get_tick",
     "daytrading_runtime.conditional_entry_snapshot.get_tick",
+    "historical_replay.stage2.get_tick",
     "mt5.market_data.get_tick",  # covers liquidity.affinity's per-call local import
 )
 

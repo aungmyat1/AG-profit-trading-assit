@@ -303,3 +303,105 @@ def run_replay(store: HistoricalCandleStore, symbol: str, m5_step_candles: Seque
         ready_lifecycle_created_events=ready_created_events,
         per_combination=funnel.per_combination(), per_e=funnel.per_e(), per_m=funnel.per_m(),
     )
+
+
+@dataclass(frozen=True)
+class Stage1Event:
+    """A qualified E-condition instance -- the seam between Stage 1 (context/E
+    production) and Stage 2 (M1/M2/M3 entry confirmation). `qualification_time` is
+    when this (entry_condition, reference_key, direction) tuple was first observed
+    eligible_for_confirmation -- reconstructed here from an existing full-replay
+    SetupLedger (min first_seen_time across its 3 combinations), NOT from a separately
+    re-run Stage-1-only pass. A genuine standalone Stage-1 producer (one that runs E1/
+    E2/E3 evaluation without ever touching M1/M2/M3) is future work; see status doc."""
+    entry_condition: str
+    reference_key: Optional[str]
+    direction: Optional[str]
+    qualification_time: datetime
+    liquidity_reference: Optional[object] = None  # historical_replay.stage2.Stage1LiquidityReference,
+    # for E3 events only -- untyped here to avoid a circular import (stage2.py imports Stage1Event
+    # from this module)
+
+
+def stage1_events_from_ledger(rows: Sequence[SetupLedgerRow]) -> Tuple[Stage1Event, ...]:
+    groups: Dict[Tuple[str, Optional[str], Optional[str]], datetime] = {}
+    for r in rows:
+        key = (r.entry_condition, r.reference_key, r.direction)
+        if key not in groups or r.first_seen_time < groups[key]:
+            groups[key] = r.first_seen_time
+    return tuple(Stage1Event(entry_condition=k[0], reference_key=k[1], direction=k[2], qualification_time=v)
+                 for k, v in sorted(groups.items(), key=lambda kv: kv[1]))
+
+
+# RESEARCH_ASSUMPTION / NOT_STRATEGY_CONTRACT (spec source, prior session's own rule on
+# entry expiry, still true: "ENTRY_EXPIRY_RULE = UNDEFINED... do not invent one unless
+# explicitly labeled"). No frozen entry-expiry contract exists anywhere in
+# entry_confirmation. This window bounds how long Stage 2 keeps re-evaluating M5 for a
+# given Stage-1 event before giving up -- picked generously (192h = 8 days) to exceed
+# the longest observed real span in the Aug-Sep 2025 fixture (167.9h) with margin, NOT
+# derived from any strategy rule. Never present ENTRY_ONLY_REPLAY results as canonical
+# strategy behavior without this caveat attached.
+STAGE2_WINDOW_HOURS_RESEARCH_ASSUMPTION = 192
+
+
+def run_event_driven_replay(store: HistoricalCandleStore, symbol: str, m5_step_candles: Sequence[Candle],
+                            events: Sequence[Stage1Event],
+                            window_hours: int = STAGE2_WINDOW_HOURS_RESEARCH_ASSUMPTION) -> ReplayResult:
+    """ENTRY_ONLY_REPLAY: identical per-step evaluation logic to run_replay (the SAME
+    live entrypoint call, same ledger/funnel observation -- no duplicate strategy
+    logic), but restricted to the UNION of [event.qualification_time,
+    event.qualification_time + window_hours) across `events`, instead of one
+    continuous [start, end) range. Does not skip warmup checking (still fails closed
+    on insufficient D1/H1/M5 history at any given step)."""
+    intervals = sorted(
+        (e.qualification_time, e.qualification_time + timedelta(hours=window_hours)) for e in events
+    )
+    merged: List[Tuple[datetime, datetime]] = []
+    for start, end in intervals:
+        if merged and start <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+        else:
+            merged.append((start, end))
+
+    ledger = SetupLedger()
+    funnel = FunnelTracker()
+    lifecycle_store = InMemoryKeyValueStore()
+    steps = warmup_steps = valid_steps = 0
+    ready_created_events = 0
+    warmup_cleared = False
+    interval_idx = 0
+
+    for candle in m5_step_candles:
+        as_of = candle.time + timedelta(minutes=5)
+        while interval_idx < len(merged) and as_of >= merged[interval_idx][1]:
+            interval_idx += 1
+        if interval_idx >= len(merged) or as_of < merged[interval_idx][0]:
+            continue
+        steps += 1
+
+        if not warmup_cleared:
+            if (_has_enough_history(store, symbol, "D1", D1_WARMUP_CANDLES, as_of)
+                    and _has_enough_history(store, symbol, "H1", H1_WARMUP_CANDLES, as_of)
+                    and _has_enough_history(store, symbol, "M5", M5_WARMUP_CANDLES, as_of)):
+                warmup_cleared = True
+            else:
+                warmup_steps += 1
+                continue
+
+        valid_steps += 1
+        with historical_data_context(store, as_of):
+            analysis = build_symbol_conditional_entry_analysis(symbol)
+
+        ledger.observe(analysis, as_of)
+        funnel.observe(analysis)
+        updates = update_proposal_lifecycle(analysis, lifecycle_store)
+        ready_created_events += sum(1 for u in updates if u.lifecycle == LIFECYCLE_CREATED)
+
+    return ReplayResult(
+        symbol=symbol, steps=steps, warmup_steps=warmup_steps, valid_steps=valid_steps,
+        setup_ledger=tuple(ledger.rows.values()),
+        identity_collisions=len(ledger.identity_collisions),
+        identity_instability_events=0,
+        ready_lifecycle_created_events=ready_created_events,
+        per_combination=funnel.per_combination(), per_e=funnel.per_e(), per_m=funnel.per_m(),
+    )

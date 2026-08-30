@@ -227,6 +227,33 @@ def test_symbol_meta_lookup_degrades_gracefully_not_via_forced_guard():
     assert result is not None
 
 
+def test_stage2_entry_only_reuses_historical_data_not_live_mt5():
+    """Regression: historical_replay.stage2 imports get_latest_candles/get_tick into
+    its own module namespace too (same bug class as conditional_entry_snapshot's
+    earlier fix) -- the true Stage-2 entry point must never silently fall through to
+    live MT5 either."""
+    from entry_confirmation.entry_models_v1 import EntryModelState
+    from historical_replay.orchestrator import Stage1Event
+    from historical_replay.stage2 import evaluate_entry_stage
+
+    store = HistoricalCandleStore()
+    base = dt.datetime(2026, 1, 1, tzinfo=UTC)
+    store.load_series("EURUSD", "M5", [
+        Candle(time=base + dt.timedelta(minutes=5 * i), open=1.10, high=1.1005, low=1.0995, close=1.1002)
+        for i in range(210)
+    ])
+    event = Stage1Event(entry_condition="E2", reference_key="H1_POI|1.10|1.11|None",
+                        direction="LONG", qualification_time=base + dt.timedelta(hours=2))
+
+    as_of = base + dt.timedelta(hours=17)  # enough M5 history closed by now
+    with historical_data_context(store, as_of):
+        analysis = evaluate_entry_stage("EURUSD", event, as_of)
+
+    assert not any("MT5_NOT_CONNECTED" in (c.evidence.get("m_evidence") or ()) for c in analysis.combinations)
+    assert analysis.data_quality != "UNAVAILABLE"
+    assert analysis.m_maneuvers["M2"][0].state != EntryModelState.INSUFFICIENT_DATA.value
+
+
 def test_unpatched_bulk_rate_fetch_fails_fast_not_silently():
     """Defense-in-depth for the same bug class: copy_rates_from_pos/copy_rates_range
     are ONLY reachable after a wrapper's own terminal_info() connectivity check has
