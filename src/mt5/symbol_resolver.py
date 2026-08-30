@@ -16,6 +16,15 @@ class SymbolMetaError(RuntimeError):
     pass
 
 
+# metadata_source distinguishes real, broker-fetched metadata from a synthetic stand-in
+# (see strategy_engine/sweep_retest/crypto_symbols.py::crypto_symbol_meta(), the only
+# producer of SYNTHETIC_RESEARCH metadata in this repo). Defaults to EXCHANGE_VERIFIED so
+# every existing get_symbol_meta() caller -- the only broker-backed producer of SymbolMeta
+# -- is correctly tagged with no code change required at any of its call sites.
+METADATA_SOURCE_EXCHANGE_VERIFIED = "EXCHANGE_VERIFIED"
+METADATA_SOURCE_SYNTHETIC_RESEARCH = "SYNTHETIC_RESEARCH"
+
+
 @dataclass(frozen=True)
 class SymbolMeta:
     symbol: str
@@ -29,6 +38,7 @@ class SymbolMeta:
     point: float = 0.0
     trade_stops_level: int = 0  # points; broker's minimum SL/TP distance from market
     trade_freeze_level: int = 0  # points; broker's minimum distance to modify/close near market
+    metadata_source: str = METADATA_SOURCE_EXCHANGE_VERIFIED
 
 
 def resolve(symbol: str) -> str:
