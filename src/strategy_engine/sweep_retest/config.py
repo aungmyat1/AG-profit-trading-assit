@@ -1,30 +1,47 @@
-"""Parses strategies/ST_SESSION_SWEEP_RETEST_V1.yaml into a SweepRetestStrategyConfig.
+"""Parses strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml into a SweepRetestStrategyConfig
+holding one MarketProfile per asset class (Forex, Crypto) plus the rules shared across
+both (risk, TTL, guards).
 
 Deliberately a SEPARATE small loader from strategy_engine.loader.load_strategy /
-StrategyConfig, not an extension of it. strategy_engine.models.StrategyConfig's own
-docstring says its fields "mirror strategies/*.yaml structurally" for the session-box
-family (session_pairs + EMA_50 regime_classification + PERCENT_OF_SESSION_RANGE stop
-mode) -- ST_ASIAN_SWEEP_5R_V1's exact shape. This strategy's parameters (H1 structural
-trend instead of EMA, M5 sweep/MSS/retest instead of a session-box sweep, an entry TTL in
-bars, a pip-based SL buffer, a daily R circuit breaker, and global position concurrency)
-have no home in that dataclass without adding a pile of Optional fields that would be
-meaningless for ST_ASIAN_SWEEP_5R_V1 -- judged fundamentally incompatible rather than a
-minimal extension, per the task's own guidance to use judgment here. StrategyConfig/
-TradeSignal/load_strategy are therefore untouched by this change.
+StrategyConfig, not an extension of it -- see this module's original docstring reasoning
+(unchanged by the crypto generalization): strategy_engine.models.StrategyConfig's fields
+mirror the EMA/session-box regime family (ST_ASIAN_SWEEP_5R_V1's exact shape), which has
+no natural home for H1 structural trend, M5 MSS/retest, a multi-profile symbol->reference
+mapping, or the pip/tick buffer split this strategy needs. StrategyConfig/TradeSignal/
+load_strategy remain untouched.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import time
 from typing import Sequence, Tuple
 
 import yaml
 
+from .profile import (
+    BUFFER_PIP,
+    BUFFER_TICK,
+    REFERENCE_ASIAN_SESSION,
+    REFERENCE_PREVIOUS_DAY,
+    MarketProfile,
+)
+
+_REFERENCE_KIND_MAP = {"ASIAN_SESSION": REFERENCE_ASIAN_SESSION, "PREVIOUS_DAY": REFERENCE_PREVIOUS_DAY}
+_BUFFER_KIND_MAP = {"PIP": BUFFER_PIP, "TICK": BUFFER_TICK}
+
+
+def _parse_hhmm(value: str) -> time:
+    hour, minute = value.split(":")
+    return time(int(hour), int(minute))
+
 
 @dataclass(frozen=True)
-class ExecutionWindow:
-    name: str
-    start_time_gmt: str  # "HH:MM"
-    end_time_gmt: str  # "HH:MM"
+class ProfileConfig:
+    profile: MarketProfile
+    reference_start_gmt: str = ""  # ASIAN_SESSION only
+    reference_end_gmt: str = ""  # ASIAN_SESSION only
+    buffer_pips: float = 0.0  # BUFFER_PIP only
+    buffer_ticks: float = 0.0  # BUFFER_TICK only
 
 
 @dataclass(frozen=True)
@@ -34,37 +51,36 @@ class SweepRetestStrategyConfig:
     strategy_family: str
     version: str
     status: str
-    instruments: Sequence[str]
     magic_number: int
 
-    asian_reference_start_gmt: str
-    asian_reference_end_gmt: str
-    execution_windows: Tuple[ExecutionWindow, ...]
+    profiles: Tuple[ProfileConfig, ...]
 
-    sl_buffer_pips: float
+    entry_ttl_m5_bars: int
     min_tp2_r_multiple: float
     tp1_volume_pct: float
-    entry_ttl_m5_bars: int
-
     risk_percent: float
     max_open_strategy_positions: int
     daily_loss_circuit_r: float
 
     source_path: str
 
+    @property
+    def instruments(self) -> Tuple[str, ...]:
+        return tuple(sym for p in self.profiles for sym in p.profile.symbols)
+
+    def profile_config_for_symbol(self, symbol: str) -> "ProfileConfig | None":
+        return next((p for p in self.profiles if symbol in p.profile.symbols), None)
+
 
 def load_sweep_retest_strategy(path: str) -> SweepRetestStrategyConfig:
     with open(path, "r", encoding="utf-8") as f:
         raw = yaml.safe_load(f)
 
-    windows = tuple(
-        ExecutionWindow(name=w["name"], start_time_gmt=w["start_time_gmt"], end_time_gmt=w["end_time_gmt"])
-        for w in raw["execution_windows"]
-    )
+    profiles = tuple(_parse_profile(p) for p in raw["profiles"])
 
-    risk_raw = raw["risk_and_money_management"]
-    targets_raw = raw["position_split_and_targets"]
     entry_raw = raw["entry_rules"]
+    targets_raw = raw["position_split_and_targets"]
+    risk_raw = raw["risk_and_money_management"]
     guards_raw = raw["global_guards"]
 
     return SweepRetestStrategyConfig(
@@ -73,17 +89,39 @@ def load_sweep_retest_strategy(path: str) -> SweepRetestStrategyConfig:
         strategy_family=raw["strategy_family"],
         version=raw["version"],
         status=raw["status"],
-        instruments=tuple(raw["instruments"]),
         magic_number=raw["magic_number"],
-        asian_reference_start_gmt=raw["asian_reference_session"]["start_time_gmt"],
-        asian_reference_end_gmt=raw["asian_reference_session"]["end_time_gmt"],
-        execution_windows=windows,
-        sl_buffer_pips=risk_raw["sl_buffer_pips"],
+        profiles=profiles,
+        entry_ttl_m5_bars=entry_raw["entry_ttl_m5_bars"],
         min_tp2_r_multiple=targets_raw["min_tp2_r_multiple"],
         tp1_volume_pct=targets_raw["tp1_volume_pct"],
-        entry_ttl_m5_bars=entry_raw["entry_ttl_m5_bars"],
         risk_percent=risk_raw["risk_percent"],
         max_open_strategy_positions=guards_raw["max_open_strategy_positions"],
         daily_loss_circuit_r=guards_raw["daily_loss_circuit_r"],
         source_path=path,
+    )
+
+
+def _parse_profile(raw: dict) -> ProfileConfig:
+    reference = raw["reference"]
+    reference_kind = _REFERENCE_KIND_MAP[reference["kind"]]
+    windows = tuple(
+        (_parse_hhmm(w["start_time_gmt"]), _parse_hhmm(w["end_time_gmt"])) for w in raw["execution_windows"]
+    )
+    stop_buffer = raw["stop_buffer"]
+    buffer_kind = _BUFFER_KIND_MAP[stop_buffer["kind"]]
+
+    profile = MarketProfile(
+        profile_id=raw["profile_id"],
+        symbols=tuple(raw["instruments"]),
+        reference_kind=reference_kind,
+        reference_label=reference["label"],
+        buffer_kind=buffer_kind,
+        execution_windows=windows,
+    )
+    return ProfileConfig(
+        profile=profile,
+        reference_start_gmt=reference.get("start_time_gmt", ""),
+        reference_end_gmt=reference.get("end_time_gmt", ""),
+        buffer_pips=stop_buffer.get("pips", 0.0),
+        buffer_ticks=stop_buffer.get("ticks", 0.0),
     )

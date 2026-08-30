@@ -1,16 +1,27 @@
-"""Orchestration for ST_SESSION_SWEEP_RETEST_V1.
+"""Orchestration for ST_LIQUIDITY_SWEEP_RETEST_V1 -- asset-independent, parameterized by a
+MarketProfile (profile.py) rather than forked per asset class. The Forex profile (Asian
+High/Low/Mid reference, pip-based SL buffer) and the Crypto profile (Previous-Day
+High/Low/Mid reference, tick-based SL buffer) run through this exact same pipeline.
 
 Pipeline (spec):
-  Asian reference box (strategy_engine.session.build_reference_box, REUSED)
-    -> execution window gate (this strategy's own 07:00-10:00 / 12:00-15:00 UTC windows)
+  profile-specific reference box (profile.build_profile_reference_box, wraps
+    strategy_engine.session.build_reference_box, REUSED for both profiles)
+    -> execution window gate (profile-specific windows, e.g. Forex London/NY vs Crypto's
+       single strategy-activity window)
     -> H1 trend filter (trend.py, wraps market_structure.structural_breaks_for_candles, REUSED)
     -> M5 sweep detection (sweep.py, this strategy's own rule -- see its docstring)
     -> M5 MSS confirmation (mss.py, wraps market_structure.smc_adapter.full_swings, REUSED)
     -> M5 retest trigger with TTL (retest.py, this strategy's own rule)
-    -> SL/TP + target-geometry guard (targets.py)
-    -> position sizing (execution.risk.size_position, REUSED)
+    -> SL/TP + target-geometry guard (targets.py, asset-independent; SL buffer price is
+       precomputed by the caller per-profile -- forex_sl_buffer_price() vs
+       crypto_symbols.crypto_sl_buffer_price())
+    -> position sizing (execution.risk.size_position, REUSED -- works unchanged for
+       crypto too since it only needs a SymbolMeta-shaped record, see crypto_symbols.py)
   Guards (execution.position_guard / execution.daily_loss_guard, NEW shared pieces) are
   checked up front, before any candle work, since a blocked setup never needs evaluating.
+  Both guards are keyed asset-agnostically (position_guard by position_id, daily_loss_guard
+  by strategy_id+day) so "max 1 open position" and "-2R daily loss" are naturally COMBINED
+  across Forex and Crypto setups of this same strategy_id, not tracked per-profile.
 
 evaluate_setup() is a pure function of its candle-history inputs -- calling it twice with
 identical inputs produces a bit-identical SetupState (no MT5 call, no wall-clock read
@@ -38,9 +49,9 @@ from execution.risk import size_position
 from market_structure.config import load_market_structure_config
 from market_structure.models import MarketStructureConfig
 from mt5.symbol_resolver import SymbolMeta
-from strategy_engine.session import Candle, build_reference_box
+from strategy_engine.session import Candle
 
-from .config import SweepRetestStrategyConfig
+from .profile import MarketProfile, build_profile_reference_box
 from .models import (
     STATE_BLOCKED_DAILY_LOSS,
     STATE_BLOCKED_OPEN_POSITION,
@@ -82,15 +93,16 @@ def evaluate_setup(
     strategy_id: str,
     symbol: str,
     trading_day: date,
-    asian_candles: Sequence[Candle],
-    asian_expected_bar_count: int,
+    profile: MarketProfile,
+    reference_candles: Sequence[Candle],
     h1_candles: Sequence[Candle],
     m5_candles: Sequence[Candle],
     execution_windows: Sequence[tuple],  # [(time_start, time_end), ...] UTC, half-open
     equity: float,
     symbol_meta: SymbolMeta,
     risk_percent: float,
-    sl_buffer_pips: float,
+    stop_buffer_price: float,
+    reference_expected_bar_count: Optional[int] = None,
     entry_ttl_m5_bars: int = ENTRY_TTL_M5_BARS,
     market_structure_config: Optional[MarketStructureConfig] = None,
     daily_loss_guard: Optional[DailyLossGuard] = None,
@@ -98,11 +110,21 @@ def evaluate_setup(
     session_window_closed: bool = False,
     now: Optional[datetime] = None,
 ) -> SetupState:
-    """m5_candles: ALL closed M5 candles from the end of the Asian reference session up
-    to "now", chronological -- this function itself filters to execution-window candles
-    for sweep scanning, and reuses the full (unfiltered) series for MSS/retest lookups
-    around whatever sweep candle it finds, since a swing/MSS/retest may legitimately
-    straddle a window boundary."""
+    """m5_candles: ALL closed M5 candles from the end of the reference window up to "now",
+    chronological -- this function itself filters to execution-window candles for sweep
+    scanning, and reuses the full (unfiltered) series for MSS/retest lookups around
+    whatever sweep candle it finds, since a swing/MSS/retest may legitimately straddle a
+    window boundary.
+
+    reference_candles / reference_expected_bar_count: the profile's own reference window
+    (Forex: today's Asian-session candles + the real expected bar count; Crypto: the
+    completed previous UTC day's candles, see profile.filter_previous_day_candles --
+    expected_bar_count left None so it defaults to len(reference_candles)).
+
+    stop_buffer_price: precomputed by the caller per-profile (forex_sl_buffer_price() /
+    crypto_symbols.crypto_sl_buffer_price()) -- this function itself never chooses
+    between pip and tick semantics, see targets.py's docstring.
+    """
     base = dict(setup_id=setup_id, strategy_id=strategy_id, symbol=symbol, evaluated_at=now)
     config = market_structure_config or load_market_structure_config()
 
@@ -111,9 +133,10 @@ def evaluate_setup(
     if open_position_guard is not None and open_position_guard.is_blocked():
         return SetupState(**base, state=STATE_BLOCKED_OPEN_POSITION, reason_code=STATE_BLOCKED_OPEN_POSITION)
 
-    box = build_reference_box("Asian", asian_candles, asian_expected_bar_count) if asian_candles else None
+    box = build_profile_reference_box(profile, reference_candles, reference_expected_bar_count)
     if box is None or not box.session_complete:
-        return SetupState(**base, state=STATE_WAITING_REFERENCE, reason_code="ASIAN_SESSION_INCOMPLETE")
+        return SetupState(**base, state=STATE_WAITING_REFERENCE, reason_code="REFERENCE_WINDOW_INCOMPLETE",
+                           profile_id=profile.profile_id)
 
     direction_gate = h1_trend_direction(h1_candles, config)
     if direction_gate == DIRECTION_LONG_ONLY:
@@ -125,10 +148,11 @@ def evaluate_setup(
     else:
         return SetupState(
             **base, state=STATE_NO_TRADE_DIRECTION, reason_code=STATE_NO_TRADE_DIRECTION,
-            asian_high=box.session_high, asian_low=box.session_low, asian_mid=box.session_mid,
+            profile_id=profile.profile_id, ref_high=box.session_high, ref_low=box.session_low, ref_mid=box.session_mid,
         )
 
-    box_evidence = dict(asian_high=box.session_high, asian_low=box.session_low, asian_mid=box.session_mid, direction=trade_direction)
+    box_evidence = dict(profile_id=profile.profile_id, ref_high=box.session_high, ref_low=box.session_low,
+                         ref_mid=box.session_mid, direction=trade_direction)
 
     window_candles = [c for c in m5_candles if _in_windows(c.time, execution_windows)]
     if not window_candles:
@@ -164,7 +188,7 @@ def evaluate_setup(
 
     plan = build_target_plan(
         trade_direction, retest.entry_price, sweep.extreme_price, box.session_mid, box.session_high, box.session_low,
-        symbol_meta, sl_buffer_pips,
+        stop_buffer_price,
     )
     plan_evidence = dict(
         **mss_evidence, entry=plan.entry, stop_loss=plan.stop_loss, tp1=plan.tp1, tp2=plan.tp2,

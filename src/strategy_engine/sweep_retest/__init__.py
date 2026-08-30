@@ -1,13 +1,26 @@
-"""ST_SESSION_SWEEP_RETEST_V1: Asian session liquidity sweep + H1 trend + M5 MSS + retest.
+"""ST_LIQUIDITY_SWEEP_RETEST_V1: liquidity sweep + H1 trend + M5 MSS + retest, generalized
+across a Forex profile (Asian High/Low/Mid reference) and a Crypto profile (Previous-Day
+High/Low/Mid reference) via profile.py's MarketProfile -- one asset-independent
+sweep/MSS/retest/state-machine engine, not a fork per asset class.
+
+Package name kept as `sweep_retest` (not renamed to match the strategy_id) -- the
+mechanism it implements (sweep + MSS + retest) is itself asset-independent and the name
+describes that mechanism, not "session" or "asian" specifically; renaming the package
+would touch every import across tests/config/execution for no behavioral gain. Only the
+strategy_id and the strategies/*.yaml filename were renamed.
 
 Orchestration only -- all trading intelligence is delegated to existing capability
-modules (strategy_engine.session for the Asian reference box, market_structure for H1
+modules (strategy_engine.session for the reference box math, market_structure for H1
 trend / M5 swing detection, execution.risk for position sizing). See engine.py's
 docstring for the full pipeline and models.py for the state machine.
 
 Status: RESEARCH. Produces a SetupState (candidate signal, ENTRY_READY at most) -- never
-sends an order. See ../../execution/ for what happens to an ENTRY_READY setup next.
+sends an order. See ../../execution/adapter.py for the (interface-only) execution
+boundary an ENTRY_READY setup would cross next.
 """
+from .config import ProfileConfig, SweepRetestStrategyConfig, load_sweep_retest_strategy
+from .crypto_symbols import CRYPTO_TICK_SIZE, crypto_sl_buffer_price, crypto_symbol_meta
+from .engine import SweepRetestRuntime, evaluate_setup
 from .models import (
     STATE_BLOCKED_DAILY_LOSS,
     STATE_BLOCKED_OPEN_POSITION,
@@ -32,8 +45,16 @@ from .models import (
     TERMINAL_STATES,
     SetupState,
 )
-from .config import SweepRetestStrategyConfig, load_sweep_retest_strategy
-from .engine import SweepRetestRuntime, evaluate_setup
+from .profile import (
+    PROFILE_CRYPTO_PERP,
+    PROFILE_FOREX,
+    MarketProfile,
+    build_profile_reference_box,
+    filter_previous_day_candles,
+    previous_utc_day_window,
+    profile_for_symbol,
+)
+from .targets import forex_sl_buffer_price
 
 __all__ = [
     "SetupState", "TERMINAL_STATES",
@@ -44,6 +65,9 @@ __all__ = [
     "STATE_TP2_HIT", "STATE_STOPPED", "STATE_SETUP_EXPIRED", "STATE_SESSION_EXPIRED",
     "STATE_NO_TRADE_DIRECTION", "STATE_NO_TRADE_TARGET_GEOMETRY",
     "STATE_BLOCKED_DAILY_LOSS", "STATE_BLOCKED_OPEN_POSITION",
-    "SweepRetestStrategyConfig", "load_sweep_retest_strategy",
+    "SweepRetestStrategyConfig", "ProfileConfig", "load_sweep_retest_strategy",
     "evaluate_setup", "SweepRetestRuntime",
+    "MarketProfile", "PROFILE_FOREX", "PROFILE_CRYPTO_PERP", "profile_for_symbol",
+    "build_profile_reference_box", "previous_utc_day_window", "filter_previous_day_candles",
+    "forex_sl_buffer_price", "CRYPTO_TICK_SIZE", "crypto_symbol_meta", "crypto_sl_buffer_price",
 ]

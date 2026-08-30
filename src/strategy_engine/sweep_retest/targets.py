@@ -1,13 +1,18 @@
 """Stop loss, targets, and target-geometry guard.
 
-Pip-size conversion is a genuinely missing piece rather than a reuse: mt5.symbol_resolver
-.SymbolMeta exposes broker facts (digits/point/tick_size/tick_value) but nothing in this
-repo converts that into an FX "pip" -- execution/risk.py deliberately sizes positions from
-tick_size/tick_value directly and never needs a pip concept (see its own docstring). This
-strategy's SL buffer is spec'd in pips ("Default Forex buffer: 2.5 pips"), so a minimal
-pip_size() helper is added here rather than assuming a fixed decimal representation of
-price. Standard FX convention: a 5- or 3-digit (fractional-pip) broker's pip is 10x its
-point; a 4- or 2-digit broker's pip equals its point.
+Asset-independent by design: build_target_plan() takes a precomputed stop_buffer_price
+(a plain price distance), never a Forex pip or a crypto tick itself -- so the SAME
+geometry/reward-guard logic serves both the Forex and Crypto profiles without forking.
+The two buffer CONVENTIONS (pip vs tick) live in their own small, profile-specific
+helpers below/alongside so this stays true.
+
+pip_size()/forex_sl_buffer_price(): Forex-only. mt5.symbol_resolver.SymbolMeta exposes
+broker facts (digits/point/tick_size/tick_value) but nothing in this repo converts that
+into an FX "pip" -- execution/risk.py deliberately sizes positions from tick_size/
+tick_value directly and never needs a pip concept (see its own docstring). Standard FX
+convention: a 5- or 3-digit (fractional-pip) broker's pip is 10x its point; a 4- or
+2-digit broker's pip equals its point. Crypto MUST NOT go through this path (spec: "do
+not apply Forex pip math to crypto") -- see crypto_symbols.py for its own buffer.
 """
 from __future__ import annotations
 
@@ -30,6 +35,10 @@ def pip_size(symbol_meta: SymbolMeta) -> float:
     return symbol_meta.point * 10 if symbol_meta.digits in (3, 5) else symbol_meta.point
 
 
+def forex_sl_buffer_price(symbol_meta: SymbolMeta, sl_buffer_pips: float = DEFAULT_SL_BUFFER_PIPS) -> float:
+    return sl_buffer_pips * pip_size(symbol_meta)
+
+
 @dataclass(frozen=True)
 class TargetPlan:
     status: str  # GEOMETRY_VALID or GEOMETRY_INVALID
@@ -47,31 +56,33 @@ def build_target_plan(
     direction: str,
     entry: float,
     sweep_extreme: float,
-    asian_mid: float,
-    asian_high: float,
-    asian_low: float,
-    symbol_meta: SymbolMeta,
-    sl_buffer_pips: float = DEFAULT_SL_BUFFER_PIPS,
+    ref_mid: float,
+    ref_high: float,
+    ref_low: float,
+    stop_buffer_price: float,
 ) -> TargetPlan:
-    """direction: "SHORT" after a HIGH sweep (TP1=Asian mid, TP2=Asian low) or "LONG"
-    after a LOW sweep (TP1=Asian mid, TP2=Asian high). SL = sweep extreme +/- a
-    configurable pip buffer (spec default 2.5 pips).
+    """direction: "SHORT" after a HIGH sweep (TP1=reference mid, TP2=reference low) or
+    "LONG" after a LOW sweep (TP1=reference mid, TP2=reference high). SL = sweep extreme
+    +/- stop_buffer_price (a plain, already-resolved price distance -- see this module's
+    docstring for how each profile computes that distance).
 
     Rejects invalid geometry (spec): for SHORT, TP1/TP2 must be below entry; for LONG,
-    above. Minimum TP2 reward/risk is MIN_TP2_R_MULTIPLE (1.5R) -- below that, no
-    substitute target is invented; the setup is simply rejected.
+    above. Minimum TP2 reward/risk is MIN_TP2_R_MULTIPLE (1.5R). If TP1 (the reference
+    midpoint) lands on the wrong side of entry, the WHOLE setup is rejected here -- V1
+    deliberately does not fall back to a TP1-less single-TP2 exit for either profile, to
+    keep exactly one target-plan code path shared by both (documented choice, see status
+    report: "reject" was chosen for consistency with this same existing Forex behavior,
+    not invented separately for crypto). No substitute target is ever invented.
     """
-    buffer_price = sl_buffer_pips * pip_size(symbol_meta)
-
     if direction == DIRECTION_SHORT:
-        stop_loss = sweep_extreme + buffer_price
-        tp1, tp2 = asian_mid, asian_low
+        stop_loss = sweep_extreme + stop_buffer_price
+        tp1, tp2 = ref_mid, ref_low
         risk_distance = stop_loss - entry
         geometry_ok = risk_distance > 0 and tp1 < entry and tp2 < entry
         reward = (entry - tp2) if risk_distance > 0 else None
     elif direction == DIRECTION_LONG:
-        stop_loss = sweep_extreme - buffer_price
-        tp1, tp2 = asian_mid, asian_high
+        stop_loss = sweep_extreme - stop_buffer_price
+        tp1, tp2 = ref_mid, ref_high
         risk_distance = entry - stop_loss
         geometry_ok = risk_distance > 0 and tp1 > entry and tp2 > entry
         reward = (tp2 - entry) if risk_distance > 0 else None

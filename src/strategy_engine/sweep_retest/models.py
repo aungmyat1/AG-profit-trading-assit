@@ -54,9 +54,10 @@ class SetupState:
     evaluated_at: Optional[datetime] = None
 
     direction: Optional[str] = None  # "LONG" / "SHORT"
-    asian_high: Optional[float] = None
-    asian_low: Optional[float] = None
-    asian_mid: Optional[float] = None
+    profile_id: Optional[str] = None  # "FOREX" / "CRYPTO_PERP" -- see profile.py
+    ref_high: Optional[float] = None  # Asian High (Forex) / Previous-Day High (Crypto)
+    ref_low: Optional[float] = None  # Asian Low (Forex) / Previous-Day Low (Crypto)
+    ref_mid: Optional[float] = None  # Asian Mid (Forex) / Previous-Day Mid (Crypto)
 
     sweep_level: Optional[float] = None
     sweep_extreme: Optional[float] = None
