@@ -15,11 +15,18 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 import assistant.commands as commands
 from assistant.analysis_models import PROPOSAL_EXECUTED, PROPOSAL_READY, TradeCandidate, TradeProposal
 from execution import executor
 from execution.models import ExecutionSource, OrderSendResult, TradeCommand
 from mt5.symbol_resolver import SymbolMeta
+
+
+@pytest.fixture(autouse=True)
+def _isolated_execution_claim(monkeypatch):
+    monkeypatch.setattr(executor.journal, "claim_command", lambda command_id: True)
 
 
 def _eurusd_meta(**overrides):

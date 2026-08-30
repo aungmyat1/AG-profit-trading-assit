@@ -241,3 +241,22 @@ def test_unpatched_bulk_rate_fetch_fails_fast_not_silently():
     with historical_data_context(store, dt.datetime(2026, 1, 1, tzinfo=UTC)):
         with pytest.raises(HistoricalDataError, match="HISTORICAL_REPLAY_MT5_ACCESS_FORBIDDEN"):
             mt5_sdk.copy_rates_from_pos("EURUSD", 0, 0, 10)
+
+
+def test_session_range_path_degrades_without_touching_live_mt5(monkeypatch):
+    """A connected terminal must not turn the known historical-session completeness
+    gap into a live-data access during replay."""
+    import mt5.market_data as market_data_module
+    from supply_demand.native_zones import session_zone
+
+    monkeypatch.setattr(market_data_module, "_require_connected", lambda: None)
+    monkeypatch.setattr(market_data_module, "_require_symbol", lambda symbol: None)
+    monkeypatch.setattr(market_data_module, "_broker_offset_hours", lambda symbol: 0)
+
+    store = HistoricalCandleStore()
+    as_of = dt.datetime(2026, 1, 6, 12, 0, tzinfo=UTC)
+    with historical_data_context(store, as_of):
+        zone = session_zone("EURUSD", "asian", dt.date(2026, 1, 5))
+
+    assert zone.low is None and zone.high is None
+    assert zone.reason_codes == ("HISTORICAL_SESSION_DATA_UNAVAILABLE",)

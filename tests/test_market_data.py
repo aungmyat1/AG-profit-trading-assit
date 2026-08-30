@@ -21,7 +21,14 @@ def _mt5_available():
     return mt5.initialize()
 
 
-@pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
+def _fx_session_open_today():
+    return dt.datetime.now(dt.timezone.utc).weekday() < 5
+
+
+@pytest.mark.skipif(
+    not _mt5_available() or not _fx_session_open_today(),
+    reason="requires a running MT5 terminal and an open FX trading day",
+)
 def test_get_candles_last_bar_matches_true_utc_now():
     from mt5.connection import connect
     from mt5.market_data import get_candles
@@ -70,7 +77,10 @@ def test_get_candles_unknown_symbol_fails_closed():
     assert exc_info.value.reason_code == "SYMBOL_NOT_FOUND"
 
 
-@pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
+@pytest.mark.skipif(
+    not _mt5_available() or not _fx_session_open_today(),
+    reason="requires a running MT5 terminal and an open FX trading day",
+)
 def test_get_candles_session_window_is_half_open_and_exact():
     import session_clock as sc
     from mt5.connection import connect

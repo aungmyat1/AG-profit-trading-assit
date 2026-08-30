@@ -1,5 +1,9 @@
 # Architecture Conflict Audit — 2026-08-27
 
+> Historical evidence snapshot. Statements about execution being paused describe the
+> 2026-08-27 audit state; see [`../../PROJECT_STATUS.md`](../../PROJECT_STATUS.md) for
+> the current execution state and safety baseline.
+
 Scope: this repo (`AG profit trading`) plus its registered-by-reference strategy
 `SESSION_TRADE_V1` (implemented in `D:\ddev\Session Trade Codex`). Searched for duplicated
 strategy authority across session windows, classifiers, sweep rules, direction/entry/SL/TP

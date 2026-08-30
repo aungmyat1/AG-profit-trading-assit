@@ -3,10 +3,13 @@ stdout and analysis.json -> StrategyResult mapping. Pure functions, no subproces
 needed -- fixtures model the REAL shapes read from execute_session_signal.py."""
 from __future__ import annotations
 
+import pytest
+
 from assistant.models import STATUS_INVALID_CONTEXT, STATUS_NO_SETUP, STATUS_TRADE_READY
 from strategy_manager.session_trade_adapter import (
     AdapterRunResult,
     OUTCOME_DRY_RUN,
+    SessionTradeAdapterError,
     extract_last_json_object,
     to_strategy_result,
 )
@@ -84,3 +87,27 @@ def test_to_strategy_result_invalid_context_on_error():
     )
     result = to_strategy_result(run_result, "EURUSD", "ASIAN_LONDON")
     assert result.status == STATUS_INVALID_CONTEXT
+
+
+def test_to_strategy_result_missing_analysis_fails_closed():
+    run_result = AdapterRunResult(
+        execution_outcome=OUTCOME_DRY_RUN,
+        payload={"execution": "DRY_RUN", "signal_id": "sig123"},
+        exit_code=0,
+        analysis=None,
+    )
+
+    with pytest.raises(SessionTradeAdapterError, match="ANALYSIS_MISSING"):
+        to_strategy_result(run_result, "EURUSD", "ASIAN_LONDON")
+
+
+def test_to_strategy_result_malformed_analysis_fails_closed():
+    run_result = AdapterRunResult(
+        execution_outcome=OUTCOME_DRY_RUN,
+        payload={"execution": "DRY_RUN", "signal_id": "sig123"},
+        exit_code=0,
+        analysis=["not", "an", "object"],
+    )
+
+    with pytest.raises(SessionTradeAdapterError, match="ANALYSIS_INVALID"):
+        to_strategy_result(run_result, "EURUSD", "ASIAN_LONDON")

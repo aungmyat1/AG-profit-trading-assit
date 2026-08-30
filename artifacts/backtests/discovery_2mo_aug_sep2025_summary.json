@@ -5,7 +5,7 @@
     "SYMBOL": "EURUSD",
     "RANGE": [
       "2025-08-01T00:00:00",
-      "2025-08-15T00:00:00"
+      "2025-10-01T00:00:00"
     ],
     "FULL_DATASET_RANGE": [
       "2025-04-21T14:15:00+00:00",
@@ -13,72 +13,24 @@
     ]
   },
   "REPLAY": {
-    "STEPS": 2880,
+    "STEPS": 12383,
     "WARMUP_STEPS": 0,
-    "VALID_STEPS": 2880,
-    "LOAD_SECONDS": 87.8,
-    "REPLAY_SECONDS": 1955.2
+    "VALID_STEPS": 12383,
+    "LOAD_SECONDS": 20.8,
+    "REPLAY_SECONDS": 11690.3
   },
   "IDENTITY": {
     "COLLISIONS": 0
   },
   "SETUP_LEDGER": {
-    "ROWS": 15,
-    "UNIQUE_SETUPS": 15,
-    "READY": 0,
-    "ENTRY_ARRAYS": 3,
-    "ARTIFACT": "artifacts/backtests/discovery_aug2025_bench_setup_ledger.parquet"
+    "ROWS": 54,
+    "UNIQUE_SETUPS": 54,
+    "READY": 3,
+    "ENTRY_ARRAYS": 9,
+    "ARTIFACT": "artifacts/backtests/discovery_2mo_aug_sep2025_setup_ledger.parquet"
   },
   "PER_COMBINATION": {
     "E1M1": {
-      "REFERENCE_FOUND": 0,
-      "E_QUALIFIED": 0,
-      "M_STARTED": 1,
-      "M_CONFIRMED": 1,
-      "ENTRY_ARRAY_CREATED": 0,
-      "READY": 0
-    },
-    "E1M2": {
-      "REFERENCE_FOUND": 0,
-      "E_QUALIFIED": 0,
-      "M_STARTED": 1,
-      "M_CONFIRMED": 1,
-      "ENTRY_ARRAY_CREATED": 1,
-      "READY": 0
-    },
-    "E1M3": {
-      "REFERENCE_FOUND": 0,
-      "E_QUALIFIED": 0,
-      "M_STARTED": 1,
-      "M_CONFIRMED": 1,
-      "ENTRY_ARRAY_CREATED": 0,
-      "READY": 0
-    },
-    "E2M1": {
-      "REFERENCE_FOUND": 0,
-      "E_QUALIFIED": 0,
-      "M_STARTED": 1,
-      "M_CONFIRMED": 1,
-      "ENTRY_ARRAY_CREATED": 0,
-      "READY": 0
-    },
-    "E2M2": {
-      "REFERENCE_FOUND": 0,
-      "E_QUALIFIED": 0,
-      "M_STARTED": 1,
-      "M_CONFIRMED": 0,
-      "ENTRY_ARRAY_CREATED": 0,
-      "READY": 0
-    },
-    "E2M3": {
-      "REFERENCE_FOUND": 0,
-      "E_QUALIFIED": 0,
-      "M_STARTED": 1,
-      "M_CONFIRMED": 1,
-      "ENTRY_ARRAY_CREATED": 0,
-      "READY": 0
-    },
-    "E3M1": {
       "REFERENCE_FOUND": 0,
       "E_QUALIFIED": 0,
       "M_STARTED": 3,
@@ -86,65 +38,113 @@
       "ENTRY_ARRAY_CREATED": 0,
       "READY": 0
     },
-    "E3M2": {
+    "E1M2": {
       "REFERENCE_FOUND": 0,
       "E_QUALIFIED": 0,
       "M_STARTED": 3,
-      "M_CONFIRMED": 0,
+      "M_CONFIRMED": 3,
+      "ENTRY_ARRAY_CREATED": 3,
+      "READY": 1
+    },
+    "E1M3": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 3,
+      "M_CONFIRMED": 3,
+      "ENTRY_ARRAY_CREATED": 1,
+      "READY": 1
+    },
+    "E2M1": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 4,
+      "M_CONFIRMED": 4,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E2M2": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 4,
+      "M_CONFIRMED": 1,
+      "ENTRY_ARRAY_CREATED": 1,
+      "READY": 0
+    },
+    "E2M3": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 4,
+      "M_CONFIRMED": 4,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E3M1": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 11,
+      "M_CONFIRMED": 11,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E3M2": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 11,
+      "M_CONFIRMED": 1,
       "ENTRY_ARRAY_CREATED": 0,
       "READY": 0
     },
     "E3M3": {
       "REFERENCE_FOUND": 0,
       "E_QUALIFIED": 0,
-      "M_STARTED": 3,
-      "M_CONFIRMED": 2,
-      "ENTRY_ARRAY_CREATED": 2,
-      "READY": 0
+      "M_STARTED": 11,
+      "M_CONFIRMED": 4,
+      "ENTRY_ARRAY_CREATED": 4,
+      "READY": 1
     }
   },
   "PER_E": {
     "E1": {
-      "REFERENCE_FOUND": 3,
-      "E_QUALIFIED": 1
+      "REFERENCE_FOUND": 11,
+      "E_QUALIFIED": 3
     },
     "E2": {
-      "REFERENCE_FOUND": 13,
-      "E_QUALIFIED": 1
+      "REFERENCE_FOUND": 50,
+      "E_QUALIFIED": 4
     },
     "E3": {
-      "REFERENCE_FOUND": 140,
-      "E_QUALIFIED": 3
+      "REFERENCE_FOUND": 555,
+      "E_QUALIFIED": 11
     }
   },
   "PER_M": {
     "M1": {
-      "M_STARTED": 5,
-      "M_CONFIRMED": 5,
+      "M_STARTED": 18,
+      "M_CONFIRMED": 18,
       "ENTRY_ARRAY_CREATED": 0,
       "READY": 0
     },
     "M2": {
-      "M_STARTED": 5,
-      "M_CONFIRMED": 1,
-      "ENTRY_ARRAY_CREATED": 1,
-      "READY": 0
+      "M_STARTED": 18,
+      "M_CONFIRMED": 5,
+      "ENTRY_ARRAY_CREATED": 4,
+      "READY": 1
     },
     "M3": {
-      "M_STARTED": 5,
-      "M_CONFIRMED": 4,
-      "ENTRY_ARRAY_CREATED": 2,
-      "READY": 0
+      "M_STARTED": 18,
+      "M_CONFIRMED": 11,
+      "ENTRY_ARRAY_CREATED": 5,
+      "READY": 2
     }
   },
   "FAILURE_REASONS": {
-    "WAITING_M5_CONFIRMATION": 6,
-    "WAITING_HTF_TOUCH": 5,
-    "WAITING_M5_ENTRY": 2,
-    "WAITING_H1_REACTION": 2
+    "WAITING_M5_CONFIRMATION": 23,
+    "WAITING_HTF_TOUCH": 18,
+    "WAITING_H1_REACTION": 7,
+    "WAITING_M5_ENTRY": 3
   },
   "NEAR_READY": {
-    "COUNT": 2,
+    "COUNT": 3,
     "SAMPLE": [
       {
         "setup_id": "SETUP-EURUSD-E3M3-764f424d73e6c650",
@@ -159,14 +159,26 @@
         "direction": "LONG",
         "failed_condition": "WAITING_M5_ENTRY",
         "last_seen_time": "2025-08-01T11:55:00+00:00"
+      },
+      {
+        "setup_id": "SETUP-EURUSD-E3M3-92aaf1a12c77173e",
+        "combination": "E3M3",
+        "direction": "SHORT",
+        "failed_condition": "WAITING_M5_ENTRY",
+        "last_seen_time": "2025-09-12T12:55:00+00:00"
       }
     ]
   },
   "MONTHLY": {
     "2025-08": {
-      "setups": 15,
-      "arrays": 3,
+      "setups": 27,
+      "arrays": 4,
       "ready": 0
+    },
+    "2025-09": {
+      "setups": 27,
+      "arrays": 5,
+      "ready": 3
     }
   },
   "PNL": {

@@ -54,6 +54,24 @@ def test_ledger_and_funnel_agree_on_entry_array_count():
     assert ledger_arrays == funnel_arrays == 1
 
 
+def test_funnel_does_not_misclassify_early_waiting_states_as_confirmed():
+    """Regression for a real bug found via the Aug-Sep 2025 discovery run: composer
+    copies combo.state = m.state directly, and M1/M3's own early state vocabulary
+    includes WAITING_HTF_TOUCH ("no inducement candidate identified yet") and
+    WAITING_H1_REACTION ("identified but not taken") in addition to
+    WAITING_M5_CONFIRMATION. A blacklist that only excluded WAITING_M5_CONFIRMATION
+    silently counted these early states as M_CONFIRMED."""
+    for early_state in ("WAITING_HTF_TOUCH", "WAITING_H1_REACTION", "WAITING_M5_CONFIRMATION"):
+        funnel = FunnelTracker()
+        funnel.observe(_analysis(early_state))
+        assert funnel.per_combination()["E2M1"]["M_CONFIRMED"] == 0, early_state
+
+    for confirmed_state in ("WAITING_M5_ENTRY", "READY", "INVALIDATED"):
+        funnel = FunnelTracker()
+        funnel.observe(_analysis(confirmed_state))
+        assert funnel.per_combination()["E2M1"]["M_CONFIRMED"] == 1, confirmed_state
+
+
 def test_ledger_still_records_entry_fields_at_ready():
     ledger = SetupLedger()
     ledger.observe(_analysis("READY"), dt.datetime(2026, 1, 5, 10, 0, tzinfo=UTC))

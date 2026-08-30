@@ -82,6 +82,13 @@ _PATCHED_TICK_TARGETS = (
     "mt5.market_data.get_tick",  # covers liquidity.affinity's per-call local import
 )
 
+_PATCHED_RANGE_CANDLE_TARGETS = (
+    # Session snapshots need an arbitrary UTC range, while HistoricalCandleStore's
+    # replay interface is count/as-of based. Until that completeness seam exists,
+    # fail closed here rather than allowing a connected terminal to answer historically.
+    "assistant.market_data.get_candles",
+)
+
 
 def _raise_as_market_data_error(exc: HistoricalDataError):
     raise MarketDataError(exc.reason_code, str(exc)) from exc
@@ -111,6 +118,13 @@ def _make_get_tick(store: HistoricalCandleStore, as_of: datetime):
     return _get_tick
 
 
+def _historical_range_unavailable(symbol: str, timeframe: str, start_utc: datetime, end_utc: datetime):
+    raise MarketDataError(
+        "HISTORICAL_SESSION_DATA_UNAVAILABLE",
+        "range-based session candles are not supplied by historical_data_context",
+    )
+
+
 @contextlib.contextmanager
 def historical_data_context(store: HistoricalCandleStore, as_of: datetime):
     """Within this context, every frozen analyzer's candle/tick retrieval is redirected
@@ -125,6 +139,8 @@ def historical_data_context(store: HistoricalCandleStore, as_of: datetime):
             stack.enter_context(patch(target, get_candles_fn))
         for target in _PATCHED_TICK_TARGETS:
             stack.enter_context(patch(target, get_tick_fn))
+        for target in _PATCHED_RANGE_CANDLE_TARGETS:
+            stack.enter_context(patch(target, _historical_range_unavailable))
         # Applied AFTER the real substitutions above (patch() stacks correctly since
         # get_latest_candles/get_tick above never call the real MetaTrader5 SDK) --
         # HISTORICAL_REPLAY_MT5_ACCESS = FORBIDDEN, enforced globally, not just at the

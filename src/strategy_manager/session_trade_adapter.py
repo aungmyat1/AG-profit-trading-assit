@@ -61,7 +61,7 @@ class AdapterRunResult:
         self.execution_outcome = execution_outcome
         self.payload = payload
         self.exit_code = exit_code
-        self.analysis = analysis or {}
+        self.analysis = analysis
 
 
 def _flags_for_mode(mode: str) -> list:
@@ -125,8 +125,11 @@ def _find_analysis_json(output_dir: Path) -> Optional[dict]:
     matches = sorted(output_dir.glob("*/*/analysis.json"))
     if not matches:
         return None
-    with open(matches[-1], "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(matches[-1], "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SessionTradeAdapterError(f"SESSION_TRADE_ANALYSIS_INVALID: {exc}") from exc
 
 
 def run_session_trade_v1(symbol: str, cycle: str, mode: str) -> AdapterRunResult:
@@ -175,6 +178,13 @@ def to_strategy_result(result: AdapterRunResult, symbol: str, cycle: str) -> Str
     Copies setup/direction/entry/SL/TP verbatim from analysis.json -- never
     recomputed."""
     analysis = result.analysis
+    if analysis is not None and not isinstance(analysis, dict):
+        raise SessionTradeAdapterError("SESSION_TRADE_ANALYSIS_INVALID: expected a JSON object")
+    if not analysis:
+        if result.execution_outcome in (OUTCOME_NO_TRADE, OUTCOME_ERROR):
+            analysis = {}
+        else:
+            raise SessionTradeAdapterError("SESSION_TRADE_ANALYSIS_MISSING: analysis.json was not produced")
     strategy_id = analysis.get("strategy_id", "SESSION_TRADE_V1")
     strategy_version = str(analysis.get("contract_version", "unknown"))
     trading_date_raw = analysis.get("trading_date")

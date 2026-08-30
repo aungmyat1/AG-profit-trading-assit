@@ -43,7 +43,24 @@ M5_WARMUP_CANDLES = 200  # matches ...M5_LOOKBACK_CANDLES
 
 _NOT_STARTED_STATES = (EntryModelState.NOT_APPLICABLE.value, EntryModelState.NO_VALID_COMBINATION.value,
                        EntryModelState.INSUFFICIENT_DATA.value)
-_STARTED_BUT_NOT_CONFIRMED_STATES = _NOT_STARTED_STATES + (EntryModelState.WAITING_M5_CONFIRMATION.value,)
+
+# "M_CONFIRMED" (spec section 25/functionally "M's own confirmation event fired") --
+# an ALLOWLIST of past-confirmation-or-terminal states, not a blacklist. M1/M3's own
+# state vocabulary (m1_character_change_inducement.py, m3_sweep_drop_pump.py) includes
+# several EARLY pre-confirmation states beyond WAITING_M5_CONFIRMATION --
+# WAITING_HTF_TOUCH ("no inducement candidate identified yet", M1's very first gate)
+# and WAITING_H1_REACTION ("inducement identified but not yet taken") -- and the
+# composer copies combo.state = m.state directly (composer.py's compose()), so these
+# early names DO appear as a combo's own state. An earlier blacklist-based version of
+# this classifier only excluded WAITING_M5_CONFIRMATION, silently misclassifying
+# WAITING_HTF_TOUCH/WAITING_H1_REACTION as "confirmed" -- found via the Aug-Sep 2025
+# discovery run (M1 showed 18/18 "confirmed" with 0 arrays, which turned out to mean
+# 18/18 never found an inducement candidate at all). See
+# tests/test_setup_ledger_funnel_reconciliation.py for the regression test.
+_CONFIRMED_OR_TERMINAL_STATES = (
+    EntryModelState.WAITING_M5_ENTRY.value, EntryModelState.READY.value,
+    EntryModelState.INVALIDATED.value, EntryModelState.EXPIRED.value,
+)
 
 _STAGES = ("REFERENCE_FOUND", "E_QUALIFIED", "M_STARTED", "M_CONFIRMED", "ENTRY_ARRAY_CREATED", "READY")
 
@@ -180,7 +197,7 @@ class FunnelTracker:
             combo_key = (combo.combination, setup_id)
 
             self._combo_stage_seen["M_STARTED"].add(combo_key)
-            if combo.state not in _STARTED_BUT_NOT_CONFIRMED_STATES:
+            if combo.state in _CONFIRMED_OR_TERMINAL_STATES:
                 self._combo_stage_seen["M_CONFIRMED"].add(combo_key)
             if combo.entry_array not in (None, "NONE"):
                 self._combo_stage_seen["ENTRY_ARRAY_CREATED"].add(combo_key)

@@ -10,12 +10,19 @@ import ast
 import inspect
 from types import SimpleNamespace
 
+import pytest
+
 import assistant.commands as commands_module
 from execution import executor
 from execution.models import ExecutionSource, OrderSendResult, TradeCommand
 from mt5.management_gateway import GatewayResult
 from trade_management.models import TradeGeometry, PositionSizing, PositionStateAdvisory
 from trade_management.models import GEOMETRY_VALID, OVERALL_READY, SIZING_NOT_REQUESTED
+
+
+@pytest.fixture(autouse=True)
+def _isolated_execution_claim(monkeypatch):
+    monkeypatch.setattr(executor.journal, "claim_command", lambda command_id: True)
 
 
 def _fake_tm_result():
@@ -161,6 +168,8 @@ def test_new_command_id_for_another_order_still_succeeds(monkeypatch):
 def test_close_delegates_to_management_gateway(monkeypatch):
     fake_row = SimpleNamespace(symbol="EURUSD", type=1, volume=0.31)  # type 1 == SELL position
     monkeypatch.setattr(executor, "get_positions", lambda ticket=None: [fake_row])
+    monkeypatch.setattr(executor, "get_symbol_meta", lambda symbol: SimpleNamespace(
+        volume_min=0.01, volume_max=100.0, volume_step=0.01))
     monkeypatch.setattr(executor, "get_tick", lambda symbol: SimpleNamespace(bid=1.16400, ask=1.16414, spread_points=14))
     monkeypatch.setattr(executor.journal, "record_event", lambda *a, **kw: None)
 

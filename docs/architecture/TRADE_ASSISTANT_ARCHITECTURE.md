@@ -1,5 +1,9 @@
 # Trade Assistant Architecture
 
+> Current authority and operational gates are summarized in
+> [`../../PROJECT_STATUS.md`](../../PROJECT_STATUS.md). Dated implementation notes in
+> this document explain design evolution and do not replace the executable safety gates.
+
 ## Project objective
 
 ```

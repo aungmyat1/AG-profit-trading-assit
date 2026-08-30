@@ -53,6 +53,10 @@ def _mt5_available():
     return mt5.initialize()
 
 
+def _fx_session_open_today():
+    return dt.datetime.now(UTC).weekday() < 5
+
+
 @pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
 def test_market_snapshot_live():
     from assistant.market_data import market_snapshot
@@ -67,7 +71,10 @@ def test_market_snapshot_live():
     assert snap.recent_high >= snap.recent_low
 
 
-@pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
+@pytest.mark.skipif(
+    not _mt5_available() or not _fx_session_open_today(),
+    reason="requires a running MT5 terminal and an open FX trading day",
+)
 def test_historical_candles_utc_range_live():
     from assistant.market_data import historical_candles
     from mt5.connection import connect
@@ -88,7 +95,10 @@ def test_historical_candles_rejects_ambiguous_query():
     assert result.status == "AMBIGUOUS_QUERY"
 
 
-@pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
+@pytest.mark.skipif(
+    not _mt5_available() or not _fx_session_open_today(),
+    reason="requires a running MT5 terminal and an open FX trading day",
+)
 def test_session_snapshot_completeness_live():
     from assistant.market_data import session_snapshot
     from mt5.connection import connect
@@ -111,7 +121,10 @@ def test_session_snapshot_completeness_live():
         assert result.midpoint == pytest.approx((result.high + result.low) / 2.0)
 
 
-@pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
+@pytest.mark.skipif(
+    not _mt5_available() or not _fx_session_open_today(),
+    reason="requires a running MT5 terminal and an open FX trading day",
+)
 def test_data_health_ok_and_failure_live():
     from assistant.market_data import data_health
     from mt5.connection import connect

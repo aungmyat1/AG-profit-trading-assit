@@ -1,77 +1,123 @@
 # AG Profit Trading
 
-Trading Assistant + Strategy Execution Platform for MT5. See `AGENTS.md` for agent
-working rules and `PROJECT_STATUS.md` for what's implemented vs. scaffolding.
+AG Profit Trading is an MT5-connected trading assistant built around deterministic
+strategy evaluation, explicit risk controls, and human-authorized execution. AI
+capabilities inspect and explain market state; they do not independently authorize
+orders or override strategy results.
 
-## Authority order
+## Safety and authority
 
-```
+```text
 Strategy YAML -> Strategy Engine -> Execution Engine -> MT5
-Agent skills  -> ADVISORY ONLY, no independent execution authority
+Agent skills  -> advisory and explanatory only
 ```
 
-Trading skills advise, inspect, validate, and explain. `strategy_engine/` decides.
-`execution/` sends orders — but only via `execution/executor.py`, reached only through
-`assistant/commands.py`, and only with an explicit, non-defaulted user command each
-call (see PROJECT_STATUS.md "Execution authority restructure"). `mt5/` is the broker
-interface. See `AGENTS.md`.
+- `strategy_engine/` owns deterministic trade signals.
+- `execution/risk.py` owns entry-side sizing and risk constraints.
+- New orders reach MT5 only through `assistant.commands.execute_command()` and require
+  an explicit, non-defaulted `user_confirmed=True` for that user instruction.
+- Manual-entry position management is a separate, ticket-claimed pathway. It can
+  modify or reduce an existing position but cannot open one.
+- Live trading and live trade management are disabled by default in
+  [`config/trading.yaml`](config/trading.yaml).
 
-## Layout
+See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
+[`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current implementation state.
 
-Source moved under `src/` (2026-08-28 reorganization) — a flat layout, one directory
-per package, package names unchanged from before the move (`import mt5`, `import
-execution`, etc. still work identically; see `pyproject.toml`'s `pythonpath`/packaging
-config). Deep spec/status docs moved into `docs/`; `README.md`, `AGENTS.md`, and
-`PROJECT_STATUS.md` stay at root as the three things a new reader hits first.
+## Current state
 
-```
-AGENTS.md                Agent working rules (short, always-load)
-PROJECT_STATUS.md         Implemented vs. scaffolding, implementation sequence
-pyproject.toml            src/ packaging config + pytest pythonpath
-
-docs/
-  architecture/            TRADE_ASSISTANT_ARCHITECTURE.md, ARCHITECTURE_CONFLICT_AUDIT.md
-  specs/                   *_SPEC.md contracts (entry-confirmation, trade-management, ...)
-  status/                  Phase/runtime status snapshots
-  setup/                   MT5_MCP_SETUP.md
-
-config/
-  canonical_sessions.yaml Session-window authority (Asian/London/NY, UTC, M15)
-  trading.yaml             Operating mode (ANALYSIS/DRY_RUN/TRADING) + live-trading gate
-  mt5.yaml                 MT5 connection config (no secrets committed here)
-
-strategies/
-  ST_ASIAN_SWEEP_5R_V1.yaml  Strategy authority for this strategy
-  STRATEGY_LEDGER.md          Index of registered strategies
-
-src/
-  strategy_engine/         Deterministic: candles -> TradeSignal. No MT5 import.
-    loader.py, models.py, engine.py
-    session/                Session-box family (box/classify/route); formerly session_router/
-
-  execution/                TradeSignal/TradeCommand -> risk -> validation -> MT5 -> journal
-  mt5/                       Broker adapter: connection, market data, account, symbols
-  trade_management/          Pre-trade geometry/sizing + manual-entry position management
-  market_structure/, supply_demand/, liquidity/, entry_confirmation/, chart_renderer/
-                              Capability/analysis layer (advisory only)
-  assistant/                  Agent-facing orchestration/execution-funnel layer
-  strategy_manager/           Registered-strategy dispatch
-  session_clock.py
-
-.claude/skills/, .agents/skills/   Agent skills (identical mirrors)
-scripts/                   CLI entry points (run_strategy, dry_run, check_mt5,
-                            execute_trade, trade_assistant, ...) + setup .ps1 scripts
-tests/
-```
+- Market data, structure, supply/demand, liquidity, and entry-confirmation layers are
+  implemented with fail-closed reason codes.
+- Explicit-command DEMO execution supports OPEN and CLOSE.
+- Execution commands use persistent atomic claims, duplicate protection, safe journal
+  filenames, and conservative CLOSE-volume normalization.
+- Manual-entry trade management supports ticket claiming, TP1 partial close,
+  breakeven, and a 5R runner under an independent safety gate.
+- Historical replay prohibits live MT5 candle/tick access. Historical session-box
+  reconstruction remains a documented completeness gap and degrades explicitly.
+- Current regression baseline: **979 passed, 5 skipped, 0 failed** (2026-08-30).
 
 ## Quick start
 
-```
-python -m pytest tests/ -q
+Requirements: Python 3.10 or newer and, for live market-data checks, a running and
+logged-in MetaTrader 5 terminal.
+
+```powershell
+python -m pip install -r requirements.txt
+python -m pytest -q
 ```
 
-`strategy_engine/loader.py` and `engine.py` are implemented and tested — they turn a
-`strategies/*.yaml` file into a `TradeSignal` given candle data. `execution/mt5_gateway.py`
-and `executor.py` now implement OPEN-side order placement (explicit-user-command-gated,
-DEMO only); see `PROJECT_STATUS.md`'s "Execution authority restructure" for the current
-state and `scripts/execute_trade.py` for the CLI entry point.
+Safe read-only examples:
+
+```powershell
+python scripts/check_mt5.py --symbol EURUSD
+python scripts/analyze_structure.py --symbol EURUSD --timeframe M15
+python scripts/run_strategy.py --help
+python scripts/trade_assistant.py --help
+```
+
+Execution preview and manual-position management:
+
+```powershell
+# Without --confirm, execute_trade reports the broker request but does not send it.
+python scripts/execute_trade.py --help
+
+# Claim only a position that the user already opened manually.
+python scripts/manage_trade.py --help
+python scripts/manage_positions.py --once
+```
+
+Do not enable `mode: TRADING`, `allow_order_send`, `allow_live_trading`, or
+`allow_live_management` without an intentional, separately reviewed operation.
+
+## Repository map
+
+```text
+config/                    Session, analysis, risk, and trading safety configuration
+strategies/                Strategy YAML authority and strategy ledger
+src/
+  strategy_engine/         Deterministic strategy evaluation
+  execution/               Authorization, risk, validation, command lifecycle, OPEN/CLOSE
+  mt5/                     Broker connection and MT5 adapters
+  trade_management/        Pre-trade analysis and claimed manual-position management
+  assistant/               User-facing analysis and execution funnel
+  strategy_manager/        Registered-strategy dispatch
+  historical_replay/       Point-in-time data store, replay guards, fill simulation
+  market_structure/        Structure analysis
+  supply_demand/           Zones and order-block contracts
+  liquidity/               Liquidity levels and sweep/reclaim state
+  entry_confirmation/      Frozen entry-confirmation contracts and implementations
+scripts/                   Operator and research command-line tools
+tests/                     Offline, live-guarded, execution-safety, and replay tests
+docs/                      Architecture, specifications, setup, and evidence snapshots
+```
+
+Python packages use the flat `src/` layout. Imports remain package-based (`import mt5`,
+`import execution`, and so on) through the project configuration in `pyproject.toml`.
+
+## Documentation
+
+Start with the [`docs` index](docs/README.md). The documentation types have different
+authority:
+
+1. Strategy YAML and frozen specification documents define intended behavior.
+2. `PROJECT_STATUS.md` describes the current implementation and known gaps.
+3. `docs/status/` records dated verification evidence; older test totals are historical.
+4. Architecture documents explain seams and authority but do not override strategy or
+   execution gates.
+
+## Testing notes
+
+```powershell
+# Full regression
+python -m pytest -q
+
+# Execution safety
+python -m pytest -q tests/test_execution_command_safety.py tests/test_execution_safety_v1.py
+
+# Historical replay isolation and no-lookahead behavior
+python -m pytest -q tests/test_historical_replay_no_lookahead.py tests/test_replay_orchestrator.py
+```
+
+Live MT5 tests are environment-aware and may skip when the FX session is closed. They
+never fabricate fresh candles or weaken production stale-data checks.

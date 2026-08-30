@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import datetime, timezone
+import math
 from typing import Optional
 
 from mt5.account import account as get_account
@@ -56,6 +57,7 @@ _STALE_PROPOSAL_SPREAD_MULTIPLIER = 5  # x current spread
 # actual_risk_percent <= requested_risk_percent, so this is a defensive re-check, not
 # the primary control -- a small epsilon absorbs float rounding noise, nothing more.
 _RISK_REVALIDATION_TOLERANCE_PCT = 1e-6
+_VOLUME_TOLERANCE = 1e-9
 
 
 class ProposalStore:
@@ -232,6 +234,10 @@ def execute(command: TradeCommand, *, user_confirmed: bool, proposal_store: Opti
     if command.action not in ("OPEN", "CLOSE"):
         return _reject(command, "INVALID_ACTION")
 
+    if journal.has_executed(command.command_id):
+        return _reject(command, "DUPLICATE_COMMAND_BLOCKED",
+                       f"command_id {command.command_id} has already resulted in ORDER_EXECUTED.")
+
     if command.action == "CLOSE":
         return _execute_close(command)
 
@@ -257,10 +263,6 @@ def execute(command: TradeCommand, *, user_confirmed: bool, proposal_store: Opti
 
     if command.side not in ("BUY", "SELL"):
         return _reject(command, "INVALID_SIDE")
-
-    if journal.has_executed(command.command_id):
-        return _reject(command, "DUPLICATE_COMMAND_BLOCKED",
-                        f"command_id {command.command_id} has already resulted in ORDER_EXECUTED.")
 
     if proposal is not None:
         try:
@@ -327,6 +329,10 @@ def execute(command: TradeCommand, *, user_confirmed: bool, proposal_store: Opti
             _mark_proposal_status(store, command.proposal_id, "REJECTED")
             return _reject(command, "RISK_LIMIT_EXCEEDED",
                             f"actual_risk_percent {actual_pct} exceeds requested {requested_pct}.")
+
+    if not journal.claim_command(command.command_id):
+        return _reject(command, "DUPLICATE_COMMAND_BLOCKED",
+                       f"command_id {command.command_id} is already claimed by another execution worker.")
 
     # Crash/restart reconciliation (AG_DEMO_EXECUTION_SAFETY_V1 Test 8): if a prior
     # attempt with this exact command_id already reached the broker but the process
@@ -429,13 +435,26 @@ def _execute_close(command: TradeCommand) -> ExecutionReport:
     row = rows[0]
     symbol = row.symbol
     direction = "BUY" if row.type == 0 else "SELL"
-    volume = command.volume if command.volume is not None else float(row.volume)
+    current_volume = float(row.volume)
+    requested_volume = command.volume if command.volume is not None else current_volume
+    try:
+        symbol_meta = get_symbol_meta(symbol)
+    except Exception as exc:  # noqa: BLE001 -- missing broker constraints must fail closed
+        return _reject(command, "SYMBOL_METADATA_UNAVAILABLE", str(exc))
+
+    volume, volume_error = _normalize_close_volume(requested_volume, current_volume, symbol_meta)
+    if volume_error is not None:
+        return _reject(command, volume_error)
 
     try:
         tick = get_tick(symbol)
     except Exception as exc:  # noqa: BLE001
         return _reject(command, "STALE_MARKET_DATA", str(exc))
     price = tick.bid if direction == "BUY" else tick.ask
+
+    if not journal.claim_command(command.command_id):
+        return _reject(command, "DUPLICATE_COMMAND_BLOCKED",
+                       f"command_id {command.command_id} is already claimed by another execution worker.")
 
     journal.record_event(command.command_id, "CLOSE_ATTEMPTED", ticket=command.position_ticket, volume=volume)
 
@@ -465,3 +484,33 @@ def _execute_close(command: TradeCommand) -> ExecutionReport:
     )
     return ExecutionReport(command_id=command.command_id, source=command.source,
                             status=status, gate_reason_code=reason_code, result=result)
+
+
+def _normalize_close_volume(requested_volume: float, current_volume: float, symbol_meta):
+    """Return a conservative broker-valid close volume, or a fail-closed reason code."""
+    if not math.isfinite(requested_volume) or requested_volume <= 0:
+        return None, "INVALID_CLOSE_VOLUME"
+    if not math.isfinite(current_volume) or current_volume <= 0:
+        return None, "INVALID_POSITION_VOLUME"
+    if requested_volume > current_volume + _VOLUME_TOLERANCE:
+        return None, "CLOSE_VOLUME_EXCEEDS_POSITION"
+    if (
+        symbol_meta.volume_min <= 0
+        or symbol_meta.volume_max < symbol_meta.volume_min
+        or symbol_meta.volume_step <= 0
+    ):
+        return None, "SYMBOL_METADATA_UNAVAILABLE"
+
+    steps = math.floor(requested_volume / symbol_meta.volume_step + _VOLUME_TOLERANCE)
+    normalized = round(steps * symbol_meta.volume_step, 8)
+    if normalized < symbol_meta.volume_min - _VOLUME_TOLERANCE:
+        return None, "CLOSE_VOLUME_BELOW_MIN"
+    if normalized > symbol_meta.volume_max + _VOLUME_TOLERANCE:
+        return None, "CLOSE_VOLUME_ABOVE_MAX"
+    if normalized > current_volume + _VOLUME_TOLERANCE:
+        return None, "CLOSE_VOLUME_EXCEEDS_POSITION"
+
+    remaining = current_volume - normalized
+    if remaining > _VOLUME_TOLERANCE and remaining < symbol_meta.volume_min - _VOLUME_TOLERANCE:
+        return None, "CLOSE_VOLUME_LEAVES_BELOW_MIN_REMAINDER"
+    return normalized, None

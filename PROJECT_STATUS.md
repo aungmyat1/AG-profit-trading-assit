@@ -1,8 +1,43 @@
 # Project Status — AG Profit Trading
 
 AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
-`README.md` for the folder map. Git history has the how-we-got-here; this file is
-current state only.
+`README.md` for the folder map. The first section is the current rolling summary;
+later sections preserve dated milestone evidence and may contain older test totals.
+
+## Current operational snapshot (2026-08-30)
+
+This section is the rolling summary. Test totals elsewhere in this document belong to
+the dated milestone that introduced the surrounding feature.
+
+```text
+ANALYSIS                      AVAILABLE
+DEMO OPEN/CLOSE EXECUTION     IMPLEMENTED, explicit-command-gated
+LIVE TRADING                  DISABLED BY DEFAULT
+MANUAL TRADE MANAGEMENT       BUILT, independently gated, live validation deferred
+HISTORICAL REPLAY             LIVE-MT5 ACCESS BLOCKED
+FULL REGRESSION               979 passed / 5 skipped / 0 failed
+```
+
+Execution safety was reverified and hardened on 2026-08-30:
+
+- OPEN and CLOSE share duplicate-command protection.
+- An atomic, restart-persistent command claim permits only one worker to own a
+  `command_id`; crash recovery fails closed rather than risking a duplicate send.
+- Journal filenames use a deterministic hash of `command_id`, while entries retain the
+  original ID. Existing safe legacy journal filenames remain readable.
+- CLOSE volume rejects non-finite, non-positive, excessive, below-minimum, above-maximum,
+  and unsafe remainder cases; off-step requests are floored to the broker step and are
+  never rounded upward.
+- Missing or malformed Session Trade adapter analysis fails closed.
+- Historical replay explicitly blocks live MT5 candle/tick access even if a terminal
+  was initialized earlier in the test or process. Historical session-box reconstruction
+  remains a completeness gap and reports `HISTORICAL_SESSION_DATA_UNAVAILABLE`.
+- Live FX tests skip closed-market days instead of weakening stale-data protection or
+  fabricating candles.
+
+Current default gates remain safe in `config/trading.yaml`: `mode: ANALYSIS`,
+`allow_order_check: false`, `allow_order_send: false`, `allow_live_trading: false`, and
+manual trade management in `DRY_RUN` with `allow_live_management: false`.
 
 ## Repository reorganization (2026-08-28)
 
@@ -75,9 +110,10 @@ Two `ExecutionSource`s (`execution/models.py`):
 Both paths require `execution.executor.execute(command, user_confirmed=True)` — a
 Python-level invariant, not a config flag: no code path reaches `order_send` without the
 caller having just received an explicit user instruction that turn. Duplicate protection
-via `execution/journal.py` (append-only `journal/execution_<command_id>.jsonl`, mirroring
-`trade_management/journal.py`'s existing convention) blocks re-sending an already-
-`EXECUTED` `command_id`. CLI: `scripts/execute_trade.py open|close ... [--confirm]`
+via `execution/journal.py` uses an atomic persistent claim plus append-only hashed
+journal files. It blocks concurrent workers, process-restart retries, and re-sending an
+already-`EXECUTED` `command_id` without putting caller-controlled IDs into paths. CLI:
+`scripts/execute_trade.py open|close ... [--confirm]`
 (omit `--confirm` for a dry-run report of the exact broker request).
 
 **AG_DEMO_EXECUTION_V1 (2026-08-28): PASSED.** One real, explicit-user-command DEMO
@@ -137,14 +173,15 @@ PHASE 3 — SUPPLY & DEMAND      COMPLETE / FROZEN (AG_ORDER_BLOCK_V1, frozen 20
 ORDER BLOCK CONTRACT           AG_ORDER_BLOCK_V1 FROZEN -- L1/L2 + inside-bar still UNSIGNED
 PHASE 4 — LIQUIDITY            COMPLETE / FROZEN (AG_LIQUIDITY_V1, frozen 2026-08-27)
 PHASE 5 — ENTRY & CONFIRMATION VERIFIED / FROZEN (AG_ENTRY_CONFIRMATION_V1, frozen 2026-08-28)
-PHASE 6 — TRADE MANAGEMENT     BUILT (manual-entry only, 2026-08-27) -- see below      <- current
+PHASE 6 — TRADE MANAGEMENT     BUILT (manual-entry only, 2026-08-27) -- see below
 ```
 
 ### PHASE 6 — TRADE MANAGEMENT (manual-entry only): BUILT (2026-08-27)
 
 Owner-requested, out of the bottom-up phase order above: manages *already open,
-manually entered* MT5 positions -- it does not depend on Phase 5 and does not resume
-the paused entry-side `execution/` package. New top-level `trade_management/` package
+manually entered* MT5 positions. It was implemented independently of Phase 5 and
+remains separate from the later entry-side `execution/` pathway. New top-level
+`trade_management/` package
 (`models.py`, `claims.py`, `state.py`, `risk.py`, `rules.py`, `validator.py`,
 `journal.py`, `manager.py`, `position_monitor.py`), plus `mt5.account.positions()`
 (implemented; was `NotImplementedError`), `mt5/deals.py` (new), and
@@ -153,7 +190,7 @@ order_check/order_send for modify/partial-close/close on an existing position).
 
 **Authority addendum (extends, does not replace, the section below):** this subsystem
 is a third, independently-gated pathway -- distinct from both the advisory-only skills
-and the paused entry-side `execution/`. It never opens a position (structurally: every
+and entry-side `execution/`. It never opens a position (structurally: every
 gateway function requires an existing ticket) and is gated by
 `config/trading.yaml`'s own `trade_management: {mode, allow_live_management}` block,
 default `DRY_RUN`/`false`. `.claude/skills/trade_management/*` /

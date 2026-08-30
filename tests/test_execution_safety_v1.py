@@ -23,6 +23,11 @@ from mt5.symbol_resolver import SymbolMeta
 from trade_management.sizing import evaluate_sizing
 
 
+@pytest.fixture(autouse=True)
+def _isolated_execution_claim(monkeypatch):
+    monkeypatch.setattr(executor.journal, "claim_command", lambda command_id: True)
+
+
 def _eurusd_meta(**overrides):
     fields = dict(symbol="EURUSD", tick_size=1e-5, tick_value=1.0, contract_size=100000.0,
                   volume_min=0.01, volume_max=100.0, volume_step=0.01, digits=5, point=1e-5)
