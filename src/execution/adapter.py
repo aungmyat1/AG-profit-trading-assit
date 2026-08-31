@@ -19,6 +19,8 @@ from mt5.symbol_resolver import METADATA_SOURCE_EXCHANGE_VERIFIED, SymbolMeta
 from strategy_engine.sweep_retest.models import STATE_ENTRY_READY, SetupState
 from strategy_engine.sweep_retest.profile import PROFILE_CRYPTO_PERP, PROFILE_FOREX
 
+from .models import TradeIntent
+
 
 @dataclass(frozen=True)
 class TradeProposal:
@@ -46,6 +48,29 @@ class TradeProposal:
             profile_id=state.profile_id, direction=state.direction, entry=state.entry,
             stop_loss=state.stop_loss, tp1=state.tp1, tp2=state.tp2,
             volume=state.volume, risk_amount=state.risk_amount,
+        )
+
+    @classmethod
+    def from_trade_intent(cls, intent: TradeIntent, profile_id: str = PROFILE_FOREX) -> "TradeProposal":
+        """Sibling constructor to from_setup_state(), for ST_ASIAN_SWEEP_5R_V1's own
+        signal path: strategy_engine.TradeSignal -> execution.intent_builder.build_intent()
+        -> TradeIntent (already volume/risk_amount-sized by execution.risk.size_position,
+        via build_intent -- never recomputed here) -> TradeProposal, so a session-strategy
+        signal can pass through ExecutionCoordinator.submit() exactly like a sweep-retest
+        SetupState-derived proposal. ST_ASIAN_SWEEP_5R_V1 is Forex-only (profile_id
+        defaults to PROFILE_FOREX; no crypto session-strategy exists to route here).
+
+        intent.signal_id becomes setup_id -- the same per-signal identity intent_builder
+        already produces, reused as ExecutionCoordinator._forex_command()'s command_id for
+        idempotency, the same role from_setup_state()'s setup_id already plays for
+        ST_LIQUIDITY_SWEEP_RETEST_V1. tp2 has no TradeIntent equivalent (intent_builder
+        only ever produces one target, leg1_take_profit) -- left None, never invented.
+        """
+        return cls(
+            setup_id=intent.signal_id, strategy_id=intent.strategy_id, symbol=intent.symbol,
+            profile_id=profile_id, direction=intent.direction, entry=intent.entry,
+            stop_loss=intent.stop_loss, tp1=intent.take_profit, tp2=None,
+            volume=intent.volume, risk_amount=intent.risk_amount,
         )
 
 

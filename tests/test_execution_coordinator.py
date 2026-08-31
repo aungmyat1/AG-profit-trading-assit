@@ -12,8 +12,9 @@ import datetime as dt
 
 import pytest
 
-from execution import executor
+from execution import build_intent, executor
 from execution.adapter import SyntheticMetadataError, TradeProposal, require_exchange_verified_metadata
+from execution.close_ledger import CloseLedger
 from execution.coordinator import (
     GLOBAL_LEDGER_STRATEGY_ID,
     STATUS_BLOCKED_DAILY_LOSS,
@@ -30,6 +31,7 @@ from execution.models import OrderSendResult
 from execution.position_guard import OpenPositionGuard
 from mt5.symbol_resolver import METADATA_SOURCE_EXCHANGE_VERIFIED, SymbolMeta
 from runtime_state.store import JsonKeyValueStore
+from strategy_engine.models import RiskConfig, StrategyConfig, TargetLeg, TradeSignal
 from strategy_engine.sweep_retest.crypto_symbols import crypto_symbol_meta
 from strategy_engine.sweep_retest.profile import PROFILE_CRYPTO_PERP, PROFILE_FOREX
 from trade_management.models import (
@@ -81,7 +83,95 @@ def _coordinator(tmp_path) -> ExecutionCoordinator:
     return ExecutionCoordinator(
         open_position_guard=OpenPositionGuard(JsonKeyValueStore(str(tmp_path / "open_positions.json"))),
         daily_loss_guard=DailyLossGuard(JsonKeyValueStore(str(tmp_path / "daily_r.json")), GLOBAL_LEDGER_STRATEGY_ID),
+        close_ledger=CloseLedger(JsonKeyValueStore(str(tmp_path / "closed_r.json"))),
     )
+
+
+# ============================================================================= session strategy routing (Tests 1, 3, 4)
+
+def _session_strategy_config() -> StrategyConfig:
+    """Minimal StrategyConfig with an unambiguous MARKET entry_order_type -- same idiom
+    tests/test_execution_intent_builder.py's own _strategy() helper uses. The REAL
+    registered strategies/ST_ASIAN_SWEEP_5R_V1.yaml declares entry_order_type:
+    MARKET_OR_LIMIT (a pre-existing, documented ambiguity -- strategies/STRATEGY_LEDGER.md
+    'Open gaps', also asserted by
+    tests/test_execution_intent_builder.py::test_real_strategy_config_is_ambiguous_on_entry_order_type),
+    which build_intent() rejects with ENTRY_EXECUTION_UNDEFINED regardless of this phase --
+    fixing that ambiguity is strategy-config scope, explicitly out of bounds here (spec:
+    do not change signal/session rules). This fixture isolates ExecutionCoordinator's own
+    routing behavior from that pre-existing, unrelated config gap."""
+    return StrategyConfig(
+        strategy_id=STRATEGY_A, strategy_name="Asian Sweep 5R", strategy_family="Session",
+        version="1.0.0", status="ACTIVE_INCUBATION", instruments=("EURUSD",), timeframe="M15",
+        magic_number=777001, session_pairs=(),
+        risk=RiskConfig("FIXED_PERCENT_OR_CONTRACT", "PERCENT_OF_SESSION_RANGE", 0.25, 2.0, 10),
+        entry_order_type="MARKET", total_target_r=5.0,
+        legs=(TargetLeg(leg_id=1, volume_pct=0.75, target_type="OPPOSITE_SESSION_BOUNDARY"),),
+        max_range_pips_eurusd=25.0, time_invalidation="15:00 GMT", structural_invalidation="x",
+        source_path="test",
+    )
+
+
+def _session_signal() -> TradeSignal:
+    return TradeSignal(
+        signal_id="ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-01-05", strategy_id=STRATEGY_A,
+        strategy_version="1.0.0", symbol="EURUSD", pair_id="ASIAN_LONDON", reference_session="Asian",
+        session_date=dt.date(2026, 1, 5), box_high=1.1050, box_low=1.0950, box_mid=1.1000,
+        regime="RANGE", setup="SWEEP", status="SIGNAL", reason_code="LOWER_SWEEP_STRICT_PENETRATION",
+        direction="LONG", entry=1.1000, stop_loss=1.0990, risk_distance=0.0010,
+    )
+
+
+def _session_strategy_proposal() -> TradeProposal:
+    """The seam: strategy_engine.TradeSignal -> execution.intent_builder.build_intent()
+    (unchanged, reused) -> TradeIntent -> TradeProposal.from_trade_intent() (the sibling
+    constructor added for this phase) -- proves ST_ASIAN_SWEEP_5R_V1's own signal/sizing
+    pipeline, not a stand-in, produces the proposal that reaches submit()."""
+    result = build_intent(_session_signal(), _session_strategy_config(), equity=10_000.0,
+                           symbol_meta=SymbolMeta(symbol="EURUSD", tick_size=0.00001, tick_value=1.0,
+                                                   contract_size=100000.0, volume_min=0.01,
+                                                   volume_max=50.0, volume_step=0.01, digits=5),
+                           risk_per_trade_pct=1.0)
+    assert result.intent is not None  # sanity: fixture itself must reach STATUS_READY
+    return TradeProposal.from_trade_intent(result.intent)
+
+
+def test_session_strategy_signal_routes_through_coordinator(monkeypatch, tmp_path):
+    proposal = _session_strategy_proposal()
+    assert proposal.strategy_id == STRATEGY_A
+    _mock_geometry(monkeypatch, "LONG", proposal.entry, proposal.stop_loss, proposal.tp1)
+    calls = _mock_order_open(monkeypatch, side="BUY", symbol="EURUSD")
+
+    coordinator = _coordinator(tmp_path)
+    result = coordinator.submit(proposal, user_confirmed=True)
+
+    assert result.status == STATUS_EXECUTION_DELEGATED
+    assert len(calls) == 1
+    assert calls[0]["volume"] == pytest.approx(proposal.volume)  # read off the intent, not recomputed
+    assert coordinator.open_position_guard.is_blocked() is True  # confirmed fill registered open
+
+
+def test_session_strategy_open_position_blocks_sweep_retest_proposal(monkeypatch, tmp_path):
+    coordinator = _coordinator(tmp_path)
+    coordinator.open_position_guard.register_open("555", STRATEGY_A, "EURUSD", risk_amount=100.0)
+    calls = _mock_order_open(monkeypatch)
+
+    result = coordinator.submit(_forex_proposal(strategy_id=STRATEGY_B), user_confirmed=True)
+
+    assert result.status == STATUS_BLOCKED_OPEN_POSITION
+    assert calls == []
+
+
+def test_sweep_retest_open_position_blocks_session_strategy_proposal(monkeypatch, tmp_path):
+    coordinator = _coordinator(tmp_path)
+    coordinator.open_position_guard.register_open("556", STRATEGY_B, "GBPUSD", risk_amount=100.0)
+    calls = _mock_order_open(monkeypatch)
+
+    proposal = _session_strategy_proposal()
+    result = coordinator.submit(proposal, user_confirmed=True)
+
+    assert result.status == STATUS_BLOCKED_OPEN_POSITION
+    assert calls == []
 
 
 @pytest.fixture(autouse=True)

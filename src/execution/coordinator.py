@@ -24,9 +24,23 @@ module is what makes both guards truly CROSS-STRATEGY authoritative: every propo
 routed through ExecutionCoordinator.submit(), regardless of originating strategy_id or
 asset, is checked against ONE shared OpenPositionGuard instance and ONE shared
 DailyLossGuard instance scoped under GLOBAL_LEDGER_STRATEGY_ID (not any individual
-strategy's own strategy_id) -- see .default(). Wiring ST_ASIAN_SWEEP_5R_V1's own signal
-path to actually route through this coordinator (and to record its own trade results into
-this shared ledger) is a known, separate gap -- see this phase's status report GAPS.
+strategy's own strategy_id) -- see .default(). ST_ASIAN_SWEEP_5R_V1's own signal path now
+also reaches this same submit() -- via TradeProposal.from_trade_intent() (see
+execution/adapter.py), the sibling of from_setup_state() -- so both strategies' realized
+results land in the SAME shared ledger (AG_GLOBAL_EXECUTION_LIFECYCLE_V1).
+
+FILL/CLOSE LIFECYCLE (AG_GLOBAL_EXECUTION_LIFECYCLE_V1): submit() itself only ever
+registers a GLOBAL OPEN position once execution.executor.execute() reports a real broker
+fill (see _submit_forex -> execution.lifecycle.register_confirmed_fill) -- a mere
+submission, a rejection, or a confirmation-required response never does. Closing (partial
+or full) is NOT observed synchronously by submit() -- MT5 fills/closes happen out of band
+from the strategy loop that called submit() -- so reconcile() (execution/lifecycle.py)
+must be run at restart, and periodically while the process stays up, to detect a broker-
+confirmed FULL close and record its realized R exactly once. See execution/lifecycle.py's
+own module docstring for the full contract and its documented gap (positions restored via
+reconciliation alone, with no surviving OpenPositionGuard record, cannot recover their
+original risk_amount/strategy_id and are intentionally left CLOSED_RISK_AMOUNT_MISSING
+rather than guessed).
 
 IDEMPOTENCY: delegates to execution.journal's existing command-claim mechanism
 (journal.claim_command / journal.has_executed) rather than inventing a second persistence
@@ -40,14 +54,16 @@ executor a second time.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date, datetime, timezone
-from typing import Optional
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import List, Optional
 
-from execution import journal
+from execution import journal, lifecycle
 from execution.adapter import AdapterSubmitResult, CryptoExecutionAdapter, TradeProposal
+from execution.close_ledger import CloseLedger
 from execution.daily_loss_guard import DailyLossGuard
 from execution.executor import execute as executor_execute
+from execution.lifecycle import _trading_day
 from execution.models import ExecutionReport, ExecutionSource, TradeCommand
 from execution.position_guard import OpenPositionGuard
 from strategy_engine.sweep_retest.models import STATE_BLOCKED_DAILY_LOSS, STATE_BLOCKED_OPEN_POSITION
@@ -89,10 +105,6 @@ class CoordinatorResult:
     adapter_result: Optional[AdapterSubmitResult] = None
 
 
-def _trading_day(now: Optional[datetime]) -> date:
-    return (now or datetime.now(timezone.utc)).date()
-
-
 def _direction_to_side(direction: str) -> str:
     return "BUY" if direction == "LONG" else "SELL"
 
@@ -122,6 +134,17 @@ def _forex_command(proposal: TradeProposal) -> TradeCommand:
 
     command_id = proposal.setup_id: the SAME stable identity SweepRetestRuntime/
     state_store.py already key a setup on -- see module docstring on IDEMPOTENCY.
+
+    comment is left unset (empty) so executor.execute() falls back to its OWN
+    _comment_tag(command.command_id) ("AGT:<command_id>") when it calls order_open --
+    this is deliberate, not an oversight: that tag is also the exact string
+    executor.py's own crash/restart broker reconciliation (_reconcile_via_broker) and
+    this phase's execution/lifecycle.py restart reconciliation both scan a broker
+    position's/deal's comment for. A prior version of this function set a
+    strategy_id-only comment here, which silently defeated both of those (a coordinator-
+    routed order's broker comment would then never contain its own command_id) -- fixed
+    as part of AG_GLOBAL_EXECUTION_LIFECYCLE_V1 since restart reconciliation depends on
+    reusing that existing tag convention rather than inventing a second one.
     """
     return TradeCommand(
         command_id=proposal.setup_id,
@@ -135,7 +158,6 @@ def _forex_command(proposal: TradeProposal) -> TradeCommand:
         sl=proposal.stop_loss,
         tp=proposal.tp1,
         risk_percent=None,
-        comment=f"AGX:{proposal.strategy_id}",
     )
 
 
@@ -148,12 +170,19 @@ class ExecutionCoordinator:
 
     open_position_guard: OpenPositionGuard
     daily_loss_guard: DailyLossGuard
+    # Optional/default-factory (AG_GLOBAL_EXECUTION_LIFECYCLE_V1): existing callers/tests
+    # that construct ExecutionCoordinator(open_position_guard=..., daily_loss_guard=...)
+    # positionally-by-keyword without a close_ledger keep working unchanged. The default
+    # factory only ever points at the on-disk path -- it never touches disk unless a
+    # lifecycle function actually calls mark_recorded()/is_recorded() on it.
+    close_ledger: CloseLedger = field(default_factory=CloseLedger.default)
 
     @classmethod
     def default(cls) -> "ExecutionCoordinator":
         return cls(
             open_position_guard=OpenPositionGuard.default(),
             daily_loss_guard=DailyLossGuard.default(GLOBAL_LEDGER_STRATEGY_ID),
+            close_ledger=CloseLedger.default(),
         )
 
     def submit(self, proposal: TradeProposal, *, user_confirmed: bool,
@@ -190,6 +219,10 @@ class ExecutionCoordinator:
 
         if report.status == "EXECUTED":
             status = STATUS_EXECUTION_DELEGATED
+            # BROKER_FILL_CONFIRMED -> register_open (see execution/lifecycle.py). Never
+            # fires on CONFIRMATION_REQUIRED/DUPLICATE/REJECTED -- "SUBMITTED does not
+            # automatically equal OPEN" (spec).
+            lifecycle.register_confirmed_fill(self.open_position_guard, proposal, report)
         elif report.gate_reason_code == "EXECUTION_NOT_AUTHORIZED":
             status = STATUS_CONFIRMATION_REQUIRED
         elif report.gate_reason_code == "DUPLICATE_COMMAND_BLOCKED":
@@ -215,3 +248,18 @@ class ExecutionCoordinator:
         # the result-type set smallest and most consistent").
         return CoordinatorResult(status=STATUS_PROPOSAL_ONLY, reason_code=result.reason_code,
                                   adapter_result=result, **base)
+
+    def reconcile(self, *, positions_lookup=None, deals_lookup=None,
+                  now: Optional[datetime] = None) -> List[dict]:
+        """Restart-safe (and safe to call periodically) reconciliation entrypoint -- see
+        execution/lifecycle.py::reconcile_open_positions for the full contract. Defaults
+        to the real mt5.account.positions / mt5.deals.deals_for_position broker reads;
+        tests inject fakes, same idiom execution/executor.py itself uses."""
+        if positions_lookup is None:
+            from mt5.account import positions as positions_lookup  # local import: keep MT5 optional for pure-guard use
+        if deals_lookup is None:
+            from mt5.deals import deals_for_position as deals_lookup
+        return lifecycle.reconcile_open_positions(
+            self.open_position_guard, self.daily_loss_guard, self.close_ledger,
+            positions_lookup=positions_lookup, deals_lookup=deals_lookup, now=now,
+        )
