@@ -66,4 +66,5 @@ def evaluate(
         entry=decision.entry_reference,
         stop_loss=decision.stop_reference,
         risk_distance=decision.risk_distance,
+        signal_timestamp=decision.signal_timestamp,
     )

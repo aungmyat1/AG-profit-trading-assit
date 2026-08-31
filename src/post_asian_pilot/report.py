@@ -40,14 +40,18 @@ def cycle_to_dict(result: PilotCycleResult) -> Dict[str, Any]:
         pairs.append(entry)
 
     return {
-        "release": "AG_TRADE_ASSISTANT_V1_0",
+        "release": result.release_id,
         "strategy_id": result.strategy.strategy_id,
         "strategy_version": result.strategy.version,
         "trading_date": result.trading_date.isoformat(),
         "evaluation_time_utc": result.evaluation_time.isoformat(),
         "execution_window": f"{result.pilot_config.execution_window_start_utc}-{result.pilot_config.execution_window_end_utc} UTC",
         "pairs": pairs,
-        "tiebreak_status": result.tiebreak_status,
+        "daily_opportunity_ledger": {
+            "max_opportunities": result.ledger_max_slots,
+            "used": result.ledger_slots_used,
+            "max_per_symbol": result.pilot_config.max_new_trades_per_symbol_per_day,
+        },
         "execution": {
             "mode": "PROPOSAL_ONLY", "automatic_execution": EXECUTION_STATUS_DISABLED,
             "live_execution": EXECUTION_STATUS_DISABLED,
@@ -57,7 +61,7 @@ def cycle_to_dict(result: PilotCycleResult) -> Dict[str, Any]:
 
 def human_readable_report(result: PilotCycleResult) -> str:
     lines = [
-        "AG PROFIT TRADING", "POST-ASIAN LONDON PILOT", "",
+        "AG PROFIT TRADING", result.release_id, "",
         f"Strategy: {result.strategy.strategy_id} v{result.strategy.version}",
         f"Date: {result.trading_date.isoformat()}",
         f"Active window: {result.pilot_config.execution_window_start_utc}-"
@@ -66,6 +70,8 @@ def human_readable_report(result: PilotCycleResult) -> str:
     for pr in result.pairs:
         lines.append(pr.symbol)
         lines.append(f"  strategy_state: {pr.decision.status}")
+        if pr.decision.ready_at is not None:
+            lines.append(f"  ready_at: {pr.decision.ready_at.isoformat()}")
         lines.append(f"  portfolio_state: {pr.portfolio_state}"
                      + (f" ({pr.portfolio_reason_code})" if pr.portfolio_reason_code else ""))
         if pr.decision.missing_condition:
@@ -78,6 +84,11 @@ def human_readable_report(result: PilotCycleResult) -> str:
             lines.append(f"  expires: {pr.proposal.expires_at.isoformat()}")
             lines.append(f"  execution: {pr.proposal.execution_status}")
         lines.append("")
+    lines.append("DAILY OPPORTUNITY LEDGER")
+    lines.append(f"maximum opportunities: {result.ledger_max_slots}")
+    lines.append(f"used: {result.ledger_slots_used} / {result.ledger_max_slots}")
+    lines.append(f"maximum per symbol: {result.pilot_config.max_new_trades_per_symbol_per_day}")
+    lines.append("")
     lines.append("EXECUTION")
     lines.append("automatic_execution = DISABLED")
     lines.append("live_execution = DISABLED")
@@ -86,9 +97,11 @@ def human_readable_report(result: PilotCycleResult) -> str:
 
 def release_fingerprints(release_path: str, strategy_path: str, session_path: str,
                          pilot_risk_config: Dict[str, Any]) -> Dict[str, str]:
+    release_raw = load_raw_yaml(release_path)
     return {
-        "release_fingerprint": fingerprint(load_raw_yaml(release_path)),
+        "release_fingerprint": fingerprint(release_raw),
         "strategy_fingerprint": fingerprint(load_raw_yaml(strategy_path)),
         "session_fingerprint": fingerprint(load_raw_yaml(session_path)),
         "risk_fingerprint": fingerprint(pilot_risk_config),
+        "selection_policy_fingerprint": fingerprint(release_raw.get("selection_policy") or {}),
     }

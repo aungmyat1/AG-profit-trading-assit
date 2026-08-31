@@ -23,7 +23,7 @@ from execution.position_guard import OpenPositionGuard
 from runtime_state.store import JsonKeyValueStore
 
 from .decision import PostAsianDecision
-from .governor import DailyTradeSlot
+from .governor import DailyTradeLedger
 from .proposal import PostAsianEntryProposal
 from .snapshot import AsianSessionSnapshot
 
@@ -36,9 +36,9 @@ class PilotStores:
     decision_store: JsonKeyValueStore
     proposal_store: JsonKeyValueStore
     bar_tracker: LastClosedBarStore
-    open_position_guard: OpenPositionGuard
+    open_position_guard: OpenPositionGuard  # execution-time only, see governor.py docstring
     daily_loss_guard: DailyLossGuard
-    trade_slot: DailyTradeSlot
+    ledger: DailyTradeLedger
 
     @classmethod
     def default(cls, strategy_id: str, state_dir: str = DEFAULT_STATE_DIR) -> "PilotStores":
@@ -49,7 +49,7 @@ class PilotStores:
             bar_tracker=LastClosedBarStore.default(f"{state_dir}/last_closed_bar.json"),
             open_position_guard=OpenPositionGuard.default(),
             daily_loss_guard=DailyLossGuard.default(strategy_id),
-            trade_slot=DailyTradeSlot.default(f"{state_dir}/daily_trade_slot.json"),
+            ledger=DailyTradeLedger.default(f"{state_dir}/daily_trade_ledger.json"),
         )
 
 
@@ -114,6 +114,7 @@ def decision_from_record(record: Dict[str, Any]) -> PostAsianDecision:
         reason_codes=tuple(record.get("reason_codes") or ()),
         evaluation_time=datetime.fromisoformat(record["evaluation_time"]),
         session_snapshot_id=record.get("session_snapshot_id"), signal=None,
+        ready_at=datetime.fromisoformat(record["ready_at"]) if record.get("ready_at") else None,
         missing_condition=record.get("missing_condition"), trigger_type=record.get("trigger_type"),
         trigger_level=record.get("trigger_level"), trigger_timeframe=record.get("trigger_timeframe"),
         valid_until=datetime.fromisoformat(record["valid_until"]) if record.get("valid_until") else None,

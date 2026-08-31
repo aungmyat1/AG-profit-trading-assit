@@ -54,6 +54,12 @@ class PostAsianEntryProposal:
     execution_status: str = EXECUTION_STATUS_CONFIRMATION_REQUIRED
     execution_authorized: bool = False
     user_confirmation_required: bool = True
+    # False for a candidate that lost the tie-break/daily-slot claim -- preserved as
+    # research evidence (spec section 7/28) but must never reach an execution pathway.
+    # Set True only after DailyTradeSlot.try_claim() succeeds for this exact identity
+    # (see pipeline.py) -- constructing a proposal object never makes it actionable by
+    # itself (spec section 13).
+    actionable: bool = False
 
 
 @dataclass(frozen=True)

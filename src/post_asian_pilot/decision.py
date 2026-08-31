@@ -46,6 +46,11 @@ class PostAsianDecision:
     evaluation_time: datetime
     session_snapshot_id: Optional[str] = None
     signal: Optional[TradeSignal] = None
+    # The CLOSED M15 candle whose completion caused READY (strategy_engine's own
+    # SetupDecision.signal_timestamp, verbatim) -- NOT evaluation_time (polling/wall-clock
+    # time). This is the ONLY field selection/tie-break logic may order candidates by; see
+    # tiebreak.py. None for non-READY decisions (nothing "became ready").
+    ready_at: Optional[datetime] = None
     missing_condition: Optional[str] = None
     trigger_type: Optional[str] = None
     trigger_level: Optional[float] = None
@@ -75,8 +80,16 @@ def map_trade_signal_to_decision(
 
     if signal.status == "SIGNAL":
         if signal.setup == "SWEEP":
+            if signal.signal_timestamp is None:
+                # STOP CONDITION (spec): ready_at must be derivable from authoritative
+                # strategy evidence. entry_2_sweep always sets signal_timestamp for a
+                # VALID sweep decision -- reaching here means that invariant broke.
+                raise ValueError(
+                    f"READY sweep signal {signal.signal_id!r} has no signal_timestamp -- "
+                    "cannot derive ready_at from authoritative strategy evidence")
             return PostAsianDecision(
                 status=STATUS_READY, reason_codes=(signal.reason_code,),
+                ready_at=signal.signal_timestamp,
                 trigger_type="LIQUIDITY_SWEEP", trigger_level=signal.entry, trigger_timeframe="M15",
                 valid_until=window_end_utc, **common,
             )

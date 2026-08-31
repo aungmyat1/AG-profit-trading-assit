@@ -1,17 +1,18 @@
-"""Focused tests for AG_POST_ASIAN_LONDON_PILOT_V1: session snapshot validation, decision
-normalization, risk-sized proposal construction, daily governor, simultaneous-READY
-tie-break, persistence idempotency, execution-boundary (zero order_check/order_send), and
-release-manifest fingerprints. Uses tmp_path-backed JsonKeyValueStore files throughout --
-never touches the real journal/ directory.
+"""Focused tests for AG_POST_ASIAN_LONDON_PILOT_V1 / V1_0_1: session snapshot validation,
+decision normalization, ready_at semantics (never evaluation_time), risk-sized proposal
+construction, the two-slot daily opportunity ledger (atomic cross-process claim, one slot
+per symbol, terminal-state consumption, crash recovery), deterministic candidate
+ordering, execution-boundary (zero order_check/order_send, non-owner execution blocked),
+and release-manifest fingerprints. Uses tmp_path-backed JsonKeyValueStore files
+throughout -- never touches the real journal/ directory.
 """
 from __future__ import annotations
 
 import datetime as dt
-from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
-from execution.adapter import TradeProposal
 from execution.daily_loss_guard import DailyLossGuard
 from execution.position_guard import OpenPositionGuard
 from mt5.symbol_resolver import SymbolMeta
@@ -31,22 +32,34 @@ from post_asian_pilot.fingerprint import fingerprint
 from post_asian_pilot.governor import (
     PORTFOLIO_BLOCKED,
     PORTFOLIO_ELIGIBLE,
+    REASON_AGGREGATE_OPEN_RISK,
     REASON_DAILY_TRADE_LIMIT,
-    REASON_MAX_OPEN_POSITIONS,
+    REASON_OPEN_POSITION_LIMIT,
     REASON_STRATEGY_DAILY_LOSS_LOCK,
-    DailyTradeSlot,
+    REASON_SYMBOL_DAILY_TRADE_LIMIT,
+    DailyTradeLedger,
     evaluate_daily_governor,
+    evaluate_execution_eligibility,
+    strategy_open_position_count,
+    strategy_open_risk_pct,
+    validate_slot_ownership,
 )
-from post_asian_pilot.pilot_config import load_pilot_config, load_raw_yaml
+from post_asian_pilot.pilot_config import (
+    V1_0_PILOT_CONFIG_PATH,
+    V1_0_RELEASE_CONFIG_PATH,
+    load_pilot_config,
+    load_raw_yaml,
+)
 from post_asian_pilot.proposal import build_entry_proposal
 from post_asian_pilot.report import release_fingerprints
 from post_asian_pilot.snapshot import build_asian_session_snapshot, validate_candle_array
 from post_asian_pilot.store import decision_from_record, save_decision, save_proposal, save_snapshot
-from post_asian_pilot.tiebreak import RESULT_CLAIMED, RESULT_UNRESOLVED, resolve_tiebreak
+from post_asian_pilot.tiebreak import order_candidates
 from strategy_engine.session import Candle
 
 UTC = dt.timezone.utc
 STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
+RELEASE_PATH = "config/releases/AG_TRADE_ASSISTANT_V1_0_1.yaml"
 
 
 def _m15_candles(start: dt.datetime, count: int, base: float = 1.1000, step: float = 0.0001):
@@ -122,22 +135,38 @@ def test_snapshot_immutable_and_builds_correctly():
         result.snapshot.high = 999.0  # frozen dataclass
 
 
-# --------------------------------------------------------------------------- decision mapping
+# --------------------------------------------------------------------------- decision mapping / ready_at
 
-def _signal(status, setup, reason_code, direction=None, entry=None, stop_loss=None, risk_distance=None):
+def _signal(status, setup, reason_code, direction=None, entry=None, stop_loss=None, risk_distance=None,
+           signal_timestamp=None, symbol="EURUSD"):
     return TradeSignal(
-        signal_id="SID", strategy_id="ST_ASIAN_SWEEP_5R_V1", strategy_version="1.1.1", symbol="EURUSD",
+        signal_id="SID", strategy_id="ST_ASIAN_SWEEP_5R_V1", strategy_version="1.1.1", symbol=symbol,
         pair_id="ASIAN_LONDON", reference_session="Asian", session_date=dt.date(2026, 1, 5),
         box_high=1.10, box_low=1.09, box_mid=1.095, regime="RANGE", setup=setup, status=status,
-        reason_code=reason_code, direction=direction, entry=entry, stop_loss=stop_loss, risk_distance=risk_distance,
+        reason_code=reason_code, direction=direction, entry=entry, stop_loss=stop_loss,
+        risk_distance=risk_distance, signal_timestamp=signal_timestamp,
     )
 
 
-def test_decision_sweep_signal_is_ready():
-    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", 1.0995, 1.101, 0.0015)
+def test_decision_sweep_signal_is_ready_with_ready_at_from_signal_timestamp():
+    qualifying_candle_time = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", 1.0995, 1.101, 0.0015,
+                     signal_timestamp=qualifying_candle_time)
     window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
-    decision = map_trade_signal_to_decision(signal, "SNAP-1", dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC), window_end)
+    polling_time = dt.datetime(2026, 1, 5, 8, 1, 15, tzinfo=UTC)  # deliberately NOT the qualifying candle time
+    decision = map_trade_signal_to_decision(signal, "SNAP-1", polling_time, window_end)
     assert decision.status == STATUS_READY
+    assert decision.ready_at == qualifying_candle_time
+    assert decision.ready_at != decision.evaluation_time  # ready_at must never be polling/wall-clock time
+
+
+def test_decision_ready_sweep_without_signal_timestamp_raises():
+    """STOP CONDITION: ready_at must be derivable from authoritative strategy evidence."""
+    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", 1.0995, 1.101, 0.0015,
+                     signal_timestamp=None)
+    window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
+    with pytest.raises(ValueError):
+        map_trade_signal_to_decision(signal, "SNAP-1", dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC), window_end)
 
 
 def test_decision_trend_signal_out_of_scope_no_trade():
@@ -172,11 +201,19 @@ def test_decision_ambiguous_dual_sweep_is_no_trade():
 
 # --------------------------------------------------------------------------- proposal / risk sizing
 
-def test_build_entry_proposal_ready_geometry_and_risk(strategy, symbol_meta):
-    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.10000,
-                     stop_loss=1.10150, risk_distance=0.00150)
+def _ready_decision(symbol, ready_at, evaluation_time=None):
+    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.0995,
+                     stop_loss=1.101, risk_distance=0.0015, signal_timestamp=ready_at, symbol=symbol)
     window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
-    decision = map_trade_signal_to_decision(signal, "SNAP-1", dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC), window_end)
+    return map_trade_signal_to_decision(signal, "SNAP", evaluation_time or ready_at, window_end)
+
+
+def test_build_entry_proposal_ready_geometry_and_risk(strategy, symbol_meta):
+    ready_at = dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC)
+    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.10000,
+                     stop_loss=1.10150, risk_distance=0.00150, signal_timestamp=ready_at)
+    window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
+    decision = map_trade_signal_to_decision(signal, "SNAP-1", ready_at, window_end)
     assert decision.status == STATUS_READY
 
     result = build_entry_proposal(decision, strategy, equity=10_000.0, symbol_meta=symbol_meta,
@@ -185,50 +222,83 @@ def test_build_entry_proposal_ready_geometry_and_risk(strategy, symbol_meta):
     tp = result.proposal.trade_proposal
     assert tp.entry == 1.10000
     assert tp.stop_loss == 1.10150
-    # SHORT: TP1 = box_low (opposing boundary), TP2 = entry - 5R
     assert tp.tp1 == pytest.approx(1.09)
     assert tp.tp2 == pytest.approx(1.10000 - 5 * 0.00150)
     assert tp.risk_percent == 0.5
-    # risk_budget = 10000 * 0.005 = 50; never exceeds it
     assert tp.risk_amount <= 50.0 + 1e-6
     assert result.proposal.execution_authorized is False
     assert result.proposal.user_confirmation_required is True
     assert result.proposal.execution_status == "CONFIRMATION_REQUIRED"
+    assert result.proposal.actionable is False  # not actionable until an atomic ledger claim succeeds
 
 
 def test_build_entry_proposal_min_volume_exceeds_budget_blocked(strategy):
     tiny_meta = SymbolMeta(symbol="EURUSD", tick_size=0.00001, tick_value=1.0, contract_size=100000,
                            volume_min=100.0, volume_max=200.0, volume_step=0.01, digits=5)
+    ready_at = dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC)
     signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.10000,
-                     stop_loss=1.10150, risk_distance=0.00150)
+                     stop_loss=1.10150, risk_distance=0.00150, signal_timestamp=ready_at)
     window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
-    decision = map_trade_signal_to_decision(signal, "SNAP-1", dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC), window_end)
+    decision = map_trade_signal_to_decision(signal, "SNAP-1", ready_at, window_end)
     result = build_entry_proposal(decision, strategy, equity=10_000.0, symbol_meta=tiny_meta,
                                   risk_per_trade_pct=0.5, session_snapshot_id="SNAP-1")
     assert result.status == "BLOCKED"
     assert result.reason_code == "VOLUME_BELOW_MIN"
 
 
-# --------------------------------------------------------------------------- daily governor
+# --------------------------------------------------------------------------- candidate ordering (A/B/C/D/E)
 
-def test_governor_max_open_positions_blocks(tmp_path):
-    open_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
-    open_guard.register_open("POS-1", "ST_ASIAN_SWEEP_5R_V1", "EURUSD")
-    loss_guard = DailyLossGuard.default("ST_ASIAN_SWEEP_5R_V1", str(tmp_path / "loss.json"))
-    slot = DailyTradeSlot.default(str(tmp_path / "slot.json"))
-    result = evaluate_daily_governor("ST_ASIAN_SWEEP_5R_V1", dt.date(2026, 1, 5), "GBPUSD",
-                                     open_guard, loss_guard, slot, -1.0)
-    assert result.portfolio_state == PORTFOLIO_BLOCKED
-    assert result.reason_code == REASON_MAX_OPEN_POSITIONS
+def test_order_A_one_ready():
+    t = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    ordered = order_candidates([_ready_decision("EURUSD", t)], priority=("EURUSD", "GBPUSD"))
+    assert [d.symbol for d in ordered] == ["EURUSD"]
 
+
+def test_order_B_different_qualifying_timestamps_earliest_first():
+    t1 = dt.datetime(2026, 1, 5, 7, 45, tzinfo=UTC)
+    t2 = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    ordered = order_candidates([_ready_decision("EURUSD", t2), _ready_decision("GBPUSD", t1)],
+                               priority=("EURUSD", "GBPUSD"))
+    assert [d.symbol for d in ordered] == ["GBPUSD", "EURUSD"]
+
+
+def test_order_C_same_qualifying_timestamp_eurusd_priority_first():
+    t = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    ordered = order_candidates([_ready_decision("GBPUSD", t), _ready_decision("EURUSD", t)],
+                               priority=("EURUSD", "GBPUSD"))
+    assert [d.symbol for d in ordered] == ["EURUSD", "GBPUSD"]
+
+
+def test_order_D_polling_times_differ_qualifying_same_priority_applies():
+    """Spec CASE A: evaluation_time differs (08:01:10 vs 08:01:15) but ready_at is
+    identical (08:00) -- exact-timestamp priority still applies."""
+    ready_at = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    eurusd = _ready_decision("EURUSD", ready_at, evaluation_time=dt.datetime(2026, 1, 5, 8, 1, 10, tzinfo=UTC))
+    gbpusd = _ready_decision("GBPUSD", ready_at, evaluation_time=dt.datetime(2026, 1, 5, 8, 1, 15, tzinfo=UTC))
+    ordered = order_candidates([gbpusd, eurusd], priority=("EURUSD", "GBPUSD"))
+    assert [d.symbol for d in ordered] == ["EURUSD", "GBPUSD"]
+
+
+def test_order_E_polling_times_same_qualifying_differs_earlier_candle_wins():
+    """Spec CASE B: evaluation_time identical (08:01:10) but ready_at differs
+    (08:00 vs 07:45) -- the earlier qualifying candle wins regardless of polling time."""
+    polling = dt.datetime(2026, 1, 5, 8, 1, 10, tzinfo=UTC)
+    eurusd = _ready_decision("EURUSD", dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC), evaluation_time=polling)
+    gbpusd = _ready_decision("GBPUSD", dt.datetime(2026, 1, 5, 7, 45, tzinfo=UTC), evaluation_time=polling)
+    ordered = order_candidates([eurusd, gbpusd], priority=("EURUSD", "GBPUSD"))
+    assert [d.symbol for d in ordered] == ["GBPUSD", "EURUSD"]
+
+
+def test_order_no_candidates():
+    assert order_candidates([]) == ()
+
+
+# --------------------------------------------------------------------------- daily governor (loss gates only)
 
 def test_governor_strategy_minus_1r_lock_blocks(tmp_path):
-    open_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
     loss_guard = DailyLossGuard.default("ST_ASIAN_SWEEP_5R_V1", str(tmp_path / "loss.json"))
     loss_guard.record_trade_result(dt.date(2026, 1, 5), -1.0)
-    slot = DailyTradeSlot.default(str(tmp_path / "slot.json"))
-    result = evaluate_daily_governor("ST_ASIAN_SWEEP_5R_V1", dt.date(2026, 1, 5), "EURUSD",
-                                     open_guard, loss_guard, slot, -1.0)
+    result = evaluate_daily_governor("ST_ASIAN_SWEEP_5R_V1", dt.date(2026, 1, 5), loss_guard, -1.0)
     assert result.portfolio_state == PORTFOLIO_BLOCKED
     assert result.reason_code == REASON_STRATEGY_DAILY_LOSS_LOCK
 
@@ -236,72 +306,265 @@ def test_governor_strategy_minus_1r_lock_blocks(tmp_path):
 def test_governor_project_minus_2r_guard_unmodified(tmp_path):
     """The project-wide -2R guard still fires independently of the pilot's -1R lock,
     and is never weakened by this pilot's own gate."""
-    open_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
     loss_guard = DailyLossGuard.default("ST_ASIAN_SWEEP_5R_V1", str(tmp_path / "loss.json"))
     loss_guard.record_trade_result(dt.date(2026, 1, 5), -2.0)
     assert loss_guard.is_blocked(dt.date(2026, 1, 5))  # still -2.0 project circuit, untouched
-    slot = DailyTradeSlot.default(str(tmp_path / "slot.json"))
-    result = evaluate_daily_governor("ST_ASIAN_SWEEP_5R_V1", dt.date(2026, 1, 5), "EURUSD",
-                                     open_guard, loss_guard, slot, -1.0)
+    result = evaluate_daily_governor("ST_ASIAN_SWEEP_5R_V1", dt.date(2026, 1, 5), loss_guard, -1.0)
     assert result.portfolio_state == PORTFOLIO_BLOCKED
 
 
-def test_governor_daily_trade_limit_blocks_second_symbol(tmp_path):
-    open_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
+def test_governor_open_position_not_checked_at_selection_time(tmp_path):
+    """Spec section 17: daily trade capacity and open-position capacity are separate --
+    an open position must NOT block selection/claiming, only execution."""
     loss_guard = DailyLossGuard.default("ST_ASIAN_SWEEP_5R_V1", str(tmp_path / "loss.json"))
-    slot = DailyTradeSlot.default(str(tmp_path / "slot.json"))
-    slot.claim("ST_ASIAN_SWEEP_5R_V1", dt.date(2026, 1, 5), "EURUSD", "SETUP-1",
-              dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC))
-    result = evaluate_daily_governor("ST_ASIAN_SWEEP_5R_V1", dt.date(2026, 1, 5), "GBPUSD",
-                                     open_guard, loss_guard, slot, -1.0)
+    result = evaluate_daily_governor("ST_ASIAN_SWEEP_5R_V1", dt.date(2026, 1, 5), loss_guard, -1.0)
+    assert result.portfolio_state == PORTFOLIO_ELIGIBLE  # no open-position guard consulted at all
+
+
+# --------------------------------------------------------------------------- daily opportunity ledger
+
+def test_ledger_two_symbols_both_claim_slots(tmp_path):
+    """Spec section 12: EURUSD and GBPUSD both READY -- both get a slot, capacity=2."""
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    now = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    r1 = ledger.try_claim("ST_ASIAN_SWEEP_5R_V1", "1.1.1", "AG_TRADE_ASSISTANT_V1_0_1", dt.date(2026, 1, 5),
+                          "EURUSD", "SETUP-A", "PROPOSAL-A", now, now)
+    r2 = ledger.try_claim("ST_ASIAN_SWEEP_5R_V1", "1.1.1", "AG_TRADE_ASSISTANT_V1_0_1", dt.date(2026, 1, 5),
+                          "GBPUSD", "SETUP-B", "PROPOSAL-B", now, now)
+    assert r1.success and r2.success
+    assert r1.slot["slot_index"] == 1
+    assert r2.slot["slot_index"] == 2
+    assert ledger.consumed_count("ST_ASIAN_SWEEP_5R_V1", dt.date(2026, 1, 5)) == 2
+
+
+def test_ledger_third_candidate_blocked_capacity_exhausted(tmp_path):
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"), max_slots=2)
+    now = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "EURUSD", "A", "PA", now, now)
+    ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "GBPUSD", "B", "PB", now, now)
+    r3 = ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "USDJPY", "C", "PC", now, now)
+    assert not r3.success
+    assert r3.reason_code == REASON_DAILY_TRADE_LIMIT
+
+
+def test_ledger_same_symbol_second_setup_blocked(tmp_path):
+    """Spec section 14: max one setup per symbol -- a second EURUSD setup is blocked
+    even though ledger capacity (2) is not exhausted."""
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    t1 = dt.datetime(2026, 1, 5, 7, 45, tzinfo=UTC)
+    t2 = dt.datetime(2026, 1, 5, 9, 15, tzinfo=UTC)
+    ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "EURUSD", "SETUP-A", "PROPOSAL-A", t1, t1)
+    r2 = ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "EURUSD", "SETUP-B", "PROPOSAL-B", t2, t2)
+    assert not r2.success
+    assert r2.reason_code == REASON_SYMBOL_DAILY_TRADE_LIMIT
+
+
+def test_ledger_idempotent_reclaim_same_identity_crash_recovery(tmp_path):
+    """Spec section 14/H: a process that crashed after claiming but before persisting
+    its proposal can safely re-claim the IDENTICAL identity on restart."""
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    now = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    first = ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "EURUSD", "SETUP-A", "PROPOSAL-A", now, now)
+    second = ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "EURUSD", "SETUP-A", "PROPOSAL-A", now, now)
+    assert first.success and second.success
+    assert ledger.consumed_count("S", dt.date(2026, 1, 5)) == 1  # no duplicate slot
+
+
+def test_ledger_terminal_states_never_free_capacity(tmp_path):
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    now = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "EURUSD", "SETUP-A", "PROPOSAL-A", now, now)
+    ledger.transition("S", dt.date(2026, 1, 5), "EURUSD", "EXPIRED", terminal_reason="WINDOW_CLOSED", now=now)
+    assert ledger.consumed_count("S", dt.date(2026, 1, 5)) == 1
+    # A different setup on EURUSD is still blocked -- EXPIRED does not free the symbol slot.
+    r2 = ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "EURUSD", "SETUP-B", "PROPOSAL-B", now, now)
+    assert not r2.success
+    assert r2.reason_code == REASON_SYMBOL_DAILY_TRADE_LIMIT
+
+
+def test_ledger_restart_terminal_state_preserved(tmp_path):
+    """Spec I-L: restart with each terminal state preserves it -- fresh instance, same
+    backing file."""
+    path = str(tmp_path / "ledger.json")
+    ledger = DailyTradeLedger.default(path)
+    now = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "EURUSD", "SETUP-A", "PROPOSAL-A", now, now)
+    ledger.transition("S", dt.date(2026, 1, 5), "EURUSD", "DECLINED", terminal_reason="USER_DECLINED", now=now)
+
+    ledger_after_restart = DailyTradeLedger.default(path)
+    slot = ledger_after_restart.symbol_slot("S", dt.date(2026, 1, 5), "EURUSD")
+    assert slot["state"] == "DECLINED"
+    assert ledger_after_restart.consumed_count("S", dt.date(2026, 1, 5)) == 1
+
+
+def test_ledger_corrupt_state_fails_closed(tmp_path):
+    path = tmp_path / "ledger.json"
+    path.write_text("{not valid json", encoding="utf-8")
+    from runtime_state.store import StateStoreCorrupted
+    ledger = DailyTradeLedger.default(str(path))
+    with pytest.raises(StateStoreCorrupted):
+        ledger.slots("S", dt.date(2026, 1, 5))
+
+
+def test_ledger_concurrent_claims_exactly_one_per_symbol(tmp_path):
+    """Spec section 16, CASE A: two candidates concurrently claim an empty ledger --
+    both succeed (different symbols), no overwrite, unique slot indexes. Uses a
+    ThreadPoolExecutor racing on the SAME real OS-level exclusive-file-creation lock
+    every process would use -- the mechanism under test is process-agnostic."""
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    now = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+
+    def _claim(symbol, setup_id, proposal_id):
+        return ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), symbol, setup_id, proposal_id, now, now)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        f1 = pool.submit(_claim, "EURUSD", "SETUP-A", "PROPOSAL-A")
+        f2 = pool.submit(_claim, "GBPUSD", "SETUP-B", "PROPOSAL-B")
+        r1, r2 = f1.result(), f2.result()
+
+    assert r1.success and r2.success
+    assert {r1.slot["slot_index"], r2.slot["slot_index"]} == {1, 2}
+    assert ledger.consumed_count("S", dt.date(2026, 1, 5)) == 2
+
+
+def test_ledger_concurrent_third_candidate_blocked(tmp_path):
+    """Spec section 16, CASE B: three concurrent claims, capacity 2 -- exactly two
+    succeed, the third is blocked."""
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"), max_slots=2)
+    now = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+
+    def _claim(symbol, setup_id, proposal_id):
+        return ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), symbol, setup_id, proposal_id, now, now)
+
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        futures = [pool.submit(_claim, sym, f"SETUP-{sym}", f"PROPOSAL-{sym}")
+                  for sym in ("EURUSD", "GBPUSD", "USDJPY")]
+        results = [f.result() for f in futures]
+
+    successes = [r for r in results if r.success]
+    failures = [r for r in results if not r.success]
+    assert len(successes) == 2
+    assert len(failures) == 1
+    assert failures[0].reason_code == REASON_DAILY_TRADE_LIMIT
+    assert ledger.consumed_count("S", dt.date(2026, 1, 5)) == 2
+
+
+def test_ledger_concurrent_same_symbol_one_wins(tmp_path):
+    """Spec section 16, CASE C: two concurrent EURUSD setups -- one succeeds, one is
+    blocked with the symbol-limit reason."""
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    now = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+
+    def _claim(setup_id, proposal_id):
+        return ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "EURUSD", setup_id, proposal_id, now, now)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        f1 = pool.submit(_claim, "SETUP-A", "PROPOSAL-A")
+        f2 = pool.submit(_claim, "SETUP-B", "PROPOSAL-B")
+        r1, r2 = f1.result(), f2.result()
+
+    successes = [r for r in (r1, r2) if r.success]
+    failures = [r for r in (r1, r2) if not r.success]
+    assert len(successes) == 1
+    assert len(failures) == 1
+    assert failures[0].reason_code == REASON_SYMBOL_DAILY_TRADE_LIMIT
+    assert ledger.consumed_count("S", dt.date(2026, 1, 5)) == 1
+
+
+# --------------------------------------------------------------------------- execution eligibility / ownership
+
+def _eligibility(symbol, ledger, open_guard, loss_guard, tmp_path, equity=10_000.0, candidate_risk=50.0):
+    now = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    if not ledger.symbol_slot("S", dt.date(2026, 1, 5), symbol):
+        ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), symbol, "SETUP-X", "PROPOSAL-X", now, now)
+    return evaluate_execution_eligibility("S", dt.date(2026, 1, 5), symbol, "SETUP-X", "PROPOSAL-X",
+                                          ledger, open_guard, loss_guard, -1.0,
+                                          max_open_positions=2, max_aggregate_open_risk_pct=1.0,
+                                          equity=equity, candidate_risk_amount=candidate_risk)
+
+
+def test_execution_eligibility_zero_open_may_proceed(tmp_path):
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    open_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
+    loss_guard = DailyLossGuard.default("S", str(tmp_path / "loss.json"))
+    result = _eligibility("EURUSD", ledger, open_guard, loss_guard, tmp_path)
+    assert result.portfolio_state == PORTFOLIO_ELIGIBLE
+
+
+def test_execution_eligibility_one_open_other_symbol_may_proceed_within_risk_budget(tmp_path):
+    """Spec section 15/26: one EURUSD open (0.5% risk) + a GBPUSD candidate (0.5%) may
+    still proceed -- max_open_positions=2, aggregate risk 1.0% exactly at the cap."""
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    open_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
+    open_guard.register_open("POS-1", "S", "EURUSD", risk_amount=50.0)  # 0.5% of 10,000
+    loss_guard = DailyLossGuard.default("S", str(tmp_path / "loss.json"))
+    result = _eligibility("GBPUSD", ledger, open_guard, loss_guard, tmp_path, candidate_risk=50.0)
+    assert result.portfolio_state == PORTFOLIO_ELIGIBLE
+
+
+def test_execution_eligibility_two_open_blocks_third(tmp_path):
+    """Spec section 26: 2 open positions -> BLOCKED_OPEN_POSITION_LIMIT regardless of risk."""
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    open_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
+    open_guard.register_open("POS-1", "S", "EURUSD", risk_amount=10.0)
+    open_guard.register_open("POS-2", "S", "GBPUSD", risk_amount=10.0)
+    loss_guard = DailyLossGuard.default("S", str(tmp_path / "loss.json"))
+    result = _eligibility("USDJPY", ledger, open_guard, loss_guard, tmp_path, candidate_risk=1.0)
     assert result.portfolio_state == PORTFOLIO_BLOCKED
-    assert result.reason_code == REASON_DAILY_TRADE_LIMIT
-
-    # the claiming symbol itself remains eligible (idempotent re-check, not a second claim)
-    same = evaluate_daily_governor("ST_ASIAN_SWEEP_5R_V1", dt.date(2026, 1, 5), "EURUSD",
-                                   open_guard, loss_guard, slot, -1.0)
-    assert same.portfolio_state == PORTFOLIO_ELIGIBLE
+    assert result.reason_code == REASON_OPEN_POSITION_LIMIT
 
 
-# --------------------------------------------------------------------------- tie-break
-
-def _ready_decision(symbol, evaluation_time):
-    signal = TradeSignal(signal_id="SID", strategy_id="ST_ASIAN_SWEEP_5R_V1", strategy_version="1.1.1",
-                         symbol=symbol, pair_id="ASIAN_LONDON", reference_session="Asian",
-                         session_date=dt.date(2026, 1, 5), box_high=1.10, box_low=1.09, box_mid=1.095,
-                         regime="RANGE", setup="SWEEP", status="SIGNAL",
-                         reason_code="UPPER_SWEEP_STRICT_PENETRATION", direction="SHORT", entry=1.0995,
-                         stop_loss=1.101, risk_distance=0.0015)
-    return map_trade_signal_to_decision(signal, "SNAP", evaluation_time, dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC))
-
-
-def test_tiebreak_same_timestamp_unresolved():
-    t = dt.datetime(2026, 1, 5, 9, 15, tzinfo=UTC)
-    result = resolve_tiebreak([_ready_decision("EURUSD", t), _ready_decision("GBPUSD", t)])
-    assert result.status == RESULT_UNRESOLVED
-    assert result.claimed_symbol is None
+def test_execution_eligibility_aggregate_risk_exceeded_blocks(tmp_path):
+    """Spec section 26: existing risk 0.65% + candidate 0.5% = 1.15% > 1.0% cap -> blocked."""
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    open_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
+    open_guard.register_open("POS-1", "S", "EURUSD", risk_amount=65.0)  # 0.65% of 10,000
+    loss_guard = DailyLossGuard.default("S", str(tmp_path / "loss.json"))
+    result = _eligibility("GBPUSD", ledger, open_guard, loss_guard, tmp_path, candidate_risk=50.0)
+    assert result.portfolio_state == PORTFOLIO_BLOCKED
+    assert result.reason_code == REASON_AGGREGATE_OPEN_RISK
 
 
-def test_tiebreak_different_timestamp_earliest_claims():
-    t1 = dt.datetime(2026, 1, 5, 9, 15, tzinfo=UTC)
-    t2 = dt.datetime(2026, 1, 5, 9, 30, tzinfo=UTC)
-    result = resolve_tiebreak([_ready_decision("GBPUSD", t2), _ready_decision("EURUSD", t1)])
-    assert result.status == RESULT_CLAIMED
-    assert result.claimed_symbol == "EURUSD"
+def test_strategy_open_position_count_filters_by_strategy_id(tmp_path):
+    """The shared global OpenPositionGuard is never modified -- only a strategy-scoped
+    read over the same store, so a position from a DIFFERENT strategy_id doesn't count
+    against this pilot's own max_open_positions."""
+    open_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
+    open_guard.register_open("POS-1", "ST_ASIAN_SWEEP_5R_V1", "EURUSD")
+    open_guard.register_open("POS-2", "ST_LIQUIDITY_SWEEP_RETEST_V1", "GBPUSD")
+    assert strategy_open_position_count(open_guard, "ST_ASIAN_SWEEP_5R_V1") == 1
+    assert open_guard.open_count() == 2  # the shared global guard still sees both, unmodified
 
 
-def test_tiebreak_no_candidates():
-    result = resolve_tiebreak([])
-    assert result.claimed_symbol is None
+def test_strategy_open_risk_pct_conservative_initial_risk(tmp_path):
+    open_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
+    open_guard.register_open("POS-1", "ST_ASIAN_SWEEP_5R_V1", "EURUSD", risk_amount=50.0)
+    assert strategy_open_risk_pct(open_guard, "ST_ASIAN_SWEEP_5R_V1", 10_000.0) == pytest.approx(0.5)
+
+
+def test_non_owner_proposal_cannot_reach_execution(tmp_path):
+    """Spec section 21/28: a losing/non-selected candidate's proposal must never pass
+    ownership validation, regardless of any other gate."""
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+    now = dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC)
+    ledger.try_claim("S", "1.1.1", "R", dt.date(2026, 1, 5), "EURUSD", "SETUP-A", "PROPOSAL-A", now, now)
+    result = validate_slot_ownership("S", dt.date(2026, 1, 5), "GBPUSD", "SETUP-B", "PROPOSAL-B", ledger)
+    assert result.success is False
+    assert result.reason_code == "PROPOSAL_NOT_DAILY_SLOT_OWNER"
+
+    owner_result = validate_slot_ownership("S", dt.date(2026, 1, 5), "EURUSD", "SETUP-A", "PROPOSAL-A", ledger)
+    assert owner_result.success is True
 
 
 # --------------------------------------------------------------------------- persistence / idempotency
 
 def test_save_decision_idempotent_no_duplicate_write(tmp_path):
     store = JsonKeyValueStore(str(tmp_path / "decision.json"))
-    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", 1.0995, 1.101, 0.0015)
+    ready_at = dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC)
+    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", 1.0995, 1.101, 0.0015,
+                     signal_timestamp=ready_at)
     window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
-    decision = map_trade_signal_to_decision(signal, "SNAP-1", dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC), window_end)
+    decision = map_trade_signal_to_decision(signal, "SNAP-1", ready_at, window_end)
 
     assert save_decision(store, decision) is True
     assert save_decision(store, decision) is False  # unchanged re-detection -> no duplicate write
@@ -312,13 +575,15 @@ def test_save_decision_idempotent_no_duplicate_write(tmp_path):
     assert restored.status == decision.status
     assert restored.evaluation_time == decision.evaluation_time
     assert restored.trading_date == decision.trading_date
+    assert restored.ready_at == decision.ready_at
 
 
 def test_save_proposal_idempotent(strategy, symbol_meta, tmp_path):
+    ready_at = dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC)
     signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.10000,
-                     stop_loss=1.10150, risk_distance=0.00150)
+                     stop_loss=1.10150, risk_distance=0.00150, signal_timestamp=ready_at)
     window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
-    decision = map_trade_signal_to_decision(signal, "SNAP-1", dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC), window_end)
+    decision = map_trade_signal_to_decision(signal, "SNAP-1", ready_at, window_end)
     result = build_entry_proposal(decision, strategy, equity=10_000.0, symbol_meta=symbol_meta,
                                   risk_per_trade_pct=0.5, session_snapshot_id="SNAP-1")
     store = JsonKeyValueStore(str(tmp_path / "proposal.json"))
@@ -347,6 +612,20 @@ def test_no_execution_imports_in_pilot_package():
         assert "order_send(" not in text, py_file
 
 
+def test_no_env_credential_references_in_pilot_package():
+    """Nothing in this package reads .env / os.environ -- MT5 connects via the already
+    logged-in desktop terminal (mt5.connection.connect() -> mt5.initialize(), no
+    credentials), so no secret can end up in a fingerprint, status doc, or exception
+    message from this code."""
+    import pathlib
+    pkg_dir = pathlib.Path(__file__).resolve().parent.parent / "src" / "post_asian_pilot"
+    for py_file in pkg_dir.glob("*.py"):
+        text = py_file.read_text(encoding="utf-8")
+        assert ".env" not in text, py_file
+        assert "os.environ" not in text, py_file
+        assert "getenv" not in text, py_file
+
+
 # --------------------------------------------------------------------------- release manifest / fingerprints
 
 def test_pilot_config_loads():
@@ -354,20 +633,92 @@ def test_pilot_config_loads():
     assert pilot.strategy_id == "ST_ASIAN_SWEEP_5R_V1"
     assert pilot.universe == ("EURUSD", "GBPUSD")
     assert pilot.risk_per_trade_pct == 0.5
-    assert pilot.max_new_trades_per_day == 1
-    assert pilot.max_open_positions == 1
+    assert pilot.max_new_trades_per_day == 2
+    assert pilot.max_new_trades_per_symbol_per_day == 1
+    assert pilot.max_open_positions == 2
+    assert pilot.max_aggregate_open_risk_pct == 1.0
     assert pilot.strategy_daily_loss_limit_r == -1.0
+    assert pilot.tie_break_priority == ("EURUSD", "GBPUSD")
 
 
-def test_release_fingerprints_deterministic():
-    a = release_fingerprints("config/releases/AG_TRADE_ASSISTANT_V1_0.yaml", STRATEGY_PATH,
-                             "config/canonical_sessions.yaml", {"risk_per_trade_pct": 0.5})
-    b = release_fingerprints("config/releases/AG_TRADE_ASSISTANT_V1_0.yaml", STRATEGY_PATH,
-                             "config/canonical_sessions.yaml", {"risk_per_trade_pct": 0.5})
+def test_v1_0_pilot_config_unchanged_and_still_reproducible():
+    pilot_v1_0 = load_pilot_config(V1_0_PILOT_CONFIG_PATH)
+    assert pilot_v1_0.pilot_id == "AG_POST_ASIAN_LONDON_PILOT_V1"
+    assert pilot_v1_0.tie_break_priority == ()  # no priority key in the unchanged V1.0 file
+    assert pilot_v1_0.max_new_trades_per_day == 1  # V1.0's own single-slot policy, unchanged
+    assert pilot_v1_0.universe == ("EURUSD", "GBPUSD")
+    assert pilot_v1_0.risk_per_trade_pct == 0.5
+
+
+def test_release_fingerprints_deterministic_and_distinct():
+    a = release_fingerprints(RELEASE_PATH, STRATEGY_PATH, "config/canonical_sessions.yaml",
+                             {"risk_per_trade_pct": 0.5})
+    b = release_fingerprints(RELEASE_PATH, STRATEGY_PATH, "config/canonical_sessions.yaml",
+                             {"risk_per_trade_pct": 0.5})
     assert a == b
-    assert len({a["release_fingerprint"], a["strategy_fingerprint"], a["session_fingerprint"],
-               a["risk_fingerprint"]}) == 4  # all distinct
+    values = {a["release_fingerprint"], a["strategy_fingerprint"], a["session_fingerprint"],
+             a["risk_fingerprint"], a["selection_policy_fingerprint"]}
+    assert len(values) == 5  # all distinct
+
+
+def test_v1_0_1_release_fingerprint_distinct_from_v1_0():
+    fp_v1_0 = release_fingerprints(V1_0_RELEASE_CONFIG_PATH, STRATEGY_PATH,
+                                   "config/canonical_sessions.yaml", {"risk_per_trade_pct": 0.5})
+    fp_v1_0_1 = release_fingerprints(RELEASE_PATH, STRATEGY_PATH, "config/canonical_sessions.yaml",
+                                     {"risk_per_trade_pct": 0.5})
+    assert fp_v1_0["release_fingerprint"] != fp_v1_0_1["release_fingerprint"]
+    # strategy/session fingerprints are identical -- neither strategy nor session config changed
+    assert fp_v1_0["strategy_fingerprint"] == fp_v1_0_1["strategy_fingerprint"]
+    assert fp_v1_0["session_fingerprint"] == fp_v1_0_1["session_fingerprint"]
+    # V1.0 has no selection_policy section at all -- its fingerprint is over an empty policy
+    assert fp_v1_0["selection_policy_fingerprint"] != fp_v1_0_1["selection_policy_fingerprint"]
 
 
 def test_fingerprint_stable_for_same_content():
     assert fingerprint({"a": 1, "b": 2}) == fingerprint({"b": 2, "a": 1})
+
+
+# --------------------------------------------------------------------------- preflight
+
+def test_preflight_first_run_establishes_baseline_and_ready(tmp_path, monkeypatch):
+    import post_asian_pilot.preflight as preflight_mod
+    from mt5.account import Account
+    from mt5.symbol_resolver import SymbolMeta as _SM
+
+    monkeypatch.setattr(preflight_mod, "connect", lambda: None)
+    monkeypatch.setattr(preflight_mod, "is_connected", lambda: True)
+    monkeypatch.setattr(preflight_mod, "fetch_account", lambda: Account(
+        login=1, server="Demo", is_demo=True, balance=10_000.0, equity=10_000.0,
+        trade_allowed=True, is_hedging_account=False))
+    monkeypatch.setattr(preflight_mod, "get_symbol_meta", lambda symbol: _SM(
+        symbol=symbol, tick_size=0.00001, tick_value=1.0, contract_size=100000,
+        volume_min=0.01, volume_max=100.0, volume_step=0.01, digits=5))
+    monkeypatch.setattr(preflight_mod, "validate_session_contract", lambda: None)
+
+    class _FakeCoordinator:
+        def __init__(self):
+            self.open_position_guard = OpenPositionGuard.default(str(tmp_path / "open.json"))
+
+        def reconcile(self, **kw):
+            return []
+
+    monkeypatch.setattr(preflight_mod.ExecutionCoordinator, "default", classmethod(lambda cls: _FakeCoordinator()))
+    monkeypatch.setattr(preflight_mod, "DailyTradeLedger",
+                        type("_L", (), {"default": staticmethod(
+                            lambda: DailyTradeLedger.default(str(tmp_path / "ledger.json")))}))
+
+    result = preflight_mod.run_preflight(baseline_path=str(tmp_path / "baseline.json"))
+    assert result.pilot_status == "READY_TO_MONITOR"
+    assert result.first_block_reason is None
+    assert result.account_mode == "DEMO"
+    assert any(name == "fingerprint_baseline_established" for name, _ in result.checks)
+
+
+def test_preflight_wrong_release_id_blocks(tmp_path):
+    import post_asian_pilot.preflight as preflight_mod
+    bad_release = tmp_path / "bad_release.yaml"
+    bad_release.write_text('release_id: "SOME_OTHER_RELEASE"\n', encoding="utf-8")
+    result = preflight_mod.run_preflight(release_path=str(bad_release),
+                                         baseline_path=str(tmp_path / "baseline.json"))
+    assert result.pilot_status == "PILOT_STARTUP_BLOCKED"
+    assert result.first_block_reason == "WRONG_RELEASE_LOADED"

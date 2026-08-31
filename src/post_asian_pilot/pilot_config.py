@@ -10,8 +10,10 @@ from typing import Tuple
 
 import yaml
 
-DEFAULT_PILOT_CONFIG_PATH = "config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1.yaml"
-DEFAULT_RELEASE_CONFIG_PATH = "config/releases/AG_TRADE_ASSISTANT_V1_0.yaml"
+DEFAULT_PILOT_CONFIG_PATH = "config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1_0_1.yaml"
+DEFAULT_RELEASE_CONFIG_PATH = "config/releases/AG_TRADE_ASSISTANT_V1_0_1.yaml"
+V1_0_PILOT_CONFIG_PATH = "config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1.yaml"
+V1_0_RELEASE_CONFIG_PATH = "config/releases/AG_TRADE_ASSISTANT_V1_0.yaml"
 
 
 @dataclass(frozen=True)
@@ -28,7 +30,10 @@ class PilotConfig:
     risk_per_trade_pct: float
     max_open_positions: int
     max_new_trades_per_day: int
+    max_new_trades_per_symbol_per_day: int
+    max_aggregate_open_risk_pct: float
     strategy_daily_loss_limit_r: float
+    tie_break_priority: Tuple[str, ...]
     raw: dict
     source_path: str
 
@@ -52,7 +57,10 @@ def load_pilot_config(path: str = DEFAULT_PILOT_CONFIG_PATH) -> PilotConfig:
         risk_per_trade_pct=float(risk["risk_per_trade_pct"]),
         max_open_positions=int(risk["max_open_positions"]),
         max_new_trades_per_day=int(risk["max_new_trades_per_day"]),
+        max_new_trades_per_symbol_per_day=int(risk.get("max_new_trades_per_symbol_per_day", 1)),
+        max_aggregate_open_risk_pct=float(risk.get("max_aggregate_open_risk_pct", risk["risk_per_trade_pct"])),
         strategy_daily_loss_limit_r=float(risk["strategy_daily_loss_limit_r"]),
+        tie_break_priority=tuple(raw.get("tie_break_priority") or ()),
         raw=raw,
         source_path=path,
     )

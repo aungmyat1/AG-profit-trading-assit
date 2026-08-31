@@ -4,3 +4,4 @@ __pycache__/
 journal/*.jsonl
 logs/
 *.egg-info/
+.env

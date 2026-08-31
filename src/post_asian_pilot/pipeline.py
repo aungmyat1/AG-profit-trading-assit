@@ -28,12 +28,14 @@ from .decision import (
     map_trade_signal_to_decision,
     watch_decision,
 )
-from .governor import PORTFOLIO_ELIGIBLE, evaluate_daily_governor
-from .pilot_config import PilotConfig, load_pilot_config
+import dataclasses
+
+from .governor import PORTFOLIO_ELIGIBLE, PORTFOLIO_SELECTED, evaluate_daily_governor
+from .pilot_config import DEFAULT_RELEASE_CONFIG_PATH, PilotConfig, load_pilot_config, load_raw_yaml
 from .proposal import PostAsianEntryProposal, build_entry_proposal
 from .snapshot import AsianSessionSnapshot, build_asian_session_snapshot
 from .store import PilotStores, decision_from_record, save_decision, save_proposal, save_snapshot
-from .tiebreak import RESULT_CLAIMED, resolve_tiebreak
+from .tiebreak import order_candidates
 
 
 @dataclass(frozen=True)
@@ -49,10 +51,12 @@ class PairResult:
 class PilotCycleResult:
     pilot_config: PilotConfig
     strategy: StrategyConfig
+    release_id: str
     evaluation_time: dt.datetime
     trading_date: dt.date
     pairs: Tuple[PairResult, ...]
-    tiebreak_status: str
+    ledger_slots_used: int
+    ledger_max_slots: int
 
 
 def _asian_bounds(trading_date: dt.date, reference_session_name: str) -> Tuple[dt.datetime, dt.datetime, int]:
@@ -141,6 +145,7 @@ def run_pilot_cycle(
 ) -> PilotCycleResult:
     pilot = load_pilot_config(pilot_path) if pilot_path else load_pilot_config()
     strategy = load_strategy(pilot.strategy_source_path)
+    release_id = load_raw_yaml(DEFAULT_RELEASE_CONFIG_PATH).get("release_id", "AG_TRADE_ASSISTANT_V1_0_1")
     now = now or dt.datetime.now(dt.timezone.utc)
     trading_date = now.date()
     stores = PilotStores.default(pilot.strategy_id)
@@ -148,43 +153,57 @@ def run_pilot_cycle(
     results = [_evaluate_pair(pilot, strategy, symbol, trading_date, now, stores) for symbol in pilot.universe]
 
     ready = [r.decision for r in results if r.decision.status == STATUS_READY]
-    tb = resolve_tiebreak(ready)
+    ordered_ready = order_candidates(ready, priority=pilot.tie_break_priority)
 
-    final: List[PairResult] = []
+    final_by_symbol: dict = {}
     for r in results:
-        if r.decision.status != STATUS_READY:
-            final.append(r)
-            continue
+        final_by_symbol[r.symbol] = r
 
-        if tb.status != RESULT_CLAIMED or tb.claimed_symbol != r.symbol:
-            final.append(PairResult(r.symbol, r.decision, "BLOCKED",
-                                    tb.reason_code or "BLOCKED_DAILY_TRADE_LIMIT", None))
-            continue
-
-        gate = evaluate_daily_governor(strategy.strategy_id, trading_date, r.symbol,
-                                       stores.open_position_guard, stores.daily_loss_guard,
-                                       stores.trade_slot, pilot.strategy_daily_loss_limit_r)
-        if gate.portfolio_state != PORTFOLIO_ELIGIBLE:
-            final.append(PairResult(r.symbol, r.decision, gate.portfolio_state, gate.reason_code, None))
-            continue
-
+    # Selection ordering (spec section 12/13): candidates claim slots in deterministic
+    # ready_at order -- both may succeed (capacity 2, one slot per symbol), unlike the
+    # old winner-take-all V1.0 tie-break. Claim-before-actionable-publication: the
+    # proposal is only persisted as actionable once its exact identity atomically owns
+    # a ledger slot.
+    for decision in ordered_ready:
+        symbol = decision.symbol
         try:
             equity = fetch_equity()
-            symbol_meta: SymbolMeta = get_symbol_meta(r.symbol)
+            symbol_meta: SymbolMeta = get_symbol_meta(symbol)
         except (MarketDataError, SymbolMetaError) as exc:
             reason = getattr(exc, "reason_code", "ACCOUNT_DATA_MISSING")
-            final.append(PairResult(r.symbol, r.decision, "BLOCKED", reason, None))
+            final_by_symbol[symbol] = PairResult(symbol, decision, "BLOCKED", reason, None)
             continue
 
-        prop_result = build_entry_proposal(r.decision, strategy, equity, symbol_meta,
-                                           pilot.risk_per_trade_pct, r.decision.session_snapshot_id)
+        prop_result = build_entry_proposal(decision, strategy, equity, symbol_meta,
+                                           pilot.risk_per_trade_pct, decision.session_snapshot_id)
         if prop_result.status != "READY" or prop_result.proposal is None:
-            final.append(PairResult(r.symbol, r.decision, "BLOCKED", prop_result.reason_code, None))
+            final_by_symbol[symbol] = PairResult(symbol, decision, "BLOCKED", prop_result.reason_code, None)
+            continue
+        candidate_proposal = prop_result.proposal  # in-memory candidate -- not yet actionable
+
+        gate = evaluate_daily_governor(strategy.strategy_id, trading_date, stores.daily_loss_guard,
+                                       pilot.strategy_daily_loss_limit_r)
+        if gate.portfolio_state != PORTFOLIO_ELIGIBLE:
+            save_proposal(stores.proposal_store, candidate_proposal)  # evidence only, actionable=False
+            final_by_symbol[symbol] = PairResult(symbol, decision, gate.portfolio_state, gate.reason_code,
+                                                 candidate_proposal)
             continue
 
-        save_proposal(stores.proposal_store, prop_result.proposal)
-        stores.trade_slot.claim(strategy.strategy_id, trading_date, r.symbol,
-                                prop_result.proposal.setup_id, now)
-        final.append(PairResult(r.symbol, r.decision, "ELIGIBLE", None, prop_result.proposal))
+        claim = stores.ledger.try_claim(
+            strategy.strategy_id, strategy.version, release_id, trading_date, symbol,
+            candidate_proposal.setup_id, candidate_proposal.proposal_id, decision.ready_at, now,
+        )
+        if not claim.success:
+            save_proposal(stores.proposal_store, candidate_proposal)  # evidence only, actionable=False
+            final_by_symbol[symbol] = PairResult(symbol, decision, "BLOCKED", claim.reason_code,
+                                                 candidate_proposal)
+            continue
 
-    return PilotCycleResult(pilot, strategy, now, trading_date, tuple(final), tb.status)
+        actionable_proposal = dataclasses.replace(candidate_proposal, actionable=True)
+        save_proposal(stores.proposal_store, actionable_proposal)
+        final_by_symbol[symbol] = PairResult(symbol, decision, PORTFOLIO_SELECTED, None, actionable_proposal)
+
+    final = tuple(final_by_symbol[symbol] for symbol in pilot.universe)
+    slots_used = stores.ledger.consumed_count(strategy.strategy_id, trading_date)
+    return PilotCycleResult(pilot, strategy, release_id, now, trading_date, final,
+                            slots_used, stores.ledger.max_slots)

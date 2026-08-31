@@ -1,0 +1,48 @@
+# AG_POST_ASIAN_LONDON_PILOT_V1_0_1: inherits AG_POST_ASIAN_LONDON_PILOT_V1 (V1.0)
+# strategy semantics completely. config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1.yaml (V1.0)
+# is left byte-for-byte unchanged and remains independently loadable/reproducible.
+#
+# Operational (not strategy) changes in V1.0.1:
+#   - a two-slot daily opportunity ledger (max_new_trades_per_day=2,
+#     max_new_trades_per_symbol_per_day=1) replaces V1.0's implicit single slot -- both
+#     EURUSD and GBPUSD may be SELECTED the same trading day, each owning at most one
+#     slot. See src/post_asian_pilot/governor.py::DailyTradeLedger.
+#   - tie_break_priority: an operational SLOT-ORDERING rule only (which slot_index a
+#     candidate gets when two share the exact same ready_at) -- it never excludes a
+#     candidate that ledger capacity would otherwise admit, never changes strategy
+#     qualification, and never changes entry/SL/TP/risk geometry. See
+#     src/post_asian_pilot/tiebreak.py.
+
+pilot_id: AG_POST_ASIAN_LONDON_PILOT_V1_0_1
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+strategy_version: "1.1.1"
+strategy_source_path: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
+pair_id: ASIAN_LONDON
+
+universe: [EURUSD, GBPUSD]
+tie_break_priority: [EURUSD, GBPUSD]
+
+reference_session:
+  source: config/canonical_sessions.yaml
+  name: asian
+
+execution_window:
+  id: ASIAN_LONDON
+  start_utc: "07:00"
+  end_utc: "11:00"
+
+inactive_cycle: [LONDON_NEWYORK]
+
+risk:
+  risk_per_trade_pct: 0.5
+  max_open_positions: 2
+  max_new_trades_per_day: 2
+  max_new_trades_per_symbol_per_day: 1
+  max_aggregate_open_risk_pct: 1.0
+  strategy_daily_loss_limit_r: -1.0
+
+execution:
+  mode: PROPOSAL_ONLY
+  automatic_execution: false
+  explicit_confirmation_required: true
+  live_execution: false

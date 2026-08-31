@@ -1,47 +1,30 @@
-"""Simultaneous-READY tie-break: no existing policy anywhere in this repo resolves which
-symbol claims the one daily trade slot when two become READY together (confirmed by
-audit: no priority/tie_break/first_qualified concept in strategy_engine or elsewhere).
-Per spec, this must fail closed rather than have code silently pick one by iteration
-order (which would otherwise be an unintentional, undocumented "alphabetical"/list-order
-bias -- exactly what's forbidden).
+"""Deterministic candidate ordering for daily-ledger slot assignment.
 
-The orchestrator must call resolve_tiebreak() once per evaluation cycle across the FULL
-set of decisions that went READY in that same pass, BEFORE calling
-governor.DailyTradeSlot.claim() for any of them -- claiming per-symbol independently
-would let loop order silently break the tie instead of this function.
+Under the two-slot ledger (governor.DailyTradeLedger), EURUSD and GBPUSD can BOTH be
+SELECTED the same day -- there is no single "winner" to exclude the other. The only
+thing that must be deterministic is the ORDER candidates attempt to claim a slot in
+(which only matters for stable slot_index assignment and for genuine capacity
+exhaustion, e.g. a 3rd candidate when max_slots=2): order by `ready_at` (the qualifying
+CLOSED M15 candle's own timestamp -- NEVER `evaluation_time`, wall-clock/polling time),
+and only fall back to the configured priority list when two candidates share the exact
+same `ready_at` and would otherwise tie. Priority decides ordering ONLY -- it never
+changes strategy qualification and, with ledger capacity >= 2, does not by itself block
+either candidate (both still get a slot if capacity allows).
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Sequence, Tuple
 
 from .decision import PostAsianDecision
 
-RESULT_CLAIMED = "CLAIMED"
-RESULT_NONE_READY = "NONE_READY"
-RESULT_UNRESOLVED = "SIMULTANEOUS_READY_POLICY_UNRESOLVED"
 
+def order_candidates(
+    ready_decisions: Sequence[PostAsianDecision], priority: Tuple[str, ...] = (),
+) -> Tuple[PostAsianDecision, ...]:
+    if any(d.ready_at is None for d in ready_decisions):
+        raise ValueError("order_candidates requires ready_at on every READY decision")
 
-@dataclass(frozen=True)
-class TieBreakResult:
-    status: str  # RESULT_CLAIMED / RESULT_NONE_READY / RESULT_UNRESOLVED
-    claimed_symbol: Optional[str] = None
-    reason_code: Optional[str] = None
+    def _priority_rank(symbol: str) -> int:
+        return priority.index(symbol) if symbol in priority else len(priority)
 
-
-def resolve_tiebreak(ready_decisions: Sequence[PostAsianDecision]) -> TieBreakResult:
-    if not ready_decisions:
-        return TieBreakResult(status=RESULT_NONE_READY)
-    if len(ready_decisions) == 1:
-        return TieBreakResult(status=RESULT_CLAIMED, claimed_symbol=ready_decisions[0].symbol)
-
-    timestamps = {d.evaluation_time for d in ready_decisions}
-    if len(timestamps) == 1:
-        # Same closed-M15 timestamp, no existing frozen priority -- fail closed, per spec.
-        return TieBreakResult(status=RESULT_UNRESOLVED, reason_code=RESULT_UNRESOLVED)
-
-    # Timestamps differ: earliest valid READY claims the slot -- the natural, deterministic
-    # consequence of processing closed candles in chronological order (never an AI choice
-    # among simultaneous candidates), matching spec section 24's "first-qualified" case.
-    earliest = min(ready_decisions, key=lambda d: d.evaluation_time)
-    return TieBreakResult(status=RESULT_CLAIMED, claimed_symbol=earliest.symbol)
+    return tuple(sorted(ready_decisions, key=lambda d: (d.ready_at, _priority_rank(d.symbol), d.symbol)))

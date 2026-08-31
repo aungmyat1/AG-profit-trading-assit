@@ -8,7 +8,7 @@ knobs -- see strategy_engine/session/classifier.py for why.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, Sequence
 
 
@@ -89,3 +89,10 @@ class TradeSignal:
     entry: Optional[float] = None
     stop_loss: Optional[float] = None
     risk_distance: Optional[float] = None
+    # Additive, backward-compatible (default None): the CLOSED candle whose completion
+    # produced this decision (strategy_engine.session.setups.SetupDecision.signal_timestamp,
+    # verbatim -- entry_1_trend has none, box-based; entry_2_sweep/entry_3_range set it to
+    # the qualifying candle's own open time). Callers needing a deterministic "ready at"
+    # ordering key (not wall-clock evaluation/polling time) should use this field, never
+    # invent one from when evaluate() happened to be called.
+    signal_timestamp: Optional[datetime] = None
