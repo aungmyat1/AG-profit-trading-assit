@@ -1,0 +1,520 @@
+{
+  "schema_version": "QUALIFIED_E_EVENT_V1",
+  "producer_version": "AG_NATIVE_STAGE1_V1",
+  "created_at": "2026-08-31T10:10:36.533227+00:00",
+  "metadata": {
+    "symbol": "EURUSD",
+    "period_start": "2025-08-01T00:00:00+00:00",
+    "period_end": "2025-10-01T00:00:00+00:00",
+    "feed": "D:\\EURUSD_M5_202504211715_202607310000.csv",
+    "broker_timezone_contract": "BROKER_SERVER_TIME(UTC+2/UTC+3 seasonal DST, empirically detected)",
+    "broker_day_anchor_policy": "resample_broker_aligned (D1/H4 anchored to broker calendar day/4h window)",
+    "session_contract_version": "config/canonical_sessions.yaml (unchanged)",
+    "closed_bar_policy": "HistoricalCandleStore.closed_candles: bar_open_time + timeframe_duration <= as_of",
+    "strategy_context_version": "SMC_CONDITIONAL_ENTRY_V2"
+  },
+  "events": [
+    {
+      "event_id": "QE-EURUSD-E1-ea9852c2b78ac45a",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E1",
+      "direction": "LONG",
+      "qualification_time": "2025-08-01T21:00:00+00:00",
+      "reference_type": "D1_GAP",
+      "reference_low": 1.14604,
+      "reference_high": 1.15183,
+      "reference_level": null,
+      "reference_key": "D1_GAP|1.14604|1.15183|None",
+      "eligibility_intervals": [
+        [
+          "2025-08-01T21:00:00+00:00",
+          "2025-08-01T21:05:00+00:00"
+        ],
+        [
+          "2025-08-03T21:05:00+00:00",
+          "2025-08-04T21:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": null
+    },
+    {
+      "event_id": "QE-EURUSD-E1-ba85db0c9d68cfbc",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E1",
+      "direction": "SHORT",
+      "qualification_time": "2025-09-09T21:00:00+00:00",
+      "reference_type": "D1_GAP",
+      "reference_low": 1.16687,
+      "reference_high": 1.17031,
+      "reference_level": null,
+      "reference_key": "D1_GAP|1.16687|1.17031|None",
+      "eligibility_intervals": [
+        [
+          "2025-09-09T21:00:00+00:00",
+          "2025-09-12T21:05:00+00:00"
+        ],
+        [
+          "2025-09-14T21:05:00+00:00",
+          "2025-09-16T21:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": null
+    },
+    {
+      "event_id": "QE-EURUSD-E1-933b5ff7e3af1c82",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E1",
+      "direction": "LONG",
+      "qualification_time": "2025-09-22T21:00:00+00:00",
+      "reference_type": "D1_GAP",
+      "reference_low": 1.17919,
+      "reference_high": 1.18073,
+      "reference_level": null,
+      "reference_key": "D1_GAP|1.17919|1.18073|None",
+      "eligibility_intervals": [
+        [
+          "2025-09-22T21:00:00+00:00",
+          "2025-09-24T21:20:00+00:00"
+        ],
+        [
+          "2025-09-24T21:25:00+00:00",
+          "2025-09-26T21:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": null
+    },
+    {
+      "event_id": "QE-EURUSD-E2-add2c33ca6e12e86",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E2",
+      "direction": "SHORT",
+      "qualification_time": "2025-08-06T07:00:00+00:00",
+      "reference_type": "ORDER_BLOCK",
+      "reference_low": 1.1570099592208862,
+      "reference_high": 1.1587200164794922,
+      "reference_level": null,
+      "reference_key": "ORDER_BLOCK|1.1570099592208862|1.1587200164794922|None",
+      "eligibility_intervals": [
+        [
+          "2025-08-06T07:00:00+00:00",
+          "2025-08-06T09:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": null
+    },
+    {
+      "event_id": "QE-EURUSD-E2-15bf020e1ec9c232",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E2",
+      "direction": "SHORT",
+      "qualification_time": "2025-08-22T14:00:00+00:00",
+      "reference_type": "ORDER_BLOCK",
+      "reference_low": 1.161080002784729,
+      "reference_high": 1.1618200540542603,
+      "reference_level": null,
+      "reference_key": "ORDER_BLOCK|1.161080002784729|1.1618200540542603|None",
+      "eligibility_intervals": [
+        [
+          "2025-08-22T14:00:00+00:00",
+          "2025-08-22T15:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": null
+    },
+    {
+      "event_id": "QE-EURUSD-E2-831cf0547cc7120a",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E2",
+      "direction": "SHORT",
+      "qualification_time": "2025-08-21T08:00:00+00:00",
+      "reference_type": "ORDER_BLOCK",
+      "reference_low": 1.1640700101852417,
+      "reference_high": 1.1649999618530273,
+      "reference_level": null,
+      "reference_key": "ORDER_BLOCK|1.1640700101852417|1.1649999618530273|None",
+      "eligibility_intervals": [
+        [
+          "2025-08-21T08:00:00+00:00",
+          "2025-08-21T12:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": null
+    },
+    {
+      "event_id": "QE-EURUSD-E2-a086b6d3d729f9cc",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E2",
+      "direction": "LONG",
+      "qualification_time": "2025-09-09T20:00:00+00:00",
+      "reference_type": "ORDER_BLOCK",
+      "reference_low": 1.1703100204467773,
+      "reference_high": 1.1718300580978394,
+      "reference_level": null,
+      "reference_key": "ORDER_BLOCK|1.1703100204467773|1.1718300580978394|None",
+      "eligibility_intervals": [
+        [
+          "2025-09-09T20:00:00+00:00",
+          "2025-09-10T00:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": null
+    },
+    {
+      "event_id": "QE-EURUSD-E3-a0820dbd23bce3e5",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "SHORT",
+      "qualification_time": "2025-08-12T16:00:00+00:00",
+      "reference_type": "PDH",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.16751,
+      "reference_key": "PDH|None|None|1.16751",
+      "eligibility_intervals": [
+        [
+          "2025-08-12T16:00:00+00:00",
+          "2025-08-12T17:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "BUY_SIDE",
+        "source": "PDH",
+        "price": 1.16751,
+        "origin_time": "2025-08-11T21:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-08-12T15:00:00+00:00",
+        "reclaim_time": "2025-08-12T15:00:00+00:00"
+      }
+    },
+    {
+      "event_id": "QE-EURUSD-E3-87b5aae643e8da1b",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "SHORT",
+      "qualification_time": "2025-09-11T15:00:00+00:00",
+      "reference_type": "PDH",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.17301,
+      "reference_key": "PDH|None|None|1.17301",
+      "eligibility_intervals": [
+        [
+          "2025-09-11T15:00:00+00:00",
+          "2025-09-11T16:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "BUY_SIDE",
+        "source": "PDH",
+        "price": 1.17301,
+        "origin_time": "2025-09-10T21:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-09-11T13:00:00+00:00",
+        "reclaim_time": "2025-09-11T14:00:00+00:00"
+      }
+    },
+    {
+      "event_id": "QE-EURUSD-E3-f4b63e4c41669825",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "SHORT",
+      "qualification_time": "2025-09-09T09:10:00+00:00",
+      "reference_type": "PDH",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.1765,
+      "reference_key": "PDH|None|None|1.1765",
+      "eligibility_intervals": [
+        [
+          "2025-09-09T09:10:00+00:00",
+          "2025-09-09T10:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "BUY_SIDE",
+        "source": "PDH",
+        "price": 1.1765,
+        "origin_time": "2025-09-08T21:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-09-08T23:00:00+00:00",
+        "reclaim_time": "2025-09-09T07:00:00+00:00"
+      }
+    },
+    {
+      "event_id": "QE-EURUSD-E3-56780bcbb8a95ced",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "SHORT",
+      "qualification_time": "2025-09-23T13:05:00+00:00",
+      "reference_type": "PDH",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.1802,
+      "reference_key": "PDH|None|None|1.1802",
+      "eligibility_intervals": [
+        [
+          "2025-09-23T13:05:00+00:00",
+          "2025-09-23T13:10:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "BUY_SIDE",
+        "source": "PDH",
+        "price": 1.1802,
+        "origin_time": "2025-09-22T21:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-09-22T22:00:00+00:00",
+        "reclaim_time": "2025-09-23T10:00:00+00:00"
+      }
+    },
+    {
+      "event_id": "QE-EURUSD-E3-a862083566807198",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "LONG",
+      "qualification_time": "2025-08-01T10:00:00+00:00",
+      "reference_type": "PDL",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.13996,
+      "reference_key": "PDL|None|None|1.13996",
+      "eligibility_intervals": [
+        [
+          "2025-08-01T10:00:00+00:00",
+          "2025-08-01T10:05:00+00:00"
+        ],
+        [
+          "2025-08-01T12:20:00+00:00",
+          "2025-08-01T12:35:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "SELL_SIDE",
+        "source": "PDL",
+        "price": 1.13996,
+        "origin_time": "2025-07-31T21:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-08-01T09:00:00+00:00",
+        "reclaim_time": "2025-08-01T09:00:00+00:00"
+      }
+    },
+    {
+      "event_id": "QE-EURUSD-E3-07c1f9e0dc725be6",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "SHORT",
+      "qualification_time": "2025-08-22T17:10:00+00:00",
+      "reference_type": "PWH",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.17296,
+      "reference_key": "PWH|None|None|1.17296",
+      "eligibility_intervals": [
+        [
+          "2025-08-22T17:10:00+00:00",
+          "2025-08-22T18:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "BUY_SIDE",
+        "source": "PWH",
+        "price": 1.17296,
+        "origin_time": "2025-08-18T21:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-08-22T15:00:00+00:00",
+        "reclaim_time": "2025-08-22T15:00:00+00:00"
+      }
+    },
+    {
+      "event_id": "QE-EURUSD-E3-ac63054d0fa9ac24",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "SHORT",
+      "qualification_time": "2025-09-15T10:25:00+00:00",
+      "reference_type": "PWH",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.1765,
+      "reference_key": "PWH|None|None|1.1765",
+      "eligibility_intervals": [
+        [
+          "2025-09-15T10:25:00+00:00",
+          "2025-09-15T10:40:00+00:00"
+        ],
+        [
+          "2025-09-15T12:10:00+00:00",
+          "2025-09-15T12:30:00+00:00"
+        ],
+        [
+          "2025-09-15T12:35:00+00:00",
+          "2025-09-15T13:00:00+00:00"
+        ],
+        [
+          "2025-09-15T15:30:00+00:00",
+          "2025-09-15T15:45:00+00:00"
+        ],
+        [
+          "2025-09-15T15:50:00+00:00",
+          "2025-09-15T16:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "BUY_SIDE",
+        "source": "PWH",
+        "price": 1.1765,
+        "origin_time": "2025-09-08T21:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-09-09T06:00:00+00:00",
+        "reclaim_time": "2025-09-09T10:00:00+00:00"
+      }
+    },
+    {
+      "event_id": "QE-EURUSD-E3-7a0c72914be7888c",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "LONG",
+      "qualification_time": "2025-08-27T10:35:00+00:00",
+      "reference_type": "PWL",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.15824,
+      "reference_key": "PWL|None|None|1.15824",
+      "eligibility_intervals": [
+        [
+          "2025-08-27T10:35:00+00:00",
+          "2025-08-27T11:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "SELL_SIDE",
+        "source": "PWL",
+        "price": 1.15824,
+        "origin_time": "2025-08-25T21:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-08-27T08:00:00+00:00",
+        "reclaim_time": "2025-08-27T08:00:00+00:00"
+      }
+    },
+    {
+      "event_id": "QE-EURUSD-E3-3e5c8e275795c218",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "SHORT",
+      "qualification_time": "2025-09-12T08:00:00+00:00",
+      "reference_type": "SWING_HIGH",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.17454,
+      "reference_key": "SWING_HIGH|None|None|1.17454",
+      "eligibility_intervals": [
+        [
+          "2025-09-12T08:00:00+00:00",
+          "2025-09-12T13:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "BUY_SIDE",
+        "source": "SWING_HIGH",
+        "price": 1.17454,
+        "origin_time": "2025-09-11T15:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-09-12T07:00:00+00:00",
+        "reclaim_time": "2025-09-12T07:00:00+00:00"
+      }
+    },
+    {
+      "event_id": "QE-EURUSD-E3-acb0d4c79e5ef06b",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "SHORT",
+      "qualification_time": "2025-09-23T18:00:00+00:00",
+      "reference_type": "SWING_HIGH",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.18119,
+      "reference_key": "SWING_HIGH|None|None|1.18119",
+      "eligibility_intervals": [
+        [
+          "2025-09-23T18:00:00+00:00",
+          "2025-09-23T19:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "BUY_SIDE",
+        "source": "SWING_HIGH",
+        "price": 1.18119,
+        "origin_time": "2025-09-23T09:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-09-23T17:00:00+00:00",
+        "reclaim_time": "2025-09-23T17:00:00+00:00"
+      }
+    },
+    {
+      "event_id": "QE-EURUSD-E3-3f31d347b8f44a0c",
+      "producer_version": "AG_NATIVE_STAGE1_V1",
+      "symbol": "EURUSD",
+      "entry_condition": "E3",
+      "direction": "LONG",
+      "qualification_time": "2025-08-01T11:00:00+00:00",
+      "reference_type": "SWING_LOW",
+      "reference_low": null,
+      "reference_high": null,
+      "reference_level": 1.14044,
+      "reference_key": "SWING_LOW|None|None|1.14044",
+      "eligibility_intervals": [
+        [
+          "2025-08-01T11:00:00+00:00",
+          "2025-08-01T12:00:00+00:00"
+        ]
+      ],
+      "htf_liquidity_reference": {
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "side": "SELL_SIDE",
+        "source": "SWING_LOW",
+        "price": 1.14044,
+        "origin_time": "2025-08-01T01:00:00+00:00",
+        "status": "RECLAIMED",
+        "sweep_time": "2025-08-01T09:00:00+00:00",
+        "reclaim_time": "2025-08-01T10:00:00+00:00"
+      }
+    }
+  ]
+}

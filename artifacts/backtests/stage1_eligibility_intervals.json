@@ -1,0 +1,260 @@
+{
+  "symbol": "EURUSD",
+  "range": [
+    "2025-08-01T00:00:00+00:00",
+    "2025-10-01T00:00:00+00:00"
+  ],
+  "steps": 12383,
+  "valid_steps": 12383,
+  "elapsed_seconds": 9919.47,
+  "events": [
+    {
+      "entry_condition": "E3",
+      "reference_key": "PDH|None|None|1.17301",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-09-11T15:00:00+00:00",
+          "2025-09-11T16:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E3",
+      "reference_key": "PWH|None|None|1.17296",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-08-22T17:10:00+00:00",
+          "2025-08-22T18:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E2",
+      "reference_key": "ORDER_BLOCK|1.161080002784729|1.1618200540542603|None",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-08-22T14:00:00+00:00",
+          "2025-08-22T15:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E3",
+      "reference_key": "SWING_LOW|None|None|1.14044",
+      "direction": "LONG",
+      "eligibility_intervals": [
+        [
+          "2025-08-01T11:00:00+00:00",
+          "2025-08-01T12:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E3",
+      "reference_key": "PDH|None|None|1.1765",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-09-09T09:10:00+00:00",
+          "2025-09-09T10:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E3",
+      "reference_key": "SWING_HIGH|None|None|1.17454",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-09-12T08:00:00+00:00",
+          "2025-09-12T13:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E3",
+      "reference_key": "SWING_HIGH|None|None|1.18119",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-09-23T18:00:00+00:00",
+          "2025-09-23T19:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E3",
+      "reference_key": "PDH|None|None|1.16751",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-08-12T16:00:00+00:00",
+          "2025-08-12T17:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E1",
+      "reference_key": "D1_GAP|1.17919|1.18073|None",
+      "direction": "LONG",
+      "eligibility_intervals": [
+        [
+          "2025-09-22T21:00:00+00:00",
+          "2025-09-24T21:20:00+00:00"
+        ],
+        [
+          "2025-09-24T21:25:00+00:00",
+          "2025-09-26T21:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 2
+    },
+    {
+      "entry_condition": "E2",
+      "reference_key": "ORDER_BLOCK|1.1570099592208862|1.1587200164794922|None",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-08-06T07:00:00+00:00",
+          "2025-08-06T09:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E1",
+      "reference_key": "D1_GAP|1.14604|1.15183|None",
+      "direction": "LONG",
+      "eligibility_intervals": [
+        [
+          "2025-08-01T21:00:00+00:00",
+          "2025-08-01T21:05:00+00:00"
+        ],
+        [
+          "2025-08-03T21:05:00+00:00",
+          "2025-08-04T21:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 2
+    },
+    {
+      "entry_condition": "E2",
+      "reference_key": "ORDER_BLOCK|1.1703100204467773|1.1718300580978394|None",
+      "direction": "LONG",
+      "eligibility_intervals": [
+        [
+          "2025-09-09T20:00:00+00:00",
+          "2025-09-10T00:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E3",
+      "reference_key": "PDH|None|None|1.1802",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-09-23T13:05:00+00:00",
+          "2025-09-23T13:10:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E3",
+      "reference_key": "PWL|None|None|1.15824",
+      "direction": "LONG",
+      "eligibility_intervals": [
+        [
+          "2025-08-27T10:35:00+00:00",
+          "2025-08-27T11:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E3",
+      "reference_key": "PWH|None|None|1.1765",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-09-15T10:25:00+00:00",
+          "2025-09-15T10:40:00+00:00"
+        ],
+        [
+          "2025-09-15T12:10:00+00:00",
+          "2025-09-15T12:30:00+00:00"
+        ],
+        [
+          "2025-09-15T12:35:00+00:00",
+          "2025-09-15T13:00:00+00:00"
+        ],
+        [
+          "2025-09-15T15:30:00+00:00",
+          "2025-09-15T15:45:00+00:00"
+        ],
+        [
+          "2025-09-15T15:50:00+00:00",
+          "2025-09-15T16:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 5
+    },
+    {
+      "entry_condition": "E2",
+      "reference_key": "ORDER_BLOCK|1.1640700101852417|1.1649999618530273|None",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-08-21T08:00:00+00:00",
+          "2025-08-21T12:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 1
+    },
+    {
+      "entry_condition": "E1",
+      "reference_key": "D1_GAP|1.16687|1.17031|None",
+      "direction": "SHORT",
+      "eligibility_intervals": [
+        [
+          "2025-09-09T21:00:00+00:00",
+          "2025-09-12T21:05:00+00:00"
+        ],
+        [
+          "2025-09-14T21:05:00+00:00",
+          "2025-09-16T21:00:00+00:00"
+        ]
+      ],
+      "num_intervals": 2
+    },
+    {
+      "entry_condition": "E3",
+      "reference_key": "PDL|None|None|1.13996",
+      "direction": "LONG",
+      "eligibility_intervals": [
+        [
+          "2025-08-01T10:00:00+00:00",
+          "2025-08-01T10:05:00+00:00"
+        ],
+        [
+          "2025-08-01T12:20:00+00:00",
+          "2025-08-01T12:35:00+00:00"
+        ]
+      ],
+      "num_intervals": 2
+    }
+  ]
+}

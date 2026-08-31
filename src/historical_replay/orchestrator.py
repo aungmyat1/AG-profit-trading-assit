@@ -321,6 +321,9 @@ class Stage1Event:
     liquidity_reference: Optional[object] = None  # historical_replay.stage2.Stage1LiquidityReference,
     # for E3 events only -- untyped here to avoid a circular import (stage2.py imports Stage1Event
     # from this module)
+    eligibility_intervals: Tuple[Tuple[datetime, datetime], ...] = ()  # [start, end) pairs; empty =
+    # not yet reconstructed (migration-fixture default). See historical_replay.stage1.QualifiedEEvent
+    # for the canonical, fully-specified contract this field is being promoted into.
 
 
 def stage1_events_from_ledger(rows: Sequence[SetupLedgerRow]) -> Tuple[Stage1Event, ...]:
