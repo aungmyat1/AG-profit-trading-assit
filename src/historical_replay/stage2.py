@@ -111,6 +111,24 @@ def enrich_e3_events_with_liquidity(store: HistoricalCandleStore, symbol: str,
     return tuple(out)
 
 
+def _parse_reference_key(reference_key: Optional[str]):
+    """Inverse of proposals.identity.reference_key_for: recovers
+    (reference_type, reference_low, reference_high, reference_level) from the exact
+    "TYPE|low|high|level" string it produces, so setup_id identity (spec section 4-5
+    of the identity-repair phase) can be reconstructed without re-running E discovery.
+    Returns (None, None, None, None) if reference_key is None (matches
+    reference_key_for's own "nothing to disambiguate on" case)."""
+    if reference_key is None:
+        return None, None, None, None
+    raw_type, raw_low, raw_high, raw_level = reference_key.split("|", 3)
+    reference_type = None if raw_type == "NONE" else raw_type
+
+    def _num(raw: str) -> Optional[float]:
+        return None if raw == "None" else float(raw)
+
+    return reference_type, _num(raw_low), _num(raw_high), _num(raw_level)
+
+
 def _m5_side_primitives(symbol: str, current_price: Optional[float]):
     """M5-only primitives M1/M2/M3 consume -- fetched fresh at each replay step, same
     functions the live entrypoint uses for its M5-side inputs (conditional_entry_
@@ -173,8 +191,11 @@ def evaluate_entry_stage(symbol: str, event: Stage1Event, evaluation_time: datet
 
     liquidity_level = event.liquidity_reference.to_liquidity_level() if event.liquidity_reference is not None else None
 
+    ref_type, ref_low, ref_high, ref_level = _parse_reference_key(event.reference_key)
     pseudo_e = EConditionResult(symbol=symbol, entry_condition=event.entry_condition,
-                                direction=event.direction, eligible_for_confirmation=True)
+                                direction=event.direction, eligible_for_confirmation=True,
+                                reference_type=ref_type, reference_low=ref_low,
+                                reference_high=ref_high, reference_level=ref_level)
 
     m1 = evaluate_m1_character_change_with_inducement(
         symbol, pseudo_e, candidate, None, m5_candles, m5_candles, m5_fvg, m5_obs, current_price, evaluation_time)

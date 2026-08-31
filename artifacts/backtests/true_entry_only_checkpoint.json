@@ -1,0 +1,13 @@
+{
+  "event_index": 17,
+  "event_id": "E3-LONG-SWING_LOW|None|None|1.14044",
+  "setups_seen": 54,
+  "arrays_seen": 29,
+  "ready_seen": 12,
+  "elapsed_seconds": 15928.6,
+  "call_counts": {
+    "D1_or_H1_discovery": 0,
+    "E_evaluator": 0,
+    "build_symbol_conditional_entry_analysis": 0
+  }
+}
