@@ -1,0 +1,46 @@
+# AG_TRADE_ASSISTANT_V1_0: application-level release contract, separate from strategy
+# versions (strategies/*.yaml) and from the pilot policy file
+# (config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1.yaml) it wraps. Once accepted, this
+# release's behavior must not silently change -- future improvements become
+# AG_TRADE_ASSISTANT_V1_1, not a mutation of this file's fields.
+
+release_id: AG_TRADE_ASSISTANT_V1_0
+status: PILOT
+
+day_trading_strategy:
+  id: ST_ASIAN_SWEEP_5R_V1
+  version: "1.1.1"
+  authority: SOLE_DAY_TRADING_STRATEGY
+
+universe:
+  EURUSD: ENABLED
+  GBPUSD: ENABLED
+
+reference_session:
+  source: config/canonical_sessions.yaml
+  name: ASIAN
+
+active_cycle:
+  id: ASIAN_LONDON
+  start_utc: "07:00"
+  end_utc: "11:00"
+
+risk:
+  risk_per_trade_pct: 0.5
+  max_open_positions: 1
+  max_new_trades_per_day: 1
+  strategy_loss_lock_r: -1.0
+
+features:
+  session_trade: true
+  SMC_advisory: false
+  order_flow_advisory: false
+  Large_SMC_entries: false
+  crypto: false
+
+execution:
+  proposal_generation: true
+  mode: PROPOSAL_ONLY
+  explicit_confirmation_required: true
+  automatic_execution: false
+  live_execution: false

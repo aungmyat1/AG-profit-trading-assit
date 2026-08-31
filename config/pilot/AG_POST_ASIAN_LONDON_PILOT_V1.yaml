@@ -1,0 +1,44 @@
+# AG_POST_ASIAN_LONDON_PILOT_V1: pilot-level runtime policy layered on top of
+# ST_ASIAN_SWEEP_5R_V1's own signed strategy contract (strategies/ST_ASIAN_SWEEP_5R_V1.yaml).
+#
+# Nothing here redefines strategy semantics (entry/sweep/exit rules), the canonical
+# session windows (config/canonical_sessions.yaml), or the strategy's own pair_id/
+# reference_session names -- it only narrows the universe and adds pilot-specific risk/
+# governance policy that the strategy YAML itself does not (and per PROJECT_STATUS.md
+# open-gaps section, currently cannot) express.
+#
+# risk_per_trade_pct: ST_ASIAN_SWEEP_5R_V1.yaml has no signed risk_per_trade_pct
+# (confirmed open gap, PROJECT_STATUS.md "Strategy-config gaps" section). 0.5% here is
+# PILOT-LEVEL POLICY, not strategy authority -- an explicit, documented override, not a
+# retroactive edit to the strategy's own signed contract.
+
+pilot_id: AG_POST_ASIAN_LONDON_PILOT_V1
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+strategy_version: "1.1.1"
+strategy_source_path: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
+pair_id: ASIAN_LONDON   # the one session_pairs entry this pilot uses; LONDON_NEWYORK is inactive_cycle
+
+universe: [EURUSD, GBPUSD]
+
+reference_session:
+  source: config/canonical_sessions.yaml
+  name: asian
+
+execution_window:
+  id: ASIAN_LONDON
+  start_utc: "07:00"
+  end_utc: "11:00"
+
+inactive_cycle: [LONDON_NEWYORK]
+
+risk:
+  risk_per_trade_pct: 0.5
+  max_open_positions: 1
+  max_new_trades_per_day: 1
+  strategy_daily_loss_limit_r: -1.0
+
+execution:
+  mode: PROPOSAL_ONLY
+  automatic_execution: false
+  explicit_confirmation_required: true
+  live_execution: false

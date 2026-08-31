@@ -1,0 +1,80 @@
+{
+  "ST_ASIAN_SWEEP_5R_V1|EURUSD|2026-08-31|Asian": {
+    "decision_id": "DECISION-EURUSD-a13ca62724404893",
+    "evaluation_time": "2026-08-31 20:37:56.304007+00:00",
+    "missing_condition": null,
+    "reason_codes": [
+      "LOWER_SWEEP_STRICT_PENETRATION"
+    ],
+    "reference_session": "Asian",
+    "session_snapshot_id": "SNAPSHOT-EURUSD-2026-08-31-f3bbace0220ac7ae",
+    "signal": {
+      "box_high": 1.15939,
+      "box_low": 1.1585,
+      "box_mid": 1.1589450000000001,
+      "direction": "LONG",
+      "entry": 1.1588,
+      "pair_id": "ASIAN_LONDON",
+      "reason_code": "LOWER_SWEEP_STRICT_PENETRATION",
+      "reference_session": "Asian",
+      "regime": "RANGE",
+      "risk_distance": 0.00038000000000004697,
+      "session_date": "2026-08-31",
+      "setup": "SWEEP",
+      "signal_id": "ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-08-31",
+      "status": "SIGNAL",
+      "stop_loss": 1.15842,
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.1",
+      "symbol": "EURUSD"
+    },
+    "status": "READY",
+    "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+    "strategy_version": "1.1.1",
+    "symbol": "EURUSD",
+    "trading_date": "2026-08-31",
+    "trigger_level": 1.1588,
+    "trigger_timeframe": "M15",
+    "trigger_type": "LIQUIDITY_SWEEP",
+    "valid_until": "2026-08-31 11:00:00+00:00"
+  },
+  "ST_ASIAN_SWEEP_5R_V1|GBPUSD|2026-08-31|Asian": {
+    "decision_id": "DECISION-GBPUSD-bd3d2bff2c50991b",
+    "evaluation_time": "2026-08-31 20:37:56.304007+00:00",
+    "missing_condition": null,
+    "reason_codes": [
+      "UPPER_SWEEP_STRICT_PENETRATION"
+    ],
+    "reference_session": "Asian",
+    "session_snapshot_id": "SNAPSHOT-GBPUSD-2026-08-31-43beb8a859739745",
+    "signal": {
+      "box_high": 1.35465,
+      "box_low": 1.3533,
+      "box_mid": 1.353975,
+      "direction": "SHORT",
+      "entry": 1.35449,
+      "pair_id": "ASIAN_LONDON",
+      "reason_code": "UPPER_SWEEP_STRICT_PENETRATION",
+      "reference_session": "Asian",
+      "regime": "RANGE",
+      "risk_distance": 0.000260000000000149,
+      "session_date": "2026-08-31",
+      "setup": "SWEEP",
+      "signal_id": "ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-08-31",
+      "status": "SIGNAL",
+      "stop_loss": 1.3547500000000001,
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.1",
+      "symbol": "GBPUSD"
+    },
+    "status": "READY",
+    "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+    "strategy_version": "1.1.1",
+    "symbol": "GBPUSD",
+    "trading_date": "2026-08-31",
+    "trigger_level": 1.35449,
+    "trigger_timeframe": "M15",
+    "trigger_type": "LIQUIDITY_SWEEP",
+    "valid_until": "2026-08-31 11:00:00+00:00"
+  }
+}
