@@ -21,7 +21,7 @@ from historical_replay.data_source_patch import historical_data_context  # noqa:
 from historical_replay.orchestrator import (  # noqa: E402
     D1_WARMUP_CANDLES, H1_WARMUP_CANDLES, M5_WARMUP_CANDLES, SetupLedger, Stage1Event, _has_enough_history,
 )
-from historical_replay.stage1 import load_qualified_e_events  # noqa: E402
+from historical_replay.stage1 import load_directional_liquidity_timeline, load_qualified_e_events  # noqa: E402
 from historical_replay.stage2 import evaluate_entry_stage  # noqa: E402
 
 ARTIFACT = "artifacts/backtests/stage1/qualified_e_events_2025-08-01_2025-10-01.json"
@@ -54,6 +54,8 @@ def _to_stage1_event(qe):
 
 def main() -> None:
     events, metadata = load_qualified_e_events(ARTIFACT)
+    liquidity_timeline = load_directional_liquidity_timeline(
+        "artifacts/backtests/directional_liquidity_timeline.json")
 
     candles, rep = load_mt5_export_csv(
         r"D:\EURUSD_M5_202504211715_202607310000.csv", "EURUSD", "M5")
@@ -99,7 +101,8 @@ def main() -> None:
                     continue
                 steps += 1
                 with historical_data_context(store, as_of):
-                    analysis = evaluate_entry_stage("EURUSD", stage1_event, as_of)
+                    analysis = evaluate_entry_stage("EURUSD", stage1_event, as_of,
+                                                    liquidity_timeline=liquidity_timeline)
                 ledger.observe(analysis, as_of)
 
             rows = list(ledger.rows.values())

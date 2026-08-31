@@ -23,6 +23,7 @@ from proposals.identity import reference_key_for
 from .stage2 import Stage1LiquidityReference, _parse_reference_key
 
 SCHEMA_VERSION = "QUALIFIED_E_EVENT_V1"
+CONTEXT_SCHEMA_VERSION = "STAGE1_CONTEXT_V2"
 PRODUCER_VERSION = "AG_NATIVE_STAGE1_V1"
 
 
@@ -151,3 +152,84 @@ def load_qualified_e_events(path: str) -> Tuple[Tuple[QualifiedEEvent, ...], Dic
         raise ValueError(f"schema_version mismatch: {payload['schema_version']!r} != {SCHEMA_VERSION!r}")
     events = tuple(_deserialize_event(e) for e in payload["events"])
     return events, payload["metadata"]
+
+
+# --------------------------------------------------------------------------- directional HTF liquidity
+# Call-graph audit finding (this phase): M3's liquidity_level is NOT owned by E3.
+# conditional_entry_snapshot.py:222-256 computes htf_liquidity_buy/htf_liquidity_sell
+# ONCE per poll (from one liquidity_result(symbol,"H1") call), selects
+# `liquidity_level = htf_liquidity_buy if direction==SHORT else htf_liquidity_sell`
+# purely by DIRECTION inside the per-direction loop, and the resulting M3 result is
+# then cross-joined with E1/E2/E3 of matching direction by the composer. Modeling this
+# as "E3's own payload" (the earlier, WRONG design) starves E1-paired and E2-paired M3
+# evaluations of a liquidity_level they should have had, exactly as diagnosed via the
+# missing SETUP-EURUSD-E1M3-29ef3d6e78d5f9c2 setup this phase found.
+
+@dataclass(frozen=True)
+class DirectionalLiquidityInterval:
+    start_time: datetime
+    end_time: datetime
+    liquidity_reference: Optional[Stage1LiquidityReference]
+
+
+@dataclass(frozen=True)
+class DirectionalLiquidityTimeline:
+    """[start, end) intervals per side ("BUY_SIDE"/"SELL_SIDE" -- matches
+    LiquiditySide.value), time-varying, gaps preserved as liquidity_reference=None.
+    No fallback/backfill: a query outside any interval, or inside a None interval,
+    returns None -- exactly what the original per-poll evaluator would have seen."""
+    buy: Tuple[DirectionalLiquidityInterval, ...]
+    sell: Tuple[DirectionalLiquidityInterval, ...]
+
+    def lookup(self, direction: str, t: datetime) -> Optional[Stage1LiquidityReference]:
+        # direction "SHORT" -> BUY_SIDE liquidity, "LONG" -> SELL_SIDE (matches
+        # conditional_entry_snapshot.py:254's own mapping exactly)
+        intervals = self.buy if direction == "SHORT" else self.sell
+        for iv in intervals:
+            if iv.start_time <= t < iv.end_time:
+                return iv.liquidity_reference
+        return None
+
+
+@dataclass(frozen=True)
+class Stage1Dataset:
+    """Wraps the unchanged QualifiedEEvent set (E identity/reference/qualification/
+    eligibility -- STAGE1_CORE, frozen) together with the directional liquidity
+    timeline (the one field that was mis-scoped to E3-only; now direction-scoped and
+    shared, matching original semantics) -- spec source phase's `Stage1Dataset`."""
+    events: Tuple[QualifiedEEvent, ...]
+    liquidity_timeline: DirectionalLiquidityTimeline
+    metadata: Dict[str, Any]
+
+
+def _liq_ref_from_dict(d: Optional[Dict[str, Any]]) -> Optional[Stage1LiquidityReference]:
+    if d is None:
+        return None
+    return Stage1LiquidityReference(
+        symbol=d.get("symbol", ""), timeframe=d.get("timeframe", "H1"), side=d["side"], source=d["source"],
+        price=d["price"], origin_time=None, status=d.get("status", "UNKNOWN"),
+        sweep_time=datetime.fromisoformat(d["sweep_time"]) if d.get("sweep_time") else None,
+        reclaim_time=datetime.fromisoformat(d["reclaim_time"]) if d.get("reclaim_time") else None,
+    )
+
+
+def load_directional_liquidity_timeline(path: str) -> DirectionalLiquidityTimeline:
+    with open(path, encoding="utf-8") as f:
+        payload = json.load(f)
+
+    def _side(raw: List[Dict[str, Any]]) -> Tuple[DirectionalLiquidityInterval, ...]:
+        return tuple(
+            DirectionalLiquidityInterval(
+                start_time=datetime.fromisoformat(iv["start_time"]), end_time=datetime.fromisoformat(iv["end_time"]),
+                liquidity_reference=_liq_ref_from_dict(iv["liquidity_reference"]),
+            )
+            for iv in raw
+        )
+
+    return DirectionalLiquidityTimeline(buy=_side(payload["BUY"]), sell=_side(payload["SELL"]))
+
+
+def load_stage1_dataset(events_path: str, liquidity_path: str) -> Stage1Dataset:
+    events, metadata = load_qualified_e_events(events_path)
+    timeline = load_directional_liquidity_timeline(liquidity_path)
+    return Stage1Dataset(events=events, liquidity_timeline=timeline, metadata=metadata)

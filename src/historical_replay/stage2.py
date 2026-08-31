@@ -164,7 +164,8 @@ def _m5_side_primitives(symbol: str, current_price: Optional[float]):
     return m5_candles, m5_fvg_zones, m5_validated_order_blocks, m5_candidate_zones, inducement_candidates
 
 
-def evaluate_entry_stage(symbol: str, event: Stage1Event, evaluation_time: datetime) -> SMCConditionalEntryAnalysis:
+def evaluate_entry_stage(symbol: str, event: Stage1Event, evaluation_time: datetime,
+                         liquidity_timeline=None) -> SMCConditionalEntryAnalysis:
     """The true Stage-2 entry point: Stage1Event -> M1/M2/M3 -> composer.compose(),
     calling ZERO D1/H1 discovery and ZERO E1/E2/E3 evaluators (unlike
     compose_conditional_entry_analysis, which always evaluates all three E's --
@@ -173,7 +174,15 @@ def evaluate_entry_stage(symbol: str, event: Stage1Event, evaluation_time: datet
     composer.compose() -- the pure per-(E,M)-pair primitive composer.py itself uses --
     directly, once per maneuver, so evaluate_eN never runs at all). Must run inside
     historical_data_context. Returns the same SMCConditionalEntryAnalysis shape
-    build_symbol_conditional_entry_analysis produces, for ledger/funnel reuse."""
+    build_symbol_conditional_entry_analysis produces, for ledger/funnel reuse.
+
+    `liquidity_timeline` (historical_replay.stage1.DirectionalLiquidityTimeline), when
+    given, is M3's ONLY source of HTF liquidity context -- looked up by
+    (event.direction, evaluation_time), matching the original live entrypoint's own
+    per-poll-per-direction semantics (spec source: call-graph audit,
+    conditional_entry_snapshot.py:222-256 -- M3's liquidity_level is direction-scoped,
+    not E3-owned). When omitted, falls back to `event.liquidity_reference` (the older,
+    E3-only migration path) for backward compatibility with existing callers/tests."""
     current_price = None
     try:
         current_price = get_tick(symbol).bid
@@ -189,7 +198,11 @@ def evaluate_entry_stage(symbol: str, event: Stage1Event, evaluation_time: datet
     inducement_side = _INDUCEMENT_SIDE_FOR_DIRECTION[event.direction]
     candidate = next((c for c in inducement_candidates if c.side == inducement_side), None)
 
-    liquidity_level = event.liquidity_reference.to_liquidity_level() if event.liquidity_reference is not None else None
+    if liquidity_timeline is not None:
+        liquidity_ref = liquidity_timeline.lookup(event.direction, evaluation_time)
+    else:
+        liquidity_ref = event.liquidity_reference
+    liquidity_level = liquidity_ref.to_liquidity_level() if liquidity_ref is not None else None
 
     ref_type, ref_low, ref_high, ref_level = _parse_reference_key(event.reference_key)
     pseudo_e = EConditionResult(symbol=symbol, entry_condition=event.entry_condition,
