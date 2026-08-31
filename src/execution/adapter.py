@@ -38,6 +38,14 @@ class TradeProposal:
     tp2: Optional[float]
     volume: float
     risk_amount: float
+    # AG_EXECUTION_RUNTIME_READINESS_V1 (GAP 2): the ORIGINAL requested risk_percent, if
+    # the upstream pipeline that produced this proposal computed one -- persisted onto
+    # confirmed-fill lifecycle metadata (execution/lifecycle.py::register_confirmed_fill)
+    # so it survives a restart. Optional/defaulted so existing callers/tests that
+    # construct TradeProposal(**fields) without it keep working unchanged; SetupState (see
+    # from_setup_state below) carries no risk_percent field of its own, so it stays None
+    # there rather than being invented.
+    risk_percent: Optional[float] = None
 
     @classmethod
     def from_setup_state(cls, state: SetupState) -> "TradeProposal":
@@ -71,6 +79,7 @@ class TradeProposal:
             profile_id=profile_id, direction=intent.direction, entry=intent.entry,
             stop_loss=intent.stop_loss, tp1=intent.take_profit, tp2=None,
             volume=intent.volume, risk_amount=intent.risk_amount,
+            risk_percent=intent.risk_percent,
         )
 
 

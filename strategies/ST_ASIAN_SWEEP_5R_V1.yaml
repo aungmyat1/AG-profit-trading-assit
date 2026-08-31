@@ -1,10 +1,10 @@
 strategy_id: ST_ASIAN_SWEEP_5R_V1
 strategy_name: Asian Session Liquidity Sweep 5R
 strategy_family: Liquidity_Sweep
-version: 1.1.0
+version: 1.1.1
 status: ACTIVE_INCUBATION
 registered_utc: "2026-08-26"
-updated_utc: "2026-08-26"
+updated_utc: "2026-08-31"
 
 # v1.1.0: added a second reference/trade session pair so the same sweep logic also runs
 # off the London range during the New York session, not only off the Asian range during
@@ -62,16 +62,28 @@ regime_classification:
     # revisit if LONDON_NEWYORK setups rarely qualify as range.
 
 # "Reference" below means whichever session_pairs[].reference_session is in play for that pair.
+#
+# entry_order_type resolved to MARKET (AG_EXECUTION_RUNTIME_READINESS_V1, 2026-08-31): the
+# previously-declared dual-mode value was never a genuine two-case ambiguity to begin with --
+# entry_level: Sweep_Candle_Body_Close means the entry price IS the close of the M15 candle
+# that already produced the sweep signal (see strategy_engine/session/setups.py::
+# entry_2_sweep, entry_reference = max/min(open, close) of a candle from post_session_candles
+# that has already fully closed by the time the signal fires). There is no future price to
+# rest a resting order at -- the signal only exists once that candle's close is known, so the
+# only executable order type consistent with the frozen entry logic is a MARKET fill entered
+# immediately after signal detection. Both long_setup and short_setup share this identically
+# (loader.py already refuses to load the file if they ever diverge). See
+# strategies/STRATEGY_LEDGER.md 'Open gaps' for the prior ambiguity and its resolution.
 entry_rules:
   long_setup:
     trigger: SWEEP_REFERENCE_LOW
     condition: "Price wick breaches Reference Session Low and candle closes back inside Reference Range"
-    entry_order_type: MARKET_OR_LIMIT
+    entry_order_type: MARKET
     entry_level: Sweep_Candle_Body_Close
   short_setup:
     trigger: SWEEP_REFERENCE_HIGH
     condition: "Price wick breaches Reference Session High and candle closes back inside Reference Range"
-    entry_order_type: MARKET_OR_LIMIT
+    entry_order_type: MARKET
     entry_level: Sweep_Candle_Body_Close
 
 risk_and_money_management:

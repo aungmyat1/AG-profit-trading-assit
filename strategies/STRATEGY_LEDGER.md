@@ -36,11 +36,16 @@ from canonical session windows or other repo conventions at the time of registra
     actual risk-per-trade percentage or contract size. `execution/risk.py` currently
     falls back to `config/trading.yaml`'s account-wide `risk.risk_per_trade_pct: 1.0`
     default rather than inventing a strategy-specific number.
-  - `entry_rules.{long,short}_setup.entry_order_type: MARKET_OR_LIMIT` does not specify
-    which. `execution/intent_builder.py` treats this as undefined and fails closed with
-    `ENTRY_EXECUTION_UNDEFINED` rather than choosing -- so this strategy cannot currently
-    reach `READY_FOR_ORDER_CHECK` until this value is changed to `MARKET` or `LIMIT`
-    (with a defined limit-price rule, if `LIMIT`).
+  - ~~`entry_rules.{long,short}_setup.entry_order_type: MARKET_OR_LIMIT` does not specify
+    which.~~ **Resolved 2026-08-31 (AG_EXECUTION_RUNTIME_READINESS_V1, v1.1.1):** this was
+    never a genuine two-case ambiguity -- `entry_level: Sweep_Candle_Body_Close` means the
+    entry price is the close of the M15 candle that already produced the sweep signal
+    (`strategy_engine/session/setups.py::entry_2_sweep`), a price already known and in the
+    past by the time the signal fires. There is no future price to rest a LIMIT order at,
+    so the only order type consistent with the frozen entry logic is MARKET. Both
+    `long_setup`/`short_setup` now declare `entry_order_type: MARKET`; `execution/
+    intent_builder.py` reaches `READY_FOR_ORDER_CHECK` for this strategy's real signals.
+    See `tests/test_execution_runtime_readiness.py` for the real-YAML, real-path proof.
 
 ## SESSION_TRADE_V1 -- Asian/London session trend-continuation & sweep strategy
 

@@ -150,12 +150,15 @@ def test_volume_above_broker_max_rejected():
 
 # --------------------------------------------------------------------------- real registered strategy
 
-def test_real_strategy_config_is_ambiguous_on_entry_order_type():
-    """Documents a known gap (strategies/STRATEGY_LEDGER.md 'Open gaps'): the registered
-    strategy declares entry_order_type: MARKET_OR_LIMIT, which is not a single
-    executable order type, so it cannot reach READY_FOR_ORDER_CHECK until fixed."""
+def test_real_strategy_config_entry_order_type_resolved_to_market():
+    """AG_EXECUTION_RUNTIME_READINESS_V1: the formerly-ambiguous entry_order_type:
+    MARKET_OR_LIMIT (strategies/STRATEGY_LEDGER.md 'Open gaps') is resolved to a single
+    deterministic MARKET contract -- entry_level: Sweep_Candle_Body_Close means the entry
+    price is already a known, past candle close by the time the signal fires, never a
+    future resting-limit price. The real registered strategy now reaches
+    READY_FOR_ORDER_CHECK instead of ENTRY_EXECUTION_UNDEFINED."""
     strategy = load_strategy("strategies/ST_ASIAN_SWEEP_5R_V1.yaml")
-    assert strategy.entry_order_type == "MARKET_OR_LIMIT"
+    assert strategy.entry_order_type == "MARKET"
 
     result = build_intent(_signal(), strategy, equity=10_000.0, symbol_meta=_symbol_meta(), risk_per_trade_pct=1.0)
-    assert result.status == "ENTRY_EXECUTION_UNDEFINED"
+    assert result.status == STATUS_READY

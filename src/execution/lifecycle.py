@@ -47,6 +47,7 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 
+from execution import journal
 from execution.close_ledger import CloseLedger
 from execution.daily_loss_guard import DailyLossGuard
 from execution.models import ExecutionReport
@@ -65,13 +66,37 @@ def register_confirmed_fill(open_position_guard: OpenPositionGuard, proposal, re
     itself reports EXECUTED with a real broker ticket -- an ASSISTANT_PROPOSAL/order still
     awaiting confirmation, a rejection, or a duplicate short-circuit never reaches here
     (spec: "SUBMITTED does not automatically equal OPEN"). Returns the position_id
-    (ticket, as a string) it registered under, or None if nothing was registered."""
+    (ticket, as a string) it registered under, or None if nothing was registered.
+
+    AG_EXECUTION_RUNTIME_READINESS_V1 (GAP 2): also persists IMMUTABLE lifecycle metadata
+    (ticket, strategy_id, setup_id, symbol, direction, effective fill entry, original
+    stop_loss, initial executed volume, original risk_amount, requested risk_percent) into
+    execution.journal, keyed by proposal.setup_id -- the SAME command_id the Forex
+    TradeCommand already used (see coordinator._forex_command), and the SAME identity a
+    restart-restored broker position's AGT:<command_id> comment tag already resolves to
+    (see reconcile_open_positions below). This is what lets a later restart recover the
+    ORIGINAL risk_amount for a position whose OpenPositionGuard record did not itself
+    survive, instead of leaving it permanently unrecoverable."""
     if report.status != "EXECUTED" or report.result is None or report.result.ticket is None:
         return None
     position_id = str(report.result.ticket)
     open_position_guard.register_open(
         position_id, proposal.strategy_id, proposal.symbol,
         setup_id=proposal.setup_id, risk_amount=proposal.risk_amount, volume=proposal.volume,
+    )
+    result = report.result
+    journal.record_lifecycle_metadata(
+        proposal.setup_id,
+        ticket=position_id,
+        strategy_id=proposal.strategy_id,
+        setup_id=proposal.setup_id,
+        symbol=proposal.symbol,
+        direction=proposal.direction,
+        entry=result.fill_price if result.fill_price is not None else proposal.entry,
+        stop_loss=proposal.stop_loss,
+        volume=result.filled_volume if result.filled_volume is not None else proposal.volume,
+        risk_amount=proposal.risk_amount,
+        risk_percent=getattr(proposal, "risk_percent", None),
     )
     return position_id
 
@@ -213,14 +238,39 @@ def reconcile_open_positions(
         command_id = _extract_command_id_from_comment(getattr(row, "comment", None))
         if command_id is None:
             continue  # not one of ours (no AGT: tag) -- never adopt a foreign position
+
+        # GAP 2: combine "live MT5 AG position exists" with "persisted lifecycle metadata
+        # for that command_id" -- if register_confirmed_fill() ran for this ticket before
+        # whatever crash/restart lost the OpenPositionGuard record, the ORIGINAL
+        # risk_amount/strategy_id are recoverable from execution.journal instead of being
+        # permanently None. If no metadata was ever persisted (predates this phase, or the
+        # write itself failed), fail closed exactly as before -- never guess.
+        metadata = journal.read_lifecycle_metadata(command_id)
+        if metadata is not None and metadata.get("risk_amount") is not None:
+            open_position_guard.register_open(
+                ticket_str, metadata.get("strategy_id") or UNKNOWN_STRATEGY_ID, row.symbol,
+                setup_id=command_id, risk_amount=metadata.get("risk_amount"),
+                volume=float(row.volume),
+            )
+            results.append({
+                "status": "MISSING_RECORD_RESTORED_FROM_METADATA", "position_id": ticket_str,
+                "risk_metadata_status": "RECOVERED",
+                "risk_amount": metadata.get("risk_amount"),
+                "strategy_id": metadata.get("strategy_id"),
+            })
+            continue
+
         open_position_guard.register_open(
             ticket_str, UNKNOWN_STRATEGY_ID, row.symbol,
             setup_id=command_id, risk_amount=None, volume=float(row.volume),
         )
         results.append({
             "status": "MISSING_RECORD_RESTORED", "position_id": ticket_str,
-            "gap": "strategy_id/risk_amount not recoverable from broker state alone; "
-                   "realized-R at close will be skipped (CLOSED_RISK_AMOUNT_MISSING)",
+            "risk_metadata_status": "OPEN_RISK_METADATA_MISSING",
+            "gap": "strategy_id/risk_amount not recoverable from broker state or the "
+                   "lifecycle-metadata journal alone; the position still counts toward "
+                   "and blocks the one-open-position rule, but realized-R at close will "
+                   "be skipped (CLOSED_RISK_AMOUNT_MISSING) -- never guessed.",
         })
 
     return results
