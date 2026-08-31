@@ -17,6 +17,7 @@ import re
 from datetime import datetime, timezone
 
 _EXECUTED_EVENT = "ORDER_EXECUTED"
+_LIFECYCLE_METADATA_EVENT = "LIFECYCLE_METADATA_RECORDED"
 _LEGACY_SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
@@ -90,3 +91,41 @@ def read_events(command_id: str, base_dir: str = "journal") -> list:
 
 def has_executed(command_id: str, base_dir: str = "journal") -> bool:
     return any(event.get("event") == _EXECUTED_EVENT for event in read_events(command_id, base_dir))
+
+
+def has_lifecycle_metadata(command_id: str, base_dir: str = "journal") -> bool:
+    """AG_EXECUTION_RUNTIME_READINESS_V1 (GAP 2): has immutable confirmed-fill lifecycle
+    metadata already been recorded for this command_id (== a Forex TradeProposal's
+    setup_id, the same stable identity ORDER_EXECUTED is already keyed by)?"""
+    return any(event.get("event") == _LIFECYCLE_METADATA_EVENT for event in read_events(command_id, base_dir))
+
+
+def record_lifecycle_metadata(command_id: str, base_dir: str = "journal", **payload) -> bool:
+    """Write-once persistence of confirmed-fill lifecycle metadata (ticket, strategy_id,
+    setup_id, symbol, direction, effective fill entry, original stop_loss, initial
+    executed volume, original risk_amount, requested risk_percent) into the SAME
+    per-command_id append-only journal file ORDER_EXECUTED already lives in -- not a
+    second persistence mechanism. The record's own "ts" field (stamped by record_event)
+    doubles as the opened timestamp.
+
+    Immutable: a command_id that already has lifecycle metadata recorded is left
+    untouched (returns False, no-op) -- same "claimed once, never re-decided" posture as
+    claim_command(), so a replayed/duplicate register_confirmed_fill() call can never
+    silently overwrite the ORIGINAL risk metadata with a second, possibly-different value.
+    Returns True iff this call actually wrote the record.
+    """
+    if has_lifecycle_metadata(command_id, base_dir):
+        return False
+    record_event(command_id, _LIFECYCLE_METADATA_EVENT, base_dir=base_dir, **payload)
+    return True
+
+
+def read_lifecycle_metadata(command_id: str, base_dir: str = "journal") -> dict | None:
+    """Returns the persisted lifecycle-metadata record for command_id, or None if none was
+    ever recorded (e.g. this position predates AG_EXECUTION_RUNTIME_READINESS_V1, or the
+    metadata write itself failed) -- callers (execution/lifecycle.py restart
+    reconciliation) must fail closed on None, never guess."""
+    for event in read_events(command_id, base_dir):
+        if event.get("event") == _LIFECYCLE_METADATA_EVENT:
+            return event
+    return None

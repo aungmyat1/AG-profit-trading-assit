@@ -92,14 +92,12 @@ def _coordinator(tmp_path) -> ExecutionCoordinator:
 def _session_strategy_config() -> StrategyConfig:
     """Minimal StrategyConfig with an unambiguous MARKET entry_order_type -- same idiom
     tests/test_execution_intent_builder.py's own _strategy() helper uses. The REAL
-    registered strategies/ST_ASIAN_SWEEP_5R_V1.yaml declares entry_order_type:
-    MARKET_OR_LIMIT (a pre-existing, documented ambiguity -- strategies/STRATEGY_LEDGER.md
-    'Open gaps', also asserted by
-    tests/test_execution_intent_builder.py::test_real_strategy_config_is_ambiguous_on_entry_order_type),
-    which build_intent() rejects with ENTRY_EXECUTION_UNDEFINED regardless of this phase --
-    fixing that ambiguity is strategy-config scope, explicitly out of bounds here (spec:
-    do not change signal/session rules). This fixture isolates ExecutionCoordinator's own
-    routing behavior from that pre-existing, unrelated config gap."""
+    registered strategies/ST_ASIAN_SWEEP_5R_V1.yaml now ALSO resolves to entry_order_type:
+    MARKET (AG_EXECUTION_RUNTIME_READINESS_V1 -- see strategies/STRATEGY_LEDGER.md 'Open
+    gaps' and tests/test_execution_runtime_readiness.py for the real-YAML, real-path
+    proof). This fixture stays a minimal, isolated StrategyConfig on purpose -- it keeps
+    ExecutionCoordinator's own routing tests independent of session/candle fixtures, not
+    because the real config is still ambiguous."""
     return StrategyConfig(
         strategy_id=STRATEGY_A, strategy_name="Asian Sweep 5R", strategy_family="Session",
         version="1.0.0", status="ACTIVE_INCUBATION", instruments=("EURUSD",), timeframe="M15",
