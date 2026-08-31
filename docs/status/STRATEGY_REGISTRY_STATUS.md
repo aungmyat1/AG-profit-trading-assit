@@ -1,11 +1,16 @@
 # Strategy Registry Status — 2026-08-27
 
+> Historical evidence snapshot. The statement below that no runtime caller existed was
+> accurate on 2026-08-27 but was superseded by the later day-trading and execution
+> runtimes. Use `PROJECT_STATUS.md` for current reachability and safety-gate status.
+
 ## Registry implementation
 
 `strategies/registry.yaml` — data-only registry (strategy_id, registered/active/research flags,
-demo/live authorization, config source, owning engine). No runtime loader/orchestrator exists
-yet (see `docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md`'s "Strategy Manager" section for why that's a
-deliberate, not accidental, gap: nothing currently calls one).
+demo/live authorization, config source, owning engine). At this milestone no runtime
+loader/orchestrator existed (see `docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md`'s
+"Strategy Manager" section). That observation is retained as dated evidence and is not
+a statement about the current repository.
 
 `strategies/STRATEGY_LEDGER.md` — narrative registration history, now includes `SESSION_TRADE_V1`
 alongside the existing `ST_ASIAN_SWEEP_5R_V1` entry.

@@ -1,8 +1,21 @@
 # AG Profit Trading
 
-AG Profit Trading is an MT5-connected trading assistant built around deterministic
-strategy evaluation, explicit risk controls, and human-authorized execution. AI
-capabilities inspect and explain market state; they do not independently authorize
+AG Profit Trading is a deterministic FX and crypto trading assistant designed to
+produce two complementary decision products:
+
+- **Session Trade** proposals for recurring intraday opportunities around defined
+  market sessions.
+- **Large-SMC Trade** proposals for selective higher-timeframe liquidity and structure
+  opportunities with lower-timeframe confirmation.
+
+The guaranteed daily output is a decision (`READY`, `WATCH`, `NO_TRADE`, or a fail-closed
+data/error state), not a forced trade. A pre-trade proposal is not a broker ticket. MT5
+or a future crypto venue creates a broker ticket only after a qualifying proposal is
+refreshed, validated, explicitly authorized by the user, and successfully executed.
+
+The current operational implementation is FX/MT5-first. Crypto signal conventions and
+adapter interfaces exist, but a real crypto venue feed and execution adapter do not.
+AI capabilities inspect and explain market state; they do not independently authorize
 orders or override strategy results.
 
 ## Safety and authority
@@ -33,9 +46,17 @@ See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
   filenames, and conservative CLOSE-volume normalization.
 - Manual-entry trade management supports ticket claiming, TP1 partial close,
   breakeven, and a 5R runner under an independent safety gate.
+- A read-only day-trading runtime evaluates completed-session events and SMC conditional
+  surveillance, persists restart-safe state, and emits alerts. Its execution submission
+  remains disabled.
+- The execution runtime has restart-safe lifecycle reconciliation and explicit-confirmation
+  routing for eligible FX proposals.
+- Crypto sweep/retest strategy rules and adapter boundaries exist, but crypto market data
+  and exchange execution remain disabled until a real venue is integrated.
 - Historical replay prohibits live MT5 candle/tick access. Historical session-box
   reconstruction remains a documented completeness gap and degrades explicitly.
-- Current regression baseline: **979 passed, 5 skipped, 0 failed** (2026-08-30).
+- See [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current regression baseline and
+  live operational snapshot; dated totals elsewhere are milestone evidence.
 
 ## Quick start
 
@@ -105,6 +126,11 @@ authority:
 3. `docs/status/` records dated verification evidence; older test totals are historical.
 4. Architecture documents explain seams and authority but do not override strategy or
    execution gates.
+
+When implementation, authorization, live validation, or regression state changes,
+follow [`docs/status/LIVE_STATUS_MAINTENANCE.md`](docs/status/LIVE_STATUS_MAINTENANCE.md).
+It defines which rolling documents must change together and which dated evidence must
+remain immutable.
 
 ## Testing notes
 

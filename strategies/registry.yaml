@@ -14,7 +14,8 @@ strategies:
     registered: true
     active: true
     research: true
-    demo_authorized: false   # execution/ is project-wide PAUSED (PROJECT_STATUS.md); also blocked
+    demo_authorized: false   # explicit-command demo execution exists project-wide, but this strategy
+                             # remains independently blocked by its own open contract gaps
     live_authorized: false   #   independently by strategies/STRATEGY_LEDGER.md's own open gaps
                               #   (entry_order_type undefined, risk_per_trade_pct unspecified)
     config_source: strategies/ST_ASIAN_SWEEP_5R_V1.yaml

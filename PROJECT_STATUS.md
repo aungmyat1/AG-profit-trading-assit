@@ -4,19 +4,52 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Current operational snapshot (2026-08-30)
+## Current operational snapshot (2026-08-31)
 
 This section is the rolling summary. Test totals elsewhere in this document belong to
 the dated milestone that introduced the surrounding feature.
 
 ```text
 ANALYSIS                      AVAILABLE
+DAILY SESSION/SMC RUNTIME     READ-ONLY, restart-persistent
 DEMO OPEN/CLOSE EXECUTION     IMPLEMENTED, explicit-command-gated
 LIVE TRADING                  DISABLED BY DEFAULT
 MANUAL TRADE MANAGEMENT       BUILT, independently gated, live validation deferred
+CRYPTO SIGNAL CONTRACT        IMPLEMENTED (incubation)
+CRYPTO DATA/EXECUTION         NOT IMPLEMENTED, fail-closed
 HISTORICAL REPLAY             LIVE-MT5 ACCESS BLOCKED
-FULL REGRESSION               979 passed / 5 skipped / 0 failed
+FULL REGRESSION               979 passed / 5 skipped / 0 failed (last completed baseline, 2026-08-30)
 ```
+
+### Product objective
+
+The target product produces two deterministic decision services: recurring intraday
+**Session Trade** proposals and selective higher-timeframe **Large-SMC Trade** proposals.
+Each evaluation must end in an explicit actionable or non-actionable state; the system
+guarantees a daily decision report, not a forced trade. A proposal is not a broker
+ticket. Broker execution remains a separate, freshly validated, explicitly
+human-authorized action.
+
+The current implementation is FX/MT5-first. `scripts/run_daytrading_runtime.py` provides
+a read-only, closed-bar runtime for completed-session evaluation and SMC conditional
+surveillance with restart-persistent state and idempotent alert records. The execution
+runtime provides explicit-confirmation FX routing and restart reconciliation. These are
+real runtime paths, superseding older documents that described the registry as having
+no caller or orchestrator.
+
+`ST_LIQUIDITY_SWEEP_RETEST_V1` contains parameterized Forex and crypto-perpetual signal
+profiles. Crypto remains incubation-only: `execution_runtime.crypto_feed` defines the
+feed protocol but no venue feed, and `execution.adapter.CryptoExecutionAdapter` cannot
+send orders. Synthetic crypto metadata is research-only and rejected as an execution
+basis.
+
+Documentation live-status changes follow
+`docs/status/LIVE_STATUS_MAINTENANCE.md`. Dated milestone documents remain evidence of
+their date and are not rewritten merely because later implementation superseded them.
+The 2026-08-31 documentation refresh started a new full regression run, but it was
+operator-interrupted after passing 64% with no reported failures because
+environment-sensitive checks were taking an extended time; it therefore does not
+replace the last completed baseline above.
 
 Execution safety was reverified and hardened on 2026-08-30:
 

@@ -2,9 +2,12 @@
 
 ## Purpose
 
-AG Profit Trading is an MT5-connected trading assistant: deterministic strategy engine
-+ execution engine + broker adapter, with AI as an advisory/explanatory layer on top.
-See `PROJECT_STATUS.md` for current implementation state.
+AG Profit Trading is a deterministic FX and crypto trading assistant whose target
+decision products are daily Session Trade proposals and selective higher-timeframe
+Large-SMC Trade proposals. The guaranteed output is an explicit decision state, not a
+forced trade. The current operational implementation is FX/MT5-first; crypto remains
+proposal/interface-only until a real venue integration is implemented and validated.
+AI remains an advisory/explanatory layer. See `PROJECT_STATUS.md` for current state.
 
 ## Authority order
 
@@ -87,3 +90,26 @@ validation, not day-to-day analysis): `strategy-specification`, `backtest-engine
 
 inspect → implement → targeted tests → concise report. Stop when the requested
 acceptance criteria pass; don't expand scope into an unrequested audit or rewrite.
+
+## Live-status documentation maintenance
+
+Any change that affects implemented capability, runtime reachability, execution
+authority, safety gates, strategy authorization, live/demo validation, known gaps, or
+the regression baseline must follow `docs/status/LIVE_STATUS_MAINTENANCE.md` in the same
+change set.
+
+At minimum:
+
+1. Update the rolling snapshot at the top of `PROJECT_STATUS.md`.
+2. Update `README.md` when the user-visible capability or quick-start surface changed.
+3. Update `strategies/registry.yaml` and `strategies/STRATEGY_LEDGER.md` together when
+   strategy registration or authorization changed; never infer authorization from code
+   availability.
+4. Add or update a dated `docs/status/` evidence document for a completed milestone or
+   live validation. Preserve old dated results as historical evidence.
+5. Update `docs/README.md` when a document is added, moved, superseded, or changes its
+   role in the authority hierarchy.
+6. Record the exact test command, result, date, environment, and any skipped or deferred
+   live checks. Never label a unit-tested path as live-verified.
+
+Documentation-only edits do not authorize trading and must not change safety gates.

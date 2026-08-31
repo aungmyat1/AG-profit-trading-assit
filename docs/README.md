@@ -11,6 +11,9 @@ their age.
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,
    safety gates, known gaps, and latest regression baseline.
 4. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
+5. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
+   update procedure for rolling status, dated evidence, strategy authorization, and
+   live-validation claims.
 
 ## Architecture
 
@@ -57,6 +60,11 @@ observations from the named milestone; they are not rolling dashboards.
 
 When a historical test total differs from the current baseline, retain the historical
 number and use `PROJECT_STATUS.md` for the latest result.
+
+`PROJECT_STATUS.md` is the only rolling status page. A dated status document may be
+superseded, but it must not be silently rewritten to look current. Follow
+[`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) whenever code,
+configuration, execution authority, or validation evidence changes operational status.
 
 ## Strategy documentation
 
