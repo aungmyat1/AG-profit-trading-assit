@@ -13,6 +13,7 @@ is out of this change's scope (see status report GAPS).
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
 
 from runtime_state.store import JsonKeyValueStore
 
@@ -34,8 +35,25 @@ class OpenPositionGuard:
     def is_blocked(self) -> bool:
         return self.open_count() >= MAX_OPEN_STRATEGY_POSITIONS
 
-    def register_open(self, position_id: str, strategy_id: str, symbol: str) -> None:
-        self.store.put(position_id, {"strategy_id": strategy_id, "symbol": symbol})
+    def register_open(self, position_id: str, strategy_id: str, symbol: str, *,
+                       setup_id: Optional[str] = None, risk_amount: Optional[float] = None,
+                       volume: Optional[float] = None) -> None:
+        """position_id is the compound-identity key -- AG_GLOBAL_EXECUTION_LIFECYCLE_V1
+        callers key it by the broker ticket (the one truly stable, restart-safe identity;
+        see execution/lifecycle.py), never by symbol alone. setup_id/risk_amount/volume
+        are optional so existing callers that only ever cared about "is a slot occupied"
+        (e.g. tests that register a synthetic position_id string with no broker ticket)
+        keep working unchanged -- the extra fields exist only so a later close/reconcile
+        (lifecycle.py) can recover the ORIGINAL risk_amount for realized-R math without a
+        second parallel store."""
+        record = {"strategy_id": strategy_id, "symbol": symbol}
+        if setup_id is not None:
+            record["setup_id"] = setup_id
+        if risk_amount is not None:
+            record["risk_amount"] = risk_amount
+        if volume is not None:
+            record["volume"] = volume
+        self.store.put(position_id, record)
 
     def register_closed(self, position_id: str) -> None:
         self.store.remove(position_id)
