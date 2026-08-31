@@ -1,0 +1,131 @@
+{
+  "architecture_version": "AG_TWO_STAGE_ARCHITECTURE_V1",
+  "stage1_schema": "STAGE1_CONTEXT_V2",
+  "source_artifact": "artifacts/backtests/stage1/qualified_e_events_2025-08-01_2025-10-01.json",
+  "source_liquidity_timeline": "artifacts/backtests/directional_liquidity_timeline.json",
+  "source_oracle_original_continuous": "artifacts/backtests/discovery_2mo_aug_sep2025_setup_ledger.parquet",
+  "source_oracle_true_stage2": "artifacts/backtests/true_stage2_from_stage1_result.json",
+  "fingerprint_algorithm": "SHA-256",
+  "fingerprint": "81a2bfcadf7da3414528e499c9e764b6dde93ebfa336faf673ff08d38b6586f2",
+  "provenance_note": "docs/status/TRUE_STAGE2_ORACLE_RECONCILIATION_STATUS.md -- oracle regenerated 2026-09-01 after confirming it predated the DirectionalLiquidityTimeline fix (commit 1ebb4f2); all expected values below are read directly from the row-level original-continuous ledger and the regenerated, determinism-verified TRUE_STAGE2 oracle, never retyped from memory.",
+  "cases": [
+    {
+      "case_id": "CASE_A_E1M3_RESTORED_READY",
+      "setup_id": "SETUP-EURUSD-E1M3-29ef3d6e78d5f9c2",
+      "event_id": "QE-EURUSD-E1-ba85db0c9d68cfbc",
+      "combination": "E1M3",
+      "entry_condition": "E1",
+      "maneuver": "M3",
+      "direction": "SHORT",
+      "reference_key": "D1_GAP|1.16687|1.17031|None",
+      "evaluation_timestamp": "2025-09-15T12:10:00+00:00",
+      "source_setup_id": "SETUP-EURUSD-E1M3-29ef3d6e78d5f9c2",
+      "source_timestamp": "2025-09-15T12:10:00+00:00",
+      "expected": {
+        "eligible": true,
+        "directional_liquidity_present": true,
+        "directional_liquidity": {"side": "BUY_SIDE", "source": "PWH", "price": 1.1765},
+        "entry_array": {"type": "FVG", "reference": 1.1732200000000002},
+        "ready": true,
+        "ready_timestamp": "2025-09-15T12:10:00+00:00"
+      }
+    },
+    {
+      "case_id": "CASE_B_E3M3_SIBLING_SHARED_LIQUIDITY",
+      "setup_id": "SETUP-EURUSD-E3M3-27d758322ae69d05",
+      "event_id": "QE-EURUSD-E3-ac63054d0fa9ac24",
+      "combination": "E3M3",
+      "entry_condition": "E3",
+      "maneuver": "M3",
+      "direction": "SHORT",
+      "reference_key": "PWH|None|None|1.1765",
+      "evaluation_timestamp": "2025-09-15T12:10:00+00:00",
+      "source_setup_id": "SETUP-EURUSD-E3M3-27d758322ae69d05",
+      "source_timestamp": "2025-09-15T12:10:00+00:00",
+      "expected": {
+        "eligible": true,
+        "directional_liquidity_present": true,
+        "directional_liquidity": {"side": "BUY_SIDE", "source": "PWH", "price": 1.1765},
+        "entry_array": {"type": "FVG", "reference": 1.1732200000000002},
+        "ready": true,
+        "ready_timestamp": "2025-09-15T12:10:00+00:00",
+        "shared_directional_liquidity_with": "SETUP-EURUSD-E1M3-29ef3d6e78d5f9c2"
+      }
+    },
+    {
+      "case_id": "CASE_C_E1M2_READY",
+      "setup_id": "SETUP-EURUSD-E1M2-204f3417f2901979",
+      "event_id": "QE-EURUSD-E1-933b5ff7e3af1c82",
+      "combination": "E1M2",
+      "entry_condition": "E1",
+      "maneuver": "M2",
+      "direction": "LONG",
+      "reference_key": "D1_GAP|1.17919|1.18073|None",
+      "evaluation_timestamp": "2025-09-23T14:55:00+00:00",
+      "source_setup_id": "SETUP-EURUSD-E1M2-204f3417f2901979",
+      "source_timestamp": "2025-09-23T14:55:00+00:00",
+      "provenance_note_case_c": "The setup ledger overwrites entry_type/entry_low/entry_high/entry_reference on EVERY poll where an entry array exists, not only at ready_time (orchestrator.py SetupLedger.observe) -- this setup stayed non-terminal until final_time=2025-09-26T20:55:00Z (final_state=WAITING_H1_REACTION), 3 days after READY, and formed a different entry array by then. The row's final entry_reference=1.168235 (both in the original continuous ledger and the regenerated TRUE_STAGE2 oracle -- fully reproduced, confirming determinism) is therefore the geometry AT final_time, not AT ready_time. This case is verified as a full walk of the event through SetupLedger (matching how the oracle itself was produced), not a single-point evaluation at ready_timestamp.",
+      "expected": {
+        "eligible": true,
+        "ready": true,
+        "ready_timestamp": "2025-09-23T14:55:00+00:00",
+        "final_entry_array": {"type": "FVG", "low": 1.16807, "high": 1.1684, "reference": 1.1682350000000001},
+        "final_state": "WAITING_H1_REACTION",
+        "final_time": "2025-09-26T20:55:00+00:00"
+      }
+    },
+    {
+      "case_id": "CASE_D_E3M2_EXPIRY_REGRESSION",
+      "setup_id": "SETUP-EURUSD-E3M2-4942255764efb736",
+      "event_id": "QE-EURUSD-E3-a0820dbd23bce3e5",
+      "combination": "E3M2",
+      "entry_condition": "E3",
+      "maneuver": "M2",
+      "direction": "SHORT",
+      "reference_key": "PDH|None|None|1.16751",
+      "eligibility_intervals": [["2025-08-12T16:00:00+00:00", "2025-08-12T17:00:00+00:00"]],
+      "source_setup_id": "SETUP-EURUSD-E3M2-4942255764efb736",
+      "source_timestamp_range": ["2025-08-12T16:00:00+00:00", "2025-08-12T16:55:00+00:00"],
+      "expected": {
+        "eligible_at": {
+          "2025-08-12T16:00:00+00:00": true,
+          "2025-08-12T16:55:00+00:00": true,
+          "2025-08-12T17:00:00+00:00": false,
+          "2025-08-19T16:00:00+00:00": false
+        },
+        "ready": false,
+        "false_aug19_ready_impossible": true
+      }
+    },
+    {
+      "case_id": "CASE_E_MULTI_INTERVAL_ELIGIBILITY",
+      "setup_id": "SETUP-EURUSD-E3M3-27d758322ae69d05",
+      "event_id": "QE-EURUSD-E3-ac63054d0fa9ac24",
+      "combination": "E3M3",
+      "entry_condition": "E3",
+      "maneuver": "M3",
+      "direction": "SHORT",
+      "reference_key": "PWH|None|None|1.1765",
+      "eligibility_intervals": [
+        ["2025-09-15T10:25:00+00:00", "2025-09-15T10:40:00+00:00"],
+        ["2025-09-15T12:10:00+00:00", "2025-09-15T12:30:00+00:00"],
+        ["2025-09-15T12:35:00+00:00", "2025-09-15T13:00:00+00:00"],
+        ["2025-09-15T15:30:00+00:00", "2025-09-15T15:45:00+00:00"],
+        ["2025-09-15T15:50:00+00:00", "2025-09-15T16:00:00+00:00"]
+      ],
+      "source_setup_id": "SETUP-EURUSD-E3M3-27d758322ae69d05",
+      "source_timestamp": "n/a -- raw eligibility_intervals field of the frozen QualifiedEEvent, no oracle re-derivation needed",
+      "expected": {
+        "eligible_at": {
+          "2025-09-15T10:30:00+00:00": true,
+          "2025-09-15T11:00:00+00:00": false,
+          "2025-09-15T12:20:00+00:00": true,
+          "2025-09-15T12:32:00+00:00": false,
+          "2025-09-15T12:40:00+00:00": true,
+          "2025-09-15T16:00:00+00:00": false,
+          "2025-09-15T17:00:00+00:00": false
+        }
+      }
+    }
+  ]
+}

@@ -145,6 +145,18 @@ def save_qualified_e_events(events: Tuple[QualifiedEEvent, ...], path: str, meta
         json.dump(payload, f, indent=2)
 
 
+def fingerprint_qualified_e_events(events: Tuple[QualifiedEEvent, ...]) -> str:
+    """SHA-256 over the deterministic, semantic content of a QualifiedEEvent set --
+    event fields sorted by event_id, JSON-canonicalized (sort_keys, no whitespace).
+    Deliberately excludes wall-clock `created_at`/producer metadata and any
+    non-semantic ordering (golden-slice spec section 12): same semantic Stage1
+    artifact -> same fingerprint, regardless of when/where it was regenerated."""
+    import hashlib
+    rows = sorted((_serialize_event(e) for e in events), key=lambda d: d["event_id"])
+    canonical = json.dumps(rows, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def load_qualified_e_events(path: str) -> Tuple[Tuple[QualifiedEEvent, ...], Dict[str, Any]]:
     with open(path, encoding="utf-8") as f:
         payload = json.load(f)

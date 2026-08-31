@@ -164,6 +164,31 @@ def _m5_side_primitives(symbol: str, current_price: Optional[float]):
     return m5_candles, m5_fvg_zones, m5_validated_order_blocks, m5_candidate_zones, inducement_candidates
 
 
+class MissingStage1DirectionalLiquidityContextError(ValueError):
+    """Raised by evaluate_entry_stage_canonical_v2 when a STAGE1_CONTEXT_V2 replay is
+    attempted without its directional liquidity timeline. The canonical V2 boundary
+    must fail closed rather than silently falling back to the legacy per-event
+    `event.liquidity_reference` path (golden-slice spec section 14) -- that fallback
+    remains available, deliberately, only via evaluate_entry_stage() directly for
+    legacy/low-level callers."""
+
+
+def evaluate_entry_stage_canonical_v2(symbol: str, event: Stage1Event, evaluation_time: datetime,
+                                      liquidity_timeline) -> SMCConditionalEntryAnalysis:
+    """Strict canonical STAGE1_CONTEXT_V2 -> TRUE_STAGE2 boundary: requires a real
+    `historical_replay.stage1.DirectionalLiquidityTimeline` and fails closed
+    (MissingStage1DirectionalLiquidityContextError) if omitted, instead of silently
+    falling back to `event.liquidity_reference` the way evaluate_entry_stage() does
+    for legacy callers. No E1/E2/E3/M1/M2/M3 semantics change -- this only gates which
+    liquidity source is acceptable for the canonical replay path."""
+    if liquidity_timeline is None:
+        raise MissingStage1DirectionalLiquidityContextError(
+            "MISSING_STAGE1_DIRECTIONAL_LIQUIDITY_CONTEXT: canonical STAGE1_CONTEXT_V2 "
+            "replay requires a DirectionalLiquidityTimeline; the legacy "
+            "event.liquidity_reference fallback is not permitted on this path.")
+    return evaluate_entry_stage(symbol, event, evaluation_time, liquidity_timeline=liquidity_timeline)
+
+
 def evaluate_entry_stage(symbol: str, event: Stage1Event, evaluation_time: datetime,
                          liquidity_timeline=None) -> SMCConditionalEntryAnalysis:
     """The true Stage-2 entry point: Stage1Event -> M1/M2/M3 -> composer.compose(),
