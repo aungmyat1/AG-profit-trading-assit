@@ -1,18 +1,20 @@
 # ST_LARGE_SMC_V1 — Research Strategy Specification
 
-Status: **RESEARCH_DRAFT / ADVISORY_ONLY** &nbsp; Version: **1.0.1** &nbsp; Authority: `strategies/ST_LARGE_SMC_V1.yaml`
+Status: **RESEARCH_DRAFT / ADVISORY_ONLY** &nbsp; Version: **1.0.3** &nbsp; Authority: `strategies/ST_LARGE_SMC_V1.yaml`
 
 Specification phase: `ST_LARGE_SMC_V1_STRATEGY_SPECIFICATION` (2026-09-01), extended by
 `ST_LARGE_SMC_V1_RESOLVE_UC_001_TIMEFRAME_ROLES`, `..._3X3_VARIANT_AUTHORITY_
-RECONCILIATION`, `..._RESOLVE_C11_TARGET_MODEL`, and `..._C11_CONTRACT_FINALIZATION`
-(all 2026-09-01). This document extracts, reconciles, and freezes the smallest
-deterministic Large-SMC contract actually supported by AG Profit Trading's own evidence
-and its approved research resource (`smc-lss-platform`). It is a specification artifact
-only — no engine, workflow, or candidate ledger exists; `strategies/ST_LARGE_SMC_V1.yaml`
-carries only `CONTRACT_ONLY`/`NOT_IMPLEMENTED` fields. See
+RECONCILIATION`, `..._RESOLVE_C11_TARGET_MODEL`, `..._C11_CONTRACT_FINALIZATION`,
+`..._RESOLVE_C12_EXPIRY`, and `..._RESOLVE_C14_DUPLICATE_REENTRY` (all 2026-09-01). This
+document extracts, reconciles, and freezes the smallest deterministic Large-SMC contract
+actually supported by AG Profit Trading's own evidence and its approved research
+resource (`smc-lss-platform`). It is a specification artifact only — no engine,
+workflow, or candidate ledger exists; `strategies/ST_LARGE_SMC_V1.yaml` carries only
+`CONTRACT_ONLY`/`NOT_IMPLEMENTED` fields. See
 `docs/status/ST_LARGE_SMC_V1_STRATEGY_SPECIFICATION_STATUS.md`,
-`..._3X3_VARIANT_AUTHORITY_RECONCILIATION_STATUS.md`, and
-`..._C11_CONTRACT_FINALIZATION_STATUS.md` for the phase reports.
+`..._3X3_VARIANT_AUTHORITY_RECONCILIATION_STATUS.md`, `..._C11_CONTRACT_FINALIZATION_
+STATUS.md`, `..._C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md`, and
+`..._C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md` for the phase reports.
 
 This is a separate strategy family. It does not modify, extend, or operate as a mode of
 `ST_ASIAN_SWEEP_5R_V1 v1.1.1`, `SMC_3R_V1`, `ST_LIQUIDITY_SWEEP_RETEST_V1`, or
@@ -21,7 +23,7 @@ not share strategy authority or validation evidence.
 
 ## 1. Strategy identity
 
-`strategy_id=ST_LARGE_SMC_V1`, `version=1.0.0`, `family=SMART_MONEY_CONCEPT`,
+`strategy_id=ST_LARGE_SMC_V1`, `version=1.0.3`, `family=SMART_MONEY_CONCEPT`,
 `role=LARGE_SMC_OPPORTUNITY`, `status=RESEARCH_DRAFT`.
 
 ## 2. Authority / status
@@ -254,18 +256,65 @@ Full candidate/evidence matrices (superseded as *decision* material, retained as
 provenance): `docs/status/ST_LARGE_SMC_V1_C11_TARGET_MODEL_RESOLUTION_STATUS.md`.
 → **UC-010, RESOLVED_BY_OWNER.**
 
-## 17. Expiry (C12) — `PARTIALLY_RESOLVED`
+## 17. Expiry (C12) — `RESOLVED_BY_REUSE`, `C12_IMPLEMENTATION_SPEC=COMPLETE`
 
-An `EXPIRED` state exists and is reused end-to-end (`EntryModelState.EXPIRED`,
-surfaced through `SMCEntryCombinationResult.invalidation`) — the state machine can
-already represent expiry. The exact *trigger* (bar-count limit, time horizon, weekend
-close) that flips a candidate to `EXPIRED` is model-internal and was not independently
-verified in this reconciliation pass (would require reading each M-model's expiry
-condition individually, deferred as it does not change UC-001's resolution). No
-AG-signed expiry *value* exists at the strategy-contract level. `v3.6`'s `ttl_bars=1` /
-horizon-based time-stops remain `RESEARCH_REFERENCE`, un-adopted. → **UC-011,
-PARTIALLY_RESOLVED** (mechanism exists and is reused; exact trigger/value per model
-still needs confirmation, not yet a strategy-level decision).
+Full derivation: `docs/status/ST_LARGE_SMC_V1_C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md`;
+contract recorded in `strategies/ST_LARGE_SMC_V1.yaml`'s `candidate_lifecycle:` block
+(`CONTRACT_ONLY`). Strategy version bumped `1.0.1 → 1.0.2`
+(`docs/VERSION_HISTORY.md`: "intrinsic trade eligibility logic" is an explicit
+strategy-version-bump trigger).
+
+The prior draft's assumption — that `EntryModelState.EXPIRED` is "reused end-to-end"
+with only its exact trigger left open — did not survive direct verification. Grepping
+`m1_character_change_inducement.py`, `m2_supply_demand_shift.py`,
+`m3_sweep_drop_pump.py`, `entry_array.py`, `engine_v2_1.py`, and `composer.py` for
+`EXPIRED`/`expir`/`max_bars`/`timeout`/`window`/`age` found **zero hits outside the enum
+declaration itself** — no M-model, the composer, or Stage2 ever transitions anything
+into `EXPIRED`. It is a declared-but-unused enum value, not an implemented mechanism.
+
+The reason: `historical_replay/stage2.py::evaluate_entry_stage()` — the frozen research
+entry point — re-derives `m5_candles`/`m5_fvg`/`m5_obs`/`m2_zones`/
+`inducement_candidates` fresh from current market data on **every call**
+(`stage2.py:211-217`); AG has no persisted candidate object that "waits" across
+evaluation timestamps and could time out. The only real, already-coded validity clock
+found anywhere is `historical_replay/stage1.py::QualifiedEEvent.is_eligible_at(t)`
+(`stage1.py:51-57`: `return any(start <= t < end for start, end in
+self.eligibility_intervals)`), which Stage2's own docstring says gates *all* M-model
+evaluation: *"Stage 2 must not evaluate M1/M2/M3 for an event outside its real
+eligibility window."* Since this gate is identical for E1, E2, and E3 and none of
+M1/M2/M3 has an independent clock anywhere in the code, C12 resolves to
+**`SHARED_EXPIRY_DEPENDENCY`**: candidate validity is governed entirely by the shared
+E-context eligibility window, not by per-M-model bar counts. This is a discovery from
+tracing the actual call graph, not an invented rule — flagged transparently in case the
+owner intended independent M-specific timers that were simply never built.
+
+Frozen, by reuse:
+
+- **Boundary/same-bar precedence**: half-open `[start, end)`, already coded verbatim —
+  at `t == end`, `is_eligible_at` is already `False`, so `EXPIRY_FIRST` at the exact
+  boundary bar is forced by construction, not chosen.
+- **Non-monotonic**: eligibility can go `FALSE → TRUE → FALSE → TRUE`
+  (`stage1.py:11`) — a later interval is a *new* evaluation, not a revived one.
+- **Terminal semantics**: `EXPIRED` is non-actionable; revival of the *same* combination
+  instance is prohibited — citing this project's own architecture-audit-phase invariant
+  ("...must eventually prevent...resurrecting invalidated candidates"), not reinventing
+  it.
+- **Structural invalidation** (distinct from time-based expiry): `entry_confirmation/
+  invalidation.py`'s `ManeuverInvalidation` (`EXACT_REUSE`, already wired for M1/M2;
+  M3's IFVG-specific invalidation remains repo-wide `PARTIAL`, flagged not assumed).
+- **Target consumed before activation** (new composition, not yet wired anywhere):
+  `INVALIDATED` for either tier — reusing `liquidity.status.compute_status` (the same
+  function used once at target selection) re-invoked at a later evaluation timestamp;
+  classified `INVALIDATED` rather than `EXPIRED` because it is a structural/liquidity-
+  status change, not a time/interval boundary; explicitly does **not** trigger
+  reselection — C11's `TARGET_MODE=STATIC` is preserved unmodified.
+- **Data-quality failure**: `INSUFFICIENT_DATA` (existing value), never fabricated as
+  `EXPIRED` from unprovable chronology.
+- **No C15 dependency**: `is_eligible_at`'s intervals are reconstructed from market/
+  structural evidence (gap-fill/POI-reaction/sweep-reclaim windows), not from
+  session/trading-hour definitions.
+
+→ **UC-011, RESOLVED_BY_REUSE.**
 
 ## 18. Candidate lifecycle (C13) — `RESOLVED_FROM_EXISTING_RESOURCE`
 
@@ -285,20 +334,68 @@ oracle's own `READY` terminology and historical output are not renamed or altere
 supporting evidence for E-side eligibility windows specifically. → **UC-012, RESOLVED**
 (see §32).
 
-## 19. Duplicate / re-entry (C14) — `UNRESOLVED_CONTRACT`, BLOCKING
+## 19. Duplicate / re-entry (C14) — `RESOLVED_BY_REUSE`, `C14_IMPLEMENTATION_SPEC=COMPLETE`
+(post-fill re-entry `DEFERRED`)
 
-No field addresses this at all. Verified during this pass:
-`SMCEntryCombinationResult.selected_combination` is `Optional[str] = None` and
-documented as *"always None -- no selection/ranking layer exists"*
-(`entry_models_v1.py:203`) — the composer deliberately returns every valid combination
-with no deduplication, priority, or re-entry policy (`composer.py:16-18`, "multiple E's
-and multiple M's may all be simultaneously active... producing anywhere from 0 to 9
-combinations"). This confirms the gap rather than closing it: AG's own pipeline
-explicitly defers this decision. `v3.6` (`RESEARCH_REFERENCE`) offers
-`one_signal_per_structure`, a `structure_key=[symbol, variant, structure_type,
-creation_index]` identity, and `ttl_bars`. Not yet AG-adopted. Persistence/ledger design
-is out of scope for this phase (spec section 35/38) but the *policy* itself is core
-semantics needed before any ledger is designed. → **UC-013, BLOCKING.**
+Full derivation: `docs/status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_
+STATUS.md`; contract recorded in `strategies/ST_LARGE_SMC_V1.yaml`'s
+`candidate_identity:` block (`CONTRACT_ONLY`). Strategy version bumped
+`1.0.2 → 1.0.3` (`docs/VERSION_HISTORY.md`: "setup qualification" and "intrinsic trade
+eligibility logic" are both explicit strategy-version-bump triggers).
+
+The prior assessment — "no field addresses this at all" — undersold what AG already
+has: `src/proposals/identity.py` and `src/proposals/lifecycle.py` implement almost the
+entire contract as generic (not Session-specific) infrastructure, already used by
+`historical_replay/orchestrator.py`'s `SetupLedger` for this exact E1-E3/M1-M3
+pipeline:
+
+- **Exact duplicate key** = `setup_id(symbol, combination, direction, reference_key)`
+  (`proposals/identity.py:29-35`) — a pure `blake2b` hash with zero transient/wall-clock
+  input; `reference_key` pins the E-condition's own structural reference
+  (`reference_type`/`reference_low`/`reference_high`/`reference_level`), **not** the
+  M-model's entry-array geometry and **not** the eligibility interval's bounds.
+  `EXACT_REUSE`.
+- **Same E, same M, same interval → repeated qualification**: `SAME_CANDIDATE_UPDATED`
+  — `proposals/lifecycle.py`'s own documented design tracks "exactly one proposal per
+  active setup; entry-metadata changes are LIFECYCLE transitions
+  (`CREATED`/`STILL_VALID`/`UPDATED`) on that same proposal_id, never a new one"
+  (`identity.py:16-18`), with `_SIGNATURE_FIELDS` (`orchestrator.py`-adjacent
+  `lifecycle.py:39-40`) explicitly including `entry_reference` — a changed entry price
+  triggers `UPDATED`, not a new identity, directly answering the prior draft's open
+  "authoritative entry identity" question.
+- **Same E, different M** (e.g. E1M2 vs E1M3) and **different E, same/different M**
+  (e.g. E1M3 vs E3M3): `DISTINCT_CANDIDATE`, guaranteed by construction —
+  `combination` and/or `reference_key` differ, changing the hash input. Verified
+  directly against the golden setup IDs themselves (`SETUP-EURUSD-E1M3-
+  29ef3d6e78d5f9c2` vs. `SETUP-EURUSD-E3M3-27d758322ae69d05`, same symbol/direction/
+  timestamp, different `setup_id`) without rerunning replay.
+- **Target is not identity-bearing**: confirmed directly from the hash formula (target
+  fields are absent from `setup_id`'s inputs) — a different C11 target never implies a
+  different candidate; C11's `TARGET_MODE=STATIC` remains unmodified.
+- **Terminality**: `EXPIRED` and `INVALIDATED` are both terminal — matching
+  `proposals/lifecycle.py`'s own explicit `_TERMINAL = (LIFECYCLE_INVALIDATED,
+  LIFECYCLE_EXPIRED)` constant (code evidence, not inference) and
+  `historical_replay/orchestrator.py`'s `SetupLedgerRow.terminal: bool` field.
+- **Revival**: a later, *different* eligibility interval under the *same* `setup_id`
+  (non-monotonic per C12) is a new *occurrence* under a stable structural identity —
+  not a "revived" one, and not a new `setup_id` either, since interval bounds are
+  excluded from the hash. Revival of the *same* occurrence remains prohibited (C12).
+- **Multi-candidate output is deliberate strategy architecture**, not an unresolved
+  gap: `composer.py`'s own docstring — "every valid combination is returned; multiple
+  E's and multiple M's may all be simultaneously active... producing anywhere from 0 to
+  9 combinations" — confirms `selected_combination=None` is `OPTIONAL_PORTFOLIO_
+  HANDOFF`, not `UNIMPLEMENTED_STRATEGY_SELECTION`: the strategy layer emits all
+  distinct valid candidates; a downstream (not-yet-built) portfolio/selection authority
+  chooses among them. `v3.6`'s `one_signal_per_structure`/`structure_key`/`ttl_bars`
+  (`RESEARCH_REFERENCE`) were **not** adopted — AG's own already-implemented mechanism
+  answered the question more precisely.
+- **Post-fill re-entry**: `DEFERRED` — no execution or position-lifecycle authority
+  exists for `ST_LARGE_SMC_V1` (per spec section 35 of the resolution phase); this is a
+  future execution/portfolio-contract question, not a C14 gap.
+
+No item required `OWNER_DECISION_REQUIRED` — everything traced back to already-existing,
+already-tested infrastructure. → **UC-013, RESOLVED_BY_REUSE** (candidate-level; post-fill
+re-entry explicitly deferred, not unresolved).
 
 ## 20. Time restrictions (C15) — `UNRESOLVED_CONTRACT`, non-blocking
 
@@ -400,9 +497,9 @@ entries are kept with `RESOLVED` status rather than removed.
 | UC-008 | C09 Entry model | RESOLVED | M-specific entry reference (M5, per-model formula); resolved as a consequence of UC-001=Model B. |
 | UC-009 | C10 Invalidation/stop | PARTIALLY_RESOLVED | Candidate-invalidation mechanism reused; broker SL-distance formula still open — see UC-009b below (was the secondary owner decision). |
 | UC-010 | C11 Target model | RESOLVED_BY_OWNER | Candidate 2 (Hybrid) frozen 2026-09-01, `strategies/ST_LARGE_SMC_V1.yaml` `target_model:` block, v1.0.1. See §16. |
-| UC-011 | C12 Expiry | PARTIALLY_RESOLVED | `EXPIRED` state exists and is reused; exact per-model trigger/value not yet confirmed. |
+| UC-011 | C12 Expiry | RESOLVED_BY_REUSE | No independent M1/M2/M3 clock exists; validity is shared via `QualifiedEEvent.is_eligible_at()`. v1.0.2. See §17. |
 | UC-012 | C13 Candidate lifecycle (internal) | RESOLVED | `EntryModelState` is the internal state machine, reused verbatim. |
-| UC-013 | C14 Duplicate/re-entry | BLOCKING | Confirmed gap: `selected_combination` is always `None`, no dedup/selection layer exists anywhere in AG. |
+| UC-013 | C14 Duplicate/re-entry | RESOLVED_BY_REUSE | `setup_id`/lifecycle machinery already exists in `proposals/`; post-fill re-entry `DEFERRED`. v1.0.3. See §19. |
 | UC-014 | C15 Time restrictions | Non-blocking | No session field; plausible session-independence is an inference, not a decision. |
 | UC-015 | C18 Conflicting evidence | PARTIALLY_RESOLVED | E-vs-M conflicts resolved by the composer's direction gate; remaining scope merged into UC-013 (multi-combination selection policy). |
 | UC-016 | C01 Instrument list | Non-blocking | Asset class (FX) signed; exact instrument list unsigned. |
@@ -542,21 +639,20 @@ policy note is a caveat on an `EXACT_REUSE` row, not its own row),
 
 ## 35. Remaining contracts and next blocking item
 
-Updated completeness (post C11 finalization, 2026-09-01): `RESOLVED=10` (C02, C03, C04,
-C05, C07, C08, C09, C11, C13, C17), `PARTIALLY_RESOLVED=6` (C01, C06, C10, C12, C16,
-C18), `UNRESOLVED_CONTRACT=2` (C14, C15), `NOT_REQUIRED=0`. (10+6+2=18.)
+Updated completeness (post C14 resolution, 2026-09-01): `RESOLVED=12` (C02, C03, C04,
+C05, C07, C08, C09, C11, C12, C13, C14, C17), `PARTIALLY_RESOLVED=5` (C01, C06, C10,
+C16, C18), `UNRESOLVED_CONTRACT=1` (C15), `NOT_REQUIRED=0`. (12+5+1=18.)
 
-Per spec section 58's minimum-core ordering (direction → location → activation →
-confirmation → entry → invalidation → target → expiry → lifecycle → data) and this
-project's own expected dependency sequence (C11 target → C12 expiry residual → C14
-duplicate/re-entry), the next item is **C12's residual expiry semantics (UC-011)**: the
-`EXPIRED` state mechanism is already reused (§17), but the exact per-model trigger
-(bar-count/time-horizon/weekend-close) was not independently verified when C12 was
-first assessed and remains open — now that C11's anchor/timing model is frozen, C12's
-residual can be resolved against it. **C14 (duplicate/re-entry, UC-013)** remains the
-following, fully `UNRESOLVED_CONTRACT` item (§19) — target identity is now available
-(via the frozen `target_model`) as a potential future input to duplicate comparison,
-but the policy itself is still undefined. This phase does not resolve either.
+C11, C12, and C14 are all now resolved. Per spec section 58's minimum-core ordering
+(direction → location → activation → confirmation → entry → **invalidation** → target →
+expiry → lifecycle → data), the earliest still-open item is **C10's residual SL-distance
+formula (UC-009)** — deliberately left open across both the C11 and C12 phases
+("C10 PRESERVATION: keep C10 = PARTIALLY_RESOLVED... do not resolve SL-distance formula
+here"). Its candidate-invalidation half has been reused since §15; only the actual
+broker-stop distance (ST-C1's unified rule vs. `v3.6`'s per-model formulas, still an
+un-adopted fork) remains. C16 (data quality, `warmup` value) and C18 (residual
+multi-combination conflict policy, merged into C14's now-resolved territory but not
+itself finalized) are secondary. C01 (instrument list) and C15 (session/time) remain
+open but non-blocking.
 
-→ **FIRST_REMAINING_BLOCKER = UC-011 (C12 expiry residual semantics)**, with UC-013
-(C14 duplicate/re-entry) next in sequence.
+→ **FIRST_REMAINING_BLOCKER = UC-009 (C10 SL-distance residual).**

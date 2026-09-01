@@ -73,16 +73,18 @@ Current default gates remain safe in `config/trading.yaml`: `mode: ANALYSIS`,
 `allow_order_check: false`, `allow_order_send: false`, `allow_live_trading: false`, and
 manual trade management in `DRY_RUN` with `allow_live_management: false`.
 
-`ST_LARGE_SMC_V1 v1.0.1` is registered as an independent `RESEARCH_DRAFT` strategy
+`ST_LARGE_SMC_V1 v1.0.3` is registered as an independent `RESEARCH_DRAFT` strategy
 contract. It shares advisory Market Structure, Supply/Demand, Liquidity, Entry
 Confirmation, and Trade Management capabilities, but shares no strategy authority or
 validation evidence with `ST_ASIAN_SWEEP_5R_V1`. Its engine is not implemented; UC-001
-(timeframe roles: D1/H1/M5) and C11 (target model: `HYBRID_WITH_STRUCTURAL_FALLBACK`)
-are now `RESOLVED_BY_OWNER` and recorded `CONTRACT_ONLY` in the strategy YAML, but
-entry/order/lifecycle/risk/backtest parameters remain otherwise `UNSIGNED`, and
-demo/live authorization are false. See
+(timeframe roles: D1/H1/M5), C11 (target model: `HYBRID_WITH_STRUCTURAL_FALLBACK`), C12
+(candidate expiry: shared `is_eligible_at()` window, no independent M1/M2/M3 timer),
+and C14 (duplicate/re-entry: reuses `proposals/`'s existing `setup_id`/lifecycle
+machinery; post-fill re-entry `DEFERRED`) are now resolved and recorded
+`CONTRACT_ONLY` in the strategy YAML, but entry/order/risk/backtest parameters remain
+otherwise `UNSIGNED`, and demo/live authorization are false. See
 `docs/status/LARGE_SMC_V1_REGISTRATION_STATUS.md` and
-`docs/status/ST_LARGE_SMC_V1_C11_CONTRACT_FINALIZATION_STATUS.md`.
+`docs/status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`.
 
 The strategy/skill workflow is organized conceptually in
 `docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md`: local contracts and engines retain

@@ -95,3 +95,18 @@ from canonical session windows or other repo conventions at the time of registra
   as `CONTRACT_ONLY`; no engine wired, no proposal/execution authority. Still
   `RESEARCH_DRAFT`. See `docs/specs/LARGE_SMC_V1_SPEC.md` and
   `docs/status/ST_LARGE_SMC_V1_C11_CONTRACT_FINALIZATION_STATUS.md`.
+- **v1.0.2 (2026-09-01):** C12 (candidate expiry/lifecycle) resolved by reuse —
+  AG has no persisted research-candidate ledger, so no independent M1/M2/M3 timer was
+  ever implemented; validity is governed entirely by the shared, already-coded
+  `QualifiedEEvent.is_eligible_at()` E-context eligibility window. Recorded as a
+  `CONTRACT_ONLY` `candidate_lifecycle:` block; no engine wired, no proposal/execution
+  authority. Still `RESEARCH_DRAFT`. See
+  `docs/status/ST_LARGE_SMC_V1_C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md`.
+- **v1.0.3 (2026-09-01):** C14 (duplicate/re-entry, candidate identity) resolved by
+  reuse — `src/proposals/`'s already-existing `setup_id`/lifecycle-signature machinery
+  (already used by `historical_replay/orchestrator.py`'s `SetupLedger` for this exact
+  E1-E3/M1-M3 pipeline) answers exact-duplicate, coexistence, and terminality
+  questions without inventing anything new. Recorded as a `CONTRACT_ONLY`
+  `candidate_identity:` block; post-fill re-entry `DEFERRED`; `composer.py`
+  untouched; no engine wired, no proposal/execution authority. Still `RESEARCH_DRAFT`.
+  See `docs/status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`.
