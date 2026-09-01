@@ -1,6 +1,6 @@
 # ST_LARGE_SMC_V1 — Research Strategy Specification
 
-Status: **RESEARCH_DRAFT / ADVISORY_ONLY** &nbsp; Version: **1.0.4** &nbsp; Authority: `strategies/ST_LARGE_SMC_V1.yaml`
+Status: **RESEARCH_DRAFT / ADVISORY_ONLY** &nbsp; Version: **1.0.5** &nbsp; Authority: `strategies/ST_LARGE_SMC_V1.yaml`
 
 Specification phase: `ST_LARGE_SMC_V1_STRATEGY_SPECIFICATION` (2026-09-01), extended by
 `ST_LARGE_SMC_V1_RESOLVE_UC_001_TIMEFRAME_ROLES`, `..._3X3_VARIANT_AUTHORITY_
@@ -716,3 +716,84 @@ non-blocking.
 in strict minimum-core sequence; C14's remaining piece is a deferred infrastructure
 decision (`SHARED_CHANGE_REQUIRED`), not a contract question blocking further
 specification work.
+
+## 36. RESEARCH_ONLY_FUNNEL_V1 (2026-09-02) — the two-part funnel engine
+
+Full evidence: `docs/status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`. Strategy
+version bumped `1.0.4 → 1.0.5` (targets/intrinsic-eligibility-logic bump triggers).
+
+Implements the smallest research-only engine answering: *does ST_LARGE_SMC_V1 produce
+enough causal, executable, unambiguous historical occurrences to justify full
+validation?* — organized as the universal funnel:
+
+```
+DATA COLLECTION:  MT5/broker data -> closed D1/H1/M5 candles -> market structure,
+                  liquidity, OB/FVG -> E1/E2/E3 context -> M1/M2/M3 confirmation ->
+                  deterministic E*M candidate occurrences
+                  (entirely historical_replay.stage1/stage2 + entry_confirmation/*,
+                  all pre-existing, zero redetection)
+
+DECISION MAKING:  candidate validity -> simultaneous-combination resolution (C18) ->
+                  entry (M-model's own entry_price) -> broker stop (C10, BLOCKED) ->
+                  target (C11, IMPLEMENTED) -> pending-entry expiry (BLOCKED) ->
+                  explicit research decision
+                  (src/large_smc_research/engine.py -- new, thin)
+```
+
+New code: `src/large_smc_research/decision.py` (the `LargeSMCResearchDecision` output
+shape and decision-state vocabulary), `target_model.py` (C11 adapter), `engine.py`
+(`LargeSMCResearchEngine.evaluate()`). New script:
+`scripts/run_large_smc_discovery.py` (Phase B driver, reuses
+`historical_replay.orchestrator.run_replay` unchanged).
+
+**C01 (instrument list), RESOLVED:** `[EURUSD]` only (task default recommendation).
+GBPUSD explicitly deferred. Enforced in code
+(`large_smc_research.engine.FROZEN_INSTRUMENT_UNIVERSE`) — no dynamic/inferred
+inclusion.
+
+**C16 (warmup), RESOLVED_BY_REUSE:** `D1=60/H1=50/M5=200`, the same constants
+`historical_replay/orchestrator.py` already uses operationally. No new number invented.
+
+**C11 (target model) adapter, IMPLEMENTED:** `target_model.py::select_target` — formula
+unchanged from §16's frozen contract; primary tier via
+`liquidity.hierarchy.external_swing_liquidity`, fallback via
+`market_structure.tiers.StructureTier.swings` + `liquidity.status.compute_status` (the
+same status function the primary tier itself uses). No new detector.
+
+**C18 (simultaneous-combination selection), RESOLVED_BY_REUSE:** not a new decision —
+formalizes what §19's `candidate_identity.selection`/`coexistence` already established
+(`strategy_level_single_winner_required: NO`, `multi_candidate_output: CONFIRMED`,
+`portfolio_selection_boundary: DOWNSTREAM_FUTURE_AUTHORITY`). `engine.evaluate()`
+returns one independent `LargeSMCResearchDecision` per composed E×M combination, each
+with its own `candidate_occurrence_id` (wiring C14B's previously-unwired
+`proposals/occurrence_identity.py` into this engine's own output only — not into the
+shared `proposals/lifecycle.py` store, so the `SHARED_CHANGE_REQUIRED` migration stays
+exactly as deferred). Never narrowed by list order.
+
+**Decision-state vocabulary:** dropped the placeholder `READY` (an actionable trading
+state; per this task's explicit instruction, never emitted here) for
+`RESEARCH_QUALIFIED` (the ceiling under `RESEARCH_DRAFT`) and added `INVALIDATED`
+(structural invalidation, distinct from time-based `EXPIRED`, per C12).
+`strategies/ST_LARGE_SMC_V1.yaml`'s `decision_states:` updated to match.
+
+**C10 (broker stop-loss) and post-READY pending-entry expiry — deliberately left
+`UNSIGNED`, by owner decision (2026-09-01):** no formula or clock invented. Any
+candidate whose M-model reaches its entry-available state returns `BLOCKED`
+(`UNSIGNED_CONTRACT:C10_BROKER_STOP` and/or `UNSIGNED_CONTRACT:PENDING_ENTRY_EXPIRY`)
+rather than a fabricated actionable state. Two decision-packet documents record
+candidate options from research references, none selected:
+`docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md` and
+`docs/status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md`. Consequently,
+fill simulation, invalidated-before-fill, expired-unfilled, intrabar ambiguity, and
+completed-outcome resolution are **not attempted** this phase (Phase B's discovery
+report states this honestly rather than fabricating zeros).
+
+**Updated unresolved-contract register:** C01 and C16 move from non-blocking-open to
+`RESOLVED`; C18's residual (§23) moves from `PARTIALLY_RESOLVED` to `RESOLVED_BY_REUSE`
+(merged fully into C14's already-settled selection policy — see §19). `RESOLVED` count
+rises from 11 to 14 (C01, C02, C03, C04, C05, C07, C08, C09, C11-adapter, C12, C13,
+C16, C17, C18); `PARTIALLY_RESOLVED` narrows to C06, C10, C14 (its own residual,
+`SHARED_CHANGE_REQUIRED`, unchanged); `UNRESOLVED_CONTRACT` remains C15 only,
+non-blocking. → **FIRST_REMAINING_BLOCKER = UC-009 (C10 SL-distance)**, unchanged —
+now the *only* thing standing between this funnel and outcome simulation, alongside
+the pending-entry-expiry decision packet.

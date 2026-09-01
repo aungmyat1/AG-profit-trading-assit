@@ -55,7 +55,8 @@ observations from the named milestone; they are not rolling dashboards.
   [`status/FIVE_SKILL_ASSISTANT_RUNTIME_STATUS.md`](status/FIVE_SKILL_ASSISTANT_RUNTIME_STATUS.md)
 - SMC validation: [`status/SMC_SKILL_VALIDATION.md`](status/SMC_SKILL_VALIDATION.md),
   [`status/SMC_ASSISTANT_READY_TO_USE_V1_STATUS.md`](status/SMC_ASSISTANT_READY_TO_USE_V1_STATUS.md),
-  and [`status/SMC_3X3_HISTORICAL_VALIDATION_V1_STATUS.md`](status/SMC_3X3_HISTORICAL_VALIDATION_V1_STATUS.md)
+  [`status/SMC_3X3_HISTORICAL_VALIDATION_V1_STATUS.md`](status/SMC_3X3_HISTORICAL_VALIDATION_V1_STATUS.md),
+  and [`status/SMC_TRAP_GUARD_V1_STATUS.md`](status/SMC_TRAP_GUARD_V1_STATUS.md)
 - Frozen phases: [`status/PHASE_1_4_FREEZE_STATUS.md`](status/PHASE_1_4_FREEZE_STATUS.md)
   and [`status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md`](status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md)
 - Registry and skills: [`status/STRATEGY_REGISTRY_STATUS.md`](status/STRATEGY_REGISTRY_STATUS.md),
@@ -72,7 +73,10 @@ observations from the named milestone; they are not rolling dashboards.
   [`status/ST_LARGE_SMC_V1_C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md`](status/ST_LARGE_SMC_V1_C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md),
   [`status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`](status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md),
   [`status/ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md`](status/ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md) (correction: C14 downgraded to `PARTIALLY_RESOLVED`),
-  and [`status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`](status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md) (M-candidate identity implemented, Option B)
+  [`status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`](status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md) (M-candidate identity implemented, Option B),
+  [`status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`](status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md) (research-only engine, v1.0.5),
+  [`status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md), and
+  [`status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md) (both unsigned, decision packets only)
 
 When a historical test total differs from the current baseline, retain the historical
 number and use `PROJECT_STATUS.md` for the latest result.

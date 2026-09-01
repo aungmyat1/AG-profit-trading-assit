@@ -27,6 +27,10 @@ from canonical session windows or other repo conventions at the time of registra
 - **Open assumption:** the 25-pip EURUSD range ceiling used for the Asian reference range
   is also applied unchanged to the London reference range, though London ranges are
   typically wider. Not separately tuned -- see the config's inline note.
+- **SMC_TRAP_GUARD_V1 (2026-09-01):** additive safety declaration pins the existing
+  sweep contract: reference-session liquidity only, strict penetration plus close-back-
+  inside reclaim, dual-side sweep = ambiguous/no-trade, and no advisory evidence may
+  bypass the strategy engine. No strategy-version or authorization change.
 - **Not yet defined:** this spec covers entry/exit/risk mechanics but not a full
   causal backtest contract (data timestamps, fill model, cost model, train/validation/
   test partition, baselines, acceptance criteria) -- see the `strategy-specification`
@@ -81,6 +85,10 @@ from canonical session windows or other repo conventions at the time of registra
 - **Family:** LARGE_SMC
 - **Execution authority:** none; advisory only, demo/live authorization false
 - **Engine:** not implemented
+- **SMC_TRAP_GUARD_V1 (2026-09-01):** additive research guard pins `sweep != signal`,
+  `POI != entry`, internal/external structure separation, no hindsight/timeframe
+  leakage, and `RESEARCH_QUALIFIED` as the maximum authority without an engine. It
+  resolves no unsigned contract and changes no strategy version or authorization.
 - **Relationship:** independent of `ST_ASIAN_SWEEP_5R_V1`, which remains the sole
   Session Day Trading authority. It also does not alias or promote `SMC_3R_V1` or
   `ST_LIQUIDITY_SWEEP_RETEST_V1`.
@@ -122,3 +130,21 @@ from canonical session windows or other repo conventions at the time of registra
   Stage1/Stage2 identity tests (21) pass unchanged. `composer.py` untouched; no
   engine wired, no proposal/execution authority. Still `RESEARCH_DRAFT`. See
   `docs/status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`.
+- **v1.0.5 (2026-09-02, `RESEARCH_ONLY_FUNNEL_V1`):** implemented the minimum
+  research-only two-part funnel (DATA COLLECTION -> DECISION MAKING) as
+  `src/large_smc_research/` (`engine.py`, `target_model.py`, `decision.py`) -- a thin
+  orchestration layer over the already-frozen `historical_replay.stage2` boundary,
+  zero E1/E2/E3/M1/M2/M3 redetection. Resolved: C01 (instruments -> `[EURUSD]` only),
+  C16 (warmup -> reuse of `D1=60/H1=50/M5=200`), C11 target-model adapter
+  (`CONTRACT_ONLY` formula now `IMPLEMENTED`, unchanged), C18 (simultaneous-combination
+  selection -> `RECORD_ALL_INDEPENDENTLY`, reuse of C14's already-frozen
+  `selection`/`coexistence` fields). `decision_states` dropped the placeholder `READY`
+  for `RESEARCH_QUALIFIED`/`INVALIDATED`. **Deliberately left BLOCKED, per owner
+  decision:** C10 (broker stop-loss distance) and post-READY pending-entry expiry --
+  no formula/clock invented; the engine returns `BLOCKED` for any candidate that would
+  otherwise need either, with a decision-packet document recording unselected
+  candidate options for each. Still `RESEARCH_DRAFT`; no proposal, demo, live,
+  execution, or risk-sizing authority added. See
+  `docs/status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`,
+  `docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md`, and
+  `docs/status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md`.

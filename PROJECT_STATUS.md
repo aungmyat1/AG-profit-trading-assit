@@ -4,7 +4,7 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Current operational snapshot (2026-08-31)
+## Current operational snapshot (2026-09-01)
 
 This section is the rolling summary. Test totals elsewhere in this document belong to
 the dated milestone that introduced the surrounding feature.
@@ -17,7 +17,8 @@ LIVE TRADING                  DISABLED BY DEFAULT
 MANUAL TRADE MANAGEMENT       BUILT, independently gated, live validation deferred
 CRYPTO SIGNAL CONTRACT        IMPLEMENTED (incubation)
 CRYPTO DATA/EXECUTION         NOT IMPLEMENTED, fail-closed
-LARGE SMC STRATEGY            RESEARCH_DRAFT, separately registered, no engine/execution authority
+LARGE SMC STRATEGY            RESEARCH_DRAFT v1.0.5, research-only funnel engine implemented, no execution authority
+SMC SEMANTIC TRAP GUARD       UNIT_TESTED, additive evidence validation for Asian Sweep + Large SMC
 HISTORICAL REPLAY             LIVE-MT5 ACCESS BLOCKED
 FULL REGRESSION               979 passed / 5 skipped / 0 failed (last completed baseline, 2026-08-30)
 ```
@@ -73,23 +74,43 @@ Current default gates remain safe in `config/trading.yaml`: `mode: ANALYSIS`,
 `allow_order_check: false`, `allow_order_send: false`, `allow_live_trading: false`, and
 manual trade management in `DRY_RUN` with `allow_live_management: false`.
 
-`ST_LARGE_SMC_V1 v1.0.4` is registered as an independent `RESEARCH_DRAFT` strategy
+`SMC_TRAP_GUARD_V1` is an additive, deterministic evidence validator shared by
+`ST_ASIAN_SWEEP_5R_V1` and `ST_LARGE_SMC_V1`. It rejects future/retrospective evidence,
+direction claims made below strategy authority, and lower-timeframe attempts to
+override higher-timeframe context. Strategy contracts also pin existing invariants
+such as liquidity-event != trade-signal, penetration-without-reclaim = no trade, and
+E3 sweep-without-reclaim = not eligible. It adds no entry filter, changes no strategy
+version, and grants no proposal/demo/live authority. See
+`docs/status/SMC_TRAP_GUARD_V1_STATUS.md`.
+
+`ST_LARGE_SMC_V1 v1.0.5` is registered as an independent `RESEARCH_DRAFT` strategy
 contract. It shares advisory Market Structure, Supply/Demand, Liquidity, Entry
 Confirmation, and Trade Management capabilities, but shares no strategy authority or
-validation evidence with `ST_ASIAN_SWEEP_5R_V1`. Its engine is not implemented; UC-001
-(timeframe roles: D1/H1/M5), C11 (target model: `HYBRID_WITH_STRUCTURAL_FALLBACK`), and
-C12 (candidate expiry: shared `is_eligible_at()` window, no independent M1/M2/M3 timer)
-are resolved and recorded `CONTRACT_ONLY` in the strategy YAML. C14 (duplicate/
-re-entry) is `PARTIALLY_RESOLVED`: setup-family identity reuses `proposals/`'s
-existing `setup_id`, and (as of v1.0.4) candidate-occurrence/M-candidate identity is
-now deterministic and unit-tested via additive `source_id` fields on `M1Result`/
-`M2Result`/`M3Result` and a new `proposals/occurrence_identity.py` — none of it wired
-into `proposals/lifecycle.py`'s live store, which remains shared with the live
-`SMC_CONDITIONAL_ENTRY_V2` watcher and requires its own, separately-authorized
-migration (`SHARED_CHANGE_REQUIRED`); post-fill re-entry separately `DEFERRED`.
-Entry/order/risk/backtest parameters remain otherwise `UNSIGNED`, and demo/live
-authorization are false. See `docs/status/LARGE_SMC_V1_REGISTRATION_STATUS.md` and
-`docs/status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`.
+validation evidence with `ST_ASIAN_SWEEP_5R_V1`. UC-001 (timeframe roles: D1/H1/M5),
+C11 (target model: `HYBRID_WITH_STRUCTURAL_FALLBACK`), and C12 (candidate expiry:
+shared `is_eligible_at()` window, no independent M1/M2/M3 timer) are resolved. C14
+(duplicate/re-entry) is `PARTIALLY_RESOLVED`: setup-family identity reuses
+`proposals/`'s existing `setup_id`, and candidate-occurrence/M-candidate identity is
+deterministic and unit-tested via additive `source_id` fields on `M1Result`/
+`M2Result`/`M3Result` and `proposals/occurrence_identity.py` — not wired into
+`proposals/lifecycle.py`'s live store (shared with the live `SMC_CONDITIONAL_ENTRY_V2`
+watcher; migration `SHARED_CHANGE_REQUIRED`); post-fill re-entry separately `DEFERRED`.
+
+As of v1.0.5 (2026-09-02, `RESEARCH_ONLY_FUNNEL_V1`), a research-only engine exists:
+`src/large_smc_research/` composes the already-frozen E1/E2/E3 + M1/M2/M3 pipeline
+(`historical_replay.stage2`, zero redetection) into explicit
+`LargeSMCResearchDecision`s. C01 (instruments → `[EURUSD]` only), C16 (warmup → reuse
+of `D1=60/H1=50/M5=200`), the C11 target-model adapter (formula unchanged, now
+`IMPLEMENTED`), and C18 (simultaneous-combination selection →
+`RECORD_ALL_INDEPENDENTLY`, reuse of C14) are resolved. `decision_states` dropped the
+placeholder `READY` for `RESEARCH_QUALIFIED`/`INVALIDATED`. **C10 (broker stop-loss)
+and post-READY pending-entry expiry remain deliberately `UNSIGNED`** — an explicit
+owner decision to block outcome simulation rather than guess; the engine fails closed
+to `BLOCKED` for any candidate that would otherwise need either, with a decision-packet
+document for each. No proposal, demo, live, execution, or risk-sizing authority was
+added. See `docs/status/LARGE_SMC_V1_REGISTRATION_STATUS.md`,
+`docs/status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`, and
+`docs/status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`.
 
 The strategy/skill workflow is organized conceptually in
 `docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md`: local contracts and engines retain

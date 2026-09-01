@@ -1,9 +1,32 @@
 strategy_id: ST_LARGE_SMC_V1
 strategy_name: Large SMC Opportunity Service
 strategy_family: LARGE_SMC
-version: 1.0.4
+version: 1.0.5
 status: RESEARCH_DRAFT
 registered_utc: "2026-09-01"
+# v1.0.5 (2026-09-02, RESEARCH_ONLY_FUNNEL_V1): the minimum research-only two-part
+# funnel (DATA COLLECTION -> DECISION MAKING) is now implemented as
+# src/large_smc_research/ (engine.py, target_model.py, decision.py) -- a thin
+# orchestration layer over the already-frozen historical_replay.stage2 boundary (zero
+# E1/E2/E3/M1/M2/M3 redetection). C01 (instrument list) resolved to [EURUSD] only; C16
+# (warmup) resolved by reuse of historical_replay/orchestrator.py's own
+# D1=60/H1=50/M5=200 constants; C11 (target model) implementation flipped from
+# NOT_IMPLEMENTED to IMPLEMENTED (formula unchanged, thin adapter only -- see
+# target_model below); C18 (simultaneous-combination selection) resolved by reuse of
+# C14's already-frozen candidate_identity.selection/coexistence fields --
+# RECORD_ALL_INDEPENDENTLY, every composed E*M combination is its own decision with its
+# own candidate_occurrence_id, never narrowed by list order. decision_states below
+# dropped the placeholder READY (never emitted) for RESEARCH_QUALIFIED/INVALIDATED.
+# C10 (broker stop-loss distance) and post-READY pending-entry expiry remain UNSIGNED
+# by explicit owner decision (2026-09-01): the engine fails closed to BLOCKED for any
+# candidate that would otherwise need either, rather than guessing. Two decision-packet
+# documents record the candidate formulas found in research references, none selected.
+# Per docs/VERSION_HISTORY.md, "targets"/"intrinsic trade eligibility logic" are
+# explicit strategy-version-bump triggers. Still RESEARCH_DRAFT; no proposal, demo,
+# live, execution, or risk-sizing authority added. See
+# docs/status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md,
+# docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md, and
+# docs/status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md.
 # v1.0.1 (2026-09-01): C11 target-model contract frozen (RESOLVED_BY_OWNER, Candidate
 # 2 -- HYBRID_WITH_STRUCTURAL_FALLBACK). Per docs/VERSION_HISTORY.md, "targets" is an
 # explicit strategy-version-bump trigger. Still RESEARCH_DRAFT; target_model below is
@@ -51,6 +74,27 @@ authority:
   demo_authorized: false
   live_authorized: false
 
+# Additive research semantic guard. It prevents analytical SMC facts from leaking into
+# strategy authority; it does not resolve any UNSIGNED field or implement the engine.
+semantic_safety_contract:
+  version: SMC_TRAP_GUARD_V1
+  authority_boundary: STRATEGY_ENGINE_ONLY
+  invariants:
+    liquidity_event_is_not_trade_signal: true
+    poi_is_not_entry: true
+    bias_is_not_entry: true
+    internal_break_is_not_external_break: true
+    candidate_ob_is_not_qualified_ob: true
+    future_evidence_cannot_create_past_qualification: true
+    lower_timeframe_cannot_override_higher_timeframe: true
+    optional_evidence_cannot_become_required_silently: true
+    silent_rule_changes_prohibited: true
+  strategy_specific:
+    e3_sweep_without_reclaim: NOT_ELIGIBLE
+    e_m_direction_mismatch: NO_VALID_COMBINATION
+    timeframe_authority: {D1: MACRO_REFERENCE, H1: CONTEXT, M5: CONFIRMATION_AND_ENTRY}
+    maximum_authority_without_engine: RESEARCH_QUALIFIED
+
 purpose: >-
   Identify event- and location-driven Large SMC opportunities using D1/H1 primary
   context with M5 confirmation/entry (owner UC-001 decision, Model B); H4-origin
@@ -58,7 +102,12 @@ purpose: >-
   (E3's caller-supplied liquidity-level origin).
 
 asset_class: FX
-instruments: UNSIGNED
+# C01, RESOLVED (2026-09-02, RESEARCH_ONLY_FUNNEL_V1): EURUSD only for the first
+# discovery run (task default recommendation, owner-consistent with keeping the first
+# pass fast and honest). GBPUSD deferred until the EURUSD funnel works and data quality
+# passes. No dynamic or inferred symbol inclusion -- enforced in code
+# (large_smc_research.engine.FROZEN_INSTRUMENT_UNIVERSE).
+instruments: [EURUSD]
 
 # Owner UC-001 decision (2026-09-01, docs/status/ST_LARGE_SMC_V1_UC_001_TIMEFRAME_DECISION.md):
 # primary architecture = D1/H1/M5, matching the frozen E1/E2/E3 + M1/M2/M3 research
@@ -90,7 +139,29 @@ confirmation_sequence:
   entry_array: UNSIGNED
   exact_sequence_and_timing: UNSIGNED
 
-decision_states: [READY, WATCH, NO_TRADE, DATA_ERROR, EXPIRED, BLOCKED]
+# RESEARCH_ONLY_FUNNEL_V1 (2026-09-02): dropped placeholder READY (an actionable
+# trading state; never emitted by src/large_smc_research/engine.py) for
+# RESEARCH_QUALIFIED (the ceiling under RESEARCH_DRAFT, per spec sec.5) and added
+# INVALIDATED (structural invalidation, distinct from time-based EXPIRED, per C12).
+# RESEARCH_QUALIFIED is honestly unreachable right now: any candidate that would
+# otherwise qualify resolves to BLOCKED instead, because C10/pending-entry-expiry are
+# unsigned -- see candidate_lifecycle and the C10 decision-packet doc.
+decision_states: [RESEARCH_QUALIFIED, WATCH, NO_TRADE, DATA_ERROR, EXPIRED, INVALIDATED, BLOCKED]
+
+# C18 (simultaneous-combination selection), RESOLVED_BY_REUSE (2026-09-02,
+# RESEARCH_ONLY_FUNNEL_V1): reuses C14's already-frozen candidate_identity.selection/
+# coexistence fields verbatim (strategy_level_single_winner_required: NO,
+# multiple_distinct_candidates_allowed: YES, multi_candidate_output: CONFIRMED,
+# portfolio_selection_boundary: DOWNSTREAM_FUTURE_AUTHORITY) -- not a new decision, a
+# formal cross-reference. Implemented in src/large_smc_research/engine.py:
+# evaluate() returns one independent LargeSMCResearchDecision per composed E*M
+# combination, each with its own candidate_occurrence_id; never narrowed by list order,
+# dict order, or any other accidental priority.
+candidate_selection_policy:
+  status: RESOLVED_BY_REUSE
+  policy: RECORD_ALL_INDEPENDENTLY
+  reuse_source: candidate_identity.selection / candidate_identity.coexistence (this file)
+  portfolio_selection_boundary: DOWNSTREAM_FUTURE_AUTHORITY   # unchanged from C14
 
 entry:
   timeframe: UNSIGNED
@@ -108,7 +179,15 @@ target_model:
   status: CONTRACT_ONLY
   authority: RESOLVED_BY_OWNER
   type: HYBRID_WITH_STRUCTURAL_FALLBACK
-  implementation: NOT_IMPLEMENTED
+  # RESEARCH_ONLY_FUNNEL_V1 (2026-09-02): IMPLEMENTED as a thin adapter,
+  # src/large_smc_research/target_model.py::select_target -- formula unchanged from
+  # the contract below; no new detector, reuses liquidity.hierarchy.
+  # external_swing_liquidity (primary) and market_structure.tiers.StructureTier.swings
+  # + liquidity.status.compute_status (fallback, same status function). Called only
+  # from src/large_smc_research/engine.py, only for a READY-equivalent candidate --
+  # still no proposal/execution authority; still status=CONTRACT_ONLY for the
+  # underlying contract itself, only the adapter is now real code.
+  implementation: IMPLEMENTED
   scope: GLOBAL   # applies identically across all 9 E1-E3 x M1-M3 research variants
 
   anchor_price:
@@ -419,9 +498,23 @@ candidate_identity:
     simultaneously-valid opposite-direction candidates should be reconciled remains
     C18's open question, not resolved here
 
+# C10 (broker stop-loss distance), UNSIGNED -- owner decision (2026-09-01, per
+# ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1 phase): block outcome simulation rather than
+# invent a formula. src/large_smc_research/engine.py returns BLOCKED
+# (reason_code=UNSIGNED_CONTRACT:C10_BROKER_STOP) for any candidate whose M-model
+# reaches its entry-available (READY-equivalent) state -- never a fabricated stop.
+# Candidate formulas found in research references (ST-C1 G7 unified rule, v3.6
+# per-model formulas) are recorded, unselected, in
+# docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md, pending separate
+# owner sign-off. Same treatment for post-READY pending-entry expiry (no clock exists
+# or is invented; reason_code=UNSIGNED_CONTRACT:PENDING_ENTRY_EXPIRY) -- see
+# docs/status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md. Distinct from
+# candidate_lifecycle above (C12), which governs PRE-ACTIVATION E-context eligibility
+# only, not the lifetime of an unfilled READY entry.
 exit_and_lifecycle:
-  initial_stop: UNSIGNED
-  profit_target_source: C11_TARGET_MODEL   # see target_model above; CONTRACT_ONLY, not implemented
+  initial_stop: UNSIGNED   # C10 -- BLOCKED_AWAITING_OWNER_DECISION, see note above
+  pending_entry_expiry: UNSIGNED   # BLOCKED_AWAITING_OWNER_DECISION, see note above
+  profit_target_source: C11_TARGET_MODEL   # see target_model above; adapter IMPLEMENTED
   partial_profit: UNSIGNED
   breakeven: UNSIGNED
   maximum_holding_period: UNSIGNED   # POST-fill position duration -- out of C12's
@@ -433,12 +526,22 @@ risk:
   risk_per_trade_pct: UNSIGNED
   portfolio_limits: UNSIGNED
 
+# C16 (data quality / warmup), RESOLVED_BY_REUSE (2026-09-02, RESEARCH_ONLY_FUNNEL_V1):
+# reuses historical_replay/orchestrator.py's own already-operational
+# D1_WARMUP_CANDLES=60 / H1_WARMUP_CANDLES=50 / M5_WARMUP_CANDLES=200 constants
+# (already CANDIDATE_FOR_SPEC per docs/specs/LARGE_SMC_V1_SPEC.md sec.21) -- no new
+# number invented. Enforcement is split across the two existing layers that already
+# perform it: D1/H1 (E-context reconstruction) is gated by the replay loop's own
+# warmup check before Stage 1/2 ever run; M5 (M-confirmation) is enforced inside
+# historical_replay.stage2.evaluate_entry_stage_canonical_v2 itself (raises
+# MarketDataError on insufficient M5 history, mapped to DATA_ERROR by
+# src/large_smc_research/engine.py). No new warmup gate was added.
 data_contract:
   timezone: UTC
   closed_bars_only: true
   source: MT5_FX_RESEARCH
   availability_and_staleness: USE_EXISTING_FAIL_CLOSED_MARKET_DATA_CONTRACT
-  warmup: UNSIGNED
+  warmup: {D1: 60, H1: 50, M5: 200}
 
 research_contract:
   fill_model: UNSIGNED
@@ -461,4 +564,3 @@ related_strategies:
   SMC_3R_V1: SEPARATE_SMC_DAY_TRADING_METHOD
   ST_LIQUIDITY_SWEEP_RETEST_V1: SEPARATE_RESEARCH_SUPPORTING_ENTRY_MODEL
   ST_HIGH_RR_LIQUIDITY_MSS_V1: DEFERRED_NOT_REGISTERED
-

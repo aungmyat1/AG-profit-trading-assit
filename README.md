@@ -111,6 +111,7 @@ src/
   supply_demand/           Zones and order-block contracts
   liquidity/               Liquidity levels and sweep/reclaim state
   entry_confirmation/      Frozen entry-confirmation contracts and implementations
+  large_smc_research/      ST_LARGE_SMC_V1 research-only decision engine (no execution authority)
 scripts/                   Operator and research command-line tools
 tests/                     Offline, live-guarded, execution-safety, and replay tests
 docs/                      Architecture, specifications, setup, and evidence snapshots
