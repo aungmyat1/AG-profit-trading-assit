@@ -1,9 +1,13 @@
 strategy_id: ST_LARGE_SMC_V1
 strategy_name: Large SMC Opportunity Service
 strategy_family: LARGE_SMC
-version: 1.0.0
+version: 1.0.1
 status: RESEARCH_DRAFT
 registered_utc: "2026-09-01"
+# v1.0.1 (2026-09-01): C11 target-model contract frozen (RESOLVED_BY_OWNER, Candidate
+# 2 -- HYBRID_WITH_STRUCTURAL_FALLBACK). Per docs/VERSION_HISTORY.md, "targets" is an
+# explicit strategy-version-bump trigger. Still RESEARCH_DRAFT; target_model below is
+# CONTRACT_ONLY -- no engine wired, no proposal/execution authority implied.
 
 # Independent of ST_ASIAN_SWEEP_5R_V1. Registration permits research/advisory use
 # only. UNSIGNED fields make signal generation and execution fail closed.
@@ -16,19 +20,26 @@ authority:
   live_authorized: false
 
 purpose: >-
-  Identify event- and location-driven Large SMC opportunities using D1/H4/H1 context
-  and a separately frozen lower-timeframe confirmation sequence.
+  Identify event- and location-driven Large SMC opportunities using D1/H1 primary
+  context with M5 confirmation/entry (owner UC-001 decision, Model B); H4-origin
+  evidence is consumed only where an existing E-model contract explicitly allows it
+  (E3's caller-supplied liquidity-level origin).
 
 asset_class: FX
 instruments: UNSIGNED
 
+# Owner UC-001 decision (2026-09-01, docs/status/ST_LARGE_SMC_V1_UC_001_TIMEFRAME_DECISION.md):
+# primary architecture = D1/H1/M5, matching the frozen E1/E2/E3 + M1/M2/M3 research
+# pipeline (src/entry_confirmation/). NOTE: the "M1" key below is the 1-minute
+# TIMEFRAME, unrelated to the "M1" confirmation MANEUVER model (m1_character_change_
+# inducement.py) -- the two share a name by coincidence, not by design.
 timeframe_responsibilities:
-  D1: NARRATIVE_AND_EXTERNAL_STRUCTURE
-  H4: CONTEXT_AND_LOCATION
-  H1: SETUP_CONTEXT
-  M15: CONFIRMATION_CANDIDATE
-  M5: UNSIGNED
-  M1: UNSIGNED
+  D1: MACRO_EVENT_REFERENCE   # E1's D1-gap reference only (entry_models_v1.REFERENCE_TIMEFRAME_E1)
+  H1: STRUCTURE_LOCATION_LIQUIDITY_REACTION   # E1/E2/E3 structure, POI, liquidity, reaction check (CHECK_TIMEFRAME)
+  M5: CONFIRMATION_AND_ENTRY   # M1/M2/M3 maneuver confirmation + entry array (CONFIRMATION_TIMEFRAME/EXECUTION_TIMEFRAME)
+  H4: OPTIONAL_EVIDENCE_ORIGIN_ONLY   # E3 may accept an H4-origin LiquidityLevel; not a primary/mandatory layer
+  M15: NOT_REQUIRED   # no Large-SMC or existing E/M-pipeline semantics use M15
+  M1: UNSIGNED   # 1-minute timeframe; no evidence assigns it a role
 
 location_model:
   external_liquidity: CANDIDATE_INPUT
@@ -55,9 +66,69 @@ entry:
   order_type: UNSIGNED
   expiry: UNSIGNED
 
+# C11 (UC-010): RESOLVED_BY_OWNER (Candidate 2, HYBRID_WITH_STRUCTURAL_FALLBACK,
+# 2026-09-01). CONTRACT_ONLY -- no engine wired, no adapter implemented; every field
+# below reuses an already-existing, already-frozen AG mechanism (cited), not a new
+# detector. See docs/specs/LARGE_SMC_V1_SPEC.md sec.16 and
+# docs/status/ST_LARGE_SMC_V1_C11_TARGET_MODEL_RESOLUTION_STATUS.md and
+# ..._C11_CONTRACT_FINALIZATION_STATUS.md for full derivation and provenance.
+target_model:
+  status: CONTRACT_ONLY
+  authority: RESOLVED_BY_OWNER
+  type: HYBRID_WITH_STRUCTURAL_FALLBACK
+  implementation: NOT_IMPLEMENTED
+  scope: GLOBAL   # applies identically across all 9 E1-E3 x M1-M3 research variants
+
+  anchor_price:
+    source: SELECTED_M_MODEL_CANDIDATE_ENTRY_PRICE   # SMCEntryCombinationResult.entry_price
+    decision_timestamp: M_MODEL_ENTRY_ARRAY_AVAILABILITY_TIMESTAMP   # no lookahead: reuses the
+      # same timestamp the M-model's own entry_price/READY transition already uses
+
+  primary:
+    type: OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY
+    timeframe: M5   # matches historical_replay/stage2.py's own external_swing_liquidity(symbol,"M5",...) wiring
+    candidate_universe: MARKET_STRUCTURE_EXTERNAL_TIER_LATEST_SWING   # StructureTier.latest_swing_high/low via liquidity.hierarchy.external_swing_liquidity() -- structurally at most one candidate per side, no lookback parameter to invent
+    required_status: UNSWEPT   # liquidity.status.compute_status
+    direction_long: nearest qualifying BUY_SIDE EXTERNAL/UNSWEPT liquidity strictly above anchor_price
+    direction_short: nearest qualifying SELL_SIDE EXTERNAL/UNSWEPT liquidity strictly below anchor_price
+    selection: NEAREST_IN_TRADE_DIRECTION   # distance = abs(target_price - anchor_price)
+    tie_break: NOT_APPLICABLE   # candidate universe is structurally single-valued per side (latest_swing_high/low)
+
+  fallback:
+    type: CONFIRMED_M5_SWING_EXTREMUM
+    timeframe: M5
+    swing_contract: market_structure.tiers.StructureTier (EXTERNAL tier, swing_length=50) -- reused verbatim, no new swing algorithm
+    candidate_universe: StructureTier.swings (ALL confirmed EXTERNAL-tier M5 swings, chronological) filtered to UNSWEPT + correct side, excluding whichever swing the primary tier already evaluated
+    required_status: UNSWEPT
+    confirmation_rule: reuses market_structure's existing confirmed-swing point-in-time guarantee -- eligible only if already confirmed as of decision_timestamp
+    direction_long: nearest qualifying confirmed UNSWEPT M5 swing high above anchor_price
+    direction_short: nearest qualifying confirmed UNSWEPT M5 swing low below anchor_price
+    selection: NEAREST_IN_TRADE_DIRECTION
+    tie_break: MOST_RECENT_ORIGIN_TIME_WINS   # reuses market_structure/tiers.py::_build_tier's own "reversed(...) + next(...) = most recent match wins" reduction convention
+
+  priority:
+    tier_1: OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY   # if any valid candidate exists, tier 1 wins outright -- no cross-tier comparison
+    tier_2: CONFIRMED_M5_SWING_EXTREMUM
+
+  no_target:
+    state: NO_TRADE
+    reason_code: REJECT_NO_TARGET
+    ready_with_null_target: PROHIBITED
+
+  mode: STATIC   # selected once at candidate qualification; no dynamic retargeting, no trailing target
+
+  provenance_fields_required: [target_price, target_tier, target_type, target_source,
+    target_source_id, target_side, target_status_at_selection, target_selected_at,
+    target_anchor_price, target_anchor_source, target_evidence_timestamp]   # future
+    # output-model fields only -- not implemented in this contract-only phase
+
+  excluded_from_scope: [SETUP_INVALIDATION, BROKER_STOP_LOSS, FIXED_R_TARGET,
+    TP1, TP2, PARTIAL_PROFIT, RUNNER, BREAKEVEN, TRAILING]   # C10/C14/trade-management
+    # remain separately tracked; not defined or implied by this contract
+
 exit_and_lifecycle:
   initial_stop: UNSIGNED
-  profit_targets: UNSIGNED
+  profit_target_source: C11_TARGET_MODEL   # see target_model above; CONTRACT_ONLY, not implemented
   partial_profit: UNSIGNED
   breakeven: UNSIGNED
   maximum_holding_period: UNSIGNED

@@ -88,3 +88,10 @@ from canonical session windows or other repo conventions at the time of registra
   M15/M5/M1 confirmation and entry rules, order/fill model, lifecycle, risk limits,
   costs, validation partitions, benchmarks, acceptance criteria, and falsification
   tests. Every unresolved field is explicit and fails closed.
+- **v1.0.1 (2026-09-01):** owner resolved UC-001 (timeframe roles → D1/H1/M5, matching
+  AG's own frozen E1/E2/E3 + M1/M2/M3 pipeline) and C11 (target model → Candidate 2,
+  `HYBRID_WITH_STRUCTURAL_FALLBACK`, reusing `liquidity.hierarchy` and
+  `market_structure.tiers` verbatim). Both recorded in `strategies/ST_LARGE_SMC_V1.yaml`
+  as `CONTRACT_ONLY`; no engine wired, no proposal/execution authority. Still
+  `RESEARCH_DRAFT`. See `docs/specs/LARGE_SMC_V1_SPEC.md` and
+  `docs/status/ST_LARGE_SMC_V1_C11_CONTRACT_FINALIZATION_STATUS.md`.
