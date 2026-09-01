@@ -53,6 +53,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, Sequence, Tuple
 
+from liquidity import level_id
 from liquidity.models import LiquidityLevel, LiquiditySide
 from market_structure import MarketStructureConfig, StructurePointKind, StructureResult, structural_breaks_for_candles
 from strategy_engine.session import Candle
@@ -121,8 +122,27 @@ class M3Result:
     invalidation_reason: Optional[str] = None
     invalidation_trigger: Optional[str] = None
 
+    # Canonical structural identity of THIS specific M3 candidate (ST_LARGE_SMC_V1
+    # C14B) -- None until the M5 structural failure (choch_point) is found, since no
+    # concrete candidate exists before then. Composed from the swept liquidity level's
+    # own existing level_id (liquidity.level_id) and the confirming CHoCH timestamp --
+    # both already computed above, nothing new detected. Additive/optional: existing
+    # callers unaffected.
+    source_id: Optional[str] = None
+
     evidence: Tuple[str, ...] = field(default_factory=tuple)
     reason: Optional[str] = None
+
+
+def _m3_source_id(swept_level: LiquidityLevel, choch_time: datetime) -> str:
+    """Same construction as _m1_source_id/_m2_source_id (ST_LARGE_SMC_V1 C14B): the
+    swept liquidity level's own existing level_id plus the confirming CHoCH timestamp.
+    No new hashing infrastructure."""
+    import hashlib
+    digest = hashlib.blake2b(
+        f"{level_id(swept_level)}|{choch_time.isoformat()}".encode("utf-8"), digest_size=8,
+    ).hexdigest()
+    return f"M3-{digest}"
 
 
 def evaluate_m3_sweep_drop_pump(
@@ -230,6 +250,7 @@ def evaluate_m3_sweep_drop_pump(
         symbol=symbol, entry_condition=entry_condition, direction=direction.value, state=state,
         sweep_level=liquidity_level.price, sweep_type=liquidity_level.source, reclaim=True,
         choch=choch_point.price, choch_time=choch_point.time_utc,
+        source_id=_m3_source_id(liquidity_level, choch_point.time_utc),
         displacement=displacement.status.value == "PASS",
         gap=result.entry_array.entry_array_type,
         inverted_gap_policy=inverted_gap.status if inverted_gap is not None else "UNAVAILABLE",

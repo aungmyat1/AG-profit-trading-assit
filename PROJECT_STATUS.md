@@ -73,18 +73,23 @@ Current default gates remain safe in `config/trading.yaml`: `mode: ANALYSIS`,
 `allow_order_check: false`, `allow_order_send: false`, `allow_live_trading: false`, and
 manual trade management in `DRY_RUN` with `allow_live_management: false`.
 
-`ST_LARGE_SMC_V1 v1.0.3` is registered as an independent `RESEARCH_DRAFT` strategy
+`ST_LARGE_SMC_V1 v1.0.4` is registered as an independent `RESEARCH_DRAFT` strategy
 contract. It shares advisory Market Structure, Supply/Demand, Liquidity, Entry
 Confirmation, and Trade Management capabilities, but shares no strategy authority or
 validation evidence with `ST_ASIAN_SWEEP_5R_V1`. Its engine is not implemented; UC-001
-(timeframe roles: D1/H1/M5), C11 (target model: `HYBRID_WITH_STRUCTURAL_FALLBACK`), C12
-(candidate expiry: shared `is_eligible_at()` window, no independent M1/M2/M3 timer),
-and C14 (duplicate/re-entry: reuses `proposals/`'s existing `setup_id`/lifecycle
-machinery; post-fill re-entry `DEFERRED`) are now resolved and recorded
-`CONTRACT_ONLY` in the strategy YAML, but entry/order/risk/backtest parameters remain
-otherwise `UNSIGNED`, and demo/live authorization are false. See
-`docs/status/LARGE_SMC_V1_REGISTRATION_STATUS.md` and
-`docs/status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`.
+(timeframe roles: D1/H1/M5), C11 (target model: `HYBRID_WITH_STRUCTURAL_FALLBACK`), and
+C12 (candidate expiry: shared `is_eligible_at()` window, no independent M1/M2/M3 timer)
+are resolved and recorded `CONTRACT_ONLY` in the strategy YAML. C14 (duplicate/
+re-entry) is `PARTIALLY_RESOLVED`: setup-family identity reuses `proposals/`'s
+existing `setup_id`, and (as of v1.0.4) candidate-occurrence/M-candidate identity is
+now deterministic and unit-tested via additive `source_id` fields on `M1Result`/
+`M2Result`/`M3Result` and a new `proposals/occurrence_identity.py` — none of it wired
+into `proposals/lifecycle.py`'s live store, which remains shared with the live
+`SMC_CONDITIONAL_ENTRY_V2` watcher and requires its own, separately-authorized
+migration (`SHARED_CHANGE_REQUIRED`); post-fill re-entry separately `DEFERRED`.
+Entry/order/risk/backtest parameters remain otherwise `UNSIGNED`, and demo/live
+authorization are false. See `docs/status/LARGE_SMC_V1_REGISTRATION_STATUS.md` and
+`docs/status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`.
 
 The strategy/skill workflow is organized conceptually in
 `docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md`: local contracts and engines retain

@@ -55,6 +55,18 @@ class ZoneResult:
     reason_codes: Tuple[str, ...] = field(default_factory=tuple)
 
 
+def zone_id(zone: ZoneResult) -> str:
+    """Deterministic cross-reference id for a ZoneResult -- same construction as
+    liquidity.hierarchy.level_id(): same input always produces the same id, no
+    counter/state needed. Added for candidate-occurrence identity composition
+    (ST_LARGE_SMC_V1 C14B); does not change ZoneResult's own fields or any existing
+    caller's behavior."""
+    origin = zone.origin_time.isoformat() if zone.origin_time is not None else "NONE"
+    low = f"{zone.low:.8f}" if zone.low is not None else "NONE"
+    high = f"{zone.high:.8f}" if zone.high is not None else "NONE"
+    return f"{zone.symbol}:{zone.timeframe}:{zone.family.value}:{zone.role.value}:{zone.source}:{origin}:{low}:{high}"
+
+
 @dataclass(frozen=True)
 class ZoneQueryResult:
     """Fail-closed wrapper for a batch zone query (order_blocks_for/fair_value_gaps_for):

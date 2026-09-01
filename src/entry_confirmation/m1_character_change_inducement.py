@@ -99,12 +99,35 @@ class M1Result:
     invalidation_reason: Optional[str] = None
     invalidation_trigger: Optional[str] = None
 
+    # Canonical structural identity of THIS specific M1 candidate (ST_LARGE_SMC_V1
+    # C14B) -- None until choch_confirmed=True, since no concrete candidate exists
+    # before then. Composed from the inducement level's own existing level_id
+    # (liquidity.hierarchy.InducementCandidate.candidate_id) and the confirming CHoCH's
+    # timestamp -- both already computed above, nothing new detected. Additive/optional:
+    # existing callers that don't read this field are unaffected.
+    source_id: Optional[str] = None
+
     evidence: Tuple[str, ...] = field(default_factory=tuple)
     reason: Optional[str] = None
 
 
 def _candle_at(candles: Sequence[Candle], time: datetime) -> Optional[Candle]:
     return next((c for c in candles if c.time == time), None)
+
+
+def _m1_source_id(inducement_candidate_id: str, choch_time: datetime) -> str:
+    """Canonical structural identity for THIS M1 candidate (ST_LARGE_SMC_V1 C14B):
+    the inducement level's own existing level_id (liquidity.hierarchy.level_id, via
+    InducementCandidate.candidate_id) plus the confirming CHoCH's timestamp. Same
+    deterministic-hash convention as proposals/identity.py::setup_id -- no new hashing
+    infrastructure. A different inducement OR a different CHoCH bar produces a
+    different id; the same evidence always produces the same id (restart/replay-safe,
+    no wall-clock/random input)."""
+    import hashlib
+    digest = hashlib.blake2b(
+        f"{inducement_candidate_id}|{choch_time.isoformat()}".encode("utf-8"), digest_size=8,
+    ).hexdigest()
+    return f"M1-{digest}"
 
 
 def _zone_in_window(zones: Sequence[ZoneResult], start: datetime, end: datetime) -> Optional[ZoneResult]:
@@ -206,6 +229,7 @@ def evaluate_m1_character_change_with_inducement(
                          state=EntryModelState.WAITING_M5_CONFIRMATION.value,
                          inducement_level=inducement_level, inducement_type=inducement_type, inducement_taken=True,
                          choch_level=choch_point.price, choch_confirmed=True, displacement_confirmed=False,
+                         source_id=_m1_source_id(inducement_candidate.candidate_id, choch_point.time_utc),
                          reason="CHoCH confirmed but displacement does not qualify under AG_ENTRY_DISPLACEMENT_V1.")
 
     leg_start, leg_end = inducement_taken_time, choch_point.time_utc
@@ -232,10 +256,13 @@ def evaluate_m1_character_change_with_inducement(
     if invalidation is not None and invalidation.triggered:
         state = EntryModelState.INVALIDATED.value
 
+    source_id = _m1_source_id(inducement_candidate.candidate_id, choch_point.time_utc)
+
     return M1Result(
         symbol=symbol, entry_condition=entry_condition, direction=direction.value, state=state,
         inducement_level=inducement_level, inducement_type=inducement_type, inducement_taken=True,
         choch_level=choch_point.price, choch_confirmed=True, displacement_confirmed=True,
+        source_id=source_id,
         entry_array_type=entry_array.entry_array_type,
         entry_array_low=min(order_block.low, order_block.high) if order_block is not None else (fvg_zone.low if fvg_zone else None),
         entry_array_high=max(order_block.low, order_block.high) if order_block is not None else (fvg_zone.high if fvg_zone else None),

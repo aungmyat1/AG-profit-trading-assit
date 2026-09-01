@@ -15,7 +15,7 @@ identification, L1/L2, inside-bar D2S/S2D -- all explicitly UNSIGNED).
 Advisory only: no execution authority. See PROJECT_STATUS.md 'Authority order'.
 """
 from .analyzer import fair_value_gaps_for, order_blocks_for, validated_order_blocks_for
-from .models import ZoneDirection, ZoneFamily, ZoneQueryResult, ZoneResult, ZoneRole, ZoneStatus
+from .models import ZoneDirection, ZoneFamily, ZoneQueryResult, ZoneResult, ZoneRole, ZoneStatus, zone_id
 from .native_zones import (
     DealingRangeZones,
     dealing_range_zones,
@@ -44,7 +44,7 @@ __all__ = [
     "session_zone", "previous_day_high_low", "previous_week_high_low", "dealing_range_zones",
     "premium_discount_from_previous_day", "premium_discount_from_session",
     "DealingRangeZones",
-    "ZoneResult", "ZoneQueryResult", "ZoneFamily", "ZoneRole", "ZoneDirection", "ZoneStatus",
+    "ZoneResult", "ZoneQueryResult", "ZoneFamily", "ZoneRole", "ZoneDirection", "ZoneStatus", "zone_id",
     "ValidatedOrderBlock", "OBFamily", "OBValidationStatus",
     "validate_order_block", "validate_order_blocks",
     "OrderBlockContractGap", "ORDER_BLOCK_CONTRACT_GAPS",

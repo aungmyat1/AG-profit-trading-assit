@@ -1,7 +1,7 @@
 strategy_id: ST_LARGE_SMC_V1
 strategy_name: Large SMC Opportunity Service
 strategy_family: LARGE_SMC
-version: 1.0.3
+version: 1.0.4
 status: RESEARCH_DRAFT
 registered_utc: "2026-09-01"
 # v1.0.1 (2026-09-01): C11 target-model contract frozen (RESOLVED_BY_OWNER, Candidate
@@ -21,6 +21,25 @@ registered_utc: "2026-09-01"
 # "setup qualification"/"intrinsic trade eligibility logic" are explicit
 # strategy-version-bump triggers. Still RESEARCH_DRAFT; candidate_identity below is
 # CONTRACT_ONLY -- no engine wired, no proposal/execution authority implied.
+# CORRECTION (same-day, ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY phase):
+# the v1.0.3 claim above overclaimed. setup_id is a SETUP-FAMILY identity only (one
+# event_id/setup_id legitimately spans multiple eligibility_intervals); no canonical
+# M-candidate identity existed anywhere. candidate_identity.authority was downgraded
+# to PARTIALLY_RESOLVED (no version bump for that correction). See
+# docs/status/ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md.
+# v1.0.4 (2026-09-01, owner-selected Option B): the C14A gap closed by IMPLEMENTATION
+# (not merely reuse) -- additive `source_id` fields added to M1Result/M2Result/
+# M3Result (src/entry_confirmation/), computed from already-existing structural
+# evidence (liquidity.level_id / supply_demand.zone_id (new) + confirming timestamp),
+# no new detection logic. New src/proposals/occurrence_identity.py composes
+# eligibility_interval_id() + candidate_occurrence_id() (additive, not wired into
+# proposals/lifecycle.py's live store -- that migration is a separate,
+# SHARED_CHANGE_REQUIRED decision, since lifecycle.py is shared with the live
+# SMC_CONDITIONAL_ENTRY_V2 watcher, not just Large-SMC research). 172+ pre-existing
+# tests (M1/M2/M3, entry_confirmation, proposals, supply_demand, Stage1/Stage2
+# identity, golden vertical slice) pass unchanged, proving the additions are
+# backward-compatible. See
+# docs/status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md.
 
 # Independent of ST_ASIAN_SWEEP_5R_V1. Registration permits research/advisory use
 # only. UNSIGNED fields make signal generation and execution fail closed.
@@ -222,34 +241,113 @@ candidate_lifecycle:
 # SetupLedger for this exact E1-E3/M1-M3 pipeline -- confirmed by inspecting the
 # golden setup_ids themselves (SETUP-EURUSD-E1M3-..., SETUP-EURUSD-E3M3-...), not by
 # rerunning replay. Nothing here was newly invented.
+# C14A correction (2026-09-01, ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY
+# phase): the block below originally claimed authority: RESOLVED_BY_REUSE for ALL of
+# C14. That overclaimed -- setup_id is a SETUP-FAMILY identity only (one event_id/
+# setup_id legitimately spans multiple eligibility_intervals, per
+# QualifiedEEvent.eligibility_intervals: Tuple[Tuple[datetime,datetime],...]).
+# candidate_occurrence_identity and M_candidate_identity remain UNRESOLVED -- see
+# candidate_occurrence_identity block below and
+# docs/status/ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md.
+# Downgraded authority to PARTIALLY_RESOLVED; version NOT bumped for this correction.
 candidate_identity:
   status: CONTRACT_ONLY
-  authority: RESOLVED_BY_REUSE
-  implementation: NOT_IMPLEMENTED
+  authority: PARTIALLY_RESOLVED   # setup_family_identity=RESOLVED_BY_REUSE;
+    # candidate_occurrence_identity=DETERMINISTIC_AND_TESTED (C14B, Option B);
+    # live lifecycle-store migration to occurrence-keying=SHARED_CHANGE_REQUIRED,
+    # deliberately deferred (see lifecycle_store_evidence below)
+  implementation: PARTIALLY_IMPLEMENTED   # identity computation IS real code
+    # (src/entry_confirmation M1/M2/M3Result.source_id, src/proposals/
+    # occurrence_identity.py) -- not wired into any strategy engine, proposal
+    # generation, or execution path; still no engine, no proposal/execution authority
 
-  exact_duplicate_key: >-
-    setup_id(symbol, combination, direction, reference_key) -- proposals/identity.py,
-    a pure blake2b hash with no transient fields (current tick, poll time, snapshot
-    id) as input; same underlying setup keeps the same identity across every poll.
-    reference_key pins the E-condition's own structural reference (reference_type +
-    reference_low/high/level), NOT the M-model's entry-array geometry and NOT the
-    eligibility interval's start/end bounds.
-  reuse: EXACT_REUSE
-  wall_clock_component: NONE
-  restart_stability: EXACT_REUSE   # same evidence + same (symbol,combination,direction,
-    # reference_key) always yields the same setup_id, no process/UUID/poll-order input
+  setup_family_identity:
+    key: >-
+      setup_id(symbol, combination, direction, reference_key) -- proposals/identity.py,
+      a pure blake2b hash with no transient fields (current tick, poll time, snapshot
+      id) as input; same underlying setup keeps the same identity across every poll.
+      reference_key pins the E-condition's own structural reference (reference_type +
+      reference_low/high/level), NOT the M-model's entry-array geometry and NOT the
+      eligibility interval's start/end bounds.
+    reuse: EXACT_REUSE
+    wall_clock_component: NONE
+    restart_stability: EXACT_REUSE   # same evidence + same (symbol,combination,
+      # direction,reference_key) always yields the same setup_id, no process/UUID/
+      # poll-order input
+    scope_caveat: >-
+      one setup_id spans MULTIPLE eligibility_intervals (confirmed:
+      QualifiedEEvent.eligibility_intervals is a tuple of [start,end) pairs, all under
+      one event_id) -- this key identifies the structural setup FAMILY, not a single
+      occurrence within it
 
   identity_layers:
     E_event_identity: QualifiedEEvent.event_id (historical_replay/stage1.py _make_event_id;
       blake2b of symbol+entry_condition+direction+reference_key) -- EXACT_REUSE
-    M_model_identity: SMCEntryCombinationResult.maneuver ("M1"/"M2"/"M3") -- EXACT_REUSE
+    M_model_identity: SMCEntryCombinationResult.maneuver ("M1"/"M2"/"M3") -- EXACT_REUSE,
+      # but this is only model-CLASS identity, not a structural M-candidate identifier
     combination_identity: SMCEntryCombinationResult.combination ("E1M1".."E3M3"),
       part of the setup_id hash input -- EXACT_REUSE
     target_identity_role: ATTRIBUTE_ONLY   # target_price/target_source are NOT part of
       # setup_id's hash input -- confirmed from the formula itself, not inferred;
       # different target never implies different candidate (preserves C11's
       # entry_price-based anchor as a separate, non-identity field)
-    strategy_candidate_identity: setup_id (see exact_duplicate_key above)
+    strategy_candidate_identity: setup_id -- SETUP-FAMILY layer only (see
+      # candidate_occurrence_identity below for the occurrence layer, UNRESOLVED)
+
+  candidate_occurrence_identity:
+    status: DETERMINISTIC_AND_TESTED   # C14B (2026-09-01, owner-selected Option B).
+      # Computable and unit-tested; NOT wired into any live/replay store -- see
+      # lifecycle_store_evidence below.
+    eligibility_interval_identity:
+      formula: proposals.occurrence_identity.eligibility_interval_id(event_id,
+        interval_start, interval_end)   # IMPLEMENTED (src/proposals/
+        # occurrence_identity.py) -- THIN_ADAPTER composed from existing fields, same
+        # blake2b convention as proposals/identity.py::setup_id, no new hashing
+        # infrastructure
+      market_time_only: true   # interval bounds are candle/event-derived, never
+        # wall-clock -- inherits C12's existing no-lookahead guarantee
+      restart_stable: true   # pure function of already-persisted fields; unit-tested
+        # (tests/test_candidate_occurrence_identity.py)
+    m_candidate_identity:
+      status: IMPLEMENTED   # additive M1Result/M2Result/M3Result.source_id fields
+        # (src/entry_confirmation/), Option B selected by owner over Option A
+        # (price-only fallback)
+      m1: source_id = hash(InducementCandidate.candidate_id [existing liquidity.
+        level_id], choch_point.time_utc) -- set once choch_confirmed=True; None
+        before (no concrete candidate exists yet). No new detection, only surfacing
+        already-computed internal values.
+      m2: source_id = hash(supply_demand.zone_id(opposing_zone) [new, additive
+        helper mirroring liquidity.level_id's construction], zone_failure_time) --
+        set once zone_failure=True; None before.
+      m3: source_id = hash(liquidity.level_id(liquidity_level), choch_point.
+        time_utc) -- set once the M5 structural failure (choch_point) is found;
+        None before. Inherits the existing repo-wide PARTIAL inverted_gap_policy
+        caveat unchanged (identity addition does not resolve that separate gap).
+      collision_test: >-
+        same evidence -> same source_id; different inducement/zone/liquidity-level
+        or different confirming bar -> different source_id -- proven for all three
+        models in tests/test_candidate_occurrence_identity.py (not price-primary;
+        no wall-clock/random component)
+    candidate_occurrence_id:
+      formula: proposals.occurrence_identity.candidate_occurrence_id(
+        setup_family_id, eligibility_interval_id, m_candidate_identity)   # IMPLEMENTED
+      proven: >-
+        repeated-poll idempotence, new-interval separation, multiple-independent-M-
+        candidate separation, and 3x3 coexistence preservation (different E/M ->
+        different id) all unit-tested
+        (tests/test_candidate_occurrence_identity.py)
+    lifecycle_store_evidence: >-
+      proposals/lifecycle.py::update_proposal_lifecycle's store is STILL keyed ONLY
+      by setup_id -- this phase did NOT modify lifecycle.py (it is shared with the
+      live SMC_CONDITIONAL_ENTRY_V2 watcher in daily_routine/m5_execution.py, not
+      just Large-SMC research; migrating its store key from setup_id to
+      candidate_occurrence_id is a live-behavior change requiring its own,
+      separately-authorized regression scope -- SHARED_CHANGE_REQUIRED, deferred).
+      tests/test_candidate_occurrence_identity.py reproduces the exact defect
+      against the REAL, unmodified update_proposal_lifecycle() (terminal record
+      overwritten) and separately proves candidate_occurrence_id would distinguish
+      what that defect conflates -- the identity layer is ready for that migration
+      whenever it is separately authorized.
 
   coexistence:
     same_E_same_M_same_interval: SAME_CANDIDATE_UPDATED   # lifecycle transitions

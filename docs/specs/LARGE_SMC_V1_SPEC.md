@@ -1,20 +1,25 @@
 # ST_LARGE_SMC_V1 — Research Strategy Specification
 
-Status: **RESEARCH_DRAFT / ADVISORY_ONLY** &nbsp; Version: **1.0.3** &nbsp; Authority: `strategies/ST_LARGE_SMC_V1.yaml`
+Status: **RESEARCH_DRAFT / ADVISORY_ONLY** &nbsp; Version: **1.0.4** &nbsp; Authority: `strategies/ST_LARGE_SMC_V1.yaml`
 
 Specification phase: `ST_LARGE_SMC_V1_STRATEGY_SPECIFICATION` (2026-09-01), extended by
 `ST_LARGE_SMC_V1_RESOLVE_UC_001_TIMEFRAME_ROLES`, `..._3X3_VARIANT_AUTHORITY_
 RECONCILIATION`, `..._RESOLVE_C11_TARGET_MODEL`, `..._C11_CONTRACT_FINALIZATION`,
-`..._RESOLVE_C12_EXPIRY`, and `..._RESOLVE_C14_DUPLICATE_REENTRY` (all 2026-09-01). This
-document extracts, reconciles, and freezes the smallest deterministic Large-SMC contract
-actually supported by AG Profit Trading's own evidence and its approved research
-resource (`smc-lss-platform`). It is a specification artifact only — no engine,
-workflow, or candidate ledger exists; `strategies/ST_LARGE_SMC_V1.yaml` carries only
-`CONTRACT_ONLY`/`NOT_IMPLEMENTED` fields. See
+`..._RESOLVE_C12_EXPIRY`, `..._RESOLVE_C14_DUPLICATE_REENTRY`,
+`..._C14A_CANDIDATE_OCCURRENCE_IDENTITY`, and `..._C14B_OCCURRENCE_IDENTITY_HARDENING`
+(all 2026-09-01). This document extracts, reconciles, and freezes the smallest
+deterministic Large-SMC contract actually supported by AG Profit Trading's own evidence
+and its approved research resource (`smc-lss-platform`). It is a specification artifact
+only — no engine or workflow exists; `strategies/ST_LARGE_SMC_V1.yaml` carries only
+`CONTRACT_ONLY` fields, though `candidate_identity`'s identity layer is now backed by
+real, additive, unit-tested code in `src/entry_confirmation/` and `src/proposals/` (not
+wired into any engine, proposal, or execution path). See
 `docs/status/ST_LARGE_SMC_V1_STRATEGY_SPECIFICATION_STATUS.md`,
 `..._3X3_VARIANT_AUTHORITY_RECONCILIATION_STATUS.md`, `..._C11_CONTRACT_FINALIZATION_
-STATUS.md`, `..._C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md`, and
-`..._C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md` for the phase reports.
+STATUS.md`, `..._C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md`,
+`..._C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`,
+`..._C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md`, and
+`..._C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md` for the phase reports.
 
 This is a separate strategy family. It does not modify, extend, or operate as a mode of
 `ST_ASIAN_SWEEP_5R_V1 v1.1.1`, `SMC_3R_V1`, `ST_LIQUIDITY_SWEEP_RETEST_V1`, or
@@ -23,7 +28,7 @@ not share strategy authority or validation evidence.
 
 ## 1. Strategy identity
 
-`strategy_id=ST_LARGE_SMC_V1`, `version=1.0.3`, `family=SMART_MONEY_CONCEPT`,
+`strategy_id=ST_LARGE_SMC_V1`, `version=1.0.4`, `family=SMART_MONEY_CONCEPT`,
 `role=LARGE_SMC_OPPORTUNITY`, `status=RESEARCH_DRAFT`.
 
 ## 2. Authority / status
@@ -334,68 +339,112 @@ oracle's own `READY` terminology and historical output are not renamed or altere
 supporting evidence for E-side eligibility windows specifically. → **UC-012, RESOLVED**
 (see §32).
 
-## 19. Duplicate / re-entry (C14) — `RESOLVED_BY_REUSE`, `C14_IMPLEMENTATION_SPEC=COMPLETE`
-(post-fill re-entry `DEFERRED`)
+## 19. Duplicate / re-entry (C14) — `PARTIALLY_RESOLVED`
+(`setup_family_identity=RESOLVED_BY_REUSE`, `candidate_occurrence_identity=
+DETERMINISTIC_AND_TESTED`, live lifecycle-store migration `SHARED_CHANGE_REQUIRED`,
+post-fill re-entry `DEFERRED`)
 
-Full derivation: `docs/status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_
-STATUS.md`; contract recorded in `strategies/ST_LARGE_SMC_V1.yaml`'s
-`candidate_identity:` block (`CONTRACT_ONLY`). Strategy version bumped
-`1.0.2 → 1.0.3` (`docs/VERSION_HISTORY.md`: "setup qualification" and "intrinsic trade
-eligibility logic" are both explicit strategy-version-bump triggers).
+**Correction (2026-09-01, `ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY`
+phase):** the prior version of this section claimed `RESOLVED_BY_REUSE` for all of
+C14. That overclaimed. Full derivation of both the original findings and this
+correction: `docs/status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_
+STATUS.md` and `docs/status/ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY_
+STATUS.md`. Contract recorded in `strategies/ST_LARGE_SMC_V1.yaml`'s
+`candidate_identity:` block, `authority:` downgraded from `RESOLVED_BY_REUSE` to
+`PARTIALLY_RESOLVED`. **No version bump for this correction** — no new semantics were
+frozen, an overclaim was corrected; version remains `1.0.3`.
 
-The prior assessment — "no field addresses this at all" — undersold what AG already
-has: `src/proposals/identity.py` and `src/proposals/lifecycle.py` implement almost the
-entire contract as generic (not Session-specific) infrastructure, already used by
-`historical_replay/orchestrator.py`'s `SetupLedger` for this exact E1-E3/M1-M3
-pipeline:
+**What remains correctly resolved (setup-family layer):**
 
-- **Exact duplicate key** = `setup_id(symbol, combination, direction, reference_key)`
+- **Setup-family key** = `setup_id(symbol, combination, direction, reference_key)`
   (`proposals/identity.py:29-35`) — a pure `blake2b` hash with zero transient/wall-clock
-  input; `reference_key` pins the E-condition's own structural reference
-  (`reference_type`/`reference_low`/`reference_high`/`reference_level`), **not** the
-  M-model's entry-array geometry and **not** the eligibility interval's bounds.
-  `EXACT_REUSE`.
-- **Same E, same M, same interval → repeated qualification**: `SAME_CANDIDATE_UPDATED`
-  — `proposals/lifecycle.py`'s own documented design tracks "exactly one proposal per
-  active setup; entry-metadata changes are LIFECYCLE transitions
-  (`CREATED`/`STILL_VALID`/`UPDATED`) on that same proposal_id, never a new one"
-  (`identity.py:16-18`), with `_SIGNATURE_FIELDS` (`orchestrator.py`-adjacent
-  `lifecycle.py:39-40`) explicitly including `entry_reference` — a changed entry price
-  triggers `UPDATED`, not a new identity, directly answering the prior draft's open
-  "authoritative entry identity" question.
-- **Same E, different M** (e.g. E1M2 vs E1M3) and **different E, same/different M**
-  (e.g. E1M3 vs E3M3): `DISTINCT_CANDIDATE`, guaranteed by construction —
-  `combination` and/or `reference_key` differ, changing the hash input. Verified
-  directly against the golden setup IDs themselves (`SETUP-EURUSD-E1M3-
-  29ef3d6e78d5f9c2` vs. `SETUP-EURUSD-E3M3-27d758322ae69d05`, same symbol/direction/
-  timestamp, different `setup_id`) without rerunning replay.
-- **Target is not identity-bearing**: confirmed directly from the hash formula (target
-  fields are absent from `setup_id`'s inputs) — a different C11 target never implies a
-  different candidate; C11's `TARGET_MODE=STATIC` remains unmodified.
-- **Terminality**: `EXPIRED` and `INVALIDATED` are both terminal — matching
-  `proposals/lifecycle.py`'s own explicit `_TERMINAL = (LIFECYCLE_INVALIDATED,
-  LIFECYCLE_EXPIRED)` constant (code evidence, not inference) and
-  `historical_replay/orchestrator.py`'s `SetupLedgerRow.terminal: bool` field.
-- **Revival**: a later, *different* eligibility interval under the *same* `setup_id`
-  (non-monotonic per C12) is a new *occurrence* under a stable structural identity —
-  not a "revived" one, and not a new `setup_id` either, since interval bounds are
-  excluded from the hash. Revival of the *same* occurrence remains prohibited (C12).
-- **Multi-candidate output is deliberate strategy architecture**, not an unresolved
-  gap: `composer.py`'s own docstring — "every valid combination is returned; multiple
-  E's and multiple M's may all be simultaneously active... producing anywhere from 0 to
-  9 combinations" — confirms `selected_combination=None` is `OPTIONAL_PORTFOLIO_
-  HANDOFF`, not `UNIMPLEMENTED_STRATEGY_SELECTION`: the strategy layer emits all
-  distinct valid candidates; a downstream (not-yet-built) portfolio/selection authority
-  chooses among them. `v3.6`'s `one_signal_per_structure`/`structure_key`/`ttl_bars`
-  (`RESEARCH_REFERENCE`) were **not** adopted — AG's own already-implemented mechanism
-  answered the question more precisely.
-- **Post-fill re-entry**: `DEFERRED` — no execution or position-lifecycle authority
-  exists for `ST_LARGE_SMC_V1` (per spec section 35 of the resolution phase); this is a
-  future execution/portfolio-contract question, not a C14 gap.
+  input. `EXACT_REUSE`, still valid.
+- **Same E, different M** and **different E, same/different M**: `DISTINCT_CANDIDATE`
+  at the setup-family level, guaranteed by construction (verified against the golden
+  setup IDs). Still valid.
+- **Target is not identity-bearing**: confirmed from the hash formula. Still valid.
+- **Multi-candidate output is deliberate architecture** (`composer.py`'s own
+  docstring); `selected_combination=None` is `OPTIONAL_PORTFOLIO_HANDOFF`. Still valid.
+- **Post-fill re-entry**: `DEFERRED`. Still valid, unchanged.
 
-No item required `OWNER_DECISION_REQUIRED` — everything traced back to already-existing,
-already-tested infrastructure. → **UC-013, RESOLVED_BY_REUSE** (candidate-level; post-fill
-re-entry explicitly deferred, not unresolved).
+**What was wrong — the occurrence layer:**
+
+The claim that `setup_id` alone provides everything needed for duplicate suppression
+conflated two distinct layers. Verified directly:
+`QualifiedEEvent.eligibility_intervals: Tuple[Tuple[datetime, datetime], ...]`
+(`stage1.py:47`) — **one `event_id`/`setup_id` legitimately spans multiple, disjoint
+eligibility intervals** (non-monotonic per C12: `FALSE→TRUE→FALSE→TRUE`,
+`stage1.py:11`). `setup_id` is therefore a **setup-family** identity, not a
+per-occurrence identity — section 8's completion requirement ("two distinct
+occurrences under the same setup family must be deterministically distinguishable")
+was not actually satisfied.
+
+Worse, no canonical **M-candidate structural identifier** exists anywhere: `M1Result`,
+`M2Result`, `M3Result`, `ZoneResult`, and `ValidatedOrderBlock` were all inspected —
+none has an `id`/`source_id`/`origin_id` field. `M1Result` has *zero* timestamp fields
+at all (only `entry_array_low`/`entry_array_high`/`entry_array_type`, all price/type,
+no time); `M2Result`/`M3Result` have partial timestamps (`structural_break_time`,
+`zone_failure_time`, `choch_time`) plus `ZoneResult`/`ValidatedOrderBlock.origin_time`,
+but still no id field.
+
+The prior "terminality"/"revival" claims were not actually grounded in enforcement:
+`proposals/lifecycle.py::update_proposal_lifecycle`'s `store` is keyed **only** by
+`setup_id` (`store.get(proposal.setup_id)` / `store.put(proposal.setup_id, ...)`,
+`lifecycle.py:69,80`). When a prior record is terminal (`_TERMINAL =
+(LIFECYCLE_INVALIDATED, LIFECYCLE_EXPIRED)`, `lifecycle.py:34`) and new evidence
+arrives for the *same* `setup_id`, the code transitions to `CREATED`
+(`lifecycle.py:72-73`) but **overwrites** the old terminal record rather than
+preserving it alongside a distinguishable new occurrence. This is
+`SETUP_FAMILY_STATE_OVERWRITE`, not `OCCURRENCE_HISTORY` — confirmed by code, not
+inferred. `OCCURRENCE_IDENTITY_GAP = YES`.
+
+**C14B (2026-09-01, owner-selected Option B) — closed by implementation, not just
+composition.** Full derivation:
+`docs/status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`. Strategy
+version bumped `1.0.3 → 1.0.4`.
+
+- `eligibility_interval_id(event_id, interval_start, interval_end)` — implemented,
+  `src/proposals/occurrence_identity.py`, same `blake2b` convention as
+  `proposals/identity.py::setup_id`, market-time-only, restart-stable, unit-tested.
+- `M_candidate_identity` — **Option B implemented**: additive `source_id` field on
+  `M1Result`/`M2Result`/`M3Result` (`src/entry_confirmation/`), computed from
+  already-existing structural evidence, no new detection:
+  - **M1**: `hash(InducementCandidate.candidate_id [existing liquidity.hierarchy.
+    level_id], choch_point.time_utc)` — set once `choch_confirmed=True`.
+  - **M2**: `hash(supply_demand.zone_id(opposing_zone), zone_failure_time)` —
+    `zone_id()` is a small, new, additive helper in `supply_demand/models.py`
+    mirroring `liquidity.hierarchy.level_id()`'s exact construction; set once
+    `zone_failure=True`.
+  - **M3**: `hash(liquidity.level_id(liquidity_level), choch_point.time_utc)` — set
+    once the M5 structural failure is found. Inherits the pre-existing, unrelated
+    `inverted_gap_policy=PARTIAL` caveat unchanged.
+  - Stability and separation proven for all three models in
+    `tests/test_candidate_occurrence_identity.py` (16 new tests): same evidence →
+    same `source_id`; different inducement/zone/liquidity-level or confirming bar →
+    different `source_id`; `None` before a concrete candidate exists (not fabricated).
+- `candidate_occurrence_id(setup_family_id, eligibility_interval_id, m_candidate_
+  identity)` — implemented, composes the three layers; repeated-poll idempotence,
+  new-interval separation, multiple-independent-M-candidate separation, and 3×3
+  coexistence preservation all unit-tested.
+- **The live lifecycle store was deliberately NOT migrated.**
+  `proposals/lifecycle.py::update_proposal_lifecycle` remains keyed only by
+  `setup_id` — it is shared with the live `SMC_CONDITIONAL_ENTRY_V2` watcher
+  (`daily_routine/m5_execution.py`), not just Large-SMC research, so changing its
+  store key is a live-behavior change requiring its own, separately-authorized
+  regression scope (`SHARED_CHANGE_REQUIRED`). A test reproduces the exact defect
+  against the real, unmodified function (a terminal record is overwritten, not
+  preserved, when new evidence arrives under the same `setup_id`) and separately
+  proves `candidate_occurrence_id` would distinguish what that defect conflates —
+  the identity layer is ready for that migration whenever it is authorized.
+- Full regression proof of backward compatibility: 172 pre-existing tests (M1/M2/M3,
+  `entry_confirmation`, `proposals`, `supply_demand`), 21 Stage1/Stage2 identity
+  tests, and the 7-test golden vertical slice all pass unchanged.
+
+→ **UC-013, PARTIALLY_RESOLVED — identity layer complete, live storage migration
+deferred (`SHARED_CHANGE_REQUIRED`).** The distinction matters: every deterministic
+question C14 needed to answer (what makes two candidates the same, when they may
+coexist, what is terminal) now has a computable, tested answer; only *wiring that
+answer into the live, shared lifecycle store* remains open, and deliberately so.
 
 ## 20. Time restrictions (C15) — `UNRESOLVED_CONTRACT`, non-blocking
 
@@ -499,7 +548,7 @@ entries are kept with `RESOLVED` status rather than removed.
 | UC-010 | C11 Target model | RESOLVED_BY_OWNER | Candidate 2 (Hybrid) frozen 2026-09-01, `strategies/ST_LARGE_SMC_V1.yaml` `target_model:` block, v1.0.1. See §16. |
 | UC-011 | C12 Expiry | RESOLVED_BY_REUSE | No independent M1/M2/M3 clock exists; validity is shared via `QualifiedEEvent.is_eligible_at()`. v1.0.2. See §17. |
 | UC-012 | C13 Candidate lifecycle (internal) | RESOLVED | `EntryModelState` is the internal state machine, reused verbatim. |
-| UC-013 | C14 Duplicate/re-entry | RESOLVED_BY_REUSE | `setup_id`/lifecycle machinery already exists in `proposals/`; post-fill re-entry `DEFERRED`. v1.0.3. See §19. |
+| UC-013 | C14 Duplicate/re-entry | PARTIALLY_RESOLVED | Identity layer `DETERMINISTIC_AND_TESTED` (C14B, v1.0.4); live lifecycle-store migration `SHARED_CHANGE_REQUIRED`, deferred. See §19. |
 | UC-014 | C15 Time restrictions | Non-blocking | No session field; plausible session-independence is an inference, not a decision. |
 | UC-015 | C18 Conflicting evidence | PARTIALLY_RESOLVED | E-vs-M conflicts resolved by the composer's direction gate; remaining scope merged into UC-013 (multi-combination selection policy). |
 | UC-016 | C01 Instrument list | Non-blocking | Asset class (FX) signed; exact instrument list unsigned. |
@@ -639,20 +688,31 @@ policy note is a caveat on an `EXACT_REUSE` row, not its own row),
 
 ## 35. Remaining contracts and next blocking item
 
-Updated completeness (post C14 resolution, 2026-09-01): `RESOLVED=12` (C02, C03, C04,
-C05, C07, C08, C09, C11, C12, C13, C14, C17), `PARTIALLY_RESOLVED=5` (C01, C06, C10,
-C16, C18), `UNRESOLVED_CONTRACT=1` (C15), `NOT_REQUIRED=0`. (12+5+1=18.)
+Updated completeness (post C14B, 2026-09-01): `RESOLVED=11` (C02, C03, C04, C05, C07,
+C08, C09, C11, C12, C13, C17), `PARTIALLY_RESOLVED=6` (C01, C06, C10, C14, C16, C18),
+`UNRESOLVED_CONTRACT=1` (C15), `NOT_REQUIRED=0`. (11+6+1=18.) The top-level tally is
+unchanged from the C14A correction — C14 remains `PARTIALLY_RESOLVED`, deliberately —
+but its internal composition changed substantially: `candidate_occurrence_identity`
+moved from `OWNER_DECISION_REQUIRED` to `DETERMINISTIC_AND_TESTED`; the only remaining
+open piece is the live lifecycle-store migration, explicitly classified
+`SHARED_CHANGE_REQUIRED` rather than an unresolved contract question (§19).
 
-C11, C12, and C14 are all now resolved. Per spec section 58's minimum-core ordering
-(direction → location → activation → confirmation → entry → **invalidation** → target →
-expiry → lifecycle → data), the earliest still-open item is **C10's residual SL-distance
-formula (UC-009)** — deliberately left open across both the C11 and C12 phases
-("C10 PRESERVATION: keep C10 = PARTIALLY_RESOLVED... do not resolve SL-distance formula
-here"). Its candidate-invalidation half has been reused since §15; only the actual
-broker-stop distance (ST-C1's unified rule vs. `v3.6`'s per-model formulas, still an
-un-adopted fork) remains. C16 (data quality, `warmup` value) and C18 (residual
-multi-combination conflict policy, merged into C14's now-resolved territory but not
-itself finalized) are secondary. C01 (instrument list) and C15 (session/time) remain
-open but non-blocking.
+Two open items remain for "first remaining blocker":
 
-→ **FIRST_REMAINING_BLOCKER = UC-009 (C10 SL-distance residual).**
+- **C14's live-storage migration** (`SHARED_CHANGE_REQUIRED`) — the identity layer is
+  ready; wiring `candidate_occurrence_id` into `proposals/lifecycle.py`'s store key
+  requires its own, separately-authorized regression scope, since that module is
+  shared with the live `SMC_CONDITIONAL_ENTRY_V2` watcher, not just Large-SMC
+  research.
+- **C10's residual SL-distance formula** (UC-009) — earlier in spec section 58's
+  minimum-core ordering (invalidation precedes duplicate/re-entry), deliberately left
+  open across the C11 and C12 phases, and still not revisited.
+
+C16 (data quality, `warmup` value) and C18 (residual multi-combination conflict
+policy) are secondary. C01 (instrument list) and C15 (session/time) remain open but
+non-blocking.
+
+→ **FIRST_REMAINING_BLOCKER = UC-009 (C10 SL-distance residual)** — the earliest item
+in strict minimum-core sequence; C14's remaining piece is a deferred infrastructure
+decision (`SHARED_CHANGE_REQUIRED`), not a contract question blocking further
+specification work.

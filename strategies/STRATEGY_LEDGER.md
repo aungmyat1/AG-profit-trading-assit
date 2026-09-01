@@ -102,11 +102,23 @@ from canonical session windows or other repo conventions at the time of registra
   `CONTRACT_ONLY` `candidate_lifecycle:` block; no engine wired, no proposal/execution
   authority. Still `RESEARCH_DRAFT`. See
   `docs/status/ST_LARGE_SMC_V1_C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md`.
-- **v1.0.3 (2026-09-01):** C14 (duplicate/re-entry, candidate identity) resolved by
-  reuse — `src/proposals/`'s already-existing `setup_id`/lifecycle-signature machinery
-  (already used by `historical_replay/orchestrator.py`'s `SetupLedger` for this exact
-  E1-E3/M1-M3 pipeline) answers exact-duplicate, coexistence, and terminality
-  questions without inventing anything new. Recorded as a `CONTRACT_ONLY`
-  `candidate_identity:` block; post-fill re-entry `DEFERRED`; `composer.py`
-  untouched; no engine wired, no proposal/execution authority. Still `RESEARCH_DRAFT`.
-  See `docs/status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`.
+- **v1.0.3 (2026-09-01):** C14 (duplicate/re-entry, candidate identity) claimed
+  resolved by reuse via `src/proposals/`'s `setup_id`/lifecycle-signature machinery.
+  **Correction, same day:** overclaimed — `setup_id` is a setup-*family* identity
+  only; no canonical M-candidate structural identity existed; the lifecycle store
+  (keyed only by `setup_id`) overwrites terminal records rather than preserving them.
+  Downgraded to `PARTIALLY_RESOLVED`, no version bump for the correction. See
+  `docs/status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`
+  and `..._C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md`.
+- **v1.0.4 (2026-09-01, owner-selected Option B):** C14A's gap closed by
+  implementation — additive `source_id` fields on `M1Result`/`M2Result`/`M3Result`
+  (`src/entry_confirmation/`), computed from existing structural evidence
+  (`liquidity.level_id` / new `supply_demand.zone_id`), no new detection. New
+  `src/proposals/occurrence_identity.py` composes `eligibility_interval_id()` +
+  `candidate_occurrence_id()` — additive, unit-tested, not wired into
+  `proposals/lifecycle.py`'s live store (shared with the live
+  `SMC_CONDITIONAL_ENTRY_V2` watcher; migration deferred as
+  `SHARED_CHANGE_REQUIRED`). 172 pre-existing tests + golden vertical slice (7) +
+  Stage1/Stage2 identity tests (21) pass unchanged. `composer.py` untouched; no
+  engine wired, no proposal/execution authority. Still `RESEARCH_DRAFT`. See
+  `docs/status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`.

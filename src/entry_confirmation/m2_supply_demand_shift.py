@@ -40,7 +40,7 @@ from typing import Optional, Sequence, Tuple
 from market_structure import MarketStructureConfig, StructurePointKind, structural_breaks_for_candles
 from strategy_engine.session import Candle
 from supply_demand import ValidatedOrderBlock, ZoneResult
-from supply_demand.models import ZoneRole, ZoneStatus
+from supply_demand.models import ZoneRole, ZoneStatus, zone_id
 
 from .displacement import evaluate_displacement
 from .entry_array import evaluate_entry_array
@@ -101,8 +101,29 @@ class M2Result:
     invalidation_reason: Optional[str] = None
     invalidation_trigger: Optional[str] = None
 
+    # Canonical structural identity of THIS specific M2 candidate (ST_LARGE_SMC_V1
+    # C14B) -- None until zone_failure=True, since no concrete candidate exists before
+    # the opposing zone has genuinely failed. Composed from the opposing zone's own
+    # structural fields (supply_demand.zone_id, mirroring liquidity.hierarchy.level_id)
+    # and the confirming zone_failure_time -- both already computed above, nothing new
+    # detected. Additive/optional: existing callers unaffected.
+    source_id: Optional[str] = None
+
     evidence: Tuple[str, ...] = field(default_factory=tuple)
     reason: Optional[str] = None
+
+
+def _m2_source_id(opposing_zone: ZoneResult, zone_failure_time: datetime) -> str:
+    """Canonical structural identity for THIS M2 candidate (ST_LARGE_SMC_V1 C14B): the
+    opposing zone's own existing structural id (supply_demand.zone_id) plus the
+    confirming zone-failure timestamp. Same deterministic-hash convention as
+    proposals/identity.py::setup_id -- no new hashing infrastructure. A different
+    opposing zone OR a different failure bar produces a different id."""
+    import hashlib
+    digest = hashlib.blake2b(
+        f"{zone_id(opposing_zone)}|{zone_failure_time.isoformat()}".encode("utf-8"), digest_size=8,
+    ).hexdigest()
+    return f"M2-{digest}"
 
 
 def _zone_failure_time(zone: ZoneResult, direction: CandidateDirection, candles: Sequence[Candle]) -> Optional[datetime]:
@@ -201,6 +222,7 @@ def evaluate_m2_supply_demand_shift(
                          pre_shift_flow=pre_shift_flow, opposing_zone=opposing_zone,
                          opposing_zone_status=opposing_zone.status.value, zone_failure=True,
                          zone_failure_time=zone_failure_time,
+                         source_id=_m2_source_id(opposing_zone, zone_failure_time),
                          reason="Zone failed but no causally-ordered closed-candle structural break found yet.")
     choch_point = qualifying[0]
 
@@ -213,6 +235,7 @@ def evaluate_m2_supply_demand_shift(
                          opposing_zone_status=opposing_zone.status.value, zone_failure=True,
                          zone_failure_time=zone_failure_time, structural_break=choch_point.price,
                          structural_break_time=choch_point.time_utc, displacement_confirmed=False,
+                         source_id=_m2_source_id(opposing_zone, zone_failure_time),
                          reason="Structural break confirmed but displacement does not qualify under "
                                 "AG_ENTRY_DISPLACEMENT_V1.")
 
@@ -248,6 +271,7 @@ def evaluate_m2_supply_demand_shift(
         pre_shift_flow=pre_shift_flow, opposing_zone=opposing_zone,
         opposing_zone_status=opposing_zone.status.value, zone_failure=True, zone_failure_time=zone_failure_time,
         structural_break=choch_point.price, structural_break_time=choch_point.time_utc, displacement_confirmed=True,
+        source_id=_m2_source_id(opposing_zone, zone_failure_time),
         new_zone=new_zone, new_zone_type=new_zone.family.value if new_zone is not None else None,
         entry_fvg=fvg_zone, entry_ob=order_block, retrace=entry_array.entry_status == "ENTRY_REFERENCE_AVAILABLE",
         invalidation_price=invalidation.price if invalidation is not None else None,

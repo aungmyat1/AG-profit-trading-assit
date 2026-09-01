@@ -25,7 +25,7 @@ imply a strategy semantic change.
 | Strategy | Version | Status | Used by application releases |
 |---|---|---|---|
 | `ST_ASIAN_SWEEP_5R_V1` | 1.1.1 | ACTIVE, `SOLE_DAY_TRADING_AUTHORITY` (pilot-scoped) | V1.0, V1.0.1, V1.0.2 |
-| `ST_LARGE_SMC_V1` | 1.0.3 | `RESEARCH_DRAFT`, advisory-only, fail-closed (`proposal_generation_authorized: false`, engine `NOT_IMPLEMENTED`) | none (not used by any application release) |
+| `ST_LARGE_SMC_V1` | 1.0.4 | `RESEARCH_DRAFT`, advisory-only, fail-closed (`proposal_generation_authorized: false`, engine `NOT_IMPLEMENTED`) | none (not used by any application release) |
 
 `ST_LARGE_SMC_V1` is a fully independent strategy family (`strategies/ST_LARGE_SMC_V1.yaml`,
 spec `docs/specs/LARGE_SMC_V1_SPEC.md`) — it does not inherit `ST_ASIAN_SWEEP_5R_V1`'s,
@@ -44,14 +44,31 @@ evidence, and it does not appear in any `AG_TRADE_ASSISTANT_V1_0*` release manif
   Frozen as a `CONTRACT_ONLY` `candidate_lifecycle:` block. Still `RESEARCH_DRAFT`; no
   engine, proposal, or execution authority added. See
   `docs/status/ST_LARGE_SMC_V1_C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md`.
-- **v1.0.3 (2026-09-01):** C14 (duplicate/re-entry, candidate identity) resolved by
-  reuse — `src/proposals/identity.py`'s `setup_id()`/`reference_key_for()` and
-  `src/proposals/lifecycle.py`'s `CREATED`/`STILL_VALID`/`UPDATED`/`INVALIDATED`/
-  `EXPIRED` machinery already exist as generic infrastructure, already used by
-  `historical_replay/orchestrator.py`'s `SetupLedger` for this exact pipeline. Frozen
-  as a `CONTRACT_ONLY` `candidate_identity:` block; post-fill re-entry `DEFERRED`.
-  Still `RESEARCH_DRAFT`; `composer.py` untouched. See
-  `docs/status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`.
+- **v1.0.3 (2026-09-01):** C14 (duplicate/re-entry, candidate identity) claimed
+  resolved by reuse via `src/proposals/identity.py`'s `setup_id()`/`reference_key_for()`
+  and `src/proposals/lifecycle.py`'s lifecycle machinery. **Correction, same day
+  (`ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY`):** this overclaimed —
+  `setup_id` is a setup-*family* identity only (one `event_id`/`setup_id` legitimately
+  spans multiple eligibility intervals); no canonical M-candidate structural identity
+  existed anywhere, and the lifecycle store (keyed only by `setup_id`) was shown to
+  overwrite terminal records rather than preserve them. `candidate_identity.authority`
+  was downgraded to `PARTIALLY_RESOLVED`, no version bump for the correction itself.
+  See `docs/status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`
+  and `..._C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md`.
+- **v1.0.4 (2026-09-01, `ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING`,
+  owner-selected Option B):** the C14A gap closed by implementation. Additive
+  `source_id` fields added to `M1Result`/`M2Result`/`M3Result`
+  (`src/entry_confirmation/`), computed from already-existing structural evidence
+  (`liquidity.level_id` / new `supply_demand.zone_id` + a confirming timestamp), no
+  new detection logic. New `src/proposals/occurrence_identity.py` composes
+  `eligibility_interval_id()` + `candidate_occurrence_id()` — additive, unit-tested,
+  **not** wired into `proposals/lifecycle.py`'s live store (that migration is shared
+  with the live `SMC_CONDITIONAL_ENTRY_V2` watcher, deferred as
+  `SHARED_CHANGE_REQUIRED`). 172 pre-existing tests plus the golden vertical slice
+  (7) and Stage1/Stage2 identity tests (21) pass unchanged, proving backward
+  compatibility. Still `RESEARCH_DRAFT`; no engine, proposal, or execution authority
+  added. See
+  `docs/status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`.
 
 A strategy version bump is required if a change affects: setup qualification, sweep
 definition, direction, entry, confirmation, stop, targets, session strategy logic, or
