@@ -17,6 +17,7 @@ LIVE TRADING                  DISABLED BY DEFAULT
 MANUAL TRADE MANAGEMENT       BUILT, independently gated, live validation deferred
 CRYPTO SIGNAL CONTRACT        IMPLEMENTED (incubation)
 CRYPTO DATA/EXECUTION         NOT IMPLEMENTED, fail-closed
+LARGE SMC STRATEGY            RESEARCH_DRAFT, separately registered, no engine/execution authority
 HISTORICAL REPLAY             LIVE-MT5 ACCESS BLOCKED
 FULL REGRESSION               979 passed / 5 skipped / 0 failed (last completed baseline, 2026-08-30)
 ```
@@ -71,6 +72,19 @@ Execution safety was reverified and hardened on 2026-08-30:
 Current default gates remain safe in `config/trading.yaml`: `mode: ANALYSIS`,
 `allow_order_check: false`, `allow_order_send: false`, `allow_live_trading: false`, and
 manual trade management in `DRY_RUN` with `allow_live_management: false`.
+
+`ST_LARGE_SMC_V1 v1.0.0` is registered as an independent `RESEARCH_DRAFT` strategy
+contract. It shares advisory Market Structure, Supply/Demand, Liquidity, Entry
+Confirmation, and Trade Management capabilities, but shares no strategy authority or
+validation evidence with `ST_ASIAN_SWEEP_5R_V1`. Its engine is not implemented, every
+material entry/lifecycle/risk/backtest parameter remains explicitly `UNSIGNED`, and
+demo/live authorization are false. See `docs/status/LARGE_SMC_V1_REGISTRATION_STATUS.md`.
+
+The strategy/skill workflow is organized conceptually in
+`docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md`: local contracts and engines retain
+authority; D-drive SMC repositories are classified as separate authorities, research
+references, locked work, or historical safety evidence. `.agents/skills` and
+`.claude/skills` remain path-for-path mirrors; no skill or strategy code was moved.
 
 ## Repository reorganization (2026-08-28)
 

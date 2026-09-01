@@ -71,3 +71,20 @@ from canonical session windows or other repo conventions at the time of registra
   (`session_router` -> this repo's `strategy_engine/session/`), but they are **separate,
   independently-signed strategies** with different session windows, different classifiers, and
   different execution authority. Do not merge them.
+
+## ST_LARGE_SMC_V1 -- Large SMC Opportunity Service
+
+- **Registered:** 2026-09-01
+- **Config:** `strategies/ST_LARGE_SMC_V1.yaml`
+- **Specification:** `docs/specs/LARGE_SMC_V1_SPEC.md`
+- **Status:** RESEARCH_DRAFT / inactive
+- **Family:** LARGE_SMC
+- **Execution authority:** none; advisory only, demo/live authorization false
+- **Engine:** not implemented
+- **Relationship:** independent of `ST_ASIAN_SWEEP_5R_V1`, which remains the sole
+  Session Day Trading authority. It also does not alias or promote `SMC_3R_V1` or
+  `ST_LIQUIDITY_SWEEP_RETEST_V1`.
+- **Open contract fields:** instrument eligibility, exact location qualification,
+  M15/M5/M1 confirmation and entry rules, order/fill model, lifecycle, risk limits,
+  costs, validation partitions, benchmarks, acceptance criteria, and falsification
+  tests. Every unresolved field is explicit and fails closed.

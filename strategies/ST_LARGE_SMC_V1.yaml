@@ -1,0 +1,99 @@
+strategy_id: ST_LARGE_SMC_V1
+strategy_name: Large SMC Opportunity Service
+strategy_family: LARGE_SMC
+version: 1.0.0
+status: RESEARCH_DRAFT
+registered_utc: "2026-09-01"
+
+# Independent of ST_ASIAN_SWEEP_5R_V1. Registration permits research/advisory use
+# only. UNSIGNED fields make signal generation and execution fail closed.
+authority:
+  active: false
+  research: true
+  advisory_only: true
+  proposal_generation_authorized: false
+  demo_authorized: false
+  live_authorized: false
+
+purpose: >-
+  Identify event- and location-driven Large SMC opportunities using D1/H4/H1 context
+  and a separately frozen lower-timeframe confirmation sequence.
+
+asset_class: FX
+instruments: UNSIGNED
+
+timeframe_responsibilities:
+  D1: NARRATIVE_AND_EXTERNAL_STRUCTURE
+  H4: CONTEXT_AND_LOCATION
+  H1: SETUP_CONTEXT
+  M15: CONFIRMATION_CANDIDATE
+  M5: UNSIGNED
+  M1: UNSIGNED
+
+location_model:
+  external_liquidity: CANDIDATE_INPUT
+  internal_liquidity: CANDIDATE_INPUT
+  premium_discount: CANDIDATE_INPUT
+  order_block: CANDIDATE_INPUT
+  fair_value_gap: CANDIDATE_INPUT
+  supply_demand: CANDIDATE_INPUT
+  protected_highs_lows: CANDIDATE_INPUT
+  qualification_rule: UNSIGNED
+
+confirmation_sequence:
+  liquidity_event: REQUIRED_CANDIDATE
+  market_structure_shift_or_choch: REQUIRED_CANDIDATE
+  displacement: REQUIRED_CANDIDATE
+  entry_array: UNSIGNED
+  exact_sequence_and_timing: UNSIGNED
+
+decision_states: [READY, WATCH, NO_TRADE, DATA_ERROR, EXPIRED, BLOCKED]
+
+entry:
+  timeframe: UNSIGNED
+  trigger: UNSIGNED
+  order_type: UNSIGNED
+  expiry: UNSIGNED
+
+exit_and_lifecycle:
+  initial_stop: UNSIGNED
+  profit_targets: UNSIGNED
+  partial_profit: UNSIGNED
+  breakeven: UNSIGNED
+  maximum_holding_period: UNSIGNED
+  overnight_and_weekend_policy: UNSIGNED
+
+risk:
+  engine: execution.risk
+  risk_per_trade_pct: UNSIGNED
+  portfolio_limits: UNSIGNED
+
+data_contract:
+  timezone: UTC
+  closed_bars_only: true
+  source: MT5_FX_RESEARCH
+  availability_and_staleness: USE_EXISTING_FAIL_CLOSED_MARKET_DATA_CONTRACT
+  warmup: UNSIGNED
+
+research_contract:
+  fill_model: UNSIGNED
+  spread_slippage_commission: UNSIGNED
+  parameter_selection: UNSIGNED
+  train_validation_test_partition: UNSIGNED
+  benchmarks: UNSIGNED
+  acceptance_criteria: UNSIGNED
+  falsification_tests: UNSIGNED
+
+execution:
+  mode: ADVISORY_ONLY
+  proposal_only: true
+  explicit_confirmation_required: true
+  automatic_execution: false
+  execution_adapter: NOT_CONNECTED
+
+related_strategies:
+  ST_ASIAN_SWEEP_5R_V1: SEPARATE_SESSION_DAY_TRADING_AUTHORITY
+  SMC_3R_V1: SEPARATE_SMC_DAY_TRADING_METHOD
+  ST_LIQUIDITY_SWEEP_RETEST_V1: SEPARATE_RESEARCH_SUPPORTING_ENTRY_MODEL
+  ST_HIGH_RR_LIQUIDITY_MSS_V1: DEFERRED_NOT_REGISTERED
+

@@ -21,6 +21,8 @@ their age.
   — system responsibilities, execution authority, and runtime flow.
 - [`architecture/ARCHITECTURE_CONFLICT_AUDIT.md`](architecture/ARCHITECTURE_CONFLICT_AUDIT.md)
   — recorded architecture conflicts and their disposition.
+- [`architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md`](architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md)
+  — D-drive strategy provenance and agent-skill workflow organization.
 
 Architecture descriptions do not override Strategy YAML, frozen specifications, or
 the execution gates in code and configuration.
@@ -30,6 +32,7 @@ the execution gates in code and configuration.
 The `specs/` directory contains behavior contracts. The most useful entry points are:
 
 - [`specs/SESSION_TRADE_V1_SPEC.md`](specs/SESSION_TRADE_V1_SPEC.md)
+- [`specs/LARGE_SMC_V1_SPEC.md`](specs/LARGE_SMC_V1_SPEC.md)
 - [`specs/TRADE_MANAGEMENT_V1_SPEC.md`](specs/TRADE_MANAGEMENT_V1_SPEC.md)
 - [`specs/FIVE_SKILL_ASSISTANT_RUNTIME_V1_SPEC.md`](specs/FIVE_SKILL_ASSISTANT_RUNTIME_V1_SPEC.md)
 - [`specs/SMC_ASSISTANT_RUNTIME_V1_SPEC.md`](specs/SMC_ASSISTANT_RUNTIME_V1_SPEC.md)
@@ -55,7 +58,9 @@ observations from the named milestone; they are not rolling dashboards.
   and [`status/SMC_3X3_HISTORICAL_VALIDATION_V1_STATUS.md`](status/SMC_3X3_HISTORICAL_VALIDATION_V1_STATUS.md)
 - Frozen phases: [`status/PHASE_1_4_FREEZE_STATUS.md`](status/PHASE_1_4_FREEZE_STATUS.md)
   and [`status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md`](status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md)
-- Registry and skills: [`status/STRATEGY_REGISTRY_STATUS.md`](status/STRATEGY_REGISTRY_STATUS.md)
+- Registry and skills: [`status/STRATEGY_REGISTRY_STATUS.md`](status/STRATEGY_REGISTRY_STATUS.md),
+  [`status/LARGE_SMC_V1_REGISTRATION_STATUS.md`](status/LARGE_SMC_V1_REGISTRATION_STATUS.md),
+  [`status/STRATEGY_WORKFLOW_RESOURCE_AUDIT_STATUS.md`](status/STRATEGY_WORKFLOW_RESOURCE_AUDIT_STATUS.md),
   and [`status/SKILL_OPTIMIZATION_STATUS.md`](status/SKILL_OPTIMIZATION_STATUS.md)
 
 When a historical test total differs from the current baseline, retain the historical

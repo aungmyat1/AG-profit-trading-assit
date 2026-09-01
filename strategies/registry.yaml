@@ -40,6 +40,19 @@ strategies:
     engine: "smc_3r_v1 (D:\\ddev\\Session Trade Codex)"
     note: independence preserved; not merged into SESSION_TRADE_V1's rules.
 
+  ST_LARGE_SMC_V1:
+    registered: true
+    active: false
+    research: true
+    demo_authorized: false
+    live_authorized: false
+    config_source: strategies/ST_LARGE_SMC_V1.yaml
+    engine: NOT_IMPLEMENTED
+    note: >-
+      Independent Large-SMC research contract. Shares advisory capabilities with other
+      strategies but does not inherit ST_ASIAN_SWEEP_5R_V1, SMC_3R_V1, or
+      ST_LIQUIDITY_SWEEP_RETEST_V1 authority or validation evidence.
+
   R8_OBM_V1:
     registered: true
     active: false

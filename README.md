@@ -51,6 +51,9 @@ See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
   remains disabled.
 - The execution runtime has restart-safe lifecycle reconciliation and explicit-confirmation
   routing for eligible FX proposals.
+- Large SMC is registered as the separate `ST_LARGE_SMC_V1` research strategy. Its
+  contract is advisory-only and intentionally incomplete; it has no engine or execution
+  authorization and does not share authority with the Session Day Trading strategy.
 - Crypto sweep/retest strategy rules and adapter boundaries exist, but crypto market data
   and exchange execution remain disabled until a real venue is integrated.
 - Historical replay prohibits live MT5 candle/tick access. Historical session-box
