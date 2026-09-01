@@ -18,6 +18,8 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))  # src/, for the top-level packages below
 
 import session_clock as sc
@@ -25,6 +27,27 @@ from mt5.account import account
 from mt5.connection import MT5ConnectionError, connect
 from mt5.market_data import MarketDataError, get_candles
 from strategy_engine import evaluate, load_strategy
+
+REGISTRY_PATH = Path(__file__).resolve().parent.parent / "strategies" / "registry.yaml"
+
+
+def _check_registry_active(strategy_id: str) -> str | None:
+    """Return a reason code if strategy_id is not registry-active, else None.
+
+    This script never sizes risk or sends orders, but it can still print a
+    signal-shaped result (direction/entry/stop_loss); a non-ACTIVE strategy (e.g.
+    ST_LARGE_SMC_V1, RESEARCH_DRAFT) must not be evaluated here either, so this
+    gate fails closed on the same registry.yaml the rest of the project treats as
+    authoritative rather than relying on incidental schema mismatches.
+    """
+    with open(REGISTRY_PATH, "r", encoding="utf-8") as f:
+        registry = (yaml.safe_load(f) or {}).get("strategies", {})
+    entry = registry.get(strategy_id)
+    if entry is None or not entry.get("registered"):
+        return "STRATEGY_NOT_REGISTERED"
+    if not entry.get("active"):
+        return "STRATEGY_NOT_ACTIVE"
+    return None
 
 # Maps a strategy's own reference_session.name to session_clock's canonical session
 # name -- only names that ARE genuinely one of canonical_sessions.yaml's frozen boxes
@@ -38,6 +61,17 @@ _CANONICAL_REFERENCE_SESSION = {
 
 def main(argv=None) -> int:
     args = _parse_args(argv)
+
+    block_reason = _check_registry_active(args.strategy)
+    if block_reason is not None:
+        _report(args, {
+            "status": "BLOCKED",
+            "reason_code": block_reason,
+            "strategy_id": args.strategy,
+            "symbol": args.symbol,
+            "reference_session": "-",
+        })
+        return 2
 
     strategy = load_strategy(f"strategies/{args.strategy}.yaml")
     pair = next((p for p in strategy.session_pairs if p.pair_id == args.pair), None)

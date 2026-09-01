@@ -66,11 +66,29 @@ For every task:
 
 ## Skill grouping (conceptual — both dirs stay flat, this is about which to load)
 
-**Runtime** (load for "analyze EURUSD", "what's today's box", "why didn't this fire"):
-`market-data`, `market-structure-analysis`, `supply-demand-analysis`,
-`liquidity-analysis`, `entry-confirmation-analysis`, `trade-management-analysis`, plus
-`session-box-drawing`, `trend-range-classification`, `sweep-detection-range-v2`,
-`risk-position-sizing` underneath them as needed.
+**Strategy authority and dispatch** (load when a registered strategy is named):
+`strategy-management`. Read `strategies/registry.yaml` and the named contract first.
+Registration, advisory analysis, proposal authority, demo authorization, and live
+authorization are separate states. Never use a generic analysis skill to fill an
+`UNSIGNED` strategy rule.
+
+**Session Day Trading runtime** (`ST_ASIAN_SWEEP_5R_V1` and independently registered
+session strategies): `market-data` -> `session-box-drawing` -> deterministic strategy
+engine. Load `trend-range-classification` and `sweep-detection-range-v2` only when the
+named contract requires them. `risk-position-sizing` applies only after the engine has
+produced an eligible signal; advisory structure/zone reads never promote a signal.
+
+**Large SMC research/advisory** (`ST_LARGE_SMC_V1`, currently `RESEARCH_DRAFT`):
+`market-data` -> `market-structure-analysis` -> `supply-demand-analysis` ->
+`liquidity-analysis` -> `entry-confirmation-analysis` -> `trade-management-analysis`.
+Use these to collect and explain evidence only. Until the Large-SMC contract resolves
+its `UNSIGNED` fields and gains an engine, this chain cannot emit an actionable `READY`
+proposal and must not borrow rules from another D-drive repository implicitly.
+
+**Generic market analysis** (no strategy named): load only the smallest necessary
+subset of `market-data`, `market-structure-analysis`, `supply-demand-analysis`,
+`liquidity-analysis`, `entry-confirmation-analysis`, and
+`trade-management-analysis`. These remain advisory and do not require strategy dispatch.
 
 **Manual-entry trade management** (load for "claim this ticket", "is this position
 eligible for a partial", "should breakeven have fired", "check on my open manual
@@ -81,10 +99,15 @@ and `mt5.management_gateway` (via `trade_management.manager`) — see Authority 
 point 5. Distinct from `trade-management-analysis` above, which only reports strategy
 config-defined milestones and has no execution path at all.
 
-**Research** (load only when the task is explicitly about spec-writing, backtesting, or
-validation, not day-to-day analysis): `strategy-specification`, `backtest-engineering`,
-`market-data-quality`, `robustness-validation`, `performance-analysis`,
-`multi-asset-conventions`.
+**Research and promotion** (load only for explicit research work, in this order):
+`strategy-specification` -> `multi-asset-conventions` -> `market-data-quality` ->
+`backtest-engineering` -> `robustness-validation` -> `performance-analysis`. A later
+stage must not silently repair or reinterpret an earlier contract. Research evidence
+never authorizes demo/live execution; promotion is recorded separately in the registry
+and strategy ledger.
+
+See `docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md` for the D-drive source map,
+adoption rules, and the complete skill-to-workflow matrix.
 
 ## Workflow
 

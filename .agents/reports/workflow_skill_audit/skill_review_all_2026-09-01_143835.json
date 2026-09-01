@@ -1,0 +1,107 @@
+{
+  "generated_at": "2026-09-01 14:38:35",
+  "results": [
+    {
+      "skill": "backtest-engineering",
+      "score": 32,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "entry-confirmation-analysis",
+      "score": 27,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "liquidity-analysis",
+      "score": 32,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "market-data",
+      "score": 27,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "market-data-quality",
+      "score": 40,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "market-structure-analysis",
+      "score": 32,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "multi-asset-conventions",
+      "score": 32,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "performance-analysis",
+      "score": 40,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "risk-position-sizing",
+      "score": 37,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "robustness-validation",
+      "score": 32,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "session-box-drawing",
+      "score": 32,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "strategy-management",
+      "score": 37,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "strategy-specification",
+      "score": 32,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "supply-demand-analysis",
+      "score": 32,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "sweep-detection-range-v2",
+      "score": 27,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "trade-management-analysis",
+      "score": 27,
+      "pass": false,
+      "high_findings": 0
+    },
+    {
+      "skill": "trend-range-classification",
+      "score": 27,
+      "pass": false,
+      "high_findings": 0
+    }
+  ]
+}

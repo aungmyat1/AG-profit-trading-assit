@@ -1,0 +1,201 @@
+{
+  "generated_at": "2026-09-01 14:38:35",
+  "seed": null,
+  "selection_mode": "random",
+  "skill_name": "sweep-detection-range-v2",
+  "skill_file": "skills\\sweep-detection-range-v2\\SKILL.md",
+  "auto_review": {
+    "skill_name": "sweep-detection-range-v2",
+    "skill_file": "skills\\sweep-detection-range-v2\\SKILL.md",
+    "skill_type": "execution_or_hybrid",
+    "score": 27,
+    "score_breakdown": {
+      "metadata_use_case": 20,
+      "workflow_coverage": 0,
+      "execution_safety_reproducibility": 7,
+      "supporting_artifacts": 0,
+      "test_health": 0
+    },
+    "findings": [
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "Missing section: `## When to Use`.",
+        "improvement": "Add `## When to Use` to improve operator guidance."
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "Missing section: `## Prerequisites`.",
+        "improvement": "Add `## Prerequisites` to improve operator guidance."
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "Missing section: `## Workflow`.",
+        "improvement": "Add `## Workflow` to improve operator guidance."
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "Missing section: `## Output`.",
+        "improvement": "Add `## Output` to improve operator guidance."
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "Missing section: `## Resources`.",
+        "improvement": "Add `## Resources` to improve operator guidance."
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "No runnable bash examples found.",
+        "improvement": "Add executable command examples in a `bash` code block."
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "No markdown reference files found in `references/`.",
+        "improvement": "Add methodology/reference docs to support consistent interpretation."
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "No executable helper scripts found in `scripts/`.",
+        "improvement": "Add automation scripts for repeatable execution."
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "No `test_*.py` tests found for skill scripts.",
+        "improvement": "Add skill-level tests under `scripts/tests/` or `tests/`."
+      }
+    ],
+    "improvements_required": true,
+    "improvement_items": [
+      "Missing section: `## When to Use`. -> Add `## When to Use` to improve operator guidance.",
+      "Missing section: `## Prerequisites`. -> Add `## Prerequisites` to improve operator guidance.",
+      "Missing section: `## Workflow`. -> Add `## Workflow` to improve operator guidance.",
+      "Missing section: `## Output`. -> Add `## Output` to improve operator guidance.",
+      "Missing section: `## Resources`. -> Add `## Resources` to improve operator guidance.",
+      "No runnable bash examples found. -> Add executable command examples in a `bash` code block.",
+      "No markdown reference files found in `references/`. -> Add methodology/reference docs to support consistent interpretation.",
+      "No executable helper scripts found in `scripts/`. -> Add automation scripts for repeatable execution.",
+      "No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+    ],
+    "test_status": "skipped",
+    "test_command": null,
+    "test_output": ""
+  },
+  "llm_review": {
+    "provided": false,
+    "source_file": null,
+    "score": null,
+    "summary": "",
+    "findings": []
+  },
+  "final_review": {
+    "score": 27,
+    "weights": {
+      "auto_weight": 1.0,
+      "llm_weight": 0.0
+    },
+    "improvements_required": true,
+    "improvement_items": [
+      "Missing section: `## When to Use`. -> Add `## When to Use` to improve operator guidance.",
+      "Missing section: `## Prerequisites`. -> Add `## Prerequisites` to improve operator guidance.",
+      "Missing section: `## Workflow`. -> Add `## Workflow` to improve operator guidance.",
+      "Missing section: `## Output`. -> Add `## Output` to improve operator guidance.",
+      "Missing section: `## Resources`. -> Add `## Resources` to improve operator guidance.",
+      "No runnable bash examples found. -> Add executable command examples in a `bash` code block.",
+      "No markdown reference files found in `references/`. -> Add methodology/reference docs to support consistent interpretation.",
+      "No executable helper scripts found in `scripts/`. -> Add automation scripts for repeatable execution.",
+      "No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+    ],
+    "findings": [
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "Missing section: `## When to Use`.",
+        "improvement": "Add `## When to Use` to improve operator guidance.",
+        "axis": "auto"
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "Missing section: `## Prerequisites`.",
+        "improvement": "Add `## Prerequisites` to improve operator guidance.",
+        "axis": "auto"
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "Missing section: `## Workflow`.",
+        "improvement": "Add `## Workflow` to improve operator guidance.",
+        "axis": "auto"
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "Missing section: `## Output`.",
+        "improvement": "Add `## Output` to improve operator guidance.",
+        "axis": "auto"
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "Missing section: `## Resources`.",
+        "improvement": "Add `## Resources` to improve operator guidance.",
+        "axis": "auto"
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "No runnable bash examples found.",
+        "improvement": "Add executable command examples in a `bash` code block.",
+        "axis": "auto"
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "No markdown reference files found in `references/`.",
+        "improvement": "Add methodology/reference docs to support consistent interpretation.",
+        "axis": "auto"
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "No executable helper scripts found in `scripts/`.",
+        "improvement": "Add automation scripts for repeatable execution.",
+        "axis": "auto"
+      },
+      {
+        "severity": "medium",
+        "path": "skills\\sweep-detection-range-v2\\SKILL.md",
+        "line": null,
+        "message": "No `test_*.py` tests found for skill scripts.",
+        "improvement": "Add skill-level tests under `scripts/tests/` or `tests/`.",
+        "axis": "auto"
+      }
+    ]
+  },
+  "llm_prompt_file": null
+}
