@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 journal/*.jsonl
+journal/post_asian_pilot/
 logs/
 *.egg-info/
 .env

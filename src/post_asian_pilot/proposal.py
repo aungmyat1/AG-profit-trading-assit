@@ -50,6 +50,14 @@ class PostAsianEntryProposal:
     valid_from: datetime
     expires_at: datetime
 
+    # Display-only: the UNFLOORED volume before broker-step normalization, recomputed
+    # here with the identical formula execution.risk.size_position() uses internally
+    # (risk_budget / loss_per_lot) -- that function only returns the already-floored
+    # volume, never the pre-floor value, so this is NOT a second sizing authority, only
+    # a transparency figure for the Entry Ticket (spec section 17/18). The ACTUAL,
+    # authoritative, broker-safe volume remains trade_proposal.volume.
+    raw_volume: Optional[float] = None
+
     decision_status: str = "READY"
     execution_status: str = EXECUTION_STATUS_CONFIRMATION_REQUIRED
     execution_authorized: bool = False
@@ -85,6 +93,12 @@ def build_entry_proposal(
 
     trade_proposal = TradeProposal.from_trade_intent(intent_result.intent)
 
+    stop_distance = abs(intent_result.intent.entry - intent_result.intent.stop_loss)
+    risk_budget = equity * (risk_per_trade_pct / 100.0)
+    value_per_price_unit = symbol_meta.tick_value / symbol_meta.tick_size
+    loss_per_lot = stop_distance * value_per_price_unit
+    raw_volume = risk_budget / loss_per_lot if loss_per_lot > 0 else None
+
     total_target_r = strategy.total_target_r
     risk_distance = abs(intent_result.intent.entry - intent_result.intent.stop_loss)
     if signal.direction == "LONG":
@@ -106,5 +120,6 @@ def build_entry_proposal(
         evidence_snapshot_id=decision.decision_id,
         reason_codes=decision.reason_codes,
         created_at=now, valid_from=now, expires_at=expires_at,
+        raw_volume=raw_volume,
     )
     return ProposalResult(status="READY", proposal=proposal, reason_code=intent_result.reason_code)

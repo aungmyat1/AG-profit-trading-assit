@@ -45,13 +45,16 @@ class PreflightResult:
     trading_date: Optional[date] = None
     daily_slot_state: Optional[str] = None
     open_positions: Optional[int] = None
+    snapshot_store_state: Optional[str] = None
 
 
 def run_preflight(
-    release_path: str = "config/releases/AG_TRADE_ASSISTANT_V1_0_1.yaml",
+    release_path: str = "config/releases/AG_TRADE_ASSISTANT_V1_0_2.yaml",
     pilot_path: Optional[str] = None,
     baseline_path: str = DEFAULT_FINGERPRINT_BASELINE_PATH,
 ) -> PreflightResult:
+    """Readiness ONLY (spec section 13): never runs a strategy cycle, never claims a
+    ledger slot, never writes/mutates a snapshot, never sends an order."""
     checks = []
     first_block = None
 
@@ -73,7 +76,7 @@ def run_preflight(
         _fail("release_manifest_loaded", f"RELEASE_LOAD_FAILED:{exc}")
         return PreflightResult(STATUS_BLOCKED, first_block, tuple(checks))
 
-    if release_raw.get("release_id") != "AG_TRADE_ASSISTANT_V1_0_1":
+    if release_raw.get("release_id") != "AG_TRADE_ASSISTANT_V1_0_2":
         _fail("release_id", "WRONG_RELEASE_LOADED")
     else:
         _pass("release_id")
@@ -149,6 +152,15 @@ def run_preflight(
     except StateStoreCorrupted as exc:
         _fail("daily_trade_ledger_readable", f"DAILY_SLOT_CORRUPT:{exc}")
 
+    snapshot_store_state = None
+    try:
+        snapshot_store = JsonKeyValueStore(f"journal/post_asian_pilot/session_snapshot.json")
+        count = len(snapshot_store.all())
+        snapshot_store_state = f"{count} frozen snapshot(s), readable"
+        _pass("snapshot_store_readable")
+    except StateStoreCorrupted as exc:
+        _fail("snapshot_store_readable", f"ASIAN_SNAPSHOT_CORRUPT:{exc}")
+
     try:
         coordinator = ExecutionCoordinator.default()
         open_positions_count = coordinator.open_position_guard.open_count()
@@ -165,4 +177,5 @@ def run_preflight(
         strategy_id=strategy.strategy_id, strategy_version=strategy.version,
         account_mode=("DEMO" if (account and account.is_demo) else "LIVE" if account else None),
         trading_date=trading_date, daily_slot_state=daily_slot_state, open_positions=open_positions_count,
+        snapshot_store_state=snapshot_store_state,
     )

@@ -22,8 +22,11 @@ from execution.daily_loss_guard import DailyLossGuard
 from execution.position_guard import OpenPositionGuard
 from runtime_state.store import JsonKeyValueStore
 
+from strategy_engine.models import TradeSignal
+
 from .decision import PostAsianDecision
 from .governor import DailyTradeLedger
+from .monitor import MonitoringCounters
 from .proposal import PostAsianEntryProposal
 from .snapshot import AsianSessionSnapshot
 
@@ -39,6 +42,7 @@ class PilotStores:
     open_position_guard: OpenPositionGuard  # execution-time only, see governor.py docstring
     daily_loss_guard: DailyLossGuard
     ledger: DailyTradeLedger
+    counters: MonitoringCounters
 
     @classmethod
     def default(cls, strategy_id: str, state_dir: str = DEFAULT_STATE_DIR) -> "PilotStores":
@@ -50,6 +54,7 @@ class PilotStores:
             open_position_guard=OpenPositionGuard.default(),
             daily_loss_guard=DailyLossGuard.default(strategy_id),
             ledger=DailyTradeLedger.default(f"{state_dir}/daily_trade_ledger.json"),
+            counters=MonitoringCounters.default(f"{state_dir}/monitoring_counters.json"),
         )
 
 
@@ -63,13 +68,26 @@ def _signature(record: Dict[str, Any], fields: tuple) -> tuple:
     return tuple(_norm(record.get(f)) for f in fields)
 
 
+class SnapshotImmutabilityViolation(RuntimeError):
+    """Raised when a second write for the same (strategy_id, symbol, trading_date,
+    session) identity carries different OHLC/bar_count/fingerprint than the frozen
+    snapshot already on disk. A snapshot, once frozen, is immutable -- this is never
+    silently overwritten, only ever confirmed-identical (idempotent no-op) or rejected."""
+
+
+_SNAPSHOT_IDENTITY_FIELDS = ("open", "high", "low", "close", "bar_count", "source_fingerprint", "data_quality")
+
+
 def save_snapshot(store: JsonKeyValueStore, snapshot: AsianSessionSnapshot) -> bool:
     key = _session_event_key(snapshot.strategy_id, snapshot.symbol, snapshot.trading_date, snapshot.session_name)
     existing = store.get(key)
     record = dataclasses.asdict(snapshot)
-    sig_fields = ("open", "high", "low", "close", "bar_count", "source_fingerprint", "data_quality")
-    if existing is not None and _signature(existing, sig_fields) == _signature(record, sig_fields):
-        return False
+    if existing is not None:
+        if _signature(existing, _SNAPSHOT_IDENTITY_FIELDS) == _signature(record, _SNAPSHOT_IDENTITY_FIELDS):
+            return False  # identical re-freeze -- idempotent no-op, not a re-write
+        raise SnapshotImmutabilityViolation(
+            f"SNAPSHOT_IMMUTABILITY_VIOLATION: {key} already frozen with different "
+            f"OHLC/bar_count/fingerprint -- refusing to overwrite")
     store.put(key, record)
     return True
 
@@ -100,12 +118,34 @@ def get_proposal_record(store: JsonKeyValueStore, setup_id: str) -> Optional[Dic
     return store.get(setup_id)
 
 
+def _signal_from_record(raw: Optional[Dict[str, Any]]) -> Optional[TradeSignal]:
+    """TradeSignal IS the normalized, authoritative strategy evidence the spec asks for
+    (setup/direction/entry/stop_loss/risk_distance/signal_timestamp/box_high/box_low/
+    box_mid/reason_code, all already the exact fields build_entry_proposal() needs) --
+    dataclasses.asdict(decision) already recursively serializes it into the persisted
+    decision record (save_decision()), so restart recovery only ever needs to re-parse
+    it, never re-run the strategy or invent evidence. Returns None only when the
+    persisted decision genuinely never carried a signal (WATCH/DATA_ERROR states)."""
+    if raw is None:
+        return None
+    return TradeSignal(
+        signal_id=raw["signal_id"], strategy_id=raw["strategy_id"], strategy_version=raw["strategy_version"],
+        symbol=raw["symbol"], pair_id=raw["pair_id"], reference_session=raw["reference_session"],
+        session_date=date.fromisoformat(raw["session_date"]), box_high=raw["box_high"], box_low=raw["box_low"],
+        box_mid=raw["box_mid"], regime=raw["regime"], setup=raw["setup"], status=raw["status"],
+        reason_code=raw["reason_code"], direction=raw.get("direction"), entry=raw.get("entry"),
+        stop_loss=raw.get("stop_loss"), risk_distance=raw.get("risk_distance"),
+        signal_timestamp=datetime.fromisoformat(raw["signal_timestamp"]) if raw.get("signal_timestamp") else None,
+    )
+
+
 def decision_from_record(record: Dict[str, Any]) -> PostAsianDecision:
     """Reconstructs a PostAsianDecision from a JsonKeyValueStore record -- dates/
     datetimes round-tripped through JSON (default=str) come back as plain strings, so
     this re-parses them rather than passing the raw dict straight into the dataclass.
-    `signal` (a TradeSignal) is never persisted in reconstructible form -- always None
-    on reload, matching the cached-decision-only use case (no re-evaluation happens)."""
+    `signal` is reconstructed from the persisted nested TradeSignal record (see
+    _signal_from_record) -- restart/crash recovery needs this to rebuild the SAME
+    proposal identity without re-evaluating the strategy against later data."""
     return PostAsianDecision(
         decision_id=record["decision_id"], strategy_id=record["strategy_id"],
         strategy_version=record["strategy_version"], symbol=record["symbol"],
@@ -113,7 +153,7 @@ def decision_from_record(record: Dict[str, Any]) -> PostAsianDecision:
         reference_session=record["reference_session"], status=record["status"],
         reason_codes=tuple(record.get("reason_codes") or ()),
         evaluation_time=datetime.fromisoformat(record["evaluation_time"]),
-        session_snapshot_id=record.get("session_snapshot_id"), signal=None,
+        session_snapshot_id=record.get("session_snapshot_id"), signal=_signal_from_record(record.get("signal")),
         ready_at=datetime.fromisoformat(record["ready_at"]) if record.get("ready_at") else None,
         missing_condition=record.get("missing_condition"), trigger_type=record.get("trigger_type"),
         trigger_level=record.get("trigger_level"), trigger_timeframe=record.get("trigger_timeframe"),

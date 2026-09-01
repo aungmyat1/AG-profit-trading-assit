@@ -8,6 +8,7 @@ throughout -- never touches the real journal/ directory.
 """
 from __future__ import annotations
 
+import dataclasses
 import datetime as dt
 from concurrent.futures import ThreadPoolExecutor
 
@@ -26,7 +27,9 @@ from post_asian_pilot.decision import (
     STATUS_NO_TRADE,
     STATUS_READY,
     STATUS_WATCH,
+    data_error_decision,
     map_trade_signal_to_decision,
+    watch_decision,
 )
 from post_asian_pilot.fingerprint import fingerprint
 from post_asian_pilot.governor import (
@@ -53,7 +56,13 @@ from post_asian_pilot.pilot_config import (
 from post_asian_pilot.proposal import build_entry_proposal
 from post_asian_pilot.report import release_fingerprints
 from post_asian_pilot.snapshot import build_asian_session_snapshot, validate_candle_array
-from post_asian_pilot.store import decision_from_record, save_decision, save_proposal, save_snapshot
+from post_asian_pilot.store import (
+    SnapshotImmutabilityViolation,
+    decision_from_record,
+    save_decision,
+    save_proposal,
+    save_snapshot,
+)
 from post_asian_pilot.tiebreak import order_candidates
 from strategy_engine.session import Candle
 
@@ -612,6 +621,15 @@ def test_no_execution_imports_in_pilot_package():
         assert "order_send(" not in text, py_file
 
 
+def test_journal_post_asian_pilot_is_gitignored():
+    """Spec section 28/44: runtime JSON under journal/post_asian_pilot/ must not become
+    staged by normal operation."""
+    import subprocess
+    result = subprocess.run(["git", "check-ignore", "-q", "journal/post_asian_pilot/decision.json"],
+                            capture_output=True)
+    assert result.returncode == 0, "journal/post_asian_pilot/ must be covered by .gitignore"
+
+
 def test_no_env_credential_references_in_pilot_package():
     """Nothing in this package reads .env / os.environ -- MT5 connects via the already
     logged-in desktop terminal (mt5.connection.connect() -> mt5.initialize(), no
@@ -714,7 +732,156 @@ def test_preflight_first_run_establishes_baseline_and_ready(tmp_path, monkeypatc
     assert any(name == "fingerprint_baseline_established" for name, _ in result.checks)
 
 
-def test_preflight_wrong_release_id_blocks(tmp_path):
+def test_ready_decision_restart_recovery_preserves_signal(tmp_path):
+    """Spec section 5: a persisted READY decision must reload with its authoritative
+    signal intact (not None), so the proposal builder still sees READY, not NOT_READY."""
+    store = JsonKeyValueStore(str(tmp_path / "decision.json"))
+    ready_at = dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC)
+    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.10000,
+                     stop_loss=1.10150, risk_distance=0.00150, signal_timestamp=ready_at)
+    window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
+    decision = map_trade_signal_to_decision(signal, "SNAP-1", ready_at, window_end)
+    save_decision(store, decision)
+
+    key = f"{decision.strategy_id}|{decision.symbol}|{decision.trading_date.isoformat()}|{decision.reference_session}"
+    restored = decision_from_record(store.get(key))
+    assert restored.status == STATUS_READY
+    assert restored.signal is not None
+    assert restored.signal.direction == "SHORT"
+    assert restored.signal.entry == 1.10000
+    assert restored.signal.stop_loss == 1.10150
+
+    from post_asian_pilot.proposal import build_entry_proposal
+    result = build_entry_proposal(restored, load_strategy(STRATEGY_PATH), equity=10_000.0,
+                                  symbol_meta=SymbolMeta(symbol="EURUSD", tick_size=0.00001, tick_value=1.0,
+                                                         contract_size=100000, volume_min=0.01, volume_max=100.0,
+                                                         volume_step=0.01, digits=5),
+                                  risk_per_trade_pct=0.5, session_snapshot_id="SNAP-1")
+    assert result.status == "READY"  # proves it does NOT downgrade to NOT_READY after reload
+    assert result.proposal.setup_id == build_entry_proposal(
+        decision, load_strategy(STRATEGY_PATH), equity=10_000.0,
+        symbol_meta=SymbolMeta(symbol="EURUSD", tick_size=0.00001, tick_value=1.0, contract_size=100000,
+                               volume_min=0.01, volume_max=100.0, volume_step=0.01, digits=5),
+        risk_per_trade_pct=0.5, session_snapshot_id="SNAP-1").proposal.setup_id  # same identity before/after restart
+
+
+# --------------------------------------------------------------------------- snapshot immutability
+
+def _snapshot_for(tmp_path, high=1.10, trading_date=dt.date(2026, 1, 5)):
+    start = dt.datetime(2026, 1, 5, 0, 0, tzinfo=UTC)
+    candles = _m15_candles(start, 24, base=1.09)
+    # force a specific high so two calls can differ deterministically
+    candles = list(candles)
+    candles[0] = Candle(time=candles[0].time, open=candles[0].open, high=high,
+                        low=candles[0].low, close=candles[0].close)
+    return build_asian_session_snapshot("S", "EURUSD", trading_date, "asian", start,
+                                        start + dt.timedelta(hours=6), candles, 24,
+                                        as_of=start + dt.timedelta(hours=6)).snapshot
+
+
+def test_snapshot_same_write_idempotent(tmp_path):
+    store = JsonKeyValueStore(str(tmp_path / "snap.json"))
+    snap = _snapshot_for(tmp_path)
+    assert save_snapshot(store, snap) is True
+    assert save_snapshot(store, snap) is False  # identical re-freeze, no mutation, no error
+
+
+def test_snapshot_conflicting_write_fails_closed(tmp_path):
+    store = JsonKeyValueStore(str(tmp_path / "snap.json"))
+    snap_a = _snapshot_for(tmp_path, high=1.10)
+    snap_b = _snapshot_for(tmp_path, high=1.11)  # same identity, different OHLC
+    save_snapshot(store, snap_a)
+    with pytest.raises(SnapshotImmutabilityViolation):
+        save_snapshot(store, snap_b)
+    # the original frozen snapshot is provably untouched
+    key = f"S|EURUSD|{snap_a.trading_date.isoformat()}|asian"
+    assert store.get(key)["high"] == 1.10
+
+
+def test_snapshot_corrupt_store_fails_closed(tmp_path):
+    path = tmp_path / "snap.json"
+    path.write_text("{not valid json", encoding="utf-8")
+    from runtime_state.store import StateStoreCorrupted
+    store = JsonKeyValueStore(str(path))
+    with pytest.raises(StateStoreCorrupted):
+        save_snapshot(store, _snapshot_for(tmp_path))
+
+
+# --------------------------------------------------------------------------- entry ticket / end report
+
+def test_entry_ticket_complete_fields(strategy, symbol_meta):
+    from post_asian_pilot.governor import DailyTradeLedger
+    from post_asian_pilot.report import release_fingerprints, render_entry_ticket
+
+    ready_at = dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC)
+    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.10000,
+                     stop_loss=1.10150, risk_distance=0.00150, signal_timestamp=ready_at)
+    window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
+    decision = map_trade_signal_to_decision(signal, "SNAP-1", ready_at, window_end)
+    result = build_entry_proposal(decision, strategy, equity=10_000.0, symbol_meta=symbol_meta,
+                                  risk_per_trade_pct=0.5, session_snapshot_id="SNAP-1", swept_level=1.10)
+
+    ledger = DailyTradeLedger.default()  # not used for a real claim here; symbol_slot() -> None is fine
+    fps = release_fingerprints("config/releases/AG_TRADE_ASSISTANT_V1_0_2.yaml", STRATEGY_PATH,
+                               "config/canonical_sessions.yaml", {"risk_per_trade_pct": 0.5})
+    ticket = render_entry_ticket(result.proposal, decision, strategy, "AG_TRADE_ASSISTANT_V1_0_2",
+                                 fps["release_fingerprint"], fps["strategy_fingerprint"],
+                                 ledger, dt.date(2099, 1, 1))  # unused date -> guaranteed empty slot
+
+    assert ticket["application"]["release_fingerprint"] == fps["release_fingerprint"]
+    assert ticket["strategy"]["strategy_fingerprint"] == fps["strategy_fingerprint"]
+    assert ticket["identity"]["proposal_id"] == result.proposal.proposal_id
+    assert ticket["market"]["direction"] == "SHORT"
+    assert ticket["session"]["swept_level"] == 1.10
+    assert ticket["entry"]["entry"] == 1.10000
+    assert ticket["allocation"] == {"tp1_pct": 75, "runner_pct": 25}
+    assert ticket["risk"]["raw_volume"] is not None
+    assert ticket["risk"]["normalized_volume"] == result.proposal.trade_proposal.volume
+    assert ticket["portfolio"]["aggregate_open_risk_pct"] == "UNAVAILABLE_NOT_WIRED"  # honestly not fabricated
+    assert ticket["decision"] == "READY"
+    assert ticket["execution"]["execution_authorized"] is False
+
+
+def test_end_report_no_trade_day_uses_journal_evidence(tmp_path, strategy):
+    from post_asian_pilot.report import render_pilot_end_report
+    from post_asian_pilot.store import PilotStores
+
+    stores = PilotStores.default("ST_ASIAN_SWEEP_5R_V1", state_dir=str(tmp_path))
+    pilot = load_pilot_config()  # real V1.0.1 pilot config -- universe (EURUSD, GBPUSD) is what matters here
+    trading_date = dt.date(2026, 1, 5)
+
+    for symbol in pilot.universe:
+        decision = watch_decision(strategy.strategy_id, strategy.version, symbol, trading_date,
+                                  pilot.reference_session_name, dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC),
+                                  "NO_SETUP_BY_WINDOW_END")
+        save_decision(stores.decision_store, dataclasses.replace(decision, status="NO_TRADE"))
+
+    report = render_pilot_end_report(pilot, strategy, "AG_TRADE_ASSISTANT_V1_0_2", trading_date, stores)
+    assert report["report"] == "AG_TRADE_ASSISTANT_V1_0_2_PILOT_END"
+    assert report["result"] == "PASS"
+    assert report["portfolio"]["slots_used"] == 0
+    for symbol in pilot.universe:
+        assert report["pairs"][symbol]["final_strategy_state"] == "NO_TRADE"
+
+
+def test_end_report_data_error_day_is_pass_with_observations(tmp_path, strategy):
+    from post_asian_pilot.report import render_pilot_end_report
+    from post_asian_pilot.store import PilotStores
+
+    stores = PilotStores.default("ST_ASIAN_SWEEP_5R_V1", state_dir=str(tmp_path))
+    pilot = load_pilot_config()
+    trading_date = dt.date(2026, 1, 5)
+    stores.counters.increment(strategy.strategy_id, trading_date, "data_errors")
+
+    for symbol in pilot.universe:
+        decision = data_error_decision(strategy.strategy_id, strategy.version, symbol, trading_date,
+                                       pilot.reference_session_name, dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC),
+                                       ("DATA_MISSING",))
+        save_decision(stores.decision_store, decision)
+
+    report = render_pilot_end_report(pilot, strategy, "AG_TRADE_ASSISTANT_V1_0_2", trading_date, stores)
+    assert report["result"] == "PASS_WITH_OBSERVATIONS"
+
     import post_asian_pilot.preflight as preflight_mod
     bad_release = tmp_path / "bad_release.yaml"
     bad_release.write_text('release_id: "SOME_OTHER_RELEASE"\n', encoding="utf-8")
