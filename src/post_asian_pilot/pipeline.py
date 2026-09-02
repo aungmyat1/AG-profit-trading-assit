@@ -45,6 +45,7 @@ from .pilot_config import DEFAULT_RELEASE_CONFIG_PATH, PilotConfig, load_pilot_c
 from .proposal import PostAsianEntryProposal, build_entry_proposal
 from .snapshot import AsianSessionSnapshot, build_asian_session_snapshot
 from .store import (
+    DEFAULT_STATE_DIR,
     PilotStores,
     SnapshotImmutabilityViolation,
     decision_from_record,
@@ -194,7 +195,7 @@ def run_pilot_cycle(
     release_id = load_raw_yaml(DEFAULT_RELEASE_CONFIG_PATH).get("release_id", "AG_TRADE_ASSISTANT_V1_0_1")
     now = now or dt.datetime.now(dt.timezone.utc)
     trading_date = now.date()
-    stores = PilotStores.default(pilot.strategy_id)
+    stores = PilotStores.default(pilot.strategy_id, pilot.state_dir or DEFAULT_STATE_DIR)
 
     results = [_evaluate_pair(pilot, strategy, symbol, trading_date, now, stores) for symbol in pilot.universe]
 

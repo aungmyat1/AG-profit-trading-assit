@@ -6,7 +6,7 @@ own header comment for why risk_per_trade_pct lives here and not in the strategy
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Optional, Tuple
 
 import yaml
 
@@ -35,6 +35,7 @@ class PilotConfig:
     max_aggregate_open_risk_pct: float
     strategy_daily_loss_limit_r: float
     tie_break_priority: Tuple[str, ...]
+    state_dir: Optional[str]
     raw: dict
     source_path: str
 
@@ -62,6 +63,16 @@ def load_pilot_config(path: str = DEFAULT_PILOT_CONFIG_PATH) -> PilotConfig:
         max_aggregate_open_risk_pct=float(risk.get("max_aggregate_open_risk_pct", risk["risk_per_trade_pct"])),
         strategy_daily_loss_limit_r=float(risk["strategy_daily_loss_limit_r"]),
         tie_break_priority=tuple(raw.get("tie_break_priority") or ()),
+        # Optional: isolates this pilot's snapshot/decision/proposal/ledger/counter state
+        # under its own journal subdirectory (see store.PilotStores.default's state_dir
+        # param) so two pilot configs for the SAME strategy_id but DIFFERENT session_pairs
+        # cycle (e.g. ASIAN_LONDON vs LONDON_NEWYORK) never share one DailyTradeLedger --
+        # that ledger's own capacity/per-symbol-slot key is strategy_id+date only, not
+        # cycle-aware (governor.py), so sharing a directory across cycles would let an
+        # ASIAN_LONDON slot claim silently consume LONDON_NEWYORK's independent quota for
+        # the same symbol/day, violating cycle independence. Absent -> unchanged default
+        # behavior (store.DEFAULT_STATE_DIR), so existing pilot configs need no edit.
+        state_dir=raw.get("state_dir"),
         raw=raw,
         source_path=path,
     )

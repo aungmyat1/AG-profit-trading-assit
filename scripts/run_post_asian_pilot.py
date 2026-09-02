@@ -31,12 +31,12 @@ from post_asian_pilot.pilot_config import DEFAULT_RELEASE_CONFIG_PATH, load_pilo
 from post_asian_pilot.pipeline import run_pilot_cycle  # noqa: E402
 from post_asian_pilot.preflight import run_preflight  # noqa: E402
 from post_asian_pilot.report import cycle_to_dict, human_readable_report, render_pilot_end_report  # noqa: E402
-from post_asian_pilot.store import PilotStores  # noqa: E402
+from post_asian_pilot.store import DEFAULT_STATE_DIR, PilotStores  # noqa: E402
 from strategy_engine.loader import load_strategy  # noqa: E402
 
 
-def _run_preflight(as_json: bool) -> None:
-    result = run_preflight()
+def _run_preflight(as_json: bool, pilot_path: str = None) -> None:
+    result = run_preflight(pilot_path=pilot_path)
     payload = {
         "release_id": result.release_id, "release_fingerprint": result.release_fingerprint,
         "strategy_id": result.strategy_id, "strategy_version": result.strategy_version,
@@ -60,16 +60,16 @@ def _run_preflight(as_json: bool) -> None:
         sys.exit(1)
 
 
-def _execute_cycle():
+def _execute_cycle(pilot_path: str = None):
     mt5_connection.connect()
     try:
-        return run_pilot_cycle()
+        return run_pilot_cycle(pilot_path)
     finally:
         mt5_connection.shutdown()
 
 
-def _run_once(as_json: bool):
-    result = _execute_cycle()
+def _run_once(as_json: bool, pilot_path: str = None):
+    result = _execute_cycle(pilot_path)
     if as_json:
         print(json.dumps(cycle_to_dict(result), indent=2, default=str))
     else:
@@ -85,8 +85,8 @@ def _watch_signature(result) -> tuple:
                 for pr in result.pairs)
 
 
-def _run_watch(as_json: bool, interval: int) -> None:
-    pilot = load_pilot_config()
+def _run_watch(as_json: bool, interval: int, pilot_path: str = None) -> None:
+    pilot = load_pilot_config(pilot_path) if pilot_path else load_pilot_config()
     strategy = load_strategy(pilot.strategy_source_path)
     release_id = load_raw_yaml(DEFAULT_RELEASE_CONFIG_PATH).get("release_id")
     window_end_seen = False
@@ -94,7 +94,7 @@ def _run_watch(as_json: bool, interval: int) -> None:
 
     while True:
         try:
-            result = _execute_cycle()
+            result = _execute_cycle(pilot_path)
         except Exception as exc:  # noqa: BLE001 -- an operational error is itself an event to report
             print(f"[{datetime.now(timezone.utc).isoformat()}] ERROR: {exc}")
             time.sleep(interval)
@@ -115,7 +115,7 @@ def _run_watch(as_json: bool, interval: int) -> None:
 
         if result.evaluation_time >= window_end and not window_end_seen:
             window_end_seen = True
-            stores = PilotStores.default(strategy.strategy_id)
+            stores = PilotStores.default(strategy.strategy_id, pilot.state_dir or DEFAULT_STATE_DIR)
             end_report = render_pilot_end_report(pilot, strategy, release_id, result.trading_date, stores)
             print(json.dumps(end_report, indent=2, default=str) if as_json
                  else f"AG_TRADE_ASSISTANT_V1_0_2_PILOT_END: {end_report['result']}")
@@ -131,16 +131,19 @@ def main() -> None:
     parser.add_argument("--status", action="store_true", help="one operational cycle, JSON report")
     parser.add_argument("--interval", type=int, default=60)
     parser.add_argument("--json", action="store_true", help="emit JSON instead of the human-readable report")
+    parser.add_argument("--pilot-config", default=None,
+                        help="path to a pilot config yaml (default: AG_POST_ASIAN_LONDON_PILOT_V1_0_1.yaml); "
+                             "use to run a different session_pairs cycle, e.g. LONDON_NEWYORK")
     args = parser.parse_args()
 
     as_json = args.json or args.status
 
     if args.preflight:
-        _run_preflight(as_json)
+        _run_preflight(as_json, args.pilot_config)
     elif args.watch:
-        _run_watch(as_json, args.interval)
+        _run_watch(as_json, args.interval, args.pilot_config)
     else:
-        _run_once(as_json)
+        _run_once(as_json, args.pilot_config)
 
 
 if __name__ == "__main__":

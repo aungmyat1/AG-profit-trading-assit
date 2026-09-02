@@ -25,6 +25,7 @@ from .fingerprint import fingerprint
 from .governor import DailyTradeLedger
 from .pilot_config import PilotConfig, load_pilot_config, load_raw_yaml
 from .report import release_fingerprints
+from .store import DEFAULT_STATE_DIR
 
 STATUS_READY = "READY_TO_MONITOR"
 STATUS_BLOCKED = "PILOT_STARTUP_BLOCKED"
@@ -142,10 +143,11 @@ def run_preflight(
 
     # -- state stores / daily slot / open positions / reconciliation ----------------------
     trading_date = datetime.now(timezone.utc).date()
+    state_dir = pilot.state_dir or DEFAULT_STATE_DIR
     daily_slot_state = None
     open_positions_count = None
     try:
-        ledger = DailyTradeLedger.default()
+        ledger = DailyTradeLedger.default(f"{state_dir}/daily_trade_ledger.json")
         slots = ledger.slots(strategy.strategy_id, trading_date)
         daily_slot_state = f"{len(slots)}/{ledger.max_slots}"
         _pass("daily_trade_ledger_readable")
@@ -154,7 +156,7 @@ def run_preflight(
 
     snapshot_store_state = None
     try:
-        snapshot_store = JsonKeyValueStore(f"journal/post_asian_pilot/session_snapshot.json")
+        snapshot_store = JsonKeyValueStore(f"{state_dir}/session_snapshot.json")
         count = len(snapshot_store.all())
         snapshot_store_state = f"{count} frozen snapshot(s), readable"
         _pass("snapshot_store_readable")

@@ -1,0 +1,63 @@
+# AG_POST_LONDON_NEWYORK_PILOT_V1_0_1: activates the LONDON_NEWYORK session_pairs entry
+# already defined in strategies/ST_ASIAN_SWEEP_5R_V1.yaml (v1.1.0+) -- same strategy_id,
+# same entry/risk/target/invalidation rules as the existing AG_POST_ASIAN_LONDON_PILOT
+# pilot, only the reference/execution session pair differs. This is a genuinely
+# independent opportunity cycle, not a variant of the Asian->London pilot:
+#   reference_session = London (06:00-11:00 UTC, canonical `london_am`)
+#   execution_window  = New_York_Open (12:00-15:00 UTC, canonical `new_york_am`)
+#
+# state_dir isolates this pilot's snapshot/decision/proposal/ledger/counter journal from
+# AG_POST_ASIAN_LONDON_PILOT's (journal/post_asian_pilot/) -- see pilot_config.py's
+# state_dir field docstring for why this is required for correct cycle independence
+# (governor.DailyTradeLedger's capacity/per-symbol-slot key is strategy_id+date only, not
+# cycle-aware; sharing a ledger across cycles would let an ASIAN_LONDON slot silently
+# consume LONDON_NEWYORK's independent per-cycle quota for the same symbol/day, or vice
+# versa). Running both pilots (independent processes/cycles, each against its own
+# state_dir) is what makes EURUSD/GBPUSD eligible for up to one proposal in EACH cycle
+# the same trading day (max 2/symbol/day, 4/day total across both symbols) -- see
+# strategies/ST_ASIAN_SWEEP_5R_V1.yaml's own session_pairs comment.
+#
+# AG_POST_ASIAN_LONDON_PILOT_V1_0_1.yaml is left byte-for-byte unchanged; its own
+# `inactive_cycle: [LONDON_NEWYORK]` note describes THAT pilot instance's own scope
+# (Asian->London only) and remains accurate -- LONDON_NEWYORK is activated here, as a
+# separate, independently-operated pilot, not by editing that file.
+
+pilot_id: AG_POST_LONDON_NEWYORK_PILOT_V1_0_1
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+strategy_version: "1.1.1"
+strategy_source_path: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
+pair_id: LONDON_NEWYORK
+
+universe: [EURUSD, GBPUSD]
+tie_break_priority: [EURUSD, GBPUSD]
+
+reference_session:
+  source: config/canonical_sessions.yaml
+  name: london_am
+
+execution_window:
+  id: LONDON_NEWYORK
+  start_utc: "12:00"
+  end_utc: "15:00"
+
+state_dir: journal/post_london_newyork_pilot
+
+# Same risk/capacity policy as AG_POST_ASIAN_LONDON_PILOT_V1_0_1 -- the strategy contract's
+# risk_and_money_management and position_split_and_targets blocks are identical across
+# both session_pairs entries (strategies/ST_ASIAN_SWEEP_5R_V1.yaml only varies the
+# reference/trade session windows per pair), so there is no basis to diverge the pilot-level
+# overlay either. Independent from AG_POST_ASIAN_LONDON_PILOT's own ledger (separate
+# state_dir above), so this is this CYCLE's own 2-slot/1-per-symbol capacity, not shared.
+risk:
+  risk_per_trade_pct: 0.5
+  max_open_positions: 2
+  max_new_trades_per_day: 2
+  max_new_trades_per_symbol_per_day: 1
+  max_aggregate_open_risk_pct: 1.0
+  strategy_daily_loss_limit_r: -1.0
+
+execution:
+  mode: PROPOSAL_ONLY
+  automatic_execution: false
+  explicit_confirmation_required: true
+  live_execution: false

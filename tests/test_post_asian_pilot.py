@@ -723,7 +723,7 @@ def test_preflight_first_run_establishes_baseline_and_ready(tmp_path, monkeypatc
     monkeypatch.setattr(preflight_mod.ExecutionCoordinator, "default", classmethod(lambda cls: _FakeCoordinator()))
     monkeypatch.setattr(preflight_mod, "DailyTradeLedger",
                         type("_L", (), {"default": staticmethod(
-                            lambda: DailyTradeLedger.default(str(tmp_path / "ledger.json")))}))
+                            lambda *a, **kw: DailyTradeLedger.default(str(tmp_path / "ledger.json")))}))
 
     result = preflight_mod.run_preflight(baseline_path=str(tmp_path / "baseline.json"))
     assert result.pilot_status == "READY_TO_MONITOR"

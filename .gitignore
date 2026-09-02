@@ -3,6 +3,8 @@ __pycache__/
 .pytest_cache/
 journal/*.jsonl
 journal/post_asian_pilot/
+journal/post_london_newyork_pilot/
+journal/btc_sweep_research/
 logs/
 *.egg-info/
 .env
