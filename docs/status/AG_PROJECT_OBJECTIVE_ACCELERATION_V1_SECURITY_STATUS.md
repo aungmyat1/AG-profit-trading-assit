@@ -33,9 +33,14 @@ BYBIT_API_SECRET             = EXPOSED, presence PRESENT
 ## Required state vs. actual state
 
 ```text
-EXPOSED_CREDENTIALS = RETIRED           -- NOT YET (owner action required; rotation
-                                            happens on each exchange's own dashboard,
-                                            outside this agent's reach)
+EXPOSED_CREDENTIALS = RETIRED           -- OWNER_CONFIRMED_COMPLETE (2026-09-03,
+                                            AG_TRADE_ASSISTANT_V1_0_3 manifest freeze)
+                                            for Binance, MEXC, and Bybit. Confirmation
+                                            only -- no replacement value was printed,
+                                            inspected, or compared by any agent to reach
+                                            this record; rotation itself happened on
+                                            each exchange's own dashboard, outside any
+                                            agent's reach.
 compromised_keys_reused = NO            -- confirmed: after the incident, this session
                                             used BINANCE_PAPER_API_KEY/SECRET exactly
                                             once, for one authenticated read-only GET to

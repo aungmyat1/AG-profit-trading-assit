@@ -51,6 +51,38 @@ packet:
    of reusing an already-frozen, already-tested field with zero new detection — the only
    genuinely new decision would be the buffer/minimum-distance numbers themselves.
 
+## Owner-provided SMC method reference (2026-09-03)
+
+The owner supplied a mechanical SMC workflow as a **requirements reference for this
+existing strategy**, not as a request to register a separate strategy. Its applicable
+stop requirement is:
+
+> Place the stop beyond the extreme structural pivot associated with the liquidity
+> sweep, with an additional 1–2 pip/tick buffer.
+
+Applied to `ST_LARGE_SMC_V1`, this supports the shape of option 3 above: start from the
+already-computed `SMCEntryCombinationResult.invalidation_price`, then place the broker
+stop farther beyond that structural invalidation in the adverse direction. This is the
+only safe cross-model adaptation because M1, M2, and M3 already expose their own signed
+structural invalidation anchors; requiring every combination to use a sweep-wick anchor
+would silently redefine E1/E2 and M2, which do not require that sweep.
+
+This reference therefore narrows C10 as follows:
+
+- structural anchor: each M-model's existing `invalidation_price` (`EXACT_REUSE`);
+- direction: below the anchor for `LONG`, above the anchor for `SHORT`;
+- additional buffer unit for the frozen EURUSD universe: pip;
+- buffer range supported by the reference: 1.0–2.0 pips;
+- absent structural anchor: fail closed; never substitute the entry, current price, or
+  another model's sweep extreme.
+
+It does **not** yet select one reproducible buffer value from the 1.0–2.0 range, define
+spread/bid/ask treatment, or define broker minimum-stop-distance behavior. Those are
+not implementation details: each changes simulated risk and fill/outcome results.
+Consequently the reference is recorded as `REQUIREMENTS_REFERENCE_PARTIAL`; C10 remains
+`UNSIGNED`, and the engine must continue returning
+`UNSIGNED_CONTRACT:C10_BROKER_STOP` until those exact fields are signed.
+
 ## What a signed C10 contract must specify (per this task's own requirement)
 
 Regardless of which structural-anchor approach is chosen, the frozen contract must
