@@ -9,9 +9,16 @@ live SMC_CONDITIONAL_ENTRY_V2 watcher also produces from the same underlying M-m
 Decision states deliberately exclude an actionable `READY` (per the owner's explicit
 research-safety instruction: RESEARCH_QUALIFIED is the ceiling while
 status=RESEARCH_DRAFT, never an actionable READY). `RESEARCH_QUALIFIED` is defined here
-but -- honestly, given the current unsigned state of C10 (broker stop) and pending-entry
-expiry -- can never actually be reached by engine.py this phase; every candidate that
-would otherwise qualify resolves to BLOCKED instead. See engine.py.
+but -- honestly, given the current unsigned state of C10 (broker stop) -- can never
+actually be reached by engine.py this phase; every candidate that would otherwise
+qualify resolves to BLOCKED instead. See engine.py.
+
+Pending-entry expiry (OUTCOME_LIFECYCLE_V1 phase, 2026-09-02) is RESOLVED_BY_REUSE, not
+unsigned: `historical_replay/fill_simulator.py` already establishes, for this exact E/M
+pipeline, that no time-based expiry exists -- a pending entry is terminal only via FILL
+or structural INVALIDATION; `UNFILLED_AS_OF_DATA_END` is a data-boundary artifact, never
+a fabricated strategy state. See `pending_entry.py`. Only C10 (broker stop) still blocks
+an otherwise-qualifying candidate.
 """
 from __future__ import annotations
 
@@ -39,6 +46,8 @@ class LargeSMCDecisionState(str, Enum):
 
 # Reason codes this engine actually emits -- never invented ad hoc at call sites.
 REASON_UNSIGNED_C10_BROKER_STOP = "UNSIGNED_CONTRACT:C10_BROKER_STOP"
+# Retained for provenance only -- pending-entry expiry is RESOLVED_BY_REUSE as of
+# OUTCOME_LIFECYCLE_V1 (see module docstring); no longer emitted by engine.py.
 REASON_UNSIGNED_PENDING_ENTRY_EXPIRY = "UNSIGNED_CONTRACT:PENDING_ENTRY_EXPIRY"
 REASON_REJECT_NO_TARGET = "REJECT_NO_TARGET"
 REASON_SYMBOL_NOT_IN_FROZEN_UNIVERSE = "SYMBOL_NOT_IN_FROZEN_UNIVERSE"
@@ -70,6 +79,13 @@ class LargeSMCResearchDecision:
 
     entry_array: Optional[str] = None
     entry_price: Optional[float] = None
+    # Entry-array price range when the underlying M-model exposes one (M1's FVG/OB
+    # bounds, M2's zone bounds) -- reuses proposals.gate._entry_range(m_result)
+    # verbatim, the same helper historical_replay.orchestrator.SetupLedgerRow already
+    # uses. None/None for M3 (single entry_level, no range) -- see that helper's own
+    # docstring; never fabricated.
+    entry_low: Optional[float] = None
+    entry_high: Optional[float] = None
 
     structural_invalidation_price: Optional[float] = None
     structural_invalidation_source_type: Optional[str] = None
@@ -93,9 +109,14 @@ class LargeSMCResearchDecision:
     # reason_codes whenever a candidate would otherwise need one.
     simulated_broker_stop: Optional[float] = None
 
-    # C12/pending-entry expiry.
+    # C12 (E-context eligibility, distinct from pending-entry lifecycle below).
     e_context_eligibility_end: Optional[datetime] = None  # C12, reused (is_eligible_at)
-    pending_entry_expiry: Optional[datetime] = None  # always None this phase (unsigned)
+    # RESOLVED_BY_REUSE (OUTCOME_LIFECYCLE_V1): always None by construction -- no
+    # time-based pending-entry expiry exists (see module docstring). A candidate's
+    # pending-entry fate is FILLED / INVALIDATED_BEFORE_FILL / UNFILLED_AS_OF_DATA_END /
+    # INTRABAR_AMBIGUOUS / NO_ENTRY_CONTRACT -- see pending_entry.PendingEntryOutcome,
+    # computed separately (never inline here, to keep PRE_OUTCOME_COUNTS unchanged).
+    pending_entry_expiry: Optional[datetime] = None
 
     state: str = LargeSMCDecisionState.WATCH.value
     missing_conditions: Tuple[str, ...] = field(default_factory=tuple)

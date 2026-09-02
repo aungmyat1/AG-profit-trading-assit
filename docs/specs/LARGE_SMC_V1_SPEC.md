@@ -1,6 +1,6 @@
 # ST_LARGE_SMC_V1 — Research Strategy Specification
 
-Status: **RESEARCH_DRAFT / ADVISORY_ONLY** &nbsp; Version: **1.0.5** &nbsp; Authority: `strategies/ST_LARGE_SMC_V1.yaml`
+Status: **RESEARCH_DRAFT / ADVISORY_ONLY** &nbsp; Version: **1.0.6** &nbsp; Authority: `strategies/ST_LARGE_SMC_V1.yaml`
 
 Specification phase: `ST_LARGE_SMC_V1_STRATEGY_SPECIFICATION` (2026-09-01), extended by
 `ST_LARGE_SMC_V1_RESOLVE_UC_001_TIMEFRAME_ROLES`, `..._3X3_VARIANT_AUTHORITY_
@@ -797,3 +797,62 @@ C16, C17, C18); `PARTIALLY_RESOLVED` narrows to C06, C10, C14 (its own residual,
 non-blocking. → **FIRST_REMAINING_BLOCKER = UC-009 (C10 SL-distance)**, unchanged —
 now the *only* thing standing between this funnel and outcome simulation, alongside
 the pending-entry-expiry decision packet.
+
+## 37. OUTCOME_LIFECYCLE_V1 (2026-09-02) — pending-entry lifecycle and a discovered gap
+
+Full evidence: `docs/status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md` and
+`docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`. Strategy version
+bumped `1.0.5 → 1.0.6` ("intrinsic trade eligibility logic" bump trigger).
+
+**Post-READY pending-entry expiry, RESOLVED_BY_REUSE:** the previously-open question
+(§27's §35 "next remaining blocker" companion) is answered by exact reuse of
+`historical_replay/fill_simulator.py` — a pre-existing, already-tested module built for
+exactly this E/M pipeline that had simply never been wired to `ST_LARGE_SMC_V1`. Its
+own module docstring already states "ENTRY_EXPIRY = UNDEFINED... does NOT invent one":
+a pending candidate is terminal only via `FILLED` or structural
+`INVALIDATED_BEFORE_FILL`; `UNFILLED_AS_OF_DATA_END` is an honest data-boundary
+statement, and `INTRABAR_AMBIGUOUS` fails closed rather than assuming a favorable fill
+order. New `src/large_smc_research/pending_entry.py` composes this verbatim, preserving
+full occurrence identity (`candidate_occurrence_id`, `setup_family_id`,
+`eligibility_interval_id`) end to end. This is a separate lifecycle stage from C12
+(pre-activation E-context eligibility) — the two are not conflated.
+
+**C10 (broker stop-loss) remains genuinely UNSIGNED and BLOCKED** — nothing this phase
+resolves it; a new AG-native precedent was found and added to the decision packet
+(`strategy_engine.sweep_retest.targets.forex_sl_buffer_price`'s structural-anchor +
+pip-buffer pattern) but not adopted, since its numeric buffer is
+`ST_LIQUIDITY_SWEEP_RETEST_V1`-specific and would need its own justification for
+Large-SMC. `TARGET_HIT`/`STOP_HIT` outcome resolution and R-multiples remain
+unimplemented and unattempted.
+
+**Discovered, disclosed gap (not fixed):** the first real wiring of
+`LargeSMCResearchEngine` into historical replay (targeted at the three known September
+2025 occurrences, via the existing `artifacts/backtests/stage1/
+qualified_e_events_2025-08-01_2025-10-01.json` + `directional_liquidity_timeline.json`
+artifacts — no full-month re-run needed) revealed that C11's target-model adapter, and
+project-wide the pre-existing M1 inducement-candidate detection in
+`historical_replay/stage2.py`, both depend on
+`market_structure.tiers.analyze_structure_tiers`, which requires a *live* MT5 terminal
+for symbol metadata (`mt5.symbol_resolver.get_symbol_meta`) that
+`historical_replay/data_source_patch.py` has never patched. This silently starves M1's
+inducement detection in *every* historical replay this project has ever run — directly
+explaining §32's "M1: zero entry arrays formed... despite 5/5 confirmations" finding,
+previously classified `INSUFFICIENT_EVIDENCE` (a valid research result). That
+classification is now known to be at least partly a data-source-patching artifact, not
+purely a strategy-evidence finding. `src/large_smc_research/engine.py` was fixed during
+this same phase to fail closed to `DATA_ERROR` when this happens, rather than silently
+reporting the legitimate-looking `NO_TRADE:REJECT_NO_TARGET`. Fixing the underlying gap
+itself would mean changing shared `historical_replay/data_source_patch.py` (touches the
+live `SMC_CONDITIONAL_ENTRY_V2` watcher) — `SHARED_CHANGE_REQUIRED`, deliberately
+deferred, same class as C14B's lifecycle-store migration.
+
+**Consequence:** none of the three known September 2025 occurrences (E1M2, E1M3, E3M3)
+currently reach `BLOCKED` when replayed through the new engine — all three now
+correctly report `DATA_ERROR` (previously, before the fix, they misreported
+`NO_TRADE`). The pending-entry lifecycle mechanism itself is implemented and unit-tested
+against synthetic fixtures shaped exactly like a real `BLOCKED` decision, but has not
+yet been exercised end-to-end against real replay-derived decisions, pending the
+separate MT5-symbol-metadata fix. **Recommendation: `HOLD`** — not `NO_GO` (no evidence
+against the strategy itself; both open items are infrastructure/authorization gaps, not
+causal defects) and not `GO_TO_LARGER_DISCOVERY`/`CONDITIONAL_GO` (nothing would be
+gained by a larger replay while target-model calls resolve to `DATA_ERROR` throughout).

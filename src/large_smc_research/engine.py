@@ -35,7 +35,7 @@ from entry_confirmation.entry_models_v1 import EntryModelState
 from historical_replay.stage1 import QualifiedEEvent, Stage1Dataset
 from market_structure.tiers import analyze_structure_tiers
 from mt5.market_data import MarketDataError
-from proposals.gate import _matching_m_result
+from proposals.gate import _entry_range, _matching_m_result
 from proposals.identity import reference_key_for, setup_id as _setup_id
 from proposals.occurrence_identity import candidate_occurrence_id as _candidate_occurrence_id
 from proposals.occurrence_identity import eligibility_interval_id as _eligibility_interval_id
@@ -46,14 +46,13 @@ from .decision import (
     REASON_REJECT_NO_TARGET,
     REASON_SYMBOL_NOT_IN_FROZEN_UNIVERSE,
     REASON_UNSIGNED_C10_BROKER_STOP,
-    REASON_UNSIGNED_PENDING_ENTRY_EXPIRY,
     STRATEGY_ID,
     LargeSMCDecisionState,
     LargeSMCResearchDecision,
 )
 from .target_model import select_target
 
-STRATEGY_VERSION = "1.0.5"
+STRATEGY_VERSION = "1.0.6"
 
 # C01, RESOLVED (2026-09-01): EURUSD only for the first discovery run. GBPUSD explicitly
 # deferred until the funnel works and data quality passes on EURUSD -- see
@@ -155,6 +154,7 @@ class LargeSMCResearchEngine:
         m_result = _matching_m_result(analysis, combo)
         m_source_id = getattr(m_result, "source_id", None) if m_result is not None else None
         occurrence_id = _candidate_occurrence_id(setup_family_id, interval_id, m_source_id)
+        entry_low, entry_high = _entry_range(m_result) if m_result is not None else (None, None)
 
         common = dict(
             symbol=symbol, evaluation_timestamp=evaluation_time,
@@ -162,6 +162,7 @@ class LargeSMCResearchEngine:
             direction=combo.direction, event_id=event.event_id, setup_family_id=setup_family_id,
             eligibility_interval_id=interval_id, m_candidate_source_id=m_source_id,
             candidate_occurrence_id=occurrence_id, entry_array=combo.entry_array, entry_price=combo.entry_price,
+            entry_low=entry_low, entry_high=entry_high,
             structural_invalidation_price=combo.invalidation_price,
             structural_invalidation_source_type=combo.invalidation_source_type,
             structural_invalidation_reason=combo.invalidation_reason,
@@ -192,16 +193,26 @@ class LargeSMCResearchEngine:
             return _decision(**common, state=LargeSMCDecisionState.DATA_ERROR.value,
                               reason_codes=(REASON_INSUFFICIENT_DATA, exc.reason_code), data_quality_state="DATA_ERROR")
         if not target.found:
-            return _decision(**common, state=LargeSMCDecisionState.NO_TRADE.value,
-                              reason_codes=(REASON_REJECT_NO_TARGET,))
+            if target.reason == "REJECT_NO_TARGET":
+                # Genuine C11 outcome: both tiers were actually checked and neither
+                # qualified. A legitimate trading conclusion, not a data problem.
+                return _decision(**common, state=LargeSMCDecisionState.NO_TRADE.value,
+                                  reason_codes=(REASON_REJECT_NO_TARGET,))
+            # Any other target.reason (e.g. MISSING_DIRECTION_OR_STRUCTURE_TIER) means
+            # target selection itself could not run -- fail closed to DATA_ERROR, never
+            # silently reported as "no target exists" (task's own FAIL-CLOSED
+            # requirement: "target selection fails" -> BLOCKED/DATA_ERROR, distinct
+            # from C11's own signed REJECT_NO_TARGET outcome).
+            return _decision(**common, state=LargeSMCDecisionState.DATA_ERROR.value,
+                              reason_codes=(REASON_INSUFFICIENT_DATA, target.reason), data_quality_state="DATA_ERROR")
 
-        # Target resolved; broker stop and pending-entry expiry remain unsigned (owner
-        # decision: block outcome simulation rather than guess). BLOCKED, not
-        # RESEARCH_QUALIFIED -- this candidate is exactly the kind Phase B's discovery
-        # report counts as "READY-equivalent, blocked pending owner decision."
+        # Target resolved; only the broker stop (C10) remains unsigned -- pending-entry
+        # expiry is RESOLVED_BY_REUSE (see decision.py module docstring / pending_entry.py).
+        # BLOCKED, not RESEARCH_QUALIFIED -- this candidate is exactly the kind Phase B's
+        # discovery report counts as "READY-equivalent, blocked pending owner decision."
         return _decision(
             **common, state=LargeSMCDecisionState.BLOCKED.value,
-            reason_codes=(REASON_UNSIGNED_C10_BROKER_STOP, REASON_UNSIGNED_PENDING_ENTRY_EXPIRY),
+            reason_codes=(REASON_UNSIGNED_C10_BROKER_STOP,),
             target_price=target.target_price, target_tier=target.target_tier, target_type=target.target_type,
             target_source=target.target_source, target_source_id=target.target_source_id,
             target_side=target.target_side, target_status_at_selection=target.target_status_at_selection,

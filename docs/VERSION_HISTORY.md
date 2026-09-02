@@ -25,7 +25,7 @@ imply a strategy semantic change.
 | Strategy | Version | Status | Used by application releases |
 |---|---|---|---|
 | `ST_ASIAN_SWEEP_5R_V1` | 1.1.1 | ACTIVE, `SOLE_DAY_TRADING_AUTHORITY` (pilot-scoped) | V1.0, V1.0.1, V1.0.2 |
-| `ST_LARGE_SMC_V1` | 1.0.5 | `RESEARCH_DRAFT`, advisory-only, fail-closed (`proposal_generation_authorized: false`, engine `src/large_smc_research/` RESEARCH_ONLY) | none (not used by any application release) |
+| `ST_LARGE_SMC_V1` | 1.0.6 | `RESEARCH_DRAFT`, advisory-only, fail-closed (`proposal_generation_authorized: false`, engine `src/large_smc_research/` RESEARCH_ONLY) | none (not used by any application release) |
 
 `ST_LARGE_SMC_V1` is a fully independent strategy family (`strategies/ST_LARGE_SMC_V1.yaml`,
 spec `docs/specs/LARGE_SMC_V1_SPEC.md`) — it does not inherit `ST_ASIAN_SWEEP_5R_V1`'s,
@@ -82,6 +82,14 @@ evidence, and it does not appear in any `AG_TRADE_ASSISTANT_V1_0*` release manif
   record unselected candidate options. Still `RESEARCH_DRAFT`; no proposal, demo,
   live, execution, or risk-sizing authority added. See
   `docs/status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`.
+- **v1.0.6 (2026-09-02, `OUTCOME_LIFECYCLE_V1`):** post-READY pending-entry expiry
+  `RESOLVED_BY_REUSE` (`historical_replay/fill_simulator.py`, exact reuse, no new
+  clock/formula). C10 remains `UNSIGNED`/`BLOCKED`. Discovered, disclosed, and worked
+  around (not fixed) a separate gap: C11's target-model adapter and pre-existing M1
+  inducement detection require live MT5 symbol metadata unavailable during historical
+  replay -- now fails closed to `DATA_ERROR` instead of a misleading `NO_TRADE`.
+  Recommendation: `HOLD`. See
+  `docs/status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md`.
 
 A strategy version bump is required if a change affects: setup qualification, sweep
 definition, direction, entry, confirmation, stop, targets, session strategy logic, or

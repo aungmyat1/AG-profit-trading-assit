@@ -13,6 +13,7 @@ from .decision import (
     LargeSMCResearchDecision,
 )
 from .engine import STRATEGY_VERSION, FROZEN_INSTRUMENT_UNIVERSE, LargeSMCResearchEngine
+from .pending_entry import PendingEntryOutcome, simulate_pending_entry
 from .target_model import TargetSelection, select_target
 
 __all__ = [
@@ -23,6 +24,8 @@ __all__ = [
     "LargeSMCDecisionState",
     "LargeSMCResearchDecision",
     "LargeSMCResearchEngine",
+    "PendingEntryOutcome",
+    "simulate_pending_entry",
     "TargetSelection",
     "select_target",
 ]

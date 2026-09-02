@@ -148,3 +148,24 @@ from canonical session windows or other repo conventions at the time of registra
   `docs/status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`,
   `docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md`, and
   `docs/status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md`.
+- **v1.0.6 (2026-09-02, `OUTCOME_LIFECYCLE_V1`):** post-READY pending-entry expiry
+  **RESOLVED_BY_REUSE** -- `historical_replay/fill_simulator.py` (pre-existing,
+  already tested, never wired to this strategy) already establishes no time-based
+  expiry exists for this E/M pipeline; a pending entry is terminal only via `FILLED`
+  or structural `INVALIDATED_BEFORE_FILL`, with `UNFILLED_AS_OF_DATA_END` as an honest
+  data-boundary state, never a fabricated expiry. New
+  `src/large_smc_research/pending_entry.py` (thin adapter, 7 new tests). C10 (broker
+  stop) remains genuinely `UNSIGNED`/`BLOCKED` -- unaffected. **New finding, disclosed
+  not fixed:** wiring the engine into a real historical replay revealed that C11's
+  target-model adapter (and, project-wide, the pre-existing M1 inducement-candidate
+  detection in `historical_replay/stage2.py`) depends on
+  `market_structure.tiers.analyze_structure_tiers`, which requires a live MT5 terminal
+  for symbol metadata that `historical_replay/data_source_patch.py` never patches --
+  every historical replay has silently starved M1's inducement detection, previously
+  misread as "M1 rarely qualifies." Fixed in this engine: a target-model failure for
+  any reason other than the genuine `REJECT_NO_TARGET` outcome now fails closed to
+  `DATA_ERROR`, never a silent `NO_TRADE`. The underlying gap itself is
+  `SHARED_CHANGE_REQUIRED` (touches the live `SMC_CONDITIONAL_ENTRY_V2` watcher's own
+  code path) and is deliberately not fixed this phase. Recommendation: `HOLD`. See
+  `docs/status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md` and
+  `docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`.

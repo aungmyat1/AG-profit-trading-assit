@@ -1,9 +1,37 @@
 strategy_id: ST_LARGE_SMC_V1
 strategy_name: Large SMC Opportunity Service
 strategy_family: LARGE_SMC
-version: 1.0.5
+version: 1.0.6
 status: RESEARCH_DRAFT
 registered_utc: "2026-09-01"
+# v1.0.6 (2026-09-02, OUTCOME_LIFECYCLE_V1): post-READY pending-entry expiry RESOLVED
+# BY REUSE -- historical_replay/fill_simulator.py (pre-existing, already tested, never
+# wired to this strategy) already establishes that no time-based expiry exists for this
+# E/M pipeline: a pending entry is terminal only via FILLED or structural
+# INVALIDATED_BEFORE_FILL; UNFILLED_AS_OF_DATA_END is a data-boundary fact, not a
+# fabricated strategy state. New src/large_smc_research/pending_entry.py is a thin
+# adapter (7 new unit tests, all offline). C10 (broker stop) remains genuinely
+# UNSIGNED and BLOCKED -- unaffected by this resolution; TARGET_HIT/STOP_HIT outcome
+# resolution still requires it and was not attempted.
+#
+# NEW FINDING this phase, not fixed here (SHARED_CHANGE_REQUIRED, same class as C14B's
+# deferred lifecycle-store migration): wiring LargeSMCResearchEngine into a real
+# historical replay (targeted check against the existing Aug-Oct 2025 QualifiedEEvent
+# artifact) revealed that C11's target-model adapter -- and, project-wide, the
+# pre-existing M1 inducement-candidate detection inside historical_replay/stage2.py --
+# depends on market_structure.tiers.analyze_structure_tiers, which requires a LIVE MT5
+# terminal for symbol metadata (tick_size, via mt5.symbol_resolver.get_symbol_meta).
+# historical_replay/data_source_patch.py has never patched this call, so
+# analyze_structure_tiers silently degrades to SYMBOL_METADATA_MISSING during ALL
+# historical replay -- previously misread project-wide as "M1 rarely forms an entry
+# array" (a real, structurally-derived research finding) rather than a data-source-
+# patching gap. This engine now correctly reports DATA_ERROR (never a silent
+# REJECT_NO_TARGET/NO_TRADE) when this happens -- see engine.py's target-selection
+# branch. Fixing the gap itself means changing historical_replay/data_source_patch.py,
+# which is shared with the live SMC_CONDITIONAL_ENTRY_V2 watcher -- out of scope for
+# this additive research phase, deliberately deferred pending separate authorization.
+# See docs/status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md and
+# docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md.
 # v1.0.5 (2026-09-02, RESEARCH_ONLY_FUNNEL_V1): the minimum research-only two-part
 # funnel (DATA COLLECTION -> DECISION MAKING) is now implemented as
 # src/large_smc_research/ (engine.py, target_model.py, decision.py) -- a thin
@@ -187,7 +215,18 @@ target_model:
   # from src/large_smc_research/engine.py, only for a READY-equivalent candidate --
   # still no proposal/execution authority; still status=CONTRACT_ONLY for the
   # underlying contract itself, only the adapter is now real code.
-  implementation: IMPLEMENTED
+  #
+  # REPLAY_COMPATIBILITY caveat (discovered OUTCOME_LIFECYCLE_V1, 2026-09-02): the
+  # fallback tier's market_structure.tiers.analyze_structure_tiers call requires LIVE
+  # MT5 symbol metadata (mt5.symbol_resolver.get_symbol_meta, for HH/HL/LH/LL
+  # tolerance) that historical_replay/data_source_patch.py has never patched -- this
+  # adapter therefore correctly runs live but fails with DATA_ERROR
+  # (MISSING_DIRECTION_OR_STRUCTURE_TIER) during ALL historical replay until that
+  # separate, shared-infrastructure gap is fixed (SHARED_CHANGE_REQUIRED -- affects the
+  # live SMC_CONDITIONAL_ENTRY_V2 watcher's own M1 inducement-candidate detection too,
+  # not just this adapter). See
+  # docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md.
+  implementation: IMPLEMENTED   # live-context; historical-replay execution blocked, see caveat above
   scope: GLOBAL   # applies identically across all 9 E1-E3 x M1-M3 research variants
 
   anchor_price:
@@ -504,17 +543,27 @@ candidate_identity:
 # (reason_code=UNSIGNED_CONTRACT:C10_BROKER_STOP) for any candidate whose M-model
 # reaches its entry-available (READY-equivalent) state -- never a fabricated stop.
 # Candidate formulas found in research references (ST-C1 G7 unified rule, v3.6
-# per-model formulas) are recorded, unselected, in
-# docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md, pending separate
-# owner sign-off. Same treatment for post-READY pending-entry expiry (no clock exists
-# or is invented; reason_code=UNSIGNED_CONTRACT:PENDING_ENTRY_EXPIRY) -- see
-# docs/status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md. Distinct from
-# candidate_lifecycle above (C12), which governs PRE-ACTIVATION E-context eligibility
-# only, not the lifetime of an unfilled READY entry.
+# per-model formulas; plus an AG-native precedent found this phase,
+# strategy_engine.sweep_retest.targets.forex_sl_buffer_price's structural-anchor +
+# pip-buffer pattern, offered as a candidate ONLY -- its ST_LIQUIDITY_SWEEP_RETEST_V1-
+# specific 2.5-pip constant is not adopted without its own justification) are recorded,
+# unselected, in docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md, pending
+# separate owner sign-off. Distinct from candidate_lifecycle above (C12), which governs
+# PRE-ACTIVATION E-context eligibility only, not the lifetime of an unfilled READY
+# entry (see pending_entry_expiry below, RESOLVED as of v1.0.6).
 exit_and_lifecycle:
   initial_stop: UNSIGNED   # C10 -- BLOCKED_AWAITING_OWNER_DECISION, see note above
-  pending_entry_expiry: UNSIGNED   # BLOCKED_AWAITING_OWNER_DECISION, see note above
+  # RESOLVED_BY_REUSE (v1.0.6, OUTCOME_LIFECYCLE_V1): no time-based expiry --
+  # historical_replay/fill_simulator.py's existing FILLED / INVALIDATED_BEFORE_FILL /
+  # UNFILLED_AS_OF_DATA_END / INTRABAR_AMBIGUOUS state machine, reused verbatim via
+  # src/large_smc_research/pending_entry.py. A pending entry never expires on a clock;
+  # it terminates only via fill or structural invalidation (or is reported as an
+  # honest data-boundary artifact if the loaded history simply ends first).
+  pending_entry_expiry: RESOLVED_BY_REUSE
   profit_target_source: C11_TARGET_MODEL   # see target_model above; adapter IMPLEMENTED
+    # (live-context; historical-replay execution currently blocked by a separately
+    # discovered, unrelated gap -- see target_model.implementation note above and
+    # docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md)
   partial_profit: UNSIGNED
   breakeven: UNSIGNED
   maximum_holding_period: UNSIGNED   # POST-fill position duration -- out of C12's

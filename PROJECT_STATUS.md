@@ -83,7 +83,7 @@ E3 sweep-without-reclaim = not eligible. It adds no entry filter, changes no str
 version, and grants no proposal/demo/live authority. See
 `docs/status/SMC_TRAP_GUARD_V1_STATUS.md`.
 
-`ST_LARGE_SMC_V1 v1.0.5` is registered as an independent `RESEARCH_DRAFT` strategy
+`ST_LARGE_SMC_V1 v1.0.6` is registered as an independent `RESEARCH_DRAFT` strategy
 contract. It shares advisory Market Structure, Supply/Demand, Liquidity, Entry
 Confirmation, and Trade Management capabilities, but shares no strategy authority or
 validation evidence with `ST_ASIAN_SWEEP_5R_V1`. UC-001 (timeframe roles: D1/H1/M5),
@@ -104,13 +104,31 @@ of `D1=60/H1=50/M5=200`), the C11 target-model adapter (formula unchanged, now
 `IMPLEMENTED`), and C18 (simultaneous-combination selection →
 `RECORD_ALL_INDEPENDENTLY`, reuse of C14) are resolved. `decision_states` dropped the
 placeholder `READY` for `RESEARCH_QUALIFIED`/`INVALIDATED`. **C10 (broker stop-loss)
-and post-READY pending-entry expiry remain deliberately `UNSIGNED`** — an explicit
-owner decision to block outcome simulation rather than guess; the engine fails closed
-to `BLOCKED` for any candidate that would otherwise need either, with a decision-packet
-document for each. No proposal, demo, live, execution, or risk-sizing authority was
-added. See `docs/status/LARGE_SMC_V1_REGISTRATION_STATUS.md`,
+remains deliberately `UNSIGNED`** — an explicit owner decision to block outcome
+simulation rather than guess; the engine fails closed to `BLOCKED` for any candidate
+that would otherwise need it, with a decision-packet document. No proposal, demo,
+live, execution, or risk-sizing authority was added. See
+`docs/status/LARGE_SMC_V1_REGISTRATION_STATUS.md`,
 `docs/status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`, and
 `docs/status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`.
+
+As of v1.0.6 (2026-09-02, `OUTCOME_LIFECYCLE_V1`), post-READY pending-entry expiry is
+`RESOLVED_BY_REUSE`: `historical_replay/fill_simulator.py` (pre-existing, tested, never
+previously wired here) already establishes no time-based expiry exists for this
+pipeline — a pending entry terminates only via fill or structural invalidation, reused
+verbatim by new `src/large_smc_research/pending_entry.py`. This phase also **discovered
+and disclosed** (not fixed) a separate, pre-existing gap: C11's target-model adapter
+and the project's own M1 inducement-candidate detection both silently fail during
+historical replay because `market_structure.tiers.analyze_structure_tiers` requires a
+live MT5 terminal for symbol metadata that `historical_replay/data_source_patch.py`
+never patches — this likely explains the long-standing "M1 forms zero entry arrays"
+finding as at least partly a data-source-patching artifact, not purely a strategy
+result. The engine now fails closed to `DATA_ERROR` in this case rather than a
+misleading `NO_TRADE`. Fixing the gap itself is `SHARED_CHANGE_REQUIRED` (touches the
+live `SMC_CONDITIONAL_ENTRY_V2` watcher) and deliberately deferred.
+Recommendation: `HOLD`. See
+`docs/status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md` and
+`docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`.
 
 The strategy/skill workflow is organized conceptually in
 `docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md`: local contracts and engines retain

@@ -1,0 +1,164 @@
+{
+  "STRATEGY": {
+    "STRATEGY_ID": "ST_LARGE_SMC_V1",
+    "STRATEGY_VERSION": "1.0.5",
+    "AUTHORITY": "RESEARCH_ONLY -- no proposal/demo/live/execution/risk-sizing authority exercised"
+  },
+  "DATA": {
+    "SOURCE": "D:\\EURUSD_M5_202504211715_202607310000.csv",
+    "SYMBOL": "EURUSD",
+    "BASE_RESOLUTION": "M5",
+    "DATE_RANGE_REQUESTED": [
+      "2025-09-01T00:00:00",
+      "2025-09-30T00:00:00"
+    ],
+    "FULL_DATASET_RANGE": [
+      "2025-04-21T14:15:00+00:00",
+      "2026-07-30T21:00:00+00:00"
+    ],
+    "SOURCE_TIMEZONE": "BROKER_SERVER_TIME(UTC+2/UTC+3 seasonal DST)",
+    "NORMALIZED_TIMEZONE": "UTC",
+    "TOTAL_M5_ROWS": 95393,
+    "UNEXPECTED_GAPS": 15,
+    "DERIVED_TIMEFRAME_ROWS": {
+      "M15": 31788,
+      "H1": 7937,
+      "H4": 1976,
+      "D1": 320
+    }
+  },
+  "REPLAY": {
+    "LOAD_TIME_SECONDS": 47.96,
+    "REPLAY_TIME_SECONDS": 5327.81,
+    "SECONDS_PER_STEP": 0.8811
+  },
+  "FUNNEL": {
+    "1_RAW_PERIODS": 6047,
+    "2_VALID_DATA_PERIODS": 6047,
+    "WARMUP_PERIODS_EXCLUDED": 0,
+    "3_E_QUALIFIED_EVENTS": 9,
+    "4_M_CONFIRMED_EVENTS": 5,
+    "5_COMPOSED_CANDIDATES": 27,
+    "6_SELECTED_CANDIDATES": 27,
+    "7_ENTRY_ARRAY_CREATED": 5,
+    "8_READY_EQUIVALENT_BLOCKED_PENDING_OWNER_DECISION": 3,
+    "9_FILLED_ENTRIES": "NOT_ATTEMPTED_BLOCKED_UNSIGNED_CONTRACT",
+    "10_INVALIDATED_BEFORE_FILL": "NOT_ATTEMPTED_BLOCKED_UNSIGNED_CONTRACT",
+    "11_EXPIRED_UNFILLED": "NOT_ATTEMPTED_BLOCKED_UNSIGNED_CONTRACT",
+    "12_INTRABAR_AMBIGUOUS": "NOT_ATTEMPTED_BLOCKED_UNSIGNED_CONTRACT",
+    "13_UNAMBIGUOUS_COMPLETED_OUTCOMES": "NOT_ATTEMPTED_BLOCKED_UNSIGNED_CONTRACT",
+    "BLOCKED_REASON": "C10 (broker stop-loss distance) and post-READY pending-entry expiry are unsigned (owner decision, 2026-09-01: block outcome simulation and write a decision packet rather than guess). Stages 9-13 require one or both and were not attempted. Stage 8's count is exactly how many candidates are pending that decision -- see docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md and ..._PENDING_ENTRY_EXPIRY_DECISION_PACKET.md."
+  },
+  "IDENTITY": {
+    "IDENTITY_COLLISIONS": 0,
+    "READY_LIFECYCLE_CREATED_EVENTS": 3
+  },
+  "PER_COMBINATION": {
+    "E1M1": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 2,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E1M2": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 2,
+      "M_CONFIRMED": 2,
+      "ENTRY_ARRAY_CREATED": 2,
+      "READY": 1
+    },
+    "E1M3": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 2,
+      "M_CONFIRMED": 1,
+      "ENTRY_ARRAY_CREATED": 1,
+      "READY": 1
+    },
+    "E2M1": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 1,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E2M2": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 1,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E2M3": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 1,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E3M1": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 6,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E3M2": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 6,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "E3M3": {
+      "REFERENCE_FOUND": 0,
+      "E_QUALIFIED": 0,
+      "M_STARTED": 6,
+      "M_CONFIRMED": 2,
+      "ENTRY_ARRAY_CREATED": 2,
+      "READY": 1
+    }
+  },
+  "PER_E": {
+    "E1": {
+      "REFERENCE_FOUND": 7,
+      "E_QUALIFIED": 2
+    },
+    "E2": {
+      "REFERENCE_FOUND": 23,
+      "E_QUALIFIED": 1
+    },
+    "E3": {
+      "REFERENCE_FOUND": 278,
+      "E_QUALIFIED": 6
+    }
+  },
+  "PER_M": {
+    "M1": {
+      "M_STARTED": 9,
+      "M_CONFIRMED": 0,
+      "ENTRY_ARRAY_CREATED": 0,
+      "READY": 0
+    },
+    "M2": {
+      "M_STARTED": 9,
+      "M_CONFIRMED": 2,
+      "ENTRY_ARRAY_CREATED": 2,
+      "READY": 1
+    },
+    "M3": {
+      "M_STARTED": 9,
+      "M_CONFIRMED": 3,
+      "ENTRY_ARRAY_CREATED": 3,
+      "READY": 2
+    }
+  }
+}

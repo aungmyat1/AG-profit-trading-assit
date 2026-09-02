@@ -26,7 +26,6 @@ from large_smc_research.decision import (
     REASON_REJECT_NO_TARGET,
     REASON_SYMBOL_NOT_IN_FROZEN_UNIVERSE,
     REASON_UNSIGNED_C10_BROKER_STOP,
-    REASON_UNSIGNED_PENDING_ENTRY_EXPIRY,
     LargeSMCDecisionState,
 )
 from large_smc_research.engine import STRATEGY_VERSION, LargeSMCResearchEngine
@@ -145,7 +144,7 @@ def test_occurrence_id_differs_across_disjoint_intervals():
 # --------------------------------------------------------------------------- READY branch: target found -> BLOCKED (C10)
 
 
-def test_ready_with_target_found_is_blocked_on_unsigned_c10_and_expiry(monkeypatch):
+def test_ready_with_target_found_is_blocked_on_unsigned_c10_only(monkeypatch):
     engine = LargeSMCResearchEngine()
     analysis, combo = _analysis_with_combo(EntryModelState.READY.value, entry_price=1.1000)
     event = _event()
@@ -160,8 +159,7 @@ def test_ready_with_target_found_is_blocked_on_unsigned_c10_and_expiry(monkeypat
 
     decision = engine._evaluate_combination("EURUSD", T0, event, combo, analysis, T0, T0 + dt.timedelta(hours=8))
     assert decision.state == LargeSMCDecisionState.BLOCKED.value
-    assert REASON_UNSIGNED_C10_BROKER_STOP in decision.reason_codes
-    assert REASON_UNSIGNED_PENDING_ENTRY_EXPIRY in decision.reason_codes
+    assert decision.reason_codes == (REASON_UNSIGNED_C10_BROKER_STOP,)  # pending-entry expiry is RESOLVED_BY_REUSE -- no longer a blocking reason
     assert decision.simulated_broker_stop is None
     assert decision.target_price == 1.1200
 
@@ -180,6 +178,29 @@ def test_ready_with_no_target_is_no_trade(monkeypatch):
     decision = engine._evaluate_combination("EURUSD", T0, event, combo, analysis, T0, T0 + dt.timedelta(hours=8))
     assert decision.state == LargeSMCDecisionState.NO_TRADE.value
     assert REASON_REJECT_NO_TARGET in decision.reason_codes
+
+
+def test_ready_with_unavailable_structure_tier_is_data_error_not_no_trade(monkeypatch):
+    """A target-model failure caused by unavailable structure/data (e.g.
+    market_structure.tiers.analyze_structure_tiers requiring live MT5 symbol metadata
+    that historical replay never patches -- a real gap this phase discovered) must
+    fail closed to DATA_ERROR, never be silently reported as the legitimate C11
+    trading conclusion REJECT_NO_TARGET."""
+    engine = LargeSMCResearchEngine()
+    analysis, combo = _analysis_with_combo(EntryModelState.READY.value, entry_price=1.1000)
+    event = _event()
+
+    monkeypatch.setattr(engine_module, "select_target",
+                         lambda *a, **k: TargetSelection(found=False, reason="MISSING_DIRECTION_OR_STRUCTURE_TIER"))
+    monkeypatch.setattr(engine_module.stage2, "get_latest_candles", lambda *a, **k: ())
+    monkeypatch.setattr(engine_module.stage2, "get_tick", lambda *a, **k: (_ for _ in ()).throw(MarketDataError("NO_TICK", "n/a")))
+    monkeypatch.setattr(engine_module, "analyze_structure_tiers",
+                         lambda *a, **k: type("R", (), {"status": "VALID", "external": None})())
+
+    decision = engine._evaluate_combination("EURUSD", T0, event, combo, analysis, T0, T0 + dt.timedelta(hours=8))
+    assert decision.state == LargeSMCDecisionState.DATA_ERROR.value
+    assert decision.data_quality_state == "DATA_ERROR"
+    assert "MISSING_DIRECTION_OR_STRUCTURE_TIER" in decision.reason_codes
 
 
 def test_ready_target_selection_data_error_fails_closed(monkeypatch):

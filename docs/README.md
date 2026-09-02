@@ -76,7 +76,9 @@ observations from the named milestone; they are not rolling dashboards.
   [`status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`](status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md) (M-candidate identity implemented, Option B),
   [`status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`](status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md) (research-only engine, v1.0.5),
   [`status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md), and
-  [`status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md) (both unsigned, decision packets only)
+  [`status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md) (C10 still unsigned; pending-entry expiry resolved as of v1.0.6, see below),
+  [`status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md`](status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md) (v1.0.6, pending-entry lifecycle), and
+  [`status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`](status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md) (discovered gap, disclosed not fixed)
 
 When a historical test total differs from the current baseline, retain the historical
 number and use `PROJECT_STATUS.md` for the latest result.
