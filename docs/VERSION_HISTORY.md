@@ -1,5 +1,97 @@
 # AG Profit Trading — Version History
 
+## Current Capability and Upgrade Report (2026-09-03)
+
+This report describes the Trade Assistant as source/runtime software. Windows desktop
+packaging is outside the current scope. `IMPLEMENTED`, `VERIFIED`, and `ENABLED` remain
+separate states: implemented code is not automatically authorized to trade.
+
+### Application versions and usable capabilities
+
+| Application version | Release state | Capabilities that can be used | Important limits |
+|---|---|---|---|
+| `AG_TRADE_ASSISTANT_V1_0` | FROZEN | Proposal-only post-Asian/London evaluation for EURUSD and GBPUSD. | Original single-slot pilot; no execution wiring. |
+| `AG_TRADE_ASSISTANT_V1_0_1` | IMPLEMENTED | Two independent daily FX opportunity slots, one per symbol; deterministic selection, risk limits, atomic ledger claims and portfolio guards. | Asian/London cycle only. |
+| `AG_TRADE_ASSISTANT_V1_0_2` | CURRENT DOCUMENTED RELEASE | Restart recovery, immutable session snapshots, preflight checks, event-driven watch mode, complete entry-ticket rendering, end-of-window reporting and monitoring counters. | Proposal runtime remains separate from broker execution. |
+| `AG_TRADE_ASSISTANT_V1_0_3` | RELEASE CANDIDATE — current source baseline | Everything in V1.0.2 plus the proposal-only London/New York FX pilot; BTCUSDT Binance USDT-M research data/runtime; multi-occurrence BTC research ledger; explicit qualification-versus-tradability reporting; Large-SMC historical metadata decoupling and corrected replay baseline; hardened rejection of research proposals by the FX executor; read-only MT5-demo and Binance Futures Testnet discovery evidence. | Not yet represented by a release manifest. New York FX is unit-tested but not yet shadow-validated. BTC is research/proposal-only; production Binance data is HTTP-451 blocked from the current machine. Crypto execution is not implemented. |
+
+The recommended next documentation-only release action is to formalize
+`AG_TRADE_ASSISTANT_V1_0_3` from the current tested source baseline. This assignment
+does not change a strategy version, enable an order gate, or authorize trading.
+
+### What is usable now
+
+| Feature | Implementation | Verification | Enabled/authority |
+|---|---|---|---|
+| Market analysis and explicit decision states | IMPLEMENTED | Regression-tested | AVAILABLE |
+| Asian/London EURUSD+GBPUSD proposals | IMPLEMENTED | Runtime evidence exists | PROPOSAL_ONLY |
+| London/New York EURUSD+GBPUSD proposals | IMPLEMENTED | Unit-tested | PROPOSAL_ONLY; shadow validation pending |
+| MT5 demo open/close execution | IMPLEMENTED | Prior demo evidence exists | Disabled by default; every send requires a fresh explicit user command |
+| MT5 live/real execution | IMPLEMENTED behind gates | Not authorized as a live service | DISABLED |
+| BTCUSDT market-data adapter | IMPLEMENTED | Offline tests plus Binance Futures Testnet connectivity evidence | Production endpoint blocked from this environment |
+| BTCUSDT sweep/retest research proposals | IMPLEMENTED | Unit-tested | RESEARCH_ONLY; execution authority disabled |
+| Binance Futures Testnet account reads | IMPLEMENTED as discovery evidence | Authentication, balance, position and metadata reads verified | Read-only; existing external testnet positions must be preserved |
+| Binance crypto order execution | NOT IMPLEMENTED | N/A | DISABLED |
+| Large-SMC replay and research funnel | IMPLEMENTED | Corrected replay baseline recorded | RESEARCH_ONLY; C10 remains blocked |
+
+Latest recorded project regression evidence belongs to the dated status documents and
+must be quoted with its tested working-tree state. The rolling project snapshot reports
+`1356 passed / 1 skipped / 0 failed` for the 2026-09-02/03 trade-opportunity remediation
+milestone; this report does not rerun or independently replace that evidence.
+
+### Required upgrades
+
+#### Complete `AG_TRADE_ASSISTANT_V1_0_3`
+
+- Add a release manifest that pins the Asian/London and London/New York proposal-only
+  runtimes, BTC research-only runtime, effective configuration and safety posture.
+- Reconcile `README.md`, `PROJECT_STATUS.md`, `docs/README.md`, and the dated milestone
+  evidence with the manifest.
+- Run operational preflight and begin 20-trading-day FX shadow validation.
+- Run 30-calendar-day BTC observation only after a production-quality BTCUSDT market-data
+  source is available from an authorized environment. Binance Testnet prices must not be
+  treated as real-market strategy evidence.
+- Rotate previously exposed exchange credentials and remove withdrawal permission before
+  any further authenticated broker validation.
+
+#### Proposed `AG_TRADE_ASSISTANT_V1_1_0` — demo execution integration
+
+- Implement an offline-tested `CryptoTradeCommand`, explicit broker/environment router,
+  exchange-filter refresh, quantity/price normalization, journal, atomic idempotency and
+  restart reconciliation.
+- Require an explicit account environment; never default or fall back between DEMO and
+  REAL.
+- Add Binance server-time correction and secret-safe authenticated error handling.
+- Validate against Binance Futures Testnet with rotated credentials. An actual testnet
+  order remains a separate, freshly confirmed user action.
+- Preserve all existing FX behavior and leave all real-money sends disabled by default.
+
+#### Proposed `AG_TRADE_ASSISTANT_V1_2_0` — Large-SMC proposal readiness
+
+- Resolve and freeze C10A structural invalidation and C10B simulated broker-stop rules
+  without optimizing against the four corrected research occurrences.
+- Complete causal stop/target/ambiguity outcome simulation, wider discovery and robustness
+  validation.
+- Authorize proposal generation only through a separate registry/ledger decision after
+  the evidence passes. Demo/live authority remains independent.
+
+#### Future major release — real trading operations
+
+- Complete dedicated deployment, credential rotation, monitoring, account reconciliation,
+  incident recovery and broker-specific live validation.
+- Prefer isolated MT5 terminal instances per account/environment over automatic switching
+  of one shared terminal.
+- Require separate owner authorization for each strategy and broker domain. Code
+  availability or API-key trading permission must never imply live authorization.
+
+### Versioning boundary
+
+Application versions cover runtime, reporting, persistence, broker adapters and operating
+controls. Strategy versions change only when signal, entry, stop, target, session or risk
+semantics change. The V1.0.3 release candidate therefore continues to use
+`ST_ASIAN_SWEEP_5R_V1 v1.1.1`, `ST_LIQUIDITY_SWEEP_RETEST_V1 v2.0.0`, and
+`ST_LARGE_SMC_V1 v1.0.6`; it does not silently promote any strategy's execution authority.
+
 Two independent version histories are maintained. **Application/release version
 changes (reporting, persistence, runtime operations, recovery, CLI, journaling,
 monitoring, execution plumbing) do NOT imply a strategy semantics change, and vice
@@ -14,18 +106,27 @@ changes, journal hygiene, or release manifests.
 |---|---|---|---|
 | `AG_TRADE_ASSISTANT_V1_0` | FROZEN | First operational release: post-Asian London pilot for EURUSD+GBPUSD, single-slot selection, PROPOSAL_ONLY. | `config/releases/AG_TRADE_ASSISTANT_V1_0.yaml` |
 | `AG_TRADE_ASSISTANT_V1_0_1` | IMPLEMENTED | Portfolio/daily-ledger hardening: `ready_at` (qualifying closed M15, never wall-clock) selection ordering, two-slot daily opportunity ledger (max 2/day, 1/symbol) with cross-process atomic claims, `max_open_positions=2` with a 1.0% aggregate-open-risk gate, `-1R` realized strategy loss lock layered on the unmodified project-wide `-2R` guard. | `config/releases/AG_TRADE_ASSISTANT_V1_0_1.yaml` |
-| `AG_TRADE_ASSISTANT_V1_0_2` | CURRENT DEVELOPMENT | Operational observability + restart recovery: fixed READY-decision restart reconstruction (previously downgraded to NOT_READY on reload), immutable Asian snapshots (fail-closed on conflicting rewrite), a dedicated `--preflight` CLI, event-driven `--watch` output, a complete Entry Ticket renderer, a journal-grounded end-of-window report, and lightweight monitoring counters. Execution integration remains `NOT_WIRED`. | `config/releases/AG_TRADE_ASSISTANT_V1_0_2.yaml` |
-| `AG_TRADE_ASSISTANT_V1_1` | DEFERRED | SMC advisory context (not started). | — |
+| `AG_TRADE_ASSISTANT_V1_0_2` | CURRENT DOCUMENTED RELEASE | Operational observability + restart recovery: fixed READY-decision restart reconstruction (previously downgraded to NOT_READY on reload), immutable Asian snapshots (fail-closed on conflicting rewrite), a dedicated `--preflight` CLI, event-driven `--watch` output, a complete Entry Ticket renderer, a journal-grounded end-of-window report, and lightweight monitoring counters. Execution integration remains `NOT_WIRED`. | `config/releases/AG_TRADE_ASSISTANT_V1_0_2.yaml` |
+| `AG_TRADE_ASSISTANT_V1_0_3` | RELEASE CANDIDATE | Current source baseline described in the capability report above: London/New York FX proposal pilot, BTCUSDT research runtime, multi-occurrence research evidence, Large-SMC replay correction, execution-boundary hardening, and read-only broker/testnet discovery. Scope is frozen for validation; defects may be fixed, but unrelated features are deferred. | Manifest pending — required before release |
+| `AG_TRADE_ASSISTANT_V1_1_0` | PROPOSED | Crypto demo-execution infrastructure, kept independent from Large-SMC research readiness. | — |
+| `AG_TRADE_ASSISTANT_V1_2_0` | PROPOSED | Large-SMC proposal-readiness evidence after C10A/C10B contract resolution. | — |
 
-Every release above runs **`ST_ASIAN_SWEEP_5R_V1` v1.1.1** — application releases never
-imply a strategy semantic change.
+The earlier `AG_TRADE_ASSISTANT_V1_1` “SMC advisory context” entry was a roadmap
+placeholder only. It was never released and is superseded by the explicit, independently
+scoped V1.1.0 and V1.2.0 roadmap entries above.
+
+**`ST_ASIAN_SWEEP_5R_V1` v1.1.1** remains the FX Asian/London strategy authority across
+these application releases. Other strategy and research runtimes listed for V1.0.3 retain
+their own independent registration, proposal, demo, and live authority states. An
+application release never implies a strategy semantic or authorization change.
 
 ## Strategy Version History
 
 | Strategy | Version | Status | Used by application releases |
 |---|---|---|---|
-| `ST_ASIAN_SWEEP_5R_V1` | 1.1.1 | ACTIVE, `SOLE_DAY_TRADING_AUTHORITY` (pilot-scoped) | V1.0, V1.0.1, V1.0.2 |
-| `ST_LARGE_SMC_V1` | 1.0.6 | `RESEARCH_DRAFT`, advisory-only, fail-closed (`proposal_generation_authorized: false`, engine `src/large_smc_research/` RESEARCH_ONLY) | none (not used by any application release) |
+| `ST_ASIAN_SWEEP_5R_V1` | 1.1.1 | ACTIVE, `SOLE_DAY_TRADING_AUTHORITY` (pilot-scoped) | V1.0, V1.0.1, V1.0.2, V1.0.3 release candidate |
+| `ST_LIQUIDITY_SWEEP_RETEST_V1` | 2.0.0 | `ACTIVE_INCUBATION`, BTCUSDT research/proposal-only; crypto execution disabled | V1.0.3 release candidate only |
+| `ST_LARGE_SMC_V1` | 1.0.6 | `RESEARCH_DRAFT`, advisory-only, fail-closed (`proposal_generation_authorized: false`, engine `src/large_smc_research/` RESEARCH_ONLY) | V1.0.3 research component only; no proposal authority |
 
 `ST_LARGE_SMC_V1` is a fully independent strategy family (`strategies/ST_LARGE_SMC_V1.yaml`,
 spec `docs/specs/LARGE_SMC_V1_SPEC.md`) — it does not inherit `ST_ASIAN_SWEEP_5R_V1`'s,

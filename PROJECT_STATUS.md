@@ -23,7 +23,7 @@ CRYPTO EXECUTION              NOT IMPLEMENTED, fail-closed (execution.adapter.Cr
 LARGE SMC STRATEGY            RESEARCH_DRAFT v1.0.6, research-only funnel + replay infra fixed, C10 remains sole blocker, no execution authority
 SMC SEMANTIC TRAP GUARD       UNIT_TESTED, additive evidence validation for Asian Sweep + Large SMC
 HISTORICAL REPLAY             LIVE-MT5 ACCESS BLOCKED
-FULL REGRESSION               see docs/status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md for the exact current total (2026-09-02 remediation milestone); previous dated milestone baseline: 979 passed / 5 skipped / 0 failed, 2026-08-30 -- see dated sections below
+FULL REGRESSION               1356 passed / 1 skipped / 0 failed (2026-09-02/03, `python -m pytest -q`, AG_COMPLETE_TRADE_OPPORTUNITY_V1 remediation milestone -- see docs/status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md); previous dated milestone baseline: 979 passed / 5 skipped / 0 failed, 2026-08-30 -- see dated sections below
 ```
 
 ### Product objective

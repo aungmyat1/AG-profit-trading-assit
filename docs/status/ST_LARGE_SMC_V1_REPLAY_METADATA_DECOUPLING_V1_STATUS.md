@@ -209,16 +209,19 @@ structure, golden vertical slice): **132 passed, 0 failed** (23 new manifest tes
 109 adjacent tests; one test was found to depend on live-MT5-connectivity state rather
 than the feature under test, fixed to be deterministic, and re-verified at 23/23).
 
-A full-suite run was separately launched for the final record. **Note on repository
-state at that time:** an unrelated, concurrent, uncommitted change set (BTC/crypto
-sweep-research files -- `requirements.txt`, `src/execution/executor.py`,
+Final full-suite result: **1 failed, 1344 passed, 1 skipped, 10743 warnings in
+3085.42s (0:51:25)**. The one failure --
+`tests/test_btc_proposal_execution_boundary.py::test_calling_executor_execute_with_btc_proposal_raises_type_mismatch`
+-- is in a file this phase never touched, part of the unrelated, concurrent BTC/crypto
+sweep-research change set (`requirements.txt`, `src/execution/executor.py`,
 `src/execution_runtime/binance_usdtm_feed.py`,
 `src/strategy_engine/sweep_retest/{engine,models,occurrence_enumerator}.py`, and their
-tests) was present in the working tree from a different, concurrent session -- entirely
-unrelated to ST_LARGE_SMC_V1, left untouched per this task's own git-safety
-instructions. Any full-suite pass/fail delta involving those specific files is not
-attributable to this phase; every file this phase actually changed is covered by the
-132/132 targeted result above, independent of that concurrent work.
+tests) that another, concurrent session was actively working on in this same working
+tree during this run -- left completely untouched per this task's own git-safety
+instructions, and not attributable to REPLAY_METADATA_DECOUPLING_V1. Every file this
+phase actually changed is separately covered by the 132/132 targeted result above,
+with zero failures.
+new_failures_attributable_to_this_phase=0
 
 ## AUTHORITY
 

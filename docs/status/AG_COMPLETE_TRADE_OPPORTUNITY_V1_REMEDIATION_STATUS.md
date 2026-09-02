@@ -198,12 +198,24 @@ tests/test_execution_mt5_gateway.py
 tests/test_execution_safety_v1.py                  (combined with the above: 155 passed)
 ```
 
-Full repository suite (after all remediation code changes, `python -m pytest -q`):
-**PENDING -- see PROJECT_STATUS.md's rolling snapshot for the completed total; this
-document is updated once that run finishes.**
+Full repository suite (after all remediation code changes, `python -m pytest -q`,
+2026-09-02/03): **1356 passed, 1 skipped, 0 failed, 10743 warnings in 2389.14s
+(0:39:49)**. The 1 skip is the intentional live-network Binance smoke test. All warnings
+are pre-existing `datetime.utcfromtimestamp` deprecation notices, unrelated to this work.
 
-`git diff --check`: clean (only pre-existing CRLF line-ending warnings on
-previously-modified files, no conflicts).
+`git diff --check`: clean (only pre-existing CRLF line-ending warnings, no conflicts).
+
+**Note on repository state:** this working tree was shared, concurrently, with another
+session doing unrelated work on `ST_LARGE_SMC_V1`/`REPLAY_METADATA_DECOUPLING_V1`
+(`strategies/ST_LARGE_SMC_V1.yaml`, `docs/specs/LARGE_SMC_V1_SPEC.md`,
+`docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`, a new
+`docs/status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md`, and a
+`journal/large_smc_discovery_2025-09_corrected.json` fixture). Something in this
+environment (not this session -- no `git commit` was ever run here) committed both
+sessions' work together as `d36dea7` and `be5d31a`. Every file this remediation pass
+actually changed is listed above and independently verified by the test counts above;
+the ST_LARGE_SMC_V1 files were never touched by this session. See the chat transcript
+for the full disclosure of this cross-session collision.
 
 ## Safety
 
