@@ -20,14 +20,16 @@ from __future__ import annotations
 
 import contextlib
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from unittest.mock import patch
 
 import MetaTrader5 as _mt5_sdk
 
 from mt5.market_data import MarketDataError, Tick
+from mt5.symbol_resolver import SymbolMetaError
 
 from .candle_store import HistoricalCandleStore, HistoricalDataError
+from .symbol_metadata_manifest import HistoricalSymbolMetadataManifest
 
 # Defense-in-depth for the "replay silently falls back to live MT5" bug class found
 # this phase (a consumer module's own get_latest_candles/get_tick import was missed
@@ -91,6 +93,18 @@ _PATCHED_RANGE_CANDLE_TARGETS = (
     "assistant.market_data.get_candles",
 )
 
+# Symbol-metadata patch target (REPLAY_METADATA_DECOUPLING_V1) -- ONLY active when a
+# manifest is explicitly supplied to historical_data_context (opt-in, backward
+# compatible: omitting it leaves get_symbol_meta completely unpatched, exactly as
+# before this phase). market_structure/tiers.py is currently the only historical-replay
+# consumer of get_symbol_meta (verified: it's the sole call site project-wide) -- this
+# single target therefore also fixes historical_replay/stage2.py's M1 inducement-
+# candidate detection, which calls analyze_structure_tiers internally and would
+# otherwise hit the exact same live-MT5-only gap.
+_PATCHED_SYMBOL_META_TARGETS = (
+    "market_structure.tiers.get_symbol_meta",
+)
+
 
 def _raise_as_market_data_error(exc: HistoricalDataError):
     raise MarketDataError(exc.reason_code, str(exc)) from exc
@@ -127,12 +141,40 @@ def _historical_range_unavailable(symbol: str, timeframe: str, start_utc: dateti
     )
 
 
+def _make_get_symbol_meta(manifest: HistoricalSymbolMetadataManifest):
+    """Returns a `SymbolMeta` for `manifest.symbol` only -- any other symbol fails
+    closed (`SymbolMetaError`, never a fabricated/reused metadata object for an
+    unauthorized symbol). Caller must already have validated `manifest` against the
+    actual loaded dataset via `validate_manifest_for_dataset` before entering this
+    context -- this function does not re-fingerprint the dataset on every call."""
+    synthetic = manifest.to_synthetic_symbol_meta()
+
+    def _get_symbol_meta(symbol: str):
+        if symbol != manifest.symbol:
+            raise SymbolMetaError(
+                f"MANIFEST_SYMBOL_MISMATCH: historical symbol metadata manifest is scoped to "
+                f"{manifest.symbol!r}, not {symbol!r} -- no historical tick_size authorized for it"
+            )
+        return synthetic
+    return _get_symbol_meta
+
+
 @contextlib.contextmanager
-def historical_data_context(store: HistoricalCandleStore, as_of: datetime):
+def historical_data_context(
+    store: HistoricalCandleStore, as_of: datetime,
+    symbol_metadata_manifest: Optional[HistoricalSymbolMetadataManifest] = None,
+):
     """Within this context, every frozen analyzer's candle/tick retrieval is redirected
     to `store` as of `as_of` (the replay clock's current knowledge_time). No-lookahead
     is enforced entirely by `HistoricalCandleStore.closed_candles`'s closure check
-    (spec sections 7, 51) -- this context manager only performs the substitution."""
+    (spec sections 7, 51) -- this context manager only performs the substitution.
+
+    `symbol_metadata_manifest` (REPLAY_METADATA_DECOUPLING_V1) is opt-in and additive:
+    omitted (default), `get_symbol_meta` is left completely unpatched -- identical to
+    every prior behavior/test. When supplied, it must already be validated against the
+    actual dataset (`symbol_metadata_manifest.validate_manifest_for_dataset`) -- this
+    context manager does not perform that check itself, to avoid re-hashing a
+    multi-megabyte file on every replay step."""
     get_candles_fn = _make_get_latest_candles(store, as_of)
     get_tick_fn = _make_get_tick(store, as_of)
 
@@ -143,6 +185,10 @@ def historical_data_context(store: HistoricalCandleStore, as_of: datetime):
             stack.enter_context(patch(target, get_tick_fn))
         for target in _PATCHED_RANGE_CANDLE_TARGETS:
             stack.enter_context(patch(target, _historical_range_unavailable))
+        if symbol_metadata_manifest is not None:
+            get_symbol_meta_fn = _make_get_symbol_meta(symbol_metadata_manifest)
+            for target in _PATCHED_SYMBOL_META_TARGETS:
+                stack.enter_context(patch(target, get_symbol_meta_fn))
         # Applied AFTER the real substitutions above (patch() stacks correctly since
         # get_latest_candles/get_tick above never call the real MetaTrader5 SDK) --
         # HISTORICAL_REPLAY_MT5_ACCESS = FORBIDDEN, enforced globally, not just at the

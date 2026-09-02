@@ -13,8 +13,13 @@ an equivalent live substitution) -- exactly the same requirement
 `stage2.evaluate_entry_stage` itself documents. This module performs zero MT5 access of
 its own; it only calls already-patched module attributes
 (`historical_replay.stage2.get_latest_candles` / `.get_tick`,
-`market_structure.tiers.analyze_structure_tiers`), so no change to
-`historical_replay/data_source_patch.py`'s patch-target allowlist was needed.
+`market_structure.tiers.analyze_structure_tiers`). For historical replay to actually
+resolve a C11 target (REPLAY_METADATA_DECOUPLING_V1), the caller must additionally pass
+an owner-approved, dataset-validated `symbol_metadata_manifest` into
+`historical_data_context(...)` -- see `historical_replay.symbol_metadata_manifest` and
+`docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`. This engine itself
+needs no code change for that fix: it only ever calls `analyze_structure_tiers`, which
+is transparently patched by the context manager exactly like candles/ticks already are.
 
 C18 (simultaneous-combination selection): resolved by reuse of C14's already-frozen
 `candidate_identity.selection`/`coexistence` fields (`strategy_level_single_winner_

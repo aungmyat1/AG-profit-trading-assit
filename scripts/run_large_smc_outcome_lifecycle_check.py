@@ -29,7 +29,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from historical_replay import HistoricalCandleStore, historical_data_context, load_mt5_export_csv  # noqa: E402
+from historical_replay import (  # noqa: E402
+    HistoricalCandleStore,
+    historical_data_context,
+    load_mt5_export_csv,
+    load_symbol_metadata_manifest,
+    validate_manifest_for_dataset,
+)
 from historical_replay.stage1 import load_stage1_dataset  # noqa: E402
 from large_smc_research import LargeSMCResearchEngine, simulate_pending_entry  # noqa: E402
 from large_smc_research.decision import LargeSMCDecisionState  # noqa: E402
@@ -38,6 +44,7 @@ SYMBOL = "EURUSD"
 CSV_PATH = r"D:\EURUSD_M5_202504211715_202607310000.csv"
 EVENTS_PATH = "artifacts/backtests/stage1/qualified_e_events_2025-08-01_2025-10-01.json"
 LIQUIDITY_PATH = "artifacts/backtests/directional_liquidity_timeline.json"
+MANIFEST_PATH = "config/historical_datasets/EURUSD_M5_202504211715_202607310000.yaml"
 
 # From artifacts/backtests/discovery_2mo_aug_sep2025_setup_ledger.parquet (prior phase).
 KNOWN_READY_TIMES = [
@@ -55,10 +62,15 @@ def main() -> None:
     store = HistoricalCandleStore()
     store.load_series(SYMBOL, "M5", candles)
 
+    manifest = load_symbol_metadata_manifest(MANIFEST_PATH)
+    validate_manifest_for_dataset(manifest, CSV_PATH, SYMBOL)
+    print(f"Loaded and validated symbol-metadata manifest: {MANIFEST_PATH} "
+          f"(tick_size={manifest.tick_size}, scope={manifest.metadata_scope})")
+
     engine = LargeSMCResearchEngine()
     all_decisions = []
     for t in KNOWN_READY_TIMES:
-        with historical_data_context(store, t):
+        with historical_data_context(store, t, symbol_metadata_manifest=manifest):
             decisions = engine.evaluate(SYMBOL, t, dataset)
         all_decisions.extend(decisions)
         print(f"\n=== evaluation_time={t.isoformat()} -> {len(decisions)} decision(s) ===")

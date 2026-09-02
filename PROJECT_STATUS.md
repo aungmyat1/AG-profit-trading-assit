@@ -4,7 +4,7 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Current operational snapshot (2026-09-01)
+## Current operational snapshot (2026-09-02)
 
 This section is the rolling summary. Test totals elsewhere in this document belong to
 the dated milestone that introduced the surrounding feature.
@@ -20,7 +20,7 @@ CRYPTO DATA/EXECUTION         NOT IMPLEMENTED, fail-closed
 LARGE SMC STRATEGY            RESEARCH_DRAFT v1.0.5, research-only funnel engine implemented, no execution authority
 SMC SEMANTIC TRAP GUARD       UNIT_TESTED, additive evidence validation for Asian Sweep + Large SMC
 HISTORICAL REPLAY             LIVE-MT5 ACCESS BLOCKED
-FULL REGRESSION               979 passed / 5 skipped / 0 failed (last completed baseline, 2026-08-30)
+FULL REGRESSION               1249 passed / 0 failed (last completed baseline, 2026-09-02, `python -m pytest -q`; previous dated milestone baseline: 979 passed / 5 skipped / 0 failed, 2026-08-30 -- see dated sections below)
 ```
 
 ### Product objective

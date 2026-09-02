@@ -252,14 +252,21 @@ def _has_enough_history(store: HistoricalCandleStore, symbol: str, timeframe: st
 
 def run_replay(store: HistoricalCandleStore, symbol: str, m5_step_candles: Sequence[Candle],
                start_utc: datetime, end_utc: datetime, progress_callback=None,
-               progress_every: int = 2000) -> ReplayResult:
+               progress_every: int = 2000, symbol_metadata_manifest=None) -> ReplayResult:
     """`m5_step_candles` is the base M5 series already loaded into `store` -- the
     replay clock is exactly its closed-bar boundaries (spec section 15: M5
     closed-candle progression), filtered to [start_utc, end_utc).
 
     `progress_callback(valid_steps, steps, as_of)`, if given, is invoked every
     `progress_every` valid steps -- pure observability (e.g. writing a tiny checkpoint
-    file for a long run), never affects replay semantics or results."""
+    file for a long run), never affects replay semantics or results.
+
+    `symbol_metadata_manifest` (REPLAY_METADATA_DECOUPLING_V1, optional, default None
+    -- fully backward compatible) is threaded straight into `historical_data_context`;
+    see that function and `historical_replay.symbol_metadata_manifest` for what it
+    does (restores `market_structure.tiers.analyze_structure_tiers`'s tick_size lookup
+    during replay, fixing M1 inducement-candidate detection's own use of it -- no
+    detection semantics changed, only data availability)."""
     ledger = SetupLedger()
     funnel = FunnelTracker()
     lifecycle_store = InMemoryKeyValueStore()
@@ -284,7 +291,7 @@ def run_replay(store: HistoricalCandleStore, symbol: str, m5_step_candles: Seque
                 continue  # insufficient history -- WARMUP, not a valid "no setup" result
 
         valid_steps += 1
-        with historical_data_context(store, as_of):
+        with historical_data_context(store, as_of, symbol_metadata_manifest=symbol_metadata_manifest):
             analysis = build_symbol_conditional_entry_analysis(symbol)
 
         if progress_callback is not None and valid_steps % progress_every == 0:

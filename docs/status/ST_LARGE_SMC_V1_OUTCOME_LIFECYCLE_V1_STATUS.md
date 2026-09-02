@@ -174,8 +174,8 @@ focused=48 new/updated tests this phase across
   tests/test_large_smc_research_engine.py (+1 new, -1 outdated fixed = 14 total),
   tests/test_large_smc_target_model.py (7, unchanged) -- all passing
 full_suite=1237 passed / 0 failed baseline confirmed at the start of this phase
-  (carried over from RESEARCH_FUNNEL_V1); a fresh full run was launched at the end of
-  this phase for the final record -- see the accompanying session notes for its result
+  (carried over from RESEARCH_FUNNEL_V1); final full run at the end of this phase:
+  **1249 passed / 0 failed** (`python -m pytest -q`, 2026-09-02)
 new_failures=0
 known_unrelated_failures=0 (the RESEARCH_FUNNEL_V1 phase's one live-market flake,
   tests/test_supply_demand.py::test_order_blocks_and_fvg_live_eurusd[H1], was already

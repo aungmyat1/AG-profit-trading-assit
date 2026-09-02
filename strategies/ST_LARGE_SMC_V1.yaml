@@ -172,8 +172,11 @@ confirmation_sequence:
 # RESEARCH_QUALIFIED (the ceiling under RESEARCH_DRAFT, per spec sec.5) and added
 # INVALIDATED (structural invalidation, distinct from time-based EXPIRED, per C12).
 # RESEARCH_QUALIFIED is honestly unreachable right now: any candidate that would
-# otherwise qualify resolves to BLOCKED instead, because C10/pending-entry-expiry are
-# unsigned -- see candidate_lifecycle and the C10 decision-packet doc.
+# otherwise qualify resolves to BLOCKED instead, because C10 (broker stop-loss) is
+# unsigned -- see candidate_lifecycle and the C10 decision-packet doc. (Pending-entry
+# expiry was the other original blocker here; it is RESOLVED_BY_REUSE as of v1.0.6 --
+# see exit_and_lifecycle.pending_entry_expiry below -- and no longer contributes to
+# this BLOCKED outcome.)
 decision_states: [RESEARCH_QUALIFIED, WATCH, NO_TRADE, DATA_ERROR, EXPIRED, INVALIDATED, BLOCKED]
 
 # C18 (simultaneous-combination selection), RESOLVED_BY_REUSE (2026-09-02,

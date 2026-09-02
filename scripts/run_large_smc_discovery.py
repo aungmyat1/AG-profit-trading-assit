@@ -1,24 +1,36 @@
-"""Phase B discovery replay for ST_LARGE_SMC_V1 (RESEARCH_ONLY_FUNNEL_V1).
+"""Phase B discovery replay for ST_LARGE_SMC_V1 (RESEARCH_ONLY_FUNNEL_V1, corrected in
+REPLAY_METADATA_DECOUPLING_V1).
 
 Reuses the same real-CSV replay machinery `scripts/run_historical_replay.py` already
 uses (`historical_replay.orchestrator.run_replay` -- zero E1/E2/E3/M1/M2/M3
 redetection) and re-expresses `FunnelTracker`'s distinct-occurrence counts in the
-funnel shape the research task asked for. C10 (broker stop) and post-READY
-pending-entry expiry remain unsigned (owner decision: block outcome simulation rather
-than guess -- see docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md and
-..._PENDING_ENTRY_EXPIRY_DECISION_PACKET.md), so fill/invalidated-before-fill/
-expired-unfilled/intrabar-ambiguity/completed-outcome resolution are reported as
-NOT_ATTEMPTED, never fabricated.
+funnel shape the research task asked for. C10 (broker stop) remains unsigned (owner
+decision: block outcome simulation rather than guess -- see
+docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md), so fill/invalidated-
+before-fill/expired-unfilled/intrabar-ambiguity/completed-outcome resolution are
+reported as NOT_ATTEMPTED, never fabricated. Pending-entry expiry is separately
+RESOLVED_BY_REUSE (v1.0.6) -- see large_smc_research/pending_entry.py -- and does not
+affect this funnel-level report.
+
+As of REPLAY_METADATA_DECOUPLING_V1, an owner-approved, dataset-fingerprint-validated
+`HistoricalSymbolMetadataManifest` (see historical_replay.symbol_metadata_manifest) is
+loaded and threaded into `run_replay`, restoring `market_structure.tiers.
+analyze_structure_tiers`'s tick_size lookup during replay -- this is what M1's
+inducement-candidate detection depends on (see
+docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md for the discovered gap).
+If no manifest exists for the requested (dataset, symbol), this script fails closed
+rather than silently reverting to the old, incomplete replay behavior.
 
 No proposal, demo, live, execution, or risk-sizing authority is exercised here --
 read-only research replay only.
 
 Usage:
-    python scripts/run_large_smc_discovery.py <csv_path> <symbol> <start_iso> <end_iso> <out_json_path>
+    python scripts/run_large_smc_discovery.py <csv_path> <symbol> <start_iso> <end_iso> <out_json_path> [manifest_path]
 
 Example:
     python scripts/run_large_smc_discovery.py D:\\EURUSD_M5_202504211715_202607310000.csv \\
-        EURUSD 2025-08-01T00:00:00 2025-08-15T00:00:00 docs/status/large_smc_discovery_sample.json
+        EURUSD 2025-08-01T00:00:00 2025-08-15T00:00:00 docs/status/large_smc_discovery_sample.json \\
+        config/historical_datasets/EURUSD_M5_202504211715_202607310000.yaml
 """
 from __future__ import annotations
 
@@ -30,7 +42,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from historical_replay import HistoricalCandleStore, load_mt5_export_csv, resample, resample_broker_aligned  # noqa: E402
+from historical_replay import (  # noqa: E402
+    HistoricalCandleStore,
+    SymbolMetadataManifestError,
+    load_mt5_export_csv,
+    load_symbol_metadata_manifest,
+    resample,
+    resample_broker_aligned,
+    validate_manifest_for_dataset,
+)
 from historical_replay.orchestrator import run_replay  # noqa: E402
 from large_smc_research.engine import FROZEN_INSTRUMENT_UNIVERSE, STRATEGY_VERSION  # noqa: E402
 from large_smc_research.decision import STRATEGY_ID  # noqa: E402
@@ -39,7 +59,9 @@ NOT_ATTEMPTED = "NOT_ATTEMPTED_BLOCKED_UNSIGNED_CONTRACT"
 
 
 def main() -> None:
-    csv_path, symbol, start_iso, end_iso, out_path = sys.argv[1:6]
+    args = sys.argv[1:7]
+    csv_path, symbol, start_iso, end_iso, out_path = args[:5]
+    manifest_path = args[5] if len(args) > 5 else None
     if symbol not in FROZEN_INSTRUMENT_UNIVERSE:
         raise SystemExit(
             f"SYMBOL_NOT_IN_FROZEN_UNIVERSE: {symbol!r} not in {FROZEN_INSTRUMENT_UNIVERSE} "
@@ -47,6 +69,14 @@ def main() -> None:
         )
     start_utc = datetime.fromisoformat(start_iso).replace(tzinfo=timezone.utc)
     end_utc = datetime.fromisoformat(end_iso).replace(tzinfo=timezone.utc)
+
+    manifest = None
+    if manifest_path:
+        try:
+            manifest = load_symbol_metadata_manifest(manifest_path)
+            validate_manifest_for_dataset(manifest, csv_path, symbol)
+        except SymbolMetadataManifestError as exc:
+            raise SystemExit(f"BLOCKED_DATASET_METADATA_PROVENANCE: {exc}") from exc
 
     t0 = time.time()
     candles, ingestion_report = load_mt5_export_csv(csv_path, symbol, "M5")
@@ -64,7 +94,7 @@ def main() -> None:
     load_time = time.time() - t0
 
     t0 = time.time()
-    result = run_replay(store, symbol, candles, start_utc, end_utc)
+    result = run_replay(store, symbol, candles, start_utc, end_utc, symbol_metadata_manifest=manifest)
     replay_time = time.time() - t0
 
     combos = tuple(result.per_combination.keys())
@@ -77,6 +107,12 @@ def main() -> None:
     report = {
         "STRATEGY": {"STRATEGY_ID": STRATEGY_ID, "STRATEGY_VERSION": STRATEGY_VERSION,
                      "AUTHORITY": "RESEARCH_ONLY -- no proposal/demo/live/execution/risk-sizing authority exercised"},
+        "SYMBOL_METADATA": {
+            "MANIFEST_USED": manifest_path if manifest is not None else None,
+            "TICK_SIZE": manifest.tick_size if manifest is not None else None,
+            "SCOPE": manifest.metadata_scope if manifest is not None else None,
+            "M1_INDUCEMENT_DETECTION_LIVE_MT5_REQUIRED": manifest is None,
+        },
         "DATA": {
             "SOURCE": csv_path, "SYMBOL": symbol, "BASE_RESOLUTION": "M5",
             "DATE_RANGE_REQUESTED": [start_iso, end_iso],
@@ -106,12 +142,12 @@ def main() -> None:
             "12_INTRABAR_AMBIGUOUS": NOT_ATTEMPTED,
             "13_UNAMBIGUOUS_COMPLETED_OUTCOMES": NOT_ATTEMPTED,
             "BLOCKED_REASON": (
-                "C10 (broker stop-loss distance) and post-READY pending-entry expiry are "
-                "unsigned (owner decision, 2026-09-01: block outcome simulation and write a "
-                "decision packet rather than guess). Stages 9-13 require one or both and were "
-                "not attempted. Stage 8's count is exactly how many candidates are pending "
-                "that decision -- see docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md "
-                "and ..._PENDING_ENTRY_EXPIRY_DECISION_PACKET.md."
+                "C10 (broker stop-loss distance) is unsigned (owner decision, 2026-09-01: "
+                "block outcome simulation and write a decision packet rather than guess). "
+                "Stages 9-13 require it and were not attempted. Stage 8's count is exactly "
+                "how many candidates are pending that decision -- see "
+                "docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md. (Pending-entry "
+                "expiry is separately RESOLVED_BY_REUSE, v1.0.6 -- not a factor here.)"
             ),
         },
         "IDENTITY": {
