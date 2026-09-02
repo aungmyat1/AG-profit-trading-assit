@@ -50,6 +50,17 @@ from canonical session windows or other repo conventions at the time of registra
     `long_setup`/`short_setup` now declare `entry_order_type: MARKET`; `execution/
     intent_builder.py` reaches `READY_FOR_ORDER_CHECK` for this strategy's real signals.
     See `tests/test_execution_runtime_readiness.py` for the real-YAML, real-path proof.
+  - **`LONDON_NEWYORK` pilot activated (2026-09-02):** the `LONDON_NEWYORK` session pair
+    (registered 2026-08-26, v1.1.0) had no operating pilot until now -- only `ASIAN_LONDON`
+    ran (`config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1_0_1.yaml`'s own `inactive_cycle:
+    [LONDON_NEWYORK]` note). `config/pilot/AG_POST_LONDON_NEWYORK_PILOT_V1_0_1.yaml`
+    activates it as an independent, proposal-only pilot with its own `state_dir`
+    (`journal/post_london_newyork_pilot/`) -- required because `post_asian_pilot.governor.
+    DailyTradeLedger`'s capacity identity is `strategy_id + trading_date` only, not
+    cycle-aware; a shared journal directory would let an `ASIAN_LONDON` slot silently
+    consume `LONDON_NEWYORK`'s independent per-cycle quota for the same symbol/day. No
+    strategy-file change. `PROPOSAL_ONLY`, no live/demo authorization change. See
+    `tests/test_post_london_newyork_pilot.py`.
 
 ## SESSION_TRADE_V1 -- Asian/London session trend-continuation & sweep strategy
 
@@ -148,6 +159,22 @@ from canonical session windows or other repo conventions at the time of registra
   `docs/status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`,
   `docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md`, and
   `docs/status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md`.
+- **`REPLAY_METADATA_DECOUPLING_V1` (2026-09-02, no version bump — replay
+  infrastructure, not strategy semantics):** the MT5-symbol-metadata replay gap
+  disclosed in v1.0.6's own phase is now **resolved**. Owner authorized a
+  dataset-fingerprint-bound historical `tick_size=0.00001` for
+  `EURUSD_M5_202504211715_202607310000` only (`config/historical_datasets/`,
+  `HISTORICAL_ANALYSIS_ONLY` scope, tagged `SYNTHETIC_RESEARCH`, never usable for
+  execution). Wired into `historical_replay/data_source_patch.py`'s
+  `historical_data_context` as an opt-in, backward-compatible parameter, patching the
+  single shared call site (`market_structure.tiers.get_symbol_meta`) both C11's
+  target adapter and M1's pre-existing inducement-candidate detection depend on. Live
+  watcher behavior verified unchanged (structurally unreachable by this change). A
+  corrected September 2025 replay shows exactly one changed combination cell (E1M1:
+  now `M_CONFIRMED=1, ENTRY_ARRAY_CREATED=1, READY=1`, previously all zero) — every
+  other cell byte-identical to the pre-fix run, classified
+  `REPLAY_METADATA_CORRECTION`, not a regression. C10 remains the sole open blocker.
+  See `docs/status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md`.
 - **v1.0.6 (2026-09-02, `OUTCOME_LIFECYCLE_V1`):** post-READY pending-entry expiry
   **RESOLVED_BY_REUSE** -- `historical_replay/fill_simulator.py` (pre-existing,
   already tested, never wired to this strategy) already establishes no time-based
@@ -169,3 +196,60 @@ from canonical session windows or other repo conventions at the time of registra
   code path) and is deliberately not fixed this phase. Recommendation: `HOLD`. See
   `docs/status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md` and
   `docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`.
+
+## ST_LIQUIDITY_SWEEP_RETEST_V1 -- Liquidity Sweep + H1 Trend + M5 MSS + Retest (Forex + Crypto)
+
+- **Registered:** 2026-08-30
+- **Config:** `strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml`
+- **Status:** ACTIVE_INCUBATION (v2.0.0) -- no live/demo execution authority for either
+  profile. Forex profile: signal engine only, no operating pilot yet (unlike
+  `ST_ASIAN_SWEEP_5R_V1`). Crypto profile: RESEARCH_ONLY / SHADOW / PROPOSAL_ONLY.
+- **Family:** Liquidity_Sweep_MSS_Retest
+- **Instruments:** EURUSD, GBPUSD (Forex profile); BTCUSDT (Crypto profile -- ETHUSDT is
+  declared in the strategy YAML but out of scope for this phase, no adapter built for it).
+- **Engine:** `src/strategy_engine/sweep_retest/` -- one asset-independent engine
+  (`engine.py::evaluate_setup`), parameterized by `profile.py::MarketProfile`, shared
+  unmodified by both profiles.
+- **Binance USDT-M BTCUSDT market-data adapter added (2026-09-02):** the first real
+  exchange integration in this repo. `src/execution_runtime/binance_usdtm_feed.py`
+  implements `execution_runtime.crypto_feed.CryptoCandleFeed` against Binance's public
+  `/fapi/v1/klines` + `/fapi/v1/exchangeInfo` REST endpoints (`requests`, no API key) --
+  fail-closed on monotonicity, duplicates, gaps, OHLC consistency, NaN/negative/null
+  fields, non-positive prices, negative volume, malformed/out-of-range timestamps, stale
+  data, and unfinished/forming candles. `UNIT_TESTED` (fully offline/mocked); **live
+  connectivity from this development environment is BLOCKED** -- Binance returns
+  HTTP 451 ("Service unavailable from a restricted location") on both endpoints as of
+  2026-09-02. Re-verify from the actual deployment environment before operational use.
+  See `docs/status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md`.
+- **BTC research runtime added (2026-09-02):** `src/btc_sweep_research/` orchestrates
+  fetch -> enumerate every qualifying same-day occurrence -> evaluate (via the existing,
+  unmodified `SweepRetestRuntime`) -> record. Never imports
+  `execution.executor`/`mt5.management_gateway`/`execution.coordinator`/
+  `execution.adapter` (statically and behaviorally verified,
+  `tests/test_btc_proposal_execution_boundary.py`). `BTCSweepResearchProposal` declares
+  `execution_domain=CRYPTO_RESEARCH` / `execution_authority=DISABLED`.
+- **Engine changes (2026-09-02, additive, both profiles share them):**
+  - `evaluate_setup`'s `daily_loss_guard`/`open_position_guard` checks moved from before
+    qualification to after it -- a setup that reaches full qualification (would be
+    `ENTRY_READY`) but is guard-blocked now still reports `strategy_qualified=True` (new
+    `SetupState` field) with a `tradability_blocked`/`tradability_reason` verdict,
+    instead of the guard silently erasing all qualification evidence. A setup that never
+    qualifies is unaffected -- the guard was never consulted for it either way. See
+    `engine.py::evaluate_setup`'s own "Guard ordering" docstring.
+  - New optional `sweep_search_after` parameter (default `None`, no behavior change for
+    any existing caller) lets a caller evaluate a specific, later sweep candidate in the
+    same window without re-discovering an earlier one -- the mechanism
+    `occurrence_enumerator.py` builds on to let the BTC pipeline collect 0..N distinct
+    same-day occurrences instead of being capped at one per symbol/day.
+  - `_in_windows`/the H1-direction-to-sweep-direction mapping made public
+    (`in_execution_windows`, `sweep_requirement_for_h1_direction`) so orchestration code
+    can reuse the exact same window/direction logic without re-deriving it.
+- **`execution.executor.execute()` hardened (2026-09-02):** now rejects any object that
+  is not `execution.models.TradeCommand` with a typed `UnsupportedExecutionDomain`,
+  checked before any field of the argument is read -- an explicit domain gate, not an
+  incidental shape-mismatch error. No change to any TradeCommand-shaped call.
+- **Not yet defined:** Forex profile has no operating pilot (unlike
+  `ST_ASIAN_SWEEP_5R_V1`'s `ASIAN_LONDON`/`LONDON_NEWYORK` pilots) -- signal engine only.
+  Crypto simulated-trade lifecycle (fill simulation, R outcome tracking) is not built;
+  only the research-observation ledger exists. No live/demo execution authority exists
+  for either profile.

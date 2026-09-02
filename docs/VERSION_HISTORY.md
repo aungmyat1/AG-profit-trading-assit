@@ -90,6 +90,14 @@ evidence, and it does not appear in any `AG_TRADE_ASSISTANT_V1_0*` release manif
   replay -- now fails closed to `DATA_ERROR` instead of a misleading `NO_TRADE`.
   Recommendation: `HOLD`. See
   `docs/status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md`.
+- **`REPLAY_METADATA_DECOUPLING_V1` (2026-09-02, replay-infrastructure fix, no strategy
+  version bump per this table's own policy below):** the MT5-symbol-metadata replay
+  gap is resolved via an owner-approved, dataset-fingerprint-bound historical
+  `tick_size` manifest -- no entry/confirmation/stop/target/session logic changed.
+  Corrected September 2025 replay isolates the effect to exactly one combination cell
+  (E1M1, previously starved), classified a metadata correction, not a regression. C10
+  remains the sole open blocker; recommendation `GO_TO_C10_DECISION`. See
+  `docs/status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md`.
 
 A strategy version bump is required if a change affects: setup qualification, sweep
 definition, direction, entry, confirmation, stop, targets, session strategy logic, or

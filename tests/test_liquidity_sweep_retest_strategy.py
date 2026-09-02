@@ -320,6 +320,56 @@ def test_daily_loss_circuit_breaker_resets_next_trading_day(tmp_path):
     assert guard.realized_r(day2) == 0.0
 
 
+# ------------------------------------------------------ 17b: strategy_qualified / tradability
+# (remediation Gap 2 -- engine.py's own two-layer result model)
+
+def test_guard_blocked_setup_still_reports_strategy_qualified_true(tmp_path):
+    guard = OpenPositionGuard(JsonKeyValueStore(str(tmp_path / "open_positions.json")))
+    guard.register_open("pos-1", "ST_ASIAN_SWEEP_5R_V1", "GBPUSD")
+
+    result = evaluate_setup(**_forex_kwargs(open_position_guard=guard))
+    assert result.state == STATE_BLOCKED_OPEN_POSITION
+    assert result.strategy_qualified is True  # the opportunity genuinely existed
+    assert result.tradability_blocked is True
+    assert result.tradability_reason == STATE_BLOCKED_OPEN_POSITION
+    # Full qualification evidence is preserved, not erased by the guard block.
+    assert result.entry is not None and result.stop_loss is not None and result.volume is not None
+
+
+def test_unblocked_entry_ready_reports_qualified_and_tradable():
+    result = evaluate_setup(**_forex_kwargs())
+    assert result.state == STATE_ENTRY_READY
+    assert result.strategy_qualified is True
+    assert result.tradability_blocked is False
+    assert result.tradability_reason is None
+
+
+def test_non_qualifying_setup_reports_strategy_qualified_false():
+    flat_h1 = _h1_candles([1.1000] * 10, step_minutes=60)
+    result = evaluate_setup(**_forex_kwargs(h1_candles=flat_h1))
+    assert result.state == STATE_NO_TRADE_DIRECTION
+    assert result.strategy_qualified is False
+    assert result.tradability_blocked is False
+    assert result.tradability_reason is None
+
+
+def test_sweep_search_after_skips_earlier_sweep_in_window():
+    """Remediation Gap 1's own extension point: sweep_search_after lets a caller lock
+    onto a LATER sweep candidate in the same window, without re-discovering an earlier
+    one -- the exact mechanism occurrence_enumerator.py builds on."""
+    candles = _short_sequence()
+    first_sweep = find_qualified_sweep(candles, ASIAN_HIGH, ASIAN_LOW)
+    assert first_sweep is not None
+
+    result_default = evaluate_setup(**_forex_kwargs())
+    assert result_default.sweep_time == first_sweep.candle_time
+
+    result_after = evaluate_setup(**_forex_kwargs(sweep_search_after=first_sweep.candle_time))
+    # No second sweep exists in this fixture past the first one -> falls back to WAITING_SWEEP.
+    assert result_after.state in ("WAITING_SWEEP", "SESSION_EXPIRED")
+    assert result_after.strategy_qualified is False
+
+
 # --------------------------------------------------------------------------- full Forex pipeline / replay
 
 def _forex_kwargs(**overrides):

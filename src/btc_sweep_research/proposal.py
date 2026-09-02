@@ -61,3 +61,14 @@ class BTCSweepResearchProposal:
     risk_amount: Optional[float] = None
     setup_id: Optional[str] = None
     evidence: dict = field(default_factory=dict)
+
+    # Two-layer result model (remediation Gap 2): this proposal is only ever built once
+    # strategy_qualified=True (see strategy_engine.sweep_retest.models.SetupState) -- the
+    # occurrence existed and is recorded regardless of these two fields. They report
+    # whether a shared tradability guard (daily_loss_guard/open_position_guard) would
+    # additionally have allowed a simulated trade on it, WITHOUT ever erasing the
+    # occurrence itself: tradability_allowed=False (guard-blocked) rows still get an
+    # occurrence_id, still get recorded in the research ledger, and still count toward
+    # opportunity-completeness metrics -- only simulated-trade eligibility differs.
+    tradability_allowed: bool = True
+    tradability_block_reason: Optional[str] = None

@@ -83,9 +83,25 @@ from .targets import GEOMETRY_VALID, build_target_plan
 from .trend import DIRECTION_LONG_ONLY, DIRECTION_SHORT_ONLY, h1_trend_direction
 
 
-def _in_windows(t: datetime, windows: Sequence[tuple]) -> bool:
+def in_execution_windows(t: datetime, windows: Sequence[tuple]) -> bool:
+    """Public (remediation: an occurrence enumerator outside this module needs the exact
+    same window filter evaluate_setup itself uses, e.g. to enumerate multiple sweep
+    candidates within one window -- see occurrence_enumerator.py). Behavior unchanged."""
     tod = t.time()
     return any(start <= tod < end for start, end in windows)
+
+
+def sweep_requirement_for_h1_direction(direction_gate: Optional[str]) -> tuple:
+    """Maps the H1 trend-filter's direction gate to (required_sweep_direction,
+    trade_direction), or (None, None) for NO_TRADE_DIRECTION -- extracted, unchanged
+    logic, from evaluate_setup's own inline mapping so an occurrence enumerator can derive
+    the same required_sweep_direction evaluate_setup will use, without re-deriving the H1
+    trend rule itself (still only ever computed by trend.h1_trend_direction)."""
+    if direction_gate == DIRECTION_LONG_ONLY:
+        return SWEEP_LOW, "LONG"
+    if direction_gate == DIRECTION_SHORT_ONLY:
+        return SWEEP_HIGH, "SHORT"
+    return None, None
 
 
 def evaluate_setup(
@@ -109,6 +125,7 @@ def evaluate_setup(
     open_position_guard: Optional[OpenPositionGuard] = None,
     session_window_closed: bool = False,
     now: Optional[datetime] = None,
+    sweep_search_after: Optional[datetime] = None,
 ) -> SetupState:
     """m5_candles: ALL closed M5 candles from the end of the reference window up to "now",
     chronological -- this function itself filters to execution-window candles for sweep
@@ -124,14 +141,30 @@ def evaluate_setup(
     stop_buffer_price: precomputed by the caller per-profile (forex_sl_buffer_price() /
     crypto_symbols.crypto_sl_buffer_price()) -- this function itself never chooses
     between pip and tick semantics, see targets.py's docstring.
+
+    sweep_search_after: optional (remediation Gap 1 -- multi-occurrence collection). When
+    given, only window candles strictly after this timestamp are eligible for
+    find_qualified_sweep -- lets a caller (occurrence_enumerator.py) evaluate a SPECIFIC,
+    already-identified later sweep candidate without this call re-discovering an earlier
+    one it has already evaluated under its own setup_id. None (default, all existing
+    callers) preserves the original single-occurrence "first sweep in the window" contract
+    exactly -- this is purely a candidate-selection filter, never a change to what counts
+    as a qualified sweep (still only ever decided by sweep.find_qualified_sweep).
+
+    Guard ordering (remediation Gap 2): daily_loss_guard/open_position_guard are checked
+    ONLY once every other qualification step below has already succeeded (i.e. exactly
+    where this function would otherwise return STATE_ENTRY_READY) -- never before. A
+    setup that never reaches genuine strategy qualification is never re-labeled as
+    guard-blocked (that would misreport "an opportunity existed but was blocked" for
+    something that was never actually an opportunity), and a setup that DOES qualify but
+    is guard-blocked still carries strategy_qualified=True plus its full evidence on the
+    returned SetupState -- the guard only changes tradability, never whether the
+    opportunity is recorded as having existed. The guard RULES themselves (which guard,
+    what threshold, what it means to be blocked) are unchanged -- see
+    execution.daily_loss_guard / execution.position_guard, untouched by this change.
     """
     base = dict(setup_id=setup_id, strategy_id=strategy_id, symbol=symbol, evaluated_at=now)
     config = market_structure_config or load_market_structure_config()
-
-    if daily_loss_guard is not None and daily_loss_guard.is_blocked(trading_day):
-        return SetupState(**base, state=STATE_BLOCKED_DAILY_LOSS, reason_code=STATE_BLOCKED_DAILY_LOSS)
-    if open_position_guard is not None and open_position_guard.is_blocked():
-        return SetupState(**base, state=STATE_BLOCKED_OPEN_POSITION, reason_code=STATE_BLOCKED_OPEN_POSITION)
 
     box = build_profile_reference_box(profile, reference_candles, reference_expected_bar_count)
     if box is None or not box.session_complete:
@@ -139,13 +172,8 @@ def evaluate_setup(
                            profile_id=profile.profile_id)
 
     direction_gate = h1_trend_direction(h1_candles, config)
-    if direction_gate == DIRECTION_LONG_ONLY:
-        required_sweep_direction = SWEEP_LOW
-        trade_direction = "LONG"
-    elif direction_gate == DIRECTION_SHORT_ONLY:
-        required_sweep_direction = SWEEP_HIGH
-        trade_direction = "SHORT"
-    else:
+    required_sweep_direction, trade_direction = sweep_requirement_for_h1_direction(direction_gate)
+    if required_sweep_direction is None:
         return SetupState(
             **base, state=STATE_NO_TRADE_DIRECTION, reason_code=STATE_NO_TRADE_DIRECTION,
             profile_id=profile.profile_id, ref_high=box.session_high, ref_low=box.session_low, ref_mid=box.session_mid,
@@ -154,7 +182,9 @@ def evaluate_setup(
     box_evidence = dict(profile_id=profile.profile_id, ref_high=box.session_high, ref_low=box.session_low,
                          ref_mid=box.session_mid, direction=trade_direction)
 
-    window_candles = [c for c in m5_candles if _in_windows(c.time, execution_windows)]
+    window_candles = [c for c in m5_candles if in_execution_windows(c.time, execution_windows)]
+    if sweep_search_after is not None:
+        window_candles = [c for c in window_candles if c.time > sweep_search_after]
     if not window_candles:
         return SetupState(**base, state=STATE_WAITING_WINDOW, reason_code="EXECUTION_WINDOW_NOT_REACHED", **box_evidence)
 
@@ -201,10 +231,19 @@ def evaluate_setup(
     if size_reason is not None:
         return SetupState(**base, state=STATE_NO_TRADE_TARGET_GEOMETRY, reason_code=size_reason, **plan_evidence)
 
-    return SetupState(
-        **base, state=STATE_ENTRY_READY, reason_code="RETEST_CONFIRMED",
-        volume=volume, risk_amount=risk_amount, **plan_evidence,
-    )
+    # Full strategy qualification reached -- everything above this point is guard-
+    # independent (see this function's own docstring, "Guard ordering"). From here on,
+    # strategy_qualified=True regardless of what the guards below decide.
+    qualified = dict(**base, volume=volume, risk_amount=risk_amount, **plan_evidence, strategy_qualified=True)
+
+    if daily_loss_guard is not None and daily_loss_guard.is_blocked(trading_day):
+        return SetupState(**qualified, state=STATE_BLOCKED_DAILY_LOSS, reason_code=STATE_BLOCKED_DAILY_LOSS,
+                          tradability_blocked=True, tradability_reason=STATE_BLOCKED_DAILY_LOSS)
+    if open_position_guard is not None and open_position_guard.is_blocked():
+        return SetupState(**qualified, state=STATE_BLOCKED_OPEN_POSITION, reason_code=STATE_BLOCKED_OPEN_POSITION,
+                          tradability_blocked=True, tradability_reason=STATE_BLOCKED_OPEN_POSITION)
+
+    return SetupState(**qualified, state=STATE_ENTRY_READY, reason_code="RETEST_CONFIRMED", tradability_blocked=False)
 
 
 # --------------------------------------------------------------------- position lifecycle

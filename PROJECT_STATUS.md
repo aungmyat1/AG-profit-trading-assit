@@ -15,12 +15,15 @@ DAILY SESSION/SMC RUNTIME     READ-ONLY, restart-persistent
 DEMO OPEN/CLOSE EXECUTION     IMPLEMENTED, explicit-command-gated
 LIVE TRADING                  DISABLED BY DEFAULT
 MANUAL TRADE MANAGEMENT       BUILT, independently gated, live validation deferred
+FX LONDON->NEW YORK CYCLE     UNIT_TESTED, ST_ASIAN_SWEEP_5R_V1 LONDON_NEWYORK pilot (AG_POST_LONDON_NEWYORK_PILOT_V1_0_1), proposal-only, isolated ledger from ASIAN_LONDON, no live/demo verification yet
 CRYPTO SIGNAL CONTRACT        IMPLEMENTED (incubation)
-CRYPTO DATA/EXECUTION         NOT IMPLEMENTED, fail-closed
-LARGE SMC STRATEGY            RESEARCH_DRAFT v1.0.5, research-only funnel engine implemented, no execution authority
+CRYPTO DATA ADAPTER           UNIT_TESTED (offline/mocked), Binance USDT-M perpetual BTCUSDT public REST -- LIVE CONNECTIVITY BLOCKED from this environment (Binance returns HTTP 451 "restricted location" on /fapi/v1/exchangeInfo and /fapi/v1/klines as of 2026-09-02; see docs/status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md). Re-verify from the actual deployment environment before relying on it.
+CRYPTO RESEARCH RUNTIME       UNIT_TESTED, RESEARCH_ONLY/PROPOSAL_ONLY, execution_domain=CRYPTO_RESEARCH/execution_authority=DISABLED, statically and behaviorally verified never to reach execution.executor/mt5.management_gateway
+CRYPTO EXECUTION              NOT IMPLEMENTED, fail-closed (execution.adapter.CryptoExecutionAdapter remains NOT_IMPLEMENTED; execution.executor now explicitly rejects any non-TradeCommand object, not just BTC proposals)
+LARGE SMC STRATEGY            RESEARCH_DRAFT v1.0.6, research-only funnel + replay infra fixed, C10 remains sole blocker, no execution authority
 SMC SEMANTIC TRAP GUARD       UNIT_TESTED, additive evidence validation for Asian Sweep + Large SMC
 HISTORICAL REPLAY             LIVE-MT5 ACCESS BLOCKED
-FULL REGRESSION               1249 passed / 0 failed (last completed baseline, 2026-09-02, `python -m pytest -q`; previous dated milestone baseline: 979 passed / 5 skipped / 0 failed, 2026-08-30 -- see dated sections below)
+FULL REGRESSION               see docs/status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md for the exact current total (2026-09-02 remediation milestone); previous dated milestone baseline: 979 passed / 5 skipped / 0 failed, 2026-08-30 -- see dated sections below
 ```
 
 ### Product objective
@@ -40,10 +43,20 @@ real runtime paths, superseding older documents that described the registry as h
 no caller or orchestrator.
 
 `ST_LIQUIDITY_SWEEP_RETEST_V1` contains parameterized Forex and crypto-perpetual signal
-profiles. Crypto remains incubation-only: `execution_runtime.crypto_feed` defines the
-feed protocol but no venue feed, and `execution.adapter.CryptoExecutionAdapter` cannot
-send orders. Synthetic crypto metadata is research-only and rejected as an execution
-basis.
+profiles. Crypto remains research/proposal-only: `execution_runtime.binance_usdtm_feed`
+(added 2026-09-02) implements `execution_runtime.crypto_feed.CryptoCandleFeed` for
+Binance USDT-M perpetual BTCUSDT public market data (fail-closed candle validation,
+UNIT_TESTED offline; live connectivity from this environment is currently BLOCKED --
+Binance returns HTTP 451 -- see the dated status document below), and
+`execution.adapter.CryptoExecutionAdapter` still cannot send orders. The BTC research
+runtime (`src/btc_sweep_research/`) enumerates every qualifying same-day occurrence (not
+capped at one), separates strategy qualification from tradability-guard state, and builds
+a `BTCSweepResearchProposal` explicitly tagged `execution_domain=CRYPTO_RESEARCH` /
+`execution_authority=DISABLED`; `execution.executor.execute()` now rejects any object
+that is not `execution.models.TradeCommand` before reading any of its fields, so this
+proposal type cannot reach the FX order path even by accident. Its own exchange-specific
+metadata (tick size, quantity step, minimum quantity) is sourced from the Binance adapter,
+not the crypto_symbols.py synthetic defaults.
 
 Documentation live-status changes follow
 `docs/status/LIVE_STATUS_MAINTENANCE.md`. Dated milestone documents remain evidence of
@@ -124,11 +137,21 @@ live MT5 terminal for symbol metadata that `historical_replay/data_source_patch.
 never patches — this likely explains the long-standing "M1 forms zero entry arrays"
 finding as at least partly a data-source-patching artifact, not purely a strategy
 result. The engine now fails closed to `DATA_ERROR` in this case rather than a
-misleading `NO_TRADE`. Fixing the gap itself is `SHARED_CHANGE_REQUIRED` (touches the
-live `SMC_CONDITIONAL_ENTRY_V2` watcher) and deliberately deferred.
-Recommendation: `HOLD`. See
-`docs/status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md` and
-`docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`.
+misleading `NO_TRADE`. See `docs/status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md`.
+
+**Resolved same day (`REPLAY_METADATA_DECOUPLING_V1`):** the owner authorized a
+dataset-fingerprint-bound historical `tick_size=0.00001` for
+`EURUSD_M5_202504211715_202607310000` only (`HISTORICAL_ANALYSIS_ONLY` scope, tagged
+`SYNTHETIC_RESEARCH`, never usable for execution — `config/historical_datasets/`,
+`historical_replay/symbol_metadata_manifest.py`). Wired as an opt-in parameter into
+`historical_data_context`, fixing both C11's target adapter and M1's inducement
+detection at their one shared call site, with no live-behavior change (verified) and
+no formula change. A corrected September 2025 replay isolates the effect to exactly
+one combination cell (E1M1, previously starved) — every other cell byte-identical to
+the pre-fix run. C10 (broker stop-loss) remains the sole open blocker.
+Recommendation: `GO_TO_C10_DECISION`. See
+`docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md` and
+`docs/status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md`.
 
 The strategy/skill workflow is organized conceptually in
 `docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md`: local contracts and engines retain

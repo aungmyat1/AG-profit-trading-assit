@@ -37,24 +37,31 @@ def _run_once(as_json: bool):
     return result
 
 
+def _watch_signature(report):
+    if report.container_state is not None:
+        return ("CONTAINER", report.container_state.state, report.container_state.reason_code)
+    return tuple((o.setup_state.setup_id, o.setup_state.state, o.setup_state.reason_code, o.ledger_new_row)
+                for o in report.occurrences)
+
+
 def _run_watch(as_json: bool, interval: int) -> None:
     feed = BinanceUSDTMFeed()
-    last_state_signature = None
+    last_signature = None
     while True:
         try:
-            result = run_research_cycle(feed)
+            report = run_research_cycle(feed)
         except Exception as exc:  # noqa: BLE001 -- an operational error is itself an event to report
             print(f"[{datetime.now(timezone.utc).isoformat()}] ERROR: {exc}")
             time.sleep(interval)
             continue
 
-        signature = (result.setup_state.state, result.setup_state.reason_code, result.ledger_new_row)
-        if signature != last_state_signature:
+        signature = _watch_signature(report)
+        if signature != last_signature:
             if as_json:
-                print(json.dumps(cycle_to_dict(result), indent=2, default=str))
+                print(json.dumps(cycle_to_dict(report), indent=2, default=str))
             else:
-                print(human_readable_report(result))
-            last_state_signature = signature
+                print(human_readable_report(report))
+            last_signature = signature
         time.sleep(interval)
 
 

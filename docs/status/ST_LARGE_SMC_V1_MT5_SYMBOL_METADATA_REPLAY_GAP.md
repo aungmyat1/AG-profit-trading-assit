@@ -1,6 +1,13 @@
 # MT5 Symbol-Metadata Replay Gap — Discovered During ST_LARGE_SMC_V1 OUTCOME_LIFECYCLE_V1
 
-Status: **DISCLOSED, NOT FIXED — SHARED_CHANGE_REQUIRED**. Date: 2026-09-02.
+Status: **RESOLVED (2026-09-02, `ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1`)**, per
+explicit owner authorization of a dataset-bound historical `tick_size`. See
+`docs/status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md` for the full
+fix, parity proof, and corrected-replay evidence. This document is retained as the
+original disclosure record.
+
+Original disclosure below (2026-09-02, `OUTCOME_LIFECYCLE_V1`): **DISCLOSED, NOT FIXED
+— SHARED_CHANGE_REQUIRED**.
 
 ## What was found
 
@@ -88,10 +95,25 @@ three known September occurrences were misreported as `NO_TRADE:REJECT_NO_TARGET
 which would have read as a legitimate (if uninteresting) trading conclusion rather than
 the data problem it actually is.
 
-## Recommended next step
+## Recommended next step (superseded — see resolution below)
 
-Treat this as a new, separate decision point: authorize (or decline) a historical
+~~Treat this as a new, separate decision point: authorize (or decline) a historical
 stand-in for `get_symbol_meta` in `historical_replay/data_source_patch.py`, scoped
 narrowly to symbol metadata only, with its own regression proof against the existing
 golden fixtures before any Large-SMC or live-watcher behavior is considered to rely on
-it.
+it.~~
+
+## Resolution (2026-09-02)
+
+The owner authorized a dataset-bound historical `tick_size = 0.00001` for
+`EURUSD_M5_202504211715_202607310000` (fingerprint-verified,
+`HISTORICAL_ANALYSIS_ONLY` scope only). Implemented as
+`historical_replay/symbol_metadata_manifest.py` (loader/validator) +
+`historical_data_context`'s new opt-in `symbol_metadata_manifest` parameter, patching
+exactly the one call site (`market_structure.tiers.get_symbol_meta`) both C11 and M1's
+inducement detection go through — no fabricated broker metadata, no live-behavior
+change (verified: the live watcher never enters `historical_data_context` at all).
+Corrected September 2025 replay: M1 now genuinely detects inducement candidates
+(0→1 at the same timestamp) and produces one new READY-equivalent occurrence (E1M1);
+every other combination cell is byte-identical to the pre-fix run. Full evidence:
+`docs/status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md`.

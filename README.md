@@ -54,8 +54,17 @@ See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
 - Large SMC is registered as the separate `ST_LARGE_SMC_V1` research strategy. Its
   contract is advisory-only and intentionally incomplete; it has no engine or execution
   authorization and does not share authority with the Session Day Trading strategy.
-- Crypto sweep/retest strategy rules and adapter boundaries exist, but crypto market data
-  and exchange execution remain disabled until a real venue is integrated.
+- `ST_ASIAN_SWEEP_5R_V1`'s `LONDON_NEWYORK` session-pair cycle is now activated as an
+  independent, proposal-only pilot (`config/pilot/AG_POST_LONDON_NEWYORK_PILOT_V1_0_1.yaml`,
+  `scripts/run_post_asian_pilot.py --pilot-config ...`), isolated from the existing
+  `ASIAN_LONDON` pilot's own ledger/snapshot state.
+- Crypto sweep/retest strategy rules now have a real Binance USDT-M perpetual BTCUSDT
+  market-data adapter (`execution_runtime.binance_usdtm_feed`) and a research/proposal-only
+  runtime (`src/btc_sweep_research/`, `scripts/run_btc_sweep_research.py`) that can never
+  reach exchange or MT5 order-submission. Live network connectivity to Binance is currently
+  BLOCKED from this development environment (HTTP 451 geo-restriction) -- re-verify from
+  the actual deployment environment before relying on it operationally. Exchange execution
+  remains not implemented.
 - Historical replay prohibits live MT5 candle/tick access. Historical session-box
   reconstruction remains a documented completeness gap and degrades explicitly.
 - See [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current regression baseline and

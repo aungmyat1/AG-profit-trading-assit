@@ -856,3 +856,35 @@ separate MT5-symbol-metadata fix. **Recommendation: `HOLD`** — not `NO_GO` (no
 against the strategy itself; both open items are infrastructure/authorization gaps, not
 causal defects) and not `GO_TO_LARGER_DISCOVERY`/`CONDITIONAL_GO` (nothing would be
 gained by a larger replay while target-model calls resolve to `DATA_ERROR` throughout).
+
+## 38. REPLAY_METADATA_DECOUPLING_V1 (2026-09-02) — the MT5-symbol-metadata gap resolved
+
+Full evidence: `docs/status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md`.
+No strategy version bump (replay infrastructure, not strategy semantics, per
+`docs/VERSION_HISTORY.md`'s own bump-trigger policy).
+
+The owner authorized a dataset-fingerprint-bound historical `tick_size=0.00001` scoped
+strictly to `EURUSD_M5_202504211715_202607310000` and `HISTORICAL_ANALYSIS_ONLY`
+(`config/historical_datasets/`, `historical_replay/symbol_metadata_manifest.py`).
+Wired as an opt-in, backward-compatible `symbol_metadata_manifest` parameter on
+`historical_data_context` and `historical_replay.orchestrator.run_replay`, patching
+the single shared call site (`market_structure.tiers.get_symbol_meta`) both C11's
+target adapter and M1's pre-existing inducement-candidate detection depend on — one
+fix, not a Large-SMC-only patch. Any `SymbolMeta` built from the manifest is tagged
+`SYNTHETIC_RESEARCH` (the same tag `strategy_engine/sweep_retest/crypto_symbols.py`'s
+existing synthetic-metadata precedent already uses) and carries only an authorized
+`tick_size`; every other field is an inert zero, never fabricated. No structure/C11/M1
+formula changed; live watcher behavior verified unchanged (structurally unreachable by
+this code path).
+
+**Corrected September 2025 replay**: exactly one combination cell changed — `E1M1`
+(`M_CONFIRMED`/`ENTRY_ARRAY_CREATED`/`READY` all 0→1) — with all eight other cells,
+`PER_E`, raw/valid/warmup counts, and identity-collision counts byte-identical to the
+pre-fix run. Classified `REPLAY_METADATA_CORRECTION`, not a regression: the prior
+"M1 forms zero entry arrays" finding is `SUPERSEDED_BY_CORRECTED_REPLAY`, not
+reinterpreted as a strategy result either way — this is a measurement correction, not
+evidence of profitability or improvement.
+
+**Updated recommendation: `GO_TO_C10_DECISION`** — replay infrastructure is now
+trustworthy for both C11 and M1; C10 (broker stop-loss) is the only remaining blocker
+before outcome simulation (fill → target/stop/ambiguity) can proceed.

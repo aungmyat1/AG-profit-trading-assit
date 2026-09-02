@@ -59,6 +59,24 @@ _STALE_PROPOSAL_SPREAD_MULTIPLIER = 5  # x current spread
 _RISK_REVALIDATION_TOLERANCE_PCT = 1e-6
 _VOLUME_TOLERANCE = 1e-9
 
+# This executor's ONE supported execution domain: MT5/FX TradeCommand. Anything else --
+# most concretely btc_sweep_research.proposal.BTCSweepResearchProposal, which declares its
+# own execution_domain=CRYPTO_RESEARCH / execution_authority=DISABLED and must never reach
+# an order-submission path (spec: BTC is RESEARCH_ONLY/PROPOSAL_ONLY, always) -- is an
+# intentional, explicit, fail-closed rejection (remediation Gap 3). Deliberately NOT an
+# import of btc_sweep_research or any BTC-specific type: this module stays domain-agnostic
+# about what it rejects, coupled only to what it accepts (TradeCommand).
+SUPPORTED_EXECUTION_DOMAIN = "MT5_FX"
+
+
+class UnsupportedExecutionDomain(RuntimeError):
+    """Raised by execute() when given anything other than execution.models.TradeCommand.
+    Previously an unsupported object (e.g. a BTC research proposal) would fail deep inside
+    this module with an incidental AttributeError the first time an FX-only field was
+    accessed -- a shape mismatch, not a safety gate. This is the intentional gate: checked
+    before ANY field of `command` is read, so the rejection reason is always this one,
+    never whatever attribute happened to be touched first."""
+
 
 class ProposalStore:
     """In-memory TradeProposal store, keyed by proposal_id. A process-local cache is
@@ -225,6 +243,13 @@ def _proposal_stale_reason(proposal, current_price: float, spread_points: float,
 
 
 def execute(command: TradeCommand, *, user_confirmed: bool, proposal_store: Optional[ProposalStore] = None) -> ExecutionReport:
+    if not isinstance(command, TradeCommand):
+        raise UnsupportedExecutionDomain(
+            f"execute() only accepts execution.models.TradeCommand (this executor's domain: "
+            f"{SUPPORTED_EXECUTION_DOMAIN!r}); got {type(command).__module__}.{type(command).__name__!r}. "
+            f"If that object declares its own execution_domain/execution_authority, they are not "
+            f"this executor's -- it has no authority over any domain but its own."
+        )
     store = proposal_store or _default_store
 
     if not user_confirmed:

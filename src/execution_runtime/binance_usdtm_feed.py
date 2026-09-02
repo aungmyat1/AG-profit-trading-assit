@@ -35,6 +35,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 import requests
 
+from mt5.symbol_resolver import METADATA_SOURCE_SYNTHETIC_RESEARCH, SymbolMeta
 from strategy_engine.session import Candle
 
 FAPI_BASE_URL = "https://fapi.binance.com"
@@ -185,6 +186,27 @@ def fetch_exchange_symbol_meta(
     )
 
 
+def to_symbol_meta(binance_meta: BinanceSymbolMeta, volume_max: float = 1000.0) -> SymbolMeta:
+    """Bridges BinanceSymbolMeta (this adapter's own exchange-identity record) into the
+    SymbolMeta shape execution.risk.size_position / btc_sweep_research actually consume --
+    using THIS adapter's tick_size/step_size/min_qty/contract_size as the authority, not
+    strategy_engine.sweep_retest.crypto_symbols.crypto_symbol_meta()'s hardcoded synthetic
+    defaults (spec: "for fields that are exchange-specific, prefer the verified Binance
+    exchangeInfo metadata ... do not silently continue using synthetic metadata where real
+    Binance metadata is already available"). Still tagged METADATA_SOURCE_SYNTHETIC_RESEARCH
+    (never METADATA_SOURCE_EXCHANGE_VERIFIED): that tag's real meaning in this repo is
+    execution.adapter.require_exchange_verified_metadata()'s gate for FX/MT5 broker-order
+    eligibility, which this crypto RESEARCH-domain record must never claim regardless of
+    whether the underlying numbers came from a live Binance fetch or the offline-safe
+    documented default -- see this module's own EXCHANGE/CONTRACT constants' docstrings."""
+    return SymbolMeta(
+        symbol=binance_meta.canonical_symbol, tick_size=binance_meta.tick_size, tick_value=binance_meta.tick_size,
+        contract_size=binance_meta.contract_size, volume_min=binance_meta.min_qty, volume_max=volume_max,
+        volume_step=binance_meta.step_size, digits=binance_meta.price_precision, point=binance_meta.tick_size,
+        metadata_source=METADATA_SOURCE_SYNTHETIC_RESEARCH,
+    )
+
+
 def _to_float(value: Any, field_name: str, row_index: int) -> float:
     if value is None:
         raise BinanceFeedDataError("CANDLE_NULL_FIELD", f"row {row_index}: {field_name} is null")
@@ -195,6 +217,23 @@ def _to_float(value: Any, field_name: str, row_index: int) -> float:
     if math.isnan(f) or math.isinf(f):
         raise BinanceFeedDataError("CANDLE_NAN_FIELD", f"row {row_index}: {field_name}={value!r}")
     return f
+
+
+def _to_epoch_ms(value: Any, field_name: str, row_index: int) -> int:
+    """Normalizes a raw timestamp field to an int epoch-ms, never leaking a raw
+    ValueError/TypeError/OverflowError from int()/float() -- every malformed timestamp
+    (non-numeric, None, absurdly large/NaN-ish) fails closed as a typed
+    BinanceFeedDataError carrying the symbol/timeframe context the caller adds (spec:
+    "malformed exchange timestamps must not leak arbitrary low-level exceptions")."""
+    if value is None:
+        raise BinanceFeedDataError("CANDLE_NULL_TIMESTAMP", f"row {row_index}: {field_name} is null")
+    try:
+        ms = int(value)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise BinanceFeedDataError(
+            "CANDLE_MALFORMED_TIMESTAMP", f"row {row_index}: {field_name}={value!r} ({exc})",
+        ) from exc
+    return ms
 
 
 def _parse_klines(raw: Sequence[Sequence[Any]], timeframe: str) -> List[dict]:
@@ -218,6 +257,8 @@ def _parse_klines(raw: Sequence[Sequence[Any]], timeframe: str) -> List[dict]:
 
         if open_ <= 0 or high <= 0 or low <= 0 or close <= 0:
             raise BinanceFeedDataError("CANDLE_NON_POSITIVE_PRICE", f"row {i}: open={open_} high={high} low={low} close={close}")
+        if volume < 0:
+            raise BinanceFeedDataError("CANDLE_NEGATIVE_VOLUME", f"row {i}: volume={volume} (0 is valid -- a genuinely quiet bar; negative is not)")
         if high < max(open_, close, low) or low > min(open_, close, high):
             raise BinanceFeedDataError(
                 "CANDLE_OHLC_INCONSISTENT",
@@ -225,7 +266,8 @@ def _parse_klines(raw: Sequence[Sequence[Any]], timeframe: str) -> List[dict]:
             )
 
         parsed.append({
-            "open_time_ms": int(open_time_ms), "close_time_ms": int(close_time_ms),
+            "open_time_ms": _to_epoch_ms(open_time_ms, "open_time", i),
+            "close_time_ms": _to_epoch_ms(close_time_ms, "close_time", i),
             "open": open_, "high": high, "low": low, "close": close, "volume": volume,
         })
     return parsed
@@ -270,14 +312,24 @@ def _drop_forming_candle(parsed: List[dict], now_ms: int) -> List[dict]:
     return parsed
 
 
-def _to_candles(parsed: Sequence[dict]) -> List[Candle]:
-    return [
-        Candle(
-            time=datetime.fromtimestamp(row["open_time_ms"] / 1000.0, tz=timezone.utc),
-            open=row["open"], high=row["high"], low=row["low"], close=row["close"], volume=row["volume"],
-        )
-        for row in parsed
-    ]
+def _to_candles(parsed: Sequence[dict], symbol: str, timeframe: str) -> List[Candle]:
+    candles = []
+    for row in parsed:
+        try:
+            candle_time = datetime.fromtimestamp(row["open_time_ms"] / 1000.0, tz=timezone.utc)
+        except (OverflowError, OSError, ValueError) as exc:
+            # Same fail-closed normalization as _to_epoch_ms -- a numerically valid but
+            # out-of-range epoch-ms (e.g. an absurdly large value) must not leak a raw
+            # platform exception (spec: "must not leak arbitrary low-level exceptions").
+            raise BinanceFeedDataError(
+                "CANDLE_TIMESTAMP_OUT_OF_RANGE",
+                f"{symbol}/{timeframe}: open_time_ms={row['open_time_ms']!r} ({exc})",
+            ) from exc
+        candles.append(Candle(
+            time=candle_time, open=row["open"], high=row["high"], low=row["low"],
+            close=row["close"], volume=row["volume"],
+        ))
+    return candles
 
 
 class BinanceUSDTMFeed:
@@ -347,4 +399,4 @@ class BinanceUSDTMFeed:
                 f"(> {_STALE_MULTIPLE}x{expected_spacing_ms // 1000}s threshold)",
             )
 
-        return _to_candles(parsed[-count:])
+        return _to_candles(parsed[-count:], symbol, timeframe)

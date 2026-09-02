@@ -6,3 +6,4 @@ MetaTrader5==5.0.5735
 smartmoneyconcepts==0.0.27
 pytest==8.3.5
 matplotlib==3.11.0
+requests==2.34.2  # execution_runtime.binance_usdtm_feed (Binance USDT-M public REST) -- verified 2026-09-02

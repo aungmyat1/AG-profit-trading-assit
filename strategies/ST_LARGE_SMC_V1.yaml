@@ -219,17 +219,20 @@ target_model:
   # still no proposal/execution authority; still status=CONTRACT_ONLY for the
   # underlying contract itself, only the adapter is now real code.
   #
-  # REPLAY_COMPATIBILITY caveat (discovered OUTCOME_LIFECYCLE_V1, 2026-09-02): the
-  # fallback tier's market_structure.tiers.analyze_structure_tiers call requires LIVE
-  # MT5 symbol metadata (mt5.symbol_resolver.get_symbol_meta, for HH/HL/LH/LL
-  # tolerance) that historical_replay/data_source_patch.py has never patched -- this
-  # adapter therefore correctly runs live but fails with DATA_ERROR
-  # (MISSING_DIRECTION_OR_STRUCTURE_TIER) during ALL historical replay until that
-  # separate, shared-infrastructure gap is fixed (SHARED_CHANGE_REQUIRED -- affects the
-  # live SMC_CONDITIONAL_ENTRY_V2 watcher's own M1 inducement-candidate detection too,
-  # not just this adapter). See
-  # docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md.
-  implementation: IMPLEMENTED   # live-context; historical-replay execution blocked, see caveat above
+  # REPLAY_COMPATIBILITY caveat (discovered OUTCOME_LIFECYCLE_V1, 2026-09-02;
+  # RESOLVED same day, REPLAY_METADATA_DECOUPLING_V1): the fallback tier's
+  # market_structure.tiers.analyze_structure_tiers call requires LIVE MT5 symbol
+  # metadata (mt5.symbol_resolver.get_symbol_meta, for HH/HL/LH/LL tolerance) that
+  # historical_replay/data_source_patch.py never patched -- this adapter (and,
+  # project-wide, M1's own inducement-candidate detection) failed with DATA_ERROR
+  # during ALL historical replay until an owner-approved, dataset-fingerprint-bound
+  # historical tick_size manifest (config/historical_datasets/*.yaml,
+  # historical_replay/symbol_metadata_manifest.py) was authorized and wired into
+  # historical_data_context's opt-in symbol_metadata_manifest parameter -- no formula
+  # change, no live-behavior change (verified). See
+  # docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md and
+  # docs/status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md.
+  implementation: IMPLEMENTED   # live-context AND historical-replay (with an authorized dataset manifest), see caveat above
   scope: GLOBAL   # applies identically across all 9 E1-E3 x M1-M3 research variants
 
   anchor_price:

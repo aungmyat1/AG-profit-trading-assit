@@ -238,6 +238,61 @@ def test_negative_price_rejected():
     assert exc.value.reason_code in ("CANDLE_NON_POSITIVE_PRICE", "CANDLE_OHLC_INCONSISTENT")
 
 
+def test_negative_volume_rejected():
+    rows = _clean_m5_rows(1)
+    rows[0][5] = "-1.0"
+    session = _FakeSession(rows)
+    feed = BinanceUSDTMFeed(session=session, clock=_now_after(rows))
+    with pytest.raises(BinanceFeedDataError) as exc:
+        feed.get_latest_candles("BTCUSDT", "M5", 1)
+    assert exc.value.reason_code == "CANDLE_NEGATIVE_VOLUME"
+
+
+def test_zero_volume_is_valid():
+    rows = _clean_m5_rows(1)
+    rows[0][5] = "0"
+    session = _FakeSession(rows)
+    feed = BinanceUSDTMFeed(session=session, clock=_now_after(rows))
+    candles = feed.get_latest_candles("BTCUSDT", "M5", 1)
+    assert candles[0].volume == 0.0
+
+
+def test_malformed_open_timestamp_normalized_not_leaked():
+    rows = _clean_m5_rows(1)
+    rows[0][0] = "not-a-timestamp"
+    session = _FakeSession(rows)
+    feed = BinanceUSDTMFeed(session=session, clock=lambda: dt.datetime.now(dt.timezone.utc))
+    with pytest.raises(BinanceFeedDataError) as exc:
+        feed.get_latest_candles("BTCUSDT", "M5", 1)
+    assert exc.value.reason_code == "CANDLE_MALFORMED_TIMESTAMP"
+    assert "not-a-timestamp" in str(exc.value)
+
+
+def test_null_close_timestamp_normalized_not_leaked():
+    rows = _clean_m5_rows(1)
+    rows[0][6] = None
+    session = _FakeSession(rows)
+    feed = BinanceUSDTMFeed(session=session, clock=lambda: dt.datetime.now(dt.timezone.utc))
+    with pytest.raises(BinanceFeedDataError) as exc:
+        feed.get_latest_candles("BTCUSDT", "M5", 1)
+    assert exc.value.reason_code == "CANDLE_NULL_TIMESTAMP"
+
+
+def test_out_of_range_open_timestamp_normalized_not_leaked():
+    # A numerically valid but astronomically out-of-range epoch-ms can never reach this
+    # point through get_latest_candles's own pipeline (it always trips the forming-candle
+    # or staleness gate first, both of which compare against "now" and reject it earlier)
+    # -- so this exercises _to_candles's own OverflowError/OSError normalization directly,
+    # as the internal defense-in-depth it is (spec: "malformed exchange timestamps must
+    # not leak arbitrary low-level exceptions" -- true regardless of which gate a given
+    # bad value happens to be caught by first).
+    from execution_runtime.binance_usdtm_feed import _to_candles
+    parsed = [{"open_time_ms": 10**18, "close_time_ms": 10**18, "open": 1.0, "high": 1.0, "low": 1.0, "close": 1.0, "volume": 1.0}]
+    with pytest.raises(BinanceFeedDataError) as exc:
+        _to_candles(parsed, "BTCUSDT", "M5")
+    assert exc.value.reason_code == "CANDLE_TIMESTAMP_OUT_OF_RANGE"
+
+
 # ---------------------------------------------------------------------------------- stale
 
 def test_stale_data_rejected():

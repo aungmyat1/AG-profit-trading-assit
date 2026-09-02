@@ -77,3 +77,15 @@ class SetupState:
     risk_amount: Optional[float] = None
 
     evidence: dict = field(default_factory=dict)
+
+    # Two-layer result model (remediation Gap 2): strategy_qualified is True once the
+    # setup has genuinely reached full qualification (everything up to and including
+    # target-geometry/sizing validation) -- independent of whether a shared tradability
+    # guard (daily_loss_guard/open_position_guard) would allow a simulated trade on it.
+    # tradability_blocked/tradability_reason are only ever set when strategy_qualified is
+    # True; a setup that never qualified (WAITING_*/NO_TRADE_*/EXPIRED) has no tradability
+    # verdict to report -- it was never a candidate to begin with. See engine.py's
+    # evaluate_setup docstring for exactly where in the pipeline this is decided.
+    strategy_qualified: bool = False
+    tradability_blocked: bool = False
+    tradability_reason: Optional[str] = None

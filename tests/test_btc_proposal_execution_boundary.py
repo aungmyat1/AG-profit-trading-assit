@@ -17,6 +17,7 @@ from btc_sweep_research.proposal import (
     EXECUTION_DOMAIN_CRYPTO_RESEARCH,
     BTCSweepResearchProposal,
 )
+from execution.executor import UnsupportedExecutionDomain
 
 SRC_ROOT = Path(__file__).resolve().parent.parent / "src"
 
@@ -62,13 +63,12 @@ def test_management_gateway_has_no_function_accepting_btc_proposal():
             )
 
 
-def test_calling_executor_execute_with_btc_proposal_raises_type_mismatch():
-    """execute() expects a TradeCommand (execution.models.TradeCommand) with specific
-    attributes (command_id, symbol, direction, ...) that BTCSweepResearchProposal simply
-    does not have -- attempting to route a BTC research proposal through it fails fast
-    with an AttributeError rather than silently doing something order-shaped."""
-    from btc_sweep_research.pipeline import DEFAULT_RESEARCH_EQUITY_USDT  # noqa: F401 -- sanity import stays in-package
-
+def test_calling_executor_execute_with_btc_proposal_raises_explicit_domain_rejection():
+    """execute() now gates on isinstance(command, TradeCommand) BEFORE reading any field
+    (remediation Gap 3) -- a BTC research proposal is rejected with an intentional, typed
+    UnsupportedExecutionDomain, never an incidental AttributeError/KeyError from a
+    downstream field access. Checked with user_confirmed=True too, to prove the domain
+    gate fires even before (independent of) the authorization check."""
     fake_proposal = BTCSweepResearchProposal(
         strategy="ST_LIQUIDITY_SWEEP_RETEST_V1", strategy_version="2.0.0", authority="RESEARCH_ONLY",
         exchange="BINANCE_USDT_M_PERP", instrument="BTCUSDT", direction="SHORT",
@@ -77,8 +77,19 @@ def test_calling_executor_execute_with_btc_proposal_raises_type_mismatch():
         RR=1.6, estimated_fees=1.0, funding_assumption={}, data_timestamp=None, expiry=None,
         occurrence_id="BTC-OCC-test",
     )
-    with pytest.raises(AttributeError):
+    with pytest.raises(UnsupportedExecutionDomain):
         executor_module.execute(fake_proposal, user_confirmed=False)
+    with pytest.raises(UnsupportedExecutionDomain):
+        executor_module.execute(fake_proposal, user_confirmed=True)
+
+
+def test_malformed_object_does_not_bypass_domain_check():
+    """A plain object shaped nothing like either proposal type must also be rejected by
+    the domain gate, not slip through to an incidental error deeper in execute()."""
+    with pytest.raises(UnsupportedExecutionDomain):
+        executor_module.execute(object(), user_confirmed=True)
+    with pytest.raises(UnsupportedExecutionDomain):
+        executor_module.execute({"not": "a command"}, user_confirmed=True)
 
 
 def _package_files():

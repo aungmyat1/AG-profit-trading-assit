@@ -37,6 +37,7 @@ from execution.position_guard import OpenPositionGuard
 from execution.runtime_context import ExecutionRuntimeContext
 from mt5.symbol_resolver import SymbolMeta
 from runtime_state.store import JsonKeyValueStore
+from market_structure.models import MarketStructureConfig
 from strategy_engine import evaluate, load_strategy
 from strategy_engine.session import Candle
 from strategy_engine.sweep_retest.engine import evaluate_setup
@@ -54,6 +55,47 @@ from trade_management.models import (
 
 UTC = dt.timezone.utc
 STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
+
+# Minimal ENTRY_READY-reaching sweep_retest fixture (Gap 2 remediation: evaluate_setup's
+# guard checks moved to AFTER full qualification -- see engine.py's "Guard ordering"
+# docstring -- so test_one_context_gives_consistent_blocking_between_evaluation_and_
+# coordinator below needs candles that actually reach qualification to observe the guard,
+# rather than the empty-candles shortcut it previously relied on). Same shape as
+# tests/test_liquidity_sweep_retest_strategy.py's own validated Forex fixture (HIGH sweep
+# of AsianHigh=1.1050, MSS on the 3rd post-sweep candle, retest at 07:35) -- duplicated
+# here rather than cross-imported since no test file in this repo imports from another.
+_SWEEP_RETEST_TEST_CFG = MarketStructureConfig(swing_length=1, close_break=True, default_analysis_count=50)
+_ASIAN_HIGH, _ASIAN_LOW = 1.1050, 1.0700
+
+
+def _sweep_retest_asian_candles():
+    return [Candle(time=dt.datetime(2026, 1, 5, 3, 0, tzinfo=UTC), open=1.0900, high=_ASIAN_HIGH,
+                   low=_ASIAN_LOW, close=1.0900, volume=1.0)]
+
+
+def _sweep_retest_m5_sequence():
+    def _c(minute, o, h, l, cl, hour=7):
+        return Candle(time=dt.datetime(2026, 1, 5, hour, minute, tzinfo=UTC), open=o, high=h, low=l, close=cl, volume=1.0)
+    return [
+        _c(0, 1.1000, 1.1005, 1.0995, 1.1000),
+        _c(5, 1.0980, 1.0985, 1.0940, 1.0950),   # swing low candidate ~1.0940
+        _c(10, 1.0960, 1.1010, 1.0955, 1.1005),  # rally
+        _c(15, 1.1005, 1.1080, 1.0900, 1.0910),  # SWEEP: high>1.1050, close<1.1050
+        _c(20, 1.0910, 1.0950, 1.0930, 1.0945),  # intrabar only
+        _c(25, 1.0945, 1.0950, 1.0935, 1.0942),  # still above
+        _c(30, 1.0942, 1.0945, 1.0890, 1.0895),  # closes below 1.0940 -> MSS confirmed
+        _c(35, 1.0895, 1.0945, 1.0890, 1.0900),  # retest: high 1.0945 >= 1.0940
+        _c(40, 1.0900, 1.0905, 1.0850, 1.0860),
+    ]
+
+
+def _sweep_retest_h1_bearish():
+    out, t, price = [], dt.datetime(2026, 1, 1, tzinfo=UTC), 1.2000
+    for i in range(25):
+        for p in (price - i * 0.0100, price - i * 0.0100 - 0.0300):
+            out.append(Candle(time=t, open=p, high=p + 0.0005, low=p - 0.0005, close=p, volume=1.0))
+            t += dt.timedelta(hours=1)
+    return out
 
 
 def _eurusd_meta(**overrides) -> SymbolMeta:
@@ -407,17 +449,21 @@ def test_one_context_gives_consistent_blocking_between_evaluation_and_coordinato
         DailyLossGuard(JsonKeyValueStore(str(tmp_path / "daily.json")), GLOBAL_LEDGER_STRATEGY_ID),
         CloseLedger(JsonKeyValueStore(str(tmp_path / "closed.json"))),
     )
-    profile = MarketProfile(PROFILE_FOREX, ("EURUSD",), REFERENCE_ASIAN_SESSION, "Asian", BUFFER_PIP, ())
+    profile = MarketProfile(PROFILE_FOREX, ("EURUSD",), REFERENCE_ASIAN_SESSION, "Asian", BUFFER_PIP,
+                            ((time(7, 0), time(10, 0)),))
     eval_kwargs = dict(
         setup_id="eval-1", strategy_id="ST_LIQUIDITY_SWEEP_RETEST_V1", symbol="EURUSD",
-        trading_day=dt.date(2026, 1, 5), profile=profile, reference_candles=[], h1_candles=[],
-        m5_candles=[], execution_windows=[(time(7, 0), time(10, 0))], equity=10_000.0,
+        trading_day=dt.date(2026, 1, 5), profile=profile,
+        reference_candles=_sweep_retest_asian_candles(), h1_candles=_sweep_retest_h1_bearish(),
+        m5_candles=_sweep_retest_m5_sequence(), execution_windows=[(time(7, 0), time(10, 0))], equity=10_000.0,
         symbol_meta=_eurusd_meta(), risk_percent=1.0, stop_buffer_price=0.0001,
+        market_structure_config=_SWEEP_RETEST_TEST_CFG,
         daily_loss_guard=ctx.daily_loss_guard, open_position_guard=ctx.open_position_guard,
     )
 
     before = evaluate_setup(**eval_kwargs)
     assert before.state != STATE_BLOCKED_OPEN_POSITION  # nothing open yet, per the SAME guard
+    assert before.strategy_qualified is True  # this fixture reaches full qualification (ENTRY_READY)
 
     result = ctx.coordinator.submit(_forex_proposal(setup_id="fill-1"), user_confirmed=True)
     assert result.status == STATUS_EXECUTION_DELEGATED
