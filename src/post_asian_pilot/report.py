@@ -20,8 +20,41 @@ from .store import PilotStores, find_decision
 EXECUTION_STATUS_DISABLED = "DISABLED"
 UNAVAILABLE_NOT_WIRED = "UNAVAILABLE_NOT_WIRED"
 
+ENTRY_TICKET_RENDERED = "RENDERED"
+ENTRY_TICKET_NOT_APPLICABLE = "NOT_APPLICABLE"
+ENTRY_TICKET_RENDER_ERROR = "RENDER_ERROR"
 
-def cycle_to_dict(result: PilotCycleResult) -> Dict[str, Any]:
+
+def _safe_entry_ticket(
+    pr, strategy: StrategyConfig, release_id: str, release_fingerprint: str, strategy_fingerprint: str,
+    ledger: DailyTradeLedger, trading_date: date,
+):
+    """Reporting-only, best-effort Entry Ticket enrichment for a READY pair with an
+    already-persisted proposal. Never recomputes direction/entry/stop/targets/risk --
+    render_entry_ticket() (unchanged) reads them verbatim from the existing decision/
+    proposal. A render failure never changes the decision/proposal/ledger claim already
+    established by run_pilot_cycle() -- it only degrades this one presentation field,
+    surfaced as an explicit, non-sensitive error code rather than silently hidden."""
+    if pr.decision.status != STATUS_READY or pr.proposal is None:
+        return None, ENTRY_TICKET_NOT_APPLICABLE, None
+    try:
+        ticket = render_entry_ticket(pr.proposal, pr.decision, strategy, release_id,
+                                     release_fingerprint, strategy_fingerprint, ledger, trading_date)
+        return ticket, ENTRY_TICKET_RENDERED, None
+    except Exception as exc:  # noqa: BLE001 -- presentation-only; must never affect the decision/proposal
+        return None, ENTRY_TICKET_RENDER_ERROR, f"ENTRY_TICKET_RENDER_FAILED:{type(exc).__name__}"
+
+
+def cycle_to_dict(
+    result: PilotCycleResult, ledger: Optional[DailyTradeLedger] = None,
+    release_fingerprint: Optional[str] = None, strategy_fingerprint: Optional[str] = None,
+) -> Dict[str, Any]:
+    """`ledger`/`release_fingerprint`/`strategy_fingerprint` are optional -- when
+    omitted, output is byte-identical to before this Entry Ticket wiring (no
+    `entry_ticket*` fields added). When supplied (the CLI always supplies them), every
+    READY pair with a persisted proposal gets its complete Entry Ticket
+    (render_entry_ticket, unchanged) attached; non-READY pairs and any pair with a
+    render failure get `entry_ticket: null` with an explicit status/error instead."""
     pairs = []
     for pr in result.pairs:
         entry: Dict[str, Any] = {
@@ -47,6 +80,13 @@ def cycle_to_dict(result: PilotCycleResult) -> Dict[str, Any]:
                 "execution_authorized": pr.proposal.execution_authorized,
                 "actionable": pr.proposal.actionable,
             }
+        if ledger is not None and release_fingerprint is not None and strategy_fingerprint is not None:
+            ticket, status, error = _safe_entry_ticket(pr, result.strategy, result.release_id,
+                                                        release_fingerprint, strategy_fingerprint, ledger,
+                                                        result.trading_date)
+            entry["entry_ticket"] = ticket
+            entry["entry_ticket_status"] = status
+            entry["entry_ticket_error"] = error
         pairs.append(entry)
 
     return {
@@ -69,7 +109,15 @@ def cycle_to_dict(result: PilotCycleResult) -> Dict[str, Any]:
     }
 
 
-def human_readable_report(result: PilotCycleResult) -> str:
+def human_readable_report(
+    result: PilotCycleResult, ledger: Optional[DailyTradeLedger] = None,
+    release_fingerprint: Optional[str] = None, strategy_fingerprint: Optional[str] = None,
+) -> str:
+    """`ledger`/`release_fingerprint`/`strategy_fingerprint` optional -- see
+    cycle_to_dict's docstring; when supplied, a READY pair with a proposal gets an
+    "ENTRY TICKET" section rendered from the existing render_entry_ticket() output,
+    clearly distinct from DECISION/PROPOSAL/EXECUTION and never implying an order was
+    sent."""
     lines = [
         "AG PROFIT TRADING", result.release_id, "",
         f"Strategy: {result.strategy.strategy_id} v{result.strategy.version}",
@@ -77,6 +125,8 @@ def human_readable_report(result: PilotCycleResult) -> str:
         f"Active window: {result.pilot_config.execution_window_start_utc}-"
         f"{result.pilot_config.execution_window_end_utc} UTC", "",
     ]
+    have_ticket_context = (ledger is not None and release_fingerprint is not None
+                           and strategy_fingerprint is not None)
     for pr in result.pairs:
         lines.append(pr.symbol)
         lines.append(f"  strategy_state: {pr.decision.status}")
@@ -93,6 +143,22 @@ def human_readable_report(result: PilotCycleResult) -> str:
             lines.append(f"  risk: {tp.risk_percent}%  volume: {tp.volume} (raw {pr.proposal.raw_volume})")
             lines.append(f"  expires: {pr.proposal.expires_at.isoformat()}")
             lines.append(f"  execution: {pr.proposal.execution_status}")
+        if have_ticket_context:
+            ticket, status, error = _safe_entry_ticket(pr, result.strategy, result.release_id,
+                                                        release_fingerprint, strategy_fingerprint, ledger,
+                                                        result.trading_date)
+            if status == ENTRY_TICKET_RENDERED:
+                lines.append("  ENTRY TICKET (informational -- not a broker ticket, execution disabled):")
+                lines.append(f"    direction: {ticket['market']['direction']}")
+                lines.append(f"    entry: {ticket['entry']['entry']}  stop_loss: {ticket['entry']['stop_loss']}"
+                             f"  tp1: {ticket['entry']['tp1']}  tp2_runner: {ticket['entry']['tp2_runner']}")
+                lines.append(f"    risk_amount: {ticket['risk']['risk_amount']}"
+                             f"  normalized_volume: {ticket['risk']['normalized_volume']}")
+                lines.append(f"    portfolio slots_used: {ticket['portfolio']['daily_slots_used']}")
+                lines.append(f"    execution_status: {ticket['execution']['status']}"
+                             f"  execution_authorized: {ticket['execution']['execution_authorized']}")
+            elif status == ENTRY_TICKET_RENDER_ERROR:
+                lines.append(f"  ENTRY TICKET: RENDER_ERROR ({error}) -- decision/proposal unaffected")
         lines.append("")
     lines.append("DAILY OPPORTUNITY LEDGER")
     lines.append(f"maximum opportunities: {result.ledger_max_slots}")

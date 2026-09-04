@@ -30,7 +30,9 @@ import mt5.connection as mt5_connection  # noqa: E402
 from post_asian_pilot.pilot_config import DEFAULT_RELEASE_CONFIG_PATH, load_pilot_config, load_raw_yaml  # noqa: E402
 from post_asian_pilot.pipeline import run_pilot_cycle  # noqa: E402
 from post_asian_pilot.preflight import run_preflight  # noqa: E402
-from post_asian_pilot.report import cycle_to_dict, human_readable_report, render_pilot_end_report  # noqa: E402
+from post_asian_pilot.report import (  # noqa: E402
+    cycle_to_dict, human_readable_report, release_fingerprints, render_pilot_end_report,
+)
 from post_asian_pilot.store import DEFAULT_STATE_DIR, PilotStores  # noqa: E402
 from strategy_engine.loader import load_strategy  # noqa: E402
 
@@ -68,12 +70,31 @@ def _execute_cycle(pilot_path: str = None):
         mt5_connection.shutdown()
 
 
+def _entry_ticket_context(pilot_path: str, result):
+    """Reporting-only, read-only reconstruction of the context render_entry_ticket()
+    needs (ledger + fingerprints) -- reuses the same PilotStores.default(...) /
+    release_fingerprints(...) pattern render_pilot_end_report's own caller already uses
+    below, never a new persistence mechanism. Any failure here degrades to no Entry
+    Ticket enrichment (cycle_to_dict/human_readable_report already treat a None ledger
+    as "omit entry_ticket*") -- it never affects the decision/proposal already
+    established by run_pilot_cycle()."""
+    try:
+        pilot = load_pilot_config(pilot_path) if pilot_path else load_pilot_config()
+        stores = PilotStores.default(result.strategy.strategy_id, pilot.state_dir or DEFAULT_STATE_DIR)
+        fps = release_fingerprints(DEFAULT_RELEASE_CONFIG_PATH, pilot.strategy_source_path,
+                                   "config/canonical_sessions.yaml", pilot.raw["risk"])
+        return stores.ledger, fps["release_fingerprint"], fps["strategy_fingerprint"]
+    except Exception:  # noqa: BLE001 -- presentation-only context; never block the cycle report
+        return None, None, None
+
+
 def _run_once(as_json: bool, pilot_path: str = None):
     result = _execute_cycle(pilot_path)
+    ledger, release_fp, strategy_fp = _entry_ticket_context(pilot_path, result)
     if as_json:
-        print(json.dumps(cycle_to_dict(result), indent=2, default=str))
+        print(json.dumps(cycle_to_dict(result, ledger, release_fp, strategy_fp), indent=2, default=str))
     else:
-        print(human_readable_report(result))
+        print(human_readable_report(result, ledger, release_fp, strategy_fp))
     return result
 
 
@@ -107,10 +128,11 @@ def _run_watch(as_json: bool, interval: int, pilot_path: str = None) -> None:
         is_ready = any(pr.decision.status == "READY" for pr in result.pairs)
 
         if signature != last_signature or is_ready:
+            ledger, release_fp, strategy_fp = _entry_ticket_context(pilot_path, result)
             if as_json:
-                print(json.dumps(cycle_to_dict(result), indent=2, default=str))
+                print(json.dumps(cycle_to_dict(result, ledger, release_fp, strategy_fp), indent=2, default=str))
             else:
-                print(human_readable_report(result))
+                print(human_readable_report(result, ledger, release_fp, strategy_fp))
             last_signature = signature
 
         if result.evaluation_time >= window_end and not window_end_seen:

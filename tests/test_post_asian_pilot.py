@@ -1015,3 +1015,230 @@ def test_end_report_surfaces_ready_decision_despite_casing_mismatch(tmp_path, st
     assert report["pairs"]["EURUSD"]["final_strategy_state"] == STATUS_READY  # was NO_RECORD before the fix
     assert report["pairs"]["EURUSD"]["proposal_id"] == result.proposal.proposal_id
     assert report["pairs"]["GBPUSD"]["final_strategy_state"] == "NO_RECORD"  # genuinely no record -- unaffected
+
+
+# --------------------------------------------------------------------------- Entry Ticket
+# per-cycle operational wiring (AG_TRADE_ASSISTANT_V1_0_3_FX_COMPLETE_ENTRY_TICKET_WIRING)
+
+def _pair_result_for(strategy, symbol_meta, status, symbol="EURUSD", trading_date=dt.date(2026, 1, 5)):
+    """Builds a single PairResult the way run_pilot_cycle would, for each decision
+    family the wiring must handle. READY includes a real, persisted-style proposal
+    (same build_entry_proposal() call already used by test_entry_ticket_complete_fields)."""
+    from post_asian_pilot.pipeline import PairResult
+
+    window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
+    if status == STATUS_READY:
+        ready_at = dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC)
+        signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.10000,
+                         stop_loss=1.10150, risk_distance=0.00150, signal_timestamp=ready_at, symbol=symbol)
+        decision = map_trade_signal_to_decision(signal, "SNAP-1", ready_at, window_end)
+        result = build_entry_proposal(decision, strategy, equity=10_000.0, symbol_meta=symbol_meta,
+                                      risk_per_trade_pct=0.5, session_snapshot_id="SNAP-1", swept_level=1.10)
+        return PairResult(symbol, decision, "SELECTED", None, result.proposal)
+    if status == STATUS_DATA_ERROR:
+        decision = data_error_decision(strategy.strategy_id, strategy.version, symbol, trading_date,
+                                       "asian", dt.datetime(2026, 1, 5, 8, 0, tzinfo=UTC), ("DATA_MISSING",))
+        return PairResult(symbol, decision, "ELIGIBLE", None, None)
+    if status == STATUS_EXPIRED:
+        signal = _signal("NO_TRADE", "NONE", "NO_SETUP_BY_WINDOW_END", symbol=symbol)
+        decision = map_trade_signal_to_decision(signal, "SNAP-1", window_end, window_end)
+        return PairResult(symbol, decision, "ELIGIBLE", None, None)
+    if status == STATUS_NO_TRADE:
+        signal = _signal("NO_TRADE", "TREND", "TREND_NOT_SWEEP", symbol=symbol)
+        decision = map_trade_signal_to_decision(signal, "SNAP-1", dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC),
+                                                window_end)
+        return PairResult(symbol, decision, "ELIGIBLE", None, None)
+    assert status == STATUS_WATCH
+    decision = watch_decision(strategy.strategy_id, strategy.version, symbol, trading_date, "asian",
+                              dt.datetime(2026, 1, 5, 2, 0, tzinfo=UTC), "WAITING_REFERENCE_SESSION_COMPLETION")
+    return PairResult(symbol, decision, "ELIGIBLE", None, None)
+
+
+def _cycle_result_for(pilot, strategy, *pair_results, trading_date=dt.date(2026, 1, 5)):
+    from post_asian_pilot.pipeline import PilotCycleResult
+    return PilotCycleResult(
+        pilot_config=pilot, strategy=strategy, release_id="AG_TRADE_ASSISTANT_V1_0_3",
+        evaluation_time=dt.datetime(2026, 1, 5, 9, 0, tzinfo=UTC), trading_date=trading_date,
+        pairs=tuple(pair_results), ledger_slots_used=len(pair_results), ledger_max_slots=2,
+    )
+
+
+@pytest.fixture()
+def ticket_fingerprints():
+    from post_asian_pilot.report import release_fingerprints
+    return release_fingerprints("config/releases/AG_TRADE_ASSISTANT_V1_0_2.yaml", STRATEGY_PATH,
+                               "config/canonical_sessions.yaml", {"risk_per_trade_pct": 0.5})
+
+
+def test_ready_json_contains_matching_entry_ticket(tmp_path, strategy, symbol_meta, ticket_fingerprints):
+    from post_asian_pilot.governor import DailyTradeLedger
+    from post_asian_pilot.report import ENTRY_TICKET_RENDERED, cycle_to_dict
+
+    pilot = load_pilot_config()
+    pr = _pair_result_for(strategy, symbol_meta, STATUS_READY, "EURUSD")
+    result = _cycle_result_for(pilot, strategy, pr)
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+
+    payload = cycle_to_dict(result, ledger, ticket_fingerprints["release_fingerprint"],
+                            ticket_fingerprints["strategy_fingerprint"])
+    entry = payload["pairs"][0]
+    assert entry["entry_ticket_status"] == ENTRY_TICKET_RENDERED
+    assert entry["entry_ticket_error"] is None
+    ticket = entry["entry_ticket"]
+    assert ticket is not None
+    tp = pr.proposal.trade_proposal
+    assert ticket["entry"]["entry"] == tp.entry == entry["proposal"]["entry"]
+    assert ticket["entry"]["stop_loss"] == tp.stop_loss == entry["proposal"]["stop_loss"]
+    assert ticket["identity"]["proposal_id"] == pr.proposal.proposal_id == entry["proposal"]["proposal_id"]
+    assert ticket["decision"] == "READY"
+    assert ticket["execution"]["execution_authorized"] is False
+
+
+def test_ready_json_without_ticket_context_omits_entry_ticket_fields(strategy, symbol_meta):
+    """Backward compatibility: no ledger/fingerprints supplied -> byte-identical to the
+    pre-wiring schema, no entry_ticket* keys at all."""
+    from post_asian_pilot.report import cycle_to_dict
+
+    pilot = load_pilot_config()
+    pr = _pair_result_for(strategy, symbol_meta, STATUS_READY, "EURUSD")
+    result = _cycle_result_for(pilot, strategy, pr)
+
+    payload = cycle_to_dict(result)
+    entry = payload["pairs"][0]
+    assert "entry_ticket" not in entry
+    assert "entry_ticket_status" not in entry
+    assert "entry_ticket_error" not in entry
+
+
+def test_entry_ticket_render_error_never_changes_decision_or_proposal(
+    tmp_path, strategy, symbol_meta, ticket_fingerprints, monkeypatch,
+):
+    from post_asian_pilot.governor import DailyTradeLedger
+    from post_asian_pilot.report import ENTRY_TICKET_RENDER_ERROR
+    import post_asian_pilot.report as report_mod
+
+    def _boom(*a, **kw):
+        raise RuntimeError("simulated renderer failure")
+    monkeypatch.setattr(report_mod, "render_entry_ticket", _boom)
+
+    pilot = load_pilot_config()
+    pr = _pair_result_for(strategy, symbol_meta, STATUS_READY, "EURUSD")
+    result = _cycle_result_for(pilot, strategy, pr)
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+
+    payload = report_mod.cycle_to_dict(result, ledger, ticket_fingerprints["release_fingerprint"],
+                                       ticket_fingerprints["strategy_fingerprint"])
+    entry = payload["pairs"][0]
+    assert entry["strategy_state"] == STATUS_READY  # decision itself unaffected
+    assert entry["proposal"]["proposal_id"] == pr.proposal.proposal_id  # proposal unaffected
+    assert entry["entry_ticket"] is None
+    assert entry["entry_ticket_status"] == ENTRY_TICKET_RENDER_ERROR
+    assert entry["entry_ticket_error"] == "ENTRY_TICKET_RENDER_FAILED:RuntimeError"
+    assert "simulated" not in entry["entry_ticket_error"]  # safe reason code, not the raw exception text
+
+
+@pytest.mark.parametrize("status", [STATUS_WATCH, STATUS_NO_TRADE, STATUS_DATA_ERROR, STATUS_EXPIRED])
+def test_non_ready_states_never_get_a_fabricated_entry_ticket(
+    tmp_path, strategy, symbol_meta, ticket_fingerprints, status,
+):
+    from post_asian_pilot.governor import DailyTradeLedger
+    from post_asian_pilot.report import ENTRY_TICKET_NOT_APPLICABLE, cycle_to_dict
+
+    pilot = load_pilot_config()
+    pr = _pair_result_for(strategy, symbol_meta, status, "EURUSD")
+    result = _cycle_result_for(pilot, strategy, pr)
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+
+    payload = cycle_to_dict(result, ledger, ticket_fingerprints["release_fingerprint"],
+                            ticket_fingerprints["strategy_fingerprint"])
+    entry = payload["pairs"][0]
+    assert entry["strategy_state"] == status
+    assert entry["entry_ticket"] is None
+    assert entry["entry_ticket_status"] == ENTRY_TICKET_NOT_APPLICABLE
+    assert entry["entry_ticket_error"] is None
+
+
+def test_entry_ticket_wiring_works_for_london_newyork_pilot_and_gbpusd(
+    tmp_path, strategy, symbol_meta, ticket_fingerprints,
+):
+    from post_asian_pilot.governor import DailyTradeLedger
+    from post_asian_pilot.report import ENTRY_TICKET_RENDERED, cycle_to_dict
+
+    pilot = load_pilot_config("config/pilot/AG_POST_LONDON_NEWYORK_PILOT_V1_0_1.yaml")
+    pr = _pair_result_for(strategy, symbol_meta, STATUS_READY, "GBPUSD")
+    result = _cycle_result_for(pilot, strategy, pr)
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+
+    payload = cycle_to_dict(result, ledger, ticket_fingerprints["release_fingerprint"],
+                            ticket_fingerprints["strategy_fingerprint"])
+    entry = payload["pairs"][0]
+    assert entry["symbol"] == "GBPUSD"
+    assert entry["entry_ticket_status"] == ENTRY_TICKET_RENDERED
+    assert entry["entry_ticket"]["market"]["direction"] == "SHORT"
+
+
+def test_human_output_ready_shows_entry_ticket_section_without_implying_execution(
+    tmp_path, strategy, symbol_meta, ticket_fingerprints,
+):
+    from post_asian_pilot.governor import DailyTradeLedger
+    from post_asian_pilot.report import human_readable_report
+
+    pilot = load_pilot_config()
+    pr = _pair_result_for(strategy, symbol_meta, STATUS_READY, "EURUSD")
+    result = _cycle_result_for(pilot, strategy, pr)
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+
+    text = human_readable_report(result, ledger, ticket_fingerprints["release_fingerprint"],
+                                 ticket_fingerprints["strategy_fingerprint"])
+    assert "ENTRY TICKET" in text
+    assert "execution disabled" in text
+    assert "order sent" not in text.lower()
+    assert "order_send" not in text
+    assert "MT5 ticket" not in text
+
+
+@pytest.mark.parametrize("status", [STATUS_WATCH, STATUS_NO_TRADE, STATUS_DATA_ERROR])
+def test_human_output_non_ready_has_no_entry_ticket_section(
+    tmp_path, strategy, symbol_meta, ticket_fingerprints, status,
+):
+    from post_asian_pilot.governor import DailyTradeLedger
+    from post_asian_pilot.report import human_readable_report
+
+    pilot = load_pilot_config()
+    pr = _pair_result_for(strategy, symbol_meta, status, "EURUSD")
+    result = _cycle_result_for(pilot, strategy, pr)
+    ledger = DailyTradeLedger.default(str(tmp_path / "ledger.json"))
+
+    text = human_readable_report(result, ledger, ticket_fingerprints["release_fingerprint"],
+                                 ticket_fingerprints["strategy_fingerprint"])
+    assert "ENTRY TICKET" not in text
+
+
+def test_canonical_daily_report_schema_unchanged_by_entry_ticket_wiring(tmp_path, strategy):
+    """AG_FX_DAILY_REPORT_V1 (render_pilot_end_report / daily_fx_report.py) must never
+    gain an entry_ticket field -- that schema is explicitly out of scope for this wiring."""
+    from post_asian_pilot.report import render_pilot_end_report
+    from post_asian_pilot.store import PilotStores
+
+    stores = PilotStores.default("ST_ASIAN_SWEEP_5R_V1", state_dir=str(tmp_path))
+    pilot = load_pilot_config()
+    trading_date = dt.date(2026, 1, 5)
+    for symbol in pilot.universe:
+        decision = watch_decision(strategy.strategy_id, strategy.version, symbol, trading_date,
+                                  pilot.reference_session_name, dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC),
+                                  "NO_SETUP_BY_WINDOW_END")
+        save_decision(stores.decision_store, dataclasses.replace(decision, status="NO_TRADE"))
+
+    report = render_pilot_end_report(pilot, strategy, "AG_TRADE_ASSISTANT_V1_0_3", trading_date, stores)
+    import json as _json
+    serialized = _json.dumps(report, default=str)
+    assert "entry_ticket" not in serialized
+    for symbol in pilot.universe:
+        assert "entry_ticket" not in report["pairs"][symbol]
+
+
+def test_entry_ticket_wiring_source_never_references_execution_send_path():
+    import post_asian_pilot.report as report_mod
+
+    assert not hasattr(report_mod, "order_send")
+    assert not any(name.startswith("execution") for name in vars(report_mod))

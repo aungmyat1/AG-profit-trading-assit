@@ -58,6 +58,12 @@ See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
   independent, proposal-only pilot (`config/pilot/AG_POST_LONDON_NEWYORK_PILOT_V1_0_1.yaml`,
   `scripts/run_post_asian_pilot.py --pilot-config ...`), isolated from the existing
   `ASIAN_LONDON` pilot's own ledger/snapshot state.
+- A READY FX proposal (`ASIAN_LONDON` or `LONDON_NEWYORK`, EURUSD/GBPUSD) now shows a
+  complete Entry Ticket in `scripts/run_post_asian_pilot.py --once`/`--status`/`--watch`
+  operational output (JSON `entry_ticket` field, human-readable `ENTRY TICKET` section)
+  -- the existing renderer (`report.render_entry_ticket`, unchanged), not a new
+  capability; informational only, never implying a broker order was sent. Non-READY
+  states and the canonical daily archive (`AG_FX_DAILY_REPORT_V1`) are unaffected.
 - Crypto sweep/retest strategy rules now have a real Binance USDT-M perpetual BTCUSDT
   market-data adapter (`execution_runtime.binance_usdtm_feed`) and a research/proposal-only
   runtime (`src/btc_sweep_research/`, `scripts/run_btc_sweep_research.py`) that can never
