@@ -1,4 +1,4 @@
-"""AG_TRADE_ASSISTANT_V1_0_2 CLI entrypoint.
+"""AG_TRADE_ASSISTANT_V1_0_3 CLI entrypoint.
 
 Read-only, PROPOSAL_ONLY: never calls execution.executor / execution.mt5_gateway /
 order_check / order_send. See src/post_asian_pilot/pipeline.py for the actual cycle
@@ -49,7 +49,7 @@ def _run_preflight(as_json: bool, pilot_path: str = None) -> None:
     if as_json:
         print(json.dumps(payload, indent=2, default=str))
     else:
-        print("AG_TRADE_ASSISTANT_V1_0_2_PREFLIGHT")
+        print("AG_TRADE_ASSISTANT_V1_0_3_PREFLIGHT")
         for name, value in payload.items():
             if name == "checks":
                 continue
@@ -118,13 +118,13 @@ def _run_watch(as_json: bool, interval: int, pilot_path: str = None) -> None:
             stores = PilotStores.default(strategy.strategy_id, pilot.state_dir or DEFAULT_STATE_DIR)
             end_report = render_pilot_end_report(pilot, strategy, release_id, result.trading_date, stores)
             print(json.dumps(end_report, indent=2, default=str) if as_json
-                 else f"AG_TRADE_ASSISTANT_V1_0_2_PILOT_END: {end_report['result']}")
+                 else f"AG_TRADE_ASSISTANT_V1_0_3_PILOT_END: {end_report['result']}")
 
         time.sleep(interval)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="AG_TRADE_ASSISTANT_V1_0_2 (read-only, PROPOSAL_ONLY)")
+    parser = argparse.ArgumentParser(description="AG_TRADE_ASSISTANT_V1_0_3 (read-only, PROPOSAL_ONLY)")
     parser.add_argument("--preflight", action="store_true", help="operational readiness only, no strategy cycle")
     parser.add_argument("--once", action="store_true", help="run a single evaluation cycle")
     parser.add_argument("--watch", action="store_true", help="continuous, event-driven observation")

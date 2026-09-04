@@ -11,7 +11,7 @@ from typing import Optional, Tuple
 import yaml
 
 DEFAULT_PILOT_CONFIG_PATH = "config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1_0_1.yaml"
-DEFAULT_RELEASE_CONFIG_PATH = "config/releases/AG_TRADE_ASSISTANT_V1_0_2.yaml"
+DEFAULT_RELEASE_CONFIG_PATH = "config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml"
 V1_0_PILOT_CONFIG_PATH = "config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1.yaml"
 V1_0_RELEASE_CONFIG_PATH = "config/releases/AG_TRADE_ASSISTANT_V1_0.yaml"
 V1_0_1_RELEASE_CONFIG_PATH = "config/releases/AG_TRADE_ASSISTANT_V1_0_1.yaml"

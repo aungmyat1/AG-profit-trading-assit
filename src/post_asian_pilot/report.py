@@ -1,4 +1,4 @@
-"""JSON + human-readable reports for AG_TRADE_ASSISTANT_V1_0_2: per-cycle report,
+"""JSON + human-readable reports for AG_TRADE_ASSISTANT_V1_0_3: per-cycle report,
 complete Entry Ticket, and a journal-grounded end-of-window report. Fingerprints reuse
 the same canonical SHA-256 technique as fingerprint.py / historical_replay.stage1.
 """
@@ -199,7 +199,7 @@ def render_pilot_end_report(
         result = "PASS"
 
     return {
-        "report": "AG_TRADE_ASSISTANT_V1_0_2_PILOT_END",
+        "report": "AG_TRADE_ASSISTANT_V1_0_3_PILOT_END",
         "trading_date": trading_date.isoformat(),
         "pairs": pairs,
         "portfolio": {"slots_used": len(slots), "max_slots": stores.ledger.max_slots,

@@ -50,7 +50,7 @@ class PreflightResult:
 
 
 def run_preflight(
-    release_path: str = "config/releases/AG_TRADE_ASSISTANT_V1_0_2.yaml",
+    release_path: str = "config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml",
     pilot_path: Optional[str] = None,
     baseline_path: str = DEFAULT_FINGERPRINT_BASELINE_PATH,
 ) -> PreflightResult:
@@ -77,7 +77,7 @@ def run_preflight(
         _fail("release_manifest_loaded", f"RELEASE_LOAD_FAILED:{exc}")
         return PreflightResult(STATUS_BLOCKED, first_block, tuple(checks))
 
-    if release_raw.get("release_id") != "AG_TRADE_ASSISTANT_V1_0_2":
+    if release_raw.get("release_id") != "AG_TRADE_ASSISTANT_V1_0_3":
         _fail("release_id", "WRONG_RELEASE_LOADED")
     else:
         _pass("release_id")

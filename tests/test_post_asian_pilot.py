@@ -856,8 +856,8 @@ def test_end_report_no_trade_day_uses_journal_evidence(tmp_path, strategy):
                                   "NO_SETUP_BY_WINDOW_END")
         save_decision(stores.decision_store, dataclasses.replace(decision, status="NO_TRADE"))
 
-    report = render_pilot_end_report(pilot, strategy, "AG_TRADE_ASSISTANT_V1_0_2", trading_date, stores)
-    assert report["report"] == "AG_TRADE_ASSISTANT_V1_0_2_PILOT_END"
+    report = render_pilot_end_report(pilot, strategy, "AG_TRADE_ASSISTANT_V1_0_3", trading_date, stores)
+    assert report["report"] == "AG_TRADE_ASSISTANT_V1_0_3_PILOT_END"
     assert report["result"] == "PASS"
     assert report["portfolio"]["slots_used"] == 0
     for symbol in pilot.universe:
@@ -879,7 +879,7 @@ def test_end_report_data_error_day_is_pass_with_observations(tmp_path, strategy)
                                        ("DATA_MISSING",))
         save_decision(stores.decision_store, decision)
 
-    report = render_pilot_end_report(pilot, strategy, "AG_TRADE_ASSISTANT_V1_0_2", trading_date, stores)
+    report = render_pilot_end_report(pilot, strategy, "AG_TRADE_ASSISTANT_V1_0_3", trading_date, stores)
     assert report["result"] == "PASS_WITH_OBSERVATIONS"
 
     import post_asian_pilot.preflight as preflight_mod
