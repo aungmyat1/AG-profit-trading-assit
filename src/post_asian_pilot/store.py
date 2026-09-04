@@ -159,3 +159,39 @@ def decision_from_record(record: Dict[str, Any]) -> PostAsianDecision:
         trigger_level=record.get("trigger_level"), trigger_timeframe=record.get("trigger_timeframe"),
         valid_until=datetime.fromisoformat(record["valid_until"]) if record.get("valid_until") else None,
     )
+
+
+def find_decision(
+    store: JsonKeyValueStore, strategy_id: str, symbol: str, trading_date: date,
+    reference_session_name: Optional[str] = None,
+) -> Optional[PostAsianDecision]:
+    """Read-only lookup tolerant of the reference_session display-name mismatch between
+    the pilot config (config/canonical_sessions.yaml-sourced, e.g. "asian"/"london_am")
+    and the strategy YAML (session_pairs[].reference_session.name, e.g. "Asian"/
+    "London", copied verbatim onto TradeSignal.reference_session by strategy_engine and
+    therefore onto any decision derived from a real evaluation -- see
+    map_trade_signal_to_decision). These are not always a simple casing difference --
+    "London" vs "london_am" differ by more than case -- so a case-insensitive string
+    match alone is not sufficient; this does not persist, rewrite, or invent a new
+    record, it only changes how an existing one is found.
+
+    Matches on the (strategy_id, symbol, trading_date) identity alone, ignoring
+    reference_session entirely: each pilot cycle (ASIAN_LONDON, LONDON_NEWYORK) already
+    persists to its own isolated state_dir/decision store (see PilotConfig.state_dir /
+    PilotStores.default), so within one store this triple is already the real identity
+    -- reference_session was never needed to disambiguate across cycles, only within a
+    single cycle's own file, where at most one genuinely distinct real-world decision
+    exists per (symbol, date). If more than one record happens to match (e.g. a stale
+    pre-close WATCH saved under the pilot-config-cased key alongside a later real
+    evaluation saved under the strategy-YAML-cased key), the one with the latest
+    evaluation_time wins -- the terminal, most-recently-recorded decision, matching
+    render_pilot_end_report's own "report actual recorded state" contract. Any single
+    caller-supplied reference_session_name is accepted for backward-compatible call
+    signatures but no longer affects the result -- kept optional rather than required."""
+    del reference_session_name  # no longer used for matching -- see docstring
+    prefix = f"{strategy_id}|{symbol}|{trading_date.isoformat()}|"
+    candidates = [decision_from_record(record) for key, record in store.all().items()
+                 if key.startswith(prefix)]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda d: d.evaluation_time)

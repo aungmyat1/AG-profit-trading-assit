@@ -889,3 +889,129 @@ def test_end_report_data_error_day_is_pass_with_observations(tmp_path, strategy)
                                          baseline_path=str(tmp_path / "baseline.json"))
     assert result.pilot_status == "PILOT_STARTUP_BLOCKED"
     assert result.first_block_reason == "WRONG_RELEASE_LOADED"
+
+
+# --------------------------------------------------------------------------- find_decision /
+# reference_session casing tolerance (AG_TRADE_ASSISTANT_V1_0_3_FX_REPORT_DECISION_KEY_REMEDIATION)
+
+def test_find_decision_exact_match_fast_path(tmp_path, strategy):
+    """A record saved under the pilot config's own reference_session_name (e.g. every
+    pre-close WATCH/DATA_ERROR decision, unaffected by this remediation) must still be
+    found exactly as before."""
+    from post_asian_pilot.store import find_decision
+
+    store = JsonKeyValueStore(str(tmp_path / "decision.json"))
+    trading_date = dt.date(2026, 1, 5)
+    decision = watch_decision(strategy.strategy_id, strategy.version, "EURUSD", trading_date,
+                              "asian", dt.datetime(2026, 1, 5, 3, 0, tzinfo=UTC),
+                              "WAITING_REFERENCE_SESSION_COMPLETION")
+    save_decision(store, decision)
+
+    found = find_decision(store, strategy.strategy_id, "EURUSD", trading_date, "asian")
+    assert found is not None
+    assert found.status == STATUS_WATCH
+
+
+def test_find_decision_tolerates_strategy_yaml_casing_mismatch(tmp_path, strategy):
+    """Reproduces the real AG_V1_0_3_FX_SHADOW_SERIES_002 Day 001 defect: a real
+    strategy-engine-produced decision is persisted with reference_session="Asian"
+    (strategies/ST_ASIAN_SWEEP_5R_V1.yaml's session_pairs display name), but the pilot
+    config's own reference_session_name is "asian" (config/canonical_sessions.yaml).
+    find_decision must locate it read-only, without any change to how it was written."""
+    from post_asian_pilot.store import find_decision
+
+    store = JsonKeyValueStore(str(tmp_path / "decision.json"))
+    trading_date = dt.date(2026, 1, 5)
+    ready_at = dt.datetime(2026, 1, 5, 7, 45, tzinfo=UTC)
+    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.10000,
+                     stop_loss=1.10150, risk_distance=0.00150, signal_timestamp=ready_at)
+    window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
+    decision = map_trade_signal_to_decision(signal, "SNAP-1", ready_at, window_end)
+    assert decision.reference_session == "Asian"  # confirms the real-world casing this test reproduces
+    save_decision(store, decision)
+
+    found = find_decision(store, strategy.strategy_id, "EURUSD", trading_date, "asian")
+    assert found is not None
+    assert found.status == STATUS_READY
+    assert found.ready_at == ready_at
+
+
+def test_find_decision_no_record_returns_none(tmp_path, strategy):
+    from post_asian_pilot.store import find_decision
+
+    store = JsonKeyValueStore(str(tmp_path / "decision.json"))
+    assert find_decision(store, strategy.strategy_id, "EURUSD", dt.date(2026, 1, 5), "asian") is None
+
+
+def test_find_decision_tolerates_non_casing_name_mismatch(tmp_path, strategy):
+    """LONDON_NEWYORK's real defect variant: the pilot config's reference_session_name
+    is "london_am" (config/canonical_sessions.yaml) but strategies/ST_ASIAN_SWEEP_5R_V1.yaml's
+    session_pairs entry for that pair is just "London" -- not a casing difference at
+    all ("london" != "london_am"), so a case-insensitive-equality fallback would still
+    miss this. find_decision must fall back to (strategy_id, symbol, trading_date)
+    alone and find it anyway."""
+    from post_asian_pilot.store import find_decision
+
+    store = JsonKeyValueStore(str(tmp_path / "decision.json"))
+    trading_date = dt.date(2026, 1, 5)
+    decision = data_error_decision(strategy.strategy_id, strategy.version, "EURUSD", trading_date,
+                                   "London", dt.datetime(2026, 1, 5, 12, 0, tzinfo=UTC), ("DATA_MISSING",))
+    save_decision(store, decision)
+
+    found = find_decision(store, strategy.strategy_id, "EURUSD", trading_date, "london_am")
+    assert found is not None
+    assert found.status == STATUS_DATA_ERROR
+
+
+def test_find_decision_prefers_latest_when_ambiguous(tmp_path, strategy):
+    """A stale pre-close WATCH (lowercase key) and a later real evaluation (strategy-YAML-
+    cased key) can legitimately coexist as two distinct dict entries under the same
+    (strategy_id, symbol, trading_date) prefix. The most recently evaluated one --
+    the terminal, authoritative state -- must win."""
+    from post_asian_pilot.store import find_decision
+
+    store = JsonKeyValueStore(str(tmp_path / "decision.json"))
+    trading_date = dt.date(2026, 1, 5)
+    stale = watch_decision(strategy.strategy_id, strategy.version, "EURUSD", trading_date,
+                           "asian", dt.datetime(2026, 1, 5, 2, 0, tzinfo=UTC),
+                           "WAITING_REFERENCE_SESSION_COMPLETION")
+    save_decision(store, stale)
+
+    ready_at = dt.datetime(2026, 1, 5, 7, 45, tzinfo=UTC)
+    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.10000,
+                     stop_loss=1.10150, risk_distance=0.00150, signal_timestamp=ready_at)
+    real = map_trade_signal_to_decision(signal, "SNAP-1", ready_at, dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC))
+    save_decision(store, real)
+
+    found = find_decision(store, strategy.strategy_id, "EURUSD", trading_date, "asian")
+    assert found is not None
+    assert found.status == STATUS_READY  # the real, terminal decision -- not the stale WATCH
+
+
+def test_end_report_surfaces_ready_decision_despite_casing_mismatch(tmp_path, strategy, symbol_meta):
+    """End-to-end reproduction of the Day 001 defect through render_pilot_end_report
+    itself: previously this returned final_strategy_state="NO_RECORD" for a symbol with
+    a real, legitimately-claimed READY proposal."""
+    from post_asian_pilot.report import render_pilot_end_report
+    from post_asian_pilot.store import PilotStores
+
+    stores = PilotStores.default("ST_ASIAN_SWEEP_5R_V1", state_dir=str(tmp_path))
+    pilot = load_pilot_config()
+    trading_date = dt.date(2026, 1, 5)
+    ready_at = dt.datetime(2026, 1, 5, 7, 45, tzinfo=UTC)
+    window_end = dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
+
+    signal = _signal("SIGNAL", "SWEEP", "UPPER_SWEEP_STRICT_PENETRATION", "SHORT", entry=1.10000,
+                     stop_loss=1.10150, risk_distance=0.00150, signal_timestamp=ready_at, symbol="EURUSD")
+    decision = map_trade_signal_to_decision(signal, "SNAP-1", ready_at, window_end)
+    save_decision(stores.decision_store, decision)
+
+    result = build_entry_proposal(decision, strategy, equity=10_000.0, symbol_meta=symbol_meta,
+                                  risk_per_trade_pct=0.5, session_snapshot_id="SNAP-1", swept_level=1.10)
+    stores.ledger.try_claim(strategy.strategy_id, strategy.version, "AG_TRADE_ASSISTANT_V1_0_3", trading_date,
+                            "EURUSD", result.proposal.setup_id, result.proposal.proposal_id, ready_at, ready_at)
+
+    report = render_pilot_end_report(pilot, strategy, "AG_TRADE_ASSISTANT_V1_0_3", trading_date, stores)
+    assert report["pairs"]["EURUSD"]["final_strategy_state"] == STATUS_READY  # was NO_RECORD before the fix
+    assert report["pairs"]["EURUSD"]["proposal_id"] == result.proposal.proposal_id
+    assert report["pairs"]["GBPUSD"]["final_strategy_state"] == "NO_RECORD"  # genuinely no record -- unaffected

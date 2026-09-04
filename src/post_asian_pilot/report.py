@@ -15,7 +15,7 @@ from .governor import DailyTradeLedger
 from .pilot_config import PilotConfig, load_raw_yaml
 from .pipeline import PilotCycleResult
 from .proposal import PostAsianEntryProposal
-from .store import PilotStores, decision_from_record
+from .store import PilotStores, find_decision
 
 EXECUTION_STATUS_DISABLED = "DISABLED"
 UNAVAILABLE_NOT_WIRED = "UNAVAILABLE_NOT_WIRED"
@@ -173,9 +173,8 @@ def render_pilot_end_report(
     pairs: Dict[str, Any] = {}
     data_error_seen = False
     for symbol in pilot.universe:
-        key = f"{strategy.strategy_id}|{symbol}|{trading_date.isoformat()}|{pilot.reference_session_name}"
-        record = stores.decision_store.get(key)
-        decision = decision_from_record(record) if record is not None else None
+        decision = find_decision(stores.decision_store, strategy.strategy_id, symbol, trading_date,
+                                 pilot.reference_session_name)
         slot = stores.ledger.symbol_slot(strategy.strategy_id, trading_date, symbol)
         if decision is not None and decision.status == STATUS_DATA_ERROR:
             data_error_seen = True
