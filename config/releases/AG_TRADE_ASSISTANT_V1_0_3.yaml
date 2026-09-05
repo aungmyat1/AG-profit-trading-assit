@@ -214,9 +214,11 @@ btc_research_runtime:
       already recorded for Binance production (HTTP 451). No circumvention attempted or
       authorized. Production Bybit market-data acquisition requires a permitted
       environment; this is an environment constraint, not an unresolved source-selection
-      decision -- source selection is FROZEN_BY_OWNER above. Not re-tested by this
-      implementation milestone (see this milestone's own status document for whether a
-      permitted-environment smoke test was possible).
+      decision -- source selection is FROZEN_BY_OWNER above. Re-tested 2026-09-05
+      (AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3, using the
+      now-implemented adapter's own base URL): identical result, HTTP 403, same
+      CloudFront country-block message. Still an environment constraint, not
+      circumvented.
     execution_domain_independence_note: >-
       execution_domain=CRYPTO_RESEARCH / BINANCE_USDTM (crypto execution scaffolding
       elsewhere in this repo, src/execution/crypto_*.py) names Binance as an execution
