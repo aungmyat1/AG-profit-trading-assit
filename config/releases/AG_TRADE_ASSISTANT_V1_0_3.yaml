@@ -203,6 +203,19 @@ btc_research_runtime:
     adapter_status: IMPLEMENTED   # src/execution_runtime/bybit_linear_perp_feed.py,
       # AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3 (2026-09-05);
       # public/read-only only -- no auth, no order/wallet endpoint anywhere in it
+    historical_implementation_baseline: 0c5cda1   # the commit that first implemented the
+      # adapter/pipeline-wiring/daily_report modules on the isolated
+      # btc/bybit-qualification-v3 branch (governance 705a790 -> implementation 0c5cda1 ->
+      # provenance freeze fb23f39) -- preserved, not overwritten
+    btc_operational_qualification_baseline: 8289c2d95f9f97403766354ee922672f59f34677
+      # AG_V1_0_3_EVIDENCE_CAMPAIGN_ACTIVATION (2026-09-05) -- the exact commit whose code
+      # must produce every counted BTC observation for the eventual 30-day campaign
+      # (scripts/run_btc_daily_report.py + scheduler installer, merged to main via 3b4eb60
+      # then extended by this commit). Any qualification-critical change to strategy
+      # semantics, provider normalization, window/closed-candle rules, data-quality rules,
+      # decision taxonomy, report generation, or archive behavior after this point requires
+      # stopping the count, reconciling this field to the new commit, and deciding whether
+      # the campaign continues or restarts -- see release_qualification_gates.btc below.
     observation_contract: docs/contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md
       # UTC calendar day, half-open [00:00:00Z, next-day 00:00:00Z), report target
       # 00:05-00:15 UTC next day -- frozen, no strategy-timing conflict found
