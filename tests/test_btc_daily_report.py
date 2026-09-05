@@ -15,6 +15,7 @@ import pytest
 from btc_sweep_research import daily_report
 from btc_sweep_research.pipeline import ResearchCycleReport, ResearchCycleResult
 from btc_sweep_research.proposal import BTCSweepResearchProposal
+from strategy_engine.session import Candle
 from strategy_engine.sweep_retest.models import (
     STATE_ENTRY_READY,
     STATE_NO_TRADE_DIRECTION,
@@ -200,3 +201,102 @@ def test_archive_correction_on_real_change_preserves_original(tmp_path, monkeypa
 def test_daily_report_module_never_references_execution_send_path():
     assert not hasattr(daily_report, "order_send")
     assert not any(name.startswith("execution") for name in vars(daily_report))
+
+
+def test_next_day_report_clock_still_evaluates_observation_date(monkeypatch):
+    captured = {}
+
+    def _cycle(*args, **kwargs):
+        captured["now"] = kwargs["now"]
+        return ResearchCycleReport(
+            trading_day=OBS_DATE,
+            container_state=_setup_state(STATE_WAITING_REFERENCE),
+            occurrences=(),
+        )
+
+    monkeypatch.setattr(daily_report.pipeline, "run_research_cycle", _cycle)
+    next_day_report_time = dt.datetime(2026, 1, 6, 0, 7, tzinfo=UTC)
+    result = daily_report.build_btc_daily_report(
+        _FakeFeed(), OBS_DATE, **_base_kwargs(), now=next_day_report_time,
+        generated_at=next_day_report_time,
+    )
+
+    assert captured["now"].date() == OBS_DATE
+    assert captured["now"].time() == dt.time(23, 59, 59, 999999)
+    assert result["generated_at_utc"] == next_day_report_time.isoformat()
+
+
+@pytest.mark.parametrize(
+    ("now", "expected"),
+    [
+        (dt.datetime(2026, 1, 6, 0, 4, 59, tzinfo=UTC), "BEFORE_WINDOW"),
+        (dt.datetime(2026, 1, 6, 0, 5, tzinfo=UTC), "IN_WINDOW"),
+        (dt.datetime(2026, 1, 6, 0, 14, 59, tzinfo=UTC), "IN_WINDOW"),
+        (dt.datetime(2026, 1, 6, 0, 15, tzinfo=UTC), "AFTER_WINDOW"),
+    ],
+)
+def test_report_window_status(now, expected):
+    assert daily_report.report_window_status(OBS_DATE, now) == expected
+
+
+def test_human_report_renders_informational_ticket_only_for_proposal(monkeypatch):
+    qualified = ResearchCycleResult(
+        setup_state=_setup_state(STATE_ENTRY_READY, strategy_qualified=True),
+        proposal=_proposal(), ledger_new_row=True, trading_day=OBS_DATE,
+    )
+    _patch_cycle(monkeypatch, ResearchCycleReport(
+        trading_day=OBS_DATE, container_state=None, occurrences=(qualified,),
+    ))
+    report = daily_report.build_btc_daily_report(_FakeFeed(), OBS_DATE, **_base_kwargs())
+    text = daily_report.human_readable_btc_daily_report(report)
+    assert "ENTRY PROPOSAL TICKET" in text
+    assert "NOT A BROKER TICKET" in text
+    assert "Execution authority: DISABLED" in text
+
+
+class _CompleteObservationFeed:
+    def __init__(self, missing_m5=False):
+        h1_start = dt.datetime(2025, 12, 28, tzinfo=UTC)
+        m5_start = dt.datetime(2026, 1, 4, tzinfo=UTC)
+        self.h1 = [Candle(time=h1_start + dt.timedelta(hours=i), open=1, high=2, low=0.5,
+                          close=1.5, volume=1) for i in range(200)]
+        self.m5 = [Candle(time=m5_start + dt.timedelta(minutes=5 * i), open=1, high=2, low=0.5,
+                          close=1.5, volume=1) for i in range(600)]
+        if missing_m5:
+            missing = dt.datetime(2026, 1, 5, 12, 0, tzinfo=UTC)
+            self.m5 = [c for c in self.m5 if c.time != missing]
+
+    def get_latest_candles(self, symbol, timeframe, count):
+        return list((self.h1 if timeframe == "H1" else self.m5)[-count:])
+
+
+def test_complete_production_observation_audit_passes_before_cycle(monkeypatch):
+    report = ResearchCycleReport(
+        trading_day=OBS_DATE, container_state=_setup_state(STATE_WAITING_REFERENCE), occurrences=(),
+    )
+    _patch_cycle(monkeypatch, report)
+    result = daily_report.build_btc_daily_report(
+        _CompleteObservationFeed(), OBS_DATE, **_base_kwargs(), validate_observation_data=True,
+    )
+    assert result["data_quality"]["status"] == "PASS"
+    assert result["data_quality"]["h1_reference_candles"] == 24
+    assert result["data_quality"]["m5_observation_candles"] == 288
+    assert result["data_quality"]["closed_candles_only"] is True
+
+
+def test_incomplete_observation_fails_closed_before_cycle(monkeypatch):
+    called = False
+
+    def _cycle(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("strategy must not run on incomplete evidence")
+
+    monkeypatch.setattr(daily_report.pipeline, "run_research_cycle", _cycle)
+    result = daily_report.build_btc_daily_report(
+        _CompleteObservationFeed(missing_m5=True), OBS_DATE, **_base_kwargs(),
+        validate_observation_data=True,
+    )
+    assert called is False
+    assert result["decision"] == "DATA_ERROR"
+    assert result["data_quality"]["reason_code"] == "BTC_M5_OBSERVATION_INCOMPLETE"

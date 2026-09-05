@@ -13,8 +13,9 @@ data/error state), not a forced trade. A pre-trade proposal is not a broker tick
 or a future crypto venue creates a broker ticket only after a qualifying proposal is
 refreshed, validated, explicitly authorized by the user, and successfully executed.
 
-The current operational implementation is FX/MT5-first. Crypto signal conventions and
-adapter interfaces exist, but a real crypto venue feed and execution adapter do not.
+The current operational implementation is FX/MT5-first. The crypto research path has a
+live-validated, public/read-only Bybit BTCUSDT linear-perpetual feed and a scheduler-ready
+daily decision CLI; crypto execution remains unimplemented and disabled.
 AI capabilities inspect and explain market state; they do not independently authorize
 orders or override strategy results.
 
@@ -64,13 +65,14 @@ See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
   -- the existing renderer (`report.render_entry_ticket`, unchanged), not a new
   capability; informational only, never implying a broker order was sent. Non-READY
   states and the canonical daily archive (`AG_FX_DAILY_REPORT_V1`) are unaffected.
-- Crypto sweep/retest strategy rules now have a real Binance USDT-M perpetual BTCUSDT
-  market-data adapter (`execution_runtime.binance_usdtm_feed`) and a research/proposal-only
-  runtime (`src/btc_sweep_research/`, `scripts/run_btc_sweep_research.py`) that can never
-  reach exchange or MT5 order-submission. Live network connectivity to Binance is currently
-  BLOCKED from this development environment (HTTP 451 geo-restriction) -- re-verify from
-  the actual deployment environment before relying on it operationally. Exchange execution
-  remains not implemented.
+- The BTC sweep/retest research path uses Bybit production public market data for the
+  BTCUSDT linear perpetual. `scripts/run_btc_daily_report.py` produces the previous UTC
+  day's deterministic `READY`/`WATCH`/`NO_TRADE`/`DATA_ERROR` decision during the frozen
+  00:05-00:15 UTC report window, validates complete closed H1/M5 evidence, and archives it
+  immutably. A `READY` result includes an informational entry-proposal ticket—not a broker
+  ticket. `scripts/install_btc_daily_task.ps1` can install the 06:37 MMT daily local task.
+  No crypto research path can reach exchange or MT5 order submission; crypto execution
+  remains unimplemented.
 - Historical replay prohibits live MT5 candle/tick access. Historical session-box
   reconstruction remains a documented completeness gap and degrades explicitly.
 - See [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current regression baseline and
@@ -93,6 +95,7 @@ python scripts/check_mt5.py --symbol EURUSD
 python scripts/analyze_structure.py --symbol EURUSD --timeframe M15
 python scripts/run_strategy.py --help
 python scripts/trade_assistant.py --help
+python scripts/run_btc_daily_report.py --help
 ```
 
 Execution preview and manual-position management:

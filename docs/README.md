@@ -83,6 +83,11 @@ observations from the named milestone; they are not rolling dashboards.
 - Opportunity coverage: [`status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md`](status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md)
   (FX `LONDON_NEWYORK` pilot activation; BTC Binance USDT-M market-data adapter,
   multi-occurrence research collection, and execution-domain gate)
+- BTC daily production path: [`contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md`](contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md),
+  [`status/AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3_STATUS.md`](status/AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3_STATUS.md), and
+  [`status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md`](status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md)
+  (frozen UTC contract, public/read-only Bybit adapter, live-validated scheduler-ready
+  daily decision and informational proposal-ticket path; crypto execution disabled)
 
 When a historical test total differs from the current baseline, retain the historical
 number and use `PROJECT_STATUS.md` for the latest result.

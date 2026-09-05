@@ -188,6 +188,20 @@ def test_qualified_setup_reaches_entry_ready_and_records_ledger(tmp_path):
     assert result.proposal.tradability_allowed is True
 
 
+def test_backfill_ignores_m5_candles_after_observation_date(tmp_path):
+    h1, m5 = _build_fixture([(13, 30)])
+    future = [Candle(time=c.time + dt.timedelta(days=1), open=c.open, high=c.high,
+                     low=c.low, close=c.close, volume=c.volume) for c in m5]
+    feed = _FixtureFeed(h1, m5 + future)
+    runtime, ledger, daily_loss_guard, open_position_guard = _fresh_runtime_and_guards(tmp_path)
+
+    report = _run(feed, runtime, ledger, daily_loss_guard, open_position_guard)
+
+    assert len(report.occurrences) == 1
+    assert report.occurrences[0].trading_day == NOW.date()
+    assert report.occurrences[0].setup_state.sweep_time.date() == NOW.date()
+
+
 def test_reobserving_same_occurrence_does_not_duplicate_ledger_row(tmp_path):
     h1, m5 = _build_fixture([(13, 30)])
     feed = _FixtureFeed(h1, m5)

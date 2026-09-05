@@ -90,10 +90,12 @@ STRATEGY_YAML_PATH = "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml"
 # package -- see module docstring).
 DEFAULT_RESEARCH_EQUITY_USDT = 10000.0
 
-# >24h of M5 bars -- covers "end of reference window (today's UTC midnight) up to now" per
+# >48h of M5 bars -- covers a complete observation date when the scheduled daily report
+# runs shortly after midnight on the following day, and also permits controlled delayed
+# diagnostics without truncating the beginning of the observation date.
 # engine.evaluate_setup's own docstring ("m5_candles: ALL closed M5 candles from the end
 # of the reference window ... up to now").
-M5_LOOKBACK_COUNT = 300
+M5_LOOKBACK_COUNT = 600
 # ~8 days of H1 -- enough history for market_structure.structural_breaks_for_candles to
 # locate real swings for the H1 trend filter, while the same series also covers the
 # previous UTC day used for the PREVIOUS_DAY reference box (spec section 2 / this
@@ -219,11 +221,14 @@ def run_research_cycle(
     symbol_meta = symbol_meta or to_symbol_meta(default_symbol_meta(CANONICAL_SYMBOL))
     stop_buffer_price = symbol_meta.tick_size * (profile_config.buffer_ticks or 10.0)
 
-    h1_candles = list(feed.get_latest_candles(CANONICAL_SYMBOL, "H1", H1_LOOKBACK_COUNT))
+    h1_candles_raw = list(feed.get_latest_candles(CANONICAL_SYMBOL, "H1", H1_LOOKBACK_COUNT))
     m5_candles_raw = list(feed.get_latest_candles(CANONICAL_SYMBOL, "M5", M5_LOOKBACK_COUNT))
 
     today_start = previous_utc_day_window(now)[1]
-    m5_candles = [c for c in m5_candles_raw if c.time >= today_start]
+    # Scheduled/backfill callers may retrieve candles newer than the observation date.
+    # Never let those future candles influence its H1 direction or M5 occurrences.
+    h1_candles = [c for c in h1_candles_raw if c.time <= now]
+    m5_candles = [c for c in m5_candles_raw if today_start <= c.time <= now]
     reference_candles = filter_previous_day_candles(h1_candles, now)
     reference_trading_day = previous_utc_day_window(now)[0].date()
 

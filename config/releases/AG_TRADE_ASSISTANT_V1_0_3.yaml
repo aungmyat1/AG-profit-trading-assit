@@ -206,7 +206,7 @@ btc_research_runtime:
     observation_contract: docs/contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md
       # UTC calendar day, half-open [00:00:00Z, next-day 00:00:00Z), report target
       # 00:05-00:15 UTC next day -- frozen, no strategy-timing conflict found
-    current_environment_access: BLOCKED_OR_ENVIRONMENT_DEPENDENT
+    current_environment_access: PRODUCTION_PUBLIC_READ_PASS
     current_environment_evidence: >-
       Bybit public market-data endpoint (api.bybit.com) returned HTTP 403 from this
       development environment, 2026-09-03 -- explicit CloudFront country-block message
@@ -214,11 +214,14 @@ btc_research_runtime:
       already recorded for Binance production (HTTP 451). No circumvention attempted or
       authorized. Production Bybit market-data acquisition requires a permitted
       environment; this is an environment constraint, not an unresolved source-selection
-      decision -- source selection is FROZEN_BY_OWNER above. Re-tested 2026-09-05
+      decision -- source selection is FROZEN_BY_OWNER above. Re-tested earlier 2026-09-05
       (AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3, using the
       now-implemented adapter's own base URL): identical result, HTTP 403, same
-      CloudFront country-block message. Still an environment constraint, not
-      circumvented.
+      CloudFront country-block message. A later same-day re-test at 15:11 UTC showed the
+      environment condition had changed: server time, instrument metadata, and M5 klines
+      all returned HTTP 200/retCode 0. The frozen adapter then retrieved and validated
+      complete production H1/M5 data and generated a deterministic diagnostic daily
+      decision. No circumvention, credentials, or private endpoint was used.
     execution_domain_independence_note: >-
       execution_domain=CRYPTO_RESEARCH / BINANCE_USDTM (crypto execution scaffolding
       elsewhere in this repo, src/execution/crypto_*.py) names Binance as an execution
@@ -403,17 +406,15 @@ release_qualification_gates:
     material_anomalies_reconciled: NOT_YET_COLLECTED
   btc:
     market_data_authority: BYBIT   # FROZEN_BY_OWNER, 2026-09-03
-    production_data_available: false   # HTTP 403 (Bybit) / HTTP 451 (Binance) from this
-                                         # development environment -- environment constraint,
-                                         # not re-tested by this implementation milestone
-                                         # (no permitted environment available)
+    production_data_available: true   # Bybit public production metadata + complete closed
+                                        # H1/M5 observation data live-validated 2026-09-05
     bybit_adapter_implemented: true   # AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3
                                         # (2026-09-05) -- src/execution_runtime/bybit_linear_perp_feed.py,
                                         # public/read-only only; see qualification_exception above
     btc_registration_reconciled: true   # strategies/registry.yaml <-> STRATEGY_LEDGER.md, same milestone
     btc_daily_decision_code_ready: true   # src/btc_sweep_research/daily_report.py, focused-tested
-    btc_production_daily_decision_operational: false   # code ready; production connectivity
-                                                          # not validated from this environment
+    btc_production_daily_decision_operational: true   # scheduler-ready read-only CLI;
+                                                        # first in-window scheduled archive pending
     observation_days_completed: 0
     observation_days_required: 30
     observation_campaign_started: false   # not authorized/started by this milestone

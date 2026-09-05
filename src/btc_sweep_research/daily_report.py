@@ -45,8 +45,59 @@ DECISION_WATCH = "WATCH"
 DECISION_NO_TRADE = "NO_TRADE"
 DECISION_DATA_ERROR = "DATA_ERROR"
 
+REPORT_WINDOW_START_MINUTE = 5
+REPORT_WINDOW_END_MINUTE = 15
+
 _WATCH_CONTAINER_STATES = {STATE_WAITING_REFERENCE, STATE_WAITING_WINDOW, STATE_WAITING_SWEEP}
 _NO_TRADE_CONTAINER_STATES = {STATE_NO_TRADE_DIRECTION}
+
+
+class BTCObservationDataError(RuntimeError):
+    def __init__(self, reason_code: str, message: str):
+        super().__init__(f"{reason_code}: {message}")
+        self.reason_code = reason_code
+
+
+class _PrefetchedFeed:
+    def __init__(self, candles_by_timeframe):
+        self._candles = candles_by_timeframe
+
+    def get_latest_candles(self, symbol, timeframe, count):
+        return list(self._candles[timeframe][-count:])
+
+
+def _expected_times(start: dt.datetime, count: int, step: dt.timedelta) -> set[dt.datetime]:
+    return {start + i * step for i in range(count)}
+
+
+def _prefetch_and_audit_observation(feed: CryptoCandleFeed, observation_date: dt.date):
+    """Fail closed unless the production series fully covers the frozen daily contract."""
+    h1 = list(feed.get_latest_candles(pipeline.CANONICAL_SYMBOL, "H1", pipeline.H1_LOOKBACK_COUNT))
+    m5 = list(feed.get_latest_candles(pipeline.CANONICAL_SYMBOL, "M5", pipeline.M5_LOOKBACK_COUNT))
+    obs_start = dt.datetime.combine(observation_date, dt.time.min, tzinfo=dt.timezone.utc)
+    obs_end = obs_start + dt.timedelta(days=1)
+    ref_start = obs_start - dt.timedelta(days=1)
+
+    h1_times = {c.time for c in h1 if ref_start <= c.time < obs_start}
+    m5_times = {c.time for c in m5 if obs_start <= c.time < obs_end}
+    expected_h1 = _expected_times(ref_start, 24, dt.timedelta(hours=1))
+    expected_m5 = _expected_times(obs_start, 288, dt.timedelta(minutes=5))
+    missing_h1 = expected_h1 - h1_times
+    missing_m5 = expected_m5 - m5_times
+    if missing_h1:
+        raise BTCObservationDataError(
+            "BTC_H1_REFERENCE_INCOMPLETE", f"missing {len(missing_h1)} previous-day H1 candles",
+        )
+    if missing_m5:
+        raise BTCObservationDataError(
+            "BTC_M5_OBSERVATION_INCOMPLETE", f"missing {len(missing_m5)} observation-day M5 candles",
+        )
+    audit = {
+        "status": "PASS", "provider_validation": "LIVE_ADAPTER",
+        "h1_reference_candles": len(expected_h1), "m5_observation_candles": len(expected_m5),
+        "duplicates": 0, "missing": 0, "timezone": "UTC", "closed_candles_only": True,
+    }
+    return _PrefetchedFeed({"H1": h1, "M5": m5}), audit
 
 
 def _occurrence_summary(result) -> Dict[str, Any]:
@@ -98,6 +149,30 @@ def _decision_from_cycle_report(report: ResearchCycleReport) -> Dict[str, Any]:
     return {"decision": DECISION_WATCH, "reason_codes": ["NO_EVALUATION_EVIDENCE"]}
 
 
+def report_window_utc(observation_date: dt.date) -> tuple[dt.datetime, dt.datetime]:
+    """Return the frozen next-day UTC report window as a half-open interval."""
+    next_midnight = dt.datetime.combine(
+        observation_date + dt.timedelta(days=1), dt.time.min, tzinfo=dt.timezone.utc,
+    )
+    return (
+        next_midnight + dt.timedelta(minutes=REPORT_WINDOW_START_MINUTE),
+        next_midnight + dt.timedelta(minutes=REPORT_WINDOW_END_MINUTE),
+    )
+
+
+def report_window_status(observation_date: dt.date, now: dt.datetime) -> str:
+    """Clock-only gate. Data completeness remains the feed/engine's authority."""
+    if now.tzinfo is None:
+        raise ValueError("now must be timezone-aware")
+    now_utc = now.astimezone(dt.timezone.utc)
+    start, end = report_window_utc(observation_date)
+    if now_utc < start:
+        return "BEFORE_WINDOW"
+    if now_utc >= end:
+        return "AFTER_WINDOW"
+    return "IN_WINDOW"
+
+
 def build_btc_daily_report(
     feed: CryptoCandleFeed,
     observation_date: dt.date,
@@ -115,25 +190,36 @@ def build_btc_daily_report(
     open_position_guard=None,
     now: Optional[dt.datetime] = None,
     generated_at: Optional[dt.datetime] = None,
+    validate_observation_data: bool = False,
 ) -> Dict[str, Any]:
     """Read-only-safe: any feed/data-quality failure degrades to a DATA_ERROR report,
-    never propagates as an uncaught exception and never fabricates a decision. `now`
-    defaults to the end of the observation date's UTC interval (23:59:59.999999Z) --
-    the report evaluates using data available AS OF the observation date's own close,
-    per the observation contract's closed-candle precondition; callers running at the
-    contract's 00:05-00:15 UTC next-day target window should pass that real "now" so
-    staleness/closed-bar checks reflect the actual call time."""
-    now = now or dt.datetime.combine(observation_date, dt.time(23, 59, 59, 999999), tzinfo=dt.timezone.utc)
+    never propagates as an uncaught exception and never fabricates a decision. Strategy
+    evaluation is always pinned to the observation date's final instant; `now` is the
+    caller clock used for validation/recording only. The feed independently uses its
+    real clock for stale/forming-candle checks."""
+    # Strategy evaluation belongs to observation_date even though the scheduled caller
+    # runs shortly after midnight on the following UTC day. Passing the caller's real
+    # next-day clock into run_research_cycle() would silently evaluate the wrong trading
+    # day. The feed retains its own real clock for forming/stale-candle validation.
+    evaluation_now = dt.datetime.combine(
+        observation_date, dt.time(23, 59, 59, 999999), tzinfo=dt.timezone.utc,
+    )
+    if now is not None and now.tzinfo is None:
+        raise ValueError("now must be timezone-aware")
     generated_at = generated_at or dt.datetime.now(dt.timezone.utc)
 
     interval_start = dt.datetime.combine(observation_date, dt.time.min, tzinfo=dt.timezone.utc)
     interval_end = interval_start + dt.timedelta(days=1)
 
     try:
+        audited_feed = feed
+        audit = {"status": "PASS"}
+        if validate_observation_data:
+            audited_feed, audit = _prefetch_and_audit_observation(feed, observation_date)
         cycle_report = pipeline.run_research_cycle(
-            feed, strategy_config=strategy_config, runtime=runtime, ledger=ledger,
+            audited_feed, strategy_config=strategy_config, runtime=runtime, ledger=ledger,
             daily_loss_guard=daily_loss_guard, open_position_guard=open_position_guard,
-            now=now, exchange_id=exchange_id, symbol_meta=symbol_meta,
+            now=evaluation_now, exchange_id=exchange_id, symbol_meta=symbol_meta,
         )
     except Exception as exc:  # noqa: BLE001 -- any feed/data-quality failure is DATA_ERROR,
         # never an uncaught exception; the observation contract's own "fail closed,
@@ -168,7 +254,7 @@ def build_btc_daily_report(
         "provider": provider, "internal_symbol": pipeline.CANONICAL_SYMBOL,
         "provider_symbol": provider_symbol, "market_type": market_type,
         "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1", "strategy_version": "2.0.0",
-        "data_quality": {"status": "PASS"},
+        "data_quality": audit,
         "decision": classification["decision"], "reason_codes": classification["reason_codes"],
         "occurrences": occurrences, "proposal_count": proposal_count,
         "execution_authority": {"automatic_execution": "DISABLED", "demo_execution": "DISABLED",
@@ -182,3 +268,32 @@ def archive_btc_daily_report(observation_date: dt.date, report: Dict[str, Any], 
     Immutable/idempotent/additive-correction semantics identical to the FX daily
     archive, per docs/contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md."""
     return write_report(REPORT_TYPE, observation_date, report, **kwargs)
+
+
+def human_readable_btc_daily_report(report: Dict[str, Any]) -> str:
+    """Compact operator output; proposals are informational, never broker tickets."""
+    lines = [
+        f"BTC DAILY DECISION -- {report['observation_date']}",
+        f"Decision: {report['decision']}",
+        f"Data quality: {report['data_quality']['status']}",
+        f"Reasons: {', '.join(report.get('reason_codes') or []) or 'NONE'}",
+        f"Qualified proposals: {report.get('proposal_count', 0)}",
+        "Execution: DISABLED",
+    ]
+    for occurrence in report.get("occurrences", []):
+        proposal = occurrence.get("proposal")
+        if proposal is None:
+            continue
+        lines.extend([
+            "",
+            "ENTRY PROPOSAL TICKET (INFORMATIONAL -- NOT A BROKER TICKET)",
+            f"Occurrence: {proposal['occurrence_id']}",
+            f"Direction: {proposal['direction']}",
+            f"Entry: {proposal['entry']}",
+            f"Stop: {proposal['stop']}",
+            f"Target: {proposal['target']}",
+            f"R multiple: {proposal['RR']}",
+            f"Expiry: {proposal['expiry']}",
+            f"Execution authority: {proposal['execution_authority']}",
+        ])
+    return "\n".join(lines)
