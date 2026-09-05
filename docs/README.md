@@ -9,7 +9,12 @@ their age.
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository.
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,
-   safety gates, known gaps, and latest regression baseline.
+   safety gates, known gaps, and latest regression baseline. Its "Capability &
+   Roadmap Reconciliation (dated 2026-09-06)" section is the authoritative current
+   answer for what AG can do now, what is implemented-but-not-integrated, what is
+   verified, what is authorized, what remains research-only, and the core-completion
+   roadmap (CORE-D1..D7) — including where Telegram (paused), MT5 Demo, BTC/Bybit,
+   and Large-SMC currently sit relative to it.
 4. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
 5. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
    update procedure for rolling status, dated evidence, strategy authorization, and

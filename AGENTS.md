@@ -64,6 +64,35 @@ For every task:
    not after every edit.
 5. Report changes, evidence, and blockers — skip narrating routine reads/searches.
 
+## Token-efficiency rules
+
+Treat tokens, tool output, and repeated validation as finite project resources:
+
+1. **Do not rediscover settled facts.** Reuse the latest authoritative status/evidence
+   record unless the underlying commit, date gate, environment, or external dependency
+   has materially changed.
+2. **Fail fast at ordered gates.** Check date/time/authorization before baseline, data,
+   network, or runtime work. When an earlier gate fails, stop and mark later checks
+   `NOT_EVALUATED`; do not run them for reassurance.
+3. **Avoid duplicate waiting-state reports.** If nothing material changed, report only
+   the unchanged state, the trigger required to resume, and the next checkpoint.
+4. **Do not repeat external probes without a reason.** Retry MT5/exchange/Telegram calls
+   only after a relevant environment change, scheduled checkpoint, backoff interval, or
+   explicit user request. Preserve the prior HTTP/error evidence otherwise.
+5. **Bound every read and command output.** Prefer targeted `rg`, specific files/line
+   ranges, narrow JSON fields, and focused test summaries. Do not dump full logs,
+   registries, status histories, candles, or diffs when a small excerpt answers the task.
+6. **Read each authoritative source once per task.** Keep and reuse the result; do not
+   reopen the same large document unless new evidence creates a concrete ambiguity.
+7. **Use progressive testing.** Run the smallest relevant tests after each edit, the
+   affected suite at completion, and the full suite only for a real milestone or broad
+   shared-surface change. Do not rerun an unchanged passing suite.
+8. **Prefer concise structured results.** Report classification, changed paths, exact
+   test command/result, blockers, and next action. Do not reproduce long prompts or
+   historical narratives already stored in the repository.
+9. **Stop at acceptance.** Once requested criteria pass, do not expand into speculative
+   features, unrelated audits, extra documentation, or repeated confirmation work.
+
 ## Skill grouping (conceptual — both dirs stay flat, this is about which to load)
 
 **Strategy authority and dispatch** (load when a registered strategy is named):

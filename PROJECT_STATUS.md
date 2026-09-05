@@ -44,6 +44,387 @@ AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3 -- IMPLEMENTAT
 AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1 (2026-09-05)  BTC_PRODUCTION_DATA_PATH_PASS_SCHEDULER_READY. Merged the frozen BTC qualification lineage into main without changing the seven protected FX behavioral paths. Bybit production public endpoints recovered from the earlier environment-specific HTTP 403 and returned HTTP 200/retCode 0. Added strict scheduler-ready CLI scripts/run_btc_daily_report.py, complete closed-candle audit (24 prior-day H1 + 288 observation-day M5), observation-date/future-candle guards, clean machine JSON, immutable archive, and human READY proposal ticket explicitly labeled NOT A BROKER TICKET. Live diagnostic against observation date 2026-09-04 returned WATCH/NO_QUALIFIED_SWEEP_YET with complete data-quality PASS; deliberately outside the report window, unarchived, disposable state, and non-counting. Local Task Scheduler installer added for 06:37 MMT. Crypto execution remains unimplemented/disabled; campaign remains not started at 0/30 pending separate owner authorization. See docs/status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md.
 ```
 
+## Capability & Roadmap Reconciliation (dated 2026-09-06)
+
+This section is additive — it does not replace or rewrite the rolling summary above or
+any dated evidence below. It exists to answer, from current evidence, seven standing
+questions: what AG can do now; what is implemented but not integrated; what is
+verified; what is actually enabled/authorized; what is research-only; the current
+core-completion path; and where Telegram, MT5 Demo, BTC/Bybit, and Large-SMC sit
+relative to that path. No strategy semantics, risk settings, execution authority,
+broker routing, or release state were changed while writing this section.
+
+**Core principle.** `IMPLEMENTED ≠ VERIFIED ≠ ENABLED ≠ AUTHORIZED`. Historical release
+state (`docs/VERSION_HISTORY.md`) is distinct from current project state (this
+document). Execution infrastructure (can a component send an order) is distinct from
+strategy execution authority (is a specific strategy allowed to use it). A component
+being able to place an MT5 order does not mean a strategy is authorized to use it.
+
+**Authority sources used to build this section** (verified, not assumed):
+`docs/VERSION_HISTORY.md` = historical application/version authority.
+`PROJECT_STATUS.md` (this file, rolling summary above) = current operational
+authority. `strategies/registry.yaml` + `strategies/ST_ASIAN_SWEEP_5R_V1.yaml` +
+`strategies/STRATEGY_LEDGER.md` = strategy authorization authority. `AGENTS.md`'s
+"Authority order" section = execution authority — confirmed the sole approved
+execution funnel is `assistant.commands.execute_command(command, user_confirmed=True)`
+(`AGENTS.md`, "Authority order" / PROJECT_STATUS.md "Execution authority restructure
+(2026-08-28)" below).
+
+### AUTHORITY_RECONCILIATION matrix
+
+| Capability | Historical (VERSION_HISTORY, 2026-09-03) | Current (PROJECT_STATUS, 2026-09-05/06) | Registry authority | Implemented | Verified | Enabled | Notes |
+|---|---|---|---|---|---|---|---|
+| EURUSD/GBPUSD Asian→London proposals | IMPLEMENTED, PROPOSAL_ONLY | unchanged, PROPOSAL_ONLY, Series 002 in progress | `ST_ASIAN_SWEEP_5R_V1` demo_authorized=false | Yes | Runtime evidence exists | PROPOSAL_ONLY |  |
+| EURUSD/GBPUSD London→New York proposals | IMPLEMENTED, unit-tested only, shadow pending | unchanged, PROPOSAL_ONLY, still no live/demo verification | same strategy, `LONDON_NEWYORK` pair | Yes | Unit-tested only | PROPOSAL_ONLY |  |
+| `ST_ASIAN_SWEEP_5R_V1` | v1.1.1 ACTIVE, SOLE_DAY_TRADING_AUTHORITY (pilot-scoped) | unchanged | registered=true active=true research=true demo_authorized=false live_authorized=false | Yes (signal engine) | Live runtime evidence exists | PROPOSAL_ONLY only | `entry_order_type` resolved to MARKET (2026-08-31); `risk_per_trade_pct` still absent from the strategy YAML itself |
+| MT5 Demo execution subsystem | IMPLEMENTED, disabled by default, every send requires a fresh explicit user command | unchanged | N/A — application infrastructure, not strategy-scoped | Yes (`execution/executor.py`, `execution/mt5_gateway.py`) | Live-verified 2026-08-28 (ticket 1879685149) | Disabled by default; explicit-command-gated |  |
+| FX proposal→MT5 integration | not separately called out | Generic `ASSISTANT_PROPOSAL` plumbing exists and was live-verified 2026-08-28 (ticket 1880212783); see architecture note below | not strategy-scoped by itself | Yes, generically | Live-verified, but from the assistant's own analysis-derived `TradeProposal`, not from an `ST_ASIAN_SWEEP_5R_V1` pilot-cycle proposal | Requires fresh explicit command AND the specific strategy to be `demo_authorized` | `ST_ASIAN_SWEEP_5R_V1` is not `demo_authorized`, so its pilot proposals cannot use this path today even though the generic plumbing works |
+| MT5 live execution | IMPLEMENTED behind gates, not authorized as a live service | unchanged | N/A | Yes (behind gates) | Not exercised live | DISABLED (`config/trading.yaml` `account.allow_live_trading: false`) |  |
+| BTC market-data runtime | IMPLEMENTED (Binance adapter), production blocked (HTTP 451/403) | Bybit adapter IMPLEMENTED and LIVE-VALIDATED (HTTP 200/retCode 0, 2026-09-05); supersedes 2026-09-03 blocked claim | `ST_LIQUIDITY_SWEEP_RETEST_V1` v2.0.0 registry entry, research=true | Yes | Live-validated 2026-09-05 | Read-only market data only |  |
+| Bybit production market-data connectivity | BLOCKED (HTTP 403, CloudFront country-block, 2026-09-03) | RECOVERED — HTTP 200/retCode=0 confirmed 2026-09-05 (`config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml`, `qualification_exception`/`btc_market_data_authority` blocks) | N/A (infrastructure) | Yes | Live-validated 2026-09-05 | Read-only public endpoint only, no credentials |  |
+| BTC sweep/retest proposals | IMPLEMENTED, unit-tested, RESEARCH_ONLY | unchanged, RESEARCH_ONLY, `execution_domain=CRYPTO_RESEARCH`/`execution_authority=DISABLED`, statically+behaviorally verified never to reach `execution.executor`/`mt5.management_gateway` | `ST_LIQUIDITY_SWEEP_RETEST_V1` registered=true active=false research=true demo_authorized=false live_authorized=false | Yes | Unit-tested + live-data-validated | RESEARCH_ONLY |  |
+| BTC daily report | not present (predates 2026-09-05 milestone) | OPERATIONAL CLI READY (`scripts/run_btc_daily_report.py`), immutable archive, informational proposal ticket labeled NOT A BROKER TICKET | inherits `ST_LIQUIDITY_SWEEP_RETEST_V1`'s RESEARCH_ONLY authority | Yes | Live diagnostic run 2026-09-05 against 2026-09-04 (WATCH, disposable, non-counting) | Scheduler-ready, not yet scheduled to run in-window |  |
+| BTC scheduler | not present | Task Scheduler installer added (`scripts/install_btc_daily_task.ps1`), 06:37 MMT | same | Yes | Installer exists; no confirmed installed/running scheduled task recorded yet | Not started |  |
+| BTC execution | NOT IMPLEMENTED, DISABLED | unchanged | `execution_authority=DISABLED`, `crypto_execution_adapter: NOT_IMPLEMENTED` | No | N/A | DISABLED |  |
+| Large-SMC research | IMPLEMENTED (research funnel + replay infra), RESEARCH_ONLY, C10 blocked | unchanged, v1.0.6 RESEARCH_DRAFT, C10 sole blocker | `ST_LARGE_SMC_V1` research=true, no demo/live | Yes (research engine) | Corrected replay baseline recorded | RESEARCH_ONLY; engine fails closed to BLOCKED |  |
+| Large-SMC proposal authority | none | unchanged, none | `proposal_generation_authorized: false` | No | N/A | NONE |  |
+| Telegram approval module | not covered by VERSION_HISTORY (VERSION_HISTORY never mentions Telegram) | Committed as a frozen baseline in an isolated worktree only (`.claude/worktrees/telegram-execution-gateway-v1`, branch `feature/telegram-demo-execution-gateway-v1`, commit `740512b` "AG_TELEGRAM_DEMO_EXECUTION_GATEWAY_V1_PHASE_D1_BROKER_UNREACHABLE_BASELINE", branched from `main` at `63938cc`); not merged into `main`, not pushed; `src/authorization/`, `src/notifications/` still do not exist on `main` | not registered as a strategy; not a strategy-authority concept | Phases A/B/C/D1 all present and committed on the feature branch (`authorization/{store,models,config,integrity,strategy_authority,proposal_source,telegram_gateway}.py`, `notifications/{telegram_client,trade_ticket_formatter}.py`, matching tests) | 117 focused tests passing (all HTTP mocked); not verified against `main` — none of it is part of the current operational codebase | PAUSED (owner directive) | See `docs/status/AG_TELEGRAM_DEMO_EXECUTION_GATEWAY_V1_PHASE_D1_FROZEN_STATUS.md` (on the feature branch) and Telegram section below |
+| Telegram→real proposal integration | not covered | COMPLETE and committed, worktree-only (`proposal_source.py` reads real `post_asian_pilot` proposal journals read-only) — not merged, not part of current operational state | N/A | Complete, committed on feature branch | Verified (8 focused tests) | Not integrated into `main` | Do not treat as core-project evidence |
+| Telegram→MT5 execution integration | not covered | Not present anywhere in the branch's file set (no code calls `execution.executor` or `assistant.commands.execute_command`) | N/A | No | N/A | Not integrated | |
+
+### Corrected architecture description
+
+Do **not** publish "FX Trade Proposal → Risk/Safety Gates → Execution System → MT5
+Demo" as one seamless, strategy-authorized pipeline — the repository does not prove
+that exact integration exists generally for any currently `demo_authorized` strategy.
+The accurate picture is two separated domains plus a documented, narrower bridge:
+
+```text
+CORE FX PROPOSAL RUNTIME (proposal-only, strategy-scoped)
+  FX deterministic runtime (strategy_engine/, ST_ASIAN_SWEEP_5R_V1)
+    -> TradeIntent / TradeProposal (execution/intent_builder.py, post_asian_pilot/proposal.py)
+    -> proposal persistence + reporting (journal/post_asian_pilot/, journal/post_london_newyork_pilot/,
+       report_archive.py, AG_FX_DAILY_REPORT_V1)
+    -> PROPOSAL-ONLY OPERATIONAL OUTPUT (CLI --once/--status/--watch, Entry Ticket)
+  ST_ASIAN_SWEEP_5R_V1 stops here today: demo_authorized=false, live_authorized=false.
+
+SEPARATE EXECUTION SUBSYSTEM (application infrastructure, not strategy-scoped)
+  explicit fresh user command
+    -> execution safety gates (execution/validator.py, execution/risk.py, journal.py atomic claim)
+    -> assistant.commands.execute_command(command, user_confirmed=True)
+    -> MT5 Demo (execution/executor.py, execution/mt5_gateway.py)
+    -> journal / reconciliation
+
+DOCUMENTED BRIDGE BETWEEN THEM (generic, infrastructure-level, live-verified once)
+  A TradeProposal built from the assistant's own ASSISTANT_PROPOSAL analysis path CAN
+  be resolved ("execute it") into a TradeCommand and sent through the execution
+  subsystem above — AG_ASSISTANT_PROPOSAL_EXECUTION_V1, 2026-08-28, ticket 1880212783,
+  real order_send -> real close, fully verified. This bridge is strategy-agnostic
+  infrastructure: it does not, by itself, authorize any specific strategy. No evidence
+  was found of this bridge ever being exercised specifically with an
+  ST_ASIAN_SWEEP_5R_V1 pilot-cycle-origin proposal — the 2026-08-28 evidence describes
+  a proposal from the assistant's own live analysis, not a post_asian_pilot journal
+  entry. ST_ASIAN_SWEEP_5R_V1 proposals cannot use this bridge today because the
+  strategy itself is not demo_authorized (a registry-level gate, independent of whether
+  the bridge code works).
+
+PARALLEL RESEARCH DOMAINS (independent strategy families, no execution authority)
+  BTC:        Bybit market data (live-validated) -> ST_LIQUIDITY_SWEEP_RETEST_V1 research
+              engine -> btc_sweep_research proposals -> RESEARCH_ONLY, never reaches
+              execution.executor / mt5.management_gateway (verified statically+behaviorally)
+  Large-SMC:  ST_LARGE_SMC_V1 v1.0.6 RESEARCH_DRAFT -> large_smc_research engine ->
+              fails closed to BLOCKED on any C10-dependent candidate; no proposal
+              authority
+
+PAUSED OPTIONAL INTERFACE (not part of the core path, not merged)
+  Telegram approval module (Phases A/B/C/D1 all built and committed as a frozen
+  baseline, commit 740512b) lives only in an isolated feature-branch worktree; it is
+  not connected to MT5 execution anywhere in its own file set, and it is not part of
+  main. Development is PAUSED by owner directive.
+```
+
+### Current capability classification table
+
+| Capability | Implementation | Verification | Integration | Authority | Current operational state |
+|---|---|---|---|---|---|
+| MT5 Demo execution subsystem | IMPLEMENTED | LIVE-VERIFIED (2026-08-28) | Standalone, explicit-command-only | Application infrastructure, not strategy-gated | ENABLED, explicit-command-gated, disabled by default absent a fresh command |
+| FX proposal→MT5 execution (generic bridge) | IMPLEMENTED | LIVE-VERIFIED (2026-08-28), generically, not for `ST_ASIAN_SWEEP_5R_V1` specifically | NOT_GENERALLY_WIRED to any pilot-cycle proposal | Requires per-strategy `demo_authorized` in addition | PARTIAL — infrastructure works, no currently-authorized strategy can use it |
+| `ST_ASIAN_SWEEP_5R_V1` Demo authority | N/A (strategy has no execution code of its own) | N/A | N/A | `demo_authorized: false`, `live_authorized: false` (registry) | BLOCKED — proposal-only by explicit authorization gate, independent of infrastructure readiness |
+| BTC execution | NOT_IMPLEMENTED (`CryptoExecutionAdapter`) | N/A | N/A | `execution_authority: DISABLED` | NOT_OPERATIONAL, fail-closed |
+| BTC market data | IMPLEMENTED (Bybit adapter) | LIVE-VERIFIED (2026-09-05, HTTP 200/retCode 0) | Wired into `btc_sweep_research` and `run_btc_daily_report.py` | Read-only, no execution implication | OPERATIONAL for data/reporting only |
+| Large-SMC | IMPLEMENTED (research engine) | Corrected replay baseline recorded | Standalone research pipeline, no execution/broker call anywhere | `proposal_generation_authorized: false`, C10 UNSIGNED | RESEARCH_ONLY, BLOCKED at C10 for any candidate needing it |
+
+### Historical vs. current — stale-claim correction
+
+`docs/VERSION_HISTORY.md`'s "Current Capability and Upgrade Report (2026-09-03)" is
+preserved unchanged as historical record — it was accurate for that date. Two of its
+claims are now superseded by later evidence in this file's rolling summary and by
+`config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml`'s `qualification_exception` block:
+
+- "BTC ... production market-data authority is owner-frozen as Bybit (2026-09-03),
+  adapter not yet implemented, environment-blocked (HTTP 403)" — **superseded**: the
+  adapter is now implemented (`src/execution_runtime/bybit_linear_perp_feed.py`) and
+  production connectivity is live-validated (HTTP 200/retCode 0, 2026-09-05). Historical
+  state as of 2026-09-03; see this file's rolling summary (`CRYPTO DATA ADAPTER` line,
+  2026-09-05) for current operational status.
+- "Shadow-day/observation-day collection has not started" — **superseded** for FX:
+  Series 002 has one classified day (Day 001, INVALID_DAY, defect found+fixed, not
+  counted) and one verified-baseline pending day (Day 002, next eligible trading date
+  2026-09-07). See `FX_VALIDATION` below for the current counters. BTC observation
+  (0/30) genuinely has not started and that portion of the historical claim still holds.
+
+`README.md` and `docs/README.md` are reconciled against this same current state (see
+their own edits, dated 2026-09-06).
+
+### BTC/Bybit current status (verify market data ≠ execution)
+
+Market-data connectivity and trade-execution capability are independent facts. Current
+truth, from `config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml`'s `qualification_exception`
+and `btc_market_data_authority` blocks (owner-approved 2026-09-05,
+`V1_0_3_BYBIT_QUALIFICATION_EXCEPTION`, `APPROVED_READ_ONLY_ONLY`):
+
+- Feed: `BybitLinearPerpFeed` (`src/execution_runtime/bybit_linear_perp_feed.py`),
+  public/read-only only, no authenticated or order/wallet endpoint anywhere in it;
+  111 BTC tests passing.
+- Production connectivity: `PRODUCTION_PUBLIC_READ_PASS` (HTTP 200/retCode 0, verified
+  2026-09-05) — supersedes the 2026-09-03 HTTP 403 CloudFront country-block finding,
+  which is preserved as historical evidence in the same manifest, not deleted.
+- Reporting: `scripts/run_btc_daily_report.py`, scheduler-ready, one disposable/
+  non-counting diagnostic run completed 2026-09-05 (WATCH/NO_QUALIFIED_SWEEP_YET
+  against 2026-09-04).
+- Scheduler: `scripts/install_btc_daily_task.ps1` (06:37 MMT), added but not confirmed
+  installed/running as a live scheduled task in this environment.
+- Observation campaign: 0/30, forbidden_scope explicitly excludes starting it —
+  requires separate owner authorization after production validation passes.
+- Execution: forbidden_scope explicitly excludes order creation/checking/submission/
+  modification/cancellation and wallet operations. `BTC_EXECUTION: NOT_IMPLEMENTED`.
+  BTC research proposal capability never implies BTC execution authorization.
+
+### FX validation current status
+
+Do not report "shadow validation pending" or "collection has not started" without
+citing the actual counters. Current series is `AG_V1_0_3_FX_SHADOW_SERIES_002`
+(Series 001 — Day 001 EXCLUDED_DAY, Day 002 PENDING_RECONCILIATION — was left
+unresolved and superseded by a fresh series, not retroactively fixed):
+
+- `valid_days = 0/20`, `invalid_days = 1`, `excluded_days = 0`, `pending_days = 0`.
+- Day 001 (2026-09-04): `INVALID_DAY` — a real reference-session key-casing defect was
+  found and fixed (not retroactively counted as valid).
+- Day 002: checked 2026-09-04, re-checked 2026-09-05 —
+  `BASELINE_VERIFIED_AWAITING_NEXT_ELIGIBLE_DAY`. 2026-09-05/06 are weekend; next
+  eligible trading date is Monday 2026-09-07.
+- Baseline: source HEAD `3b2eeed` (validation_source_baseline), affected suite 92
+  passed/0 failed at last verification.
+
+### Strategy authority correction — `ST_ASIAN_SWEEP_5R_V1`
+
+Values below are read as-is from `strategies/registry.yaml` and
+`strategies/ST_ASIAN_SWEEP_5R_V1.yaml`; none were changed while writing this section.
+
+- `demo_authorized: false`, `live_authorized: false` (registry).
+- `entry_order_type: MARKET` for both `long_setup`/`short_setup` — resolved
+  2026-08-31 (`AG_EXECUTION_RUNTIME_READINESS_V1`, strategy v1.1.1); the prior
+  "dual-mode ambiguity" was determined to have never been a genuine two-case choice.
+- `risk_per_trade_pct`: **UNSPECIFIED in the strategy YAML** — the
+  `risk_and_money_management` block only declares `risk_mode:
+  FIXED_PERCENT_OR_CONTRACT`, `stop_loss_mode: PERCENT_OF_SESSION_RANGE`,
+  `stop_loss_range_pct: 0.25`. This is a real, current, unresolved gap, not a stale
+  historical claim.
+- **Account-level risk fallback — verified from code, not assumed.** Contrary to
+  `strategies/STRATEGY_LEDGER.md`'s comment ("`execution/risk.py` currently falls back
+  to `config/trading.yaml`'s account-wide `risk.risk_per_trade_pct: 1.0` default"),
+  reading the actual call chain shows no code path performs that fallback today:
+  `execution/risk.py::size_position()` and `execution/intent_builder.py::build_intent()`
+  both take `risk_per_trade_pct` as a required parameter with no default and never read
+  `config/trading.yaml` themselves; `execution/validator.py::validate_account_and_config()`
+  only checks that whatever value it is handed is a finite number in `(0, 100]` — it
+  does not supply one. `config/trading.yaml`'s own comment ("Not read by any code yet
+  except execution/risk.py") is itself stale — `risk.py` does not read the file. The
+  value that actually reaches the FX proposal path today comes from the pilot-config
+  layer (`config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1_0_1.yaml` /
+  `..._LONDON_NEWYORK_PILOT_V1_0_1.yaml`'s own `risk_per_trade_pct`), deliberately kept
+  outside the strategy YAML (`post_asian_pilot/pilot_config.py`'s own docstring). There
+  is currently no automatic code-level fallback from an unset strategy
+  `risk_per_trade_pct` to `config/trading.yaml`'s account-wide default for the direct
+  `execution.executor` path (`ASSISTANT_PROPOSAL`/`USER_EXPLICIT_ORDER`) — a caller must
+  supply an explicit value every time. This is reported as a finding, not resolved; no
+  risk value was changed.
+
+### Telegram — current owner directive
+
+The owner has explicitly decided: **PAUSE further Telegram-related development,
+finish the core project first.** This is a current project-management directive from
+this session, not derived from `docs/VERSION_HISTORY.md` (which never mentions
+Telegram at all). Verified against the actual worktree, not assumed:
+
+- `implemented_phases`: A+B+C+D1 all committed as a frozen, broker-unreachable
+  baseline in `.claude/worktrees/telegram-execution-gateway-v1` (branch
+  `feature/telegram-demo-execution-gateway-v1`, commit `740512b`
+  "AG_TELEGRAM_DEMO_EXECUTION_GATEWAY_V1_PHASE_D1_BROKER_UNREACHABLE_BASELINE",
+  branched from `main` at `63938cc` — this is the branch's only Telegram-related
+  commit; `main` itself remains at `63938cc`, unchanged). Not merged into `main`, not
+  pushed. `authorization_core` (`src/authorization/{store,models,config,integrity,strategy_authority,proposal_source,telegram_gateway}.py`)
+  and the transport/callback gateway (`src/notifications/{telegram_client,trade_ticket_formatter}.py`)
+  are present with matching tests (`tests/test_authorization_core.py`,
+  `tests/test_telegram_client.py`, `tests/test_telegram_gateway.py`,
+  `tests/test_trade_ticket_formatter.py`, `tests/test_phase_d1_proposal_and_authority.py`,
+  `tests/test_phase_d1_gateway_execution_flow.py` — 117 tests, all passing, all
+  Telegram HTTP mocked).
+- Phase D1 (real proposal integration) is **complete and committed**:
+  `src/authorization/proposal_source.py` (its own docstring: "Phase D1: the real,
+  authoritative TradeProposal source ... replaces Phase C's placeholder JSON-file
+  lookup") reads real `post_asian_pilot` proposal journals read-only; a live strategy
+  demo-authorization recheck (`src/authorization/strategy_authority.py`, reads
+  `strategies/registry.yaml` directly on every Execute Demo click) blocks execution
+  with `BLOCKED_STRATEGY_NOT_DEMO_AUTHORIZED` for `ST_ASIAN_SWEEP_5R_V1`
+  (`demo_authorized: false`, verified from the registry file, unchanged). `main` still
+  has zero Telegram files (`src/authorization/`, `src/notifications/` do not exist
+  there) — this is a preservation commit on an isolated branch, not an integration.
+- MT5/Bybit broker wiring: not present anywhere in the branch's file set — no
+  Telegram module calls `execution.executor`, `execution.coordinator`, or
+  `assistant.commands.execute_command`; verified by an AST-based import scan plus
+  grep, both clean. See `docs/status/AG_TELEGRAM_DEMO_EXECUTION_GATEWAY_V1_PHASE_D1_FROZEN_STATUS.md`
+  (on the feature branch) for full detail, including a known pre-existing Windows
+  `JsonKeyValueStore` concurrency race under heavy combined-suite parallel test load
+  (`WINDOWS_APPROVAL_STORE_CONCURRENCY = MUST_FIX_BEFORE_EXECUTION_AUTHORIZATION`) —
+  does not affect FX/BTC qualification, which never touches this store; must be fixed
+  before any future Telegram/MT5/Bybit execution work resumes.
+- `development_state = PAUSED`. `reason = core-project (V1.0.3) qualification
+  prioritized`. `resume_condition = explicit owner authorization after the V1.0.3
+  release qualification decision`.
+- No Telegram feature work was added, refactored, or continued this milestone beyond
+  the preservation commit itself. Telegram is not a core-completion dependency.
+
+### Core project objective
+
+AG Profit Trading should become a deterministic trading assistant that can: (1)
+produce an immutable deterministic `TradeProposal`; (2) persist it; (3) obtain fresh
+explicit owner authorization through an approved interface; (4) enforce strategy
+authority; (5) execute exactly once through the canonical command funnel; (6) operate
+only against a positively verified MT5 Demo environment; (7) journal broker actions;
+(8) reconcile against broker truth; (9) survive restart/crash boundaries safely; (10)
+keep live trading disabled unless separately authorized. Telegram is one possible
+future approval interface, not the definition of the core system.
+
+### CORE-FIRST roadmap (replaces the old Telegram-centric Phase D roadmap)
+
+- **CORE-D1 — Real deterministic proposal persistence.** Status: **substantially
+  already implemented for FX**, not NOT_STARTED. `strategy_engine` → `TradeIntent` →
+  `TradeProposal` (`execution/intent_builder.py`, `post_asian_pilot/proposal.py`) →
+  durable per-cycle journal (`journal/post_asian_pilot/`,
+  `journal/post_london_newyork_pilot/`) → append-only immutable archive
+  (`post_asian_pilot/report_archive.py`, `AG_FX_DAILY_REPORT_V1`) → CLI inspection
+  (`--once`/`--status`/`--watch`, Entry Ticket). Deterministic identity, strategy/
+  version recording, restart-safe lookup, and no-broker-call are already evidenced by
+  the FX shadow-series work above. Not yet formally re-verified against this
+  milestone's exact acceptance-criteria wording (immutable execution fields, expiry
+  recorded) — that re-verification, not the underlying capability, is what remains
+  open.
+- **CORE-D2 — Strategy execution contract.** OPEN, unresolved by design. Before
+  connecting `ST_ASIAN_SWEEP_5R_V1` to MT5 Demo, an explicit owner decision is required
+  among: (A) add a strategy-specific `risk_per_trade_pct` to the strategy YAML; (B)
+  explicitly authorize the pilot-config/account-level risk value as the strategy's
+  real contract; (C) remain proposal-only. This task reports the gap (see "Strategy
+  authority correction" above) and does not choose for the owner.
+- **CORE-D3 — Approved command funnel.** Status: **substantially already implemented**
+  at the infrastructure level (see "Corrected architecture description" bridge above) —
+  stored `TradeProposal` → "execute it" resolution
+  (`assistant.commands.resolve_active_proposal()`) → freshness/integrity revalidation →
+  `TradeCommand` → `assistant.commands.execute_command(command, user_confirmed=True)`
+  → execution subsystem, live-verified 2026-08-28. What remains open is strategy-level
+  gating: `ST_ASIAN_SWEEP_5R_V1` pilot proposals cannot reach this funnel today because
+  the strategy is not `demo_authorized` — that is CORE-D2's decision, not a missing
+  funnel capability.
+- **CORE-D4 — MT5 Demo firewall.** Status: implemented and live-verified for the
+  existing OPEN/CLOSE path (`config/trading.yaml` `account.allow_live_trading: false`,
+  explicit `user_confirmed=True` required every call, DEMO round trip verified
+  2026-08-28). Not independently re-audited in this task against every firewall
+  condition listed in the task protocol (unknown environment, analysis-mode leakage,
+  etc.) — flagged for a dedicated review, not claimed complete here.
+- **CORE-D5 — Controlled Demo verification gate.** Defined by this task only (offline
+  tests → mocked end-to-end → real `order_check` → one minimum-size Demo order →
+  verify broker ticket/journal/reconciliation; one authorization = one command = at
+  most one broker submission = one reconciled broker result). No broker smoke test was
+  performed by this task.
+- **CORE-D6 — Recovery/concurrency hardening.** `execution/journal.py` already
+  implements its own independent atomic-claim mechanism (O_EXCL exclusive-create,
+  restart-safe, cross-process/cross-thread safe per the 2026-08-30 hardening notes
+  referenced in this file's "Authority order" section) — separate from, and not
+  affected by, the Telegram approval store's own concurrency implementation. The
+  Telegram-specific approval store (`.claude/worktrees/telegram-execution-gateway-v1/
+  src/authorization/store.py`) reuses the same O_EXCL idiom by its own docstring; no
+  Windows-specific concurrency-race defect document was found under `docs/status/` for
+  it in this pass. Flag clearly: **this pattern must not be re-implemented or weakened
+  when Telegram resumes** — the core execution path's own atomic claim in
+  `execution/journal.py` must remain the reference implementation.
+- **CORE-D7 — Release/validation closure.** FX Series 002 in progress (0/20 valid, 1
+  invalid, next eligible day 2026-09-07); BTC observation not started (0/30). Execution
+  capability (MT5 Demo works) and evidence qualification (shadow/observation days) are
+  separate — MT5 Demo working does not imply release completion.
+
+```text
+AG PROFIT TRADING -- CORE COMPLETION ROADMAP
+
+CURRENT (2026-09-06)
+  |
+  v
+CORE-D1  Real deterministic proposal persistence  [substantially already done for FX]
+  |
+  v
+CORE-D2  Strategy execution contract (risk_per_trade_pct decision)  [OPEN -- owner decision required]
+  |
+  v
+CORE-D3  Approved command funnel  [infrastructure already done; strategy-gate blocked on D2]
+  |
+  v
+CORE-D4  MT5 Demo firewall  [implemented; not independently re-audited this pass]
+  |
+  v
+CORE-D5  Controlled Demo verification gate  [DEFINED only, not run]
+  |
+  v
+CORE-D6  Recovery/concurrency hardening  [core path already has its own atomic claim]
+  |
+  v
+CORE-D7  Release/validation closure  [FX Series 002 0/20, BTC 0/30, in progress]
+  |
+  v
+CORE PROJECT OPERATIONALLY READY
+  |
+  +--> OPTIONAL: Telegram integration resumes (resume_condition: core ready or owner reactivation)
+  +--> OPTIONAL: Bybit Demo execution work (BYBIT-DEMO-1..6, not started)
+  +--> OPTIONAL: Large-SMC evidence progression (C10 -> causal outcomes -> robustness -> proposal-authority decision)
+```
+
+**Large-SMC roadmap** (unchanged, preserved): research → C10 contract resolution
+(owner-selected `AG_NATIVE_INVALIDATION` conceptual model, implementation still
+`PENDING`) → causal outcomes → wider robustness → evidence review → separate
+proposal-authorization decision. Demo/live execution remains independently
+authorized and is not implied by any research progress. `ST_LARGE_SMC_V1` stays
+`RESEARCH_DRAFT` — not promoted by this section.
+
+### Current-state summary
+
+```text
+FX_SESSION_ANALYSIS             IMPLEMENTED, VERIFIED
+FX_PROPOSALS                    PROPOSAL_ONLY (ASIAN_LONDON verified runtime evidence; LONDON_NEWYORK unit-tested, shadow pending)
+FX_PROPOSAL_TO_MT5               PARTIAL (generic bridge IMPLEMENTED + VERIFIED 2026-08-28; NOT_WIRED for ST_ASIAN_SWEEP_5R_V1 specifically -- strategy not demo_authorized)
+ST_ASIAN_SWEEP_DEMO_AUTHORITY    DISABLED (registry: demo_authorized=false)
+ST_ASIAN_SWEEP_LIVE_AUTHORITY    DISABLED (registry: live_authorized=false)
+MT5_DEMO_SUBSYSTEM               IMPLEMENTED, VERIFIED, explicit-command-gated
+MT5_LIVE_SERVICE                 IMPLEMENTED behind gates, DISABLED
+BTC_MARKET_DATA                  IMPLEMENTED, VERIFIED (Bybit, HTTP 200/retCode 0, 2026-09-05)
+BTC_PROPOSALS                    RESEARCH_ONLY
+BTC_EXECUTION                    NOT_IMPLEMENTED, DISABLED
+LARGE_SMC_RESEARCH                IMPLEMENTED, RESEARCH_ONLY, BLOCKED at C10
+LARGE_SMC_PROPOSALS               NOT_AUTHORIZED
+LARGE_SMC_EXECUTION               NOT_IMPLEMENTED, NONE
+TELEGRAM_INTERFACE                Phases A+B+C implemented (uncommitted, worktree-only); Phase D1 in progress
+TELEGRAM_REAL_PROPOSAL_INTEGRATION  IN_PROGRESS, uncommitted, not merged
+TELEGRAM_MT5_INTEGRATION          NOT_WIRED, not present in worktree
+TELEGRAM_DEVELOPMENT_STATE        PAUSED (owner directive, 2026-09-06)
+```
+
 ### Product objective
 
 The target product produces two deterministic decision services: recurring intraday
