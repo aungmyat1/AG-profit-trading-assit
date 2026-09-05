@@ -168,13 +168,44 @@ btc_research_runtime:
   #   EXECUTION AUTHORITY = DISABLED (execution_domain/execution_authority above)
   # Selecting Bybit as market-data authority does NOT authorize Bybit order submission,
   # account mutation, leverage changes, position management, or wallet operations.
+  qualification_exception:
+    id: V1_0_3_BYBIT_QUALIFICATION_EXCEPTION
+    status: APPROVED_READ_ONLY_ONLY
+    classification: EXISTING_RELEASE_QUALIFICATION_CAPABILITY_COMPLETION   # not
+      # GENERAL_FEATURE_EXPANSION, not CRYPTO_EXECUTION_ENABLEMENT, not
+      # STRATEGY_SEMANTIC_CHANGE
+    approved_by: owner (direct instruction, 2026-09-05, this milestone --
+      AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3)
+    authorized_scope:
+      - registration reconciliation (strategies/registry.yaml <-> STRATEGY_LEDGER.md)
+      - public unauthenticated Bybit BTC market data (BTCUSDT linear USDT perpetual)
+      - deterministic market-data quality validation
+      - existing BTC research-engine wiring (no strategy rule change)
+      - BTC daily research decision + immutable observation archive
+      - focused governance/implementation/provenance commits, not pushed
+    forbidden_scope:
+      - private/authenticated Bybit endpoints
+      - order creation/checking/submission/modification/cancellation
+      - wallet/deposit/withdrawal/transfer operations
+      - demo/live/automatic crypto execution
+      - BTC or FX strategy-semantic changes
+      - FX session/risk/quota/proposal-logic changes
+      - geographic/provider restriction circumvention
+    observation_campaign_note: does not itself authorize the 30-day observation
+      campaign start -- that requires separate authorization after production
+      validation passes (see release_qualification_gates.btc below)
   btc_market_data_authority:
     source: BYBIT
     decision_status: FROZEN_BY_OWNER
-    target_instrument: Bybit USDT-margined BTC perpetual (canonical identity/symbol
-      mapping to be derived from authoritative Bybit instrument metadata when the
-      adapter is built -- not invented here)
-    adapter_status: NOT_IMPLEMENTED   # next milestone: AG_BYBIT_BTC_MARKET_DATA_V1
+    target_instrument: Bybit USDT-margined linear BTC perpetual, canonical symbol
+      BTCUSDT (verified against Bybit's official V5 instruments-info documentation,
+      2026-09-05 -- see execution_runtime.bybit_linear_perp_feed's own module docstring)
+    adapter_status: IMPLEMENTED   # src/execution_runtime/bybit_linear_perp_feed.py,
+      # AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3 (2026-09-05);
+      # public/read-only only -- no auth, no order/wallet endpoint anywhere in it
+    observation_contract: docs/contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md
+      # UTC calendar day, half-open [00:00:00Z, next-day 00:00:00Z), report target
+      # 00:05-00:15 UTC next day -- frozen, no strategy-timing conflict found
     current_environment_access: BLOCKED_OR_ENVIRONMENT_DEPENDENT
     current_environment_evidence: >-
       Bybit public market-data endpoint (api.bybit.com) returned HTTP 403 from this
@@ -183,7 +214,9 @@ btc_research_runtime:
       already recorded for Binance production (HTTP 451). No circumvention attempted or
       authorized. Production Bybit market-data acquisition requires a permitted
       environment; this is an environment constraint, not an unresolved source-selection
-      decision -- source selection is FROZEN_BY_OWNER above.
+      decision -- source selection is FROZEN_BY_OWNER above. Not re-tested by this
+      implementation milestone (see this milestone's own status document for whether a
+      permitted-environment smoke test was possible).
     execution_domain_independence_note: >-
       execution_domain=CRYPTO_RESEARCH / BINANCE_USDTM (crypto execution scaffolding
       elsewhere in this repo, src/execution/crypto_*.py) names Binance as an execution
@@ -369,10 +402,19 @@ release_qualification_gates:
   btc:
     market_data_authority: BYBIT   # FROZEN_BY_OWNER, 2026-09-03
     production_data_available: false   # HTTP 403 (Bybit) / HTTP 451 (Binance) from this
-                                         # development environment -- environment constraint
-    bybit_adapter_implemented: false   # next milestone: AG_BYBIT_BTC_MARKET_DATA_V1
+                                         # development environment -- environment constraint,
+                                         # not re-tested by this implementation milestone
+                                         # (no permitted environment available)
+    bybit_adapter_implemented: true   # AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3
+                                        # (2026-09-05) -- src/execution_runtime/bybit_linear_perp_feed.py,
+                                        # public/read-only only; see qualification_exception above
+    btc_registration_reconciled: true   # strategies/registry.yaml <-> STRATEGY_LEDGER.md, same milestone
+    btc_daily_decision_code_ready: true   # src/btc_sweep_research/daily_report.py, focused-tested
+    btc_production_daily_decision_operational: false   # code ready; production connectivity
+                                                          # not validated from this environment
     observation_days_completed: 0
     observation_days_required: 30
+    observation_campaign_started: false   # not authorized/started by this milestone
     testnet_excluded_from_strategy_evidence: true
     occurrence_identity_verified: true    # tests/test_btc_occurrence_identity.py, existing evidence
     deduplication_verified: true          # tests/test_btc_sweep_research_pipeline.py, existing evidence
