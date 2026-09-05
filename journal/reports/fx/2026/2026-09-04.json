@@ -1,0 +1,115 @@
+{
+  "application_release": "AG_TRADE_ASSISTANT_V1_0_3",
+  "cycles": {
+    "ASIAN_LONDON": {
+      "data": {
+        "stale_data_events": 0
+      },
+      "operations": {
+        "mt5_disconnect_events": 0,
+        "restart_recovery_events": 0,
+        "runtime_errors": 0
+      },
+      "pairs": {
+        "EURUSD": {
+          "final_reason": null,
+          "final_strategy_state": "NO_RECORD",
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-04",
+          "ready_at": null,
+          "setup_id": "ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-04",
+          "slot_index": 1
+        },
+        "GBPUSD": {
+          "final_reason": null,
+          "final_strategy_state": "NO_RECORD",
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-04",
+          "ready_at": null,
+          "setup_id": "ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-04",
+          "slot_index": 2
+        }
+      },
+      "portfolio": {
+        "max_slots": 2,
+        "slot_identities": [
+          {
+            "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-04",
+            "setup_id": "ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-04",
+            "state": "CLAIMED",
+            "symbol": "EURUSD"
+          },
+          {
+            "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-04",
+            "setup_id": "ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-04",
+            "state": "CLAIMED",
+            "symbol": "GBPUSD"
+          }
+        ],
+        "slots_used": 2
+      },
+      "report": "AG_TRADE_ASSISTANT_V1_0_3_PILOT_END",
+      "result": "PASS",
+      "safety": {
+        "automatic_execution": "DISABLED",
+        "duplicate_claims": 0,
+        "duplicate_proposals_suppressed": 0,
+        "order_check_calls": 0,
+        "order_send_calls": 0
+      },
+      "trading_date": "2026-09-04"
+    },
+    "LONDON_NEWYORK": {
+      "data": {
+        "stale_data_events": 0
+      },
+      "operations": {
+        "mt5_disconnect_events": 0,
+        "restart_recovery_events": 0,
+        "runtime_errors": 0
+      },
+      "pairs": {
+        "EURUSD": {
+          "final_reason": null,
+          "final_strategy_state": "NO_RECORD",
+          "proposal_id": null,
+          "ready_at": null,
+          "setup_id": null,
+          "slot_index": null
+        },
+        "GBPUSD": {
+          "final_reason": null,
+          "final_strategy_state": "NO_RECORD",
+          "proposal_id": null,
+          "ready_at": null,
+          "setup_id": null,
+          "slot_index": null
+        }
+      },
+      "portfolio": {
+        "max_slots": 2,
+        "slot_identities": [],
+        "slots_used": 0
+      },
+      "report": "AG_TRADE_ASSISTANT_V1_0_3_PILOT_END",
+      "result": "PASS",
+      "safety": {
+        "automatic_execution": "DISABLED",
+        "duplicate_claims": 0,
+        "duplicate_proposals_suppressed": 8,
+        "order_check_calls": 0,
+        "order_send_calls": 0
+      },
+      "trading_date": "2026-09-04"
+    }
+  },
+  "daily_decision_required": true,
+  "daily_proposal_required": false,
+  "execution_authority": {
+    "automatic_execution": "DISABLED",
+    "fx_live_execution": "DISABLED",
+    "proposal_only": true
+  },
+  "generated_at_utc": "2026-09-04T13:51:04.945429+00:00",
+  "report_type": "FX_DAILY",
+  "schema_version": "AG_FX_DAILY_REPORT_V1",
+  "trading_date": "2026-09-04"
+}
