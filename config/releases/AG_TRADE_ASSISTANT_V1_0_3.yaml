@@ -207,9 +207,10 @@ btc_research_runtime:
       # adapter/pipeline-wiring/daily_report modules on the isolated
       # btc/bybit-qualification-v3 branch (governance 705a790 -> implementation 0c5cda1 ->
       # provenance freeze fb23f39) -- preserved, not overwritten
-    btc_operational_qualification_baseline: PENDING_REPORT_WINDOW_AMENDMENT_COMMIT
-      # Must be replaced with the commit containing the owner-approved 06:30-06:45 UTC
-      # report-window amendment before the first counted observation. Count is still 0/30.
+    btc_operational_qualification_baseline: d5e15385f2354628f1eecac86b0808e936c3aeec
+      # Pinned 2026-09-06: commit "Set BTC daily qualification report window to
+      # 06:30-06:45 UTC" -- the owner-approved report-window amendment is now the
+      # frozen behavioral baseline. Count remains 0/30, campaign not started.
       # AG_V1_0_3_EVIDENCE_CAMPAIGN_ACTIVATION (2026-09-05) -- the exact commit whose code
       # must produce every counted BTC observation for the eventual 30-day campaign
       # (scripts/run_btc_daily_report.py + scheduler installer, merged to main via 3b4eb60
