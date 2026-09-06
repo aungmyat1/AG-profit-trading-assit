@@ -19,6 +19,13 @@ their age.
 5. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
    update procedure for rolling status, dated evidence, strategy authorization, and
    live-validation claims.
+6. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
+   non-authorizing capability-completeness audit and navigation matrix (Section A
+   trading edge, Section B operations/execution/platform, execution-authority matrix,
+   qualification counters). It does not replace `PROJECT_STATUS.md`,
+   `strategies/registry.yaml` / `strategies/STRATEGY_LEDGER.md`,
+   `docs/VERSION_HISTORY.md`, or dated `docs/status/*.md` evidence — see its own top
+   section for which source is authoritative for which claim.
 
 ## Architecture
 
@@ -91,7 +98,7 @@ observations from the named milestone; they are not rolling dashboards.
 - BTC daily production path: [`contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md`](contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md),
   [`status/AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3_STATUS.md`](status/AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3_STATUS.md), and
   [`status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md`](status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md)
-  (frozen UTC contract, public/read-only Bybit adapter, live-validated scheduler-ready
+  (frozen UTC contract, public/read-only Bybit adapter, production-data-connectivity-confirmed scheduler-ready
   daily decision and informational proposal-ticket path; crypto execution disabled)
 
 When a historical test total differs from the current baseline, retain the historical
