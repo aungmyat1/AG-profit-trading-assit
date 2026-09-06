@@ -1,7 +1,8 @@
 """Scheduled read-only BTC daily decision for Bybit BTCUSDT linear perpetual.
 
 Default invocation evaluates the preceding UTC observation date and is accepted only
-inside the frozen 00:05-00:15 UTC next-day report window. It archives one immutable
+inside the frozen 06:30-06:45 UTC next-day report window (13:00-13:15 Myanmar time).
+It archives one immutable
 daily decision and prints either canonical JSON or a human-readable decision/proposal
 ticket. It has no exchange execution path and uses no API credentials.
 """

@@ -29,6 +29,9 @@ their age.
 7. [`status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md`](status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md)
    — owner authorization to begin the read-only 30-valid-observation BTC campaign;
    records the zero-count starting state and preserves all execution prohibitions.
+8. [`status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`](status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md)
+   — prospective owner-approved move of the BTC report window to 13:00-13:15 MMT
+   (06:30-06:45 UTC); no observation, execution, or scheduler activation.
 
 ## Architecture
 

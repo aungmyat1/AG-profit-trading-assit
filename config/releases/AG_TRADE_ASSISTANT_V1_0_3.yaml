@@ -207,7 +207,9 @@ btc_research_runtime:
       # adapter/pipeline-wiring/daily_report modules on the isolated
       # btc/bybit-qualification-v3 branch (governance 705a790 -> implementation 0c5cda1 ->
       # provenance freeze fb23f39) -- preserved, not overwritten
-    btc_operational_qualification_baseline: 8289c2d95f9f97403766354ee922672f59f34677
+    btc_operational_qualification_baseline: PENDING_REPORT_WINDOW_AMENDMENT_COMMIT
+      # Must be replaced with the commit containing the owner-approved 06:30-06:45 UTC
+      # report-window amendment before the first counted observation. Count is still 0/30.
       # AG_V1_0_3_EVIDENCE_CAMPAIGN_ACTIVATION (2026-09-05) -- the exact commit whose code
       # must produce every counted BTC observation for the eventual 30-day campaign
       # (scripts/run_btc_daily_report.py + scheduler installer, merged to main via 3b4eb60
@@ -218,7 +220,8 @@ btc_research_runtime:
       # the campaign continues or restarts -- see release_qualification_gates.btc below.
     observation_contract: docs/contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md
       # UTC calendar day, half-open [00:00:00Z, next-day 00:00:00Z), report target
-      # 00:05-00:15 UTC next day -- frozen, no strategy-timing conflict found
+      # 06:30-06:45 UTC next day (13:00-13:15 MMT) -- owner-adjusted 2026-09-06;
+      # no strategy-timing conflict, finishes before the 13:30 MMT FX desk window
     current_environment_access: PRODUCTION_PUBLIC_READ_PASS
     current_environment_evidence: >-
       Bybit public market-data endpoint (api.bybit.com) returned HTTP 403 from this

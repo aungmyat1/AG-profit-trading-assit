@@ -1,6 +1,6 @@
 param(
     [string]$TaskName = "AG Profit Trading - BTC Daily Decision",
-    [string]$LocalTime = "06:37"
+    [string]$LocalTime = "13:05"
 )
 
 $ErrorActionPreference = "Stop"
@@ -24,7 +24,7 @@ Register-ScheduledTask `
     -Action $action `
     -Trigger $trigger `
     -Settings $settings `
-    -Description "Read-only Bybit BTCUSDT daily decision at 00:07 UTC; execution disabled." `
+    -Description "Read-only Bybit BTCUSDT daily decision at 06:35 UTC; execution disabled." `
     -Force | Out-Null
 
-Write-Output "Installed '$TaskName' daily at $LocalTime local time (00:07 UTC)."
+Write-Output "Installed '$TaskName' daily at $LocalTime local time (06:35 UTC)."

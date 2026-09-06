@@ -20,7 +20,7 @@ def _load_cli():
 
 def test_cli_rejects_outside_report_window_before_network(capsys):
     cli = _load_cli()
-    rc = cli.main([], clock=lambda: dt.datetime(2026, 1, 6, 0, 4, tzinfo=UTC))
+    rc = cli.main([], clock=lambda: dt.datetime(2026, 1, 6, 6, 29, tzinfo=UTC))
     assert rc == 2
     assert "BTC_DAILY_REPORT_WINDOW_BEFORE_WINDOW" in capsys.readouterr().err
 
@@ -37,7 +37,7 @@ def test_diagnostic_mode_requires_no_archive(capsys):
 
 def test_in_window_builds_and_archives_previous_utc_day(monkeypatch, capsys):
     cli = _load_cli()
-    now = dt.datetime(2026, 1, 6, 0, 7, tzinfo=UTC)
+    now = dt.datetime(2026, 1, 6, 6, 35, tzinfo=UTC)
     captured = {}
 
     class _Feed:

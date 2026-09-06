@@ -5,7 +5,7 @@ Reuses post_asian_pilot.report_archive.write_report (already generic over
 correction semantics unchanged.
 
 Governed by docs/contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md: UTC calendar day,
-half-open [00:00:00Z, next-day 00:00:00Z), report target 00:05-00:15 UTC the following
+half-open [00:00:00Z, next-day 00:00:00Z), report target 06:30-06:45 UTC the following
 day. This module does not itself enforce clock timing -- callers (the future scheduled
 runner) are responsible for invoking it inside that window; this module always reports
 truthfully on whatever evidence exists at call time, per the observation contract's own
@@ -45,8 +45,10 @@ DECISION_WATCH = "WATCH"
 DECISION_NO_TRADE = "NO_TRADE"
 DECISION_DATA_ERROR = "DATA_ERROR"
 
-REPORT_WINDOW_START_MINUTE = 5
-REPORT_WINDOW_END_MINUTE = 15
+REPORT_WINDOW_START_HOUR = 6
+REPORT_WINDOW_START_MINUTE = 30
+REPORT_WINDOW_END_HOUR = 6
+REPORT_WINDOW_END_MINUTE = 45
 
 _WATCH_CONTAINER_STATES = {STATE_WAITING_REFERENCE, STATE_WAITING_WINDOW, STATE_WAITING_SWEEP}
 _NO_TRADE_CONTAINER_STATES = {STATE_NO_TRADE_DIRECTION}
@@ -155,8 +157,8 @@ def report_window_utc(observation_date: dt.date) -> tuple[dt.datetime, dt.dateti
         observation_date + dt.timedelta(days=1), dt.time.min, tzinfo=dt.timezone.utc,
     )
     return (
-        next_midnight + dt.timedelta(minutes=REPORT_WINDOW_START_MINUTE),
-        next_midnight + dt.timedelta(minutes=REPORT_WINDOW_END_MINUTE),
+        next_midnight + dt.timedelta(hours=REPORT_WINDOW_START_HOUR, minutes=REPORT_WINDOW_START_MINUTE),
+        next_midnight + dt.timedelta(hours=REPORT_WINDOW_END_HOUR, minutes=REPORT_WINDOW_END_MINUTE),
     )
 
 

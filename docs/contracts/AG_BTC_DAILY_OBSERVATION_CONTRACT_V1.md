@@ -57,7 +57,7 @@ strategy_timing_semantics_changed = NO
 ```
 
 **Finding: no conflict.** The strategy's own execution window (13:30-16:00 UTC) closes
-hours before the proposed daily-report target window (00:05-00:15 UTC the *following*
+hours before the daily-report target window (06:30-06:45 UTC the *following*
 day) even begins -- the report boundary is comfortably, conservatively later than the
 last possible moment the strategy could produce a new occurrence for that date. Using
 the proposed report window can never involve an in-progress bar for the observation
@@ -77,9 +77,9 @@ BTC_OBSERVATION_DAY_END                        = 00:00:00 UTC (exclusive) on the
 Example -- observation date 2026-09-07:
   interval = [2026-09-07T00:00:00Z, 2026-09-08T00:00:00Z)
 
-BTC_DAILY_REPORT_TARGET_WINDOW      = [2026-09-08T00:05:00Z, 2026-09-08T00:15:00Z]
-                                      (00:05-00:15 UTC on the day AFTER the observation date)
-BTC_MYANMAR_DELIVERY_WINDOW              = [06:35, 06:45] MMT (UTC+06:30), same calendar
+BTC_DAILY_REPORT_TARGET_WINDOW      = [2026-09-08T06:30:00Z, 2026-09-08T06:45:00Z]
+                                      (06:30-06:45 UTC on the day AFTER the observation date)
+BTC_MYANMAR_DELIVERY_WINDOW              = [13:00, 13:15] MMT (UTC+06:30), same calendar
                                           conversion, following local day -- MMT is a
                                           DISPLAY conversion only; UTC remains the sole
                                           canonical evidence authority
@@ -104,7 +104,7 @@ re-derived here):
 ## Report precondition (fail-closed)
 
 The final BTC daily report for a given observation date may be generated only when
-**all** of the following hold -- reaching the target clock window (00:05-00:15 UTC) is
+**all** of the following hold -- reaching the target clock window (06:30-06:45 UTC) is
 necessary but never sufficient on its own:
 
 1. the observation day interval `[start, end)` has fully elapsed;
@@ -121,11 +121,11 @@ No in-progress/forming bar may ever be used, regardless of clock time.
 ## Late-data policy
 
 ```text
-at 00:05 UTC (window open):    check required data completeness
+at 06:30 UTC (window open):    check required data completeness
 if complete:                    finalize the daily report normally within the window
-if incomplete (plausibly late): may re-check until 00:15 UTC (window close) -- no
+if incomplete (plausibly late): may re-check until 06:45 UTC (window close) -- no
                                  favorable retry beyond that, no fabricated data
-at/after 00:15 UTC (cutoff):        if still incomplete, produce the fail-closed
+at/after 06:45 UTC (cutoff):        if still incomplete, produce the fail-closed
                                     DATA_ERROR daily report for that observation date
                                     using whatever partial evidence exists -- never
                                     invent missing candles/decisions
@@ -193,8 +193,8 @@ mock/fixture/testnet/backtest_data_counts = NO
 Observation date 2026-09-07 (Monday):
   interval          = [2026-09-07T00:00:00Z, 2026-09-08T00:00:00Z)
   last strategy-relevant candle = M5 bar closing 2026-09-07T16:00:00Z
-  report target      = [2026-09-08T00:05:00Z, 2026-09-08T00:15:00Z]
-  Myanmar display        = 2026-09-08, 06:35-06:45 MMT
+  report target      = [2026-09-08T06:30:00Z, 2026-09-08T06:45:00Z]
+  Myanmar display        = 2026-09-08, 13:00-13:15 MMT
 
 Observation date 2026-09-13 (Sunday):
   interval          = [2026-09-13T00:00:00Z, 2026-09-14T00:00:00Z)

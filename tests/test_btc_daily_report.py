@@ -215,7 +215,7 @@ def test_next_day_report_clock_still_evaluates_observation_date(monkeypatch):
         )
 
     monkeypatch.setattr(daily_report.pipeline, "run_research_cycle", _cycle)
-    next_day_report_time = dt.datetime(2026, 1, 6, 0, 7, tzinfo=UTC)
+    next_day_report_time = dt.datetime(2026, 1, 6, 6, 35, tzinfo=UTC)
     result = daily_report.build_btc_daily_report(
         _FakeFeed(), OBS_DATE, **_base_kwargs(), now=next_day_report_time,
         generated_at=next_day_report_time,
@@ -229,10 +229,10 @@ def test_next_day_report_clock_still_evaluates_observation_date(monkeypatch):
 @pytest.mark.parametrize(
     ("now", "expected"),
     [
-        (dt.datetime(2026, 1, 6, 0, 4, 59, tzinfo=UTC), "BEFORE_WINDOW"),
-        (dt.datetime(2026, 1, 6, 0, 5, tzinfo=UTC), "IN_WINDOW"),
-        (dt.datetime(2026, 1, 6, 0, 14, 59, tzinfo=UTC), "IN_WINDOW"),
-        (dt.datetime(2026, 1, 6, 0, 15, tzinfo=UTC), "AFTER_WINDOW"),
+        (dt.datetime(2026, 1, 6, 6, 29, 59, tzinfo=UTC), "BEFORE_WINDOW"),
+        (dt.datetime(2026, 1, 6, 6, 30, tzinfo=UTC), "IN_WINDOW"),
+        (dt.datetime(2026, 1, 6, 6, 44, 59, tzinfo=UTC), "IN_WINDOW"),
+        (dt.datetime(2026, 1, 6, 6, 45, tzinfo=UTC), "AFTER_WINDOW"),
     ],
 )
 def test_report_window_status(now, expected):
