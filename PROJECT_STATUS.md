@@ -22,7 +22,9 @@ Current one-liners, from actual evidence as of `main`
   pending=0; next eligible trading day 2026-09-07.
 - **BTC**: Bybit production market-data connectivity confirmed (HTTP 200/retCode 0) —
   data access only, not trade execution or profitability; daily-decision CLI ready;
-  30-day observation campaign is 0/30 and **not authorized to start**.
+  30-valid-observation campaign is 0/30 and **OWNER_AUTHORIZED to start** as of
+  2026-09-06T06:52:42Z. No observation has been counted yet; prior diagnostics and
+  missed report windows do not count retroactively. Crypto execution remains disabled.
 - **Execution**: MT5 Demo infrastructure implemented and DEMO_VERIFIED generically
   (a real MT5 Demo-account order round trip, 2026-08-28; not real-money execution
   evidence); `ST_ASIAN_SWEEP_5R_V1`, the active V1.0.3 FX pilot strategy, is not

@@ -127,16 +127,16 @@ Verified current instances of this boundary holding:
 | BTC market data (Bybit adapter) | A | DIRECT_EDGE (data correctness) | IMPLEMENTED | PRODUCTION_DATA_VERIFIED (HTTP 200/retCode 0, 2026-09-05) | N/A (read-only) | NOT_REQUIRED | READY | `src/execution_runtime/bybit_linear_perp_feed.py`, 111 BTC tests | none material | maintain |
 | BTC production data validation | A | DIRECT_EDGE | IMPLEMENTED | PRODUCTION_DATA_VERIFIED | N/A | NOT_REQUIRED | READY | complete closed 24×H1 + 288×M5 audit (`scripts/run_btc_daily_report.py`) | none | maintain |
 | BTC data provenance | A | DIRECT_EDGE | IMPLEMENTED | PRODUCTION_DATA_VERIFIED | N/A | NOT_REQUIRED | READY | Bybit V5 official docs verified; public/unauthenticated only | none | maintain |
-| BTC strategy (`ST_LIQUIDITY_SWEEP_RETEST_V1`, CRYPTO_PERP profile) | A | DIRECT_EDGE | IMPLEMENTED | UNIT_TESTED + PRODUCTION_DATA_VERIFIED | RESEARCH_ONLY | NOT_STARTED (observation) | READY | `src/strategy_engine/sweep_retest/`, registry v2.0.0 `ACTIVE_INCUBATION` | no live-observation evidence yet | owner authorization for 30-day campaign |
+| BTC strategy (`ST_LIQUIDITY_SWEEP_RETEST_V1`, CRYPTO_PERP profile) | A | DIRECT_EDGE | IMPLEMENTED | UNIT_TESTED + PRODUCTION_DATA_VERIFIED | RESEARCH_ONLY | NOT_STARTED (observation) | READY | `src/strategy_engine/sweep_retest/`, registry v2.0.0 `ACTIVE_INCUBATION`; campaign start owner-authorized 2026-09-06 | no counted observation evidence yet | first eligible in-window observation |
 | BTC daily classification | A | DIRECT_EDGE | IMPLEMENTED | PRODUCTION_DATA_VERIFIED (diagnostic run 2026-09-05, WATCH) | RESEARCH_ONLY | NOT_REQUIRED | READY | `src/btc_sweep_research/daily_report.py`, reuses READY/WATCH/NO_TRADE/DATA_ERROR | none | maintain |
 | BTC research proposal | A | DIRECT_EDGE | IMPLEMENTED | FOCUSED_VERIFIED | RESEARCH_ONLY | NOT_REQUIRED | READY | `BTCSweepResearchProposal`, `execution_authority=DISABLED` | none | maintain |
-| BTC evidence ledger | A | EDGE_VALIDATION | IMPLEMENTED | FOCUSED_VERIFIED | N/A | NOT_STARTED | READY | `journal/btc_sweep_research/occurrences.json` | 0 observations recorded | campaign authorization |
+| BTC evidence ledger | A | EDGE_VALIDATION | IMPLEMENTED | FOCUSED_VERIFIED | N/A | NOT_STARTED | READY | `journal/btc_sweep_research/occurrences.json` | 0 observations recorded | first eligible in-window observation |
 | BTC daily report semantics | A | DIRECT_EDGE / supports EDGE_VALIDATION | IMPLEMENTED | PRODUCTION_DATA_VERIFIED (diagnostic, disposable/non-counting) | RESEARCH_ONLY | NOT_REQUIRED | READY | labeled "NOT A BROKER TICKET" | first in-window scheduled archive still pending | scheduler run in-window |
 | BTC observation contract | A | EDGE_VALIDATION | IMPLEMENTED | FOCUSED_VERIFIED | NOT_APPLICABLE | NOT_REQUIRED | READY | `docs/contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md` — UTC half-open day, 00:05-00:15 UTC report target, no strategy timing conflict found | none | maintain |
 | BTC scheduler readiness | B (supports A) | OPERATIONAL_SUPPORT | IMPLEMENTED (installer) | UNVERIFIED (not confirmed installed/running) | N/A | NOT_STARTED | READY | `scripts/install_btc_daily_task.ps1` (06:37 MMT) | installed ≠ confirmed running | confirm scheduled task active |
-| BTC observation evidence (30-day) | A | EDGE_VALIDATION | IMPLEMENTED (tooling) | N/A (0 collected) | NOT_APPLICABLE | NOT_STARTED | INACTIVE | `observation_days_completed: 0`, `observation_campaign_started: false` (release manifest) | 0/30, campaign not authorized | **owner authorization required** |
+| BTC observation evidence (30 valid observations) | A | EDGE_VALIDATION | IMPLEMENTED (tooling) | N/A (0 collected) | OWNER_AUTHORIZED_READ_ONLY | NOT_STARTED | READY | release manifest: `observation_campaign_authorized: true`, `observation_days_completed: 0`, `observation_campaign_started: false` | 0/30; no retroactive counting | first eligible in-window observation |
 | BTC performance evidence | A | EDGE_VALIDATION | NOT_STARTED | NOT_STARTED | NOT_APPLICABLE | NOT_STARTED | INACTIVE | no observations exist | none exist | after campaign starts |
-| BTC qualification status | A | EDGE_VALIDATION | N/A | N/A | N/A | NOT_STARTED | INACTIVE | 0/30 | campaign not authorized | owner authorization |
+| BTC qualification status | A | EDGE_VALIDATION | N/A | N/A | OWNER_AUTHORIZED_READ_ONLY | NOT_STARTED | READY | 0/30; authorization recorded 2026-09-06 | no counted observations yet | first eligible in-window observation |
 | Large-SMC research architecture (HTF context, E1/E2/E3+M1/M2/M3) | A | EDGE_VALIDATION (research) | IMPLEMENTED | FOCUSED_VERIFIED | RESEARCH_ONLY | BLOCKED (C10) | READY (research) | `src/large_smc_research/`, v1.0.6 | C10 broker-stop unsigned | C10 contract-freeze milestone |
 | Large-SMC C10 invalidation/stop contract | A | RISK_CONTROL | PARTIAL (concept selected, not implemented) | UNVERIFIED | NOT_APPLICABLE | BLOCKED | INACTIVE | owner selected `AG_NATIVE_INVALIDATION` concept 2026-09-03; `implementation_status: PENDING` | buffer/spread/min-distance policy still UNSIGNED | `ST_LARGE_SMC_V1_C10_AG_NATIVE_CONTRACT_FREEZE` milestone (not started) |
 | Large-SMC proposal/Demo/live authority | A | N/A | NOT_STARTED | N/A | NONE | NOT_STARTED | INACTIVE | `proposal_generation_authorized: false` | engine fails closed to BLOCKED | C10 resolution, then evidence review |
@@ -246,8 +246,9 @@ BTC daily CLI being ready is explicitly **not** the same fact as campaign
 authorization — the release manifest's own `release_qualification_gates.btc` block
 separately tracks `bybit_adapter_implemented: true`,
 `btc_production_daily_decision_operational: true`, and
-`observation_campaign_started: false` as independent booleans. This audit did not
-start the campaign, did not run a counted observation, and did not count Day 1.
+`observation_campaign_authorized: true` and `observation_campaign_started: false` as
+independent booleans. The owner authorized the read-only campaign on 2026-09-06, but
+authorization did not run a counted observation or count Day 1.
 
 ## 10. Large-SMC current state
 
@@ -425,8 +426,8 @@ PENDING) / next_gate=ST_LARGE_SMC_V1_C10_AG_NATIVE_CONTRACT_FREEZE milestone`.
 | Item | Classification |
 |---|---|
 | A1 Continue FX Series 002 | VALID_NOW |
-| A2 Obtain owner authorization for BTC observation | WAITING_AUTHORIZATION |
-| A3 Run BTC 30-day observation only after authorization | WAITING_AUTHORIZATION |
+| A2 Obtain owner authorization for BTC observation | COMPLETE — owner authorized 2026-09-06 |
+| A3 Run BTC 30-valid-observation campaign at eligible report checkpoints | VALID_NOW / first observation pending |
 | A4 Collect outcomes/performance evidence | WAITING_TIME (depends on A1/A3 progressing) |
 | A5 Record evidence-backed defects | VALID_NOW (ongoing practice, already exercised once) |
 | A6 Fix only qualification-blocking strategy/data defects | VALID_NOW (ongoing practice) |
@@ -467,9 +468,9 @@ the expected roadmap shape substantially confirmed.
 
 ## 19. Next owner decisions
 
-- BTC 30-day observation campaign start (production market-data connectivity is
-  confirmed — HTTP 200/retCode 0 — and tooling is ready; explicit go/no-go is the
-  only remaining gate).
+- BTC campaign authorization is no longer open: the owner authorized the read-only
+  30-valid-observation campaign on 2026-09-06. The next gate is the first eligible
+  in-window observation; scheduler installation remains a separate operational action.
 - Future `ST_ASIAN_SWEEP_5R_V1` Demo authorization (CORE-D2): choose among (A) add a
   strategy-specific `risk_per_trade_pct`, (B) explicitly authorize the pilot-config
   value as the strategy's real risk contract, or (C) remain proposal-only.
@@ -569,9 +570,9 @@ flipped).
 
 **Q10 — What three workstreams have the highest expected project value?** (1)
 Continue FX Shadow Series 002 to 20 valid days — the direct path to FX qualification
-evidence. (2) Obtain owner authorization and, once granted, run the BTC 30-day
-observation campaign — tooling and data access are the only prerequisites, both
-already satisfied. (3) Resolve the CORE-D2 strategy risk-contract owner decision — it
+evidence. (2) Run the now-owner-authorized BTC 30-valid-observation campaign at the
+frozen report checkpoints — tooling and data access are already ready. (3) Resolve
+the CORE-D2 strategy risk-contract owner decision — it
 is the single gating item standing between "FX proposals work" and "FX Demo execution
 is even possible to authorize," and is inexpensive to resolve (a decision, not new
 code).

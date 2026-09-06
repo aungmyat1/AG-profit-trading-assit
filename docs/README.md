@@ -26,6 +26,9 @@ their age.
    `strategies/registry.yaml` / `strategies/STRATEGY_LEDGER.md`,
    `docs/VERSION_HISTORY.md`, or dated `docs/status/*.md` evidence — see its own top
    section for which source is authoritative for which claim.
+7. [`status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md`](status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md)
+   — owner authorization to begin the read-only 30-valid-observation BTC campaign;
+   records the zero-count starting state and preserves all execution prohibitions.
 
 ## Architecture
 

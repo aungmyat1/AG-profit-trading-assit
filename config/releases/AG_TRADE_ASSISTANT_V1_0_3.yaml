@@ -430,7 +430,11 @@ release_qualification_gates:
                                                         # first in-window scheduled archive pending
     observation_days_completed: 0
     observation_days_required: 30
-    observation_campaign_started: false   # not authorized/started by this milestone
+    observation_campaign_authorized: true   # OWNER_AUTHORIZED, explicit instruction 2026-09-06
+    observation_campaign_authorized_at_utc: "2026-09-06T06:52:42Z"
+    observation_campaign_started: false   # becomes true only after the first eligible
+                                            # in-window observation is archived; no
+                                            # diagnostic or prior date counts retroactively
     testnet_excluded_from_strategy_evidence: true
     occurrence_identity_verified: true    # tests/test_btc_occurrence_identity.py, existing evidence
     deduplication_verified: true          # tests/test_btc_sweep_research_pipeline.py, existing evidence
