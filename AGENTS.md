@@ -51,6 +51,16 @@ Agent skills  -> ADVISORY ONLY
 - Never modify files unrelated to the current task.
 - Prefer the smallest correct implementation over a general one.
 
+## Frozen strategy version preservation
+
+Do not modify a frozen production or current-authority strategy version in place. A
+behavior-changing correction must be implemented in a new candidate strategy version and
+may replace the current authority only after explicit validation and promotion. Newer
+code, a higher version number, or passing tests do not by themselves make a candidate
+production/current authority. Historical evidence remains permanently attributed to the
+exact application version and strategy version that generated it and must never be
+silently rewritten or reattributed.
+
 ## Minimum-context principle
 
 For every task:

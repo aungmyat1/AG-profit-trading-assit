@@ -1,0 +1,41 @@
+{
+  "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-02",
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "strategy_version": "1.1.1",
+  "symbol": "EURUSD",
+  "cycle": "LONDON_NEWYORK",
+  "trading_date": "2026-09-02",
+  "proposal_timestamp": "2026-09-02T12:15:00+00:00",
+  "direction": "SHORT",
+  "entry": 1.15817,
+  "stop_loss": 1.1585,
+  "tp1": 1.1565699999999999,
+  "tp2": 1.156519999999999,
+  "session_exit_cutoff_utc": "2026-09-02T15:00:00+00:00",
+  "session_exit_cutoff_interpretation": "pair_own_trade_session_end (ASIAN_LONDON=11:00Z / LONDON_NEWYORK=15:00Z) -- an explicit interpretation of an ambiguous invalidation_rules.time_invalidation clause, not a certainty; see module docstring",
+  "market_data_source": "MT5 (VantageMarkets-Demo)",
+  "market_data_timeframe": "M1",
+  "market_data_start": "2026-09-02T12:15:00+00:00",
+  "market_data_end": "2026-09-02T14:59:00+00:00",
+  "resolution_contract_version": "AG_OUTCOME_RESOLUTION_CONTRACT_V1_DRAFT",
+  "fill_model": "MARKET_at_recorded_entry_price_at_ready_at",
+  "fill_quality": "EXACT",
+  "event_sequence": [
+    {
+      "time": "2026-09-02T12:21:00+00:00",
+      "event": "SL",
+      "candle": {
+        "open": 1.15833,
+        "high": 1.1585,
+        "low": 1.15807,
+        "close": 1.15817
+      }
+    }
+  ],
+  "terminal_state": "RESOLVED_SL",
+  "realized_R": -1.0,
+  "tp1_R": 4.8484848484825855,
+  "cost_status": "NOT_INCLUDED",
+  "evidence_quality": "MODERATE",
+  "note": ""
+}

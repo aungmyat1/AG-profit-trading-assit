@@ -1,0 +1,40 @@
+{
+  "original_proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-02",
+  "original_strategy_version": "1.1.1",
+  "original_entry": 1.3492,
+  "original_direction": "LONG",
+  "original_SL": 1.34889,
+  "original_result": "RESOLVED_SL",
+  "original_R": -1.0,
+  "candidate_model": "SESSION_RANGE_25",
+  "candidate_version": "1.1.2-RC1",
+  "box_high": 1.35142,
+  "box_low": 1.34938,
+  "reference_session_range": 0.0020400000000000418,
+  "candidate_SL": 1.34869,
+  "candidate_SL_distance": 0.0005100000000000104,
+  "candidate_TP1": 1.35142,
+  "candidate_TP2": 1.35175,
+  "candidate_result": "RESOLVED_SL",
+  "candidate_R": -1.0,
+  "legacy_lot": 3.22,
+  "legacy_risk_amount": 99.82000000001045,
+  "legacy_lot_reason": null,
+  "candidate_lot": 1.96,
+  "candidate_risk_amount": 99.96000000000203,
+  "candidate_lot_reason": null,
+  "geometry_error": null,
+  "event_sequence": [
+    {
+      "time": "2026-09-02T09:57:00+00:00",
+      "event": "SL"
+    }
+  ],
+  "classification": "COUNTERFACTUAL_REPLAY",
+  "evidence_labels": [
+    "COUNTERFACTUAL_REPLAY",
+    "NOT_ORIGINAL_EVIDENCE",
+    "NOT_LIVE_OBSERVATION",
+    "NOT_PROMOTION_EVIDENCE"
+  ]
+}

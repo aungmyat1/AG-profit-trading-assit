@@ -74,9 +74,11 @@ proposals cannot use it today.
 - The BTC sweep/retest research path uses Bybit production public market data for the
   BTCUSDT linear perpetual. `scripts/run_btc_daily_report.py` produces the previous UTC
   day's deterministic `READY`/`WATCH`/`NO_TRADE`/`DATA_ERROR` decision during the frozen
-  00:05-00:15 UTC report window, validates complete closed H1/M5 evidence, and archives it
-  immutably. A `READY` result includes an informational entry-proposal ticket—not a broker
-  ticket. `scripts/install_btc_daily_task.ps1` can install the 06:37 MMT daily local task.
+  06:30-06:45 UTC report window (13:00-13:15 MMT; see
+  `docs/contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md`), validates complete closed
+  H1/M5 evidence, and archives it immutably. A `READY` result includes an informational
+  entry-proposal ticket—not a broker ticket. `scripts/install_btc_daily_task.ps1`
+  installs the daily local task at 13:05 MMT (06:35 UTC), inside that window.
   No crypto research path can reach exchange or MT5 order submission; crypto execution
   remains unimplemented.
 - Historical replay prohibits live MT5 candle/tick access. Historical session-box

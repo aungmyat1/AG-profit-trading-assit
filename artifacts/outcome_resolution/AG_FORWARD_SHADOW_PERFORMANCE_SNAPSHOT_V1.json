@@ -1,0 +1,68 @@
+{
+  "schema": "AG_FORWARD_SHADOW_PERFORMANCE_SNAPSHOT_V1",
+  "strategy": "ST_ASIAN_SWEEP_5R_V1",
+  "version": "1.1.1",
+  "evidence_class": "FORWARD_SHADOW_RETROSPECTIVE_RESOLUTION",
+  "resolution_contract_version": "AG_OUTCOME_RESOLUTION_CONTRACT_V1_DRAFT",
+  "generated_at_utc": "2026-09-06T12:53:17.488504+00:00",
+  "date_range": [
+    "2026-09-01",
+    "2026-09-04"
+  ],
+  "READY_total": 13,
+  "FILLED": 13,
+  "ENTRY_NOT_REACHED": 0,
+  "RESOLVED": 13,
+  "AMBIGUOUS": 0,
+  "INVALID_EVIDENCE": 0,
+  "UNRESOLVED": 0,
+  "wins": 0,
+  "losses": 13,
+  "breakevens_or_partial": 0,
+  "fill_rate": 1.0,
+  "win_rate": 0.0,
+  "win_rate_excluding_BE": 0.0,
+  "average_win_R": null,
+  "average_loss_R": -1.0,
+  "expectancy_R": -1.0,
+  "net_R": -13.0,
+  "profit_factor": 0.0,
+  "max_drawdown_R": 13.0,
+  "cost_model": {
+    "spread": "NOT_INCLUDED",
+    "commission": "NOT_INCLUDED",
+    "slippage": "NOT_INCLUDED",
+    "swap": "NOT_INCLUDED"
+  },
+  "performance_basis": "GROSS_OF_UNMODELED_COSTS",
+  "EURUSD": {
+    "trades": 7,
+    "wins": 0,
+    "win_rate": 0.0,
+    "expectancy_R": -1.0,
+    "net_R": -7.0
+  },
+  "GBPUSD": {
+    "trades": 6,
+    "wins": 0,
+    "win_rate": 0.0,
+    "expectancy_R": -1.0,
+    "net_R": -6.0
+  },
+  "ASIAN_LONDON": {
+    "trades": 8,
+    "wins": 0,
+    "win_rate": 0.0,
+    "expectancy_R": -1.0,
+    "net_R": -8.0
+  },
+  "LONDON_NEWYORK": {
+    "trades": 5,
+    "wins": 0,
+    "win_rate": 0.0,
+    "expectancy_R": -1.0,
+    "net_R": -5.0
+  },
+  "sample_size_warning": "VERY_SMALL_SAMPLE",
+  "profitability_classification": "NEGATIVE_EXPECTANCY_OBSERVED"
+}
