@@ -353,14 +353,15 @@ def test_unknown_transition_pair_yields_no_requirements_but_is_still_adjacency_c
 
 
 def test_fx_adapter_reconciles_against_registry_and_yaml():
-    """Hardened + stage-contract-reconciled expectation: FX is legacy-labeled
-    OPERATIONAL_SHADOW, but cumulative inheritance re-checks FOUNDATIONAL_INVARIANTS for
-    its next transition too -- DETERMINISM/HISTORICAL_REPLAY (both PARTIAL) must surface
-    as blockers alongside the stage's own SHADOW_SERIES_COMPLETION/FRICTION_STRESS_TEST/
-    OOS_VALIDATION. Critically, FX must NOT carry BTC's NATURAL_CAMPAIGN_ACCRUAL gate --
-    the abstract SHADOW_ENTRY_EVIDENCE milestone resolves, for FX, to
-    FX_SHADOW_ENTRY_PREFLIGHT_PASS (PASS, real preflight-closure evidence), so it is
-    correctly absent from the blocker list entirely."""
+    """Stage-contract-reconciled + determinism-reconciled expectation: FX is
+    legacy-labeled OPERATIONAL_SHADOW, but cumulative inheritance re-checks
+    FOUNDATIONAL_INVARIANTS for its next transition too. DETERMINISM is now real-
+    evidence PASS (AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION,
+    scripts/generate_determinism_evidence.py::generate_fx_evidence) and must NOT
+    appear as a blocker; HISTORICAL_REPLAY (still PARTIAL) must. FX must NOT carry
+    BTC's NATURAL_CAMPAIGN_ACCRUAL gate -- the abstract SHADOW_ENTRY_EVIDENCE milestone
+    resolves, for FX, to FX_SHADOW_ENTRY_PREFLIGHT_PASS (PASS, real preflight-closure
+    evidence), so it is correctly absent from the blocker list entirely."""
     record = build_fx_record(repo_root=REPO_ROOT)
     assert record.identity.strategy_id == "ST_ASIAN_SWEEP_5R_V1"
     assert record.identity.semantic_version == "1.1.1"
@@ -368,7 +369,6 @@ def test_fx_adapter_reconciles_against_registry_and_yaml():
     assert record.execution_authority == "SHADOW_PROPOSAL_ONLY"
     assert record.promotion_eligible is False
     assert set(record.promotion_blockers) == {
-        "DETERMINISM",
         "HISTORICAL_REPLAY",
         "SHADOW_SERIES_COMPLETION",
         "FRICTION_STRESS_TEST",
@@ -376,16 +376,20 @@ def test_fx_adapter_reconciles_against_registry_and_yaml():
     }
     assert "SPEC_FIDELITY" not in record.promotion_blockers  # PASS, correctly not blocking
     assert "NO_LOOKAHEAD" not in record.promotion_blockers  # PASS, correctly not blocking
+    assert "DETERMINISM" not in record.promotion_blockers  # real evidence PASS, correctly not blocking
+    assert record.gates["DETERMINISM"].status == GateStatus.PASS
     assert "NATURAL_CAMPAIGN_ACCRUAL" not in record.promotion_blockers  # BTC's gate, never FX's
     assert "FX_SHADOW_ENTRY_PREFLIGHT_PASS" not in record.promotion_blockers  # PASS, correctly not blocking
     assert record.gates["FX_SHADOW_ENTRY_PREFLIGHT_PASS"].status == GateStatus.PASS
 
 
 def test_btc_adapter_reconciles_against_registry_and_yaml():
-    """Hardened expectation: BTC's NO_LOOKAHEAD/HISTORICAL_REPLAY (NOT_VERIFIED) and
-    DETERMINISM (PARTIAL) must block FORWARD_RESEARCH -> OPERATIONAL_SHADOW alongside
-    NATURAL_CAMPAIGN_ACCRUAL -- campaign completion alone could never make this
-    eligible while the foundational gates stay unproven."""
+    """Determinism-reconciled expectation: BTC's NO_LOOKAHEAD/HISTORICAL_REPLAY
+    (NOT_VERIFIED) must still block FORWARD_RESEARCH -> OPERATIONAL_SHADOW alongside
+    NATURAL_CAMPAIGN_ACCRUAL, but DETERMINISM is now real-evidence PASS
+    (scripts/generate_determinism_evidence.py::generate_btc_evidence) and must NOT
+    appear -- campaign completion alone still could never make this eligible while the
+    remaining foundational gates stay unproven."""
     record = build_btc_record(repo_root=REPO_ROOT)
     assert record.identity.strategy_id == "ST_LIQUIDITY_SWEEP_RETEST_V1"
     assert record.identity.semantic_version == "2.0.0"
@@ -393,28 +397,32 @@ def test_btc_adapter_reconciles_against_registry_and_yaml():
     assert record.execution_authority == "RESEARCH_ONLY"
     assert record.promotion_eligible is False
     assert set(record.promotion_blockers) == {
-        "DETERMINISM",
         "NO_LOOKAHEAD",
         "HISTORICAL_REPLAY",
         "NATURAL_CAMPAIGN_ACCRUAL",
     }
     assert "SPEC_FIDELITY" not in record.promotion_blockers
+    assert "DETERMINISM" not in record.promotion_blockers  # real evidence PASS, correctly not blocking
+    assert record.gates["DETERMINISM"].status == GateStatus.PASS
     assert record.gates["NATURAL_CAMPAIGN_ACCRUAL"].details["observed_count"] == 0
 
 
 def test_large_smc_adapter_reconciles_against_registry_and_yaml():
-    """Hardened expectation: OFFLINE_RESEARCH -> FORWARD_RESEARCH requires only the
-    foundational four plus this strategy's own C10_STOP_POLICY addition --
-    FRICTION_STRESS_TEST/OOS_VALIDATION belong to a later transition (DEMO_ELIGIBLE)
-    and must NOT appear here (this was the pre-hardening adapter's own over-blocking
-    bug -- section 29's forbidden pattern)."""
+    """Determinism-reconciled expectation: OFFLINE_RESEARCH -> FORWARD_RESEARCH
+    requires only the foundational four plus this strategy's own C10_STOP_POLICY
+    addition -- FRICTION_STRESS_TEST/OOS_VALIDATION belong to a later transition
+    (DEMO_ELIGIBLE) and must NOT appear here. DETERMINISM is now real-evidence PASS
+    (scripts/generate_determinism_evidence.py::generate_large_smc_evidence) and must
+    NOT appear as a blocker; only the still-unsigned C10_STOP_POLICY should."""
     record = build_large_smc_record(repo_root=REPO_ROOT)
     assert record.identity.strategy_id == "ST_LARGE_SMC_V1"
     assert record.identity.semantic_version == "1.0.6"
     assert record.gates["C10_STOP_POLICY"].status == GateStatus.UNSIGNED
     assert record.execution_authority == "NONE"
     assert record.promotion_eligible is False
-    assert set(record.promotion_blockers) == {"DETERMINISM", "C10_STOP_POLICY"}
+    assert set(record.promotion_blockers) == {"C10_STOP_POLICY"}
+    assert "DETERMINISM" not in record.promotion_blockers  # real evidence PASS, correctly not blocking
+    assert record.gates["DETERMINISM"].status == GateStatus.PASS
     assert "FRICTION_STRESS_TEST" not in record.promotion_blockers  # belongs to a later transition
     assert "OOS_VALIDATION" not in record.promotion_blockers  # belongs to a later transition
     assert "SPEC_FIDELITY" not in record.promotion_blockers
@@ -508,16 +516,35 @@ def test_cumulative_required_gates_resolve_abstract_milestone_per_strategy_famil
     assert set(FOUNDATIONAL_INVARIANTS).issubset(fx_required)
 
 
-def test_large_smc_blocker_includes_determinism():
-    """Mandatory regression (AGENT PROMPT section 20). Large-SMC's real evidence has
-    DETERMINISM=PARTIAL, SPEC_FIDELITY/NO_LOOKAHEAD/HISTORICAL_REPLAY=PASS, and its own
-    additive C10_STOP_POLICY=UNSIGNED for OFFLINE_RESEARCH -> FORWARD_RESEARCH.
-    DETERMINISM must remain a blocker -- it cannot disappear just because Large-SMC's
-    current stage label is OFFLINE_RESEARCH (the very first stage)."""
+def test_large_smc_blocker_mechanism_would_surface_a_non_pass_determinism():
+    """Mechanism regression, updated for AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_
+    EVIDENCE_RECONCILIATION. Before that task, Large-SMC's DETERMINISM sat at PARTIAL
+    (unit-level occurrence-identity evidence only) and this test proved it could not
+    silently disappear from the blocker list at OFFLINE_RESEARCH -> FORWARD_RESEARCH.
+    Real evidence has since been established (LargeSMCResearchEngine.evaluate() proven
+    repeat-run-identical against the golden fixture) and DETERMINISM is now genuinely
+    PASS -- see test_large_smc_adapter_reconciles_against_registry_and_yaml for that
+    real-evidence assertion. This test instead proves the underlying MECHANISM still
+    works: if DETERMINISM's gate were anything other than PASS, evaluate_transition
+    would still surface it, using Large-SMC's own real gates/overrides as the fixture
+    shape (never a fabricated one)."""
+    from validation_framework.adapters.large_smc_adapter import STRATEGY_TRANSITION_OVERRIDES
+
     record = build_large_smc_record(repo_root=REPO_ROOT)
-    assert record.promotion_eligible is False
-    assert "DETERMINISM" in record.promotion_blockers
-    assert "C10_STOP_POLICY" in record.promotion_blockers
+    assert record.gates["DETERMINISM"].status == GateStatus.PASS  # current real evidence
+
+    degraded_gates = dict(record.gates)
+    degraded_gates["DETERMINISM"] = _gate("DETERMINISM", GateStatus.PARTIAL)
+    evaluation = evaluate_transition(
+        record.lifecycle_stage,
+        record.next_transition,
+        degraded_gates,
+        strategy_overrides=STRATEGY_TRANSITION_OVERRIDES,
+        strategy_id=record.identity.strategy_id,
+    )
+    assert evaluation.eligible is False
+    assert "DETERMINISM" in evaluation.blocking_gates
+    assert "C10_STOP_POLICY" in evaluation.blocking_gates
 
 
 def test_btc_cumulative_block_at_operational_shadow():

@@ -199,6 +199,54 @@ blockers are now exactly its own evidence gaps (`DETERMINISM`, `HISTORICAL_REPLA
 `SHADOW_SERIES_COMPLETION`, `FRICTION_STRESS_TEST`, `OOS_VALIDATION`); BTC and Large-SMC
 blocker lists are unchanged.
 
+## AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION (2026-09-07)
+
+All three strategies previously carried `DETERMINISM = PARTIAL`, each backed only by
+unit-level evidence (one repeat-run of a *reporting* layer for FX; occurrence-identity
+determinism alone for BTC/Large-SMC) -- never a proof that the actual versioned
+semantic pipeline itself is repeat-run-stable end to end.
+
+**DETERMINISM PASS requires repeated semantic-pipeline equality over identical
+version-bound fixtures. Unit/helper determinism alone is insufficient.**
+
+Each strategy's real, offline, no-network pipeline boundary was identified and driven
+2-3 times over a fixed fixture, comparing the full canonical semantic payload (never
+just an identity field):
+
+- **FX:** `strategy_engine.engine.evaluate()` -> `TradeSignal` ->
+  `post_asian_pilot.decision.map_trade_signal_to_decision()` -> `PostAsianDecision`.
+  Both functions are pure given explicit candles/timestamps.
+- **BTC:** `btc_sweep_research.pipeline.run_research_cycle()` against a cached,
+  in-memory `CryptoCandleFeed` fixture (`tests/test_btc_sweep_research_pipeline.py`'s
+  own `_FixtureFeed`/`_build_fixture`) -- no network, fresh tmp_path-isolated state
+  each run.
+- **Large-SMC:** `large_smc_research.engine.LargeSMCResearchEngine.evaluate()` against
+  the frozen golden two-stage fixture (`artifacts/backtests/golden/
+  two_stage_golden_fixture_v1.json` + cached historical CSV store) -- the actual
+  research-decision boundary, one layer above the Stage1/Stage2 fingerprint tests that
+  already existed.
+
+Evidence is **immutable and version-bound**: `scripts/generate_determinism_evidence.py`
+writes one JSON record per strategy under `artifacts/validation_evidence/determinism/`,
+named `<strategy_id>_<semantic_version>_<timestamp>.json`, never overwritten. Each
+record carries `strategy_id`, `strategy_version`, `evaluation_head`, `fixture_ref`,
+`test_ref`, `runs`, `normalization_contract`, `result`, and `payload_digests` (SHA-256
+of the canonical JSON payload via the existing `post_asian_pilot.fingerprint.fingerprint`
+serializer -- no new serializer invented). Every adapter's `DETERMINISM` gate is now
+derived by `validation_framework.adapters.determinism_evidence.load_determinism_evidence()`,
+which reads the most recent record matching the strategy's *exact* current
+`(strategy_id, semantic_version)` and reports its recorded `result` verbatim --
+`NOT_VERIFIED` if no matching record exists (a record for any other version is never
+read), `FAIL` if one exists but recorded a genuine digest mismatch, `PASS` only if it
+recorded one. No adapter infers `PASS` from a test file merely existing.
+
+Result: all three strategies' `DETERMINISM` gate is now `PASS`, backed by real evidence
+generated this task. Every other gate/blocker is unchanged -- FX still blocks on
+`HISTORICAL_REPLAY`/`SHADOW_SERIES_COMPLETION`/`FRICTION_STRESS_TEST`/`OOS_VALIDATION`;
+BTC still blocks on `NO_LOOKAHEAD`/`HISTORICAL_REPLAY`/`NATURAL_CAMPAIGN_ACCRUAL`;
+Large-SMC still blocks on `C10_STOP_POLICY` (C10 remains `UNSIGNED`,
+`proposal_generation_authorized` remains `false` -- unchanged by this task).
+
 ## What this task did NOT do
 
 - Did not create, promote, or version-bump any strategy.
@@ -210,5 +258,5 @@ blocker lists are unchanged.
   found no discrepancy needing a documentation edit this run).
 - Did not invent a Large-SMC shadow-entry gate or otherwise assign speculative future
   evidence.
-- Did not touch strategy determinism evidence -- that is explicitly the next task
-  (`AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION`), not this one.
+- Did not resolve C10, change Large-SMC's proposal authorization, or touch any strategy
+  economics while establishing determinism evidence.

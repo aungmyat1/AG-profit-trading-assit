@@ -272,3 +272,42 @@ def test_case_e_multi_interval_eligibility(dataset, golden):
     for iso_ts, expected in case["expected"]["eligible_at"].items():
         ts = dt.datetime.fromisoformat(iso_ts)
         assert qe.is_eligible_at(ts) == expected, f"{iso_ts}: expected eligible={expected}"
+
+
+# --------------------------------------------------------------------------- determinism
+# (AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION)
+#
+# The stage1/stage2 fingerprint-reload tests above (test_fingerprint_matches_golden_
+# fixture, test_fingerprint_stable_across_reload) already prove Stage1 determinism.
+# What they do NOT cover is large_smc_research.engine.LargeSMCResearchEngine -- the
+# actual top-level entry point that composes Stage2's combinations into
+# LargeSMCResearchDecision (occurrence identity, setup_family_id, entry geometry,
+# structural-invalidation fields, and C10's always-None simulated_broker_stop). This
+# test drives that real engine, reusing the same golden dataset/store/bypass_counters
+# fixtures as the cases above -- no new fixture data, no CSV replay of its own.
+
+
+def test_large_smc_discovery_is_deterministic_for_golden_fixture(dataset, store, bypass_counters, golden):
+    """Same golden dataset + same cached historical store + same evaluation_time must
+    yield byte-identical LargeSMCResearchDecision tuples across repeated calls to
+    LargeSMCResearchEngine.evaluate() -- the actual research-decision output boundary,
+    not just Stage1's own fingerprint or one case's combination. C10 remains UNSIGNED
+    throughout: simulated_broker_stop must repeat as None, never invented."""
+    from large_smc_research.engine import LargeSMCResearchEngine
+
+    case = next(c for c in golden["cases"] if c["case_id"] == "CASE_A_E1M3_RESTORED_READY")
+    as_of = dt.datetime.fromisoformat(case["evaluation_timestamp"])
+    engine = LargeSMCResearchEngine()
+
+    runs = []
+    for _ in range(2):
+        with historical_data_context(store, as_of):
+            runs.append(engine.evaluate("EURUSD", as_of, dataset))
+
+    baseline = runs[0]
+    assert len(baseline) > 0
+    for decisions in runs[1:]:
+        assert decisions == baseline
+    for decision in baseline:
+        assert decision.simulated_broker_stop is None  # C10 UNSIGNED -- never invented, repeats identically
+    assert bypass_counters == {"D1_or_H1_discovery": 0, "E_evaluator": 0, "build_symbol_conditional_entry_analysis": 0}

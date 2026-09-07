@@ -43,6 +43,7 @@ from __future__ import annotations
 import os
 from datetime import datetime, timezone
 
+from validation_framework.adapters.determinism_evidence import load_determinism_evidence
 from validation_framework.evaluator import evaluate_transition
 from validation_framework.models import (
     GateResult,
@@ -96,11 +97,22 @@ def build_btc_record(repo_root: str = ".") -> StrategyValidationRecord:
         ("strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml", "strategies/registry.yaml"),
     )
 
+    determinism_status, determinism_refs, determinism_details = load_determinism_evidence(
+        repo_root, STRATEGY_ID, SEMANTIC_VERSION
+    )
     gates["DETERMINISM"] = gate(
         "DETERMINISM",
-        GateStatus.PARTIAL,
-        ("tests/test_btc_occurrence_identity.py",),
-        {"note": "Candidate-occurrence identity proven deterministic; full end-to-end decision pipeline determinism not separately tested."},
+        determinism_status,
+        determinism_refs + ("tests/test_btc_occurrence_identity.py",),
+        {
+            **determinism_details,
+            "note": (
+                "Full offline run_research_cycle() pipeline (cached H1/M5 fixture, no "
+                "network) proven repeat-run-identical -- SetupState + full "
+                "BTCSweepResearchProposal payload, not just occurrence identity "
+                "(AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION)."
+            ),
+        },
     )
 
     gates["NO_LOOKAHEAD"] = gate(

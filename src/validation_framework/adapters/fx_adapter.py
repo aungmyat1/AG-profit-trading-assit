@@ -59,6 +59,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Tuple
 
+from validation_framework.adapters.determinism_evidence import load_determinism_evidence
 from validation_framework.evaluator import evaluate_transition
 from validation_framework.models import (
     GateResult,
@@ -139,18 +140,24 @@ def build_fx_record(repo_root: str = ".") -> StrategyValidationRecord:
         {"note": "entry_order_type resolved to MARKET as of v1.1.1 (AG_EXECUTION_RUNTIME_READINESS_V1, 2026-08-31)"},
     )
 
+    determinism_status, determinism_refs, determinism_details = load_determinism_evidence(
+        repo_root, STRATEGY_ID, SEMANTIC_VERSION
+    )
     gates["DETERMINISM"] = gate(
         "DETERMINISM",
-        GateStatus.PARTIAL,
-        (
+        determinism_status,
+        determinism_refs
+        + (
             "docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_RELEASE_IDENTITY_REMEDIATION_STATUS.md",
         ),
         {
+            **determinism_details,
             "note": (
-                "One real repeat-run against unchanged 2026-09-03 journals produced "
-                "byte-identical decisions/proposals; not a dedicated seeded-determinism "
-                "unit test, so PARTIAL rather than PASS."
-            )
+                "Full semantic pipeline (strategy_engine.engine.evaluate -> "
+                "map_trade_signal_to_decision) proven repeat-run-identical over a fixed "
+                "fixture (AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION); "
+                "the release-identity repeat-run remains additional supporting evidence."
+            ),
         },
     )
 

@@ -1242,3 +1242,82 @@ def test_entry_ticket_wiring_source_never_references_execution_send_path():
 
     assert not hasattr(report_mod, "order_send")
     assert not any(name.startswith("execution") for name in vars(report_mod))
+
+
+# --------------------------------------------------------------------------- determinism
+# (AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION)
+#
+# Exercises the actual canonical FX semantic pipeline boundary: fixed session/post-session
+# candles -> strategy_engine.engine.evaluate() (the same public entry point
+# post_asian_pilot.pipeline._evaluate_pair calls) -> TradeSignal -> map_trade_signal_to_
+# decision() -> PostAsianDecision. Both functions are pure (no MT5, no wall-clock, no
+# randomness) given explicit candles/timestamps -- this is not a new determinism
+# framework, just the smallest fixed fixture needed to drive them twice and compare.
+# The candle geometry is the same shape as tests/test_session_router.py's
+# test_range_with_sweep_routes_to_entry_2 (a real SHORT sweep-and-reject), reused here
+# rather than re-derived, translated onto ST_ASIAN_SWEEP_5R_V1's real ASIAN_LONDON pair.
+
+
+def _fx_determinism_fixture_candles():
+    session_date = dt.date(2026, 1, 5)
+    session_candles = [
+        Candle(dt.datetime(2026, 1, 5, 0, 0, tzinfo=UTC), 1.1000, 1.1050, 1.0950, 1.1010),
+        Candle(dt.datetime(2026, 1, 5, 0, 15, tzinfo=UTC), 1.1010, 1.1040, 1.0960, 1.1005),
+    ]
+    session_high = 1.1050
+    sweep_candle = Candle(
+        dt.datetime(2026, 1, 5, 6, 0, tzinfo=UTC), 1.1005, session_high + 0.0010, 1.1000, session_high - 0.0002
+    )
+    return session_date, session_candles, [sweep_candle]
+
+
+def _run_fx_pipeline_once(strategy):
+    from strategy_engine.engine import evaluate as evaluate_strategy
+
+    session_date, session_candles, post_session_candles = _fx_determinism_fixture_candles()
+    signal = evaluate_strategy(
+        strategy, "ASIAN_LONDON", "EURUSD", session_date, session_candles, 2, post_session_candles
+    )
+    decision = map_trade_signal_to_decision(
+        signal,
+        session_snapshot_id="DETERMINISM-TEST-SNAPSHOT",
+        evaluation_time=dt.datetime(2026, 1, 5, 7, 0, tzinfo=UTC),
+        window_end_utc=dt.datetime(2026, 1, 5, 11, 0, tzinfo=UTC),
+    )
+    return signal, decision
+
+
+def test_fx_full_pipeline_is_deterministic_for_fixed_fixture(strategy):
+    """Same fixed candles + same strategy config + same injected evaluation/window
+    timestamps must yield byte-identical TradeSignal and PostAsianDecision across
+    repeated calls -- the real semantic pipeline boundary, not just one helper."""
+    session_date, session_candles, post_session_candles = _fx_determinism_fixture_candles()
+    before = (tuple(session_candles), tuple(post_session_candles))
+
+    runs = [_run_fx_pipeline_once(strategy) for _ in range(3)]
+
+    signal_1, decision_1 = runs[0]
+    assert signal_1.status == "SIGNAL"
+    assert signal_1.setup == "SWEEP"
+    assert signal_1.direction == "SHORT"
+    assert decision_1.status == STATUS_READY
+
+    for signal, decision in runs[1:]:
+        assert signal == signal_1
+        assert decision == decision_1
+
+    # Fixture candles must not have been mutated by any run.
+    after = _fx_determinism_fixture_candles()
+    assert before == (tuple(after[1]), tuple(after[2]))
+
+
+def test_fx_pipeline_changed_input_changes_output(strategy):
+    """Control test: this fixture is not vacuously deterministic -- a materially
+    different sweep candle (no breach of the session high) must yield a different
+    semantic outcome (no SIGNAL), proving the equality assertions above are meaningful."""
+    session_date, session_candles, _ = _fx_determinism_fixture_candles()
+    from strategy_engine.engine import evaluate as evaluate_strategy
+
+    boring_candle = Candle(dt.datetime(2026, 1, 5, 6, 0, tzinfo=UTC), 1.1005, 1.1006, 1.1004, 1.1005)
+    signal = evaluate_strategy(strategy, "ASIAN_LONDON", "EURUSD", session_date, session_candles, 2, [boring_candle])
+    assert signal.status == "NO_TRADE"

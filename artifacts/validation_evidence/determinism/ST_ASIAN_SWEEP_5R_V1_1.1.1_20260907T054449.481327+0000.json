@@ -1,0 +1,18 @@
+{
+  "evaluated_at": "2026-09-07T05:44:49.481327+00:00",
+  "evaluation_head": "d6fd2c68f868b25a61a6d84c9eee7ee4ff3446b4",
+  "fixture_ref": "scripts/generate_determinism_evidence.py::generate_fx_evidence (inline fixed candle fixture, same shape as tests/test_session_router.py::test_range_with_sweep_routes_to_entry_2)",
+  "framework_id": "AG_EGSVF_V1",
+  "normalization_contract": "Canonical semantic payload = the full dataclass output of the pipeline call (TradeSignal+PostAsianDecision for FX; SetupState+BTCSweepResearchProposal for BTC; tuple of LargeSMCResearchDecision for Large-SMC), serialized via post_asian_pilot.fingerprint.fingerprint() (sort_keys=True, stable separators, default=str for datetimes). No field is excluded -- every run used a fixed, explicitly-injected timestamp/session context (no wall-clock, no randomness, no network), so there is no run-specific field (generated_at/run_id/etc.) to strip.",
+  "payload_digests": [
+    "06f366e8da4e5625c51826a8110fe15e3f93cd58c778b3e6138d37430a452ccf",
+    "06f366e8da4e5625c51826a8110fe15e3f93cd58c778b3e6138d37430a452ccf",
+    "06f366e8da4e5625c51826a8110fe15e3f93cd58c778b3e6138d37430a452ccf"
+  ],
+  "payload_digests_equal": true,
+  "result": "PASS",
+  "runs": 3,
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "strategy_version": "1.1.1",
+  "test_ref": "tests/test_post_asian_pilot.py::test_fx_full_pipeline_is_deterministic_for_fixed_fixture"
+}

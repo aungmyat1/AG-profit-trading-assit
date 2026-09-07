@@ -359,3 +359,63 @@ def test_research_occurrence_count_identical_regardless_of_guard_state(tmp_path)
     assert ledger_a.count() == ledger_b.count() == 2  # research evidence identical either way
     assert all(not o.setup_state.tradability_blocked for o in report_unblocked.occurrences)
     assert all(o.setup_state.tradability_blocked for o in report_blocked.occurrences)
+
+
+# --------------------------------------------------------------------------- determinism
+# (AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION)
+#
+# The occurrence-identity determinism proven by tests/test_btc_occurrence_identity.py is
+# a real but partial component (same inputs -> same occurrence_id); it does not by
+# itself prove the qualification/direction/geometry/costs/ticket payload built AROUND
+# that id are also stable. This test drives the actual, real run_research_cycle() (the
+# same function BTC's daily-report CLI calls) three times against identical cached
+# candles, fresh isolated tmp_path-backed state each run (never the production journal/
+# directories), and compares the full semantic payload -- not just the identity field.
+
+
+def test_btc_research_pipeline_is_deterministic_for_cached_fixture(tmp_path):
+    """Same fixed H1/M5 candles + same injected `now` must yield byte-identical
+    SetupState and BTCSweepResearchProposal payloads across repeated, independently
+    state-isolated runs of run_research_cycle -- offline, no network, no shared/
+    production campaign state."""
+    h1, m5 = _build_fixture([(13, 30)])
+    before = (tuple(h1), tuple(m5))
+
+    reports = []
+    for i in range(3):
+        feed = _FixtureFeed(h1, m5)
+        runtime, ledger, daily_loss_guard, open_position_guard = _fresh_runtime_and_guards(tmp_path, suffix=f"_det{i}")
+        reports.append(_run(feed, runtime, ledger, daily_loss_guard, open_position_guard))
+
+    baseline = reports[0]
+    assert len(baseline.occurrences) == 1
+    assert baseline.occurrences[0].setup_state.state == STATE_ENTRY_READY
+
+    for report in reports[1:]:
+        assert len(report.occurrences) == len(baseline.occurrences)
+        for a, b in zip(baseline.occurrences, report.occurrences):
+            assert a.setup_state == b.setup_state
+            assert a.proposal == b.proposal
+            assert a.ledger_new_row == b.ledger_new_row
+
+    # Fixture candles must not have been mutated by any run.
+    after_h1, after_m5 = _build_fixture([(13, 30)])
+    assert before == (tuple(after_h1), tuple(after_m5))
+
+
+def test_btc_pipeline_changed_input_changes_output(tmp_path):
+    """Control test: a materially different H1 trend (reversed zigzag direction) must
+    change the qualified direction, proving the equality assertions above are
+    meaningful rather than vacuously true."""
+    h1_down, m5 = _build_fixture([(13, 30)])
+    h1_up = _h1_zigzag(down_len=3, up_len=8)  # inverts which leg dominates -> opposite H1 trend
+
+    feed_down = _FixtureFeed(h1_down, m5)
+    runtime_a, ledger_a, daily_loss_a, open_position_a = _fresh_runtime_and_guards(tmp_path, "_ctrl_a")
+    report_down = _run(feed_down, runtime_a, ledger_a, daily_loss_a, open_position_a)
+
+    feed_up = _FixtureFeed(h1_up, m5)
+    runtime_b, ledger_b, daily_loss_b, open_position_b = _fresh_runtime_and_guards(tmp_path, "_ctrl_b")
+    report_up = _run(feed_up, runtime_b, ledger_b, daily_loss_b, open_position_b)
+
+    assert report_down.container_state != report_up.container_state or report_down.occurrences != report_up.occurrences

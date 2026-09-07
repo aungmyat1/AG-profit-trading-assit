@@ -49,6 +49,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+from validation_framework.adapters.determinism_evidence import load_determinism_evidence
 from validation_framework.evaluator import evaluate_transition
 from validation_framework.models import (
     GateResult,
@@ -96,11 +97,23 @@ def build_large_smc_record(repo_root: str = ".") -> StrategyValidationRecord:
         {"note": "Config correctly declares its own C10/proposal-authorization gaps; implementation enforces them. See section 40 distinction: SPEC_FIDELITY != C10_SIGNED."},
     )
 
+    determinism_status, determinism_refs, determinism_details = load_determinism_evidence(
+        repo_root, STRATEGY_ID, SEMANTIC_VERSION
+    )
     gates["DETERMINISM"] = gate(
         "DETERMINISM",
-        GateStatus.PARTIAL,
-        ("proposals/occurrence_identity.py",),
-        {"note": "Candidate-occurrence identity is deterministic and unit-tested; full research-engine determinism across the whole D1/H1/M5 pipeline not separately proven."},
+        determinism_status,
+        determinism_refs + ("proposals/occurrence_identity.py",),
+        {
+            **determinism_details,
+            "note": (
+                "LargeSMCResearchEngine.evaluate() proven repeat-run-identical against "
+                "the frozen golden two-stage fixture -- full decision tuple (occurrence "
+                "identity, entry geometry, structural invalidation, always-None C10 "
+                "stop), not just occurrence identity in isolation "
+                "(AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION)."
+            ),
+        },
     )
 
     gates["NO_LOOKAHEAD"] = gate(
