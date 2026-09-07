@@ -67,27 +67,48 @@ A profile with only `bias` and `execution` set is valid.
 
 ## Orchestration (what this skill actually calls)
 
-For every role with a timeframe assigned, in role order MACRO -> BIAS -> WORKING ->
-SETUP -> EXECUTION -> MANAGEMENT:
+`src/mtf_context/` (added 2026-09-07, `AG_UNIVERSAL_MTF_CONTEXT_OPERATIONAL_INTEGRATION_AND_VALIDATION_V1`)
+is the real, thin runtime implementation of this skill: `mtf_context.analyze(symbol,
+profile, evaluation_time=None, ...)` takes an `MTFProfile` (role -> timeframe map, any
+subset of MACRO/BIAS/WORKING/SETUP/EXECUTION/MANAGEMENT) and returns one `MTFContext`.
+For every role with a timeframe assigned:
 
-1. **Structure** — `market_structure.analyze_structure(symbol, timeframe)`, or
-   `assistant.market_data.multi_timeframe_snapshot(symbol, timeframes)` when several
-   roles share a plain structure+quote need in one call — it already returns
-   closed-candle `StructureResult` per timeframe and accepts an arbitrary `timeframes`
-   sequence, not a fixed D1/H4/H1/M15 list.
-2. **Zones** (SETUP/EXECUTION roles, and MACRO for major POIs) —
-   `supply_demand.validated_order_blocks_for()`, `fair_value_gaps_for()`,
-   `dealing_range_zones()` / `premium_discount_from_previous_day()`.
-3. **Liquidity** (MACRO for external liquidity, SETUP/EXECUTION for local sweeps) —
-   `liquidity.liquidity_result()`, `liquidity.hierarchy.external_swing_liquidity()` /
-   `find_inducement_candidates()`.
-4. **Local confirmation** (EXECUTION role only) —
+1. **Structure** — `market_structure.analyze_structure(symbol, timeframe)` — closed-candle
+   `StructureResult`, called for every role that has a timeframe (not a fixed
+   D1/H4/H1/M15 list; `tests/test_mtf_context.py::test_role_timeframes_is_role_based_not_hardcoded_hierarchy`
+   and its live counterpart prove two structurally different profiles run through the
+   same code path).
+2. **Liquidity** — `liquidity.liquidity_result(symbol, timeframe)`, every role.
+3. **Zones** (SETUP/EXECUTION roles only) — `supply_demand.validated_order_blocks_for()`,
+   `fair_value_gaps_for()`.
+4. **Local confirmation** (EXECUTION role only, and only when the caller explicitly
+   supplies `candidate_direction` + `candidate_candle` + `candle_history` — the
+   orchestrator never invents a candidate) —
    `entry_confirmation.evaluate_entry_confirmation()`, passing the already-computed
-   `structure_result` / `liquidity_result` from steps 1 and 3 — never fetched fresh
-   inside that call, per that skill's own contract.
+   `structure_result` / `liquidity_result` from steps 1-2 — never fetched fresh inside
+   that call, per that skill's own contract.
 
-Do not reimplement any of the above. If a role has no assigned analysis need (e.g.
-MACRO with no liquidity question), skip that call rather than manufacturing output.
+Each role's failures are isolated and non-fatal: an exception or a non-`VALID`
+underlying status becomes that role's `reason_codes`/`status` (`VALID`/`PARTIAL`/
+`DATA_ERROR`), never a crash — see `src/mtf_context/orchestrator.py::_evaluate_role()`.
+Do not reimplement any of the above. `src/mtf_context/` must never import `execution/`,
+`mt5.management_gateway`, or `trade_management.manager` — enforced by
+`tests/test_mtf_context_execution_guard.py` (AST-based static scan, not a comment
+promise).
+
+**Not yet integrated** (deliberately deferred, not a defect): no strategy report or
+Telegram ticket attaches `mtf_context` yet. `src/post_asian_pilot/report.py::cycle_to_dict()`
+has a clean, safe extension point matching this need — it already takes optional
+`ledger`/`release_fingerprint`/`strategy_fingerprint` parameters that, when omitted,
+leave output byte-identical to before they existed; a future `mtf_context` parameter
+following that exact pattern (opt-in, `None` by default, byte-identical output when
+omitted) is the recommended next step, not implemented in this pass because
+`AG_V1_0_3_FX_SHADOW_SERIES_002` evidence collection is active and touching that file
+deserves its own scoped, tested change rather than bundling it with new orchestrator
+code in the same pass. See `references/strategy_usage_contract.json` for the generic
+per-field usage-mode vocabulary (`REQUIRED`/`OPTIONAL`/`SCORE_ONLY`/`OBSERVE_ONLY`/
+`IGNORE`/`EXPECTED_CONFLICT`) any future strategy binding should use, defaulting to
+`OBSERVE_ONLY`.
 
 ## No-lookahead / data quality
 

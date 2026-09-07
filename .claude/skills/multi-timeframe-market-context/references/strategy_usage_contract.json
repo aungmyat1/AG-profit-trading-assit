@@ -1,0 +1,39 @@
+{
+  "_comment": "Generic strategy-consumption contract vocabulary. Reference/documentation only -- no strategy YAML in this repository declares this block yet, and this file does not create or imply one. A strategy that later wants to consume multi-timeframe-market-context would add a `multi_timeframe_context:` block shaped like this to its own strategy YAML, under a separately versioned, explicitly authorized change.",
+  "schema_version": "1.0.0",
+  "field": "multi_timeframe_context",
+  "shape": {
+    "enabled": "bool",
+    "profile": {
+      "macro": "string timeframe or null",
+      "bias": "string timeframe or null",
+      "working": "string timeframe or null",
+      "setup": "string timeframe or null",
+      "execution": "string timeframe or null",
+      "management": "string timeframe or null"
+    },
+    "usage": {
+      "macro_context": "one of USAGE_MODES",
+      "bias_structure": "one of USAGE_MODES",
+      "working_alignment": "one of USAGE_MODES",
+      "poi_context": "one of USAGE_MODES",
+      "liquidity_event": "one of USAGE_MODES",
+      "entry_confirmation": "one of USAGE_MODES"
+    }
+  },
+  "USAGE_MODES": ["REQUIRED", "OPTIONAL", "SCORE_ONLY", "OBSERVE_ONLY", "IGNORE", "EXPECTED_CONFLICT"],
+  "default_mode_for_any_new_binding": "OBSERVE_ONLY",
+  "default_mode_rationale": "An OBSERVE_ONLY binding may be recorded as metadata on a strategy's report/ticket but must never affect that strategy's decision, direction, entry, SL, TP, risk, or size (see AG_UNIVERSAL_MULTI_TIMEFRAME_OPERATIONAL_STATUS 'Strategy preservation' evidence). Promoting a field to REQUIRED/SCORE_ONLY/EXPECTED_CONFLICT requires evidence of it improving or legitimately changing that strategy's own expectancy, gathered while it was OBSERVE_ONLY, plus an explicit versioned strategy change and governance review -- never as a side effect of installing or extending this skill.",
+  "examples": {
+    "trend_strategy": {
+      "usage": {"bias_structure": "REQUIRED", "working_alignment": "REQUIRED", "poi_context": "OPTIONAL"}
+    },
+    "reversal_strategy": {
+      "usage": {"bias_structure": "REQUIRED", "working_alignment": "EXPECTED_CONFLICT", "liquidity_event": "REQUIRED"}
+    },
+    "session_strategy": {
+      "usage": {"macro_context": "OBSERVE_ONLY", "bias_structure": "SCORE_ONLY", "working_alignment": "IGNORE"}
+    }
+  },
+  "currently_bound_strategies": []
+}
