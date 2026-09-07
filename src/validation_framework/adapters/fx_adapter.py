@@ -61,6 +61,7 @@ from typing import Tuple
 
 from validation_framework.adapters.determinism_evidence import load_determinism_evidence
 from validation_framework.evaluator import evaluate_transition
+from validation_framework.lifecycle_registry import get_lifecycle_stage, get_next_stage
 from validation_framework.models import (
     GateResult,
     GateStatus,
@@ -250,8 +251,12 @@ def build_fx_record(repo_root: str = ".") -> StrategyValidationRecord:
     execution_authority = "SHADOW_PROPOSAL_ONLY"
     execution_authority_evidence = ("strategies/registry.yaml: ST_ASIAN_SWEEP_5R_V1.demo_authorized=false",)
 
-    lifecycle_stage = LifecycleStage.OPERATIONAL_SHADOW
-    next_transition = LifecycleStage.DEMO_ELIGIBLE
+    # Sole lifecycle-stage authority: config/governance/strategy_lifecycle.yaml (see
+    # lifecycle_registry.py). Fails closed (raises LifecycleRegistryError) rather than
+    # ever guessing a stage -- including on a semantic-version mismatch between this
+    # constant and the registry's own recorded version for this strategy.
+    lifecycle_stage = get_lifecycle_stage(STRATEGY_ID, SEMANTIC_VERSION, repo_root)
+    next_transition = get_next_stage(lifecycle_stage)
 
     # Sole promotion authority: evaluator.evaluate_transition(), never a hand-picked
     # subset of gates. Cumulative inheritance means this call also re-checks

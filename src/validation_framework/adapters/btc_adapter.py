@@ -45,6 +45,7 @@ from datetime import datetime, timezone
 
 from validation_framework.adapters.determinism_evidence import load_determinism_evidence
 from validation_framework.evaluator import evaluate_transition
+from validation_framework.lifecycle_registry import get_lifecycle_stage, get_next_stage
 from validation_framework.models import (
     GateResult,
     GateStatus,
@@ -177,8 +178,10 @@ def build_btc_record(repo_root: str = ".") -> StrategyValidationRecord:
         "tests/test_btc_proposal_execution_boundary.py",
     )
 
-    lifecycle_stage = LifecycleStage.FORWARD_RESEARCH
-    next_transition = LifecycleStage.OPERATIONAL_SHADOW
+    # Sole lifecycle-stage authority: config/governance/strategy_lifecycle.yaml (see
+    # lifecycle_registry.py). Fails closed rather than ever guessing a stage.
+    lifecycle_stage = get_lifecycle_stage(STRATEGY_ID, SEMANTIC_VERSION, repo_root)
+    next_transition = get_next_stage(lifecycle_stage)
 
     # Sole promotion authority: evaluator.evaluate_transition(). Cumulative inheritance
     # re-checks FOUNDATIONAL_INVARIANTS (SPEC_FIDELITY/DETERMINISM/NO_LOOKAHEAD/

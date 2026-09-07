@@ -121,6 +121,16 @@ def test_adapters_do_not_mutate_source_evidence_files(tmp_path):
         (dest_dir / name).write_bytes(content)
         before[name] = content
 
+    # build_fx_record now also reads the canonical lifecycle registry
+    # (config/governance/strategy_lifecycle.yaml) -- copy it into the isolated fixture
+    # root too, otherwise this test would be exercising the registry's own fail-closed
+    # missing-file behavior instead of the immutability invariant it actually tests.
+    governance_src = os.path.join(REPO_ROOT, "config", "governance", "strategy_lifecycle.yaml")
+    governance_dest_dir = fixture_root / "config" / "governance"
+    governance_dest_dir.mkdir(parents=True)
+    with open(governance_src, "rb") as fh:
+        (governance_dest_dir / "strategy_lifecycle.yaml").write_bytes(fh.read())
+
     build_fx_record(repo_root=str(fixture_root))
 
     for name, content in before.items():

@@ -51,6 +51,7 @@ from datetime import datetime, timezone
 
 from validation_framework.adapters.determinism_evidence import load_determinism_evidence
 from validation_framework.evaluator import evaluate_transition
+from validation_framework.lifecycle_registry import get_lifecycle_stage, get_next_stage
 from validation_framework.models import (
     GateResult,
     GateStatus,
@@ -179,20 +180,14 @@ def build_large_smc_record(repo_root: str = ".") -> StrategyValidationRecord:
     execution_authority = "NONE"
     execution_authority_evidence = ("strategies/ST_LARGE_SMC_V1.yaml:101: proposal_generation_authorized=false",)
 
-    # GOVERNANCE PROMOTION (2026-09-07, AG_PROJECT_READINESS_LARGE_SMC_FORWARD_RESEARCH_
-    # PROMOTION_AND_NEXT_TRACKS_V1): the evaluator found OFFLINE_RESEARCH ->
-    # FORWARD_RESEARCH eligible=True/blockers=() once C10 was signed (v1.0.7), and the
-    # owner explicitly authorized the lifecycle transition itself (a governance action
-    # this framework's evaluator can recommend but never perform on its own -- V1 has
-    # no promote_strategy()). This literal is the only persisted record of Large-SMC's
-    # current lifecycle stage anywhere in the repository: strategies/registry.yaml's
-    # schema has no lifecycle_stage/version field for any strategy (only
-    # registered/active/research/demo_authorized/live_authorized booleans), so this
-    # adapter constant -- not a YAML field -- is the existing canonical representation,
-    # consistent with how it was originally set to OFFLINE_RESEARCH from evidence
-    # (never invent a new registry schema key just to mirror this).
-    lifecycle_stage = LifecycleStage.FORWARD_RESEARCH
-    next_transition = LifecycleStage.OPERATIONAL_SHADOW
+    # GOVERNANCE PROMOTION (2026-09-07): owner-authorized OFFLINE_RESEARCH ->
+    # FORWARD_RESEARCH, recorded in config/governance/strategy_lifecycle.yaml -- the
+    # sole lifecycle-stage authority (see lifecycle_registry.py; P0,
+    # AG_PROJECT_READINESS_POST_LARGE_SMC_PROMOTION_IMPLEMENTATION_V2). This adapter no
+    # longer hardcodes the stage as a Python literal -- it reads it, fail-closed on any
+    # missing/malformed entry or semantic-version mismatch.
+    lifecycle_stage = get_lifecycle_stage(STRATEGY_ID, SEMANTIC_VERSION, repo_root)
+    next_transition = get_next_stage(lifecycle_stage)
 
     # Sole promotion authority: evaluator.evaluate_transition(). FORWARD_RESEARCH ->
     # OPERATIONAL_SHADOW's cumulative requirement now includes the abstract

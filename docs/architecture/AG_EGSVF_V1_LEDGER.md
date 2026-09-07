@@ -247,6 +247,50 @@ BTC still blocks on `NO_LOOKAHEAD`/`HISTORICAL_REPLAY`/`NATURAL_CAMPAIGN_ACCRUAL
 Large-SMC still blocks on `C10_STOP_POLICY` (C10 remains `UNSIGNED`,
 `proposal_generation_authorized` remains `false` -- unchanged by this task).
 
+## Lifecycle Authority (2026-09-07, P0 hardening)
+
+Before this section, each adapter (`fx_adapter.py`/`btc_adapter.py`/
+`large_smc_adapter.py`) hardcoded its own `lifecycle_stage` Python literal directly --
+functional (it is exactly how Large-SMC's `OFFLINE_RESEARCH -> FORWARD_RESEARCH`
+promotion was recorded one milestone earlier), but architecturally fragile: an adapter
+that emits evidence should not also be the sole owner of a strategy's current lifecycle
+state, and nothing prevented future drift between what different adapters/tools
+believed a strategy's stage to be.
+
+**One machine-readable governance source now owns lifecycle stage**:
+`config/governance/strategy_lifecycle.yaml`, read exclusively through
+`src/validation_framework/lifecycle_registry.py::get_lifecycle_stage()`. It
+deliberately does **not** duplicate `proposal_generation_authorized`/
+`demo_authorized`/`live_authorized` -- those already have a canonical home
+(`strategies/registry.yaml`, `strategies/<ID>.yaml`) and remain read from there
+unchanged; duplicating them into the lifecycle file would create a second,
+divergence-prone source of truth in the opposite direction. This registry owns exactly
+one fact per strategy: its current `lifecycle_stage`, version-bound to the exact
+`semantic_version` it applies to.
+
+```text
+Adapters are readers only -- they no longer own lifecycle state.
+
+get_lifecycle_stage(strategy_id, semantic_version, repo_root) fails closed
+(LifecycleRegistryError) on: missing registry file, malformed registry, missing
+strategy entry, missing/unknown lifecycle_stage, or a semantic_version mismatch
+between the registry's recorded version and the caller's own -- never silently
+defaults to a guessed stage.
+
+get_next_stage(current_stage) derives the next adjacent stage from the single
+canonical LIFECYCLE_ORDER tuple (models.py) -- adapters no longer separately
+hardcode `next_transition` either.
+
+PromotionEvaluator remains eligibility authority only -- it has no knowledge of, and
+no dependency on, where lifecycle_stage came from.
+
+Governance actions (lifecycle promotion) mutate config/governance/strategy_lifecycle.yaml
+only after an evaluator PASS (promotion_eligible=True) plus explicit owner
+authorization -- exactly the same sequence every prior AG-EGSVF promotion in this
+repository's history already followed; this section only relocates WHERE that fact is
+persisted, it does not change WHEN or HOW it may be changed.
+```
+
 ## What this task did NOT do
 
 - Did not create, promote, or version-bump any strategy.
@@ -260,3 +304,6 @@ Large-SMC still blocks on `C10_STOP_POLICY` (C10 remains `UNSIGNED`,
   evidence.
 - Did not resolve C10, change Large-SMC's proposal authorization, or touch any strategy
   economics while establishing determinism evidence.
+- Did not duplicate `proposal_generation_authorized`/`demo_authorized`/
+  `live_authorized` into the new lifecycle registry -- those remain owned by their
+  existing canonical sources.
