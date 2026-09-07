@@ -411,23 +411,29 @@ def test_btc_adapter_reconciles_against_registry_and_yaml():
 
 
 def test_large_smc_adapter_reconciles_against_registry_and_yaml():
-    """C10-signing-reconciled expectation (AG_LARGE_SMC_V1_C10_STRUCTURAL_INVALIDATION_
-    IMPLEMENTATION_AND_PROMOTION_V3, v1.0.7): C10 is now signed and implemented
-    (c10_stop_policy.py), so OFFLINE_RESEARCH -> FORWARD_RESEARCH's required gates
-    (foundational four + C10_STOP_POLICY) are ALL PASS -- FRICTION_STRESS_TEST/
-    OOS_VALIDATION belong to a later transition (DEMO_ELIGIBLE) and must NOT appear
-    here. The strategy should therefore be promotion_eligible for this transition."""
+    """Post-promotion expectation (AG_PROJECT_READINESS_LARGE_SMC_FORWARD_RESEARCH_
+    PROMOTION_AND_NEXT_TRACKS_V1, 2026-09-07): the owner-authorized governance
+    promotion moved Large-SMC's recorded lifecycle_stage to FORWARD_RESEARCH; the
+    evaluator now evaluates its NEXT transition, FORWARD_RESEARCH -> OPERATIONAL_SHADOW.
+    C10_STOP_POLICY (relevant to the transition already completed) remains PASS.
+    FRICTION_STRESS_TEST/OOS_VALIDATION still correctly do not appear (they belong to
+    DEMO_ELIGIBLE, two transitions further out). The one real blocker is the abstract
+    SHADOW_ENTRY_EVIDENCE milestone gate, unresolved for Large-SMC (no repository
+    governance yet defines its shadow-entry evidence) -- a genuine, evidence-derived
+    finding, not a fabricated one."""
     record = build_large_smc_record(repo_root=REPO_ROOT)
     assert record.identity.strategy_id == "ST_LARGE_SMC_V1"
     assert record.identity.semantic_version == "1.0.7"
+    assert record.lifecycle_stage == LifecycleStage.FORWARD_RESEARCH
+    assert record.next_transition == LifecycleStage.OPERATIONAL_SHADOW
     assert record.gates["C10_STOP_POLICY"].status == GateStatus.PASS
     assert record.execution_authority == "NONE"
-    assert record.promotion_blockers == ()
-    assert record.promotion_eligible is True
+    assert set(record.promotion_blockers) == {"SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY"}
+    assert record.promotion_eligible is False
     assert "DETERMINISM" not in record.promotion_blockers  # real evidence PASS, correctly not blocking
     assert record.gates["DETERMINISM"].status == GateStatus.PASS
-    assert "FRICTION_STRESS_TEST" not in record.promotion_blockers  # belongs to a later transition
-    assert "OOS_VALIDATION" not in record.promotion_blockers  # belongs to a later transition
+    assert "FRICTION_STRESS_TEST" not in record.promotion_blockers  # belongs to a later transition (DEMO_ELIGIBLE)
+    assert "OOS_VALIDATION" not in record.promotion_blockers  # belongs to a later transition (DEMO_ELIGIBLE)
     assert "SPEC_FIDELITY" not in record.promotion_blockers
     assert "NO_LOOKAHEAD" not in record.promotion_blockers
     assert "HISTORICAL_REPLAY" not in record.promotion_blockers

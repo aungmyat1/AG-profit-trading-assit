@@ -41,8 +41,11 @@ Current one-liners, from actual evidence as of `main`
   feature-branch working tree is clean (no uncommitted changes) as of this audit. It
   has not been merged into `main`, and development remains **paused** by owner
   directive; broker wiring absent by design.
-- **Large-SMC**: `RESEARCH_DRAFT`, blocked at C10 (broker stop-loss); no proposal/
-  demo/live authority.
+- **Large-SMC**: `RESEARCH_DRAFT` v1.0.7 -- C10 (broker stop-loss) SIGNED and
+  implemented 2026-09-07 (`DYNAMIC_ATR_WITH_HARD_FLOOR`, frozen); AG-EGSVF lifecycle
+  stage owner-promoted `OFFLINE_RESEARCH -> FORWARD_RESEARCH` the same day. Next
+  transition (`-> OPERATIONAL_SHADOW`) is evaluated, not executed, and blocks on an
+  unresolved shadow-entry-evidence gate. No proposal/demo/live authority (unchanged).
 
 ## Current operational snapshot (2026-09-05)
 
@@ -62,7 +65,7 @@ CRYPTO DAILY DECISION         OPERATIONAL CLI READY, scripts/run_btc_daily_repor
 CRYPTO STRATEGY SKILL         REGISTERED, btc-sweep-retest-analysis (owner_strategy=ST_LIQUIDITY_SWEEP_RETEST_V1, ADVISORY_ONLY -- explains the shared sweep/retest engine's CRYPTO_PERP contract and cost model, never places/authorizes orders or changes thresholds), mirrored in .claude/skills/SKILL_REGISTRY.yaml and .agents/skills/SKILL_REGISTRY.yaml.
 CRYPTO RESEARCH RUNTIME       LIVE-DATA-VALIDATED, RESEARCH_ONLY/PROPOSAL_ONLY, execution_domain=CRYPTO_RESEARCH/execution_authority=DISABLED, statically and behaviorally verified never to reach execution.executor/mt5.management_gateway
 CRYPTO EXECUTION              NOT IMPLEMENTED, fail-closed (execution.adapter.CryptoExecutionAdapter remains NOT_IMPLEMENTED; execution.executor now explicitly rejects any non-TradeCommand object, not just BTC proposals)
-LARGE SMC STRATEGY            RESEARCH_DRAFT v1.0.6, research-only funnel + replay infra fixed, C10 remains sole blocker, no execution authority
+LARGE SMC STRATEGY            RESEARCH_DRAFT v1.0.7, C10 (broker stop-loss) SIGNED and implemented 2026-09-07 (DYNAMIC_ATR_WITH_HARD_FLOOR, frozen); AG-EGSVF lifecycle owner-promoted OFFLINE_RESEARCH -> FORWARD_RESEARCH same day; next transition (-> OPERATIONAL_SHADOW) evaluated-not-executed, blocked on unresolved shadow-entry-evidence gate; no proposal/execution authority
 SMC SEMANTIC TRAP GUARD       UNIT_TESTED, additive evidence validation for Asian Sweep + Large SMC
 HISTORICAL REPLAY             LIVE-MT5 ACCESS BLOCKED
 FULL REGRESSION               1356 passed / 1 skipped / 0 failed (2026-09-02/03, `python -m pytest -q`, AG_COMPLETE_TRADE_OPPORTUNITY_V1 remediation milestone -- see docs/status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md); previous dated milestone baseline: 979 passed / 5 skipped / 0 failed, 2026-08-30 -- see dated sections below

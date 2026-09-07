@@ -179,18 +179,29 @@ def build_large_smc_record(repo_root: str = ".") -> StrategyValidationRecord:
     execution_authority = "NONE"
     execution_authority_evidence = ("strategies/ST_LARGE_SMC_V1.yaml:101: proposal_generation_authorized=false",)
 
-    lifecycle_stage = LifecycleStage.OFFLINE_RESEARCH
-    next_transition = LifecycleStage.FORWARD_RESEARCH
+    # GOVERNANCE PROMOTION (2026-09-07, AG_PROJECT_READINESS_LARGE_SMC_FORWARD_RESEARCH_
+    # PROMOTION_AND_NEXT_TRACKS_V1): the evaluator found OFFLINE_RESEARCH ->
+    # FORWARD_RESEARCH eligible=True/blockers=() once C10 was signed (v1.0.7), and the
+    # owner explicitly authorized the lifecycle transition itself (a governance action
+    # this framework's evaluator can recommend but never perform on its own -- V1 has
+    # no promote_strategy()). This literal is the only persisted record of Large-SMC's
+    # current lifecycle stage anywhere in the repository: strategies/registry.yaml's
+    # schema has no lifecycle_stage/version field for any strategy (only
+    # registered/active/research/demo_authorized/live_authorized booleans), so this
+    # adapter constant -- not a YAML field -- is the existing canonical representation,
+    # consistent with how it was originally set to OFFLINE_RESEARCH from evidence
+    # (never invent a new registry schema key just to mirror this).
+    lifecycle_stage = LifecycleStage.FORWARD_RESEARCH
+    next_transition = LifecycleStage.OPERATIONAL_SHADOW
 
-    # Sole promotion authority: evaluator.evaluate_transition(). Required gates for
-    # OFFLINE_RESEARCH -> FORWARD_RESEARCH are cumulative-through-FORWARD_RESEARCH
-    # (FOUNDATIONAL_INVARIANTS) plus this strategy's own C10_STOP_POLICY addition --
-    # NOT FRICTION_STRESS_TEST/OOS_VALIDATION, which belong to a later transition
-    # (DEMO_ELIGIBLE) and must not block this earlier one (AGENT PROMPT section 29).
-    # strategy_id is passed for consistency/future-proofing; it has no effect on THIS
-    # transition since FORWARD_RESEARCH's cumulative set never reaches the abstract
-    # SHADOW_ENTRY_EVIDENCE gate (that only enters at OPERATIONAL_SHADOW) -- no
-    # concrete Large-SMC shadow-entry gate is invented here (AGENT PROMPT section 19).
+    # Sole promotion authority: evaluator.evaluate_transition(). FORWARD_RESEARCH ->
+    # OPERATIONAL_SHADOW's cumulative requirement now includes the abstract
+    # SHADOW_ENTRY_EVIDENCE milestone gate (see evaluator.STAGE_PREREQUISITES) --
+    # Large-SMC has no MILESTONE_GATE_MAP entry for it (no repository governance yet
+    # defines its shadow-entry evidence), so it resolves to the fail-closed
+    # SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY placeholder and correctly blocks
+    # this next transition -- evaluated here, never executed, and no concrete gate is
+    # invented to force it past NOT_APPLICABLE.
     evaluation = evaluate_transition(
         lifecycle_stage,
         next_transition,
@@ -215,8 +226,8 @@ def build_large_smc_record(repo_root: str = ".") -> StrategyValidationRecord:
             "required_gates": evaluation.required_gates,
             "passed_gates": evaluation.passed_gates,
             "evaluation_violations": evaluation.violations,
-            "stage_assignment_provenance": "LEGACY_PRE_EGSVF",
-            "C10": "UNSIGNED",
+            "stage_assignment_provenance": "OWNER_GOVERNANCE_PROMOTION_2026-09-07 (OFFLINE_RESEARCH -> FORWARD_RESEARCH, evaluator eligible=True/blockers=() prior to promotion; see docs/status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md)",
+            "C10": "SIGNED_AND_LOCKED (v1.0.7)",
             "C14_overall": "PARTIALLY_RESOLVED",
         },
     )

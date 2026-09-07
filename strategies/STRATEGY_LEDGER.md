@@ -224,6 +224,29 @@ from canonical session windows or other repo conventions at the time of registra
   execution/demo/live authority is unaffected by this resolution (promotion eligibility
   is never execution authority). See
   `docs/status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V3_STATUS.md`.
+- **`AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_V1` (2026-09-07, no strategy version
+  change -- governance/lifecycle transition only, still v1.0.7):** owner-authorized
+  **lifecycle promotion**, `OFFLINE_RESEARCH -> FORWARD_RESEARCH`. Re-verified from the
+  canonical `AG_EGSVF_V1` evaluator immediately before promotion:
+  `SPEC_FIDELITY`/`DETERMINISM`/`NO_LOOKAHEAD`/`HISTORICAL_REPLAY`/`C10_STOP_POLICY` all
+  `PASS`, `promotion_eligible=True`, `promotion_blockers=()`. The C10 buffer/spread/
+  broker-minimum-stop parameters signed in the v1.0.7 entry above are explicitly
+  **frozen** by this transition -- no ATR-multiplier, floor-pip, timeframe, or
+  spread-model change is authorized alongside or after this promotion; any future
+  change to those parameters is a new strategy version, not an in-place mutation of
+  v1.0.7. `strategies/registry.yaml` has no `lifecycle_stage`/`version` schema field for
+  any strategy (only `registered`/`active`/`research`/`demo_authorized`/
+  `live_authorized`); the sole persisted lifecycle-stage record remains
+  `src/validation_framework/adapters/large_smc_adapter.py`'s own `lifecycle_stage`
+  constant, updated here from `OFFLINE_RESEARCH` to `FORWARD_RESEARCH`. `proposal_
+  generation_authorized` remains `false`; `execution_authority` remains `NONE` --
+  unaffected by this promotion. The evaluator's next transition,
+  `FORWARD_RESEARCH -> OPERATIONAL_SHADOW`, was evaluated (not executed) immediately
+  after promotion and correctly blocks on the abstract `SHADOW_ENTRY_EVIDENCE`
+  milestone gate, unresolved for this strategy (no repository governance yet defines
+  Large-SMC's shadow-entry evidence; see `evaluator.MILESTONE_GATE_MAP`). No M1/M2/M3/
+  C10/C14/target-model code changed. See
+  `docs/status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md`.
 
 ## ST_LIQUIDITY_SWEEP_RETEST_V1 -- Liquidity Sweep + H1 Trend + M5 MSS + Retest (Forex + Crypto)
 
