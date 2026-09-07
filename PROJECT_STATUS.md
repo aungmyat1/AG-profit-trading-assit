@@ -58,7 +58,8 @@ MANUAL TRADE MANAGEMENT       BUILT, independently gated, live validation deferr
 FX LONDON->NEW YORK CYCLE     UNIT_TESTED, ST_ASIAN_SWEEP_5R_V1 LONDON_NEWYORK pilot (AG_POST_LONDON_NEWYORK_PILOT_V1_0_1), proposal-only, isolated ledger from ASIAN_LONDON, no live/demo verification yet
 CRYPTO SIGNAL CONTRACT        IMPLEMENTED (incubation)
 CRYPTO DATA ADAPTER           LIVE-VALIDATED, Bybit production public/read-only BTCUSDT linear perpetual: server time/instrument/M5 endpoints HTTP 200 retCode=0; frozen adapter validated complete closed H1/M5 evidence on 2026-09-05. No credentials/private endpoints.
-CRYPTO DAILY DECISION         OPERATIONAL CLI READY, scripts/run_btc_daily_report.py enforces the owner-adjusted 06:30-06:45 UTC next-day window (13:00-13:15 MMT), previous-UTC-date evaluation, complete 24 H1 reference + 288 M5 observation audit, immutable archive, and informational proposal ticket on READY. Campaign is owner-authorized, remains 0/30, and has not started; scheduler installation remains unauthorized.
+CRYPTO DAILY DECISION         OPERATIONAL CLI READY, scripts/run_btc_daily_report.py enforces the owner-adjusted 06:30-06:45 UTC next-day window (13:00-13:15 MMT), previous-UTC-date evaluation, complete 24 H1 reference + 288 M5 observation audit, immutable archive, and informational proposal ticket on READY. Campaign is owner-authorized (2026-09-06T06:52:42Z) and the Windows Task Scheduler daily task ("AG Profit Trading - BTC Daily Decision", 13:05 MMT/06:35 UTC, State=Ready) is now installed and enabled; campaign_status=ACTIVE_0_OF_30 -- remains 0/30 until the first in-window observation is actually archived (no diagnostic or scheduler-installation event counts by itself).
+CRYPTO STRATEGY SKILL         REGISTERED, btc-sweep-retest-analysis (owner_strategy=ST_LIQUIDITY_SWEEP_RETEST_V1, ADVISORY_ONLY -- explains the shared sweep/retest engine's CRYPTO_PERP contract and cost model, never places/authorizes orders or changes thresholds), mirrored in .claude/skills/SKILL_REGISTRY.yaml and .agents/skills/SKILL_REGISTRY.yaml.
 CRYPTO RESEARCH RUNTIME       LIVE-DATA-VALIDATED, RESEARCH_ONLY/PROPOSAL_ONLY, execution_domain=CRYPTO_RESEARCH/execution_authority=DISABLED, statically and behaviorally verified never to reach execution.executor/mt5.management_gateway
 CRYPTO EXECUTION              NOT IMPLEMENTED, fail-closed (execution.adapter.CryptoExecutionAdapter remains NOT_IMPLEMENTED; execution.executor now explicitly rejects any non-TradeCommand object, not just BTC proposals)
 LARGE SMC STRATEGY            RESEARCH_DRAFT v1.0.6, research-only funnel + replay infra fixed, C10 remains sole blocker, no execution authority
@@ -124,7 +125,7 @@ execution funnel is `assistant.commands.execute_command(command, user_confirmed=
 | Bybit production market-data connectivity | BLOCKED (HTTP 403, CloudFront country-block, 2026-09-03) | RECOVERED — HTTP 200/retCode=0 confirmed 2026-09-05 (`config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml`, `qualification_exception`/`btc_market_data_authority` blocks) | N/A (infrastructure) | Yes | Production-data-verified 2026-09-05 — data access only, not trade execution | Read-only public endpoint only, no credentials |  |
 | BTC sweep/retest proposals | IMPLEMENTED, unit-tested, RESEARCH_ONLY | unchanged, RESEARCH_ONLY, `execution_domain=CRYPTO_RESEARCH`/`execution_authority=DISABLED`, statically+behaviorally verified never to reach `execution.executor`/`mt5.management_gateway` | `ST_LIQUIDITY_SWEEP_RETEST_V1` registered=true active=false research=true demo_authorized=false live_authorized=false | Yes | Unit-tested + production-data-verified | RESEARCH_ONLY |  |
 | BTC daily report | not present (predates 2026-09-05 milestone) | OPERATIONAL CLI READY (`scripts/run_btc_daily_report.py`), immutable archive, informational proposal ticket labeled NOT A BROKER TICKET | inherits `ST_LIQUIDITY_SWEEP_RETEST_V1`'s RESEARCH_ONLY authority | Yes | Diagnostic run against production data 2026-09-05, evaluated 2026-09-04 (WATCH, disposable, non-counting) | Scheduler-ready, not yet scheduled to run in-window |  |
-| BTC scheduler | not present | Task Scheduler installer template updated to 13:05 MMT | same | Yes | Installer exists; no confirmed installed/running scheduled task recorded yet | Not installed/authorized |  |
+| BTC scheduler | not present | Installed and enabled: "AG Profit Trading - BTC Daily Decision" (13:05 MMT/06:35 UTC), State=Ready, next run 2026-09-07T06:35Z | same | Yes | `Get-ScheduledTask`/`Get-ScheduledTaskInfo` confirmed installed this session | Installed and authorized (campaign authorized 2026-09-06T06:52:42Z); 0 valid observations archived yet |  |
 | BTC execution | NOT IMPLEMENTED, DISABLED | unchanged | `execution_authority=DISABLED`, `crypto_execution_adapter: NOT_IMPLEMENTED` | No | N/A | DISABLED |  |
 | Large-SMC research | IMPLEMENTED (research funnel + replay infra), RESEARCH_ONLY, C10 blocked | unchanged, v1.0.6 RESEARCH_DRAFT, C10 sole blocker | `ST_LARGE_SMC_V1` research=true, no demo/live | Yes (research engine) | Corrected replay baseline recorded | RESEARCH_ONLY; engine fails closed to BLOCKED |  |
 | Large-SMC proposal authority | none | unchanged, none | `proposal_generation_authorized: false` | No | N/A | NONE |  |
@@ -233,16 +234,42 @@ and `btc_market_data_authority` blocks (owner-approved 2026-09-05,
 - Feed: `BybitLinearPerpFeed` (`src/execution_runtime/bybit_linear_perp_feed.py`),
   public/read-only only, no authenticated or order/wallet endpoint anywhere in it;
   111 BTC tests passing.
-- Production connectivity: `PRODUCTION_PUBLIC_READ_PASS` (HTTP 200/retCode 0, verified
-  2026-09-05) — supersedes the 2026-09-03 HTTP 403 CloudFront country-block finding,
-  which is preserved as historical evidence in the same manifest, not deleted.
+- Production connectivity: last recorded authoritative PASS is `PRODUCTION_PUBLIC_READ_PASS`
+  (HTTP 200/retCode 0, verified 2026-09-05, per the release manifest) — supersedes the
+  2026-09-03 HTTP 403 CloudFront country-block finding, preserved as historical evidence
+  in the same manifest, not deleted. **This is a dated record, not a live status**: a
+  fresh check from this development session on 2026-09-06 again returned HTTP 403
+  ("configured to block access from your country"), the same class of environment-
+  specific restriction documented since 2026-08-31/09-03 — an expected, known condition
+  for this environment, not a code defect or a reversal of the owner's Bybit
+  market-data-authority decision. The scheduled daily task performs its own live check
+  at each real invocation and fails closed to a non-counting `DATA_ERROR` if still
+  blocked at that moment.
 - Reporting: `scripts/run_btc_daily_report.py`, scheduler-ready, one disposable/
   non-counting diagnostic run completed 2026-09-05 (WATCH/NO_QUALIFIED_SWEEP_YET
   against 2026-09-04).
-- Scheduler template: `scripts/install_btc_daily_task.ps1` (13:05 MMT), added but not confirmed
-  installed/running as a live scheduled task in this environment.
-- Observation campaign: 0/30, forbidden_scope explicitly excludes starting it —
-  requires separate owner authorization after production validation passes.
+- Skill: `btc-sweep-retest-analysis` (owner_strategy=`ST_LIQUIDITY_SWEEP_RETEST_V1`,
+  `ADVISORY_ONLY`) registered in both `.claude/skills/SKILL_REGISTRY.yaml` and
+  `.agents/skills/SKILL_REGISTRY.yaml` — explains the shared sweep/retest engine's
+  `CRYPTO_PERP` contract; never places orders, changes thresholds, or overrides a
+  strategy decision.
+- Scheduler: `scripts/install_btc_daily_task.ps1` installed and enabled this session --
+  "AG Profit Trading - BTC Daily Decision", 13:05 MMT/06:35 UTC (inside the 06:30-06:45
+  UTC window), `State=Ready`, next run 2026-09-07T06:35Z.
+- Observation campaign: owner-authorized (`observation_campaign_authorized: true`,
+  2026-09-06T06:52:42Z, `config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml`).
+  `campaign_status = ACTIVE_0_OF_30` — scheduler installation and campaign authorization
+  are each necessary but neither alone is sufficient: `observation_campaign_started`
+  remains `false` until the first eligible in-window observation is actually archived;
+  no diagnostic or prior date counts retroactively. The 06:30-06:45 UTC report-window
+  amendment itself is already committed and pinned as the frozen operational baseline
+  (`btc_operational_qualification_baseline = d5e1538...`, see
+  `docs/status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`) — it is not the
+  pending item. Separately, and NOT yet authorized: a proposed catch-up/delayed-reporting
+  contract amendment (`docs/contracts/AG_BTC_CATCHUP_CONTRACT_AMENDMENT_V1_PROPOSED.md`,
+  audited in `docs/status/AG_INTERMITTENT_PC_CATCHUP_CONTRACT_AUDIT_V1_STATUS.md`) remains
+  documentation-only and does not change the current 06:30-06:45 UTC observation
+  contract unless/until the owner approves it.
 - Execution: forbidden_scope explicitly excludes order creation/checking/submission/
   modification/cancellation and wallet operations. `BTC_EXECUTION: NOT_IMPLEMENTED`.
   BTC research proposal capability never implies BTC execution authorization.
