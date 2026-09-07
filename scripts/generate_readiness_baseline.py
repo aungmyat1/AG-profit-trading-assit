@@ -117,6 +117,28 @@ def build_readiness_baseline() -> Path:
             "demo_readiness": "NO (no strategy is both DEMO_ELIGIBLE and DEMO_AUTHORIZED)",
             "live_readiness": "NO (live trading disabled by default; no strategy has live_authorized=true)",
         },
+        "gate_changes_since_prior_readiness_artifact": {
+            "prior_artifact": "artifacts/readiness/AG_PROJECT_READINESS_V1_3f683766f22b_20260907T061909.170003+0000.json",
+            "ST_LIQUIDITY_SWEEP_RETEST_V1": {
+                "NO_LOOKAHEAD": "NOT_VERIFIED -> PASS (H1 future-candle-exclusion test added, AG_PROJECT_READINESS_CONTINUATION_DUAL_TRACK_V1 P3)",
+            },
+            "ST_LARGE_SMC_V1": {
+                "C10_STOP_POLICY": "unchanged, UNSIGNED (owner decision packet V2 produced, not signed -- docs/status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V2_STATUS.md)",
+            },
+            "ST_ASIAN_SWEEP_5R_V1": "no gate change this task",
+        },
+        "execution_architecture": {
+            "fx_demo_venue": "MT5 (VantageMarkets-Demo) -- unchanged",
+            "crypto_demo_venue_target": "VT Markets Demo MT5 (owner-stated intent) -- NOT auditable in this environment; only VantageMarkets-Demo was connected/reachable",
+            "shared_mt5_gateway": "execution/executor.py + execution/mt5_gateway.py -- already broker-metadata-generic (mt5/symbol_resolver.py, execution/risk.py); one narrow FX-shaped fallback noted at executor.py:299 (missing-symbol_meta case only), not fixed this task",
+            "vtmarkets_crypto_audit": "ASSESSMENT_INCOMPLETE -- see docs/status/AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_E1_STATUS.md",
+            "vtmarkets_crypto_symbols": "NOT AUDITED (no VT Markets terminal reachable); VantageMarkets-Demo's own BTCUSD/ETHUSD audited instead, as a secondary/labeled finding",
+            "cross_venue_compatibility": "MATERIAL MISMATCH found between Bybit BTCUSDT linear perpetual (existing market-data authority) and VantageMarkets-Demo's BTCUSD CFD (different quote/margin currency, no funding mechanism, different price basis) -- requires owner-signed reconciliation before any execution routing",
+            "crypto_adapter_required": "NOT DETERMINED (E2 not reached -- E1 did not confirm compatibility for the intended venue)",
+            "crypto_execution_authorized": False,
+            "broker_order_sent": False,
+            "concurrent_unrelated_work_observed": "This task discovered unrelated, actively-changing files (config/mt5.yaml, src/execution/mt5_gateway.py, new src/mt5/{account_guard,broker_symbol_resolver,config}.py, src/.env.example, new mt5-related tests) appearing in the working tree mid-task, not created by this task and left completely untouched/uncommitted -- appears to be a concurrent, independent workstream on the same repository.",
+        },
     }
 
     READINESS_DIR.mkdir(parents=True, exist_ok=True)
