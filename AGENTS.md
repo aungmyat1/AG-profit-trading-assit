@@ -3,11 +3,15 @@
 ## Purpose
 
 AG Profit Trading is a deterministic FX and crypto trading assistant whose target
-decision products are daily Session Trade proposals and selective higher-timeframe
-Large-SMC Trade proposals. The guaranteed output is an explicit decision state, not a
-forced trade. The current operational implementation is FX/MT5-first; crypto remains
-proposal/interface-only until a real venue integration is implemented and validated.
-AI remains an advisory/explanatory layer. See `PROJECT_STATUS.md` for current state.
+decision products are post-Asian and post-London Session Trade tickets, preset-time
+BTC/ETH tickets, and persistent Large-SMC funnel status with entry-confirmation alerts.
+The immediate roadmap publishes informational tickets from current frozen strategy
+outputs; strategy validation and candidate promotion are the next stage. The
+guaranteed output is an explicit decision state, not a forced trade, and a ticket is
+not a broker order. The current operational implementation is FX/MT5-first; crypto
+remains proposal/interface-only until a real venue integration is implemented and
+validated. AI remains an advisory/explanatory layer. See `PROJECT_STATUS.md` and
+`docs/PROJECT_ROADMAP.md` for current state and delivery order.
 
 ## Authority order
 

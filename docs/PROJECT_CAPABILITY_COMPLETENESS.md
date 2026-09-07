@@ -1,5 +1,12 @@
 # AG Profit Trading — Project Capability Completeness
 
+> **Roadmap supersession notice (2026-09-07):** capability evidence and authority
+> classifications in this audit remain useful, but its qualification-first priority
+> order has been superseded by the owner-directed product roadmap in
+> [`PROJECT_ROADMAP.md`](PROJECT_ROADMAP.md). The current sequence is informational
+> trade-ticket operations using frozen strategy outputs first, followed by strategy
+> validation. This notice changes neither historical evidence nor execution authority.
+
 **Last verified:** 2026-09-06, `main` @ `651ade619c2c2df9a973d45cea37ae6599c2b9eb`
 ("Reconcile V1.0.3 evidence and pause Telegram development for qualification").
 Audit type: `AG_PROJECT_TWO_SECTION_CAPABILITY_COMPLETENESS_AUDIT_V1` —

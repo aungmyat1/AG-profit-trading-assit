@@ -4,6 +4,30 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Owner-directed product objective and roadmap (2026-09-07)
+
+The current product objective is proposal-first trade assistance:
+
+- produce an informational trade ticket after the Asian session and after the London
+  session for three major FX pairs plus gold (target universe: EURUSD, GBPUSD, USDJPY,
+  XAUUSD, pending final contract freeze);
+- produce scheduled informational tickets for two crypto instruments (BTCUSDT and
+  ETHUSDT) at preset time(s);
+- watch a preset Large-SMC pair universe, expose persistent funnel status, and alert
+  when the current frozen strategy reaches entry confirmation.
+
+Delivery is now sequenced as **current-strategy ticket operations first, strategy
+validation second**. This sequencing does not change any frozen strategy behavior or
+claim that an unvalidated strategy has trading edge. The ticket layer may publish only
+values returned by the current deterministic strategy and must preserve `NO_TRADE`,
+`WATCH`, and fail-closed outcomes. All tickets and Large-SMC alerts remain
+informational; Demo/live execution authority is unchanged.
+
+The authoritative product roadmap and implementation backlog are in
+`docs/PROJECT_ROADMAP.md`. Earlier CORE-D1..D7 and qualification-first roadmap text
+below is retained as dated historical planning context where it conflicts with this
+newer owner direction.
+
 ## Two-section capability model (2026-09-06)
 
 The project is organized into two capability sections, audited in full in

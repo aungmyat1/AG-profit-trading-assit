@@ -6,6 +6,13 @@
 
 ## Project objective
 
+The owner-directed product objective and delivery order were updated on 2026-09-07.
+The assistant now targets post-Asian and post-London informational FX tickets,
+preset-time BTC/ETH tickets, and Large-SMC funnel/entry-confirmation alerts. Current
+frozen-strategy ticket operation precedes the separate strategy-validation stage. See
+[`../PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md). This update changes the product
+priority, not the authority boundaries described below.
+
 ```
 AG PROFIT TRADING ASSISTANT
 ```

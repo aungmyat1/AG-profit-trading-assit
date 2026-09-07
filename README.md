@@ -1,15 +1,25 @@
 # AG Profit Trading
 
 AG Profit Trading is a deterministic FX and crypto trading assistant designed to
-produce two complementary decision products:
+produce three complementary decision products:
 
 - **Session Trade** proposals for recurring intraday opportunities around defined
   market sessions.
 - **Large-SMC Trade** proposals for selective higher-timeframe liquidity and structure
   opportunities with lower-timeframe confirmation.
+- **Large-SMC Watch** funnel-status updates and entry-confirmation alerts for a preset
+  watchlist.
+
+The owner-directed product target is two daily FX session decision cycles for EURUSD,
+GBPUSD, USDJPY, and XAUUSD; scheduled crypto decisions for BTCUSDT and ETHUSDT; and a
+persistent Large-SMC watch. The immediate delivery stage uses current frozen strategy
+behavior to publish informational trade tickets. Strategy validation and candidate
+promotion follow as a separate next stage. See
+[`docs/PROJECT_ROADMAP.md`](docs/PROJECT_ROADMAP.md).
 
 The guaranteed daily output is a decision (`READY`, `WATCH`, `NO_TRADE`, or a fail-closed
-data/error state), not a forced trade. A pre-trade proposal is not a broker ticket. MT5
+data/error state), not a forced trade. A pre-trade proposal ticket is not a broker
+execution ticket. MT5
 or a future crypto venue creates a broker ticket only after a qualifying proposal is
 refreshed, validated, explicitly authorized by the user, and successfully executed.
 
@@ -45,6 +55,12 @@ subsystem: a generic proposal→execution bridge exists and was live-verified
 proposals cannot use it today.
 
 ## Current state
+
+Roadmap scope is broader than current implementation. Today the operational FX pilot
+and complete Entry Ticket cover EURUSD/GBPUSD; USDJPY/XAUUSD require candidate-version
+integration. Crypto reporting is BTCUSDT-only; ETHUSDT remains to be implemented.
+Large-SMC has a research engine and live-batch ledger but not yet the complete
+incremental funnel-status and external confirmation-alert service.
 
 - Market data, structure, supply/demand, liquidity, and entry-confirmation layers are
   implemented with fail-closed reason codes.
