@@ -146,6 +146,59 @@ cumulative prerequisite inheritance through the target stage.
 The ledger records that judgment unchanged. It never invents a different one.
 ```
 
+## AG_EGSVF_V1_STRATEGY_STAGE_CONTRACT_RECONCILIATION (2026-09-07)
+
+`STAGE_PREREQUISITES[OPERATIONAL_SHADOW]` was hardcoded to the literal gate name
+`NATURAL_CAMPAIGN_ACCRUAL` -- BTC's own forward-observation campaign gate, wrongly
+treated as the universal definition of a lifecycle milestone every strategy family
+shares. FX has no such campaign; cumulative inheritance was therefore permanently
+blocking FX on a gate it can never satisfy and never should have to.
+
+**Fix -- abstract milestone gates resolved per strategy family:**
+
+1. **Foundational gates are universal.** `FOUNDATIONAL_INVARIANTS` is unchanged and
+   still required for every promotion at or beyond `FORWARD_RESEARCH`, for every
+   strategy, with no substitution mechanism reaching it.
+2. **Lifecycle milestones may name an ABSTRACT evidence requirement.**
+   `STAGE_PREREQUISITES[OPERATIONAL_SHADOW]` now names `SHADOW_ENTRY_EVIDENCE` --  a
+   milestone concept ("sufficient evidence exists to enter operational shadow"), not a
+   concrete gate. `ABSTRACT_MILESTONE_GATES` is the explicit, narrow allow-list of
+   names that may ever be treated this way (currently just this one).
+3. **Abstract requirements resolve to strategy-family-specific concrete gates.**
+   `MILESTONE_GATE_MAP` maps `strategy_id -> {abstract_gate: concrete_gate}`:
+   `ST_ASIAN_SWEEP_5R_V1 -> FX_SHADOW_ENTRY_PREFLIGHT_PASS` (sourced from
+   `docs/status/AG_TRADE_ASSISTANT_V1_0_3_MT5_DATA_READINESS_AND_PREFLIGHT_CLOSURE_STATUS.md`'s
+   `shadow_entry_ready = YES` / `PREFLIGHT_PASS_SHADOW_READY` classification -- a real,
+   dated governance event, deliberately NOT Series 001's non-counting evidence);
+   `ST_LIQUIDITY_SWEEP_RETEST_V1 -> NATURAL_CAMPAIGN_ACCRUAL` (unchanged). Large-SMC has
+   no entry: no repository governance defines its shadow-entry evidence, and its actual
+   current transition never reaches this gate, so none is invented.
+4. **A family mapping cannot replace a foundational gate.** `validate_family_gate_map`
+   (run at import time against `MILESTONE_GATE_MAP`, and directly callable by tests
+   against any other mapping) raises `ValueError` if a mapping ever targets a name
+   outside `ABSTRACT_MILESTONE_GATES` -- this makes the invariant enforced, not a
+   convention.
+5. **Unresolved milestone mappings fail closed.** A strategy_id with no mapping entry
+   for a needed abstract gate (or no strategy_id supplied at all) resolves to
+   `f"{abstract_gate}_UNRESOLVED_FOR_STRATEGY"` -- a placeholder no adapter emits a
+   GateResult for, so it always surfaces as a real `MISSING_GATE` blocker. It never
+   silently borrows another strategy's concrete gate and is never treated as PASS.
+6. **Lifecycle label alone is still never proof of a concrete gate** (unchanged from
+   the promotion-invariant-hardening milestone above) -- resolution happens fresh on
+   every `evaluate_transition()` call from the strategy's actual current evidence.
+7. **Evaluator remains sole promotion authority.** `evaluate_transition(..., strategy_id=...)`
+   is still the only place `promotion_eligible`/`promotion_blockers` are computed;
+   adapters only supply `strategy_id` and, where legitimately needed, one concrete
+   GateResult -- see `tests/test_validation_framework.py::test_fx_shadow_entry_uses_fx_specific_gate`,
+   `test_btc_shadow_entry_uses_natural_campaign_accrual`,
+   `test_family_gate_mapping_cannot_replace_foundational_invariant`, and
+   `test_missing_abstract_gate_mapping_fails_closed`.
+
+Net effect: FX's blocker list no longer contains `NATURAL_CAMPAIGN_ACCRUAL`. Its real
+blockers are now exactly its own evidence gaps (`DETERMINISM`, `HISTORICAL_REPLAY`,
+`SHADOW_SERIES_COMPLETION`, `FRICTION_STRESS_TEST`, `OOS_VALIDATION`); BTC and Large-SMC
+blocker lists are unchanged.
+
 ## What this task did NOT do
 
 - Did not create, promote, or version-bump any strategy.
@@ -155,3 +208,7 @@ The ledger records that judgment unchanged. It never invents a different one.
 - Did not implement `promote_strategy(...)` -- only `evaluate_transition(...)` exists.
 - Did not change `PROJECT_STATUS.md` (see the final report for why: the reconciliation
   found no discrepancy needing a documentation edit this run).
+- Did not invent a Large-SMC shadow-entry gate or otherwise assign speculative future
+  evidence.
+- Did not touch strategy determinism evidence -- that is explicitly the next task
+  (`AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION`), not this one.

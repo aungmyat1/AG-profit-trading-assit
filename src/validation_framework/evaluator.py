@@ -27,10 +27,32 @@ FORWARD_RESEARCH's. Cumulative inheritance closes that gap: FOUNDATIONAL_INVARIA
 required for every promotion at or beyond FORWARD_RESEARCH, permanently, regardless of
 which adjacent step is currently being evaluated or which stage a strategy is currently
 labeled at.
+
+ABSTRACT MILESTONE GATES vs. CONCRETE STRATEGY-FAMILY GATES
+(AG_EGSVF_V1_STRATEGY_STAGE_CONTRACT_RECONCILIATION). A lifecycle MILESTONE is common to
+every strategy family; the EVIDENCE that satisfies it is not. `OPERATIONAL_SHADOW`'s
+entry prerequisite was originally hardcoded as the literal gate name
+`NATURAL_CAMPAIGN_ACCRUAL` -- correct for BTC's forward-observation campaign, but wrong
+as a universal requirement: FX has no campaign named that, and forcing FX to prove it
+would either fabricate evidence or wrongly block FX forever on a gate that doesn't apply
+to its lifecycle. `STAGE_PREREQUISITES` may therefore name an ABSTRACT gate (currently
+only `SHADOW_ENTRY_EVIDENCE`, listed in `ABSTRACT_MILESTONE_GATES`); `MILESTONE_GATE_MAP`
+resolves it, per `strategy_id`, to that strategy's own concrete, evidence-backed gate
+name. This substitution mechanism is deliberately narrow: `_resolve_gate_name` only ever
+looks up a name that is a member of `ABSTRACT_MILESTONE_GATES` -- a FOUNDATIONAL_INVARIANT
+name (or any other concrete gate name) is never a valid abstract-gate key, and
+`validate_family_gate_map` (run at import time against `MILESTONE_GATE_MAP`, and callable
+directly by tests against any other mapping) raises if one is ever configured, so
+"foundational gates are never family-substitutable" is an enforced fact, not a
+convention. A strategy with no entry in `MILESTONE_GATE_MAP` for a needed abstract gate
+resolves to an intentionally-unsatisfiable placeholder name
+(`f"{abstract_name}_UNRESOLVED_FOR_STRATEGY"`) rather than silently borrowing another
+strategy's concrete gate or being treated as PASS -- no adapter emits a GateResult under
+that placeholder name, so it always surfaces as a real MISSING_GATE blocker.
 """
 from __future__ import annotations
 
-from typing import Dict, Mapping, Tuple
+from typing import Dict, FrozenSet, Mapping, Optional, Tuple
 
 from .models import GateResult, GateStatus, LIFECYCLE_ORDER, LifecycleStage, PromotionEvaluation
 
@@ -50,10 +72,15 @@ FOUNDATIONAL_INVARIANTS: Tuple[str, ...] = (
 # none -- it is the starting point every strategy begins at. FORWARD_RESEARCH's entry
 # prerequisite is exactly FOUNDATIONAL_INVARIANTS; every stage after it ADDS its own
 # additional entry gate(s) on top (see get_cumulative_required_gates).
+#
+# OPERATIONAL_SHADOW's prerequisite is the ABSTRACT milestone gate SHADOW_ENTRY_EVIDENCE
+# (see module docstring), resolved per-strategy by MILESTONE_GATE_MAP -- it is NOT a
+# concrete gate name in its own right and no adapter should ever emit a GateResult
+# literally named "SHADOW_ENTRY_EVIDENCE".
 STAGE_PREREQUISITES: Dict[LifecycleStage, Tuple[str, ...]] = {
     LifecycleStage.OFFLINE_RESEARCH: (),
     LifecycleStage.FORWARD_RESEARCH: FOUNDATIONAL_INVARIANTS,
-    LifecycleStage.OPERATIONAL_SHADOW: ("NATURAL_CAMPAIGN_ACCRUAL",),
+    LifecycleStage.OPERATIONAL_SHADOW: ("SHADOW_ENTRY_EVIDENCE",),
     LifecycleStage.DEMO_ELIGIBLE: (
         "SHADOW_SERIES_COMPLETION",
         "FRICTION_STRESS_TEST",
@@ -71,6 +98,75 @@ STAGE_PREREQUISITES: Dict[LifecycleStage, Tuple[str, ...]] = {
         "OWNER_LIVE_SIGNATURE",
     ),
 }
+
+# The ONLY gate names that may ever be resolved through MILESTONE_GATE_MAP. Adding a
+# name here is a deliberate governance decision that a lifecycle milestone's evidence is
+# strategy-family-specific; FOUNDATIONAL_INVARIANTS must never appear in this set (see
+# validate_family_gate_map, which enforces this at import time and is also directly
+# testable against any other mapping).
+ABSTRACT_MILESTONE_GATES: FrozenSet[str] = frozenset({"SHADOW_ENTRY_EVIDENCE"})
+
+# Per-strategy resolution of each abstract milestone gate to that strategy's own
+# concrete, evidence-backed gate name. A strategy_id absent from this map (or missing an
+# entry for a specific abstract gate it needs) is NOT silently satisfied and does NOT
+# fall back to another strategy's gate -- see _resolve_gate_name.
+#
+# ST_ASIAN_SWEEP_5R_V1: FX_SHADOW_ENTRY_PREFLIGHT_PASS is sourced from
+#   docs/status/AG_TRADE_ASSISTANT_V1_0_3_MT5_DATA_READINESS_AND_PREFLIGHT_CLOSURE_STATUS.md
+#   (`shadow_entry_ready = YES`, classification `PREFLIGHT_PASS_SHADOW_READY`) -- the
+#   actual, dated governance event that made FX's shadow-validation series eligible to
+#   begin. Series 001's own evidence is NOT used as this gate's source: Series 001's Day
+#   1 was EXCLUDED_DAY and Day 2 PENDING_RECONCILIATION (see PROJECT_STATUS.md), i.e.
+#   pre-remediation, non-counting evidence -- using it here would manufacture a PASS from
+#   a source the project itself never treated as qualifying.
+# ST_LIQUIDITY_SWEEP_RETEST_V1: NATURAL_CAMPAIGN_ACCRUAL is BTC's own forward-observation
+#   campaign gate, unchanged from the pre-reconciliation universal default -- reconciled
+#   here as a per-strategy concrete mapping instead of a global one.
+# ST_LARGE_SMC_V1: deliberately absent. No repository governance currently defines
+#   Large-SMC's OPERATIONAL_SHADOW entry evidence, and Large-SMC's actual current
+#   transition (OFFLINE_RESEARCH -> FORWARD_RESEARCH) never reaches this abstract gate --
+#   inventing a mapping now would be speculative policy, not reconciliation.
+MILESTONE_GATE_MAP: Dict[str, Dict[str, str]] = {
+    "ST_ASIAN_SWEEP_5R_V1": {"SHADOW_ENTRY_EVIDENCE": "FX_SHADOW_ENTRY_PREFLIGHT_PASS"},
+    "ST_LIQUIDITY_SWEEP_RETEST_V1": {"SHADOW_ENTRY_EVIDENCE": "NATURAL_CAMPAIGN_ACCRUAL"},
+}
+
+
+def validate_family_gate_map(mapping: Mapping[str, Mapping[str, str]]) -> None:
+    """Raises ValueError if `mapping` targets anything other than a declared abstract
+    milestone gate. This is what makes 'foundational invariants (and any other concrete
+    gate) can never be family-substituted' an enforced fact: a mapping entry for
+    DETERMINISM, SPEC_FIDELITY, or any name outside ABSTRACT_MILESTONE_GATES is rejected,
+    never silently applied. Run at import time against MILESTONE_GATE_MAP; also exposed
+    for tests to exercise directly against a deliberately malformed fixture."""
+    for strategy_id, family_map in mapping.items():
+        for abstract_name in family_map:
+            if abstract_name not in ABSTRACT_MILESTONE_GATES:
+                raise ValueError(
+                    f"{strategy_id}: {abstract_name!r} is not a declared abstract "
+                    f"milestone gate (ABSTRACT_MILESTONE_GATES={sorted(ABSTRACT_MILESTONE_GATES)}) "
+                    "-- only an abstract milestone gate may be resolved to a "
+                    "strategy-specific concrete gate; a foundational invariant or any "
+                    "other concrete gate can never be targeted by a family mapping."
+                )
+
+
+validate_family_gate_map(MILESTONE_GATE_MAP)
+
+
+def _resolve_gate_name(gate_name: str, strategy_id: Optional[str]) -> str:
+    """Pass-through for every concrete gate name (including every FOUNDATIONAL_INVARIANT
+    -- they are never members of ABSTRACT_MILESTONE_GATES, so this function never
+    touches them). Only a name in ABSTRACT_MILESTONE_GATES is looked up in
+    MILESTONE_GATE_MAP; an unmapped strategy (or no strategy_id at all) fails closed to
+    an intentionally-unsatisfiable placeholder rather than PASS or another strategy's
+    gate."""
+    if gate_name not in ABSTRACT_MILESTONE_GATES:
+        return gate_name
+    concrete = MILESTONE_GATE_MAP.get(strategy_id or "", {}).get(gate_name)
+    if concrete is None:
+        return f"{gate_name}_UNRESOLVED_FOR_STRATEGY"
+    return concrete
 
 # No skipped transition is currently permitted by any higher-authority AG contract
 # discovered during this task. Kept as an explicit, empty, extensible set rather than a
@@ -92,7 +188,9 @@ def _is_adjacent(source: LifecycleStage, target: LifecycleStage) -> bool:
         return False
 
 
-def get_cumulative_required_gates(target_stage: LifecycleStage) -> Tuple[str, ...]:
+def get_cumulative_required_gates(
+    target_stage: LifecycleStage, strategy_id: Optional[str] = None
+) -> Tuple[str, ...]:
     """Every gate required to have legitimately reached `target_stage`, walking
     STAGE_PREREQUISITES from FORWARD_RESEARCH through target_stage inclusive (AGENT
     PROMPT section 11). This is NOT "every gate in the entire lifecycle" -- a target of
@@ -100,7 +198,15 @@ def get_cumulative_required_gates(target_stage: LifecycleStage) -> Tuple[str, ..
     (section 24: future gates must not block an earlier transition). Order is
     deterministic: earliest stage's gates first, target stage's own gates last;
     duplicates (none expected today, but a future stage could legitimately reuse a name)
-    are removed while preserving first-seen order."""
+    are removed while preserving first-seen order.
+
+    Any abstract milestone gate encountered (see ABSTRACT_MILESTONE_GATES) is resolved
+    to `strategy_id`'s concrete gate via _resolve_gate_name before being added -- so the
+    tuple this returns is always a list of concrete gate names an adapter could actually
+    have emitted a GateResult for, never a bare abstract placeholder like
+    "SHADOW_ENTRY_EVIDENCE" itself. Omitting `strategy_id` (or naming an unmapped
+    strategy) resolves to the fail-closed `_UNRESOLVED_FOR_STRATEGY` placeholder, not to
+    any other strategy's gate."""
     if target_stage == LifecycleStage.OFFLINE_RESEARCH:
         return ()
     try:
@@ -114,8 +220,9 @@ def get_cumulative_required_gates(target_stage: LifecycleStage) -> Tuple[str, ..
     seen = []
     for stage in LIFECYCLE_ORDER[start_index : target_index + 1]:
         for name in STAGE_PREREQUISITES.get(stage, ()):
-            if name not in seen:
-                seen.append(name)
+            resolved = _resolve_gate_name(name, strategy_id)
+            if resolved not in seen:
+                seen.append(resolved)
     return tuple(seen)
 
 
@@ -123,15 +230,19 @@ def required_gates_for(
     source: LifecycleStage,
     target: LifecycleStage,
     strategy_overrides: Mapping[Tuple[LifecycleStage, LifecycleStage], Tuple[str, ...]] = None,
+    strategy_id: Optional[str] = None,
 ) -> Tuple[str, ...]:
     """Cumulative stage-entry requirements through `target` (see
-    get_cumulative_required_gates), extended -- never weakened -- by any strategy-
+    get_cumulative_required_gates, which resolves any abstract milestone gate to
+    `strategy_id`'s concrete gate), extended -- never weakened -- by any strategy-
     specific stricter requirement registered for this exact (source, target) transition.
     A strategy override may only ADD gate names to the specific transition being
     evaluated; it can never remove a cumulative gate (AGENT PROMPT section 12: "Never
     weaken a global requirement just because one strategy is not ready for it"), and it
-    never applies to any transition other than the exact pair it is registered under."""
-    base = get_cumulative_required_gates(target)
+    never applies to any transition other than the exact pair it is registered under.
+    `strategy_id` is keyword-only in practice (appended last) so existing positional
+    call sites are unaffected."""
+    base = get_cumulative_required_gates(target, strategy_id=strategy_id)
     extra = ()
     if strategy_overrides:
         extra = strategy_overrides.get((source, target), ())
@@ -150,11 +261,17 @@ def evaluate_transition(
     gates: Mapping[str, GateResult],
     strategy_overrides: Mapping[Tuple[LifecycleStage, LifecycleStage], Tuple[str, ...]] = None,
     na_satisfies: Mapping[Tuple[LifecycleStage, LifecycleStage], Tuple[str, ...]] = None,
+    strategy_id: Optional[str] = None,
 ) -> PromotionEvaluation:
     """Pure function. `gates` must already be computed GateResult objects (typically
     from an adapter reading real evidence) -- this function never computes a gate
     itself, never touches a filesystem, network, or broker, and never mutates
     authorization state.
+
+    `strategy_id` resolves any abstract milestone gate in the cumulative requirement set
+    (see ABSTRACT_MILESTONE_GATES/MILESTONE_GATE_MAP) to that strategy's own concrete
+    gate name -- omitting it (or naming a strategy with no mapping for a needed abstract
+    gate) fails closed rather than defaulting to any concrete gate name.
     """
     violations: list = []
 
@@ -174,7 +291,7 @@ def evaluate_transition(
             violations=tuple(violations),
         )
 
-    required = required_gates_for(source_stage, target_stage, strategy_overrides)
+    required = required_gates_for(source_stage, target_stage, strategy_overrides, strategy_id=strategy_id)
     na_ok = set((na_satisfies or {}).get((source_stage, target_stage), ()))
 
     passed: list = []

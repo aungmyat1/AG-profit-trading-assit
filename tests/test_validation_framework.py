@@ -18,10 +18,13 @@ from validation_framework.adapters.btc_adapter import build_btc_record
 from validation_framework.adapters.fx_adapter import build_fx_record
 from validation_framework.adapters.large_smc_adapter import build_large_smc_record
 from validation_framework.evaluator import (
+    ABSTRACT_MILESTONE_GATES,
     FOUNDATIONAL_INVARIANTS,
+    MILESTONE_GATE_MAP,
     evaluate_transition,
     get_cumulative_required_gates,
     required_gates_for,
+    validate_family_gate_map,
 )
 from validation_framework.ledger import (
     build_ledger,
@@ -189,7 +192,9 @@ def test_promotion_eligible_does_not_change_execution_authority_field():
     write that field, and this test proves the record's authority field is left exactly
     as the caller set it regardless of eligibility. Under cumulative inheritance,
     reaching LIVE_AUTHORIZED requires every earlier stage's prerequisites too, not just
-    OWNER_LIVE_SIGNATURE -- so the fixture supplies the full cumulative set."""
+    OWNER_LIVE_SIGNATURE -- so the fixture supplies the full cumulative set. Uses BTC's
+    strategy_id so the abstract SHADOW_ENTRY_EVIDENCE milestone resolves to the concrete
+    NATURAL_CAMPAIGN_ACCRUAL gate this fixture supplies."""
     gates = _all_pass_gates(
         "SPEC_FIDELITY", "DETERMINISM", "NO_LOOKAHEAD", "HISTORICAL_REPLAY",
         "NATURAL_CAMPAIGN_ACCRUAL",
@@ -198,7 +203,12 @@ def test_promotion_eligible_does_not_change_execution_authority_field():
         "DEMO_SLIPPAGE_VERIFICATION", "IDEMPOTENCY_CHECK",
         "OWNER_LIVE_SIGNATURE",
     )
-    result = evaluate_transition(LifecycleStage.LIVE_ELIGIBLE, LifecycleStage.LIVE_AUTHORIZED, gates)
+    result = evaluate_transition(
+        LifecycleStage.LIVE_ELIGIBLE,
+        LifecycleStage.LIVE_AUTHORIZED,
+        gates,
+        strategy_id="ST_LIQUIDITY_SWEEP_RETEST_V1",
+    )
     assert result.eligible is True
 
     record = StrategyValidationRecord(
@@ -220,15 +230,21 @@ def test_promotion_eligible_does_not_change_execution_authority_field():
 
 def test_demo_eligible_without_explicit_authorization_is_not_demo_authorized():
     """Under cumulative inheritance, OPERATIONAL_SHADOW -> DEMO_ELIGIBLE requires the
-    foundational four AND NATURAL_CAMPAIGN_ACCRUAL AND DEMO_ELIGIBLE's own three gates
-    -- not just the latter, which is all the pre-hardening delta-only evaluator
-    checked."""
+    foundational four AND the (strategy-resolved) shadow-entry gate AND DEMO_ELIGIBLE's
+    own three gates -- not just the latter, which is all the pre-hardening delta-only
+    evaluator checked. Uses BTC's strategy_id so the abstract SHADOW_ENTRY_EVIDENCE
+    milestone resolves to NATURAL_CAMPAIGN_ACCRUAL."""
     gates = _all_pass_gates(
         "SPEC_FIDELITY", "DETERMINISM", "NO_LOOKAHEAD", "HISTORICAL_REPLAY",
         "NATURAL_CAMPAIGN_ACCRUAL",
         "SHADOW_SERIES_COMPLETION", "FRICTION_STRESS_TEST", "OOS_VALIDATION",
     )
-    result = evaluate_transition(LifecycleStage.OPERATIONAL_SHADOW, LifecycleStage.DEMO_ELIGIBLE, gates)
+    result = evaluate_transition(
+        LifecycleStage.OPERATIONAL_SHADOW,
+        LifecycleStage.DEMO_ELIGIBLE,
+        gates,
+        strategy_id="ST_LIQUIDITY_SWEEP_RETEST_V1",
+    )
     assert result.eligible is True
     # Reaching DEMO_ELIGIBLE is not itself DEMO_AUTHORIZED -- that requires a further,
     # explicit transition with its own gates (OWNER_PROMOTION_SIGNATURE, etc.).
@@ -296,9 +312,13 @@ def test_not_applicable_blocks_unless_explicitly_permitted():
         "SHADOW_SERIES_COMPLETION", "FRICTION_STRESS_TEST",
     )
     na_gate = {"OOS_VALIDATION": _gate("OOS_VALIDATION", GateStatus.NOT_APPLICABLE)}
+    btc_id = "ST_LIQUIDITY_SWEEP_RETEST_V1"  # resolves SHADOW_ENTRY_EVIDENCE -> NATURAL_CAMPAIGN_ACCRUAL
 
     blocked = evaluate_transition(
-        LifecycleStage.OPERATIONAL_SHADOW, LifecycleStage.DEMO_ELIGIBLE, {**base_pass, **na_gate}
+        LifecycleStage.OPERATIONAL_SHADOW,
+        LifecycleStage.DEMO_ELIGIBLE,
+        {**base_pass, **na_gate},
+        strategy_id=btc_id,
     )
     assert blocked.eligible is False
     assert "OOS_VALIDATION" in blocked.blocking_gates
@@ -308,6 +328,7 @@ def test_not_applicable_blocks_unless_explicitly_permitted():
         LifecycleStage.DEMO_ELIGIBLE,
         {**base_pass, **na_gate},
         na_satisfies={(LifecycleStage.OPERATIONAL_SHADOW, LifecycleStage.DEMO_ELIGIBLE): ("OOS_VALIDATION",)},
+        strategy_id=btc_id,
     )
     assert allowed.eligible is True
 
@@ -332,12 +353,14 @@ def test_unknown_transition_pair_yields_no_requirements_but_is_still_adjacency_c
 
 
 def test_fx_adapter_reconciles_against_registry_and_yaml():
-    """Hardened expectation: FX is legacy-labeled OPERATIONAL_SHADOW, but cumulative
-    inheritance re-checks FOUNDATIONAL_INVARIANTS and NATURAL_CAMPAIGN_ACCRUAL for its
-    next transition too -- DETERMINISM/HISTORICAL_REPLAY (both PARTIAL) and
-    NATURAL_CAMPAIGN_ACCRUAL (a gate FX has never computed) must all surface as
-    blockers alongside the stage's own SHADOW_SERIES_COMPLETION/FRICTION_STRESS_TEST/
-    OOS_VALIDATION -- none of the foundational ones may silently disappear."""
+    """Hardened + stage-contract-reconciled expectation: FX is legacy-labeled
+    OPERATIONAL_SHADOW, but cumulative inheritance re-checks FOUNDATIONAL_INVARIANTS for
+    its next transition too -- DETERMINISM/HISTORICAL_REPLAY (both PARTIAL) must surface
+    as blockers alongside the stage's own SHADOW_SERIES_COMPLETION/FRICTION_STRESS_TEST/
+    OOS_VALIDATION. Critically, FX must NOT carry BTC's NATURAL_CAMPAIGN_ACCRUAL gate --
+    the abstract SHADOW_ENTRY_EVIDENCE milestone resolves, for FX, to
+    FX_SHADOW_ENTRY_PREFLIGHT_PASS (PASS, real preflight-closure evidence), so it is
+    correctly absent from the blocker list entirely."""
     record = build_fx_record(repo_root=REPO_ROOT)
     assert record.identity.strategy_id == "ST_ASIAN_SWEEP_5R_V1"
     assert record.identity.semantic_version == "1.1.1"
@@ -347,13 +370,15 @@ def test_fx_adapter_reconciles_against_registry_and_yaml():
     assert set(record.promotion_blockers) == {
         "DETERMINISM",
         "HISTORICAL_REPLAY",
-        "NATURAL_CAMPAIGN_ACCRUAL",
         "SHADOW_SERIES_COMPLETION",
         "FRICTION_STRESS_TEST",
         "OOS_VALIDATION",
     }
     assert "SPEC_FIDELITY" not in record.promotion_blockers  # PASS, correctly not blocking
     assert "NO_LOOKAHEAD" not in record.promotion_blockers  # PASS, correctly not blocking
+    assert "NATURAL_CAMPAIGN_ACCRUAL" not in record.promotion_blockers  # BTC's gate, never FX's
+    assert "FX_SHADOW_ENTRY_PREFLIGHT_PASS" not in record.promotion_blockers  # PASS, correctly not blocking
+    assert record.gates["FX_SHADOW_ENTRY_PREFLIGHT_PASS"].status == GateStatus.PASS
 
 
 def test_btc_adapter_reconciles_against_registry_and_yaml():
@@ -449,6 +474,10 @@ def test_discrepancy_detector_flags_stale_documentation():
 
 
 def test_cumulative_required_gates_grow_monotonically_through_the_lifecycle():
+    """Without a strategy_id, the OPERATIONAL_SHADOW milestone's abstract
+    SHADOW_ENTRY_EVIDENCE gate cannot be resolved to any concrete strategy's evidence --
+    it fails closed to an unsatisfiable placeholder rather than defaulting to BTC's
+    NATURAL_CAMPAIGN_ACCRUAL or any other concrete name."""
     forward = set(get_cumulative_required_gates(LifecycleStage.FORWARD_RESEARCH))
     shadow = set(get_cumulative_required_gates(LifecycleStage.OPERATIONAL_SHADOW))
     demo_eligible = set(get_cumulative_required_gates(LifecycleStage.DEMO_ELIGIBLE))
@@ -456,8 +485,27 @@ def test_cumulative_required_gates_grow_monotonically_through_the_lifecycle():
     assert forward == set(FOUNDATIONAL_INVARIANTS)
     assert forward.issubset(shadow)
     assert shadow.issubset(demo_eligible)
-    assert shadow - forward == {"NATURAL_CAMPAIGN_ACCRUAL"}
+    assert shadow - forward == {"SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY"}
     assert demo_eligible - shadow == {"SHADOW_SERIES_COMPLETION", "FRICTION_STRESS_TEST", "OOS_VALIDATION"}
+
+
+def test_cumulative_required_gates_resolve_abstract_milestone_per_strategy_family():
+    """The taxonomy fix under test: OPERATIONAL_SHADOW's milestone requirement is the
+    same abstract concept for every strategy, but it resolves to a different concrete
+    gate name per strategy family -- BTC's own campaign gate for BTC, FX's own preflight
+    gate for FX, never the other's."""
+    btc_required = set(get_cumulative_required_gates(LifecycleStage.OPERATIONAL_SHADOW, strategy_id="ST_LIQUIDITY_SWEEP_RETEST_V1"))
+    fx_required = set(get_cumulative_required_gates(LifecycleStage.OPERATIONAL_SHADOW, strategy_id="ST_ASIAN_SWEEP_5R_V1"))
+
+    assert "NATURAL_CAMPAIGN_ACCRUAL" in btc_required
+    assert "FX_SHADOW_ENTRY_PREFLIGHT_PASS" not in btc_required
+
+    assert "FX_SHADOW_ENTRY_PREFLIGHT_PASS" in fx_required
+    assert "NATURAL_CAMPAIGN_ACCRUAL" not in fx_required
+
+    # Foundational invariants are identical and universal across both families.
+    assert set(FOUNDATIONAL_INVARIANTS).issubset(btc_required)
+    assert set(FOUNDATIONAL_INVARIANTS).issubset(fx_required)
 
 
 def test_large_smc_blocker_includes_determinism():
@@ -477,7 +525,8 @@ def test_btc_cumulative_block_at_operational_shadow():
     ACCRUAL forced to PASS (simulating campaign completion), NO_LOOKAHEAD and
     HISTORICAL_REPLAY (both real-evidence NOT_VERIFIED for BTC) and DETERMINISM
     (PARTIAL) must still block FORWARD_RESEARCH -> OPERATIONAL_SHADOW. Campaign
-    completion alone can never erase a foundational deficiency."""
+    completion alone can never erase a foundational deficiency. strategy_id=BTC resolves
+    the abstract SHADOW_ENTRY_EVIDENCE milestone to NATURAL_CAMPAIGN_ACCRUAL."""
     gates = {
         "SPEC_FIDELITY": _gate("SPEC_FIDELITY", GateStatus.PASS),
         "DETERMINISM": _gate("DETERMINISM", GateStatus.PARTIAL),
@@ -485,7 +534,12 @@ def test_btc_cumulative_block_at_operational_shadow():
         "HISTORICAL_REPLAY": _gate("HISTORICAL_REPLAY", GateStatus.NOT_VERIFIED),
         "NATURAL_CAMPAIGN_ACCRUAL": _gate("NATURAL_CAMPAIGN_ACCRUAL", GateStatus.PASS),
     }
-    result = evaluate_transition(LifecycleStage.FORWARD_RESEARCH, LifecycleStage.OPERATIONAL_SHADOW, gates)
+    result = evaluate_transition(
+        LifecycleStage.FORWARD_RESEARCH,
+        LifecycleStage.OPERATIONAL_SHADOW,
+        gates,
+        strategy_id="ST_LIQUIDITY_SWEEP_RETEST_V1",
+    )
     assert result.eligible is False
     assert "NO_LOOKAHEAD" in result.blocking_gates
     assert "HISTORICAL_REPLAY" in result.blocking_gates
@@ -495,20 +549,30 @@ def test_btc_cumulative_block_at_operational_shadow():
 
 def test_fx_cumulative_block_at_demo_eligible():
     """Mandatory regression (AGENT PROMPT section 22). Even with the stage's own three
-    gates (SHADOW_SERIES_COMPLETION/FRICTION_STRESS_TEST/OOS_VALIDATION) and
-    NATURAL_CAMPAIGN_ACCRUAL forced to PASS, DETERMINISM=PARTIAL must still block
-    OPERATIONAL_SHADOW -> DEMO_ELIGIBLE."""
+    gates (SHADOW_SERIES_COMPLETION/FRICTION_STRESS_TEST/OOS_VALIDATION) and FX's own
+    concrete shadow-entry gate forced to PASS, DETERMINISM=PARTIAL must still block
+    OPERATIONAL_SHADOW -> DEMO_ELIGIBLE. Uses FX's real concrete gate name
+    (FX_SHADOW_ENTRY_PREFLIGHT_PASS), not BTC's NATURAL_CAMPAIGN_ACCRUAL -- proving the
+    taxonomy fix is honored in the cumulative-inheritance safety tests too, not just the
+    adapter-reconciliation tests."""
     gates = _all_pass_gates(
         "SPEC_FIDELITY", "NO_LOOKAHEAD",
-        "NATURAL_CAMPAIGN_ACCRUAL", "SHADOW_SERIES_COMPLETION", "FRICTION_STRESS_TEST", "OOS_VALIDATION",
+        "FX_SHADOW_ENTRY_PREFLIGHT_PASS", "SHADOW_SERIES_COMPLETION", "FRICTION_STRESS_TEST", "OOS_VALIDATION",
     )
     gates["DETERMINISM"] = _gate("DETERMINISM", GateStatus.PARTIAL)
     gates["HISTORICAL_REPLAY"] = _gate("HISTORICAL_REPLAY", GateStatus.PARTIAL)
-    result = evaluate_transition(LifecycleStage.OPERATIONAL_SHADOW, LifecycleStage.DEMO_ELIGIBLE, gates)
+    result = evaluate_transition(
+        LifecycleStage.OPERATIONAL_SHADOW,
+        LifecycleStage.DEMO_ELIGIBLE,
+        gates,
+        strategy_id="ST_ASIAN_SWEEP_5R_V1",
+    )
     assert result.eligible is False
     assert "DETERMINISM" in result.blocking_gates
     assert "HISTORICAL_REPLAY" in result.blocking_gates
     assert "SHADOW_SERIES_COMPLETION" not in result.blocking_gates  # forced PASS, correctly satisfied
+    assert "FX_SHADOW_ENTRY_PREFLIGHT_PASS" not in result.blocking_gates  # forced PASS, correctly satisfied
+    assert "NATURAL_CAMPAIGN_ACCRUAL" not in result.required_gates  # BTC's gate must never appear for FX
 
 
 def test_ledger_blockers_exactly_match_evaluator():
@@ -530,7 +594,11 @@ def test_ledger_blockers_exactly_match_evaluator():
     for build, overrides in builds_and_overrides:
         record = build(repo_root=REPO_ROOT)
         evaluation = evaluate_transition(
-            record.lifecycle_stage, record.next_transition, record.gates, strategy_overrides=overrides
+            record.lifecycle_stage,
+            record.next_transition,
+            record.gates,
+            strategy_overrides=overrides,
+            strategy_id=record.identity.strategy_id,
         )
 
         ledger = build_ledger([record], repository_head="testhead")
@@ -599,3 +667,95 @@ def test_legacy_stage_assignment_does_not_imply_prior_gate_pass():
     for foundational_gate in FOUNDATIONAL_INVARIANTS:
         assert foundational_gate in evaluation.blocking_gates
         assert f"MISSING_GATE:{foundational_gate}" in evaluation.violations
+
+
+# ---------------------------------------------------------------------------
+# AG_EGSVF_V1_STRATEGY_STAGE_CONTRACT_RECONCILIATION regressions.
+#
+# Root taxonomy defect (confirmed by inspection before any edit):
+# STAGE_PREREQUISITES[OPERATIONAL_SHADOW] was hardcoded to the literal, BTC-specific
+# gate name NATURAL_CAMPAIGN_ACCRUAL, treating one concrete evidence mechanism as the
+# universal definition of a lifecycle milestone every strategy family shares. FX has no
+# such campaign and was therefore permanently, incorrectly blocked on a gate that will
+# never apply to it. Fix: STAGE_PREREQUISITES now names the ABSTRACT milestone gate
+# SHADOW_ENTRY_EVIDENCE; MILESTONE_GATE_MAP resolves it per strategy_id to that family's
+# own concrete, evidence-backed gate (FX: FX_SHADOW_ENTRY_PREFLIGHT_PASS, sourced from
+# the real MT5 data-readiness preflight closure, not from Series 001's non-counting
+# evidence; BTC: unchanged NATURAL_CAMPAIGN_ACCRUAL). Only names in
+# ABSTRACT_MILESTONE_GATES may ever be resolved this way -- foundational invariants can
+# never be a mapping target (validate_family_gate_map enforces this) -- and a strategy
+# with no mapping entry fails closed rather than silently borrowing another strategy's
+# gate or being treated as satisfied.
+# ---------------------------------------------------------------------------
+
+
+def test_fx_shadow_entry_uses_fx_specific_gate():
+    """Mandatory regression (AGENT PROMPT section 20). FX's real evidence-derived
+    required-gate set for OPERATIONAL_SHADOW -> DEMO_ELIGIBLE must contain FX's own
+    concrete shadow-entry gate and must NOT contain BTC's NATURAL_CAMPAIGN_ACCRUAL."""
+    record = build_fx_record(repo_root=REPO_ROOT)
+    required = record.details["required_gates"]
+    assert "FX_SHADOW_ENTRY_PREFLIGHT_PASS" in required
+    assert "NATURAL_CAMPAIGN_ACCRUAL" not in required
+    assert "SHADOW_ENTRY_EVIDENCE" not in required  # abstract name must never appear unresolved
+    for foundational_gate in FOUNDATIONAL_INVARIANTS:
+        assert foundational_gate in required
+
+
+def test_btc_shadow_entry_uses_natural_campaign_accrual():
+    """Mandatory regression (AGENT PROMPT section 21). BTC's real evidence-derived
+    required-gate set for FORWARD_RESEARCH -> OPERATIONAL_SHADOW must contain
+    NATURAL_CAMPAIGN_ACCRUAL and must NOT contain FX's concrete gate."""
+    record = build_btc_record(repo_root=REPO_ROOT)
+    required = record.details["required_gates"]
+    assert set(FOUNDATIONAL_INVARIANTS).issubset(set(required))
+    assert "NATURAL_CAMPAIGN_ACCRUAL" in required
+    assert "FX_SHADOW_ENTRY_PREFLIGHT_PASS" not in required
+    assert "SHADOW_ENTRY_EVIDENCE" not in required
+
+
+def test_family_gate_mapping_cannot_replace_foundational_invariant():
+    """Mandatory regression (AGENT PROMPT section 22). Attempting to configure a family
+    mapping that targets a foundational invariant (or any other non-abstract gate) must
+    be rejected outright by validate_family_gate_map, not silently accepted or ignored
+    by resolution -- proving 'foundational invariants are never family-substitutable' is
+    an enforced mechanism, not a naming convention."""
+    for foundational_gate in FOUNDATIONAL_INVARIANTS:
+        assert foundational_gate not in ABSTRACT_MILESTONE_GATES
+        bad_map = {"ST_HYPOTHETICAL": {foundational_gate: "SOME_FAMILY_GATE"}}
+        with pytest.raises(ValueError):
+            validate_family_gate_map(bad_map)
+
+    # The real, shipped map must itself already pass this validation (it does, at
+    # import time -- re-asserting it here catches any future accidental regression).
+    validate_family_gate_map(MILESTONE_GATE_MAP)
+
+    # A mapping for a concrete (non-abstract, non-foundational) gate name is equally
+    # rejected -- only a declared abstract milestone gate is a valid mapping target.
+    with pytest.raises(ValueError):
+        validate_family_gate_map({"ST_HYPOTHETICAL": {"NATURAL_CAMPAIGN_ACCRUAL": "SOMETHING_ELSE"}})
+
+
+def test_missing_abstract_gate_mapping_fails_closed():
+    """Mandatory regression (AGENT PROMPT section 12/23). A registered strategy with no
+    MILESTONE_GATE_MAP entry for an abstract gate its target stage requires must not
+    silently fall back to another strategy's concrete gate, and must not be treated as
+    PASS. It fails closed with an explicit, deterministic blocker/violation."""
+    assert "ST_FUTURE_STRATEGY_V1" not in MILESTONE_GATE_MAP
+
+    gates = _all_pass_gates(
+        "SPEC_FIDELITY", "DETERMINISM", "NO_LOOKAHEAD", "HISTORICAL_REPLAY",
+        "NATURAL_CAMPAIGN_ACCRUAL",  # even if a caller mistakenly supplies BTC's own gate name
+    )
+    result = evaluate_transition(
+        LifecycleStage.FORWARD_RESEARCH,
+        LifecycleStage.OPERATIONAL_SHADOW,
+        gates,
+        strategy_id="ST_FUTURE_STRATEGY_V1",
+    )
+    assert result.eligible is False
+    assert "SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY" in result.blocking_gates
+    assert "MISSING_GATE:SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY" in result.violations
+    # Supplying BTC's gate name must not accidentally satisfy the unknown strategy's
+    # requirement -- it is simply never looked at.
+    assert "NATURAL_CAMPAIGN_ACCRUAL" not in result.required_gates

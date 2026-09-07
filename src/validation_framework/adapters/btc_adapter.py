@@ -158,8 +158,10 @@ def build_btc_record(repo_root: str = ".") -> StrategyValidationRecord:
     # re-checks FOUNDATIONAL_INVARIANTS (SPEC_FIDELITY/DETERMINISM/NO_LOOKAHEAD/
     # HISTORICAL_REPLAY) even though the transition being evaluated is
     # FORWARD_RESEARCH -> OPERATIONAL_SHADOW, not OFFLINE_RESEARCH -> FORWARD_RESEARCH --
-    # BTC's current stage label does not itself prove those gates ever passed.
-    evaluation = evaluate_transition(lifecycle_stage, next_transition, gates)
+    # BTC's current stage label does not itself prove those gates ever passed. Passing
+    # strategy_id resolves the abstract SHADOW_ENTRY_EVIDENCE milestone gate to BTC's own
+    # NATURAL_CAMPAIGN_ACCRUAL (evaluator.MILESTONE_GATE_MAP), not to FX's gate.
+    evaluation = evaluate_transition(lifecycle_stage, next_transition, gates, strategy_id=STRATEGY_ID)
 
     return StrategyValidationRecord(
         identity=identity,

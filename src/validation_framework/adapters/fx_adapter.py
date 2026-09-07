@@ -35,6 +35,18 @@ search trail):
                         STATUS.md, the dated, frozen classification record for each
                         evaluated day of AG_V1_0_3_FX_SHADOW_SERIES_002. Counts here are
                         read from those documents (as of this evaluation), not recomputed.
+- Shadow-entry evidence (concrete resolution of the abstract SHADOW_ENTRY_EVIDENCE
+                        milestone gate, AG_EGSVF_V1_STRATEGY_STAGE_CONTRACT_
+                        RECONCILIATION -- see evaluator.MILESTONE_GATE_MAP):
+                        docs/status/AG_TRADE_ASSISTANT_V1_0_3_MT5_DATA_READINESS_AND_
+                        PREFLIGHT_CLOSURE_STATUS.md, `shadow_entry_ready = YES`,
+                        classification `PREFLIGHT_PASS_SHADOW_READY` -- the real, dated
+                        governance event that made FX's shadow-validation series
+                        eligible to begin. Deliberately NOT sourced from Series 001's own
+                        evidence: Series 001 Day 1 was EXCLUDED_DAY and Day 2
+                        PENDING_RECONCILIATION (see PROJECT_STATUS.md) -- pre-remediation,
+                        non-counting evidence the project itself never treated as
+                        qualifying, so it is not treated as qualifying here either.
 - Execution capability: execution/executor.py + execution/mt5_gateway.py, DEMO_VERIFIED
                         2026-08-28 (generic MT5 Demo round trip).
 - Execution authority:  strategies/registry.yaml -- demo_authorized: false.
@@ -207,6 +219,21 @@ def build_fx_record(repo_root: str = ".") -> StrategyValidationRecord:
         },
     )
 
+    # Concrete resolution of the abstract SHADOW_ENTRY_EVIDENCE milestone gate for this
+    # strategy family (evaluator.MILESTONE_GATE_MAP["ST_ASIAN_SWEEP_5R_V1"]). See module
+    # docstring for why this is sourced from the MT5 data-readiness preflight closure,
+    # not from Series 001 (non-counting, pre-remediation evidence).
+    gates["FX_SHADOW_ENTRY_PREFLIGHT_PASS"] = gate(
+        "FX_SHADOW_ENTRY_PREFLIGHT_PASS",
+        GateStatus.PASS,
+        (
+            "docs/status/AG_TRADE_ASSISTANT_V1_0_3_MT5_DATA_READINESS_AND_PREFLIGHT_CLOSURE_STATUS.md",
+        ),
+        {
+            "note": "shadow_entry_ready=YES, classification=PREFLIGHT_PASS_SHADOW_READY -- MT5 IPC connected to a demo account, EURUSD/GBPUSD both resolved with 24 well-formed closed M15 bars, session/clock contract validated, no broker mutation.",
+        },
+    )
+
     execution_capability = "MT5_DEMO_AVAILABLE"
     execution_capability_evidence = (
         "execution/executor.py",
@@ -221,13 +248,13 @@ def build_fx_record(repo_root: str = ".") -> StrategyValidationRecord:
 
     # Sole promotion authority: evaluator.evaluate_transition(), never a hand-picked
     # subset of gates. Cumulative inheritance means this call also re-checks
-    # FOUNDATIONAL_INVARIANTS and NATURAL_CAMPAIGN_ACCRUAL even though FX's current
-    # `lifecycle_stage` label is already OPERATIONAL_SHADOW -- that label was assigned
-    # before AG-EGSVF existed and is not itself proof those gates were ever evaluated
-    # (see docs/architecture/AG_EGSVF_V1_LEDGER.md, "legacy stage assignments are not
-    # evidence"). FX has no NATURAL_CAMPAIGN_ACCRUAL gate of its own, so it will
-    # legitimately surface as a missing-gate blocker below, not be silently skipped.
-    evaluation = evaluate_transition(lifecycle_stage, next_transition, gates)
+    # FOUNDATIONAL_INVARIANTS even though FX's current `lifecycle_stage` label is
+    # already OPERATIONAL_SHADOW -- that label was assigned before AG-EGSVF existed and
+    # is not itself proof those gates were ever evaluated (see
+    # docs/architecture/AG_EGSVF_V1_LEDGER.md, "legacy stage assignments are not
+    # evidence"). Passing strategy_id resolves the abstract SHADOW_ENTRY_EVIDENCE gate to
+    # FX_SHADOW_ENTRY_PREFLIGHT_PASS above -- not to BTC's NATURAL_CAMPAIGN_ACCRUAL.
+    evaluation = evaluate_transition(lifecycle_stage, next_transition, gates, strategy_id=STRATEGY_ID)
 
     return StrategyValidationRecord(
         identity=identity,

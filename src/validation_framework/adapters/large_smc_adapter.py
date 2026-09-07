@@ -162,8 +162,16 @@ def build_large_smc_record(repo_root: str = ".") -> StrategyValidationRecord:
     # (FOUNDATIONAL_INVARIANTS) plus this strategy's own C10_STOP_POLICY addition --
     # NOT FRICTION_STRESS_TEST/OOS_VALIDATION, which belong to a later transition
     # (DEMO_ELIGIBLE) and must not block this earlier one (AGENT PROMPT section 29).
+    # strategy_id is passed for consistency/future-proofing; it has no effect on THIS
+    # transition since FORWARD_RESEARCH's cumulative set never reaches the abstract
+    # SHADOW_ENTRY_EVIDENCE gate (that only enters at OPERATIONAL_SHADOW) -- no
+    # concrete Large-SMC shadow-entry gate is invented here (AGENT PROMPT section 19).
     evaluation = evaluate_transition(
-        lifecycle_stage, next_transition, gates, strategy_overrides=STRATEGY_TRANSITION_OVERRIDES
+        lifecycle_stage,
+        next_transition,
+        gates,
+        strategy_overrides=STRATEGY_TRANSITION_OVERRIDES,
+        strategy_id=STRATEGY_ID,
     )
 
     return StrategyValidationRecord(
