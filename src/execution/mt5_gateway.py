@@ -33,6 +33,7 @@ import MetaTrader5 as mt5
 import yaml
 
 from mt5.account import account as get_account
+from mt5.account_guard import verify_configured_account
 from execution.models import OrderSendResult
 
 _CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config", "trading.yaml")
@@ -74,7 +75,15 @@ def _order_check_allowed() -> bool:
 def _account_authorized_for_send() -> Optional[str]:
     """Returns None if the connected account may receive a real order_send, else a
     reason_code. Defense-in-depth on top of config: requires the live account to read
-    as demo, UNLESS allow_live_trading is explicitly true in config too."""
+    as demo, UNLESS allow_live_trading is explicitly true in config too. Also requires
+    the connected account to match the .env-configured broker identity
+    (mt5.account_guard) -- prevents an order being sent to whatever account happens to
+    already be logged into the local terminal (AG_UNIFIED_VANTAGE_MARKETS_DEMO_MT5_
+    ACCOUNT_MIGRATION_V1)."""
+    identity_mismatch = verify_configured_account()
+    if identity_mismatch is not None:
+        return identity_mismatch
+
     config = _load_config()
     allow_live_trading = (config.get("account", {}) or {}).get("allow_live_trading") is True
     try:

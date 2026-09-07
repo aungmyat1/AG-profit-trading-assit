@@ -376,6 +376,9 @@ def test_real_account_hard_lock_blocks_even_with_config_send_enabled(monkeypatch
     from execution import mt5_gateway as gw
 
     fake_account = SimpleNamespace(is_demo=False)
+    # Identity gate (mt5.account_guard) is a separate, prior check -- stub it matched so
+    # this test isolates the is_demo/allow_live_trading gate it actually exercises.
+    monkeypatch.setattr(gw, "verify_configured_account", lambda: None)
     monkeypatch.setattr(gw, "get_account", lambda: fake_account)
     monkeypatch.setattr(gw, "_order_send_allowed", lambda: True)  # simulate config fully open
     send_calls = []

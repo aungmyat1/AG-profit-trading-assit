@@ -86,6 +86,22 @@ def test_live_execution_disabled_when_account_not_authorized(monkeypatch):
     assert send_calls == []
 
 
+def test_account_authorized_for_send_blocks_on_identity_mismatch(monkeypatch):
+    # Real _account_authorized_for_send (not monkeypatched away) must consult
+    # mt5.account_guard.verify_configured_account before its own demo/live check --
+    # AG_UNIFIED_VANTAGE_MARKETS_DEMO_MT5_ACCOUNT_MIGRATION_V1.
+    monkeypatch.setattr(gw, "verify_configured_account", lambda: "ACCOUNT_LOGIN_MISMATCH")
+
+    assert gw._account_authorized_for_send() == "ACCOUNT_LOGIN_MISMATCH"
+
+
+def test_account_authorized_for_send_proceeds_when_identity_matches(monkeypatch):
+    monkeypatch.setattr(gw, "verify_configured_account", lambda: None)
+    monkeypatch.setattr(gw, "get_account", lambda: SimpleNamespace(is_demo=True))
+
+    assert gw._account_authorized_for_send() is None
+
+
 def test_broker_rejected_order_send(monkeypatch):
     monkeypatch.setattr(gw, "_order_send_allowed", lambda: True)
     monkeypatch.setattr(gw, "_account_authorized_for_send", lambda: None)
