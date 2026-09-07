@@ -384,12 +384,14 @@ def test_fx_adapter_reconciles_against_registry_and_yaml():
 
 
 def test_btc_adapter_reconciles_against_registry_and_yaml():
-    """Determinism-reconciled expectation: BTC's NO_LOOKAHEAD/HISTORICAL_REPLAY
-    (NOT_VERIFIED) must still block FORWARD_RESEARCH -> OPERATIONAL_SHADOW alongside
-    NATURAL_CAMPAIGN_ACCRUAL, but DETERMINISM is now real-evidence PASS
-    (scripts/generate_determinism_evidence.py::generate_btc_evidence) and must NOT
-    appear -- campaign completion alone still could never make this eligible while the
-    remaining foundational gates stay unproven."""
+    """Determinism- and no-lookahead-reconciled expectation: BTC's HISTORICAL_REPLAY
+    (still NOT_VERIFIED -- no real historical dataset replay exists) must still block
+    FORWARD_RESEARCH -> OPERATIONAL_SHADOW alongside NATURAL_CAMPAIGN_ACCRUAL. DETERMINISM
+    (scripts/generate_determinism_evidence.py::generate_btc_evidence) and NO_LOOKAHEAD
+    (tests/test_btc_sweep_research_pipeline.py's M5+H1 future-candle-exclusion tests,
+    AG_PROJECT_READINESS_CONTINUATION_DUAL_TRACK_V1 P3) are both now real-evidence PASS
+    and must NOT appear -- campaign completion alone still could never make this
+    eligible while HISTORICAL_REPLAY stays unproven."""
     record = build_btc_record(repo_root=REPO_ROOT)
     assert record.identity.strategy_id == "ST_LIQUIDITY_SWEEP_RETEST_V1"
     assert record.identity.semantic_version == "2.0.0"
@@ -397,13 +399,14 @@ def test_btc_adapter_reconciles_against_registry_and_yaml():
     assert record.execution_authority == "RESEARCH_ONLY"
     assert record.promotion_eligible is False
     assert set(record.promotion_blockers) == {
-        "NO_LOOKAHEAD",
         "HISTORICAL_REPLAY",
         "NATURAL_CAMPAIGN_ACCRUAL",
     }
     assert "SPEC_FIDELITY" not in record.promotion_blockers
     assert "DETERMINISM" not in record.promotion_blockers  # real evidence PASS, correctly not blocking
+    assert "NO_LOOKAHEAD" not in record.promotion_blockers  # real evidence PASS, correctly not blocking
     assert record.gates["DETERMINISM"].status == GateStatus.PASS
+    assert record.gates["NO_LOOKAHEAD"].status == GateStatus.PASS
     assert record.gates["NATURAL_CAMPAIGN_ACCRUAL"].details["observed_count"] == 0
 
 

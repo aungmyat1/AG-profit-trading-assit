@@ -202,6 +202,37 @@ def test_backfill_ignores_m5_candles_after_observation_date(tmp_path):
     assert report.occurrences[0].setup_state.sweep_time.date() == NOW.date()
 
 
+def test_h1_direction_gate_ignores_h1_candles_after_now(tmp_path):
+    """AG_PROJECT_READINESS_CONTINUATION_DUAL_TRACK_V1 (P3). The existing backfill test
+    above proves M5 future-candle exclusion; H1 had no equivalent test even though
+    pipeline.py applies the identical `c.time <= now` filter to H1 before computing the
+    trend-direction gate AND the PREVIOUS_DAY reference box -- both decision-critical.
+    Injects H1 candles dated strictly after `now` shaped to reverse the H1 trend (if
+    they were wrongly included) and proves the resulting report is byte-identical to
+    the baseline with no future candles at all."""
+    h1, m5 = _build_fixture([(13, 30)])
+    baseline_feed = _FixtureFeed(h1, m5)
+    baseline_runtime, baseline_ledger, baseline_dl, baseline_op = _fresh_runtime_and_guards(tmp_path, "_nolookahead_baseline")
+    baseline = _run(baseline_feed, baseline_runtime, baseline_ledger, baseline_dl, baseline_op)
+
+    # Future H1 candles: a strongly bullish zigzag (opposite of the fixture's bearish
+    # H1), dated a full day after NOW -- if pipeline.py's `c.time <= now` filter were
+    # broken, this would flip h1_trend_direction() and change the qualified direction.
+    future_h1 = _h1_zigzag(
+        cycles=13, down_len=3, up_len=8, start=h1[-1].close,
+        start_time=NOW + dt.timedelta(hours=1),
+    )
+    assert all(c.time > NOW for c in future_h1)
+
+    tainted_feed = _FixtureFeed(h1 + future_h1, m5)
+    tainted_runtime, tainted_ledger, tainted_dl, tainted_op = _fresh_runtime_and_guards(tmp_path, "_nolookahead_tainted")
+    tainted = _run(tainted_feed, tainted_runtime, tainted_ledger, tainted_dl, tainted_op)
+
+    assert len(tainted.occurrences) == len(baseline.occurrences) == 1
+    assert tainted.occurrences[0].setup_state == baseline.occurrences[0].setup_state
+    assert tainted.occurrences[0].proposal == baseline.occurrences[0].proposal
+
+
 def test_reobserving_same_occurrence_does_not_duplicate_ledger_row(tmp_path):
     h1, m5 = _build_fixture([(13, 30)])
     feed = _FixtureFeed(h1, m5)

@@ -117,9 +117,23 @@ def build_btc_record(repo_root: str = ".") -> StrategyValidationRecord:
 
     gates["NO_LOOKAHEAD"] = gate(
         "NO_LOOKAHEAD",
-        GateStatus.NOT_VERIFIED,
-        (),
-        {"note": "No BTC-pipeline-scoped no-lookahead test found; the shared historical_replay no-lookahead suite does not cover btc_sweep_research.pipeline."},
+        GateStatus.PASS,
+        (
+            "tests/test_btc_sweep_research_pipeline.py::test_backfill_ignores_m5_candles_after_observation_date",
+            "tests/test_btc_sweep_research_pipeline.py::test_h1_direction_gate_ignores_h1_candles_after_now",
+        ),
+        {
+            "note": (
+                "Both of pipeline.py's own `c.time <= now` future-candle filters "
+                "(M5 window candles and H1 trend/reference-box candles) are now "
+                "directly tested -- injecting future-dated H1 candles shaped to "
+                "reverse the qualified direction produces a byte-identical report to "
+                "the no-future-candle baseline (AG_PROJECT_READINESS_CONTINUATION_"
+                "DUAL_TRACK_V1, P3). Distinct from HISTORICAL_REPLAY, which remains "
+                "NOT_VERIFIED -- this proves lookahead exclusion, not replay against a "
+                "real historical dataset."
+            )
+        },
     )
 
     gates["HISTORICAL_REPLAY"] = gate(
