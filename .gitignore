@@ -5,6 +5,12 @@ journal/*.jsonl
 journal/post_asian_pilot/
 journal/post_london_newyork_pilot/
 journal/btc_sweep_research/
-logs/
+/logs/
 *.egg-info/
 .env
+
+# web/ (Node/Vite frontend, AG_WEB_TELEGRAM_DEMO_EXECUTION_GATEWAY_IMPLEMENTATION_V1)
+web/node_modules/
+web/dist/
+web/.vite/
+web/.env

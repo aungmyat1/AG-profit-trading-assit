@@ -1,0 +1,8 @@
+{
+  "name": "AG Profit Trading",
+  "description": "Deterministic FX and crypto trading assistant with session sweep strategies, SMC confirmation, Trade Journal weekly/monthly PnL growth charts, and backtest replay.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
