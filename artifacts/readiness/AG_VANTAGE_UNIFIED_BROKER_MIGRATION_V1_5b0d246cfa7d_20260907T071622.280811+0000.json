@@ -1,0 +1,94 @@
+{
+  "artifact_id": "AG_VANTAGE_UNIFIED_BROKER_MIGRATION_V1",
+  "evaluation_head": "5b0d246cfa7d",
+  "generated_at_utc": "2026-09-07T07:16:22.280811+00:00",
+  "broker": {
+    "canonical_id": "VANTAGE",
+    "display_name": "Vantage Markets",
+    "environment": "DEMO",
+    "transport": "MT5",
+    "unified_account_requested": true,
+    "unified_account_supported": true,
+    "unified_account_evidence": "One connected Vantage Markets Demo MT5 login exposes EURUSD, GBPUSD, BTCUSD, ETHUSD, all trade_mode=SYMBOL_TRADE_MODE_FULL, captured read-only via symbol_info() on 2026-09-07."
+  },
+  "account_config": {
+    "source": ".env (src/.env, gitignored)",
+    "loader": "src/mt5/config.py::load_mt5_config()",
+    "identity_guard": "src/mt5/account_guard.py::verify_configured_account()",
+    "credentials_hardcoded": false,
+    "credentials_included_in_this_artifact": false,
+    "required_variables": ["MT5_BROKER", "MT5_ENVIRONMENT", "MT5_LOGIN", "MT5_PASSWORD", "MT5_SERVER"],
+    "optional_variables": ["MT5_TERMINAL_PATH"],
+    "wired_into": "execution/mt5_gateway.py::_account_authorized_for_send() -- runs before the existing is_demo/allow_live_trading gate, blocks with a reason_code if the connected account's login/server/demo-vs-live does not match .env"
+  },
+  "fx": {
+    "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+    "strategy_version": "1.1.1",
+    "strategy_semantics_changed": false,
+    "canonical_symbols": ["EURUSD", "GBPUSD"],
+    "vantage_symbols": {"EURUSD": "EURUSD", "GBPUSD": "GBPUSD"},
+    "market_data_provider_before": "whichever MT5 terminal happened to be locally logged in (unverified)",
+    "market_data_provider_after": "Vantage Markets MT5 (same connection, now identity-verified before any order-send)",
+    "execution_venue_before": "unverified local MT5 terminal session",
+    "execution_venue_after": "VANTAGE_MT5_DEMO (identity-verified)",
+    "authority": "demo_authorized=false (registry, unchanged) -- proposal-only"
+  },
+  "crypto": {
+    "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1",
+    "strategy_version": "2.0.0",
+    "strategy_semantics_changed": false,
+    "canonical_symbols": ["BTCUSDT", "ETHUSDT"],
+    "vantage_symbols": {"BTCUSDT": "BTCUSD", "ETHUSDT": "ETHUSD"},
+    "vantage_available": true,
+    "market_data_provider_before": "BYBIT (frozen, config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml)",
+    "market_data_provider_after": "BYBIT (unchanged -- not migrated, see btc_provider_boundary)",
+    "execution_venue_before": "none (CryptoExecutionAdapter.submit() = NOT_IMPLEMENTED)",
+    "execution_venue_after": "none (unchanged -- crypto execution remains disabled; only routing/symbol-map infrastructure added)",
+    "authority": "RESEARCH_ONLY (unchanged)"
+  },
+  "btc_provider_boundary": {
+    "existing_bybit_evidence_preserved": true,
+    "campaign_count_before": "0/30 (unchanged)",
+    "campaign_contract_allows_provider_change": "not evaluated -- not needed, no provider change made",
+    "new_campaign_series_required": "N/A -- provider not migrated",
+    "migration_effective_from": null,
+    "provider_equivalence_checked": true,
+    "provider_equivalence_scope": "30 H1 BTCUSD candles read-only via copy_rates_from_pos, 2026-09-06T05:00Z-2026-09-07T10:00Z (spans a weekend)",
+    "provider_equivalence_result": "PRELIMINARY_POSITIVE: continuous hourly bars, uniform 3600s spacing, zero-volume-bar count = 0, no weekend gap observed in this window -- consistent with 24/7 crypto CFD coverage. This is a small fixed-interval sanity check only (per task section 52), not a full OHLC/session/spread/missing-bar audit against Bybit, and does NOT itself authorize a provider migration.",
+    "decision": "NOT MIGRATED. BTC market-data authority remains Bybit, per the existing dated owner freeze (PROJECT_STATUS.md, 2026-09-03: 'BTC production market-data authority FROZEN as Bybit'). Reversing that freeze is a governance decision requiring its own explicit, dated owner authorization -- this migration task's general 'owner has selected Vantage for FX+crypto' framing does not itself constitute that re-authorization of a previously frozen, dated decision. Recommend a separate, explicitly-scoped owner decision packet (mirroring the existing C10/Bybit-qualification decision-packet pattern already used in this repo) before any BTC market-data provider change."
+  },
+  "mt5_architecture": {
+    "connection_manager": "mt5/connection.py::connect() -- UNCHANGED (still a bare mt5.initialize(), relied on by ~25 existing read-only callers; not modified in this migration to avoid broad-surface regression risk)",
+    "execution_gateway": "execution/mt5_gateway.py (OPEN side) + mt5/management_gateway.py (existing-position side) -- both reused unchanged in structure; only mt5_gateway.py's account gate was extended",
+    "shared_gateway": true,
+    "broker_symbol_resolver": "src/mt5/broker_symbol_resolver.py (new) -- canonical symbol -> broker symbol, config/mt5.yaml symbol_map, fails closed on unmapped pair",
+    "price_normalization": "unchanged (pre-existing gap: no explicit round-to-tick pre-send step; relies on broker order_check() rejection) -- not addressed in this migration, out of scope",
+    "volume_normalization": "unchanged -- execution/risk.py::size_position() already broker-metadata-driven (tick_size/tick_value/contract_size/volume_step), confirmed compatible against real Vantage EURUSD/GBPUSD/BTCUSD/ETHUSD metadata captured this session",
+    "stop_validation": "unchanged (pre-existing gap: no explicit trade_stops_level/trade_freeze_level pre-check; relies on broker order_check()) -- real Vantage values for all 4 symbols are 0/0 (no minimum), so no practical impact observed",
+    "fill_mode": "mt5_gateway.py hardcodes ORDER_FILLING_IOC (pre-existing); real Vantage symbol_info().filling_mode == 2 (IOC-only) for all 4 symbols audited, so this hardcoding is currently correct by evidence, not merely by luck -- not changed to dynamic in this migration (out of scope; flagged as a robustness item)",
+    "idempotency": "unchanged (execution/journal.py, lifecycle.py)",
+    "duplicate_protection": "unchanged (execution/journal.py atomic claim)"
+  },
+  "execution_guards": {
+    "fx_shadow_execution_blocked": true,
+    "btc_research_execution_blocked": true,
+    "live_account_blocked": "yes, unless MT5_ENVIRONMENT=LIVE is explicitly set AND config/trading.yaml account.allow_live_trading=true (both independently gated, unchanged)",
+    "demo_account_verified": "verified via mt5.account_guard.verify_configured_account() at send-time, when MT5_LOGIN/PASSWORD/SERVER/BROKER/ENVIRONMENT are populated in src/.env",
+    "broker_order_sent": false
+  },
+  "protected_state": {
+    "strategy_versions_changed": false,
+    "strategy_semantics_changed": false,
+    "historical_evidence_rewritten": false,
+    "campaign_evidence_manufactured": false,
+    "egsvf_promotion_changed": false,
+    "execution_authority_changed": false,
+    "live_trading_enabled": false,
+    "broker_execution_performed": false
+  },
+  "notes": [
+    "src/.env's Demo section previously used invalid space-containing keys ('MT5 Login=', 'MT5 Password=', 'MT5 Server=') that no environment loader could parse; renamed in place to MT5_LOGIN/MT5_PASSWORD/MT5_SERVER with user confirmation, values never read or printed by this process beyond what was necessary to perform the rename edit.",
+    "A pre-existing, now-superseded duplicate empty MT5_LOGIN/MT5_PASSWORD/MT5_SERVER block (documented as unused MetaAPI reference) was renamed to MT5_LEGACY_METAAPI_LOGIN/PASSWORD/SERVER to remove a last-wins key collision that would otherwise have silently overridden the real Demo credentials with empty values.",
+    "The .env Live section (VANTAGE-LIVE, VANTAGE-LIVE-PASSWORD, VANTAGE-SERVER, 'Acc Type=Standard STP') was left untouched per explicit user instruction; 'Acc Type=Standard STP' still has an invalid space-containing key and is silently skipped by python-dotenv (harmless, does not block loading of other variables) -- not remediated, out of scope."
+  ]
+}
