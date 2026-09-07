@@ -136,3 +136,40 @@ never on a recurring schedule against live data. This is reported as an
 above is signed, natural evidence cannot begin accruing until a scheduled observation
 runner exists. Building one is out of this packet's scope (a research/infrastructure
 task, not a governance decision) and is not attempted in this task.
+
+## Addendum (2026-09-07): a fourth, simpler option and its verification against discovery data
+
+A simpler "hybrid statistical minimum" shape has since been proposed:
+
+```text
+OPTION D -- HYBRID STATISTICAL MINIMUM
+minimum 10 resolved setups
++ coverage across at least 2 distinct M models
++ full C10 structural stop computation on each
++ complete provenance
+```
+
+This is **RECOMMENDED as a reasonable starting shape** -- it is simpler to audit than
+Options A-C above and directly requires the one thing this task cares most about
+(C10 actually producing a usable stop in practice, not just in unit tests). It is
+**NOT owner-signed**; no authorization for it exists in any repository record.
+
+**Attainability check against the only real discovery evidence available** (18
+E-qualified events / ~2 months: E1=3, E2=4, E3=11): this cannot be verified as
+practically attainable without knowing the E→M confirmation rate, which remains
+genuinely unmeasured (the same gap already flagged above). If, hypothetically, even
+30% of E-events reach an M-confirmation, 18 events over 2 months would yield roughly
+5-6 confirmed setups per 2 months -- suggesting Option D's "10 resolved setups" target
+is plausible on a multi-month horizon, but this is an illustrative arithmetic check
+against an assumed confirmation rate, **not measured evidence**, and must not be
+treated as a validated estimate. The "≥2 distinct M models" clause is likely the
+harder constraint given M1's typically-scarcer inducement-based confirmation pattern
+relative to M2/M3 in comparable SMC implementations -- again, not measured for this
+engine specifically.
+
+**Recommendation to the owner**: before signing Option D (or any option), commission
+the small offline analysis already flagged above (running `LargeSMCResearchEngine`
+across a longer historical window with `historical_data_context`, entirely additive
+and research-only) to measure actual E→M confirmation rates and C10-computability rate.
+Signing a quota before that data exists risks freezing an unattainable or trivially-easy
+threshold by chance rather than by design.
