@@ -45,19 +45,24 @@ from proposals.identity import reference_key_for, setup_id as _setup_id
 from proposals.occurrence_identity import candidate_occurrence_id as _candidate_occurrence_id
 from proposals.occurrence_identity import eligibility_interval_id as _eligibility_interval_id
 
+from .c10_stop_policy import C10StopPolicyViolation, compute_c10_stop
 from .decision import (
     ENGINE_VERSION,
+    REASON_C10_STOP_MIN_STOP_VIOLATION,
+    REASON_C10_STOP_MISSING_DATA,
     REASON_INSUFFICIENT_DATA,
     REASON_REJECT_NO_TARGET,
     REASON_SYMBOL_NOT_IN_FROZEN_UNIVERSE,
-    REASON_UNSIGNED_C10_BROKER_STOP,
     STRATEGY_ID,
     LargeSMCDecisionState,
     LargeSMCResearchDecision,
 )
 from .target_model import select_target
 
-STRATEGY_VERSION = "1.0.6"
+STRATEGY_VERSION = "1.0.7"  # C10 signed and implemented (c10_stop_policy.py) -- RESEARCH_QUALIFIED
+# is now reachable, matching v1.0.6's own precedent (pending-entry expiry resolution
+# bumped v1.0.5 -> v1.0.6 for the same reason: resolving a previously-BLOCKED unsigned
+# contract gap materially changes reachable decision states).
 
 # C01, RESOLVED (2026-09-01): EURUSD only for the first discovery run. GBPUSD explicitly
 # deferred until the funnel works and data quality passes on EURUSD -- see
@@ -211,13 +216,64 @@ class LargeSMCResearchEngine:
             return _decision(**common, state=LargeSMCDecisionState.DATA_ERROR.value,
                               reason_codes=(REASON_INSUFFICIENT_DATA, target.reason), data_quality_state="DATA_ERROR")
 
-        # Target resolved; only the broker stop (C10) remains unsigned -- pending-entry
-        # expiry is RESOLVED_BY_REUSE (see decision.py module docstring / pending_entry.py).
-        # BLOCKED, not RESEARCH_QUALIFIED -- this candidate is exactly the kind Phase B's
-        # discovery report counts as "READY-equivalent, blocked pending owner decision."
+        # Target resolved; C10 (broker stop) is now signed (c10_stop_policy.py) --
+        # compute it. ATR14(M5) is fetched via the same already-patched, replay-safe
+        # stage2.get_latest_candles seam _select_target above already uses (no second
+        # MT5 access pattern introduced). The tick is only required for SHORT (C10-B);
+        # LONG's own formula does not use spread, so a missing tick never blocks a LONG
+        # candidate. min_stop_distance_price/entry_price for C10-C's broker-minimum
+        # check are deliberately left unwired here: this engine documents (module
+        # docstring) that it performs "zero MT5 access of its own" beyond the already-
+        # patched stage2.get_latest_candles/.get_tick/analyze_structure_tiers seams, and
+        # no such seam exists for live broker symbol metadata (SymbolMeta.trade_stops_
+        # level) that would remain replay-safe under historical_data_context. The
+        # minimum-stop check therefore always evaluates as NOT_APPLICABLE at this call
+        # site (compute_c10_stop's own documented behavior when min_stop_distance_price
+        # is None) -- never silently treated as PASS, and unit-tested independently in
+        # tests/test_c10_stop_policy.py.
+        try:
+            m5_candles = stage2.get_latest_candles(symbol, _M5_TIMEFRAME, _M5_CANDLE_COUNT)
+        except MarketDataError as exc:
+            return _decision(
+                **common, state=LargeSMCDecisionState.DATA_ERROR.value,
+                reason_codes=(REASON_INSUFFICIENT_DATA, exc.reason_code), data_quality_state="DATA_ERROR",
+            )
+        bid = ask = None
+        if combo.direction == "SHORT":
+            try:
+                tick = stage2.get_tick(symbol)
+                bid, ask = tick.bid, tick.ask
+            except MarketDataError as exc:
+                return _decision(
+                    **common, state=LargeSMCDecisionState.DATA_ERROR.value,
+                    reason_codes=(REASON_INSUFFICIENT_DATA, exc.reason_code), data_quality_state="DATA_ERROR",
+                )
+        try:
+            c10 = compute_c10_stop(
+                direction=combo.direction,
+                invalidation_price=combo.invalidation_price,
+                bid=bid,
+                ask=ask,
+                m5_candles=m5_candles,
+            )
+        except C10StopPolicyViolation as exc:
+            reason = (
+                REASON_C10_STOP_MIN_STOP_VIOLATION if exc.reason_code == "MIN_STOP_VIOLATION"
+                else REASON_C10_STOP_MISSING_DATA
+            )
+            return _decision(
+                **common, state=LargeSMCDecisionState.BLOCKED.value,
+                reason_codes=(f"{reason}:{exc.reason_code}",),
+                target_price=target.target_price, target_tier=target.target_tier, target_type=target.target_type,
+                target_source=target.target_source, target_source_id=target.target_source_id,
+                target_side=target.target_side, target_status_at_selection=target.target_status_at_selection,
+                target_selected_at=evaluation_time,
+                target_anchor_price=combo.entry_price, target_evidence_timestamp=target.target_evidence_timestamp,
+            )
+
         return _decision(
-            **common, state=LargeSMCDecisionState.BLOCKED.value,
-            reason_codes=(REASON_UNSIGNED_C10_BROKER_STOP,),
+            **common, state=LargeSMCDecisionState.RESEARCH_QUALIFIED.value,
+            simulated_broker_stop=c10.stop_price,
             target_price=target.target_price, target_tier=target.target_tier, target_type=target.target_type,
             target_source=target.target_source, target_source_id=target.target_source_id,
             target_side=target.target_side, target_status_at_selection=target.target_status_at_selection,

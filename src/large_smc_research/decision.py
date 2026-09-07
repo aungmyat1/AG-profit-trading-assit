@@ -45,7 +45,19 @@ class LargeSMCDecisionState(str, Enum):
 
 
 # Reason codes this engine actually emits -- never invented ad hoc at call sites.
+# Retained for provenance only -- C10 is now signed (c10_stop_policy.py,
+# AG_PROJECT_STRATEGY_ECONOMICS_AND_EXECUTION_RECONCILIATION_CONTINUATION_V1,
+# 2026-09-07); this code is no longer emitted by engine.py but historical BLOCKED
+# decisions attributed to it under earlier evaluations must not be reinterpreted.
 REASON_UNSIGNED_C10_BROKER_STOP = "UNSIGNED_CONTRACT:C10_BROKER_STOP"
+# Emitted when the now-signed C10 policy itself fails closed: missing structural
+# anchor, missing spread, or (rare, given entry-level checks) an invalid spread.
+# c10_stop_policy.C10StopPolicyViolation.reason_code is appended verbatim after the
+# colon so the exact cause is never collapsed into one generic code.
+REASON_C10_STOP_MISSING_DATA = "C10_STOP:MISSING_DATA"
+# Emitted when a computed stop violates the broker's minimum stop distance -- C10-C's
+# signed REJECT policy (never WIDEN).
+REASON_C10_STOP_MIN_STOP_VIOLATION = "C10_STOP:MIN_STOP_VIOLATION"
 # Retained for provenance only -- pending-entry expiry is RESOLVED_BY_REUSE as of
 # OUTCOME_LIFECYCLE_V1 (see module docstring); no longer emitted by engine.py.
 REASON_UNSIGNED_PENDING_ENTRY_EXPIRY = "UNSIGNED_CONTRACT:PENDING_ENTRY_EXPIRY"
