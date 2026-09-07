@@ -36,7 +36,9 @@ Agent skills  -> ADVISORY ONLY
    `user_confirmed=True` unless the user's own message this turn was an explicit
    execution command ("execute it", "sell EURUSD 0.31 lots...", "close this position") —
    analysis or a proposal being generated is never sufficient on its own.
-4. Agent skills (`.claude/skills/`, `.agents/skills/`) read and explain; they have no
+4. Agent skills (`.agents/skills/` canonical, `.claude/skills/` a runtime-discovery
+   mirror — see `docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md` "Universal skill
+   contract") read and explain; they have no
    *independent* execution authority and never call `execution.executor`,
    `execution.mt5_gateway`, or any order_check/order_send path themselves, and never
    override a strategy engine result. Actual execution is always routed through point 3.
@@ -137,6 +139,10 @@ proposal and must not borrow rules from another D-drive repository implicitly.
 subset of `market-data`, `market-structure-analysis`, `supply-demand-analysis`,
 `liquidity-analysis`, `entry-confirmation-analysis`, and
 `trade-management-analysis`. These remain advisory and do not require strategy dispatch.
+Load `multi-timeframe-market-context` only when the question is explicitly cross-
+timeframe (top-down / HTF-to-LTF alignment) — it orchestrates the skills above across a
+caller-supplied timeframe profile and introduces no new detection logic or strategy
+wiring; see `docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md` workflow F.
 
 **Manual-entry trade management** (load for "claim this ticket", "is this position
 eligible for a partial", "should breakeven have fired", "check on my open manual

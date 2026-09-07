@@ -1,0 +1,34 @@
+{
+  "reference_only": true,
+  "authority": "ADVISORY_ONLY",
+  "roles": {
+    "MACRO": {
+      "purpose": "major structural boundaries, external liquidity, major POIs",
+      "states": ["CLEAR_PATH", "AT_MAJOR_DEMAND", "AT_MAJOR_SUPPLY", "AT_EXTERNAL_LIQUIDITY", "MACRO_CONFLICT", "NEUTRAL", "INSUFFICIENT_DATA"]
+    },
+    "BIAS": {
+      "purpose": "dominant structural direction",
+      "states": ["BULLISH", "BEARISH", "STRUCTURE_STATE_UNDEFINED", "INSUFFICIENT_DATA"],
+      "reuses": "market_structure.StructureResult.state verbatim"
+    },
+    "WORKING": {
+      "purpose": "current retracement/alignment state relative to BIAS",
+      "states": ["ALIGNED", "RETRACING", "CONFLICTED", "REALIGNING", "UNKNOWN", "NOT_APPLICABLE"]
+    },
+    "SETUP": {
+      "purpose": "zone/liquidity location context for a possible setup",
+      "evidence_types": ["poi_tap", "liquidity_sweep", "order_block_reaction", "fvg", "session_extreme", "inducement_candidate"]
+    },
+    "EXECUTION": {
+      "purpose": "lower-timeframe confirmation observations",
+      "evidence_types": ["liquidity_sweep", "reclaim", "structure_shift", "displacement", "rejection", "fvg"],
+      "reuses": "entry_confirmation.EntryConfirmationResult verbatim"
+    },
+    "MANAGEMENT": {
+      "purpose": "advisory-only open-position context",
+      "note": "never mutates SL/TP/position; see trade_management/* for the actually-gated pathway"
+    }
+  },
+  "strategy_usage_policy_values": ["REQUIRED", "OPTIONAL", "SCORE_ONLY", "OBSERVE_ONLY", "IGNORE", "EXPECTED_CONFLICT"],
+  "note": "No current strategy YAML declares a multi_timeframe_context/usage block. This file documents vocabulary only."
+}

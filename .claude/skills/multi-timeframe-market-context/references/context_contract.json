@@ -1,0 +1,85 @@
+{
+  "_comment": "Worked example only. Not a schema validator, not runtime code. Field values shown are illustrative.",
+  "skill_id": "multi-timeframe-market-context",
+  "skill_version": "1.0.0",
+  "authority": "ADVISORY_ONLY",
+  "symbol": "EURUSD",
+  "evaluation_time": "2026-09-07T09:00:00Z",
+  "profile": {
+    "macro": "D1",
+    "bias": "H4",
+    "working": "H1",
+    "setup": "M15",
+    "execution": "M5",
+    "management": null
+  },
+  "layers": {
+    "macro": {
+      "role": "MACRO",
+      "timeframe": "D1",
+      "state": "CLEAR_PATH",
+      "structure": "<market_structure.StructureResult, reported as-is>",
+      "liquidity": [],
+      "evidence": [],
+      "bar_close_time": "2026-09-06T00:00:00Z",
+      "data_cutoff": "2026-09-07T09:00:00Z",
+      "forming_bar_used": false
+    },
+    "bias": {
+      "role": "BIAS",
+      "timeframe": "H4",
+      "state": "BULLISH",
+      "structure": "<market_structure.StructureResult, reported as-is>",
+      "evidence": [],
+      "bar_close_time": "2026-09-07T08:00:00Z",
+      "data_cutoff": "2026-09-07T09:00:00Z",
+      "forming_bar_used": false
+    },
+    "working": {
+      "role": "WORKING",
+      "timeframe": "H1",
+      "alignment_to_bias": "RETRACING",
+      "evidence": [],
+      "bar_close_time": "2026-09-07T08:00:00Z",
+      "data_cutoff": "2026-09-07T09:00:00Z",
+      "forming_bar_used": false
+    },
+    "setup": {
+      "role": "SETUP",
+      "timeframe": "M15",
+      "state": "ACTIVE",
+      "zones": "<supply_demand.ZoneResult list, reported as-is>",
+      "liquidity": "<liquidity.LiquidityResult, reported as-is>",
+      "evidence": [],
+      "bar_close_time": "2026-09-07T08:45:00Z",
+      "data_cutoff": "2026-09-07T09:00:00Z",
+      "forming_bar_used": false
+    },
+    "execution": {
+      "role": "EXECUTION",
+      "timeframe": "M5",
+      "confirmation": "<entry_confirmation.EntryConfirmationResult, reported as-is>",
+      "evidence": [],
+      "bar_close_time": "2026-09-07T08:55:00Z",
+      "data_cutoff": "2026-09-07T09:00:00Z",
+      "forming_bar_used": false
+    }
+  },
+  "alignment": {
+    "macro_to_bias": "ALIGNED",
+    "bias_to_working": "CONFLICTED",
+    "working_to_setup": "UNKNOWN"
+  },
+  "data_quality": {
+    "status": "VALID",
+    "closed_candle_only": true,
+    "reason_codes": []
+  },
+  "authorization": {
+    "may_create_trade": false,
+    "may_reject_trade": false,
+    "may_change_strategy_decision": false,
+    "may_modify_risk": false,
+    "may_execute": false
+  }
+}

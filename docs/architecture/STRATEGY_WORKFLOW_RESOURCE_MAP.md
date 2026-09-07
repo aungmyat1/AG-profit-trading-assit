@@ -107,6 +107,26 @@ position-monitor
 This pathway applies only to a manually opened position explicitly claimed by ticket.
 It is independent of proposal generation and cannot open a position.
 
+### F. Multi-timeframe market context (generic, cross-cutting)
+
+```text
+market-structure-analysis / supply-demand-analysis / liquidity-analysis /
+entry-confirmation-analysis
+  -> multi-timeframe-market-context (role-based orchestration: MACRO/BIAS/WORKING/
+     SETUP/EXECUTION/MANAGEMENT mapped to a caller-supplied timeframe profile, not a
+     fixed D1/H4/H1/M15 hierarchy)
+  -> normalized ADVISORY_ONLY context object
+```
+
+Introduces no new detection package -- composes calls into the four skills above (plus
+`assistant.market_data.multi_timeframe_snapshot()` for closed-candle structure across an
+arbitrary timeframe list). No strategy YAML consumes this today; attaching its output to
+an existing strategy's report as `mtf_context` metadata must never change that strategy's
+`READY`/`WATCH`/`NO_TRADE`, direction, entry, SL, TP, or risk. Canonical definition:
+`.agents/skills/multi-timeframe-market-context/SKILL.md` (`.claude/skills/...` is a
+runtime-discovery mirror only -- see `docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md`
+"Universal skill contract (vendor/model/runtime neutrality)").
+
 ## Skill-set audit
 
 The `.agents/skills` and `.claude/skills` trees contain the same 22 `SKILL.md` files by
