@@ -3,20 +3,11 @@
 ## Purpose
 
 AG Profit Trading is a deterministic FX and crypto trading assistant whose target
-decision products are post-Asian and post-London Session Trade tickets, preset-time
-BTC/ETH tickets, and persistent Large-SMC funnel status with entry-confirmation alerts.
-The assistant also supports owner-led top-down chart analysis: relevant agent skills
-organize structure, supply/demand, liquidity, and cross-timeframe confirmation evidence,
-then resolve and invoke a compatible registered strategy when one exists. Skills remain
-advisory; only the strategy engine may produce a `TradeSignal`, and no registered match
-must be reported explicitly rather than filled with borrowed rules.
-The immediate roadmap publishes informational tickets from current frozen strategy
-outputs; strategy validation and candidate promotion are the next stage. The
-guaranteed output is an explicit decision state, not a forced trade, and a ticket is
-not a broker order. The current operational implementation is FX/MT5-first; crypto
-remains proposal/interface-only until a real venue integration is implemented and
-validated. AI remains an advisory/explanatory layer. See `PROJECT_STATUS.md` and
-`docs/PROJECT_ROADMAP.md` for current state and delivery order.
+decision products are daily Session Trade proposals and selective higher-timeframe
+Large-SMC Trade proposals. The guaranteed output is an explicit decision state, not a
+forced trade. The current operational implementation is FX/MT5-first; crypto remains
+proposal/interface-only until a real venue integration is implemented and validated.
+AI remains an advisory/explanatory layer. See `PROJECT_STATUS.md` for current state.
 
 ## Authority order
 
@@ -36,9 +27,7 @@ Agent skills  -> ADVISORY ONLY
    `user_confirmed=True` unless the user's own message this turn was an explicit
    execution command ("execute it", "sell EURUSD 0.31 lots...", "close this position") —
    analysis or a proposal being generated is never sufficient on its own.
-4. Agent skills (`.agents/skills/` canonical, `.claude/skills/` a runtime-discovery
-   mirror — see `docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md` "Universal skill
-   contract") read and explain; they have no
+4. Agent skills (`.claude/skills/`, `.agents/skills/`) read and explain; they have no
    *independent* execution authority and never call `execution.executor`,
    `execution.mt5_gateway`, or any order_check/order_send path themselves, and never
    override a strategy engine result. Actual execution is always routed through point 3.
@@ -62,16 +51,6 @@ Agent skills  -> ADVISORY ONLY
 - Never modify files unrelated to the current task.
 - Prefer the smallest correct implementation over a general one.
 
-## Frozen strategy version preservation
-
-Do not modify a frozen production or current-authority strategy version in place. A
-behavior-changing correction must be implemented in a new candidate strategy version and
-may replace the current authority only after explicit validation and promotion. Newer
-code, a higher version number, or passing tests do not by themselves make a candidate
-production/current authority. Historical evidence remains permanently attributed to the
-exact application version and strategy version that generated it and must never be
-silently rewritten or reattributed.
-
 ## Minimum-context principle
 
 For every task:
@@ -84,35 +63,6 @@ For every task:
 4. Run the narrowest test file that covers the change; run the full suite at milestones,
    not after every edit.
 5. Report changes, evidence, and blockers — skip narrating routine reads/searches.
-
-## Token-efficiency rules
-
-Treat tokens, tool output, and repeated validation as finite project resources:
-
-1. **Do not rediscover settled facts.** Reuse the latest authoritative status/evidence
-   record unless the underlying commit, date gate, environment, or external dependency
-   has materially changed.
-2. **Fail fast at ordered gates.** Check date/time/authorization before baseline, data,
-   network, or runtime work. When an earlier gate fails, stop and mark later checks
-   `NOT_EVALUATED`; do not run them for reassurance.
-3. **Avoid duplicate waiting-state reports.** If nothing material changed, report only
-   the unchanged state, the trigger required to resume, and the next checkpoint.
-4. **Do not repeat external probes without a reason.** Retry MT5/exchange/Telegram calls
-   only after a relevant environment change, scheduled checkpoint, backoff interval, or
-   explicit user request. Preserve the prior HTTP/error evidence otherwise.
-5. **Bound every read and command output.** Prefer targeted `rg`, specific files/line
-   ranges, narrow JSON fields, and focused test summaries. Do not dump full logs,
-   registries, status histories, candles, or diffs when a small excerpt answers the task.
-6. **Read each authoritative source once per task.** Keep and reuse the result; do not
-   reopen the same large document unless new evidence creates a concrete ambiguity.
-7. **Use progressive testing.** Run the smallest relevant tests after each edit, the
-   affected suite at completion, and the full suite only for a real milestone or broad
-   shared-surface change. Do not rerun an unchanged passing suite.
-8. **Prefer concise structured results.** Report classification, changed paths, exact
-   test command/result, blockers, and next action. Do not reproduce long prompts or
-   historical narratives already stored in the repository.
-9. **Stop at acceptance.** Once requested criteria pass, do not expand into speculative
-   features, unrelated audits, extra documentation, or repeated confirmation work.
 
 ## Skill grouping (conceptual — both dirs stay flat, this is about which to load)
 
@@ -139,10 +89,6 @@ proposal and must not borrow rules from another D-drive repository implicitly.
 subset of `market-data`, `market-structure-analysis`, `supply-demand-analysis`,
 `liquidity-analysis`, `entry-confirmation-analysis`, and
 `trade-management-analysis`. These remain advisory and do not require strategy dispatch.
-Load `multi-timeframe-market-context` only when the question is explicitly cross-
-timeframe (top-down / HTF-to-LTF alignment) — it orchestrates the skills above across a
-caller-supplied timeframe profile and introduces no new detection logic or strategy
-wiring; see `docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md` workflow F.
 
 **Manual-entry trade management** (load for "claim this ticket", "is this position
 eligible for a partial", "should breakeven have fired", "check on my open manual

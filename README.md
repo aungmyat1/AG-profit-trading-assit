@@ -1,40 +1,20 @@
 # AG Profit Trading
 
 AG Profit Trading is a deterministic FX and crypto trading assistant designed to
-produce four complementary decision products:
+produce two complementary decision products:
 
 - **Session Trade** proposals for recurring intraday opportunities around defined
   market sessions.
 - **Large-SMC Trade** proposals for selective higher-timeframe liquidity and structure
   opportunities with lower-timeframe confirmation.
-- **Large-SMC Watch** funnel-status updates and entry-confirmation alerts for a preset
-  watchlist.
-- **Interactive Top-Down Analysis** assistance that coordinates structure, zones,
-  liquidity, registered-strategy matching, and cross-timeframe entry confirmation when
-  the owner is analyzing a chart.
-
-The owner-directed product target is two daily FX session decision cycles for EURUSD,
-GBPUSD, USDJPY, and XAUUSD; scheduled crypto decisions for BTCUSDT and ETHUSDT; and a
-persistent Large-SMC watch. The immediate delivery stage uses current frozen strategy
-behavior to publish informational trade tickets. Strategy validation and candidate
-promotion follow as a separate next stage. See
-[`docs/PROJECT_ROADMAP.md`](docs/PROJECT_ROADMAP.md).
-
-For chart-led analysis, agent skills organize advisory evidence from higher timeframe
-to lower timeframe. A related strategy is considered only when its registered contract
-matches the symbol, session, setup, and timeframe chain. The deterministic strategy
-decision remains authoritative; advisory confirmation never becomes a trade signal by
-itself.
 
 The guaranteed daily output is a decision (`READY`, `WATCH`, `NO_TRADE`, or a fail-closed
-data/error state), not a forced trade. A pre-trade proposal ticket is not a broker
-execution ticket. MT5
+data/error state), not a forced trade. A pre-trade proposal is not a broker ticket. MT5
 or a future crypto venue creates a broker ticket only after a qualifying proposal is
 refreshed, validated, explicitly authorized by the user, and successfully executed.
 
-The current operational implementation is FX/MT5-first. The crypto research path has a
-live-validated, public/read-only Bybit BTCUSDT linear-perpetual feed and a scheduler-ready
-daily decision CLI; crypto execution remains unimplemented and disabled.
+The current operational implementation is FX/MT5-first. Crypto signal conventions and
+adapter interfaces exist, but a real crypto venue feed and execution adapter do not.
 AI capabilities inspect and explain market state; they do not independently authorize
 orders or override strategy results.
 
@@ -55,21 +35,9 @@ Agent skills  -> advisory and explanatory only
   [`config/trading.yaml`](config/trading.yaml).
 
 See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
-[`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current implementation state — in
-particular its "Capability & Roadmap Reconciliation (dated 2026-09-06)" section, which
-distinguishes IMPLEMENTED from VERIFIED from ENABLED from AUTHORIZED, and separates
-the proposal-only FX runtime from the independently-gated MT5 Demo execution
-subsystem: a generic proposal→execution bridge exists and was live-verified
-(2026-08-28), but `ST_ASIAN_SWEEP_5R_V1` itself is not `demo_authorized`, so its
-proposals cannot use it today.
+[`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current implementation state.
 
 ## Current state
-
-Roadmap scope is broader than current implementation. Today the operational FX pilot
-and complete Entry Ticket cover EURUSD/GBPUSD; USDJPY/XAUUSD require candidate-version
-integration. Crypto reporting is BTCUSDT-only; ETHUSDT remains to be implemented.
-Large-SMC has a research engine and live-batch ledger but not yet the complete
-incremental funnel-status and external confirmation-alert service.
 
 - Market data, structure, supply/demand, liquidity, and entry-confirmation layers are
   implemented with fail-closed reason codes.
@@ -86,26 +54,8 @@ incremental funnel-status and external confirmation-alert service.
 - Large SMC is registered as the separate `ST_LARGE_SMC_V1` research strategy. Its
   contract is advisory-only and intentionally incomplete; it has no engine or execution
   authorization and does not share authority with the Session Day Trading strategy.
-- `ST_ASIAN_SWEEP_5R_V1`'s `LONDON_NEWYORK` session-pair cycle is now activated as an
-  independent, proposal-only pilot (`config/pilot/AG_POST_LONDON_NEWYORK_PILOT_V1_0_1.yaml`,
-  `scripts/run_post_asian_pilot.py --pilot-config ...`), isolated from the existing
-  `ASIAN_LONDON` pilot's own ledger/snapshot state.
-- A READY FX proposal (`ASIAN_LONDON` or `LONDON_NEWYORK`, EURUSD/GBPUSD) now shows a
-  complete Entry Ticket in `scripts/run_post_asian_pilot.py --once`/`--status`/`--watch`
-  operational output (JSON `entry_ticket` field, human-readable `ENTRY TICKET` section)
-  -- the existing renderer (`report.render_entry_ticket`, unchanged), not a new
-  capability; informational only, never implying a broker order was sent. Non-READY
-  states and the canonical daily archive (`AG_FX_DAILY_REPORT_V1`) are unaffected.
-- The BTC sweep/retest research path uses Bybit production public market data for the
-  BTCUSDT linear perpetual. `scripts/run_btc_daily_report.py` produces the previous UTC
-  day's deterministic `READY`/`WATCH`/`NO_TRADE`/`DATA_ERROR` decision during the frozen
-  06:30-06:45 UTC report window (13:00-13:15 MMT; see
-  `docs/contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md`), validates complete closed
-  H1/M5 evidence, and archives it immutably. A `READY` result includes an informational
-  entry-proposal ticket—not a broker ticket. `scripts/install_btc_daily_task.ps1`
-  installs the daily local task at 13:05 MMT (06:35 UTC), inside that window.
-  No crypto research path can reach exchange or MT5 order submission; crypto execution
-  remains unimplemented.
+- Crypto sweep/retest strategy rules and adapter boundaries exist, but crypto market data
+  and exchange execution remain disabled until a real venue is integrated.
 - Historical replay prohibits live MT5 candle/tick access. Historical session-box
   reconstruction remains a documented completeness gap and degrades explicitly.
 - See [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current regression baseline and
@@ -128,7 +78,6 @@ python scripts/check_mt5.py --symbol EURUSD
 python scripts/analyze_structure.py --symbol EURUSD --timeframe M15
 python scripts/run_strategy.py --help
 python scripts/trade_assistant.py --help
-python scripts/run_btc_daily_report.py --help
 ```
 
 Execution preview and manual-position management:
@@ -162,7 +111,6 @@ src/
   supply_demand/           Zones and order-block contracts
   liquidity/               Liquidity levels and sweep/reclaim state
   entry_confirmation/      Frozen entry-confirmation contracts and implementations
-  large_smc_research/      ST_LARGE_SMC_V1 research-only decision engine (no execution authority)
 scripts/                   Operator and research command-line tools
 tests/                     Offline, live-guarded, execution-safety, and replay tests
 docs/                      Architecture, specifications, setup, and evidence snapshots

@@ -16,22 +16,6 @@
 # orchestrates market-structure/supply-demand/liquidity/entry-confirmation/
 # trade-management directly via their Python packages (imports, not this YAML file --
 # still not a runtime loader). See docs/specs/FIVE_SKILL_ASSISTANT_RUNTIME_V1_SPEC.md.
-#
-# UNIVERSAL_AGENT_SKILLS_FRAMEWORK_V1 (2026-09-07): every skill listed below is a
-# vendor-neutral / model-neutral / runtime-neutral capability contract -- audited by
-# grep for AI-vendor/runtime names and tool-specific instruction language, zero found.
-# See docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md "Universal skill contract
-# (vendor/model/runtime neutrality)". Each entry's `decides:` field is that skill's
-# authority statement (observe/analyze/classify only, never strategy/risk/execution/
-# lifecycle authority) -- this file remains the reference-based registry, not a
-# per-skill manifest.yaml/schema retrofit, per that section's stated rationale.
-#
-# CANONICAL SOURCE (AG_UNIVERSAL_AGENT_SKILLS_PORTABILITY_REMEDIATION_V1, 2026-09-07):
-# .agents/skills/SKILL_REGISTRY.yaml is the canonical copy of this file;
-# .claude/skills/SKILL_REGISTRY.yaml is its runtime-discovery mirror and must never
-# diverge from it in content (only this header block, if ever edited independently, may
-# legitimately differ). Verify with `python scripts/check_skill_mirror_drift.py`. See
-# .agents/skills/_CANONICAL_SOURCE.md / .claude/skills/_MIRROR_NOTICE.md.
 
 logical_families:
 
@@ -101,23 +85,6 @@ logical_families:
       backtest/research portfolio sizing (unchanged) -- the live/production sizing path
       is trade_management.evaluate_sizing(), not that skill.
 
-  multi-timeframe-market-context:
-    category: core
-    status: ready
-    implementation:
-      skill: multi-timeframe-market-context
-      package: N/A -- orchestrates market_structure/, supply_demand/, liquidity/,
-        entry_confirmation/ (and assistant.market_data.multi_timeframe_snapshot for
-        closed-candle structure across an arbitrary timeframe list); introduces no new
-        detection package.
-    decides: "role-based (MACRO/BIAS/WORKING/SETUP/EXECUTION/MANAGEMENT) composition of
-      existing structure/zone/liquidity/confirmation facts across caller-defined
-      timeframes -- never a trade"
-    note: >
-      Pure orchestration/documentation skill, added 2026-09-07. No strategy YAML
-      declares a multi_timeframe_context/usage block; no strategy behavior changed by
-      its addition. See docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md workflow F.
-
   # ---- Foundation ----
 
   market-context:
@@ -185,22 +152,3 @@ strategy_specific_implementations:
     algorithm_id: SESSION_FLOW_V2_SIMPLE / entry_2_sweep
     source: strategy_engine/session/setups.py
     not_owner: SESSION_TRADE_V1   # has its own separate detect_sweep(), different thresholds
-
-  btc-sweep-retest-analysis:
-    owner_strategy: ST_LIQUIDITY_SWEEP_RETEST_V1
-    algorithm_id: BTC_SESSION_LIQUIDITY_SWEEP_RETEST / CRYPTO_PERP profile
-    source:
-      - strategy_engine/sweep_retest/engine.py
-      - strategy_engine/sweep_retest/sweep.py
-      - strategy_engine/sweep_retest/retest.py
-      - strategy_engine/sweep_retest/mss.py
-      - strategy_engine/sweep_retest/trend.py
-      - strategy_engine/sweep_retest/targets.py
-      - strategy_engine/sweep_retest/profile.py
-      - btc_sweep_research/pipeline.py
-      - btc_sweep_research/costs.py
-      - btc_sweep_research/proposal.py
-    not_owner: >-
-      the FOREX profile of the same strategy_id uses the identical engine functions
-      above (shared, not forked) -- this skill documents the CRYPTO_PERP profile and
-      BTC-specific orchestration (costs/proposal/ledger/daily report) only.

@@ -6,23 +6,6 @@ status: ACTIVE_INCUBATION
 registered_utc: "2026-08-26"
 updated_utc: "2026-08-31"
 
-# Additive cross-strategy semantic guard. These invariants document and regression-pin
-# existing behavior; they do not add an entry filter or change this strategy's version.
-semantic_safety_contract:
-  version: SMC_TRAP_GUARD_V1
-  authority_boundary: STRATEGY_ENGINE_ONLY
-  invariants:
-    liquidity_event_is_not_trade_signal: true
-    bias_is_not_entry: true
-    future_evidence_cannot_create_past_qualification: true
-    lower_timeframe_cannot_override_higher_timeframe: true
-    silent_rule_changes_prohibited: true
-  strategy_specific:
-    authoritative_liquidity: [REFERENCE_SESSION_HIGH, REFERENCE_SESSION_LOW]
-    penetration_without_close_back_inside: NO_TRADE
-    dual_side_same_candle_sweep: AMBIGUOUS_NO_TRADE
-    immutable_reference_box_required: true
-
 # v1.1.0: added a second reference/trade session pair so the same sweep logic also runs
 # off the London range during the New York session, not only off the Asian range during
 # London Open. Both pairs share identical entry, risk, sizing, and invalidation rules --

@@ -16,7 +16,7 @@ The system is now configured for automated execution. We have lifted the prohibi
 It works. Verified live:
 
 ```
-account_info      1144985 · balance 987.82 USD · leverage 500
+account_info      7098421 · balance 10000.00 USD · leverage 500
 
 get_candles_latest EURUSD M15
   2026-08-17 07:45   1.15866  1.15869  1.15861  1.15866   vol 61
@@ -59,7 +59,7 @@ The end state is now explicit: `execution.mode: auto` plus a desktop scheduler e
 ## Known defects in the kept server
 
 **`account_type` reports `"real"` on a demo account.** Confirmed again today: the API
-says `real`, the title bar says `1144985 - VTMarkets-Demo: Demo Account - Hedge`.
+says `real`, the title bar says `7098421 - VantageInternational-Demo: Demo Account - Hedge`.
 **The field is unusable as a live-account interlock.** The interlock is the trader's
 own eyes. Already recorded in `STATUS.md`.
 

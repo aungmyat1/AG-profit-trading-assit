@@ -47,32 +47,11 @@ strategies:
     demo_authorized: false
     live_authorized: false
     config_source: strategies/ST_LARGE_SMC_V1.yaml
-    engine: "src/large_smc_research/engine.py (RESEARCH_ONLY -- no proposal/demo/live/execution/risk-sizing authority; C10 stop-loss SIGNED and implemented as of v1.0.7 (c10_stop_policy.py, 2026-09-07), RESEARCH_QUALIFIED now reachable; pending-entry expiry RESOLVED_BY_REUSE as of v1.0.6, see historical_replay/fill_simulator.py). AG-EGSVF lifecycle stage (recorded only in src/validation_framework/adapters/large_smc_adapter.py -- this registry has no lifecycle_stage/version field): owner-promoted OFFLINE_RESEARCH -> FORWARD_RESEARCH 2026-09-07, see strategies/STRATEGY_LEDGER.md's AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_V1 entry. Next transition (FORWARD_RESEARCH -> OPERATIONAL_SHADOW) is evaluated, not executed, and blocks on an unresolved shadow-entry-evidence gate."
+    engine: NOT_IMPLEMENTED
     note: >-
       Independent Large-SMC research contract. Shares advisory capabilities with other
       strategies but does not inherit ST_ASIAN_SWEEP_5R_V1, SMC_3R_V1, or
       ST_LIQUIDITY_SWEEP_RETEST_V1 authority or validation evidence.
-
-  ST_LIQUIDITY_SWEEP_RETEST_V1:
-    registered: true
-    active: false   # Forex profile has no operating pilot yet (unlike ST_ASIAN_SWEEP_5R_V1);
-                     # Crypto profile is proposal/observation-only via a dedicated runner
-                     # (src/btc_sweep_research/), not a continuously "active" pilot cycle
-    research: true
-    demo_authorized: false
-    live_authorized: false
-    config_source: strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml
-    engine: "RESEARCH_ONLY -- src/strategy_engine/sweep_retest/ (signal engine, asset-independent, both FOREX and CRYPTO_PERP profiles); BTC daily research/reporting orchestration: src/btc_sweep_research/ (pipeline.py -> daily_report.py); BTC market data: src/execution_runtime/bybit_linear_perp_feed.py (Bybit V5 linear perpetual, public/read-only, owner-approved AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION scope) and src/execution_runtime/binance_usdtm_feed.py (Binance USDT-M, environment-blocked HTTP 451, retained as an alternate implementation of the same CryptoCandleFeed interface)"
-    note: >-
-      Version 2.0.0, ACTIVE_INCUBATION (see strategies/STRATEGY_LEDGER.md for full
-      history). RESEARCH_ONLY authority throughout -- no proposal ever reaches
-      execution.executor/execution.coordinator/mt5.management_gateway (statically and
-      behaviorally verified, tests/test_btc_proposal_execution_boundary.py). Registry
-      entry added AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3
-      (2026-09-05) to reconcile a pre-existing inconsistency (documented in
-      STRATEGY_LEDGER.md since 2026-08-30, never entered here) -- reconciliation only,
-      no authority change: research/demo/live/execution fields already matched the
-      ledger's own long-standing statement.
 
   R8_OBM_V1:
     registered: true

@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "mt5": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["scripts/start_mt5_mcp.mjs"],
+      "env": {
+        "MT5_MCP_COMMAND": "${env:MT5_MCP_COMMAND}"
+      }
+    }
+  }
+}

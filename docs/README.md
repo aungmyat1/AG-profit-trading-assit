@@ -9,35 +9,11 @@ their age.
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository.
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,
-   safety gates, known gaps, and latest regression baseline. Its "Capability &
-   Roadmap Reconciliation (dated 2026-09-06)" section is the authoritative current
-   answer for what AG can do now, what is implemented-but-not-integrated, what is
-   verified, what is authorized, what remains research-only, and the core-completion
-   roadmap (CORE-D1..D7) — including where Telegram (paused), MT5 Demo, BTC/Bybit,
-   and Large-SMC currently sit relative to it.
-4. [`PROJECT_ROADMAP.md`](PROJECT_ROADMAP.md) — owner-directed product objective,
-   profit-seeking ticket-first sequence, economic gates, backlog, and authority
-   boundaries, including the interactive top-down chart-analysis and cross-timeframe
-   confirmation workflow.
-5. [`plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`](plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md)
-   — detailed implementation and acceptance plan for the current milestone.
-6. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
-7. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
+   safety gates, known gaps, and latest regression baseline.
+4. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
+5. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
    update procedure for rolling status, dated evidence, strategy authorization, and
    live-validation claims.
-8. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
-   non-authorizing capability-completeness audit and navigation matrix (Section A
-   trading edge, Section B operations/execution/platform, execution-authority matrix,
-   qualification counters). It does not replace `PROJECT_STATUS.md`,
-   `strategies/registry.yaml` / `strategies/STRATEGY_LEDGER.md`,
-   `docs/VERSION_HISTORY.md`, or dated `docs/status/*.md` evidence — see its own top
-   section for which source is authoritative for which claim.
-9. [`status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md`](status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md)
-   — owner authorization to begin the read-only 30-valid-observation BTC campaign;
-   records the zero-count starting state and preserves all execution prohibitions.
-10. [`status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`](status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md)
-   — prospective owner-approved move of the BTC report window to 13:00-13:15 MMT
-   (06:30-06:45 UTC); no observation, execution, or scheduler activation.
 
 ## Architecture
 
@@ -77,41 +53,18 @@ observations from the named milestone; they are not rolling dashboards.
 - Runtime: [`status/ASSISTANT_RUNTIME_V1.md`](status/ASSISTANT_RUNTIME_V1.md),
   [`status/ASSISTANT_RUNTIME_V1_STATUS.md`](status/ASSISTANT_RUNTIME_V1_STATUS.md), and
   [`status/FIVE_SKILL_ASSISTANT_RUNTIME_STATUS.md`](status/FIVE_SKILL_ASSISTANT_RUNTIME_STATUS.md)
+- Trade Assistant Releases & Pilots: [`status/AG_TRADE_ASSISTANT_V1_0_2_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_2_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_1_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_1_STATUS.md), and
+  [`status/AG_POST_ASIAN_LONDON_PILOT_V1_STATUS.md`](status/AG_POST_ASIAN_LONDON_PILOT_V1_STATUS.md)
 - SMC validation: [`status/SMC_SKILL_VALIDATION.md`](status/SMC_SKILL_VALIDATION.md),
   [`status/SMC_ASSISTANT_READY_TO_USE_V1_STATUS.md`](status/SMC_ASSISTANT_READY_TO_USE_V1_STATUS.md),
-  [`status/SMC_3X3_HISTORICAL_VALIDATION_V1_STATUS.md`](status/SMC_3X3_HISTORICAL_VALIDATION_V1_STATUS.md),
-  and [`status/SMC_TRAP_GUARD_V1_STATUS.md`](status/SMC_TRAP_GUARD_V1_STATUS.md)
+  and [`status/SMC_3X3_HISTORICAL_VALIDATION_V1_STATUS.md`](status/SMC_3X3_HISTORICAL_VALIDATION_V1_STATUS.md)
 - Frozen phases: [`status/PHASE_1_4_FREEZE_STATUS.md`](status/PHASE_1_4_FREEZE_STATUS.md)
   and [`status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md`](status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md)
 - Registry and skills: [`status/STRATEGY_REGISTRY_STATUS.md`](status/STRATEGY_REGISTRY_STATUS.md),
   [`status/LARGE_SMC_V1_REGISTRATION_STATUS.md`](status/LARGE_SMC_V1_REGISTRATION_STATUS.md),
   [`status/STRATEGY_WORKFLOW_RESOURCE_AUDIT_STATUS.md`](status/STRATEGY_WORKFLOW_RESOURCE_AUDIT_STATUS.md),
   and [`status/SKILL_OPTIMIZATION_STATUS.md`](status/SKILL_OPTIMIZATION_STATUS.md)
-- Large-SMC contract resolution (`ST_LARGE_SMC_V1`, still `RESEARCH_DRAFT`):
-  [`status/AG_SHARED_EVIDENCE_STRATEGY_ARCHITECTURE_V1_STATUS.md`](status/AG_SHARED_EVIDENCE_STRATEGY_ARCHITECTURE_V1_STATUS.md),
-  [`status/ST_LARGE_SMC_V1_STRATEGY_SPECIFICATION_STATUS.md`](status/ST_LARGE_SMC_V1_STRATEGY_SPECIFICATION_STATUS.md),
-  [`status/ST_LARGE_SMC_V1_UC_001_TIMEFRAME_DECISION.md`](status/ST_LARGE_SMC_V1_UC_001_TIMEFRAME_DECISION.md),
-  [`status/ST_LARGE_SMC_V1_3X3_VARIANT_AUTHORITY_RECONCILIATION_STATUS.md`](status/ST_LARGE_SMC_V1_3X3_VARIANT_AUTHORITY_RECONCILIATION_STATUS.md),
-  [`status/ST_LARGE_SMC_V1_C11_TARGET_MODEL_RESOLUTION_STATUS.md`](status/ST_LARGE_SMC_V1_C11_TARGET_MODEL_RESOLUTION_STATUS.md),
-  [`status/ST_LARGE_SMC_V1_C11_CONTRACT_FINALIZATION_STATUS.md`](status/ST_LARGE_SMC_V1_C11_CONTRACT_FINALIZATION_STATUS.md),
-  [`status/ST_LARGE_SMC_V1_C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md`](status/ST_LARGE_SMC_V1_C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md),
-  [`status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`](status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md),
-  [`status/ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md`](status/ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md) (correction: C14 downgraded to `PARTIALLY_RESOLVED`),
-  [`status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`](status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md) (M-candidate identity implemented, Option B),
-  [`status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`](status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md) (research-only engine, v1.0.5),
-  [`status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md), and
-  [`status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md) (C10 still unsigned; pending-entry expiry resolved as of v1.0.6, see below),
-  [`status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md`](status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md) (v1.0.6, pending-entry lifecycle), and
-  [`status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`](status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md) (discovered gap, resolved same day), and
-  [`status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md`](status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md) (the fix, parity proof, corrected-replay evidence)
-- Opportunity coverage: [`status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md`](status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md)
-  (FX `LONDON_NEWYORK` pilot activation; BTC Binance USDT-M market-data adapter,
-  multi-occurrence research collection, and execution-domain gate)
-- BTC daily production path: [`contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md`](contracts/AG_BTC_DAILY_OBSERVATION_CONTRACT_V1.md),
-  [`status/AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3_STATUS.md`](status/AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3_STATUS.md), and
-  [`status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md`](status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md)
-  (frozen UTC contract, public/read-only Bybit adapter, production-data-connectivity-confirmed scheduler-ready
-  daily decision and informational proposal-ticket path; crypto execution disabled)
 
 When a historical test total differs from the current baseline, retain the historical
 number and use `PROJECT_STATUS.md` for the latest result.

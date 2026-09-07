@@ -107,26 +107,6 @@ position-monitor
 This pathway applies only to a manually opened position explicitly claimed by ticket.
 It is independent of proposal generation and cannot open a position.
 
-### F. Multi-timeframe market context (generic, cross-cutting)
-
-```text
-market-structure-analysis / supply-demand-analysis / liquidity-analysis /
-entry-confirmation-analysis
-  -> multi-timeframe-market-context (role-based orchestration: MACRO/BIAS/WORKING/
-     SETUP/EXECUTION/MANAGEMENT mapped to a caller-supplied timeframe profile, not a
-     fixed D1/H4/H1/M15 hierarchy)
-  -> normalized ADVISORY_ONLY context object
-```
-
-Introduces no new detection package -- composes calls into the four skills above (plus
-`assistant.market_data.multi_timeframe_snapshot()` for closed-candle structure across an
-arbitrary timeframe list). No strategy YAML consumes this today; attaching its output to
-an existing strategy's report as `mtf_context` metadata must never change that strategy's
-`READY`/`WATCH`/`NO_TRADE`, direction, entry, SL, TP, or risk. Canonical definition:
-`.agents/skills/multi-timeframe-market-context/SKILL.md` (`.claude/skills/...` is a
-runtime-discovery mirror only -- see `docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md`
-"Universal skill contract (vendor/model/runtime neutrality)").
-
 ## Skill-set audit
 
 The `.agents/skills` and `.claude/skills` trees contain the same 22 `SKILL.md` files by
@@ -146,12 +126,8 @@ Audit artifact:
   operational pathway.
 - Keep other skill directories flat; organize through this workflow map and `AGENTS.md`
   rather than moving paths and breaking discovery.
-- Add a strategy-specific skill only when it delegates to a real local engine. A
-  research-only Large-SMC engine now exists (`src/large_smc_research/`, 2026-09-02,
-  `RESEARCH_ONLY_FUNNEL_V1` — see `docs/status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`),
-  but a dedicated `large-smc` skill remains deliberately out of scope until explicitly
-  requested — that phase's own instructions excluded skill-specific wrapper
-  infrastructure. Engine existing is necessary but not sufficient to justify a skill.
+- Add a strategy-specific skill only when it delegates to a real local engine. Do not
+  create a `large-smc` runtime skill while its engine is `NOT_IMPLEMENTED`.
 - Add per-skill tests only where the wrapper contains executable behavior; otherwise
   test the delegated module and keep the skill declarative.
 

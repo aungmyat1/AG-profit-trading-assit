@@ -6,32 +6,6 @@
 
 ## Project objective
 
-The owner-directed product objective and delivery order were updated on 2026-09-07.
-The assistant now targets post-Asian and post-London informational FX tickets,
-preset-time BTC/ETH tickets, and Large-SMC funnel/entry-confirmation alerts. Current
-frozen-strategy ticket operation precedes the separate strategy-validation stage. See
-[`../PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md). This update changes the product
-priority, not the authority boundaries described below.
-
-It also supports an owner-led interactive path:
-
-```text
-CHART / USER CONTEXT
-  -> market structure
-  -> supply and demand
-  -> liquidity
-  -> registered-strategy match
-  -> strategy-defined timeframe crossover
-  -> entry-confirmation evidence
-  -> strategy decision
-  -> informational ticket only when strategy READY
-```
-
-The capability layers may identify and explain a candidate opportunity, but they do
-not collectively create execution or signal authority. If the registry has no signed
-strategy matching the symbol/session/setup/timeframe chain, the flow stops at
-`NO_REGISTERED_STRATEGY_MATCH`.
-
 ```
 AG PROFIT TRADING ASSISTANT
 ```
@@ -138,91 +112,6 @@ etc., and how to report the result. They must never hardcode a strategy's decisi
 skill deciding "sweep => short" on its own). See `docs/architecture/ARCHITECTURE_CONFLICT_AUDIT.md` for the audit
 of current skills against this rule.
 
-## Universal skill contract (vendor/model/runtime neutrality)
-
-AG Agent Skills are universal capability contracts. They are not Claude Skills, Codex
-Skills, ChatGPT Skills, or any other vendor-specific agent instructions. A compatible
-runtime may discover and invoke them through their portable inputs, outputs,
-dependencies, and authority contract described in each `SKILL.md`. Vendor/runtime
-integrations, where one is ever genuinely required, belong in an adapter outside this
-capability definition -- none exists in this repository today because none has been
-needed.
-
-**Canonical source rule** (`AG_UNIVERSAL_AGENT_SKILLS_PORTABILITY_REMEDIATION_V1`,
-2026-09-07): `.agents/skills/` is the canonical, vendor-neutral skill source --
-`.agents` names the general agent-runtime concept, not a specific vendor. `.claude/skills/`
-is a **runtime discovery mirror** for the Claude Code runtime only (`_MIRROR_NOTICE.md`
-in that directory says so explicitly) and must never carry skill semantics that don't
-also exist under `.agents/skills/` (`_CANONICAL_SOURCE.md` there states the same rule
-from the canonical side). Edit a skill under `.agents/skills/` first, copy the change
-into `.claude/skills/` (or any future runtime-adapter directory, added the same way --
-see "Acceptable runtime adapter patterns" below), then run
-`python scripts/check_skill_mirror_drift.py` to confirm the two remain byte-identical.
-This applies to every skill directory and to `SKILL_REGISTRY.yaml` itself, not only to
-`multi-timeframe-market-context` -- that skill was simply the one already being worked
-on when this rule was formalized; the rest of the tree was already drift-free
-(`NO_DRIFT: 29 files identical`, verified 2026-09-07) and needs no further action unless
-a future edit touches it.
-
-Acceptable runtime adapter patterns, smallest-first: (A) a future runtime reads
-`.agents/skills/` directly -- no adapter needed; (B) a symlink to `.agents/skills/` where
-the platform reliably supports one; (C) a generated/manually-synced mirror, checked with
-the drift script above (the pattern currently used for `.claude/skills/`, since this
-project's supported environments include Windows, where symlinks are not reliably
-available without elevated privileges); (D) a thin pointer/metadata adapter referencing
-the canonical skill without copying it. Do not add an independently authored skill copy
-under any vendor/runtime-specific directory.
-
-Audited 2026-09-07 (`AG_UNIVERSAL_AGENT_SKILLS_FRAMEWORK_V1`): every `SKILL.md` under
-`.claude/skills/` and `.agents/skills/` was grepped for vendor/runtime names
-(claude/codex/chatgpt/openai/anthropic/gemini/copilot/cursor) and for tool-specific
-instruction language (`bash`, `python_repl`, etc. named as the domain requirement rather
-than an incidental example). Result: zero vendor/runtime couplings. The skill layer
-already satisfies the following properties and this section makes them explicit rather
-than changing anything:
-
-- **Vendor-neutral / model-neutral / runtime-neutral** -- a `SKILL.md` describes a
-  capability (what to call, what it returns, what it may never do) in plain language and
-  named Python entry points (`market_structure.analyze_structure()`,
-  `liquidity.liquidity_result()`, etc.). Any agent runtime capable of reading
-  instructions and invoking those functions can use it; none is written for a specific
-  conversational model.
-- **Deterministic core first** -- every core/foundation skill (see "Assistant skill
-  taxonomy" below) delegates its factual claims to a deterministic, project-owned Python
-  package. The agent/runtime layer orchestrates, explains, and summarizes; it does not
-  invent structure, liquidity, or zone facts the deterministic layer would otherwise
-  produce.
-- **Authority-bounded** -- every skill in this taxonomy is `observe`/`analyze`/`classify`
-  only; none carries `strategy_decision`, `risk_decision`, `order_execution`, or
-  `lifecycle_promotion` authority (see "Agent skill boundary" above and AGENTS.md
-  "Authority order"). This is already declared per-family in
-  `.claude/skills/SKILL_REGISTRY.yaml`'s `decides:` field for every entry, and is
-  restated here as the project-level invariant rather than a new per-skill mechanism.
-- **Strategy-agnostic where applicable, strategy-coupled where documented** -- the five
-  core/foundation families plus `multi-timeframe-market-context` are universal
-  (`UNIVERSAL_ALREADY`); `trend-range-classification`, `sweep-detection-range-v2`, and
-  `btc-sweep-retest-analysis` are intentionally strategy-specific and already labeled as
-  such (see "Strategy-specific skill ownership" below) -- they are not being generalized
-  by this section, since their rules are signed for one strategy and generalizing them
-  would itself be an undocumented strategy-semantics change.
-- **Portable I/O** -- skills that produce structured output already do so as plain
-  dataclasses/JSON-serializable objects (`StructureResult`, `LiquidityResult`,
-  `ZoneResult`, `EntryConfirmationResult`, and `multi-timeframe-market-context`'s
-  normalized context object), not a chat-turn-shaped response tied to one runtime's
-  conversation format.
-
-No skill directory, script, or dependency list was changed by this audit -- this is a
-documentation-only pass confirming and recording an already-true architectural property,
-per the resource-first/minimum-context principle in `AGENTS.md`. Retrofitting every skill
-with a `manifest.yaml`/JSON-Schema I/O contract was considered and rejected as
-unnecessary churn: nothing found required it, and the repository's own convention
-(`docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md` "Skill-set audit") is
-intentionally thin, code-delegating `SKILL.md` files without their own scripts/schemas.
-A future skill that genuinely needs a portable schema (e.g. for a non-agent runtime, a
-CLI, or an API caller) should add `schemas/input.schema.json` /
-`schemas/output.schema.json` to that skill's own directory when that need is real, not
-speculatively to all of them.
-
 ## Session-box capability vs. strategy execution authority
 
 The assistant can compute/report Asian, London, and New York session boxes for any symbol
@@ -264,12 +153,6 @@ CORE (five-layer pyramid, primary trading intelligence)
                                  trade_management/ package (Phase 6 manual-entry, READY;
                                  TRADE_MANAGEMENT_V1 pre-trade geometry/sizing/RR, READY,
                                  added 2026-08-28 -- see docs/specs/TRADE_MANAGEMENT_V1_SPEC.md)
-  1b. multi-timeframe-context <- multi-timeframe-market-context skill (added 2026-09-07,
-                                 cross-cutting orchestration only, no new package -- role-
-                                 based composition of families 1-4 above across a caller-
-                                 supplied timeframe profile; see
-                                 docs/architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md
-                                 workflow F)
 
 FOUNDATION
   6. market-context          <- market-data, market-data-quality, multi-asset-conventions,

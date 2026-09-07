@@ -1,30 +1,15 @@
-# MT5 terminal/connection config. Credentials are NOT here -- see src/mt5/config.py,
-# which reads MT5_LOGIN/MT5_PASSWORD/MT5_SERVER/MT5_BROKER/MT5_ENVIRONMENT/
-# MT5_TERMINAL_PATH from src/.env (gitignored). This file holds only non-secret,
-# broker-symbol-routing config.
+# MT5 terminal/connection config. NOT YET CONSUMED BY CODE -- mt5/connection.py is still
+# scaffolding (see PROJECT_STATUS.md).
 #
-# Do NOT put login, password, or investor password here or in any committed file.
-terminal_path: null       # e.g. "C:/Program Files/MetaTrader 5/terminal64.exe" -- superseded by MT5_TERMINAL_PATH
-account_login: null       # superseded by MT5_LOGIN (src/mt5/config.py) -- not read from here
-server: null              # superseded by MT5_SERVER (src/mt5/config.py) -- not read from here
+# Do NOT put login, password, or investor password here or in any committed file. This
+# repo has no .env/secrets convention yet -- decide one (e.g. environment variables read
+# by mt5/connection.py) before wiring this file up for real, and add it to .gitignore.
+terminal_path: null       # e.g. "C:/Program Files/MetaTrader 5/terminal64.exe"
+account_login: null       # read from env var at connect time, not from here
+server: null
 default_deviation_points: 10
 
 symbol_suffixes:
   # Broker-specific Market Watch suffixes (docs/setup/MT5_MCP_SETUP.md 'Operating notes': gold is
   # XAUUSD.crp on some brokers). Empty until a real broker/account is wired up.
   XAUUSD: ""
-
-# Canonical strategy symbol -> broker MT5 symbol name, per broker. Read by
-# mt5/broker_symbol_resolver.py. Fails closed (raises) for any (broker, symbol) pair
-# not listed here -- no guessing that a broker symbol equals the canonical name.
-#
-# VANTAGE entries below were captured read-only from the connected Vantage Markets Demo
-# account's live symbol_info() (AG_UNIFIED_VANTAGE_MARKETS_DEMO_MT5_ACCOUNT_MIGRATION_V1,
-# 2026-09-07) -- EURUSD/GBPUSD/BTCUSD/ETHUSD all confirmed tradable (trade_mode=FULL) on
-# the single Demo login; no MetaAPI/live account symbols were queried.
-symbol_map:
-  VANTAGE:
-    EURUSD: EURUSD
-    GBPUSD: GBPUSD
-    BTCUSDT: BTCUSD
-    ETHUSDT: ETHUSD
