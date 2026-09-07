@@ -47,7 +47,7 @@ strategies:
     demo_authorized: false
     live_authorized: false
     config_source: strategies/ST_LARGE_SMC_V1.yaml
-    engine: "src/large_smc_research/engine.py (RESEARCH_ONLY -- no proposal/demo/live/execution/risk-sizing authority; C10 stop-loss remains unsigned and fails closed to BLOCKED; pending-entry expiry RESOLVED_BY_REUSE as of v1.0.6, see historical_replay/fill_simulator.py)"
+    engine: "src/large_smc_research/engine.py (RESEARCH_ONLY -- no proposal/demo/live/execution/risk-sizing authority; C10 stop-loss SIGNED and implemented as of v1.0.7 (c10_stop_policy.py, 2026-09-07), RESEARCH_QUALIFIED now reachable; pending-entry expiry RESOLVED_BY_REUSE as of v1.0.6, see historical_replay/fill_simulator.py)"
     note: >-
       Independent Large-SMC research contract. Shares advisory capabilities with other
       strategies but does not inherit ST_ASIAN_SWEEP_5R_V1, SMC_3R_V1, or

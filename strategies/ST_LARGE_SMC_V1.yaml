@@ -1,18 +1,51 @@
 strategy_id: ST_LARGE_SMC_V1
 strategy_name: Large SMC Opportunity Service
 strategy_family: LARGE_SMC
-version: 1.0.6
+version: 1.0.7
 status: RESEARCH_DRAFT
 registered_utc: "2026-09-01"
+# v1.0.7 (2026-09-07, C10_STRUCTURAL_INVALIDATION_V1): C10 (broker stop-loss distance)
+# SIGNED and IMPLEMENTED -- src/large_smc_research/c10_stop_policy.py. Same category of
+# change as v1.0.5 -> v1.0.6 (pending-entry expiry resolution): resolves the second of
+# the two contract gaps v1.0.5 deliberately left BLOCKED, and materially changes
+# reachable decision states (RESEARCH_QUALIFIED is now reachable; previously
+# unreachable per v1.0.5/v1.0.6's own module docstring). See stop_loss_contract below
+# and docs/status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V3_STATUS.md.
+# No M1/M2/M3 detection, entry, candidate-selection, or C14 semantics changed; only
+# stop construction changes where C10 was previously BLOCKED.
 # v1.0.6 (2026-09-02, OUTCOME_LIFECYCLE_V1): post-READY pending-entry expiry RESOLVED
 # BY REUSE -- historical_replay/fill_simulator.py (pre-existing, already tested, never
 # wired to this strategy) already establishes that no time-based expiry exists for this
 # E/M pipeline: a pending entry is terminal only via FILLED or structural
 # INVALIDATED_BEFORE_FILL; UNFILLED_AS_OF_DATA_END is a data-boundary fact, not a
 # fabricated strategy state. New src/large_smc_research/pending_entry.py is a thin
-# adapter (7 new unit tests, all offline). C10 (broker stop) remains genuinely
-# UNSIGNED and BLOCKED -- unaffected by this resolution; TARGET_HIT/STOP_HIT outcome
-# resolution still requires it and was not attempted.
+# adapter (7 new unit tests, all offline). (C10 was UNSIGNED/BLOCKED as of this
+# entry -- see the v1.0.7 entry above for its resolution.)
+
+stop_loss_contract:
+  governance:
+    contract_id: C10_STRUCTURAL_INVALIDATION_V1
+    status: SIGNED_AND_LOCKED
+    model_family: AG_NATIVE_INVALIDATION
+    signed_utc: "2026-09-07"
+    implementation: src/large_smc_research/c10_stop_policy.py
+  anchor_mapping:
+    model: M_MODEL_EXACT_REUSE  # SMCEntryCombinationResult.invalidation_price, never recomputed
+    missing_anchor_action: FAIL_CLOSED
+  buffer_policy:
+    model: DYNAMIC_ATR_WITH_HARD_FLOOR
+    atr_timeframe: M5
+    atr_period: 14
+    atr_multiplier: 0.35
+    min_buffer_pips: 1.5
+    atr_not_ready_action: FAIL_CLOSED  # never silently degrades to the floor alone
+  spread_handling:
+    mode: SIDE_AWARE
+    long_policy: STRUCTURAL_ANCHOR_MINUS_BUFFER  # no spread term -- see c10_stop_policy.py docstring
+    short_policy: STRUCTURAL_ANCHOR_PLUS_BUFFER_PLUS_VERIFIED_SPREAD
+    missing_required_spread_action: FAIL_CLOSED  # SHORT only; LONG never requires spread
+  broker_constraints:
+    min_stop_violation_action: REJECT  # never WIDEN
 #
 # NEW FINDING this phase, not fixed here (SHARED_CHANGE_REQUIRED, same class as C14B's
 # deferred lifecycle-store migration): wiring LargeSMCResearchEngine into a real
@@ -543,22 +576,19 @@ candidate_identity:
     simultaneously-valid opposite-direction candidates should be reconciled remains
     C18's open question, not resolved here
 
-# C10 (broker stop-loss distance), UNSIGNED -- owner decision (2026-09-01, per
-# ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1 phase): block outcome simulation rather than
-# invent a formula. src/large_smc_research/engine.py returns BLOCKED
+# C10 (broker stop-loss distance), SIGNED as of v1.0.7 (2026-09-07, C10_STRUCTURAL_
+# INVALIDATION_V1) -- see stop_loss_contract above and
+# src/large_smc_research/c10_stop_policy.py. Historical note (2026-09-01 through
+# v1.0.6): block outcome simulation rather than invent a formula;
+# src/large_smc_research/engine.py returned BLOCKED
 # (reason_code=UNSIGNED_CONTRACT:C10_BROKER_STOP) for any candidate whose M-model
-# reaches its entry-available (READY-equivalent) state -- never a fabricated stop.
-# Candidate formulas found in research references (ST-C1 G7 unified rule, v3.6
-# per-model formulas; plus an AG-native precedent found this phase,
-# strategy_engine.sweep_retest.targets.forex_sl_buffer_price's structural-anchor +
-# pip-buffer pattern, offered as a candidate ONLY -- its ST_LIQUIDITY_SWEEP_RETEST_V1-
-# specific 2.5-pip constant is not adopted without its own justification) are recorded,
-# unselected, in docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md, pending
-# separate owner sign-off. Distinct from candidate_lifecycle above (C12), which governs
-# PRE-ACTIVATION E-context eligibility only, not the lifetime of an unfilled READY
-# entry (see pending_entry_expiry below, RESOLVED as of v1.0.6).
+# reached its entry-available (READY-equivalent) state -- never a fabricated stop. That
+# reason code is retained in decision.py for provenance only and is no longer emitted.
+# Distinct from candidate_lifecycle above (C12), which governs PRE-ACTIVATION E-context
+# eligibility only, not the lifetime of an unfilled READY entry (see
+# pending_entry_expiry below, RESOLVED as of v1.0.6).
 exit_and_lifecycle:
-  initial_stop: UNSIGNED   # C10 -- BLOCKED_AWAITING_OWNER_DECISION, see note above
+  initial_stop: SIGNED   # C10 -- see stop_loss_contract above (v1.0.7)
   # RESOLVED_BY_REUSE (v1.0.6, OUTCOME_LIFECYCLE_V1): no time-based expiry --
   # historical_replay/fill_simulator.py's existing FILLED / INVALIDATED_BEFORE_FILL /
   # UNFILLED_AS_OF_DATA_END / INTRABAR_AMBIGUOUS state machine, reused verbatim via

@@ -196,6 +196,34 @@ from canonical session windows or other repo conventions at the time of registra
   code path) and is deliberately not fixed this phase. Recommendation: `HOLD`. See
   `docs/status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md` and
   `docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`.
+- **v1.0.7 (2026-09-07, `C10_STRUCTURAL_INVALIDATION_V1`):** C10 (broker stop-loss
+  distance) **SIGNED and IMPLEMENTED** -- `src/large_smc_research/c10_stop_policy.py`.
+  Owner-signed policy: buffer = `max(1.5 pips, 0.35 x ATR14(M5))`
+  (`DYNAMIC_ATR_WITH_HARD_FLOOR`; ATR uses only closed M5 candles available at the
+  decision timestamp, fetched via the same already-patched, replay-safe
+  `stage2.get_latest_candles` seam target selection already uses -- no second MT5
+  access pattern introduced; missing/insufficient ATR history fails closed
+  (`ATR_NOT_READY`), never silently degrading to the floor alone); side-aware spread
+  (LONG: anchor - buffer, no spread term; SHORT: anchor + buffer + verified live
+  spread, protecting the structural anchor from Ask-side stop-trigger effects);
+  broker-minimum-stop policy = `REJECT` (fail closed, never `WIDEN`). Structural
+  anchor/direction/missing-anchor rules are unchanged, already-signed C10 facts
+  (`SMCEntryCombinationResult.invalidation_price`, `EXACT_REUSE`). `engine.py`'s final
+  decision branch now reaches `RESEARCH_QUALIFIED` (previously documented as
+  "currently unreachable") with a real `simulated_broker_stop` when a candidate is
+  READY and ATR/spread data are available; it still fails closed to `BLOCKED` on any
+  C10 computation failure and to `DATA_ERROR` on a genuine market-data-fetch
+  exception. Version bump follows the same precedent as v1.0.5 -> v1.0.6 (pending-entry
+  expiry): resolving a previously-declared-BLOCKED unsigned contract gap that changes
+  reachable decision states. No M1/M2/M3 detection, entry, candidate-selection, or C14
+  semantics changed. 23 new focused unit tests
+  (`tests/test_c10_stop_policy.py`) plus 5 new/updated engine-integration tests
+  (`tests/test_large_smc_research_engine.py`); full pre-existing Large-SMC suite
+  (execution boundary, occurrence identity, target model, golden vertical slice)
+  re-verified passing. `proposal_generation_authorized` remains `false` --
+  execution/demo/live authority is unaffected by this resolution (promotion eligibility
+  is never execution authority). See
+  `docs/status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V3_STATUS.md`.
 
 ## ST_LIQUIDITY_SWEEP_RETEST_V1 -- Liquidity Sweep + H1 Trend + M5 MSS + Retest (Forex + Crypto)
 
