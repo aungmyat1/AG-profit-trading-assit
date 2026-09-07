@@ -99,7 +99,8 @@ def build_readiness_baseline() -> Path:
                 "c10_source": "docs/status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V3_STATUS.md",
                 "c10_min_stop_broker_metadata_note": "REJECT policy fully implemented and unit-tested; not yet wired to a live broker-metadata source in the engine's own replay-safe call path (no such patched seam exists) -- evaluates as NOT_APPLICABLE there, never silently PASS",
                 "c14_status": "PARTIALLY_RESOLVED (occurrence identity + duplicate suppression resolved; live-store migration + post-fill re-entry remaining)",
-                "promotion_note": "AG_EGSVF_V1 evaluator reports promotion_eligible=True, zero blockers, for OFFLINE_RESEARCH -> FORWARD_RESEARCH as of this snapshot -- this is the evaluator's own read-only eligibility result, not a promotion action; lifecycle_stage remains OFFLINE_RESEARCH (no promote_strategy exists in this framework).",
+                "promotion_note": "OFFLINE_RESEARCH -> FORWARD_RESEARCH governance-promoted 2026-09-07 (owner-authorized; see docs/status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md). Next transition (-> OPERATIONAL_SHADOW) evaluated, not executed: blocked on the abstract SHADOW_ENTRY_EVIDENCE milestone gate, unresolved for this strategy -- no repository governance yet defines its shadow-entry evidence.",
+                "semantic_freeze": "C10 parameters (buffer model/ATR timeframe/period/multiplier/floor, spread mode, min-stop policy) are frozen as of this promotion -- no in-place mutation authorized; any future change requires a new strategy version.",
             },
         },
         "execution_system": {
@@ -115,17 +116,30 @@ def build_readiness_baseline() -> Path:
             "governance_framework": "READY_LOCKED",
             "strategy_logic": "VALIDATED_AT_DIFFERENT_MATURITY_LEVELS",
             "historical_evidence": "PARTIAL (FX 13 draft-methodology outcomes; BTC/Large-SMC none required yet at their current stage)",
-            "forward_evidence": "IN_PROGRESS (FX shadow series accruing; BTC campaign not yet started; Large-SMC not yet eligible)",
+            "forward_evidence": "IN_PROGRESS (FX shadow series accruing; BTC campaign not yet started; Large-SMC now FORWARD_RESEARCH, observation accrual not yet started)",
             "demo_readiness": "NO (no strategy is both DEMO_ELIGIBLE and DEMO_AUTHORIZED)",
             "live_readiness": "NO (live trading disabled by default; no strategy has live_authorized=true)",
         },
+        "project_priority": {
+            "active_engineering": [
+                "FX P2: historical replay / friction reconciliation (ST_ASIAN_SWEEP_5R_V1 v1.1.1, active v1.1.1 geometry only)",
+                "MT5 venue identity / crypto compatibility audit (VT Markets vs Vantage Markets; Bybit BTCUSDT vs MT5 BTCUSD reconciliation)",
+            ],
+            "passive_evidence": [
+                "FX Series 002 shadow-day accrual (natural, no manual acceleration)",
+                "BTC 30-day natural campaign accrual (natural, no manufactured observations)",
+                "Large-SMC forward-research observation accrual (v1.0.7, frozen C10 -- no parameter engineering against forward evidence)",
+            ],
+            "explicitly_not_next": "ST_LARGE_SMC_V1 parameter optimization (0.35 ATR multiplier / 1.5 pip floor) against forward evidence -- any such change requires a new strategy version and separate research authorization, never an in-place v1.0.7 mutation.",
+        },
         "gate_changes_since_prior_readiness_artifact": {
-            "prior_artifact": "artifacts/readiness/AG_PROJECT_READINESS_V1_cff2c686925b_20260907T071129.586551+0000.json",
+            "prior_artifact": "artifacts/readiness/AG_PROJECT_READINESS_V1_bf0f50e5e920_20260907T090123.359610+0000.json",
             "ST_LARGE_SMC_V1": {
-                "C10_STOP_POLICY": "UNSIGNED -> PASS (owner-signed DYNAMIC_ATR_WITH_HARD_FLOOR policy, implemented c10_stop_policy.py, strategy bumped 1.0.6 -> 1.0.7)",
-                "promotion_eligible": "False -> True for OFFLINE_RESEARCH -> FORWARD_RESEARCH (evaluator result, zero remaining blockers)",
+                "lifecycle_stage": "OFFLINE_RESEARCH -> FORWARD_RESEARCH (owner-authorized governance promotion, 2026-09-07)",
+                "next_transition": "FORWARD_RESEARCH -> OPERATIONAL_SHADOW (newly evaluated, not executed)",
+                "promotion_blockers": "() -> (SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY,) -- correct, since the prior () was for the transition just completed, and the new blocker is for the NEXT transition, not a regression",
             },
-            "ST_LIQUIDITY_SWEEP_RETEST_V1": "no gate change this task (NO_LOOKAHEAD -> PASS was the prior task's change)",
+            "ST_LIQUIDITY_SWEEP_RETEST_V1": "no gate change this task",
             "ST_ASIAN_SWEEP_5R_V1": "no gate change this task",
         },
         "execution_architecture": {
