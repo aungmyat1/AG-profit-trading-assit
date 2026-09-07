@@ -16,16 +16,19 @@ from __future__ import annotations
 
 import datetime as dt
 
+import pytest
+
 import large_smc_research.engine as engine_module
 from entry_confirmation.composer import compose
 from entry_confirmation.entry_models_v1 import EConditionResult, EntryModelState, SMCConditionalEntryAnalysis
 from entry_confirmation.m1_character_change_inducement import M1Result
 from entry_confirmation.m2_supply_demand_shift import M2Result
 from historical_replay.stage1 import DirectionalLiquidityTimeline, QualifiedEEvent, Stage1Dataset
+from large_smc_research.c10_stop_policy import ATR_PERIOD, MIN_BUFFER_PIPS, PIP_SIZE_EURUSD
 from large_smc_research.decision import (
+    REASON_C10_STOP_MISSING_DATA,
     REASON_REJECT_NO_TARGET,
     REASON_SYMBOL_NOT_IN_FROZEN_UNIVERSE,
-    REASON_UNSIGNED_C10_BROKER_STOP,
     LargeSMCDecisionState,
 )
 from large_smc_research.engine import STRATEGY_VERSION, LargeSMCResearchEngine
@@ -48,19 +51,19 @@ def _event(entry_condition="E1", direction="SHORT", intervals=((T0, T0 + dt.time
     )
 
 
-def _m1(state, direction="SHORT", entry_price=1.1000, source_id="M1-src"):
+def _m1(state, direction="SHORT", entry_price=1.1000, source_id="M1-src", invalidation_price=None):
     return M1Result(symbol="EURUSD", entry_condition="E1", direction=direction, state=state,
                      entry_array_type="FVG" if entry_price is not None else "NONE",
                      entry_array_low=entry_price - 0.001 if entry_price is not None else None,
                      entry_array_high=entry_price + 0.001 if entry_price is not None else None,
-                     source_id=source_id)
+                     source_id=source_id, invalidation_price=invalidation_price)
 
 
-def _analysis_with_combo(m_state, direction="SHORT", entry_price=1.1000):
+def _analysis_with_combo(m_state, direction="SHORT", entry_price=1.1000, invalidation_price=None):
     e_condition = EConditionResult(symbol="EURUSD", entry_condition="E1", direction=direction,
                                     eligible_for_confirmation=True, reference_type="GAP",
                                     reference_low=1.17, reference_high=1.18)
-    m1 = _m1(m_state, direction=direction, entry_price=entry_price)
+    m1 = _m1(m_state, direction=direction, entry_price=entry_price, invalidation_price=invalidation_price)
     combo = compose(e_condition, m1)
     assert combo is not None, f"fixture combo did not compose for state={m_state}"
     return SMCConditionalEntryAnalysis(
@@ -141,27 +144,136 @@ def test_occurrence_id_differs_across_disjoint_intervals():
     assert d1.setup_family_id == d2.setup_family_id  # same setup family, different occurrence
 
 
-# --------------------------------------------------------------------------- READY branch: target found -> BLOCKED (C10)
+# --------------------------------------------------------------------------- READY branch: target found -> C10 (now signed)
 
 
-def test_ready_with_target_found_is_blocked_on_unsigned_c10_only(monkeypatch):
+def _flat_m5_candles(n=ATR_PERIOD + 1, price=1.1000):
+    """Zero-true-range M5 candles for ATR14 -- deterministic, ATR == 0.0, so the
+    1.5-pip floor always governs the buffer in these engine-level tests (the ATR
+    formula itself is exercised in tests/test_c10_stop_policy.py)."""
+    return [
+        type("Candle", (), {
+            "time": T0 - dt.timedelta(minutes=5 * (n - i)), "open": price, "high": price, "low": price, "close": price,
+        })()
+        for i in range(n)
+    ]
+
+
+def test_ready_with_target_found_and_valid_tick_is_research_qualified(monkeypatch):
+    """C10 is now signed (c10_stop_policy.py, AG_LARGE_SMC_V1_C10_STRUCTURAL_
+    INVALIDATION_IMPLEMENTATION_AND_PROMOTION_V3): a READY SHORT combination with a
+    found target, sufficient closed M5 history for ATR14, and an available bid/ask
+    reaches RESEARCH_QUALIFIED with a real simulated_broker_stop, not BLOCKED."""
     engine = LargeSMCResearchEngine()
-    analysis, combo = _analysis_with_combo(EntryModelState.READY.value, entry_price=1.1000)
+    analysis, combo = _analysis_with_combo(EntryModelState.READY.value, entry_price=1.1000, invalidation_price=1.1050)
+    event = _event()
+
+    bid, ask = 1.09990, 1.10010
+    monkeypatch.setattr(engine_module, "select_target",
+                         lambda *a, **k: TargetSelection(found=True, target_price=1.1200,
+                                                          target_tier="PRIMARY_EXTERNAL_LIQUIDITY"))
+    monkeypatch.setattr(engine_module.stage2, "get_latest_candles", lambda *a, **k: _flat_m5_candles())
+    monkeypatch.setattr(engine_module.stage2, "get_tick", lambda *a, **k: type("Tick", (), {"bid": bid, "ask": ask})())
+    monkeypatch.setattr(engine_module, "analyze_structure_tiers",
+                         lambda *a, **k: type("R", (), {"status": "VALID", "external": None})())
+
+    decision = engine._evaluate_combination("EURUSD", T0, event, combo, analysis, T0, T0 + dt.timedelta(hours=8))
+    assert decision.state == LargeSMCDecisionState.RESEARCH_QUALIFIED.value
+    assert decision.reason_codes == ()
+    assert decision.simulated_broker_stop is not None
+    floor_price = MIN_BUFFER_PIPS * PIP_SIZE_EURUSD  # ATR == 0 with flat candles -> floor governs
+    spread = ask - bid
+    assert combo.direction == "SHORT"
+    expected_stop = combo.invalidation_price + floor_price + spread
+    assert decision.simulated_broker_stop == pytest.approx(expected_stop)
+    assert decision.target_price == 1.1200
+
+
+def test_ready_missing_atr_history_is_blocked_not_data_error(monkeypatch):
+    """C10-A requires closed M5 history for ATR14; insufficient history must fail
+    closed to BLOCKED (a C10-specific governance failure), distinct from DATA_ERROR
+    (which is reserved for genuine market-data-fetch exceptions)."""
+    engine = LargeSMCResearchEngine()
+    analysis, combo = _analysis_with_combo(EntryModelState.READY.value, entry_price=1.1000, invalidation_price=1.1050)
     event = _event()
 
     monkeypatch.setattr(engine_module, "select_target",
                          lambda *a, **k: TargetSelection(found=True, target_price=1.1200,
                                                           target_tier="PRIMARY_EXTERNAL_LIQUIDITY"))
-    monkeypatch.setattr(engine_module.stage2, "get_latest_candles", lambda *a, **k: ())
-    monkeypatch.setattr(engine_module.stage2, "get_tick", lambda *a, **k: (_ for _ in ()).throw(MarketDataError("NO_TICK", "n/a")))
+    monkeypatch.setattr(engine_module.stage2, "get_latest_candles", lambda *a, **k: _flat_m5_candles(n=3))  # too few
+    monkeypatch.setattr(engine_module.stage2, "get_tick", lambda *a, **k: type("Tick", (), {"bid": 1.0999, "ask": 1.1001})())
     monkeypatch.setattr(engine_module, "analyze_structure_tiers",
                          lambda *a, **k: type("R", (), {"status": "VALID", "external": None})())
 
     decision = engine._evaluate_combination("EURUSD", T0, event, combo, analysis, T0, T0 + dt.timedelta(hours=8))
     assert decision.state == LargeSMCDecisionState.BLOCKED.value
-    assert decision.reason_codes == (REASON_UNSIGNED_C10_BROKER_STOP,)  # pending-entry expiry is RESOLVED_BY_REUSE -- no longer a blocking reason
+    assert decision.reason_codes == (f"{REASON_C10_STOP_MISSING_DATA}:ATR_NOT_READY",)
     assert decision.simulated_broker_stop is None
-    assert decision.target_price == 1.1200
+
+
+def test_ready_with_target_found_missing_tick_is_data_error(monkeypatch):
+    """C10-B requires a live spread for SHORT; a MarketDataError from get_tick fails
+    closed to DATA_ERROR (never fabricates a stop, never silently reverts to BLOCKED)."""
+    engine = LargeSMCResearchEngine()
+    analysis, combo = _analysis_with_combo(EntryModelState.READY.value, entry_price=1.1000, invalidation_price=1.1050)
+    event = _event()
+
+    monkeypatch.setattr(engine_module, "select_target",
+                         lambda *a, **k: TargetSelection(found=True, target_price=1.1200,
+                                                          target_tier="PRIMARY_EXTERNAL_LIQUIDITY"))
+    monkeypatch.setattr(engine_module.stage2, "get_latest_candles", lambda *a, **k: _flat_m5_candles())
+    monkeypatch.setattr(engine_module.stage2, "get_tick", lambda *a, **k: (_ for _ in ()).throw(MarketDataError("NO_TICK", "n/a")))
+    monkeypatch.setattr(engine_module, "analyze_structure_tiers",
+                         lambda *a, **k: type("R", (), {"status": "VALID", "external": None})())
+
+    decision = engine._evaluate_combination("EURUSD", T0, event, combo, analysis, T0, T0 + dt.timedelta(hours=8))
+    assert decision.state == LargeSMCDecisionState.DATA_ERROR.value
+    assert decision.simulated_broker_stop is None
+
+
+def test_ready_long_direction_ignores_missing_tick_and_qualifies(monkeypatch):
+    """LONG never needs bid/ask for C10 -- a missing tick (MarketDataError, e.g. from
+    _select_target's own tolerant live_bid/live_ask lookup) must not block a LONG
+    candidate's C10 computation, unlike SHORT which requires it."""
+    engine = LargeSMCResearchEngine()
+    analysis, combo = _analysis_with_combo(EntryModelState.READY.value, direction="LONG",
+                                            entry_price=1.1000, invalidation_price=1.0950)
+    event = _event(direction="LONG")
+
+    monkeypatch.setattr(engine_module, "select_target",
+                         lambda *a, **k: TargetSelection(found=True, target_price=1.0800,
+                                                          target_tier="PRIMARY_EXTERNAL_LIQUIDITY"))
+    monkeypatch.setattr(engine_module.stage2, "get_latest_candles", lambda *a, **k: _flat_m5_candles())
+    monkeypatch.setattr(engine_module.stage2, "get_tick", lambda *a, **k: (_ for _ in ()).throw(MarketDataError("NO_TICK", "n/a")))
+    monkeypatch.setattr(engine_module, "analyze_structure_tiers",
+                         lambda *a, **k: type("R", (), {"status": "VALID", "external": None})())
+
+    decision = engine._evaluate_combination("EURUSD", T0, event, combo, analysis, T0, T0 + dt.timedelta(hours=8))
+    assert decision.state == LargeSMCDecisionState.RESEARCH_QUALIFIED.value
+    floor_price = MIN_BUFFER_PIPS * PIP_SIZE_EURUSD
+    assert decision.simulated_broker_stop == pytest.approx(combo.invalidation_price - floor_price)
+
+
+def test_ready_with_inverted_tick_blocks_on_invalid_spread(monkeypatch):
+    """A tick with ask < bid (a genuinely invalid market snapshot) must fail closed to
+    BLOCKED with a C10_STOP:MISSING_DATA-family reason, never silently produce a
+    negative-spread stop."""
+    engine = LargeSMCResearchEngine()
+    analysis, combo = _analysis_with_combo(EntryModelState.READY.value, entry_price=1.1000, invalidation_price=1.1050)
+    event = _event()
+
+    monkeypatch.setattr(engine_module, "select_target",
+                         lambda *a, **k: TargetSelection(found=True, target_price=1.1200,
+                                                          target_tier="PRIMARY_EXTERNAL_LIQUIDITY"))
+    monkeypatch.setattr(engine_module.stage2, "get_latest_candles", lambda *a, **k: _flat_m5_candles())
+    monkeypatch.setattr(engine_module.stage2, "get_tick", lambda *a, **k: type("Tick", (), {"bid": 1.1010, "ask": 1.0990})())
+    monkeypatch.setattr(engine_module, "analyze_structure_tiers",
+                         lambda *a, **k: type("R", (), {"status": "VALID", "external": None})())
+
+    decision = engine._evaluate_combination("EURUSD", T0, event, combo, analysis, T0, T0 + dt.timedelta(hours=8))
+    assert decision.state == LargeSMCDecisionState.BLOCKED.value
+    assert decision.reason_codes == (f"{REASON_C10_STOP_MISSING_DATA}:INVALID_SPREAD",)
+    assert decision.simulated_broker_stop is None
 
 
 def test_ready_with_no_target_is_no_trade(monkeypatch):

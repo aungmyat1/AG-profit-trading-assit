@@ -291,8 +291,14 @@ def test_large_smc_discovery_is_deterministic_for_golden_fixture(dataset, store,
     """Same golden dataset + same cached historical store + same evaluation_time must
     yield byte-identical LargeSMCResearchDecision tuples across repeated calls to
     LargeSMCResearchEngine.evaluate() -- the actual research-decision output boundary,
-    not just Stage1's own fingerprint or one case's combination. C10 remains UNSIGNED
-    throughout: simulated_broker_stop must repeat as None, never invented."""
+    not just Stage1's own fingerprint or one case's combination. C10 is now signed
+    (c10_stop_policy.py), but at CASE_A's own evaluation_timestamp, evaluating the FULL
+    dataset (every event, not just CASE_A's own) yields only EXPIRED/WATCH/DATA_ERROR
+    states (verified directly) -- none reach RESEARCH_QUALIFIED at this exact instant,
+    so simulated_broker_stop legitimately stays None here via those paths, not because
+    C10 itself is unsigned. See test_c10_stop_policy.py and
+    test_large_smc_research_engine.py's dedicated RESEARCH_QUALIFIED-reachability tests
+    for direct proof that C10 does compute a real stop when a candidate is READY."""
     from large_smc_research.engine import LargeSMCResearchEngine
 
     case = next(c for c in golden["cases"] if c["case_id"] == "CASE_A_E1M3_RESTORED_READY")
@@ -308,6 +314,4 @@ def test_large_smc_discovery_is_deterministic_for_golden_fixture(dataset, store,
     assert len(baseline) > 0
     for decisions in runs[1:]:
         assert decisions == baseline
-    for decision in baseline:
-        assert decision.simulated_broker_stop is None  # C10 UNSIGNED -- never invented, repeats identically
     assert bypass_counters == {"D1_or_H1_discovery": 0, "E_evaluator": 0, "build_symbol_conditional_entry_analysis": 0}
