@@ -13,6 +13,25 @@ frozen-strategy ticket operation precedes the separate strategy-validation stage
 [`../PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md). This update changes the product
 priority, not the authority boundaries described below.
 
+It also supports an owner-led interactive path:
+
+```text
+CHART / USER CONTEXT
+  -> market structure
+  -> supply and demand
+  -> liquidity
+  -> registered-strategy match
+  -> strategy-defined timeframe crossover
+  -> entry-confirmation evidence
+  -> strategy decision
+  -> informational ticket only when strategy READY
+```
+
+The capability layers may identify and explain a candidate opportunity, but they do
+not collectively create execution or signal authority. If the registry has no signed
+strategy matching the symbol/session/setup/timeframe chain, the flow stops at
+`NO_REGISTERED_STRATEGY_MATCH`.
+
 ```
 AG PROFIT TRADING ASSISTANT
 ```

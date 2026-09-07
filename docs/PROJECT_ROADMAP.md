@@ -1,146 +1,280 @@
-# AG Profit Trading — Product Roadmap
+# AG Profit Trading — Profit-Seeking Product Roadmap
 
-Status: **OWNER-DIRECTED, 2026-09-07**
+Status: **OWNER-DIRECTED, REGENERATED 2026-09-07**
 
-This document records the current product direction. It does not authorize broker
-execution, modify a frozen strategy, or reclassify research evidence. Strategy YAML
-and the strategy registry remain authoritative for strategy behavior and execution
-permission.
+Planning baseline: `main` @ `b89eddbc30d5c6c5d48f203f8d5e48e065a18fbd`
 
-## Product objective
+This roadmap converts the project objective into an ordered product and evidence plan.
+It does not authorize broker execution, change a frozen strategy, or claim that any
+current strategy is profitable. Strategy YAML owns signal behavior; the registry owns
+execution authority; immutable evidence owns performance claims.
 
-AG Profit Trading is a deterministic, proposal-only trade assistant whose primary
-operational product is a timely **informational trade ticket**:
+## Objective
 
-1. **FX Session Trade:** evaluate three major FX pairs plus gold after the Asian
-   session and again after the London session, producing an explicit decision for
-   every configured symbol and cycle.
-2. **Crypto Session Trade:** evaluate two crypto instruments at owner-specified preset
-   times, producing the same explicit decision/ticket product.
-3. **Large-SMC Watch:** monitor an owner-specified pair watchlist, persist each setup's
-   funnel status, and alert when the frozen strategy reaches entry confirmation.
+Build a deterministic trade assistant that:
 
-The default proposed universe, pending contract freeze, is:
+1. publishes informational FX tickets after the Asian and London sessions for
+   EURUSD, GBPUSD, USDJPY, and XAUUSD;
+2. publishes preset-time crypto tickets for BTCUSDT and ETHUSDT;
+3. watches an approved Large-SMC universe, exposes funnel status, and alerts on entry
+   confirmation;
+4. assists the owner during chart-led top-down analysis by coordinating the relevant
+   market-structure, supply/demand, liquidity, and entry-confirmation skills, resolving
+   any matching registered strategy, and tracking confirmation from higher-timeframe
+   context into the strategy's related lower timeframe;
+5. measures resolved outcomes after costs and promotes only strategies with credible
+   positive out-of-sample evidence;
+6. preserves `WATCH`, `NO_TRADE`, `DATA_ERROR`, `EXPIRED`, and `BLOCKED` as valid
+   products rather than forcing activity.
+
+The commercial product is dependable decision delivery. The profit-seeking objective
+is to identify and scale positive net expectancy while controlling drawdown and
+execution risk. More tickets, indicators, or wins are not substitutes for positive
+net expectancy.
+
+## Current baseline
+
+| Area | Verified current state | Gap |
+|---|---|---|
+| FX strategy | EURUSD/GBPUSD decisions and READY rendering work for both cycles | USDJPY/XAUUSD not operationally contracted |
+| FX scheduling | Two Windows tasks installed, enabled, and successfully fired on 2026-09-07 | restart, overlap, and missed-run recovery unverified |
+| Ticket storage | decision/proposal journals and local reports exist | per-cycle immediate archive contract incomplete |
+| External delivery | no transport on `main` | message-only delivery required |
+| BTC | scheduled BTCUSDT production-data decision path | no delivered normalized ticket; evidence 0/30 |
+| ETH | declared in strategy profile | feed/report/ticket path absent |
+| Large-SMC | EURUSD research engine, batch watcher, version-safe ledger, funnel calculator | no live forward run, scheduler, alert delivery, or outcome resolver |
+| Performance | normalized gross/net model and adapters committed | drawdown defect; timestamp-order ambiguity; costs/OOS incomplete |
+| Demo execution | separate `SESSION_TRADE_V1` Asian→London path is authorized | reconciliation lookup fails open; recovery safety unreliable |
+| Live execution | unauthorized | intentionally out of scope |
+
+## Contracts to freeze first
+
+### Logical ticket identity
+
+One market occurrence produces one logical ticket. `proposal_id` is the current
+canonical equivalent and may remain the identifier unless cross-strategy normalization
+requires a separate `ticket_id`.
 
 ```text
-FX      EURUSD, GBPUSD, USDJPY, XAUUSD
-CRYPTO  BTCUSDT, ETHUSDT
+strategy occurrence -> logical ticket -> archive -> delivery attempt(s)
 ```
 
-`XAUUSD` is the canonical product symbol; broker aliases such as `XAUUSD.crp` must be
-resolved by configuration. No symbol-specific thresholds may be copied from EURUSD to
-USDJPY, XAUUSD, or crypto without a versioned strategy contract.
+A scheduler rerun resolves to the same ticket. A delivery timeout may create a new
+`delivery_attempt_id`, but never a new ticket. Exactly-once means one logical ticket
+and one durable delivered-state transition; an external network call may be retried
+idempotently.
 
-## Decision and ticket contract
+### Ticket content
 
-Every scheduled evaluation must return one explicit state, including when no trade is
-available. Existing strategy-specific states remain authoritative; the operational
-normalization is `READY`, `WATCH`, `NO_TRADE`, `DATA_ERROR`, `EXPIRED`, or `BLOCKED`.
+Only `READY` receives a complete informational ticket. It contains only strategy-owned
+values: strategy/version, instrument, cycle, direction, entry, stop, targets,
+expiry/invalidation, signed risk data, reason codes, venue/freshness, and proposal
+identity. It must display `INFORMATIONAL PROPOSAL — NOT A BROKER ORDER`.
 
-Only `READY` produces a complete informational trade ticket. A ticket should contain,
-where supplied by the current frozen strategy:
+Missing strategy-owned data stays missing or causes `BLOCKED`; the ticket layer never
+invents it.
 
-- strategy id and version;
-- instrument, market, session/cycle, and evaluation time;
-- direction, entry, stop loss, targets, and invalidation/expiry;
-- risk information already authorized by the strategy contract;
-- proposal/ticket identity and decision reason codes;
-- market-data venue and freshness;
-- the label `INFORMATIONAL PROPOSAL — NOT A BROKER ORDER`.
+### Interactive top-down analysis
 
-A missing strategy-owned value must remain missing or `BLOCKED`; the ticket layer must
-never invent direction, entry, stop, target, risk, or confirmation.
+When the owner analyzes a chart from higher to lower timeframe, the assistant should:
 
-## Delivery sequence
+1. establish higher-timeframe regime, structure, dealing range, and directional
+   context;
+2. map relevant supply/demand and liquidity areas without inventing levels;
+3. search the strategy registry for a strategy whose signed universe, timeframe chain,
+   session, and setup contract match the observed context;
+4. report `NO_REGISTERED_STRATEGY_MATCH` when none applies rather than borrowing rules;
+5. run the matched deterministic strategy and preserve its decision as the authority;
+6. monitor the strategy-defined crossover from context timeframe to entry timeframe,
+   using closed-candle evidence for structure shift, liquidity reclaim, displacement,
+   rejection, or the strategy's own confirmation model;
+7. distinguish advisory confirmation (`CONFIRMED`, `PARTIAL`, `NOT_CONFIRMED`, or
+   `INDETERMINATE`) from a strategy `TradeSignal`;
+8. produce a ticket only when the registered strategy itself reaches `READY`.
 
-### Stage 1 — Current-strategy trade-ticket operations
+The agent skill set organizes and explains evidence; it does not create an independent
+signal, silently select an unsigned threshold, or override `WATCH`/`NO_TRADE`.
 
-Goal: deliver useful tickets now from current frozen strategy behavior, before the
-separate strategy-validation program.
+### Profit measurement
 
-1. Preserve the existing EURUSD/GBPUSD `ASIAN_LONDON` and `LONDON_NEWYORK` proposal
-   paths and complete Entry Ticket renderer.
-2. Produce and archive a cycle result immediately after each configured session,
-   rather than relying only on the combined end-of-day FX report.
-3. Install restart-safe scheduling and missed-run recovery for both FX cycles.
-4. Add deduplicated notification delivery for new READY tickets and operational
-   failures; WATCH/NO_TRADE summaries remain available without alert spam.
-5. Add USDJPY and XAUUSD only through a new candidate strategy/config version with
-   signed pip/tick, spread, range, stop, sizing, and broker-symbol conventions.
-6. Keep order submission disabled. The milestone ends at ticket publication.
+```text
+net out-of-sample expectancy
+  -> drawdown and tail loss
+  -> robustness across time/symbol/session/regime
+  -> capacity and operational reliability
+  -> gross metrics for diagnosis only
+```
 
-Acceptance: every configured symbol/cycle produces exactly one archived decision per
-eligible day; every READY decision produces exactly one complete informational ticket;
-restart does not duplicate decisions or notifications.
+Performance must reconcile to immutable proposal/outcome/fill evidence and itemized
+spread, commission, slippage, and funding where applicable. Metrics remain
+`NOT_EVALUATED` when required inputs are absent.
 
-### Stage 2 — Two-asset crypto ticket operations
+## Roadmap
 
-1. Preserve the current scheduled BTCUSDT Bybit decision path.
-2. Generalize the BTC-only market-data/report orchestration for ETHUSDT without
-   changing the frozen BTC strategy semantics.
-3. Freeze the preset evaluation time(s), venue, contract type, and complete-candle
-   requirements for both assets.
-4. Archive and deliver deduplicated informational tickets; crypto execution remains
-   fail-closed and out of scope.
+### Stage 0 — Safety and measurement hygiene
 
-Acceptance: BTCUSDT and ETHUSDT each produce one deterministic, archived decision at
-their preset time; READY produces a normalized informational ticket.
+Run alongside ticket work without expanding into execution development.
 
-### Stage 3 — Large-SMC funnel watch and confirmation alerts
+1. Fix the performance drawdown baseline so the equity curve starts at zero; add the
+   real 13-loss regression case.
+2. Decide and test the canonical ordering for missing resolution timestamps.
+3. Change broker reconciliation failure from “not found” to a fail-closed result.
+   Until fixed, do not rely on crash recovery for the separately authorized
+   `SESSION_TRADE_V1` Demo path.
+4. Do not rewrite historical outcomes or strategy versions.
 
-1. Freeze the initial watchlist; retain EURUSD-only authority until expansion is
-   explicitly contracted.
-2. Use the existing research engine and live-batch ledger as the baseline.
-3. Add incremental closed-bar observation, durable funnel-stage transitions, expiry,
-   invalidation, and restart recovery.
-4. Publish alerts only on material state transitions, especially entry confirmation.
-5. Keep `ST_LARGE_SMC_V1` `RESEARCH_ONLY`; an entry-confirmation alert is not proposal,
-   demo, or live execution authority.
+Exit: metrics obey a frozen calculation contract and broker lookup failure cannot
+trigger a replacement order.
 
-Acceptance: each watched instrument exposes a current explainable funnel state, and a
-new confirmation transition emits exactly one alert.
+### Stage 1 — Exactly-once FX ticket product
 
-### Stage 4 — Strategy validation and promotion
+Scope: current `ST_ASIAN_SWEEP_5R_V1` behavior, EURUSD/GBPUSD, both cycles.
 
-Validation is deliberately sequenced after the initial current-strategy ticket
-operation is stable. It includes:
+1. Freeze logical-ticket and delivery-attempt identity.
+2. Persist and archive each cycle result immediately after its checkpoint.
+3. Verify overlapping scheduler invocations, restart recovery, and missed-run catch-up.
+4. Reuse only the message/formatting portion of the paused Telegram branch after a
+   secret, authorization, logging, and payload audit.
+5. Add a delivery journal with retry state and durable deduplication.
+6. Notify on new READY tickets and actionable operational failures; retain quiet local
+   summaries for WATCH/NO_TRADE.
+7. Exclude approval buttons, broker callbacks, and execution wiring.
 
-- FX forward-shadow evidence by symbol and cycle;
-- independent BTC and ETH observation ledgers;
-- Large-SMC funnel-transition and confirmation evidence;
-- data quality, missed-run, duplicate-ticket, and duplicate-alert measurements;
-- outcome/performance analysis without retroactively rewriting historical evidence;
-- promotion of candidate strategy versions only after explicit owner review.
+Exit: one archived decision per symbol/cycle/date; one logical ticket per READY
+occurrence; retries preserve identity; restart/overlap creates no duplicate; real
+external delivery is verified without an order path.
 
-Software correctness and ticket delivery do not establish profitability or trading
-edge. Until Stage 4 passes, all products remain decision support.
+### Stage 2 — Coverage expansion
 
-### Stage 5 — Optional execution program
+For FX, create a new candidate version for USDJPY and XAUUSD. Freeze per-symbol
+pip/tick conventions, aliases, sessions, spread filters, range limits, stop geometry,
+sizing inputs, and data-quality requirements. Do not copy EURUSD constants.
 
-Demo/live execution, Telegram approval-to-broker wiring, and crypto order routing are
-not part of the current product milestone. They require separate strategy risk
-contracts, authorization, safety validation, and explicit owner direction.
+For crypto, preserve BTCUSDT semantics while generalizing the feed/report/ticket
+boundary for ETHUSDT. Freeze venue, contract type, metadata, UTC observation period,
+preset publication time, complete-candle checks, and cost fields.
 
-## Immediate implementation backlog
+Exit: all six target instruments produce deterministic archived decisions and
+normalized informational tickets when READY; execution remains disabled.
 
-| Priority | Deliverable | Current state | Completion gate |
+### Stage 3 — Large-SMC operational funnel
+
+1. Run one controlled read-only EURUSD live batch to establish first forward evidence.
+2. Install a watcher schedule only after batch output and version identity pass.
+3. Persist material transitions: context candidate, E-qualified, M-engaged,
+   entry-eligible, READY, invalidated, and expired.
+4. Add restart-safe transition delivery and exactly-once confirmation alerts.
+5. Keep EURUSD-only authority until a candidate expansion is signed.
+6. Keep `ST_LARGE_SMC_V1` `RESEARCH_ONLY`; funnel alerts are not trade authority.
+
+Exit: every watched instrument exposes a current explainable state; each transition is
+durable; each new confirmation emits one informational alert.
+
+### Stage 3A — Interactive chart-assistance workflow
+
+1. Define a normalized top-down analysis request: symbol, current chart timeframe,
+   analysis time, candidate direction if any, and optional named strategy.
+2. Route the request through structure → supply/demand → liquidity → entry-confirmation
+   skills, reusing each layer's output rather than re-detecting it downstream.
+3. Resolve related registered strategies by signed symbol, session, setup, and
+   timeframe-chain compatibility; never match by a strategy name alone.
+4. Present a single traceable report containing HTF thesis, zones/liquidity, matched
+   strategy status, next lower-timeframe confirmation required, invalidation, and
+   current decision state.
+5. Persist a watch candidate only when the relevant strategy contract permits it, then
+   update it on newly closed bars until confirmed, invalidated, or expired.
+6. Hand a strategy-produced READY result to the same canonical ticket pipeline used by
+   scheduled decisions.
+
+Exit: a user can begin from a chart, receive a deterministic multi-timeframe evidence
+chain, see whether a registered strategy applies, and be assisted through entry
+confirmation without the advisory skills being presented as signal authority.
+
+### Stage 4 — Outcome resolution and economic validation
+
+```text
+proposal -> entry evidence -> SL/target/expiry outcome -> gross R
+         -> costs -> net R -> portfolio equity
+```
+
+1. Sign outcome-resolution contracts separately for FX, crypto, and Large-SMC.
+2. Preserve ambiguous sequences as unresolved; never choose the favorable path.
+3. Reconcile periodic equity with trade/fill ledgers.
+4. Separate development, validation, and untouched out-of-sample periods.
+5. Report net expectancy first, then gross expectancy, payoff, hit rate, profit factor,
+   drawdown/duration, loss streaks, exposure, turnover, holding time, and costs.
+6. Attribute by version, instrument, cycle, direction, regime, and setup family.
+7. Quantify uncertainty when sample size permits; do not annualize short or overlapping
+   samples without warnings.
+8. Run walk-forward, parameter perturbation, cost/slippage stress, and regime tests.
+
+Promotion gates must be owner-signed before evaluation. At minimum they require:
+
+- positive **net** out-of-sample expectancy;
+- drawdown and loss streaks within an explicit capital budget;
+- no excessive dependence on one symbol, session, or regime;
+- survival under conservative costs and plausible slippage;
+- stable behavior across validation windows;
+- sufficient independent observations for the strategy frequency;
+- zero unresolved safety or evidence-integrity blockers.
+
+Exact numeric thresholds remain `UNSIGNED`; they must not be tuned after seeing the
+validation result.
+
+Exit: each strategy receives `PASS`, `FAIL`, or `INSUFFICIENT_EVIDENCE`. Only `PASS`
+may be considered for Demo eligibility; it does not grant Demo authorization.
+
+### Stage 5 — Portfolio selection and risk budgeting
+
+Only strategies passing Stage 4 enter portfolio research.
+
+1. Rank by conservative net expectancy and drawdown, not READY count or win rate.
+2. Measure cross-strategy correlation, clustered losses, session overlap, and shared
+   USD/crypto exposure.
+3. Allocate a small explicit risk budget per strategy and a portfolio loss ceiling.
+4. Reject edges that disappear after costs, concentration, capacity, or execution
+   assumptions.
+5. Define pause/retire rules for degradation before assigning capital.
+
+Exit: a versioned portfolio candidate with explicit risk limits and independent
+evidence.
+
+### Stage 6 — Optional controlled Demo program
+
+Demo eligibility, Demo authorization, and live authorization remain separate. After
+Stage 0 safety closure and Stage 4/5 passage: mocked end-to-end validation, broker
+`order_check`, one minimum-size Demo order, reconciliation, restart testing, then a
+larger Demo observation program. Live trading remains outside this roadmap unless
+separately authorized.
+
+## Priority backlog
+
+| Priority | Work item | Profit role | Gate |
 |---|---|---|---|
-| P0 | Per-cycle FX ticket run/archive | Renderer and two-cycle engine exist | exactly-once post-session artifact |
-| P0 | Persistent FX scheduling/recovery | CLI is scheduler-ready; no durable multi-cycle deployment confirmed | unattended run and missed-run evidence |
-| P0 | Ticket notification transport | local sinks exist; external delivery not operational on `main` | real delivery plus dedup/retry evidence |
-| P1 | USDJPY and XAUUSD candidate support | declared in broader contracts, not operational pilot | signed per-symbol conventions and tests |
-| P1 | ETHUSDT scheduled ticket | strategy lists ETH; production feed/report is BTC-only | production-data and complete-candle validation |
-| P1 | Large-SMC funnel status publication | research engine and batch ledger exist | durable transition model and query/report |
-| P1 | Large-SMC confirmation alert | confirmation components exist; no complete operational delivery path | exactly-once research alert |
-| P2 | Strategy-validation campaigns | existing FX/BTC campaigns incomplete | Stage 4 evidence gates |
-| Deferred | Broker execution | independently gated/disabled | separate owner authorization |
+| P0 | Exactly-once FX archive/recovery | captures every current opportunity reliably | Stage 1 acceptance |
+| P0 | External message-only delivery | makes decisions actionable to the human | real delivery, no execution path |
+| P0-Safety | Fail-closed broker reconciliation | prevents duplicate Demo orders | before trusted Demo use |
+| P1 | USDJPY/XAUUSD contracts and tickets | expands opportunity set safely | candidate contract + shadow evidence |
+| P1 | ETHUSDT feed/decision/ticket | adds second crypto stream | production data-quality proof |
+| P1 | Large-SMC forward funnel and alerts | captures selective asymmetric candidates | durable transition evidence |
+| P1 | Interactive top-down analysis workflow | converts chart context into a traceable strategy/confirmation watch | strategy match + closed-bar confirmation evidence |
+| P1-Validation | Outcome resolvers and net metrics | determines economic value | reconciled immutable outcomes |
+| P2 | Robustness and portfolio selection | reduces overfit and concentration | signed promotion/risk gates |
+| Deferred | Demo/live execution expansion | monetizes only validated edge | separate authorization |
 
-## Authority preservation
+## Stop conditions
 
-- Current frozen strategies may produce tickets only from values they already own.
-- Adding instruments or changing behavior requires a new candidate strategy version.
-- `NO_TRADE` and fail-closed states are valid products and must never be promoted by
-  the ticket or alert layer.
-- Large-SMC remains research-only until separately validated and promoted.
-- No roadmap item implicitly changes `demo_authorized`, `live_authorized`, or crypto
-  execution authority.
+- Stop product expansion if ticket identity, freshness, or evidence integrity is
+  unreliable.
+- Stop promotion on non-positive net OOS expectancy, unacceptable drawdown, cost
+  fragility, concentration, or insufficient evidence.
+- Stop adding analytical concepts when the bottleneck is delivery or outcomes.
+- Never delete losses, alter frozen attribution, or optimize gates after results.
+
+## Immediate next milestone
+
+`AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1`
+
+It is limited to EURUSD/GBPUSD, the two current FX cycles, current strategy outputs,
+per-cycle archive, recovery, and message-only delivery. See
+`plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`.

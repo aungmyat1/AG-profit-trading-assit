@@ -4,7 +4,7 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Owner-directed product objective and roadmap (2026-09-07)
+## Owner-directed profit-seeking objective and roadmap (regenerated 2026-09-07)
 
 The current product objective is proposal-first trade assistance:
 
@@ -15,6 +15,9 @@ The current product objective is proposal-first trade assistance:
   ETHUSDT) at preset time(s);
 - watch a preset Large-SMC pair universe, expose persistent funnel status, and alert
   when the current frozen strategy reaches entry confirmation.
+- assist owner-led top-down chart analysis through the relevant advisory skill chain,
+  resolve a compatible registered strategy, identify strategy-eligible opportunities,
+  and monitor the strategy-defined higher-to-lower-timeframe entry confirmation.
 
 Delivery is now sequenced as **current-strategy ticket operations first, strategy
 validation second**. This sequencing does not change any frozen strategy behavior or
@@ -23,8 +26,19 @@ values returned by the current deterministic strategy and must preserve `NO_TRAD
 `WATCH`, and fail-closed outcomes. All tickets and Large-SMC alerts remain
 informational; Demo/live execution authority is unchanged.
 
-The authoritative product roadmap and implementation backlog are in
-`docs/PROJECT_ROADMAP.md`. Earlier CORE-D1..D7 and qualification-first roadmap text
+In the interactive workflow, skills may describe structure, zones, liquidity, and
+confirmation evidence, but only the matched strategy engine can emit `READY` or a
+`TradeSignal`. If no signed strategy matches, the required result is
+`NO_REGISTERED_STRATEGY_MATCH`; rules must not be borrowed from another strategy.
+
+The authoritative profit-seeking roadmap and backlog are in
+`docs/PROJECT_ROADMAP.md`; the current milestone plan is
+`docs/plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`. Two installed FX
+scheduler tasks were read-only verified by the 2026-09-07 readiness audit as enabled
+and successfully fired. Scheduling is implemented; overlap, restart, and missed-run
+recovery remain unverified. Local ticket persistence exists; the current delivery
+blocker is specifically external message delivery on `main`. Earlier CORE-D1..D7 and
+qualification-first roadmap text
 below is retained as dated historical planning context where it conflicts with this
 newer owner direction.
 

@@ -1,7 +1,7 @@
 # AG Profit Trading
 
 AG Profit Trading is a deterministic FX and crypto trading assistant designed to
-produce three complementary decision products:
+produce four complementary decision products:
 
 - **Session Trade** proposals for recurring intraday opportunities around defined
   market sessions.
@@ -9,6 +9,9 @@ produce three complementary decision products:
   opportunities with lower-timeframe confirmation.
 - **Large-SMC Watch** funnel-status updates and entry-confirmation alerts for a preset
   watchlist.
+- **Interactive Top-Down Analysis** assistance that coordinates structure, zones,
+  liquidity, registered-strategy matching, and cross-timeframe entry confirmation when
+  the owner is analyzing a chart.
 
 The owner-directed product target is two daily FX session decision cycles for EURUSD,
 GBPUSD, USDJPY, and XAUUSD; scheduled crypto decisions for BTCUSDT and ETHUSDT; and a
@@ -16,6 +19,12 @@ persistent Large-SMC watch. The immediate delivery stage uses current frozen str
 behavior to publish informational trade tickets. Strategy validation and candidate
 promotion follow as a separate next stage. See
 [`docs/PROJECT_ROADMAP.md`](docs/PROJECT_ROADMAP.md).
+
+For chart-led analysis, agent skills organize advisory evidence from higher timeframe
+to lower timeframe. A related strategy is considered only when its registered contract
+matches the symbol, session, setup, and timeframe chain. The deterministic strategy
+decision remains authoritative; advisory confirmation never becomes a trade signal by
+itself.
 
 The guaranteed daily output is a decision (`READY`, `WATCH`, `NO_TRADE`, or a fail-closed
 data/error state), not a forced trade. A pre-trade proposal ticket is not a broker

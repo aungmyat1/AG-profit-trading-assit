@@ -5,6 +5,11 @@
 AG Profit Trading is a deterministic FX and crypto trading assistant whose target
 decision products are post-Asian and post-London Session Trade tickets, preset-time
 BTC/ETH tickets, and persistent Large-SMC funnel status with entry-confirmation alerts.
+The assistant also supports owner-led top-down chart analysis: relevant agent skills
+organize structure, supply/demand, liquidity, and cross-timeframe confirmation evidence,
+then resolve and invoke a compatible registered strategy when one exists. Skills remain
+advisory; only the strategy engine may produce a `TradeSignal`, and no registered match
+must be reported explicitly rather than filled with borrowed rules.
 The immediate roadmap publishes informational tickets from current frozen strategy
 outputs; strategy validation and candidate promotion are the next stage. The
 guaranteed output is an explicit decision state, not a forced trade, and a ticket is
