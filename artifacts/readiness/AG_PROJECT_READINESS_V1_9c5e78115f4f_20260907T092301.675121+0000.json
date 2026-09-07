@@ -1,0 +1,579 @@
+{
+  "application": {
+    "release_id": "AG_TRADE_ASSISTANT_V1_0_3",
+    "release_status": "RELEASE_CANDIDATE",
+    "source": "config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml"
+  },
+  "evaluated_at": "2026-09-07T09:23:01.675121+00:00",
+  "evaluation_head": "9c5e78115f4f77c56e4fe95a4a61133eef5b0ec2",
+  "execution_architecture": {
+    "broker_order_sent": false,
+    "concurrent_unrelated_work_observed": "This task discovered unrelated, actively-changing files (config/mt5.yaml, src/execution/mt5_gateway.py, new src/mt5/{account_guard,broker_symbol_resolver,config}.py, src/.env.example, new mt5-related tests) appearing in the working tree mid-task, not created by this task and left completely untouched/uncommitted -- appears to be a concurrent, independent workstream on the same repository.",
+    "cross_venue_compatibility": "MATERIAL MISMATCH found between Bybit BTCUSDT linear perpetual (existing market-data authority) and VantageMarkets-Demo's BTCUSD CFD (different quote/margin currency, no funding mechanism, different price basis) -- requires owner-signed reconciliation before any execution routing",
+    "crypto_adapter_required": "NOT DETERMINED (E2 not reached -- E1 did not confirm compatibility for the intended venue)",
+    "crypto_demo_venue_target": "VT Markets Demo MT5 (owner-stated intent) -- NOT auditable in this environment; only VantageMarkets-Demo was connected/reachable",
+    "crypto_execution_authorized": false,
+    "fx_demo_venue": "MT5 (VantageMarkets-Demo) -- unchanged",
+    "shared_mt5_gateway": "execution/executor.py + execution/mt5_gateway.py -- already broker-metadata-generic (mt5/symbol_resolver.py, execution/risk.py); one narrow FX-shaped fallback noted at executor.py:299 (missing-symbol_meta case only), not fixed this task",
+    "vtmarkets_crypto_audit": "ASSESSMENT_INCOMPLETE -- see docs/status/AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_E1_STATUS.md",
+    "vtmarkets_crypto_symbols": "NOT AUDITED (no VT Markets terminal reachable); VantageMarkets-Demo's own BTCUSD/ETHUSD audited instead, as a secondary/labeled finding"
+  },
+  "execution_system": {
+    "demo_capability": "DEMO_VERIFIED (2026-08-28, generic MT5 Demo round trip; not strategy-specific authorization)",
+    "duplicate_protection": "PASS (execution/journal.py, OPEN/CLOSE share duplicate-command protection)",
+    "idempotency": "PASS (atomic O_EXCL command claim, restart-safe)",
+    "journal_protection": "PASS (deterministic hash filenames, legacy filenames still readable)",
+    "live_authority": "DISABLED (config/trading.yaml account.allow_live_trading: false)",
+    "replay_live_guard": "PASS (historical_replay blocks live MT5 access even if a terminal was initialized earlier)",
+    "volume_validation": "PASS (CLOSE volume rejects non-finite/non-positive/excessive/below-minimum/above-maximum, floors to broker step)"
+  },
+  "framework_id": "AG_EGSVF_V1",
+  "gate_changes_since_prior_readiness_artifact": {
+    "ST_ASIAN_SWEEP_5R_V1": "no gate change this task",
+    "ST_LARGE_SMC_V1": {
+      "lifecycle_stage": "OFFLINE_RESEARCH -> FORWARD_RESEARCH (owner-authorized governance promotion, 2026-09-07)",
+      "next_transition": "FORWARD_RESEARCH -> OPERATIONAL_SHADOW (newly evaluated, not executed)",
+      "promotion_blockers": "() -> (SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY,) -- correct, since the prior () was for the transition just completed, and the new blocker is for the NEXT transition, not a regression"
+    },
+    "ST_LIQUIDITY_SWEEP_RETEST_V1": "no gate change this task",
+    "prior_artifact": "artifacts/readiness/AG_PROJECT_READINESS_V1_bf0f50e5e920_20260907T090123.359610+0000.json"
+  },
+  "governance_framework": {
+    "classification": "READY_LOCKED",
+    "cumulative_inheritance": "PASS",
+    "determinism_artifact_provenance": "PASS",
+    "determinism_semantic_proof": "PASS",
+    "evaluator_single_authority": "PASS",
+    "execution_authority_separation": "PASS",
+    "foundation": "PASS",
+    "stage_contracts": "PASS"
+  },
+  "portfolio_readiness": {
+    "demo_readiness": "NO (no strategy is both DEMO_ELIGIBLE and DEMO_AUTHORIZED)",
+    "forward_evidence": "IN_PROGRESS (FX shadow series accruing; BTC campaign not yet started; Large-SMC now FORWARD_RESEARCH, observation accrual not yet started)",
+    "governance_framework": "READY_LOCKED",
+    "historical_evidence": "PARTIAL (FX 13 draft-methodology outcomes; BTC/Large-SMC none required yet at their current stage)",
+    "live_readiness": "NO (live trading disabled by default; no strategy has live_authorized=true)",
+    "strategy_logic": "VALIDATED_AT_DIFFERENT_MATURITY_LEVELS"
+  },
+  "project_priority": {
+    "active_engineering": [
+      "FX P2: historical replay / friction reconciliation (ST_ASIAN_SWEEP_5R_V1 v1.1.1, active v1.1.1 geometry only)",
+      "MT5 venue identity / crypto compatibility audit (VT Markets vs Vantage Markets; Bybit BTCUSDT vs MT5 BTCUSD reconciliation)"
+    ],
+    "explicitly_not_next": "ST_LARGE_SMC_V1 parameter optimization (0.35 ATR multiplier / 1.5 pip floor) against forward evidence -- any such change requires a new strategy version and separate research authorization, never an in-place v1.0.7 mutation.",
+    "passive_evidence": [
+      "FX Series 002 shadow-day accrual (natural, no manual acceleration)",
+      "BTC 30-day natural campaign accrual (natural, no manufactured observations)",
+      "Large-SMC forward-research observation accrual (v1.0.7, frozen C10 -- no parameter engineering against forward evidence)"
+    ]
+  },
+  "readiness_id": "AG_PROJECT_READINESS_V1",
+  "source_ledger": "artifacts/validation_ledger/AG_STRATEGY_PORTFOLIO_LEDGER_V1_305f4e294a1e_20260907T092037.160983+0000.json",
+  "strategies": {
+    "ST_ASIAN_SWEEP_5R_V1": {
+      "friction_status": "NOT_INCLUDED (cost_status field on every resolved record)",
+      "historical_methodology_status": "AG_OUTCOME_RESOLUTION_CONTRACT_V1_DRAFT",
+      "historical_resolved_count": 13,
+      "ledger_record": {
+        "details": {
+          "candidate_geometry_status": "SESSION_RANGE_25 remains candidate/research-only (artifacts/candidate_research/model_a_session_range_25/), not wired into active runtime, no promotion performed by this framework or this task.",
+          "evaluation_violations": [],
+          "passed_gates": [
+            "SPEC_FIDELITY",
+            "DETERMINISM",
+            "NO_LOOKAHEAD",
+            "FX_SHADOW_ENTRY_PREFLIGHT_PASS"
+          ],
+          "required_gates": [
+            "SPEC_FIDELITY",
+            "DETERMINISM",
+            "NO_LOOKAHEAD",
+            "HISTORICAL_REPLAY",
+            "FX_SHADOW_ENTRY_PREFLIGHT_PASS",
+            "SHADOW_SERIES_COMPLETION",
+            "FRICTION_STRESS_TEST",
+            "OOS_VALIDATION"
+          ],
+          "stage_assignment_provenance": "LEGACY_PRE_EGSVF"
+        },
+        "execution_authority": "SHADOW_PROPOSAL_ONLY",
+        "execution_authority_evidence": [
+          "strategies/registry.yaml: ST_ASIAN_SWEEP_5R_V1.demo_authorized=false"
+        ],
+        "execution_capability": "MT5_DEMO_AVAILABLE",
+        "execution_capability_evidence": [
+          "execution/executor.py",
+          "execution/mt5_gateway.py",
+          "docs/status/ (2026-08-28 DEMO_VERIFIED round trip, ticket 1879685149)"
+        ],
+        "gate_results": {
+          "DETERMINISM": {
+            "details": {
+              "evaluated_at": "2026-09-07T06:12:21.830496+00:00",
+              "evaluation_head": "4fe97ba7594a72808f88bd46104c95fe50366fcd",
+              "fixture_ref": "scripts/generate_determinism_evidence.py::generate_fx_evidence (inline fixed candle fixture, same shape as tests/test_session_router.py::test_range_with_sweep_routes_to_entry_2)",
+              "note": "Full semantic pipeline (strategy_engine.engine.evaluate -> map_trade_signal_to_decision) proven repeat-run-identical over a fixed fixture (AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION); the release-identity repeat-run remains additional supporting evidence.",
+              "payload_digests_equal": true,
+              "runs": 3,
+              "test_ref": "tests/test_post_asian_pilot.py::test_fx_full_pipeline_is_deterministic_for_fixed_fixture"
+            },
+            "evaluated_at": "2026-09-07T09:20:37.152761+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "artifacts/validation_evidence/determinism/ST_ASIAN_SWEEP_5R_V1_1.1.1_20260907T061221.830496+0000.json",
+              "docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_RELEASE_IDENTITY_REMEDIATION_STATUS.md"
+            ],
+            "gate_name": "DETERMINISM",
+            "status": "PASS"
+          },
+          "FRICTION_STRESS_TEST": {
+            "details": {
+              "note": "Every resolved outcome record's own cost_status field is read verbatim, not inferred."
+            },
+            "evaluated_at": "2026-09-07T09:20:37.152761+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-01.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-02.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-03.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-04.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-01.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-02.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-03.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-04.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_EURUSD_2026-09-02.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_EURUSD_2026-09-03.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_EURUSD_2026-09-04.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_GBPUSD_2026-09-02.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_GBPUSD_2026-09-03.json"
+            ],
+            "gate_name": "FRICTION_STRESS_TEST",
+            "status": "NOT_VERIFIED"
+          },
+          "FX_SHADOW_ENTRY_PREFLIGHT_PASS": {
+            "details": {
+              "note": "shadow_entry_ready=YES, classification=PREFLIGHT_PASS_SHADOW_READY -- MT5 IPC connected to a demo account, EURUSD/GBPUSD both resolved with 24 well-formed closed M15 bars, session/clock contract validated, no broker mutation."
+            },
+            "evaluated_at": "2026-09-07T09:20:37.152761+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "docs/status/AG_TRADE_ASSISTANT_V1_0_3_MT5_DATA_READINESS_AND_PREFLIGHT_CLOSURE_STATUS.md"
+            ],
+            "gate_name": "FX_SHADOW_ENTRY_PREFLIGHT_PASS",
+            "status": "PASS"
+          },
+          "HISTORICAL_REPLAY": {
+            "details": {
+              "note": "Resolved outcomes exist and are version-bound to 1.1.1, but the resolution contract is itself labeled DRAFT.",
+              "resolution_contract_version": "AG_OUTCOME_RESOLUTION_CONTRACT_V1_DRAFT",
+              "resolved_record_count": 13
+            },
+            "evaluated_at": "2026-09-07T09:20:37.152761+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-01.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-02.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-03.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-04.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-01.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-02.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-03.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-04.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_EURUSD_2026-09-02.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_EURUSD_2026-09-03.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_EURUSD_2026-09-04.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_GBPUSD_2026-09-02.json",
+              "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_GBPUSD_2026-09-03.json"
+            ],
+            "gate_name": "HISTORICAL_REPLAY",
+            "status": "PARTIAL"
+          },
+          "NO_LOOKAHEAD": {
+            "details": {},
+            "evaluated_at": "2026-09-07T09:20:37.152761+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "tests/test_strategy_decision_no_lookahead.py",
+              "tests/test_historical_replay_no_lookahead.py"
+            ],
+            "gate_name": "NO_LOOKAHEAD",
+            "status": "PASS"
+          },
+          "OOS_VALIDATION": {
+            "details": {
+              "note": "No FX-scoped out-of-sample/walk-forward artifact or test found repository-wide."
+            },
+            "evaluated_at": "2026-09-07T09:20:37.152761+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [],
+            "gate_name": "OOS_VALIDATION",
+            "status": "NOT_VERIFIED"
+          },
+          "SHADOW_SERIES_COMPLETION": {
+            "details": {
+              "excluded_days": 0,
+              "invalid_days": 1,
+              "pending_days": 0,
+              "series_id": "AG_V1_0_3_FX_SHADOW_SERIES_002",
+              "target_valid_days": 20,
+              "valid_days": 0
+            },
+            "evaluated_at": "2026-09-07T09:20:37.152761+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_DAY_001_STATUS.md",
+              "docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_DAY_002_STATUS.md"
+            ],
+            "gate_name": "SHADOW_SERIES_COMPLETION",
+            "status": "PARTIAL"
+          },
+          "SPEC_FIDELITY": {
+            "details": {
+              "note": "entry_order_type resolved to MARKET as of v1.1.1 (AG_EXECUTION_RUNTIME_READINESS_V1, 2026-08-31)"
+            },
+            "evaluated_at": "2026-09-07T09:20:37.152761+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "strategies/ST_ASIAN_SWEEP_5R_V1.yaml",
+              "strategies/registry.yaml"
+            ],
+            "gate_name": "SPEC_FIDELITY",
+            "status": "PASS"
+          }
+        },
+        "interface_version": null,
+        "last_updated": "2026-09-07T09:20:37.152761+00:00",
+        "lifecycle_stage": "OPERATIONAL_SHADOW",
+        "next_transition": "DEMO_ELIGIBLE",
+        "promotion_blockers": [
+          "HISTORICAL_REPLAY",
+          "SHADOW_SERIES_COMPLETION",
+          "FRICTION_STRESS_TEST",
+          "OOS_VALIDATION"
+        ],
+        "promotion_eligible": false,
+        "semantic_version": "1.1.1",
+        "strategy_id": "ST_ASIAN_SWEEP_5R_V1"
+      },
+      "session_range_25_active_semantics": false,
+      "session_range_25_source": "artifacts/candidate_research/model_a_session_range_25/ (candidate/research-only, non-promotional)",
+      "shadow_series": {
+        "excluded_days": 0,
+        "invalid_days": 1,
+        "latest_countable_day": "2026-09-04 (Day 001, INVALID_DAY -- key-casing defect found+fixed, not counted)",
+        "latest_status": "BASELINE_VERIFIED_AWAITING_NEXT_ELIGIBLE_DAY (next eligible trading day 2026-09-07)",
+        "pending_days": 0,
+        "series_id": "AG_V1_0_3_FX_SHADOW_SERIES_002",
+        "target": 20,
+        "valid_days": 0
+      }
+    },
+    "ST_LARGE_SMC_V1": {
+      "c10_min_stop_broker_metadata_note": "REJECT policy fully implemented and unit-tested; not yet wired to a live broker-metadata source in the engine's own replay-safe call path (no such patched seam exists) -- evaluates as NOT_APPLICABLE there, never silently PASS",
+      "c10_owner_decision_complete": true,
+      "c10_resolved_parameters": [
+        "structural anchor = each M-model's own invalidation_price (EXACT_REUSE)",
+        "direction: below anchor for LONG, above anchor for SHORT",
+        "missing anchor: fail closed"
+      ],
+      "c10_signed_parameters": [
+        "structural buffer: max(1.5 pips, 0.35 x ATR14(M5)) -- DYNAMIC_ATR_WITH_HARD_FLOOR",
+        "spread: side-aware (LONG none; SHORT anchor+buffer+verified spread)",
+        "broker minimum-stop-distance behavior: REJECT (never WIDEN)"
+      ],
+      "c10_source": "docs/status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V3_STATUS.md",
+      "c10_status": "SIGNED_AND_LOCKED (v1.0.7, 2026-09-07)",
+      "c14_status": "PARTIALLY_RESOLVED (occurrence identity + duplicate suppression resolved; live-store migration + post-fill re-entry remaining)",
+      "ledger_record": {
+        "details": {
+          "C10": "SIGNED_AND_LOCKED (v1.0.7)",
+          "C14_overall": "PARTIALLY_RESOLVED",
+          "evaluation_violations": [
+            "MISSING_GATE:SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY"
+          ],
+          "passed_gates": [
+            "SPEC_FIDELITY",
+            "DETERMINISM",
+            "NO_LOOKAHEAD",
+            "HISTORICAL_REPLAY"
+          ],
+          "required_gates": [
+            "SPEC_FIDELITY",
+            "DETERMINISM",
+            "NO_LOOKAHEAD",
+            "HISTORICAL_REPLAY",
+            "SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY"
+          ],
+          "stage_assignment_provenance": "OWNER_GOVERNANCE_PROMOTION_2026-09-07 (OFFLINE_RESEARCH -> FORWARD_RESEARCH, evaluator eligible=True/blockers=() prior to promotion; see docs/status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md)"
+        },
+        "execution_authority": "NONE",
+        "execution_authority_evidence": [
+          "strategies/ST_LARGE_SMC_V1.yaml:101: proposal_generation_authorized=false"
+        ],
+        "execution_capability": "NONE",
+        "execution_capability_evidence": [
+          "tests/test_large_smc_execution_boundary.py"
+        ],
+        "gate_results": {
+          "C10_STOP_POLICY": {
+            "details": {
+              "note": "C10_STRUCTURAL_INVALIDATION_V1 signed and implemented 2026-09-07: buffer=max(1.5 pips, 0.35xATR14(M5)), side-aware spread (LONG none, SHORT anchor+buffer+verified spread), broker-min-stop=REJECT. ATR/anchor/spread all fail closed when unavailable -- never a fabricated stop."
+            },
+            "evaluated_at": "2026-09-07T09:20:37.160231+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "strategies/ST_LARGE_SMC_V1.yaml:stop_loss_contract (SIGNED_AND_LOCKED, v1.0.7)",
+              "src/large_smc_research/c10_stop_policy.py",
+              "tests/test_c10_stop_policy.py",
+              "tests/test_large_smc_research_engine.py (RESEARCH_QUALIFIED-reachability tests)"
+            ],
+            "gate_name": "C10_STOP_POLICY",
+            "status": "PASS"
+          },
+          "C14_DUPLICATE_REENTRY": {
+            "details": {
+              "remaining_components": [
+                "C14_LIVE_STORE_MIGRATION (SHARED_CHANGE_REQUIRED)",
+                "C14_POST_FILL_REENTRY (DEFERRED)"
+              ],
+              "resolved_components": [
+                "C14_OCCURRENCE_IDENTITY",
+                "C14_DUPLICATE_SUPPRESSION"
+              ]
+            },
+            "evaluated_at": "2026-09-07T09:20:37.160231+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "strategies/registry.yaml",
+              "proposals/occurrence_identity.py"
+            ],
+            "gate_name": "C14_DUPLICATE_REENTRY",
+            "status": "PARTIAL"
+          },
+          "DETERMINISM": {
+            "details": {
+              "evaluated_at": "2026-09-07T08:49:30.065547+00:00",
+              "evaluation_head": "a546b452c5bb7c7d1e579f6a0ca93023a1046e99",
+              "fixture_ref": "artifacts/backtests/golden/two_stage_golden_fixture_v1.json + artifacts/backtests/stage1/qualified_e_events_2025-08-01_2025-10-01.json (frozen golden two-stage fixture, CASE_A_E1M3_RESTORED_READY)",
+              "note": "LargeSMCResearchEngine.evaluate() proven repeat-run-identical against the frozen golden two-stage fixture -- full decision tuple (occurrence identity, entry geometry, structural invalidation, always-None C10 stop), not just occurrence identity in isolation (AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION).",
+              "payload_digests_equal": true,
+              "runs": 2,
+              "test_ref": "tests/test_golden_vertical_slice.py::test_large_smc_discovery_is_deterministic_for_golden_fixture"
+            },
+            "evaluated_at": "2026-09-07T09:20:37.160231+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "artifacts/validation_evidence/determinism/ST_LARGE_SMC_V1_1.0.7_20260907T084930.065547+0000.json",
+              "proposals/occurrence_identity.py"
+            ],
+            "gate_name": "DETERMINISM",
+            "status": "PASS"
+          },
+          "FRICTION_STRESS_TEST": {
+            "details": {
+              "note": "No Large-SMC-specific cost/friction model or test found."
+            },
+            "evaluated_at": "2026-09-07T09:20:37.160231+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [],
+            "gate_name": "FRICTION_STRESS_TEST",
+            "status": "NOT_VERIFIED"
+          },
+          "HISTORICAL_REPLAY": {
+            "details": {},
+            "evaluated_at": "2026-09-07T09:20:37.160231+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "artifacts/backtests/golden/two_stage_golden_fixture_v1.json",
+              "artifacts/backtests/stage1/qualified_e_events_2025-08-01_2025-10-01.json"
+            ],
+            "gate_name": "HISTORICAL_REPLAY",
+            "status": "PASS"
+          },
+          "NO_LOOKAHEAD": {
+            "details": {},
+            "evaluated_at": "2026-09-07T09:20:37.160231+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "tests/test_historical_replay_no_lookahead.py"
+            ],
+            "gate_name": "NO_LOOKAHEAD",
+            "status": "PASS"
+          },
+          "OOS_VALIDATION": {
+            "details": {
+              "note": "tests/test_smc_walkforward.py is scoped to shared advisory skills (Structure/Supply-Demand/Liquidity), not ST_LARGE_SMC_V1's own candidate economics."
+            },
+            "evaluated_at": "2026-09-07T09:20:37.160231+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [],
+            "gate_name": "OOS_VALIDATION",
+            "status": "NOT_VERIFIED"
+          },
+          "SPEC_FIDELITY": {
+            "details": {
+              "note": "Config correctly declares its own C10/proposal-authorization gaps; implementation enforces them. See section 40 distinction: SPEC_FIDELITY != C10_SIGNED."
+            },
+            "evaluated_at": "2026-09-07T09:20:37.160231+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "strategies/ST_LARGE_SMC_V1.yaml",
+              "tests/test_large_smc_execution_boundary.py"
+            ],
+            "gate_name": "SPEC_FIDELITY",
+            "status": "PASS"
+          }
+        },
+        "interface_version": null,
+        "last_updated": "2026-09-07T09:20:37.160231+00:00",
+        "lifecycle_stage": "FORWARD_RESEARCH",
+        "next_transition": "OPERATIONAL_SHADOW",
+        "promotion_blockers": [
+          "SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY"
+        ],
+        "promotion_eligible": false,
+        "semantic_version": "1.0.7",
+        "strategy_id": "ST_LARGE_SMC_V1"
+      },
+      "promotion_note": "OFFLINE_RESEARCH -> FORWARD_RESEARCH governance-promoted 2026-09-07 (owner-authorized; see docs/status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md). Next transition (-> OPERATIONAL_SHADOW) evaluated, not executed: blocked on the abstract SHADOW_ENTRY_EVIDENCE milestone gate, unresolved for this strategy -- no repository governance yet defines its shadow-entry evidence.",
+      "semantic_freeze": "C10 parameters (buffer model/ATR timeframe/period/multiplier/floor, spread mode, min-stop policy) are frozen as of this promotion -- no in-place mutation authorized; any future change requires a new strategy version."
+    },
+    "ST_LIQUIDITY_SWEEP_RETEST_V1": {
+      "campaign_count": 0,
+      "campaign_source": "journal/reports/btc/ (directory absent -> 0 archived observations)",
+      "campaign_target": 30,
+      "ledger_record": {
+        "details": {
+          "canonical_data_authority": "Bybit V5 linear perpetual, public/read-only (AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION, APPROVED_READ_ONLY_ONLY)",
+          "evaluation_violations": [],
+          "passed_gates": [
+            "SPEC_FIDELITY",
+            "DETERMINISM",
+            "NO_LOOKAHEAD"
+          ],
+          "required_gates": [
+            "SPEC_FIDELITY",
+            "DETERMINISM",
+            "NO_LOOKAHEAD",
+            "HISTORICAL_REPLAY",
+            "NATURAL_CAMPAIGN_ACCRUAL"
+          ],
+          "stage_assignment_provenance": "LEGACY_PRE_EGSVF"
+        },
+        "execution_authority": "RESEARCH_ONLY",
+        "execution_authority_evidence": [
+          "strategies/registry.yaml: ST_LIQUIDITY_SWEEP_RETEST_V1.demo_authorized=false, live_authorized=false",
+          "tests/test_btc_proposal_execution_boundary.py"
+        ],
+        "execution_capability": "MARKET_DATA_ONLY (BybitLinearPerpFeed, public/read-only); NO_ORDER_ADAPTER",
+        "execution_capability_evidence": [
+          "src/execution_runtime/bybit_linear_perp_feed.py",
+          "execution/adapter.py: CryptoExecutionAdapter NOT_IMPLEMENTED"
+        ],
+        "gate_results": {
+          "DETERMINISM": {
+            "details": {
+              "evaluated_at": "2026-09-07T06:12:58.198631+00:00",
+              "evaluation_head": "4fe97ba7594a72808f88bd46104c95fe50366fcd",
+              "fixture_ref": "tests/test_btc_sweep_research_pipeline.py::_build_fixture([(13, 30)]) (cached, offline H1/M5 candles, no network)",
+              "note": "Full offline run_research_cycle() pipeline (cached H1/M5 fixture, no network) proven repeat-run-identical -- SetupState + full BTCSweepResearchProposal payload, not just occurrence identity (AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION).",
+              "payload_digests_equal": true,
+              "runs": 3,
+              "test_ref": "tests/test_btc_sweep_research_pipeline.py::test_btc_research_pipeline_is_deterministic_for_cached_fixture"
+            },
+            "evaluated_at": "2026-09-07T09:20:37.159065+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "artifacts/validation_evidence/determinism/ST_LIQUIDITY_SWEEP_RETEST_V1_2.0.0_20260907T061258.198631+0000.json",
+              "tests/test_btc_occurrence_identity.py"
+            ],
+            "gate_name": "DETERMINISM",
+            "status": "PASS"
+          },
+          "FRICTION_STRESS_TEST": {
+            "details": {},
+            "evaluated_at": "2026-09-07T09:20:37.159065+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "src/btc_sweep_research/costs.py",
+              "tests/test_btc_costs.py",
+              "src/btc_sweep_research/pipeline.py:164"
+            ],
+            "gate_name": "FRICTION_STRESS_TEST",
+            "status": "PASS"
+          },
+          "HISTORICAL_REPLAY": {
+            "details": {
+              "note": "No BTC backtest/historical-replay artifact or test found repository-wide."
+            },
+            "evaluated_at": "2026-09-07T09:20:37.159065+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [],
+            "gate_name": "HISTORICAL_REPLAY",
+            "status": "NOT_VERIFIED"
+          },
+          "NATURAL_CAMPAIGN_ACCRUAL": {
+            "details": {
+              "campaign_authorized": true,
+              "observed_count": 0,
+              "target_count": 30
+            },
+            "evaluated_at": "2026-09-07T09:20:37.159065+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "docs/status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md",
+              "journal\\reports\\btc/ (directory absent -> 0 archived observations)"
+            ],
+            "gate_name": "NATURAL_CAMPAIGN_ACCRUAL",
+            "status": "PARTIAL"
+          },
+          "NO_LOOKAHEAD": {
+            "details": {
+              "note": "Both of pipeline.py's own `c.time <= now` future-candle filters (M5 window candles and H1 trend/reference-box candles) are now directly tested -- injecting future-dated H1 candles shaped to reverse the qualified direction produces a byte-identical report to the no-future-candle baseline (AG_PROJECT_READINESS_CONTINUATION_DUAL_TRACK_V1, P3). Distinct from HISTORICAL_REPLAY, which remains NOT_VERIFIED -- this proves lookahead exclusion, not replay against a real historical dataset."
+            },
+            "evaluated_at": "2026-09-07T09:20:37.159065+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "tests/test_btc_sweep_research_pipeline.py::test_backfill_ignores_m5_candles_after_observation_date",
+              "tests/test_btc_sweep_research_pipeline.py::test_h1_direction_gate_ignores_h1_candles_after_now"
+            ],
+            "gate_name": "NO_LOOKAHEAD",
+            "status": "PASS"
+          },
+          "OOS_VALIDATION": {
+            "details": {},
+            "evaluated_at": "2026-09-07T09:20:37.159065+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [],
+            "gate_name": "OOS_VALIDATION",
+            "status": "NOT_VERIFIED"
+          },
+          "SPEC_FIDELITY": {
+            "details": {},
+            "evaluated_at": "2026-09-07T09:20:37.159065+00:00",
+            "evaluator_version": "AG_EGSVF_V1",
+            "evidence_refs": [
+              "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
+              "strategies/registry.yaml"
+            ],
+            "gate_name": "SPEC_FIDELITY",
+            "status": "PASS"
+          }
+        },
+        "interface_version": null,
+        "last_updated": "2026-09-07T09:20:37.159065+00:00",
+        "lifecycle_stage": "FORWARD_RESEARCH",
+        "next_transition": "OPERATIONAL_SHADOW",
+        "promotion_blockers": [
+          "HISTORICAL_REPLAY",
+          "NATURAL_CAMPAIGN_ACCRUAL"
+        ],
+        "promotion_eligible": false,
+        "semantic_version": "2.0.0",
+        "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1"
+      },
+      "provider_authority": "Bybit V5 linear perpetual, public/read-only (AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION, APPROVED_READ_ONLY_ONLY)"
+    }
+  }
+}
