@@ -84,20 +84,22 @@ def build_readiness_baseline() -> Path:
             },
             "ST_LARGE_SMC_V1": {
                 "ledger_record": strategies_by_id.get("ST_LARGE_SMC_V1"),
-                "c10_status": "UNSIGNED",
-                "c10_owner_decision_complete": False,
-                "c10_unresolved_parameters": [
-                    "exact structural buffer value (owner-narrowed range: 1.0-2.0 pips, not a single value)",
-                    "spread/bid-ask treatment",
-                    "broker minimum-stop-distance behavior (WIDEN vs REJECT)",
+                "c10_status": "SIGNED_AND_LOCKED (v1.0.7, 2026-09-07)",
+                "c10_owner_decision_complete": True,
+                "c10_signed_parameters": [
+                    "structural buffer: max(1.5 pips, 0.35 x ATR14(M5)) -- DYNAMIC_ATR_WITH_HARD_FLOOR",
+                    "spread: side-aware (LONG none; SHORT anchor+buffer+verified spread)",
+                    "broker minimum-stop-distance behavior: REJECT (never WIDEN)",
                 ],
                 "c10_resolved_parameters": [
                     "structural anchor = each M-model's own invalidation_price (EXACT_REUSE)",
                     "direction: below anchor for LONG, above anchor for SHORT",
                     "missing anchor: fail closed",
                 ],
-                "c10_source": "docs/status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md",
+                "c10_source": "docs/status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V3_STATUS.md",
+                "c10_min_stop_broker_metadata_note": "REJECT policy fully implemented and unit-tested; not yet wired to a live broker-metadata source in the engine's own replay-safe call path (no such patched seam exists) -- evaluates as NOT_APPLICABLE there, never silently PASS",
                 "c14_status": "PARTIALLY_RESOLVED (occurrence identity + duplicate suppression resolved; live-store migration + post-fill re-entry remaining)",
+                "promotion_note": "AG_EGSVF_V1 evaluator reports promotion_eligible=True, zero blockers, for OFFLINE_RESEARCH -> FORWARD_RESEARCH as of this snapshot -- this is the evaluator's own read-only eligibility result, not a promotion action; lifecycle_stage remains OFFLINE_RESEARCH (no promote_strategy exists in this framework).",
             },
         },
         "execution_system": {
@@ -118,13 +120,12 @@ def build_readiness_baseline() -> Path:
             "live_readiness": "NO (live trading disabled by default; no strategy has live_authorized=true)",
         },
         "gate_changes_since_prior_readiness_artifact": {
-            "prior_artifact": "artifacts/readiness/AG_PROJECT_READINESS_V1_3f683766f22b_20260907T061909.170003+0000.json",
-            "ST_LIQUIDITY_SWEEP_RETEST_V1": {
-                "NO_LOOKAHEAD": "NOT_VERIFIED -> PASS (H1 future-candle-exclusion test added, AG_PROJECT_READINESS_CONTINUATION_DUAL_TRACK_V1 P3)",
-            },
+            "prior_artifact": "artifacts/readiness/AG_PROJECT_READINESS_V1_cff2c686925b_20260907T071129.586551+0000.json",
             "ST_LARGE_SMC_V1": {
-                "C10_STOP_POLICY": "unchanged, UNSIGNED (owner decision packet V2 produced, not signed -- docs/status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V2_STATUS.md)",
+                "C10_STOP_POLICY": "UNSIGNED -> PASS (owner-signed DYNAMIC_ATR_WITH_HARD_FLOOR policy, implemented c10_stop_policy.py, strategy bumped 1.0.6 -> 1.0.7)",
+                "promotion_eligible": "False -> True for OFFLINE_RESEARCH -> FORWARD_RESEARCH (evaluator result, zero remaining blockers)",
             },
+            "ST_LIQUIDITY_SWEEP_RETEST_V1": "no gate change this task (NO_LOOKAHEAD -> PASS was the prior task's change)",
             "ST_ASIAN_SWEEP_5R_V1": "no gate change this task",
         },
         "execution_architecture": {
