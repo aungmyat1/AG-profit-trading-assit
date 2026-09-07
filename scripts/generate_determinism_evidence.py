@@ -178,7 +178,7 @@ def generate_large_smc_evidence(runs: int = 2) -> Path:
     from historical_replay.data_source_patch import historical_data_context
     from large_smc_research.engine import LargeSMCResearchEngine
 
-    strategy_version = "1.0.6"  # strategies/ST_LARGE_SMC_V1.yaml:4
+    strategy_version = "1.0.7"  # strategies/ST_LARGE_SMC_V1.yaml:4 -- C10 signed (v1.0.7, 2026-09-07)
     dataset = smc_test.load_stage1_dataset(smc_test.EVENTS_PATH, smc_test.LIQUIDITY_PATH)
     golden = json.loads(Path(smc_test.GOLDEN_FIXTURE_PATH).read_text(encoding="utf-8"))
     case = next(c for c in golden["cases"] if c["case_id"] == "CASE_A_E1M3_RESTORED_READY")

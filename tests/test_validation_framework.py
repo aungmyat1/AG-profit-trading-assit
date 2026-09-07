@@ -411,19 +411,19 @@ def test_btc_adapter_reconciles_against_registry_and_yaml():
 
 
 def test_large_smc_adapter_reconciles_against_registry_and_yaml():
-    """Determinism-reconciled expectation: OFFLINE_RESEARCH -> FORWARD_RESEARCH
-    requires only the foundational four plus this strategy's own C10_STOP_POLICY
-    addition -- FRICTION_STRESS_TEST/OOS_VALIDATION belong to a later transition
-    (DEMO_ELIGIBLE) and must NOT appear here. DETERMINISM is now real-evidence PASS
-    (scripts/generate_determinism_evidence.py::generate_large_smc_evidence) and must
-    NOT appear as a blocker; only the still-unsigned C10_STOP_POLICY should."""
+    """C10-signing-reconciled expectation (AG_LARGE_SMC_V1_C10_STRUCTURAL_INVALIDATION_
+    IMPLEMENTATION_AND_PROMOTION_V3, v1.0.7): C10 is now signed and implemented
+    (c10_stop_policy.py), so OFFLINE_RESEARCH -> FORWARD_RESEARCH's required gates
+    (foundational four + C10_STOP_POLICY) are ALL PASS -- FRICTION_STRESS_TEST/
+    OOS_VALIDATION belong to a later transition (DEMO_ELIGIBLE) and must NOT appear
+    here. The strategy should therefore be promotion_eligible for this transition."""
     record = build_large_smc_record(repo_root=REPO_ROOT)
     assert record.identity.strategy_id == "ST_LARGE_SMC_V1"
-    assert record.identity.semantic_version == "1.0.6"
-    assert record.gates["C10_STOP_POLICY"].status == GateStatus.UNSIGNED
+    assert record.identity.semantic_version == "1.0.7"
+    assert record.gates["C10_STOP_POLICY"].status == GateStatus.PASS
     assert record.execution_authority == "NONE"
-    assert record.promotion_eligible is False
-    assert set(record.promotion_blockers) == {"C10_STOP_POLICY"}
+    assert record.promotion_blockers == ()
+    assert record.promotion_eligible is True
     assert "DETERMINISM" not in record.promotion_blockers  # real evidence PASS, correctly not blocking
     assert record.gates["DETERMINISM"].status == GateStatus.PASS
     assert "FRICTION_STRESS_TEST" not in record.promotion_blockers  # belongs to a later transition
@@ -547,7 +547,7 @@ def test_large_smc_blocker_mechanism_would_surface_a_non_pass_determinism():
     )
     assert evaluation.eligible is False
     assert "DETERMINISM" in evaluation.blocking_gates
-    assert "C10_STOP_POLICY" in evaluation.blocking_gates
+    assert "C10_STOP_POLICY" not in evaluation.blocking_gates  # real evidence: C10 is now signed/PASS
 
 
 def test_btc_cumulative_block_at_operational_shadow():

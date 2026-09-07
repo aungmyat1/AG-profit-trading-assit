@@ -60,7 +60,7 @@ from validation_framework.models import (
 )
 
 STRATEGY_ID = "ST_LARGE_SMC_V1"
-SEMANTIC_VERSION = "1.0.6"  # strategies/ST_LARGE_SMC_V1.yaml:4
+SEMANTIC_VERSION = "1.0.7"  # strategies/ST_LARGE_SMC_V1.yaml:4 -- C10 signed (v1.0.7, 2026-09-07)
 
 EVALUATOR_VERSION = "AG_EGSVF_V1"
 
@@ -147,9 +147,21 @@ def build_large_smc_record(repo_root: str = ".") -> StrategyValidationRecord:
 
     gates["C10_STOP_POLICY"] = gate(
         "C10_STOP_POLICY",
-        GateStatus.UNSIGNED,
-        ("strategies/ST_LARGE_SMC_V1.yaml:561",),
-        {"note": "initial_stop: UNSIGNED -- owner-selected conceptual model AG_NATIVE_INVALIDATION, implementation/contract-freeze still PENDING."},
+        GateStatus.PASS,
+        (
+            "strategies/ST_LARGE_SMC_V1.yaml:stop_loss_contract (SIGNED_AND_LOCKED, v1.0.7)",
+            "src/large_smc_research/c10_stop_policy.py",
+            "tests/test_c10_stop_policy.py",
+            "tests/test_large_smc_research_engine.py (RESEARCH_QUALIFIED-reachability tests)",
+        ),
+        {
+            "note": (
+                "C10_STRUCTURAL_INVALIDATION_V1 signed and implemented 2026-09-07: "
+                "buffer=max(1.5 pips, 0.35xATR14(M5)), side-aware spread (LONG none, "
+                "SHORT anchor+buffer+verified spread), broker-min-stop=REJECT. "
+                "ATR/anchor/spread all fail closed when unavailable -- never a fabricated stop."
+            )
+        },
     )
 
     gates["C14_DUPLICATE_REENTRY"] = gate(
