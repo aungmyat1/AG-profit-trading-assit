@@ -21,21 +21,24 @@ their age.
    confirmation workflow.
 5. [`plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`](plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md)
    — detailed implementation and acceptance plan for the current milestone.
-6. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
-7. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
+6. [`plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md`](plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md)
+   — current-status-reconciled action plan from Stage 0 safety through optional
+   controlled Demo evaluation; planning only and non-authorizing.
+7. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
+8. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
    update procedure for rolling status, dated evidence, strategy authorization, and
    live-validation claims.
-8. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
+9. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
    non-authorizing capability-completeness audit and navigation matrix (Section A
    trading edge, Section B operations/execution/platform, execution-authority matrix,
    qualification counters). It does not replace `PROJECT_STATUS.md`,
    `strategies/registry.yaml` / `strategies/STRATEGY_LEDGER.md`,
    `docs/VERSION_HISTORY.md`, or dated `docs/status/*.md` evidence — see its own top
    section for which source is authoritative for which claim.
-9. [`status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md`](status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md)
+10. [`status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md`](status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md)
    — owner authorization to begin the read-only 30-valid-observation BTC campaign;
    records the zero-count starting state and preserves all execution prohibitions.
-10. [`status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`](status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md)
+11. [`status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`](status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md)
    — prospective owner-approved move of the BTC report window to 13:00-13:15 MMT
    (06:30-06:45 UTC); no observation, execution, or scheduler activation.
 
