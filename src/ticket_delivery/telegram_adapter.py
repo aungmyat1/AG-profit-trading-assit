@@ -21,7 +21,7 @@ import dataclasses
 import os
 import re
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable, Mapping, Optional
 
 from notifications.telegram_client import TelegramApiResult, TelegramClient, TelegramClientError
@@ -52,7 +52,7 @@ class TelegramDestinationConfig:
     caller must supply; a destination outside it is rejected before send_message is
     ever called."""
 
-    bot_token: str
+    bot_token: str = field(repr=False)
     chat_id: int
     authorized_chat_ids: frozenset
 

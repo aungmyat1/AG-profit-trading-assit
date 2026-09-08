@@ -100,6 +100,12 @@ def test_unauthorized_destination_rejected():
     assert exc_info.value.reason_code == REASON_UNAUTHORIZED_DESTINATION
 
 
+def test_bot_token_never_appears_in_dataclass_repr():
+    destination = _destination()
+    assert FAKE_TOKEN not in repr(destination)
+    assert FAKE_TOKEN not in str(destination)
+
+
 def test_no_default_chat_id_exists_anywhere_in_dataclass():
     import inspect
 
