@@ -16,13 +16,26 @@ Modes:
                        signed CatchUpPolicy below. Zero network calls -- structural, not
                        merely config-gated: this module never constructs a deliver()
                        closure for ANY mode.
-  MESSAGE_DELIVERY  -- NOT AUTHORIZED. As of this commit, MESSAGE_DELIVERY is handled
-                       IDENTICALLY to ARCHIVE_ONLY (deliver=None) -- the actual Telegram
-                       client/destination construction is deliberately not wired into
-                       this integration function yet, so setting `mode:
-                       MESSAGE_DELIVERY` in config today has no effect beyond what
-                       ARCHIVE_ONLY already does. Activating real delivery is a
-                       separate, later, explicitly-authorized change (WP7).
+  MESSAGE_DELIVERY  -- STILL NOT AUTHORIZED IN THE SHIPPED config/ticket_delivery.yaml
+                       (mode remains ARCHIVE_ONLY there -- see that file's own history
+                       comment). WP7 (docs/status/AG_STAGE1_WP7_MESSAGE_DELIVERY_
+                       PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md) implemented the runtime
+                       so a SEPARATELY-authorized future config change can activate it
+                       with no further code change: this mode now lazily constructs a
+                       real deliver() closure over
+                       telegram_adapter.deliver_informational_ticket_with_retry()
+                       (WP7's chosen retry design (A): in-process wait-and-retry, sleep
+                       [30, 60] seconds, 3 total attempts, per the signed policy) --
+                       but ONLY when TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID are both set
+                       AND the resolved chat_id is present in this config's
+                       `telegram_destination.authorized_chat_ids` allow-list AND the
+                       resulting TelegramDestinationConfig validates; any failure of
+                       that chain falls closed to the same `deliver is None` ->
+                       TRANSPORT_NOT_CONFIGURED path ARCHIVE_ONLY already has. This
+                       construction is reachable ONLY from the `config.mode ==
+                       MODE_MESSAGE_DELIVERY` branch inside process_cycle_result() --
+                       ARCHIVE_ONLY/DISABLED never call it, so they remain provably
+                       unable to construct the network adapter.
 
 Signed operational policy (OWNER_APPROVED 2026-09-08 -- see
 docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md's approval
@@ -33,22 +46,29 @@ and never read, when `mode == DISABLED`.
 from __future__ import annotations
 
 import datetime as dt
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List, Optional
 
 import yaml
 
+from notifications.telegram_client import TelegramClient
 from post_asian_pilot.report import render_entry_ticket
 
+from .attempt_journal import AttemptJournal
 from .delivery_store import TicketDeliveryStore
 from .fx_cycle_integration import process_pair_result
 from .policy import CatchUpPolicy, RetryPolicy
+from .telegram_adapter import (
+    TelegramConfigError,
+    TelegramDestinationConfig,
+    deliver_informational_ticket_with_retry,
+)
 
 MODE_DISABLED = "DISABLED"
 MODE_ARCHIVE_ONLY = "ARCHIVE_ONLY"
 MODE_MESSAGE_DELIVERY = "MESSAGE_DELIVERY"
 _VALID_MODES = (MODE_DISABLED, MODE_ARCHIVE_ONLY, MODE_MESSAGE_DELIVERY)
-_ARCHIVING_MODES = (MODE_ARCHIVE_ONLY, MODE_MESSAGE_DELIVERY)  # both currently behave identically -- see module docstring
+_ARCHIVING_MODES = (MODE_ARCHIVE_ONLY, MODE_MESSAGE_DELIVERY)  # both archive-before-send; only MESSAGE_DELIVERY may also construct a deliver() closure -- see module docstring
 
 DEFAULT_CONFIG_PATH = "config/ticket_delivery.yaml"
 DEFAULT_ARCHIVE_ROOT = "journal/ticket_delivery/archive"
@@ -65,6 +85,7 @@ REASON_POLICY_VALUE_INVALID_TYPE = "POLICY_VALUE_INVALID_TYPE"
 REASON_POLICY_VALUE_NOT_POSITIVE = "POLICY_VALUE_NOT_POSITIVE"
 REASON_POLICY_UNKNOWN_FIELD = "POLICY_UNKNOWN_FIELD"
 REASON_POLICY_RETRY_DELAY_BOUNDS_INVALID = "POLICY_RETRY_DELAY_BOUNDS_INVALID"
+REASON_TELEGRAM_DESTINATION_BLOCK_INVALID = "TELEGRAM_DESTINATION_BLOCK_INVALID"
 
 
 class TicketDeliveryConfigError(Exception):
@@ -91,6 +112,13 @@ class TicketDeliveryIntegrationConfig:
     delivery_state_dir: str
     catch_up_policy: CatchUpPolicy
     retry_policy: RetryPolicy
+    # WP7: the explicit destination allow-list -- NEVER inferred from TELEGRAM_CHAT_ID
+    # itself (see telegram_adapter.TelegramDestinationConfig.from_env()'s docstring).
+    # Defaults to an empty frozenset (== "no destination authorized") so every
+    # pre-WP7 caller/test that constructs this dataclass without the new field keeps
+    # working unchanged, and MESSAGE_DELIVERY fails closed to TRANSPORT_NOT_CONFIGURED
+    # whenever it is absent.
+    authorized_chat_ids: frozenset = field(default_factory=frozenset)
 
 
 def _require_numeric(raw_policy: Dict[str, Any], field: str, *, integer: bool) -> float:
@@ -150,6 +178,26 @@ def _parse_policy(raw_policy: Optional[Dict[str, Any]]) -> "_SignedPolicyValues"
     )
 
 
+def _parse_authorized_chat_ids(raw_block: Optional[Dict[str, Any]]) -> frozenset:
+    """WP7: `telegram_destination:` is a SIBLING block to `policy:`, deliberately kept
+    out of the strictly-validated `policy:` block (which rejects any unrecognized
+    field) so this can be added additively without touching the already-signed policy
+    contract. Absent block -> empty allow-list (never inferred, never fabricated) --
+    this is NOT an error even when mode != DISABLED, unlike a missing `policy:` block:
+    an operator may legitimately run ARCHIVE_ONLY (or even MESSAGE_DELIVERY, though
+    unauthorized without this) without ever configuring a destination."""
+    if raw_block is None:
+        return frozenset()
+    if not isinstance(raw_block, dict):
+        raise TicketDeliveryConfigError(REASON_TELEGRAM_DESTINATION_BLOCK_INVALID, "the 'telegram_destination:' block must be a mapping")
+    ids = raw_block.get("authorized_chat_ids", [])
+    if not isinstance(ids, list) or not all(isinstance(i, int) and not isinstance(i, bool) for i in ids):
+        raise TicketDeliveryConfigError(
+            REASON_TELEGRAM_DESTINATION_BLOCK_INVALID, "'telegram_destination.authorized_chat_ids' must be a list of integers",
+        )
+    return frozenset(ids)
+
+
 @dataclass(frozen=True)
 class _SignedPolicyValues:
     fx_max_catch_up_age_minutes: int
@@ -197,7 +245,8 @@ def load_integration_config(path: Optional[str] = None) -> TicketDeliveryIntegra
         max_attempts=signed.delivery_max_attempts, base_delay_seconds=signed.delivery_retry_base_delay_seconds,
         max_delay_seconds=signed.delivery_retry_max_delay_seconds,
     )
-    return TicketDeliveryIntegrationConfig(mode, archive_root, delivery_state_dir, catch_up_policy, retry_policy)
+    authorized_chat_ids = _parse_authorized_chat_ids(raw.get("telegram_destination"))
+    return TicketDeliveryIntegrationConfig(mode, archive_root, delivery_state_dir, catch_up_policy, retry_policy, authorized_chat_ids)
 
 
 def cycle_label_from_pilot_path(pilot_path: Optional[str]) -> str:
@@ -213,6 +262,37 @@ def cycle_label_from_pilot_path(pilot_path: Optional[str]) -> str:
     if "ASIAN_LONDON" in upper:
         return "ASIAN_LONDON"
     raise ValueError(f"cannot derive a cycle label from pilot_path={pilot_path!r} -- no ASIAN_LONDON/LONDON_NEWYORK marker found")
+
+
+def _build_message_delivery_closure(
+    *, config: TicketDeliveryIntegrationConfig, store: TicketDeliveryStore,
+) -> Optional[Callable[[str, str], Any]]:
+    """WP7: constructs a real `(logical_ticket_id, message_text) -> DeliveryOutcome`
+    closure over telegram_adapter.deliver_informational_ticket_with_retry() -- called
+    ONLY from process_cycle_result()'s MODE_MESSAGE_DELIVERY branch, never from
+    ARCHIVE_ONLY/DISABLED. Fails closed to None (never raises out of this integration
+    call site) on ANY of: missing TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID env var, a
+    malformed TELEGRAM_CHAT_ID, or a chat_id outside config.authorized_chat_ids --
+    delegated entirely to TelegramDestinationConfig.from_env(), no parallel
+    validation. A `None` return here makes fx_cycle_integration.process_pair_result()
+    take its existing, already-tested `deliver is None` -> TRANSPORT_NOT_CONFIGURED
+    path -- the archived decision is preserved, only the network step is skipped."""
+    try:
+        destination = TelegramDestinationConfig.from_env(authorized_chat_ids=config.authorized_chat_ids)
+    except TelegramConfigError:
+        return None
+
+    client = TelegramClient(destination.bot_token)
+    journal = AttemptJournal(path=f"{config.delivery_state_dir}/attempt_journal.jsonl")
+
+    def _deliver(logical_ticket_id: str, message_text: str):
+        return deliver_informational_ticket_with_retry(
+            store=store, logical_ticket_id=logical_ticket_id, message_text=message_text,
+            client=client, destination=destination, retry_policy=config.retry_policy,
+            attempt_journal=journal,
+        )
+
+    return _deliver
 
 
 def process_cycle_result(
@@ -252,9 +332,17 @@ def process_cycle_result(
             release_fingerprint, strategy_fingerprint, ledger, result.trading_date,
         )
 
-    # Both ARCHIVE_ONLY and (this pass's still-inert) MESSAGE_DELIVERY pass deliver=None:
-    # zero network reachability is enforced structurally here, not by config alone.
+    # ARCHIVE_ONLY: `deliver` stays None, unconditionally, for the entire function body
+    # -- this line is the ONLY assignment reachable on that path, so ARCHIVE_ONLY is
+    # PROVABLY unable to construct the network adapter (not merely config-gated).
+    # MESSAGE_DELIVERY (WP7): a real deliver() closure is constructed LAZILY, and only
+    # inside this one guarded branch, only when the mode is exactly MESSAGE_DELIVERY --
+    # _build_message_delivery_closure() itself fails closed to None (falling back to
+    # this same TRANSPORT_NOT_CONFIGURED behavior ARCHIVE_ONLY already has) on any
+    # missing/malformed/unauthorized destination or invalid client construction.
     deliver = None
+    if config.mode == MODE_MESSAGE_DELIVERY:
+        deliver = _build_message_delivery_closure(config=config, store=store)
     assert config.mode in _ARCHIVING_MODES  # exhaustiveness guard -- DISABLED already returned above
 
     outcomes: List[Dict[str, Any]] = []

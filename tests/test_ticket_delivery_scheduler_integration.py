@@ -266,10 +266,15 @@ def test_archive_only_mode_archives_watch_and_makes_no_network_call(tmp_path):
     assert outcomes[0]["delivery_state"] == "NOT_APPLICABLE"
 
 
-def test_message_delivery_mode_is_currently_identical_to_archive_only_zero_network(tmp_path):
+def test_message_delivery_mode_is_currently_identical_to_archive_only_zero_network(tmp_path, monkeypatch):
     """Explicit proof of this pass's deliberate non-activation: even a config
-    requesting MESSAGE_DELIVERY makes zero network calls, because this integration
-    function never constructs a deliver() closure for either archiving mode."""
+    requesting MESSAGE_DELIVERY makes zero network calls when no destination is
+    authorized (the shipped, current state -- `telegram_destination.authorized_chat_ids`
+    is empty in config/ticket_delivery.yaml). Env vars are explicitly cleared so this
+    is deterministic regardless of what happens to be set in the actual process
+    environment (WP7: TelegramDestinationConfig.from_env() must fail closed here)."""
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    monkeypatch.delenv("TELEGRAM_CHAT_ID", raising=False)
     config_msg = TicketDeliveryIntegrationConfig(
         mode=MODE_MESSAGE_DELIVERY, archive_root=str(tmp_path / "archive1"), delivery_state_dir=str(tmp_path / "state1"),
         catch_up_policy=CatchUpPolicy(max_catch_up_age=dt.timedelta(minutes=60)),
@@ -285,14 +290,21 @@ def test_message_delivery_mode_is_currently_identical_to_archive_only_zero_netwo
     assert outcomes_msg[0]["delivery_state"] == "NOT_APPLICABLE"
 
 
-def test_no_deliver_closure_constructed_for_any_mode_static_check():
+def test_deliver_closure_only_ever_constructed_inside_the_message_delivery_branch_static_check():
+    """WP7 superseded the pre-WP7 invariant ("no mode ever constructs a deliver()
+    closure") with a narrower one: `deliver` still starts as an unconditional `None`
+    for every mode (ARCHIVE_ONLY/DISABLED never reassign it), and the ONLY other
+    assignment is gated behind an `if config.mode == MODE_MESSAGE_DELIVERY:` check --
+    so ARCHIVE_ONLY remains provably unable to reach the network-adapter constructor."""
     import inspect
 
     import ticket_delivery.scheduler_integration as mod
     source = inspect.getsource(mod.process_cycle_result)
     assert "deliver = None" in source
-    # No conditional branch assigns anything else to `deliver` -- single, unconditional assignment.
-    assert source.count("deliver =") == 1
+    assert source.count("deliver =") == 2  # the unconditional None, plus one gated reassignment
+    lines = source.splitlines()
+    gate_idx = next(i for i, line in enumerate(lines) if "if config.mode == MODE_MESSAGE_DELIVERY:" in line)
+    assert "_build_message_delivery_closure" in lines[gate_idx + 1]
 
 
 def test_ready_pair_without_ledger_context_reports_render_blocked_not_delivered(tmp_path):

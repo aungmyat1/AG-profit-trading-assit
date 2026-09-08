@@ -18,6 +18,7 @@ import { LiveManagedPositionsWidget } from './components/Terminal/LiveManagedPos
 import { DailyPnLHeader } from './components/Terminal/DailyPnLHeader';
 import { TradeJournal } from './components/Journal/TradeJournal';
 import { BackendConnectionDiagnostic } from './components/Terminal/BackendConnectionDiagnostic';
+import { AG_UI_MODE } from './utils/agApiClient';
 
 import {
   Candle,
@@ -197,6 +198,11 @@ export const App: React.FC = () => {
     takeProfit2: number;
     user_confirmed: boolean;
   }) => {
+    if (AG_UI_MODE === 'real') {
+      showToast('Manual order entry is disabled in real mode. Use an authorized backend ticket.', 'error');
+      return false;
+    }
+
     try {
       const res = await fetch('/api/execution/execute', {
         method: 'POST',
@@ -208,7 +214,7 @@ export const App: React.FC = () => {
         : null;
 
       if (data && data.success) {
-        showToast(`Position #${data.ticket} executed successfully!`);
+        showToast(`Simulated position #${data.ticket} created.`);
         fetchSystemData();
         return true;
       } else {
@@ -222,15 +228,25 @@ export const App: React.FC = () => {
   };
 
   const handleManagePosition = async (ticket: number, action: 'BREAKEVEN' | 'PARTIAL_CLOSE' | 'CLOSE') => {
+    if (AG_UI_MODE === 'real') {
+      showToast('Position management is disabled in real mode until the validated management API is wired.', 'error');
+      return;
+    }
+
     try {
       const res = await fetch('/api/execution/manage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ticket, action })
       });
-      if (res.ok) {
-        showToast(`Action ${action} applied to position #${ticket}`);
+      const data = res.headers.get('content-type')?.includes('application/json')
+        ? await res.json()
+        : null;
+      if (res.ok && data?.success) {
+        showToast(data.message || `Simulated ${action} applied to position #${ticket}`);
         fetchSystemData();
+      } else {
+        showToast(data?.error || `Could not apply ${action} to position #${ticket}`, 'error');
       }
     } catch (err) {
       showToast('Failed to manage position', 'error');
@@ -331,6 +347,19 @@ export const App: React.FC = () => {
         setSelectedSymbol={setSelectedSymbol}
         symbols={SUPPORTED_SYMBOLS}
       />
+
+      <div
+        role="status"
+        className={`border-b px-4 py-2 text-center text-xs font-bold tracking-wide ${
+          AG_UI_MODE === 'mock'
+            ? 'border-amber-500/40 bg-amber-950/80 text-amber-200'
+            : 'border-cyan-500/40 bg-cyan-950/80 text-cyan-200'
+        }`}
+      >
+        {AG_UI_MODE === 'mock'
+          ? 'SIMULATION MODE — prices, proposals, positions, execution, and management are generated fixtures; no broker orders are sent.'
+          : 'REAL BACKEND MODE — broker status and authorized tickets are read from the backend; manual execution and management controls are fail-closed.'}
+      </div>
 
       {/* Toast notifications */}
       {toastMessage && (

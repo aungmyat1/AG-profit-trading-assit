@@ -4,6 +4,18 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+### Frontend simulation-boundary correction (2026-09-08)
+
+The React workspace now displays a persistent mode banner. Its default `mock` mode
+identifies candles, proposals, positions, execution, and management as generated
+fixtures, and mock API successes explicitly state that no broker action occurred.
+When `VITE_AG_API_MODE=real`, the legacy manual-order and direct-management controls
+fail closed because they are not wired to the authoritative backend workflows.
+Malformed mock orders and unsupported management actions are rejected. This is a
+user-interface safety correction only: it adds no strategy, Demo, LIVE, or trade-
+management authorization. See
+`docs/status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`.
+
 ## Owner-directed profit-seeking objective and roadmap (regenerated 2026-09-07)
 
 The current product objective is proposal-first trade assistance:

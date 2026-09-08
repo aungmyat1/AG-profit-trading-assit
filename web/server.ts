@@ -1250,6 +1250,14 @@ async function startServer() {
       });
     }
 
+    if (!['BUY', 'SELL'].includes(side) || !Number.isFinite(Number(lots)) || Number(lots) <= 0) {
+      return res.status(400).json({
+        success: false,
+        simulated: true,
+        error: 'SIMULATION_REJECTED: side must be BUY or SELL and lots must be greater than zero.'
+      });
+    }
+
     const symCheck = SUPPORTED_SYMBOLS.find(s => s.symbol === symbol);
     if (symCheck?.category === 'CRYPTO') {
       return res.status(403).json({
@@ -1294,9 +1302,10 @@ async function startServer() {
 
     res.json({
       success: true,
+      simulated: true,
       ticket: newTicket,
       position: newPosition,
-      message: `Demo position #${newTicket} opened successfully for ${lots} lots of ${symbol}.`
+      message: `Simulated position #${newTicket} created for ${lots} lots of ${symbol}; no broker order was sent.`
     });
   });
 
@@ -1310,6 +1319,16 @@ async function startServer() {
 
     if (!pos) {
       return res.status(404).json({ error: `Position #${ticket} not found` });
+    }
+
+
+    const supportedActions = ['BREAKEVEN', 'PARTIAL_CLOSE', 'CLOSE'];
+    if (!supportedActions.includes(action)) {
+      return res.status(400).json({
+        success: false,
+        simulated: true,
+        error: `Unsupported management action: ${String(action)}`
+      });
     }
 
     if (action === 'BREAKEVEN') {
@@ -1328,7 +1347,12 @@ async function startServer() {
       pos.journalNotes.push(`Position closed manually at current price`);
     }
 
-    res.json({ success: true, position: pos });
+    res.json({
+      success: true,
+      simulated: true,
+      position: pos,
+      message: `Simulated ${action} applied to position #${ticket}; no broker position was changed.`
+    });
   });
 
   // Note management endpoint for trade tickets

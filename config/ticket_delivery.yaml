@@ -8,9 +8,25 @@
 #   2026-09-08  archive-only activated          -- mode changed to ARCHIVE_ONLY under explicit
 #                                                    owner authorization, gated by the signed
 #                                                    `policy:` block below.
-#   --          message delivery NOT authorized -- MESSAGE_DELIVERY remains inert (see below);
+#   --          message delivery NOT authorized -- MESSAGE_DELIVERY remains inert here
+#                                                    (mode stays ARCHIVE_ONLY below);
 #                                                    activating it is a separate, later,
 #                                                    explicitly-authorized change (WP7).
+#   2026-09-08  WP7 runtime implemented,           -- src/ticket_delivery/telegram_adapter.py
+#               NOT activated                         gained deliver_informational_ticket_with_retry()
+#                                                       (retry design A: in-process wait/retry,
+#                                                       sleep [30, 60]s, 3 total attempts) and
+#                                                       scheduler_integration.py now lazily
+#                                                       constructs a real deliver() closure IF
+#                                                       AND ONLY IF mode == MESSAGE_DELIVERY. The
+#                                                       `telegram_destination.authorized_chat_ids`
+#                                                       allow-list below is intentionally left
+#                                                       empty -- it is a separate, later,
+#                                                       explicitly-authorized decision to populate
+#                                                       it. `mode` here remains ARCHIVE_ONLY; this
+#                                                       change is additive/inert until both that
+#                                                       allow-list is populated AND mode is
+#                                                       separately changed to MESSAGE_DELIVERY.
 #
 # Read by src/ticket_delivery/scheduler_integration.py::load_integration_config().
 #
@@ -69,3 +85,17 @@ policy:
   # Upper bound on any single retry delay (the deterministic backoff never exceeds
   # this, no matter how many attempts a future, differently-configured policy allowed).
   delivery_retry_max_delay_seconds: 300
+
+# WP7 -- the explicit Telegram destination allow-list. A SIBLING block to `policy:`
+# above, deliberately kept separate from it (policy: strictly rejects any unrecognized
+# field; this block does not share that contract). Read by
+# src/ticket_delivery/scheduler_integration.py::_parse_authorized_chat_ids(). NEVER
+# inferred from the TELEGRAM_CHAT_ID environment variable itself -- see
+# src/ticket_delivery/telegram_adapter.py::TelegramDestinationConfig.from_env()'s
+# docstring for why that would make "authorized" a tautology. Optional: absent or
+# empty means "no destination authorized," which is the current, intentional state --
+# MESSAGE_DELIVERY (itself still not activated via `mode:` above) would fail closed to
+# TRANSPORT_NOT_CONFIGURED regardless of any other configuration while this is empty.
+# Populating this list is a separate, later, explicitly-authorized decision.
+telegram_destination:
+  authorized_chat_ids: []

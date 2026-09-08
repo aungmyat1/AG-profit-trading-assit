@@ -16,6 +16,11 @@
 export const AG_API_BASE_URL: string =
   (import.meta as any).env?.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
+export const AG_UI_MODE: 'mock' | 'real' =
+  String((import.meta as any).env?.VITE_AG_API_MODE || 'mock').toLowerCase() === 'real'
+    ? 'real'
+    : 'mock';
+
 const DEFAULT_TIMEOUT_MS = 5000;
 
 export class AgApiError extends Error {

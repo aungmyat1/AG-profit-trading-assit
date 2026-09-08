@@ -45,6 +45,9 @@ their age.
    — preflight architecture review and authorization packet for the next, separately
    authorized WP7 task (real Telegram message delivery); does not itself authorize
    `MESSAGE_DELIVERY` or any send.
+13. [`status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`](status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md)
+   — records the frontend's explicit mock/real mode boundary, fail-closed legacy
+   controls, verification limits, and unchanged trading authority.
 
 ## Architecture
 

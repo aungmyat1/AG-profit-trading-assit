@@ -53,6 +53,10 @@ Agent skills  -> advisory and explanatory only
   modify or reduce an existing position but cannot open one.
 - Live trading and live trade management are disabled by default in
   [`config/trading.yaml`](config/trading.yaml).
+- The web workspace defaults to an explicitly labelled **SIMULATION MODE**. Its generated
+  candles, proposals, positions, and mock execution/management responses never represent
+  broker activity. In `VITE_AG_API_MODE=real`, the legacy manual controls fail closed;
+  only read-only backend status and authorized-ticket surfaces may use the real API.
 
 See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
 [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current implementation state — in
