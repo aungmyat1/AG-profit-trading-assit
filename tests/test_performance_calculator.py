@@ -71,6 +71,38 @@ def test_max_drawdown_and_consecutive_losses_are_deterministic():
     assert metrics.max_consecutive_losses == 2
 
 
+def test_drawdown_baseline_starts_at_zero_not_at_first_sample():
+    """AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1 Phase 1 item 1: a lone first
+    resolved trade that is a loss must itself register as drawdown -- the equity curve's
+    peak starts at the zero baseline that exists before any trade, not at whatever the
+    first sample's own cumulative value happens to be."""
+    metrics = compute_trade_metrics([_sample(-1.0, resolved_at="2026-01-01T00:00:00Z")])
+    assert metrics.max_drawdown_R == pytest.approx(1.0)
+
+
+def test_drawdown_baseline_zero_does_not_affect_a_winning_first_trade():
+    """A first trade that's a win must not retroactively create drawdown either --
+    zero-baseline peak only matters when equity ever dips below its starting point."""
+    metrics = compute_trade_metrics([_sample(2.0, resolved_at="2026-01-01T00:00:00Z")])
+    assert metrics.max_drawdown_R == pytest.approx(0.0)
+
+
+def test_missing_timestamps_sort_last_by_source_record_id():
+    """AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1 Phase 1 item 3: timestamped
+    records first (chronological), missing-timestamp records last, ordered by their
+    immutable source_record_id -- never silently dropped, never sorted as if earliest."""
+    from performance.calculator import _ordered
+
+    samples = [
+        _sample(1.0, source_record_id="missing_b", resolved_at=None),
+        _sample(1.0, source_record_id="timed_2", resolved_at="2026-01-02T00:00:00Z"),
+        _sample(1.0, source_record_id="missing_a", resolved_at=None),
+        _sample(1.0, source_record_id="timed_1", resolved_at="2026-01-01T00:00:00Z"),
+    ]
+    ordered_ids = [s.source_record_id for s in _ordered(samples)]
+    assert ordered_ids == ["timed_1", "timed_2", "missing_a", "missing_b"]
+
+
 def test_ordering_is_stable_and_independent_of_input_order():
     ordered_input = [
         _sample(1.0, source_record_id="a", resolved_at="2026-01-01T00:00:00Z"),

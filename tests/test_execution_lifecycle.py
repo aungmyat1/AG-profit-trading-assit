@@ -302,6 +302,60 @@ def test_restart_with_stale_persisted_open_removes_stale_state(tmp_path):
     assert coordinator.daily_loss_guard.realized_r(dt.date.today()) == 0.0  # no fabricated R
 
 
+def test_broker_query_failure_fails_closed_and_never_removes_open_state(tmp_path):
+    """AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1 Phase 1 items 4-5: UNKNOWN !=
+    NOT_FOUND. A positions_lookup that raises (timeout/connection failure) must be
+    reported as a distinct POSITION_QUERY_FAILED status and must leave the existing
+    open-position guard record untouched -- unlike the genuinely-empty-list NOT_FOUND
+    case (test_restart_with_stale_persisted_open_removes_stale_state above), which
+    correctly does clear stale state. Conflating the two would let an ambiguous broker
+    outcome silently look identical to "confirmed gone", which is exactly the condition
+    that could let a caller believe a replacement order is safe to submit."""
+    coordinator = _coordinator(tmp_path)
+    coordinator.open_position_guard.register_open("777", STRATEGY_A, "EURUSD", risk_amount=100.0)
+
+    def _raising_positions_lookup(ticket=None):
+        raise RuntimeError("MT5_TIMEOUT: no response from terminal")
+
+    results = reconcile_open_positions(
+        coordinator.open_position_guard, coordinator.daily_loss_guard, coordinator.close_ledger,
+        positions_lookup=_raising_positions_lookup,
+        deals_lookup=lambda ticket: [],
+    )
+
+    assert results[0]["status"] == "POSITION_QUERY_FAILED"
+    assert "error" in results[0]
+    # Fail-closed: the record must still exist and the guard must still be blocked --
+    # a query failure must never be indistinguishable from a confirmed close.
+    assert coordinator.open_position_guard.store.get("777") is not None
+    assert coordinator.open_position_guard.is_blocked() is True
+    # No realized R was fabricated from an ambiguous outcome.
+    assert coordinator.daily_loss_guard.realized_r(dt.date.today()) == 0.0
+
+
+def test_broker_deals_query_failure_on_close_reports_distinct_status_not_not_found(tmp_path):
+    """Same invariant as above, for reconcile_closed_position's own deals_lookup path
+    (execution/lifecycle.py's DEALS_UNAVAILABLE branch) -- a deals-history query failure
+    must never be reported or treated the same as "no deals exist for this close"."""
+    coordinator = _coordinator(tmp_path)
+    coordinator.open_position_guard.register_open("777", STRATEGY_A, "EURUSD", risk_amount=100.0)
+
+    def _raising_deals_lookup(ticket):
+        raise RuntimeError("MT5_TIMEOUT: history_deals_get unavailable")
+
+    result = reconcile_closed_position(
+        coordinator.open_position_guard, coordinator.daily_loss_guard, coordinator.close_ledger,
+        "777", {"risk_amount": 100.0, "strategy_id": STRATEGY_A, "symbol": "EURUSD"},
+        deals_lookup=_raising_deals_lookup,
+    )
+
+    assert result["status"] == "DEALS_UNAVAILABLE"
+    assert "error" in result
+    # Fail-closed: no realized R fabricated, and this ambiguous outcome is distinct from
+    # a genuine "no deals" result -- a caller must not treat DEALS_UNAVAILABLE as CLOSED.
+    assert coordinator.daily_loss_guard.realized_r(dt.date.today()) == 0.0
+
+
 def test_restart_with_position_still_open_leaves_guard_untouched(tmp_path):
     coordinator = _coordinator(tmp_path)
     coordinator.open_position_guard.register_open("777", STRATEGY_B, "EURUSD", risk_amount=100.0)

@@ -20,10 +20,14 @@ def _classify(r: float) -> str:
 
 
 def _ordered(samples: Sequence[ResolvedTradeSample]) -> List[ResolvedTradeSample]:
-    """Deterministic ordering for drawdown/consecutive-loss sequencing: primary key is
-    resolved_at (None sorts first, treated as unknown-earliest -- flagged, never
-    silently dropped), secondary stable key is source_record_id so ties never depend on
-    input iteration order."""
+    """Deterministic ordering for drawdown/consecutive-loss sequencing
+    (AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1 Phase 1 item 3): timestamped
+    records sort first, in chronological order; records with a missing/unknown
+    resolved_at sort last, ordered by their immutable source_record_id rather than
+    dropped -- verified by test_missing_timestamps_sort_last_by_source_record_id. (This
+    docstring previously and incorrectly claimed the opposite -- missing timestamps
+    sorting first as "unknown-earliest" -- corrected to match the actual, tested
+    behavior below; the code itself was never wrong.)"""
     return sorted(samples, key=lambda s: (s.resolved_at is None, s.resolved_at or "", s.source_record_id))
 
 
@@ -74,7 +78,10 @@ def compute_trade_metrics(samples: Sequence[ResolvedTradeSample]) -> TradeMetric
         profit_factor = positive_sum / abs(negative_sum)
 
     cum = 0.0
-    running_peak = float("-inf")
+    running_peak = 0.0  # baseline peak is the pre-trade zero equity point (AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1
+    # Phase 1 item 1) -- starting this at -inf let the first resolved sample's own cum
+    # value "become" the peak before drawdown was measured against it, so a lone first
+    # loss always reported max_drawdown_R=0.0 instead of the loss itself.
     max_drawdown = 0.0
     max_consecutive_losses = 0
     current_streak = 0
