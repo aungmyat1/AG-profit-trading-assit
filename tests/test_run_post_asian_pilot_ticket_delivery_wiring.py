@@ -37,7 +37,8 @@ def script_module():
 def _decision(status="WATCH"):
     from post_asian_pilot.decision import STATUS_WATCH
     return SimpleNamespace(status=STATUS_WATCH if status == "WATCH" else status, reason_codes=("R1",),
-                           evaluation_time=dt.datetime(2026, 9, 8, 7, 45, tzinfo=UTC))
+                           evaluation_time=dt.datetime(2026, 9, 8, 7, 45, tzinfo=UTC),
+                           signal=None, ready_at=None, missing_condition=None)
 
 
 def _fixture_result():
@@ -147,10 +148,13 @@ def test_archive_failure_produces_nonzero_indication_and_no_crash(script_module,
     assert '"delivery_state": "ARCHIVE_FAILED"' in buf.getvalue()
 
 
-def test_ticket_delivery_error_never_crashes_the_scheduled_run(script_module, tmp_path, monkeypatch):
+def test_ticket_delivery_error_never_crashes_but_signals_failure(script_module, tmp_path, monkeypatch):
     """An unexpected exception anywhere in ticket-delivery processing must be caught
     and reported to stderr, never propagate and crash the caller (the strategy report
-    already printed successfully before this function was even called)."""
+    already printed successfully before this function was even called) -- but it must
+    still be reported as a failure to the caller so a nonzero scheduler exit code
+    results. Silently returning False here would mean a real ticket-delivery defect
+    never surfaces anywhere except an unwatched stderr line."""
     import ticket_delivery.scheduler_integration as si_module
 
     def _raise(*a, **k):
@@ -161,8 +165,34 @@ def test_ticket_delivery_error_never_crashes_the_scheduled_run(script_module, tm
     result = _fixture_result()
     buf = io.StringIO()
     with redirect_stdout(buf):
-        archive_failed = script_module._process_ticket_delivery(result, None, None, None, None, as_json=True)
-    assert archive_failed is False  # degrades safely, does not propagate
+        ticket_delivery_failed = script_module._process_ticket_delivery(result, None, None, None, None, as_json=True)
+    assert ticket_delivery_failed is True  # degrades safely (no exception propagates) but is not silently swallowed
+
+
+def test_unexpected_ticket_delivery_error_propagates_as_nonzero_exit_from_run_once(script_module, tmp_path, monkeypatch):
+    """Proves the failure signal actually reaches the real scheduled entry point
+    (_run_once), not only the helper in isolation -- the strategy report must still
+    print successfully before the nonzero exit."""
+    import ticket_delivery.scheduler_integration as si_module
+
+    def _raise(*a, **k):
+        raise RuntimeError("totally unexpected bug")
+
+    monkeypatch.setattr(si_module, "load_integration_config", _raise)
+    monkeypatch.setattr(script_module, "_execute_cycle", lambda pilot_path=None: _fixture_result())
+    monkeypatch.setattr(script_module, "_entry_ticket_context", lambda pilot_path, result: (None, None, None))
+    # cycle_to_dict()/human_readable_report() rendering is proven elsewhere against a
+    # real PilotCycleResult; this test isolates only the exit-code propagation path, so
+    # a minimal stub stands in for the already-frozen report schema.
+    monkeypatch.setattr(script_module, "cycle_to_dict", lambda result, ledger, rfp, sfp: {"strategy_report": "STUBBED_FOR_EXIT_CODE_TEST"})
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        with pytest.raises(SystemExit) as exc_info:
+            script_module._run_once(as_json=True)
+    assert exc_info.value.code == 1
+    # The strategy report printed successfully before the exit.
+    assert '"strategy_report": "STUBBED_FOR_EXIT_CODE_TEST"' in buf.getvalue()
 
 
 def test_message_delivery_config_makes_zero_network_calls_through_the_cli(script_module, tmp_path, monkeypatch):

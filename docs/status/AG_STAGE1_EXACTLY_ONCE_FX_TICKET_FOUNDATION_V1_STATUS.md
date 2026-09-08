@@ -584,3 +584,41 @@ real_demo_orders                       = 0
 real_live_orders                       = 0
 local commit made                      = yes (checkpoint only, not pushed)
 ```
+
+---
+
+## Addendum 4 (2026-09-08): exit-code propagation fix for unexpected ticket-delivery errors
+
+Baseline: HEAD at the Addendum 3 commit (`c8b1fa8`). Continues the same package.
+
+### Defect found and fixed
+
+`_process_ticket_delivery()` caught every unexpected exception (a genuine bug in
+ticket-delivery processing, distinct from the already-handled `ARCHIVE_FAILED`
+outcome) and returned `False` -- meaning the scheduled run exited 0 even though
+ticket-delivery processing had silently broken, with the only trace being an
+unwatched stderr line. Fixed by returning `True` from that exception branch (still
+never letting the exception propagate and crash the already-printed strategy report),
+so `_run_once()` now raises `sys.exit(1)` for both an archive failure and an
+unexpected operational error. `_run_once()`'s local variable was renamed from
+`archive_failed` to `ticket_delivery_failed` to match the corrected, broader meaning.
+
+### Proof
+
+`tests/test_run_post_asian_pilot_ticket_delivery_wiring.py::test_ticket_delivery_error_never_crashes_but_signals_failure`
+(updated) proves the helper itself now returns `True`. A new test,
+`test_unexpected_ticket_delivery_error_propagates_as_nonzero_exit_from_run_once`,
+proves the signal actually reaches `_run_once()` -- calling the real function
+(`_execute_cycle`/`_entry_ticket_context` monkeypatched to avoid needing live MT5,
+`cycle_to_dict` stubbed since report-rendering correctness is proven elsewhere) and
+asserting both `SystemExit(1)` is raised AND the strategy report had already printed
+successfully to stdout before that exit -- the never-crash-the-report guarantee still
+holds; what changed is that the exit code no longer lies about the outcome.
+
+Combined affected suite: **295 passed, 0 failed**; `git diff --check` clean.
+
+### Not changed this addendum
+
+- No activation: `config/ticket_delivery.yaml` remains `DISABLED`.
+- No catch-up/retry policy signed.
+- No strategy, scheduler task, or execution/broker file touched.

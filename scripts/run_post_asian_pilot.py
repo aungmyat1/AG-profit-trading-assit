@@ -91,11 +91,18 @@ def _entry_ticket_context(pilot_path: str, result):
 def _process_ticket_delivery(result, pilot_path: str, ledger, release_fp, strategy_fp, as_json: bool) -> bool:
     """Additive, best-effort: NEVER alters the strategy/report output already printed
     by the caller (AG_FX_DAILY_REPORT_V1's cycle_to_dict()/human_readable_report()
-    schemas stay frozen, untouched by this function). Ships DISABLED by default
+    schemas stay frozen, untouched by this function -- it has already printed
+    successfully by the time this runs). Ships DISABLED by default
     (config/ticket_delivery.yaml) -- a no-op until an operator explicitly opts in.
-    Returns True if an archive failure occurred for any pair (the one condition this
-    function treats as worth a nonzero scheduler exit code; render-blocked/
-    transport-not-configured are expected, non-critical outcomes in ARCHIVE_ONLY mode).
+
+    Returns True (the caller then raises a nonzero scheduler exit code) if either: an
+    archive failure occurred for any pair, or ticket-delivery processing itself raised
+    an unexpected exception. Both are operationally actionable and must be visible to
+    whatever watches the scheduled task's exit code (Task Scheduler LastTaskResult,
+    the .bat wrapper) -- silently swallowing an unexpected error here would mean a real
+    ticket-delivery defect never surfaces anywhere except a stderr line nobody is
+    watching. render-blocked/transport-not-configured are expected, non-critical
+    outcomes in ARCHIVE_ONLY mode and do NOT trigger a nonzero exit.
     """
     try:
         from ticket_delivery.scheduler_integration import load_integration_config, process_cycle_result
@@ -107,9 +114,9 @@ def _process_ticket_delivery(result, pilot_path: str, ledger, release_fp, strate
             result, pilot_path=pilot_path, config=config, ledger=ledger,
             release_fingerprint=release_fp, strategy_fingerprint=strategy_fp,
         )
-    except Exception as exc:  # noqa: BLE001 -- ticket-delivery is additive; never fail the scheduled cycle for an unexpected error here
+    except Exception as exc:  # noqa: BLE001 -- ticket-delivery is additive; never let an unexpected error here raise out of this function and crash the already-printed strategy report
         print(f"TICKET_DELIVERY_OPERATIONAL_ERROR: {exc}", file=sys.stderr)
-        return False
+        return True
 
     if as_json:
         print(json.dumps({"ticket_delivery": {"mode": config.mode, "outcomes": outcomes}}, default=str))
@@ -129,8 +136,8 @@ def _run_once(as_json: bool, pilot_path: str = None):
         print(json.dumps(cycle_to_dict(result, ledger, release_fp, strategy_fp), indent=2, default=str))
     else:
         print(human_readable_report(result, ledger, release_fp, strategy_fp))
-    archive_failed = _process_ticket_delivery(result, pilot_path, ledger, release_fp, strategy_fp, as_json)
-    if archive_failed:
+    ticket_delivery_failed = _process_ticket_delivery(result, pilot_path, ledger, release_fp, strategy_fp, as_json)
+    if ticket_delivery_failed:
         sys.exit(1)
     return result
 
