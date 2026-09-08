@@ -366,6 +366,89 @@ def test_no_reconciliation_match_falls_through_to_normal_send(monkeypatch):
     assert len(sent) == 1  # no false-positive reconciliation match blocked the real send
 
 
+# ============================================ AG2 -- fail-closed broker-lookup failure
+# (Bounded next action item 2 / source plan A2): a broker query that RAISES (terminal
+# disconnect, timeout, malformed response) must never be silently treated the same as a
+# broker query that SUCCEEDED and confirmed no matching position/deal exists. Only the
+# latter (STATE_CONFIRMED_ABSENT) may permit order_open(); the former must fail closed.
+
+def test_position_lookup_failure_blocks_order_open_and_rejects(monkeypatch):
+    def _raise_positions(**kw):
+        raise RuntimeError("MT5 terminal not connected")
+
+    monkeypatch.setattr(executor, "get_positions", _raise_positions)
+    monkeypatch.setattr(executor, "deals_for_symbol", lambda symbol, **kw: [])
+    monkeypatch.setattr(executor, "get_tick", lambda symbol: SimpleNamespace(
+        bid=1.16450, ask=1.16464, spread_points=14))
+    monkeypatch.setattr(executor.journal, "has_executed", lambda cid: False)
+    events = []
+    monkeypatch.setattr(executor.journal, "record_event", lambda cid, event, **kw: events.append((event, kw)))
+    sent = []
+    monkeypatch.setattr(executor.mt5_gateway, "order_open", lambda **kw: sent.append(kw))
+
+    command = TradeCommand(command_id="lookup-fail-1", action="OPEN", symbol="EURUSD",
+                            source=ExecutionSource.USER_EXPLICIT_ORDER, side="SELL",
+                            sl=1.16500, volume=0.01)
+    report = executor.execute(command, user_confirmed=True)
+
+    assert report.status == "REJECTED"
+    assert report.gate_reason_code == "RECONCILIATION_AMBIGUOUS_LOOKUP_FAILED"
+    assert sent == []  # a lookup failure must never fall through to a fresh order_open()
+    assert ("ORDER_EXECUTED", {}) not in [(e, {}) for e, _ in events]
+    assert any(event == "ORDER_REJECTED" for event, _ in events)
+
+
+def test_deal_history_lookup_failure_blocks_order_open_and_rejects(monkeypatch):
+    monkeypatch.setattr(executor, "get_positions", lambda **kw: [])  # positions side clean
+
+    def _raise_deals(symbol, **kw):
+        raise RuntimeError("history query timed out")
+
+    monkeypatch.setattr(executor, "deals_for_symbol", _raise_deals)
+    monkeypatch.setattr(executor, "get_tick", lambda symbol: SimpleNamespace(
+        bid=1.16450, ask=1.16464, spread_points=14))
+    monkeypatch.setattr(executor.journal, "has_executed", lambda cid: False)
+    monkeypatch.setattr(executor.journal, "record_event", lambda *a, **kw: None)
+    sent = []
+    monkeypatch.setattr(executor.mt5_gateway, "order_open", lambda **kw: sent.append(kw))
+
+    command = TradeCommand(command_id="lookup-fail-2", action="OPEN", symbol="EURUSD",
+                            source=ExecutionSource.USER_EXPLICIT_ORDER, side="SELL",
+                            sl=1.16500, volume=0.01)
+    report = executor.execute(command, user_confirmed=True)
+
+    assert report.status == "REJECTED"
+    assert report.gate_reason_code == "RECONCILIATION_AMBIGUOUS_LOOKUP_FAILED"
+    assert sent == []
+
+
+def test_confirmed_absent_both_queries_succeed_empty_still_proceeds(monkeypatch):
+    """Sanity companion to the two failure tests above: genuinely successful, empty
+    broker responses (STATE_CONFIRMED_ABSENT) must still permit the normal send -- the
+    fail-closed fix must not turn every reconciliation call into a rejection."""
+    _no_broker_calls(monkeypatch)
+    monkeypatch.setattr(executor, "get_tick", lambda symbol: SimpleNamespace(
+        bid=1.16450, ask=1.16464, spread_points=14))
+    monkeypatch.setattr(executor.journal, "has_executed", lambda cid: False)
+    monkeypatch.setattr(executor.journal, "record_event", lambda *a, **kw: None)
+    sent = []
+
+    def fake_order_open(**kwargs):
+        sent.append(kwargs)
+        return OrderSendResult(status="EXECUTED", reason_code="ORDER_SEND_DONE", symbol="EURUSD",
+                                ticket=1, deal_id=2, filled_volume=0.01, fill_price=1.16450)
+
+    monkeypatch.setattr(executor.mt5_gateway, "order_open", fake_order_open)
+
+    command = TradeCommand(command_id="confirmed-absent-1", action="OPEN", symbol="EURUSD",
+                            source=ExecutionSource.USER_EXPLICIT_ORDER, side="SELL",
+                            sl=1.16500, volume=0.01)
+    report = executor.execute(command, user_confirmed=True)
+
+    assert report.status == "EXECUTED"
+    assert len(sent) == 1
+
+
 # =============================================================== TEST 9 -- real-account hard lock
 
 def test_real_account_hard_lock_blocks_even_with_config_send_enabled(monkeypatch):

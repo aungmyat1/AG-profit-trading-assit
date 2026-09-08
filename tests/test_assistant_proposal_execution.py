@@ -27,6 +27,13 @@ from mt5.symbol_resolver import SymbolMeta
 @pytest.fixture(autouse=True)
 def _isolated_execution_claim(monkeypatch):
     monkeypatch.setattr(executor.journal, "claim_command", lambda command_id: True)
+    # execution.executor._reconcile_via_broker (AG2 fail-closed fix) now distinguishes a
+    # genuine "broker confirmed no match" from a lookup FAILURE -- without a live MT5
+    # terminal, the real get_positions()/deals_for_symbol() calls raise, which the fixed
+    # executor correctly treats as STATE_AMBIGUOUS and rejects rather than silently
+    # falling through. Mock them empty so these tests keep exercising CONFIRMED_ABSENT.
+    monkeypatch.setattr(executor, "get_positions", lambda **kw: [])
+    monkeypatch.setattr(executor, "deals_for_symbol", lambda symbol, **kw: [])
 
 
 def _eurusd_meta(**overrides):

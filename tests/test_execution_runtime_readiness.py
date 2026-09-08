@@ -191,6 +191,11 @@ def test_real_signal_reaches_coordinator_without_entry_execution_undefined(monke
     monkeypatch.setattr(executor.journal, "claim_command", lambda command_id: True)
     monkeypatch.setattr(executor.journal, "has_executed", lambda command_id: False)
     monkeypatch.setattr(executor.journal, "record_event", lambda *a, **kw: None)
+    # execution.executor._reconcile_via_broker (AG2 fail-closed fix): without a live MT5
+    # terminal, real get_positions()/deals_for_symbol() calls raise -- mock them empty so
+    # this test exercises CONFIRMED_ABSENT (no prior attempt), not a lookup failure.
+    monkeypatch.setattr(executor, "get_positions", lambda **kw: [])
+    monkeypatch.setattr(executor, "deals_for_symbol", lambda symbol, **kw: [])
 
     strategy = load_strategy(STRATEGY_PATH)
     day = dt.date(2026, 1, 5)
@@ -441,6 +446,11 @@ def test_one_context_gives_consistent_blocking_between_evaluation_and_coordinato
     monkeypatch.setattr(executor.journal, "claim_command", lambda command_id: True)
     monkeypatch.setattr(executor.journal, "has_executed", lambda command_id: False)
     monkeypatch.setattr(executor.journal, "record_event", lambda *a, **kw: None)
+    # execution.executor._reconcile_via_broker (AG2 fail-closed fix): without a live MT5
+    # terminal, real get_positions()/deals_for_symbol() calls raise -- mock them empty so
+    # this test exercises CONFIRMED_ABSENT (no prior attempt), not a lookup failure.
+    monkeypatch.setattr(executor, "get_positions", lambda **kw: [])
+    monkeypatch.setattr(executor, "deals_for_symbol", lambda symbol, **kw: [])
     _mock_geometry(monkeypatch, "LONG", 1.1000, 1.0950, 1.1050)
     _mock_order_open(monkeypatch, side="BUY", symbol="EURUSD", ticket=90100)
 

@@ -182,6 +182,15 @@ def _isolated_journal(monkeypatch):
     monkeypatch.setattr(executor.journal, "claim_command", lambda command_id: True)
     monkeypatch.setattr(executor.journal, "has_executed", lambda command_id: False)
     monkeypatch.setattr(executor.journal, "record_event", lambda *a, **kw: None)
+    # execution.executor._reconcile_via_broker (AG2 fail-closed fix) now distinguishes a
+    # genuine "broker confirmed no match" from a lookup FAILURE -- without a live MT5
+    # terminal, the real get_positions()/deals_for_symbol() calls raise, which the fixed
+    # executor correctly treats as STATE_AMBIGUOUS and rejects rather than silently
+    # falling through. Mock them to genuinely empty results so these coordinator tests
+    # keep exercising CONFIRMED_ABSENT (the normal, no-prior-attempt path), same as
+    # tests/test_execution_safety_v1.py's own _no_broker_calls() convention.
+    monkeypatch.setattr(executor, "get_positions", lambda **kw: [])
+    monkeypatch.setattr(executor, "deals_for_symbol", lambda symbol, **kw: [])
 
 
 def _mock_geometry(monkeypatch, direction, entry, sl, tp):

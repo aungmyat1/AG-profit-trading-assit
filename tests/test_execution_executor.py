@@ -61,6 +61,8 @@ def test_direct_user_order_allowed_without_strategy_signal(monkeypatch):
     # only geometry/sizing (trade_management.pretrade_engine).
     monkeypatch.setattr(executor, "evaluate_trade_management", lambda request: _fake_tm_result())
     monkeypatch.setattr(executor.journal, "has_executed", lambda command_id: False)
+    monkeypatch.setattr(executor, "get_positions", lambda **kw: [])
+    monkeypatch.setattr(executor, "deals_for_symbol", lambda symbol, **kw: [])
     events = []
     monkeypatch.setattr(executor.journal, "record_event", lambda command_id, event, **kw: events.append(event))
 
@@ -85,6 +87,8 @@ def test_explicit_execute_sends_order_exactly_once(monkeypatch):
     monkeypatch.setattr(executor, "evaluate_trade_management", lambda request: _fake_tm_result())
     monkeypatch.setattr(executor.journal, "has_executed", lambda command_id: False)
     monkeypatch.setattr(executor.journal, "record_event", lambda *a, **kw: None)
+    monkeypatch.setattr(executor, "get_positions", lambda **kw: [])
+    monkeypatch.setattr(executor, "deals_for_symbol", lambda symbol, **kw: [])
 
     call_count = {"n": 0}
 
@@ -104,6 +108,8 @@ def test_explicit_execute_sends_order_exactly_once(monkeypatch):
 def test_broker_rejection_never_reports_executed(monkeypatch):
     monkeypatch.setattr(executor, "evaluate_trade_management", lambda request: _fake_tm_result())
     monkeypatch.setattr(executor.journal, "has_executed", lambda command_id: False)
+    monkeypatch.setattr(executor, "get_positions", lambda **kw: [])
+    monkeypatch.setattr(executor, "deals_for_symbol", lambda symbol, **kw: [])
     events = []
     monkeypatch.setattr(executor.journal, "record_event", lambda command_id, event, **kw: events.append(event))
     monkeypatch.setattr(
@@ -122,6 +128,8 @@ def test_live_safety_block_surfaced_as_rejection(monkeypatch):
     monkeypatch.setattr(executor, "evaluate_trade_management", lambda request: _fake_tm_result())
     monkeypatch.setattr(executor.journal, "has_executed", lambda command_id: False)
     monkeypatch.setattr(executor.journal, "record_event", lambda *a, **kw: None)
+    monkeypatch.setattr(executor, "get_positions", lambda **kw: [])
+    monkeypatch.setattr(executor, "deals_for_symbol", lambda symbol, **kw: [])
     monkeypatch.setattr(
         executor.mt5_gateway, "order_open",
         lambda **kw: OrderSendResult(status="REJECTED", reason_code="LIVE_EXECUTION_DISABLED", symbol="EURUSD"),
@@ -154,6 +162,8 @@ def test_new_command_id_for_another_order_still_succeeds(monkeypatch):
     monkeypatch.setattr(executor, "evaluate_trade_management", lambda request: _fake_tm_result())
     monkeypatch.setattr(executor.journal, "has_executed", lambda command_id: command_id == "dup-1")
     monkeypatch.setattr(executor.journal, "record_event", lambda *a, **kw: None)
+    monkeypatch.setattr(executor, "get_positions", lambda **kw: [])
+    monkeypatch.setattr(executor, "deals_for_symbol", lambda symbol, **kw: [])
     monkeypatch.setattr(
         executor.mt5_gateway, "order_open",
         lambda **kw: OrderSendResult(status="EXECUTED", reason_code="ORDER_SEND_DONE", symbol="EURUSD",

@@ -43,6 +43,7 @@ from trade_management.models import (
 from trade_management.pretrade_engine import evaluate_trade_management
 
 from . import journal, mt5_gateway
+from .crypto_reconciliation import STATE_AMBIGUOUS, STATE_CONFIRMED_ABSENT, STATE_CONFIRMED_OPEN
 from .models import ExecutionReport, ExecutionSource, OrderSendResult, TradeCommand
 
 # Stale-proposal tolerance -- no existing project precedent for this number; an
@@ -161,41 +162,73 @@ def _comment_tag(command_id: str) -> str:
     return f"AGT:{command_id}"[:31]
 
 
-def _reconcile_via_broker(symbol: str, command_id: str) -> Optional[OrderSendResult]:
+# FX/MT5 broker-reconciliation lookup outcome (AG2 -- Bounded next action item 2). Ports
+# execution.crypto_reconciliation's typed-result pattern (STATE_CONFIRMED_OPEN /
+# STATE_CONFIRMED_ABSENT / STATE_AMBIGUOUS, reused directly rather than re-derived) onto
+# the MT5 crash-window reconciliation path below. The gap this closes: the prior version
+# of _reconcile_via_broker caught get_positions()/deals_for_symbol() exceptions (terminal
+# disconnect, timeout, malformed response) and silently substituted an empty list, which
+# is bit-for-bit indistinguishable from "the broker was reachable and confirmed no
+# matching position/deal exists" -- a lookup FAILURE was being treated as a lookup
+# SUCCESS that happened to find nothing, and execute() would then fall through to
+# order_open() and place a brand-new order even if the original attempt had actually
+# already reached the broker. Only STATE_CONFIRMED_ABSENT (both queries succeeded, no
+# match) may permit that fall-through; STATE_AMBIGUOUS must fail closed.
+REASON_LOOKUP_FAILED = "RECONCILIATION_AMBIGUOUS_LOOKUP_FAILED"
+
+
+class _BrokerReconciliationOutcome:
+    __slots__ = ("state", "result", "reason_code")
+
+    def __init__(self, state: str, result: Optional[OrderSendResult] = None,
+                 reason_code: Optional[str] = None):
+        self.state = state
+        self.result = result
+        self.reason_code = reason_code
+
+
+def _reconcile_via_broker(symbol: str, command_id: str) -> _BrokerReconciliationOutcome:
     """Checks open positions, then recent deal history, for a comment tag matching this
     command_id -- reusing mt5.account.positions()/mt5.deals.deals_for_symbol() (both
-    already existed for other purposes) rather than a new persistence layer. Returns an
-    OrderSendResult reconstructed from broker state if found, else None. This is the
+    already existed for other purposes) rather than a new persistence layer. This is the
     crash-window closer: journal.has_executed() alone only catches a crash AFTER the
     local journal write; this catches one that happened before it, by asking the broker
-    what actually happened instead of trusting local state."""
+    what actually happened instead of trusting local state.
+
+    Returns a typed outcome, never a bare Optional collapsing "found" and "lookup failed"
+    into the same falsy shape:
+      STATE_CONFIRMED_OPEN   -- a matching position/deal was found; .result is populated.
+      STATE_CONFIRMED_ABSENT -- both broker queries succeeded and found no match; safe
+                                 for the caller to proceed to a fresh order_open().
+      STATE_AMBIGUOUS        -- a broker query itself raised (disconnect/timeout/malformed
+                                 response); the caller MUST NOT treat this as absence."""
     tag = _comment_tag(command_id)
     try:
         rows = get_positions(symbol=symbol)
-    except Exception:  # noqa: BLE001 -- reconciliation is best-effort, never blocks the caller
-        rows = []
+    except Exception:  # noqa: BLE001 -- the failure itself becomes a typed, fail-closed outcome
+        return _BrokerReconciliationOutcome(STATE_AMBIGUOUS, reason_code=REASON_LOOKUP_FAILED)
     for row in rows:
         if tag in (row.comment or ""):
-            return OrderSendResult(
+            return _BrokerReconciliationOutcome(STATE_CONFIRMED_OPEN, result=OrderSendResult(
                 status="EXECUTED", reason_code="RECONCILED_FROM_BROKER_POSITION", symbol=symbol,
                 side=("BUY" if row.type == 0 else "SELL"), filled_volume=float(row.volume),
                 fill_price=float(row.price_open), sl=row.sl, tp=row.tp, ticket=int(row.ticket),
                 timestamp=datetime.now(timezone.utc),
-            )
+            ))
     try:
         deals = deals_for_symbol(symbol)
     except Exception:  # noqa: BLE001
-        deals = []
+        return _BrokerReconciliationOutcome(STATE_AMBIGUOUS, reason_code=REASON_LOOKUP_FAILED)
     for deal in deals:
         # entry == 0 -> DEAL_ENTRY_IN (an opening deal, not a close/partial of another position).
         if tag in (deal.comment or "") and getattr(deal, "entry", None) == 0:
-            return OrderSendResult(
+            return _BrokerReconciliationOutcome(STATE_CONFIRMED_OPEN, result=OrderSendResult(
                 status="EXECUTED", reason_code="RECONCILED_FROM_BROKER_HISTORY", symbol=symbol,
                 side=("BUY" if deal.type == 0 else "SELL"), filled_volume=float(deal.volume),
                 fill_price=float(deal.price), deal_id=int(deal.ticket),
                 timestamp=datetime.now(timezone.utc),
-            )
-    return None
+            ))
+    return _BrokerReconciliationOutcome(STATE_CONFIRMED_ABSENT)
 
 
 def _direction_to_side(direction: str) -> str:
@@ -364,8 +397,21 @@ def execute(command: TradeCommand, *, user_confirmed: bool, proposal_store: Opti
     # crashed before journal.record_event(ORDER_EXECUTED) ran, journal.has_executed()
     # above would have missed it (the local file was never written). Ask the broker
     # directly via the comment tag before ever calling order_open again.
-    reconciled = _reconcile_via_broker(command.symbol, command.command_id)
-    if reconciled is not None:
+    reconciliation = _reconcile_via_broker(command.symbol, command.command_id)
+    if reconciliation.state == STATE_AMBIGUOUS:
+        # Fail closed (AG2): a lookup failure must never be interpreted as "order
+        # absent." The command_id stays claimed (journal.claim_command already
+        # succeeded above) -- by this module's own existing fail-closed claim design,
+        # that permanently blocks a second order_open for this command_id without
+        # operator review, exactly as intended here: we do not know whether the
+        # original attempt reached the broker, so we must not guess by sending another.
+        journal.record_event(command.command_id, "ORDER_REJECTED", reason_code=reconciliation.reason_code)
+        _mark_proposal_status(store, command.proposal_id, "REJECTED")
+        return _reject(command, reconciliation.reason_code,
+                        "Broker reconciliation lookup failed before order_open; refusing to guess "
+                        "whether this command already reached the broker.")
+    if reconciliation.state == STATE_CONFIRMED_OPEN:
+        reconciled = reconciliation.result
         journal.record_event(command.command_id, "ORDER_EXECUTED", ticket=reconciled.ticket,
                               deal_id=reconciled.deal_id, fill_price=reconciled.fill_price,
                               filled_volume=reconciled.filled_volume, proposal_id=command.proposal_id,
@@ -374,6 +420,8 @@ def execute(command: TradeCommand, *, user_confirmed: bool, proposal_store: Opti
         return ExecutionReport(command_id=command.command_id, source=command.source,
                                 status="EXECUTED", gate_reason_code=reconciled.reason_code,
                                 result=reconciled)
+    # reconciliation.state == STATE_CONFIRMED_ABSENT -- both broker queries succeeded and
+    # genuinely found nothing; safe to proceed to a fresh order_open() below.
 
     result: OrderSendResult = mt5_gateway.order_open(
         symbol=command.symbol,
