@@ -1,8 +1,16 @@
 # AG Stage 1 — Exactly-Once FX Ticket Delivery V1
 
-Status: **WP1/WP2/WP3/WP5/WP6 IMPLEMENTED AND TESTED (2026-09-08); WP4/WP7 NOT
-STARTED.** Not yet integrated into the live FX cycle/report orchestration or the
-scheduler -- see `docs/status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`.
+Status (2026-09-08): **WP1/WP2/WP3/WP5 COMPLETE. WP4.1-WP4.3 (archive-before-send
+runtime integration, READY delivery orchestration, run-level overlap protection)
+IMPLEMENTED AND TESTED. WP4.4 (missed-checkpoint catch-up) and the WP6 bounded-retry
+completion are MECHANISM-COMPLETE, OPERATIONALLY UNSIGNED** -- no production catch-up
+duration or retry bound exists anywhere in this repository (searched; only an
+unrelated, still-unauthorized BTC-specific proposal exists), so both policies are
+implemented as fail-closed interfaces requiring an explicit injected value, never
+activated with a default. **WP4.5 (scheduler-facing CLI) is a read-only diagnostic
+script only** -- installed scheduler tasks were NOT modified and nothing yet calls the
+new orchestration from a live cycle run. **WP7 NOT STARTED.** See
+`docs/status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`'s WP4 addendum.
 
 ## Outcome
 
@@ -98,7 +106,8 @@ attempt id, Telegram response identity, and proof that execution was unreachable
 - [x] One logical ticket exists per natural READY occurrence. (`identity.logical_ticket_id()`, deterministic, tested against collision on every dimension)
 - [x] Every cycle decision is archived before delivery. (`archive.archive_cycle_decision()`, all 5 cycle states, reuses `report_archive.write_report()`'s existing idempotent/correction/atomic-write guarantees; archive-before-send enforced by design -- delivery journal has no path that doesn't require an existing archived record's identity)
 - [x] Duplicate and overlapping runs are idempotent. (`ensure_ready_to_deliver()` idempotent creation; 10-way concurrent claim proven exactly-one-winner; parallel-different-tickets proven independent)
-- [ ] Missed checkpoints recover under a signed catch-up rule. (WP4 -- not started)
+- [x] Every cycle decision is archived before delivery, AT THE ORCHESTRATION LAYER (not only the primitive). `ticket_delivery.fx_cycle_integration.process_pair_result()` proven to archive-before-render-before-claim-before-transport for all 5 cycle states, with a simulated archive failure producing zero transport calls.
+- [ ] Missed checkpoints recover under a signed catch-up rule. `ticket_delivery.policy.CatchUpPolicy` mechanism implemented and tested (premature/exact-boundary/within-bound/outside-bound/unconfigured all covered), but `max_catch_up_age` is UNSIGNED -- no production value exists, so operational catch-up remains disabled by construction (the unconfigured case fails closed).
 - [x] Telegram retries reuse the logical ticket. (proven twice: at the store layer, and end-to-end in `test_successful_retry_after_retryable_failure_reuses_logical_ticket` against a mocked Telegram failure-then-success sequence)
 - [x] Secrets/destinations are configuration-only and redacted. (`TelegramDestinationConfig.from_values` takes no defaults, requires an explicit authorized-chat-id allow-list; `_redact()` strips the bot token from every piece of persisted failure evidence -- proven by 2 tests reading the actual on-disk journal file)
 - [x] No path enters execution or MT5 order submission. (static AST guard, `tests/test_ticket_delivery_execution_boundary.py`, now 4 tests covering renderer.py/telegram_adapter.py too, and excluding `notifications.trade_ticket_formatter` -- the approval/keyboard-coupled formatter -- as an additionally forbidden import)

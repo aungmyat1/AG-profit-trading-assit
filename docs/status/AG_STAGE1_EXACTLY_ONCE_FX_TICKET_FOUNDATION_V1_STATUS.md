@@ -296,3 +296,156 @@ real Telegram sends              = 0 (every test uses an injected fake HTTP sess
 real_demo_orders                 = 0
 real_live_orders                 = 0
 ```
+
+---
+
+## Addendum 2 (2026-09-08): WP4 scheduler/runtime integration + WP6 bounded retry
+
+Baseline: HEAD `05ddd00` (the WP2/WP5 addendum above, committed). Continues the same
+package.
+
+### Gate 1 — scheduler entry-point reconciliation
+
+Read-only inspection of `scripts/scheduled/run_asian_london_once.bat` and
+`run_london_newyork_once.bat`: both invoke `python scripts\run_post_asian_pilot.py
+--once --json`, the second with `--pilot-config config\pilot\AG_POST_LONDON_NEWYORK_PILOT_V1_0_1.yaml`.
+Neither installed task was modified. `run_post_asian_pilot.py` calls
+`post_asian_pilot.pipeline.run_pilot_cycle()`, which returns a `PilotCycleResult`
+(`pairs: Tuple[PairResult, ...]`, each `PairResult(symbol, decision, portfolio_state,
+portfolio_reason_code, proposal)`) -- this is the deterministic-cycle-completion
+checkpoint the new orchestration consumes; nothing in `pipeline.py` was touched.
+Live scheduler task state itself (Task Scheduler `Get-ScheduledTask`) was
+**NOT_EVALUATED** this pass -- code-level integration was verified instead, per this
+task's own explicit allowance not to treat that as a blocker.
+
+### WP4.1/WP4.2 — `src/ticket_delivery/fx_cycle_integration.py`
+
+`process_pair_result()` takes one already-computed `PairResult` and a caller-supplied
+`cycle` label (the future scheduler wrapper's job, not derived here) and:
+
+1. Maps `decision.status`/`portfolio_state` to the 5-state archive vocabulary via an
+   exhaustive, fail-closed `_map_cycle_state()` (an unrecognized status raises, never
+   silently defaults). A `READY` decision that never became actionable (governor/ledger
+   blocked it) is correctly archived as `BLOCKED`, not `READY`.
+2. Calls `archive_cycle_decision()` FIRST, unconditionally, for every cycle state --
+   proven by construction: no render/register/claim/transport call exists on any code
+   path that skips this step, and a simulated `ArchiveFailedError` returns immediately
+   with zero further calls (`test_archive_failure_produces_zero_transport_calls`).
+3. For non-READY states: `delivery_store.record_not_applicable()`, zero Telegram calls
+   (parametrized across all 4 non-READY states).
+4. For READY: calls a caller-injected `render_entry_ticket_dict` (keeps this module
+   decoupled from `post_asian_pilot`'s fingerprint/ledger construction, matching WP2's
+   own "wrap without re-deriving" boundary), renders via the existing WP2 renderer,
+   registers via `ensure_ready_to_deliver()`, then calls a caller-injected `deliver`
+   closure (typically `telegram_adapter.deliver_informational_ticket()`) -- absence of
+   `deliver` fails closed AFTER the archive/registration already happened (config
+   absence never discards the archived decision).
+
+11 new tests, `tests/test_ticket_delivery_fx_cycle_integration.py`, all passing.
+
+### WP4.3 — run-level overlap protection
+
+No new locking mechanism -- proven by COMPOSITION of the already-atomic primitives
+(`archive_cycle_decision`'s idempotent/correction write, `ensure_ready_to_deliver`'s
+idempotent creation, `claim_for_delivery`'s O_EXCL atomic claim). 3 new tests,
+`tests/test_ticket_delivery_fx_cycle_overlap.py`:
+
+- 10 concurrent `process_pair_result()` calls for the identical pair -> exactly 1
+  `DELIVERED` outcome, exactly 1 real HTTP call counted at the mocked transport
+  boundary, all 10 outcomes share one `logical_ticket_id`, exactly 1 delivery record
+  ever created.
+- Two independent symbols processed concurrently both deliver independently (2 HTTP
+  calls, 2 distinct logical tickets) -- proving unrelated occurrences don't block each
+  other.
+- A simulated restart (fresh `TicketDeliveryStore` instance against the same
+  `state_dir`, after an archive+registration with no delivery attempted) resumes
+  safely: same `logical_ticket_id`, same `archive_path` (idempotent), reaches
+  `DELIVERED` with exactly 1 HTTP call total across both "processes".
+
+### WP4.4 catch-up + WP6 retry policy — `src/ticket_delivery/policy.py`
+
+**Resource-first check performed before writing this module:** searched
+`docs/plans/`, `docs/contracts/`, `config/governance/` for any existing signed FX
+ticket-delivery catch-up duration or retry/backoff bound. None exists. The only
+related document (`docs/contracts/AG_BTC_CATCHUP_CONTRACT_AMENDMENT_V1_PROPOSED.md`) is
+itself explicitly PROPOSED / not authorized, and scoped to a different domain (BTC
+daily observation counting) that does not transfer by analogy without its own sign-off.
+
+```
+CATCH_UP_DURATION  = UNSIGNED
+RETRY_MAX_ATTEMPTS = UNSIGNED
+RETRY_BASE_DELAY   = UNSIGNED
+RETRY_MAX_DELAY    = UNSIGNED
+```
+
+Both `CatchUpPolicy` and `RetryPolicy` are implemented as **mechanism-complete,
+fail-closed interfaces**: zero-argument construction represents "not configured" and
+refuses every evaluation (never applies an implicit default), while an explicit
+injected value (e.g. in a test) exercises full, deterministic logic. `RetryPolicy`'s
+backoff (`base * 2^(attempt-1)`, capped at `max_delay`) is a pure function of
+`(attempt_number, policy)` -- no wall-clock read, no randomness, no real sleeping in
+any test. Terminal and ambiguous classifications are refused unconditionally,
+independent of whether numeric bounds are configured.
+
+13 new tests, `tests/test_ticket_delivery_policy.py`, all passing: premature run,
+exact-checkpoint boundary, valid configured catch-up, catch-up outside the bound,
+missing catch-up configuration (fails closed), successful subsequent-cycle recovery
+(framed as an ordinary in-bound catch-up, no separate mechanism needed);
+deterministic backoff at 5 attempt numbers, successful bounded retry, max-attempts
+exhaustion, terminal-never-retried, ambiguous-never-retried, missing retry
+configuration (fails closed), `next_delay()` raises rather than guessing when
+unconfigured.
+
+**This is precisely the "mechanism complete, operational policy unsigned" distinction
+the task instructions asked to classify precisely** -- WP4.4 and the WP6 retry
+completion are NOT marked accepted/operational; they are proven-safe scaffolding
+awaiting an owner-signed numeric value before any real catch-up or retry could ever
+actually fire.
+
+### WP4.5 — scheduler-facing CLI
+
+`scripts/run_ticket_delivery_status.py`: read-only diagnostic over the existing
+delivery journal (single-ticket lookup or full listing), JSON or pretty output,
+nonzero exit on an actionable failure state (`DELIVERY_FAILED_TERMINAL` /
+`DELIVERY_AMBIGUOUS` present). No execution/approval/broker flag exists. Documents the
+two env var *names* (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`) a real run would
+eventually need, without reading or printing either. Does not archive, render, claim,
+or deliver anything itself -- diagnostic only, smoke-tested against an empty state
+directory this pass (`{"status": "OK", "count": 0, "records": []}`).
+
+### Combined test results
+
+```
+pytest tests/test_ticket_delivery_fx_cycle_integration.py -q  → 11 passed
+pytest tests/test_ticket_delivery_fx_cycle_overlap.py -q      → 3 passed
+pytest tests/test_ticket_delivery_policy.py -q                → 13 passed
+pytest tests/test_ticket_delivery_identity_and_archive.py tests/test_ticket_delivery_concurrency_and_restart.py tests/test_ticket_delivery_execution_boundary.py tests/test_ticket_delivery_renderer.py tests/test_ticket_delivery_telegram_adapter.py tests/test_ticket_delivery_fx_cycle_integration.py tests/test_ticket_delivery_fx_cycle_overlap.py tests/test_ticket_delivery_policy.py tests/test_telegram_client.py tests/test_telegram_gateway.py tests/test_authorization_core.py tests/test_post_asian_pilot.py -q
+  → 271 passed, 0 failed
+git diff --check → clean (1 CRLF line-ending warning only)
+```
+
+### Not implemented / not activated this addendum
+
+- Installed scheduler tasks were NOT modified (read-only inspection only).
+- Live Task Scheduler state was NOT_EVALUATED (code-level integration verified
+  instead).
+- `CatchUpPolicy`/`RetryPolicy` are NOT wired to any real config source and carry no
+  signed operational value -- mechanism-complete, operationally inert.
+- Nothing in `post_asian_pilot/run_post_asian_pilot.py` yet calls
+  `process_pair_result()` -- the orchestration exists and is fully tested in isolation,
+  but a real scheduled run still only produces the existing decision/proposal journals,
+  not a ticket_delivery archive record, until a follow-up task wires the call site.
+- **WP7** — no real Telegram send, mocked or otherwise beyond unit tests, was
+  attempted; no natural READY ticket was captured through this path.
+
+### Safety confirmation (addendum 2)
+
+```
+strategy files modified          = 0
+execution/authorization files modified = 0
+scheduler task files modified    = 0
+broker order-submission calls    = 0 (statically verified, execution-boundary scan now covers fx_cycle_integration.py and policy.py too)
+real Telegram sends              = 0 (every test uses an injected fake HTTP session)
+real_demo_orders                 = 0
+real_live_orders                 = 0
+```

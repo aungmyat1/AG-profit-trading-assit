@@ -17,6 +17,8 @@ from .models import (
     STATE_READY_TO_DELIVER,
 )
 from .delivery_store import TicketDeliveryStore
+from .fx_cycle_integration import PairOutcome, process_pair_result
+from .policy import CatchUpPolicy, RetryPolicy
 
 __all__ = [
     "CycleDecisionRecord", "archive_cycle_decision",
@@ -25,4 +27,6 @@ __all__ = [
     "ALL_STATES", "STATE_NOT_APPLICABLE", "STATE_READY_TO_DELIVER", "STATE_DELIVERY_CLAIMED",
     "STATE_DELIVERED", "STATE_DELIVERY_FAILED_RETRYABLE", "STATE_DELIVERY_FAILED_TERMINAL",
     "STATE_DELIVERY_AMBIGUOUS",
+    "process_pair_result", "PairOutcome",
+    "CatchUpPolicy", "RetryPolicy",
 ]
