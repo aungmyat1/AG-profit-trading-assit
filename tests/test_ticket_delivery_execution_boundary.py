@@ -14,6 +14,7 @@ FORBIDDEN_IMPORT_PREFIXES = (
     "mt5.mt5_gateway",
     "authorization.mt5_execution_handler",
     "authorization.telegram_gateway",  # approval/execution-callback surface -- ticket_delivery is message-only
+    "notifications.trade_ticket_formatter",  # ExecutionApproval-coupled, builds inline keyboards -- WP5 excludes it explicitly
 )
 FORBIDDEN_CALL_NAMES = {
     "order_send", "order_check", "create_order", "submit_order", "place_order",

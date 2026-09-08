@@ -177,13 +177,122 @@ Stage-0 files was modified.
 - Integration into the live FX cycle/report pipeline (`post_asian_pilot/`) — the new
   package exists and is fully tested in isolation but nothing calls it yet.
 
-## Safety confirmation
+## Safety confirmation (original pass)
 
 ```
 strategy files modified          = 0
 execution/authorization files modified = 0
 broker order-submission calls    = 0 (statically verified, 4 tests)
 real Telegram sends              = 0 (WP5/WP7 not attempted)
+real_demo_orders                 = 0
+real_live_orders                 = 0
+```
+
+---
+
+## Addendum (2026-09-08, same date): WP2 renderer + WP5 message-only transport
+
+Baseline for this addendum: HEAD `fecc32b` (the foundation above, committed). Continues
+the same package; no prior file in this document's original section was modified.
+
+### WP2 — `src/ticket_delivery/renderer.py`
+
+`render_informational_ticket()` wraps the EXISTING `post_asian_pilot.report.render_entry_ticket()`-shaped
+dict verbatim -- reads 14 mandatory dotted-path fields (identity/strategy/application/
+market/entry/risk/timing/evidence), computes nothing itself. Only `decision_status ==
+"READY"` renders; WATCH/NO_TRADE/DATA_ERROR/BLOCKED all return `status="BLOCKED"`,
+`reason_code="DECISION_NOT_READY"`. Any missing mandatory field (individually tested,
+all 14) blocks rendering with `reason_code="MISSING_MANDATORY_FIELDS"` and the exact
+missing dotted paths -- never a fabricated or defaulted value. Output payload always
+carries the literal label `INFORMATIONAL PROPOSAL -- NOT A BROKER ORDER` and an
+`authorization: {strategy_authorized: false, execution_authorized: false}` block.
+Canonical serialization is `json.dumps(..., sort_keys=True, separators=(",", ":"))`;
+`payload_hash()` is its SHA-256 -- proven deterministic (same input -> same hash across
+two independent calls) and content-sensitive (a single changed field changes the hash).
+`format_message_text()` renders plain text only -- no inline keyboard, no
+`callback_data` field anywhere in its output.
+
+25 new tests, `tests/test_ticket_delivery_renderer.py`, all passing: complete READY
+rendering; all 4 non-READY states rejected (parametrized); each of the 14 mandatory
+fields individually missing (parametrized); stable hash across repeated calls; hash
+changes on content change; strategy-version/release binding present; source proposal
+dict never mutated; no inline-keyboard/callback shape in the message text; no
+execution-module reference in the renderer source.
+
+### WP5 — `src/ticket_delivery/telegram_adapter.py`
+
+Reuses `notifications.telegram_client.TelegramClient.send_message()` ONLY -- no other
+method on that class (`get_updates`, `answer_callback_query`, `edit_message_*`, or any
+callback-parsing function) is ever called from this package. Deliberately does NOT
+reuse `notifications.trade_ticket_formatter` (builds `ExecutionApproval`-coupled inline
+keyboards) or `authorization.telegram_gateway` (the approval-callback surface) -- both
+are now in the AST-based execution-boundary scan's forbidden-import list alongside
+`execution.*`/`mt5.management_gateway`/`mt5.mt5_gateway`/`authorization.mt5_execution_handler`.
+
+`TelegramDestinationConfig.from_values()` takes no defaults: missing bot token ->
+`TELEGRAM_BOT_TOKEN_NOT_CONFIGURED`, missing chat_id -> `TELEGRAM_DESTINATION_NOT_CONFIGURED`,
+a chat_id outside the caller-supplied `authorized_chat_ids` allow-list ->
+`TELEGRAM_DESTINATION_NOT_AUTHORIZED` -- every case raises before `deliver_informational_ticket()`
+is ever reached, so no network call is possible without explicit, authorized
+configuration. `_redact()` strips the literal bot token from every string this module
+ever persists as failure evidence, applied unconditionally (not only when a leak looks
+likely) -- proven by two tests that construct a connection failure whose exception
+message contains the real token embedded in a URL, then read back both the in-memory
+record and the actual on-disk `delivery_records.json` file and assert the token string
+is absent from both.
+
+Outcome classification: `ok=true` -> `DELIVERED` (provider `message_id` persisted);
+`ok=false, error_code=429` -> `DELIVERY_FAILED_RETRYABLE`; any other `ok=false` ->
+`DELIVERY_FAILED_TERMINAL`; a transport-level exception (connection failure, timeout,
+or an unparseable/malformed response -- all three currently share Telegram client's own
+`SENDMESSAGE_REQUEST_FAILED` reason code, since none of them can distinguish "definitely
+not sent" from "sent, response lost") -> `DELIVERY_AMBIGUOUS`, and `DELIVERY_AMBIGUOUS`
+inherits the foundation's existing "never auto-reclaimed" guarantee unchanged (proven by
+a repeat call after an ambiguous outcome: `claimed=False`, state unchanged). A retry
+after `DELIVERY_FAILED_RETRYABLE` was proven end-to-end (mocked 429 then mocked success):
+same `logical_ticket_id`, incremented `attempt_number`, final state `DELIVERED`.
+
+20 new tests, `tests/test_ticket_delivery_telegram_adapter.py` (17) +
+`tests/test_ticket_delivery_execution_boundary.py` (4, one pre-existing + `trade_ticket_formatter`
+addition), all passing: missing token / missing destination / unauthorized destination
+all fail closed pre-network; no hardcoded destination in the module source; successful
+delivery with provider evidence persisted; rate-limit -> retryable; other `ok=false` ->
+terminal; malformed response -> ambiguous; connection failure -> ambiguous; timeout ->
+ambiguous; HTTP error -> ambiguous; ambiguous outcome never auto-reclaimed (a second
+delivery attempt against the same store fails to claim); successful retry after a
+retryable failure reuses the logical ticket and reaches DELIVERED; bot token absent from
+both the returned failure evidence and the actual on-disk journal file; no
+execution/broker import anywhere in the module (AST-verified).
+
+### Combined test results
+
+```
+pytest tests/test_ticket_delivery_renderer.py -q            → 25 passed
+pytest tests/test_ticket_delivery_telegram_adapter.py -q    → 17 passed
+pytest tests/test_ticket_delivery_execution_boundary.py -q  → 4 passed
+pytest tests/test_ticket_delivery_identity_and_archive.py tests/test_ticket_delivery_concurrency_and_restart.py tests/test_ticket_delivery_execution_boundary.py tests/test_ticket_delivery_renderer.py tests/test_ticket_delivery_telegram_adapter.py tests/test_telegram_client.py tests/test_telegram_gateway.py tests/test_authorization_core.py -q
+  → 164 passed, 0 failed
+git diff --check → clean (one CRLF line-ending warning only)
+```
+
+### Not implemented this addendum
+
+- **WP4** — scheduler recovery (bounded catch-up rule, single-run overlap claim,
+  weekend/closed-market/stale-data tests). Explicitly out of scope for this task.
+- **WP7** — operational proof with a real Telegram send. Explicitly out of scope; no
+  live send was attempted or claimed anywhere in this addendum.
+- Integration into the live FX cycle/report pipeline -- `renderer.py` and
+  `telegram_adapter.py` exist and are fully tested in isolation; nothing in
+  `post_asian_pilot/` calls either yet.
+
+### Safety confirmation (addendum)
+
+```
+strategy files modified          = 0
+execution/authorization files modified = 0
+scheduler files modified         = 0
+broker order-submission calls    = 0 (statically verified)
+real Telegram sends              = 0 (every test uses an injected fake HTTP session)
 real_demo_orders                 = 0
 real_live_orders                 = 0
 ```

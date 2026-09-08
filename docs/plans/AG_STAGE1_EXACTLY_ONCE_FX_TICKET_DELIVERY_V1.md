@@ -1,8 +1,8 @@
 # AG Stage 1 — Exactly-Once FX Ticket Delivery V1
 
-Status: **WP1/WP3/WP6 CORE IMPLEMENTED AND TESTED (2026-09-08); WP2/WP4/WP5/WP7 NOT
-STARTED.** Not yet integrated into the live FX cycle/report orchestration -- see
-`docs/status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`.
+Status: **WP1/WP2/WP3/WP5/WP6 IMPLEMENTED AND TESTED (2026-09-08); WP4/WP7 NOT
+STARTED.** Not yet integrated into the live FX cycle/report orchestration or the
+scheduler -- see `docs/status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`.
 
 ## Outcome
 
@@ -98,11 +98,11 @@ attempt id, Telegram response identity, and proof that execution was unreachable
 - [x] One logical ticket exists per natural READY occurrence. (`identity.logical_ticket_id()`, deterministic, tested against collision on every dimension)
 - [x] Every cycle decision is archived before delivery. (`archive.archive_cycle_decision()`, all 5 cycle states, reuses `report_archive.write_report()`'s existing idempotent/correction/atomic-write guarantees; archive-before-send enforced by design -- delivery journal has no path that doesn't require an existing archived record's identity)
 - [x] Duplicate and overlapping runs are idempotent. (`ensure_ready_to_deliver()` idempotent creation; 10-way concurrent claim proven exactly-one-winner; parallel-different-tickets proven independent)
-- [ ] Missed checkpoints recover under a signed catch-up rule. (WP4 -- not started this pass)
-- [x] Telegram retries reuse the logical ticket. (`claim_for_delivery()` retry path proven: same `logical_ticket_id`, new `attempt_number`/`delivery_attempt_id`)
-- [ ] Secrets/destinations are configuration-only and redacted. (WP5 -- transport not yet ported/audited this pass)
-- [x] No path enters execution or MT5 order submission. (static AST guard, `tests/test_ticket_delivery_execution_boundary.py`, 4 tests passing)
-- [ ] Real message-only delivery is evidenced. (WP7 -- no live send attempted or claimed)
+- [ ] Missed checkpoints recover under a signed catch-up rule. (WP4 -- not started)
+- [x] Telegram retries reuse the logical ticket. (proven twice: at the store layer, and end-to-end in `test_successful_retry_after_retryable_failure_reuses_logical_ticket` against a mocked Telegram failure-then-success sequence)
+- [x] Secrets/destinations are configuration-only and redacted. (`TelegramDestinationConfig.from_values` takes no defaults, requires an explicit authorized-chat-id allow-list; `_redact()` strips the bot token from every piece of persisted failure evidence -- proven by 2 tests reading the actual on-disk journal file)
+- [x] No path enters execution or MT5 order submission. (static AST guard, `tests/test_ticket_delivery_execution_boundary.py`, now 4 tests covering renderer.py/telegram_adapter.py too, and excluding `notifications.trade_ticket_formatter` -- the approval/keyboard-coupled formatter -- as an additionally forbidden import)
+- [ ] Real message-only delivery is evidenced. (WP7 -- no live send attempted or claimed; all Telegram tests use an injected fake HTTP session)
 - [x] No execution authority or lifecycle field changes. (verified: no `strategies/`, `execution/`, `authorization/telegram_gateway.py` file modified this pass)
 
 ## Implementation order
