@@ -9,6 +9,38 @@ It does not authorize broker execution, change a frozen strategy, or claim that 
 current strategy is profitable. Strategy YAML owns signal behavior; the registry owns
 execution authority; immutable evidence owns performance claims.
 
+## Owner-directed delivery-to-validation sequence (2026-09-09)
+
+The governing sequence is:
+
+```text
+safety and measurement contracts
+  -> canonical proposal contract
+  -> exactly-once proposal delivery
+  -> persistent opportunity/watch system
+  -> outcome and cost resolution
+  -> formal strategy validation
+  -> promotion decision
+  -> optional funding or commercial release
+```
+
+Formal strategy validation starts after the relevant strategy's proposal and watch
+system is operationally proven. “Operationally proven” means deterministic state,
+archive-before-delivery, identity/deduplication, restart recovery, complete evidence
+capture, and execution isolation have passed their acceptance tests. It does not mean
+the strategy is profitable or authorized for Demo/LIVE execution.
+
+The handoff is per validation cohort: EURUSD/GBPUSD may enter validation after their
+proposal-delivery and FX watcher gates pass without waiting for unsigned USDJPY,
+XAUUSD, or ETHUSDT candidates. BTCUSDT may enter its separate validation cohort after
+its proposal/watch path passes. New candidate instruments require their own contracts
+and may not inherit another cohort's evidence or validation result.
+
+Evidence capture begins as soon as a valid proposal/watch pipeline is active so no
+eligible observation is discarded. Formal performance classification remains
+`NOT_EVALUATED` until the setup gate, outcome/cost contract, prospective thresholds,
+and required sample are complete.
+
 ## Objective
 
 Build a deterministic trade assistant that:
@@ -190,7 +222,12 @@ Exit: a user can begin from a chart, receive a deterministic multi-timeframe evi
 chain, see whether a registered strategy applies, and be assisted through entry
 confirmation without the advisory skills being presented as signal authority.
 
-### Stage 4 — Outcome resolution and economic validation
+### Stage 4 — Outcome resolution and strategy validation
+
+Entry gate: the strategy cohort's canonical proposal path and persistent watch system
+have passed their reliability, recovery, evidence-integrity, and execution-isolation
+acceptance criteria. Outcome and cost contracts and prospective promotion thresholds
+must be frozen before formal results are reviewed.
 
 ```text
 proposal -> entry evidence -> SL/target/expiry outcome -> gross R

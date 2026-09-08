@@ -16,36 +16,43 @@ their age.
    roadmap (CORE-D1..D7) — including where Telegram (paused), MT5 Demo, BTC/Bybit,
    and Large-SMC currently sit relative to it.
 4. [`PROJECT_ROADMAP.md`](PROJECT_ROADMAP.md) — owner-directed product objective,
-   profit-seeking ticket-first sequence, economic gates, backlog, and authority
-   boundaries, including the interactive top-down chart-analysis and cross-timeframe
-   confirmation workflow.
+   proposal/watch-first then strategy-validation sequence, economic gates, backlog,
+   and authority boundaries, including per-cohort validation handoff, interactive
+   top-down chart analysis, and cross-timeframe confirmation workflow.
 5. [`plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`](plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md)
    — detailed implementation and acceptance plan for the current milestone.
 6. [`plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md`](plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md)
    — current-status-reconciled action plan from Stage 0 safety through optional
    controlled Demo evaluation; planning only and non-authorizing.
-7. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
-8. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
+7. [`plans/BEST_MONEY_MAKING_PATHS_AND_TICKET_DELIVERY_ACTION_PLAN_V1.md`](plans/BEST_MONEY_MAKING_PATHS_AND_TICKET_DELIVERY_ACTION_PLAN_V1.md)
+   — owner-directed commercialization paths and gated action plan for exactly-once
+   Major FX, BTCUSDT, and later XAUUSD delivery; includes the independent watcher,
+   proposal, and execution-authority dimensions, `STRATEGY_UNMATCHED`, lifecycle
+   timestamps, next-required evidence, reuse-first SMC watcher recovery, a downstream
+   read-only Opportunity Board, outcome/funnel evidence, campaigns, prospective
+   promotion, and cost-stress requirements; planning only and non-authorizing.
+8. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
+9. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
    update procedure for rolling status, dated evidence, strategy authorization, and
    live-validation claims.
-9. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
+10. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
    non-authorizing capability-completeness audit and navigation matrix (Section A
    trading edge, Section B operations/execution/platform, execution-authority matrix,
    qualification counters). It does not replace `PROJECT_STATUS.md`,
    `strategies/registry.yaml` / `strategies/STRATEGY_LEDGER.md`,
    `docs/VERSION_HISTORY.md`, or dated `docs/status/*.md` evidence — see its own top
    section for which source is authoritative for which claim.
-10. [`status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md`](status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md)
+11. [`status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md`](status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md)
    — owner authorization to begin the read-only 30-valid-observation BTC campaign;
    records the zero-count starting state and preserves all execution prohibitions.
-11. [`status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`](status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md)
+12. [`status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`](status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md)
    — prospective owner-approved move of the BTC report window to 13:00-13:15 MMT
    (06:30-06:45 UTC); no observation, execution, or scheduler activation.
-12. [`status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md`](status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md)
+13. [`status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md`](status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md)
    — preflight architecture review and authorization packet for the next, separately
    authorized WP7 task (real Telegram message delivery); does not itself authorize
    `MESSAGE_DELIVERY` or any send.
-13. [`status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`](status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md)
+14. [`status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`](status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md)
    — records the frontend's explicit mock/real mode boundary, fail-closed legacy
    controls, verification limits, and unchanged trading authority.
 

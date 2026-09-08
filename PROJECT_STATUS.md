@@ -31,12 +31,16 @@ The current product objective is proposal-first trade assistance:
   resolve a compatible registered strategy, identify strategy-eligible opportunities,
   and monitor the strategy-defined higher-to-lower-timeframe entry confirmation.
 
-Delivery is now sequenced as **current-strategy ticket operations first, strategy
-validation second**. This sequencing does not change any frozen strategy behavior or
-claim that an unvalidated strategy has trading edge. The ticket layer may publish only
-values returned by the current deterministic strategy and must preserve `NO_TRADE`,
-`WATCH`, and fail-closed outcomes. All tickets and Large-SMC alerts remain
-informational; Demo/live execution authority is unchanged.
+Delivery is now sequenced as **proposal delivery and persistent watch setup first,
+strategy validation second**. Formal validation starts per strategy cohort after its
+proposal/watch path passes deterministic-state, archive/deduplication, restart-
+recovery, evidence-integrity, outcome/cost-contract, and execution-isolation gates;
+EURUSD/GBPUSD and BTCUSDT may therefore enter separate validation cohorts without
+waiting for unsigned expansion instruments. This sequencing does not change any frozen
+strategy behavior or claim that an unvalidated strategy has trading edge. The ticket
+layer may publish only values returned by the current deterministic strategy and must
+preserve `NO_TRADE`, `WATCH`, and fail-closed outcomes. All tickets and Large-SMC alerts
+remain informational; Demo/live execution authority is unchanged.
 
 In the interactive workflow, skills may describe structure, zones, liquidity, and
 confirmation evidence, but only the matched strategy engine can emit `READY` or a
@@ -53,6 +57,20 @@ blocker is specifically external message delivery on `main`. Earlier CORE-D1..D7
 qualification-first roadmap text
 below is retained as dated historical planning context where it conflicts with this
 newer owner direction.
+
+The owner-directed commercialization choices and end-to-end delivery/evidence plan are
+recorded in
+`docs/plans/BEST_MONEY_MAKING_PATHS_AND_TICKET_DELIVERY_ACTION_PLAN_V1.md`. It defines
+Major FX V1 delivery as EURUSD/GBPUSD, sequences BTCUSDT next and XAUUSD delivery only
+after the first pipeline passes its reliability gate, and adds a parallel expanded
+research/watch surface for FX Major Three, Gold, and Crypto Two. USDJPY, XAUUSD, and
+ETHUSDT may appear there only under explicit candidate/shadow status until their own
+contracts and gates pass. The plan now freezes watcher state, proposal state, and
+execution authority as three independent dimensions; preserves compatible research
+setups as `STRATEGY_UNMATCHED`; requires lifecycle timestamps and
+`next_required_evidence`; and places the Opportunity Board strictly after persisted
+watcher-state/recovery proof. It is non-authorizing: it does not change strategy,
+Demo/LIVE, message-delivery, or broker-execution authority.
 
 ## Two-section capability model (2026-09-06)
 
