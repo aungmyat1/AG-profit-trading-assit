@@ -1,0 +1,44 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "AG: Start Backend",
+            "type": "shell",
+            "command": "python",
+            "args": ["scripts/run_api.py", "--host", "127.0.0.1", "--port", "8000"],
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": { "reveal": "always", "panel": "dedicated" }
+        },
+        {
+            "label": "AG: Start Frontend",
+            "type": "shell",
+            "command": "npm",
+            "args": ["run", "dev"],
+            "options": { "cwd": "${workspaceFolder}/web" },
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": { "reveal": "always", "panel": "dedicated" }
+        },
+        {
+            "label": "AG: Start Dev",
+            "dependsOn": ["AG: Start Backend", "AG: Start Frontend"],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
+        },
+        {
+            "label": "AG: Run Integration Tests",
+            "type": "shell",
+            "command": "powershell",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/test_integration.ps1"],
+            "problemMatcher": []
+        },
+        {
+            "label": "AG: Test Dev Connection",
+            "type": "shell",
+            "command": "python",
+            "args": ["scripts/test_dev_connection.py"],
+            "problemMatcher": []
+        }
+    ]
+}

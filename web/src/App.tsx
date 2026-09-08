@@ -17,6 +17,7 @@ import { TradeCorrelationCard } from './components/Terminal/TradeCorrelationCard
 import { LiveManagedPositionsWidget } from './components/Terminal/LiveManagedPositionsWidget';
 import { DailyPnLHeader } from './components/Terminal/DailyPnLHeader';
 import { TradeJournal } from './components/Journal/TradeJournal';
+import { BackendConnectionDiagnostic } from './components/Terminal/BackendConnectionDiagnostic';
 
 import {
   Candle,
@@ -488,14 +489,17 @@ export const App: React.FC = () => {
 
         {/* VIEW 5: Execution & Trade Management */}
         {activeTab === 'execution' && (
-          <ExecutionCockpit
-            positions={positions}
-            onManagePosition={handleManagePosition}
-            onAddNote={handleAddPositionNote}
-            onDeleteNote={handleDeletePositionNote}
-            onExecuteTrade={handleExecuteTrade}
-            selectedProposal={activeProposal}
-          />
+          <div className="space-y-4">
+            <BackendConnectionDiagnostic />
+            <ExecutionCockpit
+              positions={positions}
+              onManagePosition={handleManagePosition}
+              onAddNote={handleAddPositionNote}
+              onDeleteNote={handleDeletePositionNote}
+              onExecuteTrade={handleExecuteTrade}
+              selectedProposal={activeProposal}
+            />
+          </div>
         )}
 
         {/* VIEW 6: Deterministic Trade Journal & PnL Growth */}

@@ -4,6 +4,52 @@ Status: setup guide, additive. Does not change execution authority, strategy sem
 or safety gates. See `AGENTS.md` "Authority order" for what actually decides/executes a
 trade — nothing in this document changes that chain.
 
+## QUICK START — VS Code
+
+```text
+1. Open MT5 and log into Vantage Demo
+
+2. Open AG Profit Trading in VS Code
+
+3. Run:
+   .\scripts\run_dev.ps1
+   (first run installs web/node_modules automatically if missing)
+
+4. Open:
+   http://localhost:3000
+
+5. Go to the "Execution" tab, click:
+   Test Backend Connection
+
+Expected:
+   BACKEND CONNECTED
+   Environment: DEMO
+   Broker connected: YES
+```
+
+Optional read-only check from a separate terminal (never sends an order):
+
+```powershell
+python scripts/test_dev_connection.py
+```
+
+Or from VS Code: `Ctrl+Shift+P` → `Tasks: Run Task` → `AG: Start Dev` (starts backend +
+frontend as two VS Code tasks) or `AG: Test Dev Connection` / `AG: Run Integration Tests`.
+`scripts/run_dev.ps1` is the more reliable single-command path — prefer it if the VS
+Code compound task behaves inconsistently on your machine.
+
+### Troubleshooting
+
+| Symptom | Likely cause / fix |
+|---|---|
+| `Port already in use` (8000 or 3000) | Another process already bound that port — stop it, or pass `--port` to `scripts/run_api.py` / change `web/vite.config.ts`'s `server.port` (and update `VITE_API_BASE_URL` to match if you change 8000). |
+| `npm install` fails or hangs | Check `node --version` / `npm --version` are on PATH. This repo ships `web/bun.lock` (Bun was the original scaffold's package manager) but no `package-lock.json`; `npm install` still works from `package.json` alone, just without that lockfile's pinning. A slow/flaky network to `registry.npmjs.org` can make it look hung — retry with `npm install --fetch-retries=5 --fetch-timeout=60000`. |
+| FastAPI unreachable | Confirm `python scripts/run_api.py` is actually running and printed `Application startup complete` with no `ERROR` line (a stale process can be holding the port — check `netstat -ano | findstr :8000`). |
+| Vite unreachable | Confirm `npm run dev` is running inside `web/` and printed a `Local: http://localhost:3000/` line. |
+| CORS error in the browser console | The frontend's origin isn't in the backend's allow-list. Default is `http://localhost:3000` and `http://127.0.0.1:3000`; if you're using a different port/origin, set `AG_ALLOWED_ORIGINS` (comma-separated) before starting the backend. Never set it to `*`. |
+| MT5 disconnected | `Test Backend Connection` will still say `BACKEND CONNECTED` (the API itself is up) but broker fields will show disconnected/unknown — this is expected and not a bug; open/log into the MT5 terminal and click the test again. |
+| Backend works (`curl` succeeds) but the frontend can't connect | Check `web/.env` has `VITE_API_BASE_URL=http://127.0.0.1:8000` and `VITE_AG_API_MODE=real`, then restart `npm run dev` (Vite only reads `.env` at startup). |
+
 ## Roles
 
 ```text
