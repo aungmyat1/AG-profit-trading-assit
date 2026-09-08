@@ -103,6 +103,27 @@ def test_missing_timestamps_sort_last_by_source_record_id():
     assert ordered_ids == ["timed_1", "timed_2", "missing_a", "missing_b"]
 
 
+def test_same_timestamp_records_never_dropped_or_reordered_by_value():
+    """Closest analog this schema has to a 'correction' ordering case: there is no
+    correction/supersedes field in ResolvedTradeSample (see models.py), so a corrected
+    record is just another independent sample that can legitimately share its original's
+    resolved_at. Ordering must still be total and deterministic -- tie-broken only by the
+    immutable source_record_id, never by gross_R/outcome favorability, and neither record
+    may be dropped."""
+    from performance.calculator import _ordered
+
+    samples = [
+        _sample(-5.0, source_record_id="orig", resolved_at="2026-01-01T00:00:00Z"),
+        _sample(1.0, source_record_id="corrected", resolved_at="2026-01-01T00:00:00Z"),
+    ]
+    ordered_ids = [s.source_record_id for s in _ordered(samples)]
+    assert ordered_ids == ["corrected", "orig"]  # tie broken by source_record_id, not by R
+    # Reversing the favorable/unfavorable input order must not change the tie-break.
+    ordered_ids_rev = [s.source_record_id for s in _ordered(list(reversed(samples)))]
+    assert ordered_ids_rev == ordered_ids
+    assert len(_ordered(samples)) == 2  # neither record dropped
+
+
 def test_ordering_is_stable_and_independent_of_input_order():
     ordered_input = [
         _sample(1.0, source_record_id="a", resolved_at="2026-01-01T00:00:00Z"),
