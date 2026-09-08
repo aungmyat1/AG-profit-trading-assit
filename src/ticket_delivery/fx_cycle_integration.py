@@ -42,11 +42,14 @@ from .archive import (
 )
 from .delivery_store import TicketDeliveryStore
 from .identity import logical_ticket_id
+from .policy import CatchUpPolicy
 from .renderer import format_message_text, render_informational_ticket
 
 REASON_ARCHIVE_FAILED = "ARCHIVE_FAILED"
 REASON_RENDER_BLOCKED = "RENDER_BLOCKED"
 REASON_TRANSPORT_NOT_CONFIGURED = "TELEGRAM_NOT_CONFIGURED"
+REASON_READY_MISSING_READY_AT = "READY_MISSING_READY_AT"
+DELIVERY_STATE_CATCH_UP_REJECTED = "CATCH_UP_REJECTED"
 
 
 @dataclass(frozen=True)
@@ -88,9 +91,10 @@ def process_pair_result(
     render_entry_ticket_dict: Optional[Callable[[Any], Dict[str, Any]]] = None,
     deliver: Optional[Callable[[str, str], Any]] = None,
     archive_root: Optional[str] = None, now: Optional[dt.datetime] = None,
+    catch_up_policy: Optional[CatchUpPolicy] = None,
 ) -> PairOutcome:
     """Processes ONE PairResult end-to-end: archive-before-send, then (READY only)
-    render -> register -> claim -> deliver.
+    catch-up gate -> render -> register -> claim -> deliver.
 
     `render_entry_ticket_dict`: caller-injected, maps a PairResult to the
     render_entry_ticket()-shaped dict renderer.render_informational_ticket() expects --
@@ -103,7 +107,19 @@ def process_pair_result(
     (typically a closure over telegram_adapter.deliver_informational_ticket() with a
     pre-built store/client/destination) -- absence means "transport not configured",
     which fails closed AFTER the archive has already happened (WP4.2: configuration
-    absence must preserve the archived strategy result)."""
+    absence must preserve the archived strategy result).
+
+    `catch_up_policy`: caller-injected `CatchUpPolicy` (typically built from
+    scheduler_integration's signed config), evaluated ONLY for a READY pair, using
+    `pair.decision.ready_at` as the checkpoint (the real strategy-signal timestamp --
+    frozen across restart/cache-reconstruction, never re-derived here) against `now`
+    (the actual current time this invocation is running, injectable for tests, real
+    wall-clock in production). `None` (the default) skips the gate entirely --
+    preserves every pre-catch-up-integration caller/test unchanged. When supplied, a
+    rejected catch-up NEVER creates a ticket (no render/register call below this
+    point); the archive already happened above and is untouched -- only registration is
+    withheld. A READY decision with no `ready_at` at all is itself an anomaly and fails
+    closed the same way (never assumed to be "on time")."""
     cycle_state = _map_cycle_state(pair)
     symbol = pair.symbol
     evaluation_time = pair.decision.evaluation_time.isoformat() if getattr(pair.decision, "evaluation_time", None) else (now or dt.datetime.now(dt.timezone.utc)).isoformat()
@@ -139,6 +155,17 @@ def process_pair_result(
         return PairOutcome(symbol, cycle_state, ticket_id, archive_path, True, "NOT_APPLICABLE")
 
     # READY only, past this point.
+    if catch_up_policy is not None:
+        checkpoint = getattr(pair.decision, "ready_at", None)
+        effective_now = now or dt.datetime.now(dt.timezone.utc)
+        if checkpoint is None:
+            return PairOutcome(symbol, cycle_state, ticket_id, archive_path, True,
+                               DELIVERY_STATE_CATCH_UP_REJECTED, REASON_READY_MISSING_READY_AT)
+        gate = catch_up_policy.evaluate(checkpoint=checkpoint, now=effective_now)
+        if not gate.allowed:
+            return PairOutcome(symbol, cycle_state, ticket_id, archive_path, True,
+                               DELIVERY_STATE_CATCH_UP_REJECTED, gate.reason_code)
+
     if render_entry_ticket_dict is None:
         raise ValueError("render_entry_ticket_dict is required to process a READY pair")
     proposal_dict = render_entry_ticket_dict(pair)

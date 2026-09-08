@@ -1,0 +1,22 @@
+{
+  "ST_ASIAN_SWEEP_5R_V1|1.1.1|EURUSD|ASIAN_LONDON|2026-09-08": {
+    "application_release": "AG_TRADE_ASSISTANT_V1_0_3",
+    "attempt_number": 0,
+    "created_at": "2026-09-08T08:22:11.778464+00:00",
+    "cycle": "ASIAN_LONDON",
+    "delivery_attempt_id": "",
+    "expires_at": null,
+    "failure_evidence_redacted": null,
+    "logical_ticket_id": "ST_ASIAN_SWEEP_5R_V1|1.1.1|EURUSD|ASIAN_LONDON|2026-09-08",
+    "payload_hash": "",
+    "provider": "TELEGRAM",
+    "provider_response_id": null,
+    "retry_classification": null,
+    "state": "NOT_APPLICABLE",
+    "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+    "strategy_version": "1.1.1",
+    "symbol": "EURUSD",
+    "trading_date": "2026-09-08",
+    "updated_at": "2026-09-08T08:22:11.778464+00:00"
+  }
+}

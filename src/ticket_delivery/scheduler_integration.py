@@ -5,25 +5,34 @@ existing --once path, unchanged) to fx_cycle_integration.process_pair_result() u
 explicit, config-controlled mode.
 
 Modes:
-  DISABLED         -- no ticket_delivery call at all. The only mode this repository's
-                       shipped config/ticket_delivery.yaml ships with. Instant rollback:
-                       deleting/reverting that one file's `mode` line returns to exactly
-                       today's unmodified scheduler behavior.
-  ARCHIVE_ONLY      -- archive every cycle decision, register READY ticket identity.
-                       Zero network calls -- structural, not merely config-gated: this
-                       module never constructs a deliver() closure for ANY mode.
-  MESSAGE_DELIVERY  -- NOT ACTIVATED this pass. As of this commit, MESSAGE_DELIVERY is
-                       handled IDENTICALLY to ARCHIVE_ONLY (deliver=None) -- the actual
-                       Telegram client/destination construction is deliberately not
-                       wired into this integration function yet, so setting
-                       `mode: MESSAGE_DELIVERY` in config today has no effect beyond
-                       what ARCHIVE_ONLY already does. Activating real delivery is a
-                       separate, later change (WP7), gated on the owner-signed catch-up
-                       and retry policy values -- see
-                       docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md.
+  DISABLED         -- no ticket_delivery call at all. One-line rollback: setting/
+                       reverting `mode: DISABLED` returns to exactly today's unmodified
+                       scheduler behavior, regardless of whether the signed `policy:`
+                       block below it is valid -- DISABLED never reads or requires it.
+  ARCHIVE_ONLY      -- ACTIVATED 2026-09-08 (see PROJECT_STATUS.md / the Stage 1 plan
+                       doc's dated entry) as the shipped repository default. Archives
+                       every completed cycle decision (READY/WATCH/NO_TRADE/DATA_ERROR/
+                       BLOCKED) and registers READY ticket identity, gated by the
+                       signed CatchUpPolicy below. Zero network calls -- structural, not
+                       merely config-gated: this module never constructs a deliver()
+                       closure for ANY mode.
+  MESSAGE_DELIVERY  -- NOT AUTHORIZED. As of this commit, MESSAGE_DELIVERY is handled
+                       IDENTICALLY to ARCHIVE_ONLY (deliver=None) -- the actual Telegram
+                       client/destination construction is deliberately not wired into
+                       this integration function yet, so setting `mode:
+                       MESSAGE_DELIVERY` in config today has no effect beyond what
+                       ARCHIVE_ONLY already does. Activating real delivery is a
+                       separate, later, explicitly-authorized change (WP7).
+
+Signed operational policy (OWNER_APPROVED 2026-09-08 -- see
+docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md's approval
+addendum): `config/ticket_delivery.yaml`'s `policy:` block is REQUIRED and strictly
+validated whenever `mode != DISABLED` -- see `_parse_policy()`. It is never required,
+and never read, when `mode == DISABLED`.
 """
 from __future__ import annotations
 
+import datetime as dt
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
@@ -33,6 +42,7 @@ from post_asian_pilot.report import render_entry_ticket
 
 from .delivery_store import TicketDeliveryStore
 from .fx_cycle_integration import process_pair_result
+from .policy import CatchUpPolicy, RetryPolicy
 
 MODE_DISABLED = "DISABLED"
 MODE_ARCHIVE_ONLY = "ARCHIVE_ONLY"
@@ -44,18 +54,123 @@ DEFAULT_CONFIG_PATH = "config/ticket_delivery.yaml"
 DEFAULT_ARCHIVE_ROOT = "journal/ticket_delivery/archive"
 DEFAULT_DELIVERY_STATE_DIR = "journal/ticket_delivery/state"
 
+_REQUIRED_POLICY_FIELDS = (
+    "fx_max_catch_up_age_minutes", "delivery_max_attempts",
+    "delivery_retry_base_delay_seconds", "delivery_retry_max_delay_seconds",
+)
+
+REASON_POLICY_BLOCK_MISSING = "POLICY_BLOCK_MISSING"
+REASON_POLICY_VALUE_MISSING = "POLICY_VALUE_MISSING"
+REASON_POLICY_VALUE_INVALID_TYPE = "POLICY_VALUE_INVALID_TYPE"
+REASON_POLICY_VALUE_NOT_POSITIVE = "POLICY_VALUE_NOT_POSITIVE"
+REASON_POLICY_UNKNOWN_FIELD = "POLICY_UNKNOWN_FIELD"
+REASON_POLICY_RETRY_DELAY_BOUNDS_INVALID = "POLICY_RETRY_DELAY_BOUNDS_INVALID"
+
+
+class TicketDeliveryConfigError(Exception):
+    """Raised by load_integration_config() ONLY when mode != DISABLED and the signed
+    `policy:` block is missing, malformed, or fails validation. Deliberately NOT raised
+    for a missing config file, malformed top-level YAML, or an unrecognized `mode`
+    value -- those retain the pre-existing, already-tested fail-closed-to-DISABLED
+    behavior (the caller cannot even determine what was requested, so the safest
+    response is an implicit no-op). A syntactically valid ARCHIVE_ONLY/MESSAGE_DELIVERY
+    request with an invalid policy block is different in kind: the operator has
+    unambiguously asked to activate ticket delivery with a broken policy, which must be
+    visible (a nonzero scheduler exit, via scripts/run_post_asian_pilot.py's existing
+    broad exception handling in _process_ticket_delivery()), not silently disabled."""
+
+    def __init__(self, reason_code: str, message: str):
+        super().__init__(message)
+        self.reason_code = reason_code
+
 
 @dataclass(frozen=True)
 class TicketDeliveryIntegrationConfig:
     mode: str
     archive_root: str
     delivery_state_dir: str
+    catch_up_policy: CatchUpPolicy
+    retry_policy: RetryPolicy
+
+
+def _require_numeric(raw_policy: Dict[str, Any], field: str, *, integer: bool) -> float:
+    if field not in raw_policy:
+        raise TicketDeliveryConfigError(REASON_POLICY_VALUE_MISSING, f"required policy field '{field}' is missing")
+    value = raw_policy[field]
+    # bool is a subclass of int in Python -- explicitly excluded so `true`/`false`
+    # can never silently pass as 1/0.
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TicketDeliveryConfigError(REASON_POLICY_VALUE_INVALID_TYPE, f"policy field '{field}' must be numeric, got {type(value).__name__}")
+    if integer and not isinstance(value, int):
+        raise TicketDeliveryConfigError(REASON_POLICY_VALUE_INVALID_TYPE, f"policy field '{field}' must be an integer, got {type(value).__name__}")
+    if value <= 0:
+        raise TicketDeliveryConfigError(REASON_POLICY_VALUE_NOT_POSITIVE, f"policy field '{field}' must be positive, got {value}")
+    return value
+
+
+def _parse_policy(raw_policy: Optional[Dict[str, Any]]) -> "_SignedPolicyValues":
+    """Strict validation of the signed policy contract (OWNER_APPROVED 2026-09-08):
+    every required field must be present, numeric, and positive; base retry delay must
+    not exceed max retry delay; no unrecognized field is tolerated. Never silently
+    substitutes a default for an invalid or missing value -- raises
+    TicketDeliveryConfigError with a specific reason_code instead.
+
+    Attempt-semantics interpretation (documented per this task's own instruction not to
+    silently choose one): `delivery_max_attempts` is the TOTAL number of attempts,
+    INCLUDING the initial attempt -- this is the existing, already-implemented
+    interpretation in `RetryPolicy.should_retry()` (`attempt_number >= max_attempts`
+    refuses a further retry), not a new choice made here. Under the approved
+    max_attempts=3, base=30s, max=300s contract this yields exactly: attempt 1
+    (initial) -> attempt 2 after a 30s delay -> attempt 3 after a 60s delay -> exhausted
+    (no attempt 4), matching the approved contract verbatim -- see
+    tests/test_ticket_delivery_policy.py's signed-contract-specific test."""
+    if raw_policy is None:
+        raise TicketDeliveryConfigError(REASON_POLICY_BLOCK_MISSING, "mode is not DISABLED but the 'policy:' block is missing")
+    if not isinstance(raw_policy, dict):
+        raise TicketDeliveryConfigError(REASON_POLICY_BLOCK_MISSING, "the 'policy:' block must be a mapping")
+
+    unknown = set(raw_policy) - set(_REQUIRED_POLICY_FIELDS)
+    if unknown:
+        raise TicketDeliveryConfigError(REASON_POLICY_UNKNOWN_FIELD, f"unrecognized policy field(s): {sorted(unknown)}")
+
+    catch_up_minutes = _require_numeric(raw_policy, "fx_max_catch_up_age_minutes", integer=True)
+    max_attempts = _require_numeric(raw_policy, "delivery_max_attempts", integer=True)
+    base_delay = _require_numeric(raw_policy, "delivery_retry_base_delay_seconds", integer=False)
+    max_delay = _require_numeric(raw_policy, "delivery_retry_max_delay_seconds", integer=False)
+
+    if base_delay > max_delay:
+        raise TicketDeliveryConfigError(
+            REASON_POLICY_RETRY_DELAY_BOUNDS_INVALID,
+            f"delivery_retry_base_delay_seconds ({base_delay}) must not exceed delivery_retry_max_delay_seconds ({max_delay})",
+        )
+
+    return _SignedPolicyValues(
+        fx_max_catch_up_age_minutes=int(catch_up_minutes), delivery_max_attempts=int(max_attempts),
+        delivery_retry_base_delay_seconds=float(base_delay), delivery_retry_max_delay_seconds=float(max_delay),
+    )
+
+
+@dataclass(frozen=True)
+class _SignedPolicyValues:
+    fx_max_catch_up_age_minutes: int
+    delivery_max_attempts: int
+    delivery_retry_base_delay_seconds: float
+    delivery_retry_max_delay_seconds: float
 
 
 def load_integration_config(path: Optional[str] = None) -> TicketDeliveryIntegrationConfig:
-    """Fail-closed to DISABLED on any missing file, malformed YAML, or unrecognized
-    mode value -- a configuration problem must never crash the scheduler run or alter
-    the strategy cycle report; it can only ever result in the safest (no-op) behavior.
+    """Fail-closed to DISABLED (silently, exit 0) on any missing file, malformed
+    top-level YAML, or unrecognized `mode` value -- unchanged from the original design:
+    a request this function cannot even parse is safest treated as an implicit no-op,
+    never crashing the scheduler run or altering the strategy cycle report.
+
+    A DIFFERENT failure mode -- mode is validly ARCHIVE_ONLY/MESSAGE_DELIVERY but the
+    signed `policy:` block is missing/invalid -- is NOT silently absorbed: it RAISES
+    TicketDeliveryConfigError, which scripts/run_post_asian_pilot.py's existing
+    exception handling turns into a nonzero scheduler exit (see
+    _process_ticket_delivery()). This is a deliberate asymmetry: an operator who wrote
+    `mode: ARCHIVE_ONLY` has unambiguously asked to activate ticket delivery, so a
+    broken policy under that request must be visible, not swallowed.
 
     `path` defaults to the module-level DEFAULT_CONFIG_PATH, read dynamically at call
     time (not bound as a Python default-argument value at definition time) so tests can
@@ -65,14 +180,24 @@ def load_integration_config(path: Optional[str] = None) -> TicketDeliveryIntegra
         with open(path, "r", encoding="utf-8") as f:
             raw = yaml.safe_load(f) or {}
     except (OSError, yaml.YAMLError):
-        return TicketDeliveryIntegrationConfig(MODE_DISABLED, DEFAULT_ARCHIVE_ROOT, DEFAULT_DELIVERY_STATE_DIR)
+        return TicketDeliveryIntegrationConfig(MODE_DISABLED, DEFAULT_ARCHIVE_ROOT, DEFAULT_DELIVERY_STATE_DIR, CatchUpPolicy(), RetryPolicy())
 
     mode = raw.get("mode", MODE_DISABLED)
     archive_root = raw.get("archive_root", DEFAULT_ARCHIVE_ROOT)
     delivery_state_dir = raw.get("delivery_state_dir", DEFAULT_DELIVERY_STATE_DIR)
     if mode not in _VALID_MODES:
         mode = MODE_DISABLED
-    return TicketDeliveryIntegrationConfig(mode=mode, archive_root=archive_root, delivery_state_dir=delivery_state_dir)
+
+    if mode == MODE_DISABLED:
+        return TicketDeliveryIntegrationConfig(mode, archive_root, delivery_state_dir, CatchUpPolicy(), RetryPolicy())
+
+    signed = _parse_policy(raw.get("policy"))
+    catch_up_policy = CatchUpPolicy(max_catch_up_age=dt.timedelta(minutes=signed.fx_max_catch_up_age_minutes))
+    retry_policy = RetryPolicy(
+        max_attempts=signed.delivery_max_attempts, base_delay_seconds=signed.delivery_retry_base_delay_seconds,
+        max_delay_seconds=signed.delivery_retry_max_delay_seconds,
+    )
+    return TicketDeliveryIntegrationConfig(mode, archive_root, delivery_state_dir, catch_up_policy, retry_policy)
 
 
 def cycle_label_from_pilot_path(pilot_path: Optional[str]) -> str:
@@ -93,6 +218,7 @@ def cycle_label_from_pilot_path(pilot_path: Optional[str]) -> str:
 def process_cycle_result(
     result, *, pilot_path: Optional[str], config: Optional[TicketDeliveryIntegrationConfig] = None,
     ledger: Any = None, release_fingerprint: Optional[str] = None, strategy_fingerprint: Optional[str] = None,
+    now: Optional[dt.datetime] = None,
 ) -> List[Dict[str, Any]]:
     """The single call site scripts/run_post_asian_pilot.py (and its tests) use.
     `result` is the UNMODIFIED PilotCycleResult run_pilot_cycle() already returned --
@@ -101,11 +227,16 @@ def process_cycle_result(
     scripts/run_post_asian_pilot.py's existing `_entry_ticket_context()` already builds
     for report rendering -- reused verbatim, not rebuilt.
 
+    `now`: injectable clock (real wall-clock when omitted, a fixed value in tests --
+    never a real sleep anywhere in this call chain) forwarded to
+    fx_cycle_integration.process_pair_result()'s catch-up gate and delivery-journal
+    timestamps.
+
     Returns a list of plain-dict outcomes (one per PairResult), always -- an archive
-    failure or render-block for one pair is reported in that pair's own dict, never
-    raised, so one pair's operational failure never prevents the loop from completing
-    for the others (requirement: never cause strategy reevaluation, never abort the
-    cycle report)."""
+    failure, catch-up rejection, or render-block for one pair is reported in that
+    pair's own dict, never raised, so one pair's operational failure never prevents the
+    loop from completing for the others (requirement: never cause strategy
+    reevaluation, never abort the cycle report)."""
     config = config or load_integration_config()
     if config.mode == MODE_DISABLED:
         return []
@@ -132,7 +263,7 @@ def process_cycle_result(
             pair, strategy_id=result.strategy.strategy_id, strategy_version=result.strategy.version,
             application_release=result.release_id, cycle=cycle, trading_date=result.trading_date,
             delivery_store=store, render_entry_ticket_dict=render_dict, deliver=deliver,
-            archive_root=config.archive_root,
+            archive_root=config.archive_root, now=now, catch_up_policy=config.catch_up_policy,
         )
         outcomes.append({
             "symbol": outcome.symbol, "cycle_state": outcome.cycle_state,

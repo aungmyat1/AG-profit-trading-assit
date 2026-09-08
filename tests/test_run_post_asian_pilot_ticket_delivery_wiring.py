@@ -50,24 +50,87 @@ def _fixture_result():
                            trading_date=dt.date(2026, 9, 8), pairs=[pair])
 
 
-def _write_config(tmp_path, mode="ARCHIVE_ONLY"):
-    cfg_path = tmp_path / "ticket_delivery.yaml"
-    cfg_path.write_text(
-        f"mode: {mode}\narchive_root: {tmp_path / 'archive'}\ndelivery_state_dir: {tmp_path / 'state'}\n",
-        encoding="utf-8",
-    )
+_SIGNED_POLICY_YAML = (
+    "policy:\n"
+    "  fx_max_catch_up_age_minutes: 60\n"
+    "  delivery_max_attempts: 3\n"
+    "  delivery_retry_base_delay_seconds: 30\n"
+    "  delivery_retry_max_delay_seconds: 300\n"
+)
+
+
+def _write_config(tmp_path, mode="ARCHIVE_ONLY", include_policy=True, name="ticket_delivery.yaml"):
+    cfg_path = tmp_path / name
+    body = f"mode: {mode}\narchive_root: {tmp_path / 'archive'}\ndelivery_state_dir: {tmp_path / 'state'}\n"
+    if include_policy and mode != "DISABLED":
+        body += _SIGNED_POLICY_YAML
+    cfg_path.write_text(body, encoding="utf-8")
     return str(cfg_path)
 
 
-def test_disabled_default_config_produces_no_ticket_delivery_output(script_module, tmp_path, monkeypatch):
+def test_real_shipped_config_is_archive_only_and_produces_output(script_module):
     """The real shipped config/ticket_delivery.yaml -- proves a scheduled run today
-    (with no operator opt-in) prints nothing new and touches no new files."""
+    (owner-authorized 2026-09-08) archives with the signed policy, no monkeypatching of
+    the config path at all."""
     result = _fixture_result()
     buf = io.StringIO()
     with redirect_stdout(buf):
-        archive_failed = script_module._process_ticket_delivery(result, None, None, None, None, as_json=True)
-    assert archive_failed is False
+        ticket_delivery_failed = script_module._process_ticket_delivery(result, None, None, None, None, as_json=True)
+    assert ticket_delivery_failed is False
+    output = buf.getvalue()
+    assert '"mode": "ARCHIVE_ONLY"' in output
+    assert '"cycle_state": "WATCH"' in output
+
+
+def test_disabled_config_produces_no_ticket_delivery_output_and_no_writes(script_module, tmp_path, monkeypatch):
+    """The one-line-rollback path: an explicit DISABLED config (no policy block
+    required or read) must remain a complete, silent no-op."""
+    import ticket_delivery.scheduler_integration as si_module
+    monkeypatch.setattr(si_module, "DEFAULT_CONFIG_PATH", _write_config(tmp_path, "DISABLED"))
+
+    result = _fixture_result()
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        ticket_delivery_failed = script_module._process_ticket_delivery(result, None, None, None, None, as_json=True)
+    assert ticket_delivery_failed is False
     assert "ticket_delivery" not in buf.getvalue()
+    import os
+    assert not os.path.exists(str(tmp_path / "archive"))
+    assert not os.path.exists(str(tmp_path / "state"))
+
+
+def test_missing_signed_policy_under_active_mode_produces_nonzero_exit_zero_network(script_module, tmp_path, monkeypatch):
+    """Gate 2: mode is ARCHIVE_ONLY but the signed policy block is absent -- this must
+    be a visible, normalized operational failure (nonzero exit) at the real CLI call
+    site, not a silent DISABLED-style no-op, and must make zero archive/network calls."""
+    import ticket_delivery.scheduler_integration as si_module
+    monkeypatch.setattr(si_module, "DEFAULT_CONFIG_PATH", _write_config(tmp_path, "ARCHIVE_ONLY", include_policy=False))
+
+    result = _fixture_result()
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        ticket_delivery_failed = script_module._process_ticket_delivery(result, None, None, None, None, as_json=True)
+    assert ticket_delivery_failed is True
+    import os
+    assert not os.path.exists(str(tmp_path / "archive"))
+
+
+def test_invalid_signed_policy_value_under_active_mode_produces_nonzero_exit(script_module, tmp_path, monkeypatch):
+    import ticket_delivery.scheduler_integration as si_module
+    cfg_path = tmp_path / "ticket_delivery.yaml"
+    cfg_path.write_text(
+        f"mode: ARCHIVE_ONLY\narchive_root: {tmp_path / 'archive'}\ndelivery_state_dir: {tmp_path / 'state'}\n"
+        "policy:\n  fx_max_catch_up_age_minutes: 0\n  delivery_max_attempts: 3\n"
+        "  delivery_retry_base_delay_seconds: 30\n  delivery_retry_max_delay_seconds: 300\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(si_module, "DEFAULT_CONFIG_PATH", str(cfg_path))
+
+    result = _fixture_result()
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        ticket_delivery_failed = script_module._process_ticket_delivery(result, None, None, None, None, as_json=True)
+    assert ticket_delivery_failed is True
 
 
 def test_archive_only_config_wired_through_the_real_cli_function(script_module, tmp_path, monkeypatch):

@@ -95,17 +95,21 @@ def _process_ticket_delivery(result, pilot_path: str, ledger, release_fp, strate
     successfully by the time this runs). Ships DISABLED by default
     (config/ticket_delivery.yaml) -- a no-op until an operator explicitly opts in.
 
-    Returns True (the caller then raises a nonzero scheduler exit code) if either: an
-    archive failure occurred for any pair, or ticket-delivery processing itself raised
-    an unexpected exception. Both are operationally actionable and must be visible to
-    whatever watches the scheduled task's exit code (Task Scheduler LastTaskResult,
-    the .bat wrapper) -- silently swallowing an unexpected error here would mean a real
-    ticket-delivery defect never surfaces anywhere except a stderr line nobody is
-    watching. render-blocked/transport-not-configured are expected, non-critical
-    outcomes in ARCHIVE_ONLY mode and do NOT trigger a nonzero exit.
+    Returns True (the caller then raises a nonzero scheduler exit code) if any of:
+    an archive failure occurred for any pair, a signed-policy configuration error was
+    detected (mode is ARCHIVE_ONLY/MESSAGE_DELIVERY but the policy block is missing or
+    invalid), or ticket-delivery processing raised an unexpected exception. All three
+    are operationally actionable and must be visible to whatever watches the scheduled
+    task's exit code (Task Scheduler LastTaskResult, the .bat wrapper) -- silently
+    swallowing any of them here would mean a real ticket-delivery defect never surfaces
+    anywhere except a stderr line nobody is watching. render-blocked/
+    transport-not-configured/catch-up-rejected are expected, non-critical outcomes in
+    ARCHIVE_ONLY mode and do NOT trigger a nonzero exit.
     """
     try:
-        from ticket_delivery.scheduler_integration import load_integration_config, process_cycle_result
+        from ticket_delivery.scheduler_integration import (
+            TicketDeliveryConfigError, load_integration_config, process_cycle_result,
+        )
 
         config = load_integration_config()
         if config.mode == "DISABLED":
@@ -114,6 +118,9 @@ def _process_ticket_delivery(result, pilot_path: str, ledger, release_fp, strate
             result, pilot_path=pilot_path, config=config, ledger=ledger,
             release_fingerprint=release_fp, strategy_fingerprint=strategy_fp,
         )
+    except TicketDeliveryConfigError as exc:  # noqa: BLE001 -- an operator activated ticket delivery with a broken signed policy; this must be visible, never silently disabled
+        print(f"TICKET_DELIVERY_CONFIG_ERROR: {exc.reason_code}: {exc}", file=sys.stderr)
+        return True
     except Exception as exc:  # noqa: BLE001 -- ticket-delivery is additive; never let an unexpected error here raise out of this function and crash the already-printed strategy report
         print(f"TICKET_DELIVERY_OPERATIONAL_ERROR: {exc}", file=sys.stderr)
         return True

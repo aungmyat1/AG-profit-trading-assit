@@ -1,27 +1,39 @@
 # Ticket-delivery scheduler integration mode
-# (AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1, activated 2026-09-08).
+# (AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1)
+#
+# Status history:
+#   2026-09-08  integration introduced          -- src/ticket_delivery/scheduler_integration.py
+#                                                    wired into scripts/run_post_asian_pilot.py,
+#                                                    shipped DISABLED (no-op).
+#   2026-09-08  archive-only activated          -- mode changed to ARCHIVE_ONLY under explicit
+#                                                    owner authorization, gated by the signed
+#                                                    `policy:` block below.
+#   --          message delivery NOT authorized -- MESSAGE_DELIVERY remains inert (see below);
+#                                                    activating it is a separate, later,
+#                                                    explicitly-authorized change (WP7).
 #
 # Read by src/ticket_delivery/scheduler_integration.py::load_integration_config().
-# Fails closed to DISABLED if this file is missing, malformed, or `mode` is not one of
-# the three values below -- a config problem can never crash a scheduled run or change
-# strategy/report output, only ever result in the safest (no-op) behavior.
 #
 # mode: DISABLED
-#   No ticket_delivery call at all. Current shipped value. Reverting this single line
-#   to DISABLED is the complete, immediate rollback for this entire integration.
+#   No ticket_delivery call at all. Reverting this single line to DISABLED is the
+#   complete, immediate rollback for this entire integration -- the `policy:` block
+#   below is never read or required in this mode, even if it is invalid.
 #
-# mode: ARCHIVE_ONLY
+# mode: ARCHIVE_ONLY   (current value)
 #   Archives every completed cycle decision (READY/WATCH/NO_TRADE/DATA_ERROR/BLOCKED)
-#   and registers READY ticket identity. Zero network/Telegram calls -- enforced
-#   structurally in scheduler_integration.py, not just by this config value.
+#   and registers READY ticket identity, gated by the signed CatchUpPolicy below. Zero
+#   network/Telegram calls -- enforced structurally in scheduler_integration.py, not
+#   just by this config value. Whenever mode != DISABLED, the `policy:` block below is
+#   REQUIRED and strictly validated; a missing/invalid policy value produces a nonzero
+#   scheduler exit (never a silent no-op), because the operator has unambiguously asked
+#   to activate ticket delivery.
 #
 # mode: MESSAGE_DELIVERY
-#   NOT YET AUTHORIZED. As of this file's introduction, MESSAGE_DELIVERY behaves
+#   NOT AUTHORIZED. As of this file's introduction, MESSAGE_DELIVERY behaves
 #   IDENTICALLY to ARCHIVE_ONLY (see scheduler_integration.py's module docstring) --
-#   real Telegram delivery requires a separate, later code change plus owner-signed
-#   catch-up/retry policy values. See
-#   docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md.
-mode: DISABLED
+#   real Telegram delivery requires a separate, later, explicitly-authorized code
+#   change (WP7).
+mode: ARCHIVE_ONLY
 
 # Where per-cycle decisions are archived (post_asian_pilot.report_archive's existing
 # atomic-write/idempotent/correction convention, unchanged).
@@ -29,3 +41,31 @@ archive_root: journal/ticket_delivery/archive
 
 # Where the durable delivery journal (atomic claim state) lives.
 delivery_state_dir: journal/ticket_delivery/state
+
+# OWNER_APPROVED 2026-09-08 -- Stage 1 FX ticket-delivery operational policy.
+# See docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md's approval
+# addendum for the full rationale, alternatives considered, and unsigned-failure
+# behavior. These values apply PROSPECTIVELY to Stage 1 FX ticket operations only --
+# they do not alter strategy behavior, and changing them later does not retroactively
+# alter any already-archived record's identity (logical_ticket_id has no dependency on
+# any of these values). Required and strictly validated whenever mode != DISABLED (see
+# src/ticket_delivery/scheduler_integration.py::_parse_policy()).
+policy:
+  # Missed-checkpoint catch-up: a READY ticket's registration is only permitted while
+  # `now - decision.ready_at <= 60 minutes`. Older than that, the decision is still
+  # archived (never lost) but no ticket identity is registered (reason_code
+  # OUTSIDE_CATCH_UP_WINDOW) -- see fx_cycle_integration.py's catch-up gate.
+  fx_max_catch_up_age_minutes: 60
+
+  # Total delivery attempts, INCLUDING the initial attempt (existing RetryPolicy
+  # interpretation, not newly chosen here -- see _parse_policy()'s docstring). Not yet
+  # exercised by any real code path: MESSAGE_DELIVERY is still inert this pass.
+  delivery_max_attempts: 3
+
+  # First retry delay. With the approved values this yields 30s, then 60s (base *
+  # 2^(attempt-1)), before the 3rd (final) attempt is exhausted.
+  delivery_retry_base_delay_seconds: 30
+
+  # Upper bound on any single retry delay (the deterministic backoff never exceeds
+  # this, no matter how many attempts a future, differently-configured policy allowed).
+  delivery_retry_max_delay_seconds: 300
