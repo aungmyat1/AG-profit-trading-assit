@@ -197,6 +197,63 @@ def test_claim_and_reject_race_has_exactly_one_winner(tmp_path):
     assert store.get(approval.approval_id).state in (STATE_CLAIMED, STATE_REJECTED)
 
 
+def test_ten_way_concurrent_claim_has_exactly_one_winner(tmp_path):
+    """AG_DEMO_EXECUTION_GATEWAY_PHASE_D2 section 5: explicit 10-way concurrency case,
+    beyond the pre-existing 8-way test above. Run against runtime_state.store's
+    path-level threading.Lock fix -- before that fix this reproduced the Windows
+    os.replace() PermissionError intermittently under this exact shape."""
+    store = ExecutionApprovalStore(state_dir=str(tmp_path))
+    approval = store.create(_proposal(), venue=VENUE_MT5)
+    store.mark_sent_to_telegram(approval.approval_id, chat_id=1, message_id=1)
+
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        results = list(pool.map(lambda _: store.claim(approval.approval_id), range(10)))
+
+    successes = [r for r in results if r.success]
+    assert len(successes) == 1
+    assert store.get(approval.approval_id).state == STATE_CLAIMED
+
+
+def test_claim_after_store_reopen_is_rejected_as_duplicate(tmp_path):
+    """Restart/reopen scenario (section 5): a second ExecutionApprovalStore instance
+    constructed fresh against the same state_dir (simulating a process restart, or a
+    new instance built per HTTP request/Telegram callback) must see the already-CLAIMED
+    state on disk and refuse a second claim -- state lives in the file, not in any
+    in-memory object identity."""
+    first_store = ExecutionApprovalStore(state_dir=str(tmp_path))
+    approval = first_store.create(_proposal(), venue=VENUE_MT5)
+    first_store.mark_sent_to_telegram(approval.approval_id, chat_id=1, message_id=1)
+
+    first_result = first_store.claim(approval.approval_id)
+    assert first_result.success is True
+
+    reopened_store = ExecutionApprovalStore(state_dir=str(tmp_path))
+    second_result = reopened_store.claim(approval.approval_id)
+    assert second_result.success is False
+    assert second_result.reason_code == REASON_APPROVAL_ALREADY_PROCESSED
+    assert reopened_store.get(approval.approval_id).state == STATE_CLAIMED
+
+
+def test_concurrent_claims_on_independent_approvals_each_succeed(tmp_path):
+    """Different approvals (different proposal identities) must not interfere with each
+    other's locking -- the path-level lock is per state-file (shared by all approvals in
+    one store), so this also proves the fix didn't accidentally serialize unrelated
+    approvals into an incorrect single-winner-overall outcome."""
+    store = ExecutionApprovalStore(state_dir=str(tmp_path))
+    approvals = []
+    for i in range(5):
+        approval = store.create(_proposal(setup_id=f"ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-0{i+1}"), venue=VENUE_MT5)
+        store.mark_sent_to_telegram(approval.approval_id, chat_id=1, message_id=i)
+        approvals.append(approval)
+
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        results = list(pool.map(lambda a: store.claim(a.approval_id), approvals))
+
+    assert all(r.success for r in results)
+    for approval in approvals:
+        assert store.get(approval.approval_id).state == STATE_CLAIMED
+
+
 def test_rejected_approval_cannot_later_be_claimed(tmp_path):
     store = ExecutionApprovalStore(state_dir=str(tmp_path))
     approval = store.create(_proposal(), venue=VENUE_MT5)
