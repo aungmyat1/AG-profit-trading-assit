@@ -23,6 +23,54 @@ Authority: `docs/PROJECT_ROADMAP.md`, reconciled with the current checkout
 | 7 — Stage 5 portfolio selection | NOT STARTED | — |
 | 8 — Stage 6 optional controlled Demo program | NOT STARTED | Live trading remains disabled. |
 
+### Current roadmap classification (2026-09-08, governance-reconciled)
+
+```text
+PHASE_0_BASELINE_RECONCILIATION   = COMPLETE_WITH_GOVERNANCE_CLEANUP
+  -- documentation reconciled to the checkout; a repository-local push guard was
+     added after an unexplained auto-commit/auto-push governance anomaly (see the
+     Stage 1 governance-reconciliation status document).
+
+STAGE_0_SAFETY_AND_MEASUREMENT    = COMPLETE
+  -- drawdown-from-zero, missing-timestamp ordering, fail-closed broker
+     reconciliation all fixed/verified.
+
+STAGE_1_EXACTLY_ONCE_FX_TICKETS   = ARCHIVE_ONLY_OPERATIONAL
+                                   = EXTERNAL_DELIVERY_NOT_VERIFIED
+                                   = NOT_COMPLETE
+  -- ARCHIVE_ONLY active with real scheduled evidence and a signed catch-up policy;
+     MESSAGE_DELIVERY inert/unauthorized; WP7 (real Telegram send) not started.
+
+STAGE_2_COVERAGE_EXPANSION        = NOT_STARTED
+  -- USDJPY/XAUUSD/ETHUSDT untouched; begins only after Stage 1 external delivery
+     is proven and closed.
+
+STAGE_3_LARGE_SMC_FORWARD_FUNNEL  = RESEARCH_FOUNDATION_PRESENT
+                                   = FORWARD_QUALIFICATION_INCOMPLETE
+  -- RESEARCH_DRAFT strategy + advisory skills exist; no forward watcher, no
+     alert lifecycle, no execution authority.
+
+STAGE_3A_CHART_ASSISTANCE         = PARTIAL
+  -- the underlying analysis-chain primitives exist as advisory skills
+     (market-structure/supply-demand/liquidity/entry-confirmation/multi-timeframe-
+     context); the request/response contract, strategy-matching
+     (NO_REGISTERED_STRATEGY_MATCH), persisted watches, and ticket routing described
+     in Phase 5 below do not exist in code yet.
+
+STAGE_4_ECONOMIC_VALIDATION       = FOUNDATION_PRESENT
+                                   = PROMOTION_GATE_NOT_SATISFIED
+  -- src/performance/ (calculator, models, adapters) exists and is tested; no signed
+     outcome-resolution contract, no walk-forward validation run, no strategy has
+     received a PASS/FAIL/INSUFFICIENT_EVIDENCE verdict.
+
+STAGE_5_PORTFOLIO_SELECTION       = NOT_STARTED
+
+STAGE_6_CONTROLLED_DEMO           = NOT_AUTHORIZED
+
+LIVE_EXECUTION                    = DISABLED
+                                   = OUTSIDE_CURRENT_ROADMAP
+```
+
 ## Objective
 
 Complete dependable informational decision delivery first, then expand instrument
@@ -32,20 +80,54 @@ frozen strategy rule.
 
 ## Current baseline
 
+Historical baseline (as originally recorded 2026-09-08 at `main` @ `5185035`, before
+any phase in this plan was executed) is preserved below in "Historical baseline
+(superseded)". The bullets in THIS section describe present, current-checkout state
+only -- read the phase-by-phase status table above first; these bullets add detail the
+table doesn't carry.
+
 - EURUSD and GBPUSD deterministic decisions exist for both current FX cycles.
-- FX and BTC scheduler tasks exist, but overlap, restart, and missed-run recovery are
-  not proven.
-- Local persistence exists; durable external delivery and delivery-attempt
-  reconciliation remain incomplete.
-- FastAPI, authorization, Telegram, and MT5 execution-handler code is now present on
-  `main`, while `PROJECT_STATUS.md` still describes part of it as isolated. The status
-  record must be reconciled before this is treated as an operational surface.
+- FX scheduler overlap, restart, and missed-checkpoint recovery ARE now proven for the
+  ticket-delivery layer: `MultipleInstances: IgnoreNew` (OS-level overlap guard),
+  idempotent archive/registration convergence under repeated/concurrent invocation, and
+  a signed 60-minute catch-up gate -- proven against both synthetic tests and one real
+  naturally-occurring stale READY signal that was correctly catch-up-rejected. BTC's
+  scheduler overlap/restart/missed-run recovery is NOT covered by this proof (out of
+  Stage 1's FX-only scope) and remains unverified.
+- Local delivery-attempt persistence/reconciliation (the exactly-once journal, atomic
+  claim, retry/backoff mechanism) is now IMPLEMENTED, signed, and wired
+  (`ARCHIVE_ONLY` active). EXTERNAL delivery (an actual Telegram send) remains
+  unverified -- `MESSAGE_DELIVERY` is inert/unauthorized pending a separate WP7 task.
+- FastAPI, authorization, Telegram, and MT5 execution-handler code is present on
+  `main` and `PROJECT_STATUS.md` has been reconciled to describe it correctly (Phase 0,
+  DONE) -- it is IMPLEMENTED_AND_TESTED, not yet operationally wired (no live Telegram
+  bot process, no persistent proposal registry beyond in-memory).
 - BTCUSDT has a scheduled read-only decision path; ETHUSDT does not. Crypto execution
   remains unimplemented.
-- Large-SMC has a research funnel but no proven forward watcher and alert lifecycle.
-- Performance drawdown/timestamp-ordering contracts and fail-closed broker
-  reconciliation remain Stage 0 blockers.
+- Large-SMC has a research funnel but no proven forward watcher and alert lifecycle
+  (Stage 3, unchanged -- out of this plan's current scope).
+- Performance drawdown-from-zero, missing-timestamp ordering, and fail-closed broker
+  reconciliation are DONE (Phase 1) -- no longer Stage 0 blockers. Stage 0 is CLOSED
+  for the specific defects this plan tracked.
 - Live trading stays disabled. Eligibility and authorization remain separate.
+- A repository-local `git push` guard (`scripts/git-hooks/pre-push`,
+  `core.hooksPath` set locally) was added 2026-09-08 after unexplained automatic
+  commits/pushes to `origin/main` were observed from this VS Code workspace -- see
+  the Stage 1 governance-reconciliation status document for the full investigation.
+
+### Historical baseline (superseded)
+
+Recorded 2026-09-08 at `main` @ `5185035`, before Phase 0/1/2 work in this plan began.
+Preserved verbatim as prior-state evidence -- do not treat as current:
+
+- FX and BTC scheduler tasks existed, but overlap, restart, and missed-run recovery
+  were not proven.
+- Local persistence existed; durable external delivery and delivery-attempt
+  reconciliation were incomplete.
+- `PROJECT_STATUS.md` still described the FastAPI/authorization/Telegram/execution-handler
+  code as isolated, which no longer matched the checkout.
+- Performance drawdown/timestamp-ordering contracts and fail-closed broker
+  reconciliation were open Stage 0 blockers.
 
 ## Phased action plan
 

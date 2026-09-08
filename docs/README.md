@@ -41,6 +41,10 @@ their age.
 11. [`status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`](status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md)
    — prospective owner-approved move of the BTC report window to 13:00-13:15 MMT
    (06:30-06:45 UTC); no observation, execution, or scheduler activation.
+12. [`status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md`](status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md)
+   — preflight architecture review and authorization packet for the next, separately
+   authorized WP7 task (real Telegram message delivery); does not itself authorize
+   `MESSAGE_DELIVERY` or any send.
 
 ## Architecture
 

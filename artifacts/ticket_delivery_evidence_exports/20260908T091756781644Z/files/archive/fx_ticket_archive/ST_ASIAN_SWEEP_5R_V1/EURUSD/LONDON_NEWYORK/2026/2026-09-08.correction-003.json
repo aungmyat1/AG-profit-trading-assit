@@ -1,0 +1,24 @@
+{
+  "corrected_at": "2026-09-08T09:15:49.247766+00:00",
+  "correction_reason": "REGENERATED_WITH_DIFFERENT_CONTENT",
+  "new_record": {
+    "application_release": "AG_TRADE_ASSISTANT_V1_0_3",
+    "cycle": "LONDON_NEWYORK",
+    "cycle_state": "WATCH",
+    "evaluation_time_utc": "2026-09-08T09:15:47.783173+00:00",
+    "logical_ticket_id": "ST_ASIAN_SWEEP_5R_V1|1.1.1|EURUSD|LONDON_NEWYORK|2026-09-08",
+    "payload": {
+      "decision_status": "WATCH",
+      "portfolio_reason_code": null,
+      "portfolio_state": "ELIGIBLE",
+      "setup_id": null
+    },
+    "reason_codes": [],
+    "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+    "strategy_version": "1.1.1",
+    "symbol": "EURUSD",
+    "trading_date": "2026-09-08"
+  },
+  "original_record_identity": "journal/ticket_delivery/archive\\fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/LONDON_NEWYORK\\2026\\2026-09-08.json",
+  "supersedes": "journal/ticket_delivery/archive\\fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/LONDON_NEWYORK\\2026\\2026-09-08.correction-002.json"
+}

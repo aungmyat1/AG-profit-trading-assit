@@ -1,0 +1,139 @@
+{
+  "application_release": "AG_TRADE_ASSISTANT_V1_0_3",
+  "export_id": "20260908T091756781644Z",
+  "export_timestamp_utc": "2026-09-08T09:17:56.781644+00:00",
+  "file_count": 20,
+  "files": [
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-001.json",
+      "sha256": "f83abf1fe899afc772b3228352803162c0d5982a2d76354e6f5f31f17a369e97",
+      "size_bytes": 1076,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-001.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-002.json",
+      "sha256": "cc2dbbd326a327d12b642bc9b076c02d3ff2dc7ede43484a0605070f0faf600b",
+      "size_bytes": 1091,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-002.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-003.json",
+      "sha256": "cf0cd7c1a1e394bcf3b26b812f6a328033101fbf8ab833884ef5c3fbf54cfe18",
+      "size_bytes": 1091,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-003.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-004.json",
+      "sha256": "1d24738e109a7be0f11cc83a0f1469d42205a946a4f30e201a76ee0622338f4b",
+      "size_bytes": 1091,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-004.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-005.json",
+      "sha256": "f168cb43f5ee0fe71f305a209422b85847d6cf9b6ce6d322113e837445fec8cb",
+      "size_bytes": 1091,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-005.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.json",
+      "sha256": "973c59d3198850a1f610a6f91bea43633a6f9ab2d8f4188d6d1795e566b41123",
+      "size_bytes": 569,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/LONDON_NEWYORK/2026/2026-09-08.correction-001.json",
+      "sha256": "3fa58f93e7e4f91aed5d59693ad315830989eaccfa8df82ff92ef4cb8baca7c8",
+      "size_bytes": 1027,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/LONDON_NEWYORK/2026/2026-09-08.correction-001.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/LONDON_NEWYORK/2026/2026-09-08.correction-002.json",
+      "sha256": "396a5965c2cb237a3be3403c935f82ef9340f8b26f585adf91f833c653ac3310",
+      "size_bytes": 1042,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/LONDON_NEWYORK/2026/2026-09-08.correction-002.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/LONDON_NEWYORK/2026/2026-09-08.correction-003.json",
+      "sha256": "515fabc000d3cbed65b8642e124a59b042c9bb1cb2a063fdfaffa40da0de752d",
+      "size_bytes": 1042,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/LONDON_NEWYORK/2026/2026-09-08.correction-003.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/LONDON_NEWYORK/2026/2026-09-08.json",
+      "sha256": "fdb1da0b010a77c19f3f2ea11287c932c532f7cb4345ed65bc2e529a0f00b551",
+      "size_bytes": 566,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/LONDON_NEWYORK/2026/2026-09-08.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.correction-001.json",
+      "sha256": "975bdb960b1561a1dfcc2774f4006742926ee520e885e0d5c69ba6276cd5e1c0",
+      "size_bytes": 1019,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.correction-001.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.correction-002.json",
+      "sha256": "91fd28f07c33b4cbbb959bf1ba8bb6cd51926ccf1561954e9ffb9acc30423986",
+      "size_bytes": 1129,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.correction-002.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.correction-003.json",
+      "sha256": "c50a584deb56772b176fe03531d45376b2cd6299bd5c2c8aad270206539dad3e",
+      "size_bytes": 1129,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.correction-003.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.correction-004.json",
+      "sha256": "2002fbdd9217534207c9eaaf09b1140d9ac72ccaeec3999cfde81efcc177c737",
+      "size_bytes": 1129,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.correction-004.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.json",
+      "sha256": "c0a94804bfbbc124aecb34f3def325aa9a7d817fe76cf231b43a1dc42d65de31",
+      "size_bytes": 653,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/LONDON_NEWYORK/2026/2026-09-08.correction-001.json",
+      "sha256": "12b29cbbcaa634ca9bc1142524d2c62827423bbca044277e0c7a01e76d801913",
+      "size_bytes": 1027,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/LONDON_NEWYORK/2026/2026-09-08.correction-001.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/LONDON_NEWYORK/2026/2026-09-08.correction-002.json",
+      "sha256": "2845c72b047646c1b210ec0db069013c795f6b67ea914fc0ade6083a0fef1fbc",
+      "size_bytes": 1042,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/LONDON_NEWYORK/2026/2026-09-08.correction-002.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/LONDON_NEWYORK/2026/2026-09-08.correction-003.json",
+      "sha256": "0823064fccc42227c5ee04f745765b4b97e214cc2b37cd756e0e8d0131170cb2",
+      "size_bytes": 1042,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/LONDON_NEWYORK/2026/2026-09-08.correction-003.json"
+    },
+    {
+      "export_path": "files/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/LONDON_NEWYORK/2026/2026-09-08.json",
+      "sha256": "c029e945efda8d09ef59c81c84056d069f53c303394ae29ce20194af10722cfe",
+      "size_bytes": 566,
+      "source_path": "archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/LONDON_NEWYORK/2026/2026-09-08.json"
+    },
+    {
+      "export_path": "files/state/delivery_records.json",
+      "sha256": "92c7c693f24dd9a728108cc614defa3944decd1db4a125d2ea0c6eaa16718736",
+      "size_bytes": 3103,
+      "source_path": "state/delivery_records.json"
+    }
+  ],
+  "repository_head": "6ed1cfb6695399237c08c51f809170068cd78fd9",
+  "source_root": "D:\\ddev\\AG profit trading\\journal\\ticket_delivery",
+  "ticket_delivery": {
+    "mode": "ARCHIVE_ONLY",
+    "policy": {
+      "delivery_max_attempts": 3,
+      "delivery_retry_base_delay_seconds": 30,
+      "delivery_retry_max_delay_seconds": 300,
+      "fx_max_catch_up_age_minutes": 60
+    }
+  }
+}

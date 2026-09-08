@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# AG_STAGE1_GOVERNANCE_RECONCILIATION_AND_WP7_PREFLIGHT_V1 -- repository-local guard.
+#
+# Background: a prior task observed commits landing on origin/main without any
+# explicit `git push` invocation from that session. Investigation found no repo-local
+# git hook responsible; the plausible cause is external to this repository (VS Code's
+# global chat.tools.terminal.autoApprove setting pre-approves `git push` for any
+# chat/agent tool, and several other agent-capable extensions are installed in this
+# same VS Code profile with their own terminal/git access). Neither can be safely
+# changed from within this task (they are user/machine-wide, not repository state).
+#
+# This hook is the safe, minimal, repository-local mitigation available: it makes
+# EVERY push through this clone (from any tool, human or agent) require an explicit,
+# conscious opt-in via the AG_ALLOW_PUSH environment variable. It does not touch any
+# global/user VS Code setting, does not disable any extension, and is fully reversible
+# (delete this file, or `git config --unset core.hooksPath`).
+#
+# To push deliberately:
+#   AG_ALLOW_PUSH=1 git push ...
+#
+# To remove this guard entirely:
+#   git config --unset core.hooksPath
+
+if [ "$AG_ALLOW_PUSH" = "1" ]; then
+  exit 0
+fi
+
+cat >&2 <<'EOF'
+AG_PUSH_BLOCKED_BY_REPOSITORY_LOCAL_GUARD
+
+This repository blocks `git push` by default (scripts/git-hooks/pre-push) after a
+prior task observed unexplained automatic commits/pushes to origin/main from this
+VS Code workspace (root cause: environment-level auto-approval of git push for
+chat/agent tools, not this repository).
+
+To push deliberately, re-run with the explicit opt-in:
+    AG_ALLOW_PUSH=1 git push ...
+
+To remove this guard:
+    git config --unset core.hooksPath
+EOF
+exit 1
