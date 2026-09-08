@@ -46,13 +46,51 @@ None of the following, individually or together, satisfies this gate:
 valid Telegram token syntax, the dataclass repr-safety fix existing, or the WP7 test
 suite passing. Those are necessary but not sufficient.
 
-The owner helper enforces this as a literal code gate: `OWNER_CONFIRMS_TOKEN_ROTATION_COMPLETE`
-is a module-level constant defaulting to `False`. It must be manually edited to `True`
-in the helper file itself — no environment variable or CLI flag can set it — and only
-after you have personally completed BotFather revocation of the old token and
-confirmed the new one is installed. This repository's security policy does not permit
-testing the old token from any automated task; use BotFather's own revocation
-confirmation as your evidence.
+**This gate is enforced interactively, not by editing source.** An earlier revision of
+this helper used a module-level `OWNER_CONFIRMS_TOKEN_ROTATION_COMPLETE = False`
+constant that had to be hand-edited to `True` before running — that mechanism was
+removed because it let the reviewed-and-hashed artifact diverge from the executed one
+(editing the file after it was hashed silently invalidates the recorded hash below).
+The current helper instead requires you to type an exact phrase at a live interactive
+terminal prompt immediately before it proceeds:
+
+```text
+ROTATION-CONFIRMED
+```
+
+Typing this phrase attests to all three of:
+
+1. The previous (exposed) Telegram bot token was revoked through BotFather.
+2. The replacement Telegram bot token is installed locally (`src/.env`).
+3. You authorize exactly ONE synthetic, non-trading Telegram delivery for this WP7
+   proof — nothing more, no ongoing delivery authority.
+
+This is your own attestation, not an independent technical verification that the old
+token is invalid — the helper does not test the old token itself (repository security
+policy prohibits that). Expected resulting evidence fields:
+
+```text
+owner_rotation_confirmation = YES
+replacement_token_present   = YES
+old_token_automated_test    = NOT_PERFORMED
+rotation_gate                = SATISFIED_BY_OWNER_CONTROL
+```
+
+Do not read or report this as `TOKEN_ROTATION_TECHNICALLY_VERIFIED` — that claim would
+require independent evidence this helper does not, and by policy should not, gather.
+
+**Fail-closed behavior**, all verified to return `False`/abort before any repository
+or network action:
+
+- wrong phrase → `OWNER_CONFIRMATION_FAILED`
+- blank input → `OWNER_CONFIRMATION_FAILED`
+- EOF / Ctrl-D / `KeyboardInterrupt` → `OWNER_CONFIRMATION_FAILED`
+- non-interactive context (`sys.stdin`/`sys.stdout` not a real terminal — piped,
+  redirected, or run from a non-interactive harness) → refuses before even prompting
+- any other input exception → `OWNER_CONFIRMATION_FAILED`
+
+No environment variable, CLI flag, or source-code constant can substitute for the
+live interactive phrase.
 
 ## Owner authorization requirements
 
@@ -74,13 +112,18 @@ execution/order action.
 
 ## Pre-run checks (performed by the helper itself)
 
-1. Token-rotation gate (`OWNER_CONFIRMS_TOKEN_ROTATION_COMPLETE`) — see above.
-2. `git status --short` is empty (clean working tree).
-3. Source pin: WP7 source tree matches the reviewed commit's tree (see "Source
+1. `git status --short` is empty (clean working tree).
+2. Source pin: WP7 source tree matches the reviewed commit's tree (see "Source
    commit").
-4. `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` present in the environment (booleans
+3. On-disk `config/ticket_delivery.yaml` still reads `mode: ARCHIVE_ONLY` with an
+   empty `authorized_chat_ids` allow-list (belt-and-suspenders static check, on top
+   of the fact this file is never written by the helper).
+4. Interactive owner confirmation (the `ROTATION-CONFIRMED` phrase) — see above. This
+   runs *after* the three checks above so nothing is prompted for against an unsafe
+   or unreviewable repository state.
+5. `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` present in the environment (booleans
    only, never printed).
-5. `TELEGRAM_CHAT_ID` parses as an integer.
+6. `TELEGRAM_CHAT_ID` parses as an integer.
 
 Any failure aborts before any archive write or network call.
 
@@ -199,16 +242,28 @@ interface — not a promotion of this helper.
 ## Reproducibility record
 
 ```text
-source_commit          = 3161287
-helper_hash_algorithm  = SHA256
-helper_sha256           = 8c342ea9cf91167c4a79bd8cadabe1b08e2815f7cafb25d0723cd52aa81ddcb3
+source_commit           = 3161287
+helper_hash_algorithm   = SHA256
+helper_sha256           = 75c88111c5cf3d1597821fff4f87c9cd9985b70c625c1f99586ab5dc473e583d
 helper_hash_recorded    = YES
 ```
 
-If the helper file changes after this hash was recorded, it must be re-reviewed and
-re-hashed before use; update this record accordingly. The hash identifies executable
-procedure provenance only — it is not derived from, and does not include, any
-credential.
+Superseded prior hash (from the pre-hardening revision that used the editable
+`OWNER_CONFIRMS_TOKEN_ROTATION_COMPLETE` source constant — removed for the reason
+described above):
+
+```text
+prior_helper_sha256 = 8c342ea9cf91167c4a79bd8cadabe1b08e2815f7cafb25d0723cd52aa81ddcb3
+prior_hash_status    = SUPERSEDED_BEFORE_EXECUTION  (verified to exist and match this
+                        exact recorded value before being superseded; never executed)
+```
+
+**The reviewed helper hash must equal the executed helper hash.** If the helper file
+changes after `helper_sha256` above was recorded — for any reason, including a
+seemingly trivial edit — it must be re-reviewed and re-hashed before use, and this
+record updated accordingly. Do not run a helper whose current SHA-256 does not match
+`helper_sha256` above. The hash identifies executable procedure provenance only — it
+is not derived from, and does not include, any credential.
 
 ## Non-secret evidence schema
 
@@ -217,15 +272,17 @@ The helper's run output (and any evidence recorded from it) may include only:
 ```text
 source_commit
 source_pin_verified
-token_rotation_confirmed        (the gate value, true/false — not the tokens)
+owner_rotation_confirmation     (YES/NO — the interactive attestation, not the tokens)
+replacement_token_present       (boolean)
+old_token_automated_test        (always NOT_PERFORMED, by policy)
 archive_before_send             (PASS/FAIL)
 logical_ticket_id
 logical_message_count           (expected: 1)
 provider_call_count             (expected: 1)
 delivery_result                 (e.g. DELIVERED)
-provider_message_id_recorded    (boolean presence only)
+provider_message_identity_saved (YES, REDACTED / NO)
 execution_calls                 (expected: 0)
-idempotent_second_evaluation    (e.g. NO_SEND_ALREADY_DELIVERED / claimed=False)
+idempotent_second_evaluation    (e.g. NO_SEND_ALREADY_DELIVERED)
 disk_mode_after                 (expected: ARCHIVE_ONLY)
 disk_authorized_chat_count      (expected: 0)
 ```
@@ -237,9 +294,10 @@ headers, the raw provider response body, or an environment dump.
 
 | Condition | Helper behavior |
 |---|---|
-| Token-rotation gate not confirmed | Abort before any repo/network check. `WP7_BLOCKED_PENDING_TOKEN_ROTATION`. |
-| Working tree not clean | Abort. |
-| Source pin mismatch | Abort. `SOURCE_COMMIT_MISMATCH`. Re-review and re-pin required. |
+| Working tree not clean | Abort before any confirmation prompt. |
+| Source pin mismatch | Abort before any confirmation prompt. `SOURCE_COMMIT_MISMATCH`. Re-review and re-pin required. |
+| Disk config not `ARCHIVE_ONLY` / non-empty allow-list | Abort before any confirmation prompt. `DISK_CONFIG_UNSAFE`. |
+| Owner confirmation: wrong phrase, blank, EOF, non-interactive context, or input exception | `OWNER_CONFIRMATION_FAILED`, `NETWORK_CALLS = 0`. |
 | Token/chat id missing | Abort before any network call — this is the existing fail-closed `TelegramDestinationConfig`/`_build_message_delivery_closure()` behavior, not a defect. |
 | `DELIVERY_FAILED_TERMINAL` | Not retried automatically. Check bot/chat configuration. |
 | `DELIVERY_AMBIGUOUS` | Stop immediately. Do not re-run. Manually verify in the Telegram chat, then use `resolve_ambiguous_outcome()` from a Python shell to record the true outcome once you know it. |
