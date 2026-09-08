@@ -29,15 +29,29 @@ calls execution.executor.execute() directly, bypassing ExecutionCoordinator enti
 neither guard was ever consulted on the Telegram/Web execution path: an authorized,
 integrity-verified, Demo-eligible click could still open a position past the concurrent-
 position cap or after the daily circuit breaker had already tripped.
+
+Gap 3 (investigated, found NOT a defect -- see test_build_trade_command_reaches_
+proposal_not_found_without_registration below and its docstring for why): the first
+draft of this audit suspected build_trade_command's use of
+ExecutionSource.ASSISTANT_PROPOSAL, combined with never registering the TradeProposal
+into execution.executor's own ProposalStore, would make every REAL (non-monkeypatched)
+execute() call fail closed with PROPOSAL_NOT_FOUND before ever reaching a broker call --
+which would mean this whole path never actually functioned end to end. That check is
+kept here as a permanent regression probe (it deliberately never calls a broker function
+-- ASSISTANT_PROPOSAL's ProposalStore lookup is the very first branch inside execute(),
+long before any mt5.* import is ever reached) confirming the CURRENT, documented
+behavior either way, so a future change to executor.py's ASSISTANT_PROPOSAL branch
+cannot silently reintroduce this as a real defect without this test failing.
 """
 from __future__ import annotations
 
 from datetime import datetime, timezone
 
 import authorization.mt5_execution_handler as handler_module
-from authorization.mt5_execution_handler import mt5_execution_handler
+from authorization.mt5_execution_handler import build_trade_command, mt5_execution_handler
 from authorization.models import ExecutionApproval, ENVIRONMENT_DEMO, STATE_CLAIMED, VENUE_MT5
 from authorization.telegram_gateway import TelegramExecutionGateway
+from execution.executor import execute as real_execute
 from authorization.store import ExecutionApprovalStore
 from execution.adapter import TradeProposal
 from execution.daily_loss_guard import DailyLossGuard
@@ -183,3 +197,37 @@ def test_mt5_execution_handler_allows_execution_when_guards_clear(tmp_path, monk
     assert "555111" in result.result_reference
     # the newly-filled position must now itself count toward the shared cap
     assert open_guard.open_count() == 1
+
+
+# ------------------------------------------------------- Gap 3 (investigated, confirmed)
+
+def test_build_trade_command_reaches_proposal_not_found_without_registration(monkeypatch):
+    """Documents and pins down CURRENT real behavior of the REAL (non-monkeypatched)
+    execution.executor.execute() when given the exact TradeCommand shape
+    build_trade_command() produces: source=ExecutionSource.ASSISTANT_PROPOSAL,
+    proposal_id=proposal.setup_id, and NO corresponding entry ever registered into
+    execute()'s own execution.executor.ProposalStore (mt5_execution_handler never calls
+    ProposalStore.put -- it only ever supplies field values already read directly off
+    the authorization-side execution.adapter.TradeProposal, a different, simpler
+    dataclass than execution.executor's own store-keyed TradeProposal-with-TradeCandidate
+    shape). ASSISTANT_PROPOSAL's very first branch inside execute() is exactly this
+    `store.get(command.proposal_id)` lookup -- reached before ANY mt5.* import, so this
+    assertion needs no broker mock of any kind and is safe to run for real.
+
+    Today this correctly, deterministically fails CLOSED (PROPOSAL_NOT_FOUND) rather than
+    silently proceeding with a mismatched/absent proposal record -- i.e. NOT a live safety
+    defect (no path to an unauthorized/unintended order). It is pinned here as a permanent
+    regression probe because it also means this exact call shape can never itself reach a
+    real fill: any operator wiring mt5_execution_handler end-to-end for a real Demo click
+    depends on some other layer (this repo's own PROJECT_STATUS.md 2026-08-28 DEMO_VERIFIED
+    round trip, or a future change) populating that ProposalStore, or on
+    build_trade_command switching to ExecutionSource.USER_EXPLICIT_ORDER the way
+    execution.coordinator._forex_command's own docstring explains it deliberately does for
+    this exact reason -- see that module for the precedent."""
+    monkeypatch.setattr("execution.journal.has_executed", lambda *a, **k: False)
+
+    command = build_trade_command(_proposal(), command_id="AUDIT_PROBE_NEVER_REGISTERED")
+    report = real_execute(command, user_confirmed=True)
+
+    assert report.status == "REJECTED"
+    assert report.gate_reason_code == "PROPOSAL_NOT_FOUND"
