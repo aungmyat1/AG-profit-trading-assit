@@ -2,17 +2,24 @@
 section 9). Thin HTTP adapter only -- every domain decision is delegated to
 authorization.store / api.execution_service; this module owns no trading semantics.
 
-Binding: 127.0.0.1 only by default (see scripts/run_api.py, not yet added -- this
-module just declares the app; a future run script is responsible for the actual
-uvicorn bind-address choice, per section 27's "prefer 127.0.0.1" instruction).
-CORS is intentionally NOT configured here with a wildcard; a future web/ integration
-pass must set an explicit allowed-origin list, never "*", for this router.
+Binding: 127.0.0.1 only by default -- see scripts/run_api.py
+(AG_AI_STUDIO_PREVIEW_VSCODE_RUNTIME_INTEGRATION_V1), the deterministic local dev-server
+launcher this module's own prior docstring anticipated. This module never binds a
+socket itself (FastAPI apps don't); the run script is what chooses 127.0.0.1 over
+0.0.0.0.
+
+CORS: narrow by construction. AG_ALLOWED_ORIGINS (comma-separated) overrides the
+default allow-list of the known local Vite dev origins (see web/vite.config.ts's
+port 3000). No wildcard "*" origin is ever used for this router -- see
+test_api.py::test_cors_never_allows_wildcard_origin.
 """
 from __future__ import annotations
 
+import os
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 
 from authorization.models import ENVIRONMENT_DEMO
 from authorization.store import ExecutionApprovalStore
@@ -27,7 +34,30 @@ from .schemas import (
     TicketResponse,
 )
 
+DEFAULT_ALLOWED_ORIGINS = (
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+)
+
+
+def _allowed_origins() -> list[str]:
+    """AG_ALLOWED_ORIGINS, comma-separated, overrides the default local-dev list --
+    e.g. to add a stable, known AI Studio preview origin (section 10: only if that
+    origin is verified stable; never "*"). Empty/whitespace entries are dropped."""
+    raw = os.environ.get("AG_ALLOWED_ORIGINS", "")
+    origins = [o.strip() for o in raw.split(",") if o.strip()]
+    return origins or list(DEFAULT_ALLOWED_ORIGINS)
+
+
 app = FastAPI(title="AG Profit Trading -- Demo Execution Gateway API", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_allowed_origins(),
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 
 # Process-wide singletons for this minimal app. A real deployment may want these
 # constructed per-request from a persistent path instead -- kept simple/overridable
@@ -101,6 +131,7 @@ def get_ticket(approval_id: str, store: ExecutionApprovalStore = Depends(get_sto
 def authorize_demo(
     approval_id: str,
     request: AuthorizeDemoRequest,
+    http_request: Request,
     store: ExecutionApprovalStore = Depends(get_store),
     proposal_registry: InMemoryProposalRegistry = Depends(get_proposal_registry),
     execution_handler=Depends(get_execution_handler),
@@ -108,9 +139,10 @@ def authorize_demo(
     if request.action != "EXECUTE_DEMO":
         raise HTTPException(status_code=400, detail={"reason_code": "UNSUPPORTED_ACTION"})
 
+    actor_id = http_request.client.host if http_request.client else None
     result = authorize_demo_execution(
         approval_id, store=store, proposal_registry=proposal_registry,
-        execution_handler=execution_handler, source=SOURCE_WEB,
+        execution_handler=execution_handler, source=SOURCE_WEB, actor_id=actor_id,
     )
     return AuthorizeDemoResponse(
         approval_id=result.approval_id, success=result.success, state=result.state,

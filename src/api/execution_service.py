@@ -91,8 +91,13 @@ def authorize_demo_execution(
     proposal_registry: ProposalRegistry,
     execution_handler: Callable[[TradeProposal], ExecutionHandlerResult],
     source: str = SOURCE_WEB,
+    actor_id: Optional[str] = None,
     registry_path: Optional[str] = None,
 ) -> AuthorizationExecutionResult:
+    """`actor_id` is audit metadata only (e.g. requester IP for a web call, Telegram
+    numeric user ID for a Telegram callback) -- it is journaled alongside the outcome
+    but never influences the authorization decision itself, which remains keyed
+    entirely on `approval_id`'s own atomic claim state."""
     approval = store.get(approval_id)
     if approval is None:
         return AuthorizationExecutionResult(approval_id, False, "NOT_FOUND", REASON_APPROVAL_NOT_FOUND)
@@ -118,7 +123,7 @@ def authorize_demo_execution(
     )
     if not demo_check.authorized:
         store.mark_failed(approval_id, failure_reason=demo_check.reason_code)
-        _journal(approval, proposal, source, success=False, reason_code=demo_check.reason_code)
+        _journal(approval, proposal, source, actor_id, success=False, reason_code=demo_check.reason_code)
         return AuthorizationExecutionResult(approval_id, False, "FAILED", demo_check.reason_code)
 
     if approval.environment != ENVIRONMENT_DEMO:
@@ -132,18 +137,18 @@ def authorize_demo_execution(
         store.mark_executed(
             approval_id, approved_by_user_id=0, result_reference=handler_result.result_reference,
         )
-        _journal(approval, proposal, source, success=True, result_reference=handler_result.result_reference)
+        _journal(approval, proposal, source, actor_id, success=True, result_reference=handler_result.result_reference)
         return AuthorizationExecutionResult(
             approval_id, True, "EXECUTED", result_reference=handler_result.result_reference,
         )
 
     store.mark_failed(approval_id, failure_reason=handler_result.detail)
-    _journal(approval, proposal, source, success=False, reason_code=handler_result.detail)
+    _journal(approval, proposal, source, actor_id, success=False, reason_code=handler_result.detail)
     return AuthorizationExecutionResult(approval_id, False, "FAILED", handler_result.detail)
 
 
 def _journal(
-    approval, proposal: TradeProposal, source: str, *,
+    approval, proposal: TradeProposal, source: str, actor_id: Optional[str], *,
     success: bool, reason_code: Optional[str] = None, result_reference: Optional[str] = None,
 ) -> None:
     """Additive event record via the existing execution.journal (append-only,
@@ -153,7 +158,7 @@ def _journal(
             approval.approval_id, "demo_execution_authorized" if success else "demo_execution_blocked",
             approval_id=approval.approval_id, proposal_hash=approval.proposal_hash,
             strategy_id=proposal.strategy_id, symbol=proposal.symbol,
-            environment=approval.environment, source=source, success=success,
+            environment=approval.environment, source=source, actor_id=actor_id, success=success,
             reason_code=reason_code, result_reference=result_reference,
         )
     except OSError:  # noqa: BLE001 -- journaling must never crash the authorization path

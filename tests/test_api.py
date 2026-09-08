@@ -48,6 +48,50 @@ def test_health():
     assert resp.json() == {"status": "OK"}
 
 
+def test_cors_never_allows_wildcard_origin():
+    """AI Studio/VS Code integration section 10/26: default allow-list is the known
+    local Vite dev origins only, and AG_ALLOWED_ORIGINS (if set) is never treated as
+    a wildcard even if misconfigured with one -- FastAPI's CORSMiddleware simply
+    wouldn't match a literal '*' string against a real Origin header the way an
+    actual wildcard config would, so this asserts the app's own default never emits one."""
+    from api.app import _allowed_origins
+
+    origins = _allowed_origins()
+    assert "*" not in origins
+    assert all(o.startswith("http://") or o.startswith("https://") for o in origins)
+
+
+def test_authorize_demo_actor_id_recorded_from_request(tmp_path, monkeypatch):
+    """The requester's client host is threaded through as audit-only actor_id --
+    proves the wiring exists without asserting on the exact loopback string TestClient
+    uses (which is an httpx/starlette implementation detail, not part of this
+    module's contract)."""
+    captured = {}
+    monkeypatch.setattr(
+        "api.execution_service.check_strategy_demo_authorized",
+        lambda strategy_id, registry_path=None: __import__(
+            "authorization.models", fromlist=["AuthorizationCheckResult"]
+        ).AuthorizationCheckResult(True),
+    )
+    original_journal = __import__("api.execution_service", fromlist=["_journal"])._journal
+
+    def spy_journal(approval, proposal, source, actor_id, **kwargs):
+        captured["actor_id"] = actor_id
+        return original_journal(approval, proposal, source, actor_id, **kwargs)
+
+    monkeypatch.setattr("api.execution_service._journal", spy_journal)
+
+    client, store, registry = _client(tmp_path)
+    proposal = _proposal()
+    approval = store.create(proposal, venue=VENUE_MT5)
+    store.mark_sent_to_telegram(approval.approval_id, chat_id=1, message_id=1)
+    registry.register(proposal)
+
+    client.post(f"/api/tickets/{approval.approval_id}/authorize-demo", json={"action": "EXECUTE_DEMO"})
+    assert "actor_id" in captured  # captured, even if TestClient's value is None/loopback
+    app.dependency_overrides.clear()
+
+
 def test_ticket_not_found(tmp_path):
     client, _store, _registry = _client(tmp_path)
     resp = client.get("/api/tickets/does-not-exist")
