@@ -5,6 +5,7 @@ journal/*.jsonl
 journal/post_asian_pilot/
 journal/post_london_newyork_pilot/
 journal/btc_sweep_research/
+journal/ticket_delivery/
 /logs/
 *.egg-info/
 .env

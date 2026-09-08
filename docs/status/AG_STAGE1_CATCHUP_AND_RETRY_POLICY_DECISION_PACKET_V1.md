@@ -110,3 +110,50 @@ it), (2) wire `CatchUpPolicy`/`RetryPolicy` construction from that config in
 matrix in `tests/test_ticket_delivery_policy.py` against the real signed values, and
 only then consider activating `MESSAGE_DELIVERY` mode under WP7's own separately
 authorized synthetic-message proof.
+
+---
+
+## Approval addendum (OWNER_APPROVED 2026-09-08)
+
+The owner explicitly approved Option A for all four values above, exactly as
+recommended:
+
+```yaml
+fx_max_catch_up_age_minutes: 60
+delivery_max_attempts: 3
+delivery_retry_base_delay_seconds: 30
+delivery_retry_max_delay_seconds: 300
+```
+
+These apply **prospectively** to Stage 1 FX ticket-delivery operations from this date
+forward. They do **not** alter any frozen strategy rule (entry, stop, target, risk,
+session, or quota logic), and do **not** retroactively change any already-archived
+record's identity -- `logical_ticket_id` has no dependency on any of these four values,
+so changing them again later (a future re-sign) would only affect future evaluation
+attempts, never rewrite history.
+
+**Attempt-semantics confirmation:** `delivery_max_attempts=3` means the TOTAL number of
+attempts including the initial attempt -- this is the pre-existing interpretation
+already implemented in `RetryPolicy.should_retry()` (`attempt_number >= max_attempts`
+refuses a further retry), not a new choice made for this approval. Under the approved
+values this yields exactly: attempt 1 (initial) -> 30s delay -> attempt 2 -> 60s delay
+-> attempt 3 -> exhausted (no attempt 4). Locked in by
+`tests/test_ticket_delivery_policy.py`'s signed-contract-specific test section.
+
+**The original alternatives table above is preserved unchanged** as the historical
+record of what was considered before this approval -- this addendum records the
+decision, it does not retroactively rewrite the options that were weighed.
+
+**Where these values now live:** `config/ticket_delivery.yaml`'s `policy:` block
+(operational configuration only -- never `strategies/*.yaml` or
+`strategies/registry.yaml`), validated by
+`src/ticket_delivery/scheduler_integration.py::_parse_policy()` and wired into
+`CatchUpPolicy`/`RetryPolicy` via `load_integration_config()`. Demo/live execution
+authorization is unchanged by this approval.
+
+**What this approval does NOT do:** it does not authorize `MESSAGE_DELIVERY` (still
+inert/unauthorized -- see `config/ticket_delivery.yaml`'s mode documentation) and does
+not itself activate `ARCHIVE_ONLY` -- that is recorded as a separate, explicit
+authorization in the same session (see
+`docs/plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`'s dated entry and
+`docs/status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`'s Addendum 5).

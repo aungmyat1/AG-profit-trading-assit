@@ -32,22 +32,23 @@ from ticket_delivery.archive import (
 from ticket_delivery.delivery_store import TicketDeliveryStore
 from ticket_delivery.fx_cycle_integration import process_pair_result
 from ticket_delivery.models import STATE_NOT_APPLICABLE, STATE_READY_TO_DELIVER
+from ticket_delivery.policy import REASON_OUTSIDE_CATCH_UP_WINDOW, REASON_PREMATURE, CatchUpPolicy
 
 UTC = dt.timezone.utc
 TRADING_DATE = dt.date(2026, 9, 8)
 
 
-def _decision(status, reason_codes=("R1",)):
-    return SimpleNamespace(status=status, reason_codes=reason_codes, evaluation_time=dt.datetime(2026, 9, 8, 7, 45, tzinfo=UTC))
+def _decision(status, reason_codes=("R1",), ready_at=None):
+    return SimpleNamespace(status=status, reason_codes=reason_codes, evaluation_time=dt.datetime(2026, 9, 8, 7, 45, tzinfo=UTC), ready_at=ready_at)
 
 
 def _proposal(setup_id="ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-08", actionable=True):
     return SimpleNamespace(setup_id=setup_id, actionable=actionable)
 
 
-def _pair(symbol="EURUSD", decision_status=STATUS_READY, portfolio_state=PORTFOLIO_SELECTED, proposal=None, portfolio_reason_code=None):
+def _pair(symbol="EURUSD", decision_status=STATUS_READY, portfolio_state=PORTFOLIO_SELECTED, proposal=None, portfolio_reason_code=None, ready_at=None):
     return SimpleNamespace(
-        symbol=symbol, decision=_decision(decision_status), portfolio_state=portfolio_state,
+        symbol=symbol, decision=_decision(decision_status, ready_at=ready_at), portfolio_state=portfolio_state,
         portfolio_reason_code=portfolio_reason_code,
         proposal=proposal if proposal is not None else (_proposal() if decision_status == STATUS_READY else None),
     )
@@ -213,3 +214,118 @@ def test_successful_delivery_end_to_end_via_injected_deliver(tmp_path):
     assert outcome.delivery_state == "DELIVERED"
     assert store.get(outcome.logical_ticket_id).state == "DELIVERED"
     assert store.get(outcome.logical_ticket_id).provider_response_id == "42"
+
+
+# --------------------------------------------------------------------------- catch-up gate (OWNER_APPROVED 2026-09-08: 60-minute bound)
+
+SIGNED_CATCH_UP_POLICY = CatchUpPolicy(max_catch_up_age=dt.timedelta(minutes=60))
+
+
+def test_no_catch_up_policy_supplied_skips_the_gate_entirely(tmp_path):
+    """Backward-compatible default: omitting catch_up_policy (every pre-existing test
+    above does) must behave exactly as before this task -- a READY pair proceeds
+    straight to render/register regardless of ready_at."""
+    store = TicketDeliveryStore(state_dir=str(tmp_path / "delivery"))
+    outcome = process_pair_result(_pair(ready_at=None), **_common_kwargs(tmp_path, store, render=lambda pair: _full_render_dict()))
+    assert outcome.delivery_state == "TRANSPORT_NOT_CONFIGURED"
+
+
+def test_on_time_ready_passes_the_catch_up_gate(tmp_path):
+    now = dt.datetime(2026, 9, 8, 7, 45, tzinfo=UTC)
+    store = TicketDeliveryStore(state_dir=str(tmp_path / "delivery"))
+    outcome = process_pair_result(
+        _pair(ready_at=now), catch_up_policy=SIGNED_CATCH_UP_POLICY, now=now,
+        **_common_kwargs(tmp_path, store, render=lambda pair: _full_render_dict()),
+    )
+    assert outcome.delivery_state == "TRANSPORT_NOT_CONFIGURED"
+    assert store.get(outcome.logical_ticket_id).state == STATE_READY_TO_DELIVER
+
+
+def test_exact_60_minute_boundary_is_still_permitted(tmp_path):
+    ready_at = dt.datetime(2026, 9, 8, 7, 0, tzinfo=UTC)
+    now = ready_at + dt.timedelta(minutes=60)
+    store = TicketDeliveryStore(state_dir=str(tmp_path / "delivery"))
+    outcome = process_pair_result(
+        _pair(ready_at=ready_at), catch_up_policy=SIGNED_CATCH_UP_POLICY, now=now,
+        **_common_kwargs(tmp_path, store, render=lambda pair: _full_render_dict()),
+    )
+    assert outcome.delivery_state == "TRANSPORT_NOT_CONFIGURED"  # allowed, not CATCH_UP_REJECTED
+
+
+def test_one_minute_past_the_60_minute_boundary_is_rejected(tmp_path):
+    ready_at = dt.datetime(2026, 9, 8, 7, 0, tzinfo=UTC)
+    now = ready_at + dt.timedelta(minutes=61)
+    store = TicketDeliveryStore(state_dir=str(tmp_path / "delivery"))
+    outcome = process_pair_result(
+        _pair(ready_at=ready_at), catch_up_policy=SIGNED_CATCH_UP_POLICY, now=now,
+        **_common_kwargs(tmp_path, store, render=lambda pair: _full_render_dict()),
+    )
+    assert outcome.delivery_state == "CATCH_UP_REJECTED"
+    assert outcome.reason_code == REASON_OUTSIDE_CATCH_UP_WINDOW
+
+
+def test_rejected_catch_up_still_archives_but_creates_no_ticket(tmp_path):
+    ready_at = dt.datetime(2026, 9, 8, 7, 0, tzinfo=UTC)
+    now = ready_at + dt.timedelta(hours=2)
+    store = TicketDeliveryStore(state_dir=str(tmp_path / "delivery"))
+    outcome = process_pair_result(
+        _pair(ready_at=ready_at), catch_up_policy=SIGNED_CATCH_UP_POLICY, now=now,
+        **_common_kwargs(tmp_path, store, render=lambda pair: _full_render_dict()),
+    )
+    assert outcome.archived is True
+    assert outcome.archive_path is not None
+    assert store.get(outcome.logical_ticket_id) is None  # no ticket ever registered
+
+
+def test_premature_now_before_ready_at_is_rejected(tmp_path):
+    """A clock anomaly (now before the signal's own checkpoint) must never be treated
+    as 'on time' -- fails closed via CatchUpPolicy's own premature check."""
+    ready_at = dt.datetime(2026, 9, 8, 7, 45, tzinfo=UTC)
+    now = ready_at - dt.timedelta(minutes=5)
+    store = TicketDeliveryStore(state_dir=str(tmp_path / "delivery"))
+    outcome = process_pair_result(
+        _pair(ready_at=ready_at), catch_up_policy=SIGNED_CATCH_UP_POLICY, now=now,
+        **_common_kwargs(tmp_path, store, render=lambda pair: _full_render_dict()),
+    )
+    assert outcome.delivery_state == "CATCH_UP_REJECTED"
+    assert outcome.reason_code == REASON_PREMATURE
+
+
+def test_ready_missing_ready_at_fails_closed_rather_than_assumed_on_time(tmp_path):
+    store = TicketDeliveryStore(state_dir=str(tmp_path / "delivery"))
+    outcome = process_pair_result(
+        _pair(ready_at=None), catch_up_policy=SIGNED_CATCH_UP_POLICY,
+        **_common_kwargs(tmp_path, store, render=lambda pair: _full_render_dict()),
+    )
+    assert outcome.delivery_state == "CATCH_UP_REJECTED"
+    assert outcome.reason_code == "READY_MISSING_READY_AT"
+
+
+def test_catch_up_rejection_preserves_the_same_logical_ticket_identity(tmp_path):
+    """Recovery preserves trading date and logical occurrence identity: the
+    logical_ticket_id computed for a late (rejected) evaluation of an occurrence is
+    identical to the one an on-time evaluation of the SAME occurrence would produce --
+    identity depends only on strategy/version/symbol/cycle/trading_date, never on the
+    catch-up outcome."""
+    ready_at = dt.datetime(2026, 9, 8, 7, 0, tzinfo=UTC)
+    store_a = TicketDeliveryStore(state_dir=str(tmp_path / "a"))
+    store_b = TicketDeliveryStore(state_dir=str(tmp_path / "b"))
+    on_time = process_pair_result(
+        _pair(ready_at=ready_at), catch_up_policy=SIGNED_CATCH_UP_POLICY, now=ready_at,
+        **_common_kwargs(tmp_path, store_a, render=lambda pair: _full_render_dict()),
+    )
+    late = process_pair_result(
+        _pair(ready_at=ready_at), catch_up_policy=SIGNED_CATCH_UP_POLICY, now=ready_at + dt.timedelta(hours=2),
+        **_common_kwargs(tmp_path, store_b, render=lambda pair: _full_render_dict()),
+    )
+    assert on_time.logical_ticket_id == late.logical_ticket_id
+
+
+def test_already_registered_occurrence_stays_idempotent_across_repeated_on_time_calls(tmp_path):
+    now = dt.datetime(2026, 9, 8, 7, 45, tzinfo=UTC)
+    store = TicketDeliveryStore(state_dir=str(tmp_path / "delivery"))
+    kwargs = _common_kwargs(tmp_path, store, render=lambda pair: _full_render_dict())
+    first = process_pair_result(_pair(ready_at=now), catch_up_policy=SIGNED_CATCH_UP_POLICY, now=now, **kwargs)
+    second = process_pair_result(_pair(ready_at=now), catch_up_policy=SIGNED_CATCH_UP_POLICY, now=now, **kwargs)
+    assert first.logical_ticket_id == second.logical_ticket_id
+    assert len(store._records.all()) == 1

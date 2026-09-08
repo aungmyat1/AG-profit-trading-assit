@@ -1,32 +1,41 @@
 # AG Stage 1 — Exactly-Once FX Ticket Delivery V1
 
 Status (2026-09-08): **WP1/WP2/WP3/WP5 COMPLETE. WP4 (scheduler call-site integration)
-IS NOW WIRED INTO THE ACTUAL SCHEDULED ENTRY POINT** --
+IS WIRED INTO THE ACTUAL SCHEDULED ENTRY POINT AND `ARCHIVE_ONLY` IS NOW ACTIVE.**
+
+Policy status: `FX_MAX_CATCH_UP_AGE`/`DELIVERY_MAX_ATTEMPTS`/
+`DELIVERY_RETRY_BASE_DELAY`/`DELIVERY_RETRY_MAX_DELAY` are **OWNER_APPROVED
+2026-09-08** (60 min / 3 / 30s / 300s -- see
+`docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md`'s approval
+addendum) and are now **WIRED**: `config/ticket_delivery.yaml`'s `policy:` block is
+validated by `scheduler_integration.py::_parse_policy()` and constructs a real
+`CatchUpPolicy`/`RetryPolicy` used by the scheduler call site. `RetryPolicy` is wired
+but not yet exercised by any live code path (`MESSAGE_DELIVERY` remains inert).
+
+Activation status: `config/ticket_delivery.yaml`'s shipped `mode` is now
+**`ARCHIVE_ONLY` (ACTIVATED 2026-09-08, owner-authorized)** --
 `scripts/run_post_asian_pilot.py::_run_once()` calls
 `ticket_delivery.scheduler_integration.process_cycle_result()` after every `--once`
 cycle (the same function the real `AG_FX_ASIAN_LONDON_SHADOW` /
-`AG_FX_LONDON_NEWYORK_SHADOW` scheduled tasks invoke via
-`scripts/scheduled/run_asian_london_once.bat` / `run_london_newyork_once.bat`), under an
-explicit `DISABLED` / `ARCHIVE_ONLY` / `MESSAGE_DELIVERY` mode contract in
-`config/ticket_delivery.yaml`. **The shipped repository default remains `DISABLED`** --
-this task implemented and proved `ARCHIVE_ONLY` end-to-end through the real CLI
-function (archive-before-send, repeated/simultaneous-invocation idempotency, archive
-failure, zero network calls) but did NOT flip the shipped config to `ARCHIVE_ONLY`;
-that activation remains an explicit, separate operator decision (edit one line in
-`config/ticket_delivery.yaml`, instantly reversible). See
-`docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md`.
+`AG_FX_LONDON_NEWYORK_SHADOW` scheduled tasks invoke). Real scheduled evidence exists:
+the live task fired at 2026-09-08T08:30:20Z, producing a genuine natural GBPUSD READY
+decision (`ready_at` 07:15:00Z) that the newly-wired catch-up gate correctly declined to
+register as a deliverable ticket (75 minutes late, past the signed 60-minute bound,
+`reason_code=OUTSIDE_CATCH_UP_WINDOW`) while still archiving the decision -- see
+`docs/status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`'s Addendum 5 for
+the full evidence trail. One-line rollback to `DISABLED` remains available and untested
+by neither reading nor requiring the `policy:` block.
 
-`MESSAGE_DELIVERY` mode is currently identical to `ARCHIVE_ONLY` (both pass
-`deliver=None`, a structural, not merely config-gated, zero-network guarantee) --
-setting it in config has no additional effect this pass; real Telegram construction is
-WP7, separately gated on signed catch-up/retry values.
+`MESSAGE_DELIVERY` mode remains **NOT AUTHORIZED** -- it is currently identical to
+`ARCHIVE_ONLY` (both pass `deliver=None`, a structural, not merely config-gated,
+zero-network guarantee); setting it in config has no additional effect this pass. Real
+Telegram construction is WP7, a separate, later, explicitly-authorized change.
 
-**WP4.4 (missed-checkpoint catch-up) and the WP6 bounded-retry completion remain
-MECHANISM-COMPLETE, OPERATIONALLY UNSIGNED** -- no production catch-up duration or
-retry bound exists anywhere in this repository; see the decision packet above for the
-proposed values awaiting owner sign-off. **WP7 NOT STARTED** (no real Telegram send, no
-natural READY capture attempted). See
-`docs/status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`'s WP4 addenda.
+**WP7 NOT STARTED** -- a real GBPUSD READY signal was observed live this pass (see
+above), but it was correctly catch-up-rejected before reaching any delivery/render
+step, so this is NOT the "natural READY ticket delivered" evidence WP7 requires; no
+real Telegram send has ever been attempted. See
+`docs/status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`'s WP4/WP4-callsite/policy-activation addenda.
 
 ## Outcome
 
@@ -138,8 +147,8 @@ attempt id, Telegram response identity, and proof that execution was unreachable
 - [x] Every cycle decision is archived before delivery. (`archive.archive_cycle_decision()`, all 5 cycle states, reuses `report_archive.write_report()`'s existing idempotent/correction/atomic-write guarantees; archive-before-send enforced by design -- delivery journal has no path that doesn't require an existing archived record's identity)
 - [x] Duplicate and overlapping runs are idempotent. (`ensure_ready_to_deliver()` idempotent creation; 10-way concurrent claim proven exactly-one-winner; parallel-different-tickets proven independent)
 - [x] Every cycle decision is archived before delivery, AT THE ORCHESTRATION LAYER (not only the primitive). `ticket_delivery.fx_cycle_integration.process_pair_result()` proven to archive-before-render-before-claim-before-transport for all 5 cycle states, with a simulated archive failure producing zero transport calls.
-- [x] Every cycle decision is archived before delivery, AT THE ACTUAL SCHEDULED CALL SITE (not only the orchestration layer in isolation). `scripts/run_post_asian_pilot.py::_run_once()` now calls `ticket_delivery.scheduler_integration.process_cycle_result()`; proven idempotent under repeated and simultaneous CLI invocation via `tests/test_run_post_asian_pilot_ticket_delivery_wiring.py`. Shipped config remains `mode: DISABLED`; activating `ARCHIVE_ONLY` in the repository is a distinct, still-pending operator decision.
-- [ ] Missed checkpoints recover under a signed catch-up rule. `ticket_delivery.policy.CatchUpPolicy` mechanism implemented and tested (premature/exact-boundary/within-bound/outside-bound/unconfigured all covered), but `max_catch_up_age` is UNSIGNED -- no production value exists, so operational catch-up remains disabled by construction (the unconfigured case fails closed).
+- [x] Every cycle decision is archived before delivery, AT THE ACTUAL SCHEDULED CALL SITE (not only the orchestration layer in isolation). `scripts/run_post_asian_pilot.py::_run_once()` now calls `ticket_delivery.scheduler_integration.process_cycle_result()`; proven idempotent under repeated and simultaneous CLI invocation via `tests/test_run_post_asian_pilot_ticket_delivery_wiring.py`. Shipped config is now `mode: ARCHIVE_ONLY` (owner-authorized, activated 2026-09-08), and real scheduled evidence (Addendum 5) confirms it archives live cycle output.
+- [x] Missed checkpoints are gated by a signed catch-up rule at the actual scheduled call site. `ticket_delivery.policy.CatchUpPolicy` is now constructed from the OWNER_APPROVED `fx_max_catch_up_age_minutes: 60` value (`scheduler_integration.py::_parse_policy()`) and wired into `fx_cycle_integration.process_pair_result()`'s READY path (premature/exact-boundary/within-bound/outside-bound/missing-ready_at all covered by new tests). Proven with REAL data: a live scheduled run's genuine GBPUSD READY signal (75 minutes stale) was correctly rejected (`CATCH_UP_REJECTED`/`OUTSIDE_CATCH_UP_WINDOW`), archived but never registered as a ticket -- see Addendum 5. "Recovery" in the sense of an on-time re-evaluation succeeding is proven; a rejected-then-later-recovered catch-up scenario has not yet occurred naturally (would need a second READY within a later 60-minute window for the same occurrence, which this pass did not observe).
 - [x] Telegram retries reuse the logical ticket. (proven twice: at the store layer, and end-to-end in `test_successful_retry_after_retryable_failure_reuses_logical_ticket` against a mocked Telegram failure-then-success sequence)
 - [x] Secrets/destinations are configuration-only and redacted. (`TelegramDestinationConfig.from_values` takes no defaults, requires an explicit authorized-chat-id allow-list; `_redact()` strips the bot token from every piece of persisted failure evidence -- proven by 2 tests reading the actual on-disk journal file)
 - [x] No path enters execution or MT5 order submission. (static AST guard, `tests/test_ticket_delivery_execution_boundary.py`, now 4 tests covering renderer.py/telegram_adapter.py too, and excluding `notifications.trade_ticket_formatter` -- the approval/keyboard-coupled formatter -- as an additionally forbidden import)

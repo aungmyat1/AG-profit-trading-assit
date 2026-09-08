@@ -622,3 +622,282 @@ Combined affected suite: **295 passed, 0 failed**; `git diff --check` clean.
 - No activation: `config/ticket_delivery.yaml` remains `DISABLED`.
 - No catch-up/retry policy signed.
 - No strategy, scheduler task, or execution/broker file touched.
+
+---
+
+## Addendum 5 (2026-09-08): signed policy activation + real ARCHIVE_ONLY evidence
+
+Baseline: HEAD at the Addendum 4 commit (`d7ab190`). Continues the same package, under
+explicit owner authorization to record the approved policy values, wire them, and
+activate `ARCHIVE_ONLY`.
+
+### Owner authorization received this pass
+
+```yaml
+fx_max_catch_up_age_minutes: 60
+delivery_max_attempts: 3
+delivery_retry_base_delay_seconds: 30
+delivery_retry_max_delay_seconds: 300
+```
+
+plus explicit authorization to change `config/ticket_delivery.yaml`'s `mode` from
+`DISABLED` to `ARCHIVE_ONLY`. Recorded in
+`docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md`'s new approval
+addendum (the original alternatives table is preserved unchanged as historical
+record).
+
+### Gate 2 — signed values wired and validated
+
+`src/ticket_delivery/scheduler_integration.py` gained `TicketDeliveryConfigError`, a
+strict `_parse_policy()` validator, and two new `TicketDeliveryIntegrationConfig`
+fields (`catch_up_policy: CatchUpPolicy`, `retry_policy: RetryPolicy`) constructed from
+the signed `policy:` block. Validation fails closed (raises, never substitutes a
+default) for: the whole block missing, any required field missing, non-numeric type,
+a bool masquerading as numeric (Python's `bool` is an `int` subclass -- explicitly
+excluded), zero/negative values, `base_delay > max_delay`, and any unrecognized extra
+field. This validation applies ONLY when `mode != DISABLED` -- `DISABLED` remains the
+unconditional one-line rollback, never reading or requiring the policy block, exactly
+preserving the pre-existing structural fail-closed-to-DISABLED behavior for a missing
+file, malformed top-level YAML, or an unrecognized `mode` value (deliberately
+unchanged, documented in `load_integration_config()`'s own docstring as an explicit
+interpretation choice, not a silent behavior change).
+
+`scripts/run_post_asian_pilot.py::_process_ticket_delivery()` gained a specific
+`except TicketDeliveryConfigError` branch (before the general exception handler) so a
+broken signed policy under an active mode produces a normalized
+`TICKET_DELIVERY_CONFIG_ERROR: <reason_code>: ...` stderr line and a nonzero scheduler
+exit -- visible, never silently swallowed to `DISABLED`-style exit 0.
+
+**Attempt-semantics interpretation confirmed, not changed:** `delivery_max_attempts=3`
+is the total attempt count including the initial attempt (pre-existing
+`RetryPolicy.should_retry()` behavior: `attempt_number >= max_attempts` refuses a
+further retry) -- verified against the approved contract by a new "signed contract"
+test section in `tests/test_ticket_delivery_policy.py`: attempt 1 (initial, 30s next
+delay) -> attempt 2 (60s next delay) -> attempt 3 exhausts (`RETRY_MAX_ATTEMPTS_EXHAUSTED`),
+delay capped at 300s, terminal/ambiguous never retried, expired ticket never claimable
+(re-proven directly against the primitive store).
+
+### Catch-up integration (previously unwired -- confirmed and closed this pass)
+
+Confirmed `CatchUpPolicy`/`RetryPolicy` were NOT invoked anywhere in
+`scheduler_integration.py` or `fx_cycle_integration.py` before this pass (`grep` came
+back empty). Added the smallest integration point: `fx_cycle_integration.process_pair_result()`
+gained an optional `catch_up_policy: Optional[CatchUpPolicy] = None` parameter,
+evaluated ONLY for a READY pair, using `pair.decision.ready_at` (the real,
+restart-frozen strategy-signal timestamp -- confirmed by reading `post_asian_pilot`'s
+`decision_from_record()`/`map_trade_signal_to_decision()`: `ready_at` is the
+authoritative bar-close/signal timestamp, never re-derived on a later poll) as the
+checkpoint against an injectable `now` (real wall-clock in production, a fixed value in
+every test). `None` (the default) skips the gate entirely, so every pre-existing test
+and caller is unaffected. A rejected catch-up (`CATCH_UP_REJECTED`, reason code from
+`CatchUpPolicy.evaluate()`) never creates a ticket -- the archive has already happened
+unconditionally before this gate and is untouched. A READY decision with no `ready_at`
+at all fails closed the same way (`READY_MISSING_READY_AT`), never assumed to be
+"on time." `scheduler_integration.process_cycle_result()` gained an injectable `now`
+parameter, forwarded through to the gate and to the delivery-journal timestamps it
+already used.
+
+This was NOT approximated: the checkpoint (`ready_at`) is real, authoritative evidence
+already present on every `PostAsianDecision`, not an invented "expected 15-minute tick"
+time (which Task Scheduler's actual trigger schedule is not passed into the Python
+process at all, and which the pipeline itself never needs -- it evaluates directly
+against live candle data, not against a scheduler-relative offset). Non-READY states
+(`WATCH`/`NO_TRADE`/`DATA_ERROR`/`BLOCKED`) are current-state observations, not late
+arrivals of a past event, so the catch-up gate structurally does not apply to them --
+they return from the function before the READY-only branch is ever reached.
+
+### Gate 3 — ARCHIVE_ONLY activated
+
+`config/ticket_delivery.yaml`'s `mode` changed from `DISABLED` to `ARCHIVE_ONLY`, with
+the signed `policy:` block added. Header comments rewritten to a status-history format
+distinguishing "integration introduced" (2026-09-08) / "archive-only activated"
+(2026-09-08) / "message delivery NOT authorized" (ongoing), replacing the earlier
+single "activated 2026-09-08" phrase that had conflated introduction with activation.
+
+### New tests
+
+- `tests/test_ticket_delivery_scheduler_integration.py`: expanded to 35 tests (from
+  16) -- policy validation (block missing, each required field missing x4, invalid
+  type, bool-as-numeric, float-for-integer-field, zero/negative x3, base>max,
+  base==max valid, unknown extra field, no-silent-default-on-repeat-call,
+  MESSAGE_DELIVERY also requires policy), plus catch-up-through-`process_cycle_result`
+  tests (on-time permitted, >60min rejected with no ticket registered), plus the real
+  shipped config now asserting `ARCHIVE_ONLY` (renamed from the prior
+  DISABLED-assuming test).
+- `tests/test_ticket_delivery_fx_cycle_integration.py`: +9 tests -- catch-up gate
+  behavior (no-policy-supplied skips gate / on-time passes / exact-60-minute-boundary
+  permitted / 61-minutes rejected / premature-now rejected / missing-ready_at rejected
+  / rejected catch-up still archives with no ticket created / identity preserved
+  between an on-time and a late evaluation of the same occurrence / repeated on-time
+  calls stay idempotent).
+- `tests/test_ticket_delivery_policy.py`: +8 tests -- the signed-contract section
+  (exact 3/30/60/300 values, not generic arbitrary values as before), plus a static
+  no-real-sleep check.
+- `tests/test_run_post_asian_pilot_ticket_delivery_wiring.py`: real-shipped-config-is-now-ARCHIVE_ONLY
+  test (replacing the prior DISABLED-assuming test), an explicit DISABLED-rollback
+  test (policy-block-optional, zero writes), missing-policy-under-active-mode nonzero
+  exit + zero archive writes, invalid-policy-value-under-active-mode nonzero exit.
+
+### Combined test results
+
+```
+pytest tests/test_ticket_delivery_scheduler_integration.py tests/test_ticket_delivery_fx_cycle_integration.py tests/test_ticket_delivery_policy.py tests/test_run_post_asian_pilot_ticket_delivery_wiring.py -q
+  -> 87 passed
+
+pytest tests/test_ticket_delivery_identity_and_archive.py tests/test_ticket_delivery_concurrency_and_restart.py tests/test_ticket_delivery_execution_boundary.py tests/test_ticket_delivery_renderer.py tests/test_ticket_delivery_telegram_adapter.py tests/test_ticket_delivery_fx_cycle_integration.py tests/test_ticket_delivery_fx_cycle_overlap.py tests/test_ticket_delivery_policy.py tests/test_ticket_delivery_scheduler_integration.py tests/test_run_post_asian_pilot_ticket_delivery_wiring.py tests/test_telegram_client.py tests/test_telegram_gateway.py tests/test_authorization_core.py tests/test_post_asian_pilot.py -q
+  -> 334 passed, 0 failed
+
+pytest tests/test_post_asian_pilot.py tests/test_runtime_state_store.py -q
+  -> 87 passed
+
+git diff --check -> clean (CRLF line-ending warnings only)
+```
+
+One pre-existing, non-reproducible concurrency-test flake
+(`test_ten_concurrent_invocations_same_pair_exactly_one_delivery`, unrelated to this
+pass's changes since `catch_up_policy` defaults to `None` there and the code path it
+exercises is unchanged) was observed once under full-suite system load and did not
+reproduce across 3 subsequent isolated and full-suite re-runs; noted for visibility,
+not treated as a defect requiring a fix.
+
+### Read-only scheduler re-inspection (live `Get-ScheduledTask`)
+
+```
+AG_FX_ASIAN_LONDON_SHADOW
+  State: Ready
+  Command: "D:\ddev\AG profit trading\scripts\scheduled\run_asian_london_once.bat"
+  Trigger interval: 15 minutes (PT15M)
+  MultipleInstances: IgnoreNew
+  LastRunTime: 2026-09-08 15:00:30 (local, MMT/UTC+6:30) = 2026-09-08T08:30:00Z
+  LastTaskResult: 0
+  NextRunTime: 2026-09-08 15:15:45 (local)
+
+AG_FX_LONDON_NEWYORK_SHADOW
+  State: Ready
+  Command: "D:\ddev\AG profit trading\scripts\scheduled\run_london_newyork_once.bat"
+  Trigger interval: 15 minutes (PT15M)
+  MultipleInstances: IgnoreNew
+  LastRunTime: 2026-09-08 15:00:30 (local) = 2026-09-08T08:30:00Z
+  LastTaskResult: 0
+  NextRunTime: 2026-09-08 15:15:45 (local)
+```
+
+Neither task nor either `.bat` wrapper was modified. Both invoke exactly the call site
+containing the new archive-only integration (`python scripts\run_post_asian_pilot.py
+--once --json [--pilot-config ...]`).
+
+### REAL_ARCHIVE_ONLY_EVIDENCE = VERIFIED
+
+Two independent sources of real evidence, both from AFTER `ARCHIVE_ONLY` was activated
+in this pass:
+
+**1. A genuine, unprompted OS-scheduled trigger** (`LastTaskResult: 0` at
+2026-09-08T08:30:00Z, confirmed against the real `%TEMP%\ag_shadow_asian_london.log`
+and `ag_shadow_london_newyork.log` files the `.bat` wrappers append to) produced real
+`ticket_delivery` output for both cycles:
+
+```
+ASIAN_LONDON: {"ticket_delivery": {"mode": "ARCHIVE_ONLY", "outcomes": [
+  {"symbol": "EURUSD", "cycle_state": "DATA_ERROR", "delivery_state": "NOT_APPLICABLE", ...},
+  {"symbol": "GBPUSD", "cycle_state": "READY", "delivery_state": "CATCH_UP_REJECTED",
+   "reason_code": "OUTSIDE_CATCH_UP_WINDOW", "archived": true,
+   "logical_ticket_id": "ST_ASIAN_SWEEP_5R_V1|1.1.1|GBPUSD|ASIAN_LONDON|2026-09-08"} ]}}
+LONDON_NEWYORK: {"ticket_delivery": {"mode": "ARCHIVE_ONLY", "outcomes": [
+  {"symbol": "EURUSD", "cycle_state": "WATCH", "delivery_state": "NOT_APPLICABLE", ...},
+  {"symbol": "GBPUSD", "cycle_state": "WATCH", "delivery_state": "NOT_APPLICABLE", ...} ]}}
+```
+
+The GBPUSD `ASIAN_LONDON` decision was a real, naturally-occurring READY signal
+(`ready_at: "2026-09-08T07:15:00+00:00"`, `LOWER_SWEEP_STRICT_PENETRATION`, real
+rendered entry/stop/targets visible in the strategy report portion of the same log
+line) -- not manufactured, not forced. By the time this scheduled run reached
+`ticket_delivery` processing (evaluation_time `08:30:20Z`), the signal was 75 minutes
+old, past the signed 60-minute catch-up bound -- so the catch-up gate correctly
+rejected ticket registration while the decision itself was still archived. This is
+real, live proof the newly-wired catch-up gate works correctly against genuine
+production data, not just synthetic tests.
+
+**2. One additional read-only, proposal-only manual invocation** (`python
+scripts\run_post_asian_pilot.py --once --json`, run directly rather than waiting ~7
+minutes for the next OS trigger, per this task's own allowance) at `08:39:04Z`
+confirmed continued correct operation: `exit code 0`, GBPUSD had since rolled to a
+fresh `WATCH` (a new M15 candle closed between the two runs, correctly superseding the
+earlier stale READY -- ordinary strategy behavior, not a ticket_delivery concern), and
+the archive for GBPUSD ASIAN_LONDON 2026-09-08 recorded a correction (append-only,
+original preserved) rather than an overwrite.
+
+**Archive path and decision state, verified directly from disk:**
+
+```
+journal/ticket_delivery/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.json
+journal/ticket_delivery/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/GBPUSD/ASIAN_LONDON/2026/2026-09-08.correction-001.json
+journal/ticket_delivery/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.json
+journal/ticket_delivery/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-001.json
+journal/ticket_delivery/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/EURUSD/ASIAN_LONDON/2026/2026-09-08.correction-002.json
+journal/ticket_delivery/archive/fx_ticket_archive/ST_ASIAN_SWEEP_5R_V1/{EURUSD,GBPUSD}/LONDON_NEWYORK/2026/2026-09-08.json
+```
+
+**Real delivery journal, read directly** (`journal/ticket_delivery/state/delivery_records.json`):
+all four real logical tickets present, every one `"state": "NOT_APPLICABLE"` --
+critically, GBPUSD `ASIAN_LONDON` shows NO `READY_TO_DELIVER` record anywhere,
+confirming the catch-up-rejected READY never registered a deliverable ticket, exactly
+per the approved contract ("do not create a ticket for a rejected catch-up attempt").
+
+### IDEMPOTENCY_AND_CONCURRENCY (real data)
+
+The correction-numbered files above are direct, real proof that archiving the same
+`(symbol, cycle, trading_date)` occurrence multiple times across real scheduled/manual
+runs converges correctly: identical content is a no-op, genuinely changed content
+(a new decision snapshot/reason code on a later poll) produces a numbered correction
+file while the original stays byte-identical -- this is the pre-existing
+`report_archive.write_report()` guarantee (Addendum 1), now proven against real
+production data rather than only synthetic tests.
+
+### ZERO_NETWORK_PROOF (real run)
+
+`deliver=None` unconditionally for both `ARCHIVE_ONLY` and `MESSAGE_DELIVERY` (static
+source check, unchanged this pass) -- the real scheduled/manual runs above made zero
+Telegram calls by construction, not merely by the absence of configured credentials.
+No broker/MT5 order-submission call exists anywhere in `src/ticket_delivery/` (AST
+scan, `tests/test_ticket_delivery_execution_boundary.py`, re-verified this pass to
+still pass with the two files this task modified).
+
+### Documentation updated this addendum
+
+- `config/ticket_delivery.yaml` -- signed `policy:` block added, `mode: ARCHIVE_ONLY`,
+  status-history header comments.
+- `docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md` -- approval
+  addendum (original alternatives table preserved unchanged).
+- `docs/plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md` -- status header and
+  acceptance checklist updated to reflect activation + real evidence; catch-up
+  checklist item flipped from unchecked/unsigned to checked/wired-and-evidenced.
+- `docs/plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md` -- Phase 2 status
+  row updated.
+- `PROJECT_STATUS.md` -- new dated entry (see below).
+- This document (Addendum 5).
+
+### Not implemented / not activated this addendum
+
+- `MESSAGE_DELIVERY` remains inert and unauthorized -- no real Telegram transport
+  constructed, no real send attempted.
+- WP7 (real Telegram send, a natural READY ticket actually DELIVERED, not merely
+  observed-and-correctly-rejected) not started.
+- No strategy YAML, installed scheduler task, or execution/broker configuration file
+  modified.
+- No positions modified, no broker order sent, no push.
+
+### Safety confirmation (addendum 5)
+
+```
+strategy files modified                = 0
+execution/authorization files modified = 0
+scheduler task files modified          = 0 (.bat / Task Scheduler definitions untouched; read-only re-inspection only)
+broker order-submission calls          = 0 (statically verified; execution-boundary scan re-passed against the 2 files this task modified)
+real Telegram sends                    = 0 (deliver=None unconditionally for every mode; zero mock/real transport in this call chain)
+real MT5/broker calls from ticket_delivery = 0
+config/ticket_delivery.yaml shipped mode = ARCHIVE_ONLY (owner-authorized 2026-09-08)
+real_demo_orders                       = 0
+real_live_orders                       = 0
+positions modified                     = 0
+local commit made                      = yes (checkpoint only, not pushed)
+```
