@@ -1,0 +1,31 @@
+# Ticket-delivery scheduler integration mode
+# (AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1, activated 2026-09-08).
+#
+# Read by src/ticket_delivery/scheduler_integration.py::load_integration_config().
+# Fails closed to DISABLED if this file is missing, malformed, or `mode` is not one of
+# the three values below -- a config problem can never crash a scheduled run or change
+# strategy/report output, only ever result in the safest (no-op) behavior.
+#
+# mode: DISABLED
+#   No ticket_delivery call at all. Current shipped value. Reverting this single line
+#   to DISABLED is the complete, immediate rollback for this entire integration.
+#
+# mode: ARCHIVE_ONLY
+#   Archives every completed cycle decision (READY/WATCH/NO_TRADE/DATA_ERROR/BLOCKED)
+#   and registers READY ticket identity. Zero network/Telegram calls -- enforced
+#   structurally in scheduler_integration.py, not just by this config value.
+#
+# mode: MESSAGE_DELIVERY
+#   NOT YET AUTHORIZED. As of this file's introduction, MESSAGE_DELIVERY behaves
+#   IDENTICALLY to ARCHIVE_ONLY (see scheduler_integration.py's module docstring) --
+#   real Telegram delivery requires a separate, later code change plus owner-signed
+#   catch-up/retry policy values. See
+#   docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md.
+mode: DISABLED
+
+# Where per-cycle decisions are archived (post_asian_pilot.report_archive's existing
+# atomic-write/idempotent/correction convention, unchanged).
+archive_root: journal/ticket_delivery/archive
+
+# Where the durable delivery journal (atomic claim state) lives.
+delivery_state_dir: journal/ticket_delivery/state

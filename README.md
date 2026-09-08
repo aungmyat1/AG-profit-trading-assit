@@ -96,6 +96,12 @@ incremental funnel-status and external confirmation-alert service.
   -- the existing renderer (`report.render_entry_ticket`, unchanged), not a new
   capability; informational only, never implying a broker order was sent. Non-READY
   states and the canonical daily archive (`AG_FX_DAILY_REPORT_V1`) are unaffected.
+- `scripts/run_post_asian_pilot.py --once` also now runs an additive, config-controlled
+  exactly-once ticket-delivery step (`config/ticket_delivery.yaml`, `mode: DISABLED` by
+  default -- a one-line, reversible opt-in). `ARCHIVE_ONLY` durably archives every cycle
+  decision with zero network calls; `MESSAGE_DELIVERY` is not yet activated (currently
+  behaves identically to `ARCHIVE_ONLY`). See
+  `docs/plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`.
 - The BTC sweep/retest research path uses Bybit production public market data for the
   BTCUSDT linear perpetual. `scripts/run_btc_daily_report.py` produces the previous UTC
   day's deterministic `READY`/`WATCH`/`NO_TRADE`/`DATA_ERROR` decision during the frozen

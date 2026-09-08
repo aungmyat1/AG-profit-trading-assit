@@ -88,6 +88,40 @@ def _entry_ticket_context(pilot_path: str, result):
         return None, None, None
 
 
+def _process_ticket_delivery(result, pilot_path: str, ledger, release_fp, strategy_fp, as_json: bool) -> bool:
+    """Additive, best-effort: NEVER alters the strategy/report output already printed
+    by the caller (AG_FX_DAILY_REPORT_V1's cycle_to_dict()/human_readable_report()
+    schemas stay frozen, untouched by this function). Ships DISABLED by default
+    (config/ticket_delivery.yaml) -- a no-op until an operator explicitly opts in.
+    Returns True if an archive failure occurred for any pair (the one condition this
+    function treats as worth a nonzero scheduler exit code; render-blocked/
+    transport-not-configured are expected, non-critical outcomes in ARCHIVE_ONLY mode).
+    """
+    try:
+        from ticket_delivery.scheduler_integration import load_integration_config, process_cycle_result
+
+        config = load_integration_config()
+        if config.mode == "DISABLED":
+            return False
+        outcomes = process_cycle_result(
+            result, pilot_path=pilot_path, config=config, ledger=ledger,
+            release_fingerprint=release_fp, strategy_fingerprint=strategy_fp,
+        )
+    except Exception as exc:  # noqa: BLE001 -- ticket-delivery is additive; never fail the scheduled cycle for an unexpected error here
+        print(f"TICKET_DELIVERY_OPERATIONAL_ERROR: {exc}", file=sys.stderr)
+        return False
+
+    if as_json:
+        print(json.dumps({"ticket_delivery": {"mode": config.mode, "outcomes": outcomes}}, default=str))
+    else:
+        print(f"TICKET_DELIVERY ({config.mode}):")
+        for o in outcomes:
+            print(f"  {o['symbol']}: cycle_state={o['cycle_state']} delivery_state={o['delivery_state']}"
+                 + (f" reason={o['reason_code']}" if o['reason_code'] else ""))
+
+    return any(o["delivery_state"] == "ARCHIVE_FAILED" for o in outcomes)
+
+
 def _run_once(as_json: bool, pilot_path: str = None):
     result = _execute_cycle(pilot_path)
     ledger, release_fp, strategy_fp = _entry_ticket_context(pilot_path, result)
@@ -95,6 +129,9 @@ def _run_once(as_json: bool, pilot_path: str = None):
         print(json.dumps(cycle_to_dict(result, ledger, release_fp, strategy_fp), indent=2, default=str))
     else:
         print(human_readable_report(result, ledger, release_fp, strategy_fp))
+    archive_failed = _process_ticket_delivery(result, pilot_path, ledger, release_fp, strategy_fp, as_json)
+    if archive_failed:
+        sys.exit(1)
     return result
 
 

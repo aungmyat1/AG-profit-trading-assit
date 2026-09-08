@@ -1,16 +1,32 @@
 # AG Stage 1 — Exactly-Once FX Ticket Delivery V1
 
-Status (2026-09-08): **WP1/WP2/WP3/WP5 COMPLETE. WP4.1-WP4.3 (archive-before-send
-runtime integration, READY delivery orchestration, run-level overlap protection)
-IMPLEMENTED AND TESTED. WP4.4 (missed-checkpoint catch-up) and the WP6 bounded-retry
-completion are MECHANISM-COMPLETE, OPERATIONALLY UNSIGNED** -- no production catch-up
-duration or retry bound exists anywhere in this repository (searched; only an
-unrelated, still-unauthorized BTC-specific proposal exists), so both policies are
-implemented as fail-closed interfaces requiring an explicit injected value, never
-activated with a default. **WP4.5 (scheduler-facing CLI) is a read-only diagnostic
-script only** -- installed scheduler tasks were NOT modified and nothing yet calls the
-new orchestration from a live cycle run. **WP7 NOT STARTED.** See
-`docs/status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`'s WP4 addendum.
+Status (2026-09-08): **WP1/WP2/WP3/WP5 COMPLETE. WP4 (scheduler call-site integration)
+IS NOW WIRED INTO THE ACTUAL SCHEDULED ENTRY POINT** --
+`scripts/run_post_asian_pilot.py::_run_once()` calls
+`ticket_delivery.scheduler_integration.process_cycle_result()` after every `--once`
+cycle (the same function the real `AG_FX_ASIAN_LONDON_SHADOW` /
+`AG_FX_LONDON_NEWYORK_SHADOW` scheduled tasks invoke via
+`scripts/scheduled/run_asian_london_once.bat` / `run_london_newyork_once.bat`), under an
+explicit `DISABLED` / `ARCHIVE_ONLY` / `MESSAGE_DELIVERY` mode contract in
+`config/ticket_delivery.yaml`. **The shipped repository default remains `DISABLED`** --
+this task implemented and proved `ARCHIVE_ONLY` end-to-end through the real CLI
+function (archive-before-send, repeated/simultaneous-invocation idempotency, archive
+failure, zero network calls) but did NOT flip the shipped config to `ARCHIVE_ONLY`;
+that activation remains an explicit, separate operator decision (edit one line in
+`config/ticket_delivery.yaml`, instantly reversible). See
+`docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md`.
+
+`MESSAGE_DELIVERY` mode is currently identical to `ARCHIVE_ONLY` (both pass
+`deliver=None`, a structural, not merely config-gated, zero-network guarantee) --
+setting it in config has no additional effect this pass; real Telegram construction is
+WP7, separately gated on signed catch-up/retry values.
+
+**WP4.4 (missed-checkpoint catch-up) and the WP6 bounded-retry completion remain
+MECHANISM-COMPLETE, OPERATIONALLY UNSIGNED** -- no production catch-up duration or
+retry bound exists anywhere in this repository; see the decision packet above for the
+proposed values awaiting owner sign-off. **WP7 NOT STARTED** (no real Telegram send, no
+natural READY capture attempted). See
+`docs/status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`'s WP4 addenda.
 
 ## Outcome
 
@@ -73,6 +89,21 @@ overlap. Confirm timezone and closed-candle gates before evaluation.
 Tests: duplicate trigger, restart during run, missed checkpoint, weekend/closed market,
 premature run, stale data, and successful next-run recovery.
 
+**Call-site wiring (2026-09-08):** `src/ticket_delivery/scheduler_integration.py`
+provides `process_cycle_result()`, the single call site
+`scripts/run_post_asian_pilot.py::_process_ticket_delivery()` invokes from
+`_run_once()` -- the exact function body the two live scheduled tasks execute every 15
+minutes. Proven via `tests/test_run_post_asian_pilot_ticket_delivery_wiring.py` (loads
+the real script module, no live MT5 needed) and
+`tests/test_ticket_delivery_scheduler_integration.py`: disabled-by-default is silent
+and touches no filesystem; `ARCHIVE_ONLY` archives every cycle state and makes zero
+network calls; repeated and two-simultaneous invocations converge on exactly one
+archive/logical-ticket; an archive failure surfaces as a nonzero scheduler exit code
+without crashing the strategy report; any unexpected error in ticket-delivery
+processing is caught and degrades to a no-op, never propagating into the cycle report
+that already printed. Missed-checkpoint catch-up itself remains unsigned (see below) --
+this pass proves the wiring and archive-only idempotency, not catch-up recovery.
+
 ### WP5 — Message-only transport extraction
 
 Audit the Telegram client/formatter for token, chat/user source, payload privacy, log
@@ -107,6 +138,7 @@ attempt id, Telegram response identity, and proof that execution was unreachable
 - [x] Every cycle decision is archived before delivery. (`archive.archive_cycle_decision()`, all 5 cycle states, reuses `report_archive.write_report()`'s existing idempotent/correction/atomic-write guarantees; archive-before-send enforced by design -- delivery journal has no path that doesn't require an existing archived record's identity)
 - [x] Duplicate and overlapping runs are idempotent. (`ensure_ready_to_deliver()` idempotent creation; 10-way concurrent claim proven exactly-one-winner; parallel-different-tickets proven independent)
 - [x] Every cycle decision is archived before delivery, AT THE ORCHESTRATION LAYER (not only the primitive). `ticket_delivery.fx_cycle_integration.process_pair_result()` proven to archive-before-render-before-claim-before-transport for all 5 cycle states, with a simulated archive failure producing zero transport calls.
+- [x] Every cycle decision is archived before delivery, AT THE ACTUAL SCHEDULED CALL SITE (not only the orchestration layer in isolation). `scripts/run_post_asian_pilot.py::_run_once()` now calls `ticket_delivery.scheduler_integration.process_cycle_result()`; proven idempotent under repeated and simultaneous CLI invocation via `tests/test_run_post_asian_pilot_ticket_delivery_wiring.py`. Shipped config remains `mode: DISABLED`; activating `ARCHIVE_ONLY` in the repository is a distinct, still-pending operator decision.
 - [ ] Missed checkpoints recover under a signed catch-up rule. `ticket_delivery.policy.CatchUpPolicy` mechanism implemented and tested (premature/exact-boundary/within-bound/outside-bound/unconfigured all covered), but `max_catch_up_age` is UNSIGNED -- no production value exists, so operational catch-up remains disabled by construction (the unconfigured case fails closed).
 - [x] Telegram retries reuse the logical ticket. (proven twice: at the store layer, and end-to-end in `test_successful_retry_after_retryable_failure_reuses_logical_ticket` against a mocked Telegram failure-then-success sequence)
 - [x] Secrets/destinations are configuration-only and redacted. (`TelegramDestinationConfig.from_values` takes no defaults, requires an explicit authorized-chat-id allow-list; `_redact()` strips the bot token from every piece of persisted failure evidence -- proven by 2 tests reading the actual on-disk journal file)

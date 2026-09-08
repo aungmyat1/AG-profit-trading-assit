@@ -449,3 +449,138 @@ real Telegram sends              = 0 (every test uses an injected fake HTTP sess
 real_demo_orders                 = 0
 real_live_orders                 = 0
 ```
+
+---
+
+## Addendum 3 (2026-09-08): scheduler call-site wiring (final pre-operational slice)
+
+Baseline: HEAD at the WP4 addendum 2 commit above. Continues the same package.
+
+### Gate 1 — live scheduler re-inspection
+
+`Get-ScheduledTask` confirmed both `AG_FX_ASIAN_LONDON_SHADOW` and
+`AG_FX_LONDON_NEWYORK_SHADOW` are `State=Ready`, trigger every 15 minutes, with
+`MultipleInstances: IgnoreNew` (OS-level overlap guard, independent of anything this
+package does). Each invokes its own `.bat` wrapper, which calls `python
+scripts\run_post_asian_pilot.py --once --json [--pilot-config ...]` -- confirming the
+call-site target identified read-only in Addendum 2 is exactly where the real scheduled
+process re-enters user code on every tick. Neither task, nor either `.bat` file, was
+modified.
+
+### New: `src/ticket_delivery/scheduler_integration.py`
+
+The single call site. `load_integration_config()` reads `config/ticket_delivery.yaml`
+and fails closed to `DISABLED` on any missing file, malformed YAML, or unrecognized
+`mode` value. `process_cycle_result()` derives the `cycle` label from the
+`--pilot-config` path already passed to the script (no pilot YAML modified), then loops
+`process_pair_result()` (Addendum 2's orchestration, unmodified) over every pair in the
+already-computed `PilotCycleResult`. `DISABLED` returns `[]` before touching any
+filesystem. Both `ARCHIVE_ONLY` and (still-inert) `MESSAGE_DELIVERY` pass `deliver=None`
+unconditionally -- a structural, not merely config-gated, zero-network guarantee,
+proven by a static source-inspection test asserting the string `"deliver ="` appears
+exactly once in `process_cycle_result()`'s source.
+
+### New: `config/ticket_delivery.yaml`
+
+Ships `mode: DISABLED` -- the real, committed repository default. Comments document
+each mode and note that reverting to today's behavior is a one-line edit.
+
+### Modified: `scripts/run_post_asian_pilot.py`
+
+`_process_ticket_delivery()` is additive only: called from `_run_once()` AFTER the
+existing `cycle_to_dict()` / `human_readable_report()` output has already printed (that
+frozen schema is untouched), prints a separate `"ticket_delivery"` JSON block (or a
+separate text block) only when `mode != DISABLED`, and never raises out of `_run_once()`
+-- any unexpected exception inside it is caught and logged to stderr, degrading to a
+no-op. The one exception: an `ARCHIVE_FAILED` outcome now produces a nonzero scheduler
+exit code (`sys.exit(1)`) after the strategy report has already printed successfully --
+a deliberate, narrow escalation for the one failure mode considered worth an operator
+alert, not a silent one.
+
+### Proof of archive-before-send, at the real call site (not only the orchestration layer)
+
+`tests/test_ticket_delivery_scheduler_integration.py` (16 tests) and
+`tests/test_run_post_asian_pilot_ticket_delivery_wiring.py` (7 tests, loading the real
+script module via `importlib.util` so no live MT5 terminal is required -- `_execute_cycle`
+is never invoked, only `_process_ticket_delivery()` directly against a fixture
+`PilotCycleResult`) together prove, through the actual CLI function:
+
+| Scenario | Result |
+|---|---|
+| Missing config file / malformed YAML / unrecognized mode | fails closed to `DISABLED` |
+| Shipped `config/ticket_delivery.yaml` | is `DISABLED` (read directly, not a test fixture assumption) |
+| `DISABLED` mode, real CLI call | zero new stdout output, zero new files |
+| `ARCHIVE_ONLY`, real CLI call | archives, zero network calls, correct `mode`/`cycle_state` in output |
+| Repeated identical CLI invocation | same `logical_ticket_id` both times |
+| Two simultaneous CLI invocations (`ThreadPoolExecutor`) | exactly 1 persisted delivery record (verified by reading the store directly, not by parsing racing stdout -- `contextlib.redirect_stdout` is not thread-safe, see fix below) |
+| Simulated archive failure | `archive_failed=True`, `"delivery_state": "ARCHIVE_FAILED"` in output, no crash |
+| Unexpected exception anywhere in ticket-delivery processing | caught, logged to stderr, `_run_once()` still returns the already-printed strategy report normally |
+| `MESSAGE_DELIVERY` config, real CLI call | zero network calls (no mock transport exists anywhere in this call chain; a real attempt would raise) |
+| READY pair without ledger/fingerprint context | `RENDER_BLOCKED`, never fabricated |
+| Zero-network in `ARCHIVE_ONLY`/`MESSAGE_DELIVERY` | proven structurally (single unconditional `deliver = None`), not just empirically |
+
+10-concurrent-invocation scale beyond the 2-way `ThreadPoolExecutor` test was not
+separately re-run at the CLI layer this pass -- the underlying 10-way concurrent claim
+guarantee was already proven at the orchestration layer in Addendum 2
+(`test_ticket_delivery_fx_cycle_overlap.py`), and this addendum's CLI-layer tests prove
+the wiring reaches that same code path unchanged, not a new concurrency primitive.
+
+### Bugs found and fixed by these tests
+
+1. `load_integration_config(path: str = DEFAULT_CONFIG_PATH)` bound Python's default
+   argument at function-definition time, so `monkeypatch.setattr(module,
+   "DEFAULT_CONFIG_PATH", ...)` in tests had no effect on the already-bound default --
+   fixed by changing the signature to `path: Optional[str] = None` and reading the
+   module constant dynamically inside the function body.
+2. The first version of the two-simultaneous-invocation test used
+   `contextlib.redirect_stdout` from two threads via `ThreadPoolExecutor`, which is not
+   thread-safe (it swaps the single process-global `sys.stdout`) and produced a flaky
+   empty-buffer read on one thread -- a test-harness race, not a production defect. Fixed
+   by inspecting `TicketDeliveryStore._records.all()` directly instead of parsing
+   concurrently-captured stdout. Re-run 3 consecutive times after the fix, zero flakes.
+
+### Owner decision packet
+
+`docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md` proposes (does
+not activate) values for `FX_MAX_CATCH_UP_AGE`, `DELIVERY_MAX_ATTEMPTS`,
+`DELIVERY_RETRY_BASE_DELAY`, `DELIVERY_RETRY_MAX_DELAY`, each with a recommended
+default, a conservative alternative, the unsigned fail-closed behavior already in
+force, and confirmation that none of these values retroactively affects any
+already-archived record's identity. `src/ticket_delivery/policy.py` was NOT modified
+this addendum -- still zero production defaults, per Addendum 2.
+
+### Combined test results
+
+```
+pytest tests/test_ticket_delivery_scheduler_integration.py -q                → 16 passed
+pytest tests/test_run_post_asian_pilot_ticket_delivery_wiring.py -q          → 7 passed (re-run 3x after the redirect_stdout fix, zero flakes)
+pytest tests/test_ticket_delivery_identity_and_archive.py tests/test_ticket_delivery_concurrency_and_restart.py tests/test_ticket_delivery_execution_boundary.py tests/test_ticket_delivery_renderer.py tests/test_ticket_delivery_telegram_adapter.py tests/test_ticket_delivery_fx_cycle_integration.py tests/test_ticket_delivery_fx_cycle_overlap.py tests/test_ticket_delivery_policy.py tests/test_ticket_delivery_scheduler_integration.py tests/test_run_post_asian_pilot_ticket_delivery_wiring.py tests/test_telegram_client.py tests/test_telegram_gateway.py tests/test_authorization_core.py tests/test_post_asian_pilot.py -q
+  → 294 passed, 0 failed
+git diff --check → clean
+```
+
+### Not implemented / not activated this addendum
+
+- `config/ticket_delivery.yaml` was NOT flipped to `ARCHIVE_ONLY` -- ships `DISABLED`.
+  Activating archive-only in the real repository remains a distinct, still-pending,
+  one-line operator decision.
+- `CatchUpPolicy`/`RetryPolicy` remain unwired to any config source and carry no signed
+  value -- the decision packet proposes values; nothing here signs them.
+- **WP7** — no real Telegram send, mocked or otherwise beyond unit tests, was
+  attempted; no natural READY ticket was captured through this path.
+- No strategy YAML, installed scheduler task, or execution/broker configuration file
+  was modified.
+
+### Safety confirmation (addendum 3)
+
+```
+strategy files modified                = 0
+execution/authorization files modified = 0
+scheduler task files modified          = 0 (.bat / Task Scheduler definitions untouched; read-only re-inspection only)
+broker order-submission calls          = 0 (statically verified; execution-boundary scan unchanged, scheduler_integration.py has no execution import)
+real Telegram sends                    = 0 (MESSAGE_DELIVERY remains structurally zero-network this pass; no mock transport exists in this call chain)
+config/ticket_delivery.yaml shipped mode = DISABLED
+real_demo_orders                       = 0
+real_live_orders                       = 0
+local commit made                      = yes (checkpoint only, not pushed)
+```

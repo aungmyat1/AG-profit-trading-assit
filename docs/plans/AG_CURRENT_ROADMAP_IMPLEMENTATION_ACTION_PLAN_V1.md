@@ -1,9 +1,27 @@
 # AG Profit Trading — Current Roadmap Implementation Action Plan V1
 
-Status: **PLANNED — NOT IMPLEMENTED**  
-Recorded: **2026-09-08**  
+Status: **PHASE 0 AND PHASE 1 COMPLETE. PHASE 2 (STAGE 1 FX TICKET DELIVERY) IMPLEMENTED
+AND TESTED, ARCHIVE-ONLY WIRED TO THE REAL SCHEDULED ENTRY POINT BUT NOT ACTIVATED IN
+SHIPPED CONFIG; MESSAGE DELIVERY (WP7) NOT STARTED. PHASES 3-8 NOT STARTED.**
+Last updated: **2026-09-08** (originally recorded 2026-09-08 at baseline `main` @
+`5185035`; this status line reflects work completed since, through the Stage 1
+scheduler call-site integration -- see phase-by-phase detail below).
 Planning baseline: `main` at `5185035`  
 Authority: `docs/PROJECT_ROADMAP.md`, reconciled with the current checkout
+
+### Phase-by-phase status
+
+| Phase | Status | Evidence |
+|---|---|---|
+| 0 — Reconcile and freeze baseline | **DONE** | `PROJECT_STATUS.md` reconciled against the live API/authorization/Telegram/execution-handler checkout in an earlier milestone this arc. |
+| 1 — Stage 0 safety/measurement defects | **DONE** | Drawdown-from-zero fix, 13-loss regression, timestamp-ordering freeze, and fail-closed broker reconciliation all verified in `AG_CURRENT_ROADMAP_FIRST_CONTROLLED_MILESTONE_V1` (see `docs/status/`). |
+| 2 — Stage 1 exactly-once FX ticket delivery | **IMPLEMENTED, ARCHIVE-ONLY PROVEN AT THE REAL SCHEDULER CALL SITE, NOT YET ACTIVATED IN SHIPPED CONFIG** | `src/ticket_delivery/` (identity, archive, delivery journal, renderer, message-only Telegram transport, fx-cycle orchestration, scheduler call-site wiring) all implemented and tested; wired into `scripts/run_post_asian_pilot.py::_run_once()` under a `DISABLED`/`ARCHIVE_ONLY`/`MESSAGE_DELIVERY` mode contract (`config/ticket_delivery.yaml`, shipped `DISABLED`). Missed-checkpoint catch-up and delivery retry remain mechanism-complete but operationally unsigned -- see `docs/status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md`. WP7 (real Telegram send, natural READY capture) not started. Full detail: `docs/plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`. |
+| 3 — Stage 2 coverage expansion (USDJPY/XAUUSD/ETH) | NOT STARTED | — |
+| 4 — Stage 3 Large-SMC operational funnel | NOT STARTED | Research/skill scaffolding exists (`multi-timeframe-market-context` advisory skill); no forward watcher or alert lifecycle. |
+| 5 — Stage 3A interactive chart assistance | NOT STARTED | — |
+| 6 — Stage 4 economic validation | NOT STARTED | — |
+| 7 — Stage 5 portfolio selection | NOT STARTED | — |
+| 8 — Stage 6 optional controlled Demo program | NOT STARTED | Live trading remains disabled. |
 
 ## Objective
 
