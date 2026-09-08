@@ -8,7 +8,9 @@ from __future__ import annotations
 import authorization.mt5_execution_handler as handler_module
 from authorization.mt5_execution_handler import REASON_NON_DEMO_ENVIRONMENT_REJECTED, mt5_execution_handler
 from execution.adapter import TradeProposal
+from execution.daily_loss_guard import DailyLossGuard
 from execution.models import ExecutionReport, ExecutionSource, OrderSendResult
+from execution.position_guard import OpenPositionGuard
 
 
 def _proposal(**overrides) -> TradeProposal:
@@ -22,7 +24,20 @@ def _proposal(**overrides) -> TradeProposal:
     return TradeProposal(**base)
 
 
-def test_successful_mocked_execution_maps_ticket(monkeypatch):
+def _guards(tmp_path):
+    """AG_EXISTING_DEMO_GATEWAY_GAP_AUDIT (2026-09-08): mt5_execution_handler now checks
+    the GLOBAL OpenPositionGuard/DailyLossGuard before calling execute() (see that
+    module's own docstring, gap 2). Every test here injects tmp_path-backed guards so a
+    test run never reads or writes this repository's real journal/ag_open_strategy_
+    positions.json / journal/ag_strategy_daily_realized_r.json state -- the same
+    isolation convention execution/coordinator.py's own tests already use."""
+    return (
+        OpenPositionGuard.default(str(tmp_path / "open_positions.json")),
+        DailyLossGuard.default("AG_EXECUTION_COORDINATOR_GLOBAL", str(tmp_path / "daily_r.json")),
+    )
+
+
+def test_successful_mocked_execution_maps_ticket(tmp_path, monkeypatch):
     def fake_execute(command, *, user_confirmed, proposal_store=None):
         assert user_confirmed is True
         assert command.symbol == "GBPUSD"
@@ -34,13 +49,14 @@ def test_successful_mocked_execution_maps_ticket(monkeypatch):
         )
 
     monkeypatch.setattr(handler_module, "execution_gateway_execute", fake_execute)
+    open_guard, loss_guard = _guards(tmp_path)
 
-    result = mt5_execution_handler(_proposal())
+    result = mt5_execution_handler(_proposal(), open_position_guard=open_guard, daily_loss_guard=loss_guard)
     assert result.success is True
     assert "123456" in result.result_reference
 
 
-def test_rejected_execution_maps_failure_with_reason(monkeypatch):
+def test_rejected_execution_maps_failure_with_reason(tmp_path, monkeypatch):
     def fake_execute(command, *, user_confirmed, proposal_store=None):
         return ExecutionReport(
             command_id=command.command_id, source=ExecutionSource.ASSISTANT_PROPOSAL,
@@ -48,17 +64,20 @@ def test_rejected_execution_maps_failure_with_reason(monkeypatch):
         )
 
     monkeypatch.setattr(handler_module, "execution_gateway_execute", fake_execute)
+    open_guard, loss_guard = _guards(tmp_path)
 
-    result = mt5_execution_handler(_proposal())
+    result = mt5_execution_handler(_proposal(), open_position_guard=open_guard, daily_loss_guard=loss_guard)
     assert result.success is False
     assert result.detail == "RISK_CHECK_FAILED"
 
 
-def test_non_demo_environment_rejected_without_calling_gateway(monkeypatch):
+def test_non_demo_environment_rejected_without_calling_gateway(tmp_path, monkeypatch):
     calls = []
     monkeypatch.setattr(handler_module, "execution_gateway_execute", lambda *a, **k: calls.append(1))
+    open_guard, loss_guard = _guards(tmp_path)
 
-    result = mt5_execution_handler(_proposal(), environment="LIVE")
+    result = mt5_execution_handler(_proposal(), environment="LIVE",
+                                    open_position_guard=open_guard, daily_loss_guard=loss_guard)
     assert result.success is False
     assert result.detail == REASON_NON_DEMO_ENVIRONMENT_REJECTED
     assert calls == []  # gateway never called at all
