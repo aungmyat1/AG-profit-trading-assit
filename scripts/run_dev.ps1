@@ -1,11 +1,15 @@
-# AG Profit Trading -- one-command local development runtime
-# (AG_VSCODE_ONE_CLICK_TEST_RUN_V1). Starts FastAPI (127.0.0.1:8000) and the Vite
-# frontend (localhost:3000) as separate PowerShell jobs, prints the URLs, and does
-# NOT touch MT5 -- MT5 stays an external application the operator starts/logs into
-# themselves. No broker order is submitted by this script.
+# AG Profit Trading -- lightweight daily development runtime
+# (AG_FRONTEND_RUNTIME_VERIFICATION_AND_LOCAL_TEST_V1). Starts FastAPI (127.0.0.1:8000)
+# and the Vite frontend (localhost:3000) as separate PowerShell jobs, prints the URLs,
+# and does NOT touch MT5 -- MT5 stays an external application the operator
+# starts/logs into themselves. No broker order is submitted by this script.
+#
+# This script does NOT install dependencies. Run scripts/setup_dev.ps1 once first
+# (or whenever web/package.json changes).
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
+$WebDir = Join-Path $RepoRoot "web"
 
 Write-Host ""
 Write-Host "AG Profit Trading -- Development Runtime" -ForegroundColor Cyan
@@ -21,26 +25,34 @@ try {
     exit 1
 }
 
-# 2. Verify Node/npm
+# 2. Verify Node
 try {
     $nodeVersion = (node --version) 2>&1
-    $npmVersion = (npm --version) 2>&1
-    Write-Host "Node: $nodeVersion  npm: $npmVersion"
+    Write-Host "Node: $nodeVersion"
 } catch {
-    Write-Host "ERROR: node/npm not found on PATH." -ForegroundColor Red
+    Write-Host "ERROR: node not found on PATH." -ForegroundColor Red
     exit 1
 }
 
-# 3. Verify frontend dependencies
-$webDir = Join-Path $RepoRoot "web"
-if (-not (Test-Path (Join-Path $webDir "node_modules"))) {
-    Write-Host "web/node_modules not found -- running 'npm install' in web/ (first run only)..." -ForegroundColor Yellow
-    Push-Location $webDir
-    npm install --no-audit --no-fund
-    Pop-Location
+# 3. Verify frontend dependencies exist -- do NOT install here
+if (-not (Test-Path (Join-Path $WebDir "node_modules"))) {
+    Write-Host ""
+    Write-Host "Frontend dependencies missing." -ForegroundColor Red
+    Write-Host "Run:" -ForegroundColor Yellow
+    Write-Host "  .\scripts\setup_dev.ps1"
+    Write-Host ""
+    exit 1
 }
 
-# 4. Start FastAPI (background job)
+# 4. Pick the same package manager setup_dev.ps1 would have used, for `npm run dev` /
+# `bun run dev` consistency (Bun preferred if available, since web/bun.lock is present).
+$bunAvailable = $false
+try {
+    $null = (bun --version) 2>&1
+    if ($LASTEXITCODE -eq 0) { $bunAvailable = $true }
+} catch {}
+
+# 5. Start FastAPI (background job)
 Write-Host ""
 Write-Host "Starting FastAPI on http://127.0.0.1:8000 ..." -ForegroundColor Green
 $apiJob = Start-Job -Name "AG-API" -ScriptBlock {
@@ -49,13 +61,13 @@ $apiJob = Start-Job -Name "AG-API" -ScriptBlock {
     python scripts/run_api.py --host 127.0.0.1 --port 8000
 } -ArgumentList $RepoRoot
 
-# 5. Start Vite (background job)
+# 6. Start Vite (background job)
 Write-Host "Starting Vite frontend on http://localhost:3000 ..." -ForegroundColor Green
 $viteJob = Start-Job -Name "AG-Vite" -ScriptBlock {
-    param($webDir)
+    param($webDir, $useBun)
     Set-Location $webDir
-    npm run dev
-} -ArgumentList $webDir
+    if ($useBun) { bun run dev } else { npm run dev }
+} -ArgumentList $WebDir, $bunAvailable
 
 Start-Sleep -Seconds 3
 

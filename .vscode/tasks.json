@@ -2,6 +2,13 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "AG: Setup Dev (first time)",
+            "type": "shell",
+            "command": "powershell",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/setup_dev.ps1"],
+            "problemMatcher": []
+        },
+        {
             "label": "AG: Start Backend",
             "type": "shell",
             "command": "python",

@@ -7,18 +7,26 @@ trade — nothing in this document changes that chain.
 ## QUICK START — VS Code
 
 ```text
-1. Open MT5 and log into Vantage Demo
+FIRST-TIME SETUP
 
-2. Open AG Profit Trading in VS Code
+1. Open repository in VS Code
+2. Run:
+   .\scripts\setup_dev.ps1
+   (verifies Python/Node/package manager, installs web/node_modules)
+```
 
-3. Run:
+```text
+DAILY TEST RUN
+
+1. Open MT5
+2. Log into Vantage Demo
+3. Open repository in VS Code
+4. Run:
    .\scripts\run_dev.ps1
-   (first run installs web/node_modules automatically if missing)
-
-4. Open:
+5. Open:
    http://localhost:3000
-
-5. Go to the "Execution" tab, click:
+6. Open the "Execution" tab
+7. Click:
    Test Backend Connection
 
 Expected:
@@ -33,22 +41,28 @@ Optional read-only check from a separate terminal (never sends an order):
 python scripts/test_dev_connection.py
 ```
 
-Or from VS Code: `Ctrl+Shift+P` → `Tasks: Run Task` → `AG: Start Dev` (starts backend +
-frontend as two VS Code tasks) or `AG: Test Dev Connection` / `AG: Run Integration Tests`.
-`scripts/run_dev.ps1` is the more reliable single-command path — prefer it if the VS
-Code compound task behaves inconsistently on your machine.
+Or from VS Code: `Ctrl+Shift+P` → `Tasks: Run Task` → `AG: Setup Dev (first time)`,
+`AG: Start Dev`, `AG: Test Dev Connection`, `AG: Run Integration Tests`.
+`scripts/setup_dev.ps1` / `scripts/run_dev.ps1` are the more reliable path — prefer
+them if the VS Code compound task behaves inconsistently on your machine.
+`run_dev.ps1` deliberately does NOT install dependencies itself; if `web/node_modules`
+is missing it tells you to run `setup_dev.ps1` instead of installing silently.
 
 ### Troubleshooting
 
 | Symptom | Likely cause / fix |
 |---|---|
+| `Bun not installed` | `web/bun.lock` documents Bun as the frontend scaffold's original package manager, but Bun isn't required — `scripts/setup_dev.ps1` automatically falls back to `npm` (installing from `web/package.json` alone) when `bun` isn't on PATH. Installing Bun is optional, not a blocker. |
+| `npm registry timeout` / `npm install` hangs with no output | A flaky network path to `registry.npmjs.org` (confirmed via `npm install --loglevel verbose`, which shows lines like `npm http fetch GET .../@tailwindcss%2fvite attempt 1 failed with ETIMEDOUT`). Retry with `npm install --fetch-retries=8 --fetch-retry-mintimeout=3000 --fetch-timeout=120000`, or from a more stable network. This is an environment/network condition, not a project defect — do not "fix" it by deleting `web/bun.lock` or hand-editing dependency versions. |
+| `node_modules missing` | Run `.\scripts\setup_dev.ps1` once. `run_dev.ps1` intentionally refuses to start Vite and tells you to do this instead of installing silently on every run. |
 | `Port already in use` (8000 or 3000) | Another process already bound that port — stop it, or pass `--port` to `scripts/run_api.py` / change `web/vite.config.ts`'s `server.port` (and update `VITE_API_BASE_URL` to match if you change 8000). |
-| `npm install` fails or hangs | Check `node --version` / `npm --version` are on PATH. This repo ships `web/bun.lock` (Bun was the original scaffold's package manager) but no `package-lock.json`; `npm install` still works from `package.json` alone, just without that lockfile's pinning. A slow/flaky network to `registry.npmjs.org` can make it look hung — retry with `npm install --fetch-retries=5 --fetch-timeout=60000`. |
 | FastAPI unreachable | Confirm `python scripts/run_api.py` is actually running and printed `Application startup complete` with no `ERROR` line (a stale process can be holding the port — check `netstat -ano | findstr :8000`). |
-| Vite unreachable | Confirm `npm run dev` is running inside `web/` and printed a `Local: http://localhost:3000/` line. |
-| CORS error in the browser console | The frontend's origin isn't in the backend's allow-list. Default is `http://localhost:3000` and `http://127.0.0.1:3000`; if you're using a different port/origin, set `AG_ALLOWED_ORIGINS` (comma-separated) before starting the backend. Never set it to `*`. |
-| MT5 disconnected | `Test Backend Connection` will still say `BACKEND CONNECTED` (the API itself is up) but broker fields will show disconnected/unknown — this is expected and not a bug; open/log into the MT5 terminal and click the test again. |
-| Backend works (`curl` succeeds) but the frontend can't connect | Check `web/.env` has `VITE_API_BASE_URL=http://127.0.0.1:8000` and `VITE_AG_API_MODE=real`, then restart `npm run dev` (Vite only reads `.env` at startup). |
+| Vite unreachable | Confirm the frontend dev server is running inside `web/` (`npm run dev` or `bun run dev`) and printed a `Local: http://localhost:3000/` line. |
+| CORS failure in the browser console | The frontend's origin isn't in the backend's allow-list. Default is `http://localhost:3000` and `http://127.0.0.1:3000`; if you're using a different port/origin, set `AG_ALLOWED_ORIGINS` (comma-separated) before starting the backend. Never set it to `*`. |
+| MT5 disconnected | `Test Backend Connection` will still say `BACKEND CONNECTED` (the API itself is up) but broker fields will show disconnected/unknown — this is expected and not a bug; open/log into the MT5 terminal and click the test again. `scripts/test_dev_connection.py` reports this as `UI_READY_BROKER_DISCONNECTED`, not a failure. |
+| Frontend reachable but backend unreachable | FastAPI isn't running, crashed, or is bound to a different host/port than `VITE_API_BASE_URL` points at — check the FastAPI terminal/job output and `web/.env`'s `VITE_API_BASE_URL`. |
+| Backend reachable but broker disconnected | Expected, not a bug — see the "MT5 disconnected" row above. |
+| Backend works (`curl` succeeds) but the frontend can't connect | Check `web/.env` has `VITE_API_BASE_URL=http://127.0.0.1:8000` and `VITE_AG_API_MODE=real`, then restart the Vite dev server (it only reads `.env` at startup). |
 
 ## Roles
 
