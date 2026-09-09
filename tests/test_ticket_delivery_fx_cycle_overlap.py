@@ -84,9 +84,16 @@ def test_ten_concurrent_invocations_same_pair_exactly_one_delivery(tmp_path):
     with ThreadPoolExecutor(max_workers=10) as pool:
         outcomes = list(pool.map(lambda _: process_pair_result(_pair(), **kwargs), range(10)))
 
-    delivered = [o for o in outcomes if o.delivery_state == "DELIVERED"]
-    already_claimed = [o for o in outcomes if o.delivery_state == "DELIVERY_ALREADY_PROCESSED"]
-    assert len(delivered) == 1
+    # DELIVERED is the durable ticket state, not "who sent it": a losing caller can
+    # legitimately observe delivery_state == "DELIVERED" (the winner already finished)
+    # OR the transient "DELIVERY_CLAIMED" (the winner is still mid-send) depending on
+    # scheduling -- both are correct, non-duplicate outcomes, so delivery_state itself
+    # is not asserted per-outcome here (see DeliveryOutcome's docstring in
+    # telegram_adapter.py). The exactly-once guarantee that actually matters is how
+    # many callers performed the real transport call, tracked separately and
+    # deterministic regardless of scheduling.
+    performed_delivery = [o for o in outcomes if o.delivery_performed_by_this_invocation]
+    assert len(performed_delivery) == 1
     assert session.send_count == 1  # exactly one real transport call among 10 workers
     assert len({o.logical_ticket_id for o in outcomes}) == 1  # all 10 converged on the same logical ticket
     assert len(store._records.all()) == 1  # exactly one delivery record, ever

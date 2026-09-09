@@ -111,10 +111,25 @@ def _redact(text: str, bot_token: str) -> str:
 
 @dataclass(frozen=True)
 class DeliveryOutcome:
+    """`final_state` is the durable ticket's state as of this call, regardless of which
+    invocation produced it -- e.g. a caller that loses a claim race against a
+    concurrent winner, or that re-invokes after a prior successful send, both see
+    `final_state="DELIVERED"`, matching the persisted DeliveryRecord. This is
+    deliberate and frozen: a repeat/idempotent caller must be able to observe "this
+    ticket is DELIVERED" without needing to know who sent it.
+
+    `delivery_performed_by_this_invocation` answers the separate question "did THIS
+    call cause the send" -- True only when this invocation held the claim and Telegram
+    confirmed the message (the `mark_delivered()` branch below). False in every other
+    case: lost claim race, already-resolved ticket, ambiguous/failed/retryable
+    outcome. Use this field (not `final_state`) to count how many callers actually
+    performed a real transport call."""
+
     claimed: bool
     final_state: str
     reason_code: Optional[str] = None
     provider_response_id: Optional[str] = None
+    delivery_performed_by_this_invocation: bool = False
 
 
 def deliver_informational_ticket(
@@ -148,7 +163,11 @@ def deliver_informational_ticket(
         if isinstance(result.result, dict):
             message_id = result.result.get("message_id")
         store.mark_delivered(logical_ticket_id, provider_response_id=str(message_id) if message_id is not None else "SENT_NO_ID")
-        return DeliveryOutcome(claimed=True, final_state="DELIVERED", provider_response_id=str(message_id) if message_id is not None else None)
+        return DeliveryOutcome(
+            claimed=True, final_state="DELIVERED",
+            provider_response_id=str(message_id) if message_id is not None else None,
+            delivery_performed_by_this_invocation=True,
+        )
 
     # Telegram answered but ok=false -- a real, non-ambiguous provider decision.
     evidence = _redact(f"error_code={result.error_code} description={result.description}", destination.bot_token)

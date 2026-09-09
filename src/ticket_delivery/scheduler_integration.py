@@ -357,5 +357,6 @@ def process_cycle_result(
             "symbol": outcome.symbol, "cycle_state": outcome.cycle_state,
             "logical_ticket_id": outcome.logical_ticket_id, "archived": outcome.archived,
             "delivery_state": outcome.delivery_state, "reason_code": outcome.reason_code,
+            "delivery_performed_by_this_invocation": outcome.delivery_performed_by_this_invocation,
         })
     return outcomes

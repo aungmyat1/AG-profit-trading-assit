@@ -10,12 +10,13 @@ preparing (not executing) the next owner activation decisions.
 ```text
 branch = main
 head_before = 934ce15
-head_after = 934ce15 (docs-only changes made this pass; commit pending user request)
-origin_main = 934ce15
-ahead = 0
+head_after = <see COMMITS at the end of this document -- two local commits this pass,
+              neither pushed>
+origin_main = 934ce15 (unchanged; nothing has been pushed)
+ahead = 2
 behind = 0
 working_tree_before = CLEAN
-working_tree_after = CLEAN (docs edits staged/unstaged only, see COMMITS)
+working_tree_after = CLEAN
 diff_check = PASS
 ```
 
@@ -96,34 +97,56 @@ command: python -m pytest -q tests/test_ticket_delivery_wp7_retry_and_journal.py
   tests/test_ticket_delivery_evidence_export.py
   tests/test_ticket_delivery_policy.py
   tests/test_ticket_delivery_renderer.py
-result (combined load, 1st run): 218 passed, 1 failed
-result (failing test isolated, reran 3x): 3 passed, 0 failed
+result (initial combined run, before the fix below): 218 passed, 1 failed
+result (failing test isolated, reran 3x, before the fix): 3 passed, 0 failed
+result (combined run, AFTER the fix below, x3 consecutive): 219 passed, 0 failed / 219 passed, 0 failed / 219 passed, 0 failed
 ```
 
-The single failure is `test_ten_concurrent_invocations_same_pair_exactly_one_delivery`
-(`tests/test_ticket_delivery_fx_cycle_overlap.py`). Root cause investigated:
-`deliver_informational_ticket()`'s lost-claim-race branch
-(`telegram_adapter.py::deliver_informational_ticket`, the `if not claim.success:`
-branch) mirrors an already-DELIVERED record's raw state back to every losing
-concurrent caller, so `PairOutcome.delivery_state` cannot distinguish "I performed the
-delivery" from "I observed it was already delivered" under thread contention — under
-unlucky scheduling, more than one of the 10 concurrent callers can observe and report
-`"DELIVERED"`, failing that test's `len(delivered) == 1` assertion even though the
-real invariants that matter (`session.send_count == 1`, exactly one persisted record,
-all 10 callers converge on the same logical ticket id) hold every time.
+### Root cause and fix (resolved this pass)
 
-A source-level fix was attempted and then **deliberately reverted** this pass: adding a
-distinct `DELIVERY_ALREADY_PROCESSED` state for the lost-claim-race case breaks a
-different, deliberately-asserted test
-(`tests/test_ticket_delivery_wp7_scheduler_message_delivery.py::test_second_identical_invocation_is_idempotent_zero_provider_calls`),
-which locks in that a *sequential* idempotent re-invocation must keep reporting
-`"DELIVERED"` unchanged. Reconciling these two tests' semantics is a real design
-decision (what should a caller who did not perform the delivery see: "delivered" or
-"already processed"?) that this WP7-readiness pass is not authorized to make
-unilaterally — it is flagged here as a known, pre-existing, non-blocking gap for a
-future explicitly-scoped fix, not treated as a WP7 readiness blocker, since it affects
-outcome *reporting* under contention, not the underlying dedup/transport-call-count/
-execution-boundary guarantees.
+The single failure was `test_ten_concurrent_invocations_same_pair_exactly_one_delivery`
+(`tests/test_ticket_delivery_fx_cycle_overlap.py`), caused by an unfrozen, ambiguous
+meaning of `PairOutcome.delivery_state`/`DeliveryOutcome.final_state`: it was being
+used simultaneously to mean two different things depending on caller — "the durable
+ticket's current state" (what the sequential idempotency test in
+`tests/test_ticket_delivery_wp7_scheduler_message_delivery.py` deliberately relies on)
+and "what this invocation itself just did" (what the concurrency test needed). Under
+contention, more than one of 10 concurrent callers could legitimately observe
+`final_state == "DELIVERED"` (the durable state, correct) while the test's assertion
+implicitly required it to mean "I sent it" (also seemingly reasonable, but a different
+question).
+
+**Fix — meaning frozen, per explicit owner direction:**
+
+- `DeliveryOutcome.final_state` / `PairOutcome.delivery_state` = **the durable ticket
+  state, regardless of caller ownership.** Any caller, winner or loser, sees the
+  ticket's real current state (`DELIVERED`, `DELIVERY_CLAIMED` mid-flight,
+  `DELIVERY_FAILED_TERMINAL`, etc.). This preserves the sequential idempotency test's
+  existing, correct guarantee unchanged.
+- A new, separate field answers caller-ownership: **`delivery_performed_by_this_invocation:
+  bool`** on both `DeliveryOutcome` (`src/ticket_delivery/telegram_adapter.py`) and
+  `PairOutcome` (`src/ticket_delivery/fx_cycle_integration.py`), plumbed through to the
+  scheduler's per-pair output dict (`scheduler_integration.py`). It is `True` **only**
+  when this specific invocation held the claim lock and Telegram confirmed the send
+  (the `mark_delivered()` branch) — `False` in every other case: lost claim race,
+  already-resolved ticket, ambiguous/retryable/terminal-failed outcome. This field, not
+  `delivery_state`, is what a caller must check to count "how many callers actually
+  performed a real transport call."
+- `tests/test_ticket_delivery_fx_cycle_overlap.py`'s concurrency test now asserts
+  `len([o for o in outcomes if o.delivery_performed_by_this_invocation]) == 1` instead
+  of counting `delivery_state == "DELIVERED"` occurrences, and no longer asserts a
+  specific `delivery_state` value per losing caller (a loser can correctly observe
+  either the terminal `"DELIVERED"` or the transient `"DELIVERY_CLAIMED"` depending on
+  scheduling — both are correct, non-duplicate outcomes; only the transport-call count
+  and record count need to be exactly one, and both are asserted, deterministically).
+- The sequential idempotency test
+  (`test_second_identical_invocation_is_idempotent_zero_provider_calls`) was not
+  changed and continues to pass unmodified — its `delivery_state == "DELIVERED"`
+  assertion on a repeat call is exactly the "durable state" semantics this fix froze.
+
+Verified: the full 219-test focused suite passes in 3 consecutive combined runs (see
+above) — the flake is resolved, not merely hidden by a relaxed assertion (the actual
+invariant, `session.send_count == 1`, is still checked and still holds every run).
 
 ```text
 git diff --check: PASS
@@ -165,8 +188,8 @@ EXECUTION_AUTHORITY = NONE
 ## Future activation hard guards
 
 A future synthetic send may occur only if: WP7 runtime = READY (confirmed this pass);
-tests = PASS (confirmed, with the one documented non-blocking flake); destination
-allow-list = explicitly owner-authorized; `MESSAGE_DELIVERY` = explicitly
+tests = PASS (confirmed this pass, 219/219, no known flake — see the fix above);
+destination allow-list = explicitly owner-authorized; `MESSAGE_DELIVERY` = explicitly
 owner-authorized; execution firewall = PASS (confirmed this pass); broker/MT5 calls =
 ZERO; secrets exposed = ZERO; rollback path = VERIFIED (below).
 
@@ -188,20 +211,33 @@ strategy behavior; does not change execution authority.
 
 ## Files changed this pass
 
+Documentation reconciliation (commit 1):
+
 - `docs/plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md` — dated correction to
   the stale "WP7 NOT STARTED" banner; original text preserved.
 - `docs/status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md`
   — dated addendum resolving the open retry-scheduling question; original text
   preserved.
-- `PROJECT_STATUS.md` — new rolling-summary entry for this pass.
+- `PROJECT_STATUS.md` — new rolling-summary entry.
+- `docs/README.md` — index entry for this status document.
 - `docs/status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md` — this document
   (new).
 
-No `src/`, `scripts/`, `config/`, or test file was modified in the final state of this
-pass (a candidate one-line fix to `telegram_adapter.py` was made, tested, found to
-conflict with another test's locked-in semantics, and reverted — see the test-run
-section above; `git status`/`git diff` confirm a clean working tree matching this
-statement).
+Test-flake root-cause fix (commit 2, `MESSAGE_DELIVERY` mode/config untouched by this
+change, `mode` in `config/ticket_delivery.yaml` not modified, no destination added):
+
+- `src/ticket_delivery/telegram_adapter.py` — `DeliveryOutcome` gains
+  `delivery_performed_by_this_invocation: bool = False`; the `mark_delivered()` branch
+  is the only site that sets it `True`; a clarifying docstring freezes `final_state`'s
+  meaning as the durable ticket state.
+- `src/ticket_delivery/fx_cycle_integration.py` — `PairOutcome` gains the same field,
+  propagated from `DeliveryOutcome` at the one call site that invokes `deliver(...)`.
+- `src/ticket_delivery/scheduler_integration.py` — the per-pair output dict built by
+  `process_cycle_result()` includes the new field for operator observability.
+- `tests/test_ticket_delivery_fx_cycle_overlap.py` — the concurrency test now asserts
+  on `delivery_performed_by_this_invocation` (deterministic exactly-once truth) instead
+  of counting `delivery_state == "DELIVERED"` occurrences (non-deterministic under
+  contention by design, once the semantics above are correctly understood).
 
 ## Verdict
 

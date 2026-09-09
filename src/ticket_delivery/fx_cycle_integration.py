@@ -61,6 +61,15 @@ class PairOutcome:
     archived: bool
     delivery_state: str  # NOT_APPLICABLE / RENDER_BLOCKED / (delivery_store state) / TRANSPORT_NOT_CONFIGURED / ARCHIVE_FAILED
     reason_code: Optional[str] = None
+    # True only when THIS call to process_pair_result() is the one that performed the
+    # real Telegram send (mirrors DeliveryOutcome.delivery_performed_by_this_invocation
+    # -- see telegram_adapter.py's docstring). `delivery_state == "DELIVERED"` alone is
+    # NOT sufficient to answer "did I send it": a caller that lost a claim race, or
+    # that re-invoked after a prior successful send, also observes "DELIVERED" (the
+    # durable ticket state), but did not itself deliver anything. Defaults to False on
+    # every non-delivery path (NOT_APPLICABLE, RENDER_BLOCKED, CATCH_UP_REJECTED,
+    # TRANSPORT_NOT_CONFIGURED, ARCHIVE_FAILED) since none of those ever send.
+    delivery_performed_by_this_invocation: bool = False
 
 
 def _map_cycle_state(pair) -> str:
@@ -189,4 +198,7 @@ def process_pair_result(
 
     message_text = format_message_text(render_result.payload)
     outcome = deliver(ticket_id, message_text)
-    return PairOutcome(symbol, cycle_state, ticket_id, archive_path, True, outcome.final_state, outcome.reason_code)
+    return PairOutcome(
+        symbol, cycle_state, ticket_id, archive_path, True, outcome.final_state, outcome.reason_code,
+        delivery_performed_by_this_invocation=getattr(outcome, "delivery_performed_by_this_invocation", False),
+    )
