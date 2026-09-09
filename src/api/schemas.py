@@ -38,6 +38,32 @@ class BrokerAccountResponse(BaseModel):
     reason_code: Optional[str] = None
 
 
+class BrokerDealResponse(BaseModel):
+    ticket: int
+    position_id: int
+    time: str
+    symbol: str
+    side: str
+    volume: float
+    price: float
+    profit: float
+    commission: float
+    swap: float
+    fee: float
+    comment: str
+
+
+class BrokerHistoryResponse(BaseModel):
+    account_redacted: str
+    server: str
+    environment: str
+    lookback_days: int
+    total_closing_deals: int
+    returned_deals: int
+    realized_net: float
+    deals: List[BrokerDealResponse]
+
+
 class MT5StatusResponse(BaseModel):
     connected: bool
 

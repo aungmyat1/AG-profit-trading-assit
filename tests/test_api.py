@@ -212,6 +212,37 @@ def test_broker_account_never_500s_and_matches_broker_status_connection_state():
         assert body["balance"] is None
 
 
+def test_broker_history_returns_sanitized_mt5_deals(monkeypatch):
+    from api import app as app_module
+
+    monkeypatch.setattr(app_module.broker_service, "closed_deal_history", lambda **kwargs: {
+        "account_redacted": "****2746", "server": "VantageMarkets-Demo", "environment": "DEMO",
+        "lookback_days": kwargs["days"], "total_closing_deals": 1, "returned_deals": 1,
+        "realized_net": -1.25, "deals": [{
+            "ticket": 123, "position_id": 456, "time": "2026-09-09T10:00:00+00:00",
+            "symbol": "EURUSD", "side": "SELL", "volume": 0.01, "price": 1.16,
+            "profit": -1.25, "commission": 0.0, "swap": 0.0, "fee": 0.0, "comment": "[sl]",
+        }],
+    })
+    response = TestClient(app).get("/api/broker/history?days=30&limit=10")
+    assert response.status_code == 200
+    assert response.json()["account_redacted"] == "****2746"
+    assert response.json()["deals"][0]["ticket"] == 123
+    assert "login" not in response.text.lower()
+
+
+def test_broker_history_rejects_invalid_range(monkeypatch):
+    from api import app as app_module
+
+    def invalid(**_kwargs):
+        raise ValueError("days must be between 1 and 3650")
+
+    monkeypatch.setattr(app_module.broker_service, "closed_deal_history", invalid)
+    response = TestClient(app).get("/api/broker/history?days=0")
+    assert response.status_code == 400
+    assert response.json()["detail"]["reason_code"] == "days must be between 1 and 3650"
+
+
 def test_list_strategies_reads_real_registry():
     """No monkeypatch: proves this reads the real strategies/registry.yaml, same file
     the authorization path already consults."""

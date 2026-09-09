@@ -9,9 +9,8 @@
  *   - Proposals are whatever /api/proposals returns (possibly empty -- the backend's
  *     proposal registry has no persistent ingestion path yet, which is a known,
  *     pre-existing backend limitation, not a bug in this panel).
- *   - No POST route is called anywhere in this file -- authorize/execute stays out of
- *     scope for this phase (see AuthorizeDemo already gated elsewhere behind
- *     AG_UI_MODE and never invoked from here).
+ *   - Demo authorization is available only for an already-created PENDING backend
+ *     ticket, only in real UI mode, and only after a fresh browser confirmation.
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -29,10 +28,13 @@ import {
 import {
   agApiClient,
   AgApiError,
+  AG_UI_MODE,
   type BrokerAccountResponse,
+  type BrokerHistoryResponse,
   type ProposalResponse,
   type StrategyResponse,
   type SystemStatusResponse,
+  type TicketResponse,
   type ValidationResponse,
 } from '../../utils/agApiClient';
 
@@ -236,6 +238,71 @@ function BrokerAccountSection() {
             <div className="text-slate-500 text-[10px] uppercase">Equity</div>
             <div className="text-emerald-400 font-bold">{data.equity != null ? data.equity.toFixed(2) : 'N/A'}</div>
           </div>
+        </div>
+      )}
+    </SectionShell>
+  );
+}
+
+function BrokerHistorySection() {
+  const [state, setState] = useState<LoadState>('LOADING');
+  const [data, setData] = useState<BrokerHistoryResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setState('LOADING');
+    setError(null);
+    try {
+      setData(await agApiClient.getBrokerHistory(90, 100));
+      setState('READY');
+    } catch (err) {
+      setData(null);
+      setError(describeError(err));
+      setState(isDisconnected(err) ? 'DISCONNECTED' : 'ERROR');
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return (
+    <SectionShell title="MT5 Trade History" icon={<Server className="w-4 h-4 text-cyan-400" />} state={state} error={error} onRetry={load}>
+      {data && (
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-4 text-[11px] text-slate-300">
+            <span>{data.account_redacted} · {data.server} · {data.environment}</span>
+            <span>Closed deals: {data.total_closing_deals}</span>
+            <span className={data.realized_net >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+              Returned net: {data.realized_net.toFixed(2)}
+            </span>
+            <span>Lookback: {data.lookback_days} days</span>
+          </div>
+          {data.deals.length === 0 ? (
+            <div className="text-slate-500">No MT5 closing deals in this period.</div>
+          ) : (
+            <div className="max-h-72 overflow-auto">
+              <table className="w-full text-[11px]">
+                <thead className="sticky top-0 bg-slate-900 text-left text-slate-500">
+                  <tr><th className="py-1 pr-2">Time (UTC)</th><th className="pr-2">Symbol</th><th className="pr-2">Side</th><th className="pr-2">Volume</th><th className="pr-2">Price</th><th className="pr-2">Net</th><th>Ticket</th></tr>
+                </thead>
+                <tbody>
+                  {data.deals.map(deal => {
+                    const net = deal.profit + deal.commission + deal.swap + deal.fee;
+                    return (
+                      <tr key={deal.ticket} className="border-t border-slate-800 text-slate-300">
+                        <td className="py-1 pr-2">{new Date(deal.time).toISOString().replace('T', ' ').slice(0, 19)}</td>
+                        <td className="pr-2">{deal.symbol}</td><td className="pr-2">{deal.side}</td>
+                        <td className="pr-2">{deal.volume}</td><td className="pr-2">{deal.price}</td>
+                        <td className={`pr-2 ${net >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{net.toFixed(2)}</td>
+                        <td>{deal.ticket}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </SectionShell>
@@ -463,13 +530,104 @@ function ProposalsSection() {
   );
 }
 
+function TicketsSection() {
+  const [state, setState] = useState<LoadState>('LOADING');
+  const [data, setData] = useState<TicketResponse[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [result, setResult] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setState('LOADING');
+    setError(null);
+    try {
+      setData(await agApiClient.listTickets());
+      setState('READY');
+    } catch (err) {
+      setData([]);
+      setError(describeError(err));
+      setState(isDisconnected(err) ? 'DISCONNECTED' : 'ERROR');
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const authorize = async (ticket: TicketResponse) => {
+    if (AG_UI_MODE !== 'real') {
+      setResult('BLOCKED: switch VITE_AG_API_MODE to real before authorizing a backend ticket.');
+      return;
+    }
+    const confirmed = window.confirm(
+      `Send this DEMO order to the broker now?\n\n${ticket.symbol ?? 'Unknown symbol'} ${ticket.direction ?? ''}\nTicket: ${ticket.approval_id}\n\nThis confirmation applies only to this ticket.`,
+    );
+    if (!confirmed) return;
+
+    setBusyId(ticket.approval_id);
+    setResult(null);
+    try {
+      const response = await agApiClient.authorizeDemo(ticket.approval_id);
+      setResult(
+        response.success
+          ? `EXECUTED: broker reference ${response.result_reference ?? 'not returned'}`
+          : `BLOCKED: ${response.reason_code ?? response.state}`,
+      );
+      await load();
+    } catch (err) {
+      setResult(`ERROR: ${describeError(err)}`);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <SectionShell title="Demo Execution Tickets" icon={<ShieldAlert className="w-4 h-4 text-amber-400" />} state={state} error={error} onRetry={load}>
+      {result && <div className="mb-3 rounded border border-slate-700 bg-slate-950 px-3 py-2 text-slate-200">{result}</div>}
+      {data.length === 0 ? (
+        <div className="text-slate-500">
+          No backend execution tickets are available. A deterministic strategy must first produce and publish an actionable ticket.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {data.map(ticket => {
+            const canAuthorize = AG_UI_MODE === 'real' && ticket.environment === 'DEMO' && ticket.state === 'PENDING';
+            return (
+              <div key={ticket.approval_id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-slate-800 bg-slate-950/60 p-3">
+                <div className="space-y-1">
+                  <div className="font-semibold text-slate-200">
+                    {ticket.symbol ?? 'N/A'} {ticket.direction ?? ''} · {ticket.strategy_id ?? 'N/A'}
+                  </div>
+                  <div className="text-[10px] text-slate-500">
+                    {ticket.approval_id} · {ticket.environment} · {ticket.state} · expires {ticket.expires_at}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={!canAuthorize || busyId === ticket.approval_id}
+                  onClick={() => authorize(ticket)}
+                  className="rounded border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-[11px] font-bold text-amber-200 hover:bg-amber-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {busyId === ticket.approval_id ? 'Authorizing…' : 'Authorize Demo'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </SectionShell>
+  );
+}
+
 export function AGBackendPanel() {
   return (
     <div className="space-y-4">
       <SystemStatusSection />
       <BrokerAccountSection />
+      <BrokerHistorySection />
       <StrategiesSection />
       <ProposalsSection />
+      <TicketsSection />
     </div>
   );
 }

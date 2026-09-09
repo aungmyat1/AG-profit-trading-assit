@@ -56,7 +56,11 @@ Agent skills  -> advisory and explanatory only
 - The web workspace defaults to an explicitly labelled **SIMULATION MODE**. Its generated
   candles, proposals, positions, and mock execution/management responses never represent
   broker activity. In `VITE_AG_API_MODE=real`, the legacy manual controls fail closed;
-  only read-only backend status and authorized-ticket surfaces may use the real API.
+  backend status and authorized-ticket surfaces use the real API. The AG Backend panel
+  can authorize an existing `PENDING` Demo ticket after a fresh per-ticket confirmation;
+  it cannot create order parameters or bypass strategy/proposal authority. The same
+  panel displays sanitized account status and closing-deal history read directly from
+  the connected MT5 terminal; fixture performance remains visually separate.
 
 See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
 [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current implementation state — in
@@ -66,6 +70,15 @@ the proposal-only FX runtime from the independently-gated MT5 Demo execution
 subsystem: a generic proposal→execution bridge exists and was live-verified
 (2026-08-28), but `ST_ASIAN_SWEEP_5R_V1` itself is not `demo_authorized`, so its
 proposals cannot use it today.
+
+## Run locally from VS Code
+
+After the one-time `AG: Setup Dev (first time)` task, press `Ctrl+Shift+B` or run
+`Tasks: Run Task` → `AG: Start Dev`. The supervised task starts the local FastAPI
+backend at `http://127.0.0.1:8000` and the Vite frontend at
+`http://localhost:3000` in one dedicated terminal. Stop that task to stop both.
+See [`docs/setup/AI_STUDIO_VSCODE_DEVELOPMENT.md`](docs/setup/AI_STUDIO_VSCODE_DEVELOPMENT.md)
+for environment and troubleshooting details.
 
 ## Current state
 

@@ -4,6 +4,41 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+### Frontend Demo-ticket authorization surface (2026-09-09)
+
+The real-mode AG Backend panel now lists durable backend execution tickets and exposes
+`Authorize Demo` only for `PENDING` `DEMO` tickets. Every click requires a fresh browser
+confirmation and calls the existing identifier-only
+`POST /api/tickets/{approval_id}/authorize-demo` route; order fields never come from the
+browser. Mock mode, non-Demo tickets, and non-pending tickets remain disabled. Local
+VS Code runtime verification passed with FastAPI, Vite, MT5, and the configured Vantage
+Demo account connected; frontend TypeScript validation passed (`npm run lint`). No
+order was sent during this milestone: current `SESSION_TRADE_V1` evaluations produced
+no eligible setup, and the backend had no actionable proposal or pending ticket. The
+known persistent proposal-ingestion gap remains open.
+
+### Live MT5 account and history synchronization (2026-09-09)
+
+Read-only validation confirmed the active terminal is account `25972746` on
+`VantageMarkets-Demo`, MT5 account trade mode `DEMO`, with trading permitted. The local
+FastAPI status endpoint independently returned the same identity as `****2746`. Added
+`GET /api/broker/history` and a real-mode `MT5 Trade History` panel backed directly by
+MT5 `history_deals_get`; it exposes sanitized closing-deal fields only and performs no
+broker mutation. Live 90-day evidence at validation time: 11 closing deals, net
+`-5.43 USD`, balance/equity `994.57 USD`, zero open positions, zero pending orders.
+Verification: `python -m pytest tests/test_api.py -q` = 26 passed; `npm run lint` passed;
+browser rendering verified against the live local API. No trade or setting changed.
+
+### VS Code supervised frontend/backend startup (2026-09-09)
+
+The primary VS Code task `AG: Start Dev` now directly invokes
+`scripts/run_dev.ps1` instead of depending on two background tasks without readiness
+problem matchers. It is the default `Ctrl+Shift+B` task, opens in one dedicated terminal,
+starts FastAPI and Vite together, and stops both child jobs when terminated. Separate
+backend/frontend tasks remain for debugging. Existing real-mode environment verified:
+`VITE_API_BASE_URL=http://127.0.0.1:8000`, `VITE_AG_API_MODE=real`; live runtime ports
+8000 and 3000 were listening at validation time. No trading authority changed.
+
 ### Frontend simulation-boundary correction (2026-09-08)
 
 The React workspace now displays a persistent mode banner. Its default `mock` mode

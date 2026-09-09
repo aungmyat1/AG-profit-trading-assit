@@ -126,6 +126,32 @@ export interface BrokerAccountResponse {
   reason_code?: string | null;
 }
 
+export interface BrokerDealResponse {
+  ticket: number;
+  position_id: number;
+  time: string;
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  volume: number;
+  price: number;
+  profit: number;
+  commission: number;
+  swap: number;
+  fee: number;
+  comment: string;
+}
+
+export interface BrokerHistoryResponse {
+  account_redacted: string;
+  server: string;
+  environment: string;
+  lookback_days: number;
+  total_closing_deals: number;
+  returned_deals: number;
+  realized_net: number;
+  deals: BrokerDealResponse[];
+}
+
 export interface StrategyResponse {
   strategy_id: string;
   registered: boolean;
@@ -175,6 +201,8 @@ export const agApiClient = {
   getSystemStatus: () => agFetch<SystemStatusResponse>('/api/system/status'),
   getBrokerStatus: () => agFetch<BrokerStatusResponse>('/api/broker/status'),
   getBrokerAccount: () => agFetch<BrokerAccountResponse>('/api/broker/account'),
+  getBrokerHistory: (days = 90, limit = 100) =>
+    agFetch<BrokerHistoryResponse>(`/api/broker/history?days=${days}&limit=${limit}`),
   listStrategies: () => agFetch<StrategyResponse[]>('/api/strategies'),
   getStrategy: (id: string) => agFetch<StrategyResponse>(`/api/strategies/${encodeURIComponent(id)}`),
   getValidation: (id: string) => agFetch<ValidationResponse>(`/api/validation/${encodeURIComponent(id)}`),

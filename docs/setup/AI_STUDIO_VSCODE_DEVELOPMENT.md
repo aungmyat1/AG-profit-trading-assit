@@ -43,8 +43,10 @@ python scripts/test_dev_connection.py
 
 Or from VS Code: `Ctrl+Shift+P` → `Tasks: Run Task` → `AG: Setup Dev (first time)`,
 `AG: Start Dev`, `AG: Test Dev Connection`, `AG: Run Integration Tests`.
-`scripts/setup_dev.ps1` / `scripts/run_dev.ps1` are the more reliable path — prefer
-them if the VS Code compound task behaves inconsistently on your machine.
+`AG: Start Dev` directly runs the same supervised `scripts/run_dev.ps1` launcher and is
+also the default VS Code build task (`Ctrl+Shift+B`). It keeps FastAPI and Vite together
+in one dedicated terminal; stopping that task stops both child jobs. The separate
+`AG: Start Backend` and `AG: Start Frontend` tasks remain available for debugging.
 `run_dev.ps1` deliberately does NOT install dependencies itself; if `web/node_modules`
 is missing it tells you to run `setup_dev.ps1` instead of installing silently.
 

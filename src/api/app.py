@@ -26,12 +26,13 @@ from authorization.models import ENVIRONMENT_DEMO
 from authorization.store import ExecutionApprovalStore
 from authorization.telegram_gateway import ExecutionHandlerResult
 
-from . import strategy_service, telegram_service
+from . import broker_service, strategy_service, telegram_service
 from .execution_service import InMemoryProposalRegistry, SOURCE_WEB, authorize_demo_execution
 from .schemas import (
     AuthorizeDemoRequest,
     AuthorizeDemoResponse,
     BrokerAccountResponse,
+    BrokerHistoryResponse,
     BrokerStatusResponse,
     GateResultResponse,
     HealthResponse,
@@ -164,6 +165,17 @@ def broker_account() -> BrokerAccountResponse:
         equity=acct.equity,
         trade_allowed_informational=acct.trade_allowed,
     )
+
+
+@app.get("/api/broker/history", response_model=BrokerHistoryResponse)
+def broker_history(days: int = 90, limit: int = 100) -> BrokerHistoryResponse:
+    """Read-only MT5 closing-deal history; never returns credentials or account name."""
+    try:
+        return BrokerHistoryResponse(**broker_service.closed_deal_history(days=days, limit=limit))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"reason_code": str(exc)})
+    except Exception as exc:  # noqa: BLE001 -- normalize MT5 failures for the UI
+        raise HTTPException(status_code=502, detail={"reason_code": f"MT5_HISTORY_ERROR:{type(exc).__name__}"})
 
 
 @app.get("/api/system/status", response_model=SystemStatusResponse)

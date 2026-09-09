@@ -29,9 +29,17 @@
         },
         {
             "label": "AG: Start Dev",
-            "dependsOn": ["AG: Start Backend", "AG: Start Frontend"],
-            "dependsOrder": "parallel",
-            "problemMatcher": []
+            "type": "shell",
+            "command": "powershell",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/run_dev.ps1"],
+            "problemMatcher": [],
+            "group": { "kind": "build", "isDefault": true },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": true,
+                "clear": true
+            }
         },
         {
             "label": "AG: Run Integration Tests",
