@@ -300,3 +300,85 @@ def test_incomplete_observation_fails_closed_before_cycle(monkeypatch):
     assert called is False
     assert result["decision"] == "DATA_ERROR"
     assert result["data_quality"]["reason_code"] == "BTC_M5_OBSERVATION_INCOMPLETE"
+
+
+# ---------------------------------------------------------------------------
+# AG_MONEY_MAKING_EVIDENCE_PIPELINE_M1 P3.1/P3.2/P3.5 -- external data-acquisition
+# failure containment (the gap outside build_btc_daily_report's own try/except: a
+# failure while fetching exchange symbol metadata, which happens in the CLI BEFORE
+# build_btc_daily_report is ever called).
+# ---------------------------------------------------------------------------
+
+class _FakeHTTPError(RuntimeError):
+    reason_code = "INSTRUMENTS_INFO_REQUEST_FAILED"
+
+    def __init__(self, message, status_code=403):
+        super().__init__(message)
+
+        class _Resp:
+            pass
+
+        self.response = _Resp()
+        self.response.status_code = status_code
+
+
+def test_build_external_data_error_report_never_crashes_and_is_bounded():
+    exc = _FakeHTTPError("403 Client Error: Forbidden for url: https://api.bybit.com/secret?api_key=abc123")
+    report = daily_report.build_external_data_error_report(
+        exc,
+        strategy_id="ST_LIQUIDITY_SWEEP_RETEST_V1",
+        strategy_version="2.0.0",
+        application_release="AG_TRADE_ASSISTANT_V1_0_3",
+        observation_date=OBS_DATE,
+        expected_window={"start_utc": "06:30", "end_utc": "06:45"},
+        now=dt.datetime(2026, 1, 6, 6, 35, tzinfo=UTC),
+        endpoint_role="SYMBOL_METADATA_OR_MARKET_DATA_FETCH",
+        data_source="BYBIT:BTCUSDT",
+    )
+    assert report["decision"] == "DATA_ERROR"
+    assert report["data_quality"]["status"] == "FAIL"
+    assert report["evidence_qualified"] is False
+    assert report["counting_eligible"] is False
+    assert report["http_status"] == 403
+    assert report["error_type"] == "_FakeHTTPError"
+    # Bounded and redacted: never a raw credential/query-string secret.
+    assert "api_key" not in report["error_detail"]
+    assert len(report["error_detail"]) <= 320
+
+
+def test_evaluate_counting_eligibility_rejects_data_error():
+    report = {
+        "decision": "DATA_ERROR", "data_quality": {"status": "FAIL"},
+        "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1", "strategy_version": "2.0.0",
+        "qualification_evidence_eligible": True,
+    }
+    result = daily_report.evaluate_counting_eligibility(
+        report, expected_strategy_id="ST_LIQUIDITY_SWEEP_RETEST_V1", expected_strategy_version="2.0.0",
+    )
+    assert result["counting_eligible"] is False
+    assert any("NON_QUALIFYING_DECISION" in r for r in result["counting_ineligible_reasons"])
+
+
+def test_evaluate_counting_eligibility_accepts_valid_watch():
+    report = {
+        "decision": "WATCH", "data_quality": {"status": "PASS"},
+        "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1", "strategy_version": "2.0.0",
+        "qualification_evidence_eligible": True,
+    }
+    result = daily_report.evaluate_counting_eligibility(
+        report, expected_strategy_id="ST_LIQUIDITY_SWEEP_RETEST_V1", expected_strategy_version="2.0.0",
+    )
+    assert result["counting_eligible"] is True
+    assert result["counting_ineligible_reasons"] == []
+
+
+def test_evaluate_counting_eligibility_rejects_wrong_version():
+    report = {
+        "decision": "READY", "data_quality": {"status": "PASS"},
+        "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1", "strategy_version": "1.0.0",
+        "qualification_evidence_eligible": True,
+    }
+    result = daily_report.evaluate_counting_eligibility(
+        report, expected_strategy_id="ST_LIQUIDITY_SWEEP_RETEST_V1", expected_strategy_version="2.0.0",
+    )
+    assert result["counting_eligible"] is False

@@ -122,13 +122,17 @@ ABSTRACT_MILESTONE_GATES: FrozenSet[str] = frozenset({"SHADOW_ENTRY_EVIDENCE"})
 # ST_LIQUIDITY_SWEEP_RETEST_V1: NATURAL_CAMPAIGN_ACCRUAL is BTC's own forward-observation
 #   campaign gate, unchanged from the pre-reconciliation universal default -- reconciled
 #   here as a per-strategy concrete mapping instead of a global one.
-# ST_LARGE_SMC_V1: deliberately absent. No repository governance currently defines
-#   Large-SMC's OPERATIONAL_SHADOW entry evidence, and Large-SMC's actual current
-#   transition (OFFLINE_RESEARCH -> FORWARD_RESEARCH) never reaches this abstract gate --
-#   inventing a mapping now would be speculative policy, not reconciliation.
+# ST_LARGE_SMC_V1: LARGE_SMC_SHADOW_ENTRY_PREFLIGHT (large_smc_adapter.py,
+#   AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1 P2). Large-SMC's own itemized entry
+#   preflight -- strategy/version validity, E/M-model reachability, C10 stop
+#   availability, market-data completeness, cost/spread metadata, zero execution
+#   authority. Currently PARTIAL (real mechanism proof, no natural occurrence evidence
+#   yet, no cost model yet) -- this still fails closed and blocks OPERATIONAL_SHADOW, but
+#   as a real, inspectable gate rather than the unresolved placeholder.
 MILESTONE_GATE_MAP: Dict[str, Dict[str, str]] = {
     "ST_ASIAN_SWEEP_5R_V1": {"SHADOW_ENTRY_EVIDENCE": "FX_SHADOW_ENTRY_PREFLIGHT_PASS"},
     "ST_LIQUIDITY_SWEEP_RETEST_V1": {"SHADOW_ENTRY_EVIDENCE": "NATURAL_CAMPAIGN_ACCRUAL"},
+    "ST_LARGE_SMC_V1": {"SHADOW_ENTRY_EVIDENCE": "LARGE_SMC_SHADOW_ENTRY_PREFLIGHT"},
 }
 
 

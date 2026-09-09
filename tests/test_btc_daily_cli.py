@@ -101,6 +101,37 @@ def test_diagnostic_uses_disposable_runtime_state(monkeypatch, capsys):
     assert "qualification_evidence_eligible" not in capsys.readouterr().err
 
 
+def test_cli_contains_symbol_meta_fetch_failure_instead_of_crashing(monkeypatch, capsys):
+    """AG_MONEY_MAKING_EVIDENCE_PIPELINE_M1 P3.1/P17#1: reproduces the real observed
+    defect (Bybit HTTP 403 on the symbol-metadata fetch, previously an unhandled
+    exception -- confirmed live via Get-ScheduledTaskInfo LastTaskResult=1) and proves
+    it no longer crashes the process or loses all evidence."""
+    cli = _load_cli()
+    now = dt.datetime(2026, 1, 6, 6, 35, tzinfo=UTC)
+
+    class _Boom(cli.BybitFeedRequestError):
+        pass
+
+    def _raise(symbol):
+        raise _Boom("INSTRUMENTS_INFO_REQUEST_FAILED", "403 Client Error: Forbidden")
+
+    monkeypatch.setattr(cli, "fetch_exchange_symbol_meta", _raise)
+    archived = {}
+    monkeypatch.setattr(
+        cli, "archive_btc_daily_report",
+        lambda date, report: archived.setdefault("report", report) or "archive.json",
+    )
+
+    rc = cli.main(["--json"], clock=lambda: now)
+
+    assert rc == 0  # no crash, no nonzero-from-unhandled-exception
+    assert archived["report"]["decision"] == "DATA_ERROR"
+    assert archived["report"]["counting_eligible"] is False
+    assert archived["report"]["evidence_qualified"] is False
+    output = capsys.readouterr()
+    assert '"decision": "DATA_ERROR"' in output.out
+
+
 def test_cli_source_has_no_order_or_private_api_path():
     source = (ROOT / "scripts" / "run_btc_daily_report.py").read_text(encoding="utf-8")
     forbidden = (

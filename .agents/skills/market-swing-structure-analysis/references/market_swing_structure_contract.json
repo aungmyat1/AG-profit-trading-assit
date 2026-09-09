@@ -1,0 +1,86 @@
+{
+  "_comment": "Worked example of market_swing_structure.analyze()'s normalized output. Every non-derived field is a direct, unmodified read from an existing canonical engine (market_structure / liquidity / supply_demand) -- see SKILL.md 'What is genuinely new here (and only this)'.",
+  "schema_version": "MARKET_SWING_STRUCTURE_V1",
+  "symbol": "EURUSD",
+  "analysis_time_utc": "2026-09-10T09:00:00+00:00",
+  "authority": "ADVISORY_CONTEXT_ONLY",
+
+  "timeframes": [
+    ["H4", {
+      "timeframe": "H4",
+      "status": "VALID",
+      "structure_state": "BULLISH",
+      "last_confirmed_swing_high": {
+        "swing_type": "SWING_HIGH",
+        "price": 1.0895,
+        "pivot_time_utc": "2026-09-08T04:00:00+00:00",
+        "confirmed_time_utc": "2026-09-09T00:00:00+00:00",
+        "timeframe": "H4",
+        "strength": 5,
+        "status": "CONFIRMED",
+        "source_engine": "CANONICAL_MARKET_STRUCTURE"
+      },
+      "last_confirmed_swing_low": {
+        "swing_type": "SWING_LOW",
+        "price": 1.0820,
+        "pivot_time_utc": "2026-09-06T12:00:00+00:00",
+        "confirmed_time_utc": "2026-09-07T08:00:00+00:00",
+        "timeframe": "H4",
+        "strength": 5,
+        "status": "CONFIRMED",
+        "source_engine": "CANONICAL_MARKET_STRUCTURE"
+      },
+      "last_bos": {"event_type": "BOS_BULLISH", "price": 1.0895, "confirmed_time_utc": "2026-09-09T04:00:00+00:00", "timeframe": "H4"},
+      "last_choch": null,
+      "reason_codes": []
+    }],
+    ["H1", {
+      "timeframe": "H1",
+      "status": "VALID",
+      "structure_state": "BULLISH",
+      "last_confirmed_swing_high": null,
+      "last_confirmed_swing_low": null,
+      "last_bos": null,
+      "last_choch": null,
+      "reason_codes": []
+    }],
+    ["M15", {
+      "timeframe": "M15",
+      "status": "VALID",
+      "structure_state": "STRUCTURE_STATE_UNDEFINED",
+      "last_confirmed_swing_high": null,
+      "last_confirmed_swing_low": null,
+      "last_bos": null,
+      "last_choch": null,
+      "reason_codes": []
+    }]
+  ],
+
+  "active_dealing_range": {
+    "swing_high": 1.0895,
+    "swing_low": 1.0820,
+    "equilibrium": 1.08575,
+    "current_zone": "DISCOUNT",
+    "defining_timeframe": "M15",
+    "source": "structure:M15:latest_confirmed_swing_pair"
+  },
+
+  "liquidity_context": [],
+  "imbalance_context": [],
+  "structure_events": [
+    {"event_type": "BOS_BULLISH", "price": 1.0895, "confirmed_time_utc": "2026-09-09T04:00:00+00:00", "timeframe": "H4"}
+  ],
+
+  "mtf_alignment": "HTF_BULLISH_LTF_TRANSITION",
+
+  "provenance": {
+    "skill_version": "1.0.0",
+    "schema_version": "MARKET_SWING_STRUCTURE_V1",
+    "timeframes_requested": ["H4", "H1", "M15"],
+    "dealing_range_defining_timeframe": "M15",
+    "liquidity_imbalance_defining_timeframe": "M15"
+  },
+
+  "status": "OK",
+  "reason_codes": []
+}

@@ -56,9 +56,10 @@ from __future__ import annotations
 import json
 import os
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Tuple
 
+from post_asian_pilot.shadow_day_classifier import classify_series
 from validation_framework.adapters.determinism_evidence import load_determinism_evidence
 from validation_framework.evaluator import evaluate_transition
 from validation_framework.lifecycle_registry import get_lifecycle_stage, get_next_stage
@@ -93,6 +94,15 @@ _SHADOW_EVIDENCE_REFS = (
     "docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_DAY_001_STATUS.md",
     "docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_DAY_002_STATUS.md",
 )
+
+# AG_MONEY_MAKING_EVIDENCE_PIPELINE_M1 P4.4: the hand-authored counters above are the
+# frozen, signed, historical record for 2026-09-04 (Day 1, INVALID_DAY) -- never
+# silently rewritten (P4.3). Day 002's own doc re-verified that same date and added no
+# new classified day (counters_before == counters after, see that doc's own "unchanged"
+# statement), so classify_series() below picks up cleanly the next calendar day with no
+# double-count risk. Going forward, SHADOW_SERIES_COMPLETION is derived from the
+# canonical machine-readable classifier, not a hand-maintained literal.
+_CLASSIFIER_SERIES_START_DATE = date(2026, 9, 5)
 
 
 def _read_outcome_records(repo_root: str) -> Tuple[list, Tuple[str, ...]]:
@@ -171,13 +181,21 @@ def build_fx_record(repo_root: str = ".") -> StrategyValidationRecord:
         ),
     )
 
+    _SIGNED_CONTRACT_VERSION = "AG_OUTCOME_RESOLUTION_CONTRACT_V1_SIGNED"
     if records:
-        cost_included = sum(1 for r in records if r.get("cost_status") == "INCLUDED")
-        historical_status = GateStatus.PARTIAL
+        contract_versions = {r.get("resolution_contract_version") for r in records}
+        all_signed = contract_versions == {_SIGNED_CONTRACT_VERSION}
+        historical_status = GateStatus.PASS if all_signed else GateStatus.PARTIAL
         historical_details = {
             "resolved_record_count": len(records),
-            "resolution_contract_version": records[0].get("resolution_contract_version"),
-            "note": "Resolved outcomes exist and are version-bound to 1.1.1, but the resolution contract is itself labeled DRAFT.",
+            "resolution_contract_version": sorted(contract_versions),
+            "note": (
+                "Resolved outcomes exist, are version-bound to 1.1.1, and the resolution "
+                "contract is owner-signed (AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1 "
+                "P1A, 2026-09-09)."
+                if all_signed
+                else "Resolved outcomes exist and are version-bound to 1.1.1, but not every record's resolution contract is signed."
+            ),
         }
     else:
         historical_status = GateStatus.NOT_VERIFIED
@@ -208,22 +226,44 @@ def build_fx_record(repo_root: str = ".") -> StrategyValidationRecord:
         {"note": "No FX-scoped out-of-sample/walk-forward artifact or test found repository-wide."},
     )
 
+    as_of_date = datetime.now(timezone.utc).date()
+    classifier_result = classify_series(
+        STRATEGY_ID, SEMANTIC_VERSION, "AG_TRADE_ASSISTANT_V1_0_3", _SHADOW_SERIES_ID,
+        _CLASSIFIER_SERIES_START_DATE, as_of_date, repo_root,
+    )
+    total_valid_days = _SHADOW_VALID_DAYS + classifier_result["valid_days"]
+    total_invalid_days = _SHADOW_INVALID_DAYS + classifier_result["invalid_days"]
+    total_excluded_days = _SHADOW_EXCLUDED_DAYS + classifier_result["excluded_days"]
+    total_pending_days = _SHADOW_PENDING_DAYS + classifier_result["unresolved_days"]
+
     shadow_status = (
         GateStatus.PASS
-        if _SHADOW_VALID_DAYS >= _SHADOW_TARGET_VALID_DAYS
+        if total_valid_days >= _SHADOW_TARGET_VALID_DAYS
         else GateStatus.PARTIAL
     )
     gates["SHADOW_SERIES_COMPLETION"] = gate(
         "SHADOW_SERIES_COMPLETION",
         shadow_status,
-        _SHADOW_EVIDENCE_REFS,
+        _SHADOW_EVIDENCE_REFS + (f"post_asian_pilot.shadow_day_classifier ({_CLASSIFIER_SERIES_START_DATE.isoformat()} -> {as_of_date.isoformat()})",),
         {
             "series_id": _SHADOW_SERIES_ID,
-            "valid_days": _SHADOW_VALID_DAYS,
+            "valid_days": total_valid_days,
             "target_valid_days": _SHADOW_TARGET_VALID_DAYS,
-            "invalid_days": _SHADOW_INVALID_DAYS,
-            "excluded_days": _SHADOW_EXCLUDED_DAYS,
-            "pending_days": _SHADOW_PENDING_DAYS,
+            "invalid_days": total_invalid_days,
+            "excluded_days": total_excluded_days,
+            "pending_days": total_pending_days,
+            "hand_authored_historical": {
+                "valid_days": _SHADOW_VALID_DAYS, "invalid_days": _SHADOW_INVALID_DAYS,
+                "excluded_days": _SHADOW_EXCLUDED_DAYS, "pending_days": _SHADOW_PENDING_DAYS,
+                "covers": "2026-09-04 (Day 1) only -- frozen, not recomputed",
+            },
+            "classifier_derived": {
+                "valid_days": classifier_result["valid_days"], "invalid_days": classifier_result["invalid_days"],
+                "excluded_days": classifier_result["excluded_days"], "unresolved_days": classifier_result["unresolved_days"],
+                "covers": f"{_CLASSIFIER_SERIES_START_DATE.isoformat()} -> {as_of_date.isoformat()}",
+                "classifier_version": classifier_result["classifier_version"],
+            },
+            "hand_authored_counter_dependency": "PARTIAL -- 2026-09-04 remains a frozen hand-authored record; every date from 2026-09-05 onward is now classifier-derived, not hand-maintained",
         },
     )
 

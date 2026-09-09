@@ -39,6 +39,8 @@ from .pipeline import ResearchCycleReport
 
 SCHEMA_VERSION = "AG_BTC_DAILY_REPORT_V1"
 REPORT_TYPE = "btc"
+STRATEGY_ID = "ST_LIQUIDITY_SWEEP_RETEST_V1"
+STRATEGY_VERSION = "2.0.0"
 
 DECISION_READY = "READY"
 DECISION_WATCH = "WATCH"
@@ -49,6 +51,127 @@ REPORT_WINDOW_START_HOUR = 6
 REPORT_WINDOW_START_MINUTE = 30
 REPORT_WINDOW_END_HOUR = 6
 REPORT_WINDOW_END_MINUTE = 45
+
+# AG_MONEY_MAKING_EVIDENCE_PIPELINE_M1 P3.3 -- the canonical BTC campaign counting
+# contract. Only these decisions can ever count toward NATURAL_CAMPAIGN_ACCRUAL; a
+# DATA_ERROR day is real, persisted, diagnostic evidence but is never confused with a
+# qualifying observation ("no trade" is not "no evidence", but "could not evaluate" is
+# not "evidence" either -- see the report's own data_quality.status).
+QUALIFYING_DECISIONS = frozenset({DECISION_READY, DECISION_WATCH, DECISION_NO_TRADE})
+
+_MAX_ERROR_DETAIL_LENGTH = 300
+_REDACTED_SUBSTRING_PATTERNS = ("authorization", "api-key", "api_key", "x-bapi", "cookie", "token", "secret")
+
+
+def _sanitize_error_detail(exc: BaseException) -> str:
+    """Bounded, redacted excerpt of an external-data-acquisition failure (P3.2). Never
+    includes a raw HTTP body, header, credential, or cookie -- only the exception's own
+    str(), truncated, with any line that looks like it might carry a credential/secret
+    header dropped rather than partially redacted (safer than pattern-scrubbing inline)."""
+    lines = str(exc).splitlines() or [""]
+    safe_lines = [
+        line for line in lines
+        if not any(marker in line.lower() for marker in _REDACTED_SUBSTRING_PATTERNS)
+    ]
+    detail = " ".join(safe_lines).strip() or "(detail suppressed: matched credential/secret pattern)"
+    if len(detail) > _MAX_ERROR_DETAIL_LENGTH:
+        detail = detail[:_MAX_ERROR_DETAIL_LENGTH] + "...(truncated)"
+    return detail
+
+
+def build_external_data_error_report(
+    exc: BaseException,
+    *,
+    strategy_id: str,
+    strategy_version: str,
+    application_release: str,
+    observation_date: dt.date,
+    expected_window: Dict[str, str],
+    now: dt.datetime,
+    endpoint_role: str,
+    data_source: str,
+    retry_count: int = 0,
+) -> Dict[str, Any]:
+    """P3.1/P3.2: the fail-closed record for a failure that happens BEFORE
+    build_btc_daily_report() is ever entered (e.g. the symbol-metadata fetch) -- the one
+    gap build_btc_daily_report()'s own internal try/except cannot cover, since that
+    wrapper only starts once this function's caller has already succeeded. Shape matches
+    build_btc_daily_report()'s own internal-failure branch exactly (same top-level keys)
+    so every downstream consumer (adapter, archive, CLI) treats both paths identically.
+    Only bounded, sanitized fields are persisted -- never a raw response body, header, or
+    credential (P3.2)."""
+    interval_start = dt.datetime.combine(observation_date, dt.time.min, tzinfo=dt.timezone.utc)
+    interval_end = interval_start + dt.timedelta(days=1)
+    http_status = getattr(getattr(exc, "response", None), "status_code", None)
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "report_type": "BTC_DAILY",
+        "application_release": application_release,
+        "strategy_id": strategy_id,
+        "strategy_version": strategy_version,
+        "observation_date": observation_date.isoformat(),
+        "observation_interval": {"start": interval_start.isoformat(), "end": interval_end.isoformat()},
+        "expected_window": expected_window,
+        "observed_at": now.isoformat(),
+        "generated_at_utc": now.isoformat(),
+        "data_quality": {
+            "status": "FAIL",
+            "reason_code": getattr(exc, "reason_code", type(exc).__name__),
+        },
+        "decision": DECISION_DATA_ERROR,
+        "reason_codes": [getattr(exc, "reason_code", type(exc).__name__)],
+        "error_code": getattr(exc, "reason_code", type(exc).__name__),
+        "error_type": type(exc).__name__,
+        "error_detail": _sanitize_error_detail(exc),
+        "endpoint_role": endpoint_role,
+        "http_status": http_status,
+        "data_source": data_source,
+        "retry_count": retry_count,
+        "occurrences": [],
+        "proposal_count": 0,
+        "evidence_qualified": False,
+        "counting_eligible": False,
+        "execution_authority": {
+            "automatic_execution": "DISABLED", "demo_execution": "DISABLED",
+            "live_execution": "DISABLED", "research_only": True,
+        },
+    }
+
+
+def evaluate_counting_eligibility(
+    report: Dict[str, Any],
+    *,
+    expected_strategy_id: str,
+    expected_strategy_version: str,
+) -> Dict[str, Any]:
+    """P3.3 canonical counting contract, applied uniformly to every report this module
+    or the CLI produces (success, internal DATA_ERROR, or external DATA_ERROR). A record
+    counts toward NATURAL_CAMPAIGN_ACCRUAL only if ALL of: it is one of
+    QUALIFYING_DECISIONS, its own data_quality.status is PASS, it identifies the
+    expected strategy/version, and it was generated inside the signed report window
+    (report.get('qualification_evidence_eligible') -- set by the CLI from
+    report_window_status()). Returns a dict merged onto the report, never silently
+    assumed true for a record missing these fields (a legacy/malformed record fails
+    closed to not-eligible, never counted by accident)."""
+    reasons = []
+    decision = report.get("decision")
+    if decision not in QUALIFYING_DECISIONS:
+        reasons.append(f"NON_QUALIFYING_DECISION:{decision}")
+    data_quality_status = (report.get("data_quality") or {}).get("status")
+    if data_quality_status != "PASS":
+        reasons.append(f"DATA_QUALITY_NOT_PASS:{data_quality_status}")
+    if report.get("strategy_id") != expected_strategy_id:
+        reasons.append(f"STRATEGY_ID_MISMATCH:{report.get('strategy_id')}")
+    if report.get("strategy_version") != expected_strategy_version:
+        reasons.append(f"STRATEGY_VERSION_MISMATCH:{report.get('strategy_version')}")
+    if report.get("qualification_evidence_eligible") is not True:
+        reasons.append("OUTSIDE_REPORT_WINDOW_OR_UNKNOWN")
+    counting_eligible = not reasons
+    return {
+        "evidence_qualified": data_quality_status == "PASS",
+        "counting_eligible": counting_eligible,
+        "counting_ineligible_reasons": reasons,
+    }
 
 _WATCH_CONTAINER_STATES = {STATE_WAITING_REFERENCE, STATE_WAITING_WINDOW, STATE_WAITING_SWEEP}
 _NO_TRADE_CONTAINER_STATES = {STATE_NO_TRADE_DIRECTION}
@@ -235,7 +358,7 @@ def build_btc_daily_report(
             "generated_at_utc": generated_at.isoformat(),
             "provider": provider, "internal_symbol": pipeline.CANONICAL_SYMBOL,
             "provider_symbol": provider_symbol, "market_type": market_type,
-            "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1", "strategy_version": "2.0.0",
+            "strategy_id": STRATEGY_ID, "strategy_version": STRATEGY_VERSION,
             "data_quality": {"status": "FAIL", "reason_code": reason_code},
             "decision": DECISION_DATA_ERROR, "reason_codes": [reason_code],
             "occurrences": [], "proposal_count": 0,
@@ -255,7 +378,7 @@ def build_btc_daily_report(
         "generated_at_utc": generated_at.isoformat(),
         "provider": provider, "internal_symbol": pipeline.CANONICAL_SYMBOL,
         "provider_symbol": provider_symbol, "market_type": market_type,
-        "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1", "strategy_version": "2.0.0",
+        "strategy_id": STRATEGY_ID, "strategy_version": STRATEGY_VERSION,
         "data_quality": audit,
         "decision": classification["decision"], "reason_codes": classification["reason_codes"],
         "occurrences": occurrences, "proposal_count": proposal_count,

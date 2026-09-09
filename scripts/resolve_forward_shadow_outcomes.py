@@ -11,10 +11,12 @@ This is a PROFITABILITY_RESEARCH tool, not a qualification or execution surface:
     research surface), one immutable JSON record per proposal plus an aggregate snapshot.
   - It never modifies strategies/ST_ASIAN_SWEEP_5R_V1.yaml or any release/qualification file.
 
-Resolution contract (AG_OUTCOME_RESOLUTION_CONTRACT_V1_DRAFT -- see module docstring
-sections below for the exact interpretations applied; two of these are genuine
-ambiguity-resolutions in the frozen strategy YAML, flagged explicitly rather than
-silently assumed):
+Resolution contract (AG_OUTCOME_RESOLUTION_CONTRACT_V1_SIGNED -- see module docstring
+sections below for the exact interpretations applied; SESSION EXIT CUTOFF below is a
+genuine ambiguity-resolution in the frozen strategy YAML that the owner has now signed
+off, per AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1 P1A (2026-09-09) -- flagged
+explicitly rather than silently assumed, and now an owner-authorized governance fact
+rather than only this tool's own assumption):
 
   ENTRY / FILL
     entry_order_type is MARKET at `entry_level: Sweep_Candle_Body_Close` (strategy YAML).
@@ -34,18 +36,26 @@ silently assumed):
     knows about).
     TP2 = fixed 5.0R on the remaining 25%, no trailing.
 
-  SESSION EXIT CUTOFF -- INTERPRETATION, NOT CERTAINTY (see AGENTS.md fail-closed rule)
+  SESSION EXIT CUTOFF -- OWNER-SIGNED (AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1
+  P1A, 2026-09-09; previously a flagged tool-level assumption, DRAFT contract)
     strategies/ST_ASIAN_SWEEP_5R_V1.yaml's invalidation_rules.time_invalidation says
     "15:00 GMT ... still functions as a single global cutoff covering both
     session_pairs" as an inline comment, but does not explicitly state whether a
     position opened under ASIAN_LONDON (trade_session 07:00-11:00) is held open past its
     own trade_session end until the global 15:00 mark, or is marked closed at its own
-    trade_session end. This tool applies the narrower, pair-own-trade_session-end
-    interpretation (11:00 UTC for ASIAN_LONDON, 15:00 UTC for LONDON_NEWYORK) as the
-    session-exit cutoff, and records this choice explicitly in every output record's
-    `session_exit_cutoff_interpretation` field so it can be revisited/overridden once the
-    owner freezes an explicit written contract. This is a measurement-tool assumption,
-    not a change to the strategy's own frozen entry/exit rules.
+    trade_session end. The owner has signed the narrower, pair-own-trade_session-end
+    reading (11:00 UTC for ASIAN_LONDON, 15:00 UTC for LONDON_NEWYORK) as the session-
+    exit cutoff: each session_pair is an independently-bounded cycle, and an
+    ASIAN_LONDON position must never be carried forward into (or resolved using bars
+    from) the separate LONDON_NEWYORK cycle merely to reach the shared 15:00 mark. This
+    is a governance sign-off of this tool's pre-existing, already-applied behavior, not a
+    change to it and not a change to the strategy's own frozen entry/exit rules -- no
+    resolved outcome record's terminal_state/realized_R changes as a result. Every output
+    record's `session_exit_cutoff_interpretation` field still records the choice
+    explicitly, now as a signed fact rather than a revisitable assumption. See
+    tests/test_resolve_forward_shadow_outcomes.py for the no-lookahead/session-isolation
+    acceptance tests this sign-off requires (no bar after a cycle's own cutoff may ever
+    affect that cycle's resolution).
 
   INTRABAR EVENT ORDERING
     Resolved against M1 candles (the finest timeframe this MT5 terminal exposes) rather
@@ -88,7 +98,10 @@ from mt5.market_data import MarketDataError, get_candles  # noqa: E402
 
 STRATEGY_ID = "ST_ASIAN_SWEEP_5R_V1"
 STRATEGY_VERSION = "1.1.1"
-RESOLUTION_CONTRACT_VERSION = "AG_OUTCOME_RESOLUTION_CONTRACT_V1_DRAFT"
+# Signed 2026-09-09 (AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1 P1A): owner confirmed
+# the pair-own-trade_session-end interpretation below as a governance fact, not merely
+# this tool's assumption. See the SESSION EXIT CUTOFF docstring section above.
+RESOLUTION_CONTRACT_VERSION = "AG_OUTCOME_RESOLUTION_CONTRACT_V1_SIGNED"
 
 JOURNAL_DIRS = {
     "ASIAN_LONDON": REPO_ROOT / "journal" / "post_asian_pilot",
@@ -255,8 +268,8 @@ def resolve_proposal(rec: dict) -> ResolvedOutcome:
         session_exit_cutoff_utc=cutoff.isoformat(),
         session_exit_cutoff_interpretation=(
             "pair_own_trade_session_end (ASIAN_LONDON=11:00Z / LONDON_NEWYORK=15:00Z) -- "
-            "an explicit interpretation of an ambiguous invalidation_rules.time_invalidation "
-            "clause, not a certainty; see module docstring"
+            "owner-signed 2026-09-09 (AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1 P1A); "
+            "see module docstring"
         ),
         market_data_source="MT5 (VantageMarkets-Demo)",
         market_data_timeframe="M1",

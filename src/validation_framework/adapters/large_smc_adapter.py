@@ -175,6 +175,66 @@ def build_large_smc_record(repo_root: str = ".") -> StrategyValidationRecord:
         },
     )
 
+    # Concrete resolution of the abstract SHADOW_ENTRY_EVIDENCE milestone gate for this
+    # strategy family (evaluator.MILESTONE_GATE_MAP). Prior to this gate's existence,
+    # Large-SMC had no repository-governance definition of what evidence its own
+    # OPERATIONAL_SHADOW entry requires, so the abstract gate resolved to the
+    # intentionally-unsatisfiable SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY
+    # placeholder (fail-closed, correct, but not an inspectable governance artifact).
+    # This gate replaces that placeholder with a real, itemized preflight covering every
+    # component named by the continuation directive -- each sub-check cites its own real
+    # evidence, and the aggregate status is never rounded up past what every sub-check
+    # actually supports.
+    #
+    #   strategy_version_valid       -- SPEC_FIDELITY/identity already prove this; not
+    #                                   re-derived here, only referenced.
+    #   e_model_m_model_reachability -- engine.py's E1-E3/M1-M3 pipeline is proven to
+    #                                   reach RESEARCH_QUALIFIED with a real
+    #                                   simulated_broker_stop under
+    #                                   tests/test_large_smc_research_engine.py, but only
+    #                                   against unit-test fixtures -- no real historical
+    #                                   replay or live occurrence has been observed
+    #                                   reaching RESEARCH_QUALIFIED (see
+    #                                   docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_
+    #                                   REPLAY_GAP.md: the MT5 symbol-metadata dependency
+    #                                   silently starved M1 detection in every historical
+    #                                   replay prior to the one-off dataset-fingerprint
+    #                                   patch, and that gap remains SHARED_CHANGE_REQUIRED
+    #                                   / open). PARTIAL, not PASS: the mechanism is
+    #                                   proven, a natural (non-synthetic) qualifying
+    #                                   occurrence is not.
+    #   c10_stop_availability        -- C10_STOP_POLICY gate (this record) is PASS.
+    #   market_data_completeness     -- PARTIAL; see e_model_m_model_reachability note.
+    #   cost_spread_metadata         -- NOT_VERIFIED; FRICTION_STRESS_TEST (this record)
+    #                                   is NOT_VERIFIED -- C10's spread term covers only
+    #                                   its own stop buffer, not a strategy-wide cost
+    #                                   model.
+    #   zero_execution_authority     -- PASS; execution_authority=NONE (this record),
+    #                                   tests/test_large_smc_execution_boundary.py.
+    gates["LARGE_SMC_SHADOW_ENTRY_PREFLIGHT"] = gate(
+        "LARGE_SMC_SHADOW_ENTRY_PREFLIGHT",
+        GateStatus.PARTIAL,
+        (
+            "strategies/ST_LARGE_SMC_V1.yaml",
+            "strategies/registry.yaml",
+            "src/large_smc_research/engine.py",
+            "src/large_smc_research/c10_stop_policy.py",
+            "tests/test_large_smc_research_engine.py::test_ready_with_target_found_and_valid_tick_is_research_qualified",
+            "tests/test_large_smc_execution_boundary.py",
+            "docs/status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md",
+        ),
+        {
+            "strategy_version_valid": True,
+            "e_model_m_model_reachability": "PARTIAL: proven only against unit-test fixtures, not a real historical/live occurrence",
+            "c10_stop_availability": True,
+            "market_data_completeness": "PARTIAL: MT5 symbol-metadata replay gap open, SHARED_CHANGE_REQUIRED",
+            "cost_spread_metadata": "NOT_VERIFIED: no strategy-wide cost model, only C10's own stop-buffer spread term",
+            "zero_execution_authority": True,
+            "natural_occurrence_evidence": "NOT_FOUND: no real historical replay or live observation of RESEARCH_QUALIFIED exists yet",
+            "note": "Aggregate is PARTIAL because every component is real evidence and none is fabricated or rounded up; this gate blocks OPERATIONAL_SHADOW until a natural RESEARCH_QUALIFIED occurrence and a strategy-wide cost model both exist.",
+        },
+    )
+
     execution_capability = "NONE"
     execution_capability_evidence = ("tests/test_large_smc_execution_boundary.py",)
     execution_authority = "NONE"
@@ -192,11 +252,11 @@ def build_large_smc_record(repo_root: str = ".") -> StrategyValidationRecord:
     # Sole promotion authority: evaluator.evaluate_transition(). FORWARD_RESEARCH ->
     # OPERATIONAL_SHADOW's cumulative requirement now includes the abstract
     # SHADOW_ENTRY_EVIDENCE milestone gate (see evaluator.STAGE_PREREQUISITES) --
-    # Large-SMC has no MILESTONE_GATE_MAP entry for it (no repository governance yet
-    # defines its shadow-entry evidence), so it resolves to the fail-closed
-    # SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY placeholder and correctly blocks
-    # this next transition -- evaluated here, never executed, and no concrete gate is
-    # invented to force it past NOT_APPLICABLE.
+    # evaluator.MILESTONE_GATE_MAP now resolves it to this record's own
+    # LARGE_SMC_SHADOW_ENTRY_PREFLIGHT gate (AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1
+    # P2), which is PARTIAL -- still correctly blocks this next transition, evaluated
+    # here, never executed, but as a real inspectable gate rather than the prior
+    # unresolved placeholder.
     evaluation = evaluate_transition(
         lifecycle_stage,
         next_transition,

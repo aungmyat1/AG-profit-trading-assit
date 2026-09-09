@@ -368,10 +368,16 @@ def test_fx_adapter_reconciles_against_registry_and_yaml():
     FOUNDATIONAL_INVARIANTS for its next transition too. DETERMINISM is now real-
     evidence PASS (AG_EGSVF_V1_CROSS_STRATEGY_DETERMINISM_EVIDENCE_RECONCILIATION,
     scripts/generate_determinism_evidence.py::generate_fx_evidence) and must NOT
-    appear as a blocker; HISTORICAL_REPLAY (still PARTIAL) must. FX must NOT carry
-    BTC's NATURAL_CAMPAIGN_ACCRUAL gate -- the abstract SHADOW_ENTRY_EVIDENCE milestone
-    resolves, for FX, to FX_SHADOW_ENTRY_PREFLIGHT_PASS (PASS, real preflight-closure
-    evidence), so it is correctly absent from the blocker list entirely."""
+    appear as a blocker. HISTORICAL_REPLAY is now also real-evidence PASS
+    (AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1 P1A, 2026-09-09: the outcome-
+    resolution contract is owner-signed) -- SHADOW_SERIES_COMPLETION/
+    FRICTION_STRESS_TEST/OOS_VALIDATION remain real blockers, each for its own distinct
+    reason (SHADOW_SERIES_COMPLETION is time-dependent forward evidence that cannot be
+    manufactured; FRICTION_STRESS_TEST/OOS_VALIDATION have no evidence yet). FX must NOT
+    carry BTC's NATURAL_CAMPAIGN_ACCRUAL gate -- the abstract SHADOW_ENTRY_EVIDENCE
+    milestone resolves, for FX, to FX_SHADOW_ENTRY_PREFLIGHT_PASS (PASS, real
+    preflight-closure evidence), so it is correctly absent from the blocker list
+    entirely."""
     record = build_fx_record(repo_root=REPO_ROOT)
     assert record.identity.strategy_id == "ST_ASIAN_SWEEP_5R_V1"
     assert record.identity.semantic_version == "1.1.1"
@@ -379,7 +385,6 @@ def test_fx_adapter_reconciles_against_registry_and_yaml():
     assert record.execution_authority == "SHADOW_PROPOSAL_ONLY"
     assert record.promotion_eligible is False
     assert set(record.promotion_blockers) == {
-        "HISTORICAL_REPLAY",
         "SHADOW_SERIES_COMPLETION",
         "FRICTION_STRESS_TEST",
         "OOS_VALIDATION",
@@ -388,6 +393,8 @@ def test_fx_adapter_reconciles_against_registry_and_yaml():
     assert "NO_LOOKAHEAD" not in record.promotion_blockers  # PASS, correctly not blocking
     assert "DETERMINISM" not in record.promotion_blockers  # real evidence PASS, correctly not blocking
     assert record.gates["DETERMINISM"].status == GateStatus.PASS
+    assert "HISTORICAL_REPLAY" not in record.promotion_blockers  # signed contract, real evidence PASS
+    assert record.gates["HISTORICAL_REPLAY"].status == GateStatus.PASS
     assert "NATURAL_CAMPAIGN_ACCRUAL" not in record.promotion_blockers  # BTC's gate, never FX's
     assert "FX_SHADOW_ENTRY_PREFLIGHT_PASS" not in record.promotion_blockers  # PASS, correctly not blocking
     assert record.gates["FX_SHADOW_ENTRY_PREFLIGHT_PASS"].status == GateStatus.PASS
@@ -427,18 +434,22 @@ def test_large_smc_adapter_reconciles_against_registry_and_yaml():
     evaluator now evaluates its NEXT transition, FORWARD_RESEARCH -> OPERATIONAL_SHADOW.
     C10_STOP_POLICY (relevant to the transition already completed) remains PASS.
     FRICTION_STRESS_TEST/OOS_VALIDATION still correctly do not appear (they belong to
-    DEMO_ELIGIBLE, two transitions further out). The one real blocker is the abstract
-    SHADOW_ENTRY_EVIDENCE milestone gate, unresolved for Large-SMC (no repository
-    governance yet defines its shadow-entry evidence) -- a genuine, evidence-derived
-    finding, not a fabricated one."""
+    DEMO_ELIGIBLE, two transitions further out). Since
+    AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1 P2, the abstract SHADOW_ENTRY_EVIDENCE
+    milestone gate resolves to Large-SMC's own concrete, itemized
+    LARGE_SMC_SHADOW_ENTRY_PREFLIGHT gate (large_smc_adapter.py) instead of the
+    unresolved placeholder -- still PARTIAL, still the one real blocker, but now a real,
+    evidence-derived finding rather than a fail-closed absence."""
     record = build_large_smc_record(repo_root=REPO_ROOT)
     assert record.identity.strategy_id == "ST_LARGE_SMC_V1"
     assert record.identity.semantic_version == "1.0.7"
     assert record.lifecycle_stage == LifecycleStage.FORWARD_RESEARCH
     assert record.next_transition == LifecycleStage.OPERATIONAL_SHADOW
     assert record.gates["C10_STOP_POLICY"].status == GateStatus.PASS
+    assert record.gates["LARGE_SMC_SHADOW_ENTRY_PREFLIGHT"].status == GateStatus.PARTIAL
     assert record.execution_authority == "NONE"
-    assert set(record.promotion_blockers) == {"SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY"}
+    assert set(record.promotion_blockers) == {"LARGE_SMC_SHADOW_ENTRY_PREFLIGHT"}
+    assert "SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY" not in record.promotion_blockers
     assert record.promotion_eligible is False
     assert "DETERMINISM" not in record.promotion_blockers  # real evidence PASS, correctly not blocking
     assert record.gates["DETERMINISM"].status == GateStatus.PASS
@@ -464,9 +475,21 @@ def test_ledger_round_trips_serializable_json():
 
 
 def test_discrepancy_detector_reports_consistent_when_counters_match():
-    records = [build_fx_record(repo_root=REPO_ROOT), build_btc_record(repo_root=REPO_ROOT)]
+    """AG_MONEY_MAKING_EVIDENCE_PIPELINE_M1: FX's SHADOW_SERIES_COMPLETION valid/invalid
+    counts are now classifier-derived (post_asian_pilot.shadow_day_classifier) and move
+    forward with real calendar evidence, not a frozen hand-authored literal -- so the
+    comparison text here is built FROM the same record's own gate details rather than a
+    stale hardcoded snapshot, keeping this test valid as evidence accrues."""
+    fx_record = build_fx_record(repo_root=REPO_ROOT)
+    btc_record = build_btc_record(repo_root=REPO_ROOT)
+    records = [fx_record, btc_record]
     ledger = build_ledger(records, repository_head="testhead")
-    status_text = "BTC: 0/30 observations. valid_days = 0/20, invalid_days = 1"
+    fx_shadow = fx_record.gates["SHADOW_SERIES_COMPLETION"].details
+    btc_campaign = btc_record.gates["NATURAL_CAMPAIGN_ACCRUAL"].details
+    status_text = (
+        f"BTC: {btc_campaign['observed_count']}/30 observations. "
+        f"valid_days = {fx_shadow['valid_days']}/20, invalid_days = {fx_shadow['invalid_days']}"
+    )
     findings = detect_project_status_discrepancies(ledger, status_text)
     assert findings, "expected at least one comparison to run"
     for f in findings:
@@ -758,6 +781,28 @@ def test_btc_shadow_entry_uses_natural_campaign_accrual():
     assert "NATURAL_CAMPAIGN_ACCRUAL" in required
     assert "FX_SHADOW_ENTRY_PREFLIGHT_PASS" not in required
     assert "SHADOW_ENTRY_EVIDENCE" not in required
+
+
+def test_large_smc_shadow_entry_uses_own_concrete_preflight_gate():
+    """Mandatory regression (AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1 P2). Large-SMC's
+    real evidence-derived required-gate set for FORWARD_RESEARCH -> OPERATIONAL_SHADOW
+    must contain Large-SMC's own concrete LARGE_SMC_SHADOW_ENTRY_PREFLIGHT gate, and must
+    NOT contain FX's or BTC's concrete gates, the bare abstract name, or the old
+    unresolved-placeholder name."""
+    record = build_large_smc_record(repo_root=REPO_ROOT)
+    required = record.details["required_gates"]
+    assert "LARGE_SMC_SHADOW_ENTRY_PREFLIGHT" in required
+    assert "FX_SHADOW_ENTRY_PREFLIGHT_PASS" not in required
+    assert "NATURAL_CAMPAIGN_ACCRUAL" not in required
+    assert "SHADOW_ENTRY_EVIDENCE" not in required
+    assert "SHADOW_ENTRY_EVIDENCE_UNRESOLVED_FOR_STRATEGY" not in required
+    for foundational_gate in FOUNDATIONAL_INVARIANTS:
+        assert foundational_gate in required
+    # The gate is real evidence, itemized, and honestly PARTIAL -- not rounded up.
+    preflight = record.gates["LARGE_SMC_SHADOW_ENTRY_PREFLIGHT"]
+    assert preflight.status == GateStatus.PARTIAL
+    assert preflight.details["zero_execution_authority"] is True
+    assert preflight.details["c10_stop_availability"] is True
 
 
 def test_family_gate_mapping_cannot_replace_foundational_invariant():

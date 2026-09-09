@@ -17,6 +17,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+import requests
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 # A third-party analysis dependency prints an ANSI promotional banner at import time.
@@ -24,12 +26,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 # scheduler and downstream consumers. Runtime errors/output are never suppressed.
 with contextlib.redirect_stdout(io.StringIO()):
     from btc_sweep_research.daily_report import (  # noqa: E402
+        REPORT_WINDOW_END_HOUR,
+        REPORT_WINDOW_END_MINUTE,
+        REPORT_WINDOW_START_HOUR,
+        REPORT_WINDOW_START_MINUTE,
+        STRATEGY_ID,
+        STRATEGY_VERSION,
         archive_btc_daily_report,
         build_btc_daily_report,
+        build_external_data_error_report,
+        evaluate_counting_eligibility,
         human_readable_btc_daily_report,
         report_window_status,
     )
     from execution_runtime.bybit_linear_perp_feed import (  # noqa: E402
+        BybitFeedRequestError,
         BybitLinearPerpFeed,
         CANONICAL_SYMBOL,
         EXCHANGE_ID,
@@ -84,24 +95,37 @@ def main(argv=None, *, clock=None) -> int:
         print("--allow-outside-window requires --no-archive", file=sys.stderr)
         return 2
 
-    live_meta = fetch_exchange_symbol_meta(CANONICAL_SYMBOL)
-    feed = BybitLinearPerpFeed()
-    runtime_kwargs = {}
+    # AG_MONEY_MAKING_EVIDENCE_PIPELINE_M1 P3.1: every external data-acquisition step
+    # (symbol-metadata fetch included) is inside this one controlled failure boundary.
+    # Previously `fetch_exchange_symbol_meta()` sat OUTSIDE any try/except -- a Bybit
+    # HTTP 403/timeout/DNS failure there produced an unhandled exception (real observed
+    # LastTaskResult=1 on the live scheduled task) and left zero evidence of any kind.
+    # Now every such failure degrades to a persisted, non-counting DATA_ERROR record via
+    # build_external_data_error_report(), exactly like build_btc_daily_report()'s own
+    # internal failure branch -- never a bare crash, never fabricated data.
+    expected_window = {
+        "start_utc": f"{REPORT_WINDOW_START_HOUR:02d}:{REPORT_WINDOW_START_MINUTE:02d}",
+        "end_utc": f"{REPORT_WINDOW_END_HOUR:02d}:{REPORT_WINDOW_END_MINUTE:02d}",
+    }
     temporary_state = None
-    if args.allow_outside_window:
-        # A diagnostic must not create campaign/runtime evidence. Use disposable state
-        # while still exercising the real production feed and deterministic engine.
-        temporary_state = tempfile.TemporaryDirectory(prefix="ag-btc-diagnostic-")
-        root = Path(temporary_state.name)
-        runtime_kwargs = {
-            "runtime": SweepRetestRuntime(SweepRetestStateStore(str(root / "setup.json"))),
-            "ledger": BTCResearchLedger(str(root / "occurrences.json")),
-            "daily_loss_guard": DailyLossGuard(
-                JsonKeyValueStore(str(root / "daily-loss.json")), "ST_LIQUIDITY_SWEEP_RETEST_V1",
-            ),
-            "open_position_guard": OpenPositionGuard(JsonKeyValueStore(str(root / "positions.json"))),
-        }
     try:
+        live_meta = fetch_exchange_symbol_meta(CANONICAL_SYMBOL)
+        feed = BybitLinearPerpFeed()
+        runtime_kwargs = {}
+        if args.allow_outside_window:
+            # A diagnostic must not create campaign/runtime evidence. Use disposable
+            # state while still exercising the real production feed and deterministic
+            # engine.
+            temporary_state = tempfile.TemporaryDirectory(prefix="ag-btc-diagnostic-")
+            root = Path(temporary_state.name)
+            runtime_kwargs = {
+                "runtime": SweepRetestRuntime(SweepRetestStateStore(str(root / "setup.json"))),
+                "ledger": BTCResearchLedger(str(root / "occurrences.json")),
+                "daily_loss_guard": DailyLossGuard(
+                    JsonKeyValueStore(str(root / "daily-loss.json")), STRATEGY_ID,
+                ),
+                "open_position_guard": OpenPositionGuard(JsonKeyValueStore(str(root / "positions.json"))),
+            }
         report = build_btc_daily_report(
             feed,
             observation_date,
@@ -116,11 +140,26 @@ def main(argv=None, *, clock=None) -> int:
             validate_observation_data=True,
             **runtime_kwargs,
         )
+    except (BybitFeedRequestError, requests.exceptions.RequestException, ValueError, KeyError, OSError) as exc:
+        report = build_external_data_error_report(
+            exc,
+            strategy_id=STRATEGY_ID,
+            strategy_version=STRATEGY_VERSION,
+            application_release=APPLICATION_RELEASE,
+            observation_date=observation_date,
+            expected_window=expected_window,
+            now=now,
+            endpoint_role="SYMBOL_METADATA_OR_MARKET_DATA_FETCH",
+            data_source=f"{PROVIDER}:{CANONICAL_SYMBOL}",
+        )
     finally:
         if temporary_state is not None:
             temporary_state.cleanup()
     report["report_window_status"] = window_status
     report["qualification_evidence_eligible"] = window_status == "IN_WINDOW"
+    report.update(evaluate_counting_eligibility(
+        report, expected_strategy_id=STRATEGY_ID, expected_strategy_version=STRATEGY_VERSION,
+    ))
 
     archived_path = None
     if not args.no_archive:

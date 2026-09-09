@@ -41,8 +41,9 @@ Discovered evidence sources:
 from __future__ import annotations
 
 import os
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
+from btc_sweep_research.campaign_calendar import compute_campaign_stats
 from validation_framework.adapters.determinism_evidence import load_determinism_evidence
 from validation_framework.evaluator import evaluate_transition
 from validation_framework.lifecycle_registry import get_lifecycle_stage, get_next_stage
@@ -61,19 +62,10 @@ EVALUATOR_VERSION = "AG_EGSVF_V1"
 
 _CAMPAIGN_TARGET = 30
 _CAMPAIGN_ARCHIVE_DIR = os.path.join("journal", "reports", "btc")
-
-
-def _campaign_observed_count(repo_root: str) -> int:
-    """Counts archived in-window observation reports the same way the FX adapter counts
-    archived daily reports (journal/reports/<market>/). Returns 0, verified by absence
-    of the directory, rather than assuming a number from prose."""
-    path = os.path.join(repo_root, _CAMPAIGN_ARCHIVE_DIR)
-    if not os.path.isdir(path):
-        return 0
-    count = 0
-    for root, _dirs, files in os.walk(path):
-        count += sum(1 for f in files if f.endswith(".json") and ".correction-" not in f)
-    return count
+# Campaign authorized 2026-09-06T06:52:42Z (docs/status/AG_V1_0_3_BTC_OBSERVATION_
+# CAMPAIGN_AUTHORIZATION_STATUS.md) -- the first UTC calendar day the expected-day
+# calendar (P3.4) can hold this strategy accountable for an observation.
+_CAMPAIGN_ACTIVATION_DATE = date(2026, 9, 6)
 
 
 def build_btc_record(repo_root: str = ".") -> StrategyValidationRecord:
@@ -156,15 +148,42 @@ def build_btc_record(repo_root: str = ".") -> StrategyValidationRecord:
         (),
     )
 
-    observed = _campaign_observed_count(repo_root)
+    # AG_MONEY_MAKING_EVIDENCE_PIPELINE_M1 P3.3/P3.4: evidence-qualified counting, not
+    # "file exists on disk" -- see campaign_calendar.compute_campaign_stats. as_of_date
+    # is the latest fully-closed UTC calendar day (today's UTC day is still in
+    # progress and can never yet be a candidate MISSED_DAY).
+    as_of_date = datetime.now(timezone.utc).date() - timedelta(days=1)
+    stats = compute_campaign_stats(
+        repo_root,
+        _CAMPAIGN_ARCHIVE_DIR,
+        expected_strategy_id=STRATEGY_ID,
+        expected_strategy_version=SEMANTIC_VERSION,
+        target=_CAMPAIGN_TARGET,
+        activation_date=_CAMPAIGN_ACTIVATION_DATE,
+        as_of_date=as_of_date,
+    )
     gates["NATURAL_CAMPAIGN_ACCRUAL"] = gate(
         "NATURAL_CAMPAIGN_ACCRUAL",
-        GateStatus.PASS if observed >= _CAMPAIGN_TARGET else GateStatus.PARTIAL,
+        GateStatus.PASS if stats.valid_campaign_days >= _CAMPAIGN_TARGET else GateStatus.PARTIAL,
         (
             "docs/status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md",
-            f"{_CAMPAIGN_ARCHIVE_DIR}/ (directory absent -> 0 archived observations)" if observed == 0 else _CAMPAIGN_ARCHIVE_DIR,
+            f"{_CAMPAIGN_ARCHIVE_DIR}/ (0 valid observations archived)" if stats.valid_campaign_days == 0 else _CAMPAIGN_ARCHIVE_DIR,
         ),
-        {"observed_count": observed, "target_count": _CAMPAIGN_TARGET, "campaign_authorized": True},
+        {
+            "observed_count": stats.valid_campaign_days,  # renamed meaning: qualified count, not raw file count
+            "target_count": _CAMPAIGN_TARGET,
+            "campaign_authorized": True,
+            "valid_campaign_days": stats.valid_campaign_days,
+            "data_error_days": stats.data_error_days,
+            "excluded_days": stats.excluded_days,
+            "other_ineligible_days": stats.other_ineligible_days,
+            "missed_days": stats.missed_days,
+            "missed_dates": stats.missed_dates,
+            "total_observation_records": stats.total_observation_records,
+            "activation_date": stats.activation_date,
+            "as_of_date": stats.as_of_date,
+            "counting_contract": "evidence-qualified (counting_eligible field); raw file count is no longer the counting mechanism",
+        },
     )
 
     execution_capability = "MARKET_DATA_ONLY (BybitLinearPerpFeed, public/read-only); NO_ORDER_ADAPTER"

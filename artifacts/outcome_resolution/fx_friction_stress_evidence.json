@@ -1,0 +1,449 @@
+{
+  "application_release": "AG_TRADE_ASSISTANT_V1_0_3",
+  "cost_model_version": "FX_FRICTION_COST_MODEL_V1",
+  "economic_status": {
+    "economic_classification": "NEGATIVE_EXPECTANCY",
+    "economic_gate_pass": false,
+    "gross_status": "NEGATIVE",
+    "net_status": "NEGATIVE"
+  },
+  "evidence_completeness": {
+    "friction_evidence_complete": true,
+    "note": "PASS means every resolved trade received valid cost treatment under all three scenarios, identity/provenance are bound, and results are reproducible from resolved_record_hash. It does NOT mean profitable -- see economic_status below."
+  },
+  "generated_at": "2026-09-09T16:22:18.223974+00:00",
+  "git_commit": "5ca5854cc97252fbec8dcb007289f46343ba143a",
+  "resolved_record_count": 13,
+  "resolved_record_hash": "c346168da3fc4512e2f5cb7ce6e703e902eb8b191714318323328890228aa8f8",
+  "resolved_record_refs": [
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-01.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-02.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-03.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_EURUSD_2026-09-04.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-01.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-02.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-03.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_ASIAN_LONDON_GBPUSD_2026-09-04.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_EURUSD_2026-09-02.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_EURUSD_2026-09-03.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_EURUSD_2026-09-04.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_GBPUSD_2026-09-02.json",
+    "artifacts/outcome_resolution/records/ST_ASIAN_SWEEP_5R_V1_LONDON_NEWYORK_GBPUSD_2026-09-03.json"
+  ],
+  "scenarios": {
+    "BASE": {
+      "cost_assumptions": {
+        "commission_pips": 0.7,
+        "slippage_pips": 0.3,
+        "source": "Documented industry-typical figures for a retail ECN/STP EURUSD/GBPUSD account (approx. 0.8 pip average spread, approx. $7/round-turn-per-standard-lot commission expressed as pip-equivalent, approx. 0.3 pip conservative market-order slippage) -- NOT a Vantage-specific measured historical fact; no such capture exists in this repository for FX (the one real broker-cost audit found, AG_BTC_VANTAGE_ECONOMIC_RECONCILIATION_V1_STATUS.md, is BTC/BTCUSD-specific and itself could not capture commission).",
+        "spread_pips": 0.8,
+        "total_friction_pips": 1.8
+      },
+      "cost_drag_R": 18.6019,
+      "gross_R_total": -13.0,
+      "gross_expectancy_R": -1.0,
+      "max_drawdown_R": 31.6019,
+      "net_R_total": -31.6019,
+      "net_expectancy_R": -2.4309,
+      "per_trade": [
+        {
+          "commission_cost_R": 0.35,
+          "gross_R": -1.0,
+          "net_R": -1.9,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-01",
+          "slippage_cost_R": 0.15,
+          "spread_cost_R": 0.4,
+          "total_friction_R": 0.9
+        },
+        {
+          "commission_cost_R": 0.1892,
+          "gross_R": -1.0,
+          "net_R": -1.4865,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-01",
+          "slippage_cost_R": 0.0811,
+          "spread_cost_R": 0.2162,
+          "total_friction_R": 0.4865
+        },
+        {
+          "commission_cost_R": 0.2258,
+          "gross_R": -1.0,
+          "net_R": -1.5806,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-02",
+          "slippage_cost_R": 0.0968,
+          "spread_cost_R": 0.2581,
+          "total_friction_R": 0.5806
+        },
+        {
+          "commission_cost_R": 1.75,
+          "gross_R": -1.0,
+          "net_R": -5.5,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-02",
+          "slippage_cost_R": 0.75,
+          "spread_cost_R": 2.0,
+          "total_friction_R": 4.5
+        },
+        {
+          "commission_cost_R": 0.2121,
+          "gross_R": -1.0,
+          "net_R": -1.5455,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-02",
+          "slippage_cost_R": 0.0909,
+          "spread_cost_R": 0.2424,
+          "total_friction_R": 0.5455
+        },
+        {
+          "commission_cost_R": 0.5833,
+          "gross_R": -1.0,
+          "net_R": -2.5,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:GBPUSD:2026-09-02",
+          "slippage_cost_R": 0.25,
+          "spread_cost_R": 0.6667,
+          "total_friction_R": 1.5
+        },
+        {
+          "commission_cost_R": 0.0833,
+          "gross_R": -1.0,
+          "net_R": -1.2143,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-03",
+          "slippage_cost_R": 0.0357,
+          "spread_cost_R": 0.0952,
+          "total_friction_R": 0.2143
+        },
+        {
+          "commission_cost_R": 1.1667,
+          "gross_R": -1.0,
+          "net_R": -4.0,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-03",
+          "slippage_cost_R": 0.5,
+          "spread_cost_R": 1.3333,
+          "total_friction_R": 3.0
+        },
+        {
+          "commission_cost_R": 0.1944,
+          "gross_R": -1.0,
+          "net_R": -1.5,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-03",
+          "slippage_cost_R": 0.0833,
+          "spread_cost_R": 0.2222,
+          "total_friction_R": 0.5
+        },
+        {
+          "commission_cost_R": 0.4375,
+          "gross_R": -1.0,
+          "net_R": -2.125,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:GBPUSD:2026-09-03",
+          "slippage_cost_R": 0.1875,
+          "spread_cost_R": 0.5,
+          "total_friction_R": 1.125
+        },
+        {
+          "commission_cost_R": 0.4667,
+          "gross_R": -1.0,
+          "net_R": -2.2,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-04",
+          "slippage_cost_R": 0.2,
+          "spread_cost_R": 0.5333,
+          "total_friction_R": 1.2
+        },
+        {
+          "commission_cost_R": 0.7,
+          "gross_R": -1.0,
+          "net_R": -2.8,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-04",
+          "slippage_cost_R": 0.3,
+          "spread_cost_R": 0.8,
+          "total_friction_R": 1.8
+        },
+        {
+          "commission_cost_R": 0.875,
+          "gross_R": -1.0,
+          "net_R": -3.25,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-04",
+          "slippage_cost_R": 0.375,
+          "spread_cost_R": 1.0,
+          "total_friction_R": 2.25
+        }
+      ],
+      "profit_factor_net": 0.0,
+      "scenario": "BASE",
+      "trade_count": 13
+    },
+    "SEVERE": {
+      "cost_assumptions": {
+        "commission_pips": 0.7,
+        "slippage_pips": 2.0,
+        "source": "2x the STRESSED spread/slippage anchors -- an explicit, labeled hypothetical adverse-liquidity-event stress case (e.g. a news spike), not a measured or observed historical condition; commission_pips unchanged from BASE.",
+        "spread_pips": 4.0,
+        "total_friction_pips": 6.7
+      },
+      "cost_drag_R": 69.2403,
+      "gross_R_total": -13.0,
+      "gross_expectancy_R": -1.0,
+      "max_drawdown_R": 82.2403,
+      "net_R_total": -82.2403,
+      "net_expectancy_R": -6.3262,
+      "per_trade": [
+        {
+          "commission_cost_R": 0.35,
+          "gross_R": -1.0,
+          "net_R": -4.35,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-01",
+          "slippage_cost_R": 1.0,
+          "spread_cost_R": 2.0,
+          "total_friction_R": 3.35
+        },
+        {
+          "commission_cost_R": 0.1892,
+          "gross_R": -1.0,
+          "net_R": -2.8108,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-01",
+          "slippage_cost_R": 0.5405,
+          "spread_cost_R": 1.0811,
+          "total_friction_R": 1.8108
+        },
+        {
+          "commission_cost_R": 0.2258,
+          "gross_R": -1.0,
+          "net_R": -3.1613,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-02",
+          "slippage_cost_R": 0.6452,
+          "spread_cost_R": 1.2903,
+          "total_friction_R": 2.1613
+        },
+        {
+          "commission_cost_R": 1.75,
+          "gross_R": -1.0,
+          "net_R": -17.75,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-02",
+          "slippage_cost_R": 5.0,
+          "spread_cost_R": 10.0,
+          "total_friction_R": 16.75
+        },
+        {
+          "commission_cost_R": 0.2121,
+          "gross_R": -1.0,
+          "net_R": -3.0303,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-02",
+          "slippage_cost_R": 0.6061,
+          "spread_cost_R": 1.2121,
+          "total_friction_R": 2.0303
+        },
+        {
+          "commission_cost_R": 0.5833,
+          "gross_R": -1.0,
+          "net_R": -6.5833,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:GBPUSD:2026-09-02",
+          "slippage_cost_R": 1.6667,
+          "spread_cost_R": 3.3333,
+          "total_friction_R": 5.5833
+        },
+        {
+          "commission_cost_R": 0.0833,
+          "gross_R": -1.0,
+          "net_R": -1.7976,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-03",
+          "slippage_cost_R": 0.2381,
+          "spread_cost_R": 0.4762,
+          "total_friction_R": 0.7976
+        },
+        {
+          "commission_cost_R": 1.1667,
+          "gross_R": -1.0,
+          "net_R": -12.1667,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-03",
+          "slippage_cost_R": 3.3333,
+          "spread_cost_R": 6.6667,
+          "total_friction_R": 11.1667
+        },
+        {
+          "commission_cost_R": 0.1944,
+          "gross_R": -1.0,
+          "net_R": -2.8611,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-03",
+          "slippage_cost_R": 0.5556,
+          "spread_cost_R": 1.1111,
+          "total_friction_R": 1.8611
+        },
+        {
+          "commission_cost_R": 0.4375,
+          "gross_R": -1.0,
+          "net_R": -5.1875,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:GBPUSD:2026-09-03",
+          "slippage_cost_R": 1.25,
+          "spread_cost_R": 2.5,
+          "total_friction_R": 4.1875
+        },
+        {
+          "commission_cost_R": 0.4667,
+          "gross_R": -1.0,
+          "net_R": -5.4667,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-04",
+          "slippage_cost_R": 1.3333,
+          "spread_cost_R": 2.6667,
+          "total_friction_R": 4.4667
+        },
+        {
+          "commission_cost_R": 0.7,
+          "gross_R": -1.0,
+          "net_R": -7.7,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-04",
+          "slippage_cost_R": 2.0,
+          "spread_cost_R": 4.0,
+          "total_friction_R": 6.7
+        },
+        {
+          "commission_cost_R": 0.875,
+          "gross_R": -1.0,
+          "net_R": -9.375,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-04",
+          "slippage_cost_R": 2.5,
+          "spread_cost_R": 5.0,
+          "total_friction_R": 8.375
+        }
+      ],
+      "profit_factor_net": 0.0,
+      "scenario": "SEVERE",
+      "trade_count": 13
+    },
+    "STRESSED": {
+      "cost_assumptions": {
+        "commission_pips": 0.7,
+        "slippage_pips": 1.0,
+        "source": "spread_pips = strategies/ST_ASIAN_SWEEP_5R_V1.yaml:110 max_spread_allowed_pips (the strategy's own signed maximum-tradable-spread threshold, i.e. the worst spread this strategy is configured to still enter under); slippage_pips = strategies/ST_ASIAN_SWEEP_5R_V1.yaml:111 slippage_limit_points=10, converted at 10 points/pip for this 5-digit-quote symbol (real captured evidence: docs/status/AG_TRADE_ASSISTANT_V1_0_3_MT5_DATA_READINESS_AND_PREFLIGHT_CLOSURE_STATUS.md's EURUSD/GBPUSD symbol_metadata, digits=5/tick_size=1e-05); commission_pips unchanged from BASE (no independent basis to stress it).",
+        "spread_pips": 2.0,
+        "total_friction_pips": 3.7
+      },
+      "cost_drag_R": 38.2372,
+      "gross_R_total": -13.0,
+      "gross_expectancy_R": -1.0,
+      "max_drawdown_R": 51.2372,
+      "net_R_total": -51.2372,
+      "net_expectancy_R": -3.9413,
+      "per_trade": [
+        {
+          "commission_cost_R": 0.35,
+          "gross_R": -1.0,
+          "net_R": -2.85,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-01",
+          "slippage_cost_R": 0.5,
+          "spread_cost_R": 1.0,
+          "total_friction_R": 1.85
+        },
+        {
+          "commission_cost_R": 0.1892,
+          "gross_R": -1.0,
+          "net_R": -2.0,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-01",
+          "slippage_cost_R": 0.2703,
+          "spread_cost_R": 0.5405,
+          "total_friction_R": 1.0
+        },
+        {
+          "commission_cost_R": 0.2258,
+          "gross_R": -1.0,
+          "net_R": -2.1935,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-02",
+          "slippage_cost_R": 0.3226,
+          "spread_cost_R": 0.6452,
+          "total_friction_R": 1.1935
+        },
+        {
+          "commission_cost_R": 1.75,
+          "gross_R": -1.0,
+          "net_R": -10.25,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-02",
+          "slippage_cost_R": 2.5,
+          "spread_cost_R": 5.0,
+          "total_friction_R": 9.25
+        },
+        {
+          "commission_cost_R": 0.2121,
+          "gross_R": -1.0,
+          "net_R": -2.1212,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-02",
+          "slippage_cost_R": 0.303,
+          "spread_cost_R": 0.6061,
+          "total_friction_R": 1.1212
+        },
+        {
+          "commission_cost_R": 0.5833,
+          "gross_R": -1.0,
+          "net_R": -4.0833,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:GBPUSD:2026-09-02",
+          "slippage_cost_R": 0.8333,
+          "spread_cost_R": 1.6667,
+          "total_friction_R": 3.0833
+        },
+        {
+          "commission_cost_R": 0.0833,
+          "gross_R": -1.0,
+          "net_R": -1.4405,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-03",
+          "slippage_cost_R": 0.119,
+          "spread_cost_R": 0.2381,
+          "total_friction_R": 0.4405
+        },
+        {
+          "commission_cost_R": 1.1667,
+          "gross_R": -1.0,
+          "net_R": -7.1667,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-03",
+          "slippage_cost_R": 1.6667,
+          "spread_cost_R": 3.3333,
+          "total_friction_R": 6.1667
+        },
+        {
+          "commission_cost_R": 0.1944,
+          "gross_R": -1.0,
+          "net_R": -2.0278,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-03",
+          "slippage_cost_R": 0.2778,
+          "spread_cost_R": 0.5556,
+          "total_friction_R": 1.0278
+        },
+        {
+          "commission_cost_R": 0.4375,
+          "gross_R": -1.0,
+          "net_R": -3.3125,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:GBPUSD:2026-09-03",
+          "slippage_cost_R": 0.625,
+          "spread_cost_R": 1.25,
+          "total_friction_R": 2.3125
+        },
+        {
+          "commission_cost_R": 0.4667,
+          "gross_R": -1.0,
+          "net_R": -3.4667,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-04",
+          "slippage_cost_R": 0.6667,
+          "spread_cost_R": 1.3333,
+          "total_friction_R": 2.4667
+        },
+        {
+          "commission_cost_R": 0.7,
+          "gross_R": -1.0,
+          "net_R": -4.7,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-04",
+          "slippage_cost_R": 1.0,
+          "spread_cost_R": 2.0,
+          "total_friction_R": 3.7
+        },
+        {
+          "commission_cost_R": 0.875,
+          "gross_R": -1.0,
+          "net_R": -5.625,
+          "proposal_id": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-04",
+          "slippage_cost_R": 1.25,
+          "spread_cost_R": 2.5,
+          "total_friction_R": 4.625
+        }
+      ],
+      "profit_factor_net": 0.0,
+      "scenario": "STRESSED",
+      "trade_count": 13
+    }
+  },
+  "schema": "AG_FX_FRICTION_STRESS_EVIDENCE_V1",
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "strategy_version": "1.1.1"
+}

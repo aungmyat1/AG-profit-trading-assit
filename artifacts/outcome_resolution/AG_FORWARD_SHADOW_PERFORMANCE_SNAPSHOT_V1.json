@@ -3,7 +3,7 @@
   "strategy": "ST_ASIAN_SWEEP_5R_V1",
   "version": "1.1.1",
   "evidence_class": "FORWARD_SHADOW_RETROSPECTIVE_RESOLUTION",
-  "resolution_contract_version": "AG_OUTCOME_RESOLUTION_CONTRACT_V1_DRAFT",
+  "resolution_contract_version": "AG_OUTCOME_RESOLUTION_CONTRACT_V1_SIGNED",
   "generated_at_utc": "2026-09-06T12:53:17.488504+00:00",
   "date_range": [
     "2026-09-01",
