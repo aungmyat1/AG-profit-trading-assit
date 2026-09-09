@@ -168,10 +168,15 @@ def broker_account() -> BrokerAccountResponse:
 
 @app.get("/api/system/status", response_model=SystemStatusResponse)
 def system_status() -> SystemStatusResponse:
-    from authorization.config import TelegramGatewayConfig
-
+    # Reuses telegram_service.get_status()'s outbound-readiness definition -- this used
+    # to recompute TelegramGatewayConfig.is_ready() locally, which also requires a
+    # non-empty TELEGRAM_ALLOWED_USER_IDS (that flag only gates the separate inbound-
+    # callback path in authorization.telegram_gateway) and so under-reported
+    # `configured` for an environment with a valid bot token + chat id but no inbound
+    # button authorization enabled -- a real, supported configuration. One definition
+    # of "configured" now, not two that can silently disagree.
     broker = broker_status()
-    telegram_ready = TelegramGatewayConfig.from_env().is_ready()
+    telegram_status = telegram_service.get_status()
     return SystemStatusResponse(
         service="AG Profit Trading Assistant",
         status="online",
@@ -179,7 +184,7 @@ def system_status() -> SystemStatusResponse:
         execution_mode=EXECUTION_MODE,
         broker=broker,
         mt5=MT5StatusResponse(connected=broker.connected),
-        telegram=TelegramStatusResponse(configured=telegram_ready),
+        telegram=TelegramStatusResponse(configured=telegram_status.configured),
     )
 
 

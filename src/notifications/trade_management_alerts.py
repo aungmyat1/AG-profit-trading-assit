@@ -15,6 +15,7 @@ never inspects this function's return value for control flow.
 from __future__ import annotations
 
 import logging
+import re
 from typing import Optional
 
 from authorization.config import TelegramGatewayConfig
@@ -23,6 +24,17 @@ from trade_management import journal as tm_journal
 from .telegram_client import TelegramClient
 
 logger = logging.getLogger("notifications.trade_management_alerts")
+
+
+def _redact(text: str, bot_token: str) -> str:
+    """A transport-level exception's str() can embed the full request URL
+    (.../bot<TOKEN>/sendMessage) -- e.g. requests.ConnectionError/Timeout commonly
+    include it. Same technique as ticket_delivery.telegram_adapter._redact(); applied
+    to every exception string this module logs or journals, not only ones that look
+    suspicious."""
+    if not text or not bot_token:
+        return text
+    return re.sub(re.escape(bot_token), "***REDACTED***", text)
 
 _ACTION_LABELS = {
     "PARTIAL_CLOSE": "Partial TP1 close",
@@ -52,7 +64,10 @@ def notify_confirmed_action(
         client = TelegramClient(cfg.bot_token)
         result = client.send_message(cfg.chat_id, text)
     except Exception as exc:  # noqa: BLE001 -- must never propagate into the caller's state machine
-        logger.warning("trade management telegram notify failed ticket=%s action=%s: %s", ticket, action, exc)
+        logger.warning(
+            "trade management telegram notify failed ticket=%s action=%s: %s",
+            ticket, action, _redact(str(exc), cfg.bot_token),
+        )
         _record(ticket, action, "TELEGRAM_NOTIFY_FAILED", base_dir, reason_code="TELEGRAM_SEND_EXCEPTION")
         return
 

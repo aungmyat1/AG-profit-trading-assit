@@ -101,6 +101,29 @@ def test_network_exception_never_raises_and_is_journaled(tmp_path, monkeypatch):
     assert events[0]["reason_code"] == "TELEGRAM_SEND_EXCEPTION"
 
 
+def test_network_exception_log_never_contains_the_bot_token(tmp_path, monkeypatch, caplog):
+    """A requests transport exception's str() commonly embeds the full request URL
+    (.../bot<TOKEN>/sendMessage) -- this asserts the token is redacted before it ever
+    reaches a log line, not merely that the call doesn't raise."""
+    base_dir = str(tmp_path / "journal")
+    token = "SUPER_SECRET_BOT_TOKEN_123"
+    fake_session = _FakeSession(
+        raises=requests.ConnectionError(f"failed to reach https://api.telegram.org/bot{token}/sendMessage"),
+    )
+    monkeypatch.setattr(
+        trade_management_alerts, "TelegramClient",
+        lambda tok: _RealTelegramClient(tok, session=fake_session),
+    )
+
+    with caplog.at_level("WARNING"):
+        trade_management_alerts.notify_confirmed_action(
+            1006, "EURUSD", "MOVE_SL", base_dir=base_dir, config=_cfg(bot_token=token),
+        )
+
+    assert token not in caplog.text
+    assert "REDACTED" in caplog.text
+
+
 def test_notification_never_mutates_trading_journal_events(tmp_path, monkeypatch):
     """The notification event is always additive (a new, distinctly-suffixed event) --
     it must never be recorded under the same event name as the trading confirmation
