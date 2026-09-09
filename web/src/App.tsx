@@ -18,6 +18,7 @@ import { LiveManagedPositionsWidget } from './components/Terminal/LiveManagedPos
 import { DailyPnLHeader } from './components/Terminal/DailyPnLHeader';
 import { TradeJournal } from './components/Journal/TradeJournal';
 import { BackendConnectionDiagnostic } from './components/Terminal/BackendConnectionDiagnostic';
+import { AGBackendPanel } from './components/Terminal/AGBackendPanel';
 import { AG_UI_MODE } from './utils/agApiClient';
 
 import {
@@ -57,7 +58,7 @@ import {
 } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal'>('terminal');
+  const [activeTab, setActiveTab] = useState<'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend'>('terminal');
   const [selectedSymbol, setSelectedSymbol] = useState<string>('EURUSD');
 
   // Market & Analysis State
@@ -550,6 +551,14 @@ export const App: React.FC = () => {
 
         {/* VIEW 8: System Audit Logs */}
         {activeTab === 'logs' && <AuditLogViewer logs={logs} />}
+
+        {/* VIEW 9: Real AG Local Backend (read-only) */}
+        {activeTab === 'backend' && (
+          <div className="space-y-4">
+            <BackendConnectionDiagnostic />
+            <AGBackendPanel />
+          </div>
+        )}
       </main>
 
       {/* Footer */}

@@ -104,9 +104,82 @@ export interface AuthorizeDemoResponse {
   result_reference?: string | null;
 }
 
+export interface SystemStatusResponse {
+  service: string;
+  status: string;
+  application_release: string;
+  execution_mode: string;
+  broker: BrokerStatusResponse;
+  mt5: { connected: boolean };
+  telegram: { configured: boolean };
+}
+
+export interface BrokerAccountResponse {
+  connected: boolean;
+  broker?: string | null;
+  environment?: string | null;
+  server?: string | null;
+  account_redacted?: string | null;
+  balance?: number | null;
+  equity?: number | null;
+  trade_allowed_informational?: boolean | null;
+  reason_code?: string | null;
+}
+
+export interface StrategyResponse {
+  strategy_id: string;
+  registered: boolean;
+  active: boolean;
+  research: boolean;
+  demo_authorized: boolean;
+  live_authorized: boolean;
+  lifecycle_stage?: string | null;
+  semantic_version?: string | null;
+}
+
+export interface GateResultResponse {
+  gate_name: string;
+  status: string;
+  evidence_refs: string[];
+}
+
+export interface ValidationResponse {
+  strategy_id: string;
+  semantic_version: string;
+  lifecycle_stage: string;
+  execution_capability: string;
+  execution_authority: string;
+  next_transition?: string | null;
+  promotion_eligible: boolean;
+  promotion_blockers: string[];
+  gates: GateResultResponse[];
+}
+
+export interface ProposalResponse {
+  proposal_hash: string;
+  setup_id: string;
+  strategy_id: string;
+  symbol: string;
+  direction: string;
+  entry: number;
+  stop_loss: number;
+  tp1?: number | null;
+  tp2?: number | null;
+  volume: number;
+  risk_amount: number;
+  risk_percent?: number | null;
+}
+
 export const agApiClient = {
   getHealth: () => agFetch<HealthResponse>('/api/health'),
+  getSystemStatus: () => agFetch<SystemStatusResponse>('/api/system/status'),
   getBrokerStatus: () => agFetch<BrokerStatusResponse>('/api/broker/status'),
+  getBrokerAccount: () => agFetch<BrokerAccountResponse>('/api/broker/account'),
+  listStrategies: () => agFetch<StrategyResponse[]>('/api/strategies'),
+  getStrategy: (id: string) => agFetch<StrategyResponse>(`/api/strategies/${encodeURIComponent(id)}`),
+  getValidation: (id: string) => agFetch<ValidationResponse>(`/api/validation/${encodeURIComponent(id)}`),
+  listProposals: () => agFetch<ProposalResponse[]>('/api/proposals'),
+  getProposal: (hash: string) => agFetch<ProposalResponse>(`/api/proposals/${encodeURIComponent(hash)}`),
   listTickets: () => agFetch<TicketResponse[]>('/api/tickets'),
   getTicket: (id: string) => agFetch<TicketResponse>(`/api/tickets/${encodeURIComponent(id)}`),
   authorizeDemo: (id: string) =>

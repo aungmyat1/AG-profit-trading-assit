@@ -186,6 +186,82 @@ def test_duplicate_authorize_demo_request_calls_gateway_exactly_once(tmp_path, m
     app.dependency_overrides.clear()
 
 
+def test_system_status_shape():
+    client = TestClient(app)
+    resp = client.get("/api/system/status")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["service"] == "AG Profit Trading Assistant"
+    assert body["execution_mode"] == "OWNER_AUTH_REQUIRED"
+    assert "broker" in body and "mt5" in body and "telegram" in body
+    assert isinstance(body["telegram"]["configured"], bool)
+
+
+def test_broker_account_never_500s_and_matches_broker_status_connection_state():
+    """Whatever this machine's real MT5 connection state is, the endpoint must report
+    it consistently with /api/broker/status (same underlying connect()/account()
+    call), never raise a raw 500, and never claim a balance without connected=True."""
+    client = TestClient(app)
+    status_resp = client.get("/api/broker/status")
+    account_resp = client.get("/api/broker/account")
+    assert account_resp.status_code == 200
+    body = account_resp.json()
+    assert body["connected"] == status_resp.json()["connected"]
+    if not body["connected"]:
+        assert body["reason_code"] is not None
+        assert body["balance"] is None
+
+
+def test_list_strategies_reads_real_registry():
+    """No monkeypatch: proves this reads the real strategies/registry.yaml, same file
+    the authorization path already consults."""
+    client = TestClient(app)
+    resp = client.get("/api/strategies")
+    assert resp.status_code == 200
+    ids = [s["strategy_id"] for s in resp.json()]
+    assert "ST_ASIAN_SWEEP_5R_V1" in ids
+    entry = next(s for s in resp.json() if s["strategy_id"] == "ST_ASIAN_SWEEP_5R_V1")
+    assert entry["demo_authorized"] is False
+
+
+def test_get_strategy_unknown_returns_404():
+    client = TestClient(app)
+    resp = client.get("/api/strategies/DOES_NOT_EXIST")
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["reason_code"] == "STRATEGY_NOT_REGISTERED"
+
+
+def test_get_validation_unknown_adapter_returns_404():
+    client = TestClient(app)
+    resp = client.get("/api/validation/DOES_NOT_EXIST")
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["reason_code"] == "NO_VALIDATION_ADAPTER"
+
+
+def test_list_and_get_proposal(tmp_path):
+    client, _store, registry = _client(tmp_path)
+    proposal = _proposal()
+    proposal_hash = registry.register(proposal)
+
+    resp = client.get("/api/proposals")
+    assert resp.status_code == 200
+    hashes = [p["proposal_hash"] for p in resp.json()]
+    assert proposal_hash in hashes
+
+    resp = client.get(f"/api/proposals/{proposal_hash}")
+    assert resp.status_code == 200
+    assert resp.json()["setup_id"] == proposal.setup_id
+    app.dependency_overrides.clear()
+
+
+def test_get_proposal_not_found(tmp_path):
+    client, _store, _registry = _client(tmp_path)
+    resp = client.get("/api/proposals/does-not-exist")
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["reason_code"] == "PROPOSAL_NOT_FOUND"
+    app.dependency_overrides.clear()
+
+
 def test_no_response_model_field_named_like_a_secret():
     import inspect
 

@@ -70,6 +70,11 @@ class InMemoryProposalRegistry:
     def get_by_hash(self, proposal_hash: str) -> Optional[TradeProposal]:
         return self._by_hash.get(proposal_hash)
 
+    def all(self) -> dict[str, TradeProposal]:
+        """Read-only snapshot for GET /api/proposals -- a copy, so a caller iterating
+        the result can never mutate this registry's internal state."""
+        return dict(self._by_hash)
+
 
 @dataclass(frozen=True)
 class AuthorizationExecutionResult:

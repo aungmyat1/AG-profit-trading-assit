@@ -18,8 +18,8 @@ import { BrokerConnectionModal } from './Terminal/BrokerConnectionModal';
 import { BrokerHeartbeatIndicator } from './Terminal/BrokerHeartbeatIndicator';
 
 interface NavbarProps {
-  activeTab: 'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal';
-  setActiveTab: (tab: 'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal') => void;
+  activeTab: 'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend';
+  setActiveTab: (tab: 'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend') => void;
   selectedSymbol: string;
   setSelectedSymbol: (sym: string) => void;
   symbols: Array<{ symbol: string; typicalSpread: number; basePrice: number }>;
@@ -217,6 +217,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Replay & Backtest Lab</span>
+          </button>
+
+          <button
+            id="tab-backend"
+            onClick={() => setActiveTab('backend')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              activeTab === 'backend'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <Server className="w-3.5 h-3.5" />
+            <span>AG Backend</span>
           </button>
 
           <button

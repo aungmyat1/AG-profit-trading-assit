@@ -17,6 +17,7 @@ from mt5 import account as mt5_account
 from mt5 import management_gateway
 from mt5.market_data import get_tick
 from mt5.symbol_resolver import get_symbol_meta
+from notifications.trade_management_alerts import notify_confirmed_action
 
 from . import journal
 from .claims import load_claims
@@ -133,6 +134,10 @@ def run_cycle_for_ticket(ticket: int, claims_path: str = "journal/claims.json", 
         intent_id=intent.intent_id,
         volume_after=gateway_result.volume_after,
     )
+    try:
+        notify_confirmed_action(ticket, claim.symbol, intent.action, reason_code=intent.reason_code, base_dir=base_dir)
+    except Exception:  # noqa: BLE001 -- a notification failure must never affect this state transition
+        pass
     record = _advance_state(record, intent, gateway_result.volume_after)
     save_state(record, base_dir)
     return CycleResult(ticket=ticket, outcome="EXECUTED", detail=intent.action, intent=intent)

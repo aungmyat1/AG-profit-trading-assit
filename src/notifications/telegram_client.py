@@ -135,6 +135,12 @@ class TelegramClient:
                 return result
         return result
 
+    def get_me(self) -> TelegramApiResult:
+        """Read-only, no side effects -- the standard Bot API way to verify a token is
+        valid and the bot is reachable, without sending any message or consuming an
+        update offset."""
+        return self._call("getMe", {})
+
     def get_updates(self, *, offset: Optional[int] = None, limit: int = 20,
                     timeout: int = 0, allowed_updates: Optional[List[str]] = None) -> TelegramApiResult:
         params: Dict[str, Any] = {"limit": limit, "timeout": timeout}

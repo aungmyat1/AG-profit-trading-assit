@@ -46,6 +46,13 @@
             "command": "python",
             "args": ["scripts/test_dev_connection.py"],
             "problemMatcher": []
+        },
+        {
+            "label": "AG: Test MT5 Demo",
+            "type": "shell",
+            "command": "python",
+            "args": ["scripts/check_mt5.py", "--symbol", "EURUSD", "--json"],
+            "problemMatcher": []
         }
     ]
 }
