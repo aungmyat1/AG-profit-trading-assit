@@ -262,6 +262,156 @@ def test_get_proposal_not_found(tmp_path):
     app.dependency_overrides.clear()
 
 
+def test_telegram_status_route_reflects_service(monkeypatch):
+    from api import app as app_module
+    from api.telegram_service import TelegramStatus
+
+    monkeypatch.setattr(
+        app_module.telegram_service, "get_status",
+        lambda: TelegramStatus(configured=True, bot_configured=True, chat_configured=True, reachable=True),
+    )
+    client = TestClient(app)
+    resp = client.get("/api/telegram/status")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body == {
+        "configured": True, "bot_configured": True, "chat_configured": True,
+        "reachable": True, "reason_code": None,
+    }
+
+
+def test_telegram_status_route_never_configured_from_env_vars_alone(monkeypatch):
+    """No monkeypatch of the service itself: proves the route calls the real
+    telegram_service.get_status(), which never reports reachable=True without an
+    actual (mocked-at-the-transport-level, here just absent) Telegram round trip."""
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    monkeypatch.delenv("TELEGRAM_CHAT_ID", raising=False)
+    client = TestClient(app)
+    resp = client.get("/api/telegram/status")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["configured"] is False
+    assert body["reachable"] is False
+    assert body["reason_code"] == "NOT_CONFIGURED"
+
+
+def test_telegram_test_route(monkeypatch):
+    from api import app as app_module
+    from api.telegram_service import TelegramActionResult
+
+    monkeypatch.setattr(
+        app_module.telegram_service, "send_test_notification",
+        lambda: TelegramActionResult(success=True, message_id="123"),
+    )
+    client = TestClient(app)
+    resp = client.post("/api/telegram/test")
+    assert resp.status_code == 200
+    assert resp.json() == {"success": True, "reason_code": None, "message_id": "123"}
+
+
+def test_telegram_test_route_not_configured(monkeypatch):
+    from api import app as app_module
+    from api.telegram_service import TelegramActionResult
+
+    monkeypatch.setattr(
+        app_module.telegram_service, "send_test_notification",
+        lambda: TelegramActionResult(success=False, reason_code="NOT_CONFIGURED"),
+    )
+    client = TestClient(app)
+    resp = client.post("/api/telegram/test")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["success"] is False
+    assert body["reason_code"] == "NOT_CONFIGURED"
+
+
+def test_telegram_notify_trade_unknown_id_returns_404(tmp_path):
+    client, _store, _registry = _client(tmp_path)
+    resp = client.post("/api/telegram/trades/does-not-exist/notify")
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["reason_code"] == "TRADE_NOT_FOUND"
+    app.dependency_overrides.clear()
+
+
+def test_telegram_notify_trade_success_ignores_client_body(tmp_path, monkeypatch):
+    """The endpoint accepts no request body at all -- proves a client cannot inject an
+    arbitrary symbol/price/etc. even by trying to POST one."""
+    from api import app as app_module
+    from api.telegram_service import TelegramActionResult
+
+    captured = {}
+
+    def fake_notify_trade(approval):
+        captured["approval_id"] = approval.approval_id
+        return TelegramActionResult(success=True, message_id="55")
+
+    monkeypatch.setattr(app_module.telegram_service, "notify_trade", fake_notify_trade)
+
+    client, store, registry = _client(tmp_path)
+    proposal = _proposal()
+    approval = store.create(proposal, venue=VENUE_MT5)
+
+    resp = client.post(
+        f"/api/telegram/trades/{approval.approval_id}/notify",
+        json={"symbol": "HACKED", "volume": 999.0},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["success"] is True
+    assert captured["approval_id"] == approval.approval_id  # canonical id used, body ignored
+    app.dependency_overrides.clear()
+
+
+def test_telegram_notify_position_unknown_ticket_returns_404(monkeypatch):
+    from api import app as app_module
+
+    monkeypatch.setattr("mt5.connection.connect", lambda: None)
+    monkeypatch.setattr("mt5.account.positions", lambda ticket=None, symbol=None: [])
+
+    client = TestClient(app)
+    resp = client.post("/api/telegram/positions/999999/notify")
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["reason_code"] == "POSITION_NOT_FOUND"
+
+
+def test_telegram_notify_position_success_reads_real_position_not_client_body(monkeypatch):
+    from types import SimpleNamespace
+
+    from api import app as app_module
+    from api.telegram_service import TelegramActionResult
+    from mt5.account import Account
+    from trade_management.models import NormalizedPosition
+
+    fake_account = Account(
+        login=1, server="Test-Demo", is_demo=True, balance=1000.0, equity=1000.0,
+        trade_allowed=True, is_hedging_account=False,
+    )
+    raw_position = SimpleNamespace(
+        ticket=42, symbol="EURUSD", type=0, volume=0.1, price_open=1.1000, sl=None, tp=None,
+        profit=5.0, swap=0.0, comment="", magic=0, time=1893456000,
+    )
+
+    monkeypatch.setattr("mt5.connection.connect", lambda: None)
+    monkeypatch.setattr("mt5.account.positions", lambda ticket=None, symbol=None: [raw_position])
+    monkeypatch.setattr("mt5.account.account", lambda: fake_account)
+    monkeypatch.setattr("mt5.market_data.get_tick", lambda symbol: SimpleNamespace(bid=1.1005, ask=1.1007))
+
+    captured = {}
+
+    def fake_notify_position(position):
+        captured["ticket"] = position.ticket
+        captured["symbol"] = position.symbol
+        return TelegramActionResult(success=True, message_id="77")
+
+    monkeypatch.setattr(app_module.telegram_service, "notify_position", fake_notify_position)
+
+    client = TestClient(app)
+    resp = client.post("/api/telegram/positions/42/notify", json={"symbol": "HACKED"})
+    assert resp.status_code == 200
+    assert resp.json()["success"] is True
+    assert captured["ticket"] == 42
+    assert captured["symbol"] == "EURUSD"  # from the real position, never the request body
+
+
 def test_no_response_model_field_named_like_a_secret():
     import inspect
 

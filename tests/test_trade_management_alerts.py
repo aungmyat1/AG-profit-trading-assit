@@ -9,6 +9,7 @@ import requests
 
 from authorization.config import TelegramGatewayConfig
 from notifications import trade_management_alerts
+from notifications.telegram_client import TelegramClient as _RealTelegramClient
 from trade_management import journal as tm_journal
 
 
@@ -57,7 +58,7 @@ def test_success_journals_notify_sent(tmp_path, monkeypatch):
     fake_session = _FakeSession(response=_FakeResponse({"ok": True, "result": {"message_id": 1}}))
     monkeypatch.setattr(
         trade_management_alerts, "TelegramClient",
-        lambda token: trade_management_alerts.TelegramClient(token, session=fake_session),
+        lambda token: _RealTelegramClient(token, session=fake_session),
     )
 
     trade_management_alerts.notify_confirmed_action(
@@ -74,7 +75,7 @@ def test_gateway_rejection_journals_notify_failed_separately(tmp_path, monkeypat
     fake_session = _FakeSession(response=_FakeResponse({"ok": False, "error_code": 401, "description": "Unauthorized"}))
     monkeypatch.setattr(
         trade_management_alerts, "TelegramClient",
-        lambda token: trade_management_alerts.TelegramClient(token, session=fake_session),
+        lambda token: _RealTelegramClient(token, session=fake_session),
     )
 
     trade_management_alerts.notify_confirmed_action(1003, "XAUUSD", "CLOSE", base_dir=base_dir, config=_cfg())
@@ -89,7 +90,7 @@ def test_network_exception_never_raises_and_is_journaled(tmp_path, monkeypatch):
     fake_session = _FakeSession(raises=requests.ConnectionError("no route to host"))
     monkeypatch.setattr(
         trade_management_alerts, "TelegramClient",
-        lambda token: trade_management_alerts.TelegramClient(token, session=fake_session),
+        lambda token: _RealTelegramClient(token, session=fake_session),
     )
 
     # Must not raise -- this is the hard invariant manager.run_cycle_for_ticket depends on.
@@ -110,7 +111,7 @@ def test_notification_never_mutates_trading_journal_events(tmp_path, monkeypatch
     fake_session = _FakeSession(response=_FakeResponse({"ok": True, "result": {"message_id": 2}}))
     monkeypatch.setattr(
         trade_management_alerts, "TelegramClient",
-        lambda token: trade_management_alerts.TelegramClient(token, session=fake_session),
+        lambda token: _RealTelegramClient(token, session=fake_session),
     )
     trade_management_alerts.notify_confirmed_action(1005, "EURUSD", "MOVE_SL", base_dir=base_dir, config=_cfg())
 
