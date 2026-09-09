@@ -53,6 +53,26 @@ WP7 must explicitly choose one of:
 This packet does not choose between them — that decision belongs to the WP7 task
 itself, made explicit and recorded, not inferred.
 
+## Addendum (2026-09-09, WP7 readiness/reconciliation pass) — resolved
+
+This open question has since been resolved and implemented. **Design (A), in-process
+wait-and-retry, was chosen**, exactly as described above: implemented in
+`src/ticket_delivery/telegram_adapter.py::deliver_informational_ticket_with_retry()`,
+with an injectable `sleeper` so no test in the repository sleeps for real. The 30s/60s
+backoff produced by the signed policy (`base=30s`, `max=300s`, `max_attempts=3`) matches
+this addendum's estimate exactly. A new append-only `AttemptJournal`
+(`src/ticket_delivery/attempt_journal.py`) records one entry per attempt for durable
+audit evidence, independent of the delivery-state control flow. `RetryPolicy` is no
+longer dead config — it is read by `deliver_informational_ticket_with_retry()` on every
+loop iteration via `RetryPolicy.should_retry()`/`next_delay()`.
+
+This resolution is implementation only. `MESSAGE_DELIVERY` remains unauthorized, the
+Telegram destination allow-list remains empty, and no real or synthetic Telegram send
+has occurred — the activation decisions this packet's own header describes as out of
+scope are still separate, unmade owner decisions. See
+`docs/status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md` for the full
+verification evidence.
+
 ## Exact destination identity and credential source
 
 - Env vars: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` — the existing repository

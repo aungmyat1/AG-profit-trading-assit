@@ -26,10 +26,29 @@ register as a deliverable ticket (75 minutes late, past the signed 60-minute bou
 the full evidence trail. One-line rollback to `DISABLED` remains available and untested
 by neither reading nor requiring the `policy:` block.
 
-`MESSAGE_DELIVERY` mode remains **NOT AUTHORIZED** -- it is currently identical to
-`ARCHIVE_ONLY` (both pass `deliver=None`, a structural, not merely config-gated,
-zero-network guarantee); setting it in config has no additional effect this pass. Real
-Telegram construction is WP7, a separate, later, explicitly-authorized change.
+`MESSAGE_DELIVERY` mode remains **NOT AUTHORIZED** -- `config/ticket_delivery.yaml`'s
+shipped `mode` is `ARCHIVE_ONLY` and the Telegram destination allow-list is empty; the
+scheduler call site only constructs a real delivery closure inside the
+`MODE_MESSAGE_DELIVERY` branch (`scheduler_integration.py::_build_message_delivery_closure()`),
+so no owner action in config alone can reach a network call.
+
+**Correction (2026-09-09, WP7 readiness/reconciliation pass):** the line below
+("WP7 NOT STARTED") is **STALE** and superseded by this correction; it is left in
+place unmodified as the historical record of that 2026-09-08 pass. WP7 runtime is now
+**RUNTIME_IMPLEMENTED, NOT ACTIVATED**: `deliver_informational_ticket_with_retry()`
+(in-process wait-and-retry, Design A per the WP7 preflight packet's open question,
+30s/60s backoff matching the signed 3-attempt/30s/300s policy), the append-only
+`AttemptJournal`, and the conditional `MESSAGE_DELIVERY` closure construction are all
+implemented and covered by the focused WP7 test suite (`tests/test_ticket_delivery_wp7_*`
+and related `tests/test_ticket_delivery_*` files; 218/219 passing as of this pass, one
+pre-existing load-dependent concurrency-outcome-reporting flake unrelated to the
+execution boundary, mode gating, or dedup guarantees -- see
+`docs/status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md`). No real or
+synthetic Telegram send has ever been performed for Stage 1 ticket delivery; a hardened
+owner runbook for the future synthetic proof exists at
+`docs/runbooks/WP7_OWNER_SYNTHETIC_PROOF_RUNBOOK.md`. Activation to `MESSAGE_DELIVERY`,
+population of the destination allow-list, and the synthetic/natural proof sends all
+remain separate, explicit owner decisions -- none of them occurred during this pass.
 
 **WP7 NOT STARTED** -- a real GBPUSD READY signal was observed live this pass (see
 above), but it was correctly catch-up-rejected before reaching any delivery/render

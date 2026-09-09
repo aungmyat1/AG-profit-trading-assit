@@ -55,6 +55,11 @@ their age.
 14. [`status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`](status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md)
    — records the frontend's explicit mock/real mode boundary, fail-closed legacy
    controls, verification limits, and unchanged trading authority.
+15. [`status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md`](status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md)
+   — verifies WP7 runtime is actually implemented (retry, attempt journal, conditional
+   message-delivery closure), corrects stale "WP7 NOT STARTED" claims elsewhere,
+   confirms `ARCHIVE_ONLY`/empty destination allow-list/zero real sends unchanged, and
+   prepares (without executing) the next owner activation decisions.
 
 ## Architecture
 
