@@ -38,6 +38,39 @@ def _proposal_status(decision: DaytradingSetupDecision) -> str:
     return _DECISION_STATUS_TO_PROPOSAL_STATUS.get(decision.decision_status, PROPOSAL_INDETERMINATE)
 
 
+class ProvenanceMismatchError(ValueError):
+    """AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1 M4 (P16/P26): fail closed rather
+    than silently mixing evidence from two different decision cycles."""
+
+
+def verify_bias_provenance_consistency(decision: DaytradingSetupDecision, proposal: SessionTradeProposal) -> None:
+    """Raises ProvenanceMismatchError if `proposal`'s bound bias identity does not match
+    `decision.market_bias.canonical_provenance` exactly. Both being None (a MarketBias
+    that never carried canonical_provenance) is consistent, not a mismatch -- there is
+    simply nothing to trace. This is never called automatically inside
+    evaluate_session_completion (single-source construction there makes a mismatch
+    structurally impossible); it exists to fail closed if a caller ever assembles a
+    proposal from a different decision than the one supplied, e.g. by hand or across a
+    persistence boundary."""
+    provenance = decision.market_bias.canonical_provenance
+    if provenance is None and proposal.bias_decision_cycle_id is None:
+        return
+    if provenance is None or proposal.bias_decision_cycle_id is None:
+        raise ProvenanceMismatchError(
+            "one of decision.market_bias.canonical_provenance / proposal.bias_decision_cycle_id "
+            "is None and the other is not -- cannot verify consistency, refusing to assume it"
+        )
+    if (
+        provenance.decision_cycle_id != proposal.bias_decision_cycle_id
+        or provenance.input_fingerprint != proposal.bias_input_fingerprint
+    ):
+        raise ProvenanceMismatchError(
+            f"decision_cycle_id/input_fingerprint mismatch: "
+            f"decision={provenance.decision_cycle_id}/{provenance.input_fingerprint} "
+            f"proposal={proposal.bias_decision_cycle_id}/{proposal.bias_input_fingerprint}"
+        )
+
+
 def evaluate_session_completion(
     strategy_id: str,
     symbol: str,
@@ -59,6 +92,7 @@ def evaluate_session_completion(
         evaluation_time=evaluation_time,
     )
     session_decision = decision.session_decision
+    provenance = decision.market_bias.canonical_provenance
 
     return SessionTradeProposal(
         strategy_id=strategy_id,
@@ -86,6 +120,11 @@ def evaluate_session_completion(
         proposal_status=_proposal_status(decision),
         reason_codes=decision.reason_codes,
         created_at=evaluation_time,
+        bias_decision_cycle_id=provenance.decision_cycle_id if provenance is not None else None,
+        bias_model_version=provenance.model_version if provenance is not None else None,
+        bias_decision_time=provenance.decision_time if provenance is not None else None,
+        bias_input_fingerprint=provenance.input_fingerprint if provenance is not None else None,
+        bias_reason_codes=provenance.reason_codes if provenance is not None else (),
     )
 
 

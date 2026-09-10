@@ -72,7 +72,14 @@ class RuntimeCoordinator:
             for symbol in universe.configured_symbols:
                 try:
                     ref_candles = get_candles(symbol, strategy.timeframe, ref_start, ref_end)
-                    bias = derive_market_bias(symbol, timeframe="H1")
+                    # AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1 M4: bind this cycle's
+                    # own decision_time/session_pair so MarketBias.canonical_provenance
+                    # carries a real, reproducible fingerprint/decision_cycle_id for this
+                    # exact evaluation, not a fresh now()/placeholder.
+                    bias = derive_market_bias(
+                        symbol, timeframe="H1",
+                        decision_time=now_utc, session_pair=pair.reference_session.name,
+                    )
                 except MarketDataError as exc:
                     results.append({"symbol": symbol, "reference_session": pair.reference_session.name,
                                      "status": "DATA_ERROR", "reason_code": exc.reason_code})

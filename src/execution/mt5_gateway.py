@@ -36,7 +36,10 @@ from mt5.account import account as get_account
 from mt5.account_guard import verify_configured_account
 from execution.models import OrderSendResult
 
-_CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config", "trading.yaml")
+_DEFAULT_CONFIG_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config", "trading.yaml"
+)
+_CONFIG_PATH = os.environ.get("AG_TRADING_CONFIG_PATH", _DEFAULT_CONFIG_PATH)
 
 # side -> MT5 order type for a MARKET open. LIMIT support deferred (not requested this
 # pass; ORDER_TYPE_BUY_LIMIT/SELL_LIMIT would need a pending-order lifecycle this repo

@@ -1,0 +1,101 @@
+version: AG_DAILY_OPPORTUNITY_SCHEDULER_V2
+status: RESEARCH
+timezone: UTC   # scheduler authority; MMT (+06:30) is display-only, never a bare integer offset
+display_timezone:
+  name: MMT
+  utc_offset: "+06:30"
+
+# Owner-specified canonical daily schedule (spec section 3). Boundaries are half-open
+# [start, end) in UTC, matching the canonical_sessions.yaml convention. RESEARCH_WINDOW
+# has no end (open-ended until the next PRE_FLIGHT).
+schedule:
+  - state: PRE_FLIGHT
+    start: "06:25"
+    end: "06:30"
+  - state: BTC_OBSERVE
+    start: "06:30"
+    end: "06:45"
+  - state: BTC_FINALIZE
+    start: "06:45"
+    end: "06:50"
+  - state: PRE_LONDON_REFERENCE
+    start: "06:50"
+    end: "06:55"
+  - state: PRE_LONDON_READINESS
+    start: "06:55"
+    end: "07:00"
+  - state: WINDOW_ASIAN_LONDON
+    start: "07:00"
+    end: "11:00"
+  - state: POST_LONDON
+    start: "11:00"
+    end: "11:05"
+  - state: STANDBY
+    start: "11:05"
+    end: "11:55"
+  - state: PRE_NEW_YORK
+    start: "11:55"
+    end: "12:00"
+  - state: WINDOW_LONDON_NEWYORK
+    start: "12:00"
+    end: "15:00"
+  - state: POST_NEW_YORK
+    start: "15:00"
+    end: "15:10"
+  - state: P1_RESEARCH
+    start: "15:10"
+    end: null   # open-ended: runs until the next day's PRE_FLIGHT
+
+# P0/P1 resource-class control (spec section 5/6/7).
+standby:
+  allow_p1_research: false   # owner default: minimum unnecessary PC workload during standby
+
+# M15 bar-close wake architecture (spec section 8). Mechanism only -- these are
+# owner-specified Phase-1 hypotheses, not tuned/optimized values (spec section 41).
+m15_event:
+  close_settlement_seconds: 5
+  maximum_wait_seconds: 60
+
+# Economic-news risk window (spec section 14). Phase-1 research default, not a
+# profitability claim.
+news:
+  impact: HIGH
+  risk_window_minutes_before: 15
+  risk_window_minutes_after: 15
+  preflight_check_times_utc:
+    - "06:55"
+    - "11:55"
+
+# Rolling-expectancy ranking (spec sections 20-24).
+priority:
+  rolling_sample_trades: 30
+  deterministic_symbol_fallback_order: ["EURUSD", "GBPUSD"]
+
+# Forward-shadow statistical validation gate (spec section 33). Owner-specified research
+# thresholds; do not mutate lifecycle on GATE_PASS.
+validation_gate:
+  shadow_sample_threshold: 100
+  net_expectancy_threshold_r: 0.25
+  missed_observation_cycle_rate_threshold: 0.05
+
+# Strategy integration (spec section 17; see reconciliation note below).
+strategy_integration:
+  strategy_id: SESSION_TRADE_V1
+  # ST_SESSION_SWEEP_CONTINUATION_V1 does not exist anywhere in this repository (no
+  # registry entry, no adapter, no contract, no tests -- confirmed by repository
+  # reconciliation on 2026-09-10). Per explicit owner direction, SESSION_TRADE_V1 (the
+  # existing registered strategy with S1/S2/S3-shaped session sweep/continuation logic,
+  # invoked via strategy_manager.manager.evaluate()) is used as the working target for
+  # this scheduler's strategy-integration point. AG_DAILY_OPPORTUNITY_SCHEDULER_V2 never
+  # asserts that "ST_SESSION_SWEEP_CONTINUATION_V1" is a real, separately-registered
+  # strategy_id; it is only this config's alias for SESSION_TRADE_V1.
+  strategy_id_alias: ST_SESSION_SWEEP_CONTINUATION_V1
+  symbols: ["EURUSD", "GBPUSD"]
+  session_pairs:
+    WINDOW_ASIAN_LONDON: ASIAN_LONDON
+    WINDOW_LONDON_NEWYORK: LONDON_NEWYORK
+
+lifecycle:
+  stage: OFFLINE_RESEARCH
+  demo_eligible: false
+  demo_authorized: false

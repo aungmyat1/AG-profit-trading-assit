@@ -1185,3 +1185,23 @@ as the cross-source dedup tolerance are documented, non-blocking V1 gaps. Phase 
 `AG_TRADE_MANAGEMENT_V1`'s entry-side dependency on Phase 5 (Phase 6's manual-entry-only
 subsystem already ships independently of Phase 5 -- see PHASE 6 above) -- not started
 in this pass.
+# Web-to-MT5 Vantage Demo bridge (2026-09-10)
+
+Status: **UNIT_TESTED / RUNTIME BLOCKED — MT5 authorization failed.** The real-mode web
+execution endpoint now invokes `scripts/web_execute_trade.py`, which constructs a
+`USER_EXPLICIT_ORDER` and calls the sole authority boundary
+`assistant.commands.execute_command()` with the UI's explicit confirmation. The bridge
+uses `config/trading.demo.yaml`: order-check/send are enabled only for this bridge while
+`allow_live_trading: false` keeps real accounts blocked. The repository default
+`config/trading.yaml` remains fail-closed in `ANALYSIS`. No order was sent during this
+change; the read-only EURUSD MT5 probe returned `MT5_INITIALIZE_FAILED: Terminal:
+Authorization failed`, so broker-level frontend execution remains not re-verified in
+the current session.
+
+Follow-up: MT5 subsequently connected successfully to the configured Vantage Demo
+account with fresh EURUSD data. Real-mode frontend positions now come from the terminal,
+and manual breakeven/partial-close/close controls delegate to the claimed-position
+`trade_management.manager` with requested-action eligibility enforcement. The dedicated
+demo profile enables management while a new gateway guard rejects any non-Demo account
+before `order_check` or `order_send`. No execution or management order was sent during
+verification.

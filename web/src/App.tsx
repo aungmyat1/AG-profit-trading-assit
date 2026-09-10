@@ -199,11 +199,6 @@ export const App: React.FC = () => {
     takeProfit2: number;
     user_confirmed: boolean;
   }) => {
-    if (AG_UI_MODE === 'real') {
-      showToast('Manual order entry is disabled in real mode. Use an authorized backend ticket.', 'error');
-      return false;
-    }
-
     try {
       const res = await fetch('/api/execution/execute', {
         method: 'POST',
@@ -215,7 +210,7 @@ export const App: React.FC = () => {
         : null;
 
       if (data && data.success) {
-        showToast(`Simulated position #${data.ticket} created.`);
+        showToast(data.message || `${data.simulated ? 'Simulated' : 'MT5 demo'} position #${data.ticket} created.`);
         fetchSystemData();
         return true;
       } else {
@@ -229,11 +224,6 @@ export const App: React.FC = () => {
   };
 
   const handleManagePosition = async (ticket: number, action: 'BREAKEVEN' | 'PARTIAL_CLOSE' | 'CLOSE') => {
-    if (AG_UI_MODE === 'real') {
-      showToast('Position management is disabled in real mode until the validated management API is wired.', 'error');
-      return;
-    }
-
     try {
       const res = await fetch('/api/execution/manage', {
         method: 'POST',

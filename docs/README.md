@@ -148,3 +148,6 @@ configuration, execution authority, or validation evidence changes operational s
 [`../strategies/STRATEGY_LEDGER.md`](../strategies/STRATEGY_LEDGER.md) indexes registered
 strategies and unresolved strategy-authorship decisions. Strategy YAML remains the
 authoritative machine-readable source.
+# Status evidence
+
+- [Web-to-Vantage Demo execution bridge](status/AG_WEB_VANTAGE_DEMO_EXECUTION_BRIDGE_V1.md)

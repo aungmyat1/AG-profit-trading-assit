@@ -24,7 +24,13 @@ from typing import Optional
 import MetaTrader5 as mt5
 import yaml
 
-_CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config", "trading.yaml")
+from mt5.account import account as get_account
+from mt5.account_guard import verify_configured_account
+
+_DEFAULT_CONFIG_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config", "trading.yaml"
+)
+_CONFIG_PATH = os.environ.get("AG_TRADING_CONFIG_PATH", _DEFAULT_CONFIG_PATH)
 
 
 class ManagementGatewayError(RuntimeError):
@@ -103,6 +109,19 @@ def _send(
 ) -> GatewayResult:
     if not _live_management_allowed():
         return GatewayResult(dry_run=True, request=request)
+
+    identity_mismatch = verify_configured_account()
+    if identity_mismatch is not None:
+        return GatewayResult(dry_run=False, request=request, comment=identity_mismatch)
+    try:
+        if not get_account().is_demo:
+            return GatewayResult(dry_run=False, request=request, comment="LIVE_MANAGEMENT_DISABLED")
+    except Exception as exc:  # noqa: BLE001 - fail closed before broker mutation
+        return GatewayResult(
+            dry_run=False,
+            request=request,
+            comment=f"ACCOUNT_STATE_UNAVAILABLE: {exc}",
+        )
 
     volume_before = _current_volume(ticket)
 

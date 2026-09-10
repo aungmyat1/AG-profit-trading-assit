@@ -1,0 +1,18 @@
+# Explicit execution profile used only by the confirmed web-to-MT5 demo bridge.
+# The account guard must still verify that the connected account matches configuration
+# and is a demo account. Live accounts remain blocked independently below.
+mode: TRADING
+
+execution:
+  allow_order_check: true
+  allow_order_send: true
+
+account:
+  allow_live_trading: false
+
+risk:
+  risk_per_trade_pct: 1.0
+
+trade_management:
+  mode: LIVE
+  allow_live_management: true

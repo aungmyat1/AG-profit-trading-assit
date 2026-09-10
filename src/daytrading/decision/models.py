@@ -12,6 +12,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional, Tuple
 
+from market_intelligence.models import MarketBiasResult
 from strategy_engine.session import Direction, Regime, SetupDecision, SetupType
 
 
@@ -42,6 +43,16 @@ class MarketBias:
     protected_level: Optional[float] = None
     latest_break: Optional[str] = None  # e.g. "BOS_UP" / "CHOCH_DOWN", copied verbatim
     reasons: Tuple[str, ...] = field(default_factory=tuple)
+
+    # AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1 M4: the exact canonical
+    # MarketBiasResult this legacy MarketBias's direction was delegated to (P3/P6 --
+    # "preserve canonical provenance, not just direction"). Held directly (Approach A
+    # from the M4 spec) rather than copied field-by-field, since MarketBiasResult is
+    # itself already frozen/immutable -- holding the object IS the lossless-traceability
+    # guarantee, not a duplicate of it. None only for a MarketBias constructed by a
+    # caller that never went through derive_market_bias_from_tiers (e.g. a hand-built
+    # test fixture) -- never fabricated after the fact.
+    canonical_provenance: Optional[MarketBiasResult] = None
 
 
 @dataclass(frozen=True)

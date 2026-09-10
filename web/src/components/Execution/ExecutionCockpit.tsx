@@ -160,11 +160,25 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
     }
   };
 
-  const handleClaimTicket = (e: React.FormEvent) => {
+  const handleClaimTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticketInput) return;
-    setClaimStatus(`Ticket #${ticketInput} claimed successfully into manual management.`);
-    setTicketInput('');
+    try {
+      const response = await fetch('/api/execution/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticket: Number(ticketInput), finalR: 5 })
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.success) {
+        setClaimStatus(`Claim rejected: ${payload.error || 'unknown error'}`);
+      } else {
+        setClaimStatus(`Ticket #${ticketInput} claimed successfully into manual management.`);
+        setTicketInput('');
+      }
+    } catch {
+      setClaimStatus('Claim failed: backend unavailable.');
+    }
     setTimeout(() => setClaimStatus(null), 4000);
   };
 

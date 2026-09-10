@@ -61,6 +61,11 @@ Agent skills  -> advisory and explanatory only
   it cannot create order parameters or bypass strategy/proposal authority. The same
   panel displays sanitized account status and closing-deal history read directly from
   the connected MT5 terminal; fixture performance remains visually separate.
+- When `VITE_AG_API_MODE=real`, the execution confirmation modal submits FX market
+  orders through the local Python authority boundary and the dedicated demo-only
+  `config/trading.demo.yaml` profile. The connected MT5 account must match the configured
+  Vantage identity and report itself as Demo; live accounts remain blocked. Every order
+  still requires the checkbox confirmation for that individual submission.
 
 See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
 [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current implementation state — in

@@ -61,3 +61,15 @@ class SessionTradeProposal:
 
     reason_codes: Tuple[str, ...] = field(default_factory=tuple)
     created_at: Optional[datetime] = None
+
+    # AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1 M4 (P15/P16): traces this proposal
+    # back to the exact canonical MarketBiasResult that produced its `market_bias`
+    # string above -- None only when the upstream MarketBias never carried
+    # canonical_provenance (a hand-built MarketBias fixture, never a real evaluation
+    # path). Never fabricated after the fact; always copied verbatim from
+    # decision.market_bias.canonical_provenance by session_workflow.py.
+    bias_decision_cycle_id: Optional[str] = None
+    bias_model_version: Optional[str] = None
+    bias_decision_time: Optional[datetime] = None
+    bias_input_fingerprint: Optional[str] = None
+    bias_reason_codes: Tuple[str, ...] = field(default_factory=tuple)

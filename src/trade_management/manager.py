@@ -50,7 +50,12 @@ class CycleResult:
     intent: Optional[ManagementIntent] = None
 
 
-def run_cycle_for_ticket(ticket: int, claims_path: str = "journal/claims.json", base_dir: str = "journal") -> CycleResult:
+def run_cycle_for_ticket(
+    ticket: int,
+    claims_path: str = "journal/claims.json",
+    base_dir: str = "journal",
+    expected_action: Optional[str] = None,
+) -> CycleResult:
     claims = load_claims(claims_path)
     claim = claims.get(ticket)
     if claim is None:
@@ -98,6 +103,14 @@ def run_cycle_for_ticket(ticket: int, claims_path: str = "journal/claims.json", 
             ticket, "MANAGEMENT_BLOCKED", base_dir, reason_code=validation.reason_code, intent_id=intent.intent_id
         )
         return CycleResult(ticket=ticket, outcome="BLOCKED", detail=validation.reason_code, intent=intent)
+
+    if expected_action is not None and intent.action != expected_action:
+        return CycleResult(
+            ticket=ticket,
+            outcome="BLOCKED",
+            detail=f"REQUESTED_ACTION_NOT_ELIGIBLE:{expected_action}:NEXT_ACTION:{intent.action}",
+            intent=intent,
+        )
 
     journal.record_event(
         ticket,

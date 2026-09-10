@@ -32,6 +32,7 @@ router.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from typing import Optional
 
 from market_structure.models import STATE_BEARISH, STATE_BULLISH, TieredStructureResult
 
@@ -48,20 +49,37 @@ _CANONICAL_TO_LEGACY_DIRECTION = {
 }
 
 
-def derive_market_bias_from_tiers(tiers: TieredStructureResult, timeframe: str = "H1") -> MarketBias:
-    # Single canonical direction authority (invariant 1/9) -- decision_time/symbol/
-    # session_pair are irrelevant to the LABEL itself (only to fingerprint/decision_cycle_id,
-    # which this legacy shape does not carry), so fixed placeholders are used here purely
-    # to satisfy the canonical resolver's required arguments.
+def derive_market_bias_from_tiers(
+    tiers: TieredStructureResult,
+    timeframe: str = "H1",
+    decision_time: Optional[datetime] = None,
+    session_pair: str = "UNSPECIFIED",
+) -> MarketBias:
+    """AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1 M4: `decision_time`/`session_pair`
+    are optional and additive -- every existing caller that omits them keeps working
+    unchanged. Supplying them (as daytrading_workflow.evaluate_session_completion now
+    does, via its own `evaluation_time`/`reference_session`) makes the resulting
+    MarketBias.canonical_provenance a REAL, reproducible MarketBiasResult (same
+    decision_time -> same input_fingerprint, P22 determinism); omitting decision_time
+    falls back to `now()`, which is honest (this call truly has no caller-supplied
+    decision instant) but not reproducible across two separate calls -- existing
+    callers were already not asserting on provenance, so this is not a behavior
+    regression for them.
+
+    `tiers.symbol` (always real, never a placeholder) is used as the canonical
+    resolver's `symbol` -- no separate symbol parameter is needed here."""
+    resolved_decision_time = decision_time or datetime.now(timezone.utc)
+    # Single canonical direction authority (invariant 1/9).
     canonical = resolve_from_structure_tiers(
-        tiers, symbol="UNSPECIFIED", decision_time=datetime.now(timezone.utc),
-        session_pair="UNSPECIFIED", timeframe=timeframe,
+        tiers, symbol=tiers.symbol, decision_time=resolved_decision_time,
+        session_pair=session_pair, timeframe=timeframe,
     )
 
     if tiers.status != "VALID" or tiers.external is None:
         return MarketBias(
             direction=MarketBiasDirection.INDETERMINATE.value, timeframe=timeframe,
             reasons=(f"TIERED_STRUCTURE_STATUS={tiers.status}",),
+            canonical_provenance=canonical,
         )
 
     external = tiers.external
@@ -84,6 +102,7 @@ def derive_market_bias_from_tiers(tiers: TieredStructureResult, timeframe: str =
             protected_level=protected.price if protected is not None else None,
             latest_break=latest_break.kind.value if latest_break is not None else None,
             reasons=tuple(reasons),
+            canonical_provenance=canonical,
         )
 
     if canonical.bias == "BEARISH":
@@ -98,6 +117,7 @@ def derive_market_bias_from_tiers(tiers: TieredStructureResult, timeframe: str =
             protected_level=protected.price if protected is not None else None,
             latest_break=latest_break.kind.value if latest_break is not None else None,
             reasons=tuple(reasons),
+            canonical_provenance=canonical,
         )
 
     return MarketBias(
@@ -105,14 +125,18 @@ def derive_market_bias_from_tiers(tiers: TieredStructureResult, timeframe: str =
         external_structure_direction=external.direction,
         latest_break=latest_break.kind.value if latest_break is not None else None,
         reasons=("EXTERNAL_STRUCTURE_UNDEFINED",),
+        canonical_provenance=canonical,
     )
 
 
-def derive_market_bias(symbol: str, timeframe: str = "H1") -> MarketBias:
+def derive_market_bias(
+    symbol: str, timeframe: str = "H1",
+    decision_time: Optional[datetime] = None, session_pair: str = "UNSPECIFIED",
+) -> MarketBias:
     """Convenience wrapper: fetches TieredStructureResult itself. Mirrors the exact H1
     tiers fetch daytrading/pipeline.py already performs for protected-level/BOS
     evidence -- no second fetch convention invented."""
     from market_structure.tiers import analyze_structure_tiers
 
     tiers = analyze_structure_tiers(symbol, timeframe)
-    return derive_market_bias_from_tiers(tiers, timeframe)
+    return derive_market_bias_from_tiers(tiers, timeframe, decision_time=decision_time, session_pair=session_pair)

@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import MetaTrader5 as mt5
 
+from mt5.config import load_mt5_config
+
 
 class MT5ConnectionError(RuntimeError):
     pass
@@ -17,6 +19,26 @@ def connect() -> None:
     if not mt5.initialize():
         code, message = mt5.last_error()
         raise MT5ConnectionError(f"MT5_INITIALIZE_FAILED: ({code}) {message}")
+
+
+def connect_configured() -> None:
+    """Connect to the exact configured Vantage Demo terminal/account.
+
+    This is used by execution-facing subprocesses so MT5 auto-discovery cannot attach
+    to another installed terminal. Broker identity is still rechecked by the gateway
+    before any order submission.
+    """
+    config = load_mt5_config()
+    kwargs = {
+        "login": config.login,
+        "password": config.password,
+        "server": config.server,
+    }
+    if config.terminal_path:
+        kwargs["path"] = config.terminal_path
+    if not mt5.initialize(**kwargs):
+        code, message = mt5.last_error()
+        raise MT5ConnectionError(f"MT5_CONFIGURED_INITIALIZE_FAILED: ({code}) {message}")
 
 
 def shutdown() -> None:

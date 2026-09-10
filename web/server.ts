@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import { spawn } from 'child_process';
 import { createServer as createViteServer } from 'vite';
 
 // Load .env configuration into process.env and envFileVars if present
@@ -1240,7 +1241,7 @@ async function startServer() {
     });
   });
 
-  app.post('/api/execution/execute', (req, res) => {
+  app.post('/api/execution/execute', async (req, res) => {
     const { symbol, strategyId, side, lots, entryPrice, stopLoss, takeProfit1, takeProfit2, user_confirmed } = req.body;
 
     if (!user_confirmed) {
@@ -1264,6 +1265,63 @@ async function startServer() {
         success: false,
         error: 'CRYPTO_EXECUTION_BLOCKED: Crypto execution adapters remain proposal/interface-only under AG Profit Trading Authority Rules. Real crypto venue order submission is disabled fail-closed.'
       });
+    }
+
+    if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() === 'real') {
+      if (![entryPrice, stopLoss, takeProfit1].every(value => Number.isFinite(Number(value)))) {
+        return res.status(400).json({ success: false, error: 'ENTRY_SL_AND_TP1_MUST_BE_FINITE' });
+      }
+
+      const repoRoot = path.resolve(process.cwd(), '..');
+      const scriptPath = path.join(repoRoot, 'scripts', 'web_execute_trade.py');
+      const python = process.env.PYTHON_EXECUTABLE || 'python';
+      const args = [
+        scriptPath,
+        '--symbol', String(symbol),
+        '--side', String(side),
+        '--volume', String(Number(lots)),
+        '--entry', String(Number(entryPrice)),
+        '--sl', String(Number(stopLoss)),
+        '--tp', String(Number(takeProfit1)),
+        '--strategy-id', String(strategyId || 'FRONTEND_MANUAL'),
+        '--confirm'
+      ];
+
+      try {
+        const bridgeResult = await new Promise<{ code: number | null; stdout: string; stderr: string }>((resolve, reject) => {
+          const child = spawn(python, args, { cwd: repoRoot, windowsHide: true });
+          let stdout = '';
+          let stderr = '';
+          child.stdout.on('data', chunk => { stdout += chunk.toString(); });
+          child.stderr.on('data', chunk => { stderr += chunk.toString(); });
+          child.on('error', reject);
+          child.on('close', code => resolve({ code, stdout: stdout.trim(), stderr: stderr.trim() }));
+        });
+        const lastLine = bridgeResult.stdout.split(/\r?\n/).filter(Boolean).at(-1) || '';
+        const report = JSON.parse(lastLine);
+        if (bridgeResult.code !== 0 || report.status !== 'EXECUTED') {
+          return res.status(409).json({
+            success: false,
+            error: report.gate_reason_code || report.order?.reason_code || 'MT5_ORDER_REJECTED',
+            report
+          });
+        }
+        return res.json({
+          success: true,
+          simulated: false,
+          ticket: report.order?.ticket,
+          deal_id: report.order?.deal_id,
+          fill_price: report.order?.fill_price,
+          report,
+          message: `Vantage MT5 demo order #${report.order?.ticket} executed.`
+        });
+      } catch (error) {
+        return res.status(502).json({
+          success: false,
+          error: 'MT5_BRIDGE_FAILURE',
+          details: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
 
     const newTicket = Math.floor(9000000 + Math.random() * 999999);
@@ -1310,12 +1368,101 @@ async function startServer() {
   });
 
   app.get('/api/execution/positions', (req, res) => {
+    if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() === 'real') {
+      const repoRoot = path.resolve(process.cwd(), '..');
+      const child = spawn(process.env.PYTHON_EXECUTABLE || 'python', [path.join(repoRoot, 'scripts', 'web_mt5_positions.py')], {
+        cwd: repoRoot,
+        windowsHide: true
+      });
+      let stdout = '';
+      let stderr = '';
+      child.stdout.on('data', chunk => { stdout += chunk.toString(); });
+      child.stderr.on('data', chunk => { stderr += chunk.toString(); });
+      child.on('error', error => res.status(502).json({ error: 'MT5_POSITIONS_BRIDGE_FAILURE', details: error.message }));
+      child.on('close', code => {
+        try {
+          const lastLine = stdout.trim().split(/\r?\n/).filter(Boolean).at(-1) || '';
+          const payload = JSON.parse(lastLine);
+          if (code !== 0 || !Array.isArray(payload)) {
+            return res.status(502).json({ error: payload.reason_code || 'MT5_POSITIONS_UNAVAILABLE' });
+          }
+          return res.json(payload);
+        } catch (error) {
+          return res.status(502).json({ error: 'INVALID_MT5_POSITIONS_RESPONSE', details: stderr || String(error) });
+        }
+      });
+      return;
+    }
     res.json(positions);
+  });
+
+  app.post('/api/execution/claim', (req, res) => {
+    const ticket = Number(req.body?.ticket);
+    const finalR = Number(req.body?.finalR ?? 5);
+    if (!Number.isInteger(ticket) || !Number.isFinite(finalR) || finalR <= 0) {
+      return res.status(400).json({ success: false, error: 'INVALID_CLAIM_REQUEST' });
+    }
+    if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() !== 'real') {
+      return res.json({ success: true, simulated: true, ticket });
+    }
+
+    const repoRoot = path.resolve(process.cwd(), '..');
+    const args = [
+      path.join(repoRoot, 'scripts', 'manage_trade.py'),
+      'claim', String(ticket), '--final-r', String(finalR), '--json'
+    ];
+    const child = spawn(process.env.PYTHON_EXECUTABLE || 'python', args, { cwd: repoRoot, windowsHide: true });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', chunk => { stdout += chunk.toString(); });
+    child.stderr.on('data', chunk => { stderr += chunk.toString(); });
+    child.on('error', error => res.status(502).json({ success: false, error: 'MT5_CLAIM_BRIDGE_FAILURE', details: error.message }));
+    child.on('close', code => {
+      try {
+        const lastLine = stdout.trim().split(/\r?\n/).filter(Boolean).at(-1) || '';
+        const report = JSON.parse(lastLine);
+        if (code !== 0 || report.status !== 'CLAIMED') {
+          return res.status(409).json({ success: false, error: report.reason_code || report.status || 'CLAIM_REJECTED', report });
+        }
+        return res.json({ success: true, simulated: false, report });
+      } catch (error) {
+        return res.status(502).json({ success: false, error: 'INVALID_MT5_CLAIM_RESPONSE', details: stderr || String(error) });
+      }
+    });
   });
 
   app.post('/api/execution/manage', (req, res) => {
     const { ticket, action } = req.body;
     const pos = positions.find(p => p.ticket === ticket);
+
+    if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() === 'real') {
+      if (!Number.isInteger(Number(ticket)) || !['BREAKEVEN', 'PARTIAL_CLOSE', 'CLOSE'].includes(action)) {
+        return res.status(400).json({ success: false, error: 'INVALID_MANAGEMENT_REQUEST' });
+      }
+      const repoRoot = path.resolve(process.cwd(), '..');
+      const scriptPath = path.join(repoRoot, 'scripts', 'web_manage_trade.py');
+      const python = process.env.PYTHON_EXECUTABLE || 'python';
+      const args = [scriptPath, '--ticket', String(Number(ticket)), '--action', String(action)];
+      const child = spawn(python, args, { cwd: repoRoot, windowsHide: true });
+      let stdout = '';
+      let stderr = '';
+      child.stdout.on('data', chunk => { stdout += chunk.toString(); });
+      child.stderr.on('data', chunk => { stderr += chunk.toString(); });
+      child.on('error', error => res.status(502).json({ success: false, error: 'MT5_MANAGEMENT_BRIDGE_FAILURE', details: error.message }));
+      child.on('close', code => {
+        try {
+          const lastLine = stdout.trim().split(/\r?\n/).filter(Boolean).at(-1) || '';
+          const report = JSON.parse(lastLine);
+          if (code !== 0 || report.outcome !== 'EXECUTED') {
+            return res.status(409).json({ success: false, error: report.detail || 'MANAGEMENT_REJECTED', report });
+          }
+          return res.json({ success: true, simulated: false, report, message: `MT5 ${action} executed for #${ticket}.` });
+        } catch (error) {
+          return res.status(502).json({ success: false, error: 'INVALID_MANAGEMENT_BRIDGE_RESPONSE', details: stderr || String(error) });
+        }
+      });
+      return;
+    }
 
     if (!pos) {
       return res.status(404).json({ error: `Position #${ticket} not found` });
