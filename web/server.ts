@@ -1062,11 +1062,19 @@ async function startServer() {
   });
 
   // 4. Proposals Scanner API
+  //
+  // AG_SCANNER_SAFE_PROPOSAL_EXECUTION_REMEDIATION_V2 (Finding 1 / Invariant D): these
+  // candles come from generateRealisticCandles(), a synthetic fixture -- not real MT5
+  // closed candles, and not the canonical Python strategy engine. Every proposal this
+  // route returns is therefore explicitly tagged non-authoritative and non-executable;
+  // it exists for research/UI display only until it is rebuilt on real MT5 data + the
+  // canonical proposal ledger (src/proposals, authorization/store.py). Do NOT remove
+  // this tagging to "make the scanner executable" -- see repository task P20.
   app.get('/api/proposals/scan', (req, res) => {
     const proposals = SUPPORTED_SYMBOLS.map(symInfo => {
       const candles = generateRealisticCandles(symInfo.symbol, 'M15', 3);
       const strategy = REGISTERED_STRATEGIES[0]; // ST_ASIAN_SWEEP_5R_V1
-      return evaluateAsianSweepStrategy(
+      const proposal = evaluateAsianSweepStrategy(
         symInfo.symbol,
         candles,
         strategy,
@@ -1074,6 +1082,12 @@ async function startServer() {
         symInfo.typicalSpread,
         brokerAccountConfig.balance
       );
+      return {
+        ...proposal,
+        marketDataSource: 'SYNTHETIC' as const,
+        executionEligible: false,
+        executionBlockReason: 'SYNTHETIC_MARKET_DATA'
+      };
     });
 
     res.json(proposals);

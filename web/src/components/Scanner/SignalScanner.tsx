@@ -12,7 +12,9 @@ import {
   Zap,
   Coins,
   Sparkles,
-  DollarSign
+  DollarSign,
+  Eye,
+  Ban
 } from 'lucide-react';
 
 interface ScannerProps {
@@ -28,13 +30,18 @@ export const SignalScanner: React.FC<ScannerProps> = ({
   onSelectSymbol,
   onExecuteProposal
 }) => {
-  const getStateBadge = (state: DecisionState) => {
+  const getStateBadge = (state: DecisionState, executionEligible?: boolean) => {
     switch (state) {
       case 'READY':
-        return (
+        return executionEligible ? (
           <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            READY
+            READY — DEMO EXECUTABLE
+          </span>
+        ) : (
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+            <Eye className="w-3 h-3 text-cyan-400" />
+            READY — OBSERVATION ONLY
           </span>
         );
       case 'WATCH':
@@ -119,7 +126,7 @@ export const SignalScanner: React.FC<ScannerProps> = ({
                     <span className="font-mono text-base font-bold text-slate-100">{prop.symbol}</span>
                     <span className="text-[11px] font-mono text-slate-400">{prop.strategyId}</span>
                   </div>
-                  {getStateBadge(prop.state)}
+                  {getStateBadge(prop.state, prop.executionEligible)}
                 </div>
 
                 {/* Regime & Session Range Metrics */}
@@ -155,6 +162,11 @@ export const SignalScanner: React.FC<ScannerProps> = ({
                 {/* Trade Setup Parameters if READY */}
                 {isReady && prop.entryPrice && prop.stopLoss && (
                   <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-lg p-3 mb-3 text-xs font-mono space-y-2">
+                    {prop.marketDataSource === 'SYNTHETIC' && (
+                      <div className="text-[10px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded px-1.5 py-1">
+                        NON_AUTHORITATIVE_ESTIMATE — synthetic market data, research only
+                      </div>
+                    )}
                     <div className="flex justify-between items-center text-emerald-300 font-bold border-b border-emerald-500/20 pb-1">
                       <span className="flex items-center gap-1">
                         <Sparkles className="w-3 h-3 text-emerald-400" />
@@ -222,7 +234,7 @@ export const SignalScanner: React.FC<ScannerProps> = ({
                   <ArrowRight className="w-3 h-3" />
                 </button>
 
-                {isReady && (
+                {isReady && prop.executionEligible && (
                   <button
                     id={`exec-btn-${prop.symbol}`}
                     onClick={() => onExecuteProposal(prop)}
@@ -231,6 +243,17 @@ export const SignalScanner: React.FC<ScannerProps> = ({
                     <ShieldCheck className="w-3.5 h-3.5" />
                     <span>Execute</span>
                   </button>
+                )}
+
+                {isReady && !prop.executionEligible && (
+                  <span
+                    id={`exec-blocked-${prop.symbol}`}
+                    title={`Execution blocked: ${prop.executionBlockReason || 'NOT_EXECUTION_ELIGIBLE'}`}
+                    className="py-1.5 px-3 rounded text-xs font-bold bg-slate-800 text-slate-500 border border-slate-700 flex items-center gap-1 cursor-not-allowed"
+                  >
+                    <Ban className="w-3.5 h-3.5" />
+                    <span>Observation Only</span>
+                  </span>
                 )}
               </div>
             </div>

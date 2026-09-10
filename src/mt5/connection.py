@@ -36,7 +36,7 @@ def connect_configured() -> None:
     }
     if config.terminal_path:
         kwargs["path"] = config.terminal_path
-    if not mt5.initialize(**kwargs):
+    if not mt5.initialize(timeout=10_000, **kwargs):
         code, message = mt5.last_error()
         raise MT5ConnectionError(f"MT5_CONFIGURED_INITIALIZE_FAILED: ({code}) {message}")
 

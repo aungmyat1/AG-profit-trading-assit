@@ -1187,16 +1187,17 @@ subsystem already ships independently of Phase 5 -- see PHASE 6 above) -- not st
 in this pass.
 # Web-to-MT5 Vantage Demo bridge (2026-09-10)
 
-Status: **UNIT_TESTED / RUNTIME BLOCKED — MT5 authorization failed.** The real-mode web
+Status: **UNIT_TESTED / VANTAGE DEMO CONNECTION VERIFIED — ORDER SEND NOT EXERCISED.** The real-mode web
 execution endpoint now invokes `scripts/web_execute_trade.py`, which constructs a
 `USER_EXPLICIT_ORDER` and calls the sole authority boundary
 `assistant.commands.execute_command()` with the UI's explicit confirmation. The bridge
 uses `config/trading.demo.yaml`: order-check/send are enabled only for this bridge while
 `allow_live_trading: false` keeps real accounts blocked. The repository default
-`config/trading.yaml` remains fail-closed in `ANALYSIS`. No order was sent during this
-change; the read-only EURUSD MT5 probe returned `MT5_INITIALIZE_FAILED: Terminal:
-Authorization failed`, so broker-level frontend execution remains not re-verified in
-the current session.
+`config/trading.yaml` remains fail-closed in `ANALYSIS`. The bridge now uses an explicit
+configured-terminal initialization with a bounded timeout, eliminating ambiguous MT5
+auto-discovery. Read-only web position synchronization returned HTTP 200 from the
+configured Vantage Demo terminal. No order was sent during this change, so broker-level
+frontend order submission remains not re-verified in the current session.
 
 Follow-up: MT5 subsequently connected successfully to the configured Vantage Demo
 account with fresh EURUSD data. Real-mode frontend positions now come from the terminal,

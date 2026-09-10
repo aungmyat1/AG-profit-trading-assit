@@ -2,7 +2,7 @@
 
 Date: 2026-09-10
 
-Status: **UNIT_TESTED / DEMO RUNTIME NOT VERIFIED THIS SESSION**
+Status: **UNIT_TESTED / DEMO CONNECTION VERIFIED / ORDER SEND NOT EXERCISED**
 
 The real-mode Express endpoint now delegates a frontend-confirmed FX order to
 `scripts/web_execute_trade.py`. That bridge calls
@@ -19,8 +19,11 @@ Validation evidence:
 
 - Frontend TypeScript: `npm run lint` — passed with no diagnostics.
 - Execution/gateway focused suite: run after restoring the default fail-closed profile.
-- Read-only MT5 probe: `python scripts/check_mt5.py --symbol EURUSD --json` — failed with
-  `MT5_INITIALIZE_FAILED: (-6) Terminal: Authorization failed`.
+- Read-only MT5 position bridge: `python scripts/web_mt5_positions.py` — connected and
+  returned the current position list successfully.
+- Frontend positions endpoint: HTTP 200 with the same current empty list.
+- Non-confirmed execution bridge check: rejected with `EXECUTION_NOT_AUTHORIZED` before
+  any broker mutation.
 - Broker order submission: `NOT_EVALUATED`; no order was sent.
 
 Operational prerequisite: open MetaTrader 5, log in to the configured Vantage Demo

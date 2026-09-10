@@ -194,6 +194,17 @@ export interface TradeProposal {
     dailyLossOk: boolean;
     sessionTimeOk: boolean;
   };
+  /** AG_SCANNER_SAFE_PROPOSAL_EXECUTION_REMEDIATION_V2: provenance of the candles this
+   * proposal was computed from. 'SYNTHETIC' means the local generateRealisticCandles()
+   * fixture, not real MT5 data -- such a proposal must never be execution_eligible. */
+  marketDataSource?: 'SYNTHETIC' | 'MT5';
+  /** True only for a proposal whose geometry is safe to execute against: real broker
+   * data AND canonical strategy governance (demo_authorized) both hold. Absent/false
+   * means research/observation only -- the frontend must not offer an Execute action. */
+  executionEligible?: boolean;
+  /** Machine-readable reason executionEligible is false, e.g. SYNTHETIC_MARKET_DATA or
+   * STRATEGY_NOT_DEMO_AUTHORIZED. Always present when executionEligible is false. */
+  executionBlockReason?: string;
 }
 
 export interface Position {

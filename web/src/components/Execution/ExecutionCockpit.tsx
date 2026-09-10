@@ -121,14 +121,23 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
     });
   }, [activePositions, searchQuery, sideFilter, pnlFilter]);
 
-  // New Order Form state
-  const [symbol, setSymbol] = useState<string>(selectedProposal?.symbol || 'EURUSD');
-  const [side, setSide] = useState<'BUY' | 'SELL'>(selectedProposal?.entrySide || 'BUY');
-  const [lots, setLots] = useState<number>(selectedProposal?.suggestedLots || 1.0);
-  const [entryPrice, setEntryPrice] = useState<number>(selectedProposal?.entryPrice || 1.08500);
-  const [stopLoss, setStopLoss] = useState<number>(selectedProposal?.stopLoss || 1.08300);
-  const [tp1, setTp1] = useState<number>(selectedProposal?.takeProfit1 || 1.08800);
-  const [tp2, setTp2] = useState<number>(selectedProposal?.takeProfit2 || 1.09200);
+  // New Order Form state.
+  //
+  // AG_SCANNER_SAFE_PROPOSAL_EXECUTION_REMEDIATION_V2 (Finding 3 / Invariant D): a
+  // scanner proposal built from synthetic candles must never silently seed the values
+  // this form sends to /api/execution/execute -- that would let stale/fake geometry
+  // reach a real MT5 order under manual (USER_EXPLICIT_ORDER) authority merely because
+  // the operator navigated here from the scanner. Only a non-synthetic proposal (none
+  // exist yet -- see repository task P2-P4) may pre-fill these fields; otherwise the
+  // operator must type every value themselves.
+  const isAuthoritativeProposal = !!selectedProposal && selectedProposal.marketDataSource !== 'SYNTHETIC';
+  const [symbol, setSymbol] = useState<string>(isAuthoritativeProposal ? selectedProposal!.symbol : 'EURUSD');
+  const [side, setSide] = useState<'BUY' | 'SELL'>(isAuthoritativeProposal ? (selectedProposal!.entrySide || 'BUY') : 'BUY');
+  const [lots, setLots] = useState<number>(isAuthoritativeProposal ? (selectedProposal!.suggestedLots || 1.0) : 1.0);
+  const [entryPrice, setEntryPrice] = useState<number>(isAuthoritativeProposal ? (selectedProposal!.entryPrice || 1.08500) : 1.08500);
+  const [stopLoss, setStopLoss] = useState<number>(isAuthoritativeProposal ? (selectedProposal!.stopLoss || 1.08300) : 1.08300);
+  const [tp1, setTp1] = useState<number>(isAuthoritativeProposal ? (selectedProposal!.takeProfit1 || 1.08800) : 1.08800);
+  const [tp2, setTp2] = useState<number>(isAuthoritativeProposal ? (selectedProposal!.takeProfit2 || 1.09200) : 1.09200);
 
   // Explicit confirmation modal gate
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
@@ -145,7 +154,7 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
     setExecuting(true);
     const success = await onExecuteTrade({
       symbol,
-      strategyId: selectedProposal?.strategyId || 'ST_ASIAN_SWEEP_5R_V1',
+      strategyId: isAuthoritativeProposal ? (selectedProposal!.strategyId || 'FRONTEND_MANUAL') : 'FRONTEND_MANUAL',
       side,
       lots,
       entryPrice,
@@ -257,6 +266,16 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
 
           {leftPanelMode === 'ORDER' ? (
             <>
+              {selectedProposal && selectedProposal.marketDataSource === 'SYNTHETIC' && (
+                <div className="p-2 bg-amber-950/40 border border-amber-800/80 rounded-lg flex items-start gap-2 text-xs font-mono text-amber-300">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <span>
+                    Scanner proposal for {selectedProposal.symbol} is NON_AUTHORITATIVE_ESTIMATE (synthetic market
+                    data, research only) and has NOT been used to fill this form. Enter every value yourself for a
+                    manual (user-directed) order.
+                  </span>
+                </div>
+              )}
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-mono flex items-center gap-2">
                   <Play className="w-3.5 h-3.5 text-emerald-400" />
