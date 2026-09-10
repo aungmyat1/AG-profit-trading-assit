@@ -15,9 +15,11 @@ produce four complementary decision products:
 
 The owner-directed product target is two daily FX session decision cycles for EURUSD,
 GBPUSD, USDJPY, and XAUUSD; scheduled crypto decisions for BTCUSDT and ETHUSDT; and a
-persistent Large-SMC watch. The immediate delivery stage uses current frozen strategy
-behavior to publish informational trade tickets. Strategy validation and candidate
-promotion follow as a separate next stage. See
+persistent Large-SMC watch. The master plan is capability-gated: real-market watch,
+canonical Python decisions, and immutable informational proposals come first; outcome
+and edge validation follow; scanner-driven Demo and controlled Live remain later,
+separately authorized gates. The current primary product target is the R2–R4 canonical
+scanner proposal pipeline, ending at an observation-only STOP boundary. See
 [`docs/PROJECT_ROADMAP.md`](docs/PROJECT_ROADMAP.md).
 
 For chart-led analysis, agent skills organize advisory evidence from higher timeframe

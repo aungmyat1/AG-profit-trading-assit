@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TradeProposal, DecisionState } from '../../types/trading';
+import { AG_UI_MODE, agApiClient, MarketDataCandlesResponse } from '../../utils/agApiClient';
 import {
   CheckCircle2,
   Clock,
@@ -30,6 +31,33 @@ export const SignalScanner: React.FC<ScannerProps> = ({
   onSelectSymbol,
   onExecuteProposal
 }) => {
+  // Roadmap R2 (AG_REAL_MARKET_WATCH_READY_V1): a purely informational, read-only real
+  // MT5 market-data strip per symbol. This intentionally does NOT feed the synthetic
+  // strategy evaluation above or change any proposal's marketDataSource/
+  // executionEligible -- those still come only from /api/proposals/scan (SYNTHETIC,
+  // never executable). This is real-data OBSERVATION only; canonical strategy/proposal
+  // integration on top of real data is a separate, later roadmap stage (R3/R4).
+  const [realMarketData, setRealMarketData] = useState<Record<string, MarketDataCandlesResponse | 'ERROR'>>({});
+
+  useEffect(() => {
+    if (AG_UI_MODE !== 'real') return;
+    let cancelled = false;
+    const symbols = Array.from(new Set(proposals.map(p => p.symbol)));
+    symbols.forEach(sym => {
+      agApiClient
+        .getMarketDataCandles(sym, 'M15', 3)
+        .then(res => {
+          if (!cancelled) setRealMarketData(prev => ({ ...prev, [sym]: res }));
+        })
+        .catch(() => {
+          if (!cancelled) setRealMarketData(prev => ({ ...prev, [sym]: 'ERROR' }));
+        });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [proposals]);
+
   const getStateBadge = (state: DecisionState, executionEligible?: boolean) => {
     switch (state) {
       case 'READY':
@@ -128,6 +156,26 @@ export const SignalScanner: React.FC<ScannerProps> = ({
                   </div>
                   {getStateBadge(prop.state, prop.executionEligible)}
                 </div>
+
+                {/* Real Market Watch (R2) -- informational only, never feeds the
+                    synthetic proposal above */}
+                {AG_UI_MODE === 'real' && (
+                  <div className="text-[10px] font-mono mb-2">
+                    {realMarketData[prop.symbol] === undefined && (
+                      <span className="text-slate-500">Real market watch: checking MT5...</span>
+                    )}
+                    {realMarketData[prop.symbol] === 'ERROR' && (
+                      <span className="text-rose-400">Real market watch: MT5 unavailable</span>
+                    )}
+                    {realMarketData[prop.symbol] && realMarketData[prop.symbol] !== 'ERROR' && (
+                      <span className="text-cyan-400">
+                        Real market watch: MT5 {(realMarketData[prop.symbol] as MarketDataCandlesResponse).environment} &bull;{' '}
+                        freshness {(realMarketData[prop.symbol] as MarketDataCandlesResponse).freshness} &bull; last closed{' '}
+                        {(realMarketData[prop.symbol] as MarketDataCandlesResponse).last_closed_candle_at}
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Regime & Session Range Metrics */}
                 <div className="grid grid-cols-2 gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 mb-3 text-xs font-mono">

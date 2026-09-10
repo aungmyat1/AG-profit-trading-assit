@@ -243,6 +243,60 @@ def test_broker_history_rejects_invalid_range(monkeypatch):
     assert response.json()["detail"]["reason_code"] == "days must be between 1 and 3650"
 
 
+def test_market_data_candles_returns_real_mt5_provenance(monkeypatch):
+    """Roadmap R2 (AG_REAL_MARKET_WATCH_READY_V1): the response must carry real MT5
+    provenance -- source, broker/environment, and per-candle OHLC/time -- never a
+    fixture shape indistinguishable from the frontend's SYNTHETIC scanner proposals."""
+    from api import app as app_module
+
+    monkeypatch.setattr(app_module.broker_service, "real_market_data", lambda **kwargs: {
+        "source": "MT5", "broker": "VantageMarkets-Demo", "environment": "DEMO",
+        "symbol": kwargs["symbol"], "timeframe": kwargs["timeframe"], "bar_count": 2,
+        "last_closed_candle_at": "2026-09-10T11:45:00+00:00", "freshness": "OK",
+        "candles": [
+            {"time": "2026-09-10T11:30:00+00:00", "open": 1.1, "high": 1.11, "low": 1.09, "close": 1.105, "volume": 120.0},
+            {"time": "2026-09-10T11:45:00+00:00", "open": 1.105, "high": 1.108, "low": 1.1, "close": 1.107, "volume": 98.0},
+        ],
+    })
+    response = TestClient(app).get("/api/market-data/candles?symbol=EURUSD&timeframe=M15&count=2")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["source"] == "MT5"
+    assert body["environment"] == "DEMO"
+    assert body["symbol"] == "EURUSD"
+    assert body["bar_count"] == 2
+    assert len(body["candles"]) == 2
+
+
+def test_market_data_candles_rejects_invalid_count(monkeypatch):
+    from api import app as app_module
+
+    def invalid(**_kwargs):
+        raise ValueError("count must be between 1 and 500")
+
+    monkeypatch.setattr(app_module.broker_service, "real_market_data", invalid)
+    response = TestClient(app).get("/api/market-data/candles?symbol=EURUSD&count=0")
+    assert response.status_code == 400
+    assert response.json()["detail"]["reason_code"] == "count must be between 1 and 500"
+
+
+def test_market_data_candles_fails_closed_never_synthesizes_on_mt5_failure(monkeypatch):
+    """Invariant D: if real MT5 data is unavailable, this route must fail closed with a
+    reason_code -- never fabricate/substitute candles so the caller could mistake a
+    synthetic result for real MT5 data."""
+    from api import app as app_module
+    from mt5.market_data import MarketDataError
+
+    def failing(**_kwargs):
+        raise MarketDataError("DATA_MISSING", "EURUSD M15: no data")
+
+    monkeypatch.setattr(app_module.broker_service, "real_market_data", failing)
+    response = TestClient(app).get("/api/market-data/candles?symbol=EURUSD&timeframe=M15&count=100")
+    assert response.status_code == 502
+    assert response.json()["detail"]["reason_code"] == "DATA_MISSING"
+    assert "candles" not in response.json()
+
+
 def test_list_strategies_reads_real_registry():
     """No monkeypatch: proves this reads the real strategies/registry.yaml, same file
     the authorization path already consults."""

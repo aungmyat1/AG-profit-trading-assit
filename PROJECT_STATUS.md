@@ -51,7 +51,47 @@ user-interface safety correction only: it adds no strategy, Demo, LIVE, or trade
 management authorization. See
 `docs/status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`.
 
-## Owner-directed profit-seeking objective and roadmap (regenerated 2026-09-07)
+## Master capability-gated readiness plan (owner adopted 2026-09-10)
+
+The owner adopted `AG Profit Trading — Master Project Readiness Plan V3` as the
+authoritative roadmap. Readiness is now tracked through independent capability gates:
+R0 Safe Foundation, R1 Research Watch, R2 Real Market Watch, R3 Canonical Strategy, R4
+Canonical Proposal, R5 Edge Validation Ready, R6 Edge Validated, R7 Demo Execution
+Ready, R8 Demo Auto-Execution Validated, and R9 Controlled Live.
+
+Current classification: R0 `READY`; R1 `READY / RESEARCH_ONLY`; R2 `PARTIAL`; R3
+`PARTIAL`; R4 `NOT_READY` and the primary product target; R5 `PARTIAL`; R6
+`INCOMPLETE`; R7–R9 `BLOCKED`. R2 is partial because Vantage Demo MT5 read-only
+connectivity and closed M15 candles are verified for the current EURUSD/GBPUSD backend
+path, while the guarded end-to-end scanner/watch path is not yet proven. Existing
+execution infrastructure and separately authorized strategy paths do not advance
+scanner-driven execution readiness.
+
+The current engineering program is `AG_CANONICAL_SCANNER_PROPOSAL_PIPELINE_V1`: R2
+real-market data and fail-closed guards → R3 canonical Python decisions and
+renderer-only UI → R4 immutable persistent proposals, API, scanner integration,
+focused tests, and natural read-only end-to-end proof → **STOP**. R4 proposals must
+carry `execution_eligible=false` and `execution_authority=NONE`. Edge validation
+follows proposal operation; scanner-driven Demo execution follows a strategy-specific
+validated edge and separate authorization; Live remains separately blocked. This is a
+planning/governance change only: no strategy, registry, risk, account, or execution
+configuration changed.
+
+The authoritative master plan is `docs/PROJECT_ROADMAP.md`. The existing
+`docs/plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md` is retained as supporting
+R4 delivery work, not the master milestone. Earlier roadmap text below remains dated
+historical context where it conflicts with this 2026-09-10 owner direction.
+
+The owner-approved hardening amendment on 2026-09-10 added six explicit contracts:
+end-to-end `REAL`/`REPLAY`/`SYNTHETIC` market-data provenance; distinct
+`StrategyDecision.READY` and `Proposal.ACTIVE` states; a non-economic Proposal
+Formation Gate; deterministic occurrence identity; freshness independent from proposal
+expiry; and separate Demo eligibility, authorization, and execution gates. It also
+decomposed the current program into WP0–WP12 and added Proposal Integrity Rate as the
+primary R4 quality KPI. These are roadmap requirements only; schemas and thresholds
+remain to be frozen during implementation, and no runtime or trading authority changed.
+
+## Historical owner-directed profit-seeking objective (regenerated 2026-09-07; superseded as master ordering)
 
 The current product objective is proposal-first trade assistance:
 
@@ -82,16 +122,12 @@ confirmation evidence, but only the matched strategy engine can emit `READY` or 
 `TradeSignal`. If no signed strategy matches, the required result is
 `NO_REGISTERED_STRATEGY_MATCH`; rules must not be borrowed from another strategy.
 
-The authoritative profit-seeking roadmap and backlog are in
-`docs/PROJECT_ROADMAP.md`; the current milestone plan is
+At the time of this 2026-09-07 plan, the milestone was
 `docs/plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`. Two installed FX
-scheduler tasks were read-only verified by the 2026-09-07 readiness audit as enabled
-and successfully fired. Scheduling is implemented; overlap, restart, and missed-run
-recovery remain unverified. Local ticket persistence exists; the current delivery
-blocker is specifically external message delivery on `main`. Earlier CORE-D1..D7 and
-qualification-first roadmap text
-below is retained as dated historical planning context where it conflicts with this
-newer owner direction.
+scheduler tasks had been read-only verified as enabled and successfully fired, while
+overlap, restart, and missed-run recovery were then unverified and external message
+delivery was the stated blocker. These claims are preserved as dated historical
+context; the rolling 2026-09-10 classification and `docs/PROJECT_ROADMAP.md` now govern.
 
 The owner-directed commercialization choices and end-to-end delivery/evidence plan are
 recorded in

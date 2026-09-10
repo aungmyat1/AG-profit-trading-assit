@@ -1,317 +1,504 @@
-# AG Profit Trading — Profit-Seeking Product Roadmap
+# AG Profit Trading — Master Project Readiness Plan V3
 
-Status: **OWNER-DIRECTED, REGENERATED 2026-09-07**
+Status: **AUTHORITATIVE MASTER PLAN — APPROVED WITH HARDENING 2026-09-10**
 
-Planning baseline: `main` @ `b89eddbc30d5c6c5d48f203f8d5e48e065a18fbd`
+This is the project's authoritative readiness progression. It supersedes the prior
+delivery-stage ordering. Historical plans remain evidence of earlier decisions, but
+this capability-gate sequence governs new implementation work.
 
-This roadmap converts the project objective into an ordered product and evidence plan.
-It does not authorize broker execution, change a frozen strategy, or claim that any
-current strategy is profitable. Strategy YAML owns signal behavior; the registry owns
-execution authority; immutable evidence owns performance claims.
+This plan does not authorize broker execution, alter a frozen strategy, promote a
+candidate, or claim profitability. Strategy YAML owns signal behavior; the strategy
+engine owns decisions; the proposal ledger owns proposal identity; validation evidence
+owns performance claims; the registry owns strategy authorization; and the execution
+gateway owns broker mutation.
 
-## Owner-directed delivery-to-validation sequence (2026-09-09)
+## Readiness questions
 
-The governing sequence is:
+Project readiness is evaluated through five independent questions:
+
+1. Can the system safely **WATCH**?
+2. Can it produce **TRUSTWORTHY PROPOSALS**?
+3. Does the strategy have a **VALIDATED EDGE**?
+4. Can it **EXECUTE SAFELY**?
+5. Has execution **PRESERVED THE EDGE**?
+
+## North-star progression
 
 ```text
-safety and measurement contracts
-  -> canonical proposal contract
-  -> exactly-once proposal delivery
-  -> persistent opportunity/watch system
-  -> outcome and cost resolution
-  -> formal strategy validation
-  -> promotion decision
-  -> optional funding or commercial release
+PRESET STRATEGIES → WATCH REAL MARKETS → DETECT QUALIFIED SETUPS
+                  → GENERATE CANONICAL PROPOSALS → COLLECT OUTCOME EVIDENCE
+                  → VALIDATE ECONOMIC EDGE → DEMO AUTO-EXECUTION
+                  → VALIDATE BROKER EXECUTION → SMALL LIVE → CONTROLLED SCALING
 ```
 
-Formal strategy validation starts after the relevant strategy's proposal and watch
-system is operationally proven. “Operationally proven” means deterministic state,
-archive-before-delivery, identity/deduplication, restart recovery, complete evidence
-capture, and execution isolation have passed their acceptance tests. It does not mean
-the strategy is profitable or authorized for Demo/LIVE execution.
+The current engineering program is
+`AG_CANONICAL_SCANNER_PROPOSAL_PIPELINE_V1`: R2 Real Market Watch → R3 Canonical
+Strategy → R4 Canonical Proposal → scanner integration → automated tests → natural
+end-to-end proof → **STOP**.
 
-The handoff is per validation cohort: EURUSD/GBPUSD may enter validation after their
-proposal-delivery and FX watcher gates pass without waiting for unsigned USDJPY,
-XAUUSD, or ETHUSDT candidates. BTCUSDT may enter its separate validation cohort after
-its proposal/watch path passes. New candidate instruments require their own contracts
-and may not inherit another cohort's evidence or validation result.
+## One authority per layer
 
-Evidence capture begins as soon as a valid proposal/watch pipeline is active so no
-eligible observation is discarded. Formal performance classification remains
-`NOT_EVALUATED` until the setup gate, outcome/cost contract, prospective thresholds,
-and required sample are complete.
+```text
+MARKET TRUTH       Broker / authoritative market feed
+        ↓
+STRATEGY TRUTH     Canonical Python strategy engine
+        ↓
+PROPOSAL TRUTH     Persistent proposal ledger
+        ↓
+EVIDENCE TRUTH     Canonical outcome and evidence layer
+        ↓
+GOVERNANCE TRUTH   Lifecycle, validation, and authorization gates
+        ↓
+EXECUTION TRUTH    Fresh broker state and execution gateway
+```
 
-## Objective
+AI and advisory skills sit beside this chain. They may diagnose, explain, compare,
+recommend, and propose experiments. They are not an alternative source of market,
+strategy, proposal, governance, or execution truth.
 
-Build a deterministic trade assistant that:
+## Current readiness matrix
 
-1. publishes informational FX tickets after the Asian and London sessions for
-   EURUSD, GBPUSD, USDJPY, and XAUUSD;
-2. publishes preset-time crypto tickets for BTCUSDT and ETHUSDT;
-3. watches an approved Large-SMC universe, exposes funnel status, and alerts on entry
-   confirmation;
-4. assists the owner during chart-led top-down analysis by coordinating the relevant
-   market-structure, supply/demand, liquidity, and entry-confirmation skills, resolving
-   any matching registered strategy, and tracking confirmation from higher-timeframe
-   context into the strategy's related lower timeframe;
-5. measures resolved outcomes after costs and promotes only strategies with credible
-   positive out-of-sample evidence;
-6. preserves `WATCH`, `NO_TRADE`, `DATA_ERROR`, `EXPIRED`, and `BLOCKED` as valid
-   products rather than forcing activity.
-
-The commercial product is dependable decision delivery. The profit-seeking objective
-is to identify and scale positive net expectancy while controlling drawdown and
-execution risk. More tickets, indicators, or wins are not substitutes for positive
-net expectancy.
-
-## Current baseline
-
-| Area | Verified current state | Gap |
+| Capability | Current classification | Target gate |
 |---|---|---|
-| FX strategy | EURUSD/GBPUSD decisions and READY rendering work for both cycles | USDJPY/XAUUSD not operationally contracted |
-| FX scheduling | Two Windows tasks installed, enabled, and successfully fired on 2026-09-07 | restart, overlap, and missed-run recovery unverified |
-| Ticket storage | decision/proposal journals and local reports exist | per-cycle immediate archive contract incomplete |
-| External delivery | no transport on `main` | message-only delivery required |
-| BTC | scheduled BTCUSDT production-data decision path | no delivered normalized ticket; evidence 0/30 |
-| ETH | declared in strategy profile | feed/report/ticket path absent |
-| Large-SMC | EURUSD research engine, batch watcher, version-safe ledger, funnel calculator | no live forward run, scheduler, alert delivery, or outcome resolver |
-| Performance | normalized gross/net model and adapters committed | drawdown defect; timestamp-order ambiguity; costs/OOS incomplete |
-| Demo execution | separate `SESSION_TRADE_V1` Asian→London path is authorized | reconciliation lookup fails open; recovery safety unreliable |
-| Live execution | unauthorized | intentionally out of scope |
+| Safety containment | `READY` | Maintain R0 |
+| Synthetic research scanner | `READY / RESEARCH_ONLY` | Maintain R1 |
+| Real-market watch | `PARTIAL` | R2 |
+| Canonical Python decisions | `PARTIAL` | R3 |
+| Canonical proposals | `NOT_READY` | R4 primary target |
+| Proposal persistence and scanner consumption | `NOT_READY` | R4 primary target |
+| Proposal outcome evidence | `PARTIAL` | R5 |
+| Edge validation | `INCOMPLETE` | R5–R6 |
+| Scanner-driven Demo execution | `BLOCKED` | R7 |
+| Demo auto-execution validation | `BLOCKED` | R8 |
+| Controlled Live | `BLOCKED` | R9 |
 
-## Contracts to freeze first
+`PARTIAL` real-market watch means the backend has read-only MT5 connectivity and
+closed-candle evidence for the current FX path, but the canonical guarded end-to-end
+scanner/watch pipeline has not passed R2. Existing execution infrastructure or a
+separately authorized strategy path does not advance scanner-driven execution.
 
-### Logical ticket identity
+## R0 — Safe Foundation
 
-One market occurrence produces one logical ticket. `proposal_id` is the current
-canonical equivalent and may remain the identifier unless cross-strategy normalization
-requires a separate `ticket_id`.
+Objective: prevent research or display functionality from acquiring trading authority.
 
-```text
-strategy occurrence -> logical ticket -> archive -> delivery attempt(s)
-```
-
-A scheduler rerun resolves to the same ticket. A delivery timeout may create a new
-`delivery_attempt_id`, but never a new ticket. Exactly-once means one logical ticket
-and one durable delivered-state transition; an external network call may be retried
-idempotently.
-
-### Ticket content
-
-Only `READY` receives a complete informational ticket. It contains only strategy-owned
-values: strategy/version, instrument, cycle, direction, entry, stop, targets,
-expiry/invalidation, signed risk data, reason codes, venue/freshness, and proposal
-identity. It must display `INFORMATIONAL PROPOSAL — NOT A BROKER ORDER`.
-
-Missing strategy-owned data stays missing or causes `BLOCKED`; the ticket layer never
-invents it.
-
-### Interactive top-down analysis
-
-When the owner analyzes a chart from higher to lower timeframe, the assistant should:
-
-1. establish higher-timeframe regime, structure, dealing range, and directional
-   context;
-2. map relevant supply/demand and liquidity areas without inventing levels;
-3. search the strategy registry for a strategy whose signed universe, timeframe chain,
-   session, and setup contract match the observed context;
-4. report `NO_REGISTERED_STRATEGY_MATCH` when none applies rather than borrowing rules;
-5. run the matched deterministic strategy and preserve its decision as the authority;
-6. monitor the strategy-defined crossover from context timeframe to entry timeframe,
-   using closed-candle evidence for structure shift, liquidity reclaim, displacement,
-   rejection, or the strategy's own confirmation model;
-7. distinguish advisory confirmation (`CONFIRMED`, `PARTIAL`, `NOT_CONFIRMED`, or
-   `INDETERMINATE`) from a strategy `TradeSignal`;
-8. produce a ticket only when the registered strategy itself reaches `READY`.
-
-The agent skill set organizes and explains evidence; it does not create an independent
-signal, silently select an unsigned threshold, or override `WATCH`/`NO_TRADE`.
-
-### Profit measurement
+Current classification: **READY / maintain**.
 
 ```text
-net out-of-sample expectancy
-  -> drawdown and tail loss
-  -> robustness across time/symbol/session/regime
-  -> capacity and operational reliability
-  -> gross metrics for diagnosis only
+synthetic scanner → SYNTHETIC / OBSERVATION ONLY
+                  → executionEligible = false → STOP
+
+explicit owner order → USER_EXPLICIT_ORDER → existing guards → Demo gateway
 ```
 
-Performance must reconcile to immutable proposal/outcome/fill evidence and itemized
-spread, commission, slippage, and funding where applicable. Metrics remain
-`NOT_EVALUATED` when required inputs are absent.
-
-## Roadmap
-
-### Stage 0 — Safety and measurement hygiene
-
-Run alongside ticket work without expanding into execution development.
-
-1. Fix the performance drawdown baseline so the equity curve starts at zero; add the
-   real 13-loss regression case.
-2. Decide and test the canonical ordering for missing resolution timestamps.
-3. Change broker reconciliation failure from “not found” to a fail-closed result.
-   Until fixed, do not rely on crash recovery for the separately authorized
-   `SESSION_TRADE_V1` Demo path.
-4. Do not rewrite historical outcomes or strategy versions.
-
-Exit: metrics obey a frozen calculation contract and broker lookup failure cannot
-trigger a replacement order.
-
-### Stage 1 — Exactly-once FX ticket product
-
-Scope: current `ST_ASIAN_SWEEP_5R_V1` behavior, EURUSD/GBPUSD, both cycles.
-
-1. Freeze logical-ticket and delivery-attempt identity.
-2. Persist and archive each cycle result immediately after its checkpoint.
-3. Verify overlapping scheduler invocations, restart recovery, and missed-run catch-up.
-4. Reuse only the message/formatting portion of the paused Telegram branch after a
-   secret, authorization, logging, and payload audit.
-5. Add a delivery journal with retry state and durable deduplication.
-6. Notify on new READY tickets and actionable operational failures; retain quiet local
-   summaries for WATCH/NO_TRADE.
-7. Exclude approval buttons, broker callbacks, and execution wiring.
-
-Exit: one archived decision per symbol/cycle/date; one logical ticket per READY
-occurrence; retries preserve identity; restart/overlap creates no duplicate; real
-external delivery is verified without an order path.
-
-### Stage 2 — Coverage expansion
-
-For FX, create a new candidate version for USDJPY and XAUUSD. Freeze per-symbol
-pip/tick conventions, aliases, sessions, spread filters, range limits, stop geometry,
-sizing inputs, and data-quality requirements. Do not copy EURUSD constants.
-
-For crypto, preserve BTCUSDT semantics while generalizing the feed/report/ticket
-boundary for ETHUSDT. Freeze venue, contract type, metadata, UTC observation period,
-preset publication time, complete-candle checks, and cost fields.
-
-Exit: all six target instruments produce deterministic archived decisions and
-normalized informational tickets when READY; execution remains disabled.
-
-### Stage 3 — Large-SMC operational funnel
-
-1. Run one controlled read-only EURUSD live batch to establish first forward evidence.
-2. Install a watcher schedule only after batch output and version identity pass.
-3. Persist material transitions: context candidate, E-qualified, M-engaged,
-   entry-eligible, READY, invalidated, and expired.
-4. Add restart-safe transition delivery and exactly-once confirmation alerts.
-5. Keep EURUSD-only authority until a candidate expansion is signed.
-6. Keep `ST_LARGE_SMC_V1` `RESEARCH_ONLY`; funnel alerts are not trade authority.
-
-Exit: every watched instrument exposes a current explainable state; each transition is
-durable; each new confirmation emits one informational alert.
-
-### Stage 3A — Interactive chart-assistance workflow
-
-1. Define a normalized top-down analysis request: symbol, current chart timeframe,
-   analysis time, candidate direction if any, and optional named strategy.
-2. Route the request through structure → supply/demand → liquidity → entry-confirmation
-   skills, reusing each layer's output rather than re-detecting it downstream.
-3. Resolve related registered strategies by signed symbol, session, setup, and
-   timeframe-chain compatibility; never match by a strategy name alone.
-4. Present a single traceable report containing HTF thesis, zones/liquidity, matched
-   strategy status, next lower-timeframe confirmation required, invalidation, and
-   current decision state.
-5. Persist a watch candidate only when the relevant strategy contract permits it, then
-   update it on newly closed bars until confirmed, invalidated, or expired.
-6. Hand a strategy-produced READY result to the same canonical ticket pipeline used by
-   scheduled decisions.
-
-Exit: a user can begin from a chart, receive a deterministic multi-timeframe evidence
-chain, see whether a registered strategy applies, and be assisted through entry
-confirmation without the advisory skills being presented as signal authority.
-
-### Stage 4 — Outcome resolution and strategy validation
-
-Entry gate: the strategy cohort's canonical proposal path and persistent watch system
-have passed their reliability, recovery, evidence-integrity, and execution-isolation
-acceptance criteria. Outcome and cost contracts and prospective promotion thresholds
-must be frozen before formal results are reviewed.
+Recorded invariant:
 
 ```text
-proposal -> entry evidence -> SL/target/expiry outcome -> gross R
-         -> costs -> net R -> portfolio equity
+scanner_ui_containment = PASS
+synthetic_scanner_execution_via_supported_path = NO
+server_side_synthetic_proposal_execution_invariant = NOT_YET_APPLICABLE
+reason = no scanner proposal execution endpoint exists
 ```
 
-1. Sign outcome-resolution contracts separately for FX, crypto, and Large-SMC.
-2. Preserve ambiguous sequences as unresolved; never choose the favorable path.
-3. Reconcile periodic equity with trade/fill ledgers.
-4. Separate development, validation, and untouched out-of-sample periods.
-5. Report net expectancy first, then gross expectancy, payoff, hit rate, profit factor,
-   drawdown/duration, loss streaks, exposure, turnover, holding time, and costs.
-6. Attribute by version, instrument, cycle, direction, regime, and setup family.
-7. Quantify uncertainty when sample size permits; do not annualize short or overlapping
-   samples without warnings.
-8. Run walk-forward, parameter perturbation, cost/slippage stress, and regime tests.
+Existing execution-gateway regressions do not prove scanner market-data, proposal, or
+authority behavior. Record those test surfaces separately.
 
-Promotion gates must be owner-signed before evaluation. At minimum they require:
+Exit: safety boundaries remain fail-closed and independently tested.
 
-- positive **net** out-of-sample expectancy;
-- drawdown and loss streaks within an explicit capital budget;
-- no excessive dependence on one symbol, session, or regime;
-- survival under conservative costs and plausible slippage;
-- stable behavior across validation windows;
-- sufficient independent observations for the strategy frequency;
-- zero unresolved safety or evidence-integrity blockers.
+## R1 — Research Watch Ready
 
-Exact numeric thresholds remain `UNSIGNED`; they must not be tuned after seeing the
-validation result.
+Objective: safely observe strategy and UI behavior using synthetic, replay, or forward
+research data.
 
-Exit: each strategy receives `PASS`, `FAIL`, or `INSUFFICIENT_EVIDENCE`. Only `PASS`
-may be considered for Demo eligibility; it does not grant Demo authorization.
+```text
+research data → strategy research → candidate / READY / NO_TRADE → display → STOP
+```
 
-### Stage 5 — Portfolio selection and risk budgeting
+Current classification: **READY — `SCANNER_SAFE_FOR_RESEARCH_ONLY`**.
 
-Only strategies passing Stage 4 enter portfolio research.
+This supports development, visualization, UI work, and research. Synthetic output is
+never trading truth and never replaces unavailable broker data in a real-market mode.
 
-1. Rank by conservative net expectancy and drawdown, not READY count or win rate.
-2. Measure cross-strategy correlation, clustered losses, session overlap, and shared
-   USD/crypto exposure.
-3. Allocate a small explicit risk budget per strategy and a portfolio loss ceiling.
-4. Reject edges that disappear after costs, concentration, capacity, or execution
-   assumptions.
-5. Define pause/retire rules for degradation before assigning capital.
+## R2 — Real Market Watch Ready
 
-Exit: a versioned portfolio candidate with explicit risk limits and independent
-evidence.
+Objective: make actual broker market data the scanner/watch source of market truth.
 
-### Stage 6 — Optional controlled Demo program
+```text
+Vantage Demo MT5 → real closed candles → canonical timestamps
+                 → validated symbols → strategy engine
+```
 
-Demo eligibility, Demo authorization, and live authorization remain separate. After
-Stage 0 safety closure and Stage 4/5 passage: mocked end-to-end validation, broker
-`order_check`, one minimum-size Demo order, reconciliation, restart testing, then a
-larger Demo observation program. Live trading remains outside this roadmap unless
-separately authorized.
+Required gates:
 
-## Priority backlog
+- MT5 connection and correct Demo account.
+- Explicit symbol resolution and feed validation for each in-scope instrument.
+- M15 closed candles, plus M1 execution/context data only where a signed contract
+  requires it.
+- UTC normalization and decision-time/as-of-time separation.
+- stale-data, missing-data, duplicate-bar, and incomplete-bar protection.
+- fail-closed `DATA_UNAVAILABLE`; never substitute synthetic candles and report READY.
+- FX and crypto feed gates recorded independently.
+- An explicit `market_data_mode` enum (`REAL`, `REPLAY`, or `SYNTHETIC`) originating at
+  `MarketSnapshot` and propagated unchanged through `StrategyDecision`, `Proposal`,
+  `EvidenceEnvelope`, API, and UI. R2 can pass only with `market_data_mode=REAL`.
 
-| Priority | Work item | Profit role | Gate |
-|---|---|---|---|
-| P0 | Exactly-once FX archive/recovery | captures every current opportunity reliably | Stage 1 acceptance |
-| P0 | External message-only delivery | makes decisions actionable to the human | real delivery, no execution path |
-| P0-Safety | Fail-closed broker reconciliation | prevents duplicate Demo orders | before trusted Demo use |
-| P1 | USDJPY/XAUUSD contracts and tickets | expands opportunity set safely | candidate contract + shadow evidence |
-| P1 | ETHUSDT feed/decision/ticket | adds second crypto stream | production data-quality proof |
-| P1 | Large-SMC forward funnel and alerts | captures selective asymmetric candidates | durable transition evidence |
-| P1 | Interactive top-down analysis workflow | converts chart context into a traceable strategy/confirmation watch | strategy match + closed-bar confirmation evidence |
-| P1-Validation | Outcome resolvers and net metrics | determines economic value | reconciled immutable outcomes |
-| P2 | Robustness and portfolio selection | reduces overfit and concentration | signed promotion/risk gates |
-| Deferred | Demo/live execution expansion | monetizes only validated edge | separate authorization |
+Mixing modes within one decision/proposal/evidence chain is invalid and must fail
+closed. Replay and synthetic objects remain valid research inputs under R1, but they
+cannot be relabeled or silently promoted to real-market truth downstream.
 
-## Stop conditions
+Current classification: **PARTIAL**. Read-only MT5 connectivity and closed M15 candles
+are verified for the current EURUSD/GBPUSD backend path. End-to-end scanner/watch
+integration, all required guards, and separately-authorized crypto market truth remain
+to be proven.
 
-- Stop product expansion if ticket identity, freshness, or evidence integrity is
-  unreliable.
-- Stop promotion on non-positive net OOS expectancy, unacceptable drawdown, cost
-  fragility, concentration, or insufficient evidence.
-- Stop adding analytical concepts when the bottleneck is delivery or outcomes.
-- Never delete losses, alter frozen attribution, or optimize gates after results.
+Exit milestone: `AG_REAL_MARKET_WATCH_READY_V1`.
 
-## Immediate next milestone
+## R3 — Canonical Strategy Ready
 
-`AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1`
+Objective: make the deterministic Python strategy engine the only strategy authority;
+the frontend becomes a renderer.
 
-It is limited to EURUSD/GBPUSD, the two current FX cycles, current strategy outputs,
-per-cycle archive, recovery, and message-only delivery. See
-`plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`.
+```text
+MT5 → canonical Python strategy engine → StrategyDecision → UI
+```
+
+The UI displays `READY`, `WATCH`, `NO_TRADE`, and fail-closed states exactly as the
+backend returns them. It never implements an approximate strategy or independently
+upgrades `CANDIDATE` to `READY`.
+
+Required decision contract:
+
+```text
+strategy_id, strategy_version
+symbol, timeframe, session
+evaluated_at, market_data_asof
+state: WATCHING | CANDIDATE | QUALIFYING | READY | NO_TRADE | INVALIDATED | DATA_ERROR
+direction, entry, stop_loss, targets
+setup_reason, confirmation, invalidation
+config_hash, code_identity, market_data_fingerprint
+```
+
+Only strategy-owned fields may be populated. Missing required strategy geometry blocks
+the proposal; the UI or proposal layer does not invent it.
+
+Exit milestone: `AG_CANONICAL_STRATEGY_RUNTIME_READY_V1`.
+
+## R4 — Canonical Proposal Ready — Primary Product Target
+
+Objective: convert each real canonical `READY` decision into an immutable,
+non-executable proposal and expose it consistently through persistence, API, and UI.
+
+```text
+authoritative feed → canonical strategy → canonical proposal service
+                   → persistent proposal ledger → scanner/dashboard
+                   → OBSERVATION ONLY
+```
+
+Required proposal contract:
+
+```text
+proposal_id
+proposal_occurrence_key
+strategy_id, strategy_version
+symbol, direction, timeframe, session
+decision_bar_close, setup_identity
+entry, stop_loss, take_profit[]
+risk_R, reward_R
+ready_at, created_at, expires_at
+market_data_source, market_data_asof, market_data_fingerprint
+market_data_mode
+config_hash, git_commit, engine_release
+strategy_decision_state, proposal_state, freshness_status, edge_status
+execution_eligible = false
+execution_authority = NONE
+```
+
+Proposal geometry comes only from the canonical backend. The browser cannot create a
+proposal from a frontend-only object or become authoritative for trade geometry.
+
+### Proposal Formation Gate
+
+A canonical `StrategyDecision.READY` is necessary but not sufficient to create a
+proposal. A non-economic formation gate must verify:
+
+```text
+strategy identity and version known       PASS
+market_data_mode = REAL                    PASS
+market fingerprint and as-of time present PASS
+entry, stop, and targets present           PASS
+risk geometry valid                        PASS
+underlying data not stale                  PASS
+decision not expired                       PASS
+```
+
+Only a complete event becomes `Proposal.ACTIVE`. A failure produces a durable,
+reason-coded `PROPOSAL_REJECTED`; it never causes the proposal layer or frontend to
+guess missing values. This gate establishes technical representability only. It does
+not assess profitability or grant execution eligibility.
+
+### Proposal identity and lifecycle
+
+One strategy occurrence creates one logical `proposal_id`. Reruns and delivery retries
+preserve that identity. The stable idempotency input is:
+
+```text
+proposal_occurrence_key = hash(
+    strategy_id
+    + strategy_version
+    + symbol
+    + session
+    + decision_bar_close
+    + setup_identity
+)
+```
+
+The hash encoding, normalization, and algorithm must be versioned before
+implementation. The same occurrence key resolves to the same proposal ID across
+scheduler overlap, restart, repeated bar evaluation, duplicate API calls, and delivery
+retries; a different market occurrence resolves to a new proposal ID.
+
+```text
+              ┌──→ INVALIDATED
+              │
+CREATED → ACTIVE ──→ EXPIRED
+              │
+              └──→ RESOLVED
+```
+
+`READY` is exclusively a strategy-decision state; `ACTIVE` is the initial usable
+proposal state. Execution states (`AUTHORIZED`, `EXECUTED`) are not part of R4. Reload
+must return the same strategy identity, original geometry, timestamps, occurrence key,
+market fingerprint, data mode, freshness, and lifecycle state.
+
+Proposal lifecycle and market freshness are independent:
+
+```text
+proposal_state   = ACTIVE | INVALIDATED | EXPIRED | RESOLVED
+freshness_status = FRESH | STALE | EXPIRED
+```
+
+An `ACTIVE` proposal may become `STALE` before its strategy-defined expiry. Freshness
+is informational in R4 and must be preserved for R7 fresh-price revalidation; it does
+not silently rewrite proposal lifecycle.
+
+### R4 acceptance proof
+
+Automated tests are necessary but not sufficient. Approval requires a natural,
+end-to-end, read-only proof in the intended environment:
+
+- A real EURUSD or GBPUSD closed-bar evaluation reaches `READY`, creates one persistent
+  proposal, is returned by the API, and is rendered **OBSERVATION ONLY**, with source,
+  as-of time, strategy, and proposal identity visible and execution blocked.
+- A real `NO_TRADE` evaluation renders `NO_TRADE` and creates no frontend proposal.
+- Reload, rerun, overlap, and restart preserve identity without duplication.
+- Zero broker order is submitted.
+
+Exit milestones: `AG_CANONICAL_SCANNER_PROPOSAL_PIPELINE_V1` and
+`AG_PROPOSAL_OPERATION_READY_V1`.
+
+**STOP #1:** operate the proposal system and collect evidence. Canonical proposals do
+not authorize or trigger scanner execution.
+
+## R5 — Edge Validation Ready
+
+Objective: turn canonical proposals into complete, immutable economic evidence.
+
+```text
+proposal → outcome resolver → canonical trade export
+         → evidence envelope → validation gates → economic gates
+```
+
+Required dimensions include sample completeness, data integrity, no-lookahead checks,
+spread, slippage, commission, net expectancy in R, profit factor, maximum drawdown,
+average/median R, and performance by session, symbol, setup, and regime. Validation
+includes untouched out-of-sample data, walk-forward stability, and friction stress.
+
+`EVIDENCE_COMPLETE` is not `ECONOMIC_GATE_PASS`. A completely measured losing strategy
+is not a validated edge. Thresholds must be owner-signed prospectively and may not be
+tuned after reviewing the result.
+
+Exit: each strategy cohort receives `PASS`, `FAIL`, or `INSUFFICIENT_EVIDENCE` under a
+versioned validation contract.
+
+## R6 — Edge Validated
+
+Objective: establish strategy-version-specific economic eligibility without granting
+execution authority.
+
+```text
+implementation = READY
+watch = READY
+proposal = READY
+evidence = COMPLETE
+economic_edge = VALIDATED
+demo_execution = BLOCKED
+live_execution = BLOCKED
+```
+
+Validation agents may diagnose, compare, identify failure modes, propose experiments,
+and report. They may not promote a strategy, change thresholds, set Demo authorization,
+or waive failed evidence. Registry and governance records remain authoritative.
+
+**STOP #2:** edge validation permits work on Demo execution; it does not authorize
+Demo or Live trading.
+
+## R7 — Demo Execution Ready
+
+Objective: implement scanner-driven Demo execution only for a strategy that has passed
+the preceding gates and received separate authorization.
+
+Three distinct gates must pass in order:
+
+```text
+DEMO_ELIGIBILITY_GATE
+  economic edge and prerequisite evidence permit Demo consideration
+        ↓
+DEMO_AUTHORIZATION_GATE
+  owner/governance explicitly authorizes this strategy/version/scope
+        ↓
+DEMO_EXECUTION_GATE
+  scanner execution infrastructure is verified safe and operational
+```
+
+`economic_edge=VALIDATED`, `demo_eligible=true`, and `demo_authorized=false` is a valid
+state. Capability availability never supplies eligibility or authorization.
+
+```text
+proposal_id → server-side proposal resolution → lifecycle validation
+            → strategy governance → edge eligibility → owner authorization
+            → fresh-price revalidation → risk gate
+            → MT5 order_check → MT5 order_send
+```
+
+The client supplies an identifier and fresh owner confirmation, not authoritative
+entry, stop, target, volume, or strategy fields. **The client is never execution
+geometry authority.** Existing explicit/manual execution paths remain independently
+gated and do not prove this stage.
+
+Exit: fail-closed, identifier-based, separately authorized Demo execution with
+recovery, reconciliation, and duplicate protection.
+
+## R8 — Demo Auto-Execution Validated
+
+Objective: prove that the validated theoretical edge survives real Demo execution.
+
+Reconcile proposal entry with actual fill, spread, slippage, latency, commission,
+realized R, missed trades, rejection rates, restart recovery, and operational
+reliability. Passing `order_send()` alone is insufficient.
+
+Exit: Demo expectancy after actual execution costs passes signed gates.
+
+**STOP #3:** successful Demo automation permits evaluation for small Live. It does not
+grant Live authorization.
+
+## R9 — Controlled Live
+
+Objective: introduce small capital only after R8, under independently recorded Live
+authorization.
+
+Required controls include per-trade and portfolio risk ceilings, daily loss and
+position limits, a kill switch, owner-controlled authorization, broker reconciliation,
+and staged capital scaling. Performance, not infrastructure availability, determines
+whether capital may scale.
+
+## Strategy readiness is independent
+
+Project capability and strategy readiness must not be conflated. Maintain these fields
+for every strategy version:
+
+```yaml
+strategy_readiness:
+  implementation:
+    status: READY | PARTIAL | BLOCKED
+  market_watch:
+    status: READY | PARTIAL | BLOCKED
+  proposal:
+    status: READY | BUILDING | BLOCKED
+  evidence:
+    status: COMPLETE | VALIDATING | INSUFFICIENT_EVIDENCE | BLOCKED
+  economic_edge:
+    status: VALIDATED | FAILED | INSUFFICIENT_EVIDENCE | NOT_EVALUATED
+  demo:
+    eligibility: ELIGIBLE | BLOCKED | NOT_EVALUATED
+    authorization: AUTHORIZED | BLOCKED
+    execution: READY | PARTIAL | BLOCKED
+  live:
+    eligibility: ELIGIBLE | BLOCKED | NOT_EVALUATED
+    authorization: AUTHORIZED | BLOCKED
+    execution: READY | PARTIAL | BLOCKED
+```
+
+This representation should become machine-readable in the appropriate governance
+source only when its schema, allowed transitions, and authority owner are frozen. This
+roadmap does not itself update the strategy registry or grant any status.
+
+After R4 a strategy may legitimately be ready for implementation, watch, and proposals
+while evidence is validating and Demo/Live remain blocked. Receiving proposals never
+implies profitability.
+
+## Priority and KPI progression
+
+Shortest profit-seeking path:
+
+```text
+real market watch → trustworthy canonical proposals → clean resolved observations
+                  → credible positive edge → Demo automation
+```
+
+KPI progression:
+
+1. Percentage of the canonical watch/proposal pipeline passing its gates.
+2. Proposal Integrity Rate: valid canonical proposals divided by all proposal formation
+   attempts, with duplicate identity, missing geometry, stale input, wrong strategy
+   version/source, invalid timestamps, and ledger mismatches counted as failures.
+3. Number and completeness of trustworthy resolved proposals.
+4. Number of strategy versions passing prospective economic gates.
+5. Demo expectancy after actual execution costs.
+6. Risk-adjusted Live return within signed risk limits.
+
+At R4, Proposal Integrity Rate has priority over proposal count. Its numerator,
+denominator, exclusions, and target threshold must be frozen before it is used as an
+acceptance gate; this plan does not assume that less than 100% is acceptable.
+
+Do not optimize READY count, win rate, UI breadth, or execution features ahead of the
+current gate.
+
+## Immediate implementation scope
+
+```text
+WP0  Baseline reconciliation
+  ↓
+WP1  Market truth contract, including market_data_mode propagation
+  ↓
+WP2  Real closed-candle scanner feed
+  ↓
+WP3  R2 fail-closed freshness, completeness, duplication, and mode guards
+  ↓
+WP4  Canonical StrategyDecision contract
+  ↓
+WP5  Renderer-only UI; remove frontend strategy authority
+  ↓
+WP6  Proposal Formation Gate
+  ↓
+WP7  Deterministic proposal occurrence identity
+  ↓
+WP8  Persistent proposal ledger and lifecycle/freshness separation
+  ↓
+WP9  Read-only proposal API
+  ↓
+WP10 Scanner rendering
+  ↓
+WP11 Restart, rerun, overlap, idempotency, and duplicate tests
+  ↓
+WP12 Natural READY and NO_TRADE end-to-end proof; zero broker orders
+  ↓
+AG_PROPOSAL_OPERATION_READY_V1
+  ↓
+STOP
+```
+
+Before implementation, decompose `AG_CANONICAL_SCANNER_PROPOSAL_PIPELINE_V1` into
+acceptance-tested work packages that reuse existing market-data, strategy, journal,
+API, and frontend surfaces. The exactly-once ticket-delivery plan becomes supporting
+R4 work rather than the master milestone. External messaging, broader instrument
+coverage, Large-SMC operationalization, and interactive chart assistance remain
+valuable product tracks, but may not bypass the R2–R4 authority chain or R4 STOP.

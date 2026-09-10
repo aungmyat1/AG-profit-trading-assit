@@ -9,21 +9,19 @@ their age.
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository.
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,
-   safety gates, known gaps, and latest regression baseline. Its "Capability &
-   Roadmap Reconciliation (dated 2026-09-06)" section is the authoritative current
-   answer for what AG can do now, what is implemented-but-not-integrated, what is
-   verified, what is authorized, what remains research-only, and the core-completion
-   roadmap (CORE-D1..D7) — including where Telegram (paused), MT5 Demo, BTC/Bybit,
-   and Large-SMC currently sit relative to it.
-4. [`PROJECT_ROADMAP.md`](PROJECT_ROADMAP.md) — owner-directed product objective,
-   proposal/watch-first then strategy-validation sequence, economic gates, backlog,
-   and authority boundaries, including per-cohort validation handoff, interactive
-   top-down chart analysis, and cross-timeframe confirmation workflow.
+   safety gates, known gaps, latest regression baseline, and rolling classification
+   against the master readiness gates.
+4. [`PROJECT_ROADMAP.md`](PROJECT_ROADMAP.md) — authoritative Master Project Readiness
+   Plan V3: R0–R9 capability gates from safe research watch through canonical
+   proposals, edge validation, Demo execution validation, and separately authorized
+   controlled Live operation.
 5. [`plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`](plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md)
-   — detailed implementation and acceptance plan for the current milestone.
+   — retained supporting plan for exactly-once delivery work under R4; it is no longer
+   the master milestone.
 6. [`plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md`](plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md)
-   — current-status-reconciled action plan from Stage 0 safety through optional
-   controlled Demo evaluation; planning only and non-authorizing.
+   — historical implementation action plan under the superseded stage model; retain
+   its evidence and reusable acceptance criteria, but use `PROJECT_ROADMAP.md` for
+   current ordering and authority.
 7. [`plans/BEST_MONEY_MAKING_PATHS_AND_TICKET_DELIVERY_ACTION_PLAN_V1.md`](plans/BEST_MONEY_MAKING_PATHS_AND_TICKET_DELIVERY_ACTION_PLAN_V1.md)
    — owner-directed commercialization paths and gated action plan for exactly-once
    Major FX, BTCUSDT, and later XAUUSD delivery; includes the independent watcher,

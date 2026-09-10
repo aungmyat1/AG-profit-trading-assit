@@ -68,6 +68,32 @@ class MT5StatusResponse(BaseModel):
     connected: bool
 
 
+class MarketDataCandleResponse(BaseModel):
+    time: str
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float
+
+
+class MarketDataCandlesResponse(BaseModel):
+    """Roadmap R2 (AG_REAL_MARKET_WATCH_READY_V1): real, closed-bar-only MT5 candles.
+    `source` is always the literal 'MT5' here -- this response model exists precisely
+    so a caller can distinguish it from the frontend's SYNTHETIC scanner proposals,
+    never the reverse."""
+
+    source: str
+    broker: Optional[str] = None
+    environment: Optional[str] = None
+    symbol: str
+    timeframe: str
+    bar_count: int
+    last_closed_candle_at: str
+    freshness: str
+    candles: List[MarketDataCandleResponse]
+
+
 class TelegramStatusResponse(BaseModel):
     configured: bool
 

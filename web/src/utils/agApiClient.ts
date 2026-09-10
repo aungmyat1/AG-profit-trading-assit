@@ -181,6 +181,32 @@ export interface ValidationResponse {
   gates: GateResultResponse[];
 }
 
+export interface MarketDataCandleResponse {
+  time: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+/** Roadmap R2 (AG_REAL_MARKET_WATCH_READY_V1): real, closed-bar-only MT5 candles.
+ * `source` is always 'MT5' here -- this is how a caller distinguishes real broker
+ * data from the frontend's SYNTHETIC scanner proposals (TradeProposal.marketDataSource).
+ * Observation-only: this response carries no strategy, proposal, or execution
+ * authority. */
+export interface MarketDataCandlesResponse {
+  source: 'MT5';
+  broker?: string | null;
+  environment?: string | null;
+  symbol: string;
+  timeframe: string;
+  bar_count: number;
+  last_closed_candle_at: string;
+  freshness: string;
+  candles: MarketDataCandleResponse[];
+}
+
 export interface ProposalResponse {
   proposal_hash: string;
   setup_id: string;
@@ -217,4 +243,8 @@ export const agApiClient = {
       body: JSON.stringify({ action: 'EXECUTE_DEMO' }),
     }),
   getExecutionStatus: (executionId: string) => agFetch<TicketResponse>(`/api/executions/${encodeURIComponent(executionId)}`),
+  getMarketDataCandles: (symbol: string, timeframe = 'M15', count = 100) =>
+    agFetch<MarketDataCandlesResponse>(
+      `/api/market-data/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(timeframe)}&count=${count}`,
+    ),
 };

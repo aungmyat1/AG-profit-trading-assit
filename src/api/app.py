@@ -36,6 +36,7 @@ from .schemas import (
     BrokerStatusResponse,
     GateResultResponse,
     HealthResponse,
+    MarketDataCandlesResponse,
     MT5StatusResponse,
     ProposalResponse,
     StrategyResponse,
@@ -176,6 +177,32 @@ def broker_history(days: int = 90, limit: int = 100) -> BrokerHistoryResponse:
         raise HTTPException(status_code=400, detail={"reason_code": str(exc)})
     except Exception as exc:  # noqa: BLE001 -- normalize MT5 failures for the UI
         raise HTTPException(status_code=502, detail={"reason_code": f"MT5_HISTORY_ERROR:{type(exc).__name__}"})
+
+
+@app.get("/api/market-data/candles", response_model=MarketDataCandlesResponse)
+def market_data_candles(symbol: str, timeframe: str = "M15", count: int = 100) -> MarketDataCandlesResponse:
+    """Read-only real MT5 closed-candle feed (roadmap R2, AG_REAL_MARKET_WATCH_READY_V1
+    -- see docs/PROJECT_ROADMAP.md). Reuses broker_service.real_market_data(), which
+    itself reuses assistant.market_data.historical_candles / mt5.market_data --  the
+    same canonical retrieval and validation already used elsewhere in this codebase.
+    Never substitutes synthetic candles on failure: any error fails closed with a
+    reason_code, exactly like /api/broker/history above. This route carries no
+    strategy, proposal, or execution authority -- it is a market-data observation
+    surface only; R3/R4 (canonical strategy + proposal integration) are separate,
+    not-yet-implemented roadmap stages."""
+    from mt5.connection import MT5ConnectionError
+    from mt5.market_data import MarketDataError
+
+    try:
+        return MarketDataCandlesResponse(**broker_service.real_market_data(symbol=symbol, timeframe=timeframe, count=count))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"reason_code": str(exc)})
+    except MarketDataError as exc:
+        raise HTTPException(status_code=502, detail={"reason_code": exc.reason_code})
+    except MT5ConnectionError as exc:
+        raise HTTPException(status_code=502, detail={"reason_code": f"MT5_NOT_CONNECTED:{exc}"})
+    except Exception as exc:  # noqa: BLE001 -- never leak a raw traceback to the client
+        raise HTTPException(status_code=502, detail={"reason_code": f"MT5_MARKET_DATA_ERROR:{type(exc).__name__}"})
 
 
 @app.get("/api/system/status", response_model=SystemStatusResponse)
