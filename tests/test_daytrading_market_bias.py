@@ -82,3 +82,52 @@ def test_missing_protected_level_is_still_bullish_but_flagged():
     assert bias.direction == MarketBiasDirection.BULLISH.value
     assert bias.protected_level is None
     assert "PROTECTED_LOW_UNAVAILABLE" in bias.reasons
+
+
+# ---------------------------------------------------------------------------
+# AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1 M2/M3 regression: this legacy adapter's
+# direction label must always agree with the canonical resolver it now delegates to.
+# ---------------------------------------------------------------------------
+
+
+def test_legacy_direction_matches_canonical_resolver_bullish():
+    from market_intelligence.bias_resolver import resolve_from_structure_tiers
+
+    protected_low = StructurePoint(time_utc=T0, price=1.1500, kind=StructurePointKind.SWING_LOW)
+    tiers = _tiers(STATE_BULLISH, latest_swing_low=protected_low)
+
+    legacy = derive_market_bias_from_tiers(tiers, "H1")
+    canonical = resolve_from_structure_tiers(tiers, "EURUSD", T0, "ASIAN_LONDON")
+
+    assert legacy.direction == MarketBiasDirection.BULLISH.value
+    assert canonical.bias == "BULLISH"
+
+
+def test_legacy_direction_matches_canonical_resolver_bearish():
+    from market_intelligence.bias_resolver import resolve_from_structure_tiers
+
+    protected_high = StructurePoint(time_utc=T0, price=1.1700, kind=StructurePointKind.SWING_HIGH)
+    tiers = _tiers(STATE_BEARISH, latest_swing_high=protected_high)
+
+    legacy = derive_market_bias_from_tiers(tiers, "H1")
+    canonical = resolve_from_structure_tiers(tiers, "EURUSD", T0, "ASIAN_LONDON")
+
+    assert legacy.direction == MarketBiasDirection.BEARISH.value
+    assert canonical.bias == "BEARISH"
+
+
+def test_legacy_neutral_and_indeterminate_both_collapse_to_canonical_neutral():
+    from market_intelligence.bias_resolver import resolve_from_structure_tiers
+
+    undefined_tiers = _tiers(STATE_UNDEFINED)
+    invalid_tiers = _tiers(STATE_BULLISH, status="INSUFFICIENT_STRUCTURE_HISTORY")
+
+    legacy_neutral = derive_market_bias_from_tiers(undefined_tiers, "H1")
+    legacy_indeterminate = derive_market_bias_from_tiers(invalid_tiers, "H1")
+    canonical_from_undefined = resolve_from_structure_tiers(undefined_tiers, "EURUSD", T0, "ASIAN_LONDON")
+    canonical_from_invalid = resolve_from_structure_tiers(invalid_tiers, "EURUSD", T0, "ASIAN_LONDON")
+
+    assert legacy_neutral.direction == MarketBiasDirection.NEUTRAL.value
+    assert legacy_indeterminate.direction == MarketBiasDirection.INDETERMINATE.value  # legacy keeps the distinction
+    assert canonical_from_undefined.bias == "NEUTRAL"
+    assert canonical_from_invalid.bias == "NEUTRAL"  # canonical side collapses both, by design (invariant 2)

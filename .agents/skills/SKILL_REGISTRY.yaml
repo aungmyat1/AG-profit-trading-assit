@@ -37,6 +37,20 @@ logical_families:
 
   # ---- Core Trading Intelligence (the five-layer pyramid) ----
 
+  market-bias:
+    category: core
+    status: ready
+    implementation:
+      skill: market-bias
+      package: market_intelligence/
+    decides: "the ONE final directional verdict -- BULLISH/BEARISH/NEUTRAL -- never a trade"
+    note: >
+      AG_STRATEGY_DIRECTION_CONTRACT_V1's single Bias Resolver. Every other skill in this
+      registry produces evidence for market-bias to consume; none may independently emit
+      a final BULLISH/BEARISH/NEUTRAL verdict. daytrading.decision.market_bias is a
+      legacy-shaped adapter over this same resolver, not a second authority -- see
+      docs/status/AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1_M2_M3_STATUS.md.
+
   market-structure:
     category: core
     status: ready
