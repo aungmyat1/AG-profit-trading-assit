@@ -4,6 +4,15 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+### Deterministic Trading Skills architecture (2026-09-11)
+
+Deterministic market-analysis capabilities now have a canonical data-only registry and
+an authority-limited `TradingSkill.evaluate(context) -> MarketObservation` interface.
+They may observe/classify but cannot decide or propose trades, modify strategy or risk
+rules, promote strategies, authorize trades, or execute. Existing implementations,
+strategy engines, replay surfaces, lifecycle state, risk, and execution paths are
+unchanged. See `docs/architecture/DETERMINISTIC_TRADING_SKILLS.md`.
+
 ### Frontend Demo-ticket authorization surface (2026-09-09)
 
 The real-mode AG Backend panel now lists durable backend execution tickets and exposes

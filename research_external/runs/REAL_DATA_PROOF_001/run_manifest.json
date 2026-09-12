@@ -1,0 +1,15 @@
+{
+  "broker": "VantageMarkets-Demo",
+  "candidate_created": false,
+  "created_at_utc": "2026-09-12T11:19:27.653056+00:00",
+  "data_source": "REAL_OBSERVED_MARKET",
+  "dataset_id": "EURUSD_M5_REAL_PROOF",
+  "dataset_sha256": "85146e654c32c3fe081a9690d0a05dfc4a0e73c1b3fbc13162ff68b201e1c6cd",
+  "git_commit": "cfcfc8503dbca828e466824ff7529baa55dc44db",
+  "optimization_performed": false,
+  "platform": "Windows 10",
+  "purpose": "LOCAL_RESEARCH_PIPELINE_BOOTSTRAP",
+  "python_version": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+  "run_id": "REAL_DATA_PROOF_001",
+  "strategy_research_performed": false
+}

@@ -24,6 +24,21 @@ import MetaTrader5 as mt5
 
 MIN_WEEKEND_GAP = timedelta(hours=40)  # a weekday data gap is never this long; the weekly reopen gap is ~44-49h
 
+# Owner-authorized widening (2026-09-11, AG_DAILY_SESSION_TRADE_CONTINUATION M1 timezone
+# remediation): the original 0.01h (36s) tolerance was tighter than this function's own
+# documented allowance ("the reopen bar can land up to ~15 minutes after the true
+# instant" -- see offset_from_reopen's docstring below, unchanged). EURUSD M1/tick data
+# on D:\ proved a real, reproducible ~2-minute (120.0s-120.12s) reopen-publish lag across
+# three independent weekends (2026-06-01, 2026-06-22, 2026-07-06 -- see
+# config/historical_datasets/EURUSD_M1_202605180946_202607312356.yaml and the
+# AG_DAILY_SESSION_TRADE_IMPLEMENTATION_STATUS report for the full derivation), which the
+# 36s tolerance rejected as OFFSET_FROM_REOPEN_AMBIGUOUS even though every other file in
+# the same broker export family (H1/M15/M5/Daily) already resolves cleanly to the same
+# +3h offset. 0.05h (180s) covers the proven 120.12s lag with a 60s margin, stays 60x
+# below the full-hour ambiguity risk this function exists to prevent, and does not change
+# the result for any dataset that already resolved within the old 36s bound.
+REOPEN_TOLERANCE_HOURS = 0.05
+
 
 class BrokerTimeError(RuntimeError):
     pass
@@ -57,7 +72,7 @@ def offset_from_reopen(server_reopen_reading: datetime) -> int:
     for day_shift in (0, -1, 1):
         candidate = ny_1700_reopen_instant_utc(server_reopen_reading.date() + timedelta(days=day_shift))
         delta = (server_reopen_reading - candidate).total_seconds() / 3600
-        if abs(delta - round(delta)) < 0.01 and abs(round(delta)) <= 14:
+        if abs(delta - round(delta)) < REOPEN_TOLERANCE_HOURS and abs(round(delta)) <= 14:
             return round(delta)
     raise BrokerTimeError(
         f"OFFSET_FROM_REOPEN_AMBIGUOUS: {server_reopen_reading} did not resolve to a whole-hour "

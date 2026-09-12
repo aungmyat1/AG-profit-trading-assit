@@ -11,6 +11,8 @@ import datetime as dt
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
+import logging
+
 import session_clock as sc
 from execution_runtime.data_provider import fetch_equity
 from runtime_state.store import StateStoreCorrupted
@@ -19,6 +21,15 @@ from mt5.symbol_resolver import SymbolMeta, SymbolMetaError, get_symbol_meta
 from strategy_engine.engine import evaluate as evaluate_strategy
 from strategy_engine.loader import load_strategy
 from strategy_engine.models import StrategyConfig
+
+from proposal_envelope.adapters.fx_adapter import to_canonical_proposal as fx_to_canonical_proposal
+from proposal_envelope.formation_gate import apply_formation_gate
+from proposal_envelope.ledger import ProposalLedger
+from proposal_envelope.models import PROPOSAL_READY
+from strategy_contract.decision import from_fx_decision
+from strategy_contract.market_snapshot import MarketSnapshot, from_real_candle
+
+from .fingerprint import fingerprint as _config_fingerprint
 
 from .decision import (
     PostAsianDecision,
@@ -55,6 +66,8 @@ from .store import (
 )
 from .tiebreak import order_candidates
 
+logger = logging.getLogger("post_asian_pilot.pipeline")
+
 
 @dataclass(frozen=True)
 class PairResult:
@@ -63,6 +76,14 @@ class PairResult:
     portfolio_state: str
     portfolio_reason_code: Optional[str]
     proposal: Optional[PostAsianEntryProposal]
+    # WP11A (AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1): the REAL MarketSnapshot for the
+    # exact closed candle that produced `decision` THIS cycle -- only set on a genuine
+    # fresh evaluation (the "new closed M15" branch of _evaluate_pair), never on the
+    # cached/restart-recovery branch, which re-reads an already-persisted native
+    # decision rather than fetching fresh data. None means "no fresh REAL provenance
+    # this cycle" -- the canonical pipeline correctly skips formation for that case
+    # rather than reconstructing/guessing a snapshot after the fact.
+    market_snapshot: Optional[MarketSnapshot] = None
 
 
 @dataclass(frozen=True)
@@ -184,11 +205,61 @@ def _evaluate_pair(
     elif not wrote:
         stores.counters.increment(strategy.strategy_id, trading_date, COUNTER_DUPLICATE_SUPPRESSED)
     stores.bar_tracker.mark_processed(symbol, "M15", post_candles[-1].time)
-    return PairResult(symbol, decision, "ELIGIBLE", None, None)
+    # WP11A: wrap the exact closed candle that drove this evaluation as REAL market-truth
+    # provenance -- no second fetch, no reconstruction after the fact (see PairResult's
+    # market_snapshot docstring).
+    market_snapshot = from_real_candle(symbol, "M15", post_candles[-1])
+    return PairResult(symbol, decision, "ELIGIBLE", None, None, market_snapshot)
+
+
+def _form_canonical_proposal(
+    decision: PostAsianDecision, actionable_proposal: PostAsianEntryProposal,
+    market_snapshot: Optional[MarketSnapshot], proposal_ledger: ProposalLedger,
+    config_hash: Optional[str] = None, engine_release: Optional[str] = None,
+) -> None:
+    """WP11A (AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1): additive canonical-pipeline
+    wiring. Reuses the existing WP4 decision adapter, WP7 fx proposal-envelope adapter,
+    WP6 formation gate, and WP8 ledger exactly as built -- no new proposal identity, no
+    reinterpretation of strategy logic, no execution call. Any exception here is caught
+    and logged by the caller and MUST NEVER affect the native pipeline's own decision,
+    proposal, governor, or ledger behavior -- this function has no return value and no
+    side effect visible to the native pipeline, only to the separate canonical ledger.
+
+    market_snapshot is None on the cached/restart-recovery path (no fresh REAL
+    provenance this cycle) -- apply_formation_gate already fails closed on a missing
+    snapshot (REASON_MISSING_MARKET_SNAPSHOT), so this still correctly forms no
+    canonical proposal rather than guessing provenance.
+
+    config_hash/engine_release (P8, this phase): caller-supplied from the two
+    authoritative sources already computed elsewhere in this module --
+    post_asian_pilot.fingerprint.fingerprint() over the strategy's own YAML (config_hash)
+    and the release config's release_id (engine_release). Neither is recomputed or
+    guessed here. git_commit is deliberately NEVER set (stays None) -- no authoritative
+    runtime producer exists anywhere in this repository (P8 finding); no subprocess git
+    call, CI assumption, or placeholder value is introduced."""
+    strategy_decision = from_fx_decision(decision, market_snapshot=market_snapshot)
+    envelope = fx_to_canonical_proposal(decision, actionable_proposal.trade_proposal)
+    gated = apply_formation_gate(envelope, market_snapshot=market_snapshot)
+    if gated.proposal_state == PROPOSAL_READY:
+        gated = dataclasses.replace(
+            gated, config_hash=config_hash, engine_release=engine_release, git_commit=None,
+        )
+        proposal_ledger.record_proposal(gated)
+    else:
+        logger.info(
+            "WP11A canonical proposal formation rejected symbol=%s reasons=%s",
+            decision.symbol, gated.reasons,
+        )
+    # strategy_decision is constructed to prove/exercise the WP4 propagation path end to
+    # end in the live cycle; the canonical envelope/gate/ledger chain above is what
+    # persists, matching the plan's "adapter may not reinterpret strategy logic" rule --
+    # nothing about strategy_decision itself is persisted separately in this phase.
+    del strategy_decision
 
 
 def run_pilot_cycle(
     pilot_path: str = None, now: Optional[dt.datetime] = None,
+    proposal_ledger: Optional[ProposalLedger] = None,
 ) -> PilotCycleResult:
     pilot = load_pilot_config(pilot_path) if pilot_path else load_pilot_config()
     strategy = load_strategy(pilot.strategy_source_path)
@@ -196,6 +267,12 @@ def run_pilot_cycle(
     now = now or dt.datetime.now(dt.timezone.utc)
     trading_date = now.date()
     stores = PilotStores.default(pilot.strategy_id, pilot.state_dir or DEFAULT_STATE_DIR)
+    proposal_ledger = proposal_ledger if proposal_ledger is not None else ProposalLedger()
+    # P8: reuse the existing authoritative strategy-config fingerprint (same function
+    # post_asian_pilot/report.py::release_fingerprints() already uses for
+    # strategy_fingerprint) as WP11A's canonical config_hash -- no second hashing
+    # algorithm. engine_release reuses release_id, already computed above.
+    canonical_config_hash = _config_fingerprint(load_raw_yaml(pilot.strategy_source_path))
 
     results = [_evaluate_pair(pilot, strategy, symbol, trading_date, now, stores) for symbol in pilot.universe]
 
@@ -203,8 +280,10 @@ def run_pilot_cycle(
     ordered_ready = order_candidates(ready, priority=pilot.tie_break_priority)
 
     final_by_symbol: dict = {}
+    market_snapshot_by_symbol: dict = {}
     for r in results:
         final_by_symbol[r.symbol] = r
+        market_snapshot_by_symbol[r.symbol] = r.market_snapshot
 
     # Selection ordering (spec section 12/13): candidates claim slots in deterministic
     # ready_at order -- both may succeed (capacity 2, one slot per symbol), unlike the
@@ -256,6 +335,18 @@ def run_pilot_cycle(
         if save_proposal(stores.proposal_store, actionable_proposal):
             stores.counters.increment(strategy.strategy_id, trading_date, COUNTER_PROPOSALS_CREATED)
         final_by_symbol[symbol] = PairResult(symbol, decision, PORTFOLIO_SELECTED, None, actionable_proposal)
+
+        # WP11A: additive canonical R2-R4 pipeline wiring. Deliberately isolated from the
+        # native pipeline above -- any exception here is caught, logged, and never
+        # propagated, so a bug in the canonical layer can never block, alter, or delay an
+        # actionable native proposal or its governor/ledger claim.
+        try:
+            _form_canonical_proposal(
+                decision, actionable_proposal, market_snapshot_by_symbol.get(symbol), proposal_ledger,
+                config_hash=canonical_config_hash, engine_release=release_id,
+            )
+        except Exception:  # noqa: BLE001 -- see docstring: must never affect native behavior
+            logger.exception("WP11A canonical proposal formation failed for symbol=%s (native pipeline unaffected)", symbol)
 
     final = tuple(final_by_symbol[symbol] for symbol in pilot.universe)
     slots_used = stores.ledger.consumed_count(strategy.strategy_id, trading_date)

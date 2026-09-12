@@ -31,3 +31,7 @@ strategies:
   ST_LARGE_SMC_V1:
     semantic_version: "1.0.7"
     lifecycle_stage: FORWARD_RESEARCH
+
+  ST_SESSION_SWEEP_CONTINUATION_V1:
+    semantic_version: "1.0.0"
+    lifecycle_stage: OFFLINE_RESEARCH

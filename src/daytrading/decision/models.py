@@ -10,10 +10,19 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
-from market_intelligence.models import MarketBiasResult
 from strategy_engine.session import Direction, Regime, SetupDecision, SetupType
+
+if TYPE_CHECKING:
+    # Deferred: market_intelligence's package __init__ imports .bias_resolver, which
+    # imports THIS module (daytrading.decision.models) at module level -- a module-level
+    # import here would form a circular import between the two packages. This module
+    # has `from __future__ import annotations`, so the `Optional[MarketBiasResult]`
+    # annotation below is never evaluated at runtime -- only static type checkers need
+    # this import, so guarding it here breaks the cycle with zero behavior change (same
+    # discipline as the existing deferred import in .market_bias.py).
+    from market_intelligence.models import MarketBiasResult
 
 
 class MarketBiasDirection(str, Enum):

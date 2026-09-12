@@ -15,49 +15,59 @@ their age.
    Plan V3: R0–R9 capability gates from safe research watch through canonical
    proposals, edge validation, Demo execution validation, and separately authorized
    controlled Live operation.
-5. [`plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`](plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md)
+5. [`plans/AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1.md`](plans/AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1.md)
+   — current priority implementation plan for the authoritative R2-R4 market-truth,
+   canonical-decision, and persistent-proposal pipeline; ends at natural read-only
+   proof and `AG_PROPOSAL_OPERATION_READY_V1`.
+6. [`plans/AG_POST_R4_EXPANSION_AND_DELIVERY_PLAN_V1.md`](plans/AG_POST_R4_EXPANSION_AND_DELIVERY_PLAN_V1.md)
+   — deferred follow-on plan for R4 operational hardening, evidence export/reporting,
+   informational Telegram delivery, and independently contracted USDJPY/XAUUSD shadow
+   coverage.
+7. [`plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md`](plans/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_DELIVERY_V1.md)
    — retained supporting plan for exactly-once delivery work under R4; it is no longer
    the master milestone.
-6. [`plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md`](plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md)
-   — historical implementation action plan under the superseded stage model; retain
-   its evidence and reusable acceptance criteria, but use `PROJECT_ROADMAP.md` for
-   current ordering and authority.
-7. [`plans/BEST_MONEY_MAKING_PATHS_AND_TICKET_DELIVERY_ACTION_PLAN_V1.md`](plans/BEST_MONEY_MAKING_PATHS_AND_TICKET_DELIVERY_ACTION_PLAN_V1.md)
+8. [`plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md`](plans/AG_CURRENT_ROADMAP_IMPLEMENTATION_ACTION_PLAN_V1.md)
+   — program-level plan index and handoff map; its original 2026-09-08 stage plan is
+   retained as historical context beneath the current plan stack.
+9. [`plans/BEST_MONEY_MAKING_PATHS_AND_TICKET_DELIVERY_ACTION_PLAN_V1.md`](plans/BEST_MONEY_MAKING_PATHS_AND_TICKET_DELIVERY_ACTION_PLAN_V1.md)
    — owner-directed commercialization paths and gated action plan for exactly-once
    Major FX, BTCUSDT, and later XAUUSD delivery; includes the independent watcher,
    proposal, and execution-authority dimensions, `STRATEGY_UNMATCHED`, lifecycle
    timestamps, next-required evidence, reuse-first SMC watcher recovery, a downstream
    read-only Opportunity Board, outcome/funnel evidence, campaigns, prospective
    promotion, and cost-stress requirements; planning only and non-authorizing.
-8. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
-9. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
+10. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
+11. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
    update procedure for rolling status, dated evidence, strategy authorization, and
    live-validation claims.
-10. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
+12. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
    non-authorizing capability-completeness audit and navigation matrix (Section A
    trading edge, Section B operations/execution/platform, execution-authority matrix,
    qualification counters). It does not replace `PROJECT_STATUS.md`,
    `strategies/registry.yaml` / `strategies/STRATEGY_LEDGER.md`,
    `docs/VERSION_HISTORY.md`, or dated `docs/status/*.md` evidence — see its own top
    section for which source is authoritative for which claim.
-11. [`status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md`](status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md)
+13. [`status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md`](status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md)
    — owner authorization to begin the read-only 30-valid-observation BTC campaign;
    records the zero-count starting state and preserves all execution prohibitions.
-12. [`status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`](status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md)
+14. [`status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`](status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md)
    — prospective owner-approved move of the BTC report window to 13:00-13:15 MMT
    (06:30-06:45 UTC); no observation, execution, or scheduler activation.
-13. [`status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md`](status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md)
+15. [`status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md`](status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md)
    — preflight architecture review and authorization packet for the next, separately
    authorized WP7 task (real Telegram message delivery); does not itself authorize
    `MESSAGE_DELIVERY` or any send.
-14. [`status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`](status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md)
+16. [`status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`](status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md)
    — records the frontend's explicit mock/real mode boundary, fail-closed legacy
    controls, verification limits, and unchanged trading authority.
-15. [`status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md`](status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md)
+17. [`status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md`](status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md)
    — verifies WP7 runtime is actually implemented (retry, attempt journal, conditional
    message-delivery closure), corrects stale "WP7 NOT STARTED" claims elsewhere,
    confirms `ARCHIVE_ONLY`/empty destination allow-list/zero real sends unchanged, and
    prepares (without executing) the next owner activation decisions.
+18. [`status/AG_DETERMINISTIC_TRADING_SKILLS_REFACTOR_V1_STATUS.md`](status/AG_DETERMINISTIC_TRADING_SKILLS_REFACTOR_V1_STATUS.md)
+   — records the observation-only skill classification/interface refactor and focused
+   compatibility evidence.
 
 ## Architecture
 
@@ -67,6 +77,9 @@ their age.
   — recorded architecture conflicts and their disposition.
 - [`architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md`](architecture/STRATEGY_WORKFLOW_RESOURCE_MAP.md)
   — D-drive strategy provenance and agent-skill workflow organization.
+- [`architecture/DETERMINISTIC_TRADING_SKILLS.md`](architecture/DETERMINISTIC_TRADING_SKILLS.md)
+  — canonical separation of deterministic observations, strategy decisions, AI diagnostics,
+  governance, and authorized execution.
 
 Architecture descriptions do not override Strategy YAML, frozen specifications, or
 the execution gates in code and configuration.

@@ -1,0 +1,54 @@
+# Owner-authorized historical analytical metadata for ONE specific dataset file.
+#
+# Scope: DATA_DISCOVERY / REPLAY-READINESS ONLY, for the ST_SESSION_SWEEP_CONTINUATION_V1
+# (v1.0.0, OFFLINE_RESEARCH) data-readiness assessment (2026-09-10). Role in that
+# strategy's timeframe contract: H1 = MARKET_BIAS_INPUT (higher-timeframe context,
+# completed bars only). This manifest does NOT grant demo/live execution authority --
+# see strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml / config/governance/
+# strategy_lifecycle.yaml for that (OFFLINE_RESEARCH, demo_authorized: false).
+#
+# Authorization basis: owner blanket authorization "you can use market data on D:, when
+# you need" (relayed 2026-09-10) -- covers USE of relevant FX historical CSVs on D:\ for
+# this strategy without a fresh per-file manual-approval round, UNLIKE the one older
+# EURUSD_M5_202504211715_202607310000.yaml manifest in this directory (approved
+# 2026-09-02 under a narrower, file-specific HISTORICAL_ANALYSIS_ONLY scope). Blanket
+# authorization is NOT the same as integrity/quality/sufficiency -- both are still
+# independently recorded below, per that same discipline.
+#
+# Timezone: MT5-exported CSV timestamps are the broker's own wall-clock reading, not
+# true UTC. Verified here via src/mt5/broker_time.py's weekend-reopen-gap technique
+# (same technique src/session_tribranch_research/data_loader.py already reuses),
+# reimplemented in streaming form at src/market_data_readiness/scanner.py to avoid a
+# MetaTrader5 live-connection dependency for a historical-only file.
+
+dataset_id: EURUSD_H1_202501020000_202607310000
+symbol: EURUSD
+declared_timeframe: H1
+observed_timeframe: H1
+timeframe_status: MATCH
+strategy_role: MARKET_BIAS_INPUT
+authorization_status: OWNER_AUTHORIZED   # blanket D:\ FX authorization, 2026-09-10
+integrity_status: HASH_RECORDED
+quality_status: PASS
+source_file: "D:\\EURUSD_H1_202501020000_202607310000.csv"
+file_size_bytes: 617998
+row_count: 9817
+parser_version: market_data_readiness.scanner v1 (streaming csv, tab-delimited MT5 export)
+dataset_fingerprint: "sha256:f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060"
+timestamp_convention:
+  raw_start: "2025-01-02T00:00:00"       # broker wall clock, as read from the file
+  raw_end: "2026-07-31T00:00:00"
+  timezone_status: BROKER_OFFSET_CONFIRMED
+  broker_utc_offset_hours: 3             # server_time = true_utc + 3h, derived from the
+                                          # weekend-reopen gap in this file's own data
+  utc_start: "2025-01-01T21:00:00+00:00"
+  utc_end: "2026-07-30T21:00:00+00:00"
+quality_findings:
+  duplicate_timestamps: 0
+  nonmonotonic_timestamps: 0
+  ohlc_violations: 0
+  zero_or_negative_price_rows: 0
+  parse_failures: 0
+  largest_gap_hours: 49.0   # weekly weekend closure, expected
+candidates_considered: 1   # only one H1 EURUSD file exists on D:\ as of this scan
+selection_reason_codes: [ONLY_CANDIDATE, TIMEFRAME_MATCH, TIMEZONE_RESOLVED, QUALITY_PASS]

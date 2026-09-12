@@ -1,0 +1,10 @@
+{
+  "end": "2026-07-01",
+  "locked": false,
+  "parent_dataset_sha256": "34c3296cefd4715c6c742210a36f3afe4261b53e24fa91dd02e8d3884bb240ef",
+  "partition_id": "VALIDATION_2026-04-01_2026-07-01",
+  "partition_sha256": "053c979f2143e2125568c85cbd9da5faeab7e327fa05a40816895cd1f4413ba9",
+  "role": "VALIDATION",
+  "rows": 18719,
+  "start": "2026-04-01"
+}

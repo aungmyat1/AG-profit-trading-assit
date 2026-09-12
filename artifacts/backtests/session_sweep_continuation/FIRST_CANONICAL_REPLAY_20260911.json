@@ -1,0 +1,265 @@
+{
+  "report_id": "AG_ST_SESSION_SWEEP_CONTINUATION_FIRST_CANONICAL_REPLAY_STATUS",
+  "generated_at": "2026-09-11T14:58:49.346509+00:00",
+  "identity": {
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "git_commit": "94fc5c26dfa184c6fa3f48c27ac95980b7cd6352",
+    "config_fingerprint": "e0cf113b2e1e6b82fedee02e744615aa8f30ff7962355c331cbbdfd581fdcfbf",
+    "H1_fingerprint": "f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060",
+    "M15_fingerprint": "7f7502938862f4a3779f018caab468fe4445a4d8c676c8393dc29ca57fc43a65",
+    "M1_fingerprint": "55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23",
+    "symbol_metadata_fingerprint": "sha256:f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060",
+    "replay_evidence_fingerprint": "sha256:6d8fc29dc67a7b984ff4a464593bb107669ca266fd56929fc1ec18ce160048fe",
+    "replay_engine_version": "session_sweep_continuation.replay v1 (M1-fill-wired)"
+  },
+  "coverage": {
+    "h1_raw": {
+      "start": "2025-01-01 22:00:00+00:00",
+      "end": "2026-07-30 21:00:00+00:00"
+    },
+    "m15_raw": {
+      "start": "2025-01-01 22:00:00+00:00",
+      "end": "2026-06-19 20:45:00+00:00"
+    },
+    "m1_raw": {
+      "start": "2026-05-18 06:46:00+00:00",
+      "end": "2026-07-31 20:56:00+00:00"
+    },
+    "effective_start": "2026-05-18",
+    "effective_end": "2026-06-19",
+    "effective_days": 33
+  },
+  "decision_cycles": 66,
+  "bias_counts": {
+    "BULLISH": 0,
+    "BEARISH": 66,
+    "NEUTRAL": 0,
+    "UNAVAILABLE": 0,
+    "ERROR": 0
+  },
+  "regime_counts": {
+    "RANGE": 34,
+    "TREND_DOWN": 7,
+    "UNKNOWN": 16,
+    "TRANSITION": 2,
+    "TREND_UP": 7
+  },
+  "setup_candidates": {
+    "S1": 13,
+    "S2": 3,
+    "S3": 15
+  },
+  "direction_blocked": 53,
+  "fills": {
+    "S1": 13,
+    "S2": 3,
+    "S3": 15
+  },
+  "campaigns_started": 16,
+  "campaigns_with": {
+    "S1": 13,
+    "S2": 3,
+    "S3": 9
+  },
+  "campaigns_no_trade": 0,
+  "friction_rejections": 9,
+  "alloc_rejections": 8,
+  "exclusions": {
+    "insufficient_h1_history": 0,
+    "neutral_bias": 0,
+    "unavailable_bias": 0,
+    "direction_blocked": 53,
+    "regime_unknown": 16,
+    "friction_rejected": 9,
+    "alloc_rejected": 8,
+    "ambiguous": 0
+  },
+  "overall_metrics": {
+    "sample_size": 31,
+    "wins": 15,
+    "losses": 15,
+    "breakevens": 1,
+    "gross_total_R": 0.009297474401486275,
+    "gross_expectancy_R": 0.00029991852908020243,
+    "net_total_R": -5.877143551454205,
+    "net_expectancy_R": -0.18958527585336146,
+    "win_rate": 0.4838709677419355,
+    "average_win_R": 0.7764922296208834,
+    "average_loss_R": -0.7758723979941177,
+    "profit_factor": 1.0007988834612085,
+    "max_drawdown_R": 4.554691801679736,
+    "max_consecutive_losses": 4,
+    "cost_status": "MODELED"
+  },
+  "overall_max_consecutive_wins": 3,
+  "by_setup_metrics": {
+    "S1": {
+      "sample_size": 13,
+      "wins": 7,
+      "losses": 5,
+      "breakevens": 1,
+      "gross_total_R": 2.9735682700763917,
+      "gross_expectancy_R": 0.22873602077510705,
+      "net_total_R": 0.06310067935828989,
+      "net_expectancy_R": 0.004853898412176145,
+      "win_rate": 0.5384615384615384,
+      "average_win_R": 1.1390811814394846,
+      "average_loss_R": -1.0,
+      "profit_factor": 1.5947136540152784,
+      "max_drawdown_R": 2.7560826723166145,
+      "max_consecutive_losses": 2,
+      "cost_status": "MODELED"
+    },
+    "S2": {
+      "sample_size": 3,
+      "wins": 0,
+      "losses": 3,
+      "breakevens": 0,
+      "gross_total_R": -3.0,
+      "gross_expectancy_R": -1.0,
+      "net_total_R": -3.7127425501852547,
+      "net_expectancy_R": -1.2375808500617516,
+      "win_rate": 0.0,
+      "average_win_R": "NOT_EVALUATED",
+      "average_loss_R": -1.0,
+      "profit_factor": "UNDEFINED_NO_WINS",
+      "max_drawdown_R": 3.0,
+      "max_consecutive_losses": 3,
+      "cost_status": "MODELED"
+    },
+    "S3": {
+      "sample_size": 15,
+      "wins": 8,
+      "losses": 7,
+      "breakevens": 0,
+      "gross_total_R": 0.035729204325094535,
+      "gross_expectancy_R": 0.002381946955006302,
+      "net_total_R": -2.22750168062724,
+      "net_expectancy_R": -0.148500112041816,
+      "win_rate": 0.5333333333333333,
+      "average_win_R": 0.45922689677960743,
+      "average_loss_R": -0.5197265671302521,
+      "profit_factor": 1.0098208796110337,
+      "max_drawdown_R": 2.0,
+      "max_consecutive_losses": 2,
+      "cost_status": "MODELED"
+    }
+  },
+  "by_direction_metrics": {
+    "LONG": {
+      "sample_size": 0,
+      "wins": 0,
+      "losses": 0,
+      "breakevens": 0,
+      "gross_total_R": 0.0,
+      "gross_expectancy_R": "NOT_EVALUATED",
+      "net_total_R": "NOT_EVALUATED",
+      "net_expectancy_R": "NOT_EVALUATED",
+      "win_rate": "NOT_EVALUATED",
+      "average_win_R": "NOT_EVALUATED",
+      "average_loss_R": "NOT_EVALUATED",
+      "profit_factor": "NOT_EVALUATED",
+      "max_drawdown_R": "NOT_EVALUATED",
+      "max_consecutive_losses": 0,
+      "cost_status": "NOT_EVALUATED"
+    },
+    "SHORT": {
+      "sample_size": 31,
+      "wins": 15,
+      "losses": 15,
+      "breakevens": 1,
+      "gross_total_R": 0.009297474401486275,
+      "gross_expectancy_R": 0.00029991852908020243,
+      "net_total_R": -5.877143551454205,
+      "net_expectancy_R": -0.18958527585336146,
+      "win_rate": 0.4838709677419355,
+      "average_win_R": 0.7764922296208834,
+      "average_loss_R": -0.7758723979941177,
+      "profit_factor": 1.0007988834612085,
+      "max_drawdown_R": 4.554691801679736,
+      "max_consecutive_losses": 4,
+      "cost_status": "MODELED"
+    }
+  },
+  "by_regime_metrics": {
+    "RANGE": {
+      "sample_size": 28,
+      "wins": 15,
+      "losses": 12,
+      "breakevens": 1,
+      "gross_total_R": 3.009297474401486,
+      "gross_expectancy_R": 0.10747490980005307,
+      "net_total_R": -2.16440100126895,
+      "net_expectancy_R": -0.07730003575960535,
+      "win_rate": 0.5357142857142857,
+      "average_win_R": 0.7764922296208834,
+      "average_loss_R": -0.7198404974926471,
+      "profit_factor": 1.3483754948588713,
+      "max_drawdown_R": 3.554691801679736,
+      "max_consecutive_losses": 4,
+      "cost_status": "MODELED"
+    },
+    "TREND_DOWN": {
+      "sample_size": 3,
+      "wins": 0,
+      "losses": 3,
+      "breakevens": 0,
+      "gross_total_R": -3.0,
+      "gross_expectancy_R": -1.0,
+      "net_total_R": -3.7127425501852547,
+      "net_expectancy_R": -1.2375808500617516,
+      "win_rate": 0.0,
+      "average_win_R": "NOT_EVALUATED",
+      "average_loss_R": -1.0,
+      "profit_factor": "UNDEFINED_NO_WINS",
+      "max_drawdown_R": 3.0,
+      "max_consecutive_losses": 3,
+      "cost_status": "MODELED"
+    }
+  },
+  "by_session_metrics": {
+    "ASIAN_LONDON": {
+      "sample_size": 15,
+      "wins": 4,
+      "losses": 11,
+      "breakevens": 0,
+      "gross_total_R": -6.948901774201092,
+      "gross_expectancy_R": -0.4632601182800728,
+      "net_total_R": -10.074388558259296,
+      "net_expectancy_R": -0.671625903883953,
+      "win_rate": 0.26666666666666666,
+      "average_win_R": 0.4055567358597818,
+      "average_loss_R": -0.7791935197854745,
+      "profit_factor": 0.1892664311644773,
+      "max_drawdown_R": 7.083520979139484,
+      "max_consecutive_losses": 5,
+      "cost_status": "MODELED"
+    },
+    "LONDON_NEWYORK": {
+      "sample_size": 16,
+      "wins": 11,
+      "losses": 4,
+      "breakevens": 1,
+      "gross_total_R": 6.958199248602578,
+      "gross_expectancy_R": 0.43488745303766113,
+      "net_total_R": 4.197245006805091,
+      "net_expectancy_R": 0.2623278129253182,
+      "win_rate": 0.6875,
+      "average_win_R": 0.9113778637158294,
+      "average_loss_R": -0.7667393130678863,
+      "profit_factor": 3.2687630365401996,
+      "max_drawdown_R": 2.0,
+      "max_consecutive_losses": 2,
+      "cost_status": "MODELED"
+    }
+  },
+  "reproducibility": {
+    "run_1_sample_count": 31,
+    "run_2_sample_count": 31,
+    "deterministic": true
+  },
+  "economic_verdict": "NEGATIVE_EXPECTANCY"
+}
+
+[exited with code 0]

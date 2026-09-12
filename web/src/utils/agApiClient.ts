@@ -222,6 +222,36 @@ export interface ProposalResponse {
   risk_percent?: number | null;
 }
 
+/** WP9/WP10 (AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1): read-only view of the
+ * ledger-backed canonical proposal. execution_authority is always 'NONE' and
+ * execution_eligible is always false -- OBSERVATION ONLY, never an execution surface.
+ * Distinct from ProposalResponse (/api/proposals), which is the execution-approval
+ * registry backing authorize-demo, not this plan's canonical R2-R4 proposal. */
+export interface CanonicalProposalResponse {
+  proposal_id: string;
+  strategy_id: string;
+  strategy_version: string;
+  symbol: string;
+  market: string;
+  direction?: string | null;
+  entry?: number | null;
+  stop?: number | null;
+  targets: number[];
+  watcher_state: string;
+  proposal_state: string;
+  execution_authority: string;
+  execution_eligible: boolean;
+  market_data_mode?: string | null;
+  market_data_source?: string | null;
+  market_data_asof?: string | null;
+  market_data_fingerprint?: string | null;
+  ready_at?: string | null;
+  expires_at?: string | null;
+  version: number;
+  correction_of?: string | null;
+  reasons: string[];
+}
+
 export const agApiClient = {
   getHealth: () => agFetch<HealthResponse>('/api/health'),
   getSystemStatus: () => agFetch<SystemStatusResponse>('/api/system/status'),
@@ -234,6 +264,9 @@ export const agApiClient = {
   getValidation: (id: string) => agFetch<ValidationResponse>(`/api/validation/${encodeURIComponent(id)}`),
   listProposals: () => agFetch<ProposalResponse[]>('/api/proposals'),
   getProposal: (hash: string) => agFetch<ProposalResponse>(`/api/proposals/${encodeURIComponent(hash)}`),
+  listCanonicalProposals: () => agFetch<CanonicalProposalResponse[]>('/api/canonical-proposals'),
+  getCanonicalProposal: (proposalId: string) =>
+    agFetch<CanonicalProposalResponse>(`/api/canonical-proposals/${encodeURIComponent(proposalId)}`),
   listTickets: () => agFetch<TicketResponse[]>('/api/tickets'),
   getTicket: (id: string) => agFetch<TicketResponse>(`/api/tickets/${encodeURIComponent(id)}`),
   authorizeDemo: (id: string) =>

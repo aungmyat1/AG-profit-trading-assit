@@ -1,0 +1,20 @@
+{
+  "actual_end": "2026-09-11T23:55:00+00:00",
+  "actual_start": "2025-06-30T10:35:00+00:00",
+  "broker": "VantageMarkets-Demo",
+  "dataset_id": "EURUSD_M5_S2R_RESEARCH",
+  "file_path": "research_external/datasets/EURUSD_M5_S2R_RESEARCH.parquet",
+  "hash_match": true,
+  "limitation_note": "MT5 terminal maxbars=100000 caps copy_rates_from_pos depth; a wide copy_rates_range back to 2023-01-01/2020-01-01 both returned no/partial data (probed this session). Maximum trustworthy contiguous EURUSD M5 history actually available from this terminal is ~14.4 months, not the originally targeted 2023-2026 multi-year span. Documented, not silently substituted.",
+  "requested_count": 90000,
+  "requested_end": null,
+  "requested_start": null,
+  "row_count_reopened": 90000,
+  "rows": 90000,
+  "sha256": "34c3296cefd4715c6c742210a36f3afe4261b53e24fa91dd02e8d3884bb240ef",
+  "sha256_reopen": "34c3296cefd4715c6c742210a36f3afe4261b53e24fa91dd02e8d3884bb240ef",
+  "size_bytes": 1364209,
+  "source": "REAL_OBSERVED_MARKET (MT5 copy_rates_from_pos, position 0 = last closed bar)",
+  "symbol": "EURUSD",
+  "timeframe": "M5"
+}

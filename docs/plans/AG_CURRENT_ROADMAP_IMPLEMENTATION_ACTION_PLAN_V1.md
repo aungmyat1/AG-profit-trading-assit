@@ -1,15 +1,36 @@
 # AG Profit Trading — Current Roadmap Implementation Action Plan V1
 
-Status: **PHASE 0 AND PHASE 1 COMPLETE. PHASE 2 (STAGE 1 FX TICKET DELIVERY) IMPLEMENTED
-AND TESTED, ARCHIVE-ONLY WIRED TO THE REAL SCHEDULED ENTRY POINT BUT NOT ACTIVATED IN
-SHIPPED CONFIG; MESSAGE DELIVERY (WP7) NOT STARTED. PHASES 3-8 NOT STARTED.**
-Last updated: **2026-09-08** (originally recorded 2026-09-08 at baseline `main` @
-`5185035`; this status line reflects work completed since, through the Stage 1
-scheduler call-site integration -- see phase-by-phase detail below).
+Status: **PROGRAM-LEVEL STATUS AND HANDOFF PLAN — R2-R4 IS THE CURRENT PRIORITY;
+POST-R4 EXPANSION IS DEFERRED.**
+Last updated: **2026-09-11** (originally recorded 2026-09-08 at baseline `main` @
+`5185035`; the original phase model is retained below as historical context).
 Planning baseline: `main` at `5185035`  
-Authority: `docs/PROJECT_ROADMAP.md`, reconciled with the current checkout
+Authority: `docs/PROJECT_ROADMAP.md`, reconciled with the current plan stack
 
-### Phase-by-phase status
+## Current plan stack
+
+| Order | Plan | Role | Start gate | Stop gate |
+|---|---|---|---|---|
+| 1 | `AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1.md` | **CURRENT** core implementation plan — WP0 + WP0A **COMPLETE** (execution-gateway conflict resolved; see `docs/status/AG_CANONICAL_R2_R4_WP0_BASELINE_RECONCILIATION_STATUS.md`); WP1 is next | WP0 baseline reconciliation | `AG_PROPOSAL_OPERATION_READY_V1` natural proof |
+| 2 | `AG_POST_R4_EXPANSION_AND_DELIVERY_PLAN_V1.md` | **DEFERRED** FX/Gold, Telegram, evidence/reporting expansion | Plan 1 fully complete | Independent expansion evidence; zero broker mutation |
+| 3 | Economic validation maturity | **FUTURE** evidence/promotion track | Durable resolved cohorts and prospective thresholds | `PASS`, `FAIL`, or `INSUFFICIENT_EVIDENCE` per strategy version |
+| 4 | Crypto proposal maturity | **FUTURE / INDEPENDENT** venue track | Stable canonical pipeline and signed crypto contracts | Independent crypto proposal/evidence readiness |
+| 5 | Controlled Demo execution | **OPTIONAL / BLOCKED** | Validated edge, eligibility, explicit authorization, safe execution gate | Demo preserves edge after actual costs |
+
+```text
+canonical R2-R4 proposal pipeline
+  -> STOP and reconcile evidence
+  -> post-R4 FX/Gold + Telegram + operator expansion
+  -> STOP and reconcile evidence
+  -> economic validation maturity
+  -> separately consider crypto and Demo execution
+```
+
+Do not mix crypto, broad symbol expansion, Telegram activation, or execution work into
+the current R2-R4 milestone. Existing execution infrastructure does not advance the
+scanner/proposal execution maturity gate.
+
+### Historical phase-by-phase status (2026-09-08 model)
 
 | Phase | Status | Evidence |
 |---|---|---|
@@ -129,7 +150,11 @@ Preserved verbatim as prior-state evidence -- do not treat as current:
 - Performance drawdown/timestamp-ordering contracts and fail-closed broker
   reconciliation were open Stage 0 blockers.
 
-## Phased action plan
+## Historical phased action plan (superseded for implementation order)
+
+The sections below preserve the original plan and its evidence vocabulary. They do not
+override the current plan stack above or the R0-R9 sequence in
+`docs/PROJECT_ROADMAP.md`.
 
 ### Phase 0 — Reconcile and freeze the baseline
 
@@ -254,7 +279,7 @@ After Stage 0 closure and Stage 4/5 passage: mocked end-to-end validation, broke
 restart tests, then a larger Demo observation program. Live trading remains outside
 this plan unless separately authorized.
 
-## Priority backlog
+## Historical priority backlog (superseded)
 
 | Priority | Deliverable | Dependency |
 |---|---|---|
@@ -280,4 +305,3 @@ this plan unless separately authorized.
 - Stop expansion when identity, freshness, or evidence integrity is unreliable.
 - Stop execution work while Stage 0 safety is open.
 - Never rewrite historical evidence or modify a frozen strategy in place.
-

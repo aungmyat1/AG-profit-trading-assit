@@ -1,0 +1,98 @@
+{
+  "schema": "AG_D_DRIVE_RESOURCE_INVENTORY_V1",
+  "generated_at_utc": "2026-09-12",
+  "audit_scope": "STAGED, SHALLOW: git remote identity + top-1..2-level directory listing + targeted grep for S2-relevant keywords + dataset file metadata (row count / date range / header) only. No full-file content review beyond the specific files listed as inspected. No secrets read or recorded.",
+  "entries": [
+    {
+      "path": "D:/ddev/1upgraded_ai_gold_trading",
+      "type": "repo",
+      "remote": "https://github.com/aungmyat1/1upgraded_ai_gold_trading.git",
+      "owner_confirmed": "aungmyat1 (owner-confirmed)",
+      "inspected_depth": "top-level directory listing only",
+      "capabilities": ["dashboard", "telegram_signal_service", "paxg_bot_skill", "saas_landing"],
+      "reuse_candidate": false,
+      "notes": "Matches prompt's classification exactly: gold/PAXG productization, dashboard, Telegram, SaaS landing page. Not an FX edge-validation donor. Classified LATER_PRODUCT_REUSE per prompt's own guidance -- not pursued further this audit."
+    },
+    {
+      "path": "D:/ddev/Session-SMC/session-smc-trading-bot",
+      "type": "repo",
+      "remote": "https://github.com/aungmyat1/session-smc-trading-bot.git",
+      "owner_confirmed": "aungmyat1 (owner-confirmed)",
+      "head_summary": "e179fe2 SYS2-T014 closure archive, SYS2-T015, and System 2 feature freeze (#29), branch main",
+      "inspected_depth": "2-level directory listing + targeted grep (breakout/displacement/retest) + read: strategy/session_liquidity/{displacement_detector,sweep_detector,entry_engine}.py (headers/docstrings + partial body)",
+      "capabilities": [
+        "historical_replay (historical_replay/replay_engine.py, event_clock.py, market_data_loader.py)",
+        "virtual_broker (virtual_broker/fill_engine.py, order_validator.py, position_manager.py)",
+        "execution_simulator (execution_simulator/execution/risk_engine.py, broker/virtual_broker.py)",
+        "strategy_validation (strategy_validation/{pipeline,scoring,validators,schemas}/)",
+        "svos governance/lifecycle/registry (svos/{governance,lifecycle,registry}/)",
+        "wilder_atr + displacement/sweep detection (strategy/session_liquidity/*.py) -- pure, deterministic, dataclass-result functions, strict-inequality discipline, well-documented",
+        "src/signals/london_breakout.py, ny_momentum.py -- additional session-breakout signal implementations",
+        "extensive test suite (tests/{unit,integration,regression,replay,strategy_validation,...}/)"
+      ],
+      "reuse_candidate": true,
+      "notes": "Largest, most mature donor found. This is a full 'Strategy Validation Operating System' (SVOS) with its own historical replay, virtual broker/fill engine, and multi-stage governance -- structurally analogous to AG's own R0-R9 discipline but for a sibling project. displacement_detector.py's wilder_atr() and DisplacementResult (body > mult*ATR, close-quartile gate, strict inequality) are directly relevant to S2's own displacement requirement and are REUSE_DIRECT candidates for the ATR helper specifically. sweep_detector.py/entry_engine.py implement a DIFFERENT setup ('Strategy A': Asian-range liquidity sweep + displacement + entry), not AG's own S2 breakout/retest/confirmation sequence -- reusable as PATTERN/adapter reference, not a drop-in S2 implementation. virtual_broker/fill_engine.py and historical_replay/replay_engine.py were located but not content-reviewed this session -- flagged for the next task's deeper inspection before any REUSE_DIRECT classification of the replay/fill engine itself."
+    },
+    {
+      "path": "D:/ddev/smc-lss-platform",
+      "type": "repo",
+      "remote": "https://github.com/aungmyat1/smc-lss-platform.git",
+      "owner_confirmed": "aungmyat1 (owner-confirmed)",
+      "inspected_depth": "top-level directory listing + dataset file metadata (head/tail/wc -l on EURUSD_M5.csv only)",
+      "capabilities": [
+        "contracts/DATASET_CONTRACT.yaml -- a predeclared dataset contract convention, worth comparing against AG's own config/historical_datasets/*.yaml manifest shape",
+        "governance/st_c2_stage_status.yaml, st_c3_stage_status.yaml + stages/{A2,A3,B,C,D}/ -- a staged-gate governance model, structurally similar in spirit to AG's own R0-R9 / lifecycle_stage discipline",
+        "golden/, evidence/, validation/ directories -- not yet content-inspected",
+        "real historical CSV datasets: data/EURUSD_M5.csv, EURUSD_M15.csv, EURUSD_H1.csv, EURUSD_H4.csv, EURUSD_D1.csv, GBPUSD_*.csv, BTCUSD_*.csv, XAUUSD-VIP_*.csv"
+      ],
+      "reuse_candidate": true,
+      "dataset_found": {
+        "file": "data/EURUSD_M5.csv",
+        "size_bytes": 4185878,
+        "row_count_incl_header": 80005,
+        "header": "time,open,high,low,close",
+        "first_row": "2025-06-24 14:25,1.16079,1.1609099999999999,1.16054,1.16088",
+        "last_row": "2026-07-21 09:20,1.14196,1.14196,1.14188,1.14192",
+        "coverage_approx": "2025-06-24 through 2026-07-21 (~13 months)",
+        "classification": "SECONDARY_CROSSCHECK -- no volume column, timezone convention not yet verified against MT5/broker offset, does not reach back to 2023-01-01. Useful as an independent cross-check sample against MT5-captured data for the same period (mission section 28), not as a primary multi-year source -- it does not extend AG's available history beyond what MT5 can already supply directly."
+      },
+      "notes": "Second major SMC-related platform under the same owner, with its own contract/governance vocabulary worth comparing to AG's before assuming AG's is superior or vice versa. Not deep-inspected beyond the above this session."
+    },
+    {
+      "path": "D:/ddev/Session Trade Codex",
+      "type": "repo",
+      "remote": "https://github.com/ifashion101gm/Session-Trade-Codex.git",
+      "owner_confirmed": "user confirmed ifashion101gm is also their own account",
+      "inspected_depth": "not re-inspected this session -- already a known, referenced-not-vendored dependency of this repo (strategies/session_trade/contract.yaml, strategies/registry.yaml's SESSION_TRADE_V1/SMC_3R_V1 entries)",
+      "capabilities": ["SESSION_TRADE_V1 engine (existing AG dependency)", "smc_3r_v1"],
+      "reuse_candidate": "ALREADY_REFERENCED",
+      "notes": "Not a new discovery -- AG's own strategies/registry.yaml already documents this as SESSION_TRADE_V1's and SMC_3R_V1's actual engine location, referenced not vendored. No new audit action needed here; listed for completeness."
+    },
+    {
+      "path": "D:/ddev/ai-trade-systemD/auto-trade-system",
+      "type": "repo",
+      "remote": "https://github.com/ifashion101gm/auto-trade-system.git",
+      "owner_confirmed": "user confirmed ifashion101gm is also their own account",
+      "inspected_depth": "git remote identity only -- not content-inspected this session",
+      "capabilities": ["UNASSESSED"],
+      "reuse_candidate": "UNASSESSED",
+      "notes": "Closest local match to the prompt's named 'am1-auto-trade-system', but under a different exact name/owner than specified (ifashion101gm/auto-trade-system, not aungmyat1/am1-auto-trade-system). A sibling directory 'auto-trade-system-1' exists with the identical remote URL -- likely two working copies of the same repo, not two different repos. Content not inspected this session; deferred to a future audit pass."
+    },
+    {
+      "path": "D:/ddev/AG trade assit",
+      "type": "empty_directory",
+      "remote": null,
+      "inspected_depth": "listing only",
+      "capabilities": [],
+      "reuse_candidate": false,
+      "notes": "Empty -- not a real clone of the prompt's named 'AG-profit-trading-assit'. No git repository present."
+    }
+  ],
+  "not_found_locally": [
+    "simple-smc-ag-trading-bot (aungmyat1) -- no matching local directory found under D:/ddev or D:/dev by name or grep",
+    "am1-auto-trade-system (aungmyat1, exact name) -- closest local match is ifashion101gm/auto-trade-system, a different exact identity",
+    "gold_binance_trading_plan (aungmyat1) -- no matching local directory found",
+    "AG-profit-trading-assit (aungmyat1) -- the similarly-named local folder 'AG trade assit' is empty"
+  ],
+  "secrets_policy_followed": "No .env, credential, token, or key file contents were read or recorded from any donor repository. Only .git/config remote URLs and public directory/file listings were inspected."
+}

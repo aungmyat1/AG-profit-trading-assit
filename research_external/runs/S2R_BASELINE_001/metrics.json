@@ -1,0 +1,23 @@
+{
+  "dataset_role": "TRAIN",
+  "expectancy_R": -0.91910099303112,
+  "friction_authority": "PROVISIONAL",
+  "gross_total_R": -63.41796851914728,
+  "holdout_used": false,
+  "label": "BASELINE_NON_OPTIMIZED_RESEARCH_EVIDENCE",
+  "losses": 54,
+  "max_drawdown_R": 63.41796851914728,
+  "net_total_R": "NOT_EVALUATED",
+  "optimization_used": false,
+  "profit_factor": 0.26037405712326145,
+  "rejected_order_count": 1,
+  "reproducibility": {
+    "metrics_parity": true,
+    "signal_parity": true,
+    "trade_parity": true
+  },
+  "run_id": "S2R_BASELINE_001",
+  "trade_count": 69,
+  "win_rate": 0.21739130434782608,
+  "wins": 15
+}

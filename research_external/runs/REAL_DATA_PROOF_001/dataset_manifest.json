@@ -1,0 +1,60 @@
+{
+  "acquired_at_utc": "2026-09-12T11:19:27.487495+00:00",
+  "actual_first_timestamp": "2026-09-11T22:20:00+00:00",
+  "actual_last_timestamp": "2026-09-11T23:55:00+00:00",
+  "broker": "VantageMarkets-Demo",
+  "dataset_id": "EURUSD_M5_REAL_PROOF",
+  "duplicate_timestamp_count": 0,
+  "file_path": "research_external/runs/REAL_DATA_PROOF_001/datasets/EURUSD_M5_REAL_PROOF.parquet",
+  "future_row_count": 0,
+  "hash_match": true,
+  "monotonic": true,
+  "requested_count": 20,
+  "row_count": 20,
+  "sha256": "85146e654c32c3fe081a9690d0a05dfc4a0e73c1b3fbc13162ff68b201e1c6cd",
+  "sha256_reopen": "85146e654c32c3fe081a9690d0a05dfc4a0e73c1b3fbc13162ff68b201e1c6cd",
+  "size_bytes": 6673,
+  "source_type": "REAL_OBSERVED_MARKET",
+  "symbol": "EURUSD",
+  "timeframe": "M5",
+  "timestamp_authority": "PASS",
+  "timestamp_mismatch_count": 0,
+  "timestamp_samples": [
+    {
+      "expected_utc": "2026-09-11T22:20:00+00:00",
+      "index": 0,
+      "match": true,
+      "raw_epoch": 1789165200,
+      "stored_utc": "2026-09-11T22:20:00+00:00"
+    },
+    {
+      "expected_utc": "2026-09-11T22:45:00+00:00",
+      "index": 5,
+      "match": true,
+      "raw_epoch": 1789166700,
+      "stored_utc": "2026-09-11T22:45:00+00:00"
+    },
+    {
+      "expected_utc": "2026-09-11T23:10:00+00:00",
+      "index": 10,
+      "match": true,
+      "raw_epoch": 1789168200,
+      "stored_utc": "2026-09-11T23:10:00+00:00"
+    },
+    {
+      "expected_utc": "2026-09-11T23:35:00+00:00",
+      "index": 15,
+      "match": true,
+      "raw_epoch": 1789169700,
+      "stored_utc": "2026-09-11T23:35:00+00:00"
+    },
+    {
+      "expected_utc": "2026-09-11T23:55:00+00:00",
+      "index": 19,
+      "match": true,
+      "raw_epoch": 1789170900,
+      "stored_utc": "2026-09-11T23:55:00+00:00"
+    }
+  ],
+  "timestamp_samples_checked": 5
+}

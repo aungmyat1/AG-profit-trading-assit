@@ -1,0 +1,30 @@
+{
+  "schema": "AG_FILL_ENGINE_DECISION_V1",
+  "generated_at_utc": "2026-09-12",
+  "inspected": [
+    "session-smc-trading-bot/virtual_broker/fill_engine.py (6 lines -- re-export only, `from execution_simulator.execution.fill_engine import FillEngine, FillResult`)",
+    "session-smc-trading-bot/virtual_broker/broker.py (6 lines -- re-export only)",
+    "session-smc-trading-bot/execution_simulator/execution/fill_engine.py (62 lines -- the real implementation)"
+  ],
+  "criteria": {
+    "deterministic": {"result": false, "note": "fill price depends on wall-clock-style latency offset applied to a live/replay tick timestamp, and on a fixed slippage_points constant applied unconditionally -- reproducible given identical inputs, but the model itself is a live-tick latency/slippage simulator, not a deterministic historical-bar fill resolver"},
+    "causal": {"result": "not applicable to this module", "note": "this module only prices a single order against one already-supplied MarketEvent tick -- causality is the caller's (replay_engine's) responsibility, not evaluated here"},
+    "historical_only": {"result": false, "note": "designed for a live/replay tick-event harness (MarketEvent with bid/ask), not a closed-OHLC-bar historical backtest"},
+    "long_support": {"result": true},
+    "short_support": {"result": true},
+    "SL_support": {"result": false, "note": "FillEngine.fill_order() has no stop_loss/take_profit parameters at all -- it only fills an entry order against ask/bid + slippage"},
+    "TP_support": {"result": false, "note": "same as SL_support"},
+    "same_bar_SL_TP_collision_behavior": {"result": "NOT_APPLICABLE", "note": "no SL/TP concept exists in this module to have a collision policy for"},
+    "entry_timing": {"result": "tick-based with latency_ms offset (default 150ms)", "note": "not bar-close-based; does not match AG's own closed-M5/M15-bar decision cadence"},
+    "spread_support": {"result": "indirect", "note": "consumes market_event.bid/market_event.ask separately depending on direction -- spread is implicit in the caller-supplied tick, not modeled by this module itself"},
+    "commission_support": {"result": false},
+    "slippage_support": {"result": true, "note": "fixed slippage_points * point_size_by_symbol, applied unconditionally in the adverse direction -- not spread/volatility-aware"},
+    "trade_ledger_exportability": {"result": "NOT_APPLICABLE", "note": "FillResult covers only the fill event, not a full trade lifecycle (no exit/outcome fields) -- a trade ledger would need to be assembled elsewhere regardless of which fill engine is chosen"},
+    "no_live_broker_dependency": {"result": false, "note": "line 6: `from execution.metaapi_client import OrderResult` -- an unused import (OrderResult is never referenced in this file) but it makes the MODULE ITSELF unimportable without the live MetaAPI execution client package present, and semantically couples this 'virtual' fill engine to the project's real execution stack by construction"},
+    "no_execution_api_dependency": {"result": false, "note": "same finding as above -- this is the disqualifying criterion"}
+  },
+  "classification": "REJECT",
+  "reason": "Two of the mission's own explicit safety requirements fail outright: it imports from execution.metaapi_client (a live broker execution client) at module level, and it has no SL/TP concept at all (only prices a single entry fill against a tick). It also isn't semantically matched to AG's closed-bar (M5/M15) historical decision cadence -- it's a tick-latency/slippage simulator for a live-replay harness, not a deterministic historical OHLC-bar fill resolver. No further engine search performed, per the mission's own instruction not to spend additional work once one donor and Backtesting.py have both been considered.",
+  "engine_selected": "Backtesting.py",
+  "engine_selection_reason": "Per the mission's own engine selection rule (donor passes all safety/semantic requirements -> reuse; otherwise Backtesting.py), and since the donor was REJECTED on safety grounds (execution-API coupling) independent of any semantic scoring, Backtesting.py is selected without further comparison."
+}

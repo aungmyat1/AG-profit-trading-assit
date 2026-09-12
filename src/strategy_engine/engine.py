@@ -12,10 +12,10 @@ TradeSignal after this.
 from __future__ import annotations
 
 from datetime import date
-from typing import Sequence
+from typing import Optional, Sequence
 
 from .models import StrategyConfig, TradeSignal
-from .session import Candle, DecisionStatus, route_completed_session
+from .session import Candle, DecisionStatus, Regime, route_completed_session
 
 
 def evaluate(
@@ -26,7 +26,11 @@ def evaluate(
     session_candles: Sequence[Candle],
     expected_bar_count: int,
     post_session_candles: Sequence[Candle] = (),
+    regime_override: Optional[Regime] = None,
 ) -> TradeSignal:
+    """regime_override: AG_PROJECT_ARCHITECTURE_READINESS_COMPLETION_V1 -- passed
+    through unchanged to route_completed_session (see its own docstring). Omitting it
+    (None, the default) preserves exact prior behavior for every existing caller."""
     if symbol not in strategy.instruments:
         raise ValueError(f"{symbol!r} is not in {strategy.strategy_id}'s instruments: {strategy.instruments}")
 
@@ -43,6 +47,7 @@ def evaluate(
         session_candles,
         expected_bar_count,
         post_session_candles,
+        regime_override=regime_override,
     )
 
     status = "SIGNAL" if decision.decision_status is DecisionStatus.VALID else "NO_TRADE"

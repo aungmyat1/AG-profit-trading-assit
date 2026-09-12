@@ -31,6 +31,7 @@ import {
   AG_UI_MODE,
   type BrokerAccountResponse,
   type BrokerHistoryResponse,
+  type CanonicalProposalResponse,
   type ProposalResponse,
   type StrategyResponse,
   type SystemStatusResponse,
@@ -481,11 +482,13 @@ function ProposalsSection() {
   }, [load]);
 
   return (
-    <SectionShell title="Canonical Proposals" icon={<BadgeCheck className="w-4 h-4 text-cyan-400" />} state={state} error={error} onRetry={load}>
+    <SectionShell title="Execution-Linked Proposals" icon={<BadgeCheck className="w-4 h-4 text-cyan-400" />} state={state} error={error} onRetry={load}>
       {data.length === 0 ? (
         <div className="text-slate-500">
-          No proposals currently registered on the backend. This backend's proposal registry has no
-          persistent ingestion path yet -- an empty list here is expected, not an error.
+          No proposals currently registered on the backend's execution-approval registry
+          (backs POST /api/tickets/*/authorize-demo). This is a separate surface from the
+          canonical R2-R4 proposal ledger below -- see "Canonical Proposals (Observation Only)".
+          An empty list here is expected, not an error.
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -519,6 +522,95 @@ function ProposalsSection() {
                   <td className="py-1 pr-3">
                     {p.risk_amount}
                     {p.risk_percent != null ? ` (${p.risk_percent}%)` : ''}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </SectionShell>
+  );
+}
+
+/** WP10 (AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1): renders the ledger-backed canonical
+ * proposal population verbatim from GET /api/canonical-proposals. This component
+ * computes nothing -- state, geometry, and provenance are exactly what the backend
+ * returned; it never infers READY, never fills missing geometry, and never offers an
+ * execute action (execution_authority/execution_eligible are always displayed as
+ * received, always NONE/false from this route by construction). */
+function CanonicalProposalsSection() {
+  const [state, setState] = useState<LoadState>('LOADING');
+  const [data, setData] = useState<CanonicalProposalResponse[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setState('LOADING');
+    setError(null);
+    try {
+      const resp = await agApiClient.listCanonicalProposals();
+      setData(resp);
+      setState('READY');
+    } catch (err) {
+      setData([]);
+      setError(describeError(err));
+      setState(isDisconnected(err) ? 'DISCONNECTED' : 'ERROR');
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return (
+    <SectionShell
+      title="Canonical Proposals (Observation Only)"
+      icon={<ShieldCheck className="w-4 h-4 text-emerald-400" />}
+      state={state}
+      error={error}
+      onRetry={load}
+    >
+      {data.length === 0 ? (
+        <div className="text-slate-500">
+          No canonical proposals in the ledger yet. This is expected until a natural,
+          real-market READY strategy decision forms one -- see
+          AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1's WP12 natural-proof requirement.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="text-slate-500 text-left border-b border-slate-800">
+                <th className="py-1 pr-3">Proposal ID</th>
+                <th className="py-1 pr-3">Strategy</th>
+                <th className="py-1 pr-3">Symbol</th>
+                <th className="py-1 pr-3">State</th>
+                <th className="py-1 pr-3">Direction</th>
+                <th className="py-1 pr-3">Entry</th>
+                <th className="py-1 pr-3">Stop</th>
+                <th className="py-1 pr-3">Targets</th>
+                <th className="py-1 pr-3">Source</th>
+                <th className="py-1 pr-3">Mode</th>
+                <th className="py-1 pr-3">Execution</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map(p => (
+                <tr key={p.proposal_id} className="border-b border-slate-900 text-slate-300">
+                  <td className="py-1 pr-3 font-mono">{p.proposal_id}</td>
+                  <td className="py-1 pr-3">{p.strategy_id}</td>
+                  <td className="py-1 pr-3">{p.symbol}</td>
+                  <td className="py-1 pr-3">{p.proposal_state}</td>
+                  <td className="py-1 pr-3">{p.direction ?? 'N/A'}</td>
+                  <td className="py-1 pr-3">{p.entry ?? 'N/A'}</td>
+                  <td className="py-1 pr-3">{p.stop ?? 'N/A'}</td>
+                  <td className="py-1 pr-3">{p.targets.length ? p.targets.join(', ') : 'N/A'}</td>
+                  <td className="py-1 pr-3">{p.market_data_source ?? 'N/A'}</td>
+                  <td className="py-1 pr-3">{p.market_data_mode ?? 'N/A'}</td>
+                  <td className="py-1 pr-3">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border bg-slate-800 text-slate-400 border-slate-700">
+                      {p.execution_authority} / BLOCKED
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -626,6 +718,7 @@ export function AGBackendPanel() {
       <BrokerAccountSection />
       <BrokerHistorySection />
       <StrategiesSection />
+      <CanonicalProposalsSection />
       <ProposalsSection />
       <TicketsSection />
     </div>

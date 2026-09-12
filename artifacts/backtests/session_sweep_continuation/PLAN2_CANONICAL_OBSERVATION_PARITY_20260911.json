@@ -1,0 +1,93 @@
+{
+  "report_id": "AG_PLAN2_CANONICAL_OBSERVATION_PARITY",
+  "migration_slice": "AG_PLAN2_GOLDEN_CANONICAL_COMPLETION_V1",
+  "generated_at": "2026-09-11T19:12:26.620580+00:00",
+  "git_commit": "cfcfc8503dbca828e466824ff7529baa55dc44db",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.0",
+  "references_frozen_baseline": "artifacts/backtests/session_sweep_continuation/FIRST_CANONICAL_REPLAY_20260911.json",
+  "observations": {
+    "MARKET_BIAS": "FULLY_INJECTED",
+    "MARKET_REGIME": "FULLY_INJECTED",
+    "remaining_coupling_debt": "NONE"
+  },
+  "decision_cycles": 66,
+  "semantic_parity": {
+    "fields_compared": [
+      "regime",
+      "campaign_direction",
+      "campaign_status",
+      "accepted_count",
+      "rejected_count",
+      "accepted_entry_prices",
+      "accepted_stop_prices",
+      "accepted_net_R"
+    ],
+    "mismatches": [],
+    "matches": 66,
+    "status": "PASS"
+  },
+  "regime_injection_verification": {
+    "description": "legacy path's internally-computed regime (classify_regime called directly) vs canonical path's injected regime_result (unwrapped from the MARKET_REGIME MarketObservation, passed into run_replay's regime_result parameter)",
+    "mismatches": [],
+    "matches": 66,
+    "status": "PASS"
+  },
+  "input_fingerprint_samples": [
+    {
+      "date": "2026-05-18",
+      "pair": "ASIAN_LONDON",
+      "bias_input_fingerprint": "4efe1521b21b3be95b58cd96289b64a574167629ceacbb9735cb4ee26b566a36",
+      "regime_input_fingerprint": "0ccea21f99e6a2b812fb8517f191ebf21b6c731c133fb7d473a76a09c41877e5"
+    },
+    {
+      "date": "2026-05-18",
+      "pair": "LONDON_NEWYORK",
+      "bias_input_fingerprint": "c86d7bd88cd9aa5732f8b6ddd1e91001542ca0c0610790bbf42cd89e2655e26a",
+      "regime_input_fingerprint": "c123239befae7f06733a5dd22cc8c237023341bfa27ae250ea36bfe991c78783"
+    },
+    {
+      "date": "2026-05-19",
+      "pair": "ASIAN_LONDON",
+      "bias_input_fingerprint": "3144a531fb7671dbaf653dc42b0fdb151e85362f27f6c13dcd34c57af7b5cbf2",
+      "regime_input_fingerprint": "62236d860497541696a11a47f882cf4ed1061084d4e7f37f8fb664e7f524b99e"
+    }
+  ],
+  "legacy_sample_size": 31,
+  "canonical_sample_size": 31,
+  "legacy_metrics": {
+    "sample_size": 31,
+    "wins": 15,
+    "losses": 15,
+    "breakevens": 1,
+    "gross_total_R": 0.009297474401486275,
+    "gross_expectancy_R": 0.00029991852908020243,
+    "net_total_R": -5.877143551454205,
+    "net_expectancy_R": -0.18958527585336146,
+    "win_rate": 0.4838709677419355,
+    "average_win_R": 0.7764922296208834,
+    "average_loss_R": -0.7758723979941177,
+    "profit_factor": 1.0007988834612085,
+    "max_drawdown_R": 4.554691801679736,
+    "max_consecutive_losses": 4,
+    "cost_status": "MODELED"
+  },
+  "canonical_metrics": {
+    "sample_size": 31,
+    "wins": 15,
+    "losses": 15,
+    "breakevens": 1,
+    "gross_total_R": 0.009297474401486275,
+    "gross_expectancy_R": 0.00029991852908020243,
+    "net_total_R": -5.877143551454205,
+    "net_expectancy_R": -0.18958527585336146,
+    "win_rate": 0.4838709677419355,
+    "average_win_R": 0.7764922296208834,
+    "average_loss_R": -0.7758723979941177,
+    "profit_factor": 1.0007988834612085,
+    "max_drawdown_R": 4.554691801679736,
+    "max_consecutive_losses": 4,
+    "cost_status": "MODELED"
+  },
+  "economic_parity": "PASS"
+}

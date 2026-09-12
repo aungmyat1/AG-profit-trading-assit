@@ -74,6 +74,41 @@ strategies:
       no authority change: research/demo/live/execution fields already matched the
       ledger's own long-standing statement.
 
+  ST_SESSION_SWEEP_CONTINUATION_V1:
+    registered: true
+    active: false   # OFFLINE_RESEARCH only (config/governance/strategy_lifecycle.yaml) --
+                     # no operating pilot/incubation cycle, matches ST_LARGE_SMC_V1's own
+                     # active:false convention at an equivalent early lifecycle stage
+    research: true
+    demo_authorized: false
+    live_authorized: false
+    config_source: strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml
+    engine: >-
+      src/session_sweep_continuation/ (isolated replay/regime/setup/state-machine/
+      outcome-resolution engine; RESEARCH_ONLY -- see
+      src/validation_framework/adapters/session_sweep_continuation_adapter.py for
+      lifecycle-gate evidence). Registered under strategy_manager.manager's own
+      registry-lookup pattern; strategy_manager.manager.evaluate() itself only has an
+      adapter wired for SESSION_TRADE_V1 (see that module's own docstring: "Only
+      SESSION_TRADE_V1 has an adapter in this V1"), so this registration makes the
+      strategy enumerable/visible (registry.yaml, GET /api/strategies) and
+      demo-authorization-checkable (authorization.strategy_authority), but NOT
+      dispatchable through strategy_manager.manager.evaluate() -- calling it for this
+      strategy_id returns STRATEGY_ADAPTER_NOT_IMPLEMENTED, exactly like every other
+      non-SESSION_TRADE_V1 registry entry today. No execution/proposal authority is
+      implied or added by this entry.
+    note: >-
+      Identity note (registered 2026-09-10): the owner request that prompted this entry
+      named a bare id `ST_SESSION_SWEEP_CONTINUATION` at version 1.1.1, which does not
+      match any strategy that actually exists in this repository. The real, already-
+      implemented and tested identity is ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.0 (see
+      strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml, config/governance/
+      strategy_lifecycle.yaml, src/session_sweep_continuation/). This entry registers
+      THAT real identity rather than fabricating a second, competing
+      bare-id/v1.1.1 identity with no implementation behind it -- see the
+      AG_ST_SESSION_SWEEP_CONTINUATION_REGISTRATION_STATUS report for the full
+      open-question writeup.
+
   R8_OBM_V1:
     registered: true
     active: false

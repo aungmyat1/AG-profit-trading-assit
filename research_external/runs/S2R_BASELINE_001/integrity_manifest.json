@@ -1,0 +1,42 @@
+{
+  "entries": [
+    {
+      "filename": "signal_ledger.parquet",
+      "reproducible": true,
+      "sha256": "8c4667c99687c47e4048d21cb00582ccd898e678be5369ab8d4945c76b46b763",
+      "size_bytes": 24908
+    },
+    {
+      "filename": "trade_ledger.parquet",
+      "reproducible": true,
+      "sha256": "4ad0659bae0db5d07c919d7c0bf9a00d0f91f0b7af6a7d74e645bbcff4713394",
+      "size_bytes": 13835
+    },
+    {
+      "filename": "strategy_spec_snapshot.json",
+      "sha256": "9b9d014e644e8814f65e2a3edb96cbf961f462ddf0222ce554c73d593247467c",
+      "size_bytes": 1676
+    },
+    {
+      "filename": "parameters.json",
+      "sha256": "b091eba71702a7ed09d321a1c57f4b41f16698a9cfacbe8ac83741b3a32e7788",
+      "size_bytes": 129
+    },
+    {
+      "filename": "engine_metadata.json",
+      "sha256": "0c34f420f5318b4a2ce4c48314787940c33c9528f72ac511d4a8bf4a451039de",
+      "size_bytes": 308
+    },
+    {
+      "filename": "metrics.json",
+      "sha256": "736c440ddedb164709c3281357ed25981b1f4b621ac1ec2e1b4ce0a667c7f6fd",
+      "size_bytes": 622
+    },
+    {
+      "filename": "data_validation.json",
+      "sha256": "ef8210ce0078ee1f08b7e69c8e9974aa343b03124f36d92cc0a42f78dd375b41",
+      "size_bytes": 131
+    }
+  ],
+  "run_id": "S2R_BASELINE_001"
+}

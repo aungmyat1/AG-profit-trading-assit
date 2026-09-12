@@ -1,0 +1,55 @@
+# Owner-authorized historical analytical metadata for ONE specific dataset file.
+# See EURUSD_H1_202501020000_202607310000.yaml (same directory) for the full
+# authorization/timezone-methodology explanation this file also follows.
+#
+# Role in ST_SESSION_SWEEP_CONTINUATION_V1's timeframe contract: M15 =
+# STRATEGY_DECISION_INPUT (session ranges, S1/S2/S3, decision cycle).
+#
+# SELECTION NOTE (P22-P24, DETECT_OVERLAP/SELECT step): two other EURUSD M15 files
+# exist on D:\:
+#   - EURUSD_M15_202210030000_202210212345.csv -- DISJOINT_CONTIGUOUS (Oct 2022, no
+#     overlap with this file's range; a separate, much older, isolated 19-day window).
+#   - EURUSD_M15_202601020000_202606192345.csv -- OVERLAPPING_CONFLICTING with THIS
+#     file under strict start/end-equality overlap classification (its range
+#     2026-01-02..2026-06-19 sits entirely inside this file's own 2025-01-02..2026-06-19
+#     range, i.e. is very likely a true subset export from the same source, but
+#     byte-for-byte identity of the overlapping window was NOT independently verified
+#     row-by-row this pass -- flagged, not assumed). THIS file was selected over the
+#     narrower one on LONGEST_COVERAGE / SUPERSET_OF_SIBLING grounds. The narrower file
+#     is NOT deleted or concatenated; it remains available as a discovered candidate,
+#     unselected, for a future run that wants to independently cross-check the
+#     overlapping window.
+
+dataset_id: EURUSD_M15_202501020000_202606192345
+symbol: EURUSD
+declared_timeframe: M15
+observed_timeframe: M15
+timeframe_status: MATCH
+strategy_role: STRATEGY_DECISION_INPUT
+authorization_status: OWNER_AUTHORIZED
+integrity_status: HASH_RECORDED
+quality_status: PASS
+source_file: "D:\\EURUSD_M15_202501020000_202606192345.csv"
+file_size_bytes: 2272852
+row_count: 36480
+parser_version: market_data_readiness.scanner v1 (streaming csv, tab-delimited MT5 export)
+dataset_fingerprint: "sha256:7f7502938862f4a3779f018caab468fe4445a4d8c676c8393dc29ca57fc43a65"
+timestamp_convention:
+  raw_start: "2025-01-02T00:00:00"
+  raw_end: "2026-06-19T23:45:00"
+  timezone_status: BROKER_OFFSET_CONFIRMED
+  broker_utc_offset_hours: 3
+  utc_start: "2025-01-01T21:00:00+00:00"
+  utc_end: "2026-06-19T20:45:00+00:00"
+quality_findings:
+  duplicate_timestamps: 0
+  nonmonotonic_timestamps: 0
+  ohlc_violations: 0
+  zero_or_negative_price_rows: 0
+  parse_failures: 0
+  largest_gap_hours: 48.25
+candidates_considered: 3
+overlap_relationships:
+  EURUSD_M15_202210030000_202210212345.csv: DISJOINT_CONTIGUOUS
+  EURUSD_M15_202601020000_202606192345.csv: OVERLAPPING_CONFLICTING
+selection_reason_codes: [LONGEST_COVERAGE, SUPERSET_OF_SIBLING, TIMEZONE_RESOLVED, QUALITY_PASS]

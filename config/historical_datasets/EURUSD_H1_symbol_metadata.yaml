@@ -1,0 +1,48 @@
+# OWNER-APPROVED symbol-metadata manifest for EURUSD_H1_202501020000_202607310000.csv.
+#
+# Authorized 2026-09-11 (AG_DAILY_SESSION_TRADE_CONTINUATION, explicit owner decision
+# recorded in-session via AskUserQuestion -- "Yes, authorize it") -- promoted from the
+# candidate artifact this repository previously carried as
+# EURUSD_H1_symbol_metadata_candidate.yaml (authority: PENDING_OWNER_AUTHORIZATION,
+# introduced by AG_SYMBOL_METADATA_H1_BIAS_REMEDIATION, 2026-09-10). This file replaces
+# that candidate; the candidate file is removed rather than left as stale/misleading
+# duplicate state.
+#
+# Mechanism (unchanged from the candidate): this repository already has a strategy-
+# neutral, repo-native mechanism for exactly this need --
+# historical_replay/symbol_metadata_manifest.py's HistoricalSymbolMetadataManifest,
+# consumed via historical_replay/data_source_patch.py's historical_data_context(...,
+# symbol_metadata_manifest=...), which redirects market_structure.tiers.
+# analyze_structure_tiers's tick_size lookup away from live MT5 during historical
+# replay (the same mechanism ST_LARGE_SMC_V1 already depends on for its M5 target
+# model). No new resolver, schema, or analyzer was needed or written.
+#
+# Distinct from config/historical_datasets/EURUSD_H1_202501020000_202607310000.yaml
+# (same directory, same dataset_id prefix) -- that file is a DATA-QUALITY/timezone
+# readiness manifest (market_data_readiness.scanner schema: row_count, quality_findings,
+# timestamp_convention); this file is the SEPARATE symbol-metadata/tick_size manifest
+# schema (historical_replay/symbol_metadata_manifest.py's schema) that
+# analyze_structure_tiers actually consumes. Named with a "_symbol_metadata" suffix
+# specifically to avoid colliding with that other manifest.
+#
+# tick_size = 0.00001: same value as the one other currently-approved manifest of this
+# schema (EURUSD_M5_202504211715_202607310000.yaml, approved 2026-09-02), same apparent
+# broker export family (EURUSD_M1_202605180946_202607312356.yaml's own note: "H1/M15/M5/
+# Daily EURUSD files from the same apparent broker export family all DO resolve cleanly
+# to +3h" -- independently corroborated this same day via tick-level cross-validation,
+# see src/mt5/broker_time.py's REOPEN_TOLERANCE_HOURS comment). Each manifest's approval
+# remains scoped to its own ONE dataset file (own dataset_fingerprint below) -- this file
+# does not retroactively broaden the M5 manifest's own scope, and vice versa.
+
+dataset_id: EURUSD_H1_202501020000_202607310000
+symbol: EURUSD
+tick_size: 0.00001
+metadata_scope: HISTORICAL_ANALYSIS_ONLY
+authority: OWNER_APPROVED_DATASET_MANIFEST
+approval_date: "2026-09-11"
+# sha256 of the exact source file, re-verified byte-for-byte against the live D:\ file
+# immediately before this authorization (2026-09-11) -- matches
+# config/historical_datasets/EURUSD_H1_202501020000_202607310000.yaml's own
+# dataset_fingerprint and every prior recomputation across all preceding tasks:
+dataset_fingerprint: "sha256:f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060"
+source_file: "D:\\EURUSD_H1_202501020000_202607310000.csv"

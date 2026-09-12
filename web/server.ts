@@ -23,7 +23,9 @@ function readEnvFile() {
             }
             if (key) {
               envFileVars[key] = val;
-              process.env[key] = val;
+              if (process.env[key] === undefined) {
+                process.env[key] = val;
+              }
             }
           }
         }
@@ -51,7 +53,7 @@ import { Position, AuditLog, ReplayFixture } from './src/types/trading';
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json());
 
@@ -1282,60 +1284,21 @@ async function startServer() {
     }
 
     if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() === 'real') {
-      if (![entryPrice, stopLoss, takeProfit1].every(value => Number.isFinite(Number(value)))) {
-        return res.status(400).json({ success: false, error: 'ENTRY_SL_AND_TP1_MUST_BE_FINITE' });
-      }
-
-      const repoRoot = path.resolve(process.cwd(), '..');
-      const scriptPath = path.join(repoRoot, 'scripts', 'web_execute_trade.py');
-      const python = process.env.PYTHON_EXECUTABLE || 'python';
-      const args = [
-        scriptPath,
-        '--symbol', String(symbol),
-        '--side', String(side),
-        '--volume', String(Number(lots)),
-        '--entry', String(Number(entryPrice)),
-        '--sl', String(Number(stopLoss)),
-        '--tp', String(Number(takeProfit1)),
-        '--strategy-id', String(strategyId || 'FRONTEND_MANUAL'),
-        '--confirm'
-      ];
-
-      try {
-        const bridgeResult = await new Promise<{ code: number | null; stdout: string; stderr: string }>((resolve, reject) => {
-          const child = spawn(python, args, { cwd: repoRoot, windowsHide: true });
-          let stdout = '';
-          let stderr = '';
-          child.stdout.on('data', chunk => { stdout += chunk.toString(); });
-          child.stderr.on('data', chunk => { stderr += chunk.toString(); });
-          child.on('error', reject);
-          child.on('close', code => resolve({ code, stdout: stdout.trim(), stderr: stderr.trim() }));
-        });
-        const lastLine = bridgeResult.stdout.split(/\r?\n/).filter(Boolean).at(-1) || '';
-        const report = JSON.parse(lastLine);
-        if (bridgeResult.code !== 0 || report.status !== 'EXECUTED') {
-          return res.status(409).json({
-            success: false,
-            error: report.gate_reason_code || report.order?.reason_code || 'MT5_ORDER_REJECTED',
-            report
-          });
-        }
-        return res.json({
-          success: true,
-          simulated: false,
-          ticket: report.order?.ticket,
-          deal_id: report.order?.deal_id,
-          fill_price: report.order?.fill_price,
-          report,
-          message: `Vantage MT5 demo order #${report.order?.ticket} executed.`
-        });
-      } catch (error) {
-        return res.status(502).json({
-          success: false,
-          error: 'MT5_BRIDGE_FAILURE',
-          details: error instanceof Error ? error.message : String(error)
-        });
-      }
+      // WP0A EXECUTION AUTHORITY CONTAINMENT (AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1):
+      // this route used to spawn scripts/web_execute_trade.py directly, accepting
+      // client-supplied entry/SL/TP/volume plus a client-supplied `user_confirmed`
+      // boolean as sufficient authority to submit a real MT5 demo order. That bypassed
+      // the canonical Python execution gateway (src/api/execution_service.py
+      // ::authorize_demo_execution) entirely -- no proposal-hash integrity check, no
+      // strategy Demo-authorization gate, no atomic approval claim. The Node/Express
+      // web surface has no execution authority during R2-R4 and must not regain it
+      // here; route real Demo execution through the canonical Python API instead.
+      return res.status(410).json({
+        success: false,
+        error: 'EXECUTION_ROUTE_RETIRED',
+        message: 'Direct real-mode execution via web/server.ts is retired. Use the ' +
+          'canonical Python execution gateway (POST /api/tickets/{approval_id}/authorize-demo) instead.'
+      });
     }
 
     const newTicket = Math.floor(9000000 + Math.random() * 999999);

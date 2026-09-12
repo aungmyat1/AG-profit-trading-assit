@@ -1,0 +1,64 @@
+{
+  "schema": "AG_STRATEGY_SPEC_CONFLICT_V1",
+  "generated_at_utc": "2026-09-12",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "setup_id": "S2_BREAKOUT_CONTINUATION",
+  "conflict": "STRATEGY_SPEC_CONFLICT = TRUE",
+
+  "authoritative_ag_spec": {
+    "source": [
+      "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml (signed research config, v1.0.0, OFFLINE_RESEARCH)",
+      "src/session_sweep_continuation/setups.py::evaluate_s2_breakout_continuation",
+      "src/session_sweep_continuation/swing_structure.py (BOS/swing/ATR detection)",
+      "src/session_sweep_continuation/stop_engine.py (structural stop + ATR buffer)",
+      "src/session_sweep_continuation/regime.py (TREND_UP/TREND_DOWN classification)"
+    ],
+    "already_tested": true,
+    "already_replayed": true,
+    "replay_evidence": "artifacts/backtests/session_sweep_continuation/{FIRST_CANONICAL_REPLAY_20260911,PLAN2_CANONICAL_OBSERVATION_PARITY_20260911}.json -- net_expectancy_R=-0.19/trade, n=31, economic_parity=PASS (from an earlier session in this conversation)",
+    "s2_definition": {
+      "trigger": "a confirmed BOS (Break of Structure) on the M15 decision timeframe -- a fractal-confirmed swing broken on CANDLE CLOSE only, never a wick (structurally enforced: BOSEvent is only ever produced by a close-break)",
+      "regime_gate": "regime must be TREND_UP (for LONG) or TREND_DOWN (for SHORT) -- classified from EMA20/EMA50 + range_max_pips, NOT from a fixed reference-session breakout",
+      "reference_session_range": "NOT part of S2's own gate at all -- a session reference range (00:00-06:00 or 06:00-11:00 UTC) is used elsewhere in the engine for S1 (sweep reversal) and regime classification inputs, not as an S2 breakout boundary",
+      "displacement": "OPTIONAL evidence field only (`displacement_confirmed`, sourced from bos.displacement_confirmed) -- config explicitly sets `bos.require_displacement_confirmation: false`, i.e. NOT a required gate for S2 in the current signed config, contradicting an ATR-multiple displacement requirement",
+      "retest": "NOT part of S2 at all -- a retest/confirmation-score mechanism (breakout_level_retest, ema20_retest, eligible_fvg_retrace, pullback_liquidity_sweep, displacement_reconfirmation, >= continuation_score.minimum of 2) exists ONLY for S3 (Pullback Continuation), a separate setup model",
+      "entry": "immediate, at bos.close_price -- no separate confirmation candle or retest wait",
+      "stop": "structural_stop_distance = abs(entry - structural_anchor) + stop_buffer_multiplier(0.20) * ATR_M15(period=14) -- matches the mission's stop_buffer_atr=0.20 by coincidence, but the structural_anchor is the broken swing, not a 'displacement leg origin'",
+      "target": "trade_management.runner_target_r = 3.0 (not 2.0), with a 50% partial via NEXT_LIQUIDITY_TARGET mode, not a flat single R multiple"
+    }
+  },
+
+  "mission_prompt_example_spec": {
+    "source": "this task's own section 6 example YAML (explicitly labeled 'baseline values only... must NOT be described as optimized or economically validated')",
+    "s2_definition": {
+      "trigger": "close outside an explicit fixed reference-session range (00:00-06:00 UTC)",
+      "displacement": "REQUIRED gate: ATR14-based, atr_multiple=1.0",
+      "retest": "REQUIRED gate: max_bars=5, tolerance_atr=0.25",
+      "confirmation": "REQUIRED separate confirmation-candle close after the retest",
+      "entry": "at confirmation_close, i.e. AFTER breakout + displacement + retest + confirmation -- structurally a 4-stage gate before entry",
+      "stop": "displacement_or_structure_origin + buffer_atr 0.20",
+      "target": "risk_multiple rr=2.0"
+    }
+  },
+
+  "material_differences": [
+    "AG's real S2 has NO retest or confirmation-candle requirement; the mission's example spec makes both mandatory, multi-bar gates. This is the single largest structural difference -- the mission's spec more closely resembles AG's own S3 (Pullback Continuation) continuation-score mechanism than its S2.",
+    "AG's real S2 has NO fixed reference-session breakout boundary; entry is triggered by a fractal BOS anywhere in the trend, not a session-range close-break. AG's session reference range belongs to S1 and to regime inputs, not S2.",
+    "AG's real S2 treats displacement as optional/evidence-only (require_displacement_confirmation: false in the signed config); the mission's spec makes displacement a hard, threshold-gated requirement.",
+    "Target R differs: AG's signed default is a 3.0R runner with a 50% partial exit; the mission's example is a flat 2.0R single target.",
+    "Only the stop-buffer ATR multiplier (0.20) matches by apparent coincidence -- not sufficient to treat the two specs as compatible."
+  ],
+
+  "why_this_matters": "Building the 'baseline S2 research engine' this task describes -- using the mission's own example spec, pure functions (detect_breakout/detect_displacement/detect_retest/detect_confirmation), and Backtesting.py -- would create a SECOND, semantically DIFFERENT S2_BREAKOUT_CONTINUATION implementation under the same strategy_id/setup_id as AG's own already-tested, already-replayed engine. That is the exact 'invent a hybrid' / silent-replacement failure mode this mission's own section 7 explicitly forbids ('Do not resolve contradictory economic semantics by guessing... Do not invent a hybrid'). It would also duplicate real, already-existing, already-hashed replay evidence (net_expectancy_R=-0.19/trade) with a second, incompatible dataset of 'S2 baseline' results carrying the identical strategy_id/setup_id label -- a direct identity collision.",
+
+  "action_taken_this_session": [
+    "FILL_ENGINE_DECISION.json: completed independently of this conflict (REJECT donor virtual_broker/fill_engine.py -- couples to execution.metaapi_client and has no SL/TP support; Backtesting.py selected as fallback per the mission's own rule)",
+    "wilder_atr adaptation: completed independently of this conflict (research_external/semantic/wilder_atr.py, provenance recorded, 3/3 parity tests pass including cross-implementation agreement with AG's own src/session_sweep_continuation/swing_structure.py::compute_atr)",
+    "Fixtures, dataset capture/partitioning, baseline replay, signal/trade ledgers: NOT STARTED -- all of these require choosing one S2 definition, which this task is not authorized to guess"
+  ],
+
+  "recommended_resolutions": [
+    "OPTION A: Treat AG's own src/session_sweep_continuation/setups.py::evaluate_s2_breakout_continuation as authoritative (per this mission's own section 6 instruction: 'Use existing owner-defined semantics where they exist... If an authoritative existing S2 specification exists: REUSE IT'). In that case, this entire 'baseline S2 research engine' task is largely REDUNDANT with work already completed and replayed in this conversation -- the open question becomes what NEW research the Backtesting.py/external engine is meant to add beyond what src/session_sweep_continuation/replay.py already proved.",
+    "OPTION B: The mission's example spec describes a genuinely NEW hypothesis (session-range breakout + displacement + retest + confirmation) that the owner wants researched as its own thing -- in which case it must be given a NEW, distinct setup_id (e.g. S4_SESSION_RANGE_BREAKOUT_RETEST or similar) rather than reusing 'S2_BREAKOUT_CONTINUATION', to avoid colliding with AG's already-defined, already-evaluated S2."
+  ]
+}

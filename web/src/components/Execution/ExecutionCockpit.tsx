@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Position, TradeProposal, AuditLog, OrderSide } from '../../types/trading';
+import { isAuthoritativeProposal as isAuthoritativeProposalCheck } from '../../utils/proposalAuthority';
 import { PositionSizeCalculator } from './PositionSizeCalculator';
 import { QuickRiskCalculatorWidget } from './QuickRiskCalculatorWidget';
 import {
@@ -130,7 +131,12 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
   // the operator navigated here from the scanner. Only a non-synthetic proposal (none
   // exist yet -- see repository task P2-P4) may pre-fill these fields; otherwise the
   // operator must type every value themselves.
-  const isAuthoritativeProposal = !!selectedProposal && selectedProposal.marketDataSource !== 'SYNTHETIC';
+  //
+  // WP5.2 (AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1): this used to be the negative-trust
+  // check `marketDataSource !== 'SYNTHETIC'`, which reads missing/unknown provenance as
+  // authoritative -- see utils/proposalAuthority.ts for why that's fail-open and what
+  // replaced it.
+  const isAuthoritativeProposal = isAuthoritativeProposalCheck(selectedProposal);
   const [symbol, setSymbol] = useState<string>(isAuthoritativeProposal ? selectedProposal!.symbol : 'EURUSD');
   const [side, setSide] = useState<'BUY' | 'SELL'>(isAuthoritativeProposal ? (selectedProposal!.entrySide || 'BUY') : 'BUY');
   const [lots, setLots] = useState<number>(isAuthoritativeProposal ? (selectedProposal!.suggestedLots || 1.0) : 1.0);
@@ -266,7 +272,7 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
 
           {leftPanelMode === 'ORDER' ? (
             <>
-              {selectedProposal && selectedProposal.marketDataSource === 'SYNTHETIC' && (
+              {selectedProposal && !isAuthoritativeProposalCheck(selectedProposal) && (
                 <div className="p-2 bg-amber-950/40 border border-amber-800/80 rounded-lg flex items-start gap-2 text-xs font-mono text-amber-300">
                   <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <span>

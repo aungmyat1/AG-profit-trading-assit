@@ -36,8 +36,6 @@ from typing import Optional
 
 from market_structure.models import STATE_BEARISH, STATE_BULLISH, TieredStructureResult
 
-from market_intelligence.bias_resolver import resolve_from_structure_tiers
-
 from .models import MarketBias, MarketBiasDirection
 
 _CANONICAL_TO_LEGACY_DIRECTION = {
@@ -68,6 +66,15 @@ def derive_market_bias_from_tiers(
 
     `tiers.symbol` (always real, never a placeholder) is used as the canonical
     resolver's `symbol` -- no separate symbol parameter is needed here."""
+    # Deferred/lazy import: market_intelligence.bias_resolver (module level) imports
+    # daytrading.decision.models, and this module is part of daytrading.decision's own
+    # package __init__ chain (derive_market_bias_from_tiers is re-exported there) -- a
+    # module-level import here forms a circular import between the two packages.
+    # Deferring it to call time (Python caches the import in sys.modules either way, so
+    # this is a zero-behavior-change fix, not a new import path) breaks the cycle
+    # without altering which canonical resolver function is called or when.
+    from market_intelligence.bias_resolver import resolve_from_structure_tiers
+
     resolved_decision_time = decision_time or datetime.now(timezone.utc)
     # Single canonical direction authority (invariant 1/9).
     canonical = resolve_from_structure_tiers(

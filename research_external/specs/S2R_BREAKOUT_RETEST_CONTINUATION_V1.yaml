@@ -1,0 +1,99 @@
+# S2R_BREAKOUT_RETEST_CONTINUATION_V1 -- EXPERIMENTAL RESEARCH ONLY.
+#
+# Owner decision (2026-09-12): this is a NEW research hypothesis, explicitly
+# distinct from the existing, authoritative, already-tested, already-replayed
+# ST_SESSION_SWEEP_CONTINUATION_V1 setup S2_BREAKOUT_CONTINUATION
+# (src/session_sweep_continuation/setups.py::evaluate_s2_breakout_continuation).
+# That canonical S2 is UNCHANGED, UNTOUCHED, and remains available as a reference
+# control strategy (its existing evidence: n=31, net_expectancy_R=-0.19/trade --
+# see research_external/resource_audit/S2_SPEC_CONFLICT.json for the full
+# reconciliation record and why these two are not the same setup).
+#
+# This file carries NO execution, proposal, Demo, or Live authority. It is not
+# registered in strategies/registry.yaml or config/governance/strategy_lifecycle.yaml
+# and must not be until a separate, explicit lifecycle-promotion task authorizes it.
+
+schema_version: "1"
+strategy_id: ST_SESSION_SWEEP_CONTINUATION_V1
+setup_id: S2R_BREAKOUT_RETEST_CONTINUATION_V1
+research_status: EXPERIMENTAL
+demo_eligible: false
+demo_authorized: false
+live_eligible: false
+live_authorized: false
+
+market:
+  symbol: EURUSD
+  decision_timeframe: M5
+
+reference_session:
+  timezone: UTC
+  start_time_utc: "00:00"
+  end_time_utc: "06:00"
+  # A day's reference session is COMPLETE only once a closed M5 bar with
+  # bar_close_time == 06:00:00 UTC has been observed (i.e. the last bar covering
+  # [05:55, 06:00) is closed). Fewer than min_reference_candles closed bars in
+  # [00:00, 06:00) => SESSION_INCOMPLETE, fail closed, no signal for that day.
+  min_reference_candles: 60   # 6h / 5min = 72 expected; allow up to 12 missing bars
+
+monitoring_window:
+  # After the reference session closes, breakout/displacement/retest/confirmation
+  # are evaluated over the REMAINDER of the same UTC calendar day (06:00-24:00).
+  # This is an explicit, documented design choice for this baseline -- not silently
+  # assumed. A future candidate task may research a different monitoring window.
+  start_time_utc: "06:00"
+  end_time_utc: "24:00"
+
+atr:
+  # Reused verbatim from research_external/semantic/wilder_atr.py (adapted from
+  # aungmyat1/session-smc-trading-bot, provenance recorded in that file's header).
+  period: 14
+
+breakout:
+  # The breakout bar is also required to be the displacement bar in this baseline
+  # (a single candle satisfying both close-outside-range AND the displacement body
+  # threshold) -- an explicit, documented simplification, not a hidden assumption.
+  require_close_outside_reference: true
+
+displacement:
+  atr_multiple: 1.0   # body_size >= atr_multiple * ATR14 on the breakout candle
+
+retest:
+  required: true
+  max_bars: 5           # bars after the breakout/displacement candle to find a retest
+  tolerance_atr: 0.25    # candle's range must come within tolerance_atr * ATR14 of the
+                         # broken reference-range boundary (the "breakout level")
+
+confirmation:
+  # The FIRST bar, starting from (and including) the retest bar itself, whose CLOSE
+  # is beyond the breakout level in the breakout direction, within the same max_bars
+  # budget as retest -- confirmation and retest may be the same candle.
+  close_beyond_breakout_level: true
+
+entry:
+  mode: confirmation_close
+  price: confirmation_candle_close
+
+stop:
+  mode: breakout_level_minus_buffer   # breakout_level -/+ buffer, adverse direction
+  buffer_atr: 0.20
+
+target:
+  mode: risk_multiple
+  rr: 2.0
+
+friction:
+  model_status: PROVISIONAL   # no owner-signed EURUSD M5 spread/commission/slippage
+                               # assumption exists for this research family; see
+                               # research_external/runs/S2R_BASELINE_001/metrics.json
+                               # for how GROSS vs NET is reported under this status
+  provisional_spread_pips: 1.0
+  provisional_commission_pips: 0.2
+  provisional_slippage_pips: 0.3
+
+baseline_parameters_label: BASELINE_NON_OPTIMIZED
+notes: >-
+  Every numeric value above (ATR period, displacement multiple, retest tolerance/
+  max_bars, stop buffer, target RR) is an explicit, documented starting hypothesis
+  from the original research mission prompt, not tuned or selected by observing any
+  result. No parameter search of any kind has been run against this spec.

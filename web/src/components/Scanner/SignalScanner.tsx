@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TradeProposal, DecisionState } from '../../types/trading';
 import { AG_UI_MODE, agApiClient, MarketDataCandlesResponse } from '../../utils/agApiClient';
+import { isAuthoritativeProposal } from '../../utils/proposalAuthority';
 import {
   CheckCircle2,
   Clock,
@@ -210,7 +211,7 @@ export const SignalScanner: React.FC<ScannerProps> = ({
                 {/* Trade Setup Parameters if READY */}
                 {isReady && prop.entryPrice && prop.stopLoss && (
                   <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-lg p-3 mb-3 text-xs font-mono space-y-2">
-                    {prop.marketDataSource === 'SYNTHETIC' && (
+                    {!isAuthoritativeProposal(prop) && (
                       <div className="text-[10px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded px-1.5 py-1">
                         NON_AUTHORITATIVE_ESTIMATE — synthetic market data, research only
                       </div>

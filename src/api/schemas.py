@@ -175,6 +175,37 @@ class ProposalResponse(BaseModel):
     risk_percent: Optional[float] = None
 
 
+class CanonicalProposalResponse(BaseModel):
+    """WP9 (AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1): read-only view of
+    proposal_envelope.models.CanonicalProposal from the WP8 ProposalLedger. Always
+    execution_authority='NONE' and execution_eligible=False -- this is an OBSERVATION
+    ONLY surface; see api.app's canonical-proposals routes for the read-only boundary
+    (no execution, no authorization, no geometry mutation)."""
+
+    proposal_id: str  # proposal_envelope_id -- the WP7 canonical identity
+    strategy_id: str
+    strategy_version: str
+    symbol: str
+    market: str
+    direction: Optional[str] = None
+    entry: Optional[float] = None
+    stop: Optional[float] = None
+    targets: List[float] = []
+    watcher_state: str
+    proposal_state: str
+    execution_authority: str
+    execution_eligible: bool = False
+    market_data_mode: Optional[str] = None
+    market_data_source: Optional[str] = None
+    market_data_asof: Optional[str] = None
+    market_data_fingerprint: Optional[str] = None
+    ready_at: Optional[str] = None
+    expires_at: Optional[str] = None
+    version: int
+    correction_of: Optional[str] = None
+    reasons: List[str] = []
+
+
 class TicketResponse(BaseModel):
     approval_id: str
     setup_id: str

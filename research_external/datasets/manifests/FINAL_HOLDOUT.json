@@ -1,0 +1,10 @@
+{
+  "end": "2026-12-31",
+  "locked": true,
+  "parent_dataset_sha256": "34c3296cefd4715c6c742210a36f3afe4261b53e24fa91dd02e8d3884bb240ef",
+  "partition_id": "FINAL_HOLDOUT_2026-07-01_2026-12-31",
+  "partition_sha256": "40332d9370ebf1ae9f5deaeaccf508561f7bbfcbf380b576e780204cc4eaabb0",
+  "role": "FINAL_HOLDOUT",
+  "rows": 15263,
+  "start": "2026-07-01"
+}

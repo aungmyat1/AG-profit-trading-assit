@@ -64,13 +64,25 @@ export async function safeFetchJson<T>(
 }
 
 /**
- * Client-side fallback generator for proposals if server is starting or offline
+ * Client-side fallback generator for proposals if server is starting or offline.
+ *
+ * WP5 (AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1, frontend-as-renderer audit): this runs
+ * the same TypeScript strategy approximation as server.ts's /api/proposals/scan, over
+ * synthetic candles -- but until this fix it returned the result untagged, unlike that
+ * route's explicit `marketDataSource:'SYNTHETIC', executionEligible:false` convention
+ * (AG_SCANNER_SAFE_PROPOSAL_EXECUTION_REMEDIATION_V2). App.tsx seeds its `proposals`
+ * state with this function's output at mount, before the first real fetch resolves;
+ * ExecutionCockpit.tsx's `isAuthoritativeProposal` check (`marketDataSource !==
+ * 'SYNTHETIC'`) reads an untagged proposal as authoritative, which is exactly the
+ * silent-fake-geometry bypass that component's own comment warns against. Tag it
+ * identically to server.ts so both synthetic sources are indistinguishable to
+ * downstream authority checks -- never left implicitly "real" by omission.
  */
 export function generateClientProposals(): TradeProposal[] {
   return SUPPORTED_SYMBOLS.map(symInfo => {
     const candles = generateRealisticCandles(symInfo.symbol, 'M15', 3);
     const strategy = REGISTERED_STRATEGIES[0];
-    return evaluateAsianSweepStrategy(
+    const proposal = evaluateAsianSweepStrategy(
       symInfo.symbol,
       candles,
       strategy,
@@ -78,6 +90,12 @@ export function generateClientProposals(): TradeProposal[] {
       symInfo.typicalSpread,
       1000 // Vantage Markets Demo baseline capital $1,000.00
     );
+    return {
+      ...proposal,
+      marketDataSource: 'SYNTHETIC' as const,
+      executionEligible: false,
+      executionBlockReason: 'SYNTHETIC_MARKET_DATA'
+    };
   });
 }
 

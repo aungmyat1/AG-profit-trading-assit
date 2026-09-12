@@ -1,0 +1,7 @@
+{
+  "duplicate_timestamp_count": 0,
+  "future_row_count": 0,
+  "invalid_ohlc_count": 0,
+  "monotonic": true,
+  "row_count": 90000
+}

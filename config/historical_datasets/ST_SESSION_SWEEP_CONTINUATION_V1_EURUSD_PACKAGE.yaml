@@ -1,0 +1,110 @@
+# Combined multi-timeframe dataset package manifest for
+# ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.0 (OFFLINE_RESEARCH) -- EURUSD.
+#
+# This is NEW (P44): no prior combined-package manifest existed in this repository;
+# only single-file manifests (see EURUSD_M5_202504211715_202607310000.yaml, the one
+# pre-existing owner-approved dataset). This file follows that directory's existing
+# YAML-shape convention, extended to bind three per-timeframe sources into one
+# reproducible package identity, per this task's own spec (P40-P44).
+#
+# Authorization: owner blanket D:\ FX authorization (2026-09-10). Integrity: each
+# source's own sha256 is recorded in its own per-file manifest in this same directory
+# (EURUSD_H1_202501020000_202607310000.yaml, EURUSD_M15_202501020000_202606192345.yaml,
+# EURUSD_M1_202605180946_202607312356.yaml) and re-bound here. Quality: see those files'
+# own quality_status fields -- H1/M15/M1 all PASS.
+#
+# UPDATE 2026-09-11 (AG_DAILY_SESSION_TRADE_CONTINUATION): both remaining blockers this
+# package originally recorded are now resolved by explicit owner decision:
+#   (1) H1 symbol-metadata authorization -- config/historical_datasets/
+#       EURUSD_H1_symbol_metadata.yaml is now authority=OWNER_APPROVED_DATASET_MANIFEST
+#       (tick_size=0.00001), enabling market_structure.tiers.analyze_structure_tiers /
+#       market_intelligence.bias_resolver.resolve_from_structure_tiers historically.
+#   (2) M1 timezone -- src/mt5/broker_time.py's offset_from_reopen tolerance was widened
+#       (0.01h -> 0.05h, evidence-justified, see that module's own comment) and the M1
+#       source above now resolves BROKER_OFFSET_CONFIRMED (+3h), matching the rest of
+#       this broker export family. See EURUSD_M1_202605180946_202607312356.yaml for the
+#       full derivation.
+#
+# Any future replay evidence for this strategy/symbol should bind:
+#   strategy_id=ST_SESSION_SWEEP_CONTINUATION_V1, strategy_version=1.0.0,
+#   dataset_id=ST_SESSION_SWEEP_CONTINUATION_V1_EURUSD_PACKAGE,
+#   dataset_fingerprint=<combined_dataset_fingerprint below>,
+#   replay_engine_version=<src/session_sweep_continuation/replay.py commit/version>.
+
+strategy_id: ST_SESSION_SWEEP_CONTINUATION_V1
+strategy_version: "1.0.0"
+symbol: EURUSD
+schema_version: AG_MARKET_DATA_READINESS_MANIFEST_V1
+
+sources:
+  - role: MARKET_BIAS_INPUT
+    timeframe: H1
+    dataset_id: EURUSD_H1_202501020000_202607310000
+    manifest: config/historical_datasets/EURUSD_H1_202501020000_202607310000.yaml
+    sha256: "f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060"
+    timezone_status: BROKER_OFFSET_CONFIRMED
+    symbol_metadata_manifest: config/historical_datasets/EURUSD_H1_symbol_metadata.yaml   # NEW 2026-09-11
+    symbol_metadata_authorization_status: OWNER_APPROVED_DATASET_MANIFEST   # NEW 2026-09-11
+  - role: STRATEGY_DECISION_INPUT
+    timeframe: M15
+    dataset_id: EURUSD_M15_202501020000_202606192345
+    manifest: config/historical_datasets/EURUSD_M15_202501020000_202606192345.yaml
+    sha256: "7f7502938862f4a3779f018caab468fe4445a4d8c676c8393dc29ca57fc43a65"
+    timezone_status: BROKER_OFFSET_CONFIRMED
+  - role: FILL_RESOLUTION_INPUT
+    timeframe: M1
+    dataset_id: EURUSD_M1_202605180946_202607312356
+    manifest: config/historical_datasets/EURUSD_M1_202605180946_202607312356.yaml
+    sha256: "55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23"
+    timezone_status: BROKER_OFFSET_CONFIRMED   # RESOLVED 2026-09-11, was UNRESOLVED
+
+timezone_normalization_policy: >-
+  mt5_weekend_reopen_gap_v1 (src/mt5/broker_time.py::offset_from_reopen, streaming
+  reimplementation src/market_data_readiness/scanner.py)
+parser_version: "market_data_readiness.scanner v1"
+
+# Deterministic canonical serialization: json.dumps({schema_version, symbol,
+# strategy_id, strategy_version, sources:[{role,timeframe,dataset_id,sha256} ...],
+# timezone_normalization_policy, parser_version}, sort_keys=True, separators=(",",":")),
+# sha256'd. Reproducible from this file's own fields above.
+combined_dataset_fingerprint: "sha256:8ab78eb99cc493131229b130fd0766efc31707f445eff10be0b0fd0e119882aa"
+
+authorization_status: OWNER_AUTHORIZED
+integrity_status: HASH_RECORDED
+quality_status: PASS   # H1/M15/M1 all PASS as of 2026-09-11 (was PARTIAL when M1 timezone was UNRESOLVED)
+
+raw_common_coverage:
+  h1_m15_only:
+    start_utc: "2025-01-01T21:00:00+00:00"
+    end_utc: "2026-06-19T20:45:00+00:00"
+  h1_m15_m1_all_three:   # COMPUTED 2026-09-11 (was NOT_COMPUTABLE) -- intersection of all
+    # three sources' own utc_start/utc_end, i.e. max(starts) to min(ends). M1's own
+    # window (2026-05-18 to 2026-07-31) is the binding constraint on the start; M15's
+    # own window (ending 2026-06-19) is the binding constraint on the end -- H1's much
+    # longer window (through 2026-07-30) is never the limiting factor here.
+    start_utc: "2026-05-18T06:46:00+00:00"
+    end_utc: "2026-06-19T20:45:00+00:00"
+    note: >-
+      ~32-day common window across all three timeframes. This is the ONLY span over
+      which a canonical H1-bias + M15-setup + M1-fill replay can run end to end with
+      every source's own no-lookahead/closed-bar guarantee intact; it is NOT the full
+      coverage of any single source. Before this window can be used for a real replay,
+      also subtract required warmups (H1 structure-tier warmup, M15 EMA/ATR warmup,
+      swing confirmation) per config/governance and strategies/
+      ST_SESSION_SWEEP_CONTINUATION_V1.yaml's own values -- not computed here.
+
+replay_data_readiness: TIER_A_FULL_CANONICAL_REPLAY_DATA_READY   # was TIER_B_FUNCTIONAL_RESEARCH;
+  # H1 bias + M15 setup + M1 fill are now all individually data-ready (metadata
+  # authorized, timezone resolved) and jointly overlap for ~32 days (see
+  # raw_common_coverage.h1_m15_m1_all_three above). This field describes DATA
+  # readiness only -- it is not an economic verdict and does not itself authorize a
+  # replay run (a separate task); see economic_evidence_sufficiency below, unchanged.
+economic_evidence_sufficiency: NOT_EVALUATED   # separate dimension; not assessed by this manifest --
+  # unchanged by this update: no economic replay was run or implied by resolving these
+  # two data blockers
+
+# GBPUSD note: no combined package exists for GBPUSD -- only one GBPUSD M15 file was
+# found on D:\ (GBPUSD_M15_202210030000_202210212345.csv, Oct 2022, 19 days), and no
+# GBPUSD H1 or M1 file exists at all. Canonical multi-timeframe replay for GBPUSD is
+# BLOCKED regardless of the M15 file's own validity -- see the final data-readiness
+# report for details, not duplicated here.

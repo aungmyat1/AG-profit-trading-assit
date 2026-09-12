@@ -118,6 +118,15 @@ class DataProvenance:
     data_version: Optional[str] = None
     complete_candle_evidence: bool = False
     freshness_note: Optional[str] = None
+    # WP6 (AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1): the WP1 market_data_mode/asof/
+    # fingerprint contract (strategy_contract/market_snapshot.py::MarketSnapshot),
+    # propagated here so the formation gate can enforce REAL-mode-only proposal
+    # formation without adapters inventing a second mode concept. All three fields are
+    # additive/optional -- None means "the caller supplied no MarketSnapshot", never
+    # "assume REAL".
+    market_data_mode: Optional[str] = None
+    market_data_asof: Optional[str] = None  # ISO8601, mirrors MarketSnapshot.market_data_asof
+    market_data_fingerprint: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -177,6 +186,18 @@ class CanonicalProposal:
     source_module: str = ""  # e.g. "proposals.models.SMCTradeProposal"
     source_record_id: str = ""  # the source object's own identity (setup_id / decision_id / occurrence_id)
     reasons: Tuple[str, ...] = field(default_factory=tuple)  # human-auditable why proposal_state landed here
+
+    # ---- code/config identity (WP11A, AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1) --------
+    # All three optional/None-default, exactly like every other provenance field in this
+    # module: populated only from an authoritative existing source, never fabricated.
+    config_hash: Optional[str] = None  # e.g. post_asian_pilot.fingerprint.fingerprint()
+    # over the strategy's own YAML config -- identifies WHICH config produced this proposal
+    engine_release: Optional[str] = None  # e.g. the release_id already loaded from the
+    # canonical release config (config/releases/*.yaml) -- identifies WHICH release build
+    git_commit: Optional[str] = None  # NOT_AVAILABLE as of WP11A: no authoritative runtime
+    # producer exists anywhere in this repo (checked: every existing git_commit field in
+    # src/ is itself an unpopulated passthrough). Left None; a future provenance task may
+    # establish one. Never a subprocess git call, CI guess, or hardcoded value.
 
 
 def blocked_envelope(*, source_module: str, source_record_id: str, symbol: str = "",

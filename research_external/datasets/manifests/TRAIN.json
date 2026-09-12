@@ -1,0 +1,10 @@
+{
+  "end": "2026-04-01",
+  "locked": false,
+  "parent_dataset_sha256": "34c3296cefd4715c6c742210a36f3afe4261b53e24fa91dd02e8d3884bb240ef",
+  "partition_id": "TRAIN_2025-07-01_2026-04-01",
+  "partition_sha256": "a5dd33eb3d62c6d93de31ad047ff2b0ea41a00e4fe98edca912d9ee5067412f2",
+  "role": "TRAIN",
+  "rows": 55857,
+  "start": "2025-07-01"
+}

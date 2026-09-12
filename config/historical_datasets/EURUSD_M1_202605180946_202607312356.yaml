@@ -1,0 +1,74 @@
+# Owner-authorized historical analytical metadata for ONE specific dataset file.
+# See EURUSD_H1_202501020000_202607310000.yaml (same directory) for the shared
+# authorization/timezone-methodology explanation.
+#
+# Role in ST_SESSION_SWEEP_CONTINUATION_V1's timeframe contract: M1 =
+# FILL_RESOLUTION_INPUT (order activation, pending/fill chronology, expiry, SL/TP
+# chronology, outcome resolution). Fill-source precision: M1_OHLC (this is an MT5
+# tab-delimited OHLC export with <TICKVOL>/<SPREAD> columns, NOT genuine tick bid/ask --
+# it must never be labeled TICK_EXACT / TICK_BID_ASK).
+#
+# *** TIMEZONE RESOLVED 2026-09-11 -- CANONICAL_ECONOMIC_REPLAY NO LONGER BLOCKED BY
+# TIMEZONE (see AG_DAILY_SESSION_TRADE_IMPLEMENTATION_STATUS / continuation reports) ***
+# History: the largest (weekend-sized, >40h) gap in this file's own timestamps did not
+# resolve to a whole-hour offset from the true NY-17:00 UTC weekly-reopen instant via
+# src/mt5/broker_time.py's original offset_from_reopen tolerance (0.01h/36s) -- the
+# reopen bar reads consistently ~2 minutes (120.0-120.12s, cross-validated at tick level
+# across three independent weekends: 2026-06-01, 2026-06-22, 2026-07-06) past the
+# expected hour boundary. This was proven to be a real, reproducible weekend-reopen
+# publish-latency characteristic of this broker/feed (not ambiguous or corrupt data, and
+# not a wrong offset) using a previously-uninvestigated genuine tick-level dataset
+# (D:\EURUSD_202606182200_202608241902.csv). Per owner decision (2026-09-11, explicit
+# authorization via AskUserQuestion: "Widen the tolerance"),
+# src/mt5/broker_time.py's tolerance was widened from 0.01h to
+# REOPEN_TOLERANCE_HOURS=0.05h (180s, a 60s margin over the proven 120.12s lag, still
+# 60x below full-hour ambiguity risk) -- a shared, evidence-justified fix, not a guess,
+# and not specific to this one file (every H1/M15/M5/Daily EURUSD file in the same
+# broker export family already resolved cleanly within the old tolerance and is
+# unaffected by the widening). All 4 discovered EURUSD M1 candidates on D:\ shared this
+# same root cause and are expected to resolve identically; only this file (the selected,
+# longest-coverage candidate, see selection_reason_codes below) was re-verified.
+
+dataset_id: EURUSD_M1_202605180946_202607312356
+symbol: EURUSD
+declared_timeframe: M1
+observed_timeframe: M1
+timeframe_status: MATCH
+strategy_role: FILL_RESOLUTION_INPUT
+fill_source_precision: M1_OHLC   # NOT tick bid/ask -- never claim TICK_EXACT
+authorization_status: OWNER_AUTHORIZED
+integrity_status: HASH_RECORDED
+quality_status: PASS   # OHLC/duplicate/monotonicity checks pass; timezone now also resolved
+canonical_economic_replay: READY   # TIMEZONE_STATUS=BROKER_OFFSET_CONFIRMED (resolved 2026-09-11)
+source_file: "D:\\EURUSD_M1_202605180946_202607312356.csv"
+file_size_bytes: 4792854
+row_count: 78444
+parser_version: market_data_readiness.scanner v1 (streaming csv, tab-delimited MT5 export);
+  UTC conversion re-verified 2026-09-11 via historical_replay.mt5_export_loader.load_mt5_export_csv
+  (per-week segmented offset detection, same underlying offset_from_reopen, now widened)
+dataset_fingerprint: "sha256:55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23"
+timestamp_convention:
+  raw_start: "2026-05-18T09:46:00"
+  raw_end: "2026-07-31T23:56:00"
+  timezone_status: BROKER_OFFSET_CONFIRMED
+  broker_utc_offset_hours: 3
+  utc_start: "2026-05-18T06:46:00+00:00"
+  utc_end: "2026-07-31T20:56:00+00:00"
+  largest_gap_reopen_raw: "2026-07-06T00:02:00"   # ~2 minutes past the expected hour boundary --
+    # now within the widened 0.05h/180s tolerance (was outside the original 0.01h/36s)
+quality_findings:
+  duplicate_timestamps: 0
+  nonmonotonic_timestamps: 0
+  ohlc_violations: 0
+  zero_or_negative_price_rows: 0
+  parse_failures: 0
+  largest_gap_hours: 48.1
+candidates_considered: 4
+overlap_relationships:
+  EURUSD_M1_202605190415_202606190000.csv: OVERLAPPING_CONFLICTING   # narrower subset window
+  EURUSD_M1_202605190415_202607302357.csv: OVERLAPPING_CONFLICTING   # narrower subset window
+  EURUSD_M1_202605202206_202607302357.csv: OVERLAPPING_CONFLICTING   # narrower subset window
+selection_reason_codes: [LONGEST_COVERAGE, SUPERSET_OF_SIBLINGS, QUALITY_PASS]
+selection_caveat: TIMEZONE_RESOLVED_2026_09_11_ALL_CANDIDATES_SAME_ROOT_CAUSE   # was
+  # TIMEZONE_UNRESOLVED_ALL_CANDIDATES_SAME_STATUS prior to the offset_from_reopen
+  # tolerance widening -- see the file-level comment above

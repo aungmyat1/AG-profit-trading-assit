@@ -1,0 +1,30 @@
+{
+  "assumption": "0-hour offset (smc-lss CSV timestamps treated as already UTC)",
+  "interpretation": "Small (sub-pip to few-pip) deviations are expected broker/feed price differences, not corruption. Large (>>1 pip) or systematically shifted deviations would indicate timezone/timestamp corruption -- see max_price_deviation above for this run's actual result.",
+  "max_price_deviation": 0.0011700000000001154,
+  "median_price_deviation": 5.999999999994898e-05,
+  "overlap_end": "2026-07-21T09:20:00+00:00",
+  "overlap_row_count": 78882,
+  "overlap_start": "2025-06-30T10:35:00+00:00",
+  "samples": [
+    {
+      "ag_close": 1.17344,
+      "deviation": 9.999999999843467e-06,
+      "smc_lss_close": 1.1734499999999999,
+      "timestamp": "2025-06-30T10:35:00+00:00"
+    },
+    {
+      "ag_close": 1.16462,
+      "deviation": 5.999999999994898e-05,
+      "smc_lss_close": 1.16468,
+      "timestamp": "2026-01-09T10:20:00+00:00"
+    },
+    {
+      "ag_close": 1.1421000000000001,
+      "deviation": 0.000180000000000069,
+      "smc_lss_close": 1.14192,
+      "timestamp": "2026-07-21T09:20:00+00:00"
+    }
+  ],
+  "status": "COMPARED"
+}

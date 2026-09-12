@@ -70,10 +70,15 @@ def _builders() -> Dict[str, Callable]:
             STRATEGY_ID as SMC_ID,
             build_large_smc_record,
         )
+        from validation_framework.adapters.session_sweep_continuation_adapter import (
+            STRATEGY_ID as SSC_ID,
+            build_session_sweep_continuation_record,
+        )
 
         _adapter_builders[FX_ID] = build_fx_record
         _adapter_builders[BTC_ID] = build_btc_record
         _adapter_builders[SMC_ID] = build_large_smc_record
+        _adapter_builders[SSC_ID] = build_session_sweep_continuation_record
     return _adapter_builders
 
 

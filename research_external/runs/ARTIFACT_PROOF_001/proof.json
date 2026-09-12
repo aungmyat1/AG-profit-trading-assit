@@ -1,0 +1,50 @@
+{
+  "expected_sum": 150,
+  "generated_at_utc": "2026-09-12T11:19:27.243977+00:00",
+  "purpose": "LOCAL_ARTIFACT_PERSISTENCE_PROOF",
+  "result": {
+    "csv": {
+      "hash_reproducible": true,
+      "path": "D:\\ddev\\AG profit trading\\research_external\\runs\\ARTIFACT_PROOF_001\\sample.csv",
+      "row_count": 5,
+      "sha256_pass1": "321efbc8598e1cb97f85809678b5b7e16649dd0aeac533dbef5916c8f54e7cc5",
+      "sha256_pass2": "321efbc8598e1cb97f85809678b5b7e16649dd0aeac533dbef5916c8f54e7cc5",
+      "size_bytes": 44,
+      "sum_matches_expected": true,
+      "sum_value": 150
+    },
+    "parquet": {
+      "hash_reproducible": true,
+      "path": "D:\\ddev\\AG profit trading\\research_external\\runs\\ARTIFACT_PROOF_001\\sample.parquet",
+      "row_count": 5,
+      "sha256_pass1": "c9b267331a0254d3cf33ad21a5bd97aaea8263280bc947aef41ba0591ca290a2",
+      "sha256_pass2": "c9b267331a0254d3cf33ad21a5bd97aaea8263280bc947aef41ba0591ca290a2",
+      "size_bytes": 1798,
+      "sum_matches_expected": true,
+      "sum_value": 150
+    }
+  },
+  "run_id": "ARTIFACT_PROOF_001",
+  "sample_rows": [
+    {
+      "row_id": 1,
+      "value": 10
+    },
+    {
+      "row_id": 2,
+      "value": 20
+    },
+    {
+      "row_id": 3,
+      "value": 30
+    },
+    {
+      "row_id": 4,
+      "value": 40
+    },
+    {
+      "row_id": 5,
+      "value": 50
+    }
+  ]
+}

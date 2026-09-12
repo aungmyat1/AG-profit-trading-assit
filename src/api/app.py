@@ -26,6 +26,8 @@ from authorization.models import ENVIRONMENT_DEMO
 from authorization.store import ExecutionApprovalStore
 from authorization.telegram_gateway import ExecutionHandlerResult
 
+from proposal_envelope.ledger import ProposalLedger
+
 from . import broker_service, strategy_service, telegram_service
 from .execution_service import InMemoryProposalRegistry, SOURCE_WEB, authorize_demo_execution
 from .schemas import (
@@ -34,6 +36,7 @@ from .schemas import (
     BrokerAccountResponse,
     BrokerHistoryResponse,
     BrokerStatusResponse,
+    CanonicalProposalResponse,
     GateResultResponse,
     HealthResponse,
     MarketDataCandlesResponse,
@@ -90,6 +93,7 @@ app.add_middleware(
 # framework this phase doesn't need.
 _default_store = ExecutionApprovalStore()
 _default_registry = InMemoryProposalRegistry()
+_default_proposal_ledger = ProposalLedger()
 
 
 def get_store() -> ExecutionApprovalStore:
@@ -98,6 +102,10 @@ def get_store() -> ExecutionApprovalStore:
 
 def get_proposal_registry() -> InMemoryProposalRegistry:
     return _default_registry
+
+
+def get_proposal_ledger() -> ProposalLedger:
+    return _default_proposal_ledger
 
 
 def get_execution_handler():
@@ -270,6 +278,58 @@ def get_proposal(
     if proposal is None:
         raise HTTPException(status_code=404, detail={"reason_code": "PROPOSAL_NOT_FOUND"})
     return _to_proposal_response(proposal_hash, proposal)
+
+
+def _to_canonical_proposal_response(envelope) -> CanonicalProposalResponse:
+    """WP9: pure read-model mapping from proposal_envelope.models.CanonicalProposal --
+    every field copied verbatim, execution_eligible is always False by construction
+    (this route grants no execution authority regardless of upstream state)."""
+    return CanonicalProposalResponse(
+        proposal_id=envelope.proposal_envelope_id,
+        strategy_id=envelope.strategy_id,
+        strategy_version=envelope.strategy_version,
+        symbol=envelope.symbol,
+        market=envelope.market,
+        direction=envelope.direction,
+        entry=envelope.entry,
+        stop=envelope.stop,
+        targets=list(envelope.targets),
+        watcher_state=envelope.watcher_state,
+        proposal_state=envelope.proposal_state,
+        execution_authority=envelope.execution_authority,
+        execution_eligible=False,
+        market_data_mode=envelope.data_provenance.market_data_mode,
+        market_data_source=envelope.data_provenance.source,
+        market_data_asof=envelope.data_provenance.market_data_asof,
+        market_data_fingerprint=envelope.data_provenance.market_data_fingerprint,
+        ready_at=envelope.timestamps.state_entered_at,
+        expires_at=envelope.timestamps.expires_at,
+        version=envelope.version,
+        correction_of=envelope.correction_of,
+        reasons=list(envelope.reasons),
+    )
+
+
+@app.get("/api/canonical-proposals", response_model=list[CanonicalProposalResponse])
+def list_canonical_proposals(
+    proposal_ledger: ProposalLedger = Depends(get_proposal_ledger),
+) -> list[CanonicalProposalResponse]:
+    """WP9 read-only R4 surface (AG_CANONICAL_R2_R4_PROPOSAL_PIPELINE_V1): the canonical,
+    ledger-backed proposal population. Distinct from GET /api/proposals (the execution-
+    approval registry backing /api/tickets/*/authorize-demo) -- this route grants no
+    execution authority and cannot be used to authorize or execute anything; it exists
+    purely so a scanner/dashboard can render OBSERVATION ONLY canonical proposals."""
+    return [_to_canonical_proposal_response(p) for p in proposal_ledger.list_active_proposals()]
+
+
+@app.get("/api/canonical-proposals/{proposal_id:path}", response_model=CanonicalProposalResponse)
+def get_canonical_proposal(
+    proposal_id: str, proposal_ledger: ProposalLedger = Depends(get_proposal_ledger),
+) -> CanonicalProposalResponse:
+    envelope = proposal_ledger.get_proposal(proposal_id)
+    if envelope is None:
+        raise HTTPException(status_code=404, detail={"reason_code": "CANONICAL_PROPOSAL_NOT_FOUND"})
+    return _to_canonical_proposal_response(envelope)
 
 
 @app.get("/api/telegram/status", response_model=TelegramStatusDetailResponse)

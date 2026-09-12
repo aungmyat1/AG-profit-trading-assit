@@ -1,0 +1,20 @@
+{
+  "entries": [
+    {
+      "filename": "sample.csv",
+      "sha256": "321efbc8598e1cb97f85809678b5b7e16649dd0aeac533dbef5916c8f54e7cc5",
+      "size_bytes": 44
+    },
+    {
+      "filename": "sample.parquet",
+      "sha256": "c9b267331a0254d3cf33ad21a5bd97aaea8263280bc947aef41ba0591ca290a2",
+      "size_bytes": 1798
+    },
+    {
+      "filename": "proof.json",
+      "sha256": "4ee115258d62117f624dd54a078c72c4c34c10554da72cbedf26e7ba3fdad6f0",
+      "size_bytes": 1347
+    }
+  ],
+  "run_id": "ARTIFACT_PROOF_001"
+}

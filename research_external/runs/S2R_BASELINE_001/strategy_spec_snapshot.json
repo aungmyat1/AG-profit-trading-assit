@@ -1,0 +1,61 @@
+{
+  "atr": {
+    "period": 14
+  },
+  "baseline_parameters_label": "BASELINE_NON_OPTIMIZED",
+  "breakout": {
+    "require_close_outside_reference": true
+  },
+  "confirmation": {
+    "close_beyond_breakout_level": true
+  },
+  "demo_authorized": false,
+  "demo_eligible": false,
+  "displacement": {
+    "atr_multiple": 1.0
+  },
+  "entry": {
+    "mode": "confirmation_close",
+    "price": "confirmation_candle_close"
+  },
+  "friction": {
+    "model_status": "PROVISIONAL",
+    "provisional_commission_pips": 0.2,
+    "provisional_slippage_pips": 0.3,
+    "provisional_spread_pips": 1.0
+  },
+  "live_authorized": false,
+  "live_eligible": false,
+  "market": {
+    "decision_timeframe": "M5",
+    "symbol": "EURUSD"
+  },
+  "monitoring_window": {
+    "end_time_utc": "24:00",
+    "start_time_utc": "06:00"
+  },
+  "notes": "Every numeric value above (ATR period, displacement multiple, retest tolerance/ max_bars, stop buffer, target RR) is an explicit, documented starting hypothesis from the original research mission prompt, not tuned or selected by observing any result. No parameter search of any kind has been run against this spec.",
+  "reference_session": {
+    "end_time_utc": "06:00",
+    "min_reference_candles": 60,
+    "start_time_utc": "00:00",
+    "timezone": "UTC"
+  },
+  "research_status": "EXPERIMENTAL",
+  "retest": {
+    "max_bars": 5,
+    "required": true,
+    "tolerance_atr": 0.25
+  },
+  "schema_version": "1",
+  "setup_id": "S2R_BREAKOUT_RETEST_CONTINUATION_V1",
+  "stop": {
+    "buffer_atr": 0.2,
+    "mode": "breakout_level_minus_buffer"
+  },
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "target": {
+    "mode": "risk_multiple",
+    "rr": 2.0
+  }
+}

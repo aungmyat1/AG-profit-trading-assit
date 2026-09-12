@@ -1,0 +1,105 @@
+{
+  "schema": "AG_CAPABILITY_REUSE_MATRIX_V1",
+  "generated_at_utc": "2026-09-12",
+  "legend": {
+    "REUSE_DIRECT": "verified-enough to lift with a thin adapter, unmodified core logic",
+    "REUSE_WITH_ADAPTER": "relevant, real implementation found, but needs an adapter or is for a sibling (not identical) setup",
+    "REFERENCE_ONLY": "worth reading for architectural pattern, not for lifting code",
+    "NOT_FOUND": "no local/donor implementation located",
+    "NOT_YET_ASSESSED": "a plausible location was found but not content-inspected this session"
+  },
+  "capabilities": [
+    {
+      "capability": "market data capture (MT5, closed candles, UTC)",
+      "CURRENT_AG": "REUSE_DIRECT -- src/mt5/market_data.py, mt5/connection.py, research_external/tooling/mt5_capture.py (built last session, timestamp-authority proven)",
+      "decision": "REUSE_AG"
+    },
+    {
+      "capability": "Parquet persistence + byte-level SHA-256 hashing",
+      "CURRENT_AG": "REUSE_DIRECT -- research_external/tooling/artifact_io.py (built last session, write/reopen/hash-twice proven)",
+      "decision": "REUSE_AG"
+    },
+    {
+      "capability": "dataset manifest / fingerprinting",
+      "CURRENT_AG": "REUSE_DIRECT -- post_asian_pilot/fingerprint.py, config/historical_datasets/*.yaml field vocabulary",
+      "D_DRIVE": "smc-lss-platform/contracts/DATASET_CONTRACT.yaml -- REFERENCE_ONLY, not content-inspected yet",
+      "decision": "REUSE_AG"
+    },
+    {
+      "capability": "ATR calculation (Wilder's method)",
+      "CURRENT_AG": "NOT_FOUND as a standalone reusable helper (per-strategy implementations may exist but were not searched this session)",
+      "SESSION_SMC": "REUSE_WITH_ADAPTER -- strategy/session_liquidity/displacement_detector.py::wilder_atr(candles, period=14): pure, well-documented, explicit seed/undefined-index handling. Strong candidate for direct extraction.",
+      "decision": "ADAPT_LOCAL_CODE (session-smc-trading-bot)"
+    },
+    {
+      "capability": "displacement detection",
+      "CURRENT_AG": "NOT_FOUND as a standalone function (session_sweep_continuation likely has its own; not compared this session)",
+      "SESSION_SMC": "REUSE_WITH_ADAPTER -- displacement_detector.py::detect_displacement(): body > mult*ATR + close-quartile gate, strict inequality, dataclass result. Same CONCEPT as S2's displacement requirement but tuned for a different setup ('Strategy A') -- semantics must be re-verified against S2's own spec, not assumed identical.",
+      "decision": "ADAPT_LOCAL_CODE, semantics re-verification required before reuse"
+    },
+    {
+      "capability": "breakout / sweep detection",
+      "CURRENT_AG": "session_sweep_continuation engine has its own setup classification (S1/S2/S3) -- not compared line-by-line this session",
+      "SESSION_SMC": "REUSE_WITH_ADAPTER -- sweep_detector.py (Asian-range liquidity sweep, strict inequality on breach+close-back), src/signals/london_breakout.py, ny_momentum.py",
+      "decision": "REFERENCE_ONLY for now -- AG's own S2 is a session-breakout-continuation setup, not a liquidity-sweep setup; do not conflate the two without an explicit spec comparison (mission's own STRATEGY_SPEC_CONFLICT rule)"
+    },
+    {
+      "capability": "retest detection",
+      "SESSION_SMC": "NOT_YET_ASSESSED -- not found in the three files inspected (sweep_detector/displacement_detector/entry_engine); may exist elsewhere in strategy/session_liquidity/session_strategy.py (not read this session)",
+      "decision": "NOT_YET_ASSESSED, deferred"
+    },
+    {
+      "capability": "historical replay engine",
+      "SESSION_SMC": "REUSE_WITH_ADAPTER (candidate, not content-verified) -- historical_replay/replay_engine.py, event_clock.py, market_data_loader.py, replay_config.py",
+      "CURRENT_AG": "REUSE_DIRECT for FX -- src/historical_replay/fill_simulator.py, src/session_sweep_continuation/replay.py (existing, proven, already parity-tested)",
+      "decision": "REUSE_AG first -- AG already has a proven, parity-tested replay engine for exactly this strategy family (ST_SESSION_SWEEP_CONTINUATION_V1); session-smc's replay engine is a REFERENCE candidate only if AG's own engine proves insufficient for Backtesting.py integration specifically"
+    },
+    {
+      "capability": "virtual broker / fill simulation",
+      "SESSION_SMC": "REUSE_WITH_ADAPTER (candidate, not content-verified) -- virtual_broker/{fill_engine,order_validator,position_manager}.py, execution_simulator/execution/{fill_engine,risk_engine}.py",
+      "CURRENT_AG": "REUSE_DIRECT -- src/historical_replay/fill_simulator.py (entry-fill only, per WP0 finding)",
+      "decision": "NOT_YET_ASSESSED -- worth a follow-up content review of session-smc's fill_engine.py against AG's own fill_simulator.py before choosing; not decided this session"
+    },
+    {
+      "capability": "strategy validation / gate / governance architecture",
+      "SESSION_SMC": "REFERENCE_ONLY -- svos/{governance,lifecycle,registry}/, strategy_validation/{pipeline,scoring,validators,schemas}/",
+      "SMC_LSS": "REFERENCE_ONLY -- governance/st_c2_stage_status.yaml, st_c3_stage_status.yaml, stages/{A2,A3,B,C,D}/",
+      "CURRENT_AG": "REUSE_DIRECT -- src/validation_framework/ (AG-EGSVF), config/governance/strategy_lifecycle.yaml, config/governance/economic_gate_contract.yaml -- already this project's own signed governance mechanism",
+      "decision": "REUSE_AG. Both donor platforms are architecturally interesting cross-references (worth a later comparative read for ideas), but AG's own R0-R9/lifecycle_stage/economic_gate_contract discipline is already mature, owner-reviewed, and in active use -- do not replace it with an imported governance model."
+    },
+    {
+      "capability": "EURUSD M5 historical dataset (multi-month/year)",
+      "CURRENT_AG": "MT5/Vantage Demo live capture (proven last session, 20-bar sample only so far) + config/historical_datasets/ManifestS for EURUSD H1/M15/M1 covering 2025-01 through 2026-07",
+      "SMC_LSS": "SECONDARY_CROSSCHECK -- data/EURUSD_M5.csv, 80,004 rows, 2025-06-24 through 2026-07-21 (~13 months), no volume column, timezone not yet cross-checked",
+      "decision": "PRIMARY = capture fresh multi-month M5 history directly from MT5 (authoritative, timestamp-authority already proven); USE smc-lss-platform's EURUSD_M5.csv only as an independent cross-check sample for overlapping timestamps (mission section 28), never as the primary source"
+    },
+    {
+      "capability": "friction/cost model (spread, commission, slippage)",
+      "CURRENT_AG": "REUSE_DIRECT -- src/performance/cost_model.py (one signed scenario, CONTRACT_CEILING), external_candidate/friction.py (built last session)",
+      "SESSION_SMC": "NOT_YET_ASSESSED -- execution_simulator/execution/risk_engine.py may contain cost logic, not read this session",
+      "decision": "REUSE_AG"
+    },
+    {
+      "capability": "performance metrics (expectancy, profit factor, drawdown)",
+      "CURRENT_AG": "REUSE_DIRECT -- src/performance/calculator.py, external_candidate/{oos_evaluator,walk_forward}.py",
+      "decision": "REUSE_AG"
+    },
+    {
+      "capability": "candidate identity / admission / lifecycle gates",
+      "CURRENT_AG": "REUSE_DIRECT -- src/external_candidate/ (this project's own, built and tested over the last several sessions)",
+      "decision": "REUSE_AG -- explicitly not to be duplicated or replaced by any donor platform's own candidate/gate concept"
+    },
+    {
+      "capability": "Bybit / Binance / MEXC / crypto exchange adapters",
+      "GOLD_REPO": "1upgraded_ai_gold_trading -- product/dashboard focus, not assessed for exchange adapters",
+      "AUTO_TRADE_SYSTEM": "NOT_YET_ASSESSED (ifashion101gm/auto-trade-system content not inspected this session)",
+      "decision": "NOT_YET_ASSESSED, deferred -- out of scope for the current EURUSD S2 research priority"
+    },
+    {
+      "capability": "Telegram / dashboard / SaaS productization",
+      "GOLD_REPO": "REFERENCE_ONLY, LATER_PRODUCT_REUSE per prompt's own instruction -- 1upgraded_ai_gold_trading/{dashboard,telegram-signal-service,saas-landing,paxg-bot-skill}",
+      "decision": "DEFER -- explicitly out of scope for FX S2 edge validation"
+    }
+  ],
+  "overall_reuse_posture": "AG's own already-built infrastructure (MT5 capture, Parquet/hash tooling, performance/cost/validation/candidate-admission modules) remains the correct REUSE_AG choice for every core pipeline capability -- it is already proven, tested, and governance-integrated. The genuinely new, real value found on D:\\ this session is (1) session-smc-trading-bot's wilder_atr()/displacement primitives as an ADAPT_LOCAL_CODE candidate for S2's ATR/displacement requirement, and (2) smc-lss-platform's EURUSD_M5.csv as a secondary cross-check dataset. Neither donor platform's replay engine, virtual broker, or governance model was found to be clearly superior to AG's own equivalents in this shallow pass -- a deeper content review of session-smc's virtual_broker/fill_engine.py remains the one open, worthwhile follow-up before the next research task begins."
+}
