@@ -140,3 +140,66 @@ def test_notification_never_mutates_trading_journal_events(tmp_path, monkeypatch
 
     events = [e["event"] for e in tm_journal.read_events(1005, base_dir)]
     assert events == ["MOVE_SL_CONFIRMED", "MOVE_SL_TELEGRAM_NOTIFY_SENT"]
+
+
+# --- broker-side close alerts (SL hit) ---------------------------------------------
+
+def test_close_notification_sends_sl_message_and_journals_sent(tmp_path, monkeypatch):
+    base_dir = str(tmp_path / "journal")
+    fake_session = _FakeSession(response=_FakeResponse({"ok": True, "result": {"message_id": 9}}))
+    monkeypatch.setattr(
+        trade_management_alerts, "TelegramClient",
+        lambda token: _RealTelegramClient(token, session=fake_session),
+    )
+
+    trade_management_alerts.notify_position_closed(1007, "EURUSD", "SL", base_dir=base_dir, config=_cfg())
+
+    assert len(fake_session.calls) == 1
+    sent_text = fake_session.calls[0][1]["text"]
+    assert "STOP LOSS" in sent_text
+    assert "POSITION_CLOSED_SL" in sent_text
+    events = [e["event"] for e in tm_journal.read_events(1007, base_dir)]
+    assert events == ["POSITION_CLOSED_SL_TELEGRAM_NOTIFY_SENT"]
+
+
+def test_close_notification_unknown_reason_is_labelled_unconfirmed(tmp_path, monkeypatch):
+    base_dir = str(tmp_path / "journal")
+    fake_session = _FakeSession(response=_FakeResponse({"ok": True, "result": {"message_id": 10}}))
+    monkeypatch.setattr(
+        trade_management_alerts, "TelegramClient",
+        lambda token: _RealTelegramClient(token, session=fake_session),
+    )
+
+    trade_management_alerts.notify_position_closed(1008, "GBPUSD", "UNKNOWN", base_dir=base_dir, config=_cfg())
+
+    sent_text = fake_session.calls[0][1]["text"]
+    assert "could not be confirmed" in sent_text
+    assert "POSITION_CLOSED_UNKNOWN" in sent_text
+
+
+def test_close_notification_not_configured_is_a_silent_noop(tmp_path):
+    base_dir = str(tmp_path / "journal")
+    trade_management_alerts.notify_position_closed(
+        1009, "EURUSD", "SL", base_dir=base_dir, config=_cfg(bot_token=""),
+    )
+    assert tm_journal.read_events(1009, base_dir) == []
+
+
+def test_close_notification_transport_failure_is_contained_and_journaled(tmp_path, monkeypatch):
+    base_dir = str(tmp_path / "journal")
+    token = "SUPER_SECRET_BOT_TOKEN_456"
+    fake_session = _FakeSession(
+        raises=requests.ConnectionError(f"failed to reach https://api.telegram.org/bot{token}/sendMessage"),
+    )
+    monkeypatch.setattr(
+        trade_management_alerts, "TelegramClient",
+        lambda tok: _RealTelegramClient(tok, session=fake_session),
+    )
+
+    trade_management_alerts.notify_position_closed(
+        1010, "EURUSD", "SL", base_dir=base_dir, config=_cfg(bot_token=token),
+    )  # must not raise
+
+    events = tm_journal.read_events(1010, base_dir)
+    assert events[0]["event"] == "POSITION_CLOSED_SL_TELEGRAM_NOTIFY_FAILED"
+    assert events[0]["reason_code"] == "TELEGRAM_SEND_EXCEPTION"

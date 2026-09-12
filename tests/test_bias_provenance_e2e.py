@@ -228,11 +228,13 @@ def test_resolver_invoked_exactly_once_per_cycle(monkeypatch):
         return real(*args, **kwargs)
 
     monkeypatch.setattr(resolver_module, "resolve_from_structure_tiers", counting_wrapper)
-    # Re-import market_bias's already-bound reference so the monkeypatch takes effect --
-    # it was imported by name (`from market_intelligence.bias_resolver import
-    # resolve_from_structure_tiers`), so patch it there too.
+    # Patching the resolver module alone is sufficient AND necessary:
+    # daytrading.decision.market_bias imports resolve_from_structure_tiers lazily,
+    # inside derive_market_bias_from_tiers() (deliberately, to avoid an import cycle),
+    # so the name is resolved from resolver_module at call time and this module never
+    # holds a module-level binding of it. A second monkeypatch.setattr against
+    # market_bias raised AttributeError for exactly that reason.
     import daytrading.decision.market_bias as market_bias_module
-    monkeypatch.setattr(market_bias_module, "resolve_from_structure_tiers", counting_wrapper)
 
     bias = market_bias_module.derive_market_bias_from_tiers(_tiers(STATE_BULLISH), "H1", decision_time=DECISION_TIME)
     assert call_count["n"] == 1

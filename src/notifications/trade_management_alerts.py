@@ -77,6 +77,57 @@ def notify_confirmed_action(
         _record(ticket, action, "TELEGRAM_NOTIFY_FAILED", base_dir, reason_code=f"TELEGRAM_ERROR_{result.error_code}")
 
 
+_CLOSE_REASON_LABELS = {
+    "SL": "closed by STOP LOSS",
+    "TP": "closed by TAKE PROFIT",
+    "STOP_OUT": "closed by broker STOP OUT",
+    "MANUAL": "closed manually",
+    "EXPERT": "closed by an expert/automated request",
+    "UNKNOWN": "closed broker-side (reason could not be confirmed)",
+}
+
+
+def notify_position_closed(
+    ticket: int, symbol: str, close_reason: str, *,
+    base_dir: str = "journal", config: Optional[TelegramGatewayConfig] = None,
+) -> None:
+    """Broker-side close alert (stop-loss hit being the case that previously had no
+    notification at all -- reconcile() detected STATE_CLOSED and returned silently).
+
+    Same contract as notify_confirmed_action: called only AFTER the close has already
+    been reconciled and journaled, never raises into the caller, and is a no-op when
+    Telegram is not configured. Caller owns de-duplication (see
+    trade_management.manager) so a restart/re-reconcile of an already-notified closed
+    position sends nothing.
+    """
+    cfg = config or TelegramGatewayConfig.from_env()
+    if not (cfg.bot_token and cfg.chat_id is not None):
+        return  # not configured -- silent no-op
+
+    event = f"POSITION_CLOSED_{close_reason}"
+    label = _CLOSE_REASON_LABELS.get(close_reason, _CLOSE_REASON_LABELS["UNKNOWN"])
+    text = (
+        f"AG Trade Management\nTicket #{ticket} ({symbol})\nPosition {label}.\n"
+        f"Reason: {event}"
+    )
+
+    try:
+        client = TelegramClient(cfg.bot_token)
+        result = client.send_message(cfg.chat_id, text)
+    except Exception as exc:  # noqa: BLE001 -- must never propagate into reconciliation
+        logger.warning(
+            "trade management telegram close-notify failed ticket=%s reason=%s: %s",
+            ticket, close_reason, _redact(str(exc), cfg.bot_token),
+        )
+        _record(ticket, event, "TELEGRAM_NOTIFY_FAILED", base_dir, reason_code="TELEGRAM_SEND_EXCEPTION")
+        return
+
+    if result.ok:
+        _record(ticket, event, "TELEGRAM_NOTIFY_SENT", base_dir)
+    else:
+        _record(ticket, event, "TELEGRAM_NOTIFY_FAILED", base_dir, reason_code=f"TELEGRAM_ERROR_{result.error_code}")
+
+
 def _record(ticket: int, action: str, outcome: str, base_dir: str, **payload) -> None:
     try:
         tm_journal.record_event(ticket, f"{action}_{outcome}", base_dir, **payload)

@@ -55,6 +55,10 @@ def dataset():
 
 @pytest.fixture(scope="module")
 def csv_data():
+    # CSV_PATH is a machine-local MT5 export outside the repo, not a tracked fixture --
+    # skip rather than error the whole module on a checkout that doesn't have it.
+    if not Path(CSV_PATH).exists():
+        pytest.skip(f"external MT5 M5 export not present on this machine: {CSV_PATH}")
     return load_mt5_export_csv(CSV_PATH, "EURUSD", "M5")
 
 
@@ -210,8 +214,18 @@ def test_case_b_e3m3_sibling_shares_directional_liquidity(dataset, store, bypass
 
 # --------------------------------------------------------------------------- Case C: E1M2 READY (full walk)
 
+@pytest.mark.slow
 def test_case_c_e1m2_ready(dataset, store, sorted_m5_times, bypass_counters, golden):
-    """entry_type/entry_low/entry_high/entry_reference are overwritten on every poll
+    """SLOW (deselected from the default suite; run with `pytest -m slow`).
+
+    This is not a hang and not broken -- it is a genuinely long exhaustive walk. The
+    CASE_C event is eligible across 1151 M5 timestamps and this test runs a full
+    canonical V2 entry evaluation at every one of them, on top of a ~26s load of the
+    95,393-candle EURUSD M5 export. Measured runtime is tens of minutes, which made a
+    plain `pytest -q` look like it hung forever at this file. Correctness is unchanged:
+    the walk still runs, it just no longer blocks every routine full-suite run.
+
+    entry_type/entry_low/entry_high/entry_reference are overwritten on every poll
     where an entry array exists (SetupLedger.observe), not only at ready_time -- this
     setup stays non-terminal for days after READY and forms a different array by
     final_time. So this case is verified the same way the oracle itself was produced:

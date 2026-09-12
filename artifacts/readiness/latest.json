@@ -1,0 +1,111 @@
+﻿{
+    "schema_version":  "1.0.0",
+    "artifact_id":  "AG_READINESS_VALIDATION_V2",
+    "timestamp_utc":  "2026-09-12T16:17:12.949994Z",
+    "commit":  "c36bf235c43764f4b537be8bbfec8653ca186077",
+    "branch":  "main",
+    "mode":  "Full",
+    "overall":  "PASS",
+    "frontend":  {
+                     "Frontend: dependencies installed":  "PASS",
+                     "Frontend: typecheck (tsc --noEmit)":  "PASS",
+                     "Frontend: production build":  "PASS",
+                     "Frontend: safety tests (execution containment, proposal authority)":  "PASS",
+                     "Frontend: API mode / base URL configuration":  "PASS",
+                     "Frontend: no direct MT5 / execution / Telegram imports in src":  "PASS"
+                 },
+    "backend":  {
+                    "Backend: collection has zero errors":  "PASS",
+                    "Backend: focused R0-R4 gate tests":  "PASS",
+                    "Backend: full suite":  "PASS",
+                    "full_suite_stats":  {
+                                             "passed":  2666,
+                                             "failed":  0,
+                                             "error":  0,
+                                             "skipped":  7,
+                                             "deselected":  1,
+                                             "duration_seconds":  586.52
+                                         }
+                },
+    "r4":  {
+               "validated_mode":  "Full",
+               "execution_containment":  "PASS"
+           },
+    "checks":  [
+                   {
+                       "Check":  "Repo: git metadata resolvable",
+                       "Group":  "repo",
+                       "Status":  "PASS",
+                       "Detail":  ""
+                   },
+                   {
+                       "Check":  "Repo: python toolchain present",
+                       "Group":  "repo",
+                       "Status":  "PASS",
+                       "Detail":  ""
+                   },
+                   {
+                       "Check":  "Frontend: dependencies installed",
+                       "Group":  "frontend",
+                       "Status":  "PASS",
+                       "Detail":  ""
+                   },
+                   {
+                       "Check":  "Frontend: typecheck (tsc --noEmit)",
+                       "Group":  "frontend",
+                       "Status":  "PASS",
+                       "Detail":  ""
+                   },
+                   {
+                       "Check":  "Frontend: production build",
+                       "Group":  "frontend",
+                       "Status":  "PASS",
+                       "Detail":  ""
+                   },
+                   {
+                       "Check":  "Frontend: safety tests (execution containment, proposal authority)",
+                       "Group":  "frontend",
+                       "Status":  "PASS",
+                       "Detail":  ""
+                   },
+                   {
+                       "Check":  "Frontend: API mode / base URL configuration",
+                       "Group":  "frontend",
+                       "Status":  "PASS",
+                       "Detail":  ""
+                   },
+                   {
+                       "Check":  "Frontend: no direct MT5 / execution / Telegram imports in src",
+                       "Group":  "frontend",
+                       "Status":  "PASS",
+                       "Detail":  ""
+                   },
+                   {
+                       "Check":  "Backend: collection has zero errors",
+                       "Group":  "backend",
+                       "Status":  "PASS",
+                       "Detail":  ""
+                   },
+                   {
+                       "Check":  "Backend: focused R0-R4 gate tests",
+                       "Group":  "backend",
+                       "Status":  "PASS",
+                       "Detail":  ""
+                   },
+                   {
+                       "Check":  "Backend: full suite",
+                       "Group":  "backend",
+                       "Status":  "PASS",
+                       "Detail":  "2666 passed, 7 skipped"
+                   }
+               ],
+    "unexplained_failures":  [
+
+                             ],
+    "safety":  {
+                   "orders_submitted":  0,
+                   "broker_mutation_attempted":  false,
+                   "strategy_parameters_changed":  false,
+                   "authority_changed":  false
+               }
+}

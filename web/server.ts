@@ -1383,28 +1383,20 @@ async function startServer() {
       return res.json({ success: true, simulated: true, ticket });
     }
 
-    const repoRoot = path.resolve(process.cwd(), '..');
-    const args = [
-      path.join(repoRoot, 'scripts', 'manage_trade.py'),
-      'claim', String(ticket), '--final-r', String(finalR), '--json'
-    ];
-    const child = spawn(process.env.PYTHON_EXECUTABLE || 'python', args, { cwd: repoRoot, windowsHide: true });
-    let stdout = '';
-    let stderr = '';
-    child.stdout.on('data', chunk => { stdout += chunk.toString(); });
-    child.stderr.on('data', chunk => { stderr += chunk.toString(); });
-    child.on('error', error => res.status(502).json({ success: false, error: 'MT5_CLAIM_BRIDGE_FAILURE', details: error.message }));
-    child.on('close', code => {
-      try {
-        const lastLine = stdout.trim().split(/\r?\n/).filter(Boolean).at(-1) || '';
-        const report = JSON.parse(lastLine);
-        if (code !== 0 || report.status !== 'CLAIMED') {
-          return res.status(409).json({ success: false, error: report.reason_code || report.status || 'CLAIM_REJECTED', report });
-        }
-        return res.json({ success: true, simulated: false, report });
-      } catch (error) {
-        return res.status(502).json({ success: false, error: 'INVALID_MT5_CLAIM_RESPONSE', details: stderr || String(error) });
-      }
+    // WP0B EXECUTION AUTHORITY CONTAINMENT (extends WP0A to position management).
+    // This branch used to spawn scripts/manage_trade.py, which reaches
+    // src/mt5/management_gateway.py and real mt5.order_check/order_send for an
+    // EXISTING position. Claiming a ticket is the entry point of that management
+    // authority chain, so it is retired here for exactly the same reason
+    // /api/execution/execute was: the Node/Express surface holds no broker
+    // authority. The canonical Python path (scripts/manage_trade.py CLI under
+    // config/trading.yaml governance, and src/api/app.py's authorized gateway)
+    // keeps the capability -- only this alternate authority route is removed.
+    return res.status(410).json({
+      success: false,
+      error: 'EXECUTION_ROUTE_RETIRED',
+      message: 'Real-mode position claim via web/server.ts is retired. Use the ' +
+        'canonical Python trade-management path instead.'
     });
   });
 
@@ -1413,32 +1405,22 @@ async function startServer() {
     const pos = positions.find(p => p.ticket === ticket);
 
     if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() === 'real') {
-      if (!Number.isInteger(Number(ticket)) || !['BREAKEVEN', 'PARTIAL_CLOSE', 'CLOSE'].includes(action)) {
-        return res.status(400).json({ success: false, error: 'INVALID_MANAGEMENT_REQUEST' });
-      }
-      const repoRoot = path.resolve(process.cwd(), '..');
-      const scriptPath = path.join(repoRoot, 'scripts', 'web_manage_trade.py');
-      const python = process.env.PYTHON_EXECUTABLE || 'python';
-      const args = [scriptPath, '--ticket', String(Number(ticket)), '--action', String(action)];
-      const child = spawn(python, args, { cwd: repoRoot, windowsHide: true });
-      let stdout = '';
-      let stderr = '';
-      child.stdout.on('data', chunk => { stdout += chunk.toString(); });
-      child.stderr.on('data', chunk => { stderr += chunk.toString(); });
-      child.on('error', error => res.status(502).json({ success: false, error: 'MT5_MANAGEMENT_BRIDGE_FAILURE', details: error.message }));
-      child.on('close', code => {
-        try {
-          const lastLine = stdout.trim().split(/\r?\n/).filter(Boolean).at(-1) || '';
-          const report = JSON.parse(lastLine);
-          if (code !== 0 || report.outcome !== 'EXECUTED') {
-            return res.status(409).json({ success: false, error: report.detail || 'MANAGEMENT_REJECTED', report });
-          }
-          return res.json({ success: true, simulated: false, report, message: `MT5 ${action} executed for #${ticket}.` });
-        } catch (error) {
-          return res.status(502).json({ success: false, error: 'INVALID_MANAGEMENT_BRIDGE_RESPONSE', details: stderr || String(error) });
-        }
+      // WP0B EXECUTION AUTHORITY CONTAINMENT (extends WP0A to position management).
+      // This branch used to spawn scripts/web_manage_trade.py ->
+      // src/mt5/management_gateway.py -> real mt5.order_check/order_send, mutating a
+      // LIVE broker position (BREAKEVEN / PARTIAL_CLOSE / CLOSE) on nothing but a
+      // client-supplied ticket + action. It was inert only because
+      // config/trading.yaml's allow_live_management/allow_order_send flags are false
+      // -- a config gate, not a structural boundary. Retired the same way
+      // /api/execution/execute was in WP0A. src/mt5/management_gateway.py and all
+      // canonical trade-management domain logic are untouched and still reachable
+      // through the canonical Python path.
+      return res.status(410).json({
+        success: false,
+        error: 'EXECUTION_ROUTE_RETIRED',
+        message: 'Real-mode position management via web/server.ts is retired. Use the ' +
+          'canonical Python trade-management path instead.'
       });
-      return;
     }
 
     if (!pos) {

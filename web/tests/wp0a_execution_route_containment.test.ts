@@ -97,6 +97,57 @@ test('scanner synthetic proposal feed still reports executionEligible=false', as
   }
 });
 
+// --- WP0B: position-management authority containment -------------------------
+// /api/execution/manage and /api/execution/claim used to spawn
+// scripts/web_manage_trade.py / scripts/manage_trade.py -> src/mt5/management_gateway.py
+// -> real mt5.order_check/order_send against an EXISTING broker position. They must now
+// fail closed in real mode exactly like /execute does.
+
+const manageActions = ['BREAKEVEN', 'PARTIAL_CLOSE', 'CLOSE'];
+
+for (const action of manageActions) {
+  test(`real-mode POST /api/execution/manage (${action}) is retired and spawns no broker script`, async () => {
+    const res = await fetch(`${BASE_URL}/api/execution/manage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ticket: 9123456, action })
+    });
+    const data = await res.json();
+    assert.equal(res.status, 410);
+    assert.equal(data.success, false);
+    assert.equal(data.error, 'EXECUTION_ROUTE_RETIRED');
+    // no bridge/broker report of any kind may come back
+    assert.equal(data.report, undefined);
+    assert.equal(data.simulated, undefined);
+    assert.equal(data.position, undefined);
+  });
+}
+
+test('real-mode POST /api/execution/claim is retired and spawns no broker script', async () => {
+  const res = await fetch(`${BASE_URL}/api/execution/claim`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ticket: 9123456, finalR: 5 })
+  });
+  const data = await res.json();
+  assert.equal(res.status, 410);
+  assert.equal(data.success, false);
+  assert.equal(data.error, 'EXECUTION_ROUTE_RETIRED');
+  assert.equal(data.report, undefined);
+  assert.equal(data.simulated, undefined);
+});
+
+test('server.ts source contains no real-mode spawn of a broker-mutating script', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const source = await readFile(path.resolve(__dirname, '..', 'server.ts'), 'utf-8');
+  for (const script of ['web_execute_trade.py', 'web_manage_trade.py', 'manage_trade.py']) {
+    assert.ok(
+      !source.includes(`'${script}'`),
+      `web/server.ts must not reference broker-mutating script ${script}`
+    );
+  }
+});
+
 test('read-only routes do not accept or trigger broker execution', async () => {
   const health = await fetch(`${BASE_URL}/api/health`);
   assert.equal(health.status, 200);

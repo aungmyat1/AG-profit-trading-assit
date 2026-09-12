@@ -13,3 +13,17 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+# `slow` is deselected by default so a plain `pytest -q` terminates deterministically.
+# It marks correct, wanted regressions whose runtime is measured in tens of minutes
+# (exhaustive historical walks over the full M5 export), not broken or flaky tests.
+# Run them explicitly with:  pytest -m slow
+markers = [
+    "slow: long-running exhaustive historical regression; deselected by default, run with -m slow",
+    # `live_mt5` marks tests that genuinely need the real MetaTrader5 package / a
+    # connected terminal. It is NOT deselected by default: on the project's Windows
+    # dev box (real MT5 installed) these run for real. tests/conftest.py skips them
+    # only where the genuine package is absent, so a non-Windows run reports SKIP
+    # instead of a misleading FAIL -- and never hides a failure where it is observable.
+    "live_mt5: requires the real MetaTrader5 package / a live MT5 terminal",
+]
+addopts = "-m 'not slow'"

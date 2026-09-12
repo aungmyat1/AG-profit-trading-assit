@@ -17,9 +17,10 @@ from mt5 import account as mt5_account
 from mt5 import management_gateway
 from mt5.market_data import get_tick
 from mt5.symbol_resolver import get_symbol_meta
-from notifications.trade_management_alerts import notify_confirmed_action
+from notifications.trade_management_alerts import notify_confirmed_action, notify_position_closed
 
 from . import journal
+from .close_reason import resolve_close_reason
 from .claims import load_claims
 from .models import (
     ACTION_CLOSE,
@@ -71,6 +72,9 @@ def run_cycle_for_ticket(
     record = load_state(ticket, base_dir)
     record, reconcile_reason = reconcile(claim, record, position)
     save_state(record, base_dir)
+
+    if position is None and record.state == STATE_CLOSED:
+        _notify_broker_side_close(ticket, claim.symbol, base_dir)
 
     if reconcile_reason != RECONCILE_OK:
         journal.record_event(ticket, "MANAGEMENT_BLOCKED", base_dir, reason_code=reconcile_reason)
@@ -154,6 +158,43 @@ def run_cycle_for_ticket(
     record = _advance_state(record, intent, gateway_result.volume_after)
     save_state(record, base_dir)
     return CycleResult(ticket=ticket, outcome="EXECUTED", detail=intent.action, intent=intent)
+
+
+_CLOSE_DETECTED_EVENT = "BROKER_SIDE_CLOSE_DETECTED"
+
+
+def _notify_broker_side_close(ticket: int, symbol: str, base_dir: str) -> None:
+    """The position is gone broker-side (stop-loss hit, broker TP, manual close, stop
+    out). Before this hook existed, reconcile() moved the record to STATE_CLOSED and the
+    cycle returned silently -- so breakeven/partial/TP-exit alerted but an SL hit never
+    did.
+
+    Idempotency is journal-backed, not state-backed: the durable
+    BROKER_SIDE_CLOSE_DETECTED event is what suppresses a second alert on restart or on
+    any later re-reconcile of the same closed ticket. It is written BEFORE the Telegram
+    attempt, so a transport failure still cannot turn into a repeat-alert loop (the
+    separate {event}_TELEGRAM_NOTIFY_FAILED record is the audit trail for that).
+
+    A close this manager itself performed already fired CLOSE_CONFIRMED +
+    notify_confirmed_action, so it is skipped here rather than double-reported.
+
+    Never raises: notification is a side effect of an already-committed reconciliation.
+    """
+    try:
+        events = journal.read_events(ticket, base_dir)
+        seen = {e.get("event") for e in events}
+        if _CLOSE_DETECTED_EVENT in seen:
+            return  # already detected + notified on an earlier cycle
+        if "CLOSE_CONFIRMED" in seen:
+            # our own managed exit -- notify_confirmed_action("CLOSE") already reported it
+            journal.record_event(ticket, _CLOSE_DETECTED_EVENT, base_dir, close_reason="SELF_MANAGED_CLOSE", notified=False)
+            return
+
+        close_reason = resolve_close_reason(ticket)
+        journal.record_event(ticket, _CLOSE_DETECTED_EVENT, base_dir, close_reason=close_reason, notified=True)
+        notify_position_closed(ticket, symbol, close_reason, base_dir=base_dir)
+    except Exception:  # noqa: BLE001 -- must never affect the reconciled state transition
+        pass
 
 
 def _dispatch(intent: ManagementIntent, claim, position) -> "management_gateway.GatewayResult":

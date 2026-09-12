@@ -4,6 +4,134 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Current rolling classification (2026-09-12)
+
+This supersedes the 2026-09-10 classification recorded further down in this file
+(kept below as dated historical context, not corrected in place).
+
+| Gate | Status | Evidence |
+| --- | --- | --- |
+| R0 Safe Foundation | `READY` | — |
+| R1 Research Watch | `READY / RESEARCH_ONLY` | — |
+| R2 Real Market Watch | `READY` | WP1–WP3, `docs/status/AG_CANONICAL_R2_R4_WP0_BASELINE_RECONCILIATION_STATUS.md` |
+| R3 Canonical Strategy | `READY` | WP4–WP5 + WP5.2, same doc (`AG_CANONICAL_STRATEGY_RUNTIME_READY_V1 = PASS`) |
+| R4 Canonical Proposal | `READY / PASS` | WP6–WP11A + WP12 natural proof, 2026-09-11 (`AG_PROPOSAL_OPERATION_READY_V1 = PASS`) |
+| R5 Edge Validation Ready | `NOT_PASS` | see below |
+| R6 Edge Validated | `NOT_PASS` | see below |
+| R7–R9 | `BLOCKED` | unchanged |
+
+R4 reached `PASS` on 2026-09-11: a real LONDON_NEWYORK cycle produced a GBPUSD `READY`
+decision that flowed through `MarketSnapshot` (REAL) → `StrategyDecision` →
+`apply_formation_gate` → `CanonicalProposal` → `ProposalLedger`, verified against the
+real ledger file and `GET /api/canonical-proposals`, with `execution_eligible=false`
+and zero broker mutation. Restart-reload and duplicate-protection were proven against
+that real record.
+
+R5/R6 are recorded here as `NOT_PASS` rather than green. The R5 evidence pipeline
+itself is complete and reproducible, but the only resolved evidence that exists —
+13 `ST_ASIAN_SWEEP_5R_V1` trades — is 13/13 losses (gross expectancy `-1.00R`, net
+`-3.38R` under the one signed cost scenario), and no **signed** economic-gate
+threshold exists, so R6 is formally `NOT_EVALUABLE_MISSING_SIGNED_THRESHOLDS`. A
+proposed contract awaits owner review in
+`config/governance/economic_gate_contract.yaml` (`status: PROPOSED`, **not signed**)
+with the review package at `docs/status/AG_R6_ECONOMIC_GATE_OWNER_REVIEW_V1.md`.
+Strategy research is `PAUSED_BY_OWNER`; the economic gate is `NOT_VALIDATED`.
+No new Demo or Live authorization has been granted. `ST_ASIAN_SWEEP_5R_V1`'s
+pre-existing `demo_authorized=true` in `strategies/registry.yaml` is unchanged.
+
+### Platform-finalization remediation (2026-09-12)
+
+Two platform blockers from the 2026-09-12 finalization audit are closed:
+
+- **Position-management authority containment (WP0B).** `web/server.ts`'s real-mode
+  `POST /api/execution/manage` and `POST /api/execution/claim` spawned
+  `scripts/web_manage_trade.py` / `scripts/manage_trade.py` →
+  `src/mt5/management_gateway.py` → real `mt5.order_check`/`order_send` against an
+  existing broker position, held inert only by `config/trading.yaml` flags. Both are
+  now retired with `410 EXECUTION_ROUTE_RETIRED`, the same structural convention WP0A
+  applied to `POST /api/execution/execute`. Mock mode is unchanged and still reports
+  `simulated: true`. `src/mt5/management_gateway.py` and all canonical
+  `src/trade_management/` logic are preserved — only the alternate Node authority path
+  was removed; no second authorization system was created. `web/server.ts` no longer
+  references any broker-mutating script, enforced by a static assertion in the
+  containment suite. Detail: `docs/status/AG_CANONICAL_R2_R4_WP0_BASELINE_RECONCILIATION_STATUS.md`
+  (WP0B section).
+- **Broker-side stop-loss close notification.** `src/trade_management/manager.py`'s
+  reconciliation previously moved a vanished position to `STATE_CLOSED` and returned
+  without notifying, so breakeven / TP1 partial / managed-exit alerted but a stop-loss
+  hit did not. Reconciliation now classifies the close from authoritative MT5 deal
+  history only (`src/trade_management/close_reason.py` over the existing read-only
+  `src/mt5/deals.py::deals_for_position`; MT5's own `DEAL_REASON` on the closing
+  `DEAL_ENTRY_OUT` deal) and emits `POSITION_CLOSED_SL` / `_TP` / `_STOP_OUT` /
+  `_MANUAL` / `_EXPERT`, falling back to `POSITION_CLOSED_UNKNOWN` when the reason
+  cannot be confirmed — a loss is never inferred to be a stop-loss. Delivery reuses
+  the existing `src/notifications/trade_management_alerts.py` gateway (no second
+  notification path). Idempotency is journal-backed via a durable
+  `BROKER_SIDE_CLOSE_DETECTED` event written before the send, so restart or
+  re-reconcile of an already-notified ticket sends nothing, and a self-managed
+  `CLOSE_CONFIRMED` exit is not double-reported. A Telegram failure cannot affect the
+  reconciled state transition.
+- **Full `pytest -q` no longer appears to hang.** Root cause was not an MT5, network
+  or subprocess dependency: `tests/test_golden_vertical_slice.py::test_case_c_e1m2_ready`
+  is an exhaustive historical walk that runs a full canonical V2 entry evaluation at
+  each of the CASE_C event's 1151 eligible M5 timestamps, on top of a ~26s load of the
+  95,393-candle EURUSD M5 export — genuinely slow but finite, and correct. It is now
+  marked `@pytest.mark.slow` and deselected by default via `addopts = "-m 'not slow'"`
+  in `pyproject.toml`; it still runs on demand with `pytest -m slow`. Its module also
+  gained a skip guard for the machine-local MT5 CSV export it depends on
+  (`D:\EURUSD_M5_*.csv`, outside the repo). Two unrelated real failures were also
+  fixed: `test_bias_provenance_e2e.py::test_resolver_invoked_exactly_once_per_cycle`
+  patched a name `daytrading.decision.market_bias` never binds (it imports the
+  resolver lazily to avoid an import cycle) — a test-only defect, production code
+  correct; and `test_mtf_context.py::test_live_closed_candle_and_timezone_sanity` now
+  skips its bar-freshness assertion during the spot-FX weekend closure instead of
+  failing on the correctly-served last bar of the trading week. No strategy rule,
+  parameter, threshold or authorization flag was touched by any of this.
+
+### Readiness validation infrastructure (2026-09-12)
+
+A repeatable readiness gate now exists so R-gate status is re-verifiable on demand
+instead of re-derived by hand each time.
+
+| Field | Value |
+| --- | --- |
+| `frontend_config` | `PASS` — 17/17 client routes in `web/src/utils/agApiClient.ts` map 1:1 onto real `src/api/app.py` routes (`/api/health`, `/api/system/status`, `/api/broker/{status,account,history}`, `/api/strategies[/{id}]`, `/api/validation/{id}`, `/api/proposals[/{hash}]`, `/api/canonical-proposals[/{id}]`, `/api/tickets[/{id}][/authorize-demo]`, `/api/executions/{id}`, `/api/market-data/candles`); no orphan client call, no invented route. `VITE_AG_API_MODE` / `VITE_API_BASE_URL` documented in `web/.env.example`; CORS allow-list is `http://localhost:3000` + `http://127.0.0.1:3000` (matching Vite's port 3000), never `*`, `allow_credentials=false`. |
+| `FAST_validation` | `PASS` — `scripts/validate_readiness.ps1 -Mode Fast` |
+| `FULL_validation` | `PASS` — `-Mode Full`, 2026-09-12: **2666 passed, 7 skipped, 1 deselected, 0 failed, 0 errors** in 586.52s. `unexplained_failures = []`. All 7 skips are the pre-existing spot-FX weekend-closure / live-MT5-trading-day guards (the run fell on Saturday 2026-09-12); the 1 deselection is the `@pytest.mark.slow` exhaustive historical walk. |
+| `WP3` | `PASS` — fail-closed guards in `src/mt5/market_data.py`: `DUPLICATE_TIMESTAMPS`, `NON_MONOTONIC_TIMESTAMPS` (`_validate_monotonic`), `INVALID_OHLC`, `NONFINITE_PRICE` (`_validate_ohlc`), plus `DATA_MISSING`, `INSUFFICIENT_CANDLES`, `SYMBOL_NOT_FOUND`, `UNSUPPORTED_TIMEFRAME`, `MT5_NOT_CONNECTED`, `NAIVE_DATETIME_REJECTED`, `TIME_NORMALIZATION_ERROR`. Every one raises `MarketDataError`; none degrades to synthetic data. |
+| `WP11` | `PASS` — `tests/test_pipeline_canonical_wiring.py` (10 cases) covers duplicate evaluation → one logical proposal, restart-reload → identical id/geometry/provenance, missing snapshot → fail closed, synthetic snapshot → fail closed, and formation never touching execution; `tests/test_proposal_ledger.py` (7) and `tests/test_ticket_delivery_concurrency_and_restart.py` cover durability and concurrency. |
+| `WP12` | `SATISFIED` — prior natural evidence **re-verified**, not re-attempted. `FX:DECISION-GBPUSD-6175099562eae0c6` is present in the real ledger `state/proposal_ledger/proposal_ledger.json` (10 entries) with `market_data_mode: REAL`, `source: MT5`, `complete_candle_evidence: true`, `execution_authority: NONE`. No new live capture was forced and no synthetic data was injected. |
+| `economic_validation` | `NOT_VALIDATED` — unchanged. R5/R6 remain `NOT_PASS`; no signed economic-gate threshold exists. Software readiness is **not** economic edge. |
+| `Demo_authority` | `UNCHANGED` — no strategy promoted, no `strategies/registry.yaml` flag altered. |
+| `Live_authority` | `UNCHANGED` — none granted; no order was ever submitted (`orders_submitted = 0`). |
+
+`scripts/validate_readiness.ps1` supports `-Mode Fast` (repo sanity, frontend
+deps/typecheck/build/safety-tests/config/containment checks, backend collection,
+focused R0–R4 gate tests) and `-Mode Full` (Fast + the complete backend suite). It
+records `PASS` / `SKIP_ENVIRONMENT` / `KNOWN_ENVIRONMENT_GAP` / `FAIL` per check —
+only explicitly classified checks may receive environment treatment; anything
+unclassified that fails is `FAIL`. No individual check can exit the run, so the
+summary always prints and only the final overall verdict sets the exit code. Each
+run writes `artifacts/readiness/latest.json` (`schema_version`, `timestamp_utc`,
+`commit`, `mode`, `overall`, `frontend{}`, `backend{}`, `r4{}`,
+`unexplained_failures[]`).
+
+`tests/conftest.py` adds a collection-time-only MetaTrader5 portability shim so the
+suite can be *collected* on a non-Windows machine. It is a **no-op on this dev box**
+(real MetaTrader5 5.0.5735 installed). It is deliberately stricter than a
+`MagicMock`: MT5 constants are real values, but every other attribute resolves to a
+callable that raises `MT5StubOperationAttempted` when invoked — importing never calls
+these, so collection succeeds, while a test that reaches a genuine MT5 operation
+fails loudly instead of being fed a fake success. A `live_mt5` marker is registered
+in `pyproject.toml` and is **not** deselected by default: these tests run for real
+here and skip only where the genuine package is absent.
+
+Frontend bundle: `vite.config.ts` splits `vendor-recharts` out of the app chunk.
+Chunks are **not** all under 500 kB — `vendor-recharts` is ~730 kB and the app chunk
+~912 kB, so Rollup's >500 kB advisory still fires. That is a load-time performance
+characteristic, not a readiness gate, and is recorded here so no document claims
+otherwise.
+
 ### Deterministic Trading Skills architecture (2026-09-11)
 
 Deterministic market-analysis capabilities now have a canonical data-only registry and
@@ -68,9 +196,11 @@ R0 Safe Foundation, R1 Research Watch, R2 Real Market Watch, R3 Canonical Strate
 Canonical Proposal, R5 Edge Validation Ready, R6 Edge Validated, R7 Demo Execution
 Ready, R8 Demo Auto-Execution Validated, and R9 Controlled Live.
 
-Current classification: R0 `READY`; R1 `READY / RESEARCH_ONLY`; R2 `PARTIAL`; R3
+Classification as recorded on 2026-09-10 (**superseded** — see "Current rolling
+classification (2026-09-12)" at the top of this file; preserved here as dated
+historical context): R0 `READY`; R1 `READY / RESEARCH_ONLY`; R2 `PARTIAL`; R3
 `PARTIAL`; R4 `NOT_READY` and the primary product target; R5 `PARTIAL`; R6
-`INCOMPLETE`; R7–R9 `BLOCKED`. R2 is partial because Vantage Demo MT5 read-only
+`INCOMPLETE`; R7–R9 `BLOCKED`. R2 was partial because Vantage Demo MT5 read-only
 connectivity and closed M15 candles are verified for the current EURUSD/GBPUSD backend
 path, while the guarded end-to-end scanner/watch path is not yet proven. Existing
 execution infrastructure and separately authorized strategy paths do not advance

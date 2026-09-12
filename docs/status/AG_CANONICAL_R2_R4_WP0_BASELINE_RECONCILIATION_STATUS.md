@@ -190,6 +190,44 @@ Resolution:
 
 WP0A = **COMPLETE**. EXECUTION_AUTHORITY_CONFLICT = **RESOLVED**.
 
+## WP0B — Position-management authority containment (resolved 2026-09-12)
+
+The 2026-09-12 platform-finalization audit found WP0A had covered only *opening* a new
+order. Two sibling routes still held an alternate authority path over an **existing**
+broker position:
+
+- `POST /api/execution/manage` (real mode) spawned `scripts/web_manage_trade.py` and
+- `POST /api/execution/claim` (real mode) spawned `scripts/manage_trade.py`,
+
+both reaching `src/mt5/management_gateway.py` and real `mt5.order_check` /
+`mt5.order_send` for `BREAKEVEN` / `PARTIAL_CLOSE` / `CLOSE`, on nothing but a
+client-supplied ticket and action. They were inert only because
+`config/trading.yaml`'s `allow_live_management`, `allow_order_send`,
+`allow_order_check` and `allow_live_trading` are all `false` — a **config gate, not a
+structural boundary**.
+
+Resolution (identical convention to WP0A, no second authorization system invented):
+
+- Both real-mode branches now return `410 EXECUTION_ROUTE_RETIRED` and perform no
+  spawn, no broker call, and no management-shaped success response.
+- Mock mode is unchanged: the in-memory simulated position management the UI depends
+  on still works and still reports `simulated: true`.
+- `src/mt5/management_gateway.py`, `scripts/manage_trade.py`,
+  `scripts/manage_positions.py` and all canonical `src/trade_management/` domain logic
+  are **untouched** — the capability is preserved, only the alternate Node authority
+  route is removed.
+- `web/server.ts` now contains no reference to any broker-mutating script
+  (`web_execute_trade.py`, `web_manage_trade.py`, `manage_trade.py`); a static source
+  assertion in the containment suite enforces this going forward. The remaining
+  real-mode spawn in `web/server.ts` is `scripts/web_mt5_positions.py`, a read-only
+  positions read.
+- Tests: `web/tests/wp0a_execution_route_containment.test.ts` extended to 9 cases
+  (execute + all three manage actions + claim + the static source assertion);
+  new `web/tests/wp0b_management_route_mock_mode.test.ts` (2 cases) proves mock mode
+  is unaffected. 11/11 PASS, no MT5 terminal or broker connection involved.
+
+WP0B = **COMPLETE**. Node/Express broker authority (open **and** manage) = **NONE**.
+
 ## Exit
 
 No unresolved ownership conflict blocks WP1 from starting. The proposal-identity

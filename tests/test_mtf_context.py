@@ -28,6 +28,19 @@ def _live_available() -> bool:
         return False
 
 
+def _fx_market_closed(now_utc: dt.datetime) -> bool:
+    """Spot-FX weekend closure: from ~Fri 21:00 UTC to ~Sun 21:00 UTC no new bars form.
+    Used only to skip freshness assertions, never to relax a correctness assertion."""
+    weekday = now_utc.weekday()  # Mon=0 .. Sun=6
+    if weekday == 5:  # Saturday
+        return True
+    if weekday == 4 and now_utc.hour >= 21:  # Friday after the close
+        return True
+    if weekday == 6 and now_utc.hour < 21:  # Sunday before the reopen
+        return True
+    return False
+
+
 def test_profile_with_no_roles_raises_invalid_profile():
     with pytest.raises(InvalidProfileError):
         analyze("EURUSD", MTFProfile())
@@ -137,5 +150,18 @@ def test_live_closed_candle_and_timezone_sanity():
     assert latest.time.utcoffset() == dt.timedelta(0)
     assert latest.time < now_utc, "latest returned M15 candle must be strictly in the past (closed, not forming)"
     assert latest.time.minute in (0, 15, 30, 45), "M15 candle boundary misaligned -- possible broker-UTC-offset defect"
+
+    # The freshness half of this check is only meaningful while the FX market is
+    # actually producing bars. The spot-FX week closes ~Fri 21:00 UTC and reopens
+    # ~Sun 21:00 UTC (market convention, not an inference about any particular
+    # failure); a connected terminal correctly serves Friday's last bar throughout
+    # that window, so asserting "< 30 minutes old" there tests the calendar, not the
+    # code. Outside the closure the assertion still fires, so a genuinely stale feed
+    # during trading hours is still caught.
+    if _fx_market_closed(now_utc):
+        pytest.skip(
+            f"FX market closed at {now_utc.isoformat()}; latest M15 bar {latest.time.isoformat()} "
+            "is the expected last bar of the trading week, so the freshness assertion is not applicable"
+        )
     # The forming bar (whichever quarter-hour 'now' falls in) must never be the one returned.
     assert now_utc - latest.time < dt.timedelta(minutes=30), "returned candle looks stale, not just closed"
