@@ -41,6 +41,7 @@ from historical_replay.symbol_metadata_manifest import (  # noqa: E402
 )
 from performance.calculator import compute_trade_metrics  # noqa: E402
 from performance.models import ResolvedTradeSample  # noqa: E402
+from research.session_lifecycle import control_reconcile, lifecycle_record, population_hash  # noqa: E402
 from session_sweep_continuation.config import compute_config_hash, load_config  # noqa: E402
 from session_sweep_continuation.h1_bias import resolve_h1_market_bias  # noqa: E402
 from session_sweep_continuation.replay import run_replay  # noqa: E402
@@ -179,6 +180,7 @@ def main():
         regime_samples = {}
         setup_samples = {"S1": [], "S2": [], "S3": []}
         all_samples = []
+        lifecycle_records = []
         steps_log = []
 
         for d in dates:
@@ -252,6 +254,13 @@ def main():
                             cost_status=outcome["cost_status"], outcome=outcome["terminal_state"],
                         )
                         all_samples.append(sample)
+                        lifecycle_records.append(lifecycle_record(
+                            entry_dict,
+                            trade_id=sample.source_record_id,
+                            strategy_id=sample.strategy_id,
+                            strategy_version=sample.strategy_version,
+                            symbol=SYMBOL,
+                        ))
                         session_pair_samples[pair_id].append(sample)
                         direction_samples[entry_dict["direction"]].append(sample)
                         regime_samples.setdefault(result.regime, []).append(sample)
@@ -269,7 +278,7 @@ def main():
             "alloc_rejections": alloc_rejections, "exclusions": exclusions,
             "session_pair_samples": session_pair_samples, "direction_samples": direction_samples,
             "regime_samples": regime_samples, "setup_samples": setup_samples, "all_samples": all_samples,
-            "steps_log": steps_log,
+            "steps_log": steps_log, "lifecycle_records": lifecycle_records,
         }
 
     print(f"Running replay across {len(dates)} dates x {len(session_pairs)} session pairs...", file=sys.stderr)
@@ -364,7 +373,23 @@ def main():
             "deterministic": deterministic,
         },
         "economic_verdict": economic_verdict,
+        "lifecycle_reconciliation": control_reconcile(r["lifecycle_records"]),
     }
+    output_dir = REPO_ROOT / "artifacts" / "research" / "EXP_EXPOSURE_EFFICIENCY_V1" / "GEN_001"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    lifecycle_path = output_dir / "canonical_lifecycle_population.json"
+    lifecycle_path.write_text(json.dumps(r["lifecycle_records"], indent=2, sort_keys=True), encoding="utf-8")
+    input_manifest = {
+        "experiment_id": "EXP_EXPOSURE_EFFICIENCY_V1", "generation_id": "GEN_001",
+        "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1", "strategy_version": config.get("version", "1.0.0"),
+        "symbol": SYMBOL, "date_start": str(effective_start), "date_end": str(effective_end),
+        "dataset_path": str(M1_CSV), "dataset_sha256": m1_sha, "trade_count": len(r["lifecycle_records"]),
+        "lifecycle_population_hash": population_hash(r["lifecycle_records"]),
+        "friction_provenance": "session_sweep_continuation.friction:MODELED",
+        "control_reconciliation": report["lifecycle_reconciliation"],
+        "experiment_arms": ["CONTROL", 30, 45, 60, 90, 120], "repository_commit": git_commit,
+    }
+    (output_dir / "input_manifest.json").write_text(json.dumps(input_manifest, indent=2, sort_keys=True), encoding="utf-8")
     print(json.dumps(report, indent=2, default=str))
     return report
 

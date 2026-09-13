@@ -1,7 +1,7 @@
-"""AG BTC Sweep Research CLI entrypoint (Binance USDT-M perpetual, BTCUSDT,
+"""AG BTC Sweep Research CLI entrypoint (Bybit linear perpetual, BTCUSDT,
 ST_LIQUIDITY_SWEEP_RETEST_V1 CRYPTO_PERP profile).
 
-RESEARCH_ONLY / SHADOW / PROPOSAL_ONLY, always. This script imports ONLY: the Binance
+RESEARCH_ONLY / SHADOW / PROPOSAL_ONLY, always. This script imports ONLY: the Bybit
 public-market-data feed adapter, and btc_sweep_research's own orchestration -- it must
 NEVER import execution.executor, mt5.management_gateway, execution.coordinator, or
 execution.adapter (see src/btc_sweep_research/pipeline.py's module docstring for why; see
@@ -24,12 +24,26 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from btc_sweep_research.pipeline import run_research_cycle  # noqa: E402
 from btc_sweep_research.report import cycle_to_dict, human_readable_report  # noqa: E402
-from execution_runtime.binance_usdtm_feed import BinanceUSDTMFeed  # noqa: E402
+from execution_runtime.bybit_linear_perp_feed import (  # noqa: E402
+    EXCHANGE_ID,
+    BybitLinearPerpFeed,
+    default_symbol_meta,
+    to_symbol_meta,
+)
+
+
+def _run_cycle(feed):
+    """Apply the Bybit identity and instrument conventions to the canonical pipeline."""
+    return run_research_cycle(
+        feed,
+        exchange_id=EXCHANGE_ID,
+        symbol_meta=to_symbol_meta(default_symbol_meta()),
+    )
 
 
 def _run_once(as_json: bool):
-    feed = BinanceUSDTMFeed()
-    result = run_research_cycle(feed)
+    feed = BybitLinearPerpFeed()
+    result = _run_cycle(feed)
     if as_json:
         print(json.dumps(cycle_to_dict(result), indent=2, default=str))
     else:
@@ -45,11 +59,11 @@ def _watch_signature(report):
 
 
 def _run_watch(as_json: bool, interval: int) -> None:
-    feed = BinanceUSDTMFeed()
+    feed = BybitLinearPerpFeed()
     last_signature = None
     while True:
         try:
-            report = run_research_cycle(feed)
+            report = _run_cycle(feed)
         except Exception as exc:  # noqa: BLE001 -- an operational error is itself an event to report
             print(f"[{datetime.now(timezone.utc).isoformat()}] ERROR: {exc}")
             time.sleep(interval)
@@ -67,7 +81,7 @@ def _run_watch(as_json: bool, interval: int) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="AG BTC Sweep Research (Binance USDT-M BTCUSDT, RESEARCH_ONLY, PROPOSAL_ONLY)"
+        description="AG BTC Sweep Research (Bybit linear BTCUSDT, RESEARCH_ONLY, PROPOSAL_ONLY)"
     )
     parser.add_argument("--once", action="store_true", help="run a single evaluation cycle (default)")
     parser.add_argument("--watch", action="store_true", help="continuous, event-driven observation")

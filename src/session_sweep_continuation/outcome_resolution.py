@@ -196,6 +196,14 @@ def resolve_campaign_entry(
         )
 
     # --- Phase 2: runner, BE-stop vs fixed-R runner target ---
+    partial_event = {
+        "time": str(subsequent_candles[partial_index].time),
+        "event": "PARTIAL_TARGET",
+        "exit_price": partial_target_price,
+        "gross_R_delta": partial_pct * partial_R,
+        "quantity_before": 1.0,
+        "quantity_after": runner_pct,
+    }
     be_price = entry_price
     for c in subsequent_candles[partial_index:]:
         if c is subsequent_candles[partial_index]:
@@ -214,7 +222,9 @@ def resolve_campaign_entry(
             net_R = _apply_cost(gross_R, total_friction_r)
             return ResolvedTradeOutcome(
                 **base, terminal_state="RESOLVED_PARTIAL_BE",
-                event_sequence=[{"time": str(c.time), "event": "RUNNER_BE_STOP"}],
+                event_sequence=[partial_event, {"time": str(c.time), "event": "RUNNER_BE_STOP",
+                                "exit_price": be_price, "gross_R_delta": 0.0,
+                                "quantity_before": runner_pct, "quantity_after": 0.0}],
                 gross_R=gross_R, net_R=net_R, cost_status=cost_status,
                 **cost_fields,
             )
@@ -223,7 +233,9 @@ def resolve_campaign_entry(
             net_R = _apply_cost(gross_R, total_friction_r)
             return ResolvedTradeOutcome(
                 **base, terminal_state="RESOLVED_PARTIAL_RUNNER_TARGET",
-                event_sequence=[{"time": str(c.time), "event": "RUNNER_TARGET_HIT"}],
+                event_sequence=[partial_event, {"time": str(c.time), "event": "RUNNER_TARGET_HIT",
+                                "exit_price": runner_target_price, "gross_R_delta": runner_pct * runner_target_r,
+                                "quantity_before": runner_pct, "quantity_after": 0.0}],
                 gross_R=gross_R, net_R=net_R, cost_status=cost_status,
                 **cost_fields,
             )
@@ -234,7 +246,9 @@ def resolve_campaign_entry(
     net_R = _apply_cost(gross_R, total_friction_r)
     return ResolvedTradeOutcome(
         **base, terminal_state="RESOLVED_SESSION_EXIT",
-        event_sequence=[{"time": str(last.time), "event": "SESSION_EXIT_RUNNER", "exit_price": last.close}],
+        event_sequence=[partial_event, {"time": str(last.time), "event": "SESSION_EXIT_RUNNER",
+                        "exit_price": last.close, "gross_R_delta": runner_pct * runner_R,
+                        "quantity_before": runner_pct, "quantity_after": 0.0}],
         gross_R=gross_R, net_R=net_R, cost_status=cost_status,
         **cost_fields,
     )

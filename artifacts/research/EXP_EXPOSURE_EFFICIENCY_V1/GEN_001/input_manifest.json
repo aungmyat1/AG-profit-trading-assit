@@ -1,0 +1,31 @@
+{
+  "control_reconciliation": {
+    "friction_R": 5.886441025855691,
+    "gross_R": 0.009297474401486275,
+    "net_R": -5.877143551454205,
+    "population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+    "trade_count": 31,
+    "volume_invariants": true
+  },
+  "dataset_path": "D:\\EURUSD_M1_202605180946_202607312356.csv",
+  "dataset_sha256": "55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23",
+  "date_end": "2026-06-19",
+  "date_start": "2026-05-18",
+  "experiment_arms": [
+    "CONTROL",
+    30,
+    45,
+    60,
+    90,
+    120
+  ],
+  "experiment_id": "EXP_EXPOSURE_EFFICIENCY_V1",
+  "friction_provenance": "session_sweep_continuation.friction:MODELED",
+  "generation_id": "GEN_001",
+  "lifecycle_population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+  "repository_commit": "f6b3126421d816b4df05466851f3997b5134939f",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.0",
+  "symbol": "EURUSD",
+  "trade_count": 31
+}

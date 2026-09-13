@@ -1,0 +1,27 @@
+{
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/.git": true,
+    "**/.venv": true,
+    "**/venv": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/artifacts/**": true,
+    "**/coverage/**": true,
+    "**/*.parquet": true,
+    "**/*.csv": true
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true,
+    "**/.venv/*/**": true,
+    "**/artifacts/*/**": true
+  },
+  "github.copilot.advanced": {
+    "debug.overrideEngine": "gpt-4o",
+    "indentation": "compact"
+  }
+}
