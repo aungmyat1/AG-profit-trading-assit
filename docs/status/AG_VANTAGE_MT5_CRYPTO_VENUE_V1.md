@@ -140,6 +140,34 @@ Tests:
   simulated; real mode still returns `410 EXECUTION_ROUTE_RETIRED` for crypto;
   `user_confirmed` is still required. Added to `web/package.json`'s `test` script.
 
+## Research authority vs. execution venue (added during integration review, 2026-09-13)
+
+This venue addition is an **execution** capability only. It does not change, and must
+never be read as changing, `ST_LIQUIDITY_SWEEP_RETEST_V1`'s research data authority:
+
+```text
+BTC research / edge validation  = Bybit (see PROJECT_STATUS.md "CRYPTO DATA ADAPTER")
+BTC manual Demo execution       = Vantage MT5 (this document)
+```
+
+These are, and must remain, two independent venues that may differ in symbol naming,
+price, spread, fees, funding, contract semantics, and liquidity — a Bybit-derived
+research price, spread, or contract size is never a substitute for a fresh Vantage MT5
+quote/`symbol_info()` read, and vice versa. `1 lot BTCUSD = 1 BTC` on Vantage; Bybit's
+BTCUSDT perpetual has its own separate contract/funding shape.
+
+This separation is already enforced technically, not just documented: every
+`BTCSweepResearchProposal` (the Bybit/Binance-research-derived object) is a distinct
+dataclass from `execution.executor`'s `TradeCommand`, and
+`tests/test_btc_proposal_execution_boundary.py` statically asserts `src/btc_sweep_research/`
+never imports `execution.executor`, `mt5.management_gateway`, `execution.coordinator`, or
+`execution.adapter` — so no BTC research proposal's geometry can reach an MT5 order
+without a human manually re-entering fresh values through the same
+`scripts/web_execute_trade.py` bridge FX uses, which itself always re-reads a live
+Vantage quote and `symbol_info()` (never a cached/research price) before sizing or
+sending. Adding the Vantage MT5 crypto venue does not weaken or bypass that boundary in
+any way.
+
 ## Remaining for the owner (manual)
 
 1. Open MetaTrader 5, confirm the configured Vantage Demo account is logged in, and add
