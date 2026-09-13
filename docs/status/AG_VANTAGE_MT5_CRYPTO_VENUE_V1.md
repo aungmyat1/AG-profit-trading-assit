@@ -2,7 +2,30 @@
 
 Date: 2026-09-13
 
-Status: **LIVE_VERIFIED (READ-ONLY) / UNIT_TESTED / ORDER SEND NOT EXERCISED**
+Status: **LIVE_VERIFIED (READ + ONE CONFIRMED ORDER SEND) / UNIT_TESTED**
+
+## Update 2026-09-13: order-send follow-up fix
+
+The integration review's owner-approved single test send
+(`python scripts/web_execute_trade.py --symbol BTCUSD --side BUY --volume 0.01 --sl ... --confirm`)
+initially failed closed with `STALE_MARKET_DATA`. Root cause:
+`mt5.broker_time.detect_broker_utc_offset_hours()` derives the broker's UTC offset from
+the weekly FX reopen gap, which never occurs for a 24/7 instrument -- `get_tick("BTCUSD")`
+always raised `NO_WEEKEND_GAP_FOUND`. This was a genuine, previously-unexercised gap: the
+tests added for this venue had monkeypatched `_broker_offset_hours` directly, so the real
+weekend-gap detection path was never run against live BTCUSD data.
+
+Fixed in `src/mt5/broker_time.py` (new `NoWeekendGapError`, a specific `BrokerTimeError`
+subtype) and `src/mt5/market_data.py::_broker_offset_hours()`: the broker's UTC offset is
+a property of the connected MT5 *server*, not the traded instrument, so a 24/7 instrument
+now re-derives it from a reference FX symbol (`EURUSD`, then `GBPUSD`) on the same
+connection instead of failing. A genuine non-weekend `BrokerTimeError` (e.g. an ambiguous
+FX reopen) still fails closed exactly as before -- this is an added fallback, not a
+loosened check.
+
+After the fix, the same command executed: **BUY 0.01 BTCUSD, ticket `1999536596`, deal
+`1612956959`, fill 77268.20, SL 76751.38**, on `VantageMarkets-Demo` (login `26088035`).
+This was a single, explicit, owner-approved test send -- not automated verification.
 
 Companion to `docs/status/AG_WEB_VANTAGE_DEMO_EXECUTION_BRIDGE_V1.md` (2026-09-10),
 which this document does not supersede. That document describes the FX manual
