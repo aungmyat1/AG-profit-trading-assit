@@ -193,6 +193,90 @@ def test_get_tick_accepts_a_normal_crypto_quote(monkeypatch):
     assert tick.ask == pytest.approx(77309.92)
 
 
+# --- 5. broker-offset detection for a 24/7 instrument (no weekly reopen gap) ---------
+#
+# Follow-up fix (2026-09-13): BTCUSD/ETHUSD trade 24/7, so
+# mt5.broker_time.detect_broker_utc_offset_hours() (which derives the offset from the
+# weekly FX reopen gap) always raises NoWeekendGapError for them. Live-observed:
+# get_tick("BTCUSD") failed closed with TIME_NORMALIZATION_ERROR / NO_WEEKEND_GAP_FOUND,
+# blocking every crypto order even though raw quotes were available. The broker's UTC
+# offset is a property of the connected MT5 SERVER (one wall clock for every symbol on
+# that connection), so a 24/7 instrument now borrows the offset already derivable from a
+# reference FX symbol on the same connection instead of failing.
+
+def test_broker_offset_falls_back_to_reference_fx_symbol_for_a_24_7_instrument(monkeypatch):
+    from mt5 import broker_time, market_data
+
+    market_data._broker_offset_hours.cache_clear()
+
+    def fake_detect(symbol, lookback_bars=3000):
+        if symbol == "BTCUSD":
+            raise broker_time.NoWeekendGapError("NO_WEEKEND_GAP_FOUND: BTCUSD is 24/7")
+        if symbol == "EURUSD":
+            return 3
+        raise AssertionError(f"unexpected symbol {symbol!r}")
+
+    monkeypatch.setattr(market_data, "detect_broker_utc_offset_hours", fake_detect)
+
+    assert market_data._broker_offset_hours("BTCUSD") == 3
+    market_data._broker_offset_hours.cache_clear()
+
+
+def test_broker_offset_tries_second_reference_symbol_if_first_fails(monkeypatch):
+    from mt5 import broker_time, market_data
+
+    market_data._broker_offset_hours.cache_clear()
+
+    def fake_detect(symbol, lookback_bars=3000):
+        if symbol == "ETHUSD":
+            raise broker_time.NoWeekendGapError("NO_WEEKEND_GAP_FOUND: ETHUSD is 24/7")
+        if symbol == "EURUSD":
+            raise broker_time.BrokerTimeError("DATA_MISSING: no EURUSD candles here")
+        if symbol == "GBPUSD":
+            return 2
+        raise AssertionError(f"unexpected symbol {symbol!r}")
+
+    monkeypatch.setattr(market_data, "detect_broker_utc_offset_hours", fake_detect)
+
+    assert market_data._broker_offset_hours("ETHUSD") == 2
+    market_data._broker_offset_hours.cache_clear()
+
+
+def test_broker_offset_fails_closed_when_no_reference_symbol_resolves(monkeypatch):
+    from mt5 import broker_time, market_data
+
+    market_data._broker_offset_hours.cache_clear()
+
+    def fake_detect(symbol, lookback_bars=3000):
+        raise broker_time.NoWeekendGapError(f"NO_WEEKEND_GAP_FOUND: {symbol}")
+
+    monkeypatch.setattr(market_data, "detect_broker_utc_offset_hours", fake_detect)
+
+    with pytest.raises(market_data.MarketDataError) as exc_info:
+        market_data._broker_offset_hours("BTCUSD")
+    assert exc_info.value.reason_code == "TIME_NORMALIZATION_ERROR"
+    market_data._broker_offset_hours.cache_clear()
+
+
+def test_broker_offset_still_raises_for_a_genuine_non_weekend_broker_time_error(monkeypatch):
+    """A BrokerTimeError that is NOT NoWeekendGapError (e.g. an ambiguous/unresolvable
+    reopen for an FX symbol) must still fail closed directly -- the 24/7 fallback path
+    must not swallow a real time-normalization problem on an FX symbol."""
+    from mt5 import broker_time, market_data
+
+    market_data._broker_offset_hours.cache_clear()
+
+    def fake_detect(symbol, lookback_bars=3000):
+        raise broker_time.BrokerTimeError("OFFSET_FROM_REOPEN_AMBIGUOUS: bad data")
+
+    monkeypatch.setattr(market_data, "detect_broker_utc_offset_hours", fake_detect)
+
+    with pytest.raises(market_data.MarketDataError) as exc_info:
+        market_data._broker_offset_hours("EURUSD")
+    assert exc_info.value.reason_code == "TIME_NORMALIZATION_ERROR"
+    market_data._broker_offset_hours.cache_clear()
+
+
 # --- 5. execute_command() gate parity: crypto is gated EXACTLY like FX ---------------
 
 def _crypto_command(command_id="cmd-crypto-1", symbol="BTCUSD", **overrides):

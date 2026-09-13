@@ -18,7 +18,18 @@ import MetaTrader5 as mt5
 
 from strategy_engine.session import Candle
 
-from .broker_time import BrokerTimeError, detect_broker_utc_offset_hours
+from .broker_time import BrokerTimeError, NoWeekendGapError, detect_broker_utc_offset_hours
+
+# A 24/7 instrument (crypto CFDs: BTCUSD/ETHUSD on Vantage) has no weekly reopen gap for
+# detect_broker_utc_offset_hours() to derive an offset from -- see AG_VANTAGE_MT5_CRYPTO_VENUE_V1
+# follow-up, 2026-09-13. The broker's UTC offset is a property of the connected MT5
+# SERVER, not of any one traded instrument: every symbol on a single terminal connection
+# shares one server wall clock, so a 24/7 instrument's offset is re-derived from a
+# reference FX symbol on that same connection instead of being assumed or hardcoded as a
+# number. EURUSD/GBPUSD are the two FX symbols this repository's Vantage config
+# (config/mt5.yaml) already knows to be tradable on this account; tried in order, first
+# success wins.
+_REFERENCE_SYMBOLS_FOR_24_7_OFFSET = ("EURUSD", "GBPUSD")
 
 _TIMEFRAMES = {
     "M1": mt5.TIMEFRAME_M1, "M5": mt5.TIMEFRAME_M5, "M15": mt5.TIMEFRAME_M15,
@@ -63,6 +74,20 @@ def _require_symbol(symbol: str) -> None:
 def _broker_offset_hours(symbol: str) -> int:
     try:
         return detect_broker_utc_offset_hours(symbol)
+    except NoWeekendGapError as exc:
+        for reference_symbol in _REFERENCE_SYMBOLS_FOR_24_7_OFFSET:
+            if reference_symbol == symbol:
+                continue
+            try:
+                return detect_broker_utc_offset_hours(reference_symbol)
+            except BrokerTimeError:
+                continue
+        raise MarketDataError(
+            "TIME_NORMALIZATION_ERROR",
+            f"{symbol}: no weekly reopen gap (24/7 instrument) and no reference FX symbol "
+            f"in {_REFERENCE_SYMBOLS_FOR_24_7_OFFSET} could establish the broker's UTC offset "
+            f"on this connection",
+        ) from exc
     except BrokerTimeError as exc:
         raise MarketDataError("TIME_NORMALIZATION_ERROR", str(exc)) from exc
 

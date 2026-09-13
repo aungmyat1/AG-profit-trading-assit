@@ -44,6 +44,15 @@ class BrokerTimeError(RuntimeError):
     pass
 
 
+class NoWeekendGapError(BrokerTimeError):
+    """Raised specifically when no weekly reopen gap exists in the lookback window --
+    the expected, non-exceptional case for a 24/7 instrument (e.g. crypto), distinct from
+    every other BrokerTimeError (which mean "a gap was found but couldn't be resolved
+    unambiguously" or "no data at all"). Callers that want a 24/7-safe fallback (see
+    mt5.market_data._broker_offset_hours) catch this type specifically rather than
+    string-matching the message."""
+
+
 def us_eastern_utc_offset_hours(d: date) -> int:
     """Hours to ADD to US Eastern local time to get UTC: 4 during EDT, 5 during EST.
     US rule since 2007: DST from the 2nd Sunday of March to the 1st Sunday of November."""
@@ -105,9 +114,10 @@ def detect_broker_utc_offset_hours(symbol: str, lookback_bars: int = 3000) -> in
     times = [datetime.utcfromtimestamp(int(r["time"])) for r in rates]  # naive: reads as broker wall clock
     gap, reopen_idx = _largest_gap(times)
     if gap < MIN_WEEKEND_GAP:
-        raise BrokerTimeError(
+        raise NoWeekendGapError(
             f"NO_WEEKEND_GAP_FOUND: largest gap in last {lookback_bars} M15 bars for {symbol!r} "
-            f"was {gap}, need >= {MIN_WEEKEND_GAP} to identify the weekly reopen"
+            f"was {gap}, need >= {MIN_WEEKEND_GAP} to identify the weekly reopen "
+            f"(expected for a 24/7 instrument such as crypto)"
         )
 
     return offset_from_reopen(times[reopen_idx])
