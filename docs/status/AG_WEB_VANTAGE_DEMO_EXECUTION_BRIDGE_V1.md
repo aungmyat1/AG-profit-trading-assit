@@ -41,3 +41,12 @@ gateway sends use the dedicated demo profile and independently reject non-Demo a
 before any broker call. No broker-mutating action was used for this verification.
 The execution cockpit's claim form now calls the existing `scripts/manage_trade.py claim`
 boundary; it no longer reports a client-only synthetic claim.
+
+## Follow-up: crypto symbols on the same bridge (2026-09-13)
+
+The same Vantage Demo MT5 account's crypto CFDs (`BTCUSD`, `ETHUSD`; canonical
+`BTCUSDT`, `ETHUSDT`) were traced through this identical chain and found already
+supported by it, with one asset-class-specific defect fixed in `mt5/market_data.py`.
+Gate semantics are unchanged and identical for crypto and FX. Broker order submission
+for crypto remains `NOT_EVALUATED`. See
+`docs/status/AG_VANTAGE_MT5_CRYPTO_VENUE_V1.md`.

@@ -21,6 +21,44 @@ export const SUPPORTED_SYMBOLS: SymbolInfo[] = [
 ];
 
 /**
+ * AG_VANTAGE_MT5_CRYPTO_VENUE_V1 (2026-09-13).
+ *
+ * The crypto symbols the Vantage Demo MT5 account can actually trade, mirroring
+ * `config/mt5.yaml`'s `symbol_map.VANTAGE` entries (`BTCUSDT -> BTCUSD`,
+ * `ETHUSDT -> ETHUSD`), which were captured read-only from that account's live
+ * `symbol_info()`. `brokerSymbol` is the exact string the MT5 terminal (and therefore
+ * `scripts/web_execute_trade.py --symbol`) expects; `canonical` is the id the rest of
+ * the repository's crypto research code uses.
+ *
+ * Deliberately an explicit allow-list, not "category === 'CRYPTO'": a crypto symbol the
+ * broker map does not contain (e.g. SOLUSD) is NOT an MT5 venue symbol and must keep
+ * failing closed, exactly as every crypto symbol did before this list existed.
+ */
+export interface Mt5CryptoVenueSymbol {
+  canonical: string;
+  brokerSymbol: string;
+}
+
+export const MT5_CRYPTO_VENUE_SYMBOLS: Mt5CryptoVenueSymbol[] = [
+  { canonical: 'BTCUSDT', brokerSymbol: 'BTCUSD' },
+  { canonical: 'ETHUSDT', brokerSymbol: 'ETHUSD' }
+];
+
+/** True only for a symbol the Vantage MT5 crypto venue map above actually contains. */
+export function isMt5CryptoVenueSymbol(symbol: string): boolean {
+  return MT5_CRYPTO_VENUE_SYMBOLS.some(
+    s => s.brokerSymbol === symbol || s.canonical === symbol
+  );
+}
+
+/** Canonical id for a broker crypto symbol, for display only. Null when unmapped. */
+export function canonicalCryptoSymbol(symbol: string): string | null {
+  return MT5_CRYPTO_VENUE_SYMBOLS.find(
+    s => s.brokerSymbol === symbol || s.canonical === symbol
+  )?.canonical ?? null;
+}
+
+/**
  * Generates realistic deterministic session candles for a given day
  */
 export function generateRealisticCandles(

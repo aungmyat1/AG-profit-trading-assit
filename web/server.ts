@@ -38,7 +38,7 @@ function readEnvFile() {
 readEnvFile();
 
 import { REGISTERED_STRATEGIES } from './src/data/strategies';
-import { SUPPORTED_SYMBOLS, generateRealisticCandles } from './src/data/marketData';
+import { SUPPORTED_SYMBOLS, generateRealisticCandles, isMt5CryptoVenueSymbol } from './src/data/marketData';
 import {
   extractSessionBoxes,
   findSwingPoints,
@@ -1275,8 +1275,20 @@ async function startServer() {
       });
     }
 
+    // AG_VANTAGE_MT5_CRYPTO_VENUE_V1 (2026-09-13): this used to reject EVERY
+    // category==='CRYPTO' symbol, on the basis that the only crypto execution adapter
+    // was the Binance USDT-M one (execution_authority=DISABLED). The owner has since
+    // added the Vantage Demo MT5 account itself as a crypto venue (config/mt5.yaml's
+    // symbol_map already maps BTCUSDT->BTCUSD / ETHUSDT->ETHUSD, live-verified on that
+    // account), so an MT5-venue crypto symbol must now be treated EXACTLY like an FX
+    // symbol on this route -- no crypto-specific bypass and no crypto-specific extra
+    // gate. Crypto symbols the MT5 broker map does NOT contain keep failing closed with
+    // the unchanged reason code: the Binance/other-venue adapters are still disabled.
+    // Note this changes nothing about real broker authority: the real-mode branch below
+    // is retired (410) for FX and crypto alike (WP0A containment), so the only path this
+    // opens for BTCUSD/ETHUSD is the same non-broker simulation FX already had.
     const symCheck = SUPPORTED_SYMBOLS.find(s => s.symbol === symbol);
-    if (symCheck?.category === 'CRYPTO') {
+    if (symCheck?.category === 'CRYPTO' && !isMt5CryptoVenueSymbol(symbol)) {
       return res.status(403).json({
         success: false,
         error: 'CRYPTO_EXECUTION_BLOCKED: Crypto execution adapters remain proposal/interface-only under AG Profit Trading Authority Rules. Real crypto venue order submission is disabled fail-closed.'

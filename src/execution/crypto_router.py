@@ -3,10 +3,27 @@ descriptor. NO live connection is made anywhere in this module -- `route()` only
 returns a labeled, deterministic dataclass built from string constants; nothing here
 opens a socket, resolves DNS, or imports `requests`/`httpx`/`urllib`.
 
-Covers exactly the 4 cells the spec names: FX+DEMO, FX+REAL, BINANCE_USDTM+DEMO,
-BINANCE_USDTM+REAL. No fallback/default for any input -- an unknown domain, unknown
-environment, or unknown combination is an explicit, typed rejection (UnroutableExecutionTarget),
-never a best-guess default route.
+Covered cells:
+  * The original 4 the spec named: FX+DEMO, FX+REAL, BINANCE_USDTM+DEMO,
+    BINANCE_USDTM+REAL. Their values are frozen and asserted unchanged by
+    tests/test_crypto_router.py::test_original_four_cells_are_unchanged.
+  * MT5_CRYPTO+DEMO / MT5_CRYPTO+REAL, added additively by
+    AG_VANTAGE_MT5_CRYPTO_VENUE_V1 (2026-09-13) so an MT5-hosted crypto CFD order
+    (Vantage's BTCUSD/ETHUSD, canonical BTCUSDT/ETHUSDT) can be LABELLED/journaled
+    distinctly from the Binance USDT-M crypto path. Shaped exactly like the MT5_FX
+    cells (base_url=None -- MT5 is a terminal API, not a REST base URL). This is a
+    labeling/observability concept only: `route()` has no production caller in this
+    repository (verified by grep -- only this module's own test imports it), so adding
+    these cells grants no execution authority to anything and changes no existing
+    behavior. In particular the manual MT5 demo execution bridge
+    (scripts/web_execute_trade.py -> assistant.commands.execute_command ->
+    execution.executor.execute) does NOT consult this router for FX today and is
+    deliberately not made to consult it for crypto either -- routing a symbol through
+    this module is not a prerequisite for, nor a grant of, order-submission authority.
+
+No fallback/default for any input -- an unknown domain, unknown environment, or unknown
+combination is an explicit, typed rejection (UnroutableExecutionTarget), never a
+best-guess default route.
 """
 from __future__ import annotations
 
@@ -24,6 +41,12 @@ BINANCE_USDTM_TESTNET_BASE_URL = "https://testnet.binancefuture.com"
 
 DOMAIN_MT5_FX = "MT5_FX"
 DOMAIN_BINANCE_USDTM = "BINANCE_USDTM"
+# MT5-hosted crypto CFDs (Vantage BTCUSD/ETHUSD). A separate domain from both MT5_FX
+# (different asset class / contract shape: contract_size=1, tick_size=0.01) and
+# BINANCE_USDTM (different venue entirely, different execution adapter) -- deliberately
+# NOT folded into either, so a journal/reconciliation reader can always tell which of
+# the two crypto venues an entry belongs to.
+DOMAIN_MT5_CRYPTO = "MT5_CRYPTO"
 
 ENVIRONMENT_DEMO = "DEMO"
 ENVIRONMENT_REAL = "REAL"
@@ -57,6 +80,15 @@ _ROUTES = {
     ),
     (DOMAIN_BINANCE_USDTM, ENVIRONMENT_REAL): VenueDescriptor(
         DOMAIN_BINANCE_USDTM, ENVIRONMENT_REAL, "BINANCE_USDTM_PRODUCTION", FAPI_BASE_URL,
+    ),
+    # --- AG_VANTAGE_MT5_CRYPTO_VENUE_V1 (2026-09-13), additive ------------------------
+    # Same shape as the MT5_FX cells above (base_url=None, "<VENUE>_<ENV>_BROKER" label
+    # pattern). Adding these does not authorize anything: see module docstring.
+    (DOMAIN_MT5_CRYPTO, ENVIRONMENT_DEMO): VenueDescriptor(
+        DOMAIN_MT5_CRYPTO, ENVIRONMENT_DEMO, "MT5_CRYPTO_DEMO_BROKER", None,
+    ),
+    (DOMAIN_MT5_CRYPTO, ENVIRONMENT_REAL): VenueDescriptor(
+        DOMAIN_MT5_CRYPTO, ENVIRONMENT_REAL, "MT5_CRYPTO_REAL_BROKER", None,
     ),
 }
 

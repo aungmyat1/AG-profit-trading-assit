@@ -150,6 +150,25 @@ def get_tick(symbol: str) -> Tick:
         code, message = mt5.last_error()
         raise MarketDataError("DATA_MISSING", f"symbol_info_tick({symbol!r}) returned no data: ({code}) {message}")
 
+    # Non-positive Bid/Ask is "no quote yet", not a price. Observed live on this account
+    # (AG_VANTAGE_MT5_CRYPTO_VENUE_V1, 2026-09-13): immediately after _require_symbol()
+    # selects a symbol that was NOT already in Market Watch, symbol_info_tick() can
+    # return bid=0.0/ask=0.0 for a moment before the first quote streams in. FX never hit
+    # this because EURUSD/GBPUSD are always already in Market Watch; BTCUSD/ETHUSD are
+    # not, so crypto reaches it on the very first call after a terminal restart. Without
+    # this guard a 0.0 would flow into execution.executor._resolve_entry_price() as a
+    # real entry price and be rejected later by geometry with a misleading reason code
+    # (INVALID_LONG_STOP) instead of the accurate "there is no market data". Fails closed
+    # with the same DATA_MISSING code the branch above already uses -- an added
+    # rejection, never a new acceptance, so no previously-valid tick becomes invalid.
+    if not (float(tick.bid) > 0 and float(tick.ask) > 0):
+        raise MarketDataError(
+            "DATA_MISSING",
+            f"symbol_info_tick({symbol!r}) returned a non-positive quote "
+            f"(bid={tick.bid}, ask={tick.ask}) -- symbol likely just selected into "
+            f"Market Watch and not yet quoting",
+        )
+
     offset = _broker_offset_hours(symbol)
     time_utc = (datetime.utcfromtimestamp(int(tick.time)) - timedelta(hours=offset)).replace(tzinfo=timezone.utc)
     info = mt5.symbol_info(symbol)

@@ -3,6 +3,7 @@ import { Position, TradeProposal, AuditLog, OrderSide } from '../../types/tradin
 import { isAuthoritativeProposal as isAuthoritativeProposalCheck } from '../../utils/proposalAuthority';
 import { PositionSizeCalculator } from './PositionSizeCalculator';
 import { QuickRiskCalculatorWidget } from './QuickRiskCalculatorWidget';
+import { SUPPORTED_SYMBOLS, isMt5CryptoVenueSymbol, canonicalCryptoSymbol } from '../../data/marketData';
 import {
   Terminal,
   Shield,
@@ -320,8 +321,12 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
                       <option value="USDJPY">USDJPY</option>
                       <option value="AUDUSD">AUDUSD</option>
                       <option value="XAUUSD">XAUUSD</option>
-                      <option value="BTCUSD">BTCUSD (Crypto)</option>
-                      <option value="ETHUSD">ETHUSD (Crypto)</option>
+                      {/* AG_VANTAGE_MT5_CRYPTO_VENUE_V1: the MT5 broker symbol stays the
+                          option VALUE (it is exactly what the terminal and
+                          scripts/web_execute_trade.py --symbol expect); the canonical
+                          research id is shown alongside it for the reader. */}
+                      <option value="BTCUSD">BTCUSD (Crypto / BTCUSDT)</option>
+                      <option value="ETHUSD">ETHUSD (Crypto / ETHUSDT)</option>
                     </select>
                   </div>
 
@@ -464,20 +469,31 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
                 className="mt-1"
               />
 
-              {/* Crypto Incubation Notice */}
-              {(symbol === 'BTCUSD' || symbol === 'ETHUSD') && (
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-2.5 text-amber-300 space-y-1">
+              {/* AG_VANTAGE_MT5_CRYPTO_VENUE_V1 (2026-09-13): crypto is no longer gated
+                  as a whole. A crypto symbol the Vantage MT5 broker map contains
+                  (BTCUSD/ETHUSD) uses the SAME confirmation modal and the SAME backend
+                  gates as EURUSD/GBPUSD -- no crypto-specific bypass, no crypto-specific
+                  extra gate. Any other crypto symbol (a non-MT5 venue, e.g. a Binance
+                  USDT-M pair) keeps the original fail-closed block unchanged. */}
+              {isMt5CryptoVenueSymbol(symbol) && (
+                <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-2.5 text-cyan-300 space-y-1">
                   <div className="flex items-center gap-1.5 font-bold text-xs">
-                    <Lock className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Crypto Strategy: Incubation / Proposal-Only</span>
+                    <Server className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Crypto Venue: Vantage Demo MT5</span>
                   </div>
-                  <p className="text-[11px] text-amber-200/80 leading-relaxed">
-                    Strategy <code className="bg-amber-950/60 px-1 rounded">ST_LIQUIDITY_SWEEP_RETEST_V1</code> (Crypto Profile) is registered for advisory proposals only. Venue execution (e.g. Binance/Bybit) is blocked fail-closed under AG Profit Trading authority rules.
+                  <p className="text-[11px] text-cyan-200/80 leading-relaxed">
+                    <code className="bg-cyan-950/60 px-1 rounded">{symbol}</code> (canonical{' '}
+                    <code className="bg-cyan-950/60 px-1 rounded">{canonicalCryptoSymbol(symbol)}</code>) is
+                    executed on the same Vantage Demo MT5 account and through the same confirmed
+                    manual bridge as the FX pairs. Contract shape differs from FX (1 lot = 1 coin,
+                    tick size 0.01) &mdash; size with the calculator, not with FX pip habits.
+                    Separate non-MT5 crypto venues (Binance USDT-M) remain blocked fail-closed.
                   </p>
                 </div>
               )}
 
-              {symbol === 'BTCUSD' || symbol === 'ETHUSD' ? (
+              {SUPPORTED_SYMBOLS.find(s => s.symbol === symbol)?.category === 'CRYPTO'
+                && !isMt5CryptoVenueSymbol(symbol) ? (
                 <button
                   type="button"
                   disabled
@@ -494,7 +510,7 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
                   className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-lg transition shadow-lg mt-1 flex items-center justify-center gap-2"
                 >
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Review & Authorize Execution</span>
+                  <span>Review &amp; Authorize Execution</span>
                 </button>
               )}
             </>
