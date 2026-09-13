@@ -23,7 +23,7 @@
   "friction_provenance": "session_sweep_continuation.friction:MODELED",
   "generation_id": "GEN_001",
   "lifecycle_population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
-  "repository_commit": "f6b3126421d816b4df05466851f3997b5134939f",
+  "repository_commit": "f0a9827eac1bddcc96f3b91db32ed0bac5736aa9",
   "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
   "strategy_version": "1.0.0",
   "symbol": "EURUSD",

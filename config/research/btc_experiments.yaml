@@ -1,0 +1,33 @@
+schema_version: CANONICAL_EXPERIMENT_SUITE_V1
+strategy_id: ST_LIQUIDITY_SWEEP_RETEST_V1
+strategy_version: "2.0.0"
+exchange: BYBIT_USDT_M_PERP
+symbol: BTCUSDT
+scope_policy:
+  split: chronological
+  discovery_fraction: 0.70
+  holdout_access: one_time_after_candidate_freeze
+hypotheses:
+  - id: CONTROL
+    type: strategy_default
+  - id: TS_30M
+    type: time_stop
+    minutes: 30
+  - id: TS_45M
+    type: time_stop
+    minutes: 45
+  - id: TS_60M
+    type: time_stop
+    minutes: 60
+  - id: TS_90M
+    type: time_stop
+    minutes: 90
+  - id: TS_120M
+    type: time_stop
+    minutes: 120
+governance:
+  research_only: true
+  demo_authorized: false
+  live_authorized: false
+  require_equal_entry_population: true
+  require_complete_m1_path: true

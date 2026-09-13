@@ -1,0 +1,10 @@
+{
+  "dataset_hash": "55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23",
+  "population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+  "run_id": "RUN_2",
+  "source": "unchanged_canonical_replay",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.0",
+  "symbol": "EURUSD",
+  "trade_count": 31
+}

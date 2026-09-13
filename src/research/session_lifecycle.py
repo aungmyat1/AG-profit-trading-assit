@@ -59,6 +59,45 @@ def control_reconcile(records: Sequence[dict]) -> dict:
             "volume_invariants": all(r["remaining_quantity"] == 0 for r in records)}
 
 
+DETERMINISM_FIELDS = (
+    "trade_id", "direction", "entry_time", "entry_price", "initial_stop",
+    "resolution_time", "final_state", "gross_R", "friction_R", "net_R",
+)
+
+
+def compare_lifecycle_records(first: Sequence[dict], second: Sequence[dict]) -> dict:
+    """Compare two ordered lifecycle populations and report the first difference."""
+    first_ids = [record.get("trade_id") for record in first]
+    second_ids = [record.get("trade_id") for record in second]
+    first_difference = None
+    if len(first) != len(second):
+        first_difference = {"kind": "trade_count", "run_1": len(first), "run_2": len(second)}
+    elif first_ids != second_ids:
+        for index, (left, right) in enumerate(zip(first_ids, second_ids)):
+            if left != right:
+                first_difference = {"kind": "occurrence_id", "index": index, "run_1": left, "run_2": right}
+                break
+    else:
+        for index, (left, right) in enumerate(zip(first, second)):
+            for field in DETERMINISM_FIELDS:
+                if left.get(field) != right.get(field):
+                    first_difference = {
+                        "kind": "field", "index": index, "field": field,
+                        "trade_id": left.get("trade_id"),
+                        "run_1": left.get(field), "run_2": right.get(field),
+                    }
+                    break
+            if first_difference:
+                break
+    return {
+        "trade_count_equal": len(first) == len(second),
+        "occurrence_ids_equal": set(first_ids) == set(second_ids),
+        "occurrence_order_equal": first_ids == second_ids,
+        "field_level_equal": first_difference is None,
+        "first_difference": first_difference,
+    }
+
+
 def apply_time_stop(record: dict, *, cutoff: datetime, exit_price: float) -> dict:
     """Preserve realized canonical events before cutoff; close only open quantity."""
     resolved_at = datetime.fromisoformat(record["resolution_time"])

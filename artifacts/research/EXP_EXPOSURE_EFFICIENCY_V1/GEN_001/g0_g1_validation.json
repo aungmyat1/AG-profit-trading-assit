@@ -1,0 +1,48 @@
+{
+  "baseline_discovery_metrics": "NOT_EVALUATED_UNTIL_G0_G1_PASS_AND_SPLIT_FREEZE",
+  "code_head": "f0a9827eac1bddcc96f3b91db32ed0bac5736aa9",
+  "dataset_hash": "55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23",
+  "evaluable_occurrences": 31,
+  "excluded_occurrences": 0,
+  "exclusion_reasons": {},
+  "g0_checks": {
+    "artifact_count_exact": true,
+    "artifact_hash_exact": true,
+    "dataset_exists": true,
+    "dataset_sha256_exact": true,
+    "manifest_dataset_sha256_exact": true,
+    "package_strategy_exact": true,
+    "package_symbol_exact": true,
+    "package_version_exact": true,
+    "reload_hash_exact": true,
+    "replay_run_2_persisted": false
+  },
+  "g0_verdict": "EVIDENCE_INCOMPLETE",
+  "g1_checks": {
+    "all_records_evaluable": true,
+    "all_records_valid": true,
+    "decision_time_causality_persisted": false,
+    "raw_post_entry_path_persisted": false,
+    "unique_occurrence_ids": true
+  },
+  "g1_verdict": "EVIDENCE_INCOMPLETE",
+  "generated_occurrences": 31,
+  "limitations": [
+    "The lifecycle artifact does not persist raw decision-time candle inputs.",
+    "The lifecycle artifact does not persist the full post-entry candle path.",
+    "Target/MAE/MFE fields are not present in this artifact; no target result is inferred."
+  ],
+  "overall_verdict": "EVIDENCE_INCOMPLETE",
+  "population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+  "replay_determinism": {
+    "reason": "SECOND_REPLAY_EVIDENCE_REQUIRED",
+    "status": "NOT_PERSISTED"
+  },
+  "split_freeze": "NOT_CREATED_G0_G1_INCOMPLETE",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "symbol": "EURUSD",
+  "timestamp": "2026-09-13T09:57:47.898091+00:00",
+  "valid_occurrences": 31,
+  "validation_implementation": "scripts/validate_first_canonical_population.py@1",
+  "version": "1.0.0"
+}

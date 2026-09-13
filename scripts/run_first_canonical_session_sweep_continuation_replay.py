@@ -41,7 +41,9 @@ from historical_replay.symbol_metadata_manifest import (  # noqa: E402
 )
 from performance.calculator import compute_trade_metrics  # noqa: E402
 from performance.models import ResolvedTradeSample  # noqa: E402
-from research.session_lifecycle import control_reconcile, lifecycle_record, population_hash  # noqa: E402
+from research.session_lifecycle import (  # noqa: E402
+    compare_lifecycle_records, control_reconcile, lifecycle_record, population_hash,
+)
 from session_sweep_continuation.config import compute_config_hash, load_config  # noqa: E402
 from session_sweep_continuation.h1_bias import resolve_h1_market_bias  # noqa: E402
 from session_sweep_continuation.replay import run_replay  # noqa: E402
@@ -59,6 +61,8 @@ M1_CSV = Path(r"D:\EURUSD_M1_202605180946_202607312356.csv")
 
 H1_MANIFEST_PATH = REPO_ROOT / "config" / "historical_datasets" / "EURUSD_H1_symbol_metadata.yaml"
 PACKAGE_MANIFEST_PATH = REPO_ROOT / "config" / "historical_datasets" / "ST_SESSION_SWEEP_CONTINUATION_V1_EURUSD_PACKAGE.yaml"
+RUN1_DIR = REPO_ROOT / "artifacts" / "research" / "EXP_EXPOSURE_EFFICIENCY_V1" / "GEN_001"
+RUN2_DIR = RUN1_DIR / "RUN_2"
 
 EXPECTED_SHA256 = {
     H1_CSV: "f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060",
@@ -158,7 +162,7 @@ def main():
     session_pairs = [p["pair_id"] for p in config.get("session_pairs", ())]
     windows = session_windows_from_config(config)
 
-    def run_all_cycles():
+    def run_all_cycles(run_label: str):
         decision_cycles = 0
         bias_counts = {"BULLISH": 0, "BEARISH": 0, "NEUTRAL": 0, "UNAVAILABLE": 0, "ERROR": 0}
         regime_counts = {}
@@ -270,6 +274,12 @@ def main():
                     if not setup_models_in_campaign:
                         campaigns_no_trade += 1
 
+                print(
+                    f"{run_label} cycle {decision_cycles}/{len(dates) * len(session_pairs)} "
+                    f"session={pair_id} date={d} occurrence_count_so_far={len(lifecycle_records)}",
+                    file=sys.stderr, flush=True,
+                )
+
         return {
             "decision_cycles": decision_cycles, "bias_counts": bias_counts, "regime_counts": regime_counts,
             "setup_candidates": setup_candidates, "direction_blocked": direction_blocked, "fills": fills,
@@ -281,10 +291,44 @@ def main():
             "steps_log": steps_log, "lifecycle_records": lifecycle_records,
         }
 
-    print(f"Running replay across {len(dates)} dates x {len(session_pairs)} session pairs...", file=sys.stderr)
-    run1 = run_all_cycles()
+    total_cycles = len(dates) * len(session_pairs)
+    print(f"Running replay across {total_cycles} cycles...", file=sys.stderr, flush=True)
+    run1 = run_all_cycles("RUN_1")
     print("Running replay again for determinism check...", file=sys.stderr)
-    run2 = run_all_cycles()
+    run2 = run_all_cycles("RUN_2")
+
+    run1_records = run1["lifecycle_records"]
+    run2_records = run2["lifecycle_records"]
+    run1_hash = population_hash(run1_records)
+    run2_hash = population_hash(run2_records)
+    field_comparison = compare_lifecycle_records(run1_records, run2_records)
+    field_comparison["population_hash_equal"] = run1_hash == run2_hash
+    field_comparison["run_1_hash"] = run1_hash
+    field_comparison["run_2_hash"] = run2_hash
+    field_comparison["final_verdict"] = (
+        "G0_REPRODUCIBILITY_PASS"
+        if field_comparison["trade_count_equal"]
+        and field_comparison["occurrence_ids_equal"]
+        and field_comparison["occurrence_order_equal"]
+        and field_comparison["field_level_equal"]
+        and field_comparison["population_hash_equal"]
+        else "G0_REPRODUCIBILITY_FAIL"
+    )
+    RUN2_DIR.mkdir(parents=True, exist_ok=True)
+    (RUN2_DIR / "canonical_lifecycle_population.json").write_text(
+        json.dumps(run2_records, indent=2, sort_keys=True), encoding="utf-8",
+    )
+    (RUN2_DIR / "reproducibility_manifest.json").write_text(
+        json.dumps({
+            "run_id": "RUN_2", "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+            "strategy_version": config.get("version", "1.0.0"), "symbol": SYMBOL,
+            "dataset_hash": m1_sha, "trade_count": len(run2_records),
+            "population_hash": run2_hash, "source": "unchanged_canonical_replay",
+        }, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+    )
+    (RUN1_DIR / "canonical_replay_determinism.json").write_text(
+        json.dumps(field_comparison, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+    )
 
     deterministic = (
         run1["decision_cycles"] == run2["decision_cycles"]
@@ -378,7 +422,12 @@ def main():
     output_dir = REPO_ROOT / "artifacts" / "research" / "EXP_EXPOSURE_EFFICIENCY_V1" / "GEN_001"
     output_dir.mkdir(parents=True, exist_ok=True)
     lifecycle_path = output_dir / "canonical_lifecycle_population.json"
-    lifecycle_path.write_text(json.dumps(r["lifecycle_records"], indent=2, sort_keys=True), encoding="utf-8")
+    if lifecycle_path.exists():
+        existing_records = json.loads(lifecycle_path.read_text(encoding="utf-8"))
+        if population_hash(existing_records) != population_hash(run1_records):
+            raise SystemExit("RUN_1_ARTIFACT_MISMATCH: refusing to overwrite existing canonical population")
+    else:
+        lifecycle_path.write_text(json.dumps(run1_records, indent=2, sort_keys=True), encoding="utf-8")
     input_manifest = {
         "experiment_id": "EXP_EXPOSURE_EFFICIENCY_V1", "generation_id": "GEN_001",
         "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1", "strategy_version": config.get("version", "1.0.0"),

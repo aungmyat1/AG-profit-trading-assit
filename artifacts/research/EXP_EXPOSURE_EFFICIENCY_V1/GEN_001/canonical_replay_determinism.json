@@ -1,0 +1,11 @@
+{
+  "field_level_equal": true,
+  "final_verdict": "G0_REPRODUCIBILITY_PASS",
+  "first_difference": null,
+  "occurrence_ids_equal": true,
+  "occurrence_order_equal": true,
+  "population_hash_equal": true,
+  "run_1_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+  "run_2_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+  "trade_count_equal": true
+}
