@@ -1,0 +1,20 @@
+{
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.0",
+  "symbol": "EURUSD",
+  "population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+  "population_count": 31,
+  "dataset_path": "D:\\EURUSD_M1_202605180946_202607312356.csv",
+  "dataset_hash": "55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23",
+  "control": "CANONICAL_LIFECYCLE",
+  "duration_policies": [
+    "CONTROL",
+    30,
+    45,
+    60,
+    90,
+    120
+  ],
+  "friction_model": "CANONICAL_MODELED",
+  "holdout_used": false
+}

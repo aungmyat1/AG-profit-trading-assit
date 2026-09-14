@@ -88,6 +88,10 @@ the execution gates in code and configuration.
 
 The `specs/` directory contains behavior contracts. The most useful entry points are:
 
+- [`specs/AG_RESEARCH_FACTORY_V1_GOVERNANCE_SPEC.md`](specs/AG_RESEARCH_FACTORY_V1_GOVERNANCE_SPEC.md)
+  — normative physical-candidate persistence, one-shot Holdout, canonical-import, parity,
+  and authorization-separation contract.
+
 - [`specs/SESSION_TRADE_V1_SPEC.md`](specs/SESSION_TRADE_V1_SPEC.md)
 - [`specs/LARGE_SMC_V1_SPEC.md`](specs/LARGE_SMC_V1_SPEC.md)
 - [`specs/TRADE_MANAGEMENT_V1_SPEC.md`](specs/TRADE_MANAGEMENT_V1_SPEC.md)

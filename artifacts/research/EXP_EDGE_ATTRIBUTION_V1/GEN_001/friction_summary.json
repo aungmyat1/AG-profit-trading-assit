@@ -1,0 +1,11 @@
+{
+  "mean_cost_R": 0.18988519438244167,
+  "median_cost_R": 0.20093250704236423,
+  "p90_cost_R": 0.290857916514161,
+  "total_cost_R": 5.886441025855691,
+  "spread_cost_R": 3.9242940172371275,
+  "commission_cost_R": 0.7848588034474255,
+  "slippage_cost_R": 1.1772882051711384,
+  "dominant_source": "SPREAD",
+  "component_provenance": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml friction pips 1.0/.2/.3"
+}

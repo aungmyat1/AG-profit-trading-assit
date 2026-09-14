@@ -1,0 +1,19 @@
+{
+  "canonical_trade_count": 31,
+  "experiment_trade_count": 31,
+  "missing_trade_ids": [],
+  "extra_trade_ids": [],
+  "ordering_match": true,
+  "field_match_count": 31,
+  "field_mismatch_count": 0,
+  "gross_R_canonical": 0.009297474401486275,
+  "friction_R_canonical": 5.886441025855691,
+  "net_R_canonical": -5.877143551454205,
+  "gross_R_control": 0.009297474401486275,
+  "friction_R_control": 5.886441025855691,
+  "net_R_control": -5.877143551454205,
+  "population_hash_match": true,
+  "dataset_hash_match": true,
+  "volume_quantity_invariants": true,
+  "CONTROL_PARITY": "PASS"
+}

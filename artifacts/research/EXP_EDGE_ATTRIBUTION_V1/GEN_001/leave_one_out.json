@@ -1,0 +1,482 @@
+{
+  "CONTROL|setup|S1_SWEEP_REVERSAL": {
+    "full_net_R": 0.06310067935828989,
+    "LOO_min_net_R": -1.9189434803787746,
+    "LOO_median_net_R": 0.17674761491530483,
+    "LOO_max_net_R": 1.3347501099009271,
+    "LOO_positive_fraction": 0.6153846153846154,
+    "LOO_min_profit_factor": 0.6969747816547712,
+    "LOO_worst_drawdown": 4.660291559863822,
+    "best_trade_dependency": true
+  },
+  "CONTROL|setup|S3_PULLBACK_CONTINUATION": {
+    "full_net_R": -2.22750168062724,
+    "LOO_min_net_R": -3.286820959906152,
+    "LOO_median_net_R": -2.217066002769348,
+    "LOO_max_net_R": -0.9285528859106287,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.3430669161945609,
+    "LOO_worst_drawdown": 4.09814589600449,
+    "best_trade_dependency": false
+  },
+  "CONTROL|trend_regime|RANGE": {
+    "full_net_R": -6.279750913195017,
+    "LOO_min_net_R": -6.6130053354669736,
+    "LOO_median_net_R": -5.9837643352234755,
+    "LOO_max_net_R": -4.9808021184784055,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.04972192776947365,
+    "LOO_worst_drawdown": 6.902292017947784,
+    "best_trade_dependency": false
+  },
+  "CONTROL|trend_regime|TREND": {
+    "full_net_R": 0.4026073617408124,
+    "LOO_min_net_R": -1.5794367979962523,
+    "LOO_median_net_R": 0.5162542972978273,
+    "LOO_max_net_R": 1.6402465802581316,
+    "LOO_positive_fraction": 0.631578947368421,
+    "LOO_min_profit_factor": 0.8047576568368792,
+    "LOO_worst_drawdown": 6.2962246331969025,
+    "best_trade_dependency": true
+  },
+  "CONTROL|volatility_regime|NORMAL": {
+    "full_net_R": -4.251517945354518,
+    "LOO_min_net_R": -6.233562105091583,
+    "LOO_median_net_R": -4.162603541086135,
+    "LOO_max_net_R": -2.9525691506379066,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.5356065119689365,
+    "LOO_worst_drawdown": 8.271557989856522,
+    "best_trade_dependency": false
+  },
+  "CONTROL|session|ASIAN_LONDON": {
+    "full_net_R": -10.074388558259296,
+    "LOO_min_net_R": -10.872636500663983,
+    "LOO_median_net_R": -8.937548182420873,
+    "LOO_max_net_R": -8.775439763542686,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.0030858153613485,
+    "LOO_worst_drawdown": 10.906291301898571,
+    "best_trade_dependency": false
+  },
+  "CONTROL|session|LONDON_NEWYORK": {
+    "full_net_R": 4.197245006805091,
+    "LOO_min_net_R": 2.2152008470680267,
+    "LOO_median_net_R": 3.891340585169757,
+    "LOO_max_net_R": 5.461320169000306,
+    "LOO_positive_fraction": 1.0,
+    "LOO_min_profit_factor": 1.5347688305738953,
+    "LOO_worst_drawdown": 2.6030478034396625,
+    "best_trade_dependency": false
+  },
+  "CONTROL|higher_timeframe_bias|BEARISH": {
+    "full_net_R": -5.877143551454205,
+    "LOO_min_net_R": -7.85918771119127,
+    "LOO_median_net_R": -5.709750420775331,
+    "LOO_max_net_R": -4.578194756737593,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.4777477647687193,
+    "LOO_worst_drawdown": 9.188918686271094,
+    "best_trade_dependency": false
+  },
+  "30|setup|S1_SWEEP_REVERSAL": {
+    "full_net_R": -5.2145723841354314,
+    "LOO_min_net_R": -5.2728678005981635,
+    "LOO_median_net_R": -4.905610435736606,
+    "LOO_max_net_R": -4.013639877093068,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.0,
+    "LOO_worst_drawdown": 5.272867800598163,
+    "best_trade_dependency": false
+  },
+  "30|setup|S3_PULLBACK_CONTINUATION": {
+    "full_net_R": -3.468583609655417,
+    "LOO_min_net_R": -4.254688725092449,
+    "LOO_median_net_R": -3.301190478976543,
+    "LOO_max_net_R": -2.1696348149388056,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.12585752317489282,
+    "LOO_worst_drawdown": 4.628923448991378,
+    "best_trade_dependency": false
+  },
+  "30|trend_regime|RANGE": {
+    "full_net_R": -4.875006197619871,
+    "LOO_min_net_R": -5.661111313056902,
+    "LOO_median_net_R": -4.401580871905471,
+    "LOO_max_net_R": -3.576057402903259,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.07223294724697021,
+    "LOO_worst_drawdown": 6.101867161868143,
+    "best_trade_dependency": false
+  },
+  "30|trend_regime|TREND": {
+    "full_net_R": -7.520892346356233,
+    "LOO_min_net_R": -7.65906442626212,
+    "LOO_median_net_R": -7.261498766823113,
+    "LOO_max_net_R": -6.2955666406688,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.011862991094846873,
+    "LOO_worst_drawdown": 7.65906442626212,
+    "best_trade_dependency": false
+  },
+  "30|volatility_regime|NORMAL": {
+    "full_net_R": -10.821563318913773,
+    "LOO_min_net_R": -11.607668434350805,
+    "LOO_median_net_R": -10.449225067985342,
+    "LOO_max_net_R": -9.522614524197161,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.05463823767752768,
+    "LOO_worst_drawdown": 11.881031152483173,
+    "best_trade_dependency": false
+  },
+  "30|session|ASIAN_LONDON": {
+    "full_net_R": -9.469001462885508,
+    "LOO_min_net_R": -9.502656264120095,
+    "LOO_median_net_R": -8.961922525872652,
+    "LOO_max_net_R": -8.170052668168896,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.0,
+    "LOO_worst_drawdown": 9.502656264120095,
+    "best_trade_dependency": false
+  },
+  "30|session|LONDON_NEWYORK": {
+    "full_net_R": -2.9268970810905954,
+    "LOO_min_net_R": -3.7130021965276274,
+    "LOO_median_net_R": -2.786377047972651,
+    "LOO_max_net_R": -1.6628219188953814,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.14648053050825177,
+    "LOO_worst_drawdown": 3.986364914659995,
+    "best_trade_dependency": false
+  },
+  "30|higher_timeframe_bias|BEARISH": {
+    "full_net_R": -12.395898543976104,
+    "LOO_min_net_R": -13.182003659413136,
+    "LOO_median_net_R": -12.086936595577278,
+    "LOO_max_net_R": -11.096949749259492,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.048428778633787514,
+    "LOO_worst_drawdown": 13.455366377545502,
+    "best_trade_dependency": false
+  },
+  "45|setup|S1_SWEEP_REVERSAL": {
+    "full_net_R": -4.5460673724062355,
+    "LOO_min_net_R": -5.580811014622105,
+    "LOO_median_net_R": -4.259035555175513,
+    "LOO_max_net_R": -3.345134865363871,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.04521662669947283,
+    "LOO_worst_drawdown": 5.66106935674093,
+    "best_trade_dependency": false
+  },
+  "45|setup|S3_PULLBACK_CONTINUATION": {
+    "full_net_R": -3.712366680906174,
+    "LOO_min_net_R": -4.544473855744235,
+    "LOO_median_net_R": -3.5449735502273,
+    "LOO_max_net_R": -2.4134178861895625,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.16697756854564966,
+    "LOO_worst_drawdown": 5.242481051579029,
+    "best_trade_dependency": false
+  },
+  "45|trend_regime|RANGE": {
+    "full_net_R": -6.531794239274951,
+    "LOO_min_net_R": -6.896547012837789,
+    "LOO_median_net_R": -5.995155255458748,
+    "LOO_max_net_R": -5.23284544455834,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.05597108796642316,
+    "LOO_worst_drawdown": 7.229801435109746,
+    "best_trade_dependency": false
+  },
+  "45|trend_regime|TREND": {
+    "full_net_R": -5.439382364222713,
+    "LOO_min_net_R": -6.474126006438583,
+    "LOO_median_net_R": -5.229560454603725,
+    "LOO_max_net_R": -4.21405665853528,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.16005669162885294,
+    "LOO_worst_drawdown": 6.474126006438583,
+    "best_trade_dependency": false
+  },
+  "45|volatility_regime|NORMAL": {
+    "full_net_R": -10.345550997397977,
+    "LOO_min_net_R": -11.380294639613847,
+    "LOO_median_net_R": -10.082594246205629,
+    "LOO_max_net_R": -9.046602202681365,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.1499394287681255,
+    "LOO_worst_drawdown": 11.711595451596235,
+    "best_trade_dependency": false
+  },
+  "45|session|ASIAN_LONDON": {
+    "full_net_R": -10.755708887382983,
+    "LOO_min_net_R": -10.78936368861757,
+    "LOO_median_net_R": -9.910418980891405,
+    "LOO_max_net_R": -9.456760092666372,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.0,
+    "LOO_worst_drawdown": 10.789363688617568,
+    "best_trade_dependency": false
+  },
+  "45|session|LONDON_NEWYORK": {
+    "full_net_R": -1.2154677161146803,
+    "LOO_min_net_R": -2.2502113583305507,
+    "LOO_median_net_R": -1.2154382825255197,
+    "LOO_max_net_R": 0.0486074460805339,
+    "LOO_positive_fraction": 0.125,
+    "LOO_min_profit_factor": 0.4672656145535564,
+    "LOO_worst_drawdown": 2.6030478034396625,
+    "best_trade_dependency": false
+  },
+  "45|higher_timeframe_bias|BEARISH": {
+    "full_net_R": -11.971176603497664,
+    "LOO_min_net_R": -13.005920245713535,
+    "LOO_median_net_R": -11.721702739153814,
+    "LOO_max_net_R": -10.672227808781052,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.13370408215934668,
+    "LOO_worst_drawdown": 13.171781537306614,
+    "best_trade_dependency": false
+  },
+  "60|setup|S1_SWEEP_REVERSAL": {
+    "full_net_R": -3.2251411489339286,
+    "LOO_min_net_R": -4.318180207612393,
+    "LOO_median_net_R": -2.9788284724248606,
+    "LOO_max_net_R": -1.9534917183912914,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.2888428594370861,
+    "LOO_worst_drawdown": 4.960763854992167,
+    "best_trade_dependency": false
+  },
+  "60|setup|S3_PULLBACK_CONTINUATION": {
+    "full_net_R": -5.064817884149741,
+    "LOO_min_net_R": -5.464745363529269,
+    "LOO_median_net_R": -4.816914375802282,
+    "LOO_max_net_R": -3.765869089433129,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.13265323970165335,
+    "LOO_worst_drawdown": 5.99496603443831,
+    "best_trade_dependency": false
+  },
+  "60|trend_regime|RANGE": {
+    "full_net_R": -6.6034534194060885,
+    "LOO_min_net_R": -7.058765764414675,
+    "LOO_median_net_R": -6.0443490189767815,
+    "LOO_max_net_R": -5.304504624689478,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.0859747071891502,
+    "LOO_worst_drawdown": 7.392020186686631,
+    "best_trade_dependency": false
+  },
+  "60|trend_regime|TREND": {
+    "full_net_R": -5.3992481638628345,
+    "LOO_min_net_R": -6.492287222541298,
+    "LOO_median_net_R": -5.1529354873537665,
+    "LOO_max_net_R": -4.161608945345516,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.22365178040164896,
+    "LOO_worst_drawdown": 6.702937650604698,
+    "best_trade_dependency": false
+  },
+  "60|volatility_regime|NORMAL": {
+    "full_net_R": -10.377075977169238,
+    "LOO_min_net_R": -11.470115035847702,
+    "LOO_median_net_R": -10.033952833312338,
+    "LOO_max_net_R": -9.078127182452626,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.20675268822198598,
+    "LOO_worst_drawdown": 11.661141297922224,
+    "best_trade_dependency": false
+  },
+  "60|session|ASIAN_LONDON": {
+    "full_net_R": -9.905970849968918,
+    "LOO_min_net_R": -10.424832012531942,
+    "LOO_median_net_R": -9.19634475563029,
+    "LOO_max_net_R": -8.607022055252306,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.044802652048991115,
+    "LOO_worst_drawdown": 10.458486813766529,
+    "best_trade_dependency": false
+  },
+  "60|session|LONDON_NEWYORK": {
+    "full_net_R": -2.0967307333000056,
+    "LOO_min_net_R": -3.1897697919784695,
+    "LOO_median_net_R": -2.0516390563981686,
+    "LOO_max_net_R": -0.8326555711047912,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.38320489141830466,
+    "LOO_worst_drawdown": 3.3556310835715513,
+    "best_trade_dependency": false
+  },
+  "60|higher_timeframe_bias|BEARISH": {
+    "full_net_R": -12.002701583268923,
+    "LOO_min_net_R": -13.095740641947387,
+    "LOO_median_net_R": -11.7156697660382,
+    "LOO_max_net_R": -10.703752788552313,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.18585770888040046,
+    "LOO_worst_drawdown": 13.261601933540467,
+    "best_trade_dependency": false
+  },
+  "90|setup|S1_SWEEP_REVERSAL": {
+    "full_net_R": -3.879737181704396,
+    "LOO_min_net_R": -6.036667590830213,
+    "LOO_median_net_R": -3.40264435272097,
+    "LOO_max_net_R": -2.608087751161759,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.20653273906195954,
+    "LOO_worst_drawdown": 7.2178739409839165,
+    "best_trade_dependency": false
+  },
+  "90|setup|S3_PULLBACK_CONTINUATION": {
+    "full_net_R": -6.165413661092739,
+    "LOO_min_net_R": -6.498668083364696,
+    "LOO_median_net_R": -5.8717979912925164,
+    "LOO_max_net_R": -4.866464866376128,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.09034878822114085,
+    "LOO_worst_drawdown": 7.110476926635363,
+    "best_trade_dependency": false
+  },
+  "90|trend_regime|RANGE": {
+    "full_net_R": -7.431703460732656,
+    "LOO_min_net_R": -7.764957883004612,
+    "LOO_median_net_R": -6.686805323038483,
+    "LOO_max_net_R": -6.132754666016045,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.06790874635272832,
+    "LOO_worst_drawdown": 8.054244565485424,
+    "best_trade_dependency": false
+  },
+  "90|trend_regime|TREND": {
+    "full_net_R": -6.326189932249734,
+    "LOO_min_net_R": -8.483120341375551,
+    "LOO_median_net_R": -5.9081888984497875,
+    "LOO_max_net_R": -5.088550713732414,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.16291747721898042,
+    "LOO_worst_drawdown": 8.668882582512705,
+    "best_trade_dependency": false
+  },
+  "90|volatility_regime|NORMAL": {
+    "full_net_R": -12.132267786882704,
+    "LOO_min_net_R": -14.28919819600852,
+    "LOO_median_net_R": -11.658640230989901,
+    "LOO_max_net_R": -10.833318992166092,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.15143294214598482,
+    "LOO_worst_drawdown": 15.170050712130143,
+    "best_trade_dependency": false
+  },
+  "90|session|ASIAN_LONDON": {
+    "full_net_R": -12.58730664673398,
+    "LOO_min_net_R": -12.863746284775136,
+    "LOO_median_net_R": -11.450466270895559,
+    "LOO_max_net_R": -11.28835785201737,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.0026094250314579685,
+    "LOO_worst_drawdown": 12.897401086009724,
+    "best_trade_dependency": false
+  },
+  "90|session|LONDON_NEWYORK": {
+    "full_net_R": -1.1705867462484094,
+    "LOO_min_net_R": -3.327517155374226,
+    "LOO_median_net_R": -0.9687041987945497,
+    "LOO_max_net_R": 0.0934884159468049,
+    "LOO_positive_fraction": 0.125,
+    "LOO_min_profit_factor": 0.4023247818087007,
+    "LOO_worst_drawdown": 3.5860190110862824,
+    "best_trade_dependency": false
+  },
+  "90|higher_timeframe_bias|BEARISH": {
+    "full_net_R": -13.75789339298239,
+    "LOO_min_net_R": -15.914823802108208,
+    "LOO_median_net_R": -13.28773111018021,
+    "LOO_max_net_R": -12.458944598265779,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.13810093722289257,
+    "LOO_worst_drawdown": 16.206980459054847,
+    "best_trade_dependency": false
+  },
+  "120|setup|S1_SWEEP_REVERSAL": {
+    "full_net_R": -1.8235243235104888,
+    "LOO_min_net_R": -3.8055684832475536,
+    "LOO_median_net_R": -1.4643127494284756,
+    "LOO_max_net_R": -0.5518748929678516,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.4714641582612551,
+    "LOO_worst_drawdown": 6.90768927940627,
+    "best_trade_dependency": false
+  },
+  "120|setup|S3_PULLBACK_CONTINUATION": {
+    "full_net_R": -3.7660412591927352,
+    "LOO_min_net_R": -4.825360538471648,
+    "LOO_median_net_R": -3.598648128513861,
+    "LOO_max_net_R": -2.467092464476124,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.2623826472350862,
+    "LOO_worst_drawdown": 5.636685474569986,
+    "best_trade_dependency": false
+  },
+  "120|trend_regime|RANGE": {
+    "full_net_R": -7.073304015704665,
+    "LOO_min_net_R": -7.406558437976622,
+    "LOO_median_net_R": -6.409838448239366,
+    "LOO_max_net_R": -5.7743552209880535,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.06617817080821613,
+    "LOO_worst_drawdown": 7.695845120457433,
+    "best_trade_dependency": false
+  },
+  "120|trend_regime|TREND": {
+    "full_net_R": -2.229004117183814,
+    "LOO_min_net_R": -4.211048276920878,
+    "LOO_median_net_R": -1.941972299953091,
+    "LOO_max_net_R": -0.9913648986664945,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.5578174427868343,
+    "LOO_worst_drawdown": 6.862338402285319,
+    "best_trade_dependency": false
+  },
+  "120|volatility_regime|NORMAL": {
+    "full_net_R": -7.676682526788792,
+    "LOO_min_net_R": -9.658726686525856,
+    "LOO_median_net_R": -7.242887937420532,
+    "LOO_max_net_R": -6.377733732072181,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.3898138104213861,
+    "LOO_worst_drawdown": 12.460493648652493,
+    "best_trade_dependency": false
+  },
+  "120|session|ASIAN_LONDON": {
+    "full_net_R": -12.591514946344061,
+    "LOO_min_net_R": -12.770387653311646,
+    "LOO_median_net_R": -11.45467457050564,
+    "LOO_max_net_R": -11.292566151627451,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.0026284512374947187,
+    "LOO_worst_drawdown": 12.80404245454623,
+    "best_trade_dependency": false
+  },
+  "120|session|LONDON_NEWYORK": {
+    "full_net_R": 3.289206813455583,
+    "LOO_min_net_R": 1.3071626537185184,
+    "LOO_median_net_R": 3.116198836507694,
+    "LOO_max_net_R": 4.553281975650797,
+    "LOO_positive_fraction": 1.0,
+    "LOO_min_profit_factor": 1.2810661349647947,
+    "LOO_worst_drawdown": 2.7866483820542234,
+    "best_trade_dependency": false
+  },
+  "120|higher_timeframe_bias|BEARISH": {
+    "full_net_R": -9.302308132888479,
+    "LOO_min_net_R": -11.284352292625544,
+    "LOO_median_net_R": -8.943096558806465,
+    "LOO_max_net_R": -8.003359338171867,
+    "LOO_positive_fraction": 0.0,
+    "LOO_min_profit_factor": 0.353509050779396,
+    "LOO_worst_drawdown": 12.799364395943376,
+    "best_trade_dependency": false
+  }
+}

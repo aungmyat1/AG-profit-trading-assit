@@ -4,7 +4,16 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Current rolling classification (2026-09-12)
+## Current rolling classification (2026-09-14)
+
+Research Factory V1 governance hardening is `UNIT_TESTED`: versioned dataset/candidate/
+economic schemas, immutable package freeze/export, two independent reopen/hash passes,
+cross-file identity binding, one-shot Holdout consumption, independent canonical import,
+100% semantic-parity policy, and separate Demo eligibility/authorization states are
+implemented in `src/external_candidate/research_factory.py`. This is infrastructure only:
+no real Holdout was run, no strategy or execution gateway changed, and no Demo/Live
+authority was granted. See
+`docs/status/AG_RESEARCH_FACTORY_V1_GOVERNANCE_HARDENING_STATUS.md`.
 
 This supersedes the 2026-09-10 classification recorded further down in this file
 (kept below as dated historical context, not corrected in place).

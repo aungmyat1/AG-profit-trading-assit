@@ -1,0 +1,47 @@
+schema_version: AG_RESEARCH_FACTORY_GOVERNANCE_V1
+status: IMPLEMENTED
+authority: RESEARCH_GOVERNANCE_ONLY
+
+lifecycle:
+  - DRAFT
+  - EXPERIMENTING
+  - ROBUSTNESS_REVIEW
+  - FREEZE_ELIGIBLE
+  - ARTIFACT_PERSISTENCE_CHECK
+  - FROZEN_FOR_HOLDOUT
+  - HOLDOUT_PASS_OR_FAIL
+  - CANONICAL_IMPORT_CHECK
+  - CANONICAL_INTEGRATION
+  - PARITY_PASS_OR_FAIL
+  - R6_REVIEW
+  - R6_PASS_OR_FAIL
+  - DEMO_ELIGIBILITY_REVIEW
+  - DEMO_AUTHORIZATION_REVIEW
+  - STAGE1_DEMO
+
+invariants:
+  max_holdout_runs_per_candidate: 1
+  semantic_parity_required: 1.0
+  unexplained_semantic_mismatches_allowed: 0
+  r6_pass_implies_demo_authorized: false
+  demo_authorized_implies_live_authorized: false
+  default_demo_authorized: false
+  default_live_authorized: false
+
+schemas:
+  dataset_manifest: AG_DATASET_MANIFEST_V1
+  candidate_manifest: AG_CANDIDATE_MANIFEST_V1
+  economic_contract: AG_ECONOMIC_CONTRACT_V1
+
+physical_authority:
+  mlflow_role: EXPERIMENT_INDEX_ONLY
+  effective_candidate_config_required: true
+  economic_contract_frozen_before_holdout: true
+  double_reopen_hash_verification_required: true
+  sha256_format: 64_LOWERCASE_OR_UPPERCASE_HEXADECIMAL
+
+safety:
+  modifies_strategy_economics: false
+  grants_demo_authority: false
+  grants_live_authority: false
+  imports_execution_gateway: false
