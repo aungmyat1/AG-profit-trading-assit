@@ -1,0 +1,198 @@
+{
+  "audit_id": "AG_SSC_POST_JULY31_CONSUMPTION_AUDIT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.0",
+  "generated_at_utc": "2026-09-15T00:00:00Z",
+  "generated_at_utc_note": "DATE_ONLY -- the exact wall-clock generation time is deliberately not embedded, so this audit's content is reproducible. No mutable timestamp enters any fingerprint.",
+  "audit_boundary": "2026-07-31T23:59:59Z",
+  "candidate_interval": {
+    "start": "2026-08-01T00:00:00Z",
+    "end": "2026-09-14T23:59:59Z",
+    "end_derivation": "Latest fully completed UTC day prior to the current date (2026-09-15). The current partial trading day is excluded per mission P3."
+  },
+  "artifacts_examined": [
+    "artifacts/backtests/session_sweep_continuation/FIRST_CANONICAL_REPLAY_20260911.json",
+    "artifacts/backtests/session_sweep_continuation/PLAN2_CANONICAL_OBSERVATION_PARITY_20260911.json",
+    "artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/manifest.json",
+    "artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/input_manifest.json",
+    "artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/canonical_lifecycle_population.json",
+    "artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/per_trade_results.csv",
+    "artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/policy_metrics.csv",
+    "artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/CONTROL_PARITY_REPORT.json",
+    "artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/g0_g1_validation.json",
+    "artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/duration_comparison.md",
+    "artifacts/research/EXP_EDGE_ATTRIBUTION_V1/GEN_001/manifest.json",
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_1_0_CANDIDATE_SPEC/candidate_spec.yaml",
+    "config/historical_datasets/ST_SESSION_SWEEP_CONTINUATION_V1_EURUSD_PACKAGE.yaml",
+    "config/historical_datasets/EURUSD_M1_202605180946_202607312356.yaml",
+    "config/historical_datasets/EURUSD_M15_202501020000_202606192345.yaml",
+    "config/historical_datasets/EURUSD_H1_202501020000_202607310000.yaml",
+    "config/governance/strategy_lifecycle.yaml",
+    "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml"
+  ],
+  "populations_examined": [
+    {
+      "population_id": "EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/LIFECYCLE",
+      "population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+      "strategy_version": "1.0.0",
+      "symbol": "EURUSD",
+      "start": "2026-05-18",
+      "end": "2026-06-19",
+      "trade_count": 31,
+      "dataset_hash": "55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23",
+      "role": "HYPOTHESIS_GENERATION_AND_MECHANISM_DIAGNOSTIC"
+    }
+  ],
+  "populations_examined_note": "This is the ONLY SSC population artifact that exists in the repository. It is shared by EXP_EXPOSURE_EFFICIENCY_V1 and EXP_EDGE_ATTRIBUTION_V1 (identical population_hash and dataset_hash).",
+  "experiments_examined": [
+    {
+      "experiment_id": "EXP_EXPOSURE_EFFICIENCY_V1",
+      "generation_id": "GEN_001",
+      "date_start": "2026-05-18",
+      "date_end": "2026-06-19",
+      "arms": [
+        "CONTROL",
+        30,
+        45,
+        60,
+        90,
+        120
+      ],
+      "holdout_used": false
+    },
+    {
+      "experiment_id": "EXP_EDGE_ATTRIBUTION_V1",
+      "generation_id": "GEN_001",
+      "date_start": "2026-05-18",
+      "date_end": "2026-06-19",
+      "holdout_used": false
+    },
+    {
+      "experiment_id": "AG_ST_SESSION_SWEEP_CONTINUATION_FIRST_CANONICAL_REPLAY",
+      "report": "FIRST_CANONICAL_REPLAY_20260911.json",
+      "effective_start": "2026-05-18",
+      "effective_end": "2026-06-19",
+      "decision_cycles": 66
+    }
+  ],
+  "git_history_examined": {
+    "command": "git log --since=2026-07-31 -- src/session_sweep_continuation strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
+    "commits_found": 2,
+    "commits": [
+      {
+        "hash": "5240f6f5616e1cfedb105e0310f458ca6991bd09",
+        "date": "2026-09-13",
+        "subject": "Add exposure efficiency research tools and session lifecycle management",
+        "classification": "INFRASTRUCTURE_ONLY",
+        "semantic_change_to_ssc": false,
+        "rationale_references_post_july31_market_observations": false,
+        "detail": "Adds src/research/exposure_efficiency.py, src/research/session_lifecycle.py, tests, and the GEN_001 artifacts. No strategy rule, parameter, setup eligibility, stop geometry or friction assumption changed."
+      },
+      {
+        "hash": "c36bf235c43764f4b537be8bbfec8653ca186077",
+        "date": "2026-09-12",
+        "subject": "Add canonical proposal and validation pipeline",
+        "classification": "INFRASTRUCTURE_ONLY",
+        "semantic_change_to_ssc": false,
+        "rationale_references_post_july31_market_observations": false,
+        "detail": "Adds dataset manifests, the economic-gate contract, the lifecycle registry, the canonical replay report and docs. No strategy semantics changed."
+      }
+    ],
+    "post_july31_market_data_used_for_changes": false,
+    "note": "Git commit DATE is not evidence of data consumption. Both commits are dated in September but are built entirely on the 2026-05-18 -> 2026-06-19 population."
+  },
+  "latest_data_available": {
+    "EURUSD": {
+      "M1": "present (ongoing)",
+      "M15": "present (ongoing)",
+      "H1": "present (ongoing)"
+    },
+    "GBPUSD": {
+      "M1": "present (ongoing)",
+      "M15": "present (ongoing)",
+      "H1": "present (ongoing)"
+    },
+    "note": "Broker-served M1 history currently begins 2026-06-09T16:09Z; M15/H1 extend far deeper. Availability is not consumption."
+  },
+  "latest_operational_observation": {
+    "value": "NONE_FOR_SSC",
+    "evidence": [
+      "No SSC scheduler task exists. Installed AG scheduled tasks are 'AG Profit Trading - BTC Daily Decision', 'AG_FX_ASIAN_LONDON_SHADOW' and 'AG_FX_LONDON_NEWYORK_SHADOW' -- all for other strategies.",
+      "No SSC journal artifact exists under journal/.",
+      "No SSC state directory exists under state/ (only state/proposal_ledger, which is unrelated).",
+      "No SSC watcher, monitor, proposal engine or shadow output was found for any period."
+    ]
+  },
+  "latest_proven_research_consumption": {
+    "EURUSD": {
+      "M1": "2026-07-31 (source file coverage end); populated observations end 2026-06-19",
+      "M15": "2026-06-19 (strategy decision input; source file coverage ends 2026-06-19)",
+      "H1": "2026-06-19 (bias input; even though the H1 source file extends to 2026-07-30)"
+    },
+    "GBPUSD": {
+      "M1": "NONE -- no GBPUSD SSC dataset, population or experiment exists",
+      "M15": "NONE",
+      "H1": "NONE"
+    },
+    "authoritative_value": "2026-06-19",
+    "note": "The binding evidence is input_manifest.json's date_end = '2026-06-19'. The consumed M1 FILE extends to 2026-07-31, but no SSC population, replay or experiment contains an occurrence after 2026-06-19."
+  },
+  "consumption_evidence": [],
+  "consumption_evidence_note": "No artifact, population, replay, experiment, commit or document was found in which any post-2026-07-31 candle influenced SSC strategy construction, setup design, parameter selection, hypothesis generation, candidate selection, exit/entry/stop policy, regime filtering, friction assumptions or research conclusions.",
+  "operational_only_evidence": [],
+  "operational_only_evidence_note": "No operational artifact for SSC exists in any period, so there is nothing to classify as OPERATIONAL_ONLY.",
+  "unresolved_evidence": [
+    {
+      "item": "D:\\EURUSD_M1_202605180946_202607312356.csv rows between 2026-06-20 and 2026-07-31",
+      "reason": "This M1 file physically cover through 2026-07-31, i.e. roughly 6 weeks beyond the 2026-06-19 population end. No artifact demonstrates that the 2026-06-20 -> 2026-07-31 portion was exposed to any SSC population, replay or experiment. Its usage is therefore unresolved rather than proven consumed.",
+      "impact_on_candidate_interval": "NONE -- this window falls BEFORE the 2026-08-01 audit boundary and therefore does not affect the post-July-31 classification.",
+      "recommended_status": "EXCLUDE_FROM_FUTURE_USE_UNTIL_RESOLVED (conservative: do not treat 2026-06-20 -> 2026-07-31 as fresh)"
+    }
+  ],
+  "holdout_overlap_status": {
+    "status": "NOT_APPLICABLE_NO_SSC_HOLDOUT_DEFINED",
+    "candidate_holdout_overlap": "ZERO",
+    "evidence": "Holdout governance exists only for the BTC external-candidate path (config/research/btc_experiments.yaml 'holdout_access: one_time_after_candidate_freeze'; config/governance/research_factory_v1.yaml 'FROZEN_FOR_HOLDOUT', 'max_holdout_runs_per_candidate: 1'). No SSC holdout window, artifact or governance record exists. Overlap is therefore zero by absence of a protected interval.",
+    "caveat": "Should the owner designate an SSC holdout in future, this classification must be recomputed."
+  },
+  "freshness_classification": "POTENTIALLY_FRESH",
+  "classification_reason": "For the interval 2026-08-01T00:00:00Z -> 2026-09-14T23:59:59Z, no proven SSC research consumption exists (empty consumption_evidence), no population/replay/experiment references it, no hypothesis-development or parameter-selection use exists, and there is no SSC holdout to overlap. Per mission P14, the single unresolved item lies entirely before the audit boundary and therefore does not gate this interval. Classification is POTENTIALLY_FRESH, not PASS: it is permission to proceed to immutable data acquisition and admission only, never permission to run HYP_002.",
+  "classification_caveats": [
+    "This segment is classified from ABSENCE of consumption evidence. Absence is strong here because no SSC population, journal, state or scheduler artifact exists at all -- but it remains absence-based.",
+    "M1 is the binding constraint for SSC path resolution. Broker-served M1 currently begins 2026-06-09T16:09Z, which does cover the whole candidate interval. A separate acquisition mission must still prove the interval is fully servable and complete.",
+    "The live system's operational presence during August/September is explicitly NOT treated as consumption, per mission P2.",
+    "This classification does not authorise HYP_002, does not change SSC_FAMILY_STATUS, and does not grant any execution authority."
+  ],
+  "maximum_potentially_fresh_interval": {
+    "start": "2026-08-01T00:00:00Z",
+    "end": "2026-09-14T23:59:59Z",
+    "length_days": 45,
+    "M1_availability": "EXPECTED_AVAILABLE (broker M1 coverage begins 2026-06-09T16:09Z; must be verified by acquisition mission)",
+    "M15_availability": "EXPECTED_AVAILABLE",
+    "H1_availability": "EXPECTED_AVAILABLE",
+    "verification_status": "NOT_VERIFIED -- no data was exported or hashed in this mission, per P16"
+  },
+  "safety": {
+    "strategy_executed": false,
+    "population_generated": false,
+    "occurrences_generated": false,
+    "market_outcomes_inspected": false,
+    "candidate_period_performance_inspected": false,
+    "HYP002_executed": false,
+    "holdout_accessed": false,
+    "holdout_run_count": 0,
+    "strategy_modified": false,
+    "runtime_changed": false,
+    "execution_authority_changed": false,
+    "demo_authorized": false,
+    "live_authorized": false
+  },
+  "not_authorized_by_this_audit": [
+    "HYP_002 execution",
+    "strategy semantics change",
+    "population generation",
+    "Demo authorization",
+    "Live authorization",
+    "SSC_FAMILY_STATUS change (remains RESEARCH_PAUSED pending owner decision)"
+  ]
+}

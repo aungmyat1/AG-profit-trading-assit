@@ -1,0 +1,174 @@
+{
+  "EURUSD_status": {
+    "admission": "PASS",
+    "bars_after_frozen_end": 0,
+    "duplicates": 0,
+    "invalid_ohlc": 0,
+    "timeframes": {
+      "H1": {
+        "bytes": 47750,
+        "first_bar": "2026-08-03 00:00:00",
+        "last_bar": "2026-09-14 23:00:00",
+        "rows": 744,
+        "sha256": "76adad8eccf378ea10004bb70aa2d91a2d5fe9e4aaab1748ea81c72657deaa96"
+      },
+      "M1": {
+        "bytes": 2778970,
+        "first_bar": "2026-08-03 00:01:00",
+        "last_bar": "2026-09-14 23:57:00",
+        "rows": 44546,
+        "sha256": "4cc01e2b185e714332cc5f1c4d253b579ee74085dd742903d0e9e3938906f332"
+      },
+      "M15": {
+        "bytes": 189222,
+        "first_bar": "2026-08-03 00:00:00",
+        "last_bar": "2026-09-14 23:45:00",
+        "rows": 2976,
+        "sha256": "3f0702eb50e67f8f9c534b30b69eafdb5620bc8d6e11defb6d8ccd47b76209e8"
+      }
+    },
+    "total_rows": 48266,
+    "unexpected_gaps": 0
+  },
+  "GBPUSD_status": {
+    "admission": "PASS",
+    "bars_after_frozen_end": 0,
+    "duplicates": 0,
+    "invalid_ohlc": 0,
+    "timeframes": {
+      "H1": {
+        "bytes": 49713,
+        "first_bar": "2026-08-03 00:00:00",
+        "last_bar": "2026-09-14 23:00:00",
+        "rows": 744,
+        "sha256": "d77f447d8da6c2543874df9c65eeccada3f28cb333b9f783fd9d63b016b0a335"
+      },
+      "M1": {
+        "bytes": 2911192,
+        "first_bar": "2026-08-03 00:02:00",
+        "last_bar": "2026-09-14 23:57:00",
+        "rows": 44539,
+        "sha256": "41a403a738060131f2be40d16cd048dd5161c934bb1bdc2f2d06f2a46862ef30"
+      },
+      "M15": {
+        "bytes": 198281,
+        "first_bar": "2026-08-03 00:00:00",
+        "last_bar": "2026-09-14 23:45:00",
+        "rows": 2976,
+        "sha256": "71a67d9d6dd984395e98473d9e265508b6bde32eeeb60c6331d4a6dad8ab3636"
+      }
+    },
+    "total_rows": 48259,
+    "unexpected_gaps": 0
+  },
+  "HYP002_executed": false,
+  "admission_id": "AG_SSC_GEN002_MT5_DATA_ADMISSION_V1",
+  "consumption_audit_lineage": {
+    "artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/POST_JULY31_CONSUMPTION_AUDIT/consumption_audit.json",
+    "audit_id": "AG_SSC_POST_JULY31_CONSUMPTION_AUDIT_V1",
+    "freshness_classification": "POTENTIALLY_FRESH",
+    "interval_matched": true,
+    "lineage_verified": true
+  },
+  "coverage_status": "PASS",
+  "cross_timeframe_coverage": {
+    "EURUSD": {
+      "common_end": "2026-09-14 23:00:00",
+      "common_start": "2026-08-03 00:01:00"
+    },
+    "GBPUSD": {
+      "common_end": "2026-09-14 23:00:00",
+      "common_start": "2026-08-03 00:02:00"
+    }
+  },
+  "demo_authorized": false,
+  "execution_authority_changed": false,
+  "freshness": {
+    "SSC_holdout_defined": "NONE_DEFINED",
+    "freshness_status": "FRESH_FOR_HYP002_ADMISSION_PURPOSES",
+    "holdout_overlap": "ZERO",
+    "post_acquisition_recheck": "Rechecked after acquisition. No SSC population, experiment, replay or parameter selection was created or modified during this mission; git working tree for SSC sources is unchanged. Reading candles for coverage/integrity/hashing/timezone does NOT constitute hypothesis consumption (mission P16).",
+    "previous_research_consumption": "NONE_PROVEN (per AG_SSC_POST_JULY31_CONSUMPTION_AUDIT_V1)"
+  },
+  "frozen_window": {
+    "end": "2026-09-14T23:59:59Z",
+    "first_market_bar": "2026-08-03T00:00:00Z",
+    "first_market_bar_note": "2026-08-01 and 2026-08-02 were a Saturday/Sunday -- expected FX market closure, not missing data.",
+    "start": "2026-08-01T00:00:00Z",
+    "window_change_note": "Interval taken verbatim from the consumption audit and never widened, shortened or shifted.",
+    "window_changed": false
+  },
+  "gap_classification": {
+    "expected_daily_rollover_maintenance": 25,
+    "expected_weekend_closures": 6,
+    "note": "The 25 daily weekday gaps (3-6 min, clustered at the ~00:00 UTC broker day boundary) are a feed property present on every weekday boundary; one 6-min occurrence on 2026-08-26 00:44->00:50 is the largest. No candle was filled or interpolated. M15/H1 show only the 6 weekend closures, as expected.",
+    "unexpected_gaps": 0
+  },
+  "holdout_accessed": false,
+  "holdout_run_count": 0,
+  "integrity_status": "PASS",
+  "live_authorized": false,
+  "market_outcomes_inspected": false,
+  "next_permitted_action": "PREREGISTER_AND_FREEZE_HYP_002_SETUP_SELECTIVITY -- this package is frozen data evidence and must not be exposed to SSC setup detection until HYP_002 is preregistered and frozen.",
+  "occurrences_generated": false,
+  "overall_admission": "FULL_PASS",
+  "package": {
+    "all_file_hashes_reproducible": true,
+    "combined_dataset_fingerprint": "f8108d37448cae8f9fe2f16a9905abdf8991ac916cf4a497b11eaca2debbf5aa",
+    "combined_fingerprint_recomputed_from_live_files": "f8108d37448cae8f9fe2f16a9905abdf8991ac916cf4a497b11eaca2debbf5aa",
+    "combined_fingerprint_reproducible": true,
+    "manifest": "data/research/ssc_fresh_dev/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914/dataset_manifest.json",
+    "package_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914",
+    "raw_files_immutable": true
+  },
+  "package_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914",
+  "parity_diagnostic": {
+    "EURUSD_H1": {
+      "bars_compared": 744,
+      "ohlc_matches": 744,
+      "ohlc_mismatches": 0
+    },
+    "EURUSD_M15": {
+      "bars_compared": 2976,
+      "ohlc_matches": 2976,
+      "ohlc_mismatches": 0
+    },
+    "GBPUSD_H1": {
+      "bars_compared": 744,
+      "ohlc_matches": 744,
+      "ohlc_mismatches": 0
+    },
+    "GBPUSD_M15": {
+      "bars_compared": 2976,
+      "ohlc_matches": 2976,
+      "ohlc_mismatches": 0
+    }
+  },
+  "parity_note": "M1-derived M15/H1 aggregated bars match broker-native bars exactly (0 mismatches across 7440 comparisons). Broker-native M15/H1 were RETAINED; derived bars were computed only as a diagnostic and are not persisted.",
+  "sample_adequacy": {
+    "note": "Not evaluated, per mission P22. The prior 31 trades / ~33 days figure is planning context only and must not be used to declare this 45-day interval adequate. A sample adequacy rule must be preregistered BEFORE occurrences are generated.",
+    "tested": false
+  },
+  "setup_detection_executed": false,
+  "source": {
+    "broker": "Vantage Markets (Pty) Ltd",
+    "environment": "DEMO",
+    "mcp_available": false,
+    "mcp_note": "MT5 MCP is non-canonical/for-smoke-testing per repo docs and was not registered; direct MetaTrader5 Python read of the same canonical VantageMarkets-Demo terminal was used, per mission P2.",
+    "metatrader5_package_version": "5.0.5735",
+    "server": "VantageMarkets-Demo",
+    "source_platform": "MT5",
+    "source_transport": "MetaTrader5_Python_DIRECT",
+    "terminal_build": 6182,
+    "trading_function_called": false
+  },
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_outcomes_generated": false,
+  "symbol_notes": {
+    "EURUSD": "Previously the SSC research symbol (consumed population ended 2026-06-19). This interval is post-boundary and unconsumed.",
+    "GBPUSD": "No prior SSC canonical population, dataset or experiment exists -- freshness is potentially excellent, BUT semantic portability is NOT established. Data admissibility only; no spread/stop/threshold/session rule was adjusted."
+  },
+  "target_hypothesis": "HYP_002_SETUP_SELECTIVITY",
+  "timezone_note": "MT5 copy_rates_* returns UTC epoch seconds. Timestamps persisted as UTC with no transformation and no overlap ambiguity. All bars verified inside the frozen interval; bars_after_frozen_end = 0 across all six files.",
+  "timezone_status": "VERIFIED"
+}

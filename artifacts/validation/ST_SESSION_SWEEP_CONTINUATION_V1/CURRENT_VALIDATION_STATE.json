@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.0",
+  "hypothesis_id": "HYP_002_SETUP_SELECTIVITY",
+
+  "active_stage": "STAGE_1",
+  "active_gate": "G1_AUDIT",
+
+  "dataset": {
+    "package_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914",
+    "fingerprint": "f8108d37448cae8f9fe2f16a9905abdf8991ac916cf4a497b11eaca2debbf5aa",
+    "admission_status": "FULL_PASS",
+    "admission_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/FRESH_DATA_ADMISSION/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914_ADMISSION.json"
+  },
+
+  "artifacts": {
+    "preregistration": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_PREREGISTRATION/HYP_002_SETUP_SELECTIVITY_PREREGISTRATION.md",
+    "population": null,
+    "economic_result": null,
+    "robustness": null,
+    "candidate": null,
+    "holdout": null,
+    "parity": null,
+    "canonical_economic_gate": null
+  },
+
+  "hashes": {
+    "preregistration": "4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7",
+    "population": null,
+    "economic_result": null,
+    "robustness": null,
+    "candidate": null,
+    "holdout": null,
+    "parity": null,
+    "canonical_economic_gate": null
+  },
+
+  "holdout_run_count": 0,
+
+  "status": {
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false
+  },
+
+  "blocked": null,
+
+  "preregistration": {
+    "control": "S1 + S2 + S3 under frozen v1.0.0 parent admission rules",
+    "treatment": "S1 + S2 only; S3 rejected at admission",
+    "primary_development_symbol": "EURUSD",
+    "primary_metric": "net_expectancy_R",
+    "sample_adequacy_rule": "TREATMENT_N >= 10",
+    "decision_rule": "PASS: TREATMENT_N>=10 AND delta_net_expectancy_R>0 AND TREATMENT_net_expectancy_R>0 | FAIL: TREATMENT_N>=10 AND (delta<=0 OR TREATMENT_net_expectancy_R<=0) | INCONCLUSIVE: TREATMENT_N<10",
+    "source": "owner-supplied mechanism definition, this session"
+  }
+}
