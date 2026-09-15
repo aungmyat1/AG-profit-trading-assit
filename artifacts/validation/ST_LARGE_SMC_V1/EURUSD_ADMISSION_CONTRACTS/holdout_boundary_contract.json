@@ -1,0 +1,22 @@
+{
+  "schema": "AG_LARGE_SMC_EURUSD_HOLDOUT_BOUNDARY_CONTRACT_V1",
+  "strategy_id": "ST_LARGE_SMC_V1",
+  "symbol": "EURUSD",
+  "generated_utc": "2026-09-15",
+  "role": "HOLDOUT_RESERVED",
+  "authorized_gate": "G6",
+  "one_shot": true,
+  "sealed": true,
+  "access_count": 0,
+  "HOLDOUT_BOUNDARY_STATUS": "NOT_AVAILABLE",
+  "boundary_rule_intended": "A future holdout MUST be: (a) a contiguous EURUSD time window, (b) with zero overlap with any window in dataset_role_contract.json's consumed_windows, (c) confirmed via a dedicated provenance audit (not this mission) that no prior AG mission, script, or manual analysis has inspected it in any form.",
+  "why_not_available": "dataset_role_contract.json classifies everything outside the confirmed 2025-08-01..2025-10-01 consumed window as UNKNOWN provenance, not verified untouched. Per this mission's explicit instruction ('Unknown provenance must fail closed' / 'Do not manufacture a holdout merely to obtain PASS'), UNKNOWN cannot be promoted to HOLDOUT_RESERVED without a dedicated audit this mission did not perform. This mirrors ST_SESSION_SWEEP_CONTINUATION_V1's own precedent, where holdout reservation was handled as its own explicit, separate governance action, not a byproduct of an admission-contract mission.",
+  "actions_not_taken": {
+    "holdout_contents_inspected": false,
+    "holdout_run": false,
+    "access_count_incremented": false,
+    "any_dataset_relabeled_as_holdout": false
+  },
+  "admission_effect": "StrategyValidationProfile.holdout_metadata for ST_LARGE_SMC_V1/EURUSD remains None -- VALIDATION_ADMISSION will continue to report MISSING_HOLDOUT_BOUNDARY until a dedicated holdout-provenance audit establishes a genuinely untouched window and an owner authorizes its reservation.",
+  "next_step": "A separate, dedicated mission (analogous to ST_SESSION_SWEEP_CONTINUATION_V1's holdout-reservation work) is required before this contract can move past NOT_AVAILABLE."
+}

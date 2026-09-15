@@ -1,0 +1,37 @@
+{
+  "schema": "AG_LARGE_SMC_EURUSD_FRICTION_POLICY_CONTRACT_V1",
+  "strategy_id": "ST_LARGE_SMC_V1",
+  "symbol": "EURUSD",
+  "status": "PROPOSED",
+  "owner_signature": "REQUIRED",
+  "generated_utc": "2026-09-15",
+  "note": "PROPOSED only -- not usable as admission/signing evidence until an owner signs it. No value below was chosen or adjusted to improve any observed Large-SMC economic result; none has been computed or inspected by this mission.",
+  "instrument_facts": {
+    "pip_size": {
+      "value": 0.0001,
+      "classification": "OBSERVED",
+      "source": "MT5 symbol-metadata capture, 5-digit broker (tick_size=1e-05), already documented in src/fx_friction_research/cost_model.py's PIP_SIZE table for EURUSD -- a symbol-level broker fact, not tied to any one strategy's trading rules."
+    },
+    "tick_size": {
+      "value": 0.00001,
+      "classification": "OBSERVED",
+      "source": "Same MT5 symbol-metadata capture as above."
+    }
+  },
+  "cost_components": {
+    "spread_pips": {"value": 0.8, "classification": "ASSUMED", "source": "Documented industry-typical figure for a retail ECN/STP EURUSD account (same literature-sourced figure already used, with the same caveat, by src/fx_friction_research/cost_model.py's BASE scenario) -- NOT a Vantage-specific measured historical fact for Large SMC or any strategy."},
+    "commission_pips": {"value": 0.7, "classification": "ASSUMED", "source": "Same industry-typical estimate as above (~$7/round-turn/standard-lot expressed as pip-equivalent)."},
+    "slippage_pips": {"value": 0.3, "classification": "ASSUMED", "source": "Same conservative industry-typical estimate as above."},
+    "round_trip_cost_representation": "Single one-time pip cost applied per trade at resolution (spread+commission+slippage summed once, not doubled for entry+exit) -- same convention as fx_friction_research.cost_model.CostScenario.total_friction_pips."
+  },
+  "deliberately_not_reused": {
+    "item": "ST_ASIAN_SWEEP_5R_V1's own STRESSED/SEVERE cost scenarios (fx_friction_research/cost_model.py SCENARIOS)",
+    "reason": "Those scenarios are anchored to ST_ASIAN_SWEEP_5R_V1's own SIGNED strategy config (max_spread_allowed_pips=2.0, slippage_limit_points=10 -- strategies/ST_ASIAN_SWEEP_5R_V1.yaml:110-111), which is that strategy's own risk tolerance, not a generic broker fact. ST_LARGE_SMC_V1 has no equivalent signed field. Reusing another strategy's own configured tolerance as if it were Large-SMC's own would misattribute a strategy-specific governance decision. Only the instrument-level facts (pip_size/tick_size) and the literature-sourced BASE-tier cost estimates are reused here; the strategy-anchored STRESSED/SEVERE tiers are not."
+  },
+  "minimum_stop_friction_relationship": {
+    "status": "UNRESOLVED",
+    "reason": "No documented relationship between this friction estimate and ST_LARGE_SMC_V1's C10_STRUCTURAL_INVALIDATION_V1 stop-buffer policy (min_buffer_pips=1.5, ATR-based) exists yet -- would require an owner/analyst decision this mission is not authorized to make."
+  },
+  "why_not_signed": "No Large-SMC-specific, broker-observed spread/commission/slippage capture exists anywhere in this repository (confirmed by search). This contract may only move to SIGNED after an owner reviews and either accepts these ASSUMED figures or supplies real observed ones -- this mission does not self-sign.",
+  "admission_effect": "Because status != SIGNED, StrategyValidationProfile.friction_policy_ref for ST_LARGE_SMC_V1/EURUSD remains None -- VALIDATION_ADMISSION will continue to report MISSING_FRICTION_POLICY until this contract is owner-signed."
+}

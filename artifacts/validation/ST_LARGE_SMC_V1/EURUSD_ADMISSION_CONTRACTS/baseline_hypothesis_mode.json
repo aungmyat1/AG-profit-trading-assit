@@ -1,0 +1,26 @@
+{
+  "schema": "AG_LARGE_SMC_EURUSD_BASELINE_HYPOTHESIS_MODE_V1",
+  "strategy_id": "ST_LARGE_SMC_V1",
+  "symbol": "EURUSD",
+  "generated_utc": "2026-09-15",
+  "mode": "BASELINE_EVALUATION",
+  "strategy_version": "1.0.7",
+  "parent_version": null,
+  "hypothesis_id": null,
+  "reasoning": "No G1 preregistration, hypothesis_id, or candidate-vs-parent comparison exists anywhere in the repository for ST_LARGE_SMC_V1 -- it remains a single, frozen RESEARCH_DRAFT contract (status field in strategies/ST_LARGE_SMC_V1.yaml) that has never been evaluated end-to-end under G0-G3 at all. Per this mission's instruction ('If the existing frozen strategy has never received a clean canonical baseline evaluation under the new framework, prefer BASELINE_EVALUATION unless repository evidence clearly requires another mode'), BASELINE_EVALUATION is the correct mode: the first admitted evaluation of this strategy version as-is, not a comparison against any prior version or a test of any specific mechanism change. This is a mode DETERMINATION only -- no evaluation was run.",
+  "mutable_dimensions": [],
+  "immutable_dimensions": [
+    "C10_STRUCTURAL_INVALIDATION_V1 stop policy (SIGNED_AND_LOCKED, strategies/ST_LARGE_SMC_V1.yaml)",
+    "M_MODEL_EXACT_REUSE anchor mapping",
+    "C01 instrument universe = [EURUSD] only (large_smc_research.engine.FROZEN_INSTRUMENT_UNIVERSE)",
+    "E1/E2/E3/M1/M2/M3 detection semantics (unchanged, reused from historical_replay.stage2)",
+    "C11 target model (HYBRID_WITH_STRUCTURAL_FALLBACK, RESOLVED_BY_OWNER)",
+    "C14 candidate identity (occurrence/candidate identity resolved; post-fill re-entry explicitly DEFERRED, not part of this baseline)"
+  ],
+  "data_permitted_for_use": {
+    "role_reference": "artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/dataset_role_contract.json",
+    "permitted": "DEVELOPMENT-role data only (2025-08-01..2025-10-01, already-consumed evidence)",
+    "not_permitted": "the UNKNOWN-provenance remainder of EURUSD_M5_202504211715_202607310000 (unresolved consumption status) and any HOLDOUT-role data (none currently reserved -- see holdout_boundary_contract.json)"
+  },
+  "no_evaluation_run": true
+}

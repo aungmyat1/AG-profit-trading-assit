@@ -1,0 +1,33 @@
+{
+  "admission": {
+    "reason_codes": [
+      "MISSING_FRICTION_POLICY",
+      "MISSING_VALIDATION_POLICY",
+      "MISSING_HOLDOUT_BOUNDARY"
+    ],
+    "result": "BLOCKED"
+  },
+  "dataset_roles": {
+    "DISCOVERY_2MO_AUG_SEP2025": "DEVELOPMENT",
+    "DISCOVERY_AUG2025_BENCH": "DEVELOPMENT",
+    "QUALIFIED_E_EVENTS_2025-08-01_2025-10-01": "DEVELOPMENT",
+    "REVISION_CHECK_SEP22_27": "DEVELOPMENT",
+    "TWO_STAGE_GOLDEN_FIXTURE_V1": "DEVELOPMENT"
+  },
+  "friction_policy_status": "PROPOSED (owner_signature REQUIRED) -- see EURUSD_ADMISSION_CONTRACTS/friction_policy_contract.json",
+  "g0_readiness": "NOT_READY",
+  "holdout_boundary_status": "NOT_AVAILABLE -- see EURUSD_ADMISSION_CONTRACTS/holdout_boundary_contract.json",
+  "hypothesis_state": "BASELINE_EVALUATION",
+  "methodology_id": "AG_VALIDATION_G0_G10_V1",
+  "owner_decisions_required": [
+    "Sign or reject artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_policy_contract.json",
+    "Sign config/governance/economic_gate_contract.yaml (repository-wide; reused as Large SMC's validation policy)",
+    "Authorize a dedicated holdout-provenance audit for the UNKNOWN remainder of EURUSD_M5_202504211715_202607310000"
+  ],
+  "schema_version": "1.0",
+  "strategy_id": "ST_LARGE_SMC_V1",
+  "strategy_version": "1.0.7",
+  "symbol": "EURUSD",
+  "validation_policy_status": "PROPOSED (owner_signature REQUIRED, reuses config/governance/economic_gate_contract.yaml) -- see EURUSD_ADMISSION_CONTRACTS/validation_policy_contract.json",
+  "wp": "PORTABILITY_WP2"
+}

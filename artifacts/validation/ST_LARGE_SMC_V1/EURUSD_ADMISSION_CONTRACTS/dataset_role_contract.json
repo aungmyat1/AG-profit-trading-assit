@@ -1,0 +1,80 @@
+{
+  "schema": "AG_LARGE_SMC_EURUSD_DATASET_ROLE_CONTRACT_V1",
+  "strategy_id": "ST_LARGE_SMC_V1",
+  "symbol": "EURUSD",
+  "generated_utc": "2026-09-15",
+  "note": "Read-only inventory of REAL, already-existing repository artifacts. No synthetic data created. No dataset content inspected beyond metadata/header fields already visible in existing manifests.",
+  "raw_source_datasets": [
+    {
+      "dataset_id": "EURUSD_M5_202504211715_202607310000",
+      "source": "config/historical_datasets/EURUSD_M5_202504211715_202607310000.yaml",
+      "symbol": "EURUSD",
+      "timeframes": ["M5"],
+      "coverage": "2025-04-21T17:15:00Z .. 2026-07-31T00:00:00Z",
+      "fingerprint": "UNKNOWN -- not extracted from the manifest by this mission (not required to define roles at sub-window granularity)",
+      "prior_consumption": "PARTIAL -- see consumed_windows below",
+      "assigned_role": "MIXED (see consumed_windows / unverified_remainder)",
+      "reason": "This is the full raw feed file cited as source in docs/specs/LARGE_SMC_V1_SPEC.md line 867 ('strictly to EURUSD_M5_202504211715_202607310000'). Only a sub-window of it has confirmed prior consumption evidence; the remainder's consumption status is UNKNOWN, not confirmed untouched."
+    }
+  ],
+  "consumed_windows": [
+    {
+      "dataset_id": "QUALIFIED_E_EVENTS_2025-08-01_2025-10-01",
+      "source": "artifacts/backtests/stage1/qualified_e_events_2025-08-01_2025-10-01.json",
+      "symbol": "EURUSD",
+      "timeframes": ["stage1-derived, sourced from M5 feed"],
+      "coverage": "2025-08-01T00:00:00Z .. 2025-10-01T00:00:00Z",
+      "fingerprint": "schema_version=QUALIFIED_E_EVENT_V1, producer_version=AG_NATIVE_STAGE1_V1 (see file header; no single top-level content hash recorded in the artifact itself)",
+      "prior_consumption": "CONSUMED -- used to build artifacts/backtests/golden/two_stage_golden_fixture_v1.json (fingerprint 81a2bfcadf7da3414528e499c9e764b6dde93ebfa336faf673ff08d38b6586f2) and discovery/revision-check backtests below",
+      "assigned_role": "DEVELOPMENT",
+      "reason": "Produced under strategy_context_version=SMC_CONDITIONAL_ENTRY_V2's stage1 pipeline, reused (not re-detected) by Large-SMC's engine per its own docstring ('thin orchestration layer over the already-frozen historical_replay.stage2 boundary, zero E1/E2/E3/M1/M2/M3 redetection'). Because underlying market facts for this window have already been inspected/used to build a golden fixture and discovery backtests, this window can never become untouched holdout for ANY strategy that shares this detection pipeline, Large SMC included."
+    },
+    {
+      "dataset_id": "DISCOVERY_2MO_AUG_SEP2025",
+      "source": "artifacts/backtests/discovery_2mo_aug_sep2025_setup_ledger.parquet",
+      "symbol": "EURUSD",
+      "coverage": "~2025-08-01 .. 2025-09-30 (per filename; not independently re-verified by opening the parquet this mission)",
+      "prior_consumption": "CONSUMED -- discovery backtest",
+      "assigned_role": "DEVELOPMENT",
+      "reason": "Discovery-phase backtest ledger, overlapping the QUALIFIED_E_EVENTS window above."
+    },
+    {
+      "dataset_id": "DISCOVERY_AUG2025_BENCH",
+      "source": "artifacts/backtests/discovery_aug2025_bench_setup_ledger.parquet",
+      "symbol": "EURUSD",
+      "coverage": "~2025-08 (per filename)",
+      "prior_consumption": "CONSUMED -- discovery/benchmark backtest",
+      "assigned_role": "DEVELOPMENT",
+      "reason": "Overlaps QUALIFIED_E_EVENTS window."
+    },
+    {
+      "dataset_id": "REVISION_CHECK_SEP22_27",
+      "source": "artifacts/backtests/revision_check_sep22_27_setup_ledger.parquet",
+      "symbol": "EURUSD",
+      "coverage": "2025-09-22 .. 2025-09-27 (per filename)",
+      "prior_consumption": "CONSUMED -- revision/regression check backtest",
+      "assigned_role": "DEVELOPMENT",
+      "reason": "Overlaps QUALIFIED_E_EVENTS window."
+    },
+    {
+      "dataset_id": "TWO_STAGE_GOLDEN_FIXTURE_V1",
+      "source": "artifacts/backtests/golden/two_stage_golden_fixture_v1.json",
+      "symbol": "EURUSD",
+      "coverage": "Case-level fixture drawn from the 2025-08-01..2025-10-01 window (e.g. CASE_A/CASE_B evaluation_timestamp=2025-09-15)",
+      "prior_consumption": "CONSUMED -- hand-verified golden/regression fixture, fingerprint 81a2bfcadf7da3414528e499c9e764b6dde93ebfa336faf673ff08d38b6586f2",
+      "assigned_role": "DEVELOPMENT",
+      "reason": "A golden fixture is, by construction, the most heavily-inspected data in the repository -- never eligible for any holdout role."
+    }
+  ],
+  "unverified_remainder": {
+    "coverage": "2025-04-21T17:15:00Z .. 2025-07-31T23:59:59Z, and 2025-10-01T00:00:00Z .. 2026-07-31T00:00:00Z (everything in EURUSD_M5_202504211715_202607310000 outside the confirmed-consumed 2025-08-01..2025-10-01 window)",
+    "assigned_role": "UNKNOWN",
+    "reason": "No repository artifact found by this mission's search confirms these sub-windows were NEVER inspected by any prior AG mission, script, or manual analysis. Absence of found evidence of consumption is not proof of non-consumption. Per this mission's explicit instruction ('unknown provenance must fail closed'), this range is classified UNKNOWN, not HOLDOUT_RESERVED or WARMUP_CONTEXT_ONLY -- promoting it to a holdout role would require a dedicated provenance audit this mission did not perform, matching the precedent set for ST_SESSION_SWEEP_CONTINUATION_V1's own holdout-reservation missions (a separate, dedicated exercise, not a byproduct of an admission-contract mission)."
+  },
+  "roles_defined": ["DEVELOPMENT", "HYPOTHESIS_GENERATION", "CONFIRMATORY", "HOLDOUT_RESERVED", "WARMUP_CONTEXT_ONLY", "EXCLUDED", "UNKNOWN"],
+  "summary": {
+    "DEVELOPMENT": "2025-08-01..2025-10-01 (confirmed consumed via stage1/golden-fixture/discovery evidence)",
+    "HOLDOUT_RESERVED": "NONE -- see holdout_boundary_contract.json (HOLDOUT_BOUNDARY_STATUS = NOT_AVAILABLE)",
+    "UNKNOWN": "everything else in the cited raw M5 feed -- not classified as any usable role pending a dedicated provenance audit"
+  }
+}

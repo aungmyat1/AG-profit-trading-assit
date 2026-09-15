@@ -1,0 +1,26 @@
+{
+  "schema": "AG_LARGE_SMC_EURUSD_VALIDATION_POLICY_CONTRACT_V1",
+  "strategy_id": "ST_LARGE_SMC_V1",
+  "symbol": "EURUSD",
+  "status": "PROPOSED",
+  "owner_signature": "REQUIRED",
+  "generated_utc": "2026-09-15",
+  "decision": "REUSE_EXISTING_GENERIC_CONTRACT",
+  "reused_contract": {
+    "path": "config/governance/economic_gate_contract.yaml",
+    "contract_id": "AG_R6_ECONOMIC_GATE_CONTRACT_V1",
+    "status": "PROPOSED",
+    "reason": "This contract is already explicitly documented as 'a strategy-neutral, prospective definition of the minimum evidence and economic performance a strategy/version must demonstrate' -- not written for or tuned to any one strategy. Semantically appropriate for Large SMC's G3 evaluation without modification. No new, Large-SMC-specific numeric thresholds were authored -- reuse only, per this mission's instruction to reuse generic signed governance contracts where appropriate and never choose thresholds by searching Large SMC's own results for values that pass."
+  },
+  "policy_summary_as_of_this_mission": {
+    "minimum_sample_adequacy": "minimum_resolved_trades=30, minimum_oos_trades=15",
+    "economic_metrics": "minimum_net_expectancy_R=0.10, minimum_profit_factor=1.30, maximum_drawdown_R=15.0",
+    "cost_adjusted_requirements": "accepted_cost_statuses=[INCLUDED_CONTRACT_CEILING] only -- gross-only evidence never satisfies",
+    "robustness_requirements": "walk_forward_required=true (>=3 windows), friction_stress_required=true, maximum_friction_degradation_pct=50",
+    "failure_behavior": "economic_gate.py: any bound violated -> EDGE_REJECTED; g3_gate.py maps this to GateStatus.FAIL",
+    "missing_evidence_behavior": "economic_gate.py: incomplete evidence/sample -> INSUFFICIENT_EVIDENCE; g3_gate.py maps any non-PASS (including this) to GateStatus.BLOCKED",
+    "g3_downstream_blocking": "g3_gate.g3_blocks_downstream(result) returns True for any status != PASS -- unchanged, not modified by this mission"
+  },
+  "why_not_signed": "config/governance/economic_gate_contract.yaml itself remains identity.status=PROPOSED repository-wide (verified unchanged by tests/test_economic_gate_evaluator.py::test_real_contract_file_is_proposed_not_signed). This mission does not sign it, does not create a Large-SMC-specific fork of it, and does not choose different threshold values for Large SMC.",
+  "admission_effect": "Because the reused contract's status != SIGNED, StrategyValidationProfile.validation_policy_ref for ST_LARGE_SMC_V1/EURUSD remains None -- VALIDATION_ADMISSION will continue to report MISSING_VALIDATION_POLICY until an owner signs config/governance/economic_gate_contract.yaml (a repository-wide decision, not Large-SMC-specific)."
+}
