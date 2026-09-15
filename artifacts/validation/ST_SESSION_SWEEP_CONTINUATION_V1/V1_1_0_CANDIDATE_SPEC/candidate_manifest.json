@@ -1,0 +1,103 @@
+{
+  "schema": "AG_SSC_HYP001_CANDIDATE_MANIFEST_V1",
+  "created_now_for": "PROSPECTIVE_CONFIRMATION_GOVERNANCE_REPAIR",
+  "created_utc": "2026-09-15",
+  "created_utc_note": "DATE_ONLY -- reproducible content, no mutable timestamp enters the hash.",
+  "authoring_note": "This file was cited by candidate_spec.yaml (lines 22, 27, 39) from the moment that spec was first authored on main (commit 53b7215), but never actually created. It does not exist historically and this manifest does NOT claim otherwise -- see historical_provenance_limitation below. It is created now, for the first time, purely to govern a PROSPECTIVE fresh confirmatory test, not to retroactively document a historical decision that was never recorded.",
+
+  "hypothesis_id": "HYP_001_EXIT_CAPTURE",
+  "lineage_audit_reference": {
+    "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_LINEAGE_AUDIT/hyp001_lineage_audit.json",
+    "sha256": "ebc7a99f84646362acb7d73367089146bb6d0ecbc4ea7d6bf9612e0554969ba7",
+    "confirmation_readiness_found": "NEEDS_PREREGISTRATION_REPAIR",
+    "note": "This manifest and the accompanying HYP_001_PREREGISTRATION artifact are the repair the audit called for."
+  },
+
+  "parent_strategy": {
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "version": "1.0.0",
+    "file": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
+    "config_hash": "e0cf113b2e1e6b82fedee02e744615aa8f30ff7962355c331cbbdfd581fdcfbf",
+    "raw_file_sha256": "c92311c3c1789a2ea01495a82a1fbcba1d877a8fb4d9ac46732f39e0b81970a9",
+    "status": "FROZEN, VALIDATED_NEGATIVE / EDGE_NOT_SUPPORTED, unmodified since its single introducing commit c36bf23"
+  },
+  "candidate_strategy": {
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "version": "1.1.0",
+    "file": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_1_0_CANDIDATE_SPEC/candidate_spec.yaml",
+    "raw_file_sha256": "3c3f232d29228de402730bc2a1d68c4c1262c91fa6f16da497157c88609d0127",
+    "lifecycle_stage": "OFFLINE_RESEARCH",
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "registered_in_strategies_registry_yaml": false,
+    "note": "NOT loaded by src/session_sweep_continuation/config.py; NOT wired to any adapter; carries no proposal/demo/live execution authority."
+  },
+
+  "control_target_r": 3.0,
+  "treatment_target_r": 1.5,
+
+  "parameter_provenance": {
+    "parameter": "trade_management.runner_target_r",
+    "parent_value": 3.0,
+    "candidate_value": 1.5,
+    "declared_on_main_first_at": "commit 53b7215 (candidate_spec.yaml)",
+    "preregistered_research_grid_evaluated_historically": [0.5, 1.0, 1.5, 2.0, 3.0],
+    "historical_empirical_best_grid_point": "0.5R (GEN_002A, net_expectancy_R=-0.330 -- the least-negative point on the grid)",
+    "explicit_disclaimer": "1.5R is NOT the historical empirical optimum. It must not be described, in this manifest or any downstream artifact, as a historically best-performing target, an empirically selected optimum, or the output of any search. It was one of five preregistered, no-search grid points; the specific choice to freeze 1.5R rather than 0.5R (or 1.0R/2.0R) has no committed historical rationale document anywhere in the repository -- see historical_provenance_limitation.",
+    "classification": "LEGACY_DECLARED_CANDIDATE_VALUE_WITH_INCOMPLETE_RATIONALE"
+  },
+
+  "historical_provenance_limitation": {
+    "statement": "candidate_spec.yaml's own header comments cite this exact file (candidate_manifest.json) and 'the preregistered P4 structural-compromise rationale' as the historical justification for freezing 1.5R specifically. Neither exists anywhere in the repository, on main or on refactor/architecture-boundary-hardening-v3 (confirmed by the HYP_001_LINEAGE_AUDIT, phase1 and phase6). This manifest does not fabricate that missing rationale. The true historical record is: 1.5R was one of five preregistered grid points evaluated with no search (P6, commit 9852c52, refactor branch), was declared as the frozen v1.1.0 value in candidate_spec.yaml (commit 53b7215, main) without any committed document explaining the specific choice, and no further explanation has since been located or reconstructed.",
+    "does_not_retroactively_repair": true
+  },
+
+  "owner_prospective_freeze_decision": {
+    "owner_freeze_status": "APPROVED_FOR_PROSPECTIVE_CONFIRMATION",
+    "control_value": 3.0,
+    "treatment_value": 1.5,
+    "reason": "1.5R is the already-declared HYP_001 candidate value; preserving it for the fresh confirmatory test avoids selecting a NEW target after observing additional GEN_002 exit/MFE evidence, which would itself be a form of post-hoc, evidence-informed parameter selection. This is a PROSPECTIVE governance decision about what to test going forward -- it does not retroactively establish that 1.5R was historically well-justified.",
+    "alternative_values_considered_or_tested_this_mission": [],
+    "explicit_confirmation": "No new target value (0.5R, 1.0R, 2.0R, or any other) was tested, computed, or compared during this governance mission. This mission performed zero economic evaluation."
+  },
+
+  "semantic_delta": {
+    "method": "Independent source/config diff of strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml @ HEAD vs candidate_spec.yaml @ HEAD, re-verified this mission (matches the HYP_001_LINEAGE_AUDIT's phase5 finding byte-for-byte).",
+    "entry": "UNCHANGED", "setup": "UNCHANGED", "regime": "UNCHANGED", "stop": "UNCHANGED",
+    "risk": "UNCHANGED", "friction": "UNCHANGED",
+    "exit": "CHANGED (trade_management.runner_target_r: 3.0 -> 1.5; partial_target_pct/runner_pct/runner_target_mode unchanged)",
+    "other": "version (1.0.0->1.1.0), registered_utc (metadata only), header comments (documentation only)",
+    "single_mechanism_confirmed": true,
+    "multi_mechanism_candidate": false
+  },
+
+  "consumed_evidence_boundary": {
+    "latest_consumed_decision_timestamp": "2026-09-14T23:59:59Z",
+    "earliest_permitted_fresh_start": "2026-09-15T00:00:00Z",
+    "source": "HYP_001_LINEAGE_AUDIT phase9 -- EURUSD, derived from the closed HYP_002 GEN_002 population generator's candle-level scan through the full admitted 2026-08-03..2026-09-14 window."
+  },
+
+  "fresh_evidence_requirement": {
+    "statement": "GEN_001, GEN_002A, and GEN_002 (all three) are HYPOTHESIS_GENERATION evidence only and may NOT be reused, re-inspected, or cited as confirmatory evidence for HYP_001's fresh test. A fresh, non-overlapping EURUSD occurrence population beginning no earlier than 2026-09-15T00:00:00Z is required. GBPUSD is out of scope for this confirmatory test (see HYP_001_PREREGISTRATION firewalls) and reserved for later external replication only.",
+    "holdout_untouched": true,
+    "holdout_run_count": 0
+  },
+
+  "preregistration_reference": {
+    "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_PREREGISTRATION/HYP_001_EXIT_CAPTURE_PREREGISTRATION.md",
+    "hash": "03ed06c68e169893b3172917f4cadf369d52e47f6b8ed5ea2c2f620a13388529"
+  },
+
+  "safety": {
+    "new_economic_runs_this_mission": false,
+    "fresh_outcomes_accessed_this_mission": false,
+    "holdout_accessed": false,
+    "holdout_run_count": 0,
+    "GBPUSD_accessed": false,
+    "parameter_search_this_mission": false,
+    "strategy_semantics_changed": false,
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false
+  }
+}
