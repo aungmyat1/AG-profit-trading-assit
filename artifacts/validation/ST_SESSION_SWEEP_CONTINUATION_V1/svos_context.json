@@ -1,0 +1,57 @@
+{
+  "blocking_issues": [
+    "G0 (Contract Audit) has no canonical AG_VALIDATION_G0_G10_V1-shaped evidence for HYP_002 -- omitted rather than assumed PASS, so furthest_verified_gate is None even though G1/G2/G3 each have real evidence.",
+    "HYP_002_SETUP_SELECTIVITY closed VALIDATED_NEGATIVE at G3 -- terminal, must not be rerun, reinterpreted, or continued through parameter tuning.",
+    "HYP_001_EXIT_CAPTURE (v1.1.0 candidate) blocked at G1: candidate_manifest.json missing, branch lineage unreconciled (NEEDS_PREREGISTRATION_REPAIR).",
+    "HYP_001_GBPUSD_REPLICATION_R1 population is NON_COUNTING_LINEAGE_MISMATCH (POPULATION_BOUND_TO_SUPERSEDED_PREREGISTRATION) -- independently reverified by this export (POPULATION_BOUND_TO_SUPERSEDED_PREREGISTRATION: artifact is bound to a superseded/draft hash, not the frozen authoritative one -- preserved as historical evidence, excluded from satisfying any gate)."
+  ],
+  "branch": "main",
+  "contracts_schema_version": "1.0",
+  "evidence_hashes": {
+    "g1_preregistration": "4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7",
+    "g2_population": "cf098f9a1d6459618d6c775a087b5cb443b7f1f7d915f650eeb8268381c2eb94",
+    "g3_economic_result": null
+  },
+  "furthest_verified_gate": null,
+  "gates": {
+    "G1": {
+      "evaluated_at": "2026-09-15T16:25:36.918630+00:00",
+      "evaluator_version": "manual_reconciliation_v1",
+      "evidence_refs": [
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_PREREGISTRATION/HYP_002_SETUP_SELECTIVITY_PREREGISTRATION.md"
+      ],
+      "status": "PASS"
+    },
+    "G2": {
+      "evaluated_at": "2026-09-15T16:25:36.918630+00:00",
+      "evaluator_version": "manual_reconciliation_v1",
+      "evidence_refs": [
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION_ATTEMPT_2/population_manifest.json"
+      ],
+      "status": "PASS"
+    },
+    "G3": {
+      "evaluated_at": "2026-09-15T16:25:36.918630+00:00",
+      "evaluator_version": "manual_reconciliation_v1",
+      "evidence_refs": [
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_ECONOMIC_RESULT_ATTEMPT_2/economic_evaluation.json"
+      ],
+      "status": "FAIL"
+    }
+  },
+  "generated_at_utc": "2026-09-15T16:25:36.925103+00:00",
+  "head_sha": "52cd991c4b36fd834520a9357cccddf2073888e9",
+  "holdout": {
+    "access_count": 0,
+    "last_accessed_utc": null,
+    "sealed": true,
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1"
+  },
+  "hypothesis_id": "HYP_002_SETUP_SELECTIVITY",
+  "next_authorized_action": "Owner adjudication of HYP_001_EXIT_CAPTURE preregistration repair. No Cycle-2 (G4+) work authorized.",
+  "schema_version": "1.1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.0",
+  "svos_lifecycle_stage": "OFFLINE_RESEARCH",
+  "validation_methodology_id": "AG_VALIDATION_G0_G10_V1"
+}
