@@ -15,10 +15,11 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Dict, Mapping, Optional, Sequence
 
+from .ag_validation_methodology import METHODOLOGY_ID
 from .models import GateResult
 from .svos_contracts import SCHEMA_VERSION, HoldoutState
 
-CONTEXT_SCHEMA_VERSION = "1.0"
+CONTEXT_SCHEMA_VERSION = "1.1"
 
 
 def build_svos_context(
@@ -27,17 +28,24 @@ def build_svos_context(
     hypothesis_id: Optional[str],
     branch: str,
     head_sha: str,
-    hypothesis_stage: Optional[str],
+    svos_lifecycle_stage: Optional[str],
+    furthest_verified_gate: Optional[str],
     gate_results: Mapping[str, GateResult],
     evidence_hashes: Mapping[str, Optional[str]],
     holdout: HoldoutState,
     blocking_issues: Sequence[str],
     next_authorized_action: str,
 ) -> Dict[str, Any]:
-    """Pure function -- builds the dict, performs no I/O. `gate_results` keys are gate
-    names (e.g. "G1","G2","G3"); only gates the caller actually evaluated should be
-    present. `evidence_hashes` is a flat {artifact_label: sha256_or_None} map -- hashes
-    only, never artifact contents."""
+    """Pure function -- builds the dict, performs no I/O. `gate_results` keys are
+    canonical AG_VALIDATION_G0_G10_V1 gate names (e.g. "G1","G2","G3"); only gates the
+    caller actually evaluated should be present. `evidence_hashes` is a flat
+    {artifact_label: sha256_or_None} map -- hashes only, never artifact contents.
+
+    `svos_lifecycle_stage` must be the REAL canonical LifecycleStage value (e.g. from
+    `validation_gate_state.describe_validation_gate_state`), never an AG-invented label
+    -- SVOS remains the only lifecycle authority (Cycle-1 remediation V2, P1).
+    `furthest_verified_gate` is the AG progress indicator, always a canonical gate name
+    (or None), never a stage label."""
     gates_out = {}
     for gate_name, result in gate_results.items():
         gates_out[gate_name] = {
@@ -50,13 +58,15 @@ def build_svos_context(
     return {
         "schema_version": CONTEXT_SCHEMA_VERSION,
         "contracts_schema_version": SCHEMA_VERSION,
+        "validation_methodology_id": METHODOLOGY_ID,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "strategy_id": strategy_id,
         "strategy_version": strategy_version,
         "hypothesis_id": hypothesis_id,
         "branch": branch,
         "head_sha": head_sha,
-        "hypothesis_stage": hypothesis_stage,
+        "svos_lifecycle_stage": svos_lifecycle_stage,
+        "furthest_verified_gate": furthest_verified_gate,
         "gates": gates_out,
         "evidence_hashes": dict(evidence_hashes),
         "holdout": {

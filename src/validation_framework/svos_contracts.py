@@ -50,6 +50,8 @@ class PopulationFingerprint:
     strategy_id: str
     strategy_version: str
     hypothesis_id: str
+    preregistration_hash: str
+    validation_methodology_id: str
     git_sha: str
     dataset_fingerprint: str
     symbol: str
@@ -79,10 +81,12 @@ class HoldoutState:
 @dataclass(frozen=True)
 class HypothesisRegistration:
     """G1 preregistration record. Every field is required at freeze time; nothing here
-    may be edited after `preregistration_hash` is computed and recorded (see
-    hypothesis_stage.HypothesisStage.AUDIT -> REFINEMENT -> HISTORICAL_REPLAY: freezing
-    happens before HISTORICAL_REPLAY, matching HYP_002's real
-    "G1 preregistration freeze -> G2 population" ordering)."""
+    may be edited after `preregistration_hash` is computed and recorded -- freezing
+    happens before G2 (population), matching HYP_002's real "G1 preregistration freeze
+    -> G2 population" ordering. `preregistration_hash` is one of the fields
+    g2_population_identity.compute_population_identity() binds into a population's
+    identity, so a population computed under a different (e.g. superseded) hash is
+    provably distinguishable (see tests/test_g2_population_identity.py)."""
 
     hypothesis_id: str
     strategy_id: str
