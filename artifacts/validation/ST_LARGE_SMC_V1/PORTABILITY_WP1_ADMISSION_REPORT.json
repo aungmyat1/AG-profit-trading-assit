@@ -1,0 +1,66 @@
+{
+  "admissions": {
+    "EURUSD": {
+      "reason_codes": [
+        "MISSING_DATASET_ROLES",
+        "MISSING_FRICTION_POLICY",
+        "MISSING_VALIDATION_POLICY",
+        "MISSING_HYPOTHESIS_BASELINE_MODE",
+        "MISSING_HOLDOUT_BOUNDARY"
+      ],
+      "result": "BLOCKED"
+    },
+    "GBPUSD": {
+      "reason_codes": [
+        "MISSING_DATASET_ROLES",
+        "SYMBOL_NOT_IN_CANONICAL_UNIVERSE",
+        "MISSING_FRICTION_POLICY",
+        "MISSING_VALIDATION_POLICY",
+        "MISSING_HYPOTHESIS_BASELINE_MODE",
+        "MISSING_HOLDOUT_BOUNDARY"
+      ],
+      "result": "BLOCKED"
+    },
+    "USDJPY": {
+      "reason_codes": [
+        "MISSING_DATASET_ROLES",
+        "SYMBOL_NOT_IN_CANONICAL_UNIVERSE",
+        "MISSING_FRICTION_POLICY",
+        "MISSING_VALIDATION_POLICY",
+        "MISSING_HYPOTHESIS_BASELINE_MODE",
+        "MISSING_HOLDOUT_BOUNDARY"
+      ],
+      "result": "BLOCKED"
+    },
+    "XAUUSD": {
+      "reason_codes": [
+        "MISSING_DATASET_ROLES",
+        "SYMBOL_NOT_IN_CANONICAL_UNIVERSE",
+        "MISSING_FRICTION_POLICY",
+        "MISSING_VALIDATION_POLICY",
+        "MISSING_HYPOTHESIS_BASELINE_MODE",
+        "MISSING_HOLDOUT_BOUNDARY"
+      ],
+      "result": "BLOCKED"
+    }
+  },
+  "canonical_symbol_universe": [
+    "EURUSD"
+  ],
+  "g0_readiness": {
+    "EURUSD": "NOT_READY",
+    "GBPUSD": "NOT_READY",
+    "USDJPY": "NOT_READY",
+    "XAUUSD": "NOT_READY"
+  },
+  "methodology_id": "AG_VALIDATION_G0_G10_V1",
+  "schema_version": "1.0",
+  "strategy_id": "ST_LARGE_SMC_V1",
+  "strategy_version": "1.0.7",
+  "target_universe_this_mission": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "XAUUSD"
+  ]
+}

@@ -123,6 +123,35 @@ class ValidationPolicy:
 
 
 @dataclass(frozen=True)
+class StrategyValidationProfile:
+    """Portability WP1: a reusable, strategy-agnostic description of a strategy for
+    admission/G0+ purposes. Purely DESCRIPTIVE -- constructing or holding one creates no
+    lifecycle authority, promotes nothing, and satisfies no gate on its own (see
+    validation_admission.py, which reads a profile but never mutates one or writes to
+    any governance registry). Every field should be populated from real, citable
+    repository sources (a strategy YAML, a spec doc, a registry entry) -- never
+    fabricated to make a strategy look admission-ready."""
+
+    strategy_id: str
+    strategy_version: str
+    methodology_id: str
+    strategy_spec_ref: Optional[str]
+    strategy_spec_hash: Optional[str]
+    implementation_ref: Optional[str]
+    symbols: Tuple[str, ...]
+    timeframes: Tuple[str, ...]
+    session_timezone_contract_ref: Optional[str]
+    dataset_roles: Mapping[str, str]
+    friction_policy_ref: Optional[str]
+    validation_policy_ref: Optional[str]
+    hypothesis_state: Optional[str]
+    mutable_parameters: Mapping[str, Any]
+    immutable_parameters: Mapping[str, Any]
+    holdout_metadata: Optional[HoldoutState]
+    execution_authority_metadata: Mapping[str, Any]
+
+
+@dataclass(frozen=True)
 class G3EconomicGateOutcome:
     """G3 result, one level above the raw EconomicGateVerdict (economic_gate.py) --
     adds explicit `blocks_downstream` so callers never have to re-derive "does this
