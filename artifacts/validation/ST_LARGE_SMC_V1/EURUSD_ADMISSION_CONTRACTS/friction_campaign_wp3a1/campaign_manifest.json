@@ -1,0 +1,48 @@
+{
+  "amendments_after_freeze": "NONE -- any change to this manifest after campaign_manifest_hash is computed voids the campaign; a genuinely new campaign requires a new campaign_id",
+  "broker": "VantageMarkets-Demo",
+  "campaign_id": "LSMC_EURUSD_FRICTION_WP3A1_V1",
+  "collection_rules": {
+    "adaptive_sampling": false,
+    "connection_gap_handling": "recorded as MISSING_GAP rows (fx_friction_research.spread_evidence.MISSING_SOURCE), never silently backfilled, interpolated, or omitted",
+    "deletion_of_high_spread_samples": false,
+    "fixed_grid": "each window samples on a fixed sampling_interval_seconds grid anchored to that window run's own start time; a missed/failed tick is recorded as MISSING_GAP, not skipped without a trace",
+    "restart_of_unfavorable_windows": false
+  },
+  "created_utc": "2026-09-15T21:25:29.988914+00:00",
+  "frozen_before_collection": true,
+  "minimum_trading_days": 5,
+  "required_minimum_population": {
+    "minimum_days": 5,
+    "samples_per_window": 120,
+    "total_minimum_observations": 2400,
+    "windows_per_day": 4
+  },
+  "samples_per_window_minimum": 120,
+  "sampling_interval_seconds": 5,
+  "schema": "AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_MANIFEST_V1",
+  "symbol": "EURUSD",
+  "trading_day_definition": "UTC calendar day; a trading day counts toward minimum_trading_days only if the FX market is open (Mon-Fri UTC, no recognized holiday closure) -- a weekend or closed day is skipped, never substituted with another day's data.",
+  "windows": [
+    {
+      "end_utc_hhmm": "05:40",
+      "start_utc_hhmm": "05:30",
+      "window_id": "WINDOW_A_ASIAN_REFERENCE"
+    },
+    {
+      "end_utc_hhmm": "07:00",
+      "start_utc_hhmm": "06:50",
+      "window_id": "WINDOW_B_PRE_LONDON"
+    },
+    {
+      "end_utc_hhmm": "09:10",
+      "start_utc_hhmm": "09:00",
+      "window_id": "WINDOW_C_LONDON"
+    },
+    {
+      "end_utc_hhmm": "12:40",
+      "start_utc_hhmm": "12:30",
+      "window_id": "WINDOW_D_LONDON_NEWYORK"
+    }
+  ]
+}
