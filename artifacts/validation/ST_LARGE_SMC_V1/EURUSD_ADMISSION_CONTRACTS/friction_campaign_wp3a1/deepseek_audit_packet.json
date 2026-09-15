@@ -1,0 +1,122 @@
+{
+  "schema": "AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_DEEPSEEK_AUDIT_PACKET_V1",
+  "generated_utc": "2026-09-15T22:50:00Z",
+  "purpose": "Independently reproducible evidence packet -- do not trust the narrative claims below without following the evidence_ref/reproduction_command for each. No raw tick observations included (WP10 token/compute control); nothing here requires an LLM to have read any raw JSONL.",
+  "repository": {
+    "branch": "main",
+    "head": "628e1c27e5049c92b7f4562459dce545b15a4821",
+    "reproduction_command": "git rev-parse HEAD; git log --oneline -8",
+    "dirty_files_at_audit_time": [".vscode/settings.json (pre-existing, unrelated)", "pyrightconfig.json (pre-existing, unrelated, untracked)"]
+  },
+  "campaign": {
+    "campaign_id": "LSMC_EURUSD_FRICTION_WP3A1_V1",
+    "manifest_path": "artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/campaign_manifest.json",
+    "campaign_manifest_hash": "6a34439f0e141bd691f724aa7c74ea3795684ef2d497ad064e29d7c183414345",
+    "hash_verification_command": "python -c \"import json,hashlib; m=json.load(open('artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/campaign_manifest.json',encoding='utf-8')); print(hashlib.sha256(json.dumps(m,sort_keys=True,separators=(',',':')).encode()).hexdigest())\"",
+    "hash_verified_at_audit_time": true,
+    "sessions_directory": "artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/",
+    "sessions_directory_exists_at_audit_time": false,
+    "windows_completed_at_audit_time": 0,
+    "total_real_observations_at_audit_time": 0
+  },
+  "scheduler": {
+    "mechanism": "Windows Task Scheduler, folder \\AG_LSMC_Friction_Campaign\\, 4 tasks, weekdays only, expiring 2026-09-30",
+    "reproduction_command": "Get-ScheduledTask -TaskPath '\\AG_LSMC_Friction_Campaign\\' | Get-ScheduledTaskInfo | Select TaskName,LastRunTime,LastTaskResult,NextRunTime",
+    "observed_at_audit_time": {
+      "audit_time_utc": "2026-09-15T22:42:29Z",
+      "audit_time_local": "2026-09-16T05:12:29+06:30",
+      "all_tasks_state": "Ready",
+      "all_tasks_last_run": "never (sentinel 1999-11-30, LastTaskResult=267011)",
+      "next_run_times_local": {
+        "WINDOW_A_ASIAN_REFERENCE": "2026-09-16T12:00:30",
+        "WINDOW_B_PRE_LONDON": "2026-09-16T13:20:50",
+        "WINDOW_C_LONDON": "2026-09-16T15:30:00",
+        "WINDOW_D_LONDON_NEWYORK": "2026-09-16T19:00:30"
+      },
+      "conclusion": "No window has fired yet; the campaign manifest was frozen at 2026-09-15T21:25:29Z, after all four of that day's UTC windows had already passed, so zero windows were expected between freeze time and this audit."
+    },
+    "log_files_present": false,
+    "log_directory": "logs/friction_campaign_<WINDOW_ID>.log (does not exist yet -- no task has fired)"
+  },
+  "cost_model_status": {
+    "spread": {
+      "status": "EMPIRICAL_CAMPAIGN_IN_PROGRESS",
+      "prior_snapshot": {
+        "source": "WP3A single ~55s session (superseded-assumption evidence only, NOT campaign data)",
+        "path": "artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/spread_evidence/wp3a_2026-09-16_session1_summary.json",
+        "sample_count": 12, "median_pips": 1.2999999999996348, "max_pips": 1.40000000000029
+      },
+      "campaign_data": "none yet (0/2400 minimum observations)"
+    },
+    "commission_pips": {
+      "status": "UNAVAILABLE",
+      "reason": "0 EURUSD deals in this account's retrievable 30-day MT5 deal history (re-verified at audit time); real BTCUSD deals confirm the commission field itself is queryable (0.0 each) but that value is deliberately not cross-inferred onto EURUSD.",
+      "reproduction_command": "python -c \"import sys; sys.path.insert(0,'src'); from mt5.connection import connect; connect(); import MetaTrader5 as mt5; from datetime import datetime,timezone,timedelta; end=datetime.now(timezone.utc); deals=mt5.history_deals_get(end-timedelta(days=30), end); print(len([d for d in (deals or []) if d.symbol=='EURUSD']))\""
+    },
+    "slippage_pips": {
+      "status": "UNAVAILABLE",
+      "reason": "Exactly n=1 real EURUSD journal record with a computed slippage_points value (re-verified at audit time, unchanged); not extrapolated into a distribution.",
+      "reproduction_command": "grep -h slippage_points journal/execution_*.jsonl | grep -c EURUSD"
+    },
+    "complete_cost_model_available": false
+  },
+  "c10_status": {
+    "c10_modified": false,
+    "min_buffer_pips_reference": 1.5,
+    "reproduction_command": "git diff 628e1c2 -- strategies/ST_LARGE_SMC_V1.yaml (expect empty)",
+    "ratio_function": "src/fx_friction_research/c10_friction_ratios.py::friction_to_stop_ratios -- descriptive division only, no write path to the strategy file, no real ratios computed yet (no campaign data)"
+  },
+  "friction_policy": {
+    "path": "artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_policy_contract.json",
+    "status": "PROPOSED",
+    "owner_signature": "REQUIRED",
+    "old_0.8_pip_spread_assumption": "explicitly flagged as evidence-superseded (see spread_evidence block and update_note in the contract) but not replaced by a new canonical figure",
+    "signability": "INSUFFICIENT_EVIDENCE",
+    "reproduction_command": "python -m json.tool < artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_policy_contract.json"
+  },
+  "strategy_governance": {
+    "ST_LARGE_SMC_V1": {
+      "lifecycle_stage": "FORWARD_RESEARCH",
+      "semantic_version": "1.0.7",
+      "demo_authorized": false, "live_authorized": false, "proposal_generation_authorized": false,
+      "reproduction_command": "grep -n 'ST_LARGE_SMC_V1' -A2 config/governance/strategy_lifecycle.yaml; grep -n 'demo_authorized\\|live_authorized\\|proposal_generation_authorized' strategies/ST_LARGE_SMC_V1.yaml"
+    },
+    "ST_SESSION_SWEEP_CONTINUATION_V1": {
+      "lifecycle_stage": "OFFLINE_RESEARCH",
+      "semantic_version": "1.0.0",
+      "reproduction_command": "grep -n 'ST_SESSION_SWEEP_CONTINUATION_V1' -A2 config/governance/strategy_lifecycle.yaml"
+    }
+  },
+  "ssc_hyp001": {
+    "checkpoint_id": "CONFIRM_001",
+    "control_R": 3.0, "treatment_R": 1.5,
+    "fresh_confirmation_boundary_utc": "2026-09-15T00:00:00Z",
+    "minimum_N": 20,
+    "current_decision": "STOP_TIMING_NOT_YET_AVAILABLE",
+    "fresh_confirmation_runs": 0,
+    "dataset_id": "NOT_YET_CREATED",
+    "recommendation_from_record": "Re-attempt no earlier than 2026-09-16T00:00:00Z UTC (not yet reached at audit time: 2026-09-15T22:42:29Z)",
+    "evidence_ref": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_FRESH_CONFIRM_001/BOUNDARY_STATUS.json",
+    "extension_policy_ref": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_FRESH_CONFIRM_001/EXTENSION_CHECKPOINT_POLICY.json",
+    "note": "Not re-run or advanced by this mission -- report-only, per the mission's own instruction not to run economic confirmation merely because calendar time has partially advanced."
+  },
+  "ssc_hyp002": {
+    "status": "FALSIFIED (VALIDATED_NEGATIVE) -- terminal, closed",
+    "evidence_ref": "docs/status/AG_SSC_HYP002_SETUP_SELECTIVITY_VALIDATION_STATUS.md",
+    "hyp_003": "explicitly declined in the HYP_002 closure -- not created by this or any subsequent mission"
+  },
+  "diffs": {
+    "reproduction_command": "git diff 628e1c2 -- strategies/ST_LARGE_SMC_V1.yaml src/large_smc_research/ src/validation_framework/adapters/large_smc_adapter.py src/validation_framework/ src/execution/ src/mt5/management_gateway.py src/mt5/mt5_gateway.py config/governance/strategy_lifecycle.yaml",
+    "result_at_audit_time": "empty (0 lines)"
+  },
+  "tests": {
+    "reproduction_command": "python -m pytest tests/test_large_smc_eurusd_friction_campaign_wp3a1.py tests/test_large_smc_eurusd_friction_evidence_wp3a.py tests/test_large_smc_eurusd_admission_wp2.py tests/test_validation_admission.py tests/test_large_smc_execution_boundary.py tests/test_execution_safety_v1.py tests/test_research_external_containment.py -q",
+    "result_at_audit_time": "95 passed, 0 failed"
+  },
+  "blockers": [
+    "Real campaign collection has not started yet -- first window (WINDOW_A_ASIAN_REFERENCE) is scheduled for 2026-09-16T05:30:00Z / 12:00:30 local",
+    "SSC HYP_001 fresh-confirmation window still has zero fully-completed UTC days (boundary not reached until 2026-09-16T00:00:00Z)",
+    "Scheduled campaign runs depend on the MT5 terminal and the Windows interactive session both being live at each trigger time -- unverifiable in advance"
+  ],
+  "next_safe_action": "CONTINUE_FROZEN_COLLECTION -- no aggregation, no contract update, no HYP_001 re-attempt until the respective real-time boundaries are actually crossed"
+}
