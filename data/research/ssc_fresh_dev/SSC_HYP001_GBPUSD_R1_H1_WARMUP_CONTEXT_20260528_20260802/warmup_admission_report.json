@@ -1,0 +1,21 @@
+{
+  "bars": 1134,
+  "broker_server": "VantageMarkets-Demo",
+  "decision_window_start_utc": "2026-08-03 00:00:00+00:00",
+  "duplicates": 0,
+  "economic_contribution": 0,
+  "expected_weekend_gaps": 9,
+  "first_bar": "2026-05-27 18:00:00+00:00",
+  "invalid_ohlc": 0,
+  "last_bar": "2026-07-31 23:00:00+00:00",
+  "no_bar_overlaps_decision_window": true,
+  "non_monotonic": 0,
+  "package_id": "SSC_HYP001_GBPUSD_R1_H1_WARMUP_CONTEXT_20260528_20260802",
+  "pull_end_server_naive": "2026-08-02 23:59:59",
+  "pull_start_server_naive": "2026-05-28 00:00:00",
+  "raw_sha256": "417d3977b86a23a46edd5169fc1f5ea095b019186227667a9e4ab87e55af8be0",
+  "required_h1_bars": 1000,
+  "role": "WARMUP_CONTEXT_ONLY",
+  "symbol": "GBPUSD",
+  "unexpected_gaps": 0
+}

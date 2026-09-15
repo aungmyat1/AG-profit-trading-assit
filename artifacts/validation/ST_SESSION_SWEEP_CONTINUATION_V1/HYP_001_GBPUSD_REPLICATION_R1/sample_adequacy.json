@@ -1,0 +1,24 @@
+{
+  "schema": "AG_SSC_HYP001_GBPUSD_R1_SAMPLE_ADEQUACY_V1",
+  "lane_id": "HYP_001_GBPUSD_REPLICATION_R1",
+  "population_manifest": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_GBPUSD_REPLICATION_R1/POPULATION/population_manifest.json",
+  "population_hash": "13c5163dbee070364645569ea71360f245d658935bedbd62c5bd3245cf8cfbb6",
+  "minimum_treatment_n": 20,
+  "TREATMENT_N": 15,
+  "CONTROL_N": 15,
+  "S1_N": 8,
+  "S2_N": 2,
+  "S3_N": 5,
+  "note_on_TREATMENT_N_equals_CONTROL_N": "Unlike HYP_002's setup-admission filter (where TREATMENT was a strict subset of CONTROL by setup exclusion), HYP_001's TREATMENT differs from CONTROL only by exit policy (runner_target_r 3.0R vs 1.5R) applied to the SAME S1+S2+S3 occurrence set -- so TREATMENT_N == CONTROL_N == TOTAL_N by construction, verified by an explicit assertion in the population-generation script.",
+  "adequacy_gate_result": "INCONCLUSIVE_INSUFFICIENT_SAMPLE",
+  "gate_rule_applied": "IF TREATMENT_N < 20: INCONCLUSIVE_INSUFFICIENT_SAMPLE, STOP before economics. IF TREATMENT_N >= 20: ADEQUATE, authorize a separate economic-evaluation mission.",
+  "actions_taken": {
+    "economics_inspected": false,
+    "net_R_or_expectancy_computed_or_reported": false,
+    "dataset_extended": false,
+    "historical_GBPUSD_added": false,
+    "minimum_N_lowered": false,
+    "strategy_tuned": false
+  },
+  "explicit_confirmation": "This mission computed and reported ONLY occurrence counts (TOTAL_N/S1_N/S2_N/S3_N/TREATMENT_N) and the population hash. No net_R, gross_R, expectancy, profit_factor, drawdown, MFE, or MAE value was read, aggregated, printed, or reported by this mission. The canonical_population.json artifact does retain each occurrence's already-resolved CONTROL (3.0R) outcome fields internally -- this is the existing, unmodified session_sweep_continuation.replay engine's own record schema (resolution happens inline with setup detection in the current architecture, exactly as it does for HYP_002's own canonical_population.json) -- but no economic aggregation or interpretation of those fields was performed by this mission."
+}

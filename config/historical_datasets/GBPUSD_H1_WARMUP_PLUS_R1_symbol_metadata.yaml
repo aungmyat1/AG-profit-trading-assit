@@ -1,0 +1,32 @@
+# OWNER-APPROVED symbol-metadata manifest for GBPUSD_H1_WARMUP_PLUS_R1.csv
+# (artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_GBPUSD_REPLICATION_R1/
+# GBPUSD_H1_WARMUP_PLUS_R1.csv).
+#
+# Authorized 2026-09-15 (AG_SSC_HYP001_GBPUSD_REPLICATION_R1, explicit owner decision
+# recorded in-session via AskUserQuestion -- "Yes, authorize it") -- the same
+# historical_replay/symbol_metadata_manifest.py mechanism already used for
+# EURUSD_H1_symbol_metadata.yaml, extended to GBPUSD for the first time on main. No
+# new resolver, schema, or analyzer was needed or written.
+#
+# tick_size = 0.00001: independently confirmed this session via live MT5
+# symbol_info('GBPUSD') (point=1e-05, digits=5) against VantageMarkets-Demo -- not
+# assumed from the EURUSD manifest, verified directly for GBPUSD.
+#
+# Source file: warmup leg (1134 H1 bars, 2026-05-27T18:00Z..2026-07-31T23:00Z,
+# read-only MT5 export, scripts/acquire_hyp001_gbpusd_replication_h1_warmup_context.py,
+# zero overlap with the 2026-08-03 decision window -- verified by that script) combined
+# with the already-admitted GEN_002 GBPUSD H1 decision-window data (2026-08-03..
+# 2026-09-14, sha256 d77f447d8da6c2543874df9c65eeccada3f28cb333b9f783fd9d63b016b0a335,
+# from FRESH_DATA_ADMISSION/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914_ADMISSION.json),
+# concatenated and sorted with a duplicate-timestamp check (none found) -- no candle
+# value from either source file was altered.
+
+dataset_id: GBPUSD_H1_WARMUP_PLUS_R1
+symbol: GBPUSD
+tick_size: 0.00001
+metadata_scope: HISTORICAL_ANALYSIS_ONLY
+authority: OWNER_APPROVED_DATASET_MANIFEST
+approval_date: "2026-09-15"
+# sha256 of the combined warmup+decision file this manifest is scoped to:
+dataset_fingerprint: "sha256:06e904873e02b4f122cdad139c534b4ea7c39202a7930cefc3a0ce0add126862"
+source_file: "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_GBPUSD_REPLICATION_R1/GBPUSD_H1_WARMUP_PLUS_R1.csv"

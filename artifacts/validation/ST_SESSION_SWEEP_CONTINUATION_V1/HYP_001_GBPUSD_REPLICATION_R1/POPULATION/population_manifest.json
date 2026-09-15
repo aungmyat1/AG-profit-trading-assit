@@ -1,0 +1,50 @@
+{
+  "adequacy": "INCONCLUSIVE_INSUFFICIENT_SAMPLE",
+  "bias_counts": {
+    "BEARISH": 15,
+    "BULLISH": 65,
+    "NEUTRAL": 0,
+    "UNAVAILABLE": 6
+  },
+  "combined_h1_sha256": "06e904873e02b4f122cdad139c534b4ea7c39202a7930cefc3a0ce0add126862",
+  "config_hash": "e0cf113b2e1e6b82fedee02e744615aa8f30ff7962355c331cbbdfd581fdcfbf",
+  "dataset_fingerprint": "f8108d37448cae8f9fe2f16a9905abdf8991ac916cf4a497b11eaca2debbf5aa",
+  "dates_admitted": 43,
+  "decision_cycles": 86,
+  "economics_computed": false,
+  "git_commit_before": "f2ba169222298e26781337d96c181e0898ba160b",
+  "h1_symbol_metadata_fingerprint": "sha256:06e904873e02b4f122cdad139c534b4ea7c39202a7930cefc3a0ce0add126862",
+  "m15_sha256": "71a67d9d6dd984395e98473d9e265508b6bde32eeeb60c6331d4a6dad8ab3636",
+  "m1_sha256": "41a403a738060131f2be40d16cd048dd5161c934bb1bdc2f2d06f2a46862ef30",
+  "minimum_treatment_n": 20,
+  "note": "Gate 2 (population + adequacy) only. No net_R/gross_R/expectancy/profit_factor/drawdown computed or stored in this artifact -- economic evaluation is a separate, explicit Gate-3 script that refuses to run below minimum_treatment_n.",
+  "parent_config_hash": "e0cf113b2e1e6b82fedee02e744615aa8f30ff7962355c331cbbdfd581fdcfbf",
+  "parent_raw_sha256": "c92311c3c1789a2ea01495a82a1fbcba1d877a8fb4d9ac46732f39e0b81970a9",
+  "population_hash": "13c5163dbee070364645569ea71360f245d658935bedbd62c5bd3245cf8cfbb6",
+  "population_id": "HYP_001_GBPUSD_REPLICATION_R1_POPULATION",
+  "preregistration_hash": "b401e9745e1be90b5a510e41c60923a79262fa9907a6dc49d7d92ee4c7a2853e",
+  "regime_counts": {
+    "RANGE": 51,
+    "TREND_DOWN": 3,
+    "TREND_UP": 6,
+    "UNKNOWN": 26
+  },
+  "reproducibility": {
+    "field_level_equal": true,
+    "first_difference": null,
+    "occurrence_ids_equal": true,
+    "occurrence_order_equal": true,
+    "population_hash_equal": true,
+    "run_1_hash": "13c5163dbee070364645569ea71360f245d658935bedbd62c5bd3245cf8cfbb6",
+    "run_2_hash": "13c5163dbee070364645569ea71360f245d658935bedbd62c5bd3245cf8cfbb6",
+    "trade_count_equal": true
+  },
+  "s1_n": 8,
+  "s2_n": 2,
+  "s3_n": 5,
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.0",
+  "symbol": "GBPUSD",
+  "total_n": 15,
+  "treatment_n": 15
+}

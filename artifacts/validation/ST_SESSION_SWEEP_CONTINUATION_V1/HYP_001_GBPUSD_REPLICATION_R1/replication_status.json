@@ -1,0 +1,91 @@
+{
+  "schema": "AG_SSC_HYP001_GBPUSD_R1_REPLICATION_STATUS_V1",
+  "lane_id": "HYP_001_GBPUSD_REPLICATION_R1",
+  "role": "CROSS_SYMBOL_REPLICATION",
+  "generated_utc": "2026-09-15",
+
+  "preregistration": {
+    "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_GBPUSD_REPLICATION_R1/HYP_001_GBPUSD_REPLICATION_R1_PREREGISTRATION.md",
+    "status": "FROZEN",
+    "frozen_sha256": "7ee1554cc041c950540f2c75931719e9fefd351d9c5fba5561fa87104c2eaa22",
+    "draft_sha256_superseded": "b401e9745e1be90b5a510e41c60923a79262fa9907a6dc49d7d92ee4c7a2853e",
+    "owner_approvals_this_session": [
+      "Section 8 decision protocol (minimum_N=20, PASS/FAIL/INCONCLUSIVE rule) -- approved verbatim as proposed",
+      "GBPUSD H1 symbol-metadata manifest (tick_size=0.00001, HISTORICAL_ANALYSIS_ONLY scope) -- required by the strategy engine's own fail-closed H1-bias-resolution gate, independently verified against live MT5 before the ask"
+    ]
+  },
+
+  "data": {
+    "symbol": "GBPUSD",
+    "decision_interval": "2026-08-03T00:00:00Z -> 2026-09-14T23:59:59Z",
+    "source": "VantageMarkets-Demo (MT5), already admitted FULL_PASS as part of SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914 -- no new decision-window data acquired",
+    "prior_overlap": "NONE (independently re-verified against GEN_002A: 2026-06-08..2026-07-30, zero overlap)",
+    "previous_outcome_access": "NONE -- confirmed this session (no prior population/artifact referenced this GBPUSD window's outcomes)",
+    "warmup": {
+      "role": "WARMUP_CONTEXT_ONLY",
+      "source": "newly acquired this session, read-only via MT5 (scripts/acquire_hyp001_gbpusd_replication_h1_warmup_context.py), 2026-05-27T18:00Z..2026-07-31T23:00Z, 1134 H1 bars, zero duplicates/gaps/invalid OHLC, verified strictly before the 2026-08-03T00:00:00Z decision boundary",
+      "economic_contribution": 0,
+      "combined_file": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_GBPUSD_REPLICATION_R1/GBPUSD_H1_WARMUP_PLUS_R1.csv",
+      "combined_sha256": "06e904873e02b4f122cdad139c534b4ea7c39202a7930cefc3a0ce0add126862"
+    }
+  },
+
+  "semantic_parity": {
+    "status": "CLEAN",
+    "strategy_changes": "none -- frozen v1.0.0 detector/config used unmodified, byte-identical config_hash (e0cf113b...) to EURUSD HYP_001",
+    "parameter_search": "none -- CONTROL=3.0R/TREATMENT=1.5R inherited verbatim from the already-frozen HYP_001_EXIT_CAPTURE_PREREGISTRATION.md, not re-selected or re-derived for GBPUSD",
+    "instrument_support": "already present in candidate_spec.yaml (instruments: [EURUSD, GBPUSD]) and in the frozen v1.0.0 friction config -- no new field added to any strategy file"
+  },
+
+  "population": {
+    "population_id": "HYP_001_GBPUSD_REPLICATION_R1_POPULATION",
+    "artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_GBPUSD_REPLICATION_R1/POPULATION/population_manifest.json",
+    "population_sha256": "13c5163dbee070364645569ea71360f245d658935bedbd62c5bd3245cf8cfbb6",
+    "TOTAL_N": 15, "S1_N": 8, "S2_N": 2, "S3_N": 5, "TREATMENT_N": 15,
+    "reproducibility": "PASS -- two independent replay runs produced identical trade_count, occurrence IDs, ordering, field-level content, and population hash",
+    "one_canonical_population": true,
+    "control_treatment_same_occurrences": true
+  },
+
+  "adequacy": {
+    "artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_GBPUSD_REPLICATION_R1/sample_adequacy.json",
+    "minimum_N": 20,
+    "TREATMENT_N": 15,
+    "result": "INCONCLUSIVE_INSUFFICIENT_SAMPLE"
+  },
+
+  "outcome_firewall": {
+    "economics_inspected": false,
+    "MFE_MAE_inspected": false,
+    "expectancy_calculated": false,
+    "profit_factor_calculated": false,
+    "net_R_gross_R_read_or_reported": false
+  },
+
+  "eurusd_hyp001": {
+    "status": "FROZEN_FOR_FRESH_CONFIRMATION",
+    "changed": false,
+    "CONFIRM_001_accessed": false,
+    "checkpoint_extension_policy_accessed": false
+  },
+
+  "holdout": {
+    "SSC_final_holdout": "NOT_YET_RESERVED",
+    "additional_untouched_SSC_evidence_consumption_policy": "BLOCKED_PENDING_HOLDOUT_RESERVATION",
+    "note": "This governance flag is set per mission P7, AFTER this already-preregistered GBPUSD replication lane (which was explicitly exempted). It applies to further NEW consumption of untouched SSC evidence beyond what is already frozen/in-flight (EURUSD CONFIRM_001/002/003, this GBPUSD lane) -- e.g. the flagged EURUSD 2026-06-20..07-31 interval remains unconsumed this mission, as required.",
+    "accessed_this_mission": false
+  },
+
+  "safety": {
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false,
+    "holdout_run_count": 0,
+    "trade_functions_called": false
+  },
+
+  "result": "REPLICATION_INCONCLUSIVE_INSUFFICIENT_SAMPLE",
+  "result_label": "CROSS_SYMBOL_REPLICATION: INSUFFICIENT_SAMPLE",
+  "terminal_for_this_population": true,
+  "next_permitted_action": "Per the frozen preregistration's own no-tuning/no-extension rule and mission P5/P7: close this population as terminal. Any future attempt at GBPUSD replication (a different, non-overlapping GBPUSD window) would require a NEW lane ID and a NEW preregistration, not an edit or extension of this one. Move to holdout/evidence-budget planning as instructed (mission P7) rather than immediately opening a new GBPUSD window."
+}

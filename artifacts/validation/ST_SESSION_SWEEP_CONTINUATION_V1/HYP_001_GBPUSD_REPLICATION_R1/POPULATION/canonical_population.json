@@ -1,0 +1,557 @@
+[
+  {
+    "direction": "SHORT",
+    "entry_price": 1.34961,
+    "entry_time": "2026-08-10 12:30:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.20438727039261848,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-08-10 12:30:00+00:00"
+      },
+      {
+        "event": "SESSION_EXIT_FULL_POSITION",
+        "exit_price": 1.35004,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": -0.4394326313440587,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-08-10 14:59:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SESSION_EXIT",
+    "friction_R": 0.20438727039261848,
+    "gross_R": -0.4394326313440587,
+    "initial_risk": 0.000978534522310559,
+    "initial_stop": 1.3505885345223105,
+    "net_R": -0.6438199017366771,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-08-10 14:59:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "LONDON_NEWYORK_2026-08-10_2026-08-10 12:30:00+00:00_S1_SWEEP_REVERSAL"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.35644,
+    "entry_time": "2026-08-17 10:15:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.26870232986600445,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-08-17 10:15:00+00:00"
+      },
+      {
+        "event": "SESSION_EXIT_FULL_POSITION",
+        "exit_price": 1.35623,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": -0.2821374463593631,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-08-17 10:59:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SESSION_EXIT",
+    "friction_R": 0.26870232986600445,
+    "gross_R": -0.2821374463593631,
+    "initial_risk": 0.000744318071598915,
+    "initial_stop": 1.3556956819284012,
+    "net_R": -0.5508397762253675,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-08-17 10:59:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "ASIAN_LONDON_2026-08-17_2026-08-17 10:15:00+00:00_S2_BREAKOUT_CONTINUATION"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.35359,
+    "entry_time": "2026-08-18 07:15:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.30053648550019396,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-08-18 07:15:00+00:00"
+      },
+      {
+        "event": "SL",
+        "exit_price": null,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": -1.0,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-08-18 09:03:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SL",
+    "friction_R": 0.30053648550019396,
+    "gross_R": -1.0,
+    "initial_risk": 0.0006654766048359573,
+    "initial_stop": 1.3529245233951641,
+    "net_R": -1.300536485500194,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-08-18 09:03:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "ASIAN_LONDON_2026-08-18_2026-08-18 07:15:00+00:00_S1_SWEEP_REVERSAL"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.36391,
+    "entry_time": "2026-08-20 12:00:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.1855905678228788,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-08-20 12:00:00+00:00"
+      },
+      {
+        "event": "SESSION_EXIT_FULL_POSITION",
+        "exit_price": 1.36311,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": -0.7423622712914335,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-08-20 14:59:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SESSION_EXIT",
+    "friction_R": 0.1855905678228788,
+    "gross_R": -0.7423622712914335,
+    "initial_risk": 0.0010776409725243852,
+    "initial_stop": 1.3628323590274756,
+    "net_R": -0.9279528391143124,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-08-20 14:59:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "LONDON_NEWYORK_2026-08-20_2026-08-20 12:00:00+00:00_S2_BREAKOUT_CONTINUATION"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.36333,
+    "entry_time": "2026-08-24 12:45:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.3142980174020527,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-08-24 12:45:00+00:00"
+      },
+      {
+        "event": "SL",
+        "exit_price": null,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": -1.0,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-08-24 13:42:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SL",
+    "friction_R": 0.3142980174020527,
+    "gross_R": -1.0,
+    "initial_risk": 0.0006363387260701625,
+    "initial_stop": 1.3626936612739298,
+    "net_R": -1.3142980174020527,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-08-24 13:42:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "LONDON_NEWYORK_2026-08-24_2026-08-24 12:45:00+00:00_S1_SWEEP_REVERSAL"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.3633899999999999,
+    "entry_time": "2026-08-24 14:30:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.1518495218707856,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-08-24 14:30:00+00:00"
+      },
+      {
+        "event": "SESSION_EXIT_FULL_POSITION",
+        "exit_price": 1.36379,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": 0.30369904374170636,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-08-24 14:59:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SESSION_EXIT",
+    "friction_R": 0.1518495218707856,
+    "gross_R": 0.30369904374170636,
+    "initial_risk": 0.0013170933799198092,
+    "initial_stop": 1.36207290662008,
+    "net_R": 0.15184952187092077,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-08-24 14:59:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "LONDON_NEWYORK_2026-08-24_2026-08-24 14:30:00+00:00_S3_PULLBACK_CONTINUATION"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.36379,
+    "entry_time": "2026-08-24 14:45:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.11634567892988347,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-08-24 14:45:00+00:00"
+      },
+      {
+        "event": "SESSION_EXIT_FULL_POSITION",
+        "exit_price": 1.36379,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": 0.0,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-08-24 14:59:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SESSION_EXIT",
+    "friction_R": 0.11634567892988347,
+    "gross_R": 0.0,
+    "initial_risk": 0.0017190152813542081,
+    "initial_stop": 1.3620709847186458,
+    "net_R": -0.11634567892988347,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-08-24 14:59:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "LONDON_NEWYORK_2026-08-24_2026-08-24 14:45:00+00:00_S3_PULLBACK_CONTINUATION"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.36371,
+    "entry_time": "2026-08-26 10:00:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.30526988742458916,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-08-26 10:00:00+00:00"
+      },
+      {
+        "event": "SL",
+        "exit_price": null,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": -1.0,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-08-26 10:53:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SL",
+    "friction_R": 0.30526988742458916,
+    "gross_R": -1.0,
+    "initial_risk": 0.0006551579708280464,
+    "initial_stop": 1.363054842029172,
+    "net_R": -1.3052698874245892,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-08-26 10:53:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "ASIAN_LONDON_2026-08-26_2026-08-26 10:00:00+00:00_S1_SWEEP_REVERSAL"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.3542,
+    "entry_time": "2026-09-01 09:30:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.24081285726995705,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-09-01 09:30:00+00:00"
+      },
+      {
+        "event": "SL",
+        "exit_price": null,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": -1.0,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-09-01 10:30:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SL",
+    "friction_R": 0.24081285726995705,
+    "gross_R": -1.0,
+    "initial_risk": 0.0008305204392629051,
+    "initial_stop": 1.3533694795607372,
+    "net_R": -1.240812857269957,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-09-01 10:30:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "ASIAN_LONDON_2026-09-01_2026-09-01 09:30:00+00:00_S1_SWEEP_REVERSAL"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.3503,
+    "entry_time": "2026-09-02 10:15:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.3024623022763643,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-09-02 10:15:00+00:00"
+      },
+      {
+        "event": "SESSION_EXIT_FULL_POSITION",
+        "exit_price": 1.35101,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": 1.0737411730810758,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-09-02 10:59:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SESSION_EXIT",
+    "friction_R": 0.3024623022763643,
+    "gross_R": 1.0737411730810758,
+    "initial_risk": 0.0006612394288305623,
+    "initial_stop": 1.3496387605711695,
+    "net_R": 0.7712788708047115,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-09-02 10:59:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "ASIAN_LONDON_2026-09-02_2026-09-02 10:15:00+00:00_S1_SWEEP_REVERSAL"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.35307,
+    "entry_time": "2026-09-04 13:30:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.2932292193181973,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-09-04 13:30:00+00:00"
+      },
+      {
+        "event": "SESSION_EXIT_FULL_POSITION",
+        "exit_price": 1.35317,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": 0.1466146096590825,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-09-04 14:59:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SESSION_EXIT",
+    "friction_R": 0.2932292193181973,
+    "gross_R": 0.1466146096590825,
+    "initial_risk": 0.0006820602682946486,
+    "initial_stop": 1.3523879397317053,
+    "net_R": -0.1466146096591148,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-09-04 14:59:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "LONDON_NEWYORK_2026-09-04_2026-09-04 13:30:00+00:00_S1_SWEEP_REVERSAL"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.35307,
+    "entry_time": "2026-09-04 13:45:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.18693106835242268,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-09-04 13:45:00+00:00"
+      },
+      {
+        "event": "SESSION_EXIT_FULL_POSITION",
+        "exit_price": 1.35317,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": 0.09346553417620104,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-09-04 14:59:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SESSION_EXIT",
+    "friction_R": 0.18693106835242268,
+    "gross_R": 0.09346553417620104,
+    "initial_risk": 0.00106991310627369,
+    "initial_stop": 1.3520000868937263,
+    "net_R": -0.09346553417622164,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-09-04 14:59:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "LONDON_NEWYORK_2026-09-04_2026-09-04 13:45:00+00:00_S3_PULLBACK_CONTINUATION"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.3535,
+    "entry_time": "2026-09-04 14:00:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.13340403504804815,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-09-04 14:00:00+00:00"
+      },
+      {
+        "event": "SESSION_EXIT_FULL_POSITION",
+        "exit_price": 1.35317,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": -0.22011665782924042,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-09-04 14:59:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SESSION_EXIT",
+    "friction_R": 0.13340403504804815,
+    "gross_R": -0.22011665782924042,
+    "initial_risk": 0.0014992050272539803,
+    "initial_stop": 1.352000794972746,
+    "net_R": -0.3535206928772886,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-09-04 14:59:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "LONDON_NEWYORK_2026-09-04_2026-09-04 14:00:00+00:00_S3_PULLBACK_CONTINUATION"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.35466,
+    "entry_time": "2026-09-09 12:15:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.3273930723809037,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-09-09 12:15:00+00:00"
+      },
+      {
+        "event": "SL",
+        "exit_price": null,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": -1.0,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-09-09 12:47:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SL",
+    "friction_R": 0.3273930723809037,
+    "gross_R": -1.0,
+    "initial_risk": 0.0006108864752254473,
+    "initial_stop": 1.3540491135247745,
+    "net_R": -1.3273930723809038,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-09-09 12:47:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "LONDON_NEWYORK_2026-09-09_2026-09-09 12:15:00+00:00_S1_SWEEP_REVERSAL"
+  },
+  {
+    "direction": "LONG",
+    "entry_price": 1.35638,
+    "entry_time": "2026-09-09 14:15:00+00:00",
+    "events": [
+      {
+        "event": "ENTRY",
+        "exit_price": null,
+        "friction_R_delta": 0.055971001211677814,
+        "gross_R_delta": 0.0,
+        "quantity_after": 1.0,
+        "quantity_before": 0.0,
+        "time": "2026-09-09 14:15:00+00:00"
+      },
+      {
+        "event": "SESSION_EXIT_FULL_POSITION",
+        "exit_price": 1.3560400000000001,
+        "friction_R_delta": 0.0,
+        "gross_R_delta": -0.09515070205979209,
+        "quantity_after": 0.0,
+        "quantity_before": 1.0,
+        "time": "2026-09-09 14:59:00+00:00"
+      }
+    ],
+    "final_state": "RESOLVED_SESSION_EXIT",
+    "friction_R": 0.055971001211677814,
+    "gross_R": -0.09515070205979209,
+    "initial_risk": 0.0035732789421367706,
+    "initial_stop": 1.3528067210578631,
+    "net_R": -0.1511217032714699,
+    "remaining_quantity": 0.0,
+    "resolution_time": "2026-09-09 14:59:00+00:00",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "symbol": "GBPUSD",
+    "trade_id": "LONDON_NEWYORK_2026-09-09_2026-09-09 14:15:00+00:00_S3_PULLBACK_CONTINUATION"
+  }
+]

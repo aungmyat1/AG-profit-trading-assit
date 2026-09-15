@@ -1,14 +1,24 @@
-# HYP_001_GBPUSD_REPLICATION_R1 -- Preregistration (DRAFT, NOT YET FROZEN)
+# HYP_001_GBPUSD_REPLICATION_R1 -- Preregistration (FROZEN 2026-09-15)
 
-Status: **DRAFT / PROPOSED. NOT FROZEN. NOT EXECUTABLE.** Written before any GBPUSD
-setup detection or outcome inspection against the interval below. This document
-proposes a **cross-symbol replication** lane for the already-frozen
+Status: **FROZEN.** Section 8's minimum_N=20 and decision rule were explicitly
+approved by the owner (in-session, via AskUserQuestion, 2026-09-15) exactly as
+proposed, before any GBPUSD setup detection or outcome inspection occurred. A
+GBPUSD H1 symbol-metadata manifest (required for H1 bias resolution) was separately
+authorized by the owner in the same session -- see
+`config/historical_datasets/GBPUSD_H1_WARMUP_PLUS_R1_symbol_metadata.yaml`. This
+document remains a **cross-symbol replication** lane for the already-frozen
 HYP_001_EXIT_CAPTURE mechanism -- it does **not** modify, gate, accelerate, or
 substitute for HYP_001's own EURUSD `CONFIRM_001` fresh-confirmation track (still
 `WAITING_FOR_DATA`, earliest acquisition 2026-10-13T00:00:00Z, entirely untouched by
-this document). Sections marked `OWNER APPROVAL REQUIRED` must be explicitly approved
-before this preregistration may be considered FROZEN and before any GBPUSD setup
-detection may run.
+this document).
+
+Gate 2 (population generation + sample-adequacy check) has since been run against
+this frozen protocol: `TREATMENT_N=15 < minimum_N=20` -->
+`INCONCLUSIVE_INSUFFICIENT_SAMPLE` (see
+`artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_GBPUSD_REPLICATION_R1/sample_adequacy.json`).
+Per Section 8's frozen adequacy gate, no economic evaluation may be performed on this
+population, and no field in Sections 1-10 may now be edited (a new lane ID and a new
+preregistration would be required for any future attempt on a different window).
 
 ## 0. Why this lane exists / evidence-independence check
 
@@ -139,27 +149,26 @@ candidate    = GBPUSD H1 history for GEN_002A's own window (2026-06-08..07-30) o
                occurrence/economic contribution.
 ```
 
-## 8. Primary metric / decision rule -- OWNER APPROVAL REQUIRED
+## 8. Primary metric / decision rule -- OWNER APPROVED 2026-09-15
 
-No GBPUSD-specific sample-adequacy or decision rule exists anywhere in this
-repository. The values below are **proposed for consistency with HYP_001's own
-EURUSD rule**, not derived from any GBPUSD data:
+Approved by the owner in-session (AskUserQuestion, 2026-09-15), exactly as proposed,
+before any GBPUSD population was generated:
 
 ```
-primary_metric      = net_expectancy_R (mean net R per resolved occurrence)
-primary_comparison  = delta_net_expectancy_R = TREATMENT - CONTROL
-PROPOSED minimum_N  = TREATMENT_N >= 20  (mirrors HYP_001 EURUSD; NOT yet
-                       owner-approved for this lane specifically)
-PROPOSED decision   = PASS: TREATMENT_N>=20 AND TREATMENT_net_expectancy_R>0
-                             AND delta_net_expectancy_R>0
-                       FAIL: TREATMENT_N>=20 AND (TREATMENT_net_expectancy_R<=0
-                             OR delta_net_expectancy_R<=0)
-                       INCONCLUSIVE: TREATMENT_N<20
+primary_metric  = net_expectancy_R (mean net R per resolved occurrence)
+comparison      = delta_net_expectancy_R = TREATMENT_net_expectancy_R
+                                            - CONTROL_net_expectancy_R
+minimum_N       = TREATMENT_N >= 20
+PASS            = TREATMENT_N>=20 AND TREATMENT_net_expectancy_R>0
+                   AND delta_net_expectancy_R>0
+FAIL            = TREATMENT_N>=20 AND (TREATMENT_net_expectancy_R<=0
+                   OR delta_net_expectancy_R<=0)
+INCONCLUSIVE    = TREATMENT_N<20  -->  INCONCLUSIVE_INSUFFICIENT_SAMPLE
 ```
 
-**This document is not FROZEN until the owner explicitly approves (or amends) the
-proposed minimum_N and decision rule above.** Until then, no population may be
-generated and no outcome may be inspected under this lane.
+**Actual Gate-2 result (2026-09-15): `TREATMENT_N=15 < 20` --> `INCONCLUSIVE_INSUFFICIENT_SAMPLE`.**
+No economic evaluation was performed -- Section 8's own frozen rule required stopping
+here.
 
 ## 9. Result labelling (mission P4)
 
@@ -186,6 +195,10 @@ demo_eligible/demo_authorized/live_authorized = false, unaffected by this lane
 
 ## 11. Verdict
 
-`HYP_001_GBPUSD_REPLICATION_R1_PREREGISTRATION_STATUS: DRAFT -- OWNER APPROVAL
-REQUIRED on Section 8 (minimum_N / decision rule) before this document is FROZEN and
-before any GBPUSD population may be generated.`
+`HYP_001_GBPUSD_REPLICATION_R1_PREREGISTRATION_STATUS: FROZEN (2026-09-15).`
+
+`HYP_001_GBPUSD_REPLICATION_R1_RESULT: INCONCLUSIVE_INSUFFICIENT_SAMPLE (Gate 2,
+2026-09-15) -- TREATMENT_N=15 < minimum_N=20. Terminal for this population per this
+document's own frozen rule. No economic evaluation was, or may now be, performed on
+it. GBPUSD raw data used: 2026-08-03..2026-09-14 (already admitted, zero new
+consumption of any other symbol/window). EURUSD HYP_001/CONFIRM_001 unaffected.`
