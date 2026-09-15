@@ -13,6 +13,17 @@
     "**/*.parquet": true,
     "**/*.csv": true
   },
+  "python.analysis.exclude": [
+    "**/node_modules",
+    "**/.venv",
+    "**/venv",
+    "**/__pycache__",
+    "**/.pytest_cache",
+    "**/.git",
+    "**/artifacts/**",
+    "**/.claude/worktrees/**",
+    "**/web/dist/**"
+  ],
   "files.watcherExclude": {
     "**/.git/objects/**": true,
     "**/.git/subtree-cache/**": true,

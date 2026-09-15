@@ -1,0 +1,90 @@
+{
+  "schema_version": "1",
+  "head": "ebe85573bd3ed9ff49492960900e68fbc9ebdfe8",
+  "branch": "main",
+  "generated": "2026-09-14",
+  "target_strategy": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "architecture_gate": "PASS",
+  "research_can_execute": "NO",
+  "new_forbidden_edges": 0,
+  "preexisting_forbidden_edges": [
+    {
+      "edge": "strategy_contract -> session_sweep_continuation",
+      "type": "NEUTRAL -> RESEARCH",
+      "site": "src/strategy_contract/decision.py:73 (from_session_sweep_continuation_replay)",
+      "execution_authority_exposed": false,
+      "note": "Already flagged in docs/plans/AG_SRC_RESTRUCTURE_TRADE_ASSIST_RESEARCH_SPLIT_PLAN.md as a Phase-5.3 inversion target; fix requires the deferred physical src/ migration, out of scope for this WP."
+    },
+    {
+      "edge": "authorization -> post_asian_pilot",
+      "type": "TRADE_ASSIST -> RESEARCH",
+      "site": "src/authorization/proposal_source.py:32 (load_pilot_config, read-only)",
+      "execution_authority_exposed": false,
+      "note": "Read-only consumer of post_asian_pilot's durable evidence; already flagged in restructure plan Phase-5.2 (governance extraction)."
+    },
+    {
+      "edge": "ticket_delivery -> post_asian_pilot",
+      "type": "TRADE_ASSIST -> RESEARCH",
+      "site": "src/ticket_delivery/{fx_cycle_integration,scheduler_integration,archive,identity}.py",
+      "execution_authority_exposed": false,
+      "note": "Ticket rendering/archival consumes post_asian_pilot decision/report objects; same Phase-5.2 extraction target."
+    },
+    {
+      "edge": "btc_sweep_research -> execution, execution_runtime",
+      "type": "RESEARCH -> TRADE_ASSIST",
+      "site": "src/btc_sweep_research/{pipeline,daily_report}.py",
+      "execution_authority_exposed": false,
+      "note": "Imports DailyLossGuard/OpenPositionGuard (execution/) -- verified pure JsonKeyValueStore-backed state trackers, no order_send/order_check/MT5 connection. Imports execution_runtime crypto feed readers (market data only). Not in the restructure plan's named risk list; newly identified, but benign -- misplacement, not an authority leak."
+    },
+    {
+      "edge": "historical_replay -> daytrading_runtime",
+      "type": "RESEARCH -> TRADE_ASSIST",
+      "site": "src/historical_replay/{orchestrator,stage2}.py (conditional_entry_snapshot)",
+      "execution_authority_exposed": false,
+      "note": "conditional_entry_snapshot.py verified pure structural/liquidity analysis (entry_confirmation, liquidity, market_structure, supply_demand, mt5.market_data read-only) -- no execution authority."
+    }
+  ],
+  "capabilities": {
+    "CanonicalOccurrence": {"status": "REUSE", "source": "src/canonical_experiments/models.py"},
+    "PopulationManifest": {"status": "REUSE", "source": "src/canonical_experiments/population.py::write_population"},
+    "PopulationSHA256": {"status": "REUSE", "source": "src/canonical_experiments/population.py::population_hash"},
+    "DatasetProvenance": {"status": "MISSING", "source": "population.py manifest lacks dataset_id/dataset_hash fields (only strategy_id/version/exchange/symbol)"},
+    "ConfigProvenance": {"status": "MISSING", "source": "population.py manifest lacks config_hash field"},
+    "ExposurePath": {"status": "EXTEND", "source": "src/canonical_experiments/models.py::CanonicalOccurrence.m1_path (CandleSnapshot[]) exists; COMPLETE/INCOMPLETE/AMBIGUOUS/EXCLUDED_WITH_REASON classification per WP2.6 not implemented"},
+    "MFE_MAE_Tracking": {"status": "MISSING", "source": "no MFE/MAE fields anywhere in canonical_experiments or performance"},
+    "ExitPolicyAbstraction": {"status": "REUSE", "source": "src/canonical_experiments/policies.py (ExitPolicy, ControlPolicy, TimeStopPolicy -- generic minutes param covers all 6 required exit policies)"},
+    "ExposureReplay": {"status": "REUSE", "source": "src/canonical_experiments/runner.py::CanonicalExperimentRunner"},
+    "FrictionModel": {"status": "EXTEND", "source": "src/performance/cost_model.py + src/external_candidate/friction.py -- only CONTRACT_CEILING is signed; BASE/SEVERE unsigned; spec's STRESS_125/STRESS_150 multiplier profiles don't exist as named"},
+    "ExperimentSpecification": {"status": "MISSING", "source": "no declarative spec module found (grepped repo-wide for ExperimentSpec)"},
+    "ExperimentManifest": {"status": "EXTEND", "source": "src/canonical_experiments/models.py::ExperimentResult has population_hash but no experiment_id/experiment_hash manifest wrapper"},
+    "ChronologicalSplit": {"status": "REUSE", "source": "src/canonical_experiments/splits.py::chronological_split"},
+    "WalkForward": {"status": "REUSE", "source": "src/external_candidate/walk_forward.py"},
+    "ParameterNeighborhood": {"status": "MISSING", "source": "no module found; trivial aggregation over existing TimeStopPolicy results across 30/45/60/90/120"},
+    "BootstrapConfidence": {"status": "MISSING", "source": "no module found repo-wide"},
+    "ConcentrationAnalysis": {"status": "MISSING", "source": "no module found; validation_diagnostics/ is a different capability (post-hoc gate-failure classifier, not segment concentration)"},
+    "MonteCarloSequence": {"status": "MISSING", "source": "no module found repo-wide"},
+    "CandidateFreeze": {"status": "EXTEND", "source": "src/external_candidate/version_guard.py + admission.py provide immutability/version-mutation guard; no freeze-manifest writer matching WP2.12 schema"},
+    "HoldoutFirewall": {"status": "EXTEND", "source": "src/external_candidate/oos_evaluator.py performs OOS aggregation over caller-supplied partition; no persistent holdout_run_count=1-enforcement store found"},
+    "HoldoutRunCount": {"status": "MISSING", "source": "no run-once enforcement store found"},
+    "CanonicalParity": {"status": "REUSE", "source": "src/external_candidate/parity/ (verdict.py, economic_comparator.py, trade_comparator.py, signal_comparator.py, divergence.py)"},
+    "EconomicGateReporting": {"status": "REUSE", "source": "src/validation_framework/economic_gate.py + evaluator.py (fail-closed on unsigned config/governance/economic_gate_contract.yaml, per project_ag_wp0_baseline_reconciliation R6 update)"}
+  },
+  "p0_missing_for_fx": [
+    "ExperimentSpecification",
+    "DatasetProvenance",
+    "ConfigProvenance",
+    "MFE_MAE_Tracking (optional for G0-G3, not blocking)",
+    "ParameterNeighborhood (G4, trivial aggregation)",
+    "BootstrapConfidence (G3)",
+    "ConcentrationAnalysis (G6)",
+    "MonteCarloSequence (G6)",
+    "HoldoutRunCount enforcement (G-holdout firewall)",
+    "R6 economic gate remains UNSIGNED (config/governance/economic_gate_contract.yaml status!=SIGNED per prior session) -- G3/final promotion cannot pass numerically regardless of new code; economic_gate.py will correctly report OWNER_THRESHOLD_REQUIRED"
+  ],
+  "governance": {
+    "demo_authorized_changed": false,
+    "live_authorized_changed": false,
+    "execution_routes_changed": false
+  },
+  "wp2_ready": true
+}

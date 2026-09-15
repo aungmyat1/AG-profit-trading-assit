@@ -1,0 +1,150 @@
+# ST_SESSION_SWEEP_CONTINUATION_V1 v1.1.0 -- CANDIDATE SPEC (OFFLINE_RESEARCH ONLY, UNVALIDATED).
+#
+# THIS IS A PREREGISTERED CANDIDATE, NOT A REGISTERED/EXECUTABLE STRATEGY CONFIG.
+# It is NOT loaded by src/session_sweep_continuation/config.py (DEFAULT_CONFIG_PATH still
+# points at strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml, v1.0.0, which remains the
+# frozen, unmodified parent -- VALIDATED_NEGATIVE / EDGE_NOT_SUPPORTED). It is NOT entered
+# in strategies/registry.yaml, NOT wired to any adapter, and carries no proposal/demo/live
+# execution authority whatsoever.
+#
+# Parent: ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.0
+#   parent_config_hash (compute_config_hash over parsed v1.0.0 YAML) =
+#     e0cf113b2e1e6b82fedee02e744615aa8f30ff7962355c331cbbdfd581fdcfbf
+#   parent_raw_file_sha256 (strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml @ HEAD ebe8557) =
+#     c92311c3c1789a2ea01495a82a1fbcba1d877a8fb4d9ac46732f39e0b81970a9
+#
+# Provenance: this candidate operationalizes the HYP_001_EXIT_CAPTURE recommendation
+# recorded in artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/CANDIDATE_SELECTION_V1/
+# candidate_selection.json (P13_versioning_recommendation), authored on
+# refactor/architecture-boundary-hardening-v3 @ 5101a51. That record explicitly deferred
+# authoring this spec ("v1.1.0 is NOT created in this pass ... NEW candidate spec, not yet
+# authored") -- this file is that deferred authoring step, done now on main so lineage is
+# reachable from main's HEAD. See candidate_manifest.json in this same directory for hashes,
+# semantic-diff verification (SEMANTIC_CHANGE_COUNT), and full provenance.
+#
+# Single intended semantic change vs parent: trade_management.runner_target_r 3.0 -> 1.5.
+# Every other field below is byte-identical to the frozen v1.0.0 parent. Rationale is the
+# preregistered P4 structural-compromise rationale (see candidate_manifest.json) -- NOT a
+# claim that 1.5R is the historically best-performing target.
+#
+# Authority: this file defines RESEARCH PARAMETERS only, for a candidate that has not yet
+# been evaluated on any fresh, non-overlapping development population. lifecycle_stage is
+# OFFLINE_RESEARCH and demo_eligible/demo_authorized are false by declaration here AND by
+# hardcoded code-level gates (see engine/adapter) -- this file cannot grant authority even
+# if edited.
+#
+# None of the numeric parameters below (EMA periods, ATR multiplier, FVG thresholds, BOS
+# sensitivity, stop multiple, session times) are tuned/optimized -- they are inherited
+# unchanged from the frozen parent and hashed into candidate_spec_hash so any future change
+# is evidence-traceable.
+
+strategy_id: ST_SESSION_SWEEP_CONTINUATION_V1
+strategy_name: Session Sweep Continuation
+strategy_family: Liquidity_Sweep_Continuation
+version: 1.1.0
+lifecycle_stage: OFFLINE_RESEARCH
+demo_eligible: false
+demo_authorized: false
+registered_utc: "2026-09-14"
+
+instruments: [EURUSD, GBPUSD]
+
+timeframes:
+  htf_context: H1
+  decision_timeframe: M15   # M15 is decision authority for regime/state/setup qualification
+  execution_timeframe: M1   # M1 refines entry timing only -- never independently creates a setup
+  ltf_refinement: M1
+
+# Session windows, UTC. ASIAN_LONDON reuses the same clock convention as
+# ST_ASIAN_SWEEP_5R_V1's session_pairs (independent config, same UTC windows) so both
+# strategies can be compared on identical session definitions without coupling code.
+session_pairs:
+  - pair_id: ASIAN_LONDON
+    reference_session:
+      start_time_utc: "00:00"
+      end_time_utc: "06:00"
+    trade_session:
+      start_time_utc: "07:00"
+      end_time_utc: "11:00"
+  - pair_id: LONDON_NEWYORK
+    reference_session:
+      start_time_utc: "06:00"
+      end_time_utc: "11:00"
+    trade_session:
+      start_time_utc: "12:00"
+      end_time_utc: "15:00"
+
+regime:
+  # Deterministic classifier inputs -- see src/session_sweep_continuation/regime.py.
+  range_max_pips: 25.0
+  ema_fast_period: 20
+  ema_slow_period: 50
+  min_reference_candles: 8   # below this, regime = UNKNOWN -> NO_TRADE (fail closed)
+
+swing:
+  fractal_bars_each_side: 2   # deterministic M15 fractal swing definition
+
+bos:
+  type: FRACTAL_CLOSE_BREAK   # candle CLOSE beyond the most recent confirmed swing only; wick never qualifies
+  require_displacement_confirmation: false   # displacement is additive supporting evidence, not required to fire BOS
+
+displacement:
+  min_body_to_range_ratio: 0.60   # configurable evidence signal, not a required gate unless bos.require_displacement_confirmation=true
+
+fvg:
+  min_pips: 1.5
+  max_pips: 15.0
+
+ema:
+  fast_period: 20
+  slow_period: 50
+
+atr:
+  timeframe: M15
+  period: 14
+  stop_buffer_multiplier: 0.20
+
+continuation_score:
+  minimum: 2   # S3 requires >=2 of 5 boolean signals; EMA-only (ema20_retest alone) can never reach this alone
+
+campaign:
+  max_entries: 3          # authoritative hard cap on total entries per campaign (not a sum of per-setup maxima)
+  maximum_total_risk_pct: 1.0
+  min_meaningful_risk_pct: 0.05
+  block_new_entries_after_realized_r_lte: -1.0   # optional conservative rule, explicit opt-in
+  block_new_entries_after_realized_r_enabled: false
+
+risk_allocation:
+  S1: 0.40
+  S2: 0.30
+  S3: 0.30
+
+setup_limits:
+  S1_max_per_campaign: 1
+  S2_max_per_campaign: 1
+  S3_max_per_campaign: 2
+
+friction:
+  minimum_stop_multiple: 3.0
+  # Symbol friction inputs -- documented research defaults, not broker-verified live
+  # quotes. cost_status is stamped per-computation (KNOWN/MODELED/UNAVAILABLE), never
+  # silently assumed INCLUDED -- see src/session_sweep_continuation/friction.py.
+  default_spread_pips:
+    EURUSD: 1.0
+    GBPUSD: 1.4
+  default_commission_pips:
+    EURUSD: 0.2
+    GBPUSD: 0.2
+  default_slippage_pips:
+    EURUSD: 0.3
+    GBPUSD: 0.4
+
+trade_management:
+  runner_target_r: 1.5    # HYP_001_EXIT_CAPTURE candidate value -- single semantic change vs v1.0.0 parent (3.0R). See candidate_manifest.json.
+  partial_target_pct: 0.50
+  partial_target_mode: NEXT_LIQUIDITY_TARGET
+  runner_pct: 0.50
+  runner_target_mode: FIXED_R
+
+performance_attribution:
+  min_sample_size: 10   # below this, report INSUFFICIENT_EVIDENCE rather than inferring profitability
