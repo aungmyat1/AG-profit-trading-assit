@@ -18,6 +18,20 @@ authority was granted. See
 This supersedes the 2026-09-10 classification recorded further down in this file
 (kept below as dated historical context, not corrected in place).
 
+### SSC HYP_002_SETUP_SELECTIVITY validated negative (2026-09-15)
+
+`ST_SESSION_SWEEP_CONTINUATION_V1`'s first preregistered validation hypothesis,
+`HYP_002_SETUP_SELECTIVITY` (exclude S3 from S1+S2+S3), completed the frozen pipeline
+and was **FALSIFIED** on GEN_002 evidence: control N=21 net `-0.41R`, treatment N=11
+net `-0.36R`, delta `+0.05R` — positive delta but the treatment remained net-negative,
+so `FAIL` under the preregistered decision rule. Attempt 1 was `INCONCLUSIVE`
+(insufficient H1 warmup); Attempt 2 (43 dates, 86 cycles) was reproducible. HYP_002 is
+closed `VALIDATED_NEGATIVE` (no rerun/tuning/reclassification permitted); the strongest
+follow-on mechanism (exit-capture/target-too-far) is already governed by
+`HYP_001_EXIT_CAPTURE` / the V1.1.0 candidate lineage, so a duplicate HYP_003 was
+declined `NOT_JUSTIFIED`. No Demo/Live authority changed and `holdout_run_count=0`. See
+`docs/status/AG_SSC_HYP002_SETUP_SELECTIVITY_VALIDATION_STATUS.md`.
+
 | Gate | Status | Evidence |
 | --- | --- | --- |
 | R0 Safe Foundation | `READY` | — |

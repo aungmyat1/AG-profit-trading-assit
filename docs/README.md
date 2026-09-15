@@ -120,6 +120,10 @@ observations from the named milestone; they are not rolling dashboards.
   and [`status/SMC_TRAP_GUARD_V1_STATUS.md`](status/SMC_TRAP_GUARD_V1_STATUS.md)
 - Frozen phases: [`status/PHASE_1_4_FREEZE_STATUS.md`](status/PHASE_1_4_FREEZE_STATUS.md)
   and [`status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md`](status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md)
+- Session Sweep Continuation research validation
+  (`ST_SESSION_SWEEP_CONTINUATION_V1`): [`status/AG_SSC_HYP002_SETUP_SELECTIVITY_VALIDATION_STATUS.md`](status/AG_SSC_HYP002_SETUP_SELECTIVITY_VALIDATION_STATUS.md)
+  (first preregistered hypothesis completed and falsified on GEN_002; HYP_002 closed
+  `VALIDATED_NEGATIVE`, duplicate HYP_003 declined)
 - Registry and skills: [`status/STRATEGY_REGISTRY_STATUS.md`](status/STRATEGY_REGISTRY_STATUS.md),
   [`status/LARGE_SMC_V1_REGISTRATION_STATUS.md`](status/LARGE_SMC_V1_REGISTRATION_STATUS.md),
   [`status/STRATEGY_WORKFLOW_RESOURCE_AUDIT_STATUS.md`](status/STRATEGY_WORKFLOW_RESOURCE_AUDIT_STATUS.md),
