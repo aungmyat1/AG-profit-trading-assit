@@ -1,0 +1,77 @@
+{
+  "schema": "AG_SSC_HYP001_FRESH_CONFIRM_001_BOUNDARY_STATUS_V1",
+  "mission": "HYP_001 fresh confirmation data admission (data acquisition + admission + freeze only)",
+  "generated_at_utc_note": "DATE_ONLY -- 2026-09-15",
+  "generated_at_utc": "2026-09-15",
+  "checkpoint_id": "CONFIRM_001",
+  "dataset_id": "NOT_YET_CREATED",
+
+  "p0_preflight": {
+    "branch": "main",
+    "head": "e9dd74e0401c1ec956419101b15cbae3a5a989ee",
+    "working_tree": "clean",
+    "lineage_audit_hash_verified": "ebc7a99f84646362acb7d73367089146bb6d0ecbc4ea7d6bf9612e0554969ba7 (MATCH)",
+    "candidate_manifest_hash_verified": "03dfed8ae45751bdbe3743e3a7c8ea7587c3a53fa73c6fdd418060f29dc0bb13 (MATCH)",
+    "preregistration_hash_verified": "03ed06c68e169893b3172917f4cadf369d52e47f6b8ed5ea2c2f620a13388529 (MATCH)",
+    "control_treatment_verified": "3.0R / 1.5R (MATCH)",
+    "minimum_N_verified": "20 (MATCH)",
+    "latest_consumed_timestamp_verified": "2026-09-14T23:59:59Z (MATCH)",
+    "earliest_fresh_start_verified": "2026-09-15T00:00:00Z (MATCH)",
+    "fresh_confirmation_runs": 0,
+    "holdout_run_count": 0,
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false
+  },
+
+  "p1_boundary_determination": {
+    "requested_start": "2026-09-15T00:00:00Z",
+    "source_connectivity": {
+      "terminal": "connected, MetaTrader5 python package v5.0.5735",
+      "account_server": "VantageMarkets-Demo (login 26088035) -- matches the authoritative source already used for GEN_002/GEN_002A admission",
+      "trade_functions_called": "NONE (mt5.initialize(), mt5.account_info(), mt5.terminal_info(), mt5.symbol_info_tick(), mt5.copy_rates_from_pos() only -- no order_send/order_check/symbol_select)"
+    },
+    "broker_utc_offset_detection": {
+      "method": "src/mt5/broker_time.py::detect_broker_utc_offset_hours(), the repository's own established weekly-reopen-gap method -- reused verbatim, not reinvented.",
+      "detected_offset_hours": 3,
+      "convention": "server_time = true_utc + offset_hours"
+    },
+    "current_true_utc_at_acquisition_attempt": "approximately 2026-09-15T12:08:00Z (derived from the latest EURUSD M1 tick, server-time 2026-09-15 15:07/15:08, minus the detected +3h offset)",
+    "finding": "The fresh confirmation window opens at 2026-09-15T00:00:00Z. As of this acquisition attempt, true UTC time is only ~12:08 on 2026-09-15 -- i.e. the calendar day 2026-09-15 is only about half elapsed. NO fully completed UTC calendar day exists yet anywhere within [2026-09-15T00:00:00Z, now). The only fully-completed UTC day available from the broker (2026-09-14) falls entirely BEFORE the freshness boundary and is already consumed (latest_consumed_decision_timestamp=2026-09-14T23:59:59Z) -- admitting it would be a direct FRESHNESS_VIOLATION.",
+    "convention_applied": "This repository's own established GEN_002/FRESH_DATA_ADMISSION convention (POST_JULY31_CONSUMPTION_AUDIT/consumption_audit.json: 'Latest fully completed UTC day prior to the current date... current partial trading day is excluded') admits data only up to the latest FULLY COMPLETED UTC calendar day, precisely to avoid embedding a still-forming/partial day's incomplete price action into a frozen, immutable package. Applying that same convention here (the mission's own P1 instruction: 'Prefer a fully completed UTC day if that is the existing GEN package convention') means: no admittable day exists yet."
+  },
+
+  "decision": "STOP_TIMING_NOT_YET_AVAILABLE",
+  "decision_reasoning": "This is not a FRESHNESS_VIOLATION (P2) -- there is no overlap with any consumed interval; the requested start (2026-09-15T00:00:00Z) is correct and untouched. It is a plain timing fact: not enough real time has elapsed since the freshness boundary opened for even one complete UTC day of fresh EURUSD decision evidence to exist yet. Admitting a partial, still-accumulating day would either (a) require inventing a new mid-day boundary convention not authorized by any existing repository precedent, risking a package whose end-boundary looks arbitrary/adaptive rather than principled, or (b) violate the mission's own 'do not use the current incomplete candle/day' instruction if today's bars are treated as closed before the day itself is over. Per the mission's own P10 guidance ('If repository conventions do not provide a pre-existing checkpoint rule: STOP and return an owner-decision requirement rather than inventing repeated optional stopping'), the same fail-closed posture is applied here to the boundary-definition question: STOP rather than invent a partial-day admission convention unilaterally.",
+
+  "not_performed": [
+    "No dataset acquired or downloaded to disk (no raw CSV/parquet written)",
+    "No dataset_id created",
+    "No dataset manifest or admission_report created",
+    "No cross-timeframe parity check run (nothing to check)",
+    "No symbol metadata binding performed",
+    "No strategy detector executed",
+    "No occurrences generated",
+    "No economic outcomes inspected",
+    "No GBPUSD access",
+    "No holdout access"
+  ],
+
+  "recommendation": "Re-attempt this exact mission (P1 onward) no earlier than 2026-09-16T00:00:00Z UTC, at which point 2026-09-15 becomes the latest fully completed UTC day and is admittable in full as the first CONFIRM_001 decision-evidence day under the already-frozen preregistration. No change to the frozen protocol, control/treatment values, sample rule, or extension policy is implied or required by this delay.",
+
+  "warmup_context_note": "P4's WARMUP_CONTEXT_ONLY provision was evaluated: the repository already holds an admitted EURUSD H1 warmup package (SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731, ending strictly before 2026-08-01) from the HYP_002 mission. Whether that same pre-existing warmup context can be reused for HYP_001's fresh confirmation (rather than acquiring a new one) is a decision for the mission that actually generates the CONFIRM_001 population -- out of scope for this data-acquisition-only mission, which acquires no data at all this pass.",
+
+  "safety": {
+    "new_economic_runs": false,
+    "fresh_outcomes_accessed": false,
+    "holdout_accessed": false,
+    "holdout_run_count": 0,
+    "GBPUSD_accessed": false,
+    "parameter_search": false,
+    "strategy_semantics_changed": false,
+    "trade_functions_called": false,
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false
+  }
+}
