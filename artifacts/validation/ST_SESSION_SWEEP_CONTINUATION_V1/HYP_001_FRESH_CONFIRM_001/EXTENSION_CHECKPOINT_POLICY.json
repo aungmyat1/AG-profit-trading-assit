@@ -1,0 +1,138 @@
+{
+  "schema": "AG_SSC_HYP001_EXTENSION_CHECKPOINT_POLICY_V1",
+  "mission": "HYP_001 confirmation extension policy final freeze",
+  "generated_at_utc_note": "DATE_ONLY -- 2026-09-15",
+  "generated_at_utc": "2026-09-15",
+
+  "p0_preflight": {
+    "branch": "main",
+    "head": "7c1f94b244b3a674e604c19a3d262b7f6ff6325d",
+    "checkpoint_policy_hash_verified": "6dc24a17b1eba11bdd26e1c25dd30f802015fe6a2ae3afa771c204cc058843f1 (MATCH)",
+    "fresh_confirmation_runs": 0,
+    "holdout_run_count": 0,
+    "occurrence_N_inspected": false,
+    "fresh_outcomes_accessed": false,
+    "unrelated_modified_file_inventoried": {
+      "path": "state/proposal_ledger/proposal_ledger.json",
+      "note": "Still present as an unrelated working-tree change from a separate live/shadow process. Not staged, not modified, not committed by this mission (same as the prior two missions)."
+    }
+  },
+
+  "governance_reference": {
+    "preregistration_hash": "03ed06c68e169893b3172917f4cadf369d52e47f6b8ed5ea2c2f620a13388529",
+    "candidate_manifest_hash": "03dfed8ae45751bdbe3743e3a7c8ea7587c3a53fa73c6fdd418060f29dc0bb13",
+    "lineage_audit_hash": "ebc7a99f84646362acb7d73367089146bb6d0ecbc4ea7d6bf9612e0554969ba7",
+    "prior_checkpoint_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_FRESH_CONFIRM_001/ACQUISITION_CHECKPOINT_POLICY.json",
+    "owner_decision_this_mission": "APPROVE fixed extension blocks of 20 completed FX market weekdays -- resolves the EXTENSION_CHECKPOINT_REQUIRES_OWNER_FREEZE flag raised by the prior checkpoint artifact.",
+    "forward_reference_not_rewrite": "This document is an ADDITIVE governance artifact. It does not edit HYP_001_EXIT_CAPTURE_PREREGISTRATION.md's existing text (Sections 1-21 remain exactly as frozen and hashed above); it supplies the extension-block-size parameter that document's Section 7 left as a forward reference ('a later extension may append the next contiguous... interval under the SAME frozen protocol') without pinning a number."
+  },
+
+  "block_size_policy": {
+    "INITIAL_BLOCK": "20 completed FX market weekdays",
+    "EXTENSION_BLOCK_SIZE": "20 completed FX market weekdays",
+    "block_properties": ["chronological", "forward_only", "contiguous", "non_overlapping", "parameter_unchanged", "outcome_independent"],
+    "block_length_selection_rule": "Derived ONLY from the frozen calendar/data-availability convention already used for CONFIRM_001 (Mon-Fri weekday counting, 'latest fully completed UTC day' admission rule). Never derived from occurrence count, profitability, MFE, MAE, setup composition, or CONTROL/TREATMENT performance."
+  },
+
+  "maximum_horizon": {
+    "MAX_CONFIRMATION_BLOCKS": 3,
+    "MAX_CONFIRMATION_MARKET_WEEKDAYS": 60,
+    "blocks": [
+      {
+        "block_id": "CONFIRM_001",
+        "start_date": "2026-09-15",
+        "end_date": "2026-10-12",
+        "earliest_acquisition_timestamp": "2026-10-13T00:00:00Z",
+        "status": "WAITING_FOR_DATA",
+        "changed_by_this_mission": false,
+        "note": "Frozen by the prior ACQUISITION_CHECKPOINT_POLICY.json (7c1f94b). Not modified here."
+      },
+      {
+        "block_id": "CONFIRM_002",
+        "start_date": "2026-10-13",
+        "end_date": "2026-11-09",
+        "earliest_acquisition_timestamp": "2026-11-10T00:00:00Z",
+        "status": "NOT_YET_ELIGIBLE",
+        "derivation": "Next 20 eligible Mon-Fri calendar dates strictly after CONFIRM_001's end_date (2026-10-12), same counting rule as CONFIRM_001. Known full market closures encountered at actual acquisition time are excluded per the repository's frozen market-day handling rule and reported separately -- this enumeration is not compensated for strategy activity."
+      },
+      {
+        "block_id": "CONFIRM_003",
+        "start_date": "2026-11-10",
+        "end_date": "2026-12-07",
+        "earliest_acquisition_timestamp": "2026-12-08T00:00:00Z",
+        "status": "NOT_YET_ELIGIBLE",
+        "derivation": "Next 20 eligible Mon-Fri calendar dates strictly after CONFIRM_002's end_date (2026-11-09), same counting rule."
+      }
+    ],
+    "CONFIRM_004_prohibition": "No CONFIRM_004 or any further block may be created under HYP_001's current preregistration. The evidence horizon is capped at 60 completed FX market weekdays across exactly 3 blocks."
+  },
+
+  "cumulative_evidence_contract": {
+    "checkpoint_1_population": "CONFIRM_001 only",
+    "checkpoint_2_population": "CONFIRM_001 + CONFIRM_002",
+    "checkpoint_3_population": "CONFIRM_001 + CONFIRM_002 + CONFIRM_003",
+    "occurrence_identity": "Deterministic, reusing the existing unmodified v1.0.0 canonical occurrence/campaign identity scheme (per HYP_001_EXIT_CAPTURE_PREREGISTRATION.md Section 8). No occurrence may be duplicated across blocks -- each occurrence belongs to exactly one block by construction (its own entry_time falls within exactly one block's non-overlapping date range).",
+    "immutability": "No historical block may be modified after admission. Each block retains its own dataset fingerprint, manifest hash, and population hash independently; a later block's admission or evaluation never alters an earlier block's already-frozen artifacts.",
+    "cumulative_hash_requirement": "The cumulative population evaluated at each checkpoint (i.e. the union of all admitted blocks up to and including that checkpoint) must itself receive a deterministic hash at evaluation time, computed over the ordered union of the constituent blocks' own occurrence records -- to be produced by the mission that performs that checkpoint's evaluation, not fabricated here since no block has been admitted yet."
+  },
+
+  "checkpoint_decision_logic": {
+    "minimum_N": 20,
+    "rule": "At each predetermined checkpoint (after CONFIRM_001 alone, after CONFIRM_001+CONFIRM_002, after CONFIRM_001+CONFIRM_002+CONFIRM_003 -- evaluated in that order, never out of order): IF cumulative TREATMENT_N < 20 AND additional frozen blocks remain: INCONCLUSIVE_INSUFFICIENT_SAMPLE_AT_CHECKPOINT, continue to the next block. IF cumulative TREATMENT_N >= 20: apply the primary economic rule EXACTLY ONCE (PASS: TREATMENT_net_expectancy_R>0 AND delta_net_expectancy_R>0; FAIL: TREATMENT_net_expectancy_R<=0 OR delta_net_expectancy_R<=0), then STOP confirmation permanently -- do not continue to later blocks seeking a different result, even if further blocks remain unused.",
+    "economic_evaluation_count_max": 1,
+    "pre_adequacy_inspection_scope": "At a checkpoint below N=20 adequacy, only occurrence count and provenance required to determine adequacy may be inspected -- never economic PASS/FAIL, never net_expectancy_R, never delta."
+  },
+
+  "no_optional_stopping_rule": {
+    "statement": "Once a block's predetermined full market-day window begins acquisition, that ENTIRE window must be admitted before its checkpoint is evaluated -- a block is never truncated early because occurrence #20 (or any other count) is reached partway through it. Example: if occurrence #20 appears halfway through CONFIRM_002, CONFIRM_002 is still acquired and admitted in full through 2026-11-09 before the checkpoint-2 cumulative population is evaluated once.",
+    "purpose": "Prevents occurrence-driven endpoint selection -- the block boundary is fixed by the calendar alone, never by watching the occurrence counter during acquisition."
+  },
+
+  "final_inconclusive_rule": {
+    "condition": "Cumulative TREATMENT_N remains < 20 after CONFIRM_001 + CONFIRM_002 + CONFIRM_003 (the full 60-market-weekday horizon) have all been admitted and evaluated.",
+    "terminal_result": "INCONCLUSIVE_INSUFFICIENT_OCCURRENCE_RATE",
+    "prohibited_responses": [
+      "lower minimum N",
+      "add CONFIRM_004 or any further block",
+      "change runner_target_r away from 1.5R",
+      "modify setup rules (S1/S2/S3 admission, entry, stop, regime)",
+      "change any block's dates retroactively",
+      "use GBPUSD to supplement the sample",
+      "access holdout",
+      "reinterpret INCONCLUSIVE_INSUFFICIENT_OCCURRENCE_RATE as FAIL"
+    ],
+    "interpretation": "This terminal state means the hypothesis could not obtain its preregistered economic sample size within the prospectively frozen evidence horizon -- it is a statement about occurrence frequency, not about the exit-capture mechanism's economic merit. It does not validate, invalidate, or otherwise economically evaluate HYP_001."
+  },
+
+  "block_calendar_derivation_rule": {
+    "method": "Each block after the first is derived as: previous_block.end_date, then the NEXT 20 eligible completed Mon-Fri market dates strictly after it, under the identical frozen counting convention used for CONFIRM_001 (no FX-specific bank-holiday calendar precommitted at the mechanical-freeze stage; a date later found to be a known full market closure at actual acquisition time is excluded from that block's admitted set and reported separately per the repository's existing GEN_002/FRESH_DATA_ADMISSION gap-diagnostic convention -- it does not shift the block's calendar START/END dates already frozen here, and is never compensated for by strategy activity).",
+    "hardcoded_dates_note": "CONFIRM_002 and CONFIRM_003's start/end dates ARE mechanically derivable today without any outcome information (pure calendar arithmetic from CONFIRM_001's already-frozen end date) and are therefore enumerated explicitly above, exactly as the mission instructs -- not deferred."
+  },
+
+  "confirm_001_unchanged": {
+    "decision_start": "2026-09-15T00:00:00Z",
+    "target_end_date": "2026-10-12",
+    "earliest_acquisition_timestamp": "2026-10-13T00:00:00Z",
+    "changed": false,
+    "note": "This document governs extension behavior AFTER CONFIRM_001 only. CONFIRM_001's own already-frozen fields are reproduced here for reference and were not edited."
+  },
+
+  "outcome_firewall": {
+    "market_data_acquired": false,
+    "strategy_detector_executed": false,
+    "population_generated": false,
+    "occurrence_N_inspected": false,
+    "economics_inspected": false
+  },
+
+  "safety": {
+    "fresh_confirmation_runs": 0,
+    "holdout_run_count": 0,
+    "GBPUSD_accessed": false,
+    "parameter_search": false,
+    "strategy_semantics_changed": false,
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false
+  }
+}
