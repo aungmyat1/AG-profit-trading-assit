@@ -1,0 +1,33 @@
+# OWNER-APPROVED symbol-metadata manifest for the combined HYP_002 evaluation-input H1
+# series: artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_EVALUATION_INPUT/
+# EURUSD_H1_WARMUP_PLUS_GEN002.csv
+#
+# Authorized 2026-09-15 (AG SSC HYP_002 Stage-2 Attempt-2, explicit owner decision:
+# "acquire and use pre-2026-08-01 EURUSD H1 history strictly as WARMUP/STATE-
+# INITIALIZATION CONTEXT... does NOT expand the GEN_002 decision/economic evaluation
+# interval"). This is a NEW manifest, scoped to this ONE combined file's own
+# dataset_fingerprint -- it supersedes neither EURUSD_H1_symbol_metadata.yaml (GEN_001)
+# nor EURUSD_H1_GEN_002_symbol_metadata.yaml (GEN_002 decision-window-only H1, Stage-2
+# Attempt-1); each remains scoped to its own file.
+#
+# The combined file is a deterministic, reproducible concatenation of two already-
+# separately-verified, immutable sources -- never a re-acquisition:
+#   1. data/research/ssc_fresh_dev/SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731/
+#      raw/EURUSD_H1.csv (WARMUP_CONTEXT_ONLY, 1128 bars, 2026-05-27T18:00Z -> 2026-07-31T17:00Z)
+#   2. data/research/ssc_fresh_dev/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914/
+#      raw/EURUSD_H1.csv (decision-window H1, 744 bars, 2026-08-03T00:00Z -> 2026-09-14T23:00Z,
+#      FULL_PASS admission, unchanged)
+# Strictly increasing timestamps verified across the join boundary, zero overlap,
+# zero duplication.
+#
+# tick_size = 0.00001: same value as every other approved EURUSD manifest in this repo
+# (same apparent broker family, 5-decimal-digit quotes throughout both source files).
+
+dataset_id: EURUSD_H1_WARMUP_PLUS_GEN002_20260528_20260914
+symbol: EURUSD
+tick_size: 0.00001
+metadata_scope: HISTORICAL_ANALYSIS_ONLY
+authority: OWNER_APPROVED_DATASET_MANIFEST
+approval_date: "2026-09-15"
+dataset_fingerprint: "sha256:0ce051944a2ff8e58c362aabf4ab25012b0936ddaf260108f5a4aca2eb46430f"
+source_file: "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_EVALUATION_INPUT/EURUSD_H1_WARMUP_PLUS_GEN002.csv"

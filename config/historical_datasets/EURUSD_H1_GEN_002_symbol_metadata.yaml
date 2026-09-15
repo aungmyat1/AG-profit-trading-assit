@@ -1,0 +1,31 @@
+# OWNER-APPROVED symbol-metadata manifest for the GEN_002 EURUSD H1 file:
+# data/research/ssc_fresh_dev/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914/raw/EURUSD_H1.csv
+#
+# Authorized 2026-09-15 (AG SSC HYP_002 Stage-2 G2 population generation, explicit owner
+# decision recorded in-session via AskUserQuestion -- "Authorize new manifest,
+# tick_size=0.00001") -- new manifest, scoped to this ONE dataset file's own
+# dataset_fingerprint, following the exact precedent and schema of
+# config/historical_datasets/EURUSD_H1_symbol_metadata.yaml (the GEN_001-era manifest,
+# approved 2026-09-11 the same way). That manifest does NOT cover this file --
+# historical_replay/symbol_metadata_manifest.py's validate_manifest_for_dataset binds by
+# exact dataset_fingerprint, and GEN_002's H1 file is a different file (different
+# acquisition window, different broker pull mechanism -- MetaTrader5 Python
+# copy_rates_range, not the "Export" menu CSV) -- so a new manifest was required rather
+# than reusing or broadening the existing one.
+#
+# tick_size = 0.00001: same value as every other currently-approved EURUSD manifest of
+# this schema (EURUSD_H1_symbol_metadata.yaml, EURUSD_M5_...yaml) -- GEN_002's EURUSD
+# admission evidence shows 5-decimal-digit quotes (e.g. 1.15442), consistent with the
+# same tick size; same apparent broker family (Vantage Markets) as the prior approvals.
+
+dataset_id: EURUSD_H1_SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914
+symbol: EURUSD
+tick_size: 0.00001
+metadata_scope: HISTORICAL_ANALYSIS_ONLY
+authority: OWNER_APPROVED_DATASET_MANIFEST
+approval_date: "2026-09-15"
+# sha256 of the exact source file, independently recomputed and verified in this same
+# session (matches dataset_manifest.json's per_file EURUSD_H1 sha256 and the
+# FRESH_DATA_ADMISSION artifact's EURUSD_status.timeframes.H1.sha256):
+dataset_fingerprint: "sha256:76adad8eccf378ea10004bb70aa2d91a2d5fe9e4aaab1748ea81c72657deaa96"
+source_file: "data/research/ssc_fresh_dev/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914/raw/EURUSD_H1.csv"

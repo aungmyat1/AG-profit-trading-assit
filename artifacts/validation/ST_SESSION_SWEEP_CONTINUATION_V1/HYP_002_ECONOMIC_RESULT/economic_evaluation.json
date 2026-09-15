@@ -1,0 +1,99 @@
+{
+  "by_setup": {
+    "S1": {
+      "average_loss_R": "NOT_EVALUATED",
+      "average_win_R": "NOT_EVALUATED",
+      "breakevens": 0,
+      "cost_status": "NOT_EVALUATED",
+      "gross_expectancy_R": "NOT_EVALUATED",
+      "gross_total_R": 0.0,
+      "losses": 0,
+      "max_consecutive_losses": 0,
+      "max_drawdown_R": "NOT_EVALUATED",
+      "net_expectancy_R": "NOT_EVALUATED",
+      "net_total_R": "NOT_EVALUATED",
+      "profit_factor": "NOT_EVALUATED",
+      "sample_size": 0,
+      "win_rate": "NOT_EVALUATED",
+      "wins": 0
+    },
+    "S2": {
+      "average_loss_R": "NOT_EVALUATED",
+      "average_win_R": "NOT_EVALUATED",
+      "breakevens": 0,
+      "cost_status": "NOT_EVALUATED",
+      "gross_expectancy_R": "NOT_EVALUATED",
+      "gross_total_R": 0.0,
+      "losses": 0,
+      "max_consecutive_losses": 0,
+      "max_drawdown_R": "NOT_EVALUATED",
+      "net_expectancy_R": "NOT_EVALUATED",
+      "net_total_R": "NOT_EVALUATED",
+      "profit_factor": "NOT_EVALUATED",
+      "sample_size": 0,
+      "win_rate": "NOT_EVALUATED",
+      "wins": 0
+    },
+    "S3": {
+      "average_loss_R": "NOT_EVALUATED",
+      "average_win_R": "NOT_EVALUATED",
+      "breakevens": 0,
+      "cost_status": "NOT_EVALUATED",
+      "gross_expectancy_R": "NOT_EVALUATED",
+      "gross_total_R": 0.0,
+      "losses": 0,
+      "max_consecutive_losses": 0,
+      "max_drawdown_R": "NOT_EVALUATED",
+      "net_expectancy_R": "NOT_EVALUATED",
+      "net_total_R": "NOT_EVALUATED",
+      "profit_factor": "NOT_EVALUATED",
+      "sample_size": 0,
+      "win_rate": "NOT_EVALUATED",
+      "wins": 0
+    }
+  },
+  "control": {
+    "breakevens": 0,
+    "definition": "S1+S2+S3",
+    "gross_expectancy_R": "NOT_EVALUATED",
+    "losses": 0,
+    "max_drawdown_R": "NOT_EVALUATED",
+    "n": 0,
+    "net_expectancy_R": "NOT_EVALUATED",
+    "net_total_R": "NOT_EVALUATED",
+    "profit_factor": "NOT_EVALUATED",
+    "win_rate": "NOT_EVALUATED",
+    "wins": 0
+  },
+  "dataset_fingerprint": "f8108d37448cae8f9fe2f16a9905abdf8991ac916cf4a497b11eaca2debbf5aa",
+  "decision_rule_applied": "PASS: N>=10 AND delta>0 AND TREATMENT_net>0 | FAIL: N>=10 AND (delta<=0 OR TREATMENT_net<=0) | INCONCLUSIVE: N<10",
+  "delta_net_expectancy_R": null,
+  "hyp002_result": "INCONCLUSIVE",
+  "hypothesis_id": "HYP_002_SETUP_SELECTIVITY",
+  "population_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "preregistration_hash": "4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7",
+  "secondary_diagnostics": {
+    "bootstrap_delta_ci_90_NONDECISION": {
+      "ci_90": null,
+      "note": "population empty"
+    },
+    "median_net_R_control": null,
+    "median_net_R_treatment": null,
+    "note": "SECONDARY / NON-DECISION diagnostics only -- do not alter hyp002_result.",
+    "std_net_R_control": null,
+    "std_net_R_treatment": null
+  },
+  "treatment": {
+    "breakevens": 0,
+    "definition": "S1+S2 only (S3 rejected)",
+    "gross_expectancy_R": "NOT_EVALUATED",
+    "losses": 0,
+    "max_drawdown_R": "NOT_EVALUATED",
+    "n": 0,
+    "net_expectancy_R": "NOT_EVALUATED",
+    "net_total_R": "NOT_EVALUATED",
+    "profit_factor": "NOT_EVALUATED",
+    "win_rate": "NOT_EVALUATED",
+    "wins": 0
+  }
+}

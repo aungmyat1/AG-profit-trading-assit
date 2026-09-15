@@ -4,8 +4,8 @@
   "strategy_version": "1.0.0",
   "hypothesis_id": "HYP_002_SETUP_SELECTIVITY",
 
-  "active_stage": "STAGE_1",
-  "active_gate": "G1_AUDIT",
+  "active_stage": "STAGE_2",
+  "active_gate": "TERMINAL_FAIL",
 
   "dataset": {
     "package_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914",
@@ -16,8 +16,8 @@
 
   "artifacts": {
     "preregistration": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_PREREGISTRATION/HYP_002_SETUP_SELECTIVITY_PREREGISTRATION.md",
-    "population": null,
-    "economic_result": null,
+    "population": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION/canonical_population.json",
+    "economic_result": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_ECONOMIC_RESULT/economic_evaluation.json",
     "robustness": null,
     "candidate": null,
     "holdout": null,
@@ -27,8 +27,8 @@
 
   "hashes": {
     "preregistration": "4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7",
-    "population": null,
-    "economic_result": null,
+    "population": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "economic_result": "ab74a3c114141eea405ee792f1ea3fbeb81ab8ede54b947561d5fdd46df0ae42",
     "robustness": null,
     "candidate": null,
     "holdout": null,
@@ -54,5 +54,43 @@
     "sample_adequacy_rule": "TREATMENT_N >= 10",
     "decision_rule": "PASS: TREATMENT_N>=10 AND delta_net_expectancy_R>0 AND TREATMENT_net_expectancy_R>0 | FAIL: TREATMENT_N>=10 AND (delta<=0 OR TREATMENT_net_expectancy_R<=0) | INCONCLUSIVE: TREATMENT_N<10",
     "source": "owner-supplied mechanism definition, this session"
-  }
+  },
+
+  "stage2_attempt_1": {
+    "population_id": "HYP_002_GEN_002_EURUSD_POPULATION_V1",
+    "dates_admitted": 1,
+    "decision_cycles": 2,
+    "control_n": 0,
+    "treatment_n": 0,
+    "hyp002_result": "INCONCLUSIVE",
+    "classification": "INCONCLUSIVE_DATA_CONTEXT_INADEQUATE",
+    "classification_reason": "INSUFFICIENT_PREWINDOW_H1_WARMUP",
+    "classification_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_ECONOMIC_RESULT/ATTEMPT_1_CLASSIFICATION.json",
+    "artifacts_immutable_and_preserved": true,
+    "terminal": true
+  },
+
+  "stage2_attempt_2": {
+    "population_id": "HYP_002_GEN_002_EURUSD_POPULATION_ATTEMPT_2",
+    "population_hash": "cf098f9a1d6459618d6c775a087b5cb443b7f1f7d915f650eeb8268381c2eb94",
+    "warmup_context_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_WARMUP_CONTEXT/WARMUP_CONTEXT_ADMISSION.json",
+    "evaluation_input_manifest": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_EVALUATION_INPUT/evaluation_input_manifest.json",
+    "evaluation_input_manifest_hash": "0817b78ce0976eefbe52a9ae8134c898e63cf162c008f70191593ecaa98ae52b",
+    "population_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION_ATTEMPT_2/canonical_population.json",
+    "population_manifest": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION_ATTEMPT_2/population_manifest.json",
+    "economic_result": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_ECONOMIC_RESULT_ATTEMPT_2/economic_evaluation.json",
+    "dates_admitted": 43,
+    "decision_cycles": 86,
+    "reproducibility": "PASS (identical population hash across two independent runs)",
+    "control_n": 21,
+    "control_net_expectancy_R": -0.40753748067260065,
+    "treatment_n": 11,
+    "treatment_net_expectancy_R": -0.35642188306694594,
+    "delta_net_expectancy_R": 0.051115597605654706,
+    "hyp002_result": "FAIL",
+    "fail_reason": "TREATMENT_N>=10 and TREATMENT_net_expectancy_R<=0 (delta is positive but TREATMENT itself remains net-negative -- 'better but still negative' is FAIL under the frozen decision rule)",
+    "terminal": true
+  },
+
+  "hyp002_final_status": "FALSIFIED_ON_GEN_002_EVIDENCE"
 }

@@ -1,0 +1,49 @@
+{
+  "admission_id": "AG_SSC_HYP002_H1_WARMUP_CONTEXT_ADMISSION_V1",
+  "role": "WARMUP_CONTEXT_ONLY",
+  "owner_authorization": "2026-09-15, explicit owner decision this session: acquire and use pre-2026-08-01 EURUSD H1 history strictly as WARMUP/STATE-INITIALIZATION CONTEXT; does NOT expand the GEN_002 decision/economic evaluation interval",
+  "symbol": "EURUSD",
+  "timeframe": "H1",
+  "source": {
+    "broker": "VantageMarkets-Demo",
+    "environment": "DEMO",
+    "source_platform": "MT5",
+    "source_transport": "MetaTrader5_Python_DIRECT",
+    "terminal_build": 6182,
+    "metatrader5_package_version": "5.0.5735",
+    "trading_function_called": false
+  },
+  "first_timestamp": "2026-05-27T18:00:00Z",
+  "last_timestamp": "2026-07-31T17:00:00Z",
+  "closed_bar_count": 1128,
+  "raw_file": "data/research/ssc_fresh_dev/SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731/raw/EURUSD_H1.csv",
+  "raw_file_sha256": "89e6d71d0e274801a4b5bf1f78333f6632ab091e51a9bf6140e474f42134b533",
+  "dataset_fingerprint": "sha256:89e6d71d0e274801a4b5bf1f78333f6632ab091e51a9bf6140e474f42134b533",
+  "decision_window_start": "2026-08-01T00:00:00Z",
+  "strategy_warmup_requirement": {
+    "constant": "STRUCTURE_WARMUP_H1_BARS",
+    "value": 1000,
+    "unit": "ACTUAL_CLOSED_H1_BARS_NOT_CALENDAR_HOURS",
+    "margin": 128
+  },
+  "integrity": {
+    "duplicates": 0,
+    "non_monotonic": 0,
+    "invalid_ohlc": 0,
+    "expected_weekend_gaps": 9,
+    "unexpected_gaps": 0,
+    "bars_at_or_after_decision_window_start": 0
+  },
+  "usage_restrictions": [
+    "CONTEXT_ONLY -- H1 structure/bias state initialization only",
+    "MUST NOT create occurrences before decision_window_start",
+    "MUST NOT create trades before decision_window_start",
+    "MUST NOT contribute economic outcomes",
+    "MUST NOT change hypothesis parameters or setup definitions",
+    "MUST NOT change the GEN_002 decision interval",
+    "MUST NOT access holdout",
+    "MUST NOT be used to initialize state for any decision using bars at/after that decision's own timestamp"
+  ],
+  "overall_admission": "FULL_PASS",
+  "source_manifest": "data/research/ssc_fresh_dev/SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731/warmup_context_manifest.json"
+}

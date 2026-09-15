@@ -1,0 +1,57 @@
+{
+  "schema": "AG_SSC_HYP002_EVALUATION_INPUT_MANIFEST_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "hypothesis_id": "HYP_002_SETUP_SELECTIVITY",
+  "attempt": 2,
+
+  "decision_interval": {
+    "start": "2026-08-01T00:00:00Z",
+    "end": "2026-09-14T23:59:59Z",
+    "unchanged_from_attempt_1": true
+  },
+
+  "gen_002_decision_dataset_fingerprint": "f8108d37448cae8f9fe2f16a9905abdf8991ac916cf4a497b11eaca2debbf5aa",
+  "gen_002_admission_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/FRESH_DATA_ADMISSION/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914_ADMISSION.json",
+
+  "warmup_context_fingerprint": "sha256:89e6d71d0e274801a4b5bf1f78333f6632ab091e51a9bf6140e474f42134b533",
+  "warmup_context_admission_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_WARMUP_CONTEXT/WARMUP_CONTEXT_ADMISSION.json",
+  "warmup_closed_h1_bars": 1128,
+  "warmup_role": "WARMUP_CONTEXT_ONLY",
+
+  "combined_h1_evaluation_series": {
+    "file": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_EVALUATION_INPUT/EURUSD_H1_WARMUP_PLUS_GEN002.csv",
+    "sha256": "0ce051944a2ff8e58c362aabf4ab25012b0936ddaf260108f5a4aca2eb46430f",
+    "total_rows": 1872,
+    "warmup_rows": 1128,
+    "decision_window_rows": 744,
+    "first_timestamp": "2026-05-27T18:00:00Z",
+    "last_timestamp": "2026-09-14T23:00:00Z",
+    "construction": "deterministic concatenation of two already-verified immutable sources (warmup raw file + GEN_002's own EURUSD_H1.csv), strictly increasing timestamps verified across the join boundary, zero overlap, zero duplication -- not a re-acquisition"
+  },
+
+  "symbol_metadata_manifest": "config/historical_datasets/EURUSD_H1_WARMUP_PLUS_GEN002_symbol_metadata.yaml",
+  "symbol_metadata_fingerprint": "sha256:0ce051944a2ff8e58c362aabf4ab25012b0936ddaf260108f5a4aca2eb46430f",
+
+  "preregistration_hash": "4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7",
+  "parent_config_hash": "e0cf113b2e1e6b82fedee02e744615aa8f30ff7962355c331cbbdfd581fdcfbf",
+  "parent_raw_sha256": "c92311c3c1789a2ea01495a82a1fbcba1d877a8fb4d9ac46732f39e0b81970a9",
+
+  "readiness_check": {
+    "module": "historical_replay.warmup_readiness",
+    "method": "actual_closed_h1_bar_count",
+    "required_bars": 1000,
+    "regression_tests": "tests/test_historical_replay_warmup_readiness.py",
+    "supersedes": "elapsed-calendar-hours approximation used in Stage-2 Attempt-1 (STRUCTURE_WARMUP_H1_BARS interpreted as 1000 hours, not 1000 bars)"
+  },
+
+  "safety": {
+    "occurrences_before_decision_window": false,
+    "trades_before_decision_window": false,
+    "economic_outcomes_from_warmup": false,
+    "setup_definitions_changed": false,
+    "hypothesis_parameters_changed": false,
+    "decision_interval_expanded": false,
+    "gbpusd_used": false,
+    "holdout_accessed": false
+  }
+}

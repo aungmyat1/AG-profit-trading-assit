@@ -1,0 +1,43 @@
+{
+  "closed_bar_count": 1128,
+  "dataset_fingerprint": "sha256:89e6d71d0e274801a4b5bf1f78333f6632ab091e51a9bf6140e474f42134b533",
+  "decision_window_start": "2026-08-01T00:00:00Z",
+  "first_timestamp": "2026-05-27T18:00:00Z",
+  "integrity": {
+    "bars_at_or_after_decision_window_start": 0,
+    "duplicates": 0,
+    "expected_weekend_gaps": 9,
+    "invalid_ohlc": 0,
+    "non_monotonic": 0,
+    "unexpected_gaps": 0
+  },
+  "last_timestamp": "2026-07-31T17:00:00Z",
+  "package_id": "SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731",
+  "raw_file": "data/research/ssc_fresh_dev/SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731/raw/EURUSD_H1.csv",
+  "raw_file_sha256": "89e6d71d0e274801a4b5bf1f78333f6632ab091e51a9bf6140e474f42134b533",
+  "role": "WARMUP_CONTEXT_ONLY",
+  "source": {
+    "broker": "VantageMarkets-Demo",
+    "environment": "DEMO",
+    "metatrader5_package_version": "5.0.5735",
+    "source_platform": "MT5",
+    "source_transport": "MetaTrader5_Python_DIRECT",
+    "terminal_build": 6182,
+    "trading_function_called": false
+  },
+  "strategy_warmup_requirement": {
+    "constant": "STRUCTURE_WARMUP_H1_BARS",
+    "margin": 128,
+    "unit": "ACTUAL_CLOSED_H1_BARS_NOT_CALENDAR_HOURS",
+    "value": 1000
+  },
+  "symbol": "EURUSD",
+  "timeframe": "H1",
+  "usage_restrictions": [
+    "CONTEXT_ONLY -- H1 structure/bias state initialization only",
+    "MUST NOT create occurrences before decision_window_start",
+    "MUST NOT create trades before decision_window_start",
+    "MUST NOT contribute economic outcomes",
+    "MUST NOT be used to initialize state for any decision using bars at/after that decision's own timestamp"
+  ]
+}

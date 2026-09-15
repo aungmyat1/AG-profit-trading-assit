@@ -1,0 +1,104 @@
+{
+  "attempt": 2,
+  "by_setup": {
+    "S1": {
+      "average_loss_R": -0.3890795141517203,
+      "average_win_R": 0.6241302323025973,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.08511659021542502,
+      "gross_total_R": -0.8511659021542501,
+      "losses": 7,
+      "max_consecutive_losses": 4,
+      "max_drawdown_R": 2.4108496494089167,
+      "net_expectancy_R": -0.36915369334684633,
+      "net_total_R": -3.6915369334684636,
+      "profit_factor": 0.687480002270788,
+      "sample_size": 10,
+      "win_rate": 0.3,
+      "wins": 3
+    },
+    "S2": {
+      "average_loss_R": -0.1850453609856399,
+      "average_win_R": "NOT_EVALUATED",
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.1850453609856399,
+      "gross_total_R": -0.1850453609856399,
+      "losses": 1,
+      "max_consecutive_losses": 1,
+      "max_drawdown_R": 0.1850453609856399,
+      "net_expectancy_R": -0.2291037802679415,
+      "net_total_R": -0.2291037802679415,
+      "profit_factor": "UNDEFINED_NO_WINS",
+      "sample_size": 1,
+      "win_rate": 0.0,
+      "wins": 0
+    },
+    "S3": {
+      "average_loss_R": -0.5541654075855458,
+      "average_win_R": 0.047283166691912494,
+      "breakevens": 2,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.26289775378519914,
+      "gross_total_R": -2.6289775378519913,
+      "losses": 5,
+      "max_consecutive_losses": 3,
+      "max_drawdown_R": 2.6289775378519913,
+      "net_expectancy_R": -0.4637646380388209,
+      "net_total_R": -4.637646380388209,
+      "profit_factor": 0.05119392085253549,
+      "sample_size": 10,
+      "win_rate": 0.3,
+      "wins": 3
+    }
+  },
+  "control": {
+    "breakevens": 2,
+    "definition": "S1+S2+S3",
+    "gross_expectancy_R": -0.17453280004723246,
+    "losses": 13,
+    "max_drawdown_R": 4.395036896274873,
+    "n": 21,
+    "net_expectancy_R": -0.40753748067260065,
+    "net_total_R": -8.558287094124614,
+    "profit_factor": 0.3546554059750656,
+    "win_rate": 0.2857142857142857,
+    "wins": 6
+  },
+  "dataset_fingerprint": "f8108d37448cae8f9fe2f16a9905abdf8991ac916cf4a497b11eaca2debbf5aa",
+  "decision_rule_applied": "PASS: N>=10 AND delta>0 AND TREATMENT_net>0 | FAIL: N>=10 AND (delta<=0 OR TREATMENT_net<=0) | INCONCLUSIVE: N<10",
+  "delta_net_expectancy_R": 0.051115597605654706,
+  "hyp002_result": "FAIL",
+  "hypothesis_id": "HYP_002_SETUP_SELECTIVITY",
+  "population_hash": "cf098f9a1d6459618d6c775a087b5cb443b7f1f7d915f650eeb8268381c2eb94",
+  "preregistration_hash": "4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7",
+  "secondary_diagnostics": {
+    "bootstrap_delta_ci_90_NONDECISION": {
+      "ci_90": [
+        -0.11162093645701343,
+        0.2341129643914157
+      ],
+      "median_delta": 0.04771938485939027,
+      "n_resamples": 2000
+    },
+    "median_net_R_control": -0.32258228229407104,
+    "median_net_R_treatment": -0.32258228229407104,
+    "note": "SECONDARY / NON-DECISION diagnostics only -- do not alter hyp002_result.",
+    "std_net_R_control": 0.4957551398766999,
+    "std_net_R_treatment": 0.5665031562927587
+  },
+  "treatment": {
+    "breakevens": 0,
+    "definition": "S1+S2 only (S3 rejected)",
+    "gross_expectancy_R": -0.0942010239218082,
+    "losses": 8,
+    "max_drawdown_R": 2.595895010394557,
+    "n": 11,
+    "net_expectancy_R": -0.35642188306694594,
+    "net_total_R": -3.920640713736405,
+    "profit_factor": 0.6437424998768471,
+    "win_rate": 0.2727272727272727,
+    "wins": 3
+  }
+}

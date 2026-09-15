@@ -1,0 +1,23 @@
+{
+  "schema": "AG_SSC_HYP002_ATTEMPT_CLASSIFICATION_V1",
+  "attempt": 1,
+  "classification": "INCONCLUSIVE_DATA_CONTEXT_INADEQUATE",
+  "reason": "INSUFFICIENT_PREWINDOW_H1_WARMUP",
+  "explicit_non_interpretation": "N=0 is NOT evidence that no market setups existed in the GEN_002 window. It reflects that the frozen H1-bias resolver could not compute a bias (confidence=UNAVAILABLE) for either admitted decision cycle, because GEN_002's own H1 file (scoped strictly to its 45-day fresh window) supplied far fewer than the required 1000 actual closed H1 bars before either decision. This is a data-context defect in Attempt 1, not a market observation.",
+  "referenced_artifacts_unmodified": [
+    {
+      "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION/canonical_population.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION/population_manifest.json",
+      "sha256": "3e31d2d8284a942c62ed03f83c570ef83496d7af3b2a44f8c90a233c027d61c8"
+    },
+    {
+      "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_ECONOMIC_RESULT/economic_evaluation.json",
+      "sha256": "ab74a3c114141eea405ee792f1ea3fbeb81ab8ede54b947561d5fdd46df0ae42"
+    }
+  ],
+  "preservation_note": "This file is additive only -- it does not edit, replace, or delete any Attempt-1 artifact. All three referenced files and their hashes are unchanged from the original Stage-2 report.",
+  "remediation": "Stage-2 Attempt 2 (separate artifacts under HYP_002_WARMUP_CONTEXT/, HYP_002_EVALUATION_INPUT/) acquires owner-approved pre-window H1 warmup context and corrects the readiness check from an elapsed-calendar-hours approximation to actual closed H1 bar count (historical_replay.warmup_readiness), per explicit owner authorization this session."
+}
