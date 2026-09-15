@@ -13,6 +13,7 @@ new type) so downstream code (symbol_metadata_manifest, h1_bias) sees an identic
 from __future__ import annotations
 
 import csv
+import math
 from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
 
@@ -50,6 +51,8 @@ def load_utc_export_csv(path: str, symbol: str, timeframe: str) -> Tuple[List[Ca
         if b <= a:
             raise IngestionError("DUPLICATE_OR_UNORDERED_TIMESTAMP", f"{path}: {a} -> {b} not strictly increasing")
     for ts, o, h, l, c, _tv in rows:
+        if not all(math.isfinite(v) for v in (o, h, l, c)):
+            raise IngestionError("NON_FINITE_OHLC", f"{path}: {ts} open={o} high={h} low={l} close={c}")
         if not (h >= max(o, c) and l <= min(o, c) and h >= l):
             raise IngestionError("INVALID_OHLC", f"{path}: {ts} open={o} high={h} low={l} close={c}")
 

@@ -92,5 +92,14 @@
     "terminal": true
   },
 
-  "hyp002_final_status": "FALSIFIED_ON_GEN_002_EVIDENCE"
+  "hyp002_final_status": "FALSIFIED_ON_GEN_002_EVIDENCE",
+
+  "hyp002_closure": {
+    "hypothesis_status": "VALIDATED_NEGATIVE",
+    "closure_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_CLOSURE/hypothesis_closure_record.json",
+    "gen_002_role_after_closure": "HYPOTHESIS_GENERATION_ONLY_AFTER_HYP002",
+    "failure_decomposition_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_FAILURE_DECOMPOSITION/failure_decomposition_report.json",
+    "hyp003_decision_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_003_DECISION/hyp003_decision.json",
+    "note": "HYP_002 is permanently closed as negative evidence and must not be rerun, reinterpreted via secondary diagnostics, or continued through parameter tuning."
+  }
 }

@@ -1,0 +1,299 @@
+{
+  "entry_stop_exit_mechanism_tags_descriptive": {
+    "BAD_ENTRY": 3,
+    "EXIT_CAPTURE": 3,
+    "FRICTION_DOMINANCE": 6,
+    "NO_SINGLE_DOMINANT_MECHANISM": 8,
+    "STOP_GEOMETRY": 1
+  },
+  "exit_capture_diagnostic": {
+    "capture_ratio_net_over_mfe_distribution": {
+      "max": 0.4385964912280241,
+      "mean": -1.3982360467043944,
+      "median": -0.8943014705886466,
+      "min": -5.918589206085519,
+      "n": 20,
+      "std": 1.6634142037171498
+    },
+    "dominant_final_state": [
+      "RESOLVED_SESSION_EXIT",
+      15
+    ],
+    "mfe_R_distribution": {
+      "max": 1.3474890326725555,
+      "mean": 0.4710397638871432,
+      "median": 0.313186339725669,
+      "min": -0.82032030683058,
+      "n": 21,
+      "std": 0.49316083099583774
+    },
+    "mfe_minus_realized_net_R_distribution": {
+      "max": 1.6881828955440177,
+      "mean": 0.8785772445597438,
+      "median": 0.7952394291178358,
+      "min": 0.25988731935881615,
+      "n": 21,
+      "std": 0.46144623985151
+    },
+    "note": "MECHANISM DIAGNOSTIC ONLY. No alternative target tested/searched/selected.",
+    "runner_target_r_frozen": 3.0,
+    "thresholds": {
+      "mfe_ge_0.5R": {
+        "finished_breakeven": 0,
+        "finished_negative": 5,
+        "finished_positive": 2,
+        "frac_negative": 0.7142857142857143,
+        "frac_positive": 0.2857142857142857,
+        "n": 7
+      },
+      "mfe_ge_1.0R": {
+        "finished_breakeven": 0,
+        "finished_negative": 3,
+        "finished_positive": 2,
+        "frac_negative": 0.6,
+        "frac_positive": 0.4,
+        "n": 5
+      },
+      "mfe_ge_1.5R": {
+        "n": 0
+      },
+      "mfe_ge_2.0R": {
+        "n": 0
+      },
+      "mfe_ge_3.0R": {
+        "n": 0
+      }
+    }
+  },
+  "friction_decomposition": {
+    "fraction_of_negative_net_attributable_to_friction": 0.5717380404884892,
+    "gross_expectancy_R": -0.17453280004723246,
+    "gross_itself_negative": true,
+    "interpretation": "Gross expectancy is already negative (--0.1745R); friction (mean 0.2330R/trade) adds further drag on top of an already-losing gross edge. This is NOT a pure friction-dominance case (gross positive, costs erase it) -- it is a hybrid: a weak/negative raw edge compounded by real transaction costs.",
+    "mean_friction_R": 0.23300468062536822,
+    "net_expectancy_R": -0.40753748067260065,
+    "total_friction_R": 4.8930982931327325
+  },
+  "population_summary": {
+    "N": 21,
+    "all_long_direction": true,
+    "final_state_counts": {
+      "RESOLVED_PARTIAL_BE": 2,
+      "RESOLVED_SESSION_EXIT": 15,
+      "RESOLVED_SL": 4
+    }
+  },
+  "regime_context_diagnostic": {
+    "by_direction": {
+      "LONG": {
+        "N": 21,
+        "net_R_total": -8.558287094124614,
+        "net_expectancy_R": -0.40753748067260065,
+        "status": "SUFFICIENTLY_POPULATED_DESCRIPTIVE"
+      }
+    },
+    "by_h1_bias": {
+      "BULLISH": {
+        "N": 21,
+        "net_R_total": -8.558287094124614,
+        "net_expectancy_R": -0.40753748067260065,
+        "status": "SUFFICIENTLY_POPULATED_DESCRIPTIVE"
+      }
+    },
+    "by_regime": {
+      "RANGE": {
+        "N": 20,
+        "net_R_total": -8.329183313856673,
+        "net_expectancy_R": -0.41645916569283364,
+        "status": "SUFFICIENTLY_POPULATED_DESCRIPTIVE"
+      },
+      "TREND_UP": {
+        "N": 1,
+        "net_R_total": -0.2291037802679415,
+        "net_expectancy_R": -0.2291037802679415,
+        "status": "DESCRIPTIVE_ONLY"
+      }
+    },
+    "by_session_pair": {
+      "ASIAN_LONDON": {
+        "N": 13,
+        "net_R_total": -4.763996914317462,
+        "net_expectancy_R": -0.3664613011013433,
+        "status": "SUFFICIENTLY_POPULATED_DESCRIPTIVE"
+      },
+      "LONDON_NEWYORK": {
+        "N": 8,
+        "net_R_total": -3.794290179807151,
+        "net_expectancy_R": -0.4742862724758939,
+        "status": "DESCRIPTIVE_ONLY"
+      }
+    },
+    "by_setup": {
+      "S1": {
+        "N": 10,
+        "net_R_total": -3.6915369334684636,
+        "net_expectancy_R": -0.3691536933468464,
+        "status": "SUFFICIENTLY_POPULATED_DESCRIPTIVE"
+      },
+      "S2": {
+        "N": 1,
+        "net_R_total": -0.2291037802679415,
+        "net_expectancy_R": -0.2291037802679415,
+        "status": "DESCRIPTIVE_ONLY"
+      },
+      "S3": {
+        "N": 10,
+        "net_R_total": -4.637646380388209,
+        "net_expectancy_R": -0.46376463803882084,
+        "status": "SUFFICIENTLY_POPULATED_DESCRIPTIVE"
+      }
+    },
+    "note": "All subgroups here are small relative to typical adequacy thresholds; treat every row as DESCRIPTIVE_ONLY unless explicitly marked otherwise. No new thresholds mined."
+  },
+  "setup_attribution": {
+    "S1": {
+      "N": 10,
+      "breakevens": 0,
+      "final_state_counts": {
+        "RESOLVED_SESSION_EXIT": 8,
+        "RESOLVED_SL": 2
+      },
+      "gross_R_total": -0.8511659021542501,
+      "gross_expectancy_R": -0.08511659021542502,
+      "losses": 8,
+      "mae_R_stats": {
+        "max": -0.8228146858214016,
+        "mean": -0.9089083417054928,
+        "median": -0.8777628379952291,
+        "min": -1.0888371430736867,
+        "n": 10,
+        "std": 0.08753961020086537
+      },
+      "mean_friction_R": 0.2840371031314214,
+      "median_net_R": -0.3256772172890757,
+      "mfe_R_stats": {
+        "max": 1.3474890326725555,
+        "mean": 0.7692495705812448,
+        "median": 0.8204282164172552,
+        "min": 0.2141974707684122,
+        "n": 10,
+        "std": 0.4442803401218276
+      },
+      "net_R_total": -3.6915369334684636,
+      "net_expectancy_R": -0.3691536933468464,
+      "profit_factor": 0.687480002270788,
+      "wins": 2
+    },
+    "S2": {
+      "N": 1,
+      "breakevens": 0,
+      "conclusion": "INSUFFICIENT_FOR_SETUP_LEVEL_CONCLUSION",
+      "final_state_counts": {
+        "RESOLVED_SESSION_EXIT": 1
+      },
+      "gross_R_total": -0.1850453609856399,
+      "gross_expectancy_R": -0.1850453609856399,
+      "losses": 1,
+      "mae_R_stats": {
+        "max": -0.3260323026890156,
+        "mean": -0.3260323026890156,
+        "median": -0.3260323026890156,
+        "min": -0.3260323026890156,
+        "n": 1,
+        "std": 0.0
+      },
+      "mean_friction_R": 0.044058419282301614,
+      "median_net_R": -0.2291037802679415,
+      "mfe_R_stats": {
+        "max": 0.10867743422967187,
+        "mean": 0.10867743422967187,
+        "median": 0.10867743422967187,
+        "min": 0.10867743422967187,
+        "n": 1,
+        "std": 0.0
+      },
+      "net_R_total": -0.2291037802679415,
+      "net_expectancy_R": -0.2291037802679415,
+      "profit_factor": 0.0,
+      "wins": 0
+    },
+    "S3": {
+      "N": 10,
+      "breakevens": 0,
+      "final_state_counts": {
+        "RESOLVED_PARTIAL_BE": 2,
+        "RESOLVED_SESSION_EXIT": 6,
+        "RESOLVED_SL": 2
+      },
+      "gross_R_total": -2.6289775378519913,
+      "gross_expectancy_R": -0.26289775378519914,
+      "losses": 10,
+      "mae_R_stats": {
+        "max": -0.04267946766246307,
+        "mean": -0.585163269001864,
+        "median": -0.5585169575564858,
+        "min": -1.076970637811182,
+        "n": 10,
+        "std": 0.31724106412909553
+      },
+      "mean_friction_R": 0.20086688425362173,
+      "median_net_R": -0.3203327290064483,
+      "mfe_R_stats": {
+        "max": 0.703829351851606,
+        "mean": 0.2090661901587888,
+        "median": 0.2447948291761457,
+        "min": -0.82032030683058,
+        "n": 10,
+        "std": 0.37770499391069245
+      },
+      "net_R_total": -4.637646380388209,
+      "net_expectancy_R": -0.46376463803882084,
+      "profit_factor": 0.05119392085253549,
+      "wins": 0
+    }
+  },
+  "temporal_concentration": {
+    "by_iso_week": {
+      "32": {
+        "N": 5,
+        "net_R_total": -2.5802269911260165,
+        "net_expectancy_R": -0.5160453982252032
+      },
+      "33": {
+        "N": 2,
+        "net_R_total": 0.48727777371510683,
+        "net_expectancy_R": 0.24363888685755342
+      },
+      "34": {
+        "N": 1,
+        "net_R_total": -0.2291037802679415,
+        "net_expectancy_R": -0.2291037802679415
+      },
+      "35": {
+        "N": 9,
+        "net_R_total": -4.198376740096413,
+        "net_expectancy_R": -0.46648630445515704
+      },
+      "36": {
+        "N": 1,
+        "net_R_total": -0.7806190609074883,
+        "net_expectancy_R": -0.7806190609074883
+      },
+      "37": {
+        "N": 3,
+        "net_R_total": -1.257238295441861,
+        "net_expectancy_R": -0.4190794318139537
+      }
+    },
+    "chronological_first_half": {
+      "N": 10,
+      "net_R_total": -3.9780074106970966,
+      "net_expectancy_R": -0.3978007410697097
+    },
+    "chronological_second_half": {
+      "N": 11,
+      "net_R_total": -4.580279683427517,
+      "net_expectancy_R": -0.4163890621297743
+    }
+  }
+}

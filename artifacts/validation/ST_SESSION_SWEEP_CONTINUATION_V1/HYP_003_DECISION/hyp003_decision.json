@@ -1,0 +1,72 @@
+{
+  "schema": "AG_SSC_HYP003_HYPOTHESIS_GENERATION_DECISION_V1",
+  "source_hypothesis": "HYP_002_SETUP_SELECTIVITY",
+  "source_result": "FAIL",
+  "hypothesis_generation_population": "HYP_002_GEN_002_EURUSD_POPULATION_ATTEMPT_2",
+  "hypothesis_generation_population_hash": "cf098f9a1d6459618d6c775a087b5cb443b7f1f7d915f650eeb8268381c2eb94",
+  "data_role": "HYPOTHESIS_GENERATION_ONLY",
+  "decomposition_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_FAILURE_DECOMPOSITION/failure_decomposition_report.json",
+
+  "mechanism_ranking": [
+    {
+      "mechanism_id": "M1_EXIT_CAPTURE_TARGET_TOO_FAR",
+      "description": "The frozen 3.0R runner_target_r is essentially unreachable within this strategy's own session-bounded holding window. MFE never exceeds 1.35R across all 21 occurrences (N=0 at MFE>=1.5R, 2.0R, 3.0R). 15/21 (71%) exits are RESOLVED_SESSION_EXIT (time-boxed), not SL or target. Every single occurrence shows realized net_R below its own MFE (mfe_minus_realized_net_R min=+0.26R, mean=+0.88R, all positive) -- profitable excursion is present but not captured.",
+      "supporting_observations": [
+        "mfe_R distribution: mean 0.47R, max 1.35R, i.e. well below the 3.0R target across the entire population",
+        "dominant_final_state = RESOLVED_SESSION_EXIT (15/21)",
+        "capture_ratio_net_over_mfe distribution is deeply negative (mean -1.40, median -0.89), meaning realized net R is typically far worse than the favorable excursion reached, not merely 'a bit short of target'",
+        "S1 in particular shows large round-trip swings (mean MAE -0.91R, mean MFE 0.77R) -- adverse excursion frequently approaches the stop before partially recovering, then still exits via session timeout rather than a target/partial capture"
+      ],
+      "contradicting_observations": [
+        "even among occurrences with meaningful MFE (>=0.5R or >=1.0R), a majority (71% and 60% respectively) still finished net-negative -- so a lower target alone would not obviously flip this population to profitable; it would reduce but not necessarily eliminate the loss"
+      ],
+      "sample_size_supporting": 21,
+      "risk_of_post_hoc_overfitting": "LOW-MEDIUM -- the MFE ceiling and session-exit dominance are structural, population-wide, not fitted to any single occurrence; but the population itself is small (N=21) and entirely RANGE-regime, BULLISH-bias, LONG-direction (no cross-sectional variation to stress-test against)",
+      "changes": ["EXIT"],
+      "GOVERNANCE_OVERLAP": "DUPLICATES an already-preregistered, separately governed hypothesis: HYP_001_EXIT_CAPTURE (see artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_1_0_CANDIDATE_SPEC/candidate_spec.yaml, authored on refactor/architecture-boundary-hardening-v3 @5101a51 from an EARLIER, DIFFERENT dataset lineage -- GEN_001/GEN_002A, not GEN_002). That candidate already proposes exactly this mechanism (runner_target_r 3.0 -> 1.5) as its single semantic change, already carries its own fresh-evidence requirement (GEN_001/GEN_002A downgraded to HYPOTHESIS_GENERATION_DATA, a NEW non-overlapping population required for confirmation), and is not yet evaluated on fresh data. This GEN_002 population reinforces the same mechanism from an independent-in-time but NOT independent-in-decision sample (GEN_002 was itself HYP_002's own development population, now also hypothesis-generation-only)."
+    },
+    {
+      "mechanism_id": "M2_FRICTION_COST_DRAG",
+      "description": "Gross expectancy is already negative (-0.1745R) and friction adds substantial further drag (mean 0.233R/trade, accounting for ~57% of the -0.408R net expectancy). S1 in particular is nearly gross-flat (-0.085R) but net-clearly-negative (-0.369R) almost entirely because of friction (0.284R/trade mean) -- a cost/execution-shaped signal distinct from the exit-capture mechanism.",
+      "supporting_observations": [
+        "friction_decomposition.fraction_of_negative_net_attributable_to_friction = 0.57",
+        "S1 gross_expectancy_R=-0.085 (near flat) vs net_expectancy_R=-0.369 (clearly negative) -- friction alone nearly explains S1's loss"
+      ],
+      "contradicting_observations": [
+        "S3's gross edge is independently and substantially negative (-0.263R) -- friction is not the primary driver of S3's loss, so this mechanism does not explain the whole population",
+        "the cost model itself was explicitly out of scope for modification/investigation in this mission (P9); this mechanism has not been decomposed further (e.g. is minimum_stop_multiple=3.0 inflating modeled friction_R for setups with naturally tighter stops? not yet analyzed)"
+      ],
+      "sample_size_supporting": 10,
+      "risk_of_post_hoc_overfitting": "MEDIUM -- identified by inspecting this exact population's own numbers with no independent replication; and the causal driver (why S1's friction is 0.284R/trade) has not been isolated",
+      "changes": ["COST/EXECUTION"],
+      "GOVERNANCE_OVERLAP": "None known. Not previously governed by any existing hypothesis in this repository."
+    },
+    {
+      "mechanism_id": "M3_S3_SETUP_QUALITY",
+      "description": "S3 (PULLBACK_CONTINUATION) shows a structurally low MFE ceiling (max 0.70R across 10 occurrences) and a clearly negative gross edge (-0.263R) independent of friction -- consistent with a weaker setup-quality/entry-confirmation mechanism specific to S3.",
+      "supporting_observations": [
+        "S3 mfe_R_stats: max=0.70R, mean=0.21R -- the lowest favorable-excursion ceiling of the three setups",
+        "S3 gross_expectancy_R=-0.263R, the most negative of the three setups, not explainable by friction alone"
+      ],
+      "contradicting_observations": [
+        "this IS the mechanism HYP_002 itself already tested (S1+S2 vs S1+S2+S3 exclusion) and found FAIL -- excluding S3 improved the observed result (delta +0.0511R) but did not produce a positive TREATMENT edge. Re-proposing 'S3 is the problem' as a new hypothesis on the same population would substantively repeat HYP_002 rather than test a genuinely new mechanism."
+      ],
+      "sample_size_supporting": 10,
+      "risk_of_post_hoc_overfitting": "N/A -- this is not a new mechanism, it is HYP_002's own already-adjudicated mechanism",
+      "changes": ["SETUP_SELECTION"],
+      "GOVERNANCE_OVERLAP": "DUPLICATES HYP_002_SETUP_SELECTIVITY itself (already FAIL, terminal). Selecting this as HYP_003 would violate the closure constraint 'HYP_002 must not be continued through parameter tuning' in substance even if given a new hypothesis_id."
+    }
+  ],
+
+  "decision": {
+    "status": "NOT_JUSTIFIED",
+    "hypothesis_id": null,
+    "reasoning": [
+      "The single mechanism with the strongest, most structural support (M1, exit-capture/target-too-far) duplicates an already-preregistered, separately governed hypothesis (HYP_001_EXIT_CAPTURE / V1_1_0_CANDIDATE_SPEC) from a distinct, earlier data lineage. Per this mission's own P19 instruction, HYP_001 should REMAIN the governing hypothesis for this mechanism; creating a parallel HYP_003 for the same mechanism would be a duplicate hypothesis manufactured merely to reset evidence history, which is explicitly disallowed.",
+      "The second mechanism (M2, friction/cost drag) is real but under-decomposed: its causal driver has not been isolated (e.g. whether minimum_stop_multiple or another friction-model input is doing the work), the cost model was out of scope to modify or probe further in this mission (P9), and it does not explain the full population (S3's negative edge is friction-independent). It is not yet at the evidentiary bar for standalone preregistration; it is recorded here as a candidate for a future, separately-scoped diagnostic mission.",
+      "The third mechanism (M3, S3 setup quality) is HYP_002's own already-tested mechanism. Reselecting it under a new hypothesis_id would substantively continue HYP_002 through parameter tuning, which the closure record explicitly forbids.",
+      "No mechanism in this pass clears the bar of being (a) genuinely new, (b) not a duplicate of governed or terminal research, and (c) sufficiently isolated/specified to preregister responsibly. Per the mission's own SUCCESS CONDITION option B, this is a valid, clean research stop."
+    ],
+    "recommendation_non_binding": "Do not open a new HYP_003 lineage this pass. The existing HYP_001_EXIT_CAPTURE / V1.1.0 candidate lineage already covers the dominant mechanism and already carries its own fresh-evidence requirement (a NEW, non-overlapping development population distinct from GEN_001/GEN_002A AND from this mission's GEN_002) -- that lineage, not a new HYP_003, is the correct vehicle for testing exit/target recalibration. If a future mission wants to pursue the friction/cost-drag mechanism (M2), it should first isolate the friction-model driver (read-only, no cost-model changes) as its own diagnostic step before drafting any preregistration."
+  }
+}

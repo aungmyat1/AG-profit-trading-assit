@@ -1,0 +1,69 @@
+{
+  "schema": "AG_SSC_HYPOTHESIS_CLOSURE_RECORD_V1",
+  "hypothesis_id": "HYP_002_SETUP_SELECTIVITY",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.0",
+  "status": "VALIDATED_NEGATIVE",
+  "primary_result": "FAIL",
+  "closed_utc": "2026-09-15",
+
+  "control": {
+    "definition": "S1+S2+S3",
+    "N": 21,
+    "net_expectancy_R": -0.40753748067260065
+  },
+  "treatment": {
+    "definition": "S1+S2 only (S3 rejected)",
+    "N": 11,
+    "net_expectancy_R": -0.35642188306694594
+  },
+  "delta_net_expectancy_R": 0.051115597605654706,
+  "reason": "S3 exclusion improved observed expectancy (delta positive, +0.0511R) but TREATMENT expectancy remained negative (-0.356R <= 0). Per the preregistered primary decision rule (PASS requires delta>0 AND TREATMENT_net_expectancy_R>0), this is FAIL, not PASS -- 'less unprofitable' does not satisfy the preregistered bar.",
+
+  "evidence_lineage": {
+    "preregistration_hash": "4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7",
+    "parent_config_hash": "e0cf113b2e1e6b82fedee02e744615aa8f30ff7962355c331cbbdfd581fdcfbf",
+    "parent_raw_sha256": "c92311c3c1789a2ea01495a82a1fbcba1d877a8fb4d9ac46732f39e0b81970a9",
+    "dataset_fingerprint_gen002": "f8108d37448cae8f9fe2f16a9905abdf8991ac916cf4a497b11eaca2debbf5aa",
+    "attempt_1": {
+      "population_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "N": 0,
+      "classification": "INCONCLUSIVE_DATA_CONTEXT_INADEQUATE",
+      "artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_ECONOMIC_RESULT/ATTEMPT_1_CLASSIFICATION.json",
+      "preserved_byte_for_byte": true
+    },
+    "attempt_2": {
+      "population_hash": "cf098f9a1d6459618d6c775a087b5cb443b7f1f7d915f650eeb8268381c2eb94",
+      "N": 21,
+      "reproducibility": "PASS (identical hash across two independent runs)",
+      "economic_result_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_ECONOMIC_RESULT_ATTEMPT_2/economic_evaluation.json",
+      "terminal": true,
+      "authoritative": true
+    }
+  },
+
+  "invariants_at_closure": {
+    "holdout_run_count": 0,
+    "gbpusd_used": false,
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false,
+    "execution_authority_changed": false
+  },
+
+  "hard_constraints": [
+    "HYP_002 must not be rerun on GEN_002 with modified rules.",
+    "HYP_002 must not be converted to PASS through secondary diagnostics.",
+    "HYP_002 must not be continued through parameter tuning.",
+    "The GEN_002 Attempt-2 population is retained as evidence but its role is downgraded to HYPOTHESIS_GENERATION_ONLY_AFTER_HYP002 -- see population_manifest.json data_role field and HYP_002_FAILURE_DECOMPOSITION/ for its permitted downstream use.",
+    "Attempt 1 and Attempt 2 artifacts are immutable and must not be deleted or edited."
+  ],
+
+  "downstream_data_role": {
+    "population_id": "HYP_002_GEN_002_EURUSD_POPULATION_ATTEMPT_2",
+    "role": "HYPOTHESIS_GENERATION_ONLY_AFTER_HYP002",
+    "may_be_used_for": ["FAILURE_ANALYSIS", "MECHANISM_GENERATION"],
+    "may_not_be_used_for": ["INDEPENDENT_CONFIRMATION_OF_ANY_HYP003_IDEA", "PARAMETER_SEARCH", "PASS_RECLASSIFICATION_OF_HYP_002"],
+    "declared_in": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION_ATTEMPT_2/population_manifest.json (data_role field, added additively this session)"
+  }
+}
