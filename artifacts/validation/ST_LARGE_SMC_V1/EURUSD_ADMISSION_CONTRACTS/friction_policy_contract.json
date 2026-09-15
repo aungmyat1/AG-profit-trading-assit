@@ -5,33 +5,89 @@
   "status": "PROPOSED",
   "owner_signature": "REQUIRED",
   "generated_utc": "2026-09-15",
-  "note": "PROPOSED only -- not usable as admission/signing evidence until an owner signs it. No value below was chosen or adjusted to improve any observed Large-SMC economic result; none has been computed or inspected by this mission.",
+  "updated_utc": "2026-09-16",
+  "update_note": "WP3A (AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_V1): added a real, read-only Vantage/MT5 spread capture and a real-deal-history slippage/commission search. Remains PROPOSED -- no value below was chosen or adjusted to improve any observed Large-SMC economic result, and this mission does not self-sign.",
   "instrument_facts": {
     "pip_size": {
       "value": 0.0001,
-      "classification": "OBSERVED",
-      "source": "MT5 symbol-metadata capture, 5-digit broker (tick_size=1e-05), already documented in src/fx_friction_research/cost_model.py's PIP_SIZE table for EURUSD -- a symbol-level broker fact, not tied to any one strategy's trading rules."
+      "unit": "price",
+      "classification": "BROKER_SPECIFIED",
+      "source": "Live MT5 symbol_info('EURUSD') read this session (VantageMarkets-Demo, account 26088035): digits=5, point=1e-05 -> pip = 10 x point = 0.0001. Same value src/fx_friction_research/cost_model.py's PIP_SIZE table already used -- a symbol-level broker fact, not tied to any one strategy's trading rules.",
+      "evidence_ref": "live capture, 2026-09-16 (this mission); src/mt5/symbol_resolver.get_symbol_meta('EURUSD')"
     },
     "tick_size": {
       "value": 0.00001,
-      "classification": "OBSERVED",
-      "source": "Same MT5 symbol-metadata capture as above."
+      "unit": "price",
+      "classification": "BROKER_SPECIFIED",
+      "source": "Same live MT5 symbol_info('EURUSD') read: trade_tick_size=1e-05.",
+      "evidence_ref": "live capture, 2026-09-16 (this mission)"
+    },
+    "trade_tick_value": {
+      "value": 1.0,
+      "unit": "USD per tick per 1.0 lot",
+      "classification": "BROKER_SPECIFIED",
+      "source": "Live MT5 symbol_info('EURUSD').trade_tick_value, this session.",
+      "evidence_ref": "live capture, 2026-09-16 (this mission)"
+    },
+    "contract_size": {
+      "value": 100000.0,
+      "unit": "base currency units per 1.0 lot",
+      "classification": "BROKER_SPECIFIED",
+      "source": "Live MT5 symbol_info('EURUSD').trade_contract_size, this session.",
+      "evidence_ref": "live capture, 2026-09-16 (this mission)"
     }
   },
   "cost_components": {
-    "spread_pips": {"value": 0.8, "classification": "ASSUMED", "source": "Documented industry-typical figure for a retail ECN/STP EURUSD account (same literature-sourced figure already used, with the same caveat, by src/fx_friction_research/cost_model.py's BASE scenario) -- NOT a Vantage-specific measured historical fact for Large SMC or any strategy."},
-    "commission_pips": {"value": 0.7, "classification": "ASSUMED", "source": "Same industry-typical estimate as above (~$7/round-turn/standard-lot expressed as pip-equivalent)."},
-    "slippage_pips": {"value": 0.3, "classification": "ASSUMED", "source": "Same conservative industry-typical estimate as above."},
-    "round_trip_cost_representation": "Single one-time pip cost applied per trade at resolution (spread+commission+slippage summed once, not doubled for entry+exit) -- same convention as fx_friction_research.cost_model.CostScenario.total_friction_pips."
+    "spread_pips": {
+      "value": 0.8,
+      "unit": "pips, one-time round-turn-equivalent",
+      "classification": "ASSUMED",
+      "source": "Documented industry-typical figure for a retail ECN/STP EURUSD account (unchanged from WP2). A real empirical capture now exists (see spread_evidence below) but is a single ~55-second continuous window at one time of day on one calendar day -- not a sample across this strategy's actual relevant trading periods (Asian/London/NY sessions), so it is evidence toward, not yet a replacement for, this ASSUMED figure. Notably the observed median (1.30 pips) is materially higher than this assumption -- see friction_signability_note.",
+      "evidence_ref": "artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/spread_evidence/wp3a_2026-09-16_session1_summary.json"
+    },
+    "commission_pips": {
+      "value": 0.7,
+      "unit": "pips-equivalent, one-time round-turn",
+      "classification": "ASSUMED",
+      "source": "Documented industry-typical ~$7/round-turn/standard-lot estimate (unchanged from WP2). Investigated this mission: MT5 deal rows do carry a real `commission` field on this account (confirmed via the account's only 3 retrievable deals in the last 30 days, all BTCUSD, commission=0.0 for each) -- but no EURUSD deal exists in this account's retrievable history (history_deals_get over the last 30 days returns 0 EURUSD rows; the journal's 3 real EURUSD fills from 2026-08-28 predate what this account's broker-side history now returns). Vantage's commission schedule can differ by asset class, so the BTCUSD-observed 0.0 is deliberately NOT reused as an EURUSD-specific value (would be exactly the cross-symbol inference this mission is instructed to avoid).",
+      "evidence_ref": "live MT5 history_deals_get query, 2026-09-16 (this mission) -- 0 EURUSD deals found in a 30-day lookback"
+    },
+    "slippage_pips": {
+      "value": 0.3,
+      "unit": "pips, one-time",
+      "classification": "ASSUMED",
+      "source": "Documented conservative industry-typical estimate (unchanged from WP2). Investigated this mission: exactly one real, legitimate Demo EURUSD execution record in journal/execution_*.jsonl carries a computed slippage_points value (command_id=ag-safety-v1-open-1, ticket=1880608563, 2026-08-28, slippage_points=-1.0 = -0.1 pip on this 5-digit broker, i.e. a favorable fill). n=1 is not a distribution -- manufacturing an 'empirically observed' slippage figure from a single data point would violate this mission's explicit instruction not to do so. A second EURUSD fill in the same journal (command_id=ag-demo-v1-open-2) has no matching requested-price record and so no computable slippage. This account's MT5 deal history no longer retains either fill (see commission_pips note), so the requested-vs-filled prices could not be independently re-verified this session either.",
+      "evidence_ref": "journal/execution_*.jsonl grep for slippage_points+EURUSD, 2026-09-16 (this mission); n=1"
+    },
+    "round_trip_cost_representation": "Single one-time pip cost applied per trade at resolution (spread+commission+slippage summed once, not doubled for entry+exit) -- same convention as fx_friction_research.cost_model.CostScenario.total_friction_pips. Unchanged by this mission."
+  },
+  "spread_evidence": {
+    "status": "EMPIRICALLY_OBSERVED",
+    "scope_caveat": "Real, read-only Vantage/MT5 live-tick capture -- but a single continuous ~55-second window (12 samples, 5s apart) at one time of day on one calendar day, not a sample spanning this strategy's relevant trading periods (Asian/London/NY). Sufficient to demonstrate the collector and to show the ASSUMED 0.8-pip spread figure may understate real cost, NOT sufficient to replace that assumption with a signed empirical figure.",
+    "measurement_window": {"start_utc": "2026-09-15T20:12:28+00:00", "end_utc": "2026-09-15T20:13:23+00:00"},
+    "broker_server": "VantageMarkets-Demo",
+    "account_login": 26088035,
+    "sample_count": 12,
+    "minimum_pips": 1.2999999999996348,
+    "median_pips": 1.2999999999996348,
+    "mean_pips": 1.3249999999999835,
+    "p75_pips": 1.325000000001464,
+    "p90_pips": 1.40000000000029,
+    "p95_pips": 1.40000000000029,
+    "maximum_pips": 1.40000000000029,
+    "raw_observations_hash": "b8d171c3207329672e785815b9840e2d5bb5a709a536889ca75697a80278299e",
+    "raw_evidence_ref": "artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/spread_evidence/wp3a_2026-09-16_session1_raw.jsonl",
+    "collector_source": "src/fx_friction_research/spread_evidence.py + scripts/collect_eurusd_spread_evidence.py (read-only; never calls order_send/order_check)"
   },
   "deliberately_not_reused": {
     "item": "ST_ASIAN_SWEEP_5R_V1's own STRESSED/SEVERE cost scenarios (fx_friction_research/cost_model.py SCENARIOS)",
-    "reason": "Those scenarios are anchored to ST_ASIAN_SWEEP_5R_V1's own SIGNED strategy config (max_spread_allowed_pips=2.0, slippage_limit_points=10 -- strategies/ST_ASIAN_SWEEP_5R_V1.yaml:110-111), which is that strategy's own risk tolerance, not a generic broker fact. ST_LARGE_SMC_V1 has no equivalent signed field. Reusing another strategy's own configured tolerance as if it were Large-SMC's own would misattribute a strategy-specific governance decision. Only the instrument-level facts (pip_size/tick_size) and the literature-sourced BASE-tier cost estimates are reused here; the strategy-anchored STRESSED/SEVERE tiers are not."
+    "reason": "Those scenarios are anchored to ST_ASIAN_SWEEP_5R_V1's own SIGNED strategy config (max_spread_allowed_pips=2.0, slippage_limit_points=10 -- strategies/ST_ASIAN_SWEEP_5R_V1.yaml:110-111), which is that strategy's own risk tolerance, not a generic broker fact. ST_LARGE_SMC_V1 has no equivalent signed field. Reusing another strategy's own configured tolerance as if it were Large-SMC's own would misattribute a strategy-specific governance decision. Only the instrument-level facts (pip_size/tick_size/trade_tick_value/contract_size) and the literature-sourced BASE-tier cost estimates are reused here; the strategy-anchored STRESSED/SEVERE tiers are not."
   },
   "minimum_stop_friction_relationship": {
-    "status": "UNRESOLVED",
-    "reason": "No documented relationship between this friction estimate and ST_LARGE_SMC_V1's C10_STRUCTURAL_INVALIDATION_V1 stop-buffer policy (min_buffer_pips=1.5, ATR-based) exists yet -- would require an owner/analyst decision this mission is not authorized to make."
+    "status": "OWNER_ADJUDICATION_REQUIRED",
+    "reason": "ST_LARGE_SMC_V1's C10_STRUCTURAL_INVALIDATION_V1 stop policy (strategies/ST_LARGE_SMC_V1.yaml) sets min_buffer_pips=1.5 as an ATR-derived FLOOR, not a typical value -- actual stop distance is usually larger. This mission's own real spread capture (median 1.30 pips, max 1.40 pips, single narrow window) plus the unchanged ASSUMED commission (0.7) and slippage (0.3) sum to a total ASSUMED-scenario friction of 1.8-2.4 pips, which is already close to or above the 1.5-pip stop-buffer FLOOR. Whether that floor case is frequent enough, and whether it represents an acceptable friction-to-stop ratio for this strategy, is a strategy-risk-tolerance decision this mission is not authorized to make -- no C10 value or stop semantics were changed.",
+    "not_changed": ["strategies/ST_LARGE_SMC_V1.yaml C10_STRUCTURAL_INVALIDATION_V1 (min_buffer_pips, atr_multiplier, atr_not_ready_action)"]
   },
-  "why_not_signed": "No Large-SMC-specific, broker-observed spread/commission/slippage capture exists anywhere in this repository (confirmed by search). This contract may only move to SIGNED after an owner reviews and either accepts these ASSUMED figures or supplies real observed ones -- this mission does not self-sign.",
+  "why_not_signed": "No Large-SMC-specific, broker-observed spread capture existed anywhere in this repository before this mission; one now exists but only as a single narrow-window sample (see spread_evidence.scope_caveat), and no EURUSD-specific commission or a sufficient (n>1) slippage sample could be obtained from this account's currently retrievable broker history. This contract may only move to SIGNED after an owner reviews and either accepts the current ASSUMED figures (now cross-checked against one real spread sample that runs higher than the assumption) or commissions a longer, session-spanning capture -- this mission does not self-sign.",
   "admission_effect": "Because status != SIGNED, StrategyValidationProfile.friction_policy_ref for ST_LARGE_SMC_V1/EURUSD remains None -- VALIDATION_ADMISSION will continue to report MISSING_FRICTION_POLICY until this contract is owner-signed."
 }
