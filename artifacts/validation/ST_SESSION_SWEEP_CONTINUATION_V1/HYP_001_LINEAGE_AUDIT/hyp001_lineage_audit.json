@@ -1,0 +1,222 @@
+{
+  "audit_id": "AG_SSC_HYP001_EXIT_CAPTURE_LINEAGE_AUDIT_V1",
+  "mission_type": "GOVERNANCE_LINEAGE_AUDIT_NOT_ECONOMIC_EVALUATION",
+  "generated_at_utc_note": "DATE_ONLY -- 2026-09-15, so this artifact's content is reproducible and no mutable timestamp enters the fingerprint.",
+  "generated_at_utc": "2026-09-15",
+
+  "repository": {
+    "branch": "main",
+    "head_before": "55c429cccb0e1870019f1ea0db82001fd8d14f86",
+    "head_after": "55c429cccb0e1870019f1ea0db82001fd8d14f86",
+    "working_tree": "CLEAN",
+    "commit_status": "NO_COMMIT_MADE_PENDING_GATE_REVIEW",
+    "a06bcea_reachable_from_head": true,
+    "unrelated_modified_or_untracked_files": []
+  },
+
+  "phase1_authority_discovery": {
+    "search_terms": ["HYP_001", "HYP_001_EXIT_CAPTURE", "EXIT_CAPTURE", "V1_1_0_CANDIDATE_SPEC", "ST_SESSION_SWEEP_CONTINUATION_V1 v1.1.0"],
+    "finding_CRITICAL": "The full HYP_001 hypothesis-creation and evaluation lineage (hypothesis formulation, MFE/MAE profiling, the preregistered {0.5,1.0,1.5,2.0,3.0}R counterfactual grid, and the P9-P17 candidate-selection/versioning-recommendation reasoning) exists ONLY on branch refactor/architecture-boundary-hardening-v3. `git merge-base --is-ancestor` confirms none of those commits are ancestors of main's HEAD. Only the FINAL candidate_spec.yaml artifact was later authored directly on main (commit 53b7215), with no accompanying manifest, preregistration record, or decision-protocol file.",
+    "artifacts_on_refactor_branch_only": [
+      {"commit": "552bec3", "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/FAILURE_DIAGNOSIS_V1/candidate_hypotheses.json", "role": "HYP_001 hypothesis creation (original formulation, mechanism_class, falsification_criterion)"},
+      {"commit": "9852c52", "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/CANDIDATE_SELECTION_V1/exit_capture_diagnostic.json", "role": "P5 MFE/MAE survival profile + P6 preregistered counterfactual grid (the economic evidence for HYP_001)"},
+      {"commit": "5c0d50b", "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/CANDIDATE_SELECTION_V1/{continuation_depth,campaign_incremental_value}.json", "role": "P3/P4 supporting campaign analyses"},
+      {"commit": "5101a51", "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/CANDIDATE_SELECTION_V1/candidate_selection.json", "role": "P9-P17 cross-population gate, friction-sensitivity context, final candidate decision (SELECTED_PRIMARY_HYPOTHESIS=HYP_001), P13 versioning recommendation that explicitly DEFERRED authoring v1.1.0"}
+    ],
+    "artifacts_on_main": [
+      {"commit": "53b7215", "date": "2026-09-15 17:09:39 +0630", "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_1_0_CANDIDATE_SPEC/candidate_spec.yaml", "role": "The deferred v1.1.0 candidate spec, authored directly on main. Commit message: 'Add AG SSC Verification Implementation Plan V2 and BTC daily reports for September 13-14, 2026' -- does NOT mention HYP_001, EXIT_CAPTURE, or the candidate spec at all; the file is a silent/unlabelled addition inside an unrelated-sounding commit."}
+    ],
+    "referenced_but_nonexistent_artifact": {
+      "name": "candidate_manifest.json",
+      "referenced_from": "candidate_spec.yaml header comments (lines 22, 27, 39), which cite it for hashes, SEMANTIC_CHANGE_COUNT verification, and 'the preregistered P4 structural-compromise rationale' for the specific value 1.5R",
+      "search_result": "Does not exist anywhere in the repository -- not on main, not on refactor/architecture-boundary-hardening-v3, not in any commit's diff-filter=A history. It is a phantom citation.",
+      "the_only_P4_documents_found": "artifacts/validation/.../CANDIDATE_SELECTION_V1/campaign_incremental_value.json (commit 5c0d50b, 'P3/P4 continuation-depth and campaign-incremental analysis') -- an unrelated campaign-depth analysis, NOT a 'structural-compromise rationale' for the runner_target_r value. No document under any name in the full repository history contains a rationale explaining why 1.5R specifically (rather than 0.5R, 1.0R, or 2.0R) was frozen as the candidate value."
+    },
+    "authority_classification": {
+      "candidate_spec.yaml_v1.1.0": "COMMITTED_AUTHORITY (on main, reachable from HEAD) -- but its own self-declared provenance chain is broken: two of the three artifacts it cites as its evidentiary basis (candidate_manifest.json, and by extension the P4 rationale) do not exist, and the third (candidate_selection.json) is UNCOMMITTED relative to main (exists only on an unmerged branch).",
+      "hypothesis_creation_and_grid_evidence": "COMMITTED_ELSEWHERE_NOT_ON_MAIN -- real, git-committed, timestamped, and internally coherent, but not part of main's history and therefore not verifiable by anyone auditing main alone without knowing to cross-reference the other branch.",
+      "candidate_manifest.json": "DOES_NOT_EXIST -- neither COMMITTED_AUTHORITY nor UNCOMMITTED_RESEARCH; a dangling citation."
+    }
+  },
+
+  "phase2_chronology": [
+    {"ts": "2026-09-14 20:27:23", "commit": "552bec3", "event": "HYP_001 hypothesis created (candidate_hypotheses.json) from Stage B root-cause diagnosis (0/88 trades ever reached the 3R target). No outcome/MFE-value inspection occurred as part of formulating this hypothesis -- it was derived from a single binary fact (0/88) already established in the same commit's own diagnosis, not from a subsequent search over target values.", "branch": "refactor/architecture-boundary-hardening-v3"},
+    {"ts": "2026-09-14 21:00:03", "commit": "5c0d50b", "event": "P3/P4 campaign-depth analyses (unrelated to target selection)", "branch": "refactor/architecture-boundary-hardening-v3"},
+    {"ts": "2026-09-14 21:03:47", "commit": "9852c52", "event": "P5 MFE survival profile + P6 preregistered {0.5,1.0,1.5,2.0,3.0}R grid computed. This is the first point outcome/MFE data was inspected in connection with HYP_001. Grid was declared 'exactly the preregistered grid, no search, no value chosen as best' -- consistent with the falsification_criterion frozen 36 minutes earlier in 552bec3.", "branch": "refactor/architecture-boundary-hardening-v3"},
+    {"ts": "2026-09-14 21:06:56", "commit": "5101a51", "event": "P9-P17: cross-population gate, friction-sensitivity, final candidate decision (SELECT HYP_001). P13 explicitly recommends -- but defers -- authoring v1.1.0; P14 explicitly bars reusing GEN_001/GEN_002A as confirmatory evidence for any future v1.1.0.", "branch": "refactor/architecture-boundary-hardening-v3"},
+    {"ts": "2026-09-15 15:45:57", "commit": "a06bcea", "event": "On main: HYP_002 closed VALIDATED_NEGATIVE. Failure decomposition of the GEN_002 Attempt-2 population (N=21, EURUSD, entries 2026-08-06 to 2026-09-11) finds MFE<=1.35R, 71% session-timeout exits -- and the commit message asserts this 'duplicates the already-preregistered, separately governed HYP_001_EXIT_CAPTURE / V1.1.0 candidate lineage'. AT THIS POINT candidate_spec.yaml did NOT YET EXIST anywhere in the repository (confirmed: its only introducing commit, 53b7215, is a child of a06bcea). The claim of an 'already-preregistered' V1.1.0 lineage was accurate only with respect to the refactor branch's uncommitted-to-main research, not to any artifact yet present on main.", "branch": "main"},
+    {"ts": "2026-09-15 17:09:39", "commit": "53b7215", "event": "candidate_spec.yaml (v1.1.0, runner_target_r=1.5) authored directly on main, inside a commit whose message is about an unrelated verification plan and BTC daily reports. This is the first point HYP_001 candidate authority exists on main.", "branch": "main"}
+  ],
+  "ordering_verdict": "The hypothesis (HYP_001) was formulated BEFORE the MFE/grid evidence that tests it (552bec3 precedes 9852c52 by 36 minutes) -- correct preregistration ordering for the hypothesis itself. However the SPECIFIC FROZEN VALUE (1.5R) cannot be shown to follow that same clean ordering, because its stated rationale document (candidate_manifest.json / 'P4 structural-compromise rationale') does not exist to inspect -- see phase6.",
+
+  "phase3_data_consumption_map": {
+    "GEN_001": {
+      "dataset": "EXP_EXPOSURE_EFFICIENCY_V1/GEN_001",
+      "symbol": "EURUSD", "interval": "2026-05-18 to 2026-06-19", "N": 31,
+      "population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+      "outcomes_inspected": true, "MFE_inspected": true, "MAE_inspected": true,
+      "alternative_exit_values_tested": "Preregistered grid {0.5,1.0,1.5,2.0,3.0}R only, no search",
+      "parameter_selection_performed": false,
+      "assigned_role": "HYPOTHESIS_GENERATION + DEVELOPMENT_EVALUATION (grid diagnostic)",
+      "evidence": "P5/P6 (9852c52) computed mfe_R/mae_R directly from this population's persisted per_trade_results.csv; GEN_001 shape=UNSTABLE_PATTERN, no reliable direction."
+    },
+    "GEN_002A": {
+      "dataset": "HYP_001 CANDIDATE_SELECTION_V1 (GBPUSD replication)",
+      "symbol": "GBPUSD", "interval": "generated 2026-09-14 (frozen v1.0.0 engine, independent of GEN_001's date range)", "N": 57,
+      "outcomes_inspected": true, "MFE_inspected": true, "MAE_inspected": true,
+      "alternative_exit_values_tested": "Same preregistered grid, no search",
+      "parameter_selection_performed": false,
+      "assigned_role": "HYPOTHESIS_GENERATION + DEVELOPMENT_EVALUATION (grid diagnostic)",
+      "evidence": "P6 grid: MONOTONIC_PATTERN -- both gross and net expectancy improve at every step as target decreases 3.0R->0.5R; best grid point (0.5R) remains net-negative (-0.330R). This is the population that gives HYP_001 its WEAKLY_SUPPORTED verdict."
+    },
+    "GEN_002": {
+      "dataset": "HYP_002_GEN_002_EURUSD_POPULATION (V1 + ATTEMPT_2)",
+      "symbol": "EURUSD", "interval": "admitted 2026-08-03 to 2026-09-14 (FRESH_DATA_ADMISSION); occurrences realized 2026-08-06 to 2026-09-11 (N=21, Attempt-2)",
+      "outcomes_inspected": true, "MFE_inspected": true, "MAE_inspected": true,
+      "alternative_exit_values_tested": "None -- this population tested HYP_002 (S3 setup exclusion), not runner_target_r",
+      "parameter_selection_performed": false,
+      "assigned_role": "For HYP_002: DEVELOPMENT_EVALUATION (now closed VALIDATED_NEGATIVE). For HYP_001, per a06bcea's own commit message and this population's manifest data_role='HYPOTHESIS_GENERATION_ONLY_AFTER_HYP002': HYPOTHESIS_GENERATION_ONLY -- the failure decomposition of this population (MFE<=1.35R, 71% session-timeout) is corroborating mechanism evidence for exit-capture, consumed into the CURRENT decision to keep HYP_001 as the governing vehicle rather than open HYP_003.",
+      "evidence": "artifacts/validation/.../HYP_002_FAILURE_DECOMPOSITION/occurrence_level_decomposition.json -- 21 records, entry_time min=2026-08-06 13:15 UTC, max=2026-09-11 08:00 UTC."
+    },
+    "other_datasets_discovered": [
+      {"id": "HYP_002_GEN_002 Attempt 1", "note": "trade_count=0 per population_manifest.json (superseded by Attempt 2); role=SUPERSEDED"},
+      {"id": "GEN_002 admitted-but-unconsumed remainder", "note": "EURUSD 2026-09-12 to 2026-09-14 and ALL of the parallel GBPUSD 2026-08-03 to 2026-09-14 admission were admitted (FRESH_DATA_ADMISSION PASS) but never drawn into any population/occurrence for either HYP_001 or HYP_002. Candle-level scanning by the Attempt-2 population generator necessarily touched every admitted candle through 2026-09-14 while searching for setups, even though the last qualifying occurrence happened to be 2026-09-11 -- see phase9 freshness-boundary reasoning.", "role": "UNRESOLVED / SCANNED_BUT_NO_OCCURRENCE"}
+    ]
+  },
+
+  "phase4_hyp001_mechanism": {
+    "source": "candidate_hypotheses.json (552bec3, refactor branch) + exit_capture_diagnostic.json (9852c52, refactor branch) -- historical evidence used directly, not inferred from the later HYP_002 decomposition per mission instruction",
+    "mechanism_class": "HYPOTHESIS_STOP_GEOMETRY / HYPOTHESIS_EXIT_CAPTURE",
+    "observed_failure": "0/88 combined GEN_001+GEN_002A trades ever reached the 3R runner_target_r leg",
+    "parent_exit_rule": "trade_management.runner_target_r = 3.0 (FIXED_R), partial_target_pct=0.50, runner_pct=0.50, runner_target_mode=FIXED_R",
+    "candidate_exit_rule": "trade_management.runner_target_r = 1.5 (FIXED_R); partial_target_pct/runner_pct/runner_target_mode unchanged",
+    "TP1_partial_behavior": "unchanged: partial_target_pct=0.50, partial_target_mode=NEXT_LIQUIDITY_TARGET",
+    "breakeven_behavior": "not present as an explicit config key in either spec; unchanged (no diff)",
+    "session_exit_behavior": "unchanged (session_pairs/trade_session windows byte-identical)",
+    "entry_behavior": "unchanged (swing/bos/displacement/fvg/ema/continuation_score sections byte-identical)",
+    "stop_behavior": "unchanged (atr section byte-identical: period=14, stop_buffer_multiplier=0.20)",
+    "setup_behavior": "unchanged (setup_limits, risk_allocation byte-identical)",
+    "regime_behavior": "unchanged (regime section byte-identical)",
+    "risk_behavior": "unchanged (campaign/risk_allocation byte-identical)",
+    "friction_behavior": "unchanged (friction section byte-identical)"
+  },
+
+  "phase5_semantic_delta": {
+    "method": "Direct diff of committed frozen parent (strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml @ HEAD) against candidate_spec.yaml @ HEAD -- independently verified, not trusted from the file's own header claim.",
+    "ENTRY": "UNCHANGED",
+    "SETUP": "UNCHANGED",
+    "REGIME": "UNCHANGED",
+    "STOP": "UNCHANGED",
+    "RISK": "UNCHANGED",
+    "FRICTION": "UNCHANGED",
+    "EXIT": "CHANGED (trade_management.runner_target_r: 3.0 -> 1.5; nothing else in trade_management block changed)",
+    "OTHER": "version (1.0.0->1.1.0) and registered_utc (metadata only, not economic semantics); header comments changed (documentation only)",
+    "MULTI_MECHANISM_CANDIDATE": false,
+    "single_mechanism_confirmed": true
+  },
+
+  "phase6_parameter_provenance": {
+    "parameter": "trade_management.runner_target_r",
+    "parent_value": 3.0,
+    "candidate_value": 1.5,
+    "first_declaration_as_candidate_value": "candidate_spec.yaml, commit 53b7215, 2026-09-15 17:09:39 (main). The P13 recommendation record (5101a51, refactor branch, 2026-09-14 21:06:56) explicitly left the exact value UNDETERMINED: 'exact value to be determined by the fresh-data experiment itself, NOT selected from GEN_001/GEN_002A's own historical optimum'.",
+    "evidence_available_before_declaration": "P5/P6 grid (9852c52) was available ~20h before 53b7215. That grid's empirically best-performing point in the only population showing a real effect (GEN_002A) is 0.5R (net_expectancy_R=-0.330), NOT 1.5R (net_expectancy_R=-0.5385, one of the WORSE grid points, closer to the 3.0R control's -0.560 than to the 0.5R best).",
+    "evidence_inspected_after_declaration": "None found -- no commit after 53b7215 touches this file or value.",
+    "neighboring_values_evaluated": "Yes, as part of the preregistered grid (0.5, 1.0, 2.0, 3.0R were all evaluated alongside 1.5R in the SAME preregistered pass) -- but 1.5R was not the best-performing of them.",
+    "did_candidate_value_come_from_search": "NO -- 1.5R is not the output of any search/optimization process found in the repository; it is one of five preregistered grid points, and specifically NOT the empirically-best one, which argues against naive in-sample cherry-picking.",
+    "did_value_change_after_evaluation": "UNRESOLVED -- cannot be determined either way. The only stated rationale for choosing 1.5R specifically ('the preregistered P4 structural-compromise rationale') is a citation to candidate_manifest.json, which does not exist anywhere in the repository (see phase1). No committed document explains why 1.5R was selected over 0.5R (the empirical best), 1.0R, or 2.0R.",
+    "PARAMETER_FREEZE_STATUS": "UNRESOLVED",
+    "freeze_status_reasoning": "Not CLEAN (the specific value's rationale cannot be inspected -- the cited document is missing). Not SEARCH_SELECTED / POST_HOC in the naive overfitting sense (1.5R is NOT the empirical optimum, which is actually mild evidence AGAINST simple best-value cherry-picking). Best classified UNRESOLVED: the value is traceable to a preregistered, no-search grid, but the specific choice of grid POINT to freeze as 'the' candidate has no committed justification anywhere in the repository, on either branch.",
+    "explicit_confirmation": "No new target values (1R/1.25R/1.5R/2R/2.5R or any other) were tested by this audit. All values reported above are read from pre-existing, already-committed artifacts."
+  },
+
+  "phase7_contamination_classification": {
+    "classification": "DEVELOPMENT_TUNED_BUT_TRACEABLE",
+    "evidence": {
+      "parameter_selection_after_outcome_inspection": "UNRESOLVED for the specific 1.5R point (see phase6) -- not proven, not ruled out, due to the missing manifest.",
+      "MFE_informed_target_selection": "The grid itself (0.5-3.0R) was chosen because it brackets the observed MFE distribution -- this is legitimate hypothesis-generation-informed grid design, preregistered before running the grid, not post-hoc.",
+      "multiple_target_search": "NO -- exactly 5 preregistered points, explicitly 'no search' per the commit message and diagnostic file's own text.",
+      "best_result_selection": "NOT PROVEN for the final frozen value -- 1.5R is demonstrably NOT the best-performing grid point, which is evidence against (not for) simple best-result cherry-picking. This is a mitigating fact.",
+      "repeated_economic_reruns": "NO evidence found of repeated reruns.",
+      "post_hoc_exclusions": "NO evidence found for HYP_001 specifically (HYP_002's S3 exclusion is a separate, already-closed hypothesis).",
+      "setup_regime_filtering": "NO changes to setup/regime logic in the v1.1.0 candidate (verified by diff, phase5).",
+      "cost_entry_stop_changes": "NONE (verified by diff, phase5).",
+      "mislabelled_OOS_holdout_evidence": "NO -- GEN_001/GEN_002A are correctly and explicitly labelled HYPOTHESIS_GENERATION, never claimed as confirmatory. GEN_002's data_role is correctly downgraded to HYPOTHESIS_GENERATION_ONLY_AFTER_HYP002."
+    },
+    "reasoning": "The lineage shows real research discipline (preregistered grid, no search, correct data-role labelling, explicit P14 firewall against reusing GEN_001/GEN_002A as confirmation) but the FINAL frozen parameter value's specific rationale is not independently verifiable because its cited source document does not exist. This is not evidence of misconduct -- the surrounding record argues against naive overfitting -- but it is a genuine, currently-unrepairable traceability gap. GEN_001/GEN_002A/GEN_002 remain valid as hypothesis-generation evidence; none of it may be reinterpreted as confirmation."
+  },
+
+  "phase8_hyp002_cross_evidence": {
+    "GEN_002_role": "HYPOTHESIS_GENERATION_ONLY_AFTER_HYP002",
+    "observations": {"N": 21, "MFE_max_R": 1.35, "session_timeout_exit_pct": 71, "MFE_to_realized_gap": "positive (every occurrence's realized net_R falls short of its own MFE)", "gross_net_expectancy": "negative"},
+    "comparison_to_declared_HYP_001_mechanism": "CONSISTENT -- the GEN_002 decomposition (fixed 3R runner essentially unreachable, favorable excursion concentrated well below target, session-timeout dominant) reproduces the same structural pattern that originally motivated HYP_001 in GEN_001/GEN_002A. It corroborates the mechanism class, not any specific target value.",
+    "classification": "CONSISTENT",
+    "constraint_confirmed": "GEN_002 was not, and per this audit is not, used to select or modify HYP_001's frozen 1.5R parameter. It is cross-mechanism corroboration only."
+  },
+
+  "phase9_freshness_boundary": {
+    "inputs_considered": [
+      {"source": "GEN_001", "latest_relevant_date": "2026-06-19"},
+      {"source": "GEN_002A", "latest_relevant_date": "2026-09-14 (generation date; underlying trade data is historical, not fresh)"},
+      {"source": "GEN_002 (Attempt 1+2, HYP_002)", "latest_occurrence": "2026-09-11 08:00 UTC", "latest_admitted_and_scanned_candle": "2026-09-14 23:57 UTC (EURUSD M1)"}
+    ],
+    "reasoning": "The Attempt-2 population generator necessarily scanned every admitted EURUSD M1/M15/H1 candle through 2026-09-14 while searching for qualifying setups, even though the last one it found was on 2026-09-11. The absence of a signal after 2026-09-11 is itself information already extracted from that scan. Per the mission's conservative instruction to include evidence that 'materially influenced the current research decision,' the full admitted-and-scanned window is treated as consumed, not just the sub-interval containing realized occurrences.",
+    "LATEST_CONSUMED_DECISION_TIMESTAMP": "2026-09-14T23:59:59Z",
+    "EARLIEST_PERMITTED_FRESH_START": "2026-09-15T00:00:00Z",
+    "warmup_context_reuse_allowed": "Historical bars before 2026-09-15 may be used as WARMUP_CONTEXT_ONLY (indicator lookback, e.g. EMA50/ATR14 seeding) with ZERO economic contribution -- no occurrence, MFE/MAE value, or expectancy figure from before this boundary may be attributed to a fresh HYP_001 confirmation run.",
+    "symbol_note": "This boundary applies to EURUSD, the only symbol with proven post-2026-06-19 consumption. GBPUSD's 2026-08-03 to 2026-09-14 admitted window was never drawn into any population for either hypothesis -- per this mission's own Phase 14 firewall, GBPUSD is out of scope for this audit and no freshness determination for it is made here."
+  },
+
+  "phase10_existing_decision_protocol_audit": {
+    "sample_adequacy_rule": {"status": "CREATED_AFTER_A_FASHION", "detail": "candidate_hypotheses.json's falsification_criterion is qualitative ('still shows net expectancy<=0 with no improvement in realized-vs-MFE capture rate') with no explicit minimum-N occurrence-count rule for the fresh confirmatory population.", "frozen_before_evidence": "N/A -- rule itself was never made quantitative"},
+    "primary_metric": {"status": "PARTIALLY_EXISTS", "detail": "net_expectancy_R and MFE-capture-rate improvement are used consistently across the lineage as the de facto primary metrics, but never formally declared as THE primary metric in a single frozen document reachable from main.", "frozen_before_evidence": "UNRESOLVED"},
+    "pass_rule": {"status": "MISSING", "detail": "No explicit quantitative PASS threshold exists anywhere (contrast with HYP_002, whose PASS rule -- 'delta>0 AND TREATMENT_net_expectancy_R>0' -- is explicitly preregistered and cited in its closure record)."},
+    "fail_rule": {"status": "QUALITATIVE_ONLY", "detail": "candidate_hypotheses.json's falsification_criterion functions as a fail rule but lacks a quantitative threshold."},
+    "inconclusive_rule": {"status": "MISSING"},
+    "friction_model": {"status": "EXISTS_AND_UNCHANGED", "detail": "friction section is byte-identical to the frozen v1.0.0 parent (verified by diff, phase5); the same model would apply to any fresh confirmatory run."},
+    "population_generation_rule": {"status": "EXISTS_BY_PRECEDENT", "detail": "The GEN_001/GEN_002A/GEN_002 generation methodology (frozen engine, deterministic replay, G0/G1 reproducibility proof) is an established, reusable pattern, though not written as a standalone HYP_001-specific rule document on main."},
+    "fresh_data_rule": {"status": "MISSING_ON_MAIN", "detail": "P14 (5101a51, refactor branch only) states the non-reuse constraint for GEN_001/GEN_002A but is not reachable from main. No committed fresh-data rule for HYP_001 exists on main."},
+    "PREREGISTRATION_REPAIR_REQUIRED": true
+  },
+
+  "phase11_sample_adequacy": {
+    "existing_frozen_rule_found": false,
+    "proposal_for_owner_review_ONLY": {
+      "status": "PROPOSED_NOT_AUTHORITATIVE",
+      "recommended_rule": "Occurrence-based: minimum N=20 qualifying occurrences (S1+S2+S3 combined, EURUSD, ASIAN_LONDON+LONDON_NEWYORK sessions) drawn from the fresh interval (2026-09-15T00:00:00Z onward, no upper bound stated here -- owner to set an evaluation cutoff date). Chosen to match the sample size HYP_002's own preregistration used (N=21 realized) as an internally-consistent precedent within this same strategy family, not derived from any outcome data.",
+      "insufficient_sample_disposition": "If fewer than the frozen minimum N are observed by the owner-set cutoff date: INCONCLUSIVE. This proposal explicitly forbids automatic extension, threshold reduction, or defaulting to PASS/FAIL on an underpowered sample. Any future evidence-extension policy must itself be frozen by the owner BEFORE it is invoked."
+    }
+  },
+
+  "phase12_confirmation_readiness": {
+    "status": "NEEDS_PREREGISTRATION_REPAIR",
+    "reason": "The candidate treatment (runner_target_r=1.5, EXIT-only, single mechanism) IS cleanly and verifiably frozen relative to its parent (independently diff-verified, not merely trusted). Data-consumption history is fully resolved and the freshness boundary is establishable (2026-09-15T00:00:00Z). However: (1) the candidate's own cited provenance document (candidate_manifest.json) does not exist anywhere in the repository, leaving the specific choice of 1.5R over the empirically-better 0.5R grid point without a committed rationale; (2) the entire hypothesis-creation and grid-evidence lineage is committed only on an unmerged branch, not reachable from main; (3) no quantitative PASS/FAIL/INCONCLUSIVE rule or sample-adequacy rule for HYP_001 exists anywhere, including on the branch. Per the mission's own Phase 12 rule ('If treatment exists but protocol is incomplete: NEEDS_PREREGISTRATION_REPAIR'), this is the correct classification -- not NEEDS_CANDIDATE_REFREEZE (the treatment itself is not the problem) and not NOT_VALID_CONFIRMATORY_HYPOTHESIS (nothing found contradicts the mechanism; DEVELOPMENT_TUNED_BUT_TRACEABLE is a repairable state, not a fatal one)."
+  },
+
+  "phase13_m2_friction": {"status": "RESEARCH_BACKLOG", "note": "Not investigated further per mission scope; friction assumptions not modified."},
+
+  "phase14_firewalls_confirmation": {
+    "holdout_run_count": 0,
+    "holdout_accessed": false,
+    "GBPUSD_accessed_for_analysis": false,
+    "GBPUSD_referenced_only_as_existing_metadata": true,
+    "new_population_generated": false,
+    "HYP_001_executed": false,
+    "HYP_002_executed": false,
+    "optuna_or_search_run": false,
+    "alternative_exits_tested_by_this_audit": false,
+    "strategy_semantics_modified": false,
+    "demo_or_live_enabled": false
+  },
+
+  "phase16_commit_gate_self_check": {
+    "audit_internally_consistent": true,
+    "fresh_outcomes_accessed": false,
+    "holdout_run_count": 0,
+    "GBPUSD_untouched": true,
+    "parameter_search_occurred": false,
+    "strategy_or_runtime_files_changed": false,
+    "git_diff_mission_scope": "Only files under artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_LINEAGE_AUDIT/ and docs/status/AG_SSC_HYP001_LINEAGE_AUDIT_STATUS.md added; no pre-existing file modified.",
+    "gate_result": "PASS -- eligible for mission-scoped commit"
+  }
+}
