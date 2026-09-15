@@ -1,0 +1,73 @@
+{
+  "audit_id": "AG_SSC_HYP002_G1_AUDIT_20260915",
+  "mission": "SSC HYP_002 G1->G3 validation mission (continuation request)",
+  "generated_at_utc_note": "DATE_ONLY -- 2026-09-15",
+  "generated_at_utc": "2026-09-15",
+
+  "mission_assumed_starting_state": {
+    "active_stage": "STAGE_1",
+    "active_gate": "G1_AUDIT",
+    "population": null,
+    "economic_result": null,
+    "robustness": null,
+    "candidate": null,
+    "holdout": null
+  },
+
+  "actual_verified_repository_state": {
+    "source": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/CURRENT_VALIDATION_STATE.json (read directly, not inferred)",
+    "active_stage": "STAGE_2",
+    "active_gate": "TERMINAL_FAIL",
+    "population": "NOT NULL -- two populations exist: HYP_002_GEN_002_EURUSD_POPULATION_V1 (Attempt 1, INCONCLUSIVE, terminal) and HYP_002_GEN_002_EURUSD_POPULATION_ATTEMPT_2 (N=21 CONTROL / N=11 TREATMENT, terminal)",
+    "economic_result": "NOT NULL -- both attempts have completed economic_evaluation.json artifacts",
+    "hyp002_final_status": "FALSIFIED_ON_GEN_002_EVIDENCE",
+    "hyp002_closure": "VALIDATED_NEGATIVE, closure_artifact=HYP_002_CLOSURE/hypothesis_closure_record.json, hyp003_decision recorded (NOT_JUSTIFIED)",
+    "explicit_governance_note_in_state_file": "HYP_002 is permanently closed as negative evidence and must not be rerun, reinterpreted via secondary diagnostics, or continued through parameter tuning.",
+    "holdout_run_count": 0,
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false
+  },
+
+  "wp1_checklist": {
+    "1_strategy_id_version": {"result": "MATCH", "detail": "ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.0, unchanged since its single introducing commit c36bf23 (git log confirms exactly one commit ever touched strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml)."},
+    "2_hypothesis_id": {"result": "MATCH", "detail": "HYP_002_SETUP_SELECTIVITY"},
+    "3_preregistration_artifact_and_sha": {"result": "MATCH", "detail": "HYP_002_PREREGISTRATION/HYP_002_SETUP_SELECTIVITY_PREREGISTRATION.md sha256 independently recomputed = 4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7, matches CURRENT_VALIDATION_STATE.json's recorded hash exactly. Preregistered CONTROL/TREATMENT/primary_metric/sample_adequacy/decision_rule text matches this mission's stated rules verbatim."},
+    "4_dataset_package_id_fingerprint": {"result": "MATCH", "detail": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914, fingerprint f8108d37448cae8f9fe2f16a9905abdf8991ac916cf4a497b11eaca2debbf5aa, admission_status=FULL_PASS."},
+    "5_raw_data_immutability": {"result": "PRESUMED_INTACT", "detail": "No commit modifies the admitted dataset files after admission; not independently re-hashed in this audit (would require touching raw data files, out of scope for a state-verification pass)."},
+    "6_parent_strategy_source_unchanged": {"result": "MATCH", "detail": "Single commit history for strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml; config_hash e0cf113b... referenced consistently across preregistration, population manifests, and the (unrelated) HYP_001 candidate spec."},
+    "7_setup_semantics_unchanged": {"result": "MATCH", "detail": "No commit after freeze touches src/session_sweep_continuation/ setup-admission logic for S1/S2/S3."},
+    "8_friction_model_unchanged": {"result": "MATCH"},
+    "9_no_holdout_use": {"result": "MATCH", "detail": "holdout_run_count=0 in CURRENT_VALIDATION_STATE.json."},
+    "10_no_previous_GEN_002_population_outcome_generation": {
+      "result": "FAIL",
+      "detail": "CONTRADICTED BY REPOSITORY STATE. Two GEN_002 populations already exist and are terminal: Attempt 1 (INCONCLUSIVE_DATA_CONTEXT_INADEQUATE, insufficient H1 warmup) and Attempt 2 (N=21 CONTROL / N=11 TREATMENT, hyp002_result=FAIL under the exact preregistered decision rule this mission restates). HYP_002 is closed VALIDATED_NEGATIVE as of commit a06bcea (2026-09-15), which is an ancestor of this repository's current HEAD."
+    }
+  },
+
+  "G1_AUDIT": "FAIL",
+  "stop_reason": "Item 10 of the mandated G1 checklist is false: GEN_002 population and outcome generation has already occurred (twice), and the hypothesis has already reached its terminal, closed state (VALIDATED_NEGATIVE) under exactly the decision rule this mission restates verbatim. The mission's assumed starting state (STAGE_1/G1_AUDIT, population=null, economic_result=null) does not match the actual repository state (STAGE_2/TERMINAL_FAIL, population and economic_result both populated, hypothesis closed). Per this mission's own instruction ('Required verdict: G1_AUDIT = PASS. Otherwise STOP.') and per the repository's own existing governance note ('must not be rerun, reinterpreted via secondary diagnostics, or continued through parameter tuning'), WP2 (generate a new GEN_002 population) is NOT performed. Generating a third population would (a) violate the repository's own closure governance, (b) not be a G1 audit continuation but an unauthorized re-litigation of an already-adjudicated FAIL, and (c) risk being interpreted as searching for a different outcome on the same hypothesis/dataset pairing -- exactly the kind of repeated-economic-rerun pattern this and the prior HYP_001 audit were built to detect and refuse.",
+
+  "WP2_WP6_status": "NOT_PERFORMED -- blocked by G1 FAIL, per mission's own stop-on-G1-fail instruction.",
+
+  "recommendation_to_owner": [
+    "If the intent was to CONTINUE HYP_002 toward robustness/holdout: this is not possible -- the hypothesis is FAIL/VALIDATED_NEGATIVE under its own frozen decision rule (TREATMENT_net_expectancy_R=-0.356, which is <=0, so FAIL regardless of the positive delta). There is no PASS state to advance from.",
+    "If the intent was to VERIFY the existing G1-through-closure work: this audit confirms it is internally consistent -- preregistration hash matches, decision rule applied exactly as frozen, Attempt 1's inadequate-warmup INCONCLUSIVE was correctly not treated as a rescue-by-extension, Attempt 2's FAIL was correctly derived from the same preregistered rule with no override.",
+    "If new evidence or a different mechanism is desired: per the existing HYP_003_DECISION record (hyp003_decision.json, NOT_JUSTIFIED) and this session's own prior HYP_001 lineage audit (docs/status/AG_SSC_HYP001_LINEAGE_AUDIT_STATUS.md), the setup-selectivity mechanism is exhausted; the actively open, owner-reviewable research thread is HYP_001_EXIT_CAPTURE, which needs preregistration repair (missing parameter-rationale document, missing quantitative PASS/FAIL/sample-adequacy rule) before any fresh confirmatory run -- not a new attempt at HYP_002."
+  ],
+
+  "safety": {
+    "holdout_accessed": false,
+    "holdout_run_count": 0,
+    "execution_authority_changed": false,
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false,
+    "new_population_generated": false,
+    "strategy_semantics_modified": false,
+    "stop_geometry_modified": false,
+    "exit_geometry_modified": false,
+    "dataset_window_expanded": false,
+    "sample_threshold_lowered": false
+  }
+}
