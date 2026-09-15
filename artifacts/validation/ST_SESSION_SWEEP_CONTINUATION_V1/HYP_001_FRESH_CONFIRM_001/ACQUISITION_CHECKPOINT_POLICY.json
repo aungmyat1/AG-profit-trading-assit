@@ -1,0 +1,94 @@
+{
+  "schema": "AG_SSC_HYP001_CONFIRM001_ACQUISITION_CHECKPOINT_POLICY_V1",
+  "mission": "HYP_001 CONFIRM_001 acquisition checkpoint freeze",
+  "generated_at_utc_note": "DATE_ONLY -- 2026-09-15",
+  "generated_at_utc": "2026-09-15",
+  "checkpoint_id": "CONFIRM_001",
+
+  "p0_governance_reverify": {
+    "branch": "main",
+    "head": "3bd7491794ab9342cf68724a249c926726efa83c",
+    "preregistration_hash": "03ed06c68e169893b3172917f4cadf369d52e47f6b8ed5ea2c2f620a13388529 (MATCH)",
+    "candidate_manifest_hash": "03dfed8ae45751bdbe3743e3a7c8ea7587c3a53fa73c6fdd418060f29dc0bb13 (MATCH)",
+    "lineage_audit_hash": "ebc7a99f84646362acb7d73367089146bb6d0ecbc4ea7d6bf9612e0554969ba7 (MATCH)",
+    "fresh_confirmation_runs": 0,
+    "holdout_run_count": 0,
+    "unrelated_modified_file_inventoried": {
+      "path": "state/proposal_ledger/proposal_ledger.json",
+      "note": "83-line addition, unrelated to this mission (a separate live/shadow process's own ledger writes). Not staged, not modified, not committed by this mission."
+    }
+  },
+
+  "p1_previous_stop_preserved": {
+    "reference_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_FRESH_CONFIRM_001/BOUNDARY_STATUS.json",
+    "decision_field_verified": "STOP_TIMING_NOT_YET_AVAILABLE",
+    "note": "Not overwritten or reinterpreted. It remains valid evidence that acquisition was correctly attempted before any admissible completed UTC day existed at or after the freshness boundary."
+  },
+
+  "decision_start": {
+    "CONFIRM_001_DECISION_START": "2026-09-15T00:00:00Z",
+    "frozen": true,
+    "note": "Matches the earliest_permitted_fresh_start already frozen in HYP_001_EXIT_CAPTURE_PREREGISTRATION.md Section 6. Cannot move forward or backward based on future results."
+  },
+
+  "checkpoint_policy": {
+    "CONFIRM_001_INITIAL_ACQUISITION_TARGET": "20 COMPLETED FX MARKET WEEKDAYS",
+    "counting_rule": "Calendar-only, strategy-outcome-independent: starting at CONFIRM_001_DECISION_START's calendar date (2026-09-15, a Tuesday), count forward inclusive, one unit per Monday-Friday calendar date (weekday() < 5 in ISO convention), skipping Saturday/Sunday, until 20 such dates are accumulated. No FX-specific bank-holiday calendar is applied at this mechanical-freeze stage (none exists in this repository as a precommitted, symbol-independent list); a date that later turns out to be a known full market closure (e.g. a bank holiday with zero candles) is excluded from the admitted package at acquisition time per mission P3/P6, which may shift the effective admitted day count for that block without altering this frozen 20-weekday TARGET definition itself.",
+    "enumerated_target_dates": [
+      "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18",
+      "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25",
+      "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02",
+      "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09",
+      "2026-10-12"
+    ],
+    "TARGET_END_DATE": "2026-10-12",
+    "EARLIEST_ACQUISITION_TIMESTAMP": "2026-10-13T00:00:00Z",
+    "earliest_acquisition_timestamp_derivation": "First UTC instant strictly after TARGET_END_DATE (2026-10-12) is fully complete under the existing GEN_002/FRESH_DATA_ADMISSION 'latest fully completed UTC day' convention -- i.e. the start of 2026-10-13T00:00:00Z.",
+    "partial_day_policy": "The current partial UTC day is never acquired into CONFIRM_001. Known full market closures encountered during actual acquisition are excluded and reported separately, not silently treated as gaps.",
+    "current_true_utc_reference": "~2026-09-15T12:08Z (per BOUNDARY_STATUS.json, broker offset +3h detected via src/mt5/broker_time.py against VantageMarkets-Demo)",
+    "CONFIRM_001_CHECKPOINT": "WAITING_FOR_DATA",
+    "checkpoint_reasoning": "Current true UTC time (~2026-09-15T12:08Z) is far earlier than EARLIEST_ACQUISITION_TIMESTAMP (2026-10-13T00:00:00Z). No partial package is acquired. This mission acquired zero market data."
+  },
+
+  "market_day_vs_occurrence_N_distinction": {
+    "market_day_target": "20 completed FX market weekdays -- a prospectively frozen DATA WINDOW size, derived purely from the calendar, before any setup detection.",
+    "minimum_occurrence_N": 20,
+    "occurrence_N_inspected_this_mission": false,
+    "explicit_statement": "These are two independent numbers that happen to share the value 20 by owner choice, not by logical necessity. The market-day count bounds how much calendar time is acquired; the occurrence-N rule (frozen in HYP_001_EXIT_CAPTURE_PREREGISTRATION.md Section 13) bounds whether the PASS/FAIL/INCONCLUSIVE decision rule may be applied once a population is later generated from the acquired data. A population generated from a full 20-weekday CONFIRM_001 window could still yield TREATMENT_N < 20 (INCONCLUSIVE_AT_CHECKPOINT_001) or >= 20 (decision rule applies) -- this mission makes no prediction and inspects no setup data to guess which."
+  },
+
+  "extension_policy_governance": {
+    "existing_preregistration_status": "HYP_001_EXIT_CAPTURE_PREREGISTRATION.md Section 7 freezes the GENERAL extension shape (chronological, forward-only, contiguous, non-overlapping, parameter-unchanged, evaluate only after a separately admitted/frozen package) but does NOT freeze an exact block SIZE for extensions beyond checkpoint_1 -- checkpoint_1 itself was described only as 'first frozen, separately-admitted EURUSD data package,' with no day-count specified until this mission mechanically derived one (20 completed FX market weekdays) for CONFIRM_001 specifically.",
+    "flag": "EXTENSION_CHECKPOINT_REQUIRES_OWNER_FREEZE",
+    "reasoning": "The mission's own P8 instruction requires flagging this rather than silently assuming a size, and forbids defining extension length after observing CONFIRM_001's occurrence N (which has not been, and will not be, observed by this mission).",
+    "proposed_extension_block_size_for_owner_review": "20 completed FX market weekdays per extension block (matching CONFIRM_001's own size), counted by the identical calendar-only rule above, starting the calendar day immediately after the prior block's last admitted trading date -- PROPOSED ONLY, NOT AUTHORITATIVE. Requires explicit owner approval and, if approved, must be added to HYP_001_EXIT_CAPTURE_PREREGISTRATION.md as a dedicated amendment (new hypothesis-preregistration field, not a silent in-place edit of Section 7's existing text) before it may govern any block beyond CONFIRM_001.",
+    "silent_preregistration_modification": false
+  },
+
+  "warmup": {
+    "role": "WARMUP_CONTEXT_ONLY",
+    "occurrence_or_economic_contribution": 0,
+    "existing_candidate_for_reuse": "artifacts admitted under SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731 (H1, ends strictly before 2026-08-01, i.e. strictly before CONFIRM_001_DECISION_START) -- whether this satisfies the strategy's STRUCTURE_WARMUP_H1_BARS=1000 requirement as-of a 2026-09-15+ decision start, or whether the intervening 2026-08-01..2026-09-14 history (already admitted for GEN_002, itself HYPOTHESIS_GENERATION_ONLY_AFTER_HYP002-labelled but never re-used as warmup) must additionally be spliced in as state-initialization-only context, is NOT decided by this mission.",
+    "deferred_to": "The mission that actually generates the CONFIRM_001 population, once CONFIRM_001_CHECKPOINT=READY_FOR_DATA_ADMISSION and decision data has been acquired.",
+    "requirement_unchanged": "STRUCTURE_WARMUP_H1_BARS=1000 not altered."
+  },
+
+  "outcome_firewall": {
+    "market_data_acquired": false,
+    "strategy_detector_executed": false,
+    "population_generated": false,
+    "MFE_MAE_inspected": false,
+    "economics_inspected": false
+  },
+
+  "safety": {
+    "fresh_confirmation_runs": 0,
+    "holdout_run_count": 0,
+    "GBPUSD_accessed": false,
+    "parameter_search": false,
+    "strategy_semantics_changed": false,
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false
+  }
+}
