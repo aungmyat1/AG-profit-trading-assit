@@ -449,3 +449,40 @@ anywhere in canonical governance and this pilot has no authority to invent one.
 reasons — the missing absolute economic floor (§6.1/§17 above) and the unresolved OOS M1 gap.
 Development data and the H1/M15 OOS package are both frozen and ready for reuse once those two
 blockers are cleared by the owner or a resolved data source.
+
+---
+
+## 18. SSC1D-WP1A addendum — OOS economic floor + M1 resolution attempt (2026-09-16)
+
+**Economic floor: RESOLVED.** Owner supplied the absolute OOS floor without any OOS outcome
+being inspected first: `expectancy_R > 0.0 AND profit_factor > 1.0` (post-friction). Full
+deterministic definitions — R-multiple/expectancy formula, profit_factor zero-loss-denominator
+handling (reported `UNDEFINED`, never infinite or synthetic), resolved-vs-unresolved occurrence
+scope, minimum-sample-size flagging (reusing SSC's existing `performance_attribution.min_sample_size=10`
+convention), and the friction basis (SSC's own existing cost model, cost-status stamped
+KNOWN/MODELED/UNAVAILABLE, never silently treated as included) — are in
+`SSC1D_WP1A_economic_floor_contract.json`. This supersedes the `OWNER_DEFINITION_REQUIRED`
+placeholder in `SSC1D_WP1_oos_decision_contract.json`; that file's relative criterion and
+combined PASS rule (both relative and absolute must hold) are otherwise unchanged.
+
+**M1 gap: still `M1_UNRESOLVED`.** Both preferred acquisition paths were audited and neither
+is defensible:
+
+- *Same-broker/same-feed (Vantage MT5)*: confirmed unavailable by both bar and tick history —
+  `mt5.copy_rates_range` and `mt5.copy_ticks_range` for EURUSD 2024-01-02..2024-01-03 both
+  returned zero results. This is consistent with an empirically observed ~120-day M1/tick
+  retention boundary on this terminal (clean data at 30/60/90 days back, none at 120+).
+- *Independently sourced*: FMP's forex endpoints are plan-gated (Premium/Ultimate/Enterprise
+  required; current plan denied access, and the tool explicitly instructed against retrying).
+  AlphaVantage's `FX_INTRADAY` endpoint has no historical date-range parameter at all — it
+  structurally cannot target 2024 Q1 regardless of plan tier.
+
+Per the mission's own fallback (option 3), this is reported as `M1_UNRESOLVED` rather than
+worked around. No candidate M1 series was ever obtained, so no cross-source comparison against
+the sealed H1/M15 legs was possible. Full audit trail in `SSC1D_WP1A_m1_resolution_report.json`.
+
+**OOS package status unchanged**: `PARTIAL_ESTABLISHED_H1_M15_ONLY`, `OOS_ACCESS_COUNT=0`. WP2
+remains blocked — now solely on the M1 gap, since the economic floor blocker is cleared.
+Resolving M1 requires an owner decision this pilot has no authority to make unilaterally: either
+authorize a paid data-source upgrade, or explicitly accept a reduced-fill-precision OOS
+methodology for this pilot.

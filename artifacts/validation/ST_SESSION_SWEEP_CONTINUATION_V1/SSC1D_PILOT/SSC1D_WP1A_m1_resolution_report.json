@@ -1,0 +1,42 @@
+{
+  "schema": "AG_SSC1D_M1_RESOLUTION_REPORT_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP1A",
+  "generated_utc": "2026-09-16",
+  "target": "EURUSD M1, 2024-01-01T00:00:00Z .. 2024-03-31T23:59:59Z (to complete the already-sealed SSC1D_WP1_OOS_EURUSD_2024Q1 H1/M15 OOS package)",
+  "note": "No SSC code was run at any point during this investigation. No strategy setups/outcomes were computed or inspected. No prospective (post-2026-09-14) or final-holdout data was accessed. This report is a data-availability audit only.",
+  "option_1_same_broker_same_feed": {
+    "source": "Vantage Markets (Pty) Ltd, VantageMarkets-Demo, via the same MT5 terminal/account used for GEN_002 and the sealed H1/M15 OOS legs",
+    "method_1_bar_history": "mt5.copy_rates_range('EURUSD', TIMEFRAME_M1, 2024-01-01, 2024-03-31) via scripts/acquire_ssc1d_wp1_oos_eurusd_2024q1.py -- returned NO_DATA (0 bars), same outcome as the original WP1 acquisition attempt",
+    "method_2_tick_history": "mt5.copy_ticks_range('EURUSD', 2024-01-02, 2024-01-03, COPY_TICKS_ALL) -- returned 0 ticks (tested directly this session, request took ~2 minutes to return, consistent with the terminal querying the broker server and receiving an empty result rather than a fast local-cache miss)",
+    "retention_boundary_characterization": "Repeated empirical probes (this session and the original WP1 acquisition) consistently show clean, well-formed M1 data at 30/60/90 calendar days back from 2026-09-16 (e.g. 2026-08-17: 2487 bars in a 2-day window; 2026-06-18: 2876 bars in a 2-day window) and zero/near-zero data at 120+ days back (2026-05-18 and earlier: 0-1 bars). This is consistent with a broker/terminal-side M1 (and tick) history retention window of roughly the trailing ~120 days, not a symbol-specific or date-specific outage.",
+    "conclusion": "NOT AVAILABLE. Same-broker/same-feed EURUSD M1 for 2024 Q1 does not exist in this MT5 terminal's accessible history at any resolution (bar or tick), and re-querying does not change the result (the data is not merely slow to arrive -- it is absent server-side for this terminal/account)."
+  },
+  "option_2_independently_sourced": {
+    "candidates_considered": [
+      {
+        "provider": "Financial Modeling Prep (FMP), via mcp__claude_ai_FMP__forex, endpoint forex-intraday-1-min",
+        "result": "BLOCKED -- tool call returned an explicit plan-tier access-denial error: \"ACCESS DENIED: This tool (forex) requires the Premium, Ultimate, or Enterprise plan. The user is currently on a lower-tier plan... Do not retry this tool or attempt sibling tools that require the same plan in this session.\" The account's current FMP plan does not permit any call to the forex-intraday family, so historical-depth for 2024 Q1 specifically could not even be evaluated -- the gate is unconditional on date range.",
+        "action_taken": "None further -- the tool's own response explicitly instructed not to retry or attempt sibling endpoints on this plan tier, and upgrading a paid subscription is a business/owner decision outside this pilot's authority, not something to act on unilaterally."
+      },
+      {
+        "provider": "AlphaVantage, via mcp__claude_ai_AlphaVantage__FX_INTRADAY",
+        "result": "STRUCTURALLY UNUSABLE for this purpose -- the tool's own parameter schema (from_symbol, to_symbol, interval, outputsize, datatype) has no date-range/start-end parameter at all. This is the classic AlphaVantage FX_INTRADAY endpoint, which only serves recent/current intraday data (outputsize=full returns whatever recent window the API exposes, not an arbitrary historical month). There is no mechanism to request 2024-01-01..2024-03-31 specifically from this endpoint regardless of plan tier, so it was not called (calling it could not answer the question being asked)."
+      }
+    ],
+    "conclusion": "NOT DEFENSIBLE. No independently-sourced EURUSD M1 data for 2024 Q1 could be obtained: one candidate provider is plan-gated (requires a paid upgrade this pilot has no authority to purchase), and the other is structurally incapable of serving a specified historical date range. No cross-source classification could be performed because no candidate M1 series was ever obtained to compare."
+  },
+  "option_3_stop": {
+    "triggered": true,
+    "reason": "Neither option 1 (same-broker/same-feed) nor option 2 (independently sourced) produced a defensible EURUSD M1 series for 2024-01-01..2024-03-31, per the mission's own preference order.",
+    "status": "M1_UNRESOLVED"
+  },
+  "explicitly_not_done": [
+    "Did not use post-2026-09-14 prospective/forward MT5 data as a substitute.",
+    "Did not run SSC or any strategy logic against any candidate M1 data (none was ever obtained to run against).",
+    "Did not attempt to upgrade the FMP plan or otherwise circumvent the access-denial.",
+    "Did not synthesize, interpolate, or derive M1 bars from the sealed H1/M15 OOS data to manufacture a substitute.",
+    "Did not access final holdout or canonical HYP_001/HYP_002 evidence in the course of this investigation."
+  ]
+}

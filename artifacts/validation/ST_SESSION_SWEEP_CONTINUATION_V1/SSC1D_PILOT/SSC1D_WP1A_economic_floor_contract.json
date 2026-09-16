@@ -1,0 +1,49 @@
+{
+  "schema": "AG_SSC1D_ECONOMIC_FLOOR_CONTRACT_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP1A",
+  "frozen_utc": "2026-09-16",
+  "note": "Owner-approved absolute OOS economic floor, recorded BEFORE any OOS outcome is inspected. Supersedes the OWNER_DEFINITION_REQUIRED placeholder in SSC1D_WP1_oos_decision_contract.json's absolute_floor_criterion.value. These are post-friction economic viability conditions -- the minimum bar an OOS result must independently clear to be considered economically viable at all -- not optimization targets, and not sufficient by themselves for OOS_PASS (the relative criterion in SSC1D_WP1_oos_decision_contract.json still applies in combination, per that file's combined_rule).",
+  "owner_approved_floor": {
+    "expectancy_R": {
+      "rule": "expectancy_R > 0.0",
+      "meaning": "the mean R-multiple per resolved occurrence, computed post-friction, must be strictly positive"
+    },
+    "profit_factor": {
+      "rule": "profit_factor > 1.0",
+      "meaning": "gross winning R must strictly exceed gross losing R, computed post-friction"
+    },
+    "combination": "BOTH conditions must hold. Either failing alone is sufficient for the absolute_floor_criterion to fail, independent of how the relative criterion (vs. DEVELOPMENT-zone baseline) evaluates."
+  },
+  "deterministic_definitions": {
+    "expectancy_R": {
+      "formula": "expectancy_R = sum(R_i for i in resolved_occurrences) / count(resolved_occurrences)",
+      "R_i": "the realized R-multiple of resolved occurrence i, computed post-friction (see modeled_friction below), using the same R-multiple convention already implemented in src/session_sweep_continuation/outcome_resolution.py (initial risk = entry-to-stop distance at trade inception; partial/runner exits blended per the strategy's own partial/runner weighting, exactly as canonical SSC v1.0.0 computes it for GEN_001/GEN_002 -- this contract does not redefine SSC's own R-multiple mechanics, only fixes which occurrences and which friction basis feed the expectancy_R aggregate)",
+      "scope": "resolved_occurrences only (see resolved/unresolved definition below); unresolved occurrences are excluded from both numerator and denominator, never treated as zero or as a loss"
+    },
+    "profit_factor": {
+      "formula": "profit_factor = sum(R_i for i in resolved_occurrences if R_i > 0) / abs(sum(R_i for i in resolved_occurrences if R_i < 0))",
+      "zero_loss_handling": "if sum(R_i for R_i < 0) == 0 (i.e. zero losing occurrences), profit_factor is UNDEFINED, not infinite and not a synthetic large number. An UNDEFINED profit_factor must be reported as such, and the absolute_floor_criterion evaluation must fall back to expectancy_R alone plus an explicit minimum-sample-size gate (see minimum_sample_size below) -- it must never silently PASS or FAIL a floor check by dividing by zero or substituting an arbitrary large/infinite value.",
+      "minimum_sample_size": "profit_factor (and expectancy_R) computed from fewer than 10 resolved occurrences must be reported alongside an explicit LOW_SAMPLE_SIZE flag; this mirrors the existing SSC convention performance_attribution.min_sample_size=10 in strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml, below which the canonical convention is INSUFFICIENT_EVIDENCE rather than an inferred PASS/FAIL"
+    },
+    "modeled_friction": {
+      "basis": "friction must be modeled using the same per-symbol spread/commission/slippage cost model already defined in canonical SSC v1.0.0 (strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml friction block, implemented in src/session_sweep_continuation/friction.py) -- this contract does not define a new friction model for the pilot",
+      "cost_status_stamping": "every occurrence's friction basis must be stamped KNOWN / MODELED / UNAVAILABLE per the existing convention (never silently treated as INCLUDED when it is not); an OOS evaluation run under UNAVAILABLE cost_status for any occurrence must flag that explicitly rather than assume zero friction",
+      "scenario_vs_evidence": "if a friction stress multiplier is applied for sensitivity purposes it is a scenario, not a claim about the 2024 Q1 Vantage EURUSD spread itself, unless supported by real broker evidence for that historical period specifically (no such evidence has been gathered for 2024 Q1 as of this contract)"
+    },
+    "resolved_vs_unresolved_occurrences": {
+      "resolved": "an occurrence whose exit (stop, target, partial+runner, or explicit time/structural invalidation per SSC's own exit rules) is fully determined within the OOS dataset's available bar range for the relevant timeframe(s)",
+      "unresolved": "an occurrence still open at the end of the OOS dataset's coverage window (no further bars exist to determine its outcome) -- unresolved occurrences are excluded from expectancy_R and profit_factor entirely (see scope above), and must be reported separately as a count, never dropped silently and never assigned an assumed outcome"
+    }
+  },
+  "relationship_to_relative_contract": {
+    "file": "SSC1D_WP1_oos_decision_contract.json",
+    "status": "PRESERVED, not modified by this contract. That file's relative_criterion (vs. DEVELOPMENT-zone frozen candidate, tolerance band still NOT YET SET) and its combined_rule (both relative AND absolute must hold for OOS_PASS) remain in force. This contract only fills in the previously-blank absolute_floor_criterion.value."
+  },
+  "occurrence_safeguards_preserved": {
+    "file": "SSC1D_WP1_optimization_objective_freeze.json",
+    "status": "PRESERVED, not modified. The N >= 70% of baseline safeguard and the neighboring-parameter robustness requirement continue to govern DEVELOPMENT-zone candidate retention; they are a separate, earlier gate from this OOS floor."
+  },
+  "oos_inspection_status": "NOT INSPECTED. No OOS outcome (occurrence, R-multiple, expectancy, PF) has been computed or viewed while drafting this contract. OOS_ACCESS_COUNT remains 0."
+}

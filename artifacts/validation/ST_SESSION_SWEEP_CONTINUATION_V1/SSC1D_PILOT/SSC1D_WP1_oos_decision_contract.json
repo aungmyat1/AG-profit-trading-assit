@@ -12,7 +12,7 @@
     },
     "absolute_floor_criterion": {
       "rule": "OOS expectancy_R (and/or net_R) must independently clear an absolute economic floor, defined without reference to the DEVELOPMENT-zone baseline or candidate results, so that an OOS result cannot PASS merely for being 'less negative than baseline'",
-      "value": "OOS_ABSOLUTE_ECONOMIC_FLOOR = OWNER_DEFINITION_REQUIRED"
+      "value": "RESOLVED as of SSC1D-WP1A (2026-09-16): expectancy_R > 0.0 AND profit_factor > 1.0, owner-approved. Full deterministic definitions (formulas, zero-loss PF handling, resolved/unresolved occurrence scope, friction basis) in SSC1D_WP1A_economic_floor_contract.json -- this field is retained here only as a pointer, the authoritative definition lives in that file."
     },
     "combined_rule": "OOS_PASS requires BOTH the relative_criterion AND the absolute_floor_criterion to hold. Either failing alone is sufficient for OOS_FAIL. This prevents the specific failure mode named in the WP1 mission: a candidate whose OOS result is merely less negative than the SSC v1.0.0 baseline (itself already net-negative per HYP_002's evidence, control net_expectancy_R = -0.4075R) passing by relative comparison alone."
   },
@@ -24,6 +24,7 @@
   },
   "mission_directive_compliance": {
     "instruction": "If no defensible absolute economic floor currently exists in canonical governance, report OOS_ABSOLUTE_ECONOMIC_FLOOR = OWNER_DEFINITION_REQUIRED and STOP before optimization. Do not choose an absolute threshold from observed future candidate results.",
-    "compliance": "COMPLIED -- no threshold has been chosen. This contract's structure is fixed; its absolute_floor_criterion.value is explicitly left as OWNER_DEFINITION_REQUIRED. SSC1D_CAN_CONTINUE_TO_OPTIMIZATION = false as a direct consequence."
+    "compliance_wp1": "COMPLIED at WP1 -- no threshold was chosen by this pilot; OWNER_DEFINITION_REQUIRED was reported and optimization did not proceed.",
+    "compliance_wp1a": "SSC1D-WP1A (2026-09-16) recorded the owner-approved floor (expectancy_R > 0.0 AND profit_factor > 1.0) AS SUPPLIED BY THE OWNER, without inspecting any OOS or candidate result first. This resolves the economic-floor blocker; the separate OOS M1 data-authority blocker remains open (see SSC1D_WP0_dataset_role_manifest.json finding_wp1.m1_gap and SSC1D_WP1A_m1_resolution_report.json)."
   }
 }
