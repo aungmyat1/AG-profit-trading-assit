@@ -551,3 +551,37 @@ All P5 integrity checks passed (`wp2_integrity_report.json`): no duplicates, no 
 the DEVELOPMENT interval, structurally no path to OOS/holdout/prospective data, all exclusions
 recorded and labeled rather than dropped. `OOS_ACCESS_COUNT` remains `0`; final holdout and
 post-2026-09-14 prospective evidence remain untouched.
+
+---
+
+## 21. SSC1D-WP3 addendum — evidence-backed failure diagnosis (2026-09-16)
+
+WP3 diagnosed the WP2 baseline purely descriptively, via read-only aggregation over the
+population-hash-verified per-trade evidence (GEN_001's `per_trade_results.csv`, CONTROL rows
+only) — no baseline rerun, no strategy code executed, no optimization. Full detail under
+`artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC1D_PILOT/SSC1D_WP3_DIAGNOSIS/`.
+
+**Economic attribution**: gross expectancy is effectively zero (`+0.0003R`); friction
+(`5.886R`) is almost exactly equal in magnitude to the entire net loss (`-5.877R`), consuming
+50.5% of all gross-positive R. This is evidence for friction overwhelming a near-zero gross
+edge, not for a negative raw trade edge.
+
+**Failure mechanism ranking** (diagnostic priority only, `SSC1D_WP3_failure_ranking_and_hypothesis_readiness.json`):
+1. `FRICTION_DRAG` (DESCRIPTIVE_STRONG) — exact arithmetic reconciliation, broad/uniform across setups and sessions.
+2. `STOP_LOSS_CONCENTRATION` (DESCRIPTIVE_STRONG) — 11 SL occurrences net -1.224R average, concentrated in ASIAN_LONDON (8/11) and clustering on 2 of 33 calendar days (5/11).
+3. `EXIT_CAPTURE_INEFFICIENCY` (DESCRIPTIVE_MODERATE) — mean MFE 0.739R vs realized gross ~0R; **explicitly flagged as overlapping the OPEN canonical `HYP_001_EXIT_CAPTURE` lineage**, not a novel finding.
+4. `SESSION_CONDITIONALITY` (DESCRIPTIVE_MODERATE) — confounded with setup-mix and largely the same evidence as rank 2.
+5. `SETUP_FAMILY_WEAKNESS` — S2 (N=3, 100% instant SL) flagged `DESCRIPTIVE_WEAK`; no removal conclusion drawn per instruction.
+6. `DIRECTION_SAMPLE_IMBALANCE` — a representativeness limitation, not a loss-driving mechanism.
+
+**Direction limitation**: all 31 occurrences are SHORT (H1 bias was BEARISH throughout this
+window) — nothing here generalizes to LONG behavior; no LONG data was synthesized.
+
+**Three `HYPOTHESIS_READY_MECHANISM` candidates** recorded (mechanism + evidence + limitations +
+concerned canonical component only — no parameter values, ranges, or candidate configurations,
+those are reserved for WP4): friction/risk-allocation interaction, ASIAN_LONDON stop-loss
+concentration, and exit-capture inefficiency (with its HYP_001 overlap flagged).
+
+Integrity confirmed: `strategy_modified=false`, `parameters_modified=false`,
+`optimization_run=false`, `candidate_count=0`, `OOS_ACCESS_COUNT=0`, final holdout and
+post-2026-09-14 prospective evidence untouched.

@@ -1,0 +1,97 @@
+{
+  "schema": "AG_SSC1D_WP3_FAILURE_RANKING_AND_HYPOTHESIS_READINESS_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP3",
+  "generated_utc": "2026-09-16",
+  "note": "Diagnostic priority only. Does NOT rank parameter candidates or strategy modifications. No optimization, sweep, or configuration change occurred in producing this file.",
+
+  "P7_direction_representativeness_limitation": {
+    "LONG_occurrences": 0,
+    "SHORT_occurrences": 31,
+    "cause": "H1 bias was BEARISH for all 66 decision cycles in this DEVELOPMENT window (bias_counts.BEARISH=66, BULLISH=0 per SSC1D_WP2_BASELINE/wp2_baseline_report.json) -- SSC only trades in the direction of H1 bias, so a BEARISH-only window structurally produces SHORT-only occurrences.",
+    "assessment": "Every finding in this diagnosis (economic attribution, setup/session/SL/exit-capture patterns) describes SHORT-side behavior only. None of it can be generalized to LONG occurrences -- friction may differ by direction (asymmetric spread/slippage is possible but not evidenced either way here), and setup/session dynamics could plausibly differ for LONG entries for reasons this window cannot speak to (e.g. different session liquidity asymmetries). This is a genuine evidentiary gap, not a strategy defect.",
+    "action_taken": "No LONG trades were synthesized. The dataset was not broadened. This limitation is carried forward as a constraint on any future WP4 hypothesis scope, not resolved here."
+  },
+
+  "P8_failure_mechanism_ranking": [
+    {
+      "rank": 1,
+      "mechanism": "FRICTION_DRAG",
+      "supporting_N": 31,
+      "economic_contribution": "friction_total_R = 5.886R, approximately equal in magnitude to the entire net loss (net_R = -5.877R), against a gross_expectancy_R of only +0.0003R",
+      "supporting_metrics": "50.5% of all gross-positive R consumed by friction; friction fairly uniform across setups (0.151-0.238R mean) and sessions (0.173-0.208R mean) -- broad structural drag, not concentrated in one segment",
+      "confidence": "DESCRIPTIVE_STRONG",
+      "limitations": "Exact arithmetic reconciliation (gross - friction = net, verified to 0.0 residual), not an inference -- the strongest-evidenced mechanism in this diagnosis by construction"
+    },
+    {
+      "rank": 2,
+      "mechanism": "STOP_LOSS_CONCENTRATION",
+      "supporting_N": 11,
+      "economic_contribution": "SL-bucket net_R sums to roughly -13.47R (net_expectancy -1.224R x 11) versus SESSION_EXIT-bucket net_R of roughly +7.59R (net_expectancy +0.379R x 20) -- the SL bucket alone more than accounts for the total -5.877R net loss",
+      "supporting_metrics": "SL occurrences concentrate in ASIAN_LONDON (8/11) and cluster on 2 of 33 calendar days (5/11 SL occurrences on 2026-05-26 and 2026-06-01 alone); mean MAE -0.593R; only 4/11 reached MFE>=0.5R before stopping (a minority)",
+      "confidence": "DESCRIPTIVE_STRONG",
+      "limitations": "Direct count/expectancy split already present in WP2's own decomposition, cross-validated here at occurrence level -- clustering on 2 days is suggestive but N=2 cluster-days is too small to claim a systematic calendar/event pattern"
+    },
+    {
+      "rank": 3,
+      "mechanism": "EXIT_CAPTURE_INEFFICIENCY",
+      "supporting_N": 12,
+      "economic_contribution": "mean gap of 0.739R between MFE and realized gross_R across all 31 occurrences; not separable into a single R-figure of 'lost' economics without assuming a counterfactual exit rule, which this diagnosis does not do",
+      "supporting_metrics": "12/31 occurrences (39%) show positive MFE with realized gross_R <= 0; mean MFE 0.739R vs mean realized gross_R 0.0003R",
+      "confidence": "DESCRIPTIVE_MODERATE",
+      "limitations": "Conflated across winning and losing occurrences and across exit reasons (session-exit trades that gave back gains vs SL trades with some prior favorable excursion are structurally different situations); this pilot's diagnosis contract (SSC1D_WP0_diagnosis_contract_schema.json) requires flagging that this exact mechanism -- exit-capture / target too far -- is ALREADY the subject of the OPEN canonical hypothesis HYP_001_EXIT_CAPTURE (artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_PREREGISTRATION/). Any future WP4 hypothesis touching this mechanism must explicitly acknowledge that overlap rather than treat it as a novel finding."
+    },
+    {
+      "rank": 4,
+      "mechanism": "SESSION_CONDITIONALITY",
+      "supporting_N": 31,
+      "economic_contribution": "ASIAN_LONDON net_expectancy -0.672R x 15 = -10.08R vs LONDON_NEWYORK +0.262R x 16 = +4.20R",
+      "supporting_metrics": "SL_rate 53.3% (ASIAN_LONDON) vs 18.75% (LONDON_NEWYORK); MFE mean 0.463R vs 0.999R; setup composition differs modestly between sessions",
+      "confidence": "DESCRIPTIVE_MODERATE",
+      "limitations": "Confounded with setup-family composition and with STOP_LOSS_CONCENTRATION (rank 2) -- ASIAN_LONDON's worse economics may be substantially the SAME evidence as the SL concentration finding rather than an independent mechanism; N=15/16 is too small to fully decompose session effect from setup-mix effect"
+    },
+    {
+      "rank": 5,
+      "mechanism": "SETUP_FAMILY_WEAKNESS (S2 specifically)",
+      "supporting_N": 3,
+      "economic_contribution": "S2 net_expectancy -1.238R x 3 = -3.71R net -- a disproportionate share of the total -5.877R net loss relative to S2's 3-of-31 occurrence share",
+      "supporting_metrics": "SL_rate 100% (3/3), all 3 with MAE=MFE=0.0 (instant 1-minute stop-outs), gross_PF and net_PF both UNDEFINED_NO_WINS",
+      "confidence": "DESCRIPTIVE_WEAK",
+      "limitations": "N=3 -- per mission instruction, this diagnosis explicitly does NOT conclude S2 should be removed based on three observations. The pattern (100% instant SL) is striking but statistically it could equally be 3 unlucky draws from a setup with real edge; no conclusion is drawn."
+    },
+    {
+      "rank": 6,
+      "mechanism": "DIRECTION_SAMPLE_IMBALANCE",
+      "supporting_N": 31,
+      "economic_contribution": "NOT CALCULABLE -- this is a representativeness limitation (see P7), not an observed cause of the measured economics",
+      "supporting_metrics": "31 SHORT / 0 LONG, driven entirely by H1 bias being BEARISH throughout this window",
+      "confidence": "DESCRIPTIVE_STRONG (as a limitation, not as a loss-driving mechanism)",
+      "limitations": "Listed per the mission's own mechanism-category list; it does not explain WHY the measured net expectancy is negative -- it constrains what the other findings above can be generalized to"
+    }
+  ],
+
+  "P9_hypothesis_ready_mechanisms": [
+    {
+      "id": "SSC1D-MECH-1",
+      "observed_mechanism": "Friction consumes roughly half of all gross-positive R and is approximately equal in magnitude to the entire net loss, against a gross edge that is statistically indistinguishable from zero at N=31",
+      "supporting_evidence": "P1 economic attribution: gross_expectancy_R=+0.0003R, friction_total_R=5.886R ~ |net_R|=5.877R, 50.5% of gross-positive R consumed by friction, friction fairly uniform across setups/sessions",
+      "sample_limitations": "N=31, single ~5-week window, SHORT-only (see P7); no cross-period or cross-symbol replication performed in this pilot",
+      "canonical_component_potentially_concerned": "session_sweep_continuation.friction (cost model) and/or campaign risk-allocation sizing (strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml risk allocation block) -- NOT specified further; no parameter values proposed"
+    },
+    {
+      "id": "SSC1D-MECH-2",
+      "observed_mechanism": "Stop-loss occurrences concentrate disproportionately in the ASIAN_LONDON session and cluster on a small number of calendar days, coinciding with that session's substantially worse net expectancy",
+      "supporting_evidence": "P5/P4: SL_rate 53.3% (ASIAN_LONDON) vs 18.75% (LONDON_NEWYORK); 5 of 11 SL occurrences fall on just 2 of 33 development days; ASIAN_LONDON MFE mean 0.463R vs LONDON_NEWYORK 0.999R",
+      "sample_limitations": "N=15 (ASIAN_LONDON), confounded with setup-family composition differences between sessions (see P4 finding); 2-day clustering is suggestive, not statistically established as a repeating pattern",
+      "canonical_component_potentially_concerned": "session_pairs / regime gating (strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml session_pairs block, src/session_sweep_continuation/regime.py) and/or stop placement (src/session_sweep_continuation/stop_engine.py) -- NOT specified further; no parameter values proposed"
+    },
+    {
+      "id": "SSC1D-MECH-3",
+      "observed_mechanism": "Favorable price excursion (MFE) is frequently not realized -- mean MFE of 0.739R against mean realized gross_R of ~0.0003R, with 39% of occurrences showing positive MFE but a flat-or-negative close",
+      "supporting_evidence": "P6: MFE_R_mean=0.739R, MFE_minus_realized_gross_R_mean=0.739R, 12/31 occurrences with positive MFE but gross_R<=0",
+      "sample_limitations": "N=31, conflated across SL and session-exit populations (structurally different situations, not cleanly separated); this exact mechanism family overlaps the OPEN canonical hypothesis HYP_001_EXIT_CAPTURE and must not be treated as a novel finding independent of that lineage",
+      "canonical_component_potentially_concerned": "exit/target logic (src/session_sweep_continuation/outcome_resolution.py partial/runner exit rules, runner_target_r) -- explicitly flagged as overlapping HYP_001_EXIT_CAPTURE; any future WP4 action here must acknowledge that overlap rather than proceed as if novel. NOT specified further; no parameter values proposed"
+    }
+  ]
+}

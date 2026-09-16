@@ -1,0 +1,69 @@
+{
+  "descriptive_finding": "Reconciliation is exact (gross - friction - net = 0.0). Gross expectancy is effectively zero (+0.0003R over 31 occurrences) -- the raw, pre-friction trade edge is indistinguishable from breakeven at this sample size. Friction consumes 50.5% of all gross POSITIVE R generated (11.647R gross-positive vs 5.886R total friction), and friction alone (5.886R) is almost exactly equal in magnitude to the entire net loss (-5.877R). This is evidence mechanism (B) -- friction overwhelming near-zero gross economics -- dominates over mechanism (A) -- negative gross trade economics are NOT evidenced; gross_expectancy_R is not meaningfully negative. Friction is fairly uniform across setups (S1 0.224R, S2 0.238R, S3 0.151R mean) and sessions (ASIAN_LONDON 0.208R, LONDON_NEWYORK 0.173R mean) -- no single setup/session concentrates friction disproportionately; it is a broad, structural drag rather than an isolated pocket.",
+  "friction_breakdown": {
+    "by_exit_reason": {
+      "SESSION_EXIT_FULL_POSITION": {
+        "N": 20,
+        "mean": 0.17104348112198728,
+        "total": 3.4208696224397457
+      },
+      "SL": {
+        "N": 11,
+        "mean": 0.22414285485599506,
+        "total": 2.4655714034159457
+      }
+    },
+    "by_session": {
+      "ASIAN_LONDON": {
+        "N": 15,
+        "mean": 0.20836578560388028,
+        "total": 3.125486784058204
+      },
+      "LONDON_NEWYORK": {
+        "N": 16,
+        "mean": 0.17255964011234295,
+        "total": 2.7609542417974873
+      }
+    },
+    "by_setup": {
+      "S1": {
+        "N": 13,
+        "mean": 0.22388212236293092,
+        "total": 2.910467590718102
+      },
+      "S2": {
+        "N": 3,
+        "mean": 0.23758085006175156,
+        "total": 0.7127425501852547
+      },
+      "S3": {
+        "N": 15,
+        "mean": 0.15088205899682233,
+        "total": 2.263230884952335
+      }
+    }
+  },
+  "generated_utc": "2026-09-16",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "reconciliation": {
+    "friction_R_distribution": {
+      "max": 0.2993429784017202,
+      "mean": 0.18988519438244167,
+      "median": 0.20093250704236423,
+      "min": 0.07044961243819618,
+      "stdev": 0.07538977763423017
+    },
+    "friction_expectancy_R": 0.18988519438244167,
+    "friction_total_R": 5.886441025855691,
+    "gross_expectancy_R": 0.00029991852908020243,
+    "gross_positive_total_R": 11.64738344431325,
+    "gross_total_R": 0.009297474401486275,
+    "net_expectancy_R": -0.18958527585336146,
+    "net_total_R": -5.877143551454205,
+    "pct_gross_positive_R_consumed_by_friction": 50.538741632393865,
+    "reconciliation_check_gross_minus_friction_minus_net": 0.0
+  },
+  "schema": "AG_SSC1D_WP3_ECONOMIC_ATTRIBUTION_V1",
+  "source": "Read-only aggregation over artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/per_trade_results.csv (policy==CONTROL rows only), justified by SSC1D-WP2's confirmed population_hash match to this exact 31-occurrence population. No baseline rerun. No strategy code executed.",
+  "work_package": "SSC1D-WP3"
+}

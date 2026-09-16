@@ -1,0 +1,161 @@
+{
+  "P3_note": "S2 (N=3) is explicitly flagged small_sample_flag=true. Per mission instruction, this diagnosis does NOT conclude S2 should be removed based on three observations -- it is reported descriptively only.",
+  "P3_setup_diagnosis": {
+    "S1": {
+      "MAE_mean": -0.8909044276061764,
+      "MAE_median": -0.8940237888110112,
+      "MFE_mean": 1.1092762677058172,
+      "MFE_median": 0.574729578521292,
+      "N": 13,
+      "SL_rate": 0.38461538461538464,
+      "breakevens": 1,
+      "friction_average_R": 0.22388212236293092,
+      "gross_PF": 1.5947136540152784,
+      "gross_expectancy_R": 0.22873602077510705,
+      "holding_duration_minutes_max": 239.0,
+      "holding_duration_minutes_mean": 99.76923076923077,
+      "holding_duration_minutes_median": 71.0,
+      "holding_duration_minutes_min": 14.0,
+      "losses": 5,
+      "net_PF": 1.009964387870613,
+      "net_expectancy_R": 0.004853898412176145,
+      "session_exit_rate": 0.6153846153846154,
+      "small_sample_flag": false,
+      "wins": 7
+    },
+    "S2": {
+      "MAE_mean": 0.0,
+      "MAE_median": 0.0,
+      "MFE_mean": 0.0,
+      "MFE_median": 0.0,
+      "N": 3,
+      "SL_rate": 1.0,
+      "breakevens": 0,
+      "friction_average_R": 0.23758085006175156,
+      "gross_PF": "UNDEFINED_NO_WINS",
+      "gross_expectancy_R": -1.0,
+      "holding_duration_minutes_max": 1.0,
+      "holding_duration_minutes_mean": 1.0,
+      "holding_duration_minutes_median": 1.0,
+      "holding_duration_minutes_min": 1.0,
+      "losses": 3,
+      "net_PF": "UNDEFINED_NO_WINS",
+      "net_expectancy_R": -1.2375808500617516,
+      "session_exit_rate": 0.0,
+      "small_sample_flag": true,
+      "wins": 0
+    },
+    "S3": {
+      "MAE_mean": -0.5451427206821852,
+      "MAE_median": -0.4708823547534398,
+      "MFE_mean": 0.5668783375165473,
+      "MFE_median": 0.5571596899578014,
+      "N": 15,
+      "SL_rate": 0.2,
+      "breakevens": 0,
+      "friction_average_R": 0.15088205899682233,
+      "gross_PF": 1.0098208796110337,
+      "gross_expectancy_R": 0.002381946955006302,
+      "holding_duration_minutes_max": 194.0,
+      "holding_duration_minutes_mean": 82.8,
+      "holding_duration_minutes_median": 74.0,
+      "holding_duration_minutes_min": 1.0,
+      "losses": 7,
+      "net_PF": 0.5547918289172548,
+      "net_expectancy_R": -0.148500112041816,
+      "session_exit_rate": 0.8,
+      "small_sample_flag": false,
+      "wins": 8
+    }
+  },
+  "P4_finding": "The ASIAN_LONDON (-0.672R) vs LONDON_NEWYORK (+0.262R) expectancy gap is associated with a large SL-rate difference (53.3% vs 18.75%) and a modestly different setup composition (ASIAN_LONDON: S1=6/S2=1/S3=8, more S3-weighted; LONDON_NEWYORK: S1=7/S2=2/S3=7, more balanced). Friction is NOT a differentiator (0.208R vs 0.173R mean, both close to the overall 0.190R average). MAE is deeper in ASIAN_LONDON (-0.738R vs -0.543R mean) and MFE is markedly lower (0.463R vs 0.999R mean) -- consistent with ASIAN_LONDON occurrences both stopping out more often AND running less favorably when they don't. Because setup composition differs between the two sessions, this diagnosis cannot cleanly isolate a pure 'session effect' from a 'setup-mix effect' with only 15 and 16 occurrences respectively.",
+  "P4_session_diagnosis": {
+    "ASIAN_LONDON": {
+      "MAE_mean": -0.737749652259953,
+      "MFE_mean": 0.4630025992285856,
+      "N": 15,
+      "SL_count": 8,
+      "SL_rate": 0.5333333333333333,
+      "exit_reason_counts": {
+        "SESSION_EXIT_FULL_POSITION": 7,
+        "SL": 8
+      },
+      "friction_mean": 0.20836578560388028,
+      "holding_duration_mean_minutes": 89.86666666666666,
+      "setup_composition": {
+        "S1": 6,
+        "S2": 1,
+        "S3": 8
+      }
+    },
+    "LONDON_NEWYORK": {
+      "MAE_mean": -0.5432908490758608,
+      "MFE_mean": 0.9986704721559406,
+      "N": 16,
+      "SL_count": 3,
+      "SL_rate": 0.1875,
+      "exit_reason_counts": {
+        "SESSION_EXIT_FULL_POSITION": 13,
+        "SL": 3
+      },
+      "friction_mean": 0.17255964011234295,
+      "holding_duration_mean_minutes": 74.625,
+      "setup_composition": {
+        "S1": 7,
+        "S2": 2,
+        "S3": 7
+      }
+    }
+  },
+  "P5_finding": "11 SL occurrences (net expectancy -1.224R) are concentrated in ASIAN_LONDON (8/11) and further cluster on specific calendar days: 3 of 11 SL occurrences fall on 2026-05-26 alone (07:30, 08:45, 09:00) and 2 more on 2026-06-01 (07:30, 09:00) -- 45% of all SL occurrences land on just 2 of the 33 development days. Mean MAE for SL trades is -0.593R (median -0.894R, bimodal: several trades show MAE=MFE=0.0, i.e. an immediate/near-instant stop-out with zero prior excursion in either direction -- both S2 SL trades and at least one other show this exact pattern -- versus others that ran favorably first). 4 of 11 SL occurrences (36%) reached MFE >= 0.5R before eventually stopping out, and 1 of 11 reached MFE >= 1.0R -- i.e. a minority of SL trades had meaningful favorable excursion that reversed; the majority did not.",
+  "P5_stop_loss_diagnosis": {
+    "MAE_mean": -0.5931067219496567,
+    "MAE_median": -0.8940237888110112,
+    "MFE_mean": 0.2880794018261667,
+    "MFE_median": 0.12055950422561346,
+    "N": 11,
+    "by_session": {
+      "ASIAN_LONDON": 8,
+      "LONDON_NEWYORK": 3
+    },
+    "by_setup": {
+      "S1": 5,
+      "S2": 3,
+      "S3": 3
+    },
+    "entry_times": [
+      "2026-05-19T13:15:00+00:00",
+      "2026-05-21T13:15:00+00:00",
+      "2026-05-26T07:30:00+00:00",
+      "2026-05-26T08:45:00+00:00",
+      "2026-05-26T09:00:00+00:00",
+      "2026-06-01T07:30:00+00:00",
+      "2026-06-01T09:00:00+00:00",
+      "2026-06-04T08:30:00+00:00",
+      "2026-06-08T08:45:00+00:00",
+      "2026-06-10T12:45:00+00:00",
+      "2026-06-12T08:15:00+00:00"
+    ],
+    "friction_mean": 0.22414285485599508,
+    "holding_duration_mean_minutes": 31.09090909090909,
+    "holding_duration_median_minutes": 34.0,
+    "occurrences_with_MFE_gte_0.5R_before_SL": 4,
+    "occurrences_with_MFE_gte_1.0R_before_SL": 1
+  },
+  "P6_exit_capture_diagnosis": {
+    "MFE_R_mean": 0.7394763400943173,
+    "MFE_R_median": 0.5070789370130278,
+    "MFE_minus_realized_gross_R_mean": 0.739176421565237,
+    "MFE_minus_realized_gross_R_median": 0.6186421553636199,
+    "N": 31,
+    "capture_ratio_mean_gross_over_MFE": -1.118820247225734,
+    "occurrences_where_MFE_positive_but_gross_R_negative_or_zero": 12,
+    "realized_gross_R_mean": 0.00029991852908020243,
+    "realized_net_R_mean": -0.18958527585336143
+  },
+  "P6_finding": "Mean MFE across all 31 occurrences is 0.739R against a mean realized gross_R of essentially 0.0003R -- a mean gap of 0.739R (median 0.619R) between favorable excursion reached and what was actually realized. 12 of 31 occurrences (39%) show positive MFE but a realized gross_R at or below zero -- i.e. the trade moved favorably at some point but still closed flat or negative. The 'capture ratio' (mean of gross_R/MFE_R, -1.12) is not a meaningful summary on its own -- it is dominated by sign flips from trades where gross_R went negative after a small positive MFE, and is reported here only for completeness, not as a primary finding. The gap-based framing (MFE minus realized) is the more interpretable descriptive signal.",
+  "generated_utc": "2026-09-16",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "schema": "AG_SSC1D_WP3_SETUP_SESSION_SL_EXITCAPTURE_DIAGNOSIS_V1",
+  "work_package": "SSC1D-WP3"
+}
