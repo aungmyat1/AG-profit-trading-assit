@@ -1,0 +1,23 @@
+{
+  "schema": "AG_SSC1D_DIAGNOSIS_CONTRACT_SCHEMA_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP0",
+  "note": "Schema only. No hypothesis instances exist yet under this pilot as of WP0.",
+  "required_fields": {
+    "optimization_hypothesis_id": "string, pilot-local namespace 'SSC1D-H<n>' -- never 'HYP_00N', which is reserved for canonical SSC lineage",
+    "observed_problem": "string, must cite concrete evidence (metric + source artifact), not intuition",
+    "supporting_metrics": "array of pointers into a specific baseline decomposition report/field",
+    "mechanism": "string, causal explanation; if it duplicates an existing canonical hypothesis mechanism (e.g. HYP_001_EXIT_CAPTURE's exit-target mechanism), must say so explicitly and justify why a separate non-canonical pilot exploration is still warranted",
+    "controlled_change_family": "string, e.g. 'exit target geometry', 'setup selectivity', 'session gate'",
+    "parameters_allowed_to_change": "array of dot-paths into strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
+    "parameters_frozen": "explicit array or statement -- must not be implied by omission",
+    "expected_effect": "string, directional and falsifiable",
+    "rejection_condition": "string, fixed before any candidate result is observed"
+  },
+  "governance_notes": [
+    "No unrestricted parameter search is permitted under any hypothesis instance.",
+    "A hypothesis instance must be fully populated in this shape before its first candidate (see SSC1D_WP0_candidate_ledger_schema.json) is built.",
+    "This schema does not itself authorize optimization; SSC1D-WP1 or later must obtain owner sign-off on a per-hypothesis PASS/FAIL/INCONCLUSIVE decision rule before backtesting any candidate under a hypothesis (see SSC_ONE_DAY_DEMO_PILOT_V2.md section 6.1)."
+  ]
+}

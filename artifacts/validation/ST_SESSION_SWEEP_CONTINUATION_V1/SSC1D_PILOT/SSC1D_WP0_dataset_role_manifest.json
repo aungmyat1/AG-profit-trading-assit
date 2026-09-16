@@ -1,0 +1,98 @@
+{
+  "schema": "AG_SSC1D_DATASET_ROLE_MANIFEST_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP0",
+  "generated_utc": "2026-09-16",
+  "note": "Read-only inventory of REAL, already-existing repository artifacts. No synthetic data created. No dataset content inspected beyond metadata/header fields already visible in existing manifests. This is a pilot-local manifest; it does not modify or supersede any canonical SSC or Large-SMC dataset-role artifact.",
+  "datasets": [
+    {
+      "dataset_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914",
+      "symbol": ["EURUSD", "GBPUSD"],
+      "time_range_utc": "2026-08-01T00:00:00Z .. 2026-09-14T23:59:59Z",
+      "timeframes": ["H1", "M15", "M1"],
+      "source": "data/research/ssc_fresh_dev/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914/dataset_manifest.json",
+      "hash": "see combined_dataset_fingerprint in source dataset_manifest.json (not re-extracted by this mission)",
+      "previous_consumption": "CONSUMED -- used for HYP_002 population (attempts 1 and 2); actively in use by the still-open HYP_001_FRESH_CONFIRM_001 canonical lane",
+      "assigned_role": "CONSUMED_NON_COUNTING",
+      "allowed_operations": ["inspection", "audit"],
+      "reason": "Ineligible for pilot development use (would cross-contaminate the independently-running canonical HYP_001 evidence lane) and ineligible as pilot OOS (not untouched)."
+    },
+    {
+      "dataset_id": "EURUSD_H1_202501020000_202607310000",
+      "symbol": ["EURUSD"],
+      "time_range_utc": "2025-01-02T00:00:00Z .. 2026-07-31T00:00:00Z",
+      "timeframes": ["H1"],
+      "source": "config/historical_datasets/EURUSD_H1_202501020000_202607310000.yaml",
+      "hash": "UNKNOWN -- not extracted from the manifest by this mission",
+      "previous_consumption": "UNKNOWN -- not confirmed consumed specifically by SSC; overlaps windows used elsewhere in the repo for other strategies/pipelines",
+      "assigned_role": "UNKNOWN",
+      "allowed_operations": [],
+      "reason": "Requires a dedicated SSC-specific consumption re-audit before any role can be assigned; not to be used until re-audited."
+    },
+    {
+      "dataset_id": "EURUSD_M15_202501020000_202606192345",
+      "symbol": ["EURUSD"],
+      "time_range_utc": "2025-01-02T00:00:00Z .. 2026-06-19T23:45:00Z",
+      "timeframes": ["M15"],
+      "source": "config/historical_datasets/EURUSD_M15_202501020000_202606192345.yaml",
+      "hash": "UNKNOWN -- not extracted from the manifest by this mission",
+      "previous_consumption": "UNKNOWN -- not confirmed consumed specifically by SSC",
+      "assigned_role": "UNKNOWN",
+      "allowed_operations": [],
+      "reason": "Requires a dedicated SSC-specific consumption re-audit before any role can be assigned."
+    },
+    {
+      "dataset_id": "EURUSD_M1_202605180946_202607312356",
+      "symbol": ["EURUSD"],
+      "time_range_utc": "2026-05-18T09:46:00Z .. 2026-07-31T23:56:00Z",
+      "timeframes": ["M1"],
+      "source": "config/historical_datasets/EURUSD_M1_202605180946_202607312356.yaml",
+      "hash": "UNKNOWN -- not extracted from the manifest by this mission",
+      "previous_consumption": "UNKNOWN -- not confirmed consumed specifically by SSC",
+      "assigned_role": "UNKNOWN",
+      "allowed_operations": [],
+      "reason": "Requires a dedicated SSC-specific consumption re-audit before any role can be assigned."
+    },
+    {
+      "dataset_id": "GBPUSD_H1_WARMUP_PLUS_R1",
+      "symbol": ["GBPUSD"],
+      "time_range_utc": "per config/historical_datasets/GBPUSD_H1_WARMUP_PLUS_R1_symbol_metadata.yaml",
+      "timeframes": ["H1"],
+      "source": "config/historical_datasets/GBPUSD_H1_WARMUP_PLUS_R1_symbol_metadata.yaml",
+      "hash": "UNKNOWN -- not extracted from the manifest by this mission",
+      "previous_consumption": "CONSUMED -- HYP_001_GBPUSD_REPLICATION_R1 (terminal, REPLICATION_INCONCLUSIVE_INSUFFICIENT_SAMPLE)",
+      "assigned_role": "CONSUMED_NON_COUNTING",
+      "allowed_operations": [],
+      "reason": "Spent on a terminal canonical replication attempt; not reusable as untouched evidence for this pilot."
+    },
+    {
+      "dataset_id": "SSC1D_FUTURE_POST_20260914_EURUSD_PACKAGE",
+      "symbol": ["EURUSD"],
+      "time_range_utc": "NOT YET ACQUIRED -- must post-date 2026-09-14T23:59:59Z (SSC_FRESH_DEV_GEN_002 frozen_end)",
+      "timeframes": ["proposed: H1, M15, M1 to match existing SSC replay engine inputs"],
+      "source": "NOT YET CREATED",
+      "hash": "NOT YET CREATED",
+      "previous_consumption": "NONE -- does not exist in the repository yet",
+      "assigned_role": "OOS_UNTOUCHED (candidate designation only -- not an existing asset)",
+      "allowed_operations": [],
+      "reason": "Must be freshly acquired via the existing admitted MT5 path (pattern: FRESH_DATA_ADMISSION/), split into DEVELOPMENT_REUSABLE and OOS_UNTOUCHED slices at acquisition time before either slice is inspected, and admitted through a new pilot-local admission record before any use. This is SSC1D-WP1 scope, not WP0."
+    },
+    {
+      "dataset_id": "SSC_CANONICAL_FINAL_HOLDOUT",
+      "symbol": ["n/a"],
+      "time_range_utc": "NOT DEFINED",
+      "timeframes": [],
+      "source": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/CURRENT_VALIDATION_STATE.json (holdout: null, holdout_run_count: 0)",
+      "hash": "n/a",
+      "previous_consumption": "n/a -- not established",
+      "assigned_role": "FINAL_HOLDOUT_SEALED (not established)",
+      "allowed_operations": [],
+      "reason": "This pilot has no authority to define, seed, or seal a canonical SSC final holdout. Out of scope for all SSC1D work packages."
+    }
+  ],
+  "finding": {
+    "dataset_role_status": "NO_LEGITIMATE_OOS_ESTABLISHED",
+    "next_safe_action": "ACQUIRE_NEW_POST_2026-09-14_EURUSD_PACKAGE_VIA_EXISTING_MT5_INFRASTRUCTURE, THEN RE-RUN DATASET-ROLE CLASSIFICATION BEFORE SSC1D-WP1 MAY PROCEED PAST P2"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "AG_SSC1D_CANDIDATE_LEDGER_SCHEMA_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP0",
+  "note": "Schema only. No candidate instances exist yet under this pilot as of WP0. Modeled after the immutable current+history pattern already used by state/proposal_ledger/proposal_ledger.json, but this is a separate pilot-local file -- never written into the canonical proposal ledger.",
+  "immutability_rule": "Entries are append-only. Rejected candidates are retained permanently, never deleted or overwritten. Only the winner is never retained-only.",
+  "required_fields": {
+    "candidate_id": "string, e.g. 'SSC1D-H1-C03'",
+    "parent_candidate_id": "string or null; null for a hypothesis's first candidate",
+    "hypothesis_id": "string, 'SSC1D-H<n>', must exist in the diagnosis contract ledger",
+    "semantic_config_hash": "hash of the full effective config (parent YAML v1.0.0 + this candidate's diff)",
+    "changed_fields": "array of {dot_path, from, to} -- explicit diff from strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
+    "development_dataset_hash": "hash of the DEVELOPMENT_REUSABLE dataset slice used (see dataset role manifest)",
+    "N": "integer, sample size",
+    "expectancy_R": "float",
+    "profit_factor": "float",
+    "max_drawdown_R": "float",
+    "MFE": "float",
+    "MAE": "float",
+    "setup_decomposition": "object keyed by S1/S2/S3, session, direction, regime, exit_reason",
+    "result": "object, raw metrics outcome",
+    "decision": "enum: RETAIN | REJECT",
+    "decision_reason": "string, must reference the owning hypothesis's preregistered rejection_condition"
+  },
+  "governance_notes": [
+    "No OOS access is permitted while this ledger is being populated (development phase only).",
+    "Budget accounting against max_major_hypotheses=3, max_total_candidates=20, max_search_time=3h (see SSC_ONE_DAY_DEMO_PILOT_V2.md section 6) must be derivable from this ledger's entry count and timestamps.",
+    "At candidate freeze (see SSC_ONE_DAY_DEMO_PILOT_V2.md section 9), a hash of the full ledger file at that moment is recorded in the freeze record."
+  ]
+}

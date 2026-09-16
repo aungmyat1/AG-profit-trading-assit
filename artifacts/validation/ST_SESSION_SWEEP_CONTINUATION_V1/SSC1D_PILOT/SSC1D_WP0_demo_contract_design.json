@@ -1,0 +1,24 @@
+{
+  "schema": "AG_SSC1D_DEMO_CONTRACT_DESIGN_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP0",
+  "activation_status": "NOT_ACTIVATED",
+  "note": "Design-only artifact for future owner review. No code path in this repository currently reads or enforces this contract. This pilot has no authority to activate it. It only becomes relevant if a future SSC1D work package reaches DEMO_PILOT_READY per the final status contract in SSC_ONE_DAY_DEMO_PILOT_V2.md section 12.",
+  "recommended_contract": {
+    "environment": "DEMO",
+    "symbol": "EURUSD",
+    "max_open_positions": 1,
+    "max_new_entries": 1,
+    "strategy_config": "frozen candidate only -- candidate_id pinned via SSC1D_WPn_candidate_freeze.json",
+    "owner_approval_required": true,
+    "live_authorized": false,
+    "automatic_expiry": "end of pilot day (UTC)",
+    "no_valid_setup_policy": "NO_TRADE_VALID_DAY"
+  },
+  "authority_statement": {
+    "canonical_demo_eligible": false,
+    "live_eligible": false,
+    "note": "Both remain false regardless of this pilot's outcome, unless independently changed by SSC's existing canonical governance (config/governance/strategy_lifecycle.yaml + explicit owner authorization), which this pilot cannot itself do."
+  }
+}
