@@ -1,0 +1,20 @@
+{
+  "schema": "AG_SSC1D_WP2_MAE_MFE_SUMMARY_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "work_package": "SSC1D-WP2",
+  "generated_utc": "2026-09-16",
+  "provenance": "MAE_R/MFE_R are not emitted by this pilot's own replay driver (scripts/run_ssc1d_wp2_baseline_replay.py) or by the canonical outcome_resolution engine it reuses. This summary is a read-only aggregation over artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/per_trade_results.csv, filtered to policy=='CONTROL' only (the 30/45/60/90/120 duration-cap rows are a DIFFERENT experiment and excluded). This borrowing is justified ONLY because SSC1D_WP2_BASELINE/wp2_baseline_report.json's gen001_cross_population_parity_check.matches_gen001 = true -- i.e. this pilot's independently-executed population_hash is byte-identical to GEN_001's. No GEN_001 file was modified to produce this summary; the CSV was read only.",
+  "overall": {
+    "N": 31,
+    "mean_MFE_R": 0.7394763400943172,
+    "mean_MAE_R": -0.6373838183584861,
+    "median_MFE_R": 0.5070789370130278
+  },
+  "by_setup": {
+    "S1": {"N": 13, "mean_MFE_R": 1.1092762677058174, "mean_MAE_R": -0.8909044276061764},
+    "S2": {"N": 3, "mean_MFE_R": 0.0, "mean_MAE_R": 0.0, "note": "All 3 S2 occurrences resolved at exactly SL with zero adverse/favorable excursion prior to stop-out per the CSV's recorded values -- reported as-is, not treated as suspicious or repaired"},
+    "S3": {"N": 15, "mean_MFE_R": 0.5668783375165473, "mean_MAE_R": -0.5451427206821851}
+  },
+  "exit_reason_counts": {"SESSION_EXIT_FULL_POSITION": 20, "SL": 11},
+  "computation_method": "Simple arithmetic mean over the mfe_R/mae_R columns of the matching CSV rows -- no strategy logic invoked, pure read-only aggregation"
+}

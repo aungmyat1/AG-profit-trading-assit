@@ -518,3 +518,36 @@ resolved or explicitly owner-approved under a preregistered reduced-precision me
 
 This addendum authorizes a future WP2 to begin DEVELOPMENT baseline work; it does not itself run
 WP2, compute a baseline, or touch the OOS package.
+
+---
+
+## 20. SSC1D-WP2 addendum — DEVELOPMENT baseline measurement (2026-09-16)
+
+WP2 executed one authoritative, canonical-parity SSC v1.0.0 replay over DEVELOPMENT only,
+via a new pilot-local driver (`scripts/run_ssc1d_wp2_baseline_replay.py`) that reuses every
+underlying canonical library call (`historical_replay.*`, `session_sweep_continuation.h1_bias`/`replay`,
+`performance.calculator`) unmodified, writing output exclusively under
+`artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC1D_PILOT/SSC1D_WP2_BASELINE/` — never
+into the existing canonical `GEN_001` directory. The baseline-run contract (§P1) was frozen
+(`SSC1D_WP2_baseline_run_contract.json`) before the run executed.
+
+**Result**: 66 decision cycles → 31 resolved occurrences (0 unresolved), matching GEN_001's own
+population exactly — `population_hash` `8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d`,
+confirmed identical both internally (RUN_1 vs RUN_2, `G0_REPRODUCIBILITY_PASS`) and against the
+pre-existing GEN_001 canonical evidence (read-only cross-check, `matches_gen001=true`). This is
+the strongest available reproducibility proof: an independently re-executed process reproduced
+GEN_001's population byte-for-byte without touching GEN_001's own files.
+
+**`SSC1D_BASELINE` anchor** (`SSC1D_BASELINE_anchor.json`): `net_expectancy_R = -0.1896`,
+`gross_expectancy_R = +0.0003`, `profit_factor (gross-based) = 1.0008`, `win_rate = 48.4%`
+(15W/15L/1BE), `max_drawdown_R = 4.55`, `friction_total_R = 5.89` over 31 occurrences,
+`2026-05-18..2026-06-19`. Full setup/session/direction/regime/exit-reason decomposition and a
+read-only MAE/MFE summary (sourced from GEN_001's own already-existing per-trade CSV, justified
+only by the confirmed population-hash match) are in the same output directory. This anchor
+records the measurement only — no economic interpretation, no diagnosis, no optimization
+hypothesis. `HYPOTHESIS_1` has not been formulated.
+
+All P5 integrity checks passed (`wp2_integrity_report.json`): no duplicates, no timestamps outside
+the DEVELOPMENT interval, structurally no path to OOS/holdout/prospective data, all exclusions
+recorded and labeled rather than dropped. `OOS_ACCESS_COUNT` remains `0`; final holdout and
+post-2026-09-14 prospective evidence remain untouched.

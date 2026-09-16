@@ -1,0 +1,45 @@
+{
+  "schema": "AG_SSC1D_BASELINE_ANCHOR_V1",
+  "anchor_id": "SSC1D_BASELINE",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.0",
+  "work_package": "SSC1D-WP2",
+  "frozen_utc": "2026-09-16",
+  "status": "IMMUTABLE COMPARISON ANCHOR",
+  "note": "This anchor is the single reference SSC1D-WP3/WP4 development-zone candidates must be compared against (per SSC1D_WP1_optimization_objective_freeze.json's primary/safeguard rules). It is NOT a threshold decision, NOT a PASS/FAIL verdict, and NOT an instruction to optimize any particular direction -- purely the measured fact. No optimization candidate has been evaluated. No HYPOTHESIS_1 has been formulated.",
+
+  "source": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC1D_PILOT/SSC1D_WP2_BASELINE/wp2_baseline_report.json (overall_metrics), independently executed and reproducibility-confirmed as described there",
+  "development_dataset_id": "SSC1D_WP2_DEVELOPMENT_GEN001_TRIPLET",
+  "development_interval": "2026-05-18 .. 2026-06-19",
+
+  "metrics": {
+    "occurrence_count": 31,
+    "resolved_count": 31,
+    "unresolved_count": 0,
+    "wins": 15,
+    "losses": 15,
+    "breakevens": 1,
+    "expectancy_R_net": -0.18958527585336146,
+    "expectancy_R_gross": 0.00029991852908020243,
+    "profit_factor_gross_based": 1.0007988834612085,
+    "gross_R": 0.009297474401486275,
+    "net_R": -5.877143551454205,
+    "max_drawdown_R": 4.554691801679736,
+    "win_rate": 0.4838709677419355,
+    "average_win_R": 0.7764922296208834,
+    "average_loss_R": -0.7758723979941177,
+    "friction_total_R": 5.886441025855691,
+    "friction_average_R_per_resolved_occurrence": 0.18988519438244164,
+    "mean_MFE_R": 0.7394763400943172,
+    "mean_MAE_R": -0.6373838183584861,
+    "median_MFE_R": 0.5070789370130278
+  },
+
+  "evidence_fingerprint": "sha256:6d8fc29dc67a7b984ff4a464593bb107669ca266fd56929fc1ec18ce160048fe",
+  "population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+  "reproducibility_verdict": "G0_REPRODUCIBILITY_PASS (internal RUN_1/RUN_2) + matches_gen001=true (cross-population parity against pre-existing canonical GEN_001 evidence)",
+  "git_commit_at_measurement": "8b158b70a0bc4134164d0f5ceac757d82879cc3a",
+
+  "economic_interpretation_deferred": "This anchor records the measurement only. Whether -0.1896R net expectancy over 31 occurrences constitutes a problem worth diagnosing, and what mechanism might explain it, is explicitly OUT OF SCOPE for WP2 and is reserved for a future WP3 diagnosis work package operating strictly within the P4 diagnosis-contract schema (SSC1D_WP0_diagnosis_contract_schema.json) -- not performed here."
+}

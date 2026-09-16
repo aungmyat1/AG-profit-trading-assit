@@ -1,0 +1,44 @@
+{
+  "schema": "AG_SSC1D_WP2_INTEGRITY_REPORT_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "work_package": "SSC1D-WP2",
+  "generated_utc": "2026-09-16",
+  "checks": {
+    "duplicate_occurrences": {"result": "NONE", "method": "31 lifecycle records, 31 unique trade_id values -- verified by direct set-cardinality comparison"},
+    "lookahead": {"result": "NOT DETECTED", "method": "Reused the canonical replay engine's own decision-cycle architecture unmodified (H1 bias resolved as of each session's ref_end, M15 decisions made only from candles up to the decision point, M1 fills only from candles after entry) -- this pilot introduced no new data-access path that could look ahead; verified structurally by reusing session_sweep_continuation.replay.run_replay and h1_bias.resolve_h1_market_bias unchanged rather than reimplementing lookahead-sensitive logic"},
+    "timestamps_outside_development_interval": {"result": "NONE", "method": "All 31 occurrences' entry_time fall within 2026-05-18T14:30:00Z .. 2026-06-15T14:30:00Z, strictly inside the frozen DEVELOPMENT common interval 2026-05-18..2026-06-19 (verified by direct min/max scan of wp2_run1_lifecycle_population.json)"},
+    "oos_timestamps": {"result": "NONE POSSIBLE", "method": "DEVELOPMENT dataset files (2025-2026 EURUSD) and OOS dataset files (SSC1D_WP1_OOS_EURUSD_2024Q1, 2024 Q1) are non-overlapping calendar ranges; this run's driver script never opens or references the OOS raw files at all (grep-verifiable: no reference to data/research/ssc1d_pilot/ anywhere in scripts/run_ssc1d_wp2_baseline_replay.py)"},
+    "final_holdout_timestamps": {"result": "NONE POSSIBLE", "method": "No final holdout dataset is defined anywhere in canonical SSC state (CURRENT_VALIDATION_STATE.json holdout: null); this run's driver script has no path to any holdout file"},
+    "prospective_data_timestamps": {"result": "NONE POSSIBLE", "method": "DEVELOPMENT dataset's M1 leg physically ends 2026-07-31 (raw), well before the 2026-09-14 prospective boundary, and this run's own effective interval (2026-05-18..2026-06-19) ends even earlier; no post-2026-09-14 file is referenced anywhere in the driver script"},
+    "m1_fills_correspond_to_eligible_m15_decisions": {"result": "PASS BY CONSTRUCTION", "method": "M1 candles are passed into session_sweep_continuation.replay.run_replay as an additive parameter used only for entry-timing refinement within a setup that M15 decision logic already qualified -- this pilot did not alter that call contract or the underlying fill-resolution code path in any way"},
+    "occurrence_identity_determinism": {"result": "PASS", "method": "trade_id = f'{pair_id}_{d}_{entry_dict[entry_time]}_{model}' -- fully derived from deterministic replay inputs, not from wall-clock run time or any random/incidental state"},
+    "repeated_execution_identical_hashes": {
+      "result": "PASS",
+      "internal_run1_vs_run2": {
+        "run_1_population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+        "run_2_population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+        "field_level_equal": true, "occurrence_ids_equal": true, "occurrence_order_equal": true,
+        "verdict": "G0_REPRODUCIBILITY_PASS"
+      },
+      "cross_check_against_preexisting_gen001_population": {
+        "gen001_population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+        "wp2_population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+        "matches": true,
+        "significance": "This pilot's fresh, independently-executed replay (new process, new timestamp, new git-commit-pinned run) reproduces byte-for-byte the same 31-occurrence population that GEN_001 produced under a separate script invocation on a separate occasion -- the strongest available reproducibility evidence, obtained without needing to touch or modify GEN_001's own existing artifacts"
+      }
+    }
+  },
+  "exclusions_recorded_not_dropped": {
+    "decision_cycles_total": 66,
+    "regime_unknown": 16,
+    "neutral_bias": 0,
+    "unavailable_bias": 0,
+    "insufficient_h1_history": 0,
+    "direction_blocked": 53,
+    "friction_rejected": 9,
+    "alloc_rejected": 8,
+    "ambiguous_sequence": 0,
+    "note": "These are decision-cycle-level exclusions (a session/date pair that did not produce an accepted entry for a stated reason), not dropped trades -- every one is counted and labeled, none silently discarded. The 31 resolved occurrences are a subset of 66 decision cycles after these documented exclusions; no occurrence with a non-null gross_R was excluded from the metric population."
+  },
+  "no_material_defects_silently_repaired": true
+}

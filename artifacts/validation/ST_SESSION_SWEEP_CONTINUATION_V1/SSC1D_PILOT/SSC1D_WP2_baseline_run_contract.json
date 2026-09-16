@@ -1,0 +1,98 @@
+{
+  "schema": "AG_SSC1D_BASELINE_RUN_CONTRACT_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP2",
+  "frozen_utc": "2026-09-16",
+  "note": "Frozen BEFORE the baseline run's results are inspected -- written immediately before scripts/run_ssc1d_wp2_baseline_replay.py is executed for the first time this session. Governs one deterministic canonical-parity SSC v1.0.0 replay over DEVELOPMENT data only.",
+
+  "strategy_id_version": {
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "source": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml, loaded via session_sweep_continuation.config.load_config -- frozen, unmodified by this pilot",
+    "lifecycle_stage": "OFFLINE_RESEARCH (config/governance/strategy_lifecycle.yaml) -- unaffected by this baseline measurement"
+  },
+
+  "development_dataset_id": "SSC1D_WP2_DEVELOPMENT_GEN001_TRIPLET (pilot-local label; underlying files identical to GEN_001's own inputs)",
+  "dataset_files_and_hashes": {
+    "H1": {"path": "D:\\EURUSD_H1_202501020000_202607310000.csv", "sha256": "f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060"},
+    "M15": {"path": "D:\\EURUSD_M15_202501020000_202606192345.csv", "sha256": "7f7502938862f4a3779f018caab468fe4445a4d8c676c8393dc29ca57fc43a65"},
+    "M1": {"path": "D:\\EURUSD_M1_202605180946_202607312356.csv", "sha256": "55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23"},
+    "hash_verification_method": "scripts/run_ssc1d_wp2_baseline_replay.py's _verify_fingerprint(), reusing historical_replay.symbol_metadata_manifest.compute_dataset_fingerprint -- identical to the pinned EXPECTED_SHA256 already independently confirmed in SSC1D_WP0_dataset_role_manifest.json and SSC1D_WP1 work"
+  },
+
+  "timestamp_intersection": {
+    "method": "Computed from the files/manifests by the replay driver's _effective_date_range(), NOT assumed from conversational dates -- a calendar date is included only if H1/M15/M1 coverage is jointly sufficient for every configured session pair on that date, matching the exact logic already used and proven for GEN_001",
+    "expected_result": "2026-05-18 .. 2026-06-19 per SSC1D_WP1B_gate_separation_contract.json's independently-derived DEVELOPMENT common interval; this run computes it directly rather than assuming that prior figure, and any mismatch must be reported, not silently reconciled"
+  },
+
+  "session_timezone_assumptions": {
+    "convention": "MT5-exported CSV timestamps are broker wall-clock (Vantage, UTC+3), normalized to true UTC by historical_replay.mt5_export_loader.load_mt5_export_csv before any replay logic runs; the driver hard-fails (SystemExit) if normalized_timezone != 'UTC' for any of the three legs",
+    "session_windows": "Defined by strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml's session_pairs block (ASIAN_LONDON, LONDON_NEWYORK), resolved via session_sweep_continuation.sessions.session_windows_from_config -- frozen, unmodified"
+  },
+
+  "friction_model": {
+    "source": "session_sweep_continuation.friction (canonical, frozen) -- same module used by every other SSC replay in this repository, not redefined by this pilot",
+    "provenance_label": "session_sweep_continuation.friction:MODELED (per GEN_001's own input_manifest.json friction_provenance field, same underlying dataset/strategy)",
+    "cost_status_convention": "Per-occurrence cost_status stamped KNOWN/MODELED/UNAVAILABLE by the canonical engine itself; this contract does not override or reinterpret that stamping"
+  },
+
+  "fill_methodology": {
+    "source": "session_sweep_continuation.replay.run_replay, M1-fill-wired (execution_timeframe=M1 per strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml line 33: 'M1 refines entry timing only -- never independently creates a setup')",
+    "note": "Fill logic is entirely the frozen canonical engine's own; this pilot does not alter it"
+  },
+
+  "stop_methodology": "Canonical, per strategy config's stop_engine (src/session_sweep_continuation/stop_engine.py) -- minimum_stop_multiple and structural stop placement rules unmodified, frozen v1.0.0",
+
+  "exit_methodology": {
+    "source": "src/session_sweep_continuation/outcome_resolution.py -- canonical terminal states: RESOLVED_SL, RESOLVED_SESSION_EXIT, RESOLVED_PARTIAL_BE, RESOLVED_PARTIAL_RUNNER_TARGET, AMBIGUOUS_SEQUENCE, UNRESOLVED_NO_DATA. Unmodified by this pilot.",
+    "ambiguous_sequence_handling": "Occurrences resolving to AMBIGUOUS_SEQUENCE are excluded from the metric population and counted separately under exclusions.ambiguous -- never silently dropped, never assigned an assumed outcome (see resolved_vs_unresolved_occurrences below)"
+  },
+
+  "resolved_vs_unresolved_occurrences": {
+    "resolved": "terminal_state in {RESOLVED_SL, RESOLVED_SESSION_EXIT, RESOLVED_PARTIAL_BE, RESOLVED_PARTIAL_RUNNER_TARGET} with a non-null gross_R -- included in metric population",
+    "excluded_not_unresolved": "AMBIGUOUS_SEQUENCE (a bar touching SL and TP ambiguously) and terminal_state with gross_R is None are excluded from the metric population and reported in exclusions -- these are DIFFERENT from 'occurrence still open at data end' (this DEVELOPMENT run has a bounded, fully-elapsed interval, so no occurrence should be open at data end; any such case would surface via UNRESOLVED_NO_DATA and must be reported explicitly, not silently folded into the resolved population)"
+  },
+
+  "metric_formulas": {
+    "source": "src/performance/calculator.py:compute_trade_metrics -- frozen, canonical, reused unmodified (same function used by GEN_001 and every other SSC performance report in this repository)",
+    "gross_expectancy_R": "sum(gross_R for resolved occurrences) / N",
+    "net_expectancy_R": "sum(net_R for resolved occurrences) / N, or NOT_EVALUATED if any net_R is None",
+    "win_rate": "count(gross_R > 1e-9) / N",
+    "profit_factor": "sum(gross_R for gross_R>0) / abs(sum(gross_R for gross_R<0)); UNDEFINED_NO_LOSSES if no losses; UNDEFINED_NO_WINS if no wins -- never a synthetic large number or infinity, consistent with SSC1D_WP1A_economic_floor_contract.json's zero-loss handling for the (separate) OOS floor",
+    "max_drawdown_R": "peak-to-trough on cumulative gross_R over samples ordered by (resolved_at, source_record_id) -- deterministic ordering, ties broken by immutable source_record_id",
+    "average_win_R_average_loss_R": "mean of gross_R within WIN / LOSS classes respectively (classification: gross_R > 1e-9 = WIN, gross_R < -1e-9 = LOSS, else BREAKEVEN)",
+    "min_sample_size_convention": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml performance_attribution.min_sample_size=10 -- any decomposition group below this must be flagged low-sample, per existing SSC convention, not treated as a confident PASS/FAIL signal"
+  },
+
+  "mae_mfe_availability": "NOT independently recomputed by this baseline run's own driver script (the canonical replay/outcome_resolution pipeline used here does not itself emit per-trade MAE/MFE). Where MAE_R/MFE_R evidence exists for this exact population, it is sourced read-only from artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/per_trade_results.csv's CONTROL rows -- justified only if this run's population_hash is independently confirmed identical to GEN_001's (see reproducibility below); if the hashes do not match, MAE/MFE must be reported NOT_AVAILABLE for this baseline rather than borrowed from a non-identical population.",
+
+  "software_code_identity": {
+    "replay_driver": "scripts/run_ssc1d_wp2_baseline_replay.py (new, pilot-local; a near-duplicate of scripts/run_first_canonical_session_sweep_continuation_replay.py with output redirected to a pilot-local path and zero semantic changes to the underlying library calls)",
+    "libraries_reused_unmodified": [
+      "historical_replay.candle_store.HistoricalCandleStore",
+      "historical_replay.mt5_export_loader.load_mt5_export_csv",
+      "historical_replay.symbol_metadata_manifest",
+      "performance.calculator.compute_trade_metrics",
+      "performance.models.ResolvedTradeSample",
+      "research.session_lifecycle (lifecycle_record, population_hash, compare_lifecycle_records, control_reconcile)",
+      "session_sweep_continuation.config.load_config / compute_config_hash",
+      "session_sweep_continuation.h1_bias.resolve_h1_market_bias",
+      "session_sweep_continuation.replay.run_replay",
+      "session_sweep_continuation.sessions.session_windows_from_config"
+    ],
+    "git_commit_recorded_at_run_time": "captured live by the driver script via `git rev-parse HEAD`, included in the run's own report.json identity block"
+  },
+
+  "reproducibility_protocol": {
+    "internal": "The driver runs the full replay twice (RUN_1, RUN_2) over identical inputs and compares lifecycle-record population hashes, field-level equality, and occurrence ordering -- verdict G0_REPRODUCIBILITY_PASS/FAIL, matching the exact protocol already used for GEN_001",
+    "cross_population": "The driver additionally reads (read-only) the pre-existing GEN_001 canonical_lifecycle_population.json and compares its population_hash against this run's RUN_1 population_hash -- reported as gen001_cross_population_parity_check.matches_gen001 in the output report. A mismatch does not invalidate this baseline (this pilot's DEVELOPMENT interval is independently computed, not assumed equal to GEN_001's), but any mismatch must be investigated and reported, not silently ignored."
+  },
+
+  "prohibited_during_this_run": [
+    "No strategy parameter is changed.",
+    "No OOS data is loaded or referenced by this script.",
+    "No optimization, candidate generation, or parameter sweep occurs.",
+    "No threshold or target is set or altered based on this run's results -- this contract's fields above are fixed before the run executes."
+  ]
+}
