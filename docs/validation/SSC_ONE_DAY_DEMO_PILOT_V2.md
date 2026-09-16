@@ -486,3 +486,35 @@ remains blocked — now solely on the M1 gap, since the economic floor blocker i
 Resolving M1 requires an owner decision this pilot has no authority to make unilaterally: either
 authorize a paid data-source upgrade, or explicitly accept a reduced-fill-precision OOS
 methodology for this pilot.
+
+---
+
+## 19. SSC1D-WP1B addendum — DEVELOPMENT/OOS gate separation (2026-09-16)
+
+WP1B re-examined whether the M1 OOS blocker actually blocks *all* further pilot work, or only
+the specific OOS evaluation step. Reading SSC's frozen timeframe contract (`strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml`
+lines 30-33: `htf_context=H1`, `decision_timeframe=M15`, `execution_timeframe=M1`) and the
+DEVELOPMENT package's own manifests (no code executed): DEVELOPMENT and OOS are two entirely
+disjoint dataset packages with zero shared dates, and WP2's baseline is defined (§4) to run
+against DEVELOPMENT only. The common H1+M15+M1 DEVELOPMENT interval is **2026-05-18..2026-06-19**
+— bounded by the M1 leg, and not coincidentally identical to GEN_001's own original 31-trade
+population window, so it is already known in advance to be data-sufficient.
+
+**Gates are split accordingly**, recorded in `SSC1D_WP1B_gate_separation_contract.json`:
+
+```
+WP2_DEVELOPMENT_BASELINE_AUTHORIZED = true
+OOS_EVALUATION_AUTHORIZED           = false
+```
+
+`PARTIAL_ESTABLISHED_H1_M15_ONLY` is explicitly **not** reinterpreted as complete OOS —
+`OOS_EVALUATION_AUTHORIZED` stays `false` independent of WP2/WP3/WP4's outcome. The firewall is
+made explicit: WP2-WP4 may consume DEVELOPMENT data only, must never inspect the OOS raw files,
+and no optimization/candidate/diagnosis decision may be informed by an OOS outcome (enforced by
+construction — `OOS_ACCESS_COUNT` stays `0` throughout). Before the P9 frozen-candidate OOS run
+can ever occur, all four preconditions must hold simultaneously: candidate frozen, optimization
+stopped, a complete approved OOS execution methodology assembled, and the M1 authority either
+resolved or explicitly owner-approved under a preregistered reduced-precision methodology.
+
+This addendum authorizes a future WP2 to begin DEVELOPMENT baseline work; it does not itself run
+WP2, compute a baseline, or touch the OOS package.

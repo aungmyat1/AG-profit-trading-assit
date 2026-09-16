@@ -1,0 +1,65 @@
+{
+  "schema": "AG_SSC1D_GATE_SEPARATION_CONTRACT_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP1B",
+  "frozen_utc": "2026-09-16",
+  "note": "Governance/gate-resolution only. No SSC code run, no baseline computed, no OOS outcome inspected, no market data acquired. All facts below are read from already-existing, already-sealed manifests/artifacts.",
+
+  "task1_data_dependency": {
+    "ssc_timeframe_contract": {
+      "source": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml lines 30-33 (frozen v1.0.0, unmodified, read-only inspection)",
+      "htf_context": "H1 -- higher-timeframe bias/context",
+      "decision_timeframe": "M15 -- decision authority for regime/state/setup qualification",
+      "execution_timeframe": "M1 -- refines entry timing only, never independently creates a setup"
+    },
+    "conclusion": "A canonical-parity SSC baseline run requires all three timeframes (H1, M15, M1) for the same symbol over an overlapping interval. This is a structural property of the frozen strategy contract, not something this pilot can change.",
+    "development_vs_oos_independence": "DEVELOPMENT (GEN_001 EURUSD, role=DEVELOPMENT_REUSABLE per SSC1D_WP0_dataset_role_manifest.json) and OOS (SSC1D_WP1_OOS_EURUSD_2024Q1) are two entirely separate, non-overlapping dataset packages (2025-2026 vs 2024 Q1; zero shared dates). WP2's baseline is defined (SSC_ONE_DAY_DEMO_PILOT_V2.md section 4, P3) as running against the DEVELOPMENT package only. It has no data dependency on the OOS package whatsoever -- the two packages are not merged, blended, or cross-referenced for baseline purposes at any point in the pilot's design."
+  },
+
+  "task1_development_common_interval": {
+    "method": "Read directly from authoritative existing manifests -- no computation, no strategy code executed.",
+    "h1_leg": {
+      "source": "config/historical_datasets/EURUSD_H1_202501020000_202607310000.yaml",
+      "range_utc": "2025-01-01T21:00:00Z .. 2026-07-30T21:00:00Z"
+    },
+    "m15_leg": {
+      "source": "config/historical_datasets/EURUSD_M15_202501020000_202606192345.yaml",
+      "range_utc": "2025-01-01T21:00:00Z .. 2026-06-19T20:45:00Z"
+    },
+    "m1_leg": {
+      "source": "artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/input_manifest.json (date_start/date_end) -- the proven-consumed segment of config/historical_datasets/EURUSD_M1_202605180946_202607312356.yaml per SSC1D_WP0_dataset_role_manifest.json's split classification (2026-06-20..2026-07-31 tail remains UNKNOWN/excluded, not part of this interval)",
+      "range": "2026-05-18 .. 2026-06-19 (date_start/date_end as recorded in GEN_001's own input_manifest.json; this is also exactly GEN_001's own actual population window, repository_commit f0a9827eac1bddcc96f3b91db32ed0bac5736aa9, trade_count 31)"
+    },
+    "common_interval_all_three_timeframes": "2026-05-18 .. 2026-06-19 (bounded on both ends by the M1 leg, the narrowest of the three -- H1 and M15 both fully cover this window as part of their much longer ranges)",
+    "sufficiency": "This is precisely the same window GEN_001 already used to produce a real 31-trade SSC population, so WP2 baseline computation over this exact interval is known in advance to be data-sufficient (it already produced a canonical, non-empty result once before, under GEN_001)."
+  },
+
+  "task1_verdict": {
+    "wp2_requires_ssc_replay_of": "H1 + M15 + M1, all sourced from DEVELOPMENT (GEN_001 triplet) only",
+    "wp2_requires_oos": false,
+    "wp2_data_sufficiency": "SUFFICIENT -- valid common H1/M15/M1 DEVELOPMENT interval exists (2026-05-18..2026-06-19), verified from authoritative manifests, requiring no new acquisition and no OOS access"
+  },
+
+  "task2_authority_flags": {
+    "WP2_DEVELOPMENT_BASELINE_AUTHORIZED": true,
+    "OOS_EVALUATION_AUTHORIZED": false,
+    "basis": "WP2/baseline can execute entirely against DEVELOPMENT_REUSABLE data per task1 above. The unresolved OOS M1 gap (SSC1D_WP1A_m1_resolution_report.json, status M1_UNRESOLVED) has zero bearing on this authorization -- it is a precondition for a DIFFERENT, later gate (OOS evaluation), not for DEVELOPMENT baseline work.",
+    "oos_status_reaffirmed": "PARTIAL_ESTABLISHED_H1_M15_ONLY -- explicitly NOT reinterpreted as complete. This pilot does not treat H1/M15-only as sufficient for OOS evaluation at any point; OOS_EVALUATION_AUTHORIZED stays false regardless of WP2's outcome."
+  },
+
+  "task3_firewall": {
+    "development_only_scope": "WP2, WP3, and WP4 (baseline, diagnosis, and development-zone candidate optimization per SSC_ONE_DAY_DEMO_PILOT_V2.md sections 4-8) may consume DEVELOPMENT data only. None of these work packages may open, read, hash-compare-for-content, or otherwise inspect data/research/ssc1d_pilot/SSC1D_WP1_OOS_EURUSD_2024Q1/raw/*.csv or its manifest's bar-level content.",
+    "no_backward_flow": "No optimization metric, candidate-retention decision, parameter choice, or failure diagnosis produced under WP2/WP3/WP4 may be informed by, or reference, any OOS outcome -- because no OOS outcome will exist until the P9 frozen-candidate OOS run occurs, this is enforced by construction as long as OOS_ACCESS_COUNT remains 0 throughout WP2-WP4.",
+    "oos_access_count_invariant": "OOS_ACCESS_COUNT remains 0 through WP2, WP3, and WP4. Any increment before all four P9 preconditions below are simultaneously true is a firewall breach.",
+    "preconditions_before_first_oos_strategy_evaluation": [
+      "1. A candidate is frozen (SSC1D_WPn_candidate_freeze.json exists per SSC_ONE_DAY_DEMO_PILOT_V2.md section 9, P8)",
+      "2. Optimization has stopped (one of the SSC1D_WP0_candidate_ledger_schema.json stop reasons has fired and is recorded)",
+      "3. A complete, approved OOS execution methodology exists (replay engine invocation plan, friction basis, occurrence resolution rules -- all already partly specified in SSC1D_WP1A_economic_floor_contract.json's deterministic_definitions, but not yet assembled into a single execution runbook)",
+      "4. The unresolved M1 authority (SSC1D_WP1A_m1_resolution_report.json, M1_UNRESOLVED) is either resolved (a defensible M1 source obtained and sealed) or separately owner-approved under an explicit, preregistered reduced-fill-precision methodology for this pilot specifically"
+    ],
+    "irreversibility_note": "Per SSC_ONE_DAY_DEMO_PILOT_V2.md section 10 (P9), the OOS run happens exactly once. Any premature or exploratory access before all four preconditions hold would itself permanently consume the OOS package's untouched status, regardless of whether a full evaluation was intended -- this is why OOS_EVALUATION_AUTHORIZED is being held at false now, well before WP2 even starts, rather than left implicit."
+  },
+
+  "scope_boundary": "This contract authorizes WP2 DEVELOPMENT baseline work to begin under a future work package. It does NOT itself run WP2. No baseline, optimization, or OOS evaluation was performed while producing this contract."
+}
