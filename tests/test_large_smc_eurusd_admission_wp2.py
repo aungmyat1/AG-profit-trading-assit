@@ -25,6 +25,8 @@ CONTRACTS_DIR = os.path.join(
 sys.path.insert(0, os.path.join(REPO_ROOT, "scripts"))
 from onboard_large_smc_eurusd_admission_wp2 import build_large_smc_eurusd_profile_v2  # noqa: E402
 
+from _lsmc_frozen_core import assert_large_smc_registry_projection_unchanged
+
 
 def build_profile_from_contracts():
     return build_large_smc_eurusd_profile_v2()
@@ -151,6 +153,12 @@ def test_strategy_semantics_files_unchanged_by_this_mission():
 
 
 def test_frozen_validation_core_unchanged_by_this_mission():
+    """The frozen validation-core Python modules (as enumerated by e596507's own
+    commit message) stay byte-identical. The shared multi-strategy
+    config/governance/strategy_lifecycle.yaml is checked separately, narrowed to
+    ST_LARGE_SMC_V1's own registry projection -- see tests/_lsmc_frozen_core.py for
+    why a whole-file freeze over-scoped this invariant (LSMC_SHARED_REGISTRY_FREEZE_
+    SCOPE_AUDIT)."""
     import subprocess
 
     diff = subprocess.check_output(
@@ -164,11 +172,11 @@ def test_frozen_validation_core_unchanged_by_this_mission():
          "src/validation_framework/lifecycle_registry.py",
          "src/validation_framework/evaluator.py",
          "src/validation_framework/models.py",
-         "src/validation_framework/validation_admission.py",
-         "config/governance/strategy_lifecycle.yaml"],
+         "src/validation_framework/validation_admission.py"],
         cwd=REPO_ROOT, text=True,
     )
     assert diff == ""
+    assert_large_smc_registry_projection_unchanged(REPO_ROOT, "e596507")
 
 
 def test_execution_authority_unchanged():

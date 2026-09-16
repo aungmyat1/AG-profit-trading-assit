@@ -29,6 +29,8 @@ from fx_friction_research.spread_evidence import (  # noqa: E402
 )
 from mt5.connection import MT5ConnectionError  # noqa: E402
 
+from _lsmc_frozen_core import assert_large_smc_registry_projection_unchanged
+
 # WP2's frozen commit -- the baseline this WP3A mission must not disturb.
 WP2_COMMIT_SHA = "7581c42"
 
@@ -194,6 +196,9 @@ def test_strategy_semantics_files_unchanged_by_this_mission():
 
 
 def test_frozen_validation_core_unchanged_by_this_mission():
+    """See tests/_lsmc_frozen_core.py: the shared multi-strategy
+    config/governance/strategy_lifecycle.yaml is checked separately, narrowed to
+    ST_LARGE_SMC_V1's own registry projection rather than the whole file."""
     diff = subprocess.check_output(
         ["git", "diff", WP2_COMMIT_SHA, "--",
          "src/validation_framework/ag_validation_methodology.py",
@@ -205,11 +210,11 @@ def test_frozen_validation_core_unchanged_by_this_mission():
          "src/validation_framework/lifecycle_registry.py",
          "src/validation_framework/evaluator.py",
          "src/validation_framework/models.py",
-         "src/validation_framework/validation_admission.py",
-         "config/governance/strategy_lifecycle.yaml"],
+         "src/validation_framework/validation_admission.py"],
         cwd=REPO_ROOT, text=True,
     )
     assert diff == ""
+    assert_large_smc_registry_projection_unchanged(REPO_ROOT, WP2_COMMIT_SHA)
 
 
 def test_execution_and_gateway_files_unchanged_by_this_mission():
