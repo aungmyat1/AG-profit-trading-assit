@@ -585,3 +585,34 @@ concentration, and exit-capture inefficiency (with its HYP_001 overlap flagged).
 Integrity confirmed: `strategy_modified=false`, `parameters_modified=false`,
 `optimization_run=false`, `candidate_count=0`, `OOS_ACCESS_COUNT=0`, final holdout and
 post-2026-09-14 prospective evidence untouched.
+
+---
+
+## 22. SSC1D-WP4A addendum — bounded hypothesis formation (2026-09-16)
+
+WP4A converted WP3's diagnosis into falsifiable hypotheses — no candidates run, no strategy
+change, no OOS/holdout/prospective access. Full detail under
+`artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC1D_PILOT/SSC1D_WP4A_HYPOTHESES/`.
+
+**Exit-capture overlap review**: `SSC1D-MECH-3` classified `MATERIALLY_OVERLAPPING` with the
+open canonical `HYP_001_EXIT_CAPTURE` — same mutable component (`trade_management.runner_target_r`),
+same mechanism (favorable excursion not realized; HYP_001's own historical record shows 0/88
+GEN_001+GEN_002A trades ever reached the 3.0R target). **No new SSC1D hypothesis created from
+it** — recorded as corroborating DEVELOPMENT evidence for HYP_001 only; HYP_001 itself untouched.
+
+**Two hypotheses admitted** (of a 2-hypothesis cap for this stage, not forced — both
+independently passed all 9 admission criteria):
+- **`SSC1D-H1`** — friction/risk-geometry: friction consumes ~50% of gross-positive R, roughly
+  uniform across setups/sessions; targets the already-canonical `friction.minimum_stop_multiple`
+  floor (currently 3.0, already gates entries via `STOP_BELOW_FRICTION_FLOOR` in `stop_engine.py`,
+  already excluded 9 decision cycles in WP2). Market friction cost inputs themselves remain frozen.
+- **`SSC1D-H2`** — ASIAN_LONDON stop-loss concentration (53.3% vs 18.75% SL rate): targets
+  `regime.range_max_pips` (currently 25.0). Explicitly flagged as partly informed by general
+  session-volatility reasoning rather than purely DEVELOPMENT-derived, and confounded with a
+  modest setup-mix difference between sessions — admitted with that caveat disclosed, not hidden.
+  Does not conclude ASIAN_LONDON should be disabled.
+
+Neither hypothesis specifies a numerical parameter value — that is explicitly reserved for
+WP4B. Budget: 2/3 major hypotheses used, 0/20 candidates used, 0h/3h optimization time used.
+`OOS_ACCESS_COUNT` remains `0`; canonical `HYP_001`/`HYP_002` unmodified; final holdout and
+post-2026-09-14 prospective evidence untouched.

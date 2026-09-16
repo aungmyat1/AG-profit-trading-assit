@@ -1,0 +1,46 @@
+{
+  "schema": "AG_SSC1D_WP4A_HYPOTHESIS_V1",
+  "hypothesis_id": "SSC1D-H2",
+  "title": "ASIAN_LONDON stop-loss concentration via a session-uniform regime/volatility threshold",
+  "status": "ACTIONABLE_WITH_CONFOUND_CAVEAT",
+  "wp3_mechanism_source": "SSC1D-MECH-2 (ASIAN_LONDON STOP-LOSS CONCENTRATION)",
+
+  "mechanism": "SSC classifies TREND/RANGE regime using a single, session-uniform threshold (regime.range_max_pips=25.0, src/session_sweep_continuation/regime.py) applied identically to both ASIAN_LONDON and LONDON_NEWYORK reference windows, despite these sessions having structurally different typical liquidity/volatility (Asian session reference windows are conventionally narrower-range than London/NY overlap windows -- a general FX market-structure fact, not something WP3 measured directly). A session-uniform volatility threshold could plausibly misclassify or produce less favorable regime/stop conditions specifically for the lower-volatility session, consistent with WP3's own MAE/MFE asymmetry finding.",
+
+  "supporting_wp3_evidence": [
+    "P4_session_diagnosis: SL_rate 53.3% (ASIAN_LONDON, 8/15) vs 18.75% (LONDON_NEWYORK, 3/16)",
+    "P4_session_diagnosis: MAE_mean -0.738R (ASIAN_LONDON) vs -0.543R (LONDON_NEWYORK) -- deeper adverse excursion in the lower-SL-rate-favorable session",
+    "P4_session_diagnosis: MFE_mean 0.463R (ASIAN_LONDON) vs 0.999R (LONDON_NEWYORK) -- more than double the favorable excursion in LONDON_NEWYORK",
+    "P4_session_diagnosis: friction_mean is NOT materially different between sessions (0.208R vs 0.173R), ruling out friction itself as the session-gap explanation",
+    "P5_stop_loss_diagnosis: 8 of 11 total SL occurrences fall in ASIAN_LONDON"
+  ],
+
+  "affected_canonical_component": "src/session_sweep_continuation/regime.py (TREND/RANGE classifier) governed by strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml regime.range_max_pips (currently 25.0), and/or the same friction.minimum_stop_multiple floor examined in Hypothesis 1 (session-uniform today)",
+
+  "eligible_mutable_parameters": ["regime.range_max_pips"],
+
+  "eligible_mutable_parameters_note": "friction.minimum_stop_multiple is deliberately NOT re-listed here as a distinct lever for this hypothesis to avoid duplicating Hypothesis 1's search space -- if WP4B finds both hypotheses converge on the same parameter, they should be merged rather than run as two independent candidate tracks.",
+
+  "explicitly_immutable_for_this_hypothesis": [
+    "session_pairs window boundaries themselves (ASIAN_LONDON/LONDON_NEWYORK reference/trade time ranges are NOT proposed for change -- this hypothesis does not touch session timing, only the regime threshold applied within existing sessions)",
+    "friction cost inputs",
+    "entry/setup qualification logic (S1/S2/S3 rules)",
+    "exit/target logic (runner_target_r) -- Hypothesis 1's and HYP_001's territory",
+    "EMA periods (ema_fast_period=20, ema_slow_period=50) -- not implicated by WP3 evidence, not proposed for change",
+    "risk allocation and campaign caps"
+  ],
+
+  "causal_pathway": "IF ASIAN_LONDON's typical reference-window range is structurally narrower than LONDON_NEWYORK's, a single fixed range_max_pips threshold could be mis-calibrated for one or both sessions -- e.g. classifying an ASIAN_LONDON window as RANGE when local volatility conditions do not support the same stop/target geometry that works for LONDON_NEWYORK's RANGE occurrences. Adjusting range_max_pips (direction not yet determined -- see limitations) could change which ASIAN_LONDON windows qualify for a setup at all, potentially reducing the SL-heavy subset.",
+
+  "falsification_condition": "The hypothesis is falsified if EITHER (a) the ASIAN_LONDON/LONDON_NEWYORK expectancy gap does not narrow after a bounded range_max_pips candidate is applied, OR (b) the gap persists essentially unchanged after controlling for setup-family composition (i.e. the gap turns out to be fully explained by setup mix rather than regime threshold), OR (c) changing range_max_pips changes regime classification counts but does NOT correspondingly change SL rate or expectancy specifically within ASIAN_LONDON.",
+
+  "possible_confounders": [
+    "CONFOUNDED WITH SETUP-FAMILY COMPOSITION (WP3's own caveat): ASIAN_LONDON is modestly more S3-weighted (S1=6/S2=1/S3=8) than LONDON_NEWYORK (S1=7/S2=2/S3=7) -- with N=15/16 this difference is not large enough to fully explain the SL-rate gap on its own, but it cannot be ruled out as a partial contributor either.",
+    "The 'Asian session has structurally lower volatility' premise is a general market-structure assumption used to motivate this hypothesis, NOT something WP3 measured directly from this 31-occurrence population (no cross-session raw-volatility comparison was computed in WP3) -- this hypothesis's mechanism is therefore partly external-knowledge-informed rather than purely evidence-derived from WP3, and that must be disclosed, not hidden.",
+    "Only 15/16 occurrences per session -- materially underpowered to cleanly separate a regime-threshold effect from ordinary sampling noise."
+  ],
+
+  "sample_limitations": "N=15 (ASIAN_LONDON) / N=16 (LONDON_NEWYORK), single ~5-week window, SHORT-only. No within-sample variation in range_max_pips exists to observe directly (all 31 occurrences share the same threshold=25.0) -- exactly as with Hypothesis 1, the marginal effect cannot be anticipated from DEVELOPMENT evidence alone without a bounded candidate run (reserved for WP4B/C).",
+
+  "explicit_non_conclusion": "This hypothesis does NOT conclude that ASIAN_LONDON should be disabled. Per mission instruction, aggregate session results alone are not sufficient grounds for that conclusion, and this hypothesis targets a specific, narrower, already-canonical threshold parameter instead of the session gate itself."
+}

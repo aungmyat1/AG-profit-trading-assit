@@ -1,0 +1,41 @@
+{
+  "schema": "AG_SSC1D_WP4A_HYPOTHESIS_V1",
+  "hypothesis_id": "SSC1D-H1",
+  "title": "Friction / initial-risk (stop) geometry interaction",
+  "status": "ACTIONABLE",
+  "wp3_mechanism_source": "SSC1D-MECH-1 (FRICTION / RISK-ALLOCATION INTERACTION)",
+
+  "mechanism": "friction_R for a fixed-pip-cost occurrence is proportional to 1/stop_distance_pips (friction_R = friction_pips / stop_distance_pips). WP3 found friction consumes ~50.5% of gross-positive R and is roughly uniform in absolute-R terms across setups/sessions (0.151R-0.238R mean) rather than concentrated in one segment -- consistent with a broad, structural relationship between stop distance and friction's proportional bite, not a setup- or session-specific defect. Canonical SSC v1.0.0 already has a stop-distance floor tied to this exact relationship (friction.minimum_stop_multiple=3.0, strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml line 106), enforced by src/session_sweep_continuation/stop_engine.py which rejects a candidate setup with reason STOP_BELOW_FRICTION_FLOOR if its stop distance is too tight relative to modeled friction. WP2's own replay already recorded 9 friction_rejected decision-cycle exclusions at the CURRENT threshold (3.0) -- i.e. the gate is already active and already filtering some occurrences.",
+
+  "supporting_wp3_evidence": [
+    "P1_economic_attribution: gross_expectancy_R=+0.0003R (near-zero raw edge) vs friction_expectancy_R=+0.1899R -- friction magnitude is comparable to or exceeds the raw gross edge",
+    "P1_friction_breakdown.by_setup: friction mean 0.224R(S1)/0.238R(S2)/0.151R(S3) -- present across all setups, not isolated",
+    "P1_friction_breakdown.by_session: friction mean 0.208R(ASIAN_LONDON)/0.173R(LONDON_NEWYORK) -- present across both sessions, ruling out a purely session-specific friction explanation",
+    "WP2 baseline report: friction_rejections=9 (decision cycles already excluded by the existing STOP_BELOW_FRICTION_FLOOR gate at multiplier=3.0), demonstrating this exact lever is live and consequential in this population"
+  ],
+
+  "affected_canonical_component": "src/session_sweep_continuation/stop_engine.py (STOP_BELOW_FRICTION_FLOOR gate) governed by strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml friction.minimum_stop_multiple (currently 3.0)",
+
+  "eligible_mutable_parameters": ["friction.minimum_stop_multiple"],
+
+  "explicitly_immutable_for_this_hypothesis": [
+    "friction cost inputs themselves -- per-symbol spread/commission/slippage pip assumptions in the friction block (market friction remains frozen per mission instruction; this hypothesis never touches the cost model)",
+    "entry/setup logic (S1/S2/S3 qualification rules)",
+    "exit/target logic (runner_target_r, partial/runner split) -- that is HYP_001_EXIT_CAPTURE's territory, not this hypothesis's (see exit-capture overlap review)",
+    "session windows / session_pairs definitions",
+    "regime classifier (range_max_pips, EMA periods) -- that is Hypothesis 2's territory",
+    "risk allocation percentages (S1=0.40/S2=0.30/S3=0.30) and campaign caps (max_entries=3, maximum_total_risk_pct=1.0)"
+  ],
+
+  "causal_pathway": "Raising minimum_stop_multiple -> stricter STOP_BELOW_FRICTION_FLOOR gate -> setups with the tightest stop-to-friction ratios are rejected before entry (never become occurrences at all) -> the surviving occurrence population has a structurally lower friction_R per occurrence on average -> net_expectancy_R improves IF the gross edge of the surviving population is not itself degraded and occurrence_count does not collapse below a usable sample size.",
+
+  "falsification_condition": "The hypothesis is falsified if, when tested with a legitimate bounded candidate value, EITHER (a) friction_R per occurrence does not decrease relative to SSC1D_BASELINE, OR (b) it decreases but net_expectancy_R does not improve because the surviving (stricter-stop) occurrence subset has a materially worse gross edge or MAE/SL profile than the rejected subset, OR (c) occurrence_count falls below the WP1 optimization-objective safeguard (>=70% of baseline N) making the comparison unreliable.",
+
+  "possible_confounders": [
+    "Widening the stop floor does not only change friction_R -- it can also change which specific occurrences are admitted at all (survivorship), potentially removing occurrences that would have been winners, not just friction-heavy losers.",
+    "Wider stops may correlate with different MAE exposure (more room to be adverse before stop-out), which is a separate risk-geometry effect entangled with the pure friction-ratio effect.",
+    "The 9 already-rejected decision cycles under the current threshold are not visible as occurrences in this diagnosis -- their counterfactual economics are unknown, so the marginal effect of a stricter floor cannot be fully anticipated from DEVELOPMENT evidence alone without actually running a bounded candidate (reserved for WP4B/C, not this stage)."
+  ],
+
+  "sample_limitations": "N=31 total occurrences, single ~5-week DEVELOPMENT window, SHORT-only (per WP3 P7) -- friction's proportional relationship to stop distance is a general/structural argument, not itself statistically tested across a range of stop distances within this population (all 31 occurrences share the SAME minimum_stop_multiple=3.0 floor; there is no within-sample variation in this parameter to directly observe its marginal effect)."
+}

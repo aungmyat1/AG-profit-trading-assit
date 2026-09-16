@@ -1,0 +1,97 @@
+{
+  "schema": "AG_SSC1D_WP4A_ADMISSION_BUDGET_INTEGRITY_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "work_package": "SSC1D-WP4A",
+  "generated_utc": "2026-09-16",
+
+  "P4_hypothesis_admission": {
+    "admission_criteria": [
+      "1. direct WP3 evidence", "2. plausible causal mechanism", "3. legitimate mutable canonical component",
+      "4. deterministic evaluation metric", "5. clear falsification condition", "6. no OOS dependence",
+      "7. no final-holdout dependence", "8. no prospective-data dependence", "9. no material duplication with existing canonical hypotheses"
+    ],
+    "SSC1D-H1": {
+      "admitted": true,
+      "criteria_check": {
+        "1_direct_evidence": "PASS -- SSC1D_WP3 P1 economic attribution + friction breakdown",
+        "2_plausible_mechanism": "PASS -- friction_R inversely proportional to stop distance, a standard FX mechanics relationship",
+        "3_legitimate_mutable_component": "PASS -- friction.minimum_stop_multiple, pre-existing canonical field, already enforced by stop_engine.py",
+        "4_deterministic_metric": "PASS -- reuses SSC1D_WP1_optimization_objective_freeze.json / performance.calculator formulas unchanged",
+        "5_falsification_condition": "PASS -- stated in hypothesis file",
+        "6_no_OOS_dependence": "PASS -- DEVELOPMENT only",
+        "7_no_holdout_dependence": "PASS",
+        "8_no_prospective_dependence": "PASS",
+        "9_no_canonical_duplication": "PASS -- distinct from HYP_001 (exit target) and HYP_002 (setup selectivity); targets the friction/stop-floor gate, which neither existing hypothesis addresses"
+      }
+    },
+    "SSC1D-H2": {
+      "admitted": true,
+      "criteria_check": {
+        "1_direct_evidence": "PASS -- SSC1D_WP3 P4/P5 session and SL diagnosis",
+        "2_plausible_mechanism": "PASS, WITH CAVEAT -- mechanism is partly informed by general FX market-structure knowledge (session volatility asymmetry) rather than purely derived from the 31-occurrence sample; disclosed explicitly in the hypothesis file, not hidden",
+        "3_legitimate_mutable_component": "PASS -- regime.range_max_pips, pre-existing canonical field",
+        "4_deterministic_metric": "PASS -- same as H1",
+        "5_falsification_condition": "PASS -- stated in hypothesis file",
+        "6_no_OOS_dependence": "PASS", "7_no_holdout_dependence": "PASS", "8_no_prospective_dependence": "PASS",
+        "9_no_canonical_duplication": "PASS -- distinct from HYP_001/HYP_002; also distinct from H1 (different parameter, explicit note against double-counting if they converge)"
+      }
+    },
+    "admitted_hypotheses": ["SSC1D-H1", "SSC1D-H2"],
+    "rejected_or_deferred_hypotheses": [
+      {
+        "candidate": "SSC1D-MECH-3 (exit-capture)",
+        "outcome": "NOT ADMITTED AS A NEW SSC1D HYPOTHESIS",
+        "reason": "Classified MATERIALLY_OVERLAPPING with canonical HYP_001_EXIT_CAPTURE per SSC1D_WP4A_exit_capture_overlap_review.json -- criterion 9 fails. Recorded as corroborating DEVELOPMENT evidence for HYP_001 instead, per mission instruction P3."
+      }
+    ],
+    "count_note": "2 of the maximum 2 admitted for this stage. Not forced -- both genuinely satisfied all 9 criteria on independent review; the cap was not the limiting factor."
+  },
+
+  "P5_objective_preserved": {
+    "reference": "SSC1D_WP1_optimization_objective_freeze.json (unmodified by this work package)",
+    "primary": "candidate expectancy_R > SSC1D_BASELINE expectancy_R",
+    "safeguards": ["candidate profit_factor > baseline", "candidate max_drawdown_R <= baseline", "candidate occurrence_count >= 70% baseline"],
+    "robustness": "isolated parameter spikes insufficient; neighboring-parameter support required",
+    "status": "UNCHANGED. Not altered by this hypothesis-formation stage. No candidate results have been observed, so no post-hoc modification is possible or has occurred."
+  },
+
+  "P6_search_space_preparation": {
+    "SSC1D-H1": {
+      "eligible_parameter": "friction.minimum_stop_multiple (current value 3.0, NOT restated as a candidate value here)",
+      "direction_justified_by_mechanism": "INCREASE (widen the floor) -- the mechanism argues that a stricter floor filters out the worst friction-to-risk-ratio occurrences",
+      "immutable_surrounding_components": "friction cost inputs, entry/setup logic, exit/target logic, session windows, regime classifier, risk allocation/campaign caps",
+      "logical_constraints": "Must remain a positive multiple; must not be set so high that occurrence_count falls below the WP1 70%-of-baseline safeguard (exact numeric bound is WP4B/C's task, not stated here)"
+    },
+    "SSC1D-H2": {
+      "eligible_parameter": "regime.range_max_pips (current value 25.0, NOT restated as a candidate value here)",
+      "direction_justified_by_mechanism": "UNDETERMINED -- the mechanism does not, on DEVELOPMENT evidence alone, establish whether a tighter or wider threshold would improve ASIAN_LONDON's classification; both directions remain open questions for WP4B's search-space design, explicitly not resolved here",
+      "immutable_surrounding_components": "session_pairs window boundaries, friction inputs, entry/setup logic, exit/target logic, EMA periods, risk allocation/campaign caps",
+      "logical_constraints": "Must remain a positive pip value; must not collapse regime classification to a degenerate all-RANGE or all-UNKNOWN state"
+    },
+    "no_numeric_candidate_values_assigned": true,
+    "no_candidates_executed": true
+  },
+
+  "P7_budget_accounting": {
+    "major_hypotheses_budget": 3,
+    "major_hypotheses_admitted_so_far": 2,
+    "major_hypotheses_remaining": 1,
+    "candidate_budget": 20,
+    "candidate_count_used": 0,
+    "candidate_count_remaining": 20,
+    "optimization_time_used_hours": 0,
+    "optimization_time_remaining_hours": 3,
+    "note": "Unused budget deliberately not consumed -- SSC1D-MECH-3 was evaluated and correctly not admitted, leaving 1 of 3 major-hypothesis slots available for a future generation if new DEVELOPMENT evidence warrants it. This is not a failure to reach the cap; it reflects the evidence."
+  },
+
+  "P8_integrity": {
+    "strategy_modified": false,
+    "candidate_run": false,
+    "candidate_count": 0,
+    "OOS_ACCESS_COUNT": 0,
+    "final_holdout_accessed": false,
+    "prospective_data_consumed": false,
+    "canonical_HYP_001_modified": false,
+    "canonical_HYP_002_modified": false
+  }
+}

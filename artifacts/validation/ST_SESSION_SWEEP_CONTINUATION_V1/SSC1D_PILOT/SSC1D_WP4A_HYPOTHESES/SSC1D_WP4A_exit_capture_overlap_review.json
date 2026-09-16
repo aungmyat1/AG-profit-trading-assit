@@ -1,0 +1,16 @@
+{
+  "schema": "AG_SSC1D_WP4A_EXIT_CAPTURE_OVERLAP_REVIEW_V1",
+  "compared": {
+    "SSC1D-MECH-3": "EXIT-CAPTURE INEFFICIENCY -- mean MFE 0.739R vs mean realized gross_R ~0.0003R across 31 occurrences; 12/31 occurrences show positive MFE with a flat-or-negative close (SSC1D_WP3_DIAGNOSIS/SSC1D_WP3_setup_session_stoploss_exitcapture_diagnosis.json, P6)",
+    "canonical_HYP_001_EXIT_CAPTURE": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_PREREGISTRATION/HYP_001_EXIT_CAPTURE_PREREGISTRATION.md -- CONTROL=trade_management.runner_target_r=3.0 (FIXED_R, frozen parent) vs TREATMENT=1.5 (FIXED_R), preregistered, owner_freeze_status=APPROVED_FOR_PROSPECTIVE_CONFIRMATION, blocked as of 2026-09-15 on evidence-timing (STOP_TIMING_NOT_YET_AVAILABLE), not on a negative result. Its own historical motivation (Section 2 of the preregistration) is a root-cause finding that '0/88 GEN_001+GEN_002A trades ever reached the frozen 3.0R runner target' -- i.e. the exact same favorable-excursion-not-realized phenomenon WP3 observed independently in this pilot's own DEVELOPMENT window."
+  },
+  "classification": "MATERIALLY_OVERLAPPING",
+  "reason": [
+    "Same affected canonical component: trade_management.runner_target_r (the runner exit target), not a different parameter.",
+    "Same causal mechanism: favorable price excursion (MFE) frequently exceeds what is captured before the position exits -- WP3's 'MFE_minus_realized_gross_R_mean=0.739R' finding is, in substance, a fresh, independent re-observation of the identical phenomenon HYP_001 was preregistered to test (0/88 trades reaching the 3.0R target in HYP_001's own historical record).",
+    "Different data windows (HYP_001's prospective post-2026-09-14 confirmation vs this pilot's 2026-05-18..2026-06-19 DEVELOPMENT window) but the SAME mechanism and the SAME mutable component -- this is why it is classified MATERIALLY_OVERLAPPING rather than merely PARTIALLY_OVERLAPPING (a partial overlap would share the mechanism but point to a materially different lever; here the lever is identical)."
+  ],
+  "not_classified_as_DUPLICATE_because": "HYP_001 is a specific CONTROL-vs-TREATMENT prospective confirmation test against future/forward evidence under canonical governance, while WP3's finding is a DEVELOPMENT-window descriptive observation under this separate, non-canonical pilot -- they are not literally the same artifact or the same test instance, only the same underlying mechanism and lever.",
+  "SSC1D_action": "NO new SSC1D optimization hypothesis is created from SSC1D-MECH-3. Per mission instruction P3, it is recorded here as SUPPORTING/CORROBORATING DEVELOPMENT evidence for the existing canonical HYP_001_EXIT_CAPTURE line only. HYP_001 itself is not modified, not reopened outside its own governance process, and not reinterpreted by this pilot -- this record is informational cross-reference only.",
+  "hypotheses_admitted_from_this_mechanism": 0
+}
