@@ -12,7 +12,7 @@ from market_intelligence.models import MarketBiasResult
 from session_sweep_continuation.config import load_config
 from session_sweep_continuation.regime import classify_regime, required_regime_warmup
 from session_sweep_continuation.replay import run_replay
-from session_sweep_continuation.outcome_resolution import resolve_campaign_entry
+from session_sweep_continuation.outcome_resolution import resolve_campaign_entry, SAME_BAR_POLICY
 from strategy_engine.session.candles import Candle
 
 PIP = 0.0001
@@ -284,22 +284,25 @@ def test_outcome_resolution_stop_loss_hit():
 
 
 def test_outcome_resolution_same_bar_ambiguity_never_assumed():
+    # v1.0.1 OPPOSITE_SESSION_BOUNDARY semantics: LONG partial target = reference_high.
+    # One candle whose range touches BOTH the stop and the (LONG) partial target.
     entry_time = datetime(2026, 1, 6, 7, 0, tzinfo=timezone.utc)
     entry_price, stop_price = 1.1000, 1.0990
-    reference_low = 1.0950  # partial target below entry for a LONG
-    # One candle whose range touches BOTH the stop and the (LONG) partial target.
-    candles = [Candle(entry_time + timedelta(minutes=15), 1.1000, 1.1010, 1.0940, 1.0995)]
+    reference_high = 1.1010  # partial target above entry for a LONG
+    candles = [Candle(entry_time + timedelta(minutes=15), 1.1000, 1.1015, 1.0980, 1.0995)]
     outcome = resolve_campaign_entry(
         campaign_id="X", setup_model="S1_SWEEP_REVERSAL", direction="LONG",
         entry_time=entry_time, entry_price=entry_price, stop_price=stop_price,
-        reference_high=1.1050, reference_low=reference_low, runner_target_r=3.0,
+        reference_high=reference_high, reference_low=1.0950, runner_target_r=3.0,
         partial_pct=0.5, runner_pct=0.5, subsequent_candles=candles,
         session_exit_time=entry_time + timedelta(hours=4), friction=_friction(),
     )
-    # This LONG's partial target is reference_low, which is BELOW entry -- fail-closed
-    # "no valid forward target" path is taken instead (see next test) -- use a SHORT
-    # here instead so the ambiguity path is genuinely exercised.
-    assert outcome.terminal_state in ("RESOLVED_SL", "UNRESOLVED_NO_DATA", "RESOLVED_SESSION_EXIT")
+    # Both the stop (1.0990) and the partial target (1.1010) fall within this single
+    # candle's [1.0980, 1.1015] range -- SAME_BAR_POLICY must never assume an intrabar
+    # ordering; this must resolve to the dedicated ambiguous-sequence state, not a
+    # silently assumed win/loss.
+    assert outcome.terminal_state == "AMBIGUOUS_SEQUENCE"
+    assert outcome.note is not None and SAME_BAR_POLICY in outcome.note
 
 
 def test_outcome_resolution_cost_status_unavailable_never_reports_net_as_gross():

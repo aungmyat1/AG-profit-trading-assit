@@ -1,0 +1,137 @@
+{
+  "schema": "AG_SSC_V1_0_1_REMEDIATION_MANIFEST_V1",
+  "mission": "SSC_V1_0_1_EXIT_CONTRACT_SEMANTIC_REMEDIATION",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "parent_version": "1.0.0",
+  "remediation_version": "1.0.1",
+  "change_class": "SEMANTIC_BUGFIX",
+  "reason": "PARTIAL_TARGET_DIRECTION_INVERSION",
+
+  "owner_adjudication": {
+    "decision": "OPTION_A",
+    "canonical_partial_target_semantic": "OPPOSITE_SESSION_BOUNDARY: LONG -> reference_high, SHORT -> reference_low",
+    "basis": [
+      "execution validator convention (src/execution/validator.py leg1_take_profit/_leg1_target)",
+      "validator conformance tests (tests/test_trade_management_execution_conformance.py)",
+      "forward-shadow resolver convention (scripts/resolve_forward_shadow_outcomes.py:190)",
+      "outcome resolver's own documented intent (outcome_resolution.py docstring/PARTIAL_TARGET_INTERPRETATION, pre-remediation)",
+      "git lineage/forensic audit (single unvarying introducing commit c36bf235, no historical fork)"
+    ],
+    "economic_results_used_for_adjudication": false
+  },
+
+  "declarations": {
+    "parameter_change": false,
+    "session_logic_change": false,
+    "setup_logic_change": false,
+    "entry_logic_change": false,
+    "stop_logic_change": false,
+    "friction_logic_change": false,
+    "target_parameter_change": false,
+    "partial_target_direction_semantics_changed": true,
+    "economic_behavior_may_change": true,
+    "economic_effect_evaluated": false
+  },
+
+  "pre_remediation_identity": {
+    "head": "43228e23dbda23bf0ba4bcf26a0432249de622be",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.0",
+    "outcome_resolution_py_sha256": "a20fe03f3d933c101d65b779413fa79807e6eae1c086995d48a7a447e3ea0b74",
+    "strategy_yaml_sha256": "c92311c3c1789a2ea01495a82a1fbcba1d877a8fb4d9ac46732f39e0b81970a9",
+    "defect": {
+      "pre_remediation_semantic": "INVERSE_BOUNDARY: LONG -> reference_low, SHORT -> reference_high",
+      "location": "src/session_sweep_continuation/outcome_resolution.py:129 (resolve_campaign_entry)",
+      "introducing_commit": "c36bf235",
+      "introducing_commit_date": "2026-09-12 19:46:40 +0630",
+      "note": "unvaried since introduction, per git blame -- not a historical fork"
+    },
+    "forensic_audit_reference": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/PHASE1_DESIGN_CONTRACT/CONTRACT_CONFLICT.json (unmerged worktree branch worktree-agent-ab109b52c81c450d6) and the prior SSC EXIT SEMANTIC LINEAGE AUDIT session report"
+  },
+
+  "production_source_allowlist": ["src/session_sweep_continuation/outcome_resolution.py"],
+  "production_source_files_changed": ["src/session_sweep_continuation/outcome_resolution.py"],
+  "diff_boundary_status": "AUTHORIZED_SEMANTIC_CHANGE",
+  "diff_summary": "16 insertions, 3 deletions, single file. Changed: (1) line 142 mapping reference_low if is_long else reference_high -> reference_high if is_long else reference_low. (2) PARTIAL_TARGET_INTERPRETATION constant text updated to record owner adjudication. (3) module docstring: added v1.0.1 SEMANTIC_BUGFIX note. No other line touched; fail-closed guard (target-behind-entry -> None), SAME_BAR_POLICY, runner/BE mechanics, session-exit fallback all byte-identical.",
+
+  "files_modified": [
+    "src/session_sweep_continuation/outcome_resolution.py",
+    "tests/test_session_sweep_continuation_gap_remediation.py (one stale test updated: test_outcome_resolution_same_bar_ambiguity_never_assumed now exercises the ambiguity path under corrected semantics instead of describing the old inverted mapping as expected)",
+    "tests/test_session_sweep_continuation_replay_determinism.py (one test's local fixture copy adjusted: test_m1_wiring_changes_outcome_when_m1_reveals_a_stop_breach_m15_could_not_see raises one reference-session candle's high, locally only, to restore its original M15-only-reaches-SESSION_EXIT baseline under the corrected target mapping; shared _build_synthetic_range_and_sweep_day helper untouched)"
+  ],
+  "files_added": [
+    "tests/test_session_sweep_continuation_v1_0_1_exit_semantic_remediation.py",
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_0_1_REMEDIATION/V1_0_1_REMEDIATION_MANIFEST.json"
+  ],
+
+  "long_mapping": "reference_high",
+  "short_mapping": "reference_low",
+
+  "session_logic_changed": false,
+  "setup_logic_changed": false,
+  "entry_logic_changed": false,
+  "stop_logic_changed": false,
+  "friction_logic_changed": false,
+  "target_parameter_changed": false,
+  "runner_parameters_changed": false,
+
+  "config_semantic_change": "NONE",
+  "parameter_diff": "NONE",
+  "strategy_yaml_sha256_unchanged_check": {
+    "pre": "c92311c3c1789a2ea01495a82a1fbcba1d877a8fb4d9ac46732f39e0b81970a9",
+    "post": "c92311c3c1789a2ea01495a82a1fbcba1d877a8fb4d9ac46732f39e0b81970a9",
+    "identical": true
+  },
+
+  "tests": {
+    "normative_new_file": "tests/test_session_sweep_continuation_v1_0_1_exit_semantic_remediation.py -- 6 passed, 0 failed (long/short mapping, LONG lifecycle entry->partial->runner-target, SHORT lifecycle entry->partial->BE, invalid-geometry fail-closed, cross-module parity vs execution/validator.py)",
+    "outcome_resolution_tests": "tests/test_session_sweep_continuation_gap_remediation.py -- 11 passed, 0 failed",
+    "ssc_golden_tests": "no pre-existing dedicated golden-test file merged to main at remediation time (a WP4 golden-test file from a prior Phase-1 audit mission remains on unmerged worktree branch worktree-agent-ab109b52c81c450d6, not part of this diff)",
+    "execution_conformance": "tests/test_trade_management_execution_conformance.py -- 15 passed, 0 failed",
+    "replay_determinism": "tests/test_session_sweep_continuation_replay_determinism.py -- 6 passed, 0 failed (1 test's local fixture adjusted, see files_modified)",
+    "ssc_full_family": "python -m pytest tests/ -k session_sweep_continuation -q -- 110 passed, 0 failed, 2774 deselected (104 pre-remediation baseline + 6 new)",
+    "broad_regression_execution_strategy_engine_validator": "python -m pytest tests/ -k \"execution or strategy_engine or validator\" -q -- 375 passed, 0 failed, 2509 deselected",
+    "full_repo_regression": "python -m pytest tests/ -q -- 2882 passed, 1 skipped, 1 deselected, 0 failed, 2884 collected total"
+  },
+
+  "phase1_exit_contract_status": "PASS -- outcome_resolution.py, execution/validator.py, validator conformance tests, and resolve_forward_shadow_outcomes.py all now resolve LONG/SHORT target direction as OPPOSITE_SESSION_BOUNDARY (verified by direct code read and by the cross-module parity test)",
+
+  "v1_0_0_evidence_classification": {
+    "hyp_002_family": "PRE_REMEDIATION_NON_COUNTING (population/economic-result/failure-decomposition/closure -- unchanged by this fix, not retroactively repaired, not replayed)",
+    "hyp_003_m1_mechanism": "AFFECTED_REPLAYABLE (unchanged by this fix, not replayed)",
+    "hyp_001_preregistration": "UNAFFECTED_REUSABLE_PENDING_REINTERPRETATION -- now quarantined, see hyp_001_quarantine below"
+  },
+
+  "hyp_001_quarantine": {
+    "status": "PENDING_BASELINE_REMEDIATION_REASSESSMENT",
+    "fresh_confirmation_runs": 0,
+    "candidate_parameter_modified": false,
+    "fresh_dataset_consumed": false,
+    "candidate_economics_evaluated": false,
+    "note": "HYP_001_EXIT_CAPTURE_PREREGISTRATION.md left untouched; not executed by this mission"
+  },
+
+  "post_remediation_identity": {
+    "head_before": "43228e23dbda23bf0ba4bcf26a0432249de622be",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "remediation_version": "1.0.1",
+    "outcome_resolution_py_sha256": "2b2480138a7ccc5f0a16023e79f95e5fc8a9ea56a11e00fe63b8dde0b969e414",
+    "strategy_yaml_sha256": "c92311c3c1789a2ea01495a82a1fbcba1d877a8fb4d9ac46732f39e0b81970a9",
+    "test_files_sha256": {
+      "tests/test_session_sweep_continuation_v1_0_1_exit_semantic_remediation.py": "9b95d7d767e4843f253299aa316240cba00ec9b164c4277552a0778c3a205f05",
+      "tests/test_session_sweep_continuation_gap_remediation.py": "a50effef6c50d0c7191ccf90781bb29e40a22b633af30ad230fe1e010bfaa288",
+      "tests/test_session_sweep_continuation_replay_determinism.py": "22df0b76ab87c57fc4a3022986e78f8a6871a05b0f9ecea9f5fd2f6cd23e7f15"
+    },
+    "hashing_convention_reused": "sha256 over raw file bytes / sha256 over canonical sorted-key JSON for config, per src/session_sweep_continuation/config.py::compute_config_hash and evidence.py::compute_dataset_hash conventions"
+  },
+  "hash_binding_status": "BOUND: pre_remediation_identity -> owner_adjudication(OPTION_A) -> authorized_diff(outcome_resolution.py only) -> tests(110 SSC + 375 broad, 0 failed) -> post_remediation_identity",
+
+  "historical_economic_replay_run": false,
+  "new_population_generated": false,
+  "protected_data_accessed": false,
+  "holdout_accessed": false,
+  "demo_authority_changed": false,
+  "live_authority_changed": false,
+
+  "final_status": "SSC_V1_0_1_REMEDIATION_VERIFIED"
+}

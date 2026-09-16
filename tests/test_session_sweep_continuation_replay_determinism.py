@@ -154,6 +154,18 @@ def test_m1_wiring_changes_outcome_when_m1_reveals_a_stop_breach_m15_could_not_s
     M1 granularity, when m1_candles is supplied, with identical stop/target/friction
     formulas (resolve_campaign_entry is untouched)."""
     candles = _build_synthetic_range_and_sweep_day()
+    # v1.0.1 OPPOSITE_SESSION_BOUNDARY remediation: the LONG partial target is now
+    # reference_high (was reference_low pre-remediation). The shared fixture's
+    # reference_high (~1.1004) sits below every trade-session M15 candle's own high
+    # (1.1005/1.1006), so the corrected partial target would now be reached at M15
+    # granularity itself -- before this test's M1-specific stop-breach proof point is
+    # exercised. Raise ONE reference-session candle's high (local copy only; the shared
+    # _build_synthetic_range_and_sweep_day helper other tests rely on is untouched) so
+    # reference_high sits above every M15 trade-session high, restoring this test's
+    # original M15-only-reaches-SESSION_EXIT baseline. Range width stays ~19 pips,
+    # comfortably under range_max_pips=25.0 -- RANGE regime classification unaffected.
+    from dataclasses import replace
+    candles = [replace(c, high=c.high + 0.0015) if i == 12 else c for i, c in enumerate(candles)]
     config = _config()
     bias = _bullish_bias()
 

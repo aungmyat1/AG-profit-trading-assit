@@ -41,6 +41,18 @@ AG_THREE_STRATEGY_VALIDATION_CONTINUATION_V1 P1A gave ST_ASIAN_SWEEP_5R_V1's own
 ambiguity -- flagged in every resolved record's `partial_target_interpretation` field,
 never silently assumed authoritative.
 
+v1.0.1 SEMANTIC_BUGFIX (PARTIAL_TARGET_DIRECTION_INVERSION): from v1.0.0's introducing
+commit through v1.0.0, the LONG/SHORT mapping below was implemented inverted relative to
+the OPPOSITE_SESSION_BOUNDARY convention this docstring already claimed to reuse (LOW for
+LONG / HIGH for SHORT, instead of HIGH for LONG / LOW for SHORT as in
+src/execution/validator.py and scripts/resolve_forward_shadow_outcomes.py). Owner-adjudicated
+in the SSC V1.0.1 EXIT CONTRACT SEMANTIC REMEDIATION mission (OPTION_A) on repository
+semantic/provenance evidence only, not economic performance. This is now an owner-signed
+convention for THIS strategy, not merely a borrowed interpretation. Pre-remediation
+economic evidence generated under the inverted mapping remains classified
+PRE_REMEDIATION_NON_COUNTING per existing governance and is not retroactively revised by
+this fix.
+
 Invariant (P15): TARGET_HIT_BEFORE_FILL != WIN, STOP_HIT_BEFORE_FILL != LOSS -- outcome
 metrics are only ever computed from candles strictly AFTER entry_time (the fill has
 already happened by construction at entry_time; nothing before it is consulted).
@@ -56,8 +68,9 @@ SAME_BAR_POLICY = "AMBIGUOUS_SEQUENCE_NO_ASSUMED_INTRABAR_ORDER"
 PARTIAL_TARGET_INTERPRETATION = (
     "NEXT_LIQUIDITY_TARGET interpreted as OPPOSITE_SESSION_BOUNDARY (reference session "
     "high/low) -- same interpretation concept as ST_ASIAN_SWEEP_5R_V1's own signed TP1 "
-    "definition in this session-box architecture; an explicit, flagged interpretation, "
-    "not an owner-signed contract for THIS strategy."
+    "definition in this session-box architecture; owner-adjudicated OPTION_A as of "
+    "v1.0.1 (SEMANTIC_BUGFIX: PARTIAL_TARGET_DIRECTION_INVERSION) -- LONG targets "
+    "reference_high, SHORT targets reference_low."
 )
 
 TERMINAL_RESOLVED_STATES = {
@@ -126,7 +139,7 @@ def resolve_campaign_entry(
     is_long = direction == "LONG"
     risk = abs(entry_price - stop_price)
 
-    partial_target_price = reference_low if is_long else reference_high
+    partial_target_price = reference_high if is_long else reference_low
     # A NEXT_LIQUIDITY_TARGET on the wrong side of entry (already passed) is not a valid
     # forward target -- fail closed to "no partial target available" rather than
     # computing a nonsensical negative-R first leg.
