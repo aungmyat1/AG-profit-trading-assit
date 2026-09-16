@@ -1,0 +1,50 @@
+{
+  "access_count": 0,
+  "broker": "VantageMarkets-Demo",
+  "combined_dataset_fingerprint": "a32a444ffe23e69aafec9380d8aff1a52ebce055a8248e547e5ec473ed6721dd",
+  "combined_dataset_fingerprint_canonical_input": "EURUSD|H1|83e84058cdeed302b98c49b5df840c0ce5569ba4416198f4b5d7028a195ab640\nEURUSD|M15|22c3c003dd7cc1e89ccf24f53e5f235238d126d639fd874af66804798c7524d8",
+  "environment": "DEMO",
+  "frozen_end": "2024-03-31T23:59:59Z",
+  "frozen_start": "2024-01-01T00:00:00Z",
+  "metatrader5_package_version": "5.0.5735",
+  "package_id": "SSC1D_WP1_OOS_EURUSD_2024Q1",
+  "per_file": {
+    "EURUSD_H1": {
+      "bars": 1536,
+      "duplicate_count": 0,
+      "expected_weekend_gaps": 12,
+      "first_timestamp": "2024-01-02T00:00:00Z",
+      "invalid_ohlc_count": 0,
+      "last_timestamp": "2024-03-29T23:00:00Z",
+      "non_monotonic_count": 0,
+      "raw_file": "data/research/ssc1d_pilot/SSC1D_WP1_OOS_EURUSD_2024Q1/raw/EURUSD_H1.csv",
+      "sha256": "83e84058cdeed302b98c49b5df840c0ce5569ba4416198f4b5d7028a195ab640",
+      "unexpected_gaps": 0
+    },
+    "EURUSD_M15": {
+      "bars": 6144,
+      "duplicate_count": 0,
+      "expected_weekend_gaps": 12,
+      "first_timestamp": "2024-01-02T00:00:00Z",
+      "invalid_ohlc_count": 0,
+      "last_timestamp": "2024-03-29T23:45:00Z",
+      "non_monotonic_count": 0,
+      "raw_file": "data/research/ssc1d_pilot/SSC1D_WP1_OOS_EURUSD_2024Q1/raw/EURUSD_M15.csv",
+      "sha256": "22c3c003dd7cc1e89ccf24f53e5f235238d126d639fd874af66804798c7524d8",
+      "unexpected_gaps": 0
+    }
+  },
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "role": "OOS_UNTOUCHED (H1, M15 legs only -- M1 unavailable, see skipped_timeframes)",
+  "role_note": "Acquired and hashed only. access_count starts at 0 and must be incremented (to exactly 1, ever) only by the single frozen-candidate OOS run under P9 of SSC_ONE_DAY_DEMO_PILOT_V2.md. No SSC code has been run against this data. This package is INSUFFICIENT on its own for a canonical-parity SSC replay, which requires M1 fill resolution -- see skipped_timeframes and the WP1 dataset-role manifest's finding_wp1.m1_gap for detail.",
+  "schema": "AG_SSC1D_OOS_DATASET_MANIFEST_V1",
+  "selection_rationale": "Chosen strictly by chronological non-overlap with every known SSC research artifact (predates GEN_001's earliest input 2025-01-02 by over 12 months); not chosen from or influenced by any SSC backtest result -- no SSC code was run before or during this acquisition.",
+  "skipped_timeframes": {
+    "M1": "NO_DATA -- broker M1 history retention exhausted for this window"
+  },
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "symbol": "EURUSD",
+  "terminal_build": 6182,
+  "trading_function_called": false,
+  "work_package": "SSC1D-WP1"
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "AG_SSC1D_DATA_HYGIENE_REPORT_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP1",
+  "generated_utc": "2026-09-16",
+  "development_dataset": {
+    "dataset": "GEN_001 triplet (EURUSD H1 full range, M15 full range, M1 2026-05-18..2026-06-19 segment)",
+    "checks_source": "Not re-run by WP1 -- this data was already integrity-checked when acquired/admitted for canonical GEN_001 use. Reused evidence: config/historical_datasets/EURUSD_H1_202501020000_202607310000.yaml (integrity_status: PASS, quality_status: PASS), the matching M15/M1 yaml manifests (same pattern), and artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/POST_JULY31_CONSUMPTION_AUDIT/consumption_audit.json.",
+    "chronological_ordering": "PASS (per source yaml integrity_status)",
+    "duplicate_bars": "PASS (per source yaml integrity_status)",
+    "missing_bars": "PASS -- expected weekend gaps only, per source yaml",
+    "ohlc_validity": "PASS (per source yaml integrity_status)",
+    "timeframe_consistency": "PASS -- declared_timeframe == observed_timeframe (MATCH) per source yaml",
+    "utc_broker_offset": "Documented and independently re-derivable: MT5-exported CSV timestamps are broker wall-clock (Vantage, UTC+3), verified via src/mt5/broker_time.py's weekend-reopen-gap technique per the yaml header comments; UTC-normalized start/end recorded in SSC1D_WP0_dataset_role_manifest.json's corrected entries",
+    "session_boundary_correctness": "Not independently re-verified by WP1 (would require re-running session-window derivation) -- deferred to SSC1D-WP2+ baseline computation, which will surface any session-boundary issue directly against SSC's own session config",
+    "weekend_handling": "PASS -- gaps at weekend boundaries only, per source yaml",
+    "lookahead_isolation": "N/A at this stage -- no strategy code has been run against this data yet under this pilot; lookahead isolation is enforced by the replay engine itself (src/session_sweep_continuation/replay.py), not by data acquisition",
+    "dataset_hash_reproducibility": "CONFIRMED -- this session independently recomputed sha256 for all 3 raw CSV files via `sha256sum` on D:\\ and it matches both the yaml-recorded dataset_fingerprint and the EXPECTED_SHA256 constants hard-coded in scripts/run_first_canonical_session_sweep_continuation_replay.py"
+  },
+  "oos_dataset": {
+    "dataset": "SSC1D_WP1_OOS_EURUSD_2024Q1 (H1 + M15 legs)",
+    "checks_source": "Performed live by scripts/acquire_ssc1d_wp1_oos_eurusd_2024q1.py during acquisition (2026-09-16); the script raises SystemExit on any integrity failure, so a successful run is itself a pass signal, corroborated by the numeric fields below (also directly reproduced from data/research/ssc1d_pilot/SSC1D_WP1_OOS_EURUSD_2024Q1/oos_dataset_manifest.json).",
+    "chronological_ordering": "PASS -- rows sorted and monotonicity checked (non_monotonic_count=0 for both H1 and M15)",
+    "duplicate_bars": "PASS -- duplicate_count=0 for both H1 and M15",
+    "missing_bars": "PASS -- unexpected_gaps=0 for both; 12 expected_weekend_gaps each (Q1 2024 = ~13 weeks, consistent)",
+    "ohlc_validity": "PASS -- invalid_ohlc_count=0 for both (high >= max(open,close), low <= min(open,close), high >= low enforced)",
+    "timeframe_consistency": "PASS -- bar counts consistent with declared timeframes: H1 1536 bars over ~64 trading days (~24/day), M15 6144 bars (exactly 4x H1, as expected for M15 vs H1 on the same window)",
+    "utc_broker_offset": "Raw MT5 export is broker wall-clock; not yet UTC-normalized in this package (deferred -- the same UTC+3 methodology used for the GEN_001/GEN_002 files applies and will be applied before any replay run, not before acquisition)",
+    "session_boundary_correctness": "Not applicable yet -- no session-window derivation has been run against this data",
+    "weekend_handling": "PASS -- all gaps classified expected_weekend_gaps, zero unexpected_gaps",
+    "lookahead_isolation": "N/A -- data acquired, not yet used by any replay",
+    "dataset_hash_reproducibility": "CONFIRMED -- sha256 computed at acquisition time and printed/recorded in oos_dataset_manifest.json; combined_dataset_fingerprint = a32a444ffe23e69aafec9380d8aff1a52ebce055a8248e547e5ec473ed6721dd",
+    "material_defects_found": "NONE",
+    "material_defects_silently_repaired": "NONE -- no repair logic exists in the acquisition script; any integrity failure would have aborted the run (SystemExit) rather than being patched"
+  },
+  "outstanding_gap": {
+    "description": "OOS M1 leg unavailable (broker M1 retention ~120 days). Not a data-quality defect -- a data-availability constraint. See SSC1D_WP0_dataset_role_manifest.json finding_wp1.m1_gap for full detail and next safe action.",
+    "silently_repaired": false
+  }
+}

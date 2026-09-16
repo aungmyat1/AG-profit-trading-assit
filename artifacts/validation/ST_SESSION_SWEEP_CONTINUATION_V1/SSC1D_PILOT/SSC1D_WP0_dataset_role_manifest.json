@@ -5,6 +5,7 @@
   "work_package": "SSC1D-WP0",
   "generated_utc": "2026-09-16",
   "note": "Read-only inventory of REAL, already-existing repository artifacts. No synthetic data created. No dataset content inspected beyond metadata/header fields already visible in existing manifests. This is a pilot-local manifest; it does not modify or supersede any canonical SSC or Large-SMC dataset-role artifact.",
+  "wp1_correction": "SSC1D-WP1 (2026-09-16) independently audited the 3 entries below previously marked UNKNOWN and found this was an ERROR: all three are proven, hash-confirmed inputs to SSC's own GEN_001 experiment (artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001, EXP_EDGE_ATTRIBUTION_V1/GEN_001), hard-coded by exact sha256 in scripts/run_first_canonical_session_sweep_continuation_replay.py and scripts/run_session_sweep_continuation_canonical_shadow_parity.py, and already documented in artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/POST_JULY31_CONSUMPTION_AUDIT/consumption_audit.json. WP0's discovery pass missed cross-referencing that audit. Entries corrected in place below; sha256 values independently recomputed and verified twice (once by the WP1 audit subagent, once directly by this session via `sha256sum` on D:\\) against the yaml-recorded dataset_fingerprint.",
   "datasets": [
     {
       "dataset_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914",
@@ -21,38 +22,44 @@
     {
       "dataset_id": "EURUSD_H1_202501020000_202607310000",
       "symbol": ["EURUSD"],
-      "time_range_utc": "2025-01-02T00:00:00Z .. 2026-07-31T00:00:00Z",
+      "time_range_utc": "2025-01-01T21:00:00Z .. 2026-07-30T21:00:00Z (UTC, broker wall-clock UTC+3; raw 2025-01-02T00:00:00 .. 2026-07-31T00:00:00)",
       "timeframes": ["H1"],
       "source": "config/historical_datasets/EURUSD_H1_202501020000_202607310000.yaml",
-      "hash": "UNKNOWN -- not extracted from the manifest by this mission",
-      "previous_consumption": "UNKNOWN -- not confirmed consumed specifically by SSC; overlaps windows used elsewhere in the repo for other strategies/pipelines",
-      "assigned_role": "UNKNOWN",
-      "allowed_operations": [],
-      "reason": "Requires a dedicated SSC-specific consumption re-audit before any role can be assigned; not to be used until re-audited."
+      "row_count": 9817,
+      "hash": "sha256:f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060 (independently verified via sha256sum on D:\\EURUSD_H1_202501020000_202607310000.csv; matches yaml dataset_fingerprint and scripts/run_first_canonical_session_sweep_continuation_replay.py's EXPECTED_SHA256 exactly)",
+      "previous_consumption": "CONSUMED -- loaded as H1 market-bias input by scripts/run_first_canonical_session_sweep_continuation_replay.py and scripts/run_session_sweep_continuation_canonical_shadow_parity.py for SSC's GEN_001 experiment (artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001, EXP_EDGE_ATTRIBUTION_V1/GEN_001; 31-trade population, 2026-05-18..2026-06-19). POST_JULY31_CONSUMPTION_AUDIT/consumption_audit.json records latest proven research consumption as 2026-06-19 (bias input) even though the file's own range extends to 2026-07-30.",
+      "assigned_role": "CONSUMED_NON_COUNTING",
+      "assigned_role_sub_use": "DEVELOPMENT_REUSABLE for SSC1D pilot purposes -- GEN_001 was hypothesis-generation-only (candidate_manifest.json bars its reuse as *confirmatory* evidence for canonical HYP_001/HYP_002), and this data is not part of any currently open canonical evidence lane (HYP_001's open lane uses GEN_002, a disjoint dataset), so reusing it as this pilot's own bounded DEVELOPMENT data creates no new contamination.",
+      "allowed_operations": ["pilot DEVELOPMENT use (baseline, diagnosis, optimization candidates)"],
+      "reason": "WP1 correction: previously marked UNKNOWN in error; see wp1_correction note above. Never eligible as OOS for any lineage (already consumed)."
     },
     {
       "dataset_id": "EURUSD_M15_202501020000_202606192345",
       "symbol": ["EURUSD"],
-      "time_range_utc": "2025-01-02T00:00:00Z .. 2026-06-19T23:45:00Z",
+      "time_range_utc": "2025-01-01T21:00:00Z .. 2026-06-19T20:45:00Z (UTC, broker wall-clock UTC+3; raw 2025-01-02T00:00:00 .. 2026-06-19T23:45:00)",
       "timeframes": ["M15"],
       "source": "config/historical_datasets/EURUSD_M15_202501020000_202606192345.yaml",
-      "hash": "UNKNOWN -- not extracted from the manifest by this mission",
-      "previous_consumption": "UNKNOWN -- not confirmed consumed specifically by SSC",
-      "assigned_role": "UNKNOWN",
-      "allowed_operations": [],
-      "reason": "Requires a dedicated SSC-specific consumption re-audit before any role can be assigned."
+      "row_count": 36480,
+      "hash": "sha256:7f7502938862f4a3779f018caab468fe4445a4d8c676c8393dc29ca57fc43a65 (independently verified via sha256sum; matches yaml + script EXPECTED_SHA256 exactly)",
+      "previous_consumption": "CONSUMED -- entire file is the SSC decision-cycle (S1/S2/S3) input for GEN_001 via src/session_sweep_continuation/replay.py; consumption_audit.json line 129 records the file's coverage ends exactly where consumption ends (2026-06-19), i.e. essentially the whole file was used, not just a tail.",
+      "assigned_role": "CONSUMED_NON_COUNTING",
+      "assigned_role_sub_use": "DEVELOPMENT_REUSABLE for SSC1D pilot purposes -- same reasoning as the H1 entry above.",
+      "allowed_operations": ["pilot DEVELOPMENT use (baseline, diagnosis, optimization candidates)"],
+      "reason": "WP1 correction: previously marked UNKNOWN in error; see wp1_correction note above. Never eligible as OOS (already consumed, highest confidence of the three)."
     },
     {
       "dataset_id": "EURUSD_M1_202605180946_202607312356",
       "symbol": ["EURUSD"],
-      "time_range_utc": "2026-05-18T09:46:00Z .. 2026-07-31T23:56:00Z",
+      "time_range_utc": "2026-05-18T06:46:00Z .. 2026-07-31T20:56:00Z (UTC, broker wall-clock UTC+3; raw 2026-05-18T09:46:00 .. 2026-07-31T23:56:00)",
       "timeframes": ["M1"],
       "source": "config/historical_datasets/EURUSD_M1_202605180946_202607312356.yaml",
-      "hash": "UNKNOWN -- not extracted from the manifest by this mission",
-      "previous_consumption": "UNKNOWN -- not confirmed consumed specifically by SSC",
-      "assigned_role": "UNKNOWN",
-      "allowed_operations": [],
-      "reason": "Requires a dedicated SSC-specific consumption re-audit before any role can be assigned."
+      "row_count": 78444,
+      "hash": "sha256:55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23 (independently verified via sha256sum; matches yaml + GEN_001 manifest.json/input_manifest.json dataset_hash exactly)",
+      "previous_consumption": "SPLIT -- 2026-05-18..2026-06-19 portion is PROVEN CONSUMED (literal GEN_001 dataset_path in artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001/manifest.json and input_manifest.json, fill-resolution input for the 31-trade population). The 2026-06-20..2026-07-31 tail (~6 weeks) is physically present in the same file but UNRESOLVED: POST_JULY31_CONSUMPTION_AUDIT/consumption_audit.json's own unresolved_evidence[0] found no artifact demonstrating that tail was ever exposed to any SSC population/replay/experiment, and recommended EXCLUDE_FROM_FUTURE_USE_UNTIL_RESOLVED. WP1 found no additional evidence resolving it either way.",
+      "assigned_role": "SPLIT -- CONSUMED_NON_COUNTING (2026-05-18..2026-06-19 segment) / UNKNOWN (2026-06-20..2026-07-31 segment)",
+      "assigned_role_sub_use": "Proven-consumed segment: DEVELOPMENT_REUSABLE for SSC1D pilot purposes. Unresolved tail: NOT usable for any purpose (neither DEVELOPMENT nor OOS) until independently resolved -- must not be treated as untouched merely because no proof of consumption exists; the file itself has already been present/handled in this repository's research process, which is a weaker but non-zero exposure risk.",
+      "allowed_operations": ["pilot DEVELOPMENT use, 2026-05-18..2026-06-19 segment only"],
+      "reason": "WP1 correction: previously marked UNKNOWN (whole file) in error for the proven segment; the tail segment's UNKNOWN classification is retained and now evidence-backed rather than a placeholder."
     },
     {
       "dataset_id": "GBPUSD_H1_WARMUP_PLUS_R1",
@@ -67,16 +74,17 @@
       "reason": "Spent on a terminal canonical replication attempt; not reusable as untouched evidence for this pilot."
     },
     {
-      "dataset_id": "SSC1D_FUTURE_POST_20260914_EURUSD_PACKAGE",
+      "dataset_id": "SSC1D_WP1_OOS_EURUSD_2024Q1",
       "symbol": ["EURUSD"],
-      "time_range_utc": "NOT YET ACQUIRED -- must post-date 2026-09-14T23:59:59Z (SSC_FRESH_DEV_GEN_002 frozen_end)",
-      "timeframes": ["proposed: H1, M15, M1 to match existing SSC replay engine inputs"],
-      "source": "NOT YET CREATED",
-      "hash": "NOT YET CREATED",
-      "previous_consumption": "NONE -- does not exist in the repository yet",
-      "assigned_role": "OOS_UNTOUCHED (candidate designation only -- not an existing asset)",
-      "allowed_operations": [],
-      "reason": "Must be freshly acquired via the existing admitted MT5 path (pattern: FRESH_DATA_ADMISSION/), split into DEVELOPMENT_REUSABLE and OOS_UNTOUCHED slices at acquisition time before either slice is inspected, and admitted through a new pilot-local admission record before any use. This is SSC1D-WP1 scope, not WP0."
+      "time_range_utc": "2024-01-01T00:00:00Z .. 2024-03-31T23:59:59Z",
+      "timeframes": ["H1", "M15"],
+      "source": "data/research/ssc1d_pilot/SSC1D_WP1_OOS_EURUSD_2024Q1/oos_dataset_manifest.json",
+      "hash": "combined_dataset_fingerprint recorded in oos_dataset_manifest.json; per-file: H1=83e84058cdeed302b98c49b5df840c0ce5569ba4416198f4b5d7028a195ab640 (1536 bars), M15=22c3c003dd7cc1e89ccf24f53e5f235238d126d639fd874af66804798c7524d8 (6144 bars)",
+      "previous_consumption": "NONE -- acquired 2026-09-16 by SSC1D-WP1 via read-only MT5 pull (scripts/acquire_ssc1d_wp1_oos_eurusd_2024q1.py, no trading function called), strictly pre-dating GEN_001's earliest input (2025-01-02) by over 12 months; chosen purely on chronological non-overlap grounds, never on observed SSC performance -- no SSC code has been run against this data",
+      "assigned_role": "OOS_UNTOUCHED (H1 and M15 legs only)",
+      "allowed_operations": ["exactly one future frozen-candidate replay run, per P9 of SSC_ONE_DAY_DEMO_PILOT_V2.md; no optimization"],
+      "access_count": 0,
+      "reason": "M1 fill-resolution leg is NOT included: this MT5 terminal/broker only retains M1 history for roughly the trailing ~120 days (verified empirically -- 2024-2025 M1 pulls returned 0-1 bars while H1/M15 pulled cleanly), so no historical M1 data exists that is both within retention and untouched by SSC. See finding.m1_gap below. This package is therefore sufficient for H1/M15 diagnostic and bias/decision-cycle checks but NOT sufficient on its own to run a canonical-parity SSC replay (which requires M1 fill resolution) until the M1 gap is resolved."
     },
     {
       "dataset_id": "SSC_CANONICAL_FINAL_HOLDOUT",
@@ -91,8 +99,16 @@
       "reason": "This pilot has no authority to define, seed, or seal a canonical SSC final holdout. Out of scope for all SSC1D work packages."
     }
   ],
-  "finding": {
-    "dataset_role_status": "NO_LEGITIMATE_OOS_ESTABLISHED",
-    "next_safe_action": "ACQUIRE_NEW_POST_2026-09-14_EURUSD_PACKAGE_VIA_EXISTING_MT5_INFRASTRUCTURE, THEN RE-RUN DATASET-ROLE CLASSIFICATION BEFORE SSC1D-WP1 MAY PROCEED PAST P2"
+  "finding_wp0_superseded": {
+    "dataset_role_status": "NO_LEGITIMATE_OOS_ESTABLISHED (as of WP0, 2026-09-16 morning)",
+    "note": "Superseded by finding_wp1 below."
+  },
+  "finding_wp1": {
+    "development_dataset_status": "ESTABLISHED",
+    "development_dataset": "GEN_001 triplet (EURUSD H1 full range + M15 full range + M1 2026-05-18..2026-06-19 segment), reclassified DEVELOPMENT_REUSABLE above",
+    "oos_status": "PARTIAL_ESTABLISHED_H1_M15_ONLY -- M1_UNAVAILABLE",
+    "oos_dataset": "SSC1D_WP1_OOS_EURUSD_2024Q1 (H1 + M15 legs only)",
+    "m1_gap": "This MT5 terminal's M1 history retention appears limited to roughly the trailing ~120 days from current server time (empirically verified: clean pulls at 30/60/90 days back, 0-1 bars at 120+ days back). Within that retention window, every EURUSD M1 interval is either CONSUMED (2026-05-18..2026-06-19 GEN_001, 2026-08-01..2026-09-14 GEN_002), UNRESOLVED/excluded (2026-06-20..2026-07-31), or the reserved post-2026-09-14 prospective/forward window this mission was explicitly told not to consume as an OOS substitute. No historical, untouched, in-retention M1 data currently exists. This is a genuine infrastructure/evidence gap, not a policy choice.",
+    "next_safe_action": "Resolve the M1 gap (e.g. a data source with deeper M1 retention, or an explicit owner-approved methodology decision on reduced fill-resolution precision for this pilot) before any canonical-parity SSC replay can be run against this OOS package. This is separate from, and in addition to, the P5/P6.1 TARGET_REACHED / OOS economic floor blockers recorded in SSC_ONE_DAY_DEMO_PILOT_V2.md and the SSC1D-WP1 status report."
   }
 }

@@ -402,3 +402,50 @@ See `SSC1D_WP0_STATUS` report delivered alongside this document's commit. Summar
 diffs against SSC semantics, HYP_001, HYP_002, holdout authority, Demo authority, Live
 authority, execution authority, and the Large-SMC campaign are `EMPTY` — WP0 added new files
 only, under new paths, and modified no existing file.
+
+---
+
+## 17. SSC1D-WP1 addendum — data authority + objective freeze (2026-09-16)
+
+WP1 resolved the two WP0 blockers only to the extent evidence allowed, without running any
+SSC baseline, optimization, OOS evaluation, or Demo action. Full artifacts under
+`artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC1D_PILOT/`.
+
+**Correction to §3 above**: the three EURUSD H1/M15/M1 packages marked `UNKNOWN` in the
+original WP0 dataset-role manifest were an error — an independent WP1 audit (hash-verified)
+found all three are proven inputs to SSC's own `GEN_001` experiment
+(`artifacts/research/EXP_EXPOSURE_EFFICIENCY_V1/GEN_001`), already documented in
+`POST_JULY31_CONSUMPTION_AUDIT/consumption_audit.json`. They are now correctly classified
+`CONSUMED_NON_COUNTING`, and — because GEN_001 was hypothesis-generation-only and is not part
+of any currently open canonical evidence lane — reused as this pilot's own `DEVELOPMENT_REUSABLE`
+data (H1 full range, M15 full range, M1 proven-consumed segment 2026-05-18..2026-06-19 only;
+the M1 tail 2026-06-20..2026-07-31 remains `UNKNOWN`/excluded, unresolved by a prior canonical
+audit). See `SSC1D_WP0_dataset_role_manifest.json`'s `wp1_correction` note for full detail.
+
+**OOS**: no genuinely untouched *historical* EURUSD interval existed anywhere in the repo, so
+WP1 acquired one via the existing read-only MT5 infrastructure (`scripts/acquire_ssc1d_wp1_oos_eurusd_2024q1.py`,
+no trading function called): EURUSD H1 + M15, 2024-01-01..2024-03-31, chosen purely on
+chronological non-overlap with every known SSC artifact (predates GEN_001 by 12+ months),
+frozen as `OOS_UNTOUCHED`, `access_count=0`. The M1 leg could not be acquired for this window —
+this MT5 terminal's M1 retention is empirically limited to roughly the trailing ~120 days, and
+every in-retention M1 interval is already consumed, unresolved, or the reserved
+post-2026-09-14 prospective window this mission explicitly forbade using as an OOS substitute.
+OOS is therefore `PARTIAL_ESTABLISHED_H1_M15_ONLY` — sufficient for diagnostic use, insufficient
+for a canonical-parity SSC replay (which requires M1 fill resolution) until this gap is resolved.
+
+**Optimization objective** (§6 development-zone candidate retention rules) is frozen in
+`SSC1D_WP1_optimization_objective_freeze.json`: primary criterion (`expectancy_R` improves vs.
+baseline), safeguards (PF, max DD, N >= 70% of baseline), and a neighboring-parameter robustness
+requirement. Not yet evaluated.
+
+**OOS decision contract structure** is frozen in `SSC1D_WP1_oos_decision_contract.json`: a
+relative criterion (vs. DEVELOPMENT-frozen-candidate result) combined with an absolute floor
+criterion, specifically to prevent an OOS result passing merely for being less negative than an
+already net-negative baseline. The absolute floor's *value* is left undefined —
+`OOS_ABSOLUTE_ECONOMIC_FLOOR = OWNER_DEFINITION_REQUIRED` — because no such floor exists
+anywhere in canonical governance and this pilot has no authority to invent one.
+
+**Net effect**: `SSC1D_CAN_CONTINUE_TO_OPTIMIZATION = false` as of WP1, independently for two
+reasons — the missing absolute economic floor (§6.1/§17 above) and the unresolved OOS M1 gap.
+Development data and the H1/M15 OOS package are both frozen and ready for reuse once those two
+blockers are cleared by the owner or a resolved data source.

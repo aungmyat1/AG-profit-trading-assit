@@ -1,0 +1,29 @@
+{
+  "schema": "AG_SSC1D_OOS_DECISION_CONTRACT_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP1",
+  "frozen_utc": "2026-09-16",
+  "note": "Structure of the future OOS decision contract, defined BEFORE any OOS outcome is inspected. OOS access_count remains 0 at the time this contract is written -- this file defines the rule, it does not apply it.",
+  "structure": {
+    "relative_criterion": {
+      "rule": "OOS expectancy_R must be >= DEVELOPMENT-zone frozen-candidate expectancy_R minus a preregistered tolerance band (band value NOT YET SET -- see blocker below)",
+      "purpose": "detects overfitting / DEVELOPMENT-to-OOS degradation"
+    },
+    "absolute_floor_criterion": {
+      "rule": "OOS expectancy_R (and/or net_R) must independently clear an absolute economic floor, defined without reference to the DEVELOPMENT-zone baseline or candidate results, so that an OOS result cannot PASS merely for being 'less negative than baseline'",
+      "value": "OOS_ABSOLUTE_ECONOMIC_FLOOR = OWNER_DEFINITION_REQUIRED"
+    },
+    "combined_rule": "OOS_PASS requires BOTH the relative_criterion AND the absolute_floor_criterion to hold. Either failing alone is sufficient for OOS_FAIL. This prevents the specific failure mode named in the WP1 mission: a candidate whose OOS result is merely less negative than the SSC v1.0.0 baseline (itself already net-negative per HYP_002's evidence, control net_expectancy_R = -0.4075R) passing by relative comparison alone."
+  },
+  "blocker": {
+    "id": "OOS_ABSOLUTE_ECONOMIC_FLOOR",
+    "status": "OWNER_DEFINITION_REQUIRED",
+    "evidence": "No universal or SSC-specific absolute economic floor (e.g. a minimum net_expectancy_R, minimum profit_factor, or minimum net_R independent of baseline comparison) exists anywhere in canonical governance. Searched docs/validation/ and config/governance/ for 'economic_floor', 'ECONOMIC_FLOOR', 'absolute threshold' framing -- zero hits. AG_ACCELERATED_VALIDATION_PLAN_V1.md section 9 explicitly forbids inventing universal metrics (PF > 1.4, Sharpe > 1.2, etc.) unless preregistered specifically for the strategy. HYP_001/HYP_002 preregistrations both use baseline-relative decision rules only (e.g. HYP_002: delta_net_expectancy_R > 0 AND TREATMENT_net_expectancy_R > 0 -- note HYP_002's own rule DOES include an absolute component, TREATMENT itself must be net-positive, which is the closest existing precedent for an absolute floor, but it was fixed per-hypothesis, not as a standing canonical constant reusable here without owner re-confirmation).",
+    "recommendation": "Following the HYP_002 precedent (absolute component: treatment must independently be net-positive, not merely relatively improved) is the most defensible reuse of existing canonical practice, but this pilot does not have authority to adopt it unilaterally as this pilot's own floor without owner sign-off, since HYP_002's rule was fixed for that specific hypothesis, not declared a standing SSC-wide constant."
+  },
+  "mission_directive_compliance": {
+    "instruction": "If no defensible absolute economic floor currently exists in canonical governance, report OOS_ABSOLUTE_ECONOMIC_FLOOR = OWNER_DEFINITION_REQUIRED and STOP before optimization. Do not choose an absolute threshold from observed future candidate results.",
+    "compliance": "COMPLIED -- no threshold has been chosen. This contract's structure is fixed; its absolute_floor_criterion.value is explicitly left as OWNER_DEFINITION_REQUIRED. SSC1D_CAN_CONTINUE_TO_OPTIMIZATION = false as a direct consequence."
+  }
+}

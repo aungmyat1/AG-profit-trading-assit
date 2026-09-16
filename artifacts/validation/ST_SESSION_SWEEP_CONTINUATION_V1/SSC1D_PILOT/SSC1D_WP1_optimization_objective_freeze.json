@@ -1,0 +1,22 @@
+{
+  "schema": "AG_SSC1D_OPTIMIZATION_OBJECTIVE_FREEZE_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP1",
+  "frozen_utc": "2026-09-16",
+  "note": "Preregistered BEFORE any baseline or candidate result is produced under this pilot. No universal profitability threshold is invented (none exists anywhere in canonical governance; see SSC_ONE_DAY_DEMO_PILOT_V2.md section 6.1). These rules govern DEVELOPMENT-zone candidate retention only -- they are not OOS PASS/FAIL criteria (see SSC1D_WP1_oos_decision_contract.json for that, separately).",
+  "primary_criterion": {
+    "metric": "expectancy_R",
+    "rule": "candidate expectancy_R must improve versus the frozen SSC v1.0.0 baseline computed on the same DEVELOPMENT dataset"
+  },
+  "safeguards": [
+    {"metric": "profit_factor", "rule": "candidate profit_factor > baseline profit_factor"},
+    {"metric": "max_drawdown_R", "rule": "candidate max_drawdown_R <= baseline max_drawdown_R"},
+    {"metric": "occurrence_count", "rule": "candidate N >= 70% of baseline N (guards against retention via sample-shrinkage artifacts)"}
+  ],
+  "robustness_requirement": {
+    "rule": "An isolated parameter optimum is not sufficient grounds for RETAIN. A candidate must show reasonable support in its neighboring parameter values (i.e. nearby parameter settings must not collapse the improvement), consistent with SSC_ONE_DAY_DEMO_PILOT_V2.md section 8's preference for stable parameter neighborhoods over isolated maxima."
+  },
+  "evaluation_status": "NOT_YET_EVALUATED -- these rules are recorded, not applied. No baseline or candidate has been computed under this pilot as of WP1.",
+  "scope_limit": "Governs DEVELOPMENT-zone candidate retention/rejection only, per the candidate ledger schema (SSC1D_WP0_candidate_ledger_schema.json). Has no bearing on, and must not be conflated with, the separate OOS decision contract."
+}
