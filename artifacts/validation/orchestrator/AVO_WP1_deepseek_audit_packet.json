@@ -1,0 +1,85 @@
+{
+  "mission_id": "AVO-WP1-IMPLEMENTATION",
+  "parent_spec": [
+    "docs/validation/AG_ACCELERATED_VALIDATION_PLAN_V1.md#section-26-avp-wp1",
+    "docs/validation/AG_AUTO_VALIDATION_ORCHESTRATOR_V1.md#section-22-avo-wp1"
+  ],
+  "repository_head_before": "1a460a77b090b7d45e57d4722b812b567f6c1f9c",
+  "scope": "State Model + Read-Only Validation Orchestrator ONLY. No scheduler, no persistent ledger, no agent dispatch, no prompt renderer, no automatic gate advancement, no Demo/Live execution.",
+  "files_added": [
+    {
+      "path": "src/validation_orchestrator/__init__.py",
+      "sha256": "ff6a74015dc1561172e5a9eea2eb845fcbe7c2e37cc4a246899884c9370f823e"
+    },
+    {
+      "path": "src/validation_orchestrator/status.py",
+      "sha256": "9c6ce4b3c935babf2f5de3833c05ca3c56fa5ff2355dbe4d0c79eaf6c43c777b"
+    },
+    {
+      "path": "scripts/run_validation_orchestrator.py",
+      "sha256": "6a2209c266a1c5df4a9679eafd4261b43eeffc783008ca21aac1c084fba4965c"
+    },
+    {
+      "path": "tests/test_validation_orchestrator_status.py",
+      "sha256": "de76225578fc5bc75b7d0a5e600243274495aa8ed769ba7853c6ee3dde42edb8"
+    }
+  ],
+  "files_modified": [],
+  "canonical_evidence_sources_reused": [
+    "src/api/strategy_service.py (list_strategies/get_strategy/has_validation_adapter/get_validation_record) -- ONLY reader used; validation_orchestrator never imports validation_framework.adapters.* directly",
+    "strategies/registry.yaml (via strategy_service)",
+    "config/governance/strategy_lifecycle.yaml (via strategy_service)",
+    "the 4 existing validation_framework adapters, reached only through strategy_service: ST_ASIAN_SWEEP_5R_V1 (fx_adapter.py), ST_LIQUIDITY_SWEEP_RETEST_V1 (btc_adapter.py), ST_LARGE_SMC_V1 (large_smc_adapter.py), ST_SESSION_SWEEP_CONTINUATION_V1 (session_sweep_continuation_adapter.py)"
+  ],
+  "design_notes": {
+    "dependency_injection": "derive_status()/derive_all_status() take get_strategy/has_validation_adapter/get_validation_record/list_strategies as keyword-only defaulted params (defaults = real strategy_service functions). Production path is 100% canonical-evidence-derived; tests inject fakes only to exercise fail-closed branches without touching real repo files.",
+    "gate_derivation": "current_gate = first non-PASS gate in the adapter's own reported gate order; furthest_verified_gate = last gate in the unbroken PASS prefix. Gate order/names are never invented -- consumed exactly as returned by the existing adapter.",
+    "fail_closed_paths": [
+      "unregistered strategy_id -> UnknownStrategyError (never a fabricated status)",
+      "has_validation_adapter()==True but get_validation_record() raises -> validation_state=EVIDENCE_ERROR",
+      "has_validation_adapter()==True but get_validation_record() returns None (contradictory signal) -> validation_state=EVIDENCE_ERROR",
+      "no adapter registered -> validation_state=NO_VALIDATION_ADAPTER (never claims gate/evidence progress that doesn't exist)"
+    ],
+    "unimplemented_fields_by_design": "dataset_role_status/lineage_status/holdout_status are always NOT_TRACKED_BY_WP1 -- no canonical multi-strategy reader for these exists in the repository today (verified by inventory); reporting anything else would be fabrication. agent_required is always NONE -- WP1 implements no dispatch capability (deferred to AVO-WP7)."
+  },
+  "tests": {
+    "narrow_wp1_suite": "tests/test_validation_orchestrator_status.py",
+    "narrow_wp1_result": "20 passed",
+    "additional_suites_run": [
+      "tests/test_validation_admission.py",
+      "tests/test_g2_population_identity.py",
+      "tests/test_large_smc_eurusd_friction_campaign_wp3a1.py",
+      "tests/test_execution_runtime_readiness.py",
+      "tests/test_btc_proposal_execution_boundary.py",
+      "tests/test_large_smc_execution_boundary.py",
+      "tests/test_large_smc_live_watch_execution_boundary.py",
+      "tests/test_proposal_envelope_execution_boundary.py",
+      "tests/test_research_external_containment.py",
+      "tests/test_execution_safety_v1.py"
+    ],
+    "additional_suites_result": "111 passed, 0 failed",
+    "full_repo_suite": "run in background; result appended to mission final output when complete"
+  },
+  "diff_assertions": {
+    "STRATEGY_SEMANTICS_DIFF": "EMPTY (no existing strategy source touched)",
+    "VALIDATION_AUTHORITY_DIFF": "EMPTY (no existing validation_framework/G0-G10/adapter file touched; new package only reads through strategy_service)",
+    "EXECUTION_AUTHORITY_DIFF": "EMPTY (no import of order_send/order_check/mt5/execution.*/authorization.* -- enforced by static source tests)",
+    "ACTIVE_CAMPAIGN_DIFF": "EMPTY (LSMC_EURUSD_FRICTION_WP3A1_V1 manifest+hash byte-identical before/after a full derive_all_status() run; orchestrator source contains no reference to the campaign path or campaign_id)",
+    "HOLDOUT_AUTHORITY_DIFF": "EMPTY (holdout_status is always NOT_TRACKED_BY_WP1; no holdout content is read)"
+  },
+  "out_of_scope_state_observed_not_caused_by_this_mission": [
+    "state/proposal_ledger/proposal_ledger.json gained one new entry (FX:DECISION-EURUSD-ac09141fd6830b55, detected_at 2026-09-16T07:51:04Z) during this session. Verified NOT caused by WP1 code: grep of all 4 new files for 'proposal_ledger' returns zero matches, and WP1's status.py contains no write-mode file access at all (statically asserted by test_status_module_has_no_write_mode_file_access). Consistent with an independently running live pilot process (ST_ASIAN_SWEEP_5R_V1 is registered active:true) writing during the session window. Left untouched, not staged, not committed by this mission -- same treatment as the other pre-existing out-of-scope WIP files."
+  ],
+  "known_limitations": [
+    "current_gate/furthest_verified_gate are derived from adapter-reported gate ORDER, which is each adapter's own construction order, not a verified topological/dependency ordering -- AVO-WP2 (Readiness Predicates + Dependency DAG) is the intended place to make gate ordering explicit and dependency-checked.",
+    "dataset_role_status/lineage_status/holdout_status are placeholders (NOT_TRACKED_BY_WP1) pending a canonical multi-strategy reader for those facts.",
+    "SESSION_TRADE_V1, SMC_3R_V1, and R8_OBM_V1 have no validation_framework adapter and are reported as NO_VALIDATION_ADAPTER -- this reflects real repository state (verified: strategy_manager.manager.evaluate() itself only has SESSION_TRADE_V1 wired, and no validation adapter exists for any of these three), not an omission in this module.",
+    "No persistent event/state ledger -- every call recomputes status fresh from canonical evidence (by design, per WP1 scope)."
+  ],
+  "reproduction_commands": [
+    "python scripts/run_validation_orchestrator.py --status",
+    "python scripts/run_validation_orchestrator.py --strategy ST_LARGE_SMC_V1",
+    "python -m pytest tests/test_validation_orchestrator_status.py -v"
+  ],
+  "next_safe_action": "OWNER_REVIEW_AVO_WP1_THEN_AVO_WP2_IF_APPROVED"
+}
