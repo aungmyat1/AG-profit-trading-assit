@@ -1,0 +1,10 @@
+{
+  "reference_event_count": 18,
+  "reference_events_mapped": 2,
+  "exact_mappings": 0,
+  "probable_mappings": 2,
+  "ambiguous_mappings": 4,
+  "reference_only_events": 12,
+  "blind_only_events": 60,
+  "total_blind_occurrences": 66
+}

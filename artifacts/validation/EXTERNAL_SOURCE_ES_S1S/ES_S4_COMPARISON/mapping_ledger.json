@@ -1,0 +1,389 @@
+[
+  {
+    "ref_id": "REF_01",
+    "date": "2022-10-03",
+    "direction": "SHORT",
+    "label": "Asian High Liquidity Sweep",
+    "ref_entry": 0.98341,
+    "ref_sl": 0.98496,
+    "ref_tp": 0.97524,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-03T10:00:00+00:00",
+    "mapped_occurrence_id": "ES_S3_002",
+    "mapped_blind_time": "2022-10-03T15:00:00+00:00",
+    "time_delta_minutes": 300.0,
+    "entry_diff_pips": 0.1,
+    "sl_diff_pips": 2.87,
+    "tp_diff_pips": 19.18,
+    "blind_uncertainty_flags": [],
+    "blind_resolution_state": "OPEN",
+    "mapping_status": "AMBIGUOUS_EVENT_MAPPING",
+    "detection_parity": "DETECTION_UNRESOLVED",
+    "direction_parity": "DIRECTION_MATCH",
+    "geometry_notes": {
+      "sl_diff_pips": 2.87,
+      "tp_diff_pips": 19.18
+    },
+    "root_cause": [
+      "TIME_ALIGNMENT_DIFFERENCE",
+      "STOP_GEOMETRY_DIFFERENCE",
+      "TARGET_GEOMETRY_DIFFERENCE"
+    ]
+  },
+  {
+    "ref_id": "REF_02",
+    "date": "2022-10-04",
+    "direction": "LONG",
+    "label": "Asian Low Sweep Continuation",
+    "ref_entry": 0.98175,
+    "ref_sl": 0.98066,
+    "ref_tp": 0.98723,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-04T10:30:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "ENTRY_SEMANTIC_DIFFERENCE",
+      "BENCHMARK_INFORMATION_INSUFFICIENT"
+    ]
+  },
+  {
+    "ref_id": "REF_03",
+    "date": "2022-10-05",
+    "direction": "LONG",
+    "label": "Asian Open Breakout Retest",
+    "ref_entry": 0.99744,
+    "ref_sl": 0.99679,
+    "ref_tp": 1.00108,
+    "ref_result": "-1R Loss",
+    "utc_time_normalized": "2022-10-05T05:00:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "TIME_ALIGNMENT_DIFFERENCE"
+    ]
+  },
+  {
+    "ref_id": "REF_04",
+    "date": "2022-10-05",
+    "direction": "SHORT",
+    "label": "Asian High Liquidity Sweep",
+    "ref_entry": 0.99591,
+    "ref_sl": 0.9972,
+    "ref_tp": 0.98938,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-05T10:30:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "ENTRY_SEMANTIC_DIFFERENCE",
+      "BENCHMARK_INFORMATION_INSUFFICIENT"
+    ]
+  },
+  {
+    "ref_id": "REF_05",
+    "date": "2022-10-06",
+    "direction": "LONG",
+    "label": "Asian Low Sweep Retest",
+    "ref_entry": 0.99024,
+    "ref_sl": 0.98841,
+    "ref_tp": 0.9996,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-06T10:00:00+00:00",
+    "mapped_occurrence_id": "ES_S3_009",
+    "mapped_blind_time": "2022-10-06T09:30:00+00:00",
+    "time_delta_minutes": 30.0,
+    "entry_diff_pips": 7.3,
+    "sl_diff_pips": 2.67,
+    "tp_diff_pips": 59.27,
+    "blind_uncertainty_flags": [],
+    "blind_resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "PROBABLE_EVENT_MATCH",
+    "detection_parity": "DETECTION_MATCH",
+    "direction_parity": "DIRECTION_MATCH",
+    "geometry_notes": {
+      "sl_diff_pips": 2.67,
+      "tp_diff_pips": 59.27
+    },
+    "root_cause": [
+      "TIME_ALIGNMENT_DIFFERENCE",
+      "STOP_GEOMETRY_DIFFERENCE",
+      "TARGET_GEOMETRY_DIFFERENCE"
+    ]
+  },
+  {
+    "ref_id": "REF_06",
+    "date": "2022-10-06",
+    "direction": "SHORT",
+    "label": "Asian Close Breakdown Retest",
+    "ref_entry": 0.98939,
+    "ref_sl": 0.99077,
+    "ref_tp": 0.98245,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-06T15:00:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "ENTRY_SEMANTIC_DIFFERENCE",
+      "BENCHMARK_INFORMATION_INSUFFICIENT"
+    ]
+  },
+  {
+    "ref_id": "REF_07",
+    "date": "2022-10-07",
+    "direction": "SHORT",
+    "label": "Asian High Continuation Limit Order",
+    "ref_entry": 0.98115,
+    "ref_sl": 0.98245,
+    "ref_tp": 0.97465,
+    "ref_result": "0R (No Fill)",
+    "utc_time_normalized": "2022-10-07T06:00:00+00:00",
+    "mapped_occurrence_id": "ES_S3_010",
+    "mapped_blind_time": "2022-10-07T08:30:00+00:00",
+    "time_delta_minutes": 150.0,
+    "entry_diff_pips": 2.2,
+    "sl_diff_pips": 3.68,
+    "tp_diff_pips": 5.17,
+    "blind_uncertainty_flags": [],
+    "blind_resolution_state": "RUNNER_TP2",
+    "mapping_status": "AMBIGUOUS_EVENT_MAPPING",
+    "detection_parity": "DETECTION_UNRESOLVED",
+    "direction_parity": "DIRECTION_MATCH",
+    "geometry_notes": {
+      "sl_diff_pips": 3.68,
+      "tp_diff_pips": 5.17
+    },
+    "root_cause": [
+      "TIME_ALIGNMENT_DIFFERENCE",
+      "STOP_GEOMETRY_DIFFERENCE",
+      "TARGET_GEOMETRY_DIFFERENCE"
+    ]
+  },
+  {
+    "ref_id": "REF_08",
+    "date": "2022-10-07",
+    "direction": "LONG",
+    "label": "London Open Breakout Continuation",
+    "ref_entry": 0.98,
+    "ref_sl": 0.9789,
+    "ref_tp": 0.9855,
+    "ref_result": "0R (Missed)",
+    "utc_time_normalized": "2022-10-07T08:00:00+00:00",
+    "mapped_occurrence_id": "ES_S3_012",
+    "mapped_blind_time": "2022-10-07T14:15:00+00:00",
+    "time_delta_minutes": 375.0,
+    "entry_diff_pips": 32.4,
+    "sl_diff_pips": 32.93,
+    "tp_diff_pips": 29.78,
+    "blind_uncertainty_flags": [],
+    "blind_resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "AMBIGUOUS_EVENT_MAPPING",
+    "detection_parity": "DETECTION_UNRESOLVED",
+    "direction_parity": "DIRECTION_MATCH",
+    "geometry_notes": {
+      "sl_diff_pips": 32.93,
+      "tp_diff_pips": 29.78
+    },
+    "root_cause": [
+      "TIME_ALIGNMENT_DIFFERENCE",
+      "STOP_GEOMETRY_DIFFERENCE",
+      "TARGET_GEOMETRY_DIFFERENCE"
+    ]
+  },
+  {
+    "ref_id": "REF_09",
+    "date": "2022-10-07",
+    "direction": "SHORT",
+    "label": "Asian Close Liquidity Sweep",
+    "ref_entry": 0.98056,
+    "ref_sl": 0.98191,
+    "ref_tp": 0.97373,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-07T10:00:00+00:00",
+    "mapped_occurrence_id": "ES_S3_011",
+    "mapped_blind_time": "2022-10-07T08:45:00+00:00",
+    "time_delta_minutes": 75.0,
+    "entry_diff_pips": 3.8,
+    "sl_diff_pips": 5.77,
+    "tp_diff_pips": 6.88,
+    "blind_uncertainty_flags": [],
+    "blind_resolution_state": "RUNNER_TP2",
+    "mapping_status": "PROBABLE_EVENT_MATCH",
+    "detection_parity": "DETECTION_MATCH",
+    "direction_parity": "DIRECTION_MATCH",
+    "geometry_notes": {
+      "sl_diff_pips": 5.77,
+      "tp_diff_pips": 6.88
+    },
+    "root_cause": [
+      "TIME_ALIGNMENT_DIFFERENCE",
+      "STOP_GEOMETRY_DIFFERENCE",
+      "TARGET_GEOMETRY_DIFFERENCE"
+    ]
+  },
+  {
+    "ref_id": "REF_10",
+    "date": "2022-10-10",
+    "direction": "NEUTRAL",
+    "label": "Asian Range Tight Consolidation",
+    "ref_entry": null,
+    "ref_sl": null,
+    "ref_tp": null,
+    "ref_result": "0R (Filtered)",
+    "utc_time_normalized": "2022-10-10T05:30:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "Reference event itself has no direction/entry (filtered/neutral row) -- structurally not comparable to a directional occurrence.",
+    "root_cause": [
+      "OTHER_EVIDENCE_SUPPORTED"
+    ]
+  },
+  {
+    "ref_id": "REF_11",
+    "date": "2022-10-10",
+    "direction": "SHORT",
+    "label": "London Range Retest",
+    "ref_entry": 0.9745,
+    "ref_sl": 0.9758,
+    "ref_tp": 0.968,
+    "ref_result": "-1R Loss",
+    "utc_time_normalized": "2022-10-10T08:30:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "ENTRY_SEMANTIC_DIFFERENCE",
+      "BENCHMARK_INFORMATION_INSUFFICIENT"
+    ]
+  },
+  {
+    "ref_id": "REF_12",
+    "date": "2022-10-10",
+    "direction": "SHORT",
+    "label": "Asian High Sweep by London Candle",
+    "ref_entry": 0.97528,
+    "ref_sl": 0.9763,
+    "ref_tp": 0.9701,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-10T10:30:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "ENTRY_SEMANTIC_DIFFERENCE",
+      "BENCHMARK_INFORMATION_INSUFFICIENT"
+    ]
+  },
+  {
+    "ref_id": "REF_13",
+    "date": "2022-10-11",
+    "direction": "LONG",
+    "label": "Asian Range High Retest",
+    "ref_entry": 0.9715,
+    "ref_sl": 0.9705,
+    "ref_tp": 0.9765,
+    "ref_result": "-1R Loss",
+    "utc_time_normalized": "2022-10-11T04:30:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "TIME_ALIGNMENT_DIFFERENCE"
+    ]
+  },
+  {
+    "ref_id": "REF_14",
+    "date": "2022-10-11",
+    "direction": "LONG",
+    "label": "Asian Low Sweep NY Transition",
+    "ref_entry": 0.9708,
+    "ref_sl": 0.9698,
+    "ref_tp": 0.9758,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-11T15:00:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "ENTRY_SEMANTIC_DIFFERENCE",
+      "BENCHMARK_INFORMATION_INSUFFICIENT"
+    ]
+  },
+  {
+    "ref_id": "REF_15",
+    "date": "2022-10-12",
+    "direction": "SHORT",
+    "label": "Asian Pre-Open Close Sweep",
+    "ref_entry": 0.97071,
+    "ref_sl": 0.9718,
+    "ref_tp": 0.9652,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-12T19:30:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "ENTRY_SEMANTIC_DIFFERENCE",
+      "BENCHMARK_INFORMATION_INSUFFICIENT"
+    ]
+  },
+  {
+    "ref_id": "REF_16",
+    "date": "2022-10-13",
+    "direction": "LONG",
+    "label": "Asian Low Sweep Retest",
+    "ref_entry": 0.9722,
+    "ref_sl": 0.9708,
+    "ref_tp": 0.9792,
+    "ref_result": "-1R Loss",
+    "utc_time_normalized": "2022-10-13T10:30:00+00:00",
+    "mapped_occurrence_id": "ES_S3_029",
+    "mapped_blind_time": "2022-10-13T07:30:00+00:00",
+    "time_delta_minutes": 180.0,
+    "entry_diff_pips": 22.2,
+    "sl_diff_pips": 16.55,
+    "tp_diff_pips": 50.45,
+    "blind_uncertainty_flags": [],
+    "blind_resolution_state": "RUNNER_TP2",
+    "mapping_status": "AMBIGUOUS_EVENT_MAPPING",
+    "detection_parity": "DETECTION_UNRESOLVED",
+    "direction_parity": "DIRECTION_MATCH",
+    "geometry_notes": {
+      "sl_diff_pips": 16.55,
+      "tp_diff_pips": 50.45
+    },
+    "root_cause": [
+      "TIME_ALIGNMENT_DIFFERENCE",
+      "STOP_GEOMETRY_DIFFERENCE",
+      "TARGET_GEOMETRY_DIFFERENCE"
+    ]
+  },
+  {
+    "ref_id": "REF_17",
+    "date": "2022-10-14",
+    "direction": "SHORT",
+    "label": "London Open Breakdown Sweep",
+    "ref_entry": 0.9768,
+    "ref_sl": 0.9782,
+    "ref_tp": 0.9698,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-14T10:30:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "ENTRY_SEMANTIC_DIFFERENCE",
+      "BENCHMARK_INFORMATION_INSUFFICIENT"
+    ]
+  },
+  {
+    "ref_id": "REF_18",
+    "date": "2022-10-20",
+    "direction": "LONG",
+    "label": "Asian to NY Transition Sweep",
+    "ref_entry": 0.97716,
+    "ref_sl": 0.97632,
+    "ref_tp": 0.9823,
+    "ref_result": "+5R Win",
+    "utc_time_normalized": "2022-10-20T10:30:00+00:00",
+    "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH",
+    "notes": "No blind occurrence of matching direction exists on this UTC date at all.",
+    "root_cause": [
+      "ENTRY_SEMANTIC_DIFFERENCE",
+      "BENCHMARK_INFORMATION_INSUFFICIENT"
+    ]
+  }
+]

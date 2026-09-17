@@ -1,0 +1,678 @@
+[
+  {
+    "occurrence_id": "ES_S3_001",
+    "date": "2022-10-03",
+    "direction": "LONG",
+    "sweep_time": "2022-10-03T14:00:00+00:00",
+    "entry_price": 0.97938,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_EXIT",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_003",
+    "date": "2022-10-03",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-03T15:15:00+00:00",
+    "entry_price": 0.98342,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "OPEN",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_004",
+    "date": "2022-10-03",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-03T15:30:00+00:00",
+    "entry_price": 0.98218,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "OPEN",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_005",
+    "date": "2022-10-04",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-04T08:15:00+00:00",
+    "entry_price": 0.98692,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_006",
+    "date": "2022-10-04",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-04T08:30:00+00:00",
+    "entry_price": 0.98712,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_007",
+    "date": "2022-10-04",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-04T09:00:00+00:00",
+    "entry_price": 0.98577,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_008",
+    "date": "2022-10-06",
+    "direction": "LONG",
+    "sweep_time": "2022-10-06T09:15:00+00:00",
+    "entry_price": 0.98997,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_013",
+    "date": "2022-10-07",
+    "direction": "LONG",
+    "sweep_time": "2022-10-07T14:30:00+00:00",
+    "entry_price": 0.97733,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_014",
+    "date": "2022-10-07",
+    "direction": "LONG",
+    "sweep_time": "2022-10-07T17:15:00+00:00",
+    "entry_price": 0.9767,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_015",
+    "date": "2022-10-07",
+    "direction": "LONG",
+    "sweep_time": "2022-10-07T17:30:00+00:00",
+    "entry_price": 0.9767,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_016",
+    "date": "2022-10-10",
+    "direction": "LONG",
+    "sweep_time": "2022-10-10T18:00:00+00:00",
+    "entry_price": 0.97178,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_017",
+    "date": "2022-10-11",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-11T07:30:00+00:00",
+    "entry_price": 0.9713,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_018",
+    "date": "2022-10-11",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-11T11:00:00+00:00",
+    "entry_price": 0.97159,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_019",
+    "date": "2022-10-11",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-11T12:45:00+00:00",
+    "entry_price": 0.97199,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_020",
+    "date": "2022-10-11",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-11T15:15:00+00:00",
+    "entry_price": 0.97212,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_021",
+    "date": "2022-10-11",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-11T18:45:00+00:00",
+    "entry_price": 0.9709,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "OPEN",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_022",
+    "date": "2022-10-12",
+    "direction": "LONG",
+    "sweep_time": "2022-10-12T14:15:00+00:00",
+    "entry_price": 0.96865,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_023",
+    "date": "2022-10-12",
+    "direction": "LONG",
+    "sweep_time": "2022-10-12T14:45:00+00:00",
+    "entry_price": 0.97013,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_024",
+    "date": "2022-10-12",
+    "direction": "LONG",
+    "sweep_time": "2022-10-12T16:30:00+00:00",
+    "entry_price": 0.96834,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "OPEN",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_025",
+    "date": "2022-10-12",
+    "direction": "LONG",
+    "sweep_time": "2022-10-12T16:45:00+00:00",
+    "entry_price": 0.96837,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "OPEN",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_026",
+    "date": "2022-10-12",
+    "direction": "LONG",
+    "sweep_time": "2022-10-12T17:00:00+00:00",
+    "entry_price": 0.96851,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "OPEN",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_027",
+    "date": "2022-10-13",
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T07:00:00+00:00",
+    "entry_price": 0.96945,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_028",
+    "date": "2022-10-13",
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T07:15:00+00:00",
+    "entry_price": 0.96918,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_030",
+    "date": "2022-10-13",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-13T12:30:00+00:00",
+    "entry_price": 0.96488,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "UNRESOLVED",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_031",
+    "date": "2022-10-13",
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T13:45:00+00:00",
+    "entry_price": 0.96944,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_032",
+    "date": "2022-10-13",
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T14:00:00+00:00",
+    "entry_price": 0.9696,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_033",
+    "date": "2022-10-13",
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T14:30:00+00:00",
+    "entry_price": 0.96911,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_034",
+    "date": "2022-10-13",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-13T14:45:00+00:00",
+    "entry_price": 0.97181,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_035",
+    "date": "2022-10-14",
+    "direction": "LONG",
+    "sweep_time": "2022-10-14T07:15:00+00:00",
+    "entry_price": 0.97624,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_036",
+    "date": "2022-10-14",
+    "direction": "LONG",
+    "sweep_time": "2022-10-14T07:30:00+00:00",
+    "entry_price": 0.97644,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_037",
+    "date": "2022-10-14",
+    "direction": "LONG",
+    "sweep_time": "2022-10-14T07:45:00+00:00",
+    "entry_price": 0.97677,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_038",
+    "date": "2022-10-14",
+    "direction": "LONG",
+    "sweep_time": "2022-10-14T12:45:00+00:00",
+    "entry_price": 0.97732,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_039",
+    "date": "2022-10-17",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-17T07:30:00+00:00",
+    "entry_price": 0.97527,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_EXIT",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_040",
+    "date": "2022-10-17",
+    "direction": "LONG",
+    "sweep_time": "2022-10-17T08:30:00+00:00",
+    "entry_price": 0.97351,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_041",
+    "date": "2022-10-17",
+    "direction": "LONG",
+    "sweep_time": "2022-10-17T08:45:00+00:00",
+    "entry_price": 0.97386,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_042",
+    "date": "2022-10-17",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-17T09:15:00+00:00",
+    "entry_price": 0.97534,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_043",
+    "date": "2022-10-17",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-17T09:30:00+00:00",
+    "entry_price": 0.97521,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_044",
+    "date": "2022-10-17",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-17T09:45:00+00:00",
+    "entry_price": 0.9753,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_045",
+    "date": "2022-10-17",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-17T10:30:00+00:00",
+    "entry_price": 0.97501,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_EXIT",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_046",
+    "date": "2022-10-17",
+    "direction": "LONG",
+    "sweep_time": "2022-10-17T12:00:00+00:00",
+    "entry_price": 0.97397,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_047",
+    "date": "2022-10-18",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-18T07:00:00+00:00",
+    "entry_price": 0.98524,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_EXIT",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_048",
+    "date": "2022-10-18",
+    "direction": "LONG",
+    "sweep_time": "2022-10-18T11:15:00+00:00",
+    "entry_price": 0.98359,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_EXIT",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_049",
+    "date": "2022-10-18",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-18T13:30:00+00:00",
+    "entry_price": 0.98655,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_ACTIVE",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_050",
+    "date": "2022-10-18",
+    "direction": "LONG",
+    "sweep_time": "2022-10-18T15:15:00+00:00",
+    "entry_price": 0.98235,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "OPEN",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_051",
+    "date": "2022-10-19",
+    "direction": "LONG",
+    "sweep_time": "2022-10-19T07:00:00+00:00",
+    "entry_price": 0.98212,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_052",
+    "date": "2022-10-19",
+    "direction": "LONG",
+    "sweep_time": "2022-10-19T07:15:00+00:00",
+    "entry_price": 0.98245,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_053",
+    "date": "2022-10-19",
+    "direction": "LONG",
+    "sweep_time": "2022-10-19T08:15:00+00:00",
+    "entry_price": 0.98211,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_054",
+    "date": "2022-10-19",
+    "direction": "LONG",
+    "sweep_time": "2022-10-19T08:30:00+00:00",
+    "entry_price": 0.98303,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_055",
+    "date": "2022-10-19",
+    "direction": "LONG",
+    "sweep_time": "2022-10-19T09:00:00+00:00",
+    "entry_price": 0.98208,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_056",
+    "date": "2022-10-20",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T07:00:00+00:00",
+    "entry_price": 0.97778,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_057",
+    "date": "2022-10-20",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T07:45:00+00:00",
+    "entry_price": 0.97868,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_058",
+    "date": "2022-10-20",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T13:15:00+00:00",
+    "entry_price": 0.97926,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_059",
+    "date": "2022-10-20",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T13:30:00+00:00",
+    "entry_price": 0.97901,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_060",
+    "date": "2022-10-20",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T13:45:00+00:00",
+    "entry_price": 0.97859,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_061",
+    "date": "2022-10-20",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T17:00:00+00:00",
+    "entry_price": 0.97926,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "OPEN",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_062",
+    "date": "2022-10-21",
+    "direction": "LONG",
+    "sweep_time": "2022-10-21T07:00:00+00:00",
+    "entry_price": 0.97672,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_063",
+    "date": "2022-10-21",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-21T08:00:00+00:00",
+    "entry_price": 0.97811,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_064",
+    "date": "2022-10-21",
+    "direction": "LONG",
+    "sweep_time": "2022-10-21T08:30:00+00:00",
+    "entry_price": 0.97652,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_065",
+    "date": "2022-10-21",
+    "direction": "LONG",
+    "sweep_time": "2022-10-21T13:15:00+00:00",
+    "entry_price": 0.97698,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "UNRESOLVED",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  },
+  {
+    "occurrence_id": "ES_S3_066",
+    "date": "2022-10-21",
+    "direction": "SHORT",
+    "sweep_time": "2022-10-21T14:15:00+00:00",
+    "entry_price": 0.97768,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "mapping_status": "BLIND_ONLY_EXTRA_EVENT"
+  }
+]

@@ -1,0 +1,420 @@
+{
+  "M0": {
+    "label": "M0_MINUS_3H_BROKER_LOCAL",
+    "offset_hours": 3,
+    "rows": [
+      {
+        "ref_id": "REF_01",
+        "date": "2022-10-03",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-03T10:00:00+00:00",
+        "utc_date_normalized": "2022-10-03",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_002",
+        "time_delta_minutes": 300.0,
+        "entry_diff_pips": 0.1,
+        "sl_diff_pips": 2.87,
+        "tp_diff_pips": 19.18,
+        "mapping_status": "AMBIGUOUS_EVENT_MAPPING"
+      },
+      {
+        "ref_id": "REF_02",
+        "date": "2022-10-04",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-04T10:30:00+00:00",
+        "utc_date_normalized": "2022-10-04",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_03",
+        "date": "2022-10-05",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-05T05:00:00+00:00",
+        "utc_date_normalized": "2022-10-05",
+        "falls_before_asian_close_utc": true,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_04",
+        "date": "2022-10-05",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-05T10:30:00+00:00",
+        "utc_date_normalized": "2022-10-05",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_05",
+        "date": "2022-10-06",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-06T10:00:00+00:00",
+        "utc_date_normalized": "2022-10-06",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_009",
+        "time_delta_minutes": 30.0,
+        "entry_diff_pips": 7.3,
+        "sl_diff_pips": 2.67,
+        "tp_diff_pips": 59.27,
+        "mapping_status": "PROBABLE_EVENT_MATCH"
+      },
+      {
+        "ref_id": "REF_06",
+        "date": "2022-10-06",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-06T15:00:00+00:00",
+        "utc_date_normalized": "2022-10-06",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_07",
+        "date": "2022-10-07",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-07T06:00:00+00:00",
+        "utc_date_normalized": "2022-10-07",
+        "falls_before_asian_close_utc": true,
+        "mapped_occurrence_id": "ES_S3_010",
+        "time_delta_minutes": 150.0,
+        "entry_diff_pips": 2.2,
+        "sl_diff_pips": 3.68,
+        "tp_diff_pips": 5.17,
+        "mapping_status": "AMBIGUOUS_EVENT_MAPPING"
+      },
+      {
+        "ref_id": "REF_08",
+        "date": "2022-10-07",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-07T08:00:00+00:00",
+        "utc_date_normalized": "2022-10-07",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_012",
+        "time_delta_minutes": 375.0,
+        "entry_diff_pips": 32.4,
+        "sl_diff_pips": 32.93,
+        "tp_diff_pips": 29.78,
+        "mapping_status": "AMBIGUOUS_EVENT_MAPPING"
+      },
+      {
+        "ref_id": "REF_09",
+        "date": "2022-10-07",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-07T10:00:00+00:00",
+        "utc_date_normalized": "2022-10-07",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_011",
+        "time_delta_minutes": 75.0,
+        "entry_diff_pips": 3.8,
+        "sl_diff_pips": 5.77,
+        "tp_diff_pips": 6.88,
+        "mapping_status": "PROBABLE_EVENT_MATCH"
+      },
+      {
+        "ref_id": "REF_10",
+        "date": "2022-10-10",
+        "direction": "NEUTRAL",
+        "utc_time_normalized": "2022-10-10T05:30:00+00:00",
+        "utc_date_normalized": "2022-10-10",
+        "falls_before_asian_close_utc": true,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_11",
+        "date": "2022-10-10",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-10T08:30:00+00:00",
+        "utc_date_normalized": "2022-10-10",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_12",
+        "date": "2022-10-10",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-10T10:30:00+00:00",
+        "utc_date_normalized": "2022-10-10",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_13",
+        "date": "2022-10-11",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-11T04:30:00+00:00",
+        "utc_date_normalized": "2022-10-11",
+        "falls_before_asian_close_utc": true,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_14",
+        "date": "2022-10-11",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-11T15:00:00+00:00",
+        "utc_date_normalized": "2022-10-11",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_15",
+        "date": "2022-10-12",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-12T19:30:00+00:00",
+        "utc_date_normalized": "2022-10-12",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_16",
+        "date": "2022-10-13",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-13T10:30:00+00:00",
+        "utc_date_normalized": "2022-10-13",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_029",
+        "time_delta_minutes": 180.0,
+        "entry_diff_pips": 22.2,
+        "sl_diff_pips": 16.55,
+        "tp_diff_pips": 50.45,
+        "mapping_status": "AMBIGUOUS_EVENT_MAPPING"
+      },
+      {
+        "ref_id": "REF_17",
+        "date": "2022-10-14",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-14T10:30:00+00:00",
+        "utc_date_normalized": "2022-10-14",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_18",
+        "date": "2022-10-20",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-20T10:30:00+00:00",
+        "utc_date_normalized": "2022-10-20",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      }
+    ],
+    "summary": {
+      "exact_mappings": 0,
+      "probable_mappings": 2,
+      "ambiguous_mappings": 4,
+      "reference_only_events": 12,
+      "mapped_total": 2,
+      "events_falling_before_07_00_utc_asian_close": 4,
+      "mean_time_delta_minutes": 185.0,
+      "median_time_delta_minutes": 180.0,
+      "mean_entry_diff_pips": 11.33
+    }
+  },
+  "M1": {
+    "label": "M1_AS_IS_UTC",
+    "offset_hours": 0,
+    "rows": [
+      {
+        "ref_id": "REF_01",
+        "date": "2022-10-03",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-03T13:00:00+00:00",
+        "utc_date_normalized": "2022-10-03",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_002",
+        "time_delta_minutes": 120.0,
+        "entry_diff_pips": 0.1,
+        "sl_diff_pips": 2.87,
+        "tp_diff_pips": 19.18,
+        "mapping_status": "AMBIGUOUS_EVENT_MAPPING"
+      },
+      {
+        "ref_id": "REF_02",
+        "date": "2022-10-04",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-04T13:30:00+00:00",
+        "utc_date_normalized": "2022-10-04",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_03",
+        "date": "2022-10-05",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-05T08:00:00+00:00",
+        "utc_date_normalized": "2022-10-05",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_04",
+        "date": "2022-10-05",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-05T13:30:00+00:00",
+        "utc_date_normalized": "2022-10-05",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_05",
+        "date": "2022-10-06",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-06T13:00:00+00:00",
+        "utc_date_normalized": "2022-10-06",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_009",
+        "time_delta_minutes": 210.0,
+        "entry_diff_pips": 7.3,
+        "sl_diff_pips": 2.67,
+        "tp_diff_pips": 59.27,
+        "mapping_status": "AMBIGUOUS_EVENT_MAPPING"
+      },
+      {
+        "ref_id": "REF_06",
+        "date": "2022-10-06",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-06T18:00:00+00:00",
+        "utc_date_normalized": "2022-10-06",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_07",
+        "date": "2022-10-07",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-07T09:00:00+00:00",
+        "utc_date_normalized": "2022-10-07",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_011",
+        "time_delta_minutes": 15.0,
+        "entry_diff_pips": 9.7,
+        "sl_diff_pips": 11.17,
+        "tp_diff_pips": 2.32,
+        "mapping_status": "PROBABLE_EVENT_MATCH"
+      },
+      {
+        "ref_id": "REF_08",
+        "date": "2022-10-07",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-07T11:00:00+00:00",
+        "utc_date_normalized": "2022-10-07",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_012",
+        "time_delta_minutes": 195.0,
+        "entry_diff_pips": 32.4,
+        "sl_diff_pips": 32.93,
+        "tp_diff_pips": 29.78,
+        "mapping_status": "AMBIGUOUS_EVENT_MAPPING"
+      },
+      {
+        "ref_id": "REF_09",
+        "date": "2022-10-07",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-07T13:00:00+00:00",
+        "utc_date_normalized": "2022-10-07",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_011",
+        "time_delta_minutes": 255.0,
+        "entry_diff_pips": 3.8,
+        "sl_diff_pips": 5.77,
+        "tp_diff_pips": 6.88,
+        "mapping_status": "AMBIGUOUS_EVENT_MAPPING"
+      },
+      {
+        "ref_id": "REF_10",
+        "date": "2022-10-10",
+        "direction": "NEUTRAL",
+        "utc_time_normalized": "2022-10-10T08:30:00+00:00",
+        "utc_date_normalized": "2022-10-10",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_11",
+        "date": "2022-10-10",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-10T11:30:00+00:00",
+        "utc_date_normalized": "2022-10-10",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_12",
+        "date": "2022-10-10",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-10T13:30:00+00:00",
+        "utc_date_normalized": "2022-10-10",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_13",
+        "date": "2022-10-11",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-11T07:30:00+00:00",
+        "utc_date_normalized": "2022-10-11",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_14",
+        "date": "2022-10-11",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-11T18:00:00+00:00",
+        "utc_date_normalized": "2022-10-11",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_15",
+        "date": "2022-10-12",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-12T22:30:00+00:00",
+        "utc_date_normalized": "2022-10-12",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_16",
+        "date": "2022-10-13",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-13T13:30:00+00:00",
+        "utc_date_normalized": "2022-10-13",
+        "falls_before_asian_close_utc": false,
+        "mapped_occurrence_id": "ES_S3_031",
+        "time_delta_minutes": 15.0,
+        "entry_diff_pips": 27.6,
+        "sl_diff_pips": 21.95,
+        "tp_diff_pips": 55.85,
+        "mapping_status": "PROBABLE_EVENT_MATCH"
+      },
+      {
+        "ref_id": "REF_17",
+        "date": "2022-10-14",
+        "direction": "SHORT",
+        "utc_time_normalized": "2022-10-14T13:30:00+00:00",
+        "utc_date_normalized": "2022-10-14",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      },
+      {
+        "ref_id": "REF_18",
+        "date": "2022-10-20",
+        "direction": "LONG",
+        "utc_time_normalized": "2022-10-20T13:30:00+00:00",
+        "utc_date_normalized": "2022-10-20",
+        "falls_before_asian_close_utc": false,
+        "mapping_status": "REFERENCE_ONLY_NO_BLIND_MATCH"
+      }
+    ],
+    "summary": {
+      "exact_mappings": 0,
+      "probable_mappings": 2,
+      "ambiguous_mappings": 4,
+      "reference_only_events": 12,
+      "mapped_total": 2,
+      "events_falling_before_07_00_utc_asian_close": 0,
+      "mean_time_delta_minutes": 135.0,
+      "median_time_delta_minutes": 195.0,
+      "mean_entry_diff_pips": 13.48
+    }
+  }
+}
