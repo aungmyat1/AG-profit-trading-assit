@@ -5,7 +5,9 @@
   "parent_version": "1.0.0",
   "current_version": "1.0.1",
   "r1_remediation_commit": "02d7b29",
-  "note": "IDENTITY/GOVERNANCE synchronization only. The economic semantic correction was completed and committed separately in 02d7b29 (fix(ssc): remediate v1.0.1 partial-target direction). No trading logic is touched by this mission.",
+  "lsmc_freeze_scope_prerequisite_commit": "f805a36",
+  "pre_rollover_head_at_resume": "24f3032",
+  "note": "IDENTITY/GOVERNANCE synchronization only. The economic semantic correction was completed and committed separately in 02d7b29 (fix(ssc): remediate v1.0.1 partial-target direction). The shared config/governance/strategy_lifecycle.yaml freeze-scope conflict this rollover originally hit was resolved separately in f805a36 (test(lsmc): scope lifecycle freeze to Large SMC), narrowing three Large SMC regression tests to their own registry projection instead of the whole shared file. This rollover diff was audited once, preserved byte-identical across both prerequisite commits (verified via diff against a snapshot taken before either prerequisite existed), and is now being resealed and committed against current HEAD. No trading logic is touched by this mission.",
 
   "version_authority_set": {
     "current_authoritative_updated": [
@@ -103,9 +105,13 @@
     "mismatch_test_new": "tests/test_validation_gate_state.py::test_stale_ssc_version_fails_closed_post_v1_0_1_rollover (new -- asserts calling with the pre-rollover 1.0.0 against the real registry now raises LifecycleRegistryError) -- PASS",
     "identity_propagation_test": "tests/test_session_sweep_continuation_evidence.py::test_canonical_record_includes_required_identity_fields (now asserts d[\"version\"] == \"1.0.1\", proving session_sweep_continuation.STRATEGY_VERSION propagates through evidence.py's EvidenceRecord) -- PASS",
     "lifecycle_gate_state_suite": "tests/test_validation_gate_state.py -- 7 passed, 0 failed",
-    "ssc_full_family": "tests/ -k session_sweep_continuation -q -- 110 passed, 0 failed, 2775 deselected",
-    "validation_framework_adapter_lifecycle_broad": "tests/ -k \"validation_framework or lifecycle or adapter or strategy_contract or gate_state or orchestrator_status\" -q -- 205 passed, 0 failed, 2680 deselected",
-    "decision_py_import_smoke": "from_session_sweep_continuation_replay signature default resolves to '1.0.1' via session_sweep_continuation.STRATEGY_VERSION -- verified by direct interpreter import"
+    "ssc_full_family": "tests/ -k session_sweep_continuation -q -- 110 passed, 0 failed, 2798 deselected",
+    "lifecycle_broad": "tests/ -k lifecycle -q -- 72 passed, 0 failed, 2836 deselected",
+    "validation_framework_adapter_strategy_contract_broad": "tests/ -k \"validation_framework or adapter or strategy_contract or gate_state or orchestrator_status\" -q -- 136 passed, 0 failed, 2772 deselected",
+    "lsmc_frozen_core_compatibility": "tests/test_large_smc_eurusd_admission_wp2.py tests/test_large_smc_eurusd_friction_campaign_wp3a1.py tests/test_large_smc_eurusd_friction_evidence_wp3a.py tests/test_lsmc_frozen_core_scope.py -- 47 passed, 0 failed (confirms the live SSC rollover on main still passes the narrowed Large-SMC freeze guard from f805a36)",
+    "full_repo_regression_at_resume": "tests/ -q -- 2905 passed, 2 skipped, 1 deselected, 0 failed",
+    "decision_py_import_smoke": "from_session_sweep_continuation_replay signature default resolves to '1.0.1' via session_sweep_continuation.STRATEGY_VERSION -- verified by direct interpreter import",
+    "coherence_check_at_resume": "package STRATEGY_VERSION=1.0.1, adapter SEMANTIC_VERSION=1.0.1, lifecycle registry semantic_version=1.0.1, decision.py default=1.0.1, export_ssc_svos_context.py STRATEGY_VERSION=1.0.1 -- all five authorities verified coherent via direct interpreter import at resume time"
   },
 
   "historical_replay_run": false,
@@ -115,6 +121,6 @@
   "demo_authority_changed": false,
   "live_authority_changed": false,
 
-  "hash_binding_status": "BOUND: r1_remediation_commit(02d7b29) -> version_authority_set(discovered+updated) -> wp3_declarations(all-false economic-change) -> fail-closed match/mismatch tests -> identity propagation test -> regression(110+205 passed) -> pre/post hashes recorded above",
+  "hash_binding_status": "BOUND: r1_remediation_commit(02d7b29) -> lsmc_freeze_scope_prerequisite_commit(f805a36) -> pre_rollover_head_at_resume(24f3032) -> version_authority_set(discovered+updated) -> wp3_declarations(all-false economic-change) -> fail-closed match/mismatch tests -> identity propagation test -> regression(110 SSC + 72 lifecycle + 136 validation-framework + 47 LSMC-compat + 2905 full-repo, all 0 failed) -> pre/post hashes recorded above -> version_rollover_commit",
   "final_status": "SSC_V1_0_1_VERSION_ROLLOVER_VERIFIED"
 }
