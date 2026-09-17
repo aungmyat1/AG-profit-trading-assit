@@ -225,11 +225,46 @@ def reconstruct_generation(gen_id: str, spec: dict, run_label: str) -> dict:
     }
 
 
+CHECKPOINT_DIR = (
+    REPO_ROOT / "artifacts" / "validation" / "ST_SESSION_SWEEP_CONTINUATION_V1"
+    / "HYP_001" / "ROUTE_B_PHASE1_RECONSTRUCTION" / "_CHECKPOINTS"
+)
+
+
+def _checkpoint_path(gen_id: str, run_label: str) -> Path:
+    return CHECKPOINT_DIR / f"{gen_id}_{run_label}.json"
+
+
+def _load_checkpoint(gen_id: str, run_label: str):
+    p = _checkpoint_path(gen_id, run_label)
+    if p.exists():
+        print(f"[{gen_id}/{run_label}] checkpoint found, reusing (no recomputation)", file=sys.stderr)
+        return json.loads(p.read_text(encoding="utf-8"))
+    return None
+
+
+def _save_checkpoint(gen_id: str, run_label: str, result: dict) -> None:
+    CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
+    _checkpoint_path(gen_id, run_label).write_text(
+        json.dumps(result, indent=2, sort_keys=True, default=str), encoding="utf-8",
+    )
+    print(f"[{gen_id}/{run_label}] checkpoint persisted: count={result['count']} hash={result['population_hash'][:16]}...", file=sys.stderr, flush=True)
+
+
+def reconstruct_generation_checkpointed(gen_id: str, spec: dict, run_label: str) -> dict:
+    cached = _load_checkpoint(gen_id, run_label)
+    if cached is not None:
+        return cached
+    result = reconstruct_generation(gen_id, spec, run_label)
+    _save_checkpoint(gen_id, run_label, result)
+    return result
+
+
 def main():
     all_results = {}
     for gen_id, spec in GENERATIONS.items():
-        run1 = reconstruct_generation(gen_id, spec, "RUN_1")
-        run2 = reconstruct_generation(gen_id, spec, "RUN_2")
+        run1 = reconstruct_generation_checkpointed(gen_id, spec, "RUN_1")
+        run2 = reconstruct_generation_checkpointed(gen_id, spec, "RUN_2")
         deterministic = (
             run1["population_hash"] == run2["population_hash"]
             and run1["count"] == run2["count"]

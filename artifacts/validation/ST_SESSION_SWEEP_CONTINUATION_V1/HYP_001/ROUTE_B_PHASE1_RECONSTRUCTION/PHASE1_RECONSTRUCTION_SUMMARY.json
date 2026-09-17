@@ -1,0 +1,44 @@
+{
+  "combined": {
+    "deterministic": true,
+    "occurrences": 88,
+    "population_hash": "e21ed545b076b157139eca22c03e3efdd0870eef83e3889a9b9febd317e3683e",
+    "run2_hash": "e21ed545b076b157139eca22c03e3efdd0870eef83e3889a9b9febd317e3683e"
+  },
+  "generated_at": "2026-09-17T17:00:52.976281+00:00",
+  "generations": {
+    "GEN_001": {
+      "dataset_hashes": {
+        "H1": "f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060",
+        "M1": "55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23",
+        "M15": "7f7502938862f4a3779f018caab468fe4445a4d8c676c8393dc29ca57fc43a65",
+        "symbol_metadata": "sha256:f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060"
+      },
+      "determinism_run2_hash": "1b6cda1733e8d0edb2dfb90ed092ab3445543ff01bce97d52ad5d04256609285",
+      "deterministic": true,
+      "historical_count": 31,
+      "historical_population_hash": "8e32a7498e5a1c7df6658e6700ff3386fb38821ed189619a20224ce032d9166d",
+      "lookahead_violations": [],
+      "reconstructed_count": 31,
+      "reconstructed_population_hash": "1b6cda1733e8d0edb2dfb90ed092ab3445543ff01bce97d52ad5d04256609285",
+      "runner_target_consulted_by_internal_outcome_math": true
+    },
+    "GEN_002A": {
+      "dataset_hashes": {
+        "H1": "a82275bcf8db245440c6f4cd15bb69ab54b7f8677025410910c913a82bcefe9e",
+        "M1": "390798def4c598f3463be5f339d1cf2921537e96a48eca4d797aadb78c1d705c",
+        "M15": "1192991287d7e1293c78b8037893ed50f2e0a274c6ed7ac0b1b187988344bac1",
+        "symbol_metadata": "sha256:a82275bcf8db245440c6f4cd15bb69ab54b7f8677025410910c913a82bcefe9e"
+      },
+      "determinism_run2_hash": "b5a77c4951b0f8ecaf4308e8421087ff3bd4f240ddf31e3326b536989d5f63e7",
+      "deterministic": true,
+      "historical_count": 57,
+      "historical_population_hash": "2a2fb946f995805ccc56342a712376ccf5ee9fb1e324fa383e7d08c5d3e54fd8",
+      "lookahead_violations": [],
+      "reconstructed_count": 57,
+      "reconstructed_population_hash": "b5a77c4951b0f8ecaf4308e8421087ff3bd4f240ddf31e3326b536989d5f63e7",
+      "runner_target_consulted_by_internal_outcome_math": true
+    }
+  },
+  "report_id": "SSC_HYP_001_ROUTE_B_PHASE1_RECONSTRUCTION"
+}
