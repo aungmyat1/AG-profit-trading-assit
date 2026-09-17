@@ -1,0 +1,124 @@
+{
+  "schema": "AG_SSC_HYP001_CONTROL_ARM_COMPARABILITY_AMENDMENT_V1",
+  "mission": "SSC_HYP_001_CONTROL_ARM_COMPARABILITY_AMENDMENT_V1",
+  "mission_type": "GOVERNANCE_DOCUMENTATION_ONLY_NOT_ECONOMIC_EVALUATION",
+  "generated_at_utc_note": "DATE_ONLY -- 2026-09-17, content reproducible, no mutable timestamp enters any hash",
+  "generated_at_utc": "2026-09-17",
+
+  "identity": {
+    "hypothesis_id": "HYP_001_EXIT_CAPTURE",
+    "hypothesis_replaced": false,
+    "amendment_type": "POST_BASELINE_REMEDIATION_COMPARABILITY",
+    "amendment_id": "HYP_001_CONTROL_ARM_COMPARABILITY_AMENDMENT_V1",
+    "parent_strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "parent_preregistration": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_PREREGISTRATION/HYP_001_EXIT_CAPTURE_PREREGISTRATION.md",
+    "parent_preregistration_status": "IMMUTABLE -- Sections 1-21 not edited, not rewritten, not retitled by this amendment",
+    "reassessment_source": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_POST_V1_0_1_REASSESSMENT/HYP_001_POST_V1_0_1_PREREGISTRATION_REASSESSMENT.md",
+    "reassessment_classification": "REQUIRES_AMENDMENT",
+    "owner_adjudication": "APPROVED",
+    "owner_adjudication_text": "APPROVE_ADDITIVE_CONTROL_COMPARABILITY_AMENDMENT"
+  },
+
+  "amendment_reasoning": {
+    "statement_1": "Historical v1.0.0 CONTROL evidence cannot be assumed to represent the corrected v1.0.1 exit lifecycle.",
+    "statement_2": "The old resolver could prevent progression into the runner-target evaluation path when partial-target geometry failed closed.",
+    "basis": [
+      "Historical CONTROL evidence (GEN_001, GEN_002A, and the GEN_002 corroboration cited by HYP_002's closure) was generated under the v1.0.0 outcome resolver, whose partial-target direction mapping was later found and remediated as INVERSE_BOUNDARY (artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_0_1_REMEDIATION/V1_0_1_REMEDIATION_MANIFEST.json).",
+      "The v1.0.1 remediation corrected the partial-target semantic to OPPOSITE_SESSION_BOUNDARY (src/session_sweep_continuation/outcome_resolution.py, commit 02d7b29).",
+      "Read directly from src/session_sweep_continuation/outcome_resolution.py (resolve_campaign_entry): a null/invalid partial-target geometry routes an occurrence to _resolve_full_position_only, a code path that evaluates stop-loss vs. session-exit only and does not evaluate runner_target_r. The partial-target-gated Phase 2 path is the only code path that ever evaluates runner_target_r.",
+      "Because partial-target activation therefore controls progression into the runner-target evaluation path, and the v1.0.0 partial-target mapping was defective, the historical CONTROL arm (runner_target_r=3.0, generated under v1.0.0) cannot be treated as clean evidence for the corrected v1.0.1 lifecycle."
+    ],
+    "explicit_non_claims": [
+      "No claim is made about how many occurrences in GEN_001/GEN_002A/GEN_002 were routed through the fail-closed path -- this has not been measured under this amendment and is not asserted as a specific count.",
+      "No claim is made about what R multiple the corrected engine would have produced for any historical occurrence.",
+      "No claim is made that profitability or net/gross expectancy would improve, worsen, or stay the same under the corrected CONTROL arm.",
+      "No claim is made about the direction or magnitude of any economic delta between pre- and post-remediation CONTROL economics.",
+      "Magnitude and direction of the effect are explicitly UNKNOWN and are not estimated, bounded, or implied by this amendment."
+    ],
+    "economic_results_used_for_this_amendment": false
+  },
+
+  "preserved_unchanged": {
+    "mechanism_class": "HYPOTHESIS_STOP_GEOMETRY / HYPOTHESIS_EXIT_CAPTURE -- unchanged",
+    "setup_rules": "S1/S2/S3 unchanged (byte-identical, per V1_0_1_REMEDIATION_MANIFEST.json declarations: setup_logic_change=false)",
+    "entry_rules": "unchanged (entry_logic_change=false)",
+    "stop_rules": "unchanged (stop_logic_change=false)",
+    "risk_rules": "unchanged (no risk/allocation field touched by the v1.0.1 diff)",
+    "friction_model": "unchanged (friction_logic_change=false)",
+    "runner_target_treatment_definition": "unchanged -- CONTROL=runner_target_r 3.0 (FIXED_R), TREATMENT=runner_target_r 1.5 (FIXED_R), single-field EXIT-only contract, exactly as frozen in HYP_001_EXIT_CAPTURE_PREREGISTRATION.md Section 4",
+    "preregistered_candidate_value": "1.5R -- unchanged, not re-selected, not re-derived by this amendment",
+    "confirmation_calendar": "unchanged -- CONFIRM_001/002/003 dates exactly as frozen in HYP_001_FRESH_CONFIRM_001/EXTENSION_CHECKPOINT_POLICY.json, not touched by this amendment",
+    "data_role_boundaries": "unchanged -- GEN_001/GEN_002A/GEN_002 remain HYPOTHESIS_GENERATION-role evidence; freshness boundary (earliest_permitted_fresh_start=2026-09-15T00:00:00Z) unchanged",
+    "holdout_boundary": "unchanged -- holdout_run_count remains 0; no holdout selected, defined, or reserved by this amendment",
+    "parameter_changed": false
+  },
+
+  "historical_control_evidence_reclassification": {
+    "scope": ["GEN_001 (EURUSD, N=31) CONTROL/actual economics", "GEN_002A (GBPUSD, N=57) CONTROL/actual economics", "GEN_002 (EURUSD, N=21, HYP_002 corroboration cited for HYP_001 mechanism) CONTROL/actual economics"],
+    "prior_role": "HYPOTHESIS_GENERATION + DEVELOPMENT_EVALUATION (grid diagnostic) / HYPOTHESIS_GENERATION_ONLY_AFTER_HYP002, per V1_0_1_REMEDIATION_MANIFEST.json v1_0_0_evidence_classification",
+    "new_role": "PRE_REMEDIATION_CONTROL_CONTEXT_ONLY",
+    "role_semantics": {
+      "usable_for": "historical lineage/context; understanding why HYP_001 was formulated and why 1.5R was among the preregistered grid points",
+      "not_usable_as": [
+        "clean corrected-v1.0.1 CONTROL economics",
+        "a comparability baseline for CONFIRM_001's fresh v1.0.1 result",
+        "confirmation evidence for HYP_001 under any version"
+      ]
+    },
+    "naming_note": "PRE_REMEDIATION_CONTROL_CONTEXT_ONLY extends this repository's existing PRE_REMEDIATION_NON_COUNTING naming family (used for the HYP_002 evidence classification in the same remediation manifest); no exact prior term covers this specific CONTROL-arm-comparability meaning, so a new, consistently-named value is introduced rather than overloading an existing one.",
+    "historical_artifact_contents_modified": false,
+    "note": "This is additive metadata/manifest linkage only. No byte of GEN_001/GEN_002A/GEN_002's own persisted files (per_trade_results.csv, exit_capture_diagnostic.json, or any other historical artifact) is edited, deleted, or retroactively rewritten by this amendment."
+  },
+
+  "anti_snooping_firewall": {
+    "CORRECTED_V1_0_1_CONTROL_REPLAY": {
+      "may": [
+        "measure corrected baseline economics",
+        "measure corrected partial activation",
+        "measure corrected runner reachability",
+        "establish control-arm comparability"
+      ],
+      "must_not": [
+        "change runner_target_r",
+        "select a new runner target",
+        "expand the parameter search",
+        "change setup/entry/stop logic",
+        "alter CONFIRM_001 dates",
+        "access final holdout",
+        "promote Demo/Live authority"
+      ]
+    },
+    "escalation_rule": "If a future corrected-baseline result motivates consideration of a different runner target, that is NEW_HYPOTHESIS_REQUIRED. HYP_001 must not be amended again to absorb that optimization -- a new hypothesis ID and a new preregistration from the existing template are required instead.",
+    "this_amendment_authorizes_replay": false,
+    "note": "This amendment does not authorize CORRECTED_V1_0_1_CONTROL_REPLAY. That replay is a separate, not-yet-approved mission requiring its own explicit preregistration and owner sign-off before execution (see next_gate below)."
+  },
+
+  "confirm_001_protection": {
+    "earliest_acquisition_timestamp_verified": "2026-10-13T00:00:00Z (read from artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_FRESH_CONFIRM_001/EXTENSION_CHECKPOINT_POLICY.json, not assumed)",
+    "CONFIRM_001_ACCESSED": false,
+    "CONFIRM_001_EVALUATED": false,
+    "CONFIRM_001_DATES_CHANGED": false,
+    "fresh_confirmation_runs": 0,
+    "holdout_run_count": 0
+  },
+
+  "next_gate": {
+    "name": "GENERATE_V1_0_1_CORRECTED_CONTROL_BASELINE",
+    "purpose": "Establish corrected v1.0.1 CONTROL-arm evidence under the frozen strategy/configuration without changing HYP_001 treatment parameters or consuming CONFIRM_001/holdout.",
+    "scope_reminder": "This gate is a read-only re-derivation over already-frozen historical occurrence populations (GEN_001/GEN_002A/GEN_002) through the corrected resolve_campaign_entry(). It generates no new data/population and does not touch CONFIRM_001 or holdout, but it IS an economic re-evaluation and therefore requires its own explicit owner preregistration and sign-off before execution -- not authorized by this amendment.",
+    "executed_by_this_mission": false
+  },
+
+  "authority": {
+    "holdout_accessed": false,
+    "demo_authority_changed": false,
+    "live_authority_changed": false,
+    "execution_authority_changed": false,
+    "strategy_semantics_changed": false,
+    "demo_eligible": false,
+    "demo_authorized": false,
+    "live_authorized": false
+  },
+
+  "amendment_status": "FROZEN"
+}

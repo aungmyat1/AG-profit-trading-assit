@@ -1,15 +1,15 @@
 <!-- GENERATED FILE — DO NOT MANUALLY EDIT. Regenerate with scripts/generate_live_status.py -->
-<!-- LIVE_STATE_FINGERPRINT: 386aa799f9ca2d3cf0509b06a6ed5304721efd6a682a75e31ed3024ec6bd2c78 -->
+<!-- LIVE_STATE_FINGERPRINT: 81774fce9fe07c2b33f86d84fd880de5cb9dae12805ea07dab5d067c8436ee20 -->
 
 # Project Live Status
 
 Schema: `AG_LIVE_STATUS_SNAPSHOT_V1`  
-Generated: 2026-09-17T06:02:59.746216+00:00
+Generated: 2026-09-17T07:07:05.860601+00:00
 
 ## 1. Repository Identity
 
 - Branch: `main`
-- HEAD: `bb6ac0fa3f6e5ab5053d15c26efeafd2916c1d6e`
+- HEAD: `d4e3b3d05edb11ce47efb6f6937a1942a2fbd1d2`
 - Working tree clean: `False`
 
 ## 2. Repository Provenance
@@ -73,28 +73,18 @@ Generated: 2026-09-17T06:02:59.746216+00:00
 - `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/compare_sensitivity.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
 - `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/per_event_delta_table.json` — UNCOMMITTED / NOT YET AUTHORITATIVE
 - `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5_RECONSTRUCTION/ES_S5_DIAGNOSTIC_REPORT.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_BLIND_ONLY_ATTRIBUTION.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_ELIGIBILITY_INVENTORY.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_HASHES.txt` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_LINEAGE_DECISION.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_MULTIPLICITY_ANALYSIS.json` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_OCCURRENCE_DECOMPOSITION.json` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_SOURCE_AUTHORITY_MATRIX.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_SUMMARY.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
 - `artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-17_WINDOW_A_ASIAN_REFERENCE_raw.jsonl` — UNCOMMITTED / NOT YET AUTHORITATIVE
 - `artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-17_WINDOW_A_ASIAN_REFERENCE_summary.json` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `docs/status/PROJECT_LIVE_STATUS.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `docs/status/RECONCILIATION_AUDIT_POST_BB6AC0F.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `docs/validation/AG_PROJECT_LIVE_CONTROL_PLANE_PROTOCOL.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `scripts/generate_live_status.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `src/validation_orchestrator/live_status.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `src/validation_orchestrator/render.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `tests/test_generate_live_status.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `tests/test_live_status_snapshot.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
+- `artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-17_WINDOW_B_PRE_LONDON_raw.jsonl` — UNCOMMITTED / NOT YET AUTHORITATIVE
+- `artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-17_WINDOW_B_PRE_LONDON_summary.json` — UNCOMMITTED / NOT YET AUTHORITATIVE
+- `artifacts/validation/ST_M15_SESSION_SWEEP_RESEARCH_V1/ES_R1_PREREGISTRATION/HYPOTHESIS_REGISTRY.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
+- `artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_POST_V1_0_1_REASSESSMENT/HYP_001_POST_V1_0_1_PREREGISTRATION_REASSESSMENT.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
+- `docs/status/AG_SSC_HYP001_POST_V1_0_1_REASSESSMENT_STATUS.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
+- `journal/reports/btc/2026/2026-09-16.json` — UNCOMMITTED / NOT YET AUTHORITATIVE
 
 ## 9. Owner Decisions Required
 
-- Foreign/concurrent WIP present -- confirm ownership and freeze/discard intent before it is treated as authoritative: artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/COMPARISON_CONFIGURATION.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/ES_S4_HASHES.txt, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/POST_FREEZE_HYPOTHESES.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/aggregate_summary.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/blind_extra_ledger.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/compare.py, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/mapping_ledger.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/reference_table.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/reference_table_normalized.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/ES_S5A_HASHES.txt, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/ES_S5A_REPORT.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/clock_sensitivity_result.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/compare_sensitivity.py, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/per_event_delta_table.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5_RECONSTRUCTION/ES_S5_DIAGNOSTIC_REPORT.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_BLIND_ONLY_ATTRIBUTION.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_ELIGIBILITY_INVENTORY.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_HASHES.txt, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_LINEAGE_DECISION.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_MULTIPLICITY_ANALYSIS.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_OCCURRENCE_DECOMPOSITION.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_SOURCE_AUTHORITY_MATRIX.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S6_SOURCE_COMPLETENESS/ES_S6_SUMMARY.md, artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-17_WINDOW_A_ASIAN_REFERENCE_raw.jsonl, artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-17_WINDOW_A_ASIAN_REFERENCE_summary.json, docs/status/PROJECT_LIVE_STATUS.md, docs/status/RECONCILIATION_AUDIT_POST_BB6AC0F.md, docs/validation/AG_PROJECT_LIVE_CONTROL_PLANE_PROTOCOL.md, scripts/generate_live_status.py, src/validation_orchestrator/live_status.py, src/validation_orchestrator/render.py, tests/test_generate_live_status.py, tests/test_live_status_snapshot.py
+- Foreign/concurrent WIP present -- confirm ownership and freeze/discard intent before it is treated as authoritative: artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/COMPARISON_CONFIGURATION.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/ES_S4_HASHES.txt, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/POST_FREEZE_HYPOTHESES.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/aggregate_summary.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/blind_extra_ledger.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/compare.py, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/mapping_ledger.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/reference_table.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S4_COMPARISON/reference_table_normalized.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/ES_S5A_HASHES.txt, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/ES_S5A_REPORT.md, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/clock_sensitivity_result.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/compare_sensitivity.py, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5A_CLOCK_SENSITIVITY/per_event_delta_table.json, artifacts/validation/EXTERNAL_SOURCE_ES_S1S/ES_S5_RECONSTRUCTION/ES_S5_DIAGNOSTIC_REPORT.md, artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-17_WINDOW_A_ASIAN_REFERENCE_raw.jsonl, artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-17_WINDOW_A_ASIAN_REFERENCE_summary.json, artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-17_WINDOW_B_PRE_LONDON_raw.jsonl, artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-17_WINDOW_B_PRE_LONDON_summary.json, artifacts/validation/ST_M15_SESSION_SWEEP_RESEARCH_V1/ES_R1_PREREGISTRATION/HYPOTHESIS_REGISTRY.md, artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_POST_V1_0_1_REASSESSMENT/HYP_001_POST_V1_0_1_PREREGISTRATION_REASSESSMENT.md, docs/status/AG_SSC_HYP001_POST_V1_0_1_REASSESSMENT_STATUS.md, journal/reports/btc/2026/2026-09-16.json
 
 ## 10. Next Safe Actions
 
@@ -121,5 +111,5 @@ Generated: 2026-09-17T06:02:59.746216+00:00
 ## 12. Generator Provenance
 
 - Generator: `scripts/generate_live_status.py` (schema `AG_LIVE_STATUS_SNAPSHOT_V1`)
-- State fingerprint: `386aa799f9ca2d3cf0509b06a6ed5304721efd6a682a75e31ed3024ec6bd2c78`
+- State fingerprint: `81774fce9fe07c2b33f86d84fd880de5cb9dae12805ea07dab5d067c8436ee20`
 - Fingerprint excludes `generated_at_utc` and every per-strategy `updated_at_utc`; it changes only when meaningful state changes.
