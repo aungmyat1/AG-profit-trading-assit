@@ -77,6 +77,13 @@ closed-candle evidence for the current FX path, but the canonical guarded end-to
 scanner/watch pipeline has not passed R2. Existing execution infrastructure or a
 separately authorized strategy path does not advance scanner-driven execution.
 
+This roadmap answers "where are we going." For "where are we right now" —
+per-strategy validation state, current git/provenance identity, active blockers, and
+concurrent/foreign working-tree state — see the generated, deterministic
+`docs/status/PROJECT_LIVE_STATUS.md` (regenerate with
+`python scripts/generate_live_status.py`; never hand-edit it). Historical dated
+snapshots under `docs/status/` remain "how did we get here" evidence.
+
 ## R0 — Safe Foundation
 
 Objective: prevent research or display functionality from acquiring trading authority.
