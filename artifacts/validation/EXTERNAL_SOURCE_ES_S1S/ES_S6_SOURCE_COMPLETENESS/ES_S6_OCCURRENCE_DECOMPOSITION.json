@@ -1,0 +1,315 @@
+[
+  {
+    "date": "2022-10-03",
+    "occurrence_count": 4,
+    "directions": {
+      "LONG": 1,
+      "SHORT": 3
+    },
+    "occurrence_ids": [
+      "ES_S3_001",
+      "ES_S3_002",
+      "ES_S3_003",
+      "ES_S3_004"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 4
+    },
+    "resolution_states": {
+      "RUNNER_BE_EXIT": 1,
+      "OPEN": 3
+    },
+    "asian_range_pips": 50.09999999999959
+  },
+  {
+    "date": "2022-10-04",
+    "occurrence_count": 3,
+    "directions": {
+      "SHORT": 3
+    },
+    "occurrence_ids": [
+      "ES_S3_005",
+      "ES_S3_006",
+      "ES_S3_007"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 3
+    },
+    "resolution_states": {
+      "STOPPED_FULL_POSITION": 3
+    },
+    "asian_range_pips": 65.99999999999939
+  },
+  {
+    "date": "2022-10-06",
+    "occurrence_count": 2,
+    "directions": {
+      "LONG": 2
+    },
+    "occurrence_ids": [
+      "ES_S3_008",
+      "ES_S3_009"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 2
+    },
+    "resolution_states": {
+      "STOPPED_FULL_POSITION": 2
+    },
+    "asian_range_pips": 33.30000000000055
+  },
+  {
+    "date": "2022-10-07",
+    "occurrence_count": 6,
+    "directions": {
+      "SHORT": 2,
+      "LONG": 4
+    },
+    "occurrence_ids": [
+      "ES_S3_010",
+      "ES_S3_011",
+      "ES_S3_012",
+      "ES_S3_013",
+      "ES_S3_014",
+      "ES_S3_015"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 4,
+      "SOURCE_RULE_DEPENDENT_UNRESOLVED": 2
+    },
+    "resolution_states": {
+      "RUNNER_TP2": 2,
+      "STOPPED_FULL_POSITION": 4
+    },
+    "asian_range_pips": 46.10000000000003
+  },
+  {
+    "date": "2022-10-10",
+    "occurrence_count": 1,
+    "directions": {
+      "LONG": 1
+    },
+    "occurrence_ids": [
+      "ES_S3_016"
+    ],
+    "classifications": {
+      "SOURCE_RULE_DEPENDENT_UNRESOLVED": 1
+    },
+    "resolution_states": {
+      "STOPPED_FULL_POSITION": 1
+    },
+    "asian_range_pips": 37.400000000000766
+  },
+  {
+    "date": "2022-10-11",
+    "occurrence_count": 5,
+    "directions": {
+      "SHORT": 5
+    },
+    "occurrence_ids": [
+      "ES_S3_017",
+      "ES_S3_018",
+      "ES_S3_019",
+      "ES_S3_020",
+      "ES_S3_021"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 4,
+      "SOURCE_RULE_DEPENDENT_UNRESOLVED": 1
+    },
+    "resolution_states": {
+      "STOPPED_FULL_POSITION": 4,
+      "OPEN": 1
+    },
+    "asian_range_pips": 52.200000000000024
+  },
+  {
+    "date": "2022-10-12",
+    "occurrence_count": 5,
+    "directions": {
+      "LONG": 5
+    },
+    "occurrence_ids": [
+      "ES_S3_022",
+      "ES_S3_023",
+      "ES_S3_024",
+      "ES_S3_025",
+      "ES_S3_026"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 2,
+      "SOURCE_RULE_DEPENDENT_UNRESOLVED": 3
+    },
+    "resolution_states": {
+      "STOPPED_FULL_POSITION": 2,
+      "OPEN": 3
+    },
+    "asian_range_pips": 51.700000000000074
+  },
+  {
+    "date": "2022-10-13",
+    "occurrence_count": 8,
+    "directions": {
+      "LONG": 6,
+      "SHORT": 2
+    },
+    "occurrence_ids": [
+      "ES_S3_027",
+      "ES_S3_028",
+      "ES_S3_029",
+      "ES_S3_030",
+      "ES_S3_031",
+      "ES_S3_032",
+      "ES_S3_033",
+      "ES_S3_034"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 8
+    },
+    "resolution_states": {
+      "STOPPED_FULL_POSITION": 4,
+      "RUNNER_TP2": 3,
+      "UNRESOLVED": 1
+    },
+    "asian_range_pips": 33.4000000000001
+  },
+  {
+    "date": "2022-10-14",
+    "occurrence_count": 4,
+    "directions": {
+      "LONG": 4
+    },
+    "occurrence_ids": [
+      "ES_S3_035",
+      "ES_S3_036",
+      "ES_S3_037",
+      "ES_S3_038"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 4
+    },
+    "resolution_states": {
+      "STOPPED_FULL_POSITION": 4
+    },
+    "asian_range_pips": 46.500000000000426
+  },
+  {
+    "date": "2022-10-17",
+    "occurrence_count": 8,
+    "directions": {
+      "SHORT": 5,
+      "LONG": 3
+    },
+    "occurrence_ids": [
+      "ES_S3_039",
+      "ES_S3_040",
+      "ES_S3_041",
+      "ES_S3_042",
+      "ES_S3_043",
+      "ES_S3_044",
+      "ES_S3_045",
+      "ES_S3_046"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 8
+    },
+    "resolution_states": {
+      "RUNNER_BE_EXIT": 2,
+      "RUNNER_TP2": 3,
+      "STOPPED_FULL_POSITION": 3
+    },
+    "asian_range_pips": 25.30000000000032
+  },
+  {
+    "date": "2022-10-18",
+    "occurrence_count": 4,
+    "directions": {
+      "SHORT": 2,
+      "LONG": 2
+    },
+    "occurrence_ids": [
+      "ES_S3_047",
+      "ES_S3_048",
+      "ES_S3_049",
+      "ES_S3_050"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 4
+    },
+    "resolution_states": {
+      "RUNNER_BE_EXIT": 2,
+      "RUNNER_BE_ACTIVE": 1,
+      "OPEN": 1
+    },
+    "asian_range_pips": 49.40000000000055
+  },
+  {
+    "date": "2022-10-19",
+    "occurrence_count": 5,
+    "directions": {
+      "LONG": 5
+    },
+    "occurrence_ids": [
+      "ES_S3_051",
+      "ES_S3_052",
+      "ES_S3_053",
+      "ES_S3_054",
+      "ES_S3_055"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 5
+    },
+    "resolution_states": {
+      "STOPPED_FULL_POSITION": 5
+    },
+    "asian_range_pips": 46.49999999999932
+  },
+  {
+    "date": "2022-10-20",
+    "occurrence_count": 6,
+    "directions": {
+      "SHORT": 6
+    },
+    "occurrence_ids": [
+      "ES_S3_056",
+      "ES_S3_057",
+      "ES_S3_058",
+      "ES_S3_059",
+      "ES_S3_060",
+      "ES_S3_061"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 5,
+      "SOURCE_RULE_DEPENDENT_UNRESOLVED": 1
+    },
+    "resolution_states": {
+      "STOPPED_FULL_POSITION": 5,
+      "OPEN": 1
+    },
+    "asian_range_pips": 39.799999999999834
+  },
+  {
+    "date": "2022-10-21",
+    "occurrence_count": 5,
+    "directions": {
+      "LONG": 3,
+      "SHORT": 2
+    },
+    "occurrence_ids": [
+      "ES_S3_062",
+      "ES_S3_063",
+      "ES_S3_064",
+      "ES_S3_065",
+      "ES_S3_066"
+    ],
+    "classifications": {
+      "SOURCE_DETERMINISTIC": 5
+    },
+    "resolution_states": {
+      "RUNNER_TP2": 2,
+      "STOPPED_FULL_POSITION": 2,
+      "UNRESOLVED": 1
+    },
+    "asian_range_pips": 21.700000000000053
+  }
+]
