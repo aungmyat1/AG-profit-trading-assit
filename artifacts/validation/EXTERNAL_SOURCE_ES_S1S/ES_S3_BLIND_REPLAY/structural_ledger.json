@@ -1,0 +1,818 @@
+[
+  {
+    "date": "2022-10-03",
+    "status": "VALID",
+    "time": "2022-10-03T14:00:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97938,
+    "evidence": {
+      "asian_low": 0.97843,
+      "candle_low": 0.97677,
+      "candle_close": 0.97938
+    }
+  },
+  {
+    "date": "2022-10-03",
+    "status": "VALID",
+    "time": "2022-10-03T15:00:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.98342,
+    "evidence": {
+      "asian_high": 0.98344,
+      "candle_high": 0.98369,
+      "candle_close": 0.98342
+    }
+  },
+  {
+    "date": "2022-10-03",
+    "status": "VALID",
+    "time": "2022-10-03T15:15:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.98342,
+    "evidence": {
+      "asian_high": 0.98344,
+      "candle_high": 0.98447,
+      "candle_close": 0.98342
+    }
+  },
+  {
+    "date": "2022-10-03",
+    "status": "VALID",
+    "time": "2022-10-03T15:30:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.98218,
+    "evidence": {
+      "asian_high": 0.98344,
+      "candle_high": 0.98372,
+      "candle_close": 0.98218
+    }
+  },
+  {
+    "date": "2022-10-04",
+    "status": "VALID",
+    "time": "2022-10-04T08:15:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.98692,
+    "evidence": {
+      "asian_high": 0.9872,
+      "candle_high": 0.98799,
+      "candle_close": 0.98692
+    }
+  },
+  {
+    "date": "2022-10-04",
+    "status": "VALID",
+    "time": "2022-10-04T08:30:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.98712,
+    "evidence": {
+      "asian_high": 0.9872,
+      "candle_high": 0.98772,
+      "candle_close": 0.98712
+    }
+  },
+  {
+    "date": "2022-10-04",
+    "status": "VALID",
+    "time": "2022-10-04T09:00:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.98577,
+    "evidence": {
+      "asian_high": 0.9872,
+      "candle_high": 0.98756,
+      "candle_close": 0.98577
+    }
+  },
+  {
+    "date": "2022-10-06",
+    "status": "VALID",
+    "time": "2022-10-06T09:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.98997,
+    "evidence": {
+      "asian_low": 0.9893,
+      "candle_low": 0.98895,
+      "candle_close": 0.98997
+    }
+  },
+  {
+    "date": "2022-10-06",
+    "status": "VALID",
+    "time": "2022-10-06T09:30:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.98951,
+    "evidence": {
+      "asian_low": 0.9893,
+      "candle_low": 0.98904,
+      "candle_close": 0.98951
+    }
+  },
+  {
+    "date": "2022-10-07",
+    "status": "VALID",
+    "time": "2022-10-07T08:30:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.98093,
+    "evidence": {
+      "asian_high": 0.98118,
+      "candle_high": 0.98168,
+      "candle_close": 0.98093
+    }
+  },
+  {
+    "date": "2022-10-07",
+    "status": "VALID",
+    "time": "2022-10-07T08:45:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.98018,
+    "evidence": {
+      "asian_high": 0.98118,
+      "candle_high": 0.98123,
+      "candle_close": 0.98018
+    }
+  },
+  {
+    "date": "2022-10-07",
+    "status": "VALID",
+    "time": "2022-10-07T14:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97676,
+    "evidence": {
+      "asian_low": 0.97657,
+      "candle_low": 0.97532,
+      "candle_close": 0.97676
+    }
+  },
+  {
+    "date": "2022-10-07",
+    "status": "VALID",
+    "time": "2022-10-07T14:30:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97733,
+    "evidence": {
+      "asian_low": 0.97657,
+      "candle_low": 0.97576,
+      "candle_close": 0.97733
+    }
+  },
+  {
+    "date": "2022-10-07",
+    "status": "VALID",
+    "time": "2022-10-07T17:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.9767,
+    "evidence": {
+      "asian_low": 0.97657,
+      "candle_low": 0.97618,
+      "candle_close": 0.9767
+    }
+  },
+  {
+    "date": "2022-10-07",
+    "status": "VALID",
+    "time": "2022-10-07T17:30:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.9767,
+    "evidence": {
+      "asian_low": 0.97657,
+      "candle_low": 0.97618,
+      "candle_close": 0.9767
+    }
+  },
+  {
+    "date": "2022-10-10",
+    "status": "VALID",
+    "time": "2022-10-10T18:00:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97178,
+    "evidence": {
+      "asian_low": 0.97159,
+      "candle_low": 0.97131,
+      "candle_close": 0.97178
+    }
+  },
+  {
+    "date": "2022-10-11",
+    "status": "VALID",
+    "time": "2022-10-11T07:30:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.9713,
+    "evidence": {
+      "asian_high": 0.97228,
+      "candle_high": 0.97249,
+      "candle_close": 0.9713
+    }
+  },
+  {
+    "date": "2022-10-11",
+    "status": "VALID",
+    "time": "2022-10-11T11:00:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97159,
+    "evidence": {
+      "asian_high": 0.97228,
+      "candle_high": 0.97237,
+      "candle_close": 0.97159
+    }
+  },
+  {
+    "date": "2022-10-11",
+    "status": "VALID",
+    "time": "2022-10-11T12:45:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97199,
+    "evidence": {
+      "asian_high": 0.97228,
+      "candle_high": 0.97312,
+      "candle_close": 0.97199
+    }
+  },
+  {
+    "date": "2022-10-11",
+    "status": "VALID",
+    "time": "2022-10-11T15:15:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97212,
+    "evidence": {
+      "asian_high": 0.97228,
+      "candle_high": 0.97239,
+      "candle_close": 0.97212
+    }
+  },
+  {
+    "date": "2022-10-11",
+    "status": "VALID",
+    "time": "2022-10-11T18:45:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.9709,
+    "evidence": {
+      "asian_high": 0.97228,
+      "candle_high": 0.97402,
+      "candle_close": 0.9709
+    }
+  },
+  {
+    "date": "2022-10-12",
+    "status": "VALID",
+    "time": "2022-10-12T14:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.96865,
+    "evidence": {
+      "asian_low": 0.96826,
+      "candle_low": 0.96817,
+      "candle_close": 0.96865
+    }
+  },
+  {
+    "date": "2022-10-12",
+    "status": "VALID",
+    "time": "2022-10-12T14:45:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97013,
+    "evidence": {
+      "asian_low": 0.96826,
+      "candle_low": 0.96678,
+      "candle_close": 0.97013
+    }
+  },
+  {
+    "date": "2022-10-12",
+    "status": "VALID",
+    "time": "2022-10-12T16:30:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.96834,
+    "evidence": {
+      "asian_low": 0.96826,
+      "candle_low": 0.96822,
+      "candle_close": 0.96834
+    }
+  },
+  {
+    "date": "2022-10-12",
+    "status": "VALID",
+    "time": "2022-10-12T16:45:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.96837,
+    "evidence": {
+      "asian_low": 0.96826,
+      "candle_low": 0.96802,
+      "candle_close": 0.96837
+    }
+  },
+  {
+    "date": "2022-10-12",
+    "status": "VALID",
+    "time": "2022-10-12T17:00:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.96851,
+    "evidence": {
+      "asian_low": 0.96826,
+      "candle_low": 0.96808,
+      "candle_close": 0.96851
+    }
+  },
+  {
+    "date": "2022-10-13",
+    "status": "VALID",
+    "time": "2022-10-13T07:00:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.96945,
+    "evidence": {
+      "asian_low": 0.96887,
+      "candle_low": 0.96879,
+      "candle_close": 0.96945
+    }
+  },
+  {
+    "date": "2022-10-13",
+    "status": "VALID",
+    "time": "2022-10-13T07:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.96918,
+    "evidence": {
+      "asian_low": 0.96887,
+      "candle_low": 0.96865,
+      "candle_close": 0.96918
+    }
+  },
+  {
+    "date": "2022-10-13",
+    "status": "VALID",
+    "time": "2022-10-13T07:30:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.96998,
+    "evidence": {
+      "asian_low": 0.96887,
+      "candle_low": 0.96854,
+      "candle_close": 0.96998
+    }
+  },
+  {
+    "date": "2022-10-13",
+    "status": "VALID",
+    "time": "2022-10-13T12:30:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.96488,
+    "evidence": {
+      "asian_high": 0.97221,
+      "candle_high": 0.9738,
+      "candle_close": 0.96488
+    }
+  },
+  {
+    "date": "2022-10-13",
+    "status": "VALID",
+    "time": "2022-10-13T13:45:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.96944,
+    "evidence": {
+      "asian_low": 0.96887,
+      "candle_low": 0.96622,
+      "candle_close": 0.96944
+    }
+  },
+  {
+    "date": "2022-10-13",
+    "status": "VALID",
+    "time": "2022-10-13T14:00:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.9696,
+    "evidence": {
+      "asian_low": 0.96887,
+      "candle_low": 0.96839,
+      "candle_close": 0.9696
+    }
+  },
+  {
+    "date": "2022-10-13",
+    "status": "VALID",
+    "time": "2022-10-13T14:30:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.96911,
+    "evidence": {
+      "asian_low": 0.96887,
+      "candle_low": 0.96808,
+      "candle_close": 0.96911
+    }
+  },
+  {
+    "date": "2022-10-13",
+    "status": "VALID",
+    "time": "2022-10-13T14:45:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97181,
+    "evidence": {
+      "asian_high": 0.97221,
+      "candle_high": 0.97263,
+      "candle_close": 0.97181
+    }
+  },
+  {
+    "date": "2022-10-14",
+    "status": "VALID",
+    "time": "2022-10-14T07:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97624,
+    "evidence": {
+      "asian_low": 0.97617,
+      "candle_low": 0.97525,
+      "candle_close": 0.97624
+    }
+  },
+  {
+    "date": "2022-10-14",
+    "status": "VALID",
+    "time": "2022-10-14T07:30:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97644,
+    "evidence": {
+      "asian_low": 0.97617,
+      "candle_low": 0.97582,
+      "candle_close": 0.97644
+    }
+  },
+  {
+    "date": "2022-10-14",
+    "status": "VALID",
+    "time": "2022-10-14T07:45:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97677,
+    "evidence": {
+      "asian_low": 0.97617,
+      "candle_low": 0.97551,
+      "candle_close": 0.97677
+    }
+  },
+  {
+    "date": "2022-10-14",
+    "status": "VALID",
+    "time": "2022-10-14T12:45:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97732,
+    "evidence": {
+      "asian_low": 0.97617,
+      "candle_low": 0.97323,
+      "candle_close": 0.97732
+    }
+  },
+  {
+    "date": "2022-10-17",
+    "status": "VALID",
+    "time": "2022-10-17T07:30:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97527,
+    "evidence": {
+      "asian_high": 0.97561,
+      "candle_high": 0.97571,
+      "candle_close": 0.97527
+    }
+  },
+  {
+    "date": "2022-10-17",
+    "status": "VALID",
+    "time": "2022-10-17T08:30:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97351,
+    "evidence": {
+      "asian_low": 0.97308,
+      "candle_low": 0.97201,
+      "candle_close": 0.97351
+    }
+  },
+  {
+    "date": "2022-10-17",
+    "status": "VALID",
+    "time": "2022-10-17T08:45:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97386,
+    "evidence": {
+      "asian_low": 0.97308,
+      "candle_low": 0.97294,
+      "candle_close": 0.97386
+    }
+  },
+  {
+    "date": "2022-10-17",
+    "status": "VALID",
+    "time": "2022-10-17T09:15:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97534,
+    "evidence": {
+      "asian_high": 0.97561,
+      "candle_high": 0.97576,
+      "candle_close": 0.97534
+    }
+  },
+  {
+    "date": "2022-10-17",
+    "status": "VALID",
+    "time": "2022-10-17T09:30:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97521,
+    "evidence": {
+      "asian_high": 0.97561,
+      "candle_high": 0.97571,
+      "candle_close": 0.97521
+    }
+  },
+  {
+    "date": "2022-10-17",
+    "status": "VALID",
+    "time": "2022-10-17T09:45:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.9753,
+    "evidence": {
+      "asian_high": 0.97561,
+      "candle_high": 0.97564,
+      "candle_close": 0.9753
+    }
+  },
+  {
+    "date": "2022-10-17",
+    "status": "VALID",
+    "time": "2022-10-17T10:30:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97501,
+    "evidence": {
+      "asian_high": 0.97561,
+      "candle_high": 0.97613,
+      "candle_close": 0.97501
+    }
+  },
+  {
+    "date": "2022-10-17",
+    "status": "VALID",
+    "time": "2022-10-17T12:00:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97397,
+    "evidence": {
+      "asian_low": 0.97308,
+      "candle_low": 0.97296,
+      "candle_close": 0.97397
+    }
+  },
+  {
+    "date": "2022-10-18",
+    "status": "VALID",
+    "time": "2022-10-18T07:00:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.98524,
+    "evidence": {
+      "asian_high": 0.98726,
+      "candle_high": 0.98738,
+      "candle_close": 0.98524
+    }
+  },
+  {
+    "date": "2022-10-18",
+    "status": "VALID",
+    "time": "2022-10-18T11:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.98359,
+    "evidence": {
+      "asian_low": 0.98232,
+      "candle_low": 0.98215,
+      "candle_close": 0.98359
+    }
+  },
+  {
+    "date": "2022-10-18",
+    "status": "VALID",
+    "time": "2022-10-18T13:30:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.98655,
+    "evidence": {
+      "asian_high": 0.98726,
+      "candle_high": 0.98757,
+      "candle_close": 0.98655
+    }
+  },
+  {
+    "date": "2022-10-18",
+    "status": "VALID",
+    "time": "2022-10-18T15:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.98235,
+    "evidence": {
+      "asian_low": 0.98232,
+      "candle_low": 0.98214,
+      "candle_close": 0.98235
+    }
+  },
+  {
+    "date": "2022-10-19",
+    "status": "VALID",
+    "time": "2022-10-19T07:00:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.98212,
+    "evidence": {
+      "asian_low": 0.98204,
+      "candle_low": 0.98155,
+      "candle_close": 0.98212
+    }
+  },
+  {
+    "date": "2022-10-19",
+    "status": "VALID",
+    "time": "2022-10-19T07:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.98245,
+    "evidence": {
+      "asian_low": 0.98204,
+      "candle_low": 0.98198,
+      "candle_close": 0.98245
+    }
+  },
+  {
+    "date": "2022-10-19",
+    "status": "VALID",
+    "time": "2022-10-19T08:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.98211,
+    "evidence": {
+      "asian_low": 0.98204,
+      "candle_low": 0.98123,
+      "candle_close": 0.98211
+    }
+  },
+  {
+    "date": "2022-10-19",
+    "status": "VALID",
+    "time": "2022-10-19T08:30:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.98303,
+    "evidence": {
+      "asian_low": 0.98204,
+      "candle_low": 0.98193,
+      "candle_close": 0.98303
+    }
+  },
+  {
+    "date": "2022-10-19",
+    "status": "VALID",
+    "time": "2022-10-19T09:00:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.98208,
+    "evidence": {
+      "asian_low": 0.98204,
+      "candle_low": 0.98134,
+      "candle_close": 0.98208
+    }
+  },
+  {
+    "date": "2022-10-20",
+    "status": "VALID",
+    "time": "2022-10-20T07:00:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97778,
+    "evidence": {
+      "asian_high": 0.97942,
+      "candle_high": 0.97946,
+      "candle_close": 0.97778
+    }
+  },
+  {
+    "date": "2022-10-20",
+    "status": "VALID",
+    "time": "2022-10-20T07:45:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97868,
+    "evidence": {
+      "asian_high": 0.97942,
+      "candle_high": 0.97947,
+      "candle_close": 0.97868
+    }
+  },
+  {
+    "date": "2022-10-20",
+    "status": "VALID",
+    "time": "2022-10-20T13:15:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97926,
+    "evidence": {
+      "asian_high": 0.97942,
+      "candle_high": 0.98087,
+      "candle_close": 0.97926
+    }
+  },
+  {
+    "date": "2022-10-20",
+    "status": "VALID",
+    "time": "2022-10-20T13:30:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97901,
+    "evidence": {
+      "asian_high": 0.97942,
+      "candle_high": 0.97979,
+      "candle_close": 0.97901
+    }
+  },
+  {
+    "date": "2022-10-20",
+    "status": "VALID",
+    "time": "2022-10-20T13:45:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97859,
+    "evidence": {
+      "asian_high": 0.97942,
+      "candle_high": 0.97968,
+      "candle_close": 0.97859
+    }
+  },
+  {
+    "date": "2022-10-20",
+    "status": "VALID",
+    "time": "2022-10-20T17:00:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97926,
+    "evidence": {
+      "asian_high": 0.97942,
+      "candle_high": 0.98027,
+      "candle_close": 0.97926
+    }
+  },
+  {
+    "date": "2022-10-21",
+    "status": "VALID",
+    "time": "2022-10-21T07:00:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97672,
+    "evidence": {
+      "asian_low": 0.97618,
+      "candle_low": 0.97611,
+      "candle_close": 0.97672
+    }
+  },
+  {
+    "date": "2022-10-21",
+    "status": "VALID",
+    "time": "2022-10-21T08:00:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97811,
+    "evidence": {
+      "asian_high": 0.97835,
+      "candle_high": 0.9791,
+      "candle_close": 0.97811
+    }
+  },
+  {
+    "date": "2022-10-21",
+    "status": "VALID",
+    "time": "2022-10-21T08:30:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97652,
+    "evidence": {
+      "asian_low": 0.97618,
+      "candle_low": 0.97612,
+      "candle_close": 0.97652
+    }
+  },
+  {
+    "date": "2022-10-21",
+    "status": "AMBIGUOUS_DUAL_SIDE",
+    "time": "2022-10-21T13:00:00+00:00",
+    "direction": null,
+    "entry_price": null,
+    "evidence": {
+      "candle_high": 0.97917,
+      "candle_low": 0.97564,
+      "candle_close": 0.97632
+    }
+  },
+  {
+    "date": "2022-10-21",
+    "status": "VALID",
+    "time": "2022-10-21T13:15:00+00:00",
+    "direction": "LONG",
+    "entry_price": 0.97698,
+    "evidence": {
+      "asian_low": 0.97618,
+      "candle_low": 0.97518,
+      "candle_close": 0.97698
+    }
+  },
+  {
+    "date": "2022-10-21",
+    "status": "AMBIGUOUS_DUAL_SIDE",
+    "time": "2022-10-21T13:30:00+00:00",
+    "direction": null,
+    "entry_price": null,
+    "evidence": {
+      "candle_high": 0.97919,
+      "candle_low": 0.97575,
+      "candle_close": 0.9775
+    }
+  },
+  {
+    "date": "2022-10-21",
+    "status": "VALID",
+    "time": "2022-10-21T14:15:00+00:00",
+    "direction": "SHORT",
+    "entry_price": 0.97768,
+    "evidence": {
+      "asian_high": 0.97835,
+      "candle_high": 0.9806,
+      "candle_close": 0.97768
+    }
+  }
+]

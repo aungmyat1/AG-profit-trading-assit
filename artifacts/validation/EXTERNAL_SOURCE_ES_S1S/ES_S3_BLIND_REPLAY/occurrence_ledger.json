@@ -1,0 +1,1703 @@
+[
+  {
+    "occurrence_id": "ES_S3_001",
+    "date": "2022-10-03",
+    "asian_high": 0.98344,
+    "asian_low": 0.97843,
+    "asian_range_A": 0.005009999999999959,
+    "asian_range_pips": 50.09999999999959,
+    "direction": "LONG",
+    "sweep_time": "2022-10-03T14:00:00+00:00",
+    "entry_price": 0.97938,
+    "initial_stop": 0.9781275,
+    "initial_risk": 0.0012524999999999897,
+    "tp1_opposite_boundary": 0.98344,
+    "tp2_5r": 0.9856425,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_EXIT",
+    "resolution_reason": "RUNNER_STOPPED_AT_BREAKEVEN",
+    "resolution_events": [
+      {
+        "time": "2022-10-03 15:00:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.98344
+      },
+      {
+        "time": "2022-10-03 17:45:00+00:00",
+        "event": "RUNNER_BE_STOP"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_002",
+    "date": "2022-10-03",
+    "asian_high": 0.98344,
+    "asian_low": 0.97843,
+    "asian_range_A": 0.005009999999999959,
+    "asian_range_pips": 50.09999999999959,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-03T15:00:00+00:00",
+    "entry_price": 0.98342,
+    "initial_stop": 0.9846725,
+    "initial_risk": 0.0012524999999999897,
+    "tp1_opposite_boundary": 0.97843,
+    "tp2_5r": 0.9771575,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "OPEN",
+    "resolution_reason": "MANAGEMENT_WINDOW_NOT_YET_RESOLVED",
+    "resolution_events": []
+  },
+  {
+    "occurrence_id": "ES_S3_003",
+    "date": "2022-10-03",
+    "asian_high": 0.98344,
+    "asian_low": 0.97843,
+    "asian_range_A": 0.005009999999999959,
+    "asian_range_pips": 50.09999999999959,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-03T15:15:00+00:00",
+    "entry_price": 0.98342,
+    "initial_stop": 0.9846725,
+    "initial_risk": 0.0012524999999999897,
+    "tp1_opposite_boundary": 0.97843,
+    "tp2_5r": 0.9771575,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "OPEN",
+    "resolution_reason": "MANAGEMENT_WINDOW_NOT_YET_RESOLVED",
+    "resolution_events": []
+  },
+  {
+    "occurrence_id": "ES_S3_004",
+    "date": "2022-10-03",
+    "asian_high": 0.98344,
+    "asian_low": 0.97843,
+    "asian_range_A": 0.005009999999999959,
+    "asian_range_pips": 50.09999999999959,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-03T15:30:00+00:00",
+    "entry_price": 0.98218,
+    "initial_stop": 0.9834325,
+    "initial_risk": 0.0012524999999999897,
+    "tp1_opposite_boundary": 0.97843,
+    "tp2_5r": 0.9759175000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "OPEN",
+    "resolution_reason": "MANAGEMENT_WINDOW_NOT_YET_RESOLVED",
+    "resolution_events": []
+  },
+  {
+    "occurrence_id": "ES_S3_005",
+    "date": "2022-10-04",
+    "asian_high": 0.9872,
+    "asian_low": 0.9806,
+    "asian_range_A": 0.006599999999999939,
+    "asian_range_pips": 65.99999999999939,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-04T08:15:00+00:00",
+    "entry_price": 0.98692,
+    "initial_stop": 0.98857,
+    "initial_risk": 0.0016499999999999293,
+    "tp1_opposite_boundary": 0.9806,
+    "tp2_5r": 0.9786700000000004,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-04 10:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_006",
+    "date": "2022-10-04",
+    "asian_high": 0.9872,
+    "asian_low": 0.9806,
+    "asian_range_A": 0.006599999999999939,
+    "asian_range_pips": 65.99999999999939,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-04T08:30:00+00:00",
+    "entry_price": 0.98712,
+    "initial_stop": 0.9887699999999999,
+    "initial_risk": 0.0016499999999999293,
+    "tp1_opposite_boundary": 0.9806,
+    "tp2_5r": 0.9788700000000004,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-04 10:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_007",
+    "date": "2022-10-04",
+    "asian_high": 0.9872,
+    "asian_low": 0.9806,
+    "asian_range_A": 0.006599999999999939,
+    "asian_range_pips": 65.99999999999939,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-04T09:00:00+00:00",
+    "entry_price": 0.98577,
+    "initial_stop": 0.98742,
+    "initial_risk": 0.0016499999999999293,
+    "tp1_opposite_boundary": 0.9806,
+    "tp2_5r": 0.9775200000000004,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-04 09:45:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_008",
+    "date": "2022-10-06",
+    "asian_high": 0.99263,
+    "asian_low": 0.9893,
+    "asian_range_A": 0.003330000000000055,
+    "asian_range_pips": 33.30000000000055,
+    "direction": "LONG",
+    "sweep_time": "2022-10-06T09:15:00+00:00",
+    "entry_price": 0.98997,
+    "initial_stop": 0.9891375,
+    "initial_risk": 0.0008325000000000138,
+    "tp1_opposite_boundary": 0.99263,
+    "tp2_5r": 0.9941325000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-06 09:30:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_009",
+    "date": "2022-10-06",
+    "asian_high": 0.99263,
+    "asian_low": 0.9893,
+    "asian_range_A": 0.003330000000000055,
+    "asian_range_pips": 33.30000000000055,
+    "direction": "LONG",
+    "sweep_time": "2022-10-06T09:30:00+00:00",
+    "entry_price": 0.98951,
+    "initial_stop": 0.9886775,
+    "initial_risk": 0.0008325000000000138,
+    "tp1_opposite_boundary": 0.99263,
+    "tp2_5r": 0.9936725000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-06 09:45:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_010",
+    "date": "2022-10-07",
+    "asian_high": 0.98118,
+    "asian_low": 0.97657,
+    "asian_range_A": 0.004610000000000003,
+    "asian_range_pips": 46.10000000000003,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-07T08:30:00+00:00",
+    "entry_price": 0.98093,
+    "initial_stop": 0.9820825,
+    "initial_risk": 0.0011525000000000007,
+    "tp1_opposite_boundary": 0.97657,
+    "tp2_5r": 0.9751675,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "resolution_reason": "RUNNER_TARGET_HIT",
+    "resolution_events": [
+      {
+        "time": "2022-10-07 12:30:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97657
+      },
+      {
+        "time": "2022-10-07 12:45:00+00:00",
+        "event": "RUNNER_TP2"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_011",
+    "date": "2022-10-07",
+    "asian_high": 0.98118,
+    "asian_low": 0.97657,
+    "asian_range_A": 0.004610000000000003,
+    "asian_range_pips": 46.10000000000003,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-07T08:45:00+00:00",
+    "entry_price": 0.98018,
+    "initial_stop": 0.9813325,
+    "initial_risk": 0.0011525000000000007,
+    "tp1_opposite_boundary": 0.97657,
+    "tp2_5r": 0.9744175,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "resolution_reason": "RUNNER_TARGET_HIT",
+    "resolution_events": [
+      {
+        "time": "2022-10-07 12:30:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97657
+      },
+      {
+        "time": "2022-10-07 12:45:00+00:00",
+        "event": "RUNNER_TP2"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_012",
+    "date": "2022-10-07",
+    "asian_high": 0.98118,
+    "asian_low": 0.97657,
+    "asian_range_A": 0.004610000000000003,
+    "asian_range_pips": 46.10000000000003,
+    "direction": "LONG",
+    "sweep_time": "2022-10-07T14:15:00+00:00",
+    "entry_price": 0.97676,
+    "initial_stop": 0.9756075,
+    "initial_risk": 0.0011525000000000007,
+    "tp1_opposite_boundary": 0.98118,
+    "tp2_5r": 0.9825225,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-07 16:45:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_013",
+    "date": "2022-10-07",
+    "asian_high": 0.98118,
+    "asian_low": 0.97657,
+    "asian_range_A": 0.004610000000000003,
+    "asian_range_pips": 46.10000000000003,
+    "direction": "LONG",
+    "sweep_time": "2022-10-07T14:30:00+00:00",
+    "entry_price": 0.97733,
+    "initial_stop": 0.9761775,
+    "initial_risk": 0.0011525000000000007,
+    "tp1_opposite_boundary": 0.98118,
+    "tp2_5r": 0.9830925,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-07 16:30:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_014",
+    "date": "2022-10-07",
+    "asian_high": 0.98118,
+    "asian_low": 0.97657,
+    "asian_range_A": 0.004610000000000003,
+    "asian_range_pips": 46.10000000000003,
+    "direction": "LONG",
+    "sweep_time": "2022-10-07T17:15:00+00:00",
+    "entry_price": 0.9767,
+    "initial_stop": 0.9755475,
+    "initial_risk": 0.0011525000000000007,
+    "tp1_opposite_boundary": 0.98118,
+    "tp2_5r": 0.9824625,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-07 18:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_015",
+    "date": "2022-10-07",
+    "asian_high": 0.98118,
+    "asian_low": 0.97657,
+    "asian_range_A": 0.004610000000000003,
+    "asian_range_pips": 46.10000000000003,
+    "direction": "LONG",
+    "sweep_time": "2022-10-07T17:30:00+00:00",
+    "entry_price": 0.9767,
+    "initial_stop": 0.9755475,
+    "initial_risk": 0.0011525000000000007,
+    "tp1_opposite_boundary": 0.98118,
+    "tp2_5r": 0.9824625,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-07 18:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_016",
+    "date": "2022-10-10",
+    "asian_high": 0.97533,
+    "asian_low": 0.97159,
+    "asian_range_A": 0.0037400000000000766,
+    "asian_range_pips": 37.400000000000766,
+    "direction": "LONG",
+    "sweep_time": "2022-10-10T18:00:00+00:00",
+    "entry_price": 0.97178,
+    "initial_stop": 0.970845,
+    "initial_risk": 0.0009350000000000191,
+    "tp1_opposite_boundary": 0.97533,
+    "tp2_5r": 0.9764550000000001,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-10 18:45:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_017",
+    "date": "2022-10-11",
+    "asian_high": 0.97228,
+    "asian_low": 0.96706,
+    "asian_range_A": 0.005220000000000002,
+    "asian_range_pips": 52.200000000000024,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-11T07:30:00+00:00",
+    "entry_price": 0.9713,
+    "initial_stop": 0.972605,
+    "initial_risk": 0.0013050000000000006,
+    "tp1_opposite_boundary": 0.96706,
+    "tp2_5r": 0.964775,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-11 11:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_018",
+    "date": "2022-10-11",
+    "asian_high": 0.97228,
+    "asian_low": 0.96706,
+    "asian_range_A": 0.005220000000000002,
+    "asian_range_pips": 52.200000000000024,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-11T11:00:00+00:00",
+    "entry_price": 0.97159,
+    "initial_stop": 0.972895,
+    "initial_risk": 0.0013050000000000006,
+    "tp1_opposite_boundary": 0.96706,
+    "tp2_5r": 0.965065,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-11 11:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_019",
+    "date": "2022-10-11",
+    "asian_high": 0.97228,
+    "asian_low": 0.96706,
+    "asian_range_A": 0.005220000000000002,
+    "asian_range_pips": 52.200000000000024,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-11T12:45:00+00:00",
+    "entry_price": 0.97199,
+    "initial_stop": 0.973295,
+    "initial_risk": 0.0013050000000000006,
+    "tp1_opposite_boundary": 0.96706,
+    "tp2_5r": 0.965465,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-11 15:30:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_020",
+    "date": "2022-10-11",
+    "asian_high": 0.97228,
+    "asian_low": 0.96706,
+    "asian_range_A": 0.005220000000000002,
+    "asian_range_pips": 52.200000000000024,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-11T15:15:00+00:00",
+    "entry_price": 0.97212,
+    "initial_stop": 0.973425,
+    "initial_risk": 0.0013050000000000006,
+    "tp1_opposite_boundary": 0.96706,
+    "tp2_5r": 0.965595,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-11 15:30:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_021",
+    "date": "2022-10-11",
+    "asian_high": 0.97228,
+    "asian_low": 0.96706,
+    "asian_range_A": 0.005220000000000002,
+    "asian_range_pips": 52.200000000000024,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-11T18:45:00+00:00",
+    "entry_price": 0.9709,
+    "initial_stop": 0.972205,
+    "initial_risk": 0.0013050000000000006,
+    "tp1_opposite_boundary": 0.96706,
+    "tp2_5r": 0.964375,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "OPEN",
+    "resolution_reason": "MANAGEMENT_WINDOW_NOT_YET_RESOLVED",
+    "resolution_events": []
+  },
+  {
+    "occurrence_id": "ES_S3_022",
+    "date": "2022-10-12",
+    "asian_high": 0.97343,
+    "asian_low": 0.96826,
+    "asian_range_A": 0.005170000000000008,
+    "asian_range_pips": 51.700000000000074,
+    "direction": "LONG",
+    "sweep_time": "2022-10-12T14:15:00+00:00",
+    "entry_price": 0.96865,
+    "initial_stop": 0.9673575,
+    "initial_risk": 0.0012925000000000297,
+    "tp1_opposite_boundary": 0.97343,
+    "tp2_5r": 0.9751125000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-12 14:30:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_023",
+    "date": "2022-10-12",
+    "asian_high": 0.97343,
+    "asian_low": 0.96826,
+    "asian_range_A": 0.005170000000000008,
+    "asian_range_pips": 51.700000000000074,
+    "direction": "LONG",
+    "sweep_time": "2022-10-12T14:45:00+00:00",
+    "entry_price": 0.97013,
+    "initial_stop": 0.9688375,
+    "initial_risk": 0.0012925000000000297,
+    "tp1_opposite_boundary": 0.97343,
+    "tp2_5r": 0.9765925000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-12 16:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_024",
+    "date": "2022-10-12",
+    "asian_high": 0.97343,
+    "asian_low": 0.96826,
+    "asian_range_A": 0.005170000000000008,
+    "asian_range_pips": 51.700000000000074,
+    "direction": "LONG",
+    "sweep_time": "2022-10-12T16:30:00+00:00",
+    "entry_price": 0.96834,
+    "initial_stop": 0.9670475,
+    "initial_risk": 0.0012925000000000297,
+    "tp1_opposite_boundary": 0.97343,
+    "tp2_5r": 0.9748025000000001,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "OPEN",
+    "resolution_reason": "MANAGEMENT_WINDOW_NOT_YET_RESOLVED",
+    "resolution_events": []
+  },
+  {
+    "occurrence_id": "ES_S3_025",
+    "date": "2022-10-12",
+    "asian_high": 0.97343,
+    "asian_low": 0.96826,
+    "asian_range_A": 0.005170000000000008,
+    "asian_range_pips": 51.700000000000074,
+    "direction": "LONG",
+    "sweep_time": "2022-10-12T16:45:00+00:00",
+    "entry_price": 0.96837,
+    "initial_stop": 0.9670774999999999,
+    "initial_risk": 0.0012925000000000297,
+    "tp1_opposite_boundary": 0.97343,
+    "tp2_5r": 0.9748325000000001,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "OPEN",
+    "resolution_reason": "MANAGEMENT_WINDOW_NOT_YET_RESOLVED",
+    "resolution_events": []
+  },
+  {
+    "occurrence_id": "ES_S3_026",
+    "date": "2022-10-12",
+    "asian_high": 0.97343,
+    "asian_low": 0.96826,
+    "asian_range_A": 0.005170000000000008,
+    "asian_range_pips": 51.700000000000074,
+    "direction": "LONG",
+    "sweep_time": "2022-10-12T17:00:00+00:00",
+    "entry_price": 0.96851,
+    "initial_stop": 0.9672175,
+    "initial_risk": 0.0012925000000000297,
+    "tp1_opposite_boundary": 0.97343,
+    "tp2_5r": 0.9749725000000001,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "OPEN",
+    "resolution_reason": "MANAGEMENT_WINDOW_NOT_YET_RESOLVED",
+    "resolution_events": []
+  },
+  {
+    "occurrence_id": "ES_S3_027",
+    "date": "2022-10-13",
+    "asian_high": 0.97221,
+    "asian_low": 0.96887,
+    "asian_range_A": 0.0033400000000000096,
+    "asian_range_pips": 33.4000000000001,
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T07:00:00+00:00",
+    "entry_price": 0.96945,
+    "initial_stop": 0.968615,
+    "initial_risk": 0.0008350000000000302,
+    "tp1_opposite_boundary": 0.97221,
+    "tp2_5r": 0.9736250000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-13 07:30:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_028",
+    "date": "2022-10-13",
+    "asian_high": 0.97221,
+    "asian_low": 0.96887,
+    "asian_range_A": 0.0033400000000000096,
+    "asian_range_pips": 33.4000000000001,
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T07:15:00+00:00",
+    "entry_price": 0.96918,
+    "initial_stop": 0.968345,
+    "initial_risk": 0.0008350000000000302,
+    "tp1_opposite_boundary": 0.97221,
+    "tp2_5r": 0.9733550000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "resolution_reason": "RUNNER_TARGET_HIT",
+    "resolution_events": [
+      {
+        "time": "2022-10-13 09:00:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97221
+      },
+      {
+        "time": "2022-10-13 09:15:00+00:00",
+        "event": "RUNNER_TP2"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_029",
+    "date": "2022-10-13",
+    "asian_high": 0.97221,
+    "asian_low": 0.96887,
+    "asian_range_A": 0.0033400000000000096,
+    "asian_range_pips": 33.4000000000001,
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T07:30:00+00:00",
+    "entry_price": 0.96998,
+    "initial_stop": 0.9691449999999999,
+    "initial_risk": 0.0008350000000000302,
+    "tp1_opposite_boundary": 0.97221,
+    "tp2_5r": 0.9741550000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "resolution_reason": "RUNNER_TARGET_HIT",
+    "resolution_events": [
+      {
+        "time": "2022-10-13 09:00:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97221
+      },
+      {
+        "time": "2022-10-13 09:30:00+00:00",
+        "event": "RUNNER_TP2"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_030",
+    "date": "2022-10-13",
+    "asian_high": 0.97221,
+    "asian_low": 0.96887,
+    "asian_range_A": 0.0033400000000000096,
+    "asian_range_pips": 33.4000000000001,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-13T12:30:00+00:00",
+    "entry_price": 0.96488,
+    "initial_stop": 0.965715,
+    "initial_risk": 0.0008350000000000302,
+    "tp1_opposite_boundary": 0.96887,
+    "tp2_5r": 0.9607049999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "UNRESOLVED",
+    "resolution_reason": "SL_TP1_SAME_BAR_INTRABAR_ORDER_UNRESOLVED",
+    "resolution_events": [
+      {
+        "time": "2022-10-13 12:45:00+00:00",
+        "sl_hit": true,
+        "pt1_hit": true,
+        "tp2_hit": false
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_031",
+    "date": "2022-10-13",
+    "asian_high": 0.97221,
+    "asian_low": 0.96887,
+    "asian_range_A": 0.0033400000000000096,
+    "asian_range_pips": 33.4000000000001,
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T13:45:00+00:00",
+    "entry_price": 0.96944,
+    "initial_stop": 0.9686049999999999,
+    "initial_risk": 0.0008350000000000302,
+    "tp1_opposite_boundary": 0.97221,
+    "tp2_5r": 0.9736150000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-13 14:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_032",
+    "date": "2022-10-13",
+    "asian_high": 0.97221,
+    "asian_low": 0.96887,
+    "asian_range_A": 0.0033400000000000096,
+    "asian_range_pips": 33.4000000000001,
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T14:00:00+00:00",
+    "entry_price": 0.9696,
+    "initial_stop": 0.968765,
+    "initial_risk": 0.0008350000000000302,
+    "tp1_opposite_boundary": 0.97221,
+    "tp2_5r": 0.9737750000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-13 14:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_033",
+    "date": "2022-10-13",
+    "asian_high": 0.97221,
+    "asian_low": 0.96887,
+    "asian_range_A": 0.0033400000000000096,
+    "asian_range_pips": 33.4000000000001,
+    "direction": "LONG",
+    "sweep_time": "2022-10-13T14:30:00+00:00",
+    "entry_price": 0.96911,
+    "initial_stop": 0.968275,
+    "initial_risk": 0.0008350000000000302,
+    "tp1_opposite_boundary": 0.97221,
+    "tp2_5r": 0.9732850000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "resolution_reason": "RUNNER_TARGET_HIT",
+    "resolution_events": [
+      {
+        "time": "2022-10-13 14:45:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97221
+      },
+      {
+        "time": "2022-10-13 15:00:00+00:00",
+        "event": "RUNNER_TP2"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_034",
+    "date": "2022-10-13",
+    "asian_high": 0.97221,
+    "asian_low": 0.96887,
+    "asian_range_A": 0.0033400000000000096,
+    "asian_range_pips": 33.4000000000001,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-13T14:45:00+00:00",
+    "entry_price": 0.97181,
+    "initial_stop": 0.972645,
+    "initial_risk": 0.0008350000000000302,
+    "tp1_opposite_boundary": 0.96887,
+    "tp2_5r": 0.9676349999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-13 15:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_035",
+    "date": "2022-10-14",
+    "asian_high": 0.98082,
+    "asian_low": 0.97617,
+    "asian_range_A": 0.004650000000000043,
+    "asian_range_pips": 46.500000000000426,
+    "direction": "LONG",
+    "sweep_time": "2022-10-14T07:15:00+00:00",
+    "entry_price": 0.97624,
+    "initial_stop": 0.9750775,
+    "initial_risk": 0.0011624999999999552,
+    "tp1_opposite_boundary": 0.98082,
+    "tp2_5r": 0.9820524999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-14 08:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_036",
+    "date": "2022-10-14",
+    "asian_high": 0.98082,
+    "asian_low": 0.97617,
+    "asian_range_A": 0.004650000000000043,
+    "asian_range_pips": 46.500000000000426,
+    "direction": "LONG",
+    "sweep_time": "2022-10-14T07:30:00+00:00",
+    "entry_price": 0.97644,
+    "initial_stop": 0.9752775,
+    "initial_risk": 0.0011624999999999552,
+    "tp1_opposite_boundary": 0.98082,
+    "tp2_5r": 0.9822524999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-14 08:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_037",
+    "date": "2022-10-14",
+    "asian_high": 0.98082,
+    "asian_low": 0.97617,
+    "asian_range_A": 0.004650000000000043,
+    "asian_range_pips": 46.500000000000426,
+    "direction": "LONG",
+    "sweep_time": "2022-10-14T07:45:00+00:00",
+    "entry_price": 0.97677,
+    "initial_stop": 0.9756075,
+    "initial_risk": 0.0011625000000000663,
+    "tp1_opposite_boundary": 0.98082,
+    "tp2_5r": 0.9825825000000004,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-14 08:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_038",
+    "date": "2022-10-14",
+    "asian_high": 0.98082,
+    "asian_low": 0.97617,
+    "asian_range_A": 0.004650000000000043,
+    "asian_range_pips": 46.500000000000426,
+    "direction": "LONG",
+    "sweep_time": "2022-10-14T12:45:00+00:00",
+    "entry_price": 0.97732,
+    "initial_stop": 0.9761575,
+    "initial_risk": 0.0011624999999999552,
+    "tp1_opposite_boundary": 0.98082,
+    "tp2_5r": 0.9831324999999997,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-14 13:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_039",
+    "date": "2022-10-17",
+    "asian_high": 0.97561,
+    "asian_low": 0.97308,
+    "asian_range_A": 0.0025300000000000322,
+    "asian_range_pips": 25.30000000000032,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-17T07:30:00+00:00",
+    "entry_price": 0.97527,
+    "initial_stop": 0.9759025,
+    "initial_risk": 0.0006325000000000358,
+    "tp1_opposite_boundary": 0.97308,
+    "tp2_5r": 0.9721074999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_EXIT",
+    "resolution_reason": "RUNNER_STOPPED_AT_BREAKEVEN",
+    "resolution_events": [
+      {
+        "time": "2022-10-17 08:30:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97308
+      },
+      {
+        "time": "2022-10-17 09:15:00+00:00",
+        "event": "RUNNER_BE_STOP"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_040",
+    "date": "2022-10-17",
+    "asian_high": 0.97561,
+    "asian_low": 0.97308,
+    "asian_range_A": 0.0025300000000000322,
+    "asian_range_pips": 25.30000000000032,
+    "direction": "LONG",
+    "sweep_time": "2022-10-17T08:30:00+00:00",
+    "entry_price": 0.97351,
+    "initial_stop": 0.9728775,
+    "initial_risk": 0.0006325000000000358,
+    "tp1_opposite_boundary": 0.97561,
+    "tp2_5r": 0.9766725000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "resolution_reason": "RUNNER_TARGET_HIT",
+    "resolution_events": [
+      {
+        "time": "2022-10-17 09:15:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97561
+      },
+      {
+        "time": "2022-10-17 10:00:00+00:00",
+        "event": "RUNNER_TP2"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_041",
+    "date": "2022-10-17",
+    "asian_high": 0.97561,
+    "asian_low": 0.97308,
+    "asian_range_A": 0.0025300000000000322,
+    "asian_range_pips": 25.30000000000032,
+    "direction": "LONG",
+    "sweep_time": "2022-10-17T08:45:00+00:00",
+    "entry_price": 0.97386,
+    "initial_stop": 0.9732274999999999,
+    "initial_risk": 0.0006325000000000358,
+    "tp1_opposite_boundary": 0.97561,
+    "tp2_5r": 0.9770225000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "resolution_reason": "RUNNER_TARGET_HIT",
+    "resolution_events": [
+      {
+        "time": "2022-10-17 09:15:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97561
+      },
+      {
+        "time": "2022-10-17 10:00:00+00:00",
+        "event": "RUNNER_TP2"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_042",
+    "date": "2022-10-17",
+    "asian_high": 0.97561,
+    "asian_low": 0.97308,
+    "asian_range_A": 0.0025300000000000322,
+    "asian_range_pips": 25.30000000000032,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-17T09:15:00+00:00",
+    "entry_price": 0.97534,
+    "initial_stop": 0.9759725,
+    "initial_risk": 0.0006325000000000358,
+    "tp1_opposite_boundary": 0.97308,
+    "tp2_5r": 0.9721774999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-17 10:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_043",
+    "date": "2022-10-17",
+    "asian_high": 0.97561,
+    "asian_low": 0.97308,
+    "asian_range_A": 0.0025300000000000322,
+    "asian_range_pips": 25.30000000000032,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-17T09:30:00+00:00",
+    "entry_price": 0.97521,
+    "initial_stop": 0.9758425000000001,
+    "initial_risk": 0.0006325000000000358,
+    "tp1_opposite_boundary": 0.97308,
+    "tp2_5r": 0.9720474999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-17 10:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_044",
+    "date": "2022-10-17",
+    "asian_high": 0.97561,
+    "asian_low": 0.97308,
+    "asian_range_A": 0.0025300000000000322,
+    "asian_range_pips": 25.30000000000032,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-17T09:45:00+00:00",
+    "entry_price": 0.9753,
+    "initial_stop": 0.9759325,
+    "initial_risk": 0.0006325000000000358,
+    "tp1_opposite_boundary": 0.97308,
+    "tp2_5r": 0.9721374999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-17 10:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_045",
+    "date": "2022-10-17",
+    "asian_high": 0.97561,
+    "asian_low": 0.97308,
+    "asian_range_A": 0.0025300000000000322,
+    "asian_range_pips": 25.30000000000032,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-17T10:30:00+00:00",
+    "entry_price": 0.97501,
+    "initial_stop": 0.9756425000000001,
+    "initial_risk": 0.0006325000000000358,
+    "tp1_opposite_boundary": 0.97308,
+    "tp2_5r": 0.9718474999999999,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_EXIT",
+    "resolution_reason": "RUNNER_STOPPED_AT_BREAKEVEN",
+    "resolution_events": [
+      {
+        "time": "2022-10-17 12:00:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97308
+      },
+      {
+        "time": "2022-10-17 12:15:00+00:00",
+        "event": "RUNNER_BE_STOP"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_046",
+    "date": "2022-10-17",
+    "asian_high": 0.97561,
+    "asian_low": 0.97308,
+    "asian_range_A": 0.0025300000000000322,
+    "asian_range_pips": 25.30000000000032,
+    "direction": "LONG",
+    "sweep_time": "2022-10-17T12:00:00+00:00",
+    "entry_price": 0.97397,
+    "initial_stop": 0.9733375,
+    "initial_risk": 0.0006325000000000358,
+    "tp1_opposite_boundary": 0.97561,
+    "tp2_5r": 0.9771325000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "resolution_reason": "RUNNER_TARGET_HIT",
+    "resolution_events": [
+      {
+        "time": "2022-10-17 12:30:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97561
+      },
+      {
+        "time": "2022-10-17 12:45:00+00:00",
+        "event": "RUNNER_TP2"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_047",
+    "date": "2022-10-18",
+    "asian_high": 0.98726,
+    "asian_low": 0.98232,
+    "asian_range_A": 0.0049400000000000555,
+    "asian_range_pips": 49.40000000000055,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-18T07:00:00+00:00",
+    "entry_price": 0.98524,
+    "initial_stop": 0.986475,
+    "initial_risk": 0.0012349999999999861,
+    "tp1_opposite_boundary": 0.98232,
+    "tp2_5r": 0.9790650000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_EXIT",
+    "resolution_reason": "RUNNER_STOPPED_AT_BREAKEVEN",
+    "resolution_events": [
+      {
+        "time": "2022-10-18 10:45:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.98232
+      },
+      {
+        "time": "2022-10-18 12:30:00+00:00",
+        "event": "RUNNER_BE_STOP"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_048",
+    "date": "2022-10-18",
+    "asian_high": 0.98726,
+    "asian_low": 0.98232,
+    "asian_range_A": 0.0049400000000000555,
+    "asian_range_pips": 49.40000000000055,
+    "direction": "LONG",
+    "sweep_time": "2022-10-18T11:15:00+00:00",
+    "entry_price": 0.98359,
+    "initial_stop": 0.982355,
+    "initial_risk": 0.0012349999999999861,
+    "tp1_opposite_boundary": 0.98726,
+    "tp2_5r": 0.9897649999999999,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_EXIT",
+    "resolution_reason": "RUNNER_STOPPED_AT_BREAKEVEN",
+    "resolution_events": [
+      {
+        "time": "2022-10-18 13:30:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.98726
+      },
+      {
+        "time": "2022-10-18 14:15:00+00:00",
+        "event": "RUNNER_BE_STOP"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_049",
+    "date": "2022-10-18",
+    "asian_high": 0.98726,
+    "asian_low": 0.98232,
+    "asian_range_A": 0.0049400000000000555,
+    "asian_range_pips": 49.40000000000055,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-18T13:30:00+00:00",
+    "entry_price": 0.98655,
+    "initial_stop": 0.987785,
+    "initial_risk": 0.0012349999999999861,
+    "tp1_opposite_boundary": 0.98232,
+    "tp2_5r": 0.9803750000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_BE_ACTIVE",
+    "resolution_reason": "MANAGEMENT_WINDOW_NOT_YET_RESOLVED",
+    "resolution_events": [
+      {
+        "time": "2022-10-18 15:15:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.98232
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_050",
+    "date": "2022-10-18",
+    "asian_high": 0.98726,
+    "asian_low": 0.98232,
+    "asian_range_A": 0.0049400000000000555,
+    "asian_range_pips": 49.40000000000055,
+    "direction": "LONG",
+    "sweep_time": "2022-10-18T15:15:00+00:00",
+    "entry_price": 0.98235,
+    "initial_stop": 0.981115,
+    "initial_risk": 0.0012349999999999861,
+    "tp1_opposite_boundary": 0.98726,
+    "tp2_5r": 0.9885249999999999,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "OPEN",
+    "resolution_reason": "MANAGEMENT_WINDOW_NOT_YET_RESOLVED",
+    "resolution_events": []
+  },
+  {
+    "occurrence_id": "ES_S3_051",
+    "date": "2022-10-19",
+    "asian_high": 0.98669,
+    "asian_low": 0.98204,
+    "asian_range_A": 0.004649999999999932,
+    "asian_range_pips": 46.49999999999932,
+    "direction": "LONG",
+    "sweep_time": "2022-10-19T07:00:00+00:00",
+    "entry_price": 0.98212,
+    "initial_stop": 0.9809575,
+    "initial_risk": 0.0011624999999999552,
+    "tp1_opposite_boundary": 0.98669,
+    "tp2_5r": 0.9879324999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-19 09:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_052",
+    "date": "2022-10-19",
+    "asian_high": 0.98669,
+    "asian_low": 0.98204,
+    "asian_range_A": 0.004649999999999932,
+    "asian_range_pips": 46.49999999999932,
+    "direction": "LONG",
+    "sweep_time": "2022-10-19T07:15:00+00:00",
+    "entry_price": 0.98245,
+    "initial_stop": 0.9812875000000001,
+    "initial_risk": 0.0011624999999999552,
+    "tp1_opposite_boundary": 0.98669,
+    "tp2_5r": 0.9882624999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-19 08:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_053",
+    "date": "2022-10-19",
+    "asian_high": 0.98669,
+    "asian_low": 0.98204,
+    "asian_range_A": 0.004649999999999932,
+    "asian_range_pips": 46.49999999999932,
+    "direction": "LONG",
+    "sweep_time": "2022-10-19T08:15:00+00:00",
+    "entry_price": 0.98211,
+    "initial_stop": 0.9809475000000001,
+    "initial_risk": 0.0011624999999999552,
+    "tp1_opposite_boundary": 0.98669,
+    "tp2_5r": 0.9879224999999998,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-19 09:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_054",
+    "date": "2022-10-19",
+    "asian_high": 0.98669,
+    "asian_low": 0.98204,
+    "asian_range_A": 0.004649999999999932,
+    "asian_range_pips": 46.49999999999932,
+    "direction": "LONG",
+    "sweep_time": "2022-10-19T08:30:00+00:00",
+    "entry_price": 0.98303,
+    "initial_stop": 0.9818675,
+    "initial_risk": 0.0011624999999999552,
+    "tp1_opposite_boundary": 0.98669,
+    "tp2_5r": 0.9888424999999997,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-19 08:45:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_055",
+    "date": "2022-10-19",
+    "asian_high": 0.98669,
+    "asian_low": 0.98204,
+    "asian_range_A": 0.004649999999999932,
+    "asian_range_pips": 46.49999999999932,
+    "direction": "LONG",
+    "sweep_time": "2022-10-19T09:00:00+00:00",
+    "entry_price": 0.98208,
+    "initial_stop": 0.9809175,
+    "initial_risk": 0.0011624999999999552,
+    "tp1_opposite_boundary": 0.98669,
+    "tp2_5r": 0.9878924999999997,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-19 09:15:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_056",
+    "date": "2022-10-20",
+    "asian_high": 0.97942,
+    "asian_low": 0.97544,
+    "asian_range_A": 0.0039799999999999836,
+    "asian_range_pips": 39.799999999999834,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T07:00:00+00:00",
+    "entry_price": 0.97778,
+    "initial_stop": 0.978775,
+    "initial_risk": 0.0009949999999999681,
+    "tp1_opposite_boundary": 0.97544,
+    "tp2_5r": 0.9728050000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-20 07:45:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_057",
+    "date": "2022-10-20",
+    "asian_high": 0.97942,
+    "asian_low": 0.97544,
+    "asian_range_A": 0.0039799999999999836,
+    "asian_range_pips": 39.799999999999834,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T07:45:00+00:00",
+    "entry_price": 0.97868,
+    "initial_stop": 0.979675,
+    "initial_risk": 0.0009949999999999681,
+    "tp1_opposite_boundary": 0.97544,
+    "tp2_5r": 0.9737050000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-20 10:30:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_058",
+    "date": "2022-10-20",
+    "asian_high": 0.97942,
+    "asian_low": 0.97544,
+    "asian_range_A": 0.0039799999999999836,
+    "asian_range_pips": 39.799999999999834,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T13:15:00+00:00",
+    "entry_price": 0.97926,
+    "initial_stop": 0.980255,
+    "initial_risk": 0.0009949999999999681,
+    "tp1_opposite_boundary": 0.97544,
+    "tp2_5r": 0.9742850000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-20 14:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_059",
+    "date": "2022-10-20",
+    "asian_high": 0.97942,
+    "asian_low": 0.97544,
+    "asian_range_A": 0.0039799999999999836,
+    "asian_range_pips": 39.799999999999834,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T13:30:00+00:00",
+    "entry_price": 0.97901,
+    "initial_stop": 0.980005,
+    "initial_risk": 0.0009949999999999681,
+    "tp1_opposite_boundary": 0.97544,
+    "tp2_5r": 0.9740350000000002,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-20 14:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_060",
+    "date": "2022-10-20",
+    "asian_high": 0.97942,
+    "asian_low": 0.97544,
+    "asian_range_A": 0.0039799999999999836,
+    "asian_range_pips": 39.799999999999834,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T13:45:00+00:00",
+    "entry_price": 0.97859,
+    "initial_stop": 0.9795849999999999,
+    "initial_risk": 0.0009949999999999681,
+    "tp1_opposite_boundary": 0.97544,
+    "tp2_5r": 0.9736150000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-20 14:00:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_061",
+    "date": "2022-10-20",
+    "asian_high": 0.97942,
+    "asian_low": 0.97544,
+    "asian_range_A": 0.0039799999999999836,
+    "asian_range_pips": 39.799999999999834,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-20T17:00:00+00:00",
+    "entry_price": 0.97926,
+    "initial_stop": 0.980255,
+    "initial_risk": 0.0009949999999999681,
+    "tp1_opposite_boundary": 0.97544,
+    "tp2_5r": 0.9742850000000002,
+    "occurrence_classification": "SOURCE_RULE_DEPENDENT_UNRESOLVED",
+    "uncertainty_reasons": [
+      "NEW_ENTRY_CUTOFF_AMBIGUOUS"
+    ],
+    "resolution_state": "OPEN",
+    "resolution_reason": "MANAGEMENT_WINDOW_NOT_YET_RESOLVED",
+    "resolution_events": []
+  },
+  {
+    "occurrence_id": "ES_S3_062",
+    "date": "2022-10-21",
+    "asian_high": 0.97835,
+    "asian_low": 0.97618,
+    "asian_range_A": 0.0021700000000000053,
+    "asian_range_pips": 21.700000000000053,
+    "direction": "LONG",
+    "sweep_time": "2022-10-21T07:00:00+00:00",
+    "entry_price": 0.97672,
+    "initial_stop": 0.9761775,
+    "initial_risk": 0.0005425000000000013,
+    "tp1_opposite_boundary": 0.97835,
+    "tp2_5r": 0.9794325,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "resolution_reason": "RUNNER_TARGET_HIT",
+    "resolution_events": [
+      {
+        "time": "2022-10-21 07:15:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97835
+      },
+      {
+        "time": "2022-10-21 07:30:00+00:00",
+        "event": "RUNNER_TP2"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_063",
+    "date": "2022-10-21",
+    "asian_high": 0.97835,
+    "asian_low": 0.97618,
+    "asian_range_A": 0.0021700000000000053,
+    "asian_range_pips": 21.700000000000053,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-21T08:00:00+00:00",
+    "entry_price": 0.97811,
+    "initial_stop": 0.9786525,
+    "initial_risk": 0.0005425000000000013,
+    "tp1_opposite_boundary": 0.97618,
+    "tp2_5r": 0.9753975,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "RUNNER_TP2",
+    "resolution_reason": "RUNNER_TARGET_HIT",
+    "resolution_events": [
+      {
+        "time": "2022-10-21 08:30:00+00:00",
+        "event": "PARTIAL_FILL_CONFIRMED",
+        "leg_a_target": 0.97618
+      },
+      {
+        "time": "2022-10-21 08:45:00+00:00",
+        "event": "RUNNER_TP2"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_064",
+    "date": "2022-10-21",
+    "asian_high": 0.97835,
+    "asian_low": 0.97618,
+    "asian_range_A": 0.0021700000000000053,
+    "asian_range_pips": 21.700000000000053,
+    "direction": "LONG",
+    "sweep_time": "2022-10-21T08:30:00+00:00",
+    "entry_price": 0.97652,
+    "initial_stop": 0.9759775,
+    "initial_risk": 0.0005425000000000013,
+    "tp1_opposite_boundary": 0.97835,
+    "tp2_5r": 0.9792325000000001,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-21 08:45:00+00:00",
+        "event": "SL"
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_065",
+    "date": "2022-10-21",
+    "asian_high": 0.97835,
+    "asian_low": 0.97618,
+    "asian_range_A": 0.0021700000000000053,
+    "asian_range_pips": 21.700000000000053,
+    "direction": "LONG",
+    "sweep_time": "2022-10-21T13:15:00+00:00",
+    "entry_price": 0.97698,
+    "initial_stop": 0.9764375,
+    "initial_risk": 0.0005425000000000013,
+    "tp1_opposite_boundary": 0.97835,
+    "tp2_5r": 0.9796925,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "UNRESOLVED",
+    "resolution_reason": "SL_TP1_SAME_BAR_INTRABAR_ORDER_UNRESOLVED",
+    "resolution_events": [
+      {
+        "time": "2022-10-21 13:30:00+00:00",
+        "sl_hit": true,
+        "pt1_hit": true,
+        "tp2_hit": false
+      }
+    ]
+  },
+  {
+    "occurrence_id": "ES_S3_066",
+    "date": "2022-10-21",
+    "asian_high": 0.97835,
+    "asian_low": 0.97618,
+    "asian_range_A": 0.0021700000000000053,
+    "asian_range_pips": 21.700000000000053,
+    "direction": "SHORT",
+    "sweep_time": "2022-10-21T14:15:00+00:00",
+    "entry_price": 0.97768,
+    "initial_stop": 0.9782225,
+    "initial_risk": 0.0005425000000000013,
+    "tp1_opposite_boundary": 0.97618,
+    "tp2_5r": 0.9749675,
+    "occurrence_classification": "SOURCE_DETERMINISTIC",
+    "uncertainty_reasons": [],
+    "resolution_state": "STOPPED_FULL_POSITION",
+    "resolution_reason": "INITIAL_STOP_HIT_BEFORE_PARTIAL",
+    "resolution_events": [
+      {
+        "time": "2022-10-21 14:30:00+00:00",
+        "event": "SL"
+      }
+    ]
+  }
+]

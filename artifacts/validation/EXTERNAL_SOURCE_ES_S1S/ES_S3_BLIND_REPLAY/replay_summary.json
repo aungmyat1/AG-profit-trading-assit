@@ -1,0 +1,43 @@
+{
+  "strategy_id": "ST_SESSION_TRADING_SOURCE_V1",
+  "strategy_version": "0.1.0",
+  "component": "SWEEP",
+  "dataset_path": "D:\\ddev\\AG profit trading\\.claude\\worktrees\\ssc1d-ext-r1\\artifacts\\validation\\ST_SESSION_SWEEP_CONTINUATION_V1\\EXT_R2B1_M15_REDUCED_PRECISION_PACKAGE\\derived\\EURUSD_M15_UTC_20221003_20221021_native_normalized.csv",
+  "dataset_hash": "b7ae5c458812107fbf3843f5f5e259b0ed14069c1906370d050330a1605af34e",
+  "dataset_actual_first_timestamp": "2022-10-02T21:00:00+00:00",
+  "dataset_actual_last_timestamp": "2022-10-21T20:45:00+00:00",
+  "dataset_total_rows": 1440,
+  "replay_period_requested": "2022-10-03..2022-10-21",
+  "total_calendar_days_in_period": 19,
+  "days_with_asian_range": 15,
+  "days_without_asian_range": 4,
+  "total_structural_events": 68,
+  "total_valid_sweep_events": 66,
+  "total_dual_side_ambiguous_events": 2,
+  "total_occurrences": 66,
+  "partition_A_source_deterministic_count": 58,
+  "partition_B_source_rule_dependent_unresolved_count": 8,
+  "partition_C_dual_side_sweep_ambiguous_count": 2,
+  "partition_C_intrabar_order_unresolved_count": 2,
+  "partition_D_days_with_range_but_no_valid_sweep": 1,
+  "resolution_state_counts": {
+    "RUNNER_BE_EXIT": 5,
+    "OPEN": 9,
+    "STOPPED_FULL_POSITION": 39,
+    "RUNNER_TP2": 10,
+    "UNRESOLVED": 2,
+    "RUNNER_BE_ACTIVE": 1
+  },
+  "direction_distribution": {
+    "LONG": 36,
+    "SHORT": 30
+  },
+  "descriptive_gross_R_subset": "SOURCE_DETERMINISTIC only, fully-resolved terminal states only (STOPPED_FULL_POSITION, RUNNER_TP2, RUNNER_BE_EXIT)",
+  "descriptive_gross_R_n": 51,
+  "descriptive_gross_R_sum": 11.945610931286303,
+  "descriptive_gross_R_excluded_undefined_count": 7,
+  "label": "BENCHMARK_REPLICATION_DESCRIPTIVE_ONLY",
+  "friction_status": "UNAVAILABLE_FOR_SOURCE_BENCHMARK",
+  "benchmark_reference_table_opened": false,
+  "benchmark_outcomes_consumed": false
+}
