@@ -47,10 +47,10 @@ def test_non_pass_status_blocks_further_gates(blocking_status):
 
 
 def test_describe_state_reads_real_registry_for_known_strategy():
-    """Uses the real repository registry -- ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.0 is
+    """Uses the real repository registry -- ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.1 is
     OFFLINE_RESEARCH there today (config/governance/strategy_lifecycle.yaml)."""
     summary = describe_validation_gate_state(
-        "ST_SESSION_SWEEP_CONTINUATION_V1", "1.0.0", "HYP_002_SETUP_SELECTIVITY",
+        "ST_SESSION_SWEEP_CONTINUATION_V1", "1.0.1", "HYP_002_SETUP_SELECTIVITY",
         {"G1": _result("G1", GateStatus.PASS), "G2": _result("G2", GateStatus.PASS),
          "G3": _result("G3", GateStatus.FAIL)},
         repo_root=REPO_ROOT,
@@ -70,13 +70,24 @@ def test_missing_svos_authority_fails_closed():
         )
 
 
+def test_stale_ssc_version_fails_closed_post_v1_0_1_rollover():
+    """SSC_V1_0_1_VERSION_ROLLOVER WP4: the registry now records semantic_version
+    1.0.1 for ST_SESSION_SWEEP_CONTINUATION_V1 -- a caller still asking about the
+    pre-rollover 1.0.0 identity must be refused, never silently matched, proving the
+    version-mismatch fail-closed boundary held through the rollover."""
+    with pytest.raises(LifecycleRegistryError):
+        describe_validation_gate_state(
+            "ST_SESSION_SWEEP_CONTINUATION_V1", "1.0.0", None, {}, repo_root=REPO_ROOT,
+        )
+
+
 def test_describe_state_never_writes_to_lifecycle_registry_file():
     """Adversarial: calling this function must never mutate
     config/governance/strategy_lifecycle.yaml -- AG gate evidence cannot promote SVOS."""
     registry_path = os.path.join(REPO_ROOT, "config", "governance", "strategy_lifecycle.yaml")
     before = os.path.getmtime(registry_path)
     describe_validation_gate_state(
-        "ST_SESSION_SWEEP_CONTINUATION_V1", "1.0.0", None,
+        "ST_SESSION_SWEEP_CONTINUATION_V1", "1.0.1", None,
         {"G0": _result("G0", GateStatus.PASS)}, repo_root=REPO_ROOT,
     )
     after = os.path.getmtime(registry_path)
@@ -88,6 +99,6 @@ def test_describe_state_does_not_advance_svos_stage_regardless_of_gate_evidence(
     -- it always reflects the real registry value, independent of AG gate results."""
     all_pass = {name: _result(name, GateStatus.PASS) for name in ("G0", "G1", "G2", "G3")}
     summary = describe_validation_gate_state(
-        "ST_SESSION_SWEEP_CONTINUATION_V1", "1.0.0", None, all_pass, repo_root=REPO_ROOT,
+        "ST_SESSION_SWEEP_CONTINUATION_V1", "1.0.1", None, all_pass, repo_root=REPO_ROOT,
     )
     assert summary.svos_lifecycle_stage == LifecycleStage.OFFLINE_RESEARCH

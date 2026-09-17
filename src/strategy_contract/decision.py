@@ -70,6 +70,7 @@ from typing import Any, Dict, Optional
 
 from large_smc_research.decision import LargeSMCResearchDecision
 from post_asian_pilot.decision import PostAsianDecision
+from session_sweep_continuation import STRATEGY_VERSION as SSC_STRATEGY_VERSION
 from session_sweep_continuation.replay import ReplayResult
 from strategy_engine.sweep_retest.models import SetupState, TERMINAL_STATES
 from strategy_contract.market_snapshot import MarketSnapshot
@@ -244,15 +245,16 @@ def from_large_smc_decision(
 def from_session_sweep_continuation_replay(
     replay_result: ReplayResult,
     observations: Optional[list] = None,
-    strategy_version: str = "1.0.0",
+    strategy_version: str = SSC_STRATEGY_VERSION,
 ) -> StrategyDecision:
     """ST_SESSION_SWEEP_CONTINUATION_V1 (research-only; OFFLINE_RESEARCH lifecycle
     stage, no demo/live authorization). ReplayResult is one full decision-cycle
     (symbol x session_pair x trading_date) outcome from session_sweep_continuation.
     replay.run_replay -- unlike PostAsianDecision/SetupState/LargeSMCResearchDecision,
-    it carries no strategy_version field of its own (see session_sweep_continuation.
-    STRATEGY_VERSION), so the caller supplies it (defaulting to the current frozen
-    "1.0.0"); it is never invented per-call.
+    it carries no strategy_version field of its own, so the caller supplies it
+    (defaulting to session_sweep_continuation.STRATEGY_VERSION, the current canonical
+    version -- v1.0.1 as of the SSC_V1_0_1_VERSION_ROLLOVER mission); it is never
+    invented per-call.
 
     `observations` (optional): the canonical MarketObservation[] this cycle's shadow
     path produced (session_sweep_continuation.canonical_consumer.

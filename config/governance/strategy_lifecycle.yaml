@@ -33,5 +33,5 @@ strategies:
     lifecycle_stage: FORWARD_RESEARCH
 
   ST_SESSION_SWEEP_CONTINUATION_V1:
-    semantic_version: "1.0.0"
+    semantic_version: "1.0.1"
     lifecycle_stage: OFFLINE_RESEARCH

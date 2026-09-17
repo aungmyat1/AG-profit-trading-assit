@@ -1,0 +1,11 @@
+# SWEEP_M15_AMBIGUITY_AUDIT
+
+| Scenario | Classification | Provenance |
+|---|---|---|
+| Entry + SL touched in same M15 candle | EXPLICITLY_UNRESOLVED (structural, not a resolver gap) | The sweep candle itself, by construction, has already touched the wick extreme (`candle.high`/`candle.low`, `setups.py:129,139`) that becomes `stop_reference` before its own close becomes the entry price. This is an inherent structural characteristic of the sweep setup, not a resolver ambiguity — flagged for visibility, not treated as a defect. |
+| Entry + TP touched in same M15 candle | UNHANDLED — not addressed in any code path examined this pass | No explicit check found for the entry candle itself reaching TP1/TP2 intrabar. Not fixed in this mission (out of scope). |
+| SL + TP1 (opposite-boundary partial) touched in same later M15 candle | EXPLICITLY_UNRESOLVED | `scripts/resolve_forward_shadow_outcomes.py:319-326`: classified `AMBIGUOUS_SEQUENCE`, explicit comment *"true intrabar order cannot be established at this granularity"* — never assumes an order. |
+| Partial boundary (TP1) + runner BE-stop touched in same candle | EXPLICITLY_UNRESOLVED | `scripts/resolve_forward_shadow_outcomes.py:371-378`: same `AMBIGUOUS_SEQUENCE` treatment for the BE-vs-TP2 runner leg. |
+| Partial boundary (TP1) + runner TP2 touched in same candle | EXPLICITLY_UNRESOLVED | Same mechanism as above (`resolve_forward_shadow_outcomes.py:371-378`) covers this leg's ambiguity generally; not independently re-verified line-by-line for this exact sub-case in this pass. |
+
+**Comparison to source:** the external source chat log's own backtesting agent adopted a "conservative stop-first" assumption for same-bar collisions (S0 rule #18, `MISSING` from any actual presenter/video statement — an implementation choice of the *chat log's own* backtester). This repository's owner-signed resolver for this exact strategy takes the opposite, stricter approach (`AMBIGUOUS_SEQUENCE`, no assumed order). **No hidden optimistic/pessimistic sequencing was found in the repository's own resolver** — the one open item (entry+TP same-candle) is UNHANDLED (absent), not silently assumed in either direction. Not fixed in this mission, per instructions.

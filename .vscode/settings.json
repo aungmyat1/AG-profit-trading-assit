@@ -22,8 +22,12 @@
     "**/.git",
     "**/artifacts/**",
     "**/.claude/worktrees/**",
-    "**/web/dist/**"
+    "**/web/dist/**",
+    "**/journal/**",
+    "**/research_external/**",
+    "**/state/**"
   ],
+  "python.analysis.diagnosticMode": "openFilesOnly",
   "files.watcherExclude": {
     "**/.git/objects/**": true,
     "**/.git/subtree-cache/**": true,

@@ -40,10 +40,10 @@ from validation_framework.models import GateResult, GateStatus  # noqa: E402
 from validation_framework.svos_contracts import HoldoutState  # noqa: E402
 from validation_framework.svos_context_export import build_svos_context, write_svos_context  # noqa: E402
 from validation_framework.validation_gate_state import describe_validation_gate_state  # noqa: E402
+from session_sweep_continuation import STRATEGY_VERSION  # noqa: E402
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 STRATEGY_ID = "ST_SESSION_SWEEP_CONTINUATION_V1"
-STRATEGY_VERSION = "1.0.0"
 
 
 def _git(*args: str) -> str:

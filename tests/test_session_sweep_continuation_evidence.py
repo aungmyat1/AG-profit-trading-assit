@@ -72,7 +72,7 @@ def test_canonical_record_includes_required_identity_fields():
                   "config_hash", "dataset_hash", "git_commit"):
         assert field in d, field
     assert d["strategy_id"] == "ST_SESSION_SWEEP_CONTINUATION_V1"
-    assert d["version"] == "1.0.0"
+    assert d["version"] == "1.0.1"  # session_sweep_continuation.STRATEGY_VERSION, post SSC_V1_0_1 rollover
     assert d["demo_eligible"] is False
     assert d["demo_authorized"] is False
     assert d["lifecycle_stage"] == "OFFLINE_RESEARCH"

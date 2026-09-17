@@ -1,0 +1,17 @@
+{
+  "campaign_id": "LSMC_EURUSD_FRICTION_WP3A1_V1",
+  "day": "2026-09-16",
+  "maximum_pips": 1.4999999999987246,
+  "mean_pips": 1.359166666666393,
+  "median_pips": 1.3999999999980695,
+  "minimum_pips": 1.2999999999996348,
+  "missing_sample_count": 0,
+  "p75_pips": 1.40000000000029,
+  "p90_pips": 1.40000000000029,
+  "p95_pips": 1.40000000000029,
+  "p99_pips": 1.40000000000029,
+  "raw_rows_hash": "92b1a83190d0bf9ae8465b57b1c6a63e03fb952a98228aefa661683f0a6500e7",
+  "sample_count": 120,
+  "total_scheduled": 120,
+  "window_id": "WINDOW_D_LONDON_NEWYORK"
+}

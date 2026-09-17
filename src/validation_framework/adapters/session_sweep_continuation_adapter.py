@@ -26,7 +26,7 @@ from validation_framework.models import (
 )
 
 STRATEGY_ID = "ST_SESSION_SWEEP_CONTINUATION_V1"
-SEMANTIC_VERSION = "1.0.0"
+SEMANTIC_VERSION = "1.0.1"
 EVALUATOR_VERSION = "AG_EGSVF_V1"
 
 
