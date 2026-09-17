@@ -1,0 +1,67 @@
+# OWNER-APPROVED symbol-metadata manifest for GBPUSD_H1_202501020000_202607310000.csv.
+#
+# Authorized 2026-09-14 (ST_SESSION_SWEEP_CONTINUATION_V1 / GEN_002A pre-generation
+# gate, explicit owner decision recorded in-task: "GBPUSD symbol-metadata admission is
+# AUTHORIZED... Obtain the authoritative GBPUSD value from the project's EXISTING
+# Vantage/MT5 symbol-metadata path... do not invent a value"). This is a SEPARATE,
+# GBPUSD-specific approval -- it does not reuse or extend EURUSD_H1_symbol_metadata.yaml's
+# own approval (2026-09-11), each manifest's authorization is scoped to its own ONE
+# dataset file only, same convention as that file.
+#
+# Mechanism (identical to EURUSD_H1_symbol_metadata.yaml, unchanged): this repository's
+# strategy-neutral historical_replay/symbol_metadata_manifest.py's
+# HistoricalSymbolMetadataManifest, consumed via historical_replay/data_source_patch.py's
+# historical_data_context(..., symbol_metadata_manifest=...), which redirects
+# market_structure.tiers.analyze_structure_tiers's tick_size lookup away from live MT5
+# during historical replay (session_sweep_continuation.h1_bias.resolve_h1_market_bias's
+# consumer). No new resolver, schema, or analyzer was needed or written.
+#
+# tick_size PROVENANCE -- genuinely sourced, not copied from EURUSD's number or assumed
+# from price decimals (this module's own "never guess" contract, and this task's
+# explicit instruction not to just reuse EURUSD's value):
+#
+#   Two INDEPENDENT live, read-only MT5 `symbol_info()` captures of this repo's own
+#   connected broker (VantageMarkets-Demo, account.login 25972746), on two different
+#   dates, both documented in already-committed status docs before this task began:
+#
+#   1. docs/status/AG_TRADE_ASSISTANT_V1_0_3_MT5_DATA_READINESS_AND_PREFLIGHT_CLOSURE_STATUS.md
+#      (2026-09-03, capture time 2026-09-02): via mt5.symbol_resolver.get_symbol_meta
+#      (metadata_source=EXCHANGE_VERIFIED) --
+#      "symbol_metadata = tick_size=1e-05, contract_size=100000.0, volume_min=0.01,
+#      volume_max=100.0, volume_step=0.01, digits=5" for GBPUSD.
+#   2. docs/status/AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_E1_STATUS.md
+#      (2026-09-07, direct mt5.symbol_info() read-only audit) --
+#      "GBPUSD: digits=5, point=1e-05, trade_contract_size=100000.0, tick_value=1.0,
+#      currency_margin=GBP".
+#
+#   Both captures independently agree: digits=5, point=1e-05, trade_tick_size=1e-05,
+#   trade_contract_size=100000.0. Per src/mt5/symbol_resolver.py::get_symbol_meta, the
+#   `SymbolMeta.tick_size` field this manifest's schema authorizes is mapped 1:1 from
+#   MT5's own `info.trade_tick_size` (`tick_size=float(info.trade_tick_size)` --
+#   verified directly from that function's source, not assumed) -- i.e. exactly the
+#   `tick_size=1e-05` value capture #1 reports. tick_size = 0.00001 is therefore this
+#   GBPUSD broker record's actual authoritative trade_tick_size, corroborated twice,
+#   not a guess and not a same-family assumption -- it happens to equal EURUSD's own
+#   value only because both are standard 5-digit-quoted FX pairs on the same broker,
+#   which the mapping above confirms rather than presumes.
+#
+# Distinct from config/historical_datasets/GBPUSD_H1_202501020000_202607310000.yaml
+# (same directory, same dataset_id prefix) -- that file is the DATA-QUALITY/timezone
+# readiness manifest (market_data_readiness.scanner schema); this file is the SEPARATE
+# symbol-metadata/tick_size manifest schema (historical_replay/symbol_metadata_manifest.py's
+# schema) that analyze_structure_tiers actually consumes. Named with a "_symbol_metadata"
+# suffix specifically to avoid colliding with that other manifest.
+
+dataset_id: GBPUSD_H1_202501020000_202607310000
+symbol: GBPUSD
+tick_size: 0.00001
+metadata_scope: HISTORICAL_ANALYSIS_ONLY
+authority: OWNER_APPROVED_DATASET_MANIFEST
+approval_date: "2026-09-14"
+# sha256 of the exact source file -- reused verbatim from the already-admitted
+# config/historical_datasets/GBPUSD_H1_202501020000_202607310000.yaml data-quality
+# manifest's own dataset_fingerprint (not recomputed independently here, per this
+# task's instruction to reuse the already-admitted hash), and independently
+# re-verified byte-for-byte against the live D:\ file in this same task:
+dataset_fingerprint: "sha256:a82275bcf8db245440c6f4cd15bb69ab54b7f8677025410910c913a82bcefe9e"
+source_file: "D:\\GBPUSD_H1_202501020000_202607310000.csv"

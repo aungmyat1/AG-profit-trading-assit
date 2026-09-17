@@ -307,6 +307,13 @@ def _to_canonical_proposal_response(envelope) -> CanonicalProposalResponse:
         version=envelope.version,
         correction_of=envelope.correction_of,
         reasons=list(envelope.reasons),
+        economic_edge_established=envelope.economic_edge_established,
+        demo_eligible=envelope.demo_eligible,
+        demo_authorized=envelope.demo_authorized,
+        live_authorized=envelope.live_authorized,
+        proposal_only=envelope.proposal_only,
+        broker_mutation_blocked=envelope.broker_mutation_blocked,
+        lifecycle_stage=envelope.lifecycle_stage,
     )
 
 

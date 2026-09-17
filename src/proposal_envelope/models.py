@@ -62,6 +62,17 @@ PROPOSAL_STATES = frozenset({
     PROPOSAL_READY, PROPOSAL_INVALIDATED, PROPOSAL_EXPIRED, PROPOSAL_BLOCKED,
 })
 
+# V1.2 (AG_MULTI_STRATEGY_PROPOSAL_AND_WATCH_READINESS_V1_2): NOT a new proposal_state --
+# PROPOSAL_STATES is a frozen contract (see
+# tests/test_proposal_envelope_models.py::test_proposal_states_match_source_plan_vocabulary_exactly)
+# and is never widened. A watcher occurrence with genuine market evidence but incomplete
+# deterministic trade geometry (e.g. ST_LARGE_SMC_V1 states short of RESEARCH_QUALIFIED)
+# uses the existing PROPOSAL_INCOMPLETE state, tagged with this evidence-level marker in
+# setup_evidence["platform_state"] so a reader can distinguish "no strategy decision
+# exists yet" from "a strategy decision exists but a required field is missing" without
+# a second competing state vocabulary.
+PLATFORM_STATE_WATCH_DETECTED = "WATCH_DETECTED"
+
 # --------------------------------------------------------------------- execution_authority
 AUTHORITY_NONE = "NONE"
 AUTHORITY_DEMO_ELIGIBLE = "DEMO_ELIGIBLE"
@@ -198,6 +209,28 @@ class CanonicalProposal:
     # producer exists anywhere in this repo (checked: every existing git_commit field in
     # src/ is itself an unpopulated passthrough). Left None; a future provenance task may
     # establish one. Never a subprocess git call, CI guess, or hardcoded value.
+
+    # ---- governance/lifecycle (AG_MULTI_STRATEGY_PROPOSAL_AND_WATCH_READINESS_V1_2) ----
+    # Additive only -- every existing adapter (fx/btc/large_smc) keeps producing valid
+    # records unchanged, since every field here defaults to the same fail-closed value a
+    # pre-V1.2 caller already implied structurally (proposal_only/no execution authority).
+    # None of these are promotion decisions: they are read from existing authorities
+    # (validation_framework.lifecycle_registry, strategies/registry.yaml, the strategy's
+    # own YAML) by proposal_envelope.strategy_authority.resolve_strategy_authority, never
+    # invented or inferred here.
+    economic_edge_established: bool = False  # no such authority/field exists anywhere in
+    # this repo to read a True value from -- stays False until one is established.
+    demo_eligible: bool = False
+    demo_authorized: bool = False
+    live_authorized: bool = False
+    proposal_only: bool = True
+    execution_eligible: bool = False  # mirrors src/api/app.py's own hardcoded-False
+    # execution_eligible on CanonicalProposalResponse -- this field makes that same
+    # invariant visible on the persisted envelope itself, not just the API DTO.
+    broker_mutation_blocked: bool = True
+    lifecycle_stage: Optional[str] = None  # from config/governance/strategy_lifecycle.yaml
+    # via lifecycle_registry.get_lifecycle_stage() -- None only if that registry has no
+    # entry for this strategy_id/version (fail-closed absence, never guessed).
 
 
 def blocked_envelope(*, source_module: str, source_record_id: str, symbol: str = "",

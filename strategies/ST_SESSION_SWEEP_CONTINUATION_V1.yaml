@@ -19,7 +19,7 @@
 strategy_id: ST_SESSION_SWEEP_CONTINUATION_V1
 strategy_name: Session Sweep Continuation
 strategy_family: Liquidity_Sweep_Continuation
-version: 1.0.0
+version: 1.0.1
 lifecycle_stage: OFFLINE_RESEARCH
 demo_eligible: false
 demo_authorized: false

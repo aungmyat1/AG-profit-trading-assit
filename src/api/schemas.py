@@ -204,6 +204,17 @@ class CanonicalProposalResponse(BaseModel):
     version: int
     correction_of: Optional[str] = None
     reasons: List[str] = []
+    # V1.2 (AG_MULTI_STRATEGY_PROPOSAL_AND_WATCH_READINESS_V1_2): additive governance
+    # fields, mirrored verbatim from CanonicalProposal -- default values match this
+    # surface's own pre-existing execution_eligible=False fail-closed posture, so every
+    # response already served before this field set existed stays valid.
+    economic_edge_established: bool = False
+    demo_eligible: bool = False
+    demo_authorized: bool = False
+    live_authorized: bool = False
+    proposal_only: bool = True
+    broker_mutation_blocked: bool = True
+    lifecycle_stage: Optional[str] = None
 
 
 class TicketResponse(BaseModel):
