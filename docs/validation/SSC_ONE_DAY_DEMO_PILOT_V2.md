@@ -221,6 +221,36 @@ NEXT_SAFE_ACTION                 = owner (or governed successor process) must fi
                                     not once for the whole pilot
 ```
 
+### 6.1.1 Owner adjudication (2026-09-18) — SSC1D-H1/H2 acceptance rule frozen
+
+The owner has adjudicated the gap above for the two admitted hypotheses (SSC1D-H1, SSC1D-H2).
+Full detail, threshold provenance, and the deterministic rule engine are frozen in
+`artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC1D_PILOT/SSC1D_SECTION_6_1_ACCEPTANCE_RULES/SSC1D_SECTION_6_1_acceptance_rules.json`,
+preregistered before any SSC1D-H1/H2 candidate is generated or replayed (zero candidates
+consumed by this freeze). Owner policy values: `NET_EXPECTANCY_FLOOR > 0.0R`,
+`NET_PF_FLOOR > 1.0`, `MIN_TREATMENT_N = 20` (hypothesis-level; distinct from and does not
+replace `performance_attribution.min_sample_size=10`). The existing WP1 candidate-retention
+safeguard (`SSC1D_WP1_optimization_objective_freeze.json`, ≈70% of baseline N) and the frozen
+WP4A mechanism-specific falsification conditions (`SSC1D_WP4A_hypothesis_1_...json`,
+`SSC1D_WP4A_hypothesis_2_...json`) remain independent, unmodified, additional gates.
+
+Per-hypothesis decision table (evaluated independently per hypothesis; a candidate slot is
+consumed the moment outcome information is exposed, per the budget-accounting rule below):
+
+| State | Condition |
+|---|---|
+| `INVALID_PRE_EVALUATION` | Candidate rejected before any outcome/performance information is exposed (schema/config invalid, duplicate, contract violation, dataset unavailable, preflight/infra failure — all pre-replay). Budget slot **not** consumed. |
+| `INVALID_EXPERIMENT` | Outcome information exposed, but the experiment itself was not legitimately evaluated (e.g. comparability/contract violation or data-integrity fault discovered only after outcome computation). Budget slot consumed. |
+| `INSUFFICIENT_EVIDENCE` | Outcome exposed, but `treatment_N < 20`. Budget slot consumed. |
+| `FAIL` | Outcome exposed, `treatment_N >= 20`, but any mandatory gate fails: WP1 retention safeguard (where applicable), `net_expectancy_R <= 0`, `net_PF <= 1`, the hypothesis's own mechanism/falsification gate, or the comparability/contract gate. Budget slot consumed. |
+| `PASS` | Outcome exposed, `treatment_N >= 20`, WP1 retention safeguard passes (where applicable), `net_expectancy_R > 0`, `net_PF > 1`, mechanism gate passes, comparability gate passes. Does not by itself terminate search if required robustness evidence is incomplete. Budget slot consumed. |
+| `TARGET_REACHED` | All PASS-level gates hold **and** required neighbor-parameter robustness passes. Budget slot consumed. |
+| `TARGET_REACHED_BLOCKED_PENDING_ROBUSTNESS_PREREGISTRATION` | All PASS-level gates hold, but the operational neighbor-parameter robustness test itself is not preregistered anywhere for H1/H2 (only the principle is, in `SSC1D_WP1_optimization_objective_freeze.json`). PASS may still be reached independently of this. Budget slot consumed. |
+
+Rule-engine unit tests (synthetic fixtures only): `tests/test_ssc1d_section_6_1_acceptance_rules.py`.
+Next required gate before any SSC1D-H1/H2 candidate execution: **independent §6.1 audit**
+(see the acceptance-rules artifact's `next_gate` field).
+
 ---
 
 ## 7. P6 — Candidate ledger (schema)

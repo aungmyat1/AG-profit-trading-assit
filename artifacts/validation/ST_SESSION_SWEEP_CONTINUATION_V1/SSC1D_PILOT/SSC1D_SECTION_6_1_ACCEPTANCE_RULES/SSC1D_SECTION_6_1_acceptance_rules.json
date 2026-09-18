@@ -1,0 +1,131 @@
+{
+  "schema": "AG_SSC1D_SECTION_6_1_ACCEPTANCE_RULES_V1",
+  "pilot_id": "SSC_ONE_DAY_OPTIMIZATION_PILOT_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "work_package": "SSC1D-WP4A-SECTION-6.1",
+  "frozen_utc": "2026-09-18",
+  "purpose": "Owner-adjudicated per-hypothesis PASS/FAIL/TARGET_REACHED acceptance rule for SSC1D-H1 and SSC1D-H2, required by docs/validation/SSC_ONE_DAY_DEMO_PILOT_V2.md section 6.1 (TARGET_REACHED_DEFINITION_STATUS = OWNER_TARGET_DEFINITION_REQUIRED) before either hypothesis's candidates may be backtested. This artifact is PREREGISTERED BEFORE any SSC1D-H1/H2 candidate is generated, replayed, or observed. Zero candidates have been executed to produce this freeze.",
+
+  "non_retroactivity_notice": "This artifact governs SSC1D-H1/H2 acceptance from this timestamp forward only. It does NOT retroactively apply to, reinterpret, or amend WP0-WP4A artifacts, which remain exactly as originally frozen. Historical WP1/WP2/WP3/WP4A files are read-only inputs here, unmodified.",
+
+  "owner_adjudication_reference": "Owner adjudicated four previously-blocking policy gaps (D1 economic floor, D2 minimum treatment N, D3 PASS/FAIL/TARGET_REACHED semantics, D4 candidate budget accounting) on 2026-09-18, communicated directly to this work package. Recorded verbatim below as OWNER_POLICY_VALUE thresholds -- none of these values previously existed anywhere in canonical governance (confirmed absent from docs/validation/AG_ACCELERATED_VALIDATION_PLAN_V1.md's prohibition on inventing universal thresholds; these are hypothesis-scoped, owner-set, and dated, not an invented universal metric).",
+
+  "threshold_provenance": {
+    "NET_EXPECTANCY_FLOOR": {
+      "value": "> 0.0 R (strict)",
+      "source": "OWNER_ADJUDICATION",
+      "classification": "OWNER_POLICY_VALUE",
+      "dated": "2026-09-18",
+      "metric_definition": "net_expectancy_R as computed by src/performance/calculator.py:compute_trade_metrics (net_total_R / N over resolved occurrences with non-null net_R) -- same canonical formula already used for SSC1D_BASELINE_anchor.json's expectancy_R_net=-0.1896 and for every WP2/WP3 measurement in this pilot. No new formula is introduced."
+    },
+    "NET_PF_FLOOR": {
+      "value": "> 1.0 (strict)",
+      "source": "OWNER_ADJUDICATION",
+      "classification": "OWNER_POLICY_VALUE",
+      "dated": "2026-09-18",
+      "metric_definition": "net_PF = sum(net_R for net_R > 0) / abs(sum(net_R for net_R < 0)) over resolved occurrences; UNDEFINED_NO_WINS / UNDEFINED_NO_LOSSES / NOT_EVALUATED conventions identical to src/performance/calculator.py's gross profit_factor, applied to net_R instead of gross_R. This is the exact net_PF formula/convention already produced and used within this same pilot at SSC1D_WP3_DIAGNOSIS/SSC1D_WP3_setup_session_stoploss_exitcapture_diagnosis.json (e.g. net_PF=1.009964387870613, net_PF=\"UNDEFINED_NO_WINS\", net_PF=0.5547918289172548) -- reused verbatim, not a new friction/PF model."
+    },
+    "MIN_TREATMENT_N": {
+      "value": 20,
+      "source": "OWNER_ADJUDICATION",
+      "classification": "OWNER_POLICY_VALUE",
+      "dated": "2026-09-18",
+      "scope_note": "Applies ONLY to hypothesis-level PASS/FAIL/TARGET_REACHED classification under this Section 6.1 artifact. Distinct from, and does not replace or round, strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml performance_attribution.min_sample_size=10 (a different, pre-existing, generic per-segment low-sample flag used elsewhere in the strategy and reused verbatim by HYP_002's own preregistration) -- that field is untouched by this artifact."
+    },
+    "WP1_RETENTION_GATE": {
+      "value": "existing frozen definition -- NOT restated numerically here",
+      "source": "SSC1D_WP1_optimization_objective_freeze.json (WP1, frozen 2026-09-16)",
+      "classification": "EXISTING_FROZEN_AUTHORITY",
+      "reference_path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC1D_PILOT/SSC1D_WP1_optimization_objective_freeze.json",
+      "content_sha256": "381ba47307b4b986b3a29f152a7ddb4bc69cdea46b86d405e0d081a9c40a158b",
+      "applicability_note": "Applies wherever SSC1D_WP1_optimization_objective_freeze.json's own scope already applies (DEVELOPMENT-zone candidate retention: primary expectancy_R criterion plus the profit_factor / max_drawdown_R / occurrence_count>=70%-of-baseline safeguards, plus the neighboring-parameter robustness requirement). This artifact treats WP1's occurrence_count>=70%-of-baseline safeguard as a DISTINCT gate from MIN_TREATMENT_N=20 above -- both must independently pass where applicable; neither is merged into, rounds, or substitutes for the other. Baseline N=31 (SSC1D_BASELINE_anchor.json), so the WP1 70% figure is ~21.7, i.e. int(floor(31*0.7))=21 occurrences minimum under WP1's own existing wording -- restated here only for arithmetic clarity, not redefined."
+    },
+    "MECHANISM_GATES": {
+      "source": "SSC1D-WP4A (frozen 2026-09-16)",
+      "classification": "EXISTING_FROZEN_AUTHORITY",
+      "H1": {
+        "reference_path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC1D_PILOT/SSC1D_WP4A_HYPOTHESES/SSC1D_WP4A_hypothesis_1_friction_risk_geometry.json",
+        "content_sha256": "ad81c9ece9f25204c60d153d5fcd02c0d82a69e5707132b7d00a55abae0e6ae7",
+        "falsification_condition_verbatim": "The hypothesis is falsified if, when tested with a legitimate bounded candidate value, EITHER (a) friction_R per occurrence does not decrease relative to SSC1D_BASELINE, OR (b) it decreases but net_expectancy_R does not improve because the surviving (stricter-stop) occurrence subset has a materially worse gross edge or MAE/SL profile than the rejected subset, OR (c) occurrence_count falls below the WP1 optimization-objective safeguard (>=70% of baseline N) making the comparison unreliable."
+      },
+      "H2": {
+        "reference_path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC1D_PILOT/SSC1D_WP4A_HYPOTHESES/SSC1D_WP4A_hypothesis_2_asian_london_sl_concentration.json",
+        "content_sha256": "7d23b12b3ed9734df5288b8c4e855ef766d9e3474610a3beec8397e455815aa4",
+        "falsification_condition_verbatim": "The hypothesis is falsified if EITHER (a) the ASIAN_LONDON/LONDON_NEWYORK expectancy gap does not narrow after a bounded range_max_pips candidate is applied, OR (b) the gap persists essentially unchanged after controlling for setup-family composition (i.e. the gap turns out to be fully explained by setup mix rather than regime threshold), OR (c) changing range_max_pips changes regime classification counts but does NOT correspondingly change SL rate or expectancy specifically within ASIAN_LONDON."
+      },
+      "no_new_gate_invented": "Both mechanism gates above are recovered verbatim from the frozen WP4A hypothesis files. This artifact does not add, loosen, tighten, or reinterpret either falsification_condition; MECHANISM_GATE_PASS below means 'none of the hypothesis's own (a)/(b)/(c) falsification sub-conditions fired for this candidate.'"
+    },
+    "COMPARABILITY_GATE": {
+      "source": "SSC1D_WP2_baseline_run_contract.json + SSC1D_WP1B_gate_separation_contract.json (existing frozen authority)",
+      "classification": "EXISTING_FROZEN_AUTHORITY",
+      "definition": "A candidate is comparable to SSC1D_BASELINE only if it reuses the same DEVELOPMENT dataset triplet (H1+M15+M1, common interval 2026-05-18..2026-06-19), the same canonical replay/outcome-resolution/friction/performance-calculator code paths, and changes ONLY the hypothesis's own eligible_mutable_parameter (friction.minimum_stop_multiple for H1; regime.range_max_pips for H2) versus strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml v1.0.0, per SSC1D_WP4A's explicitly_immutable_for_this_hypothesis lists. Any other configuration drift, dataset substitution, or OOS/holdout access fails this gate."
+    }
+  },
+
+  "hypothesis_scoping": {
+    "note": "PASS/FAIL/TARGET_REACHED are evaluated per hypothesis independently. SSC1D-H1 reaching TARGET_REACHED has no bearing on SSC1D-H2's search, and vice versa. Neither hypothesis's classification is compared against, blended with, or used to terminate the other's search.",
+    "SSC1D-H1": {"mechanism_gate": "SSC1D_WP4A_hypothesis_1_friction_risk_geometry.json falsification_condition (a)/(b)/(c)", "retention_gate_applicable": true},
+    "SSC1D-H2": {"mechanism_gate": "SSC1D_WP4A_hypothesis_2_asian_london_sl_concentration.json falsification_condition (a)/(b)/(c)", "retention_gate_applicable": true}
+  },
+
+  "decision_semantics": {
+    "FAIL": "Any mandatory gate fails on a legitimately-evaluated (outcome-exposed, valid) candidate: sample gate (treatment_N<20), economic floor (net_expectancy_R<=0 or net_PF<=1), mechanism-specific falsification gate, WP1 candidate-retention gate where applicable, or comparability/contract gate. Distinct from INVALID_EXPERIMENT (a candidate whose outcome was computed but the experiment itself was not legitimately evaluated -- e.g. comparability/contract violation discovered post-replay, or a population/data-integrity fault surfaced only after outcome computation) and from INSUFFICIENT_EVIDENCE (treatment_N<20 specifically -- reported as its own distinct classification rather than folded into a generic FAIL, following the HYP_002 precedent of separating 'not enough data to judge' from 'judged and failed').",
+    "PASS": "ALL of: valid candidate AND treatment_N>=20 (MIN_TREATMENT_N_PASS) AND WP1 retention safeguard passes where applicable AND net_expectancy_R>0 AND net_PF>1 AND hypothesis-specific mechanism gate passes AND comparability/contract gate passes. PASS does not by itself terminate the hypothesis's search if required robustness evidence (neighboring-parameter stability, per SSC1D_WP1_optimization_objective_freeze.json's robustness_requirement) is incomplete.",
+    "TARGET_REACHED": "ALL of (conjunctive, no OR composition): VALID_CANDIDATE, MIN_TREATMENT_N_PASS, WP1_RETENTION_PASS (where applicable), net_expectancy_R>0, net_PF>1, MECHANISM_GATE_PASS, COMPARABILITY_GATE_PASS, REQUIRED_NEIGHBOR_PARAMETER_ROBUSTNESS_PASS, plus any other already-frozen hypothesis-specific mandatory condition.",
+    "TARGET_REACHED_BLOCKED_PENDING_ROBUSTNESS_PREREGISTRATION": "All PASS-level gates hold, but the exact neighbor-parameter robustness acceptance procedure (numeric neighborhood width, number of neighbor points, tolerance for 'does not collapse the improvement') is not itself preregistered anywhere for H1 or H2 -- SSC1D_WP1_optimization_objective_freeze.json states the robustness PRINCIPLE ('isolated parameter optimum is not sufficient... reasonable support in neighboring parameter values') but not an operational test. Per mission instruction, this artifact does NOT invent that operational definition now. A candidate in this state may still independently reach PASS (robustness is only required for TARGET_REACHED, not for PASS)."
+  },
+
+  "rule_engine_logic": {
+    "language": "pseudocode, matches the deterministic logic actually implemented and unit-tested in tests/test_ssc1d_section_6_1_acceptance_rules.py",
+    "logic": [
+      "if pre_evaluation_invalid: budget_consumed=false; result=INVALID_PRE_EVALUATION",
+      "elif outcome_information_exposed:",
+      "    budget_consumed=true",
+      "    if invalid_experiment: result=INVALID_EXPERIMENT",
+      "    elif treatment_N < 20: result=INSUFFICIENT_EVIDENCE",
+      "    elif retention_gate_applicable and not retention_gate_pass: result=FAIL",
+      "    elif net_expectancy_R <= 0: result=FAIL",
+      "    elif net_PF <= 1: result=FAIL",
+      "    elif not mechanism_gate_pass: result=FAIL",
+      "    elif not comparability_gate_pass: result=FAIL",
+      "    else:",
+      "        result=PASS",
+      "        if all_required_robustness_pass: result=TARGET_REACHED",
+      "        elif robustness_required_but_undefined: result=TARGET_REACHED_BLOCKED_PENDING_ROBUSTNESS_PREREGISTRATION"
+    ]
+  },
+
+  "candidate_budget_accounting_rule": {
+    "principle": "outcome information exposed -> slot consumed. A slot is NOT consumed if a candidate is rejected before any outcome/performance information is exposed (schema/config invalid pre-replay, duplicate detected pre-replay, contract violation detected pre-replay, dataset unavailable pre-replay, preflight/infra failure pre-outcome). A slot IS consumed the moment outcome information is exposed -- PASS, FAIL, negative, breakeven, positive, or an evaluation later found invalid AFTER outcome computation, or post-replay contract failure. All consumed attempts, including failed/invalid ones, are recorded permanently in SSC1D_WP0_candidate_ledger_schema.json's ledger and never deleted, per that schema's existing immutability_rule.",
+    "budget_reference": {
+      "source": "SSC1D_WP4A_admission_budget_integrity.json (frozen 2026-09-16), P7_budget_accounting block",
+      "content_sha256": "192da9f19a3f5bb73225b48578605ee5c8d0712b73c84a4baf5154f7e0e4917b",
+      "max_major_hypotheses": 3,
+      "major_hypotheses_admitted": 2,
+      "major_hypotheses_remaining": 1,
+      "max_total_candidates": 20,
+      "candidate_count_used_before_this_freeze": 0,
+      "candidate_count_used_after_this_freeze": 0,
+      "max_search_time_hours": 3,
+      "optimization_time_used_hours_before_this_freeze": 0,
+      "optimization_time_used_hours_after_this_freeze": 0,
+      "verification_note": "These figures were independently re-read from SSC1D_WP4A_admission_budget_integrity.json during this work package (not assumed from the mission brief) and match exactly: max_major_hypotheses=3 (per SSC1D_WP1_optimization_objective_freeze.json's own referenced budget in docs/validation/SSC_ONE_DAY_DEMO_PILOT_V2.md section 6 / SSC1D_WP0_candidate_ledger_schema.json's governance_notes: max_major_hypotheses=3, max_total_candidates=20, max_search_time=3h), 2 of 3 hypotheses admitted (SSC1D-H1, SSC1D-H2), 0 of 20 candidates consumed, 0 of 3 hours used. This Section 6.1 freeze consumes zero additional candidates and zero additional search time -- it is a decision-rule preregistration only."
+    }
+  },
+
+  "safety_boundaries_confirmed_by_this_artifact": {
+    "candidate_backtest_run": false,
+    "candidate_economic_outcome_generated_or_inspected": false,
+    "SSC1D_H3_created": false,
+    "canonical_HYP_003_or_direction_semantics_touched": false,
+    "canonical_SSC_changed": false,
+    "holdout_or_OOS_accessed": false,
+    "OOS_ACCESS_COUNT": 0,
+    "dukascopy_oct_2022_data_touched": false,
+    "research_ssc1d_ext_r1_merged": false,
+    "demo_or_live_authority_changed": false,
+    "pushed_to_remote": false
+  },
+
+  "next_gate": "INDEPENDENT_6_1_AUDIT -- an independent reviewer must verify this preregistration has no candidate-result leakage before any SSC1D-H1/H2 candidate is generated or replayed. See the audit-packet manifest delivered alongside this freeze (final report of the work package that produced this artifact)."
+}
