@@ -4,7 +4,26 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Current rolling classification (2026-09-14)
+## Current rolling classification (2026-09-19)
+
+SVOS (Strategy Validation Operating System) historical→optimization→virtual-forward flow
+is `UNIT_TESTED`: a new `src/svos/` package implements the canonical historical runner
+contract, preregistered bounded optimization with a protected-data firewall, candidate
+freeze/fingerprint, a component-state FrictionProfile, an MT5-isolated VirtualBroker
+(statically proven zero reach to `order_send`/`order_check`), a chronological/restart-safe
+ForwardValidationCampaign, a DEMO-ELIGIBLE prerequisite projection (never executes), and
+an SSC same-strategy-authority proof. This is infrastructure only: no real forward
+campaign started, no strategy or execution gateway changed, and no Demo/Live authority
+granted. The mission lifecycle vocabulary is reconciled onto the canonical
+`AG_VALIDATION_G0_G10_V1` gates — no new authoritative lifecycle label was introduced,
+and `LifecycleStage` (via `lifecycle_registry`) remains the sole lifecycle authority. See
+`docs/svos/SVOS_AUTHORITY_MAP.md`, `docs/svos/SVOS_LIFECYCLE_AND_GATES.md`, and
+`docs/status/AG_SVOS_HISTORICAL_TO_VIRTUAL_FORWARD_V1_STATUS.md`.
+
+This supersedes the 2026-09-14 classification recorded further down in this file
+(kept below as dated historical context, not corrected in place).
+
+## Historical rolling classification (2026-09-14, superseded)
 
 Research Factory V1 governance hardening is `UNIT_TESTED`: versioned dataset/candidate/
 economic schemas, immutable package freeze/export, two independent reopen/hash passes,

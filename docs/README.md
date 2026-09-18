@@ -69,6 +69,15 @@ their age.
    — records the observation-only skill classification/interface refactor and focused
    compatibility evidence.
 
+## SVOS (Strategy Validation Operating System)
+
+- [`svos/SVOS_AUTHORITY_MAP.md`](svos/SVOS_AUTHORITY_MAP.md) — P1 authority map:
+  every SVOS domain resolved to its existing canonical authority (REUSE/EXTEND/CREATE).
+- [`svos/SVOS_LIFECYCLE_AND_GATES.md`](svos/SVOS_LIFECYCLE_AND_GATES.md) — P2/P18
+  lifecycle reconciliation onto `AG_VALIDATION_G0_G10_V1`, the full flow, and the
+  required `BACKTEST≠FORWARD`, `VIRTUAL_FORWARD≠MT5_DEMO`, `PROPOSAL≠ORDER`,
+  `DEMO_ELIGIBLE≠DEMO_EXECUTED` distinctions.
+
 ## Architecture
 
 - [`architecture/TRADE_ASSISTANT_ARCHITECTURE.md`](architecture/TRADE_ASSISTANT_ARCHITECTURE.md)
