@@ -1,15 +1,15 @@
 <!-- GENERATED FILE — DO NOT MANUALLY EDIT. Regenerate with scripts/generate_live_status.py -->
-<!-- LIVE_STATE_FINGERPRINT: 19f768772a546b471e187124a693a7203260ea1b85ee5664d4f040f049575835 -->
+<!-- LIVE_STATE_FINGERPRINT: 71bce6ec902ceeb89cd5ddfcacea3758ef4b654ad5c7c25c64e4889b1cdf45e2 -->
 
 # Project Live Status
 
 Schema: `AG_LIVE_STATUS_SNAPSHOT_V2`  
-Generated: 2026-09-17T15:49:20.811789+00:00
+Generated: 2026-09-18T08:47:16.252090+00:00
 
 ## 1. Repository Identity
 
 - Branch: `main`
-- HEAD: `c57406cab1a6f9d5af177d4924c1f82738a6c9be`
+- HEAD: `8b4ef0413f6563c0b3967980c283e9a77a9cfd2c`
 - Working tree clean: `False`
 
 ## 2. Repository Provenance
@@ -21,14 +21,14 @@ Generated: 2026-09-17T15:49:20.811789+00:00
 ## 3. Runtime Status
 
 - RUNTIME_STATUS is a **separate authority** from GOVERNANCE_STATUS. A probe result here never changes `validation_state`, `demo_authorized`, `live_authorized`, blockers, or next-safe-actions (sections 5/8/11/12), and is excluded from the governance state fingerprint below.
-- Checked at: `2026-09-17T15:49:23.999420+00:00`
+- Checked at: `2026-09-18T08:47:18.226998+00:00`
 
 | subsystem | status | detail |
 |---|---|---|
-| fastapi | UNAVAILABLE | API gateway unreachable: timed out |
-| mt5 | UNAVAILABLE | probed via API gateway; API gateway unavailable |
-| broker | UNAVAILABLE | probed via API gateway; API gateway unavailable |
-| market_data | UNAVAILABLE | probed via API gateway; API gateway unavailable |
+| fastapi | AVAILABLE | GET /api/health -> 200 OK |
+| mt5 | AVAILABLE | MT5 terminal reachable via API gateway |
+| broker | AVAILABLE | connected (environment=DEMO) |
+| market_data | AVAILABLE | 1 EURUSD M15 candle(s) returned |
 | proposal_ledger | AVAILABLE | 68 active canonical proposal(s) in ledger |
 | scheduler | UNAVAILABLE | checkpoint not yet created (scheduler not started) |
 | ssc | AVAILABLE | adapter importable (session_sweep_continuation.replay.ReplayResult.accepted_setups) |
@@ -79,17 +79,11 @@ Generated: 2026-09-17T15:49:20.811789+00:00
 
 ## 9. Concurrent / Foreign WIP
 
-- `artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001/ROUTE_B_PHASE1_RECONSTRUCTION/GEN_001_COMPARABILITY_AND_FREEZE.md` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001/ROUTE_B_PHASE1_RECONSTRUCTION/_CHECKPOINTS/GEN_001_RUN_1.json` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `src/runtime_status/__init__.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `src/runtime_status/probe.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `tests/test_cross_strategy_ledger.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `tests/test_live_status_proposal_platform.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
-- `tests/test_runtime_status_probe.py` — UNCOMMITTED / NOT YET AUTHORITATIVE
+- None detected.
 
 ## 10. Owner Decisions Required
 
-- Foreign/concurrent WIP present -- confirm ownership and freeze/discard intent before it is treated as authoritative: artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001/ROUTE_B_PHASE1_RECONSTRUCTION/GEN_001_COMPARABILITY_AND_FREEZE.md, artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001/ROUTE_B_PHASE1_RECONSTRUCTION/_CHECKPOINTS/GEN_001_RUN_1.json, src/runtime_status/__init__.py, src/runtime_status/probe.py, tests/test_cross_strategy_ledger.py, tests/test_live_status_proposal_platform.py, tests/test_runtime_status_probe.py
+- None.
 
 ## 11. Next Safe Actions
 
@@ -116,5 +110,5 @@ Generated: 2026-09-17T15:49:20.811789+00:00
 ## 13. Generator Provenance
 
 - Generator: `scripts/generate_live_status.py` (schema `AG_LIVE_STATUS_SNAPSHOT_V2`)
-- State fingerprint: `19f768772a546b471e187124a693a7203260ea1b85ee5664d4f040f049575835`
+- State fingerprint: `71bce6ec902ceeb89cd5ddfcacea3758ef4b654ad5c7c25c64e4889b1cdf45e2`
 - Fingerprint excludes `generated_at_utc` and every per-strategy `updated_at_utc`; it changes only when meaningful state changes.
