@@ -80,3 +80,15 @@ No strategy parameter, risk parameter, or historical evidence was changed. No li
 stage, demo/live authorization, or execution path was touched. `git status` before and
 after this pass shows only the new, additive `src/market_intelligence/` package, this
 document, the governance doc, and `tests/test_market_intelligence.py`.
+
+## Addendum (post-audit, non-retroactive): SSC adoption
+
+This audit's `CURRENT_DIRECTION_AUTHORITY_MAP` above is a point-in-time snapshot dated
+2026-09-10 and is left as-authored, not rewritten. For the record: two days later
+(2026-09-12, commit `c36bf23`), `ST_SESSION_SWEEP_CONTINUATION_V1` was added to this
+repository and adopted the `AG_STRATEGY_DIRECTION_CONTRACT_V1` contract from its initial
+implementation -- `src/session_sweep_continuation/bias_gate.py` gates every S1/S2/S3
+setup on `MarketBiasResult`-derived direction. This is the first strategy to migrate to
+the contract; it postdates this audit and is therefore absent from the table above. See
+`docs/architecture/AG_STRATEGY_DIRECTION_CONTRACT_V1.md` (Invariants section) for the
+current statement.

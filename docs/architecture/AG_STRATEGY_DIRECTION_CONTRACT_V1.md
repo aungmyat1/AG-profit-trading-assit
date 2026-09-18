@@ -49,10 +49,16 @@ evidence) and any unrecognized label both fail closed to `NEUTRAL` -- never gues
 Invariants 4/5/7-10/13 (strategies consuming bias, permitting only aligned-direction
 candidates, decision-cycle identity in a strategy's own evaluation, setup/entry
 separation, risk/governance bypass prevention) are **contract requirements strategies
-must satisfy once migrated** -- no strategy has been migrated to this contract yet (see
-M0_M1_STATUS.md's `CURRENT_DIRECTION_AUTHORITY_MAP`). `strategy_engine.session`'s own
-`entry_1_trend`/`entry_2_sweep`/`entry_3_range` and every strategy audited there still
-compute their own direction internally, unchanged by this milestone.
+must satisfy once migrated**. At the time `M0_M1_STATUS.md`'s
+`CURRENT_DIRECTION_AUTHORITY_MAP` audit was written (2026-09-10), no strategy had
+migrated. `ST_SESSION_SWEEP_CONTINUATION_V1` (package added 2026-09-12, commit
+`c36bf23`) adopted this contract from its initial implementation --
+`src/session_sweep_continuation/bias_gate.py` enforces `MarketBiasResult`-derived
+same-direction eligibility for every S1/S2/S3 setup, satisfying invariants 4/5/7-10/13
+for that strategy. `strategy_engine.session`'s own
+`entry_1_trend`/`entry_2_sweep`/`entry_3_range` and every other strategy audited in
+M0_M1_STATUS.md still compute their own direction internally, unchanged by this
+milestone.
 
 ## Default strategy policy (P15/P16, not yet enforced by code)
 
