@@ -1,0 +1,51 @@
+{
+  "amendments_after_freeze": "NONE -- any change to this manifest after campaign_manifest_hash is computed voids the campaign; a genuinely new campaign requires a new campaign_id",
+  "account_environment": "DEMO",
+  "broker": "VantageMarkets-Demo",
+  "campaign_id": "SSC_H2_FRICTION_CAMPAIGN_V1",
+  "collection_rules": {
+    "adaptive_sampling": false,
+    "cell_identity": "campaign_id|day|symbol|session_id",
+    "connection_gap_handling": "recorded as MISSING_GAP rows (fx_friction_research.spread_evidence.MISSING_SOURCE), never silently backfilled, interpolated, or omitted",
+    "deletion_of_high_spread_samples": false,
+    "fixed_grid": "each cell samples on a fixed sampling_interval_seconds grid anchored to that cell run's own start time; a missed/failed tick is recorded as MISSING_GAP, not skipped without a trace",
+    "restart_of_unfavorable_cells": false,
+    "reuse_collector": "fx_friction_research.spread_evidence.collect_fixed_grid -- no second collector"
+  },
+  "created_utc": "2026-09-18T20:00:00+00:00",
+  "evidence_role": "CONTEMPORANEOUS_BROKER_FRICTION_PROXY",
+  "explicitly_not": ["HISTORICAL_SPREAD_RECONSTRUCTION", "STRATEGY_EDGE_EVIDENCE"],
+  "frozen_before_collection": true,
+  "hypothesis_id": "H2_FRICTION_VERIFICATION",
+  "minimum_trading_days": 5,
+  "pip_size": 0.0001,
+  "preregistration_commit": "5513a4137389e90c89517428e42973644265190a",
+  "preregistration_source": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/H2_FRICTION_VERIFICATION_PREREGISTRATION/H2_FRICTION_VERIFICATION_PREREGISTRATION.md",
+  "required_minimum_population": {
+    "minimum_days": 5,
+    "minimum_samples_per_cell": 120,
+    "required_cells": 20,
+    "total_minimum_observations": 2400
+  },
+  "samples_per_cell_minimum": 120,
+  "sampling_interval_seconds": 5,
+  "schema": "AG_SSC_H2_FRICTION_CAMPAIGN_MANIFEST_V1",
+  "sessions": [
+    {
+      "session_id": "ASIAN_LONDON",
+      "trade_end_utc_hhmm": "11:00",
+      "trade_start_utc_hhmm": "07:00"
+    },
+    {
+      "session_id": "LONDON_NEWYORK",
+      "trade_end_utc_hhmm": "15:00",
+      "trade_start_utc_hhmm": "12:00"
+    }
+  ],
+  "start_date": "2026-09-21",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1",
+  "symbols": ["EURUSD", "GBPUSD"],
+  "timezone": "UTC",
+  "trading_day_definition": "UTC calendar day; a trading day counts toward minimum_trading_days only if the FX market is open (Mon-Fri UTC, no recognized holiday closure) -- a weekend or closed day is skipped, never substituted with another day's data."
+}
