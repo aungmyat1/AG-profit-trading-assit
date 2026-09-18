@@ -1,15 +1,15 @@
 <!-- GENERATED FILE — DO NOT MANUALLY EDIT. Regenerate with scripts/generate_live_status.py -->
-<!-- LIVE_STATE_FINGERPRINT: 71bce6ec902ceeb89cd5ddfcacea3758ef4b654ad5c7c25c64e4889b1cdf45e2 -->
+<!-- LIVE_STATE_FINGERPRINT: cb10ce5f5f12f2aa9d961e81c52e0811be3fb94ddcfab0e362255e50c7cd2e77 -->
 
 # Project Live Status
 
 Schema: `AG_LIVE_STATUS_SNAPSHOT_V2`  
-Generated: 2026-09-18T08:47:16.252090+00:00
+Generated: 2026-09-18T09:16:32.899934+00:00
 
 ## 1. Repository Identity
 
 - Branch: `main`
-- HEAD: `8b4ef0413f6563c0b3967980c283e9a77a9cfd2c`
+- HEAD: `ede3b1446bbc0205c2574643435b49d7e31ddf1f`
 - Working tree clean: `False`
 
 ## 2. Repository Provenance
@@ -21,7 +21,7 @@ Generated: 2026-09-18T08:47:16.252090+00:00
 ## 3. Runtime Status
 
 - RUNTIME_STATUS is a **separate authority** from GOVERNANCE_STATUS. A probe result here never changes `validation_state`, `demo_authorized`, `live_authorized`, blockers, or next-safe-actions (sections 5/8/11/12), and is excluded from the governance state fingerprint below.
-- Checked at: `2026-09-18T08:47:18.226998+00:00`
+- Checked at: `2026-09-18T09:16:34.558415+00:00`
 
 | subsystem | status | detail |
 |---|---|---|
@@ -79,11 +79,12 @@ Generated: 2026-09-18T08:47:16.252090+00:00
 
 ## 9. Concurrent / Foreign WIP
 
-- None detected.
+- `artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-18_WINDOW_C_LONDON_raw.jsonl` — UNCOMMITTED / NOT YET AUTHORITATIVE
+- `artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-18_WINDOW_C_LONDON_summary.json` — UNCOMMITTED / NOT YET AUTHORITATIVE
 
 ## 10. Owner Decisions Required
 
-- None.
+- Foreign/concurrent WIP present -- confirm ownership and freeze/discard intent before it is treated as authoritative: artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-18_WINDOW_C_LONDON_raw.jsonl, artifacts/validation/ST_LARGE_SMC_V1/EURUSD_ADMISSION_CONTRACTS/friction_campaign_wp3a1/sessions/2026-09-18_WINDOW_C_LONDON_summary.json
 
 ## 11. Next Safe Actions
 
@@ -110,5 +111,5 @@ Generated: 2026-09-18T08:47:16.252090+00:00
 ## 13. Generator Provenance
 
 - Generator: `scripts/generate_live_status.py` (schema `AG_LIVE_STATUS_SNAPSHOT_V2`)
-- State fingerprint: `71bce6ec902ceeb89cd5ddfcacea3758ef4b654ad5c7c25c64e4889b1cdf45e2`
+- State fingerprint: `cb10ce5f5f12f2aa9d961e81c52e0811be3fb94ddcfab0e362255e50c7cd2e77`
 - Fingerprint excludes `generated_at_utc` and every per-strategy `updated_at_utc`; it changes only when meaningful state changes.
