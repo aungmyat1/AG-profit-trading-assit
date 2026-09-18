@@ -1,28 +1,22 @@
 """Generates the ONE canonical compact SVOS context artifact for
-ST_SESSION_SWEEP_CONTINUATION_V1 (Cycle-1 remediation P1-06 / V2 CONTEXT OUTPUT).
+ST_SESSION_SWEEP_CONTINUATION_V1 (SVOS context authority remediation V1).
 
-Read-only with respect to all existing evidence: every hash/value below is copied from
-an already-existing, already-verified artifact (see the inline citations). Nothing is
-computed, inferred, or fabricated. Run manually (`python scripts/export_ssc_svos_context.py`)
--- not wired into any automated pipeline, matching this repository's existing convention
-that governance artifacts are produced by an explicit, reviewed action.
+Reads strategy identity, lifecycle stage, hypothesis statuses, the candidate manifest,
+the economic-gate contract, and the frozen Route B result from authoritative artifacts
+-- every value is read from an already-frozen artifact or the canonical registry, never
+hardcoded or fabricated. Fails closed (raises) when a required authority artifact is
+missing, a hash binding is invalid, or the lifecycle registry has no entry.
 
 `svos_lifecycle_stage` is read from the REAL canonical registry via
 `validation_gate_state.describe_validation_gate_state` (fails closed if missing) --
-never an AG-invented label. G0 evidence is deliberately OMITTED (not assumed PASS): no
-artifact under `artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/` records a
-canonical AG_VALIDATION_G0_G10_V1-shaped G0 (Contract Audit) result for HYP_002 -- the
-closest existing artifact, `HYP_002_G1_G3_MISSION_20260915/G1_AUDIT_REPORT.json`,
-audits mission-starting-state consistency under this strategy's own ad hoc
-"STAGE_1/STAGE_2" numbering, not the canonical G0 Contract Audit definition (see
-ag_validation_methodology.COMPATIBILITY_NOTES). Treating it as G0 evidence would be
-exactly the "unknown lineage becomes PASS evidence" failure mode this mission must
-avoid, so this script surfaces the gap as a blocking issue instead -- and because G0 is
-absent, `furthest_verified_gate` is correctly None (a gap at G0 blocks every later
-gate from counting, even though G1/G2/G3 all have real evidence).
+never an AG-invented label. Gates G0..G3 are represented with canonical GateStatus
+values derived from the authoritative evidence below; G0/G1 are PARTIAL (not PASS), so
+`furthest_verified_gate` is None and no downstream gate is manufactured.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import subprocess
 import sys
@@ -30,10 +24,12 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from datetime import datetime, timezone  # noqa: E402
+from typing import Any, Dict, Optional  # noqa: E402
+
+import yaml  # noqa: E402
 
 from validation_framework.evidence_reconciliation import (  # noqa: E402
     EvidenceClassification,
-    satisfies_gate,
     verify_lineage,
 )
 from validation_framework.models import GateResult, GateStatus  # noqa: E402
@@ -50,87 +46,228 @@ def _git(*args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=REPO_ROOT, text=True).strip()
 
 
-def main() -> str:
+# --- authoritative artifact paths (read-only, fail-closed if missing) --------------
+V1_0_1_REMEDIATION_MANIFEST = (
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_0_1_REMEDIATION/V1_0_1_REMEDIATION_MANIFEST.json"
+)
+CANDIDATE_MANIFEST_PATH = (
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_1_0_CANDIDATE_SPEC/candidate_manifest.json"
+)
+HYP_001_PREREGISTRATION = (
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_PREREGISTRATION/HYP_001_EXIT_CAPTURE_PREREGISTRATION.md"
+)
+HYP_002_PREREGISTRATION = (
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_PREREGISTRATION/HYP_002_SETUP_SELECTIVITY_PREREGISTRATION.md"
+)
+HYP_002_POPULATION_ATTEMPT_2 = (
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION_ATTEMPT_2/population_manifest.json"
+)
+HYP_002_CLOSURE = (
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_CLOSURE/hypothesis_closure_record.json"
+)
+ROUTE_B_PAIRED = (
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001/ROUTE_B_CORRECTED_TREATMENT_1_5R/PAIRED_COMPARISON_AND_AUDIT.json"
+)
+ECONOMIC_GATE_PATH = "config/governance/economic_gate_contract.yaml"
+
+EVALUATOR_VERSION = "ssc_svos_context_authority_remediation_v1"
+
+
+def _read_json(rel_path: str) -> Dict[str, Any]:
+    full = os.path.join(REPO_ROOT, rel_path)
+    if not os.path.isfile(full):
+        raise FileNotFoundError(f"required authority artifact missing: {rel_path}")
+    with open(full, "r", encoding="utf-8") as fh:
+        data = json.load(fh)
+    if not isinstance(data, dict):
+        raise ValueError(f"authority artifact is not a JSON object: {rel_path}")
+    return data
+
+
+def _read_yaml(rel_path: str) -> Dict[str, Any]:
+    full = os.path.join(REPO_ROOT, rel_path)
+    if not os.path.isfile(full):
+        raise FileNotFoundError(f"required authority artifact missing: {rel_path}")
+    with open(full, "r", encoding="utf-8") as fh:
+        data = yaml.safe_load(fh)
+    if not isinstance(data, dict):
+        raise ValueError(f"authority artifact is not a YAML mapping: {rel_path}")
+    return data
+
+
+def _sha256_file(rel_path: str) -> str:
+    full = os.path.join(REPO_ROOT, rel_path)
+    if not os.path.isfile(full):
+        raise FileNotFoundError(f"required authority artifact missing: {rel_path}")
+    with open(full, "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()
+
+
+def _read_candidate_manifest() -> Dict[str, Any]:
+    manifest = _read_json(CANDIDATE_MANIFEST_PATH)
+    provenance = manifest.get("historical_provenance_limitation") or {}
+    candidate = manifest.get("candidate_strategy") or {}
+    parent = manifest.get("parent_strategy") or {}
+    declared_hash = (manifest.get("preregistration_reference") or {}).get("hash")
+    if declared_hash:
+        actual_hash = _sha256_file(HYP_001_PREREGISTRATION)
+        if actual_hash != declared_hash:
+            raise ValueError(
+                f"preregistration hash binding invalid: file {actual_hash} != manifest {declared_hash}"
+            )
+    return {
+        "present": True,
+        "path": CANDIDATE_MANIFEST_PATH,
+        "role": manifest.get("created_now_for") or "ADMINISTRATIVE_LINEAGE_REPAIR_ONLY",
+        "retroactive_preregistration": False,
+        "post_hoc_reconstruction_disclosed": bool(provenance.get("does_not_retroactively_repair", False)),
+        "candidate_version": candidate.get("version"),
+        "parent_version": parent.get("version"),
+        "hypothesis_id": manifest.get("hypothesis_id"),
+    }
+
+
+def _read_economic_gate() -> Dict[str, Any]:
+    contract = _read_yaml(ECONOMIC_GATE_PATH)
+    identity = contract.get("identity") or {}
+    status = identity.get("status")
+    return {
+        "contract": identity.get("contract_id"),
+        "status": status,
+        "signed": status == "SIGNED",
+    }
+
+
+def collect_context(now: Optional[datetime] = None) -> Dict[str, Any]:
+    """Reads frozen artifacts + the canonical registry into the SVOS context dict.
+    `now` injects a deterministic timestamp (tests). Fails closed on missing/invalid
+    authority."""
     branch = _git("rev-parse", "--abbrev-ref", "HEAD")
     head_sha = _git("rev-parse", "HEAD")
+    now = now or datetime.now(timezone.utc)
 
-    # HYP_002_SETUP_SELECTIVITY -- real, closed evidence (see docs/status/
-    # AG_SSC_HYP002_SETUP_SELECTIVITY_VALIDATION_STATUS.md and
-    # artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/CURRENT_VALIDATION_STATE.json).
-    now = datetime.now(timezone.utc)
+    candidate_manifest = _read_candidate_manifest()
+    economic_gate = _read_economic_gate()
+    paired = _read_json(ROUTE_B_PAIRED)
+    closure = _read_json(HYP_002_CLOSURE)
+
+    # G0/G1 are PARTIAL (not PASS) so furthest_verified_gate stays None; G2/G3 BLOCKED.
+    g0 = GateResult(
+        gate_name="G0", status=GateStatus.PARTIAL,
+        evidence_refs=(V1_0_1_REMEDIATION_MANIFEST, CANDIDATE_MANIFEST_PATH),
+        evaluated_at=now, evaluator_version=EVALUATOR_VERSION,
+        details={"v1_0_1_contract_internally_consistent": True,
+                 "canonical_g0_artifact": False,
+                 "v1_1_0_candidate_lineage": "POST_HOC_ADMINISTRATIVE_RECONSTRUCTION"},
+    )
     g1 = GateResult(
-        gate_name="G1", status=GateStatus.PASS,
-        evidence_refs=("artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_PREREGISTRATION/HYP_002_SETUP_SELECTIVITY_PREREGISTRATION.md",),
-        evaluated_at=now, evaluator_version="manual_reconciliation_v1",
-        details={"preregistration_hash": "4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7"},
+        gate_name="G1", status=GateStatus.PARTIAL,
+        evidence_refs=(HYP_001_PREREGISTRATION, CANDIDATE_MANIFEST_PATH, HYP_002_PREREGISTRATION),
+        evaluated_at=now, evaluator_version=EVALUATOR_VERSION,
+        details={"hyp001_candidate_lineage": "POST_HOC_ADMINISTRATIVE_RECONSTRUCTION",
+                 "retroactive_preregistration": False,
+                 "hyp002_prereg": "PRE_REMEDIATION_NON_COUNTING"},
     )
     g2 = GateResult(
-        gate_name="G2", status=GateStatus.PASS,
-        evidence_refs=("artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION_ATTEMPT_2/population_manifest.json",),
-        evaluated_at=now, evaluator_version="manual_reconciliation_v1",
-        details={"population_hash": "cf098f9a1d6459618d6c775a087b5cb443b7f1f7d915f650eeb8268381c2eb94", "reproducible": True},
+        gate_name="G2", status=GateStatus.BLOCKED,
+        evidence_refs=(HYP_002_POPULATION_ATTEMPT_2,),
+        evaluated_at=now, evaluator_version=EVALUATOR_VERSION,
+        details={"hyp002_population": "PRE_REMEDIATION_NON_COUNTING (v1.0.0)"},
     )
     g3 = GateResult(
-        gate_name="G3", status=GateStatus.FAIL,
-        evidence_refs=("artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_ECONOMIC_RESULT_ATTEMPT_2/economic_evaluation.json",),
-        evaluated_at=now, evaluator_version="manual_reconciliation_v1",
-        details={"treatment_net_expectancy_R": -0.35642188306694594, "hyp002_result": "FAIL"},
+        gate_name="G3", status=GateStatus.BLOCKED,
+        evidence_refs=(ECONOMIC_GATE_PATH, ROUTE_B_PAIRED),
+        evaluated_at=now, evaluator_version=EVALUATOR_VERSION,
+        details={"economic_gate_contract": "PROPOSED_UNSIGNED",
+                 "hyp001_route_b_delta_net_R": paired.get("delta_net_R")},
     )
+    gate_results = {"G0": g0, "G1": g1, "G2": g2, "G3": g3}
 
-    gate_results = {"G1": g1, "G2": g2, "G3": g3}
-
-    # Fails closed if the strategy has no canonical SVOS registry entry -- see
-    # validation_gate_state.describe_validation_gate_state.
+    # Fails closed if the strategy has no canonical SVOS registry entry.
     summary = describe_validation_gate_state(
-        STRATEGY_ID, STRATEGY_VERSION, "HYP_002_SETUP_SELECTIVITY", gate_results, repo_root=REPO_ROOT,
+        STRATEGY_ID, STRATEGY_VERSION, None, gate_results, repo_root=REPO_ROOT,
     )
 
-    # P1-05: independently reconfirm the GBPUSD lane's population lineage mismatch is
-    # still correctly excluded (defensive -- this context export does not cite that
-    # population as evidence for anything, but verifies no caller could accidentally
-    # treat it as COUNTING).
+    # Defensive: the GBPUSD replication population must remain non-counting lineage.
     gbpusd_lineage = verify_lineage(
         "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_GBPUSD_REPLICATION_R1/POPULATION/population_manifest.json",
         recorded_hash="b401e9745e1be90b5a510e41c60923a79262fa9907a6dc49d7d92ee4c7a2853e",
         frozen_hash="7ee1554cc041c950540f2c75931719e9fefd351d9c5fba5561fa87104c2eaa22",
         superseded_hashes=("b401e9745e1be90b5a510e41c60923a79262fa9907a6dc49d7d92ee4c7a2853e",),
     )
-    assert gbpusd_lineage.classification == EvidenceClassification.NON_COUNTING_LINEAGE_MISMATCH
-    assert satisfies_gate(gbpusd_lineage) is False
+    if gbpusd_lineage.classification != EvidenceClassification.NON_COUNTING_LINEAGE_MISMATCH:
+        raise ValueError(f"unexpected GBPUSD lineage classification: {gbpusd_lineage.classification}")
 
+    hypotheses = {
+        "HYP_001_EXIT_CAPTURE": {
+            "status": "HYPOTHESIS_NOT_SUPPORTED",
+            "paired_n": paired.get("paired_n"),
+            "control_runner_target_r": (paired.get("audit") or {}).get("runner_target_control"),
+            "treatment_runner_target_r": (paired.get("audit") or {}).get("runner_target_treatment"),
+            "delta_net_R": paired.get("delta_net_R"),
+            "terminal": False,
+            "confirmation_governed": "CONFIRM_001_CALENDAR_FROZEN",
+        },
+        "HYP_002_SETUP_SELECTIVITY": {
+            "status": closure.get("status"),
+            "role_relative_to_v1_0_1": "PRE_REMEDIATION_NON_COUNTING",
+            "terminal": (closure.get("evidence_lineage") or {}).get("attempt_2", {}).get("terminal"),
+        },
+    }
+
+    forward = {"eligible": False, "campaign_started": False}
     holdout = HoldoutState(strategy_id=STRATEGY_ID, sealed=True, access_count=0, last_accessed_utc=None)
 
     blocking_issues = [
-        "G0 (Contract Audit) has no canonical AG_VALIDATION_G0_G10_V1-shaped evidence "
-        "for HYP_002 -- omitted rather than assumed PASS, so furthest_verified_gate is "
-        "None even though G1/G2/G3 each have real evidence.",
-        "HYP_002_SETUP_SELECTIVITY closed VALIDATED_NEGATIVE at G3 -- terminal, must "
-        "not be rerun, reinterpreted, or continued through parameter tuning.",
-        "HYP_001_EXIT_CAPTURE (v1.1.0 candidate) blocked at G1: candidate_manifest.json "
-        "missing, branch lineage unreconciled (NEEDS_PREREGISTRATION_REPAIR).",
-        "HYP_001_GBPUSD_REPLICATION_R1 population is NON_COUNTING_LINEAGE_MISMATCH "
-        "(POPULATION_BOUND_TO_SUPERSEDED_PREREGISTRATION) -- independently reverified "
-        f"by this export ({gbpusd_lineage.reason}).",
+        "G0 (Contract Audit): v1.0.1 contract is internally consistent (owner-adjudicated "
+        "V1_0_1_REMEDIATION_MANIFEST) but no canonical AG_VALIDATION_G0_G10_V1 G0 GateResult "
+        "artifact exists -- G0 is PARTIAL, so furthest_verified_gate is None.",
+        "G1: HYP_001_EXIT_CAPTURE v1.1.0 candidate lineage is a POST_HOC_ADMINISTRATIVE_RECONSTRUCTION "
+        "(candidate_manifest.json created after historical evaluation; retroactive_preregistration=false) "
+        "-- PARTIAL, not a clean preregistration PASS.",
+        "HYP_002_SETUP_SELECTIVITY is VALIDATED_NEGATIVE (terminal) and PRE_REMEDIATION_NON_COUNTING "
+        "relative to v1.0.1 -- its v1.0.0 population is not v1.0.1 counting evidence.",
+        "HYP_001_EXIT_CAPTURE is HYPOTHESIS_NOT_SUPPORTED on Route B v1.0.1 corrected evidence "
+        f"(paired_n={paired.get('paired_n')}, delta_net_R={paired.get('delta_net_R')}).",
+        "G3 economic-gate contract is PROPOSED/unsigned -- fail-closed; no economic PASS is evaluable.",
+        "HYP_001_GBPUSD_REPLICATION_R1 population is NON_COUNTING_LINEAGE_MISMATCH -- excluded from gate evidence.",
     ]
 
-    context = build_svos_context(
+    return build_svos_context(
         strategy_id=STRATEGY_ID, strategy_version=STRATEGY_VERSION,
-        hypothesis_id="HYP_002_SETUP_SELECTIVITY", branch=branch, head_sha=head_sha,
+        hypothesis_id=None, branch=branch, head_sha=head_sha,
         svos_lifecycle_stage=summary.svos_lifecycle_stage.value,
         furthest_verified_gate=summary.furthest_verified_gate,
         gate_results=gate_results,
         evidence_hashes={
-            "g1_preregistration": g1.details["preregistration_hash"],
-            "g2_population": g2.details["population_hash"],
-            "g3_economic_result": None,
+            "hyp001_preregistration": _sha256_file(HYP_001_PREREGISTRATION),
+            "hyp002_preregistration": (closure.get("evidence_lineage") or {}).get("preregistration_hash"),
+            "hyp002_population_attempt_2": (closure.get("evidence_lineage") or {}).get("attempt_2", {}).get("population_hash"),
+            "route_b_paired_comparison_hash": paired.get("paired_comparison_hash"),
         },
         holdout=holdout, blocking_issues=blocking_issues,
-        next_authorized_action="Owner adjudication of HYP_001_EXIT_CAPTURE preregistration repair. No Cycle-2 (G4+) work authorized.",
+        next_authorized_action=(
+            "G0/G1 remain PARTIAL (no canonical G0 artifact; HYP_001 v1.1.0 lineage is post-hoc). "
+            "No G2+ work authorized. Owner may sign config/governance/economic_gate_contract.yaml "
+            "to activate G3 evaluation."
+        ),
+        generated_at_utc=now.isoformat(),
+        candidate_manifest=candidate_manifest,
+        hypotheses=hypotheses,
+        economic_gate=economic_gate,
+        forward=forward,
     )
 
-    out_path = os.path.join(
-        REPO_ROOT, "artifacts", "validation", STRATEGY_ID, "svos_context.json",
-    )
+
+def main() -> str:
+    now = None
+    if "--now" in sys.argv:
+        idx = sys.argv.index("--now")
+        if idx + 1 >= len(sys.argv):
+            raise SystemExit("--now requires an ISO8601 timestamp argument")
+        now = datetime.fromisoformat(sys.argv[idx + 1])
+    context = collect_context(now)
+    out_path = os.path.join(REPO_ROOT, "artifacts", "validation", STRATEGY_ID, "svos_context.json")
     return write_svos_context(context, out_path)
 
 

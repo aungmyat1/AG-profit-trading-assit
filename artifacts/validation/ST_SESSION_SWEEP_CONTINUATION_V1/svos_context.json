@@ -1,57 +1,107 @@
 {
   "blocking_issues": [
-    "G0 (Contract Audit) has no canonical AG_VALIDATION_G0_G10_V1-shaped evidence for HYP_002 -- omitted rather than assumed PASS, so furthest_verified_gate is None even though G1/G2/G3 each have real evidence.",
-    "HYP_002_SETUP_SELECTIVITY closed VALIDATED_NEGATIVE at G3 -- terminal, must not be rerun, reinterpreted, or continued through parameter tuning.",
-    "HYP_001_EXIT_CAPTURE (v1.1.0 candidate) blocked at G1: candidate_manifest.json missing, branch lineage unreconciled (NEEDS_PREREGISTRATION_REPAIR).",
-    "HYP_001_GBPUSD_REPLICATION_R1 population is NON_COUNTING_LINEAGE_MISMATCH (POPULATION_BOUND_TO_SUPERSEDED_PREREGISTRATION) -- independently reverified by this export (POPULATION_BOUND_TO_SUPERSEDED_PREREGISTRATION: artifact is bound to a superseded/draft hash, not the frozen authoritative one -- preserved as historical evidence, excluded from satisfying any gate)."
+    "G0 (Contract Audit): v1.0.1 contract is internally consistent (owner-adjudicated V1_0_1_REMEDIATION_MANIFEST) but no canonical AG_VALIDATION_G0_G10_V1 G0 GateResult artifact exists -- G0 is PARTIAL, so furthest_verified_gate is None.",
+    "G1: HYP_001_EXIT_CAPTURE v1.1.0 candidate lineage is a POST_HOC_ADMINISTRATIVE_RECONSTRUCTION (candidate_manifest.json created after historical evaluation; retroactive_preregistration=false) -- PARTIAL, not a clean preregistration PASS.",
+    "HYP_002_SETUP_SELECTIVITY is VALIDATED_NEGATIVE (terminal) and PRE_REMEDIATION_NON_COUNTING relative to v1.0.1 -- its v1.0.0 population is not v1.0.1 counting evidence.",
+    "HYP_001_EXIT_CAPTURE is HYPOTHESIS_NOT_SUPPORTED on Route B v1.0.1 corrected evidence (paired_n=88, delta_net_R=-2.227145).",
+    "G3 economic-gate contract is PROPOSED/unsigned -- fail-closed; no economic PASS is evaluable.",
+    "HYP_001_GBPUSD_REPLICATION_R1 population is NON_COUNTING_LINEAGE_MISMATCH -- excluded from gate evidence."
   ],
   "branch": "main",
+  "candidate_manifest": {
+    "candidate_version": "1.1.0",
+    "hypothesis_id": "HYP_001_EXIT_CAPTURE",
+    "parent_version": "1.0.0",
+    "path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_1_0_CANDIDATE_SPEC/candidate_manifest.json",
+    "post_hoc_reconstruction_disclosed": true,
+    "present": true,
+    "retroactive_preregistration": false,
+    "role": "PROSPECTIVE_CONFIRMATION_GOVERNANCE_REPAIR"
+  },
   "contracts_schema_version": "1.0",
+  "economic_gate": {
+    "contract": "AG_R6_ECONOMIC_GATE_CONTRACT_V1",
+    "signed": false,
+    "status": "PROPOSED"
+  },
   "evidence_hashes": {
-    "g1_preregistration": "4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7",
-    "g2_population": "cf098f9a1d6459618d6c775a087b5cb443b7f1f7d915f650eeb8268381c2eb94",
-    "g3_economic_result": null
+    "hyp001_preregistration": "03ed06c68e169893b3172917f4cadf369d52e47f6b8ed5ea2c2f620a13388529",
+    "hyp002_population_attempt_2": "cf098f9a1d6459618d6c775a087b5cb443b7f1f7d915f650eeb8268381c2eb94",
+    "hyp002_preregistration": "4e2e4f21c8bf2fe5b461b29ceff670e769445be913d3f193a73e96cc84492fb7",
+    "route_b_paired_comparison_hash": "089e1fb61f7753c25efd78957884922907fcc5678d1e6a9994e6fd60d57c171c"
+  },
+  "forward": {
+    "campaign_started": false,
+    "eligible": false
   },
   "furthest_verified_gate": null,
   "gates": {
-    "G1": {
-      "evaluated_at": "2026-09-15T16:25:36.918630+00:00",
-      "evaluator_version": "manual_reconciliation_v1",
+    "G0": {
+      "evaluated_at": "2026-09-18T23:55:58.000911+00:00",
+      "evaluator_version": "ssc_svos_context_authority_remediation_v1",
       "evidence_refs": [
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_0_1_REMEDIATION/V1_0_1_REMEDIATION_MANIFEST.json",
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_1_0_CANDIDATE_SPEC/candidate_manifest.json"
+      ],
+      "status": "PARTIAL"
+    },
+    "G1": {
+      "evaluated_at": "2026-09-18T23:55:58.000911+00:00",
+      "evaluator_version": "ssc_svos_context_authority_remediation_v1",
+      "evidence_refs": [
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_PREREGISTRATION/HYP_001_EXIT_CAPTURE_PREREGISTRATION.md",
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_1_0_CANDIDATE_SPEC/candidate_manifest.json",
         "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_PREREGISTRATION/HYP_002_SETUP_SELECTIVITY_PREREGISTRATION.md"
       ],
-      "status": "PASS"
+      "status": "PARTIAL"
     },
     "G2": {
-      "evaluated_at": "2026-09-15T16:25:36.918630+00:00",
-      "evaluator_version": "manual_reconciliation_v1",
+      "evaluated_at": "2026-09-18T23:55:58.000911+00:00",
+      "evaluator_version": "ssc_svos_context_authority_remediation_v1",
       "evidence_refs": [
         "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION_ATTEMPT_2/population_manifest.json"
       ],
-      "status": "PASS"
+      "status": "BLOCKED"
     },
     "G3": {
-      "evaluated_at": "2026-09-15T16:25:36.918630+00:00",
-      "evaluator_version": "manual_reconciliation_v1",
+      "evaluated_at": "2026-09-18T23:55:58.000911+00:00",
+      "evaluator_version": "ssc_svos_context_authority_remediation_v1",
       "evidence_refs": [
-        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_ECONOMIC_RESULT_ATTEMPT_2/economic_evaluation.json"
+        "config/governance/economic_gate_contract.yaml",
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001/ROUTE_B_CORRECTED_TREATMENT_1_5R/PAIRED_COMPARISON_AND_AUDIT.json"
       ],
-      "status": "FAIL"
+      "status": "BLOCKED"
     }
   },
-  "generated_at_utc": "2026-09-15T16:25:36.925103+00:00",
-  "head_sha": "52cd991c4b36fd834520a9357cccddf2073888e9",
+  "generated_at_utc": "2026-09-18T23:55:58.000911+00:00",
+  "head_sha": "07743b6e4fd8bc5f01cb73a90bfc902ebadcb9cb",
   "holdout": {
     "access_count": 0,
     "last_accessed_utc": null,
     "sealed": true,
     "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1"
   },
-  "hypothesis_id": "HYP_002_SETUP_SELECTIVITY",
-  "next_authorized_action": "Owner adjudication of HYP_001_EXIT_CAPTURE preregistration repair. No Cycle-2 (G4+) work authorized.",
-  "schema_version": "1.1",
+  "hypotheses": {
+    "HYP_001_EXIT_CAPTURE": {
+      "confirmation_governed": "CONFIRM_001_CALENDAR_FROZEN",
+      "control_runner_target_r": 3.0,
+      "delta_net_R": -2.227145,
+      "paired_n": 88,
+      "status": "HYPOTHESIS_NOT_SUPPORTED",
+      "terminal": false,
+      "treatment_runner_target_r": 1.5
+    },
+    "HYP_002_SETUP_SELECTIVITY": {
+      "role_relative_to_v1_0_1": "PRE_REMEDIATION_NON_COUNTING",
+      "status": "VALIDATED_NEGATIVE",
+      "terminal": true
+    }
+  },
+  "hypothesis_id": null,
+  "next_authorized_action": "G0/G1 remain PARTIAL (no canonical G0 artifact; HYP_001 v1.1.0 lineage is post-hoc). No G2+ work authorized. Owner may sign config/governance/economic_gate_contract.yaml to activate G3 evaluation.",
+  "schema_version": "1.2",
   "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
-  "strategy_version": "1.0.0",
+  "strategy_version": "1.0.1",
   "svos_lifecycle_stage": "OFFLINE_RESEARCH",
   "validation_methodology_id": "AG_VALIDATION_G0_G10_V1"
 }

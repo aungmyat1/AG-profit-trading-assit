@@ -19,7 +19,7 @@ from .ag_validation_methodology import METHODOLOGY_ID
 from .models import GateResult
 from .svos_contracts import SCHEMA_VERSION, HoldoutState
 
-CONTEXT_SCHEMA_VERSION = "1.1"
+CONTEXT_SCHEMA_VERSION = "1.2"
 
 
 def build_svos_context(
@@ -35,6 +35,11 @@ def build_svos_context(
     holdout: HoldoutState,
     blocking_issues: Sequence[str],
     next_authorized_action: str,
+    generated_at_utc: Optional[str] = None,
+    candidate_manifest: Optional[Mapping[str, Any]] = None,
+    hypotheses: Optional[Mapping[str, Any]] = None,
+    economic_gate: Optional[Mapping[str, Any]] = None,
+    forward: Optional[Mapping[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Pure function -- builds the dict, performs no I/O. `gate_results` keys are
     canonical AG_VALIDATION_G0_G10_V1 gate names (e.g. "G1","G2","G3"); only gates the
@@ -45,7 +50,12 @@ def build_svos_context(
     `validation_gate_state.describe_validation_gate_state`), never an AG-invented label
     -- SVOS remains the only lifecycle authority (Cycle-1 remediation V2, P1).
     `furthest_verified_gate` is the AG progress indicator, always a canonical gate name
-    (or None), never a stage label."""
+    (or None), never a stage label.
+
+    `generated_at_utc` makes output deterministic when supplied (tests); when omitted it
+    defaults to the current UTC time. `candidate_manifest` / `hypotheses` /
+    `economic_gate` / `forward` are additive, caller-supplied authority summaries; each
+    is omitted from the output when None (backward compatible)."""
     gates_out = {}
     for gate_name, result in gate_results.items():
         gates_out[gate_name] = {
@@ -55,11 +65,11 @@ def build_svos_context(
             "evidence_refs": list(result.evidence_refs),
         }
 
-    return {
+    result = {
         "schema_version": CONTEXT_SCHEMA_VERSION,
         "contracts_schema_version": SCHEMA_VERSION,
         "validation_methodology_id": METHODOLOGY_ID,
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_at_utc": generated_at_utc or datetime.now(timezone.utc).isoformat(),
         "strategy_id": strategy_id,
         "strategy_version": strategy_version,
         "hypothesis_id": hypothesis_id,
@@ -78,6 +88,15 @@ def build_svos_context(
         "blocking_issues": list(blocking_issues),
         "next_authorized_action": next_authorized_action,
     }
+    if candidate_manifest is not None:
+        result["candidate_manifest"] = dict(candidate_manifest)
+    if hypotheses is not None:
+        result["hypotheses"] = dict(hypotheses)
+    if economic_gate is not None:
+        result["economic_gate"] = dict(economic_gate)
+    if forward is not None:
+        result["forward"] = dict(forward)
+    return result
 
 
 def write_svos_context(context: Dict[str, Any], path: str) -> str:
