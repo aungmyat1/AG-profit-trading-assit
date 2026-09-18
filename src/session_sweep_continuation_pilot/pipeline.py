@@ -74,8 +74,18 @@ def _evaluate_symbol_session(
     except SymbolMetaError as exc:
         return SymbolCycleResult(symbol, session_pair_id, None, 0, error=str(exc))
 
+    # GAP_1_REGIME_LOOKBACK (see session_sweep_continuation/replay.py's own docstring):
+    # classify_regime's EMA needs `required_regime_warmup(config)` trailing M15 closes
+    # strictly BEFORE the reference session -- the reference window alone never contains
+    # enough bars. Fetch a generous calendar lookback (7 days comfortably covers
+    # ema_slow_period=50 M15 bars even across a weekend) so run_replay's own internal
+    # pre-roll selection (candles with c.time < ref_end) has real history to warm up
+    # from; extra history beyond what it needs is inert context, never fed to the trade
+    # session (PRE_ROLL_DATA_IS_CONTEXT_ONLY, enforced by run_replay itself, not here).
+    lookback_start = ref_start - dt.timedelta(days=7)
+
     try:
-        candles = get_candles(symbol, "M15", ref_start, trade_end)
+        candles = get_candles(symbol, "M15", lookback_start, trade_end)
     except MarketDataError as exc:
         return SymbolCycleResult(symbol, session_pair_id, None, 0, error=str(exc))
 

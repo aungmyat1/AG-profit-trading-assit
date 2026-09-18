@@ -66,6 +66,50 @@ def test_get_unknown_canonical_proposal_is_404(tmp_path):
         app.dependency_overrides.pop(get_proposal_ledger, None)
 
 
+def test_canonical_proposal_governance_fields_survive_restart(tmp_path):
+    """WP12-D (AG_MULTI_STRATEGY_PROPOSAL_AND_WATCH_READINESS_V1_2): the V1.2 additive
+    governance fields (proposal_only/execution_eligible/demo_authorized/live_authorized/
+    broker_mutation_blocked/lifecycle_stage/economic_edge_established) round-trip through
+    JsonKeyValueStore serialization and are still correct after a simulated application
+    restart (a fresh ProposalLedger instance over the same store path)."""
+    path = str(tmp_path / "ledger.json")
+    ledger = ProposalLedger(path=path)
+    ledger.record_proposal(_ready(
+        lifecycle_stage="OFFLINE_RESEARCH", demo_eligible=False, demo_authorized=False,
+        live_authorized=False, economic_edge_established=False,
+    ))
+    app.dependency_overrides[get_proposal_ledger] = lambda: ledger
+    try:
+        before = TestClient(app).get("/api/canonical-proposals").json()[0]
+    finally:
+        app.dependency_overrides.pop(get_proposal_ledger, None)
+
+    # Simulated restart: a brand-new ProposalLedger instance over the same JSON path --
+    # no in-process state carried over, matching a real process restart.
+    restarted_ledger = ProposalLedger(path=path)
+    app.dependency_overrides[get_proposal_ledger] = lambda: restarted_ledger
+    try:
+        after = TestClient(app).get("/api/canonical-proposals").json()[0]
+    finally:
+        app.dependency_overrides.pop(get_proposal_ledger, None)
+
+    for field in (
+        "strategy_id", "strategy_version", "proposal_state", "proposal_only",
+        "execution_eligible", "demo_authorized", "live_authorized",
+        "broker_mutation_blocked", "economic_edge_established", "lifecycle_stage",
+    ):
+        assert field in before, f"{field} missing from pre-restart response"
+        assert before[field] == after[field], f"{field} changed across restart"
+
+    assert after["proposal_only"] is True
+    assert after["execution_eligible"] is False
+    assert after["demo_authorized"] is False
+    assert after["live_authorized"] is False
+    assert after["broker_mutation_blocked"] is True
+    assert after["economic_edge_established"] is False
+    assert after["lifecycle_stage"] == "OFFLINE_RESEARCH"
+
+
 def test_route_is_read_only_no_post_method(tmp_path):
     ledger = ProposalLedger(path=str(tmp_path / "ledger.json"))
     app.dependency_overrides[get_proposal_ledger] = lambda: ledger

@@ -29,6 +29,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from validation_orchestrator.live_status import compute_fingerprint, derive_snapshot  # noqa: E402
 from validation_orchestrator.render import render_markdown  # noqa: E402
+from runtime_status.probe import probe_runtime, runtime_status_as_dict  # noqa: E402
 
 OUTPUT_PATH = REPO_ROOT / "docs" / "status" / "PROJECT_LIVE_STATUS.md"
 _FINGERPRINT_RE = re.compile(r"<!-- LIVE_STATE_FINGERPRINT: ([0-9a-f]{64}) -->")
@@ -64,7 +65,12 @@ def main(argv=None) -> int:
     fp = compute_fingerprint(snapshot)
 
     if args.json:
-        print(json.dumps(_snapshot_to_jsonable(snapshot), indent=2, sort_keys=True, default=str))
+        runtime = probe_runtime(repo_root=REPO_ROOT)
+        payload = {
+            "governance": _snapshot_to_jsonable(snapshot),
+            "runtime": runtime_status_as_dict(runtime),
+        }
+        print(json.dumps(payload, indent=2, sort_keys=True, default=str))
         return 0
 
     state = freshness(OUTPUT_PATH, fp)
@@ -77,7 +83,8 @@ def main(argv=None) -> int:
         print(json.dumps({"written": False, "state": state, "fingerprint": fp}, indent=2))
         return 0
 
-    rendered = render_markdown(snapshot, fp)
+    runtime = probe_runtime(repo_root=REPO_ROOT)
+    rendered = render_markdown(snapshot, fp, runtime_status=runtime)
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(rendered, encoding="utf-8")
     print(json.dumps({"written": True, "state": state, "fingerprint": fp, "path": str(OUTPUT_PATH)}, indent=2))

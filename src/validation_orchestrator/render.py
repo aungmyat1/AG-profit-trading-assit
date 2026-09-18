@@ -1,10 +1,14 @@
 """Deterministic Markdown renderer for LiveStatusSnapshot.
 
-Pure function of (snapshot, fingerprint) -> str. No I/O, no git, no evidence reads --
-everything it needs is already on the snapshot. This keeps render output reproducible
-for a given snapshot, independent of when or how many times it is called.
+Pure function of (snapshot, fingerprint[, runtime_status]) -> str. No I/O, no git, no
+evidence reads -- everything it needs is already on the snapshot (and the optional
+runtime-status object, which is a separate read-only observation layer, never part of
+the governance fingerprint). This keeps render output reproducible for a given input,
+independent of when or how many times it is called.
 """
 from __future__ import annotations
+
+from typing import Optional
 
 from validation_orchestrator.live_status import LiveStatusSnapshot
 
@@ -18,7 +22,9 @@ def _fence(rows, columns):
     return "\n".join(lines)
 
 
-def render_markdown(snapshot: LiveStatusSnapshot, fingerprint: str) -> str:
+def render_markdown(
+    snapshot: LiveStatusSnapshot, fingerprint: str, runtime_status: Optional["object"] = None
+) -> str:
     p = snapshot.provenance
     lines = [
         _HEADER,
@@ -43,8 +49,26 @@ def render_markdown(snapshot: LiveStatusSnapshot, fingerprint: str) -> str:
         "",
         "## 3. Runtime Status",
         "",
-        "- No runtime probe is wired into this generator (AVO-WP1 scope). "
-        "Runtime/broker/feed status is out of scope for this snapshot.",
+    ]
+    if runtime_status is None:
+        lines.append(
+            "- No runtime probe is wired into this generator (AVO-WP1 scope). "
+            "Runtime/broker/feed status is out of scope for this snapshot."
+        )
+    else:
+        lines += [
+            "- RUNTIME_STATUS is a **separate authority** from GOVERNANCE_STATUS. A probe "
+            "result here never changes `validation_state`, `demo_authorized`, "
+            "`live_authorized`, blockers, or next-safe-actions (sections 5/8/11/12), and "
+            "is excluded from the governance state fingerprint below.",
+            f"- Checked at: `{runtime_status.checked_at_utc}`",
+            "",
+        ]
+        probe_rows = [
+            (probe.name, probe.status, probe.detail) for probe in runtime_status.probes
+        ]
+        lines.append(_fence(probe_rows, ["subsystem", "status", "detail"]))
+    lines += [
         "",
         "## 4. Project Readiness Gates",
         "",
@@ -87,7 +111,45 @@ def render_markdown(snapshot: LiveStatusSnapshot, fingerprint: str) -> str:
     )
     lines += [
         "",
-        "## 6. Campaign / Evidence State",
+        "## 6. Proposal Platform Status (V1.2)",
+        "",
+        "- Informational proposal capability (`proposal_capable`) is independent of "
+        "economic edge (`economic_edge_established`) and execution eligibility "
+        "(`execution_eligible`): a `proposal_capable = true` entry can still be "
+        "`economic_edge_established = false` and `execution_eligible = false`. "
+        "Proposal generation is OBSERVATION ONLY and grants no validation or "
+        "execution authority.",
+    ]
+    if snapshot.proposal_platform:
+        lines.append("")
+        lines.append(
+            _fence(
+                [
+                    (
+                        e.strategy_id,
+                        e.proposal_capable,
+                        e.proposal_generation_authorized,
+                        e.economic_edge_established,
+                        e.execution_eligible,
+                        e.broker_mutation_blocked,
+                    )
+                    for e in snapshot.proposal_platform
+                ],
+                [
+                    "strategy_id",
+                    "proposal_capable",
+                    "proposal_generation_authorized",
+                    "economic_edge_established",
+                    "execution_eligible",
+                    "broker_mutation_blocked",
+                ],
+            )
+        )
+    else:
+        lines.append("- No V1.2 proposal-platform entries resolved.")
+    lines += [
+        "",
+        "## 7. Campaign / Evidence State",
         "",
         "- Campaign-level evidence (observation counts, friction-campaign day counts) "
         "is not yet tracked by AVO-WP1 (`dataset_role_status`/`lineage_status`/"
@@ -96,7 +158,7 @@ def render_markdown(snapshot: LiveStatusSnapshot, fingerprint: str) -> str:
         "point-in-time campaign snapshot until a canonical multi-strategy reader "
         "exists.",
         "",
-        "## 7. Active Blockers",
+        "## 8. Active Blockers",
         "",
     ]
     if snapshot.blockers:
@@ -105,7 +167,7 @@ def render_markdown(snapshot: LiveStatusSnapshot, fingerprint: str) -> str:
         lines.append("- None reported.")
     lines += [
         "",
-        "## 8. Concurrent / Foreign WIP",
+        "## 9. Concurrent / Foreign WIP",
         "",
     ]
     if p.foreign_wip_paths:
@@ -115,7 +177,7 @@ def render_markdown(snapshot: LiveStatusSnapshot, fingerprint: str) -> str:
         lines.append("- None detected.")
     lines += [
         "",
-        "## 9. Owner Decisions Required",
+        "## 10. Owner Decisions Required",
         "",
     ]
     if snapshot.owner_decisions_required:
@@ -124,7 +186,7 @@ def render_markdown(snapshot: LiveStatusSnapshot, fingerprint: str) -> str:
         lines.append("- None.")
     lines += [
         "",
-        "## 10. Next Safe Actions",
+        "## 11. Next Safe Actions",
         "",
     ]
     if snapshot.next_safe_actions:
@@ -133,14 +195,14 @@ def render_markdown(snapshot: LiveStatusSnapshot, fingerprint: str) -> str:
         lines.append("- None.")
     lines += [
         "",
-        "## 11. Execution Authority",
+        "## 12. Execution Authority",
         "",
     ]
     auth_rows = [(s.strategy_id, s.demo_authorized, s.live_authorized) for s in snapshot.strategies]
     lines.append(_fence(auth_rows, ["strategy_id", "demo_authorized", "live_authorized"]))
     lines += [
         "",
-        "## 12. Generator Provenance",
+        "## 13. Generator Provenance",
         "",
         f"- Generator: `scripts/generate_live_status.py` (schema `{snapshot.schema_version}`)",
         f"- State fingerprint: `{fingerprint}`",
