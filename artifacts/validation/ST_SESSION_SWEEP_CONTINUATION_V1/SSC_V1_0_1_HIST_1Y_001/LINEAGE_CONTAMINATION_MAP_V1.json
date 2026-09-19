@@ -36,7 +36,8 @@
       "SSC_V1_0_1_G2_DEV_001::M15",
       "SSC_V1_0_1_G2_DEV_002::H1",
       "SSC_V1_0_1_G2_DEV_002::M1",
-      "SSC_V1_0_1_G2_DEV_002::M15"
+      "SSC_V1_0_1_G2_DEV_002::M15",
+      "SSC_V1_0_1_HIST_1Y_M1_001::M1"
     ],
     "timeframes_evaluated": [
       "H1",

@@ -1,0 +1,349 @@
+{
+  "account_login": 26088035,
+  "acquisition_method": "MetaTrader5.copy_rates_range (python bridge), chunked by calendar month",
+  "acquisition_timestamp_utc": "2026-09-19T16:44:38Z",
+  "actual_interval_utc": {
+    "from": "2025-09-14T21:02:00Z",
+    "to": "2026-09-15T21:00:00Z"
+  },
+  "api_calls": [
+    {
+      "bars": 17236,
+      "error": "(1, 'Success')",
+      "from_utc": "2025-09-14T00:00:00Z",
+      "to_utc": "2025-10-01T00:00:00Z"
+    },
+    {
+      "bars": 33005,
+      "error": "(1, 'Success')",
+      "from_utc": "2025-10-01T00:00:00Z",
+      "to_utc": "2025-11-01T00:00:00Z"
+    },
+    {
+      "bars": 28646,
+      "error": "(1, 'Success')",
+      "from_utc": "2025-11-01T00:00:00Z",
+      "to_utc": "2025-12-01T00:00:00Z"
+    },
+    {
+      "bars": 31585,
+      "error": "(1, 'Success')",
+      "from_utc": "2025-12-01T00:00:00Z",
+      "to_utc": "2026-01-01T00:00:00Z"
+    },
+    {
+      "bars": 30171,
+      "error": "(1, 'Success')",
+      "from_utc": "2026-01-01T00:00:00Z",
+      "to_utc": "2026-02-01T00:00:00Z"
+    },
+    {
+      "bars": 28750,
+      "error": "(1, 'Success')",
+      "from_utc": "2026-02-01T00:00:00Z",
+      "to_utc": "2026-03-01T00:00:00Z"
+    },
+    {
+      "bars": 31593,
+      "error": "(1, 'Success')",
+      "from_utc": "2026-03-01T00:00:00Z",
+      "to_utc": "2026-04-01T00:00:00Z"
+    },
+    {
+      "bars": 31613,
+      "error": "(1, 'Success')",
+      "from_utc": "2026-04-01T00:00:00Z",
+      "to_utc": "2026-05-01T00:00:00Z"
+    },
+    {
+      "bars": 30171,
+      "error": "(1, 'Success')",
+      "from_utc": "2026-05-01T00:00:00Z",
+      "to_utc": "2026-06-01T00:00:00Z"
+    },
+    {
+      "bars": 31617,
+      "error": "(1, 'Success')",
+      "from_utc": "2026-06-01T00:00:00Z",
+      "to_utc": "2026-07-01T00:00:00Z"
+    },
+    {
+      "bars": 33052,
+      "error": "(1, 'Success')",
+      "from_utc": "2026-07-01T00:00:00Z",
+      "to_utc": "2026-08-01T00:00:00Z"
+    },
+    {
+      "bars": 30175,
+      "error": "(1, 'Success')",
+      "from_utc": "2026-08-01T00:00:00Z",
+      "to_utc": "2026-09-01T00:00:00Z"
+    },
+    {
+      "bars": 15811,
+      "error": "(1, 'Success')",
+      "from_utc": "2026-09-01T00:00:00Z",
+      "to_utc": "2026-09-16T00:00:00Z"
+    }
+  ],
+  "bridge_version": "5.0.5735",
+  "broker_offset_segments": [
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2025-09-15T00:02:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2025-09-22T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2025-09-29T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2025-10-06T00:00:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2025-10-13T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2025-10-20T00:00:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2025-10-27T00:01:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2025-11-03T00:01:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2025-11-10T00:01:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2025-11-17T00:01:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2025-11-24T00:02:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2025-12-01T00:02:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2025-12-08T00:01:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2025-12-15T00:03:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2025-12-22T00:01:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2025-12-29T00:02:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2026-01-05T00:02:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2026-01-12T00:01:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2026-01-19T00:01:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2026-01-26T00:00:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2026-02-02T00:00:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2026-02-09T00:01:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2026-02-16T00:00:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2026-02-23T00:01:00"
+    },
+    {
+      "offset_hours": 2,
+      "segment_start_broker": "2026-03-02T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-03-09T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-03-16T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-03-23T00:02:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-03-30T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-04-06T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-04-13T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-04-20T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-04-27T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-05-04T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-05-11T00:00:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-05-18T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-05-25T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-06-01T00:02:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-06-08T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-06-15T00:02:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-06-22T00:02:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-06-29T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-07-06T00:02:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-07-13T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-07-20T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-07-27T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-08-03T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-08-10T00:02:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-08-17T00:02:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-08-24T00:02:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-08-31T00:01:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-09-07T00:02:00"
+    },
+    {
+      "offset_hours": 3,
+      "segment_start_broker": "2026-09-14T00:02:00"
+    }
+  ],
+  "broker_server": "VantageMarkets-Demo",
+  "data_role": "HISTORICAL_RESEARCH_INPUT_ONLY",
+  "data_type": "M1 OHLCV bars (MetaTrader5 TIMEFRAME_M1)",
+  "dataset_id": "SSC_V1_0_1_HIST_1Y_M1_001",
+  "environment": "DEMO",
+  "file_format": "raw: MT5 Export tab-delimited broker wall clock; dataset: CSV header timestamp_utc,open,high,low,close,tick_volume,spread,real_volume",
+  "loader_timezone_authority": "BROKER_SERVER_TIME(UTC+2/UTC+3 seasonal DST)",
+  "notes": [
+    "Not independent validation evidence: this interval is historical research input only.",
+    "The one-year SSC replay is a separate one-shot mission and was NOT run here."
+  ],
+  "offset_changes_inside_period": true,
+  "price_convention": "broker BID-based M1 OHLC (MT5 native bar convention)",
+  "provider": "Vantage Markets (Pty) Ltd",
+  "raw_source_file": "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_M1_001/raw/EURUSD_M1_broker_export.csv",
+  "raw_source_interval_broker_wallclock": {
+    "from": "2025-09-15T00:02:00Z",
+    "to": "2026-09-16T00:00:00Z"
+  },
+  "raw_source_rows": 373421,
+  "raw_source_sha256": "3fdd97cfba62c37251f401c9e357833da4df3da48729d8edf9363ef2a6fe7fdd",
+  "requested_interval_utc": {
+    "from": "2025-09-15T00:00:00Z",
+    "to": "2026-09-15T00:00:00Z"
+  },
+  "row_count": 373421,
+  "schema": "AG_SSC_M1_ACQUISITION_PROVENANCE_V1",
+  "sha256": "50beb42ad2f65203f3946301eee0e8a435dd6f2067eb4fc0692ebba451d12f8a",
+  "symbol": "EURUSD",
+  "symbol_metadata": {
+    "digits": 5,
+    "point": 1e-05,
+    "tick_size": 1e-05
+  },
+  "target_gap_utc": {
+    "from": "2025-09-15T00:00:00Z",
+    "to": "2026-05-18T06:46:00Z"
+  },
+  "terminal_build": 6182,
+  "terminal_maxbars_setting": 100000000,
+  "timezone": "BROKER_SERVER_TIME resolved to UTC per weekly reopen (src/mt5/broker_time.offset_from_reopen); raw epochs read as broker wall clock, per that module's documented MT5 quirk",
+  "timezone_offsets_detected_hours": [
+    2,
+    3
+  ]
+}

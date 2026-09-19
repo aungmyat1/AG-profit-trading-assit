@@ -1,27 +1,6 @@
 {
-  "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
-  "blocking_missing_intervals": {
-    "M1": [
-      {
-        "duration_days": 245.282,
-        "from": "2025-09-15T00:00:00Z",
-        "to": "2026-05-18T06:46:00Z",
-        "weekdays_touched": 176
-      },
-      {
-        "duration_days": 0.001,
-        "from": "2026-08-03T00:00:00Z",
-        "to": "2026-08-03T00:01:00Z",
-        "weekdays_touched": 1
-      },
-      {
-        "duration_days": 0.001,
-        "from": "2026-09-14T23:58:00Z",
-        "to": "2026-09-15T00:00:00Z",
-        "weekdays_touched": 1
-      }
-    ]
-  },
+  "FINAL_STATUS": "DATA_COVERAGE_COMPLETE",
+  "blocking_missing_intervals": {},
   "canonical_requirements": {
     "canonical_partial_target_semantic": "OPPOSITE_SESSION_BOUNDARY",
     "canonical_replay_authority": "session_sweep_continuation.replay.run_replay",
@@ -61,38 +40,16 @@
         "EXTERNAL_D_ROOT::EURUSD_M1_202606080840_202607302357.csv",
         "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::M1",
         "SSC_V1_0_1_G2_DEV_001::M1",
-        "SSC_V1_0_1_G2_DEV_002::M1"
+        "SSC_V1_0_1_G2_DEV_002::M1",
+        "SSC_V1_0_1_HIST_1Y_M1_001::M1"
       ],
       "covered_intervals": [
         [
-          "2026-05-18T06:46:00Z",
-          "2026-08-03T00:00:00Z"
-        ],
-        [
-          "2026-08-03T00:01:00Z",
-          "2026-09-14T23:58:00Z"
+          "2025-09-15T00:00:00Z",
+          "2026-09-15T00:00:00Z"
         ]
       ],
-      "missing_intervals": [
-        {
-          "duration_days": 245.282,
-          "from": "2025-09-15T00:00:00Z",
-          "to": "2026-05-18T06:46:00Z",
-          "weekdays_touched": 176
-        },
-        {
-          "duration_days": 0.001,
-          "from": "2026-08-03T00:00:00Z",
-          "to": "2026-08-03T00:01:00Z",
-          "weekdays_touched": 1
-        },
-        {
-          "duration_days": 0.001,
-          "from": "2026-09-14T23:58:00Z",
-          "to": "2026-09-15T00:00:00Z",
-          "weekdays_touched": 1
-        }
-      ]
+      "missing_intervals": []
     },
     "M15": {
       "admissible_contributors": [
@@ -129,12 +86,8 @@
       ],
       "AVAILABLE_M1": [
         [
-          "2026-05-18T06:46:00Z",
-          "2026-08-03T00:00:00Z"
-        ],
-        [
-          "2026-08-03T00:01:00Z",
-          "2026-09-14T23:58:00Z"
+          "2025-09-19T00:00:00Z",
+          "2026-09-15T21:01:00Z"
         ]
       ],
       "AVAILABLE_M15": [
@@ -146,16 +99,12 @@
       "COMMON_INTERVAL": {
         "intervals": [
           [
-            "2026-05-18T06:46:00Z",
-            "2026-08-03T00:00:00Z"
-          ],
-          [
-            "2026-08-03T00:01:00Z",
-            "2026-09-14T23:58:00Z"
+            "2025-09-19T00:00:00Z",
+            "2026-09-15T00:00:00Z"
           ]
         ],
         "note": "H1 x M15 x M1 intersection -- the only span a canonical replay could run end to end",
-        "total_covered_days": 119.716
+        "total_covered_days": 361.0
       },
       "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
       "MISSING_INTERVALS": {
@@ -169,22 +118,10 @@
         ],
         "M1": [
           {
-            "duration_days": 241.282,
-            "from": "2025-09-19T00:00:00Z",
-            "to": "2026-05-18T06:46:00Z",
-            "weekdays_touched": 172
-          },
-          {
-            "duration_days": 0.001,
-            "from": "2026-08-03T00:00:00Z",
-            "to": "2026-08-03T00:01:00Z",
-            "weekdays_touched": 1
-          },
-          {
-            "duration_days": 4.001,
-            "from": "2026-09-14T23:58:00Z",
+            "duration_days": 3.124,
+            "from": "2026-09-15T21:01:00Z",
             "to": "2026-09-19T00:00:00Z",
-            "weekdays_touched": 5
+            "weekdays_touched": 4
           }
         ],
         "M15": [
@@ -226,12 +163,8 @@
       ],
       "AVAILABLE_M1": [
         [
-          "2026-05-18T06:46:00Z",
-          "2026-08-03T00:00:00Z"
-        ],
-        [
-          "2026-08-03T00:01:00Z",
-          "2026-09-14T23:58:00Z"
+          "2025-09-15T00:00:00Z",
+          "2026-09-15T00:00:00Z"
         ]
       ],
       "AVAILABLE_M15": [
@@ -243,40 +176,15 @@
       "COMMON_INTERVAL": {
         "intervals": [
           [
-            "2026-05-18T06:46:00Z",
-            "2026-08-03T00:00:00Z"
-          ],
-          [
-            "2026-08-03T00:01:00Z",
-            "2026-09-14T23:58:00Z"
+            "2025-09-15T00:00:00Z",
+            "2026-09-15T00:00:00Z"
           ]
         ],
         "note": "H1 x M15 x M1 intersection -- the only span a canonical replay could run end to end",
-        "total_covered_days": 119.716
+        "total_covered_days": 365.0
       },
-      "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
-      "MISSING_INTERVALS": {
-        "M1": [
-          {
-            "duration_days": 245.282,
-            "from": "2025-09-15T00:00:00Z",
-            "to": "2026-05-18T06:46:00Z",
-            "weekdays_touched": 176
-          },
-          {
-            "duration_days": 0.001,
-            "from": "2026-08-03T00:00:00Z",
-            "to": "2026-08-03T00:01:00Z",
-            "weekdays_touched": 1
-          },
-          {
-            "duration_days": 0.001,
-            "from": "2026-09-14T23:58:00Z",
-            "to": "2026-09-15T00:00:00Z",
-            "weekdays_touched": 1
-          }
-        ]
-      },
+      "FINAL_STATUS": "DATA_COVERAGE_COMPLETE",
+      "MISSING_INTERVALS": {},
       "WARMUP_AVAILABLE": {
         "pass": true,
         "per_session_pair": {
@@ -299,7 +207,7 @@
       }
     }
   },
-  "precondition_tier_a_full_year_coverage": false,
+  "precondition_tier_a_full_year_coverage": true,
   "primary_window_id": "PRIMARY_1Y_ENDING_BEFORE_PROTECTED_CALENDAR",
   "protected_data_status": {
     "PROTECTED_DATASETS_ENUMERATED": [
@@ -617,6 +525,34 @@
       "timeframe": "M1",
       "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
       "unexpected_gap_count": 25,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "HISTORICAL_RESEARCH_INPUT_ONLY",
+      "dataset_id": "SSC_V1_0_1_HIST_1Y_M1_001",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 52,
+      "first_timestamp_utc": "2025-09-14T21:02:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 49.08,
+      "last_timestamp_utc": "2026-09-15T21:00:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_M1_001/raw/EURUSD_M1.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 373421,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "50beb42ad2f65203f3946301eee0e8a435dd6f2067eb4fc0692ebba451d12f8a",
+      "source_id": "SSC_V1_0_1_HIST_1Y_M1_001::M1",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M1",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 294,
       "zero_or_negative_price_rows": 0
     },
     {
@@ -1174,12 +1110,8 @@
       ],
       "AVAILABLE_M1": [
         [
-          "2026-05-18T06:46:00Z",
-          "2026-08-03T00:00:00Z"
-        ],
-        [
-          "2026-08-03T00:01:00Z",
-          "2026-09-14T23:58:00Z"
+          "2025-09-19T00:00:00Z",
+          "2026-09-15T21:01:00Z"
         ]
       ],
       "AVAILABLE_M15": [
@@ -1191,16 +1123,12 @@
       "COMMON_INTERVAL": {
         "intervals": [
           [
-            "2026-05-18T06:46:00Z",
-            "2026-08-03T00:00:00Z"
-          ],
-          [
-            "2026-08-03T00:01:00Z",
-            "2026-09-14T23:58:00Z"
+            "2025-09-19T00:00:00Z",
+            "2026-09-15T00:00:00Z"
           ]
         ],
         "note": "H1 x M15 x M1 intersection -- the only span a canonical replay could run end to end",
-        "total_covered_days": 119.716
+        "total_covered_days": 361.0
       },
       "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
       "MISSING_INTERVALS": {
@@ -1214,22 +1142,10 @@
         ],
         "M1": [
           {
-            "duration_days": 241.282,
-            "from": "2025-09-19T00:00:00Z",
-            "to": "2026-05-18T06:46:00Z",
-            "weekdays_touched": 172
-          },
-          {
-            "duration_days": 0.001,
-            "from": "2026-08-03T00:00:00Z",
-            "to": "2026-08-03T00:01:00Z",
-            "weekdays_touched": 1
-          },
-          {
-            "duration_days": 4.001,
-            "from": "2026-09-14T23:58:00Z",
+            "duration_days": 3.124,
+            "from": "2026-09-15T21:01:00Z",
             "to": "2026-09-19T00:00:00Z",
-            "weekdays_touched": 5
+            "weekdays_touched": 4
           }
         ],
         "M15": [
@@ -1263,27 +1179,15 @@
       },
       "coverage_days_by_timeframe": {
         "H1": 361.0,
-        "M1": 119.716,
+        "M1": 361.876,
         "M15": 361.0
       },
       "three_way_missing_intervals": [
         {
-          "duration_days": 241.282,
-          "from": "2025-09-19T00:00:00Z",
-          "to": "2026-05-18T06:46:00Z",
-          "weekdays_touched": 172
-        },
-        {
-          "duration_days": 0.001,
-          "from": "2026-08-03T00:00:00Z",
-          "to": "2026-08-03T00:01:00Z",
-          "weekdays_touched": 1
-        },
-        {
-          "duration_days": 4.001,
-          "from": "2026-09-14T23:58:00Z",
+          "duration_days": 4.0,
+          "from": "2026-09-15T00:00:00Z",
           "to": "2026-09-19T00:00:00Z",
-          "weekdays_touched": 5
+          "weekdays_touched": 4
         }
       ],
       "tier_a_full_year_coverage": false,
@@ -1301,12 +1205,8 @@
       ],
       "AVAILABLE_M1": [
         [
-          "2026-05-18T06:46:00Z",
-          "2026-08-03T00:00:00Z"
-        ],
-        [
-          "2026-08-03T00:01:00Z",
-          "2026-09-14T23:58:00Z"
+          "2025-09-15T00:00:00Z",
+          "2026-09-15T00:00:00Z"
         ]
       ],
       "AVAILABLE_M15": [
@@ -1318,40 +1218,15 @@
       "COMMON_INTERVAL": {
         "intervals": [
           [
-            "2026-05-18T06:46:00Z",
-            "2026-08-03T00:00:00Z"
-          ],
-          [
-            "2026-08-03T00:01:00Z",
-            "2026-09-14T23:58:00Z"
+            "2025-09-15T00:00:00Z",
+            "2026-09-15T00:00:00Z"
           ]
         ],
         "note": "H1 x M15 x M1 intersection -- the only span a canonical replay could run end to end",
-        "total_covered_days": 119.716
+        "total_covered_days": 365.0
       },
-      "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
-      "MISSING_INTERVALS": {
-        "M1": [
-          {
-            "duration_days": 245.282,
-            "from": "2025-09-15T00:00:00Z",
-            "to": "2026-05-18T06:46:00Z",
-            "weekdays_touched": 176
-          },
-          {
-            "duration_days": 0.001,
-            "from": "2026-08-03T00:00:00Z",
-            "to": "2026-08-03T00:01:00Z",
-            "weekdays_touched": 1
-          },
-          {
-            "duration_days": 0.001,
-            "from": "2026-09-14T23:58:00Z",
-            "to": "2026-09-15T00:00:00Z",
-            "weekdays_touched": 1
-          }
-        ]
-      },
+      "FINAL_STATUS": "DATA_COVERAGE_COMPLETE",
+      "MISSING_INTERVALS": {},
       "WARMUP_AVAILABLE": {
         "pass": true,
         "per_session_pair": {
@@ -1374,30 +1249,11 @@
       },
       "coverage_days_by_timeframe": {
         "H1": 365.0,
-        "M1": 119.716,
+        "M1": 365.0,
         "M15": 365.0
       },
-      "three_way_missing_intervals": [
-        {
-          "duration_days": 245.282,
-          "from": "2025-09-15T00:00:00Z",
-          "to": "2026-05-18T06:46:00Z",
-          "weekdays_touched": 176
-        },
-        {
-          "duration_days": 0.001,
-          "from": "2026-08-03T00:00:00Z",
-          "to": "2026-08-03T00:01:00Z",
-          "weekdays_touched": 1
-        },
-        {
-          "duration_days": 0.001,
-          "from": "2026-09-14T23:58:00Z",
-          "to": "2026-09-15T00:00:00Z",
-          "weekdays_touched": 1
-        }
-      ],
-      "tier_a_full_year_coverage": false,
+      "three_way_missing_intervals": [],
+      "tier_a_full_year_coverage": true,
       "window": {
         "end_utc": "2026-09-14T23:59:59Z",
         "start_utc": "2025-09-15T00:00:00Z"

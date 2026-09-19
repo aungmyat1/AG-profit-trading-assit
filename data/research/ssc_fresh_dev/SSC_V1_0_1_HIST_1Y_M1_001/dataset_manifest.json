@@ -1,0 +1,129 @@
+{
+  "acquisition_provenance": "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_M1_001/acquisition_provenance.json",
+  "authorization": "Owner-authorized 2026-09-19 acquisition mission (Vantage/MT5 route 1); owner raised the MT5 MaxBars setting to enable deep M1 history.",
+  "broker_offset_segment_count": 53,
+  "coverage_gate": "scripts/audit_ssc_v1_0_1_one_year_data_coverage.py -- must report DATA_COVERAGE_COMPLETE before any replay",
+  "data_role": "HISTORICAL_RESEARCH_INPUT_ONLY",
+  "dataset_id": "SSC_V1_0_1_HIST_1Y_M1_001",
+  "frozen_end": "2026-09-15T00:00:00Z",
+  "frozen_start": "2025-09-15T00:00:00Z",
+  "generated_at_utc": "2026-09-19",
+  "offset_changes_inside_period": true,
+  "package_id": "SSC_V1_0_1_HIST_1Y_M1_001",
+  "parity_vs_canonical_dev002_m1": {
+    "PARITY_STATUS": "PASS_EXACT",
+    "canonical_minutes_not_in_acquired": 0,
+    "canonical_rows": 43292,
+    "canonical_source": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_M1.csv",
+    "exact_all_four_rate": 1.0,
+    "overlap_first": "2026-06-21T21:02:00Z",
+    "overlap_last": "2026-08-02T23:59:00Z",
+    "overlap_minutes": 43292
+  },
+  "per_file": {
+    "EURUSD_M1": {
+      "first_timestamp": "2025-09-14T21:02:00Z",
+      "last_timestamp": "2026-09-15T21:00:00Z",
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_M1_001/raw/EURUSD_M1.csv",
+      "rows": 373421,
+      "sha256": "50beb42ad2f65203f3946301eee0e8a435dd6f2067eb4fc0692ebba451d12f8a"
+    }
+  },
+  "raw_source": {
+    "interval_broker_wallclock": {
+      "from": "2025-09-15T00:02:00Z",
+      "to": "2026-09-16T00:00:00Z"
+    },
+    "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_M1_001/raw/EURUSD_M1_broker_export.csv",
+    "rows": 373421,
+    "sha256": "3fdd97cfba62c37251f401c9e357833da4df3da48729d8edf9363ef2a6fe7fdd"
+  },
+  "schema": "AG_SSC_HISTORICAL_INPUT_MANIFEST_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1",
+  "symbol": "EURUSD",
+  "target_gap": {
+    "end": "2026-05-18T06:46:00Z",
+    "start": "2025-09-15T00:00:00Z"
+  },
+  "timezone_authority": "BROKER_SERVER_TIME(UTC+2/UTC+3 seasonal DST)",
+  "timezone_offsets_detected_hours": [
+    2,
+    3
+  ],
+  "validation": {
+    "actual_minutes_in_window": 248814,
+    "calendar_model_caveat": "The simple Sun 21:00 UTC -> Fri 21:00 UTC, Mon-Thu 21:00-22:00 UTC break model is an approximation of the FX calendar, not this broker's calendar (holidays, irregular rollover steps). It both over- and under-predicts and is therefore NOT the coverage gate. The authoritative verdict is the canonical audit in scripts/audit_ssc_v1_0_1_one_year_data_coverage.py.",
+    "duplicate_timestamps": 0,
+    "expected_minutes_under_simple_utc_fx_calendar_model": 244006,
+    "first_timestamp_utc": "2025-09-14T21:02:00Z",
+    "gap_structure": {
+      "intraday_break_gaps": 294,
+      "largest_gap_hours": 49.083,
+      "native_one_minute_steps": 373074,
+      "note": "Intraday break gaps are this broker's own rollover/maintenance behaviour (observed as 2-7 minute steps and occasional ~1 hour breaks), not missing trading data. No gap is ever filled, interpolated or synthesized.",
+      "top_non_native_durations": [
+        {
+          "count": 161,
+          "duration": "0:03:00"
+        },
+        {
+          "count": 73,
+          "duration": "0:04:00"
+        },
+        {
+          "count": 33,
+          "duration": "0:02:00"
+        },
+        {
+          "count": 29,
+          "duration": "2 days, 0:05:00"
+        },
+        {
+          "count": 14,
+          "duration": "2 days, 0:06:00"
+        },
+        {
+          "count": 7,
+          "duration": "0:07:00"
+        },
+        {
+          "count": 6,
+          "duration": "0:05:00"
+        },
+        {
+          "count": 6,
+          "duration": "2 days, 0:04:00"
+        }
+      ],
+      "weekend_closure_gaps": 52
+    },
+    "invalid_ohlc_bars": 0,
+    "last_timestamp_utc": "2026-09-15T21:00:00Z",
+    "minutes_absent_under_simple_utc_fx_calendar_model": 8399,
+    "monthly_coverage": {
+      "2025-09": 17415,
+      "2025-10": 32825,
+      "2025-11": 28764,
+      "2025-12": 31467,
+      "2026-01": 30171,
+      "2026-02": 28750,
+      "2026-03": 31771,
+      "2026-04": 31613,
+      "2026-05": 30169,
+      "2026-06": 31618,
+      "2026-07": 32873,
+      "2026-08": 30354,
+      "2026-09": 15631
+    },
+    "non_monotonic_timestamps": 0,
+    "quality_status": "PASS",
+    "row_count": 373421,
+    "schema": "UTC timestamp_utc, broker wall clock normalized per weekly reopen (src/mt5/broker_time.offset_from_reopen)"
+  },
+  "warmup_role": {
+    "may_contribute_economic_sample_N": false,
+    "may_generate_decision_occurrence": false,
+    "may_initialize_h1_bias": false
+  }
+}
