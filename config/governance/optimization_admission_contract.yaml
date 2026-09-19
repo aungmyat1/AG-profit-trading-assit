@@ -1,0 +1,48 @@
+# AG_OPTIMIZATION_ADMISSION_CONTRACT_V1 -- PROPOSED, NOT SIGNED.
+#
+# What this file is: a strategy-neutral governance contract defining the exact
+# conditions under which bounded optimization (SVOS G4) may be ADMITTED for a
+# strategy/hypothesis. Optimization is never admitted on its own -- every required
+# condition must pass, and the economic gate must have legitimately FAILED first.
+#
+# What this file is NOT: active governance. status: PROPOSED means no evaluator may
+# treat these conditions as signed authority until an owner sets status=SIGNED and
+# fills signed_by/signed_at (same convention as economic_gate_contract.yaml).
+# src/svos/optimization_admission.py fails closed (OPTIMIZATION_BLOCKED) on any
+# contract whose status is not SIGNED, and on any missing/failing condition.
+#
+# Key invariant (mirrors economic_gate_contract.yaml's promotion discipline):
+# ECONOMIC_GATE_FAIL alone NEVER authorizes optimization.
+
+schema_version: "1"
+
+identity:
+  contract_id: AG_OPTIMIZATION_ADMISSION_CONTRACT_V1
+  version: "1"
+  status: PROPOSED   # PROPOSED | SIGNED -- only SIGNED may ever be evaluated against
+  signed_by: null
+  signed_at: null
+
+optimization_admission:
+  # Preconditions (ALL required; any failure => OPTIMIZATION_BLOCKED).
+  economic_gate_result: FAIL          # G3 must have legitimately FAILED (never PASS/unsigned)
+  data_integrity: PASS                # admitted dataset hashes verified, no leakage
+  semantic_integrity: PASS            # candidate single_primary_delta, frozen dimensions verified
+  population_role: DEVELOPMENT        # optimization may only consume DEVELOPMENT data
+  failure_diagnosis_complete: true    # failure decomposition performed (causal, not fishing)
+  mechanism_identified: true          # a single concrete mechanism named in the hypothesis
+  hypothesis_preregistered: true      # frozen svos.hypothesis.HypothesisContract (hash bound)
+  search_budget_frozen: true          # MAX_CANDIDATES + MAX_SEARCH_BUDGET frozen before search
+  protected_data_access_count: 0      # holdout/OOS/confirmation untouched
+  optimization_population_authorized: true  # explicit, separately-authorized optimization population
+
+invariants:
+  economic_fail_alone_authorizes: false
+  search_on_confirmation: false
+  search_on_holdout: false
+  search_on_oos: false
+  unbounded_search: false
+
+evaluation:
+  all_conditions_pass: OPTIMIZATION_ELIGIBLE
+  any_condition_fails: OPTIMIZATION_BLOCKED
