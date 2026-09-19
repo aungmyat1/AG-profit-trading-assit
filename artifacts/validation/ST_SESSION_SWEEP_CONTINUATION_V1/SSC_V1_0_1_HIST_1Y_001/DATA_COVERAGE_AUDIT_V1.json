@@ -1,0 +1,1407 @@
+{
+  "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
+  "blocking_missing_intervals": {
+    "M1": [
+      {
+        "duration_days": 245.282,
+        "from": "2025-09-15T00:00:00Z",
+        "to": "2026-05-18T06:46:00Z",
+        "weekdays_touched": 176
+      },
+      {
+        "duration_days": 0.001,
+        "from": "2026-08-03T00:00:00Z",
+        "to": "2026-08-03T00:01:00Z",
+        "weekdays_touched": 1
+      },
+      {
+        "duration_days": 0.001,
+        "from": "2026-09-14T23:58:00Z",
+        "to": "2026-09-15T00:00:00Z",
+        "weekdays_touched": 1
+      }
+    ]
+  },
+  "canonical_requirements": {
+    "canonical_partial_target_semantic": "OPPOSITE_SESSION_BOUNDARY",
+    "canonical_replay_authority": "session_sweep_continuation.replay.run_replay",
+    "config_hash": "6281b6407c748990d3b68188dafc2b6fec5aa5534dc4ce5fc82abcf53568b1fc",
+    "structure_warmup_h1_bars": 1000,
+    "timeframe_roles": {
+      "H1": "MARKET_BIAS_INPUT / structure warmup",
+      "M1": "FILL_RESOLUTION_INPUT",
+      "M15": "STRATEGY_DECISION_INPUT"
+    }
+  },
+  "coverage_by_timeframe": {
+    "H1": {
+      "admissible_contributors": [
+        "EXTERNAL_D_ROOT::EURUSD_H1_202501020000_202607310000.csv",
+        "HYP_002_EVALUATION_INPUT::H1",
+        "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::H1",
+        "SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731::H1",
+        "SSC_V1_0_1_G2_DEV_001::H1",
+        "SSC_V1_0_1_G2_DEV_002::H1"
+      ],
+      "covered_intervals": [
+        [
+          "2025-09-15T00:00:00Z",
+          "2026-09-15T00:00:00Z"
+        ]
+      ],
+      "missing_intervals": []
+    },
+    "M1": {
+      "admissible_contributors": [
+        "EXTERNAL_D_ROOT::EURUSD_M1_202605180946_202607312356.csv",
+        "EXTERNAL_D_ROOT::EURUSD_M1_202605190415_202606190000.csv",
+        "EXTERNAL_D_ROOT::EURUSD_M1_202605190415_202607302357.csv",
+        "EXTERNAL_D_ROOT::EURUSD_M1_202605202206_202607302357.csv",
+        "EXTERNAL_D_ROOT::EURUSD_M1_202606080810_202607302357.csv",
+        "EXTERNAL_D_ROOT::EURUSD_M1_202606080840_202607302357.csv",
+        "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::M1",
+        "SSC_V1_0_1_G2_DEV_001::M1",
+        "SSC_V1_0_1_G2_DEV_002::M1"
+      ],
+      "covered_intervals": [
+        [
+          "2026-05-18T06:46:00Z",
+          "2026-08-03T00:00:00Z"
+        ],
+        [
+          "2026-08-03T00:01:00Z",
+          "2026-09-14T23:58:00Z"
+        ]
+      ],
+      "missing_intervals": [
+        {
+          "duration_days": 245.282,
+          "from": "2025-09-15T00:00:00Z",
+          "to": "2026-05-18T06:46:00Z",
+          "weekdays_touched": 176
+        },
+        {
+          "duration_days": 0.001,
+          "from": "2026-08-03T00:00:00Z",
+          "to": "2026-08-03T00:01:00Z",
+          "weekdays_touched": 1
+        },
+        {
+          "duration_days": 0.001,
+          "from": "2026-09-14T23:58:00Z",
+          "to": "2026-09-15T00:00:00Z",
+          "weekdays_touched": 1
+        }
+      ]
+    },
+    "M15": {
+      "admissible_contributors": [
+        "EXTERNAL_D_ROOT::EURUSD_M15_202210030000_202210212345.csv",
+        "EXTERNAL_D_ROOT::EURUSD_M15_202501020000_202606192345.csv",
+        "EXTERNAL_D_ROOT::EURUSD_M15_202501020000_202607310000.csv",
+        "EXTERNAL_D_ROOT::EURUSD_M15_202601020000_202606192345.csv",
+        "EXTERNAL_D_ROOT::EURUSD_M15_202606220000_202607312345.csv",
+        "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::M15",
+        "SSC_V1_0_1_G2_DEV_001::M15",
+        "SSC_V1_0_1_G2_DEV_002::M15"
+      ],
+      "covered_intervals": [
+        [
+          "2025-09-15T00:00:00Z",
+          "2026-09-15T00:00:00Z"
+        ]
+      ],
+      "missing_intervals": []
+    }
+  },
+  "data_role": "HISTORICAL_RESEARCH_ONLY",
+  "generated_at_utc": "2026-09-19",
+  "generated_at_utc_note": "DATE_ONLY -- no mutable timestamp enters any coverage decision",
+  "mission_classification": "HISTORICAL_RESEARCH_ONLY",
+  "note": "P1 gate only. Even DATA_COVERAGE_COMPLETE would not itself authorize an economic replay -- P2-P5 remain separate gates. No replay has been run.",
+  "p1_verdicts": {
+    "ALTERNATE_1Y_CALENDAR_SHIFTED": {
+      "AVAILABLE_H1": [
+        [
+          "2025-09-19T00:00:00Z",
+          "2026-09-15T00:00:00Z"
+        ]
+      ],
+      "AVAILABLE_M1": [
+        [
+          "2026-05-18T06:46:00Z",
+          "2026-08-03T00:00:00Z"
+        ],
+        [
+          "2026-08-03T00:01:00Z",
+          "2026-09-14T23:58:00Z"
+        ]
+      ],
+      "AVAILABLE_M15": [
+        [
+          "2025-09-19T00:00:00Z",
+          "2026-09-15T00:00:00Z"
+        ]
+      ],
+      "COMMON_INTERVAL": {
+        "intervals": [
+          [
+            "2026-05-18T06:46:00Z",
+            "2026-08-03T00:00:00Z"
+          ],
+          [
+            "2026-08-03T00:01:00Z",
+            "2026-09-14T23:58:00Z"
+          ]
+        ],
+        "note": "H1 x M15 x M1 intersection -- the only span a canonical replay could run end to end",
+        "total_covered_days": 119.716
+      },
+      "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
+      "MISSING_INTERVALS": {
+        "H1": [
+          {
+            "duration_days": 4.0,
+            "from": "2026-09-15T00:00:00Z",
+            "to": "2026-09-19T00:00:00Z",
+            "weekdays_touched": 4
+          }
+        ],
+        "M1": [
+          {
+            "duration_days": 241.282,
+            "from": "2025-09-19T00:00:00Z",
+            "to": "2026-05-18T06:46:00Z",
+            "weekdays_touched": 172
+          },
+          {
+            "duration_days": 0.001,
+            "from": "2026-08-03T00:00:00Z",
+            "to": "2026-08-03T00:01:00Z",
+            "weekdays_touched": 1
+          },
+          {
+            "duration_days": 4.001,
+            "from": "2026-09-14T23:58:00Z",
+            "to": "2026-09-19T00:00:00Z",
+            "weekdays_touched": 5
+          }
+        ],
+        "M15": [
+          {
+            "duration_days": 4.0,
+            "from": "2026-09-15T00:00:00Z",
+            "to": "2026-09-19T00:00:00Z",
+            "weekdays_touched": 4
+          }
+        ]
+      },
+      "WARMUP_AVAILABLE": {
+        "pass": true,
+        "per_session_pair": {
+          "ASIAN_LONDON": {
+            "closed_h1_bars_before_reference_end": 4473,
+            "first_window_decision_date": "2025-09-19",
+            "reference_end_utc": "2025-09-19T06:00:00Z",
+            "required": 1000,
+            "warmup_pass": true
+          },
+          "LONDON_NEWYORK": {
+            "closed_h1_bars_before_reference_end": 4478,
+            "first_window_decision_date": "2025-09-19",
+            "reference_end_utc": "2025-09-19T11:00:00Z",
+            "required": 1000,
+            "warmup_pass": true
+          }
+        },
+        "warmup_ready_at_utc": "2025-02-28T12:00:00Z"
+      }
+    },
+    "PRIMARY_1Y_ENDING_BEFORE_PROTECTED_CALENDAR": {
+      "AVAILABLE_H1": [
+        [
+          "2025-09-15T00:00:00Z",
+          "2026-09-15T00:00:00Z"
+        ]
+      ],
+      "AVAILABLE_M1": [
+        [
+          "2026-05-18T06:46:00Z",
+          "2026-08-03T00:00:00Z"
+        ],
+        [
+          "2026-08-03T00:01:00Z",
+          "2026-09-14T23:58:00Z"
+        ]
+      ],
+      "AVAILABLE_M15": [
+        [
+          "2025-09-15T00:00:00Z",
+          "2026-09-15T00:00:00Z"
+        ]
+      ],
+      "COMMON_INTERVAL": {
+        "intervals": [
+          [
+            "2026-05-18T06:46:00Z",
+            "2026-08-03T00:00:00Z"
+          ],
+          [
+            "2026-08-03T00:01:00Z",
+            "2026-09-14T23:58:00Z"
+          ]
+        ],
+        "note": "H1 x M15 x M1 intersection -- the only span a canonical replay could run end to end",
+        "total_covered_days": 119.716
+      },
+      "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
+      "MISSING_INTERVALS": {
+        "M1": [
+          {
+            "duration_days": 245.282,
+            "from": "2025-09-15T00:00:00Z",
+            "to": "2026-05-18T06:46:00Z",
+            "weekdays_touched": 176
+          },
+          {
+            "duration_days": 0.001,
+            "from": "2026-08-03T00:00:00Z",
+            "to": "2026-08-03T00:01:00Z",
+            "weekdays_touched": 1
+          },
+          {
+            "duration_days": 0.001,
+            "from": "2026-09-14T23:58:00Z",
+            "to": "2026-09-15T00:00:00Z",
+            "weekdays_touched": 1
+          }
+        ]
+      },
+      "WARMUP_AVAILABLE": {
+        "pass": true,
+        "per_session_pair": {
+          "ASIAN_LONDON": {
+            "closed_h1_bars_before_reference_end": 4377,
+            "first_window_decision_date": "2025-09-15",
+            "reference_end_utc": "2025-09-15T06:00:00Z",
+            "required": 1000,
+            "warmup_pass": true
+          },
+          "LONDON_NEWYORK": {
+            "closed_h1_bars_before_reference_end": 4382,
+            "first_window_decision_date": "2025-09-15",
+            "reference_end_utc": "2025-09-15T11:00:00Z",
+            "required": 1000,
+            "warmup_pass": true
+          }
+        },
+        "warmup_ready_at_utc": "2025-02-28T12:00:00Z"
+      }
+    }
+  },
+  "precondition_tier_a_full_year_coverage": false,
+  "primary_window_id": "PRIMARY_1Y_ENDING_BEFORE_PROTECTED_CALENDAR",
+  "protected_data_status": {
+    "PROTECTED_DATASETS_ENUMERATED": [
+      "SSC1D_WP1_OOS_EURUSD_2024Q1"
+    ],
+    "PROTECTED_RAW_BYTES_ACCESSED": false,
+    "access_counts": {
+      "SSC1D_WP1_OOS_EURUSD_2024Q1": 0
+    }
+  },
+  "replay_authorized_by_this_audit": false,
+  "schema": "AG_SSC_V1_0_1_ONE_YEAR_DATA_COVERAGE_AUDIT_V1",
+  "source_inventory": [
+    {
+      "access_count": 0,
+      "admissible_for_coverage": false,
+      "data_role": "OUT_OF_SAMPLE (PROTECTED, untouched)",
+      "dataset_id": "SSC1D_WP1_OOS_EURUSD_2024Q1",
+      "exclusion_reason": "PROTECTED (OOS/holdout/confirmation role) -- raw bytes never opened",
+      "location": "data/research/ssc1d_pilot/SSC1D_WP1_OOS_EURUSD_2024Q1/raw/EURUSD_H1.csv",
+      "provider": "VantageMarkets-Demo",
+      "source_id": "SSC1D_WP1_OOS_EURUSD_2024Q1::H1",
+      "status": "PROTECTED_NOT_ACCESSED",
+      "timeframe": "H1",
+      "timezone_authority": "PROTECTED_NOT_INSPECTED"
+    },
+    {
+      "access_count": 0,
+      "admissible_for_coverage": false,
+      "data_role": "OUT_OF_SAMPLE (PROTECTED, untouched)",
+      "dataset_id": "SSC1D_WP1_OOS_EURUSD_2024Q1",
+      "exclusion_reason": "PROTECTED (OOS/holdout/confirmation role) -- raw bytes never opened",
+      "location": "data/research/ssc1d_pilot/SSC1D_WP1_OOS_EURUSD_2024Q1/raw/EURUSD_M15.csv",
+      "provider": "VantageMarkets-Demo",
+      "source_id": "SSC1D_WP1_OOS_EURUSD_2024Q1::M15",
+      "status": "PROTECTED_NOT_ACCESSED",
+      "timeframe": "M15",
+      "timezone_authority": "PROTECTED_NOT_INSPECTED"
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "HYPOTHESIS_GENERATION_ONLY (consumed -- HYP_002)",
+      "dataset_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 6,
+      "first_timestamp_utc": "2026-08-03T00:00:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 49.0,
+      "last_timestamp_utc": "2026-09-14T23:00:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914/raw/EURUSD_H1.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 744,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "76adad8eccf378ea10004bb70aa2d91a2d5fe9e4aaab1748ea81c72657deaa96",
+      "source_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::H1",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": "config/historical_datasets/EURUSD_H1_GEN_002_symbol_metadata.yaml",
+      "timeframe": "H1",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 0,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "HYPOTHESIS_GENERATION_ONLY (consumed -- HYP_002)",
+      "dataset_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 6,
+      "first_timestamp_utc": "2026-08-03T00:00:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.25,
+      "last_timestamp_utc": "2026-09-14T23:45:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914/raw/EURUSD_M15.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 2976,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "3f0702eb50e67f8f9c534b30b69eafdb5620bc8d6e11defb6d8ccd47b76209e8",
+      "source_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::M15",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M15",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 0,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "HYPOTHESIS_GENERATION_ONLY (consumed -- HYP_002)",
+      "dataset_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 6,
+      "first_timestamp_utc": "2026-08-03T00:01:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.1,
+      "last_timestamp_utc": "2026-09-14T23:57:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914/raw/EURUSD_M1.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 44546,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "4cc01e2b185e714332cc5f1c4d253b579ee74085dd742903d0e9e3938906f332",
+      "source_id": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::M1",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M1",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 25,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "WARMUP_CONTEXT_ONLY (consumed)",
+      "dataset_id": "SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 9,
+      "first_timestamp_utc": "2026-05-27T18:00:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 49.0,
+      "last_timestamp_utc": "2026-07-31T17:00:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731/raw/EURUSD_H1.csv",
+      "manifest_sha256_match": null,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 1128,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "89e6d71d0e274801a4b5bf1f78333f6632ab091e51a9bf6140e474f42134b533",
+      "source_id": "SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731::H1",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "H1",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 0,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "data_role": "DEVELOPMENT (consumed)",
+      "dataset_id": "SSC_V1_0_1_G2_DEV_001",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 6,
+      "first_timestamp_utc": "2026-06-21T21:00:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 49.0,
+      "last_timestamp_utc": "2026-08-02T23:00:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_H1.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 723,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "76f2aa90d64aa552f85a6a03d596f0f0f20b77c9731acdc745803b4ff4ec5d81",
+      "source_id": "SSC_V1_0_1_G2_DEV_001::H1",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "H1",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 0,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "data_role": "DEVELOPMENT (consumed)",
+      "dataset_id": "SSC_V1_0_1_G2_DEV_001",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 6,
+      "first_timestamp_utc": "2026-06-21T21:00:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.25,
+      "last_timestamp_utc": "2026-08-02T23:45:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_M15.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 2892,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063",
+      "source_id": "SSC_V1_0_1_G2_DEV_001::M15",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M15",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 0,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "data_role": "DEVELOPMENT (consumed)",
+      "dataset_id": "SSC_V1_0_1_G2_DEV_001",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 6,
+      "first_timestamp_utc": "2026-06-21T21:02:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.1,
+      "last_timestamp_utc": "2026-08-02T23:59:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_M1.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 43292,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458",
+      "source_id": "SSC_V1_0_1_G2_DEV_001::M1",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M1",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 25,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "DEVELOPMENT (consumed -- G2 POPULATION_V1 frozen)",
+      "dataset_id": "SSC_V1_0_1_G2_DEV_002",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 83,
+      "first_timestamp_utc": "2025-01-01T21:00:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 49.0,
+      "last_timestamp_utc": "2026-08-02T23:00:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_H1.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 9843,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79",
+      "source_id": "SSC_V1_0_1_G2_DEV_002::H1",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": "config/historical_datasets/EURUSD_H1_SSC_G2_DEV_002_symbol_metadata.yaml",
+      "timeframe": "H1",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 2,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "DEVELOPMENT (consumed -- G2 POPULATION_V1 frozen)",
+      "dataset_id": "SSC_V1_0_1_G2_DEV_002",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 6,
+      "first_timestamp_utc": "2026-06-21T21:00:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.25,
+      "last_timestamp_utc": "2026-08-02T23:45:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_M15.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 2892,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063",
+      "source_id": "SSC_V1_0_1_G2_DEV_002::M15",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M15",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 0,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "DEVELOPMENT (consumed -- G2 POPULATION_V1 frozen)",
+      "dataset_id": "SSC_V1_0_1_G2_DEV_002",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 6,
+      "first_timestamp_utc": "2026-06-21T21:02:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.1,
+      "last_timestamp_utc": "2026-08-02T23:59:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_M1.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 43292,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458",
+      "source_id": "SSC_V1_0_1_G2_DEV_002::M1",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M1",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 25,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "DERIVED_H1_CONTEXT (concatenation of two already-owner-approved H1 sources)",
+      "dataset_id": "HYP_002_EVALUATION_INPUT",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 16,
+      "first_timestamp_utc": "2026-05-27T18:00:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 55.0,
+      "last_timestamp_utc": "2026-09-14T23:00:00Z",
+      "location": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_EVALUATION_INPUT/EURUSD_H1_WARMUP_PLUS_GEN002.csv",
+      "manifest_sha256_match": null,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 1872,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "0ce051944a2ff8e58c362aabf4ab25012b0936ddaf260108f5a4aca2eb46430f",
+      "source_id": "HYP_002_EVALUATION_INPUT::H1",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "H1",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 0,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": false,
+      "data_role": "OUT_OF_SCOPE_CANDIDATE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "UNKNOWN_TICK",
+      "exclusion_reason": "NOT_A_CANONICAL_INPUT: SSC v1.0.1 canonical inputs are H1 (bias/warmup), M15 (decision) and M1 (fill resolution) only. Substituting M5 or synthesizing M1 from raw tick data is prohibited by mission P1.",
+      "file_size_bytes": 239602849,
+      "filename_declared_range_raw": "EURUSD_202606182200_202608241902.csv",
+      "location": "D:\\EURUSD_202606182200_202608241902.csv",
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "metadata-only (sha256 + size); row-level scan intentionally skipped",
+      "quality_status": "NOT_SCANNED_OUT_OF_SCOPE",
+      "row_count": null,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "2a844b807086896d25ec57627350d23b80e088aec122b51af1e8357b0b56abd3",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_202606182200_202608241902.csv",
+      "status": "MEASURED_METADATA_ONLY",
+      "timeframe": "UNKNOWN_TICK",
+      "timezone_authority": "NOT_RESOLVED (out of scope)"
+    },
+    {
+      "admissible_for_coverage": false,
+      "data_role": "OUT_OF_SCOPE_CANDIDATE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "DAILY",
+      "exclusion_reason": "NOT_A_CANONICAL_INPUT: SSC v1.0.1 canonical inputs are H1 (bias/warmup), M15 (decision) and M1 (fill resolution) only. Substituting M5 or synthesizing M1 from raw tick data is prohibited by mission P1.",
+      "file_size_bytes": 22701,
+      "filename_declared_range_raw": "EURUSD_Daily_202501020000_202607310000.csv",
+      "location": "D:\\EURUSD_Daily_202501020000_202607310000.csv",
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "metadata-only (sha256 + size); row-level scan intentionally skipped",
+      "quality_status": "NOT_SCANNED_OUT_OF_SCOPE",
+      "row_count": null,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "f6415e56497f795afd7d5f58d230211f9fa3e11cb9f8770fca00f5a98c3092c0",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_Daily_202501020000_202607310000.csv",
+      "status": "MEASURED_METADATA_ONLY",
+      "timeframe": "DAILY",
+      "timezone_authority": "NOT_RESOLVED (out of scope)"
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "H1",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 617998,
+      "first_timestamp_source": "2025-01-02T00:00:00",
+      "first_timestamp_utc": "2025-01-01T21:00:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 49.0,
+      "last_timestamp_source": "2026-07-31T00:00:00",
+      "last_timestamp_utc": "2026-07-30T21:00:00+00:00",
+      "location": "D:\\EURUSD_H1_202501020000_202607310000.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "H1",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 9817,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_H1_202501020000_202607310000.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": "config/historical_datasets/EURUSD_H1_symbol_metadata.yaml",
+      "timeframe": "H1",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": false,
+      "data_role": "OUT_OF_SCOPE_CANDIDATE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "exclusion_reason": "NOT_ROUTABLE: filename carries no H1/M15/M5/M1/Daily timeframe token.",
+      "file_size_bytes": 268936,
+      "filename_declared_range_raw": "EURUSD_H4_202401020000_202609182000.csv",
+      "location": "D:\\EURUSD_H4_202401020000_202609182000.csv",
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_status": "NOT_SCANNED_UNROUTABLE_FILENAME",
+      "sha256": "1ce80b6dc818af96f5fd7af02e024a2e87f4117c8b769d8eebd74ca3c9b2fe84",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_H4_202401020000_202609182000.csv",
+      "status": "MEASURED_METADATA_ONLY",
+      "timeframe": "UNCLASSIFIED",
+      "timezone_authority": "NOT_RESOLVED (out of scope)"
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M15",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 88905,
+      "first_timestamp_source": "2022-10-03T00:00:00",
+      "first_timestamp_utc": "2022-10-02T21:00:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.25,
+      "last_timestamp_source": "2022-10-21T23:45:00",
+      "last_timestamp_utc": "2022-10-21T20:45:00+00:00",
+      "location": "D:\\EURUSD_M15_202210030000_202210212345.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M15",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 1440,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "f010df7dc0f1c30fa1c21c844c8fca79ea8b05a1911d6110c34f77b2f4525fb1",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M15_202210030000_202210212345.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M15",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M15",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 2272852,
+      "first_timestamp_source": "2025-01-02T00:00:00",
+      "first_timestamp_utc": "2025-01-01T21:00:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.25,
+      "last_timestamp_source": "2026-06-19T23:45:00",
+      "last_timestamp_utc": "2026-06-19T20:45:00+00:00",
+      "location": "D:\\EURUSD_M15_202501020000_202606192345.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M15",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 36480,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "7f7502938862f4a3779f018caab468fe4445a4d8c676c8393dc29ca57fc43a65",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M15_202501020000_202606192345.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M15",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M15",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 2446490,
+      "first_timestamp_source": "2025-01-02T00:00:00",
+      "first_timestamp_utc": "2025-01-01T21:00:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.25,
+      "last_timestamp_source": "2026-07-31T00:00:00",
+      "last_timestamp_utc": "2026-07-30T21:00:00+00:00",
+      "location": "D:\\EURUSD_M15_202501020000_202607310000.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M15",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 39265,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "1f6c9d1847bc807daf3f4f95bf0758cb51e679b055a9b1885b01409186c26e8d",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M15_202501020000_202607310000.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M15",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M15",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 725696,
+      "first_timestamp_source": "2026-01-02T00:00:00",
+      "first_timestamp_utc": "2026-01-01T21:00:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.25,
+      "last_timestamp_source": "2026-06-19T23:45:00",
+      "last_timestamp_utc": "2026-06-19T20:45:00+00:00",
+      "location": "D:\\EURUSD_M15_202601020000_202606192345.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M15",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 11616,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "b4ec6c53b418d87ca9da8c1144d42bfce9bbe3da9b255e69893ad09349ba1ff0",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M15_202601020000_202606192345.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M15",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M15",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 179656,
+      "first_timestamp_source": "2026-06-22T00:00:00",
+      "first_timestamp_utc": "2026-06-21T21:00:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.25,
+      "last_timestamp_source": "2026-07-31T23:45:00",
+      "last_timestamp_utc": "2026-07-31T20:45:00+00:00",
+      "location": "D:\\EURUSD_M15_202606220000_202607312345.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M15",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 2880,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "6e4d614a4a692072fc900ac1c9812d208408425ad4e52d91254b7d905613ede8",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M15_202606220000_202607312345.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M15",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M1",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 4792854,
+      "first_timestamp_source": "2026-05-18T09:46:00",
+      "first_timestamp_utc": "2026-05-18T06:46:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.1,
+      "last_timestamp_source": "2026-07-31T23:56:00",
+      "last_timestamp_utc": "2026-07-31T20:56:00+00:00",
+      "location": "D:\\EURUSD_M1_202605180946_202607312356.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M1",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 78444,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "55422a1ccdf4ca76fd25451fbf849d559bed45d839891a3ada7a37f9f7dd6a23",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M1_202605180946_202607312356.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M1",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M1",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 2004070,
+      "first_timestamp_source": "2026-05-19T04:15:00",
+      "first_timestamp_utc": "2026-05-19T01:15:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.1,
+      "last_timestamp_source": "2026-06-19T00:00:00",
+      "last_timestamp_utc": "2026-06-18T21:00:00+00:00",
+      "location": "D:\\EURUSD_M1_202605190415_202606190000.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M1",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 32788,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "c4ccec6b27008afefa47bcf63b6408cad2e0ab17d1632c4bdd610270e4933485",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M1_202605190415_202606190000.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M1",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M1",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 4637125,
+      "first_timestamp_source": "2026-05-19T04:15:00",
+      "first_timestamp_utc": "2026-05-19T01:15:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.1,
+      "last_timestamp_source": "2026-07-30T23:57:00",
+      "last_timestamp_utc": "2026-07-30T20:57:00+00:00",
+      "location": "D:\\EURUSD_M1_202605190415_202607302357.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M1",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 75901,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "5c89732b8e761a04aa9aaa157bb5784239daabc9daa6d3b480f3196b5c40ca05",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M1_202605190415_202607302357.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M1",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M1",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 4483616,
+      "first_timestamp_source": "2026-05-20T22:06:00",
+      "first_timestamp_utc": "2026-05-20T19:06:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.1,
+      "last_timestamp_source": "2026-07-30T23:57:00",
+      "last_timestamp_utc": "2026-07-30T20:57:00+00:00",
+      "location": "D:\\EURUSD_M1_202605202206_202607302357.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M1",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 73393,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "c2f99394541902928f65ca2dd8a1ac244d78491141d3940a882e8ef353e3235a",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M1_202605202206_202607302357.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M1",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M1",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 3394405,
+      "first_timestamp_source": "2026-06-08T08:10:00",
+      "first_timestamp_utc": "2026-06-08T05:10:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.1,
+      "last_timestamp_source": "2026-07-30T23:57:00",
+      "last_timestamp_utc": "2026-07-30T20:57:00+00:00",
+      "location": "D:\\EURUSD_M1_202606080810_202607302357.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M1",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 55560,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "a8cd88ce6c542dbd365f62ac61d5e7ca0a13422bfb2f6d2d8857b1987065dfa2",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M1_202606080810_202607302357.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M1",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": "VantageMarkets-Demo",
+      "broker_utc_offset_hours": 3,
+      "data_role": "OWNER_AUTHORIZED_EXTERNAL_SOURCE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M1",
+      "duplicate_timestamps": 0,
+      "file_size_bytes": 3392571,
+      "first_timestamp_source": "2026-06-08T08:40:00",
+      "first_timestamp_utc": "2026-06-08T05:40:00+00:00",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 48.1,
+      "last_timestamp_source": "2026-07-30T23:57:00",
+      "last_timestamp_utc": "2026-07-30T20:57:00+00:00",
+      "location": "D:\\EURUSD_M1_202606080840_202607302357.csv",
+      "non_monotonic_timestamps": 0,
+      "observed_timeframe": "M1",
+      "parse_failures": 0,
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "market_data_readiness.scanner.scan_file",
+      "quality_status": "PASS",
+      "row_count": 55530,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "db92b1eafb3e7044588777cc42f82f4641cc28ef4232cb8811c03bbadd965eda",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M1_202606080840_202607302357.csv",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M1",
+      "timeframe_status": "MATCH",
+      "timezone_authority": "BROKER_OFFSET_CONFIRMED",
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": false,
+      "data_role": "OUT_OF_SCOPE_CANDIDATE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M5",
+      "exclusion_reason": "NOT_A_CANONICAL_INPUT: SSC v1.0.1 canonical inputs are H1 (bias/warmup), M15 (decision) and M1 (fill resolution) only. Substituting M5 or synthesizing M1 from raw tick data is prohibited by mission P1.",
+      "file_size_bytes": 5903412,
+      "filename_declared_range_raw": "EURUSD_M5_202504211715_202607310000.csv",
+      "location": "D:\\EURUSD_M5_202504211715_202607310000.csv",
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "metadata-only (sha256 + size); row-level scan intentionally skipped",
+      "quality_status": "NOT_SCANNED_OUT_OF_SCOPE",
+      "row_count": null,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "0c269b9aae1a610cddc87b61f30c12bcd89bcd25c7276e5406a6e36c409957e8",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M5_202504211715_202607310000.csv",
+      "status": "MEASURED_METADATA_ONLY",
+      "timeframe": "M5",
+      "timezone_authority": "NOT_RESOLVED (out of scope)"
+    },
+    {
+      "admissible_for_coverage": false,
+      "data_role": "OUT_OF_SCOPE_CANDIDATE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M5",
+      "exclusion_reason": "NOT_A_CANONICAL_INPUT: SSC v1.0.1 canonical inputs are H1 (bias/warmup), M15 (decision) and M1 (fill resolution) only. Substituting M5 or synthesizing M1 from raw tick data is prohibited by mission P1.",
+      "file_size_bytes": 5814318,
+      "filename_declared_range_raw": "EURUSD_M5_202504281710_202607310000.csv",
+      "location": "D:\\EURUSD_M5_202504281710_202607310000.csv",
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "metadata-only (sha256 + size); row-level scan intentionally skipped",
+      "quality_status": "NOT_SCANNED_OUT_OF_SCOPE",
+      "row_count": null,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "e39b0650c54fb63077adf6a8e231710bb24d44d292da454557bd37b9a03aa9d5",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M5_202504281710_202607310000.csv",
+      "status": "MEASURED_METADATA_ONLY",
+      "timeframe": "M5",
+      "timezone_authority": "NOT_RESOLVED (out of scope)"
+    },
+    {
+      "admissible_for_coverage": false,
+      "data_role": "OUT_OF_SCOPE_CANDIDATE",
+      "dataset_id": "EXTERNAL_D_ROOT",
+      "declared_timeframe": "M5",
+      "exclusion_reason": "NOT_A_CANONICAL_INPUT: SSC v1.0.1 canonical inputs are H1 (bias/warmup), M15 (decision) and M1 (fill resolution) only. Substituting M5 or synthesizing M1 from raw tick data is prohibited by mission P1.",
+      "file_size_bytes": 5630912,
+      "filename_declared_range_raw": "EURUSD_M5_202505130005_202607310000.csv",
+      "location": "D:\\EURUSD_M5_202505130005_202607310000.csv",
+      "provider": "Vantage Markets (Pty) Ltd / VantageMarkets-Demo (owner-authorized D:\\ FX export family)",
+      "quality_evidence": "metadata-only (sha256 + size); row-level scan intentionally skipped",
+      "quality_status": "NOT_SCANNED_OUT_OF_SCOPE",
+      "row_count": null,
+      "schema": "MT5 Export-menu CSV (tab-delimited, broker-local time)",
+      "sha256": "3f32d18e5b3e7c9ad982b02796d462c87cea42c411b20ae4c2e5d9024edee71f",
+      "source_id": "EXTERNAL_D_ROOT::EURUSD_M5_202505130005_202607310000.csv",
+      "status": "MEASURED_METADATA_ONLY",
+      "timeframe": "M5",
+      "timezone_authority": "NOT_RESOLVED (out of scope)"
+    }
+  ],
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1",
+  "symbol": "EURUSD",
+  "window_selection_rule": "The primary window is anchored to the protected prospective CONFIRM_001 calendar boundary (2026-09-15T00:00:00Z), not to any strategy outcome: it is the one complete year ending immediately before that boundary. The alternate window is the same length shifted 4 days later, included so the verdict does not depend on where the boundary is drawn.",
+  "windows": {
+    "ALTERNATE_1Y_CALENDAR_SHIFTED": {
+      "AVAILABLE_H1": [
+        [
+          "2025-09-19T00:00:00Z",
+          "2026-09-15T00:00:00Z"
+        ]
+      ],
+      "AVAILABLE_M1": [
+        [
+          "2026-05-18T06:46:00Z",
+          "2026-08-03T00:00:00Z"
+        ],
+        [
+          "2026-08-03T00:01:00Z",
+          "2026-09-14T23:58:00Z"
+        ]
+      ],
+      "AVAILABLE_M15": [
+        [
+          "2025-09-19T00:00:00Z",
+          "2026-09-15T00:00:00Z"
+        ]
+      ],
+      "COMMON_INTERVAL": {
+        "intervals": [
+          [
+            "2026-05-18T06:46:00Z",
+            "2026-08-03T00:00:00Z"
+          ],
+          [
+            "2026-08-03T00:01:00Z",
+            "2026-09-14T23:58:00Z"
+          ]
+        ],
+        "note": "H1 x M15 x M1 intersection -- the only span a canonical replay could run end to end",
+        "total_covered_days": 119.716
+      },
+      "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
+      "MISSING_INTERVALS": {
+        "H1": [
+          {
+            "duration_days": 4.0,
+            "from": "2026-09-15T00:00:00Z",
+            "to": "2026-09-19T00:00:00Z",
+            "weekdays_touched": 4
+          }
+        ],
+        "M1": [
+          {
+            "duration_days": 241.282,
+            "from": "2025-09-19T00:00:00Z",
+            "to": "2026-05-18T06:46:00Z",
+            "weekdays_touched": 172
+          },
+          {
+            "duration_days": 0.001,
+            "from": "2026-08-03T00:00:00Z",
+            "to": "2026-08-03T00:01:00Z",
+            "weekdays_touched": 1
+          },
+          {
+            "duration_days": 4.001,
+            "from": "2026-09-14T23:58:00Z",
+            "to": "2026-09-19T00:00:00Z",
+            "weekdays_touched": 5
+          }
+        ],
+        "M15": [
+          {
+            "duration_days": 4.0,
+            "from": "2026-09-15T00:00:00Z",
+            "to": "2026-09-19T00:00:00Z",
+            "weekdays_touched": 4
+          }
+        ]
+      },
+      "WARMUP_AVAILABLE": {
+        "pass": true,
+        "per_session_pair": {
+          "ASIAN_LONDON": {
+            "closed_h1_bars_before_reference_end": 4473,
+            "first_window_decision_date": "2025-09-19",
+            "reference_end_utc": "2025-09-19T06:00:00Z",
+            "required": 1000,
+            "warmup_pass": true
+          },
+          "LONDON_NEWYORK": {
+            "closed_h1_bars_before_reference_end": 4478,
+            "first_window_decision_date": "2025-09-19",
+            "reference_end_utc": "2025-09-19T11:00:00Z",
+            "required": 1000,
+            "warmup_pass": true
+          }
+        },
+        "warmup_ready_at_utc": "2025-02-28T12:00:00Z"
+      },
+      "coverage_days_by_timeframe": {
+        "H1": 361.0,
+        "M1": 119.716,
+        "M15": 361.0
+      },
+      "three_way_missing_intervals": [
+        {
+          "duration_days": 241.282,
+          "from": "2025-09-19T00:00:00Z",
+          "to": "2026-05-18T06:46:00Z",
+          "weekdays_touched": 172
+        },
+        {
+          "duration_days": 0.001,
+          "from": "2026-08-03T00:00:00Z",
+          "to": "2026-08-03T00:01:00Z",
+          "weekdays_touched": 1
+        },
+        {
+          "duration_days": 4.001,
+          "from": "2026-09-14T23:58:00Z",
+          "to": "2026-09-19T00:00:00Z",
+          "weekdays_touched": 5
+        }
+      ],
+      "tier_a_full_year_coverage": false,
+      "window": {
+        "end_utc": "2026-09-18T23:59:59Z",
+        "start_utc": "2025-09-19T00:00:00Z"
+      }
+    },
+    "PRIMARY_1Y_ENDING_BEFORE_PROTECTED_CALENDAR": {
+      "AVAILABLE_H1": [
+        [
+          "2025-09-15T00:00:00Z",
+          "2026-09-15T00:00:00Z"
+        ]
+      ],
+      "AVAILABLE_M1": [
+        [
+          "2026-05-18T06:46:00Z",
+          "2026-08-03T00:00:00Z"
+        ],
+        [
+          "2026-08-03T00:01:00Z",
+          "2026-09-14T23:58:00Z"
+        ]
+      ],
+      "AVAILABLE_M15": [
+        [
+          "2025-09-15T00:00:00Z",
+          "2026-09-15T00:00:00Z"
+        ]
+      ],
+      "COMMON_INTERVAL": {
+        "intervals": [
+          [
+            "2026-05-18T06:46:00Z",
+            "2026-08-03T00:00:00Z"
+          ],
+          [
+            "2026-08-03T00:01:00Z",
+            "2026-09-14T23:58:00Z"
+          ]
+        ],
+        "note": "H1 x M15 x M1 intersection -- the only span a canonical replay could run end to end",
+        "total_covered_days": 119.716
+      },
+      "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
+      "MISSING_INTERVALS": {
+        "M1": [
+          {
+            "duration_days": 245.282,
+            "from": "2025-09-15T00:00:00Z",
+            "to": "2026-05-18T06:46:00Z",
+            "weekdays_touched": 176
+          },
+          {
+            "duration_days": 0.001,
+            "from": "2026-08-03T00:00:00Z",
+            "to": "2026-08-03T00:01:00Z",
+            "weekdays_touched": 1
+          },
+          {
+            "duration_days": 0.001,
+            "from": "2026-09-14T23:58:00Z",
+            "to": "2026-09-15T00:00:00Z",
+            "weekdays_touched": 1
+          }
+        ]
+      },
+      "WARMUP_AVAILABLE": {
+        "pass": true,
+        "per_session_pair": {
+          "ASIAN_LONDON": {
+            "closed_h1_bars_before_reference_end": 4377,
+            "first_window_decision_date": "2025-09-15",
+            "reference_end_utc": "2025-09-15T06:00:00Z",
+            "required": 1000,
+            "warmup_pass": true
+          },
+          "LONDON_NEWYORK": {
+            "closed_h1_bars_before_reference_end": 4382,
+            "first_window_decision_date": "2025-09-15",
+            "reference_end_utc": "2025-09-15T11:00:00Z",
+            "required": 1000,
+            "warmup_pass": true
+          }
+        },
+        "warmup_ready_at_utc": "2025-02-28T12:00:00Z"
+      },
+      "coverage_days_by_timeframe": {
+        "H1": 365.0,
+        "M1": 119.716,
+        "M15": 365.0
+      },
+      "three_way_missing_intervals": [
+        {
+          "duration_days": 245.282,
+          "from": "2025-09-15T00:00:00Z",
+          "to": "2026-05-18T06:46:00Z",
+          "weekdays_touched": 176
+        },
+        {
+          "duration_days": 0.001,
+          "from": "2026-08-03T00:00:00Z",
+          "to": "2026-08-03T00:01:00Z",
+          "weekdays_touched": 1
+        },
+        {
+          "duration_days": 0.001,
+          "from": "2026-09-14T23:58:00Z",
+          "to": "2026-09-15T00:00:00Z",
+          "weekdays_touched": 1
+        }
+      ],
+      "tier_a_full_year_coverage": false,
+      "window": {
+        "end_utc": "2026-09-14T23:59:59Z",
+        "start_utc": "2025-09-15T00:00:00Z"
+      }
+    }
+  }
+}

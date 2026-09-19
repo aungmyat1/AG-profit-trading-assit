@@ -1,0 +1,235 @@
+{
+  "FINAL_STATUS": "LINEAGE_MAP_FROZEN",
+  "campaign_classification": "HISTORICAL_RESEARCH_ONLY",
+  "campaign_classification_note": "Explicitly NOT: a new G2 validation population, untouched OOS, holdout, CONFIRM_001, DEV_003, prospective confirmation, or DEMO-eligibility evidence. Previously consumed periods remain previously consumed, and no historical period becomes 'fresh' by being repackaged into a new dataset identity. Repository governance is not read as supporting a stronger role.",
+  "consumed_campaigns_overlapping_window": [
+    "DEV_001",
+    "DEV_002",
+    "GEN_001",
+    "GEN_002",
+    "GEN_002A",
+    "HYP_001",
+    "HYP_002",
+    "Route B"
+  ],
+  "coverage_contribution_disclosure": {
+    "sources_used": [
+      "EXTERNAL_D_ROOT::EURUSD_H1_202501020000_202607310000.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M15_202210030000_202210212345.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M15_202501020000_202606192345.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M15_202501020000_202607310000.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M15_202601020000_202606192345.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M15_202606220000_202607312345.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M1_202605180946_202607312356.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M1_202605190415_202606190000.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M1_202605190415_202607302357.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M1_202605202206_202607302357.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M1_202606080810_202607302357.csv",
+      "EXTERNAL_D_ROOT::EURUSD_M1_202606080840_202607302357.csv",
+      "HYP_002_EVALUATION_INPUT::H1",
+      "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::H1",
+      "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::M1",
+      "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::M15",
+      "SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731::H1",
+      "SSC_V1_0_1_G2_DEV_001::H1",
+      "SSC_V1_0_1_G2_DEV_001::M1",
+      "SSC_V1_0_1_G2_DEV_001::M15",
+      "SSC_V1_0_1_G2_DEV_002::H1",
+      "SSC_V1_0_1_G2_DEV_002::M1",
+      "SSC_V1_0_1_G2_DEV_002::M15"
+    ],
+    "timeframes_evaluated": [
+      "H1",
+      "M1",
+      "M15"
+    ]
+  },
+  "dataset_identity_conflicts": {
+    "EURUSD_M15_GAP_20260620_20260802 (candidate)": "Registry lists a 2026-06-20..2026-08-02 M15 gap as NOT_ACQUIRED. This audit finds the gap already covered by owner-authorized external M15 sources (see source_inventory); no acquisition is performed or implied.",
+    "SSC_V1_0_1_G2_DEV_001 vs SSC_V1_0_1_G2_DEV_002": "DEV_002 M15/M1 are byte-identical to DEV_001's (same sha256). They are one dataset lineage, not two independent samples."
+  },
+  "double_counting_warning": "DEV_002 (N=22) sits entirely inside the one-year window. A one-year population must therefore NOT be added to DEV_002's N as if independent; the DEV_002 occurrences are a subset of the window, never additional sample.",
+  "generated_at_utc": "2026-09-19",
+  "named_campaign_cross_reference": [
+    {
+      "campaign": "GEN_001",
+      "counting_status": "NON_COUNTING_FOR_V1_0_1",
+      "kind": "dataset",
+      "one_year_campaign_effect": "OVERLAPS -- already-consumed historical period is re-inspected, NOT newly consumed as fresh evidence; N must never be pooled with the earlier campaign.",
+      "overlap_with_one_year_window": {
+        "overlap_days": 32.99,
+        "overlap_end_utc": "2026-06-19T23:45:00Z",
+        "overlap_start_utc": "2026-05-18T00:00:00Z"
+      },
+      "prior_consumption": "CONSUMED (Route B Phase 1 occurrence population)",
+      "protected_status": "NOT_PROTECTED",
+      "registry_record": "GEN_001"
+    },
+    {
+      "campaign": "GEN_002",
+      "counting_status": "PRE_REMEDIATION_NON_COUNTING",
+      "kind": "dataset",
+      "one_year_campaign_effect": "OVERLAPS -- already-consumed historical period is re-inspected, NOT newly consumed as fresh evidence; N must never be pooled with the earlier campaign.",
+      "overlap_with_one_year_window": {
+        "overlap_days": 42.998,
+        "overlap_end_utc": "2026-09-14T23:57:00Z",
+        "overlap_start_utc": "2026-08-03T00:00:00Z"
+      },
+      "prior_consumption": "CONSUMED (HYP_002 control N=21 + treatment N=11)",
+      "protected_status": "NOT_PROTECTED",
+      "registry_record": "GEN_002"
+    },
+    {
+      "campaign": "GEN_002A",
+      "counting_status": "NON_COUNTING_FOR_V1_0_1",
+      "kind": "dataset",
+      "one_year_campaign_effect": "OVERLAPS -- already-consumed historical period is re-inspected, NOT newly consumed as fresh evidence; N must never be pooled with the earlier campaign.",
+      "overlap_with_one_year_window": {
+        "overlap_days": 52.767,
+        "overlap_end_utc": "2026-07-30T23:57:00Z",
+        "overlap_start_utc": "2026-06-08T05:33:00Z"
+      },
+      "prior_consumption": "CONSUMED (Route B Phase 1 occurrence population)",
+      "protected_status": "NOT_PROTECTED",
+      "registry_record": "GEN_002A"
+    },
+    {
+      "campaign": "DEV_001",
+      "counting_status": "FROZEN_REPLAY_INSUFFICIENT",
+      "kind": "dataset",
+      "one_year_campaign_effect": "OVERLAPS -- already-consumed historical period is re-inspected, NOT newly consumed as fresh evidence; N must never be pooled with the earlier campaign.",
+      "overlap_with_one_year_window": {
+        "overlap_days": 42.124,
+        "overlap_end_utc": "2026-08-02T23:59:00Z",
+        "overlap_start_utc": "2026-06-21T21:00:00Z"
+      },
+      "prior_consumption": "NONE",
+      "protected_status": "NOT_PROTECTED",
+      "registry_record": "SSC_V1_0_1_G2_DEV_001"
+    },
+    {
+      "campaign": "DEV_002",
+      "counting_status": "CONSUMED",
+      "kind": "dataset",
+      "one_year_campaign_effect": "OVERLAPS -- already-consumed historical period is re-inspected, NOT newly consumed as fresh evidence; N must never be pooled with the earlier campaign.",
+      "overlap_with_one_year_window": {
+        "overlap_days": 322.0,
+        "overlap_end_utc": "2026-08-02T23:59:59Z",
+        "overlap_start_utc": "2025-09-15T00:00:00Z"
+      },
+      "prior_consumption": "CONSUMED (G2 baseline population SSC_V1_0_1_G2_DEV_002_POPULATION_V1)",
+      "protected_status": "NOT_PROTECTED",
+      "registry_record": "SSC_V1_0_1_G2_DEV_002"
+    },
+    {
+      "campaign": "Route B",
+      "counting_status": "NON_COUNTING_FOR_V1_0_1_G2",
+      "kind": "dataset",
+      "one_year_campaign_effect": "OVERLAPS -- already-consumed historical period is re-inspected, NOT newly consumed as fresh evidence; N must never be pooled with the earlier campaign.",
+      "overlap_with_one_year_window": {
+        "overlap_days": 73.998,
+        "overlap_end_utc": "2026-07-30T23:57:00Z",
+        "overlap_start_utc": "2026-05-18T00:00:00Z"
+      },
+      "prior_consumption": "CONSUMED (Route B control 3R + treatment 1.5R; delta_net_R=-2.227145)",
+      "protected_status": "NOT_PROTECTED",
+      "registry_record": "ROUTE_B_PHASE1_POPULATION"
+    },
+    {
+      "campaign": "HYP_001",
+      "counting_status": "NON_COUNTING_FOR_V1_0_1",
+      "kind": "hypothesis_lane",
+      "one_year_campaign_effect": "OVERLAPS -- already-consumed historical period is re-inspected, NOT newly consumed as fresh evidence; N must never be pooled with the earlier campaign.",
+      "overlap_with_one_year_window": {
+        "overlap_days": 32.99,
+        "overlap_end_utc": "2026-06-19T23:45:00Z",
+        "overlap_start_utc": "2026-05-18T00:00:00Z"
+      },
+      "prior_consumption": "CONSUMED (Route B Phase 1 occurrence population)",
+      "protected_status": "NOT_PROTECTED",
+      "registry_record": "GEN_001"
+    },
+    {
+      "campaign": "HYP_002",
+      "counting_status": "PRE_REMEDIATION_NON_COUNTING",
+      "kind": "hypothesis_lane",
+      "one_year_campaign_effect": "OVERLAPS -- already-consumed historical period is re-inspected, NOT newly consumed as fresh evidence; N must never be pooled with the earlier campaign.",
+      "overlap_with_one_year_window": {
+        "overlap_days": 42.998,
+        "overlap_end_utc": "2026-09-14T23:57:00Z",
+        "overlap_start_utc": "2026-08-03T00:00:00Z"
+      },
+      "prior_consumption": "CONSUMED (HYP_002 control N=21 + treatment N=11)",
+      "protected_status": "NOT_PROTECTED",
+      "registry_record": "GEN_002"
+    },
+    {
+      "campaign": "CONFIRM_001",
+      "counting_status": "NOT_YET_CREATED",
+      "kind": "dataset",
+      "one_year_campaign_effect": "PROTECTED -- must remain untouched (access_count 0); a one-year window whose final days fall inside this calendar cannot be treated as DEVELOPMENT there.",
+      "overlap_with_one_year_window": null,
+      "prior_consumption": "NONE (fresh; WAITING_FOR_DATA, earliest acquisition 2026-10-13T00:00:00Z)",
+      "protected_status": "PROTECTED",
+      "registry_record": "CONFIRM_001"
+    },
+    {
+      "campaign": "HOLDOUT",
+      "counting_status": "SEALED",
+      "kind": "protected",
+      "one_year_campaign_effect": "PROTECTED -- must remain untouched (access_count 0); a one-year window whose final days fall inside this calendar cannot be treated as DEVELOPMENT there.",
+      "overlap_with_one_year_window": null,
+      "prior_consumption": "NONE (access_count=0)",
+      "protected_status": "PROTECTED",
+      "registry_record": "HOLDOUT"
+    },
+    {
+      "campaign": "OOS",
+      "counting_status": "SEALED",
+      "kind": "protected",
+      "one_year_campaign_effect": "PROTECTED -- must remain untouched (access_count 0); a one-year window whose final days fall inside this calendar cannot be treated as DEVELOPMENT there.",
+      "overlap_with_one_year_window": null,
+      "prior_consumption": "NONE (access_count=0)",
+      "protected_status": "PROTECTED",
+      "registry_record": "OOS"
+    },
+    {
+      "campaign": "H2",
+      "counting_status": "NOT_YET_COLLECTED",
+      "kind": "dataset",
+      "one_year_campaign_effect": "NO_OVERLAP_WITH_WINDOW",
+      "overlap_with_one_year_window": null,
+      "prior_consumption": "NONE (collection not started)",
+      "protected_status": "NOT_PROTECTED (calibration stream, independent)",
+      "registry_record": "H2_FRICTION_VERIFICATION"
+    }
+  ],
+  "protected_calendar_note": "CONFIRM_001's reserved confirmation calendar begins 2026-09-15T00:00:00Z, i.e. the final four days of the mission's one-year window are protected confirmation calendar. Independent of the coverage block below, treating 2026-09-15..2026-09-18 as DEVELOPMENT would contaminate protected evidence.",
+  "protected_data_status": {
+    "protected_raw_bytes_accessed": false,
+    "protected_registry_records": [
+      "CONFIRM_001",
+      "HOLDOUT",
+      "OOS"
+    ],
+    "sealed_evidence_touched_to_create_this_campaign": false
+  },
+  "registry_authority": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_DATA_CONSUMPTION_REGISTRY_V1.json",
+  "registry_freshness_boundary": {
+    "earliest_permitted_fresh_start": "2026-09-15T00:00:00Z",
+    "latest_consumed_decision_timestamp": "2026-09-14T23:59:59Z",
+    "source": "HYP_001_EXIT_CAPTURE candidate_manifest.json consumed_evidence_boundary"
+  },
+  "registry_head_sha": "101488f73fd6cc5b0d5d642beccab81c23141bb0",
+  "safety": {
+    "CONFIRMATION_ROLE_CHANGED": false,
+    "CONFIRM_001_ACCESSED": false,
+    "H2_CONSUMED": false,
+    "HOLDOUT_ACCESSED": false,
+    "OOS_ACCESSED": false,
+    "PROTECTED_DATA_ACCESSED": false
+  },
+  "schema": "AG_SSC_V1_0_1_HIST_1Y_LINEAGE_CONTAMINATION_MAP_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1"
+}

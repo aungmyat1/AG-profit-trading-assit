@@ -90,6 +90,11 @@ their age.
 - [`status/AG_SSC_V1_0_1_POST_G2_AUTHORITY_SYNC_STATUS.md`](status/AG_SSC_V1_0_1_POST_G2_AUTHORITY_SYNC_STATUS.md)
   — SSC v1.0.1 post-G2 authority synchronization (`AUTHORITY_SYNCHRONIZED`: registry
   DEV_002 = CONSUMED, SVOS context `G2 = POPULATION_FROZEN`, generator fail-closed).
+- [`status/SSC_V1_0_1_ONE_YEAR_HISTORICAL_BACKTEST_STATUS.md`](status/SSC_V1_0_1_ONE_YEAR_HISTORICAL_BACKTEST_STATUS.md)
+  — SSC v1.0.1 one-year historical backtest preflight
+  (`BLOCKED_INCOMPLETE_ONE_YEAR_DATA`: no M1 `FILL_RESOLUTION_INPUT` before
+  2026-05-18, so 245.3 days of any one-year EURUSD window are unreplayable; no replay,
+  no population, `HISTORICAL_RESEARCH_ONLY`).
 
 ## Architecture
 
