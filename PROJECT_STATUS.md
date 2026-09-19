@@ -33,6 +33,20 @@ no protected data (confirmation/holdout/OOS/H2) accessed, no strategy/parameter/
 change, and no broker/demo/live order or authority change. See
 `docs/status/AG_SSC_V1_0_1_SVOS_G2_POPULATION_STATUS.md`.
 
+### SSC v1.0.1 SVOS G2 failure decomposition (2026-09-19)
+
+Read-only, evidence-first failure decomposition of the frozen `SSC_V1_0_1_G2_DEV_002_
+POPULATION_V1` (22 occurrences). Gross edge is negative (`PRIMARY_ALPHA_DEFICIT`:
+gross expectancy `-0.245R`, gross PF `0.56`); friction is a `SECONDARY_AMPLIFIER`
+(4.92R total, 47.7% of net loss). Key excursion facts: 50% stop-first (SL trades moved
+only `0.32R` favorably before stopping) and the partial target (reference boundary,
+mean `1.93R`) sits beyond the typical favorable excursion (mean MFE `1.31R`) —
+partial activation only 22.7%. **No hypothesis was justified** (N=22 below the
+proposed 30-trade economic-gate minimum; the candidate mechanisms reduce to numeric
+stop/target tuning, a closed-hypothesis duplicate, or subgroup cherry-picking). G3
+remains `NOT_EVALUATED_UNSIGNED_CONTRACT`; optimization ineligible. See
+`docs/status/AG_SSC_V1_0_1_SVOS_G2_FAILURE_DECOMPOSITION_STATUS.md`.
+
 This supersedes the 2026-09-14 classification recorded further down in this file
 (kept below as dated historical context, not corrected in place).
 

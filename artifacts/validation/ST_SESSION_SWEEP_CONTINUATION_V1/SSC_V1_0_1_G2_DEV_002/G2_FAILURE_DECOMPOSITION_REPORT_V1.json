@@ -1,0 +1,170 @@
+{
+  "schema": "AG_SSC_V1_0_1_G2_FAILURE_DECOMPOSITION_REPORT_V1",
+  "mission": "SSC v1.0.1 EVIDENCE-FIRST FAILURE DECOMPOSITION V2",
+  "generated_at_utc": "2026-09-19",
+  "generated_at_utc_note": "DATE_ONLY",
+  "population": {
+    "id": "SSC_V1_0_1_G2_DEV_002_POPULATION_V1",
+    "hash": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+    "N": 22,
+    "identity_verified": true
+  },
+  "gross_edge": {
+    "gross_R": -5.400118638454355,
+    "gross_expectancy_R": -0.2454599381115616,
+    "gross_profit_factor": 0.5627445053641036,
+    "classification": "PRIMARY_ALPHA_DEFICIT"
+  },
+  "friction": {
+    "total_friction_R": 4.919259268850799,
+    "mean_friction_R": 0.22360269403867267,
+    "median_friction_R": 0.24932409734473543,
+    "friction_share_of_absolute_net_loss": 0.4767011454603697,
+    "classification": "SECONDARY_AMPLIFIER"
+  },
+  "failure_hierarchy": [
+    {
+      "rank": 1,
+      "mechanism": "WEAK_GROSS_EDGE",
+      "evidence": "gross_expectancy_R=-0.245, gross_PF=0.563, median_trade_R=-0.913, win_rate=36.4% (8W/13L/1BE). Gross is negative before friction, so the alpha deficit is primary.",
+      "N": 22,
+      "effect_size": "-0.245R/trade gross expectancy",
+      "confounders": ["small sample (N=22 < proposed economic-gate minimum of 30)"],
+      "confidence": "HIGH"
+    },
+    {
+      "rank": 2,
+      "mechanism": "NO_POST_ENTRY_EDGE (stopped entries)",
+      "evidence": "stop_first_rate=50% (11/22). SL-resolved trades moved only mean_mfe_before_stop_R=0.324R favorably before the stop was hit -- adverse resolution followed almost immediately after entry.",
+      "N": 11,
+      "effect_size": "0.324R mean favorable excursion before stop; -1.0R gross each",
+      "confounders": ["cannot distinguish tight stop vs poor entry timing without a controlled experiment; N=11 is itself below the reportable threshold for a sub-analysis"],
+      "confidence": "MEDIUM"
+    },
+    {
+      "rank": 3,
+      "mechanism": "EXIT_CAPTURE_WEAKNESS (partial-target reachability)",
+      "evidence": "mean_partial_target_R=1.927 (reference-session boundary) vs mean_MFE_R=1.312 -- the first target is systematically beyond the typical favorable excursion, so partial_activation_rate=22.7% (5/22). Winners capture only mean_capture_efficiency_winners=52.3% of their MFE.",
+      "N": 22,
+      "effect_size": "partial target ~1.93R vs mean MFE ~1.31R (gap ~0.6R)",
+      "confounders": ["overlaps HYP_001_EXIT_CAPTURE territory (runner target), though the partial-target lever itself was not the HYP_001 treatment; N small"],
+      "confidence": "MEDIUM"
+    },
+    {
+      "rank": 4,
+      "mechanism": "SESSION_SPECIFIC_WEAKNESS",
+      "evidence": "LONDON_NEWYORK gross_expectancy_R=-0.551 (PF=0.13, 3W/7L, avg_win_R=+0.278) vs ASIAN_LONDON gross_expectancy_R=+0.010 (PF=1.02, 5W/6L/1BE, avg_win_R=+1.223). All S2 occurrences (2/2 stopped) landed in LONDON_NEWYORK.",
+      "N": 10,
+      "effect_size": "-0.56R/trade gross gap between sessions",
+      "confounders": ["N=10 is marginal; setup distribution differs (S2 only in LONDON_NEWYORK); not a causal session effect"],
+      "confidence": "LOW"
+    },
+    {
+      "rank": 5,
+      "mechanism": "FRICTION_AMPLIFICATION",
+      "evidence": "friction_R=4.92 total, mean 0.224R/trade, median 0.249R/trade, 47.7% of absolute net loss. Friction nearly doubles the per-trade loss but cannot explain the negative GROSS edge.",
+      "N": 22,
+      "effect_size": "0.224R/trade mean friction",
+      "confounders": ["friction is a function of the stop distance and modeled spread/commission/slippage, not an independent failure"],
+      "confidence": "HIGH (as secondary amplifier only)"
+    }
+  ],
+  "subgroup_guard": {
+    "LONG": "INSUFFICIENT_SUBGROUP_SAMPLE (N=4) -- 0/4 wins is descriptive only and does NOT independently justify a direction change",
+    "S2": "INSUFFICIENT_SUBGROUP_SAMPLE (N=2) -- does NOT independently justify disabling S2",
+    "S3": "LOW_SAMPLE_EXPLORATORY (N=7)",
+    "SHORT": "REPORTABLE (N=18) -- gross_expectancy_R=-0.078, i.e. near-breakeven gross, NOT poor per-trade economics",
+    "direction_concentration_note": "SHORT=18/LONG=4 mirrors the frozen H1 bias distribution (BEARISH=61 vs BULLISH=23 cycles); the bias gate only permits SHORT on BEARISH cycles and LONG on BULLISH cycles, so the concentration is a legitimate consequence of the market state, not a demonstrated direction-alignment defect."
+  },
+  "regime_interaction": {
+    "RANGE::SHORT": {"N": 14, "gross_expectancy_R": 0.003962405254759057},
+    "RANGE::LONG": {"N": 4, "gross_expectancy_R": -1.0},
+    "TREND_DOWN::SHORT": {"N": 4, "gross_expectancy_R": -0.36389807800524543},
+    "note": "All 4 LONG occurrences (all stopped) occurred in RANGE; SHORT in RANGE is gross-breakeven. Regime x direction is confounded with the LONG N=4 subgroup."
+  },
+  "closed_hypothesis_check": {
+    "HYP_001_EXIT_CAPTURE": {
+      "status": "HYPOTHESIS_NOT_SUPPORTED (Route B corrected, paired_n=88, delta_net_R=-2.227)",
+      "collision_check": "The observed EXIT_CAPTURE_WEAKNESS (partial-target reachability) is exit-capture territory but targets the PARTIAL target (reference boundary), NOT the RUNNER target that HYP_001 tested (runner_target_r 3.0R vs 1.5R). Classification if proposed: PARTIAL_OVERLAP -- NOT admissible as a clean duplicate; would require explicit governance justification.",
+      "not_recreated": true
+    },
+    "HYP_002_SETUP_SELECTIVITY": {
+      "status": "VALIDATED_NEGATIVE / FALSIFIED (TREATMENT S1+S2 net=-0.356 vs CONTROL net=-0.408; both negative)",
+      "collision_check": "S2 (N=2, gross=-1.0) is the worst setup but INSUFFICIENT_SUBGROUP_SAMPLE. Disabling any setup would be DUPLICATE_OF_HYP_002 and is NOT proposed.",
+      "not_recreated": true
+    }
+  },
+  "hypothesis_admission": {
+    "recommended": false,
+    "id": null,
+    "reason": "No single mechanism has adequate sample support combined with an independently-testable STRUCTURAL change that is not numeric tuning. N=22 is below the proposed economic-gate minimum (30). The two most defensible signals -- (a) 50% stop-first with 0.32R pre-stop favorable excursion, and (b) partial target ~1.93R vs mean MFE ~1.31R -- would both imply numeric stop/target adjustments, which are explicitly excluded from hypothesis admission. The session gap (LONDON_NEWYORK vs ASIAN_LONDON) is N=10 and confounded by setup distribution.",
+    "candidate_mechanisms_classified": [
+      {"name": "partial-target reachability (exit capture)", "classification": "PARTIAL_OVERLAP (HYP_001)", "admissible": false},
+      {"name": "disable worst setup (S2/S3)", "classification": "DUPLICATE_OF_HYP_002", "admissible": false},
+      {"name": "wider stop / closer target", "classification": "NUMERIC_TUNING", "admissible": false},
+      {"name": "disable LONDON_NEWYORK", "classification": "SUBGROUP_CHERRY_PICKING (D6 prohibits)", "admissible": false}
+    ]
+  },
+  "falsification_rule": "NOT_APPLICABLE (no hypothesis recommended; MECHANISM_FALSIFICATION vs ECONOMIC_GATE_PASS separation documented for a future hypothesis)",
+  "governance": {
+    "economic_gate_contract": {
+      "path": "config/governance/economic_gate_contract.yaml",
+      "contract_id": "AG_R6_ECONOMIC_GATE_CONTRACT_V1",
+      "status": "PROPOSED",
+      "signed": false,
+      "signed_by": null,
+      "signed_at": null,
+      "active": false
+    },
+    "optimization_admission_contract": {
+      "path": "config/governance/optimization_admission_contract.yaml",
+      "contract_id": "AG_OPTIMIZATION_ADMISSION_CONTRACT_V1",
+      "status": "PROPOSED",
+      "signed": false,
+      "signed_by": null,
+      "signed_at": null,
+      "active": false
+    },
+    "G3_canonical_verdict": "NOT_EVALUATED_UNSIGNED_CONTRACT",
+    "optimization_eligible": false
+  },
+  "bounded_experiment": {
+    "prepared": false,
+    "note": "D16 requires D13 to justify a hypothesis first; D13 recommended none."
+  },
+  "anti_overfitting": {
+    "PARAMETER_SWEEP": false,
+    "GRID_SEARCH": false,
+    "GENETIC_SEARCH": false,
+    "BAYESIAN_OPTIMIZATION": false,
+    "LOSING_TRADES_REMOVED": false,
+    "SUBGROUP_CHERRY_PICKING": false,
+    "PROTECTED_DATA_USED": false,
+    "HYPOTHESIS_COUNT": 0,
+    "TREATMENT_COUNT": 0
+  },
+  "forward": {
+    "ELIGIBLE": false,
+    "STARTED": false
+  },
+  "safety": {
+    "STRATEGY_CHANGED": false,
+    "PARAMETERS_CHANGED": false,
+    "POPULATION_CHANGED": false,
+    "G2_RERUN": false,
+    "OPTIMIZATION_RUN": false,
+    "NEW_CANDIDATE_CREATED": false,
+    "CONFIRMATION_ACCESSED": false,
+    "HOLDOUT_ACCESSED": false,
+    "OOS_ACCESSED": false,
+    "H2_CONSUMED": false,
+    "H2_MODIFIED": false,
+    "VIRTUAL_BROKER_STARTED": false,
+    "FORWARD_STARTED": false,
+    "BROKER_MUTATION": false,
+    "DEMO_ORDER": false,
+    "LIVE_ORDER": false,
+    "EXECUTION_AUTHORITY_CHANGED": false
+  },
+  "final_status": "DIAGNOSIS_COMPLETE_NO_HYPOTHESIS_JUSTIFIED"
+}

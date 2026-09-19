@@ -1,0 +1,647 @@
+{
+  "by_direction": {
+    "LONG": {
+      "N": 4,
+      "average_loss_R": -1.0,
+      "average_win_R": "NOT_EVALUATED",
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -1.0,
+      "gross_profit_factor": "UNDEFINED_NO_WINS",
+      "gross_total_R": -4.0,
+      "losses": 4,
+      "max_drawdown_R": 4.0,
+      "median_trade_R": -1.0,
+      "net_expectancy_R": -1.240286079798407,
+      "net_profit_factor": "UNDEFINED_NO_WINS",
+      "net_total_R": -4.961144319193628,
+      "win_rate": 0.0,
+      "wins": 0
+    },
+    "SHORT": {
+      "N": 18,
+      "average_loss_R": -0.9277811522861721,
+      "average_win_R": 0.8687389665151494,
+      "breakevens": 1,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.07778436880301971,
+      "gross_profit_factor": 0.8323217310216984,
+      "gross_total_R": -1.400118638454355,
+      "losses": 9,
+      "max_drawdown_R": 5.898717144317783,
+      "median_trade_R": -0.26204236129814334,
+      "net_expectancy_R": -0.29767964378397366,
+      "net_profit_factor": 0.4965901515116328,
+      "net_total_R": -5.358233588111526,
+      "win_rate": 0.4444444444444444,
+      "wins": 8
+    }
+  },
+  "by_exit_path": {
+    "RESOLVED_PARTIAL_BE": {
+      "N": 3,
+      "average_loss_R": "NOT_EVALUATED",
+      "average_win_R": 0.38674935356831114,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": 0.38674935356831114,
+      "gross_profit_factor": "UNDEFINED_NO_LOSSES",
+      "gross_total_R": 1.1602480607049335,
+      "losses": 0,
+      "max_drawdown_R": 0.0,
+      "median_trade_R": 0.34448886325267697,
+      "net_expectancy_R": 0.18064367298242945,
+      "net_profit_factor": 5.066132989399294,
+      "net_total_R": 0.5419310189472883,
+      "win_rate": 1.0,
+      "wins": 3
+    },
+    "RESOLVED_PARTIAL_RUNNER_TARGET": {
+      "N": 1,
+      "average_loss_R": "NOT_EVALUATED",
+      "average_win_R": 2.4546480703785285,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": 2.4546480703785285,
+      "gross_profit_factor": "UNDEFINED_NO_LOSSES",
+      "gross_total_R": 2.4546480703785285,
+      "losses": 0,
+      "max_drawdown_R": 0.0,
+      "median_trade_R": 2.4546480703785285,
+      "net_expectancy_R": 2.176595234345971,
+      "net_profit_factor": "UNDEFINED_NO_LOSSES",
+      "net_total_R": 2.176595234345971,
+      "win_rate": 1.0,
+      "wins": 1
+    },
+    "RESOLVED_SESSION_EXIT": {
+      "N": 7,
+      "average_loss_R": -0.6750151852877749,
+      "average_win_R": 0.8337539002594332,
+      "breakevens": 1,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": 0.2835693186374547,
+      "gross_profit_factor": 2.4703263524478616,
+      "gross_total_R": 1.9849852304621831,
+      "losses": 2,
+      "max_drawdown_R": 1.0589652050227163,
+      "median_trade_R": 0.2910651655528337,
+      "net_expectancy_R": 0.09570192274591505,
+      "net_profit_factor": 1.3797853313899797,
+      "net_total_R": 0.6699134592214053,
+      "win_rate": 0.5714285714285714,
+      "wins": 4
+    },
+    "RESOLVED_SL": {
+      "N": 11,
+      "average_loss_R": -1.0,
+      "average_win_R": "NOT_EVALUATED",
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -1.0,
+      "gross_profit_factor": "UNDEFINED_NO_WINS",
+      "gross_total_R": -11.0,
+      "losses": 11,
+      "max_drawdown_R": 11.0,
+      "median_trade_R": -1.0,
+      "net_expectancy_R": -1.246165238165438,
+      "net_profit_factor": "UNDEFINED_NO_WINS",
+      "net_total_R": -13.707817619819819,
+      "win_rate": 0.0,
+      "wins": 0
+    }
+  },
+  "by_session": {
+    "ASIAN_LONDON": {
+      "N": 12,
+      "average_loss_R": -1.0,
+      "average_win_R": 1.2228877757178687,
+      "breakevens": 1,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": 0.009536573215778582,
+      "gross_profit_factor": 1.0190731464315572,
+      "gross_total_R": 0.11443887858934298,
+      "losses": 6,
+      "max_drawdown_R": 3.3841596272740846,
+      "median_trade_R": -0.5,
+      "net_expectancy_R": -0.23256986178159023,
+      "net_profit_factor": 0.6370819025745329,
+      "net_total_R": -2.7908383413790827,
+      "win_rate": 0.4166666666666667,
+      "wins": 5
+    },
+    "LONDON_NEWYORK": {
+      "N": 10,
+      "average_loss_R": -0.9071471957965072,
+      "average_win_R": 0.27849095117728395,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.5514557517043698,
+      "gross_profit_factor": 0.1315698988469762,
+      "gross_total_R": -5.514557517043698,
+      "losses": 7,
+      "max_drawdown_R": 5.514557517043698,
+      "median_trade_R": -0.9129728239896315,
+      "net_expectancy_R": -0.7528539565926071,
+      "net_profit_factor": 0.04882975916630991,
+      "net_total_R": -7.528539565926071,
+      "win_rate": 0.3,
+      "wins": 3
+    }
+  },
+  "by_setup": {
+    "S1": {
+      "N": 13,
+      "average_loss_R": -0.9187537963219438,
+      "average_win_R": 1.1219822893337894,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.13385530183896943,
+      "gross_profit_factor": 0.7632501042617676,
+      "gross_total_R": -1.7401189239066026,
+      "losses": 8,
+      "max_drawdown_R": 3.058965205022716,
+      "median_trade_R": -0.8259456479792632,
+      "net_expectancy_R": -0.3489080602228794,
+      "net_profit_factor": 0.5040887487362604,
+      "net_total_R": -4.535804782897432,
+      "win_rate": 0.38461538461538464,
+      "wins": 5
+    },
+    "S2": {
+      "N": 2,
+      "average_loss_R": -1.0,
+      "average_win_R": "NOT_EVALUATED",
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -1.0,
+      "gross_profit_factor": "UNDEFINED_NO_WINS",
+      "gross_total_R": -2.0,
+      "losses": 2,
+      "max_drawdown_R": 2.0,
+      "median_trade_R": -1.0,
+      "net_expectancy_R": -1.2519884765645117,
+      "net_profit_factor": "UNDEFINED_NO_WINS",
+      "net_total_R": -2.5039769531290235,
+      "win_rate": 0.0,
+      "wins": 0
+    },
+    "S3": {
+      "N": 7,
+      "average_loss_R": -1.0,
+      "average_win_R": 0.4466667618174159,
+      "breakevens": 1,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.23714281636396461,
+      "gross_profit_factor": 0.4466667618174159,
+      "gross_total_R": -1.6599997145477523,
+      "losses": 3,
+      "max_drawdown_R": 1.659999714547752,
+      "median_trade_R": 0.0,
+      "net_expectancy_R": -0.4685137387540998,
+      "net_profit_factor": 0.17069712875365106,
+      "net_total_R": -3.2795961712786985,
+      "win_rate": 0.42857142857142855,
+      "wins": 3
+    }
+  },
+  "excursion_summary": {
+    "full_position_session_exit_count": 6,
+    "mean_MAE_R": 1.2630892727272727,
+    "mean_MFE_R": 1.311841090909091,
+    "mean_MFE_R_losers": 1.263953,
+    "mean_MFE_R_winners": 1.532113875,
+    "mean_capture_efficiency_winners": 0.523363625,
+    "mean_mfe_before_stop_R": 0.32401372727272726,
+    "mean_partial_target_R": 1.9267613157894736,
+    "partial_activation_rate": 0.22727272727272727,
+    "runner_activation_rate": 0.22727272727272727,
+    "stop_first_rate": 0.5
+  },
+  "excursions": [
+    {
+      "MAE_R": 1.394971,
+      "MFE_R": 5.711176,
+      "capture_efficiency": -0.175095,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 1.017508,
+      "partial_target_R": 1.95296,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S1",
+      "trade_id": "ASIAN_LONDON_2026-06-23_2026-06-23 07:00:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 1.147067,
+      "MFE_R": 1.309082,
+      "capture_efficiency": -0.763894,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 0.0,
+      "partial_target_R": null,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S3",
+      "trade_id": "ASIAN_LONDON_2026-06-23_2026-06-23 07:30:00+00:00_S3_PULLBACK_CONTINUATION"
+    },
+    {
+      "MAE_R": 1.342502,
+      "MFE_R": 0.724525,
+      "capture_efficiency": -1.380214,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 0.0,
+      "partial_target_R": null,
+      "session_pair": "LONDON_NEWYORK",
+      "setup": "S2",
+      "trade_id": "LONDON_NEWYORK_2026-06-23_2026-06-23 14:15:00+00:00_S2_BREAKOUT_CONTINUATION"
+    },
+    {
+      "MAE_R": 2.69127,
+      "MFE_R": 0.712756,
+      "capture_efficiency": -1.403004,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 0.0,
+      "partial_target_R": null,
+      "session_pair": "LONDON_NEWYORK",
+      "setup": "S2",
+      "trade_id": "LONDON_NEWYORK_2026-06-24_2026-06-24 12:30:00+00:00_S2_BREAKOUT_CONTINUATION"
+    },
+    {
+      "MAE_R": 2.754437,
+      "MFE_R": 1.355005,
+      "capture_efficiency": 0.147541,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_PARTIAL_BE",
+      "gross_R": 0.19991882472634126,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 0.399838,
+      "session_pair": "LONDON_NEWYORK",
+      "setup": "S3",
+      "trade_id": "LONDON_NEWYORK_2026-06-24_2026-06-24 13:30:00+00:00_S3_PULLBACK_CONTINUATION"
+    },
+    {
+      "MAE_R": 0.889004,
+      "MFE_R": 1.166817,
+      "capture_efficiency": 0.295238,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_PARTIAL_BE",
+      "gross_R": 0.34448886325267697,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 0.688978,
+      "session_pair": "LONDON_NEWYORK",
+      "setup": "S3",
+      "trade_id": "LONDON_NEWYORK_2026-06-24_2026-06-24 13:45:00+00:00_S3_PULLBACK_CONTINUATION"
+    },
+    {
+      "MAE_R": 1.17183,
+      "MFE_R": 4.452955,
+      "capture_efficiency": -0.22457,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 0.775211,
+      "partial_target_R": 3.587604,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S1",
+      "trade_id": "ASIAN_LONDON_2026-06-25_2026-06-25 08:45:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 0.963603,
+      "MFE_R": 0.264726,
+      "capture_efficiency": -3.12,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SESSION_EXIT",
+      "gross_R": -0.8259456479792632,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 2.287234,
+      "session_pair": "LONDON_NEWYORK",
+      "setup": "S1",
+      "trade_id": "LONDON_NEWYORK_2026-06-29_2026-06-29 14:30:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 0.807294,
+      "MFE_R": 0.593114,
+      "capture_efficiency": 0.490741,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SESSION_EXIT",
+      "gross_R": 0.2910651655528337,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 0.571147,
+      "session_pair": "LONDON_NEWYORK",
+      "setup": "S1",
+      "trade_id": "LONDON_NEWYORK_2026-07-01_2026-07-01 13:45:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 0.905237,
+      "MFE_R": 0.222339,
+      "capture_efficiency": -2.357143,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SESSION_EXIT",
+      "gross_R": -0.5240847225962867,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 0.23822,
+      "session_pair": "LONDON_NEWYORK",
+      "setup": "S1",
+      "trade_id": "LONDON_NEWYORK_2026-07-07_2026-07-07 14:00:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 0.900074,
+      "MFE_R": 1.429065,
+      "capture_efficiency": 0.430939,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_PARTIAL_BE",
+      "gross_R": 0.6158403727259152,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 1.231681,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S1",
+      "trade_id": "ASIAN_LONDON_2026-07-08_2026-07-08 08:15:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 1.135531,
+      "MFE_R": 0.109186,
+      "capture_efficiency": -9.158713,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 0.0,
+      "partial_target_R": 2.161876,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S3",
+      "trade_id": "ASIAN_LONDON_2026-07-08_2026-07-08 10:45:00+00:00_S3_PULLBACK_CONTINUATION"
+    },
+    {
+      "MAE_R": 0.841589,
+      "MFE_R": 1.88516,
+      "capture_efficiency": 0.794643,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SESSION_EXIT",
+      "gross_R": 1.4980291448633183,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 2.07031,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S1",
+      "trade_id": "ASIAN_LONDON_2026-07-09_2026-07-09 08:30:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 0.855262,
+      "MFE_R": 1.253058,
+      "capture_efficiency": 0.634921,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SESSION_EXIT",
+      "gross_R": 0.7955925974732295,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 1.471846,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S3",
+      "trade_id": "ASIAN_LONDON_2026-07-09_2026-07-09 10:30:00+00:00_S3_PULLBACK_CONTINUATION"
+    },
+    {
+      "MAE_R": 1.546861,
+      "MFE_R": 0.863832,
+      "capture_efficiency": -1.157633,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 0.060267,
+      "partial_target_R": 3.415148,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S1",
+      "trade_id": "ASIAN_LONDON_2026-07-14_2026-07-14 09:30:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 0.852695,
+      "MFE_R": 3.484929,
+      "capture_efficiency": 0.704361,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_PARTIAL_RUNNER_TARGET",
+      "gross_R": 2.4546480703785285,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 1.909296,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S1",
+      "trade_id": "ASIAN_LONDON_2026-07-17_2026-07-17 07:45:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 1.876824,
+      "MFE_R": 0.056873,
+      "capture_efficiency": -17.582898,
+      "direction": "LONG",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 0.056873,
+      "partial_target_R": 1.09197,
+      "session_pair": "LONDON_NEWYORK",
+      "setup": "S1",
+      "trade_id": "LONDON_NEWYORK_2026-07-21_2026-07-21 14:00:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 1.32061,
+      "MFE_R": 1.303233,
+      "capture_efficiency": -0.767322,
+      "direction": "LONG",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 1.303233,
+      "partial_target_R": 3.214642,
+      "session_pair": "LONDON_NEWYORK",
+      "setup": "S3",
+      "trade_id": "LONDON_NEWYORK_2026-07-21_2026-07-21 14:15:00+00:00_S3_PULLBACK_CONTINUATION"
+    },
+    {
+      "MAE_R": 0.839654,
+      "MFE_R": 1.089763,
+      "capture_efficiency": 0.688525,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SESSION_EXIT",
+      "gross_R": 0.7503286931483515,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 2.125931,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S1",
+      "trade_id": "ASIAN_LONDON_2026-07-24_2026-07-24 10:30:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 0.462231,
+      "MFE_R": 0.172204,
+      "capture_efficiency": 0.0,
+      "direction": "SHORT",
+      "final_state": "RESOLVED_SESSION_EXIT",
+      "gross_R": 0.0,
+      "mfe_before_stop_R": null,
+      "partial_target_R": 0.697879,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S3",
+      "trade_id": "ASIAN_LONDON_2026-07-24_2026-07-24 10:45:00+00:00_S3_PULLBACK_CONTINUATION"
+    },
+    {
+      "MAE_R": 1.864782,
+      "MFE_R": 0.451627,
+      "capture_efficiency": -2.214218,
+      "direction": "LONG",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 0.10198,
+      "partial_target_R": 3.423622,
+      "session_pair": "LONDON_NEWYORK",
+      "setup": "S1",
+      "trade_id": "LONDON_NEWYORK_2026-07-24_2026-07-24 12:00:00+00:00_S1_SWEEP_REVERSAL"
+    },
+    {
+      "MAE_R": 1.224636,
+      "MFE_R": 0.249079,
+      "capture_efficiency": -4.014797,
+      "direction": "LONG",
+      "final_state": "RESOLVED_SL",
+      "gross_R": -1.0,
+      "mfe_before_stop_R": 0.249079,
+      "partial_target_R": 4.068283,
+      "session_pair": "ASIAN_LONDON",
+      "setup": "S1",
+      "trade_id": "ASIAN_LONDON_2026-07-31_2026-07-31 10:00:00+00:00_S1_SWEEP_REVERSAL"
+    }
+  ],
+  "friction": {
+    "friction_by_direction": {
+      "LONG": {
+        "mean": 0.24028607979840694,
+        "total": 0.9611443191936277
+      },
+      "SHORT": {
+        "mean": 0.21989527498095393,
+        "total": 3.958114949657171
+      }
+    },
+    "friction_by_session": {
+      "ASIAN_LONDON": {
+        "mean": 0.24210643499736884,
+        "total": 2.905277219968426
+      },
+      "LONDON_NEWYORK": {
+        "mean": 0.2013982048882373,
+        "total": 2.0139820488823728
+      }
+    },
+    "friction_by_setup": {
+      "S1": {
+        "mean": 0.21505275838390997,
+        "total": 2.7956858589908293
+      },
+      "S2": {
+        "mean": 0.25198847656451157,
+        "total": 0.5039769531290231
+      },
+      "S3": {
+        "mean": 0.23137092239013515,
+        "total": 1.619596456730946
+      }
+    },
+    "friction_share_of_absolute_net_loss": 0.4767011454603697,
+    "max_friction_R": 0.33319804121044105,
+    "mean_friction_R": 0.22360269403867267,
+    "median_friction_R": 0.24932409734473543,
+    "min_friction_R": 0.08237693364704093,
+    "total_friction_R": 4.919259268850799
+  },
+  "generated_at": "2026-09-19T09:25:16.611536+00:00",
+  "identity": {
+    "dataset_fingerprint_recorded": "05b059720a7457d15a7fbc4cd7f0c15e62df86b7857c1f122edc49a0d3a2baf5",
+    "hash_match": true,
+    "population_id": "SSC_V1_0_1_G2_DEV_002_POPULATION_V1",
+    "preregistration_hash_recorded": "d40fca49b2ff92768cafd45cdb5d48de96d53ad68449af68d41f8a348d4b0952",
+    "recomputed_hash": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+    "reported_hash": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "strategy_version": "1.0.1"
+  },
+  "overall": {
+    "N": 22,
+    "average_loss_R": -0.9500023361981191,
+    "average_win_R": 0.8687389665151494,
+    "breakevens": 1,
+    "cost_status": "MODELED",
+    "gross_expectancy_R": -0.2454599381115616,
+    "gross_profit_factor": 0.5627445053641036,
+    "gross_total_R": -5.400118638454355,
+    "losses": 13,
+    "max_drawdown_R": 5.898717144317783,
+    "median_trade_R": -0.9129728239896315,
+    "net_expectancy_R": -0.46906263215023425,
+    "net_profit_factor": 0.33871436140677347,
+    "net_total_R": -10.319377907305153,
+    "win_rate": 0.36363636363636365,
+    "wins": 8
+  },
+  "regime_x_direction": {
+    "RANGE": {
+      "LONG": 4,
+      "SHORT": 14
+    },
+    "TREND_DOWN": {
+      "SHORT": 4
+    }
+  },
+  "regime_x_direction_economics": {
+    "RANGE::LONG": {
+      "N": 4,
+      "gross_expectancy_R": -1.0,
+      "gross_total_R": -4.0
+    },
+    "RANGE::SHORT": {
+      "N": 14,
+      "gross_expectancy_R": 0.003962405254759057,
+      "gross_total_R": 0.0554736735666268
+    },
+    "TREND_DOWN::SHORT": {
+      "N": 4,
+      "gross_expectancy_R": -0.36389807800524543,
+      "gross_total_R": -1.4555923120209817
+    }
+  },
+  "regime_x_setup": {
+    "RANGE": {
+      "S1": 13,
+      "S3": 5
+    },
+    "TREND_DOWN": {
+      "S2": 2,
+      "S3": 2
+    }
+  },
+  "schema": "AG_SSC_V1_0_1_G2_FAILURE_DECOMPOSITION_V1",
+  "session_x_direction": {
+    "ASIAN_LONDON": {
+      "LONG": 1,
+      "SHORT": 11
+    },
+    "LONDON_NEWYORK": {
+      "LONG": 3,
+      "SHORT": 7
+    }
+  },
+  "session_x_setup": {
+    "ASIAN_LONDON": {
+      "S1": 8,
+      "S3": 4
+    },
+    "LONDON_NEWYORK": {
+      "S1": 5,
+      "S2": 2,
+      "S3": 3
+    }
+  },
+  "subgroup_classification": {
+    "ASIAN_LONDON": "REPORTABLE",
+    "LONDON_NEWYORK": "REPORTABLE",
+    "LONG": "INSUFFICIENT_SUBGROUP_SAMPLE",
+    "S1": "REPORTABLE",
+    "S2": "INSUFFICIENT_SUBGROUP_SAMPLE",
+    "S3": "LOW_SAMPLE_EXPLORATORY",
+    "SHORT": "REPORTABLE"
+  }
+}

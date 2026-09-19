@@ -81,6 +81,9 @@ their age.
   — SSC v1.0.1 one-shot G2 historical population over `SSC_V1_0_1_G2_DEV_002`
   (`POPULATION_V1` frozen, 22 occurrences, deterministic; G3 economic gate
   NOT_EVALUATED_UNSIGNED_CONTRACT; DEVELOPMENT evidence only).
+- [`status/AG_SSC_V1_0_1_SVOS_G2_FAILURE_DECOMPOSITION_STATUS.md`](status/AG_SSC_V1_0_1_SVOS_G2_FAILURE_DECOMPOSITION_STATUS.md)
+  — read-only, evidence-first failure decomposition of the frozen G2 population
+  (`PRIMARY_ALPHA_DEFICIT` + `SECONDARY_AMPLIFIER` friction; no hypothesis justified).
 
 ## Architecture
 
