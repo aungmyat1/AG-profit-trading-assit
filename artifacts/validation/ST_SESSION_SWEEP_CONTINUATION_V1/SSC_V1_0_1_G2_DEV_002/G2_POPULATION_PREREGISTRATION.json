@@ -1,0 +1,57 @@
+{
+  "schema": "AG_SSC_V1_0_1_G2_POPULATION_PREREGISTRATION_V1",
+  "population_id": "SSC_V1_0_1_G2_DEV_002_POPULATION_V1",
+  "preregistration_hash": "d40fca49b2ff92768cafd45cdb5d48de96d53ad68449af68d41f8a348d4b0952",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1",
+  "dataset_id": "SSC_V1_0_1_G2_DEV_002",
+  "dataset_fingerprint": "05b059720a7457d15a7fbc4cd7f0c15e62df86b7857c1f122edc49a0d3a2baf5",
+  "parent_dataset": "SSC_V1_0_1_G2_DEV_001",
+  "parent_dataset_fingerprint": "3ac9fe2023f3c66d3e5ad4e99554574e24a62060e7920603b3af880590c03ef8",
+  "remediation_reason": "INSUFFICIENT_H1_WARMUP",
+  "semantic_change": false,
+  "symbol": "EURUSD",
+  "h1_context_interval": {
+    "start": "2025-01-01T21:00:00Z",
+    "end": "2026-08-02T23:00:00Z"
+  },
+  "development_decision_interval": {
+    "start": "2026-06-21T21:00:00Z",
+    "end": "2026-08-02T23:59:59Z"
+  },
+  "h1_hash": "93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79",
+  "m15_hash": "cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063",
+  "m1_hash": "b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458",
+  "h1_rows": 9843,
+  "m15_rows": 2892,
+  "m1_rows": 43292,
+  "warmup_role": {
+    "WARMUP_CONTEXT_ONLY": true,
+    "may_initialize_h1_structure": true,
+    "may_initialize_h1_bias": true,
+    "may_generate_decision_occurrence": false,
+    "may_contribute_trade": false,
+    "may_contribute_pnl": false,
+    "may_contribute_economic_sample_N": false,
+    "may_extend_development_decision_window": false,
+    "may_be_used_for_optimization": false
+  },
+  "canonical_replay_authority": "session_sweep_continuation.replay.run_replay",
+  "data_role": "DEVELOPMENT",
+  "friction_profile": "MODELED (admitted config defaults; H2 broker evidence NOT consumed)",
+  "h2_broker_evidence_consumed": false,
+  "prior_consumption": "NONE",
+  "protected_data_clear": true,
+  "outcome_not_evaluated": true,
+  "economics_evaluated": false,
+  "optimization_run": false,
+  "replay_count": 0,
+  "evaluation_dimensions_frozen": [
+    "combined", "symbol", "session", "direction",
+    "setup_S1", "setup_S2", "setup_S3", "exit_path",
+    "gross_R", "friction_R", "net_R", "expectancy_R",
+    "profit_factor", "max_drawdown_R", "MFE_R", "MAE_R"
+  ],
+  "frozen_at_utc": "2026-09-19",
+  "frozen_at_utc_note": "DATE_ONLY"
+}
