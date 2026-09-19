@@ -1,0 +1,46 @@
+# OWNER-APPROVED symbol-metadata manifest for the SSC V1.0.1 G2 DEV_002 combined H1 file:
+# data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_H1.csv
+#
+# Authorized 2026-09-19 (SSC DEV_002 H1 metadata authorization remediation mission,
+# explicit owner decision recorded in-session via AskUserQuestion -- "Yes, authorize
+# it") -- remediates BLOCKED_MISSING_H1_METADATA_AUTHORIZATION from
+# artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/
+# G2_HISTORICAL_REPLAY_BLOCKER.json. New manifest, scoped to this ONE dataset file's own
+# dataset_fingerprint -- it supersedes neither EURUSD_H1_symbol_metadata.yaml nor any
+# other approved manifest; each remains scoped to its own file.
+#
+# AUTHORIZED_DERIVED_DATASET_REBIND, not a new market-data authority: DEV_002's H1 file
+# (scripts/build_ssc_v1_0_1_g2_dev_002.py) is a deterministic, value-preserving
+# concatenation of two already-separately-verified, immutable sources -- never a
+# re-acquisition or transformation of price semantics (dataset_manifest.json:
+# "semantic_change": false):
+#   1. D:\EURUSD_H1_202501020000_202607310000.csv (wall-clock -> UTC converted, bars
+#      strictly before 2026-06-21T21:00Z only) -- the SAME file already covered by
+#      config/historical_datasets/EURUSD_H1_symbol_metadata.yaml (authority
+#      OWNER_APPROVED_DATASET_MANIFEST, tick_size=0.00001, approved 2026-09-11).
+#   2. SSC_V1_0_1_G2_DEV_001's own H1 development segment (sha256 76f2aa90..., 723 bars,
+#      2026-06-21T21:00Z -> 2026-08-02T23:00Z), acquired via MetaTrader5
+#      copy_rates_range from account 26088035 / VantageMarkets-Demo -- the same broker
+#      and account already independently used to confirm tick_size=0.00001 for this
+#      broker family (config/historical_datasets/EURUSD_H1_GEN_002_symbol_metadata.yaml,
+#      config/historical_datasets/GBPUSD_H1_WARMUP_PLUS_R1_symbol_metadata.yaml's live
+#      MT5 symbol_info verification on the same VantageMarkets-Demo server).
+# Combined, sorted, duplicate/non-monotonic/OHLC-integrity checked (zero violations) --
+# no candle value from either source file was altered. M15/M1 are unchanged byte-copies
+# of DEV_001's own already-frozen files (no metadata implication).
+#
+# tick_size = 0.00001: not copied from the replay blocker's suggestion -- traced
+# independently to the two already-authorized sources above, both already-approved at
+# this same value for this same broker/account family.
+
+dataset_id: EURUSD_H1_SSC_V1_0_1_G2_DEV_002
+symbol: EURUSD
+tick_size: 0.00001
+metadata_scope: HISTORICAL_ANALYSIS_ONLY
+authority: OWNER_APPROVED_DATASET_MANIFEST
+approval_date: "2026-09-19"
+# sha256 of the exact DEV_002 combined H1 file this manifest is scoped to (matches
+# dataset_manifest.json's per_file.EURUSD_H1.sha256 and G2_HISTORICAL_REPLAY_BLOCKER.json's
+# evidence.h1_hash_actual):
+dataset_fingerprint: "sha256:93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79"
+source_file: "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_H1.csv"
