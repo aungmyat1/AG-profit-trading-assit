@@ -399,3 +399,17 @@ def build_m5_context(symbol: str, *, parent_m15_context_id: Optional[str] = None
         structure, parent_m15_context_id=parent_m15_context_id,
         order_blocks=order_blocks, fvg_zones=fvg_zones, liquidity_levels=liquidity_levels,
     )
+
+
+# --------------------------------------------------------------------------- Public aliases (TD-4)
+# TD-4's new W1/H4/M15 builders (topdown_new_builders.py) reuse the exact same pure
+# fact-mapping helpers defined above rather than duplicating this logic -- these
+# aliases change nothing about the private names' behavior or the tests that
+# reference them directly; they exist purely so a second module can import the same
+# functions under public names.
+structure_facts_from_result = _structure_facts
+data_quality_for_structure = _data_quality_for_structure
+imbalance_facts_from_zones = _imbalance_facts_from_zones
+zone_facts_from_validated_obs = _zone_facts_from_validated_obs
+reference_level_fact_from_zone = _reference_level_fact_from_zone
+liquidity_facts_from_levels = _liquidity_facts_from_levels

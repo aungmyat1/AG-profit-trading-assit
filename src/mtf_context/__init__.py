@@ -81,6 +81,14 @@ from .topdown_context_adapters import (
     m5_context_from_structure,
 )
 from .topdown_market_data import closed_snapshot_for_topdown_timeframe
+from .topdown_new_builders import (
+    build_h4_context,
+    build_m15_context,
+    build_weekly_context,
+    h4_context_from_structure,
+    m15_context_from_structure,
+    weekly_context_from_structure,
+)
 
 __all__ = [
     "analyze", "MTFProfile", "MTFContext", "LayerResult", "InvalidProfileError",
@@ -108,4 +116,8 @@ __all__ = [
     "daily_context_from_d1", "build_daily_context",
     "h1_context_from_sources", "build_h1_context",
     "m5_context_from_structure", "build_m5_context",
+    # TD-4 new context builders (additive; see topdown_new_builders.py)
+    "weekly_context_from_structure", "build_weekly_context",
+    "h4_context_from_structure", "build_h4_context",
+    "m15_context_from_structure", "build_m15_context",
 ]
