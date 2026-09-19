@@ -47,6 +47,16 @@ stop/target tuning, a closed-hypothesis duplicate, or subgroup cherry-picking). 
 remains `NOT_EVALUATED_UNSIGNED_CONTRACT`; optimization ineligible. See
 `docs/status/AG_SSC_V1_0_1_SVOS_G2_FAILURE_DECOMPOSITION_STATUS.md`.
 
+### SSC v1.0.1 independent replication admission blocked (2026-09-19)
+
+Evidence-accumulation preflight for a fresh independent DEVELOPMENT replication
+(`SSC_V1_0_1_G2_DEV_003`) returned `BLOCKED_NO_ADMISSIBLE_REPLICATION_DATA`: the
+EURUSD H1+M15+M1 development timeline is fully consumed (GEN_001 05-18→06-19,
+DEV_002 06-21→08-02, GEN_002 08-03→09-14) and the only fresh interval
+(2026-09-15+) is calendar-reserved for CONFIRM_001 (protected). No replay, no
+hypothesis, no optimization, no protected-data access. See
+`docs/status/AG_SSC_V1_0_1_INDEPENDENT_REPLICATION_ADMISSION_STATUS.md`.
+
 This supersedes the 2026-09-14 classification recorded further down in this file
 (kept below as dated historical context, not corrected in place).
 

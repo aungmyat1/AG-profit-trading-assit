@@ -1,0 +1,96 @@
+{
+  "schema": "AG_SSC_V1_0_1_INDEPENDENT_REPLICATION_ADMISSION_V1",
+  "mission": "SSC v1.0.1 SVOS INDEPENDENT DEVELOPMENT REPLICATION ADMISSION V2",
+  "generated_at_utc": "2026-09-19",
+  "generated_at_utc_note": "DATE_ONLY",
+  "head_sha": "d96c76b36e82490b0643b26c92a78a8625328d40",
+  "strategy": {
+    "id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "version": "1.0.1"
+  },
+  "dev002_reference": {
+    "population_id": "SSC_V1_0_1_G2_DEV_002_POPULATION_V1",
+    "population_hash": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+    "N": 22,
+    "identity_verified": true,
+    "reference_failure_structure": {
+      "gross_expectancy_R": -0.2454599381115616,
+      "gross_profit_factor": 0.5627445053641036,
+      "net_expectancy_R": -0.46906263215023425,
+      "friction_R_total": 4.919259268850799,
+      "classification": "PRIMARY_ALPHA_DEFICIT + SECONDARY_FRICTION_AMPLIFICATION"
+    }
+  },
+  "closed_hypothesis_firewall": {
+    "HYP_001_EXIT_CAPTURE": "HYPOTHESIS_NOT_SUPPORTED (Route B corrected, paired_n=88, delta_net_R=-2.227)",
+    "HYP_002_SETUP_SELECTIVITY": "VALIDATED_NEGATIVE (terminal)",
+    "reopened": false,
+    "disguised_equivalent_created": false
+  },
+  "protected_data": {
+    "CONFIRM_001_accessed": false,
+    "HOLDOUT_accessed": false,
+    "OOS_accessed": false,
+    "H2_consumed": false,
+    "access_count": 0
+  },
+  "consumption_registry": {
+    "authority": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_DATA_CONSUMPTION_REGISTRY_V1.json",
+    "status": "READ (authoritative V1; its DEV_002 record predates the G2 population freeze and must be re-read as CONSUMED)",
+    "freshness_boundary": {
+      "latest_consumed_decision_timestamp": "2026-09-14T23:59:59Z",
+      "earliest_permitted_fresh_start": "2026-09-15T00:00:00Z"
+    },
+    "consumed_or_reserved": [
+      {"id": "GEN_001", "interval": "2026-05-18 -> 2026-06-19", "role": "HYPOTHESIS_GENERATION (Route B)", "reusable": false},
+      {"id": "GEN_002A", "interval": "2026-06-08 -> 2026-07-30 (GBPUSD)", "role": "HYPOTHESIS_GENERATION (Route B)", "reusable": false},
+      {"id": "ROUTE_B_PHASE1_POPULATION", "interval": "2026-05-18 -> 2026-07-30", "role": "HYP_001 development", "reusable": false},
+      {"id": "GEN_002", "interval": "2026-08-03 -> 2026-09-14", "role": "HYP_002 development", "reusable": false},
+      {"id": "SSC_V1_0_1_G2_DEV_002", "interval": "2026-06-21 -> 2026-08-02 (dev decisions)", "role": "G2 baseline population (POPULATION_V1 frozen 2026-09-19)", "reusable": false},
+      {"id": "CONFIRM_001", "interval": "2026-09-15 -> 2026-10-12", "role": "CONFIRMATION (protected)", "reusable": false},
+      {"id": "HOLDOUT", "interval": "sealed", "role": "HOLDOUT (protected)", "reusable": false},
+      {"id": "OOS", "interval": "sealed", "role": "OOS (protected)", "reusable": false}
+    ]
+  },
+  "data_search": {
+    "registered_datasets": "all config/historical_datasets/*.yaml point to consumed intervals or are metadata manifests",
+    "local_d_drive": {
+      "EURUSD_M1": "2026-05-18 -> 2026-07-31 (consumed via GEN_001/DEV_002); broker-served M1 history does not extend before ~2026-06-09",
+      "EURUSD_M15": "2025-01-02 -> 2026-07-31 (consumed); no independent pre-GEN_001 M1 leg exists",
+      "EURUSD_H1": "2025-01-02 -> 2026-07-31 (consumed as DEV_002 warmup/GEN_001)",
+      "EURUSD_202606182200_202608241902.csv": "TICK data (BID/ASK/LAST), 2026-06-18 -> 2026-08-24; overlaps DEV_002 + GEN_002; not OHLC H1/M15/M1",
+      "EURUSD_H4_202401020000_202609182000.csv": "H4 timeframe (not the H1/M15/M1 required by SSC v1.0.1)"
+    },
+    "sibling_repos": "D:/ddev/smc-lss-platform holds EURUSD_M5/M15/H1 CSV but is classified SECONDARY_CROSSCHECK with unverified timezone/provenance and overlaps consumed periods; introducing it would violate R6 (new external provider requires owner authorization).",
+    "fresh_data_found": false
+  },
+  "admissibility_conclusion": {
+    "why_blocked": "The entire EURUSD H1+M15+M1 development timeline is consumed or protected: 2026-05-18..06-19 GEN_001, 2026-06-21..08-02 DEV_002 (G2 population frozen), 2026-08-03..09-14 GEN_002; the only fresh interval (2026-09-15+) is calendar-reserved for CONFIRM_001 (protected confirmation). M1 history does not extend before 2026-05-18. GBPUSD is consumed (GEN_002A) and reserved for external replication. No unconsumed, non-protected H1+M15+M1 interval exists.",
+    "proposed_dataset_id": null,
+    "note": "SSC_V1_0_1_G2_DEV_003 cannot be created from admissible data at this time."
+  },
+  "replication_metrics_preregistered": false,
+  "trial_ledger_status": "FUTURE_G4_PREREQUISITE (not implemented this mission)",
+  "forward_status": "NOT_STARTED",
+  "safety": {
+    "STRATEGY_CHANGED": false,
+    "PARAMETERS_CHANGED": false,
+    "DEV002_CHANGED": false,
+    "REPLAY_EXECUTED": false,
+    "OPTIMIZATION_RUN": false,
+    "NEW_CANDIDATE_CREATED": false,
+    "NEW_HYPOTHESIS_CREATED": false,
+    "CONFIRMATION_ACCESSED": false,
+    "HOLDOUT_ACCESSED": false,
+    "OOS_ACCESSED": false,
+    "H2_CONSUMED": false,
+    "H2_MODIFIED": false,
+    "VIRTUAL_BROKER_STARTED": false,
+    "FORWARD_STARTED": false,
+    "BROKER_MUTATION": false,
+    "DEMO_ORDER": false,
+    "LIVE_ORDER": false,
+    "EXECUTION_AUTHORITY_CHANGED": false
+  },
+  "final_status": "BLOCKED_NO_ADMISSIBLE_REPLICATION_DATA"
+}

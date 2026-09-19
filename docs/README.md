@@ -84,6 +84,9 @@ their age.
 - [`status/AG_SSC_V1_0_1_SVOS_G2_FAILURE_DECOMPOSITION_STATUS.md`](status/AG_SSC_V1_0_1_SVOS_G2_FAILURE_DECOMPOSITION_STATUS.md)
   — read-only, evidence-first failure decomposition of the frozen G2 population
   (`PRIMARY_ALPHA_DEFICIT` + `SECONDARY_AMPLIFIER` friction; no hypothesis justified).
+- [`status/AG_SSC_V1_0_1_INDEPENDENT_REPLICATION_ADMISSION_STATUS.md`](status/AG_SSC_V1_0_1_INDEPENDENT_REPLICATION_ADMISSION_STATUS.md)
+  — SSC v1.0.1 independent development replication admission preflight
+  (`BLOCKED_NO_ADMISSIBLE_REPLICATION_DATA`; DEV_003 not creatable).
 
 ## Architecture
 
