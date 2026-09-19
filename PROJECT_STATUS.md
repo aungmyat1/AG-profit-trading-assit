@@ -6,6 +6,15 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-19)
 
+TD-8D canonical replay `MarketSnapshot` bridging is complete and uncommitted for
+owner review. The existing `strategy_contract.MarketSnapshot` can now be constructed
+from one TD-8 dataset and caller-controlled T, with TD-8C session facts attached, then
+delivered as the same immutable object to multiple independent consumers. The bridge
+is read-only and imports no strategy decision, proposal, risk, execution, frontend,
+or Market Intelligence code. `MI_FOUNDATION_READY` is established as a readiness
+result; Market Intelligence implementation has not begun. See
+`docs/status/TD8D_CANONICAL_MARKETSNAPSHOT_REPLAY_BRIDGE_STATUS.md`.
+
 TD-8C shared session-reference replay parity is implemented and under owner review
 (uncommitted). `session_snapshot` now uses the caller's historical clock and closed
 M15 range from `HistoricalCandleStore` inside replay; live calls retain the existing

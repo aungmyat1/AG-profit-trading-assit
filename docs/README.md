@@ -47,6 +47,8 @@ their age.
    — frozen TD-8B structure-only derived-cache review and verification evidence.
    [`status/TD8C_SESSION_REFERENCE_REPLAY_PARITY_STATUS.md`](status/TD8C_SESSION_REFERENCE_REPLAY_PARITY_STATUS.md)
    — uncommitted TD-8C shared session-reference replay parity and readiness assessment.
+   [`status/TD8D_CANONICAL_MARKETSNAPSHOT_REPLAY_BRIDGE_STATUS.md`](status/TD8D_CANONICAL_MARKETSNAPSHOT_REPLAY_BRIDGE_STATUS.md)
+   — uncommitted canonical replay MarketSnapshot bridge and MI foundation readiness.
 12. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
    non-authorizing capability-completeness audit and navigation matrix (Section A
    trading edge, Section B operations/execution/platform, execution-authority matrix,
@@ -107,6 +109,14 @@ their age.
   `OWNER_EXTERNAL_SOURCE_AUTHORIZATION_REQUIRED`: the broker's M1 retention no longer
   reaches 2025-09-15…2026-05-18 while M5/M15/H1 still do, so the blocker is M1-specific
   and no local file of any kind covers the interval).
+- [`status/SSC_V1_0_1_ONE_YEAR_M1_ACQUISITION_STATUS.md`](status/SSC_V1_0_1_ONE_YEAR_M1_ACQUISITION_STATUS.md)
+  — the acquisition that resolved that blocker (`READY_FOR_ONE_YEAR_REPLAY`): the blocker
+  was the terminal's `MaxBars=100000` setting, not broker retention; after the owner
+  raised it, the M1 leg was acquired from the same Vantage account, parity-proven
+  `PASS_EXACT` against canonical M1 (43 292/43 292) with per-week seasonal offset
+  resolution (`UTC+2/UTC+3`), and the canonical audit now returns
+  `DATA_COVERAGE_COMPLETE` for 2025-09-15 → 2026-09-14. The one-year replay was **not**
+  run.
 
 ## Architecture
 

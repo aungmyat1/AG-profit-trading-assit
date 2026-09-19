@@ -5,3 +5,7 @@ independently-signed strategy decision shapes. It does not replace, wrap, or cha
 behavior of any native strategy engine; see decision.py's module docstring for the exact
 non-goals and field-provenance rules.
 """
+
+from .replay_bridge import ReplayBridgeError, ReplayMarketSnapshot, build_replay_market_snapshot
+
+__all__ = ["ReplayBridgeError", "ReplayMarketSnapshot", "build_replay_market_snapshot"]
