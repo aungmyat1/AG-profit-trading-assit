@@ -77,6 +77,10 @@ their age.
   lifecycle reconciliation onto `AG_VALIDATION_G0_G10_V1`, the full flow, and the
   required `BACKTEST≠FORWARD`, `VIRTUAL_FORWARD≠MT5_DEMO`, `PROPOSAL≠ORDER`,
   `DEMO_ELIGIBLE≠DEMO_EXECUTED` distinctions.
+- [`status/AG_SSC_V1_0_1_SVOS_G2_POPULATION_STATUS.md`](status/AG_SSC_V1_0_1_SVOS_G2_POPULATION_STATUS.md)
+  — SSC v1.0.1 one-shot G2 historical population over `SSC_V1_0_1_G2_DEV_002`
+  (`POPULATION_V1` frozen, 22 occurrences, deterministic; G3 economic gate
+  NOT_EVALUATED_UNSIGNED_CONTRACT; DEVELOPMENT evidence only).
 
 ## Architecture
 

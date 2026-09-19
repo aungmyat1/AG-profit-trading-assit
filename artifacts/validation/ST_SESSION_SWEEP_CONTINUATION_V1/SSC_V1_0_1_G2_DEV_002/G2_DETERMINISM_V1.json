@@ -1,0 +1,16 @@
+{
+  "comparison": {
+    "field_level_equal": true,
+    "final_verdict": "DETERMINISM_PASS",
+    "first_difference": null,
+    "occurrence_ids_equal": true,
+    "occurrence_order_equal": true,
+    "population_hash_equal": true,
+    "run_1_hash": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+    "run_2_hash": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+    "trade_count_equal": true
+  },
+  "generated_at": "2026-09-19T08:52:27.969619+00:00",
+  "note": "RUN_2 is determinism verification only; it is NOT a second authoritative population.",
+  "population_id": "SSC_V1_0_1_G2_DEV_002_POPULATION_V1"
+}

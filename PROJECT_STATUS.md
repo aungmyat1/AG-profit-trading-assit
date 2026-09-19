@@ -20,6 +20,19 @@ and `LifecycleStage` (via `lifecycle_registry`) remains the sole lifecycle autho
 `docs/svos/SVOS_AUTHORITY_MAP.md`, `docs/svos/SVOS_LIFECYCLE_AND_GATES.md`, and
 `docs/status/AG_SVOS_HISTORICAL_TO_VIRTUAL_FORWARD_V1_STATUS.md`.
 
+### SSC v1.0.1 SVOS G2 population frozen (2026-09-19)
+
+`ST_SESSION_SWEEP_CONTINUATION_V1` v1.0.1's ONE-SHOT G2 historical population replay
+over the frozen development dataset `SSC_V1_0_1_G2_DEV_002` completed and froze
+`SSC_V1_0_1_G2_DEV_002_POPULATION_V1`: 42 dates / 84 decision cycles, **22
+occurrences**, deterministic (identical population hash across two independent runs).
+Descriptive economics (DEVELOPMENT, diagnostic only): gross expectancy `-0.25R`, net
+expectancy `-0.47R`, gross PF `0.56`, win rate 36.4%. The G3 economic gate remains
+`NOT_EVALUATED_UNSIGNED_CONTRACT` (contract PROPOSED/unsigned); no optimization run,
+no protected data (confirmation/holdout/OOS/H2) accessed, no strategy/parameter/data
+change, and no broker/demo/live order or authority change. See
+`docs/status/AG_SSC_V1_0_1_SVOS_G2_POPULATION_STATUS.md`.
+
 This supersedes the 2026-09-14 classification recorded further down in this file
 (kept below as dated historical context, not corrected in place).
 

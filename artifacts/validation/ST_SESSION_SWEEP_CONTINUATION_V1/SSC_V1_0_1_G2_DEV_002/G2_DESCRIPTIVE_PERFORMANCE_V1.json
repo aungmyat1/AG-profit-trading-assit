@@ -1,0 +1,223 @@
+{
+  "bias_counts": {
+    "BEARISH": 61,
+    "BULLISH": 23,
+    "NEUTRAL": 0
+  },
+  "by_direction": {
+    "LONG": {
+      "N": 4,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -1.0,
+      "gross_total_R": -4.0,
+      "losses": 4,
+      "max_consecutive_losses": 4,
+      "max_drawdown_R": 4.0,
+      "net_expectancy_R": -1.240286079798407,
+      "net_total_R": -4.961144319193628,
+      "profit_factor": "UNDEFINED_NO_WINS",
+      "win_rate": 0.0,
+      "wins": 0
+    },
+    "SHORT": {
+      "N": 18,
+      "breakevens": 1,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.07778436880301971,
+      "gross_total_R": -1.400118638454355,
+      "losses": 9,
+      "max_consecutive_losses": 4,
+      "max_drawdown_R": 5.898717144317783,
+      "net_expectancy_R": -0.29767964378397366,
+      "net_total_R": -5.358233588111526,
+      "profit_factor": 0.8323217310216984,
+      "win_rate": 0.4444444444444444,
+      "wins": 8
+    }
+  },
+  "by_exit_path": {
+    "RESOLVED_PARTIAL_BE": {
+      "N": 3,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": 0.38674935356831114,
+      "gross_total_R": 1.1602480607049335,
+      "losses": 0,
+      "max_consecutive_losses": 0,
+      "max_drawdown_R": 0.0,
+      "net_expectancy_R": 0.18064367298242945,
+      "net_total_R": 0.5419310189472883,
+      "profit_factor": "UNDEFINED_NO_LOSSES",
+      "win_rate": 1.0,
+      "wins": 3
+    },
+    "RESOLVED_PARTIAL_RUNNER_TARGET": {
+      "N": 1,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": 2.4546480703785285,
+      "gross_total_R": 2.4546480703785285,
+      "losses": 0,
+      "max_consecutive_losses": 0,
+      "max_drawdown_R": 0.0,
+      "net_expectancy_R": 2.176595234345971,
+      "net_total_R": 2.176595234345971,
+      "profit_factor": "UNDEFINED_NO_LOSSES",
+      "win_rate": 1.0,
+      "wins": 1
+    },
+    "RESOLVED_SESSION_EXIT": {
+      "N": 7,
+      "breakevens": 1,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": 0.2835693186374547,
+      "gross_total_R": 1.9849852304621831,
+      "losses": 2,
+      "max_consecutive_losses": 1,
+      "max_drawdown_R": 1.0589652050227163,
+      "net_expectancy_R": 0.09570192274591505,
+      "net_total_R": 0.6699134592214053,
+      "profit_factor": 2.4703263524478616,
+      "win_rate": 0.5714285714285714,
+      "wins": 4
+    },
+    "RESOLVED_SL": {
+      "N": 11,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -1.0,
+      "gross_total_R": -11.0,
+      "losses": 11,
+      "max_consecutive_losses": 11,
+      "max_drawdown_R": 11.0,
+      "net_expectancy_R": -1.246165238165438,
+      "net_total_R": -13.707817619819819,
+      "profit_factor": "UNDEFINED_NO_WINS",
+      "win_rate": 0.0,
+      "wins": 0
+    }
+  },
+  "by_session": {
+    "ASIAN_LONDON": {
+      "N": 12,
+      "breakevens": 1,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": 0.009536573215778582,
+      "gross_total_R": 0.11443887858934298,
+      "losses": 6,
+      "max_consecutive_losses": 3,
+      "max_drawdown_R": 3.3841596272740846,
+      "net_expectancy_R": -0.23256986178159023,
+      "net_total_R": -2.7908383413790827,
+      "profit_factor": 1.0190731464315572,
+      "win_rate": 0.4166666666666667,
+      "wins": 5
+    },
+    "LONDON_NEWYORK": {
+      "N": 10,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.5514557517043698,
+      "gross_total_R": -5.514557517043698,
+      "losses": 7,
+      "max_consecutive_losses": 4,
+      "max_drawdown_R": 5.514557517043698,
+      "net_expectancy_R": -0.7528539565926071,
+      "net_total_R": -7.528539565926071,
+      "profit_factor": 0.1315698988469762,
+      "win_rate": 0.3,
+      "wins": 3
+    }
+  },
+  "by_setup": {
+    "S1": {
+      "N": 13,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.13385530183896943,
+      "gross_total_R": -1.7401189239066026,
+      "losses": 8,
+      "max_consecutive_losses": 3,
+      "max_drawdown_R": 3.058965205022716,
+      "net_expectancy_R": -0.3489080602228794,
+      "net_total_R": -4.535804782897432,
+      "profit_factor": 0.7632501042617676,
+      "win_rate": 0.38461538461538464,
+      "wins": 5
+    },
+    "S2": {
+      "N": 2,
+      "breakevens": 0,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -1.0,
+      "gross_total_R": -2.0,
+      "losses": 2,
+      "max_consecutive_losses": 2,
+      "max_drawdown_R": 2.0,
+      "net_expectancy_R": -1.2519884765645117,
+      "net_total_R": -2.5039769531290235,
+      "profit_factor": "UNDEFINED_NO_WINS",
+      "win_rate": 0.0,
+      "wins": 0
+    },
+    "S3": {
+      "N": 7,
+      "breakevens": 1,
+      "cost_status": "MODELED",
+      "gross_expectancy_R": -0.23714281636396461,
+      "gross_total_R": -1.6599997145477523,
+      "losses": 3,
+      "max_consecutive_losses": 1,
+      "max_drawdown_R": 1.659999714547752,
+      "net_expectancy_R": -0.4685137387540998,
+      "net_total_R": -3.2795961712786985,
+      "profit_factor": 0.4466667618174159,
+      "win_rate": 0.42857142857142855,
+      "wins": 3
+    }
+  },
+  "failure_diagnosis": {
+    "OBSERVED_FACTS": [
+      "net_expectancy_R=-0.469063 <= 0"
+    ],
+    "POSSIBLE_HYPOTHESES": [],
+    "PRIMARY": "WEAK_GROSS_EDGE",
+    "SECONDARY": "OTHER_EVIDENCED_MECHANISM"
+  },
+  "generated_at": "2026-09-19T08:52:27.969619+00:00",
+  "net_profit_factor": 0.33871436140677347,
+  "overall": {
+    "N": 22,
+    "breakevens": 1,
+    "cost_status": "MODELED",
+    "gross_expectancy_R": -0.2454599381115616,
+    "gross_total_R": -5.400118638454355,
+    "losses": 13,
+    "max_consecutive_losses": 4,
+    "max_drawdown_R": 5.898717144317783,
+    "net_expectancy_R": -0.46906263215023425,
+    "net_total_R": -10.319377907305153,
+    "profit_factor": 0.5627445053641036,
+    "win_rate": 0.36363636363636365,
+    "wins": 8
+  },
+  "population_id": "SSC_V1_0_1_G2_DEV_002_POPULATION_V1",
+  "regime_counts": {
+    "RANGE": 40,
+    "TRANSITION": 3,
+    "TREND_DOWN": 9,
+    "TREND_UP": 7,
+    "UNKNOWN": 25
+  },
+  "rejections": {
+    "alloc_rejected": 2,
+    "direction_blocked": 69,
+    "friction_rejected": 22
+  },
+  "setup_counts": {
+    "S1": 13,
+    "S2": 2,
+    "S3": 7
+  }
+}

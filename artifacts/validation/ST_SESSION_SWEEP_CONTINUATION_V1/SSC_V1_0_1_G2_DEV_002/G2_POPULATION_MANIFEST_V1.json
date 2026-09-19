@@ -1,0 +1,25 @@
+{
+  "canonical_replay_authority": "session_sweep_continuation.replay.run_replay",
+  "config_hash": "6281b6407c748990d3b68188dafc2b6fec5aa5534dc4ce5fc82abcf53568b1fc",
+  "coverage": {
+    "decision_cycles": 84,
+    "development_decision_interval": {
+      "end": "2026-08-02T23:59:59Z",
+      "start": "2026-06-21T21:00:00Z"
+    },
+    "effective_days": 42,
+    "effective_end": "2026-08-02",
+    "effective_start": "2026-06-22"
+  },
+  "dataset_fingerprint": "05b059720a7457d15a7fbc4cd7f0c15e62df86b7857c1f122edc49a0d3a2baf5",
+  "dataset_id": "SSC_V1_0_1_G2_DEV_002",
+  "generated_at": "2026-09-19T08:52:27.969619+00:00",
+  "metadata_manifest": "config\\historical_datasets\\EURUSD_H1_SSC_G2_DEV_002_symbol_metadata.yaml",
+  "metadata_manifest_hash": "ea98c78d7b8325b24ebfd466f776c92b8317cfaee250685125210ab529425d52",
+  "population_count": 22,
+  "population_id": "SSC_V1_0_1_G2_DEV_002_POPULATION_V1",
+  "population_sha256": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+  "preregistration_hash": "d40fca49b2ff92768cafd45cdb5d48de96d53ad68449af68d41f8a348d4b0952",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1"
+}

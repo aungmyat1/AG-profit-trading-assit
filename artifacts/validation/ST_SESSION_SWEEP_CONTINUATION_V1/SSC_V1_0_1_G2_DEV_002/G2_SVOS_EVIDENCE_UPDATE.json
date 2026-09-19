@@ -1,0 +1,54 @@
+{
+  "schema": "AG_SSC_V1_0_1_SVOS_G2_EVIDENCE_UPDATE_V1",
+  "mission": "SSC V1.0.1 SVOS G2 ONE-SHOT HISTORICAL REPLAY V2",
+  "generated_at_utc": "2026-09-19",
+  "generated_at_utc_note": "DATE_ONLY",
+  "head_sha": "6ba8795c622f9d9931c4014a0b5eca9ef678e5d6",
+  "transition": {
+    "gate": "G2",
+    "before": {
+      "status": "BLOCKED",
+      "reason": "replay not executed (missing DEV_002 H1 metadata authorization)",
+      "evidence_ref": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_HISTORICAL_REPLAY_BLOCKER.json"
+    },
+    "after": {
+      "status": "POPULATION_FROZEN",
+      "canonical_gate_status": "PASS",
+      "canonical_mapping": "BASELINE_BACKTESTED -> G2 PASS (svos.lifecycle.MISSION_STATE_TO_GATE)",
+      "reason": "deterministic G2 population generated and frozen once (RESEARCH_REPLAY_COUNT=1, DETERMINISM=PASS)",
+      "evidence_refs": [
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_POPULATION_V1.json",
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_POPULATION_MANIFEST_V1.json",
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_DETERMINISM_V1.json",
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_DESCRIPTIVE_PERFORMANCE_V1.json"
+      ]
+    }
+  },
+  "g3_not_advanced": {
+    "economic_contract_status": "PROPOSED / unsigned / inactive",
+    "canonical_verdict": "NOT_EVALUATED_UNSIGNED_CONTRACT",
+    "note": "G3 remains governed independently by its signed economic contract; this evidence update does not manufacture a G3 PASS/FAIL."
+  },
+  "hyp_not_reinterpreted": [
+    "HYP_001_EXIT_CAPTURE",
+    "HYP_002_SETUP_SELECTIVITY"
+  ],
+  "safety": {
+    "STRATEGY_CHANGED": false,
+    "PARAMETERS_CHANGED": false,
+    "DATASET_CHANGED": false,
+    "OPTIMIZATION_RUN": false,
+    "NEW_CANDIDATE_CREATED": false,
+    "CONFIRMATION_ACCESSED": false,
+    "HOLDOUT_ACCESSED": false,
+    "OOS_ACCESSED": false,
+    "H2_CONSUMED": false,
+    "H2_MODIFIED": false,
+    "VIRTUAL_BROKER_STARTED": false,
+    "FORWARD_STARTED": false,
+    "BROKER_MUTATION": false,
+    "DEMO_ORDER": false,
+    "LIVE_ORDER": false,
+    "EXECUTION_AUTHORITY_CHANGED": false
+  }
+}
