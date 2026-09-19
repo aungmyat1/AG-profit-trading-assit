@@ -41,7 +41,10 @@ VALID_MARKET_DATA_MODES = frozenset(
 # Mirrors mt5/market_data.py::_TIMEFRAMES keys -- kept independent (no import of a
 # private symbol) since this module must also describe REPLAY/SYNTHETIC snapshots that
 # never touch mt5/market_data.py at all.
-_TIMEFRAME_MINUTES = {"M1": 1, "M5": 5, "M15": 15, "M30": 30, "H1": 60, "H4": 240, "D1": 1440}
+# TD-2 (AG_TD_TOPDOWN_CONTEXT, TopDownContext V1): W1 added additively (10080 = 7*1440
+# minutes) so from_mt5_latest_closed(symbol, "W1") can compute bar_close_time -- mirrors
+# the same addition just made to mt5/market_data.py::_TIMEFRAMES.
+_TIMEFRAME_MINUTES = {"M1": 1, "M5": 5, "M15": 15, "M30": 30, "H1": 60, "H4": 240, "D1": 1440, "W1": 10080}
 
 
 class UnsupportedTimeframeError(ValueError):

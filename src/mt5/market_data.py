@@ -35,6 +35,10 @@ _TIMEFRAMES = {
     "M1": mt5.TIMEFRAME_M1, "M5": mt5.TIMEFRAME_M5, "M15": mt5.TIMEFRAME_M15,
     "M30": mt5.TIMEFRAME_M30, "H1": mt5.TIMEFRAME_H1, "H4": mt5.TIMEFRAME_H4,
     "D1": mt5.TIMEFRAME_D1,
+    # TD-2 (AG_TD_TOPDOWN_CONTEXT, TopDownContext V1): additive only -- W1 is the one
+    # timeframe TD-0's audit found nowhere in this repo. Native MT5 weekly candles via
+    # mt5.TIMEFRAME_W1; no synthesis from any lower timeframe.
+    "W1": mt5.TIMEFRAME_W1,
 }
 
 
