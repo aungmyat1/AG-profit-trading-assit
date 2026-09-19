@@ -16,6 +16,7 @@ from typing import List, Optional
 
 import MetaTrader5 as mt5
 
+from shared_cache.bounded_cache import BoundedCache
 from strategy_engine.session import Candle
 
 from .broker_time import BrokerTimeError, NoWeekendGapError, detect_broker_utc_offset_hours
@@ -40,6 +41,45 @@ _TIMEFRAMES = {
     # mt5.TIMEFRAME_W1; no synthesis from any lower timeframe.
     "W1": mt5.TIMEFRAME_W1,
 }
+
+# TD-6 Layer A: raw closed-candle cache, wired directly into get_latest_candles()
+# below (see that function's own docstring for why this placement -- not an external
+# wrapper -- is what keeps historical_replay/data_source_patch.py's existing replay
+# substitution mechanism fully intact). Local to this cache only, independent of
+# _TIMEFRAMES above (same "kept independent, no shared private symbol" convention
+# strategy_contract/market_snapshot.py already uses for its own timeframe-minutes copy).
+_RAW_CACHE_PERIOD_MINUTES = {
+    "M1": 1, "M5": 5, "M15": 15, "M30": 30, "H1": 60, "H4": 240, "D1": 1440, "W1": 10080,
+}
+
+
+class _RawCacheEntry:
+    __slots__ = ("candles", "valid_until")
+
+    def __init__(self, candles, valid_until: datetime) -> None:
+        self.candles = candles
+        self.valid_until = valid_until
+
+
+_RAW_CANDLE_CACHE: BoundedCache = BoundedCache()
+
+
+def _is_raw_cache_entry_valid(entry: "_RawCacheEntry") -> bool:
+    """A new bar of that timeframe cannot exist before `valid_until` (computed from
+    the ACTUAL last fetched candle's own close, not a guess) -- see get_latest_candles's
+    docstring. Never wall-clock TTL as the sole correctness authority: this check is
+    conservative and provably correct, not merely probably fresh."""
+    return datetime.now(timezone.utc) < entry.valid_until
+
+
+def clear_raw_candle_cache() -> None:
+    """Test-isolation / explicit reset only -- never called as part of normal request
+    handling."""
+    _RAW_CANDLE_CACHE.clear()
+
+
+def raw_candle_cache_diagnostics() -> dict:
+    return _RAW_CANDLE_CACHE.diagnostics()
 
 
 class MarketDataError(RuntimeError):
@@ -139,7 +179,24 @@ def get_candles(symbol: str, timeframe: str, start_utc: datetime, end_utc: datet
 def get_latest_candles(symbol: str, timeframe: str, count: int) -> List[Candle]:
     """Most recent `count` CLOSED bars, oldest first. Convenience wrapper over
     copy_rates_from_pos (position 1 = last fully closed bar; position 0 is the
-    still-forming current bar and is deliberately excluded)."""
+    still-forming current bar and is deliberately excluded).
+
+    TD-6 Layer A: an identical (symbol, timeframe, count) request within the same
+    closed bar is served from an in-process cache instead of a second MT5 round trip
+    -- see _is_raw_cache_entry_valid below for the exact, data-identity-driven (never
+    wall-clock-TTL) invalidation rule. Deliberately implemented INSIDE this function's
+    own body, not as an external wrapper: historical_replay/data_source_patch.py
+    substitutes replay data by monkeypatching each consumer module's own bound name of
+    get_latest_candles (including this module's own name, for callers that import it
+    fresh per-call) -- when patched, the ENTIRE function object named here is replaced,
+    so this cache is automatically and completely bypassed during replay without any
+    replay-specific code in this module. A cache miss's behavior is byte-identical to
+    this function's behavior before TD-6."""
+    cache_key = (symbol, timeframe, count)
+    cached_entry = _RAW_CANDLE_CACHE.get(cache_key, is_valid=_is_raw_cache_entry_valid)
+    if cached_entry is not None:
+        return list(cached_entry.candles)
+
     _require_connected()
     _require_symbol(symbol)
     if timeframe not in _TIMEFRAMES:
@@ -166,6 +223,10 @@ def get_latest_candles(symbol: str, timeframe: str, count: int) -> List[Candle]:
     ]
     _validate_monotonic(candles, symbol)
     _validate_ohlc(candles, symbol)
+
+    if timeframe in _RAW_CACHE_PERIOD_MINUTES:
+        valid_until = candles[-1].time + timedelta(minutes=_RAW_CACHE_PERIOD_MINUTES[timeframe])
+        _RAW_CANDLE_CACHE.put(cache_key, _RawCacheEntry(candles=tuple(candles), valid_until=valid_until))
     return candles
 
 
