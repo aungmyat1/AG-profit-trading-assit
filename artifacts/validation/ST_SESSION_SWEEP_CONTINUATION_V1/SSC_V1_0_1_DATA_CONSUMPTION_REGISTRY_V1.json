@@ -259,17 +259,53 @@
       },
       "strategy_version_used": "1.0.1",
       "data_role": "DEVELOPMENT",
-      "prior_consumption": "NONE",
-      "hypothesis_usage": "none yet (G2 baseline population, preregistered)",
-      "counting_status": "ACTIVE_G2_REPLAY_CANDIDATE",
+      "prior_consumption": "CONSUMED (G2 baseline population SSC_V1_0_1_G2_DEV_002_POPULATION_V1)",
+      "hypothesis_usage": "none (G2 baseline population frozen; no hypothesis derived from it)",
+      "counting_status": "CONSUMED",
+      "status": "CONSUMED",
       "protected_status": "NOT_PROTECTED",
-      "reusable_for_new_development": true,
-      "reason": "H1 warmup remediation: warmup is WARMUP_CONTEXT_ONLY (initializes H1 structure/bias only; cannot generate occurrences). DEVELOPMENT decision interval unchanged (2026-06-21 21:00 -> 2026-08-02). closed_h1 before first decision = 9129 >= 1000."
+      "reusable_for_new_development": false,
+      "consumption_events": [
+        {
+          "consumption_event": "G2_POPULATION_FROZEN",
+          "dataset_id": "SSC_V1_0_1_G2_DEV_002",
+          "population_id": "SSC_V1_0_1_G2_DEV_002_POPULATION_V1",
+          "population_hash": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+          "N": 22,
+          "determinism": "PASS",
+          "canonical_replay_authority": "session_sweep_continuation.replay.run_replay",
+          "frozen_at_utc": "2026-09-19",
+          "evidence": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_POPULATION_V1.json",
+          "population_manifest": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_POPULATION_MANIFEST_V1.json",
+          "commit": "5c901a7"
+        }
+      ],
+      "status_history": [
+        {
+          "recorded_at_utc": "2026-09-19",
+          "prior_consumption": "NONE",
+          "hypothesis_usage": "none yet (G2 baseline population, preregistered)",
+          "counting_status": "ACTIVE_G2_REPLAY_CANDIDATE",
+          "reusable_for_new_development": true,
+          "note": "Pre-synchronization state, preserved as history -- DEV_002 was a replay candidate until the one-shot G2 replay completed."
+        }
+      ],
+      "reason": "H1 warmup remediation: warmup is WARMUP_CONTEXT_ONLY (initializes H1 structure/bias only; cannot generate occurrences). DEVELOPMENT decision interval unchanged (2026-06-21 21:00 -> 2026-08-02). closed_h1 before first decision = 9129 >= 1000. CONSUMED 2026-09-19 by the one-shot G2 replay (POPULATION_V1 frozen, N=22); no longer reusable as fresh development evidence."
     }
   ],
+  "post_g2_synchronization": {
+    "synchronized_at_utc": "2026-09-19",
+    "head_sha_at_synchronization": "ef1189cd91fb6679074a1801fef6fe715df61ef6",
+    "trigger": "SSC v1.0.1 POST-G2 AUTHORITY SYNCHRONIZATION",
+    "population_id": "SSC_V1_0_1_G2_DEV_002_POPULATION_V1",
+    "population_hash": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+    "population_n": 22,
+    "note": "Dev_002 status corrected from ACTIVE_G2_REPLAY_CANDIDATE to CONSUMED; prior state preserved under status_history. No protected-evidence role changed."
+  },
   "summary": {
-    "admissible_fresh_development_dataset_exists": true,
-    "candidate_interval": "SSC_V1_0_1_G2_DEV_002 (EURUSD DEVELOPMENT 2026-06-21 21:00 -> 2026-08-02 23:59; H1 warmup-remediated, ready for replay)",
+    "admissible_fresh_development_dataset_exists": false,
+    "candidate_interval": null,
+    "blocked_reason": "BLOCKED_NO_ADMISSIBLE_REPLICATION_DATA -- DEV_002 development interval is now consumed and every other EURUSD/GBPUSD H1/M15/M1 interval is consumed or protected; the only fresh interval (2026-09-15+) is reserved for CONFIRM_001.",
     "protected_evidence_preserved": true,
     "confirmed_holdout_oos_untouched": true
   }

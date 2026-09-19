@@ -87,6 +87,9 @@ their age.
 - [`status/AG_SSC_V1_0_1_INDEPENDENT_REPLICATION_ADMISSION_STATUS.md`](status/AG_SSC_V1_0_1_INDEPENDENT_REPLICATION_ADMISSION_STATUS.md)
   — SSC v1.0.1 independent development replication admission preflight
   (`BLOCKED_NO_ADMISSIBLE_REPLICATION_DATA`; DEV_003 not creatable).
+- [`status/AG_SSC_V1_0_1_POST_G2_AUTHORITY_SYNC_STATUS.md`](status/AG_SSC_V1_0_1_POST_G2_AUTHORITY_SYNC_STATUS.md)
+  — SSC v1.0.1 post-G2 authority synchronization (`AUTHORITY_SYNCHRONIZED`: registry
+  DEV_002 = CONSUMED, SVOS context `G2 = POPULATION_FROZEN`, generator fail-closed).
 
 ## Architecture
 

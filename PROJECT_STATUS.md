@@ -57,6 +57,20 @@ DEV_002 06-21→08-02, GEN_002 08-03→09-14) and the only fresh interval
 hypothesis, no optimization, no protected-data access. See
 `docs/status/AG_SSC_V1_0_1_INDEPENDENT_REPLICATION_ADMISSION_STATUS.md`.
 
+### SSC v1.0.1 post-G2 authority synchronization (2026-09-19)
+
+SSC governance/context state synchronized with the frozen DEV_002 G2 population
+(`AUTHORITY_SYNCHRONIZED`): the consumption registry now records DEV_002 as `CONSUMED`
+(`G2_POPULATION_FROZEN`), and the repaired SVOS context generator derives G2 authority
+from the frozen population artifacts (fail-closed on identity mismatch), so
+`svos_context.json` reports `G2 = POPULATION_FROZEN` (population_id/n/hash verified),
+`G3 = NOT_EVALUATED_UNSIGNED_CONTRACT`, `optimization_eligible = false`,
+`hypothesis_status = NO_NEW_HYPOTHESIS_JUSTIFIED`, and
+`independent_replication = BLOCKED_NO_ADMISSIBLE_REPLICATION_DATA`
+(`furthest_verified_gate` stays `None` — G0/G1 remain PARTIAL). State remediation only;
+the shared `validation_framework.svos_context_export.py` stays byte-identical. See
+`docs/status/AG_SSC_V1_0_1_POST_G2_AUTHORITY_SYNC_STATUS.md`.
+
 This supersedes the 2026-09-14 classification recorded further down in this file
 (kept below as dated historical context, not corrected in place).
 

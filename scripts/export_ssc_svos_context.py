@@ -70,6 +70,22 @@ ROUTE_B_PAIRED = (
 )
 ECONOMIC_GATE_PATH = "config/governance/economic_gate_contract.yaml"
 
+# --- post-G2 authority artifacts (read-only, fail-closed if missing/mismatched) -----
+G2_DEV002_DIR = "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002"
+G2_POPULATION_PATH = f"{G2_DEV002_DIR}/G2_POPULATION_V1.json"
+G2_POPULATION_MANIFEST_PATH = f"{G2_DEV002_DIR}/G2_POPULATION_MANIFEST_V1.json"
+G2_DETERMINISM_PATH = f"{G2_DEV002_DIR}/G2_DETERMINISM_V1.json"
+G2_FAILURE_DECOMPOSITION_PATH = f"{G2_DEV002_DIR}/G2_FAILURE_DECOMPOSITION_REPORT_V1.json"
+INDEPENDENT_REPLICATION_ADMISSION_PATH = (
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_INDEPENDENT_REPLICATION_ADMISSION_V1.json"
+)
+
+EXPECTED_G2_POPULATION_ID = "SSC_V1_0_1_G2_DEV_002_POPULATION_V1"
+EXPECTED_G2_POPULATION_HASH = "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e"
+EXPECTED_G2_POPULATION_N = 22
+EXPECTED_DEV002_DATASET_FINGERPRINT = "05b059720a7457d15a7fbc4cd7f0c15e62df86b7857c1f122edc49a0d3a2baf5"
+EXPECTED_DEV002_PREREGISTRATION_HASH = "d40fca49b2ff92768cafd45cdb5d48de96d53ad68449af68d41f8a348d4b0952"
+
 EVALUATOR_VERSION = "ssc_svos_context_authority_remediation_v1"
 
 
@@ -138,6 +154,71 @@ def _read_economic_gate() -> Dict[str, Any]:
     }
 
 
+def _read_g2_population_authority() -> Dict[str, Any]:
+    """Derives the CURRENT G2 authority from the authoritative FROZEN DEV_002
+    population artifacts (committed 5c901a7). Fails closed (raises ValueError) on any
+    identity mismatch -- an absent, altered, or differently-hashed population must never
+    be reported as a frozen PASS. This is the generator-level repair: the context is
+    derived from the frozen evidence itself, never hand-asserted."""
+    population = _read_json(G2_POPULATION_PATH)
+    manifest = _read_json(G2_POPULATION_MANIFEST_PATH)
+    determinism = _read_json(G2_DETERMINISM_PATH)
+
+    from research.session_lifecycle import population_hash
+
+    recomputed = population_hash(population["occurrences"])
+    checks = {
+        "population_id": population.get("population_id") == EXPECTED_G2_POPULATION_ID,
+        "population_hash_recorded": population.get("population_sha256") == EXPECTED_G2_POPULATION_HASH,
+        "population_hash_recomputed": recomputed == EXPECTED_G2_POPULATION_HASH,
+        "population_n": population.get("population_count") == EXPECTED_G2_POPULATION_N,
+        "manifest_hash_binding": manifest.get("population_sha256") == EXPECTED_G2_POPULATION_HASH,
+        "manifest_count_binding": manifest.get("population_count") == EXPECTED_G2_POPULATION_N,
+        "dataset_fingerprint": population.get("dataset_fingerprint") == EXPECTED_DEV002_DATASET_FINGERPRINT,
+        "preregistration_hash": population.get("preregistration_hash") == EXPECTED_DEV002_PREREGISTRATION_HASH,
+        "strategy_id": population.get("strategy_id") == STRATEGY_ID,
+        "strategy_version": population.get("strategy_version") == STRATEGY_VERSION,
+        "determinism_pass": (determinism.get("comparison") or {}).get("final_verdict") == "DETERMINISM_PASS",
+    }
+    failed = sorted(name for name, ok in checks.items() if not ok)
+    if failed:
+        raise ValueError(f"G2 population authority verification FAILED (fail-closed): {failed}")
+
+    return {
+        "status": "POPULATION_FROZEN",
+        "population_id": EXPECTED_G2_POPULATION_ID,
+        "population_n": EXPECTED_G2_POPULATION_N,
+        "population_hash": EXPECTED_G2_POPULATION_HASH,
+        "population_hash_recomputed": recomputed,
+        "dataset_id": population.get("dataset_id"),
+        "dataset_fingerprint": population.get("dataset_fingerprint"),
+        "preregistration_hash": population.get("preregistration_hash"),
+        "config_hash": population.get("config_hash"),
+        "determinism": "PASS",
+        "canonical_replay_authority": population.get("canonical_replay_authority"),
+        "population_artifact": G2_POPULATION_PATH,
+        "population_manifest": G2_POPULATION_MANIFEST_PATH,
+        "determinism_artifact": G2_DETERMINISM_PATH,
+        "failure_decomposition_artifact": G2_FAILURE_DECOMPOSITION_PATH,
+    }
+
+
+def _read_hypothesis_status() -> str:
+    """Derives the current hypothesis-admission state from the frozen failure
+    decomposition artifact -- never hand-asserted."""
+    decomposition = _read_json(G2_FAILURE_DECOMPOSITION_PATH)
+    admission = decomposition.get("hypothesis_admission") or {}
+    if admission.get("recommended") is False:
+        return "NO_NEW_HYPOTHESIS_JUSTIFIED"
+    return "HYPOTHESIS_RECOMMENDED_PENDING_PREREGISTRATION"
+
+
+def _read_independent_replication_status() -> str:
+    """Derives the independent-replication admission state from its frozen artifact."""
+    admission = _read_json(INDEPENDENT_REPLICATION_ADMISSION_PATH)
+    return admission.get("final_status") or "UNKNOWN"
+
+
 def collect_context(now: Optional[datetime] = None) -> Dict[str, Any]:
     """Reads frozen artifacts + the canonical registry into the SVOS context dict.
     `now` injects a deterministic timestamp (tests). Fails closed on missing/invalid
@@ -151,7 +232,14 @@ def collect_context(now: Optional[datetime] = None) -> Dict[str, Any]:
     paired = _read_json(ROUTE_B_PAIRED)
     closure = _read_json(HYP_002_CLOSURE)
 
-    # G0/G1 are PARTIAL (not PASS) so furthest_verified_gate stays None; G2/G3 BLOCKED.
+    # --- post-G2 authority (derived from frozen artifacts; fails closed) -------------
+    g2_authority = _read_g2_population_authority()
+    hypothesis_status = _read_hypothesis_status()
+    independent_replication = _read_independent_replication_status()
+
+    # G0/G1 are PARTIAL (not PASS) so furthest_verified_gate stays None; G2 is now PASS
+    # (frozen POPULATION_V1 with verified determinism); G3 remains non-PASS (unsigned
+    # economic-gate contract).
     g0 = GateResult(
         gate_name="G0", status=GateStatus.PARTIAL,
         evidence_refs=(V1_0_1_REMEDIATION_MANIFEST, CANDIDATE_MANIFEST_PATH),
@@ -169,16 +257,25 @@ def collect_context(now: Optional[datetime] = None) -> Dict[str, Any]:
                  "hyp002_prereg": "PRE_REMEDIATION_NON_COUNTING"},
     )
     g2 = GateResult(
-        gate_name="G2", status=GateStatus.BLOCKED,
-        evidence_refs=(HYP_002_POPULATION_ATTEMPT_2,),
+        gate_name="G2", status=GateStatus.PASS,
+        evidence_refs=(G2_POPULATION_PATH, G2_POPULATION_MANIFEST_PATH, G2_DETERMINISM_PATH),
         evaluated_at=now, evaluator_version=EVALUATOR_VERSION,
-        details={"hyp002_population": "PRE_REMEDIATION_NON_COUNTING (v1.0.0)"},
+        details={
+            "g2_state": g2_authority["status"],
+            "population_id": g2_authority["population_id"],
+            "population_n": g2_authority["population_n"],
+            "population_hash": g2_authority["population_hash"],
+            "determinism": g2_authority["determinism"],
+            "canonical_replay_authority": g2_authority["canonical_replay_authority"],
+            "hyp002_population": "PRE_REMEDIATION_NON_COUNTING (v1.0.0) -- superseded as v1.0.1 G2 evidence by DEV_002 POPULATION_V1",
+        },
     )
     g3 = GateResult(
         gate_name="G3", status=GateStatus.BLOCKED,
         evidence_refs=(ECONOMIC_GATE_PATH, ROUTE_B_PAIRED),
         evaluated_at=now, evaluator_version=EVALUATOR_VERSION,
         details={"economic_gate_contract": "PROPOSED_UNSIGNED",
+                 "verdict": "NOT_EVALUATED_UNSIGNED_CONTRACT",
                  "hyp001_route_b_delta_net_R": paired.get("delta_net_R")},
     )
     gate_results = {"G0": g0, "G1": g1, "G2": g2, "G3": g3}
@@ -225,15 +322,19 @@ def collect_context(now: Optional[datetime] = None) -> Dict[str, Any]:
         "G1: HYP_001_EXIT_CAPTURE v1.1.0 candidate lineage is a POST_HOC_ADMINISTRATIVE_RECONSTRUCTION "
         "(candidate_manifest.json created after historical evaluation; retroactive_preregistration=false) "
         "-- PARTIAL, not a clean preregistration PASS.",
+        "G2 is POPULATION_FROZEN (DEV_002 POPULATION_V1, deterministic) -- but G0/G1 remain PARTIAL, "
+        "so no G2+ progress is claimed beyond the frozen population itself.",
         "HYP_002_SETUP_SELECTIVITY is VALIDATED_NEGATIVE (terminal) and PRE_REMEDIATION_NON_COUNTING "
-        "relative to v1.0.1 -- its v1.0.0 population is not v1.0.1 counting evidence.",
+        "relative to v1.0.1 -- superseded as v1.0.1 G2 counting evidence by DEV_002 POPULATION_V1.",
         "HYP_001_EXIT_CAPTURE is HYPOTHESIS_NOT_SUPPORTED on Route B v1.0.1 corrected evidence "
         f"(paired_n={paired.get('paired_n')}, delta_net_R={paired.get('delta_net_R')}).",
         "G3 economic-gate contract is PROPOSED/unsigned -- fail-closed; no economic PASS is evaluable.",
         "HYP_001_GBPUSD_REPLICATION_R1 population is NON_COUNTING_LINEAGE_MISMATCH -- excluded from gate evidence.",
+        "Independent development replication is BLOCKED_NO_ADMISSIBLE_REPLICATION_DATA (no unconsumed, "
+        "non-protected H1/M15/M1 interval exists).",
     ]
 
-    return build_svos_context(
+    context = build_svos_context(
         strategy_id=STRATEGY_ID, strategy_version=STRATEGY_VERSION,
         hypothesis_id=None, branch=branch, head_sha=head_sha,
         svos_lifecycle_stage=summary.svos_lifecycle_stage.value,
@@ -248,8 +349,10 @@ def collect_context(now: Optional[datetime] = None) -> Dict[str, Any]:
         holdout=holdout, blocking_issues=blocking_issues,
         next_authorized_action=(
             "G0/G1 remain PARTIAL (no canonical G0 artifact; HYP_001 v1.1.0 lineage is post-hoc). "
-            "No G2+ work authorized. Owner may sign config/governance/economic_gate_contract.yaml "
-            "to activate G3 evaluation."
+            "G2 is POPULATION_FROZEN (SSC_V1_0_1_G2_DEV_002_POPULATION_V1, deterministic). "
+            "G3 remains NOT_EVALUATED_UNSIGNED_CONTRACT; optimization is ineligible. "
+            "Next: prepare a separate PROSPECTIVE H1/M15/M1 archival-data policy for future "
+            "independent development replication (no data acquisition in this mission)."
         ),
         generated_at_utc=now.isoformat(),
         candidate_manifest=candidate_manifest,
@@ -257,6 +360,17 @@ def collect_context(now: Optional[datetime] = None) -> Dict[str, Any]:
         economic_gate=economic_gate,
         forward=forward,
     )
+    # Post-G2 authority extensions are attached HERE (SSC-generator-local): the shared
+    # validation_framework.svos_context_export module is a FROZEN validation-core module
+    # (see tests/test_large_smc_eurusd_admission_wp2.py's frozen-core invariant) and is
+    # deliberately NOT modified by this mission.
+    context["schema_version"] = "1.3"
+    context["g2_population"] = g2_authority
+    context["g3_verdict"] = "NOT_EVALUATED_UNSIGNED_CONTRACT"
+    context["optimization_eligible"] = False
+    context["hypothesis_status"] = hypothesis_status
+    context["independent_replication"] = independent_replication
+    return context
 
 
 def main() -> str:

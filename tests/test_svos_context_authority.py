@@ -85,10 +85,16 @@ def test_forward_not_eligible(ctx):
 
 
 def test_no_g2_plus_pass_manufactured(ctx):
+    """G0/G1 remain PARTIAL, so furthest_verified_gate stays None even though G2 is now a
+    legitimate frozen-population PASS (DEV_002 POPULATION_V1); G3 remains non-PASS
+    (unsigned economic-gate contract). No progress is manufactured beyond the frozen
+    population itself."""
     assert ctx["furthest_verified_gate"] is None
     assert ctx["gates"]["G0"]["status"] == "PARTIAL"
-    assert ctx["gates"]["G2"]["status"] == "BLOCKED"
-    assert ctx["gates"]["G3"]["status"] == "BLOCKED"
+    assert ctx["gates"]["G1"]["status"] == "PARTIAL"
+    assert ctx["gates"]["G2"]["status"] == "PASS"
+    assert ctx["g2_population"]["status"] == "POPULATION_FROZEN"
+    assert ctx["gates"]["G3"]["status"] != "PASS"
 
 
 def test_fail_closed_missing_authority_artifact():

@@ -2,10 +2,12 @@
   "blocking_issues": [
     "G0 (Contract Audit): v1.0.1 contract is internally consistent (owner-adjudicated V1_0_1_REMEDIATION_MANIFEST) but no canonical AG_VALIDATION_G0_G10_V1 G0 GateResult artifact exists -- G0 is PARTIAL, so furthest_verified_gate is None.",
     "G1: HYP_001_EXIT_CAPTURE v1.1.0 candidate lineage is a POST_HOC_ADMINISTRATIVE_RECONSTRUCTION (candidate_manifest.json created after historical evaluation; retroactive_preregistration=false) -- PARTIAL, not a clean preregistration PASS.",
-    "HYP_002_SETUP_SELECTIVITY is VALIDATED_NEGATIVE (terminal) and PRE_REMEDIATION_NON_COUNTING relative to v1.0.1 -- its v1.0.0 population is not v1.0.1 counting evidence.",
+    "G2 is POPULATION_FROZEN (DEV_002 POPULATION_V1, deterministic) -- but G0/G1 remain PARTIAL, so no G2+ progress is claimed beyond the frozen population itself.",
+    "HYP_002_SETUP_SELECTIVITY is VALIDATED_NEGATIVE (terminal) and PRE_REMEDIATION_NON_COUNTING relative to v1.0.1 -- superseded as v1.0.1 G2 counting evidence by DEV_002 POPULATION_V1.",
     "HYP_001_EXIT_CAPTURE is HYPOTHESIS_NOT_SUPPORTED on Route B v1.0.1 corrected evidence (paired_n=88, delta_net_R=-2.227145).",
     "G3 economic-gate contract is PROPOSED/unsigned -- fail-closed; no economic PASS is evaluable.",
-    "HYP_001_GBPUSD_REPLICATION_R1 population is NON_COUNTING_LINEAGE_MISMATCH -- excluded from gate evidence."
+    "HYP_001_GBPUSD_REPLICATION_R1 population is NON_COUNTING_LINEAGE_MISMATCH -- excluded from gate evidence.",
+    "Independent development replication is BLOCKED_NO_ADMISSIBLE_REPLICATION_DATA (no unconsumed, non-protected H1/M15/M1 interval exists)."
   ],
   "branch": "main",
   "candidate_manifest": {
@@ -35,9 +37,27 @@
     "eligible": false
   },
   "furthest_verified_gate": null,
+  "g2_population": {
+    "canonical_replay_authority": "session_sweep_continuation.replay.run_replay",
+    "config_hash": "6281b6407c748990d3b68188dafc2b6fec5aa5534dc4ce5fc82abcf53568b1fc",
+    "dataset_fingerprint": "05b059720a7457d15a7fbc4cd7f0c15e62df86b7857c1f122edc49a0d3a2baf5",
+    "dataset_id": "SSC_V1_0_1_G2_DEV_002",
+    "determinism": "PASS",
+    "determinism_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_DETERMINISM_V1.json",
+    "failure_decomposition_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_FAILURE_DECOMPOSITION_REPORT_V1.json",
+    "population_artifact": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_POPULATION_V1.json",
+    "population_hash": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+    "population_hash_recomputed": "832e8e13c74a5401684a401cdbe4c42aa95e95661928fe596804068e7067ab5e",
+    "population_id": "SSC_V1_0_1_G2_DEV_002_POPULATION_V1",
+    "population_manifest": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_POPULATION_MANIFEST_V1.json",
+    "population_n": 22,
+    "preregistration_hash": "d40fca49b2ff92768cafd45cdb5d48de96d53ad68449af68d41f8a348d4b0952",
+    "status": "POPULATION_FROZEN"
+  },
+  "g3_verdict": "NOT_EVALUATED_UNSIGNED_CONTRACT",
   "gates": {
     "G0": {
-      "evaluated_at": "2026-09-18T23:55:58.000911+00:00",
+      "evaluated_at": "2026-09-19T11:14:21.131411+00:00",
       "evaluator_version": "ssc_svos_context_authority_remediation_v1",
       "evidence_refs": [
         "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/V1_0_1_REMEDIATION/V1_0_1_REMEDIATION_MANIFEST.json",
@@ -46,7 +66,7 @@
       "status": "PARTIAL"
     },
     "G1": {
-      "evaluated_at": "2026-09-18T23:55:58.000911+00:00",
+      "evaluated_at": "2026-09-19T11:14:21.131411+00:00",
       "evaluator_version": "ssc_svos_context_authority_remediation_v1",
       "evidence_refs": [
         "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_PREREGISTRATION/HYP_001_EXIT_CAPTURE_PREREGISTRATION.md",
@@ -56,15 +76,17 @@
       "status": "PARTIAL"
     },
     "G2": {
-      "evaluated_at": "2026-09-18T23:55:58.000911+00:00",
+      "evaluated_at": "2026-09-19T11:14:21.131411+00:00",
       "evaluator_version": "ssc_svos_context_authority_remediation_v1",
       "evidence_refs": [
-        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_POPULATION_ATTEMPT_2/population_manifest.json"
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_POPULATION_V1.json",
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_POPULATION_MANIFEST_V1.json",
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_DETERMINISM_V1.json"
       ],
-      "status": "BLOCKED"
+      "status": "PASS"
     },
     "G3": {
-      "evaluated_at": "2026-09-18T23:55:58.000911+00:00",
+      "evaluated_at": "2026-09-19T11:14:21.131411+00:00",
       "evaluator_version": "ssc_svos_context_authority_remediation_v1",
       "evidence_refs": [
         "config/governance/economic_gate_contract.yaml",
@@ -73,8 +95,8 @@
       "status": "BLOCKED"
     }
   },
-  "generated_at_utc": "2026-09-18T23:55:58.000911+00:00",
-  "head_sha": "07743b6e4fd8bc5f01cb73a90bfc902ebadcb9cb",
+  "generated_at_utc": "2026-09-19T11:14:21.131411+00:00",
+  "head_sha": "1a50d4bb14f258b6669e7371d5246c47818fd808",
   "holdout": {
     "access_count": 0,
     "last_accessed_utc": null,
@@ -98,8 +120,11 @@
     }
   },
   "hypothesis_id": null,
-  "next_authorized_action": "G0/G1 remain PARTIAL (no canonical G0 artifact; HYP_001 v1.1.0 lineage is post-hoc). No G2+ work authorized. Owner may sign config/governance/economic_gate_contract.yaml to activate G3 evaluation.",
-  "schema_version": "1.2",
+  "hypothesis_status": "NO_NEW_HYPOTHESIS_JUSTIFIED",
+  "independent_replication": "BLOCKED_NO_ADMISSIBLE_REPLICATION_DATA",
+  "next_authorized_action": "G0/G1 remain PARTIAL (no canonical G0 artifact; HYP_001 v1.1.0 lineage is post-hoc). G2 is POPULATION_FROZEN (SSC_V1_0_1_G2_DEV_002_POPULATION_V1, deterministic). G3 remains NOT_EVALUATED_UNSIGNED_CONTRACT; optimization is ineligible. Next: prepare a separate PROSPECTIVE H1/M15/M1 archival-data policy for future independent development replication (no data acquisition in this mission).",
+  "optimization_eligible": false,
+  "schema_version": "1.3",
   "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
   "strategy_version": "1.0.1",
   "svos_lifecycle_stage": "OFFLINE_RESEARCH",
