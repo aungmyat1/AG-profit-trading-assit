@@ -95,6 +95,11 @@ their age.
   (`BLOCKED_INCOMPLETE_ONE_YEAR_DATA`: no M1 `FILL_RESOLUTION_INPUT` before
   2026-05-18, so 245.3 days of any one-year EURUSD window are unreplayable; no replay,
   no population, `HISTORICAL_RESEARCH_ONLY`).
+- [`status/SSC_V1_0_1_ONE_YEAR_M1_SOURCE_ADMISSION_STATUS.md`](status/SSC_V1_0_1_ONE_YEAR_M1_SOURCE_ADMISSION_STATUS.md)
+  — admission search for that missing M1 leg (`NO_SUITABLE_LOCAL_SOURCE` →
+  `OWNER_EXTERNAL_SOURCE_AUTHORIZATION_REQUIRED`: the broker's M1 retention no longer
+  reaches 2025-09-15…2026-05-18 while M5/M15/H1 still do, so the blocker is M1-specific
+  and no local file of any kind covers the interval).
 
 ## Architecture
 

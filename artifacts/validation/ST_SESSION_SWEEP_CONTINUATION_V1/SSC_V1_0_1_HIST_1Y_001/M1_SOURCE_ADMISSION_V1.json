@@ -1,0 +1,694 @@
+{
+  "P1_mt5_depth_probe": {
+    "account_login": 26088035,
+    "bridge": "MetaTrader5 python package via already-running terminal (read-only rates calls)",
+    "broker_company": "Vantage Markets (Pty) Ltd",
+    "broker_server": "VantageMarkets-Demo",
+    "control_verdict": "CONTROLS_HAVE_DATA",
+    "gap_m1_verdict": "BROKER_M1_HISTORY_ABSENT_IN_GAP",
+    "m15_history_depth_verdict": "BROKER_M15_HISTORY_PRESENT_BACK_THROUGH_GAP",
+    "m1_availability_boundary": {
+      "dates_returning_degenerate_single_bar": [
+        "2026-03-01",
+        "2026-04-01",
+        "2026-05-01",
+        "2026-06-01"
+      ],
+      "dates_returning_real_m1": [
+        "2026-07-01",
+        "2026-08-01",
+        "2026-09-01"
+      ],
+      "earliest_probed_date_with_real_m1": "2026-07-01",
+      "interpretation": "A one-bar answer to a full-day M1 range is this bridge's degenerate 'history not available' response, not real coverage.",
+      "probe_dates": [
+        "2026-03-01",
+        "2026-04-01",
+        "2026-05-01",
+        "2026-06-01",
+        "2026-07-01",
+        "2026-08-01",
+        "2026-09-01"
+      ]
+    },
+    "queries": [
+      {
+        "bars": 1,
+        "date": "2025-09-16",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 1,
+        "date": "2025-10-15",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 1,
+        "date": "2025-11-17",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 1,
+        "date": "2025-12-15",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-01-15",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-02-16",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-03-16",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-04-15",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-05-04",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-06-01",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "CONTROL",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 211,
+        "date": "2026-06-01",
+        "first_broker_stamp": "2026-06-01T00:00:00Z",
+        "first_close": 1.16522,
+        "label": "CONTROL",
+        "last_broker_stamp": "2026-06-01T17:30:00Z",
+        "timeframe": "M5"
+      },
+      {
+        "bars": 71,
+        "date": "2026-06-01",
+        "first_broker_stamp": "2026-06-01T00:00:00Z",
+        "first_close": 1.16519,
+        "label": "CONTROL",
+        "last_broker_stamp": "2026-06-01T17:30:00Z",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 18,
+        "date": "2026-06-01",
+        "first_broker_stamp": "2026-06-01T00:00:00Z",
+        "first_close": 1.16572,
+        "label": "CONTROL",
+        "last_broker_stamp": "2026-06-01T17:00:00Z",
+        "timeframe": "H1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-06-01",
+        "first_broker_stamp": "2026-06-01T00:00:00Z",
+        "first_close": 1.1631,
+        "label": "CONTROL",
+        "last_broker_stamp": "2026-06-01T00:00:00Z",
+        "timeframe": "D1"
+      },
+      {
+        "bars": 1438,
+        "date": "2026-07-01",
+        "first_broker_stamp": "2026-06-30T17:30:00Z",
+        "first_close": 1.1414,
+        "label": "CONTROL",
+        "last_broker_stamp": "2026-07-01T17:30:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 289,
+        "date": "2026-07-01",
+        "first_broker_stamp": "2026-06-30T17:30:00Z",
+        "first_close": 1.14116,
+        "label": "CONTROL",
+        "last_broker_stamp": "2026-07-01T17:30:00Z",
+        "timeframe": "M5"
+      },
+      {
+        "bars": 97,
+        "date": "2026-07-01",
+        "first_broker_stamp": "2026-06-30T17:30:00Z",
+        "first_close": 1.14185,
+        "label": "CONTROL",
+        "last_broker_stamp": "2026-07-01T17:30:00Z",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 24,
+        "date": "2026-07-01",
+        "first_broker_stamp": "2026-06-30T18:00:00Z",
+        "first_close": 1.14165,
+        "label": "CONTROL",
+        "last_broker_stamp": "2026-07-01T17:00:00Z",
+        "timeframe": "H1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-07-01",
+        "first_broker_stamp": "2026-07-01T00:00:00Z",
+        "first_close": 1.13772,
+        "label": "CONTROL",
+        "last_broker_stamp": "2026-07-01T00:00:00Z",
+        "timeframe": "D1"
+      },
+      {
+        "bars": 1,
+        "date": "2025-12-15",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP_DEPTH",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 211,
+        "date": "2025-12-15",
+        "first_broker_stamp": "2025-12-15T00:00:00Z",
+        "first_close": 1.17305,
+        "label": "GAP_DEPTH",
+        "last_broker_stamp": "2025-12-15T17:30:00Z",
+        "timeframe": "M5"
+      },
+      {
+        "bars": 71,
+        "date": "2025-12-15",
+        "first_broker_stamp": "2025-12-15T00:00:00Z",
+        "first_close": 1.17346,
+        "label": "GAP_DEPTH",
+        "last_broker_stamp": "2025-12-15T17:30:00Z",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 18,
+        "date": "2025-12-15",
+        "first_broker_stamp": "2025-12-15T00:00:00Z",
+        "first_close": 1.17351,
+        "label": "GAP_DEPTH",
+        "last_broker_stamp": "2025-12-15T17:00:00Z",
+        "timeframe": "H1"
+      },
+      {
+        "bars": 1,
+        "date": "2025-12-15",
+        "first_broker_stamp": "2025-12-15T00:00:00Z",
+        "first_close": 1.17517,
+        "label": "GAP_DEPTH",
+        "last_broker_stamp": "2025-12-15T00:00:00Z",
+        "timeframe": "D1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-04-15",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "GAP_DEPTH",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 289,
+        "date": "2026-04-15",
+        "first_broker_stamp": "2026-04-14T17:30:00Z",
+        "first_close": 1.18045,
+        "label": "GAP_DEPTH",
+        "last_broker_stamp": "2026-04-15T17:30:00Z",
+        "timeframe": "M5"
+      },
+      {
+        "bars": 97,
+        "date": "2026-04-15",
+        "first_broker_stamp": "2026-04-14T17:30:00Z",
+        "first_close": 1.18064,
+        "label": "GAP_DEPTH",
+        "last_broker_stamp": "2026-04-15T17:30:00Z",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 24,
+        "date": "2026-04-15",
+        "first_broker_stamp": "2026-04-14T18:00:00Z",
+        "first_close": 1.17897,
+        "label": "GAP_DEPTH",
+        "last_broker_stamp": "2026-04-15T17:00:00Z",
+        "timeframe": "H1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-04-15",
+        "first_broker_stamp": "2026-04-15T00:00:00Z",
+        "first_close": 1.17993,
+        "label": "GAP_DEPTH",
+        "last_broker_stamp": "2026-04-15T00:00:00Z",
+        "timeframe": "D1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-03-01",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 0,
+        "date": "2026-03-01",
+        "error": "EMPTY",
+        "label": "BOUNDARY",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 1,
+        "date": "2026-04-01",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 97,
+        "date": "2026-04-01",
+        "first_broker_stamp": "2026-03-31T17:30:00Z",
+        "first_close": 1.15195,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-04-01T17:30:00Z",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 1,
+        "date": "2026-05-01",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 97,
+        "date": "2026-05-01",
+        "first_broker_stamp": "2026-04-30T17:30:00Z",
+        "first_close": 1.17136,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-05-01T17:30:00Z",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 1,
+        "date": "2026-06-01",
+        "first_broker_stamp": "2026-06-15T09:57:00Z",
+        "first_close": 1.16054,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-06-15T09:57:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 71,
+        "date": "2026-06-01",
+        "first_broker_stamp": "2026-06-01T00:00:00Z",
+        "first_close": 1.16519,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-06-01T17:30:00Z",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 1438,
+        "date": "2026-07-01",
+        "first_broker_stamp": "2026-06-30T17:30:00Z",
+        "first_close": 1.1414,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-07-01T17:30:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 97,
+        "date": "2026-07-01",
+        "first_broker_stamp": "2026-06-30T17:30:00Z",
+        "first_close": 1.14185,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-07-01T17:30:00Z",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 387,
+        "date": "2026-08-01",
+        "first_broker_stamp": "2026-07-31T17:30:00Z",
+        "first_close": 1.14794,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-07-31T23:56:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 26,
+        "date": "2026-08-01",
+        "first_broker_stamp": "2026-07-31T17:30:00Z",
+        "first_close": 1.1491500000000001,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-07-31T23:45:00Z",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 1439,
+        "date": "2026-09-01",
+        "first_broker_stamp": "2026-08-31T17:30:00Z",
+        "first_close": 1.16038,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-09-01T17:30:00Z",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 97,
+        "date": "2026-09-01",
+        "first_broker_stamp": "2026-08-31T17:30:00Z",
+        "first_close": 1.16055,
+        "label": "BOUNDARY",
+        "last_broker_stamp": "2026-09-01T17:30:00Z",
+        "timeframe": "M15"
+      }
+    ],
+    "same_date_other_timeframe_evidence": [
+      {
+        "bars": 1,
+        "date": "2025-12-15",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 211,
+        "date": "2025-12-15",
+        "timeframe": "M5"
+      },
+      {
+        "bars": 71,
+        "date": "2025-12-15",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 18,
+        "date": "2025-12-15",
+        "timeframe": "H1"
+      },
+      {
+        "bars": 1,
+        "date": "2025-12-15",
+        "timeframe": "D1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-04-15",
+        "timeframe": "M1"
+      },
+      {
+        "bars": 289,
+        "date": "2026-04-15",
+        "timeframe": "M5"
+      },
+      {
+        "bars": 97,
+        "date": "2026-04-15",
+        "timeframe": "M15"
+      },
+      {
+        "bars": 24,
+        "date": "2026-04-15",
+        "timeframe": "H1"
+      },
+      {
+        "bars": 1,
+        "date": "2026-04-15",
+        "timeframe": "D1"
+      }
+    ],
+    "status": "PROBED",
+    "symbol": "EURUSD",
+    "terminal_build": 6182,
+    "terminal_data_path": "C:\\Users\\aungp\\AppData\\Roaming\\MetaQuotes\\Terminal\\8EFB2DF501EAEF188AB46828829DBF78",
+    "terminal_max_bars_setting": 100000
+  },
+  "P2_tick_adjudication": {
+    "ask_only_rows": 1772943,
+    "authority_note": "Provenance is NOT established by the filename. This file is a manual MT5 'Ticks' export with no broker/account/venue metadata sidecar anywhere in the repository; it is admissible only if an owner-authorized acquisition record binds it to a named broker/account/interval.",
+    "bid_only_rows": 1863863,
+    "both_sides_present_rows": 2253426,
+    "crossed_price_rows": 0,
+    "distinct_minutes_ask": 67299,
+    "distinct_minutes_bid": 67365,
+    "distinct_minutes_mid": 65748,
+    "duplicate_timestamps": 84,
+    "file_size_bytes": 239602849,
+    "first_tick_broker_wallclock": "2026-06-18T22:00:00.095000",
+    "flag_value_counts": {
+      "2": 1863863,
+      "4": 1772943,
+      "6": 2253426
+    },
+    "format_note": "MT5 tick export writes one side per record -- a blank bid or ask column is the format's normal shape, not a bad price.",
+    "header": [
+      "<DATE>",
+      "<TIME>",
+      "<BID>",
+      "<ASK>",
+      "<LAST>",
+      "<VOLUME>",
+      "<FLAGS>"
+    ],
+    "invalid_price_rows": 0,
+    "last_tick_broker_wallclock": "2026-08-24T19:02:01.361000",
+    "non_monotonic_timestamps": 0,
+    "parse_cache": "HIT",
+    "parse_failures": 0,
+    "path": "D:\\EURUSD_202606182200_202608241902.csv",
+    "quality_status": "PASS",
+    "rest_row_length_histogram": {
+      "7": 5890232
+    },
+    "row_count": 5890232,
+    "sha256": "2a844b807086896d25ec57627350d23b80e088aec122b51af1e8357b0b56abd3",
+    "status": "ADJUDICATED",
+    "tick_sha256": "2a844b807086896d25ec57627350d23b80e088aec122b51af1e8357b0b56abd3"
+  },
+  "P4_overlap_parity": {
+    "PARITY_STATUS": "PASS_EXACT",
+    "candidate_conventions_scored": 15,
+    "canonical_expected_closure_gaps": 6,
+    "canonical_first": "2026-06-21T21:02:00Z",
+    "canonical_last": "2026-08-02T23:59:00Z",
+    "canonical_minutes_not_in_tick": 0,
+    "canonical_rows": 43292,
+    "canonical_source": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_M1.csv",
+    "canonical_timezone_authority": "UTC (timestamp_utc, MetaTrader5 copy_rates_range native)",
+    "exact_all_four_rate": 1.0,
+    "exact_close_rate": 1.0,
+    "exact_high_rate": 1.0,
+    "exact_low_rate": 1.0,
+    "exact_open_rate": 1.0,
+    "grid": [
+      {
+        "bars_compared": 43292,
+        "exact_all_four_rate": 1.0,
+        "max_abs_deviation": 0.0,
+        "mean_abs_deviation": 0.0,
+        "stream": "bid",
+        "utc_offset_hours_assumed": 3
+      },
+      {
+        "bars_compared": 41819,
+        "exact_all_four_rate": 9.6e-05,
+        "max_abs_deviation": 0.00651,
+        "mean_abs_deviation": 0.0005284437,
+        "stream": "mid",
+        "utc_offset_hours_assumed": 2
+      },
+      {
+        "bars_compared": 40846,
+        "exact_all_four_rate": 2.4e-05,
+        "max_abs_deviation": 0.0093,
+        "mean_abs_deviation": 0.0013921105,
+        "stream": "ask",
+        "utc_offset_hours_assumed": -3
+      },
+      {
+        "bars_compared": 42811,
+        "exact_all_four_rate": 2.3e-05,
+        "max_abs_deviation": 0.00658,
+        "mean_abs_deviation": 0.0005171789,
+        "stream": "bid",
+        "utc_offset_hours_assumed": 2
+      },
+      {
+        "bars_compared": 42288,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.00081,
+        "mean_abs_deviation": 7.29958e-05,
+        "stream": "mid",
+        "utc_offset_hours_assumed": 3
+      },
+      {
+        "bars_compared": 43245,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.00152,
+        "mean_abs_deviation": 0.000153706,
+        "stream": "ask",
+        "utc_offset_hours_assumed": 3
+      },
+      {
+        "bars_compared": 42765,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.00644,
+        "mean_abs_deviation": 0.0005424666,
+        "stream": "ask",
+        "utc_offset_hours_assumed": 2
+      },
+      {
+        "bars_compared": 41972,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.00877,
+        "mean_abs_deviation": 0.0009205838,
+        "stream": "bid",
+        "utc_offset_hours_assumed": 0
+      },
+      {
+        "bars_compared": 41003,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.00871,
+        "mean_abs_deviation": 0.0009358334,
+        "stream": "mid",
+        "utc_offset_hours_assumed": 0
+      },
+      {
+        "bars_compared": 41926,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.00863,
+        "mean_abs_deviation": 0.0009401798,
+        "stream": "ask",
+        "utc_offset_hours_assumed": 0
+      },
+      {
+        "bars_compared": 41252,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.0088,
+        "mean_abs_deviation": 0.0012353171,
+        "stream": "bid",
+        "utc_offset_hours_assumed": -2
+      },
+      {
+        "bars_compared": 40283,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.00874,
+        "mean_abs_deviation": 0.0012479295,
+        "stream": "mid",
+        "utc_offset_hours_assumed": -2
+      },
+      {
+        "bars_compared": 41206,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.00867,
+        "mean_abs_deviation": 0.0012482528,
+        "stream": "ask",
+        "utc_offset_hours_assumed": -2
+      },
+      {
+        "bars_compared": 40892,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.00943,
+        "mean_abs_deviation": 0.0013823288,
+        "stream": "bid",
+        "utc_offset_hours_assumed": -3
+      },
+      {
+        "bars_compared": 39923,
+        "exact_all_four_rate": 0.0,
+        "max_abs_deviation": 0.00937,
+        "mean_abs_deviation": 0.0013964286,
+        "stream": "mid",
+        "utc_offset_hours_assumed": -3
+      }
+    ],
+    "max_abs_deviation": 0.0,
+    "mean_abs_deviation": 0.0,
+    "observed_price_stream": "bid",
+    "observed_utc_offset_hours": 3,
+    "overlap_first": "2026-06-21T21:02:00Z",
+    "overlap_last": "2026-08-02T23:59:00Z",
+    "overlap_minutes": 43292,
+    "session_boundary_check": {
+      "by_segment": {
+        "ASIAN_LONDON": {
+          "bars": 7200,
+          "exact_all_four_rate": 1.0
+        },
+        "LONDON_NEWYORK": {
+          "bars": 5400,
+          "exact_all_four_rate": 1.0
+        },
+        "OUTSIDE_ALL_TRADE_WINDOWS": {
+          "bars": 30692,
+          "exact_all_four_rate": 1.0
+        }
+      },
+      "definition": "exact all-four OHLC match rate restricted to each session pair's trade window (UTC clock from the strategy config)"
+    },
+    "tick_minutes_not_in_canonical": 24073
+  },
+  "generated_at_utc": "2026-09-19",
+  "generated_at_utc_note": "DATE_ONLY",
+  "schema": "AG_SSC_V1_0_1_ONE_YEAR_M1_SOURCE_ADMISSION_V1",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1",
+  "symbol": "EURUSD",
+  "target_missing_interval": {
+    "from": "2025-09-15T00:00:00Z",
+    "to": "2026-05-18T06:46:00Z"
+  }
+}
