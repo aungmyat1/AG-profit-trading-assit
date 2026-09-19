@@ -29,12 +29,15 @@ from .orchestrator import analyze
 from .topdown_contracts import (
     ALL_CANONICAL_TIMEFRAMES,
     ALLOWED_STRUCTURE_DEFINITION_IDS,
+    COMPOSITION_MODE_HISTORICAL_AS_OF,
+    COMPOSITION_MODE_LIVE_CURRENT,
     DATA_QUALITY_DATA_ERROR,
     DATA_QUALITY_MISSING,
     DATA_QUALITY_PARTIAL,
     DATA_QUALITY_VALID,
     ALLOWED_ZONE_DEFINITION_IDS,
     ALLOWED_LIQUIDITY_DEFINITION_IDS,
+    InvalidCompositionModeError,
     LIQUIDITY_DEFINITION_AG_LIQUIDITY_V1,
     STRUCTURE_DEFINITION_SMC_MARKET_STRUCTURE_V1,
     TIMEFRAME_D1,
@@ -91,10 +94,11 @@ from .topdown_new_builders import (
 )
 from .topdown_composer import (
     COMPOSER_FEATURE_VERSION,
-    COMPOSITION_MODE_HISTORICAL_AS_OF,
-    COMPOSITION_MODE_LIVE_CURRENT,
     HistoricalAsOfNotSupportedError,
     IncompleteTopDownCompositionError,
+    NaiveAsOfTimeError,
+    ReplayDatasetIdentityMissingError,
+    ReplayStoreRequiredError,
     TopDownCompositionError,
     TopDownSymbolMismatchError,
     TopDownTemporalViolationError,
@@ -138,4 +142,7 @@ __all__ = [
     "COMPOSER_FEATURE_VERSION", "COMPOSITION_MODE_LIVE_CURRENT", "COMPOSITION_MODE_HISTORICAL_AS_OF",
     "TopDownCompositionError", "IncompleteTopDownCompositionError", "TopDownSymbolMismatchError",
     "TopDownTimeframeSlotError", "TopDownTemporalViolationError", "HistoricalAsOfNotSupportedError",
+    # TD-8 replay/historical composition (additive; see topdown_composer.py, topdown_contracts.py)
+    "InvalidCompositionModeError", "NaiveAsOfTimeError",
+    "ReplayStoreRequiredError", "ReplayDatasetIdentityMissingError",
 ]

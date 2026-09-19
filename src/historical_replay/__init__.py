@@ -4,6 +4,7 @@ docs/specs/SMC_3X3_HISTORICAL_VALIDATION_V1_SPEC.md.
 """
 from .candle_store import HistoricalCandleStore, HistoricalDataError, TIMEFRAME_MINUTES, timeframe_duration
 from .data_source_patch import historical_data_context
+from .dataset_identity import ReplayDatasetIdentity, build_dataset_identity, compute_candle_series_fingerprint
 from .mt5_export_loader import GapReport, IngestionError, IngestionReport, load_mt5_export_csv
 from .resampler import resample, resample_broker_aligned
 from .symbol_metadata_manifest import (
@@ -17,6 +18,8 @@ from .symbol_metadata_manifest import (
 __all__ = [
     "HistoricalCandleStore", "HistoricalDataError", "TIMEFRAME_MINUTES", "timeframe_duration",
     "historical_data_context",
+    # TD-8 dataset identity (additive; see dataset_identity.py)
+    "ReplayDatasetIdentity", "build_dataset_identity", "compute_candle_series_fingerprint",
     "load_mt5_export_csv", "IngestionError", "IngestionReport", "GapReport",
     "resample", "resample_broker_aligned",
     "HistoricalSymbolMetadataManifest", "SymbolMetadataManifestError",

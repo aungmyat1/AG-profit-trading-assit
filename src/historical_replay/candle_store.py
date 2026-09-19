@@ -18,11 +18,35 @@ from __future__ import annotations
 from bisect import bisect_right
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from strategy_engine.session import Candle
 
-TIMEFRAME_MINUTES: Dict[str, int] = {"M1": 1, "M5": 5, "M15": 15, "M30": 30, "H1": 60, "H4": 240, "D1": 1440}
+from .dataset_identity import ReplayDatasetIdentity, build_dataset_identity
+
+# TD-8: W1 added additively (mtf_context.topdown_composer's HISTORICAL_AS_OF mode needs
+# a closed-bar boundary for all six TopDownContext tiers, including weekly) -- same
+# value (10080 minutes = 7 days) already used by mt5/market_data.py's own
+# _RAW_CACHE_PERIOD_MINUTES and strategy_contract/market_snapshot.py's
+# _TIMEFRAME_MINUTES for W1. No existing (symbol, timeframe) key or behavior changes.
+TIMEFRAME_MINUTES: Dict[str, int] = {
+    "M1": 1, "M5": 5, "M15": 15, "M30": 30, "H1": 60, "H4": 240, "D1": 1440, "W1": 10080,
+}
+
+
+def _require_aware_utc(value: datetime, label: str) -> None:
+    """TD-8: explicit fail-closed guard for a timezone-naive replay clock/query time --
+    same NAIVE_DATETIME_REJECTED idiom mt5/market_data.py::get_candles already uses for
+    its own start_utc/end_utc parameters (this repo's dominant convention for any
+    caller-supplied 'as-of'/'decision_time' argument: reject, never silently assume
+    UTC). Before this guard, a naive `as_of` would silently compare against tz-aware
+    `Candle.time` values and raise an unrelated TypeError deep inside bisect_right --
+    this raises a clear, correctly-typed HistoricalDataError instead. Additive only:
+    every existing caller already always passes tz-aware datetimes (see
+    tests/test_historical_replay_no_lookahead.py), so this changes no existing
+    passing test's behavior."""
+    if value.tzinfo is None:
+        raise HistoricalDataError("NAIVE_DATETIME_REJECTED", f"{label} must be timezone-aware UTC, got a naive datetime")
 
 
 class HistoricalDataError(RuntimeError):
@@ -45,6 +69,7 @@ def timeframe_duration(timeframe: str) -> timedelta:
 class _Series:
     times: Tuple[datetime, ...]  # open times, ascending, parallel to candles
     candles: Tuple[Candle, ...]
+    identity: ReplayDatasetIdentity  # TD-8: always present once loaded -- see load_series
 
 
 class HistoricalCandleStore:
@@ -57,7 +82,17 @@ class HistoricalCandleStore:
     def __init__(self) -> None:
         self._series: Dict[Tuple[str, str], _Series] = {}
 
-    def load_series(self, symbol: str, timeframe: str, candles: Sequence[Candle]) -> None:
+    def load_series(
+        self, symbol: str, timeframe: str, candles: Sequence[Candle], *,
+        dataset_id: Optional[str] = None, source: str = "REPLAY",
+    ) -> None:
+        """TD-8: `dataset_id`/`source` are optional, additive kwargs -- every existing
+        call site (stage1/stage2/orchestrator and their tests) keeps working completely
+        unmodified. A `ReplayDatasetIdentity` is always computed and stored regardless
+        (see build_dataset_identity: collision-safety comes from a content-derived
+        `fingerprint`, not from the caller bothering to supply a label), so
+        `dataset_identity()` below never returns None for a (symbol, timeframe) that
+        was actually loaded -- only for one that was never loaded at all."""
         ordered = sorted(candles, key=lambda c: c.time)
         for a, b in zip(ordered, ordered[1:]):
             if b.time <= a.time:
@@ -65,14 +100,27 @@ class HistoricalCandleStore:
                     "DUPLICATE_OR_UNORDERED_TIMESTAMP",
                     f"{symbol} {timeframe}: non-increasing candle timestamps at {a.time} -> {b.time}",
                 )
-        self._series[(symbol, timeframe)] = _Series(
-            times=tuple(c.time for c in ordered), candles=tuple(ordered),
+        identity = build_dataset_identity(
+            symbol=symbol, timeframe=timeframe, candles=ordered, dataset_id=dataset_id, source=source,
         )
+        self._series[(symbol, timeframe)] = _Series(
+            times=tuple(c.time for c in ordered), candles=tuple(ordered), identity=identity,
+        )
+
+    def dataset_identity(self, symbol: str, timeframe: str) -> Optional[ReplayDatasetIdentity]:
+        """TD-8: None iff nothing was ever loaded for this (symbol, timeframe) -- a
+        caller (e.g. mtf_context.topdown_composer's HISTORICAL_AS_OF path) can use this
+        as a pre-flight "is this tier's replay data even present" check, distinct from
+        (and earlier than) `closed_candles` raising DATA_MISSING/INSUFFICIENT_CANDLES
+        for an `as_of` that has too little history."""
+        series = self._series.get((symbol, timeframe))
+        return series.identity if series is not None else None
 
     def closed_candles(self, symbol: str, timeframe: str, as_of: datetime, count: int) -> List[Candle]:
         """Most recent `count` bars whose CLOSE time (open + duration) <= as_of,
         oldest first -- the historical analogue of get_latest_candles's "position 1 is
         the last fully closed bar" contract."""
+        _require_aware_utc(as_of, "as_of")
         key = (symbol, timeframe)
         if key not in self._series:
             raise HistoricalDataError("DATA_MISSING", f"no historical series loaded for {symbol} {timeframe}")

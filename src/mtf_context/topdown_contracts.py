@@ -665,6 +665,25 @@ _FIXED_AUTHORIZATION: Dict[str, bool] = {
     "may_execute": False,
 }
 
+# TD-8: smallest additive amendment needed to let TopDownContext carry DATASET
+# provenance (distinct from each tier's own DETECTOR provenance -- `source`/
+# `feature_version` on WeeklyContext..M5Context are never touched or overwritten by
+# this). COMPOSITION_MODE_* mirror mtf_context.topdown_composer's own TD-7 constants
+# verbatim (that module now imports them FROM here rather than defining a second copy,
+# so there is exactly one canonical definition) -- TD-7's LIVE_CURRENT contract is
+# unaffected: both new fields default to exactly what every pre-TD-8 TopDownContext
+# construction already implied (LIVE_CURRENT, no dataset identity).
+COMPOSITION_MODE_LIVE_CURRENT = "LIVE_CURRENT"
+COMPOSITION_MODE_HISTORICAL_AS_OF = "HISTORICAL_AS_OF"
+_VALID_COMPOSITION_MODES = frozenset({COMPOSITION_MODE_LIVE_CURRENT, COMPOSITION_MODE_HISTORICAL_AS_OF})
+
+
+class InvalidCompositionModeError(ValueError):
+    """Raised for a composition_mode outside _VALID_COMPOSITION_MODES, or for a
+    dataset_identity/composition_mode combination that would let LIVE data carry a
+    fabricated dataset identity or HISTORICAL_AS_OF data hide behind no identity at
+    all -- see TopDownContext.__post_init__."""
+
 
 @dataclass(frozen=True)
 class TopDownContext:
@@ -689,6 +708,8 @@ class TopDownContext:
     m15: Optional[M15Context] = None
     m5: Optional[M5Context] = None
     authorization: Dict[str, bool] = field(default_factory=lambda: dict(_FIXED_AUTHORIZATION))
+    composition_mode: str = COMPOSITION_MODE_LIVE_CURRENT
+    dataset_identity: Optional[str] = None
 
     def __post_init__(self) -> None:
         _require_nonempty("context_id", self.context_id)
@@ -700,6 +721,20 @@ class TopDownContext:
             raise ValueError(
                 "TopDownContext.authorization is fixed and must never be overridden -- "
                 f"expected {_FIXED_AUTHORIZATION}, got {dict(self.authorization)}"
+            )
+        if self.composition_mode not in _VALID_COMPOSITION_MODES:
+            raise InvalidCompositionModeError(
+                f"composition_mode must be one of {sorted(_VALID_COMPOSITION_MODES)}, got {self.composition_mode!r}"
+            )
+        if self.composition_mode == COMPOSITION_MODE_LIVE_CURRENT and self.dataset_identity is not None:
+            raise InvalidCompositionModeError(
+                "dataset_identity must be None for LIVE_CURRENT composition -- LIVE data has no "
+                "replay dataset to identify (see mtf_context.topdown_composer's AS-OF LIMITATION)"
+            )
+        if self.composition_mode == COMPOSITION_MODE_HISTORICAL_AS_OF and not self.dataset_identity:
+            raise InvalidCompositionModeError(
+                "dataset_identity is required for HISTORICAL_AS_OF composition -- TD-8 P5/P6: "
+                "historical provenance must never be silently unidentified"
             )
         if self.daily is not None:
             _require_consistent_lineage(self.daily.parent_weekly_context_id, self.weekly, "daily")

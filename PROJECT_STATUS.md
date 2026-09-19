@@ -6,6 +6,15 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-19)
 
+TD-8 TopDownContext replay temporal parity is `UNIT_TESTED`: caller-supplied UTC
+`as_of_time` drives the six-timeframe historical composition through the existing
+replay store and shared fact builders. Closed-bar filtering, content-derived dataset
+identity, live MT5 fallback prevention, and live raw-cache isolation are covered by
+focused replay tests. Session-based reference facts remain unavailable in replay and
+fail closed (`TD8_SESSION_REFERENCE_REPLAY_PARITY`); derived fact caching remains
+unwired. This grants no strategy, proposal, demo, live, or execution authority. See
+`docs/status/TD8_REPLAY_TEMPORAL_PARITY_STATUS.md` for the dated evidence.
+
 SVOS (Strategy Validation Operating System) historical→optimization→virtual-forward flow
 is `UNIT_TESTED`: a new `src/svos/` package implements the canonical historical runner
 contract, preregistered bounded optimization with a protected-data firewall, candidate

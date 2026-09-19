@@ -13,8 +13,8 @@ from unittest.mock import patch
 import pytest
 
 from mtf_context.topdown_composer import (
-    HistoricalAsOfNotSupportedError,
     IncompleteTopDownCompositionError,
+    ReplayStoreRequiredError,
     TopDownSymbolMismatchError,
     TopDownTemporalViolationError,
     TopDownTimeframeSlotError,
@@ -283,20 +283,25 @@ def test_live_current_uses_single_captured_boundary():
     assert len(calls) == 1  # captured exactly once, never re-queried per tier
 
 
-# --------------------------------------------------------------------------- 15. historical as-of rejected, not silently served
+# --------------------------------------------------------------------------- 15. historical as-of without a replay store is rejected, never silently served from LIVE
+#
+# TD-8 note: as of TD-8, HISTORICAL_AS_OF composition IS implemented (see
+# tests/test_topdown_composer_replay.py for the full HISTORICAL_AS_OF test suite,
+# including a real replay_store). These two TD-7-era tests are updated (not deleted)
+# to prove the one thing that must remain true regardless: `as_of_time` alone, with NO
+# replay_store, must never silently fall through to LIVE MT5 -- it must be rejected
+# before any builder is ever called.
 
-def test_historical_as_of_raises_not_supported_and_calls_no_builder():
+def test_historical_as_of_without_replay_store_raises_and_calls_no_builder():
     weekly, daily, h4, h1, m15, m5 = _valid_chain()
-    with _patch_builders(weekly=weekly, daily=daily, h4=h4, h1=h1, m15=m15, m5=m5) as mocks:
-        with pytest.raises(HistoricalAsOfNotSupportedError):
+    with _patch_builders(weekly=weekly, daily=daily, h4=h4, h1=h1, m15=m15, m5=m5):
+        with pytest.raises(ReplayStoreRequiredError):
             build_topdown_context("EURUSD", as_of_time=_NOW - timedelta(days=30))
-    # None of the six builders were ever invoked -- rejected before any composition work.
-    # (patch.multiple's lambdas aren't call-tracked directly; re-verify via a spy instead.)
 
 
-def test_historical_as_of_never_reaches_any_builder():
+def test_historical_as_of_without_replay_store_never_reaches_any_builder():
     with patch("mtf_context.topdown_composer.build_weekly_context") as mock_weekly:
-        with pytest.raises(HistoricalAsOfNotSupportedError):
+        with pytest.raises(ReplayStoreRequiredError):
             build_topdown_context("EURUSD", as_of_time=_NOW - timedelta(days=30))
     mock_weekly.assert_not_called()
 

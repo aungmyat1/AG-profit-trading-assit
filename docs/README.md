@@ -40,6 +40,9 @@ their age.
 11. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
    update procedure for rolling status, dated evidence, strategy authorization, and
    live-validation claims.
+   [`status/TD8_REPLAY_TEMPORAL_PARITY_STATUS.md`](status/TD8_REPLAY_TEMPORAL_PARITY_STATUS.md)
+   — TD-8 six-timeframe historical replay implementation and verification evidence;
+   records the fail-closed session-reference limitation and unchanged trading authority.
 12. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
    non-authorizing capability-completeness audit and navigation matrix (Section A
    trading edge, Section B operations/execution/platform, execution-authority matrix,
