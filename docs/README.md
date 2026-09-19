@@ -117,6 +117,16 @@ their age.
   resolution (`UTC+2/UTC+3`), and the canonical audit now returns
   `DATA_COVERAGE_COMPLETE` for 2025-09-15 → 2026-09-14. The one-year replay was **not**
   run.
+- [`status/SSC_V1_0_1_ONE_YEAR_HISTORICAL_REPLAY_STATUS.md`](status/SSC_V1_0_1_ONE_YEAR_HISTORICAL_REPLAY_STATUS.md)
+  — the one-year replay mission itself (R0–R17, `BLOCKED_CROSS_LEG_TIMEZONE_INCONSISTENT`):
+  coverage passed but the admissible H1/M15 legs are not in the same time base as the
+  canonical M1 leg, so the timezone-consistent three-way intersection is 322.124 days
+  instead of 365 and the mission stopped before the contract freeze and the single replay.
+  Adds the companion gate
+  [`scripts/audit_ssc_v1_0_1_one_year_cross_leg_consistency.py`](../scripts/audit_ssc_v1_0_1_one_year_cross_leg_consistency.py)
+  — read-only, arbitrates every H1/M15 leg against the M1 authority and judges alignment
+  per DST season; the coverage audit is necessary-but-not-sufficient and this gate is its
+  required companion. No replay, no population, no metric, `HISTORICAL_RESEARCH_ONLY`.
 
 ## Architecture
 

@@ -6,6 +6,22 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-19)
 
+The SSC v1.0.1 one-year historical replay mission stopped at its timezone-authority gate:
+`FINAL_STATUS = BLOCKED_CROSS_LEG_TIMEZONE_INCONSISTENT`. Timestamp-union coverage had
+returned `DATA_COVERAGE_COMPLETE` for `2025-09-15 → 2026-09-14`, but coverage does not
+prove the H1 (bias), M15 (decision) and M1 (fill) legs share a time base. Arbitrating
+every admissible H1/M15 source against the canonical M1 authority shows the frozen
+`SSC_V1_0_1_G2_DEV_002::H1` file mixes a DST-shifted winter segment with an unshifted
+summer segment, and the `GEN_002` / `HYP_002` H1/M15 legs sit ~+3h off the M1 leg (the
+`GEN_002` manifest's UTC claim is contradicted by its own M1 leg, and its parity
+diagnostic compares a timeframe against itself). The timezone-consistent three-way
+intersection is therefore 322.124 days, not 365, and the window's final 42.998 days have
+no timezone-consistent H1 or M15 leg. No replay ran, no population exists, no economic
+metric exists, no parameter or config changed. A durable read-only companion gate,
+`scripts/audit_ssc_v1_0_1_one_year_cross_leg_consistency.py`, now enforces the missing
+check; the coverage audit is necessary-but-not-sufficient. See
+`docs/status/SSC_V1_0_1_ONE_YEAR_HISTORICAL_REPLAY_STATUS.md`.
+
 TD-8D canonical replay `MarketSnapshot` bridging is complete and uncommitted for
 owner review. The existing `strategy_contract.MarketSnapshot` can now be constructed
 from one TD-8 dataset and caller-controlled T, with TD-8C session facts attached, then
