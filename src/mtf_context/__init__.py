@@ -56,6 +56,20 @@ from .topdown_contracts import (
     WeeklyContext,
     compute_context_id,
 )
+from .topdown_context_adapters import (
+    ADAPTER_FEATURE_VERSION,
+    D1_CONTEXT_SOURCE,
+    H1_CONTEXT_SOURCE,
+    M5_CONTEXT_SOURCE,
+    STRUCTURE_FACT_SOURCE,
+    build_daily_context,
+    build_h1_context,
+    build_m5_context,
+    daily_context_from_d1,
+    h1_context_from_sources,
+    m5_context_from_structure,
+)
+from .topdown_market_data import closed_snapshot_for_topdown_timeframe
 
 __all__ = [
     "analyze", "MTFProfile", "MTFContext", "LayerResult", "InvalidProfileError",
@@ -70,4 +84,12 @@ __all__ = [
     "InvalidTimeframeError", "InvalidDataQualityStatusError", "InvalidStructureDefinitionError",
     "StructureFact", "TimeframeRequirement", "compute_context_id",
     "WeeklyContext", "DailyContext", "H4Context", "H1Context", "M15Context", "M5Context", "TopDownContext",
+    # TD-2 data foundation (additive; see topdown_market_data.py)
+    "closed_snapshot_for_topdown_timeframe",
+    # TD-3 existing-context adapters (additive; see topdown_context_adapters.py)
+    "ADAPTER_FEATURE_VERSION", "STRUCTURE_FACT_SOURCE",
+    "D1_CONTEXT_SOURCE", "H1_CONTEXT_SOURCE", "M5_CONTEXT_SOURCE",
+    "daily_context_from_d1", "build_daily_context",
+    "h1_context_from_sources", "build_h1_context",
+    "m5_context_from_structure", "build_m5_context",
 ]
