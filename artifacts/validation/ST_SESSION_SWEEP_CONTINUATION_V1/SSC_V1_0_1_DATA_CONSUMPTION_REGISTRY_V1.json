@@ -238,15 +238,38 @@
       "data_role": "DEVELOPMENT",
       "prior_consumption": "NONE",
       "hypothesis_usage": "none yet (G2 baseline population, preregistered)",
-      "counting_status": "ADMITTED_FROZEN_NOT_REPLAYED",
+      "counting_status": "FROZEN_REPLAY_INSUFFICIENT",
       "protected_status": "NOT_PROTECTED",
       "reusable_for_new_development": true,
-      "reason": "Fresh EURUSD H1/M15/M1 over the Route A gap; acquired and frozen before any outcome evaluation. COMMON interval 2026-06-21 21:02 -> 2026-08-02 23:00."
+      "reason": "Fresh EURUSD H1/M15/M1 over the Route A gap; acquired and frozen before any outcome evaluation. COMMON interval 2026-06-21 21:02 -> 2026-08-02 23:00. REPLAY-INSUFFICIENT: H1 leg has zero pre-decision warmup (723 bars starting 2026-06-21) -- superseded by SSC_V1_0_1_G2_DEV_002."
+    },
+    {
+      "dataset_id": "SSC_V1_0_1_G2_DEV_002",
+      "symbol": "EURUSD",
+      "source": "H1 warmup remediation of SSC_V1_0_1_G2_DEV_001 (scripts/build_ssc_v1_0_1_g2_dev_002.py): owner-approved D:\\ EURUSD H1 warmup (WARMUP_CONTEXT_ONLY) + DEV_001 H1 development segment; M15/M1 byte-identical to DEV_001",
+      "start": "2025-01-01T21:00:00Z",
+      "end": "2026-08-02T23:59:59Z",
+      "timeframes": ["H1", "M15", "M1"],
+      "timezone": "BROKER_OFFSET_CONFIRMED (+3h)",
+      "hashes": {
+        "H1": "93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79",
+        "M15": "cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063",
+        "M1": "b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458",
+        "combined_dataset_fingerprint": "05b059720a7457d15a7fbc4cd7f0c15e62df86b7857c1f122edc49a0d3a2baf5"
+      },
+      "strategy_version_used": "1.0.1",
+      "data_role": "DEVELOPMENT",
+      "prior_consumption": "NONE",
+      "hypothesis_usage": "none yet (G2 baseline population, preregistered)",
+      "counting_status": "ACTIVE_G2_REPLAY_CANDIDATE",
+      "protected_status": "NOT_PROTECTED",
+      "reusable_for_new_development": true,
+      "reason": "H1 warmup remediation: warmup is WARMUP_CONTEXT_ONLY (initializes H1 structure/bias only; cannot generate occurrences). DEVELOPMENT decision interval unchanged (2026-06-21 21:00 -> 2026-08-02). closed_h1 before first decision = 9129 >= 1000."
     }
   ],
   "summary": {
     "admissible_fresh_development_dataset_exists": true,
-    "candidate_interval": "SSC_V1_0_1_G2_DEV_001 (EURUSD 2026-06-21 21:02 -> 2026-08-02 23:00, acquired + frozen)",
+    "candidate_interval": "SSC_V1_0_1_G2_DEV_002 (EURUSD DEVELOPMENT 2026-06-21 21:00 -> 2026-08-02 23:59; H1 warmup-remediated, ready for replay)",
     "protected_evidence_preserved": true,
     "confirmed_holdout_oos_untouched": true
   }

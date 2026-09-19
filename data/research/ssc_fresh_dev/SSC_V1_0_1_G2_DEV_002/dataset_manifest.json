@@ -1,0 +1,59 @@
+{
+  "combined_dataset_fingerprint": "05b059720a7457d15a7fbc4cd7f0c15e62df86b7857c1f122edc49a0d3a2baf5",
+  "combined_dataset_fingerprint_canonical_input": "EURUSD|H1|93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79\nEURUSD|M15|cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063\nEURUSD|M1|b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458",
+  "cross_timeframe_consistency": "PASS",
+  "data_quality": "PASS",
+  "data_role": "DEVELOPMENT",
+  "development_decision_interval": {
+    "end": "2026-08-02T23:59:59Z",
+    "start": "2026-06-21T21:00:00Z"
+  },
+  "generated_at_utc": "2026-09-19",
+  "generated_at_utc_note": "DATE_ONLY",
+  "h1_context_interval": {
+    "end": "2026-08-02T23:00:00Z",
+    "start": "2025-01-01T21:00:00Z"
+  },
+  "package_id": "SSC_V1_0_1_G2_DEV_002",
+  "parent_dataset": "SSC_V1_0_1_G2_DEV_001",
+  "parent_dataset_fingerprint": "3ac9fe2023f3c66d3e5ad4e99554574e24a62060e7920603b3af880590c03ef8",
+  "per_file": {
+    "EURUSD_H1": {
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_H1.csv",
+      "rows": 9843,
+      "sha256": "93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79"
+    },
+    "EURUSD_M1": {
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_M1.csv",
+      "sha256": "b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458"
+    },
+    "EURUSD_M15": {
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_M15.csv",
+      "sha256": "cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063"
+    }
+  },
+  "remediation_reason": "INSUFFICIENT_H1_WARMUP",
+  "semantic_change": false,
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1",
+  "symbol": "EURUSD",
+  "warmup_readiness": {
+    "all_decisions_pass": true,
+    "first_decision_closed_h1": 9129,
+    "h1_total_rows": 9843,
+    "minimum_across_decisions": 9129,
+    "minimum_at": "2026-06-22 06:00:00+00:00",
+    "minimum_required": 1000
+  },
+  "warmup_role": {
+    "WARMUP_CONTEXT_ONLY": true,
+    "may_be_used_for_optimization": false,
+    "may_contribute_economic_sample_N": false,
+    "may_contribute_pnl": false,
+    "may_contribute_trade": false,
+    "may_extend_development_decision_window": false,
+    "may_generate_decision_occurrence": false,
+    "may_initialize_h1_bias": true,
+    "may_initialize_h1_structure": true
+  }
+}
