@@ -89,6 +89,19 @@ from .topdown_new_builders import (
     m15_context_from_structure,
     weekly_context_from_structure,
 )
+from .topdown_composer import (
+    COMPOSER_FEATURE_VERSION,
+    COMPOSITION_MODE_HISTORICAL_AS_OF,
+    COMPOSITION_MODE_LIVE_CURRENT,
+    HistoricalAsOfNotSupportedError,
+    IncompleteTopDownCompositionError,
+    TopDownCompositionError,
+    TopDownSymbolMismatchError,
+    TopDownTemporalViolationError,
+    TopDownTimeframeSlotError,
+    build_topdown_context,
+    compute_topdown_context_id,
+)
 
 __all__ = [
     "analyze", "MTFProfile", "MTFContext", "LayerResult", "InvalidProfileError",
@@ -120,4 +133,9 @@ __all__ = [
     "weekly_context_from_structure", "build_weekly_context",
     "h4_context_from_structure", "build_h4_context",
     "m15_context_from_structure", "build_m15_context",
+    # TD-7 six-timeframe composer (additive; see topdown_composer.py)
+    "build_topdown_context", "compute_topdown_context_id",
+    "COMPOSER_FEATURE_VERSION", "COMPOSITION_MODE_LIVE_CURRENT", "COMPOSITION_MODE_HISTORICAL_AS_OF",
+    "TopDownCompositionError", "IncompleteTopDownCompositionError", "TopDownSymbolMismatchError",
+    "TopDownTimeframeSlotError", "TopDownTemporalViolationError", "HistoricalAsOfNotSupportedError",
 ]
