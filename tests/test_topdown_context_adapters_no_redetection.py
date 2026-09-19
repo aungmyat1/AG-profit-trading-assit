@@ -82,6 +82,7 @@ def test_only_expected_project_authorities_are_imported():
     allowed_modules = {
         "daily_routine.d1_context", "daily_routine.h1_setup", "daily_routine.models",
         "market_structure", "market_structure.models",
+        "liquidity", "liquidity.models", "supply_demand",
     }
     allowed_stdlib_prefixes = ("typing", "__future__", "dataclasses", "datetime")
     for node in ast.walk(tree):

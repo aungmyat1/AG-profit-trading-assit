@@ -1,11 +1,23 @@
-"""Top-down market-context data contracts (TD-1, TD0_TOPDOWN_CONTEXT_AUDIT).
+"""Top-down market-context data contracts (TD-1, TD0_TOPDOWN_CONTEXT_AUDIT; extended
+TD-3A, TD3A_TOPDOWN_FACT_CONTRACT_GAP_AUDIT).
 
-TD-1 SCOPE ONLY -- freezes the shared timeframe registry and the frozen dataclasses
+TD-1 SCOPE: freezes the shared timeframe registry and the frozen dataclasses
 (TimeframeRequirement, StructureFact, WeeklyContext..M5Context, TopDownContext). No
 market data is fetched, no indicator/structure/liquidity calculation happens here, and
 no cache/scheduler exists yet -- every field is populated by a caller who already
 computed it elsewhere. Same NON-GOALS discipline as strategy_contract/market_snapshot.py
 and mtf_context/models.py: this module is an additive, read-only VIEW/CONTRACT layer.
+
+TD-3A ADDITION: TD-3's adapters proved that existing D1/H1/M5 authorities expose
+reusable market facts (liquidity levels, order blocks, FVGs, reference levels) that
+TD-1's original contract had no field to carry. This module now also defines
+LiquidityFact, ZoneFact, ImbalanceFact, and ReferenceLevelFact (see their own
+docstrings for exactly which existing authority each one adapts), and each tier
+context gained four new OPTIONAL tuple fields (liquidity_facts, zone_facts,
+imbalance_facts, reference_level_facts), all defaulting to `()` -- a sparse context
+that populates none of them remains valid, per TD-3A's own "do not require every
+timeframe to populate every fact type" instruction. No existing TD-1 field was removed
+or renamed; StructureFact and structure_definition_id are unchanged.
 
 EXTENDS the existing src/mtf_context package (TD-0's audit found this WRAPPER_ONLY /
 ADVISORY_ONLY package is the correct foundation) rather than a parallel package.
@@ -159,6 +171,188 @@ class StructureFact:
         _require_nonempty("feature_version", self.feature_version)
 
 
+# ---------------------------------------------------------------------------
+# Zone / imbalance / reference-level / liquidity semantics (TD-3A). Same discipline as
+# structure_definition_id above: every fact pins exactly which existing detector
+# engine produced it via a mandatory, whitelisted *_definition_id -- there is no
+# unqualified/global "zone" or "liquidity" field. Order blocks and FVGs share
+# ZONE_DEFINITION_SMC_SUPPLY_DEMAND_V1 because both are literally produced by the same
+# underlying engine, supply_demand/smc_adapter.py's smartmoneyconcepts wrapper (see
+# supply_demand/analyzer.py); session/previous-day/previous-week reference levels get a
+# distinct id because they come from a different, native (no smc) engine,
+# supply_demand/native_zones.py.
+# ---------------------------------------------------------------------------
+
+ZONE_DEFINITION_SMC_SUPPLY_DEMAND_V1 = "AG_SMC_SUPPLY_DEMAND_V1"
+ZONE_DEFINITION_NATIVE_REFERENCE_V1 = "AG_NATIVE_REFERENCE_ZONE_V1"
+ALLOWED_ZONE_DEFINITION_IDS = frozenset({ZONE_DEFINITION_SMC_SUPPLY_DEMAND_V1, ZONE_DEFINITION_NATIVE_REFERENCE_V1})
+
+# Reuses liquidity/contract.py's own CONTRACT_VERSION string verbatim -- not a new
+# version invented for this contract.
+LIQUIDITY_DEFINITION_AG_LIQUIDITY_V1 = "AG_LIQUIDITY_V1"
+ALLOWED_LIQUIDITY_DEFINITION_IDS = frozenset({LIQUIDITY_DEFINITION_AG_LIQUIDITY_V1})
+
+
+class InvalidZoneDefinitionError(ValueError):
+    """Raised when a zone-family fact's zone_definition_id is missing or not in
+    ALLOWED_ZONE_DEFINITION_IDS."""
+
+
+class InvalidLiquidityDefinitionError(ValueError):
+    """Raised when a LiquidityFact's liquidity_definition_id is missing or not in
+    ALLOWED_LIQUIDITY_DEFINITION_IDS."""
+
+
+def _require_zone_definition(zone_definition_id: str) -> None:
+    if not zone_definition_id:
+        raise InvalidZoneDefinitionError("zone_definition_id is required and cannot be empty")
+    if zone_definition_id not in ALLOWED_ZONE_DEFINITION_IDS:
+        raise InvalidZoneDefinitionError(
+            f"zone_definition_id {zone_definition_id!r} not in {sorted(ALLOWED_ZONE_DEFINITION_IDS)}"
+        )
+
+
+def _require_liquidity_definition(liquidity_definition_id: str) -> None:
+    if not liquidity_definition_id:
+        raise InvalidLiquidityDefinitionError("liquidity_definition_id is required and cannot be empty")
+    if liquidity_definition_id not in ALLOWED_LIQUIDITY_DEFINITION_IDS:
+        raise InvalidLiquidityDefinitionError(
+            f"liquidity_definition_id {liquidity_definition_id!r} not in {sorted(ALLOWED_LIQUIDITY_DEFINITION_IDS)}"
+        )
+
+
+@dataclass(frozen=True)
+class ImbalanceFact:
+    """A fair value gap (FVG) -- from supply_demand.fair_value_gaps_for()'s ZoneResult
+    (family=FVG), which wraps supply_demand/smc_adapter.py's smartmoneyconcepts-derived
+    detector. No validation/lifecycle state exists at this source beyond ZoneStatus (a
+    raw FVG carries no separate confirmation step) -- see ZoneFact for order blocks,
+    which do have one, hence the separate type rather than forcing both into one."""
+
+    zone_definition_id: str
+    timeframe: str
+    direction: str
+    low: float
+    high: float
+    origin_time: datetime
+    status: str
+    source: str
+    feature_version: str
+
+    def __post_init__(self) -> None:
+        _require_zone_definition(self.zone_definition_id)
+        _require_canonical_timeframe(self.timeframe)
+        _require_nonempty("direction", self.direction)
+        _require_nonempty("status", self.status)
+        _require_nonempty("source", self.source)
+        _require_nonempty("feature_version", self.feature_version)
+
+
+@dataclass(frozen=True)
+class ZoneFact:
+    """A validated order block -- from supply_demand.validated_order_blocks_for()'s
+    ValidatedOrderBlock (the AG_ORDER_BLOCK_V1 validator layered on a raw smc.ob()
+    candidate). Carries the validation lifecycle state (`validation_status`) and,
+    where the source actually attached one, `structure_confirmation_time` (the
+    confirming BOS/CHOCH bar time) -- neither exists for a plain FVG or reference
+    zone, which is why those stay separate fact types instead of being forced into
+    this one (do not force unlike concepts into one generic zone object)."""
+
+    zone_definition_id: str
+    timeframe: str
+    role: str
+    direction: str
+    low: float
+    high: float
+    origin_time: datetime
+    validation_status: str
+    source: str
+    feature_version: str
+    structure_confirmation_time: Optional[datetime] = None
+
+    def __post_init__(self) -> None:
+        _require_zone_definition(self.zone_definition_id)
+        _require_canonical_timeframe(self.timeframe)
+        _require_nonempty("role", self.role)
+        _require_nonempty("direction", self.direction)
+        _require_nonempty("validation_status", self.validation_status)
+        _require_nonempty("source", self.source)
+        _require_nonempty("feature_version", self.feature_version)
+
+
+@dataclass(frozen=True)
+class ReferenceLevelFact:
+    """A deterministic, closed-bar-derived reference level -- previous-day high/low,
+    previous-week high/low, or a completed session box -- from
+    supply_demand.native_zones.py's previous_day_high_low()/previous_week_high_low()/
+    session_zone(). All three are native (no smartmoneyconcepts) and are already
+    reused identically by daily_routine.d1_context/h1_setup and
+    liquidity.liquidity_result -- nothing new is detected to produce this fact.
+    `family` distinguishes which reference this is (PREVIOUS_DAY/PREVIOUS_WEEK/
+    SESSION, mirroring supply_demand.models.ZoneFamily's own values)."""
+
+    zone_definition_id: str
+    family: str
+    timeframe: str
+    low: float
+    high: float
+    origin_time: datetime
+    status: str
+    source: str
+    feature_version: str
+
+    def __post_init__(self) -> None:
+        _require_zone_definition(self.zone_definition_id)
+        _require_canonical_timeframe(self.timeframe)
+        _require_nonempty("family", self.family)
+        _require_nonempty("status", self.status)
+        _require_nonempty("source", self.source)
+        _require_nonempty("feature_version", self.feature_version)
+
+
+@dataclass(frozen=True)
+class LiquidityFact:
+    """A liquidity level (a price a resting-order cluster is believed to sit at) --
+    from liquidity.liquidity_result()'s LiquidityLevel (the AG_LIQUIDITY_V1 contract,
+    see liquidity/contract.py).
+
+    CAVEAT (documented, not hidden): `status` can be "SWEPT" only as a function of the
+    LIVE tick observed at the moment liquidity_result() was called (per
+    liquidity.models.LiquidityStatus's own docstring: "the CURRENT live tick is
+    trading through the level, not yet confirmed by a closed candle"). UNSWEPT /
+    RECLAIMED / CONSUMED / UNKNOWN are all derived from closed-candle history only.
+    This is the one fact type in this contract whose `status` is not purely a
+    function of closed-bar history -- recorded here rather than silently assumed
+    deterministic."""
+
+    liquidity_definition_id: str
+    timeframe: str
+    side: str
+    price: float
+    origin_time: datetime
+    status: str
+    source: str
+    feature_version: str
+    sweep_time: Optional[datetime] = None
+    reclaim_time: Optional[datetime] = None
+
+    def __post_init__(self) -> None:
+        _require_liquidity_definition(self.liquidity_definition_id)
+        _require_canonical_timeframe(self.timeframe)
+        _require_nonempty("side", self.side)
+        _require_nonempty("status", self.status)
+        _require_nonempty("source", self.source)
+        _require_nonempty("feature_version", self.feature_version)
+
+
+def _require_facts_timeframe(facts, expected: str) -> None:
+    """Shared per-fact timeframe-consistency check, reused for every new TD-3A fact
+    tuple (liquidity_facts/zone_facts/imbalance_facts/reference_level_facts) on every
+    tier context below -- same rule TD-1 already applies to structure_facts."""
+    for fact in facts:
+        _require_fixed_timeframe(fact.timeframe, expected)
+
+
 @dataclass(frozen=True)
 class TimeframeRequirement:
     """A consumer's declared need for one canonical timeframe tier. Contract-only --
@@ -259,6 +453,10 @@ class WeeklyContext:
     data_quality_status: str
     snapshot_fingerprint: Optional[str] = None
     structure_facts: Tuple[StructureFact, ...] = field(default_factory=tuple)
+    liquidity_facts: Tuple[LiquidityFact, ...] = field(default_factory=tuple)
+    zone_facts: Tuple[ZoneFact, ...] = field(default_factory=tuple)
+    imbalance_facts: Tuple[ImbalanceFact, ...] = field(default_factory=tuple)
+    reference_level_facts: Tuple[ReferenceLevelFact, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         _require_nonempty("context_id", self.context_id)
@@ -269,6 +467,10 @@ class WeeklyContext:
         _require_valid_data_quality(self.data_quality_status)
         for fact in self.structure_facts:
             _require_fixed_timeframe(fact.timeframe, TIMEFRAME_W1)
+        _require_facts_timeframe(self.liquidity_facts, TIMEFRAME_W1)
+        _require_facts_timeframe(self.zone_facts, TIMEFRAME_W1)
+        _require_facts_timeframe(self.imbalance_facts, TIMEFRAME_W1)
+        _require_facts_timeframe(self.reference_level_facts, TIMEFRAME_W1)
 
     def to_dict(self) -> Dict[str, Any]:
         return _to_dict(self)
@@ -286,6 +488,10 @@ class DailyContext:
     snapshot_fingerprint: Optional[str] = None
     parent_weekly_context_id: Optional[str] = None
     structure_facts: Tuple[StructureFact, ...] = field(default_factory=tuple)
+    liquidity_facts: Tuple[LiquidityFact, ...] = field(default_factory=tuple)
+    zone_facts: Tuple[ZoneFact, ...] = field(default_factory=tuple)
+    imbalance_facts: Tuple[ImbalanceFact, ...] = field(default_factory=tuple)
+    reference_level_facts: Tuple[ReferenceLevelFact, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         _require_nonempty("context_id", self.context_id)
@@ -296,6 +502,10 @@ class DailyContext:
         _require_valid_data_quality(self.data_quality_status)
         for fact in self.structure_facts:
             _require_fixed_timeframe(fact.timeframe, TIMEFRAME_D1)
+        _require_facts_timeframe(self.liquidity_facts, TIMEFRAME_D1)
+        _require_facts_timeframe(self.zone_facts, TIMEFRAME_D1)
+        _require_facts_timeframe(self.imbalance_facts, TIMEFRAME_D1)
+        _require_facts_timeframe(self.reference_level_facts, TIMEFRAME_D1)
 
     def to_dict(self) -> Dict[str, Any]:
         return _to_dict(self)
@@ -313,6 +523,10 @@ class H4Context:
     snapshot_fingerprint: Optional[str] = None
     parent_daily_context_id: Optional[str] = None
     structure_facts: Tuple[StructureFact, ...] = field(default_factory=tuple)
+    liquidity_facts: Tuple[LiquidityFact, ...] = field(default_factory=tuple)
+    zone_facts: Tuple[ZoneFact, ...] = field(default_factory=tuple)
+    imbalance_facts: Tuple[ImbalanceFact, ...] = field(default_factory=tuple)
+    reference_level_facts: Tuple[ReferenceLevelFact, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         _require_nonempty("context_id", self.context_id)
@@ -323,6 +537,10 @@ class H4Context:
         _require_valid_data_quality(self.data_quality_status)
         for fact in self.structure_facts:
             _require_fixed_timeframe(fact.timeframe, TIMEFRAME_H4)
+        _require_facts_timeframe(self.liquidity_facts, TIMEFRAME_H4)
+        _require_facts_timeframe(self.zone_facts, TIMEFRAME_H4)
+        _require_facts_timeframe(self.imbalance_facts, TIMEFRAME_H4)
+        _require_facts_timeframe(self.reference_level_facts, TIMEFRAME_H4)
 
     def to_dict(self) -> Dict[str, Any]:
         return _to_dict(self)
@@ -340,6 +558,10 @@ class H1Context:
     snapshot_fingerprint: Optional[str] = None
     parent_h4_context_id: Optional[str] = None
     structure_facts: Tuple[StructureFact, ...] = field(default_factory=tuple)
+    liquidity_facts: Tuple[LiquidityFact, ...] = field(default_factory=tuple)
+    zone_facts: Tuple[ZoneFact, ...] = field(default_factory=tuple)
+    imbalance_facts: Tuple[ImbalanceFact, ...] = field(default_factory=tuple)
+    reference_level_facts: Tuple[ReferenceLevelFact, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         _require_nonempty("context_id", self.context_id)
@@ -350,6 +572,10 @@ class H1Context:
         _require_valid_data_quality(self.data_quality_status)
         for fact in self.structure_facts:
             _require_fixed_timeframe(fact.timeframe, TIMEFRAME_H1)
+        _require_facts_timeframe(self.liquidity_facts, TIMEFRAME_H1)
+        _require_facts_timeframe(self.zone_facts, TIMEFRAME_H1)
+        _require_facts_timeframe(self.imbalance_facts, TIMEFRAME_H1)
+        _require_facts_timeframe(self.reference_level_facts, TIMEFRAME_H1)
 
     def to_dict(self) -> Dict[str, Any]:
         return _to_dict(self)
@@ -367,6 +593,10 @@ class M15Context:
     snapshot_fingerprint: Optional[str] = None
     parent_h1_context_id: Optional[str] = None
     structure_facts: Tuple[StructureFact, ...] = field(default_factory=tuple)
+    liquidity_facts: Tuple[LiquidityFact, ...] = field(default_factory=tuple)
+    zone_facts: Tuple[ZoneFact, ...] = field(default_factory=tuple)
+    imbalance_facts: Tuple[ImbalanceFact, ...] = field(default_factory=tuple)
+    reference_level_facts: Tuple[ReferenceLevelFact, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         _require_nonempty("context_id", self.context_id)
@@ -377,6 +607,10 @@ class M15Context:
         _require_valid_data_quality(self.data_quality_status)
         for fact in self.structure_facts:
             _require_fixed_timeframe(fact.timeframe, TIMEFRAME_M15)
+        _require_facts_timeframe(self.liquidity_facts, TIMEFRAME_M15)
+        _require_facts_timeframe(self.zone_facts, TIMEFRAME_M15)
+        _require_facts_timeframe(self.imbalance_facts, TIMEFRAME_M15)
+        _require_facts_timeframe(self.reference_level_facts, TIMEFRAME_M15)
 
     def to_dict(self) -> Dict[str, Any]:
         return _to_dict(self)
@@ -394,6 +628,10 @@ class M5Context:
     snapshot_fingerprint: Optional[str] = None
     parent_m15_context_id: Optional[str] = None
     structure_facts: Tuple[StructureFact, ...] = field(default_factory=tuple)
+    liquidity_facts: Tuple[LiquidityFact, ...] = field(default_factory=tuple)
+    zone_facts: Tuple[ZoneFact, ...] = field(default_factory=tuple)
+    imbalance_facts: Tuple[ImbalanceFact, ...] = field(default_factory=tuple)
+    reference_level_facts: Tuple[ReferenceLevelFact, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         _require_nonempty("context_id", self.context_id)
@@ -404,6 +642,10 @@ class M5Context:
         _require_valid_data_quality(self.data_quality_status)
         for fact in self.structure_facts:
             _require_fixed_timeframe(fact.timeframe, TIMEFRAME_M5)
+        _require_facts_timeframe(self.liquidity_facts, TIMEFRAME_M5)
+        _require_facts_timeframe(self.zone_facts, TIMEFRAME_M5)
+        _require_facts_timeframe(self.imbalance_facts, TIMEFRAME_M5)
+        _require_facts_timeframe(self.reference_level_facts, TIMEFRAME_M5)
 
     def to_dict(self) -> Dict[str, Any]:
         return _to_dict(self)
