@@ -6,6 +6,15 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+TD-8E shared historical replay evaluation is `UNIT_TESTED` and final integration is
+`MI_FOUNDATION_READY`. One context at a caller-controlled historical T fed the actual
+Asian strategy engine and SSC canonical consumer with the same event identity. R4
+reference completeness, future-only mutation isolation, bound-store replacement,
+M1 lineage, and zero observed live candle calls passed. One consumed DEV_002 event
+was used only as non-counting infrastructure evidence; no validation population or
+trading authority changed. Market Intelligence has not begun. See
+`docs/status/TD8E_FINAL_INTEGRATION_RESUME_STATUS.md`.
+
 The SSC one-year cross-leg timezone blocker is **resolved**
 (`CROSS_LEG_TIMEZONE_BLOCKER_RESOLVED`). Rather than splicing timezone-heterogeneous
 files, authoritative H1 and M15 are now derived deterministically from the already-frozen
@@ -23,8 +32,8 @@ timestamp anomalies are recorded as provenance findings and were **not** rewritt
 replay ran, no strategy/parameter changed, no optimization ran, protected data untouched.
 See `docs/status/SSC_ONE_YEAR_CROSS_LEG_AUTHORITY_REMEDIATION_STATUS.md`.
 
-TD-8D canonical replay `MarketSnapshot` bridging is complete and uncommitted for
-owner review. The existing `strategy_contract.MarketSnapshot` can now be constructed
+TD-8D canonical replay `MarketSnapshot` bridging is complete. The existing
+`strategy_contract.MarketSnapshot` can now be constructed
 from one TD-8 dataset and caller-controlled T, with TD-8C session facts attached, then
 delivered as the same immutable object to multiple independent consumers. The bridge
 is read-only and imports no strategy decision, proposal, risk, execution, frontend,

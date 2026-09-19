@@ -48,7 +48,9 @@ their age.
    [`status/TD8C_SESSION_REFERENCE_REPLAY_PARITY_STATUS.md`](status/TD8C_SESSION_REFERENCE_REPLAY_PARITY_STATUS.md)
    — uncommitted TD-8C shared session-reference replay parity and readiness assessment.
    [`status/TD8D_CANONICAL_MARKETSNAPSHOT_REPLAY_BRIDGE_STATUS.md`](status/TD8D_CANONICAL_MARKETSNAPSHOT_REPLAY_BRIDGE_STATUS.md)
-   — uncommitted canonical replay MarketSnapshot bridge and MI foundation readiness.
+   — canonical replay MarketSnapshot bridge and its dated readiness assessment.
+   [`status/TD8E_FINAL_INTEGRATION_RESUME_STATUS.md`](status/TD8E_FINAL_INTEGRATION_RESUME_STATUS.md)
+   — shared replay context, actual-consumer integration, and non-counting DEV_002 evidence.
 12. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
    non-authorizing capability-completeness audit and navigation matrix (Section A
    trading edge, Section B operations/execution/platform, execution-authority matrix,

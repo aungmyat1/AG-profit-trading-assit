@@ -40,6 +40,13 @@ daily decision CLI; crypto execution remains unimplemented and disabled.
 AI capabilities inspect and explain market state; they do not independently authorize
 orders or override strategy results.
 
+Historical replay now has a unit-tested shared evaluation context for the Asian
+strategy engine and SSC canonical shadow consumer. A caller controls historical time;
+both paths use bound, closed data from one event. One consumed DEV_002 event verified
+the integration as non-counting infrastructure evidence. This is read-only research
+plumbing and does not authorize Demo or Live trading. See
+[`TD-8E integration evidence`](docs/status/TD8E_FINAL_INTEGRATION_RESUME_STATUS.md).
+
 ## Safety and authority
 
 ```text

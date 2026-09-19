@@ -17,12 +17,13 @@ from __future__ import annotations
 
 from bisect import bisect_left, bisect_right
 from dataclasses import dataclass
+from threading import RLock
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from strategy_engine.session import Candle
 
-from .dataset_identity import ReplayDatasetIdentity, build_dataset_identity
+from .dataset_identity import ReplayDatasetIdentity, build_dataset_identity, compute_candle_series_fingerprint
 
 # TD-8: W1 added additively (mtf_context.topdown_composer's HISTORICAL_AS_OF mode needs
 # a closed-bar boundary for all six TopDownContext tiers, including weekly) -- same
@@ -72,6 +73,35 @@ class _Series:
     identity: ReplayDatasetIdentity  # TD-8: always present once loaded -- see load_series
 
 
+@dataclass(frozen=True)
+class BoundReplaySeries:
+    """Atomic identity and immutable candle population from one store state."""
+    symbol: str
+    timeframe: str
+    identity: ReplayDatasetIdentity
+    candles: Tuple[Candle, ...]
+
+    def __post_init__(self) -> None:
+        # Defensive normalization makes direct public construction safe for callers
+        # that provide a list or other iterable; the stored representation is always
+        # detached from caller-owned containers.
+        normalized = tuple(self.candles)
+        if not normalized:
+            raise HistoricalDataError("DATA_MISSING", "cannot bind an empty replay series")
+        if self.identity.symbol != self.symbol or self.identity.timeframe != self.timeframe:
+            raise ValueError("bound series symbol/timeframe do not match dataset identity")
+        if self.identity.fingerprint != compute_candle_series_fingerprint(
+            self.symbol, self.timeframe, normalized,
+        ):
+            raise ValueError("bound series candles do not match dataset identity fingerprint")
+        ordered = sorted(normalized, key=lambda candle: candle.time)
+        if self.identity.coverage_start != ordered[0].time or self.identity.coverage_end != ordered[-1].time:
+            raise ValueError("bound series coverage does not match dataset identity")
+        if tuple(ordered) != normalized:
+            raise ValueError("bound series candles must be chronologically ordered")
+        object.__setattr__(self, "candles", normalized)
+
+
 class HistoricalCandleStore:
     """Load once (e.g. from a bulk historical fetch or CSV import) via `load_series`,
     then query many times across a replay via `closed_candles`. Candles must be
@@ -81,6 +111,7 @@ class HistoricalCandleStore:
 
     def __init__(self) -> None:
         self._series: Dict[Tuple[str, str], _Series] = {}
+        self._lock = RLock()
 
     def load_series(
         self, symbol: str, timeframe: str, candles: Sequence[Candle], *,
@@ -103,9 +134,18 @@ class HistoricalCandleStore:
         identity = build_dataset_identity(
             symbol=symbol, timeframe=timeframe, candles=ordered, dataset_id=dataset_id, source=source,
         )
-        self._series[(symbol, timeframe)] = _Series(
-            times=tuple(c.time for c in ordered), candles=tuple(ordered), identity=identity,
-        )
+        with self._lock:
+            self._series[(symbol, timeframe)] = _Series(
+                times=tuple(c.time for c in ordered), candles=tuple(ordered), identity=identity,
+            )
+
+    def bind_series(self, symbol: str, timeframe: str) -> BoundReplaySeries:
+        """Atomically bind identity and immutable candles from one loaded series."""
+        with self._lock:
+            series = self._series.get((symbol, timeframe))
+            if series is None:
+                raise HistoricalDataError("DATA_MISSING", f"no historical series loaded for {symbol} {timeframe}")
+            return BoundReplaySeries(symbol, timeframe, series.identity, series.candles)
 
     def dataset_identity(self, symbol: str, timeframe: str) -> Optional[ReplayDatasetIdentity]:
         """TD-8: None iff nothing was ever loaded for this (symbol, timeframe) -- a
