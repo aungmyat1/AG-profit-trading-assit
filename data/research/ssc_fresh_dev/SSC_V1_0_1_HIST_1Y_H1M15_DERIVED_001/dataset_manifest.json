@@ -1,0 +1,237 @@
+{
+  "bucket_census": {
+    "H1": {
+      "bars_dropped_by_strict_rule": 418,
+      "bars_emitted_under_policy": 6241,
+      "complete_buckets": 5823,
+      "expected_m1_bars_per_bucket": 60,
+      "first_short_bucket": "2025-09-14T21:00:00+00:00",
+      "note": "A bucket exists only where the M1 authority has bars; a genuinely closed market produces no bucket. Short buckets are aggregated from exactly the M1 bars present, matching MT5's own native candle behaviour.",
+      "over_full_buckets": 0,
+      "short_bucket_bar_count_distribution": [
+        1,
+        33,
+        42,
+        45,
+        47,
+        48,
+        50,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59
+      ],
+      "short_buckets_by_utc_hour": [
+        0,
+        2,
+        3,
+        4,
+        7,
+        11,
+        20,
+        21,
+        22,
+        23
+      ],
+      "short_buckets_included_by_policy": 418,
+      "timeframe": "H1",
+      "total_buckets_with_any_m1": 6241
+    },
+    "M15": {
+      "bars_dropped_by_strict_rule": 452,
+      "bars_emitted_under_policy": 24961,
+      "complete_buckets": 24509,
+      "expected_m1_bars_per_bucket": 15,
+      "first_short_bucket": "2025-09-14T21:00:00+00:00",
+      "note": "A bucket exists only where the M1 authority has bars; a genuinely closed market produces no bucket. Short buckets are aggregated from exactly the M1 bars present, matching MT5's own native candle behaviour.",
+      "over_full_buckets": 0,
+      "short_bucket_bar_count_distribution": [
+        1,
+        3,
+        4,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "short_buckets_by_utc_hour": [
+        0,
+        2,
+        3,
+        4,
+        7,
+        11,
+        20,
+        21,
+        22,
+        23
+      ],
+      "short_buckets_included_by_policy": 452,
+      "timeframe": "M15",
+      "total_buckets_with_any_m1": 24961
+    }
+  },
+  "bucket_policy": "NATIVE_FAITHFUL_INCLUSIVE",
+  "combined_dataset_fingerprint": "b40c76ae8635070b1cf49c6f11b5aeb29bc28293966167c1528b2695babca605",
+  "data_role": "HISTORICAL_RESEARCH_INPUT_ONLY",
+  "dataset_id": "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001",
+  "derivation_class": "AUTHORIZED_DETERMINISTIC_TIMEFRAME_AGGREGATION",
+  "derivation_contract": {
+    "aggregation": {
+      "close": "last M1 close by M1 timestamp",
+      "high": "max M1 high",
+      "low": "min M1 low",
+      "open": "first M1 open by M1 timestamp",
+      "volume": "sum of M1 volumes present; None when no member carries a volume"
+    },
+    "broker_wallclock_buckets_used": false,
+    "bucket_authority": "exact UTC floor: M15 -> 15-minute boundary, H1 -> 1-hour boundary",
+    "data_role": "HISTORICAL_RESEARCH_INPUT_ONLY",
+    "derivation_class": "AUTHORIZED_DETERMINISTIC_TIMEFRAME_AGGREGATION",
+    "derived_timeframes": [
+      "M15",
+      "H1"
+    ],
+    "incomplete_bucket_policy": "NATIVE_FAITHFUL_INCLUSIVE",
+    "incomplete_bucket_policy_rationale": "A bucket is emitted when it holds at least one M1 bar, aggregated from exactly the M1 bars present. Chosen by measurement: against native MT5 references this reproduces every native bar exactly (reference_only = 0, mismatch = 0), whereas resampler.resample's strict complete-bucket default silently drops 418 real H1 and 452 real M15 bars of the window. No bar is invented, no price altered, no missing M1 filled, no intra-minute path synthesized; a closed market has no M1 bars and therefore produces no bucket.",
+    "independent_validation": false,
+    "prohibited_and_not_performed": [
+      "interpolating missing M1",
+      "deriving M1 from M5/M15",
+      "altering any price",
+      "synthesizing intra-minute paths",
+      "applying any timezone shift correction",
+      "using any strategy outcome to influence dataset construction"
+    ],
+    "schema": "AG_SSC_V1_0_1_H1M15_DERIVATION_CONTRACT_V1",
+    "source_dataset": "SSC_V1_0_1_HIST_1Y_M1_001",
+    "source_sha256": "50beb42ad2f65203f3946301eee0e8a435dd6f2067eb4fc0692ebba451d12f8a",
+    "source_timeframe": "M1",
+    "time_authority": "normalized UTC from canonical M1 (measured, per-week reopen)"
+  },
+  "derivation_contract_hash": "4a0ccd05070359cb3558e9ce06297eb480722f3a3bbcaa283c3e144d0c1b0b88",
+  "generated_at_utc": "2026-09-19T19:35:32.002957+00:00",
+  "package_id": "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001",
+  "per_file": {
+    "EURUSD_H1": {
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001/raw/EURUSD_H1.csv",
+      "rows": 6241,
+      "sha256": "4eb522945697773ed34d1b8d47ab928b9e94e99828dade88db18fe186905e288"
+    },
+    "EURUSD_M15": {
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001/raw/EURUSD_M15.csv",
+      "rows": 24961,
+      "sha256": "c9833427404d8634d8cf57b000017ecea7ad865ab22db4eadedacb80de9b6956"
+    }
+  },
+  "provenance": "SSC_V1_0_1_HIST_1Y_M1_001 (native MT5 M1, UTC-normalized, sha256 50beb42ad2f6..) -> deterministic EURUSD_M15.csv -> deterministic EURUSD_H1.csv. Single source of truth; no cross-source splicing; no shift correction.",
+  "quality": {
+    "H1": {
+      "duplicates": 0,
+      "first_timestamp_utc": "2025-09-14T21:00:00+00:00",
+      "invalid_ohlc": 0,
+      "largest_step_hours": 50.0,
+      "last_timestamp_utc": "2026-09-15T21:00:00+00:00",
+      "non_monotonic_rows": 0,
+      "non_native_steps": 54,
+      "off_utc_boundary_rows": 0,
+      "quality_status": "PASS",
+      "row_count": 6241,
+      "timeframe": "H1"
+    },
+    "M15": {
+      "duplicates": 0,
+      "first_timestamp_utc": "2025-09-14T21:00:00+00:00",
+      "invalid_ohlc": 0,
+      "largest_step_hours": 49.25,
+      "last_timestamp_utc": "2026-09-15T21:00:00+00:00",
+      "non_monotonic_rows": 0,
+      "non_native_steps": 54,
+      "off_utc_boundary_rows": 0,
+      "quality_status": "PASS",
+      "row_count": 24961,
+      "timeframe": "M15"
+    }
+  },
+  "reference_parity": {
+    "H1": [
+      {
+        "common_buckets": 5448,
+        "derived_only_buckets": 793,
+        "exact_match_rate": 1.0,
+        "first_mismatch": null,
+        "ohlc_mismatches": 0,
+        "reference": "EXTERNAL_D_ROOT::EURUSD_H1_202501020000_202607310000.csv",
+        "reference_only_buckets": 0,
+        "reference_rows_in_span": 5448,
+        "status": "EXACT"
+      },
+      {
+        "common_buckets": 723,
+        "derived_only_buckets": 5518,
+        "exact_match_rate": 1.0,
+        "first_mismatch": null,
+        "ohlc_mismatches": 0,
+        "reference": "SSC_V1_0_1_G2_DEV_001::H1",
+        "reference_only_buckets": 0,
+        "reference_rows_in_span": 723,
+        "status": "EXACT"
+      }
+    ],
+    "M15": [
+      {
+        "common_buckets": 21792,
+        "derived_only_buckets": 3169,
+        "exact_match_rate": 1.0,
+        "first_mismatch": null,
+        "ohlc_mismatches": 0,
+        "reference": "EXTERNAL_D_ROOT::EURUSD_M15_202501020000_202607310000.csv",
+        "reference_only_buckets": 0,
+        "reference_rows_in_span": 21792,
+        "status": "EXACT"
+      },
+      {
+        "common_buckets": 2892,
+        "derived_only_buckets": 22069,
+        "exact_match_rate": 1.0,
+        "first_mismatch": null,
+        "ohlc_mismatches": 0,
+        "reference": "SSC_V1_0_1_G2_DEV_001::M15",
+        "reference_only_buckets": 0,
+        "reference_rows_in_span": 2892,
+        "status": "EXACT"
+      },
+      {
+        "common_buckets": 2892,
+        "derived_only_buckets": 22069,
+        "exact_match_rate": 1.0,
+        "first_mismatch": null,
+        "ohlc_mismatches": 0,
+        "reference": "SSC_V1_0_1_G2_DEV_002::M15",
+        "reference_only_buckets": 0,
+        "reference_rows_in_span": 2892,
+        "status": "EXACT"
+      }
+    ]
+  },
+  "repository_commit": "a88f023165bf3349c53dfa11d036ce8e11c46a28",
+  "schema": "AG_SSC_HISTORICAL_INPUT_MANIFEST_V1",
+  "source_dataset": "SSC_V1_0_1_HIST_1Y_M1_001",
+  "source_rows": 373421,
+  "source_sha256": "50beb42ad2f65203f3946301eee0e8a435dd6f2067eb4fc0692ebba451d12f8a",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1",
+  "symbol": "EURUSD",
+  "window": {
+    "end_utc": "2026-09-14T23:59:59+00:00",
+    "start_utc": "2025-09-15T00:00:00+00:00"
+  }
+}

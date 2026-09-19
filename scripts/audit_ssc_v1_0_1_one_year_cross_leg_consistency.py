@@ -71,6 +71,18 @@ SEASONS = {
 
 # (label, path, loader) -- loader is "utc" (already-UTC timestamp_utc CSV) or "mt5"
 # (broker-local MT5 export-menu CSV, resolved by the per-week reopen authority).
+#
+# DERIVED legs (mission SSC ONE-YEAR H1/M15 AUTHORITY REMEDIATION V1) are produced by
+# `scripts/derive_ssc_one_year_h1_m15_from_m1.py` FROM the M1 arbiter itself, so their
+# alignment with it is guaranteed BY CONSTRUCTION rather than being an independent
+# finding. They are tracked separately for exactly that reason: the gate must never
+# present a self-derived leg as independent corroboration of the arbiter's own alignment.
+DERIVED_H1 = ("DERIVED::SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::H1",
+              DATA_ROOT / "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001" / "raw" / "EURUSD_H1.csv", "utc")
+DERIVED_M15 = ("DERIVED::SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::M15",
+               DATA_ROOT / "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001" / "raw" / "EURUSD_M15.csv", "utc")
+DERIVED_SOURCE_IDS = {DERIVED_H1[0], DERIVED_M15[0]}
+
 H1_SOURCES = [
     ("EXTERNAL_D_ROOT::EURUSD_H1_202501020000_202607310000.csv",
      Path(r"D:\EURUSD_H1_202501020000_202607310000.csv"), "mt5"),
@@ -83,6 +95,7 @@ H1_SOURCES = [
     ("HYP_002_EVALUATION_INPUT::H1",
      REPO_ROOT / "artifacts" / "validation" / "ST_SESSION_SWEEP_CONTINUATION_V1"
      / "HYP_002_EVALUATION_INPUT" / "EURUSD_H1_WARMUP_PLUS_GEN002.csv", "utc"),
+    DERIVED_H1,
 ]
 
 M15_SOURCES = [
@@ -98,6 +111,7 @@ M15_SOURCES = [
     ("SSC_V1_0_1_G2_DEV_002::M15", DATA_ROOT / "SSC_V1_0_1_G2_DEV_002" / "raw" / "EURUSD_M15.csv", "utc"),
     ("SSC_FRESH_DEV_GEN_002::M15",
      DATA_ROOT / "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914" / "raw" / "EURUSD_M15.csv", "utc"),
+    DERIVED_M15,
 ]
 
 M1_ARBITER = ("SSC_V1_0_1_HIST_1Y_M1_001::M1",
@@ -194,6 +208,9 @@ def _audit_source(label, path, loader, timeframe, arbiter_agg, granularity_minut
         "best_exact_rate": round(best["exact_rate"], 6),
         "shared_buckets": best["shared_buckets"],
         "mismatches": best["mismatches"],
+        # A leg derived FROM the arbiter is aligned by construction -- it can never be
+        # independent corroboration of the arbiter's own alignment.
+        "derived_from_arbiter": label in DERIVED_SOURCE_IDS,
         "shift_scan": [{**r, "exact_rate": round(r["exact_rate"], 6)} for r in overall],
         "per_season_best": {k: {**v, "exact_rate": round(v["exact_rate"], 6)}
                             for k, v in per_season.items()},
@@ -317,6 +334,16 @@ def main() -> int:
         print("  NOT EVALUABLE -- at least one timeframe has no timezone-consistent leg")
     print(f"\n  consistent H1 : {report['timezone_consistent_h1']}")
     print(f"  consistent M15: {report['timezone_consistent_m15']}")
+    independent_h1 = [s for s in report["timezone_consistent_h1"] if s not in DERIVED_SOURCE_IDS]
+    independent_m15 = [s for s in report["timezone_consistent_m15"] if s not in DERIVED_SOURCE_IDS]
+    report["independent_corroboration"] = {
+        "H1": independent_h1, "M15": independent_m15,
+        "note": ("DERIVED::* legs are produced FROM the M1 arbiter and are aligned by "
+                 "construction -- they are excluded from this list and are never presented "
+                 "as independent corroboration of the arbiter's own alignment."),
+    }
+    print(f"\n  independent (non-derived) corroboration H1 : {independent_h1}")
+    print(f"  independent (non-derived) corroboration M15: {independent_m15}")
     print(f"\nFINAL_STATUS = {report['FINAL_STATUS']}")
     if not report["covers_requested_window"]:
         print(f"requested window = {WINDOW_START.isoformat()} -> {WINDOW_END.isoformat()}")

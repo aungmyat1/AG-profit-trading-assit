@@ -127,6 +127,16 @@ their age.
   — read-only, arbitrates every H1/M15 leg against the M1 authority and judges alignment
   per DST season; the coverage audit is necessary-but-not-sufficient and this gate is its
   required companion. No replay, no population, no metric, `HISTORICAL_RESEARCH_ONLY`.
+- [`status/SSC_ONE_YEAR_CROSS_LEG_AUTHORITY_REMEDIATION_STATUS.md`](status/SSC_ONE_YEAR_CROSS_LEG_AUTHORITY_REMEDIATION_STATUS.md)
+  — the remediation that clears that blocker (`CROSS_LEG_TIMEZONE_BLOCKER_RESOLVED`):
+  authoritative H1/M15 are derived deterministically from the frozen native MT5 M1
+  authority using the repository's own existing `historical_replay.resampler` convention
+  (adjudicated `AUTHORIZED`), with exact reference parity **1.000000** and zero unreproduced
+  reference bars, so the timezone-consistent intersection spans the full window at zero
+  shift. The one deliberate departure — the `NATIVE_FAITHFUL_INCLUSIVE` bucket policy — was
+  frozen before generation and justified by native-candle parity (the strict default would
+  silently drop 418 real H1 / 452 real M15 bars). Pre-existing DEV_002/GEN_002/HYP_002
+  anomalies are recorded, **not** rewritten. No replay ran.
 
 ## Architecture
 

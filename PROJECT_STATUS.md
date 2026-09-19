@@ -4,23 +4,24 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Current rolling classification (2026-09-19)
+## Current rolling classification (2026-09-20)
 
-The SSC v1.0.1 one-year historical replay mission stopped at its timezone-authority gate:
-`FINAL_STATUS = BLOCKED_CROSS_LEG_TIMEZONE_INCONSISTENT`. Timestamp-union coverage had
-returned `DATA_COVERAGE_COMPLETE` for `2025-09-15 → 2026-09-14`, but coverage does not
-prove the H1 (bias), M15 (decision) and M1 (fill) legs share a time base. Arbitrating
-every admissible H1/M15 source against the canonical M1 authority shows the frozen
-`SSC_V1_0_1_G2_DEV_002::H1` file mixes a DST-shifted winter segment with an unshifted
-summer segment, and the `GEN_002` / `HYP_002` H1/M15 legs sit ~+3h off the M1 leg (the
-`GEN_002` manifest's UTC claim is contradicted by its own M1 leg, and its parity
-diagnostic compares a timeframe against itself). The timezone-consistent three-way
-intersection is therefore 322.124 days, not 365, and the window's final 42.998 days have
-no timezone-consistent H1 or M15 leg. No replay ran, no population exists, no economic
-metric exists, no parameter or config changed. A durable read-only companion gate,
-`scripts/audit_ssc_v1_0_1_one_year_cross_leg_consistency.py`, now enforces the missing
-check; the coverage audit is necessary-but-not-sufficient. See
-`docs/status/SSC_V1_0_1_ONE_YEAR_HISTORICAL_REPLAY_STATUS.md`.
+The SSC one-year cross-leg timezone blocker is **resolved**
+(`CROSS_LEG_TIMEZONE_BLOCKER_RESOLVED`). Rather than splicing timezone-heterogeneous
+files, authoritative H1 and M15 are now derived deterministically from the already-frozen
+native MT5 M1 authority (`SSC_V1_0_1_HIST_1Y_M1_001`) using the repository's own existing
+`historical_replay.resampler` convention, which was adjudicated `AUTHORIZED` (the spec
+explicitly prefers M1 as base feed when sufficiently long; M1 is now the longest-reaching
+leg). Derived legs pass exact reference parity **1.000000** against the independently
+exactly-aligned H1/M15 sources, with zero unreproduced reference bars, and the companion
+cross-leg gate returns `CROSS_LEG_TIMEZONE_CONSISTENT_FULL_WINDOW` at **zero shift** over
+**365.999 days** (was 322.124). The one deliberate departure from the resampler default —
+the `NATIVE_FAITHFUL_INCLUSIVE` bucket policy — was frozen and hashed before generation and
+justified by native-candle parity, because the strict complete-bucket default silently drops
+418 real H1 / 452 real M15 bars of the window. Pre-existing DEV_002 / GEN_002 / HYP_002
+timestamp anomalies are recorded as provenance findings and were **not** rewritten; no SSC
+replay ran, no strategy/parameter changed, no optimization ran, protected data untouched.
+See `docs/status/SSC_ONE_YEAR_CROSS_LEG_AUTHORITY_REMEDIATION_STATUS.md`.
 
 TD-8D canonical replay `MarketSnapshot` bridging is complete and uncommitted for
 owner review. The existing `strategy_contract.MarketSnapshot` can now be constructed
