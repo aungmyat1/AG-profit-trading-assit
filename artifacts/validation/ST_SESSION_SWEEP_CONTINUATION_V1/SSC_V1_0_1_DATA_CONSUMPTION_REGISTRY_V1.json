@@ -219,11 +219,34 @@
       "protected_status": "NOT_PROTECTED",
       "reusable_for_new_development": true,
       "reason": "Previously-unconsumed EURUSD interval; registered M15 ends 2026-06-19 and GEN_002 M15 starts 2026-08-03. Requires MT5 M15 history + a separate authorized acquisition/admission."
+    },
+    {
+      "dataset_id": "SSC_V1_0_1_G2_DEV_001",
+      "symbol": "EURUSD",
+      "source": "MT5 VantageMarkets-Demo (Route A acquisition, scripts/acquire_ssc_v1_0_1_g2_dev_001.py)",
+      "start": "2026-06-21T21:00:00Z",
+      "end": "2026-08-02T23:59:00Z",
+      "timeframes": ["H1", "M15", "M1"],
+      "timezone": "BROKER_OFFSET_CONFIRMED (+3h)",
+      "hashes": {
+        "H1": "76f2aa90d64aa552f85a6a03d596f0f0f20b77c9731acdc745803b4ff4ec5d81",
+        "M15": "cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063",
+        "M1": "b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458",
+        "combined_dataset_fingerprint": "3ac9fe2023f3c66d3e5ad4e99554574e24a62060e7920603b3af880590c03ef8"
+      },
+      "strategy_version_used": "1.0.1",
+      "data_role": "DEVELOPMENT",
+      "prior_consumption": "NONE",
+      "hypothesis_usage": "none yet (G2 baseline population, preregistered)",
+      "counting_status": "ADMITTED_FROZEN_NOT_REPLAYED",
+      "protected_status": "NOT_PROTECTED",
+      "reusable_for_new_development": true,
+      "reason": "Fresh EURUSD H1/M15/M1 over the Route A gap; acquired and frozen before any outcome evaluation. COMMON interval 2026-06-21 21:02 -> 2026-08-02 23:00."
     }
   ],
   "summary": {
-    "admissible_fresh_development_dataset_exists": false,
-    "candidate_interval": "EURUSD_M15_GAP_20260620_20260802 (Route A, requires acquisition)",
+    "admissible_fresh_development_dataset_exists": true,
+    "candidate_interval": "SSC_V1_0_1_G2_DEV_001 (EURUSD 2026-06-21 21:02 -> 2026-08-02 23:00, acquired + frozen)",
     "protected_evidence_preserved": true,
     "confirmed_holdout_oos_untouched": true
   }

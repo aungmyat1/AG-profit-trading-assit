@@ -1,0 +1,387 @@
+{
+  "account": 26088035,
+  "acquired_before_outcome_evaluation": true,
+  "broker": "Vantage Markets (Pty) Ltd",
+  "broker_server": "VantageMarkets-Demo",
+  "broker_utc_offset_hours": 3,
+  "combined_dataset_fingerprint": "3ac9fe2023f3c66d3e5ad4e99554574e24a62060e7920603b3af880590c03ef8",
+  "combined_dataset_fingerprint_canonical_input": "EURUSD|H1|76f2aa90d64aa552f85a6a03d596f0f0f20b77c9731acdc745803b4ff4ec5d81\nEURUSD|M15|cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063\nEURUSD|M1|b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458",
+  "cross_timeframe_coverage": {
+    "common_end": "2026-08-02 23:00:00",
+    "common_start": "2026-06-21 21:02:00",
+    "per_timeframe": {
+      "H1": {
+        "first": "2026-06-21 21:00:00",
+        "last": "2026-08-02 23:00:00",
+        "rows": 723
+      },
+      "M1": {
+        "first": "2026-06-21 21:02:00",
+        "last": "2026-08-02 23:59:00",
+        "rows": 43292
+      },
+      "M15": {
+        "first": "2026-06-21 21:00:00",
+        "last": "2026-08-02 23:45:00",
+        "rows": 2892
+      }
+    }
+  },
+  "cross_timeframe_status": "PASS",
+  "data_role": "DEVELOPMENT",
+  "environment": "DEMO",
+  "frozen_end": "2026-08-03T00:00:00Z",
+  "frozen_start": "2026-06-20T00:00:00Z",
+  "generated_at_utc": "2026-09-19",
+  "generated_at_utc_note": "DATE_ONLY",
+  "metatrader5_package_version": "5.0.5735",
+  "package_id": "SSC_V1_0_1_G2_DEV_001",
+  "parity_diagnostic": {
+    "EURUSD_H1": {
+      "bars_compared": 723,
+      "ohlc_matches": 723,
+      "ohlc_mismatches": 0
+    },
+    "EURUSD_M1": {
+      "bars_compared": 43292,
+      "ohlc_matches": 43292,
+      "ohlc_mismatches": 0
+    },
+    "EURUSD_M15": {
+      "bars_compared": 2892,
+      "ohlc_matches": 2892,
+      "ohlc_mismatches": 0
+    }
+  },
+  "per_file": {
+    "EURUSD_H1": {
+      "bars_after_frozen_end": 0,
+      "bytes": 45575,
+      "duplicate_count": 0,
+      "expected_daily_rollover_gaps": 0,
+      "expected_gap_details": [
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-06-26 20:00:00",
+          "missing_seconds": 176400,
+          "to": "2026-06-28 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-03 20:00:00",
+          "missing_seconds": 176400,
+          "to": "2026-07-05 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-10 20:00:00",
+          "missing_seconds": 176400,
+          "to": "2026-07-12 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-17 20:00:00",
+          "missing_seconds": 176400,
+          "to": "2026-07-19 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-24 20:00:00",
+          "missing_seconds": 176400,
+          "to": "2026-07-26 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-31 20:00:00",
+          "missing_seconds": 176400,
+          "to": "2026-08-02 21:00:00"
+        }
+      ],
+      "expected_weekend_closure_gaps": 6,
+      "first_bar": "2026-06-21 21:00:00",
+      "invalid_ohlc_count": 0,
+      "last_bar": "2026-08-02 23:00:00",
+      "non_monotonic_count": 0,
+      "nonpositive_price_count": 0,
+      "outside_frozen_interval_count": 0,
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_H1.csv",
+      "rows": 723,
+      "sha256": "76f2aa90d64aa552f85a6a03d596f0f0f20b77c9731acdc745803b4ff4ec5d81",
+      "symbol": "EURUSD",
+      "timeframe": "H1",
+      "unexpected_gap_count": 0,
+      "unexpected_gap_details": []
+    },
+    "EURUSD_M1": {
+      "bars_after_frozen_end": 0,
+      "bytes": 2644328,
+      "duplicate_count": 0,
+      "expected_daily_rollover_gaps": 25,
+      "expected_gap_details": [
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-06-22 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-06-22 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-06-23 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-06-23 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-06-24 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-06-24 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-06-25 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-06-25 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-06-26 20:56:00",
+          "missing_seconds": 173100,
+          "to": "2026-06-28 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-06-29 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-06-29 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-06-30 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-06-30 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-01 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-07-01 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-02 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-07-02 21:01:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-03 20:56:00",
+          "missing_seconds": 173160,
+          "to": "2026-07-05 21:02:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-06 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-07-06 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-07 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-07-07 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-08 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-07-08 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-09 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-07-09 21:01:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-10 20:56:00",
+          "missing_seconds": 173100,
+          "to": "2026-07-12 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-13 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-07-13 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-14 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-07-14 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-15 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-07-15 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-16 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-07-16 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-17 20:56:00",
+          "missing_seconds": 173100,
+          "to": "2026-07-19 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-20 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-07-20 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-21 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-07-21 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-22 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-07-22 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-23 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-07-23 21:01:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-24 20:56:00",
+          "missing_seconds": 173100,
+          "to": "2026-07-26 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-27 20:57:00",
+          "missing_seconds": 180,
+          "to": "2026-07-27 21:00:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-28 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-07-28 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-28 21:36:00",
+          "missing_seconds": 180,
+          "to": "2026-07-28 21:39:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-29 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-07-29 21:01:00"
+        },
+        {
+          "class": "EXPECTED_DAILY_ROLLOVER_MAINTENANCE",
+          "from": "2026-07-30 20:57:00",
+          "missing_seconds": 240,
+          "to": "2026-07-30 21:01:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-31 20:56:00",
+          "missing_seconds": 173100,
+          "to": "2026-08-02 21:01:00"
+        }
+      ],
+      "expected_weekend_closure_gaps": 6,
+      "first_bar": "2026-06-21 21:02:00",
+      "invalid_ohlc_count": 0,
+      "last_bar": "2026-08-02 23:59:00",
+      "non_monotonic_count": 0,
+      "nonpositive_price_count": 0,
+      "outside_frozen_interval_count": 0,
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_M1.csv",
+      "rows": 43292,
+      "sha256": "b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458",
+      "symbol": "EURUSD",
+      "timeframe": "M1",
+      "unexpected_gap_count": 0,
+      "unexpected_gap_details": []
+    },
+    "EURUSD_M15": {
+      "bars_after_frozen_end": 0,
+      "bytes": 180396,
+      "duplicate_count": 0,
+      "expected_daily_rollover_gaps": 0,
+      "expected_gap_details": [
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-06-26 20:45:00",
+          "missing_seconds": 173700,
+          "to": "2026-06-28 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-03 20:45:00",
+          "missing_seconds": 173700,
+          "to": "2026-07-05 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-10 20:45:00",
+          "missing_seconds": 173700,
+          "to": "2026-07-12 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-17 20:45:00",
+          "missing_seconds": 173700,
+          "to": "2026-07-19 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-24 20:45:00",
+          "missing_seconds": 173700,
+          "to": "2026-07-26 21:00:00"
+        },
+        {
+          "class": "EXPECTED_WEEKEND_CLOSURE",
+          "from": "2026-07-31 20:45:00",
+          "missing_seconds": 173700,
+          "to": "2026-08-02 21:00:00"
+        }
+      ],
+      "expected_weekend_closure_gaps": 6,
+      "first_bar": "2026-06-21 21:00:00",
+      "invalid_ohlc_count": 0,
+      "last_bar": "2026-08-02 23:45:00",
+      "non_monotonic_count": 0,
+      "nonpositive_price_count": 0,
+      "outside_frozen_interval_count": 0,
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_M15.csv",
+      "rows": 2892,
+      "sha256": "cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063",
+      "symbol": "EURUSD",
+      "timeframe": "M15",
+      "unexpected_gap_count": 0,
+      "unexpected_gap_details": []
+    }
+  },
+  "prior_consumption": "NONE",
+  "protected_data_clear": true,
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1",
+  "symbol": "EURUSD"
+}
