@@ -26,6 +26,7 @@ sys.path.insert(0, os.path.join(REPO_ROOT, "scripts"))
 from onboard_large_smc_eurusd_admission_wp2 import build_large_smc_eurusd_profile_v2  # noqa: E402
 
 from _lsmc_frozen_core import assert_large_smc_registry_projection_unchanged
+from _lsmc_shared_validation_scope import assert_large_smc_never_imports_svos_context_export
 
 
 def build_profile_from_contracts():
@@ -158,7 +159,13 @@ def test_frozen_validation_core_unchanged_by_this_mission():
     config/governance/strategy_lifecycle.yaml is checked separately, narrowed to
     ST_LARGE_SMC_V1's own registry projection -- see tests/_lsmc_frozen_core.py for
     why a whole-file freeze over-scoped this invariant (LSMC_SHARED_REGISTRY_FREEZE_
-    SCOPE_AUDIT)."""
+    SCOPE_AUDIT).
+
+    `svos_context_export.py` is deliberately NOT in this byte-freeze list --
+    see tests/_lsmc_shared_validation_scope.py (LSMC_SHARED_VALIDATION_FREEZE_
+    SCOPE_REMEDIATION_V1) for why: Large-SMC has zero actual coupling to it,
+    so its own legitimate SSC/SVOS evolution (e.g. commit 101488f) must not
+    trip this test. The decoupling guard below is the real protection."""
     import subprocess
 
     diff = subprocess.check_output(
@@ -168,7 +175,6 @@ def test_frozen_validation_core_unchanged_by_this_mission():
          "src/validation_framework/evidence_reconciliation.py",
          "src/validation_framework/g2_population_identity.py",
          "src/validation_framework/g3_gate.py",
-         "src/validation_framework/svos_context_export.py",
          "src/validation_framework/lifecycle_registry.py",
          "src/validation_framework/evaluator.py",
          "src/validation_framework/models.py",
@@ -177,6 +183,7 @@ def test_frozen_validation_core_unchanged_by_this_mission():
     )
     assert diff == ""
     assert_large_smc_registry_projection_unchanged(REPO_ROOT, "e596507")
+    assert_large_smc_never_imports_svos_context_export(REPO_ROOT)
 
 
 def test_execution_authority_unchanged():

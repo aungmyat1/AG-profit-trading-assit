@@ -30,6 +30,7 @@ from fx_friction_research.spread_evidence import (  # noqa: E402
 from mt5.connection import MT5ConnectionError  # noqa: E402
 
 from _lsmc_frozen_core import assert_large_smc_registry_projection_unchanged
+from _lsmc_shared_validation_scope import assert_large_smc_never_imports_svos_context_export
 
 # WP2's frozen commit -- the baseline this WP3A mission must not disturb.
 WP2_COMMIT_SHA = "7581c42"
@@ -198,7 +199,13 @@ def test_strategy_semantics_files_unchanged_by_this_mission():
 def test_frozen_validation_core_unchanged_by_this_mission():
     """See tests/_lsmc_frozen_core.py: the shared multi-strategy
     config/governance/strategy_lifecycle.yaml is checked separately, narrowed to
-    ST_LARGE_SMC_V1's own registry projection rather than the whole file."""
+    ST_LARGE_SMC_V1's own registry projection rather than the whole file.
+
+    `svos_context_export.py` is deliberately NOT in this byte-freeze list --
+    see tests/_lsmc_shared_validation_scope.py (LSMC_SHARED_VALIDATION_FREEZE_
+    SCOPE_REMEDIATION_V1): Large-SMC has zero actual coupling to it, so its
+    own legitimate SSC/SVOS evolution must not trip this test. The
+    decoupling guard below is the real protection."""
     diff = subprocess.check_output(
         ["git", "diff", WP2_COMMIT_SHA, "--",
          "src/validation_framework/ag_validation_methodology.py",
@@ -206,7 +213,6 @@ def test_frozen_validation_core_unchanged_by_this_mission():
          "src/validation_framework/evidence_reconciliation.py",
          "src/validation_framework/g2_population_identity.py",
          "src/validation_framework/g3_gate.py",
-         "src/validation_framework/svos_context_export.py",
          "src/validation_framework/lifecycle_registry.py",
          "src/validation_framework/evaluator.py",
          "src/validation_framework/models.py",
@@ -215,6 +221,7 @@ def test_frozen_validation_core_unchanged_by_this_mission():
     )
     assert diff == ""
     assert_large_smc_registry_projection_unchanged(REPO_ROOT, WP2_COMMIT_SHA)
+    assert_large_smc_never_imports_svos_context_export(REPO_ROOT)
 
 
 def test_execution_and_gateway_files_unchanged_by_this_mission():
