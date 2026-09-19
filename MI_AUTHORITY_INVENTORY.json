@@ -1,0 +1,18 @@
+{
+  "version": "AG_MARKET_INTELLIGENCE_V1_CYCLE1",
+  "classification": "DESIGN_ONLY",
+  "freeze_boundary": {"td8e_commit": "f4a1045", "td8e_semantics": "FROZEN"},
+  "authorities": [
+    {"area":"MarketSnapshot / multi-timeframe composition","implementation":"strategy_contract.market_snapshot.MarketSnapshot; mtf_context.topdown_composer.build_topdown_context","classification":"REUSE_WITH_ADAPTER","notes":"Snapshot is a single-bar provenance contract; TopDownContext is the six-tier composition authority. MI adapter must preserve both identities and quality fields."},
+    {"area":"Asian/session reference","implementation":"assistant.market_data.session_snapshot; strategy_engine.session.reference_box; session_sweep_continuation.sessions","classification":"REUSE_AS_IS","notes":"TD-8C shared closed M15 session authority; no second session-range calculator."},
+    {"area":"H1 bias","implementation":"session_sweep_continuation.h1_bias.resolve_h1_market_bias; market_intelligence.bias_resolver.resolve_from_structure_tiers","classification":"REUSE_WITH_ADAPTER","notes":"Expose MarketBiasResult as evidence; do not convert it into an entry direction."},
+    {"area":"ATR / EMA","implementation":"session_sweep_continuation.swing_structure.compute_atr; no repository-wide canonical EMA authority found","classification":"REUSE_WITH_ADAPTER","notes":"ATR is deterministic but strategy-local today. EMA is NOT_CANONICAL until one owner, parameters, warmup, and timeframe contract are approved."},
+    {"area":"Swings","implementation":"market_structure.tiers; market_swing_structure confirmation/orchestrator; session_sweep_continuation.swing_structure","classification":"REUSE_WITH_ADAPTER","notes":"Prefer market_structure / market_swing_structure normalized confirmed swings. SSC detector remains strategy-local and must not become universal silently."},
+    {"area":"BOS / CHoCH","implementation":"market_structure.tiers; market_swing_structure.models/orchestrator","classification":"REUSE_AS_IS","notes":"Use existing event types and confirmation timestamps."},
+    {"area":"FVG","implementation":"supply_demand.fair_value_gaps_for via market_swing_structure.orchestrator; SSC local detect_fvg","classification":"REUSE_WITH_ADAPTER","notes":"Use supply_demand as general authority; SSC FVG remains strategy-local until parity is demonstrated."},
+    {"area":"Regime","implementation":"session_sweep_continuation.regime and canonical_observations","classification":"REUSE_WITH_ADAPTER","notes":"Canonical for SSC shadow cycle only; MI needs an explicitly versioned cross-strategy regime contract before reuse."},
+    {"area":"Sweep / liquidity","implementation":"liquidity.liquidity_result, liquidity.status, liquidity hierarchy/proxies; strategy-specific sweep detectors","classification":"REUSE_WITH_ADAPTER","notes":"General liquidity authority is reusable; strategy sweep qualification remains owned by each strategy."},
+    {"area":"Provenance / temporal admission","implementation":"historical_replay.ReplayEvaluationContext, BoundReplayStoreView, HistoricalCandleStore; mtf_context historical AS_OF","classification":"REUSE_AS_IS","notes":"TD-8E and TD-8 temporal gates are frozen. MI consumes event identity and closed data; it does not reimplement admission."}
+  ],
+  "missing_or_deferred": ["versioned immutable MI snapshot", "repository-wide EMA contract", "cross-strategy regime contract", "MI builder and validation suite"]
+}

@@ -65,6 +65,12 @@ their age.
    — prospective owner-approved move of the BTC report window to 13:00-13:15 MMT
    (06:30-06:45 UTC); no observation, execution, or scheduler activation.
 15. [`status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md`](status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md)
+16. [`../AG_MARKET_INTELLIGENCE_V1_CYCLE1_DESIGN.md`](../AG_MARKET_INTELLIGENCE_V1_CYCLE1_DESIGN.md),
+    [`../MI_AUTHORITY_INVENTORY.json`](../MI_AUTHORITY_INVENTORY.json),
+    [`../MI_V1_CONTRACT.md`](../MI_V1_CONTRACT.md),
+    [`../MI_V1_INVARIANTS.md`](../MI_V1_INVARIANTS.md), and
+    [`../MI_V1_MIGRATION_PLAN.md`](../MI_V1_MIGRATION_PLAN.md) — Cycle 1 MI design
+    artifacts; design-only and non-authorizing.
    — preflight architecture review and authorization packet for the next, separately
    authorized WP7 task (real Telegram message delivery); does not itself authorize
    `MESSAGE_DELIVERY` or any send.
