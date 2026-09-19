@@ -270,9 +270,8 @@ def test_unpatched_bulk_rate_fetch_fails_fast_not_silently():
             mt5_sdk.copy_rates_from_pos("EURUSD", 0, 0, 10)
 
 
-def test_session_range_path_degrades_without_touching_live_mt5(monkeypatch):
-    """A connected terminal must not turn the known historical-session completeness
-    gap into a live-data access during replay."""
+def test_session_range_path_missing_replay_data_fails_closed_without_live_mt5(monkeypatch):
+    """A connected terminal must not fill missing historical session bars from MT5."""
     import mt5.market_data as market_data_module
     from supply_demand.native_zones import session_zone
 
@@ -286,4 +285,4 @@ def test_session_range_path_degrades_without_touching_live_mt5(monkeypatch):
         zone = session_zone("EURUSD", "asian", dt.date(2026, 1, 5))
 
     assert zone.low is None and zone.high is None
-    assert zone.reason_codes == ("HISTORICAL_SESSION_DATA_UNAVAILABLE",)
+    assert zone.reason_codes == ("DATA_MISSING",)

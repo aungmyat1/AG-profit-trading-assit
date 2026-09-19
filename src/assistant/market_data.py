@@ -132,8 +132,12 @@ class SessionSnapshot:
 
 
 def session_snapshot(symbol: str, session_name: str, session_date: Optional[date] = None) -> SessionSnapshot:
-    session_date = session_date or datetime.now(timezone.utc).date()
-    now_utc = datetime.now(timezone.utc)
+    from historical_replay.candle_store import HistoricalDataError
+    from historical_replay.data_source_patch import active_replay_context
+
+    replay = active_replay_context()
+    now_utc = replay[1] if replay is not None else datetime.now(timezone.utc)
+    session_date = session_date or now_utc.date()
 
     try:
         start, end = sc.get_session_bounds(session_date, session_name)
@@ -149,8 +153,11 @@ def session_snapshot(symbol: str, session_name: str, session_date: Optional[date
                                 complete=False, expected_bar_count=expected)
 
     try:
-        candles = get_candles(symbol, "M15", start, end)
-    except MarketDataError as exc:
+        if replay is None:
+            candles = get_candles(symbol, "M15", start, end)
+        else:
+            candles = replay[0].closed_candles_in_range(symbol, "M15", start, end, now_utc)
+    except (MarketDataError, HistoricalDataError) as exc:
         return SessionSnapshot(symbol=symbol, session_name=session_name, session_date=session_date,
                                 status=exc.reason_code, reason_codes=(exc.reason_code,),
                                 complete=True, expected_bar_count=expected)

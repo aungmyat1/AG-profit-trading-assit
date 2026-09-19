@@ -6,6 +6,14 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-19)
 
+TD-8C shared session-reference replay parity is implemented and under owner review
+(uncommitted). `session_snapshot` now uses the caller's historical clock and closed
+M15 range from `HistoricalCandleStore` inside replay; live calls retain the existing
+MT5 range path. Missing or incomplete replay sessions fail closed, and the frozen
+Asian Sweep and SSC strategy windows remain unchanged. This is shared market-context
+infrastructure, with no trading authority change. See
+`docs/status/TD8C_SESSION_REFERENCE_REPLAY_PARITY_STATUS.md`.
+
 TD-8B structure-only derived caching is owner-approved and frozen. The
 shared `market_structure.analyze_structure` authority now uses TD-6's bounded cache
 with live/replay source identity, replay dataset fingerprint, actual visible candle

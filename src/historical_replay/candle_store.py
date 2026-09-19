@@ -15,7 +15,7 @@ SIMULATOR, never SMC semantics).
 """
 from __future__ import annotations
 
-from bisect import bisect_right
+from bisect import bisect_left, bisect_right
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -140,6 +140,25 @@ class HistoricalCandleStore:
                 "INSUFFICIENT_CANDLES", f"{symbol} {timeframe}: requested {count}, only {len(result)} closed by {as_of.isoformat()}"
             )
         return result
+
+    def closed_candles_in_range(
+        self, symbol: str, timeframe: str, start: datetime, end: datetime, as_of: datetime,
+    ) -> List[Candle]:
+        """Closed bars opening in half-open [start, end), visible at replay time."""
+        for label, value in (("start", start), ("end", end), ("as_of", as_of)):
+            _require_aware_utc(value, label)
+        if start >= end:
+            raise HistoricalDataError("INVALID_RANGE", "start must precede end")
+        series = self._series.get((symbol, timeframe))
+        if series is None:
+            raise HistoricalDataError("DATA_MISSING", f"no historical series loaded for {symbol} {timeframe}")
+        first = bisect_left(series.times, start)
+        last = bisect_left(series.times, end)
+        duration = timeframe_duration(timeframe)
+        visible = [c for c in series.candles[first:last] if c.time + duration <= as_of]
+        if not visible:
+            raise HistoricalDataError("DATA_MISSING", f"no closed {timeframe} bars for {symbol} in [{start}, {end}) at {as_of}")
+        return visible
 
     def last_closed_price(self, symbol: str, timeframe: str, as_of: datetime) -> float:
         """Close price of the most recent bar closed at/before `as_of` -- used to

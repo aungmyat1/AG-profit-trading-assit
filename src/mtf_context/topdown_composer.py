@@ -89,24 +89,10 @@ content always produce a different composed identity (TD-8 P15/P16). Detector
 provenance (`source`/`feature_version` on each tier) is NEVER overwritten with this
 dataset provenance -- they remain two different dimensions, exactly as TD-8 requires.
 
-SESSION-REFERENCE-LEVEL LIMITATION (HISTORICAL_AS_OF, reported, not hidden):
-`supply_demand.native_zones.session_zone()` (feeding H1's "asian" session reference
-level and M15's three session reference levels) internally calls
-`assistant.market_data.session_snapshot()`, which is entirely wall-clock-driven (calls
-`datetime.now(timezone.utc)` itself for both its default session date and its own
-session-completeness check) and has no as-of parameter at all. `historical_data_context`
-already anticipated this exact gap and fails it closed
-(`_PATCHED_RANGE_CANDLE_TARGETS` maps `assistant.market_data.get_candles` to
-`HISTORICAL_SESSION_DATA_UNAVAILABLE`) -- so no live market data ever leaks through this
-path, but session-derived ReferenceLevelFacts are simply ABSENT from H1Context/
-M15Context during HISTORICAL_AS_OF, regardless of the requested `as_of_time`, exactly
-like any other "insufficient data" case this repository already handles honestly
-(`_reference_level_fact_from_zone` returns None rather than fabricating a fact). This
-does not fail the tier build (H1Context/M15Context still construct successfully; only
-this one fact family is missing) and is TD-8's one known, explicitly out-of-scope-to-fix
-limitation of the six-tier replay path (fixing session_snapshot() to accept an as-of
-parameter is a change to assistant/market_data.py, outside TD-8's "reuse existing
-abstractions, don't refactor strategy-adjacent modules" mandate).
+SESSION REFERENCES (TD-8C): `session_zone()` still delegates to the one shared
+`assistant.market_data.session_snapshot()` authority. In historical_data_context it
+uses the caller's replay clock and the store's closed M15 range; incomplete or missing
+sessions produce no ReferenceLevelFact. The live branch retains its MT5 range query.
 
 PARTIAL-CONTEXT POLICY (both modes): FAIL CLOSED is the only behavior this module
 implements.

@@ -48,6 +48,11 @@ def active_replay_identity(symbol: str, timeframe: str) -> Optional[tuple[str, d
         raise HistoricalDataError("DATA_MISSING", f"no replay identity for {symbol} {timeframe}")
     return identity.as_composed_identity_token(), as_of
 
+
+def active_replay_context() -> Optional[tuple[HistoricalCandleStore, datetime]]:
+    """Read-only access to the active store and clock for shared historical facts."""
+    return _ACTIVE_REPLAY.get()
+
 # Defense-in-depth for the "replay silently falls back to live MT5" bug class found
 # this phase (a consumer module's own get_latest_candles/get_tick import was missed
 # from _PATCHED_*_TARGETS below). These guard the raw MetaTrader5 SDK functions
@@ -104,9 +109,8 @@ _PATCHED_TICK_TARGETS = (
 )
 
 _PATCHED_RANGE_CANDLE_TARGETS = (
-    # Session snapshots need an arbitrary UTC range, while HistoricalCandleStore's
-    # replay interface is count/as-of based. Until that completeness seam exists,
-    # fail closed here rather than allowing a connected terminal to answer historically.
+    # Unadapted arbitrary range callers remain forbidden. TD-8C session_snapshot
+    # reads HistoricalCandleStore.closed_candles_in_range directly under this context.
     "assistant.market_data.get_candles",
 )
 
@@ -192,6 +196,8 @@ def historical_data_context(
     actual dataset (`symbol_metadata_manifest.validate_manifest_for_dataset`) -- this
     context manager does not perform that check itself, to avoid re-hashing a
     multi-megabyte file on every replay step."""
+    if as_of.tzinfo is None or as_of.utcoffset() is None:
+        raise HistoricalDataError("NAIVE_DATETIME_REJECTED", "replay as_of must be timezone-aware UTC")
     get_candles_fn = _make_get_latest_candles(store, as_of)
     get_tick_fn = _make_get_tick(store, as_of)
 

@@ -45,6 +45,8 @@ their age.
    records the fail-closed session-reference limitation and unchanged trading authority.
    [`status/TD8B_DERIVED_CACHE_INTEGRATION_REVIEW_STATUS.md`](status/TD8B_DERIVED_CACHE_INTEGRATION_REVIEW_STATUS.md)
    — frozen TD-8B structure-only derived-cache review and verification evidence.
+   [`status/TD8C_SESSION_REFERENCE_REPLAY_PARITY_STATUS.md`](status/TD8C_SESSION_REFERENCE_REPLAY_PARITY_STATUS.md)
+   — uncommitted TD-8C shared session-reference replay parity and readiness assessment.
 12. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
    non-authorizing capability-completeness audit and navigation matrix (Section A
    trading edge, Section B operations/execution/platform, execution-authority matrix,
