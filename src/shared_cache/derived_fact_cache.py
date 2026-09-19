@@ -1,15 +1,10 @@
-"""TD-6, Layer B: bounded, semantics-aware cache primitive for expensive derived
-shared-market-fact computations (e.g. market_structure.analyze_structure()'s
-StructureResult). NOT wired into any production authority this pass -- built and
-proven here as a correct, collision-safe mechanism only. See
-docs/status/TD6_EVENT_DRIVEN_SEMANTIC_CACHE_STATUS.md and
-tests/test_td6_deterministic_dedup_targets.py's module docstring for why wiring this
-into analyze_structure() was attempted and reverted (replay-substitution and
-replay/fixture timestamp-collision risk), and what a future pass needs to resolve
-first (a caller-supplied, dataset-scoped identity component in the key).
+"""TD-6 Layer B cache, wired only to market_structure.analyze_structure in TD-8B.
+TD-6 initially deferred wiring because a timestamp-only key could collide across
+replay datasets. TD-8B adds source/dataset and actual input-content identity.
 
-CACHE IDENTITY -- every field below is REQUIRED, per TD-5's own recommendation:
-    (symbol, timeframe, closed_bar_identity, authority_definition_id, feature_version,
+CACHE IDENTITY -- every field below is REQUIRED:
+    (source_dataset_identity, symbol, timeframe, closed_bar_identity,
+     authority_definition_id, feature_version,
      parameters)
 `parameters` is an already-sorted tuple of (name, value) pairs (hashable, order-
 independent by construction) covering every input that can materially change the
@@ -25,11 +20,10 @@ different definition ids (e.g. a hypothetical two-tier SMC_MARKET_STRUCTURE_TIER
 vs. today's single-tier SMC_MARKET_STRUCTURE_V1) can never share a cache entry,
 because they can never share this key field.
 
-`closed_bar_identity` must be the REAL timestamp of the last candle actually used
-(never a predicted/guessed boundary) -- a future integration should obtain this from
-Layer A's own fetch result (see mt5/market_data.py::get_latest_candles), so Layer B's
-freshness would be entirely inherited from Layer A's already-proven, data-identity-
-driven invalidation rather than reimplementing a second staleness rule.
+`closed_bar_identity` for structure includes the actual last candle time and a
+fingerprint of the complete fetched candle population. Replay also includes its
+caller-supplied as-of time; `source_dataset_identity` distinguishes LIVE from each
+content-derived replay dataset identity.
 
 FAILURE BEHAVIOR: nothing should be cached on a failure/degraded result unless a
 future caller explicitly decides that specific outcome is a valid, stable negative
@@ -43,20 +37,25 @@ from typing import Any, Hashable, Optional, Sequence, Tuple
 
 from .bounded_cache import BoundedCache
 
-_CacheKey = Tuple[str, str, str, str, str, Tuple[Tuple[str, Any], ...]]
+_CacheKey = Tuple[str, str, str, str, str, str, Tuple[Tuple[str, Any], ...]]
 
 
 def build_key(
-    *, symbol: str, timeframe: str, closed_bar_identity: datetime,
+    *, source_dataset_identity: str, symbol: str, timeframe: str, closed_bar_identity: str | datetime,
     authority_definition_id: str, feature_version: str,
     parameters: Sequence[Tuple[str, Hashable]] = (),
 ) -> _CacheKey:
     """Deterministic, order-independent key. `parameters` is sorted by name so a
     caller supplying the same (name, value) pairs in any order still produces the
     same key."""
+    if not source_dataset_identity:
+        raise ValueError("source_dataset_identity is required")
+    closed_identity = (closed_bar_identity.astimezone(timezone.utc).isoformat()
+                       if isinstance(closed_bar_identity, datetime) else closed_bar_identity)
+    if not closed_identity:
+        raise ValueError("closed_bar_identity is required")
     return (
-        symbol, timeframe,
-        closed_bar_identity.astimezone(timezone.utc).isoformat(),
+        source_dataset_identity, symbol, timeframe, closed_identity,
         authority_definition_id, feature_version,
         tuple(sorted(parameters, key=lambda item: item[0])),
     )

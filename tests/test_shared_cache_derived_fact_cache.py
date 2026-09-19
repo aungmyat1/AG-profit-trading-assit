@@ -23,7 +23,7 @@ def _clean_cache():
 
 def _key(**overrides):
     base = dict(
-        symbol="EURUSD", timeframe="H1", closed_bar_identity=_BAR,
+        source_dataset_identity="LIVE_MT5", symbol="EURUSD", timeframe="H1", closed_bar_identity=_BAR.isoformat(),
         authority_definition_id="SMC_MARKET_STRUCTURE_V1", feature_version="0.0.27",
         parameters=(("swing_length", 5), ("close_break", True)),
     )
@@ -74,6 +74,18 @@ def test_collision_b_different_authority_definition_id_never_reuses():
 
 def test_different_symbol_different_key():
     assert _key(symbol="EURUSD") != _key(symbol="GBPUSD")
+
+
+def test_live_and_distinct_replay_datasets_never_share_key():
+    live = _key(source_dataset_identity="LIVE_MT5")
+    replay_a = _key(source_dataset_identity="REPLAY:dataset-A:sha256:a")
+    replay_b = _key(source_dataset_identity="REPLAY:dataset-B:sha256:b")
+    assert len({live, replay_a, replay_b}) == 3
+
+
+def test_source_identity_is_required():
+    with pytest.raises(ValueError):
+        _key(source_dataset_identity="")
 
 
 def test_different_timeframe_different_key():

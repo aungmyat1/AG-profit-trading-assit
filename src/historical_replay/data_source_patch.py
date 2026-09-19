@@ -19,6 +19,7 @@ semantic-replay-only stand-in, not a broker-realistic quote -- Stage D (spec sec
 from __future__ import annotations
 
 import contextlib
+from contextvars import ContextVar
 from datetime import datetime
 from typing import List, Optional
 from unittest.mock import patch
@@ -30,6 +31,22 @@ from mt5.symbol_resolver import SymbolMetaError
 
 from .candle_store import HistoricalCandleStore, HistoricalDataError
 from .symbol_metadata_manifest import HistoricalSymbolMetadataManifest
+
+_ACTIVE_REPLAY: ContextVar[Optional[tuple[HistoricalCandleStore, datetime]]] = ContextVar(
+    "active_historical_replay", default=None,
+)
+
+
+def active_replay_identity(symbol: str, timeframe: str) -> Optional[tuple[str, datetime]]:
+    """Dataset and clock for a shared authority running inside historical replay."""
+    active = _ACTIVE_REPLAY.get()
+    if active is None:
+        return None
+    store, as_of = active
+    identity = store.dataset_identity(symbol, timeframe)
+    if identity is None:
+        raise HistoricalDataError("DATA_MISSING", f"no replay identity for {symbol} {timeframe}")
+    return identity.as_composed_identity_token(), as_of
 
 # Defense-in-depth for the "replay silently falls back to live MT5" bug class found
 # this phase (a consumer module's own get_latest_candles/get_tick import was missed
@@ -179,6 +196,8 @@ def historical_data_context(
     get_tick_fn = _make_get_tick(store, as_of)
 
     with contextlib.ExitStack() as stack:
+        token = _ACTIVE_REPLAY.set((store, as_of))
+        stack.callback(_ACTIVE_REPLAY.reset, token)
         for target in _PATCHED_CANDLE_TARGETS:
             stack.enter_context(patch(target, get_candles_fn))
         for target in _PATCHED_TICK_TARGETS:

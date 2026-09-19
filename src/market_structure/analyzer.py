@@ -26,6 +26,30 @@ from .smc_adapter import (
     previous_high_low,
 )
 
+_DERIVED_FEATURE_VERSION = "MARKET_STRUCTURE_ANALYZER_TD8B_V1"
+
+
+def _structure_cache_key(symbol, timeframe, candles, count, fetch_count, config):
+    """Use the actual fetched population, plus replay dataset and clock when present."""
+    from historical_replay.data_source_patch import active_replay_identity
+    from historical_replay.dataset_identity import compute_candle_series_fingerprint
+    from shared_cache.derived_fact_cache import build_key
+
+    replay = active_replay_identity(symbol, timeframe)
+    source = f"REPLAY:{replay[0]}" if replay else "LIVE_MT5"
+    visible = compute_candle_series_fingerprint(symbol, timeframe, candles)
+    boundary = replay[1].isoformat() if replay else "LIVE_CURRENT"
+    return build_key(
+        source_dataset_identity=source, symbol=symbol, timeframe=timeframe,
+        closed_bar_identity=f"{candles[-1].time.isoformat()}|{boundary}|{visible}",
+        authority_definition_id="SMC_MARKET_STRUCTURE_V1",
+        feature_version=_DERIVED_FEATURE_VERSION,
+        parameters=(("count", count), ("fetch_count", fetch_count),
+                    ("swing_length", config.swing_length), ("close_break", config.close_break),
+                    ("default_analysis_count", config.default_analysis_count),
+                    ("smc_version", _smc_version())),
+    )
+
 _PREVIOUS_HL_TIMEFRAME = {"M1": "15m", "M5": "15m", "M15": "1H", "M30": "4H", "H1": "1D", "H4": "1D", "D1": "1W"}
 
 
@@ -64,6 +88,17 @@ def analyze_structure(
                                 reason_codes=("INSUFFICIENT_STRUCTURE_HISTORY",),
                                 closed_candle_count=len(candles), config=config)
 
+    # Cache failure is never market-fact authority: recompute on lookup failure.
+    cache_key = None
+    try:
+        from shared_cache import derived_fact_cache
+        cache_key = _structure_cache_key(symbol, timeframe, candles, count, fetch_count, config)
+        cached = derived_fact_cache.get(cache_key)
+        if cached is not None:
+            return cached
+    except Exception:
+        cache_key = None
+
     df = candles_to_dataframe(candles)
 
     try:
@@ -89,7 +124,7 @@ def analyze_structure(
 
     state = _structure_state(latest["latest_bos"], latest["latest_choch"])
 
-    return StructureResult(
+    result = StructureResult(
         symbol=symbol, timeframe=timeframe, status="VALID", reason_codes=tuple(reason_codes),
         state=state,
         latest_swing_high=latest["latest_swing_high"], latest_swing_low=latest["latest_swing_low"],
@@ -99,6 +134,12 @@ def analyze_structure(
         data_start_utc=candles[0].time, data_end_utc=candles[-1].time,
         closed_candle_count=len(candles), config=config, smc_version=_smc_version(),
     )
+    if cache_key is not None:
+        try:
+            derived_fact_cache.put(cache_key, result)
+        except Exception:
+            pass  # successful market fact still takes precedence over cache storage
+    return result
 
 
 def structural_breaks_for_candles(candles, config: Optional[MarketStructureConfig] = None) -> "list[StructurePoint]":

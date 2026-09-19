@@ -127,11 +127,10 @@ implements.
     degraded status is propagated into the composed TopDownContext.data_quality_status
     (see _aggregate_data_quality) rather than being hidden behind a false VALID.
 
-TD-6 CACHE BOUNDARY: this module calls only the six existing build_<tier>_context()
-functions -- it never imports shared_cache, never adds composer-specific caching, and
-never wires derived_fact_cache.py (TD6_DERIVED_CACHE_INTEGRATION_DEFERRED remains
-carried forward, STILL DEFERRED after TD-8 too -- successful TD-8 does not itself
-authorize wiring it, per TD-8's own mission). It benefits indirectly, and only to the
+TD-6/TD-8B CACHE BOUNDARY: this module calls only the six existing
+build_<tier>_context() functions -- it never imports shared_cache or adds
+composer-specific caching. TD-8B caches only the shared structure authority;
+other derived authorities remain deferred. It benefits indirectly, and only to the
 extent the underlying analyze_structure()/liquidity_result()/etc authorities already
 do, from TD-6's raw closed-candle cache (Layer A, wired inside
 mt5.market_data.get_latest_candles for LIVE_CURRENT only -- HISTORICAL_AS_OF never

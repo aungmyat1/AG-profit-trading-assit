@@ -16,9 +16,8 @@ would have introduced an unrelated correctness risk: two different candle sets
 would return a stale/wrong cached StructureResult, since analyze_structure() has no
 way to know which "dataset" it is really answering for. Resolving that safely needs a
 replay/dataset-scoped identity, out of TD-6's explicit scope. So this file proves
-ONLY the raw-fetch (Layer A) reduction, not a derived-compute reduction -- the H1
-duplicate-COMPUTE elimination named in the mission is therefore not yet achieved in
-production; only H1/D1's duplicate raw I/O is.
+ONLY the raw-fetch (Layer A) reduction at TD-6 freeze. TD-8B now wires the derived
+structure cache with content and replay identity; the H1 test below checks both layers.
 """
 from __future__ import annotations
 
@@ -117,11 +116,10 @@ def test_d1_different_requested_counts_are_never_incorrectly_merged():
     assert call_log == [1, 15]  # two distinct, never-merged requests
 
 
-def test_h1_duplicate_raw_fetch_is_eliminated_even_though_compute_is_not_yet_cached():
+def test_h1_duplicate_raw_fetch_and_structure_compute_are_eliminated():
     """H1 analogue of the D1 proof above -- analyze_structure(H1) called twice with
-    identical parameters performs only ONE real MT5 fetch (Layer A), even though the
-    smc computation itself still re-runs both times (Layer B not wired to production
-    this pass -- see module docstring)."""
+    identical parameters performs one real MT5 fetch (TD-6 Layer A) and reuses the
+    TD-8B structure result (Layer B)."""
     call_log = []
     with patch("mt5.market_data.mt5.copy_rates_from_pos", side_effect=_fake_copy_rates_from_pos(call_log)):
         result_1 = analyze_structure("EURUSD", "H1", config=_SMALL_CONFIG)
@@ -131,7 +129,4 @@ def test_h1_duplicate_raw_fetch_is_eliminated_even_though_compute_is_not_yet_cac
     assert result_1.status == "VALID"
     assert result_2.status == "VALID"
     assert result_1 == result_2  # same computed values (dataclass equality)
-    # NOT the same object -- proves the smc computation genuinely ran twice (Layer B
-    # is not active here); this documents current, honest production behavior rather
-    # than overclaiming a compute-level dedup that isn't wired in.
-    assert result_1 is not result_2
+    assert result_1 is result_2

@@ -6,6 +6,15 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-19)
 
+TD-8B structure-only derived caching is owner-approved and frozen. The
+shared `market_structure.analyze_structure` authority now uses TD-6's bounded cache
+with live/replay source identity, replay dataset fingerprint, actual visible candle
+content, evaluation boundary, semantic definition, version, and behavior parameters
+in its key. Liquidity, FVG, order-block, and session-reference authorities remain
+uncached; session replay parity remains deferred. Cache failure recomputes the
+market fact. No strategy or execution authority changes. See
+`docs/status/TD8B_DERIVED_CACHE_INTEGRATION_REVIEW_STATUS.md`.
+
 TD-8 TopDownContext replay temporal parity is `UNIT_TESTED`: caller-supplied UTC
 `as_of_time` drives the six-timeframe historical composition through the existing
 replay store and shared fact builders. Closed-bar filtering, content-derived dataset

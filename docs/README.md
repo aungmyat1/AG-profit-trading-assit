@@ -43,6 +43,8 @@ their age.
    [`status/TD8_REPLAY_TEMPORAL_PARITY_STATUS.md`](status/TD8_REPLAY_TEMPORAL_PARITY_STATUS.md)
    — TD-8 six-timeframe historical replay implementation and verification evidence;
    records the fail-closed session-reference limitation and unchanged trading authority.
+   [`status/TD8B_DERIVED_CACHE_INTEGRATION_REVIEW_STATUS.md`](status/TD8B_DERIVED_CACHE_INTEGRATION_REVIEW_STATUS.md)
+   — frozen TD-8B structure-only derived-cache review and verification evidence.
 12. [`PROJECT_CAPABILITY_COMPLETENESS.md`](PROJECT_CAPABILITY_COMPLETENESS.md) — a
    non-authorizing capability-completeness audit and navigation matrix (Section A
    trading edge, Section B operations/execution/platform, execution-authority matrix,

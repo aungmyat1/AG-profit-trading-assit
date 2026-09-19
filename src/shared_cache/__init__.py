@@ -12,19 +12,10 @@ WHAT IS ACTUALLY WIRED INTO PRODUCTION THIS PASS:
   substitution (which replaces get_latest_candles's own bound name per consumer
   module, function object and all -- see that function's own docstring).
 
-  Layer B (derived shared-market-fact results, e.g. StructureResult) -- the cache
-  MECHANISM (derived_fact_cache.py) is built and unit-tested here as a correct,
-  collision-safe primitive, but is NOT wired into any production authority
-  (market_structure.analyze_structure() or otherwise) this pass. Reason: a
-  derived-fact cache keyed on (symbol, timeframe, closed_bar_identity, ...) is safe
-  for LIVE data (where closed_bar_identity is a real, globally unique market
-  timestamp) but would be unsafe for REPLAY or test-fixture data, where two
-  different, unrelated candle sets (different historical datasets, different test
-  fixtures) can share the exact same hand-built or simulated timestamp -- producing a
-  silently wrong cached result for the second query. Resolving this correctly
-  requires the caller to supply a replay/dataset-scoped identity, which is out of
-  TD-6's explicit scope ("do not implement replay integration now"). See the status
-  doc's LIVE EDGE CASE / Layer B section for the full reasoning.
+  Layer B (derived shared-market-fact results) -- TD-8B wires only
+  market_structure.analyze_structure() using the TD-6 BoundedCache. Its key includes
+  source/dataset identity and the fingerprint of actual visible candle input.
+  Other authorities remain unwired pending separate semantic audits.
 
 This package has no knowledge of any strategy (SSC/Sweep-Retest/AS5R/Large-SMC) and
 must never be imported by strategy-specific modules.
