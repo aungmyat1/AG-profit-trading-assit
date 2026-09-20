@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+SVOS Virtual Demo Cycle 4B is `VD_LEDGER_PARITY_READY`: append-only, hash-chained
+exchange/account evidence now reconstructs deterministic normalized account state,
+including unresolved ambiguity handling. Ledger, strategy, and execution authority are
+separate; economic qualification remains false. See
+`docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE4B_STATUS.md`.
+
 SVOS Virtual Demo Cycle 4A is `VD_ACCOUNT_CORE_READY`: deterministic normalized
 VirtualPosition and VirtualAccount state now consumes exchange fill evidence with
 idempotent snapshots and explicit ambiguity handling. Economic qualification remains

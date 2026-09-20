@@ -18,6 +18,8 @@ The [Cycle 3C canonical SSC bridge status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CY
 records the non-mutating SSC-to-virtual-order handoff and its readiness boundary.
 The [Cycle 4A account core status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE4A_STATUS.md)
 records normalized position/account state and the explicit economic boundary.
+The [Cycle 4B ledger parity status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE4B_STATUS.md)
+records append-only evidence and deterministic account reconstruction.
 
 ## Start here
 
