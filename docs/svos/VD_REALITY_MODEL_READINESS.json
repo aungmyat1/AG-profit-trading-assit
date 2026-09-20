@@ -1,0 +1,17 @@
+{
+  "schema": "VD_REALITY_MODEL_READINESS_V1",
+  "base_profile": "VD_BASE_PENDING_AUTHORITY",
+  "stress_profiles": "VD_STRESS_* may worsen established base assumptions only; no multiplier selected",
+  "models": {
+    "spread": {"readiness": "ENGINEERING_PROXY_READY", "base": "NOT_READY", "stress": "NOT_READY", "reason": "narrow live observations are not historical executable coverage"},
+    "commission": {"readiness": "NOT_READY", "base": "NOT_READY", "stress": "NOT_READY", "reason": "EURUSD-specific authority unavailable"},
+    "slippage": {"readiness": "NOT_READY", "base": "NOT_READY", "stress": "NOT_READY", "reason": "OHLC cannot estimate slippage; n=1 fill evidence insufficient"},
+    "latency": {"readiness": "NOT_READY", "base": "NOT_READY", "stress": "NOT_READY", "reason": "no order timing pairs"},
+    "broker_volume": {"readiness": "NOT_READY", "base": "NOT_READY", "stress": "NOT_READY", "reason": "min/max/step not captured for bound VD account"},
+    "pnl_conversion": {"readiness": "ENGINEERING_PROXY_READY", "base": "NOT_READY", "stress": "NOT_READY", "reason": "mechanical USD quote delta only; account profile unselected"},
+    "margin": {"readiness": "NOT_READY", "base": "NOT_READY", "stress": "NOT_READY", "reason": "leverage/rate/schedule unavailable"}
+  },
+  "economic_qualification_ready": false,
+  "safe_remediation": {"existing_data": "repository evidence cannot establish missing commission, latency, volume, margin, or full historical spread authority", "future_read_only_broker": "bind one account, capture symbol_info/account_info and paired order timing without order submission where possible", "fundamentally_unavailable_from_ohlc": ["historical slippage", "intrabar executable bid/ask path"]},
+  "economic_authority": false
+}

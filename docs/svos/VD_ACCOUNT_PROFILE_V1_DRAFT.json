@@ -1,0 +1,18 @@
+{
+  "schema": "VD_ACCOUNT_PROFILE_V1_DRAFT",
+  "status": "DRAFT_NOT_QUALIFICATION_READY",
+  "venue": "VantageMarkets-Demo",
+  "environment": "DEMO",
+  "account_currency": "USD",
+  "account_identity_status": "UNSELECTED_FOR_VD",
+  "starting_balance": null,
+  "max_open_positions": 1,
+  "quantity_basis": "ENGINEERING_NORMALIZED_1",
+  "broker_volume_authority": false,
+  "margin": {"status": "UNAVAILABLE", "mode": null, "leverage": null, "initial_margin": null},
+  "pnl": {"mechanical_quote_currency": "USD", "cash_conversion": "NOT_REQUIRED_IF_ACCOUNT_USD", "account_currency_authority": "UNSELECTED", "economic_pnl": "NOT_MODELED"},
+  "friction": {"spread": "NOT_MODELED", "commission": "NOT_MODELED", "slippage": "NOT_MODELED", "latency": "NOT_MODELED"},
+  "instrument_binding": {"symbol": "EURUSD", "contract_size": 100000, "digits": 5, "tick_size": 0.00001, "volume_min": null, "volume_step": null, "volume_max": null},
+  "readiness": {"engineering": true, "base_economic": false, "stress": false, "qualification": false},
+  "blockers": ["VD account login/profile not selected", "volume constraints unavailable", "margin schedule/leverage unavailable", "EURUSD commission unavailable", "EURUSD slippage distribution unavailable", "latency authority unavailable", "historical executable spread unavailable"]
+}

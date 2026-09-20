@@ -22,6 +22,8 @@ The [Cycle 4B ledger parity status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE4B_S
 records append-only evidence and deterministic account reconstruction.
 The [Cycle 5 orchestration status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE5_STATUS.md)
 records end-to-end composition, checkpoints, and determinism boundaries.
+The [Cycle 6A reality authority status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_STATUS.md)
+records broker/account evidence and the economic readiness boundary.
 
 ## Start here
 

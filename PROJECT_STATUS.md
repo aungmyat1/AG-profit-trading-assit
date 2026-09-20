@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+SVOS Virtual Demo Cycle 6A is `VD_REALITY_AUTHORITY_READY`: repository broker/account
+evidence is inventoried, but economic inputs remain explicitly incomplete. EURUSD is
+limited to `OHLC_M1`; commission, slippage, latency, volume, margin, and historical
+executable spread authority remain unavailable. See
+`docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_STATUS.md`.
+
 SVOS Virtual Demo Cycle 5 is `VD_E2E_ENGINE_READY`: deterministic orchestration now
 composes the temporal feed, canonical decision boundary, bridge, exchange, account,
 and ledger with auditable no-setup handling and checkpoint identity. Economic
