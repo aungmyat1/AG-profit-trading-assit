@@ -37,5 +37,8 @@ web/.env.*
 .DS_Store
 Thumbs.db
 
-# Keep project runtime data tracked unless explicitly requested otherwise
-# (do not ignore journal/, artifacts/, state/, or data/ source trees)
+# Local agent/runtime journals and generated execution traces
+/journal/
+
+# Local diagnostic outputs
+/artifacts/diagnostics/
