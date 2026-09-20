@@ -29,6 +29,25 @@ delivered rather than modifying frozen canonical behavior. Two confirmed defects
 parity tests. Demo and live authority remain `NONE`. See
 `docs/status/AG_SCHEDULER_AND_LARGE_SMC_WATCH_HARDENING_STATUS.md`.
 
+Versioned Proposal Occurrence Identity is `OCCURRENCE_IDENTITY_CANDIDATE_READY`
+(**unwired, promotion not recommended yet**). The scheduler-mission duplicate-proposal
+defect was addressed by a versioned candidate
+(`AG_PROPOSAL_OCCURRENCE_IDENTITY_V1`, `src/proposal_envelope/occurrence_identity_v1.py`,
+`WIRED_INTO_RUNTIME = False`): occurrence identity is composed from the authoritative
+`confirmation_evidence.setup_id` only, so repeated M15 observations of one unchanged
+structural setup resolve to one logical occurrence while every observation's provenance
+is preserved. A second confirmed defect was found and characterized: the frozen
+`ProposalLedger.list_active_proposals()` returns all 69 persisted records as
+`PROPOSAL_READY`, while **63 had already passed their strategy-owned expiry** — expired
+proposals were still operationally presented as current. Read-time expiry presentation
+and four distinct reporting metrics (OBSERVATION_COUNT / DISTINCT_SETUP_COUNT /
+CURRENT_ACTIVE_PROPOSAL_COUNT / EXPIRED_PROPOSAL_COUNT) were delivered. Families
+emitting no authoritative setup identity (e.g. `ssc_adapter`, 6 records) **fail closed**
+rather than receiving a derived persistence key. No frozen behavior, strategy economics,
+friction evidence, campaign state, or historical ledger record was modified; demo and
+live authority remain `NONE`. See
+`docs/status/AG_VERSIONED_PROPOSAL_OCCURRENCE_IDENTITY_STATUS.md`.
+
 SVOS Virtual Demo Cycle 6A-R is `VD_REALITY_REMEDIATION_READY`: one bounded read-only
 EURUSD MT5 check refreshed Vantage Demo/USD identity and a stale point-in-time spread
 snapshot. Volume, margin, commission, slippage, latency, and representative historical

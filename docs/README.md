@@ -262,6 +262,13 @@ observations from the named milestone; they are not rolling dashboards.
   friction-window protection; duplicate-proposal identity-layer audit; confirmed
   broker-time-alignment and non-incremental-watch defects fixed research-only with
   native-broker D1/H4 parity tests; watch lifecycle as a canonical projection)
+- Versioned proposal occurrence identity (2026-09-20):
+  [`status/AG_VERSIONED_PROPOSAL_OCCURRENCE_IDENTITY_STATUS.md`](status/AG_VERSIONED_PROPOSAL_OCCURRENCE_IDENTITY_STATUS.md)
+  (`AG_PROPOSAL_OCCURRENCE_IDENTITY_V1` candidate, **unwired**: occurrence-scoped
+  proposal identity so repeated M15 observations of one unchanged setup resolve to one
+  occurrence; authoritative-identity-only with fail-closed families; read-time expiry
+  presentation; four distinct reporting metrics. Promotion not recommended yet — see the
+  document's own promotion section)
 - Opportunity coverage: [`status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md`](status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md)
   (FX `LONDON_NEWYORK` pilot activation; BTC Binance USDT-M market-data adapter,
   multi-occurrence research collection, and execution-domain gate)
