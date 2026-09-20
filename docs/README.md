@@ -16,6 +16,8 @@ The [Cycle 3B exchange core status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE3B_S
 records the isolated deterministic fixture engine and its non-economic limits.
 The [Cycle 3C canonical SSC bridge status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE3C_STATUS.md)
 records the non-mutating SSC-to-virtual-order handoff and its readiness boundary.
+The [Cycle 4A account core status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE4A_STATUS.md)
+records normalized position/account state and the explicit economic boundary.
 
 ## Start here
 

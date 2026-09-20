@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+SVOS Virtual Demo Cycle 4A is `VD_ACCOUNT_CORE_READY`: deterministic normalized
+VirtualPosition and VirtualAccount state now consumes exchange fill evidence with
+idempotent snapshots and explicit ambiguity handling. Economic qualification remains
+false; broker quantity, money, margin, conversion, and friction are unmodeled. See
+`docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE4A_STATUS.md`.
+
 SVOS Virtual Demo Cycle 3C is `VD_SSC_BRIDGE_READY`: the canonical SSC ReplayResult
 now has a deterministic, non-mutating bridge to Cycle 3B virtual order intent and
 causal fixture fills. Research reference entries remain distinct from executable

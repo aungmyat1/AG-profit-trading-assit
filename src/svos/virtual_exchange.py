@@ -199,7 +199,9 @@ class VirtualExchange:
             kind = self._exit_kind(p, bar)
             if kind is None:
                 continue
-            self._terminal(order, OrderState.FILLED, bar, kind.value, observation_kind=kind.value)
+            level = None if kind is ObservationKind.AMBIGUOUS_SEQUENCE else (p.stop_price if kind is ObservationKind.ADVERSE else p.target_price)
+            self._terminal(order, OrderState.FILLED, bar, kind.value, observation_kind=kind.value,
+                           executable_price=level)
             order.exit = order.records[-1]
             break
         return order
@@ -227,5 +229,6 @@ class VirtualExchange:
         order.records.append(record)
         order.state = state
 
-    def _terminal(self, order, state, bar, reason, *, observation_kind=None):
-        self._transition(order, state, bar.time, reason, bar.dataset_id, bar.event_id, observation_kind=observation_kind)
+    def _terminal(self, order, state, bar, reason, *, observation_kind=None, executable_price=None):
+        self._transition(order, state, bar.time, reason, bar.dataset_id, bar.event_id,
+                         executable_price=executable_price, observation_kind=observation_kind)
