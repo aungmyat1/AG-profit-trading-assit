@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+SVOS Virtual Demo Cycle 6A-R is `VD_REALITY_REMEDIATION_READY`: one bounded read-only
+EURUSD MT5 check refreshed Vantage Demo/USD identity and a stale point-in-time spread
+snapshot. Volume, margin, commission, slippage, latency, and representative historical
+executable spread remain unresolved; `VD_BASE` remains not ready. See
+`docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_R_STATUS.md`.
+
 SVOS Virtual Demo Cycle 6A is `VD_REALITY_AUTHORITY_READY`: repository broker/account
 evidence is inventoried, but economic inputs remain explicitly incomplete. EURUSD is
 limited to `OHLC_M1`; commission, slippage, latency, volume, margin, and historical

@@ -2,7 +2,8 @@
   "schema": "VD_BROKER_REALITY_AUTHORITY_V1",
   "classification": "VD_REALITY_AUTHORITY_READY",
   "baseline_commit": "c5a2565316f47ee6510363a5b7dd5c05735ac4eb",
-  "evidence_acquired_this_cycle": false,
+  "evidence_acquired_this_cycle": true,
+  "read_only_query": {"tool": "scripts/check_mt5.py --symbol EURUSD --json", "observed_utc": "2026-09-20", "result": "OK", "freshness": "STALE_DATA", "order_calls": 0, "account_mutation": false},
   "venue": {"value": "VantageMarkets-Demo", "classification": "BROKER_SPECIFIED", "scope": "dated read-only audit; not VT Markets", "evidence": "docs/status/AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_E1_STATUS.md"},
   "account": {"server": "VantageMarkets-Demo", "company": "Vantage Markets (Pty) Ltd", "currency": "USD", "environment": "DEMO", "classification": "BROKER_SPECIFIED", "evidence": "AG_VTMARKETS...E1_STATUS.md; account 26088035 in EURUSD friction evidence; separate E1 capture also records login 25972746", "vd_account_profile": "UNSELECTED"},
   "instrument": {
@@ -24,6 +25,7 @@
   "friction": {
     "spread": {"classification": "EMPIRICAL_NARROW_WINDOW", "samples": 12, "period": "2026-09-15T20:12:28Z/20:13:23Z", "median_pips": 1.30, "max_pips": 1.40, "basis": "live bid/ask read-only capture", "historical_executable": false, "evidence": "AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md"},
     "campaign_spread": {"classification": "EMPIRICAL_NARROW_WINDOW", "samples": 1440, "period": "2026-09-16/2026-09-18", "statistics": "12 summaries, window medians ~1.30-1.40 pips", "historical_executable": false, "evidence": "friction_campaign_wp3a1/sessions/*_summary.json"},
+    "current_snapshot": {"classification": "EMPIRICAL_NARROW_WINDOW", "observed_utc": "2026-09-20", "bid": 1.14849, "ask": 1.14871, "spread_points": 22, "spread_pips": 2.2, "freshness": "STALE_DATA", "not_historical": true, "evidence": "read-only check_mt5 EURUSD query"},
     "commission": {"classification": "UNAVAILABLE", "reason": "zero EURUSD deal rows; BTCUSD zero commission not transferable"},
     "slippage": {"classification": "UNAVAILABLE", "reason": "one EURUSD requested-vs-filled observation is insufficient for a distribution"},
     "latency": {"classification": "UNAVAILABLE", "reason": "no paired submission/ack/fill timing authority"}

@@ -1,6 +1,7 @@
 {
   "schema": "VD_REALITY_MODEL_READINESS_V1",
   "base_profile": "VD_BASE_PENDING_AUTHORITY",
+  "remediation_cycle": "6A-R",
   "stress_profiles": "VD_STRESS_* may worsen established base assumptions only; no multiplier selected",
   "models": {
     "spread": {"readiness": "ENGINEERING_PROXY_READY", "base": "NOT_READY", "stress": "NOT_READY", "reason": "narrow live observations are not historical executable coverage"},

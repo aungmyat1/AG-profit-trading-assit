@@ -24,6 +24,8 @@ The [Cycle 5 orchestration status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE5_STA
 records end-to-end composition, checkpoints, and determinism boundaries.
 The [Cycle 6A reality authority status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_STATUS.md)
 records broker/account evidence and the economic readiness boundary.
+The [Cycle 6A-R remediation status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_R_STATUS.md)
+records the bounded read-only refresh and residual blocker classification.
 
 ## Start here
 
