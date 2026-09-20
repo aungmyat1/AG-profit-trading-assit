@@ -4604,6 +4604,97 @@
     },
     "history": []
   },
+  "FX:DECISION-GBPUSD-d046e4005be76531": {
+    "current": {
+      "application_release": null,
+      "broker_mutation_blocked": true,
+      "config_hash": "b1aaf486885a3dd8b92cb6e97e47c7e1d888d1ecab11ecd47ef2eccaffbf9b4d",
+      "confirmation_evidence": {
+        "setup_id": "ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:GBPUSD:2026-09-18"
+      },
+      "contract_type": "SPOT_FX",
+      "correction_of": null,
+      "cost_assumptions": {
+        "commission": null,
+        "missing_fields": [],
+        "slippage": null,
+        "spread": null,
+        "status": "NOT_INCLUDED",
+        "swap_or_funding": null
+      },
+      "data_provenance": {
+        "complete_candle_evidence": true,
+        "data_version": "SNAPSHOT-GBPUSD-2026-09-18-e5929f34663362b0",
+        "freshness_note": null,
+        "market_data_asof": "2026-09-18T15:00:00+00:00",
+        "market_data_fingerprint": "f28c84a68956984fe41e5716aee09119b440decf058d18d5f8c48ccfc7376722",
+        "market_data_mode": "REAL",
+        "source": "MT5"
+      },
+      "demo_authorized": false,
+      "demo_eligible": false,
+      "direction": "LONG",
+      "economic_edge_established": false,
+      "engine_release": "AG_TRADE_ASSISTANT_V1_0_3",
+      "entry": 1.33479,
+      "execution_authority": "NONE",
+      "execution_eligible": false,
+      "expected_R": null,
+      "git_commit": null,
+      "lifecycle_stage": null,
+      "liquidity_evidence": {
+        "trigger_level": 1.33479,
+        "trigger_timeframe": "M15",
+        "trigger_type": "LIQUIDITY_SWEEP"
+      },
+      "live_authorized": false,
+      "market": "FX",
+      "market_context_evidence": {
+        "reference_session": "London",
+        "trading_date": "2026-09-18"
+      },
+      "plan_expires_at": "2026-09-18T15:00:00+00:00",
+      "proposal_envelope_id": "FX:DECISION-GBPUSD-d046e4005be76531",
+      "proposal_only": true,
+      "proposal_state": "PROPOSAL_READY",
+      "reasons": [
+        "LOWER_SWEEP_STRICT_PENETRATION"
+      ],
+      "schema_version": "AG_CANONICAL_PROPOSAL_V1",
+      "setup_evidence": {
+        "profile_id": "FOREX",
+        "risk_amount": 49.98000000001034,
+        "risk_percent": 0.5,
+        "volume": 7.14
+      },
+      "source_module": "post_asian_pilot.decision.PostAsianDecision",
+      "source_record_id": "DECISION-GBPUSD-d046e4005be76531",
+      "stop": 1.33472,
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.1",
+      "symbol": "GBPUSD",
+      "targets": [
+        1.33742,
+        1.33514
+      ],
+      "timestamps": {
+        "detected_at": "2026-09-18T19:47:05.572376+00:00",
+        "evidence_candle_close": "2026-09-18T14:30:00+00:00",
+        "evidence_complete": [
+          "LIQUIDITY_SWEEP",
+          "M15_CLOSE_CONFIRMATION"
+        ],
+        "expires_at": "2026-09-18T15:00:00+00:00",
+        "last_evaluated_at": "2026-09-18T19:47:05.572376+00:00",
+        "next_required_evidence": [],
+        "state_entered_at": "2026-09-18T14:30:00+00:00"
+      },
+      "venue": "MT5_BROKER",
+      "version": 1,
+      "watcher_state": "SETUP_QUALIFIED"
+    },
+    "history": []
+  },
   "FX:DECISION-GBPUSD-d3216ca914b11c6c": {
     "current": {
       "application_release": null,
