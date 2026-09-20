@@ -7,6 +7,12 @@ this mission.**
 
 `HEAD_BEFORE = 415d0622b82a8bedbabdc620d018969cec51c2cb`
 
+`HEAD_AFTER = 64675c685679ac3c6346f0eaa0098271f93d9190`
+
+Note: a concurrent agent committed SVOS/agent-context work during this mission
+(`415d062` → `0d4ca40`). That work was left entirely untouched; this mission's changes
+are isolated in their own commit on top of it.
+
 ---
 
 ## 1. Existing scheduler state (audited before mutation)
@@ -279,10 +285,45 @@ the test suite fails if any installer script references it.
 | `tests/test_large_smc_live_watch_hardening.py` (new, P4) | **32 passed** |
 | `tests/test_large_smc_watch_lifecycle.py` (new, P5) | **31 passed** |
 | Affected-surface regression (`test_large_smc_live_watch_execution_boundary`, `test_large_smc_live_ledger`, `test_large_smc_execution_boundary`, `test_large_smc_registration`, `test_large_smc_research_engine`) | **45 passed** |
+| **Full suite** (`.venv\Scripts\python.exe -m pytest -q -p no:randomly`) | **3571 passed, 1 failed, 7 skipped, 1 deselected** in 34:07 |
 
 Command: `.venv\Scripts\python.exe -m pytest -q --tb=short <paths>`
 Environment: Windows, Python 3.14 venv, offline (no live MT5 dependency in the new
 tests; broker-parity tests read local `D:\` exports and skip if absent).
+
+### The single full-suite failure is NOT a regression from this mission
+
+`tests/test_validation_framework.py::test_btc_adapter_reconciles_against_registry_and_yaml`
+
+```
+assert record.gates["NATURAL_CAMPAIGN_ACCRUAL"].details["observed_count"] == 0
+E   assert 1 == 0
+```
+
+Classified as **environmental / pre-existing**, not a genuine regression:
+
+1. **Untouched by this mission.** `git show --stat HEAD` confirms all 17 changed files
+   are scheduler / Large-SMC / identity-audit / documentation only. No BTC or
+   `validation_framework` file is in the change set.
+2. **Caused by legitimate production-data accrual.** `observed_count` is
+   `stats.valid_campaign_days` (`validation_framework/adapters/btc_adapter.py`). The
+   scheduled task `AG Profit Trading - BTC Daily Decision` ran 2026-09-20 13:07:37
+   (`LastTaskResult 0`) and wrote `journal/reports/btc/2026/2026-09-19.json`, moving the
+   campaign day count from 0 to 1.
+3. **The test hard-codes the pre-accrual value.** `tests/test_validation_framework.py:427`
+   asserts `observed_count == 0` literally. It was written when the BTC campaign had no
+   qualifying days and is brittle against the daily production task that this repository
+   deliberately schedules. The same test file already writes a synthetic `observed_count = 3`
+   at line 504, showing the value is understood to be mutable.
+
+The test's own intent (campaign completion alone must not unblock `FORWARD_RESEARCH` →
+`OPERATIONAL_SHADOW` while `HISTORICAL_REPLAY` stays unproven) is **unaffected and still
+holds** — `promotion_eligible` remains `False` with the expected blockers.
+
+**Not fixed here, deliberately:** correcting it would mean editing a BTC validation test
+that is outside this mission's scope and belongs to the BTC campaign's own owner. It is
+reported rather than silently adjusted, and no frozen dataset byte or production artifact
+was altered.
 
 No frozen dataset bytes were altered to make any hash pass.
 
