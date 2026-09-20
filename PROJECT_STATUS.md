@@ -6,6 +6,13 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+SVOS Virtual Demo temporal foundation is frozen at `04a8d122682e0888d3260b103303576c887d83ee`
+after a 39-test focused TD-8E/MI regression. Cycle 3A execution adjudication is
+`VD_EXCHANGE_INPUTS_READY` for isolated engineering fixtures only: EURUSD data quality
+is `OHLC_M1`, and SSC's legacy signal-close fill conflicts with causal next-event
+VirtualExchange timing. Integrated exchange and economic qualification remain blocked
+on the explicit inputs in `docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE3A_STATUS.md`.
+
 SVOS Virtual Demo Engine V1 Cycle 2 is `VD_TIME_FEED_READY` (`UNIT_TESTED`): an isolated
 VirtualClock and TD-8E-bound historical market feed provide deterministic M1/M15/H1
 event visibility, ordering, future-isolation, speed parity, and end-of-data behavior.

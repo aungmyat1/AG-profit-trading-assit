@@ -9,6 +9,9 @@ and its linked time, exchange, account, ledger, campaign, qualification, and com
 map contracts are design-only references. They grant no campaign or trading authority.
 The [Cycle 2 Virtual Time and Feed status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE2_STATUS.md)
 records the unit-tested historical clock/feed implementation and its limits.
+The [Cycle 3A execution adjudication](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE3A_STATUS.md)
+links the EURUSD input authority inventory and draft profile; it does not authorize
+an integrated exchange or economic campaign.
 
 ## Start here
 
