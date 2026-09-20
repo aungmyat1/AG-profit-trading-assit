@@ -13,7 +13,12 @@ advance only on later M1 events, with account/ledger transitions and explicit
 end-of-data outcomes. A JSON checkpoint can rebuild and verify state by replaying
 the admitted immutable prefix. These paths are unit-tested with engineering
 fixtures; BE/partial virtual semantics and campaign contracts remain outside this
-cycle's proof. See `docs/status/VD_STRATEGY_CAPACITY_CYCLE2_STATUS.md`.
+cycle's proof. The next bounded engineering gate is the frozen
+`VD_CAPACITY_RISK_V1` contract in `src/svos/capacity_risk_contract.py`, which
+records the repo-authority capacity limits (`max_open_positions=1`,
+`ENGINEERING_NORMALIZED_1`) and explicitly defers broker leverage/margin and
+friction authority as `DEFERRED_EXECUTION_PARITY`. See
+`docs/status/VD_STRATEGY_CAPACITY_CYCLE2_STATUS.md`.
 
 Strategy Capacity VD Cycle 1 is `VD_STRATEGY_CAPACITY_SIMULATOR_NOT_READY`.
 The VD runner now has a unit-tested, fail-closed context-decision boundary for

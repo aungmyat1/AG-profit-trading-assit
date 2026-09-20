@@ -46,7 +46,12 @@ separate access governance.
 
 No campaign was run, no protected/holdout/OOS data was accessed, and no MT5
 order or margin path was used. Strategy semantics, registration, execution
-authorization, and parameters were unchanged. Simulator readiness still needs
-the capacity risk/friction/metric/qualification contracts and manifest, plus
-engineering parity proofs on permitted development evidence. BE and partial
+authorization, and parameters were unchanged. The next bounded engineering gate is
+the frozen `VD_CAPACITY_RISK_V1` contract in `src/svos/capacity_risk_contract.py`,
+which records the repo-authority virtual-capacity limits and fails closed on any
+broker or economic value that is not explicitly authorized by the project. The
+capacity contract intentionally defers leverage, margin, commission, slippage,
+latency, and executable-spread authority as `DEFERRED_EXECUTION_PARITY`. Simulator
+readiness still needs the friction/metric/qualification contracts and manifest,
+plus engineering parity proofs on permitted development evidence. BE and partial
 behavior require an explicit virtual lifecycle contract before inclusion.
