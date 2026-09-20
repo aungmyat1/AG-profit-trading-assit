@@ -6,6 +6,8 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+Validation-system assurance is `PARTIAL`: the repo now contains a fail-closed validation contract for friction and a machine-testable assurance manifest (`AG_VALIDATION_SYSTEM_ASSURANCE_V1.md` and `artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`) proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost handling. The earliest missing concrete gate, VA1 temporal/lookahead integrity, has now been frozen as `VD_TEMPORAL_LOOKAHEAD_V1` and covered by a deterministic perturbation test proving that future continuation beyond decision time T does not change the visible closed-bar set or strategy inputs at T. This is a necessary prerequisite, but the broader validation stack remains `NOT_READY` for evidence-producing development because VA2 warm-up stability, VA3 synthetic known-answer coverage, and downstream economic/holdout gates remain partial or unproven. Strategy semantics remain unchanged and no demo/live authority is granted.
+
 Strategy Capacity VD Cycle 2 remains `VD_STRATEGY_CAPACITY_SIMULATOR_NOT_READY`.
 Capacity mode now binds internally to SSC's canonical shadow cycle, rejects caller
 decision injection, and records contract/event/dataset provenance. Virtual orders

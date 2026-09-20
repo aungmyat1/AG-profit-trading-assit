@@ -1,0 +1,73 @@
+{
+  "schema_version": "AG_VALIDATION_SYSTEM_ASSURANCE_V1",
+  "commit": "da034405612a4ca2434552378386d295aa3823bc",
+  "timestamp_utc": "2026-09-20T00:00:00Z",
+  "classification": "PARTIAL",
+  "overall_status": "VALIDATION_SYSTEM_ASSURANCE = PARTIAL",
+  "tests": [
+    {
+      "test": "test_lifecycle_transition_is_contiguous_prefix_fail_closed",
+      "authority": "src/svos/lifecycle.py::evaluate_transition",
+      "input_hashes": {
+        "gate_results": "sha256:7f4d1e7d5c1d1a8f46f60dbd71731f5d7f4db6f08847c0f5a7ef4b0550e68d39",
+        "evidence_refs": "sha256:3bfd7c05f0f8cba2777f0cb6e6bbf0f5189d0dcf1be9dfe5d24f4d03c5d02d67"
+      },
+      "expected_behavior": "Transition must fail when a prior gate is not PASS; no contiguous-prefix bypass allowed.",
+      "actual_behavior": "Transition fails as expected; the prior G4 FAIL blocks progression.",
+      "result": "PASS",
+      "evidence_artifact": "tests/test_validation_system_assurance.py",
+      "commit": "da034405612a4ca2434552378386d295aa3823bc",
+      "timestamp_utc": "2026-09-20T00:00:00Z"
+    },
+    {
+      "test": "test_optimization_admission_blocks_protected_data_access",
+      "authority": "src/svos/optimization_admission.py::evaluate_optimization_admission",
+      "input_hashes": {
+        "conditions": "sha256:bcf1c4b7c65d5f4ee4c157b7d0b462d0a7cc8500dbd4a3c1d24f76454a7dcc6d"
+      },
+      "expected_behavior": "Optimization is blocked when protected_data_access_count != 0 or any required gate condition is missing.",
+      "actual_behavior": "Optimization is correctly blocked and records the missing protected-data condition.",
+      "result": "PASS",
+      "evidence_artifact": "tests/test_validation_system_assurance.py",
+      "commit": "da034405612a4ca2434552378386d295aa3823bc",
+      "timestamp_utc": "2026-09-20T00:00:00Z"
+    },
+    {
+      "test": "test_friction_contract_remains_fail_closed_for_missing_costs",
+      "authority": "src/svos/friction_contract.py::FrictionContract",
+      "input_hashes": {
+        "friction_contract": "sha256:7d7f8c5dff1188d2671d27f4af0f1e8d41f8fefc65b2c383c7ef2e4ddac48618"
+      },
+      "expected_behavior": "Unknown or unavailable friction components remain UNAVAILABLE and never become zero-cost or proxy values.",
+      "actual_behavior": "The contract remains fail-closed and rejects a zero-valued known-cost fallback.",
+      "result": "PASS",
+      "evidence_artifact": "tests/test_validation_system_assurance.py",
+      "commit": "da034405612a4ca2434552378386d295aa3823bc",
+      "timestamp_utc": "2026-09-20T00:00:00Z"
+    }
+  ],
+  "classification_by_domain": {
+    "TEMPORAL_INTEGRITY": "PARTIAL",
+    "WARMUP_STABILITY": "PARTIAL",
+    "EXECUTION_SIMULATOR_CORRECTNESS": "PARTIAL",
+    "FRICTION_CORRECTNESS": "PASS",
+    "OCCURRENCE_INTEGRITY": "PASS",
+    "DATASET_FIREWALL": "PARTIAL",
+    "OPTIMIZATION_GOVERNANCE": "PARTIAL",
+    "WALK_FORWARD_CORRECTNESS": "PARTIAL",
+    "REFERENCE_ENGINE_RECONCILIATION": "PARTIAL",
+    "DETERMINISM": "PASS"
+  },
+  "constraints": {
+    "strategy_semantics_changed": false,
+    "optimization_run": false,
+    "campaign_run": false,
+    "oos_access_count": 0,
+    "protected_access_count": 0,
+    "holdout_access_count": 0,
+    "demo_authority": false,
+    "live_authority": false
+  },
+  "notes": "This assurance package verifies the fail-closed validation architecture and the repository's deterministic contract governance. It does not claim full external validation completeness for temporal perturbation, walk-forward, full warm-up convergence, independent reference reconciliation, or final holdout evidence.",
+  "evidence_artifact": "AG_VALIDATION_SYSTEM_ASSURANCE_V1.md"
+}
