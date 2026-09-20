@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+MI V1 Cycle 2 core is `MI_V1_CORE_READY` from `93586ec`: an immutable, deterministic
+snapshot/composer consumes admitted TD-8E evidence, preserves event and dataset
+provenance, and fails closed on missing components. EMA and a cross-strategy regime
+contract remain explicitly unavailable. No consumer migration or execution authority
+changed. See `AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md`.
+
 TD-8E shared historical replay evaluation is `UNIT_TESTED` and final integration is
 `MI_FOUNDATION_READY`. One context at a caller-controlled historical T fed the actual
 Asian strategy engine and SSC canonical consumer with the same event identity. R4

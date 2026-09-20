@@ -71,6 +71,8 @@ their age.
     [`../MI_V1_INVARIANTS.md`](../MI_V1_INVARIANTS.md), and
     [`../MI_V1_MIGRATION_PLAN.md`](../MI_V1_MIGRATION_PLAN.md) — Cycle 1 MI design
     artifacts; design-only and non-authorizing.
+17. [`../AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md`](../AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md)
+    — Cycle 2 immutable MI core implementation and verification status.
    — preflight architecture review and authorization packet for the next, separately
    authorized WP7 task (real Telegram message delivery); does not itself authorize
    `MESSAGE_DELIVERY` or any send.

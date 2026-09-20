@@ -15,8 +15,13 @@ from .bias_resolver import (
     resolve_from_structure_tiers,
     resolve_unavailable,
 )
+from .snapshot import (MIComponent, MIExecutionLineage, MIIdentity, MIProvenance,
+                        MIQuality, MarketIntelligenceSnapshot, SCHEMA_VERSION)
+from .composer import compose_market_intelligence
 
 __all__ = [
     "Bias", "MarketBiasResult",
     "resolve_from_daytrading_market_bias", "resolve_from_structure_tiers", "resolve_unavailable",
+    "MIComponent", "MIExecutionLineage", "MIIdentity", "MIProvenance", "MIQuality",
+    "MarketIntelligenceSnapshot", "SCHEMA_VERSION", "compose_market_intelligence",
 ]
