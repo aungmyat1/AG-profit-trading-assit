@@ -36,6 +36,7 @@ inventing an authorization decision this module has no evidence for.
 """
 from __future__ import annotations
 
+import dataclasses
 from typing import Optional
 
 from execution.adapter import TradeProposal
@@ -105,6 +106,7 @@ def to_canonical_proposal(
         proposal_state = _PROPOSAL_STATE_BY_STATUS_NON_READY[decision.status]
         return CanonicalProposal(
             proposal_envelope_id=f"FX:{source_record_id}",
+            identity_version="AG_PROPOSAL_OCCURRENCE_IDENTITY_V1",
             strategy_id=decision.strategy_id, strategy_version=decision.strategy_version,
             market="FX", venue="MT5_BROKER", contract_type="SPOT_FX", symbol=decision.symbol,
             watcher_state=_WATCHER_STATE_BY_STATUS[decision.status], proposal_state=proposal_state,
@@ -136,22 +138,25 @@ def to_canonical_proposal(
     # TradeProposal was also supplied -- a READY decision with no such proposal is a
     # missing-required-field case (Workstream 0's own BLOCKED rule), not a partial READY.
     if trade_proposal is None:
-        return blocked_envelope(
+        envelope = blocked_envelope(
             source_module=SOURCE_MODULE, source_record_id=source_record_id, symbol=decision.symbol,
             strategy_id=decision.strategy_id, strategy_version=decision.strategy_version,
             reasons=("MISSING_ACTIONABLE_TRADE_PROPOSAL",),
         )
+        return dataclasses.replace(envelope, identity_version="AG_PROPOSAL_OCCURRENCE_IDENTITY_V1")
     if trade_proposal.setup_id != decision.decision_id and trade_proposal.symbol != decision.symbol:
         # Defensive: never silently attach an unrelated TradeProposal to this decision.
-        return blocked_envelope(
+        envelope = blocked_envelope(
             source_module=SOURCE_MODULE, source_record_id=source_record_id, symbol=decision.symbol,
             strategy_id=decision.strategy_id, strategy_version=decision.strategy_version,
             reasons=("TRADE_PROPOSAL_IDENTITY_MISMATCH",),
         )
+        return dataclasses.replace(envelope, identity_version="AG_PROPOSAL_OCCURRENCE_IDENTITY_V1")
 
     targets = tuple(t for t in (trade_proposal.tp1, trade_proposal.tp2) if t is not None)
     return CanonicalProposal(
         proposal_envelope_id=f"FX:{source_record_id}",
+        identity_version="AG_PROPOSAL_OCCURRENCE_IDENTITY_V1",
         strategy_id=decision.strategy_id, strategy_version=decision.strategy_version,
         market="FX", venue="MT5_BROKER", contract_type="SPOT_FX", symbol=decision.symbol,
         watcher_state=WATCHER_SETUP_QUALIFIED, proposal_state=PROPOSAL_READY,

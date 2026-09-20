@@ -151,6 +151,8 @@ class CanonicalProposal:
 
     # ---- identity -----------------------------------------------------------------
     proposal_envelope_id: str = ""
+    identity_version: Optional[str] = None  # forward-only identity version stamp for new
+    # proposal records; legacy records remain byte-identical and never reattributed.
     strategy_id: str = ""
     strategy_version: str = ""
     application_release: Optional[str] = None

@@ -18,7 +18,7 @@ from svos.friction_profile import (
     FrictionComponentState,
     FrictionProfile,
 )
-from svos.virtual_broker import Side, VirtualAccount, VirtualBroker, VirtualCandle
+from svos.virtual_broker import Side, VirtualAccount, VirtualBroker, VirtualCandle, VirtualOrderSpec
 
 T0 = datetime(2026, 9, 1, 8, 0)
 
@@ -144,3 +144,44 @@ def test_checkpoint_campaign_mismatch_rejected(tmp_path):
     )
     with pytest.raises(ValueError):
         other.load_checkpoint(path)
+
+
+def test_checkpoint_restores_pending_orders_open_positions_and_ledger():
+    proposal = ProposalSpec(
+        proposal_id="p1", symbol="EURUSD", side=Side.LONG, stop_loss=0.9980,
+        setup="S1", session="ASIAN_LONDON", direction="LONG",
+    )
+    broker = _broker()
+    broker.submit_market(VirtualOrderSpec(
+        symbol="EURUSD", side=Side.LONG, stop_loss=0.9980,
+    ))
+    broker.on_candle(_candle(0, 1.0000, 1.0005, 0.9990, 1.0002))
+    checkpoint = broker.to_checkpoint()
+    restored = VirtualBroker.from_checkpoint(checkpoint, friction=broker._friction, account=broker.account_snapshot())
+
+    assert len(restored.pending_orders) == 0
+    assert len(restored.open_positions) == 1
+    assert len(restored.ledger.fills) == 1
+    assert len(restored.ledger.trades) == 0
+
+
+def test_forward_orchestrator_from_checkpoint_continues_virtual_lifecycle():
+    proposal = ProposalSpec(
+        proposal_id="p1", symbol="EURUSD", side=Side.LONG, stop_loss=0.9980,
+        setup="S1", session="ASIAN_LONDON", direction="LONG",
+    )
+    orch = ForwardOrchestrator(_campaign(), _proposal_fn([proposal]), _broker())
+    orch.on_candle(_candle(0, 1.0, 1.0, 1.0, 1.0))
+    path = str(_candle(0, 1.0, 1.0, 1.0, 1.0).time)
+    checkpoint_path = "/tmp/forward_restart_checkpoint.json"
+    orch.save_checkpoint(checkpoint_path)
+
+    restored = ForwardOrchestrator.from_checkpoint(
+        checkpoint_path,
+        _campaign(),
+        _proposal_fn([proposal]),
+        _broker(),
+    )
+    assert restored.campaign.campaign_id == "CAMP-1"
+    assert restored._broker is not None
+    assert restored._last_candle_time is not None

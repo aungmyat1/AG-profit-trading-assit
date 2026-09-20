@@ -30,6 +30,7 @@ from strategy_engine.sweep_retest.models import (
 )
 
 from proposal_envelope.adapters import btc_adapter, fx_adapter, large_smc_adapter
+from proposal_envelope.ledger import ProposalLedger
 from proposal_envelope.models import (
     PROPOSAL_BLOCKED,
     PROPOSAL_INCOMPLETE,
@@ -144,6 +145,7 @@ def test_fx_ready_with_actionable_trade_proposal_maps_losslessly():
     assert envelope.strategy_id == decision.strategy_id
     assert envelope.symbol == decision.symbol
     assert envelope.execution_authority == "NONE"
+    assert envelope.identity_version == "AG_PROPOSAL_OCCURRENCE_IDENTITY_V1"
 
 
 def test_fx_ready_without_trade_proposal_maps_to_blocked_never_partial_ready():
@@ -173,6 +175,64 @@ def test_fx_no_trade_maps_to_no_trade():
     decision = _decision(STATUS_NO_TRADE)
     envelope = fx_adapter.to_canonical_proposal(decision)
     assert envelope.proposal_state == PROPOSAL_NO_TRADE
+
+
+def test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover(tmp_path):
+    strategy_id = "ST_ASIAN_SWEEP_5R_V1"
+    pair_id = "ASIAN_LONDON"
+    symbol = "EURUSD"
+    trading_date = date(2026, 9, 2)
+    ledger = ProposalLedger(path=str(tmp_path / "ledger.json"))
+    proposals = []
+
+    for i in range(3):
+        decision = _decision(
+            STATUS_READY,
+            decision_id=f"DECISION-{symbol}-{i}",
+            strategy_id=strategy_id,
+            symbol=symbol,
+            trading_date=trading_date,
+            reference_session="ASIAN",
+            evaluation_time=datetime(2026, 9, 2, 9, 0, i, tzinfo=timezone.utc),
+            ready_at=datetime(2026, 9, 2, 8, 30, i, tzinfo=timezone.utc),
+            valid_until=datetime(2026, 9, 2, 12, 0, tzinfo=timezone.utc),
+        )
+        trade_proposal = _trade_proposal(
+            setup_id=f"{strategy_id}:{pair_id}:{symbol}:{trading_date.isoformat()}",
+            symbol=symbol,
+        )
+        proposals.append(fx_adapter.to_canonical_proposal(decision, trade_proposal))
+        ledger.record_proposal(proposals[-1])
+
+    observation_count = len(proposals)
+    distinct_occurrence_count = len({
+        (p.strategy_id, p.market_context_evidence.get("reference_session"), p.symbol, p.market_context_evidence.get("trading_date"))
+        for p in proposals
+    })
+    current_proposal_count = len([
+        p for p in ledger.list_active_proposals()
+        if p.proposal_state == PROPOSAL_READY and p.strategy_id == strategy_id and p.symbol == symbol
+    ])
+
+    assert observation_count == 3
+    assert distinct_occurrence_count == 1
+    assert current_proposal_count <= 1
+
+
+def test_fx_expired_ready_proposal_remains_in_current_view_until_filtered_out():
+    now = datetime(2026, 9, 2, 18, 0, tzinfo=timezone.utc)
+    decision = _decision(
+        STATUS_READY,
+        ready_at=datetime(2026, 9, 2, 8, 30, tzinfo=timezone.utc),
+        valid_until=now - timedelta(minutes=1),
+    )
+    envelope = fx_adapter.to_canonical_proposal(decision, _trade_proposal())
+
+    assert envelope.proposal_state == PROPOSAL_READY
+    assert envelope.timestamps.expires_at is not None
+    expires_at = datetime.fromisoformat(envelope.timestamps.expires_at)
+    assert expires_at < now
+    assert not (envelope.proposal_state == PROPOSAL_READY and expires_at > now)
 
 
 def test_fx_data_error_and_blocked_and_expired_never_become_ready():

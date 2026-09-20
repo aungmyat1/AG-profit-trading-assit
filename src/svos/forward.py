@@ -334,6 +334,36 @@ class ForwardOrchestrator:
         self._opportunities = data["opportunities"]
         self._no_setups = data["no_setups"]
         self._proposals = data["proposals"]
-        # proposal meta / broker ledger are restored read-only for reporting; the broker
-        # state itself is not resumed in-place (a resumed run resumes candle consumption).
+        self._proposal_meta = {}
+        for order_id, payload in (data.get("proposal_meta") or {}).items():
+            side = payload.get("side")
+            side_name = side.split(".")[-1] if isinstance(side, str) else side
+            proposal = ProposalSpec(
+                proposal_id=payload["proposal_id"],
+                symbol=payload["symbol"],
+                side=Side(side_name) if side_name is not None else Side.LONG,
+                stop_loss=float(payload["stop_loss"]),
+                setup=payload["setup"],
+                session=payload["session"],
+                direction=payload["direction"],
+                partial_target=(float(payload["partial_target"]) if payload.get("partial_target") is not None else None),
+                partial_pct=float(payload.get("partial_pct", 0.5)),
+                runner_target=(float(payload["runner_target"]) if payload.get("runner_target") is not None else None),
+                session_exit_time=(datetime.fromisoformat(payload["session_exit_time"]) if payload.get("session_exit_time") else None),
+                risk_amount_R=float(payload.get("risk_amount_R", 1.0)),
+            )
+            self._proposal_meta[order_id] = proposal
+        self._broker.restore_checkpoint(data["broker"])
         self._restored_checkpoint = data
+
+    @classmethod
+    def from_checkpoint(
+        cls,
+        path: str,
+        campaign: ForwardValidationCampaign,
+        decision_fn: DecisionFn,
+        broker: VirtualBroker,
+    ) -> "ForwardOrchestrator":
+        orch = cls(campaign, decision_fn, broker)
+        orch.load_checkpoint(path)
+        return orch

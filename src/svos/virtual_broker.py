@@ -19,13 +19,38 @@ connection to any MT5 balance.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional, Sequence, Tuple
 
 from .friction_profile import FrictionProfile
 
 _SIDE_SIGN = {"LONG": 1.0, "SHORT": -1.0}
+
+
+def _coerce_enum(enum_cls, value):
+    if value is None:
+        return None
+    if isinstance(value, enum_cls):
+        return value
+    if isinstance(value, str):
+        name = value.split(".")[-1]
+        try:
+            return enum_cls(value)
+        except ValueError:
+            return enum_cls[name]
+    return enum_cls(value)
+
+
+def _parse_dt(value):
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        text = value.replace("Z", "+00:00")
+        return datetime.fromisoformat(text)
+    return None
 
 
 class Side(str, Enum):
@@ -65,6 +90,7 @@ class VirtualOrderSpec:
     runner_target: Optional[float] = None
     session_exit_time: Optional[datetime] = None
     risk_amount_R: float = 1.0
+    decision_time: Optional[datetime] = None
 
 
 @dataclass(frozen=True)
@@ -81,6 +107,10 @@ class VirtualOrder:
     risk_amount_R: float
     status: OrderStatus = OrderStatus.PENDING
     reason: str = ""
+    created_at: Optional[datetime] = None
+    decision_time: Optional[datetime] = None
+    eligible_fill_time: Optional[datetime] = None
+    fill_price: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -91,6 +121,10 @@ class VirtualFill:
     price: float
     size: float
     slippage_R: float
+    eligible_fill_time: Optional[datetime] = None
+    decision_time: Optional[datetime] = None
+    order_created_time: Optional[datetime] = None
+    actual_fill_time: Optional[datetime] = None
 
 
 @dataclass
@@ -111,6 +145,9 @@ class VirtualPosition:
     status: PositionStatus = PositionStatus.OPEN
     partialed: bool = False
     events: List[dict] = field(default_factory=list)
+    filled_at: Optional[datetime] = None
+    decision_time: Optional[datetime] = None
+    order_created_time: Optional[datetime] = None
 
 
 @dataclass(frozen=True)
@@ -129,6 +166,11 @@ class VirtualTrade:
     gross_R: float
     friction_R: float
     net_R: float
+    decision_time: Optional[datetime] = None
+    order_created_time: Optional[datetime] = None
+    eligible_fill_time: Optional[datetime] = None
+    actual_fill_time: Optional[datetime] = None
+    fill_price: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -239,12 +281,14 @@ class VirtualBroker:
     # -- order entry ---------------------------------------------------------
     def submit_market(self, spec: VirtualOrderSpec) -> VirtualOrder:
         self._next_ids["order"] += 1
+        created_at = spec.decision_time or datetime.now(timezone.utc)
         order = VirtualOrder(
             order_id=f"VO-{self._next_ids['order']:06d}",
             symbol=spec.symbol, side=spec.side, size=spec.size,
             stop_loss=spec.stop_loss, partial_target=spec.partial_target,
             partial_pct=spec.partial_pct, runner_target=spec.runner_target,
             session_exit_time=spec.session_exit_time, risk_amount_R=spec.risk_amount_R,
+            created_at=created_at, decision_time=spec.decision_time,
         )
 
         if spec.side is Side.LONG and spec.partial_target is not None and spec.partial_target <= spec.stop_loss:
@@ -299,10 +343,35 @@ class VirtualBroker:
                 price=fill_price,
                 size=order.size,
                 slippage_R=slippage_R,
+                eligible_fill_time=order.eligible_fill_time or candle.time,
+                decision_time=order.decision_time,
+                order_created_time=order.created_at,
+                actual_fill_time=candle.time,
             )
             self._ledger.record_fill(fill)
             new_fills.append(fill)
             order = self._mark_filled(order)
+            order = VirtualOrder(
+                order_id=order.order_id,
+                symbol=order.symbol,
+                side=order.side,
+                size=order.size,
+                stop_loss=order.stop_loss,
+                partial_target=order.partial_target,
+                partial_pct=order.partial_pct,
+                runner_target=order.runner_target,
+                session_exit_time=order.session_exit_time,
+                risk_amount_R=order.risk_amount_R,
+                status=order.status,
+                reason=order.reason,
+                created_at=order.created_at,
+                decision_time=order.decision_time,
+                eligible_fill_time=fill.eligible_fill_time,
+                fill_price=fill.price,
+            )
+            self._orders = [
+                o if o.order_id != order.order_id else order for o in self._orders
+            ]
             self._open_positions.append(self._new_position(order, fill))
 
         # 2) manage open positions against this bar (fill happened at open; intrabar uses high/low)
@@ -328,6 +397,9 @@ class VirtualBroker:
                     partial_pct=o.partial_pct, runner_target=o.runner_target,
                     session_exit_time=o.session_exit_time, risk_amount_R=o.risk_amount_R,
                     status=OrderStatus.FILLED, reason=o.reason,
+                    created_at=o.created_at, decision_time=o.decision_time,
+                    eligible_fill_time=order.eligible_fill_time or o.eligible_fill_time,
+                    fill_price=order.fill_price,
                 )
                 return self._orders[i]
         return order
@@ -360,6 +432,9 @@ class VirtualBroker:
             partial_target=partial_target, partial_pct=order.partial_pct,
             runner_target=order.runner_target, session_exit_time=order.session_exit_time,
             risk_amount_R=order.risk_amount_R,
+            filled_at=fill.timestamp,
+            decision_time=order.decision_time,
+            order_created_time=order.created_at,
         )
 
     def _friction_R(self) -> float:
@@ -431,12 +506,17 @@ class VirtualBroker:
                 exit_time=exit_time, exit_price=exit_price, exit_reason=reason,
                 size_fraction=size_fraction,
                 gross_R=gross_R, friction_R=friction_R, net_R=net_R,
+                decision_time=position.decision_time,
+                order_created_time=position.order_created_time,
+                eligible_fill_time=position.filled_at,
+                actual_fill_time=exit_time,
+                fill_price=position.entry_price,
             )
         )
 
     @staticmethod
     def _entry_time(position: VirtualPosition) -> datetime:
-        return position.events[0]["time"] if position.events else None
+        return position.filled_at or (datetime.fromisoformat(position.events[0]["time"]) if position.events else None)
 
     def _close_position(self, position: VirtualPosition) -> None:
         position.status = PositionStatus.CLOSED
@@ -453,6 +533,8 @@ class VirtualBroker:
                 "max_open_positions": self._account.max_open_positions,
                 "risk_per_trade_R": self._account.risk_per_trade_R,
                 "daily_loss_limit_R": self._account.daily_loss_limit_R,
+                "realized_pnl_R": self._account.realized_pnl_R,
+                "open_risk_R": self._account.open_risk_R,
                 "peak_equity_R": self._account.peak_equity_R,
             },
             "orders": [o.__dict__ for o in self._orders],
@@ -460,4 +542,84 @@ class VirtualBroker:
             "ledger": self._ledger.to_dict(),
             "next_ids": dict(self._next_ids),
             "daily_realized_R": self._daily_realized_R,
+            "today": self._today,
         }
+
+    def restore_checkpoint(self, data: dict) -> None:
+        account_data = data.get("account", {})
+        self._account = VirtualAccount(
+            starting_balance_R=account_data.get("starting_balance_R", self._account.starting_balance_R),
+            max_open_positions=account_data.get("max_open_positions", self._account.max_open_positions),
+            risk_per_trade_R=account_data.get("risk_per_trade_R", self._account.risk_per_trade_R),
+            daily_loss_limit_R=account_data.get("daily_loss_limit_R", self._account.daily_loss_limit_R),
+            realized_pnl_R=account_data.get("realized_pnl_R", self._account.realized_pnl_R),
+            open_risk_R=account_data.get("open_risk_R", self._account.open_risk_R),
+            peak_equity_R=account_data.get("peak_equity_R", self._account.peak_equity_R),
+        )
+        self._orders = [
+            VirtualOrder(
+                order_id=o["order_id"], symbol=o["symbol"], side=_coerce_enum(Side, o.get("side")), size=o["size"],
+                stop_loss=o["stop_loss"], partial_target=o.get("partial_target"), partial_pct=o.get("partial_pct", 0.5),
+                runner_target=o.get("runner_target"), session_exit_time=_parse_dt(o.get("session_exit_time")),
+                risk_amount_R=o["risk_amount_R"], status=_coerce_enum(OrderStatus, o.get("status")), reason=o.get("reason", ""),
+                created_at=_parse_dt(o.get("created_at")),
+                decision_time=_parse_dt(o.get("decision_time")),
+                eligible_fill_time=_parse_dt(o.get("eligible_fill_time")),
+                fill_price=o.get("fill_price"),
+            ) for o in data.get("orders", [])
+        ]
+        self._open_positions = [
+            VirtualPosition(
+                position_id=p["position_id"], order_id=p["order_id"], symbol=p["symbol"], side=_coerce_enum(Side, p.get("side")),
+                size=p["size"], entry_price=p["entry_price"], initial_stop=p["initial_stop"], stop_loss=p["stop_loss"],
+                partial_target=p.get("partial_target"), partial_pct=p.get("partial_pct", 0.5), runner_target=p.get("runner_target"),
+                session_exit_time=_parse_dt(p.get("session_exit_time")),
+                risk_amount_R=p["risk_amount_R"], status=_coerce_enum(PositionStatus, p.get("status")), partialed=p.get("partialed", False),
+                events=p.get("events", []), filled_at=_parse_dt(p.get("filled_at")),
+                decision_time=_parse_dt(p.get("decision_time")),
+                order_created_time=_parse_dt(p.get("order_created_time")),
+            ) for p in data.get("positions", [])
+        ]
+        self._ledger = VirtualBrokerLedger()
+        for fill in data.get("ledger", {}).get("fills", []):
+            self._ledger.record_fill(
+                VirtualFill(
+                    fill_id=fill["fill_id"], order_id=fill["order_id"], timestamp=_parse_dt(fill.get("timestamp")),
+                    price=fill["price"], size=fill["size"], slippage_R=fill["slippage_R"],
+                    eligible_fill_time=_parse_dt(fill.get("eligible_fill_time")),
+                    decision_time=_parse_dt(fill.get("decision_time")),
+                    order_created_time=_parse_dt(fill.get("order_created_time")),
+                    actual_fill_time=_parse_dt(fill.get("actual_fill_time")),
+                )
+            )
+        for trade in data.get("ledger", {}).get("trades", []):
+            self._ledger.record_trade(
+                VirtualTrade(
+                    trade_id=trade["trade_id"], position_id=trade["position_id"], order_id=trade["order_id"],
+                    symbol=trade["symbol"], side=_coerce_enum(Side, trade.get("side")), entry_time=_parse_dt(trade.get("entry_time")),
+                    entry_price=trade["entry_price"], exit_time=_parse_dt(trade.get("exit_time")),
+                    exit_price=trade["exit_price"], exit_reason=trade["exit_reason"], size_fraction=trade["size_fraction"],
+                    gross_R=trade["gross_R"], friction_R=trade["friction_R"], net_R=trade["net_R"],
+                    decision_time=_parse_dt(trade.get("decision_time")),
+                    order_created_time=_parse_dt(trade.get("order_created_time")),
+                    eligible_fill_time=_parse_dt(trade.get("eligible_fill_time")),
+                    actual_fill_time=_parse_dt(trade.get("actual_fill_time")),
+                    fill_price=trade.get("fill_price"),
+                )
+            )
+        self._next_ids = dict(data.get("next_ids", self._next_ids))
+        self._daily_realized_R = data.get("daily_realized_R", self._daily_realized_R)
+        self._today = data.get("today")
+
+    @classmethod
+    def from_checkpoint(
+        cls,
+        data: dict,
+        *,
+        friction: FrictionProfile,
+        account: VirtualAccount,
+        intrabar_policy: str = "CONSERVATIVE_STOP_FIRST",
+    ) -> "VirtualBroker":
+        broker = cls(friction=friction, account=account, intrabar_policy=intrabar_policy)
+        broker.restore_checkpoint(data)
+        return broker

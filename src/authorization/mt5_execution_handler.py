@@ -51,6 +51,7 @@ here, both proven first by tests/test_ag_existing_demo_gateway_gap_audit.py:
 from __future__ import annotations
 
 import logging
+import os
 from datetime import datetime
 from typing import Optional
 
@@ -61,6 +62,7 @@ from execution.executor import execute as execution_gateway_execute
 from execution.lifecycle import _trading_day, register_confirmed_fill
 from execution.models import ExecutionSource, TradeCommand
 from execution.position_guard import OpenPositionGuard
+from execution.readiness import require_demo_execution_readiness
 
 from .models import ENVIRONMENT_DEMO, ExecutionApproval
 from .store import generate_approval_id
@@ -135,6 +137,15 @@ def mt5_execution_handler(
         return ExecutionHandlerResult(success=False, result_reference="", detail=REASON_BLOCKED_DAILY_LOSS)
     if open_guard.is_blocked():
         return ExecutionHandlerResult(success=False, result_reference="", detail=REASON_BLOCKED_OPEN_POSITION)
+
+    if os.getenv("AG_DEMO_READINESS_AUDIT", "").strip().lower() in {"1", "true", "yes", "on", "enable", "enabled"}:
+        readiness = require_demo_execution_readiness(proposal, open_position_guard=open_guard, journal_guard=None)
+        if not readiness.passed:
+            return ExecutionHandlerResult(
+                success=False,
+                result_reference="",
+                detail=readiness.reason_code or "DEMO_EXECUTION_READINESS_AUDIT_FAILED",
+            )
 
     command_id = generate_approval_id()
     report = execution_gateway_execute(build_trade_command(proposal, command_id=command_id), user_confirmed=True)

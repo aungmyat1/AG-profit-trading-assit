@@ -1,20 +1,41 @@
+# Python runtime and local caches
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
 .pytest_cache/
-journal/*.jsonl
-journal/post_asian_pilot/
-journal/post_london_newyork_pilot/
-journal/btc_sweep_research/
-journal/ticket_delivery/
-/logs/
-*.log
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
 *.egg-info/
+.venv/
+venv/
+ENV/
 .env
+.env.*
 
-# web/ (Node/Vite frontend, AG_WEB_TELEGRAM_DEMO_EXECUTION_GATEWAY_IMPLEMENTATION_V1)
+# Frontend / Node
+node_modules/
 web/node_modules/
 web/dist/
 web/.vite/
 web/.env
-web/.env.local
-web/.env.*.local
+web/.env.*
+!web/.env.example
+
+# Local runtime traces and editor noise
+/logs/
+*.log
+*.pid
+*.tmp
+*.swp
+*.swo
+*.sqlite3
+*.db
+.DS_Store
+Thumbs.db
+
+# Keep project runtime data tracked unless explicitly requested otherwise
+# (do not ignore journal/, artifacts/, state/, or data/ source trees)
