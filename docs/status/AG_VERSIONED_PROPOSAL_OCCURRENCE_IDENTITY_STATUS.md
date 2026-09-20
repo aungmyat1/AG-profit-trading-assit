@@ -10,6 +10,12 @@ modified. **No demo or live execution authority was granted or exercised.**
 
 `HEAD_BEFORE = 6fafb713714ba6d649b04726f0a1d79a1b6deb82` (worktree clean)
 
+`HEAD_AFTER = accd344b7723d45e13fabda2f93e0ab1644885f0`
+
+Note: a concurrent agent committed SVOS capacity work (`0e013b6`) into the same worktree
+during this mission. That work was left entirely untouched; this mission's changes are
+isolated in their own commit on top of it.
+
 ---
 
 ## 1. Identity baseline (P0/P1) — reproduced
@@ -212,7 +218,26 @@ case:
 |---|---|
 | `pytest tests/test_proposal_occurrence_identity_v1.py -q` | **49 passed** |
 | Identity/proposal/ledger/ticket-delivery regression surface (12 files) | **129 passed** |
-| Full suite `pytest tests -q` | see §6 |
+| Full suite `pytest tests -q` | **3625 passed, 4 failed, 7 skipped, 1 deselected** in 23:10 |
+
+**All 4 full-suite failures are pre-existing and unrelated to this change set.** None is
+in a file this mission touched, and all 4 reproduce at `HEAD_BEFORE`:
+
+| Failure | Cause | Evidence |
+|---|---|---|
+| `test_large_smc_eurusd_admission_wp2.py::test_strategy_semantics_files_unchanged_by_this_mission` | Byte-freeze test asserting `git diff e596507` is empty for `src/large_smc_research/`; the prior scheduler mission (`64675c6`) added `live_watch.py` + `watch_lifecycle.py` there | Both files exist at `HEAD_BEFORE` (`git cat-file -e 6fafb71:src/large_smc_research/live_watch.py` succeeds); `git diff HEAD -- src/large_smc_research/` is **empty** |
+| `test_large_smc_eurusd_friction_campaign_wp3a1.py::test_c10_and_strategy_semantics_unchanged_by_this_mission` | Same byte-freeze invariant | Same |
+| `test_large_smc_eurusd_friction_evidence_wp3a.py::test_strategy_semantics_files_unchanged_by_this_mission` | Same byte-freeze invariant | Same |
+| `test_validation_framework.py::test_btc_adapter_reconciles_against_registry_and_yaml` | Documented environmental failure: the scheduled BTC daily task accrues `observed_count` 0→1 while the test hard-codes 0 | Already classified pre-existing in `AG_SCHEDULER_AND_LARGE_SMC_WATCH_HARDENING_STATUS.md` §"Full suite"; `git diff HEAD -- src/validation_framework/adapters/btc_adapter.py tests/test_validation_framework.py` is **empty** |
+
+The three Large-SMC byte-freeze failures are a **pre-existing invariant-scope defect**
+introduced by the prior mission (a whole-directory byte-freeze that its own new files
+trip), not a regression from this mission. They are reported here rather than silently
+repaired, because fixing them would mean editing a frozen-evidence test outside this
+mission's scope.
+
+**No WP3A.1 friction evidence, Large SMC watcher scheduling, or BTC campaign state was
+modified by this mission** — verified by empty `git diff HEAD` over those paths.
 
 ---
 
