@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+SVOS Virtual Demo Cycle 3B is `VD_EXCHANGE_CORE_READY` for isolated deterministic
+OHLC_M1 engineering fixtures. The core preserves SSC research references separately,
+enforces post-cutoff first-eligible fills, records explicit intrabar ambiguity, and has
+no account/economic/broker authority. Canonical SSC integration remains intentionally
+blocked. See `docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE3B_STATUS.md`.
+
 SVOS Virtual Demo temporal foundation is frozen at `04a8d122682e0888d3260b103303576c887d83ee`
 after a 39-test focused TD-8E/MI regression. Cycle 3A execution adjudication is
 `VD_EXCHANGE_INPUTS_READY` for isolated engineering fixtures only: EURUSD data quality
