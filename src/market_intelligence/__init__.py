@@ -18,10 +18,12 @@ from .bias_resolver import (
 from .snapshot import (MIComponent, MIExecutionLineage, MIIdentity, MIProvenance,
                         MIQuality, MarketIntelligenceSnapshot, SCHEMA_VERSION)
 from .composer import compose_market_intelligence
+from .ssc_adapter import SSCCompatibilityContext, SSCCompatibilityError, build_ssc_compatibility_context
 
 __all__ = [
     "Bias", "MarketBiasResult",
     "resolve_from_daytrading_market_bias", "resolve_from_structure_tiers", "resolve_unavailable",
     "MIComponent", "MIExecutionLineage", "MIIdentity", "MIProvenance", "MIQuality",
     "MarketIntelligenceSnapshot", "SCHEMA_VERSION", "compose_market_intelligence",
+    "SSCCompatibilityContext", "SSCCompatibilityError", "build_ssc_compatibility_context",
 ]

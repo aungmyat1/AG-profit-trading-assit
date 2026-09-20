@@ -75,6 +75,8 @@ their age.
     — Cycle 2 immutable MI core implementation and verification status.
 18. [`../AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md`](../AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md)
     — Cycle 3 parity, temporal isolation, provenance, and fallback proof.
+19. [`../AG_MARKET_INTELLIGENCE_V1_CYCLE4_STATUS.md`](../AG_MARKET_INTELLIGENCE_V1_CYCLE4_STATUS.md)
+    — controlled SSC compatibility integration and decision parity evidence.
    — preflight architecture review and authorization packet for the next, separately
    authorized WP7 task (real Telegram message delivery); does not itself authorize
    `MESSAGE_DELIVERY` or any send.

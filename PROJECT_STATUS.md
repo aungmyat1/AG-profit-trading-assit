@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+MI V1 Cycle 4 controlled SSC integration is `MI_V1_INTEGRATION_READY`: the narrow
+MI-to-SSC adapter preserves TD-8E event/provenance lineage and produces equal canonical
+`run_replay` decisions on the representative complete event. Incomplete identity and
+missing-evidence cases fail closed; no SSC cutover occurred. See
+`AG_MARKET_INTELLIGENCE_V1_CYCLE4_STATUS.md`.
+
 MI V1 Cycle 3 parity and temporal proof is `MI_V1_PARITY_READY` from `cbb6a43`: same
 event determinism, future-only mutation invariance, incomplete evidence handling, zero
 live fallback, identity and H1/M15/M1 lineage preservation, and unresolved EMA/regime
