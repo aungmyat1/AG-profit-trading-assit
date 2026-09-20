@@ -254,6 +254,12 @@ observations from the named milestone; they are not rolling dashboards.
   [`status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md`](status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md) (v1.0.6, pending-entry lifecycle), and
   [`status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`](status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md) (discovered gap, resolved same day), and
   [`status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md`](status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md) (the fix, parity proof, corrected-replay evidence)
+- Scheduler + Large-SMC watch hardening (2026-09-20):
+  [`status/AG_SCHEDULER_AND_LARGE_SMC_WATCH_HARDENING_STATUS.md`](status/AG_SCHEDULER_AND_LARGE_SMC_WATCH_HARDENING_STATUS.md)
+  (weekday window-bounded FX `--once` scheduling with fail-closed gates and frozen
+  friction-window protection; duplicate-proposal identity-layer audit; confirmed
+  broker-time-alignment and non-incremental-watch defects fixed research-only with
+  native-broker D1/H4 parity tests; watch lifecycle as a canonical projection)
 - Opportunity coverage: [`status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md`](status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md)
   (FX `LONDON_NEWYORK` pilot activation; BTC Binance USDT-M market-data adapter,
   multi-occurrence research collection, and execution-domain gate)

@@ -6,6 +6,19 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+Scheduler + Large SMC Watch Hardening is `FX_SCHEDULER_READY` /
+`LARGE_SMC_WATCH_READY_FOR_RESEARCH`. Two pre-existing FX Task Scheduler entries were
+corrected in place (no duplicates) to deterministic weekday, window-bounded `--once`
+runs anchored at each M15 close + 20s, with four ordered fail-closed gates including
+protection of the frozen WP3A.1 friction windows. The reported duplicate-proposal
+problem was reproduced (69 ledger records for only 13 logical setups) and traced to a
+proposal/observation identity-layer collapse; an additive read-only resolver was
+delivered rather than modifying frozen canonical behavior. Two confirmed defects in
+`run_large_smc_live_watch.py` (true-UTC input to broker-aligned D1/H4 bucketing; full
+150-day re-replay per invocation) were fixed research-only with native-broker D1/H4
+parity tests. Demo and live authority remain `NONE`. See
+`docs/status/AG_SCHEDULER_AND_LARGE_SMC_WATCH_HARDENING_STATUS.md`.
+
 SVOS Virtual Demo Cycle 6A-R is `VD_REALITY_REMEDIATION_READY`: one bounded read-only
 EURUSD MT5 check refreshed Vantage Demo/USD identity and a stale point-in-time spread
 snapshot. Volume, margin, commission, slippage, latency, and representative historical
