@@ -190,3 +190,19 @@ At minimum:
    live checks. Never label a unit-tested path as live-verified.
 
 Documentation-only edits do not authorize trading and must not change safety gates.
+
+## AGENT BOOTSTRAP — MANDATORY
+
+At task start, read this file once, classify the mission, read `config/agent_context.json`, resolve the relevant workstream, and load only the authoritative files and skills named there. Prefer named files and symbols before repository search; search only for unresolved dependencies, expand context progressively, and stop discovery once enough evidence exists.
+
+Mission classes: `runtime`, `strategy`, `trade_proposal`, `validation_research`, `execution`, `trade_management`, `scheduler`, `frontend_api`, and `documentation_status`.
+
+### Default context budget
+
+Discovery defaults are at most 5 initial authoritative project files, 2 initial skills, 1 focused repository search, and 10 inspected search results. Avoid large full-file reads and load historical status/evidence only when current authority or explicit lineage requires it. Exceed a default only for a concrete missing authority, cross-module dependency, failing test, ambiguity, shared-surface change, or explicit audit. Begin testing with the narrowest relevant test.
+
+### Workstream routing
+
+Use the manifest for the initial route. Minimum reads are: strategy (registry, named contract, engine, focused test); validation/research (contract, current validation profile/status, runner, focused test); trade proposal (registry, current contract, proposal/strategy engine, authorized market-data source); execution (`config/trading.yaml`, canonical execution and risk authority, focused tests); trade management (relevant management module/gateway, named skill, focused tests); scheduler (canonical config, runner/state machine, focused tests); frontend/API (named module, client/boundary, endpoint, focused tests); documentation/status (current implementation/evidence, latest status, and `LIVE_STATUS_MAINTENANCE.md` when applicable).
+
+Historical evidence, holdout/OOS data, and unrelated strategy histories are opt-in. The manifest routes discovery only; strategy, configuration, code, and status authorities remain authoritative. A HEAD mismatch alone does not invalidate the manifest; refresh an entry only when its routing authority materially changed.

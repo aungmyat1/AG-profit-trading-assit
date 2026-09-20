@@ -1,0 +1,60 @@
+{
+  "schema": "AG_AGENT_CONTEXT_V1",
+  "purpose": "minimal agent context routing",
+  "generated_from_head": "310aa00f450a5ab52a94e25ce88cd98f88abada8",
+  "last_verified_utc": "2026-09-20",
+  "authorities": {
+    "agent_instructions": "AGENTS.md",
+    "strategy_registry": "strategies/registry.yaml",
+    "project_status": "PROJECT_STATUS.md",
+    "trading_config": "config/trading.yaml"
+  },
+  "workstreams": {
+    "ssc": {
+      "purpose": "canonical session sweep continuation strategy",
+      "authority": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
+      "status": "PROJECT_STATUS.md",
+      "read_first": ["strategies/registry.yaml", "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml", "src/session_sweep_continuation"],
+      "skills": [".agents/skills/strategy-management/SKILL.md", ".agents/skills/backtest-engineering/SKILL.md"]
+    },
+    "trade_proposal": {
+      "purpose": "proposal-only strategy output",
+      "authority": "strategies/registry.yaml",
+      "status": "PROJECT_STATUS.md",
+      "read_first": ["strategies/registry.yaml", "src/proposals", "src/strategy_engine"],
+      "skills": [".agents/skills/strategy-management/SKILL.md"]
+    },
+    "execution": {
+      "purpose": "gated broker execution",
+      "authority": "config/trading.yaml",
+      "status": "PROJECT_STATUS.md",
+      "read_first": ["config/trading.yaml", "src/execution", "src/mt5"],
+      "skills": []
+    },
+    "scheduler": {
+      "purpose": "scheduled read-only/runtime jobs",
+      "authority": "config/ag_scheduler_v2.yaml",
+      "status": "PROJECT_STATUS.md",
+      "read_first": ["config/ag_scheduler_v2.yaml", "src/scheduling"],
+      "skills": []
+    },
+    "documentation_status": {
+      "purpose": "current implementation and evidence reporting",
+      "authority": "PROJECT_STATUS.md",
+      "status": "PROJECT_STATUS.md",
+      "read_first": ["PROJECT_STATUS.md", "docs/status/LIVE_STATUS_MAINTENANCE.md"],
+      "skills": []
+    }
+  },
+  "exclusions": ["historical status by default", "holdout/OOS data unless explicitly authorized", "raw datasets and generated artifacts at startup"],
+  "rules": {
+    "manifest_is_routing_only": true,
+    "authority_files_override_manifest": true,
+    "head_mismatch_requires_material_authority_change": true,
+    "historical_evidence_default": "OPT_IN",
+    "initial_authoritative_files_max": 5,
+    "initial_skills_max": 2,
+    "focused_searches_max": 1,
+    "search_results_inspected_max": 10
+  }
+}
