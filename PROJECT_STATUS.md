@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+SVOS Virtual Demo Cycle 5 is `VD_E2E_ENGINE_READY`: deterministic orchestration now
+composes the temporal feed, canonical decision boundary, bridge, exchange, account,
+and ledger with auditable no-setup handling and checkpoint identity. Economic
+qualification remains false and all broker economics stay unmodeled. See
+`docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE5_STATUS.md`.
+
 SVOS Virtual Demo Cycle 4B is `VD_LEDGER_PARITY_READY`: append-only, hash-chained
 exchange/account evidence now reconstructs deterministic normalized account state,
 including unresolved ambiguity handling. Ledger, strategy, and execution authority are

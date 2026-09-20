@@ -20,6 +20,8 @@ The [Cycle 4A account core status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE4A_ST
 records normalized position/account state and the explicit economic boundary.
 The [Cycle 4B ledger parity status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE4B_STATUS.md)
 records append-only evidence and deterministic account reconstruction.
+The [Cycle 5 orchestration status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE5_STATUS.md)
+records end-to-end composition, checkpoints, and determinism boundaries.
 
 ## Start here
 
