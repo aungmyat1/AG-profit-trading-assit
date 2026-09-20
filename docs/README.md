@@ -26,6 +26,8 @@ The [Cycle 6A reality authority status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE
 records broker/account evidence and the economic readiness boundary.
 The [Cycle 6A-R remediation status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_R_STATUS.md)
 records the bounded read-only refresh and residual blocker classification.
+The [Strategy Capacity VD Cycle 1 status](status/VD_STRATEGY_CAPACITY_CYCLE1_STATUS.md)
+records the context-decision boundary and simulator readiness blockers.
 
 ## Start here
 

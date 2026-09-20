@@ -6,6 +6,16 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+Strategy Capacity VD Cycle 1 is `VD_STRATEGY_CAPACITY_SIMULATOR_NOT_READY`.
+The VD runner now has a unit-tested, fail-closed context-decision boundary for
+capacity mode: it refuses fixture decisions and supplies a TD-8E context at each
+emitted event. This does not yet establish a canonical SSC campaign. The supplied
+source is not bound to the canonical SSC evaluator, pending orders are not carried
+through later events, checkpoints do not restore state, and capacity friction,
+risk, metrics, thresholds, and manifest are not frozen. No development or protected
+capacity dataset was accessed. See
+`docs/status/VD_STRATEGY_CAPACITY_CYCLE1_STATUS.md`.
+
 Scheduler + Large SMC Watch Hardening is `FX_SCHEDULER_READY` /
 `LARGE_SMC_WATCH_READY_FOR_RESEARCH`. Two pre-existing FX Task Scheduler entries were
 corrected in place (no duplicates) to deterministic weekday, window-bounded `--once`

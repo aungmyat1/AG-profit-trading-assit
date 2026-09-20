@@ -12,6 +12,8 @@ from .virtual_account import VirtualAccount
 from .virtual_ledger import VirtualLedger
 from .virtual_time import VirtualMarketFeed
 from .virtual_exchange import OHLCM1
+from historical_replay.evaluation_context import ReplayEvaluationContext
+from session_sweep_continuation.replay import ReplayResult
 
 
 class RunnerError(ValueError):
@@ -67,10 +69,16 @@ class VirtualDemoRunner:
     """Coordinates existing components; decision results are injected as authority."""
 
     def __init__(self, *, feed: VirtualMarketFeed, identity: VirtualDemoRunIdentity,
-                 decisions: Dict[str, object], dataset_id: str):
+                 decisions: Dict[str, object], dataset_id: str,
+                 decision_source: Optional[Callable[[ReplayEvaluationContext], ReplayResult]] = None,
+                 capacity_mode: bool = False):
         if identity.dataset_id != dataset_id or feed.symbol == "":
             raise RunnerError("RUN_IDENTITY_MISMATCH")
+        if capacity_mode and (decision_source is None or decisions):
+            raise RunnerError("CAPACITY_REQUIRES_CONTEXT_DECISION_SOURCE")
         self.feed, self.identity, self.decisions, self.dataset_id = feed, identity, decisions, dataset_id
+        self.decision_source = decision_source
+        self.capacity_mode = capacity_mode
         self.bridge = SSCToVirtualOrderBridge(strategy_id=identity.strategy_id, strategy_version=identity.strategy_version)
         self.ledger = VirtualLedger()
         self.account = VirtualAccount(max_open_positions=1)
@@ -98,8 +106,19 @@ class VirtualDemoRunner:
                                              event.candle.low, event.candle.close))
             # Controlled decision fixtures are keyed by TD-8E replay event identity.
             for event in batch:
-                decision = self.decisions.get(event.replay_event_id, self.decisions.get("__DEFAULT__"))
-                if decision is None or event.replay_event_id in self._processed_decisions:
+                if event.replay_event_id in self._processed_decisions:
+                    continue
+                if self.decision_source is not None:
+                    context = ReplayEvaluationContext.create(
+                        self.feed.store, self.feed.symbol, self.feed.clock.T, self.feed.timeframes)
+                    if context.event_id != event.replay_event_id:
+                        raise RunnerError("REPLAY_EVENT_ID_MISMATCH")
+                    decision = self.decision_source(context)
+                    if not isinstance(decision, ReplayResult):
+                        raise RunnerError("CONTEXT_SOURCE_MUST_RETURN_REPLAY_RESULT")
+                else:
+                    decision = self.decisions.get(event.replay_event_id, self.decisions.get("__DEFAULT__"))
+                if decision is None:
                     continue
                 self._processed_decisions.add(event.replay_event_id)
                 self._evaluate(decision, event.replay_event_id, mode)
