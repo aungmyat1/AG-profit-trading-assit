@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+MI V1 Cycle 3 parity and temporal proof is `MI_V1_PARITY_READY` from `cbb6a43`: same
+event determinism, future-only mutation invariance, incomplete evidence handling, zero
+live fallback, identity and H1/M15/M1 lineage preservation, and unresolved EMA/regime
+states passed against the existing core. No live/replay parity claim is made. See
+`AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md`.
+
 MI V1 Cycle 2 core is `MI_V1_CORE_READY` from `93586ec`: an immutable, deterministic
 snapshot/composer consumes admitted TD-8E evidence, preserves event and dataset
 provenance, and fails closed on missing components. EMA and a cross-strategy regime

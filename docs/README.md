@@ -73,6 +73,8 @@ their age.
     artifacts; design-only and non-authorizing.
 17. [`../AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md`](../AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md)
     — Cycle 2 immutable MI core implementation and verification status.
+18. [`../AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md`](../AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md)
+    — Cycle 3 parity, temporal isolation, provenance, and fallback proof.
    — preflight architecture review and authorization packet for the next, separately
    authorized WP7 task (real Telegram message delivery); does not itself authorize
    `MESSAGE_DELIVERY` or any send.
