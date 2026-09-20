@@ -1,7 +1,7 @@
 {
   "schema": "AG_AGENT_CONTEXT_V1",
   "purpose": "minimal agent context routing",
-  "generated_from_head": "310aa00f450a5ab52a94e25ce88cd98f88abada8",
+  "generated_from_head": "933921fa3a8a0f322ed7b5c9714626140982d02b",
   "last_verified_utc": "2026-09-20",
   "authorities": {
     "agent_instructions": "AGENTS.md",
@@ -14,39 +14,79 @@
       "purpose": "canonical session sweep continuation strategy",
       "authority": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
       "status": "PROJECT_STATUS.md",
-      "read_first": ["strategies/registry.yaml", "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml", "src/session_sweep_continuation"],
-      "skills": [".agents/skills/strategy-management/SKILL.md", ".agents/skills/backtest-engineering/SKILL.md"]
+      "read_first": [
+        "strategies/registry.yaml",
+        "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
+        "src/session_sweep_continuation"
+      ],
+      "skills": [
+        ".agents/skills/strategy-management/SKILL.md",
+        ".agents/skills/backtest-engineering/SKILL.md"
+      ]
     },
     "trade_proposal": {
       "purpose": "proposal-only strategy output",
       "authority": "strategies/registry.yaml",
       "status": "PROJECT_STATUS.md",
-      "read_first": ["strategies/registry.yaml", "src/proposals", "src/strategy_engine"],
-      "skills": [".agents/skills/strategy-management/SKILL.md"]
+      "read_first": [
+        "strategies/registry.yaml",
+        "src/proposals",
+        "src/strategy_engine"
+      ],
+      "skills": [
+        ".agents/skills/strategy-management/SKILL.md"
+      ]
     },
     "execution": {
       "purpose": "gated broker execution",
       "authority": "config/trading.yaml",
       "status": "PROJECT_STATUS.md",
-      "read_first": ["config/trading.yaml", "src/execution", "src/mt5"],
+      "read_first": [
+        "config/trading.yaml",
+        "src/execution",
+        "src/mt5"
+      ],
       "skills": []
     },
     "scheduler": {
       "purpose": "scheduled read-only/runtime jobs",
       "authority": "config/ag_scheduler_v2.yaml",
       "status": "PROJECT_STATUS.md",
-      "read_first": ["config/ag_scheduler_v2.yaml", "src/scheduling"],
+      "read_first": [
+        "config/ag_scheduler_v2.yaml",
+        "src/scheduling"
+      ],
       "skills": []
     },
     "documentation_status": {
       "purpose": "current implementation and evidence reporting",
       "authority": "PROJECT_STATUS.md",
       "status": "PROJECT_STATUS.md",
-      "read_first": ["PROJECT_STATUS.md", "docs/status/LIVE_STATUS_MAINTENANCE.md"],
+      "read_first": [
+        "PROJECT_STATUS.md",
+        "docs/status/LIVE_STATUS_MAINTENANCE.md"
+      ],
+      "skills": []
+    },
+    "svos": {
+      "purpose": "Virtual Demo reality-authority and temporal infrastructure governance",
+      "authority": "docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_R2_STATUS.md",
+      "status": "docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_R2_STATUS.md",
+      "read_first": [
+        "docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_R2_STATUS.md",
+        "docs/svos/VD_BROKER_REALITY_AUTHORITY.json",
+        "docs/svos/VD_ACCOUNT_PROFILE_V1_DRAFT.json",
+        "src/mt5/symbol_resolver.py",
+        "src/mt5/account.py"
+      ],
       "skills": []
     }
   },
-  "exclusions": ["historical status by default", "holdout/OOS data unless explicitly authorized", "raw datasets and generated artifacts at startup"],
+  "exclusions": [
+    "historical status by default",
+    "holdout/OOS data unless explicitly authorized",
+    "raw datasets and generated artifacts at startup"
+  ],
   "rules": {
     "manifest_is_routing_only": true,
     "authority_files_override_manifest": true,
