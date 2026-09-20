@@ -4,6 +4,12 @@ This directory contains design contracts, implementation architecture, setup gui
 and dated verification evidence. Read documents according to their authority, not just
 their age.
 
+The [SVOS Virtual Demo Engine V1 Cycle 1 design](svos/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE1_DESIGN.md)
+and its linked time, exchange, account, ledger, campaign, qualification, and component
+map contracts are design-only references. They grant no campaign or trading authority.
+The [Cycle 2 Virtual Time and Feed status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE2_STATUS.md)
+records the unit-tested historical clock/feed implementation and its limits.
+
 ## Start here
 
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.

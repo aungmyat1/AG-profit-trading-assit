@@ -6,6 +6,13 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+SVOS Virtual Demo Engine V1 Cycle 2 is `VD_TIME_FEED_READY` (`UNIT_TESTED`): an isolated
+VirtualClock and TD-8E-bound historical market feed provide deterministic M1/M15/H1
+event visibility, ordering, future-isolation, speed parity, and end-of-data behavior.
+This is temporal infrastructure only; execution, account, economics, and a sealed
+Virtual Demo campaign remain unimplemented/unstarted. See
+`docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE2_STATUS.md`.
+
 Market Intelligence V1 is frozen as `MI_V1_FROZEN`. The release manifest and accumulated
 117-test regression preserve the immutable MI contract, TD-8E provenance lineage, and
 controlled SSC compatibility boundary. EMA and cross-strategy regime remain unavailable;

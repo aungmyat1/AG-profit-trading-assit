@@ -1,0 +1,23 @@
+{
+  "schema_version": "VD_COMPONENT_AUTHORITY_MAP_V1",
+  "classification": "VD_V1_DESIGN_READY",
+  "baseline_commit": "415d0622b82a8bedbabdc620d018969cec51c2cb",
+  "canonical_strategy": "ST_SESSION_SWEEP_CONTINUATION_V1@1.0.1",
+  "canonical_decision_entrypoint": "session_sweep_continuation.replay.run_replay",
+  "components": [
+    {"component":"TD-8E shared replay evaluation context", "source":"src/historical_replay", "classification":"REUSE_AS_IS", "boundary":"read-only admitted event/provenance; frozen semantics"},
+    {"component":"MI V1 snapshot/composer", "source":"src/market_intelligence/snapshot.py; src/market_intelligence/composer.py", "classification":"REUSE_AS_IS", "boundary":"immutable evidence and lineage; no virtual execution fields"},
+    {"component":"MI to SSC compatibility", "source":"src/market_intelligence/ssc_adapter.py", "classification":"REUSE_AS_IS", "boundary":"preserve frozen input projection and fail-closed identity"},
+    {"component":"SSC decision and risk allocation", "source":"src/session_sweep_continuation/replay.py; src/session_sweep_continuation/campaign.py", "classification":"REUSE_AS_IS", "boundary":"sole canonical decision and strategy risk authority"},
+    {"component":"SVOS candidate fingerprint", "source":"src/svos/candidate.py", "classification":"REUSE_WITH_ADAPTER", "boundary":"bind candidate hash into sealed campaign manifest"},
+    {"component":"SVOS friction profile", "source":"src/svos/friction_profile.py", "classification":"REUSE_WITH_ADAPTER", "boundary":"map explicit component states to versioned execution profile; no silent zero cost"},
+    {"component":"SVOS virtual broker", "source":"src/svos/virtual_broker.py", "classification":"REUSE_WITH_ADAPTER", "boundary":"reference next-bar and conservative intrabar logic only; split exchange/account and add cash/quality lineage"},
+    {"component":"SVOS forward orchestration", "source":"src/svos/forward.py", "classification":"REUSE_WITH_ADAPTER", "boundary":"research precedent only; sealed access and event-time rules require new runner"},
+    {"component":"VirtualClock and VirtualMarketFeed", "source":"docs/svos/VD_TIME_CONTRACT.md", "classification":"NEW_REQUIRED", "boundary":"deterministic causal event stream"},
+    {"component":"VirtualExchange and execution models", "source":"docs/svos/VD_EXCHANGE_CONTRACT.md", "classification":"NEW_REQUIRED", "boundary":"pure versioned validation/fill/spread/slippage/fee/latency"},
+    {"component":"VirtualAccount", "source":"docs/svos/VD_ACCOUNT_CONTRACT.md", "classification":"NEW_REQUIRED", "boundary":"cash positions exposure snapshots and optional verified margin"},
+    {"component":"Immutable VD ledger and campaign access journal", "source":"docs/svos/VD_LEDGER_CONTRACT.md; docs/svos/VD_CAMPAIGN_GOVERNANCE.md", "classification":"NEW_REQUIRED", "boundary":"content-addressed lineage and sealed access"},
+    {"component":"MT5/demo/live execution", "source":"src/execution; src/mt5", "classification":"OUT_OF_SCOPE", "boundary":"no imports calls or authority changes"},
+    {"component":"holdout/OOS, DEV_002 economic reuse, population regeneration", "source":"protected datasets and research artifacts", "classification":"OUT_OF_SCOPE", "boundary":"no access or economic campaign in Cycle 1"}
+  ]
+}

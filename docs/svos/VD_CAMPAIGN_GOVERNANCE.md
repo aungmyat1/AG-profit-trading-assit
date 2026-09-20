@@ -1,0 +1,7 @@
+# VD V1 campaign governance contract
+
+Campaign states: `VIRTUAL_DEMO_SEALED → AUTHORIZED_ACCESS → VIRTUAL_DEMO_CONSUMED`. `SEALED` stores hashes and a private dataset location without exposing bars or economic summaries. Authorization requires a signed, immutable manifest binding candidate ID/hash, SSC version/config hash, TD-8E and MI release IDs/hashes, dataset ID/hash and source-quality manifest, execution profile ID/hash, account/risk profile IDs/hashes, code/environment hash, access budget/count, scope, approver, and preregistered gates/thresholds. No default authorization. The authorization record precedes any dataset read.
+
+An atomic access journal increments count before opening protected data, with an attempt ID, actor, purpose, time, manifest hash, and result. A failed or partial read still consumes an attempt unless the preregistered policy explicitly says otherwise. Once budget is exhausted or a qualifying run completes, state becomes `CONSUMED`; reopening, changing parameters, or replaying for optimization is denied. A technical rerun requires a new immutable authorization that cites the exact fault and preserves previous evidence. All sealed reads are attributable and audit logged.
+
+Development fixtures may test the engine and parity; `DEV_002` economic results cannot be reused as VD qualification evidence. Holdout/OOS access and population regeneration are outside this cycle. The campaign has no path to Demo or Live orders. A virtual result is evidence only and cannot promote registry strategy authorization by itself.
