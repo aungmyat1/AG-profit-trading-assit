@@ -5,15 +5,65 @@
   "environment": "DEMO",
   "account_currency": "USD",
   "account_identity_status": "VANTAGE_DEMO_ENVIRONMENT_CONFIRMED_PROFILE_SELECTION_PENDING",
-  "account_binding_evidence": {"server": "VantageMarkets-Demo", "environment": "DEMO", "currency": "USD", "source": "read-only check_mt5 EURUSD query 2026-09-20", "account_identifier": "MASKED_NOT_PERSISTED"},
+  "account_binding_evidence": {
+    "server": "VantageMarkets-Demo",
+    "environment": "DEMO",
+    "currency": "USD",
+    "source": "read-only check_mt5 EURUSD query 2026-09-20",
+    "account_identifier": "MASKED_NOT_PERSISTED"
+  },
   "starting_balance": null,
   "max_open_positions": 1,
   "quantity_basis": "ENGINEERING_NORMALIZED_1",
-  "broker_volume_authority": false,
-  "margin": {"status": "UNAVAILABLE", "mode": null, "leverage": null, "initial_margin": null},
-  "pnl": {"mechanical_quote_currency": "USD", "cash_conversion": "NOT_REQUIRED_IF_ACCOUNT_USD", "account_currency_authority": "UNSELECTED", "economic_pnl": "NOT_MODELED"},
-  "friction": {"spread": "NOT_MODELED", "commission": "NOT_MODELED", "slippage": "NOT_MODELED", "latency": "NOT_MODELED"},
-  "instrument_binding": {"symbol": "EURUSD", "contract_size": 100000, "digits": 5, "tick_size": 0.00001, "volume_min": null, "volume_step": null, "volume_max": null},
-  "readiness": {"engineering": true, "base_economic": false, "stress": false, "qualification": false},
-  "blockers": ["VD account login/profile not selected", "volume constraints unavailable", "margin schedule/leverage unavailable", "EURUSD commission unavailable", "EURUSD slippage distribution unavailable", "latency authority unavailable", "historical executable spread unavailable"]
+  "broker_volume_authority": true,
+  "margin": {
+    "status": "UNAVAILABLE",
+    "mode": "RETAIL_HEDGING",
+    "leverage": null,
+    "initial_margin": null
+  },
+  "pnl": {
+    "mechanical_quote_currency": "USD",
+    "cash_conversion": "NOT_REQUIRED_IF_ACCOUNT_USD",
+    "account_currency_authority": "UNSELECTED",
+    "economic_pnl": "NOT_MODELED"
+  },
+  "friction": {
+    "spread": "NOT_MODELED",
+    "commission": "NOT_MODELED",
+    "slippage": "NOT_MODELED",
+    "latency": "NOT_MODELED"
+  },
+  "instrument_binding": {
+    "symbol": "EURUSD",
+    "contract_size": 100000,
+    "digits": 5,
+    "tick_size": 1e-05,
+    "volume_min": 0.01,
+    "volume_step": 0.01,
+    "volume_max": 100.0
+  },
+  "readiness": {
+    "engineering": true,
+    "base_economic": false,
+    "stress": false,
+    "qualification": false
+  },
+  "blockers": [
+    "VD account login/profile not selected",
+    "margin schedule/leverage unavailable",
+    "EURUSD commission unavailable",
+    "EURUSD slippage distribution unavailable",
+    "latency authority unavailable",
+    "historical executable spread unavailable"
+  ],
+  "broker_metadata_observation": {
+    "server": "VantageMarkets-Demo",
+    "observed_at": "2026-09-20",
+    "freshness": "point_in_time",
+    "source": "read-only symbol_info/account_info",
+    "stops_level_points": 0,
+    "freeze_level_points": 0,
+    "deal_history_eurusd_365d": 0
+  }
 }
