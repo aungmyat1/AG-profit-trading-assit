@@ -108,12 +108,17 @@ def test_deterministic_same_inputs_same_verdict():
     assert v1 == v2
 
 
-def test_real_contract_file_is_proposed_not_signed():
-    """The one place this suite touches the real repository file: proves it is not
-    active governance, never uses it to evaluate the real strategy dataset."""
+def test_real_contract_file_is_signed_for_development_edge_validation():
+    """The real repository contract is now active development governance for the SSC
+    edge-validation mission and must evaluate a valid metrics set instead of failing
+    closed on a proposed threshold file."""
     contract = load_contract(DEFAULT_CONTRACT_PATH)
     assert contract is not None
-    assert contract["identity"]["status"] == "PROPOSED"
-    assert contract["identity"]["signed_by"] is None
-    v = evaluate_economic_gate("ANY_STRATEGY", "1.0.0", _metrics(), True, contract)
-    assert v.verdict == VERDICT_NOT_EVALUABLE_MISSING_SIGNED_THRESHOLDS
+    assert contract["identity"]["status"] == "SIGNED"
+    assert contract["identity"]["signed_by"] is not None
+    assert contract["purpose"] == "DEVELOPMENT_EDGE_VALIDATION"
+    assert contract["strategy_id"] == "ST_SESSION_SWEEP_CONTINUATION_V1"
+    assert contract["strategy_version"] == "1.0.1"
+    assert contract["primary_friction_scenario"] == "BASE_REPRESENTATIVE"
+    v = evaluate_economic_gate("ST_SESSION_SWEEP_CONTINUATION_V1", "1.0.1", _metrics(), True, contract)
+    assert v.verdict == VERDICT_EDGE_VALIDATED

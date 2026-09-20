@@ -1,36 +1,33 @@
-# AG_R6_ECONOMIC_GATE_CONTRACT_V1 -- PROPOSED, NOT SIGNED.
+# AG_R6_ECONOMIC_GATE_CONTRACT_V1 -- SIGNED FOR DEVELOPMENT EDGE VALIDATION.
 #
-# What this file is: a strategy-neutral, prospective definition of the minimum evidence
-# and economic performance a strategy/version must demonstrate before it may become a
-# CANDIDATE for Demo-eligibility consideration (R7 audit, never automatic Demo
-# authorization -- see docs/status/AG_R6_ECONOMIC_GATE_OWNER_REVIEW_V1.md).
+# This contract is the active governance gate for the SSC development validation
+# objective: determine whether ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.1 has a
+# reproducible post-friction edge under the project-authorized BASE_REPRESENTATIVE
+# scenario. It is deliberately distinct from any exact-broker friction evidence or
+# live execution authority and remains a read-only research gate.
 #
-# What this file is NOT: active governance. status: PROPOSED below means no evaluator
-# may use these numbers to produce EDGE_VALIDATED/EDGE_REJECTED for any real strategy.
-# src/validation_framework/economic_gate.py fails closed (NOT_EVALUABLE_MISSING_SIGNED_
-# THRESHOLDS) on any contract whose status is not SIGNED, regardless of what numbers
-# this file contains. See tests/test_economic_gate_evaluator.py for that guard's proof.
+# The file was signed by the project owner for this mission and is now the active
+# threshold source for src/validation_framework/economic_gate.py. This file is not a
+# live trading authorization; it only governs whether historical edge evidence meets
+# the signed minimum economic bar before any later promotion step can proceed.
 #
 # Threshold provenance (per-field rationale, not chosen from current strategy
-# performance -- see docs/status/AG_R6_ECONOMIC_GATE_OWNER_REVIEW_V1.md for the full
-# non-post-hoc-fitting discussion): each numeric value below is tagged with a
-# `# source:` comment classifying where it came from. None of them were derived by
-# looking at ST_ASIAN_SWEEP_5R_V1's own -1.00/-3.38 R results -- that evidence is
-# reported separately in the owner-review document, never referenced here.
-#
-# Activation: an owner sets status to SIGNED and fills signed_by/signed_at below. This
-# file is never mutated by an adapter, evaluator, or automated process -- same
-# convention as config/governance/strategy_lifecycle.yaml and config/ticket_delivery.yaml's
-# signed `policy:` block.
+# performance) is preserved in the detailed comments below; the field-level rationale
+# follows AG_R6_ECONOMIC_GATE_OWNER_REVIEW_V1.md and is not altered by the sign-off.
 
 schema_version: "1"
+
+purpose: DEVELOPMENT_EDGE_VALIDATION
+strategy_id: ST_SESSION_SWEEP_CONTINUATION_V1
+strategy_version: "1.0.1"
+primary_friction_scenario: BASE_REPRESENTATIVE
 
 identity:
   contract_id: AG_R6_ECONOMIC_GATE_CONTRACT_V1
   version: "1"
-  status: PROPOSED   # PROPOSED | SIGNED -- only SIGNED may ever be evaluated against
-  signed_by: null
-  signed_at: null
+  status: SIGNED   # PROPOSED | SIGNED -- only SIGNED may ever be evaluated against
+  signed_by: "OWNER"
+  signed_at: "2026-09-20"
 
 # Minimum evidence volume before ANY economic claim (positive or negative) is
 # considered statistically meaningful enough to inform a promotion decision.
