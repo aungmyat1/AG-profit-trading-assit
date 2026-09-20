@@ -143,6 +143,12 @@ class VirtualLedger:
                                  max_open_positions=max_open_positions)
         fills = {}
         for event in self.events:
+            if event.event_type == "VirtualUnresolved":
+                if event.payload.get("reason") == "END_OF_DATA_OPEN_POSITION":
+                    account.mark_unresolved(order_id=event.order_id, at=event.at,
+                        reason=event.payload["reason"],
+                        evidence_event_id=event.payload["evidence_event_id"])
+                continue
             if event.event_type not in {"VirtualFill", "VirtualOutcome"}:
                 continue
             p = event.payload

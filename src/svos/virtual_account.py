@@ -160,6 +160,21 @@ class VirtualAccount:
         self._snapshot(exit_record.at)
         return position
 
+    def mark_unresolved(self, *, order_id: str, at: datetime, reason: str,
+                        evidence_event_id: str) -> VirtualPosition:
+        position = next((p for p in self.open_positions.values() if p.order_id == order_id), None)
+        if position is None:
+            raise AccountError("UNRESOLVED_WITHOUT_OPEN_POSITION")
+        if position.state is PositionState.UNRESOLVED:
+            return position
+        position.transitions.append(PositionTransition(
+            _id([position.position_id, "UNRESOLVED", evidence_event_id]), _utc(at),
+            position.state, PositionState.UNRESOLVED, reason, evidence_event_id,
+            None, None))
+        position.state = PositionState.UNRESOLVED
+        self._snapshot(at)
+        return position
+
     def _check_lineage(self, record, symbol):
         if not record.dataset_id or not record.event_id or not record.decision_id or not record.proposal_id:
             raise AccountError("MISSING_LINEAGE")

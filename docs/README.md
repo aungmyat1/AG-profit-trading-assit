@@ -28,6 +28,9 @@ The [Cycle 6A-R remediation status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_R
 records the bounded read-only refresh and residual blocker classification.
 The [Strategy Capacity VD Cycle 1 status](status/VD_STRATEGY_CAPACITY_CYCLE1_STATUS.md)
 records the context-decision boundary and simulator readiness blockers.
+The [Strategy Capacity VD Cycle 2 status](status/VD_STRATEGY_CAPACITY_CYCLE2_STATUS.md)
+records canonical SSC binding, later-event virtual orders, checkpoint reconstruction,
+and the remaining lifecycle and campaign boundaries.
 
 ## Start here
 
@@ -269,6 +272,14 @@ observations from the named milestone; they are not rolling dashboards.
   occurrence; authoritative-identity-only with fail-closed families; read-time expiry
   presentation; four distinct reporting metrics. Promotion not recommended yet — see the
   document's own promotion section)
+- FX occurrence identity promotion readiness (2026-09-20):
+  [`status/AG_FX_OCCURRENCE_IDENTITY_PROMOTION_READINESS_STATUS.md`](status/AG_FX_OCCURRENCE_IDENTITY_PROMOTION_READINESS_STATUS.md)
+  (`FX_IDENTITY_PROMOTION_READY_FOR_SCOPED_WIRING`: `setup_id` authority proven structural
+  end to end through the real producers; occurrence parity proven for all nine required
+  cases; forward-only cutover designed with an explicit version marker; expiry-corrected
+  count promoted into the runtime status probe; six distinct metrics with one consistent
+  identity gate; SSC left fail-closed. Candidate still **not wired** into FX proposal
+  production)
 - Opportunity coverage: [`status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md`](status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md)
   (FX `LONDON_NEWYORK` pilot activation; BTC Binance USDT-M market-data adapter,
   multi-occurrence research collection, and execution-domain gate)

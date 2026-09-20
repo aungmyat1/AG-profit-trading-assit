@@ -115,6 +115,40 @@ CANDIDATE_VERSION = "AG_PROPOSAL_OCCURRENCE_IDENTITY_V1"
 OCCURRENCE_LEDGER_SCHEMA_VERSION = "AG_PROPOSAL_OCCURRENCE_LEDGER_V1"
 DEFAULT_OCCURRENCE_LEDGER_PATH = "state/proposal_ledger/proposal_occurrence_ledger.json"
 
+# --------------------------------------------------------------- P2 CUTOVER DESIGN
+# Forward-only versioned cutover. The frozen ledger is NEVER migrated, rewritten, or
+# reattributed -- its 69 records remain byte-identical historical evidence forever.
+#
+#   LEGACY  : `state/proposal_ledger/proposal_ledger.json`
+#             keyed by `proposal_envelope_id = f"FX:{decision_id}"` (observation-derived).
+#             Read-only from here on. Every record is an IMMUTABLE RAW OBSERVATION.
+#   V1      : `state/proposal_ledger/proposal_occurrence_ledger.json`
+#             keyed by `FXOCC:{strategy_id}:{occurrence_id}` (occurrence-derived).
+#             Written only from the cutover instant forward.
+#
+# The two ledgers coexist; nothing reads LEGACY as an occurrence population, and nothing
+# writes V1 into LEGACY. The cutover instant is an explicit, persisted, auditable marker
+# -- never inferred from "the newest record", which would silently reclassify history.
+LEDGER_GENERATION_LEGACY = "LEGACY"
+LEDGER_GENERATION_V1 = "V1"
+LEDGER_GENERATION_MARKER_FILENAME = "proposal_occurrence_ledger.cutover.json"
+DEFAULT_CUTOVER_MARKER_PATH = f"state/proposal_ledger/{LEDGER_GENERATION_MARKER_FILENAME}"
+
+# The exact, machine-readable version marker written on every V1 record. A reader can
+# always answer "which generation produced this?" from the record alone.
+CUTOVER_POLICY = {
+    "legacy_path": "state/proposal_ledger/proposal_ledger.json",
+    "legacy_generation": LEDGER_GENERATION_LEGACY,
+    "legacy_treatment": "IMMUTABLE_RAW_OBSERVATION",
+    "v1_path": DEFAULT_OCCURRENCE_LEDGER_PATH,
+    "v1_generation": LEDGER_GENERATION_V1,
+    "v1_treatment": "OCCURRENCE_AWARE",
+    "retroactive_rewrite": False,
+    "reattribution": False,
+    "migration": "NONE",
+}
+
+
 # Explicit, machine-checkable: this candidate is NOT wired into any runtime path. Flipping
 # this to True is a promotion decision that requires validation + registry/ledger
 # authorization, not a code change alone (AGENTS.md).
@@ -494,24 +528,34 @@ def _from_current(record: Dict[str, Any]) -> CanonicalProposal:
 
 @dataclass(frozen=True)
 class OccurrenceReportingMetrics:
-    """P5 -- the four distinct reporting metrics. Deliberately separate fields, never
-    one number:
+    """P4 -- six distinct reporting metrics. Deliberately separate fields, never one
+    number:
 
-      OBSERVATION_COUNT               -- every persisted analysis observation (the raw
-                                         ledger record count)
-      DISTINCT_SETUP_COUNT            -- distinct logical setups
-      CURRENT_ACTIVE_PROPOSAL_COUNT   -- occurrences that are NOT expired at `now`
-      EXPIRED_PROPOSAL_COUNT          -- occurrences that ARE expired at `now`
+      OBSERVATION_COUNT                  -- every persisted analysis observation (the raw
+                                            record count)
+      DISTINCT_AUTHORITATIVE_SETUP_COUNT -- distinct logical setups whose identity came
+                                            from the authoritative `setup_id` field
+      DISTINCT_OCCURRENCE_COUNT          -- distinct logical occurrences
+      IDENTITY_UNAVAILABLE_COUNT         -- records with no authoritative identity input
+      CURRENT_ACTIVE_PROPOSAL_COUNT      -- occurrences NOT expired at `now`
+      EXPIRED_PROPOSAL_COUNT             -- occurrences expired at `now`
 
     `opportunity_count` is exposed as `CURRENT_ACTIVE_PROPOSAL_COUNT` ONLY -- a raw
     record count must never be presented as a trade-opportunity count."""
 
     observation_count: int
-    distinct_setup_count: int
+    distinct_authoritative_setup_count: int
+    distinct_occurrence_count: int
     current_active_proposal_count: int
     expired_proposal_count: int
     identity_unavailable_count: int = 0
     presentation_ready_count: int = 0
+
+    @property
+    def distinct_setup_count(self) -> int:
+        """Alias kept for callers written against the earlier field name -- the same
+        number, never a second computation."""
+        return self.distinct_authoritative_setup_count
 
     @property
     def opportunity_count(self) -> int:
@@ -521,7 +565,8 @@ class OccurrenceReportingMetrics:
     def as_dict(self) -> Dict[str, int]:
         return {
             "OBSERVATION_COUNT": self.observation_count,
-            "DISTINCT_SETUP_COUNT": self.distinct_setup_count,
+            "DISTINCT_AUTHORITATIVE_SETUP_COUNT": self.distinct_authoritative_setup_count,
+            "DISTINCT_OCCURRENCE_COUNT": self.distinct_occurrence_count,
             "CURRENT_ACTIVE_PROPOSAL_COUNT": self.current_active_proposal_count,
             "EXPIRED_PROPOSAL_COUNT": self.expired_proposal_count,
             "IDENTITY_UNAVAILABLE_COUNT": self.identity_unavailable_count,
@@ -533,7 +578,8 @@ class OccurrenceReportingMetrics:
         return (
             f"OBSERVATION_COUNT={self.observation_count} (raw persisted records -- NOT a "
             f"trade-opportunity count)\n"
-            f"DISTINCT_SETUP_COUNT={self.distinct_setup_count}\n"
+            f"DISTINCT_AUTHORITATIVE_SETUP_COUNT={self.distinct_authoritative_setup_count}\n"
+            f"DISTINCT_OCCURRENCE_COUNT={self.distinct_occurrence_count}\n"
             f"CURRENT_ACTIVE_PROPOSAL_COUNT={self.current_active_proposal_count} "
             f"(= opportunity count)\n"
             f"EXPIRED_PROPOSAL_COUNT={self.expired_proposal_count}\n"
@@ -547,13 +593,22 @@ def reporting_metrics(
     """Pure. Counts each layer separately; never collapses them into one figure.
 
     `observation_count` is one per supplied record (each persisted record IS one
-    observation). `distinct_setup_count` groups by the authoritative logical setup id.
-    `current_active_proposal_count` counts occurrences not expired at `now`;
-    `expired_proposal_count` counts those that are. Records whose identity is
-    unavailable are reported separately and are NOT silently added to any of the other
-    figures."""
+    observation). `distinct_authoritative_setup_count` / `distinct_occurrence_count`
+    group by the authoritative logical setup id and the occurrence id respectively.
+
+    IDENTITY GATE, applied once and consistently: a record whose authoritative identity
+    is unavailable is counted ONLY in `identity_unavailable_count` and is excluded from
+    every other figure. This is the single gate -- `presentation_ready_count` and
+    `current_proposals`/`expired_proposals` apply the same rule, so no metric can
+    disagree with another about which records are in scope.
+
+    `current_active_proposal_count` counts in-scope occurrences NOT expired at `now`;
+    `expired_proposal_count` counts those that ARE. The two are complementary and
+    together with `identity_unavailable_count` account for `observation_count` exactly
+    once."""
     observations = 0
     setups = set()
+    occurrences = set()
     active = 0
     expired = 0
     unavailable = 0
@@ -567,6 +622,7 @@ def reporting_metrics(
             unavailable += 1
             continue
         setups.add(identity.logical_setup_id)
+        occurrences.add(identity.occurrence_id)
         if is_expired(envelope, now):
             expired += 1
         else:
@@ -576,7 +632,8 @@ def reporting_metrics(
 
     return OccurrenceReportingMetrics(
         observation_count=observations,
-        distinct_setup_count=len(setups),
+        distinct_authoritative_setup_count=len(setups),
+        distinct_occurrence_count=len(occurrences),
         current_active_proposal_count=active,
         expired_proposal_count=expired,
         identity_unavailable_count=unavailable,
@@ -592,6 +649,30 @@ def reporting_metrics_from_ledger_file(
     return reporting_metrics(_read_envelopes(path), now)
 
 
+def presentation_ready_count(
+    envelopes: Iterable[CanonicalProposal], now: datetime,
+) -> int:
+    """How many records are STILL presented as `PROPOSAL_READY` after read-time expiry is
+    applied. This is the number an operational status surface must report -- never
+    `len(list_active_proposals())`, which counts expired records as active.
+
+    Applies the same identity gate as `reporting_metrics`, so it can never disagree with
+    `CURRENT_ACTIVE_PROPOSAL_COUNT` about scope."""
+    return sum(
+        1 for e in _in_scope(envelopes)
+        if with_presentation_state(e, now).proposal_state == PROPOSAL_READY
+    )
+
+
+def presentation_ready_count_from_ledger_file(
+    path: str = "state/proposal_ledger/proposal_ledger.json", now: Optional[datetime] = None,
+) -> int:
+    """Read-only: the expiry-corrected current-proposal count for an existing
+    `ProposalLedger` JSON file. Never writes."""
+    now = now or datetime.now(timezone.utc)
+    return presentation_ready_count(_read_envelopes(path), now)
+
+
 def _read_envelopes(path: str) -> List[CanonicalProposal]:
     ledger_path = Path(path)
     if not ledger_path.exists():
@@ -603,22 +684,42 @@ def _read_envelopes(path: str) -> List[CanonicalProposal]:
     ]
 
 
+def _in_scope(envelopes: Iterable[CanonicalProposal]) -> List[CanonicalProposal]:
+    """The ONE identity gate every presentation/reporting view shares: a record is in
+    scope only when its authoritative logical-setup identity resolves. Records that fail
+    closed are never silently presented as current, and never counted as setups or
+    occurrences -- they are reported through `identity_unavailable_count` alone."""
+    in_scope: List[CanonicalProposal] = []
+    for envelope in envelopes:
+        try:
+            resolve_occurrence_identity(envelope)
+        except OccurrenceIdentityUnavailable:
+            continue
+        in_scope.append(envelope)
+    return in_scope
+
+
 def current_proposals(
     envelopes: Iterable[CanonicalProposal], now: datetime,
 ) -> List[CanonicalProposal]:
     """P3 -- the ONLY sanctioned "what is currently presented" list.
 
-    Returns occurrences that are NOT expired at `now`, with the presentation state
-    applied. An expired proposal is excluded, so it can never remain operationally
+    Returns in-scope occurrences that are NOT expired at `now`, with the presentation
+    state applied. An expired proposal is excluded, so it can never remain operationally
     presented as a current `PROPOSAL_READY` (the confirmed defect: the frozen
     `ProposalLedger.list_active_proposals()` returns all 69 persisted records, 63 of
     which had already passed their strategy-owned expiry).
 
+    A record whose authoritative identity is unavailable is excluded here too -- the same
+    gate `reporting_metrics` applies -- so an unresolvable record can never be presented
+    as a current proposal. `expired_proposals()` and `identity_unavailable_proposals()`
+    are the complementary views, so nothing is hidden.
+
     This is a read-time VIEW over immutable persisted records -- it rewrites nothing, so
     historical/auditable history is fully preserved and remains available via
-    `expired_proposals()` / `ProposalLedger.get_history()`."""
+    `ProposalLedger.get_history()`."""
     return [
-        with_presentation_state(e, now) for e in envelopes
+        with_presentation_state(e, now) for e in _in_scope(envelopes)
         if not is_expired(e, now)
     ]
 
@@ -629,7 +730,22 @@ def expired_proposals(
     """The complementary, explicitly-separated expired view -- expired records stay
     auditable and are never deleted or rewritten, they are simply not presented as
     current."""
-    return [e for e in envelopes if is_expired(e, now)]
+    return [e for e in _in_scope(envelopes) if is_expired(e, now)]
+
+
+def identity_unavailable_proposals(
+    envelopes: Iterable[CanonicalProposal],
+) -> List[CanonicalProposal]:
+    """The third, explicitly-separated view: records excluded because their authoritative
+    identity is unavailable (e.g. the `ssc_adapter` family). Exposed so the exclusion is
+    auditable rather than invisible -- this mission does NOT invent an identity for them."""
+    out: List[CanonicalProposal] = []
+    for envelope in envelopes:
+        try:
+            resolve_occurrence_identity(envelope)
+        except OccurrenceIdentityUnavailable:
+            out.append(envelope)
+    return out
 
 
 def current_proposals_from_ledger_file(
@@ -648,3 +764,49 @@ def expired_proposals_from_ledger_file(
     file. Never writes."""
     now = now or datetime.now(timezone.utc)
     return expired_proposals(_read_envelopes(path), now)
+
+
+# ----------------------------------------------------------------- cutover marker
+
+
+def read_cutover_marker(path: str = DEFAULT_CUTOVER_MARKER_PATH) -> Optional[Dict[str, Any]]:
+    """The persisted, auditable cutover marker, or None when no cutover has been
+    recorded. Read-only -- never creates the file."""
+    marker_path = Path(path)
+    if not marker_path.exists():
+        return None
+    try:
+        return json.loads(marker_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def write_cutover_marker(
+    *, cutover_at: datetime, path: str = DEFAULT_CUTOVER_MARKER_PATH,
+    note: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Record the forward-only cutover instant. Explicit and auditable -- deliberately
+    NOT inferred from "the newest legacy record", which would silently reclassify
+    history.
+
+    Does NOT migrate, rewrite, or reattribute any legacy record: the legacy ledger is
+    left byte-identical and is henceforth read as immutable raw observations only."""
+    marker = {
+        "marker_version": CANDIDATE_VERSION,
+        "cutover_at": cutover_at.isoformat(),
+        "policy": dict(CUTOVER_POLICY),
+        "note": note,
+    }
+    marker_path = Path(path)
+    marker_path.parent.mkdir(parents=True, exist_ok=True)
+    marker_path.write_text(json.dumps(marker, indent=2, sort_keys=True), encoding="utf-8")
+    return marker
+
+
+def generation_of(record: Dict[str, Any]) -> str:
+    """Which generation produced a persisted record. Reads the record's own marker, so a
+    reader never has to guess from shape or timestamp. A record carrying the V1
+    occurrence schema is V1; anything else is treated as LEGACY raw observation."""
+    if record.get("schema_version") == OCCURRENCE_LEDGER_SCHEMA_VERSION:
+        return LEDGER_GENERATION_V1
+    return LEDGER_GENERATION_LEGACY

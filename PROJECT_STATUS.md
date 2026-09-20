@@ -6,6 +6,15 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+Strategy Capacity VD Cycle 2 remains `VD_STRATEGY_CAPACITY_SIMULATOR_NOT_READY`.
+Capacity mode now binds internally to SSC's canonical shadow cycle, rejects caller
+decision injection, and records contract/event/dataset provenance. Virtual orders
+advance only on later M1 events, with account/ledger transitions and explicit
+end-of-data outcomes. A JSON checkpoint can rebuild and verify state by replaying
+the admitted immutable prefix. These paths are unit-tested with engineering
+fixtures; BE/partial virtual semantics and campaign contracts remain outside this
+cycle's proof. See `docs/status/VD_STRATEGY_CAPACITY_CYCLE2_STATUS.md`.
+
 Strategy Capacity VD Cycle 1 is `VD_STRATEGY_CAPACITY_SIMULATOR_NOT_READY`.
 The VD runner now has a unit-tested, fail-closed context-decision boundary for
 capacity mode: it refuses fixture decisions and supplies a TD-8E context at each
@@ -47,6 +56,26 @@ rather than receiving a derived persistence key. No frozen behavior, strategy ec
 friction evidence, campaign state, or historical ledger record was modified; demo and
 live authority remain `NONE`. See
 `docs/status/AG_VERSIONED_PROPOSAL_OCCURRENCE_IDENTITY_STATUS.md`.
+
+FX Occurrence Identity Promotion Readiness is
+`FX_IDENTITY_PROMOTION_READY_FOR_SCOPED_WIRING`. `confirmation_evidence.setup_id` was
+proven **structural** end to end through the real producers
+(`strategy_engine.engine.evaluate()` → `intent_builder` → `TradeProposal` →
+`build_entry_proposal` → FX adapter): its producer formula is
+`{strategy_id}:{pair_id}:{symbol}:{session_date}` with **no time component**, and
+`evaluation_time` enters only the observation layer. Occurrence parity was proven for all
+nine required cases (repeated M15 polls, market-data-timestamp-only change, restart,
+EURUSD, GBPUSD, ASIAN_LONDON, LONDON_NEWYORK, new structural setup, next trading date).
+A forward-only cutover was designed with an explicit version marker
+(`AG_PROPOSAL_OCCURRENCE_LEDGER_V1`) and an auditable cutover marker file; the 69 legacy
+records remain byte-identical immutable raw observations. The expiry-corrected current
+proposal count was promoted into the runtime status probe (which previously reported all
+69 persisted records as active while 63 were expired), and six distinct metrics are
+exposed with one consistent identity gate. SSC remains `FAIL_CLOSED` /
+`IDENTITY_UNAVAILABLE` — no SSC setup ID was invented. The candidate is **still not wired
+into FX proposal production** (`WIRED_INTO_RUNTIME = False`); demo and live authority
+remain `NONE`. See
+`docs/status/AG_FX_OCCURRENCE_IDENTITY_PROMOTION_READINESS_STATUS.md`.
 
 SVOS Virtual Demo Cycle 6A-R is `VD_REALITY_REMEDIATION_READY`: one bounded read-only
 EURUSD MT5 check refreshed Vantage Demo/USD identity and a stale point-in-time spread

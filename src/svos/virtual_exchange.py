@@ -160,6 +160,46 @@ class VirtualExchange:
         self._order = order
         return order
 
+    def advance(self, bar: OHLCM1) -> VirtualOrder:
+        """Consume one closed M1 observation without looking ahead to later bars."""
+        if self._order is None:
+            raise ExchangeError("NO_ORDER")
+        order = self._order
+        p = order.proposal
+        if bar.symbol != p.symbol or bar.dataset_id != p.dataset_id or not bar.event_id:
+            raise ExchangeError("MISMATCHED_SYMBOL_OR_DATASET")
+        if order.exit is not None or order.state in {OrderState.EXPIRED, OrderState.REJECTED, OrderState.CANCELLED}:
+            return order
+        if bar.time <= p.decision_cutoff:
+            return order
+        if p.expires_at is not None and bar.time >= p.expires_at and order.fill is None:
+            self._terminal(order, OrderState.EXPIRED, bar, "ORDER_EXPIRED")
+            return order
+        if order.fill is None:
+            self._transition(order, OrderState.ELIGIBLE, bar.time, "FIRST_ELIGIBLE_EVENT", bar.dataset_id, bar.event_id)
+            self._transition(order, OrderState.FILLED, bar.time, "OHLC_M1_ENGINEERING_OPEN", bar.dataset_id, bar.event_id,
+                             executable_price=bar.open)
+            order.fill = order.records[-1]
+            return order
+        if bar.time <= order.fill.at:
+            return order
+        kind = self._exit_kind(p, bar)
+        if kind is not None:
+            level = None if kind is ObservationKind.AMBIGUOUS_SEQUENCE else (p.stop_price if kind is ObservationKind.ADVERSE else p.target_price)
+            self._terminal(order, OrderState.FILLED, bar, kind.value, observation_kind=kind.value,
+                           executable_price=level)
+            order.exit = order.records[-1]
+        return order
+
+    def end_of_data(self, *, at: datetime, event_id: str) -> VirtualOrder:
+        if self._order is None:
+            raise ExchangeError("NO_ORDER")
+        order = self._order
+        if order.fill is None and order.state == OrderState.PENDING:
+            self._transition(order, OrderState.EXPIRED, at, "END_OF_DATA_PENDING",
+                             order.proposal.dataset_id, event_id)
+        return order
+
     def process(self, bars: Iterable[OHLCM1], *, end_time: Optional[datetime] = None,
                 mode: str = "maximum") -> VirtualOrder:
         if mode not in {"step", "accelerated", "maximum"}:
@@ -221,7 +261,7 @@ class VirtualExchange:
         return None
 
     def _transition(self, order, state, at, reason, dataset_id, event_id, executable_price=None, observation_kind=None):
-        record_type = "FILL" if state == OrderState.FILLED and executable_price is not None else "ORDER_TRANSITION"
+        record_type = "FILL" if state == OrderState.FILLED and executable_price is not None and order.fill is None else "ORDER_TRANSITION"
         payload = [order.order_id, record_type, state.value, str(at), reason, dataset_id, event_id, order.proposal.proposal_id]
         record = ExchangeRecord(record_type, _id(payload), order.order_id, _utc(at), state, reason, dataset_id, event_id,
                                 order.proposal.reference_entry.decision_id, order.proposal.proposal_id,

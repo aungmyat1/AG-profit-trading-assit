@@ -616,12 +616,16 @@ def test_reporting_metrics_from_ledger_file_matches_the_real_ledger():
 
 
 def test_empty_population_reports_zeros_not_errors():
+    """P4 (promotion readiness) widened this to six distinct metrics; all must be zero,
+    and none may be missing."""
     metrics = reporting_metrics([], NOW)
     assert metrics.as_dict() == {
-        "OBSERVATION_COUNT": 0, "DISTINCT_SETUP_COUNT": 0,
-        "CURRENT_ACTIVE_PROPOSAL_COUNT": 0, "EXPIRED_PROPOSAL_COUNT": 0,
-        "IDENTITY_UNAVAILABLE_COUNT": 0,
+        "OBSERVATION_COUNT": 0, "DISTINCT_AUTHORITATIVE_SETUP_COUNT": 0,
+        "DISTINCT_OCCURRENCE_COUNT": 0, "CURRENT_ACTIVE_PROPOSAL_COUNT": 0,
+        "EXPIRED_PROPOSAL_COUNT": 0, "IDENTITY_UNAVAILABLE_COUNT": 0,
     }
+    assert metrics.distinct_setup_count == 0  # legacy alias still resolves
+    assert metrics.opportunity_count == 0
 
 
 # ------------------------------------------------------- strategy semantics untouched

@@ -145,16 +145,34 @@ def _probe_market_data(
 
 
 def _probe_proposal_ledger(repo_root: Path) -> RuntimeProbe:
+    """Read-only. Reports the EXPIRY-CORRECTED current-proposal count, not the raw
+    persisted record count.
+
+    `ProposalLedger.list_active_proposals()` returns EVERY persisted record as
+    `PROPOSAL_READY`, including records whose strategy-owned expiry has already passed
+    (63 of 69 at the time of writing), so using its length as the operational count
+    overstates current proposals. The raw count is still reported, explicitly labelled
+    as observation records rather than opportunities, so neither figure is hidden.
+
+    Still a pure file read plus an importability check -- no execution/order machinery,
+    no writes, no governance impact (see this module's own hard rules)."""
     try:
         from proposal_envelope.ledger import ProposalLedger
+        from proposal_envelope.occurrence_identity_v1 import (
+            presentation_ready_count_from_ledger_file,
+        )
 
         path = str(repo_root / "state" / "proposal_ledger" / "proposal_ledger.json")
         ledger = ProposalLedger(path=path)
-        active = ledger.list_active_proposals()
+        persisted = len(ledger.list_active_proposals())
+        current = presentation_ready_count_from_ledger_file(path=path)
         return RuntimeProbe(
             name="proposal_ledger",
             status=STATUS_AVAILABLE,
-            detail=f"{len(active)} active canonical proposal(s) in ledger",
+            detail=(
+                f"{current} current canonical proposal(s); {persisted} persisted "
+                "observation record(s) (raw count, not an opportunity count)"
+            ),
         )
     except FileNotFoundError:
         return _unavailable("proposal_ledger", "ledger file missing")
