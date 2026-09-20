@@ -14,6 +14,8 @@ links the EURUSD input authority inventory and draft profile; it does not author
 an integrated exchange or economic campaign.
 The [Cycle 3B exchange core status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE3B_STATUS.md)
 records the isolated deterministic fixture engine and its non-economic limits.
+The [Cycle 3C canonical SSC bridge status](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE3C_STATUS.md)
+records the non-mutating SSC-to-virtual-order handoff and its readiness boundary.
 
 ## Start here
 

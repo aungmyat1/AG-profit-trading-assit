@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+SVOS Virtual Demo Cycle 3C is `VD_SSC_BRIDGE_READY`: the canonical SSC ReplayResult
+now has a deterministic, non-mutating bridge to Cycle 3B virtual order intent and
+causal fixture fills. Research reference entries remain distinct from executable
+fills. Engineering and narrow integration readiness are true; economic qualification
+remains false. See `docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE3C_STATUS.md`.
+
 SVOS Virtual Demo Cycle 3B is `VD_EXCHANGE_CORE_READY` for isolated deterministic
 OHLC_M1 engineering fixtures. The core preserves SSC research references separately,
 enforces post-cutoff first-eligible fills, records explicit intrabar ambiguity, and has
