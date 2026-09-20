@@ -4,7 +4,10 @@ import pytest
 
 from svos.virtual_exchange import (ExchangeError, OHLCM1, ObservationKind,
                                    ProposalFixture, ResearchReferenceEntry,
-                                   VirtualExchange, OrderState)
+                                   VirtualExchange, OrderState,
+                                   OHLC_AMBIGUITY_HASH, OHLC_AMBIGUITY_VERSION,
+                                   SAME_BAR_POLICY, compute_ambiguity_contract_hash,
+                                   validate_ambiguity_contract)
 
 UTC = timezone.utc
 T0 = datetime(2026, 1, 1, tzinfo=UTC)
@@ -54,6 +57,74 @@ def test_exit_observation_is_explicit(kind, high, low):
     e.submit(proposal(stop_price=1.0990, target_price=1.1010))
     order = e.process([bar(1, 1.1001, 1.1003, 1.1000, 1.1002), bar(2, 1.1002, high, low, 1.1003)])
     assert order.exit.observation_kind == kind.value
+
+
+def test_ambiguity_contract_is_frozen_and_versioned():
+    digest = validate_ambiguity_contract()
+    assert OHLC_AMBIGUITY_VERSION == "VD_OHLC_AMBIGUITY_V1"
+    assert SAME_BAR_POLICY == "AMBIGUOUS_SEQUENCE_NO_ASSUMED_INTRABAR_ORDER"
+    assert OHLC_AMBIGUITY_HASH == digest
+    assert digest.startswith("sha256:")
+    assert compute_ambiguity_contract_hash() == digest
+
+
+@pytest.mark.parametrize(
+    "entry_bar, expected",
+    [
+        (bar(1, 1.1001, 1.1003, 1.0988, 1.1002), ObservationKind.AMBIGUOUS_SEQUENCE.value),
+        (bar(1, 1.1001, 1.1015, 1.0998, 1.1004), ObservationKind.AMBIGUOUS_SEQUENCE.value),
+    ],
+)
+def test_same_bar_fill_and_exit_is_fail_closed(entry_bar, expected):
+    e = VirtualExchange()
+    e.submit(proposal(stop_price=1.0990, target_price=1.1010))
+    order = e.process([entry_bar])
+    assert order.exit is not None
+    assert order.exit.observation_kind == expected
+    assert order.exit.reason == expected
+
+
+def test_entry_plus_target_same_bar_is_ambiguous():
+    e = VirtualExchange()
+    e.submit(proposal(stop_price=1.0990, target_price=1.1010))
+    order = e.process([bar(1, 1.1001, 1.1015, 1.1000, 1.1008)])
+    assert order.exit is not None
+    assert order.exit.observation_kind == ObservationKind.AMBIGUOUS_SEQUENCE.value
+    assert order.exit.executable_price is None
+
+
+def test_sl_plus_target_after_entry_is_ambiguous_same_bar():
+    e = VirtualExchange(); e.submit(proposal(stop_price=1.0990, target_price=1.1010))
+    first_fill = bar(1, 1.1001, 1.1003, 1.1000, 1.1002)
+    ambiguous_bar = bar(2, 1.1002, 1.1015, 1.0988, 1.1009)
+    order = e.process([first_fill, ambiguous_bar])
+    assert order.exit is not None
+    assert order.exit.observation_kind == ObservationKind.AMBIGUOUS_SEQUENCE.value
+    assert order.exit.reason == ObservationKind.AMBIGUOUS_SEQUENCE.value
+
+
+def test_multiple_targets_in_one_bar_do_not_infer_favorable_sequence():
+    e = VirtualExchange(); e.submit(proposal(stop_price=1.0990, target_price=1.1010))
+    order = e.process([bar(1, 1.1001, 1.1003, 1.1000, 1.1002), bar(2, 1.1002, 1.1020, 1.0988, 1.1013)])
+    assert order.exit is not None
+    assert order.exit.observation_kind == ObservationKind.AMBIGUOUS_SEQUENCE.value
+    assert order.exit.executable_price is None
+
+
+def test_gap_cross_bar_is_fail_closed_when_range_crosses_levels():
+    e = VirtualExchange(); e.submit(proposal(stop_price=1.0990, target_price=1.1010))
+    order = e.process([bar(1, 1.1001, 1.1003, 1.1000, 1.1002), bar(2, 1.1002, 1.1015, 1.0988, 1.1004)])
+    assert order.exit is not None
+    assert order.exit.observation_kind == ObservationKind.AMBIGUOUS_SEQUENCE.value
+
+
+def test_unknown_intrabar_chronology_never_favors_target_sequence():
+    e = VirtualExchange()
+    e.submit(proposal(stop_price=1.0990, target_price=1.1010))
+    order = e.process([bar(1, 1.1001, 1.1015, 1.0988, 1.1002)])
+    assert order.exit is not None
+    assert order.exit.observation_kind == ObservationKind.AMBIGUOUS_SEQUENCE.value
+    assert order.exit.executable_price is None
 
 
 @pytest.mark.parametrize("mode", ["step", "accelerated", "maximum"])

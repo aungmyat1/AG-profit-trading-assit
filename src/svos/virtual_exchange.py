@@ -34,6 +34,71 @@ class ObservationKind(str, Enum):
     AMBIGUOUS_SEQUENCE = "AMBIGUOUS_SEQUENCE"
 
 
+SAME_BAR_POLICY = "AMBIGUOUS_SEQUENCE_NO_ASSUMED_INTRABAR_ORDER"
+OHLC_AMBIGUITY_VERSION = "VD_OHLC_AMBIGUITY_V1"
+OHLC_AMBIGUITY_CONTRACT = {
+    "schema_version": OHLC_AMBIGUITY_VERSION,
+    "purpose": "STRATEGY_CAPACITY_VALIDATION",
+    "simulator_version": "SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE3B",
+    "strategy_semantics_boundary": "SSC v1.0.1 strategy rules are frozen and unchanged; simulator execution/accounting only",
+    "policy": SAME_BAR_POLICY,
+    "supported_classes": [
+        "entry_plus_sl",
+        "entry_plus_target",
+        "sl_plus_target",
+        "multiple_targets",
+        "gap_cross",
+        "unknown_chronology",
+    ],
+    "rules": {
+        "entry_plus_sl": "If the fill bar also touches the stop, treat as AMBIGUOUS_SEQUENCE; never assume the stop was reached before the fill.",
+        "entry_plus_target": "If the fill bar also touches the target, treat as AMBIGUOUS_SEQUENCE; never assume the target was reached after the fill.",
+        "sl_plus_target": "If a later bar touches both stop and target, treat as AMBIGUOUS_SEQUENCE; no favorable-order inference.",
+        "multiple_targets": "When multiple equivalent target levels are touched in one bar, the bar remains AMBIGUOUS_SEQUENCE unless a stricter project model proves sequence order.",
+        "gap_cross": "A bar whose range crosses a stop/target without a later proven order remains AMBIGUOUS_SEQUENCE; no future-bar inspection is allowed.",
+        "unknown_chronology": "If the bar chronology is not provable from the admitted OHLC evidence, fail closed to AMBIGUOUS_SEQUENCE.",
+    },
+    "fail_closed": True,
+    "no_favorable_order_inference": True,
+    "no_future_bar_inspection": True,
+    "no_random_ordering": True,
+    "strategy_boundary": "same as SSC v1.0.1 semantics; this contract governs simulator accounting only",
+}
+
+
+def _canonical_contract_payload() -> dict:
+    payload = dict(OHLC_AMBIGUITY_CONTRACT)
+    payload.pop("sha256", None)
+    return json.loads(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+
+
+def _contract_body_for_hash(contract: Optional[dict]) -> dict:
+    payload = dict(contract) if contract is not None else _canonical_contract_payload()
+    payload.pop("sha256", None)
+    return json.loads(json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str))
+
+
+def compute_ambiguity_contract_hash(*, contract: Optional[dict] = None) -> str:
+    payload = _contract_body_for_hash(contract)
+    body = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode()
+    return "sha256:" + hashlib.sha256(body).hexdigest()
+
+
+OHLC_AMBIGUITY_HASH = compute_ambiguity_contract_hash()
+OHLC_AMBIGUITY_CONTRACT["sha256"] = OHLC_AMBIGUITY_HASH
+
+
+def validate_ambiguity_contract(*, contract: Optional[dict] = None) -> str:
+    payload = dict(contract) if contract is not None else dict(OHLC_AMBIGUITY_CONTRACT)
+    expected = payload.get("sha256")
+    if expected is None:
+        raise ExchangeError("OHLC_AMBIGUITY_CONTRACT_MISSING_HASH")
+    digest = compute_ambiguity_contract_hash(contract=payload)
+    if digest != expected:
+        raise ExchangeError("OHLC_AMBIGUITY_CONTRACT_DRIFT")
+    return digest
+
+
 def _utc(v: datetime) -> datetime:
     if v.tzinfo is None or v.utcoffset() is None:
         raise ExchangeError("timestamps must be timezone-aware")
@@ -161,7 +226,12 @@ class VirtualExchange:
         return order
 
     def advance(self, bar: OHLCM1) -> VirtualOrder:
-        """Consume one closed M1 observation without looking ahead to later bars."""
+        """Consume one closed M1 observation without looking ahead to later bars.
+
+        Same-bar fill/exit chronology is intentionally fail-closed: when the fill bar also
+        touches a stop or target, the simulator treats the sequence as
+        `AMBIGUOUS_SEQUENCE` rather than assuming favorable ordering from the OHLC range.
+        """
         if self._order is None:
             raise ExchangeError("NO_ORDER")
         order = self._order
@@ -180,6 +250,14 @@ class VirtualExchange:
             self._transition(order, OrderState.FILLED, bar.time, "OHLC_M1_ENGINEERING_OPEN", bar.dataset_id, bar.event_id,
                              executable_price=bar.open)
             order.fill = order.records[-1]
+            same_bar_kind = self._same_bar_exit_kind(p, bar)
+            if same_bar_kind is not None:
+                level = None if same_bar_kind is ObservationKind.AMBIGUOUS_SEQUENCE else (
+                    p.stop_price if same_bar_kind is ObservationKind.ADVERSE else p.target_price
+                )
+                self._terminal(order, OrderState.FILLED, bar, same_bar_kind.value,
+                               observation_kind=same_bar_kind.value, executable_price=level)
+                order.exit = order.records[-1]
             return order
         if bar.time <= order.fill.at:
             return order
@@ -227,6 +305,14 @@ class VirtualExchange:
                 self._transition(order, OrderState.FILLED, bar.time, "OHLC_M1_ENGINEERING_OPEN", bar.dataset_id, bar.event_id,
                                  executable_price=bar.open)
                 order.fill = order.records[-1]
+                same_bar_kind = self._same_bar_exit_kind(p, bar)
+                if same_bar_kind is not None:
+                    level = None if same_bar_kind is ObservationKind.AMBIGUOUS_SEQUENCE else (
+                        p.stop_price if same_bar_kind is ObservationKind.ADVERSE else p.target_price
+                    )
+                    self._terminal(order, OrderState.FILLED, bar, same_bar_kind.value,
+                                   observation_kind=same_bar_kind.value, executable_price=level)
+                    order.exit = order.records[-1]
                 break
         if order.state != OrderState.FILLED:
             end = _utc(end_time) if end_time else ordered[-1].close_time
@@ -245,6 +331,22 @@ class VirtualExchange:
             order.exit = order.records[-1]
             break
         return order
+
+    @staticmethod
+    def _same_bar_exit_kind(p: ProposalFixture, bar: OHLCM1) -> Optional[ObservationKind]:
+        """same-bar fill chronology is never proven by OHLC alone; fail closed.
+
+        This preserves the repository's no-favorable-order-inference rule: if the fill bar
+        also touches the stop or target, the simulator cannot infer whether the order or
+        the risk level happened first, so it must record AMBIGUOUS_SEQUENCE.
+        """
+        if p.stop_price is None and p.target_price is None:
+            return None
+        adverse = (bar.low <= p.stop_price) if p.side == "LONG" and p.stop_price is not None else ((bar.high >= p.stop_price) if p.stop_price is not None else False)
+        favorable = (bar.high >= p.target_price) if p.side == "LONG" and p.target_price is not None else ((bar.low <= p.target_price) if p.target_price is not None else False)
+        if adverse or favorable:
+            return ObservationKind.AMBIGUOUS_SEQUENCE
+        return None
 
     @staticmethod
     def _exit_kind(p: ProposalFixture, bar: OHLCM1) -> Optional[ObservationKind]:
