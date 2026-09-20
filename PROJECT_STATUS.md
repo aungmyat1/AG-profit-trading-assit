@@ -6,6 +6,12 @@ later sections preserve dated milestone evidence and may contain older test tota
 
 ## Current rolling classification (2026-09-20)
 
+Market Intelligence V1 is frozen as `MI_V1_FROZEN`. The release manifest and accumulated
+117-test regression preserve the immutable MI contract, TD-8E provenance lineage, and
+controlled SSC compatibility boundary. EMA and cross-strategy regime remain unavailable;
+Virtual Demo and SSC production migration remain future work. See
+`AG_MARKET_INTELLIGENCE_V1_FREEZE_STATUS.md` and `MI_V1_RELEASE_MANIFEST.json`.
+
 MI V1 Cycle 4 controlled SSC integration is `MI_V1_INTEGRATION_READY`: the narrow
 MI-to-SSC adapter preserves TD-8E event/provenance lineage and produces equal canonical
 `run_replay` decisions on the representative complete event. Incomplete identity and

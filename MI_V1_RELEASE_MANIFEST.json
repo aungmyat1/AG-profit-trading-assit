@@ -1,0 +1,15 @@
+{
+  "release_identity": "AG_MARKET_INTELLIGENCE_V1",
+  "release_version": "1.0.0",
+  "release_classification": "MI_V1_FROZEN",
+  "freeze_commit_record": "Recorded in AG_MARKET_INTELLIGENCE_V1_FREEZE_STATUS.md and git HEAD after release commit.",
+  "baselines": {"td8e":"f4a1045","cycle1_design":"93586ec","cycle2_core":"cbb6a43","cycle3_parity":"2597547","cycle4_integration":"c435dba"},
+  "canonical_ssc": {"strategy_id":"ST_SESSION_SWEEP_CONTINUATION_V1","strategy_version":"1.0.1","decision_authority":"session_sweep_continuation.replay.run_replay"},
+  "frozen_surface": ["immutable MarketIntelligenceSnapshot and value objects","deterministic composer from admitted ReplayEvaluationContext","event/symbol/as_of/source/timeframe/dataset lineage","VALID and INCOMPLETE quality behavior","non-cutover MI to SSC compatibility boundary"],
+  "validated_guarantees": ["same-event determinism","future-only mutation invariance","incomplete evidence fails closed","zero live fallback in historical evaluation","H1/M15/M1 lineage preservation","legacy and MI-backed SSC decision equality"],
+  "unresolved_fields": {"repository_wide_ema":"UNAVAILABLE","cross_strategy_regime":"UNAVAILABLE"},
+  "prohibited_authorities": ["BUY/SELL decisions","trade proposals","risk sizing or allocation","order execution","Demo authorization","Live authorization"],
+  "downstream_interface": ["SVOS_VIRTUAL_DEMO_ENGINE_V1","ReplayEvaluationContext","Market Intelligence V1","MI to SSC compatibility","canonical SSC","StrategyDecision"],
+  "tests": {"command":"python -m pytest -q tests/test_market_intelligence.py tests/test_market_intelligence_v1_core.py tests/test_market_intelligence_v1_cycle3_parity.py tests/test_market_intelligence_v1_cycle4_ssc.py tests/test_td8e_evaluation_context.py tests/test_td8e_ssc_reference_completeness.py tests/test_td8d_replay_market_snapshot_bridge.py tests/test_td8c_session_replay_parity.py tests/test_historical_replay_no_lookahead.py tests/test_historical_replay_dataset_identity.py tests/test_session_sweep_continuation_replay_determinism.py tests/test_session_sweep_continuation_canonical_observations.py","result":"117 passed","live_replay_parity_claim":false},
+  "safety": {"td8e_changed":false,"ssc_migrated":false,"parameters_changed":false,"optimization_run":false,"dev002_economic_use":false,"holdout_or_oos_access":false,"execution_authority_changed":false,"demo_or_live_order":false}
+}
