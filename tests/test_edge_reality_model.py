@@ -29,6 +29,10 @@ def test_edge_reality_model_is_separate_from_broker_execution_parity():
     assert model.not_demo_execution_authority is True
     assert model.strategy_scope == "SSC v1.0.1 strategy-edge validation only"
     assert "BROKER_EXECUTION_PARITY" not in model.purpose
+    assert model.spread_units["source_value"] == "pips"
+    assert model.spread_units["per_side_or_round_trip"] == "round_trip_per_trade"
+    assert model.spread_units["conversion_to_R"] == "(spread_price / risk_distance_price)"
+    assert model.commission_units["source_classification"] == "EXPLICIT_CONSERVATIVE_RESEARCH_ASSUMPTION"
 
 
 def test_known_answer_accounting_matches_net_r_formula():

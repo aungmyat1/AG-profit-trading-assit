@@ -40,12 +40,15 @@ EDGE_REALITY_MODEL = {
     "spread_status": "MODELLED",
     "spread_provenance": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml friction.default_spread_pips (research defaults, not broker observations)",
     "spread_value_or_model": {"EURUSD": 1.0, "GBPUSD": 1.4},
+    "spread_units": {"source_value": "pips", "per_side_or_round_trip": "round_trip_per_trade", "conversion_to_price_or_currency_cost": "spread_pips * pip_size", "conversion_to_R": "(spread_price / risk_distance_price)", "source_classification": "EXPLICIT_CONSERVATIVE_RESEARCH_ASSUMPTION"},
     "commission_status": "MODELLED",
     "commission_provenance": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml friction.default_commission_pips (research defaults, not broker observations)",
     "commission_value_or_model": {"EURUSD": 0.2, "GBPUSD": 0.2},
+    "commission_units": {"source_value": "pips", "per_side_or_round_trip": "round_trip_per_trade", "conversion_to_price_or_currency_cost": "commission_pips * pip_size", "conversion_to_R": "(commission_price / risk_distance_price)", "source_classification": "EXPLICIT_CONSERVATIVE_RESEARCH_ASSUMPTION"},
     "slippage_status": "MODELLED",
     "slippage_provenance": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml friction.default_slippage_pips (research defaults, not broker observations)",
     "slippage_value_or_model": {"EURUSD": 0.3, "GBPUSD": 0.4},
+    "slippage_units": {"source_value": "pips", "per_side_or_round_trip": "round_trip_per_trade", "conversion_to_price_or_currency_cost": "slippage_pips * pip_size", "conversion_to_R": "(slippage_price / risk_distance_price)", "source_classification": "EXPLICIT_CONSERVATIVE_RESEARCH_ASSUMPTION"},
     "latency_status": "NOT_MATERIALLY_RESOLVABLE_AT_DATA_RESOLUTION",
     "latency_research_status": "NOT_MATERIALLY_RESOLVABLE_AT_DATA_RESOLUTION",
     "latency_broker_parity_status": "DEFERRED_EXECUTION_PARITY",
@@ -88,6 +91,7 @@ EDGE_REALITY_MODEL = {
         "commission": "pips",
         "slippage": "pips",
         "latency": "ms",
+        "note": "All spread/commission/slippage figures are modeled in pips and converted to price units using the strategy's pip size before conversion to R.",
     },
     "data_resolution_applicability": "M15 decision timeframe and M1 refinement only; exact execution latency remains outside the representable resolution",
     "symbol_applicability": ["EURUSD", "GBPUSD"],
@@ -181,12 +185,15 @@ class EdgeRealityModel:
     spread_status: str = "MODELLED"
     spread_provenance: str = "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml friction.default_spread_pips (research defaults, not broker observations)"
     spread_value_or_model: Dict[str, float] = field(default_factory=lambda: {"EURUSD": 1.0, "GBPUSD": 1.4})
+    spread_units: Dict[str, str] = field(default_factory=lambda: {"source_value": "pips", "per_side_or_round_trip": "round_trip_per_trade", "conversion_to_price_or_currency_cost": "spread_pips * pip_size", "conversion_to_R": "(spread_price / risk_distance_price)", "source_classification": "EXPLICIT_CONSERVATIVE_RESEARCH_ASSUMPTION"})
     commission_status: str = "MODELLED"
     commission_provenance: str = "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml friction.default_commission_pips (research defaults, not broker observations)"
     commission_value_or_model: Dict[str, float] = field(default_factory=lambda: {"EURUSD": 0.2, "GBPUSD": 0.2})
+    commission_units: Dict[str, str] = field(default_factory=lambda: {"source_value": "pips", "per_side_or_round_trip": "round_trip_per_trade", "conversion_to_price_or_currency_cost": "commission_pips * pip_size", "conversion_to_R": "(commission_price / risk_distance_price)", "source_classification": "EXPLICIT_CONSERVATIVE_RESEARCH_ASSUMPTION"})
     slippage_status: str = "MODELLED"
     slippage_provenance: str = "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml friction.default_slippage_pips (research defaults, not broker observations)"
     slippage_value_or_model: Dict[str, float] = field(default_factory=lambda: {"EURUSD": 0.3, "GBPUSD": 0.4})
+    slippage_units: Dict[str, str] = field(default_factory=lambda: {"source_value": "pips", "per_side_or_round_trip": "round_trip_per_trade", "conversion_to_price_or_currency_cost": "slippage_pips * pip_size", "conversion_to_R": "(slippage_price / risk_distance_price)", "source_classification": "EXPLICIT_CONSERVATIVE_RESEARCH_ASSUMPTION"})
     latency_status: str = "NOT_MATERIALLY_RESOLVABLE_AT_DATA_RESOLUTION"
     latency_research_status: str = "NOT_MATERIALLY_RESOLVABLE_AT_DATA_RESOLUTION"
     latency_broker_parity_status: str = "DEFERRED_EXECUTION_PARITY"
@@ -242,12 +249,15 @@ class EdgeRealityModel:
             "spread_status": self.spread_status,
             "spread_provenance": self.spread_provenance,
             "spread_value_or_model": self.spread_value_or_model,
+            "spread_units": self.spread_units,
             "commission_status": self.commission_status,
             "commission_provenance": self.commission_provenance,
             "commission_value_or_model": self.commission_value_or_model,
+            "commission_units": self.commission_units,
             "slippage_status": self.slippage_status,
             "slippage_provenance": self.slippage_provenance,
             "slippage_value_or_model": self.slippage_value_or_model,
+            "slippage_units": self.slippage_units,
             "latency_status": self.latency_status,
             "latency_research_status": self.latency_research_status,
             "latency_broker_parity_status": self.latency_broker_parity_status,
