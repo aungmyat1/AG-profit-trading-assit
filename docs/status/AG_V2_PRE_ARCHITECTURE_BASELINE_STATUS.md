@@ -157,3 +157,42 @@ out of scope for this mission.
 `V2-2A_PURE_FUNNEL_TRANSITION_ENGINE` — a deterministic, storage-agnostic engine
 that consumes `MarketEvent` + `FunnelState` and produces `FunnelTransition` +
 updated `OpportunityCandidate`, with no strategy adapter wired yet.
+
+## Addendum (2026-09-21): Frontend freeze — non-negotiable, binding on all later phases
+
+The owner has fixed a hard constraint on every remaining V2 phase: the existing
+frontend (layout, pages, components, navigation, controls, styling, routes,
+existing API calls, existing frontend-visible semantics) is frozen and out of
+scope for this migration. No Opportunity Finder dashboard, no Execution Console
+UI, no V2-terminology renames of existing controls. Frontend source is
+read-only for this program except narrowly scoped test/config inspection.
+
+Compatibility direction is fixed as `V2 internal object -> presentation/API
+adapter -> existing API response -> existing frontend`, never the reverse
+(`change API -> rewrite frontend`), unless a separately approved future mission
+authorizes that migration. `RESEARCH_QUALIFIED` / research-only states must
+never be presented as actionable `READY` merely to satisfy an existing UI
+field; SSC must never be routed through `SESSION_TRADE_V1` merely for
+presentation convenience — strategy identity stays authoritative even when
+presentation is shared. Frontend execution controls stay governed by the
+existing fail-closed authority model; a new `ExecutionDecision` contract must
+never make a previously-blocked frontend control functional on its own.
+
+Compliance as of this mission's own commit (`0be5bad`): no frontend, API, or
+presentation-layer file was touched (`src/opportunity/`, `tests/`, and status
+docs only — verified against `git show --stat`). `frontend_source_changed =
+false`, `breaking_api_changes = false`. No compatibility adapter was needed
+this mission because no presentation-facing work was in scope.
+
+Updated roadmap (supersedes the "Future migration plan" section's original
+V2-11/V2-12 entries): `Opportunity Finder API/UI` and `Execution Console` are
+replaced by `V2-11 Existing API compatibility integration` and `V2-12 Existing
+frontend regression validation` — no dedicated UI/redesign phase exists in this
+program. Any future V2-4/V2-5 (ProposalEligibility, CanonicalProposal
+integration) work touching a read model reachable by the existing frontend must
+add API-compatibility regression tests (existing endpoints/fields/types remain
+present and compatible, synthetic/replay/research states cannot become
+executable or upgraded through presentation mapping, execution authority cannot
+be upgraded by serialization) before merging, and must report
+`BLOCKED_FRONTEND_COMPATIBILITY` with the exact endpoint/field/semantic
+conflict rather than silently modifying frontend source.
