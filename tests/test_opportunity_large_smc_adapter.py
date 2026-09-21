@@ -201,6 +201,49 @@ def test_supports_rejects_wrong_symbol():
     assert adapter.supports(wrong_symbol_event, binding()) is False
 
 
+# --- Safety Invariant #9: terminal transition must not regress a stage already
+# reached (AG_V2_INDEPENDENT_AUDIT_02 finding, fixed in opportunity.engine.
+# evaluate_funnel rather than per-adapter, since the adapter's own canonical
+# source -- SetupLedgerRow.ready_time -- is not a reliable "highest stage
+# reached" marker: it is set only at full READY, not at HTF_QUALIFIED or
+# WAITING_M5_ENTRY, so an adapter-only fix could still understate progress).
+
+def test_terminal_from_qualified_without_ready_time_does_not_regress_to_market_eligible():
+    event = market_event("regression-qualified-then-invalidated")
+    b = binding()
+
+    qualified_row = setup_row(EntryModelState.HTF_QUALIFIED.value)
+    candidate, _ = evaluate_funnel(event=event, binding=b, adapter=LargeSMCFunnelAdapter(setup_row=qualified_row))
+    assert candidate.stage == STAGE_LOCATION_VALID
+
+    invalidated_row = setup_row(EntryModelState.INVALIDATED.value, ready_time=None, final_time=T1, terminal=True)
+    terminal_candidate, transition = evaluate_funnel(
+        event=event, binding=b, adapter=LargeSMCFunnelAdapter(setup_row=invalidated_row), previous_candidate=candidate,
+    )
+    assert terminal_candidate.stage == STAGE_LOCATION_VALID, (
+        "terminal transition regressed the candidate's stage below the highest one actually "
+        "reached -- violates AG_V2_SAFETY_AND_AUTHORITY_INVARIANTS.md invariant #9"
+    )
+    assert terminal_candidate.outcome == OUTCOME_INVALIDATED
+    assert transition.to_stage == STAGE_LOCATION_VALID
+
+
+def test_terminal_from_entry_available_without_ready_time_does_not_regress():
+    event = market_event("regression-entry-available-then-expired")
+    b = binding()
+
+    waiting_row = setup_row(EntryModelState.WAITING_M5_ENTRY.value)
+    candidate, _ = evaluate_funnel(event=event, binding=b, adapter=LargeSMCFunnelAdapter(setup_row=waiting_row))
+    assert candidate.stage == STAGE_TRIGGER_ARMED
+
+    expired_row = setup_row(EntryModelState.EXPIRED.value, ready_time=None, final_time=T1, terminal=True)
+    terminal_candidate, _ = evaluate_funnel(
+        event=event, binding=b, adapter=LargeSMCFunnelAdapter(setup_row=expired_row), previous_candidate=candidate,
+    )
+    assert terminal_candidate.stage == STAGE_TRIGGER_ARMED
+    assert terminal_candidate.outcome == OUTCOME_EXPIRED
+
+
 # --- CandidateStore integration: repeated polls, progression, restart -------------
 
 def test_repeated_identical_poll_creates_exactly_one_revision():

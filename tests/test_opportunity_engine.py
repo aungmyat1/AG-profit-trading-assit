@@ -156,6 +156,57 @@ def test_terminal_set_matches_authoritative_outcome_vocabulary():
     assert TERMINAL_OUTCOMES == {OUTCOME_REJECT, OUTCOME_INVALIDATED, OUTCOME_EXPIRED, OUTCOME_ERROR}
 
 
+# -- AG_V2_INDEPENDENT_AUDIT_02 finding: a terminal transition must not regress
+# a candidate's stage below the highest one already reached (Safety Invariant #9,
+# docs/v2/AG_V2_SAFETY_AND_AUTHORITY_INVARIANTS.md #9), even when the adapter's own
+# projection for the terminal observation reports an earlier stage than a previous
+# revision already recorded. This is enforced generically in evaluate_funnel so no
+# individual adapter has to reconstruct "highest stage reached" from a canonical
+# source that may not reliably expose it.
+
+@pytest.mark.parametrize("terminal_outcome", sorted(TERMINAL_OUTCOMES))
+def test_terminal_transition_does_not_regress_stage_below_previous_high_water_mark(terminal_outcome):
+    class Advanced(Adapter):
+        def project(self, observation):
+            return FunnelProjection(stage=STAGE_TRIGGER_ARMED, outcome=OUTCOME_ACTIVE)
+
+    class TerminalButEarlierStage(Adapter):
+        def project(self, observation):
+            # Reports an earlier stage than the one already reached -- e.g. the
+            # canonical source's terminal observation carries less positional
+            # detail than an earlier non-terminal one did.
+            return FunnelProjection(stage=STAGE_SETUP_DETECTED, outcome=terminal_outcome)
+
+    advanced, _ = evaluate_funnel(event=event(), binding=binding(), adapter=Advanced())
+    assert advanced.stage == STAGE_TRIGGER_ARMED
+
+    terminal, transition = evaluate_funnel(
+        event=event(event_id="evt-2"), binding=binding(), adapter=TerminalButEarlierStage(),
+        previous_candidate=advanced,
+    )
+    assert terminal.stage == STAGE_TRIGGER_ARMED, (
+        "terminal transition must preserve the highest stage already reached, not "
+        "regress to whatever (earlier) stage the terminal observation itself reports"
+    )
+    assert terminal.outcome == terminal_outcome
+    assert transition.to_stage == STAGE_TRIGGER_ARMED
+
+
+def test_terminal_transition_uses_reported_stage_when_it_is_not_a_regression():
+    class TerminalAtLaterStage(Adapter):
+        def project(self, observation):
+            return FunnelProjection(stage=STAGE_ENTRY_CONFIRMED, outcome=OUTCOME_INVALIDATED)
+
+    first, _ = evaluate_funnel(event=event(), binding=binding(), adapter=Adapter())
+    assert first.stage == STAGE_SETUP_DETECTED
+
+    terminal, transition = evaluate_funnel(
+        event=event(event_id="evt-2"), binding=binding(), adapter=TerminalAtLaterStage(), previous_candidate=first,
+    )
+    assert terminal.stage == STAGE_ENTRY_CONFIRMED
+    assert transition.to_stage == STAGE_ENTRY_CONFIRMED
+
+
 def test_market_data_mode_is_preserved():
     candidate, _ = evaluate_funnel(event=event("REPLAY"), binding=binding(), adapter=Adapter())
     assert candidate.market_data_mode == "REPLAY"

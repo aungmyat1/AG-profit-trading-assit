@@ -23,12 +23,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from typing import Any, Mapping, Optional, Tuple
 
 from .adapter import FunnelProjection, StrategyFunnelAdapter
 from .contracts import MarketEvent, OpportunityCandidate
 from .registry_binding import StrategyBinding
 from .stages import (
+    FUNNEL_STAGES,
     OUTCOME_ERROR,
     OUTCOME_EXPIRED,
     OUTCOME_INVALIDATED,
@@ -227,14 +229,39 @@ def evaluate_funnel(
     candidate_id = previous_candidate.candidate_id if previous_candidate else _candidate_id(binding, event)
     occurrence_id = previous_candidate.occurrence_id if previous_candidate else candidate_id
     revision = previous_state.revision + 1
-    transition_id = _transition_id(candidate_id, event, previous_state, projection)
+
+    # Safety Invariant #9 (docs/v2/AG_V2_SAFETY_AND_AUTHORITY_INVARIANTS.md #9):
+    # "terminal invalidation/expiry preserves the highest stage actually reached;
+    # history is not rewritten by moving the stage backward." This is enforced
+    # here, once, for every adapter -- not left to each adapter to reconstruct
+    # from whatever partial progress marker its own canonical source happens to
+    # expose (which an audit found at least one adapter cannot reliably do:
+    # Large-SMC's SetupLedgerRow.ready_time is set only at full READY, so an
+    # adapter-side "safe floor" guess can still understate genuine prior
+    # progress). Only applies on the transition INTO a terminal outcome -- an
+    # already-terminal candidate never reaches this code (short-circuited above).
+    # Computed BEFORE `_transition_id`/`FunnelTransition` so the transition's own
+    # id/content agree with what is actually persisted -- never a transition
+    # record that disagrees with the candidate it produced.
+    final_stage = projection.stage
+    if (
+        projection.outcome in TERMINAL_OUTCOMES
+        and previous_state.stage is not None
+        and FUNNEL_STAGES.index(previous_state.stage) > FUNNEL_STAGES.index(projection.stage)
+    ):
+        final_stage = previous_state.stage
+    final_projection = (
+        projection if final_stage == projection.stage else replace(projection, stage=final_stage)
+    )
+
+    transition_id = _transition_id(candidate_id, event, previous_state, final_projection)
 
     transition = FunnelTransition(
         transition_id=transition_id,
         candidate_id=candidate_id,
         from_stage=previous_state.stage,
         from_outcome=previous_state.outcome,
-        to_stage=projection.stage,
+        to_stage=final_stage,
         to_outcome=projection.outcome,
         evaluated_at=event.market_data_asof,
         evidence_event_id=event.event_id,
@@ -255,7 +282,7 @@ def evaluate_funnel(
         detected_at=previous_candidate.detected_at if previous_candidate else event.bar_close_time,
         last_evaluated_at=event.market_data_asof,
         expires_at=previous_candidate.expires_at if previous_candidate else None,
-        stage=projection.stage,
+        stage=final_stage,
         outcome=projection.outcome,
         revision=revision,
         raw_strategy_state=dict(observation.raw_strategy_state),
