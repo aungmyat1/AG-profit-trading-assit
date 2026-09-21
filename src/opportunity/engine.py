@@ -8,6 +8,16 @@ Identity continuity is enforced here whenever a previous OpportunityCandidate is
 supplied: strategy id/version, engine version, symbol/market/venue and market-data
 mode must remain compatible with the binding/event. This prevents a caller from
 reusing a candidate id across unrelated strategy or data authorities.
+
+Restored invariants (re-audit remediation): a semantically equivalent repeated
+observation must not mint a new revision/transition (Safety Invariant #8 --
+"equivalent normalized semantic input must not create new semantic transitions
+merely because the system polled again"), and a candidate that has already
+reached a terminal outcome must not be reactivated by ordinary evaluation
+(Safety Invariant #9). Both properties existed in the original pure engine and
+were dropped when the identity-continuity fix replaced it; this restores them
+without reintroducing persistence, a second candidate-identity scheme, or any
+change to the identity-continuity behavior verified separately.
 """
 from __future__ import annotations
 
@@ -18,8 +28,24 @@ from typing import Any, Mapping, Optional, Tuple
 from .adapter import FunnelProjection, StrategyFunnelAdapter
 from .contracts import MarketEvent, OpportunityCandidate
 from .registry_binding import StrategyBinding
-from .stages import validate_outcome, validate_stage
+from .stages import (
+    OUTCOME_ERROR,
+    OUTCOME_EXPIRED,
+    OUTCOME_INVALIDATED,
+    OUTCOME_REJECT,
+    validate_outcome,
+    validate_stage,
+)
 from .transitions import FunnelState, FunnelTransition
+
+# Sticky by design (Safety Invariant #9): once a candidate's outcome reaches one
+# of these, only a new occurrence (new candidate_id, via the persistence/identity
+# layer -- out of scope here) can represent a later valid setup. This is the
+# same terminal vocabulary stages.py's FUNNEL_OUTCOMES already defines as
+# non-recoverable dispositions; it is not a second/competing outcome model.
+TERMINAL_OUTCOMES = frozenset(
+    {OUTCOME_REJECT, OUTCOME_INVALIDATED, OUTCOME_EXPIRED, OUTCOME_ERROR}
+)
 
 
 class FunnelEngineError(RuntimeError):
@@ -122,14 +148,45 @@ def state_from_candidate(candidate: Optional[OpportunityCandidate]) -> FunnelSta
     )
 
 
+def _is_semantic_no_op(
+    previous_state: FunnelState,
+    observation,
+    projection: FunnelProjection,
+) -> bool:
+    """True when the new observation changes nothing an occurrence's semantic
+    state is defined by. Compared fields are intentionally limited to stage,
+    outcome, and raw_strategy_state -- the only fields FunnelState retains
+    across cycles. Per-cycle-only fields (reason_codes, evidence maps) and
+    strategy-owned geometry are excluded from this comparison by design: they
+    are not part of FunnelState/FunnelProjection's persisted semantic
+    vocabulary, so a caller re-polling with fresh evidence text for an
+    unchanged stage/outcome must not be treated as a new transition."""
+    return (
+        previous_state.stage == projection.stage
+        and previous_state.outcome == projection.outcome
+        and previous_state.raw_strategy_state == dict(observation.raw_strategy_state)
+    )
+
+
 def evaluate_funnel(
     *,
     event: MarketEvent,
     binding: StrategyBinding,
     adapter: StrategyFunnelAdapter,
     previous_candidate: Optional[OpportunityCandidate] = None,
-) -> Tuple[OpportunityCandidate, FunnelTransition]:
-    """Evaluate one event through one canonical strategy adapter without I/O."""
+) -> Tuple[OpportunityCandidate, Optional[FunnelTransition]]:
+    """Evaluate one event through one canonical strategy adapter without I/O.
+
+    Returns `(candidate, transition)`. `transition` is `None` in two cases,
+    both returning `previous_candidate` unchanged (same revision, same
+    `latest_transition_id`, no ledger write required by the caller):
+
+    - `previous_candidate` is already terminal (Safety Invariant #9): ordinary
+      evaluation never reactivates it, and the adapter is not even invoked.
+    - the new observation is semantically equivalent to the previous state
+      (Safety Invariant #8): the funnel ledger must record semantic
+      transitions, not scheduler polling activity.
+    """
     if adapter.strategy_id != binding.strategy_id:
         raise AdapterIdentityMismatchError(
             f"adapter strategy_id {adapter.strategy_id!r} != binding {binding.strategy_id!r}"
@@ -140,6 +197,8 @@ def evaluate_funnel(
         )
     if previous_candidate is not None:
         _validate_candidate_continuity(previous_candidate, binding, event)
+        if previous_candidate.outcome in TERMINAL_OUTCOMES:
+            return previous_candidate, None
     if not adapter.supports(event, binding):
         raise AdapterNotSupportedError(
             f"adapter {adapter.strategy_id!r} does not support event {event.event_id!r}"
@@ -159,6 +218,10 @@ def evaluate_funnel(
     projection = adapter.project(observation)
     validate_stage(projection.stage)
     validate_outcome(projection.outcome)
+
+    if previous_candidate is not None and _is_semantic_no_op(previous_state, observation, projection):
+        return previous_candidate, None
+
     geometry = adapter.candidate_geometry(observation)
 
     candidate_id = previous_candidate.candidate_id if previous_candidate else _candidate_id(binding, event)
