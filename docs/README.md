@@ -182,6 +182,16 @@ and the remaining lifecycle and campaign boundaries.
   frozen before generation and justified by native-candle parity (the strict default would
   silently drop 418 real H1 / 452 real M15 bars). Pre-existing DEV_002/GEN_002/HYP_002
   anomalies are recorded, **not** rewritten. No replay ran.
+- [`status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md`](status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md)
+  — Mission 1 (`ONE_YEAR_REPLAY_DATA_AUTHORITY_READY`): freezes
+  `ONE_YEAR_REPLAY_STACK_V1` (M1/M15/H1 + a declared `WARMUP_CONTEXT_ONLY` H1 leg) via
+  the new `scripts/build_ssc_v1_0_1_one_year_replay_stack.py`, hardens
+  `scripts/audit_ssc_v1_0_1_one_year_cross_leg_consistency.py` in place (zero-shift-only
+  admission, a calendar-independent bimodal DST census, season segments split at the two
+  real EU DST transitions inside the window, single-season-source exclusion, and a
+  conflict-detecting merge that never silently overwrites a disagreeing bar), and proves
+  VA2 warm-up convergence (`WARMUP_STABLE`, 4 371 closed H1 bars before the first
+  decision). No replay executed; R5/R6 remain a separate mission.
 
 ## Validation system
 

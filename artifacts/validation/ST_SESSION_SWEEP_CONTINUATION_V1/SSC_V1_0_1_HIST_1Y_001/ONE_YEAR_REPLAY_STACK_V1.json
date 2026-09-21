@@ -1,0 +1,73 @@
+{
+  "gates": {
+    "CROSS_LEG_TIMEBASE": "CROSS_LEG_TIMEBASE_CONSISTENT",
+    "DATA_COVERAGE": "DATA_COVERAGE_COMPLETE",
+    "GEN_002_QUARANTINE_ENFORCED": true,
+    "PROTECTED_DATA_ACCESS_COUNT": 0,
+    "WARMUP": "WARMUP_STABLE",
+    "WARMUP_BARS_BEFORE_FIRST_DECISION": 4371
+  },
+  "generated_at_utc": "2026-09-21T08:19:54.920421+00:00",
+  "inputs": {
+    "H1": {
+      "dataset_id": "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::H1",
+      "range_utc": [
+        "2025-09-14T21:00:00+00:00",
+        "2026-09-15T21:00:00+00:00"
+      ],
+      "role": "MARKET_BIAS_INPUT",
+      "rows": 6241,
+      "sha256": "4eb522945697773ed34d1b8d47ab928b9e94e99828dade88db18fe186905e288",
+      "source_lineage": "deterministic exact-UTC-bucket derivation from SSC_V1_0_1_HIST_1Y_M1_001 (historical_replay.m1_derivation, NATIVE_FAITHFUL_INCLUSIVE policy)",
+      "timezone_authority": "normalized UTC from canonical M1 (derived, zero shift by construction)"
+    },
+    "M1": {
+      "dataset_id": "SSC_V1_0_1_HIST_1Y_M1_001",
+      "range_utc": [
+        "2025-09-14T21:02:00+00:00",
+        "2026-09-15T21:00:00+00:00"
+      ],
+      "role": "FILL_RESOLUTION_INPUT",
+      "rows": 373421,
+      "sha256": "50beb42ad2f65203f3946301eee0e8a435dd6f2067eb4fc0692ebba451d12f8a",
+      "source_lineage": "native MT5 broker export (VantageMarkets-Demo), UTC-normalized per-week reopen",
+      "timezone_authority": "BROKER_SERVER_TIME(UTC+2/UTC+3 seasonal, per-week reopen) -> normalized UTC"
+    },
+    "M15": {
+      "dataset_id": "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::M15",
+      "range_utc": [
+        "2025-09-14T21:00:00+00:00",
+        "2026-09-15T21:00:00+00:00"
+      ],
+      "role": "STRATEGY_DECISION_INPUT",
+      "rows": 24961,
+      "sha256": "c9833427404d8634d8cf57b000017ecea7ad865ab22db4eadedacb80de9b6956",
+      "source_lineage": "deterministic exact-UTC-bucket derivation from SSC_V1_0_1_HIST_1Y_M1_001 (historical_replay.m1_derivation, NATIVE_FAITHFUL_INCLUSIVE policy)",
+      "timezone_authority": "normalized UTC from canonical M1 (derived, zero shift by construction)"
+    },
+    "WARMUP_H1": {
+      "dataset_id": "EXTERNAL_D_ROOT::EURUSD_H1_202501020000_202607310000.csv",
+      "declared_scope": "WARMUP_CONTEXT_ONLY -- supplies pre-window H1 history only; the decision-window H1 leg above remains the sole MARKET_BIAS_INPUT authority",
+      "range_utc": [
+        "2025-01-01T22:00:00+00:00",
+        "2026-07-30T21:00:00+00:00"
+      ],
+      "role": "WARMUP_CONTEXT_ONLY",
+      "rows": 9817,
+      "sha256": "f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060",
+      "source_lineage": "owner-approved external MT5 export (config/historical_datasets/EURUSD_H1_symbol_metadata.yaml, dataset_fingerprint sha256:f1b456e4...); independently proven +0h/exact=1.000000/DST_CONSISTENT against the M1 arbiter",
+      "timezone_authority": "BROKER_SERVER_TIME(UTC+2/UTC+3 seasonal) -> normalized UTC, +0h shift verified"
+    }
+  },
+  "manifest_sha256": "59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7",
+  "schema": "AG_SSC_ONE_YEAR_REPLAY_STACK_V1",
+  "stack_id": "ONE_YEAR_REPLAY_STACK_V1",
+  "status": "FROZEN",
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1",
+  "symbol": "EURUSD",
+  "window": {
+    "end_utc": "2026-09-14T23:59:59+00:00",
+    "start_utc": "2025-09-15T00:00:00+00:00"
+  }
+}
