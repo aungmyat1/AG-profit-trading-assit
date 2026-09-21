@@ -16,6 +16,43 @@ It is a maintenance contract, not execution authorization.
 | `AGENTS.md` | Mandatory repository working and safety rules | Update when agent workflow or authority changes |
 | `docs/status/*.md` | Dated milestone and validation evidence | Preserve historical facts; add a new record when superseded |
 | `docs/README.md` | Documentation index and authority guide | Update when documentation is added, moved, or superseded |
+| `docs/<domain>/README.md` | Domain navigation | Must remain discoverable from `docs/README.md` |
+| Machine-readable manifests | Structured frozen evidence | Do not treat as authorization unless the governing authority explicitly says so |
+
+## Documentation authority invariants
+
+The documentation system uses these non-collapsible distinctions:
+
+```text
+DESIGN != IMPLEMENTED
+IMPLEMENTED != VALIDATED
+VALIDATED != STRATEGY_AUTHORIZED
+PROPOSAL != RISK_APPROVAL
+RISK_APPROVAL != EXECUTION_AUTHORIZATION
+```
+
+A design, roadmap, status narrative, generated report, or machine-readable manifest
+must never silently upgrade strategy, proposal, Demo, Live, broker-send, or external
+message-delivery authority. When sources disagree, use the authoritative source for the
+specific claim and fail closed until the conflict is reconciled.
+
+## Documentation classes
+
+Use these conceptual classes when creating or reviewing documentation. Existing files
+do not need mass renaming or front-matter migration.
+
+| Class | Meaning |
+|---|---|
+| `CURRENT` | Rolling current truth, normally `PROJECT_STATUS.md` |
+| `DESIGN` | Architecture or contract intent; non-authorizing by itself |
+| `ROADMAP` | Planned sequence, gates, and stop conditions |
+| `STATUS_EVIDENCE` | Dated implementation, validation, or operational evidence |
+| `AUTHORITY` | Explicit governing source for a bounded decision |
+| `OPERATIONS` | Setup, runtime, maintenance, or runbook guidance |
+| `HISTORICAL` | Retained evidence that may have been superseded |
+
+Every important document should make it reasonably clear what it is, whether it can
+authorize behavior, whether it is current or historical, and where newer truth lives.
 
 ## Events that require a status update
 
@@ -55,6 +92,33 @@ Update related documentation in the same change set when any of these changes:
 
 10. Confirm documentation changes did not alter execution configuration or authorize a
     strategy unintentionally.
+
+## Domain discoverability and link integrity
+
+When a new documentation domain introduces `docs/<domain>/README.md`, add a navigation
+entry to `docs/README.md` in the same change set. The root documentation index should
+route readers to the domain index; it should not duplicate the domain's entire contents.
+
+When documentation is moved or renamed, check inbound relative Markdown links before
+finishing. Prefer correcting stale links over renaming historical evidence solely to
+match an incorrect index entry.
+
+Repository-relative links are preferred for internal documentation. A documentation
+integrity check should fail on broken relative links and on primary documentation-domain
+indexes that are not discoverable from `docs/README.md`.
+
+## Current versus historical truth
+
+`PROJECT_STATUS.md` is the rolling whole-project current-status authority. Dated status
+records under `docs/status/` are evidence of what was established at a particular time;
+they should not be silently rewritten simply because the project later changed.
+
+When a historical document contains a materially stale placeholder or recording error,
+prefer a clearly dated `Documentation correction` or `Addendum` that preserves the
+original historical context while pointing to the authoritative newer evidence.
+
+Use explicit temporal language where useful: `Current as of`, `Historical evidence`,
+`At the time of this status`, `Superseded by`, and `Documentation correction`.
 
 ## Evidence rules
 
