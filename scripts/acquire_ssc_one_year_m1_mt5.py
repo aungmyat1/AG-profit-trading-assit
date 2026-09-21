@@ -74,11 +74,28 @@ PARITY_CANONICAL = (REPO_ROOT / "data" / "research" / "ssc_fresh_dev" / "SSC_V1_
                     / "raw" / "EURUSD_M1.csv")
 
 EXPECTED_TERMINAL = {
-    "company": "Vantage Markets (Pty) Ltd",
     "server": "VantageMarkets-Demo",
     "login": 26088035,
     "symbol": SYMBOL,
 }
+
+
+def development_data_source_identity(info: dict, *, history_available: bool) -> bool:
+    """Validate the research data source, not terminal vendor branding.
+
+    ``terminal_info().company`` identifies the terminal vendor (MetaQuotes here),
+    while broker/account identity is supplied by ``account_info``.  Execution
+    authorization has separate guards and is intentionally not consulted here.
+    """
+    return bool(
+        info.get("mt5_initialized")
+        and info.get("server_matches_expected")
+        and info.get("login_matches_expected")
+        and info.get("environment") == "DEMO"
+        and info.get("symbol_available")
+        and info.get("symbol_visible")
+        and history_available
+    )
 
 TICK_FIELDS = ["timestamp_utc", "open", "high", "low", "close",
                "tick_volume", "spread", "real_volume"]
@@ -127,17 +144,23 @@ def verify_terminal() -> dict:
     if not mt5.initialize():
         return {"status": "MT5_INITIALIZE_FAILED", "last_error": mt5.last_error()}
     ti, ai, si = mt5.terminal_info(), mt5.account_info(), mt5.symbol_info(SYMBOL)
-    mt5.symbol_select(SYMBOL, True)
+    symbol_selected = mt5.symbol_select(SYMBOL, True)
+    history = mt5.copy_rates_from(SYMBOL, mt5.TIMEFRAME_M1, datetime.now(timezone.utc), 1)
     info = {
         "status": "VERIFIED",
+        "mt5_initialized": True,
         "terminal_build": getattr(ti, "build", None),
         "terminal_maxbars": getattr(ti, "maxbars", None),
+        "terminal_path": getattr(ti, "path", None),
         "terminal_data_path": getattr(ti, "data_path", None),
-        "company": getattr(ai, "company", None),
+        "terminal_company": getattr(ti, "company", None),
         "server": getattr(ai, "server", None),
         "login": getattr(ai, "login", None),
         "environment": "DEMO" if getattr(ai, "trade_mode", None) == 0 else "NON_DEMO",
         "symbol": SYMBOL,
+        "symbol_available": si is not None,
+        "symbol_selected": bool(symbol_selected),
+        "history_available": history is not None and len(history) > 0,
         "symbol_digits": getattr(si, "digits", None),
         "symbol_point": getattr(si, "point", None),
         "symbol_tick_size": getattr(si, "trade_tick_size", None),
@@ -145,7 +168,9 @@ def verify_terminal() -> dict:
     }
     for key, expected in EXPECTED_TERMINAL.items():
         info[f"{key}_matches_expected"] = (info.get(key) == expected)
-    info["identity_ok"] = all(info[f"{k}_matches_expected"] for k in EXPECTED_TERMINAL)
+    info["identity_ok"] = development_data_source_identity(
+        info, history_available=info["history_available"]
+    )
     return info
 
 

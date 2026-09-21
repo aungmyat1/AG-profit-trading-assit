@@ -1,0 +1,282 @@
+From 9b76d23bcc39e10d99172db36aa1f70b43f33264 Mon Sep 17 00:00:00 2001
+From: portability-fix <portability-fix@local>
+Date: Mon, 21 Sep 2026 05:12:08 +0000
+Subject: [PATCH] fix: make pip install and pytest collection work on
+ non-Windows platforms
+
+requirements.txt:
+- MetaTrader5==5.0.5735 now carries the PEP 508 marker '; sys_platform == "win32"'.
+  The package publishes win_amd64 wheels only (cp36..cp314), so a plain
+  'pip install -r requirements.txt' previously aborted on Linux/macOS.
+  Windows installs are byte-for-byte unchanged.
+- Declare pydantic==2.13.5 explicitly (directly imported by src/api/schemas.py;
+  previously only a transitive pin of fastapi).
+
+tests (9 files): the module-level _mt5_available()/_live_available() probes that
+feed @pytest.mark.skipif called MetaTrader5.initialize()/connect() at import time.
+Where the real package is absent, tests/conftest.py's import-only stub refuses the
+call, which turned into 9 collection errors and aborted every pytest run on
+non-Windows. Each probe now returns False instead of propagating, so live-gated
+tests SKIP honestly (the behavior the stub's own error message prescribes) and the
+offline tests in those files run. Windows behavior is unchanged.
+
+tests/conftest.py: add TIMEFRAME_W1 (32769) to the stub constants table --
+src/mt5/market_data.py reads mt5.TIMEFRAME_W1 at import time, matching the stub's
+documented policy for import-time-read constants; fixes
+test_topdown_market_data.py::test_w1_registered_in_mt5_acquisition_mapping.
+
+Verified on Linux/Python 3.13: fresh venv install exits 0 (MT5 skipped via marker,
+pip check clean); pytest collects 3,745 tests with zero collection errors;
+3,619 passed / 48 skipped / 37 failed, where all 37 failures are pre-existing
+categories already recorded in the 2026-09-21 readiness audit (dataset fingerprint
+mismatch, hardcoded D:\\ paths, stale frozen-scope baselines, contract drift,
+unmarked runtime MT5 tests) -- none introduced by this change.
+---
+ requirements.txt                    | 12 ++++++++++--
+ tests/conftest.py                   |  1 +
+ tests/test_assistant_market_data.py | 11 +++++++++--
+ tests/test_five_skill_runtime.py    | 11 +++++++++--
+ tests/test_liquidity.py             | 11 +++++++++--
+ tests/test_market_data.py           | 11 +++++++++--
+ tests/test_market_structure.py      | 11 +++++++++--
+ tests/test_mtf_context.py           |  6 ++++++
+ tests/test_ob_contract.py           | 11 +++++++++--
+ tests/test_supply_demand.py         | 11 +++++++++--
+ tests/test_topdown_market_data.py   |  9 ++++++++-
+ 11 files changed, 88 insertions(+), 17 deletions(-)
+
+diff --git a/requirements.txt b/requirements.txt
+index 7c46f44..9885407 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,14 +1,22 @@
+ # No dependency mechanism existed before this file (packages were only present via the
+ # system Python install). Versions below are what was verified against on 2026-08-26.
++#
++# PLATFORM NOTE (2026-09-21): MetaTrader5 publishes win_amd64 wheels only (verified on
++# PyPI for 5.0.5735: cp36..cp314, no Linux/macOS wheels). The PEP 508 environment marker
++# below makes it install only on Windows, so `pip install -r requirements.txt` succeeds
++# on every platform. On non-Windows machines tests/conftest.py's import-only MT5 stub
++# takes over and `live_mt5`-marked tests skip; nothing else in this file is Windows-only.
+ PyYAML==6.0.3
+ pandas==2.3.3
+-MetaTrader5==5.0.5735
++MetaTrader5==5.0.5735 ; sys_platform == 'win32'
+ smartmoneyconcepts==0.0.27
+-pytest==8.3.5
+ matplotlib==3.11.0
+ requests==2.34.2  # execution_runtime.binance_usdtm_feed (Binance USDT-M public REST) -- verified 2026-09-02
+ python-dotenv==1.1.1  # mt5.config (loads src/.env for MT5 broker/account identity) -- verified 2026-09-07
+ fastapi==0.135.1  # api/ -- thin HTTP adapter over authorization/execution services (AG_DEMO_EXECUTION_GATEWAY_PHASE_D2_API_AND_EXECUTION_WIRING_V1); no existing Python HTTP framework was present, added per that milestone's explicit instruction -- verified 2026-09-08, already installed in this environment
+ uvicorn==0.41.0  # ASGI server to run api.app -- verified 2026-09-08
++pydantic==2.13.5  # src/api/schemas.py imports BaseModel directly; previously only a transitive pin of fastapi -- verified 2026-09-21
++# Test-only dependencies (kept here because the README quick start runs pytest directly).
++pytest==8.3.5
+ httpx==0.28.1  # required by fastapi.testclient.TestClient (tests/test_api.py) -- verified 2026-09-08
+ pyarrow==25.0.1  # research_external/tooling/artifact_io.py (pandas Parquet engine) -- AG_LOCAL_RESEARCH_BOOTSTRAP_V1, verified 2026-09-12
+diff --git a/tests/conftest.py b/tests/conftest.py
+index 62bf599..152ba33 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -67,6 +67,7 @@ def _install_mt5_collection_stub() -> None:
+         "TIMEFRAME_H1": 16385,
+         "TIMEFRAME_H4": 16388,
+         "TIMEFRAME_D1": 16408,
++        "TIMEFRAME_W1": 32769,
+         "ORDER_TIME_GTC": 0,
+         "ORDER_FILLING_IOC": 1,
+         "TRADE_ACTION_DEAL": 1,
+diff --git a/tests/test_assistant_market_data.py b/tests/test_assistant_market_data.py
+index 1c19466..40aa7c4 100644
+--- a/tests/test_assistant_market_data.py
++++ b/tests/test_assistant_market_data.py
+@@ -49,8 +49,15 @@ def test_detect_unexpected_gaps_ignores_normal_spacing():
+ # --------------------------------------------------------------------------- live verification
+ 
+ def _mt5_available():
+-    import MetaTrader5 as mt5
+-    return mt5.initialize()
++    try:
++        import MetaTrader5 as mt5
++        return bool(mt5.initialize())
++    except Exception:
++        # MetaTrader5 is absent, or tests/conftest.py's import-only portability
++        # stub refuses the call on this platform. Either way live MT5 is
++        # unavailable here, so the gated tests skip instead of erroring during
++        # collection. On the Windows dev box this returns initialize() unchanged.
++        return False
+ 
+ 
+ def _fx_session_open_today():
+diff --git a/tests/test_five_skill_runtime.py b/tests/test_five_skill_runtime.py
+index 1b17fa6..da465ab 100644
+--- a/tests/test_five_skill_runtime.py
++++ b/tests/test_five_skill_runtime.py
+@@ -334,8 +334,15 @@ def test_five_skill_runtime_module_has_no_execution_imports_or_broker_write_call
+ # (not failed) when no terminal is connected in this environment.
+ 
+ def _mt5_available():
+-    import MetaTrader5 as mt5
+-    return mt5.initialize()
++    try:
++        import MetaTrader5 as mt5
++        return bool(mt5.initialize())
++    except Exception:
++        # MetaTrader5 is absent, or tests/conftest.py's import-only portability
++        # stub refuses the call on this platform. Either way live MT5 is
++        # unavailable here, so the gated tests skip instead of erroring during
++        # collection. On the Windows dev box this returns initialize() unchanged.
++        return False
+ 
+ 
+ @pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
+diff --git a/tests/test_liquidity.py b/tests/test_liquidity.py
+index 4e89edf..c1c64b0 100644
+--- a/tests/test_liquidity.py
++++ b/tests/test_liquidity.py
+@@ -172,8 +172,15 @@ def test_merge_with_zero_tolerance_is_a_noop_but_still_populates_sources():
+ # --------------------------------------------------------------------------- live verification
+ 
+ def _mt5_available():
+-    import MetaTrader5 as mt5
+-    return mt5.initialize()
++    try:
++        import MetaTrader5 as mt5
++        return bool(mt5.initialize())
++    except Exception:
++        # MetaTrader5 is absent, or tests/conftest.py's import-only portability
++        # stub refuses the call on this platform. Either way live MT5 is
++        # unavailable here, so the gated tests skip instead of erroring during
++        # collection. On the Windows dev box this returns initialize() unchanged.
++        return False
+ 
+ 
+ @pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
+diff --git a/tests/test_market_data.py b/tests/test_market_data.py
+index bef4be8..0073de0 100644
+--- a/tests/test_market_data.py
++++ b/tests/test_market_data.py
+@@ -17,8 +17,15 @@ pytest.importorskip("MetaTrader5")
+ 
+ 
+ def _mt5_available():
+-    import MetaTrader5 as mt5
+-    return mt5.initialize()
++    try:
++        import MetaTrader5 as mt5
++        return bool(mt5.initialize())
++    except Exception:
++        # MetaTrader5 is absent, or tests/conftest.py's import-only portability
++        # stub refuses the call on this platform. Either way live MT5 is
++        # unavailable here, so the gated tests skip instead of erroring during
++        # collection. On the Windows dev box this returns initialize() unchanged.
++        return False
+ 
+ 
+ def _fx_session_open_today():
+diff --git a/tests/test_market_structure.py b/tests/test_market_structure.py
+index 5a299a6..ecc4c9e 100644
+--- a/tests/test_market_structure.py
++++ b/tests/test_market_structure.py
+@@ -116,8 +116,15 @@ def test_range_oscillation_has_swings_but_no_confirmed_break():
+ # --------------------------------------------------------------------------- live verification
+ 
+ def _mt5_available():
+-    import MetaTrader5 as mt5
+-    return mt5.initialize()
++    try:
++        import MetaTrader5 as mt5
++        return bool(mt5.initialize())
++    except Exception:
++        # MetaTrader5 is absent, or tests/conftest.py's import-only portability
++        # stub refuses the call on this platform. Either way live MT5 is
++        # unavailable here, so the gated tests skip instead of erroring during
++        # collection. On the Windows dev box this returns initialize() unchanged.
++        return False
+ 
+ 
+ @pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
+diff --git a/tests/test_mtf_context.py b/tests/test_mtf_context.py
+index c0a4c63..58a4e2c 100644
+--- a/tests/test_mtf_context.py
++++ b/tests/test_mtf_context.py
+@@ -26,6 +26,12 @@ def _live_available() -> bool:
+         return True
+     except MT5ConnectionError:
+         return False
++    except Exception:
++        # On platforms without the real MetaTrader5 package, tests/conftest.py's
++        # import-only portability stub refuses the underlying MT5 call instead of
++        # raising MT5ConnectionError. Same outcome: live MT5 is unavailable here,
++        # so the gated live tests skip instead of erroring during collection.
++        return False
+ 
+ 
+ def _fx_market_closed(now_utc: dt.datetime) -> bool:
+diff --git a/tests/test_ob_contract.py b/tests/test_ob_contract.py
+index f8201e7..839f5cd 100644
+--- a/tests/test_ob_contract.py
++++ b/tests/test_ob_contract.py
+@@ -289,8 +289,15 @@ def test_contract_gaps_documents_flip_ob_and_unsigned_items():
+ # --------------------------------------------------------------------------- live verification
+ 
+ def _mt5_available():
+-    import MetaTrader5 as mt5
+-    return mt5.initialize()
++    try:
++        import MetaTrader5 as mt5
++        return bool(mt5.initialize())
++    except Exception:
++        # MetaTrader5 is absent, or tests/conftest.py's import-only portability
++        # stub refuses the call on this platform. Either way live MT5 is
++        # unavailable here, so the gated tests skip instead of erroring during
++        # collection. On the Windows dev box this returns initialize() unchanged.
++        return False
+ 
+ 
+ @pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
+diff --git a/tests/test_supply_demand.py b/tests/test_supply_demand.py
+index af6c42c..8dbaabc 100644
+--- a/tests/test_supply_demand.py
++++ b/tests/test_supply_demand.py
+@@ -184,8 +184,15 @@ def test_dealing_range_zones_classifies_premium_discount_equilibrium():
+ # --------------------------------------------------------------------------- live verification
+ 
+ def _mt5_available():
+-    import MetaTrader5 as mt5
+-    return mt5.initialize()
++    try:
++        import MetaTrader5 as mt5
++        return bool(mt5.initialize())
++    except Exception:
++        # MetaTrader5 is absent, or tests/conftest.py's import-only portability
++        # stub refuses the call on this platform. Either way live MT5 is
++        # unavailable here, so the gated tests skip instead of erroring during
++        # collection. On the Windows dev box this returns initialize() unchanged.
++        return False
+ 
+ 
+ @pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")
+diff --git a/tests/test_topdown_market_data.py b/tests/test_topdown_market_data.py
+index d4889f9..e699f9b 100644
+--- a/tests/test_topdown_market_data.py
++++ b/tests/test_topdown_market_data.py
+@@ -28,7 +28,14 @@ from strategy_contract.market_snapshot import _TIMEFRAME_MINUTES
+ 
+ 
+ def _mt5_available() -> bool:
+-    return mt5.initialize()
++    try:
++        return bool(mt5.initialize())
++    except Exception:
++        # tests/conftest.py's import-only portability stub refuses the call on
++        # platforms without the real MetaTrader5 package: live MT5 is unavailable
++        # here, so the gated live smoke test skips instead of erroring during
++        # collection. On the Windows dev box this returns initialize() unchanged.
++        return False
+ 
+ 
+ # ---------------------------------------------------------------------------
+-- 
+2.47.3
+
