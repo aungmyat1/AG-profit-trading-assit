@@ -1,28 +1,24 @@
 """Pure universal opportunity funnel transition engine (V2-2A).
 
 This module intentionally orchestrates the existing V2 contracts and strategy
-adapter boundary.  It owns no strategy semantics, persistence, proposal
-formation, portfolio risk, execution authority, or broker access.
+adapter boundary. It owns no strategy semantics, persistence, proposal formation,
+portfolio risk, execution authority, or broker access.
 
-The same MarketEvent + StrategyBinding + previous FunnelState + adapter result
-must produce the same transition/candidate identities and values.
+Identity continuity is enforced here whenever a previous OpportunityCandidate is
+supplied: strategy id/version, engine version, symbol/market/venue and market-data
+mode must remain compatible with the binding/event. This prevents a caller from
+reusing a candidate id across unrelated strategy or data authorities.
 """
 from __future__ import annotations
 
-from dataclasses import replace
-from datetime import datetime
 import hashlib
 import json
 from typing import Any, Mapping, Optional, Tuple
 
-from .adapter import FunnelProjection, StrategyFunnelAdapter, StrategyObservation
+from .adapter import FunnelProjection, StrategyFunnelAdapter
 from .contracts import MarketEvent, OpportunityCandidate
 from .registry_binding import StrategyBinding
-from .stages import (
-    OUTCOME_ERROR,
-    validate_outcome,
-    validate_stage,
-)
+from .stages import validate_outcome, validate_stage
 from .transitions import FunnelState, FunnelTransition
 
 
@@ -42,6 +38,10 @@ class ObservationIdentityMismatchError(FunnelEngineError):
     pass
 
 
+class CandidateIdentityMismatchError(FunnelEngineError):
+    """Raised when an existing candidate is reused under different authority."""
+
+
 def _stable_json(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), default=str)
 
@@ -52,9 +52,6 @@ def _stable_id(prefix: str, payload: Mapping[str, Any]) -> str:
 
 
 def _candidate_id(binding: StrategyBinding, event: MarketEvent) -> str:
-    # Candidate identity is intentionally independent of polling/evaluation time.
-    # Until V2-2B introduces a durable occurrence authority, event identity is the
-    # safest deterministic occurrence boundary available to the universal engine.
     return _stable_id(
         "cand",
         {
@@ -87,12 +84,34 @@ def _transition_id(
     )
 
 
-def state_from_candidate(candidate: Optional[OpportunityCandidate]) -> FunnelState:
-    """Project an existing candidate back to the minimal adapter state.
+def _validate_candidate_continuity(
+    candidate: OpportunityCandidate,
+    binding: StrategyBinding,
+    event: MarketEvent,
+) -> None:
+    mismatches = []
+    if candidate.strategy_id != binding.strategy_id:
+        mismatches.append("strategy_id")
+    if binding.semantic_version is not None and candidate.strategy_version != binding.semantic_version:
+        mismatches.append("strategy_version")
+    if binding.engine_version is not None and candidate.strategy_engine_version != binding.engine_version:
+        mismatches.append("strategy_engine_version")
+    if candidate.symbol != event.symbol:
+        mismatches.append("symbol")
+    if candidate.market != event.market:
+        mismatches.append("market")
+    if candidate.venue != event.venue:
+        mismatches.append("venue")
+    if candidate.market_data_mode != event.market_data_mode:
+        mismatches.append("market_data_mode")
+    if mismatches:
+        raise CandidateIdentityMismatchError(
+            "existing candidate authority mismatch: " + ", ".join(mismatches)
+        )
 
-    V2-2A remains storage-independent: callers may obtain the candidate from any
-    source.  Durable storage/reconstruction belongs to V2-2B.
-    """
+
+def state_from_candidate(candidate: Optional[OpportunityCandidate]) -> FunnelState:
+    """Project a candidate to the minimal strategy-adapter state."""
     if candidate is None:
         return FunnelState()
     return FunnelState(
@@ -110,12 +129,7 @@ def evaluate_funnel(
     adapter: StrategyFunnelAdapter,
     previous_candidate: Optional[OpportunityCandidate] = None,
 ) -> Tuple[OpportunityCandidate, FunnelTransition]:
-    """Evaluate one event through one canonical strategy adapter.
-
-    This function is deliberately pure with respect to repository/runtime state:
-    it performs no I/O and writes nothing.  The adapter is responsible only for
-    calling/projecting the already-canonical strategy implementation.
-    """
+    """Evaluate one event through one canonical strategy adapter without I/O."""
     if adapter.strategy_id != binding.strategy_id:
         raise AdapterIdentityMismatchError(
             f"adapter strategy_id {adapter.strategy_id!r} != binding {binding.strategy_id!r}"
@@ -124,6 +138,8 @@ def evaluate_funnel(
         raise AdapterIdentityMismatchError(
             "adapter strategy_version does not match binding semantic_version"
         )
+    if previous_candidate is not None:
+        _validate_candidate_continuity(previous_candidate, binding, event)
     if not adapter.supports(event, binding):
         raise AdapterNotSupportedError(
             f"adapter {adapter.strategy_id!r} does not support event {event.event_id!r}"
@@ -145,16 +161,8 @@ def evaluate_funnel(
     validate_outcome(projection.outcome)
     geometry = adapter.candidate_geometry(observation)
 
-    candidate_id = (
-        previous_candidate.candidate_id
-        if previous_candidate is not None
-        else _candidate_id(binding, event)
-    )
-    occurrence_id = (
-        previous_candidate.occurrence_id
-        if previous_candidate is not None
-        else candidate_id
-    )
+    candidate_id = previous_candidate.candidate_id if previous_candidate else _candidate_id(binding, event)
+    occurrence_id = previous_candidate.occurrence_id if previous_candidate else candidate_id
     revision = previous_state.revision + 1
     transition_id = _transition_id(candidate_id, event, previous_state, projection)
 
@@ -171,12 +179,6 @@ def evaluate_funnel(
         raw_strategy_state=dict(observation.raw_strategy_state),
     )
 
-    detected_at = (
-        previous_candidate.detected_at
-        if previous_candidate is not None
-        else event.bar_close_time
-    )
-
     candidate = OpportunityCandidate(
         candidate_id=candidate_id,
         occurrence_id=occurrence_id,
@@ -187,9 +189,9 @@ def evaluate_funnel(
         market=event.market,
         venue=event.venue,
         direction=geometry.direction if geometry is not None else None,
-        detected_at=detected_at,
+        detected_at=previous_candidate.detected_at if previous_candidate else event.bar_close_time,
         last_evaluated_at=event.market_data_asof,
-        expires_at=previous_candidate.expires_at if previous_candidate is not None else None,
+        expires_at=previous_candidate.expires_at if previous_candidate else None,
         stage=projection.stage,
         outcome=projection.outcome,
         revision=revision,
@@ -199,10 +201,7 @@ def evaluate_funnel(
         trigger_evidence=dict(projection.trigger_evidence),
         geometry=geometry,
         market_data_mode=event.market_data_mode,
-        data_lineage=(
-            event.snapshot_fingerprint
-            or (previous_candidate.data_lineage if previous_candidate is not None else None)
-        ),
+        data_lineage=event.snapshot_fingerprint or (previous_candidate.data_lineage if previous_candidate else None),
         latest_transition_id=transition_id,
     )
     return candidate, transition
