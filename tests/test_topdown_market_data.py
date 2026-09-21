@@ -28,7 +28,10 @@ from strategy_contract.market_snapshot import _TIMEFRAME_MINUTES
 
 
 def _mt5_available() -> bool:
-    return mt5.initialize()
+    try:
+        return bool(mt5.initialize())
+    except Exception:
+        return False
 
 
 # ---------------------------------------------------------------------------

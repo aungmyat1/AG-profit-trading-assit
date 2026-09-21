@@ -172,8 +172,11 @@ def test_merge_with_zero_tolerance_is_a_noop_but_still_populates_sources():
 # --------------------------------------------------------------------------- live verification
 
 def _mt5_available():
-    import MetaTrader5 as mt5
-    return mt5.initialize()
+    try:
+        import MetaTrader5 as mt5
+        return bool(mt5.initialize())
+    except Exception:
+        return False
 
 
 @pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")

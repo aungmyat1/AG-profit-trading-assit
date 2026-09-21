@@ -49,8 +49,11 @@ def test_detect_unexpected_gaps_ignores_normal_spacing():
 # --------------------------------------------------------------------------- live verification
 
 def _mt5_available():
-    import MetaTrader5 as mt5
-    return mt5.initialize()
+    try:
+        import MetaTrader5 as mt5
+        return bool(mt5.initialize())
+    except Exception:
+        return False
 
 
 def _fx_session_open_today():

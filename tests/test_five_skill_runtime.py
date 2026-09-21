@@ -334,8 +334,11 @@ def test_five_skill_runtime_module_has_no_execution_imports_or_broker_write_call
 # (not failed) when no terminal is connected in this environment.
 
 def _mt5_available():
-    import MetaTrader5 as mt5
-    return mt5.initialize()
+    try:
+        import MetaTrader5 as mt5
+        return bool(mt5.initialize())
+    except Exception:
+        return False
 
 
 @pytest.mark.skipif(not _mt5_available(), reason="requires a running, logged-in MT5 terminal")

@@ -67,6 +67,7 @@ def _install_mt5_collection_stub() -> None:
         "TIMEFRAME_H1": 16385,
         "TIMEFRAME_H4": 16388,
         "TIMEFRAME_D1": 16408,
+        "TIMEFRAME_W1": 32769,
         "ORDER_TIME_GTC": 0,
         "ORDER_FILLING_IOC": 1,
         "TRADE_ACTION_DEAL": 1,

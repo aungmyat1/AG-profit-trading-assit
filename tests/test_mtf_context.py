@@ -26,6 +26,8 @@ def _live_available() -> bool:
         return True
     except MT5ConnectionError:
         return False
+    except Exception:
+        return False
 
 
 def _fx_market_closed(now_utc: dt.datetime) -> bool:

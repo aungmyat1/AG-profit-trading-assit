@@ -1,14 +1,19 @@
 # No dependency mechanism existed before this file (packages were only present via the
 # system Python install). Versions below are what was verified against on 2026-08-26.
+#
+# MetaTrader5 publishes Windows-only wheels; skip it on non-Windows platforms so
+# the offline MT5 stub can support portable installs and tests.
 PyYAML==6.0.3
 pandas==2.3.3
-MetaTrader5==5.0.5735
+MetaTrader5==5.0.5735 ; sys_platform == 'win32'
 smartmoneyconcepts==0.0.27
-pytest==8.3.5
 matplotlib==3.11.0
 requests==2.34.2  # execution_runtime.binance_usdtm_feed (Binance USDT-M public REST) -- verified 2026-09-02
 python-dotenv==1.1.1  # mt5.config (loads src/.env for MT5 broker/account identity) -- verified 2026-09-07
 fastapi==0.135.1  # api/ -- thin HTTP adapter over authorization/execution services (AG_DEMO_EXECUTION_GATEWAY_PHASE_D2_API_AND_EXECUTION_WIRING_V1); no existing Python HTTP framework was present, added per that milestone's explicit instruction -- verified 2026-09-08, already installed in this environment
 uvicorn==0.41.0  # ASGI server to run api.app -- verified 2026-09-08
+pydantic==2.13.5  # src/api/schemas.py imports BaseModel directly -- verified 2026-09-21
+# Test-only dependency (README quick start runs pytest directly).
+pytest==8.3.5
 httpx==0.28.1  # required by fastapi.testclient.TestClient (tests/test_api.py) -- verified 2026-09-08
 pyarrow==25.0.1  # research_external/tooling/artifact_io.py (pandas Parquet engine) -- AG_LOCAL_RESEARCH_BOOTSTRAP_V1, verified 2026-09-12
