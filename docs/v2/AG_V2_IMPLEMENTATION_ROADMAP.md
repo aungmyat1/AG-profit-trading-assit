@@ -15,8 +15,9 @@ Committed baseline evidence as of this document:
 - baseline manifest: `AG_V2_BASELINE_MANIFEST_V1.json`
 - status: `docs/status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md`
 - V2-2A/V2-2B implementation and verification: `docs/status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md` (VERIFIED, 2026-09-21)
+- V2-3A/V2-3B implementation and parity checkpoint: `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` (IMPLEMENTED_AND_LOCALLY_VERIFIED, 2026-09-22; independent audit not yet run)
 
-The V2 contracts layer, the pure funnel transition engine (V2-2A), and the candidate store + transition ledger (V2-2B) are all present and verified. A Large-SMC or SSC shadow adapter (V2-3A/V2-3B) is the next implementation gate unless a newer dated status document supersedes this statement.
+The V2 contracts layer, the pure funnel transition engine (V2-2A), the candidate store + transition ledger (V2-2B), and the Large-SMC/SSC shadow adapters (V2-3A/V2-3B) are all present and locally verified. The parity checkpoint is READY_FOR_INDEPENDENT_AUDIT; V2-4 (ProposalEligibility bridge) has not started and requires that audit first, unless a newer dated status document supersedes this statement.
 
 ## Phase sequence
 
@@ -29,10 +30,10 @@ V2-1B  Shared evidence contracts                 COMPLETE at contract level
 V2-2A  Pure funnel transition engine             VERIFIED (2026-09-21)
 V2-2B  Candidate store + transition ledger       VERIFIED (2026-09-21)
 
-V2-3A  Large-SMC shadow adapter                  NEXT
-V2-3B  SSC replay/shadow adapter
+V2-3A  Large-SMC shadow adapter                  IMPLEMENTED_AND_LOCALLY_VERIFIED (2026-09-22)
+V2-3B  SSC replay/shadow adapter                  IMPLEMENTED_AND_LOCALLY_VERIFIED (2026-09-22)
         ↓
-      PARITY CHECKPOINT
+      PARITY CHECKPOINT                           READY_FOR_INDEPENDENT_AUDIT
 
 V2-4   ProposalEligibility bridge
 V2-5   CanonicalProposal integration

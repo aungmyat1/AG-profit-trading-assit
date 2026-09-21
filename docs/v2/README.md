@@ -15,20 +15,22 @@ These documents are planning/engineering contracts unless a dated status documen
 
 - [`../status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md`](../status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md) — current V2 baseline/core-contract implementation status and frontend-freeze addendum.
 - [`../status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md`](../status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md) — V2-2A (pure funnel transition engine) and V2-2B (candidate store + transition ledger) implementation and test evidence, `VERIFIED` as of 2026-09-21.
+- [`../status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md`](../status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md) — V2-3A (Large-SMC shadow/funnel adapter) and V2-3B (SSC shadow/replay adapter) implementation, semantic-parity evidence, and known debt, `IMPLEMENTED_AND_LOCALLY_VERIFIED` as of 2026-09-22 (not yet independently audited).
 - [`../../AG_V2_BASELINE_MANIFEST_V1.json`](../../AG_V2_BASELINE_MANIFEST_V1.json) — machine-readable pre-architecture baseline manifest.
 - [`../../PROJECT_STATUS.md`](../../PROJECT_STATUS.md) — rolling whole-project status; use this rather than assuming a design document describes current completion.
 - [`../PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) — master project readiness plan. V2 architecture does not replace economic/execution readiness gates.
 
 ## Current next gate
 
-V2-2A and V2-2B are implemented and verified (see the status document above). The next V2 implementation gate is:
+V2-2A, V2-2B, V2-3A, and V2-3B are implemented and locally verified (see the status documents above). The parity checkpoint between canonical Large-SMC/SSC output and their V2 projections is `READY_FOR_INDEPENDENT_AUDIT`. The next V2 gate is:
 
 ```text
-V2-3A_LARGE_SMC_SHADOW_ADAPTER
-V2-3B_SSC_SHADOW_REPLAY_ADAPTER
+INDEPENDENT_AUDIT_OF_V2-3A_V2-3B_PARITY_CHECKPOINT
+        then
+V2-4_PROPOSAL_ELIGIBILITY_BRIDGE
 ```
 
-Neither has been started. A newer dated status document or repository commit may supersede this statement; verify current HEAD and status before execution.
+`SAFE_TO_ADVANCE_TO_V2_4 = NO` until that audit completes. A newer dated status document or repository commit may supersede this statement; verify current HEAD and status before execution.
 
 ## Frontend constraint
 

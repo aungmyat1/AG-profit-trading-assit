@@ -511,4 +511,12 @@ authoritative machine-readable source.
   OpportunityCandidate, ProposalEligibilityDecision, StrategyBinding, shared
   evidence contracts; no canonical duplication, no authority change; see also
   `AG_V2_BASELINE_MANIFEST_V1.json` at repo root)
+- [AG V2-2A/V2-2B pure funnel engine + candidate store](status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md)
+  (`VERIFIED`, 2026-09-21: identity continuity, semantic no-op detection, terminal
+  stickiness, restart-safe persistence)
+- [AG V2-3A/V2-3B Large-SMC + SSC shadow adapters and parity checkpoint](status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md)
+  (`IMPLEMENTED_AND_LOCALLY_VERIFIED`, 2026-09-22: thin adapters over each
+  strategy's existing canonical authority, semantic parity evidence, known
+  mapping-decision debt; parity checkpoint `READY_FOR_INDEPENDENT_AUDIT`,
+  `SAFE_TO_ADVANCE_TO_V2_4 = NO` pending that audit)
 - [Web-to-Vantage Demo execution bridge](status/AG_WEB_VANTAGE_DEMO_EXECUTION_BRIDGE_V1.md)
