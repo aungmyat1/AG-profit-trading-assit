@@ -343,6 +343,30 @@ the shared `validation_framework.svos_context_export.py` stays byte-identical. S
 This supersedes the 2026-09-14 classification recorded further down in this file
 (kept below as dated historical context, not corrected in place).
 
+### AG_FX_SESSION_DAYTRADE_EURUSD_V1 book added (2026-09-21)
+
+A new proposal-only EURUSD session book, `AG_FX_SESSION_DAYTRADE_EURUSD_V1`, is
+implemented on top of the existing frozen `ST_ASIAN_SWEEP_5R_V1@1.1.1` strategy and the
+existing `src/post_asian_pilot/` pilot infrastructure: two overlay configs
+(`config/pilot/AG_FX_SESSION_DAYTRADE_EURUSD_ASIAN_LONDON_V1.yaml`,
+`..._LONDON_NEWYORK_V1.yaml`), each EURUSD-only with its own isolated
+`journal/fx_session_daytrade/{asian_london,london_newyork}/` state directory, and a thin
+CLI wrapper (`scripts/run_fx_session_daytrade.py`) that delegates entirely to the
+existing pipeline/preflight/report functions — no forked strategy, sizing, or journal
+logic. Theoretical maximum 2 proposals/day (1 per cycle); `NO_TRADE`/`WATCH`/`DATA_ERROR`
+are legitimate outcomes, not forced trades. Proposal-only throughout: `config/trading.yaml`
+stays `mode: ANALYSIS`/`allow_order_send: false`; `strategies/registry.yaml`'s
+`ST_ASIAN_SWEEP_5R_V1` entry stays `demo_authorized: false`/`live_authorized: false`
+(hash-verified byte-identical before/after, as are both sibling pilot configs and the
+frozen strategy file). 22 new focused tests pass, plus the existing sibling-pilot,
+execution-boundary, and registry-gate regression suites. A real `--preflight --cycle BOTH`
+run on this development machine passed against the live DEMO MT5 connection. See
+`docs/status/AG_FX_SESSION_DAYTRADE_EURUSD_V1_IMPLEMENTATION_STATUS.md` for full evidence,
+including a documented pre-existing gap (shared with both sibling pilots, not introduced
+here): the pilot overlay's own `max_new_trades_per_day` field is parsed but not wired into
+ledger capacity; this book's real 1-slot/cycle/day cap holds anyway as an emergent property
+of the ledger's per-symbol cap combined with this book's EURUSD-only universe.
+
 ## Historical rolling classification (2026-09-14, superseded)
 
 Research Factory V1 governance hardening is `UNIT_TESTED`: versioned dataset/candidate/
