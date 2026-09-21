@@ -1,0 +1,63 @@
+{
+  "schema": "AG_V2_BASELINE_MANIFEST_V1",
+  "version": "1.0.0",
+  "created_at": "2026-09-21T00:00:00Z",
+
+  "baseline_commit": "1e75e36554e841d14455a73adea1799be4cef166",
+  "branch": "main",
+
+  "working_tree_status": "MODIFIED_STATE_FILES_ONLY",
+  "working_tree_note": "state/fx_schedule/slot_ledger.json and state/proposal_ledger/proposal_ledger.json show routine operational-ledger drift (scheduled runner activity), not code or strategy changes. No untracked files. Excluded from the frozen baseline commit by design -- they are live operational state, not architecture.",
+
+  "strategy_registry_fingerprint": {
+    "path": "strategies/registry.yaml",
+    "sha256": "cc81883f18b7c675bdef0640bf9d8d7ffadfd0e379c00fc4b21579fa603a6125"
+  },
+  "relevant_config_fingerprints": {
+    "config/trading.yaml": "cb301ccc93527eeda3528ec83f26ce5ffe059842e2fa53e4565f2f131a2121a5",
+    "config/agent_context.json": "688b98fced28f916a19e16f72743e83f9049539a9cd9615543cf1bce6894541a"
+  },
+
+  "proposal_ledger_identity": {
+    "path": "state/proposal_ledger/proposal_ledger.json",
+    "sha256_at_baseline_commit": "not_pinned_ledger_is_live_operational_state",
+    "note": "The ledger is append-only operational state written by scheduled runs, not a frozen architecture artifact -- its identity is tracked by proposal_envelope/occurrence identity machinery, not this manifest."
+  },
+
+  "one_year_replay_stack_identity": {
+    "authority_id": "ONE_YEAR_REPLAY_STACK_V1",
+    "manifest_sha256": "59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7",
+    "manifest_path": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_HIST_1Y_001/ONE_YEAR_REPLAY_STACK_V1.json",
+    "status_doc": "docs/status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md",
+    "frozen_in_commit": "1e75e36554e841d14455a73adea1799be4cef166",
+    "coverage": "DATA_COVERAGE_COMPLETE",
+    "timebase": "CROSS_LEG_TIMEBASE_CONSISTENT / UTC_SINGLE_TIMEBASE",
+    "warmup": "WARMUP_STABLE (4371 closed H1 bars before first decision)"
+  },
+
+  "protected_data_access_count": 0,
+
+  "test_baseline": {
+    "focused_opportunity_contracts": "56 passed (tests/test_opportunity_contracts.py, test_opportunity_events.py, test_opportunity_registry_binding.py, test_opportunity_import_boundaries.py)",
+    "focused_regression_market_snapshot_and_proposal_envelope": "25 passed (tests/test_market_snapshot_contract.py, test_proposal_envelope_models.py, test_proposal_envelope_execution_boundary.py)",
+    "broader_regression_strategy_manager_execution_boundary_registry": "121 passed, 1 pre-existing failure, 3661 deselected (slow). Failure: tests/test_validation_framework.py::test_btc_adapter_reconciles_against_registry_and_yaml (NATURAL_CAMPAIGN_ACCRUAL observed_count expected 0, got 1) -- unrelated to this mission (BTC/validation-framework calendar-accrual drift, no opportunity/ or registry.yaml file touched by this mission); not investigated further per minimum-context principle (out of scope, no opportunistic fix of unrelated failures)."
+  },
+  "skipped_or_not_evaluated_tests": [
+    "full repository suite (broad regression) -- not run in this mission per token-efficiency rule 7 (progressive testing); narrower shared-surface groups run instead"
+  ],
+
+  "strategy_authority_summary": {
+    "SESSION_TRADE_V1": {"registered": true, "active": true, "research": false, "demo_authorized": true, "live_authorized": false, "manager_dispatchable": true},
+    "ST_ASIAN_SWEEP_5R_V1": {"registered": true, "active": true, "research": true, "demo_authorized": false, "live_authorized": false, "manager_dispatchable": false},
+    "SMC_3R_V1": {"registered": true, "active": false, "research": true, "demo_authorized": false, "live_authorized": false, "manager_dispatchable": false},
+    "ST_LARGE_SMC_V1": {"registered": true, "active": false, "research": true, "demo_authorized": false, "live_authorized": false, "manager_dispatchable": false},
+    "ST_LIQUIDITY_SWEEP_RETEST_V1": {"registered": true, "active": false, "research": true, "demo_authorized": false, "live_authorized": false, "manager_dispatchable": false},
+    "ST_SESSION_SWEEP_CONTINUATION_V1": {"registered": true, "active": false, "research": true, "demo_authorized": false, "live_authorized": false, "manager_dispatchable": false},
+    "R8_OBM_V1": {"registered": true, "active": false, "research": false, "demo_authorized": false, "live_authorized": false, "manager_dispatchable": false}
+  },
+  "proposal_authority_summary": "proposal_envelope.formation_gate remains sole formation authority for CanonicalProposal; unchanged by this mission.",
+  "execution_authority_summary": "execution.executor / execution.mt5_gateway remain sole broker order-side authority, reachable only via assistant.commands.execute_command() with explicit user_confirmed=True; unchanged by this mission.",
+
+  "execution_authority_unchanged": true,
+  "broker_mutation_count": 0
+}

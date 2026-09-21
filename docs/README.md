@@ -506,4 +506,9 @@ strategies and unresolved strategy-authorship decisions. Strategy YAML remains t
 authoritative machine-readable source.
 # Status evidence
 
+- [AG V2 pre-architecture baseline + core contracts](status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md)
+  (additive `src/opportunity/` contracts: MarketEvent, funnel vocabulary,
+  OpportunityCandidate, ProposalEligibilityDecision, StrategyBinding, shared
+  evidence contracts; no canonical duplication, no authority change; see also
+  `AG_V2_BASELINE_MANIFEST_V1.json` at repo root)
 - [Web-to-Vantage Demo execution bridge](status/AG_WEB_VANTAGE_DEMO_EXECUTION_BRIDGE_V1.md)
