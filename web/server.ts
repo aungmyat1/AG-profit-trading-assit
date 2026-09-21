@@ -1038,6 +1038,18 @@ async function startServer() {
     const timeframe = (req.query.timeframe as any) || 'M15';
     const days = Number(req.query.days) || 3;
 
+    if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() === 'real') {
+      const count = Math.max(10, Math.min(500, days * 96));
+      fetch(`${process.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/api/market-data/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(timeframe)}&count=${count}`)
+        .then(async upstream => {
+          if (!upstream.ok) throw new Error(`live market-data gateway returned ${upstream.status}`);
+          const payload = await upstream.json();
+          return res.json({ ...payload, marketDataSource: 'MT5', executionEligible: false });
+        })
+        .catch(error => res.status(502).json({ error: 'LIVE_MARKET_DATA_UNAVAILABLE', details: String(error) }));
+      return;
+    }
+
     const candles = generateRealisticCandles(symbol, timeframe, days);
     const symInfo = SUPPORTED_SYMBOLS.find(s => s.symbol === symbol) || SUPPORTED_SYMBOLS[0];
 
@@ -1254,6 +1266,47 @@ async function startServer() {
       checks,
       validated_at: new Date().toISOString(),
       message: `All demo orders and broker parameters for ${brokerAccountConfig.broker} Demo #${brokerAccountConfig.account_id} are correctly synced and validated.`
+    });
+  });
+
+  // Owner-confirmed manual demo entry. This is deliberately separate from the
+  // proposal scanner: it accepts an explicit user order and delegates all broker
+  // authority to scripts/web_execute_trade.py -> assistant.commands -> MT5.
+  app.post('/api/execution/manual-demo', (req, res) => {
+    const { symbol, side, lots, entryPrice, stopLoss, takeProfit2, strategyId, user_confirmed } = req.body || {};
+    if (user_confirmed !== true) {
+      return res.status(403).json({ success: false, error: 'OWNER_CONFIRMATION_REQUIRED' });
+    }
+    if (brokerAccountConfig.trade_mode !== 'DEMO') {
+      return res.status(403).json({ success: false, error: 'DEMO_ACCOUNT_REQUIRED' });
+    }
+    if (!SUPPORTED_SYMBOLS.some(s => s.symbol === symbol) || !['BUY', 'SELL'].includes(side) ||
+        !Number.isFinite(Number(lots)) || Number(lots) <= 0 || !Number.isFinite(Number(stopLoss))) {
+      return res.status(400).json({ success: false, error: 'INVALID_MANUAL_DEMO_ORDER' });
+    }
+    if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() !== 'real') {
+      return res.status(409).json({ success: false, error: 'LIVE_API_MODE_REQUIRED', message: 'Manual demo orders require VITE_AG_API_MODE=real.' });
+    }
+
+    const repoRoot = path.resolve(process.cwd(), '..');
+    const args = [path.join(repoRoot, 'scripts', 'web_execute_trade.py'), '--symbol', String(symbol), '--side', String(side),
+      '--volume', String(lots), '--sl', String(stopLoss), '--strategy-id', String(strategyId || 'FRONTEND_MANUAL'), '--confirm'];
+    if (entryPrice !== undefined && entryPrice !== null && entryPrice !== '') args.push('--entry', String(entryPrice));
+    if (takeProfit2 !== undefined && takeProfit2 !== null && takeProfit2 !== '') args.push('--tp', String(takeProfit2));
+
+    const child = spawn(process.env.PYTHON_EXECUTABLE || 'python', args, { cwd: repoRoot, windowsHide: true });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', chunk => { stdout += chunk.toString(); });
+    child.stderr.on('data', chunk => { stderr += chunk.toString(); });
+    child.on('error', error => res.status(502).json({ success: false, error: 'DEMO_EXECUTION_BRIDGE_FAILURE', details: error.message }));
+    child.on('close', code => {
+      try {
+        const payload = JSON.parse(stdout.trim().split(/\r?\n/).filter(Boolean).at(-1) || '{}');
+        return res.status(code === 0 ? 200 : 502).json({ success: code === 0, ...payload, stderr: stderr || undefined });
+      } catch (error) {
+        return res.status(502).json({ success: false, error: 'INVALID_DEMO_EXECUTION_RESPONSE', details: stderr || String(error) });
+      }
     });
   });
 

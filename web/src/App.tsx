@@ -200,7 +200,7 @@ export const App: React.FC = () => {
     user_confirmed: boolean;
   }) => {
     try {
-      const res = await fetch('/api/execution/execute', {
+      const res = await fetch('/api/execution/manual-demo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params)
