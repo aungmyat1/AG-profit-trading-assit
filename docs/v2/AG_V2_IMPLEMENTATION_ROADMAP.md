@@ -15,9 +15,9 @@ Committed baseline evidence as of this document:
 - baseline manifest: `AG_V2_BASELINE_MANIFEST_V1.json`
 - status: `docs/status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md`
 - V2-2A/V2-2B implementation and verification: `docs/status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md` (VERIFIED, 2026-09-21)
-- V2-3A/V2-3B implementation and parity checkpoint: `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` (IMPLEMENTED_AND_LOCALLY_VERIFIED, 2026-09-22; independent audit not yet run)
+- V2-3A/V2-3B implementation, independent audit, and remediation: `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` (REMEDIATED_PENDING_RE_AUDIT, 2026-09-22; `AG_V2_INDEPENDENT_AUDIT_02` found one blocking Safety-Invariant-#9 defect in V2-3A, fixed generically in `opportunity.engine`, not yet re-audited)
 
-The V2 contracts layer, the pure funnel transition engine (V2-2A), the candidate store + transition ledger (V2-2B), and the Large-SMC/SSC shadow adapters (V2-3A/V2-3B) are all present and locally verified. The parity checkpoint is READY_FOR_INDEPENDENT_AUDIT; V2-4 (ProposalEligibility bridge) has not started and requires that audit first, unless a newer dated status document supersedes this statement.
+The V2 contracts layer, the pure funnel transition engine (V2-2A), the candidate store + transition ledger (V2-2B), and the Large-SMC/SSC shadow adapters (V2-3A/V2-3B) are all present. An independent audit found one blocking defect in V2-3A's terminal-stage handling; it has been fixed at the shared engine level and locally re-verified, but not yet re-audited. `SAFE_TO_ADVANCE_TO_V2_4 = NO`; V2-4 (ProposalEligibility bridge) requires a fresh independent audit of this remediation first, unless a newer dated status document supersedes this statement.
 
 ## Phase sequence
 
@@ -30,10 +30,10 @@ V2-1B  Shared evidence contracts                 COMPLETE at contract level
 V2-2A  Pure funnel transition engine             VERIFIED (2026-09-21)
 V2-2B  Candidate store + transition ledger       VERIFIED (2026-09-21)
 
-V2-3A  Large-SMC shadow adapter                  IMPLEMENTED_AND_LOCALLY_VERIFIED (2026-09-22)
-V2-3B  SSC replay/shadow adapter                  IMPLEMENTED_AND_LOCALLY_VERIFIED (2026-09-22)
+V2-3A  Large-SMC shadow adapter                  REMEDIATED_PENDING_RE_AUDIT (2026-09-22; audit found + fixed a Safety Invariant #9 defect)
+V2-3B  SSC replay/shadow adapter                  IMPLEMENTED_AND_LOCALLY_VERIFIED (2026-09-22; audit found no defect)
         ↓
-      PARITY CHECKPOINT                           READY_FOR_INDEPENDENT_AUDIT
+      PARITY CHECKPOINT                           REMEDIATED_PENDING_RE_AUDIT
 
 V2-4   ProposalEligibility bridge
 V2-5   CanonicalProposal integration

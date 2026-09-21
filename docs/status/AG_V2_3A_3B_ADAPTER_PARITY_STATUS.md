@@ -1,15 +1,31 @@
 # AG V2-3A / V2-3B Adapter Implementation and Parity Status
 
-Date: 2026-09-22
-Classification: **IMPLEMENTED_AND_LOCALLY_VERIFIED** (not independently audited -- see "Audit state" below)
+Date: 2026-09-22 (remediated 2026-09-22 following AG_V2_INDEPENDENT_AUDIT_02)
+Classification: **REMEDIATED_PENDING_RE_AUDIT** (blocking defect found and fixed; a fresh independent audit of this exact remediation has not yet run -- see "Audit state" and "Remediation record" below)
 
 ## Objective
 
-Implement V2-3A (Large-SMC shadow/funnel adapter) and V2-3B (SSC shadow/replay adapter) as thin `opportunity.adapter.StrategyFunnelAdapter` implementations over each strategy's EXISTING canonical authority, then establish a semantic parity checkpoint between canonical strategy output and the V2 projection. This document records that work and the follow-on audit gate.
+Implement V2-3A (Large-SMC shadow/funnel adapter) and V2-3B (SSC shadow/replay adapter) as thin `opportunity.adapter.StrategyFunnelAdapter` implementations over each strategy's EXISTING canonical authority, then establish a semantic parity checkpoint between canonical strategy output and the V2 projection. This document records that work, an independent audit that found one blocking defect, and the remediation.
 
 ## Audit state
 
-This document was produced by the implementation agent that wrote and locally ran the code/tests below. It is **IMPLEMENTED_AND_LOCALLY_VERIFIED**, not **INDEPENDENTLY_AUDITED**. Claude Audit #2 (an independent review of this exact checkpoint) has not happened yet; see "Auditor handoff" at the end of this document.
+The original version of this document (IMPLEMENTED_AND_LOCALLY_VERIFIED, not independently audited) was produced by the implementation agent that wrote and locally ran the code/tests. An independent audit (`AG_V2_INDEPENDENT_AUDIT_02`) subsequently ran against HEAD `6d416bc5fd762af5e3d764d4116b1e01725bf70c` and found one **blocking defect** in V2-3A (see "Remediation record" below); it classified the checkpoint `AUDIT_REQUIRES_REMEDIATION`, `PARITY_CHECKPOINT = FAIL`, `SAFE_TO_ADVANCE = NO`. That defect has now been fixed and re-verified (see below), but **this remediation itself has not yet been independently re-audited** -- do not treat this document's updated classification as equivalent to a passed independent audit of the fix.
+
+## Remediation record (AG_V2_INDEPENDENT_AUDIT_02 finding)
+
+**Defect**: `LargeSMCFunnelAdapter.project()`'s terminal-branch stage computation (the "retained stage" logic for INVALIDATED/EXPIRED/BLOCKED) used `SetupLedgerRow.ready_time` as its only "highest stage reached" signal. `ready_time` is stamped only at full `EntryModelState.READY` (`historical_replay/orchestrator.py:159`), not at `HTF_QUALIFIED` or `WAITING_M5_ENTRY`. Consequently, an occurrence that progressed to `QUALIFIED` (V2 `LOCATION_VALID`) or `ENTRY_AVAILABLE` (V2 `TRIGGER_ARMED`) and then terminated *before* reaching full `READY` had its recorded V2 stage silently regress backward to `MARKET_ELIGIBLE` -- a direct violation of `docs/v2/AG_V2_SAFETY_AND_AUTHORITY_INVARIANTS.md` invariant #9 ("terminal invalidation/expiry preserves the highest stage actually reached; history is not rewritten by moving the stage backward"). Confirmed by direct reproduction in the audit.
+
+**Root cause**: the `StrategyFunnelAdapter.project()` method has no access to `previous_state` (only `observe()` does), and Large-SMC's own canonical source (`SetupLedgerRow`) does not expose a reliable, monotonic "highest funnel stage reached" marker independent of `ready_time`. An adapter-only fix could only ever be a best-effort guess from whatever partial signal the canonical source happens to carry -- which is exactly what produced the defect.
+
+**Fix** (shared, not adapter-specific): `opportunity.engine.evaluate_funnel` now enforces invariant #9 once, generically, for every adapter. On a transition into a terminal outcome, if the new projection's stage has a lower index in `opportunity.stages.FUNNEL_STAGES` than `previous_state.stage`, the candidate's (and the persisted `FunnelTransition.to_stage`'s) final stage is clamped to `previous_state.stage` instead of the adapter's own reported stage. This protects every current and future `StrategyFunnelAdapter` implementation, not just Large-SMC's, without requiring any canonical strategy source to expose additional history. No adapter file was changed for this fix.
+
+**Verification**:
+- The exact defect-reproduction case from the audit (`QUALIFIED` -> `INVALIDATED` without `ready_time`) now correctly retains `LOCATION_VALID`, confirmed by direct re-execution.
+- A second, previously-undetected instance of the same defect class (`ENTRY_AVAILABLE`/`WAITING_M5_ENTRY` -> `EXPIRED` without `ready_time`) was found during remediation testing and confirmed fixed by the same generic engine change.
+- Two new regression tests added to `tests/test_opportunity_large_smc_adapter.py` (`test_terminal_from_qualified_without_ready_time_does_not_regress_to_market_eligible`, `test_terminal_from_entry_available_without_ready_time_does_not_regress`).
+- Generic, adapter-agnostic regression tests added to `tests/test_opportunity_engine.py` (`test_terminal_transition_does_not_regress_stage_below_previous_high_water_mark`, parametrized over all four `TERMINAL_OUTCOMES`, and `test_terminal_transition_uses_reported_stage_when_it_is_not_a_regression`, confirming a terminal transition to a genuinely *later* stage is still honored, not incorrectly clamped).
+- Full opportunity-scoped suite: 150 passed, 0 failed (up from 143; the increase includes the new regression tests plus parametrization). Large-SMC narrow regression (`tests/test_large_smc_watch_lifecycle.py`, `tests/test_large_smc_live_watch_hardening.py`, `tests/test_large_smc_live_watch_execution_boundary.py`) and SSC narrow regression unaffected -- both re-run clean.
+- SSC's own terminal-stage logic was independently confirmed (both by the audit and again here) to NOT exhibit this defect class: it derives terminal stage from `entry_count`, which is monotonic (`Campaign.entries` only grows), so no adapter-side change was needed for V2-3B.
 
 ## Authority discovery
 
@@ -47,12 +63,12 @@ File: `src/opportunity/large_smc_adapter.py` (`LargeSMCFunnelAdapter`).
   | `ENTRY_AVAILABLE` | `TRIGGER_ARMED` | `ACTIVE` | no |
   | `FILLED` | `OPPORTUNITY_READY` | `ACTIVE` | no (resolution pending -- P&L out of scope) |
   | `UNFILLED` | `TRIGGER_ARMED` | `WAIT` | no |
-  | `INVALIDATED` | `TRIGGER_ARMED` if `ready_time` reached, else `MARKET_ELIGIBLE` | `INVALIDATED` | **yes** |
+  | `INVALIDATED` | `TRIGGER_ARMED` if `ready_time` reached, else `MARKET_ELIGIBLE`, **clamped up to the previous candidate's stage if higher (engine-enforced, see Remediation record)** | `INVALIDATED` | **yes** |
   | `EXPIRED` | same rule as `INVALIDATED` | `EXPIRED` | **yes** |
   | `BLOCKED` | same rule as `INVALIDATED` | `ERROR` | **yes** (adapter-level choice -- see Known debt) |
   | `RESOLVED` | -- | -- | fails closed (`LargeSMCUnmappedStageError`) -- unreachable today, see Known debt |
 
-  Terminal-stage retained-stage logic is a pure function of the canonical record's own `ready_time` field only (never of adapter-side history), so it cannot corrupt the funnel engine's semantic no-op comparison (`opportunity.engine._is_semantic_no_op`, which compares `raw_strategy_state` byte-for-byte across polls).
+  The adapter's own terminal-stage computation is still a pure function of the canonical record's `ready_time` field only (never of adapter-side history), so it cannot corrupt the funnel engine's semantic no-op comparison (`opportunity.engine._is_semantic_no_op`, which compares `raw_strategy_state` byte-for-byte across polls). **As of the remediation below, `opportunity.engine.evaluate_funnel` additionally clamps this adapter-reported stage up to the previous candidate's stage whenever the adapter's own guess would otherwise regress it** -- this is what actually makes the mapping satisfy Safety Invariant #9 for the `QUALIFIED`/`ENTRY_AVAILABLE`-without-`ready_time` cases the adapter alone could not.
 - **Evidence mapping**: `context_evidence`/`setup_evidence`/`trigger_evidence` carry the canonical record's `canonical_state_source`, `combination`, `entry_condition`, `maneuver`, `entry_type`, `invalidation_trigger` verbatim.
 - **Geometry mapping**: `direction`/`entry` (`entry_reference`)/`invalidation` (`invalidation_price`) copied verbatim from `SetupLedgerRow`; `targets` is always `()` -- `SetupLedgerRow` carries no target authority (that lives on the separate `LargeSMCResearchDecision`, not consumed here), so it is never fabricated.
 - **Scheduled-watch compatibility**: the adapter is constructed from an already-produced `SetupLedgerRow` -- the exact object `live_watch.evaluate_increment` already yields via `run_replay`'s `SetupLedger.rows`. Nothing in this module calls `live_watch`, `run_replay`, MT5, or the watch state store; it is proven compatible by construction (same input type), not merely asserted.
@@ -60,7 +76,8 @@ File: `src/opportunity/large_smc_adapter.py` (`LargeSMCFunnelAdapter`).
 - **Terminal stickiness**: proven by `test_terminal_occurrence_cannot_be_reactivated`.
 - **CandidateStore integration**: proven by `test_progressive_observations_produce_one_candidate_with_valid_revision_history` (WATCHING -> QUALIFIED -> ENTRY_AVAILABLE, one candidate, revisions 1/2/3) and `test_candidate_store_integration_and_restart_continuity`.
 - **Restart continuity**: proven by the same restart test -- persist at revision 1, recreate `CandidateStore` from disk, reload, feed the next canonical observation, confirm revision 2 with the same `candidate_id` and exactly one stored candidate.
-- **Classification**: **PASS_WITH_NON_BLOCKING_DEBT** (see Known debt).
+- **Terminal stage non-regression** (Safety Invariant #9): see "Remediation record" above -- fixed at the `opportunity.engine` level, proven by `test_terminal_from_qualified_without_ready_time_does_not_regress_to_market_eligible` and `test_terminal_from_entry_available_without_ready_time_does_not_regress` (adapter-specific) plus `test_terminal_transition_does_not_regress_stage_below_previous_high_water_mark` (generic, engine-level, `tests/test_opportunity_engine.py`).
+- **Classification**: **PASS_WITH_NON_BLOCKING_DEBT** (post-remediation; see Known debt for the remaining, genuinely non-blocking items -- the previously blocking terminal-stage-regression defect is fixed, not merely re-labeled).
 
 ## V2-3B: SSC adapter
 
@@ -105,21 +122,36 @@ Result: **6 passed, 0 failed**. No parity mismatch was hidden behind adapter nor
 
 ## Test evidence
 
+Pre-remediation (original implementation, audited and found to regress on the case below):
+
 ```bash
 PYTHONPATH=src python -m pytest tests/test_opportunity_large_smc_adapter.py tests/test_opportunity_ssc_adapter.py tests/test_opportunity_adapter_parity.py -q
 # 41 passed
 
 PYTHONPATH=src python -m pytest tests/ -k "opportunity" -q
 # 143 passed, 3751 deselected, 0 failed, 0 errors, 0 skipped
+```
+
+Post-remediation (current):
+
+```bash
+PYTHONPATH=src python -m pytest tests/test_opportunity_large_smc_adapter.py -q
+# 19 passed (17 original + 2 new terminal-non-regression regression tests)
+
+PYTHONPATH=src python -m pytest tests/test_opportunity_engine.py -q
+# 32 passed (includes 2 new generic terminal-non-regression tests, one parametrized over all 4 TERMINAL_OUTCOMES)
+
+PYTHONPATH=src python -m pytest tests/ -k "opportunity" -q
+# 150 passed, 3751 deselected, 0 failed, 0 errors, 0 skipped
 
 PYTHONPATH=src python -m pytest tests/test_large_smc_watch_lifecycle.py tests/test_large_smc_live_watch_hardening.py tests/test_large_smc_live_watch_execution_boundary.py -q
-# 65 passed
+# 65 passed (unaffected by the engine fix)
 
 PYTHONPATH=src python -m pytest tests/test_session_sweep_continuation_state_machine.py tests/test_session_sweep_continuation_setups.py tests/test_session_sweep_continuation_replay_determinism.py tests/test_session_sweep_continuation_canonical_observations.py tests/test_session_sweep_continuation_campaign.py -q
-# 50 passed
+# 50 passed (unaffected)
 
 PYTHONPATH=src python -m pytest tests/test_opportunity_import_boundaries.py -q
-# 22 passed
+# 22 passed (unaffected)
 ```
 
 ## Protected-data firewall
@@ -132,6 +164,7 @@ PYTHONPATH=src python -m pytest tests/test_opportunity_import_boundaries.py -q
 
 ## Known debt (non-blocking)
 
+0. ~~**Large-SMC terminal stage can regress below the highest stage reached** (`QUALIFIED`/`ENTRY_AVAILABLE` -> terminal without `ready_time`)~~ -- **RESOLVED**. This was originally recorded here as an accepted, non-fabricating simplification; `AG_V2_INDEPENDENT_AUDIT_02` correctly identified it as a blocking violation of Safety Invariant #9, not merely debt. Fixed generically in `opportunity.engine.evaluate_funnel` -- see "Remediation record" above. Retained here, struck through, for lineage rather than silently deleted.
 1. **Large-SMC `BLOCKED` mapped to a terminal V2 outcome (`ERROR`)** even though `WatchLifecycleRecord.is_terminal` is `False` for `BLOCKED`. Accepted because this adapter's scope is one already-recorded `SetupLedgerRow` snapshot, which will not itself re-emit further progress once fill-simulation reports `INTRABAR_AMBIGUOUS`/`NO_ENTRY_CONTRACT` for it -- but it is a genuine, documented parity divergence from the canonical non-terminal classification, not a hidden one.
 2. **Large-SMC `RESOLVED` stage is unmapped (fails closed)**. It has no reachable canonical producer today (`watch_lifecycle`'s own docstring: "RESOLVED has no canonical counterpart reachable today"); resolving `FILLED` requires broker-stop-distance information (C10) this adapter does not have. Should the strategy later gain a resolution path, this adapter's `_TERMINAL_OUTCOME_FOR`/error path must be revisited explicitly rather than defaulted.
 3. **SSC `RISK_EXHAUSTED` mapped to `EXPIRED`**. There is no dedicated V2 outcome for "risk budget exhausted, no further entries possible today" distinct from a structural invalidation or a session timing expiry; `EXPIRED` was chosen as the closer semantic fit and documented rather than silently folded into `INVALIDATED`.
@@ -149,20 +182,22 @@ V2-1    VERIFIED
 V2-1B   VERIFIED
 V2-2A   VERIFIED
 V2-2B   VERIFIED
-V2-3A   IMPLEMENTED_AND_LOCALLY_VERIFIED
-V2-3B   IMPLEMENTED_AND_LOCALLY_VERIFIED
-PARITY CHECKPOINT   READY_FOR_INDEPENDENT_AUDIT
+V2-3A   REMEDIATED_PENDING_RE_AUDIT (blocking defect found by AG_V2_INDEPENDENT_AUDIT_02, fixed, not yet re-audited)
+V2-3B   IMPLEMENTED_AND_LOCALLY_VERIFIED (audit found no defect)
+PARITY CHECKPOINT   REMEDIATED_PENDING_RE_AUDIT
 V2-4    NOT_STARTED
 V2-5    NOT_STARTED
 ```
 
-`AG_V2_OPERATIONAL_PROPOSAL_PLATFORM_READY` remains the current milestone target; this checkpoint does not complete it. Strategy economic validation for either strategy continues independently and is unaffected by this document.
+`AG_V2_OPERATIONAL_PROPOSAL_PLATFORM_READY` remains the current milestone target; this checkpoint does not complete it. Strategy economic validation for either strategy continues independently and is unaffected by this document. **`SAFE_TO_ADVANCE_TO_V2_4 = NO`** until a fresh independent audit confirms the remediation.
 
 ## Auditor handoff
 
-- `head_before` (repo HEAD at mission start): `f036f8812bf69ad4ffe18eb09db71fd5005ad4f0`
-- Files changed: `src/opportunity/large_smc_adapter.py` (new), `src/opportunity/ssc_adapter.py` (new), `tests/test_opportunity_large_smc_adapter.py` (new), `tests/test_opportunity_ssc_adapter.py` (new), `tests/test_opportunity_adapter_parity.py` (new), plus this document and the doc updates listed in the commit history below.
-- Test commands/results: see "Test evidence" above.
-- Parity evidence: see "Parity evidence" above.
-- Known debt: see "Known debt" above.
-- `SAFE_TO_ADVANCE_TO_V2_4 = NO` pending independent audit of this checkpoint.
+- `head_before` (repo HEAD at original mission start): `f036f8812bf69ad4ffe18eb09db71fd5005ad4f0`
+- `audited_head` (AG_V2_INDEPENDENT_AUDIT_02): `6d416bc5fd762af5e3d764d4116b1e01725bf70c`
+- Files changed by the original mission: `src/opportunity/large_smc_adapter.py` (new), `src/opportunity/ssc_adapter.py` (new), `tests/test_opportunity_large_smc_adapter.py` (new), `tests/test_opportunity_ssc_adapter.py` (new), `tests/test_opportunity_adapter_parity.py` (new), plus this document and the doc updates listed in the commit history.
+- Files changed by this remediation: `src/opportunity/engine.py` (generic terminal-stage clamp), `tests/test_opportunity_engine.py` (2 new generic tests), `tests/test_opportunity_large_smc_adapter.py` (2 new adapter-specific regression tests), this document.
+- Test commands/results: see "Test evidence" above (pre- and post-remediation both recorded).
+- Parity evidence: see "Parity evidence" above (unaffected by this remediation -- no parity case changed outcome).
+- Known debt: see "Known debt" above (item 0 resolved; items 1-5 remain genuinely non-blocking).
+- **A fresh independent audit of this exact remediation has not yet run.** `SAFE_TO_ADVANCE_TO_V2_4 = NO` until it does. The next auditor should specifically re-attempt the exact reproduction case from `AG_V2_INDEPENDENT_AUDIT_02` (`QUALIFIED` -> `INVALIDATED` without `ready_time`) plus the second instance found during remediation (`ENTRY_AVAILABLE` -> `EXPIRED` without `ready_time`), and should independently confirm the generic engine-level fix does not itself introduce a new defect (e.g. incorrectly clamping a terminal transition that legitimately reports a *later* stage than previously recorded -- covered by `test_terminal_transition_uses_reported_stage_when_it_is_not_a_regression` but worth an independent from-scratch check).

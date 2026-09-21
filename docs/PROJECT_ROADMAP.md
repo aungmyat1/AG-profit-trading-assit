@@ -341,19 +341,19 @@ No strategy authority or broker authority is granted. Identity continuity, seman
 
 Add persistent candidate identity, append-only transitions, restart reconstruction, deduplication, and lifecycle querying. Implemented on top of the existing `runtime_state.store.JsonKeyValueStore`; see `docs/status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md`.
 
-## V2-3A — Large-SMC Shadow Adapter (`IMPLEMENTED_AND_LOCALLY_VERIFIED`, 2026-09-22)
+## V2-3A — Large-SMC Shadow Adapter (`REMEDIATED_PENDING_RE_AUDIT`, 2026-09-22)
 
-Bind the existing Large-SMC research engine to V2 without changing its canonical semantics or `RESEARCH_ONLY` authority. Implemented as a thin adapter over the pre-existing `large_smc_research.watch_lifecycle` projection; see `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md`. Not independently audited yet.
+Bind the existing Large-SMC research engine to V2 without changing its canonical semantics or `RESEARCH_ONLY` authority. Implemented as a thin adapter over the pre-existing `large_smc_research.watch_lifecycle` projection. Independent audit (`AG_V2_INDEPENDENT_AUDIT_02`) found one blocking defect (a terminal-transition stage regression violating Safety Invariant #9); fixed generically in `opportunity.engine.evaluate_funnel` and locally re-verified. Not yet re-audited. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md`.
 
 ## V2-3B — SSC Shadow / Replay Adapter (`IMPLEMENTED_AND_LOCALLY_VERIFIED`, 2026-09-22)
 
-Bind the canonical SSC evaluator/replay path to V2. Preserve exact strategy identity and prohibit substitution through another runtime strategy. Implemented as a thin adapter over `strategy_contract.decision.StrategyDecision` (itself built from the unchanged `session_sweep_continuation.replay.run_replay`); see `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md`. Not independently audited yet.
+Bind the canonical SSC evaluator/replay path to V2. Preserve exact strategy identity and prohibit substitution through another runtime strategy. Implemented as a thin adapter over `strategy_contract.decision.StrategyDecision` (itself built from the unchanged `session_sweep_continuation.replay.run_replay`). Independent audit found no defect for this strategy. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md`.
 
-## Parity Checkpoint #1 — Large-SMC + SSC (`READY_FOR_INDEPENDENT_AUDIT`, 2026-09-22)
+## Parity Checkpoint #1 — Large-SMC + SSC (`REMEDIATED_PENDING_RE_AUDIT`, 2026-09-22)
 
-Require canonical/V2 parity for decisions, time, provenance, replay behavior, candidate determinism, future-data isolation, and strategy identity. Locally verified for both strategies with 6 parity cases plus negative/fail-closed coverage; see `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` for the full evidence and known, documented mapping-decision debt.
+Require canonical/V2 parity for decisions, time, provenance, replay behavior, candidate determinism, future-data isolation, and strategy identity. An independent audit found and this mission fixed one blocking Large-SMC defect; SSC was confirmed clean. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` for the full audit findings, remediation record, and remaining known, non-blocking debt.
 
-Failure blocks strategy expansion. `SAFE_TO_ADVANCE_TO_V2_4 = NO` pending independent audit of this checkpoint.
+Failure blocks strategy expansion. `SAFE_TO_ADVANCE_TO_V2_4 = NO` pending a fresh independent audit of this remediation.
 
 ## V2-4 — Formation / ProposalEligibility Bridge
 
