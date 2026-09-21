@@ -37,6 +37,8 @@
       "SSC_V1_0_1_G2_DEV_002::H1",
       "SSC_V1_0_1_G2_DEV_002::M1",
       "SSC_V1_0_1_G2_DEV_002::M15",
+      "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::H1",
+      "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::M15",
       "SSC_V1_0_1_HIST_1Y_M1_001::M1"
     ],
     "timeframes_evaluated": [
@@ -50,7 +52,7 @@
     "SSC_V1_0_1_G2_DEV_001 vs SSC_V1_0_1_G2_DEV_002": "DEV_002 M15/M1 are byte-identical to DEV_001's (same sha256). They are one dataset lineage, not two independent samples."
   },
   "double_counting_warning": "DEV_002 (N=22) sits entirely inside the one-year window. A one-year population must therefore NOT be added to DEV_002's N as if independent; the DEV_002 occurrences are a subset of the window, never additional sample.",
-  "generated_at_utc": "2026-09-19",
+  "generated_at_utc": "2026-09-21",
   "named_campaign_cross_reference": [
     {
       "campaign": "GEN_001",

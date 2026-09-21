@@ -20,7 +20,8 @@
         "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::H1",
         "SSC_HYP002_H1_WARMUP_CONTEXT_20260528_20260731::H1",
         "SSC_V1_0_1_G2_DEV_001::H1",
-        "SSC_V1_0_1_G2_DEV_002::H1"
+        "SSC_V1_0_1_G2_DEV_002::H1",
+        "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::H1"
       ],
       "covered_intervals": [
         [
@@ -60,7 +61,8 @@
         "EXTERNAL_D_ROOT::EURUSD_M15_202606220000_202607312345.csv",
         "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914::M15",
         "SSC_V1_0_1_G2_DEV_001::M15",
-        "SSC_V1_0_1_G2_DEV_002::M15"
+        "SSC_V1_0_1_G2_DEV_002::M15",
+        "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::M15"
       ],
       "covered_intervals": [
         [
@@ -72,7 +74,7 @@
     }
   },
   "data_role": "HISTORICAL_RESEARCH_ONLY",
-  "generated_at_utc": "2026-09-19",
+  "generated_at_utc": "2026-09-21",
   "generated_at_utc_note": "DATE_ONLY -- no mutable timestamp enters any coverage decision",
   "mission_classification": "HISTORICAL_RESEARCH_ONLY",
   "note": "P1 gate only. Even DATA_COVERAGE_COMPLETE would not itself authorize an economic replay -- P2-P5 remain separate gates. No replay has been run.",
@@ -81,7 +83,7 @@
       "AVAILABLE_H1": [
         [
           "2025-09-19T00:00:00Z",
-          "2026-09-15T00:00:00Z"
+          "2026-09-15T22:00:00Z"
         ]
       ],
       "AVAILABLE_M1": [
@@ -93,25 +95,25 @@
       "AVAILABLE_M15": [
         [
           "2025-09-19T00:00:00Z",
-          "2026-09-15T00:00:00Z"
+          "2026-09-15T21:15:00Z"
         ]
       ],
       "COMMON_INTERVAL": {
         "intervals": [
           [
             "2025-09-19T00:00:00Z",
-            "2026-09-15T00:00:00Z"
+            "2026-09-15T21:01:00Z"
           ]
         ],
         "note": "H1 x M15 x M1 intersection -- the only span a canonical replay could run end to end",
-        "total_covered_days": 361.0
+        "total_covered_days": 361.876
       },
       "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
       "MISSING_INTERVALS": {
         "H1": [
           {
-            "duration_days": 4.0,
-            "from": "2026-09-15T00:00:00Z",
+            "duration_days": 3.083,
+            "from": "2026-09-15T22:00:00Z",
             "to": "2026-09-19T00:00:00Z",
             "weekdays_touched": 4
           }
@@ -126,8 +128,8 @@
         ],
         "M15": [
           {
-            "duration_days": 4.0,
-            "from": "2026-09-15T00:00:00Z",
+            "duration_days": 3.115,
+            "from": "2026-09-15T21:15:00Z",
             "to": "2026-09-19T00:00:00Z",
             "weekdays_touched": 4
           }
@@ -525,6 +527,62 @@
       "timeframe": "M1",
       "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
       "unexpected_gap_count": 25,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "HISTORICAL_RESEARCH_INPUT_ONLY",
+      "dataset_id": "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 52,
+      "first_timestamp_utc": "2025-09-14T21:00:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 50.0,
+      "last_timestamp_utc": "2026-09-15T21:00:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001/raw/EURUSD_H1.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 6241,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "4eb522945697773ed34d1b8d47ab928b9e94e99828dade88db18fe186905e288",
+      "source_id": "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::H1",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "H1",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 2,
+      "zero_or_negative_price_rows": 0
+    },
+    {
+      "admissible_for_coverage": true,
+      "broker_server": null,
+      "data_role": "HISTORICAL_RESEARCH_INPUT_ONLY",
+      "dataset_id": "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001",
+      "duplicate_timestamps": 0,
+      "expected_closure_gap_count": 52,
+      "first_timestamp_utc": "2025-09-14T21:00:00Z",
+      "invalid_ohlc_count": 0,
+      "largest_gap_hours": 49.25,
+      "last_timestamp_utc": "2026-09-15T21:00:00Z",
+      "location": "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001/raw/EURUSD_M15.csv",
+      "manifest_sha256_match": true,
+      "non_monotonic_timestamps": 0,
+      "provider": "Vantage Markets (Pty) Ltd",
+      "quality_evidence": "historical_replay.utc_export_csv_loader.load_utc_export_csv (fails closed)",
+      "quality_status": "PASS",
+      "row_count": 24961,
+      "schema": "UTC timestamp_utc (MetaTrader5 copy_rates_* native)",
+      "sha256": "c9833427404d8634d8cf57b000017ecea7ad865ab22db4eadedacb80de9b6956",
+      "source_id": "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::M15",
+      "status": "MEASURED",
+      "symbol_metadata_manifest": null,
+      "timeframe": "M15",
+      "timezone_authority": "UTC (loader-recorded source=UTC (MetaTrader5 Python copy_rates_* native, no transformation))",
+      "unexpected_gap_count": 2,
       "zero_or_negative_price_rows": 0
     },
     {
@@ -1105,7 +1163,7 @@
       "AVAILABLE_H1": [
         [
           "2025-09-19T00:00:00Z",
-          "2026-09-15T00:00:00Z"
+          "2026-09-15T22:00:00Z"
         ]
       ],
       "AVAILABLE_M1": [
@@ -1117,25 +1175,25 @@
       "AVAILABLE_M15": [
         [
           "2025-09-19T00:00:00Z",
-          "2026-09-15T00:00:00Z"
+          "2026-09-15T21:15:00Z"
         ]
       ],
       "COMMON_INTERVAL": {
         "intervals": [
           [
             "2025-09-19T00:00:00Z",
-            "2026-09-15T00:00:00Z"
+            "2026-09-15T21:01:00Z"
           ]
         ],
         "note": "H1 x M15 x M1 intersection -- the only span a canonical replay could run end to end",
-        "total_covered_days": 361.0
+        "total_covered_days": 361.876
       },
       "FINAL_STATUS": "BLOCKED_INCOMPLETE_ONE_YEAR_DATA",
       "MISSING_INTERVALS": {
         "H1": [
           {
-            "duration_days": 4.0,
-            "from": "2026-09-15T00:00:00Z",
+            "duration_days": 3.083,
+            "from": "2026-09-15T22:00:00Z",
             "to": "2026-09-19T00:00:00Z",
             "weekdays_touched": 4
           }
@@ -1150,8 +1208,8 @@
         ],
         "M15": [
           {
-            "duration_days": 4.0,
-            "from": "2026-09-15T00:00:00Z",
+            "duration_days": 3.115,
+            "from": "2026-09-15T21:15:00Z",
             "to": "2026-09-19T00:00:00Z",
             "weekdays_touched": 4
           }
@@ -1178,14 +1236,14 @@
         "warmup_ready_at_utc": "2025-02-28T12:00:00Z"
       },
       "coverage_days_by_timeframe": {
-        "H1": 361.0,
+        "H1": 361.917,
         "M1": 361.876,
-        "M15": 361.0
+        "M15": 361.885
       },
       "three_way_missing_intervals": [
         {
-          "duration_days": 4.0,
-          "from": "2026-09-15T00:00:00Z",
+          "duration_days": 3.124,
+          "from": "2026-09-15T21:01:00Z",
           "to": "2026-09-19T00:00:00Z",
           "weekdays_touched": 4
         }

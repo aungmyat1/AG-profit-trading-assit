@@ -6,6 +6,10 @@ Program: `AG_CANONICAL_SCANNER_PROPOSAL_PIPELINE_V1`
 Governing roadmap: `docs/PROJECT_ROADMAP.md`  
 Objective: **Prove the real, canonical, proposal-first path before expansion**
 
+> **Completion note (2026-09-21):** This plan's objective was achieved on 2026-09-11:
+> `AG_PROPOSAL_OPERATION_READY_V1 = PASS`. WP0–WP12 are all complete. The plan is
+> retained as the authoritative design record; current status is in `PROJECT_STATUS.md`.
+
 ## Outcome
 
 Deliver the shortest authoritative path from the current observation/demo surface to

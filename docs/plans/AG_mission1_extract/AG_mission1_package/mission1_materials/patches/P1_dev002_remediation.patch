@@ -1,0 +1,78 @@
+diff --git a/config/historical_datasets/EURUSD_H1_SSC_G2_DEV_002_symbol_metadata.yaml b/config/historical_datasets/EURUSD_H1_SSC_G2_DEV_002_symbol_metadata.yaml
+index 4ed7337..9de1c37 100644
+--- a/config/historical_datasets/EURUSD_H1_SSC_G2_DEV_002_symbol_metadata.yaml
++++ b/config/historical_datasets/EURUSD_H1_SSC_G2_DEV_002_symbol_metadata.yaml
+@@ -39,8 +39,10 @@ tick_size: 0.00001
+ metadata_scope: HISTORICAL_ANALYSIS_ONLY
+ authority: OWNER_APPROVED_DATASET_MANIFEST
+ approval_date: "2026-09-19"
+-# sha256 of the exact DEV_002 combined H1 file this manifest is scoped to (matches
+-# dataset_manifest.json's per_file.EURUSD_H1.sha256 and G2_HISTORICAL_REPLAY_BLOCKER.json's
+-# evidence.h1_hash_actual):
+-dataset_fingerprint: "sha256:93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79"
++# sha256 of the exact DEV_002 combined H1 file this manifest is scoped to.
++# REMEDIATED 2026-09-21 (DEV002_H1_MANIFEST_REMEDIATION_V1): the value originally
++# frozen here (sha256:93d27d8c...) was computed against pre-commit bytes; the file
++# committed in f66d555 -- unchanged since -- is sha256:9cb7c2da... The frozen blocker
++# and preregistration artifacts retain their original values as immutable evidence.
++dataset_fingerprint: "sha256:9cb7c2da900e958ec092327d08e4506007146bda611c4b056c396f0e121dfa6f"
+ source_file: "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_H1.csv"
+diff --git a/data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/dataset_manifest.json b/data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/dataset_manifest.json
+index d83a02b..01fcaf7 100644
+--- a/data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/dataset_manifest.json
++++ b/data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/dataset_manifest.json
+@@ -1,6 +1,6 @@
+ {
+-  "combined_dataset_fingerprint": "05b059720a7457d15a7fbc4cd7f0c15e62df86b7857c1f122edc49a0d3a2baf5",
+-  "combined_dataset_fingerprint_canonical_input": "EURUSD|H1|93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79\nEURUSD|M15|cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063\nEURUSD|M1|b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458",
++  "combined_dataset_fingerprint": "55cffa7ce3363e11028060969338e88675aee54a803b2886354d3462ec3eedef",
++  "combined_dataset_fingerprint_canonical_input": "EURUSD|H1|9cb7c2da900e958ec092327d08e4506007146bda611c4b056c396f0e121dfa6f\nEURUSD|M15|cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063\nEURUSD|M1|b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458",
+   "cross_timeframe_consistency": "PASS",
+   "data_quality": "PASS",
+   "data_role": "DEVELOPMENT",
+@@ -14,6 +14,7 @@
+     "end": "2026-08-02T23:00:00Z",
+     "start": "2025-01-01T21:00:00Z"
+   },
++  "manifest_remediation": "DEV002_H1_MANIFEST_REMEDIATION_V1",
+   "package_id": "SSC_V1_0_1_G2_DEV_002",
+   "parent_dataset": "SSC_V1_0_1_G2_DEV_001",
+   "parent_dataset_fingerprint": "3ac9fe2023f3c66d3e5ad4e99554574e24a62060e7920603b3af880590c03ef8",
+@@ -21,7 +22,7 @@
+     "EURUSD_H1": {
+       "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_H1.csv",
+       "rows": 9843,
+-      "sha256": "93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79"
++      "sha256": "9cb7c2da900e958ec092327d08e4506007146bda611c4b056c396f0e121dfa6f"
+     },
+     "EURUSD_M1": {
+       "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_M1.csv",
+diff --git a/tests/test_ssc_dev002_h1_metadata_manifest.py b/tests/test_ssc_dev002_h1_metadata_manifest.py
+index ce63636..812e0d7 100644
+--- a/tests/test_ssc_dev002_h1_metadata_manifest.py
++++ b/tests/test_ssc_dev002_h1_metadata_manifest.py
+@@ -38,7 +38,14 @@ BLOCKER = json.load(open(
+     / "G2_HISTORICAL_REPLAY_BLOCKER.json", encoding="utf-8",
+ ))
+ 
+-EXPECTED_DEV002_H1_SHA256 = "93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79"
++# The frozen G2 blocker artifact recorded this (stale) fingerprint as immutable
++# evidence; it is asserted ONLY to prove the blocker record is unchanged -- it must
++# never be rewritten. See DEV002_H1_MANIFEST_REMEDIATION_V1.
++FROZEN_BLOCKER_DEV002_H1_SHA256 = "93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79"
++# The actual bytes committed in f66d555 (unchanged since) -- content authority.
++# Remediation record: artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/
++# V1_0_1_REMEDIATION/DEV002_H1_MANIFEST_REMEDIATION_V1.json
++EXPECTED_DEV002_H1_SHA256 = "9cb7c2da900e958ec092327d08e4506007146bda611c4b056c396f0e121dfa6f"
+ EXPECTED_ORIGINAL_FINGERPRINT = "sha256:f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060"
+ 
+ 
+@@ -51,7 +58,7 @@ def _sha256(path: Path) -> str:
+ 
+ 
+ def test_blocker_recorded_dev002_h1_hash_matches_frozen_evidence():
+-    assert BLOCKER["evidence"]["h1_hash_actual"] == EXPECTED_DEV002_H1_SHA256
++    assert BLOCKER["evidence"]["h1_hash_actual"] == FROZEN_BLOCKER_DEV002_H1_SHA256
+ 
+ 
+ def test_dev002_h1_manifest_binds_to_its_own_file():

@@ -1,0 +1,64 @@
+{
+  "schema": "AG_DEV002_H1_MANIFEST_REMEDIATION_V1",
+  "remediation_id": "DEV002_H1_MANIFEST_REMEDIATION_V1",
+  "date_utc": "<FILL: YYYY-MM-DD of execution>",
+  "mission": "SSC ONE-YEAR REPLAY DATA AUTHORITY + WARMUP READINESS (P1)",
+  "head_before": "<FILL>",
+  "head_after": "<FILL>",
+  "classification": "ADDITIVE_MANIFEST_REMEDIATION -- no data bytes modified, no historical evidence rewritten",
+
+  "subject": {
+    "file": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_H1.csv",
+    "rows": 9843,
+    "actual_committed_bytes_sha256": "9cb7c2da900e958ec092327d08e4506007146bda611c4b056c396f0e121dfa6f",
+    "stale_frozen_fingerprint": "93d27d8cbeb85c0b595ece7d18a43ac66219ae9fbb137e23a9826b84fc191c79"
+  },
+
+  "evidence": {
+    "bytes_stable_since_commit": "f66d555",
+    "git_proof_command": "git show f66d555:data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_H1.csv | sha256sum",
+    "git_proof_result": "<FILL: must equal actual_committed_bytes_sha256>",
+    "combined_fingerprint_formula_verified": true,
+    "combined_dataset_fingerprint_old": "05b059720a7457d15a7fbc4cd7f0c15e62df86b7857c1f122edc49a0d3a2baf5",
+    "combined_dataset_fingerprint_new": "55cffa7ce3363e11028060969338e88675aee54a803b2886354d3462ec3eedef",
+    "known_additional_defect": "DST_MIXED_FILE per SSC_V1_0_1_ONE_YEAR_HISTORICAL_REPLAY_STATUS R3 (winter bars align at -1h, summer bars at 0h vs canonical M1): legacy development evidence only; never admissible as a one-year replay input"
+  },
+
+  "root_cause": "MANIFEST_FROZEN_AGAINST_PRE_COMMIT_BYTES -- the H1 fingerprint was recorded during the DEV_002 build session and frozen into the YAML symbol-metadata manifest and dataset_manifest.json before the final committed file bytes were written; the file itself was committed once (f66d555) and never changed",
+
+  "remediated_artifacts": [
+    {
+      "path": "config/historical_datasets/EURUSD_H1_SSC_G2_DEV_002_symbol_metadata.yaml",
+      "change": "dataset_fingerprint rebound to actual committed bytes with remediation citation comment"
+    },
+    {
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/dataset_manifest.json",
+      "change": "per_file.EURUSD_H1.sha256 corrected; combined_dataset_fingerprint_canonical_input and combined_dataset_fingerprint recomputed (formula verified); manifest_remediation field added"
+    },
+    {
+      "path": "tests/test_ssc_dev002_h1_metadata_manifest.py",
+      "change": "constants split: FROZEN_BLOCKER_DEV002_H1_SHA256 (immutable evidence assertion) vs EXPECTED_DEV002_H1_SHA256 (remediated content authority)"
+    }
+  ],
+
+  "immutable_records_retained": [
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_HISTORICAL_REPLAY_BLOCKER.json",
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_G2_DEV_002/G2_POPULATION_PREREGISTRATION.json",
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_DATA_CONSUMPTION_REGISTRY_V1.json",
+    "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/SSC_V1_0_1_HIST_1Y_001/DATA_COVERAGE_AUDIT_V1.json"
+  ],
+
+  "identity_chain_declaration": "All immutable records above reference DEV_002 CONTENT, which is unchanged by this remediation; only the recorded fingerprint was wrong. Evidence keyed to the stale hash remains evidence about these same bytes. No re-attribution of historical evidence occurs.",
+
+  "runtime_reference_verification": {
+    "scripts/run_ssc_v1_0_1_g2_dev002_population.py": "<FILL: UPDATED | COMMENT_ONLY -- disposition after inspection>",
+    "src/data_archive/lineage_audit.py": "<FILL: UPDATED | COMMENT_ONLY -- disposition after inspection>"
+  },
+
+  "dev002_role_declaration": "LEGACY_DEVELOPMENT_EVIDENCE_ONLY -- DEV_002 must never be supplied as a one-year replay stack input (subset of the one-year window; DST-mixed H1 leg)",
+
+  "test_results": {
+    "focused_command": "python -m pytest -q tests/test_ssc_dev002_h1_metadata_manifest.py tests/test_external_candidate_governance_invariance.py",
+    "result": "<FILL>"
+  }
+}

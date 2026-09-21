@@ -1,0 +1,64 @@
+{
+  "$comment": "TEMPLATE for MISSION 2 (not Mission 1). The R5 replay contract -- freeze and commit BEFORE R6 executes. Binds explicitly to the signed development economic gate so no post-hoc friction/threshold/dataset reinterpretation is possible.",
+
+  "schema": "AG_SSC_ONE_YEAR_REPLAY_CONTRACT_V1",
+  "status": "PROPOSED -- becomes FROZEN only when committed before R6; never edited after freeze (a change requires a new versioned contract)",
+  "frozen_at_utc": "<FILL>",
+  "repository_commit": "<FILL>",
+
+  "strategy": {
+    "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+    "version": "1.0.1",
+    "mutation": "PROHIBITED -- strategy YAML, parameters, and semantics are read-only for this campaign; any change is a new candidate version restarting validation"
+  },
+
+  "dataset": {
+    "stack_id": "ONE_YEAR_REPLAY_STACK_V1",
+    "stack_status_required": "FROZEN",
+    "manifest_sha256": "<FILL from frozen stack manifest>",
+    "window": ["2025-09-15T00:00:00Z", "2026-09-14T23:59:59Z"]
+  },
+
+  "execution": {
+    "entrypoint": "session_sweep_continuation.replay.run_replay",
+    "data_context": "historical_replay.data_source_patch.historical_data_context (live MT5 access blocked by construction)",
+    "entrypoint_parity": "historical == forward entrypoint, asserted by existing test",
+    "runs_required": "R6 exactly one canonical run + R7 one independent reproduction; population_hash and ledger_sha256 must be identical else STOP (determinism defect, no metrics)"
+  },
+
+  "friction": {
+    "scenario": "BASE_REPRESENTATIVE",
+    "authority": "MODELED -- session_sweep_continuation.friction; H2 broker-evidenced friction is NOT consumed in this campaign; every metric line declares this status"
+  },
+
+  "economic_gate": {
+    "contract_id": "AG_R6_ECONOMIC_GATE_CONTRACT_V1",
+    "contract_file": "config/governance/economic_gate_contract.yaml",
+    "status_required": "SIGNED",
+    "signed_at": "2026-09-20",
+    "sample_minimum_resolved_trades": 30,
+    "verdicts": ["EDGE_VALIDATED", "EDGE_REJECTED", "INSUFFICIENT_EVIDENCE", "NOT_EVALUABLE_*"],
+    "verdict_grants": "NONE of: Demo authorization, Live authorization, parameter optimization, holdout access"
+  },
+
+  "protected_data": {
+    "HOLDOUT_access": 0,
+    "OOS_access": 0,
+    "CONFIRM_001_access": 0,
+    "note": "CONFIRM_001 calendar opens 2026-09-15T00:00:00Z -- the window's final boundary is exactly before it; R4 firewall re-asserted at R6 preflight"
+  },
+
+  "population": {
+    "population_id_rule": "<FILL: deterministic seed rule, e.g. sha256(stack_manifest_sha256|window|strategy@version) prefix>",
+    "dev002_pooling": "PROHIBITED -- DEV_002 (N=22) is a strict subset of this window; R13 comparison is subset-consistency only, never pooled samples"
+  },
+
+  "metrics_skeleton": {
+    "prefill": "NOT_EVALUATED",
+    "fields": ["N", "WINS", "LOSSES", "BREAKEVEN", "WIN_RATE", "GROSS_R", "GROSS_EXPECTANCY_R", "GROSS_PF",
+               "FRICTION_R", "NET_R", "NET_EXPECTANCY_R", "NET_PF", "MAX_DRAWDOWN_R", "STDDEV_R", "SE_R",
+               "CI90", "CI95", "SETUPS_S1_S2_S3", "DIRECTIONS", "SESSIONS", "MONTHLY", "QUARTERLY",
+               "DST_REGIMES", "MFE_MAE"],
+    "rule": "no field may be zero or blank where a value was not measured; NOT_EVALUATED everywhere until R8-R13"
+  }
+}

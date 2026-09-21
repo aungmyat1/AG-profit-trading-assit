@@ -55,19 +55,33 @@ DATA_ROOT = REPO_ROOT / "data" / "research" / "ssc_fresh_dev"
 
 SYMBOL = "EURUSD"
 EXACT_ALIGNMENT_THRESHOLD = 0.999999
+MIN_COMMON_BUCKETS_FOR_CENSUS = 100  # below this, a shift's "explanation" is noise, not evidence
 
 # The canonical one-year window this gate was written for (identical to the coverage
 # audit's PRIMARY window; not outcome-derived).
 WINDOW_START = datetime(2025, 9, 15, 0, 0, 0, tzinfo=timezone.utc)
 WINDOW_END = datetime(2026, 9, 14, 23, 59, 59, tzinfo=timezone.utc)
 
-# DST seasons for the per-season arbitration (broker UTC+3 summer / UTC+2 winter).
-SEASONS = {
-    "WINTER_UTC_PLUS_2": (
-        datetime(2025, 11, 1, tzinfo=timezone.utc), datetime(2026, 3, 1, tzinfo=timezone.utc)),
-    "SUMMER_UTC_PLUS_3": (
-        datetime(2026, 5, 1, tzinfo=timezone.utc), datetime(2026, 9, 1, tzinfo=timezone.utc)),
-}
+# EU DST transition instants that actually fall inside the mission window (broker
+# server time is UTC+2 winter / UTC+3 summer, EU convention: last Sunday of March
+# spring-forward, last Sunday of October fall-back). These two dates split the window
+# into three season segments with NO gap and NO overlap, so every timestamp in the
+# window is classified into exactly one segment -- unlike the previous fixed
+# `SEASONS` calendar windows (Nov1-Mar1 / May1-Sep1), which left the ~4.5 months
+# around each transition (2025-09-15..2025-11-01, 2026-03-01..2026-05-01) unclassified
+# and therefore untested by the per-season census (fixed 2026-09-21, cross-leg gate
+# hardening: the prior windows never straddled an actual transition instant).
+DST_FALL_BACK_2025 = datetime(2025, 10, 26, 1, 0, tzinfo=timezone.utc)
+DST_SPRING_FORWARD_2026 = datetime(2026, 3, 29, 1, 0, tzinfo=timezone.utc)
+
+# Season segments, restricted to the mission window (so no timestamp far outside the
+# window -- e.g. EXTERNAL_D_ROOT's own 2025-01-02 history, which predates a DIFFERENT
+# DST transition -- is ever miscounted into one of these labels).
+SEASON_SEGMENTS = (
+    ("SUMMER_PRE_FALLBACK", WINDOW_START, DST_FALL_BACK_2025),
+    ("WINTER", DST_FALL_BACK_2025, DST_SPRING_FORWARD_2026),
+    ("SUMMER_POST_SPRINGFORWARD", DST_SPRING_FORWARD_2026, WINDOW_END + timedelta(seconds=1)),
+)
 
 # (label, path, loader) -- loader is "utc" (already-UTC timestamp_utc CSV) or "mt5"
 # (broker-local MT5 export-menu CSV, resolved by the per-week reopen authority).
@@ -159,6 +173,81 @@ def _shift_scan(by_time: dict, arbiter_agg: dict, season=None) -> list:
     return results
 
 
+# ---------------------------------------------------------------------------
+# Ported predicate logic (cross_leg_timebase_arbiter.py draft, Mission 1 P3 hardening,
+# 2026-09-21): per-BUCKET bimodal shift census, independent of any calendar-season
+# heuristic. Kept in this one script (no second arbiter module) per instruction --
+# `scripts/audit_ssc_v1_0_1_one_year_cross_leg_consistency.py` remains the single P3
+# authority; this augments its own `_audit_source`, it does not compete with it.
+# ---------------------------------------------------------------------------
+
+def _bimodal_shift_census(by_time: dict, arbiter_agg: dict, min_common_buckets: int) -> dict:
+    """For EACH arbiter bucket, find the whole-hour shift (if any) at which the
+    candidate's bucket matches it exactly, then count how many buckets each shift
+    explains. A leg is internally DST-fractured iff >= 2 distinct shifts each explain
+    at least `min_common_buckets` -- this is the generalization of the DEV_002 finding
+    (winter at -1h, summer at 0h) and needs no calendar-season assumption at all."""
+    explaining_counts: dict = {}
+    for t, agg_ohlc in arbiter_agg.items():
+        for shift in (-3, -2, -1, 0, 1, 2, 3):
+            candidate_ohlc = by_time.get(t + timedelta(hours=shift))
+            if candidate_ohlc is not None and candidate_ohlc == agg_ohlc:
+                explaining_counts[shift] = explaining_counts.get(shift, 0) + 1
+                break  # this bucket is explained by its first (smallest-|shift|-first) match
+    return {h: n for h, n in explaining_counts.items() if n >= min_common_buckets}
+
+
+def _segments_with_coverage(by_time: dict, arbiter_agg: dict, min_common_buckets: int) -> dict:
+    """Season-segment coverage (see SEASON_SEGMENTS): {segment_name: shared_bucket_count}
+    for every segment where the candidate shares >= min_common_buckets with the arbiter,
+    restricted to the mission window. Pure function -- no file I/O -- so P3's
+    single-season-exclusion rule is directly unit-testable."""
+    per_segment_common = {}
+    for name, seg_start, seg_end in SEASON_SEGMENTS:
+        seg_common = sum(1 for t in arbiter_agg if seg_start <= t < seg_end and (t in by_time))
+        if seg_common >= min_common_buckets:
+            per_segment_common[name] = seg_common
+    return per_segment_common
+
+
+def _classify_alignment(best: dict, census: dict, segments_evaluated: int) -> tuple:
+    """Pure admission-status predicate (P3 hardening, 2026-09-21): returns
+    (status, dst_consistency, timezone_consistent). Admission ('ALIGNED') requires ALL
+    of: no internal DST fracture (bimodal census), best whole-hour shift == +0h at
+    exact_rate == 1.0, AND coverage in >= 2 season segments (never a single-season
+    source, however cleanly aligned within its own one segment)."""
+    if len(census) >= 2:
+        return "DST_INCONSISTENT", "DST_INCONSISTENT", False
+    aligned_at_zero = best["shift_hours"] == 0 and best["exact_rate"] >= EXACT_ALIGNMENT_THRESHOLD
+    if not aligned_at_zero:
+        return "MISALIGNED", "NOT_EVALUABLE", False
+    if segments_evaluated < 2:
+        return "NOT_EVALUABLE_SINGLE_SEASON", "NOT_EVALUABLE", False
+    return "ALIGNED", "DST_CONSISTENT", True
+
+
+def _merge_with_conflict_detection(groups: list) -> tuple:
+    """Union candle groups by timestamp, verifying OHLC agreement on any shared
+    timestamp instead of last-writer-wins overwrite (P3 hardening, 2026-09-21: a prior
+    version silently let a later-listed source's bar replace an earlier one even when
+    they disagreed -- verified reproducible: a uniformly-shifted +3h leg admitted as
+    ALIGNED at 0h-only-in-one-season could overwrite 1437/1440 genuinely-UTC bars from
+    an earlier source for one day). Returns (merged_candles_ascending, conflict_isoformat_timestamps).
+    A conflicting timestamp is dropped from the merge entirely (fail closed), never
+    resolved by source-list order."""
+    merged: dict = {}
+    conflicts: list = []
+    for candles in groups:
+        for c in candles:
+            existing = merged.get(c.time)
+            if existing is None:
+                merged[c.time] = c
+            elif (existing.open, existing.high, existing.low, existing.close) != (c.open, c.high, c.low, c.close):
+                conflicts.append(c.time.isoformat())
+                merged.pop(c.time, None)
+    return [merged[t] for t in sorted(merged)], sorted(set(conflicts))
+
+
 def _audit_source(label, path, loader, timeframe, arbiter_agg, granularity_minutes):
     entry = {"source_id": label, "timeframe": timeframe, "loader": loader,
              "path": str(path), "opened": False}
@@ -187,21 +276,20 @@ def _audit_source(label, path, loader, timeframe, arbiter_agg, granularity_minut
     overall.sort(key=lambda r: r["exact_rate"], reverse=True)
     best = overall[0]
 
-    per_season = {}
-    season_shifts = {}
-    for name, window in SEASONS.items():
-        scan = _shift_scan(by_time, arbiter_agg, season=window)
-        if not scan:
-            continue
-        scan.sort(key=lambda r: r["exact_rate"], reverse=True)
-        per_season[name] = scan[0]
-        if scan[0]["exact_rate"] >= EXACT_ALIGNMENT_THRESHOLD:
-            season_shifts[name] = scan[0]["shift_hours"]
+    # Internal DST fracture: per-bucket bimodal census, calendar-independent (catches
+    # the DEV_002 shape and any other internally-mixed-offset file, not just one that
+    # happens to fracture at a SEASON_SEGMENTS boundary).
+    census = _bimodal_shift_census(by_time, arbiter_agg, MIN_COMMON_BUCKETS_FOR_CENSUS)
 
-    aligned = best["exact_rate"] >= EXACT_ALIGNMENT_THRESHOLD
-    # A file that is exactly aligned in two seasons at DIFFERENT shifts is internally
-    # DST-inconsistent: no single time base describes it.
-    dst_inconsistent = len(set(season_shifts.values())) > 1
+    # Season-segment coverage: restricted to the mission window, split at the two real
+    # DST transition instants inside it (2025-10-26, 2026-03-29). A source whose data
+    # only ever falls in ONE segment has never been tested across a DST boundary --
+    # its own shift==0/rate==1.0 result, however clean, is NOT_EVALUABLE evidence that
+    # it stays UTC-consistent across a transition (this is the gap a two-season
+    # Nov1-Mar1 / May1-Sep1 calendar heuristic silently papered over for any source
+    # confined to one of those un-modelled shoulder months).
+    per_segment_common = _segments_with_coverage(by_time, arbiter_agg, MIN_COMMON_BUCKETS_FOR_CENSUS)
+    status, dst_consistency, timezone_consistent = _classify_alignment(best, census, len(per_segment_common))
 
     entry.update({
         "best_shift_hours": best["shift_hours"],
@@ -212,27 +300,32 @@ def _audit_source(label, path, loader, timeframe, arbiter_agg, granularity_minut
         # independent corroboration of the arbiter's own alignment.
         "derived_from_arbiter": label in DERIVED_SOURCE_IDS,
         "shift_scan": [{**r, "exact_rate": round(r["exact_rate"], 6)} for r in overall],
-        "per_season_best": {k: {**v, "exact_rate": round(v["exact_rate"], 6)}
-                            for k, v in per_season.items()},
-        "dst_consistency": ("DST_INCONSISTENT" if dst_inconsistent
-                            else "DST_CONSISTENT" if season_shifts else "NOT_EVALUABLE"),
-        "timezone_consistent": bool(aligned and not dst_inconsistent),
-        "status": ("ALIGNED" if aligned and not dst_inconsistent
-                   else "MISALIGNED" if not aligned
-                   else "DST_INCONSISTENT"),
+        "bimodal_shift_census": census,
+        "season_segments_evaluated": sorted(per_segment_common),
+        "dst_consistency": dst_consistency,
+        "timezone_consistent": timezone_consistent,
+        "status": status,
     })
-    if not aligned:
+    if status == "MISALIGNED":
         entry["exclusion_reason"] = (
-            f"NOT_ALIGNED: best whole-hour shift {best['shift_hours']:+d}h reaches only "
-            f"{best['exact_rate']:.6f} exact agreement with the canonical M1 arbiter"
+            f"NOT_ALIGNED_AT_ZERO_SHIFT: best whole-hour shift {best['shift_hours']:+d}h "
+            f"reaches {best['exact_rate']:.6f} exact agreement; admission requires "
+            f"best_shift == +0h at exact_rate == 1.0"
         )
-    elif dst_inconsistent:
+    elif status == "DST_INCONSISTENT":
         entry["exclusion_reason"] = (
-            "DST_INCONSISTENT: per-season exact shifts differ "
-            f"({season_shifts}); no single time base describes this file"
+            f"INTERNALLY_DST_INCONSISTENT: per-bucket census explains distinct shifts "
+            f"{census} at >= {MIN_COMMON_BUCKETS_FOR_CENSUS} buckets each; no single time "
+            f"base describes this file"
+        )
+    elif status == "NOT_EVALUABLE_SINGLE_SEASON":
+        entry["exclusion_reason"] = (
+            f"NOT_EVALUABLE_SINGLE_SEASON: aligned at +0h/1.0 but data only falls in "
+            f"{sorted(per_segment_common)} -- never tested across a DST transition, so "
+            f"UTC-consistency across the boundary is unproven, not assumed"
         )
 
-    if entry["timezone_consistent"]:
+    if timezone_consistent:
         return entry, candles
     return entry, None
 
@@ -300,28 +393,35 @@ def main() -> int:
                 report[f"timezone_consistent_{tf.lower()}"].append(label)
                 consistent_series.setdefault(tf, []).append(candles)
 
-    # Union the timezone-consistent legs per timeframe (deduplicated by timestamp, with
-    # every contributor individually proven exactly aligned to the same M1 arbiter, so
-    # overlapping contributors agree by construction).
+    # Union the timezone-consistent legs per timeframe. Every contributor was
+    # individually proven ALIGNED (best_shift==0, exact_rate==1.0) against the SAME M1
+    # arbiter, so overlapping contributors are expected to agree by construction -- but
+    # this is now VERIFIED per shared timestamp, not assumed: a disagreement is a real
+    # defect (e.g. a source that passed its own global/segment checks by coincidence)
+    # and is reported as a CONFLICT, with the conflicting timestamp dropped from the
+    # merged series (fail closed) rather than silently resolved by source-list order
+    # (previously: `merged[c.time] = c`, last writer wins).
+    conflicts = {"H1": [], "M15": []}
     for tf in ("H1", "M15"):
         groups = consistent_series.get(tf, [])
         if groups:
-            merged = {}
-            for candles in groups:
-                for c in candles:
-                    merged[c.time] = c
-            consistent_series[tf] = [merged[t] for t in sorted(merged)]
+            consistent_series[tf], conflicts[tf] = _merge_with_conflict_detection(groups)
     consistent_series["M1"] = arbiter_candles
+    report["cross_leg_conflicts"] = conflicts
+    any_conflicts = bool(conflicts["H1"] or conflicts["M15"])
 
     intersection = _consistent_intersection(consistent_series)
     report["timezone_consistent_intersection"] = intersection
     report["covers_requested_window"] = bool(
-        intersection.get("evaluable")
+        not any_conflicts
+        and intersection.get("evaluable")
         and datetime.fromisoformat(intersection["start_utc"]) <= WINDOW_START
         and datetime.fromisoformat(intersection["end_utc"]) >= WINDOW_END + timedelta(seconds=1)
     )
+    report["decision_window_timebase"] = "UTC_SINGLE_TIMEBASE" if report["covers_requested_window"] else "NOT_ESTABLISHED"
     report["FINAL_STATUS"] = (
         "CROSS_LEG_TIMEZONE_CONSISTENT_FULL_WINDOW" if report["covers_requested_window"]
+        else "BLOCKED_CROSS_LEG_CONFLICTS_DETECTED" if any_conflicts
         else "BLOCKED_CROSS_LEG_TIMEZONE_INCONSISTENT"
     )
 
@@ -344,7 +444,10 @@ def main() -> int:
     }
     print(f"\n  independent (non-derived) corroboration H1 : {independent_h1}")
     print(f"  independent (non-derived) corroboration M15: {independent_m15}")
-    print(f"\nFINAL_STATUS = {report['FINAL_STATUS']}")
+    if any_conflicts:
+        print(f"\n  CROSS_LEG_CONFLICTS (dropped from merge, fail closed): {report['cross_leg_conflicts']}")
+    print(f"\ndecision_window_timebase = {report['decision_window_timebase']}")
+    print(f"FINAL_STATUS = {report['FINAL_STATUS']}")
     if not report["covers_requested_window"]:
         print(f"requested window = {WINDOW_START.isoformat()} -> {WINDOW_END.isoformat()}")
     return 0 if report["covers_requested_window"] else 1

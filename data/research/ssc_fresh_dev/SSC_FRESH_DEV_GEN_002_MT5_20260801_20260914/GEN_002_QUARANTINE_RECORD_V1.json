@@ -1,0 +1,31 @@
+{
+  "schema": "AG_DATASET_QUARANTINE_RECORD_V1",
+  "record_id": "GEN_002_QUARANTINE_V1",
+  "date_utc": "2026-09-21",
+  "mission": "SSC ONE-YEAR REPLAY DATA AUTHORITY + WARMUP READINESS (Mission 1, P5)",
+
+  "subject_package": "SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914",
+  "subject_manifest": "data/research/ssc_fresh_dev/SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914/dataset_manifest.json",
+
+  "status": "KNOWN_INTERNALLY_INCONSISTENT -- INADMISSIBLE_AS_REPLAY_STACK_INPUT",
+
+  "findings": {
+    "source": "docs/status/SSC_V1_0_1_ONE_YEAR_HISTORICAL_REPLAY_STATUS.md R3 (2026-09-19); reconfirmed live by scripts/audit_ssc_v1_0_1_one_year_cross_leg_consistency.py on 2026-09-21 (H1 best=+3h exact=0.783602 NOT_EVALUABLE MISALIGNED, M15 best=+3h exact=0.778562 NOT_EVALUABLE MISALIGNED)",
+    "manifest_claim": "timezone_status: VERIFIED -- 'timestamps persisted as UTC without transformation'",
+    "falsification": "the package's own EURUSD_M1.csv matches the canonical one-year M1 authority (SSC_V1_0_1_HIST_1Y_M1_001) at exact-match rate 0.795 under a -3h shift; its H1/M15 reproduce that same internal M1 exactly (1.000000), proving internal self-consistency around a wrong time base rather than UTC alignment",
+    "diagnostic_defect": "the package's own parity_diagnostic compared H1-against-H1 from the same package (ohlc_mismatches: 0 over 744 bars) -- a same-source tautology that cannot detect cross-timeframe displacement against the canonical M1 arbiter",
+    "best_shift_observed": {"H1": "+3h", "M15": "+3h"},
+    "exact_match_rate_vs_canonical_m1": {"H1": 0.783602, "M15": 0.778562}
+  },
+
+  "disposition": [
+    "The original dataset_manifest.json is NOT rewritten (historical original preserved).",
+    "This additive quarantine record is stored alongside the package and cited by the admission gate.",
+    "scripts/audit_ssc_v1_0_1_one_year_cross_leg_consistency.py already excludes this package from the timezone-consistent intersection on measured evidence (MISALIGNED, not admitted); this record makes that exclusion an explicit, citable disposition rather than an implicit absence.",
+    "scripts/build_ssc_v1_0_1_one_year_replay_stack.py must fail closed with QUARANTINED_DATASET if any SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914 leg is ever supplied as a replay-stack input.",
+    "No evidence previously generated from GEN_002 is re-attributed or invalidated by this record; it governs future admission only."
+  ],
+
+  "supersedes": null,
+  "superseded_by": null
+}

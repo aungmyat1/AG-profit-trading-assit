@@ -6,6 +6,14 @@
 > [`PROJECT_ROADMAP.md`](PROJECT_ROADMAP.md). The current sequence is informational
 > trade-ticket operations using frozen strategy outputs first, followed by strategy
 > validation. This notice changes neither historical evidence nor execution authority.
+>
+> **Staleness notice (2026-09-21):** This audit was last verified 2026-09-06 and has
+> not been refreshed since. Many capability states have materially changed (R2/R3/R4
+> reached PASS on 2026-09-11; SSC G2 population frozen 2026-09-19; SVOS Cycles 2–6A-R
+> completed; occurrence identity candidate delivered; scheduler/Large-SMC hardening
+> completed; validation-system assurance contract frozen). The individual matrices
+> below are preserved as historical evidence from 2026-09-06. For current capability
+> state, see `PROJECT_STATUS.md` and the R0–R9 gate table there.
 
 **Last verified:** 2026-09-06, `main` @ `651ade619c2c2df9a973d45cea37ae6599c2b9eb`
 ("Reconcile V1.0.3 evidence and pause Telegram development for qualification").

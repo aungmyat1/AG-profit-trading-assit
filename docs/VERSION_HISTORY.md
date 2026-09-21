@@ -3,8 +3,8 @@
 > **This document is historical/version authority, not current-state authority.** For
 > current operational status (BTC/Bybit connectivity, FX shadow-validation counters,
 > execution-authority reconciliation, and the core-completion roadmap), see
-> `PROJECT_STATUS.md`'s "Capability & Roadmap Reconciliation (dated 2026-09-06)"
-> section. In particular, the Bybit-blocked and shadow-collection-not-started claims
+> `PROJECT_STATUS.md`'s "Current rolling classification" section and the R0–R9 gate
+> table. In particular, the Bybit-blocked and shadow-collection-not-started claims
 > below were accurate as of 2026-09-03 and are preserved unchanged here as history; both
 > have since changed — see `PROJECT_STATUS.md` for the current facts.
 

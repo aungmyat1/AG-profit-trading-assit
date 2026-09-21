@@ -183,6 +183,177 @@ and the remaining lifecycle and campaign boundaries.
   silently drop 418 real H1 / 452 real M15 bars). Pre-existing DEV_002/GEN_002/HYP_002
   anomalies are recorded, **not** rewritten. No replay ran.
 
+## Validation system
+
+- [`../AG_VALIDATION_SYSTEM_ASSURANCE_V1.md`](../AG_VALIDATION_SYSTEM_ASSURANCE_V1.md)
+  — fail-closed validation contract for friction and machine-testable assurance manifest
+  proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost
+  handling.
+- [`../artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`](../artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json)
+  — machine-testable assurance manifest.
+- [`status/AG_VALIDATION_CYCLE_1_FOUNDATION_FREEZE_RECORD.md`](status/AG_VALIDATION_CYCLE_1_FOUNDATION_FREEZE_RECORD.md)
+  — VA1 temporal/lookahead integrity freeze record.
+- [`status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_R2_STATUS.md`](status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_R2_STATUS.md)
+  — SVOS Virtual Demo Cycle 6A-R2: `VD_REALITY_REMEDIATION_READY` (bounded read-only
+  EURUSD MT5 check, refreshed Vantage Demo/USD identity and stale spread snapshot).
+- [`status/AG_R6_ECONOMIC_GATE_OWNER_REVIEW_V1.md`](status/AG_R6_ECONOMIC_GATE_OWNER_REVIEW_V1.md)
+  — proposed economic-gate contract owner review packet (PROPOSED, unsigned).
+- [`status/AG_R5_EVIDENCE_PIPELINE_STATUS.md`](status/AG_R5_EVIDENCE_PIPELINE_STATUS.md)
+  and [`status/AG_R5_R6_READINESS_AUDIT_STATUS.md`](status/AG_R5_R6_READINESS_AUDIT_STATUS.md)
+  — R5 evidence pipeline and R5/R6 readiness audit evidence.
+- [`status/AG_CANONICAL_R2_R4_WP0_BASELINE_RECONCILIATION_STATUS.md`](status/AG_CANONICAL_R2_R4_WP0_BASELINE_RECONCILIATION_STATUS.md)
+  — R2–R4 baseline reconciliation, WP0–WP12 acceptance, and platform-finalization
+  remediation evidence.
+- [`status/AG_DETERMINISTIC_TRADING_SKILLS_REFACTOR_V1_STATUS.md`](status/AG_DETERMINISTIC_TRADING_SKILLS_REFACTOR_V1_STATUS.md)
+  — observation-only skill classification/interface refactor and compatibility evidence.
+- [`status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`](status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md)
+  — frontend mock/real mode boundary and fail-closed legacy controls.
+- [`status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md`](status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md)
+  — WP7 runtime verification, attempt journal, conditional message-delivery closure.
+- [`status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`](status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md)
+  — WP1/WP3/WP6 core ticket-delivery foundation (identity, archive, delivery journal).
+- [`status/AG_EXTERNAL_CANDIDATE_VALIDATION_LAYER_V1_STATUS.md`](status/AG_EXTERNAL_CANDIDATE_VALIDATION_LAYER_V1_STATUS.md)
+  — external-candidate validation layer and research-factory governance hardening.
+- [`status/AG_SVOS_HISTORICAL_TO_VIRTUAL_FORWARD_V1_STATUS.md`](status/AG_SVOS_HISTORICAL_TO_VIRTUAL_FORWARD_V1_STATUS.md)
+  — SVOS historical→optimization→virtual-forward flow implementation and verification.
+- [`status/AG_AGENT_CONTEXT_V1_FREEZE_STATUS.md`](status/AG_AGENT_CONTEXT_V1_FREEZE_STATUS.md)
+  — agent context V1 freeze and routing manifest.
+- [`status/AG_DAILY_OPPORTUNITY_SCHEDULER_V2_STATUS.md`](status/AG_DAILY_OPPORTUNITY_SCHEDULER_V2_STATUS.md)
+  — daily opportunity scheduler V2 status.
+- [`status/AG_POST_ASIAN_LONDON_PILOT_V1_STATUS.md`](status/AG_POST_ASIAN_LONDON_PILOT_V1_STATUS.md)
+  — post-Asian London pilot V1 status.
+- [`status/AG_MULTI_STRATEGY_OPERATIONAL_BASELINE_AND_VERSION_PROMOTION_V1_STATUS.md`](status/AG_MULTI_STRATEGY_OPERATIONAL_BASELINE_AND_VERSION_PROMOTION_V1_STATUS.md)
+  and [`status/AG_MULTI_STRATEGY_OPERATIONAL_BASELINE_FREEZE_AND_BOUNDARY_HARDENING_V1_STATUS.md`](status/AG_MULTI_STRATEGY_OPERATIONAL_BASELINE_FREEZE_AND_BOUNDARY_HARDENING_V1_STATUS.md)
+  — multi-strategy operational baseline and version promotion.
+- [`status/AG_TWO_STAGE_GOLDEN_VERTICAL_SLICE_V1_STATUS.md`](status/AG_TWO_STAGE_GOLDEN_VERTICAL_SLICE_V1_STATUS.md)
+  — two-stage golden vertical slice V1 status.
+- [`status/AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION_STATUS.md`](status/AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION_STATUS.md)
+  — ST_ASIAN_SWEEP_V1 governed SL geometry reconciliation.
+- [`status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md)
+  and [`status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md)
+  — Large-SMC EURUSD friction campaign WP3A/3A.1 evidence.
+- [`status/AG_LARGE_SMC_V1_FORWARD_OBSERVATION_RUNNER_IMPLEMENTATION_PLAN_STATUS.md`](status/AG_LARGE_SMC_V1_FORWARD_OBSERVATION_RUNNER_IMPLEMENTATION_PLAN_STATUS.md)
+  and [`status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md`](status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md)
+  — Large-SMC forward observation runner and research promotion.
+- [`status/AG_LARGE_SMC_V1_FORWARD_TO_SHADOW_EVIDENCE_CONTRACT_V1_STATUS.md`](status/AG_LARGE_SMC_V1_FORWARD_TO_SHADOW_EVIDENCE_CONTRACT_V1_STATUS.md)
+  — Large-SMC forward-to-shadow evidence contract.
+- [`status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V2_STATUS.md`](status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V2_STATUS.md)
+  and [`status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V3_STATUS.md`](status/AG_LARGE_SMC_V1_C10_STOP_POLICY_OWNER_DECISION_PACKET_V3_STATUS.md)
+  — Large-SMC C10 stop-policy owner decision packets V2/V3.
+- [`status/AG_BTC_VANTAGE_ECONOMIC_RECONCILIATION_V1_STATUS.md`](status/AG_BTC_VANTAGE_ECONOMIC_RECONCILIATION_V1_STATUS.md)
+  — BTC Vantage economic reconciliation.
+- [`status/AG_VANTAGE_MT5_CRYPTO_VENUE_V1.md`](status/AG_VANTAGE_MT5_CRYPTO_VENUE_V1.md)
+  — Vantage MT5 crypto venue discovery.
+- [`status/AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_E1_STATUS.md`](status/AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_E1_STATUS.md)
+  — Vantage Markets crypto MT5 execution compatibility.
+- [`status/AG_MULTI_MARKET_STRATEGY_OS_RESOURCE_REUSE_DISCOVERY_V1_STATUS.md`](status/AG_MULTI_MARKET_STRATEGY_OS_RESOURCE_REUSE_DISCOVERY_V1_STATUS.md)
+  — multi-market strategy OS resource reuse discovery.
+- [`status/AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS.md`](status/AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS.md)
+  — strategy tech selective port and reuse.
+- [`status/AG_TWO_SYSTEM_ARCHITECTURE_AND_OPEN_SOURCE_REUSE_V1_STATUS.md`](status/AG_TWO_SYSTEM_ARCHITECTURE_AND_OPEN_SOURCE_REUSE_V1_STATUS.md)
+  — two-system architecture and open-source reuse.
+- [`status/AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1_M0_M1_STATUS.md`](status/AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1_M0_M1_STATUS.md)
+  and [`status/AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1_M2_M3_STATUS.md`](status/AG_UNIVERSAL_MARKET_DIRECTION_ARCHITECTURE_V1_M2_M3_STATUS.md)
+  — universal market direction architecture M0–M3.
+- [`status/AG_PROJECT_OBJECTIVE_ACCELERATION_V1_SECURITY_STATUS.md`](status/AG_PROJECT_OBJECTIVE_ACCELERATION_V1_SECURITY_STATUS.md)
+  — project objective acceleration security review.
+- [`status/AG_RAW_PROSPECTIVE_ARCHIVE_V1_MISSION_STATUS.md`](status/AG_RAW_PROSPECTIVE_ARCHIVE_V1_MISSION_STATUS.md)
+  — raw prospective archive V1 mission.
+- [`status/AG_INTERMITTENT_PC_CATCHUP_CONTRACT_AUDIT_V1_STATUS.md`](status/AG_INTERMITTENT_PC_CATCHUP_CONTRACT_AUDIT_V1_STATUS.md)
+  — intermittent PC catch-up contract audit.
+- [`status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md`](status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md)
+  — Stage 1 catch-up and retry policy decision packet.
+- [`status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md`](status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md)
+  — WP7 message delivery preflight and authorization packet.
+- [`status/AG_TRADE_ASSISTANT_V1_0_1_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_1_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_2_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_2_STATUS.md),
+  and [`status/AG_TRADE_ASSISTANT_V1_0_3_BASELINE_FREEZE_BEFORE_FX_SERIES_002_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_BASELINE_FREEZE_BEFORE_FX_SERIES_002_STATUS.md)
+  — Trade Assistant V1.0.1/V1.0.2/V1.0.3 baseline freeze evidence.
+- [`status/AG_TRADE_ASSISTANT_V1_0_3_DAILY_REPORTING_HISTORY_AND_SCHEDULER_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_DAILY_REPORTING_HISTORY_AND_SCHEDULER_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_COMPLETE_ENTRY_TICKET_WIRING_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_COMPLETE_ENTRY_TICKET_WIRING_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_RELEASE_IDENTITY_REMEDIATION_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_RELEASE_IDENTITY_REMEDIATION_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_REPORT_DECISION_KEY_REMEDIATION_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_REPORT_DECISION_KEY_REMEDIATION_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_DAY_001_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_DAY_001_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_DAY_002_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_DAY_002_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_DAY_001_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_DAY_001_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_DAY_002_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_DAY_002_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_VALIDATION_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_VALIDATION_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_MT5_DATA_READINESS_AND_PREFLIGHT_CLOSURE_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_MT5_DATA_READINESS_AND_PREFLIGHT_CLOSURE_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_OPERATIONAL_PREFLIGHT_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_OPERATIONAL_PREFLIGHT_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_RELEASE_MANIFEST_FREEZE_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_RELEASE_MANIFEST_FREEZE_STATUS.md),
+  [`status/AG_TRADE_ASSISTANT_V1_0_3_RELEASE_QUALIFICATION_BLOCKERS_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_RELEASE_QUALIFICATION_BLOCKERS_STATUS.md)
+  — Trade Assistant V1.0.3 release qualification evidence (daily reporting, entry ticket,
+  release identity, report decision-key, shadow days, validation, MT5 data readiness,
+  operational preflight, manifest freeze, qualification blockers).
+- [`status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md`](status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md)
+  and [`status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md`](status/AG_V1_0_3_BTC_OBSERVATION_CAMPAIGN_AUTHORIZATION_STATUS.md)
+  — BTC daily operationalization and observation campaign authorization.
+- [`status/AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3_STATUS.md`](status/AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3_STATUS.md)
+  — Bybit qualification exception and BTC daily decision V3.
+- [`status/AG_BTC_DAILY_OBSERVATION_TIME_CONTRACT_V1_STATUS.md`](status/AG_BTC_DAILY_OBSERVATION_TIME_CONTRACT_V1_STATUS.md)
+  — BTC daily observation time contract V1.
+- [`status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md`](status/AG_BTC_DAILY_REPORT_WINDOW_AMENDMENT_V1_STATUS.md)
+  — BTC daily report window amendment V1.
+- [`status/AG_BYBIT_BTC_MARKET_DATA_AND_DAILY_DECISION_V1_STATUS.md`](status/AG_BYBIT_BTC_MARKET_DATA_AND_DAILY_DECISION_V1_STATUS.md)
+  — Bybit BTC market data and daily decision V1.
+- [`status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md`](status/AG_STAGE1_EXACTLY_ONCE_FX_TICKET_FOUNDATION_V1_STATUS.md)
+  — Stage 1 exactly-once FX ticket foundation.
+- [`status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md`](status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md)
+  — Stage 1 WP7 readiness reconciliation.
+- [`status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md`](status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md)
+  — Stage 1 WP7 message delivery preflight and authorization packet.
+- [`status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md`](status/AG_STAGE1_CATCHUP_AND_RETRY_POLICY_DECISION_PACKET_V1.md)
+  — Stage 1 catch-up and retry policy decision packet.
+- [`status/AG_RESEARCH_FACTORY_V1_GOVERNANCE_HARDENING_STATUS.md`](status/AG_RESEARCH_FACTORY_V1_GOVERNANCE_HARDENING_STATUS.md)
+  — Research Factory V1 governance hardening.
+- [`status/AG_SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md`](status/AG_SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md)
+  — SSC v1.0.1 semantic and replication confound audit.
+- [`status/TRUE_STAGE2_ORACLE_RECONCILIATION_STATUS.md`](status/TRUE_STAGE2_ORACLE_RECONCILIATION_STATUS.md)
+  — True Stage 2 oracle reconciliation.
+- [`status/LARGE_SMC_FROZEN_CONTRACT_DRIFT_ADJUDICATION_STATUS.md`](status/LARGE_SMC_FROZEN_CONTRACT_DRIFT_ADJUDICATION_STATUS.md)
+  and [`status/LARGE_SMC_SHARED_VALIDATION_FREEZE_SCOPE_REMEDIATION_STATUS.md`](status/LARGE_SMC_SHARED_VALIDATION_FREEZE_SCOPE_REMEDIATION_STATUS.md)
+  — Large-SMC frozen contract drift adjudication and shared validation freeze scope remediation.
+- [`status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md)
+  and [`status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md)
+  — Large-SMC C10 stop-loss and pending-entry expiry decision packets.
+- [`status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md`](status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md)
+  — Large-SMC outcome lifecycle V1.
+- [`status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`](status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md)
+  and [`status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md`](status/ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1_STATUS.md)
+  — Large-SMC MT5 symbol metadata replay gap and decoupling fix.
+- [`status/ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md`](status/ST_LARGE_SMC_V1_C14A_CANDIDATE_OCCURRENCE_IDENTITY_STATUS.md)
+  and [`status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md`](status/ST_LARGE_SMC_V1_C14B_OCCURRENCE_IDENTITY_HARDENING_STATUS.md)
+  — Large-SMC C14 occurrence identity candidate and hardening.
+- [`status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md`](status/ST_LARGE_SMC_V1_RESEARCH_FUNNEL_V1_STATUS.md)
+  — Large-SMC research funnel V1.
+- [`status/ST_LARGE_SMC_V1_C11_CONTRACT_FINALIZATION_STATUS.md`](status/ST_LARGE_SMC_V1_C11_CONTRACT_FINALIZATION_STATUS.md)
+  and [`status/ST_LARGE_SMC_V1_C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md`](status/ST_LARGE_SMC_V1_C12_EXPIRY_CONTRACT_RESOLUTION_STATUS.md)
+  — Large-SMC C11 contract finalization and C12 expiry contract resolution.
+- [`status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md`](status/ST_LARGE_SMC_V1_C14_DUPLICATE_REENTRY_CONTRACT_RESOLUTION_STATUS.md)
+  — Large-SMC C14 duplicate reentry contract resolution.
+- [`status/ST_LARGE_SMC_V1_3X3_VARIANT_AUTHORITY_RECONCILIATION_STATUS.md`](status/ST_LARGE_SMC_V1_3X3_VARIANT_AUTHORITY_RECONCILIATION_STATUS.md)
+  — Large-SMC 3x3 variant authority reconciliation.
+- [`status/ST_LARGE_SMC_V1_UC_001_TIMEFRAME_DECISION.md`](status/ST_LARGE_SMC_V1_UC_001_TIMEFRAME_DECISION.md)
+  — Large-SMC UC-001 timeframe decision.
+- [`status/ST_LARGE_SMC_V1_STRATEGY_SPECIFICATION_STATUS.md`](status/ST_LARGE_SMC_V1_STRATEGY_SPECIFICATION_STATUS.md)
+  — Large-SMC strategy specification status.
+- [`status/ST_LARGE_SMC_V1_C11_TARGET_MODEL_RESOLUTION_STATUS.md`](status/ST_LARGE_SMC_V1_C11_TARGET_MODEL_RESOLUTION_STATUS.md)
+  — Large-SMC C11 target model resolution.
+- [`status/AG_SHARED_EVIDENCE_STRATEGY_ARCHITECTURE_V1_STATUS.md`](status/AG_SHARED_EVIDENCE_STRATEGY_ARCHITECTURE_V1_STATUS.md)
+  — shared evidence strategy architecture.
+- [`status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md`](status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md)
+  — complete trade opportunity V1 remediation.
+- [`status/AG_SCHEDULER_AND_LARGE_SMC_WATCH_HARDENING_STATUS.md`](status/AG_SCHEDULER_AND_LARGE_SMC_WATCH_HARDENING_STATUS.md)
+  — scheduler and Large-SMC watch hardening.
+- [`status/AG_VERSIONED_PROPOSAL_OCCURRENCE_IDENTITY_STATUS.md`](status/AG_VERSIONED_PROPOSAL_OCCURRENCE_IDENTITY_STATUS.md)
+  — versioned proposal occurrence identity candidate.
+- [`status/AG_FX_OCCURRENCE_IDENTITY_PROMOTION_READINESS_STATUS.md`](status/AG_FX_OCCURRENCE_IDENTITY_PROMOTION_READINESS_STATUS.md)
+  — FX occurrence identity promotion readiness.
+- [`status/PROJECT_LIVE_STATUS.md`](status/PROJECT_LIVE_STATUS.md)
+  — generated live status snapshot (regenerate with `python scripts/generate_live_status.py`).
+- [`status/RECONCILIATION_AUDIT_POST_BB6AC0F.md`](status/RECONCILIATION_AUDIT_POST_BB6AC0F.md)
+  — reconciliation audit post-bb6ac0f.
+
 ## Architecture
 
 - [`architecture/TRADE_ASSISTANT_ARCHITECTURE.md`](architecture/TRADE_ASSISTANT_ARCHITECTURE.md)
@@ -225,6 +396,14 @@ matching status document before assuming a version is active or frozen.
 Files in `status/` are dated evidence snapshots. They preserve the test counts and
 observations from the named milestone; they are not rolling dashboards.
 
+> **Index completeness note (2026-09-21):** The `docs/status/` directory contains
+> ~140 status documents. This index lists the most commonly referenced entries but
+> is not exhaustive. For a complete listing, see the directory itself. The
+> authoritative current state is always `PROJECT_STATUS.md`; individual status
+> documents are historical evidence. Key documents referenced from the current
+> rolling classification are listed below; older or superseded documents may not
+> appear here but remain valid historical evidence.
+
 - Runtime: [`status/ASSISTANT_RUNTIME_V1.md`](status/ASSISTANT_RUNTIME_V1.md),
   [`status/ASSISTANT_RUNTIME_V1_STATUS.md`](status/ASSISTANT_RUNTIME_V1_STATUS.md), and
   [`status/FIVE_SKILL_ASSISTANT_RUNTIME_STATUS.md`](status/FIVE_SKILL_ASSISTANT_RUNTIME_STATUS.md)
@@ -235,9 +414,22 @@ observations from the named milestone; they are not rolling dashboards.
 - Frozen phases: [`status/PHASE_1_4_FREEZE_STATUS.md`](status/PHASE_1_4_FREEZE_STATUS.md)
   and [`status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md`](status/PHASE_5_ENTRY_CONFIRMATION_FREEZE_STATUS.md)
 - Session Sweep Continuation research validation
-  (`ST_SESSION_SWEEP_CONTINUATION_V1`): [`status/AG_SSC_HYP002_SETUP_SELECTIVITY_VALIDATION_STATUS.md`](status/AG_SSC_HYP002_SETUP_SELECTIVITY_VALIDATION_STATUS.md)
+  (`ST_SESSION_SWEEP_CONTINUATION_V1`):
+  [`status/AG_SSC_HYP001_CONTROL_ARM_COMPARABILITY_AMENDMENT_STATUS.md`](status/AG_SSC_HYP001_CONTROL_ARM_COMPARABILITY_AMENDMENT_STATUS.md),
+  [`status/AG_SSC_HYP001_LINEAGE_AUDIT_STATUS.md`](status/AG_SSC_HYP001_LINEAGE_AUDIT_STATUS.md),
+  [`status/AG_SSC_HYP001_POST_V1_0_1_REASSESSMENT_STATUS.md`](status/AG_SSC_HYP001_POST_V1_0_1_REASSESSMENT_STATUS.md),
+  [`status/AG_SSC_HYP002_SETUP_SELECTIVITY_VALIDATION_STATUS.md`](status/AG_SSC_HYP002_SETUP_SELECTIVITY_VALIDATION_STATUS.md)
   (first preregistered hypothesis completed and falsified on GEN_002; HYP_002 closed
-  `VALIDATED_NEGATIVE`, duplicate HYP_003 declined)
+  `VALIDATED_NEGATIVE`, duplicate HYP_003 declined),
+  [`status/AG_SSC_SVOS_G0_G8_EVIDENCE_RECONCILIATION_STATUS.md`](status/AG_SSC_SVOS_G0_G8_EVIDENCE_RECONCILIATION_STATUS.md),
+  [`status/AG_SSC_V1_0_1_SVOS_G2_POPULATION_STATUS.md`](status/AG_SSC_V1_0_1_SVOS_G2_POPULATION_STATUS.md)
+  (G2 population frozen: 22 occurrences, deterministic),
+  [`status/AG_SSC_V1_0_1_SVOS_G2_FAILURE_DECOMPOSITION_STATUS.md`](status/AG_SSC_V1_0_1_SVOS_G2_FAILURE_DECOMPOSITION_STATUS.md)
+  (PRIMARY_ALPHA_DEFICIT + SECONDARY_AMPLIFIER friction; no hypothesis justified),
+  [`status/AG_SSC_V1_0_1_INDEPENDENT_REPLICATION_ADMISSION_STATUS.md`](status/AG_SSC_V1_0_1_INDEPENDENT_REPLICATION_ADMISSION_STATUS.md)
+  (BLOCKED_NO_ADMISSIBLE_REPLICATION_DATA),
+  [`status/AG_SSC_V1_0_1_POST_G2_AUTHORITY_SYNC_STATUS.md`](status/AG_SSC_V1_0_1_POST_G2_AUTHORITY_SYNC_STATUS.md)
+  (AUTHORITY_SYNCHRONIZED)
 - Registry and skills: [`status/STRATEGY_REGISTRY_STATUS.md`](status/STRATEGY_REGISTRY_STATUS.md),
   [`status/LARGE_SMC_V1_REGISTRATION_STATUS.md`](status/LARGE_SMC_V1_REGISTRATION_STATUS.md),
   [`status/STRATEGY_WORKFLOW_RESOURCE_AUDIT_STATUS.md`](status/STRATEGY_WORKFLOW_RESOURCE_AUDIT_STATUS.md),

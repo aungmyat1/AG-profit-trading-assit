@@ -2,6 +2,13 @@
 
 Status: **AUTHORITATIVE MASTER PLAN — APPROVED WITH HARDENING 2026-09-10**
 
+> **Note (2026-09-21):** The readiness matrix below was last updated 2026-09-10 and
+> reflects the state at plan adoption. R2/R3/R4 have since reached `READY`/`PASS`
+> (2026-09-11). See `PROJECT_STATUS.md` for the current rolling classification and
+> the R0–R9 gate table there for the authoritative current status. The individual
+> R2/R3/R4 section descriptions below retain their original plan language; the
+> current classification is recorded in the gate table in `PROJECT_STATUS.md`.
+
 This is the project's authoritative readiness progression. It supersedes the prior
 delivery-stage ordering. Historical plans remain evidence of earlier decisions, but
 this capability-gate sequence governs new implementation work.
@@ -62,15 +69,20 @@ strategy, proposal, governance, or execution truth.
 |---|---|---|
 | Safety containment | `READY` | Maintain R0 |
 | Synthetic research scanner | `READY / RESEARCH_ONLY` | Maintain R1 |
-| Real-market watch | `PARTIAL` | R2 |
-| Canonical Python decisions | `PARTIAL` | R3 |
-| Canonical proposals | `NOT_READY` | R4 primary target |
-| Proposal persistence and scanner consumption | `NOT_READY` | R4 primary target |
+| Real-market watch | `READY` (since 2026-09-11) | R2 |
+| Canonical Python decisions | `READY` (since 2026-09-11) | R3 |
+| Canonical proposals | `READY / PASS` (since 2026-09-11) | R4 primary target |
+| Proposal persistence and scanner consumption | `READY / PASS` (since 2026-09-11) | R4 primary target |
 | Proposal outcome evidence | `PARTIAL` | R5 |
-| Edge validation | `INCOMPLETE` | R5–R6 |
+| Edge validation | `NOT_PASS` | R5–R6 |
 | Scanner-driven Demo execution | `BLOCKED` | R7 |
 | Demo auto-execution validation | `BLOCKED` | R8 |
 | Controlled Live | `BLOCKED` | R9 |
+
+> **Updated 2026-09-21:** R2/R3/R4 classifications promoted from `PARTIAL`/`NOT_READY`
+> to match the actual `PASS`/`READY` status proven on 2026-09-11 and recorded in
+> `PROJECT_STATUS.md`. The original 2026-09-10 classifications (`PARTIAL`/`NOT_READY`)
+> were the state at plan adoption; the R2–R4 pipeline completed the next day.
 
 `PARTIAL` real-market watch means the backend has read-only MT5 connectivity and
 closed-candle evidence for the current FX path, but the canonical guarded end-to-end
@@ -152,10 +164,11 @@ Mixing modes within one decision/proposal/evidence chain is invalid and must fai
 closed. Replay and synthetic objects remain valid research inputs under R1, but they
 cannot be relabeled or silently promoted to real-market truth downstream.
 
-Current classification: **PARTIAL**. Read-only MT5 connectivity and closed M15 candles
-are verified for the current EURUSD/GBPUSD backend path. End-to-end scanner/watch
-integration, all required guards, and separately-authorized crypto market truth remain
-to be proven.
+Current classification: **READY** (achieved 2026-09-11). Read-only MT5 connectivity and closed M15 candles
+are verified for the current EURUSD/GBPUSD backend path. The end-to-end scanner/watch
+integration, all required guards, and separately-authorized crypto market truth passed
+under WP1–WP3. See `PROJECT_STATUS.md` R0–R4 gate table and
+`docs/status/AG_CANONICAL_R2_R4_WP0_BASELINE_RECONCILIATION_STATUS.md`.
 
 Exit milestone: `AG_REAL_MARKET_WATCH_READY_V1`.
 
@@ -186,6 +199,9 @@ config_hash, code_identity, market_data_fingerprint
 
 Only strategy-owned fields may be populated. Missing required strategy geometry blocks
 the proposal; the UI or proposal layer does not invent it.
+
+Current classification: **READY** (achieved 2026-09-11). WP4–WP5 + WP5.2 passed;
+`AG_CANONICAL_STRATEGY_RUNTIME_READY_V1 = PASS`. See `PROJECT_STATUS.md`.
 
 Exit milestone: `AG_CANONICAL_STRATEGY_RUNTIME_READY_V1`.
 
@@ -301,6 +317,11 @@ end-to-end, read-only proof in the intended environment:
 
 Exit milestones: `AG_CANONICAL_SCANNER_PROPOSAL_PIPELINE_V1` and
 `AG_PROPOSAL_OPERATION_READY_V1`.
+
+Current classification: **READY / PASS** (achieved 2026-09-11). WP6–WP11A + WP12 natural
+proof completed; `AG_PROPOSAL_OPERATION_READY_V1 = PASS`. A real LONDON_NEWYORK cycle
+produced a GBPUSD `READY` decision that flowed through the full pipeline with
+`execution_eligible=false` and zero broker mutation. See `PROJECT_STATUS.md`.
 
 **STOP #1:** operate the proposal system and collect evidence. Canonical proposals do
 not authorize or trigger scanner execution.

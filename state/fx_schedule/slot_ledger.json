@@ -1,0 +1,37 @@
+{
+  "ASIAN_LONDON|2026-09-21|2026-09-21T07:00:20+00:00": {
+    "claimed_at": "2026-09-21T07:01:39.269500+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-21T07:00:20+00:00",
+    "trading_date": "2026-09-21"
+  },
+  "ASIAN_LONDON|2026-09-21|2026-09-21T07:15:20+00:00": {
+    "claimed_at": "2026-09-21T07:21:09.808936+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-21T07:15:20+00:00",
+    "trading_date": "2026-09-21"
+  },
+  "ASIAN_LONDON|2026-09-21|2026-09-21T07:30:20+00:00": {
+    "claimed_at": "2026-09-21T07:31:15.891645+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-21T07:30:20+00:00",
+    "trading_date": "2026-09-21"
+  },
+  "ASIAN_LONDON|2026-09-21|2026-09-21T07:45:20+00:00": {
+    "claimed_at": "2026-09-21T07:47:14.293986+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-21T07:45:20+00:00",
+    "trading_date": "2026-09-21"
+  },
+  "ASIAN_LONDON|2026-09-21|2026-09-21T08:00:20+00:00": {
+    "claimed_at": "2026-09-21T08:03:12.666127+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-21T08:00:20+00:00",
+    "trading_date": "2026-09-21"
+  }
+}

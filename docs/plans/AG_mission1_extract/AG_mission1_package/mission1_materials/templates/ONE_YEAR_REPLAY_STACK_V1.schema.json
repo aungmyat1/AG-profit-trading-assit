@@ -1,0 +1,82 @@
+{
+  "$comment": "SCHEMA + ANNOTATED EXAMPLE for the ONE_YEAR_REPLAY_STACK_V1 freeze manifest (P2/P8). Field names follow the repo's existing dataset-manifest conventions (dataset_manifest.json family). Agent: adjust types to the project's manifest conventions if they differ; the ROLE and gate fields are the load-bearing ones.",
+
+  "schema": "AG_SSC_ONE_YEAR_REPLAY_STACK_V1",
+  "stack_id": "ONE_YEAR_REPLAY_STACK_V1",
+  "status": "FROZEN | PROPOSED -- only FROZEN may be consumed by an R5 contract",
+  "generated_at_utc": "<ISO-8601>",
+  "generated_by": "scripts/build_ssc_v1_0_1_one_year_replay_stack.py",
+  "repository_commit": "<HEAD at freeze time>",
+
+  "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+  "strategy_version": "1.0.1",
+  "symbol": "EURUSD",
+
+  "window": {
+    "start_utc": "2025-09-15T00:00:00Z",
+    "end_utc": "2026-09-14T23:59:59Z",
+    "selection_rule": "one complete year ending immediately before CONFIRM_001 (2026-09-15T00:00:00Z) -- outcome-independent, per the 2026-09-19 backtest mission"
+  },
+
+  "legs": {
+    "M1": {
+      "role": "FILL_RESOLUTION_INPUT",
+      "dataset_id": "SSC_V1_0_1_HIST_1Y_M1_001",
+      "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_M1_001/raw/EURUSD_M1.csv",
+      "sha256": "50beb42ad2f65203f3946301eee0e8a435dd6f2067eb4fc0692ebba451d12f8a",
+      "rows": 373421,
+      "range_utc": ["2025-09-14T21:02:00Z", "2026-09-15T21:00:00Z"],
+      "timezone_authority": "UTC_SINGLE_TIMEBASE (per-week broker-offset normalization applied at acquisition; 53 segments)",
+      "lineage": "owner-authorized 2026-09-19 Vantage/MT5 acquisition (route 1); PASS_EXACT parity vs SSC_V1_0_1_G2_DEV_002 M1 on overlap"
+    },
+    "M15": {
+      "role": "STRATEGY_DECISION_INPUT",
+      "dataset_id": "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::M15",
+      "derivation_class": "AUTHORIZED_DETERMINISTIC_TIMEFRAME_AGGREGATION from the M1 authority (exact OHLC bucketing; no interpolation; no cross-source splicing)",
+      "derivation_contract_hash": "4a0ccd05070359cb3558e9ce06297eb480722f3a3bbcaa283c3e144d0c1b0b88",
+      "sha256": "<FILL from per_file>",
+      "rows": "<FILL>",
+      "range_utc": ["<FILL>", "<FILL>"],
+      "timezone_authority": "UTC_SINGLE_TIMEBASE (inherited from M1 authority by construction)",
+      "cross_leg_exact_match_rate_vs_m1_derived": 1.0
+    },
+    "H1": {
+      "role": "MARKET_BIAS_INPUT",
+      "dataset_id": "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001::H1",
+      "derivation_class": "AUTHORIZED_DETERMINISTIC_TIMEFRAME_AGGREGATION from the M1 authority",
+      "sha256": "4eb522945697773ed34d1b8d47ab928b9e94e99828dade88db18fe186905e288",
+      "rows": 6241,
+      "range_utc": ["2025-09-14T21:00:00Z", "2026-09-15T21:00:00Z"],
+      "timezone_authority": "UTC_SINGLE_TIMEBASE (inherited from M1 authority by construction)",
+      "cross_leg_exact_match_rate_vs_m1_derived": 1.0,
+      "reference_parity_external": "EXTERNAL_D_ROOT::EURUSD_H1_202501020000_202607310000.csv, exact_match_rate 1.0 over 5,448 common buckets (manifest reference_parity)"
+    },
+    "WARMUP": {
+      "role": "WARMUP_CONTEXT_ONLY",
+      "dataset_id": "<FILL: e.g. SSC_V1_0_1_ONE_YEAR_H1_WARMUP_CONTEXT_V1 -- package the pre-window H1 source>",
+      "candidate_source": "EXTERNAL_D_ROOT::EURUSD_H1_202501020000_202607310000.csv (+0h, DST CONSISTENT, exact rate 1.000000 vs M1-derived H1 buckets per R3)",
+      "sha256": "<FILL after UTC-normalized packaging>",
+      "bars_pre_window": "<FILL: must be >= 1,000 closed H1 bars before the first decision>",
+      "lineage": "declared warmup-only; decision-window bars come exclusively from the derived H1 leg; splice point and bucket policy recorded per NATIVE_FAITHFUL_INCLUSIVE convention",
+      "timezone_authority": "UTC_SINGLE_TIMEBASE (verified against M1-derived buckets in overlap)"
+    }
+  },
+
+  "gates": {
+    "DATA_COVERAGE": "DATA_COVERAGE_COMPLETE -- from scripts/audit_ssc_v1_0_1_one_year_data_coverage.py",
+    "CROSS_LEG_TIMEBASE": "CROSS_LEG_TIMEBASE_CONSISTENT -- all legs best_shift=+0h, DST CONSISTENT, cross-timeframe (never same-source) parity 1.0",
+    "WARMUP": "WARMUP_STABLE -- per-decision closed-bar counts >= SSC minimum (1,000) and convergence proven (VA2)",
+    "PROTECTED_DATA_ACCESS_COUNT": 0,
+    "QUARANTINE_CHECK": "PASS -- no quarantined package (GEN_002) leg present"
+  },
+
+  "prohibited_inputs_declaration": [
+    "no interpolated or manufactured bars",
+    "no M5-for-M1 substitution",
+    "no provider mixing without declared lineage",
+    "DEV_002 excluded (subset + DST-mixed)",
+    "GEN_002 excluded (quarantined)"
+  ],
+
+  "manifest_sha256": "<sha256 of this file's canonical serialization at freeze>"
+}

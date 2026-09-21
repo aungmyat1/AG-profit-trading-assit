@@ -78,12 +78,12 @@ Agent skills  -> advisory and explanatory only
 
 See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
 [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current implementation state — in
-particular its "Capability & Roadmap Reconciliation (dated 2026-09-06)" section, which
-distinguishes IMPLEMENTED from VERIFIED from ENABLED from AUTHORIZED, and separates
+particular its "Current rolling classification" section and the R0–R9 gate table,
+which distinguish IMPLEMENTED from VERIFIED from ENABLED from AUTHORIZED, and separate
 the proposal-only FX runtime from the independently-gated MT5 Demo execution
-subsystem: a generic proposal→execution bridge exists and was live-verified
-(2026-08-28), but `ST_ASIAN_SWEEP_5R_V1` itself is not `demo_authorized`, so its
-proposals cannot use it today.
+subsystem. `ST_ASIAN_SWEEP_5R_V1` is `demo_authorized: false` in
+`strategies/registry.yaml`; `SESSION_TRADE_V1` is independently `demo_authorized: true`
+for its `ASIAN_LONDON` cycle only.
 
 ## Run locally from VS Code
 
