@@ -36,6 +36,26 @@ doc's 2026-09-21 addendum for the full rule set and updated roadmap
 (`V2-11 Existing API compatibility integration`, `V2-12 Existing frontend
 regression validation` — no dedicated UI phase).
 
+AG V2-2A (pure funnel transition engine) and V2-2B (candidate store + transition
+ledger) are `VERIFIED` (2026-09-21, second remediation pass): `src/opportunity/engine.py::evaluate_funnel`
+fails closed on strategy_id/strategy_version/engine_version/symbol/market/venue/market_data_mode
+identity drift, does not create a new revision/`FunnelTransition` for a semantically
+equivalent repeated observation (`stage`/`outcome`/`raw_strategy_state` unchanged), and
+does not reactivate a candidate that has reached a terminal outcome
+(`REJECT`/`INVALIDATED`/`EXPIRED`/`ERROR`). `src/opportunity/candidate_store.py::CandidateStore`
+persists an `OpportunityCandidate` plus its append-only transition history as one atomic
+`runtime_state.store.JsonKeyValueStore` write, remains distinct from `CanonicalProposal`,
+fails closed on revision gaps/regressions and authority/occurrence drift, and correctly
+receives only one transition across four repeated polls of an unchanged setup (proven by
+a dedicated engine+store end-to-end test). 98 opportunity-scoped tests pass
+(`PYTHONPATH=src python -m pytest tests/ -k "opportunity" -q`). See
+`docs/status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md` for full evidence, including the two
+invariants (no-op detection, terminal stickiness) that a first remediation pass had
+silently dropped and that an independent re-audit caught before any strategy adapter was
+allowed to depend on this layer. No strategy semantics, execution authority, or
+demo/live authorization changed; no broker orders sent. Next gate: V2-3A Large-SMC
+shadow adapter / V2-3B SSC shadow-replay adapter (not started).
+
 Validation-system assurance is `PARTIAL`: the repo now contains a fail-closed validation contract for friction and a machine-testable assurance manifest (`AG_VALIDATION_SYSTEM_ASSURANCE_V1.md` and `artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`) proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost handling. The earliest missing concrete gate, VA1 temporal/lookahead integrity, has now been frozen as `VD_TEMPORAL_LOOKAHEAD_V1` and covered by a deterministic perturbation test proving that future continuation beyond decision time T does not change the visible closed-bar set or strategy inputs at T. The project has also signed the R6 development edge gate for `ST_SESSION_SWEEP_CONTINUATION_V1` v1.0.1 via `config/governance/economic_gate_contract.yaml`, making the validation model operational for the research-only development edge mission without granting any live or demo execution authority. VA2 warm-up stability is now proven: `ONE_YEAR_REPLAY_STACK_V1` is frozen (`manifest_sha256 = 59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7`) with `DATA_COVERAGE_COMPLETE`, `CROSS_LEG_TIMEBASE_CONSISTENT` (`UTC_SINGLE_TIMEBASE`, hardened gate), `WARMUP_STABLE` (4371 closed H1 bars before the first decision, convergence proven both architecturally and empirically), and `PROTECTED_DATA_ACCESS_COUNT = 0`. See `docs/status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md`. No SSC replay has been executed; R5/R6 remain a separate, not-yet-started mission. The broader validation stack remains `NOT_READY` for evidence-producing development because VA3 synthetic known-answer coverage and downstream holdout gates remain partial or unproven. Strategy semantics remain unchanged and no demo/live authority is granted.
 
 Strategy Capacity VD Cycle 2 remains `VD_STRATEGY_CAPACITY_SIMULATOR_NOT_READY`.

@@ -325,7 +325,7 @@ Implement and freeze shared evidence contracts:
 - `FrictionEvidence`
 - provenance and mode firewalls
 
-## V2-2A — Pure Funnel Transition Engine
+## V2-2A — Pure Funnel Transition Engine (`VERIFIED`, 2026-09-21)
 
 Implement a deterministic, storage-independent transition engine:
 
@@ -335,11 +335,11 @@ MarketEvent + FunnelState
 FunnelTransition + updated OpportunityCandidate
 ```
 
-No strategy authority or broker authority is granted.
+No strategy authority or broker authority is granted. Identity continuity, semantic no-op detection, and terminal-outcome stickiness are implemented and test-verified; see `docs/status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md`.
 
-## V2-2B — Candidate Store + Transition Ledger
+## V2-2B — Candidate Store + Transition Ledger (`VERIFIED`, 2026-09-21)
 
-Add persistent candidate identity, append-only transitions, restart reconstruction, deduplication, and lifecycle querying.
+Add persistent candidate identity, append-only transitions, restart reconstruction, deduplication, and lifecycle querying. Implemented on top of the existing `runtime_state.store.JsonKeyValueStore`; see `docs/status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md`.
 
 ## V2-3A — Large-SMC Shadow Adapter
 

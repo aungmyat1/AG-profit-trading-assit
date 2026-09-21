@@ -14,8 +14,9 @@ Committed baseline evidence as of this document:
 - frontend-freeze documentation: `b6e0780`
 - baseline manifest: `AG_V2_BASELINE_MANIFEST_V1.json`
 - status: `docs/status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md`
+- V2-2A/V2-2B implementation and verification: `docs/status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md` (VERIFIED, 2026-09-21)
 
-The V2 contracts layer is present. The pure funnel transition engine is the next implementation gate unless a newer dated status document supersedes this statement.
+The V2 contracts layer, the pure funnel transition engine (V2-2A), and the candidate store + transition ledger (V2-2B) are all present and verified. A Large-SMC or SSC shadow adapter (V2-3A/V2-3B) is the next implementation gate unless a newer dated status document supersedes this statement.
 
 ## Phase sequence
 
@@ -25,10 +26,10 @@ V2-0B  Pre-V2 baseline freeze                    COMPLETE
 V2-1   Core opportunity contracts                COMPLETE / PARTIAL program gate
 V2-1B  Shared evidence contracts                 COMPLETE at contract level
 
-V2-2A  Pure funnel transition engine             NEXT
-V2-2B  Candidate store + transition ledger
+V2-2A  Pure funnel transition engine             VERIFIED (2026-09-21)
+V2-2B  Candidate store + transition ledger       VERIFIED (2026-09-21)
 
-V2-3A  Large-SMC shadow adapter
+V2-3A  Large-SMC shadow adapter                  NEXT
 V2-3B  SSC replay/shadow adapter
         ↓
       PARITY CHECKPOINT

@@ -14,19 +14,21 @@ These documents are planning/engineering contracts unless a dated status documen
 ## Current implementation evidence
 
 - [`../status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md`](../status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md) — current V2 baseline/core-contract implementation status and frontend-freeze addendum.
+- [`../status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md`](../status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md) — V2-2A (pure funnel transition engine) and V2-2B (candidate store + transition ledger) implementation and test evidence, `VERIFIED` as of 2026-09-21.
 - [`../../AG_V2_BASELINE_MANIFEST_V1.json`](../../AG_V2_BASELINE_MANIFEST_V1.json) — machine-readable pre-architecture baseline manifest.
 - [`../../PROJECT_STATUS.md`](../../PROJECT_STATUS.md) — rolling whole-project status; use this rather than assuming a design document describes current completion.
 - [`../PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) — master project readiness plan. V2 architecture does not replace economic/execution readiness gates.
 
 ## Current next gate
 
-At the time this index was created, the next V2 implementation gate is:
+V2-2A and V2-2B are implemented and verified (see the status document above). The next V2 implementation gate is:
 
 ```text
-V2-2A_PURE_FUNNEL_TRANSITION_ENGINE
+V2-3A_LARGE_SMC_SHADOW_ADAPTER
+V2-3B_SSC_SHADOW_REPLAY_ADAPTER
 ```
 
-A newer dated status document or repository commit may supersede that statement; verify current HEAD and status before execution.
+Neither has been started. A newer dated status document or repository commit may supersede this statement; verify current HEAD and status before execution.
 
 ## Frontend constraint
 
