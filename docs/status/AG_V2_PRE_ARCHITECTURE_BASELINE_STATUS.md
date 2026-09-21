@@ -132,9 +132,19 @@ assumed identical; the registry's own identity note for
   (`tests/test_market_snapshot_contract.py`, `test_proposal_envelope_models.py`,
   `test_proposal_envelope_execution_boundary.py`)
 - broader regression (`strategy_manager`, `execution_boundary`, `registry`
-  keyword group): recorded in `AG_V2_BASELINE_MANIFEST_V1.json` once complete
+  keyword group): see the documentation correction below and
+  `AG_V2_BASELINE_MANIFEST_V1.json`
 - broad (full suite): not run this mission (token-efficiency rule 7 — progressive
   testing; reserved for a real milestone/shared-surface change)
+
+## Documentation correction (2026-09-21)
+
+The broader shared-surface regression result is recorded in
+`AG_V2_BASELINE_MANIFEST_V1.json`: **121 passed, 1 pre-existing unrelated BTC /
+validation-framework failure, and 3661 deselected**. The full repository suite
+was not run. This addendum corrects the earlier forward-looking wording that the
+result would be recorded "once complete"; it does not change the historical
+implementation or authorization state.
 
 ## Files changed
 
