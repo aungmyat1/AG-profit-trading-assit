@@ -1,0 +1,61 @@
+# AG_FX_SESSION_DAYTRADE_EURUSD_ASIAN_LONDON_V1: the ASIAN_LONDON cycle of the
+# AG_FX_SESSION_DAYTRADE_EURUSD_V1 book. Same strategy/mechanism as the existing
+# AG_POST_ASIAN_LONDON_PILOT_V1_0_1.yaml pilot (session_pairs.ASIAN_LONDON of
+# strategies/ST_ASIAN_SWEEP_5R_V1.yaml@1.1.1) -- this overlay does not change any
+# entry/SL/target/session-time rule. It only narrows the sibling pilot's policy:
+#   universe: EURUSD only (sibling pilot also trades GBPUSD)
+#   capacity: 1 new slot/day for this cycle (sibling pilot allows 2)
+#
+# state_dir isolates this book's snapshot/decision/proposal/ledger/counter journal
+# from AG_POST_ASIAN_LONDON_PILOT_V1_0_1 (journal/post_asian_pilot/), from this book's
+# own LONDON_NEWYORK cycle (journal/fx_session_daytrade/london_newyork/), and from
+# AG_POST_LONDON_NEWYORK_PILOT_V1_0_1 (journal/post_london_newyork_pilot/) -- see
+# src/post_asian_pilot/pilot_config.py's state_dir field docstring: governor.py's
+# DailyTradeLedger capacity/per-symbol-slot key is strategy_id+date only, not
+# cycle-aware or pilot-aware, so any shared directory would let one pilot/cycle's
+# slot claim silently consume another's independent quota for the same symbol/day.
+#
+# book_id / cycle are descriptive-only fields; src/post_asian_pilot/pilot_config.py's
+# load_pilot_config() reads specific keys off this file and ignores unrecognized ones.
+
+pilot_id: AG_FX_SESSION_DAYTRADE_EURUSD_ASIAN_LONDON_V1
+book_id: AG_FX_SESSION_DAYTRADE_EURUSD_V1
+cycle: ASIAN_LONDON
+
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+strategy_version: "1.1.1"
+strategy_source_path: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
+pair_id: ASIAN_LONDON
+
+universe: [EURUSD]
+tie_break_priority: [EURUSD]
+
+reference_session:
+  source: config/canonical_sessions.yaml
+  name: asian
+
+execution_window:
+  id: ASIAN_LONDON
+  start_utc: "07:00"
+  end_utc: "11:00"
+
+inactive_cycle: [LONDON_NEWYORK]
+
+state_dir: journal/fx_session_daytrade/asian_london
+
+# 1 slot/day for this cycle (book cap: 2/day across both cycles combined). Risk/target
+# geometry is unchanged from the strategy contract and from the sibling pilot's overlay --
+# only the daily capacity narrows to match the book's 1-slot-per-cycle mandate.
+risk:
+  risk_per_trade_pct: 0.5
+  max_open_positions: 1
+  max_new_trades_per_day: 1
+  max_new_trades_per_symbol_per_day: 1
+  max_aggregate_open_risk_pct: 0.5
+  strategy_daily_loss_limit_r: -1.0
+
+execution:
+  mode: PROPOSAL_ONLY
+  automatic_execution: false
+  explicit_confirmation_required: true
+  live_execution: false
