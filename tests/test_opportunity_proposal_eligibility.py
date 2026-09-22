@@ -227,6 +227,34 @@ def test_unknown_outcome_fails_closed():
     assert decision.reason_codes == (REASON_UNSUPPORTED_STATE,)
 
 
+def test_unknown_stage_fails_closed_no_exception():
+    """WP-3 R1 remediation. Root cause: FUNNEL_STAGES.index(candidate.stage) raised an
+    unguarded ValueError for an unknown/malformed stage instead of returning a
+    fail-closed decision, escaping the evaluator's own contract. Like
+    test_unknown_outcome_fails_closed, a real OpportunityCandidate's __post_init__
+    enum-validates stage, so this uses the same duck-typed stand-in to exercise the
+    runtime boundary the evaluator itself must still guard."""
+
+    class _FakeCandidate:
+        candidate_id = "cand-fake-stage"
+        strategy_id = STRATEGY_ID
+        outcome = OUTCOME_ACTIVE
+        stage = "NOT_A_REAL_STAGE"
+        expires_at = None
+        market_data_mode = MARKET_DATA_MODE_REAL
+        geometry = _geometry()
+
+    decision = evaluate_proposal_eligibility(_FakeCandidate(), _binding(), evaluated_at=NOW)
+    assert decision.status == ELIGIBILITY_BLOCKED
+    assert decision.reason_codes == (REASON_UNSUPPORTED_STATE,)
+
+
+def test_valid_asian_sweep_ready_candidate_still_eligible_after_remediation():
+    decision = evaluate_proposal_eligibility(_candidate(), _binding(), evaluated_at=NOW)
+    assert decision.status == ELIGIBILITY_ELIGIBLE
+    assert decision.reason_codes == ()
+
+
 # ---------------------------------------------------------------------------
 # 7. disabled/non-operational strategy -> ineligible if registry authority applies
 # ---------------------------------------------------------------------------

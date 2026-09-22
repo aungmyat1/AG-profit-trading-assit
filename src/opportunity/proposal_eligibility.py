@@ -159,6 +159,13 @@ def evaluate_proposal_eligibility(
             return _decision(candidate, ELIGIBILITY_BLOCKED, (REASON_UNSUPPORTED_STATE,), now)
         return _decision(candidate, ELIGIBILITY_INCOMPLETE, (REASON_NOT_YET_READY,), now)
 
+    if candidate.stage not in FUNNEL_STAGES:
+        # Guards FUNNEL_STAGES.index() below: a real OpportunityCandidate's __post_init__
+        # already enum-validates stage, so this is unreachable via normal construction --
+        # defensive, so an unknown/malformed stage fails closed instead of raising
+        # ValueError out of this evaluator (WP-3 R1 remediation).
+        return _decision(candidate, ELIGIBILITY_BLOCKED, (REASON_UNSUPPORTED_STATE,), now)
+
     if FUNNEL_STAGES.index(candidate.stage) < _ENTRY_CONFIRMED_INDEX:
         return _decision(candidate, ELIGIBILITY_INCOMPLETE, (REASON_NOT_YET_READY,), now)
 
