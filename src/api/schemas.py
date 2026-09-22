@@ -269,3 +269,48 @@ class AuthorizeDemoResponse(BaseModel):
 class ErrorResponse(BaseModel):
     reason_code: str
     message: str
+
+
+class OwnerDecisionRequest(BaseModel):
+    """PANEL-R4: an explicit owner action on one canonical proposal. `proposal_id` is
+    taken only from the URL path, never from this body, so a client can never submit a
+    decision against a different proposal identity than the one it POSTed to."""
+
+    decision_id: str
+    action: str  # owner_decision.models.OWNER_ACTION_APPROVE_DEMO / _REJECT
+    symbol: str
+    environment: str = "DEMO"
+    actor: Optional[str] = None
+
+
+class PreparedTradeCommandResponse(BaseModel):
+    """Read-only projection of a PREPARED, UNCONFIRMED execution.models.TradeCommand
+    template -- never itself an executed order. See OwnerDecisionResponse."""
+
+    command_id: str
+    action: str
+    symbol: str
+    side: Optional[str] = None
+    order_type: str
+    volume: Optional[float] = None
+    entry: Optional[float] = None
+    sl: Optional[float] = None
+    tp: Optional[float] = None
+    proposal_id: Optional[str] = None
+
+
+class OwnerDecisionResponse(BaseModel):
+    """PANEL-R4 (AG_PANEL_R4_HTTP_CONFIRMATION_V1): the HTTP projection of
+    owner_decision.models.ExecutionDecision -- the audited R3 boundary's own outcome,
+    verbatim. `execution_decision_prepared=True` means only that `trade_command` carries
+    a PREPARED, UNCONFIRMED template; it never means a broker order was submitted --
+    reaching one requires a separate, later, explicitly-confirmed call this route never
+    makes (AGENTS.md Authority order point 3)."""
+
+    decision_id: str
+    proposal_envelope_id: str
+    status: str  # owner_decision.models.EXECUTION_DECISION_AUTHORIZED / _REJECTED
+    reason_code: str
+    reasons: List[str] = []
+    execution_decision_prepared: bool
+    trade_command: Optional[PreparedTradeCommandResponse] = None

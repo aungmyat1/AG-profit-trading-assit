@@ -26,6 +26,8 @@ from authorization.models import ENVIRONMENT_DEMO
 from authorization.store import ExecutionApprovalStore
 from authorization.telegram_gateway import ExecutionHandlerResult
 
+from owner_decision.bridge import OwnerDecisionStore, evaluate_owner_decision
+from owner_decision.models import OWNER_ACTIONS, EXECUTION_DECISION_AUTHORIZED, OwnerDecision
 from proposal_envelope.ledger import ProposalLedger
 
 from . import broker_service, strategy_service, telegram_service
@@ -42,6 +44,9 @@ from .schemas import (
     HealthResponse,
     MarketDataCandlesResponse,
     MT5StatusResponse,
+    OwnerDecisionRequest,
+    OwnerDecisionResponse,
+    PreparedTradeCommandResponse,
     ProposalResponse,
     StrategyResponse,
     SystemStatusResponse,
@@ -96,6 +101,7 @@ app.add_middleware(
 _default_store = ExecutionApprovalStore()
 _default_registry = InMemoryProposalRegistry()
 _default_proposal_ledger = ProposalLedger()
+_default_owner_decision_store = OwnerDecisionStore()
 
 
 def get_store() -> ExecutionApprovalStore:
@@ -108,6 +114,10 @@ def get_proposal_registry() -> InMemoryProposalRegistry:
 
 def get_proposal_ledger() -> ProposalLedger:
     return _default_proposal_ledger
+
+
+def get_owner_decision_store() -> OwnerDecisionStore:
+    return _default_owner_decision_store
 
 
 def get_execution_handler():
@@ -350,6 +360,71 @@ def get_canonical_proposal(
     if envelope is None:
         raise HTTPException(status_code=404, detail={"reason_code": "CANONICAL_PROPOSAL_NOT_FOUND"})
     return _to_canonical_proposal_response(envelope)
+
+
+def _to_owner_decision_response(result) -> OwnerDecisionResponse:
+    """Pure read-model mapping from owner_decision.models.ExecutionDecision -- every
+    field copied verbatim from the audited R3 boundary's own outcome; this function
+    reinterprets nothing."""
+    trade_command = None
+    if result.trade_command is not None:
+        tc = result.trade_command
+        trade_command = PreparedTradeCommandResponse(
+            command_id=tc.command_id, action=tc.action, symbol=tc.symbol, side=tc.side,
+            order_type=tc.order_type, volume=tc.volume, entry=tc.entry, sl=tc.sl, tp=tc.tp,
+            proposal_id=tc.proposal_id,
+        )
+    return OwnerDecisionResponse(
+        decision_id=result.decision_id,
+        proposal_envelope_id=result.proposal_envelope_id,
+        status=result.status,
+        reason_code=result.reason_code,
+        reasons=list(result.reasons),
+        execution_decision_prepared=result.status == EXECUTION_DECISION_AUTHORIZED,
+        trade_command=trade_command,
+    )
+
+
+@app.post(
+    "/api/canonical-proposals/{proposal_id:path}/owner-decision",
+    response_model=OwnerDecisionResponse,
+)
+def submit_owner_decision(
+    proposal_id: str,
+    request: OwnerDecisionRequest,
+    proposal_ledger: ProposalLedger = Depends(get_proposal_ledger),
+    owner_decision_store: OwnerDecisionStore = Depends(get_owner_decision_store),
+) -> OwnerDecisionResponse:
+    """PANEL-R4 (AG_PANEL_R4_HTTP_CONFIRMATION_V1): the explicit owner-confirmation
+    surface recommended by docs/status/AG_PANEL_R3_OWNER_DECISION_BRIDGE_STATUS.md
+    "Next recommended package". Transports one explicit owner action into the already-
+    audited owner_decision.bridge.evaluate_owner_decision() boundary -- this route adds
+    no new approval/staleness/governance logic of its own; every fail-closed rule
+    (REJECT is terminal, environment must be DEMO, proposal must be PROPOSAL_READY and
+    demo_authorized and not broker_mutation_blocked, staleness, symbol/identity match,
+    decision_id idempotency) is the R3 bridge's, reused verbatim.
+
+    `proposal_id` is taken ONLY from the URL path, never from the request body, so a
+    decision can never be submitted against a different proposal identity than the one
+    the client POSTed to. AUTHORIZED means only that a PREPARED, UNCONFIRMED
+    TradeCommand template now exists -- reaching an actual Demo broker order still
+    requires a SEPARATE, later, explicitly-confirmed call this route never makes
+    (AGENTS.md Authority order point 3): this handler never imports execution.executor,
+    execution.mt5_gateway, or calls assistant.commands.execute_command."""
+    if request.action not in OWNER_ACTIONS:
+        raise HTTPException(status_code=400, detail={"reason_code": "UNSUPPORTED_ACTION"})
+
+    envelope = proposal_ledger.get_proposal(proposal_id)
+    decision = OwnerDecision(
+        decision_id=request.decision_id,
+        proposal_envelope_id=proposal_id,
+        action=request.action,
+        symbol=request.symbol,
+        environment=request.environment,
+        actor=request.actor,
+    )
+    result = evaluate_owner_decision(decision, envelope, store=owner_decision_store)
+    return _to_owner_decision_response(result)
 
 
 @app.get("/api/telegram/status", response_model=TelegramStatusDetailResponse)
