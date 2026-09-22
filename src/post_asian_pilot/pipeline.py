@@ -260,6 +260,7 @@ def _form_canonical_proposal(
 def run_pilot_cycle(
     pilot_path: str = None, now: Optional[dt.datetime] = None,
     proposal_ledger: Optional[ProposalLedger] = None,
+    persist_canonical_proposal: bool = True,
 ) -> PilotCycleResult:
     pilot = load_pilot_config(pilot_path) if pilot_path else load_pilot_config()
     strategy = load_strategy(pilot.strategy_source_path)
@@ -340,13 +341,21 @@ def run_pilot_cycle(
         # native pipeline above -- any exception here is caught, logged, and never
         # propagated, so a bug in the canonical layer can never block, alter, or delay an
         # actionable native proposal or its governor/ledger claim.
-        try:
-            _form_canonical_proposal(
-                decision, actionable_proposal, market_snapshot_by_symbol.get(symbol), proposal_ledger,
-                config_hash=canonical_config_hash, engine_release=release_id,
-            )
-        except Exception:  # noqa: BLE001 -- see docstring: must never affect native behavior
-            logger.exception("WP11A canonical proposal formation failed for symbol=%s (native pipeline unaffected)", symbol)
+        #
+        # persist_canonical_proposal=False (observational callers only -- e.g.
+        # scripts/run_post_asian_pilot.py --status) skips this entirely rather than
+        # swapping in a throwaway ProposalLedger: _form_canonical_proposal() has no
+        # return value and, per its own docstring, no side effect visible to the native
+        # pipeline above -- so not calling it changes nothing else about this cycle's
+        # result, only whether the separate durable canonical ledger gets a new record.
+        if persist_canonical_proposal:
+            try:
+                _form_canonical_proposal(
+                    decision, actionable_proposal, market_snapshot_by_symbol.get(symbol), proposal_ledger,
+                    config_hash=canonical_config_hash, engine_release=release_id,
+                )
+            except Exception:  # noqa: BLE001 -- see docstring: must never affect native behavior
+                logger.exception("WP11A canonical proposal formation failed for symbol=%s (native pipeline unaffected)", symbol)
 
     final = tuple(final_by_symbol[symbol] for symbol in pilot.universe)
     slots_used = stores.ledger.consumed_count(strategy.strategy_id, trading_date)

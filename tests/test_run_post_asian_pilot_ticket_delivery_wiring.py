@@ -242,7 +242,7 @@ def test_unexpected_ticket_delivery_error_propagates_as_nonzero_exit_from_run_on
         raise RuntimeError("totally unexpected bug")
 
     monkeypatch.setattr(si_module, "load_integration_config", _raise)
-    monkeypatch.setattr(script_module, "_execute_cycle", lambda pilot_path=None: _fixture_result())
+    monkeypatch.setattr(script_module, "_execute_cycle", lambda pilot_path=None, persist=True: _fixture_result())
     monkeypatch.setattr(script_module, "_entry_ticket_context", lambda pilot_path, result: (None, None, None))
     # cycle_to_dict()/human_readable_report() rendering is proven elsewhere against a
     # real PilotCycleResult; this test isolates only the exit-code propagation path, so

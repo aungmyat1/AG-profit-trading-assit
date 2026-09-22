@@ -62,10 +62,10 @@ def _run_preflight(as_json: bool, pilot_path: str = None) -> None:
         sys.exit(1)
 
 
-def _execute_cycle(pilot_path: str = None):
+def _execute_cycle(pilot_path: str = None, persist: bool = True):
     mt5_connection.connect()
     try:
-        return run_pilot_cycle(pilot_path)
+        return run_pilot_cycle(pilot_path, persist_canonical_proposal=persist)
     finally:
         mt5_connection.shutdown()
 
@@ -136,16 +136,26 @@ def _process_ticket_delivery(result, pilot_path: str, ledger, release_fp, strate
     return any(o["delivery_state"] == "ARCHIVE_FAILED" for o in outcomes)
 
 
-def _run_once(as_json: bool, pilot_path: str = None):
-    result = _execute_cycle(pilot_path)
+def _run_once(as_json: bool, pilot_path: str = None, persist: bool = True):
+    """persist=False (--status only -- an ad hoc/observational inspection, never the
+    scheduled production cycle scripts/run_fx_cycle_once.py invokes via --once) skips
+    BOTH persistence side effects a plain status read has no business performing:
+    WP11A's separate durable canonical-proposal ledger (run_pilot_cycle's own
+    persist_canonical_proposal flag) and ticket-delivery archival/delivery-state
+    writes (_process_ticket_delivery). The native decision/snapshot/counter/bar-tracker
+    state and the daily opportunity ledger are untouched either way -- they are read
+    through as part of computing this cycle's WATCH/READY state, exactly as before;
+    only the two purely-additive downstream persistence steps are skipped."""
+    result = _execute_cycle(pilot_path, persist=persist)
     ledger, release_fp, strategy_fp = _entry_ticket_context(pilot_path, result)
     if as_json:
         print(json.dumps(cycle_to_dict(result, ledger, release_fp, strategy_fp), indent=2, default=str))
     else:
         print(human_readable_report(result, ledger, release_fp, strategy_fp))
-    ticket_delivery_failed = _process_ticket_delivery(result, pilot_path, ledger, release_fp, strategy_fp, as_json)
-    if ticket_delivery_failed:
-        sys.exit(1)
+    if persist:
+        ticket_delivery_failed = _process_ticket_delivery(result, pilot_path, ledger, release_fp, strategy_fp, as_json)
+        if ticket_delivery_failed:
+            sys.exit(1)
     return result
 
 
@@ -215,6 +225,11 @@ def main() -> None:
         _run_preflight(as_json, args.pilot_config)
     elif args.watch:
         _run_watch(as_json, args.interval, args.pilot_config)
+    elif args.status:
+        # Observational only: no canonical-ledger record, no ticket-delivery archival/
+        # delivery-state write. scripts/run_fx_cycle_once.py (the scheduled production
+        # runner) calls --once, never --status, for the real persisting cycle.
+        _run_once(as_json, args.pilot_config, persist=False)
     else:
         _run_once(as_json, args.pilot_config)
 
