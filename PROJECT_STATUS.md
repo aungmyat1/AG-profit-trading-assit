@@ -4,6 +4,43 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PANEL_R5B_DURABLE_IDEMPOTENCY (2026-09-23, `panel-r5b-durable-execution-idempotency` worktree branch, not merged)
+
+Additive `execution/durable_idempotency.py` -- durable, restart-safe execution
+identity keyed by `decision_id` (owner_decision's own canonical idempotency key),
+reusing `runtime_state.store.JsonKeyValueStore` (the same store
+`authorization.store.ExecutionApprovalStore` already uses) and the O_EXCL claim-lock
+idiom already established by that store and `execution.journal.claim_command` -- no
+new persistence mechanism, no database server. `DurableExecutionRecord` (execution_id,
+proposal_id, decision_id, command_id, fingerprint, state, timestamps, nullable
+broker_order_id/broker_position_id/failure_reason) and a SHA-256
+`compute_execution_fingerprint()` over `TradeCommand`'s own execution-critical fields
+(same canonicalization convention as `authorization.integrity.compute_proposal_hash`,
+never Python's `hash()`). Same decision_id + same fingerprint returns the existing
+record; same decision_id + a different fingerprint fails closed
+(`FingerprintConflict`) rather than silently reusing an old authorization for a
+different trade -- a durable upgrade over R3's process-local
+`OwnerDecisionStore.put_if_absent()`, which has no fingerprint concept at all. Defines
+(but only partially activates) the `PREPARED -> AUTHORIZED -> SUBMISSION_PENDING ->
+SUBMISSION_UNKNOWN -> BROKER_ACCEPTED -> REJECTED -> RECONCILED` state vocabulary R5C/
+R5D/R6 will consume, plus `is_retry_safe()`, the single authoritative fail-closed
+answer that `SUBMISSION_PENDING`/`SUBMISSION_UNKNOWN`/`BROKER_ACCEPTED` are never
+safe to auto-retry. Wires into no HTTP route, modifies no existing file, submits no
+MT5 order (`execution.executor`/`execution.mt5_gateway`/`order_send`/
+`user_confirmed=True` do not appear anywhere in its import graph or executable code).
+Built on independently-audited `R5A_R1_INDEPENDENT_AUDIT_PASS`
+(`c94beb8e38928de25f105a086806f98ab7485c59`), which this change does not modify. 13
+new focused tests pass (including 8 real concurrent threads racing one decision_id
+and an explicit process-restart-parity test); both R5A/R5A-R1 auth boundaries
+re-verified intact (58 passed). Explicitly does NOT claim broker exactly-once
+execution -- see `docs/status/AG_PANEL_R5B_DURABLE_IDEMPOTENCY_STATUS.md`'s P15 for
+the precise guarantee boundary, and R6 for the still-missing broker reconciliation.
+Known pre-existing proposal-dedup failure
+(`test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover`)
+reproduced separately and explicitly flagged as a SEPARATE, still-unresolved defense
+from this package's execution-level idempotency -- both remain required before final
+broker activation.
+
 ## PANEL_R5A_R1_LEGACY_EXECUTION_AUTH (2026-09-23, `panel-r5a-r1-legacy-execution-auth` worktree branch, not merged)
 
 Extends R5A's `require_owner_auth` (reused verbatim, no second key/header/compare
