@@ -131,12 +131,19 @@ OWNER_AUTH_HEADER = "X-AG-Owner-Key"
 
 
 def require_owner_auth(request: Request) -> None:
-    """Fail-closed: an unset AG_OWNER_API_KEY disables this route (503), it is never
-    treated as "no auth required". A missing/incorrect X-AG-Owner-Key header is
+    """Fail-closed: an unset AG_OWNER_API_KEY disables the route it guards (503), it is
+    never treated as "no auth required". A missing/incorrect X-AG-Owner-Key header is
     rejected (401). Comparison is constant-time (hmac.compare_digest) so response
     timing cannot be used to recover the configured key. Knowing the endpoint path or a
-    proposal_id alone is never sufficient -- the header must match this process's
-    configured key."""
+    proposal_id/approval_id alone is never sufficient -- the header must match this
+    process's configured key.
+
+    PANEL-R5A-R1: this is the ONE canonical dependency for both owner-controlled write
+    surfaces -- POST .../owner-decision (R5A) and POST .../authorize-demo (R5A-R1) --
+    reused verbatim, never duplicated into a second key/header/compare implementation.
+    Authenticating here says nothing about execution authorization, risk approval, or
+    user_confirmed status; each route's own pre-existing checks still run unchanged
+    after this passes."""
     configured_key = os.environ.get(OWNER_API_KEY_ENV, "")
     if not configured_key:
         raise HTTPException(
@@ -537,7 +544,11 @@ def get_ticket(approval_id: str, store: ExecutionApprovalStore = Depends(get_sto
     return _to_ticket_response(approval)
 
 
-@app.post("/api/tickets/{approval_id}/authorize-demo", response_model=AuthorizeDemoResponse)
+@app.post(
+    "/api/tickets/{approval_id}/authorize-demo",
+    response_model=AuthorizeDemoResponse,
+    dependencies=[Depends(require_owner_auth)],
+)
 def authorize_demo(
     approval_id: str,
     request: AuthorizeDemoRequest,
@@ -546,6 +557,21 @@ def authorize_demo(
     proposal_registry: InMemoryProposalRegistry = Depends(get_proposal_registry),
     execution_handler=Depends(get_execution_handler),
 ) -> AuthorizeDemoResponse:
+    """PANEL-R5A-R1: gated by the same require_owner_auth dependency as
+    POST /api/canonical-proposals/{proposal_id}/owner-decision (X-AG-Owner-Key against
+    AG_OWNER_API_KEY) -- see that dependency's docstring. This is the second of the two
+    owner-controlled write surfaces named in AG_PANEL_R5A_OWNER_AUTH_STATUS.md's known
+    gap; it was closer to an actual broker call than owner-decision (this route's own
+    execution_handler resolves to the real MT5 execution handler in production) and had
+    no auth boundary until now.
+
+    Authentication success here means only that the request may reach the
+    pre-existing checks below -- it is not itself execution authorization. Every
+    existing fail-closed rule (explicit action == "EXECUTE_DEMO", atomic
+    approval claim, proposal integrity, strategy Demo authority, DEMO-only
+    environment) is authorize_demo_execution()'s, reused unchanged; this
+    dependency adds no new execution semantics and no new confirmation
+    mechanism, and never itself calls execution_handler."""
     if request.action != "EXECUTE_DEMO":
         raise HTTPException(status_code=400, detail={"reason_code": "UNSUPPORTED_ACTION"})
 

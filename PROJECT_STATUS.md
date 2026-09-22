@@ -4,6 +4,26 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PANEL_R5A_R1_LEGACY_EXECUTION_AUTH (2026-09-23, `panel-r5a-r1-legacy-execution-auth` worktree branch, not merged)
+
+Extends R5A's `require_owner_auth` (reused verbatim, no second key/header/compare
+implementation) to also gate the pre-existing, separate
+`POST /api/tickets/{approval_id}/authorize-demo` route -- the write surface actually
+closer to a real broker call than `owner-decision` (its `execution_handler` resolves to
+the real MT5 execution handler in production) and, until this change, had no auth
+boundary at all. Fails closed identically to R5A: unset `AG_OWNER_API_KEY` -> `503`,
+missing/wrong `X-AG-Owner-Key` -> `401`, execution handler never invoked in either
+case. Authentication success is not execution authorization: a valid header with a
+non-`"EXECUTE_DEMO"` action is still `400`, and against the real
+`strategies/registry.yaml` (`ST_ASIAN_SWEEP_5R_V1` `demo_authorized: false`) still
+blocks with `BLOCKED_STRATEGY_NOT_DEMO_AUTHORIZED` -- the existing confirmation
+(explicit `action`) and every existing guard (claim, integrity, Demo authority,
+DEMO-only environment) are unmodified. No GET route changed. Built on independently-
+audited `PANEL_R5A_INDEPENDENT_AUDIT_PASS` (`083399df0644ebe7a38c1a2d9b0174da6dcb18ac`).
+9 new focused tests pass; 91/91 of the combined R4+R5A+R5A-R1 API/execution-boundary
+suite passes (the one pre-existing, out-of-scope dedup failure reproduces separately,
+untouched by this diff). See `docs/status/AG_R5A_R1_LEGACY_EXECUTION_AUTH_STATUS.md`.
+
 ## PANEL_R5A_OWNER_AUTH (2026-09-23, `panel-r5a-owner-auth` worktree branch, not merged)
 
 Additive `require_owner_auth` FastAPI dependency (`src/api/app.py`), gating only
