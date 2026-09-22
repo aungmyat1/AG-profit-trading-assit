@@ -111,7 +111,6 @@ from .contracts import CandidateGeometry, MarketEvent
 from .registry_binding import StrategyBinding
 from .stages import (
     OUTCOME_ACTIVE,
-    OUTCOME_ERROR,
     OUTCOME_EXPIRED,
     OUTCOME_REJECT,
     OUTCOME_WAIT,
@@ -133,7 +132,7 @@ _MISSING_CONDITION_TO_STAGE = {
     "WAITING_REFERENCE_SWEEP": STAGE_CONTEXT_VALID,
 }
 
-_OUT_OF_SCOPE_SETUP_TYPES = frozenset({"TREND", "RANGE"})
+_TERMINAL_OUT_OF_SCOPE_SETUP_TYPES = frozenset({"TREND"})
 
 
 class AsianSweepUnmappedDecisionError(RuntimeError):
@@ -213,16 +212,33 @@ def _project_ready(signal_setup: Optional[str], signal_status: Optional[str]) ->
 
 
 def _project_no_trade(signal_setup: Optional[str], signal_status: Optional[str], reason_code: Optional[str]) -> FunnelProjection:
-    if signal_setup in _OUT_OF_SCOPE_SETUP_TYPES and signal_status == "SIGNAL":
-        # A genuine TREND/RANGE candidate was found by the shared canonical
-        # router, but ST_ASIAN_SWEEP_5R_V1's own entry_rules define sweep
-        # triggers only -- decision.py already rejected it as out-of-scope
-        # (see its module docstring, "SCOPE DECISION"); this adapter mirrors
-        # that rejection, never promoting it.
+    if signal_setup in _TERMINAL_OUT_OF_SCOPE_SETUP_TYPES and signal_status == "SIGNAL":
+        # A genuine TREND candidate was found by the shared canonical router,
+        # but ST_ASIAN_SWEEP_5R_V1's own entry_rules define sweep triggers
+        # only -- decision.py already rejected it as out-of-scope (see its
+        # module docstring, "SCOPE DECISION"); this adapter mirrors that
+        # rejection, never promoting it. TREND is genuinely terminal here:
+        # the independent WP-1 audit established TREND is determined by the
+        # immutable reference box, so it cannot later resolve to a sweep.
         return FunnelProjection(
             stage=STAGE_SETUP_DETECTED,
             outcome=OUTCOME_REJECT,
             reason_codes=("ASIAN_SWEEP_NON_SWEEP_SETUP_OUT_OF_SCOPE", reason_code or ""),
+        )
+    if signal_setup == "RANGE" and signal_status == "SIGNAL":
+        # A RANGE boundary-rejection observation is transient, not terminal:
+        # decision.py's own scope decision (module docstring, "SCOPE
+        # DECISION") already excludes it from READY this cycle, but a later
+        # canonical cycle in the SAME execution window may still observe a
+        # genuine strict SWEEP for this occurrence (WP-1 audit finding F1).
+        # Feeding this into a terminal REJECT would permanently lock out that
+        # later legitimate sweep, so it stays non-terminal WAIT at the
+        # highest stage already reached (candidate setup was detected, just
+        # not yet a sweep).
+        return FunnelProjection(
+            stage=STAGE_SETUP_DETECTED,
+            outcome=OUTCOME_WAIT,
+            reason_codes=("ASIAN_SWEEP_RANGE_BOUNDARY_OBSERVED_NON_TERMINAL", reason_code or ""),
         )
     if reason_code == "AMBIGUOUS_DUAL_SWEEP":
         return FunnelProjection(
@@ -256,13 +272,17 @@ def _project_expired() -> FunnelProjection:
 
 def _project_data_error(reason_codes) -> FunnelProjection:
     # Per post_asian_pilot.decision's own module docstring: DATA_ERROR is never
-    # translated into NO_TRADE. Mapped to OUTCOME_ERROR regardless of the
-    # specific underlying reason (MarketDataError variants, snapshot
-    # corruption/immutability conflicts, etc.) -- all equally mean "no reliable
-    # canonical evaluation happened this cycle", not "the strategy rejected".
+    # translated into NO_TRADE. It means "no reliable canonical evaluation
+    # happened this cycle" (MarketDataError variants, snapshot corruption/
+    # immutability conflicts, etc.), not "this occurrence can never become
+    # valid" -- a later cycle may obtain a reliable canonical evaluation for
+    # the SAME occurrence (WP-1 audit finding F2), so this stays non-terminal
+    # WAIT rather than a terminal ERROR. The underlying reason codes are kept
+    # verbatim so downstream observability can still distinguish ordinary
+    # waiting from waiting-because-canonical-evaluation-failed.
     return FunnelProjection(
         stage=STAGE_MARKET_ELIGIBLE,
-        outcome=OUTCOME_ERROR,
+        outcome=OUTCOME_WAIT,
         reason_codes=tuple(reason_codes) or ("ASIAN_SWEEP_DATA_ERROR",),
     )
 

@@ -205,7 +205,10 @@ def test_non_sweep_trend_signal_is_out_of_scope_rejected():
     assert geometry is None
 
 
-def test_non_sweep_range_signal_is_out_of_scope_rejected():
+def test_non_sweep_range_signal_is_out_of_scope_but_non_terminal():
+    """WP-1 audit finding F1: a RANGE boundary-rejection observation is
+    transient (the range boundary can still later yield a genuine SWEEP in
+    the same execution window), so it must NOT terminalize as REJECT."""
     signal = trade_signal(
         setup="RANGE", status="SIGNAL", reason_code="UPPER_BOUNDARY_REJECTION",
         direction="SHORT", entry=1.1050, stop_loss=1.1060,
@@ -214,7 +217,8 @@ def test_non_sweep_range_signal_is_out_of_scope_rejected():
     adapter = AsianSweepFunnelAdapter(decision=decision)
     projection = adapter.project(adapter.observe(market_event(), FunnelState()))
     assert projection.stage == STAGE_SETUP_DETECTED
-    assert projection.outcome == OUTCOME_REJECT
+    assert projection.outcome == OUTCOME_WAIT
+    assert projection.outcome not in TERMINAL_OUTCOMES
 
 
 def test_ambiguous_dual_sweep_rejected():
@@ -257,13 +261,17 @@ def test_window_expired_no_setup_maps_to_context_valid_expired():
 
 
 def test_data_error_never_becomes_no_trade():
+    """WP-1 audit finding F2: DATA_ERROR means no reliable canonical
+    evaluation happened this cycle, not that the occurrence can never become
+    valid -- it must stay non-terminal WAIT, not terminal ERROR."""
     decision = decision_data_error(("MARKET_DATA_UNAVAILABLE",))
     adapter = AsianSweepFunnelAdapter(decision=decision)
     projection = adapter.project(adapter.observe(market_event(), FunnelState()))
     assert projection.stage == STAGE_MARKET_ELIGIBLE
-    assert projection.outcome == OUTCOME_ERROR
+    assert projection.outcome == OUTCOME_WAIT
     assert projection.outcome != OUTCOME_REJECT
-    assert projection.outcome in TERMINAL_OUTCOMES
+    assert projection.outcome not in TERMINAL_OUTCOMES
+    assert "MARKET_DATA_UNAVAILABLE" in projection.reason_codes
 
 
 # --- Both session pairs --------------------------------------------------------
@@ -562,6 +570,164 @@ def test_window_end_boundary_distinguishes_watch_from_expired():
     assert before_projection.outcome == OUTCOME_WAIT
     assert at_end_projection.outcome == OUTCOME_EXPIRED
     assert at_end_projection.outcome in TERMINAL_OUTCOMES
+
+
+# --- WP-1 remediation regressions: F1 RANGE recoverability -----------------------
+
+
+def test_range_boundary_rejection_then_later_sweep_advances_same_candidate_to_ready():
+    """R1: reproduces the audit's real canonical sequence through the REAL
+    strategy_engine.evaluate() -- a RANGE boundary-touch candle (T1) must not
+    terminalize the occurrence, and a later strict-penetration sweep candle
+    appended to the SAME execution window (T2) must still advance the SAME
+    candidate identity to READY / ENTRY_CONFIRMED / ACTIVE."""
+    strategy = load_strategy(STRATEGY_PATH)
+    session_candles = [
+        Candle(datetime(2026, 1, 5, 0, 0, tzinfo=UTC), 1.1000, 1.1050, 1.0950, 1.1010),
+        Candle(datetime(2026, 1, 5, 0, 15, tzinfo=UTC), 1.1010, 1.1040, 1.0960, 1.1005),
+    ]
+    # T1: touches the upper boundary exactly (high == session_high, so entry_2's
+    # strict '>' penetration test does NOT fire) with a bearish close below it --
+    # qualifies only entry_3_range's UPPER_BOUNDARY_REJECTION.
+    boundary_candle = Candle(datetime(2026, 1, 5, 7, 0, tzinfo=UTC), 1.1030, 1.1050, 1.1020, 1.1010)
+    # T2: a later candle that strictly breaches the same boundary -- a genuine
+    # Entry 2 sweep.
+    sweep_candle = Candle(datetime(2026, 1, 5, 7, 15, tzinfo=UTC), 1.1048, 1.1060, 1.1040, 1.1045)
+
+    event = market_event(asof=datetime(2026, 1, 5, 7, 0, tzinfo=UTC))
+    b = binding()
+    window_end = datetime(2026, 1, 5, 11, 0, tzinfo=UTC)
+
+    signal_t1 = evaluate(strategy, "ASIAN_LONDON", "EURUSD", date(2026, 1, 5), session_candles, 2, [boundary_candle])
+    assert signal_t1.setup == "RANGE"
+    assert signal_t1.status == "SIGNAL"
+    assert signal_t1.reason_code == "UPPER_BOUNDARY_REJECTION"
+
+    decision_t1 = map_trade_signal_to_decision(signal_t1, "snapshot-r1-t1", datetime(2026, 1, 5, 7, 0, tzinfo=UTC), window_end)
+    assert decision_t1.status == STATUS_NO_TRADE
+    adapter_t1 = AsianSweepFunnelAdapter(decision=decision_t1)
+    candidate1, transition1 = evaluate_funnel(event=event, binding=b, adapter=adapter_t1)
+
+    assert candidate1.outcome == OUTCOME_WAIT
+    assert candidate1.outcome not in TERMINAL_OUTCOMES
+
+    signal_t2 = evaluate(
+        strategy, "ASIAN_LONDON", "EURUSD", date(2026, 1, 5), session_candles, 2, [boundary_candle, sweep_candle],
+    )
+    assert signal_t2.setup == "SWEEP"
+    assert signal_t2.status == "SIGNAL"
+    assert signal_t2.direction == "SHORT"
+
+    decision_t2 = map_trade_signal_to_decision(signal_t2, "snapshot-r1-t2", datetime(2026, 1, 5, 7, 15, tzinfo=UTC), window_end)
+    assert decision_t2.status == STATUS_READY
+    adapter_t2 = AsianSweepFunnelAdapter(decision=decision_t2)
+    candidate2, transition2 = evaluate_funnel(event=event, binding=b, adapter=adapter_t2, previous_candidate=candidate1)
+
+    assert candidate2.candidate_id == candidate1.candidate_id
+    assert candidate2.occurrence_id == candidate1.occurrence_id
+    assert transition2 is not None
+    assert candidate2.outcome == OUTCOME_ACTIVE
+    assert candidate2.stage == STAGE_ENTRY_CONFIRMED
+
+
+# --- WP-1 remediation regressions: F2 DATA_ERROR recoverability -------------------
+
+
+def test_data_error_then_recovery_advances_same_candidate():
+    """R2: a DATA_ERROR cycle (T1, built through the canonical data_error_decision
+    helper) must not terminalize the occurrence, and a later legitimate canonical
+    observation (T2) for the SAME candidate identity must still be able to
+    progress it."""
+    event = market_event()
+    b = binding()
+
+    decision_t1 = decision_data_error(("MARKET_DATA_UNAVAILABLE",))
+    adapter_t1 = AsianSweepFunnelAdapter(decision=decision_t1)
+    candidate1, transition1 = evaluate_funnel(event=event, binding=b, adapter=adapter_t1)
+
+    assert candidate1.outcome == OUTCOME_WAIT
+    assert candidate1.outcome not in TERMINAL_OUTCOMES
+
+    signal = trade_signal(
+        setup="SWEEP", status="SIGNAL", reason_code="LOWER_SWEEP_STRICT_PENETRATION",
+        direction="LONG", entry=1.1005, stop_loss=1.0940,
+    )
+    adapter_t2 = AsianSweepFunnelAdapter(decision=decision_from_signal(signal))
+    candidate2, transition2 = evaluate_funnel(event=event, binding=b, adapter=adapter_t2, previous_candidate=candidate1)
+
+    assert candidate2.candidate_id == candidate1.candidate_id
+    assert transition2 is not None
+    assert candidate2.outcome == OUTCOME_ACTIVE
+    assert candidate2.stage == STAGE_ENTRY_CONFIRMED
+    assert candidate2.revision == candidate1.revision + 1
+
+
+# --- Genuinely-terminal outcomes remain sticky after remediation ------------------
+
+
+def test_trend_out_of_scope_rejected_candidate_cannot_be_reactivated():
+    event = market_event()
+    b = binding()
+    trend = trade_signal(
+        setup="TREND", status="SIGNAL", reason_code="BOX_DIRECTION_V1", regime="TREND",
+        direction="LONG", entry=1.1000, stop_loss=1.0950,
+    )
+    rejected_adapter = AsianSweepFunnelAdapter(decision=decision_from_signal(trend))
+    candidate, _ = evaluate_funnel(event=event, binding=b, adapter=rejected_adapter)
+    assert candidate.outcome == OUTCOME_REJECT
+
+    signal = trade_signal(
+        setup="SWEEP", status="SIGNAL", reason_code="LOWER_SWEEP_STRICT_PENETRATION",
+        direction="LONG", entry=1.1005, stop_loss=1.0940,
+    )
+    ready_adapter = AsianSweepFunnelAdapter(decision=decision_from_signal(signal))
+    candidate2, transition2 = evaluate_funnel(event=event, binding=b, adapter=ready_adapter, previous_candidate=candidate)
+
+    assert transition2 is None
+    assert candidate2.outcome == OUTCOME_REJECT
+    assert candidate2.revision == candidate.revision
+
+
+def test_ambiguous_dual_sweep_rejected_candidate_cannot_be_reactivated():
+    event = market_event()
+    b = binding()
+    ambiguous = trade_signal(setup="SWEEP", status="NO_TRADE", reason_code="AMBIGUOUS_DUAL_SWEEP")
+    rejected_adapter = AsianSweepFunnelAdapter(decision=decision_from_signal(ambiguous))
+    candidate, _ = evaluate_funnel(event=event, binding=b, adapter=rejected_adapter)
+    assert candidate.outcome == OUTCOME_REJECT
+
+    signal = trade_signal(
+        setup="SWEEP", status="SIGNAL", reason_code="LOWER_SWEEP_STRICT_PENETRATION",
+        direction="LONG", entry=1.1005, stop_loss=1.0940,
+    )
+    ready_adapter = AsianSweepFunnelAdapter(decision=decision_from_signal(signal))
+    candidate2, transition2 = evaluate_funnel(event=event, binding=b, adapter=ready_adapter, previous_candidate=candidate)
+
+    assert transition2 is None
+    assert candidate2.outcome == OUTCOME_REJECT
+    assert candidate2.revision == candidate.revision
+
+
+def test_expired_candidate_cannot_be_reactivated():
+    event = market_event()
+    b = binding()
+    expired_signal = trade_signal(setup="NONE", status="NO_TRADE", reason_code="NO_SETUP_BY_WINDOW_END")
+    expired_adapter = AsianSweepFunnelAdapter(
+        decision=decision_from_signal(expired_signal, evaluation_time=WINDOW_END, window_end=WINDOW_END)
+    )
+    candidate, _ = evaluate_funnel(event=event, binding=b, adapter=expired_adapter)
+    assert candidate.outcome == OUTCOME_EXPIRED
+
+    signal = trade_signal(
+        setup="SWEEP", status="SIGNAL", reason_code="LOWER_SWEEP_STRICT_PENETRATION",
+        direction="LONG", entry=1.1005, stop_loss=1.0940,
+    )
+    ready_adapter = AsianSweepFunnelAdapter(decision=decision_from_signal(signal))
+    candidate2, transition2 = evaluate_funnel(event=event, binding=b, adapter=ready_adapter, previous_candidate=candidate)
+
+    assert transition2 is None
+    assert candidate2.outcome == OUTCOME_EXPIRED
+    assert candidate2.revision == candidate.revision
 
 
 # --- Canonical parity: real strategy_engine.evaluate() end to end -----------------
