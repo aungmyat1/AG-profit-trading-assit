@@ -4,6 +4,39 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PANEL_R5C_RECONCILIATION (2026-09-23, `panel-r5c-reconciliation` worktree branch, not merged)
+
+Additive `execution/reconciliation.py` -- fail-closed reconciliation of a durable
+execution decision (`execution.durable_idempotency`, R5B-R1, frozen) against
+broker-observation evidence, `OBSERVE -> MATCH -> CLASSIFY -> RECONCILE`, never
+`OBSERVE -> NOT_FOUND -> RESUBMIT`. Reuses, rather than reimplements: `execution.
+crypto_reconciliation`'s typed fail-closed outcome shape (`MATCHED`/`NOT_FOUND`/
+`AMBIGUOUS`/`BROKER_UNAVAILABLE`/`CONFLICT`/`EVIDENCE_INSUFFICIENT`), `execution.
+lifecycle`'s injected-lookup-callable idiom (`positions_lookup`/`deals_lookup`,
+never imported directly from `mt5.*`), and `execution.executor`'s own `AGT:<command_id>`
+broker-comment identity tag (reproduced byte-for-byte, not imported, to keep this
+module's import graph free of any write-capable code -- verified exactly
+`{__future__, dataclasses, typing, execution.durable_idempotency}` by AST). Matching
+requires exact tag equality (stricter than the existing substring check); more than
+one distinct matching broker record yields `AMBIGUOUS`, never an arbitrary pick; a
+persisted `broker_order_id` disagreeing with new evidence yields `CONFLICT`, never a
+silent overwrite; absent evidence (`NOT_FOUND`) never mutates the durable record and
+never triggers a resubmission -- there is no submission-capable code path in this
+module to trigger one (proven statically and dynamically, including a `MagicMock`
+standing in for `order_send` that a full reconciliation cycle never calls). Advances a
+durable record only along edges R5B-R1's frozen `ALLOWED_TRANSITIONS` already permits
+(`SUBMISSION_PENDING`/`SUBMISSION_UNKNOWN -> BROKER_ACCEPTED`,
+`BROKER_ACCEPTED -> RECONCILED`) -- no lifecycle extension was needed for either
+uncertain-submission recovery path the mission anticipated might require one. No HTTP
+route, no scheduler wiring, no MT5 submission, no auth change, no proposal-dedup fix.
+18 new focused tests pass; R5B/R5B-R1 (52 passed), R5A/R5A-R1 auth (58 passed), and
+adjacent execution-boundary (23 passed) regressions all pass; the known pre-existing
+proposal-dedup failure reproduces separately, unrelated, confirmed to have no
+dependency relationship with this package. Explicitly does not claim broker
+exactly-once execution or cross-process/cross-machine locking -- see
+`docs/status/AG_PANEL_R5C_RECONCILIATION_STATUS.md`'s P14 for the precise guarantee
+boundary.
+
 ## PANEL_R5B_R1_LIFECYCLE_REMEDIATION (2026-09-23, `panel-r5b-r1-lifecycle-remediation` worktree branch, not merged)
 
 Remediates a `PANEL_R5B_INDEPENDENT_AUDIT_FAIL` finding: `DurableExecutionStore.
