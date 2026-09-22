@@ -15,9 +15,22 @@ Committed baseline evidence as of this document:
 - baseline manifest: `AG_V2_BASELINE_MANIFEST_V1.json`
 - status: `docs/status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md`
 - V2-2A/V2-2B implementation and verification: `docs/status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md` (VERIFIED, 2026-09-21)
-- V2-3A/V2-3B implementation, independent audit, and remediation: `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` (REMEDIATED_PENDING_RE_AUDIT, 2026-09-22; `AG_V2_INDEPENDENT_AUDIT_02` found one blocking Safety-Invariant-#9 defect in V2-3A, fixed generically in `opportunity.engine`, not yet re-audited)
+- V2-3A/V2-3B implementation, independent audit, remediation, and independent re-audit: `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` (`RE_AUDIT_PASS / PARITY_CHECKPOINT_PASS`, 2026-09-22; `AG_V2_INDEPENDENT_AUDIT_02` found one blocking Safety-Invariant-#9 defect in V2-3A, fixed generically in `opportunity.engine`, then confirmed by `AG_V2_3A_REMEDIATION_REAUDIT`)
 
-The V2 contracts layer, the pure funnel transition engine (V2-2A), the candidate store + transition ledger (V2-2B), and the Large-SMC/SSC shadow adapters (V2-3A/V2-3B) are all present. An independent audit found one blocking defect in V2-3A's terminal-stage handling; it has been fixed at the shared engine level and locally re-verified, but not yet re-audited. `SAFE_TO_ADVANCE_TO_V2_4 = NO`; V2-4 (ProposalEligibility bridge) requires a fresh independent audit of this remediation first, unless a newer dated status document supersedes this statement.
+The V2 contracts layer, the pure funnel transition engine (V2-2A), the candidate store + transition ledger (V2-2B), and the Large-SMC/SSC shadow adapters (V2-3A/V2-3B) are all present. An independent audit found one blocking defect in V2-3A's terminal-stage handling; it was fixed at the shared engine level and confirmed clean by a subsequent independent re-audit. `SAFE_TO_ADVANCE_TO_V2_4 = YES` for the bounded, non-authorizing V2-4 ProposalEligibility bridge; unless a newer dated status document supersedes this statement.
+
+**Owner-approved routing decision (2026-09-22, `DOCUMENTATION_UPDATED_PENDING_OWNER_REVIEW`):**
+`ST_ASIAN_SWEEP_5R_V1@1.1.1` is the planned active FX V2 integration target,
+replacing `ST_SESSION_SWEEP_CONTINUATION_V1` in that role. This inserts a new
+**V2-3C** phase after Parity Checkpoint #1 and before V2-4 (see below). SSC's
+adapter, tests, replay, and validation evidence are preserved unchanged; only
+its *active-routing* role is planned to be removed (`SSC_ACTIVE_ROUTING_REMOVAL`,
+WP-2), not its code or evidence. This does not change registry authorization —
+`ST_ASIAN_SWEEP_5R_V1` remains `demo_authorized: false` / `live_authorized:
+false` and its existing negative economic evidence is unchanged. See
+`docs/governance/AG_MULTI_AGENT_EXECUTION_PROTOCOL_V1.md` for the full
+multi-agent protocol, gate model, and WP-0..WP-11 roadmap this phase insertion
+belongs to.
 
 ## Phase sequence
 
@@ -30,10 +43,14 @@ V2-1B  Shared evidence contracts                 COMPLETE at contract level
 V2-2A  Pure funnel transition engine             VERIFIED (2026-09-21)
 V2-2B  Candidate store + transition ledger       VERIFIED (2026-09-21)
 
-V2-3A  Large-SMC shadow adapter                  REMEDIATED_PENDING_RE_AUDIT (2026-09-22; audit found + fixed a Safety Invariant #9 defect)
+V2-3A  Large-SMC shadow adapter                  RE_AUDIT_PASS (2026-09-22; audit found + fixed a Safety Invariant #9 defect, re-audit confirmed clean)
 V2-3B  SSC replay/shadow adapter                  IMPLEMENTED_AND_LOCALLY_VERIFIED (2026-09-22; audit found no defect)
         ↓
-      PARITY CHECKPOINT                           REMEDIATED_PENDING_RE_AUDIT
+      PARITY CHECKPOINT                           PASS
+
+V2-3C  Asian Sweep shadow adapter (WP-1)          PLANNED (owner-approved 2026-09-22; replaces SSC as active FX V2 target -- SSC adapter/tests/evidence preserved)
+        ↓
+      SSC ACTIVE ROUTING REMOVAL (WP-2)           PLANNED, after V2-3C gate passes -- SSC preserved, not deleted
 
 V2-4   ProposalEligibility bridge
 V2-5   CanonicalProposal integration
@@ -123,6 +140,19 @@ legacy/canonical strategy path
 ```
 
 No shadow adapter becomes authoritative until its parity gate passes.
+
+### Asian Sweep third (V2-3C, planned, WP-1)
+
+Owner-approved (2026-09-22) as the planned active FX V2 integration target,
+replacing SSC in that role. Same shadow-adapter discipline as Large-SMC/SSC
+applies: reuse the canonical `strategy_engine/` Asian Sweep evaluator, no rule
+duplication, preserve `ASIAN_LONDON`/`LONDON_NEWYORK` session-pair identity,
+and preserve `research: true` / `demo_authorized: false` / `live_authorized:
+false` authority exactly as recorded in `strategies/registry.yaml`. Becoming
+the active V2 integration target does not reinterpret its existing negative R5
+evidence as positive. See
+`docs/governance/AG_MULTI_AGENT_EXECUTION_PROTOCOL_V1.md` WP-1 for the full
+contract and gate (`LEVEL B`, independent audit required).
 
 ## V2-4/V2-5 — Proposal bridge
 

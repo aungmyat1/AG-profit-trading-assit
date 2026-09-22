@@ -1,15 +1,54 @@
 # AG V2-3A / V2-3B Adapter Implementation and Parity Status
 
-Date: 2026-09-22 (remediated 2026-09-22 following AG_V2_INDEPENDENT_AUDIT_02)
-Classification: **REMEDIATED_PENDING_RE_AUDIT** (blocking defect found and fixed; a fresh independent audit of this exact remediation has not yet run -- see "Audit state" and "Remediation record" below)
+Date: 2026-09-22 (remediated 2026-09-22 following AG_V2_INDEPENDENT_AUDIT_02; independently re-audited 2026-09-22, AG_V2_3A_REMEDIATION_REAUDIT)
+Classification: **RE_AUDIT_PASS / PARITY_CHECKPOINT_PASS**
 
 ## Objective
 
-Implement V2-3A (Large-SMC shadow/funnel adapter) and V2-3B (SSC shadow/replay adapter) as thin `opportunity.adapter.StrategyFunnelAdapter` implementations over each strategy's EXISTING canonical authority, then establish a semantic parity checkpoint between canonical strategy output and the V2 projection. This document records that work, an independent audit that found one blocking defect, and the remediation.
+Implement V2-3A (Large-SMC shadow/funnel adapter) and V2-3B (SSC shadow/replay adapter) as thin `opportunity.adapter.StrategyFunnelAdapter` implementations over each strategy's EXISTING canonical authority, then establish a semantic parity checkpoint between canonical strategy output and the V2 projection. This document records that work, an independent audit that found one blocking defect, the remediation, and a subsequent independent re-audit of that remediation.
 
 ## Audit state
 
-The original version of this document (IMPLEMENTED_AND_LOCALLY_VERIFIED, not independently audited) was produced by the implementation agent that wrote and locally ran the code/tests. An independent audit (`AG_V2_INDEPENDENT_AUDIT_02`) subsequently ran against HEAD `6d416bc5fd762af5e3d764d4116b1e01725bf70c` and found one **blocking defect** in V2-3A (see "Remediation record" below); it classified the checkpoint `AUDIT_REQUIRES_REMEDIATION`, `PARITY_CHECKPOINT = FAIL`, `SAFE_TO_ADVANCE = NO`. That defect has now been fixed and re-verified (see below), but **this remediation itself has not yet been independently re-audited** -- do not treat this document's updated classification as equivalent to a passed independent audit of the fix.
+The original version of this document (IMPLEMENTED_AND_LOCALLY_VERIFIED, not independently audited) was produced by the implementation agent that wrote and locally ran the code/tests. An independent audit (`AG_V2_INDEPENDENT_AUDIT_02`) subsequently ran against HEAD `6d416bc5fd762af5e3d764d4116b1e01725bf70c` and found one **blocking defect** in V2-3A (see "Remediation record" below); it classified the checkpoint `AUDIT_REQUIRES_REMEDIATION`, `PARITY_CHECKPOINT = FAIL`, `SAFE_TO_ADVANCE = NO`. That defect was fixed generically in `opportunity.engine.evaluate_funnel` (commits `2027c40`, `31d156f`) and re-verified by the implementer.
+
+**A separate independent re-audit (`AG_V2_3A_REMEDIATION_REAUDIT`, 2026-09-22) then ran against that exact remediation at HEAD `31d156f864bd1ddbdf454f7e67d5fc269e605035`** -- the same HEAD this document's classification now applies to. It independently reconstructed the original defect reproduction from scratch (not by re-running the implementer's existing test files verbatim, though those were also re-run), found no remaining or new defect, and is recorded in "Re-audit record (AG_V2_3A_REMEDIATION_REAUDIT)" below with exact commands and observed counts. **A separate document, `AG_V2_3A_REAUDIT_PASS_2026-09-22.patch`, claiming this same re-audit with different, unverifiable test counts, was presented during this process and was explicitly rejected and not applied** -- it could not be traced to any actual commit, tool-call log, or CI run, and its cited numbers (97/112 passed, 3 skipped, "portable Linux environment") did not match any evidence obtainable from this repository. The evidence below was independently produced and observed in this session against the exact commands shown.
+
+## Re-audit record (AG_V2_3A_REMEDIATION_REAUDIT, 2026-09-22)
+
+Ran against `branch=main`, `HEAD=origin/main=31d156f864bd1ddbdf454f7e67d5fc269e605035` (unchanged before/after this audit -- audit made no code changes), working tree clean except the pre-existing, unrelated `.vscode/settings.json` and `web/server.ts`.
+
+Independently reconstructed (fresh scripts, not the implementer's test files) and confirmed:
+
+- `QUALIFIED -> INVALIDATED` without `ready_time`: stage correctly retained at `LOCATION_VALID` (not regressed to `MARKET_ELIGIBLE`).
+- `ENTRY_AVAILABLE -> EXPIRED` without `ready_time`: stage correctly retained at `TRIGGER_ARMED`.
+- All four `TERMINAL_OUTCOMES` (`REJECT`, `INVALIDATED`, `EXPIRED`, `ERROR`), tested generically against a stub adapter advancing to `TRIGGER_ARMED` then terminating at an earlier-reported stage: all four correctly clamp to `TRIGGER_ARMED`.
+- A genuinely later terminal stage (previous `LOCATION_VALID`, terminal projection reports the later `SETUP_DETECTED`) is honored as-is, not incorrectly clamped down -- confirms the fix is directional (regression-only), not a blanket "always keep old stage" rule.
+- Terminal stickiness: an already-terminal candidate cannot be reactivated by an ordinary later observation, for all four terminal outcomes -- no transition, same revision.
+- Candidate/transition stage consistency: `FunnelTransition.to_stage` always equals the resulting `OpportunityCandidate.stage`, in both the normal and the clamped case (the transition record never disagrees with the candidate it produced).
+- Idempotence: four repeated semantically-equivalent observations after an initial revision produce no new transitions and no revision advance.
+
+Test evidence (exact commands run in this session, this HEAD):
+
+```bash
+PYTHONPATH=src python -m pytest tests/test_opportunity_engine.py tests/test_opportunity_large_smc_adapter.py tests/test_opportunity_ssc_adapter.py tests/test_opportunity_adapter_parity.py tests/test_opportunity_import_boundaries.py tests/test_opportunity_candidate_store.py -q
+# 106 passed
+
+PYTHONPATH=src python -m pytest tests/ -k "opportunity" -q
+# 150 passed, 3751 deselected, 0 failed, 0 errors, 0 skipped
+
+PYTHONPATH=src python -m pytest tests/test_large_smc_watch_lifecycle.py tests/test_large_smc_live_watch_hardening.py tests/test_large_smc_live_watch_execution_boundary.py -q
+# 65 passed
+
+PYTHONPATH=src python -m pytest tests/test_session_sweep_continuation_state_machine.py tests/test_session_sweep_continuation_setups.py tests/test_session_sweep_continuation_replay_determinism.py tests/test_session_sweep_continuation_canonical_observations.py tests/test_session_sweep_continuation_campaign.py -q
+# 50 passed
+
+git diff --check
+# clean (exit 0)
+```
+
+No skips, no not-evaluated tests, no protected/OOS/holdout dataset access (independently grepped for `holdout`/`protected_data`/`oos[_/]`/`sealed` across the remediation code and tests -- zero matches outside this document's own prose), no broker orders, no external alerts (independently grepped for `telegram`/`order_send`/`order_check`/`mt5.executor`/`mt5.mt5_gateway`/`send_message` -- zero matches in executable code, only boundary-documenting docstring prose).
+
+**Conclusion**: `PARITY_CHECKPOINT = PASS`. `SAFE_TO_ADVANCE_TO_V2_4 = YES`, strictly for the bounded, non-authorizing V2-4 ProposalEligibility bridge as scoped in `docs/v2/AG_V2_IMPLEMENTATION_ROADMAP.md` -- this grants no proposal, Demo, Live, broker, or execution authority, and does not itself authorize V2-5.
 
 ## Remediation record (AG_V2_INDEPENDENT_AUDIT_02 finding)
 
@@ -182,22 +221,24 @@ V2-1    VERIFIED
 V2-1B   VERIFIED
 V2-2A   VERIFIED
 V2-2B   VERIFIED
-V2-3A   REMEDIATED_PENDING_RE_AUDIT (blocking defect found by AG_V2_INDEPENDENT_AUDIT_02, fixed, not yet re-audited)
-V2-3B   IMPLEMENTED_AND_LOCALLY_VERIFIED (audit found no defect)
-PARITY CHECKPOINT   REMEDIATED_PENDING_RE_AUDIT
+V2-3A   RE_AUDIT_PASS (blocking defect found by AG_V2_INDEPENDENT_AUDIT_02, fixed generically, independently re-audited AG_V2_3A_REMEDIATION_REAUDIT)
+V2-3B   IMPLEMENTED_AND_LOCALLY_VERIFIED (audit found no defect; re-audit re-confirmed)
+PARITY CHECKPOINT   PASS
 V2-4    NOT_STARTED
 V2-5    NOT_STARTED
 ```
 
-`AG_V2_OPERATIONAL_PROPOSAL_PLATFORM_READY` remains the current milestone target; this checkpoint does not complete it. Strategy economic validation for either strategy continues independently and is unaffected by this document. **`SAFE_TO_ADVANCE_TO_V2_4 = NO`** until a fresh independent audit confirms the remediation.
+`AG_V2_OPERATIONAL_PROPOSAL_PLATFORM_READY` remains the current milestone target; this checkpoint does not complete it. Strategy economic validation for either strategy continues independently and is unaffected by this document. **`SAFE_TO_ADVANCE_TO_V2_4 = YES`**, strictly for the bounded, non-authorizing V2-4 ProposalEligibility bridge -- no proposal, Demo, Live, broker, or execution authority is granted by this classification, and it does not by itself authorize V2-5.
 
 ## Auditor handoff
 
 - `head_before` (repo HEAD at original mission start): `f036f8812bf69ad4ffe18eb09db71fd5005ad4f0`
 - `audited_head` (AG_V2_INDEPENDENT_AUDIT_02): `6d416bc5fd762af5e3d764d4116b1e01725bf70c`
+- `re_audited_head` (AG_V2_3A_REMEDIATION_REAUDIT, 2026-09-22): `31d156f864bd1ddbdf454f7e67d5fc269e605035` -- unchanged before/after the re-audit (no code changes made by the re-audit itself; only this document and the other status/roadmap docs listed below were updated afterward, based on the re-audit's own observed evidence).
 - Files changed by the original mission: `src/opportunity/large_smc_adapter.py` (new), `src/opportunity/ssc_adapter.py` (new), `tests/test_opportunity_large_smc_adapter.py` (new), `tests/test_opportunity_ssc_adapter.py` (new), `tests/test_opportunity_adapter_parity.py` (new), plus this document and the doc updates listed in the commit history.
-- Files changed by this remediation: `src/opportunity/engine.py` (generic terminal-stage clamp), `tests/test_opportunity_engine.py` (2 new generic tests), `tests/test_opportunity_large_smc_adapter.py` (2 new adapter-specific regression tests), this document.
-- Test commands/results: see "Test evidence" above (pre- and post-remediation both recorded).
-- Parity evidence: see "Parity evidence" above (unaffected by this remediation -- no parity case changed outcome).
-- Known debt: see "Known debt" above (item 0 resolved; items 1-5 remain genuinely non-blocking).
-- **A fresh independent audit of this exact remediation has not yet run.** `SAFE_TO_ADVANCE_TO_V2_4 = NO` until it does. The next auditor should specifically re-attempt the exact reproduction case from `AG_V2_INDEPENDENT_AUDIT_02` (`QUALIFIED` -> `INVALIDATED` without `ready_time`) plus the second instance found during remediation (`ENTRY_AVAILABLE` -> `EXPIRED` without `ready_time`), and should independently confirm the generic engine-level fix does not itself introduce a new defect (e.g. incorrectly clamping a terminal transition that legitimately reports a *later* stage than previously recorded -- covered by `test_terminal_transition_uses_reported_stage_when_it_is_not_a_regression` but worth an independent from-scratch check).
+- Files changed by the remediation: `src/opportunity/engine.py` (generic terminal-stage clamp), `tests/test_opportunity_engine.py` (2 new generic tests), `tests/test_opportunity_large_smc_adapter.py` (2 new adapter-specific regression tests), this document.
+- Files changed by the re-audit: none in `src/` or `tests/` (audit-only, no code modified); this document and the roadmap/status docs listed in the corresponding commit.
+- Test commands/results: see "Test evidence" and "Re-audit record" above (pre-remediation, post-remediation, and independently re-audited counts all recorded, kept distinct rather than merged).
+- Parity evidence: see "Parity evidence" above (unaffected by the remediation or the re-audit -- no parity case changed outcome).
+- Known debt: see "Known debt" above (item 0 resolved; items 1-5 remain genuinely non-blocking, re-confirmed by the re-audit).
+- **Independent re-audit of this exact remediation completed 2026-09-22 (`AG_V2_3A_REMEDIATION_REAUDIT`).** It found no remaining or new defect. `SAFE_TO_ADVANCE_TO_V2_4 = YES`, within the bounded, non-authorizing V2-4 scope only. A separate, unverifiable claimed-re-audit document (`AG_V2_3A_REAUDIT_PASS_2026-09-22.patch`) was presented and explicitly rejected during this process rather than applied -- its cited counts did not match any evidence obtainable from this repository; see "Audit state" above.

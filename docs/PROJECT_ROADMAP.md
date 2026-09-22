@@ -6,6 +6,8 @@ This plan supersedes the V3 implementation ordering while preserving the R0–R9
 
 `PROJECT_STATUS.md` and generated live-status evidence own the rolling current classification. This roadmap owns the target architecture, gate ordering, and implementation direction.
 
+**Owner-approved governance layer (2026-09-22):** `docs/governance/AG_MULTI_AGENT_EXECUTION_PROTOCOL_V1.md` records the approved multi-agent operating model (Owner / ChatGPT Architect+Auditor / Claude Builder), a three-class engineering/audit/owner gate model, and a WP-0 through WP-11 work-package sequence layered over the V2-x phases below. It also records the owner-approved decision that `ST_ASIAN_SWEEP_5R_V1@1.1.1` becomes the planned active FX V2 integration target (inserting a new V2-3C phase), replacing `ST_SESSION_SWEEP_CONTINUATION_V1` in that routing role while preserving SSC's code, tests, replay, and evidence unchanged. That governance document does not alter this roadmap's R0-R9 readiness gates or grant any Demo/Live authority; read it alongside this document rather than in place of it.
+
 This document does **not** authorize broker execution, alter strategy semantics, promote a strategy, claim profitability, or grant Demo/Live authority.
 
 ## Readiness questions
@@ -341,19 +343,27 @@ No strategy authority or broker authority is granted. Identity continuity, seman
 
 Add persistent candidate identity, append-only transitions, restart reconstruction, deduplication, and lifecycle querying. Implemented on top of the existing `runtime_state.store.JsonKeyValueStore`; see `docs/status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md`.
 
-## V2-3A — Large-SMC Shadow Adapter (`REMEDIATED_PENDING_RE_AUDIT`, 2026-09-22)
+## V2-3A — Large-SMC Shadow Adapter (`RE_AUDIT_PASS`, 2026-09-22)
 
-Bind the existing Large-SMC research engine to V2 without changing its canonical semantics or `RESEARCH_ONLY` authority. Implemented as a thin adapter over the pre-existing `large_smc_research.watch_lifecycle` projection. Independent audit (`AG_V2_INDEPENDENT_AUDIT_02`) found one blocking defect (a terminal-transition stage regression violating Safety Invariant #9); fixed generically in `opportunity.engine.evaluate_funnel` and locally re-verified. Not yet re-audited. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md`.
+Bind the existing Large-SMC research engine to V2 without changing its canonical semantics or `RESEARCH_ONLY` authority. Implemented as a thin adapter over the pre-existing `large_smc_research.watch_lifecycle` projection. Independent audit (`AG_V2_INDEPENDENT_AUDIT_02`) found one blocking defect (a terminal-transition stage regression violating Safety Invariant #9); fixed generically in `opportunity.engine.evaluate_funnel`, then independently re-audited (`AG_V2_3A_REMEDIATION_REAUDIT`, 2026-09-22) with no remaining or new defect found. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md`.
 
 ## V2-3B — SSC Shadow / Replay Adapter (`IMPLEMENTED_AND_LOCALLY_VERIFIED`, 2026-09-22)
 
-Bind the canonical SSC evaluator/replay path to V2. Preserve exact strategy identity and prohibit substitution through another runtime strategy. Implemented as a thin adapter over `strategy_contract.decision.StrategyDecision` (itself built from the unchanged `session_sweep_continuation.replay.run_replay`). Independent audit found no defect for this strategy. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md`.
+Bind the canonical SSC evaluator/replay path to V2. Preserve exact strategy identity and prohibit substitution through another runtime strategy. Implemented as a thin adapter over `strategy_contract.decision.StrategyDecision` (itself built from the unchanged `session_sweep_continuation.replay.run_replay`). Independent audit found no defect for this strategy; re-confirmed by the subsequent re-audit. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md`.
 
-## Parity Checkpoint #1 — Large-SMC + SSC (`REMEDIATED_PENDING_RE_AUDIT`, 2026-09-22)
+## Parity Checkpoint #1 — Large-SMC + SSC (`PASS`, 2026-09-22)
 
-Require canonical/V2 parity for decisions, time, provenance, replay behavior, candidate determinism, future-data isolation, and strategy identity. An independent audit found and this mission fixed one blocking Large-SMC defect; SSC was confirmed clean. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` for the full audit findings, remediation record, and remaining known, non-blocking debt.
+Require canonical/V2 parity for decisions, time, provenance, replay behavior, candidate determinism, future-data isolation, and strategy identity. An independent audit found one blocking Large-SMC defect; the shared-engine remediation was independently re-audited and confirmed clean, and SSC remained clean throughout. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` for the full audit findings, remediation, re-audit evidence, and remaining non-blocking debt.
 
-Failure blocks strategy expansion. `SAFE_TO_ADVANCE_TO_V2_4 = NO` pending a fresh independent audit of this remediation.
+`SAFE_TO_ADVANCE_TO_V2_4 = YES` for the bounded, non-authorizing ProposalEligibility bridge. No proposal, Demo, Live, broker, or execution authority is granted, and this does not by itself authorize V2-5.
+
+## V2-3C — Asian Sweep Shadow Adapter (planned, WP-1)
+
+Owner-approved (2026-09-22, `docs/governance/AG_MULTI_AGENT_EXECUTION_PROTOCOL_V1.md`) as the planned active FX V2 integration target, replacing `ST_SESSION_SWEEP_CONTINUATION_V1` in that routing role. Bind the canonical `ST_ASIAN_SWEEP_5R_V1@1.1.1` `strategy_engine/` evaluator to V2 following the same thin-adapter, no-rule-duplication discipline already proven by V2-3A/V2-3B. Preserves the strategy's existing `research: true` / `demo_authorized: false` / `live_authorized: false` registry authority and its existing negative R5 evidence unchanged; becoming the active V2 integration target is not an economic promotion. `LEVEL B` gate (independent audit required).
+
+## SSC Active Routing Removal (planned, WP-2)
+
+After V2-3C's gate passes, remove SSC from active V2 FX operational/reference routing. SSC's source, V2 adapter, tests, replay evidence, and validation artifacts are preserved unchanged — this is a routing change (`SSC_ACTIVE_ROUTING_REMOVAL`), not deletion or reattribution of SSC's history. `LEVEL B` gate.
 
 ## V2-4 — Formation / ProposalEligibility Bridge
 
@@ -658,6 +668,10 @@ V2-3A Large-SMC Adapter ──────→ Large-SMC evidence continues
 V2-3B SSC Adapter ────────────→ SSC validation continues
         ↓
 Parity Checkpoint #1
+        ↓
+V2-3C Asian Sweep Adapter (WP-1, planned) ──→ Asian Sweep evidence continues, PAUSED_BY_OWNER
+        ↓
+SSC Active Routing Removal (WP-2, planned, after V2-3C gate) ──→ SSC preserved as reference
         ↓
 V2-4 ProposalEligibility
         ↓

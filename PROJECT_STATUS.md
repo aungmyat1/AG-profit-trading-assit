@@ -56,7 +56,7 @@ allowed to depend on this layer. No strategy semantics, execution authority, or
 demo/live authorization changed; no broker orders sent.
 
 AG V2-3A (Large-SMC shadow/funnel adapter) and V2-3B (SSC shadow/replay adapter) are
-`REMEDIATED_PENDING_RE_AUDIT` (2026-09-22): `src/opportunity/large_smc_adapter.py::LargeSMCFunnelAdapter`
+`RE_AUDIT_PASS / PARITY_CHECKPOINT_PASS` (2026-09-22): `src/opportunity/large_smc_adapter.py::LargeSMCFunnelAdapter`
 is a thin adapter over the pre-existing `large_smc_research.watch_lifecycle.project_setup_row`
 projection (no detection/fill logic reimplemented); `src/opportunity/ssc_adapter.py::SSCFunnelAdapter`
 is a thin adapter over `strategy_contract.decision.StrategyDecision` as built from the
@@ -82,10 +82,37 @@ authorization, or execution authority changed; no protected/OOS/holdout data acc
 broker orders sent. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` for the full
 audit findings and remediation record, including remaining genuinely non-blocking debt
 (Large-SMC `BLOCKED` -> terminal `ERROR`, SSC `RISK_EXHAUSTED` -> `EXPIRED`, and an SSC
-S3-specific parity-fixture coverage gap). **This remediation has not itself been
-independently re-audited.** Parity checkpoint classification: `REMEDIATED_PENDING_RE_AUDIT`;
-`SAFE_TO_ADVANCE_TO_V2_4 = NO` pending that re-audit. Next gate: independent re-audit of this
-remediation, then V2-4 ProposalEligibility bridge (not started).
+S3-specific parity-fixture coverage gap). **A separate, independent re-audit
+(`AG_V2_3A_REMEDIATION_REAUDIT`, 2026-09-22) then ran against this exact remediation at HEAD
+`31d156f`**, independently reconstructing the defect reproduction from scratch and
+re-running the same evidence commands; it found no remaining or new defect (106 focused / 150
+opportunity-scoped / 65 Large-SMC / 50 SSC tests passed, 0 skipped, 0 protected-data access).
+A separately circulated document claiming this same re-audit with different, unverifiable
+test counts was explicitly rejected rather than applied -- see
+`docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` "Audit state" for that record. Parity
+checkpoint classification: `PASS`; `SAFE_TO_ADVANCE_TO_V2_4 = YES` strictly for the bounded,
+non-authorizing V2-4 ProposalEligibility bridge (no proposal, Demo, Live, broker, or
+execution authority granted).
+
+**Owner-approved multi-agent protocol and platform roadmap V3 (2026-09-22,
+`DOCUMENTATION_UPDATED_PENDING_OWNER_REVIEW`):** the owner approved a multi-agent
+operating model (Owner / ChatGPT Architect+Independent Auditor / Claude Builder), a
+three-class engineering/audit/owner gate model, and a WP-0 through WP-11 work-package
+sequence layered over the V2-x phases above — see
+`docs/governance/AG_MULTI_AGENT_EXECUTION_PROTOCOL_V1.md`. The owner also decided that
+`ST_ASIAN_SWEEP_5R_V1@1.1.1` becomes the planned active FX V2 integration target
+(inserting a new V2-3C adapter phase, WP-1), replacing `ST_SESSION_SWEEP_CONTINUATION_V1`
+in that routing role; SSC's source, V2 adapter, tests, replay, and validation evidence are
+preserved unchanged, with only its active-routing role planned for later removal
+(`SSC_ACTIVE_ROUTING_REMOVAL`, WP-2) once V2-3C's own gate passes. This is a platform-
+integration-target decision, not an economic promotion: `ST_ASIAN_SWEEP_5R_V1` remains
+`demo_authorized: false` / `live_authorized: false` in `strategies/registry.yaml`, and its
+existing negative R5 evidence (13/13 losing trades, R6
+`NOT_EVALUABLE_MISSING_SIGNED_THRESHOLDS`, research `PAUSED_BY_OWNER`, see below) is
+unchanged by this decision. No strategy semantics, registry authorization, proposal/Demo/
+Live authority, or execution authority changed; no code was implemented under this
+documentation-only mission. Next gate: `WP-0_BASELINE_FREEZE`, then WP-1 (V2-3C Asian
+Sweep adapter, not started).
 
 Validation-system assurance is `PARTIAL`: the repo now contains a fail-closed validation contract for friction and a machine-testable assurance manifest (`AG_VALIDATION_SYSTEM_ASSURANCE_V1.md` and `artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`) proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost handling. The earliest missing concrete gate, VA1 temporal/lookahead integrity, has now been frozen as `VD_TEMPORAL_LOOKAHEAD_V1` and covered by a deterministic perturbation test proving that future continuation beyond decision time T does not change the visible closed-bar set or strategy inputs at T. The project has also signed the R6 development edge gate for `ST_SESSION_SWEEP_CONTINUATION_V1` v1.0.1 via `config/governance/economic_gate_contract.yaml`, making the validation model operational for the research-only development edge mission without granting any live or demo execution authority. VA2 warm-up stability is now proven: `ONE_YEAR_REPLAY_STACK_V1` is frozen (`manifest_sha256 = 59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7`) with `DATA_COVERAGE_COMPLETE`, `CROSS_LEG_TIMEBASE_CONSISTENT` (`UTC_SINGLE_TIMEBASE`, hardened gate), `WARMUP_STABLE` (4371 closed H1 bars before the first decision, convergence proven both architecturally and empirically), and `PROTECTED_DATA_ACCESS_COUNT = 0`. See `docs/status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md`. No SSC replay has been executed; R5/R6 remain a separate, not-yet-started mission. The broader validation stack remains `NOT_READY` for evidence-producing development because VA3 synthetic known-answer coverage and downstream holdout gates remain partial or unproven. Strategy semantics remain unchanged and no demo/live authority is granted.
 
