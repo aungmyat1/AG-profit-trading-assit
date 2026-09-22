@@ -12,7 +12,7 @@ import ast
 import json
 import subprocess
 import sys
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -313,9 +313,25 @@ def test_runner_refuses_friction_window_collision():
     assert "WINDOW_D_LONDON_NEWYORK" in result.stdout
 
 
+def _next_unclaimed_weekday(days_ahead: int = 365) -> date:
+    """A weekday far enough past `today` that the real, installed production scheduler
+    (state/fx_schedule/slot_ledger.json -- see SlotLedger's default path) cannot yet
+    have claimed its ASIAN_LONDON slot. A fixed historical literal here goes stale the
+    moment production actually runs that slot for real: 2026-09-21T08:00:20+00:00 was
+    genuinely claimed by the live scheduled task (observed 2026-09-22)."""
+    d = date.today() + timedelta(days=days_ahead)
+    while d.weekday() >= 5:  # Sat/Sun
+        d += timedelta(days=1)
+    return d
+
+
 def test_runner_passes_on_a_clean_weekday_slot():
+    """This runner invokes the real production SlotLedger (no test isolation exists for
+    the subprocess path -- see _run_runner), so the slot under test must be one the live
+    scheduler cannot have executed yet, not a fixed calendar date."""
+    now = f"{_next_unclaimed_weekday().isoformat()}T08:00:20+00:00"
     result = _run_runner("--cycle", "ASIAN_LONDON", "--dry-run", "--json",
-                         "--now", "2026-09-21T08:00:20+00:00")
+                         "--now", now)
     assert result.returncode == 0
     assert "PASS_DRY_RUN" in result.stdout
 
