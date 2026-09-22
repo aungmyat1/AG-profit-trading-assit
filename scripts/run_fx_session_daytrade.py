@@ -80,10 +80,15 @@ def _run_preflight(as_json: bool, cycle: str) -> int:
     return exit_code
 
 
-def _execute_cycle(pilot_path: str):
+def _execute_cycle(pilot_path: str, observe_only: bool = False):
+    """observe_only=True (--status only) makes real DailyTradeLedger.try_claim(), real
+    native proposal/counter writes, and the WP11A canonical-ledger write all
+    structurally unreachable for this call -- see pipeline.run_pilot_cycle()'s own
+    docstring. --once (the real single-cycle command) keeps observe_only=False,
+    unchanged."""
     mt5_connection.connect()
     try:
-        return run_pilot_cycle(pilot_path)
+        return run_pilot_cycle(pilot_path, observe_only=observe_only)
     finally:
         mt5_connection.shutdown()
 
@@ -104,8 +109,13 @@ def _run_once(as_json: bool, cycle: str) -> int:
 
 
 def _run_status(as_json: bool, cycle: str) -> int:
+    # Observational only: no daily-opportunity slot claim, no native actionable-
+    # proposal/counter write, no WP11A canonical-ledger record. This closes the
+    # AG_POST_ASIAN_STATUS_READONLY_INDEPENDENT_AUDIT "Defect B" gap -- this script's
+    # own --status previously called _execute_cycle() with no observe_only argument at
+    # all, so it silently inherited run_pilot_cycle()'s persisting default.
     for cycle_name, pilot_path in _resolve_cycle_paths(cycle).items():
-        result = _execute_cycle(pilot_path)
+        result = _execute_cycle(pilot_path, observe_only=True)
         payload = cycle_to_dict(result, None, None, None)
         payload["cycle"] = cycle_name
         print(json.dumps(payload, indent=2, default=str))

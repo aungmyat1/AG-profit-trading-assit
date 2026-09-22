@@ -18,6 +18,17 @@ routes through persist=False while --once/bare-invocation keep persist=True unch
 
 These tests never touch MT5, never call execution.executor/mt5_gateway, and make no
 order_check/order_send call.
+
+V2 UPDATE (AG_POST_ASIAN_TRUE_OBSERVE_ONLY_REMEDIATION): an independent audit of this
+V1 fix found persist_canonical_proposal only protected the WP11A canonical-ledger
+write, leaving the native DailyTradeLedger.try_claim()/save_proposal(actionable=True)/
+COUNTER_PROPOSALS_CREATED path (and a second, sibling entrypoint,
+scripts/run_fx_session_daytrade.py --status) still able to consume real daily-
+opportunity capacity on a genuinely fresh READY. run_pilot_cycle() replaced
+persist_canonical_proposal with the broader observe_only, which also gates those --
+see tests/test_post_asian_observe_only_remediation.py for that coverage. The tests
+below still exercise the same WP11A-specific call site (_form_canonical_proposal) they
+always did and remain valid for that narrower claim.
 """
 from __future__ import annotations
 
@@ -150,16 +161,16 @@ def test_persist_true_default_still_records_the_real_production_path(strategy, s
 
 
 # ----------------------------------------------------------------------- Test 1/4 at
-# the run_pilot_cycle() signature level: default is unchanged (True), and the new
-# keyword exists and is threaded through to _form_canonical_proposal without needing a
-# live MT5 terminal (inspected via the function's own defaults/signature, matching this
-# repo's existing "static proof" test convention -- e.g.
-# test_pipeline_canonical_wiring.py::test_pipeline_module_never_spawns_git_subprocess).
+# the run_pilot_cycle() signature level: the persisting default is unchanged (False,
+# i.e. NOT observational) under its current name observe_only (V2 superseded the
+# narrower persist_canonical_proposal flag this test originally inspected -- see the
+# module docstring's V2 UPDATE note and
+# tests/test_post_asian_observe_only_remediation.py for the broader coverage).
 
 def test_run_pilot_cycle_default_preserves_prior_persisting_behavior():
     import inspect
     sig = inspect.signature(run_pilot_cycle)
-    assert sig.parameters["persist_canonical_proposal"].default is True
+    assert sig.parameters["observe_only"].default is False
 
 
 # ----------------------------------------------------------------------- CLI wiring:

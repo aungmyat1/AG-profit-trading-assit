@@ -63,9 +63,15 @@ def _run_preflight(as_json: bool, pilot_path: str = None) -> None:
 
 
 def _execute_cycle(pilot_path: str = None, persist: bool = True):
+    """persist maps 1:1 onto pipeline.run_pilot_cycle()'s observe_only (inverted): this
+    script's own `persist` name is kept stable for its existing callers/tests, but the
+    real gate is now observe_only=not persist -- see run_pilot_cycle()'s own docstring
+    for exactly what that structurally makes unreachable (real daily-opportunity claim,
+    real native proposal/counter writes, real canonical-ledger write), not just the
+    canonical-ledger write the narrower persist_canonical_proposal flag used to gate."""
     mt5_connection.connect()
     try:
-        return run_pilot_cycle(pilot_path, persist_canonical_proposal=persist)
+        return run_pilot_cycle(pilot_path, observe_only=not persist)
     finally:
         mt5_connection.shutdown()
 
