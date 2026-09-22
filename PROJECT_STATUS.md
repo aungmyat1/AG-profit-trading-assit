@@ -4,6 +4,29 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PANEL_R5A_OWNER_AUTH (2026-09-23, `panel-r5a-owner-auth` worktree branch, not merged)
+
+Additive `require_owner_auth` FastAPI dependency (`src/api/app.py`), gating only
+`POST /api/canonical-proposals/{proposal_id}/owner-decision` behind an
+`AG_OWNER_API_KEY` env var checked against the `X-AG-Owner-Key` request header
+(`hmac.compare_digest`). This is the authenticated-owner boundary the PANEL-R4
+independent audit named as a prerequisite before any broker-side-effect R5 work
+(`docs/status/AG_PANEL_R4_INDEPENDENT_AUDIT_STATUS.md`: "R5 must add an authenticated
+owner boundary before broker-side effects"). Fails closed: an unset key disables the
+route (`503`), never opens it; missing/empty/wrong header is `401`. Every GET route
+stays unauthenticated, as audited. No change to `owner_decision.bridge` (R3, frozen)
+or to `OwnerDecisionStore`'s process-local idempotency (that gap is explicitly R5B's).
+Built on independently-audited `PANEL_R4_INDEPENDENT_AUDIT_PASS`
+(`609e92f07ef2fac6333df3d14ee91648b4e3b8d1`), which this change does not modify. 20
+focused tests pass (7 new + the 13 existing PANEL-R4 tests, updated only to override
+this new dependency the same way they already override the two stores); 226/227 of the
+surrounding regression suite passes (the one failure is the same pre-existing,
+out-of-scope `test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover`
+already documented against the R3/R4 baseline). Known gap flagged, not fixed here: the
+pre-existing, separate `POST /api/tickets/{approval_id}/authorize-demo` route (closer to
+an actual MT5 call than this one) still has no equivalent auth boundary. See
+`docs/status/AG_PANEL_R5A_OWNER_AUTH_STATUS.md`.
+
 ## PANEL_R3_OWNER_DECISION_BRIDGE (2026-09-22, `panel-r3-owner-decision-bridge` worktree branch, not merged)
 
 Additive `src/owner_decision/` package: `OwnerDecision`/`ExecutionDecision` types and

@@ -13,7 +13,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from api.app import app, get_owner_decision_store, get_proposal_ledger
+from api.app import app, get_owner_decision_store, get_proposal_ledger, require_owner_auth
 from owner_decision.bridge import OwnerDecisionStore
 from proposal_envelope.ledger import ProposalLedger
 from proposal_envelope.models import CanonicalProposal, PROPOSAL_BLOCKED, PROPOSAL_READY
@@ -31,14 +31,20 @@ def _ready(**overrides) -> CanonicalProposal:
 
 
 def _client(ledger: ProposalLedger, store: OwnerDecisionStore) -> TestClient:
+    # PANEL-R5A gates this route with require_owner_auth (see
+    # tests/test_api_owner_decision_auth.py for that boundary's own dedicated tests).
+    # These R3/R4-lineage tests are about evaluate_owner_decision()'s semantics, not
+    # auth, so they override it the same way they already override the two stores.
     app.dependency_overrides[get_proposal_ledger] = lambda: ledger
     app.dependency_overrides[get_owner_decision_store] = lambda: store
+    app.dependency_overrides[require_owner_auth] = lambda: None
     return TestClient(app)
 
 
 def _clear_overrides() -> None:
     app.dependency_overrides.pop(get_proposal_ledger, None)
     app.dependency_overrides.pop(get_owner_decision_store, None)
+    app.dependency_overrides.pop(require_owner_auth, None)
 
 
 # --------------------------------------------------------------------------- 1

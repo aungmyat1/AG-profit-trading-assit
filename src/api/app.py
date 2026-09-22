@@ -15,6 +15,7 @@ test_api.py::test_cors_never_allows_wildcard_origin.
 """
 from __future__ import annotations
 
+import hmac
 import logging
 import os
 from typing import Optional
@@ -118,6 +119,36 @@ def get_proposal_ledger() -> ProposalLedger:
 
 def get_owner_decision_store() -> OwnerDecisionStore:
     return _default_owner_decision_store
+
+
+# PANEL-R5A (AG_PANEL_R5A_OWNER_AUTH_V1): the authenticated-owner boundary the R4
+# independent audit (docs/status/AG_PANEL_R4_INDEPENDENT_AUDIT_STATUS.md) named as a
+# prerequisite before any broker-side-effect (R5B+) work -- "R5 must add an
+# authenticated owner boundary before broker-side effects." Scoped to exactly the
+# owner-decision POST route; every GET route stays as it was audited.
+OWNER_API_KEY_ENV = "AG_OWNER_API_KEY"
+OWNER_AUTH_HEADER = "X-AG-Owner-Key"
+
+
+def require_owner_auth(request: Request) -> None:
+    """Fail-closed: an unset AG_OWNER_API_KEY disables this route (503), it is never
+    treated as "no auth required". A missing/incorrect X-AG-Owner-Key header is
+    rejected (401). Comparison is constant-time (hmac.compare_digest) so response
+    timing cannot be used to recover the configured key. Knowing the endpoint path or a
+    proposal_id alone is never sufficient -- the header must match this process's
+    configured key."""
+    configured_key = os.environ.get(OWNER_API_KEY_ENV, "")
+    if not configured_key:
+        raise HTTPException(
+            status_code=503,
+            detail={"reason_code": "OWNER_AUTH_NOT_CONFIGURED"},
+        )
+    supplied_key = request.headers.get(OWNER_AUTH_HEADER, "")
+    if not supplied_key or not hmac.compare_digest(supplied_key, configured_key):
+        raise HTTPException(
+            status_code=401,
+            detail={"reason_code": "OWNER_AUTH_REJECTED"},
+        )
 
 
 def get_execution_handler():
@@ -388,6 +419,7 @@ def _to_owner_decision_response(result) -> OwnerDecisionResponse:
 @app.post(
     "/api/canonical-proposals/{proposal_id:path}/owner-decision",
     response_model=OwnerDecisionResponse,
+    dependencies=[Depends(require_owner_auth)],
 )
 def submit_owner_decision(
     proposal_id: str,
@@ -403,6 +435,10 @@ def submit_owner_decision(
     (REJECT is terminal, environment must be DEMO, proposal must be PROPOSAL_READY and
     demo_authorized and not broker_mutation_blocked, staleness, symbol/identity match,
     decision_id idempotency) is the R3 bridge's, reused verbatim.
+
+    PANEL-R5A: gated by require_owner_auth (X-AG-Owner-Key against AG_OWNER_API_KEY) --
+    see that dependency's docstring. This closes the gap the R4 independent audit named:
+    knowing this URL/proposal_id alone must not be enough to create an OwnerDecision.
 
     `proposal_id` is taken ONLY from the URL path, never from the request body, so a
     decision can never be submitted against a different proposal identity than the one
