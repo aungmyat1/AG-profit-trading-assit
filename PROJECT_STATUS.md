@@ -129,6 +129,38 @@ routing (WP-2 not started); V2-4 ProposalEligibility is not implemented. Status:
 Next gate: independent architecture audit of this WP-1 implementation
 (`AG_V2_3C_ASIAN_SWEEP_ADAPTER`), then WP-2 (SSC active routing removal, not started).
 
+**WP-1 gate PASS (owner-accepted, frozen at `98457f62c75705fee870c697fea76bda05abddf0`);
+WP-2 (SSC active-routing removal) `OWNER_ACCEPTED_FROZEN`, independent audit PASS, frozen at
+`bcee106835623572fbb62b1fe12388a282efca6c`** -- WP-2 inventory reconfirmed
+`ST_ASIAN_SWEEP_5R_V1` as the sole active FX operational route
+(`scripts/install_fx_scheduler.ps1` -> `run_fx_cycle_once.py` ->
+`run_post_asian_pilot.py`), zero active SSC operational routes, and no SSC fallback;
+SSC code/tests/replay/evidence preserved. One bounded WP-2 commit fixed a stale-date
+test in `tests/test_fx_scheduler_once.py` (unrelated to routing). **WP-3
+(ProposalEligibility) implementation complete, 2026-09-22:**
+`src/opportunity/proposal_eligibility.py::evaluate_proposal_eligibility` supplies the
+missing evaluator for the existing `opportunity.contracts.ProposalEligibilityDecision`
+contract (unmodified) -- a pure function taking an `OpportunityCandidate` and an
+already-resolved `StrategyBinding` and returning `ELIGIBLE`/`BLOCKED`/`INCOMPLETE` with
+machine-readable reason codes. Reuses `opportunity.engine.TERMINAL_OUTCOMES` and
+`opportunity.contracts.synthetic_or_replay_block_reasons` as-is; deliberately does not
+consult `StrategyBinding.dispatchable`/`.proposal_authority` (those describe
+`strategy_manager.manager.evaluate()` dispatch, true only for `SESSION_TRADE_V1`, a
+different call path than Asian Sweep's WP-2-established operational route). Eligibility
+requires a non-terminal `ACTIVE` outcome, funnel stage at least `ENTRY_CONFIRMED`, and
+fully populated trade-plan geometry (direction/entry/invalidation) -- not stage alone,
+since SSC's own adapter reaches `ENTRY_CONFIRMED` mid-campaign without populating
+geometry (see `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md`). Does not construct a
+`CanonicalProposal`, does not write `ProposalLedger`, does not import
+`execution`/`mt5`/`proposal_envelope`. 30 new focused tests plus the full existing
+opportunity-scoped regression suite (219 tests across contracts/events/registry_binding/
+import_boundaries/candidate_store/engine/adapter_parity/asian_sweep/ssc/large_smc
+adapters) pass. `ProposalEligibilityDecision.status == ELIGIBLE` grants no proposal,
+Demo, Live, or execution authority -- WP-4 (`CanonicalProposal` bridge) is not
+implemented. No strategy semantics, registry authorization, or execution authority
+changed; no protected/OOS/holdout data accessed; no broker orders sent. Next gate:
+independent audit of this WP-3 implementation.
+
 Validation-system assurance is `PARTIAL`: the repo now contains a fail-closed validation contract for friction and a machine-testable assurance manifest (`AG_VALIDATION_SYSTEM_ASSURANCE_V1.md` and `artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`) proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost handling. The earliest missing concrete gate, VA1 temporal/lookahead integrity, has now been frozen as `VD_TEMPORAL_LOOKAHEAD_V1` and covered by a deterministic perturbation test proving that future continuation beyond decision time T does not change the visible closed-bar set or strategy inputs at T. The project has also signed the R6 development edge gate for `ST_SESSION_SWEEP_CONTINUATION_V1` v1.0.1 via `config/governance/economic_gate_contract.yaml`, making the validation model operational for the research-only development edge mission without granting any live or demo execution authority. VA2 warm-up stability is now proven: `ONE_YEAR_REPLAY_STACK_V1` is frozen (`manifest_sha256 = 59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7`) with `DATA_COVERAGE_COMPLETE`, `CROSS_LEG_TIMEBASE_CONSISTENT` (`UTC_SINGLE_TIMEBASE`, hardened gate), `WARMUP_STABLE` (4371 closed H1 bars before the first decision, convergence proven both architecturally and empirically), and `PROTECTED_DATA_ACCESS_COUNT = 0`. See `docs/status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md`. No SSC replay has been executed; R5/R6 remain a separate, not-yet-started mission. The broader validation stack remains `NOT_READY` for evidence-producing development because VA3 synthetic known-answer coverage and downstream holdout gates remain partial or unproven. Strategy semantics remain unchanged and no demo/live authority is granted.
 
 Strategy Capacity VD Cycle 2 remains `VD_STRATEGY_CAPACITY_SIMULATOR_NOT_READY`.
