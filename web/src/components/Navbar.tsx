@@ -18,8 +18,8 @@ import { BrokerConnectionModal } from './Terminal/BrokerConnectionModal';
 import { BrokerHeartbeatIndicator } from './Terminal/BrokerHeartbeatIndicator';
 
 interface NavbarProps {
-  activeTab: 'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend';
-  setActiveTab: (tab: 'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend') => void;
+  activeTab: 'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend' | 'owner';
+  setActiveTab: (tab: 'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend' | 'owner') => void;
   selectedSymbol: string;
   setSelectedSymbol: (sym: string) => void;
   symbols: Array<{ symbol: string; typicalSpread: number; basePrice: number }>;
@@ -128,6 +128,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex flex-wrap items-center justify-between px-4 py-2.5 gap-3">
         {/* Navigation Tabs */}
         <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+          <button
+            id="tab-owner-analysis"
+            onClick={() => setActiveTab('owner')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === 'owner' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Owner Analysis</span>
+          </button>
+
           <button
             id="tab-terminal"
             onClick={() => setActiveTab('terminal')}

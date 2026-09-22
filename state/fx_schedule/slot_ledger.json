@@ -76,6 +76,34 @@
     "slot_utc": "2026-09-21T10:45:20+00:00",
     "trading_date": "2026-09-21"
   },
+  "ASIAN_LONDON|2026-09-22|2026-09-22T10:15:20+00:00": {
+    "claimed_at": "2026-09-22T10:15:28.389568+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-22T10:15:20+00:00",
+    "trading_date": "2026-09-22"
+  },
+  "ASIAN_LONDON|2026-09-22|2026-09-22T10:30:20+00:00": {
+    "claimed_at": "2026-09-22T10:30:24.742366+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-22T10:30:20+00:00",
+    "trading_date": "2026-09-22"
+  },
+  "ASIAN_LONDON|2026-09-22|2026-09-22T10:45:20+00:00": {
+    "claimed_at": "2026-09-22T10:45:21.909100+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-22T10:45:20+00:00",
+    "trading_date": "2026-09-22"
+  },
+  "ASIAN_LONDON|2026-09-22|2026-09-22T11:00:20+00:00": {
+    "claimed_at": "2026-09-22T11:00:21.403569+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-22T11:00:20+00:00",
+    "trading_date": "2026-09-22"
+  },
   "LONDON_NEWYORK|2026-09-21|2026-09-21T12:00:20+00:00": {
     "claimed_at": "2026-09-21T12:00:30.010741+00:00",
     "cycle_id": "LONDON_NEWYORK",
@@ -159,5 +187,33 @@
     "outcome": null,
     "slot_utc": "2026-09-21T15:00:20+00:00",
     "trading_date": "2026-09-21"
+  },
+  "LONDON_NEWYORK|2026-09-22|2026-09-22T12:00:20+00:00": {
+    "claimed_at": "2026-09-22T12:00:21.802889+00:00",
+    "cycle_id": "LONDON_NEWYORK",
+    "outcome": null,
+    "slot_utc": "2026-09-22T12:00:20+00:00",
+    "trading_date": "2026-09-22"
+  },
+  "LONDON_NEWYORK|2026-09-22|2026-09-22T12:15:20+00:00": {
+    "claimed_at": "2026-09-22T12:15:22.045018+00:00",
+    "cycle_id": "LONDON_NEWYORK",
+    "outcome": null,
+    "slot_utc": "2026-09-22T12:15:20+00:00",
+    "trading_date": "2026-09-22"
+  },
+  "LONDON_NEWYORK|2026-09-22|2026-09-22T12:45:20+00:00": {
+    "claimed_at": "2026-09-22T12:45:22.421493+00:00",
+    "cycle_id": "LONDON_NEWYORK",
+    "outcome": null,
+    "slot_utc": "2026-09-22T12:45:20+00:00",
+    "trading_date": "2026-09-22"
+  },
+  "LONDON_NEWYORK|2026-09-22|2026-09-22T13:00:20+00:00": {
+    "claimed_at": "2026-09-22T13:00:22.597670+00:00",
+    "cycle_id": "LONDON_NEWYORK",
+    "outcome": null,
+    "slot_utc": "2026-09-22T13:00:20+00:00",
+    "trading_date": "2026-09-22"
   }
 }

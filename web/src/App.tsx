@@ -20,6 +20,7 @@ import { TradeJournal } from './components/Journal/TradeJournal';
 import { BackendConnectionDiagnostic } from './components/Terminal/BackendConnectionDiagnostic';
 import { AGBackendPanel } from './components/Terminal/AGBackendPanel';
 import { AG_UI_MODE } from './utils/agApiClient';
+import { OwnerAnalysisPanel } from './components/OwnerAnalysis/OwnerAnalysisPanel';
 
 import {
   Candle,
@@ -58,7 +59,7 @@ import {
 } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend'>('terminal');
+  const [activeTab, setActiveTab] = useState<'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend' | 'owner'>('terminal');
   const [selectedSymbol, setSelectedSymbol] = useState<string>('EURUSD');
 
   // Market & Analysis State
@@ -470,6 +471,8 @@ export const App: React.FC = () => {
             </div>
           </div>
         )}
+
+        {activeTab === 'owner' && <OwnerAnalysisPanel proposal={activeProposal} candles={candles} onRefresh={fetchSystemData} />}
 
         {/* VIEW 2: Multi-Pair Signal Scanner */}
         {activeTab === 'scanner' && (
