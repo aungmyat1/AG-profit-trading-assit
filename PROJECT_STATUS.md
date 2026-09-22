@@ -111,8 +111,23 @@ existing negative R5 evidence (13/13 losing trades, R6
 `NOT_EVALUABLE_MISSING_SIGNED_THRESHOLDS`, research `PAUSED_BY_OWNER`, see below) is
 unchanged by this decision. No strategy semantics, registry authorization, proposal/Demo/
 Live authority, or execution authority changed; no code was implemented under this
-documentation-only mission. Next gate: `WP-0_BASELINE_FREEZE`, then WP-1 (V2-3C Asian
-Sweep adapter, not started).
+documentation-only mission.
+
+**WP-0 baseline frozen** (commit `c2cf33f9f353d338dbde9aece22fc2819fdf3d71`). **WP-1
+(V2-3C Asian Sweep shadow adapter) builder-side implementation complete, 2026-09-22:**
+`src/opportunity/asian_sweep_adapter.py` (`AsianSweepFunnelAdapter`) is a thin adapter
+over the EXISTING canonical `post_asian_pilot.decision.PostAsianDecision` (built from
+`strategy_engine.engine.evaluate()`'s unchanged `TradeSignal` output) -- no
+reference-box, TREND/RANGE classification, or sweep-detection logic duplicated; both
+`ASIAN_LONDON`/`LONDON_NEWYORK` session pairs, occurrence identity, idempotence, and
+terminal stickiness (reusing the generic V2-3A-remediated engine clamp) are covered.
+`ST_ASIAN_SWEEP_5R_V1` registry authority is unchanged (`research: true`,
+`demo_authorized: false`, `live_authorized: false`); SSC remains unchanged active
+routing (WP-2 not started); V2-4 ProposalEligibility is not implemented. Status:
+**`BUILDER_IMPLEMENTATION_COMPLETE` / `INDEPENDENT_AUDIT_PENDING`** -- not
+`WP1_GATE_PASS`; see `docs/v2/AG_V2_IMPLEMENTATION_ROADMAP.md` V2-3C for full evidence.
+Next gate: independent architecture audit of this WP-1 implementation
+(`AG_V2_3C_ASIAN_SWEEP_ADAPTER`), then WP-2 (SSC active routing removal, not started).
 
 Validation-system assurance is `PARTIAL`: the repo now contains a fail-closed validation contract for friction and a machine-testable assurance manifest (`AG_VALIDATION_SYSTEM_ASSURANCE_V1.md` and `artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`) proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost handling. The earliest missing concrete gate, VA1 temporal/lookahead integrity, has now been frozen as `VD_TEMPORAL_LOOKAHEAD_V1` and covered by a deterministic perturbation test proving that future continuation beyond decision time T does not change the visible closed-bar set or strategy inputs at T. The project has also signed the R6 development edge gate for `ST_SESSION_SWEEP_CONTINUATION_V1` v1.0.1 via `config/governance/economic_gate_contract.yaml`, making the validation model operational for the research-only development edge mission without granting any live or demo execution authority. VA2 warm-up stability is now proven: `ONE_YEAR_REPLAY_STACK_V1` is frozen (`manifest_sha256 = 59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7`) with `DATA_COVERAGE_COMPLETE`, `CROSS_LEG_TIMEBASE_CONSISTENT` (`UTC_SINGLE_TIMEBASE`, hardened gate), `WARMUP_STABLE` (4371 closed H1 bars before the first decision, convergence proven both architecturally and empirically), and `PROTECTED_DATA_ACCESS_COUNT = 0`. See `docs/status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md`. No SSC replay has been executed; R5/R6 remain a separate, not-yet-started mission. The broader validation stack remains `NOT_READY` for evidence-producing development because VA3 synthetic known-answer coverage and downstream holdout gates remain partial or unproven. Strategy semantics remain unchanged and no demo/live authority is granted.
 

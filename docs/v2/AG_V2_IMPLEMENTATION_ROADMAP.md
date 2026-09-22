@@ -48,7 +48,7 @@ V2-3B  SSC replay/shadow adapter                  IMPLEMENTED_AND_LOCALLY_VERIFI
         ↓
       PARITY CHECKPOINT                           PASS
 
-V2-3C  Asian Sweep shadow adapter (WP-1)          PLANNED (owner-approved 2026-09-22; replaces SSC as active FX V2 target -- SSC adapter/tests/evidence preserved)
+V2-3C  Asian Sweep shadow adapter (WP-1)          BUILDER_IMPLEMENTATION_COMPLETE (2026-09-22; INDEPENDENT_AUDIT_PENDING -- replaces SSC as active FX V2 target -- SSC adapter/tests/evidence preserved)
         ↓
       SSC ACTIVE ROUTING REMOVAL (WP-2)           PLANNED, after V2-3C gate passes -- SSC preserved, not deleted
 
@@ -141,7 +141,7 @@ legacy/canonical strategy path
 
 No shadow adapter becomes authoritative until its parity gate passes.
 
-### Asian Sweep third (V2-3C, planned, WP-1)
+### Asian Sweep third (V2-3C, `BUILDER_IMPLEMENTATION_COMPLETE`, WP-1)
 
 Owner-approved (2026-09-22) as the planned active FX V2 integration target,
 replacing SSC in that role. Same shadow-adapter discipline as Large-SMC/SSC
@@ -153,6 +153,20 @@ the active V2 integration target does not reinterpret its existing negative R5
 evidence as positive. See
 `docs/governance/AG_MULTI_AGENT_EXECUTION_PROTOCOL_V1.md` WP-1 for the full
 contract and gate (`LEVEL B`, independent audit required).
+
+Implemented as `src/opportunity/asian_sweep_adapter.py`
+(`AsianSweepFunnelAdapter`), a thin adapter over the EXISTING canonical
+`post_asian_pilot.decision.PostAsianDecision` (itself built from
+`strategy_engine.engine.evaluate()`'s unchanged `TradeSignal` output) -- no
+reference-box, classification, or sweep-detection logic duplicated. Both
+session pairs, occurrence identity, idempotence, terminal stickiness
+(reusing the generic engine-level clamp, not reimplemented per-adapter),
+and canonical parity against the real `strategy_engine.evaluate()` are
+covered by `tests/test_opportunity_asian_sweep_adapter.py` and the
+Asian Sweep cases added to `tests/test_opportunity_adapter_parity.py`.
+Builder-side status: **`BUILDER_IMPLEMENTATION_COMPLETE` /
+`INDEPENDENT_AUDIT_PENDING`** (2026-09-22) -- not yet `WP1_GATE_PASS`; SSC
+remains active routing and V2-4 is not implemented by this work package.
 
 ## V2-4/V2-5 — Proposal bridge
 

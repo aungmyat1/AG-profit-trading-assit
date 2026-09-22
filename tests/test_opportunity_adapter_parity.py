@@ -1,13 +1,15 @@
-"""V2-3A/V2-3B semantic parity checkpoint.
+"""V2-3A/V2-3B/V2-3C semantic parity checkpoint.
 
 Compares canonical strategy-side semantics (Large-SMC's
 `large_smc_research.watch_lifecycle.WatchLifecycleRecord`; SSC's
-`strategy_contract.decision.StrategyDecision`) against each V2 adapter's
+`strategy_contract.decision.StrategyDecision`; Asian Sweep's
+`post_asian_pilot.decision.PostAsianDecision`, itself wrapping a real
+`strategy_engine.models.TradeSignal`) against each V2 adapter's
 `FunnelProjection`/`CandidateGeometry` output for the SAME authoritative input,
-field by field (not object equality -- the two shapes are intentionally
-different domain objects). Every asserted field either matches directly or is
-an explicitly documented, non-fabricating adapter decision (see the two
-adapter modules' docstrings and docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md
+field by field (not object equality -- the shapes are intentionally different
+domain objects). Every asserted field either matches directly or is an
+explicitly documented, non-fabricating adapter decision (see the adapter
+modules' own docstrings and docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md
 for the handful of accepted mapping choices, e.g. BLOCKED -> OUTCOME_ERROR,
 RISK_EXHAUSTED -> OUTCOME_EXPIRED).
 """
@@ -19,11 +21,15 @@ from entry_confirmation.entry_models_v1 import EntryModelState
 from historical_replay.orchestrator import SetupLedgerRow
 from large_smc_research.watch_lifecycle import project_setup_row
 
+from post_asian_pilot.decision import STATUS_READY, map_trade_signal_to_decision
 from session_sweep_continuation.campaign import Campaign, CampaignEntry, CampaignStatus
 from session_sweep_continuation.replay import ReplayResult
 from session_sweep_continuation.setups import SetupModel
 from strategy_contract.decision import from_session_sweep_continuation_replay
+from strategy_engine import evaluate, load_strategy
+from strategy_engine.session import Candle
 
+from opportunity.asian_sweep_adapter import AsianSweepFunnelAdapter
 from opportunity.contracts import MarketEvent
 from opportunity.large_smc_adapter import LargeSMCFunnelAdapter
 from opportunity.ssc_adapter import SSCFunnelAdapter
@@ -42,6 +48,16 @@ from opportunity.transitions import FunnelState
 
 T0 = datetime(2026, 9, 20, 8, 0, tzinfo=timezone.utc)
 TRADING_DATE = date(2026, 9, 20)
+ASIAN_SWEEP_STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
+
+
+def asian_sweep_event(asof=T0, mode="REPLAY"):
+    return MarketEvent(
+        event_id="ASIAN_SWEEP:parity-1", event_type="SESSION_CYCLE_EVALUATED", symbol="EURUSD",
+        market="FX", venue=None, timeframe="M15", bar_open_time=asof, bar_close_time=asof,
+        market_data_asof=asof, market_data_mode=mode, snapshot_fingerprint=None,
+        source="post_asian_pilot.pipeline",
+    )
 
 
 def large_smc_event():
@@ -209,5 +225,95 @@ def test_ssc_parity_negative_replay_mode_cannot_become_real():
     decision = from_session_sweep_continuation_replay(result)
     adapter = SSCFunnelAdapter(decision=decision)
     observation = adapter.observe(ssc_event(mode="REPLAY"), FunnelState())
+    assert observation.market_data_mode == "REPLAY"
+    assert observation.market_data_mode != "REAL"
+
+
+# --- Asian Sweep parity (V2-3C) --------------------------------------------------
+
+
+def test_asian_sweep_parity_sweep_signal_direction_entry_stop_lineage():
+    """Drives the REAL strategy_engine.evaluate() (same canonical engine, same
+    fixture shape as tests/test_strategy_engine.py::
+    test_evaluate_range_with_sweep_yields_signal) through post_asian_pilot's
+    real decision mapper, field-by-field against the adapter's projection."""
+    strategy = load_strategy(ASIAN_SWEEP_STRATEGY_PATH)
+    session_candles = [
+        Candle(datetime(2026, 1, 5, 0, 0, tzinfo=timezone.utc), 1.1000, 1.1050, 1.0950, 1.1010),
+        Candle(datetime(2026, 1, 5, 0, 15, tzinfo=timezone.utc), 1.1010, 1.1040, 1.0960, 1.1005),
+    ]
+    sweep_candle = Candle(datetime(2026, 1, 5, 7, 0, tzinfo=timezone.utc), 1.1005, 1.1050 + 0.0010, 1.1000, 1.1050 - 0.0002)
+
+    signal = evaluate(strategy, "ASIAN_LONDON", "EURUSD", date(2026, 1, 5), session_candles, 2, [sweep_candle])
+    assert signal.status == "SIGNAL"
+    assert signal.setup == "SWEEP"
+    assert signal.direction == "SHORT"
+
+    eval_time = datetime(2026, 1, 5, 7, 15, tzinfo=timezone.utc)
+    window_end = datetime(2026, 1, 5, 11, 0, tzinfo=timezone.utc)
+    decision = map_trade_signal_to_decision(signal, "snapshot-parity", eval_time, window_end)
+    assert decision.status == STATUS_READY
+
+    adapter = AsianSweepFunnelAdapter(decision=decision)
+    observation = adapter.observe(asian_sweep_event(asof=eval_time), FunnelState())
+    projection = adapter.project(observation)
+    geometry = adapter.candidate_geometry(observation)
+
+    # strategy identity
+    assert adapter.strategy_id == decision.strategy_id == "ST_ASIAN_SWEEP_5R_V1"
+    # symbol / direction / entry / stop preserved verbatim, never recomputed
+    assert decision.symbol == signal.symbol == "EURUSD"
+    assert geometry.direction == signal.direction == "SHORT"
+    assert geometry.entry == signal.entry
+    assert geometry.invalidation == signal.stop_loss
+    # canonical state -> mapped stage (documented, non-object-equal)
+    assert decision.status == "READY"
+    assert projection.stage == STAGE_ENTRY_CONFIRMED
+    assert projection.outcome == OUTCOME_ACTIVE
+    # setup type preserved as evidence
+    assert projection.setup_evidence["setup"] == signal.setup == "SWEEP"
+    # no target/rr authority on TradeSignal for a sweep entry -- never fabricated
+    assert geometry.targets == ()
+    assert geometry.estimated_rr is None
+
+
+def test_asian_sweep_parity_negative_no_setup_cannot_yield_entry_confirmed():
+    strategy = load_strategy(ASIAN_SWEEP_STRATEGY_PATH)
+    session_candles = [
+        Candle(datetime(2026, 1, 5, 0, 0, tzinfo=timezone.utc), 1.1000, 1.1050, 1.0950, 1.1010),
+        Candle(datetime(2026, 1, 5, 0, 15, tzinfo=timezone.utc), 1.1010, 1.1040, 1.0960, 1.1005),
+    ]
+    boring_candle = Candle(datetime(2026, 1, 5, 7, 0, tzinfo=timezone.utc), 1.1005, 1.1006, 1.1004, 1.1005)
+
+    signal = evaluate(strategy, "ASIAN_LONDON", "EURUSD", date(2026, 1, 5), session_candles, 2, [boring_candle])
+    assert signal.status == "NO_TRADE"
+    assert signal.direction is None
+
+    eval_time = datetime(2026, 1, 5, 7, 15, tzinfo=timezone.utc)
+    window_end = datetime(2026, 1, 5, 11, 0, tzinfo=timezone.utc)
+    decision = map_trade_signal_to_decision(signal, "snapshot-parity", eval_time, window_end)
+
+    adapter = AsianSweepFunnelAdapter(decision=decision)
+    observation = adapter.observe(asian_sweep_event(asof=eval_time), FunnelState())
+    projection = adapter.project(observation)
+
+    assert projection.stage != STAGE_ENTRY_CONFIRMED
+    geometry = adapter.candidate_geometry(observation)
+    assert geometry is None
+
+
+def test_asian_sweep_parity_negative_replay_mode_cannot_become_real():
+    strategy = load_strategy(ASIAN_SWEEP_STRATEGY_PATH)
+    session_candles = [
+        Candle(datetime(2026, 1, 5, 0, 0, tzinfo=timezone.utc), 1.1000, 1.1050, 1.0950, 1.1010),
+        Candle(datetime(2026, 1, 5, 0, 15, tzinfo=timezone.utc), 1.1010, 1.1040, 1.0960, 1.1005),
+    ]
+    signal = evaluate(strategy, "ASIAN_LONDON", "EURUSD", date(2026, 1, 5), session_candles, 2, [])
+    eval_time = datetime(2026, 1, 5, 7, 15, tzinfo=timezone.utc)
+    window_end = datetime(2026, 1, 5, 11, 0, tzinfo=timezone.utc)
+    decision = map_trade_signal_to_decision(signal, "snapshot-parity", eval_time, window_end)
+
+    adapter = AsianSweepFunnelAdapter(decision=decision)
+    observation = adapter.observe(asian_sweep_event(asof=eval_time, mode="REPLAY"), FunnelState())
     assert observation.market_data_mode == "REPLAY"
     assert observation.market_data_mode != "REAL"
