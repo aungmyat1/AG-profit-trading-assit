@@ -676,6 +676,47 @@ async function startServer() {
   // 1b. Broker Connection & Gateway Diagnostics API
   app.get('/api/broker/status', (req, res) => {
     syncBrokerConfigFromEnv();
+    if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() === 'real') {
+      const base = process.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+      Promise.all([
+        fetch(`${base}/api/broker/status`).then(r => r.ok ? r.json() : Promise.reject(new Error(`status ${r.status}`))),
+        fetch(`${base}/api/broker/account`).then(r => r.ok ? r.json() : Promise.reject(new Error(`account ${r.status}`)))
+      ]).then(([status, account]) => {
+        const live = { ...(status || {}), ...(account || {}) };
+        return res.json({
+          connected: Boolean(live.connected),
+          broker: live.broker || brokerAccountConfig.broker,
+          server: live.server || brokerAccountConfig.server,
+          platform: brokerAccountConfig.platform,
+          account_id: live.account_redacted || null,
+          account_name: 'MT5 Demo (live gateway)',
+          currency: 'USD',
+          trade_mode: live.environment === 'DEMO' ? 'DEMO' : live.environment || 'UNKNOWN',
+          balance: live.balance,
+          equity: live.equity,
+          margin: null,
+          free_margin: null,
+          margin_level_pct: null,
+          leverage: null,
+          ping_ms: null,
+          configured_via_secrets: true,
+          has_secret_password: true,
+          last_heartbeat: new Date().toISOString(),
+          feed_status: live.connected ? 'HEALTHY' : 'UNAVAILABLE',
+          symbols_monitored: [],
+          safety_interlocks: {
+            allow_live_trading: false,
+            allow_order_send: Boolean(live.connected && live.environment === 'DEMO' && live.trade_allowed_informational),
+            user_confirmed_required: true,
+            duplicate_protection: 'ENABLED',
+            historical_replay_isolated: true
+          },
+          marketDataSource: 'MT5',
+          accountDataSource: 'MT5'
+        });
+      }).catch(error => res.status(503).json({ connected: false, feed_status: 'UNAVAILABLE', error: 'LIVE_BROKER_UNAVAILABLE', details: String(error) }));
+      return;
+    }
     const openPositions = positions.filter(p => p.status === 'OPEN');
     const openPnl = openPositions.reduce((acc, p) => acc + p.pnl, 0);
     const balance = brokerAccountConfig.balance;
@@ -729,6 +770,15 @@ async function startServer() {
   // Broker Account Config Management
   app.get('/api/broker/account', (req, res) => {
     syncBrokerConfigFromEnv();
+    if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() === 'real') {
+      const base = process.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+      fetch(`${base}/api/broker/account`).then(async upstream => {
+        if (!upstream.ok) throw new Error(`account ${upstream.status}`);
+        const payload = await upstream.json();
+        return res.json({ ...payload, accountDataSource: 'MT5' });
+      }).catch(error => res.status(503).json({ success: false, accountDataSource: 'MT5', error: 'LIVE_ACCOUNT_UNAVAILABLE', details: String(error) }));
+      return;
+    }
     res.json({
       success: true,
       account: brokerAccountConfig
@@ -1294,7 +1344,17 @@ async function startServer() {
     if (entryPrice !== undefined && entryPrice !== null && entryPrice !== '') args.push('--entry', String(entryPrice));
     if (takeProfit2 !== undefined && takeProfit2 !== null && takeProfit2 !== '') args.push('--tp', String(takeProfit2));
 
-    const child = spawn(process.env.PYTHON_EXECUTABLE || 'python', args, { cwd: repoRoot, windowsHide: true });
+    const child = spawn(process.env.PYTHON_EXECUTABLE || 'python', args, {
+      cwd: repoRoot,
+      windowsHide: true,
+      env: {
+        ...process.env,
+        // Manual execution is Demo-only. Do not inherit ANALYSIS/DRY_RUN from
+        // the parent preview process; the Python gateway still revalidates the
+        // connected account and requires user_confirmed on every request.
+        AG_TRADING_CONFIG_PATH: path.join(repoRoot, 'config', 'trading.demo.yaml')
+      }
+    });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', chunk => { stdout += chunk.toString(); });

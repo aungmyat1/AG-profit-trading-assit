@@ -7,6 +7,11 @@
     "**/data/**",
     "**/logs/**",
     "**/research_external/**",
+    "**/journal/**",
+    "**/.pytest_cache/**",
+    "**/.git/**",
+    "**/htmlcov/**",
+    "**/.mypy_cache/**",
     ".claude/worktrees/**"
   ]
 }
