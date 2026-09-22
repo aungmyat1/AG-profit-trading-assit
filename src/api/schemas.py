@@ -94,6 +94,31 @@ class MarketDataCandlesResponse(BaseModel):
     candles: List[MarketDataCandleResponse]
 
 
+class OpportunityAnalysisResponse(BaseModel):
+    """Deterministic, observe-only projection for the Owner Analysis panel."""
+
+    schema_version: str = "1"
+    strategy_id: str
+    symbol: str
+    decision_state: str
+    portfolio_state: str
+    proposal_state: str
+    evaluated_at: str
+    market_data_as_of: Optional[str] = None
+    proposal_expires_at: Optional[str] = None
+    is_stale: bool
+    direction: Optional[str] = None
+    entry: Optional[float] = None
+    stop: Optional[float] = None
+    targets: List[float] = []
+    capacity_available: Optional[bool] = None
+    capacity_reason: Optional[str] = None
+    reason_codes: List[str] = []
+    missing_condition: Optional[str] = None
+    next_required_evidence: Optional[str] = None
+    execution_authority: str = "NONE"
+
+
 class TelegramStatusResponse(BaseModel):
     configured: bool
 

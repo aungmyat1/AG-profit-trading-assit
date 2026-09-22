@@ -30,6 +30,7 @@ from proposal_envelope.ledger import ProposalLedger
 
 from . import broker_service, strategy_service, telegram_service
 from .execution_service import InMemoryProposalRegistry, SOURCE_WEB, authorize_demo_execution
+from .opportunity_analysis import OpportunityAnalysisError, get_opportunity_analysis
 from .schemas import (
     AuthorizeDemoRequest,
     AuthorizeDemoResponse,
@@ -49,6 +50,7 @@ from .schemas import (
     TelegramStatusResponse,
     TicketResponse,
     ValidationResponse,
+    OpportunityAnalysisResponse,
 )
 
 DEFAULT_ALLOWED_ORIGINS = (
@@ -119,6 +121,17 @@ def get_execution_handler():
 @app.get("/api/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     return HealthResponse(status="OK")
+
+
+@app.get("/api/opportunity-analysis", response_model=list[OpportunityAnalysisResponse])
+def opportunity_analysis(symbol: Optional[str] = None) -> list[OpportunityAnalysisResponse]:
+    """Observe-only Owner Analysis projection; never runs preflight or execution."""
+    try:
+        return get_opportunity_analysis(symbol=symbol)
+    except OpportunityAnalysisError as exc:
+        reason = str(exc)
+        status = 400 if reason == "UNSUPPORTED_SYMBOL" else 502
+        raise HTTPException(status_code=status, detail={"reason_code": reason}) from exc
 
 
 @app.get("/api/broker/status", response_model=BrokerStatusResponse)
