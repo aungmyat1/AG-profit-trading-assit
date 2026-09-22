@@ -161,6 +161,42 @@ implemented. No strategy semantics, registry authorization, or execution authori
 changed; no protected/OOS/holdout data accessed; no broker orders sent. Next gate:
 independent audit of this WP-3 implementation.
 
+**WP-4 (`CanonicalProposal` bridge) builder-side implementation complete, 2026-09-22
+(local, unpushed; `BUILDER_IMPLEMENTATION_COMPLETE` / `INDEPENDENT_AUDIT_PENDING`),
+branch `wp/v2-4-canonical-proposal-bridge` rooted at the frozen WP-3 checkpoint
+`570e755654f9aaf3f5cbbb1a09cd47690b83c9ae`:** `src/proposal_envelope/adapters/
+opportunity_adapter.py::to_canonical_proposal` maps `(OpportunityCandidate,
+ProposalEligibilityDecision, strategy_authority)` onto the existing
+`proposal_envelope.models.CanonicalProposal` shape -- ELIGIBLE maps only ever to
+`PROPOSAL_READY` with fully-populated geometry (direction/entry/stop/targets/expected_R
+copied verbatim from `candidate.geometry`); BLOCKED/INCOMPLETE never produce a
+`PROPOSAL_READY` envelope, and a partial `candidate.geometry` on those paths is
+surfaced only inside `setup_evidence` for audit, never as the top-level trade plan.
+Reuses WP-3's `evaluate_proposal_eligibility` output as a caller-supplied input rather
+than re-deriving it, and reuses `proposal_envelope.strategy_authority.StrategyAuthority`
+for the optional governance fields (defaulting to the safest/most restrictive state --
+`demo_authorized=False`, `live_authorized=False`, `proposal_only=True`,
+`broker_mutation_blocked=True` -- when omitted). `execution_authority` is always
+`AUTHORITY_NONE` regardless of what `strategy_authority` reports, matching every other
+adapter in the package. `proposal_envelope_id` is composed from
+`candidate.strategy_id`/`candidate.occurrence_id` (namespaced `OPP:`, distinct from
+every existing family prefix), so one logical occurrence keeps one identity across its
+own BLOCKED/INCOMPLETE/READY lifecycle. No risk sizing, no `TradeCommand`, no MT5/
+execution import, no `ProposalLedger` write -- statically and behaviorally proven (see
+`tests/test_opportunity_proposal_bridge.py` and the existing whole-package
+`test_proposal_envelope_execution_boundary.py`, which already covers every module under
+`proposal_envelope/`, including this new adapter). 17 new focused tests pass; the
+existing WP-3/opportunity-domain regression suite (135 tests) and the
+proposal_envelope-domain regression suite pass unchanged (4 pre-existing,
+unrelated failures reproduce identically on the unmodified frozen checkpoint --
+`state/proposal_ledger/proposal_ledger.json` has grown to 99 committed records since
+those tests' original 69-record baseline was authored; not touched or caused by this
+work). No strategy semantics, registry authorization, execution authority, or
+Demo/Live authorization changed; no protected/OOS/holdout data accessed; zero broker
+orders sent; not wired into any runtime path or the existing `ProposalLedger`. Next
+gate: independent audit of this WP-4 implementation, then WP-5 (wiring into the
+operational FX cycle).
+
 Validation-system assurance is `PARTIAL`: the repo now contains a fail-closed validation contract for friction and a machine-testable assurance manifest (`AG_VALIDATION_SYSTEM_ASSURANCE_V1.md` and `artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`) proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost handling. The earliest missing concrete gate, VA1 temporal/lookahead integrity, has now been frozen as `VD_TEMPORAL_LOOKAHEAD_V1` and covered by a deterministic perturbation test proving that future continuation beyond decision time T does not change the visible closed-bar set or strategy inputs at T. The project has also signed the R6 development edge gate for `ST_SESSION_SWEEP_CONTINUATION_V1` v1.0.1 via `config/governance/economic_gate_contract.yaml`, making the validation model operational for the research-only development edge mission without granting any live or demo execution authority. VA2 warm-up stability is now proven: `ONE_YEAR_REPLAY_STACK_V1` is frozen (`manifest_sha256 = 59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7`) with `DATA_COVERAGE_COMPLETE`, `CROSS_LEG_TIMEBASE_CONSISTENT` (`UTC_SINGLE_TIMEBASE`, hardened gate), `WARMUP_STABLE` (4371 closed H1 bars before the first decision, convergence proven both architecturally and empirically), and `PROTECTED_DATA_ACCESS_COUNT = 0`. See `docs/status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md`. No SSC replay has been executed; R5/R6 remain a separate, not-yet-started mission. The broader validation stack remains `NOT_READY` for evidence-producing development because VA3 synthetic known-answer coverage and downstream holdout gates remain partial or unproven. Strategy semantics remain unchanged and no demo/live authority is granted.
 
 Strategy Capacity VD Cycle 2 remains `VD_STRATEGY_CAPACITY_SIMULATOR_NOT_READY`.
