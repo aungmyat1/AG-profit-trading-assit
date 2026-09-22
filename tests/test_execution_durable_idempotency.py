@@ -91,9 +91,8 @@ def test_restart_preserves_identity_and_state(tmp_path):
 
     instance_one = DurableExecutionStore(state_dir=state_dir)
     created = instance_one.create_or_get(decision_id="dec-4", proposal_id="FX:R5B-1", fingerprint=fingerprint)
-    instance_one.transition(
-        "dec-4", state=STATE_SUBMISSION_PENDING,
-    )
+    instance_one.transition("dec-4", state=STATE_AUTHORIZED)  # PREPARED -> AUTHORIZED (legal)
+    instance_one.transition("dec-4", state=STATE_SUBMISSION_PENDING)  # AUTHORIZED -> SUBMISSION_PENDING (legal)
     del instance_one  # simulate process exit -- nothing but the on-disk file survives
 
     instance_two = DurableExecutionStore(state_dir=state_dir)
@@ -193,6 +192,11 @@ def test_broker_ids_attached_only_per_state_rules(tmp_path):
     # Cannot attach a broker_order_id while transitioning into a non-eligible state.
     with pytest.raises(ValueError):
         store.transition("dec-10", state=STATE_AUTHORIZED, broker_order_id="123456")
+
+    # The rejected attempt above must not have moved the record off PREPARED --
+    # advance it for real, through the legal PREPARED -> AUTHORIZED -> SUBMISSION_PENDING
+    # path, before exercising broker-id eligibility further.
+    store.transition("dec-10", state=STATE_AUTHORIZED)
 
     # Eligible state: attaching succeeds.
     updated = store.transition("dec-10", state=STATE_SUBMISSION_PENDING)

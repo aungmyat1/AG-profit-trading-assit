@@ -4,6 +4,39 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PANEL_R5B_R1_LIFECYCLE_REMEDIATION (2026-09-23, `panel-r5b-r1-lifecycle-remediation` worktree branch, not merged)
+
+Remediates a `PANEL_R5B_INDEPENDENT_AUDIT_FAIL` finding: `DurableExecutionStore.
+transition()` validated only that the requested target state was known, never that
+the record's ACTUAL current state legally permitted reaching it -- the auditor
+demonstrated `BROKER_ACCEPTED -> PREPARED` was silently accepted and persisted. Adds
+`ALLOWED_TRANSITIONS` (an explicit, immutable current-state -> allowed-target-states
+graph: `PREPARED->{AUTHORIZED,REJECTED}`,
+`AUTHORIZED->{SUBMISSION_PENDING,REJECTED}`,
+`SUBMISSION_PENDING->{SUBMISSION_UNKNOWN,BROKER_ACCEPTED,REJECTED}`,
+`SUBMISSION_UNKNOWN->{BROKER_ACCEPTED,REJECTED}`, `BROKER_ACCEPTED->{RECONCILED}`,
+`REJECTED`/`RECONCILED` terminal) and `InvalidStateTransition`, a specific domain
+exception matching the module's existing `FingerprintConflict`/
+`IdempotencyStateUnavailable` convention rather than a generic `ValueError`. Same-state
+re-affirmation is an explicit, documented idempotent no-op, never looked up in the
+graph, so a terminal state can still be safely reaffirmed. Fixes a real TOCTOU gap
+(the previous `get()`-then-later-`put()` sequence held no lock across the two calls)
+by serializing `transition()`'s whole read-validate-write sequence under a new
+per-decision_id lock, mirroring `runtime_state.store.JsonKeyValueStore`'s own
+per-path-lock design rather than inventing a different one -- proven by a real,
+8-thread-style adversarial concurrency test racing two individually-legal transitions
+from the same state. Durability claims corrected per the audit: explicitly documents
+atomic file replacement and ordinary-restart persistence as guaranteed,
+**power-loss durability as NOT guaranteed** (no `fsync` anywhere in this module or its
+`JsonKeyValueStore` backend). No MT5 submission, no HTTP wiring, no auth change, no
+strategy behavior change (`git diff` against `src/api/` is empty). 21 new focused
+tests plus 13 original R5B tests all pass (two original tests' transition SEQUENCES
+were corrected to a lifecycle-legal path per P1's own "do not invent transitions for
+test convenience" instruction -- no assertion's intent changed); R5A/R5A-R1 auth
+boundaries re-verified intact (58 passed). Known pre-existing proposal-dedup failure
+reproduced separately, unrelated, not repaired here. See
+`docs/status/AG_PANEL_R5B_R1_LIFECYCLE_REMEDIATION_STATUS.md`.
+
 ## PANEL_R5B_DURABLE_IDEMPOTENCY (2026-09-23, `panel-r5b-durable-execution-idempotency` worktree branch, not merged)
 
 Additive `execution/durable_idempotency.py` -- durable, restart-safe execution
