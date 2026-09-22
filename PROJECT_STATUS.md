@@ -4,6 +4,18 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PANEL_R5C_R1_BROKER_IDENTITY (2026-09-23, `fix/panel-r5c-broker-identity`, candidate)
+
+Remediates the independently audited R5C identity defect: reconciliation now
+validates positive integer broker tickets before converting them to durable IDs.
+Missing, blank, sentinel, zero, negative, boolean, and non-integer ticket values
+remain unresolved and cannot advance lifecycle state or persist `broker_order_id`.
+Valid exact-tag evidence remains matchable. No lifecycle, authorization, scheduler,
+strategy, MT5, or broker-submission behavior changed. Focused R5C-R1 tests pass
+23/23; combined R5B/R5B-R1/R5C/R5C-R1 tests pass 57/57; R5A-R1 authorization
+regression passes 58/58; adjacent execution-boundary tests pass 7/7. Candidate is
+ready for independent re-audit and is not frozen; R5D remains unauthorized.
+
 ## PANEL_R5C_RECONCILIATION (2026-09-23, `panel-r5c-reconciliation` worktree branch, not merged)
 
 Additive `execution/reconciliation.py` -- fail-closed reconciliation of a durable

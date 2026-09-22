@@ -116,6 +116,18 @@ def comment_tag_for(command_id: str) -> str:
     return f"{_COMMENT_TAG_PREFIX}{command_id}"[:_COMMENT_TAG_MAX_LENGTH]
 
 
+def _normalize_broker_ticket(value: Any) -> Optional[str]:
+    """Return a durable broker identity only for a valid MT5 ticket value.
+
+    MT5 tickets are positive integer identities. Missing, sentinel, boolean,
+    fractional, zero, and negative values are not broker evidence and must not
+    be stringified into identities such as ``"None"``.
+    """
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        return None
+    return str(value)
+
+
 @dataclass(frozen=True)
 class ReconciliationResult:
     """Always returned, never an exception for an expected/blocked outcome -- same
@@ -194,7 +206,11 @@ def reconcile_decision(
         if getattr(d, "comment", None) == expected_tag and getattr(d, "entry", None) == 0
     ]
     all_matches = position_matches + deal_matches
-    matched_tickets = {str(getattr(m, "ticket", None)) for m in all_matches}
+    matched_tickets = {
+        ticket
+        for match in all_matches
+        if (ticket := _normalize_broker_ticket(getattr(match, "ticket", None))) is not None
+    }
 
     if len(matched_tickets) > 1:
         return ReconciliationResult(
