@@ -4,6 +4,30 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PANEL_R3_OWNER_DECISION_BRIDGE (2026-09-22, `panel-r3-owner-decision-bridge` worktree branch, not merged)
+
+Additive `src/owner_decision/` package: `OwnerDecision`/`ExecutionDecision` types and
+`evaluate_owner_decision()`, bridging an explicit owner action on a
+`PROPOSAL_READY` + `demo_authorized=True` `CanonicalProposal` into a prepared,
+unconfirmed `execution.models.TradeCommand` template (reusing the existing, unmodified
+`assistant.canonical_proposal_adapter` / `assistant.commands.build_proposal_from_canonical`).
+Fails closed on: REJECT action, non-DEMO environment, non-READY/stale proposal,
+`demo_authorized=False`, `broker_mutation_blocked=True`, symbol mismatch, malformed
+decision, and duplicate `decision_id` replay (idempotent, never re-authorizes). Never
+imports `execution.executor`/`execution.mt5_gateway` and never sets
+`user_confirmed=True` — reaching an actual Demo order still requires a separate,
+later, explicitly-user-confirmed `assistant.commands.execute_command()` call this
+module does not make (see `docs/status/AG_PANEL_R3_OWNER_DECISION_BRIDGE_STATUS.md`
+for the full investigation, including the existing separate
+`authorization.store`/`api.execution_service` ticket-approval pathway this package
+deliberately does not duplicate or touch). Built on frozen `PANEL_R2_AUDIT_PASS`
+(`40376ce51afc819951aebc7438511421cf6fe48e`), which this change does not modify. No
+new API route, no frontend change (existing frontend-freeze directive below
+respected). 16 focused tests pass; 206/207 of the surrounding regression suite passes
+(the one failure is the pre-existing, out-of-scope
+`test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover`, already
+documented against the R2 baseline).
+
 ## Current rolling classification (2026-09-21)
 
 AG V2 pre-architecture baseline + core contracts (`PARTIAL`): the additive
