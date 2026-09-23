@@ -4,6 +4,43 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PANEL_PROPOSAL_DEDUP_R1 (2026-09-23, `fix/proposal-dedup-r1`, candidate)
+
+Root-cause fix for the known regression
+(`tests/test_proposal_envelope_adapters.py::test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover`,
+previously `current_proposal_count=3`, expected `<=1`). Root cause:
+`proposal_envelope.adapters.fx_adapter.to_canonical_proposal()`'s `PROPOSAL_READY`
+branch built `proposal_envelope_id` -- `proposal_envelope.ledger.ProposalLedger`'s own
+dedup key -- from `decision.decision_id`, which `post_asian_pilot.decision._decision_id()`
+deliberately hashes in `evaluation_time`, minting a new value every scan cycle even for
+the SAME still-open economic setup (Case C: stable economic identity, unstable
+technical ID). The repository already carries one authoritative, deterministic
+economic-setup identity end-to-end for this exact case --
+`strategy_engine.engine`'s own `signal_id=f"{strategy_id}:{pair_id}:{symbol}:
+{session_date}"`, unchanged through `TradeIntent.signal_id -> TradeProposal.setup_id`
+-- the adapter simply wasn't using it as the proposal identity. Fix: the READY branch
+now derives `proposal_envelope_id` from `trade_proposal.setup_id`;
+`decision.decision_id` is preserved unchanged as `source_record_id`
+(per-observation provenance, a separate field never used for dedup). No other adapter
+(`btc_adapter`, `large_smc_adapter`, `large_smc_research_adapter`, `ssc_adapter`) shares
+this bug -- each already derives its identity from a stable setup/occurrence id, not a
+volatile per-scan one.
+
+12 new focused tests pass covering: identity derivation, repeated admission (2x/3x),
+idempotent no-mutation, restart persistence, same-process concurrent admission
+(`threading.Barrier`-synchronized), and owner-decision-compatible repeat handling;
+negative controls confirm different trading date / strategy / pair_id / symbol remain
+distinct proposals. The exact previously-failing test now passes
+(`current_proposal_count == 1`). Combined proposal-envelope/adapters suite: 25 passed.
+Owner-decision/CanonicalProposal regression: 20 passed. R5A/R5B/R5C/R5C-R1 execution
+regression plus execution-boundary: 70 passed. Broader post_asian_pilot +
+proposal-envelope-models regression: 116 passed. Scope: exactly
+`src/proposal_envelope/adapters/fx_adapter.py` (14 lines, mostly rationale comment)
+plus one new test file -- no lifecycle, authorization, scheduler, strategy, MT5, or
+broker-submission code touched; `BROKER_ORDERS_SENT = 0`. Broker side effects remain
+disabled; this package does not itself authorize them. See
+`docs/status/AG_PROPOSAL_DEDUP_R1_STATUS.md`.
+
 ## PANEL_R5C_R1_BROKER_IDENTITY (2026-09-23, `fix/panel-r5c-broker-identity`, candidate)
 
 Remediates the independently audited R5C identity defect: reconciliation now
