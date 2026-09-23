@@ -64,6 +64,39 @@ zero order/strategy-cycle calls), classified each day under the frozen evidence 
 No strategy/session/risk parameter changed; `demo_authorized` remains `false`;
 `risk_per_trade_pct` remains unresolved; zero broker order calls. See
 `docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION_STATUS.md`.
+## AG_PANEL_R5C_PROPOSAL_DECISION_UNIQUENESS (2026-09-23, `feat/r5c-proposal-owner-decision-uniqueness`, candidate)
+
+Closes the gap the `AG_FRONTEND_OWNER_DECISION_REWIRE` entry below flagged as
+`PROPOSAL_LEVEL_OWNER_DECISION_UNIQUENESS = NOT_ENFORCED_BY_BACKEND`: implements
+`ONE proposal_envelope_id → ZERO or ONE authoritative owner decision` inside
+`owner_decision.bridge.OwnerDecisionStore`, layered on top of (not replacing) the
+already-independently-verified `decision_id` idempotency ledger. Reproduced the actual
+pre-fix gap first (`P1/A/APPROVE` + `P1/B/REJECT` durably disagreed; `P1/A/APPROVE` +
+`P1/B/APPROVE` durably duplicated). New atomic gate
+`OwnerDecisionStore.commit_terminal_decision()` extends the store's existing single
+lock so decision_id uniqueness and proposal-id authority uniqueness are established as
+one atomic unit; a new in-memory `_proposal_index` is 100% reconstructed from the
+existing persisted `state/owner_decisions/owner_decisions.json` on load — no new
+persisted file, no migration. Only two genuine terminal owner outcomes participate
+(`AUTHORIZED`, explicit `REJECT`); every validation/gating rejection (non-DEMO
+environment, proposal not ready, symbol mismatch, demo not authorized, broker mutation
+blocked, stale, malformed) is deliberately excluded so it can never block a later,
+correctly-formed request for the same proposal. Different-decision-id/same-action now
+collapses to the existing authority (no duplicate); different-decision-id/opposite-
+action fails closed (`PROPOSAL_ALREADY_DECIDED`), original authority untouched. A
+hand-planted conflicting ledger (two decision_ids, same proposal, disagreeing terminal
+outcomes) fails closed at store construction via new
+`OwnerDecisionProposalAuthorityConflict`. Proven under real concurrent threads (3
+race shapes × 25 iterations, re-verified from a third, fresh store instance reading
+disk) and across a simulated process restart. `src/api/app.py`/auth untouched;
+`strategies/`, `web/`, `execution/`, `mt5/` untouched. 20 new focused tests pass;
+41/41 existing owner-decision/R5 family tests pass unchanged; 124/124 bounded backend
+regression (canonical proposals, proposal envelope/ledger/lifecycle, execution durable
+idempotency, proposal dedup) pass unchanged. Zero MetaTrader5/order_check/order_send
+calls anywhere in implementation or tests. Does not authorize any strategy, does not
+enable Demo execution. See
+`docs/status/AG_PANEL_R5C_PROPOSAL_DECISION_UNIQUENESS_STATUS.md`.
+
 ## AG_FRONTEND_OWNER_DECISION_REWIRE (2026-09-23, `feat/frontend-owner-decision-rewire`, candidate)
 
 Closes the frontend gap the prior `AG_FINAL_DEMO_EXECUTION_GATE` entry (below) flagged:

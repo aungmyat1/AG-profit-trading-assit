@@ -261,6 +261,11 @@ and the remaining lifecycle and campaign boundaries.
   endpoints to the real canonical proposal / opportunity-analysis / owner-decision
   API; documents the `DECISION_ID_CONTRACT_AMBIGUOUS` finding and its client-side-only
   mitigation, in-memory owner-key auth, and multi-proposal-per-symbol selection UX.
+- [`status/AG_PANEL_R5C_PROPOSAL_DECISION_UNIQUENESS_STATUS.md`](status/AG_PANEL_R5C_PROPOSAL_DECISION_UNIQUENESS_STATUS.md)
+  — closes the `DECISION_ID_CONTRACT_AMBIGUOUS`/`PROPOSAL_LEVEL_OWNER_DECISION_UNIQUENESS
+  = NOT_ENFORCED_BY_BACKEND` gap above: backend proposal-level at-most-one-authority
+  invariant inside `owner_decision.bridge.OwnerDecisionStore`, atomic and durable,
+  layered on the existing decision_id idempotency ledger.
 - [`status/AG_MULTI_MARKET_STRATEGY_OS_RESOURCE_REUSE_DISCOVERY_V1_STATUS.md`](status/AG_MULTI_MARKET_STRATEGY_OS_RESOURCE_REUSE_DISCOVERY_V1_STATUS.md)
   — multi-market strategy OS resource reuse discovery.
 - [`status/AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS.md`](status/AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS.md)
