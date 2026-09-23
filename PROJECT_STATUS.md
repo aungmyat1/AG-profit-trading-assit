@@ -4,6 +4,20 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE (2026-09-23, scheduler infrastructure, no execution)
+
+2026-09-23 `INVALID_DAY` (`MISSING_MANDATORY_EVIDENCE:ASIAN_LONDON:*`) root-caused to
+`SCHEDULER_TIMING_FAILURE`. Each FX task had one weekly trigger with PT15M repetition.
+With the host asleep at the first slot (07:00:20Z), Task Scheduler launched none of the
+later slots, on both 2026-09-22 (rescued by an unrelated reboot) and 2026-09-23.
+Prospective fix: `scripts/install_fx_scheduler.ps1` now registers one independent weekday
+trigger per M15-close slot (17 ASIAN_LONDON / 13 LONDON_NEWYORK). It is deployed to the
+live tasks, and natural-cycle verification is pending (2026-09-24). Historical
+classification is unchanged and the campaign is not reset. Classifier now:
+VALID=8 INVALID=4 PENDING=1 EXCLUDED=6 (12 VALID remaining). No strategy, registry,
+execution, MT5 or trading-config change; zero orders.
+Evidence: `docs/status/AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE_STATUS.md`.
+
 ## AG_FINAL_DEMO_EXECUTION_GATE (2026-09-23, `feat/demo-execution-bridge`, candidate)
 
 Integrates the previously-frozen `PANEL_R5C_R1_BROKER_IDENTITY` and
