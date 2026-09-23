@@ -266,6 +266,21 @@ and the remaining lifecycle and campaign boundaries.
   = NOT_ENFORCED_BY_BACKEND` gap above: backend proposal-level at-most-one-authority
   invariant inside `owner_decision.bridge.OwnerDecisionStore`, atomic and durable,
   layered on the existing decision_id idempotency ledger.
+- [`status/AG_FRONTEND_OWNER_DECISION_REWIRE_R1_REAUDIT_STATUS.md`](status/AG_FRONTEND_OWNER_DECISION_REWIRE_R1_REAUDIT_STATUS.md)
+  and [`status/AG_PANEL_R5C_INDEPENDENT_AUDIT_STATUS.md`](status/AG_PANEL_R5C_INDEPENDENT_AUDIT_STATUS.md)
+  — independent audit records for the two packages above.
+- [`status/AG_MISSING_PLATFORM_PACKAGES_INTEGRATION_STATUS.md`](status/AG_MISSING_PLATFORM_PACKAGES_INTEGRATION_STATUS.md)
+  — integration of the frontend rewire and R5C uniqueness into the platform lineage
+  (cherry-pick provenance, current-tip semantic review, test and failure attribution).
+- [`status/AG_GITHUB_REPOSITORY_SYNC_STATUS.md`](status/AG_GITHUB_REPOSITORY_SYNC_STATUS.md)
+  — publication of the integrated platform lineage to `origin/main` (publication is
+  not strategy, Demo or Live authorization).
+- [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION_STATUS.md),
+  [`status/AG_ASIAN_SWEEP_RUNTIME_ERROR_PROVENANCE_RECONCILIATION_STATUS.md`](status/AG_ASIAN_SWEEP_RUNTIME_ERROR_PROVENANCE_RECONCILIATION_STATUS.md)
+  and [`status/AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE_STATUS.md`](status/AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE_STATUS.md)
+  — dated 2026-09-23 FX shadow Series 002 snapshots. The last one is the authoritative
+  `classify_series` count. The 09-18 `VALID_DAY` claim in the provenance record conflicts
+  with the classifier and is open.
 - [`status/AG_MULTI_MARKET_STRATEGY_OS_RESOURCE_REUSE_DISCOVERY_V1_STATUS.md`](status/AG_MULTI_MARKET_STRATEGY_OS_RESOURCE_REUSE_DISCOVERY_V1_STATUS.md)
   — multi-market strategy OS resource reuse discovery.
 - [`status/AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS.md`](status/AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS.md)

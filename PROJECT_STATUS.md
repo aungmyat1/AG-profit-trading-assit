@@ -4,6 +4,36 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## AG_MISSING_PLATFORM_PACKAGES_INTEGRATION (2026-09-24, `feat/demo-execution-bridge` -> `main`, integrated + published, not authorized)
+
+Integrated the two independently audited packages missing from the platform lineage, by
+`cherry-pick -x` onto `3208e78`: frontend owner-decision rewire `061d3e0` -> `f08aa35`,
+R5C proposal-level uniqueness `cffe626` -> `00c6819`. Their audit records came in as
+doc-only cherry-picks: `8b871b7` -> `19747cf`, `230a6fd` -> `9f9ae7d`. The only conflicts
+were additive `PROJECT_STATUS.md` hunks, and every section was kept. The integrated tree
+is byte-identical to the audited R5C tip `230a6fd` on `src/owner_decision`, `src/api`,
+`src/execution`, `src/assistant`, `src/proposal_envelope` and `web/`. It differs only in the
+post-Asian runtime-provenance and scheduler files, which touch none of those surfaces.
+Backend: owner-decision/R5C 61/61, execution 95/95, proposal pipeline 110/110,
+scheduler 29/30 (+2 skipped). The one scheduler failure is
+`test_runner_refuses_friction_window_collision`, classified `LIVE_STATE_DEPENDENCE`: WP3A.1
+reached 5/5 complete days with the 2026-09-23 sessions, so the gate correctly stands down.
+Proven with controlled inputs: without 09-23 the gate returns `WINDOW_D_LONDON_NEWYORK`.
+Frontend: typecheck and build pass, and 48/49 tests pass. The one failure is the
+pre-existing containment test on `web/server.ts` `/api/execution/manual-demo` (`74d65ea`,
+already on `main`, unchanged here). Secret scan PASS.
+**Status semantics:** these packages are IMPLEMENTED + AUDITED + published to `main`. They
+are not AUTHORIZED. No strategy, registry, Demo or Live authorization changed.
+**FX shadow snapshot authority:** of the three 2026-09-23 campaign sections below, the
+`AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE` section is the latest and authoritative. It
+was re-derived from canonical `classify_series` (2026-09-05..09-23), and the classifier was
+re-run for this entry with identical results: VALID=8 INVALID=4 PENDING=1 EXCLUDED=6.
+The two earlier same-day sections are historical snapshots and are not rewritten. The
+`RUNTIME_ERROR_PROVENANCE_RECONCILIATION` section's reclassification of 2026-09-18 as
+`VALID_DAY` is **not** what the canonical classifier returns (`INVALID_DAY`, missing
+`LONDON_NEWYORK` unit evidence, a separate matter from `runtime_errors`). That remains an
+open owner item. See `docs/status/AG_MISSING_PLATFORM_PACKAGES_INTEGRATION_STATUS.md`.
+
 ## AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE (2026-09-23, scheduler infrastructure, no execution)
 
 2026-09-23 `INVALID_DAY` (`MISSING_MANDATORY_EVIDENCE:ASIAN_LONDON:*`) root-caused to
@@ -19,6 +49,13 @@ execution, MT5 or trading-config change; zero orders.
 Evidence: `docs/status/AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE_STATUS.md`.
 
 ## AG_ASIAN_SWEEP_RUNTIME_ERROR_PROVENANCE_RECONCILIATION (2026-09-23, research/observation, no execution)
+
+> **Correction (2026-09-24):** 2026-09-18 is `INVALID_DAY`, not `VALID_DAY`. Both
+> LONDON_NEWYORK units lack in-window evidence (`MISSING_MANDATORY_EVIDENCE`; host asleep
+> 11:50Z-19:41Z). A recovered runtime error does not imply VALID_DAY. The "8/20" total
+> below is still numerically correct, but its date list is wrong: the canonical classifier
+> counts 2026-09-17 as VALID and 2026-09-18 as INVALID. See
+> `docs/status/AG_ASIAN_SWEEP_SCHEDULER_REMEDIATION_PROSPECTIVE_VERIFICATION_STATUS.md`.
 
 Traced `operations.runtime_errors` in the `ST_ASIAN_SWEEP_5R_V1` FX daily report
 (`src/post_asian_pilot/report.py` line 276) to its single source: it is a direct copy of
