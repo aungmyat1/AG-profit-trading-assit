@@ -18,6 +18,53 @@ VALID=8 INVALID=4 PENDING=1 EXCLUDED=6 (12 VALID remaining). No strategy, regist
 execution, MT5 or trading-config change; zero orders.
 Evidence: `docs/status/AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE_STATUS.md`.
 
+## AG_ASIAN_SWEEP_RUNTIME_ERROR_PROVENANCE_RECONCILIATION (2026-09-23, research/observation, no execution)
+
+Traced `operations.runtime_errors` in the `ST_ASIAN_SWEEP_5R_V1` FX daily report
+(`src/post_asian_pilot/report.py` line 276) to its single source: it is a direct copy of
+`MonitoringCounters` counter `data_errors` (`src/post_asian_pilot/monitor.py`), which is
+incremented at exactly 3 sites in `src/post_asian_pilot/pipeline.py` (`_evaluate_pair`),
+each of which unconditionally persists a `STATUS_DATA_ERROR` decision for that unit in the
+same call. Because `save_decision()` (`src/post_asian_pilot/store.py`) overwrites a unit's
+decision record on any later differing-signature write, and because the counter itself
+never decrements, a transient error followed by a later successful evaluation of the same
+unit on the same trading day leaves `runtime_errors > 0` while the persisted/reported
+`final_strategy_state` no longer shows `DATA_ERROR` for any unit. Verified against
+persisted evidence (`journal/reports/fx/2026/2026-09-{14,16,18,22}.json` and both pilots'
+`monitoring_counters.json`) for all 4 previously `PENDING_RECONCILIATION` days: each
+affected cycle shows exactly one `data_errors` increment against 21-28
+`new_closed_m15_cycles` that trading day, and every one of the 4 required daily units
+(EURUSD/GBPUSD x ASIAN_LONDON/LONDON_NEWYORK) carries a deterministic, non-`DATA_ERROR`
+terminal state with a genuine strategy reason code. Per the frozen Data-Error Contract
+(`docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_VALIDATION_STATUS.md`, current
+`pr.decision.status` governs, not the aggregate counter) and Restart Contract ("restart
+anomalies, if any, reconciled" -> may remain `VALID_DAY`), all 4 days
+(2026-09-14, 09-16, 09-18, 09-22) reclassify `PENDING_RECONCILIATION` -> `VALID_DAY`.
+`valid_days = 8/20` (2026-09-09, 09-11, 09-14, 09-15, 09-16, 09-18, 09-21, 09-22),
+`invalid_days = 5` (unchanged), `pending_days = 0`. No strategy/session/risk parameter,
+`strategies/registry.yaml`, or Data-Error Contract text changed; `demo_authorized` remains
+`false`; `risk_per_trade_pct` remains unresolved; zero broker order calls; no historical
+strategy rerun used as replacement evidence. Identified a genuine, prospective-only
+reporting-schema gap: the `data_errors`/`runtime_errors` counter conflates "failed
+permanently" with "failed once then recovered," and `result` (`PASS` vs
+`PASS_WITH_OBSERVATIONS`) inherits the same ambiguity -- flagged as
+`FX_RUNTIME_ERROR_STRUCTURED_PROVENANCE_REMEDIATION` (spec only, not implemented). See
+`docs/status/AG_ASIAN_SWEEP_RUNTIME_ERROR_PROVENANCE_RECONCILIATION_STATUS.md`.
+
+## AG_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION (2026-09-23, research/observation, no execution)
+
+Reconciled an 11-weekday reporting backlog (2026-09-07..2026-09-22) for the already-running
+`ST_ASIAN_SWEEP_5R_V1` FX shadow qualification campaign (`AG_V1_0_3_FX_SHADOW_SERIES_002`):
+the scheduled `run_fx_cycle_once.py` task had kept collecting real decisions, but the
+separate daily-report/archive step and status doc had not been run since Series 002 Day
+001 (2026-09-04). Using only the existing `scripts/run_fx_daily_report.py` (read-only,
+zero order/strategy-cycle calls), classified each day under the frozen evidence contract:
+`valid_days = 4/20` (2026-09-09, 09-11, 09-15, 09-21), `invalid_days = 5`, `pending_days = 4`
+(unexplained `runtime_errors` counter, left `PENDING_RECONCILIATION` rather than guessed).
+No strategy/session/risk parameter changed; `demo_authorized` remains `false`;
+`risk_per_trade_pct` remains unresolved; zero broker order calls. See
+`docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION_STATUS.md`.
+
 ## AG_FINAL_DEMO_EXECUTION_GATE (2026-09-23, `feat/demo-execution-bridge`, candidate)
 
 Integrates the previously-frozen `PANEL_R5C_R1_BROKER_IDENTITY` and
