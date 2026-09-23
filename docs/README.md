@@ -256,6 +256,11 @@ and the remaining lifecycle and campaign boundaries.
   — Vantage MT5 crypto venue discovery.
 - [`status/AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_E1_STATUS.md`](status/AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_E1_STATUS.md)
   — Vantage Markets crypto MT5 execution compatibility.
+- [`status/AG_FRONTEND_OWNER_DECISION_REWIRE_STATUS.md`](status/AG_FRONTEND_OWNER_DECISION_REWIRE_STATUS.md)
+  — frontend Owner Analysis panel rewired from fictional `/api/owner-analysis/*`
+  endpoints to the real canonical proposal / opportunity-analysis / owner-decision
+  API; documents the `DECISION_ID_CONTRACT_AMBIGUOUS` finding and its client-side-only
+  mitigation, in-memory owner-key auth, and multi-proposal-per-symbol selection UX.
 - [`status/AG_MULTI_MARKET_STRATEGY_OS_RESOURCE_REUSE_DISCOVERY_V1_STATUS.md`](status/AG_MULTI_MARKET_STRATEGY_OS_RESOURCE_REUSE_DISCOVERY_V1_STATUS.md)
   — multi-market strategy OS resource reuse discovery.
 - [`status/AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS.md`](status/AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS.md)

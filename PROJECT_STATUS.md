@@ -64,6 +64,32 @@ zero order/strategy-cycle calls), classified each day under the frozen evidence 
 No strategy/session/risk parameter changed; `demo_authorized` remains `false`;
 `risk_per_trade_pct` remains unresolved; zero broker order calls. See
 `docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION_STATUS.md`.
+## AG_FRONTEND_OWNER_DECISION_REWIRE (2026-09-23, `feat/frontend-owner-decision-rewire`, candidate)
+
+Closes the frontend gap the prior `AG_FINAL_DEMO_EXECUTION_GATE` entry (below) flagged:
+`web/src/components/OwnerAnalysis/OwnerAnalysisPanel.tsx` targeted four endpoints that
+do not exist anywhere in this repo (`/api/owner-analysis/{reject,prepare-demo,
+cancel-demo,confirm-demo}`). The panel is rewired to the real, already-frozen backend
+surface — `GET /api/canonical-proposals`, `GET /api/opportunity-analysis`, and
+`POST /api/canonical-proposals/{id}/owner-decision` (`owner_decision.bridge.
+evaluate_owner_decision`, gated by `require_owner_auth`/`X-AG-Owner-Key`) — entirely
+within `web/`; no file under `src/` changed and `strategies/registry.yaml` is
+byte-identical to baseline. A real ambiguity was found and documented, not silently
+resolved: the backend's `decision_id` idempotency key has no proposal-level
+uniqueness guard anywhere in `src/owner_decision/` or `ProposalLedger`
+(`DECISION_ID_CONTRACT_AMBIGUOUS`); the frontend mitigates this for its own
+session/tab only by deriving `decision_id` deterministically from `proposal_id`, but
+this is explicitly documented as NOT a system-wide guarantee
+(`PROPOSAL_LEVEL_OWNER_DECISION_UNIQUENESS = NOT_ENFORCED_BY_BACKEND`,
+`CROSS_CLIENT_AT_MOST_ONCE = NOT_GUARANTEED`) and is left for a future backend change.
+The owner key is manual-entry, in-memory-only (never stored/logged, cleared on
+refresh). CONFIRM only ever produces a PREPARED, UNCONFIRMED `TradeCommand` template —
+never rendered as an executed trade; a separate, later, explicitly-confirmed call is
+still required to reach MT5 (untouched by this package). 48/49 new frontend tests pass
+(the one pre-existing failure, `web/server.ts`'s broker-script-containment check, is
+unrelated — `web/server.ts` is unmodified by this change set); `npm run build`
+succeeds. 77/77 backend regression tests pass unchanged (`src/` untouched). See
+`docs/status/AG_FRONTEND_OWNER_DECISION_REWIRE_STATUS.md`.
 
 ## AG_FINAL_DEMO_EXECUTION_GATE (2026-09-23, `feat/demo-execution-bridge`, candidate)
 
