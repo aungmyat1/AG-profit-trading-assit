@@ -28,6 +28,7 @@ from .decision import PostAsianDecision
 from .governor import DailyTradeLedger
 from .monitor import MonitoringCounters
 from .proposal import PostAsianEntryProposal
+from .runtime_error_log import RuntimeErrorLog
 from .snapshot import AsianSessionSnapshot
 
 DEFAULT_STATE_DIR = "journal/post_asian_pilot"
@@ -43,6 +44,9 @@ class PilotStores:
     daily_loss_guard: DailyLossGuard
     ledger: DailyTradeLedger
     counters: MonitoringCounters
+    # AG_FX_RUNTIME_ERROR_STRUCTURED_PROVENANCE_REMEDIATION_V1: additive, prospective-only
+    # structured provenance alongside `counters` -- see runtime_error_log.py docstring.
+    runtime_error_log: RuntimeErrorLog
 
     @classmethod
     def default(cls, strategy_id: str, state_dir: str = DEFAULT_STATE_DIR) -> "PilotStores":
@@ -55,6 +59,7 @@ class PilotStores:
             daily_loss_guard=DailyLossGuard.default(strategy_id),
             ledger=DailyTradeLedger.default(f"{state_dir}/daily_trade_ledger.json"),
             counters=MonitoringCounters.default(f"{state_dir}/monitoring_counters.json"),
+            runtime_error_log=RuntimeErrorLog.default(f"{state_dir}/runtime_error_log.json"),
         )
 
 
