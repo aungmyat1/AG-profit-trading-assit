@@ -4,6 +4,33 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## AG_FINAL_DEMO_EXECUTION_GATE (2026-09-23, `feat/demo-execution-bridge`, candidate)
+
+Integrates the previously-frozen `PANEL_R5C_R1_BROKER_IDENTITY` and
+`PANEL_PROPOSAL_DEDUP_R1` fixes (below) onto the Asian Sweep remediation line via a
+zero-conflict merge, then closes the one genuine remaining gap found on
+re-verification: `owner_decision.bridge.OwnerDecisionStore` (the already-audited,
+already production-wired owner-confirmation ledger behind
+`POST /api/canonical-proposals/{id}/owner-decision`) was in-memory-only and could lose
+an AUTHORIZED decision across a process restart. It is now optionally durable via the
+same `runtime_state.store.JsonKeyValueStore` convention already used by
+`ProposalLedger`/`ExecutionApprovalStore`/`DurableExecutionStore`
+(`path=None` keeps every existing caller's in-memory behavior unchanged;
+`src/api/app.py`'s production singleton now uses
+`state/owner_decisions/owner_decisions.json`). Re-verification also found the Demo
+account guard (`mt5.account_guard.verify_configured_account`) already mandatory in
+`execution/mt5_gateway.py::order_send()`, the real-data-provenance gate already
+enforced upstream in `proposal_envelope/formation_gate.py`, and strategy-authorization
+governance already respected and unbypassed — none of these needed new code. No
+`strategies/registry.yaml` value changed; no execution/lifecycle/MT5 code touched.
+`web/src/components/OwnerAnalysis/OwnerAnalysisPanel.tsx` (added by a prior commit on
+this same branch) still targets a fictional API contract and remains unwired to the
+real `owner-decision` endpoint — flagged as a known limitation, not attempted this
+session to avoid an unreviewed UI rewrite. 217/217 combined frozen-fix + bridge +
+persistence regression tests pass; 5 new persistence/concurrency tests pass; zero
+MetaTrader5/order_check/order_send calls reachable from any changed code path. See
+`docs/status/AG_FINAL_DEMO_EXECUTION_GATE_STATUS.md`.
+
 ## PANEL_PROPOSAL_DEDUP_R1 (2026-09-23, `fix/proposal-dedup-r1`, candidate)
 
 Root-cause fix for the known regression

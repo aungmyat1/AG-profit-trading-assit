@@ -27,7 +27,11 @@ from authorization.models import ENVIRONMENT_DEMO
 from authorization.store import ExecutionApprovalStore
 from authorization.telegram_gateway import ExecutionHandlerResult
 
-from owner_decision.bridge import OwnerDecisionStore, evaluate_owner_decision
+from owner_decision.bridge import (
+    DEFAULT_OWNER_DECISION_STORE_PATH,
+    OwnerDecisionStore,
+    evaluate_owner_decision,
+)
 from owner_decision.models import OWNER_ACTIONS, EXECUTION_DECISION_AUTHORIZED, OwnerDecision
 from proposal_envelope.ledger import ProposalLedger
 
@@ -102,7 +106,7 @@ app.add_middleware(
 _default_store = ExecutionApprovalStore()
 _default_registry = InMemoryProposalRegistry()
 _default_proposal_ledger = ProposalLedger()
-_default_owner_decision_store = OwnerDecisionStore()
+_default_owner_decision_store = OwnerDecisionStore(path=DEFAULT_OWNER_DECISION_STORE_PATH)
 
 
 def get_store() -> ExecutionApprovalStore:

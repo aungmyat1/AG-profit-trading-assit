@@ -41,9 +41,10 @@ with an OwnerDecision the caller constructed from an explicit owner action.
 """
 from __future__ import annotations
 
+import dataclasses
 import threading
 from datetime import datetime, timezone
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from assistant.canonical_proposal_adapter import (
     CanonicalProposalMalformed,
@@ -51,7 +52,9 @@ from assistant.canonical_proposal_adapter import (
     trade_command_template,
 )
 from assistant.commands import build_proposal_from_canonical
+from execution.models import ExecutionSource, TradeCommand
 from proposal_envelope.models import CanonicalProposal, PROPOSAL_READY
+from runtime_state.store import JsonKeyValueStore, StateStoreCorrupted
 
 from .models import (
     ENVIRONMENT_DEMO,
@@ -62,6 +65,51 @@ from .models import (
     ExecutionDecision,
     OwnerDecision,
 )
+
+DEFAULT_OWNER_DECISION_STORE_PATH = "state/owner_decisions/owner_decisions.json"
+
+
+class OwnerDecisionStoreUnavailable(RuntimeError):
+    """P10-equivalent fail-closed signal: the on-disk owner-decision ledger exists but
+    could not be read (corrupt/truncated/unreadable). Never interpreted as "no prior
+    decisions exist" -- a caller must stop, not silently start from an empty store and
+    risk re-authorizing a decision that was already REJECTED, or minting a second
+    lineage for a decision_id that already has a durable AUTHORIZED outcome."""
+
+
+def _serialize_execution_decision(outcome: ExecutionDecision) -> Dict[str, Any]:
+    """Plain-dict form for runtime_state.store.JsonKeyValueStore (this repo's
+    established atomic JSON persistence convention -- see proposal_envelope.ledger and
+    execution.durable_idempotency for the same pattern). ExecutionSource is a str Enum
+    so it serializes as its plain string value with no extra handling."""
+    trade_command = None
+    if outcome.trade_command is not None:
+        trade_command = dataclasses.asdict(outcome.trade_command)
+    return {
+        "decision_id": outcome.decision_id,
+        "proposal_envelope_id": outcome.proposal_envelope_id,
+        "status": outcome.status,
+        "reason_code": outcome.reason_code,
+        "reasons": list(outcome.reasons),
+        "trade_command": trade_command,
+    }
+
+
+def _deserialize_execution_decision(record: Dict[str, Any]) -> ExecutionDecision:
+    trade_command = None
+    raw_command = record.get("trade_command")
+    if raw_command is not None:
+        data = dict(raw_command)
+        data["source"] = ExecutionSource(data["source"])
+        trade_command = TradeCommand(**data)
+    return ExecutionDecision(
+        decision_id=record["decision_id"],
+        proposal_envelope_id=record["proposal_envelope_id"],
+        status=record["status"],
+        reason_code=record["reason_code"],
+        reasons=tuple(record.get("reasons", ())),
+        trade_command=trade_command,
+    )
 
 REASON_MALFORMED_DECISION = "MALFORMED_DECISION"
 REASON_OWNER_REJECTED = "OWNER_REJECTED"
@@ -88,15 +136,55 @@ def _parse_iso8601(value: Optional[str]) -> Optional[datetime]:
 
 
 class OwnerDecisionStore:
-    """Process-local idempotency ledger keyed by decision_id -- same in-memory-cache
-    posture as execution.executor.ProposalStore / api.execution_service.
-    InMemoryProposalRegistry (not a persistence layer; a restart loses it, same as
-    those). Lock-protected so two near-simultaneous submissions of the identical
-    decision_id can never both "win" and produce two independent ExecutionDecisions."""
+    """Idempotency ledger keyed by decision_id. Lock-protected (a single
+    threading.Lock guards the in-memory cache AND the optional durable write below) so
+    two near-simultaneous submissions of the identical decision_id can never both "win"
+    and produce two independent ExecutionDecisions -- matching
+    execution.durable_idempotency.DurableExecutionStore's own same-process concurrency
+    guarantee (a per-path lock inside JsonKeyValueStore; this store adds its own
+    coarser lock on top so the in-memory dict and the on-disk file are updated as one
+    unit from this class's point of view).
 
-    def __init__(self) -> None:
+    PANEL_R3 shipped this as in-memory-only ("a restart loses it"). That is safe for
+    ExecutionDecision.status == REJECTED (nothing to lose) but NOT for AUTHORIZED: an
+    ordinary process restart between "owner clicked Confirm" and "a later, separately
+    user-confirmed execute_command() call resolves this decision_id" would silently
+    lose the PREPARED TradeCommand template and any caller retrying the identical HTTP
+    request would re-run evaluate_owner_decision() against whatever the proposal
+    envelope looks like NOW -- not what it looked like at the moment of the original
+    approval. Passing `path` (the production default is
+    DEFAULT_OWNER_DECISION_STORE_PATH, via api.app's singleton) makes this durable
+    using runtime_state.store.JsonKeyValueStore -- the same atomic temp-file + os.
+    replace convention already used by proposal_envelope.ledger.ProposalLedger and
+    execution.durable_idempotency.DurableExecutionStore, so this introduces no new
+    persistence mechanism. `path=None` (the default, unchanged for every existing
+    caller/test) keeps the original pure in-memory behavior.
+
+    Durability scope, precisely stated (matching DurableExecutionStore's own
+    documented boundary): atomic file replacement and restart persistence under an
+    ordinary process restart; no fsync (no power-loss guarantee); safe for concurrent
+    THREADS within one process (JsonKeyValueStore's per-path lock plus this class's own
+    lock); NOT cross-process or cross-machine safety -- nothing in this repository runs
+    more than one process against the same owner-decision store today."""
+
+    def __init__(self, path: Optional[str] = None) -> None:
         self._lock = threading.Lock()
         self._decisions: Dict[str, ExecutionDecision] = {}
+        self._persist: Optional[JsonKeyValueStore] = (
+            JsonKeyValueStore(path) if path else None
+        )
+        if self._persist is not None:
+            self._load_from_disk()
+
+    def _load_from_disk(self) -> None:
+        try:
+            raw = self._persist.all()
+        except StateStoreCorrupted as exc:
+            raise OwnerDecisionStoreUnavailable(
+                f"OWNER_DECISION_STORE_UNAVAILABLE: {exc}"
+            ) from exc
+        for decision_id, record in raw.items():
+            self._decisions[decision_id] = _deserialize_execution_decision(record)
 
     def get(self, decision_id: str) -> Optional[ExecutionDecision]:
         with self._lock:
@@ -105,12 +193,14 @@ class OwnerDecisionStore:
     def put_if_absent(self, outcome: ExecutionDecision) -> ExecutionDecision:
         """Returns the WINNING record for outcome.decision_id -- either the one just
         inserted, or (if another call already recorded one first) that earlier one,
-        unchanged. Never overwrites an existing entry."""
+        unchanged. Never overwrites an existing entry, in memory or on disk."""
         with self._lock:
             existing = self._decisions.get(outcome.decision_id)
             if existing is not None:
                 return existing
             self._decisions[outcome.decision_id] = outcome
+            if self._persist is not None:
+                self._persist.put(outcome.decision_id, _serialize_execution_decision(outcome))
             return outcome
 
 
