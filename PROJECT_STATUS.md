@@ -4,6 +4,225 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PANEL_PROPOSAL_DEDUP_R1 (2026-09-23, `fix/proposal-dedup-r1`, candidate)
+
+Root-cause fix for the known regression
+(`tests/test_proposal_envelope_adapters.py::test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover`,
+previously `current_proposal_count=3`, expected `<=1`). Root cause:
+`proposal_envelope.adapters.fx_adapter.to_canonical_proposal()`'s `PROPOSAL_READY`
+branch built `proposal_envelope_id` -- `proposal_envelope.ledger.ProposalLedger`'s own
+dedup key -- from `decision.decision_id`, which `post_asian_pilot.decision._decision_id()`
+deliberately hashes in `evaluation_time`, minting a new value every scan cycle even for
+the SAME still-open economic setup (Case C: stable economic identity, unstable
+technical ID). The repository already carries one authoritative, deterministic
+economic-setup identity end-to-end for this exact case --
+`strategy_engine.engine`'s own `signal_id=f"{strategy_id}:{pair_id}:{symbol}:
+{session_date}"`, unchanged through `TradeIntent.signal_id -> TradeProposal.setup_id`
+-- the adapter simply wasn't using it as the proposal identity. Fix: the READY branch
+now derives `proposal_envelope_id` from `trade_proposal.setup_id`;
+`decision.decision_id` is preserved unchanged as `source_record_id`
+(per-observation provenance, a separate field never used for dedup). No other adapter
+(`btc_adapter`, `large_smc_adapter`, `large_smc_research_adapter`, `ssc_adapter`) shares
+this bug -- each already derives its identity from a stable setup/occurrence id, not a
+volatile per-scan one.
+
+12 new focused tests pass covering: identity derivation, repeated admission (2x/3x),
+idempotent no-mutation, restart persistence, same-process concurrent admission
+(`threading.Barrier`-synchronized), and owner-decision-compatible repeat handling;
+negative controls confirm different trading date / strategy / pair_id / symbol remain
+distinct proposals. The exact previously-failing test now passes
+(`current_proposal_count == 1`). Combined proposal-envelope/adapters suite: 25 passed.
+Owner-decision/CanonicalProposal regression: 20 passed. R5A/R5B/R5C/R5C-R1 execution
+regression plus execution-boundary: 70 passed. Broader post_asian_pilot +
+proposal-envelope-models regression: 116 passed. Scope: exactly
+`src/proposal_envelope/adapters/fx_adapter.py` (14 lines, mostly rationale comment)
+plus one new test file -- no lifecycle, authorization, scheduler, strategy, MT5, or
+broker-submission code touched; `BROKER_ORDERS_SENT = 0`. Broker side effects remain
+disabled; this package does not itself authorize them. See
+`docs/status/AG_PROPOSAL_DEDUP_R1_STATUS.md`.
+
+## PANEL_R5C_R1_BROKER_IDENTITY (2026-09-23, `fix/panel-r5c-broker-identity`, candidate)
+
+Remediates the independently audited R5C identity defect: reconciliation now
+validates positive integer broker tickets before converting them to durable IDs.
+Missing, blank, sentinel, zero, negative, boolean, and non-integer ticket values
+remain unresolved and cannot advance lifecycle state or persist `broker_order_id`.
+Valid exact-tag evidence remains matchable. No lifecycle, authorization, scheduler,
+strategy, MT5, or broker-submission behavior changed. Focused R5C-R1 tests pass
+23/23; combined R5B/R5B-R1/R5C/R5C-R1 tests pass 57/57; R5A-R1 authorization
+regression passes 58/58; adjacent execution-boundary tests pass 7/7. Candidate is
+ready for independent re-audit and is not frozen; R5D remains unauthorized.
+
+## PANEL_R5C_RECONCILIATION (2026-09-23, `panel-r5c-reconciliation` worktree branch, not merged)
+
+Additive `execution/reconciliation.py` -- fail-closed reconciliation of a durable
+execution decision (`execution.durable_idempotency`, R5B-R1, frozen) against
+broker-observation evidence, `OBSERVE -> MATCH -> CLASSIFY -> RECONCILE`, never
+`OBSERVE -> NOT_FOUND -> RESUBMIT`. Reuses, rather than reimplements: `execution.
+crypto_reconciliation`'s typed fail-closed outcome shape (`MATCHED`/`NOT_FOUND`/
+`AMBIGUOUS`/`BROKER_UNAVAILABLE`/`CONFLICT`/`EVIDENCE_INSUFFICIENT`), `execution.
+lifecycle`'s injected-lookup-callable idiom (`positions_lookup`/`deals_lookup`,
+never imported directly from `mt5.*`), and `execution.executor`'s own `AGT:<command_id>`
+broker-comment identity tag (reproduced byte-for-byte, not imported, to keep this
+module's import graph free of any write-capable code -- verified exactly
+`{__future__, dataclasses, typing, execution.durable_idempotency}` by AST). Matching
+requires exact tag equality (stricter than the existing substring check); more than
+one distinct matching broker record yields `AMBIGUOUS`, never an arbitrary pick; a
+persisted `broker_order_id` disagreeing with new evidence yields `CONFLICT`, never a
+silent overwrite; absent evidence (`NOT_FOUND`) never mutates the durable record and
+never triggers a resubmission -- there is no submission-capable code path in this
+module to trigger one (proven statically and dynamically, including a `MagicMock`
+standing in for `order_send` that a full reconciliation cycle never calls). Advances a
+durable record only along edges R5B-R1's frozen `ALLOWED_TRANSITIONS` already permits
+(`SUBMISSION_PENDING`/`SUBMISSION_UNKNOWN -> BROKER_ACCEPTED`,
+`BROKER_ACCEPTED -> RECONCILED`) -- no lifecycle extension was needed for either
+uncertain-submission recovery path the mission anticipated might require one. No HTTP
+route, no scheduler wiring, no MT5 submission, no auth change, no proposal-dedup fix.
+18 new focused tests pass; R5B/R5B-R1 (52 passed), R5A/R5A-R1 auth (58 passed), and
+adjacent execution-boundary (23 passed) regressions all pass; the known pre-existing
+proposal-dedup failure reproduces separately, unrelated, confirmed to have no
+dependency relationship with this package. Explicitly does not claim broker
+exactly-once execution or cross-process/cross-machine locking -- see
+`docs/status/AG_PANEL_R5C_RECONCILIATION_STATUS.md`'s P14 for the precise guarantee
+boundary.
+
+## PANEL_R5B_R1_LIFECYCLE_REMEDIATION (2026-09-23, `panel-r5b-r1-lifecycle-remediation` worktree branch, not merged)
+
+Remediates a `PANEL_R5B_INDEPENDENT_AUDIT_FAIL` finding: `DurableExecutionStore.
+transition()` validated only that the requested target state was known, never that
+the record's ACTUAL current state legally permitted reaching it -- the auditor
+demonstrated `BROKER_ACCEPTED -> PREPARED` was silently accepted and persisted. Adds
+`ALLOWED_TRANSITIONS` (an explicit, immutable current-state -> allowed-target-states
+graph: `PREPARED->{AUTHORIZED,REJECTED}`,
+`AUTHORIZED->{SUBMISSION_PENDING,REJECTED}`,
+`SUBMISSION_PENDING->{SUBMISSION_UNKNOWN,BROKER_ACCEPTED,REJECTED}`,
+`SUBMISSION_UNKNOWN->{BROKER_ACCEPTED,REJECTED}`, `BROKER_ACCEPTED->{RECONCILED}`,
+`REJECTED`/`RECONCILED` terminal) and `InvalidStateTransition`, a specific domain
+exception matching the module's existing `FingerprintConflict`/
+`IdempotencyStateUnavailable` convention rather than a generic `ValueError`. Same-state
+re-affirmation is an explicit, documented idempotent no-op, never looked up in the
+graph, so a terminal state can still be safely reaffirmed. Fixes a real TOCTOU gap
+(the previous `get()`-then-later-`put()` sequence held no lock across the two calls)
+by serializing `transition()`'s whole read-validate-write sequence under a new
+per-decision_id lock, mirroring `runtime_state.store.JsonKeyValueStore`'s own
+per-path-lock design rather than inventing a different one -- proven by a real,
+8-thread-style adversarial concurrency test racing two individually-legal transitions
+from the same state. Durability claims corrected per the audit: explicitly documents
+atomic file replacement and ordinary-restart persistence as guaranteed,
+**power-loss durability as NOT guaranteed** (no `fsync` anywhere in this module or its
+`JsonKeyValueStore` backend). No MT5 submission, no HTTP wiring, no auth change, no
+strategy behavior change (`git diff` against `src/api/` is empty). 21 new focused
+tests plus 13 original R5B tests all pass (two original tests' transition SEQUENCES
+were corrected to a lifecycle-legal path per P1's own "do not invent transitions for
+test convenience" instruction -- no assertion's intent changed); R5A/R5A-R1 auth
+boundaries re-verified intact (58 passed). Known pre-existing proposal-dedup failure
+reproduced separately, unrelated, not repaired here. See
+`docs/status/AG_PANEL_R5B_R1_LIFECYCLE_REMEDIATION_STATUS.md`.
+
+## PANEL_R5B_DURABLE_IDEMPOTENCY (2026-09-23, `panel-r5b-durable-execution-idempotency` worktree branch, not merged)
+
+Additive `execution/durable_idempotency.py` -- durable, restart-safe execution
+identity keyed by `decision_id` (owner_decision's own canonical idempotency key),
+reusing `runtime_state.store.JsonKeyValueStore` (the same store
+`authorization.store.ExecutionApprovalStore` already uses) and the O_EXCL claim-lock
+idiom already established by that store and `execution.journal.claim_command` -- no
+new persistence mechanism, no database server. `DurableExecutionRecord` (execution_id,
+proposal_id, decision_id, command_id, fingerprint, state, timestamps, nullable
+broker_order_id/broker_position_id/failure_reason) and a SHA-256
+`compute_execution_fingerprint()` over `TradeCommand`'s own execution-critical fields
+(same canonicalization convention as `authorization.integrity.compute_proposal_hash`,
+never Python's `hash()`). Same decision_id + same fingerprint returns the existing
+record; same decision_id + a different fingerprint fails closed
+(`FingerprintConflict`) rather than silently reusing an old authorization for a
+different trade -- a durable upgrade over R3's process-local
+`OwnerDecisionStore.put_if_absent()`, which has no fingerprint concept at all. Defines
+(but only partially activates) the `PREPARED -> AUTHORIZED -> SUBMISSION_PENDING ->
+SUBMISSION_UNKNOWN -> BROKER_ACCEPTED -> REJECTED -> RECONCILED` state vocabulary R5C/
+R5D/R6 will consume, plus `is_retry_safe()`, the single authoritative fail-closed
+answer that `SUBMISSION_PENDING`/`SUBMISSION_UNKNOWN`/`BROKER_ACCEPTED` are never
+safe to auto-retry. Wires into no HTTP route, modifies no existing file, submits no
+MT5 order (`execution.executor`/`execution.mt5_gateway`/`order_send`/
+`user_confirmed=True` do not appear anywhere in its import graph or executable code).
+Built on independently-audited `R5A_R1_INDEPENDENT_AUDIT_PASS`
+(`c94beb8e38928de25f105a086806f98ab7485c59`), which this change does not modify. 13
+new focused tests pass (including 8 real concurrent threads racing one decision_id
+and an explicit process-restart-parity test); both R5A/R5A-R1 auth boundaries
+re-verified intact (58 passed). Explicitly does NOT claim broker exactly-once
+execution -- see `docs/status/AG_PANEL_R5B_DURABLE_IDEMPOTENCY_STATUS.md`'s P15 for
+the precise guarantee boundary, and R6 for the still-missing broker reconciliation.
+Known pre-existing proposal-dedup failure
+(`test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover`)
+reproduced separately and explicitly flagged as a SEPARATE, still-unresolved defense
+from this package's execution-level idempotency -- both remain required before final
+broker activation.
+
+## PANEL_R5A_R1_LEGACY_EXECUTION_AUTH (2026-09-23, `panel-r5a-r1-legacy-execution-auth` worktree branch, not merged)
+
+Extends R5A's `require_owner_auth` (reused verbatim, no second key/header/compare
+implementation) to also gate the pre-existing, separate
+`POST /api/tickets/{approval_id}/authorize-demo` route -- the write surface actually
+closer to a real broker call than `owner-decision` (its `execution_handler` resolves to
+the real MT5 execution handler in production) and, until this change, had no auth
+boundary at all. Fails closed identically to R5A: unset `AG_OWNER_API_KEY` -> `503`,
+missing/wrong `X-AG-Owner-Key` -> `401`, execution handler never invoked in either
+case. Authentication success is not execution authorization: a valid header with a
+non-`"EXECUTE_DEMO"` action is still `400`, and against the real
+`strategies/registry.yaml` (`ST_ASIAN_SWEEP_5R_V1` `demo_authorized: false`) still
+blocks with `BLOCKED_STRATEGY_NOT_DEMO_AUTHORIZED` -- the existing confirmation
+(explicit `action`) and every existing guard (claim, integrity, Demo authority,
+DEMO-only environment) are unmodified. No GET route changed. Built on independently-
+audited `PANEL_R5A_INDEPENDENT_AUDIT_PASS` (`083399df0644ebe7a38c1a2d9b0174da6dcb18ac`).
+9 new focused tests pass; 91/91 of the combined R4+R5A+R5A-R1 API/execution-boundary
+suite passes (the one pre-existing, out-of-scope dedup failure reproduces separately,
+untouched by this diff). See `docs/status/AG_R5A_R1_LEGACY_EXECUTION_AUTH_STATUS.md`.
+
+## PANEL_R5A_OWNER_AUTH (2026-09-23, `panel-r5a-owner-auth` worktree branch, not merged)
+
+Additive `require_owner_auth` FastAPI dependency (`src/api/app.py`), gating only
+`POST /api/canonical-proposals/{proposal_id}/owner-decision` behind an
+`AG_OWNER_API_KEY` env var checked against the `X-AG-Owner-Key` request header
+(`hmac.compare_digest`). This is the authenticated-owner boundary the PANEL-R4
+independent audit named as a prerequisite before any broker-side-effect R5 work
+(`docs/status/AG_PANEL_R4_INDEPENDENT_AUDIT_STATUS.md`: "R5 must add an authenticated
+owner boundary before broker-side effects"). Fails closed: an unset key disables the
+route (`503`), never opens it; missing/empty/wrong header is `401`. Every GET route
+stays unauthenticated, as audited. No change to `owner_decision.bridge` (R3, frozen)
+or to `OwnerDecisionStore`'s process-local idempotency (that gap is explicitly R5B's).
+Built on independently-audited `PANEL_R4_INDEPENDENT_AUDIT_PASS`
+(`609e92f07ef2fac6333df3d14ee91648b4e3b8d1`), which this change does not modify. 20
+focused tests pass (7 new + the 13 existing PANEL-R4 tests, updated only to override
+this new dependency the same way they already override the two stores); 226/227 of the
+surrounding regression suite passes (the one failure is the same pre-existing,
+out-of-scope `test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover`
+already documented against the R3/R4 baseline). Known gap flagged, not fixed here: the
+pre-existing, separate `POST /api/tickets/{approval_id}/authorize-demo` route (closer to
+an actual MT5 call than this one) still has no equivalent auth boundary. See
+`docs/status/AG_PANEL_R5A_OWNER_AUTH_STATUS.md`.
+
+## PANEL_R3_OWNER_DECISION_BRIDGE (2026-09-22, `panel-r3-owner-decision-bridge` worktree branch, not merged)
+
+Additive `src/owner_decision/` package: `OwnerDecision`/`ExecutionDecision` types and
+`evaluate_owner_decision()`, bridging an explicit owner action on a
+`PROPOSAL_READY` + `demo_authorized=True` `CanonicalProposal` into a prepared,
+unconfirmed `execution.models.TradeCommand` template (reusing the existing, unmodified
+`assistant.canonical_proposal_adapter` / `assistant.commands.build_proposal_from_canonical`).
+Fails closed on: REJECT action, non-DEMO environment, non-READY/stale proposal,
+`demo_authorized=False`, `broker_mutation_blocked=True`, symbol mismatch, malformed
+decision, and duplicate `decision_id` replay (idempotent, never re-authorizes). Never
+imports `execution.executor`/`execution.mt5_gateway` and never sets
+`user_confirmed=True` — reaching an actual Demo order still requires a separate,
+later, explicitly-user-confirmed `assistant.commands.execute_command()` call this
+module does not make (see `docs/status/AG_PANEL_R3_OWNER_DECISION_BRIDGE_STATUS.md`
+for the full investigation, including the existing separate
+`authorization.store`/`api.execution_service` ticket-approval pathway this package
+deliberately does not duplicate or touch). Built on frozen `PANEL_R2_AUDIT_PASS`
+(`40376ce51afc819951aebc7438511421cf6fe48e`), which this change does not modify. No
+new API route, no frontend change (existing frontend-freeze directive below
+respected). 16 focused tests pass; 206/207 of the surrounding regression suite passes
+(the one failure is the pre-existing, out-of-scope
+`test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover`, already
+documented against the R2 baseline).
+
 ## Current rolling classification (2026-09-21)
 
 AG V2 pre-architecture baseline + core contracts (`PARTIAL`): the additive
@@ -160,6 +379,42 @@ Demo, Live, or execution authority -- WP-4 (`CanonicalProposal` bridge) is not
 implemented. No strategy semantics, registry authorization, or execution authority
 changed; no protected/OOS/holdout data accessed; no broker orders sent. Next gate:
 independent audit of this WP-3 implementation.
+
+**WP-4 (`CanonicalProposal` bridge) builder-side implementation complete, 2026-09-22
+(local, unpushed; `BUILDER_IMPLEMENTATION_COMPLETE` / `INDEPENDENT_AUDIT_PENDING`),
+branch `wp/v2-4-canonical-proposal-bridge` rooted at the frozen WP-3 checkpoint
+`570e755654f9aaf3f5cbbb1a09cd47690b83c9ae`:** `src/proposal_envelope/adapters/
+opportunity_adapter.py::to_canonical_proposal` maps `(OpportunityCandidate,
+ProposalEligibilityDecision, strategy_authority)` onto the existing
+`proposal_envelope.models.CanonicalProposal` shape -- ELIGIBLE maps only ever to
+`PROPOSAL_READY` with fully-populated geometry (direction/entry/stop/targets/expected_R
+copied verbatim from `candidate.geometry`); BLOCKED/INCOMPLETE never produce a
+`PROPOSAL_READY` envelope, and a partial `candidate.geometry` on those paths is
+surfaced only inside `setup_evidence` for audit, never as the top-level trade plan.
+Reuses WP-3's `evaluate_proposal_eligibility` output as a caller-supplied input rather
+than re-deriving it, and reuses `proposal_envelope.strategy_authority.StrategyAuthority`
+for the optional governance fields (defaulting to the safest/most restrictive state --
+`demo_authorized=False`, `live_authorized=False`, `proposal_only=True`,
+`broker_mutation_blocked=True` -- when omitted). `execution_authority` is always
+`AUTHORITY_NONE` regardless of what `strategy_authority` reports, matching every other
+adapter in the package. `proposal_envelope_id` is composed from
+`candidate.strategy_id`/`candidate.occurrence_id` (namespaced `OPP:`, distinct from
+every existing family prefix), so one logical occurrence keeps one identity across its
+own BLOCKED/INCOMPLETE/READY lifecycle. No risk sizing, no `TradeCommand`, no MT5/
+execution import, no `ProposalLedger` write -- statically and behaviorally proven (see
+`tests/test_opportunity_proposal_bridge.py` and the existing whole-package
+`test_proposal_envelope_execution_boundary.py`, which already covers every module under
+`proposal_envelope/`, including this new adapter). 17 new focused tests pass; the
+existing WP-3/opportunity-domain regression suite (135 tests) and the
+proposal_envelope-domain regression suite pass unchanged (4 pre-existing,
+unrelated failures reproduce identically on the unmodified frozen checkpoint --
+`state/proposal_ledger/proposal_ledger.json` has grown to 99 committed records since
+those tests' original 69-record baseline was authored; not touched or caused by this
+work). No strategy semantics, registry authorization, execution authority, or
+Demo/Live authorization changed; no protected/OOS/holdout data accessed; zero broker
+orders sent; not wired into any runtime path or the existing `ProposalLedger`. Next
+gate: independent audit of this WP-4 implementation, then WP-5 (wiring into the
+operational FX cycle).
 
 Validation-system assurance is `PARTIAL`: the repo now contains a fail-closed validation contract for friction and a machine-testable assurance manifest (`AG_VALIDATION_SYSTEM_ASSURANCE_V1.md` and `artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`) proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost handling. The earliest missing concrete gate, VA1 temporal/lookahead integrity, has now been frozen as `VD_TEMPORAL_LOOKAHEAD_V1` and covered by a deterministic perturbation test proving that future continuation beyond decision time T does not change the visible closed-bar set or strategy inputs at T. The project has also signed the R6 development edge gate for `ST_SESSION_SWEEP_CONTINUATION_V1` v1.0.1 via `config/governance/economic_gate_contract.yaml`, making the validation model operational for the research-only development edge mission without granting any live or demo execution authority. VA2 warm-up stability is now proven: `ONE_YEAR_REPLAY_STACK_V1` is frozen (`manifest_sha256 = 59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7`) with `DATA_COVERAGE_COMPLETE`, `CROSS_LEG_TIMEBASE_CONSISTENT` (`UTC_SINGLE_TIMEBASE`, hardened gate), `WARMUP_STABLE` (4371 closed H1 bars before the first decision, convergence proven both architecturally and empirically), and `PROTECTED_DATA_ACCESS_COUNT = 0`. See `docs/status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md`. No SSC replay has been executed; R5/R6 remain a separate, not-yet-started mission. The broader validation stack remains `NOT_READY` for evidence-producing development because VA3 synthetic known-answer coverage and downstream holdout gates remain partial or unproven. Strategy semantics remain unchanged and no demo/live authority is granted.
 

@@ -29,7 +29,7 @@ import os
 import time
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from execution.daily_loss_guard import DailyLossGuard
 from execution.position_guard import OpenPositionGuard
@@ -139,6 +139,41 @@ class DailyTradeLedger:
     def symbol_slot(self, strategy_id: str, trading_date: date, symbol: str) -> Optional[dict]:
         return next((s for s in self.slots(strategy_id, trading_date) if s["symbol"] == symbol), None)
 
+    @staticmethod
+    def _evaluate_claim(
+        ledger: Dict, symbol: str, setup_id: str, proposal_id: str, ready_at: datetime,
+        now: datetime, max_slots: int,
+    ) -> Tuple[ClaimResult, Optional[dict]]:
+        """Pure: computes what try_claim() would do against the given in-memory ledger
+        snapshot, WITHOUT mutating it (never appends to `ledger["slots"]`, never touches
+        the store). Returns (result, new_slot_to_append_or_None) -- the second element
+        is the slot a fresh claim would append (already stamped with `now`), non-None
+        only on that branch. Shared verbatim by try_claim() (which persists) and
+        preview_claim() (which never does), so capacity/identity rules can never diverge
+        between an observational preview and a real claim."""
+        slots = ledger["slots"]
+
+        existing_identity = next(
+            (s for s in slots if s["symbol"] == symbol and s["setup_id"] == setup_id
+             and s["proposal_id"] == proposal_id), None)
+        if existing_identity is not None:
+            return ClaimResult(True, None, existing_identity), None
+
+        existing_symbol = next((s for s in slots if s["symbol"] == symbol), None)
+        if existing_symbol is not None:
+            return ClaimResult(False, REASON_SYMBOL_DAILY_TRADE_LIMIT, existing_symbol), None
+
+        if len(slots) >= ledger.get("max_slots", max_slots):
+            return ClaimResult(False, REASON_DAILY_TRADE_LIMIT, None), None
+
+        slot = {
+            "slot_index": len(slots) + 1, "symbol": symbol, "setup_id": setup_id,
+            "proposal_id": proposal_id, "ready_at": ready_at.isoformat(),
+            "claimed_at": now.isoformat(), "state": SLOT_STATE_CLAIMED,
+            "terminal_reason": None, "created_at": now.isoformat(), "updated_at": now.isoformat(),
+        }
+        return ClaimResult(True, None, slot), slot
+
     def try_claim(
         self, strategy_id: str, strategy_version: str, release_id: str, trading_date: date,
         symbol: str, setup_id: str, proposal_id: str, ready_at: datetime,
@@ -154,33 +189,42 @@ class DailyTradeLedger:
         key = self._key(strategy_id, trading_date)
         with _ExclusiveFileLock(self.store.path):
             ledger = self._load(strategy_id, strategy_version, release_id, trading_date)
-            slots = ledger["slots"]
+            result, new_slot = self._evaluate_claim(
+                ledger, symbol, setup_id, proposal_id, ready_at, now, self.max_slots)
 
-            existing_identity = next(
-                (s for s in slots if s["symbol"] == symbol and s["setup_id"] == setup_id
-                 and s["proposal_id"] == proposal_id), None)
-            if existing_identity is not None:
-                existing_identity["updated_at"] = now.isoformat()
+            if not result.success:
+                return result
+
+            if new_slot is not None:
+                ledger["slots"].append(new_slot)
                 self.store.put(key, ledger)
-                return ClaimResult(True, None, existing_identity)
+                return result
 
-            existing_symbol = next((s for s in slots if s["symbol"] == symbol), None)
-            if existing_symbol is not None:
-                return ClaimResult(False, REASON_SYMBOL_DAILY_TRADE_LIMIT, existing_symbol)
-
-            if len(slots) >= ledger.get("max_slots", self.max_slots):
-                return ClaimResult(False, REASON_DAILY_TRADE_LIMIT, None)
-
-            slot = {
-                "slot_index": len(slots) + 1, "symbol": symbol, "setup_id": setup_id,
-                "proposal_id": proposal_id, "ready_at": ready_at.isoformat(),
-                "claimed_at": now.isoformat(), "state": SLOT_STATE_CLAIMED,
-                "terminal_reason": None, "created_at": now.isoformat(), "updated_at": now.isoformat(),
-            }
-            slots.append(slot)
-            ledger["slots"] = slots
+            # Idempotent re-claim of an existing identity: result.slot IS the same dict
+            # object already inside ledger["slots"] (never copied by _evaluate_claim),
+            # so mutating it in place and persisting matches the pre-refactor behavior
+            # exactly.
+            result.slot["updated_at"] = now.isoformat()
             self.store.put(key, ledger)
-            return ClaimResult(True, None, slot)
+            return result
+
+    def preview_claim(
+        self, strategy_id: str, strategy_version: str, release_id: str, trading_date: date,
+        symbol: str, setup_id: str, proposal_id: str, ready_at: datetime,
+        now: Optional[datetime] = None,
+    ) -> ClaimResult:
+        """Read-only counterpart to try_claim(): the exact outcome try_claim() would
+        produce for this identity right now, using the identical capacity/identity
+        rules (_evaluate_claim) -- but performs ZERO writes. No updated_at mutation, no
+        slot_index persistently allocated, no store.put() call, no exclusive lock taken
+        (a plain read, like slots()/consumed_count() already do). Safe to call as often
+        as needed from an observational caller (e.g. a status read) without affecting a
+        later real try_claim() for the same or a different identity."""
+        now = now or datetime.now(timezone.utc)
+        ledger = self._load(strategy_id, strategy_version, release_id, trading_date)
+        result, _new_slot = self._evaluate_claim(
+            ledger, symbol, setup_id, proposal_id, ready_at, now, self.max_slots)
+        return result
 
     def transition(self, strategy_id: str, trading_date: date, symbol: str, new_state: str,
                    terminal_reason: Optional[str] = None, now: Optional[datetime] = None) -> None:

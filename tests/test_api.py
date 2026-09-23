@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from api.app import app, get_execution_handler, get_proposal_registry, get_store
+from api.app import app, get_execution_handler, get_proposal_registry, get_store, require_owner_auth
 from api.execution_service import InMemoryProposalRegistry
 from authorization.models import VENUE_MT5
 from authorization.store import ExecutionApprovalStore
@@ -36,6 +36,12 @@ def _client(tmp_path, *, execution_handler=None, registry_path_patch=None):
     app.dependency_overrides[get_store] = lambda: store
     app.dependency_overrides[get_proposal_registry] = lambda: registry
     app.dependency_overrides[get_execution_handler] = lambda: (execution_handler or fake_handler)
+    # PANEL-R5A-R1 gates authorize-demo with require_owner_auth (see
+    # tests/test_api_authorize_demo_auth.py for that boundary's own dedicated tests).
+    # These pre-existing tests are about authorize_demo_execution()'s own semantics,
+    # not auth, so they override it the same way they already override the three
+    # dependencies above.
+    app.dependency_overrides[require_owner_auth] = lambda: None
 
     client = TestClient(app)
     return client, store, registry

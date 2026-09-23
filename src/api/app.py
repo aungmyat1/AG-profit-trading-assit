@@ -15,6 +15,7 @@ test_api.py::test_cors_never_allows_wildcard_origin.
 """
 from __future__ import annotations
 
+import hmac
 import logging
 import os
 from typing import Optional
@@ -26,10 +27,13 @@ from authorization.models import ENVIRONMENT_DEMO
 from authorization.store import ExecutionApprovalStore
 from authorization.telegram_gateway import ExecutionHandlerResult
 
+from owner_decision.bridge import OwnerDecisionStore, evaluate_owner_decision
+from owner_decision.models import OWNER_ACTIONS, EXECUTION_DECISION_AUTHORIZED, OwnerDecision
 from proposal_envelope.ledger import ProposalLedger
 
 from . import broker_service, strategy_service, telegram_service
 from .execution_service import InMemoryProposalRegistry, SOURCE_WEB, authorize_demo_execution
+from .opportunity_analysis import OpportunityAnalysisError, get_opportunity_analysis
 from .schemas import (
     AuthorizeDemoRequest,
     AuthorizeDemoResponse,
@@ -41,6 +45,9 @@ from .schemas import (
     HealthResponse,
     MarketDataCandlesResponse,
     MT5StatusResponse,
+    OwnerDecisionRequest,
+    OwnerDecisionResponse,
+    PreparedTradeCommandResponse,
     ProposalResponse,
     StrategyResponse,
     SystemStatusResponse,
@@ -49,6 +56,7 @@ from .schemas import (
     TelegramStatusResponse,
     TicketResponse,
     ValidationResponse,
+    OpportunityAnalysisResponse,
 )
 
 DEFAULT_ALLOWED_ORIGINS = (
@@ -94,6 +102,7 @@ app.add_middleware(
 _default_store = ExecutionApprovalStore()
 _default_registry = InMemoryProposalRegistry()
 _default_proposal_ledger = ProposalLedger()
+_default_owner_decision_store = OwnerDecisionStore()
 
 
 def get_store() -> ExecutionApprovalStore:
@@ -108,6 +117,47 @@ def get_proposal_ledger() -> ProposalLedger:
     return _default_proposal_ledger
 
 
+def get_owner_decision_store() -> OwnerDecisionStore:
+    return _default_owner_decision_store
+
+
+# PANEL-R5A (AG_PANEL_R5A_OWNER_AUTH_V1): the authenticated-owner boundary the R4
+# independent audit (docs/status/AG_PANEL_R4_INDEPENDENT_AUDIT_STATUS.md) named as a
+# prerequisite before any broker-side-effect (R5B+) work -- "R5 must add an
+# authenticated owner boundary before broker-side effects." Scoped to exactly the
+# owner-decision POST route; every GET route stays as it was audited.
+OWNER_API_KEY_ENV = "AG_OWNER_API_KEY"
+OWNER_AUTH_HEADER = "X-AG-Owner-Key"
+
+
+def require_owner_auth(request: Request) -> None:
+    """Fail-closed: an unset AG_OWNER_API_KEY disables the route it guards (503), it is
+    never treated as "no auth required". A missing/incorrect X-AG-Owner-Key header is
+    rejected (401). Comparison is constant-time (hmac.compare_digest) so response
+    timing cannot be used to recover the configured key. Knowing the endpoint path or a
+    proposal_id/approval_id alone is never sufficient -- the header must match this
+    process's configured key.
+
+    PANEL-R5A-R1: this is the ONE canonical dependency for both owner-controlled write
+    surfaces -- POST .../owner-decision (R5A) and POST .../authorize-demo (R5A-R1) --
+    reused verbatim, never duplicated into a second key/header/compare implementation.
+    Authenticating here says nothing about execution authorization, risk approval, or
+    user_confirmed status; each route's own pre-existing checks still run unchanged
+    after this passes."""
+    configured_key = os.environ.get(OWNER_API_KEY_ENV, "")
+    if not configured_key:
+        raise HTTPException(
+            status_code=503,
+            detail={"reason_code": "OWNER_AUTH_NOT_CONFIGURED"},
+        )
+    supplied_key = request.headers.get(OWNER_AUTH_HEADER, "")
+    if not supplied_key or not hmac.compare_digest(supplied_key, configured_key):
+        raise HTTPException(
+            status_code=401,
+            detail={"reason_code": "OWNER_AUTH_REJECTED"},
+        )
+
+
 def get_execution_handler():
     """Production default: the real MT5 execution handler. Tests MUST override this
     dependency with a fake/mocked callable -- see tests/test_api.py."""
@@ -119,6 +169,17 @@ def get_execution_handler():
 @app.get("/api/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     return HealthResponse(status="OK")
+
+
+@app.get("/api/opportunity-analysis", response_model=list[OpportunityAnalysisResponse])
+def opportunity_analysis(symbol: Optional[str] = None) -> list[OpportunityAnalysisResponse]:
+    """Observe-only Owner Analysis projection; never runs preflight or execution."""
+    try:
+        return get_opportunity_analysis(symbol=symbol)
+    except OpportunityAnalysisError as exc:
+        reason = str(exc)
+        status = 400 if reason == "UNSUPPORTED_SYMBOL" else 502
+        raise HTTPException(status_code=status, detail={"reason_code": reason}) from exc
 
 
 @app.get("/api/broker/status", response_model=BrokerStatusResponse)
@@ -339,6 +400,76 @@ def get_canonical_proposal(
     return _to_canonical_proposal_response(envelope)
 
 
+def _to_owner_decision_response(result) -> OwnerDecisionResponse:
+    """Pure read-model mapping from owner_decision.models.ExecutionDecision -- every
+    field copied verbatim from the audited R3 boundary's own outcome; this function
+    reinterprets nothing."""
+    trade_command = None
+    if result.trade_command is not None:
+        tc = result.trade_command
+        trade_command = PreparedTradeCommandResponse(
+            command_id=tc.command_id, action=tc.action, symbol=tc.symbol, side=tc.side,
+            order_type=tc.order_type, volume=tc.volume, entry=tc.entry, sl=tc.sl, tp=tc.tp,
+            proposal_id=tc.proposal_id,
+        )
+    return OwnerDecisionResponse(
+        decision_id=result.decision_id,
+        proposal_envelope_id=result.proposal_envelope_id,
+        status=result.status,
+        reason_code=result.reason_code,
+        reasons=list(result.reasons),
+        execution_decision_prepared=result.status == EXECUTION_DECISION_AUTHORIZED,
+        trade_command=trade_command,
+    )
+
+
+@app.post(
+    "/api/canonical-proposals/{proposal_id:path}/owner-decision",
+    response_model=OwnerDecisionResponse,
+    dependencies=[Depends(require_owner_auth)],
+)
+def submit_owner_decision(
+    proposal_id: str,
+    request: OwnerDecisionRequest,
+    proposal_ledger: ProposalLedger = Depends(get_proposal_ledger),
+    owner_decision_store: OwnerDecisionStore = Depends(get_owner_decision_store),
+) -> OwnerDecisionResponse:
+    """PANEL-R4 (AG_PANEL_R4_HTTP_CONFIRMATION_V1): the explicit owner-confirmation
+    surface recommended by docs/status/AG_PANEL_R3_OWNER_DECISION_BRIDGE_STATUS.md
+    "Next recommended package". Transports one explicit owner action into the already-
+    audited owner_decision.bridge.evaluate_owner_decision() boundary -- this route adds
+    no new approval/staleness/governance logic of its own; every fail-closed rule
+    (REJECT is terminal, environment must be DEMO, proposal must be PROPOSAL_READY and
+    demo_authorized and not broker_mutation_blocked, staleness, symbol/identity match,
+    decision_id idempotency) is the R3 bridge's, reused verbatim.
+
+    PANEL-R5A: gated by require_owner_auth (X-AG-Owner-Key against AG_OWNER_API_KEY) --
+    see that dependency's docstring. This closes the gap the R4 independent audit named:
+    knowing this URL/proposal_id alone must not be enough to create an OwnerDecision.
+
+    `proposal_id` is taken ONLY from the URL path, never from the request body, so a
+    decision can never be submitted against a different proposal identity than the one
+    the client POSTed to. AUTHORIZED means only that a PREPARED, UNCONFIRMED
+    TradeCommand template now exists -- reaching an actual Demo broker order still
+    requires a SEPARATE, later, explicitly-confirmed call this route never makes
+    (AGENTS.md Authority order point 3): this handler never imports execution.executor,
+    execution.mt5_gateway, or calls assistant.commands.execute_command."""
+    if request.action not in OWNER_ACTIONS:
+        raise HTTPException(status_code=400, detail={"reason_code": "UNSUPPORTED_ACTION"})
+
+    envelope = proposal_ledger.get_proposal(proposal_id)
+    decision = OwnerDecision(
+        decision_id=request.decision_id,
+        proposal_envelope_id=proposal_id,
+        action=request.action,
+        symbol=request.symbol,
+        environment=request.environment,
+        actor=request.actor,
+    )
+    result = evaluate_owner_decision(decision, envelope, store=owner_decision_store)
+    return _to_owner_decision_response(result)
+
+
 @app.get("/api/telegram/status", response_model=TelegramStatusDetailResponse)
 def telegram_status() -> TelegramStatusDetailResponse:
     status = telegram_service.get_status()
@@ -413,7 +544,11 @@ def get_ticket(approval_id: str, store: ExecutionApprovalStore = Depends(get_sto
     return _to_ticket_response(approval)
 
 
-@app.post("/api/tickets/{approval_id}/authorize-demo", response_model=AuthorizeDemoResponse)
+@app.post(
+    "/api/tickets/{approval_id}/authorize-demo",
+    response_model=AuthorizeDemoResponse,
+    dependencies=[Depends(require_owner_auth)],
+)
 def authorize_demo(
     approval_id: str,
     request: AuthorizeDemoRequest,
@@ -422,6 +557,21 @@ def authorize_demo(
     proposal_registry: InMemoryProposalRegistry = Depends(get_proposal_registry),
     execution_handler=Depends(get_execution_handler),
 ) -> AuthorizeDemoResponse:
+    """PANEL-R5A-R1: gated by the same require_owner_auth dependency as
+    POST /api/canonical-proposals/{proposal_id}/owner-decision (X-AG-Owner-Key against
+    AG_OWNER_API_KEY) -- see that dependency's docstring. This is the second of the two
+    owner-controlled write surfaces named in AG_PANEL_R5A_OWNER_AUTH_STATUS.md's known
+    gap; it was closer to an actual broker call than owner-decision (this route's own
+    execution_handler resolves to the real MT5 execution handler in production) and had
+    no auth boundary until now.
+
+    Authentication success here means only that the request may reach the
+    pre-existing checks below -- it is not itself execution authorization. Every
+    existing fail-closed rule (explicit action == "EXECUTE_DEMO", atomic
+    approval claim, proposal integrity, strategy Demo authority, DEMO-only
+    environment) is authorize_demo_execution()'s, reused unchanged; this
+    dependency adds no new execution semantics and no new confirmation
+    mechanism, and never itself calls execution_handler."""
     if request.action != "EXECUTE_DEMO":
         raise HTTPException(status_code=400, detail={"reason_code": "UNSUPPORTED_ACTION"})
 

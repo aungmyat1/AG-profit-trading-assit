@@ -260,7 +260,22 @@ def _form_canonical_proposal(
 def run_pilot_cycle(
     pilot_path: str = None, now: Optional[dt.datetime] = None,
     proposal_ledger: Optional[ProposalLedger] = None,
+    observe_only: bool = False,
 ) -> PilotCycleResult:
+    """observe_only=False (default, unchanged for every existing production caller --
+    --once, the scheduled runner, run_fx_session_daytrade.py) preserves the exact prior
+    persisting behavior: real DailyTradeLedger.try_claim(), real
+    save_proposal(actionable=True) + COUNTER_PROPOSALS_CREATED, real WP11A canonical
+    ProposalLedger.record_proposal(). observe_only=True (status/inspection callers
+    only) makes ALL of those structurally unreachable for this call -- not run-then-
+    rolled-back, never called at all -- while still computing and returning the exact
+    same WATCH/READY/BLOCKED/SELECTED decision and proposal geometry for identical
+    input, via DailyTradeLedger.preview_claim() (same capacity/identity rules as
+    try_claim(), zero writes) in place of try_claim(), and in-memory-only
+    candidate/actionable proposal construction in place of any save_proposal() call.
+    Supersedes the narrower persist_canonical_proposal flag this repo briefly carried
+    (which only skipped the WP11A canonical-ledger write, leaving the native daily-
+    opportunity claim and native proposal/counter writes reachable from --status)."""
     pilot = load_pilot_config(pilot_path) if pilot_path else load_pilot_config()
     strategy = load_strategy(pilot.strategy_source_path)
     release_id = load_raw_yaml(DEFAULT_RELEASE_CONFIG_PATH).get("release_id", "AG_TRADE_ASSISTANT_V1_0_1")
@@ -316,37 +331,59 @@ def run_pilot_cycle(
         gate = evaluate_daily_governor(strategy.strategy_id, trading_date, stores.daily_loss_guard,
                                        pilot.strategy_daily_loss_limit_r)
         if gate.portfolio_state != PORTFOLIO_ELIGIBLE:
-            save_proposal(stores.proposal_store, candidate_proposal)  # evidence only, actionable=False
+            if not observe_only:
+                save_proposal(stores.proposal_store, candidate_proposal)  # evidence only, actionable=False
             final_by_symbol[symbol] = PairResult(symbol, decision, gate.portfolio_state, gate.reason_code,
                                                  candidate_proposal)
             continue
 
-        claim = stores.ledger.try_claim(
+        # observe_only=True uses preview_claim() -- the identical capacity/identity
+        # rules as try_claim() (governor.py's own _evaluate_claim, shared by both), but
+        # zero writes: no updated_at mutation, no slot_index persistently allocated, no
+        # store.put() call at all. This is DailyTradeLedger.try_claim() being
+        # structurally unreachable for an observational cycle, not run-then-discarded.
+        claim_fn = stores.ledger.preview_claim if observe_only else stores.ledger.try_claim
+        claim = claim_fn(
             strategy.strategy_id, strategy.version, release_id, trading_date, symbol,
             candidate_proposal.setup_id, candidate_proposal.proposal_id, decision.ready_at, now,
         )
         if not claim.success:
-            save_proposal(stores.proposal_store, candidate_proposal)  # evidence only, actionable=False
+            if not observe_only:
+                save_proposal(stores.proposal_store, candidate_proposal)  # evidence only, actionable=False
             final_by_symbol[symbol] = PairResult(symbol, decision, "BLOCKED", claim.reason_code,
                                                  candidate_proposal)
             continue
 
+        # actionable_proposal is always constructed in memory (needed for identical
+        # WATCH/READY/SELECTED report output either way -- report.py renders from this
+        # PairResult.proposal field, never from re-reading stores.proposal_store) --
+        # observe_only only skips PERSISTING it.
         actionable_proposal = dataclasses.replace(candidate_proposal, actionable=True)
-        if save_proposal(stores.proposal_store, actionable_proposal):
-            stores.counters.increment(strategy.strategy_id, trading_date, COUNTER_PROPOSALS_CREATED)
+        if not observe_only:
+            if save_proposal(stores.proposal_store, actionable_proposal):
+                stores.counters.increment(strategy.strategy_id, trading_date, COUNTER_PROPOSALS_CREATED)
         final_by_symbol[symbol] = PairResult(symbol, decision, PORTFOLIO_SELECTED, None, actionable_proposal)
 
         # WP11A: additive canonical R2-R4 pipeline wiring. Deliberately isolated from the
         # native pipeline above -- any exception here is caught, logged, and never
         # propagated, so a bug in the canonical layer can never block, alter, or delay an
         # actionable native proposal or its governor/ledger claim.
-        try:
-            _form_canonical_proposal(
-                decision, actionable_proposal, market_snapshot_by_symbol.get(symbol), proposal_ledger,
-                config_hash=canonical_config_hash, engine_release=release_id,
-            )
-        except Exception:  # noqa: BLE001 -- see docstring: must never affect native behavior
-            logger.exception("WP11A canonical proposal formation failed for symbol=%s (native pipeline unaffected)", symbol)
+        #
+        # observe_only=True (observational callers only -- e.g.
+        # scripts/run_post_asian_pilot.py --status, scripts/run_fx_session_daytrade.py
+        # --status) skips this entirely rather than swapping in a throwaway
+        # ProposalLedger: _form_canonical_proposal() has no return value and, per its
+        # own docstring, no side effect visible to the native pipeline above -- so not
+        # calling it changes nothing else about this cycle's result, only whether the
+        # separate durable canonical ledger gets a new record.
+        if not observe_only:
+            try:
+                _form_canonical_proposal(
+                    decision, actionable_proposal, market_snapshot_by_symbol.get(symbol), proposal_ledger,
+                    config_hash=canonical_config_hash, engine_release=release_id,
+                )
+            except Exception:  # noqa: BLE001 -- see docstring: must never affect native behavior
+                logger.exception("WP11A canonical proposal formation failed for symbol=%s (native pipeline unaffected)", symbol)
 
     final = tuple(final_by_symbol[symbol] for symbol in pilot.universe)
     slots_used = stores.ledger.consumed_count(strategy.strategy_id, trading_date)

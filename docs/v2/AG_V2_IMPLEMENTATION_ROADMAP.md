@@ -48,12 +48,12 @@ V2-3B  SSC replay/shadow adapter                  IMPLEMENTED_AND_LOCALLY_VERIFI
         ↓
       PARITY CHECKPOINT                           PASS
 
-V2-3C  Asian Sweep shadow adapter (WP-1)          BUILDER_IMPLEMENTATION_COMPLETE (2026-09-22; INDEPENDENT_AUDIT_PENDING -- replaces SSC as active FX V2 target -- SSC adapter/tests/evidence preserved)
+V2-3C  Asian Sweep shadow adapter (WP-1)          WP1_GATE_PASS (owner-accepted, frozen `98457f6` -- replaces SSC as active FX V2 target -- SSC adapter/tests/evidence preserved)
         ↓
-      SSC ACTIVE ROUTING REMOVAL (WP-2)           PLANNED, after V2-3C gate passes -- SSC preserved, not deleted
+      SSC ACTIVE ROUTING REMOVAL (WP-2)           OWNER_ACCEPTED_FROZEN, independent audit PASS, frozen `bcee106` -- SSC preserved, not deleted
 
-V2-4   ProposalEligibility bridge
-V2-5   CanonicalProposal integration
+V2-4   ProposalEligibility bridge (WP-3)          IMPLEMENTATION_COMPLETE (2026-09-22; INDEPENDENT_AUDIT_PENDING) -- src/opportunity/proposal_eligibility.py
+V2-5   CanonicalProposal integration (WP-4)       BUILDER_IMPLEMENTATION_COMPLETE, LOCAL/UNPUSHED (2026-09-22; INDEPENDENT_AUDIT_PENDING) -- src/proposal_envelope/adapters/opportunity_adapter.py; no proposal ledger write wired yet
 V2-6   BTC + Asian/session adapters
 V2-7   Portfolio RiskDecision
 V2-8   ExecutionDecision + authority model
@@ -164,9 +164,11 @@ session pairs, occurrence identity, idempotence, terminal stickiness
 and canonical parity against the real `strategy_engine.evaluate()` are
 covered by `tests/test_opportunity_asian_sweep_adapter.py` and the
 Asian Sweep cases added to `tests/test_opportunity_adapter_parity.py`.
-Builder-side status: **`BUILDER_IMPLEMENTATION_COMPLETE` /
-`INDEPENDENT_AUDIT_PENDING`** (2026-09-22) -- not yet `WP1_GATE_PASS`; SSC
-remains active routing and V2-4 is not implemented by this work package.
+Status: **`WP1_GATE_PASS`** (owner-accepted, frozen at `98457f62c75705fee870c697fea76bda05abddf0`).
+WP-2 (SSC active-routing removal) is `OWNER_ACCEPTED_FROZEN`, independent audit
+PASS, frozen at `bcee106835623572fbb62b1fe12388a282efca6c` -- SSC's own code/tests/
+replay/evidence remain preserved, only its active-routing role was removed. See
+`PROJECT_STATUS.md`'s rolling snapshot for the current authoritative state.
 
 ## V2-4/V2-5 — Proposal bridge
 
@@ -187,6 +189,23 @@ existing proposal ledger
 ```
 
 Do not create a second canonical proposal model. Research-only, synthetic, replay-incompatible, incomplete, or unauthorized candidates fail closed.
+
+**WP-3 (`ProposalEligibilityDecision` evaluator) is `IMPLEMENTATION_COMPLETE`**
+(2026-09-22, `INDEPENDENT_AUDIT_PENDING`): `src/opportunity/proposal_eligibility.py`
+supplies the previously-missing pure evaluator for the existing
+`opportunity.contracts.ProposalEligibilityDecision` contract. See
+`PROJECT_STATUS.md`'s rolling snapshot for full evidence.
+
+**WP-4 (`CanonicalProposal` bridge) is `BUILDER_IMPLEMENTATION_COMPLETE`, LOCAL/UNPUSHED**
+(2026-09-22, `INDEPENDENT_AUDIT_PENDING`): `src/proposal_envelope/adapters/opportunity_adapter.py::to_canonical_proposal`
+maps `(OpportunityCandidate, ProposalEligibilityDecision)` onto the exact flow diagram
+above -- ELIGIBLE only ever produces `PROPOSAL_READY`; BLOCKED/INCOMPLETE never do.
+WP-3's evaluator is reused verbatim (the bridge does not call it internally -- the
+caller supplies an already-resolved decision) and no per-family mapping is duplicated,
+since `OpportunityCandidate` is already strategy-neutral. `execution_authority` is
+always `AUTHORITY_NONE`; no risk sizing, no `TradeCommand`, no MT5/execution import, no
+ledger write -- not wired into any runtime path or the existing `ProposalLedger` yet.
+See `PROJECT_STATUS.md`'s rolling snapshot for full evidence.
 
 ## V2-7/V2-8 — Risk and execution authority
 

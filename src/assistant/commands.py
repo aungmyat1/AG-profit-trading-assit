@@ -27,10 +27,12 @@ from typing import Optional, Tuple
 
 from execution.executor import ProposalStore, execute as execution_execute
 from execution.models import ExecutionReport, TradeCommand
+from proposal_envelope.models import CanonicalProposal
 
 from .analysis_models import (
     AssistantAnalysisRequest, FiveSkillAnalysisResult, PROPOSAL_READY, TradeProposal,
 )
+from .canonical_proposal_adapter import canonical_proposal_to_trade_proposal
 from .five_skill_runtime import analyze_market
 
 _PROPOSAL_TTL_MINUTES = 15
@@ -63,6 +65,23 @@ def build_proposal(request: AssistantAnalysisRequest, analysis_summary: str = ""
         candidate=request.candidate,
         analysis_summary=analysis_summary,
         evidence=evidence,
+    )
+    _store.put(proposal)
+    return proposal
+
+
+def build_proposal_from_canonical(
+    envelope: CanonicalProposal, analysis_summary: str = "", evidence: tuple = (),
+) -> TradeProposal:
+    """WP-5/6 bridge: the CanonicalProposal counterpart to build_proposal() above.
+    Constructs (via canonical_proposal_adapter, which fails closed on anything short of
+    PROPOSAL_READY) and stores a TradeProposal in the SAME _store execute_command()
+    already reads -- no second proposal store. Runs no five-skill analysis (the
+    envelope already carries its own WP-3/WP-4 evidence) and calls no execution/MT5
+    code; producing this TradeProposal is never itself execution authorization, exactly
+    like build_proposal()'s own contract."""
+    proposal = canonical_proposal_to_trade_proposal(
+        envelope, analysis_summary=analysis_summary, evidence=evidence,
     )
     _store.put(proposal)
     return proposal
