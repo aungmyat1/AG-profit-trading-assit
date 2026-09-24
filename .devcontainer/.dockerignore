@@ -1,0 +1,38 @@
+# AG Profit Trading — Docker ignore
+# Keep the dev container build context small and fast.
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+web/dist/
+web/node_modules/
+
+# Git
+.git/
+
+# Artifacts & data (large, not needed in container)
+artifacts/
+data/
+journal/
+logs/
+state/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+
+# Secrets
+.env
+src/.env
+
+# Research (large, optional)
+research_external/
