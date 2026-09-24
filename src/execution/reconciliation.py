@@ -205,11 +205,18 @@ def reconcile_decision(
         d for d in deals
         if getattr(d, "comment", None) == expected_tag and getattr(d, "entry", None) == 0
     ]
-    all_matches = position_matches + deal_matches
+    # R5C-R2: one broker identity across both surfaces. An MT5 deal's own `ticket` is a
+    # deal id, never equal to its position's `ticket`, so keying both surfaces on
+    # `ticket` made a normal fill (open position + its opening deal) AMBIGUOUS and a
+    # later close-only observation a false CONFLICT. The shared key is the position
+    # identifier (== ticket of the order that opened it): `position.identifier` and
+    # `deal.position_id`. No fallback to `ticket` -- missing identity is not evidence.
     matched_tickets = {
         ticket
-        for match in all_matches
-        if (ticket := _normalize_broker_ticket(getattr(match, "ticket", None))) is not None
+        for match, field in (
+            [(p, "identifier") for p in position_matches] + [(d, "position_id") for d in deal_matches]
+        )
+        if (ticket := _normalize_broker_ticket(getattr(match, field, None))) is not None
     }
 
     if len(matched_tickets) > 1:

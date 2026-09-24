@@ -4,6 +4,23 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PANEL_R5C_R2_SHARED_BROKER_IDENTITY (2026-09-24, `claude/hopeful-ptolemy-1tiv9c`, candidate)
+
+Re-audit of R5C-R1 (`1c5bbf5`) confirmed its `"None"`-ticket fix, but found a new blocking
+defect. MT5 gives a position and its opening deal different `ticket` values, so a normal
+fill (open position + opening deal) came back `AMBIGUOUS` and never advanced. A record
+matched while open came back a false `CONFLICT` once only the close-era deal was visible.
+Both outcomes fail closed, but reconciliation could never succeed in the ordinary case.
+The fix, confined to `src/execution/reconciliation.py`, keys both surfaces on MT5's shared
+position identity (`position.identifier` / `deal.position_id`), with no fallback to
+`ticket`. Test fakes now carry those fields. 5 new tests; 62 reconciliation/durable tests
+pass. The pre-existing `test_execution_mt5_gateway.py::test_order_check_failure_blocks_order_send`
+failure reproduces identically on `origin/main`. Also carries the docs-only
+`audit/panel-r5c` (FAIL) and `audit/panel-r3` (PASS) audit records onto this branch. No
+broker write, route, scheduler, strategy, Demo, or Live change. Unit-tested only, not
+live-verified. `SAFE_TO_FREEZE_R5C: NO` until a fresh independent audit. See
+`docs/status/AG_PANEL_R5C_R2_SHARED_BROKER_IDENTITY_STATUS.md`.
+
 ## PANEL_R5C_R1_BROKER_IDENTITY (2026-09-23, `fix/panel-r5c-broker-identity`, candidate)
 
 Remediates the independently audited R5C identity defect: reconciliation now

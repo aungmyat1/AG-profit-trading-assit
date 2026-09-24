@@ -88,6 +88,7 @@ def test_full_matched_reconciliation_cycle_never_touches_a_submission_mock(tmp_p
     class _Position:
         def __init__(self, ticket, comment):
             self.ticket = ticket
+            self.identifier = ticket  # MT5: position identifier == its own ticket
             self.comment = comment
 
     tag = comment_tag_for(command_id)
