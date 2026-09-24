@@ -1,5 +1,9 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # AG_STAGE1_GOVERNANCE_RECONCILIATION_AND_WP7_PREFLIGHT_V1 -- repository-local guard.
+#
+# Uses #!/bin/sh (not #!/usr/bin/env bash) so Git for Windows runs its own bundled
+# sh.exe instead of resolving bash through WSL, which fails when no default WSL
+# distro is configured.
 #
 # Background: a prior task observed commits landing on origin/main without any
 # explicit `git push` invocation from that session. Investigation found no repo-local
