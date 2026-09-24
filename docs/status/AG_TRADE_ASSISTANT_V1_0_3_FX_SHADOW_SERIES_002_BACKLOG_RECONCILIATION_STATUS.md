@@ -188,3 +188,27 @@ NOT_TOUCHED:             strategies/registry.yaml, any src/*.py, any config/*.ya
    (11:00 UTC / 15:00 UTC) have passed today.
 3. Do not set `demo_authorized: true`, do not resolve `risk_per_trade_pct`, do not
    change any strategy/session/filter parameter in response to the above.
+
+
+## Correction addendum (2026-09-24) -- 2026-09-18 is INVALID_DAY, not VALID_DAY
+
+Added by `docs/status/AG_ASIAN_SWEEP_SCHEDULER_REMEDIATION_PROSPECTIVE_VERIFICATION_STATUS.md`.
+The text above is preserved as the historical record. It is superseded only on the point below.
+
+The canonical classifier (`shadow_day_classifier.classify_day`) returns **INVALID_DAY** for
+2026-09-18: `MISSING_MANDATORY_EVIDENCE:LONDON_NEWYORK:EURUSD` and
+`MISSING_MANDATORY_EVIDENCE:LONDON_NEWYORK:GBPUSD`. Neither LONDON_NEWYORK unit has an
+archive record with `evaluation_time_utc` inside the 12:00-15:00Z window. The host was
+asleep from 11:50Z to 19:41Z. The last pre-window EURUSD record is at 11:45:05Z, and the
+next is a post-wake 19:47:05Z `BLOCKED` record written outside the window. The
+LONDON_NEWYORK state quoted above (`EXPIRED`/`READY`) is the end-of-day
+daily-report state, written after the host woke. It is not in-window evidence.
+
+The two questions are independent. Runtime-error provenance reconciliation
+(a `runtime_errors` count later understood as a recovered retry) does not establish
+mandatory evidence completeness. **A recovered runtime error does not imply VALID_DAY
+when mandatory in-window session evidence is absent.** This document held 2026-09-18 at
+`PENDING_RECONCILIATION` because of its `runtime_errors` count. The later provenance
+reconciliation then promoted it to VALID_DAY. That promotion is withdrawn, and the
+authoritative state is INVALID_DAY. No archive, ledger, decision record or classifier
+rule was changed.
