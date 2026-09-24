@@ -290,13 +290,59 @@ def test_breakeven_moves_stop_to_entry():
 
 # --------------------------------------------------------------------------- 15/16/17: guards
 
-def test_one_open_position_blocks_new_entry(tmp_path):
+def test_one_open_position_blocks_new_entry_for_same_symbol(tmp_path):
     guard = OpenPositionGuard(JsonKeyValueStore(str(tmp_path / "open_positions.json")))
-    guard.register_open("pos-1", "ST_ASIAN_SWEEP_5R_V1", "GBPUSD")
-    assert guard.is_blocked() is True
+    guard.register_open("pos-1", "ST_ASIAN_SWEEP_5R_V1", "EURUSD")
+    assert guard.is_blocked() is True  # no-symbol callers retain the global cap
 
     result = evaluate_setup(**_forex_kwargs(open_position_guard=guard))
     assert result.state == STATE_BLOCKED_OPEN_POSITION
+
+
+def test_open_position_guard_counts_all_symbols_globally_and_per_symbol(tmp_path):
+    guard = OpenPositionGuard(JsonKeyValueStore(str(tmp_path / "open_positions.json")))
+    guard.register_open("pos-eur", STRATEGY_ID, "EURUSD")
+    guard.register_open("pos-gbp", STRATEGY_ID, "GBPUSD")
+
+    assert guard.open_count() == 2
+    assert guard.is_blocked() is True  # the existing global cap remains one
+    assert guard.open_count(symbol="EURUSD") == 1
+    assert guard.open_count(symbol="GBPUSD") == 1
+
+
+def test_per_symbol_blocking_does_not_block_a_different_symbol(tmp_path):
+    guard = OpenPositionGuard(JsonKeyValueStore(str(tmp_path / "open_positions.json")))
+    guard.register_open("pos-eur", STRATEGY_ID, "EURUSD")
+
+    assert guard.is_blocked(symbol="EURUSD") is True
+    assert guard.is_blocked(symbol="GBPUSD") is False
+
+
+def test_legacy_position_without_symbol_counts_only_globally(tmp_path):
+    store = JsonKeyValueStore(str(tmp_path / "open_positions.json"))
+    store.put("legacy-position", {"strategy_id": "LEGACY_STRATEGY"})
+    guard = OpenPositionGuard(store)
+
+    assert guard.open_count() == 1
+    assert guard.is_blocked() is True
+    assert guard.open_count(symbol="EURUSD") == 0
+    assert guard.is_blocked(symbol="EURUSD") is False
+
+
+def test_sweep_retest_engine_passes_current_setup_symbol_to_guard():
+    class GuardSpy:
+        def __init__(self):
+            self.symbols = []
+
+        def is_blocked(self, symbol=None):
+            self.symbols.append(symbol)
+            return False
+
+    guard = GuardSpy()
+    result = evaluate_setup(**_forex_kwargs(symbol="GBPUSD", open_position_guard=guard))
+
+    assert result.state == STATE_ENTRY_READY
+    assert guard.symbols == ["GBPUSD"]
 
 
 def test_daily_loss_circuit_breaker_blocks_after_minus_2r(tmp_path):
@@ -325,7 +371,7 @@ def test_daily_loss_circuit_breaker_resets_next_trading_day(tmp_path):
 
 def test_guard_blocked_setup_still_reports_strategy_qualified_true(tmp_path):
     guard = OpenPositionGuard(JsonKeyValueStore(str(tmp_path / "open_positions.json")))
-    guard.register_open("pos-1", "ST_ASIAN_SWEEP_5R_V1", "GBPUSD")
+    guard.register_open("pos-1", "ST_ASIAN_SWEEP_5R_V1", "EURUSD")
 
     result = evaluate_setup(**_forex_kwargs(open_position_guard=guard))
     assert result.state == STATE_BLOCKED_OPEN_POSITION
@@ -644,18 +690,16 @@ def test_crypto_semantic_replay_reference_sweep_mss_retest_proposal():
     assert result.volume is not None and result.volume > 0
 
 
-# --------------------------------------------------------------------------- global guard is asset-agnostic
+# --------------------------------------------------------------------------- shared global default + Sweep Retest per-symbol opt-in
 
-def test_global_position_lock_is_asset_agnostic_eurusd_blocks_btcusdt(tmp_path):
+def test_sweep_retest_per_symbol_scope_allows_btc_when_eurusd_is_open(tmp_path):
     guard = OpenPositionGuard(JsonKeyValueStore(str(tmp_path / "open_positions.json")))
     guard.register_open("pos-eurusd-1", STRATEGY_ID, "EURUSD")
-    assert guard.is_blocked() is True
+    assert guard.is_blocked() is True  # legacy/default calls still see the global lock
 
-    # An otherwise-valid BTCUSDT setup is blocked purely because SOME position (a
-    # different asset, same shared guard) is already open -- concurrency is combined
-    # across profiles, not tracked per-asset.
     result = evaluate_setup(**_crypto_kwargs(open_position_guard=guard))
-    assert result.state == STATE_BLOCKED_OPEN_POSITION
+    assert result.state == STATE_ENTRY_READY
+    assert result.tradability_blocked is False
 
 
 def test_daily_loss_circuit_breaker_combines_forex_and_crypto(tmp_path):

@@ -1,0 +1,261 @@
+{
+  "schema": "AG_LIQUIDITY_SWEEP_RETEST_PER_SYMBOL_GUARD_REPLAY_V1",
+  "generated_at": "2026-09-24T02:27:30+06:30",
+  "timezone": "Asia/Yangon",
+  "base_sha": "36bc3b668a7302a67ada5c48bc36ff7c0ff7cf7b",
+  "implementation_sha": null,
+  "implementation_sha_note": "This artifact was generated before the single implementation commit; its self-referential final SHA is intentionally omitted and is reported in the session completion summary.",
+  "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1",
+  "strategy_version": "2.0.0",
+  "strategy_version_status": "BUMP_REQUIRED_BY_RISK_SEMANTICS_POLICY; CANDIDATE_VERSION_ID_OWNER_DECISION_PENDING",
+  "implementation_status": "IMPLEMENTED_REPLAY_BLOCKED",
+  "validation_status": "FOCUSED_PASS_FULL_SUITE_NON_GREEN",
+  "economic_comparison_status": "BLOCKED_BASELINE_NOT_REPRODUCIBLE",
+  "configuration": {
+    "path": "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
+    "current_sha256": "9bfc25153c6be0f264088756a90d7060f9b0f789fc0b269d4d76ceb5139b584c",
+    "max_open_strategy_positions_consumer_status": "CONFIRMED_UNUSED",
+    "search_command": "rg -n 'max_open_strategy_positions' src tests strategies --glob '*.py' --glob '*.yaml'",
+    "runtime_occurrence_paths": [
+      "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
+      "src/strategy_engine/sweep_retest/config.py"
+    ],
+    "behavioral_consumers": [],
+    "note": "The field is parsed into SweepRetestStrategyConfig but has no downstream behavioral consumer. It was intentionally not wired or changed in Task C."
+  },
+  "population": {
+    "baseline_reproduction_status": "NOT_REPRODUCIBLE",
+    "dataset_identity": null,
+    "date_range": null,
+    "symbols": null,
+    "source_script": null,
+    "baseline_config_fingerprint": null,
+    "evidence_search": {
+      "uploaded_optimization_brief_in_checkout": false,
+      "exact_population_artifact_found": false,
+      "exact_replay_script_found": false,
+      "strategy_specific_historical_dataset_found": false,
+      "checked_existing_determinism_evidence_only": true
+    },
+    "user_supplied_unverified_claim": {
+      "total_setups_approx": 99,
+      "taken_approx": 50,
+      "blocked_approx": 49,
+      "position_guard_blocked_approx": 48,
+      "status": "UNVERIFIED_NOT_USED_AS_BASELINE"
+    },
+    "reason": "The checkout contains no matching 99/50/49/48 replay artifact, script, or strategy-specific historical dataset. Existing ST_LIQUIDITY_SWEEP_RETEST_V1 evidence is determinism evidence, not the economic population. The current Forex contract lists EURUSD and GBPUSD, but that does not identify the original replay population. Per P7, economic comparison stopped here."
+  },
+  "baseline": {
+    "status": "NOT_REPRODUCIBLE",
+    "metrics": {
+      "total_setups": null,
+      "taken": null,
+      "blocked": null,
+      "position_guard_blocked": null,
+      "gross_R": null,
+      "net_R": null,
+      "win_count": null,
+      "loss_count": null,
+      "win_rate": null,
+      "max_concurrent_positions": null,
+      "max_concurrent_positions_per_symbol": null
+    }
+  },
+  "candidate": {
+    "status": "NOT_EVALUATED_BASELINE_NOT_REPRODUCIBLE",
+    "metrics": {
+      "total_setups": null,
+      "taken": null,
+      "blocked": null,
+      "position_guard_blocked": null,
+      "previously_blocked_now_admitted": null,
+      "EURUSD_admitted": null,
+      "GBPUSD_admitted": null,
+      "gross_R": null,
+      "net_R": null,
+      "win_count": null,
+      "loss_count": null,
+      "win_rate": null,
+      "max_concurrent_positions": null,
+      "max_concurrent_positions_per_symbol": null
+    }
+  },
+  "delta": {
+    "status": "NOT_EVALUATED",
+    "direction": "candidate_minus_baseline",
+    "total_setups": null,
+    "taken": null,
+    "blocked": null,
+    "position_guard_blocked": null,
+    "previously_blocked_now_admitted": null,
+    "previously_admitted_now_blocked": null,
+    "EURUSD_admitted": null,
+    "GBPUSD_admitted": null,
+    "gross_R": null,
+    "net_R": null,
+    "win_count": null,
+    "loss_count": null,
+    "win_rate": null,
+    "max_concurrent_positions": null,
+    "max_concurrent_positions_per_symbol": null
+  },
+  "friction_assumptions": {
+    "status": "NOT_EVALUATED",
+    "baseline": null,
+    "candidate": null,
+    "preservation": "Cannot be verified until the exact baseline replay definition and its friction assumptions are recovered; no alternate assumption was substituted."
+  },
+  "sample_limitations": [
+    "No exact baseline population could be reproduced; no replacement or synthetic economic dataset was substituted.",
+    "No candidate replay was run, so no admission, R, win-rate, or concurrency result is asserted.",
+    "Gross R and net R, including existing friction assumptions, are not evaluated; costs are not fabricated.",
+    "The strategy engine opts into per-symbol tradability, but the generic ExecutionCoordinator and readiness guards remain global no-symbol callers; this artifact does not assert broker-execution behavior."
+  ],
+  "strategy_version_decision": {
+    "policy_source": "docs/VERSION_HISTORY.md",
+    "bump_status": "REQUIRED_BY_RISK_SEMANTICS_POLICY",
+    "reason": "The broad policy says strategy versions change for risk-semantics changes; per-symbol concurrency changes the maximum simultaneous exposure allowed by the strategy engine.",
+    "precedent_limit": "The explicit trigger list names intrinsic trade eligibility but does not specifically name open-position concurrency; no direct repository precedent for this precise global-to-per-symbol guard-scope change was found.",
+    "candidate_version_id": null,
+    "candidate_version_assignment": "OWNER_DECISION_PENDING",
+    "current_yaml_version": "2.0.0",
+    "promoted": false
+  },
+  "confounders": [
+    "The YAML global_guards declaration and max_open_strategy_positions field were left unchanged; the field is parsed but has no behavioral consumer.",
+    "The broad versioning rule treats risk-semantics changes as version-relevant, but there is no exact precedent for this guard-scope change; the owner has not assigned a candidate version.",
+    "Strategy entry/exit rules, risk percentages, broker submission, MT5 routing, Demo authorization, and Live authorization were not changed."
+  ],
+  "test_evidence": {
+    "focused": {
+      "command": "/tmp/ag-profit-trading-venv/bin/python -m pytest -q tests/test_liquidity_sweep_retest_strategy.py tests/test_btc_sweep_research_pipeline.py tests/test_btc_daily_cli.py tests/test_execution_coordinator.py tests/test_execution_runtime_readiness.py tests/test_execution_lifecycle.py tests/test_mt5_execution_handler.py tests/test_ag_existing_demo_gateway_gap_audit.py tests/test_post_asian_pilot.py tests/test_ag_daytrading_runtime.py -k 'not test_end_report_data_error_day_is_pass_with_observations'",
+      "passed": 217,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "deselected": 1,
+      "duration_seconds": 2.33,
+      "deselected_test_classification": "ENVIRONMENTAL: the unfiltered run reaches MetaTrader5.initialize(), but the Linux portability stub refuses MT5 access because the real Windows-only MetaTrader5 package/terminal is unavailable."
+    },
+    "full_regression": {
+      "command": "/tmp/ag-profit-trading-venv/bin/python -m pytest -q",
+      "pytest_default_slow_policy": "The repository's pyproject.toml default excludes slow tests; the one Large-SMC slow historical replay test was deselected and not started.",
+      "passed": 3874,
+      "failed": 52,
+      "skipped": 48,
+      "errors": 3,
+      "deselected": 1,
+      "warnings": 11,
+      "duration_seconds": 35.6,
+      "regression_from_change_count": 0,
+      "failure_classification_counts": {
+        "REGRESSION_FROM_CHANGE": 0,
+        "ENVIRONMENTAL": 36,
+        "PRE_EXISTING": 4,
+        "STALE_TEST_EXPECTATION": 9,
+        "UNRELATED": 3
+      },
+      "failure_classifications": {
+        "REGRESSION_FROM_CHANGE": [],
+        "ENVIRONMENTAL": [
+          "tests/test_execution_mt5_gateway.py::test_order_check_failure_blocks_order_send",
+          "tests/test_five_skill_runtime.py::test_generic_analysis_without_strategy_full_set",
+          "tests/test_five_skill_runtime.py::test_entry_confirmation_auto_pulls_structure_and_liquidity",
+          "tests/test_five_skill_runtime.py::test_manual_candidate_full_pipeline_no_strategy",
+          "tests/test_five_skill_runtime.py::test_unsigned_rejection_survives_to_result_and_report",
+          "tests/test_five_skill_runtime.py::test_market_context_built_exactly_once_per_analysis",
+          "tests/test_fx_session_daytrade_eurusd.py::test_wrapper_requires_cycle_argument",
+          "tests/test_fx_session_daytrade_eurusd.py::test_wrapper_rejects_both_cycle_for_once",
+          "tests/test_historical_replay_no_lookahead.py::test_stage2_entry_only_reuses_historical_data_not_live_mt5",
+          "tests/test_large_smc_eurusd_admission_wp2.py::test_strategy_semantics_files_unchanged_by_this_mission",
+          "tests/test_large_smc_eurusd_admission_wp2.py::test_frozen_validation_core_unchanged_by_this_mission",
+          "tests/test_large_smc_eurusd_friction_campaign_wp3a1.py::test_c10_and_strategy_semantics_unchanged_by_this_mission",
+          "tests/test_large_smc_eurusd_friction_campaign_wp3a1.py::test_frozen_validation_core_unchanged_by_this_mission",
+          "tests/test_large_smc_eurusd_friction_campaign_wp3a1.py::test_execution_and_gateway_files_unchanged_by_this_mission",
+          "tests/test_large_smc_eurusd_friction_evidence_wp3a.py::test_strategy_semantics_files_unchanged_by_this_mission",
+          "tests/test_large_smc_eurusd_friction_evidence_wp3a.py::test_frozen_validation_core_unchanged_by_this_mission",
+          "tests/test_large_smc_eurusd_friction_evidence_wp3a.py::test_execution_and_gateway_files_unchanged_by_this_mission",
+          "tests/test_lsmc_frozen_core_scope.py::test_case_a_unrelated_strategy_mutation_passes",
+          "tests/test_lsmc_frozen_core_scope.py::test_case_b_large_smc_entry_mutation_is_detected",
+          "tests/test_lsmc_frozen_core_scope.py::test_case_c_global_field_mutation_is_detected",
+          "tests/test_m15_session_sweep_research_v1_parity.py::test_parent_v0_1_0_untouched",
+          "tests/test_post_asian_pilot.py::test_end_report_data_error_day_is_pass_with_observations",
+          "tests/test_proposal_envelope_execution_boundary.py::test_behavioral_whole_package_never_reaches_order_mutation_surface",
+          "tests/test_raw_prospective_archive_partitions.py::test_partition_is_hash_bound_and_row_accurate",
+          "tests/test_raw_prospective_archive_partitions.py::test_partition_detects_gap",
+          "tests/test_raw_prospective_archive_partitions.py::test_partition_detects_duplicate_timestamp",
+          "tests/test_raw_prospective_archive_partitions.py::test_completed_partition_is_immutable",
+          "tests/test_raw_prospective_archive_partitions.py::test_no_data_for_day_raises_instead_of_fabricating",
+          "tests/test_td6_deterministic_dedup_targets.py::test_d1_analyze_structure_called_directly_and_again_inside_liquidity_result_dedupes_raw_fetch",
+          "tests/test_topdown_composer_replay.py::test_real_replay_composition_succeeds_and_respects_the_boundary",
+          "tests/test_topdown_composer_replay.py::test_actual_candle_inputs_never_exceed_the_as_of_boundary",
+          "tests/test_topdown_composer_replay.py::test_replay_composition_never_touches_the_live_raw_cache",
+          "tests/test_topdown_composer_replay.py::test_dataset_collision_same_timestamps_different_content_different_composed_identity",
+          "tests/test_topdown_composer_replay.py::test_future_leak_sentinel_does_not_alter_semantic_payload_at_t",
+          "tests/test_topdown_composer_replay.py::test_parity_same_content_different_dataset_labels_semantic_payload_equal",
+          "tests/test_topdown_composer_replay.py::test_repeated_equivalent_replay_composition_is_deterministic"
+        ],
+        "PRE_EXISTING": [
+          "tests/test_ssc_dev002_h1_metadata_manifest.py::test_dev002_h1_manifest_binds_to_its_own_file",
+          "tests/test_ssc_dev002_h1_metadata_manifest.py::test_dev002_h1_file_bytes_unchanged_by_remediation",
+          "tests/test_ssc_dev002_h1_metadata_manifest.py::test_h1_bias_metadata_preflight_no_longer_blocked_on_dev002",
+          "tests/test_td8e_shared_consumer_integration.py::test_consumed_dev002_one_non_counting_shared_event"
+        ],
+        "STALE_TEST_EXPECTATION": [
+          "tests/test_fx_occurrence_identity_promotion.py::test_legacy_records_are_all_read_as_raw_observations",
+          "tests/test_fx_occurrence_identity_promotion.py::test_operational_count_must_use_presentation_ready_not_raw_active_count",
+          "tests/test_fx_occurrence_identity_promotion.py::test_current_and_expired_views_partition_the_real_ledger",
+          "tests/test_fx_occurrence_identity_promotion.py::test_six_metrics_on_the_real_ledger_are_internally_consistent",
+          "tests/test_fx_occurrence_identity_promotion.py::test_metrics_do_not_count_identity_unavailable_as_setups_or_occurrences",
+          "tests/test_proposal_occurrence_identity_v1.py::test_frozen_ledger_records_are_still_all_reported_ready_by_the_frozen_path",
+          "tests/test_proposal_occurrence_identity_v1.py::test_identity_baseline_is_reproduced_on_the_real_ledger",
+          "tests/test_proposal_occurrence_identity_v1.py::test_reporting_metrics_from_ledger_file_matches_the_real_ledger",
+          "tests/test_validation_framework.py::test_btc_adapter_reconciles_against_registry_and_yaml"
+        ],
+        "UNRELATED": [
+          "tests/test_market_data_readiness_scanner.py::test_classify_filename_declared_timeframe",
+          "tests/test_market_data_readiness_scanner.py::test_classify_filename_unknown_timeframe_tick_style",
+          "tests/test_proposal_envelope_adapters.py::test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover"
+        ]
+      },
+      "errors_classification": {
+        "ENVIRONMENTAL": [
+          "tests/test_ssc_one_year_warmup_convergence.py::test_warmup_bar_sufficiency_at_representative_decision_points",
+          "tests/test_ssc_one_year_warmup_convergence.py::test_warmup_convergence_minimal_vs_full_history",
+          "tests/test_ssc_one_year_warmup_convergence.py::test_warmup_classification_is_stable_for_the_one_year_window"
+        ]
+      },
+      "environment": {
+        "python": "3.11",
+        "operating_system": "Linux",
+        "dependency_environment": "Temporary virtual environment populated from repository requirements.txt; no repository dependency files changed.",
+        "account_class": "NONE_NO_BROKER_OR_DEMO_ACCOUNT_CONNECTED",
+        "venues_accessed": [],
+        "test_fixture_symbols": ["EURUSD", "GBPUSD", "BTCUSDT", "ETHUSDT"],
+        "historical_replay_symbols": null,
+        "known_local_limitations": [
+          "MetaTrader5 package/terminal unavailable; the portability stub blocks access.",
+          "Some historical tests reference absent Windows D: paths.",
+          "Local checkout history is shallow/grafted."
+        ],
+        "broker_order_operations_occurred": false
+      }
+    },
+    "documentation_integrity": {
+      "command": "/tmp/ag-profit-trading-venv/bin/python -m pytest -q tests/test_docs_links.py",
+      "passed": 4,
+      "result": "PASS"
+    }
+  },
+  "safety": {
+    "automatic_execution_added": false,
+    "demo_authorization_changed": false,
+    "live_authorization_changed": false,
+    "broker_submission_changed": false,
+    "mt5_routing_changed": false,
+    "entry_exit_rules_changed": false,
+    "other_open_position_guard_callers_changed": false,
+    "human_in_the_loop_unchanged": true
+  }
+}

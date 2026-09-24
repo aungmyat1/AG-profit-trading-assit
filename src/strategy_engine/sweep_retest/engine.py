@@ -17,11 +17,11 @@ Pipeline (spec):
        crypto_symbols.crypto_sl_buffer_price())
     -> position sizing (execution.risk.size_position, REUSED -- works unchanged for
        crypto too since it only needs a SymbolMeta-shaped record, see crypto_symbols.py)
-  Guards (execution.position_guard / execution.daily_loss_guard, NEW shared pieces) are
-  checked up front, before any candle work, since a blocked setup never needs evaluating.
-  Both guards are keyed asset-agnostically (position_guard by position_id, daily_loss_guard
-  by strategy_id+day) so "max 1 open position" and "-2R daily loss" are naturally COMBINED
-  across Forex and Crypto setups of this same strategy_id, not tracked per-profile.
+  Guards (execution.position_guard / execution.daily_loss_guard) are checked only after
+  strategy qualification, preserving the setup evidence when tradability is blocked.
+  DailyLossGuard remains strategy/day scoped across profiles. OpenPositionGuard's default
+  remains global, but this strategy explicitly passes its setup symbol and therefore opts
+  into the per-symbol cap; unrelated no-symbol callers retain global behavior.
 
 evaluate_setup() is a pure function of its candle-history inputs -- calling it twice with
 identical inputs produces a bit-identical SetupState (no MT5 call, no wall-clock read
@@ -159,9 +159,10 @@ def evaluate_setup(
     something that was never actually an opportunity), and a setup that DOES qualify but
     is guard-blocked still carries strategy_qualified=True plus its full evidence on the
     returned SetupState -- the guard only changes tradability, never whether the
-    opportunity is recorded as having existed. The guard RULES themselves (which guard,
-    what threshold, what it means to be blocked) are unchanged -- see
-    execution.daily_loss_guard / execution.position_guard, untouched by this change.
+    opportunity is recorded as having existed. DailyLossGuard keeps its existing
+    strategy/day rule. This engine opts into OpenPositionGuard's per-symbol cap by
+    passing the current setup symbol; callers that omit ``symbol=`` retain the guard's
+    original global rule.
     """
     base = dict(setup_id=setup_id, strategy_id=strategy_id, symbol=symbol, evaluated_at=now)
     config = market_structure_config or load_market_structure_config()
@@ -239,7 +240,7 @@ def evaluate_setup(
     if daily_loss_guard is not None and daily_loss_guard.is_blocked(trading_day):
         return SetupState(**qualified, state=STATE_BLOCKED_DAILY_LOSS, reason_code=STATE_BLOCKED_DAILY_LOSS,
                           tradability_blocked=True, tradability_reason=STATE_BLOCKED_DAILY_LOSS)
-    if open_position_guard is not None and open_position_guard.is_blocked():
+    if open_position_guard is not None and open_position_guard.is_blocked(symbol=symbol):
         return SetupState(**qualified, state=STATE_BLOCKED_OPEN_POSITION, reason_code=STATE_BLOCKED_OPEN_POSITION,
                           tradability_blocked=True, tradability_reason=STATE_BLOCKED_OPEN_POSITION)
 

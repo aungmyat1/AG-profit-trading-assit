@@ -1,0 +1,96 @@
+{
+  "manifest": {
+    "baseline": {
+      "baseline_sha256": null,
+      "baseline_status": "NOT_REPRODUCIBLE",
+      "blockers": [
+        "EXACT_CONTROL_POPULATION_NOT_REPRODUCED",
+        "ORIGINAL_REPLAY_SCRIPT_AND_CONFIG_NOT_IDENTIFIED",
+        "POPULATION_MEMBERSHIP_AND_EXCLUSION_RULES_NOT_VERIFIED",
+        "FRICTION_PROFILE_AND_ASSUMPTIONS_NOT_REPRODUCED"
+      ],
+      "canonical_config_ref": "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
+      "canonical_config_sha256": "9bfc25153c6be0f264088756a90d7060f9b0f789fc0b269d4d76ceb5139b584c",
+      "dataset_id": null,
+      "dataset_sha256": null,
+      "friction_profile_ref": null,
+      "friction_profile_sha256": null,
+      "population_hash": null,
+      "source_refs": [
+        "docs/status/AG_TASK_C_PER_SYMBOL_POSITION_GUARD_STATUS.md",
+        "artifacts/optimization/evidence/AG_LIQUIDITY_SWEEP_RETEST_BASELINE_PROVENANCE_SEARCH_V1.json"
+      ],
+      "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1",
+      "strategy_version": "2.0.0"
+    },
+    "candidate": {
+      "candidate_config_sha256": "9bfc25153c6be0f264088756a90d7060f9b0f789fc0b269d4d76ceb5139b584c",
+      "candidate_implementation_sha256": "4e4d47bf2c8c56fc9a6965c479347fe5e20ab9184ac49ba8d41af5f8b64954be",
+      "candidate_version": null,
+      "forbidden_deltas": [
+        "No-symbol OpenPositionGuard callers retain the existing global cap.",
+        "Do not wire max_open_strategy_positions or alter unrelated strategy callers.",
+        "No strategy economics, entry/exit logic, sizing, or canonical strategy config changes."
+      ],
+      "implementation_ref": "working-tree candidate; user-cited commit 18947755 is not present in the local/remote refs",
+      "parent_version": "2.0.0",
+      "permitted_delta": [
+        "Liquidity Sweep Retest passes its setup symbol to the open-position guard, using the separate per-symbol cap.",
+        "The open-position guard is checked after strategy qualification so a blocked setup retains its qualification evidence."
+      ],
+      "source_status": "IMPLEMENTED_WORKTREE_PATCH_UNCOMMITTED",
+      "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1",
+      "version_assignment_status": "PENDING_OWNER_ASSIGNMENT"
+    },
+    "created_at_utc": "2026-09-24T00:00:00Z",
+    "dataset": null,
+    "experiment_id": "AG_LSR_TASK_C_PER_SYMBOL_POSITION_GUARD_V1",
+    "hypothesis": {
+      "acceptance_rule": [],
+      "development_dataset_id": null,
+      "evaluation_metric": null,
+      "forbidden_deltas": [
+        "No-symbol OpenPositionGuard callers retain the existing global cap.",
+        "Do not wire max_open_strategy_positions or alter unrelated strategy callers.",
+        "No strategy economics, entry/exit logic, sizing, or canonical strategy config changes."
+      ],
+      "frozen_dimensions": [],
+      "hypothesis_id": "TASK_C_ENGINEERING_CHANGE_NOT_AN_ECONOMIC_HYPOTHESIS",
+      "max_candidates": null,
+      "max_search_budget": null,
+      "mechanism": "ENGINEERING_SEMANTICS_ONLY_ECONOMIC_MECHANISM_NOT_CLAIMED",
+      "parent_version": "2.0.0",
+      "permitted_delta": [
+        "Liquidity Sweep Retest passes its setup symbol to the open-position guard, using the separate per-symbol cap.",
+        "The open-position guard is checked after strategy qualification so a blocked setup retains its qualification evidence."
+      ],
+      "preregistration_sha256": null,
+      "protected_dataset_ids": [],
+      "statement": "Task C records an implemented guard-semantics candidate only; no causal economic hypothesis or improvement claim has been preregistered.",
+      "status": "NOT_PREREGISTERED",
+      "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1"
+    },
+    "notes": [
+      "Implementation status: IMPLEMENTED (engineering candidate only).",
+      "Experiment status: BLOCKED_REPRODUCIBILITY; the exact baseline is not verified.",
+      "Economic claim: NOT_AVAILABLE; no control/candidate comparison or replay was run.",
+      "The reported 99 setups / 50 taken / 49 blocked / 48 historical rejections are unverified provenance claims, not experiment metrics.",
+      "No dataset was registered, consumed, or relabeled for this experiment.",
+      "No candidate strategy version was assigned and no promotion decision was made.",
+      "Candidate source SHA-256 map: {'src/execution/position_guard.py': '49f66abc98f3a0b92cd31297102c1bd1d9827ccf7a8931a19532faa0ca069c35', 'src/strategy_engine/sweep_retest/engine.py': '4c397a7ecc113132137e3693f28e5e343fd7be18b166414862ef9a4b0cf77dbc'}",
+      "Test source SHA-256 map: {'tests/test_liquidity_sweep_retest_strategy.py': 'e7233b4c229d0813ed723319435f21dea59de47d0c3764538c5e478d7022d5b1', 'tests/test_btc_sweep_research_pipeline.py': '4997bfd641a5eac3c3ed58878e1b3bc8c4cd4a1fcab02618cbb997cb1af251e6'}"
+    ],
+    "related_evidence_refs": [
+      "docs/status/AG_TASK_C_PER_SYMBOL_POSITION_GUARD_STATUS.md",
+      "artifacts/optimization/evidence/AG_LIQUIDITY_SWEEP_RETEST_BASELINE_PROVENANCE_SEARCH_V1.json",
+      "src/execution/position_guard.py",
+      "src/strategy_engine/sweep_retest/engine.py",
+      "tests/test_liquidity_sweep_retest_strategy.py",
+      "tests/test_btc_sweep_research_pipeline.py"
+    ],
+    "schema_version": "AG_STRATEGY_OPTIMIZATION_FRAMEWORK_V1",
+    "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1"
+  },
+  "manifest_sha256": "72810e6b75dfe175337eb5625f88355fbb8f1ce487b1b33c73ecc3eb1c87b903",
+  "schema_version": "AG_STRATEGY_OPTIMIZATION_FRAMEWORK_V1"
+}

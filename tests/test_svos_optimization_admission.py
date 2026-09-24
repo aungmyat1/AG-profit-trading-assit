@@ -72,3 +72,31 @@ def test_signed_contract_with_passing_conditions_is_eligible():
     result = evaluate_under_contract(contract, _conditions())
     assert result.eligible is True
     assert result.status == OPTIMIZATION_ELIGIBLE
+
+
+def test_malformed_contract_and_conditions_fail_closed_without_raising():
+    invalid_contract = evaluate_under_contract([], _conditions())
+    invalid_conditions = evaluate_optimization_admission(None)
+    assert invalid_contract.eligible is False
+    assert "CONTRACT_INVALID" in invalid_contract.blockers
+    assert invalid_conditions.eligible is False
+    assert "OPTIMIZATION_CONDITIONS_MUST_BE_A_MAPPING" in invalid_conditions.blockers
+
+
+def test_signed_but_wrong_contract_identity_blocks():
+    contract = {"identity": {"contract_id": "OTHER_POLICY", "status": "SIGNED"}}
+    result = evaluate_under_contract(contract, _conditions())
+    assert result.eligible is False
+    assert "CONTRACT_ID_MISMATCH" in result.blockers
+
+
+def test_truthy_strings_and_string_zero_do_not_satisfy_typed_admission_conditions():
+    result = evaluate_optimization_admission(
+        _conditions(
+            mechanism_identified="false",
+            protected_data_access_count="0",
+        )
+    )
+    assert result.eligible is False
+    assert any("MECHANISM_IDENTIFIED_MUST_BE_BOOLEAN_TRUE" in item for item in result.blockers)
+    assert any("PROTECTED_DATA_ACCESS_COUNT_MUST_BE_ZERO_INTEGER" in item for item in result.blockers)

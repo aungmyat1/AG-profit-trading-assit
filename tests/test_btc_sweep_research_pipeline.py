@@ -340,7 +340,8 @@ def test_open_position_guard_blocks_tradability_but_occurrence_still_recorded(tm
     h1, m5 = _build_fixture([(13, 30)])
     feed = _FixtureFeed(h1, m5)
     runtime, ledger, daily_loss_guard, open_position_guard = _fresh_runtime_and_guards(tmp_path)
-    open_position_guard.register_open("some-other-position", "SOME_OTHER_STRATEGY", "EURUSD")
+    # A position on the candidate's own symbol blocks this strategy's per-symbol guard.
+    open_position_guard.register_open("some-other-position", "SOME_OTHER_STRATEGY", "BTCUSDT")
 
     report = _run(feed, runtime, ledger, daily_loss_guard, open_position_guard)
 
@@ -383,7 +384,7 @@ def test_research_occurrence_count_identical_regardless_of_guard_state(tmp_path)
 
     feed_b = _FixtureFeed(h1, m5)
     runtime_b, ledger_b, daily_loss_b, open_position_b = _fresh_runtime_and_guards(tmp_path, "_b")
-    open_position_b.register_open("blocker", "SOME_OTHER_STRATEGY", "EURUSD")
+    open_position_b.register_open("blocker", "SOME_OTHER_STRATEGY", "BTCUSDT")
     report_blocked = _run(feed_b, runtime_b, ledger_b, daily_loss_b, open_position_b)
 
     assert len(report_unblocked.occurrences) == len(report_blocked.occurrences) == 2

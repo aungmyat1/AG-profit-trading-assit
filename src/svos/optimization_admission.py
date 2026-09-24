@@ -13,6 +13,7 @@ from typing import Any, Mapping, Tuple
 
 OPTIMIZATION_ELIGIBLE = "OPTIMIZATION_ELIGIBLE"
 OPTIMIZATION_BLOCKED = "OPTIMIZATION_BLOCKED"
+EXPECTED_CONTRACT_ID = "AG_OPTIMIZATION_ADMISSION_CONTRACT_V1"
 
 REQUIRED_CONDITIONS: Tuple[str, ...] = (
     "economic_gate_result",
@@ -55,6 +56,12 @@ class OptimizationAdmissionResult:
 def evaluate_optimization_admission(conditions: Mapping[str, Any]) -> OptimizationAdmissionResult:
     """Pure condition check (no contract read). Fails closed on any missing/incorrect
     condition; an absent condition is never treated as satisfied."""
+    if not isinstance(conditions, Mapping):
+        return OptimizationAdmissionResult(
+            eligible=False,
+            status=OPTIMIZATION_BLOCKED,
+            blockers=("OPTIMIZATION_CONDITIONS_MUST_BE_A_MAPPING",),
+        )
     blockers = []
     for cond in REQUIRED_CONDITIONS:
         if cond not in conditions:
@@ -62,14 +69,14 @@ def evaluate_optimization_admission(conditions: Mapping[str, Any]) -> Optimizati
             continue
         value = conditions[cond]
         if cond in _FIXED_VALUES:
-            if str(value).upper() != _FIXED_VALUES[cond]:
+            if not isinstance(value, str) or value.upper() != _FIXED_VALUES[cond]:
                 blockers.append(f"{cond.upper()}_MUST_BE_{_FIXED_VALUES[cond]} (got {value!r})")
         elif cond in _MUST_BE_TRUE:
-            if bool(value) is not True:
-                blockers.append(f"{cond.upper()}_MUST_BE_TRUE (got {value!r})")
+            if value is not True:
+                blockers.append(f"{cond.upper()}_MUST_BE_BOOLEAN_TRUE (got {value!r})")
         elif cond == "protected_data_access_count":
-            if int(value) != 0:
-                blockers.append(f"PROTECTED_DATA_ACCESS_COUNT_MUST_BE_ZERO (got {value!r})")
+            if not isinstance(value, int) or isinstance(value, bool) or value != 0:
+                blockers.append(f"PROTECTED_DATA_ACCESS_COUNT_MUST_BE_ZERO_INTEGER (got {value!r})")
 
     eligible = not blockers
     return OptimizationAdmissionResult(
@@ -86,7 +93,19 @@ def evaluate_under_contract(
     """Contract-gated evaluation. Fails closed (OPTIMIZATION_BLOCKED) unless the
     contract identity.status == SIGNED -- mirrors economic_gate.py's signed-contract
     discipline."""
-    identity = contract.get("identity") or {}
+    if not isinstance(contract, Mapping):
+        return OptimizationAdmissionResult(
+            eligible=False, status=OPTIMIZATION_BLOCKED, blockers=("CONTRACT_INVALID",),
+        )
+    identity = contract.get("identity")
+    if not isinstance(identity, Mapping):
+        return OptimizationAdmissionResult(
+            eligible=False, status=OPTIMIZATION_BLOCKED, blockers=("CONTRACT_IDENTITY_INVALID",),
+        )
+    if identity.get("contract_id") != EXPECTED_CONTRACT_ID:
+        return OptimizationAdmissionResult(
+            eligible=False, status=OPTIMIZATION_BLOCKED, blockers=("CONTRACT_ID_MISMATCH",),
+        )
     if identity.get("status") != "SIGNED":
         return OptimizationAdmissionResult(
             eligible=False, status=OPTIMIZATION_BLOCKED, blockers=("CONTRACT_NOT_SIGNED",),

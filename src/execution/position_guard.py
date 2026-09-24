@@ -1,14 +1,13 @@
-"""Shared, strategy-agnostic global open-position guard -- a genuinely NEW minimal piece
-(added 2026-08-30 for ST_SESSION_SWEEP_RETEST_V1). No existing module coordinated "how
-many AG strategy positions may be open at once" across strategies, so this is not a reuse
-of a prior guard. It is deliberately placed here in execution/ (not inside
-strategy_engine/sweep_retest/, which is strategy-local) and built on
-runtime_state.store.JsonKeyValueStore -- the repo's one established persistence
-convention (see runtime_state/store.py and trade_management/claims.py) -- so any other
-AG strategy can register/release positions through the same shared file later.
+"""Shared, strategy-agnostic open-position guard persisted through
+runtime_state.store.JsonKeyValueStore. No-symbol calls preserve the original GLOBAL
+cross-strategy cap. A caller may explicitly pass ``symbol=`` to count/apply the separate
+per-symbol cap; ST_LIQUIDITY_SWEEP_RETEST_V1 opts into that scope in its engine, while
+all existing no-symbol callers remain global.
 
-ST_ASIAN_SWEEP_5R_V1 does not call this yet; wiring existing strategies into this guard
-is out of this change's scope (see status report GAPS).
+The guard stays in execution/ (not inside strategy_engine/sweep_retest/, which is
+strategy-local) so any AG strategy can register/release positions through the shared
+store. Open-position registration remains keyed by position_id and includes symbol
+metadata for optional symbol-scoped reads.
 """
 from __future__ import annotations
 
@@ -19,6 +18,7 @@ from runtime_state.store import JsonKeyValueStore
 
 DEFAULT_PATH = "journal/ag_open_strategy_positions.json"
 MAX_OPEN_STRATEGY_POSITIONS = 1
+MAX_OPEN_POSITIONS_PER_SYMBOL = 1
 
 
 @dataclass(frozen=True)
@@ -29,11 +29,20 @@ class OpenPositionGuard:
     def default(cls, path: str = DEFAULT_PATH) -> "OpenPositionGuard":
         return cls(JsonKeyValueStore(path))
 
-    def open_count(self) -> int:
-        return len(self.store.all())
+    def open_count(self, symbol: Optional[str] = None) -> int:
+        records = self.store.all()
+        if symbol is None:
+            return len(records)
+        return sum(
+            1
+            for record in records.values()
+            if isinstance(record, dict) and record.get("symbol") == symbol
+        )
 
-    def is_blocked(self) -> bool:
-        return self.open_count() >= MAX_OPEN_STRATEGY_POSITIONS
+    def is_blocked(self, symbol: Optional[str] = None) -> bool:
+        if symbol is None:
+            return self.open_count() >= MAX_OPEN_STRATEGY_POSITIONS
+        return self.open_count(symbol=symbol) >= MAX_OPEN_POSITIONS_PER_SYMBOL
 
     def register_open(self, position_id: str, strategy_id: str, symbol: str, *,
                        setup_id: Optional[str] = None, risk_amount: Optional[float] = None,

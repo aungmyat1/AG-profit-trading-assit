@@ -40,3 +40,20 @@ Population) + G3 (Economic Gate) evidence.
 - **`economic_gate_contract.yaml` PROPOSED**: unchanged; G3 remains fail-closed.
 - **H2 friction campaign**: untouched (`H2_CAMPAIGN_MODIFIED=false`).
 - **External `Session-SMC/session-smc-trading-bot` SVOS**: locked research, not adopted.
+
+## AG Strategy Optimization Framework V1 binding (2026-09-24)
+
+The cross-track program wrapper lives in `src/strategy_optimization/`. It is not a new
+optimizer or lifecycle authority: it stores strategy-scoped experiment identities,
+write-once provenance, terminal blocked/rejected outcomes, and pre-read dataset-access
+records while delegating hypotheses to `svos.hypothesis`, candidate freezes to
+`svos.candidate`, bounded search to `svos.optimization`, economic metrics to
+`performance`, and canonical strategy lifecycle to `validation_framework.lifecycle_registry`.
+
+`DatasetRole` preserves `DEVELOPMENT`, `DEVELOPMENT_REUSED`, `REPLICATION`, `OOS`,
+`FINAL_HOLDOUT`, and `FORWARD_SHADOW` in program records. Only development roles map to
+the legacy optimizer role. OOS/holdout/replication/forward-shadow roles are blocked from
+optimization; access is hash-logged before a reader callback. The canonical optimization
+admission contract remains unsigned/`PROPOSED`, so result-producing stages fail closed.
+See `docs/status/AG_STRATEGY_OPTIMIZATION_FRAMEWORK_V1_STATUS.md` for the frozen four-track
+inventory and Task C's `BLOCKED_REPRODUCIBILITY` registration.

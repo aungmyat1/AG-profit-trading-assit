@@ -1,0 +1,201 @@
+{
+  "authority_reuse": {
+    "bounded_optimization": "src/svos/optimization.py and src/svos/optimization_admission.py",
+    "candidate_freeze": "src/svos/candidate.py",
+    "content_fingerprints": "src/post_asian_pilot/fingerprint.py",
+    "execution_and_demo_authority": "strategies/registry.yaml (owner-only; not mutated)",
+    "hypothesis_preregistration": "src/svos/hypothesis.py",
+    "performance_metrics": "src/performance/calculator.py and src/performance/models.py",
+    "strategy_contracts": "strategies/<ID>.yaml (per-track; not mutated)",
+    "strategy_lifecycle": "config/governance/strategy_lifecycle.yaml plus validation_framework.lifecycle_registry (sole canonical lifecycle; not mutated)"
+  },
+  "candidate_state_machine": {
+    "authority": "research experiment only; subordinate to canonical strategy lifecycle",
+    "failed_experiment_requires_new_experiment_id": true,
+    "failure_returns_to_search": false,
+    "terminal_states_are_irreversible": true
+  },
+  "dataset_role_invariants": {
+    "access_is_journaled_before_reader_callback": true,
+    "only_optimizer_roles": [
+      "DEVELOPMENT",
+      "DEVELOPMENT_REUSED"
+    ],
+    "protected_roles_cannot_be_downgraded": [
+      "REPLICATION",
+      "OOS",
+      "FINAL_HOLDOUT",
+      "FORWARD_SHADOW"
+    ],
+    "roles_are_pinned_in_write_once_dataset_manifests": true
+  },
+  "dataset_roles": [
+    "DEVELOPMENT",
+    "DEVELOPMENT_REUSED",
+    "REPLICATION",
+    "OOS",
+    "FINAL_HOLDOUT",
+    "FORWARD_SHADOW"
+  ],
+  "generated_at_utc": "2026-09-24T00:00:00Z",
+  "inventory_builder_scope": {
+    "candidate_comparison_run_by_builder": false,
+    "economic_claims_created_by_builder": false,
+    "market_data_replay_run_by_builder": false,
+    "market_data_rows_consumed_by_builder": false,
+    "parameter_search_run_by_builder": false,
+    "strategy_configs_mutated_by_builder": false,
+    "strategy_execution_authority_mutated_by_builder": false,
+    "strategy_lifecycle_mutated_by_builder": false
+  },
+  "inventory_sha256": "e8b8a88c2ee3ce6e7d72b8d0281207528adb0f21935e876c789de0904a9c818c",
+  "optimization_admission": {
+    "contract_id": "AG_OPTIMIZATION_ADMISSION_CONTRACT_V1",
+    "contract_ref": "config/governance/optimization_admission_contract.yaml",
+    "contract_status": "PROPOSED",
+    "current_blockers": [
+      "CONTRACT_NOT_SIGNED"
+    ],
+    "current_evaluation_status": "OPTIMIZATION_BLOCKED",
+    "policy": "No search/replay/optimization is admitted by this inventory; unsigned contract fails closed."
+  },
+  "schema_version": "AG_STRATEGY_OPTIMIZATION_FRAMEWORK_V1_INITIAL_INVENTORY",
+  "strategy_tracks": [
+    {
+      "canonical_config_ref": "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
+      "canonical_config_status": "NOT_DECLARED",
+      "canonical_lifecycle_stage": "OFFLINE_RESEARCH",
+      "canonical_version": "1.0.1",
+      "evidence_refs": [
+        "docs/status/AG_SSC_HYP001_POST_V1_0_1_REASSESSMENT_STATUS.md",
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_POST_V1_0_1_REASSESSMENT/HYP_001_POST_V1_0_1_PREREGISTRATION_REASSESSMENT.md",
+        "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_002_ECONOMIC_RESULT_ATTEMPT_2/economic_evaluation.json"
+      ],
+      "inventory_scope": "IDENTITY_AND_EXISTING_STATUS_REFERENCES_ONLY_NO_REPLAY_NO_DATASET_CONSUMPTION",
+      "lifecycle_version": "1.0.1",
+      "recommendation_focus": "Keep the frozen SSC hypotheses separate; first resolve the existing owner-adjudication gate. Do not start WP4B, a new replay, or parameter search in this package.",
+      "recommendation_independently_revalidated": false,
+      "recommendation_source": "USER_RECOMMENDATION_2026-09-24",
+      "source_sha256": {
+        "config/governance/strategy_lifecycle.yaml": "0863998f40893c863dd86f9c128e8d0a3481e5fd5a0b5825a703f724a361d0ad",
+        "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml": "0a3dffb0b601cf52f36c4623ed76fe22564d6145224eee2329c8ae1dc93ed658",
+        "strategies/registry.yaml": "e06ffbe5bf6926b19f4473154a098adeadc285a0340bb2b9aaf629ab32ca81cd"
+      },
+      "strategy_authority": {
+        "active": false,
+        "demo_authorized": false,
+        "live_authorized": false,
+        "registered": true,
+        "research": true
+      },
+      "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+      "validation_adapter_ref": "validation_framework.adapters.session_sweep_continuation_adapter.build_session_sweep_continuation_record",
+      "validation_state_ref": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/CURRENT_VALIDATION_STATE.json",
+      "version_conflicts": [
+        {
+          "canonical_version": "1.0.1",
+          "classification": "STALE_OR_VERSION_MISMATCHED_EVIDENCE_SNAPSHOT_NOT_CANONICAL_AUTHORITY",
+          "observed_version": "1.0.0",
+          "source": "artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/CURRENT_VALIDATION_STATE.json"
+        }
+      ]
+    },
+    {
+      "canonical_config_ref": "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
+      "canonical_config_status": "ACTIVE_INCUBATION",
+      "canonical_lifecycle_stage": "FORWARD_RESEARCH",
+      "canonical_version": "2.0.0",
+      "evidence_refs": [
+        "docs/status/AG_TASK_C_PER_SYMBOL_POSITION_GUARD_STATUS.md",
+        "artifacts/optimization/evidence/AG_LIQUIDITY_SWEEP_RETEST_BASELINE_PROVENANCE_SEARCH_V1.json",
+        "artifacts/backtests/entry_only_result.json",
+        "artifacts/validation_evidence/determinism/ST_LIQUIDITY_SWEEP_RETEST_V1_2_0_0/"
+      ],
+      "inventory_scope": "IDENTITY_AND_EXISTING_STATUS_REFERENCES_ONLY_NO_REPLAY_NO_DATASET_CONSUMPTION",
+      "lifecycle_version": "2.0.0",
+      "recommendation_focus": "Recover the exact 99/50/49/48 control population and friction assumptions before any paired replay. The Task C implementation may be recorded, but its economics remain unavailable.",
+      "recommendation_independently_revalidated": false,
+      "recommendation_source": "USER_RECOMMENDATION_2026-09-24",
+      "source_sha256": {
+        "config/governance/strategy_lifecycle.yaml": "0863998f40893c863dd86f9c128e8d0a3481e5fd5a0b5825a703f724a361d0ad",
+        "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml": "9bfc25153c6be0f264088756a90d7060f9b0f789fc0b269d4d76ceb5139b584c",
+        "strategies/registry.yaml": "e06ffbe5bf6926b19f4473154a098adeadc285a0340bb2b9aaf629ab32ca81cd"
+      },
+      "strategy_authority": {
+        "active": false,
+        "demo_authorized": false,
+        "live_authorized": false,
+        "registered": true,
+        "research": true
+      },
+      "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1",
+      "validation_adapter_ref": "validation_framework.adapters.btc_adapter.build_btc_record",
+      "validation_state_ref": null,
+      "version_conflicts": []
+    },
+    {
+      "canonical_config_ref": "strategies/ST_LARGE_SMC_V1.yaml",
+      "canonical_config_status": "RESEARCH_DRAFT",
+      "canonical_lifecycle_stage": "FORWARD_RESEARCH",
+      "canonical_version": "1.0.7",
+      "evidence_refs": [
+        "docs/status/AG_LARGE_SMC_V1_FORWARD_TO_SHADOW_EVIDENCE_CONTRACT_V1_STATUS.md",
+        "strategies/STRATEGY_LEDGER.md",
+        "artifacts/validation_evidence/determinism/ST_LARGE_SMC_V1_1_0_7/"
+      ],
+      "inventory_scope": "IDENTITY_AND_EXISTING_STATUS_REFERENCES_ONLY_NO_REPLAY_NO_DATASET_CONSUMPTION",
+      "lifecycle_version": "1.0.7",
+      "recommendation_focus": "Keep Large-SMC's E-to-M and C10 computability questions in its own track; no measurement work is started by this inventory.",
+      "recommendation_independently_revalidated": false,
+      "recommendation_source": "USER_RECOMMENDATION_2026-09-24",
+      "source_sha256": {
+        "config/governance/strategy_lifecycle.yaml": "0863998f40893c863dd86f9c128e8d0a3481e5fd5a0b5825a703f724a361d0ad",
+        "strategies/ST_LARGE_SMC_V1.yaml": "b1c4d8d10dd453a11f1bdff4a9b45398955554594e8036b00dd738acfd94c7bd",
+        "strategies/registry.yaml": "e06ffbe5bf6926b19f4473154a098adeadc285a0340bb2b9aaf629ab32ca81cd"
+      },
+      "strategy_authority": {
+        "active": false,
+        "demo_authorized": false,
+        "live_authorized": false,
+        "registered": true,
+        "research": true
+      },
+      "strategy_id": "ST_LARGE_SMC_V1",
+      "validation_adapter_ref": "validation_framework.adapters.large_smc_adapter.build_large_smc_record",
+      "validation_state_ref": null,
+      "version_conflicts": []
+    },
+    {
+      "canonical_config_ref": "strategies/ST_ASIAN_SWEEP_5R_V1.yaml",
+      "canonical_config_status": "ACTIVE_INCUBATION",
+      "canonical_lifecycle_stage": "OPERATIONAL_SHADOW",
+      "canonical_version": "1.1.1",
+      "evidence_refs": [
+        "strategies/STRATEGY_LEDGER.md",
+        "artifacts/validation_evidence/determinism/ST_ASIAN_SWEEP_5R_V1_1_1/",
+        "tests/test_fx_shadow_entry_gate.py"
+      ],
+      "inventory_scope": "IDENTITY_AND_EXISTING_STATUS_REFERENCES_ONLY_NO_REPLAY_NO_DATASET_CONSUMPTION",
+      "lifecycle_version": "1.1.1",
+      "recommendation_focus": "Preserve Asian Sweep as an independent strategy/version and verify any weak-edge concern against its own evidence before proposing a change; no replay or optimization is performed here.",
+      "recommendation_independently_revalidated": false,
+      "recommendation_source": "USER_RECOMMENDATION_2026-09-24",
+      "source_sha256": {
+        "config/governance/strategy_lifecycle.yaml": "0863998f40893c863dd86f9c128e8d0a3481e5fd5a0b5825a703f724a361d0ad",
+        "strategies/ST_ASIAN_SWEEP_5R_V1.yaml": "baed22b718e9017f291808063c62d3eda6d00ceb3b8ea89cc071919b8530f9cf",
+        "strategies/registry.yaml": "e06ffbe5bf6926b19f4473154a098adeadc285a0340bb2b9aaf629ab32ca81cd"
+      },
+      "strategy_authority": {
+        "active": true,
+        "demo_authorized": false,
+        "live_authorized": false,
+        "registered": true,
+        "research": true
+      },
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "validation_adapter_ref": "validation_framework.adapters.fx_adapter.build_fx_record",
+      "validation_state_ref": null,
+      "version_conflicts": []
+    }
+  ]
+}

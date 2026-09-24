@@ -1,0 +1,79 @@
+{
+  "schema_version": "AG_LIQUIDITY_SWEEP_RETEST_BASELINE_PROVENANCE_SEARCH_V1",
+  "searched_at_local_date": "2026-09-24",
+  "strategy_id": "ST_LIQUIDITY_SWEEP_RETEST_V1",
+  "canonical_strategy_version": "2.0.0",
+  "reported_control_claim": {
+    "setups": 99,
+    "taken": 50,
+    "blocked": 49,
+    "historical_rejections": 48,
+    "verification_status": "UNVERIFIED_PROVENANCE_CLAIM_NOT_AN_EXPERIMENT_RESULT"
+  },
+  "search_scopes": [
+    {
+      "scope": "local_artifacts_docs_scripts_src",
+      "method": "Exact-count/claim text search plus inspection of existing LSR backtest and validation artifact names/status",
+      "result": "No matching source replay, exact-population manifest, population membership, or friction assumptions found beyond the known Task C blocked-status artifact.",
+      "notes": [
+        "Existing LSR determinism evidence is implementation evidence, not economic-population evidence.",
+        "artifacts/backtests/entry_only_result.json is not evidence of the reported LSR control population.",
+        "artifacts/backtests/AG_LIQUIDITY_SWEEP_RETEST_PER_SYMBOL_GUARD_REPLAY_V1.json records the same reproducibility block; it is not a recovered baseline."
+      ]
+    },
+    {
+      "scope": "local_git_history_and_tags",
+      "method": "git log --all, git tag -l, git fsck --full --no-reflogs --unreachable, git cat-file -t 18947755",
+      "result": "The clone is shallow; 570e755654f9aaf3f5cbbb1a09cd47690b83c9ae and 87e2da79 are grafted tips. No tags or unreachable objects were found. The cited 18947755 object is absent locally.",
+      "historical_commit_coverage": "INCOMPLETE_BECAUSE_CLONE_IS_SHALLOW"
+    },
+    {
+      "scope": "remote_branches_and_tags",
+      "method": "git ls-remote --heads --tags origin; recursive GitHub tree queries filtered for LSR baseline/replay/guard artifact paths",
+      "remote_heads": [
+        "audit/panel-r2@40376ce5",
+        "audit/panel-r3@e7b8f450",
+        "audit/panel-r5c@0fd1ec3e",
+        "fix/panel-r5c-broker-identity@1c5bbf57",
+        "main@87e2da79",
+        "panel-r3-owner-decision-bridge@1b55a234"
+      ],
+      "tag_count": 0,
+      "tree_search_result": "No matching paths were printed.",
+      "tree_search_confidence": "INCONCLUSIVE_ERRORS_WERE_SUPPRESSED_DURING_PRIOR_READ_ONLY_QUERY"
+    },
+    {
+      "scope": "cited_engineering_candidate_commit",
+      "reference": "18947755",
+      "local_object_lookup": "NOT_FOUND",
+      "remote_commit_lookup": "NOT_FOUND_OR_UNAVAILABLE_IN_PRIOR_GITHUB_API_QUERY",
+      "code_search_api": "HTTP_404_UNAVAILABLE_NOT_USED_AS_EVIDENCE_OF_ABSENCE"
+    }
+  ],
+  "missing_reproduction_inputs": [
+    "original replay script/entrypoint and exact revision",
+    "exact 99-setup occurrence population and membership/exclusion rules",
+    "proof that 50 taken and 49 blocked partition the same 99 setups",
+    "the 48 historical rejections and their relationship to the 50 taken",
+    "symbol/timeframe/date-range and canonical data manifest/hash",
+    "control configuration/version hash used for that population",
+    "spread, commission, slippage, funding, fill, and other friction assumptions with provenance",
+    "same-population control replay instructions and expected deterministic outputs"
+  ],
+  "conclusion": {
+    "exact_baseline_reproduced": false,
+    "population_reproduced": false,
+    "friction_assumptions_reproduced": false,
+    "candidate_comparison_authorized": false,
+    "parameter_search_authorized": false,
+    "candidate_comparison_or_replay_run": false,
+    "terminal_experiment_state": "BLOCKED_REPRODUCIBILITY",
+    "next_safe_action": "Owner supplies or adjudicates the source provenance; create a new preregistered experiment only after exact population and friction are independently reproduced. Do not substitute a different dataset or resume this terminal experiment."
+  },
+  "data_access_note": {
+    "raw_market_or_trade_rows_loaded_into_replay": false,
+    "economic_metrics_calculated": false,
+    "protected_oos_or_final_holdout_consumed_for_optimization": false,
+    "scope": "Repository status/manifests and source metadata were inspected; no replay input was loaded. The new access firewall is for future dataset readers and does not retroactively create a file-level access log for this search."
+  }
+}

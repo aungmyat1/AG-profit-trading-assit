@@ -4,7 +4,49 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Current rolling classification (2026-09-21)
+## Current rolling classification (2026-09-24)
+
+**AG Task C per-symbol open-position guard (`implementation=IMPLEMENTED; experiment=BLOCKED_REPRODUCIBILITY; economic_claim=NOT_AVAILABLE`):**
+`OpenPositionGuard` no-symbol calls remain global; only the shared Sweep Retest engine
+opts into per-symbol blocking with its current setup symbol. Focused affected suites pass
+(217 passed; one unrelated MT5-dependent post-Asian test is environmental). The default
+full suite completed with 3,874 passed, 52 failed, 48 skipped, and 3 environmental errors;
+no failure was traced to Task C. The exact 99/50/49/48 economic baseline dataset/script,
+population, and friction profile were not reproduced, so no candidate comparison, replay,
+or parameter search was run. The `max_open_strategy_positions` YAML field is parsed but
+behaviorally unused and was not wired. A candidate version remains pending owner
+assignment; the current v2.0.0 YAML/registry and all Demo/Live/execution authority remain
+unchanged. The user-cited engineering commit `18947755` is not present in the shallow
+local clone or confirmed remote refs; the Task C worktree patch remains an engineering
+candidate only. See `docs/status/AG_TASK_C_PER_SYMBOL_POSITION_GUARD_V1_STATUS.md`,
+`artifacts/backtests/AG_LIQUIDITY_SWEEP_RETEST_PER_SYMBOL_GUARD_REPLAY_V1.json`, and the
+provenance search report linked below.
+
+**AG Strategy Optimization Framework V1 (`CONTROL_PLANE_IMPLEMENTED; NO_OPTIMIZATION_AUTHORIZED`):**
+`src/strategy_optimization/` provides strategy-isolated contracts, write-once inventory
+and experiment manifests, an append-only hash-chained event/result registry, a pre-read
+role firewall, gross/friction/net metric schemas, and a human-only promotion-decision
+record. It reuses `validation_framework.lifecycle_registry`, `svos.hypothesis`,
+`svos.candidate`, `svos.optimization`, the signed optimization-admission evaluator,
+and `performance` metrics; it creates no competing strategy lifecycle or optimizer.
+The four-track inventory and Task C entry are at
+`artifacts/optimization/inventory/AG_STRATEGY_OPTIMIZATION_FRAMEWORK_V1_INITIAL_FREEZE.json`
+and `artifacts/optimization/experiments/AG_LSR_TASK_C_PER_SYMBOL_POSITION_GUARD_V1/`.
+The canonical optimization-admission contract remains `PROPOSED`, so development-result
+and robustness transitions fail closed. Preregistration now also requires a reproducible
+baseline with a matching development dataset and verified frozen SVOS hypothesis. The
+comparison API requires explicit reproducible control, population, dataset, and friction
+identity before emitting deltas. Dataset reads use the verified experiment-registry state,
+pre-read hash-chained ledgers, and completed-access provenance; protected-role exposure is
+reconciled before development admission. Task C is registered as
+`implementation=IMPLEMENTED`, `experiment=BLOCKED_REPRODUCIBILITY`,
+`economic_claim=NOT_AVAILABLE`; it has no dataset role/result and cannot resume under
+that experiment ID. No SSC WP4B or Large-SMC measurement work was started. Verification:
+42 framework-focused tests plus 32 adjacent regressions passed; documentation links (4
+checks) and the docs checker passed. No replay, candidate comparison, parameter search,
+promotion, strategy-version change, or Demo/Live/execution-authority change occurred.
+See `docs/status/AG_STRATEGY_OPTIMIZATION_FRAMEWORK_V1_STATUS.md` and
+`artifacts/optimization/evidence/AG_LIQUIDITY_SWEEP_RETEST_BASELINE_PROVENANCE_SEARCH_V1.json`.
 
 AG V2 pre-architecture baseline + core contracts (`PARTIAL`): the additive
 `src/opportunity/` package now exists — `MarketEvent`, the strategy-neutral
@@ -160,6 +202,24 @@ Demo, Live, or execution authority -- WP-4 (`CanonicalProposal` bridge) is not
 implemented. No strategy semantics, registry authorization, or execution authority
 changed; no protected/OOS/holdout data accessed; no broker orders sent. Next gate:
 independent audit of this WP-3 implementation.
+
+**WP-3 R1 remediation applied (`570e755`, current HEAD; independent re-audit pending).**
+The independent audit (`WP3_INDEPENDENT_AUDIT_FAIL` against `0cc9ea3`) found the
+evaluator's `FUNNEL_STAGES.index(candidate.stage)` call unguarded, so an unknown or
+malformed stage raised `ValueError` instead of returning a fail-closed
+`ProposalEligibilityDecision`. The fix guards membership first and returns
+`BLOCKED`/`UNSUPPORTED_STATE` (the same convention already used for an unknown outcome);
+no other eligibility rule changed. 2 focused regression tests were added; the 11
+opportunity test files were re-run read-only on 2026-09-23 and report **221 passed**.
+This paragraph records code and test state only -- it claims no audit result and grants
+no proposal, Demo, Live, or execution authority; WP-4 remains unimplemented and is not
+authorized to start by this record. A read-only mapping of WP-0..WP-11 onto the committed
+tree is at `docs/plans/AG_V2_ROADMAP_REMAINING_WORK_GAP_ANALYSIS_V1.md`. The same
+change set repaired two documentation-navigation defects (a broken `docs/README.md` link
+to `status/SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md`, and missing
+`docs/v2/README.md` discoverability) and made no claim or authority change:
+`DOCS_LINK_CHECK = PASS`, `BROKEN_RELATIVE_LINKS = 0`,
+`UNDISCOVERABLE_PRIMARY_DOC_DOMAINS = 0`, `tests/test_docs_links.py` = 4 passed.
 
 Validation-system assurance is `PARTIAL`: the repo now contains a fail-closed validation contract for friction and a machine-testable assurance manifest (`AG_VALIDATION_SYSTEM_ASSURANCE_V1.md` and `artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`) proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost handling. The earliest missing concrete gate, VA1 temporal/lookahead integrity, has now been frozen as `VD_TEMPORAL_LOOKAHEAD_V1` and covered by a deterministic perturbation test proving that future continuation beyond decision time T does not change the visible closed-bar set or strategy inputs at T. The project has also signed the R6 development edge gate for `ST_SESSION_SWEEP_CONTINUATION_V1` v1.0.1 via `config/governance/economic_gate_contract.yaml`, making the validation model operational for the research-only development edge mission without granting any live or demo execution authority. VA2 warm-up stability is now proven: `ONE_YEAR_REPLAY_STACK_V1` is frozen (`manifest_sha256 = 59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7`) with `DATA_COVERAGE_COMPLETE`, `CROSS_LEG_TIMEBASE_CONSISTENT` (`UTC_SINGLE_TIMEBASE`, hardened gate), `WARMUP_STABLE` (4371 closed H1 bars before the first decision, convergence proven both architecturally and empirically), and `PROTECTED_DATA_ACCESS_COUNT = 0`. See `docs/status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md`. No SSC replay has been executed; R5/R6 remain a separate, not-yet-started mission. The broader validation stack remains `NOT_READY` for evidence-producing development because VA3 synthetic known-answer coverage and downstream holdout gates remain partial or unproven. Strategy semantics remain unchanged and no demo/live authority is granted.
 

@@ -70,3 +70,24 @@ these gates are subordinate validation evidence.
 | `forward.py` | 6 | ForwardValidationCampaign + orchestrator (chronological/restart-safe) |
 | `demo_eligibility.py` | 6 | DEMO_ELIGIBLE prerequisite projection (never executes) |
 | `adapters/ssc.py` | 7 | SSC same-authority proof (historical ≡ forward) |
+
+## Cross-track optimization program binding (2026-09-24)
+
+`src/strategy_optimization/` is a **non-authorizing program-control wrapper** for a
+strategy-isolated experiment registry. It reuses the contracts and authorities above:
+`svos.hypothesis` for preregistration, `svos.candidate` for a later freeze,
+`svos.optimization` for bounded search, the existing signed optimization-admission
+evaluator, `performance` for metric calculation, and
+`validation_framework.lifecycle_registry` for the sole canonical strategy lifecycle.
+
+Its `CandidateState` values describe only an experiment's research progress; they do not
+create or mutate `LifecycleStage`. Its dataset-role vocabulary preserves the distinctions
+between development, reused development, replication, OOS, final holdout, and forward
+shadow while mapping only development roles to the existing optimizer. Protected access
+is routed through the framework's pre-read ledger and is never silently downgraded.
+
+The control-plane bootstrap and the first LSR Task C registration are documented in
+[`docs/status/AG_STRATEGY_OPTIMIZATION_FRAMEWORK_V1_STATUS.md`](../status/AG_STRATEGY_OPTIMIZATION_FRAMEWORK_V1_STATUS.md).
+The optimization-admission contract remains `PROPOSED`; no search is authorized by this
+program, and Task C is terminally `BLOCKED_REPRODUCIBILITY` until its exact population
+and friction provenance are reproduced.

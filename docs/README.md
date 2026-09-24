@@ -31,6 +31,10 @@ records the context-decision boundary and simulator readiness blockers.
 The [Strategy Capacity VD Cycle 2 status](status/VD_STRATEGY_CAPACITY_CYCLE2_STATUS.md)
 records canonical SSC binding, later-event virtual orders, checkpoint reconstruction,
 and the remaining lifecycle and campaign boundaries.
+The [AG Strategy Optimization Framework V1 status](status/AG_STRATEGY_OPTIMIZATION_FRAMEWORK_V1_STATUS.md)
+records the four independent strategy-track inventory, common immutable experiment
+contracts, signed-admission gate, protected-dataset role firewall, and Task C's terminal
+reproducibility block. It grants no lifecycle, execution, Demo/Live, or promotion authority.
 
 ## Start here
 
@@ -316,8 +320,10 @@ and the remaining lifecycle and campaign boundaries.
   — Stage 1 catch-up and retry policy decision packet.
 - [`status/AG_RESEARCH_FACTORY_V1_GOVERNANCE_HARDENING_STATUS.md`](status/AG_RESEARCH_FACTORY_V1_GOVERNANCE_HARDENING_STATUS.md)
   — Research Factory V1 governance hardening.
-- [`status/AG_SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md`](status/AG_SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md)
-  — SSC v1.0.1 semantic and replication confound audit.
+- [`status/SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md`](status/SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md)
+  — SSC v1.0.1 semantic and replication confound audit (link repaired 2026-09-23;
+  the previous target `status/AG_SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md`
+  did not exist, which failed `scripts/check_docs_links.py`).
 - [`status/TRUE_STAGE2_ORACLE_RECONCILIATION_STATUS.md`](status/TRUE_STAGE2_ORACLE_RECONCILIATION_STATUS.md)
   — True Stage 2 oracle reconciliation.
 - [`status/LARGE_SMC_FROZEN_CONTRACT_DRIFT_ADJUDICATION_STATUS.md`](status/LARGE_SMC_FROZEN_CONTRACT_DRIFT_ADJUDICATION_STATUS.md)
@@ -519,4 +525,20 @@ authoritative machine-readable source.
   strategy's existing canonical authority, semantic parity evidence, known
   mapping-decision debt; parity checkpoint `READY_FOR_INDEPENDENT_AUDIT`,
   `SAFE_TO_ADVANCE_TO_V2_4 = NO` pending that audit)
+  — **superseded 2026-09-22:** the independent re-audit
+  (`AG_V2_3A_REMEDIATION_REAUDIT`) closed the parity checkpoint as `PASS` with
+  `SAFE_TO_ADVANCE_TO_V2_4 = YES`; the original sentence above is preserved as
+  historical text and `PROJECT_STATUS.md` owns the current value.
+- [AG V2 roadmap remaining-work gap analysis](plans/AG_V2_ROADMAP_REMAINING_WORK_GAP_ANALYSIS_V1.md)
+  (read-only, non-authorizing analysis dated 2026-09-23: maps WP-0..WP-11 to the
+  committed tree at `570e755`, lists the eight still-unimplemented platform work
+  packages, the open WP-3 re-audit gate, the parallel strategy-evidence lane, and the
+  documentation drift found — layered over the [V2 documentation index](v2/README.md)
+  and [`PROJECT_ROADMAP.md`](PROJECT_ROADMAP.md))
+- [Task C per-symbol open-position guard](status/AG_TASK_C_PER_SYMBOL_POSITION_GUARD_V1_STATUS.md)
+  (`IMPLEMENTED_REPLAY_BLOCKED`: only Sweep Retest opts into one open position per
+  symbol; default no-symbol guard remains global; full-suite failures classified;
+  historical baseline not reproducible, so no economic comparison was run. The
+  machine-readable artifact is
+  [`artifacts/backtests/AG_LIQUIDITY_SWEEP_RETEST_PER_SYMBOL_GUARD_REPLAY_V1.json`](../artifacts/backtests/AG_LIQUIDITY_SWEEP_RETEST_PER_SYMBOL_GUARD_REPLAY_V1.json).)
 - [Web-to-Vantage Demo execution bridge](status/AG_WEB_VANTAGE_DEMO_EXECUTION_BRIDGE_V1.md)

@@ -304,3 +304,23 @@ from canonical session windows or other repo conventions at the time of registra
   Crypto simulated-trade lifecycle (fill simulation, R outcome tracking) is not built;
   only the research-observation ledger exists. No live/demo execution authority exists
   for either profile.
+- **`AG_TASK_C_PER_SYMBOL_POSITION_GUARD_V1` (2026-09-24; technical implementation,
+  replay blocked):** `OpenPositionGuard`'s no-symbol default remains global
+  (`MAX_OPEN_STRATEGY_POSITIONS = 1`). The shared Sweep Retest engine now explicitly
+  calls `is_blocked(symbol=symbol)`, opting `ST_LIQUIDITY_SWEEP_RETEST_V1` into a
+  one-position-per-symbol cap for both the FOREX and CRYPTO_PERP profiles. Other guard
+  callers retain global behavior. `DailyLossGuard` remains strategy/day scoped; no
+  strategy entry/exit rules, risk percentages, execution authority, Demo authorization,
+  or Live authorization changed. `global_guards.max_open_strategy_positions` is
+  **CONFIRMED_UNUSED** as a behavioral setting: it is parsed into the config dataclass
+  but has no downstream consumer; it was intentionally not wired or edited. The YAML's
+  existing combined-scope declaration is unchanged and requires owner reconciliation
+  before promotion. Per the broad risk-semantics clause in `docs/VERSION_HISTORY.md`,
+  this concurrent-exposure change is strategy-version relevant and a candidate bump is
+  required; the detailed trigger list does not name position concurrency and no exact
+  repository precedent was found. The candidate version identifier is
+  `OWNER_DECISION_PENDING`; current YAML/registry remain v2.0.0 / research-only.
+  The exact 99/50/49/48 historical population could not be reproduced; no economic replay
+  or improvement claim is made. See
+  `docs/status/AG_TASK_C_PER_SYMBOL_POSITION_GUARD_V1_STATUS.md` and
+  `artifacts/backtests/AG_LIQUIDITY_SWEEP_RETEST_PER_SYMBOL_GUARD_REPLAY_V1.json`.
