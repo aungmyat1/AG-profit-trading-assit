@@ -4,6 +4,24 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PROJECT_AUDIT_AND_CLEANUP (2026-09-25, `claude/stoic-feynman-4kczs6`, docs/layout only)
+
+Repository audit plus root cleanup. There are no code, config, strategy, execution,
+scheduler, or authorization changes. 13 loose root docs/manifests moved under `docs/`
+(`docs/market_intelligence/`, `docs/v2/`, `docs/validation/`, `docs/status/`,
+`docs/specs/`, `docs/plans/`) with `git mv`; the external-validation zip moved to
+`artifacts/validation/`; the stale `full_suite2.txt` and the empty root
+`package-lock.json` were removed. The broken `docs/README.md` link was fixed. Linux
+baseline (no MT5, full history): ~4051 passed / 46–47 failed (one nondeterministic) / 3 errors. The failures fall
+into these classes: offline replay reaching live `mt5.symbol_info()` via
+`liquidity/analyzer.py` (real, HIGH); dataset SHA-256s bound to CRLF checkouts (real,
+HIGH); tests pinned to the mutable `state/proposal_ledger` or to directory diffs against
+old commits; Windows-only paths; and 3 already-known failures. Tracked runtime state
+(`journal/` idempotency claims, `state/`) must be untracked only by the owner-machine
+procedure in the record. Recommended order: fix CRLF binding → make replay hermetic →
+de-couple tests → add Linux CI → close R5C and redirect effort to R5/R6 edge evidence
+→ then the planned `src/` split. See `docs/status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md`.
+
 ## PANEL_R5C_R2_SHARED_BROKER_IDENTITY (2026-09-24, `claude/hopeful-ptolemy-1tiv9c`, candidate)
 
 Re-audit of R5C-R1 (`1c5bbf5`) confirmed its `"None"`-ticket fix, but found a new blocking
@@ -222,7 +240,7 @@ dispatchability: only `SESSION_TRADE_V1` is wired into
 import-boundary test proves the opportunity package never imports
 execution/order-send code. No strategy semantics, execution authority, or
 demo/live authorization changed; no protected data accessed; no broker orders
-sent. See `AG_V2_BASELINE_MANIFEST_V1.json` and
+sent. See `docs/v2/AG_V2_BASELINE_MANIFEST_V1.json` and
 `docs/status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md`. **Binding constraint on
 all later V2 phases (owner directive, 2026-09-21): the existing frontend is
 frozen** — no redesign, no new Opportunity Finder dashboard or Execution
@@ -396,7 +414,7 @@ orders sent; not wired into any runtime path or the existing `ProposalLedger`. N
 gate: independent audit of this WP-4 implementation, then WP-5 (wiring into the
 operational FX cycle).
 
-Validation-system assurance is `PARTIAL`: the repo now contains a fail-closed validation contract for friction and a machine-testable assurance manifest (`AG_VALIDATION_SYSTEM_ASSURANCE_V1.md` and `artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`) proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost handling. The earliest missing concrete gate, VA1 temporal/lookahead integrity, has now been frozen as `VD_TEMPORAL_LOOKAHEAD_V1` and covered by a deterministic perturbation test proving that future continuation beyond decision time T does not change the visible closed-bar set or strategy inputs at T. The project has also signed the R6 development edge gate for `ST_SESSION_SWEEP_CONTINUATION_V1` v1.0.1 via `config/governance/economic_gate_contract.yaml`, making the validation model operational for the research-only development edge mission without granting any live or demo execution authority. VA2 warm-up stability is now proven: `ONE_YEAR_REPLAY_STACK_V1` is frozen (`manifest_sha256 = 59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7`) with `DATA_COVERAGE_COMPLETE`, `CROSS_LEG_TIMEBASE_CONSISTENT` (`UTC_SINGLE_TIMEBASE`, hardened gate), `WARMUP_STABLE` (4371 closed H1 bars before the first decision, convergence proven both architecturally and empirically), and `PROTECTED_DATA_ACCESS_COUNT = 0`. See `docs/status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md`. No SSC replay has been executed; R5/R6 remain a separate, not-yet-started mission. The broader validation stack remains `NOT_READY` for evidence-producing development because VA3 synthetic known-answer coverage and downstream holdout gates remain partial or unproven. Strategy semantics remain unchanged and no demo/live authority is granted.
+Validation-system assurance is `PARTIAL`: the repo now contains a fail-closed validation contract for friction and a machine-testable assurance manifest (`docs/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1.md` and `artifacts/validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1_manifest.json`) proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost handling. The earliest missing concrete gate, VA1 temporal/lookahead integrity, has now been frozen as `VD_TEMPORAL_LOOKAHEAD_V1` and covered by a deterministic perturbation test proving that future continuation beyond decision time T does not change the visible closed-bar set or strategy inputs at T. The project has also signed the R6 development edge gate for `ST_SESSION_SWEEP_CONTINUATION_V1` v1.0.1 via `config/governance/economic_gate_contract.yaml`, making the validation model operational for the research-only development edge mission without granting any live or demo execution authority. VA2 warm-up stability is now proven: `ONE_YEAR_REPLAY_STACK_V1` is frozen (`manifest_sha256 = 59896fe6227a577ec588c701765c4a78277415ca70f7a6987f485ff1708de0c7`) with `DATA_COVERAGE_COMPLETE`, `CROSS_LEG_TIMEBASE_CONSISTENT` (`UTC_SINGLE_TIMEBASE`, hardened gate), `WARMUP_STABLE` (4371 closed H1 bars before the first decision, convergence proven both architecturally and empirically), and `PROTECTED_DATA_ACCESS_COUNT = 0`. See `docs/status/SSC_V1_0_1_ONE_YEAR_REPLAY_DATA_AUTHORITY_STATUS.md`. No SSC replay has been executed; R5/R6 remain a separate, not-yet-started mission. The broader validation stack remains `NOT_READY` for evidence-producing development because VA3 synthetic known-answer coverage and downstream holdout gates remain partial or unproven. Strategy semantics remain unchanged and no demo/live authority is granted.
 
 Strategy Capacity VD Cycle 2 remains `VD_STRATEGY_CAPACITY_SIMULATOR_NOT_READY`.
 Capacity mode now binds internally to SSC's canonical shadow cycle, rejects caller
@@ -534,25 +552,25 @@ Market Intelligence V1 is frozen as `MI_V1_FROZEN`. The release manifest and acc
 117-test regression preserve the immutable MI contract, TD-8E provenance lineage, and
 controlled SSC compatibility boundary. EMA and cross-strategy regime remain unavailable;
 Virtual Demo and SSC production migration remain future work. See
-`AG_MARKET_INTELLIGENCE_V1_FREEZE_STATUS.md` and `MI_V1_RELEASE_MANIFEST.json`.
+`docs/market_intelligence/AG_MARKET_INTELLIGENCE_V1_FREEZE_STATUS.md` and `docs/market_intelligence/MI_V1_RELEASE_MANIFEST.json`.
 
 MI V1 Cycle 4 controlled SSC integration is `MI_V1_INTEGRATION_READY`: the narrow
 MI-to-SSC adapter preserves TD-8E event/provenance lineage and produces equal canonical
 `run_replay` decisions on the representative complete event. Incomplete identity and
 missing-evidence cases fail closed; no SSC cutover occurred. See
-`AG_MARKET_INTELLIGENCE_V1_CYCLE4_STATUS.md`.
+`docs/market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE4_STATUS.md`.
 
 MI V1 Cycle 3 parity and temporal proof is `MI_V1_PARITY_READY` from `cbb6a43`: same
 event determinism, future-only mutation invariance, incomplete evidence handling, zero
 live fallback, identity and H1/M15/M1 lineage preservation, and unresolved EMA/regime
 states passed against the existing core. No live/replay parity claim is made. See
-`AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md`.
+`docs/market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md`.
 
 MI V1 Cycle 2 core is `MI_V1_CORE_READY` from `93586ec`: an immutable, deterministic
 snapshot/composer consumes admitted TD-8E evidence, preserves event and dataset
 provenance, and fails closed on missing components. EMA and a cross-strategy regime
 contract remain explicitly unavailable. No consumer migration or execution authority
-changed. See `AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md`.
+changed. See `docs/market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md`.
 
 TD-8E shared historical replay evaluation is `UNIT_TESTED` and final integration is
 `MI_FOUNDATION_READY`. One context at a caller-controlled historical T fed the actual
