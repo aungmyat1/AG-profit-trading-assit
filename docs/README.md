@@ -34,6 +34,10 @@ and the remaining lifecycle and campaign boundaries.
 
 ## Start here
 
+The [repository structure audit](REPO_STRUCTURE_AUDIT.md) records the current layout,
+safe cache cleanup, and the recommended archival policy for historical documents and
+generated evidence.
+
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository.
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,

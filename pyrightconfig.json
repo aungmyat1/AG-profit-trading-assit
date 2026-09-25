@@ -1,16 +1,23 @@
 {
+  "include": [
+    "src",
+    "tests",
+    "scripts"
+  ],
   "exclude": [
     "**/node_modules",
     "**/.venv",
     "**/venv",
     "**/__pycache__",
     "**/.pytest_cache",
+    "**/.mypy_cache",
+    "**/.ruff_cache",
     "**/.git",
-    "artifacts",
-    ".claude/worktrees",
-    "web/dist",
-    "journal",
-    "research_external",
-    "state"
+    "**/htmlcov",
+    "**/build",
+    "**/dist"
+  ],
+  "extraPaths": [
+    "src"
   ]
 }
