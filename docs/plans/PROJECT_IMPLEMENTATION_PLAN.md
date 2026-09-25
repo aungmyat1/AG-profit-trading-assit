@@ -169,10 +169,10 @@ Stop and report rather than widening scope if a task would require:
 
 ## 6. Linked source documents
 
-- [Current rolling project status](PROJECT_STATUS.md)
-- [Master project readiness roadmap](docs/PROJECT_ROADMAP.md)
-- [V2 documentation index](docs/v2/README.md)
-- [V2 implementation roadmap](docs/v2/AG_V2_IMPLEMENTATION_ROADMAP.md)
-- [V2 baseline/core-contract status](docs/status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md)
-- [Documentation governance contract](docs/DOCUMENTATION_GOVERNANCE.md)
-- [Documentation maintenance rules](docs/status/LIVE_STATUS_MAINTENANCE.md)
+- [Current rolling project status](../../PROJECT_STATUS.md)
+- [Master project readiness roadmap](../PROJECT_ROADMAP.md)
+- [V2 documentation index](../v2/README.md)
+- [V2 implementation roadmap](../v2/AG_V2_IMPLEMENTATION_ROADMAP.md)
+- [V2 baseline/core-contract status](../status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md)
+- [Documentation governance contract](../DOCUMENTATION_GOVERNANCE.md)
+- [Documentation maintenance rules](../status/LIVE_STATUS_MAINTENANCE.md)

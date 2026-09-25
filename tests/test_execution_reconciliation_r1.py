@@ -19,6 +19,10 @@ class Evidence:
     def __init__(self, comment, ticket):
         self.comment = comment
         self.ticket = ticket
+        # Carries the value under both MT5 identity fields reconciliation reads
+        # (position.identifier / deal.position_id), so each test exercises one identity.
+        self.identifier = ticket
+        self.position_id = ticket
         self.entry = 0
 
 

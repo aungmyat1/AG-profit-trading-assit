@@ -32,15 +32,21 @@ from execution.reconciliation import (
 
 
 class _FakePosition:
-    def __init__(self, ticket, comment, symbol="EURUSD"):
+    # MT5 semantics: a position's identifier equals its own ticket (the opening order's
+    # ticket) -- the identity reconciliation keys on.
+    def __init__(self, ticket, comment, symbol="EURUSD", identifier=None):
         self.ticket = ticket
+        self.identifier = ticket if identifier is None else identifier
         self.comment = comment
         self.symbol = symbol
 
 
 class _FakeDeal:
-    def __init__(self, ticket, comment, entry=0, symbol="EURUSD"):
+    # MT5 semantics: a deal's ticket is its own deal id; position_id links it to the
+    # position it opened (defaults to `ticket` here so single-surface tests keep one id).
+    def __init__(self, ticket, comment, entry=0, symbol="EURUSD", position_id=None):
         self.ticket = ticket
+        self.position_id = ticket if position_id is None else position_id
         self.comment = comment
         self.entry = entry
         self.symbol = symbol

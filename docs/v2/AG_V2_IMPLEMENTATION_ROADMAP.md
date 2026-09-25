@@ -12,7 +12,7 @@ Committed baseline evidence as of this document:
 - SSC one-year replay data authority freeze: `1e75e36`
 - V2 core contracts: `0be5bad`
 - frontend-freeze documentation: `b6e0780`
-- baseline manifest: `AG_V2_BASELINE_MANIFEST_V1.json`
+- baseline manifest: `docs/v2/AG_V2_BASELINE_MANIFEST_V1.json`
 - status: `docs/status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md`
 - V2-2A/V2-2B implementation and verification: `docs/status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md` (VERIFIED, 2026-09-21)
 - V2-3A/V2-3B implementation, independent audit, remediation, and independent re-audit: `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` (`RE_AUDIT_PASS / PARITY_CHECKPOINT_PASS`, 2026-09-22; `AG_V2_INDEPENDENT_AUDIT_02` found one blocking Safety-Invariant-#9 defect in V2-3A, fixed generically in `opportunity.engine`, then confirmed by `AG_V2_3A_REMEDIATION_REAUDIT`)
