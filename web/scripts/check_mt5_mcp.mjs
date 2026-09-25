@@ -52,7 +52,7 @@ add(liveKeys.length ? null : true, 'live credentials absent from env', liveKeys.
 // 5. The metatrader command
 const command = env.MT5_MCP_COMMAND || 'metatrader';
 const isWin = process.platform === 'win32';
-const which = spawnSync(isWin ? 'where' : 'which', [command], { encoding: 'utf8', shell: isWin });
+const which = spawnSync(isWin ? 'where' : 'which', [command], { encoding: 'utf8' });
 if (which.status === 0) {
   add(true, `command "${command}" on PATH`, which.stdout.trim().split(/\r?\n/)[0]);
 } else if (existsSync(command)) {
@@ -80,10 +80,29 @@ if (existsSync(cfgPath)) {
     const names = Object.keys(servers);
     const mt = names.filter((n) => /mt5|metatrader|mtx/i.test(n));
     add(mt.length > 0, 'Claude Desktop config has an MT5 entry', mt.length ? mt.join(', ') : `servers present: ${names.join(', ') || 'none'}`);
+    // args are printed with any --password/--login/--server/--token/--secret/--key
+    // VALUE redacted -- these launcher command lines routinely embed credentials
+    // directly as CLI args, not just via env, and this diagnostic must never surface
+    // a real secret in its own output.
+    const SENSITIVE_ARG = /^--?(password|login|server|token|secret|key)$/i;
+    const redactArgs = (args) => {
+      const out = [];
+      let redactNext = false;
+      for (const a of args) {
+        if (redactNext) {
+          out.push('***REDACTED***');
+          redactNext = false;
+          continue;
+        }
+        out.push(a);
+        if (SENSITIVE_ARG.test(a)) redactNext = true;
+      }
+      return out;
+    };
     for (const n of mt) {
       const s = servers[n];
       const cmd = s.command || '(missing command)';
-      add(!!s.command, `entry "${n}" command`, `${cmd} ${(s.args || []).join(' ')}`);
+      add(!!s.command, `entry "${n}" command`, `${cmd} ${redactArgs(s.args || []).join(' ')}`);
       if (s.env) add(true, `entry "${n}" env keys`, Object.keys(s.env).join(', ') + ' (values hidden)');
     }
     if (mt.length > 1) add(null, 'multiple MT5 servers registered', 'two servers (e.g. MTX and MBT) can collide; keep one');

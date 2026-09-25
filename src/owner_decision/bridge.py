@@ -285,9 +285,9 @@ class OwnerDecisionStore:
             existing = self._decisions.get(outcome.decision_id)
             if existing is not None:
                 return existing
-            self._decisions[outcome.decision_id] = outcome
             if self._persist is not None:
                 self._persist.put(outcome.decision_id, _serialize_execution_decision(outcome))
+            self._decisions[outcome.decision_id] = outcome
             return outcome
 
     def commit_terminal_decision(self, candidate: ExecutionDecision) -> ExecutionDecision:
@@ -318,12 +318,16 @@ class OwnerDecisionStore:
 
             existing_decision_id = self._proposal_index.get(candidate.proposal_envelope_id)
             if existing_decision_id is None:
-                self._decisions[candidate.decision_id] = candidate
-                self._proposal_index[candidate.proposal_envelope_id] = candidate.decision_id
+                # Durable write first: if this raises, neither `_decisions` nor
+                # `_proposal_index` is mutated, so a retry in this same process still
+                # sees "no authority yet" and tries the write again, instead of
+                # returning an in-memory-only authorization that a restart would lose.
                 if self._persist is not None:
                     self._persist.put(
                         candidate.decision_id, _serialize_execution_decision(candidate)
                     )
+                self._decisions[candidate.decision_id] = candidate
+                self._proposal_index[candidate.proposal_envelope_id] = candidate.decision_id
                 return candidate
 
             existing_outcome = self._decisions[existing_decision_id]
@@ -347,9 +351,9 @@ class OwnerDecisionStore:
                     f"{candidate.status} action rejected.",
                 ),
             )
-            self._decisions[candidate.decision_id] = conflict
             if self._persist is not None:
                 self._persist.put(candidate.decision_id, _serialize_execution_decision(conflict))
+            self._decisions[candidate.decision_id] = conflict
             return conflict
 
 
