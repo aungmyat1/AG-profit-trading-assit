@@ -93,20 +93,20 @@ and the remaining lifecycle and campaign boundaries.
    — prospective owner-approved move of the BTC report window to 13:00-13:15 MMT
    (06:30-06:45 UTC); no observation, execution, or scheduler activation.
 15. [`status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md`](status/AG_STAGE1_WP7_MESSAGE_DELIVERY_PREFLIGHT_AND_AUTHORIZATION_PACKET_V1.md)
-16. [`../AG_MARKET_INTELLIGENCE_V1_CYCLE1_DESIGN.md`](../AG_MARKET_INTELLIGENCE_V1_CYCLE1_DESIGN.md),
-    [`../MI_AUTHORITY_INVENTORY.json`](../MI_AUTHORITY_INVENTORY.json),
-    [`../MI_V1_CONTRACT.md`](../MI_V1_CONTRACT.md),
-    [`../MI_V1_INVARIANTS.md`](../MI_V1_INVARIANTS.md), and
-    [`../MI_V1_MIGRATION_PLAN.md`](../MI_V1_MIGRATION_PLAN.md) — Cycle 1 MI design
+16. [`market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE1_DESIGN.md`](market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE1_DESIGN.md),
+    [`market_intelligence/MI_AUTHORITY_INVENTORY.json`](market_intelligence/MI_AUTHORITY_INVENTORY.json),
+    [`market_intelligence/MI_V1_CONTRACT.md`](market_intelligence/MI_V1_CONTRACT.md),
+    [`market_intelligence/MI_V1_INVARIANTS.md`](market_intelligence/MI_V1_INVARIANTS.md), and
+    [`market_intelligence/MI_V1_MIGRATION_PLAN.md`](market_intelligence/MI_V1_MIGRATION_PLAN.md) — Cycle 1 MI design
     artifacts; design-only and non-authorizing.
-17. [`../AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md`](../AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md)
+17. [`market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md`](market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE2_STATUS.md)
     — Cycle 2 immutable MI core implementation and verification status.
-18. [`../AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md`](../AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md)
+18. [`market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md`](market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE3_STATUS.md)
     — Cycle 3 parity, temporal isolation, provenance, and fallback proof.
-19. [`../AG_MARKET_INTELLIGENCE_V1_CYCLE4_STATUS.md`](../AG_MARKET_INTELLIGENCE_V1_CYCLE4_STATUS.md)
+19. [`market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE4_STATUS.md`](market_intelligence/AG_MARKET_INTELLIGENCE_V1_CYCLE4_STATUS.md)
     — controlled SSC compatibility integration and decision parity evidence.
-20. [`../AG_MARKET_INTELLIGENCE_V1_FREEZE_STATUS.md`](../AG_MARKET_INTELLIGENCE_V1_FREEZE_STATUS.md)
-    and [`../MI_V1_RELEASE_MANIFEST.json`](../MI_V1_RELEASE_MANIFEST.json) — frozen
+20. [`market_intelligence/AG_MARKET_INTELLIGENCE_V1_FREEZE_STATUS.md`](market_intelligence/AG_MARKET_INTELLIGENCE_V1_FREEZE_STATUS.md)
+    and [`market_intelligence/MI_V1_RELEASE_MANIFEST.json`](market_intelligence/MI_V1_RELEASE_MANIFEST.json) — frozen
     MI V1 release contract and machine-readable manifest.
    — preflight architecture review and authorization packet for the next, separately
    authorized WP7 task (real Telegram message delivery); does not itself authorize
@@ -195,7 +195,7 @@ and the remaining lifecycle and campaign boundaries.
 
 ## Validation system
 
-- [`../AG_VALIDATION_SYSTEM_ASSURANCE_V1.md`](../AG_VALIDATION_SYSTEM_ASSURANCE_V1.md)
+- [`validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1.md`](validation/AG_VALIDATION_SYSTEM_ASSURANCE_V1.md)
   — fail-closed validation contract for friction and machine-testable assurance manifest
   proving contiguous gate ordering, protected-data firewall enforcement, and unavailable-cost
   handling.
@@ -316,7 +316,7 @@ and the remaining lifecycle and campaign boundaries.
   — Stage 1 catch-up and retry policy decision packet.
 - [`status/AG_RESEARCH_FACTORY_V1_GOVERNANCE_HARDENING_STATUS.md`](status/AG_RESEARCH_FACTORY_V1_GOVERNANCE_HARDENING_STATUS.md)
   — Research Factory V1 governance hardening.
-- [`status/AG_SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md`](status/AG_SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md)
+- [`status/SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md`](status/SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1.md)
   — SSC v1.0.1 semantic and replication confound audit.
 - [`status/TRUE_STAGE2_ORACLE_RECONCILIATION_STATUS.md`](status/TRUE_STAGE2_ORACLE_RECONCILIATION_STATUS.md)
   — True Stage 2 oracle reconciliation.
@@ -405,6 +405,11 @@ matching status document before assuming a version is active or frozen.
 
 Files in `status/` are dated evidence snapshots. They preserve the test counts and
 observations from the named milestone; they are not rolling dashboards.
+
+- [`status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md`](status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md)
+  — repository health audit, test-failure classification, root-file relocation map
+  (root MI/V2/validation docs now live under `market_intelligence/`, `v2/`,
+  `validation/`), and the recommended fastest path to the R5/R6 objective.
 
 > **Index completeness note (2026-09-21):** The `docs/status/` directory contains
 > ~140 status documents. This index lists the most commonly referenced entries but
@@ -510,7 +515,7 @@ authoritative machine-readable source.
   (additive `src/opportunity/` contracts: MarketEvent, funnel vocabulary,
   OpportunityCandidate, ProposalEligibilityDecision, StrategyBinding, shared
   evidence contracts; no canonical duplication, no authority change; see also
-  `AG_V2_BASELINE_MANIFEST_V1.json` at repo root)
+  `v2/AG_V2_BASELINE_MANIFEST_V1.json`)
 - [AG V2-2A/V2-2B pure funnel engine + candidate store](status/AG_V2_2A_2B_IMPLEMENTATION_STATUS.md)
   (`VERIFIED`, 2026-09-21: identity continuity, semantic no-op detection, terminal
   stickiness, restart-safe persistence)
