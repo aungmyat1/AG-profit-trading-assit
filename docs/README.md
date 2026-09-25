@@ -447,6 +447,11 @@ observations from the named milestone; they are not rolling dashboards.
   deferred (`POST_MERGE_RUNTIME_BLOCKED`, by scope choice, not failure); flags
   the still-live legacy `/api/execution/manual-demo` route as a P0 blocker for
   any future real Demo order submission.
+- [`status/AG_MANUAL_DEMO_ROUTE_CONTAINMENT_FINAL_STATUS.md`](status/AG_MANUAL_DEMO_ROUTE_CONTAINMENT_FINAL_STATUS.md)
+  — Gate 1 of post-merge demo qualification (2026-09-25): retires the
+  `/api/execution/manual-demo` P0 bypass flagged above (410
+  `EXECUTION_ROUTE_RETIRED`, 12-case HTTP containment matrix, sentinel positive
+  control, bypass-surface audit finding 0 unsafe routes). Not yet published.
 
 > **Index completeness note (2026-09-21):** The `docs/status/` directory contains
 > ~140 status documents. This index lists the most commonly referenced entries but

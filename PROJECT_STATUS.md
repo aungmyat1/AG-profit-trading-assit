@@ -4,6 +4,34 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## AG_MANUAL_DEMO_ROUTE_CONTAINMENT_FINAL (2026-09-25, `fix/manual-demo-route-containment-final`, Gate 1 of post-merge demo qualification, not yet published)
+
+Retired `POST /api/execution/manual-demo` (`web/server.ts`) -- the last
+un-retired route that spawned `scripts/web_execute_trade.py --confirm`
+directly, outside the canonical owner-decision/execution-decision pipeline,
+flagged as a known P0 gap by
+`AG_POST_MERGE_DEMO_VERTICAL_SLICE_QUALIFICATION_STATUS.md`. Now returns
+`410 EXECUTION_ROUTE_RETIRED` unconditionally (reusing the existing contract
+already used by `/api/execution/manage` and `/api/execution/claim`), with the
+`spawn(...)` call and every reference to `'web_execute_trade.py'` removed from
+`web/server.ts`. 12-case HTTP containment matrix added
+(`web/tests/wp0a_execution_route_containment.test.ts`, WP0C block): valid
+payload, empty/null/malformed/truncated JSON, missing fields, bypass-looking
+extra fields, arbitrary auth header, alternate content-type, query-parameter
+bypass attempt, repeated requests, source-scan -- all confirm zero process
+spawns and no execution evidence in the response. Full frontend suite
+59/59 pass, zero collateral regressions; zero `src/` files changed, so the
+canonical owner-decision/execution/reconciliation pipeline (already covered by
+71 backend tests) is unaffected. Bypass-surface audit of every actual
+`order_send`/`order_check`/`subprocess`/`child_process` call site found exactly
+2 production broker-mutation surfaces, both pre-existing, config-gated, and
+account-guarded (`src/execution/mt5_gateway.py`, `src/mt5/management_gateway.py`);
+zero unsafe bypasses. `REAL_ORDER_CHECK_CALLS = REAL_ORDER_SEND_CALLS =
+DEMO_ORDERS_SENT = LIVE_ORDERS_SENT = 0` throughout. Local commit only, not yet
+published -- Gate 2 (real-MT5-data prepared-order qualification) starts only
+from the reviewed/published version of this baseline. See
+`docs/status/AG_MANUAL_DEMO_ROUTE_CONTAINMENT_FINAL_STATUS.md`.
+
 ## AG_POST_MERGE_DEMO_VERTICAL_SLICE_QUALIFICATION (2026-09-25, `verify/post-merge-demo-e2e-r1`, prepare-only)
 
 Discovered PR #4's GitHub merge locked in head `8bd7ae6` -- one commit behind the
