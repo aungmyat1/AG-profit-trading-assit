@@ -439,6 +439,14 @@ observations from the named milestone; they are not rolling dashboards.
   — repository health audit, test-failure classification, root-file relocation map
   (root MI/V2/validation docs now live under `market_intelligence/`, `v2/`,
   `validation/`), and the recommended fastest path to the R5/R6 objective.
+- [`status/AG_POST_MERGE_DEMO_VERTICAL_SLICE_QUALIFICATION_STATUS.md`](status/AG_POST_MERGE_DEMO_VERTICAL_SLICE_QUALIFICATION_STATUS.md)
+  — prepare-only post-merge qualification (2026-09-25): discovered and fixed a
+  PR #4 merge gap (10 resolved review threads whose fix commit never reached
+  `main`, closed by PR #5), security/diagnostic check PASS, 71/71 focused
+  regression PASS. Runtime/real-MT5/execution/reconciliation phases explicitly
+  deferred (`POST_MERGE_RUNTIME_BLOCKED`, by scope choice, not failure); flags
+  the still-live legacy `/api/execution/manual-demo` route as a P0 blocker for
+  any future real Demo order submission.
 
 > **Index completeness note (2026-09-21):** The `docs/status/` directory contains
 > ~140 status documents. This index lists the most commonly referenced entries but
