@@ -137,6 +137,133 @@ test('real-mode POST /api/execution/claim is retired and spawns no broker script
   assert.equal(data.simulated, undefined);
 });
 
+// --- WP0C: manual-demo authority containment (AG_MANUAL_DEMO_ROUTE_CONTAINMENT_FINAL) ---
+// /api/execution/manual-demo used to spawn scripts/web_execute_trade.py --confirm
+// directly, entirely outside the canonical owner-decision/execution-decision
+// pipeline. It must now unconditionally return 410 before any body handling that
+// could reach that script, regardless of payload shape, headers, or query string.
+
+const manualDemoValidBody = {
+  symbol: 'EURUSD', side: 'BUY', lots: 0.1, entryPrice: 1.085, stopLoss: 1.083,
+  takeProfit2: 1.092, strategyId: 'FRONTEND_MANUAL', user_confirmed: true,
+};
+
+async function assertManualDemoRetired(res: Response) {
+  assert.equal(res.status, 410);
+  const data = await res.json();
+  assert.equal(data.success, false);
+  assert.equal(data.error, 'EXECUTION_ROUTE_RETIRED');
+  assert.equal(data.ticket, undefined);
+  assert.equal(data.simulated, undefined);
+  assert.equal(data.report, undefined);
+}
+
+test('manual-demo: valid legacy payload is retired, not executed', async () => {
+  const res = await fetch(`${BASE_URL}/api/execution/manual-demo`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(manualDemoValidBody),
+  });
+  await assertManualDemoRetired(res);
+});
+
+test('manual-demo: empty object body is retired', async () => {
+  await assertManualDemoRetired(
+    await fetch(`${BASE_URL}/api/execution/manual-demo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+    }),
+  );
+});
+
+test('manual-demo: null JSON body is rejected by the body parser, not executed', async () => {
+  // express.json()'s default strict:true rejects a top-level non-object/array JSON
+  // value (the literal `null`) before any route handler runs -- a framework parser
+  // rejection (500, no app-level error middleware here), not the 410 the retired
+  // handler itself returns. Either way the request never reaches the handler.
+  const res = await fetch(`${BASE_URL}/api/execution/manual-demo`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: 'null',
+  });
+  assert.ok(res.status >= 400, `expected an error status for null body, got ${res.status}`);
+  const data = await res.json().catch(() => null);
+  assert.equal(data?.ticket, undefined);
+  assert.equal(data?.simulated, undefined);
+});
+
+test('manual-demo: missing required legacy fields is retired', async () => {
+  await assertManualDemoRetired(
+    await fetch(`${BASE_URL}/api/execution/manual-demo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_confirmed: true }),
+    }),
+  );
+});
+
+test('manual-demo: arbitrary/bypass-looking extra fields do not change the outcome', async () => {
+  await assertManualDemoRetired(
+    await fetch(`${BASE_URL}/api/execution/manual-demo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...manualDemoValidBody, bypass: true, force: true, admin: true, mode: 'override',
+      }),
+    }),
+  );
+});
+
+test('manual-demo: arbitrary auth header does not unlock execution', async () => {
+  await assertManualDemoRetired(
+    await fetch(`${BASE_URL}/api/execution/manual-demo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-AG-Owner-Key': 'anything', Authorization: 'Bearer fake' },
+      body: JSON.stringify(manualDemoValidBody),
+    }),
+  );
+});
+
+test('manual-demo: query parameters appended to the route do not unlock execution', async () => {
+  await assertManualDemoRetired(
+    await fetch(`${BASE_URL}/api/execution/manual-demo?confirm=true&force=1`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(manualDemoValidBody),
+    }),
+  );
+});
+
+test('manual-demo: alternate content-type that the server still parses is retired', async () => {
+  await assertManualDemoRetired(
+    await fetch(`${BASE_URL}/api/execution/manual-demo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json;charset=utf-8' },
+      body: JSON.stringify(manualDemoValidBody),
+    }),
+  );
+});
+
+test('manual-demo: repeated requests are each independently retired', async () => {
+  for (let i = 0; i < 3; i++) {
+    await assertManualDemoRetired(
+      await fetch(`${BASE_URL}/api/execution/manual-demo`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(manualDemoValidBody),
+      }),
+    );
+  }
+});
+
+test('manual-demo: malformed/truncated JSON is rejected by the body parser, not executed', async () => {
+  for (const badBody of ['{"symbol":', '{not valid json}', '']) {
+    const res = await fetch(`${BASE_URL}/api/execution/manual-demo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: badBody,
+    });
+    // Malformed JSON either fails express.json()'s parse (this server has no
+    // app-level JSON-parse error handler, so that surfaces as a 500 from
+    // Express's default error handler) or -- for the empty-body case, which
+    // express.json() treats as no body -- reaches the handler and gets the
+    // unconditional 410. Never a 2xx, and never response evidence of execution.
+    assert.notEqual(res.status, 200, `body ${JSON.stringify(badBody)} must never succeed`);
+    const data = await res.json().catch(() => null);
+    assert.equal(data?.ticket, undefined, `body ${JSON.stringify(badBody)} must show no execution evidence`);
+    assert.equal(data?.simulated, undefined);
+  }
+});
+
 test('server.ts source contains no real-mode spawn of a broker-mutating script', async () => {
   const { readFile } = await import('node:fs/promises');
   const source = await readFile(path.resolve(__dirname, '..', 'server.ts'), 'utf-8');

@@ -1319,54 +1319,28 @@ async function startServer() {
     });
   });
 
-  // Owner-confirmed manual demo entry. This is deliberately separate from the
-  // proposal scanner: it accepts an explicit user order and delegates all broker
-  // authority to scripts/web_execute_trade.py -> assistant.commands -> MT5.
+  // RETIRED (AG_MANUAL_DEMO_ROUTE_CONTAINMENT_FINAL): this used to accept an
+  // explicit user order and delegate broker authority directly to
+  // scripts/web_execute_trade.py -> assistant.commands -> MT5, entirely outside
+  // the canonical CanonicalProposal -> owner-decision -> execution-decision ->
+  // durable-lifecycle -> reconciliation pipeline (src/api/app.py's
+  // POST /api/canonical-proposals/{id}/owner-decision, gated by
+  // require_owner_auth/X-AG-Owner-Key). That made it an unauthenticated-boundary
+  // path able to reach the broker gateway without going through owner-decision
+  // durability, proposal-level uniqueness, or reconciliation. Retired
+  // unconditionally (not mode-gated) for exactly the same reason
+  // /api/execution/manage and /api/execution/claim were retired above: the
+  // Node/Express surface holds no broker authority. The canonical Python path
+  // keeps the capability -- only this alternate authority route is removed. No
+  // fallback, no query-param bypass, no content-type-dependent execution: every
+  // request to this route returns 410 before any body parsing that could reach
+  // scripts/web_execute_trade.py.
   app.post('/api/execution/manual-demo', (req, res) => {
-    const { symbol, side, lots, entryPrice, stopLoss, takeProfit2, strategyId, user_confirmed } = req.body || {};
-    if (user_confirmed !== true) {
-      return res.status(403).json({ success: false, error: 'OWNER_CONFIRMATION_REQUIRED' });
-    }
-    if (brokerAccountConfig.trade_mode !== 'DEMO') {
-      return res.status(403).json({ success: false, error: 'DEMO_ACCOUNT_REQUIRED' });
-    }
-    if (!SUPPORTED_SYMBOLS.some(s => s.symbol === symbol) || !['BUY', 'SELL'].includes(side) ||
-        !Number.isFinite(Number(lots)) || Number(lots) <= 0 || !Number.isFinite(Number(stopLoss))) {
-      return res.status(400).json({ success: false, error: 'INVALID_MANUAL_DEMO_ORDER' });
-    }
-    if (String(process.env.VITE_AG_API_MODE || 'mock').toLowerCase() !== 'real') {
-      return res.status(409).json({ success: false, error: 'LIVE_API_MODE_REQUIRED', message: 'Manual demo orders require VITE_AG_API_MODE=real.' });
-    }
-
-    const repoRoot = path.resolve(process.cwd(), '..');
-    const args = [path.join(repoRoot, 'scripts', 'web_execute_trade.py'), '--symbol', String(symbol), '--side', String(side),
-      '--volume', String(lots), '--sl', String(stopLoss), '--strategy-id', String(strategyId || 'FRONTEND_MANUAL'), '--confirm'];
-    if (entryPrice !== undefined && entryPrice !== null && entryPrice !== '') args.push('--entry', String(entryPrice));
-    if (takeProfit2 !== undefined && takeProfit2 !== null && takeProfit2 !== '') args.push('--tp', String(takeProfit2));
-
-    const child = spawn(process.env.PYTHON_EXECUTABLE || 'python', args, {
-      cwd: repoRoot,
-      windowsHide: true,
-      env: {
-        ...process.env,
-        // Manual execution is Demo-only. Do not inherit ANALYSIS/DRY_RUN from
-        // the parent preview process; the Python gateway still revalidates the
-        // connected account and requires user_confirmed on every request.
-        AG_TRADING_CONFIG_PATH: path.join(repoRoot, 'config', 'trading.demo.yaml')
-      }
-    });
-    let stdout = '';
-    let stderr = '';
-    child.stdout.on('data', chunk => { stdout += chunk.toString(); });
-    child.stderr.on('data', chunk => { stderr += chunk.toString(); });
-    child.on('error', error => res.status(502).json({ success: false, error: 'DEMO_EXECUTION_BRIDGE_FAILURE', details: error.message }));
-    child.on('close', code => {
-      try {
-        const payload = JSON.parse(stdout.trim().split(/\r?\n/).filter(Boolean).at(-1) || '{}');
-        return res.status(code === 0 ? 200 : 502).json({ success: code === 0, ...payload, stderr: stderr || undefined });
-      } catch (error) {
-        return res.status(502).json({ success: false, error: 'INVALID_DEMO_EXECUTION_RESPONSE', details: stderr || String(error) });
-      }
+    return res.status(410).json({
+      success: false,
+      error: 'EXECUTION_ROUTE_RETIRED',
+      message: 'Direct manual Demo execution has been retired. Use the canonical ' +
+        'owner-authorized execution workflow (POST /api/canonical-proposals/{id}/owner-decision).'
     });
   });
 
