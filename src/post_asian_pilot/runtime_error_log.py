@@ -101,24 +101,32 @@ class RuntimeErrorLog:
         self, strategy_id: str, symbol: str, trading_date: date, reference_session: str,
         operation: str, now: datetime,
     ) -> Optional[Dict[str, Any]]:
-        """Marks the most recent still-unresolved failed attempt for this (unit,
-        operation) as recovered. A no-op (returns None, writes nothing) when there is no
-        unresolved prior failure -- an ordinary successful evaluation with no preceding
-        error must never create or alter a structured event."""
+        """Marks EVERY still-unresolved failed attempt for this (unit, operation) as
+        recovered -- not only the most recent one. If an operation failed twice before
+        a later successful retry, both attempts are part of the SAME recovered retry
+        chain; leaving the earlier one UNRESOLVED would make render_pilot_end_report()
+        report a permanent unresolved error for an operation that actually recovered.
+        A no-op (returns None, writes nothing) when there is no unresolved prior
+        failure -- an ordinary successful evaluation with no preceding error must never
+        create or alter a structured event. Returns the most recent updated event (the
+        one with the highest `attempt`) for caller convenience."""
         if operation not in _KNOWN_OPERATIONS:
             raise ValueError(f"unknown runtime-error operation {operation!r}")
         key = _unit_key(strategy_id, symbol, trading_date, reference_session, operation)
         events: List[Dict[str, Any]] = list(self.store.get(key) or [])
-        for idx in range(len(events) - 1, -1, -1):
+        last_updated: Optional[Dict[str, Any]] = None
+        for idx in range(len(events)):
             if not events[idx].get("recovered"):
                 updated = dict(events[idx])
                 updated["recovered"] = True
                 updated["recovered_at"] = now.isoformat()
                 updated["final_state"] = FINAL_STATE_RECOVERED
                 events[idx] = updated
-                self.store.put(key, events)
-                return updated
-        return None
+                last_updated = updated
+        if last_updated is None:
+            return None
+        self.store.put(key, events)
+        return last_updated
 
     def events_for_date(self, strategy_id: str, trading_date: date) -> List[Dict[str, Any]]:
         """All structured events for this strategy/date across every symbol and

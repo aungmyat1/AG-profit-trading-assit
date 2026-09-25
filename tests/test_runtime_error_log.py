@@ -101,6 +101,28 @@ def test_successful_retry_records_recovery(tmp_path):
     assert recovered["attempt"] == 1  # the original failed attempt, now marked recovered
 
 
+def test_recovery_resolves_every_unresolved_attempt_in_the_retry_chain(tmp_path):
+    """Review finding: if an operation fails twice before a later successful retry,
+    the retry must close BOTH failed attempts -- not only the most recent one, which
+    would otherwise leave an earlier attempt permanently UNRESOLVED even though the
+    operation actually recovered."""
+    log = RuntimeErrorLog.default(str(tmp_path / "runtime_error_log.json"))
+    d = dt.date(2026, 9, 24)
+    t1 = dt.datetime(2026, 9, 24, 6, 0, tzinfo=UTC)
+    t2 = dt.datetime(2026, 9, 24, 6, 15, tzinfo=UTC)
+    t3 = dt.datetime(2026, 9, 24, 6, 30, tzinfo=UTC)
+    log.record_error("ST_ASIAN_SWEEP_5R_V1", "EURUSD", d, "asian", OP_ASIAN_CANDLES_FETCH, "MT5_TIMEOUT", t1)
+    log.record_error("ST_ASIAN_SWEEP_5R_V1", "EURUSD", d, "asian", OP_ASIAN_CANDLES_FETCH, "MT5_TIMEOUT", t2)
+    recovered = log.record_recovery("ST_ASIAN_SWEEP_5R_V1", "EURUSD", d, "asian", OP_ASIAN_CANDLES_FETCH, t3)
+    assert recovered["attempt"] == 2
+
+    events = log.events_for_date("ST_ASIAN_SWEEP_5R_V1", d)
+    assert len(events) == 2
+    assert all(e["recovered"] for e in events)
+    assert all(e["final_state"] == FINAL_STATE_RECOVERED for e in events)
+    assert sum(1 for e in events if not e["recovered"]) == 0
+
+
 def test_unrecovered_failure_remains_distinguishable(tmp_path):
     log = RuntimeErrorLog.default(str(tmp_path / "runtime_error_log.json"))
     d = dt.date(2026, 9, 24)

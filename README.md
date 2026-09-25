@@ -75,6 +75,15 @@ Agent skills  -> advisory and explanatory only
   `config/trading.demo.yaml` profile. The connected MT5 account must match the configured
   Vantage identity and report itself as Demo; live accounts remain blocked. Every order
   still requires the checkbox confirmation for that individual submission.
+- The web workspace's **Owner Analysis** tab reads canonical FX proposals and their
+  observe-only opportunity-analysis narrative (`GET /api/canonical-proposals`,
+  `GET /api/opportunity-analysis`) and lets an authenticated owner CONFIRM or REJECT one
+  (`POST /api/canonical-proposals/{id}/owner-decision`, gated by `require_owner_auth` /
+  `X-AG-Owner-Key`, unset `AG_OWNER_API_KEY` disables the route). CONFIRM only ever
+  produces a PREPARED, UNCONFIRMED trade command template — it never itself submits an
+  order; a separate, later, explicitly-confirmed step is still required to reach MT5.
+  The owner key is manual-entry, in-memory-only, never stored or logged, and cleared on
+  refresh.
 
 See [`AGENTS.md`](AGENTS.md) for mandatory agent rules and
 [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current implementation state — in
@@ -168,6 +177,11 @@ python scripts/analyze_structure.py --symbol EURUSD --timeframe M15
 python scripts/run_strategy.py --help
 python scripts/trade_assistant.py --help
 python scripts/run_btc_daily_report.py --help
+
+# Read-only MetaTrader MCP setup diagnostic (Node/.env/credential-alias/PATH/terminal-
+# process/Claude Desktop config checks). Never prints secrets, never places orders,
+# never starts MT5.
+node web/scripts/check_mt5_mcp.mjs
 ```
 
 Execution preview and manual-position management:

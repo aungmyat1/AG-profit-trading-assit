@@ -91,12 +91,14 @@ def _allowed_origins() -> list[str]:
 
 app = FastAPI(title="AG Profit Trading -- Demo Execution Gateway API", version="0.1.0")
 
+OWNER_AUTH_HEADER = "X-AG-Owner-Key"
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins(),
     allow_credentials=False,
     allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", OWNER_AUTH_HEADER],
 )
 
 # Process-wide singletons for this minimal app. A real deployment may want these
@@ -131,7 +133,6 @@ def get_owner_decision_store() -> OwnerDecisionStore:
 # authenticated owner boundary before broker-side effects." Scoped to exactly the
 # owner-decision POST route; every GET route stays as it was audited.
 OWNER_API_KEY_ENV = "AG_OWNER_API_KEY"
-OWNER_AUTH_HEADER = "X-AG-Owner-Key"
 
 
 def require_owner_auth(request: Request) -> None:

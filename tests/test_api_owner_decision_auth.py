@@ -153,3 +153,26 @@ def test_auth_rejection_leaves_no_owner_decision_recorded(tmp_path, monkeypatch)
         assert authorized.json()["status"] == "AUTHORIZED"
     finally:
         _clear_overrides()
+
+
+# --------------------------------------------------------------------------- 8
+def test_cors_preflight_allows_owner_auth_header(tmp_path, monkeypatch):
+    """A cross-origin browser preflight (OPTIONS + Access-Control-Request-Headers)
+    for the owner-decision route must allow X-AG-Owner-Key, or the real POST never
+    leaves the browser -- see AG_PANEL frontend/CORS review finding."""
+    monkeypatch.setenv(OWNER_API_KEY_ENV, "correct-owner-key")
+    client = _client(tmp_path)
+    try:
+        response = client.options(
+            "/api/canonical-proposals/FX:R5A-AUTH-1/owner-decision",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": f"Content-Type, {OWNER_AUTH_HEADER}",
+            },
+        )
+        assert response.status_code == 200
+        allowed = response.headers.get("access-control-allow-headers", "")
+        assert OWNER_AUTH_HEADER.lower() in allowed.lower()
+    finally:
+        _clear_overrides()

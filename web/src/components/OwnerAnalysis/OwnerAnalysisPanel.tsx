@@ -41,9 +41,15 @@ export const OwnerAnalysisPanel: React.FC<Props> = ({ proposals, onRefresh }) =>
     };
   }, []);
 
+  // Identity of the underlying proposal set, independent of the array's object
+  // reference -- App.tsx creates a new array on every poll even when the same
+  // proposals are still current, and resetting on that reference would drop the
+  // owner's decision feedback every ~10s for no reason.
+  const proposalsKey = useMemo(() => proposals.map(p => p.proposal_id).sort().join('|'), [proposals]);
+
   // Reset selection/outcome whenever the underlying proposal set for this symbol
-  // changes (e.g. symbol switch, poll refresh) -- never carry a stale decision
-  // outcome across a different proposal_id.
+  // actually changes (e.g. symbol switch, a proposal appearing/disappearing) --
+  // never carry a stale decision outcome across a different proposal_id.
   useEffect(() => {
     setOutcome(null);
     if (proposals.length === 1) {
@@ -54,12 +60,17 @@ export const OwnerAnalysisPanel: React.FC<Props> = ({ proposals, onRefresh }) =>
       setSelectedProposalId(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [proposals]);
+  }, [proposalsKey]);
 
-  const selectedProposal = useMemo(
-    () => proposals.find(p => p.proposal_id === selectedProposalId) || null,
-    [proposals, selectedProposalId],
-  );
+  // The singleton case is resolved synchronously here (not only in the effect
+  // above) so a render that follows a fresh fetch never sees selectedProposal as
+  // null while proposals.length === 1 -- the effect's setSelectedProposalId only
+  // takes effect on the *next* render, and this component renders the selected
+  // proposal unconditionally once exactly one is available.
+  const selectedProposal = useMemo(() => {
+    if (proposals.length === 1) return proposals[0];
+    return proposals.find(p => p.proposal_id === selectedProposalId) || null;
+  }, [proposals, selectedProposalId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,8 +82,10 @@ export const OwnerAnalysisPanel: React.FC<Props> = ({ proposals, onRefresh }) =>
       .getOpportunityAnalysis(selectedProposal.symbol)
       .then(results => {
         if (cancelled) return;
-        const match =
-          results.find(r => r.strategy_id === selectedProposal.strategy_id) || results[0] || null;
+        // Never fall back to another strategy's analysis: on a symbol evaluated by
+        // more than one strategy, showing results[0] would attribute a different
+        // strategy's states/reasons/evidence to this proposal.
+        const match = results.find(r => r.strategy_id === selectedProposal.strategy_id) || null;
         setAnalysis(match);
       })
       .catch(() => {

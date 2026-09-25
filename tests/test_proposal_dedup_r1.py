@@ -64,7 +64,7 @@ def test_proposal_envelope_id_derived_from_stable_setup_id_not_decision_id():
     trade_proposal = _trade_proposal(setup_id)
     envelope = fx_adapter.to_canonical_proposal(decision, trade_proposal)
 
-    assert envelope.proposal_envelope_id == f"FX:{setup_id}"
+    assert envelope.proposal_envelope_id == f"FX:{setup_id}:{decision.strategy_version}"
     assert envelope.proposal_envelope_id != f"FX:{decision.decision_id}"
     # decision_id -- per-observation provenance -- is preserved, not discarded.
     assert envelope.source_record_id == decision.decision_id
@@ -78,7 +78,7 @@ def test_repeated_observation_of_same_setup_yields_same_envelope_id():
         decision = _decision(decision_id=f"DECISION-EURUSD-obs-{seq}", evaluation_seq=seq)
         envelope = fx_adapter.to_canonical_proposal(decision, trade_proposal)
         ids.add(envelope.proposal_envelope_id)
-    assert ids == {f"FX:{setup_id}"}
+    assert ids == {f"FX:{setup_id}:{decision.strategy_version}"}
 
 
 # ------------------------------------------------------------------- P6/P7: admission
@@ -94,7 +94,38 @@ def test_admit_same_setup_twice_yields_one_canonical_proposal(tmp_path):
     active = ledger.list_active_proposals()
     assert len(active) == 1
     assert active[0].proposal_state == PROPOSAL_READY
-    assert active[0].proposal_envelope_id == f"FX:{setup_id}"
+    assert active[0].proposal_envelope_id == f"FX:{setup_id}:{decision.strategy_version}"
+
+
+def test_different_strategy_versions_of_same_setup_get_independent_envelope_ids(tmp_path):
+    """Review finding: trade_proposal.setup_id alone (strategy_id:pair_id:symbol:date)
+    does not vary with strategy_version, so two versions of the same strategy on the
+    same pair/symbol/date must not collide on one proposal_envelope_id -- each must
+    remain independently addressable and get its own owner decision."""
+    ledger = ProposalLedger(path=str(tmp_path / "ledger.json"))
+    setup_id = _setup_id()
+    trade_proposal = _trade_proposal(setup_id)
+
+    decision_v1 = _decision(decision_id="DECISION-EURUSD-v1", evaluation_seq=0)
+    decision_v2 = PostAsianDecision(
+        decision_id="DECISION-EURUSD-v2", strategy_id=decision_v1.strategy_id,
+        strategy_version="1.1.0", symbol=decision_v1.symbol,
+        trading_date=decision_v1.trading_date, reference_session="ASIAN",
+        status=STATUS_READY, reason_codes=("R1",),
+        evaluation_time=datetime(2026, 9, 2, 9, 0, 1, tzinfo=timezone.utc),
+        ready_at=datetime(2026, 9, 2, 8, 30, 1, tzinfo=timezone.utc),
+        valid_until=datetime(2026, 9, 2, 12, 0, tzinfo=timezone.utc),
+    )
+
+    envelope_v1 = fx_adapter.to_canonical_proposal(decision_v1, trade_proposal)
+    envelope_v2 = fx_adapter.to_canonical_proposal(decision_v2, trade_proposal)
+    assert envelope_v1.proposal_envelope_id != envelope_v2.proposal_envelope_id
+
+    ledger.record_proposal(envelope_v1)
+    ledger.record_proposal(envelope_v2)
+    active = ledger.list_active_proposals()
+    assert len(active) == 2
+    assert {p.strategy_version for p in active} == {"1.0.0", "1.1.0"}
 
 
 def test_admit_same_setup_three_times_yields_one_canonical_proposal(tmp_path):

@@ -166,9 +166,16 @@ def to_canonical_proposal(
     # {session_date}"`, unchanged end-to-end through TradeIntent.signal_id ->
     # TradeProposal.setup_id) -- stable across repeated observation of the same setup,
     # which is exactly the identity ProposalLedger needs to dedupe on.
+    # PANEL review finding: trade_proposal.setup_id alone (strategy_id:pair_id:symbol:
+    # session_date, see strategy_engine.engine) does not vary with strategy_version, so
+    # two versions of the same strategy evaluating the same pair/symbol/date would
+    # otherwise collide on one proposal_envelope_id and alias each other's proposals.
+    # Appending strategy_version keeps the identity stable across repeated observation
+    # of the same setup by the SAME version (unchanged from PANEL_PROPOSAL_DEDUP_R1)
+    # while giving each strategy version its own independently addressable proposal.
     targets = tuple(t for t in (trade_proposal.tp1, trade_proposal.tp2) if t is not None)
     return CanonicalProposal(
-        proposal_envelope_id=f"FX:{trade_proposal.setup_id}",
+        proposal_envelope_id=f"FX:{trade_proposal.setup_id}:{decision.strategy_version}",
         identity_version="AG_PROPOSAL_OCCURRENCE_IDENTITY_V1",
         strategy_id=decision.strategy_id, strategy_version=decision.strategy_version,
         market="FX", venue="MT5_BROKER", contract_type="SPOT_FX", symbol=decision.symbol,
