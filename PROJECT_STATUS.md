@@ -4,6 +4,40 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## AG_POST_MERGE_DEMO_VERTICAL_SLICE_QUALIFICATION (2026-09-25, `verify/post-merge-demo-e2e-r1`, prepare-only)
+
+Discovered PR #4's GitHub merge locked in head `8bd7ae6` -- one commit behind the
+branch's actual tip. Commit `654fac6` (the fix for all 10 Qodo/Codex review
+findings on PR #4: CORS `X-AG-Owner-Key` header, `OwnerAnalysisPanel` null-proposal
+crash, `results[0]` cross-strategy analysis fallback, poll-triggered outcome
+clearing, `OwnerDecisionStore` persist-before-mutate durability, FX
+`proposal_envelope_id` missing `strategy_version`, `runtime_error_log` retry-chain
+recovery, `check_mt5_mcp.mjs` shell-injection + credential redaction, README docs)
+was pushed after the merge and never reached `main`, even though all 10 review
+threads showed resolved. Closed via PR #5 (merge commit
+`10da232260fd0cd11a4766ac2468ad0f335d0e38`); `main` now actually contains the
+fixes its review threads claim.
+
+From a fresh worktree at that commit: security/diagnostic check PASS
+(`check_mt5_mcp.mjs` no longer uses `shell: true` for the Windows `where` lookup;
+launcher command-line echo redacts `--password/--login/--server/--token/--secret/
+--key` values). Focused regression PASS: 71/71 (`test_proposal_dedup_r1`,
+`test_api_owner_decision_auth`, `test_api_owner_decision`,
+`test_runtime_error_log`, `test_execution_reconciliation{,_r1,_r2}`). Full 4000+
+suite not re-run (byte-identical code already validated pre-merge).
+
+Runtime/real-MT5-data/owner-decision-runtime/prepared-E2E/execution/
+reconciliation/frontend-parity phases were **not attempted** this pass -- owner
+explicitly chose prepare-only scope; classified `POST_MERGE_RUNTIME_BLOCKED`
+(scope choice, not a technical failure). Flags a **P0, pre-existing** (predates
+PR #4, introduced by `74d65ea`) gap: `web/server.ts`'s
+`POST /api/execution/manual-demo` still spawns `scripts/web_execute_trade.py
+--confirm` directly, bypassing the canonical owner-decision -> execution
+pipeline; must be retired (`LEGACY_MANUAL_DEMO_ROUTE = RETIRED`) before any
+future real Demo order submission is attempted. No strategy/registry/execution
+code changed by this qualification pass itself; zero broker calls. See
+`docs/status/AG_POST_MERGE_DEMO_VERTICAL_SLICE_QUALIFICATION_STATUS.md`.
+
 ## PROJECT_AUDIT_AND_CLEANUP (2026-09-25, `claude/stoic-feynman-4kczs6`, docs/layout only)
 
 Repository audit plus root cleanup. There are no code, config, strategy, execution,
