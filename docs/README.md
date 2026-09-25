@@ -34,6 +34,10 @@ and the remaining lifecycle and campaign boundaries.
 
 ## Start here
 
+The [repository structure audit](REPO_STRUCTURE_AUDIT.md) records the current layout,
+safe cache cleanup, and the recommended archival policy for historical documents and
+generated evidence.
+
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository.
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,
@@ -256,6 +260,31 @@ and the remaining lifecycle and campaign boundaries.
   — Vantage MT5 crypto venue discovery.
 - [`status/AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_E1_STATUS.md`](status/AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_E1_STATUS.md)
   — Vantage Markets crypto MT5 execution compatibility.
+- [`status/AG_FRONTEND_OWNER_DECISION_REWIRE_STATUS.md`](status/AG_FRONTEND_OWNER_DECISION_REWIRE_STATUS.md)
+  — frontend Owner Analysis panel rewired from fictional `/api/owner-analysis/*`
+  endpoints to the real canonical proposal / opportunity-analysis / owner-decision
+  API; documents the `DECISION_ID_CONTRACT_AMBIGUOUS` finding and its client-side-only
+  mitigation, in-memory owner-key auth, and multi-proposal-per-symbol selection UX.
+- [`status/AG_PANEL_R5C_PROPOSAL_DECISION_UNIQUENESS_STATUS.md`](status/AG_PANEL_R5C_PROPOSAL_DECISION_UNIQUENESS_STATUS.md)
+  — closes the `DECISION_ID_CONTRACT_AMBIGUOUS`/`PROPOSAL_LEVEL_OWNER_DECISION_UNIQUENESS
+  = NOT_ENFORCED_BY_BACKEND` gap above: backend proposal-level at-most-one-authority
+  invariant inside `owner_decision.bridge.OwnerDecisionStore`, atomic and durable,
+  layered on the existing decision_id idempotency ledger.
+- [`status/AG_FRONTEND_OWNER_DECISION_REWIRE_R1_REAUDIT_STATUS.md`](status/AG_FRONTEND_OWNER_DECISION_REWIRE_R1_REAUDIT_STATUS.md)
+  and [`status/AG_PANEL_R5C_INDEPENDENT_AUDIT_STATUS.md`](status/AG_PANEL_R5C_INDEPENDENT_AUDIT_STATUS.md)
+  — independent audit records for the two packages above.
+- [`status/AG_MISSING_PLATFORM_PACKAGES_INTEGRATION_STATUS.md`](status/AG_MISSING_PLATFORM_PACKAGES_INTEGRATION_STATUS.md)
+  — integration of the frontend rewire and R5C uniqueness into the platform lineage
+  (cherry-pick provenance, current-tip semantic review, test and failure attribution).
+- [`status/AG_GITHUB_REPOSITORY_SYNC_STATUS.md`](status/AG_GITHUB_REPOSITORY_SYNC_STATUS.md)
+  — publication of the integrated platform lineage to `origin/main` (publication is
+  not strategy, Demo or Live authorization).
+- [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION_STATUS.md),
+  [`status/AG_ASIAN_SWEEP_RUNTIME_ERROR_PROVENANCE_RECONCILIATION_STATUS.md`](status/AG_ASIAN_SWEEP_RUNTIME_ERROR_PROVENANCE_RECONCILIATION_STATUS.md)
+  and [`status/AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE_STATUS.md`](status/AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE_STATUS.md)
+  — dated 2026-09-23 FX shadow Series 002 snapshots. The last one is the authoritative
+  `classify_series` count. The 09-18 `VALID_DAY` claim in the provenance record conflicts
+  with the classifier and is open.
 - [`status/AG_MULTI_MARKET_STRATEGY_OS_RESOURCE_REUSE_DISCOVERY_V1_STATUS.md`](status/AG_MULTI_MARKET_STRATEGY_OS_RESOURCE_REUSE_DISCOVERY_V1_STATUS.md)
   — multi-market strategy OS resource reuse discovery.
 - [`status/AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS.md`](status/AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS.md)

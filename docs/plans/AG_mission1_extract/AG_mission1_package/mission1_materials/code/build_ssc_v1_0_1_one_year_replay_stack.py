@@ -36,7 +36,15 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
+# This copy of the builder lives in the mission package, rather than directly
+# below the repository root.  Locate the actual root before importing the P3
+# component; using ``parents[1]`` here points at ``mission1_materials`` and
+# makes ``historical_replay`` unavailable to static analyzers and at runtime.
+_HERE = Path(__file__).resolve()
+REPO = next(
+    (parent for parent in _HERE.parents if (parent / "src" / "historical_replay").is_dir()),
+    _HERE.parents[1],
+)
 sys.path.insert(0, str(REPO / "src"))
 
 from historical_replay.utc_export_csv_loader import load_utc_export_csv  # noqa: E402

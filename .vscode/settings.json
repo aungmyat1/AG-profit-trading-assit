@@ -12,6 +12,59 @@
     "**/.git/**",
     "**/htmlcov/**",
     "**/.mypy_cache/**",
-    ".claude/worktrees/**"
-  ]
+    "**/.ruff_cache/**",
+    "**/venv/**",
+    "**/ENV/**",
+    "**/artifacts/**",
+    "**/journal/**",
+    "**/.claude/worktrees/**",
+    "**/.codex/worktrees/**"
+  ],
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.indexing": true,
+  "files.exclude": {
+    "**/.venv": true,
+    "**/venv": true,
+    "**/ENV": true,
+    "**/node_modules": true,
+    "**/build": true,
+    "**/dist": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/artifacts": true,
+    "**/logs": true,
+    "**/journal": true
+  },
+  "search.exclude": {
+    "**/.venv": true,
+    "**/venv": true,
+    "**/ENV": true,
+    "**/node_modules": true,
+    "**/build": true,
+    "**/dist": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/artifacts": true,
+    "**/logs": true,
+    "**/journal": true
+  },
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/venv/**": true,
+    "**/ENV/**": true,
+    "**/node_modules/**": true,
+    "**/build/**": true,
+    "**/dist/**": true,
+    "**/__pycache__/**": true,
+    "**/.pytest_cache/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.ruff_cache/**": true,
+    "**/artifacts/**": true,
+    "**/logs/**": true,
+    "**/journal/**": true
+  }
 }

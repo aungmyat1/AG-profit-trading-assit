@@ -256,6 +256,15 @@ def render_pilot_end_report(
     slots = stores.ledger.slots(strategy.strategy_id, trading_date)
     counters = stores.counters.snapshot(strategy.strategy_id, trading_date)
 
+    # AG_FX_RUNTIME_ERROR_STRUCTURED_PROVENANCE_REMEDIATION_V1: structured events are
+    # additive/prospective (see runtime_error_log.py) -- a day with no structured events
+    # (e.g. any day before this remediation landed) yields recovered=0/unresolved=0 here,
+    # which must never be read as "zero runtime errors happened"; `runtime_errors` below
+    # (unchanged, still counters["data_errors"]) remains the sole authority for that.
+    runtime_error_events = stores.runtime_error_log.events_for_date(strategy.strategy_id, trading_date)
+    recovered_errors = sum(1 for e in runtime_error_events if e.get("recovered"))
+    unresolved_errors = sum(1 for e in runtime_error_events if not e.get("recovered"))
+
     if counters["snapshot_conflicts"] > 0:
         result = "BLOCKED"
     elif data_error_seen or counters["data_errors"] > 0 or counters["mt5_disconnects"] > 0:
@@ -274,6 +283,13 @@ def render_pilot_end_report(
             "mt5_disconnect_events": counters["mt5_disconnects"],
             "restart_recovery_events": counters["restart_recovery_events"],
             "runtime_errors": counters["data_errors"],
+            # Structured provenance (additive, prospective-only -- see
+            # runtime_error_log.py): distinguishes a runtime error that a later retry
+            # resolved from one that remained unresolved through end of window. Derived
+            # from RuntimeErrorLog, never from the aggregate counter above.
+            "recovered_errors": recovered_errors,
+            "unresolved_errors": unresolved_errors,
+            "runtime_error_events": runtime_error_events,
         },
         "data": {"stale_data_events": counters["stale_data_events"]},
         "safety": {

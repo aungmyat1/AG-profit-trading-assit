@@ -390,3 +390,48 @@ def test_schedule_module_does_not_write_to_the_frozen_campaign():
     assert "write_text" not in source.split("class SlotLedger")[0], (
         "campaign reading must be read-only")
     assert "open(" not in source or "read_text" in source
+
+
+# --- AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE (2026-09-23) -------------------------
+# A single weekly trigger with PT15M repetition made every slot of the day depend on the
+# first slot's trigger instance: host asleep at 07:00:20 UTC -> Task Scheduler launched
+# none of that day's repetitions (2026-09-22 until an unrelated reboot; 2026-09-23 not at
+# all -> MISSING_MANDATORY_EVIDENCE:ASIAN_LONDON:*). The installer must register one
+# independent weekday trigger per M15-close slot so a missed slot never suppresses later ones.
+
+INSTALLER = REPO_ROOT / "scripts" / "install_fx_scheduler.ps1"
+
+
+def _installer_cycles() -> dict:
+    import re
+    text = INSTALLER.read_text(encoding="utf-8")
+    cycles = {}
+    for block in re.findall(r"\[pscustomobject\]@\{(.*?)\n    \}", text, flags=re.S):
+        cycle = re.search(r'Cycle\s*=\s*"([A-Z_]+)"', block).group(1)
+        first = re.search(r'FirstSlot\s*=\s*"([0-9:]+)"', block).group(1)
+        count = int(re.search(r"SlotCount\s*=\s*(\d+)", block).group(1))
+        cycles[cycle] = (first, count)
+    return cycles
+
+
+def test_installer_registers_one_independent_trigger_per_slot():
+    text = INSTALLER.read_text(encoding="utf-8")
+    assert "RepetitionInterval" not in text and "$trigger.Repetition =" not in text, (
+        "repetition-anchored trigger: a missed first slot suppresses the whole day"
+    )
+    assert "-Trigger $triggers" in text
+
+
+def test_installer_slot_counts_match_the_canonical_schedule():
+    cycles = _installer_cycles()
+    expected = {
+        "ASIAN_LONDON": m15_close_slots(time(7, 0), time(11, 0)),
+        "LONDON_NEWYORK": m15_close_slots(time(12, 0), time(15, 0)),
+    }
+    for cycle, slots in expected.items():
+        first_local, count = cycles[cycle]
+        assert count == len(slots)
+        # installer times are MMT (UTC+6:30); first slot must be the first UTC close
+        h, m, s = map(int, first_local.split(":"))
+        first_utc = (datetime(2026, 1, 1, h, m, s) - timedelta(hours=6, minutes=30)).time()
+        assert first_utc == slots[0]

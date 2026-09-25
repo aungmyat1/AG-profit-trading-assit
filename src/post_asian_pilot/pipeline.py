@@ -54,6 +54,11 @@ from .monitor import (
 )
 from .pilot_config import DEFAULT_RELEASE_CONFIG_PATH, PilotConfig, load_pilot_config, load_raw_yaml
 from .proposal import PostAsianEntryProposal, build_entry_proposal
+from .runtime_error_log import (
+    OP_ASIAN_CANDLES_FETCH,
+    OP_ASIAN_SNAPSHOT_BUILD,
+    OP_POST_SESSION_CANDLES_FETCH,
+)
 from .snapshot import AsianSessionSnapshot, build_asian_session_snapshot
 from .store import (
     DEFAULT_STATE_DIR,
@@ -125,10 +130,18 @@ def _evaluate_pair(
         asian_candles = get_candles(symbol, "M15", ref_start, ref_end)
     except MarketDataError as exc:
         stores.counters.increment(strategy.strategy_id, trading_date, COUNTER_DATA_ERRORS)
+        stores.runtime_error_log.record_error(
+            strategy.strategy_id, symbol, trading_date, pilot.reference_session_name,
+            OP_ASIAN_CANDLES_FETCH, exc.reason_code, now,
+        )
         decision = data_error_decision(strategy.strategy_id, strategy.version, symbol, trading_date,
                                        pilot.reference_session_name, now, (exc.reason_code,))
         save_decision(stores.decision_store, decision)
         return PairResult(symbol, decision, "ELIGIBLE", None, None)
+    stores.runtime_error_log.record_recovery(
+        strategy.strategy_id, symbol, trading_date, pilot.reference_session_name,
+        OP_ASIAN_CANDLES_FETCH, now,
+    )
 
     snap_result = build_asian_session_snapshot(
         strategy.strategy_id, symbol, trading_date, pilot.reference_session_name,
@@ -136,10 +149,18 @@ def _evaluate_pair(
     )
     if snap_result.status == "DATA_ERROR":
         stores.counters.increment(strategy.strategy_id, trading_date, COUNTER_DATA_ERRORS)
+        stores.runtime_error_log.record_error(
+            strategy.strategy_id, symbol, trading_date, pilot.reference_session_name,
+            OP_ASIAN_SNAPSHOT_BUILD, "|".join(snap_result.reason_codes) or "DATA_ERROR", now,
+        )
         decision = data_error_decision(strategy.strategy_id, strategy.version, symbol, trading_date,
                                        pilot.reference_session_name, now, snap_result.reason_codes)
         save_decision(stores.decision_store, decision)
         return PairResult(symbol, decision, "ELIGIBLE", None, None)
+    stores.runtime_error_log.record_recovery(
+        strategy.strategy_id, symbol, trading_date, pilot.reference_session_name,
+        OP_ASIAN_SNAPSHOT_BUILD, now,
+    )
 
     snapshot: AsianSessionSnapshot = snap_result.snapshot
     try:
@@ -171,10 +192,18 @@ def _evaluate_pair(
         post_candles = get_candles(symbol, "M15", window_start, min(now, window_end))
     except MarketDataError as exc:
         stores.counters.increment(strategy.strategy_id, trading_date, COUNTER_DATA_ERRORS)
+        stores.runtime_error_log.record_error(
+            strategy.strategy_id, symbol, trading_date, pilot.reference_session_name,
+            OP_POST_SESSION_CANDLES_FETCH, exc.reason_code, now,
+        )
         decision = data_error_decision(strategy.strategy_id, strategy.version, symbol, trading_date,
                                        pilot.reference_session_name, now, (exc.reason_code,))
         save_decision(stores.decision_store, decision)
         return PairResult(symbol, decision, "ELIGIBLE", None, None)
+    stores.runtime_error_log.record_recovery(
+        strategy.strategy_id, symbol, trading_date, pilot.reference_session_name,
+        OP_POST_SESSION_CANDLES_FETCH, now,
+    )
 
     if not post_candles or not stores.bar_tracker.is_new_bar(symbol, "M15", post_candles[-1].time):
         # No new closed M15 since the last evaluation -- return last persisted decision,

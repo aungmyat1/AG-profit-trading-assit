@@ -1,0 +1,47 @@
+{
+  "name": "AG Profit Trading",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "charliermarsh.ruff",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "oven.bun-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "eamodio.gitlens",
+        "yzhang.markdown-all-in-one",
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "ms-vscode.powershell"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.analysis.extraPaths": ["src"],
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["-q", "-m", "not slow and not live_mt5"],
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+        }
+      }
+    }
+  },
+
+  "postCreateCommand": "pip install -r requirements.txt && cd web && bun install",
+
+  "remoteUser": "root"
+}

@@ -153,9 +153,22 @@ def to_canonical_proposal(
         )
         return dataclasses.replace(envelope, identity_version="AG_PROPOSAL_OCCURRENCE_IDENTITY_V1")
 
+    # PANEL_PROPOSAL_DEDUP_R1: proposal_envelope_id -- the ProposalLedger's own dedup
+    # key (proposal_envelope.ledger.ProposalLedger.record_proposal) -- must be the
+    # STABLE economic-setup identity, not the per-evaluation-cycle decision_id.
+    # decision.decision_id is deliberately volatile (post_asian_pilot.decision._decision_id
+    # hashes in evaluation_time, so a fresh scan of the SAME still-open setup mints a new
+    # decision_id every cycle -- that is correct for decision_id's own job of naming one
+    # evaluation instant for audit trail, preserved below as source_record_id unchanged).
+    # trade_proposal.setup_id, by contrast, already carries this repository's one
+    # authoritative economic-setup identity for a READY session signal
+    # (strategy_engine.engine's own `signal_id=f"{strategy_id}:{pair_id}:{symbol}:
+    # {session_date}"`, unchanged end-to-end through TradeIntent.signal_id ->
+    # TradeProposal.setup_id) -- stable across repeated observation of the same setup,
+    # which is exactly the identity ProposalLedger needs to dedupe on.
     targets = tuple(t for t in (trade_proposal.tp1, trade_proposal.tp2) if t is not None)
     return CanonicalProposal(
-        proposal_envelope_id=f"FX:{source_record_id}",
+        proposal_envelope_id=f"FX:{trade_proposal.setup_id}",
         identity_version="AG_PROPOSAL_OCCURRENCE_IDENTITY_V1",
         strategy_id=decision.strategy_id, strategy_version=decision.strategy_version,
         market="FX", venue="MT5_BROKER", contract_type="SPOT_FX", symbol=decision.symbol,

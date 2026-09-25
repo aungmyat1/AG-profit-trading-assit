@@ -1,0 +1,13 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    # MT5 is Windows-only; skip live_mt5 tests in container
+    # No ports exposed by default — run scripts/run_api.py manually when needed

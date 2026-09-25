@@ -19,7 +19,8 @@ import { DailyPnLHeader } from './components/Terminal/DailyPnLHeader';
 import { TradeJournal } from './components/Journal/TradeJournal';
 import { BackendConnectionDiagnostic } from './components/Terminal/BackendConnectionDiagnostic';
 import { AGBackendPanel } from './components/Terminal/AGBackendPanel';
-import { AG_UI_MODE } from './utils/agApiClient';
+import { AG_UI_MODE, agApiClient, CanonicalProposalResponse } from './utils/agApiClient';
+import { OwnerAnalysisPanel } from './components/OwnerAnalysis/OwnerAnalysisPanel';
 
 import {
   Candle,
@@ -58,7 +59,7 @@ import {
 } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend'>('terminal');
+  const [activeTab, setActiveTab] = useState<'terminal' | 'scanner' | 'strategies' | 'execution' | 'smc' | 'replay' | 'logs' | 'journal' | 'backend' | 'owner'>('terminal');
   const [selectedSymbol, setSelectedSymbol] = useState<string>('EURUSD');
 
   // Market & Analysis State
@@ -70,6 +71,10 @@ export const App: React.FC = () => {
   const [fairValueGaps, setFairValueGaps] = useState<FairValueGap[]>([]);
   const [liquidityPools, setLiquidityPools] = useState<LiquidityPool[]>([]);
   const [proposals, setProposals] = useState<TradeProposal[]>(() => generateClientProposals());
+  // Real backend canonical proposals (WP9/R2-R4/V1.2 governance) -- used ONLY by
+  // OwnerAnalysisPanel. The synthetic `proposals` above and every other consumer of
+  // them are left completely untouched.
+  const [canonicalProposals, setCanonicalProposals] = useState<CanonicalProposalResponse[]>([]);
   const [strategies, setStrategies] = useState<StrategyContract[]>(REGISTERED_STRATEGIES);
   const [positions, setPositions] = useState<Position[]>(DEFAULT_POSITIONS_FALLBACK);
   const [fixtures, setFixtures] = useState<ReplayFixture[]>(DEFAULT_FIXTURES_FALLBACK);
@@ -185,7 +190,25 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const fetchCanonicalProposals = async () => {
+    try {
+      const fetched = await agApiClient.listCanonicalProposals();
+      setCanonicalProposals(fetched);
+    } catch (err) {
+      console.warn('Canonical proposal read-model synchronization note:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCanonicalProposals();
+    const interval = setInterval(() => {
+      fetchCanonicalProposals();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   const activeProposal = proposals.find(p => p.symbol === selectedSymbol) || null;
+  const canonicalProposalsForSymbol = canonicalProposals.filter(p => p.symbol === selectedSymbol);
 
   // Handle trade execution
   const handleExecuteTrade = async (params: {
@@ -469,6 +492,13 @@ export const App: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {activeTab === 'owner' && (
+          <OwnerAnalysisPanel
+            proposals={canonicalProposalsForSymbol}
+            onRefresh={fetchCanonicalProposals}
+          />
         )}
 
         {/* VIEW 2: Multi-Pair Signal Scanner */}

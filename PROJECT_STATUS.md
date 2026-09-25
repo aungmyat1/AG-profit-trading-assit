@@ -22,6 +22,227 @@ procedure in the record. Recommended order: fix CRLF binding → make replay her
 de-couple tests → add Linux CI → close R5C and redirect effort to R5/R6 edge evidence
 → then the planned `src/` split. See `docs/status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md`.
 
+## AG_MISSING_PLATFORM_PACKAGES_INTEGRATION (2026-09-24, `feat/demo-execution-bridge` -> `main`, integrated + published, not authorized)
+
+Integrated the two independently audited packages missing from the platform lineage, by
+`cherry-pick -x` onto `3208e78`: frontend owner-decision rewire `061d3e0` -> `f08aa35`,
+R5C proposal-level uniqueness `cffe626` -> `00c6819`. Their audit records came in as
+doc-only cherry-picks: `8b871b7` -> `19747cf`, `230a6fd` -> `9f9ae7d`. The only conflicts
+were additive `PROJECT_STATUS.md` hunks, and every section was kept. The integrated tree
+is byte-identical to the audited R5C tip `230a6fd` on `src/owner_decision`, `src/api`,
+`src/execution`, `src/assistant`, `src/proposal_envelope` and `web/`. It differs only in the
+post-Asian runtime-provenance and scheduler files, which touch none of those surfaces.
+Backend: owner-decision/R5C 61/61, execution 95/95, proposal pipeline 110/110,
+scheduler 29/30 (+2 skipped). The one scheduler failure is
+`test_runner_refuses_friction_window_collision`, classified `LIVE_STATE_DEPENDENCE`: WP3A.1
+reached 5/5 complete days with the 2026-09-23 sessions, so the gate correctly stands down.
+Proven with controlled inputs: without 09-23 the gate returns `WINDOW_D_LONDON_NEWYORK`.
+Frontend: typecheck and build pass, and 48/49 tests pass. The one failure is the
+pre-existing containment test on `web/server.ts` `/api/execution/manual-demo` (`74d65ea`,
+already on `main`, unchanged here). Secret scan PASS.
+**Status semantics:** these packages are IMPLEMENTED + AUDITED + published to `main`. They
+are not AUTHORIZED. No strategy, registry, Demo or Live authorization changed.
+**FX shadow snapshot authority:** of the three 2026-09-23 campaign sections below, the
+`AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE` section is the latest and authoritative. It
+was re-derived from canonical `classify_series` (2026-09-05..09-23), and the classifier was
+re-run for this entry with identical results: VALID=8 INVALID=4 PENDING=1 EXCLUDED=6.
+The two earlier same-day sections are historical snapshots and are not rewritten. The
+`RUNTIME_ERROR_PROVENANCE_RECONCILIATION` section's reclassification of 2026-09-18 as
+`VALID_DAY` is **not** what the canonical classifier returns (`INVALID_DAY`, missing
+`LONDON_NEWYORK` unit evidence, a separate matter from `runtime_errors`). That remains an
+open owner item. See `docs/status/AG_MISSING_PLATFORM_PACKAGES_INTEGRATION_STATUS.md`.
+
+## AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE (2026-09-23, scheduler infrastructure, no execution)
+
+2026-09-23 `INVALID_DAY` (`MISSING_MANDATORY_EVIDENCE:ASIAN_LONDON:*`) root-caused to
+`SCHEDULER_TIMING_FAILURE`. Each FX task had one weekly trigger with PT15M repetition.
+With the host asleep at the first slot (07:00:20Z), Task Scheduler launched none of the
+later slots, on both 2026-09-22 (rescued by an unrelated reboot) and 2026-09-23.
+Prospective fix: `scripts/install_fx_scheduler.ps1` now registers one independent weekday
+trigger per M15-close slot (17 ASIAN_LONDON / 13 LONDON_NEWYORK). It is deployed to the
+live tasks, and natural-cycle verification is pending (2026-09-24). Historical
+classification is unchanged and the campaign is not reset. Classifier now:
+VALID=8 INVALID=4 PENDING=1 EXCLUDED=6 (12 VALID remaining). No strategy, registry,
+execution, MT5 or trading-config change; zero orders.
+Evidence: `docs/status/AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE_STATUS.md`.
+
+## AG_ASIAN_SWEEP_RUNTIME_ERROR_PROVENANCE_RECONCILIATION (2026-09-23, research/observation, no execution)
+
+> **Correction (2026-09-24):** 2026-09-18 is `INVALID_DAY`, not `VALID_DAY`. Both
+> LONDON_NEWYORK units lack in-window evidence (`MISSING_MANDATORY_EVIDENCE`; host asleep
+> 11:50Z-19:41Z). A recovered runtime error does not imply VALID_DAY. The "8/20" total
+> below is still numerically correct, but its date list is wrong: the canonical classifier
+> counts 2026-09-17 as VALID and 2026-09-18 as INVALID. See
+> `docs/status/AG_ASIAN_SWEEP_SCHEDULER_REMEDIATION_PROSPECTIVE_VERIFICATION_STATUS.md`.
+
+Traced `operations.runtime_errors` in the `ST_ASIAN_SWEEP_5R_V1` FX daily report
+(`src/post_asian_pilot/report.py` line 276) to its single source: it is a direct copy of
+`MonitoringCounters` counter `data_errors` (`src/post_asian_pilot/monitor.py`), which is
+incremented at exactly 3 sites in `src/post_asian_pilot/pipeline.py` (`_evaluate_pair`),
+each of which unconditionally persists a `STATUS_DATA_ERROR` decision for that unit in the
+same call. Because `save_decision()` (`src/post_asian_pilot/store.py`) overwrites a unit's
+decision record on any later differing-signature write, and because the counter itself
+never decrements, a transient error followed by a later successful evaluation of the same
+unit on the same trading day leaves `runtime_errors > 0` while the persisted/reported
+`final_strategy_state` no longer shows `DATA_ERROR` for any unit. Verified against
+persisted evidence (`journal/reports/fx/2026/2026-09-{14,16,18,22}.json` and both pilots'
+`monitoring_counters.json`) for all 4 previously `PENDING_RECONCILIATION` days: each
+affected cycle shows exactly one `data_errors` increment against 21-28
+`new_closed_m15_cycles` that trading day, and every one of the 4 required daily units
+(EURUSD/GBPUSD x ASIAN_LONDON/LONDON_NEWYORK) carries a deterministic, non-`DATA_ERROR`
+terminal state with a genuine strategy reason code. Per the frozen Data-Error Contract
+(`docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_VALIDATION_STATUS.md`, current
+`pr.decision.status` governs, not the aggregate counter) and Restart Contract ("restart
+anomalies, if any, reconciled" -> may remain `VALID_DAY`), all 4 days
+(2026-09-14, 09-16, 09-18, 09-22) reclassify `PENDING_RECONCILIATION` -> `VALID_DAY`.
+`valid_days = 8/20` (2026-09-09, 09-11, 09-14, 09-15, 09-16, 09-18, 09-21, 09-22),
+`invalid_days = 5` (unchanged), `pending_days = 0`. No strategy/session/risk parameter,
+`strategies/registry.yaml`, or Data-Error Contract text changed; `demo_authorized` remains
+`false`; `risk_per_trade_pct` remains unresolved; zero broker order calls; no historical
+strategy rerun used as replacement evidence. Identified a genuine, prospective-only
+reporting-schema gap: the `data_errors`/`runtime_errors` counter conflates "failed
+permanently" with "failed once then recovered," and `result` (`PASS` vs
+`PASS_WITH_OBSERVATIONS`) inherits the same ambiguity -- flagged as
+`FX_RUNTIME_ERROR_STRUCTURED_PROVENANCE_REMEDIATION` (spec only, not implemented). See
+`docs/status/AG_ASIAN_SWEEP_RUNTIME_ERROR_PROVENANCE_RECONCILIATION_STATUS.md`.
+
+## AG_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION (2026-09-23, research/observation, no execution)
+
+Reconciled an 11-weekday reporting backlog (2026-09-07..2026-09-22) for the already-running
+`ST_ASIAN_SWEEP_5R_V1` FX shadow qualification campaign (`AG_V1_0_3_FX_SHADOW_SERIES_002`):
+the scheduled `run_fx_cycle_once.py` task had kept collecting real decisions, but the
+separate daily-report/archive step and status doc had not been run since Series 002 Day
+001 (2026-09-04). Using only the existing `scripts/run_fx_daily_report.py` (read-only,
+zero order/strategy-cycle calls), classified each day under the frozen evidence contract:
+`valid_days = 4/20` (2026-09-09, 09-11, 09-15, 09-21), `invalid_days = 5`, `pending_days = 4`
+(unexplained `runtime_errors` counter, left `PENDING_RECONCILIATION` rather than guessed).
+No strategy/session/risk parameter changed; `demo_authorized` remains `false`;
+`risk_per_trade_pct` remains unresolved; zero broker order calls. See
+`docs/status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION_STATUS.md`.
+## AG_PANEL_R5C_PROPOSAL_DECISION_UNIQUENESS (2026-09-23, `feat/r5c-proposal-owner-decision-uniqueness`, candidate)
+
+Closes the gap the `AG_FRONTEND_OWNER_DECISION_REWIRE` entry below flagged as
+`PROPOSAL_LEVEL_OWNER_DECISION_UNIQUENESS = NOT_ENFORCED_BY_BACKEND`: implements
+`ONE proposal_envelope_id → ZERO or ONE authoritative owner decision` inside
+`owner_decision.bridge.OwnerDecisionStore`, layered on top of (not replacing) the
+already-independently-verified `decision_id` idempotency ledger. Reproduced the actual
+pre-fix gap first (`P1/A/APPROVE` + `P1/B/REJECT` durably disagreed; `P1/A/APPROVE` +
+`P1/B/APPROVE` durably duplicated). New atomic gate
+`OwnerDecisionStore.commit_terminal_decision()` extends the store's existing single
+lock so decision_id uniqueness and proposal-id authority uniqueness are established as
+one atomic unit; a new in-memory `_proposal_index` is 100% reconstructed from the
+existing persisted `state/owner_decisions/owner_decisions.json` on load — no new
+persisted file, no migration. Only two genuine terminal owner outcomes participate
+(`AUTHORIZED`, explicit `REJECT`); every validation/gating rejection (non-DEMO
+environment, proposal not ready, symbol mismatch, demo not authorized, broker mutation
+blocked, stale, malformed) is deliberately excluded so it can never block a later,
+correctly-formed request for the same proposal. Different-decision-id/same-action now
+collapses to the existing authority (no duplicate); different-decision-id/opposite-
+action fails closed (`PROPOSAL_ALREADY_DECIDED`), original authority untouched. A
+hand-planted conflicting ledger (two decision_ids, same proposal, disagreeing terminal
+outcomes) fails closed at store construction via new
+`OwnerDecisionProposalAuthorityConflict`. Proven under real concurrent threads (3
+race shapes × 25 iterations, re-verified from a third, fresh store instance reading
+disk) and across a simulated process restart. `src/api/app.py`/auth untouched;
+`strategies/`, `web/`, `execution/`, `mt5/` untouched. 20 new focused tests pass;
+41/41 existing owner-decision/R5 family tests pass unchanged; 124/124 bounded backend
+regression (canonical proposals, proposal envelope/ledger/lifecycle, execution durable
+idempotency, proposal dedup) pass unchanged. Zero MetaTrader5/order_check/order_send
+calls anywhere in implementation or tests. Does not authorize any strategy, does not
+enable Demo execution. See
+`docs/status/AG_PANEL_R5C_PROPOSAL_DECISION_UNIQUENESS_STATUS.md`.
+
+## AG_FRONTEND_OWNER_DECISION_REWIRE (2026-09-23, `feat/frontend-owner-decision-rewire`, candidate)
+
+Closes the frontend gap the prior `AG_FINAL_DEMO_EXECUTION_GATE` entry (below) flagged:
+`web/src/components/OwnerAnalysis/OwnerAnalysisPanel.tsx` targeted four endpoints that
+do not exist anywhere in this repo (`/api/owner-analysis/{reject,prepare-demo,
+cancel-demo,confirm-demo}`). The panel is rewired to the real, already-frozen backend
+surface — `GET /api/canonical-proposals`, `GET /api/opportunity-analysis`, and
+`POST /api/canonical-proposals/{id}/owner-decision` (`owner_decision.bridge.
+evaluate_owner_decision`, gated by `require_owner_auth`/`X-AG-Owner-Key`) — entirely
+within `web/`; no file under `src/` changed and `strategies/registry.yaml` is
+byte-identical to baseline. A real ambiguity was found and documented, not silently
+resolved: the backend's `decision_id` idempotency key has no proposal-level
+uniqueness guard anywhere in `src/owner_decision/` or `ProposalLedger`
+(`DECISION_ID_CONTRACT_AMBIGUOUS`); the frontend mitigates this for its own
+session/tab only by deriving `decision_id` deterministically from `proposal_id`, but
+this is explicitly documented as NOT a system-wide guarantee
+(`PROPOSAL_LEVEL_OWNER_DECISION_UNIQUENESS = NOT_ENFORCED_BY_BACKEND`,
+`CROSS_CLIENT_AT_MOST_ONCE = NOT_GUARANTEED`) and is left for a future backend change.
+The owner key is manual-entry, in-memory-only (never stored/logged, cleared on
+refresh). CONFIRM only ever produces a PREPARED, UNCONFIRMED `TradeCommand` template —
+never rendered as an executed trade; a separate, later, explicitly-confirmed call is
+still required to reach MT5 (untouched by this package). 48/49 new frontend tests pass
+(the one pre-existing failure, `web/server.ts`'s broker-script-containment check, is
+unrelated — `web/server.ts` is unmodified by this change set); `npm run build`
+succeeds. 77/77 backend regression tests pass unchanged (`src/` untouched). See
+`docs/status/AG_FRONTEND_OWNER_DECISION_REWIRE_STATUS.md`.
+
+## AG_FINAL_DEMO_EXECUTION_GATE (2026-09-23, `feat/demo-execution-bridge`, candidate)
+
+Integrates the previously-frozen `PANEL_R5C_R1_BROKER_IDENTITY` and
+`PANEL_PROPOSAL_DEDUP_R1` fixes (below) onto the Asian Sweep remediation line via a
+zero-conflict merge, then closes the one genuine remaining gap found on
+re-verification: `owner_decision.bridge.OwnerDecisionStore` (the already-audited,
+already production-wired owner-confirmation ledger behind
+`POST /api/canonical-proposals/{id}/owner-decision`) was in-memory-only and could lose
+an AUTHORIZED decision across a process restart. It is now optionally durable via the
+same `runtime_state.store.JsonKeyValueStore` convention already used by
+`ProposalLedger`/`ExecutionApprovalStore`/`DurableExecutionStore`
+(`path=None` keeps every existing caller's in-memory behavior unchanged;
+`src/api/app.py`'s production singleton now uses
+`state/owner_decisions/owner_decisions.json`). Re-verification also found the Demo
+account guard (`mt5.account_guard.verify_configured_account`) already mandatory in
+`execution/mt5_gateway.py::order_send()`, the real-data-provenance gate already
+enforced upstream in `proposal_envelope/formation_gate.py`, and strategy-authorization
+governance already respected and unbypassed — none of these needed new code. No
+`strategies/registry.yaml` value changed; no execution/lifecycle/MT5 code touched.
+`web/src/components/OwnerAnalysis/OwnerAnalysisPanel.tsx` (added by a prior commit on
+this same branch) still targets a fictional API contract and remains unwired to the
+real `owner-decision` endpoint — flagged as a known limitation, not attempted this
+session to avoid an unreviewed UI rewrite. 217/217 combined frozen-fix + bridge +
+persistence regression tests pass; 5 new persistence/concurrency tests pass; zero
+MetaTrader5/order_check/order_send calls reachable from any changed code path. See
+`docs/status/AG_FINAL_DEMO_EXECUTION_GATE_STATUS.md`.
+
+## PANEL_PROPOSAL_DEDUP_R1 (2026-09-23, `fix/proposal-dedup-r1`, candidate)
+
+Root-cause fix for the known regression
+(`tests/test_proposal_envelope_adapters.py::test_fx_repeated_same_setup_same_date_is_not_deduplicated_in_current_cutover`,
+previously `current_proposal_count=3`, expected `<=1`). Root cause:
+`proposal_envelope.adapters.fx_adapter.to_canonical_proposal()`'s `PROPOSAL_READY`
+branch built `proposal_envelope_id` -- `proposal_envelope.ledger.ProposalLedger`'s own
+dedup key -- from `decision.decision_id`, which `post_asian_pilot.decision._decision_id()`
+deliberately hashes in `evaluation_time`, minting a new value every scan cycle even for
+the SAME still-open economic setup (Case C: stable economic identity, unstable
+technical ID). The repository already carries one authoritative, deterministic
+economic-setup identity end-to-end for this exact case --
+`strategy_engine.engine`'s own `signal_id=f"{strategy_id}:{pair_id}:{symbol}:
+{session_date}"`, unchanged through `TradeIntent.signal_id -> TradeProposal.setup_id`
+-- the adapter simply wasn't using it as the proposal identity. Fix: the READY branch
+now derives `proposal_envelope_id` from `trade_proposal.setup_id`;
+`decision.decision_id` is preserved unchanged as `source_record_id`
+(per-observation provenance, a separate field never used for dedup). No other adapter
+(`btc_adapter`, `large_smc_adapter`, `large_smc_research_adapter`, `ssc_adapter`) shares
+this bug -- each already derives its identity from a stable setup/occurrence id, not a
+volatile per-scan one.
+
+12 new focused tests pass covering: identity derivation, repeated admission (2x/3x),
+idempotent no-mutation, restart persistence, same-process concurrent admission
+(`threading.Barrier`-synchronized), and owner-decision-compatible repeat handling;
+negative controls confirm different trading date / strategy / pair_id / symbol remain
+distinct proposals. The exact previously-failing test now passes
+(`current_proposal_count == 1`). Combined proposal-envelope/adapters suite: 25 passed.
+Owner-decision/CanonicalProposal regression: 20 passed. R5A/R5B/R5C/R5C-R1 execution
+regression plus execution-boundary: 70 passed. Broader post_asian_pilot +
+proposal-envelope-models regression: 116 passed. Scope: exactly
+`src/proposal_envelope/adapters/fx_adapter.py` (14 lines, mostly rationale comment)
+plus one new test file -- no lifecycle, authorization, scheduler, strategy, MT5, or
+broker-submission code touched; `BROKER_ORDERS_SENT = 0`. Broker side effects remain
+disabled; this package does not itself authorize them. See
+`docs/status/AG_PROPOSAL_DEDUP_R1_STATUS.md`.
+
 ## PANEL_R5C_R2_SHARED_BROKER_IDENTITY (2026-09-24, `claude/hopeful-ptolemy-1tiv9c`, candidate)
 
 Re-audit of R5C-R1 (`1c5bbf5`) confirmed its `"None"`-ticket fix, but found a new blocking

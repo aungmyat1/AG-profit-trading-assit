@@ -13,6 +13,12 @@
 #   * Bounded to the cycle's own window -- was unbounded (PT15M repeating forever).
 #   * Anchored at M15 CLOSE + 20s       -- was anchored at :00 (the bar OPEN).
 #   * Fail-closed runner action         -- was a direct --once call with no gates.
+#   * One independent trigger per slot  -- was ONE weekly trigger + PT15M repetition, whose
+#     repetitions all hang off the first slot's trigger instance: with the host asleep at
+#     the first slot (StartWhenAvailable/WakeToRun off), Task Scheduler launched NONE of
+#     that day's later slots even after wake (2026-09-22, 2026-09-23 ASIAN_LONDON). See
+#     docs/status/AG_ASIAN_SWEEP_MISSING_MANDATORY_EVIDENCE_STATUS.md. A slot missed while
+#     asleep is now just that slot; missed slots are still never caught up.
 #
 # Idempotent: re-running with triggers already correct makes no change and says so.
 
@@ -44,14 +50,14 @@ $Cycles = @(
         Cycle      = "ASIAN_LONDON"
         TaskName   = "AG_FX_ASIAN_LONDON_SHADOW"
         FirstSlot  = "13:30:20"   # 07:00:20 UTC (MMT = UTC+6:30), M15 close + 20s settle
-        Duration   = "PT4H"       # 07:00:20 -> 11:00:20 UTC = 17 slots
+        SlotCount  = 17           # 07:00:20 -> 11:00:20 UTC, every 15m
         BatchFile  = "scripts\scheduled\run_asian_london_once.bat"
     },
     [pscustomobject]@{
         Cycle      = "LONDON_NEWYORK"
         TaskName   = "AG_FX_LONDON_NEWYORK_SHADOW"
         FirstSlot  = "18:30:20"   # 12:00:20 UTC, M15 close + 20s settle
-        Duration   = "PT3H"       # 12:00:20 -> 15:00:20 UTC = 13 slots
+        SlotCount  = 13           # 12:00:20 -> 15:00:20 UTC, every 15m
         BatchFile  = "scripts\scheduled\run_london_newyork_once.bat"
     }
 )
@@ -90,6 +96,10 @@ foreach ($c in $Cycles) {
     if ($xml) {
         $path = Join-Path $BackupDir ("{0}.before.json" -f $c.TaskName)
         if (Test-Path $path) { $path = Join-Path $BackupDir ("{0}.before.again.json" -f $c.TaskName) }
+        if (Test-Path $path) {
+            # never overwrite an earlier backup -- it is evidence of a prior state
+            $path = Join-Path $BackupDir ("{0}.before.{1}.json" -f $c.TaskName, (Get-Date -Format "yyyyMMddTHHmmss"))
+        }
         $xml | Set-Content -Path $path -Encoding UTF8
         Write-Output ("  saved {0}" -f $path)
     } else {
@@ -109,15 +119,15 @@ foreach ($c in $Cycles) {
 
     $at = [datetime]::ParseExact($c.FirstSlot, "HH:mm:ss", $null)
 
-    # Weekly Mon-Fri at the first M15-close slot, then repeat every 15 minutes for
-    # exactly the window's duration. RepetitionDuration == window length, so the final
-    # repetition lands precisely on the window's last M15 close and never past it.
-    $trigger = New-ScheduledTaskTrigger -Weekly `
-        -DaysOfWeek Monday, Tuesday, Wednesday, Thursday, Friday -At $at
-    $rep = (New-ScheduledTaskTrigger -Once -At $at `
-        -RepetitionInterval (New-TimeSpan -Minutes 15) `
-        -RepetitionDuration (New-TimeSpan -Hours ([int]($c.Duration -replace 'PT|H', '')))).Repetition
-    $trigger.Repetition = $rep
+    # One weekly Mon-Fri trigger per M15-close slot (first slot + k*15m, k < SlotCount),
+    # so the last trigger lands precisely on the window's last M15 close and never past
+    # it, and no slot's launch depends on any other slot's trigger having fired.
+    $triggers = @(
+        for ($k = 0; $k -lt $c.SlotCount; $k++) {
+            New-ScheduledTaskTrigger -Weekly `
+                -DaysOfWeek Monday, Tuesday, Wednesday, Thursday, Friday -At $at.AddMinutes(15 * $k)
+        }
+    )
 
     $settings = New-ScheduledTaskSettingsSet `
         -MultipleInstances IgnoreNew `
@@ -126,9 +136,9 @@ foreach ($c in $Cycles) {
         -AllowStartIfOnBatteries `
         -DontStopIfGoingOnBatteries
 
-    Set-ScheduledTask -TaskName $c.TaskName -Trigger $trigger -Settings $settings | Out-Null
-    Write-Output ("  {0}: trigger corrected -> weekdays at {1}, every 15m for {2}" -f `
-        $c.TaskName, $c.FirstSlot, $c.Duration)
+    Set-ScheduledTask -TaskName $c.TaskName -Trigger $triggers -Settings $settings | Out-Null
+    Write-Output ("  {0}: triggers corrected -> weekdays, {1} independent slots from {2}, every 15m" -f `
+        $c.TaskName, $c.SlotCount, $c.FirstSlot)
 }
 
 Write-Output ""
