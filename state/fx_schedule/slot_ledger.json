@@ -244,6 +244,20 @@
     "slot_utc": "2026-09-25T10:30:20+00:00",
     "trading_date": "2026-09-25"
   },
+  "ASIAN_LONDON|2026-09-25|2026-09-25T10:45:20+00:00": {
+    "claimed_at": "2026-09-25T10:55:00.420494+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-25T10:45:20+00:00",
+    "trading_date": "2026-09-25"
+  },
+  "ASIAN_LONDON|2026-09-25|2026-09-25T11:00:20+00:00": {
+    "claimed_at": "2026-09-25T11:00:27.621613+00:00",
+    "cycle_id": "ASIAN_LONDON",
+    "outcome": null,
+    "slot_utc": "2026-09-25T11:00:20+00:00",
+    "trading_date": "2026-09-25"
+  },
   "LONDON_NEWYORK|2026-09-21|2026-09-21T12:00:20+00:00": {
     "claimed_at": "2026-09-21T12:00:30.010741+00:00",
     "cycle_id": "LONDON_NEWYORK",
