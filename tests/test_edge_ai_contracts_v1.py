@@ -19,11 +19,20 @@ def common(**overrides):
     return values
 
 
+def accepted_eligibility(opportunity_id="opp-1", **overrides):
+    values = common(
+        event_id="eligibility-1", opportunity_id=opportunity_id, eligible=True,
+        reason_codes=("ELIGIBLE",), details={},
+    )
+    values.update(overrides)
+    return ProposalEligibilityDecision(**values)
+
+
 @pytest.mark.parametrize("contract", [
     MarketState(**common(symbol="EURUSD", facts={"spread": 0.8, "session": "LONDON"})),
     Opportunity(**common(symbol="EURUSD", opportunity_id="opp-1", strategy_id="s1", strategy_version="1.0", details={"side": "LONG"})),
     ProposalEligibilityDecision(**common(opportunity_id="opp-1", eligible=False, reason_codes=("ACCOUNT_BLOCKED",), details={})),
-    Proposal(**common(symbol="EURUSD", opportunity_id="opp-1", strategy_id="s1", strategy_version="1.0", details={"entry": 1.1})),
+    Proposal(**common(symbol="EURUSD", opportunity_id="opp-1", strategy_id="s1", strategy_version="1.0", eligibility=accepted_eligibility(), details={"entry": 1.1})),
     OwnerDecision(**common(proposal_id="proposal-1", action="REJECT", owner_id="owner-1", reason_codes=("OWNER_REJECTED",))),
     ExecutionRequest(**common(symbol="EURUSD", proposal_id="proposal-1", owner_decision_id="decision-1", account_id="acct-1", mode="DEMO", idempotency_key="idem-1", request={})),
     ExecutionResult(**common(request_id="request-1", status="REJECTED", reason_codes=("GATE_CLOSED",), result={})),
@@ -107,10 +116,87 @@ def test_opportunity_eligibility_and_proposal_are_distinct_types():
         ProposalEligibilityDecision(**common(opportunity_id="opp-1", eligible=False, reason_codes=(), details={}))
 
 
+def test_proposal_requires_matching_accepted_eligibility_and_round_trips_binding():
+    eligibility = accepted_eligibility("opp-1")
+    proposal = Proposal(**common(
+        symbol="EURUSD", opportunity_id="opp-1", strategy_id="s1",
+        strategy_version="1.0", eligibility=eligibility, details={"entry": 1.1},
+    ))
+    restored = Proposal.from_dict(json.loads(proposal.to_json()))
+    assert restored.eligibility == eligibility
+    assert restored.eligibility.event_id == eligibility.event_id
+    assert restored.eligibility.semantic_hash == eligibility.semantic_hash
+    assert restored.semantic_hash == proposal.semantic_hash
+    assert restored.to_json() == proposal.to_json()
+
+
+def test_rejected_eligibility_cannot_construct_proposal():
+    rejected = ProposalEligibilityDecision(**common(
+        opportunity_id="opp-1", eligible=False, reason_codes=("STALE",), details={},
+    ))
+    with pytest.raises(ContractError, match="rejected eligibility"):
+        Proposal(**common(
+            symbol="EURUSD", opportunity_id="opp-1", strategy_id="s1",
+            strategy_version="1.0", eligibility=rejected, details={},
+        ))
+
+
+def test_proposal_rejects_eligibility_for_different_opportunity():
+    with pytest.raises(ContractError, match="opportunity_id does not match"):
+        Proposal(**common(
+            symbol="EURUSD", opportunity_id="opp-2", strategy_id="s1",
+            strategy_version="1.0", eligibility=accepted_eligibility("opp-1"), details={},
+        ))
+
+
+def test_proposal_rejects_tampered_eligibility_hash_on_deserialization():
+    proposal = Proposal(**common(
+        symbol="EURUSD", opportunity_id="opp-1", strategy_id="s1",
+        strategy_version="1.0", eligibility=accepted_eligibility(), details={},
+    ))
+    raw = proposal.to_dict()
+    raw["eligibility"]["semantic_hash"] = "0" * 64
+    with pytest.raises(ContractError, match="semantic_hash"):
+        Proposal.from_dict(raw)
+
+
+def test_proposal_rejects_tampered_eligibility_identity_on_deserialization():
+    proposal = Proposal(**common(
+        symbol="EURUSD", opportunity_id="opp-1", strategy_id="s1",
+        strategy_version="1.0", eligibility=accepted_eligibility(), details={},
+    ))
+    raw = proposal.to_dict()
+    raw["eligibility"]["event_id"] = "eligibility-tampered"
+    with pytest.raises(ContractError, match="semantic_hash"):
+        Proposal.from_dict(raw)
+
+
 @pytest.mark.parametrize("facts", [
-    {"direction": "BUY"}, {"approved_volume": 0.1}, {"execution_command": "submit"},
-    {"risk_approval": True}, {"owner_approval": True}, {"structure": {"decision": "SELL"}},
+    {"recommendation": "BUY"}, {"recommendation": "SELL"},
+    {"action": "BUY"}, {"action": "ENTER"}, {"signal": "SELL"},
+    {"trade_signal": "BUY"}, {"execution": "ENTER"}, {"order": "BUY"},
+    {"approved": True}, {"risk_approved": True}, {"owner_approved": True},
+    {"approved_volume": 0.1}, {"execution_command": "submit"},
+    {"structure": {"recommendation": "BUY"}},
+    {"structure": {"nested": {"signal": "SELL"}}},
+    {"freshness": {"trade_signal": "BUY"}},
+    {"structure": {"trend_state": "BUY"}},
 ])
 def test_market_state_cannot_encode_decision_or_execution_authority(facts):
-    with pytest.raises(ContractError, match="authority fields"):
+    with pytest.raises(ContractError, match="unsupported MarketState fact field|invalid for"):
         MarketState(**common(symbol="EURUSD", facts=facts))
+
+
+def test_market_state_allows_only_typed_observable_fact_categories():
+    state = MarketState(**common(symbol="EURUSD", facts={
+        "session": {"name": "LONDON", "state": "OPEN", "high": 1.2},
+        "spread": 0.8,
+        "structure": {"trend_state": "BULLISH", "swing_high": 1.2},
+        "liquidity": {"buy_side_level": 1.21},
+        "sweep": {"detected": True, "liquidity_side": "BUY_SIDE", "price": 1.2},
+        "freshness": {"is_fresh": True, "age_seconds": 0.5},
+        "provenance": {"provider": "feed-a"},
+    }))
+    assert state.facts["session"]["name"] == "LONDON"
+    with pytest.raises(ContractError, match="unsupported MarketState fact field"):
+        MarketState(**common(symbol="EURUSD", facts={"custom": {"price": 1.0}}))

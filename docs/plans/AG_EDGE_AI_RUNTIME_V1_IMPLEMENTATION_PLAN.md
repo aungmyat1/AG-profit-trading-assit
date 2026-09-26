@@ -219,7 +219,9 @@ Exit: `ONE_STRATEGY_MARKETSTATE_PARITY = PASS`.
 Preserve:
 
 ```text
-MarketState -> Strategy -> Opportunity -> ProposalEligibilityDecision -> Proposal
+MarketState -> Strategy -> Opportunity -> ProposalEligibilityDecision
+                                      | rejected -> STOP (no Proposal)
+                                      ` accepted -> Proposal bound to that decision
 ```
 
 A blocked setup remains an Opportunity plus a rejected eligibility decision; it is not an executable Proposal.

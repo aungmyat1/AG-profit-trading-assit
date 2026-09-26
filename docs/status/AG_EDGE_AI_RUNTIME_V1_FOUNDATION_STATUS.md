@@ -2,7 +2,52 @@
 
 Date: 2026-09-26
 Owner decision: `MIGRATION_BASELINE_SELECTED`
-Classification: `FOUNDATION_PASS`
+Classification: `FOUNDATION_R1_IN_PROGRESS`
+
+## Independent audit and remediation state
+
+The independent foundation audit of `59701c4be377ab7b4bba4d9ebcd0f58ca88deaaa`
+failed on F-01 (MarketState accepted action-like generic facts) and F-02 (Proposal
+construction was not bound to accepted eligibility). Those findings supersede the
+builder's earlier P1 pass claim. The original 33/58/247 test results below are historical
+pre-audit evidence; they do not establish the R1 fixes.
+
+```text
+P0_ARCH_BASELINE_FROZEN = PASS
+P1_CONTRACTS_V1 = REMEDIATION_R1
+P2_NEW_ARCH_SHELL_READY = PASS
+FOUNDATION_FROZEN = NO
+R1_BRANCH = fix/edge-ai-foundation-contracts-r1
+R1_BASE = 59701c4be377ab7b4bba4d9ebcd0f58ca88deaaa
+R1_CLASSIFICATION = FOUNDATION_R1_READY_FOR_REAUDIT
+R1_STATUS = candidate complete; independent re-audit required
+F01_MARKETSTATE_FACT_SCHEMA = PASS (closed allowlist)
+MARKET_STATE_EXECUTION_AUTHORITY = NONE
+F02_ELIGIBILITY_PROPOSAL_INVARIANT = PASS
+REJECTED_ELIGIBILITY_TO_PROPOSAL = IMPOSSIBLE
+FUNNEL_SEPARATION = PASS
+```
+
+The funnel rule is `Opportunity -> rejected eligibility -> NO Proposal`; only an
+accepted eligibility contract bound to the same opportunity may be carried by a
+Proposal. The prior rejection remains preserved in the independent audit report/history.
+
+R1 validation on 2026-09-26, Windows, Python 3.14.0:
+
+| Gate | Command | Result |
+|---|---|---|
+| V1 contract suite | `python -m pytest -q tests/test_edge_ai_contracts_v1.py` | PASS, 45 passed |
+| V2 MarketState adversarial cases | `python -m pytest -q tests/test_edge_ai_contracts_v1.py -k market_state` | PASS, 20 passed, 25 deselected |
+| V3 eligibility/Proposal transition cases | `python -m pytest -q tests/test_edge_ai_contracts_v1.py -k 'proposal or eligibility'` | PASS, 6 passed, 39 deselected |
+| V4 architecture boundaries | `python -m pytest -q tests/test_edge_ai_architecture_boundaries.py` | PASS, 5 passed |
+| V5 focused owner/execution regression | `python -m pytest -q tests/test_proposal_dedup_r1.py tests/test_api_owner_decision_auth.py tests/test_api_owner_decision.py tests/test_execution_reconciliation.py tests/test_execution_reconciliation_r1.py tests/test_execution_reconciliation_r2.py` | PASS, 58 passed; one Starlette/httpx deprecation warning |
+| V6 broader owner/execution regression | `$files = rg --files tests | Where-Object { $_ -match 'test_(owner_decision|execution|api_owner_decision)' }; python -m pytest -q $files` | PASS, 247 passed; one Starlette/httpx deprecation warning |
+| Protected runtime diff | `git diff --quiet 59701c4 -- src scripts web strategies config scheduler` | PASS, no differences |
+| Whitespace | `git diff --check` | PASS |
+
+Source comparison confirms the same five `order_check`/`order_send` call sites in the
+same two gateway files as the base. No live MT5 checks were run. R1 is ready for the
+independent re-audit; this report does not declare the foundation frozen.
 
 ## P0 frozen migration baseline
 
@@ -55,7 +100,7 @@ the merged [route containment evidence](AG_MANUAL_DEMO_ROUTE_CONTAINMENT_FINAL_S
 ## Mission results
 
 ```text
-CLASSIFICATION = FOUNDATION_PASS
+CLASSIFICATION = FOUNDATION_R1_IN_PROGRESS
 MIGRATION_BASE_SHA = 1a8e7c5d922ba48423dca1b7858f8895afe0d66f
 MIGRATION_BASE_TREE = 53b54053283f58fe7f34a898808212275c725768
 BRANCH = arch/edge-ai-runtime-v1-foundation
@@ -63,8 +108,9 @@ HEAD = this status document's containing commit (see final handoff / git log)
 WORKTREE = CLEAN after local commit
 
 P0_ARCH_BASELINE_FROZEN = PASS
-P1_CONTRACTS_V1_FROZEN = PASS
+P1_CONTRACTS_V1 = REMEDIATION_R1
 P2_NEW_ARCH_SHELL_READY = PASS
+FOUNDATION_FROZEN = NO
 OLD_RUNTIME_UNCHANGED = PASS
 
 BROKER_CALL_DELTA = 0 (same five call sites in the same two gateway files)

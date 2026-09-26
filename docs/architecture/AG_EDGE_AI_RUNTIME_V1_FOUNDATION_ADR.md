@@ -1,6 +1,6 @@
 # ADR: AG Edge + AI Runtime V1 foundation
 
-Status: ACCEPTED FOUNDATION BASELINE / P0–P2 ONLY
+Status: BASELINE ACCEPTED / P0 AND P2 PASS / P1 R1 REMEDIATION IN PROGRESS
 Decision date: 2026-09-26
 
 ## Decision
@@ -85,3 +85,7 @@ The contracts are standalone standard-library Python definitions. They cannot im
 MT5, broker gateways, AI clients, or application runtime modules. Package shells state
 dependency rules without moving existing code. Independent review is required before
 P3 or any runtime migration begins.
+
+The initial independent audit found two P1 contract gaps: MarketState's generic fact map
+did not enforce facts-only semantics, and Proposal construction did not require accepted
+eligibility. P1 is not frozen until the R1 remediation is independently re-audited.
