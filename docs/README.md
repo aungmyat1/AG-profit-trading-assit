@@ -2,7 +2,9 @@
 
 This directory contains design contracts, implementation architecture, setup guidance,
 and dated verification evidence. Read documents according to their authority, not just
-their age.
+their age. For the shortest path to the active objective, start with the repo priority
+plan in [REPO_CLEANUP_AND_OBJECTIVE.md](REPO_CLEANUP_AND_OBJECTIVE.md) and then use
+[PROJECT_STATUS.md](../PROJECT_STATUS.md) as the live source of truth.
 
 The [SVOS Virtual Demo Engine V1 Cycle 1 design](svos/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE1_DESIGN.md)
 and its linked time, exchange, account, ledger, campaign, qualification, and component

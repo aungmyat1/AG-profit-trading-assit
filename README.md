@@ -22,6 +22,20 @@ separately authorized gates. The current primary product target is the R2–R4 c
 scanner proposal pipeline, ending at an observation-only STOP boundary. See
 [`docs/PROJECT_ROADMAP.md`](docs/PROJECT_ROADMAP.md).
 
+## Fastest path to the project objective
+
+The repo is high-signal but dense. For the quickest path to real progress, use this order:
+
+1. `AGENTS.md` for authority and workflow guardrails.
+2. `PROJECT_STATUS.md` for the current active status and blockers.
+3. `strategies/registry.yaml` and the relevant strategy contract for the workstream.
+4. The smallest focused test or status probe, not a broad suite.
+5. One narrow implementation change, then re-run the same proof.
+
+This is the minimum path to preserve momentum without getting lost in historical design
+snapshots. For the repo hygiene plan and archive recommendations, see
+[`docs/REPO_CLEANUP_AND_OBJECTIVE.md`](docs/REPO_CLEANUP_AND_OBJECTIVE.md).
+
 For chart-led analysis, agent skills organize advisory evidence from higher timeframe
 to lower timeframe. A related strategy is considered only when its registered contract
 matches the symbol, session, setup, and timeframe chain. The deterministic strategy
