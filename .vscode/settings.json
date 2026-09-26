@@ -66,5 +66,6 @@
     "**/artifacts/**": true,
     "**/logs/**": true,
     "**/journal/**": true
-  }
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:system"
 }

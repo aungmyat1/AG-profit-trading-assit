@@ -4,6 +4,19 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## AG_EDGE_AI_RUNTIME_V1_FOUNDATION (2026-09-26, additive P0–P2 candidate)
+
+The owner selected merged containment baseline `1a8e7c5d922ba48423dca1b7858f8895afe0d66f`
+(`53b54053283f58fe7f34a898808212275c725768` tree); Gate-2 R3
+`19fd8fa320e6f93ed15ec32cd442941e1fc337b2` remains separate and unaccepted as this
+foundation's base. P0 freezes existing execution/owner-decision authorities, P1 defines
+standard-library Contracts V1, and P2 adds architecture boundary shells. This is not a
+runtime migration and does not authorize trading. Validation and the independent audit
+handoff are recorded in
+[`docs/status/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_STATUS.md`](docs/status/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_STATUS.md);
+the authority matrix and rollback record are in
+[`docs/architecture/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_ADR.md`](docs/architecture/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_ADR.md).
+
 ## AG_MANUAL_DEMO_ROUTE_CONTAINMENT_FINAL (2026-09-25, `fix/manual-demo-route-containment-final`, Gate 1 of post-merge demo qualification, not yet published)
 
 Retired `POST /api/execution/manual-demo` (`web/server.ts`) -- the last
