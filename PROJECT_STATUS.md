@@ -4,6 +4,24 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Crypto Opportunity Scanner V1 (2026-09-27, ready for independent audit)
+
+The bounded BTCUSDT scanner reads Bybit V5 public M5 candles only and maps a closed
+previous-UTC-day sweep rejection to the existing OpportunityCandidate/store contract.
+Fixture and replay input retain their declared modes; REAL mode is admitted only through
+the live-feed entry point. The read-only `GET /api/opportunities` route lists persisted
+scanner candidates. No ProposalEligibility, CanonicalProposal, risk sizing, owner
+decision, AI call, exchange order, or MT5 order path was added. Crypto trade execution
+remains MT5-only.
+
+The focused scanner suite passes 15/15; bounded Opportunity/contract/store/import-boundary,
+Bybit-feed, and API regression passes 126/126 on Windows/Python 3.14.0/pytest 8.3.5.
+One real public Bybit observation returned `VENUE_UNAVAILABLE` / `KLINES_REQUEST_FAILED`;
+live BTC data and live strategy evaluation are therefore unverified. No fixture was used
+as live evidence. Economic validation is not established, and the observer grants no
+strategy authorization. See
+[`docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_STATUS.md`](docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_STATUS.md).
+
 ## Canonical Proposal Orchestration Bridge R1.1 (2026-09-27, ready for independent re-audit)
 
 R1.1 closes the audited orchestration trust-boundary findings in a bounded candidate:

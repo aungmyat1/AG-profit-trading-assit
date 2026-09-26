@@ -38,6 +38,7 @@ from proposal_envelope.ledger import ProposalLedger
 from . import broker_service, strategy_service, telegram_service
 from .execution_service import InMemoryProposalRegistry, SOURCE_WEB, authorize_demo_execution
 from .opportunity_analysis import OpportunityAnalysisError, get_opportunity_analysis
+from .crypto_opportunities import list_crypto_opportunities
 from .schemas import (
     AuthorizeDemoRequest,
     AuthorizeDemoResponse,
@@ -61,6 +62,7 @@ from .schemas import (
     TicketResponse,
     ValidationResponse,
     OpportunityAnalysisResponse,
+    OpportunityCandidateResponse,
 )
 
 DEFAULT_ALLOWED_ORIGINS = (
@@ -185,6 +187,15 @@ def opportunity_analysis(symbol: Optional[str] = None) -> list[OpportunityAnalys
         reason = str(exc)
         status = 400 if reason == "UNSUPPORTED_SYMBOL" else 502
         raise HTTPException(status_code=status, detail={"reason_code": reason}) from exc
+
+
+@app.get("/api/opportunities", response_model=list[OpportunityCandidateResponse])
+def opportunities(symbol: Optional[str] = None, limit: int = 50) -> list[OpportunityCandidateResponse]:
+    """Read-only OpportunityCandidate listing; this route never scans or trades."""
+    try:
+        return list_crypto_opportunities(symbol=symbol, limit=limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"reason_code": str(exc)}) from exc
 
 
 @app.get("/api/broker/status", response_model=BrokerStatusResponse)

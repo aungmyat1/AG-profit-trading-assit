@@ -1,0 +1,1 @@
+"""Read-only public-market scanner that emits OpportunityCandidate observations."""\n

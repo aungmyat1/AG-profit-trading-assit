@@ -119,6 +119,32 @@ class OpportunityAnalysisResponse(BaseModel):
     execution_authority: str = "NONE"
 
 
+class OpportunityCandidateResponse(BaseModel):
+    """Read-only strategy observation; contains no eligibility or execution authority."""
+
+    candidate_id: str
+    occurrence_id: str
+    strategy_id: str
+    strategy_version: str
+    symbol: str
+    market: str
+    venue: Optional[str] = None
+    direction: Optional[str] = None
+    detected_at: str
+    last_evaluated_at: str
+    expires_at: Optional[str] = None
+    stage: str
+    outcome: str
+    revision: int
+    raw_strategy_state: dict
+    context_evidence: dict
+    setup_evidence: dict
+    trigger_evidence: dict
+    geometry: Optional[dict] = None
+    market_data_mode: str
+    data_lineage: Optional[str] = None
+
+
 class TelegramStatusResponse(BaseModel):
     configured: bool
 

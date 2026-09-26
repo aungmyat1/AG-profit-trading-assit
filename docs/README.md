@@ -448,6 +448,9 @@ matching status document before assuming a version is active or frozen.
 Files in `status/` are dated evidence snapshots. They preserve the test counts and
 observations from the named milestone; they are not rolling dashboards.
 
+- [`status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_STATUS.md`](status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_STATUS.md)
+  — bounded BTCUSDT Bybit-public observer, deterministic OpportunityCandidate/API
+  verification, and blocked live public-data observation; no crypto execution authority.
 - [`status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md`](status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md)
   — repository health audit, test-failure classification, root-file relocation map
   (root MI/V2/validation docs now live under `market_intelligence/`, `v2/`,
