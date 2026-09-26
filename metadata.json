@@ -1,0 +1,8 @@
+{
+  "name": "AG Profit Trading Assistant",
+  "description": "Deterministic FX and Crypto trading assistant for Session Trade tickets, Large-SMC surveillance, owner-directed analysis, and execution management.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
