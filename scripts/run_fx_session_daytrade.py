@@ -32,7 +32,9 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import mt5.connection as mt5_connection  # noqa: E402
 from post_asian_pilot.pipeline import run_pilot_cycle  # noqa: E402

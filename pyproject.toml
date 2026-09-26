@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = [".", "src"]
 testpaths = ["tests"]
 # `slow` is deselected by default so a plain `pytest -q` terminates deterministically.
 # It marks correct, wanted regressions whose runtime is measured in tens of minutes
