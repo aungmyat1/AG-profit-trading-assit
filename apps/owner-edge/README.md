@@ -1,5 +1,7 @@
-# Owner Edge boundary shell
+# Owner Analysis boundary shell
 
-Future local trusted edge and sole designated target boundary for new-order broker
-mutation after explicit owner confirmation and later safety gates. This shell contains no
-runtime, MT5 connection, broker call, or execution capability in P0–P2.
+Future advisory analysis boundary for the owner. It may present ChatGPT/Claude analysis,
+MarketState facts, strategy evidence, risk snapshots, and canonical proposals to the
+owner. The owner alone records a separate OwnerDecision. This shell contains no runtime,
+MT5 connection, broker call, or execution capability. Broker mutation remains in the
+existing gated execution subsystem.

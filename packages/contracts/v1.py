@@ -74,6 +74,15 @@ def _identifier(name: str, value: str) -> None:
         raise ContractError(f"{name} must be a non-empty stable identifier")
 
 
+class _MarketStateSchemaMeta(type):
+    """Prevent runtime replacement of the closed MarketState schema."""
+
+    def __setattr__(cls, name: str, value: Any) -> None:
+        if name in {"_FACT_FIELDS", "_NESTED_FACT_FIELDS"} and hasattr(cls, name):
+            raise AttributeError(f"{name} is an immutable MarketState schema")
+        super().__setattr__(name, value)
+
+
 @dataclass(frozen=True, kw_only=True)
 class Contract:
     """Shared immutable provenance. AccountState and SemanticError may omit symbol."""
@@ -147,25 +156,26 @@ class Contract:
 
 
 @dataclass(frozen=True, kw_only=True)
-class MarketState(Contract):
+class MarketState(Contract, metaclass=_MarketStateSchemaMeta):
     facts: Mapping[str, Any]
     KIND: ClassVar[str] = "MarketState"
-    _FACT_FIELDS: ClassVar[dict[str, str]] = {
-        "symbol": "string", "source": "string", "session": "session",
+    _FACT_FIELDS: ClassVar[Mapping[str, str]] = MappingProxyType({
+        "symbol": "string", "source": "string", "source_timestamp": "timestamp",
+        "observed_at": "timestamp", "session": "session",
         "price": "number", "bid": "number", "ask": "number", "spread": "number",
         "market_metadata": "market_metadata", "structure": "structure",
         "liquidity": "liquidity", "sweep": "sweep", "freshness": "freshness",
         "provenance": "provenance",
-    }
-    _NESTED_FACT_FIELDS: ClassVar[dict[str, dict[str, str]]] = {
-        "session": {"name": "session_name", "state": "session_state", "opened_at": "timestamp", "closed_at": "timestamp", "high": "number", "low": "number"},
-        "market_metadata": {"digits": "integer", "point": "number", "tick_size": "number", "tick_value": "number", "contract_size": "number", "is_open": "boolean"},
-        "structure": {"trend_state": "trend_state", "swing_high": "number", "swing_low": "number", "range_high": "number", "range_low": "number", "break_of_structure": "structure_event", "change_of_character": "structure_event", "premium_discount": "premium_discount"},
-        "liquidity": {"buy_side_level": "number", "sell_side_level": "number", "equal_highs": "number", "equal_lows": "number", "nearest_high": "number", "nearest_low": "number"},
-        "sweep": {"detected": "boolean", "liquidity_side": "liquidity_side", "price": "number", "occurred_at": "timestamp"},
-        "freshness": {"is_fresh": "boolean", "age_seconds": "number", "as_of": "timestamp", "closed_bar": "boolean"},
-        "provenance": {"provider": "string", "feed": "string", "instrument": "string"},
-    }
+    })
+    _NESTED_FACT_FIELDS: ClassVar[Mapping[str, Mapping[str, str]]] = MappingProxyType({
+        "session": MappingProxyType({"name": "session_name", "state": "session_state", "opened_at": "timestamp", "closed_at": "timestamp", "high": "number", "low": "number"}),
+        "market_metadata": MappingProxyType({"digits": "integer", "point": "number", "tick_size": "number", "tick_value": "number", "contract_size": "number", "is_open": "boolean"}),
+        "structure": MappingProxyType({"trend_state": "trend_state", "swing_high": "number", "swing_low": "number", "range_high": "number", "range_low": "number", "break_of_structure": "structure_event", "change_of_character": "structure_event", "premium_discount": "premium_discount"}),
+        "liquidity": MappingProxyType({"buy_side_level": "number", "sell_side_level": "number", "equal_highs": "number", "equal_lows": "number", "nearest_high": "number", "nearest_low": "number"}),
+        "sweep": MappingProxyType({"detected": "boolean", "liquidity_side": "liquidity_side", "price": "number", "occurred_at": "timestamp"}),
+        "freshness": MappingProxyType({"is_fresh": "boolean", "age_seconds": "number", "as_of": "timestamp", "closed_bar": "boolean"}),
+        "provenance": MappingProxyType({"provider": "string", "feed": "string", "instrument": "string"}),
+    })
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -182,6 +192,14 @@ class MarketState(Contract):
             raise ContractError("MarketState facts source does not match contract source")
         _validate_market_facts(frozen, self._FACT_FIELDS, self._NESTED_FACT_FIELDS)
         object.__setattr__(self, "facts", frozen)
+
+    def semantic_fields(self) -> dict[str, Any]:
+        semantic = super().semantic_fields()
+        facts = dict(semantic["facts"])
+        facts.pop("source", None)
+        facts.pop("provenance", None)
+        semantic["facts"] = facts
+        return semantic
 
 
 @dataclass(frozen=True, kw_only=True)

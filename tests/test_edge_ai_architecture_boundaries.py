@@ -39,12 +39,12 @@ def test_strategy_control_and_ai_shells_have_no_mutation_dependencies():
             assert not [name for name in names if any(name == item or name.startswith(item + ".") for item in FORBIDDEN_IMPORTS)]
 
 
-def test_future_new_order_mutation_owner_is_only_designated_as_owner_edge():
+def test_owner_analysis_has_no_execution_authority():
     adr = (ROOT / "docs/architecture/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_ADR.md").read_text(encoding="utf-8")
     edge = (ROOT / "apps/owner-edge/README.md").read_text(encoding="utf-8")
-    assert "Owner Edge (future)" in adr
-    assert "sole designated target boundary for new-order broker" in edge
-    assert "AI has zero broker authority" in adr
+    assert "Owner Analysis (future)" in adr
+    assert "Broker mutation remains in the" in edge
+    assert "AI has zero broker, execution, and owner authority" in adr
 
 
 def test_production_runtime_and_authority_files_match_frozen_base():

@@ -2,7 +2,55 @@
 
 Date: 2026-09-26
 Owner decision: `MIGRATION_BASELINE_SELECTED`
-Classification: `FOUNDATION_R1_IN_PROGRESS`
+Classification: `FOUNDATION_R2_CANDIDATE_PENDING_INDEPENDENT_AUDIT`
+
+## R2 candidate — 2026-09-26
+
+```text
+MISSION = AG_EDGE_AI_RUNTIME_V1_FOUNDATION_R2_REMEDIATION
+R1_REAUDIT_RESULT = FAIL (MarketState schema was mutable; extensible arbitrary action semantics remained representable)
+R1_SHA = f56a475195fd02c3f86a6a052d90808a305ee153
+R2_BASE_SHA = f56a475195fd02c3f86a6a052d90808a305ee153
+R2_BRANCH = fix/edge-ai-foundation-r2
+R2_CLASSIFICATION = CANDIDATE_PENDING_INDEPENDENT_AUDIT
+MARKETSTATE_FACT_SCHEMA = CLOSED_AND_IMMUTABLE
+MARKETSTATE_INSTANCE = FROZEN_WITH_RECURSIVELY_FROZEN_FACTS
+PRODUCER_NEUTRAL = PYTHON_AND_FUTURE_MQL5_FACTS_USE_SAME_CONTRACT
+SEMANTIC_IDENTITY = FACTS_ONLY; PRODUCER PROVENANCE EXCLUDED
+TIMESTAMP_FACTS = source_timestamp + observed_at; created_at remains construction time
+AI_AUTHORITY = NONE (advisory analysis belongs inside Owner Analysis)
+DOWNSTREAM_PIPELINE = EXISTING AUTHORITIES PRESERVED
+MQL5_IMPLEMENTATION = NOT_STARTED
+AI_INTEGRATION = NOT_STARTED
+EXECUTION_RUNTIME_CHANGED = NO
+BROKER_MUTATION = ZERO
+FOCUSED_TESTS = 74 passed (contract + architecture boundary suites)
+INDEPENDENT_AUDIT_REQUIRED = YES
+```
+
+R2 closes the R1 schema mutability gap with immutable allowlist containers and guarded
+schema attributes. Negative tests cover action, execution, owner, risk, position sizing,
+and nested/extensible metadata semantics. Producer provenance remains serialized but is
+excluded from semantic identity. `MarketState` accepts distinct source and observation
+timestamps while `created_at` remains contract construction time. The
+architecture record now places future AI within read-only Owner Analysis and retains
+broker mutation solely in the existing gated execution subsystem. No MQL5, parity, AI
+integration, or execution implementation is part of this candidate.
+
+The exact checks on Windows were:
+
+| Gate | Command | Result |
+|---|---|---|
+| Focused contract suite | `python -m pytest -q tests/test_edge_ai_contracts_v1.py` | PASS, 69 passed |
+| Architecture boundary suite | `python -m pytest -q tests/test_edge_ai_architecture_boundaries.py` | PASS, 5 passed |
+| Combined affected regression | `python -m pytest -q tests/test_edge_ai_contracts_v1.py tests/test_edge_ai_architecture_boundaries.py` | PASS, 74 passed |
+
+No downstream runtime test imports `packages.contracts.v1`; the architecture suite
+verifies protected runtime files and broker mutation call sites remain unchanged. No
+broker or MT5 calls were made. The candidate awaits an independent audit; this status is
+not an audit approval.
+
+Prior R1 history below is preserved as historical evidence.
 
 ## Independent audit and remediation state
 

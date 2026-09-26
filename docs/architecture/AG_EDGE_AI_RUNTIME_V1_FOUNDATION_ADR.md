@@ -1,6 +1,6 @@
 # ADR: AG Edge + AI Runtime V1 foundation
 
-Status: BASELINE ACCEPTED / P0 AND P2 PASS / P1 R1 REMEDIATION IN PROGRESS
+Status: BASELINE ACCEPTED / R2 FOUNDATION CANDIDATE PENDING INDEPENDENT AUDIT
 Decision date: 2026-09-26
 
 ## Decision
@@ -58,19 +58,37 @@ are maintained in `docs/status/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_STATUS.md`.
 - `config/trading.yaml`: order check, order send, and live trading default disabled;
   manual trade management is also disabled by default.
 
+## R2 frozen data and authority flow
+
+The future sensing front end may use Python/MT5 or MQL5 fact indicators. Both producers
+must emit the same immutable, facts-only MarketState contract. That contract has no
+strategy, risk, owner, execution, or broker authority. The existing deterministic
+Strategy, Opportunity, ProposalEligibility, Risk, CanonicalProposal, OwnerDecision,
+ExecutionDecision, and gated execution subsystem remain the downstream authorities.
+Producer provenance remains serialized for traceability but does not change the semantic
+identity of otherwise equivalent market facts. These authorities are reused; this
+foundation does not redesign or expand them.
+
+AI belongs inside Owner Analysis, alongside MarketState, strategy evidence, risk
+snapshot, and CanonicalProposal. AI may explain and analyze, but has no broker,
+execution, or owner authority. Only the owner records the separate OwnerDecision.
+Broker mutation remains reachable only through the existing gated execution subsystem.
+No MQL5 producer, parity path, AI integration, or execution capability is implemented
+by this R2 candidate.
+
 ## Authority matrix
 
 | Component | Facts | Strategy decision | Risk decision | Owner decision | Broker mutation |
 |---|---:|---:|---:|---:|---:|
 | MT5 indicators (future) | emit only | No | No | No | No |
-| Owner Edge (future) | read/revalidate | no new decision | final guards only | consume/verify | gated, owner-confirmed only |
+| Owner Analysis (future) | read-only facts/evidence | No | No | owner records separately | No |
 | Strategy Core (future) | consume | deterministic only | No | No | No |
 | Risk Engine (future) | account/proposal | No | deterministic only | No | No |
 | Control API / AI-facing tools (future) | authorized views | No | No | authenticated record/proxy only | No |
 | Existing runtime (current authority) | as implemented | strategy engine | `execution/risk.py` | owner-decision boundary | existing gated gateways only |
 
-AI has zero broker authority. No automatic execution or authorization expansion is
-introduced by these contracts or shells.
+AI has zero broker, execution, and owner authority. No automatic execution or
+authorization expansion is introduced by these contracts or shells.
 
 ## Rollback and recovery
 
@@ -88,4 +106,6 @@ P3 or any runtime migration begins.
 
 The initial independent audit found two P1 contract gaps: MarketState's generic fact map
 did not enforce facts-only semantics, and Proposal construction did not require accepted
-eligibility. P1 is not frozen until the R1 remediation is independently re-audited.
+eligibility. R1 closed those gaps but its schema tables remained mutable. R2 freezes the
+schema itself and expands executable negative tests. R2 is not frozen until independent
+audit accepts its candidate.

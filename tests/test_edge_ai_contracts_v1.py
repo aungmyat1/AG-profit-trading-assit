@@ -88,6 +88,26 @@ def test_identity_and_nested_semantics_are_immutable():
         contract.facts["session"]["name"] = "ASIA"
 
 
+def test_market_state_schema_itself_cannot_be_extended_or_replaced():
+    with pytest.raises(TypeError):
+        MarketState._FACT_FIELDS["action"] = "string"
+    with pytest.raises(TypeError):
+        MarketState._NESTED_FACT_FIELDS["session"]["action"] = "string"
+    with pytest.raises(AttributeError, match="immutable MarketState schema"):
+        MarketState._FACT_FIELDS = {"action": "string"}
+    with pytest.raises(AttributeError, match="immutable MarketState schema"):
+        MarketState._NESTED_FACT_FIELDS = {"session": {"action": "string"}}
+
+
+def test_market_state_copies_input_before_freezing_nested_facts():
+    source = {"session": {"name": "LONDON"}, "liquidity": {"buy_side_level": 1.2}}
+    state = MarketState(**common(symbol="EURUSD", facts=source))
+    source["session"]["name"] = "ASIA"
+    source["liquidity"]["buy_side_level"] = 9.9
+    assert state.facts["session"]["name"] == "LONDON"
+    assert state.facts["liquidity"]["buy_side_level"] == 1.2
+
+
 def test_symbol_provenance_and_semantic_hash_are_validated():
     with pytest.raises(ContractError, match="requires symbol"):
         MarketState(**common(facts={}))
@@ -181,6 +201,16 @@ def test_proposal_rejects_tampered_eligibility_identity_on_deserialization():
     {"structure": {"nested": {"signal": "SELL"}}},
     {"freshness": {"trade_signal": "BUY"}},
     {"structure": {"trend_state": "BUY"}},
+    {"metadata": {"action": "SELL"}}, {"extras": {"execute": True}},
+    {"attributes": {"owner_confirmed": True}}, {"payload": {"order_type": "BUY"}},
+    {"context": {"position_size": 1}}, {"tags": ["CONFIRM"]},
+    {"custom": {"lot_size": 0.1}}, {"extension": {"stop_loss": 1.0}},
+    {"session": {"name": "LONDON", "metadata": {"action": "SELL"}}},
+    {"provenance": {"provider": "feed-a", "custom": {"execute": True}}},
+    {"action": "SELL"}, {"execute": True}, {"owner_confirmed": True},
+    {"order_type": "BUY"},
+    {"position_size": 1}, {"lot_size": 0.1}, {"risk_percent": 1.0},
+    {"stop_loss": 1.0}, {"take_profit": 2.0},
 ])
 def test_market_state_cannot_encode_decision_or_execution_authority(facts):
     with pytest.raises(ContractError, match="unsupported MarketState fact field|invalid for"):
@@ -200,3 +230,46 @@ def test_market_state_allows_only_typed_observable_fact_categories():
     assert state.facts["session"]["name"] == "LONDON"
     with pytest.raises(ContractError, match="unsupported MarketState fact field"):
         MarketState(**common(symbol="EURUSD", facts={"custom": {"price": 1.0}}))
+
+
+def test_market_state_has_distinct_source_observation_and_creation_times():
+    state = MarketState(**common(symbol="EURUSD", facts={
+        "source_timestamp": "2026-09-26T11:59:58Z",
+        "observed_at": "2026-09-26T12:00:00Z",
+        "freshness": {"as_of": "2026-09-26T12:00:00Z", "age_seconds": 2.0},
+    }))
+    assert state.facts["source_timestamp"] == "2026-09-26T11:59:58Z"
+    assert state.facts["observed_at"] == "2026-09-26T12:00:00Z"
+    assert state.created_at == "2026-09-26T12:00:00.000000Z"
+    with pytest.raises(ContractError, match="invalid for timestamp"):
+        MarketState(**common(symbol="EURUSD", facts={"source_timestamp": "not-a-time"}))
+
+
+def test_market_state_accepts_producer_neutral_factual_inputs():
+    facts = {
+        "source_timestamp": "2026-09-26T11:59:58Z",
+        "observed_at": "2026-09-26T12:00:00Z",
+        "bid": 1.1, "ask": 1.1002,
+        "structure": {"trend_state": "BULLISH"},
+    }
+    python_state = MarketState(**common(
+        source="python.mt5", symbol="EURUSD",
+        facts={**facts, "provenance": {"provider": "python.mt5", "feed": "terminal"}},
+    ))
+    mql5_state = MarketState(**common(
+        source="mql5.indicators", symbol="EURUSD",
+        facts={**facts, "provenance": {"provider": "mql5.indicators", "feed": "terminal"}},
+    ))
+    assert python_state.facts != mql5_state.facts
+    assert python_state.semantic_hash == mql5_state.semantic_hash
+
+
+def test_market_state_serialization_and_identity_ignore_fact_order():
+    left = MarketState(**common(symbol="EURUSD", facts={
+        "spread": 0.8, "structure": {"trend_state": "BULLISH", "swing_high": 1.2},
+    }))
+    right = MarketState(**common(symbol="EURUSD", facts={
+        "structure": {"swing_high": 1.2, "trend_state": "BULLISH"}, "spread": 0.8,
+    }))
+    assert left.to_json() == right.to_json()
+    assert left.semantic_hash == right.semantic_hash
