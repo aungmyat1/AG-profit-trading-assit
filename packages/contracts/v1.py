@@ -75,7 +75,12 @@ def _identifier(name: str, value: str) -> None:
 
 
 class _MarketStateSchemaMeta(type):
-    """Prevent runtime replacement of the closed MarketState schema."""
+    """Keep the canonical MarketState schema from gaining subclass authorities."""
+
+    def __new__(mcls, name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any):
+        if any(isinstance(base, _MarketStateSchemaMeta) for base in bases):
+            raise TypeError("MarketState is final; its factual schema cannot be subclassed")
+        return super().__new__(mcls, name, bases, namespace, **kwargs)
 
     def __setattr__(cls, name: str, value: Any) -> None:
         if name in {"_FACT_FIELDS", "_NESTED_FACT_FIELDS"} and hasattr(cls, name):
@@ -157,6 +162,7 @@ class Contract:
 
 @dataclass(frozen=True, kw_only=True)
 class MarketState(Contract, metaclass=_MarketStateSchemaMeta):
+    """Canonical immutable factual state. Subclassing would create a second schema authority."""
     facts: Mapping[str, Any]
     KIND: ClassVar[str] = "MarketState"
     _FACT_FIELDS: ClassVar[Mapping[str, str]] = MappingProxyType({

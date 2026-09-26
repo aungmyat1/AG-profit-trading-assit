@@ -39,6 +39,31 @@ integration, or execution implementation is part of this candidate.
 
 The exact checks on Windows were:
 
+## R2.1 remediation — 2026-09-26
+
+```text
+MISSION = AG_EDGE_AI_RUNTIME_V1_FOUNDATION_R2_1_REMEDIATION
+BASE_CANDIDATE_SHA = b0792ba3706ebe715416a96ce494992e39ba1efc
+R2_1_CLASSIFICATION = FOUNDATION_R2_1_READY_FOR_INDEPENDENT_REAUDIT
+IMPLEMENTATION = MarketState is runtime-final; subclass creation is rejected
+SCHEMA_AUTHORITY = canonical positive allowlist; immutable mappings; recursive fact freezing
+SUBCLASS_EXPANSION = REJECTED
+SUBCLASS_REPLACEMENT = REJECTED
+PROTECTED_RUNTIME_CHANGED = NO
+BROKER_MUTATION = ZERO
+CONTRACT_TESTS = 84 passed
+ARCHITECTURE_TESTS = 5 passed
+COMBINED_TESTS = 89 passed
+INDEPENDENT_REAUDIT_REQUIRED = YES
+```
+
+The independent R2 audit's subclass schema-expansion bypass was reproduced before the
+change. `MarketState` now rejects every subclass at class creation, so neither schema
+extension nor full schema replacement can create an alternate contract authority. The
+allowlist, nested allowlists, recursive instance freezing, and canonical factual
+vocabulary remain unchanged. The R2.1 candidate commit and exact validation record are
+maintained in Git history; no broker calls or mutations were made.
+
 | Gate | Command | Result |
 |---|---|---|
 | Focused contract suite | `python -m pytest -q tests/test_edge_ai_contracts_v1.py` | PASS, 69 passed |

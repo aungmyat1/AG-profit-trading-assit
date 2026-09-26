@@ -107,5 +107,9 @@ P3 or any runtime migration begins.
 The initial independent audit found two P1 contract gaps: MarketState's generic fact map
 did not enforce facts-only semantics, and Proposal construction did not require accepted
 eligibility. R1 closed those gaps but its schema tables remained mutable. R2 freezes the
-schema itself and expands executable negative tests. R2 is not frozen until independent
-audit accepts its candidate.
+schema itself and expands executable negative tests. The independent R2 audit then showed
+that a subclass could replace the validator's schema authority. R2.1 makes canonical
+`MarketState` runtime-final: the metaclass rejects subclass creation before an alternate
+schema can be installed. Together with immutable canonical schema mappings and recursive
+fact freezing, the positive allowlist remains the only accepted vocabulary. R2.1 remains
+a candidate pending independent re-audit.

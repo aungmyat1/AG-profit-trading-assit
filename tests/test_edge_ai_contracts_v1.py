@@ -99,6 +99,39 @@ def test_market_state_schema_itself_cannot_be_extended_or_replaced():
         MarketState._NESTED_FACT_FIELDS = {"session": {"action": "string"}}
 
 
+@pytest.mark.parametrize("replacement", [
+    {**MarketState._FACT_FIELDS, "action": "string"},
+    {"action": "string"},
+])
+def test_market_state_subclasses_cannot_expand_or_replace_canonical_schema(replacement):
+    with pytest.raises(TypeError, match="MarketState is final"):
+        class ExtendedMarketState(MarketState):
+            _FACT_FIELDS = replacement
+
+
+@pytest.mark.parametrize("field", [
+    "desired_position", "trade_instruction", "broker_intent",
+    "execution_intent", "owner_authorization", "target_lot",
+])
+def test_market_state_rejects_noncanonical_authority_aliases(field):
+    with pytest.raises(ContractError, match="unsupported MarketState fact field"):
+        MarketState(**common(symbol="EURUSD", facts={field: "BUY"}))
+
+
+@pytest.mark.parametrize("facts", [
+    {"market_metadata": {"action": "BUY"}},
+    {"session": {"name": "LONDON", "desired_position": "LONG"}},
+    {"structure": {"trend_state": "BULLISH", "execution_intent": "BUY"}},
+    {"liquidity": {"buy_side_level": 1.2, "broker_intent": "SELL"}},
+    {"sweep": {"detected": True, "owner_authorization": True}},
+    {"freshness": {"is_fresh": True, "trade_instruction": "BUY"}},
+    {"provenance": {"provider": "feed-a", "target_lot": 0.1}},
+])
+def test_market_state_rejects_authority_smuggling_in_supported_nested_structures(facts):
+    with pytest.raises(ContractError, match="unsupported MarketState fact field"):
+        MarketState(**common(symbol="EURUSD", facts=facts))
+
+
 def test_market_state_copies_input_before_freezing_nested_facts():
     source = {"session": {"name": "LONDON"}, "liquidity": {"buy_side_level": 1.2}}
     state = MarketState(**common(symbol="EURUSD", facts=source))
