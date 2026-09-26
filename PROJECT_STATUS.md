@@ -4,6 +4,22 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Canonical Proposal Orchestration Bridge R1.1 (2026-09-27, ready for independent re-audit)
+
+R1.1 closes the audited orchestration trust-boundary findings in a bounded candidate:
+the sole public production entrypoint owns actual eligibility evaluation, has no
+eligibility or market-mode override, binds candidate provenance to its snapshot before
+risk and formation, applies the mandatory REAL formation gate, and persists successful
+READY proposals through an explicit default `ProposalLedger`. The accepted main
+composition is exercised through a test double at the external market-truth boundary;
+its synthetic candle values are not REAL MT5 evidence. R1's forged-eligibility attack
+was reproduced separately (one risk call, then blocked formation). R1.1 adversarial,
+bridge, and bounded regression selections pass 19/19, 206/206, and 155/155 respectively.
+No Foundation, MarketState schema, strategy, execution authority, or broker gate changed.
+No MT5 connection or broker calls were made. Classification is
+`ORCHESTRATION_BRIDGE_R1_1_READY_FOR_INDEPENDENT_REAUDIT`, not live verified. See
+[`docs/status/AG_CANONICAL_PROPOSAL_ORCHESTRATION_BRIDGE_R1_1_STATUS.md`](docs/status/AG_CANONICAL_PROPOSAL_ORCHESTRATION_BRIDGE_R1_1_STATUS.md).
+
 ## Canonical Proposal Orchestration Bridge R1 (2026-09-27, unit-tested candidate)
 
 Added a separate proposal-only entrypoint for canonical immutable `MarketState` plus

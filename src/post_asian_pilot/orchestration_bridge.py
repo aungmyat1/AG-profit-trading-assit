@@ -110,14 +110,12 @@ def _evaluate_strategy_decision(
     return pilot, strategy, decision
 
 
-def evaluate_opportunity_eligibility(
+def _evaluate_opportunity_eligibility(
     state: MarketState, candles: Sequence[Candle], snapshot: MarketSnapshot,
     trading_date: dt.date, evaluation_time: dt.datetime, *, venue: str,
-    market_data_mode: str = MARKET_DATA_MODE_REAL,
 ):
     """PRODUCTION PRE-ELIGIBILITY: strategy -> candidate -> REAL evaluator."""
-    if market_data_mode != snapshot.market_data_mode:
-        raise MarketStateLineageError("event market-data mode does not match MarketSnapshot")
+    _validate_marketstate(state, snapshot, candles)
     pilot, strategy, decision = _evaluate_strategy_decision(state, candles, snapshot, trading_date, evaluation_time)
     if decision.status != STATUS_READY:
         return pilot, strategy, decision, None, None
@@ -127,7 +125,7 @@ def evaluate_opportunity_eligibility(
         event_type="BAR_CLOSE", symbol=state.symbol, market="FX", venue=venue,
         timeframe=snapshot.timeframe, bar_open_time=snapshot.bar_open_time,
         bar_close_time=snapshot.bar_close_time, market_data_asof=snapshot.market_data_asof,
-        market_data_mode=market_data_mode, snapshot_fingerprint=snapshot.fingerprint,
+        market_data_mode=snapshot.market_data_mode, snapshot_fingerprint=snapshot.fingerprint,
         source=snapshot.source,
     )
     candidate, _ = evaluate_funnel(
@@ -138,15 +136,27 @@ def evaluate_opportunity_eligibility(
     return pilot, strategy, decision, candidate, eligibility
 
 
-def build_eligible_canonical_proposal(
+def _validate_candidate_snapshot(candidate, snapshot: MarketSnapshot) -> None:
+    """Require candidate provenance to agree before Risk and again before formation."""
+    if candidate.symbol != snapshot.symbol:
+        raise MarketStateLineageError("Opportunity candidate symbol does not match MarketSnapshot")
+    if candidate.market_data_mode != snapshot.market_data_mode:
+        raise MarketStateLineageError("Opportunity candidate mode does not match MarketSnapshot")
+    if candidate.data_lineage != snapshot.fingerprint:
+        raise MarketStateLineageError("Opportunity candidate fingerprint does not match MarketSnapshot")
+    if candidate.last_evaluated_at != snapshot.market_data_asof:
+        raise MarketStateLineageError("Opportunity candidate as-of does not match MarketSnapshot")
+
+
+def _build_after_accepted_eligibility(
     candidate, eligibility: ProposalEligibilityDecision, decision: PostAsianDecision,
     strategy, *, equity: float, symbol_meta: SymbolMeta, risk_per_trade_pct: float,
     snapshot: MarketSnapshot, marketstate_event_id: str, marketstate_semantic_hash: str,
 ) -> tuple[Optional[CanonicalProposal], Optional[str]]:
-    """Typed post-eligibility boundary, reusable by production after evaluator only.
+    """Private typed post-eligibility boundary, called only after evaluator acceptance.
 
-    This helper intentionally does not decide eligibility. Its production caller is
-    evaluate_marketstate_to_proposal(), which supplies the real evaluator result.
+    Tests may call this seam with an explicit accepted eligibility fixture. The sole
+    production entrypoint owns evaluator invocation and does not accept eligibility.
     """
     if not isinstance(eligibility, ProposalEligibilityDecision):
         raise TypeError("typed ProposalEligibilityDecision required")
@@ -154,6 +164,20 @@ def build_eligible_canonical_proposal(
         return None, "ELIGIBILITY_NOT_ACCEPTED_FOR_CANDIDATE"
     if decision.status != STATUS_READY:
         return None, "STRATEGY_DECISION_NOT_READY"
+    if (
+        candidate.strategy_id != decision.strategy_id
+        or candidate.strategy_version != decision.strategy_version
+        or candidate.symbol != decision.symbol
+        or strategy.strategy_id != decision.strategy_id
+        or strategy.version != decision.strategy_version
+        or decision.signal is None
+        or candidate.geometry is None
+        or candidate.geometry.direction != decision.signal.direction
+        or candidate.geometry.entry != decision.signal.entry
+        or candidate.geometry.invalidation != decision.signal.stop_loss
+    ):
+        return None, "OPPORTUNITY_STRATEGY_LINEAGE_MISMATCH"
+    _validate_candidate_snapshot(candidate, snapshot)
     risk_result = build_entry_proposal(
         decision, strategy, equity, symbol_meta, risk_per_trade_pct,
         decision.session_snapshot_id or "", now=eligibility.evaluated_at,
@@ -174,6 +198,8 @@ def build_eligible_canonical_proposal(
         "fx_trade_proposal_id": trade.setup_id,
     }
     proposal = to_canonical_proposal(candidate, eligibility)
+    if proposal.data_provenance.market_data_mode != candidate.market_data_mode:
+        return None, "CANONICAL_PROVENANCE_MISMATCH"
     proposal = dataclasses.replace(
         proposal,
         targets=tuple(v for v in (trade.tp1, trade.tp2) if v is not None),
@@ -182,6 +208,13 @@ def build_eligible_canonical_proposal(
                         "marketstate_event_id": marketstate_event_id},
     )
     proposal = apply_formation_gate(proposal, snapshot)
+    if (
+        proposal.data_provenance.market_data_mode != candidate.market_data_mode
+        or proposal.data_provenance.market_data_mode != snapshot.market_data_mode
+        or proposal.data_provenance.market_data_fingerprint != snapshot.fingerprint
+        or proposal.data_provenance.market_data_asof != snapshot.market_data_asof.isoformat()
+    ):
+        return proposal, "FORMATION_PROVENANCE_MISMATCH"
     if proposal.proposal_state != PROPOSAL_READY:
         return proposal, "CANONICAL_FORMATION_REJECTED"
     return proposal, None
@@ -192,8 +225,8 @@ def evaluate_marketstate_to_proposal(
     trading_date: dt.date, evaluation_time: dt.datetime, *, venue: str, equity: float,
     symbol_meta: SymbolMeta, proposal_ledger: Optional[ProposalLedger] = None,
 ) -> OrchestrationResult:
-    """Full production composition; persistence uses only the existing ledger."""
-    pilot, strategy, decision, candidate, eligibility = evaluate_opportunity_eligibility(
+    """Full production composition; accepted READY proposals persist to the ledger."""
+    pilot, strategy, decision, candidate, eligibility = _evaluate_opportunity_eligibility(
         state, candles, snapshot, trading_date, evaluation_time, venue=venue,
     )
     if candidate is None or eligibility is None:
@@ -203,15 +236,14 @@ def evaluate_marketstate_to_proposal(
     authority = resolve_strategy_authority(
         STRATEGY_ID, strategy.version, strategy_config_path=pilot.strategy_source_path,
     )
-    proposal, reason = build_eligible_canonical_proposal(
+    proposal, reason = _build_after_accepted_eligibility(
         candidate, eligibility, decision, strategy, equity=equity, symbol_meta=symbol_meta,
         risk_per_trade_pct=pilot.risk_per_trade_pct, snapshot=snapshot,
         marketstate_event_id=state.event_id,
         marketstate_semantic_hash=state.semantic_hash,
-        apply_real_formation_gate=True,
     )
-    if proposal is None:
-        return OrchestrationResult(decision, candidate, eligibility, 1, None, None, reason)
+    if proposal is None or proposal.proposal_state != PROPOSAL_READY:
+        return OrchestrationResult(decision, candidate, eligibility, 1, proposal, None, reason)
     proposal = dataclasses.replace(proposal, setup_evidence={
         **proposal.setup_evidence,
         "strategy_lifecycle_authority": authority.lifecycle_stage,
@@ -219,5 +251,6 @@ def evaluate_marketstate_to_proposal(
         "marketstate_source": snapshot.source,
         "marketstate_source_timestamp": str(state.facts.get("source_timestamp") or state.created_at),
     })
-    persisted = proposal_ledger.record_proposal(proposal) if proposal_ledger is not None else None
+    ledger = proposal_ledger if proposal_ledger is not None else ProposalLedger()
+    persisted = ledger.record_proposal(proposal)
     return OrchestrationResult(decision, candidate, eligibility, 1, proposal, persisted)

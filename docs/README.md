@@ -34,6 +34,10 @@ and the remaining lifecycle and campaign boundaries.
 
 ## Start here
 
+The [Canonical Proposal Orchestration Bridge R1.1 status](status/AG_CANONICAL_PROPOSAL_ORCHESTRATION_BRIDGE_R1_1_STATUS.md)
+records the bounded remediation, reproduced R1 trust-boundary findings, R1.1 test
+evidence, and independent re-audit handoff.
+
 The [Canonical Proposal Orchestration Bridge R1 status](status/AG_CANONICAL_PROPOSAL_ORCHESTRATION_BRIDGE_R1_STATUS.md)
 records the unit-tested Strategy → Opportunity → real eligibility → FX risk → canonical
 proposal path and the deferred REAL-MT5 persistence/readback proof.
