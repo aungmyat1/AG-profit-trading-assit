@@ -1,41 +1,56 @@
-# AG Edge + AI Runtime V1 — Implementation Plan
+# AG Edge + AI Runtime V1 — Architecture & Implementation Roadmap
 
-Status: PLANNED / NOT AUTHORIZED FOR EXECUTION CHANGES  
+Status: ACTIVE ROADMAP — FOUNDATION REMEDIATION REQUIRED  
 Planning branch: `plan/edge-ai-runtime-v1`  
-Planning baseline: `1a8e7c5d922ba48423dca1b7858f8895afe0d66f`  
-Baseline tree: `53b54053283f58fe7f34a898808212275c725768`
+Owner-selected migration baseline: `1a8e7c5d922ba48423dca1b7858f8895afe0d66f`  
+Baseline tree: `53b54053283f58fe7f34a898808212275c725768`  
+Foundation candidate: `59701c4be377ab7b4bba4d9ebcd0f58ca88deaaa` (local candidate; independent audit FAIL)  
+Current gate: `P1-R1 CONTRACT INVARIANT REMEDIATION`
 
 ## 1. Objective
 
-Restructure AG Profit Trading so the owner PC is a lightweight trusted trading edge:
+Restructure AG Profit Trading so the owner PC becomes a lightweight trusted trading edge while research, development, and AI analysis can run outside the broker-execution boundary.
 
 ```text
-MT5 indicators -> Owner Edge Agent -> deterministic strategy/funnel -> Control API
-                                                        |
-                                                ChatGPT / Claude
-                                                        |
-                                                      Owner
-                                                        |
-                                               explicit confirmation
-                                                        |
-                                            Owner Edge Agent -> MT5
+DEVELOPMENT / RESEARCH / AI
+ChatGPT • Claude • Codex
+          |
+          | analysis / coding / audit
+          v
+     CONTROL API
+market state / opportunities / proposals / audit
+          |
+          | narrow contracts/events
+          v
++---------------- OWNER PC ----------------+
+|                                          |
+| MT5 + indicators <-> AG Owner Edge Agent |
+|       |                    |             |
+|  market facts         account safety     |
+|                       reconciliation     |
+|                       gated execution    |
++------------------------------------------+
+          ^
+          |
+   EXPLICIT OWNER CONFIRM
 ```
 
-The migration is architectural, not a rewrite. Existing proposal, owner-decision, risk, execution containment, account guards, idempotency, reconciliation, and authorization behavior remain authoritative until a replacement component proves deterministic parity and receives independent review.
+This is an architectural migration, not a rewrite. Existing proposal, owner-decision, risk, containment, account guards, idempotency, reconciliation, and authorization behavior remain authoritative until replacement components prove parity and receive independent review.
 
-## 2. Non-negotiable invariants
+## 2. Non-negotiable authority rules
 
 - AI has zero broker execution authority.
 - Only the local Owner Edge Agent may ultimately reach MT5 `order_check` / `order_send` for new orders.
-- Indicators emit market facts only; never `BUY`, `SELL`, volume, risk approval, or execution commands.
-- Opportunity and Proposal remain separate funnel states.
+- MT5 indicators emit deterministic market facts only; never BUY/SELL recommendations, approved volume, risk approval, owner approval, or execution commands.
+- `Opportunity` and `Proposal` are different states.
+- A rejected `ProposalEligibilityDecision` cannot produce an executable `Proposal`.
 - No automatic execution.
-- No live authorization expansion.
-- No Demo authorization expansion as part of restructuring.
+- No Live authorization expansion.
+- No Demo authorization expansion merely because of restructuring.
 - No strategy semantic change disguised as architecture work.
 - No risk-policy change disguised as architecture work.
-- Historical replay, backtests, optimization, and Virtual Demo are not production-runtime dependencies.
-- Existing runtime is not deleted until replacement parity and rollback evidence exist.
+- Research/backtest/replay/optimization workloads are not production-runtime dependencies.
+- Existing runtime is not removed until replacement parity and rollback evidence exist.
 - One writer per branch/worktree; immutable baselines; bounded work packages; independent audit at security-sensitive gates.
 
 ## 3. Target repository architecture
@@ -44,7 +59,7 @@ The migration is architectural, not a rewrite. Existing proposal, owner-decision
 apps/
   control-api/
   owner-edge/
-  web/                    # optional operational/debug UI
+  web/                    # optional operations/debug UI
 
 packages/
   contracts/
@@ -72,173 +87,217 @@ tests/
 docs/
 ```
 
-The existing `src/`, `scripts/`, and `web/` runtime remain intact during the foundation phases. Migration is adapter-first, then parity-proven replacement.
+During migration, existing `src/`, `scripts/`, and `web/` production runtime remain intact. Migration is adapter-first and parity-gated.
 
-## 4. Canonical contracts
-
-Freeze these before moving implementation:
+## 4. Canonical state pipeline
 
 ```text
 MarketState
-  -> Opportunity
-  -> ProposalEligibilityDecision
-  -> Proposal
-  -> OwnerDecision
-  -> ExecutionRequest
-  -> ExecutionResult
+    -> Strategy
+    -> Opportunity
+    -> ProposalEligibilityDecision
+         |-- REJECTED -> STOP / retain audit evidence
+         `-- ACCEPTED -> Proposal
+                           -> OwnerDecision
+                           -> ExecutionRequest
+                           -> ExecutionResult
 ```
 
 Supporting contract: `AccountState`.
 
-Every applicable contract must carry stable identity/provenance fields such as:
+Every applicable contract carries stable identity/provenance such as `schema_version`, `event_id`, `created_at`, `symbol`, `source`, `correlation_id`, and `semantic_hash`.
 
-- `schema_version`
-- `event_id`
-- `created_at`
-- `symbol`
-- `source`
-- `correlation_id`
-- `semantic_hash`
+### MarketState closed-schema rule
 
-Contracts must be deterministic, serializable, versioned, fail-closed on malformed/non-finite values, and independently testable.
+`MarketState` must use an explicit typed/allowlisted facts schema. Arbitrary key/value maps must not be able to encode action or approval semantics such as `recommendation=BUY`, `action=ENTER`, `risk_approved=true`, or equivalent variants.
+
+### Proposal eligibility binding rule
+
+A `Proposal` must be cryptographically/deterministically bound to the exact ACCEPTED eligibility decision for the same Opportunity. Rejected, mismatched, or tampered eligibility identity must make Proposal construction fail closed.
 
 ## 5. Runtime authority matrix
 
-| Component | Read market/account | Evaluate strategy | Evaluate risk | Record owner decision | Broker mutation |
+| Component | Read market/account | Strategy evaluation | Risk evaluation | Owner decision | Broker mutation |
 |---|---:|---:|---:|---:|---:|
 | MT5 indicators | YES | NO | NO | NO | NO |
-| Owner Edge Agent | YES | NO* | final safety revalidation only | consume/verify | YES, gated |
+| Owner Edge Agent | YES | verify only | final safety revalidation | consume/verify | YES, later gated |
 | Strategy Core | facts only | YES | NO | NO | NO |
-| Risk Engine | account/proposal | NO | YES | NO | NO |
-| Control API | persisted state | NO | NO | YES | NO |
-| ChatGPT / Claude | authorized API views | advisory only | advisory explanation only | proxy explicit owner action only | NO |
-| Research | historical/replay data | YES | research only | NO | NO |
+| Risk Engine | account/proposal context | NO | YES | NO | NO |
+| Control API | persisted state | NO | NO | record explicit action | NO |
+| ChatGPT / Claude | authorized views | advisory | advisory explanation | proxy explicit owner action only | NO |
+| Research | historical/replay | research | research | NO | NO |
 
-`*` Edge may verify frozen decision identity/contract invariants but must not invent a new strategy decision.
+## 6. Current verified status
 
-## 6. Phase sequence
+### P0 — Migration baseline freeze: PASS
 
-### P0 — Migration baseline freeze
+Owner selected merged baseline `1a8e7c5d922ba48423dca1b7858f8895afe0d66f`. Gate-2 R3 remains a separate lineage.
 
-Do not assume this planning branch is the final implementation baseline. Before implementation, reconcile the latest accepted Gate-2 state and explicitly select the migration base SHA.
+### P1 — Contracts V1: REMEDIATION REQUIRED
 
-Record:
-- base commit and tree hash;
-- baseline tests and known failures;
-- environment-only failures;
-- strategy registry state;
-- Demo/Live authorization state;
-- known broker mutation surfaces;
-- owner-decision and execution route identities.
+Foundation candidate `59701c4...` passed serialization, hashing, immutability, schema, timezone, and finite-value inspection, but independent audit found two HIGH contract gaps:
 
-Exit: `ARCH_BASELINE_FROZEN = PASS`.
+- `F-01`: MarketState generic facts can encode action-like semantics (for example `recommendation=BUY`).
+- `F-02`: Proposal can be constructed even when eligibility for the same Opportunity is rejected.
 
-### P1 — Contracts V1
+Therefore `CONTRACTS_V1_FROZEN = NO` until P1-R1 remediation passes independent re-audit.
 
-Create `packages/contracts/` with versioned schemas for MarketState, Opportunity, ProposalEligibilityDecision, Proposal, OwnerDecision, ExecutionRequest, ExecutionResult, AccountState, and semantic errors.
+### P2 — Architecture shell: PASS AS CANDIDATE
 
-Required tests:
-- serialization round-trip;
-- deterministic semantic hash;
-- non-finite rejection;
-- symbol/source mismatch rejection where relevant;
-- immutable identity fields;
-- schema-version rejection/compatibility behavior;
-- timestamp/freshness primitives.
+Independent audit found the candidate correctly based on the selected baseline, with protected runtime unchanged and no new broker/authorization path. This remains part of the candidate and becomes frozen only when the Foundation as a whole passes re-audit.
 
-Exit: `CONTRACTS_V1_FROZEN = PASS`.
+### Reproduced candidate validation
 
-### P2 — Architecture shell
+- 33 new tests passed.
+- 58 focused regression tests passed.
+- 247 broader owner-decision/execution tests passed.
+- Broker-call delta: 0.
+- New broker mutation surfaces: 0.
+- Strategy semantic delta: 0.
+- Risk-policy delta: 0.
+- Authorization delta: 0.
+- Demo authorization expansion: NO.
+- Live authorization expansion: NO.
+- AI-to-broker path introduced: NONE.
+- Full backend suite: not required/run for this audit; known broad-suite/environment failures remain separate.
 
-Create the target directory shell without moving/deleting the existing runtime. Add import/dependency boundary tests so broker libraries cannot leak into AI/control/strategy packages.
+Current classification:
 
-Exit:
-- `NEW_ARCH_SHELL_READY = PASS`
-- `OLD_RUNTIME_UNCHANGED = PASS`
-- `BROKER_CALL_DELTA = 0`
-- `AUTHORIZATION_DELTA = 0`
+```text
+P0 = PASS
+P1 = REMEDIATION_R1
+P2 = PASS_AS_CANDIDATE
+FOUNDATION_FROZEN = NO
+CURRENT_GATE = P1_R1_CONTRACT_INVARIANT_REMEDIATION
+```
 
-### P3 — MT5 MarketState pilot
+## 7. Immediate mission — P1-R1 Contract Invariant Remediation
 
-Scope: EURUSD only; closed-bar facts; one selected strategy's minimum feature set.
+Do not start P3 or P5 yet.
+
+### F-01 remediation
+
+Replace/constrain unrestricted MarketState generic facts with an explicit closed typed/allowlisted schema. Do not solve this with an ever-growing blacklist. Add adversarial negative tests for action, recommendation, signal, execution, order, owner approval, and risk approval semantics including nested/alternate representations where supported.
+
+Exit requirements:
+
+```text
+MARKET_STATE_FACT_SCHEMA = CLOSED
+MARKET_STATE_EXECUTION_AUTHORITY = NONE
+```
+
+### F-02 remediation
+
+Bind Proposal creation to an immutable ACCEPTED `ProposalEligibilityDecision` for the same Opportunity. Proposal must preserve eligibility identity/hash through serialization and semantic hashing.
+
+Required cases:
+
+- ACCEPTED + matching Opportunity -> Proposal construction PASS.
+- REJECTED -> Proposal construction FAIL.
+- ACCEPTED for different Opportunity -> FAIL.
+- tampered eligibility identity/hash -> FAIL.
+
+Exit requirements:
+
+```text
+FUNNEL_SEPARATION = PASS
+REJECTED_ELIGIBILITY_TO_PROPOSAL = IMPOSSIBLE
+```
+
+After local remediation commit, stop for `INDEPENDENT_FOUNDATION_R1_REAUDIT`.
+
+## 8. Foundation freeze gate
+
+Foundation may freeze only when the independent R1 re-audit verifies:
+
+```text
+P0_ARCH_BASELINE_FROZEN = PASS
+P1_CONTRACTS_V1_FROZEN = PASS
+P2_NEW_ARCH_SHELL_READY = PASS
+OLD_RUNTIME_UNCHANGED = PASS
+BROKER_CALL_DELTA = 0
+NEW_BROKER_MUTATION_SURFACES = 0
+STRATEGY_SEMANTIC_DELTA = 0
+RISK_POLICY_DELTA = 0
+AUTHORIZATION_DELTA = 0
+DEMO_AUTHORIZATION_EXPANSION = NO
+LIVE_AUTHORIZATION_EXPANSION = NO
+MARKET_STATE_EXECUTION_AUTHORITY = NONE
+FUNNEL_SEPARATION = PASS
+```
+
+## 9. P3 — MT5 MarketState pilot
+
+Starts only after Foundation freeze.
+
+Scope: EURUSD only; closed-bar facts; minimum feature set required by one frozen vertical-slice strategy.
 
 Implement incrementally:
+
 - `AG_SessionLevels.mq5`
 - `AG_MarketStructure.mq5`
 - `AG_Liquidity.mq5`
 - `AG_SweepDetector.mq5`
 - `AG_MarketState.mq5`
 
-Optional FVG component only when required by the frozen vertical-slice strategy.
+FVG is optional and added only if required by the selected strategy.
 
-Indicators emit facts only. No order functions, risk sizing, strategy authorization, or trade direction commands.
+No order functions, risk sizing, strategy authorization, BUY/SELL recommendation, or trade execution semantics.
 
 Exit: `MT5_MARKET_STATE_EURUSD_READY = PASS`.
 
-### P4 — Python/MQL5 deterministic parity
+## 10. P4 — Python/MQL5 deterministic parity
 
-Feed identical closed candle blocks to the canonical Python implementation and MQL5 implementation. Compare session levels, structure, sweep/liquidity facts, timestamps, and required strategy features.
+Feed identical closed candle blocks to canonical Python and MQL5 implementations and compare session levels, structure, liquidity/sweep facts, timestamps, and required features.
 
-Test boundaries:
-- session edges;
-- DST;
-- weekend gaps;
-- missing bars;
-- reconnect/restart;
-- current/partial bar exclusion;
-- symbol metadata/suffix handling;
-- stale data.
+Boundary tests include session edges, DST, weekend gaps, missing bars, restart/reconnect, partial-bar exclusion, symbol suffix/metadata, and stale data.
 
-Fail closed on semantic differences. Python remains canonical until parity is frozen.
+Python remains canonical until parity is frozen.
 
 Exit: `MARKET_STATE_PARITY = PASS`.
 
-### P5 — Read-only Owner Edge Agent
+## 11. P5 — Read-only Owner Edge Agent
 
-Create `apps/owner-edge/` and migrate/adapt existing MT5 connection/account/symbol/deal/time capabilities behind a narrow interface. Initial mode is read-only.
+May begin in parallel with P3/P4 only after Foundation freeze.
 
-Target submodules:
-- `mt5_bridge/`
-- `market_state/`
-- `execution/`
-- `safety/`
-- `transport/`
+Create/adapt `apps/owner-edge/` around narrow read-only MT5 interfaces for connection, account state, symbols, positions/deals, broker time, MarketState transport, and local safety state.
 
-No order submission is enabled in P5.
+P5 MUST NOT enable new-order submission.
 
 Exit: `EDGE_AGENT_READ_ONLY_READY = PASS`.
 
-### P6 — Strategy Core extraction
+## 12. P6 — Strategy Core
 
-Extract/adapt one strategy only into deterministic `packages/strategy-core/` + a self-contained strategy package. Input is MarketState; output is Opportunity/NoOpportunity with reason codes. No broker/account mutation access.
+Extract one strategy only. Input is normalized MarketState; output is Opportunity/NoOpportunity plus deterministic reason codes. Strategy Core has no broker/account mutation access.
 
 Exit: `ONE_STRATEGY_MARKETSTATE_PARITY = PASS`.
 
-### P7 — Funnel preservation
+## 13. P7 — Opportunity/Proposal funnel
 
 Preserve:
 
 ```text
-MarketState -> Strategy -> Opportunity -> ProposalEligibilityDecision -> Proposal
+MarketState -> Strategy -> Opportunity -> ProposalEligibilityDecision
+                                          | rejected -> STOP
+                                          ` accepted -> Proposal
 ```
 
-A blocked setup remains an Opportunity plus a rejected eligibility decision; it is not an executable Proposal.
+A rejected setup remains an Opportunity with rejection/audit evidence; it is not a Proposal.
 
 Exit: `FUNNEL_SEMANTIC_PARITY = PASS`.
 
-### P8 — Risk Engine extraction
+## 14. P8 — Risk Engine
 
-Centralize stop geometry, finite-value validation, pilot risk policy, aggregate open-risk policy, volume calculation, broker metadata consistency, and risk reason codes.
-
-Inputs include ProposalCandidate/Opportunity context, AccountState, StrategyPolicy, PilotPolicy, and BrokerMetadata. Output is deterministic RiskDecision / eligibility evidence.
+Only after P6/P7 semantics are stable. Centralize stop geometry, finite values, pilot risk policy, aggregate open-risk policy, volume calculation, broker metadata consistency, and deterministic reason codes.
 
 Exit: `RISK_ENGINE_PARITY = PASS`.
 
-### P9 — Lightweight Control API
+## 15. P9 — Lightweight Control API
 
-Implement state coordination only. Start local-first; SQLite is sufficient unless measured requirements prove otherwise.
+Build state coordination only after contracts/funnel/Edge interfaces are stable. Start local-first; SQLite is sufficient until measured requirements prove otherwise.
 
 Minimum surfaces:
+
 - `GET /v1/market-state`
 - `GET /v1/opportunities`
 - `GET /v1/proposals`
@@ -247,126 +306,166 @@ Minimum surfaces:
 - `GET /v1/executions/{id}`
 - `GET /v1/strategies/{id}`
 
-The API cannot call MT5 directly.
+The Control API cannot call MT5 directly.
 
 Exit: `CONTROL_API_READY = PASS`.
 
-### P10 — ChatGPT / Claude interface
+## 16. P10 — ChatGPT / Claude interface
 
-Expose narrow analytical tools for market state, opportunities, proposals, account state, strategy evidence, and execution results. An owner-decision action may only record/proxy an explicit owner action under the existing authentication model.
+Expose narrow analytical tools for market state, opportunities, proposals, account state, strategy evidence, and execution results. Owner-decision actions may only proxy an explicit authenticated owner action.
 
-Never expose arbitrary order submission, risk-policy mutation, authorization mutation, or raw broker credentials.
+Never expose arbitrary order submission, risk-policy mutation, authorization mutation, or broker credentials.
 
 Exit: `AI_INTERFACE_CONTAINED = PASS`.
 
-### P11 — Owner-confirmed Demo E2E
+## 17. P11 — Owner-confirmed Demo E2E
 
-Only after P0-P10 pass:
+First major destination milestone:
 
 ```text
-Proposal -> AI/UI presentation -> explicit owner confirm -> OwnerDecision
--> ExecutionRequest -> Edge final guards -> MT5 Demo -> ExecutionResult -> reconciliation
+Proposal
+ -> AI/UI explanation
+ -> explicit Owner CONFIRM
+ -> OwnerDecision
+ -> ExecutionRequest
+ -> Owner Edge final guards
+ -> MT5 Demo order_check/order_send
+ -> ExecutionResult
+ -> reconciliation
 ```
 
-Edge final guards must include proposal identity/freshness, explicit owner authorization, account identity/Demo classification, symbol metadata, finite entry/SL, stop geometry, strategy/pilot risk, aggregate risk, volume, idempotency/duplicate state, and execution authorization.
+Final Edge guards include proposal identity/freshness, explicit owner authorization, Demo account identity, symbol metadata, finite entry/SL, stop geometry, strategy/pilot risk, aggregate risk, volume, duplicate/idempotency state, and execution authorization.
 
 No Live execution.
 
-Exit: `EDGE_DEMO_E2E = PASS`.
+Exit: `FIRST_VERTICAL_SLICE_E2E = PASS` / `EDGE_DEMO_E2E = PASS`.
+
+## 18. P12–P15 — Reduce owner-PC capacity requirements
 
 ### P12 — Research separation
-
-Move/reclassify replay, backtests, Virtual Demo, experiments, optimization, and heavy datasets as research-only dependencies. Do not alter their evidence semantics during the move.
-
-Exit: `RESEARCH_NOT_RUNTIME_DEPENDENCY = PASS`.
+Move/reclassify replay, backtests, Virtual Demo, experiments, optimization, and heavy datasets as research-only workloads. Exit: `RESEARCH_NOT_RUNTIME_DEPENDENCY = PASS`.
 
 ### P13 — Event-driven runtime
-
-Replace aggressive polling only where parity is proven. Prefer closed-bar MarketState events and account/order/position change events. Preserve restart safety, exactly-once/idempotent behavior, and reconciliation.
-
-Exit: `EVENT_RUNTIME_PARITY = PASS` plus measured resource comparison.
+Replace aggressive polling where parity is proven. Prefer closed-bar MarketState events and account/order/position change events. Preserve restart safety, idempotency, and reconciliation. Exit: `EVENT_RUNTIME_PARITY = PASS` plus measured resource comparison.
 
 ### P14 — Frontend optionalization
+Make local Vite/React an optional debug/admin surface, not a trading-runtime requirement. Preserve a deterministic non-AI fallback path. Exit: `FRONTEND_OPTIONAL = PASS`.
 
-Make local Vite/React an optional debug/administration surface, not a required trading runtime dependency. Preserve a deterministic non-AI operational path for emergency/debug use.
+### P15 — Lightweight production PC profile
+Target normal trading-hours footprint: MT5 + AG Owner Edge Agent; browser only on demand. Measure CPU, RAM, process count, startup/restart, reconnect, and offline behavior against the pre-migration baseline. Exit: `LIGHTWEIGHT_OWNER_PC_PROFILE = PASS`.
 
-Exit: `FRONTEND_OPTIONAL = PASS`.
+## 19. P16–P18 — Scale only after the vertical slice
 
-### P15 — Production PC profile
+### P16 — Multi-symbol
+Sequence: EURUSD -> GBPUSD -> USDJPY -> XAUUSD. Each requires MarketState parity, broker metadata tests, and strategy/risk compatibility.
 
-Target normal trading-hours footprint:
-1. MetaTrader 5 terminal;
-2. AG Owner Edge Agent;
-3. browser only when the owner wants ChatGPT/Claude/UI interaction.
-
-Record CPU, RAM, process count, restart behavior, and offline behavior against the pre-migration baseline.
-
-Exit: `LIGHTWEIGHT_OWNER_PC_PROFILE = PASS`.
-
-### P16 — Multi-symbol expansion
-
-Sequence: EURUSD -> GBPUSD -> USDJPY -> XAUUSD. Each symbol requires MarketState parity, broker metadata tests, and strategy/risk compatibility before enabling the next.
-
-### P17 — Multi-strategy expansion
-
-Add strategies one at a time against the normalized MarketState contract. Do not allow strategy-specific market-data polling to re-enter production runtime without explicit architecture review.
+### P17 — Multi-strategy
+Add strategies one at a time against normalized MarketState. Do not reintroduce strategy-specific production market-data polling without architecture review.
 
 ### P18 — Cloud deployment
+Cloud is last. Move Control API/state coordination only after local E2E is stable. Owner Edge remains the trusted broker boundary. Connectivity loss must fail closed for remote execution while preserving local account/broker safety and later non-mutating state reconciliation.
 
-Cloud is last, not a prerequisite. Move Control API/state coordination only after local E2E is stable. Edge remains the trusted broker boundary. On connectivity loss, remote execution requests fail closed; local broker/account reconciliation remains safe; buffered non-mutating state may reconcile after reconnect.
+## 20. Correct parallel execution model
 
-## 7. Parallel workstreams
+After Foundation R1 independent re-audit PASS:
 
-After P0/P1 contract freeze:
+```text
+                     FOUNDATION FROZEN
+                            |
+                +-----------+-----------+
+                |                       |
+                v                       v
+          LANE A: P3 -> P4         LANE B: P5
+          MT5 MarketState          Read-only Edge
+          + parity                 preparation
+                |                       |
+                +-----------+-----------+
+                            v
+                           P6
+                     Strategy Core
+                            |
+                           P7
+                   Funnel integration
+                            |
+                           P8
+                      Risk Engine
+                            |
+                           P9
+                      Control API
+                            |
+                          P10
+                    ChatGPT / Claude
+                            |
+                          P11
+                   Owner Demo E2E
+```
 
-- Lane A — MT5/MQL5: P3 -> P4.
-- Lane B — Platform: P2 -> P5 and preparatory package work that does not depend on unproven MT5 semantics.
-- Lane C — Independent audit: contract review, parity review, safety-boundary audit, regression classification.
+Do not start P8/P9 prematurely: P8 depends on stable P6/P7 semantics and P9 should consume stable contracts/Edge interfaces rather than create another reconciliation target.
 
-Integration occurs only at explicit frozen SHAs. One writer per worktree/branch.
+Gate-2 R3 remains a separate lineage until independently accepted. Any later integration with the frozen Edge+AI foundation requires a bounded compatibility/diff audit; no automatic cherry-pick/merge is authorized by this roadmap.
 
-## 8. Bounded PR plan
+## 21. Bounded PR/work-package sequence
 
 1. PR-A0 — Migration baseline + architecture ADR
 2. PR-A1 — Contracts V1
-3. PR-A2 — Repository shell + dependency boundaries
-4. PR-M1 — SessionLevels
-5. PR-M2 — Structure/Liquidity/Sweep facts
-6. PR-M3 — MarketState aggregator
-7. PR-M4 — Python/MQL parity harness
-8. PR-E1 — Read-only Edge Agent
-9. PR-S1 — Strategy-core vertical slice
-10. PR-F1 — Opportunity/Proposal funnel adapter
-11. PR-R1 — Risk-engine extraction
-12. PR-E2 — Edge execution guard pipeline
+3. PR-A1-R1 — Contract invariant remediation (F-01/F-02) — CURRENT
+4. PR-A2 — Repository shell + dependency boundaries
+5. PR-M1 — SessionLevels
+6. PR-M2 — Structure/Liquidity/Sweep facts
+7. PR-M3 — MarketState aggregator
+8. PR-M4 — Python/MQL parity harness
+9. PR-E1 — Read-only Edge Agent
+10. PR-S1 — Strategy-core vertical slice
+11. PR-F1 — Opportunity/Proposal funnel adapter
+12. PR-R1 — Risk-engine extraction
 13. PR-C1 — Control API
 14. PR-AI1 — AI analytical interface
-15. PR-X1 — Owner-confirmed Demo E2E
-16. PR-RS1 — Research separation
-17. PR-RT1 — Event-driven runtime
-18. PR-UI1 — Frontend optionalization
-19. PR-P1 — Production runtime profile
+15. PR-E2 — Edge execution guard pipeline
+16. PR-X1 — Owner-confirmed Demo E2E
+17. PR-RS1 — Research separation
+18. PR-RT1 — Event-driven runtime
+19. PR-UI1 — Frontend optionalization
+20. PR-P1 — Production runtime profile
 
-Every PR must be independently reversible and must state: frozen base SHA, allowed files, prohibited changes, focused tests, regression evidence, authorization delta, broker-call delta, and rollback instructions.
+Every work package must state frozen base SHA, allowed files, prohibited changes, focused tests, regression evidence, authorization delta, broker-call delta, rollback instructions, and next audit gate.
 
-## 9. Immediate implementation mission
+## 22. Roadmap summary
 
-The first implementation mission is P0 + P1 + P2 only. Do not implement MQL5 indicators or alter execution behavior in this mission.
+```text
+FOUNDATION
+P0 Baseline Freeze                 PASS
+P1 Contracts V1                    R1 REMEDIATION  <-- CURRENT
+P2 Architecture Shell              PASS AS CANDIDATE
+Independent Foundation Audit       FAIL (F-01/F-02)
+Independent Foundation R1 Reaudit  NEXT
 
-Required deliverables:
-1. select/freeze the accepted migration baseline after reconciling current Gate-2 work;
-2. architecture ADR;
-3. runtime authority matrix;
-4. canonical Contracts V1;
-5. contract validation tests;
-6. architecture shell;
-7. dependency/boundary tests;
-8. proof existing runtime behavior/authorization is unchanged;
-9. migration status document;
-10. independent audit handoff.
+SENSING
+P3 MT5 MarketState                 BLOCKED ON FOUNDATION FREEZE
+P4 Python/MQL parity               BLOCKED ON P3
 
-Stop after P0/P1/P2 for independent audit.
+EDGE + TRADING BRAIN
+P5 Read-only Owner Edge            BLOCKED ON FOUNDATION FREEZE
+P6 Strategy Core                   BLOCKED ON P3/P4/P5 INTERFACES
+P7 Opportunity/Proposal Funnel     BLOCKED ON P6
+P8 Risk Engine                     BLOCKED ON P6/P7
 
-## 10. Definition of architectural success
+CONTROL + AI + EXECUTION
+P9 Control API                     BLOCKED ON STABLE CONTRACTS/EDGE
+P10 ChatGPT / Claude               BLOCKED ON P9
+P11 Owner-confirmed Demo E2E       BLOCKED ON P0-P10
 
-The migration is complete only when normal trading requires no local research/development stack and the owner PC can operate with MT5 + Owner Edge Agent, while ChatGPT/Claude remain optional analytical/control interfaces. Broker execution remains deterministic, local, owner-confirmed, account-guarded, risk-guarded, idempotent, auditable, and fail-closed.
+OPTIMIZATION
+P12 Research Separation            AFTER FIRST VERTICAL SLICE
+P13 Event-driven Runtime           AFTER PARITY/E2E
+P14 Optional Frontend              AFTER CONTROL PATH STABLE
+P15 Lightweight PC Profile         AFTER P12-P14
+
+SCALE
+P16 Multi-symbol                   AFTER EURUSD VERTICAL SLICE
+P17 Multi-strategy                 AFTER SINGLE STRATEGY PROVEN
+P18 Cloud Deployment               LAST
+```
+
+## 23. Definition of architectural success
+
+Normal trading should ultimately require only MT5 + Owner Edge Agent locally, with a browser/ChatGPT/Claude used on demand. Heavy research/development workloads stay outside the trading runtime. Broker execution remains deterministic, local, owner-confirmed, account-guarded, risk-guarded, idempotent, auditable, and fail-closed.
