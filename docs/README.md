@@ -34,6 +34,10 @@ and the remaining lifecycle and campaign boundaries.
 
 ## Start here
 
+The [Canonical Proposal Orchestration Bridge R1 status](status/AG_CANONICAL_PROPOSAL_ORCHESTRATION_BRIDGE_R1_STATUS.md)
+records the unit-tested Strategy → Opportunity → real eligibility → FX risk → canonical
+proposal path and the deferred REAL-MT5 persistence/readback proof.
+
 The [AG Edge + AI Runtime V1 Foundation ADR](architecture/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_ADR.md)
 freezes the owner-selected migration baseline and authority matrix for P0–P2. Its
 [foundation status](status/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_STATUS.md) records validation,

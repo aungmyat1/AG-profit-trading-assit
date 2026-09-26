@@ -4,6 +4,23 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Canonical Proposal Orchestration Bridge R1 (2026-09-27, unit-tested candidate)
+
+Added a separate proposal-only entrypoint for canonical immutable `MarketState` plus
+closed `strategy_engine.session.Candle` inputs. It composes the existing
+ST_ASIAN_SWEEP_5R_V1 v1.1.1 engine, Asian Sweep opportunity adapter, production
+ProposalEligibility evaluator, pilot-configured FX risk, canonical proposal adapter,
+REAL-only formation gate, and ProposalLedger. Non-READY strategy output stops before
+Opportunity; rejected eligibility stops before risk; sizing failure stops before
+CanonicalProposal. Accepted eligibility test fixtures remain test-only and SYNTHETIC or
+REPLAY data cannot pass formation or ledger persistence. The Owner Analysis response
+schema was checked in memory. Related regression tests pass 197/197 on Windows / Python
+3.14; no MT5 connection or broker calls were made. This is `UNIT_TESTED`, not REAL-MT5
+verified. Fresh REAL closed-bar input is still required to verify end-to-end eligibility,
+risk, persistence, and API readback. Strategy authorization and execution gates are
+unchanged. See
+[`docs/status/AG_CANONICAL_PROPOSAL_ORCHESTRATION_BRIDGE_R1_STATUS.md`](docs/status/AG_CANONICAL_PROPOSAL_ORCHESTRATION_BRIDGE_R1_STATUS.md).
+
 ## AG_EDGE_AI_RUNTIME_V1_FOUNDATION (2026-09-26, additive P0–P2 candidate)
 
 The owner selected merged containment baseline `1a8e7c5d922ba48423dca1b7858f8895afe0d66f`
