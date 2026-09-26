@@ -34,6 +34,11 @@ and the remaining lifecycle and campaign boundaries.
 
 ## Start here
 
+The [AG Edge + AI Runtime V1 Foundation ADR](architecture/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_ADR.md)
+freezes the owner-selected migration baseline and authority matrix for P0–P2. Its
+[foundation status](status/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_STATUS.md) records validation,
+authorization deltas, and the independent audit handoff.
+
 The [repository structure audit](REPO_STRUCTURE_AUDIT.md) records the current layout,
 safe cache cleanup, and the recommended archival policy for historical documents and
 generated evidence.
