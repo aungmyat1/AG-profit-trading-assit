@@ -38,6 +38,8 @@ def _freeze(value: Any, path: str = "data") -> Any:
 
 
 def _plain(value: Any) -> Any:
+    if isinstance(value, Contract):
+        return value.to_dict()
     if isinstance(value, Mapping):
         return {key: _plain(item) for key, item in value.items()}
     if isinstance(value, tuple):
@@ -70,6 +72,20 @@ def _timestamp(value: str | datetime) -> str:
 def _identifier(name: str, value: str) -> None:
     if not isinstance(value, str) or not _SAFE_ID.fullmatch(value):
         raise ContractError(f"{name} must be a non-empty stable identifier")
+
+
+class _MarketStateSchemaMeta(type):
+    """Keep the canonical MarketState schema from gaining subclass authorities."""
+
+    def __new__(mcls, name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any):
+        if any(isinstance(base, _MarketStateSchemaMeta) for base in bases):
+            raise TypeError("MarketState is final; its factual schema cannot be subclassed")
+        return super().__new__(mcls, name, bases, namespace, **kwargs)
+
+    def __setattr__(cls, name: str, value: Any) -> None:
+        if name in {"_FACT_FIELDS", "_NESTED_FACT_FIELDS"} and hasattr(cls, name):
+            raise AttributeError(f"{name} is an immutable MarketState schema")
+        super().__setattr__(name, value)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -145,14 +161,27 @@ class Contract:
 
 
 @dataclass(frozen=True, kw_only=True)
-class MarketState(Contract):
+class MarketState(Contract, metaclass=_MarketStateSchemaMeta):
+    """Canonical immutable factual state. Subclassing would create a second schema authority."""
     facts: Mapping[str, Any]
     KIND: ClassVar[str] = "MarketState"
-    _FORBIDDEN_FACT_KEYS: ClassVar[set[str]] = {
-        "action", "approved_volume", "broker_command", "command", "decision",
-        "direction", "execution_command", "owner_approval", "risk_approval",
-        "side", "signal", "trade_action", "volume",
-    }
+    _FACT_FIELDS: ClassVar[Mapping[str, str]] = MappingProxyType({
+        "symbol": "string", "source": "string", "source_timestamp": "timestamp",
+        "observed_at": "timestamp", "session": "session",
+        "price": "number", "bid": "number", "ask": "number", "spread": "number",
+        "market_metadata": "market_metadata", "structure": "structure",
+        "liquidity": "liquidity", "sweep": "sweep", "freshness": "freshness",
+        "provenance": "provenance",
+    })
+    _NESTED_FACT_FIELDS: ClassVar[Mapping[str, Mapping[str, str]]] = MappingProxyType({
+        "session": MappingProxyType({"name": "session_name", "state": "session_state", "opened_at": "timestamp", "closed_at": "timestamp", "high": "number", "low": "number"}),
+        "market_metadata": MappingProxyType({"digits": "integer", "point": "number", "tick_size": "number", "tick_value": "number", "contract_size": "number", "is_open": "boolean"}),
+        "structure": MappingProxyType({"trend_state": "trend_state", "swing_high": "number", "swing_low": "number", "range_high": "number", "range_low": "number", "break_of_structure": "structure_event", "change_of_character": "structure_event", "premium_discount": "premium_discount"}),
+        "liquidity": MappingProxyType({"buy_side_level": "number", "sell_side_level": "number", "equal_highs": "number", "equal_lows": "number", "nearest_high": "number", "nearest_low": "number"}),
+        "sweep": MappingProxyType({"detected": "boolean", "liquidity_side": "liquidity_side", "price": "number", "occurred_at": "timestamp"}),
+        "freshness": MappingProxyType({"is_fresh": "boolean", "age_seconds": "number", "as_of": "timestamp", "closed_bar": "boolean"}),
+        "provenance": MappingProxyType({"provider": "string", "feed": "string", "instrument": "string"}),
+    })
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -167,10 +196,16 @@ class MarketState(Contract):
         fact_source = frozen.get("source")
         if fact_source is not None and fact_source != self.source:
             raise ContractError("MarketState facts source does not match contract source")
-        forbidden = _keys_recursively(frozen).intersection(self._FORBIDDEN_FACT_KEYS)
-        if forbidden:
-            raise ContractError(f"MarketState facts cannot encode authority fields: {', '.join(sorted(forbidden))}")
+        _validate_market_facts(frozen, self._FACT_FIELDS, self._NESTED_FACT_FIELDS)
         object.__setattr__(self, "facts", frozen)
+
+    def semantic_fields(self) -> dict[str, Any]:
+        semantic = super().semantic_fields()
+        facts = dict(semantic["facts"])
+        facts.pop("source", None)
+        facts.pop("provenance", None)
+        semantic["facts"] = facts
+        return semantic
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -215,6 +250,7 @@ class Proposal(Contract):
     opportunity_id: str
     strategy_id: str
     strategy_version: str
+    eligibility: ProposalEligibilityDecision
     details: Mapping[str, Any]
     KIND: ClassVar[str] = "Proposal"
 
@@ -224,6 +260,16 @@ class Proposal(Contract):
             raise ContractError("Proposal requires symbol")
         for name in ("opportunity_id", "strategy_id", "strategy_version"):
             _identifier(name, getattr(self, name))
+        eligibility = self.eligibility
+        if isinstance(eligibility, Mapping):
+            eligibility = ProposalEligibilityDecision.from_dict(eligibility)
+            object.__setattr__(self, "eligibility", eligibility)
+        if not isinstance(eligibility, ProposalEligibilityDecision):
+            raise ContractError("Proposal requires a validated eligibility decision")
+        if not eligibility.eligible:
+            raise ContractError("Proposal cannot be created from rejected eligibility")
+        if eligibility.opportunity_id != self.opportunity_id:
+            raise ContractError("Proposal eligibility opportunity_id does not match")
         object.__setattr__(self, "details", _freeze_mapping(self.details, "details"))
 
 
@@ -330,9 +376,56 @@ def _reason_codes(codes: tuple[str, ...]) -> None:
         raise ContractError("reason_codes must be unique")
 
 
-def _keys_recursively(value: Any) -> set[str]:
-    if isinstance(value, Mapping):
-        return {key.lower() for key in value}.union(*(_keys_recursively(item) for item in value.values()))
-    if isinstance(value, tuple):
-        return set().union(*(_keys_recursively(item) for item in value))
-    return set()
+def _validate_market_facts(
+    facts: Mapping[str, Any],
+    root_schema: Mapping[str, str],
+    nested_schema: Mapping[str, Mapping[str, str]],
+) -> None:
+    for key, value in facts.items():
+        kind = root_schema.get(key)
+        if kind is None:
+            raise ContractError(f"unsupported MarketState fact field {key!r}")
+        if kind in nested_schema:
+            if kind == "session" and isinstance(value, str):
+                _validate_fact_value("session_name", value, key)
+                continue
+            if not isinstance(value, Mapping):
+                raise ContractError(f"MarketState fact {key!r} must be an object")
+            schema = nested_schema[kind]
+            for child_key, child_value in value.items():
+                child_kind = schema.get(child_key)
+                if child_kind is None:
+                    raise ContractError(f"unsupported MarketState fact field {key}.{child_key}")
+                _validate_fact_value(child_kind, child_value, f"{key}.{child_key}")
+            continue
+        _validate_fact_value(kind, value, key)
+
+
+def _validate_fact_value(kind: str, value: Any, path: str) -> None:
+    valid = False
+    if kind == "number":
+        valid = isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+    elif kind == "integer":
+        valid = isinstance(value, int) and not isinstance(value, bool)
+    elif kind == "boolean":
+        valid = isinstance(value, bool)
+    elif kind in {"string", "session_name", "session_state", "trend_state", "structure_event", "premium_discount", "liquidity_side"}:
+        allowed = {
+            "session_name": {"ASIA", "LONDON", "NEW_YORK", "SYDNEY", "OVERLAP", "CLOSED", "UNKNOWN"},
+            "session_state": {"OPEN", "CLOSED", "PRE_OPEN", "UNKNOWN"},
+            "trend_state": {"BULLISH", "BEARISH", "RANGE", "UNDEFINED"},
+            "structure_event": {"BULLISH", "BEARISH", "NONE", "UNDEFINED"},
+            "premium_discount": {"PREMIUM", "DISCOUNT", "EQUILIBRIUM", "UNDEFINED"},
+            "liquidity_side": {"BUY_SIDE", "SELL_SIDE", "UNKNOWN"},
+        }
+        valid = isinstance(value, str) and bool(value.strip())
+        if kind in allowed:
+            valid = valid and value.upper() in allowed[kind]
+    elif kind == "timestamp":
+        try:
+            _timestamp(value)
+            valid = True
+        except ContractError:
+            valid = False
+    if not valid:
+        raise ContractError(f"MarketState fact {path!r} is invalid for {kind}")
