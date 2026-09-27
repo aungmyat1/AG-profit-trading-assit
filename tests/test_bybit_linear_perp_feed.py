@@ -12,6 +12,7 @@ import datetime as dt
 import pytest
 
 from execution_runtime.bybit_linear_perp_feed import (
+    BybitCandleBatch,
     BTCUSDT_STEP_SIZE,
     BTCUSDT_TICK_SIZE,
     BybitFeedDataError,
@@ -93,6 +94,80 @@ def test_returns_closed_candles_oldest_first_utc_from_descending_provider_order(
     assert candles[0].time.tzinfo == dt.timezone.utc
     assert candles[0].open == 50000.0
     assert candles[0].high == 50010.0
+    assert isinstance(candles, BybitCandleBatch)
+    assert candles.symbol == CANONICAL_SYMBOL
+    assert candles.timeframe == "M5"
+
+
+def test_caller_cannot_create_or_relabel_verified_candle_batch():
+    rows = _clean_m5_rows_ascending(5)
+    feed = BybitLinearPerpFeed(session=_FakeSession(_envelope(rows)), clock=_now_after(rows))
+    batch = feed.get_latest_candles(CANONICAL_SYMBOL, "M5", 5)
+    with pytest.raises(ValueError, match="only be created by validated feed acquisition"):
+        BybitCandleBatch(batch, CANONICAL_SYMBOL, "M5")
+    with pytest.raises(AttributeError, match="identity is immutable"):
+        batch._symbol = "ETHUSDT"
+
+
+@pytest.mark.parametrize(
+    ("response_symbol", "remove_symbol", "reason"),
+    [
+        ("ETHUSDT", False, "KLINES_SYMBOL_MISMATCH"),
+        ("", False, "KLINES_SYMBOL_MISSING"),
+        (None, False, "KLINES_SYMBOL_MISSING"),
+        (None, True, "KLINES_SYMBOL_MISSING"),
+        (123, False, "KLINES_SYMBOL_MISSING"),
+        ("btcusdt", False, "KLINES_SYMBOL_MISMATCH"),
+        (" BTCUSDT ", False, "KLINES_SYMBOL_MISMATCH"),
+    ],
+)
+def test_kline_response_symbol_must_match_request(response_symbol, remove_symbol, reason):
+    rows = _clean_m5_rows_ascending(5)
+    payload = _envelope(rows)
+    if remove_symbol:
+        del payload["result"]["symbol"]
+    else:
+        payload["result"]["symbol"] = response_symbol
+    feed = BybitLinearPerpFeed(
+        session=_FakeSession(payload), clock=_now_after(rows),
+    )
+    with pytest.raises(BybitFeedDataError) as exc:
+        feed.get_latest_candles(CANONICAL_SYMBOL, "M5", 5)
+    assert exc.value.reason_code == reason
+
+
+def test_kline_wrong_symbol_with_valid_candles_fails_before_candle_parsing():
+    rows = _clean_m5_rows_ascending(5)
+    payload = _envelope(rows)
+    payload["result"]["symbol"] = "ETHUSDT"
+    session = _FakeSession(payload)
+    feed = BybitLinearPerpFeed(session=session, clock=_now_after(rows))
+    with pytest.raises(BybitFeedDataError, match="KLINES_SYMBOL_MISMATCH"):
+        feed.get_latest_candles(CANONICAL_SYMBOL, "M5", 5)
+    assert len(rows) == 5
+    assert len(session.calls) == 1
+
+
+def test_kline_response_category_must_match_linear_request():
+    rows = _clean_m5_rows_ascending(5)
+    payload = _envelope(rows)
+    payload["result"]["category"] = "spot"
+    feed = BybitLinearPerpFeed(
+        session=_FakeSession(payload), clock=_now_after(rows),
+    )
+    with pytest.raises(BybitFeedDataError) as exc:
+        feed.get_latest_candles(CANONICAL_SYMBOL, "M5", 5)
+    assert exc.value.reason_code == "KLINES_CATEGORY_MISMATCH"
+
+
+def test_kline_missing_response_category_fails_closed():
+    rows = _clean_m5_rows_ascending(5)
+    payload = _envelope(rows)
+    del payload["result"]["category"]
+    feed = BybitLinearPerpFeed(session=_FakeSession(payload), clock=_now_after(rows))
+    with pytest.raises(BybitFeedDataError) as exc:
+        feed.get_latest_candles(CANONICAL_SYMBOL, "M5", 5)
+    assert exc.value.reason_code == "KLINES_CATEGORY_MISSING"
 
 
 def test_requests_category_linear_and_limit_plus_one():
@@ -131,7 +206,12 @@ def test_non_zero_ret_code_raises_request_error():
 
 
 def test_missing_result_list_raises_data_error():
-    payload = {"retCode": 0, "retMsg": "OK", "result": {}, "time": 0}
+    payload = {
+        "retCode": 0,
+        "retMsg": "OK",
+        "result": {"category": "linear", "symbol": CANONICAL_SYMBOL},
+        "time": 0,
+    }
     session = _FakeSession(payload)
     feed = BybitLinearPerpFeed(session=session, clock=lambda: dt.datetime.now(dt.timezone.utc))
     with pytest.raises(BybitFeedDataError) as exc:
@@ -323,9 +403,49 @@ def test_fetch_exchange_symbol_meta_parses_live_shape():
     assert meta.contract_type == "LinearPerpetual"
 
 
+def _metadata_entry(symbol, tick_size="0.10"):
+    return {
+        "symbol": symbol, "contractType": "LinearPerpetual", "settleCoin": "USDT",
+        "priceFilter": {"tickSize": tick_size},
+        "lotSizeFilter": {"qtyStep": "0.001", "minOrderQty": "0.001"},
+    }
+
+
+def test_fetch_exchange_symbol_meta_selects_exact_entry_not_first():
+    payload = {
+        "retCode": 0, "retMsg": "OK",
+        "result": {"category": "linear", "list": [
+            _metadata_entry("ETHUSDT", "1"), _metadata_entry("BTCUSDT", "0.10"),
+        ]},
+        "time": 0,
+    }
+    meta = fetch_exchange_symbol_meta(CANONICAL_SYMBOL, session=_FakeSession(payload))
+    assert meta.canonical_symbol == "BTCUSDT"
+    assert meta.tick_size == 0.1
+
+
+@pytest.mark.parametrize(
+    ("entries", "category", "expected_reason"),
+    [
+        ([_metadata_entry("ETHUSDT")], "linear", "INSTRUMENTS_INFO_SYMBOL_MISMATCH"),
+        ([], "linear", "INSTRUMENTS_INFO_EMPTY"),
+        ([_metadata_entry("BTCUSDT")], "spot", "INSTRUMENTS_INFO_CATEGORY_MISMATCH"),
+        ([_metadata_entry("BTCUSDT")], None, "INSTRUMENTS_INFO_CATEGORY_MISSING"),
+    ],
+)
+def test_fetch_exchange_symbol_meta_rejects_wrong_or_unbound_identity(entries, category, expected_reason):
+    result = {"list": entries}
+    if category is not None:
+        result["category"] = category
+    payload = {"retCode": 0, "retMsg": "OK", "result": result, "time": 0}
+    with pytest.raises(BybitFeedDataError) as exc:
+        fetch_exchange_symbol_meta(CANONICAL_SYMBOL, session=_FakeSession(payload))
+    assert exc.value.reason_code == expected_reason
+
+
 def test_fetch_exchange_symbol_meta_missing_filters_raises():
     payload = {"retCode": 0, "retMsg": "OK",
-              "result": {"list": [{"symbol": "BTCUSDT"}]}, "time": 0}
+              "result": {"category": "linear", "list": [{"symbol": "BTCUSDT"}]}, "time": 0}
     session = _FakeSession(payload)
     with pytest.raises(BybitFeedDataError) as exc:
         fetch_exchange_symbol_meta(CANONICAL_SYMBOL, session=session)

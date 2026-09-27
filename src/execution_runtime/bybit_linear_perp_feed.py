@@ -96,6 +96,37 @@ class BybitFeedStaleData(BybitFeedError):
     the reference "now" -- the feed is not current."""
 
 
+_VERIFIED_CANDLE_BATCH = object()
+
+
+class BybitCandleBatch(list[Candle]):
+    """List-compatible candles carrying the feed-verified response identity."""
+
+    __slots__ = ("_symbol", "_timeframe")
+
+    def __init__(
+        self, candles: Sequence[Candle], symbol: str, timeframe: str, *, _verification: object = None,
+    ) -> None:
+        if _verification is not _VERIFIED_CANDLE_BATCH:
+            raise ValueError("BybitCandleBatch can only be created by validated feed acquisition")
+        super().__init__(candles)
+        self._symbol = symbol
+        self._timeframe = timeframe
+
+    def __setattr__(self, name: str, value: object) -> None:
+        if name in {"_symbol", "_timeframe"} and hasattr(self, name):
+            raise AttributeError("verified feed identity is immutable")
+        super().__setattr__(name, value)
+
+    @property
+    def symbol(self) -> str:
+        return self._symbol
+
+    @property
+    def timeframe(self) -> str:
+        return self._timeframe
+
+
 @dataclass(frozen=True)
 class BybitSymbolMeta:
     """Exchange-identity + contract metadata record for a Bybit linear-perpetual symbol
@@ -174,11 +205,26 @@ def fetch_exchange_symbol_meta(
     payload = _get_json(http, f"{API_BASE_URL}{INSTRUMENTS_INFO_PATH}",
                         {"category": CATEGORY, "symbol": symbol}, timeout, "INSTRUMENTS_INFO")
 
-    result = payload.get("result") or {}
+    result = payload.get("result")
+    if not isinstance(result, dict):
+        raise BybitFeedDataError("INSTRUMENTS_INFO_MALFORMED_RESPONSE", "'result' must be an object")
+    response_category = result.get("category")
+    if not isinstance(response_category, str) or not response_category:
+        raise BybitFeedDataError("INSTRUMENTS_INFO_CATEGORY_MISSING", "response category is missing or malformed")
+    if response_category != CATEGORY:
+        raise BybitFeedDataError(
+            "INSTRUMENTS_INFO_CATEGORY_MISMATCH",
+            f"requested category {CATEGORY!r}, received {response_category!r}",
+        )
     entries = result.get("list")
-    if not entries:
+    if not isinstance(entries, list) or not entries:
         raise BybitFeedDataError("INSTRUMENTS_INFO_EMPTY", f"no instrument entries for {symbol!r}")
-    entry = next((e for e in entries if e.get("symbol") == symbol), entries[0])
+    entry = next(
+        (candidate for candidate in entries if isinstance(candidate, dict) and candidate.get("symbol") == symbol),
+        None,
+    )
+    if entry is None:
+        raise BybitFeedDataError("INSTRUMENTS_INFO_SYMBOL_MISMATCH", f"no exact metadata entry for {symbol!r}")
 
     price_filter = entry.get("priceFilter") or {}
     lot_filter = entry.get("lotSizeFilter") or {}
@@ -361,7 +407,7 @@ class BybitLinearPerpFeed:
         self._base_url = base_url
         self._timeout = timeout
 
-    def get_latest_candles(self, symbol: str, timeframe: str, count: int) -> List[Candle]:
+    def get_latest_candles(self, symbol: str, timeframe: str, count: int) -> BybitCandleBatch:
         if symbol != CANONICAL_SYMBOL:
             raise ValueError(f"this adapter is scoped to {CANONICAL_SYMBOL!r} only, got {symbol!r}")
         interval = _TIMEFRAME_TO_BYBIT_INTERVAL.get(timeframe)
@@ -376,7 +422,25 @@ class BybitLinearPerpFeed:
         params = {"category": CATEGORY, "symbol": symbol, "interval": interval, "limit": count + 1}
         payload = _get_json(self._http, f"{self._base_url}{KLINE_PATH}", params, self._timeout, "KLINES")
 
-        result = payload.get("result") or {}
+        result = payload.get("result")
+        if not isinstance(result, dict):
+            raise BybitFeedDataError("KLINES_MALFORMED_RESPONSE", "'result' must be an object")
+        response_category = result.get("category")
+        if not isinstance(response_category, str) or not response_category:
+            raise BybitFeedDataError("KLINES_CATEGORY_MISSING", "response category is missing or malformed")
+        if response_category != CATEGORY:
+            raise BybitFeedDataError(
+                "KLINES_CATEGORY_MISMATCH",
+                f"requested category {CATEGORY!r}, received {response_category!r}",
+            )
+        response_symbol = result.get("symbol")
+        if not isinstance(response_symbol, str) or not response_symbol:
+            raise BybitFeedDataError("KLINES_SYMBOL_MISSING", "response symbol is missing or malformed")
+        if response_symbol != symbol:
+            raise BybitFeedDataError(
+                "KLINES_SYMBOL_MISMATCH",
+                f"requested symbol {symbol!r}, received {response_symbol!r}",
+            )
         raw_desc = result.get("list")
         if raw_desc is None:
             raise BybitFeedDataError("KLINES_MALFORMED_RESPONSE", "no 'result.list' in kline response")
@@ -405,4 +469,7 @@ class BybitLinearPerpFeed:
                 f"(> {_STALE_MULTIPLE}x{expected_spacing_ms // 1000}s threshold)",
             )
 
-        return _to_candles(parsed[-count:], symbol, timeframe)
+        return BybitCandleBatch(
+            _to_candles(parsed[-count:], symbol, timeframe), symbol, timeframe,
+            _verification=_VERIFIED_CANDLE_BATCH,
+        )

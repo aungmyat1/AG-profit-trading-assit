@@ -157,9 +157,10 @@ incremental funnel-status and external confirmation-alert service.
 - `scripts/scan_crypto_opportunities.py` performs one bounded, read-only BTCUSDT M5
   previous-UTC-day sweep observation and stores an early-stage `OpportunityCandidate`;
   `GET /api/opportunities` exposes that owner-readable record. This observer does not
-  make a trade proposal or place an order. R2 binds REAL provenance to the live public
-  feed entrypoint and keeps fixture/replay scans non-REAL. See
-  [`docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_STATUS.md`](docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_STATUS.md).
+  make a trade proposal or place an order. R2.1 validates Bybit response category and
+  symbol against the request before REAL provenance is granted; fixture/replay scans
+  remain non-REAL. See
+  [`docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_1_STATUS.md`](docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_1_STATUS.md).
 - Historical replay prohibits live MT5 candle/tick access. Historical session-box
   reconstruction remains a documented completeness gap and degrades explicitly.
 - See [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for the current regression baseline and

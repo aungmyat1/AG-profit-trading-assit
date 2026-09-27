@@ -34,9 +34,11 @@ and the remaining lifecycle and campaign boundaries.
 
 ## Start here
 
-The [Crypto Opportunity Scanner V1 R2 status](status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_STATUS.md)
-records the acquisition-owned REAL-provenance boundary, test-double production composition,
-adversarial regressions, and bounded test results. The [R1 status](status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R1_STATUS.md)
+The [Crypto Opportunity Scanner V1 R2.1 status](status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_1_STATUS.md)
+records response-symbol binding, failed-acquisition behavior, preserved R2 provenance
+controls, and bounded test results. The [R2 status](status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_STATUS.md)
+records the acquisition-owned REAL-provenance boundary and test-double production composition.
+The [R1 status](status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R1_STATUS.md)
 preserves the preceding source-import remediation and its independent HTTP 403 observation.
 
 The [Canonical Proposal Orchestration Bridge R1.1 status](status/AG_CANONICAL_PROPOSAL_ORCHESTRATION_BRIDGE_R1_1_STATUS.md)

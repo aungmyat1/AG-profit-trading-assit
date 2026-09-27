@@ -4,7 +4,27 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Crypto Opportunity Scanner V1 R2 (2026-09-27, ready for independent re-audit)
+## Crypto Opportunity Scanner V1 R2.1 (2026-09-27, ready for independent re-audit)
+
+R2.1 closes the wrong-instrument provenance gap found in the R2 re-audit. The Bybit
+public feed now validates the response category and exact response symbol against the
+request before parsing candles, then returns a list-compatible candle batch carrying
+that verified symbol/timeframe. `scan_live_once` requires matching feed identity before
+REAL provenance, strategy evaluation, or persistence. Wrong, empty, missing, malformed,
+and unsupported case-variant symbols fail closed; fixtures confirm no REAL candidate or
+persistence. This is offline `UNIT_TESTED` evidence, not live venue verification.
+
+Scanner tests pass 31/31 and Bybit feed tests pass 40/40. The affected functional and
+authority bounded selection across feed, scanner, Opportunity contracts/engine/store,
+API, proposals, and execution-containment boundaries passes 310/310. The historical
+architecture suite remains 4 passed / 1 failed at its broad frozen-base guard; it was
+not modified or excluded from that result. The broad non-live suite was interrupted
+before a completed summary, so it is not claimed as passing. No private exchange,
+proposal, owner-decision, or order authority changed. No live request or broker call
+was made. See
+[`docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_1_STATUS.md`](docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_1_STATUS.md).
+
+## Crypto Opportunity Scanner V1 R2 (2026-09-27, historical remediation evidence)
 
 R2 removes R1's mutable REAL-window registry. Offline scan helpers accept only
 SYNTHETIC/REPLAY windows and cannot form REAL candidates or REAL MarketState. The sole

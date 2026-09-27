@@ -14,6 +14,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from typing import TYPE_CHECKING, Optional, Sequence
 
 from execution_runtime.bybit_linear_perp_feed import (
+    BybitCandleBatch,
     BybitFeedDataError,
     BybitFeedError,
     BybitFeedRequestError,
@@ -457,7 +458,15 @@ def _status_for_feed_error(error: BybitFeedError) -> str:
 def scan_live_once(*, store: Optional[CandidateStore] = None) -> ScannerResult:
     """Fetch, validate, evaluate, and persist one public Bybit observation; never trades."""
     try:
-        candles = tuple(BybitLinearPerpFeed().get_latest_candles(SYMBOL, TIMEFRAME, LOOKBACK_CANDLES))
+        feed_batch = BybitLinearPerpFeed().get_latest_candles(SYMBOL, TIMEFRAME, LOOKBACK_CANDLES)
+        if not isinstance(feed_batch, BybitCandleBatch):
+            raise BybitFeedDataError("KLINES_IDENTITY_UNVERIFIED", "feed did not provide verified response identity")
+        if feed_batch.symbol != SYMBOL or feed_batch.timeframe != TIMEFRAME:
+            raise BybitFeedDataError(
+                "KLINES_IDENTITY_MISMATCH",
+                f"expected {SYMBOL}/{TIMEFRAME}, received {feed_batch.symbol}/{feed_batch.timeframe}",
+            )
+        candles = tuple(feed_batch)
     except BybitFeedError as exc:
         return ScannerResult(status=_status_for_feed_error(exc), reason_code=exc.reason_code)
     window = CryptoMarketWindow(
