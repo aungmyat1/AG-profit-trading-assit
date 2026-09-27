@@ -1,0 +1,72 @@
+import { createInterface } from 'node:readline';
+
+export function isReadOnlyTool(tool) {
+  return tool?.annotations?.readOnlyHint === true &&
+    tool?.annotations?.destructiveHint !== true;
+}
+
+export function isPublicBybitMarketTool(tool) {
+  const publicMarketTool = /(ticker|orderbook|kline|candlestick|instrument|funding|open.?interest|volatility|risk.?limit|delivery.?price|insurance.?pool|long.?short|option.?underlying|option.?asset.?type|server.?time)/i;
+  return isReadOnlyTool(tool) && publicMarketTool.test(tool?.name || '');
+}
+
+export function startReadOnlyProxy({ child, input = process.stdin, output = process.stdout, allowTool = isReadOnlyTool }) {
+  const readOnlyTools = new Map();
+  let stdoutBuffer = '';
+
+  child.stdout.on('data', chunk => {
+    stdoutBuffer += chunk.toString('utf8');
+    let newline;
+    while ((newline = stdoutBuffer.indexOf('\n')) !== -1) {
+      const line = stdoutBuffer.slice(0, newline).trim();
+      stdoutBuffer = stdoutBuffer.slice(newline + 1);
+      if (!line) continue;
+      let message;
+      try {
+        message = JSON.parse(line);
+      } catch {
+        // Do not pass unexpected stdout text through the MCP protocol channel.
+        continue;
+      }
+      if (message.id !== undefined && message.result?.tools) {
+        readOnlyTools.clear();
+        const tools = message.result.tools.filter(allowTool).map(tool => {
+          const alias = `readonly_${tool.name}`;
+          readOnlyTools.set(alias, tool.name);
+          return { ...tool, name: alias };
+        });
+        message.result.tools = tools;
+      }
+      output.write(`${JSON.stringify(message)}\n`);
+    }
+  });
+
+  const lines = createInterface({ input, crlfDelay: Infinity });
+  lines.on('line', line => {
+    let message;
+    try {
+      message = JSON.parse(line);
+    } catch {
+      return;
+    }
+
+    if (message.method === 'tools/call') {
+      const name = message.params?.name;
+      const upstreamName = readOnlyTools.get(name);
+      if (!upstreamName) {
+        if (message.id !== undefined) {
+          output.write(`${JSON.stringify({
+            jsonrpc: '2.0',
+            id: message.id,
+            error: { code: -32601, message: 'Tool is not available in the read-only MT5 MCP.' }
+          })}\n`);
+        }
+        return;
+      }
+      message.params.name = upstreamName;
+    }
+    child.stdin.write(`${JSON.stringify(message)}\n`);
+  });
+
+  input.on('end', () => child.stdin.end());
+}
