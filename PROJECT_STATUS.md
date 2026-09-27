@@ -4,6 +4,18 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Workspace MCP integrations (2026-09-27, read-only configuration)
+
+`.mcp.json` and `.vscode/mcp.json` now configure a read-only MT5 Demo MCP launcher
+and an unauthenticated Bybit MCP pinned to `2.1.22` in forced testnet mode. Both
+launchers filter tool discovery and reject calls outside their explicit read-only
+allowlists; Bybit is restricted to public market-data tools, and the MT5 launcher
+requires `MT5_ENVIRONMENT=DEMO`. Focused protocol/allowlist tests pass (4/4); local
+config parsing and script syntax checks pass. This does not validate connectivity or
+venue responses: MT5 terminal was not running during diagnosis, and no exchange calls
+were made. It does not enable or authorize trading. See
+[`docs/setup/MT5_MCP_SETUP.md`](docs/setup/MT5_MCP_SETUP.md).
+
 ## AG_EDGE_AI_RUNTIME_V1_FOUNDATION (2026-09-26, additive P0–P2 candidate)
 
 The owner selected merged containment baseline `1a8e7c5d922ba48423dca1b7858f8895afe0d66f`

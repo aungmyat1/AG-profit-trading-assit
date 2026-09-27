@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "bybit": {
+      "command": "node",
+      "args": ["web/scripts/start_bybit_mcp.mjs"],
+      "env": {
+        "BYBIT_TESTNET": "true"
+      }
+    },
+    "mt5ReadOnly": {
+      "command": "node",
+      "args": ["web/scripts/start_mt5_mcp.mjs"]
+    }
+  }
+}

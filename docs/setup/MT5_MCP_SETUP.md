@@ -5,13 +5,24 @@
 > live-account execution is explicitly disabled (`live_execution_authorized: false` in
 > `config/strategy.yaml`). See `STATUS.md` for the current runtime state.
 
-**DECIDED 2026-08-22: enable MTX/MBT for automated execution.**
+**Current integration: workspace-configured, read-only MCP spot checks.**
 
-The system is now configured for automated execution. We have lifted the prohibition on algorithmic trading.
+The repository's `.mcp.json` and `.vscode/mcp.json` configure an MT5 MCP launcher
+and Bybit MCP launcher for VS Code-compatible clients. The MT5 launcher requires
+`MT5_ENVIRONMENT=DEMO`, loads demo credentials from `src/.env`, and filters both
+tool discovery and tool calls to the server's explicitly annotated read-only tools.
+The Bybit launcher is pinned to `bybit-official-trading-server@2.1.22`, forces
+`BYBIT_TESTNET=true`, strips API credentials, and only exposes explicitly
+read-only public market-data tools. Neither MCP configuration authorizes any order.
+For proposals, execution, or research evidence, continue using the canonical project
+engines and data paths described in `AGENTS.md` and `PROJECT_STATUS.md`.
+
+The MTX/MBT automated-execution statements below are dated historical context only;
+they are not current authority and those servers are not configured by this workspace.
 
 ---
 
-## Why `metatrader`
+## Historical note: why `metatrader` was selected (2026-08-22)
 
 It works. Verified live:
 
@@ -47,12 +58,14 @@ MT5 terminal profile. The `.mq5` is an Expert Advisor.
 both MQL5 artifacts to a dated folder, leaves `claude_desktop_config.json` untouched,
 then re-verifies the MT5 connection.
 
-## Why MTX is now permitted
+## Historical note: MTX policy (superseded)
 
 MTX provides the read/**write** half — it opens, modifies and closes real positions. 
 Since the project charter was updated on 2026-08-22 to allow automated trading, MTX is the recommended way to execute the Python-driven trades directly via the MCP or python integrations.
 
-The end state is now explicit: `execution.mode: auto` plus a desktop scheduler equals unattended live trading.
+The old claim that MTX or a scheduler permits unattended live trading is superseded.
+Current execution authority and explicit per-command confirmation are defined in
+`AGENTS.md`, `config/trading.yaml`, and `PROJECT_STATUS.md`.
 
 ---
 
@@ -113,3 +126,23 @@ it, and catching a broker that does not follow US DST.
   background while Antigravity makes calls.
 - **Account Permissions**: Ensure your MT5 login credentials have trade/read
   permissions on the target server.
+
+## Current VS Code MCP setup
+
+- Keep the MT5 terminal open and logged into the intended Demo account. The launcher
+  never starts the terminal. `MT5_ENVIRONMENT` must be explicitly set to `DEMO` in
+  the existing `src/.env` file.
+- Credentials use the existing `VANTAGE-DEMO-LOGIN`, `VANTAGE-DEMO_PASSWORD`, and
+  `VANTAGE-DEMO-SERVER` keys in `src/.env`. Do not put credentials in MCP JSON.
+- If the MCP executable is not discovered automatically, set `MT5_MCP_COMMAND` in
+  `src/.env` to its full path. The launcher forwards only Demo credentials and strips
+  live-account, Bybit API, and paper API credentials from the child environment.
+- Bybit is unauthenticated and testnet-forced. Its public tools expose market data
+  only; Bybit account and order tools are intentionally filtered out.
+- Run `node web/scripts/check_mt5_mcp.mjs` from the workspace root for a read-only
+  setup diagnostic. Secret values are never printed.
+- Restart the MCP server (or reload VS Code/start a new chat) after config changes.
+
+These local MCP guardrails do not replace project execution authority, validation,
+or venue qualification. The third-party MT5 server may internally implement trading
+tools; they are not exposed through this workspace's MT5 launcher.

@@ -40,6 +40,11 @@ daily decision CLI; crypto execution remains unimplemented and disabled.
 AI capabilities inspect and explain market state; they do not independently authorize
 orders or override strategy results.
 
+Workspace MCP integrations are configured for read-only MT5 Demo spot checks and
+unauthenticated public Bybit market data (testnet forced). The MCP launchers filter out
+trading/account tools and do not change strategy or execution authority. See
+[`docs/setup/MT5_MCP_SETUP.md`](docs/setup/MT5_MCP_SETUP.md).
+
 Historical replay now has a unit-tested shared evaluation context for the Asian
 strategy engine and SSC canonical shadow consumer. A caller controls historical time;
 both paths use bound, closed data from one event. One consumed DEV_002 event verified

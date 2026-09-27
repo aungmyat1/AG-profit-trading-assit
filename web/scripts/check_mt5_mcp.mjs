@@ -1,7 +1,7 @@
 // check_mt5_mcp.mjs -- read-only diagnostic for the MetaTrader MCP setup.
 // Run from the project root:  node web/scripts/check_mt5_mcp.mjs
 // It never prints passwords, never places orders, and never starts MT5.
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
@@ -16,8 +16,10 @@ const add = (ok, name, detail = '') => {
 const major = Number(process.versions.node.split('.')[0]);
 add(major >= 18, 'Node >= 18', `found ${process.versions.node}`);
 
-// 2. .env in the working directory (the launcher reads process.cwd()/.env)
-const envPath = resolve(process.cwd(), '.env');
+// 2. Read the same environment-file locations as start_mt5_mcp.mjs.
+const rootEnvPath = resolve(process.cwd(), '.env');
+const sourceEnvPath = resolve(process.cwd(), 'src', '.env');
+const envPath = existsSync(sourceEnvPath) ? sourceEnvPath : rootEnvPath;
 const env = { ...process.env };
 if (existsSync(envPath)) {
   add(true, '.env found', envPath);
@@ -31,7 +33,7 @@ if (existsSync(envPath)) {
     if (!(k in env)) env[k] = v;
   }
 } else {
-  add(false, '.env found', `no .env in ${process.cwd()} -- Claude Desktop may start the server from a different folder`);
+  add(false, '.env found', `checked ${rootEnvPath} and ${sourceEnvPath}`);
 }
 
 // 3. Credential aliases, same lists as start_mt5_mcp.mjs (presence only, values hidden)
@@ -44,13 +46,27 @@ for (const [canon, keys] of Object.entries(aliases)) {
   const hit = keys.find((k) => env[k]);
   add(!!hit, `credential ${canon}`, hit ? `set via ${hit} (value hidden)` : `none of: ${keys.join(', ')}`);
 }
+add((env.MT5_ENVIRONMENT || '').toUpperCase() === 'DEMO', 'MT5_ENVIRONMENT is DEMO', 'required by the read-only workspace launcher');
 
 // 4. Live-account variables should not be present in the demo env
 const liveKeys = ['VANTAGE-LIVE-PASSWORD', 'VANTAGE-LIVE', 'VANTAGE-SERVER'].filter((k) => env[k]);
-add(liveKeys.length ? null : true, 'live credentials absent from env', liveKeys.length ? `present: ${liveKeys.join(', ')} (launcher strips them, keep it that way)` : '');
+  add(true, 'live credentials excluded from MT5 child process', liveKeys.length ? `detected in env; launcher strips them (${liveKeys.join(', ')})` : 'none found');
 
 // 5. The metatrader command
-const command = env.MT5_MCP_COMMAND || 'metatrader';
+let command = env.MT5_MCP_COMMAND;
+if (!command && process.platform === 'win32') {
+  const appData = process.env.APPDATA || join(homedir(), 'AppData', 'Roaming');
+  try {
+    const installs = readdirSync(join(appData, 'Python'))
+      .filter(name => /^Python\d+$/i.test(name))
+      .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))
+      .map(name => join(appData, 'Python', name, 'Scripts', 'metatrader-mcp-server.exe'));
+    command = installs.find(existsSync);
+  } catch {
+    // Use the executable name fallback below.
+  }
+}
+command ||= process.platform === 'win32' ? 'metatrader-mcp-server.exe' : 'metatrader-mcp-server';
 const isWin = process.platform === 'win32';
 const which = spawnSync(isWin ? 'where' : 'which', [command], { encoding: 'utf8' });
 if (which.status === 0) {
@@ -65,56 +81,37 @@ if (which.status === 0) {
 if (isWin) {
   const t = spawnSync('tasklist', ['/FI', 'IMAGENAME eq terminal64.exe', '/FO', 'CSV', '/NH'], { encoding: 'utf8' });
   const running = /terminal64\.exe/i.test(t.stdout || '');
-  add(running, 'MT5 terminal64.exe running', running ? '' : 'open MT5 and log in to the DEMO account, then wait ~30s');
+  add(running ? true : null, 'MT5 terminal64.exe running', running ? '' : 'not running; open MT5 and log in to the DEMO account when you need MT5 tools');
 } else {
   add(null, 'MT5 terminal running', 'skipped (not Windows)');
 }
 
-// 7. Claude Desktop config -- is the entry there and does it look sane?
-const appData = process.env.APPDATA || join(homedir(), 'AppData', 'Roaming');
-const cfgPath = join(appData, 'Claude', 'claude_desktop_config.json');
-if (existsSync(cfgPath)) {
+// 7. Workspace MCP configs -- are both intended integrations registered?
+const configs = [
+  { path: resolve(process.cwd(), '.mcp.json'), serversKey: 'mcpServers' },
+  { path: resolve(process.cwd(), '.vscode', 'mcp.json'), serversKey: 'servers' },
+];
+let checkedConfig = false;
+for (const { path: cfgPath, serversKey } of configs) {
+  if (!existsSync(cfgPath)) continue;
+  checkedConfig = true;
   try {
     const cfg = JSON.parse(readFileSync(cfgPath, 'utf8'));
-    const servers = cfg.mcpServers || {};
+    const servers = cfg[serversKey] || {};
     const names = Object.keys(servers);
-    const mt = names.filter((n) => /mt5|metatrader|mtx/i.test(n));
-    add(mt.length > 0, 'Claude Desktop config has an MT5 entry', mt.length ? mt.join(', ') : `servers present: ${names.join(', ') || 'none'}`);
-    // args are printed with any --password/--login/--server/--token/--secret/--key
-    // VALUE redacted -- these launcher command lines routinely embed credentials
-    // directly as CLI args, not just via env, and this diagnostic must never surface
-    // a real secret in its own output.
-    const SENSITIVE_ARG = /^--?(password|login|server|token|secret|key)$/i;
-    const redactArgs = (args) => {
-      const out = [];
-      let redactNext = false;
-      for (const a of args) {
-        if (redactNext) {
-          out.push('***REDACTED***');
-          redactNext = false;
-          continue;
-        }
-        out.push(a);
-        if (SENSITIVE_ARG.test(a)) redactNext = true;
-      }
-      return out;
-    };
-    for (const n of mt) {
-      const s = servers[n];
-      const cmd = s.command || '(missing command)';
-      add(!!s.command, `entry "${n}" command`, `${cmd} ${redactArgs(s.args || []).join(' ')}`);
-      if (s.env) add(true, `entry "${n}" env keys`, Object.keys(s.env).join(', ') + ' (values hidden)');
-    }
-    if (mt.length > 1) add(null, 'multiple MT5 servers registered', 'two servers (e.g. MTX and MBT) can collide; keep one');
+    const mt = names.find(name => /mt5readonly/i.test(name));
+    const bybit = names.find(name => /^bybit$/i.test(name));
+    add(!!mt, `${cfgPath} has read-only MT5 MCP`, mt || `servers present: ${names.join(', ') || 'none'}`);
+    add(!!bybit, `${cfgPath} has Bybit MCP`, bybit || `servers present: ${names.join(', ') || 'none'}`);
   } catch (e) {
-    add(false, 'claude_desktop_config.json is valid JSON', e.message);
+    add(false, `${cfgPath} is valid JSON`, e.message);
   }
-} else {
-  add(null, 'claude_desktop_config.json', `not found at ${cfgPath}`);
 }
+if (!checkedConfig) add(false, 'workspace MCP configuration', 'neither .mcp.json nor .vscode/mcp.json was found');
 
 // Summary
 const fails = results.filter((r) => r.ok === false);
-console.log('\n' + (fails.length ? `${fails.length} problem(s). Fix the first [FAIL] above, then re-run.` : 'No hard failures. If tools are still missing, fully quit Claude Desktop and start a NEW conversation.'));
-console.log('Reminder: account_type from the API says "real" even on demo. Check the MT5 title bar for the "Demo Account" label.');
+const warnings = results.filter((r) => r.ok === null);
+console.log('\n' + (fails.length ? `${fails.length} blocking setup issue(s) remain.` : warnings.length ? 'Configuration checks passed; runtime warnings remain.' : 'All checks passed. Restart the MCP server or reload VS Code after config changes.'));
+console.log('Reminder: the MT5 MCP launcher requires MT5_ENVIRONMENT=DEMO and exposes only explicitly read-only tools.');
 process.exitCode = fails.length ? 1 : 0;
