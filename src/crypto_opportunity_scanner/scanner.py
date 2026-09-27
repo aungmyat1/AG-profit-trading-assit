@@ -49,6 +49,12 @@ from .constants import (
     VENUE,
 )
 
+
+# REAL provenance is granted only to the exact immutable window constructed inside
+# scan_live_once after the public feed returns successfully. A caller-supplied flag or
+# source string cannot authorize a different window.
+_LIVE_FEED_WINDOWS: dict[int, "CryptoMarketWindow"] = {}
+
 _BAR = timedelta(minutes=5)
 _DAY_BARS = 24 * 60 // 5
 _MAX_CLOSED_BAR_AGE = 3 * _BAR
@@ -159,7 +165,7 @@ def _aware_utc(value: datetime, field: str) -> datetime:
     return value.astimezone(timezone.utc)
 
 
-def _validate_window(window: CryptoMarketWindow, *, live_feed_verified: bool = False) -> tuple[Candle, ...]:
+def _validate_window(window: CryptoMarketWindow) -> tuple[Candle, ...]:
     if window.symbol != SYMBOL or window.venue != VENUE or window.timeframe != TIMEFRAME:
         raise ScannerInputError("INVALID_RESPONSE", "UNSUPPORTED_MARKET_WINDOW_IDENTITY")
     if not isinstance(window.source, str) or not window.source:
@@ -168,7 +174,8 @@ def _validate_window(window: CryptoMarketWindow, *, live_feed_verified: bool = F
         raise ScannerInputError("INVALID_RESPONSE", "UNKNOWN_MARKET_DATA_MODE")
     if window.market_data_mode == MARKET_DATA_MODE_REAL and window.source != VENUE:
         raise ScannerInputError("INVALID_RESPONSE", "REAL_MODE_REQUIRES_BYBIT_SOURCE")
-    if window.market_data_mode == MARKET_DATA_MODE_REAL and not live_feed_verified:
+    if (window.market_data_mode == MARKET_DATA_MODE_REAL
+            and _LIVE_FEED_WINDOWS.get(id(window)) is not window):
         raise ScannerInputError("INVALID_RESPONSE", "REAL_MODE_REQUIRES_LIVE_FEED_ENTRYPOINT")
     if window.freshness != "LIVE_FRESH":
         status = window.freshness if window.freshness in {
@@ -232,17 +239,16 @@ def scan_window(
     """Evaluate explicit fixture/replay evidence; REAL data uses scan_live_once only."""
     if window.market_data_mode == MARKET_DATA_MODE_REAL:
         raise ScannerInputError("INVALID_RESPONSE", "REAL_MODE_REQUIRES_LIVE_FEED_ENTRYPOINT")
-    return _scan_window(window, store=store, live_feed_verified=False)
+    return _scan_window(window, store=store)
 
 
 def _scan_window(
     window: CryptoMarketWindow,
     *,
     store: Optional[CandidateStore] = None,
-    live_feed_verified: bool,
 ) -> ScannerResult:
-    """Internal evaluator; REAL mode is reachable only after the public feed fetch."""
-    candles = _validate_window(window, live_feed_verified=live_feed_verified)
+    """Evaluate a validated window; REAL windows require live-feed-issued identity."""
+    candles = _validate_window(window)
     latest = candles[-1]
     latest_open = _aware_utc(latest.time, "latest_candle_time")
     current_day_start, _ = _utc_day_bounds(latest_open.date())
@@ -401,7 +407,7 @@ def _status_for_feed_error(error: BybitFeedError) -> str:
     return "INVALID_RESPONSE"
 
 
-def scan_live_once(*, store: Optional[CandidateStore] = None, observed_at: Optional[datetime] = None) -> ScannerResult:
+def scan_live_once(*, store: Optional[CandidateStore] = None) -> ScannerResult:
     """Fetch one bounded public Bybit window and run one scan; never polls or trades."""
     try:
         candles = tuple(BybitLinearPerpFeed().get_latest_candles(SYMBOL, TIMEFRAME, LOOKBACK_CANDLES))
@@ -409,11 +415,14 @@ def scan_live_once(*, store: Optional[CandidateStore] = None, observed_at: Optio
         return ScannerResult(status=_status_for_feed_error(exc), reason_code=exc.reason_code)
     window = CryptoMarketWindow(
         candles=candles,
-        observed_at=observed_at or datetime.now(timezone.utc),
+        observed_at=datetime.now(timezone.utc),
         market_data_mode=MARKET_DATA_MODE_REAL,
         source=VENUE,
     )
+    _LIVE_FEED_WINDOWS[id(window)] = window
     try:
-        return _scan_window(window, store=store, live_feed_verified=True)
+        return _scan_window(window, store=store)
     except ScannerInputError as exc:
-        return ScannerResult(status=exc.status, reason_code=exc.reason_code)\n
+        return ScannerResult(status=exc.status, reason_code=exc.reason_code)
+    finally:
+        _LIVE_FEED_WINDOWS.pop(id(window), None)

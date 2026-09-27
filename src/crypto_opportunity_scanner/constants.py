@@ -9,4 +9,4 @@ STRATEGY_ID = "CRYPTO_PREVIOUS_DAY_SWEEP_OBSERVATION_V1"
 STRATEGY_VERSION = "1.0.0"
 STRATEGY_CLASSIFICATION = "RESEARCH / OBSERVATION"
 
-DEFAULT_STORE_PATH = "state/crypto_opportunity_candidates_v1.json"\n
+DEFAULT_STORE_PATH = "state/crypto_opportunity_candidates_v1.json"

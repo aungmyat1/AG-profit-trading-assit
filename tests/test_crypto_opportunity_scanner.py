@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from crypto_opportunity_scanner.scanner import CryptoMarketWindow, ScannerInputError, scan_window
+from crypto_opportunity_scanner.scanner import CryptoMarketWindow, ScannerInputError, _scan_window, scan_window
 from opportunity.candidate_store import CandidateStore
 from strategy_engine.session import Candle
 
@@ -76,6 +76,12 @@ def test_closed_candle_age_is_checked_independently_of_fx_sessions():
 def test_fixture_cannot_claim_real_bybit_provenance():
     with pytest.raises(ScannerInputError, match="REAL_MODE_REQUIRES_LIVE_FEED_ENTRYPOINT"):
         scan_window(_window(mode="REAL", source="BYBIT_LINEAR_PERP"))
+
+
+def test_direct_scanner_helper_cannot_forge_real_provenance(tmp_path):
+    window = _window(mode="REAL", source="BYBIT_LINEAR_PERP")
+    with pytest.raises(ScannerInputError, match="REAL_MODE_REQUIRES_LIVE_FEED_ENTRYPOINT"):
+        _scan_window(window, store=CandidateStore(str(tmp_path / "forged-real.json")))
 
 
 def test_repeat_event_is_deduplicated_and_new_bar_gets_new_identity(tmp_path):
