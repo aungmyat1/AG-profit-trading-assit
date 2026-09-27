@@ -34,9 +34,10 @@ and the remaining lifecycle and campaign boundaries.
 
 ## Start here
 
-The [Crypto Opportunity Scanner V1 R1 status](status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R1_STATUS.md)
-records the bounded source repair, REAL-provenance boundary regression, reproduced tests,
-and the independently observed public Bybit HTTP 403 blocker.
+The [Crypto Opportunity Scanner V1 R2 status](status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_STATUS.md)
+records the acquisition-owned REAL-provenance boundary, test-double production composition,
+adversarial regressions, and bounded test results. The [R1 status](status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R1_STATUS.md)
+preserves the preceding source-import remediation and its independent HTTP 403 observation.
 
 The [Canonical Proposal Orchestration Bridge R1.1 status](status/AG_CANONICAL_PROPOSAL_ORCHESTRATION_BRIDGE_R1_1_STATUS.md)
 records the bounded remediation, reproduced R1 trust-boundary findings, R1.1 test

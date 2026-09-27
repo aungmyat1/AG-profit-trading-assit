@@ -50,11 +50,6 @@ from .constants import (
 )
 
 
-# REAL provenance is granted only to the exact immutable window constructed inside
-# scan_live_once after the public feed returns successfully. A caller-supplied flag or
-# source string cannot authorize a different window.
-_LIVE_FEED_WINDOWS: dict[int, "CryptoMarketWindow"] = {}
-
 _BAR = timedelta(minutes=5)
 _DAY_BARS = 24 * 60 // 5
 _MAX_CLOSED_BAR_AGE = 3 * _BAR
@@ -90,6 +85,20 @@ class _SweepHit:
     level_name: str
     level: float
     extreme: float
+
+
+@dataclass(frozen=True)
+class _SweepEvaluation:
+    """Pure strategy facts; contains no market-data authority or Opportunity."""
+
+    latest: Candle
+    latest_open: datetime
+    current_day_start: datetime
+    previous_day_start: datetime
+    reference_high: float
+    reference_low: float
+    sweep: Optional[_SweepHit]
+    fingerprint: str
 
 
 class ScannerInputError(ValueError):
@@ -174,9 +183,6 @@ def _validate_window(window: CryptoMarketWindow) -> tuple[Candle, ...]:
         raise ScannerInputError("INVALID_RESPONSE", "UNKNOWN_MARKET_DATA_MODE")
     if window.market_data_mode == MARKET_DATA_MODE_REAL and window.source != VENUE:
         raise ScannerInputError("INVALID_RESPONSE", "REAL_MODE_REQUIRES_BYBIT_SOURCE")
-    if (window.market_data_mode == MARKET_DATA_MODE_REAL
-            and _LIVE_FEED_WINDOWS.get(id(window)) is not window):
-        raise ScannerInputError("INVALID_RESPONSE", "REAL_MODE_REQUIRES_LIVE_FEED_ENTRYPOINT")
     if window.freshness != "LIVE_FRESH":
         status = window.freshness if window.freshness in {
             "STALE", "VENUE_UNAVAILABLE", "RATE_LIMITED", "INVALID_RESPONSE",
@@ -236,7 +242,7 @@ def scan_window(
     *,
     store: Optional[CandidateStore] = None,
 ) -> ScannerResult:
-    """Evaluate explicit fixture/replay evidence; REAL data uses scan_live_once only."""
+    """Evaluate fixture/replay evidence only; production REAL scans acquire Bybit data."""
     if window.market_data_mode == MARKET_DATA_MODE_REAL:
         raise ScannerInputError("INVALID_RESPONSE", "REAL_MODE_REQUIRES_LIVE_FEED_ENTRYPOINT")
     return _scan_window(window, store=store)
@@ -247,8 +253,19 @@ def _scan_window(
     *,
     store: Optional[CandidateStore] = None,
 ) -> ScannerResult:
-    """Evaluate a validated window; REAL windows require live-feed-issued identity."""
+    """Offline evaluator. It cannot accept or form REAL provenance."""
+    if window.market_data_mode == MARKET_DATA_MODE_REAL:
+        raise ScannerInputError("INVALID_RESPONSE", "REAL_MODE_REQUIRES_PUBLIC_FEED_ENTRYPOINT")
     candles = _validate_window(window)
+    evaluation = _evaluate_sweep(window, candles)
+    marketstate = _marketstate(window, evaluation.latest, evaluation.sweep)
+    return _form_offline_opportunity(
+        window, evaluation, marketstate, store=store,
+    )
+
+
+def _evaluate_sweep(window: CryptoMarketWindow, candles: Sequence[Candle]) -> _SweepEvaluation:
+    """Pure closed-candle strategy calculation shared by offline and live entrypoints."""
     latest = candles[-1]
     latest_open = _aware_utc(latest.time, "latest_candle_time")
     current_day_start, _ = _utc_day_bounds(latest_open.date())
@@ -270,8 +287,36 @@ def _scan_window(
         sweep = _SweepHit("HIGH_SWEEP", "REF_HIGH", reference_high, latest.high)
     else:
         sweep = _SweepHit("LOW_SWEEP", "REF_LOW", reference_low, latest.low)
-    fingerprint = _fingerprint(candles, window.source)
-    marketstate = _marketstate(window, latest, sweep)
+    return _SweepEvaluation(
+        latest=latest,
+        latest_open=latest_open,
+        current_day_start=current_day_start,
+        previous_day_start=previous_day_start,
+        reference_high=reference_high,
+        reference_low=reference_low,
+        sweep=sweep,
+        fingerprint=_fingerprint(candles, window.source),
+    )
+
+
+def _form_offline_opportunity(
+    window: CryptoMarketWindow,
+    evaluation: _SweepEvaluation,
+    marketstate: MarketState,
+    *,
+    store: Optional[CandidateStore] = None,
+) -> ScannerResult:
+    """Persist fixture/replay observations only; REAL authority is never accepted here."""
+    if window.market_data_mode == MARKET_DATA_MODE_REAL:
+        raise ScannerInputError("INVALID_RESPONSE", "REAL_MODE_REQUIRES_PUBLIC_FEED_ENTRYPOINT")
+    latest = evaluation.latest
+    latest_open = evaluation.latest_open
+    current_day_start = evaluation.current_day_start
+    previous_day_start = evaluation.previous_day_start
+    reference_high = evaluation.reference_high
+    reference_low = evaluation.reference_low
+    sweep = evaluation.sweep
+    fingerprint = evaluation.fingerprint
     if sweep is None:
         return ScannerResult(status="NO_OPPORTUNITY", marketstate=marketstate)
 
@@ -353,6 +398,8 @@ def _scan_window(
 
 
 def _marketstate(window: CryptoMarketWindow, latest: Candle, sweep: Optional[_SweepHit]) -> MarketState:
+    if window.market_data_mode == MARKET_DATA_MODE_REAL:
+        raise ScannerInputError("INVALID_RESPONSE", "REAL_MARKETSTATE_REQUIRES_PUBLIC_FEED_ENTRYPOINT")
     observed_at = _aware_utc(window.observed_at, "observed_at")
     close_at = _aware_utc(latest.time, "latest_candle_time") + _BAR
     age_seconds = max(0.0, (observed_at - close_at).total_seconds())
@@ -408,7 +455,7 @@ def _status_for_feed_error(error: BybitFeedError) -> str:
 
 
 def scan_live_once(*, store: Optional[CandidateStore] = None) -> ScannerResult:
-    """Fetch one bounded public Bybit window and run one scan; never polls or trades."""
+    """Fetch, validate, evaluate, and persist one public Bybit observation; never trades."""
     try:
         candles = tuple(BybitLinearPerpFeed().get_latest_candles(SYMBOL, TIMEFRAME, LOOKBACK_CANDLES))
     except BybitFeedError as exc:
@@ -419,10 +466,124 @@ def scan_live_once(*, store: Optional[CandidateStore] = None) -> ScannerResult:
         market_data_mode=MARKET_DATA_MODE_REAL,
         source=VENUE,
     )
-    _LIVE_FEED_WINDOWS[id(window)] = window
     try:
-        return _scan_window(window, store=store)
+        validated = _validate_window(window)
+        evaluation = _evaluate_sweep(window, validated)
     except ScannerInputError as exc:
         return ScannerResult(status=exc.status, reason_code=exc.reason_code)
-    finally:
-        _LIVE_FEED_WINDOWS.pop(id(window), None)
+    latest = evaluation.latest
+    sweep = evaluation.sweep
+    observed_at = _aware_utc(window.observed_at, "observed_at")
+    close_at = evaluation.latest_open + _BAR
+    marketstate_id = f"CRYPTO_MARKETSTATE_{VENUE}_{SYMBOL}_{close_at.strftime('%Y%m%dT%H%M%SZ')}"
+    marketstate = MarketState(
+        schema_version=SCHEMA_VERSION,
+        event_id=marketstate_id,
+        created_at=observed_at,
+        source=VENUE,
+        correlation_id=marketstate_id,
+        symbol=SYMBOL,
+        facts={
+            "symbol": SYMBOL,
+            "source": VENUE,
+            "source_timestamp": close_at.isoformat(),
+            "observed_at": observed_at.isoformat(),
+            "freshness": {
+                "is_fresh": True,
+                "age_seconds": max(0.0, (observed_at - close_at).total_seconds()),
+                "as_of": observed_at.isoformat(),
+                "closed_bar": True,
+            },
+            "provenance": {
+                "provider": "BYBIT",
+                "feed": "V5_PUBLIC_LINEAR_KLINE",
+                "instrument": SYMBOL,
+            },
+            "sweep": {
+                "detected": sweep is not None,
+                "liquidity_side": "BUY_SIDE" if sweep and sweep.direction == "HIGH_SWEEP" else "SELL_SIDE" if sweep else "UNKNOWN",
+                "price": sweep.extreme if sweep else latest.close,
+                "occurred_at": close_at.isoformat(),
+            },
+        },
+    )
+    if sweep is None:
+        return ScannerResult(status="NO_OPPORTUNITY", marketstate=marketstate)
+
+    side = sweep.direction
+    event_id = f"CRYPTO_SWEEP_OBSERVATION_{VENUE}_{SYMBOL}_{TIMEFRAME}_{close_at.strftime('%Y%m%dT%H%M%SZ')}_{side}"
+    event = MarketEvent(
+        event_id=event_id,
+        event_type="BAR_CLOSE",
+        symbol=SYMBOL,
+        market="CRYPTO",
+        venue=VENUE,
+        timeframe=TIMEFRAME,
+        bar_open_time=evaluation.latest_open,
+        bar_close_time=close_at,
+        market_data_asof=observed_at,
+        market_data_mode=MARKET_DATA_MODE_REAL,
+        snapshot_fingerprint=evaluation.fingerprint,
+        source=VENUE,
+    )
+    raw_state = {
+        "classification": STRATEGY_CLASSIFICATION,
+        "observation": "PREVIOUS_UTC_DAY_SWEEP_REJECTION",
+        "event_id": event_id,
+        "sweep_side": side,
+        "source_timestamp": close_at.isoformat(),
+        "timeframe": TIMEFRAME,
+        "market_data_mode": MARKET_DATA_MODE_REAL,
+        "source_fingerprint": evaluation.fingerprint,
+    }
+    adapter = _SweepObservationAdapter(
+        raw_state=raw_state,
+        context={
+            "asset_class": "CRYPTO",
+            "classification": STRATEGY_CLASSIFICATION,
+            "venue": VENUE,
+            "source": VENUE,
+            "source_timestamp": close_at.isoformat(),
+            "observation_timestamp": observed_at.isoformat(),
+            "marketstate_semantic_hash": marketstate.semantic_hash,
+            "market_data_mode": MARKET_DATA_MODE_REAL,
+            "economic_validation": "NOT_ESTABLISHED",
+        },
+        setup_evidence={
+            "observation": "CLOSED_M5_WICK_CROSSED_PREVIOUS_UTC_DAY_LEVEL_AND_CLOSED_BACK_INSIDE",
+            "sweep_side": side,
+            "level_name": sweep.level_name,
+            "reference_level": sweep.level,
+            "sweep_extreme": sweep.extreme,
+            "previous_utc_day_start": evaluation.previous_day_start.isoformat(),
+            "previous_utc_day_end": evaluation.current_day_start.isoformat(),
+            "trigger_candle_open_time": evaluation.latest_open.isoformat(),
+            "trigger_candle_close_time": close_at.isoformat(),
+            "reference_high": evaluation.reference_high,
+            "reference_low": evaluation.reference_low,
+        },
+    )
+    binding = _binding()
+    probe, _ = evaluate_funnel(event=event, binding=binding, adapter=adapter)
+    candidate_store = store or CandidateStore(DEFAULT_STORE_PATH)
+    previous = candidate_store.get(probe.candidate_id)
+    if previous is not None and previous.market_data_mode != MARKET_DATA_MODE_REAL:
+        return ScannerResult(
+            status="INVALID_RESPONSE", reason_code="CANDIDATE_MARKET_DATA_MODE_CONFLICT",
+            marketstate=marketstate,
+        )
+    if previous is None:
+        candidate, transition_obj = evaluate_funnel(event=event, binding=binding, adapter=adapter)
+    else:
+        candidate, transition_obj = evaluate_funnel(
+            event=event, binding=binding, adapter=adapter, previous_candidate=previous,
+        )
+    deduplicated = transition_obj is None
+    if transition_obj is not None:
+        candidate_store.persist(candidate, transition_obj)
+    return ScannerResult(
+        status="UNCHANGED" if deduplicated else "OPPORTUNITY_UPDATED",
+        marketstate=marketstate,
+        candidate=candidate,
+        deduplicated=deduplicated,
+    )

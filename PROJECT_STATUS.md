@@ -4,24 +4,23 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Crypto Opportunity Scanner V1 R1 (2026-09-27, ready for independent re-audit)
+## Crypto Opportunity Scanner V1 R2 (2026-09-27, ready for independent re-audit)
 
-R1 repairs source-escape corruption in the scanner package initializer, constants, and
-scanner module. It also removes the caller-controlled REAL-verification boolean: only
-the exact window created after a successful bounded Bybit public-feed fetch is admitted
-as REAL, and the live observation time comes from the local UTC clock. Fixture/replay
-scans retain their labels. The scanner remains BTCUSDT/M5, observation-only, and persists
-to the existing OpportunityCandidate store; `GET /api/opportunities` remains read-only.
-No proposal eligibility, CanonicalProposal, risk sizing, owner decision, private Bybit
-access, or trading route was added. Crypto execution remains MT5-only.
+R2 removes R1's mutable REAL-window registry. Offline scan helpers accept only
+SYNTHETIC/REPLAY windows and cannot form REAL candidates or REAL MarketState. The sole
+live entrypoint, `scan_live_once`, owns Bybit public-feed acquisition, validation,
+strategy evaluation, REAL provenance formation, and storage; callers cannot pass it a
+window. An offline test double exercises this full production composition without
+claiming live Bybit evidence. The scanner remains BTCUSDT/M5 and observation-only;
+`GET /api/opportunities` remains read-only. No proposal, risk, owner-decision, private
+exchange, or order authority was added. Crypto execution remains MT5-only.
 
-R1 compile/import gates pass; the focused scanner suite passes 16/16 and the bounded
-Opportunity/contract/store/import-boundary, Bybit-feed, and API regression passes
-126/126 on Windows/Python 3.14.0/pytest 8.3.5. One read-only public Bybit request
-returned HTTP 403 Forbidden, surfaced as `KLINES_REQUEST_FAILED`; real market data and
-real strategy evaluation remain unverified. No fixture was used as live evidence.
-Economic validation and strategy authorization are not established. See
-[`docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R1_STATUS.md`](docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R1_STATUS.md).
+Compile/import gates pass. The focused scanner suite passes 22/22. The bounded scanner,
+Opportunity, Bybit, API, import-boundary, and applicable architecture selection passes
+152 tests with one unrelated frozen-Foundation snapshot assertion deselected; that
+assertion compares the whole repository with a base predating the scanner feature. No
+live Bybit request was made in this remediation. See
+[`docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_STATUS.md`](docs/status/AG_CRYPTO_OPPORTUNITY_SCANNER_V1_R2_STATUS.md).
 
 ## Canonical Proposal Orchestration Bridge R1.1 (2026-09-27, ready for independent re-audit)
 

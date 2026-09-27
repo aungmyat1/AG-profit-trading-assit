@@ -1,13 +1,26 @@
 from __future__ import annotations
 
 import ast
+import inspect
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
-from crypto_opportunity_scanner.scanner import CryptoMarketWindow, ScannerInputError, _scan_window, scan_window
+import crypto_opportunity_scanner.scanner as scanner
+from crypto_opportunity_scanner.scanner import (
+    CryptoMarketWindow,
+    ScannerInputError,
+    _evaluate_sweep,
+    _form_offline_opportunity,
+    _marketstate,
+    _scan_window,
+    _validate_window,
+    scan_live_once,
+    scan_window,
+)
 from opportunity.candidate_store import CandidateStore
+from execution_runtime.bybit_linear_perp_feed import BybitFeedRequestError
 from strategy_engine.session import Candle
 
 
@@ -78,10 +91,63 @@ def test_fixture_cannot_claim_real_bybit_provenance():
         scan_window(_window(mode="REAL", source="BYBIT_LINEAR_PERP"))
 
 
-def test_direct_scanner_helper_cannot_forge_real_provenance(tmp_path):
-    window = _window(mode="REAL", source="BYBIT_LINEAR_PERP")
-    with pytest.raises(ScannerInputError, match="REAL_MODE_REQUIRES_LIVE_FEED_ENTRYPOINT"):
-        _scan_window(window, store=CandidateStore(str(tmp_path / "forged-real.json")))
+@pytest.mark.parametrize("source", ["TEST_FIXTURE", "ARCHIVED_CAPTURE", "TEST_SYNTHETIC"])
+def test_direct_scanner_helper_cannot_forge_real_provenance(source, tmp_path):
+    window = _window(mode="REAL", source=source)
+    with pytest.raises(ScannerInputError, match="REAL_MODE_REQUIRES_PUBLIC_FEED_ENTRYPOINT"):
+        _scan_window(window, store=CandidateStore(str(tmp_path / f"forged-{source}.json")))
+    bybit_labeled = _window(mode="REAL", source="BYBIT_LINEAR_PERP")
+    evaluation = _evaluate_sweep(bybit_labeled, _validate_window(bybit_labeled))
+    with pytest.raises(ScannerInputError, match="REAL_MARKETSTATE_REQUIRES_PUBLIC_FEED_ENTRYPOINT"):
+        _marketstate(bybit_labeled, evaluation.latest, evaluation.sweep)
+    with pytest.raises(ScannerInputError, match="REAL_MODE_REQUIRES_PUBLIC_FEED_ENTRYPOINT"):
+        _form_offline_opportunity(bybit_labeled, evaluation, None)
+
+
+def test_public_production_entrypoint_owns_feed_acquisition_and_rejects_window_injection():
+    assert "window" not in inspect.signature(scan_live_once).parameters
+    with pytest.raises(TypeError):
+        scan_live_once(window=_window(mode="REAL", source="BYBIT_LINEAR_PERP"))
+    assert not hasattr(scanner, "_LIVE_FEED_WINDOWS")
+
+
+def test_test_double_production_composition_forms_real_only_after_feed_success(monkeypatch, tmp_path):
+    now = datetime.now(timezone.utc)
+    latest_open = now.replace(second=0, microsecond=0, minute=(now.minute // 5) * 5) - timedelta(minutes=5)
+    start = latest_open - timedelta(minutes=5 * 719)
+    candles = [
+        Candle(start + timedelta(minutes=5 * index), 100.0, 105.0, 95.0, 100.0, 1.0)
+        for index in range(720)
+    ]
+    candles[-1] = Candle(latest_open, 100.0, 111.0, 95.0, 100.0, 1.0)
+    calls = []
+
+    def fake_public_feed(self, symbol, timeframe, count):
+        calls.append((symbol, timeframe, count))
+        return candles
+
+    monkeypatch.setattr(scanner.BybitLinearPerpFeed, "get_latest_candles", fake_public_feed)
+    store = CandidateStore(str(tmp_path / "test-double-live.json"))
+    result = scan_live_once(store=store)
+
+    assert calls == [("BTCUSDT", "M5", 720)]
+    assert result.status == "OPPORTUNITY_UPDATED"
+    assert result.candidate.market_data_mode == "REAL"
+    assert result.marketstate.facts["provenance"]["provider"] == "BYBIT"
+    assert len(store.all_candidates()) == 1
+
+
+def test_failed_public_feed_acquisition_cannot_create_real_opportunity(monkeypatch, tmp_path):
+    def fail_public_feed(self, symbol, timeframe, count):
+        raise BybitFeedRequestError("KLINES_REQUEST_FAILED", "HTTP 403 Forbidden")
+
+    monkeypatch.setattr(scanner.BybitLinearPerpFeed, "get_latest_candles", fail_public_feed)
+    store = CandidateStore(str(tmp_path / "failed-feed.json"))
+    result = scan_live_once(store=store)
+    assert result.status == "VENUE_UNAVAILABLE"
+    assert result.candidate is None
+    assert result.marketstate is None
+    assert not store.all_candidates()
 
 
 def test_repeat_event_is_deduplicated_and_new_bar_gets_new_identity(tmp_path):
@@ -97,6 +163,24 @@ def test_repeat_event_is_deduplicated_and_new_bar_gets_new_identity(tmp_path):
     later = scan_window(CryptoMarketWindow(tuple(candles), stamp + timedelta(minutes=5, seconds=2),
                                            "SYNTHETIC", "TEST_FIXTURE"), store=store)
     assert later.candidate.candidate_id != first.candidate.candidate_id
+
+
+def test_observation_time_does_not_change_identity(tmp_path):
+    store = CandidateStore(str(tmp_path / "observation-time.json"))
+    first_window = _window(mode="SYNTHETIC", source="TEST_FIXTURE")
+    first = scan_window(first_window, store=store)
+    repeated = scan_window(
+        CryptoMarketWindow(
+            first_window.candles,
+            first_window.observed_at + timedelta(minutes=1),
+            "SYNTHETIC",
+            "TEST_FIXTURE",
+        ),
+        store=store,
+    )
+    assert repeated.candidate.candidate_id == first.candidate.candidate_id
+    assert repeated.status == "UNCHANGED" and repeated.deduplicated is True
+    assert len(store.all_candidates()) == 1
 
 
 def test_incomplete_prior_day_fails_closed():
