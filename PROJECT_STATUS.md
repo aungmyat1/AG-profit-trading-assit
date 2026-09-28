@@ -4,6 +4,27 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## FX Opportunity platform V2 (2026-09-28): LIVE_MT5_AUTH_BLOCKED_PLATFORM_READY
+
+- **Scope:** the capability-zero Opportunity platform now covers EURUSD, GBPUSD and USDJPY.
+  Per-instrument pip semantics live in `config/instruments/fx_opportunity_instruments.yaml`
+  (USDJPY pip is 0.01). MarketState is strategy-neutral and fingerprinted, and
+  `fx_opportunity.scanner` returns one explicit state per symbol for POST_ASIAN and
+  POST_LONDON.
+- **Bindings:** EURUSD and GBPUSD are bound to research-only `ST_ASIAN_SWEEP_5R_V1` v1.1.1.
+  USDJPY is not in any pilot universe, so it returns `NO_COMPATIBLE_OPPORTUNITY_STRATEGY`;
+  no strategy was widened to bind it.
+- **Authority:** Proposal, Demo and Live authority are NONE, and TradeTicket is
+  NOT_CREATED. Broker mutation calls are 0 (static, fresh-interpreter and runtime checks).
+- **Live MT5:** one read-only attempt failed with error -6 (authorization) and was not
+  retried. Live data validation is deferred until the owner restores the terminal login.
+- **Tests:** focused suites give 253 passed. The full suite gives 590 passed, 4 skipped and
+  1 baseline-unrelated failure (`api.app` is absent at base).
+- **Manual command:** `python scripts/run_fx_opportunity_once.py --cycle POST_ASIAN --symbol ALL`.
+  No scheduler is installed; a design-only proposal is in the status doc.
+
+See `docs/status/AG_FX_OPPORTUNITY_PLATFORM_V2_STATUS.md`.
+
 ## FX discovery V1 (2026-09-28): NO_DEVELOPMENT_CANDIDATE
 
 - **Asian Sweep closed:** V1.2 is NEGATIVE_BASELINE; V1.3 is TERMINATED_BEFORE_EVALUATION.

@@ -39,6 +39,8 @@ and the remaining lifecycle and campaign boundaries.
 The [FX Opportunity foundation V1 status](status/AG_FX_OPPORTUNITY_FOUNDATION_V1_STATUS.md)
 records the selective byte-exact restoration from `2b75bbf`, the EURUSD Opportunity slice,
 the strategy-authority audit, and why Proposal/TradeTicket fail closed. The
+[FX Opportunity platform V2 status](status/AG_FX_OPPORTUNITY_PLATFORM_V2_STATUS.md)
+generalizes that slice to EURUSD/GBPUSD/USDJPY with MarketState and a three-pair scanner. The
 [FX Opportunity qualification V1 status](status/AG_FX_OPPORTUNITY_QUALIFICATION_V1_STATUS.md)
 freezes the economic-qualification contract and lists the unsigned/contradictory fields
 that block it. The
