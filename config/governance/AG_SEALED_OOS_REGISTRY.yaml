@@ -1,0 +1,41 @@
+# AG_SEALED_OOS_REGISTRY -- datasets reserved for one-shot, owner-authorized OOS evaluation.
+#
+# A SEALED_OOS dataset must NOT be used for candidate discovery, threshold, feature,
+# parameter, stop, target or session selection, filtering decisions, or inspection of any
+# outcome-related distribution. Opening one requires (1) a frozen candidate specification
+# committed beforehand, and (2) a separate, explicit owner authorization naming that
+# candidate. Market data from a sealed period (in any file, at any timeframe) is sealed
+# too: the D:\ root EURUSD exports reproduce these prices exactly over their common
+# span (see H1M15_AUTHORITY_REMEDIATION_EVIDENCE_V1.json), so they cannot serve as
+# development data for any date inside the sealed period.
+schema: AG_SEALED_OOS_REGISTRY_V1
+sealed_at_utc: "2026-09-28"
+sealed_by: OWNER (mission "ASIAN SWEEP RESEARCH CLOSURE + OSS-FIRST FX STRATEGY DISCOVERY V1")
+
+sealed:
+  - id: EURUSD_HIST_1Y_2025_09_TO_2026_09
+    symbol: EURUSD
+    sealed_period_utc: {from: "2025-09-14T21:00:00Z", to: "2026-09-15T21:00:00Z"}
+    excluded_subinterval_already_consumed:
+      # G2_DEV_001 was consumed by ST_ASIAN_SWEEP_5R_V1 V1.2 research before sealing. It
+      # is not part of the sealed OOS evaluation period; it remains development data,
+      # closed to Asian-Sweep optimization.
+      {from: "2026-06-20T00:00:00Z", to: "2026-08-03T00:00:00Z", dataset: SSC_V1_0_1_G2_DEV_001}
+    datasets:
+      - dataset_id: SSC_V1_0_1_HIST_1Y_M1_001
+        location: "git 2b75bbf0d290cbf3b52684f87770396442790639 data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_M1_001/ (not restored into this tree)"
+        files:
+          EURUSD_M1.csv: {sha256: 50beb42ad2f65203f3946301eee0e8a435dd6f2067eb4fc0692ebba451d12f8a, git_blob: ef5e2470341baee76f972c25839d3a5131900417}
+          EURUSD_M1_broker_export.csv: {sha256: 3fdd97cfba62c37251f401c9e357833da4df3da48729d8edf9363ef2a6fe7fdd, git_blob: cd05503f06da4d24fd826a540318664073d450bf}
+      - dataset_id: SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001
+        location: data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001/
+        files:
+          EURUSD_M15.csv: {sha256: c9833427404d8634d8cf57b000017ecea7ad865ab22db4eadedacb80de9b6956}
+          EURUSD_H1.csv: {sha256: 4eb522945697773ed34d1b8d47ab928b9e94e99828dade88db18fe186905e288}
+    status: SEALED_OOS
+    opened: false
+    access_log: []   # append {date, candidate, contract_sha, owner_authorization} on the one authorized opening
+
+research_status:
+  - {candidate: ST_ASIAN_SWEEP_5R_V1@1.2.0-CANDIDATE, technical_pipeline: VALIDATED, economic_result: NEGATIVE_BASELINE, proposal_authority: NONE, demo_authority: NONE, live_authority: NONE, evidence: artifacts/validation/AG_FX_OPPORTUNITY_FOUNDATION_V1/ST_ASIAN_SWEEP_5R_V1_1_2_0_CANDIDATE_OUTCOMES_V2.json}
+  - {candidate: ST_ASIAN_SWEEP_5R_V1@1.3.0-CANDIDATE, status: TERMINATED_BEFORE_EVALUATION, reason: THRESHOLD_PREREGISTRATION_REQUIRED, max_friction_to_risk: NOT_SET, contract: config/governance/AG_ASIAN_SWEEP_V1_3_FRICTION_GATE_CONTRACT_DRAFT.yaml}

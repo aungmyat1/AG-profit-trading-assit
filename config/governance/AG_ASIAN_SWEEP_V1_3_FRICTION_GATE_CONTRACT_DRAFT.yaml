@@ -1,5 +1,7 @@
 # ST_ASIAN_SWEEP_5R_V1@1.3.0-CANDIDATE -- friction-to-risk admission experiment.
-# STATUS: PROPOSED / UNSIGNED. The threshold is deliberately left unset.
+# STATUS: TERMINATED_BEFORE_EVALUATION / UNSIGNED (owner decision 2026-09-28). Preserved
+# as historical research evidence. It must never be signed, and no outcome may be
+# computed against it. The threshold was deliberately never set.
 #
 # No outcome may be computed against this file while max_friction_to_risk is null. The
 # owner sets exactly one value, with a rationale that is independent of
@@ -7,7 +9,7 @@
 # Only after that commit may the OOS replay run. See
 # docs/status/AG_ASIAN_SWEEP_V1_3_FRICTION_GATE_STATUS.md.
 schema: AG_ASIAN_SWEEP_V1_3_FRICTION_GATE_CONTRACT
-status: PROPOSED_UNSIGNED
+status: TERMINATED_UNSIGNED   # was PROPOSED_UNSIGNED; reason THRESHOLD_PREREGISTRATION_REQUIRED
 strategy_id: ST_ASIAN_SWEEP_5R_V1
 candidate_version: 1.3.0-CANDIDATE
 control: {candidate_version: 1.2.0-CANDIDATE, contract: config/governance/AG_OUTCOME_RESOLUTION_CONTRACT_V2.yaml, contract_sha256_lf: a5680bb014bff836ebc0536b91fe050cf84060d81d0bdbae6bec2eaf003128aa}
