@@ -142,3 +142,106 @@ def test_collector_has_no_execution_capability(path):
             names = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module or ""]
             for n in names:
                 assert n.split(".")[0] not in _FORBIDDEN_IMPORT_ROOTS, (path.name, n)
+
+
+# --- P6-R3: quote-state metadata probe + session gate --------------------------------
+
+import os  # noqa: E402
+import runpy  # noqa: E402
+import sys  # noqa: E402
+import types  # noqa: E402
+from types import SimpleNamespace  # noqa: E402
+
+from fx_friction_capture.quote_metadata import UNAVAILABLE, local_constant_tables, quote_metadata  # noqa: E402
+from post_asian_pilot.pilot_config import load_pilot_config  # noqa: E402
+
+CONSTANTS = {"TICK_FLAG_": {"ASK": 4, "BID": 2, "BUY": 32, "LAST": 8, "SELL": 64, "VOLUME": 16},
+             "SYMBOL_TRADE_MODE_": {"CLOSEONLY": 3, "DISABLED": 0, "FULL": 4, "LONGONLY": 1, "SHORTONLY": 2},
+             "SYMBOL_TRADE_EXECUTION_": {"EXCHANGE": 3, "INSTANT": 1, "MARKET": 2, "REQUEST": 0},
+             "SYMBOL_FILLING_": {}}
+RAW_TICK = SimpleNamespace(time=1790000000, bid=1.17, ask=1.17, last=0.0, volume=0, time_msc=1790000000123,
+                           flags=6, volume_real=0.0)
+SYMBOL = SimpleNamespace(trade_mode=0, trade_exemode=2, filling_mode=3, order_mode=127, spread=0, spread_float=True,
+                         visible=True, select=True, bid=1.17, ask=float("nan"), name="EURUSD", login=999)
+
+
+def test_metadata_copies_present_fields_and_decodes_only_with_local_constants():
+    m = quote_metadata(RAW_TICK, SYMBOL, CONSTANTS, previous_time_msc=None)
+    assert m["tick"]["flags"] == 6 and m["tick_flags_decoded"] == ["ASK", "BID"]
+    assert (m["trade_mode_decoded"], m["execution_mode_decoded"]) == ("DISABLED", "MARKET")
+    assert m["filling_mode_decoded"] == UNAVAILABLE and m["symbol"]["filling_mode"] == 3
+    assert "trade_stops_level" not in m["symbol"]           # absent fields are not invented
+    assert m["symbol"]["ask"] == "nan"                      # non-finite kept as raw token, JSON-safe
+    assert m["same_tick_as_previous_sample"] is None
+    assert quote_metadata(RAW_TICK, SYMBOL, CONSTANTS, 1790000000123)["same_tick_as_previous_sample"] is True
+    assert "login" not in json.dumps(m)                     # symbol-only fields; nothing from the account
+
+
+def test_metadata_is_deterministic_and_never_affects_validity():
+    a = quote_metadata(RAW_TICK, SYMBOL, CONSTANTS, 1)
+    assert a == quote_metadata(RAW_TICK, SYMBOL, CONSTANTS, 1)
+    with_meta = sc.observe(capture_id="C", sequence=0, sampled_at_utc=T, expected_symbol="EURUSD",
+                           observed_symbol="EURUSD", venue=VT, tick=tick(1.17, 1.17), pip_size=0.0001,
+                           git_lineage="abc", session_classification="OTHER", quote_metadata=a)
+    plain = row(t=tick(1.17, 1.17))
+    assert {k: v for k, v in with_meta.items() if k != "quote_metadata"} == {k: v for k, v in plain.items() if k != "quote_metadata"}
+    assert with_meta["validity"] == "VALID" and with_meta["zero_spread"] is True
+    assert sc.serialize_rows([with_meta])  # canonical, NaN-free, secret-free
+
+
+def test_local_constant_tables_reads_module_families():
+    fake = SimpleNamespace(TICK_FLAG_BID=2, SYMBOL_TRADE_MODE_FULL=4, OTHER=1)
+    t = local_constant_tables(fake)
+    assert t["TICK_FLAG_"] == {"BID": 2} and t["SYMBOL_FILLING_"] == {}
+
+
+def test_session_windows_match_canonical_pilot_execution_windows():
+    for name, start, end in sc.SESSION_WINDOWS:
+        path = {"POST_ASIAN": "config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1_0_1.yaml",
+                "POST_LONDON": "config/pilot/AG_POST_LONDON_NEWYORK_PILOT_V1_0_1.yaml"}[name]
+        pilot = load_pilot_config(path)
+        assert (start.strftime("%H:%M"), end.strftime("%H:%M")) == (
+            pilot.execution_window_start_utc, pilot.execution_window_end_utc)
+
+
+def _load_script(monkeypatch, calls):
+    fake = types.ModuleType("MetaTrader5")
+    fake.__file__ = os.path.join(os.sep, "site-packages", "MetaTrader5", "__init__.py")
+    fake.initialize = lambda **k: calls.append("initialize") or False
+    fake.last_error = lambda: (-6, "x")
+    monkeypatch.setitem(sys.modules, "MetaTrader5", fake)
+    cwd = os.getcwd()
+    try:
+        return runpy.run_path(str(REPO / "scripts" / "capture_vt_spread_evidence.py"), run_name="capture_under_test")
+    finally:
+        os.chdir(cwd)
+
+
+@pytest.mark.parametrize("session,start,duration,expected", [
+    ("POST_ASIAN", dt.datetime(2026, 9, 29, 7, 5, tzinfo=UTC), 720, None),
+    ("POST_ASIAN", dt.datetime(2026, 9, 29, 10, 50, tzinfo=UTC), 720, "INSUFFICIENT_REMAINING_SESSION_WINDOW"),
+    ("POST_ASIAN", dt.datetime(2026, 9, 28, 19, 44, tzinfo=UTC), 720, "TARGET_SESSION_NOT_ACTIVE"),
+    ("POST_LONDON", dt.datetime(2026, 9, 29, 12, 0, tzinfo=UTC), 720, None),
+    ("POST_LONDON", dt.datetime(2026, 9, 29, 8, 0, tzinfo=UTC), 720, "TARGET_SESSION_NOT_ACTIVE"),
+    ("OTHER", dt.datetime(2026, 9, 29, 8, 0, tzinfo=UTC), 720, "TARGET_SESSION_NOT_ACTIVE"),
+    ("OTHER", dt.datetime(2026, 9, 28, 19, 44, tzinfo=UTC), 720, None),
+    ("POST_ASIAN", dt.datetime(2026, 10, 3, 8, 0, tzinfo=UTC), 720, "TARGET_SESSION_NOT_ACTIVE"),  # Saturday
+])
+def test_session_gate(monkeypatch, session, start, duration, expected):
+    gate = _load_script(monkeypatch, [])["session_gate"]
+    assert gate(session, start, duration) == expected
+
+
+def test_out_of_session_run_stops_before_mt5_initialize(monkeypatch, capsys):
+    calls = []
+    ns = _load_script(monkeypatch, calls)
+    monkeypatch.setattr(sys, "argv", ["capture", "--session", "POST_ASIAN"])
+    monkeypatch.setitem(ns["main"].__globals__, "session_gate", lambda *a: "TARGET_SESSION_NOT_ACTIVE")
+    cwd = os.getcwd()
+    try:
+        rc = ns["main"]()
+    finally:
+        os.chdir(cwd)
+    out = json.loads(capsys.readouterr().out)
+    assert rc == 2 and calls == [] and out["status"] == "TARGET_SESSION_NOT_ACTIVE"
+    assert set(out["broker_mutation_calls"].values()) == {0}

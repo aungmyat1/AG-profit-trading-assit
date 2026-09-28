@@ -27,7 +27,10 @@ import math
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
-COLLECTOR_VERSION = "AG_VT_SPREAD_COLLECTOR_V1"
+# V2 (P6-R3): adds the optional, additive `quote_metadata` row field; every V1 field and
+# its semantics are unchanged. V1 evidence (capture VT_SPREAD_20260928T190357Z_18ee81e6)
+# remains attributed to V1 via its own rows/manifest.
+COLLECTOR_VERSION = "AG_VT_SPREAD_COLLECTOR_V2"
 SOURCE = "MT5_LIVE_TICK"
 EXPECTED_BROKER = "VT_MARKETS"
 EXPECTED_SERVER = "VTMarkets-Demo"
@@ -95,8 +98,10 @@ def observe(
     pip_size: float,
     git_lineage: str,
     session_classification: str,
+    quote_metadata: Optional[Mapping[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """One raw evidence row. Never raises for bad market data -- it classifies it."""
+    """One raw evidence row. Never raises for bad market data -- it classifies it.
+    `quote_metadata` (quote_metadata.py) is recorded verbatim and never affects validity."""
     validity = VALID
     if venue.broker != EXPECTED_BROKER:
         validity = "WRONG_BROKER"
@@ -145,6 +150,7 @@ def observe(
         "collector_version": COLLECTOR_VERSION,
         "git_lineage": git_lineage,
         "validity": validity,
+        "quote_metadata": dict(quote_metadata) if quote_metadata is not None else None,
     }
 
 

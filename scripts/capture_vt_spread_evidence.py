@@ -1,6 +1,13 @@
 """Capture immutable VT Markets Demo EURUSD/GBPUSD bid/ask evidence (P6-R2, evidence only).
 
-    python scripts/capture_vt_spread_evidence.py [--duration-seconds 720] [--cadence-seconds 5]
+    python scripts/capture_vt_spread_evidence.py --session POST_ASIAN|POST_LONDON|OTHER \
+        [--duration-seconds 720] [--cadence-seconds 5]
+
+Session gate (P6-R3), checked BEFORE MT5 is initialized: the current UTC time must be
+inside the requested session (canonical scanner execution windows, see
+spread_capture.SESSION_WINDOWS) with at least --duration-seconds remaining, otherwise the
+run stops with TARGET_SESSION_NOT_ACTIVE and creates nothing. OTHER must be requested
+explicitly and must also match the actual time.
 
 Attaches to the already-running, logged-in terminal (no credentials passed or read).
 Gates before any tick is read: real MetaTrader5 package (repo stub refused), Demo account,
@@ -48,6 +55,7 @@ for _name in _BLOCKED:
     setattr(MetaTrader5, _name, _block(_name))
 
 from fx_friction_capture import spread_capture as sc  # noqa: E402
+from fx_friction_capture.quote_metadata import SYMBOL_FIELDS, TICK_FIELDS, local_constant_tables, quote_metadata  # noqa: E402
 from fx_opportunity.instruments import check_broker_spec, get_instrument, load_brokers  # noqa: E402
 from mt5.market_data import MarketDataError, server_time_provenance, server_time_timeline  # noqa: E402
 
@@ -91,18 +99,57 @@ def _write_once(path: str, data: bytes) -> str:
     return sc.sha256(data)
 
 
-def _stop(reason: str, **extra) -> int:
-    print(json.dumps({"status": reason, **extra, "broker_mutation_calls": dict(_calls)}, indent=2, default=str))
+def _metadata_counts(rows) -> dict:
+    """Presence/counts only (acquisition verification) -- no interpretation."""
+    metas = [r["quote_metadata"] for r in rows if r.get("quote_metadata")]
+
+    def values(key):
+        return sorted({json.dumps(m[key], sort_keys=True) for m in metas})
+    return {"metadata": {
+        "rows_with_metadata": len(metas),
+        "tick_flags_present": sum("flags" in m["tick"] for m in metas),
+        "trade_mode_present": sum("trade_mode" in m["symbol"] for m in metas),
+        "execution_mode_present": sum("trade_exemode" in m["symbol"] for m in metas),
+        "filling_mode_present": sum("filling_mode" in m["symbol"] for m in metas),
+        "same_tick_as_previous_sample": sum(m["same_tick_as_previous_sample"] is True for m in metas),
+        "trade_mode_decoded_values": values("trade_mode_decoded"),
+        "execution_mode_decoded_values": values("execution_mode_decoded"),
+        "filling_mode_decoded_values": values("filling_mode_decoded"),
+        "tick_flags_decoded_values": values("tick_flags_decoded"),
+    }}
+
+
+def _stop(status: str, **extra) -> int:
+    print(json.dumps({"status": status, **extra, "broker_mutation_calls": dict(_calls)}, indent=2, default=str))
     return 2
+
+
+def session_gate(session: str, start: dt.datetime, duration_seconds: int):
+    """None if a capture of `duration_seconds` starting at `start` stays inside `session`,
+    else a reason code. Pure, so it is unit-tested without MT5."""
+    end = start + dt.timedelta(seconds=duration_seconds)
+    if sc.classify_session(start) != session:
+        return "TARGET_SESSION_NOT_ACTIVE"
+    if session == "OTHER":
+        return None if sc.classify_session(end) == "OTHER" else "TARGET_SESSION_NOT_ACTIVE"
+    window_end = next(e for name, _s, e in sc.SESSION_WINDOWS if name == session)
+    if end > dt.datetime.combine(start.date(), window_end, tzinfo=dt.timezone.utc):
+        return "INSUFFICIENT_REMAINING_SESSION_WINDOW"
+    return None
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--session", required=True, choices=["POST_ASIAN", "POST_LONDON", "OTHER"])
     ap.add_argument("--duration-seconds", type=int, default=720)
     ap.add_argument("--cadence-seconds", type=float, default=5.0)
     args = ap.parse_args()
     if not (60 <= args.duration_seconds <= 1800 and 1.0 <= args.cadence_seconds <= 60.0):
         return _stop("VT_CAPTURE_FAILED", reason="duration/cadence outside bounded limits")
+    gate = session_gate(args.session, dt.datetime.now(dt.timezone.utc), args.duration_seconds)
+    if gate is not None:
+        return _stop("TARGET_SESSION_NOT_ACTIVE", requested_session=args.session, reason=gate,
+                     now_utc=dt.datetime.now(dt.timezone.utc).isoformat())
     lineage = _lineage()
     if lineage.endswith("+dirty"):
         return _stop("VT_CAPTURE_FAILED", reason="tracked worktree is dirty; lineage must be exact")
@@ -131,7 +178,9 @@ def main() -> int:
             offset = server_time_timeline(broker_symbols["EURUSD"], start, start).at_utc(start).utc_offset_hours
         except MarketDataError as exc:
             return _stop("VT_CAPTURE_FAILED", reason=exc.reason_code)
-        capture_id = "VT_SPREAD_" + start.strftime("%Y%m%dT%H%M%SZ") + "_" + lineage[:8]
+        capture_id = f"VT_SPREAD_{args.session}_" + start.strftime("%Y%m%dT%H%M%SZ") + "_" + lineage[:8]
+        constants = local_constant_tables(MetaTrader5)
+        last_msc = {s: None for s in SYMBOLS}
         rows = {s: [] for s in SYMBOLS}
         rounds = int(args.duration_seconds // args.cadence_seconds)
         t0 = time.monotonic()
@@ -150,11 +199,13 @@ def main() -> int:
                     tick_utc = (dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc)
                                 + dt.timedelta(milliseconds=int(raw.time_msc)) - dt.timedelta(hours=offset))
                     tick = sc.RawTick(bid=raw.bid, ask=raw.ask, time_utc=tick_utc, time_msc=int(raw.time_msc))
+                meta = quote_metadata(raw, info, constants, last_msc[s])
+                last_msc[s] = meta["tick"].get("time_msc", last_msc[s])
                 rows[s].append(sc.observe(
                     capture_id=capture_id, sequence=seq, sampled_at_utc=sampled, expected_symbol=broker_symbols[s],
                     observed_symbol=getattr(info, "name", None), venue=round_venue, tick=tick,
                     pip_size=instruments[s].pip_size, git_lineage=lineage,
-                    session_classification=sc.classify_session(sampled)))
+                    session_classification=sc.classify_session(sampled), quote_metadata=meta))
                 seq += 1
         end = dt.datetime.now(dt.timezone.utc)
     finally:
@@ -167,10 +218,16 @@ def main() -> int:
         rel = os.path.join(out_dir, f"{s}_raw.jsonl").replace(os.sep, "/")
         raw_files[s] = {"path": rel, "sha256": _write_once(rel, sc.serialize_rows(rows[s]))}
     sessions = sorted({r["session_classification"] for rs in rows.values() for r in rs})
+    base_status = sc.capture_status(rows)
+    status = (f"VT_{args.session}_CAPTURE_COMPLETE" if base_status == "VT_INITIAL_FRICTION_CAPTURE_COMPLETE"
+              else "VT_CAPTURE_OUTSIDE_TARGET_SESSION" if base_status == "VT_CAPTURE_OUTSIDE_TARGET_SESSION" and args.session == "OTHER"
+              else "VT_SESSION_CAPTURE_FAILED")
     manifest = {
-        "schema": "AG_VT_SPREAD_CAPTURE_MANIFEST_V1",
+        "schema": "AG_VT_SPREAD_CAPTURE_MANIFEST_V2",
         "capture_id": capture_id,
-        "status": sc.capture_status(rows),
+        "requested_session": args.session,
+        "status": status,
+        "collector_status": base_status,
         "broker": venue.broker, "server": venue.server, "environment": venue.environment,
         "source": sc.SOURCE,
         "semantics": {"spread_price": "ask - bid", "spread_pips": "spread_price / pip_size",
@@ -178,6 +235,17 @@ def main() -> int:
                       "bar_spread_field_used": False,
                       "stale_tolerance_seconds": sc.STALE_TOLERANCE_SECONDS,
                       "zero_spread": "preserved and flagged; not interpreted as zero economic friction"},
+        "quote_metadata": {
+            "purpose": "observable API facts that may help explain zero-spread quotes; interprets nothing",
+            "tick_fields": list(TICK_FIELDS),
+            "symbol_fields": list(SYMBOL_FIELDS),
+            "decode_source": "local MetaTrader5 package constant tables only",
+            "local_constant_tables": constants,
+            "undecodable": "codes with no local constant table are recorded raw as UNAVAILABLE_IN_LOCAL_API",
+            "same_tick_as_previous_sample": "tick time_msc equals the previous sample's time_msc for that symbol",
+            "not_friction_authority": ["symbol.spread", "symbol.spread_float"],
+            "executability": "no field is evidence of executability",
+        },
         "symbols": list(SYMBOLS),
         "instrument_spec": spec,
         "server_clock": clock,
@@ -186,7 +254,7 @@ def main() -> int:
         "session_classification": sessions[0] if len(sessions) == 1 else sessions,
         "sampling": {"cadence_seconds": args.cadence_seconds, "rounds": rounds,
                      "order_per_round": list(SYMBOLS), "mode": "INTERLEAVED_FIXED_CADENCE"},
-        "per_symbol": {s: {**sc.symbol_counts(rows[s]), "pip_size": instruments[s].pip_size,
+        "per_symbol": {s: {**sc.symbol_counts(rows[s]), **_metadata_counts(rows[s]), "pip_size": instruments[s].pip_size,
                            "raw_path": raw_files[s]["path"], "raw_sha256": raw_files[s]["sha256"]} for s in SYMBOLS},
         "collector": {"version": sc.COLLECTOR_VERSION, "git_lineage": lineage,
                       "module_sha256": _file_sha("src/fx_friction_capture/spread_capture.py"),
@@ -203,7 +271,7 @@ def main() -> int:
     print(json.dumps({"capture_id": capture_id, "status": manifest["status"], "manifest": manifest_path,
                       "manifest_sha256": manifest_hash, "per_symbol": manifest["per_symbol"],
                       "broker_mutation_calls": dict(_calls)}, indent=2))
-    return 0 if manifest["status"] != "VT_CAPTURE_VALIDATION_FAILED" else 1
+    return 0 if status != "VT_SESSION_CAPTURE_FAILED" else 1
 
 
 if __name__ == "__main__":
