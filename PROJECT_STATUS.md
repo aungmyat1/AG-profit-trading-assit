@@ -4,6 +4,22 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## VT Markets spread evidence P6-R2 (2026-09-28): VT_CAPTURE_OUTSIDE_TARGET_SESSION
+
+- **What was captured:** immutable raw EURUSD and GBPUSD bid/ask from VTMarkets-Demo
+  (DEMO): 144 samples per symbol, with 0 missing and 0 invalid. The capture ran at
+  19:04–19:16Z, so its session is labelled `OTHER`.
+- **Artifacts:** raw files and the manifest are SHA-256 pinned under
+  `artifacts/validation/VT_MARKETS_FRICTION_EVIDENCE/`.
+- **Semantics:** the collector implements the owner-provided A5 interface contract
+  (`src/fx_friction_capture/`). It has no friction model and no economics. Commission is
+  UNKNOWN and slippage UNKNOWN/INSUFFICIENT_SAMPLE.
+- **Platform:** P6-R1 is unchanged, and broker mutation calls are 0.
+- **Next:** handed to Arena A6 for independent analysis. Target-session captures are still
+  needed.
+
+See `docs/status/AG_FX_OPPORTUNITY_PLATFORM_V2_R2_VT_SPREAD_CAPTURE_STATUS.md`.
+
 ## FX Opportunity platform V2 P6-R1 (2026-09-28): LIVE_FX_OPPORTUNITY_3PAIR_VERIFIED
 
 - **Server-time authority:** `src/mt5/time_authority.py` defines per-week effective periods

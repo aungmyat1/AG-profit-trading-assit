@@ -45,6 +45,8 @@ generalizes that slice to EURUSD/GBPUSD/USDJPY with MarketState and a three-pair
 records the first read-only MT5 run and the USDJPY broker-time finding. The
 [P6-R1 server-time status](status/AG_FX_OPPORTUNITY_PLATFORM_V2_R1_SERVER_TIME_STATUS.md)
 resolves it with a shared server-time authority and verifies all three pairs live on VT Markets Demo. The
+[P6-R2 VT spread capture status](status/AG_FX_OPPORTUNITY_PLATFORM_V2_R2_VT_SPREAD_CAPTURE_STATUS.md)
+records the first hash-pinned VT Markets Demo bid/ask evidence handed to Arena A6. The
 [FX Opportunity qualification V1 status](status/AG_FX_OPPORTUNITY_QUALIFICATION_V1_STATUS.md)
 freezes the economic-qualification contract and lists the unsigned/contradictory fields
 that block it. The
