@@ -4,6 +4,21 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## FX Opportunity qualification V1 (2026-09-28): QUALIFICATION_CONTRACT_BLOCKED
+
+- **Live MT5 proof:** `LIVE_MT5_AUTH_BLOCKED`. One attempt returned `-6 Authorization
+  failed`; probing then stopped.
+- **Economic qualification:** stopped at the contract freeze, and no outcomes were computed.
+  - The signed `AG_OUTCOME_RESOLUTION_CONTRACT_V1_SIGNED` resolver starts resolution at the
+    sweep bar's *open*, although its text says the fill is at that bar's *close*. All 13
+    existing records are `RESOLVED_SL` inside the sweep bar itself.
+  - The YAML declares a stop (`PERCENT_OF_SESSION_RANGE` 0.25) and filters (EMA_50, a
+    25-pip range ceiling) that the engine does not implement.
+  - Structural invalidation ("expansion volume") is unsigned.
+- **Authority and execution:** authority unchanged (proposal/demo NONE); no execution change.
+
+See `docs/status/AG_FX_OPPORTUNITY_QUALIFICATION_V1_STATUS.md`.
+
 ## FX Opportunity foundation V1 (2026-09-28, restoration + read-only slice)
 
 Selectively restored, byte-exact from `2b75bbf`, the 25-file closure lost in `3f1f955`
