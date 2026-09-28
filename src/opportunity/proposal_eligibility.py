@@ -68,6 +68,7 @@ function itself performs no registry/file/clock access.
 """
 from __future__ import annotations
 
+import math
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -103,6 +104,21 @@ REASON_EXPIRED = "EXPIRED"
 REASON_NOT_YET_READY = "NOT_YET_READY"
 REASON_MISSING_REQUIRED_INPUT = "MISSING_REQUIRED_INPUT"
 REASON_UNSUPPORTED_STATE = "UNSUPPORTED_STATE"
+# AG_PROPOSAL_STAGE_FOUNDATION_V1 (2026-09-28): malformed trade facts fail closed
+# with deterministic reason codes BEFORE an ELIGIBLE decision can exist.
+REASON_SYMBOL_NOT_CANONICAL = "SYMBOL_NOT_CANONICAL"
+REASON_INVALID_DIRECTION = "INVALID_DIRECTION"
+REASON_NON_FINITE_GEOMETRY = "NON_FINITE_GEOMETRY"
+REASON_ENTRY_EQUALS_STOP = "ENTRY_EQUALS_STOP"
+REASON_INVALID_STOP_GEOMETRY = "INVALID_STOP_GEOMETRY"
+
+# Side vocabulary: LONG/SHORT are the canonical side names; BUY/SELL are this
+# repository's long-established synonyms for the same two sides (FX heritage --
+# every historical fixture and adapter uses them). Exactly these four values are
+# sides; nothing else is accepted and no value is ever rewritten/normalized.
+_LONG_SIDES = frozenset({"LONG", "BUY"})
+_SHORT_SIDES = frozenset({"SHORT", "SELL"})
+_VALID_SIDES = _LONG_SIDES | _SHORT_SIDES
 
 _ENTRY_CONFIRMED_INDEX = FUNNEL_STAGES.index(STAGE_ENTRY_CONFIRMED)
 
@@ -177,5 +193,47 @@ def evaluate_proposal_eligibility(
         or geometry.invalidation is None
     ):
         return _decision(candidate, ELIGIBILITY_INCOMPLETE, (REASON_MISSING_REQUIRED_INPUT,), now)
+
+    # AG_PROPOSAL_STAGE_FOUNDATION_V1 trust-boundary hardening: everything below
+    # is a BLOCKED (fail-closed) decision. No NaN/Inf is silently normalized, no
+    # stop or target is invented, and no failing input is ever turned into a
+    # valid one -- malformed facts simply cannot become ELIGIBLE.
+
+    # (1) opportunity symbol must be present and canonical (non-empty, no
+    # surrounding whitespace, uppercase) -- the proposal symbol is derived from
+    # this same identity downstream and no second symbol exists anywhere.
+    if (
+        not isinstance(candidate.symbol, str)
+        or not candidate.symbol
+        or any(character.isspace() for character in candidate.symbol)
+        or candidate.symbol != candidate.symbol.upper()
+    ):
+        return _decision(candidate, ELIGIBILITY_BLOCKED, (REASON_SYMBOL_NOT_CANONICAL,), now)
+
+    # (2) side must be exactly a known side value.
+    if geometry.direction not in _VALID_SIDES:
+        return _decision(candidate, ELIGIBILITY_BLOCKED, (REASON_INVALID_DIRECTION,), now)
+
+    # (3) entry, stop/invalidation, and every target must be numeric and finite.
+    if (
+        not math.isfinite(geometry.entry)
+        or not math.isfinite(geometry.invalidation)
+        or not all(math.isfinite(target) for target in geometry.targets)
+    ):
+        return _decision(candidate, ELIGIBILITY_BLOCKED, (REASON_NON_FINITE_GEOMETRY,), now)
+
+    # (4) entry != stop.
+    if geometry.entry == geometry.invalidation:
+        return _decision(candidate, ELIGIBILITY_BLOCKED, (REASON_ENTRY_EQUALS_STOP,), now)
+
+    # (5) stop must sit on the losing side of the entry: LONG/BUY requires
+    # stop < entry, SHORT/SELL requires stop > entry. This also makes the risk
+    # distance strictly positive by construction.
+    if geometry.direction in _LONG_SIDES:
+        if not geometry.invalidation < geometry.entry:
+            return _decision(candidate, ELIGIBILITY_BLOCKED, (REASON_INVALID_STOP_GEOMETRY,), now)
+    else:
+        if not geometry.invalidation > geometry.entry:
+            return _decision(candidate, ELIGIBILITY_BLOCKED, (REASON_INVALID_STOP_GEOMETRY,), now)
 
     return _decision(candidate, ELIGIBILITY_ELIGIBLE, (), now)
