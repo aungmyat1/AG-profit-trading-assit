@@ -1,0 +1,949 @@
+{
+  "schema": "AG_FX_OPPORTUNITY_REPLAY_EVIDENCE_V1",
+  "source": "replay:data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_M15.csv@sha256:cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063",
+  "symbol": "EURUSD",
+  "trading_days": 30,
+  "first_day": "2026-06-22",
+  "last_day": "2026-07-31",
+  "evaluations": 120,
+  "determinism_mismatches": [],
+  "end_of_window_decision_status": {
+    "POST_ASIAN": {
+      "READY": 21,
+      "EXPIRED": 6,
+      "NO_TRADE": 3
+    },
+    "POST_LONDON": {
+      "READY": 17,
+      "NO_TRADE": 5,
+      "EXPIRED": 8
+    }
+  },
+  "end_of_window_opportunity": {
+    "POST_ASIAN": {
+      "OPPORTUNITY": 21,
+      "NO_OPPORTUNITY": 9
+    },
+    "POST_LONDON": {
+      "OPPORTUNITY": 17,
+      "NO_OPPORTUNITY": 13
+    }
+  },
+  "mid_window_opportunity": {
+    "POST_ASIAN": {
+      "NO_OPPORTUNITY": 13,
+      "OPPORTUNITY": 17
+    },
+    "POST_LONDON": {
+      "OPPORTUNITY": 9,
+      "NO_OPPORTUNITY": 21
+    }
+  },
+  "eligibility_status_all": {
+    "BLOCKED": 120
+  },
+  "proposal_all": {
+    "NO_PROPOSAL_AUTHORITY": 120
+  },
+  "trade_ticket_all": {
+    "NOT_CREATED": 120
+  },
+  "opportunities": [
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-06-22",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14502,
+      "invalidation": 1.14498,
+      "candidate_id": "cand_9d9e76bea85a56634e41ba03",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-06-23",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.143,
+      "invalidation": 1.14351,
+      "candidate_id": "cand_e2db644fb20ba93ee3e898c3",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-06-23",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.143,
+      "invalidation": 1.14351,
+      "candidate_id": "cand_e2db644fb20ba93ee3e898c3",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-06-25",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.13497,
+      "invalidation": 1.13441,
+      "candidate_id": "cand_975b8c924b2fc43cc327e305",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-06-25",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.13497,
+      "invalidation": 1.13441,
+      "candidate_id": "cand_975b8c924b2fc43cc327e305",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-01",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.13978,
+      "invalidation": 1.13966,
+      "candidate_id": "cand_76809e64f2b790ecdfa615e2",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-01",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.13978,
+      "invalidation": 1.13966,
+      "candidate_id": "cand_76809e64f2b790ecdfa615e2",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-06",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.14225,
+      "invalidation": 1.14161,
+      "candidate_id": "cand_305e28cd1ef836198b5e07a6",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-06",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14225,
+      "invalidation": 1.14161,
+      "candidate_id": "cand_305e28cd1ef836198b5e07a6",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-07",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.14281,
+      "invalidation": 1.14254,
+      "candidate_id": "cand_bd95a67a4f303b3972fadb13",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-07",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14281,
+      "invalidation": 1.14254,
+      "candidate_id": "cand_bd95a67a4f303b3972fadb13",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-08",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.14219,
+      "invalidation": 1.14223,
+      "candidate_id": "cand_a3402ff0b444bba75d048578",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-08",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.14219,
+      "invalidation": 1.14223,
+      "candidate_id": "cand_a3402ff0b444bba75d048578",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-09",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.1436,
+      "invalidation": 1.14367,
+      "candidate_id": "cand_16534934648840c94ab6e372",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-09",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.1436,
+      "invalidation": 1.14367,
+      "candidate_id": "cand_16534934648840c94ab6e372",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-10",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14283,
+      "invalidation": 1.14278,
+      "candidate_id": "cand_26da100bfebc2ec6373c73dc",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-13",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.14075,
+      "invalidation": 1.14098,
+      "candidate_id": "cand_7532b22b0c5f7b7030e8509a",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-13",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.14075,
+      "invalidation": 1.14098,
+      "candidate_id": "cand_7532b22b0c5f7b7030e8509a",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-14",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.13953,
+      "invalidation": 1.1397,
+      "candidate_id": "cand_a3721e1fd5de63acf87e3198",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-14",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.13953,
+      "invalidation": 1.1397,
+      "candidate_id": "cand_a3721e1fd5de63acf87e3198",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-15",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.14221,
+      "invalidation": 1.14216,
+      "candidate_id": "cand_5dace56e820e988a1273a8ca",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-15",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14221,
+      "invalidation": 1.14216,
+      "candidate_id": "cand_5dace56e820e988a1273a8ca",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-16",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.14707,
+      "invalidation": 1.14757,
+      "candidate_id": "cand_efa5718af985131fbffbb08f",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-16",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.14707,
+      "invalidation": 1.14757,
+      "candidate_id": "cand_efa5718af985131fbffbb08f",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-17",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.14485,
+      "invalidation": 1.14485,
+      "candidate_id": "cand_d76929454b7e0ed405ece4c3",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-17",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.14485,
+      "invalidation": 1.14485,
+      "candidate_id": "cand_d76929454b7e0ed405ece4c3",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-20",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.14474,
+      "invalidation": 1.14483,
+      "candidate_id": "cand_31f569f3813c8077456cfa19",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-20",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.14474,
+      "invalidation": 1.14483,
+      "candidate_id": "cand_31f569f3813c8077456cfa19",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-21",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.14225,
+      "invalidation": 1.1423,
+      "candidate_id": "cand_2b1742767a6f2ade6ad8bf57",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-21",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.14225,
+      "invalidation": 1.1423,
+      "candidate_id": "cand_2b1742767a6f2ade6ad8bf57",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-22",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.14123,
+      "invalidation": 1.14176,
+      "candidate_id": "cand_0bdbf74c9de686e0483c22de",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-22",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.14123,
+      "invalidation": 1.14176,
+      "candidate_id": "cand_0bdbf74c9de686e0483c22de",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-24",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.13869,
+      "invalidation": 1.13872,
+      "candidate_id": "cand_16d6a0f59ad89e49057fd133",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-24",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.13869,
+      "invalidation": 1.13872,
+      "candidate_id": "cand_16d6a0f59ad89e49057fd133",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-27",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.13947,
+      "invalidation": 1.13941,
+      "candidate_id": "cand_c18a4beb058ca20534935f83",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-30",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.14453,
+      "invalidation": 1.14452,
+      "candidate_id": "cand_948466c7d5a45b65a147f173",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-30",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14453,
+      "invalidation": 1.14452,
+      "candidate_id": "cand_948466c7d5a45b65a147f173",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_ASIAN",
+      "trading_date": "2026-07-31",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.15029,
+      "invalidation": 1.15029,
+      "candidate_id": "cand_7eb1a5b814e617616787c34b",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-06-22",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.14443,
+      "invalidation": 1.1435,
+      "candidate_id": "cand_88e8ff9e97937525323a6a25",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-06-22",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14443,
+      "invalidation": 1.1435,
+      "candidate_id": "cand_88e8ff9e97937525323a6a25",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-06-23",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.13905,
+      "invalidation": 1.13895,
+      "candidate_id": "cand_f2255b370ea36f259c44c949",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-06-24",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.13378,
+      "invalidation": 1.13368,
+      "candidate_id": "cand_331cd15297897f20e3efac82",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-06-24",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.13378,
+      "invalidation": 1.13368,
+      "candidate_id": "cand_331cd15297897f20e3efac82",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-06-25",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.13405,
+      "invalidation": 1.13404,
+      "candidate_id": "cand_a9d2bec7f7d936422b1b9800",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-06-25",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.13405,
+      "invalidation": 1.13404,
+      "candidate_id": "cand_a9d2bec7f7d936422b1b9800",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-06-29",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.14145,
+      "invalidation": 1.14217,
+      "candidate_id": "cand_a964e9b1eeef90049393324c",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-01",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.13614,
+      "invalidation": 1.13613,
+      "candidate_id": "cand_c731aa7aed2902ec8ba87087",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-01",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.13614,
+      "invalidation": 1.13613,
+      "candidate_id": "cand_c731aa7aed2902ec8ba87087",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-03",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14411,
+      "invalidation": 1.14396,
+      "candidate_id": "cand_9b222f8b7842047bc149e21d",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-06",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14121,
+      "invalidation": 1.14078,
+      "candidate_id": "cand_c3028e80b328b74d04c09560",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-07",
+      "at": "MID",
+      "direction": "SHORT",
+      "entry": 1.1436,
+      "invalidation": 1.1436,
+      "candidate_id": "cand_84652445eda26cc1fd5cf70f",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-07",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.1436,
+      "invalidation": 1.1436,
+      "candidate_id": "cand_84652445eda26cc1fd5cf70f",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-08",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.13956,
+      "invalidation": 1.1395,
+      "candidate_id": "cand_636cffbf09c1ee260ed8ddb4",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-08",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.13956,
+      "invalidation": 1.1395,
+      "candidate_id": "cand_636cffbf09c1ee260ed8ddb4",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-10",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.14255,
+      "invalidation": 1.14227,
+      "candidate_id": "cand_94e04450e938f1ba92559fbc",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-10",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14255,
+      "invalidation": 1.14227,
+      "candidate_id": "cand_94e04450e938f1ba92559fbc",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-17",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.14263,
+      "invalidation": 1.14253,
+      "candidate_id": "cand_e020fa111eba606317d20232",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-17",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14263,
+      "invalidation": 1.14253,
+      "candidate_id": "cand_e020fa111eba606317d20232",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-21",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14108,
+      "invalidation": 1.14107,
+      "candidate_id": "cand_d1e19c7ba3e2c8b1f14d0dde",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-22",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.14173,
+      "invalidation": 1.1421,
+      "candidate_id": "cand_0580d57b8dbce3c67573a0f2",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-24",
+      "at": "MID",
+      "direction": "LONG",
+      "entry": 1.13741,
+      "invalidation": 1.13713,
+      "candidate_id": "cand_b1ea1150b14729bc67c1bf5a",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-24",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.13741,
+      "invalidation": 1.13713,
+      "candidate_id": "cand_b1ea1150b14729bc67c1bf5a",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-28",
+      "at": "END",
+      "direction": "SHORT",
+      "entry": 1.13718,
+      "invalidation": 1.13735,
+      "candidate_id": "cand_ff3a6285b3622d25a8f402fa",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    },
+    {
+      "cycle": "POST_LONDON",
+      "trading_date": "2026-07-31",
+      "at": "END",
+      "direction": "LONG",
+      "entry": 1.14916,
+      "invalidation": 1.14889,
+      "candidate_id": "cand_cb89ec7bd4078c0a2e2baea9",
+      "eligibility_status": "BLOCKED",
+      "eligibility_reasons": [
+        "REPLAY_DATA_NOT_BROKER_EXECUTABLE"
+      ],
+      "proposal": "NO_PROPOSAL_AUTHORITY"
+    }
+  ]
+}

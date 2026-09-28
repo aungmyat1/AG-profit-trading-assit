@@ -4,6 +4,39 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## FX Opportunity foundation V1 (2026-09-28, restoration + read-only slice)
+
+Selectively restored, byte-exact from `2b75bbf`, the 25-file closure lost in `3f1f955`
+that EURUSD Opportunity needs:
+- `strategies/registry.yaml`, `STRATEGY_LEDGER.md` and `ST_ASIAN_SWEEP_5R_V1.yaml`;
+- `opportunity/asian_sweep_adapter.py`;
+- the pure `post_asian_pilot/{decision,snapshot,fingerprint,pilot_config}.py` modules;
+- `mt5/{market_data,broker_time}.py` and `shared_cache/`;
+- the covering tests.
+
+New `src/fx_opportunity/` composes the following, and nothing beyond it:
+- MT5 M15 candles;
+- the session snapshot;
+- `strategy_engine.evaluate` for `ST_ASIAN_SWEEP_5R_V1` v1.1.1, unchanged;
+- `OpportunityCandidate`;
+- the existing ProposalEligibility boundary.
+
+It then stops. For both post-Asian and post-London cycles, and for EURUSD only, the
+result is `Proposal = NO_PROPOSAL_AUTHORITY` and `TradeTicket = NOT_CREATED`. The
+strategy's proposal authority is conflicting (release manifest vs.
+`StrategyBinding.proposal_authority=False`) and is resolved fail-closed pending an
+owner decision.
+
+**Evidence:** a replay over hash-pinned real MT5 EURUSD M15 (`SSC_V1_0_1_G2_DEV_001`):
+- 120 evaluations, 0 determinism mismatches;
+- 38 end-of-window opportunities, every one blocked;
+- `pytest -q tests`: 501 passed, 4 skipped, 1 pre-existing failure (`api.app` deleted).
+
+Live MT5 is NOT_EVALUATED: the terminal returned `-6 Authorization failed`. The scheduler
+is deferred, because `ag_scheduler_v2` is bound to `strategy_manager`. Nothing was
+promoted or authorized, and no execution path was restored. See
+`docs/status/AG_FX_OPPORTUNITY_FOUNDATION_V1_STATUS.md`.
+
 ## Workspace MCP upgrade check (2026-09-28, read-only configuration)
 
 Checked both launchers against the official package setups. Bybit

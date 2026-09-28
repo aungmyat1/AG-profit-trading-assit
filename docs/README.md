@@ -36,6 +36,10 @@ and the remaining lifecycle and campaign boundaries.
 
 ## Start here
 
+The [FX Opportunity foundation V1 status](status/AG_FX_OPPORTUNITY_FOUNDATION_V1_STATUS.md)
+records the selective byte-exact restoration from `2b75bbf`, the EURUSD Opportunity slice,
+the strategy-authority audit, and why Proposal/TradeTicket fail closed.
+
 The [AG Edge + AI Runtime V1 Foundation ADR](architecture/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_ADR.md)
 freezes the owner-selected migration baseline and authority matrix for P0–P2. Its
 [foundation status](status/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_STATUS.md) records validation,
