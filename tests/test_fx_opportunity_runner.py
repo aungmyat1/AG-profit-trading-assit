@@ -313,7 +313,7 @@ def test_slice_imports_no_execution_or_proposal_formation_module():
     assert proc.returncode == 0, proc.stdout + proc.stderr
 
 
-_ALLOWED_IMPORT_ROOTS = {"__future__", "datetime", "hashlib", "json", "dataclasses", "typing",
+_ALLOWED_IMPORT_ROOTS = {"__future__", "datetime", "hashlib", "json", "dataclasses", "typing", "yaml",
                          "session_clock", "mt5", "opportunity", "post_asian_pilot", "strategy_engine"}
 _FORBIDDEN_TOKENS = ("order_send", "order_check", "execution.", "telegram", "requests", "user_confirmed")
 

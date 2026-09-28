@@ -1,0 +1,60 @@
+# FX Opportunity platform instrument contract (AG_FX_OPPORTUNITY_PLATFORM_V2).
+#
+# Market FACTS only -- no strategy, sizing or execution authority lives here. Read by
+# src/fx_opportunity/instruments.py, which fails closed on any missing/inconsistent field.
+#
+# Price semantics: `point` is the broker's smallest price increment (MT5 symbol_info.point
+# for a `digits`-decimal quote); `pip_size` is the conventional FX pip. For 5-digit
+# (xxxUSD) quotes pip = 10 points = 0.0001; for 3-digit JPY quotes pip = 10 points = 0.01.
+# Never assume 0.0001 for every pair.
+#
+# Time semantics: every timestamp the platform consumes is true UTC. Broker server time is
+# converted to UTC by mt5.market_data (broker offset detection) before candles reach the
+# platform; sessions come from config/canonical_sessions.yaml via the cycle's pilot config.
+#
+# Broker symbol mapping: VANTAGE EURUSD/GBPUSD are the verified entries in config/mt5.yaml
+# symbol_map (captured read-only 2026-09-07). USDJPY is NOT yet verified against a live
+# broker symbol_info(); the live runner cross-checks digits/point read-only before use and
+# fails closed on mismatch or absence.
+
+schema: AG_FX_INSTRUMENTS_V1
+timeframe: M15
+cycles: [POST_ASIAN, POST_LONDON]
+
+instruments:
+  EURUSD:
+    asset_class: FX
+    base_currency: EUR
+    quote_currency: USD
+    digits: 5
+    point: 0.00001
+    pip_size: 0.0001
+    broker_symbols:
+      VANTAGE: {symbol: EURUSD, verified: true}
+    time_semantics: UTC
+    allowed_cycles: [POST_ASIAN, POST_LONDON]
+    minimum_history: COMPLETE_REFERENCE_SESSION
+  GBPUSD:
+    asset_class: FX
+    base_currency: GBP
+    quote_currency: USD
+    digits: 5
+    point: 0.00001
+    pip_size: 0.0001
+    broker_symbols:
+      VANTAGE: {symbol: GBPUSD, verified: true}
+    time_semantics: UTC
+    allowed_cycles: [POST_ASIAN, POST_LONDON]
+    minimum_history: COMPLETE_REFERENCE_SESSION
+  USDJPY:
+    asset_class: FX
+    base_currency: USD
+    quote_currency: JPY
+    digits: 3
+    point: 0.001
+    pip_size: 0.01
+    broker_symbols:
+      VANTAGE: {symbol: USDJPY, verified: false}
+    time_semantics: UTC
+    allowed_cycles: [POST_ASIAN, POST_LONDON]
+    minimum_history: COMPLETE_REFERENCE_SESSION
