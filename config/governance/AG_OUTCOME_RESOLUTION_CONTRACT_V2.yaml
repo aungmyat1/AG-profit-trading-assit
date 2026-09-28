@@ -1,0 +1,171 @@
+# AG_OUTCOME_RESOLUTION_CONTRACT_V2 -- frozen BEFORE any V2 outcome was computed.
+#
+# Owner-signed decisions (2026-09-28, mission "ASIAN SWEEP V1.2 CANDIDATE CONTRACT FREEZE +
+# ONE-SHOT OUTCOME REPLAY"). Makes the Opportunity behavior of the currently implemented
+# engine economically measurable under an unambiguous, post-fill outcome contract.
+#
+# This contract does NOT change ST_ASIAN_SWEEP_5R_V1@1.1.1 semantics, its registry
+# entry, its lifecycle stage, or any historical evidence. The 13 V1 outcome records
+# (artifacts/outcome_resolution/records/) stay attributed to
+# AG_OUTCOME_RESOLUTION_CONTRACT_V1_SIGNED and are NOT V2 evidence (see
+# historical_evidence below).
+#
+# Changing ANY field after results are observed creates a new, separately preregistered
+# candidate -- never an edit to this file.
+schema: AG_OUTCOME_RESOLUTION_CONTRACT_V2
+contract_version: "2.0.0"
+frozen_at_utc: "2026-09-28"
+frozen_on_base_sha: 3474b132121345f604e8a0f57bb3b7dc1771489b
+
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+candidate_version: 1.2.0-CANDIDATE
+lifecycle: RESEARCH_CANDIDATE
+detection_source:
+  # Opportunities come from the UNCHANGED v1.1.1 engine; only outcome semantics are new.
+  engine: strategy_engine.engine.evaluate
+  engine_strategy_version: "1.1.1"
+  strategy_config: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
+  strategy_config_sha256: ba7f5de859e6b4287a25252ec8195f172473ebea83aa88427d4b730449763826
+  composition: src/fx_opportunity/runner.py::evaluate_fx_opportunity
+  population_rule: >-
+    Every PostAsianDecision with status READY produced by evaluate_fx_opportunity for
+    EURUSD at now = the cycle's own execution-window end, for every weekday in the
+    dataset, for both cycles. First qualified sweep per (symbol, cycle, trading_date)
+    only (max_entries_per_session: 1). No opportunity is removed for any reason other
+    than the pre-registered geometry exclusions below, each reported with its count.
+  cycles:
+    POST_ASIAN: {pair_id: ASIAN_LONDON, pilot: config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1_0_1.yaml, session_exit_cutoff_utc: "11:00"}
+    POST_LONDON: {pair_id: LONDON_NEWYORK, pilot: config/pilot/AG_POST_LONDON_NEWYORK_PILOT_V1_0_1.yaml, session_exit_cutoff_utc: "15:00"}
+  symbols: [EURUSD]
+
+entry:
+  mode: SWEEP_CONFIRMATION_CANDLE_CLOSE
+  order_type: MARKET
+  timestamp: >-
+    Close time of the confirmed M15 sweep candle = TradeSignal.signal_timestamp (the
+    candle's OPEN time) + 15 minutes.
+  price: >-
+    The CLOSE of the confirmed M15 sweep candle. Authority: YAML entry_level
+    Sweep_Candle_Body_Close + STRATEGY_LEDGER.md 2026-08-31 resolution ("the entry
+    price is the close of the M15 candle that produced the sweep signal") + owner
+    ENTRY_MODE. A MARKET fill at the close timestamp cannot obtain any other price.
+  v1_1_1_divergence: >-
+    The engine's TradeSignal.entry is min(open, close) for LONG / max(open, close) for
+    SHORT (setups.py::entry_2_sweep), i.e. the body extreme, which differs from the close
+    whenever the sweep candle's body points in the trade direction. Recorded, not used.
+
+resolution_start:
+  semantics: POST_FILL
+  invariant: "position_exists(t) = false for t < entry_fill_timestamp"
+  m1_eligibility: >-
+    Only M1 bars with open time >= entry_fill_timestamp participate. No bar of the
+    sweep candle itself (open times in [signal_timestamp, entry_fill_timestamp)) can
+    resolve SL, TP, or any exit.
+
+stop_loss:
+  mode: SWEEP_WICK_EXTREME
+  long: qualifying sweep candle LOW   # == TradeSignal.stop_loss
+  short: qualifying sweep candle HIGH # == TradeSignal.stop_loss
+  risk_distance: "abs(entry_price - stop_loss) -- 1R"
+  v1_1_1_divergence: >-
+    YAML risk_and_money_management.stop_loss_mode PERCENT_OF_SESSION_RANGE /
+    stop_loss_range_pct 0.25 is loaded but never applied by the engine. Not
+    authoritative for this candidate; the historical field is left untouched.
+
+targets:
+  tp1: {type: OPPOSITE_SESSION_BOUNDARY, long: reference box HIGH, short: reference box LOW, volume_pct: 0.75, on_fill: MOVE_RUNNER_STOP_TO_ENTRY_PRICE}
+  tp2: {type: FIXED_R_MULTIPLE, r_multiple: 5.0, price: "entry_price +/- 5 * risk_distance", volume_pct: 0.25, trailing: NONE}
+  breakeven_arming: >-
+    The runner's breakeven stop is armed from the M1 bar AFTER the bar in which TP1
+    fills (inherited from the V1 resolver; the within-bar order of a TP1 fill and a
+    later retrace cannot be observed).
+
+exits_disabled:
+  structural_invalidation: {state: "OFF", reason: "'expansion volume' has no deterministic signed definition"}
+  ema_50_trend_filter: {state: "OFF", reason: "declared in YAML, not implemented by the engine that produced the population"}
+  range_ceiling_25_pips: {state: "OFF", reason: "declared in YAML, loaded but unused by the engine that produced the population"}
+  note: Adding any of these requires a separately preregistered candidate and an independent comparison.
+
+session_exit:
+  rule: >-
+    Owner-signed pair-own trade-session end (2026-09-09, P1A, inherited unchanged):
+    11:00 UTC for POST_ASIAN, 15:00 UTC for POST_LONDON. Any open quantity is closed at
+    the CLOSE of the last M1 bar whose open time is < the cutoff.
+
+same_bar_ambiguity:
+  policy: >-
+    Existing signed conservative rule (AG_OUTCOME_RESOLUTION_CONTRACT_V1_SIGNED,
+    INTRABAR EVENT ORDERING), compatible and reused: if one M1 bar touches both SL and TP1
+    (phase 1), or both the breakeven stop and TP2 (phase 2), the observation is
+    AMBIGUOUS_SAME_BAR. It is excluded from resolved win/loss statistics and reported
+    explicitly. No tick order is inferred and no favorable choice is made.
+
+m1_ordering: M1 bars in ascending open time; first qualifying event wins; touches are inclusive (low <= level / high >= level).
+missing_data: >-
+  If any M1 minute between the entry fill and the session cutoff is absent, the observation
+  is UNRESOLVED_MISSING_M1. There is no M15 fallback in V2.
+unresolved: Reported with count and reason; excluded from resolved statistics; never imputed.
+
+geometry_exclusions:
+  # Pre-registered. Counted and reported, never silently dropped.
+  - {code: NO_POST_FILL_WINDOW, rule: "entry_fill_timestamp >= session cutoff"}
+  - {code: INVALID_RISK, rule: "risk_distance <= 0"}
+  - {code: TP1_NOT_BEYOND_ENTRY, rule: "LONG: tp1 <= entry; SHORT: tp1 >= entry"}
+
+classification:
+  win: "net_R > 0"
+  loss: "net_R < 0"
+  flat: "net_R == 0 (counted as neither win nor loss)"
+  gross_classification: The same rules applied to gross_R, reported separately.
+
+metrics:
+  per_group: [POST_ASIAN, POST_LONDON, COMBINED]
+  profit_factor: "sum(R > 0) / abs(sum(R < 0)); undefined if there are no losses"
+  mfe_mae: >-
+    Most favorable and adverse price excursion from the entry price, in R, over M1 bars
+    from the fill up to and including the resolving bar (or the last bar before the cutoff).
+  holding_duration: "exit M1 bar close time (open + 1 min) - entry_fill_timestamp; cutoff for session exits"
+  uncertainty: bootstrap 95% CI of the mean net R (10,000 resamples, seed 20260928)
+
+friction:
+  scenario: CONTRACT_CEILING
+  source: historical src/performance/cost_model.py @ 2b75bbf (the strategy's own YAML ceilings)
+  spread_pips: 2.0
+  slippage_pips: 1.0      # slippage_limit_points 10 on a 5-digit quote
+  commission: {value: 0.0, status: UNVERIFIED_NO_SIGNED_COMMISSION_RATE}
+  pip_size: 0.0001
+  conversion: "friction_R = (spread_pips + slippage_pips) * pip_size / risk_distance, once per trade"
+  applies_to: every resolved observation (not AMBIGUOUS/UNRESOLVED/excluded)
+  net_R: gross_R - friction_R
+  other_scenarios: NOT_AVAILABLE_NO_SIGNED_ASSUMPTION
+
+dataset_requirements:
+  dataset_id: SSC_V1_0_1_G2_DEV_001
+  manifest: data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/dataset_manifest.json
+  m15: {path: data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_M15.csv, sha256: cefed9705bf9609329183c9bc44b7536eafdf070950ff6bcd45b759623ccd063}
+  m1:  {path: data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_M1.csv,  sha256: b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458}
+  provenance: VantageMarkets-Demo MT5, MetaTrader5 5.0.5735, data_role DEVELOPMENT, not a holdout, not quarantined
+  timestamps: true UTC bar-open times
+  lineage_checks_pre_freeze: >-
+    All 2843 M15 bars that have a full 15-bar M1 set aggregate exactly from M1 (0
+    mismatches); 0 missing M1 minutes across 12600 trade-window minutes (07:00-11:00,
+    12:00-15:00 UTC, all weekdays); no duplicate or unordered M1 timestamps.
+  excluded: SSC_FRESH_DEV_GEN_002_MT5_20260801_20260914 (GEN_002_QUARANTINE_V1)
+  replay_policy: exactly one canonical replay; the hashes are re-verified at run time and it fails closed on a mismatch
+
+historical_evidence:
+  v1_records: artifacts/outcome_resolution/records/ (13 files)
+  v1_contract: AG_OUTCOME_RESOLUTION_CONTRACT_V1_SIGNED (scripts/resolve_forward_shadow_outcomes.py)
+  status: PRESERVED_UNCHANGED_NOT_V2_EVIDENCE
+  contamination: >-
+    V1 resolution starts at the sweep candle's open (ready_at); all 13 records resolve SL
+    inside [ready_at, ready_at + 15m), i.e. before the close fill. They cannot establish
+    economic performance for V2.
+
+authority:
+  proposal_authority: NONE
+  proposal_generation_authorized: false
+  demo_authorized: false
+  live_authorized: false
+  trade_ticket: NOT_CREATED
+  execution_authority: NONE
