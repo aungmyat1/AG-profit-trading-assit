@@ -132,12 +132,19 @@ it, and catching a broker that does not follow US DST.
 - Keep the MT5 terminal open and logged into the intended Demo account. The launcher
   never starts the terminal. `MT5_ENVIRONMENT` must be explicitly set to `DEMO` in
   the existing `src/.env` file.
+- Install the pinned MT5 server: `pip install metatrader-mcp-server==0.5.1`
+  (official: github.com/ariadng/metatrader-mcp-server, Python >= 3.10, Windows + MT5).
+  Upstream registers tools without MCP annotations, so the launcher exposes only the
+  exact query tools in `MT5_READ_ONLY_TOOL_NAMES` (`web/scripts/readonly_mcp_proxy.mjs`).
+  Re-review that list before changing the pinned version.
 - Credentials use the existing `VANTAGE-DEMO-LOGIN`, `VANTAGE-DEMO_PASSWORD`, and
-  `VANTAGE-DEMO-SERVER` keys in `src/.env`. Do not put credentials in MCP JSON.
+  `VANTAGE-DEMO-SERVER` keys in `src/.env` (`VANTAGE_DEMO_*`/`MT5_*` aliases also work).
+  Do not put credentials in MCP JSON.
 - If the MCP executable is not discovered automatically, set `MT5_MCP_COMMAND` in
   `src/.env` to its full path. The launcher forwards only Demo credentials and strips
   live-account, Bybit API, and paper API credentials from the child environment.
-- Bybit is unauthenticated and testnet-forced. Its public tools expose market data
+- Bybit uses the official `bybit-official-trading-server@2.1.22` (Node >= 20.6), pinned
+  rather than `@latest`. It is unauthenticated and testnet-forced. Its public tools expose market data
   only; Bybit account and order tools are intentionally filtered out.
 - Run `node web/scripts/check_mt5_mcp.mjs` from the workspace root for a read-only
   setup diagnostic. Secret values are never printed.

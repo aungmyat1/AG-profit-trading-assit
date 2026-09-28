@@ -12,9 +12,9 @@ const add = (ok, name, detail = '') => {
   console.log(`${ok === true ? '[ OK ]' : ok === false ? '[FAIL]' : '[WARN]'} ${name}${detail ? ' -- ' + detail : ''}`);
 };
 
-// 1. Node version
-const major = Number(process.versions.node.split('.')[0]);
-add(major >= 18, 'Node >= 18', `found ${process.versions.node}`);
+// 1. Node version (the official Bybit MCP package declares engines.node >=20.6)
+const [major, minor] = process.versions.node.split('.').map(Number);
+add(major > 20 || (major === 20 && minor >= 6), 'Node >= 20.6', `found ${process.versions.node}`);
 
 // 2. Read the same environment-file locations as start_mt5_mcp.mjs.
 const rootEnvPath = resolve(process.cwd(), '.env');
@@ -39,8 +39,8 @@ if (existsSync(envPath)) {
 // 3. Credential aliases, same lists as start_mt5_mcp.mjs (presence only, values hidden)
 const aliases = {
   MT5_ACCOUNT_ID: ['VANTAGE-DEMO-LOGIN', 'VANTAGE_DEMO_LOGIN', 'MT5_ACCOUNT_ID', 'VANTAGE_DEMO_ACCOUNT_ID', 'MT5_LOGIN'],
-  MT5_PASSWORD: ['VANTAGE_DEMO_PASSWORD', 'MT5_PASSWORD', 'VANTAGE-DEMO_PASSWORD'],
-  MT5_SERVER: ['VANTAGE_DEMO_SERVER', 'MT5_SERVER', 'VANTAGE-DEMO_SERVER'],
+  MT5_PASSWORD: ['VANTAGE-DEMO-PASSWORD', 'VANTAGE-DEMO_PASSWORD', 'VANTAGE_DEMO_PASSWORD', 'MT5_PASSWORD'],
+  MT5_SERVER: ['VANTAGE-DEMO-SERVER', 'VANTAGE-DEMO_SERVER', 'VANTAGE_DEMO_SERVER', 'MT5_SERVER'],
 };
 for (const [canon, keys] of Object.entries(aliases)) {
   const hit = keys.find((k) => env[k]);
@@ -75,6 +75,18 @@ if (which.status === 0) {
   add(true, `command "${command}" exists as a path`);
 } else {
   add(false, `command "${command}" on PATH`, 'not found -- install it or set MT5_MCP_COMMAND to the full path');
+}
+
+// 5b. Installed metatrader-mcp-server version (the read-only allowlist is reviewed against it)
+const expectedMt5McpVersion = '0.5.1';
+const pip = spawnSync(isWin ? 'python' : 'python3', ['-m', 'pip', 'show', 'metatrader-mcp-server'], { encoding: 'utf8' });
+const installedVersion = /^Version:\s*(\S+)/m.exec(pip.stdout || '')?.[1];
+if (!installedVersion) {
+  add(null, 'metatrader-mcp-server version', `not detected via pip; install with: pip install metatrader-mcp-server==${expectedMt5McpVersion}`);
+} else {
+  add(installedVersion === expectedMt5McpVersion ? true : null, 'metatrader-mcp-server version',
+    installedVersion === expectedMt5McpVersion ? installedVersion
+      : `found ${installedVersion}; expected ${expectedMt5McpVersion} (re-review MT5_READ_ONLY_TOOL_NAMES before changing)`);
 }
 
 // 6. Is terminal64.exe running? (Windows only)

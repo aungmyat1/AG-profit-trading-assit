@@ -5,6 +5,22 @@ export function isReadOnlyTool(tool) {
     tool?.annotations?.destructiveHint !== true;
 }
 
+// metatrader-mcp-server (ariadng, pinned 0.5.1) registers every tool without MCP
+// annotations, so the annotation check alone would hide all of them. These exact
+// upstream names are its query-only tools; order/position mutators (place_*, modify_*,
+// close_*, cancel_*) are never listed and stay unreachable.
+export const MT5_READ_ONLY_TOOL_NAMES = new Set([
+  'get_account_info', 'get_deals', 'get_orders', 'get_candles_by_date', 'get_candles_latest',
+  'get_symbol_price', 'get_all_symbols', 'get_symbols', 'get_all_positions',
+  'get_positions_by_symbol', 'get_positions_by_id', 'get_all_pending_orders',
+  'get_pending_orders_by_symbol', 'get_pending_orders_by_id'
+]);
+
+export function isReadOnlyMt5Tool(tool) {
+  if (tool?.annotations?.destructiveHint === true) return false;
+  return isReadOnlyTool(tool) || MT5_READ_ONLY_TOOL_NAMES.has(tool?.name);
+}
+
 export function isPublicBybitMarketTool(tool) {
   const publicMarketTool = /(ticker|orderbook|kline|candlestick|instrument|funding|open.?interest|volatility|risk.?limit|delivery.?price|insurance.?pool|long.?short|option.?underlying|option.?asset.?type|server.?time)/i;
   return isReadOnlyTool(tool) && publicMarketTool.test(tool?.name || '');
@@ -58,7 +74,7 @@ export function startReadOnlyProxy({ child, input = process.stdin, output = proc
           output.write(`${JSON.stringify({
             jsonrpc: '2.0',
             id: message.id,
-            error: { code: -32601, message: 'Tool is not available in the read-only MT5 MCP.' }
+            error: { code: -32601, message: 'Tool is not available in this read-only MCP.' }
           })}\n`);
         }
         return;
