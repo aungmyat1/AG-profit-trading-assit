@@ -1,0 +1,1091 @@
+{
+ "k": 2,
+ "fixtures": {
+  "swing_high": {
+   "AG": {
+    "swings": [
+     [
+      4,
+      6,
+      "high",
+      110
+     ]
+    ],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": [
+     [
+      3,
+      4,
+      "bullish",
+      103,
+      102
+     ]
+    ]
+   },
+   "smc_mcp": {
+    "swings": [
+     [
+      4,
+      6,
+      "high",
+      110
+     ]
+    ],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": [
+     [
+      3,
+      4,
+      "bullish",
+      103,
+      102
+     ]
+    ]
+   },
+   "smart_money_concepts": {
+    "swings": [
+     [
+      0,
+      null,
+      "low",
+      98.0
+     ],
+     [
+      4,
+      null,
+      "high",
+      110.0
+     ],
+     [
+      7,
+      null,
+      "low",
+      97.0
+     ],
+     [
+      9,
+      null,
+      "high",
+      101.0
+     ]
+    ],
+    "breaks": [],
+    "liquidity": [],
+    "fvg": [
+     [
+      3,
+      "bullish",
+      103.0,
+      102.0
+     ]
+    ]
+   }
+  },
+  "swing_low": {
+   "AG": {
+    "swings": [
+     [
+      4,
+      6,
+      "low",
+      90
+     ]
+    ],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": [
+     [
+      3,
+      4,
+      "bearish",
+      98,
+      97
+     ]
+    ]
+   },
+   "smc_mcp": {
+    "swings": [
+     [
+      4,
+      6,
+      "low",
+      90
+     ]
+    ],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": [
+     [
+      3,
+      4,
+      "bearish",
+      98,
+      97
+     ]
+    ]
+   },
+   "smart_money_concepts": {
+    "swings": [
+     [
+      0,
+      null,
+      "high",
+      102.0
+     ],
+     [
+      4,
+      null,
+      "low",
+      90.0
+     ],
+     [
+      7,
+      null,
+      "high",
+      103.0
+     ],
+     [
+      9,
+      null,
+      "low",
+      99.0
+     ]
+    ],
+    "breaks": [],
+    "liquidity": [],
+    "fvg": [
+     [
+      3,
+      "bearish",
+      98.0,
+      97.0
+     ]
+    ]
+   }
+  },
+  "equal_highs": {
+   "AG": {
+    "swings": [],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": []
+   },
+   "smc_mcp": {
+    "swings": [],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": []
+   },
+   "smart_money_concepts": {
+    "swings": [
+     [
+      0,
+      null,
+      "low",
+      98.0
+     ],
+     [
+      3,
+      null,
+      "high",
+      110.0
+     ],
+     [
+      7,
+      null,
+      "low",
+      97.0
+     ],
+     [
+      9,
+      null,
+      "high",
+      101.0
+     ]
+    ],
+    "breaks": [],
+    "liquidity": [],
+    "fvg": []
+   }
+  },
+  "wick_sweep": {
+   "AG": {
+    "swings": [
+     [
+      4,
+      6,
+      "low",
+      90
+     ],
+     [
+      8,
+      10,
+      "low",
+      88
+     ]
+    ],
+    "breaks": [],
+    "sweeps": [
+     [
+      8,
+      "bullish",
+      90
+     ]
+    ],
+    "fvg": [
+     [
+      3,
+      4,
+      "bearish",
+      98,
+      97
+     ],
+     [
+      8,
+      9,
+      "bearish",
+      99,
+      98
+     ]
+    ]
+   },
+   "smc_mcp": {
+    "swings": [
+     [
+      4,
+      6,
+      "low",
+      90
+     ],
+     [
+      8,
+      10,
+      "low",
+      88
+     ]
+    ],
+    "breaks": [],
+    "sweeps": [
+     [
+      8,
+      "bullish",
+      90
+     ]
+    ],
+    "fvg": [
+     [
+      3,
+      4,
+      "bearish",
+      98,
+      97
+     ],
+     [
+      8,
+      9,
+      "bearish",
+      99,
+      98
+     ]
+    ]
+   },
+   "smart_money_concepts": {
+    "swings": [
+     [
+      0,
+      null,
+      "high",
+      102.0
+     ],
+     [
+      4,
+      null,
+      "low",
+      90.0
+     ],
+     [
+      6,
+      null,
+      "high",
+      102.0
+     ],
+     [
+      8,
+      null,
+      "low",
+      88.0
+     ],
+     [
+      10,
+      null,
+      "high",
+      98.0
+     ]
+    ],
+    "breaks": [],
+    "liquidity": [
+     [
+      0,
+      1,
+      102.0
+     ]
+    ],
+    "fvg": [
+     [
+      3,
+      "bearish",
+      98.0,
+      97.0
+     ],
+     [
+      8,
+      "bearish",
+      99.0,
+      98.0
+     ]
+    ]
+   },
+   "AG_session_sweep": {
+    "status": "VALID",
+    "reason": "LOWER_SWEEP_STRICT_PENETRATION",
+    "at_index": 8
+   }
+  },
+  "close_through": {
+   "AG": {
+    "swings": [
+     [
+      4,
+      6,
+      "low",
+      90
+     ]
+    ],
+    "breaks": [
+     [
+      8,
+      "CHoCH",
+      "bearish",
+      90
+     ]
+    ],
+    "sweeps": [],
+    "fvg": [
+     [
+      3,
+      4,
+      "bearish",
+      98,
+      97
+     ],
+     [
+      8,
+      9,
+      "bearish",
+      99,
+      89
+     ]
+    ]
+   },
+   "smc_mcp": {
+    "swings": [
+     [
+      4,
+      6,
+      "low",
+      90
+     ]
+    ],
+    "breaks": [
+     [
+      8,
+      "CHoCH",
+      "bearish",
+      90
+     ]
+    ],
+    "sweeps": [],
+    "fvg": [
+     [
+      3,
+      4,
+      "bearish",
+      98,
+      97
+     ],
+     [
+      8,
+      9,
+      "bearish",
+      99,
+      89
+     ]
+    ]
+   },
+   "smart_money_concepts": {
+    "swings": [
+     [
+      0,
+      null,
+      "high",
+      102.0
+     ],
+     [
+      4,
+      null,
+      "low",
+      90.0
+     ],
+     [
+      6,
+      null,
+      "high",
+      102.0
+     ],
+     [
+      10,
+      null,
+      "low",
+      85.0
+     ]
+    ],
+    "breaks": [],
+    "liquidity": [
+     [
+      0,
+      1,
+      102.0
+     ]
+    ],
+    "fvg": [
+     [
+      3,
+      "bearish",
+      98.0,
+      97.0
+     ],
+     [
+      8,
+      "bearish",
+      99.0,
+      89.0
+     ]
+    ]
+   },
+   "AG_session_sweep": {
+    "status": "NO_SETUP",
+    "reason": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "at_index": null
+   }
+  },
+  "bos_up": {
+   "AG": {
+    "swings": [
+     [
+      3,
+      5,
+      "high",
+      108
+     ],
+     [
+      5,
+      7,
+      "low",
+      99
+     ],
+     [
+      7,
+      9,
+      "high",
+      115
+     ],
+     [
+      9,
+      11,
+      "low",
+      106
+     ]
+    ],
+    "breaks": [
+     [
+      6,
+      "CHoCH",
+      "bullish",
+      108
+     ],
+     [
+      10,
+      "BOS",
+      "bullish",
+      115
+     ]
+    ],
+    "sweeps": [],
+    "fvg": [
+     [
+      6,
+      7,
+      "bullish",
+      110,
+      103
+     ],
+     [
+      10,
+      11,
+      "bullish",
+      117,
+      110
+     ]
+    ]
+   },
+   "smc_mcp": {
+    "swings": [
+     [
+      3,
+      5,
+      "high",
+      108
+     ],
+     [
+      5,
+      7,
+      "low",
+      99
+     ],
+     [
+      7,
+      9,
+      "high",
+      115
+     ],
+     [
+      9,
+      11,
+      "low",
+      106
+     ]
+    ],
+    "breaks": [
+     [
+      6,
+      "CHoCH",
+      "bullish",
+      108
+     ],
+     [
+      10,
+      "BOS",
+      "bullish",
+      115
+     ]
+    ],
+    "sweeps": [],
+    "fvg": [
+     [
+      6,
+      7,
+      "bullish",
+      110,
+      103
+     ],
+     [
+      10,
+      11,
+      "bullish",
+      117,
+      110
+     ]
+    ]
+   },
+   "smart_money_concepts": {
+    "swings": [
+     [
+      0,
+      null,
+      "low",
+      98.0
+     ],
+     [
+      3,
+      null,
+      "high",
+      108.0
+     ],
+     [
+      5,
+      null,
+      "low",
+      99.0
+     ],
+     [
+      7,
+      null,
+      "high",
+      115.0
+     ],
+     [
+      9,
+      null,
+      "low",
+      106.0
+     ],
+     [
+      12,
+      null,
+      "high",
+      121.0
+     ]
+    ],
+    "breaks": [
+     [
+      3,
+      "BOS",
+      "bullish",
+      108.0,
+      6
+     ],
+     [
+      7,
+      "BOS",
+      "bullish",
+      115.0,
+      10
+     ]
+    ],
+    "liquidity": [],
+    "fvg": [
+     [
+      6,
+      "bullish",
+      110.0,
+      103.0
+     ],
+     [
+      10,
+      "bullish",
+      117.0,
+      110.0
+     ]
+    ]
+   }
+  },
+  "choch_down": {
+   "AG": {
+    "swings": [
+     [
+      3,
+      5,
+      "high",
+      108
+     ],
+     [
+      5,
+      7,
+      "low",
+      99
+     ],
+     [
+      7,
+      9,
+      "high",
+      115
+     ]
+    ],
+    "breaks": [
+     [
+      6,
+      "CHoCH",
+      "bullish",
+      108
+     ],
+     [
+      11,
+      "CHoCH",
+      "bearish",
+      99
+     ]
+    ],
+    "sweeps": [
+     [
+      8,
+      "bearish",
+      108
+     ]
+    ],
+    "fvg": [
+     [
+      6,
+      7,
+      "bullish",
+      110,
+      103
+     ],
+     [
+      8,
+      9,
+      "bearish",
+      110,
+      109
+     ],
+     [
+      11,
+      12,
+      "bearish",
+      104,
+      98
+     ]
+    ]
+   },
+   "smc_mcp": {
+    "swings": [
+     [
+      3,
+      5,
+      "high",
+      108
+     ],
+     [
+      5,
+      7,
+      "low",
+      99
+     ],
+     [
+      7,
+      9,
+      "high",
+      115
+     ]
+    ],
+    "breaks": [
+     [
+      6,
+      "CHoCH",
+      "bullish",
+      108
+     ],
+     [
+      11,
+      "CHoCH",
+      "bearish",
+      99
+     ]
+    ],
+    "sweeps": [],
+    "fvg": [
+     [
+      6,
+      7,
+      "bullish",
+      110,
+      103
+     ],
+     [
+      8,
+      9,
+      "bearish",
+      110,
+      109
+     ],
+     [
+      11,
+      12,
+      "bearish",
+      104,
+      98
+     ]
+    ]
+   },
+   "smart_money_concepts": {
+    "swings": [
+     [
+      0,
+      null,
+      "low",
+      98.0
+     ],
+     [
+      3,
+      null,
+      "high",
+      108.0
+     ],
+     [
+      5,
+      null,
+      "low",
+      99.0
+     ],
+     [
+      7,
+      null,
+      "high",
+      115.0
+     ],
+     [
+      13,
+      null,
+      "low",
+      94.0
+     ]
+    ],
+    "breaks": [
+     [
+      3,
+      "BOS",
+      "bullish",
+      108.0,
+      6
+     ],
+     [
+      5,
+      "BOS",
+      "bearish",
+      99.0,
+      11
+     ]
+    ],
+    "liquidity": [],
+    "fvg": [
+     [
+      6,
+      "bullish",
+      110.0,
+      103.0
+     ],
+     [
+      8,
+      "bearish",
+      110.0,
+      109.0
+     ],
+     [
+      11,
+      "bearish",
+      104.0,
+      98.0
+     ]
+    ]
+   }
+  },
+  "fvg_bull": {
+   "AG": {
+    "swings": [],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": [
+     [
+      4,
+      5,
+      "bullish",
+      103,
+      101
+     ]
+    ]
+   },
+   "smc_mcp": {
+    "swings": [],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": [
+     [
+      4,
+      5,
+      "bullish",
+      103,
+      101
+     ]
+    ]
+   },
+   "smart_money_concepts": {
+    "swings": [
+     [
+      0,
+      null,
+      "low",
+      98.0
+     ],
+     [
+      6,
+      null,
+      "high",
+      111.0
+     ],
+     [
+      8,
+      null,
+      "low",
+      107.0
+     ]
+    ],
+    "breaks": [],
+    "liquidity": [],
+    "fvg": [
+     [
+      4,
+      "bullish",
+      103.0,
+      101.0
+     ]
+    ]
+   }
+  },
+  "incomplete_forming": {
+   "AG": {
+    "swings": [],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": [
+     [
+      4,
+      5,
+      "bullish",
+      103,
+      102
+     ]
+    ]
+   },
+   "smc_mcp": {
+    "swings": [],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": [
+     [
+      4,
+      5,
+      "bullish",
+      103,
+      102
+     ]
+    ]
+   },
+   "smart_money_concepts": {
+    "swings": [
+     [
+      0,
+      null,
+      "high",
+      102.0
+     ],
+     [
+      3,
+      null,
+      "low",
+      98.0
+     ],
+     [
+      6,
+      null,
+      "high",
+      107.0
+     ]
+    ],
+    "breaks": [],
+    "liquidity": [],
+    "fvg": [
+     [
+      4,
+      "bullish",
+      103.0,
+      102.0
+     ]
+    ]
+   }
+  },
+  "unconfirmed_swing_sweep": {
+   "AG": {
+    "swings": [
+     [
+      5,
+      7,
+      "low",
+      89
+     ]
+    ],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": [
+     [
+      3,
+      4,
+      "bearish",
+      98,
+      97
+     ]
+    ]
+   },
+   "smc_mcp": {
+    "swings": [
+     [
+      5,
+      7,
+      "low",
+      89
+     ]
+    ],
+    "breaks": [],
+    "sweeps": [],
+    "fvg": [
+     [
+      3,
+      4,
+      "bearish",
+      98,
+      97
+     ]
+    ]
+   },
+   "smart_money_concepts": {
+    "swings": [
+     [
+      0,
+      null,
+      "high",
+      102.0
+     ],
+     [
+      5,
+      null,
+      "low",
+      89.0
+     ],
+     [
+      6,
+      null,
+      "high",
+      100.0
+     ],
+     [
+      8,
+      null,
+      "low",
+      96.0
+     ]
+    ],
+    "breaks": [],
+    "liquidity": [],
+    "fvg": [
+     [
+      3,
+      "bearish",
+      98.0,
+      97.0
+     ]
+    ]
+   }
+  }
+ },
+ "future_mutation_prefix_stable": {
+  "AG": true,
+  "smc_mcp": true,
+  "smart_money_concepts": false
+ },
+ "indicators_vs_pandas_ta_classic": {
+  "atr14_maxabs_diff_from_bar_14": 9.262430668398628e-06,
+  "atr14_maxabs_diff_after_150": 3.886941749367545e-10,
+  "ema50_maxabs_diff_from_bar_49": 0.0,
+  "atr_typical_value": 0.0009771445716644945
+ }
+}
