@@ -130,10 +130,17 @@ it, and catching a broker that does not follow US DST.
 ## Current VS Code MCP setup
 
 - Keep the MT5 terminal open and logged into the intended Demo account. The launcher
-  never starts the terminal. `MT5_ENVIRONMENT` must be explicitly set to `DEMO` in
-  the existing `src/.env` file.
-- Credentials use the existing `VANTAGE-DEMO-LOGIN`, `VANTAGE-DEMO_PASSWORD`, and
-  `VANTAGE-DEMO-SERVER` keys in `src/.env`. Do not put credentials in MCP JSON.
+  never starts the terminal. `.vscode/mcp.json` explicitly sets
+  `MT5_ENVIRONMENT=DEMO` and securely prompts for the Demo login, password, and
+  broker server when the MCP starts. VS Code stores prompt values securely; they are
+  not written to the repository.
+- The broker server name must match the exact account server shown in the MT5 login
+  dialog (for example, the configured Vantage Demo server). The launcher intentionally
+  does not infer or guess a broker server name.
+- For non-VS Code MCP clients, provide `MT5_ENVIRONMENT=DEMO` and the
+  `VANTAGE-DEMO-LOGIN`, `VANTAGE-DEMO_PASSWORD`, and `VANTAGE-DEMO-SERVER` variables
+  through that client's secret/environment mechanism or locally in ignored `src/.env`.
+  Never put credentials in MCP JSON.
 - If the MCP executable is not discovered automatically, set `MT5_MCP_COMMAND` in
   `src/.env` to its full path. The launcher forwards only Demo credentials and strips
   live-account, Bybit API, and paper API credentials from the child environment.

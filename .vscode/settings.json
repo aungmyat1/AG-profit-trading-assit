@@ -67,5 +67,13 @@
     "**/logs/**": true,
     "**/journal/**": true
   },
-  "python-envs.defaultEnvManager": "ms-python.python:system"
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "chat.mcp.serverSampling": {
+    "AG profit trading/.vscode/mcp.json: mt5ReadOnly": {
+      "allowedModels": [
+        "copilotcli/auto",
+        "copilot/auto"
+      ]
+    }
+  }
 }

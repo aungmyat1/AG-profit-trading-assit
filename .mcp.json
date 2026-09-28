@@ -1,6 +1,7 @@
 {
   "mcpServers": {
     "bybit": {
+      "type": "stdio",
       "command": "node",
       "args": ["web/scripts/start_bybit_mcp.mjs"],
       "env": {
@@ -8,8 +9,12 @@
       }
     },
     "mt5ReadOnly": {
+      "type": "stdio",
       "command": "node",
-      "args": ["web/scripts/start_mt5_mcp.mjs"]
+      "args": ["web/scripts/start_mt5_mcp.mjs"],
+      "env": {
+        "MT5_ENVIRONMENT": "DEMO"
+      }
     }
   }
 }

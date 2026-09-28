@@ -5,6 +5,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
+import { resolveMt5DemoConfig, resolveMt5DemoServer } from './mt5_mcp_config.mjs';
 
 const results = [];
 const add = (ok, name, detail = '') => {
@@ -36,15 +37,60 @@ if (existsSync(envPath)) {
   add(false, '.env found', `checked ${rootEnvPath} and ${sourceEnvPath}`);
 }
 
+const workspaceMcpPaths = [
+  { path: resolve(process.cwd(), '.vscode', 'mcp.json'), serversKey: 'servers' },
+  { path: resolve(process.cwd(), '.mcp.json'), serversKey: 'mcpServers' },
+];
+const inputIds = new Set();
+let hasMt5ServerConfig = false;
+for (const { path: workspaceMcpPath, serversKey } of workspaceMcpPaths) {
+  if (!existsSync(workspaceMcpPath)) continue;
+  try {
+    const mcpConfig = JSON.parse(readFileSync(workspaceMcpPath, 'utf8'));
+    if (mcpConfig[serversKey]?.mt5ReadOnly) hasMt5ServerConfig = true;
+    for (const input of mcpConfig.inputs || []) inputIds.add(input.id);
+  } catch {
+    add(false, `MCP config ${workspaceMcpPath}`, 'invalid JSON');
+  }
+}
+add(hasMt5ServerConfig, 'workspace MT5 MCP config', 'read-only entry found');
+// `${input:...}` is VS Code-only; Claude Code passes it through as a literal string.
+const claudeMcpPath = resolve(process.cwd(), '.mcp.json');
+if (existsSync(claudeMcpPath) && /\$\{input:/.test(readFileSync(claudeMcpPath, 'utf8'))) {
+  add(false, '.mcp.json uses only Claude Code variable syntax', '${input:...} is VS Code-only; keep credentials in src/.env');
+}
+const mcpConfigs = workspaceMcpPaths
+  .filter(({ path, serversKey }) => serversKey === 'servers' && existsSync(path))
+  .map(({ path, serversKey }) => {
+    const config = JSON.parse(readFileSync(path, 'utf8'));
+    return config[serversKey]?.mt5ReadOnly?.env || {};
+  });
+const isSecureInputConfigured = key => {
+  return mcpConfigs.some(mcpEnv => {
+    const match = /^\$\{input:([^}]+)\}$/.exec(mcpEnv[key] || '');
+    return !!match && inputIds.has(match[1]);
+  });
+};
+
 // 3. Credential aliases, same lists as start_mt5_mcp.mjs (presence only, values hidden)
 const aliases = {
   MT5_ACCOUNT_ID: ['VANTAGE-DEMO-LOGIN', 'VANTAGE_DEMO_LOGIN', 'MT5_ACCOUNT_ID', 'VANTAGE_DEMO_ACCOUNT_ID', 'MT5_LOGIN'],
   MT5_PASSWORD: ['VANTAGE_DEMO_PASSWORD', 'MT5_PASSWORD', 'VANTAGE-DEMO_PASSWORD'],
-  MT5_SERVER: ['VANTAGE_DEMO_SERVER', 'MT5_SERVER', 'VANTAGE-DEMO_SERVER'],
+  MT5_SERVER: ['VANTAGE-DEMO-SERVER', 'VANTAGE-DEMO_SERVER', 'VANTAGE_DEMO_SERVER', 'MT5_SERVER'],
 };
+const resolvedCredentials = resolveMt5DemoConfig(env);
 for (const [canon, keys] of Object.entries(aliases)) {
+  const serverResolution = resolveMt5DemoServer(env, env.MT5_TERMINAL_PATH || '');
+  const key = canon === 'MT5_ACCOUNT_ID' ? 'VANTAGE-DEMO-LOGIN'
+    : canon === 'MT5_PASSWORD' ? 'VANTAGE-DEMO_PASSWORD'
+      : 'VANTAGE-DEMO-SERVER';
+  const resolved = (canon === 'MT5_ACCOUNT_ID' && resolvedCredentials.account) ||
+    (canon === 'MT5_PASSWORD' && resolvedCredentials.password) ||
+    (canon === 'MT5_SERVER' && serverResolution.server) || isSecureInputConfigured(key);
   const hit = keys.find((k) => env[k]);
-  add(!!hit, `credential ${canon}`, hit ? `set via ${hit} (value hidden)` : `none of: ${keys.join(', ')}`);
+  const source = isSecureInputConfigured(key) ? 'VS Code secure input prompt'
+    : canon === 'MT5_SERVER' ? serverResolution.source : hit || 'supported alias';
+  add(!!resolved, `credential ${canon}`, resolved ? `set via ${source} (value hidden)` : `missing ${canon === 'MT5_ACCOUNT_ID' ? 'VANTAGE-DEMO-LOGIN' : canon === 'MT5_PASSWORD' ? 'VANTAGE-DEMO_PASSWORD' : 'VANTAGE-DEMO-SERVER'}`);
 }
 add((env.MT5_ENVIRONMENT || '').toUpperCase() === 'DEMO', 'MT5_ENVIRONMENT is DEMO', 'required by the read-only workspace launcher');
 

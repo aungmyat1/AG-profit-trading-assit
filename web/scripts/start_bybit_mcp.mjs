@@ -1,4 +1,6 @@
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { startReadOnlyProxy, isPublicBybitMarketTool } from './readonly_mcp_proxy.mjs';
 
 // This workspace exposes Bybit's public market-data tools only. Do not inherit
@@ -11,15 +13,17 @@ for (const key of Object.keys(childEnv)) {
 }
 
 const packageSpec = 'bybit-official-trading-server@2.1.22';
-const npxPath = process.platform === 'win32'
-  ? spawnSync('where.exe', ['npx.cmd'], { encoding: 'utf8' }).stdout?.split(/\r?\n/).find(path => path.trim().toLowerCase().endsWith('npx.cmd'))?.trim() ||
-    join(process.env.ProgramFiles || 'C:\\Program Files', 'nodejs', 'npx.cmd')
-  : 'npx';
-if (!npxPath) {
-  console.error('Unable to locate npx.cmd; verify Node.js/npm are installed and available on PATH.');
+// Node refuses to spawn .cmd/.bat files without a shell (CVE-2024-27980), so on
+// Windows run npm's bundled npx-cli.js with the current node binary instead of npx.cmd.
+const npxCli = join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npx-cli.js');
+const [npxCommand, npxArgs] = process.platform === 'win32'
+  ? [process.execPath, [npxCli]]
+  : ['npx', []];
+if (process.platform === 'win32' && !existsSync(npxCli)) {
+  console.error('Unable to locate npm\'s npx-cli.js next to node.exe; verify the Node.js/npm installation.');
   process.exit(1);
 }
-const child = spawn(npxPath, ['-y', packageSpec], { env: childEnv, stdio: ['pipe', 'pipe', 'inherit'], shell: false });
+const child = spawn(npxCommand, [...npxArgs, '-y', packageSpec], { env: childEnv, stdio: ['pipe', 'pipe', 'inherit'], shell: false });
 
 child.on('error', () => {
   console.error('Unable to start Bybit MCP; verify Node.js/npm and network access.');

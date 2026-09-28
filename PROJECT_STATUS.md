@@ -16,6 +16,12 @@ venue responses: MT5 terminal was not running during diagnosis, and no exchange 
 were made. It does not enable or authorize trading. See
 [`docs/setup/MT5_MCP_SETUP.md`](docs/setup/MT5_MCP_SETUP.md).
 
+The 2026-09-28 startup follow-up adds password-hidden input prompts for MT5 Demo
+login/password/server in both VS Code and portable workspace MCP configs. The
+diagnostic now recognizes those configured secure inputs; no broker credentials are
+stored in tracked configuration. Restart the MCP server and supply the account's
+exact Demo server name when prompted.
+
 ## AG_EDGE_AI_RUNTIME_V1_FOUNDATION (2026-09-26, additive P0–P2 candidate)
 
 The owner selected merged containment baseline `1a8e7c5d922ba48423dca1b7858f8895afe0d66f`
