@@ -113,4 +113,13 @@ selection_criteria:   # pre-registered; evaluated on POOLED development (DEV2025
     3 hypotheses on one development period. A pass is development evidence only; the
     winner's-curse risk is exactly why the sealed one-shot OOS exists.
 
-results: []   # appended after the single development run; entries are never removed
+results:   # appended after the single development run (9e17b89); entries are never removed
+  - run: artifacts/research/FX_DISCOVERY_V1/DEVELOPMENT_RUN_V1.json
+    date_utc: "2026-09-28"
+    label: IN_SAMPLE / DEVELOPMENT
+    classification: NO_DEVELOPMENT_CANDIDATE
+    selected: null
+    families:
+      A_SSR: {passes: false, n_resolved: 27, mean_gross_R: 0.1526, mean_net_R: -0.0075, profit_factor_net: 0.9732, leave_top_3_out_mean_net_R: -0.1349, failed: ['N_resolved>=40', 'mean_net_R>0', 'PF_net>=1.20', 'leave_top_3_out>0']}
+      B_HSF: {passes: false, n_resolved: 43, mean_gross_R: 0.2113, mean_net_R: -0.0650, profit_factor_net: 0.8968, leave_top_3_out_mean_net_R: -0.2031, failed: ['mean_net_R>0', 'PF_net>=1.20', 'leave_top_3_out>0']}
+      C_LBR: {passes: false, n_resolved: 33, mean_gross_R: -0.2727, mean_net_R: -0.7052, profit_factor_net: 0.3533, leave_top_3_out_mean_net_R: -0.9470, failed: ['N_resolved>=40', 'mean_net_R>0', 'PF_net>=1.20', 'leave_top_3_out>0', 'DEV2025_mean_net_R>0']}

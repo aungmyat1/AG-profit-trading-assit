@@ -4,6 +4,24 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## FX discovery V1 (2026-09-28): NO_DEVELOPMENT_CANDIDATE
+
+- **Asian Sweep closed:** V1.2 is NEGATIVE_BASELINE; V1.3 is TERMINATED_BEFORE_EVALUATION.
+- **SEALED_OOS registered** (EURUSD 2025-09-14 → 2026-09-15; HIST_1Y M1 + derived M15/H1)
+  in `config/governance/AG_SEALED_OOS_REGISTRY.yaml`, unopened.
+- **OSS evaluated in isolation:**
+  - smart-money-concepts rejected (non-causal);
+  - smc-mcp used as the semantic reference (its sweep look-ahead is corrected);
+  - pandas-ta-classic used as the indicator oracle;
+  - no dependency added.
+- **Development data:** a new lineage-explicit dataset, pre-sealed M5 from 2025-04 to
+  2025-09 (UTC), plus G2_DEV_001.
+- **Development run:** three pre-registered families. None passed; net expectancy was A
+  −0.008R, B −0.065R, C −0.705R under 3-pip friction. Nothing is frozen and SEALED_OOS
+  stays closed.
+
+See `docs/status/AG_FX_DISCOVERY_V1_STATUS.md`.
+
 ## Asian Sweep V1.3 friction gate (2026-09-28): THRESHOLD_PREREGISTRATION_REQUIRED
 
 - **V1.2 recorded as:** TECHNICAL_PIPELINE VALIDATED / ECONOMIC_RESULT NEGATIVE_BASELINE;

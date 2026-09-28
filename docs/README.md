@@ -47,7 +47,11 @@ records the frozen `AG_OUTCOME_RESOLUTION_CONTRACT_V2` and its one-shot post-fil
 evidence (not a qualification). The
 [Asian Sweep V1.3 friction gate status](status/AG_ASIAN_SWEEP_V1_3_FRICTION_GATE_STATUS.md)
 records the V1.2 negative-baseline freeze, the qualified OOS dataset, and the pending
-owner threshold preregistration.
+owner threshold preregistration. The
+[FX discovery V1 status](status/AG_FX_DISCOVERY_V1_STATUS.md) records the sealed-OOS
+registry, the development-data inventory, the OSS semantic parity
+([details](research/FX_DISCOVERY_V1_SEMANTIC_PARITY.md)), and the three-family development
+run (no candidate).
 
 The [AG Edge + AI Runtime V1 Foundation ADR](architecture/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_ADR.md)
 freezes the owner-selected migration baseline and authority matrix for P0–P2. Its
