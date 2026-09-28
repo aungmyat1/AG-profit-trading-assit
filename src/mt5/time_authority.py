@@ -84,20 +84,24 @@ class TimeAuthorityPeriod:
     source: str
     evidence_symbols: Tuple[str, ...]
 
-    def covers_utc(self, t: datetime) -> bool:
-        # A period never reaches past its own week: a missing/unobserved next week must
-        # stay uncovered (fail closed), not inherit this week's offset.
+    def coverage_end(self) -> Tuple[datetime, str]:
+        """(exclusive end, basis). A period never reaches past its own week: a missing or
+        unobserved next week stays uncovered (fail closed), not inheriting this offset."""
         until = self.effective_until_utc
         if until is None or until > self.effective_from_utc + _MAX_WEEK_SPAN:
-            until = self.effective_from_utc + _LATEST_PERIOD_SPAN
-        return self.effective_from_utc <= t < until
+            return self.effective_from_utc + _LATEST_PERIOD_SPAN, "WEEK_BOUND"
+        return until, "NEXT_REOPEN"
+
+    def covers_utc(self, t: datetime) -> bool:
+        return self.effective_from_utc <= t < self.coverage_end()[0]
 
     def provenance(self, symbol: str) -> Dict[str, object]:
         return {
             "broker": self.broker,
             "server": self.server,
             "effective_from_utc": self.effective_from_utc.isoformat(),
-            "effective_until_utc": self.effective_until_utc.isoformat() if self.effective_until_utc else None,
+            "effective_until_utc": self.coverage_end()[0].isoformat(),
+            "effective_until_basis": self.coverage_end()[1],
             "utc_offset_hours": self.utc_offset_hours,
             "source": self.source,
             "evidence_symbols": list(self.evidence_symbols),

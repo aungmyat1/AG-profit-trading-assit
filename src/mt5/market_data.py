@@ -11,17 +11,30 @@ import calendar
 import math
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from functools import lru_cache
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import MetaTrader5 as mt5
 
 from shared_cache.bounded_cache import BoundedCache
 from strategy_engine.session import Candle
 
-from .broker_time import BrokerTimeError, NoWeekendGapError, detect_broker_utc_offset_hours
+from .broker_time import BrokerTimeError
+from .time_authority import (
+    TimeAuthorityConflict,
+    TimeAuthorityPeriod,
+    TimeAuthorityTimeline,
+    merge_periods,
+    observe_reopens,
+    resolve_periods,
+)
 
-# A 24/7 instrument (crypto CFDs: BTCUSD/ETHUSD on Vantage) has no weekly reopen gap for
+# Server-time authority (P6-R1, src/mt5/time_authority.py): the broker's UTC offset is a
+# property of the connected server and of the effective week, resolved from weekly reopen
+# evidence pooled across the requesting symbol and these same-connection reference FX
+# symbols. It replaces per-symbol largest-gap inference here (the legacy
+# broker_time.detect_broker_utc_offset_hours is kept, unchanged, for acquisition scripts).
+#
+# Historical note: a 24/7 instrument (crypto CFDs: BTCUSD/ETHUSD on Vantage) has no weekly reopen gap for
 # detect_broker_utc_offset_hours() to derive an offset from -- see AG_VANTAGE_MT5_CRYPTO_VENUE_V1
 # follow-up, 2026-09-13. The broker's UTC offset is a property of the connected MT5
 # SERVER, not of any one traded instrument: every symbol on a single terminal connection
@@ -114,26 +127,78 @@ def _require_symbol(symbol: str) -> None:
             raise MarketDataError("SYMBOL_NOT_FOUND", f"{symbol!r} not visible and symbol_select failed")
 
 
-@lru_cache(maxsize=32)
-def _broker_offset_hours(symbol: str) -> int:
+# Previously validated periods per (broker, server). A new resolution that disagrees with
+# a validated period for the same week fails closed (time_authority.merge_periods).
+_TIME_AUTHORITY: Dict[Tuple[str, str], Dict[datetime, TimeAuthorityPeriod]] = {}
+_EVIDENCE_LOOKBACK = timedelta(days=8)
+_EVIDENCE_PAD = timedelta(hours=14)  # |any broker offset| <= 14h
+
+
+def clear_time_authority_cache() -> None:
+    _TIME_AUTHORITY.clear()
+
+
+def _server_identity() -> Tuple[str, str]:
+    info = mt5.account_info()
+    server = getattr(info, "server", None) if info is not None else None
+    if not server:
+        raise MarketDataError("TIME_AUTHORITY_UNAVAILABLE", "no connected account/server identity for server-time authority")
+    return str(getattr(info, "company", "") or ""), str(server)
+
+
+def _broker_clock_bar_times(symbol: str, start_utc: datetime, end_utc: datetime) -> List[datetime]:
+    """Naive broker-clock M15 bar times around [start, end] (padded so no offset is assumed)."""
+    frm = calendar.timegm((start_utc - _EVIDENCE_LOOKBACK - _EVIDENCE_PAD).astimezone(timezone.utc).timetuple())
+    to = calendar.timegm((end_utc + _EVIDENCE_PAD).astimezone(timezone.utc).timetuple())
+    rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M15, frm, to)
+    if rates is None:
+        return []
+    return [datetime.utcfromtimestamp(int(r["time"])) for r in rates]
+
+
+def server_time_timeline(symbol: str, start_utc: datetime, end_utc: datetime) -> TimeAuthorityTimeline:
+    """Server-time authority covering [start_utc, end_utc] for `symbol`'s connected server.
+
+    Order of authority: previously validated same-server periods, then same-server
+    evidence (requesting symbol + reference FX symbols) resolved per week. Raises
+    MarketDataError TIME_AUTHORITY_UNAVAILABLE / TIME_AUTHORITY_CONFLICT (fail closed).
+    """
+    broker, server = _server_identity()
+    key = (broker, server)
+    known = _TIME_AUTHORITY.get(key, {})
     try:
-        return detect_broker_utc_offset_hours(symbol)
-    except NoWeekendGapError as exc:
-        for reference_symbol in _REFERENCE_SYMBOLS_FOR_24_7_OFFSET:
-            if reference_symbol == symbol:
-                continue
-            try:
-                return detect_broker_utc_offset_hours(reference_symbol)
-            except BrokerTimeError:
-                continue
-        raise MarketDataError(
-            "TIME_NORMALIZATION_ERROR",
-            f"{symbol}: no weekly reopen gap (24/7 instrument) and no reference FX symbol "
-            f"in {_REFERENCE_SYMBOLS_FOR_24_7_OFFSET} could establish the broker's UTC offset "
-            f"on this connection",
-        ) from exc
+        timeline = TimeAuthorityTimeline(list(known.values()))
+        timeline.covering(start_utc, end_utc)
+        return timeline
+    except BrokerTimeError:
+        pass
+    observations = []
+    for evidence_symbol in dict.fromkeys((symbol,) + _REFERENCE_SYMBOLS_FOR_24_7_OFFSET):
+        if mt5.symbol_info(evidence_symbol) is None:
+            continue
+        observations.extend(observe_reopens(evidence_symbol, _broker_clock_bar_times(evidence_symbol, start_utc, end_utc)))
+    try:
+        merged = merge_periods(known, resolve_periods(broker, server, symbol, observations))
+        timeline = TimeAuthorityTimeline(list(merged.values()))
+        timeline.covering(start_utc, end_utc)
+    except TimeAuthorityConflict as exc:
+        raise MarketDataError("TIME_AUTHORITY_CONFLICT", str(exc)) from exc
     except BrokerTimeError as exc:
-        raise MarketDataError("TIME_NORMALIZATION_ERROR", str(exc)) from exc
+        raise MarketDataError("TIME_AUTHORITY_UNAVAILABLE", f"{symbol}: {exc}") from exc
+    _TIME_AUTHORITY[key] = merged
+    return timeline
+
+
+def server_time_provenance(symbol: str, start_utc: datetime, end_utc: datetime) -> List[dict]:
+    """Non-secret provenance of every server-time period covering [start, end]."""
+    return [p.provenance(symbol) for p in server_time_timeline(symbol, start_utc, end_utc).covering(start_utc, end_utc)]
+
+
+def _broker_offset_hours(symbol: str) -> int:
+    """UTC offset of the CURRENT effective period (get_latest_candles/get_tick). Not
+    cached per symbol for the process lifetime: the period changes weekly/at DST."""
+    now = datetime.now(timezone.utc)
+    return server_time_timeline(symbol, now, now).at_utc(now).utc_offset_hours
 
 
 def get_candles(symbol: str, timeframe: str, start_utc: datetime, end_utc: datetime) -> List[Candle]:
@@ -145,31 +210,36 @@ def get_candles(symbol: str, timeframe: str, start_utc: datetime, end_utc: datet
     if start_utc.tzinfo is None or end_utc.tzinfo is None:
         raise MarketDataError("NAIVE_DATETIME_REJECTED", "start_utc/end_utc must be timezone-aware UTC")
 
-    offset = _broker_offset_hours(symbol)
+    timeline = server_time_timeline(symbol, start_utc, end_utc)
     # Deliberately epoch INTEGERS, not datetime objects: the MetaTrader5 python module
     # converts a naive datetime passed to copy_rates_range via this machine's *system*
     # local timezone (confirmed empirically -- on a UTC+6:30 system it silently shifted
     # every query by 6.5h), not as literal broker-wall-clock digits. Passing an int
     # sidesteps that reinterpretation entirely -- see tests/test_market_data.py.
-    start_epoch = _to_broker_epoch(start_utc, offset)
-    end_epoch = _to_broker_epoch(end_utc, offset) - 1  # half-open: exclude a bar opening exactly at end_utc
+    # Each bound converts through its own effective period (DST-safe across periods).
+    start_epoch = _to_broker_epoch(start_utc, timeline.at_utc(start_utc).utc_offset_hours)
+    end_epoch = _to_broker_epoch(end_utc, timeline.at_utc(end_utc).utc_offset_hours) - 1  # half-open
 
     rates = mt5.copy_rates_range(symbol, _TIMEFRAMES[timeframe], start_epoch, end_epoch)
     if rates is None or len(rates) == 0:
         code, message = mt5.last_error()
         raise MarketDataError("DATA_MISSING", f"copy_rates_range({symbol!r}, {timeframe}) returned no data: ({code}) {message}")
 
-    candles = [
-        Candle(
-            time=(datetime.utcfromtimestamp(int(r["time"])) - timedelta(hours=offset)).replace(tzinfo=timezone.utc),
+    candles = []
+    for r in rates:
+        reading = datetime.utcfromtimestamp(int(r["time"]))
+        try:
+            offset = timeline.at_broker(reading).utc_offset_hours
+        except BrokerTimeError as exc:
+            raise MarketDataError("TIME_AUTHORITY_UNAVAILABLE", f"{symbol}: {exc}") from exc
+        candles.append(Candle(
+            time=(reading - timedelta(hours=offset)).replace(tzinfo=timezone.utc),
             open=float(r["open"]),
             high=float(r["high"]),
             low=float(r["low"]),
             close=float(r["close"]),
             volume=float(r["tick_volume"]),
-        )
-        for r in rates
-    ]
+        ))
 
     _validate_monotonic(candles, symbol)
     _validate_ohlc(candles, symbol)
