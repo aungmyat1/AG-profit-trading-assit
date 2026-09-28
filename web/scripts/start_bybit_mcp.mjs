@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
+import { join } from 'node:path';
 import { startReadOnlyProxy, isPublicBybitMarketTool } from './readonly_mcp_proxy.mjs';
 
 // This workspace exposes Bybit's public market-data tools only. Do not inherit
@@ -10,6 +11,8 @@ for (const key of Object.keys(childEnv)) {
   if (/^BYBIT_(API_KEY|API_SECRET|API_PRIVATE_KEY_PATH|PAPER_)/i.test(key)) delete childEnv[key];
 }
 
+// Official package (github.com/bybit-exchange/trading-mcp). Pinned instead of the
+// README's @latest so tool names reviewed by the read-only allowlist cannot drift.
 const packageSpec = 'bybit-official-trading-server@2.1.22';
 const npxPath = process.platform === 'win32'
   ? spawnSync('where.exe', ['npx.cmd'], { encoding: 'utf8' }).stdout?.split(/\r?\n/).find(path => path.trim().toLowerCase().endsWith('npx.cmd'))?.trim() ||

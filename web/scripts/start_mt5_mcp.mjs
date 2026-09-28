@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
-import { startReadOnlyProxy } from './readonly_mcp_proxy.mjs';
+import { startReadOnlyProxy, isReadOnlyMt5Tool } from './readonly_mcp_proxy.mjs';
 
 function parseEnvFile(path) {
   const values = {};
@@ -53,8 +53,10 @@ if ((env.MT5_ENVIRONMENT || '').toUpperCase() !== 'DEMO') {
 
 const account = env['VANTAGE-DEMO-LOGIN'] || env.VANTAGE_DEMO_LOGIN ||
   env.VANTAGE_DEMO_ACCOUNT_ID || env.MT5_ACCOUNT_ID || env.MT5_LOGIN;
-const password = env.VANTAGE_DEMO_PASSWORD || env.MT5_PASSWORD;
-const server = env['VANTAGE-DEMO-SERVER'] || env.VANTAGE_DEMO_SERVER || env.MT5_SERVER;
+const password = env['VANTAGE-DEMO-PASSWORD'] || env['VANTAGE-DEMO_PASSWORD'] ||
+  env.VANTAGE_DEMO_PASSWORD || env.MT5_PASSWORD;
+const server = env['VANTAGE-DEMO-SERVER'] || env['VANTAGE-DEMO_SERVER'] ||
+  env.VANTAGE_DEMO_SERVER || env.MT5_SERVER;
 if (!account || !password || !server) {
   console.error(`MT5 MCP stopped: demo credentials are incomplete${envFile ? ` in ${envFile}` : ''}.`);
   process.exit(1);
@@ -90,4 +92,4 @@ child.on('exit', (code, signal) => {
   process.exitCode = code ?? (signal ? 1 : 0);
 });
 
-startReadOnlyProxy({ child });
+startReadOnlyProxy({ child, allowTool: isReadOnlyMt5Tool });

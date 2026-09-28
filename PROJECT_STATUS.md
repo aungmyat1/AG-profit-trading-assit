@@ -4,6 +4,25 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Workspace MCP upgrade check (2026-09-28, read-only configuration)
+
+Checked both launchers against the official package setups. Bybit
+(`bybit-official-trading-server`, github.com/bybit-exchange/trading-mcp) is already on
+the latest release `2.1.22`; it stays pinned (not the README's `@latest`) so the reviewed
+allowlist cannot drift. The MT5 server (`metatrader-mcp-server`, latest `0.5.1`) registers
+its tools **without MCP annotations**, so the previous annotation-only filter exposed zero
+MT5 tools; the MT5 launcher now uses an exact-name allowlist of 14 upstream query tools
+(`isReadOnlyMt5Tool`); every `place_*`/`modify_*`/`close_*`/`cancel_*` tool stays blocked.
+Also fixed: MT5 launcher now accepts the `VANTAGE-DEMO_PASSWORD`/`VANTAGE-DEMO_SERVER`
+keys the setup doc and diagnostic already named; Bybit launcher's missing `join` import
+(Windows fallback path); diagnostic now requires Node >= 20.6 (official Bybit engine
+floor) and reports the installed `metatrader-mcp-server` version. Evidence (Linux cloud
+container, 2026-09-28): `node --test web/tests/readonly_mcp_proxy.test.mjs` 5/5 pass;
+Bybit launcher stdio run reports `trading-mcp 2.1.22`, 29 public tools exposed, order
+calls rejected, a read call forwarded (upstream HTTP 403 from the container's egress
+allowlist, so no venue response verified). MT5 runtime NOT_EVALUATED (no Windows/MT5
+terminal/demo `.env` in this environment). Does not enable or authorize trading.
+
 ## Workspace MCP integrations (2026-09-27, read-only configuration)
 
 `.mcp.json` and `.vscode/mcp.json` now configure a read-only MT5 Demo MCP launcher
