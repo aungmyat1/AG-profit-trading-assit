@@ -1,0 +1,116 @@
+# FX_DISCOVERY_V1 hypothesis ledger. Committed BEFORE any development outcome is computed.
+#
+# Exactly three structurally different families. Each is one fixed specification: no
+# parameter variants and no sweeps. Every family tested is recorded here with its result.
+# Failed families are never deleted. Any later variant is a NEW ledger entry (hypothesis
+# count +1). Research only: PROPOSAL/DEMO/LIVE authority = NONE; SEALED_OOS
+# (config/governance/AG_SEALED_OOS_REGISTRY.yaml) is not touched.
+schema: AG_RESEARCH_HYPOTHESIS_LEDGER_V1
+program: FX_DISCOVERY_V1
+symbol: EURUSD
+frozen_at_utc: "2026-09-28"
+canonical_features: src/fx_discovery/features.py   # semantics fixed in c38f53b (parity doc)
+hypothesis_count: 3
+
+development_data:   # IN_SAMPLE / DEVELOPMENT, never OOS
+  DEV2025:
+    file: data/research/fx_discovery_v1/EURUSD_DEV2025_M5_UTC.csv
+    sha256_lf: aad5e7d79bf59b6cf4a12175d317fdf02eddca87d8027977e5b9ccaefe3e08ba
+    base_timeframe: M5          # resolution granularity
+    evaluation_days_utc: {from: "2025-04-28", to: "2025-09-12"}   # the week from 2025-04-21 is indicator warmup
+  G2_DEV_001:
+    m1: {file: data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_M1.csv, sha256: b760a2a65f8f453d121500657e824daec63579bfa4e67895e4501454dedc7458}
+    base_timeframe: M1
+    evaluation_days_utc: {from: "2026-06-24", to: "2026-07-31"}
+    note: already consumed by Asian Sweep V1.2 (a different family); outside the sealed OOS evaluation period
+
+common_rules:
+  timeframes: M15 and H1 bars are built by UTC-bucket aggregation of the base bars (open=first, high=max, low=min, close=last)
+  causality: a feature is usable at time t only if it is KNOWN (its known_at bar has closed) at or before t
+  atr_h1: ATR(14) (Wilder) of H1 bars, taken from the last H1 bar closed at or before the entry decision time
+  stop_buffer: 0.1 * atr_h1 beyond the structural level
+  min_stop_distance: >-
+    0.5 * atr_h1. If the structural stop is closer than this, the stop is WIDENED to the
+    floor (never skipped). Disclosed prior: motivated by the V1.2 finding that very
+    small structural stops are dominated by friction. It is scale-aware, not tuned.
+  target: entry +/- 2.0 * risk_distance (single target, full position)
+  one_trade_per_family_per_utc_day: first qualifying setup only
+  resolution:
+    fill: at the entry decision time; no base bar opening before the fill participates (V2 post-fill invariant)
+    touches: inclusive (low <= level / high >= level)
+    same_bar_sl_and_tp: AMBIGUOUS_SAME_BAR (excluded from scored stats, reported)
+    limit_fill_bar_also_touches_stop_or_target: AMBIGUOUS_SAME_BAR
+    time_exit: close of the last base bar opening before the family's time_exit_utc
+    missing_base_bars_in_window: UNRESOLVED_MISSING_DATA (reported, not imputed)
+  friction:
+    primary: {name: CEILING_3PIP, round_trip_pips: 3.0, composition: "2.0 spread + 1.0 slippage", commission: "0.0 UNVERIFIED"}
+    conversion: friction_R = 3.0 * 0.0001 / risk_distance, once per resolved trade
+  pip: 0.0001
+
+families:
+  A_SSR:
+    name: Session liquidity sweep -> structural reclaim
+    htf_context: none
+    reference: Asian box = M15 bars opening in [00:00, 06:00) UTC; exactly 24 required, else no trade
+    setup: >-
+      First M15 bar opening in [07:00, 10:00) with high > box_high and close < box_high
+      (bearish sweep) or low < box_low and close > box_low (bullish sweep). A bar doing
+      both is skipped.
+    confirmation: >-
+      First AG structure break (BOS or CHoCH; swings k=2 on that UTC day's M15 bars from
+      00:00) with index > sweep index, in the reversal direction (bullish after a low
+      sweep), within 8 bars after the sweep and opening before 10:00.
+    entry: MARKET at the close of the confirming break bar
+    stop: "bullish: min(low of bars sweep..break) - buffer; bearish: max(high) + buffer; then the min_stop floor"
+    target: 2.0R
+    expiry: no confirmation within 8 bars or by 10:00, so no trade
+    time_exit_utc: "12:00"
+  B_HSF:
+    name: H1 structure bias -> M15 liquidity sweep -> FVG retracement
+    htf_context: >-
+      H1 bias = direction of the most recent AG H1 structure break (k=2, full H1 series)
+      whose bar closed at or before the decision time; neutral means no trade
+    window: M15 bars opening in [07:00, 15:00) UTC
+    setup: AG M15 sweep (k=2, full M15 series, confirmed swings only) in the bias direction, sweep bar in window
+    confirmation: >-
+      First AG M15 FVG in the same direction with middle index > sweep index and known_at
+      <= sweep index + 6, known (bar closed) before 15:00.
+    entry: >-
+      LIMIT at the FVG proximal edge (bullish: FVG top; bearish: FVG bottom), active from
+      the FVG known time until min(known + 3h, 16:00). Fill = the first base bar with low
+      <= entry (long) / high >= entry (short). Cancelled if the stop level trades before
+      the fill.
+    stop: "bullish: sweep bar low - buffer; bearish: sweep bar high + buffer; then the min_stop floor relative to entry"
+    target: 2.0R
+    expiry: no FVG in time, or no fill before order expiry, so no trade
+    time_exit_utc: "17:00"
+  C_LBR:
+    name: London breakout of the Asian range -> retest -> continuation
+    htf_context: none
+    reference: Asian box as in A_SSR
+    setup: First M15 bar opening in [07:00, 11:00) that CLOSES > box_high (bull) or < box_low (bear)
+    confirmation: >-
+      Within the next 8 M15 bars (opening before 11:00), the first bar with low <= box_high
+      and close > box_high (bull; mirror for bear). If an earlier bar closes back <= box_high
+      (bull), the breakout has failed and there is no trade.
+    entry: MARKET at the close of the retest bar
+    stop: "bull: retest bar low - buffer; bear: retest bar high + buffer; then the min_stop floor"
+    target: 2.0R
+    expiry: no retest within 8 bars or by 11:00, so no trade
+    time_exit_utc: "16:00"
+
+selection_criteria:   # pre-registered; evaluated on POOLED development (DEV2025 + G2_DEV_001), net of CEILING_3PIP
+  all_required:
+    - "N_resolved >= 40"
+    - "mean_net_R > 0"
+    - "profit_factor_net >= 1.20"
+    - "leave_top_3_out mean_net_R > 0 (not carried by 1-3 trades)"
+    - "DEV2025 alone: mean_net_R > 0 (G2_DEV_001 alone is reported, too small to gate)"
+  tie_break: highest bootstrap 95% CI lower bound of mean net R (10,000 resamples, seed 20260928)
+  if_none_pass: NO_DEVELOPMENT_CANDIDATE. STOP; SEALED_OOS stays closed.
+  if_one_or_more_pass: freeze exactly ONE (tie_break), then return OOS_CANDIDATE_READY to the owner; never auto-open SEALED_OOS
+  multiple_testing_note: >-
+    3 hypotheses on one development period. A pass is development evidence only; the
+    winner's-curse risk is exactly why the sealed one-shot OOS exists.
+
+results: []   # appended after the single development run; entries are never removed
