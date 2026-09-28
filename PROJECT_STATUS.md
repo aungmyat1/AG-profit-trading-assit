@@ -17,6 +17,9 @@ later sections preserve dated milestone evidence and may contain older test tota
 - **Platform:** P6-R1 is unchanged, and broker mutation calls are 0.
 - **Next:** handed to Arena A6 for independent analysis. Target-session captures are still
   needed.
+- **P6-R3 (19:48Z):** `TARGET_SESSION_NOT_ACTIVE`, so no capture was created. Collector
+  V2 is prepared (`50460cc`): a session gate, the zero-spread metadata probe, and a fix for
+  a fail-closed-exit crash. It awaits the next POST_ASIAN or POST_LONDON window.
 
 See `docs/status/AG_FX_OPPORTUNITY_PLATFORM_V2_R2_VT_SPREAD_CAPTURE_STATUS.md`.
 

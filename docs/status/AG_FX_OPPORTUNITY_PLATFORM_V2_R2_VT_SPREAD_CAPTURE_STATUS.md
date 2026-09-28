@@ -120,3 +120,35 @@ secret-like terms found 0 hits, and the serializer fails closed on secret-like k
 including any median, P95 or EMPIRICAL_BASE/STRESS figure and any friction contract.
 Target-session captures, POST_ASIAN and POST_LONDON, are still needed for session-relevant
 evidence; each gets its own new capture ID.
+
+## P6-R3 addendum (2026-09-28 19:48Z): TARGET_SESSION_NOT_ACTIVE, collector V2 prepared
+
+The P6-R3 session-relevant capture was requested at 19:44Z on Monday, outside both scanner
+execution windows, so **no capture was created**. The runs of
+`capture_vt_spread_evidence.py --session POST_ASIAN|POST_LONDON` stopped at the session
+gate before MT5 was initialized, with 0 mutations.
+
+**Prepared in `50460cc`** (evidence tooling only; platform and Capture 001 are untouched):
+- **Collector `AG_VT_SPREAD_COLLECTOR_V2`.** It adds an additive `quote_metadata` field
+  per row: raw tick `time`, `time_msc`, `flags`, `last` and `volume`; symbol trade,
+  execution, filling and order modes; symbol `spread` and `spread_float`, which are
+  **not** friction authority; the symbol bid/ask snapshot; and session counters. Codes are
+  decoded only via the local MetaTrader5 constant tables. The local package defines
+  `TICK_FLAG_*`, `SYMBOL_TRADE_MODE_*` (0 = `DISABLED`) and `SYMBOL_TRADE_EXECUTION_*`;
+  it defines no `SYMBOL_FILLING_*`, so filling mode is recorded raw as
+  `UNAVAILABLE_IN_LOCAL_API`. A repeated-tick flag is derived from `time_msc`. No field is
+  treated as evidence of executability.
+- **Required session gate.** `--session` is now required and is checked before MT5 is
+  initialized. The run must fall inside the canonical execution window (POST_ASIAN
+  07:00–11:00Z, POST_LONDON 12:00–15:00Z; tests confirm these equal the pilot configs)
+  with the full duration still remaining.
+- **Capture IDs.** New captures are named `VT_SPREAD_<SESSION>_<ts>_<lineage>`.
+- **Fail-closed exits fixed.** `_stop()` crashed on the `reason=` keyword that every
+  fail-closed exit passes. This was latent since R2a and never hit.
+
+**Tests.** `python -m pytest -q tests/test_fx_friction_capture.py` gave 42 passed.
+
+**Next run windows (UTC).** POST_ASIAN must start between 07:00 and 10:48 on a weekday, and
+POST_LONDON between 12:00 and 14:48, so that the default 720 s capture fits inside the
+window. Each run produces a new immutable capture ID and is then published to
+`audit/vt-spread-post-asian-v1` or `audit/vt-spread-post-london-v1`.
