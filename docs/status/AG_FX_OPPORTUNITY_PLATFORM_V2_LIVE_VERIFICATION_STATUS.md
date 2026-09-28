@@ -126,3 +126,24 @@ was not read.
 `ST_ASIAN_SWEEP_5R_V1`, pilot universes, `proposal_authority`, `demo_authorized`,
 `live_authorized` and the USDJPY binding (NONE) are all unchanged. Proposal, Demo and Live
 authority remain NONE.
+
+## Addendum: owner-confirmed VT Markets scope (2026-09-28)
+
+- **Broker:** the owner's refined P6 brief confirms that **VT Markets Demo** is the intended
+  broker. Finding 2 is therefore a confirmed configuration discrepancy. The instrument
+  contract key and the CLI `--broker` default are `VANTAGE`, so every live result's
+  provenance `source` string says `VANTAGE` when it should say VT Markets. It was **not
+  patched** here, per the stop-and-report rule; the fix is a separate bounded remediation.
+- **Demo gate:** passed from safe metadata: server `VTMarkets-Demo`, account trade_mode 0
+  (`ACCOUNT_TRADE_MODE_DEMO`). No login or account number was printed or recorded.
+- **`.env`:** only key names were inspected, and no values were printed. The main repo's
+  gitignored `src/.env` has `MT5_TERMINAL_PATH`, `MT5_ENVIRONMENT` and `MT5_BROKER`
+  populated; `MT5_LOGIN`, `MT5_PASSWORD` and `MT5_SERVER` are not populated. This lineage
+  has no credentialed login module, so the connection used the CLI's existing path: it
+  attaches to the already-logged-in terminal and passes no credentials. No `.env` was
+  copied into the worktree.
+- **Versions:** the runtime strategy version stays **1.1.1**. `1.2.0-CANDIDATE` is only the
+  research outcome contract version and was not relabelled.
+- **Full regression:** `python -m pytest -q -p no:cacheprovider` gave 590 passed, 4 skipped,
+  1 failed (the same baseline-unrelated `api.app` failure). Pytest resolves the repo stub,
+  so the suite never touched the live terminal.
