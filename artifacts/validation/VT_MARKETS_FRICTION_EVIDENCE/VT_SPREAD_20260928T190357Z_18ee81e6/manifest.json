@@ -1,0 +1,137 @@
+{
+  "authority": {
+    "demo_trade": "NONE",
+    "live": "NONE",
+    "proposal": "NONE",
+    "trade_ticket": "NOT_CREATED"
+  },
+  "broker": "VT_MARKETS",
+  "broker_mutation_calls": {
+    "order_check": 0,
+    "order_send": 0,
+    "orders_get": 0,
+    "orders_total": 0,
+    "positions_get": 0,
+    "positions_total": 0,
+    "trade_buy": 0,
+    "trade_cancel": 0,
+    "trade_close": 0,
+    "trade_modify": 0,
+    "trade_sell": 0
+  },
+  "capture_id": "VT_SPREAD_20260928T190357Z_18ee81e6",
+  "collector": {
+    "git_lineage": "18ee81e684da79f5e6dfba1ba4942e7f86094076",
+    "module_sha256": "c7e3f1cca84b53622fe53053080b98c1b15dbff83596692ea0a3ad2759aab809",
+    "script_sha256": "d744d12e8186e78aae9ae9e9398923007fa5b3018a09979d5a29044f438cb221",
+    "version": "AG_VT_SPREAD_COLLECTOR_V1"
+  },
+  "commission_status": "UNKNOWN",
+  "duration_seconds": 715.603,
+  "end_utc": "2026-09-28T19:15:53.401767+00:00",
+  "environment": "DEMO",
+  "instrument_spec": {
+    "EURUSD": {
+      "broker_symbol": "EURUSD",
+      "digits": 5,
+      "pip_size": 0.0001,
+      "point": 1e-05
+    },
+    "GBPUSD": {
+      "broker_symbol": "GBPUSD",
+      "digits": 5,
+      "pip_size": 0.0001,
+      "point": 1e-05
+    }
+  },
+  "per_symbol": {
+    "EURUSD": {
+      "attempted": 144,
+      "invalid": 0,
+      "invalid_by_code": {},
+      "missing": 0,
+      "pip_size": 0.0001,
+      "raw_path": "artifacts/validation/VT_MARKETS_FRICTION_EVIDENCE/VT_SPREAD_20260928T190357Z_18ee81e6/EURUSD_raw.jsonl",
+      "raw_sha256": "1c235c6ec1216aeb8840f36a01d974d98778a15d7df9b35dcb97dad8ba83fb34",
+      "spread_max_pips": 0.2,
+      "spread_min_pips": 0.0,
+      "valid": 144,
+      "zero_spread_samples": 53
+    },
+    "GBPUSD": {
+      "attempted": 144,
+      "invalid": 0,
+      "invalid_by_code": {},
+      "missing": 0,
+      "pip_size": 0.0001,
+      "raw_path": "artifacts/validation/VT_MARKETS_FRICTION_EVIDENCE/VT_SPREAD_20260928T190357Z_18ee81e6/GBPUSD_raw.jsonl",
+      "raw_sha256": "b53c62af4f1ca8d44479a3ee99a11d27dc67ba9ece10088885d74a5669e5143a",
+      "spread_max_pips": 0.7,
+      "spread_min_pips": 0.0,
+      "valid": 144,
+      "zero_spread_samples": 34
+    }
+  },
+  "sampling": {
+    "cadence_seconds": 5.0,
+    "mode": "INTERLEAVED_FIXED_CADENCE",
+    "order_per_round": [
+      "EURUSD",
+      "GBPUSD"
+    ],
+    "rounds": 144
+  },
+  "schema": "AG_VT_SPREAD_CAPTURE_MANIFEST_V1",
+  "semantics": {
+    "a5_semantic_source": "OWNER/ARCHITECT_PROVIDED_INTERFACE_CONTRACT",
+    "bar_spread_field_used": false,
+    "spread_pips": "spread_price / pip_size",
+    "spread_price": "ask - bid",
+    "stale_tolerance_seconds": 60.0,
+    "zero_spread": "preserved and flagged; not interpreted as zero economic friction"
+  },
+  "server": "VTMarkets-Demo",
+  "server_clock": {
+    "EURUSD": [
+      {
+        "broker": "VT Markets (Pty) Ltd",
+        "effective_from_utc": "2026-09-27T21:00:00+00:00",
+        "effective_until_basis": "WEEK_BOUND",
+        "effective_until_utc": "2026-10-04T20:00:00+00:00",
+        "evidence_symbols": [
+          "EURUSD",
+          "GBPUSD"
+        ],
+        "scope": "SERVER_SHARED",
+        "server": "VTMarkets-Demo",
+        "source": "SERVER_CONSENSUS",
+        "utc_offset_hours": 3
+      }
+    ],
+    "GBPUSD": [
+      {
+        "broker": "VT Markets (Pty) Ltd",
+        "effective_from_utc": "2026-09-27T21:00:00+00:00",
+        "effective_until_basis": "WEEK_BOUND",
+        "effective_until_utc": "2026-10-04T20:00:00+00:00",
+        "evidence_symbols": [
+          "EURUSD",
+          "GBPUSD"
+        ],
+        "scope": "SERVER_SHARED",
+        "server": "VTMarkets-Demo",
+        "source": "SERVER_CONSENSUS",
+        "utc_offset_hours": 3
+      }
+    ]
+  },
+  "session_classification": "OTHER",
+  "slippage_status": "UNKNOWN/INSUFFICIENT_SAMPLE",
+  "source": "MT5_LIVE_TICK",
+  "start_utc": "2026-09-28T19:03:57.799252+00:00",
+  "status": "VT_CAPTURE_OUTSIDE_TARGET_SESSION",
+  "symbols": [
+    "EURUSD",
+    "GBPUSD"
+  ]
+}
