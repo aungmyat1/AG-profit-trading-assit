@@ -44,7 +44,10 @@ freezes the economic-qualification contract and lists the unsigned/contradictory
 that block it. The
 [Asian Sweep V1.2 candidate outcome replay status](status/AG_ASIAN_SWEEP_V1_2_CANDIDATE_OUTCOME_REPLAY_STATUS.md)
 records the frozen `AG_OUTCOME_RESOLUTION_CONTRACT_V2` and its one-shot post-fill replay
-evidence (not a qualification).
+evidence (not a qualification). The
+[Asian Sweep V1.3 friction gate status](status/AG_ASIAN_SWEEP_V1_3_FRICTION_GATE_STATUS.md)
+records the V1.2 negative-baseline freeze, the qualified OOS dataset, and the pending
+owner threshold preregistration.
 
 The [AG Edge + AI Runtime V1 Foundation ADR](architecture/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_ADR.md)
 freezes the owner-selected migration baseline and authority matrix for P0–P2. Its

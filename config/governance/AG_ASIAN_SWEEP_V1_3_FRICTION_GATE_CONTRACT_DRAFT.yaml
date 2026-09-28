@@ -1,0 +1,54 @@
+# ST_ASIAN_SWEEP_5R_V1@1.3.0-CANDIDATE -- friction-to-risk admission experiment.
+# STATUS: PROPOSED / UNSIGNED. The threshold is deliberately left unset.
+#
+# No outcome may be computed against this file while max_friction_to_risk is null. The
+# owner sets exactly one value, with a rationale that is independent of
+# SSC_V1_0_1_G2_DEV_001, then renames this file to the signed contract and commits it.
+# Only after that commit may the OOS replay run. See
+# docs/status/AG_ASIAN_SWEEP_V1_3_FRICTION_GATE_STATUS.md.
+schema: AG_ASIAN_SWEEP_V1_3_FRICTION_GATE_CONTRACT
+status: PROPOSED_UNSIGNED
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+candidate_version: 1.3.0-CANDIDATE
+control: {candidate_version: 1.2.0-CANDIDATE, contract: config/governance/AG_OUTCOME_RESOLUTION_CONTRACT_V2.yaml, contract_sha256_lf: a5680bb014bff836ebc0536b91fe050cf84060d81d0bdbae6bec2eaf003128aa}
+
+single_change:
+  dimension: FRICTION_TO_RISK_ADMISSION_GATE
+  applies: after a deterministic Opportunity exists and before economic trade admission; detection is unchanged
+  friction_ratio: expected_round_trip_friction_pips / initial_stop_distance_pips
+  expected_round_trip_friction_pips: 3.0   # V2 CONTRACT_CEILING: 2.0 spread + 1.0 slippage per trade; commission 0.0 UNVERIFIED
+  initial_stop_distance_pips: abs(sweep_candle_close - sweep_wick_extreme) / 0.0001   # V2 entry/stop, unchanged
+  admission: friction_ratio <= max_friction_to_risk
+  max_friction_to_risk: null               # OWNER MUST SET EXACTLY ONE VALUE
+  threshold_rationale: null                # OWNER: must not be derived from G2_DEV_001 results or distributions
+  rejected_opportunity_state: REJECTED_FRICTION_GATE   # counted and reported; not scored
+
+inherited_unchanged_from_v2:
+  - entry, resolution start, stop, targets, session exit, same-bar policy, missing-data policy, exclusions, friction conversion
+  - structural invalidation, EMA50 and 25-pip ceiling remain OFF
+
+oos_dataset:   # qualified 2026-09-28; lineage only, no strategy statistics computed
+  m1:
+    dataset_id: SSC_V1_0_1_HIST_1Y_M1_001
+    source: git blob ef5e2470341baee76f972c25839d3a5131900417 at 2b75bbf0d290cbf3b52684f87770396442790639 (data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_M1_001/raw/EURUSD_M1.csv)
+    sha256: 50beb42ad2f65203f3946301eee0e8a435dd6f2067eb4fc0692ebba451d12f8a
+    provenance: VantageMarkets-Demo MT5 copy_rates_range, bridge 5.0.5735, owner-authorized 2026-09-19, UTC-normalized across 53 broker-offset segments
+  m15:
+    dataset_id: SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001
+    path: data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001/raw/EURUSD_M15.csv
+    sha256: c9833427404d8634d8cf57b000017ecea7ad865ab22db4eadedacb80de9b6956
+    derivation: deterministic M1 aggregation (AUTHORIZED_DETERMINISTIC_TIMEFRAME_AGGREGATION)
+  period: all weekdays 2025-09-15 .. 2026-09-15 EXCEPT [2026-06-20, 2026-08-03) (the G2_DEV_001 frozen interval); 232 weekdays
+  lineage_checks:
+    m1_to_m15: 21666/21666 full OOS buckets exact; 0 mismatches in any bucket
+    utc: Sunday opens at 21:0x UTC (summer) / 22:0x UTC (winter), consistent across DST
+    coverage: 1710 of 194880 ref+trade-window minutes missing; 840 on 2025-12-25 and 840 on 2026-01-01 (holidays); 30 across 6 other days; handled by the V2 missing-data policy
+    quarantine: none; the GEN_002 quarantine names this M1 package the canonical one-year M1 authority
+  excluded: [SSC_V1_0_1_G2_DEV_001, SSC_V1_0_1_G2_DEV_002 (M1/M15 byte-identical to DEV_001), SSC_FRESH_DEV_GEN_002 (quarantined)]
+
+evaluation:
+  runs: one canonical replay, CONTROL and TREATMENT over the identical Opportunity population
+  report: N, admitted, rejected, resolved, gross and net expectancy, median, PF, total R, 95% bootstrap CI, leave-top-k-out sensitivity, and the stop-distance and friction-ratio distributions
+  forbidden: computing OOS stop-distance or friction-ratio distributions before this contract is signed and committed
+
+authority: {proposal_authority: NONE, demo_authorized: false, live_authorized: false, trade_ticket: NOT_CREATED}

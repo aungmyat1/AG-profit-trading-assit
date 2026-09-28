@@ -4,6 +4,20 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Asian Sweep V1.3 friction gate (2026-09-28): THRESHOLD_PREREGISTRATION_REQUIRED
+
+- **V1.2 recorded as:** TECHNICAL_PIPELINE VALIDATED / ECONOMIC_RESULT NEGATIVE_BASELINE;
+  authority NONE. G2_DEV_001 is closed to optimization.
+- **Why V1.3 stopped:** no independent pre-existing per-trade friction-to-risk threshold
+  exists, and the agent had already seen G2's stop distribution. No V1.3 outcome was
+  computed.
+- **OOS dataset qualified:** `SSC_V1_0_1_HIST_1Y_M1_001` M1 plus the derived M15, 232
+  weekdays excluding G2. M1→M15 exact; UTC verified.
+- **Pending:** the owner sets one threshold in
+  `config/governance/AG_ASIAN_SWEEP_V1_3_FRICTION_GATE_CONTRACT_DRAFT.yaml`.
+
+See `docs/status/AG_ASIAN_SWEEP_V1_3_FRICTION_GATE_STATUS.md`.
+
 ## Asian Sweep V1.2 candidate outcome replay (2026-09-28): V1_2_OUTCOME_EVIDENCE_READY
 
 - **Contract:** `config/governance/AG_OUTCOME_RESOLUTION_CONTRACT_V2.yaml`, frozen in
