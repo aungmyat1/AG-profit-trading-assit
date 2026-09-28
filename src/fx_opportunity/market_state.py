@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import datetime as dt
 from dataclasses import asdict, dataclass
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from mt5.market_data import MarketDataError
 from post_asian_pilot.fingerprint import fingerprint
@@ -80,6 +80,9 @@ class MarketState:
     last_closed_bar: Optional[Dict[str, Any]]
     spread_pips: Optional[float]
     spread_source: Optional[str]
+    # Server-time periods (broker, server, effective period, UTC offset, source, scope)
+    # that normalized these bars to UTC; None for injected/replay data.
+    server_clock: Optional[Tuple[Dict[str, Any], ...]]
     fingerprint: str
 
     def to_dict(self) -> Dict[str, Any]:
@@ -102,6 +105,7 @@ def build_market_state(
     source: str,
     spread_price: Optional[float] = None,
     spread_source: Optional[str] = None,
+    server_clock: Optional[Sequence[Mapping[str, Any]]] = None,
 ) -> MarketState:
     """Pure: identical closed candles + configuration -> identical MarketState."""
     for bar in list(reference_candles) + list(post_candles):
@@ -147,6 +151,7 @@ def build_market_state(
         },
         spread_pips=instrument.price_to_pips(spread_price) if spread_price is not None else None,
         spread_source=spread_source if spread_price is not None else None,
+        server_clock=tuple(dict(p) for p in server_clock) if server_clock is not None else None,
     )
     return MarketState(fingerprint=fingerprint(fields), **fields)
 
@@ -166,6 +171,7 @@ def observe_market_state(
     source: str,
     spread_price: Optional[float] = None,
     spread_source: Optional[str] = None,
+    server_clock: Optional[Sequence[Mapping[str, Any]]] = None,
 ) -> Tuple[Optional[MarketState], Tuple[str, ...]]:
     """Fetch closed bars and build a MarketState without any strategy.
 
@@ -196,6 +202,6 @@ def observe_market_state(
         execution_window=execution_window, expected_reference_bars=expected_reference_bars,
         reference_candles=ref, post_candles=post,
         market_data_mode=market_data_mode, source=source,
-        spread_price=spread_price, spread_source=spread_source,
+        spread_price=spread_price, spread_source=spread_source, server_clock=server_clock,
     )
     return state, ()

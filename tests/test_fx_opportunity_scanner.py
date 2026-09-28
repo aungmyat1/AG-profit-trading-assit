@@ -136,3 +136,37 @@ def test_cli_classifies_unauthorized_terminal_without_reading_data(monkeypatch, 
     assert rc == 2 and calls == ["initialize"]  # one attempt, no retry, no data read
     assert {r["status"] for r in out["results"]} == {"LIVE_MT5_AUTH_BLOCKED"}
     assert out["results"][0]["reason_codes"] == ["MT5_INITIALIZE_FAILED:-6"]
+
+
+def _run_cli_with_fake(monkeypatch, capsys, account):
+    calls = []
+    fake = types.ModuleType("MetaTrader5")
+    fake.__file__ = os.path.join(os.sep, "site-packages", "MetaTrader5", "__init__.py")
+    fake.initialize = lambda **k: calls.append("initialize") or True
+    fake.shutdown = lambda: calls.append("shutdown")
+    fake.account_info = lambda: calls.append("account_info") or account
+    fake.ACCOUNT_TRADE_MODE_DEMO = 0
+    for name in ("copy_rates_range", "copy_rates_from_pos", "symbol_info", "symbol_info_tick"):
+        setattr(fake, name, lambda *a, _n=name, **k: calls.append(_n))
+    monkeypatch.setitem(sys.modules, "MetaTrader5", fake)
+    monkeypatch.setattr(sys, "argv", ["run_fx_opportunity_once.py", "--cycle", "POST_ASIAN", "--symbol", "ALL"])
+    cwd = os.getcwd()
+    try:
+        rc = runpy.run_path(str(REPO / "scripts" / "run_fx_opportunity_once.py"), run_name="cli_under_test")["main"]()
+    finally:
+        os.chdir(cwd)
+    return rc, calls, json.loads(capsys.readouterr().out)
+
+
+def test_cli_refuses_non_demo_account_before_any_data(monkeypatch, capsys):
+    rc, calls, out = _run_cli_with_fake(monkeypatch, capsys, types.SimpleNamespace(server="VTMarkets-Live", trade_mode=2, login=123))
+    assert rc == 2 and calls == ["initialize", "account_info", "shutdown"]
+    assert {r["status"] for r in out["results"]} == {"ACCOUNT_ENVIRONMENT_NOT_VERIFIED_DEMO"}
+    assert "123" not in json.dumps(out) and "login" not in json.dumps(out)
+
+
+def test_cli_refuses_server_not_listed_for_broker(monkeypatch, capsys):
+    rc, calls, out = _run_cli_with_fake(monkeypatch, capsys, types.SimpleNamespace(server="Other-Demo", trade_mode=0, login=123))
+    assert rc == 2 and "copy_rates_range" not in calls
+    assert (out["broker"], out["server"], out["account_environment"]) == ("VT_MARKETS", "Other-Demo", "DEMO")
+    assert {r["status"] for r in out["results"]} == {"BROKER_SERVER_MISMATCH"}

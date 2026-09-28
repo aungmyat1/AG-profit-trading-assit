@@ -82,3 +82,29 @@ def test_broker_spec_cross_check():
     assert check_broker_spec(jpy, SimpleNamespace(digits=5, point=0.00001)) == (
         "INSTRUMENT_DIGITS_MISMATCH", "INSTRUMENT_POINT_MISMATCH")
     assert check_broker_spec(jpy, None) == ("BROKER_SYMBOL_UNAVAILABLE",)
+
+
+# --- P6-R1 broker identity -----------------------------------------------------------
+
+from fx_opportunity.instruments import get_broker, load_brokers  # noqa: E402
+
+
+def test_vtmarkets_is_the_canonical_verified_broker():
+    vt = get_broker("VTMARKETS")
+    assert (vt.canonical_name, vt.servers, vt.environment) == ("VT_MARKETS", ("VTMarkets-Demo",), "DEMO")
+    for symbol in ("EURUSD", "GBPUSD", "USDJPY"):
+        entry = get_instrument(symbol).broker_symbol("VTMARKETS")
+        assert (entry.symbol, entry.verified) == (symbol, True)
+    # the genuine historical Vantage origin is preserved, with no verified server
+    assert get_broker("VANTAGE").servers == ()
+    assert sorted(load_brokers()) == ["VANTAGE", "VTMARKETS"]
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda d: d["instruments"]["EURUSD"]["broker_symbols"].update(UNKNOWNBROKER={"symbol": "EURUSD", "verified": True}),
+    lambda d: d["brokers"]["VTMARKETS"].update(environment="LIVE"),
+    lambda d: d.pop("brokers"),
+])
+def test_broker_contract_fails_closed(tmp_path, mutate):
+    with pytest.raises(InstrumentConfigError):
+        load_instruments(_write(tmp_path, mutate))

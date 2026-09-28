@@ -10,9 +10,11 @@ requested symbol gets one explicit state (see fx_opportunity.scanner); an unavai
 real package or an unauthorized terminal is reported per symbol (fail closed) and no
 market data is read. Never forms a proposal or ticket and never sends/checks an order.
 
-MT5 calls made: initialize/shutdown/terminal_info/account_info (presence only; nothing
-is printed from the account), last_error, symbol_info, symbol_info_tick, copy_rates_range,
-and symbol_select (Market Watch visibility only, via mt5.market_data).
+MT5 calls made: initialize/shutdown/terminal_info/account_info (server name and Demo/Live
+trade mode only; the login/account number is never read into output), last_error,
+symbol_info, symbol_info_tick, copy_rates_range, and symbol_select (Market Watch visibility
+only, via mt5.market_data). Refuses a non-Demo account and a server not listed for the
+selected broker (default VTMARKETS -> VTMarkets-Demo).
 """
 from __future__ import annotations
 
@@ -46,9 +48,9 @@ for _name in _BLOCKED:
     setattr(MetaTrader5, _name, _block(_name))
 
 from fx_opportunity import scanner  # noqa: E402
-from fx_opportunity.instruments import check_broker_spec, get_instrument, load_instruments  # noqa: E402
+from fx_opportunity.instruments import check_broker_spec, get_broker, get_instrument, load_brokers, load_instruments  # noqa: E402
 from fx_opportunity.runner import CYCLES  # noqa: E402
-from mt5.market_data import MarketDataError, get_candles, get_tick  # noqa: E402
+from mt5.market_data import MarketDataError, get_candles, get_tick, server_time_provenance  # noqa: E402
 from opportunity.candidate_store import CandidateStore  # noqa: E402
 
 
@@ -68,11 +70,14 @@ def _application_lineage() -> str:
         return "UNKNOWN"
 
 
-def _emit(cycle, now, lineage, scans, exit_code):
+def _emit(cycle, now, lineage, scans, exit_code, identity=None):
     print(json.dumps({
         "cycle": cycle,
         "evaluated_at": now.isoformat(),
         "market_data_mode": "REAL",
+        "mode": "LIVE",
+        "source": "MT5_REAL",
+        **(identity or {}),
         "application_lineage": lineage,
         "results": [s.summary() for s in scans],
         "proposal_authority": "NONE",
@@ -87,7 +92,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--cycle", choices=sorted(CYCLES), required=True)
     ap.add_argument("--symbol", default="EURUSD", choices=symbols_known + ["ALL"])
-    ap.add_argument("--broker", default="VANTAGE", help="broker key in the instrument contract's broker_symbols")
+    ap.add_argument("--broker", default="VTMARKETS", choices=sorted(load_brokers()),
+                    help="broker key in the instrument contract (the connected server must be listed for it)")
     ap.add_argument("--store", default="journal/fx_opportunity/candidates.json")
     ap.add_argument("--terminal-path", default=os.environ.get("MT5_TERMINAL_PATH") or None,
                     help="attach to this running terminal (no credentials are ever passed)")
@@ -106,10 +112,25 @@ def main() -> int:
         return _emit(args.cycle, now, lineage, scanner.blocked(
             args.cycle, symbols, status, (f"MT5_INITIALIZE_FAILED:{code}",)), 2)
     try:
-        if MetaTrader5.account_info() is None:
+        account = MetaTrader5.account_info()
+        if account is None:
             return _emit(args.cycle, now, lineage, scanner.blocked(
                 args.cycle, symbols, scanner.LIVE_MT5_AUTH_BLOCKED, ("MT5_NO_AUTHORIZED_ACCOUNT",)), 2)
+        # Non-secret identity only: never the login/account number.
+        broker = get_broker(args.broker)
+        server = str(getattr(account, "server", "") or "")
+        demo = getattr(account, "trade_mode", None) == getattr(MetaTrader5, "ACCOUNT_TRADE_MODE_DEMO", 0)
+        identity = {"broker": broker.canonical_name, "server": server,
+                    "account_environment": "DEMO" if demo else "NOT_VERIFIED_DEMO"}
+        if not demo:
+            return _emit(args.cycle, now, lineage, scanner.blocked(
+                args.cycle, symbols, scanner.ACCOUNT_ENVIRONMENT_NOT_VERIFIED_DEMO, ("ACCOUNT_NOT_DEMO",)), 2, identity)
+        if server not in broker.servers:
+            return _emit(args.cycle, now, lineage, scanner.blocked(
+                args.cycle, symbols, scanner.BROKER_SERVER_MISMATCH, (f"SERVER_NOT_LISTED_FOR_{args.broker}",)), 2, identity)
         ctx = scanner.load_cycle_context(args.cycle)
+        span_start, span_end = scanner.cycle_span(ctx, now.date())
+        span_end = max(span_start, min(now, span_end))
         store = CandidateStore(args.store)
         scans = []
         for symbol in symbols:
@@ -118,6 +139,11 @@ def main() -> int:
             mismatch = check_broker_spec(instrument, MetaTrader5.symbol_info(broker_symbol))
             if mismatch:
                 scans.append(scanner.SymbolScan(args.cycle, symbol, scanner.INSTRUMENT_SPEC_MISMATCH, mismatch))
+                continue
+            try:
+                server_clock = server_time_provenance(broker_symbol, span_start, span_end)
+            except MarketDataError as exc:
+                scans.append(scanner.SymbolScan(args.cycle, symbol, scanner.DATA_UNAVAILABLE, (exc.reason_code,)))
                 continue
             try:
                 tick = get_tick(broker_symbol)
@@ -130,10 +156,12 @@ def main() -> int:
 
             scans.append(scanner.scan_symbol(
                 ctx, symbol, trading_date=now.date(), now=now, fetch_candles=fetch,
-                market_data_mode="REAL", source=f"mt5.market_data.get_candles:{args.broker}:{broker_symbol}",
+                market_data_mode="REAL",
+                source=f"mt5.market_data.get_candles:{broker.canonical_name}:{server}:{broker_symbol}",
                 store=store, spread_price=spread, spread_source=spread_src, application_lineage=lineage,
+                server_clock=server_clock,
             ))
-        return _emit(args.cycle, now, lineage, scans, 0)
+        return _emit(args.cycle, now, lineage, scans, 0, identity)
     finally:
         MetaTrader5.shutdown()
 

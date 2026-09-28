@@ -38,7 +38,7 @@ from __future__ import annotations
 
 import datetime as dt
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
 import session_clock as sc
 from mt5.market_data import MarketDataError
@@ -211,6 +211,7 @@ def evaluate_fx_opportunity(
     spread_price: Optional[float] = None,
     spread_source: Optional[str] = None,
     application_lineage: Optional[str] = None,
+    server_clock: Optional[Sequence[Mapping[str, Any]]] = None,
 ) -> FxOpportunityResult:
     """`spread_price` is recorded as a MarketState fact only when genuinely observed; it
     is not a strategy input. `application_lineage` (e.g. git HEAD) is provenance only and
@@ -264,8 +265,9 @@ def evaluate_fx_opportunity(
             execution_window=(window_start, window_end), expected_reference_bars=expected_bars,
             reference_candles=ref_candles, post_candles=post_candles,
             market_data_mode=market_data_mode, source=source,
-            spread_price=spread_price, spread_source=spread_source,
+            spread_price=spread_price, spread_source=spread_source, server_clock=server_clock,
         )
+        provenance["server_clock"] = list(market_state.server_clock) if market_state.server_clock else None
         provenance["market_state_fingerprint"] = market_state.fingerprint
         provenance["evaluation_fingerprint"] = fingerprint({k: provenance[k] for k in (
             "market_state_fingerprint", "lineage_fingerprint", "strategy_config_fingerprint",

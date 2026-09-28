@@ -9,17 +9,30 @@
 # Never assume 0.0001 for every pair.
 #
 # Time semantics: every timestamp the platform consumes is true UTC. Broker server time is
-# converted to UTC by mt5.market_data (broker offset detection) before candles reach the
-# platform; sessions come from config/canonical_sessions.yaml via the cycle's pilot config.
+# converted to UTC by mt5.market_data through the shared server-time authority
+# (src/mt5/time_authority.py: per-week effective periods per broker/server) before candles
+# reach the platform; sessions come from config/canonical_sessions.yaml via the pilot config.
 #
-# Broker symbol mapping: VANTAGE EURUSD/GBPUSD are the verified entries in config/mt5.yaml
-# symbol_map (captured read-only 2026-09-07). USDJPY is NOT yet verified against a live
-# broker symbol_info(); the live runner cross-checks digits/point read-only before use and
-# fails closed on mismatch or absence.
+# Brokers: VTMARKETS is the owner-confirmed broker of the connected Demo terminal (server
+# VTMarkets-Demo; EURUSD/GBPUSD/USDJPY digits/point read-only verified 2026-09-28, see
+# docs/status/AG_FX_OPPORTUNITY_PLATFORM_V2_LIVE_VERIFICATION_STATUS.md). The live runner
+# refuses a connected server not listed for the selected broker, and a non-Demo account.
+# VANTAGE entries are kept as their genuine historical origin: config/mt5.yaml symbol_map
+# (captured read-only 2026-09-07 on a Vantage account); no Vantage server is verified here.
 
 schema: AG_FX_INSTRUMENTS_V1
 timeframe: M15
 cycles: [POST_ASIAN, POST_LONDON]
+
+brokers:
+  VTMARKETS:
+    canonical_name: VT_MARKETS
+    servers: [VTMarkets-Demo]
+    environment: DEMO
+  VANTAGE:
+    canonical_name: VANTAGE
+    servers: []
+    environment: DEMO
 
 instruments:
   EURUSD:
@@ -30,6 +43,7 @@ instruments:
     point: 0.00001
     pip_size: 0.0001
     broker_symbols:
+      VTMARKETS: {symbol: EURUSD, verified: true}
       VANTAGE: {symbol: EURUSD, verified: true}
     time_semantics: UTC
     allowed_cycles: [POST_ASIAN, POST_LONDON]
@@ -42,6 +56,7 @@ instruments:
     point: 0.00001
     pip_size: 0.0001
     broker_symbols:
+      VTMARKETS: {symbol: GBPUSD, verified: true}
       VANTAGE: {symbol: GBPUSD, verified: true}
     time_semantics: UTC
     allowed_cycles: [POST_ASIAN, POST_LONDON]
@@ -54,6 +69,7 @@ instruments:
     point: 0.001
     pip_size: 0.01
     broker_symbols:
+      VTMARKETS: {symbol: USDJPY, verified: true}
       VANTAGE: {symbol: USDJPY, verified: false}
     time_semantics: UTC
     allowed_cycles: [POST_ASIAN, POST_LONDON]

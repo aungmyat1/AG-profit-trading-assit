@@ -231,3 +231,16 @@ def test_multi_symbol_persistence_dedup_and_restart(tmp_path):
         again = run(symbol, Feed(ready_bars(symbol)), at(7, 46), store=CandidateStore(path))
         assert again.transition is None and again.candidate.revision == first.candidate.revision
     assert sorted(c.symbol for c in CandidateStore(path).all_candidates()) == list(BOUND)
+
+
+def test_server_clock_is_recorded_and_fingerprinted():
+    clock = [{"broker": "VT Markets", "server": "VTMarkets-Demo", "effective_from_utc": "2026-09-20T21:00:00+00:00",
+              "effective_until_utc": "2026-09-27T20:00:00+00:00", "effective_until_basis": "WEEK_BOUND",
+              "utc_offset_hours": 3, "source": "SERVER_CONSENSUS", "evidence_symbols": ["EURUSD", "GBPUSD"],
+              "scope": "SERVER_SHARED"}]
+    plain, _ = observe("USDJPY", at(7, 31))
+    timed, _ = observe("USDJPY", at(7, 31), server_clock=clock)
+    assert plain.server_clock is None
+    assert timed.server_clock == tuple(clock) and timed.fingerprint != plain.fingerprint
+    r = run("EURUSD", Feed(ready_bars("EURUSD")), at(7, 31), server_clock=clock)
+    assert r.market_state.server_clock == tuple(clock) and r.provenance["server_clock"] == clock

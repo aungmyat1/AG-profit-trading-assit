@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import datetime as dt
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
+from typing import Any, Dict, Iterable, Mapping, Optional, Sequence, Tuple
 
 import session_clock as sc
 from opportunity.candidate_store import CandidateStore
@@ -50,6 +50,8 @@ MT5_REAL_PACKAGE_UNAVAILABLE = "MT5_REAL_PACKAGE_UNAVAILABLE"
 INSTRUMENT_SPEC_MISMATCH = "INSTRUMENT_SPEC_MISMATCH"
 CYCLE_NOT_ALLOWED = "CYCLE_NOT_ALLOWED"
 UNKNOWN_INSTRUMENT = "UNKNOWN_INSTRUMENT"
+ACCOUNT_ENVIRONMENT_NOT_VERIFIED_DEMO = "ACCOUNT_ENVIRONMENT_NOT_VERIFIED_DEMO"
+BROKER_SERVER_MISMATCH = "BROKER_SERVER_MISMATCH"
 
 
 @dataclass(frozen=True)
@@ -66,6 +68,14 @@ def load_cycle_context(cycle: str) -> CycleContext:
     pilot = load_pilot_config(CYCLES[cycle])
     return CycleContext(cycle=cycle, pilot=pilot, strategy=load_strategy(pilot.strategy_source_path),
                         binding=resolve_strategy_binding(pilot.strategy_id))
+
+
+def cycle_span(ctx: CycleContext, trading_date: dt.date) -> Tuple[dt.datetime, dt.datetime]:
+    """[reference session start, execution window end] in UTC for this cycle/date."""
+    ref_start, _ = sc.get_session_bounds(trading_date, ctx.pilot.reference_session_name)
+    end = dt.datetime.combine(trading_date, dt.time.fromisoformat(ctx.pilot.execution_window_end_utc),
+                              tzinfo=dt.timezone.utc)
+    return ref_start, end
 
 
 @dataclass(frozen=True)
@@ -116,6 +126,7 @@ def scan_symbol(
     spread_price: Optional[float] = None,
     spread_source: Optional[str] = None,
     application_lineage: Optional[str] = None,
+    server_clock: Optional[Sequence[Mapping[str, Any]]] = None,
 ) -> SymbolScan:
     try:
         instrument = get_instrument(symbol)
@@ -135,7 +146,7 @@ def scan_symbol(
             reference_session=pilot.reference_session_name, reference_window=(ref_start, ref_end),
             execution_window=win, expected_reference_bars=sc.expected_bar_count(pilot.reference_session_name, "M15"),
             fetch_candles=fetch_candles, market_data_mode=market_data_mode, source=source,
-            spread_price=spread_price, spread_source=spread_source,
+            spread_price=spread_price, spread_source=spread_source, server_clock=server_clock,
         )
         return SymbolScan(ctx.cycle, symbol, NO_COMPATIBLE_OPPORTUNITY_STRATEGY,
                           incompatible + data_reasons, market_state=state)
@@ -145,6 +156,7 @@ def scan_symbol(
         strategy=ctx.strategy, binding=ctx.binding, fetch_candles=fetch_candles,
         market_data_mode=market_data_mode, source=source, store=store,
         spread_price=spread_price, spread_source=spread_source, application_lineage=application_lineage,
+        server_clock=server_clock,
     )
     status = result.decision.status
     if status == STATUS_DATA_ERROR:

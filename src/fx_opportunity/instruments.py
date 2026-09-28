@@ -38,6 +38,15 @@ class BrokerSymbol:
 
 
 @dataclass(frozen=True)
+class Broker:
+    """Canonical broker identity and the servers verified for it (no credentials)."""
+    key: str
+    canonical_name: str
+    servers: Tuple[str, ...]
+    environment: str
+
+
+@dataclass(frozen=True)
 class Instrument:
     symbol: str
     asset_class: str
@@ -110,11 +119,35 @@ def _parse(symbol: str, raw: Mapping[str, Any], timeframe: str, cycles: Tuple[st
 
 def load_instruments(path: str = INSTRUMENTS_PATH) -> Dict[str, Instrument]:
     """Fresh dict per call over an immutable, per-path cached parse."""
-    return dict(_load(path))
+    return dict(_load(path)[0])
+
+
+def load_brokers(path: str = INSTRUMENTS_PATH) -> Dict[str, Broker]:
+    return dict(_load(path)[1])
+
+
+def get_broker(key: str, path: str = INSTRUMENTS_PATH) -> Broker:
+    brokers = load_brokers(path)
+    if key not in brokers:
+        raise UnknownInstrumentError(f"{key!r} is not a broker in the instrument contract {sorted(brokers)}")
+    return brokers[key]
+
+
+def _parse_brokers(raw: Mapping[str, Any]) -> Tuple[Tuple[str, Broker], ...]:
+    if not raw:
+        raise InstrumentConfigError("no brokers defined")
+    out = []
+    for key, spec in sorted(raw.items()):
+        env = _require(spec, "environment", key)
+        if env != "DEMO":
+            raise InstrumentConfigError(f"{key}: only DEMO broker environments are supported")
+        out.append((key, Broker(key=key, canonical_name=str(_require(spec, "canonical_name", key)),
+                                servers=tuple(str(x) for x in (spec.get("servers") or ())), environment=env)))
+    return tuple(out)
 
 
 @lru_cache(maxsize=8)
-def _load(path: str) -> Tuple[Tuple[str, Instrument], ...]:
+def _load(path: str) -> Tuple[Tuple[Tuple[str, Instrument], ...], Tuple[Tuple[str, Broker], ...]]:
     try:
         with open(path, "r", encoding="utf-8") as fh:
             data = yaml.safe_load(fh) or {}
@@ -129,7 +162,14 @@ def _load(path: str) -> Tuple[Tuple[str, Instrument], ...]:
     raw = data.get("instruments") or {}
     if not raw:
         raise InstrumentConfigError("no instruments defined")
-    return tuple((sym, _parse(sym, spec, timeframe, cycles)) for sym, spec in sorted(raw.items()))
+    brokers = _parse_brokers(data.get("brokers") or {})
+    instruments = tuple((sym, _parse(sym, spec, timeframe, cycles)) for sym, spec in sorted(raw.items()))
+    known = {key for key, _ in brokers}
+    for sym, inst in instruments:
+        unknown = {b.broker for b in inst.broker_symbols} - known
+        if unknown:
+            raise InstrumentConfigError(f"{sym}: broker_symbols reference undefined brokers {sorted(unknown)}")
+    return instruments, brokers
 
 
 def get_instrument(symbol: str, path: str = INSTRUMENTS_PATH) -> Instrument:
