@@ -4,6 +4,25 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## FX Opportunity platform V2 P6-R1 (2026-09-28): LIVE_FX_OPPORTUNITY_3PAIR_VERIFIED
+
+- **Server-time authority:** `src/mt5/time_authority.py` defines per-week effective periods
+  per broker and server, resolved from same-server reopen evidence. Incomplete reopen
+  readings are rejected as evidence, and DST is derived per period. Conflicts and missing
+  authority fail closed. `mt5.market_data.get_candles` converts per period, and the legacy
+  largest-gap function is kept for the acquisition scripts.
+- **Broker identity:** the canonical broker is `VTMARKETS` (VT_MARKETS, server
+  `VTMarkets-Demo`, DEMO). The CLI refuses non-Demo accounts and unlisted servers.
+- **Live read-only result:** EURUSD, GBPUSD and USDJPY all build a MarketState in both
+  cycles, with server clock +3 (`SERVER_CONSENSUS`). USDJPY remains
+  `NO_COMPATIBLE_OPPORTUNITY_STRATEGY`. Re-evaluating the captured snapshot reproduces the
+  CLI output exactly.
+- **Authority and containment:** broker mutation calls are 0, and all authority is NONE.
+- **Tests:** focused suites give 308 passed and 4 skipped. The full suite gives 618 passed,
+  4 skipped and 1 baseline failure (`api.app`).
+
+See `docs/status/AG_FX_OPPORTUNITY_PLATFORM_V2_R1_SERVER_TIME_STATUS.md`.
+
 ## FX Opportunity platform V2 live verification (2026-09-28): LIVE_MARKET_DATA_INSUFFICIENT
 
 - **MT5:** authorization is restored. The real package (5.0.5735) is connected to server
