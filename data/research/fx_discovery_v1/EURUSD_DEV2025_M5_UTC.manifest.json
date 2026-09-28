@@ -1,0 +1,51 @@
+{
+ "dataset_id": "FX_DISCOVERY_V1_EURUSD_DEV2025_M5",
+ "data_role": "DEVELOPMENT",
+ "symbol": "EURUSD",
+ "timeframe": "M5",
+ "derived_file": "data/research/fx_discovery_v1/EURUSD_DEV2025_M5_UTC.csv",
+ "derived_sha256": "aad5e7d79bf59b6cf4a12175d317fdf02eddca87d8027977e5b9ccaefe3e08ba",
+ "rows": 30032,
+ "utc_first": "2025-04-21T14:15:00Z",
+ "utc_last": "2025-09-12T20:55:00Z",
+ "source": {
+  "file": "D:/EURUSD_M5_202504211715_202607310000.csv",
+  "sha256": "0c269b9aae1a610cddc87b61f30c12bcd89bcd25c7276e5406a6e36c409957e8",
+  "registration": "config/historical_datasets/EURUSD_M5_202504211715_202607310000.yaml (OWNER_AUTHORIZED, blanket D:\\ FX authorization 2026-09-10)",
+  "format": "MT5 terminal export, tab-delimited, broker wall clock"
+ },
+ "transform": {
+  "row_filter": "broker time < 2025-09-13T00:00 (pre-sealed only)",
+  "utc": "timestamp_utc = broker_time - 3h",
+  "offset_evidence": "every pre-sealed week opens Monday 00:00 broker (= Sunday 21:00 UTC = 17:00 New York EDT); span lies wholly inside US DST 2025-03-09..2025-11-02; SSC_V1_0_1_HIST_1Y_M1_001 provenance measured +3 at 2025-09-15",
+  "prices": "unchanged, 5 decimals"
+ },
+ "aggregation_proof_broker_time": {
+  "M15": {
+   "reference": "D:/EURUSD_M15_202501020000_202607310000.csv",
+   "reference_sha256": "1f6c9d1847bc807daf3f4f95bf0758cb51e679b055a9b1885b01409186c26e8d",
+   "common_bars": 10008,
+   "exact": 10008,
+   "only_in_reference": 0
+  },
+  "H1": {
+   "reference": "D:/EURUSD_H1_202501020000_202607310000.csv",
+   "reference_sha256": "f1b456e4b50215ad23370949f15faaa8548f9c03053a20d8974d6e9fd480a060",
+   "common_bars": 2502,
+   "exact": 2502,
+   "only_in_reference": 0
+  }
+ },
+ "sealed_oos_overlap": "NONE (sealed period starts 2025-09-14T21:00Z; this file ends 2025-09-12)",
+ "known_limitations": [
+  "no M1: outcome resolution at M5 granularity (same-bar ambiguity is more frequent than at M1)",
+  "first ~7 days double as indicator warmup"
+ ],
+ "coverage": {
+  "weekdays": 105,
+  "missing_m5_bars_00_20utc": 171,
+  "days_with_gaps": {
+   "2025-04-21": 171
+  }
+ }
+}
