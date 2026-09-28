@@ -4,6 +4,24 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Asian Sweep V1.2 candidate outcome replay (2026-09-28): V1_2_OUTCOME_EVIDENCE_READY
+
+- **Contract:** `config/governance/AG_OUTCOME_RESOLUTION_CONTRACT_V2.yaml`, frozen in
+  `0992103` before any outcome was computed, for `ST_ASIAN_SWEEP_5R_V1@1.2.0-CANDIDATE`.
+  - Entry at the sweep-candle close, resolved post-fill only, with a wick-extreme stop.
+  - Structural invalidation, EMA50 and the 25-pip ceiling are OFF.
+  - Friction is the CONTRACT_CEILING scenario (3 pips; commission UNVERIFIED).
+- **One-shot replay:** on hash-pinned `SSC_V1_0_1_G2_DEV_001` M15+M1, with M1 lineage
+  verified. Net expectancy:
+  - POST_ASIAN: −1.141R, N=21, PF 0.19;
+  - POST_LONDON: −0.472R, N=16, PF 0.69;
+  - COMBINED: −0.852R, N=37, PF 0.42, 95% CI (−1.62, +0.21).
+  - Friction drag averages about 1.0R per trade (median stop 4.8 pips).
+- **Scope:** evidence only, not qualification.
+- **Unchanged:** V1.1.1 semantics and the 13 contaminated V1 records. Authority stays NONE.
+
+See `docs/status/AG_ASIAN_SWEEP_V1_2_CANDIDATE_OUTCOME_REPLAY_STATUS.md`.
+
 ## FX Opportunity qualification V1 (2026-09-28): QUALIFICATION_CONTRACT_BLOCKED
 
 - **Live MT5 proof:** `LIVE_MT5_AUTH_BLOCKED`. One attempt returned `-6 Authorization

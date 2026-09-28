@@ -41,7 +41,10 @@ records the selective byte-exact restoration from `2b75bbf`, the EURUSD Opportun
 the strategy-authority audit, and why Proposal/TradeTicket fail closed. The
 [FX Opportunity qualification V1 status](status/AG_FX_OPPORTUNITY_QUALIFICATION_V1_STATUS.md)
 freezes the economic-qualification contract and lists the unsigned/contradictory fields
-that block it.
+that block it. The
+[Asian Sweep V1.2 candidate outcome replay status](status/AG_ASIAN_SWEEP_V1_2_CANDIDATE_OUTCOME_REPLAY_STATUS.md)
+records the frozen `AG_OUTCOME_RESOLUTION_CONTRACT_V2` and its one-shot post-fill replay
+evidence (not a qualification).
 
 The [AG Edge + AI Runtime V1 Foundation ADR](architecture/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_ADR.md)
 freezes the owner-selected migration baseline and authority matrix for P0–P2. Its
