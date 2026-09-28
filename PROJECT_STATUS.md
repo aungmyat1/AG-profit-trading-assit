@@ -4,6 +4,20 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## FX Opportunity platform V2 live verification (2026-09-28): LIVE_MARKET_DATA_INSUFFICIENT
+
+- **MT5:** authorization is restored. The real package (5.0.5735) is connected to server
+  `VTMarkets-Demo`; the contract labels the broker `VANTAGE`, so that label is flagged.
+- **Spec:** EURUSD, GBPUSD and USDJPY digits and point match the contract.
+- **EURUSD and GBPUSD:** live read-only POST_ASIAN and POST_LONDON both work. Re-evaluating
+  from the captured snapshot reproduces the CLI's fingerprints and candidate ids exactly.
+- **USDJPY:** fails closed with `TIME_NORMALIZATION_ERROR`. `mt5.broker_time` anchors on the
+  largest weekend gap, and the broker history lacks the 2026-09-14 00:00 reopen bar. The
+  shared module was not patched.
+- **Authority and containment:** broker mutation calls are 0, and authority is NONE.
+
+See `docs/status/AG_FX_OPPORTUNITY_PLATFORM_V2_LIVE_VERIFICATION_STATUS.md`.
+
 ## FX Opportunity platform V2 (2026-09-28): LIVE_MT5_AUTH_BLOCKED_PLATFORM_READY
 
 - **Scope:** the capability-zero Opportunity platform now covers EURUSD, GBPUSD and USDJPY.
