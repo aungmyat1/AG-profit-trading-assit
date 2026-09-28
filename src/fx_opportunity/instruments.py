@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 from typing import Any, Dict, Mapping, Optional, Tuple
 
 import yaml
@@ -108,6 +109,12 @@ def _parse(symbol: str, raw: Mapping[str, Any], timeframe: str, cycles: Tuple[st
 
 
 def load_instruments(path: str = INSTRUMENTS_PATH) -> Dict[str, Instrument]:
+    """Fresh dict per call over an immutable, per-path cached parse."""
+    return dict(_load(path))
+
+
+@lru_cache(maxsize=8)
+def _load(path: str) -> Tuple[Tuple[str, Instrument], ...]:
     try:
         with open(path, "r", encoding="utf-8") as fh:
             data = yaml.safe_load(fh) or {}
@@ -122,7 +129,7 @@ def load_instruments(path: str = INSTRUMENTS_PATH) -> Dict[str, Instrument]:
     raw = data.get("instruments") or {}
     if not raw:
         raise InstrumentConfigError("no instruments defined")
-    return {sym: _parse(sym, spec, timeframe, cycles) for sym, spec in sorted(raw.items())}
+    return tuple((sym, _parse(sym, spec, timeframe, cycles)) for sym, spec in sorted(raw.items()))
 
 
 def get_instrument(symbol: str, path: str = INSTRUMENTS_PATH) -> Instrument:

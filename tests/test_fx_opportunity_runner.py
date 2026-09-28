@@ -265,9 +265,12 @@ def test_same_occurrence_keeps_identity_and_repeated_poll_is_idempotent(tmp_path
 # --- scope ---------------------------------------------------------------------------
 
 
-def test_non_slice_symbol_fails_closed():
+@pytest.mark.parametrize("symbol", ["AUDUSD", "USDJPY"])
+def test_non_slice_symbol_fails_closed(symbol):
+    # AUDUSD: not in the instrument contract. USDJPY: instrument exists but the pilot
+    # universe has no binding for it -- the scanner reports NO_COMPATIBLE_OPPORTUNITY_STRATEGY.
     with pytest.raises(FxOpportunityScopeError):
-        run(Feed(asian_bars()), at(7, 16), symbol="GBPUSD")
+        run(Feed(asian_bars()), at(7, 16), symbol=symbol)
 
 
 def test_strategy_version_mismatch_fails_closed():
@@ -313,7 +316,7 @@ def test_slice_imports_no_execution_or_proposal_formation_module():
     assert proc.returncode == 0, proc.stdout + proc.stderr
 
 
-_ALLOWED_IMPORT_ROOTS = {"__future__", "datetime", "hashlib", "json", "dataclasses", "typing", "yaml",
+_ALLOWED_IMPORT_ROOTS = {"__future__", "datetime", "hashlib", "json", "dataclasses", "functools", "typing", "yaml",
                          "session_clock", "mt5", "opportunity", "post_asian_pilot", "strategy_engine"}
 _FORBIDDEN_TOKENS = ("order_send", "order_check", "execution.", "telegram", "requests", "user_confirmed")
 
