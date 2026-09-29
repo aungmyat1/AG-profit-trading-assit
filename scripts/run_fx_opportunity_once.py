@@ -12,9 +12,16 @@ market data is read. Never forms a proposal or ticket and never sends/checks an 
 
 MT5 calls made: initialize/shutdown/terminal_info/account_info (server name and Demo/Live
 trade mode only; the login/account number is never read into output), last_error,
-symbol_info, symbol_info_tick, copy_rates_range, and symbol_select (Market Watch visibility
-only, via mt5.market_data). Refuses a non-Demo account and a server not listed for the
-selected broker (default VTMARKETS -> VTMarkets-Demo).
+symbols_get (exposed symbol NAMES only, for exact canonical identity), symbol_info,
+symbol_info_tick, copy_rates_range, and symbol_select (Market Watch visibility only, via
+mt5.market_data). Refuses a non-Demo account and a server not listed for the selected
+broker (default VTMARKETS -> VTMarkets-Demo).
+
+WP-7B: every symbol passes the canonical instrument identity gate
+(instrument_registry.fx_gated_scan) BEFORE Opportunity evaluation. Only a symbol whose
+canonical identity RESOLVES (exact venue symbol, server and broker metadata) and whose
+MarketState is AUTHORITATIVE reaches the unchanged scanner; symbols without a production
+canonical mapping report CANONICAL_IDENTITY_NOT_CONFIGURED and no market data is read.
 """
 from __future__ import annotations
 
@@ -48,9 +55,12 @@ for _name in _BLOCKED:
     setattr(MetaTrader5, _name, _block(_name))
 
 from fx_opportunity import scanner  # noqa: E402
-from fx_opportunity.instruments import check_broker_spec, get_broker, get_instrument, load_brokers, load_instruments  # noqa: E402
+from fx_opportunity.instruments import get_broker, get_instrument, load_brokers, load_instruments  # noqa: E402
 from fx_opportunity.runner import CYCLES  # noqa: E402
+from instrument_registry.fx_gated_scan import canonical_id_for, gated_scan_symbol, venue_for_broker  # noqa: E402
+from instrument_registry.identity import snapshot_from_symbol_info  # noqa: E402
 from mt5.market_data import MarketDataError, get_candles, get_tick, server_time_provenance  # noqa: E402
+from mt5.symbol_resolver import SymbolMetaError, available_symbols  # noqa: E402
 from opportunity.candidate_store import CandidateStore  # noqa: E402
 
 
@@ -132,34 +142,40 @@ def main() -> int:
         span_start, span_end = scanner.cycle_span(ctx, now.date())
         span_end = max(span_start, min(now, span_end))
         store = CandidateStore(args.store)
+        venue_id = venue_for_broker(broker.canonical_name)
+        try:
+            exposed = available_symbols()  # exact names only; never pattern-matched
+        except SymbolMetaError:
+            exposed = None  # -> BROKER_METADATA_UNAVAILABLE for configured instruments
         scans = []
         for symbol in symbols:
             instrument = get_instrument(symbol)
             broker_symbol = instrument.broker_symbol(args.broker).symbol
-            mismatch = check_broker_spec(instrument, MetaTrader5.symbol_info(broker_symbol))
-            if mismatch:
-                scans.append(scanner.SymbolScan(args.cycle, symbol, scanner.INSTRUMENT_SPEC_MISMATCH, mismatch))
-                continue
-            try:
-                server_clock = server_time_provenance(broker_symbol, span_start, span_end)
-            except MarketDataError as exc:
-                scans.append(scanner.SymbolScan(args.cycle, symbol, scanner.DATA_UNAVAILABLE, (exc.reason_code,)))
-                continue
-            try:
-                tick = get_tick(broker_symbol)
-                spread, spread_src = round(tick.ask - tick.bid, instrument.digits), "mt5.symbol_info_tick"
-            except MarketDataError:
-                spread, spread_src = None, None
+            # No broker read at all for a symbol without a production canonical mapping.
+            info = MetaTrader5.symbol_info(broker_symbol) if canonical_id_for(symbol, venue_id) else None
+            metadata = None if info is None else snapshot_from_symbol_info(
+                info, venue_id=venue_id or "", server=server, observed_at=now)
+
+            def server_clock_provider(_b=broker_symbol):
+                return server_time_provenance(_b, span_start, span_end)
+
+            def spread_provider(_b=broker_symbol, _d=instrument.digits):
+                try:
+                    tick = get_tick(_b)
+                    return round(tick.ask - tick.bid, _d), "mt5.symbol_info_tick"
+                except MarketDataError:
+                    return None, None
 
             def fetch(_symbol, timeframe, start, end, _b=broker_symbol):
                 return get_candles(_b, timeframe, start, end)
 
-            scans.append(scanner.scan_symbol(
-                ctx, symbol, trading_date=now.date(), now=now, fetch_candles=fetch,
+            scans.append(gated_scan_symbol(
+                ctx, symbol, venue_id=venue_id, observed_server=server, exposed_symbols=exposed,
+                metadata=metadata, trading_date=now.date(), now=now, fetch_candles=fetch,
                 market_data_mode="REAL",
                 source=f"mt5.market_data.get_candles:{broker.canonical_name}:{server}:{broker_symbol}",
-                store=store, spread_price=spread, spread_source=spread_src, application_lineage=lineage,
-                server_clock=server_clock,
+                store=store, application_lineage=lineage,
+                server_clock_provider=server_clock_provider, spread_provider=spread_provider,
             ))
         return _emit(args.cycle, now, lineage, scans, 0, identity)
     finally:
