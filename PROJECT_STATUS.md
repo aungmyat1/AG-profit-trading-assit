@@ -4,6 +4,27 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## TradeTicket vertical slice V1 R2 (2026-09-29): TRADETICKET_PIPELINE_READY_NO_STRATEGY_AUTHORITY
+
+- **New:** `src/trade_ticket/` composes the chain Opportunity → StrategyQualification →
+  ProposalEligibility (existing, unchanged) → CanonicalProposal (existing, unchanged) →
+  `TradeTicket` (`AG_TRADE_TICKET_V1`). Its status is `PREPARED_ONLY` or
+  `PREPARED_TEST_ONLY`, and `execution_authority` is `NONE`. A ticket is not a broker
+  order; the owner-confirm lifecycle is declared only.
+- **EURUSD fixture:** produces a `PREPARED_TEST_ONLY` ticket and an owner view. The same
+  contracts cover GBPUSD.
+- **ST_ASIAN_SWEEP_5R_V1:** returns `NO_PROPOSAL_AUTHORITY`, because no registry entry
+  carries `proposal_authorized`. USDJPY has no strategy binding.
+- **Sizing:** `size_position` is restored verbatim (from `1a8e7c5`). Risk comes from the
+  cycle pilot only (0.5% per trade, 1.0% aggregate), never from `trading.demo.yaml` (1.0%).
+- **OSS:** no dependency is adopted. Backtesting.py (AGPL) is not reachable from product
+  runtime, and a test guards that.
+- **Containment:** broker calls are 0, and `src/execution` stays absent. Demo, Live and
+  proposal authority are all unchanged at NONE.
+- **Tests:** 42 focused, plus 318 affected regression, all passing.
+
+See `docs/status/AG_OSS_FIRST_TRADETICKET_VERTICAL_SLICE_V1_STATUS.md`.
+
 ## VT Markets spread evidence P6-R2 (2026-09-28): VT_CAPTURE_OUTSIDE_TARGET_SESSION
 
 - **What was captured:** immutable raw EURUSD and GBPUSD bid/ask from VTMarkets-Demo
