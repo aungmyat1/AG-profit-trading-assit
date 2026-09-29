@@ -1,0 +1,2 @@
+# Hash-pinned raw evidence: bytes must survive checkout unchanged (no EOL conversion).
+* -text

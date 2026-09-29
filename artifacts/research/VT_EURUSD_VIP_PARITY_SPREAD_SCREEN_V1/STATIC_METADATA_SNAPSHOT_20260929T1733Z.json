@@ -1,0 +1,83 @@
+{
+  "account_trade_mode": 0,
+  "calls": [
+    "initialize",
+    "account_info",
+    "symbol_info(EURUSD)",
+    "symbol_info(EURUSD-VIP)",
+    "shutdown"
+  ],
+  "captured_at_utc": "2026-09-29T17:33:43.163901+00:00",
+  "field_diff": {
+    "name": [
+      "EURUSD",
+      "EURUSD-VIP"
+    ],
+    "path": [
+      "Forex Major\\Forex Major\\EURUSD",
+      "VT\\Forex-VIP\\EURUSD-VIP"
+    ],
+    "trade_mode": [
+      0,
+      4
+    ]
+  },
+  "order_check_calls": 0,
+  "order_send_calls": 0,
+  "purpose": "static parity fields only; supplementary, not the preregistered live parity capture",
+  "schema": "AG_VT_VIP_STATIC_METADATA_SNAPSHOT_V1",
+  "server": "VTMarkets-Demo",
+  "symbol_select_calls": 0,
+  "symbols": {
+    "EURUSD": {
+      "currency_base": "EUR",
+      "currency_margin": "EUR",
+      "currency_profit": "USD",
+      "description": "Euro vs US Dollar",
+      "digits": 5,
+      "filling_mode": 2,
+      "margin_initial": 0.0,
+      "name": "EURUSD",
+      "path": "Forex Major\\Forex Major\\EURUSD",
+      "point": 1e-05,
+      "swap_long": -5.76,
+      "swap_short": 2.5,
+      "trade_calc_mode": 0,
+      "trade_contract_size": 100000.0,
+      "trade_exemode": 2,
+      "trade_mode": 0,
+      "trade_tick_size": 1e-05,
+      "trade_tick_value": 1.0,
+      "trade_tick_value_loss": 1.0,
+      "trade_tick_value_profit": 1.0,
+      "volume_max": 100.0,
+      "volume_min": 0.01,
+      "volume_step": 0.01
+    },
+    "EURUSD-VIP": {
+      "currency_base": "EUR",
+      "currency_margin": "EUR",
+      "currency_profit": "USD",
+      "description": "Euro vs US Dollar",
+      "digits": 5,
+      "filling_mode": 2,
+      "margin_initial": 0.0,
+      "name": "EURUSD-VIP",
+      "path": "VT\\Forex-VIP\\EURUSD-VIP",
+      "point": 1e-05,
+      "swap_long": -5.76,
+      "swap_short": 2.5,
+      "trade_calc_mode": 0,
+      "trade_contract_size": 100000.0,
+      "trade_exemode": 2,
+      "trade_mode": 4,
+      "trade_tick_size": 1e-05,
+      "trade_tick_value": 1.0,
+      "trade_tick_value_loss": 1.0,
+      "trade_tick_value_profit": 1.0,
+      "volume_max": 100.0,
+      "volume_min": 0.01,
+      "volume_step": 0.01
+    }
+  }
+}
