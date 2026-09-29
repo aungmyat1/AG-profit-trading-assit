@@ -1,0 +1,30 @@
+name: main-protection-tripwire
+
+# Bounded guard only: fails a PR into main, or a push to main, that deletes an
+# anomalous number of files or removes a protected authority path.
+# Policy: config/governance/main_protection_tripwire.json (read from the base revision).
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  tripwire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Evaluate tripwire
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: python scripts/governance/main_protection_tripwire.py --base "$BASE_SHA" --head "$HEAD_SHA"

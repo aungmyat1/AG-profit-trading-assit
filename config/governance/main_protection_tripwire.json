@@ -1,0 +1,23 @@
+{
+  "schema": "AG_MAIN_PROTECTION_TRIPWIRE_V1",
+  "purpose": "Fail any change to main that deletes an anomalous number of files or removes a protected authority path. A path is protected only if it exists at the base revision, so paths not yet restored to main are covered automatically once they land. Entries ending in '/' are directory prefixes; all others are exact paths. Loosening this file must itself be a reviewed change: the file is self-protected against deletion.",
+  "max_deleted_files": 50,
+  "max_deleted_fraction": 0.05,
+  "protected_paths": [
+    "AGENTS.md",
+    "config/trading.yaml",
+    "strategies/registry.yaml",
+    "strategies/STRATEGY_LEDGER.md",
+    "config/governance/",
+    "src/trade_ticket/",
+    "tests/test_trade_ticket_vertical_slice.py",
+    "src/instrument_registry/",
+    "config/instruments/registry/",
+    "tests/test_instrument_registry_v1.py",
+    "scripts/run_fx_opportunity_once.py",
+    "tests/test_fx_identity_gated_scan.py",
+    "scripts/governance/main_protection_tripwire.py",
+    ".github/workflows/main-protection-tripwire.yml",
+    "tests/test_main_protection_tripwire.py"
+  ]
+}
