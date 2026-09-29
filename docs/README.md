@@ -41,6 +41,10 @@ freezes the owner-selected migration baseline and authority matrix for P0–P2. 
 [foundation status](status/AG_EDGE_AI_RUNTIME_V1_FOUNDATION_STATUS.md) records validation,
 authorization deltas, and the independent audit handoff.
 
+The [AG V1 Two Goals owner decisions](governance/AG_V1_TWO_GOALS_OWNER_DECISIONS.md) record
+D1–D8 and the Large-SMC 1.1.0 rules. The [cloud status](status/AG_V1_TWO_GOALS_CLOUD_STATUS.md)
+records why the code part is blocked at the baseline gate.
+
 The [repository structure audit](REPO_STRUCTURE_AUDIT.md) records the current layout,
 safe cache cleanup, and the recommended archival policy for historical documents and
 generated evidence.
