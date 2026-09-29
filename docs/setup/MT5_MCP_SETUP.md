@@ -168,6 +168,38 @@ it, and catching a broker that does not follow US DST.
   setup diagnostic. Secret values are never printed.
 - Restart the MCP server (or reload VS Code/start a new chat) after config changes.
 
+## Claude Desktop setup (chat sessions)
+
+Claude Desktop does **not** read `.mcp.json` or `.vscode/mcp.json`. It reads
+`%APPDATA%\Claude\claude_desktop_config.json` and launches servers from its own working
+directory, so the workspace-relative `web/scripts/start_mt5_mcp.mjs` path fails there.
+Claude Code on the web (cloud) sessions run on Linux and always land in setup-status mode;
+MT5 chat access needs Claude Desktop (or Claude Code) on the Windows PC running MT5.
+
+On that Windows PC, from the project root:
+
+```
+node web/scripts/claude_desktop_config.mjs          # dry run: shows the merged config
+node web/scripts/claude_desktop_config.mjs --write  # backs up, then merges mt5ReadOnly
+node web/scripts/check_mt5_mcp.mjs                  # includes a Claude Desktop check
+```
+
+The script writes absolute paths to `node.exe` and `start_mt5_mcp.mjs`, keeps every other
+server, writes no credentials (they stay in `src/.env`), and warns if `mtx`/`mbt` are
+registered. Then fully quit Claude Desktop from the tray, reopen it, and start a new chat.
+Equivalent manual entry:
+
+```json
+{
+  "mcpServers": {
+    "mt5ReadOnly": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": ["D:\\path\\to\\AG-profit-trading-assit\\web\\scripts\\start_mt5_mcp.mjs"]
+    }
+  }
+}
+```
+
 These local MCP guardrails do not replace project execution authority, validation,
 or venue qualification. The third-party MT5 server may internally implement trading
 tools; they are not exposed through this workspace's MT5 launcher.

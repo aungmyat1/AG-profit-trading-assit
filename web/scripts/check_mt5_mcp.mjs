@@ -6,6 +6,7 @@ import { resolve, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { resolveDemoCredentials, credentialAliases, DEFAULT_DEMO_BROKER } from './mt5_demo_credentials.mjs';
+import { desktopConfigPath, inspectDesktopEntry } from './claude_desktop_config.mjs';
 
 const results = [];
 const add = (ok, name, detail = '') => {
@@ -126,6 +127,21 @@ for (const { path: cfgPath, serversKey } of configs) {
   }
 }
 if (!checkedConfig) add(false, 'workspace MCP configuration', 'neither .mcp.json nor .vscode/mcp.json was found');
+
+// 8. Claude Desktop config (Windows only) -- Desktop ignores .mcp.json and needs absolute paths.
+if (isWin) {
+  const desktopPath = desktopConfigPath();
+  if (!existsSync(desktopPath)) {
+    add(null, 'Claude Desktop config', `${desktopPath} not found; run: node web/scripts/claude_desktop_config.mjs --write`);
+  } else {
+    try {
+      const { ok, detail } = inspectDesktopEntry(JSON.parse(readFileSync(desktopPath, 'utf8')));
+      add(ok, 'Claude Desktop has read-only MT5 MCP', ok ? detail : `${detail}; run: node web/scripts/claude_desktop_config.mjs --write`);
+    } catch (e) {
+      add(false, `${desktopPath} is valid JSON`, e.message);
+    }
+  }
+}
 
 // Summary
 const fails = results.filter((r) => r.ok === false);
