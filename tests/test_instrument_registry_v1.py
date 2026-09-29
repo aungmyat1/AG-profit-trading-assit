@@ -326,3 +326,30 @@ def test_gates_transitive_imports_have_no_execution_roots():
     env = dict(os.environ, PYTHONPATH=os.pathsep.join([str(REPO), str(REPO / "src")]))
     proc = subprocess.run([sys.executable, "-c", code], cwd=REPO, env=env, capture_output=True, text=True)
     assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+# --- WP-7A R1: registry path is independent of the process cwd -----------------------
+
+
+def _envelope_from_cwd(cwd):
+    proc = subprocess.run([sys.executable, str(REPO / "tests" / "_cwd_envelope_probe.py"), str(cwd)],
+                          capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr
+    return json.loads(proc.stdout.strip().splitlines()[-1])
+
+
+def test_registry_dir_is_package_anchored_not_cwd_relative():
+    assert Path(idm.REGISTRY_DIR).is_absolute()
+    assert Path(idm.REGISTRY_DIR) == REPO / "config" / "instruments" / "registry"
+
+
+def test_envelope_operation_is_identical_from_every_cwd(tmp_path):
+    results = {name: _envelope_from_cwd(cwd) for name, cwd in (
+        ("repo_root", REPO), ("scripts", REPO / "scripts"), ("src", REPO / "src"), ("temp", tmp_path))}
+    root = results["repo_root"]
+    assert root["status"] == RESOLVED and root["registry_version"] == "instruments-v1.0.0"
+    assert root["identity_fingerprint"] == EVIDENCE["identity_fingerprint"]
+    assert root["metadata_fingerprint"] == EVIDENCE["broker_metadata_fingerprint"]
+    assert root["envelope"] is not None and root["reasons"] == []
+    for name, out in results.items():
+        assert out == root, name

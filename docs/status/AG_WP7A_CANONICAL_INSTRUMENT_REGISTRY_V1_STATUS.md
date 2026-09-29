@@ -113,3 +113,28 @@ No OSS is reused. The inventory found `fx_opportunity.instruments` (platform mar
 
 - `python -m pytest tests/test_instrument_registry_v1.py -q` → 44 passed.
 - `python -m pytest tests/test_trade_ticket_vertical_slice.py tests/test_opportunity_*.py tests/test_proposal_*.py tests/test_fx_opportunity_*.py -q` → 430 passed.
+
+## R1 — registry path determinism (2026-09-29)
+
+**Scope.** Arena audited `9b185e7` as `CANONICAL_INSTRUMENT_REGISTRY_V1_AUDIT_PASS`, with 0 blocking and 4 nonblocking findings. R1 remediates only one of them: registry resolution depended on the process cwd.
+
+**The defect, reproduced on `9b185e7`.** From `scripts/`, `src/` or a temp directory, the published `instruments-v1.0.0` resolved as `UNKNOWN_REGISTRY_VERSION`, so no envelope was produced.
+
+**The fix.** `REGISTRY_DIR` is now `Path(__file__).resolve().parents[2] / "config" / "instruments" / "registry"`. This is the same package-anchored convention as `session_clock._CONFIG_PATH`. There is:
+
+- no copy of the registry;
+- no absolute machine path;
+- no parent-directory search.
+
+**Unchanged:**
+
+- the pin and content fingerprint;
+- `RegistryIntegrityError` and unknown-version handling;
+- identity, metadata, the EURUSD mapping, the gate and the envelope schema;
+- `src/trade_ticket`.
+
+**Proof.** `tests/_cwd_envelope_probe.py` runs `resolve_identity` and `envelope_for_ticket` after chdir to the repo root, `scripts/`, `src/` and a temp directory. All four give an identical `RESOLVED` result: `instruments-v1.0.0`, identity fingerprint `6a781d60…`, metadata fingerprint `1455483d…`, envelope fingerprint `093beeda…`.
+
+**Residual, out of scope, pre-existing.** Importing `instrument_registry.gates` still requires the repo-root cwd. It imports the frozen `trade_ticket`, which imports the platform `fx_opportunity` package, and that package loads `config/instruments/fx_opportunity_instruments.yaml` and the pilot configs from cwd-relative paths at import time. Fixing this needs a change to audited platform code, so the probe performs its imports at the repo root. `identity.py` has no such dependency.
+
+**Tests.** `tests/test_instrument_registry_v1.py`: 46 passed. Regression: 430 passed.

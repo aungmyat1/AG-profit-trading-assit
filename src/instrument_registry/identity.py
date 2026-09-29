@@ -28,6 +28,7 @@ import datetime as dt
 import math
 import os
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import yaml
@@ -35,7 +36,9 @@ import yaml
 from post_asian_pilot.fingerprint import fingerprint
 
 SCHEMA = "AG_CANONICAL_INSTRUMENT_REGISTRY_V1"
-REGISTRY_DIR = os.path.join("config", "instruments", "registry")
+# Anchored to this package's location (src/instrument_registry/ -> repository root), the
+# same convention as session_clock._CONFIG_PATH -- never the process cwd (WP-7A R1).
+REGISTRY_DIR = str(Path(__file__).resolve().parents[2] / "config" / "instruments" / "registry")
 CURRENT_REGISTRY_VERSION = "instruments-v1.0.0"
 # Content fingerprints (canonical JSON of the parsed YAML, newline-agnostic) of every
 # published registry version. Editing a published file in place fails the load; a
