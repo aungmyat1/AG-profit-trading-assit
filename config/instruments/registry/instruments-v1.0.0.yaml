@@ -1,0 +1,46 @@
+# Canonical Instrument Registry (WP-7A, AG_CANONICAL_INSTRUMENT_REGISTRY_V1).
+#
+# IMMUTABLE once published: src/instrument_registry/identity.py pins this file's content
+# fingerprint. Any change (venue symbol renamed, venue/server mapping changed, product type
+# changed, canonical-ID semantics changed, expected metadata changed) must be published as a
+# NEW version file (e.g. instruments-v1.1.0.yaml) with a new pin -- never edited in place.
+#
+# Identity only. Broker metadata is observed separately (BrokerMetadataSnapshot) and checked
+# against `expected_metadata`; it never rewrites identity. Exact-match only: no suffix
+# stripping, case folding, prefix/nearest match or alias creation.
+#
+# Production scope V1: FX.EURUSD on VT_MARKETS_MT5 / VTMarkets-Demo.
+# expected_metadata verified read-only on 2026-09-29 (connected VTMarkets-Demo DEMO account,
+# USD): see artifacts/validation/CANONICAL_INSTRUMENT_REGISTRY_V1/.
+# Crypto identities are intentionally absent: BTCUSD CFD, BTCUSDT spot, BTCUSDT linear
+# perpetual and BTCUSD inverse perpetual are distinct products and need distinct canonical
+# IDs once the exact venue product is proven.
+
+schema: AG_CANONICAL_INSTRUMENT_REGISTRY_V1
+registry_version: instruments-v1.0.0
+
+venues:
+  VT_MARKETS_MT5:
+    platform: MT5
+    broker_canonical_name: VT_MARKETS
+    environment: DEMO
+
+instruments:
+  FX.EURUSD:
+    asset_class: FX
+    base_asset: EUR
+    quote_asset: USD
+    product_type: SPOT_FX
+    venues:
+      VT_MARKETS_MT5:
+        server: VTMarkets-Demo
+        venue_symbol: EURUSD
+        enabled: true
+        expected_metadata:
+          digits: 5
+          point: 0.00001
+          tick_size: 0.00001
+          contract_size: 100000.0
+          volume_min: 0.01
+          volume_max: 100.0
+          volume_step: 0.01

@@ -52,6 +52,8 @@ records the first hash-pinned VT Markets Demo bid/ask evidence handed to Arena A
 ticket pipeline and the NO_PROPOSAL_AUTHORITY real-strategy result; its
 [R1 audit remediation status](status/AG_TRADETICKET_VERTICAL_SLICE_V1_R1_REMEDIATION_STATUS.md)
 records the authority cross-check and ticket provenance fixes. The
+[WP-7A canonical instrument registry status](status/AG_WP7A_CANONICAL_INSTRUMENT_REGISTRY_V1_STATUS.md)
+records exact FX.EURUSD identity on VT Markets Demo and the symbol-drift gate. The
 [FX Opportunity qualification V1 status](status/AG_FX_OPPORTUNITY_QUALIFICATION_V1_STATUS.md)
 freezes the economic-qualification contract and lists the unsigned/contradictory fields
 that block it. The

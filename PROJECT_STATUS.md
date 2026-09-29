@@ -4,6 +4,24 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## WP-7A Canonical Instrument Registry V1 (2026-09-29): READY_FOR_AUDIT
+
+- **What it is:** `src/instrument_registry/` with the pinned, immutable
+  `config/instruments/registry/instruments-v1.0.0.yaml`. It maps
+  `FX.EURUSD` → `VT_MARKETS_MT5` / `VTMarkets-Demo` / `EURUSD` by exact match only.
+- **Separate fingerprints:** broker identity and broker metadata are fingerprinted separately.
+- **Fail-closed states:** `BROKER_SYMBOL_DRIFT`, `SERVER_MISMATCH`, metadata mismatch or
+  unavailable, and unknown instrument, version or venue. Each instrument resolves on its own.
+- **Live check:** a read-only probe of VTMarkets-Demo resolves EURUSD. It also shows
+  `EURUSD-VIP` exposed alongside, which is never remapped.
+- **Execution blocker:** EURUSD `trade_mode = 0` (DISABLED) at observation time. This
+  blocks any future execution step.
+- **Gates:** a MarketState identity gate and a frozen-TradeTicket envelope. The frozen
+  `1564769` ticket and the platform code are unchanged, and the live runner is not yet wired.
+- **Tests:** 44 focused and 430 regression, all passing.
+
+See `docs/status/AG_WP7A_CANONICAL_INSTRUMENT_REGISTRY_V1_STATUS.md`.
+
 ## TradeTicket vertical slice V1 — R1 audit remediation (2026-09-29): READY_FOR_REAUDIT
 
 - **Why:** Arena audited `e7dd985` as `TRADETICKET_VERTICAL_SLICE_AUDIT_FAIL`, with two blocking

@@ -1,0 +1,43 @@
+# TEST FIXTURE ONLY -- never a published registry version (not in REGISTRY_VERSIONS; tests
+# pin it at runtime). Exercises per-instrument continuity and the disabled state.
+schema: AG_CANONICAL_INSTRUMENT_REGISTRY_V1
+registry_version: instruments-test-v1
+
+venues:
+  VT_MARKETS_MT5:
+    platform: MT5
+    broker_canonical_name: VT_MARKETS
+    environment: DEMO
+
+instruments:
+  FX.EURUSD:
+    asset_class: FX
+    base_asset: EUR
+    quote_asset: USD
+    product_type: SPOT_FX
+    venues:
+      VT_MARKETS_MT5: {server: VTMarkets-Demo, venue_symbol: EURUSD, enabled: true,
+                       expected_metadata: {digits: 5, point: 0.00001}}
+  FX.GBPUSD:
+    asset_class: FX
+    base_asset: GBP
+    quote_asset: USD
+    product_type: SPOT_FX
+    venues:
+      VT_MARKETS_MT5: {server: VTMarkets-Demo, venue_symbol: GBPUSD, enabled: true,
+                       expected_metadata: {digits: 5, point: 0.00001}}
+  FX.USDJPY:
+    asset_class: FX
+    base_asset: USD
+    quote_asset: JPY
+    product_type: SPOT_FX
+    venues:
+      VT_MARKETS_MT5: {server: VTMarkets-Demo, venue_symbol: USDJPY, enabled: true,
+                       expected_metadata: {digits: 3, point: 0.001}}
+  FX.AUDUSD:
+    asset_class: FX
+    base_asset: AUD
+    quote_asset: USD
+    product_type: SPOT_FX
+    venues:
+      VT_MARKETS_MT5: {server: VTMarkets-Demo, venue_symbol: AUDUSD, enabled: false}

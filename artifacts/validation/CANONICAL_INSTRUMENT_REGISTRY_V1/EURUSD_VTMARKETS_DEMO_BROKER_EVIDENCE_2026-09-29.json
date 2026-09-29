@@ -1,0 +1,39 @@
+{
+  "account_currency": "USD",
+  "account_trade_mode": 0,
+  "account_trade_mode_meaning": "DEMO",
+  "broker_metadata_fingerprint": "1455483dbb19566a070dff8e259e33c2bd2d2551679f95950725e89957d248d6",
+  "exposed_names_containing_EURUSD": [
+    "EURUSD",
+    "EURUSD-VIP"
+  ],
+  "identity_fingerprint": "6a781d6092240571bb6a4636870fd8df5aaefc8438fb8f6543f069da275903c8",
+  "method": "read-only MetaTrader5 initialize/account_info.server/symbol_info/symbols_get; no symbol_select, no order or position API; login/account number not recorded",
+  "notes": [
+    "trade_mode 0 = SYMBOL_TRADE_MODE_DISABLED on this account at observation time (INFORMATIONAL in V1; blocks any future execution step)",
+    "EURUSD-VIP is exposed alongside EURUSD; it is a different venue symbol and is never remapped"
+  ],
+  "observed_date_utc": "2026-09-29",
+  "resolution_status_registry_instruments-v1.0.0": "RESOLVED",
+  "schema": "AG_CANONICAL_INSTRUMENT_REGISTRY_V1_BROKER_EVIDENCE",
+  "server": "VTMarkets-Demo",
+  "symbol_info_EURUSD": {
+    "currency_base": "EUR",
+    "currency_profit": "USD",
+    "digits": 5,
+    "filling_mode": 2,
+    "name": "EURUSD",
+    "path": "Forex Major\\Forex Major\\EURUSD",
+    "point": 1e-05,
+    "trade_contract_size": 100000.0,
+    "trade_exemode": 2,
+    "trade_mode": 0,
+    "trade_tick_size": 1e-05,
+    "trade_tick_value": 1.0,
+    "visible": true,
+    "volume_max": 100.0,
+    "volume_min": 0.01,
+    "volume_step": 0.01
+  },
+  "symbols_total": 1242
+}
