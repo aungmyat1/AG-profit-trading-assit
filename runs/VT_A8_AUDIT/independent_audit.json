@@ -1,0 +1,48 @@
+{
+  "mission": "A8_FX_OPPORTUNITY_PLATFORM_V2_FREEZE_AUDIT",
+  "verdict": "FX_OPPORTUNITY_PLATFORM_V2_AUDIT_PASS_WITH_CAVEATS",
+  "audited_at_utc": "2026-09-29",
+  "auditor": "independent (Claude-built platform verified independently; Claude report not trusted)",
+  "method": "read_only_detached_worktree_no_broker_fixtures_only",
+  "lineage": {
+    "audited_sha": "6fdc921a",
+    "audited_tree": "cf6112e9",
+    "origin_main": "4bbba319",
+    "merge_base": "4bbba319",
+    "ahead": 29,
+    "behind": 0,
+    "merge_commits": 0,
+    "history_rewrite": "NONE",
+    "lineage_valid": true,
+    "origin_main_differs": true,
+    "p6_r1_ancestor": "1e265339",
+    "collector_v2_76348c72": "UNFETCHABLE_EXCLUDED"
+  },
+  "sections": {
+    "s4_scope": "REQUIRED_PLATFORM + EVIDENCE_ONLY + RESEARCH_ONLY separable; UNRELATED=crypto/bybit(pre-existing); SECURITY_SENSITIVE=none",
+    "s5_three_pair_pips": {"EURUSD": 0.0001, "GBPUSD": 0.0001, "USDJPY": 0.01, "status": "PASS"},
+    "s6_runtime_strategy": {"id": "ST_ASIAN_SWEEP_5R_V1", "version": "1.1.1", "usdjpy": "NO_COMPATIBLE_OPPORTUNITY_STRATEGY", "no_fallback": true, "demo_authorized": false, "live_authorized": false, "status": "PASS_WITH_CAVEAT"},
+    "s7_time_authority": "PASS (weekly effective periods, whole-hour evidence, same-server consensus, conflict/unavailable fail-closed, week-bound no-leak, data-derived DST +2/+3, USDJPY 00:15 rejected)",
+    "s8_legacy_largest_gap_runtime_reachable": false,
+    "s9_gating": "PASS (no-credentials attach, DEMO gate, VTMarkets-Demo server allowlist, login never read, VANTAGE identities not rewritten)",
+    "s10_real_or_fail_closed": "PASS (is_stub -> MT5_REAL_PACKAGE_UNAVAILABLE exit2; execution_authority NONE)",
+    "s11_market_state": "PASS (facts-only, closed-bars-only, raises on forming bar, dropped-row counts NOT in fingerprint)",
+    "s12_candidate_capability_zero": "PASS",
+    "s14_s15_containment": {"broker_order_check_calls": 0, "order_send": 0, "other_mutations": 0, "static": "PASS", "import_graph": "PASS", "runtime_sentinel": "PASS", "status": "PASS"},
+    "s16_persistence": "PASS (symbol+cycle+date keyed, idempotent, USDJPY no fake candidate)",
+    "s17_determinism": "PASS",
+    "s18_look_ahead": "PASS",
+    "s19_p6r1_live_evidence": "reviewed_document_only_no_broker",
+    "s20_tests": {"focused": "182 passed, 4 skipped", "full_excluding_unrelated": "577 passed, 4 skipped", "skips": "live-terminal-only", "unrelated_baseline": "crypto/bybit collection error: missing 'requests' (classified separate, not required green)"},
+    "s21_freeze_ready": true,
+    "s22_merge_recommendation": "bounded_platform_PR_or_audited_recovery_merge; exclude RESEARCH_ONLY and Collector V2; do not merge branch wholesale; origin/main remains merge base"
+  },
+  "caveats": [
+    "USDJPY exclusion single-layered: strategy yaml instruments still lists USDJPY; runtime guarantee relies on pilot universe [EURUSD,GBPUSD] only. Harden with runtime<=pilot assertion or trim strategy instruments.",
+    "Collector V2 (76348c72) unfetchable -> excluded from freeze baseline.",
+    "Audit branch commingles platform/evidence/research -> bounded PR required.",
+    "A6 residual ZERO_SPREAD=OBSERVED_UNEXPLAINED in VT capture evidence.",
+    "Audit sandbox needed pyyaml/pytest/numpy (disposable); crypto/bybit tests need 'requests' (separate baseline condition).",
+    "Live P6-R1 evidence reviewed as document only; no broker connection."
+  ]
+}
