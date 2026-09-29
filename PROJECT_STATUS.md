@@ -4,6 +4,26 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## MT5 MCP: VT Markets Demo default + setup-status mode (2026-09-29, read-only configuration)
+
+The read-only MT5 MCP launcher (`web/scripts/start_mt5_mcp.mjs`) now defaults to the
+**VT Markets Demo** account: credentials resolve from `VTMARKETS-DEMO-LOGIN` /
+`VTMARKETS-DEMO-PASSWORD` / `VTMARKETS-DEMO-SERVER` (underscore and `MT5_*` aliases
+accepted) via `web/scripts/mt5_demo_credentials.mjs`. Vantage Demo keys are used only when
+`MT5_DEMO_BROKER=VANTAGE` is set explicitly. The launcher fails closed unless
+`MT5_ENVIRONMENT=DEMO`, the login is numeric, and the server name matches the selected
+broker's demo server (`VTMarkets-Demo*`); all broker and `MT5_*` credential keys are
+stripped from the child environment. When setup is incomplete (missing credentials,
+non-demo server, or a non-Windows host where MetaTrader 5 cannot run) the launcher no
+longer exits (clients showed only `CONNECTION_CLOSED`); it stays connected and exposes
+one read-only `mt5_setup_status` tool that names the problem. The tool allowlist is
+unchanged. `config/mt5.yaml` `symbol_map` is unchanged: VT Markets symbols are not yet
+audited, so the resolver still fails closed for a `VTMARKETS` broker key. Evidence (Linux
+cloud container, 2026-09-29): `node --test web/tests/*.test.mjs` 13/13 pass; a launcher
+stdio run returned `initialize`, `tools/list` = [`mt5_setup_status`] and the Windows-host
+reason. MT5 runtime NOT_EVALUATED (no Windows/MT5 terminal/VT Markets demo `.env` in this
+environment). Does not enable or authorize trading.
+
 ## Workspace MCP upgrade check (2026-09-28, read-only configuration)
 
 Checked both launchers against the official package setups. Bybit
