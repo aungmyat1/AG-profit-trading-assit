@@ -86,3 +86,53 @@ export function startReadOnlyProxy({ child, input = process.stdin, output = proc
 
   input.on('end', () => child.stdin.end());
 }
+// Minimal stdio MCP server used when the MT5 launcher cannot start its upstream
+// server (wrong platform, missing credentials, non-demo server). Instead of exiting,
+// which clients only report as "Connection closed", it stays connected and exposes a
+// single read-only tool that returns the setup problem. It never contacts MT5.
+export const SETUP_STATUS_TOOL = {
+  name: 'mt5_setup_status',
+  description: 'Report why the read-only MT5 Demo MCP is not connected and how to fix it.',
+  inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  annotations: { readOnlyHint: true, destructiveHint: false }
+};
+
+export function startSetupErrorServer({ reason, input = process.stdin, output = process.stdout, serverName = 'mt5ReadOnly' }) {
+  const send = message => output.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
+  const lines = createInterface({ input, crlfDelay: Infinity });
+  lines.on('line', line => {
+    let message;
+    try {
+      message = JSON.parse(line);
+    } catch {
+      return;
+    }
+    if (message.id === undefined) return; // notifications need no reply
+    switch (message.method) {
+      case 'initialize':
+        send({ id: message.id, result: {
+          protocolVersion: message.params?.protocolVersion || '2025-06-18',
+          capabilities: { tools: {} },
+          serverInfo: { name: `${serverName}-setup-error`, version: '1.0.0' },
+          instructions: `MT5 MCP is not connected: ${reason}`
+        } });
+        break;
+      case 'ping':
+        send({ id: message.id, result: {} });
+        break;
+      case 'tools/list':
+        send({ id: message.id, result: { tools: [SETUP_STATUS_TOOL] } });
+        break;
+      case 'tools/call':
+        if (message.params?.name === SETUP_STATUS_TOOL.name) {
+          send({ id: message.id, result: { isError: true, content: [{ type: 'text', text: `MT5 MCP is not connected: ${reason}` }] } });
+        } else {
+          send({ id: message.id, error: { code: -32601, message: `MT5 MCP is not connected: ${reason}` } });
+        }
+        break;
+      default:
+        send({ id: message.id, error: { code: -32601, message: 'Method not available while MT5 MCP setup is incomplete.' } });
+    }
+  });
+  return lines;
+}

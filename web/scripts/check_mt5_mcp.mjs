@@ -5,6 +5,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
+import { resolveDemoCredentials, credentialAliases, DEFAULT_DEMO_BROKER } from './mt5_demo_credentials.mjs';
 
 const results = [];
 const add = (ok, name, detail = '') => {
@@ -36,20 +37,23 @@ if (existsSync(envPath)) {
   add(false, '.env found', `checked ${rootEnvPath} and ${sourceEnvPath}`);
 }
 
-// 3. Credential aliases, same lists as start_mt5_mcp.mjs (presence only, values hidden)
-const aliases = {
-  MT5_ACCOUNT_ID: ['VANTAGE-DEMO-LOGIN', 'VANTAGE_DEMO_LOGIN', 'MT5_ACCOUNT_ID', 'VANTAGE_DEMO_ACCOUNT_ID', 'MT5_LOGIN'],
-  MT5_PASSWORD: ['VANTAGE-DEMO-PASSWORD', 'VANTAGE-DEMO_PASSWORD', 'VANTAGE_DEMO_PASSWORD', 'MT5_PASSWORD'],
-  MT5_SERVER: ['VANTAGE-DEMO-SERVER', 'VANTAGE-DEMO_SERVER', 'VANTAGE_DEMO_SERVER', 'MT5_SERVER'],
-};
-for (const [canon, keys] of Object.entries(aliases)) {
-  const hit = keys.find((k) => env[k]);
-  add(!!hit, `credential ${canon}`, hit ? `set via ${hit} (value hidden)` : `none of: ${keys.join(', ')}`);
+// 3. Demo broker + credential aliases, resolved exactly as start_mt5_mcp.mjs does
+// (presence only, values hidden). VT Markets Demo is the default broker.
+const brokerKey = (env.MT5_DEMO_BROKER || DEFAULT_DEMO_BROKER).toUpperCase().replace(/[^A-Z]/g, '');
+add(true, 'demo broker', `${brokerKey}${env.MT5_DEMO_BROKER ? ' (MT5_DEMO_BROKER)' : ' (default)'}`);
+try {
+  for (const [field, keys] of Object.entries(credentialAliases(brokerKey))) {
+    const hit = keys.find((k) => env[k]);
+    add(!!hit, `credential ${field}`, hit ? `set via ${hit} (value hidden)` : `none of: ${keys.join(', ')}`);
+  }
+} catch {
+  // Unknown broker; resolveDemoCredentials below reports it.
 }
-add((env.MT5_ENVIRONMENT || '').toUpperCase() === 'DEMO', 'MT5_ENVIRONMENT is DEMO', 'required by the read-only workspace launcher');
+const resolved = resolveDemoCredentials(env);
+add(resolved.ok, 'demo credentials resolve', resolved.ok ? `${resolved.label} on ${resolved.server}` : resolved.error);
 
 // 4. Live-account variables should not be present in the demo env
-const liveKeys = ['VANTAGE-LIVE-PASSWORD', 'VANTAGE-LIVE', 'VANTAGE-SERVER'].filter((k) => env[k]);
+const liveKeys = Object.keys(env).filter((k) => /^(VANTAGE|VTMARKETS)[-_]?(LIVE|SERVER$)/i.test(k));
   add(true, 'live credentials excluded from MT5 child process', liveKeys.length ? `detected in env; launcher strips them (${liveKeys.join(', ')})` : 'none found');
 
 // 5. The metatrader command
@@ -93,9 +97,11 @@ if (!installedVersion) {
 if (isWin) {
   const t = spawnSync('tasklist', ['/FI', 'IMAGENAME eq terminal64.exe', '/FO', 'CSV', '/NH'], { encoding: 'utf8' });
   const running = /terminal64\.exe/i.test(t.stdout || '');
-  add(running ? true : null, 'MT5 terminal64.exe running', running ? '' : 'not running; open MT5 and log in to the DEMO account when you need MT5 tools');
+  add(running ? true : null, 'MT5 terminal64.exe running', running ? '' : 'not running; open MT5 and log in to the VT Markets Demo account when you need MT5 tools');
+} else if (env.MT5_MCP_COMMAND) {
+  add(null, 'MT5 terminal running', 'skipped (not Windows; using MT5_MCP_COMMAND)');
 } else {
-  add(null, 'MT5 terminal running', 'skipped (not Windows)');
+  add(false, 'Windows host', `MetaTrader 5 needs Windows; this host is ${process.platform}, so the launcher runs in setup-status mode`);
 }
 
 // 7. Workspace MCP configs -- are both intended integrations registered?

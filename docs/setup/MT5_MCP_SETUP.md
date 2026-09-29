@@ -137,9 +137,27 @@ it, and catching a broker that does not follow US DST.
   Upstream registers tools without MCP annotations, so the launcher exposes only the
   exact query tools in `MT5_READ_ONLY_TOOL_NAMES` (`web/scripts/readonly_mcp_proxy.mjs`).
   Re-review that list before changing the pinned version.
-- Credentials use the existing `VANTAGE-DEMO-LOGIN`, `VANTAGE-DEMO_PASSWORD`, and
-  `VANTAGE-DEMO-SERVER` keys in `src/.env` (`VANTAGE_DEMO_*`/`MT5_*` aliases also work).
-  Do not put credentials in MCP JSON.
+- **Demo account: VT Markets Demo (default, 2026-09-29).** Put these keys in `src/.env`
+  (gitignored; never in MCP JSON):
+
+  ```
+  MT5_ENVIRONMENT=DEMO
+  VTMARKETS-DEMO-LOGIN=<numeric demo login>
+  VTMARKETS-DEMO-PASSWORD=<demo password>
+  VTMARKETS-DEMO-SERVER=VTMarkets-Demo
+  ```
+
+  Underscore forms (`VTMARKETS_DEMO_*`) and `MT5_LOGIN`/`MT5_PASSWORD`/`MT5_SERVER`
+  aliases also work. The server must match the exact name shown in the MT5 login dialog
+  and must start with `VTMarkets-Demo`; anything else is refused. To use the old Vantage
+  Demo login instead, set `MT5_DEMO_BROKER=VANTAGE` (then the `VANTAGE-DEMO-*` keys apply).
+- **Setup-status mode.** If credentials are incomplete, the server is not a demo server, or
+  the host is not Windows (MetaTrader 5 and its Python package are Windows-only, so a cloud
+  container can never connect), the launcher stays connected and exposes a single
+  read-only `mt5_setup_status` tool explaining what to fix, instead of the opaque
+  "Connection closed".
+- VT Markets broker symbols are not yet recorded in `config/mt5.yaml` `symbol_map`; capture
+  them read-only (`readonly_get_all_symbols`) before routing strategy symbols to it.
 - If the MCP executable is not discovered automatically, set `MT5_MCP_COMMAND` in
   `src/.env` to its full path. The launcher forwards only Demo credentials and strips
   live-account, Bybit API, and paper API credentials from the child environment.

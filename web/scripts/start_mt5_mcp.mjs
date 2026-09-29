@@ -2,7 +2,8 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
-import { startReadOnlyProxy, isReadOnlyMt5Tool } from './readonly_mcp_proxy.mjs';
+import { startReadOnlyProxy, startSetupErrorServer, isReadOnlyMt5Tool } from './readonly_mcp_proxy.mjs';
+import { resolveDemoCredentials, isStrippedChildEnvKey } from './mt5_demo_credentials.mjs';
 
 function parseEnvFile(path) {
   const values = {};
@@ -46,50 +47,45 @@ const envFile = [join(workspaceRoot, 'src', '.env'), join(workspaceRoot, '.env')
 const fileEnv = envFile ? parseEnvFile(envFile) : {};
 const env = { ...fileEnv, ...process.env };
 
-if ((env.MT5_ENVIRONMENT || '').toUpperCase() !== 'DEMO') {
-  console.error('MT5 MCP stopped: MT5_ENVIRONMENT must be explicitly set to DEMO.');
-  process.exit(1);
+// Setup problems keep the MCP connected in a diagnostic mode (one read-only
+// mt5_setup_status tool) instead of exiting, which clients only show as
+// "Connection closed".
+function setupError(reason) {
+  console.error(`MT5 MCP setup incomplete: ${reason}`);
+  startSetupErrorServer({ reason });
 }
 
-const account = env['VANTAGE-DEMO-LOGIN'] || env.VANTAGE_DEMO_LOGIN ||
-  env.VANTAGE_DEMO_ACCOUNT_ID || env.MT5_ACCOUNT_ID || env.MT5_LOGIN;
-const password = env['VANTAGE-DEMO-PASSWORD'] || env['VANTAGE-DEMO_PASSWORD'] ||
-  env.VANTAGE_DEMO_PASSWORD || env.MT5_PASSWORD;
-const server = env['VANTAGE-DEMO-SERVER'] || env['VANTAGE-DEMO_SERVER'] ||
-  env.VANTAGE_DEMO_SERVER || env.MT5_SERVER;
-if (!account || !password || !server) {
-  console.error(`MT5 MCP stopped: demo credentials are incomplete${envFile ? ` in ${envFile}` : ''}.`);
-  process.exit(1);
+const credentials = resolveDemoCredentials(env);
+if (!credentials.ok) {
+  setupError(`${credentials.error}${envFile ? ` (env file: ${envFile})` : ' (no src/.env or .env found)'}`);
+} else if (process.platform !== 'win32' && !env.MT5_MCP_COMMAND) {
+  // metatrader-mcp-server needs the Windows-only MetaTrader5 Python package and a
+  // running terminal64.exe; a Linux/macOS host (e.g. a cloud container) cannot run it.
+  setupError(`MetaTrader 5 needs Windows; this host is ${process.platform}. Run the MCP on the Windows PC ` +
+    `where MT5 is open and logged in to ${credentials.label} (or set MT5_MCP_COMMAND to a compatible bridge).`);
+} else {
+  const command = findServerCommand(env);
+  const args = [
+    '--login', credentials.login, '--password', credentials.password, '--server', credentials.server,
+    '--transport', 'stdio'
+  ];
+  if (env.MT5_TERMINAL_PATH) args.push('--path', env.MT5_TERMINAL_PATH);
+
+  // Credentials are passed only to the installed MT5 MCP executable (its CLI has no
+  // environment-variable credential interface). Never log the command or its args.
+  const childEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !isStrippedChildEnvKey(key)));
+  console.error(`MT5 MCP: connecting read-only to ${credentials.label} (${credentials.server}).`);
+  const child = spawn(command, args, { cwd: workspaceRoot, env: childEnv, stdio: ['pipe', 'pipe', 'inherit'] });
+
+  child.on('error', () => {
+    console.error('Unable to start the configured MT5 MCP executable; verify MT5_MCP_COMMAND or install path ' +
+      '(pip install metatrader-mcp-server==0.5.1).');
+    process.exitCode = 1;
+  });
+  child.on('exit', (code, signal) => {
+    process.exitCode = code ?? (signal ? 1 : 0);
+  });
+
+  startReadOnlyProxy({ child, allowTool: isReadOnlyMt5Tool });
 }
-
-const command = findServerCommand(env);
-const args = [
-  '--login', String(account), '--password', password, '--server', server,
-  '--transport', 'stdio'
-];
-if (env.MT5_TERMINAL_PATH) args.push('--path', env.MT5_TERMINAL_PATH);
-
-// Credentials are passed only to the installed MT5 MCP executable (its CLI has no
-// environment-variable credential interface). Never log the command or its args.
-const childEnv = { ...process.env };
-for (const key of Object.keys(childEnv)) {
-  if (/^(VANTAGE-LIVE|VANTAGE_LIVE|BYBIT_API_|BYBIT_PAPER_)/i.test(key)) delete childEnv[key];
-}
-delete childEnv['VANTAGE-SERVER'];
-delete childEnv.VANTAGE_SERVER;
-delete childEnv.MT5_PASSWORD;
-delete childEnv.MT5_ACCOUNT_ID;
-delete childEnv.MT5_LOGIN;
-delete childEnv.MT5_SERVER;
-delete childEnv.MT5_MCP_COMMAND;
-const child = spawn(command, args, { cwd: workspaceRoot, env: childEnv, stdio: ['pipe', 'pipe', 'inherit'] });
-
-child.on('error', () => {
-  console.error('Unable to start the configured MT5 MCP executable; verify MT5_MCP_COMMAND or install path.');
-  process.exitCode = 1;
-});
-child.on('exit', (code, signal) => {
-  process.exitCode = code ?? (signal ? 1 : 0);
-});
-
-startReadOnlyProxy({ child, allowTool: isReadOnlyMt5Tool });
