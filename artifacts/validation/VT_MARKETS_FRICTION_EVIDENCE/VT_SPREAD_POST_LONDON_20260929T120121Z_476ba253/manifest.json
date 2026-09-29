@@ -1,0 +1,255 @@
+{
+  "authority": {
+    "demo_trade": "NONE",
+    "live": "NONE",
+    "proposal": "NONE",
+    "trade_ticket": "NOT_CREATED"
+  },
+  "broker": "VT_MARKETS",
+  "broker_mutation_calls": {
+    "order_check": 0,
+    "order_send": 0,
+    "orders_get": 0,
+    "orders_total": 0,
+    "positions_get": 0,
+    "positions_total": 0,
+    "trade_buy": 0,
+    "trade_cancel": 0,
+    "trade_close": 0,
+    "trade_modify": 0,
+    "trade_sell": 0
+  },
+  "capture_id": "VT_SPREAD_POST_LONDON_20260929T120121Z_476ba253",
+  "collector": {
+    "git_lineage": "476ba253dd6f578e96b8e740cdd3652c372a4bce",
+    "module_sha256": "14932b8791c8e65918738ba7a9f3bb84d9b8befa78164c2cdf00e7229f37330a",
+    "script_sha256": "6c9482a41a10447f33a01d582cae7f7acce76feacaad79992902548c751bd8e4",
+    "version": "AG_VT_SPREAD_COLLECTOR_V2"
+  },
+  "collector_status": "VT_INITIAL_FRICTION_CAPTURE_COMPLETE",
+  "commission_status": "UNKNOWN",
+  "duration_seconds": 894.285,
+  "end_utc": "2026-09-29T12:16:16.250827+00:00",
+  "environment": "DEMO",
+  "instrument_spec": {
+    "EURUSD": {
+      "broker_symbol": "EURUSD",
+      "digits": 5,
+      "pip_size": 0.0001,
+      "point": 1e-05
+    },
+    "GBPUSD": {
+      "broker_symbol": "GBPUSD",
+      "digits": 5,
+      "pip_size": 0.0001,
+      "point": 1e-05
+    }
+  },
+  "per_symbol": {
+    "EURUSD": {
+      "attempted": 144,
+      "invalid": 83,
+      "invalid_by_code": {
+        "STALE_TICK": 83
+      },
+      "metadata": {
+        "execution_mode_decoded_values": [
+          "\"MARKET\""
+        ],
+        "execution_mode_present": 144,
+        "filling_mode_decoded_values": [
+          "\"UNAVAILABLE_IN_LOCAL_API\""
+        ],
+        "filling_mode_present": 144,
+        "rows_with_metadata": 144,
+        "same_tick_as_previous_sample": 86,
+        "tick_flags_decoded_values": [
+          "[\"ASK\", \"BID\"]",
+          "[\"ASK\"]",
+          "[\"BID\"]"
+        ],
+        "tick_flags_present": 144,
+        "trade_mode_decoded_values": [
+          "\"DISABLED\""
+        ],
+        "trade_mode_present": 144
+      },
+      "missing": 0,
+      "pip_size": 0.0001,
+      "raw_path": "artifacts/validation/VT_MARKETS_FRICTION_EVIDENCE/VT_SPREAD_POST_LONDON_20260929T120121Z_476ba253/EURUSD_raw.jsonl",
+      "raw_sha256": "517104b007cf3e2cd61156c7b4f3c636c72c290bc6285210b0a321225cea348d",
+      "spread_max_pips": 0.1,
+      "spread_min_pips": 0.0,
+      "valid": 61,
+      "zero_spread_samples": 28
+    },
+    "GBPUSD": {
+      "attempted": 144,
+      "invalid": 83,
+      "invalid_by_code": {
+        "STALE_TICK": 83
+      },
+      "metadata": {
+        "execution_mode_decoded_values": [
+          "\"MARKET\""
+        ],
+        "execution_mode_present": 144,
+        "filling_mode_decoded_values": [
+          "\"UNAVAILABLE_IN_LOCAL_API\""
+        ],
+        "filling_mode_present": 144,
+        "rows_with_metadata": 144,
+        "same_tick_as_previous_sample": 84,
+        "tick_flags_decoded_values": [
+          "[\"ASK\", \"BID\"]",
+          "[\"ASK\"]",
+          "[\"BID\"]"
+        ],
+        "tick_flags_present": 144,
+        "trade_mode_decoded_values": [
+          "\"DISABLED\""
+        ],
+        "trade_mode_present": 144
+      },
+      "missing": 0,
+      "pip_size": 0.0001,
+      "raw_path": "artifacts/validation/VT_MARKETS_FRICTION_EVIDENCE/VT_SPREAD_POST_LONDON_20260929T120121Z_476ba253/GBPUSD_raw.jsonl",
+      "raw_sha256": "d1da1f68d9ac92233c5b5c54dd079bc3675ef95566b24a91fa4841499551b11d",
+      "spread_max_pips": 0.5,
+      "spread_min_pips": 0.0,
+      "valid": 61,
+      "zero_spread_samples": 9
+    }
+  },
+  "quote_metadata": {
+    "decode_source": "local MetaTrader5 package constant tables only",
+    "executability": "no field is evidence of executability",
+    "local_constant_tables": {
+      "SYMBOL_FILLING_": {},
+      "SYMBOL_TRADE_EXECUTION_": {
+        "EXCHANGE": 3,
+        "INSTANT": 1,
+        "MARKET": 2,
+        "REQUEST": 0
+      },
+      "SYMBOL_TRADE_MODE_": {
+        "CLOSEONLY": 3,
+        "DISABLED": 0,
+        "FULL": 4,
+        "LONGONLY": 1,
+        "SHORTONLY": 2
+      },
+      "TICK_FLAG_": {
+        "ASK": 4,
+        "BID": 2,
+        "BUY": 32,
+        "LAST": 8,
+        "SELL": 64,
+        "VOLUME": 16
+      }
+    },
+    "not_friction_authority": [
+      "symbol.spread",
+      "symbol.spread_float"
+    ],
+    "purpose": "observable API facts that may help explain zero-spread quotes; interprets nothing",
+    "same_tick_as_previous_sample": "tick time_msc equals the previous sample's time_msc for that symbol",
+    "symbol_fields": [
+      "trade_mode",
+      "trade_exemode",
+      "filling_mode",
+      "order_mode",
+      "trade_calc_mode",
+      "chart_mode",
+      "spread",
+      "spread_float",
+      "trade_stops_level",
+      "trade_freeze_level",
+      "ticks_bookdepth",
+      "visible",
+      "select",
+      "time",
+      "bid",
+      "ask",
+      "bidhigh",
+      "bidlow",
+      "askhigh",
+      "asklow",
+      "session_deals",
+      "session_buy_orders",
+      "session_sell_orders"
+    ],
+    "tick_fields": [
+      "time",
+      "time_msc",
+      "flags",
+      "last",
+      "volume",
+      "volume_real"
+    ],
+    "undecodable": "codes with no local constant table are recorded raw as UNAVAILABLE_IN_LOCAL_API"
+  },
+  "requested_session": "POST_LONDON",
+  "sampling": {
+    "cadence_seconds": 5.0,
+    "mode": "INTERLEAVED_FIXED_CADENCE",
+    "order_per_round": [
+      "EURUSD",
+      "GBPUSD"
+    ],
+    "rounds": 144
+  },
+  "schema": "AG_VT_SPREAD_CAPTURE_MANIFEST_V2",
+  "semantics": {
+    "a5_semantic_source": "OWNER/ARCHITECT_PROVIDED_INTERFACE_CONTRACT",
+    "bar_spread_field_used": false,
+    "spread_pips": "spread_price / pip_size",
+    "spread_price": "ask - bid",
+    "stale_tolerance_seconds": 60.0,
+    "zero_spread": "preserved and flagged; not interpreted as zero economic friction"
+  },
+  "server": "VTMarkets-Demo",
+  "server_clock": {
+    "EURUSD": [
+      {
+        "broker": "VT Markets (Pty) Ltd",
+        "effective_from_utc": "2026-09-27T21:00:00+00:00",
+        "effective_until_basis": "WEEK_BOUND",
+        "effective_until_utc": "2026-10-04T20:00:00+00:00",
+        "evidence_symbols": [
+          "EURUSD",
+          "GBPUSD"
+        ],
+        "scope": "SERVER_SHARED",
+        "server": "VTMarkets-Demo",
+        "source": "SERVER_CONSENSUS",
+        "utc_offset_hours": 3
+      }
+    ],
+    "GBPUSD": [
+      {
+        "broker": "VT Markets (Pty) Ltd",
+        "effective_from_utc": "2026-09-27T21:00:00+00:00",
+        "effective_until_basis": "WEEK_BOUND",
+        "effective_until_utc": "2026-10-04T20:00:00+00:00",
+        "evidence_symbols": [
+          "EURUSD",
+          "GBPUSD"
+        ],
+        "scope": "SERVER_SHARED",
+        "server": "VTMarkets-Demo",
+        "source": "SERVER_CONSENSUS",
+        "utc_offset_hours": 3
+      }
+    ]
+  },
+  "session_classification": "POST_LONDON",
+  "slippage_status": "UNKNOWN/INSUFFICIENT_SAMPLE",
+  "source": "MT5_LIVE_TICK",
+  "start_utc": "2026-09-29T12:01:21.965708+00:00",
+  "status": "VT_POST_LONDON_CAPTURE_COMPLETE",
+  "symbols": [
+    "EURUSD",
+    "GBPUSD"
+  ]
+}
