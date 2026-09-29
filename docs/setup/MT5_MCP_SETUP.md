@@ -126,6 +126,18 @@ it, and catching a broker that does not follow US DST.
   background while Antigravity makes calls.
 - **Account Permissions**: Ensure your MT5 login credentials have trade/read
   permissions on the target server.
+- **`Request timed out` on start (Claude Code / Cowork)**: fixed 2026-09-29.
+  `metatrader-mcp-server` logs in to the MT5 terminal *before* it answers the MCP
+  `initialize` request, so a closed, slow, or logged-out terminal (or a missing
+  executable, or an upstream exit) outlasted the client's handshake timeout. The
+  launcher now uses `startDeferredReadOnlyProxy` (`web/scripts/readonly_mcp_proxy.mjs`):
+  it answers `initialize`/`ping` itself, queues requests until the upstream server is
+  ready, and after `MT5_MCP_STARTUP_TIMEOUT_MS` (default `20000`) returns the
+  `mt5_setup_status` tool instead of waiting, then sends
+  `notifications/tools/list_changed` once MT5 connects. If the upstream server fails to
+  start or exits, the MCP stays connected in setup-status mode and names the cause.
+  If tools still show only `mt5_setup_status`: open MT5, log in to the demo account,
+  run `node web/scripts/check_mt5_mcp.mjs`, then reconnect the MCP (`/mcp` in Claude Code).
 
 ## Current VS Code MCP setup
 

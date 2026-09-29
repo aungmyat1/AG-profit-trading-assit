@@ -4,6 +4,23 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## MT5 MCP: `Request timed out` startup fix (2026-09-29, read-only configuration)
+
+Claude Code and Cowork reported `mt5ReadOnly: Couldn't start … Request timed out`. Cause:
+the launcher forwarded the client's `initialize` straight to `metatrader-mcp-server`,
+which logs in to the MT5 terminal before replying; a slow/closed/logged-out terminal,
+a missing executable, or an upstream exit left the handshake unanswered. The MT5 launcher
+now uses `startDeferredReadOnlyProxy` (`web/scripts/readonly_mcp_proxy.mjs`): it answers
+`initialize`/`ping` locally, queues requests until the upstream is ready, falls back to
+`mt5_setup_status` after `MT5_MCP_STARTUP_TIMEOUT_MS` (default 20000) and emits
+`notifications/tools/list_changed` when MT5 connects, and stays in setup-status mode if the
+upstream fails or exits. The read-only tool allowlist and call filtering are unchanged;
+Bybit still uses the pass-through proxy. Evidence (Linux cloud container, 2026-09-29):
+`node --test web/tests/*.test.mjs` 22/22 pass; a launcher run against a fake upstream
+that delays 5 s answered `initialize` in ~64 ms and served tools after login; with a missing
+executable it returned `mt5_setup_status` with the cause. Real Windows MT5 runtime
+NOT_EVALUATED. Does not enable or authorize trading.
+
 ## MT5 MCP: VT Markets Demo default + setup-status mode (2026-09-29, read-only configuration)
 
 The read-only MT5 MCP launcher (`web/scripts/start_mt5_mcp.mjs`) now defaults to the
