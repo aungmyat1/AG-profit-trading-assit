@@ -30,7 +30,13 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 # V2 (P6-R3): adds the optional, additive `quote_metadata` row field; every V1 field and
 # its semantics are unchanged. V1 evidence (capture VT_SPREAD_20260928T190357Z_18ee81e6)
 # remains attributed to V1 via its own rows/manifest.
-COLLECTOR_VERSION = "AG_VT_SPREAD_COLLECTOR_V2"
+# V3 (P6-R3 correction): the fixed-cadence scheduler skips rounds that are more than one
+# cadence late (host/terminal stall) instead of bursting them back-to-back; skips are
+# recorded in the manifest. V2 burst 83 overdue rounds at one instant in capture
+# VT_SPREAD_POST_LONDON_20260929T120121Z_476ba253 (preserved, marked defective).
+COLLECTOR_VERSION = "AG_VT_SPREAD_COLLECTOR_V3"
+# A capture that had to skip more than this fraction of its scheduled rounds fails.
+MAX_SKIPPED_ROUND_FRACTION = 0.10
 SOURCE = "MT5_LIVE_TICK"
 EXPECTED_BROKER = "VT_MARKETS"
 EXPECTED_SERVER = "VTMarkets-Demo"
@@ -68,6 +74,16 @@ class RawTick:
     ask: float
     time_utc: dt.datetime   # tick's own timestamp, converted to true UTC
     time_msc: int           # raw broker-clock milliseconds, as returned
+
+
+def round_action(k: int, t0: float, now: float, cadence: float) -> Tuple[str, float]:
+    """Fixed-cadence schedule: round k is due at t0 + k*cadence (monotonic seconds).
+    ("SAMPLE", delay>=0) when it is early or at most one cadence late, else
+    ("SKIP_LATE", lateness). Missed rounds are never sampled late, bursted or backfilled."""
+    due = t0 + k * cadence
+    if now > due + cadence:
+        return "SKIP_LATE", now - due
+    return "SAMPLE", max(0.0, due - now)
 
 
 def classify_session(t: dt.datetime) -> str:

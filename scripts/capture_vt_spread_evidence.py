@@ -185,10 +185,14 @@ def main() -> int:
         rounds = int(args.duration_seconds // args.cadence_seconds)
         t0 = time.monotonic()
         seq = 0
+        skipped = []
         for k in range(rounds):
-            delay = t0 + k * args.cadence_seconds - time.monotonic()
-            if delay > 0:
-                time.sleep(delay)
+            action, value = sc.round_action(k, t0, time.monotonic(), args.cadence_seconds)
+            if action == "SKIP_LATE":
+                skipped.append({"round": k, "lateness_seconds": round(value, 3)})
+                continue
+            if value > 0:
+                time.sleep(value)
             round_venue = _venue()
             for s in SYMBOLS:
                 sampled = dt.datetime.now(dt.timezone.utc)
@@ -219,6 +223,8 @@ def main() -> int:
         raw_files[s] = {"path": rel, "sha256": _write_once(rel, sc.serialize_rows(rows[s]))}
     sessions = sorted({r["session_classification"] for rs in rows.values() for r in rs})
     base_status = sc.capture_status(rows)
+    if len(skipped) > sc.MAX_SKIPPED_ROUND_FRACTION * rounds:
+        base_status = "VT_CAPTURE_VALIDATION_FAILED"  # cadence broken (stall): not a valid capture
     status = (f"VT_{args.session}_CAPTURE_COMPLETE" if base_status == "VT_INITIAL_FRICTION_CAPTURE_COMPLETE"
               else "VT_CAPTURE_OUTSIDE_TARGET_SESSION" if base_status == "VT_CAPTURE_OUTSIDE_TARGET_SESSION" and args.session == "OTHER"
               else "VT_SESSION_CAPTURE_FAILED")
@@ -253,6 +259,10 @@ def main() -> int:
         "duration_seconds": round((end - start).total_seconds(), 3),
         "session_classification": sessions[0] if len(sessions) == 1 else sessions,
         "sampling": {"cadence_seconds": args.cadence_seconds, "rounds": rounds,
+                     "scheduled_rounds": rounds, "executed_rounds": rounds - len(skipped),
+                     "skipped_late_rounds": skipped,
+                     "skip_rule": "a round more than one cadence late is skipped, never burst or backfilled",
+                     "max_skipped_round_fraction": sc.MAX_SKIPPED_ROUND_FRACTION,
                      "order_per_round": list(SYMBOLS), "mode": "INTERLEAVED_FIXED_CADENCE"},
         "per_symbol": {s: {**sc.symbol_counts(rows[s]), **_metadata_counts(rows[s]), "pip_size": instruments[s].pip_size,
                            "raw_path": raw_files[s]["path"], "raw_sha256": raw_files[s]["sha256"]} for s in SYMBOLS},

@@ -245,3 +245,23 @@ def test_out_of_session_run_stops_before_mt5_initialize(monkeypatch, capsys):
     out = json.loads(capsys.readouterr().out)
     assert rc == 2 and calls == [] and out["status"] == "TARGET_SESSION_NOT_ACTIVE"
     assert set(out["broker_mutation_calls"].values()) == {0}
+
+
+# --- V3: stall-safe fixed cadence -----------------------------------------------------
+
+
+def test_round_action_samples_on_time_and_early_rounds():
+    assert sc.round_action(3, 100.0, 110.0, 5.0) == ("SAMPLE", 5.0)       # early: wait
+    assert sc.round_action(3, 100.0, 115.0, 5.0) == ("SAMPLE", 0.0)       # due now
+    assert sc.round_action(3, 100.0, 119.9, 5.0) == ("SAMPLE", 0.0)       # < one cadence late
+
+
+def test_round_action_never_bursts_after_a_stall():
+    """Reproduces the V2 defect: a ~10 min stall must skip the missed rounds, not sample
+    83 of them at one instant."""
+    t0, cadence, rounds, resume = 0.0, 5.0, 144, 300.0 + 598.0  # stall from round 60 to ~t=898s
+    actions = [sc.round_action(k, t0, resume, cadence)[0] for k in range(60, rounds)]
+    sampled_at_resume = actions.count("SAMPLE")
+    assert sampled_at_resume <= 1 and actions.count("SKIP_LATE") >= 83 - 1
+    skipped = actions.count("SKIP_LATE")
+    assert skipped > sc.MAX_SKIPPED_ROUND_FRACTION * rounds   # such a capture is marked failed
