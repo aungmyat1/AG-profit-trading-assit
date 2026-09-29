@@ -18,6 +18,12 @@ Semantic identity: `semantic_fingerprint` hashes every ticket field except
 `ticket_id` and itself. All timestamps (created_at = evaluation instant, expires_at)
 are deterministic inputs, so no timestamp exclusion is needed.
 
+R1 (Arena BLOCKING-1/2): the ticket records the authority provenance actually used
+(`proposal_authority_source`) and the full risk context that gated sizing
+(`risk_pct`, `max_aggregate_open_risk_pct`, `open_risk_pct`,
+`open_risk_snapshot_fingerprint`, `risk_policy_fingerprint`) -- all hashed and
+re-validated on construction and in `verify_ticket_dict`.
+
 CUSTOM_BUILD_REASON = NO_ACCEPTABLE_EXISTING_OR_OSS_COMPONENT (CanonicalProposal has no
 broker/server/environment/cycle/sizing/instrument-fingerprint/semantic-hash fields).
 """
@@ -25,6 +31,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime as dt
+import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, Mapping, Optional, Tuple
 
@@ -45,6 +52,8 @@ from proposal_envelope.models import AUTHORITY_NONE, PROPOSAL_READY, CanonicalPr
 from proposal_envelope.strategy_authority import StrategyAuthority
 
 from .qualification import (
+    AUTHORITY_SOURCE_PIPELINE_TEST,
+    AUTHORITY_SOURCE_REGISTRY,
     MODE_PIPELINE_TEST,
     MODE_REAL,
     NO_PROPOSAL_AUTHORITY,
@@ -57,6 +66,7 @@ from .sizing import AccountSnapshot, RiskPolicy, SizingResult, prepare_sizing
 
 SCHEMA = "AG_TRADE_TICKET_V1"
 EXECUTION_AUTHORITY_NONE = "NONE"
+OPEN_RISK_SNAPSHOT_NOT_AVAILABLE = "NOT_AVAILABLE"
 
 # ---- lifecycle contract (Phase 10): declared, only PREPARED states implemented -------
 PREPARED_ONLY = "PREPARED_ONLY"
@@ -115,7 +125,10 @@ class TradeTicket:
     position_size_lots: float
     account_currency: str
     account_equity: float
-    aggregate_risk_policy: str
+    max_aggregate_open_risk_pct: float
+    open_risk_pct: float
+    open_risk_snapshot_fingerprint: str
+    proposal_authority_source: Dict[str, Any]
     strategy_id: str
     strategy_version: str
     strategy_config_hash: str
@@ -142,9 +155,41 @@ class TradeTicket:
             raise ValueError("a prepared ticket never carries execution authority")
         if (self.status == PREPARED_TEST_ONLY) == self.market_authoritative:
             raise ValueError("PREPARED_TEST_ONLY tickets are never market-authoritative (and vice versa)")
+        problem = _provenance_problem(self.to_dict())
+        if problem:
+            raise ValueError(problem)
 
     def to_dict(self) -> Dict[str, Any]:
         return dataclasses.asdict(self)
+
+
+def _finite(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def _provenance_problem(d: Mapping[str, Any]) -> Optional[str]:
+    """Authority and risk-context provenance a ticket must carry (R1). None == valid."""
+    for key in ("risk_pct", "max_aggregate_open_risk_pct", "open_risk_pct"):
+        if not _finite(d.get(key)):
+            return f"{key} must be finite"
+    if d["risk_pct"] <= 0 or d["max_aggregate_open_risk_pct"] <= 0 or d["open_risk_pct"] < 0:
+        return "risk percentages out of range"
+    if d["open_risk_pct"] + d["risk_pct"] > d["max_aggregate_open_risk_pct"] + 1e-9:
+        return "open_risk_pct + risk_pct exceeds the applied aggregate ceiling"
+    if not isinstance(d.get("open_risk_snapshot_fingerprint"), str) or not d["open_risk_snapshot_fingerprint"]:
+        return "open_risk_snapshot_fingerprint required"
+    src = d.get("proposal_authority_source")
+    if not isinstance(src, Mapping):
+        return "proposal_authority_source required"
+    if d.get("status") == PREPARED_ONLY:
+        fp = src.get("registry_fingerprint")
+        if (src.get("source") != AUTHORITY_SOURCE_REGISTRY or src.get("resolution") != "AUTHORIZED"
+                or src.get("binding_proposal_authority") is not True
+                or not (isinstance(fp, str) and len(fp) == 64)):
+            return "PREPARED_ONLY requires registry-resolved, binding-agreed proposal authority provenance"
+    elif dict(src) != {"source": AUTHORITY_SOURCE_PIPELINE_TEST, "strategy_authority": "NONE"}:
+        return "PREPARED_TEST_ONLY carries fixture provenance only and never impersonates strategy authority"
+    return None
 
 
 def semantic_fingerprint(ticket_dict: Mapping[str, Any]) -> str:
@@ -152,9 +197,15 @@ def semantic_fingerprint(ticket_dict: Mapping[str, Any]) -> str:
 
 
 def verify_ticket_dict(ticket_dict: Mapping[str, Any]) -> bool:
-    """Restart parity: a persisted/reloaded ticket still hashes to its own identity."""
+    """Restart parity: a persisted/reloaded ticket still hashes to its own identity and
+    still carries valid authority and risk-context provenance."""
     fp = semantic_fingerprint(ticket_dict)
-    return fp == ticket_dict.get("semantic_fingerprint") and ticket_dict.get("ticket_id") == f"TKT-{fp[:24]}"
+    try:
+        problem = _provenance_problem(ticket_dict)
+    except (KeyError, TypeError):
+        return False
+    return (problem is None and fp == ticket_dict.get("semantic_fingerprint")
+            and ticket_dict.get("ticket_id") == f"TKT-{fp[:24]}")
 
 
 @dataclass(frozen=True)
@@ -179,20 +230,25 @@ def prepare_trade_ticket(
     binding: StrategyBinding,
     cycle: str,
     mode: str,
-    authority: ProposalAuthority,
+    authority: Optional[ProposalAuthority],
     provenance: Mapping[str, Any],
     broker_key: str,
     account: AccountSnapshot,
     symbol_meta: Optional[SymbolMeta],
     risk_policy: Optional[RiskPolicy],
     evaluated_at: dt.datetime,
+    expected_registry_fingerprint: Optional[str] = None,
     strategy_authority: Optional[StrategyAuthority] = None,
     existing: Optional[Mapping[str, TradeTicket]] = None,
 ) -> TicketPipelineResult:
     """Pure composition; deterministic for identical inputs. `existing` maps
-    proposal_envelope_id -> previously prepared ticket (duplicate guard)."""
-    q = qualify(candidate=candidate, market_state=market_state, cycle=cycle, mode=mode,
-                authority=authority, evaluated_at=evaluated_at)
+    proposal_envelope_id -> previously prepared ticket (duplicate guard).
+    REAL mode requires `authority` from resolve_proposal_authority() and
+    `expected_registry_fingerprint` from registry_fingerprint(); PIPELINE_TEST mode
+    requires `authority=None`."""
+    q = qualify(candidate=candidate, market_state=market_state, binding=binding, cycle=cycle, mode=mode,
+                authority=authority, evaluated_at=evaluated_at,
+                expected_registry_fingerprint=expected_registry_fingerprint)
     out = dict(qualification=q, market_state=market_state)
     if not q.qualified:
         return TicketPipelineResult(q.status, q.reason_codes, **out)
@@ -263,7 +319,11 @@ def prepare_trade_ticket(
         position_size_lots=sizing.volume,
         account_currency=account.currency,
         account_equity=account.equity,
-        aggregate_risk_policy="NOT_AVAILABLE",
+        max_aggregate_open_risk_pct=risk_policy.max_aggregate_open_risk_pct,
+        open_risk_pct=float(account.open_risk_pct),
+        # Caller-supplied open risk; no OpenRiskSnapshot source exists yet (future WP).
+        open_risk_snapshot_fingerprint=OPEN_RISK_SNAPSHOT_NOT_AVAILABLE,
+        proposal_authority_source=dict(q.authority_provenance),
         strategy_id=candidate.strategy_id,
         strategy_version=candidate.strategy_version,
         strategy_config_hash=provenance["strategy_config_fingerprint"],
@@ -333,10 +393,14 @@ def owner_view(res: TicketPipelineResult) -> Dict[str, Any]:
             "direction": t.direction, "entry": t.entry, "stop_loss": t.stop_loss, "targets": list(t.targets),
             "why": t.evidence,
             "risk": {"risk_pct": t.risk_pct, "risk_amount": t.risk_amount, "currency": t.account_currency,
-                     "position_size_lots": t.position_size_lots, "aggregate_policy": t.aggregate_risk_policy},
+                     "position_size_lots": t.position_size_lots,
+                     "max_aggregate_open_risk_pct": t.max_aggregate_open_risk_pct,
+                     "open_risk_pct": t.open_risk_pct,
+                     "open_risk_snapshot_fingerprint": t.open_risk_snapshot_fingerprint},
             "expires_at": t.expires_at, "expiry_source": t.expiry_source,
             "broker": t.broker, "server": t.server, "environment": t.environment,
-            "provenance": {"strategy_config_hash": t.strategy_config_hash, "pilot_config_hash": t.pilot_config_hash,
+            "provenance": {"proposal_authority_source": dict(t.proposal_authority_source),
+                           "strategy_config_hash": t.strategy_config_hash, "pilot_config_hash": t.pilot_config_hash,
                            "market_state_fingerprint": t.market_state_fingerprint,
                            "market_data_fingerprint": t.market_data_fingerprint,
                            "risk_policy_source": t.risk_policy_source,

@@ -4,6 +4,23 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## TradeTicket vertical slice V1 — R1 audit remediation (2026-09-29): READY_FOR_REAUDIT
+
+- **Why:** Arena audited `e7dd985` as `TRADETICKET_VERTICAL_SLICE_AUDIT_FAIL`, with two blocking
+  findings (`afbcc97`). Both are remediated.
+- **Authority cross-check:** REAL mode now requires the `StrategyBinding` and the
+  registry-resolved authority to agree. The authority's scope must match exactly (version,
+  symbol, cycle and data mode), and it must come from the canonical registry at the expected
+  fingerprint.
+- **Ticket provenance:** the ticket now records `proposal_authority_source`, `open_risk_pct`,
+  `max_aggregate_open_risk_pct` and an `open_risk_snapshot_fingerprint` placeholder. All are
+  hashed and verified.
+- **Unchanged:** sizing mathematics, pilot risk, strategies, the registry and execution. Real
+  proposal authority stays NONE.
+- **Tests:** 112 focused and 318 regression, all passing. Closure is Arena's decision.
+
+See `docs/status/AG_TRADETICKET_VERTICAL_SLICE_V1_R1_REMEDIATION_STATUS.md`.
+
 ## TradeTicket vertical slice V1 R2 (2026-09-29): TRADETICKET_PIPELINE_READY_NO_STRATEGY_AUTHORITY
 
 - **New:** `src/trade_ticket/` composes the chain Opportunity → StrategyQualification →

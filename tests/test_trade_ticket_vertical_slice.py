@@ -39,7 +39,8 @@ from trade_ticket import sizing as sizing_mod
 from trade_ticket.qualification import (
     MODE_PIPELINE_TEST,
     MODE_REAL,
-    pipeline_test_authority,
+    ProposalAuthority,
+    registry_fingerprint,
     resolve_proposal_authority,
 )
 from trade_ticket.sizing import AccountSnapshot, RiskPolicy, prepare_sizing, risk_policy_from_pilot, size_position
@@ -99,7 +100,7 @@ def prepare(symbol="EURUSD", cycle="POST_ASIAN", *, candidate=None, result=None,
     result = result or runner_result(symbol, cycle)
     candidate = candidate or fixture_candidate(symbol)
     args = dict(candidate=candidate, market_state=result.market_state, binding=binding or fixture_binding(candidate.strategy_id),
-                cycle=cycle, mode=mode, authority=authority or pipeline_test_authority(TEST_ID),
+                cycle=cycle, mode=mode, authority=authority,
                 provenance=result.provenance, broker_key="VTMARKETS", account=ACCOUNT, symbol_meta=meta(symbol),
                 evaluated_at=NOW)
     if "risk_policy" not in kw:
@@ -162,9 +163,11 @@ def test_real_research_opportunity_is_denied_proposal_authority(mode):
     if mode == "REAL":
         assert result.eligibility.status == "ELIGIBLE"  # existing gate alone would pass
     res = prepare(result=result, candidate=result.candidate, mode=MODE_REAL, binding=BINDING,
-                  authority=resolve_proposal_authority("ST_ASIAN_SWEEP_5R_V1"))
+                  authority=resolve_proposal_authority("ST_ASIAN_SWEEP_5R_V1"),
+                  expected_registry_fingerprint=registry_fingerprint())
     assert res.status == "NO_PROPOSAL_AUTHORITY"
-    assert res.reason_codes == ("PROPOSAL_AUTHORITY_REGISTRY_FIELD_ABSENT",)
+    # R1: both representations deny, and both denials are reported
+    assert res.reason_codes == ("BINDING_PROPOSAL_AUTHORITY_FALSE", "PROPOSAL_AUTHORITY_FIELD_ABSENT")
     assert res.ticket is None and res.eligibility is None and res.proposal is None
     assert res.owner_view()["proposal_authority"] == "NONE"
 
@@ -178,8 +181,17 @@ def test_mode_namespace_cannot_be_crossed():
     real = runner_result().candidate
     assert prepare(candidate=real, binding=BINDING).reason_codes == ("REAL_STRATEGY_IN_PIPELINE_TEST_MODE",)
     assert prepare(mode=MODE_REAL).reason_codes == ("PIPELINE_TEST_STRATEGY_IN_REAL_MODE",)
-    with pytest.raises(ValueError):
-        pipeline_test_authority("ST_ASIAN_SWEEP_5R_V1")
+
+
+def test_fixture_path_accepts_no_strategy_authority():
+    """R1: PREPARED_TEST_ONLY needs no (fake) authority and cannot be handed one."""
+    real_auth = resolve_proposal_authority("ST_ASIAN_SWEEP_5R_V1")
+    forged = dataclasses.replace(real_auth, strategy_id=TEST_ID, proposal_authorized=True)
+    assert prepare(authority=forged).reason_codes == ("AUTHORITY_NOT_ALLOWED_IN_PIPELINE_TEST",)
+    claiming = dataclasses.replace(fixture_binding(), proposal_authority=True)
+    assert prepare(binding=claiming).reason_codes == ("FIXTURE_BINDING_CLAIMS_AUTHORITY",)
+    src = prepare().ticket.proposal_authority_source
+    assert src == {"source": "PIPELINE_TEST_FIXTURE", "strategy_authority": "NONE"}
 
 
 # --- fail-closed matrix --------------------------------------------------------------
@@ -425,3 +437,192 @@ def test_reference_only_and_rejected_oss_not_imported_by_product_runtime():
     offenders = [(p, r) for p, roots in _product_import_roots() for r in roots
                  if r in ("smartmoneyconcepts", "vectorbt")]
     assert offenders == []
+
+
+
+# --- R1: Arena BLOCKING-1 (authority cross-check) ------------------------------------
+# A temporary registry stands in for a FUTURE owner-signed proposal_authorization block;
+# the real strategies/registry.yaml is never modified and grants nothing.
+
+from trade_ticket import qualification as qualification_mod  # noqa: E402
+from trade_ticket.ticket import semantic_fingerprint  # noqa: E402
+
+SCOPE = dict(authorized=True, strategy_version="1.1.1", symbols=["EURUSD"], cycles=["POST_ASIAN"],
+             market_data_modes=["REAL"])
+
+
+def authorized_registry(tmp_path, monkeypatch, **scope_overrides):
+    data = yaml.safe_load((REPO / "strategies/registry.yaml").read_text(encoding="utf-8"))
+    data["strategies"]["ST_ASIAN_SWEEP_5R_V1"]["proposal_authorization"] = dict(SCOPE, **scope_overrides)
+    path = tmp_path / "registry.yaml"
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
+    monkeypatch.setattr(qualification_mod, "REGISTRY_PATH", str(path))
+    return resolve_proposal_authority("ST_ASIAN_SWEEP_5R_V1"), registry_fingerprint()
+
+
+def real(authority, fp, *, binding_authority=True, with_test_target=False, **kw):
+    r = runner_result(mode="REAL")
+    candidate = r.candidate
+    if with_test_target:
+        # ST_ASIAN_SWEEP_5R_V1 emits no targets (never invented by the pipeline); a
+        # TEST-supplied 5R target lets the authorized path be exercised to the ticket.
+        candidate = dataclasses.replace(candidate, geometry=dataclasses.replace(candidate.geometry, targets=(1.1066,)))
+    binding = dataclasses.replace(BINDING, proposal_authority=binding_authority)
+    return prepare(result=r, candidate=candidate, mode=MODE_REAL, binding=binding, authority=authority,
+                   expected_registry_fingerprint=fp, **kw)
+
+
+def test_agreeing_authority_passes_gate_then_genuine_candidate_still_fails_closed(tmp_path, monkeypatch):
+    auth, fp = authorized_registry(tmp_path, monkeypatch)
+    res = real(auth, fp)
+    assert res.qualification.authority_provenance["source"] == "REGISTRY"  # authority gate passed
+    assert (res.status, res.reason_codes, res.ticket) == ("INCOMPLETE_TRADE_PLAN", ("TARGETS_NOT_STRATEGY_OWNED",), None)
+
+
+def test_binding_true_and_matching_registry_authority_reaches_prepared_only(tmp_path, monkeypatch):
+    auth, fp = authorized_registry(tmp_path, monkeypatch)
+    res = real(auth, fp, with_test_target=True)
+    assert res.status == "PREPARED_ONLY", res.reason_codes
+    t = res.ticket
+    assert t.market_authoritative is True and t.execution_authority == "NONE"
+    src = t.proposal_authority_source
+    assert (src["source"], src["resolution"], src["registry_fingerprint"], src["binding_proposal_authority"]) == \
+        ("REGISTRY", "AUTHORIZED", fp, True)
+    assert res.owner_view()["ticket"]["provenance"]["proposal_authority_source"] == src
+    assert verify_ticket_dict(json.loads(json.dumps(t.to_dict())))
+
+
+def test_arena_forged_authority_with_genuine_binding_is_blocked():
+    """Arena BLOCKING-1 reproduction: forged in-memory authority + genuine binding (False)."""
+    forged = ProposalAuthority("ST_ASIAN_SWEEP_5R_V1", True, "FORGED", "AUTHORIZED", "strategies/registry.yaml",
+                               registry_fingerprint(), "1.1.1", ("EURUSD",), ("POST_ASIAN",), ("REAL",))
+    r = runner_result(mode="REAL")
+    res = prepare(result=r, candidate=r.candidate, mode=MODE_REAL, binding=BINDING, authority=forged,
+                  expected_registry_fingerprint=registry_fingerprint())
+    assert res.status == "NO_PROPOSAL_AUTHORITY" and res.ticket is None
+    assert res.reason_codes == ("BINDING_PROPOSAL_AUTHORITY_FALSE", "AUTHORITY_SOURCE_NOT_REGISTRY")
+
+
+def test_binding_false_with_forged_registry_shaped_authority_is_blocked(tmp_path, monkeypatch):
+    auth, fp = authorized_registry(tmp_path, monkeypatch)
+    res = real(auth, fp, binding_authority=False)
+    assert res.reason_codes == ("BINDING_PROPOSAL_AUTHORITY_FALSE",) and res.ticket is None
+
+
+def test_binding_true_with_registry_authority_false_is_blocked():
+    res = real(resolve_proposal_authority("ST_ASIAN_SWEEP_5R_V1"), registry_fingerprint())
+    assert res.reason_codes == ("PROPOSAL_AUTHORITY_FIELD_ABSENT",)
+
+
+def test_both_false_is_blocked_with_both_reasons():
+    res = real(resolve_proposal_authority("ST_ASIAN_SWEEP_5R_V1"), registry_fingerprint(), binding_authority=False)
+    assert res.reason_codes == ("BINDING_PROPOSAL_AUTHORITY_FALSE", "PROPOSAL_AUTHORITY_FIELD_ABSENT")
+
+
+def test_missing_authority_in_real_mode_is_blocked():
+    assert real(None, registry_fingerprint()).reason_codes == ("AUTHORITY_MISSING",)
+
+
+@pytest.mark.parametrize("override, reason", [
+    ({"strategy_version": "9.9.9"}, "AUTHORITY_STRATEGY_VERSION_MISMATCH"),
+    ({"symbols": ["GBPUSD"]}, "AUTHORITY_SYMBOL_NOT_PERMITTED"),
+    ({"cycles": ["POST_LONDON"]}, "AUTHORITY_CYCLE_NOT_PERMITTED"),
+    ({"market_data_modes": ["REPLAY"]}, "AUTHORITY_DATA_MODE_NOT_PERMITTED"),
+    ({"authorized": False}, "PROPOSAL_AUTHORITY_NOT_AUTHORIZED"),
+    ({"symbols": []}, "PROPOSAL_AUTHORITY_MALFORMED"),
+])
+def test_authority_scope_must_match_exactly(tmp_path, monkeypatch, override, reason):
+    auth, fp = authorized_registry(tmp_path, monkeypatch, **override)
+    assert real(auth, fp).reason_codes == (reason,)
+
+
+def test_authority_strategy_id_mismatch_is_blocked(tmp_path, monkeypatch):
+    auth, fp = authorized_registry(tmp_path, monkeypatch)
+    assert real(dataclasses.replace(auth, strategy_id="SESSION_TRADE_V1"), fp).reason_codes == \
+        ("AUTHORITY_STRATEGY_MISMATCH",)
+
+
+def test_wrong_source_or_registry_lineage_is_blocked(tmp_path, monkeypatch):
+    auth, fp = authorized_registry(tmp_path, monkeypatch)
+    assert real(dataclasses.replace(auth, source="FORGED"), fp).reason_codes == ("AUTHORITY_SOURCE_NOT_REGISTRY",)
+    assert real(auth, "0" * 64).reason_codes == ("AUTHORITY_REGISTRY_LINEAGE_MISMATCH",)
+    assert real(auth, None).reason_codes == ("AUTHORITY_REGISTRY_LINEAGE_MISMATCH",)
+    other = tmp_path / "forged.yaml"
+    other.write_text((tmp_path / "registry.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+    off_path = resolve_proposal_authority("ST_ASIAN_SWEEP_5R_V1", registry_path=str(other))
+    assert real(off_path, fp).reason_codes == ("AUTHORITY_REGISTRY_PATH_NOT_CANONICAL",)
+
+
+def test_ticket_constructor_rejects_authority_impersonation():
+    t = prepare().ticket
+    with pytest.raises(ValueError):  # a fixture ticket cannot be relabelled as authoritative
+        dataclasses.replace(t, status="PREPARED_ONLY", market_authoritative=True)
+    with pytest.raises(ValueError):  # nor carry registry-looking provenance
+        dataclasses.replace(t, proposal_authority_source={"source": "REGISTRY", "strategy_authority": "NONE"})
+
+
+# --- R1: Arena BLOCKING-2 (risk context + authority provenance on the ticket) ---------
+
+
+def test_open_risk_and_aggregate_policy_are_recorded_and_hashed():
+    zero = prepare().ticket
+    some = prepare(account=dataclasses.replace(ACCOUNT, open_risk_pct=0.4)).ticket
+    assert (zero.open_risk_pct, some.open_risk_pct) == (0.0, 0.4)
+    assert zero.semantic_fingerprint != some.semantic_fingerprint
+    assert (zero.risk_pct, zero.max_aggregate_open_risk_pct) == (0.5, 1.0)
+    assert zero.risk_policy_fingerprint == risk_policy_from_pilot(PILOTS["POST_ASIAN"]).fingerprint()
+    assert zero.open_risk_snapshot_fingerprint == "NOT_AVAILABLE"
+    assert "aggregate_risk_policy" not in zero.to_dict()
+    risk = prepare().owner_view()["ticket"]["risk"]
+    assert (risk["open_risk_pct"], risk["max_aggregate_open_risk_pct"]) == (0.0, 1.0)
+
+
+@pytest.mark.parametrize("field, value", [
+    ("proposal_authority_source", {"source": "REGISTRY", "strategy_authority": "NONE"}),
+    ("open_risk_pct", 0.4),
+    ("max_aggregate_open_risk_pct", 2.0),
+    ("risk_policy_fingerprint", "0" * 64),
+    ("risk_policy_source", "pilot:OTHER"),
+    ("open_risk_snapshot_fingerprint", "f" * 64),
+])
+def test_r1_field_mutation_breaks_verification(field, value):
+    d = json.loads(json.dumps(prepare().ticket.to_dict()))
+    before = d["semantic_fingerprint"]
+    d[field] = value
+    assert not verify_ticket_dict(d)
+    assert semantic_fingerprint(d) != before
+
+
+def _mutate(value):
+    if isinstance(value, bool):
+        return not value
+    if isinstance(value, (int, float)):
+        return value + 1
+    if isinstance(value, str):
+        return value + "x"
+    if isinstance(value, list):
+        return value + ["x"]
+    if isinstance(value, dict):
+        return dict(value, __tamper__=1)
+    return "x"
+
+
+SEMANTIC_FIELDS = [f.name for f in dataclasses.fields(TradeTicket) if f.name not in ("ticket_id", "semantic_fingerprint")]
+
+
+@pytest.mark.parametrize("field", SEMANTIC_FIELDS)
+def test_full_mutation_matrix_every_semantic_field(field):
+    d = json.loads(json.dumps(prepare().ticket.to_dict()))
+    d[field] = _mutate(d[field])
+    assert not verify_ticket_dict(d), field
+
+
+def test_full_mutation_matrix_on_registry_authorized_ticket(tmp_path, monkeypatch):
+    auth, fp = authorized_registry(tmp_path, monkeypatch)
+    base = json.loads(json.dumps(real(auth, fp, with_test_target=True).ticket.to_dict()))
+    assert verify_ticket_dict(base)
+    for field in SEMANTIC_FIELDS:
+        assert not verify_ticket_dict(dict(base, **{field: _mutate(base[field])})), field
+    d = json.loads(json.dumps(base))
+    d["proposal_authority_source"]["registry_fingerprint"] = "0" * 64
+    assert not verify_ticket_dict(d)

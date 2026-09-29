@@ -70,6 +70,14 @@ No new third-party dependency is added by this slice.
 - `REAL_STRATEGY_MODE`: requires the registry entry to carry `proposal_authorized: true` (read-only; this slice never writes it). Today no entry does → `NO_PROPOSAL_AUTHORITY` (successful fail-closed result). Reserved test namespace strategies are refused.
 - `PIPELINE_TEST_MODE`: only strategy ids in the reserved `PIPELINE_TEST_` namespace (never registry entries), deterministic fixtures; ticket status `PREPARED_TEST_ONLY`, `market_authoritative = false`, no lifecycle successor. The unmodified eligibility firewall still applies (a SYNTHETIC-labelled fixture is BLOCKED; the fixtures reproduce the REAL-mode shape so the whole gate is exercised, and their non-authority is carried by mode + namespace + status, not by weakening eligibility).
 
+## 5a. R1 — canonical proposal authority (resolves Arena BLOCKING-1)
+
+REAL_STRATEGY_MODE authority is the **conjunction** of `StrategyBinding.proposal_authority is True` (the canonical runtime-capability gate) and a canonical-registry `proposal_authorization` block. The block is `authorized: true`, `strategy_version`, `symbols`, `cycles` and `market_data_modes`, and it must match the exact candidate. The block is resolved from `strategies/registry.yaml` at the fingerprint the caller expects.
+
+Neither one may override the other. The block replaces the bare `proposal_authorized` key described in section 5. No registry entry carries it, so every real strategy is `NO_PROPOSAL_AUTHORITY`.
+
+PIPELINE_TEST_MODE uses no authority object. See `docs/status/AG_TRADETICKET_VERTICAL_SLICE_V1_R1_REMEDIATION_STATUS.md`.
+
 ## 6. Scope
 
 EURUSD first (POST_ASIAN, one cycle), then GBPUSD by configuration only. USDJPY: `NO_COMPATIBLE_OPPORTUNITY_STRATEGY`, strategy binding NONE (sizing geometry tested only). No runner/scanner/eligibility/bridge modification; the new package composes downstream of `FxOpportunityResult`. No scheduler, no Demo/Live order, no registry authorization change.

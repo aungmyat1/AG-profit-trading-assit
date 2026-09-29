@@ -49,7 +49,9 @@ resolves it with a shared server-time authority and verifies all three pairs liv
 records the first hash-pinned VT Markets Demo bid/ask evidence handed to Arena A6. The
 [TradeTicket vertical slice V1 status](status/AG_OSS_FIRST_TRADETICKET_VERTICAL_SLICE_V1_STATUS.md)
 (plan: [component map](plans/AG_OSS_FIRST_TRADETICKET_VERTICAL_SLICE_V1.md)) records the PREPARED_ONLY
-ticket pipeline and the NO_PROPOSAL_AUTHORITY real-strategy result. The
+ticket pipeline and the NO_PROPOSAL_AUTHORITY real-strategy result; its
+[R1 audit remediation status](status/AG_TRADETICKET_VERTICAL_SLICE_V1_R1_REMEDIATION_STATUS.md)
+records the authority cross-check and ticket provenance fixes. The
 [FX Opportunity qualification V1 status](status/AG_FX_OPPORTUNITY_QUALIFICATION_V1_STATUS.md)
 freezes the economic-qualification contract and lists the unsigned/contradictory fields
 that block it. The
