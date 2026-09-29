@@ -1,0 +1,109 @@
+# VT EURUSD / EURUSD-VIP parity + preregistered spread-only friction screen (V1)
+#
+# FROZEN BEFORE ANY RESULT. Committed before (a) any EURUSD-VIP spread observation is
+# aggregated and (b) any development stop distance is read for this screen. Any change
+# after this commit voids the screen; a correction needs a new screen_id.
+#
+# Research/futility screen only. Not a transaction-cost model, not economic qualification,
+# not proposal/demo/live authority. Does not sign, amend or replace the V1.3 draft
+# (config/governance/AG_ASIAN_SWEEP_V1_3_FRICTION_GATE_CONTRACT_DRAFT.yaml stays
+# TERMINATED_UNSIGNED). Does not touch Canonical Instrument Registry V1, strategy rules,
+# or SEALED_OOS.
+schema: AG_SPREAD_SCREEN_PREREGISTRATION_V1
+screen_id: VT_EURUSD_VIP_SPREAD_TO_DEV_STOP_SCREEN_V1
+frozen_utc: "2026-09-29"
+owner_decision:
+  max_friction_to_risk: 0.25
+  rationale: >-
+    Owner-set ex-ante spread-only burden ceiling. NOT derived from G2 outcomes, the G2
+    stop distribution, strategy profitability, or post-hoc optimization.
+  interpretation: spread_pips / stop_pips <= 0.25
+  tuning_after_results: FORBIDDEN
+
+boundary:
+  SPREAD_ONLY_SCREEN: YES
+  COMMISSION_INCLUDED: NO      # COMMISSION_STATUS = UNKNOWN
+  SLIPPAGE_INCLUDED: NO        # SLIPPAGE_STATUS = UNKNOWN/INSUFFICIENT_SAMPLE
+  FULL_FRICTION_ESTIMATE: NO
+  ECONOMIC_QUALIFICATION: NO
+  screen_pass_grants_authority: NO
+
+symbols:   # venue symbols on VTMarkets-Demo; no aliasing, no registry change
+  EURUSD: ANALYSIS_FEED_REFERENCE          # symbol trade_mode DISABLED (snapshot 2026-09-29T15:53Z)
+  EURUSD-VIP: EXECUTION_FRICTION_CANDIDATE # symbol trade_mode FULL
+
+lineages:  # kept separate; historical rows never rewritten
+  WP3A1_VANTAGE: campaign LSMC_EURUSD_FRICTION_WP3A1_V1, venue VantageMarkets-Demo only
+  VT_SEPARATE: any VTMarkets-Demo observation, including sessions written into the WP3A.1
+    sessions/ directory on 2026-09-28/29; never counted as WP3A.1 evidence
+
+parity_capture:   # evidence for parity AND the only source of VIP spread authority
+  mode: live, read-only, interleaved -- each round samples EURUSD then EURUSD-VIP back to back
+  sessions: {POST_ASIAN: "07:00 <= UTC < 11:00", POST_LONDON: "12:00 <= UTC < 15:00"}  # weekdays
+  session_containment: capture must fit entirely in the window; checked before MT5 initialize
+    and again immediately before the first sample (Unit F R1 semantics)
+  duration_seconds: 720
+  cadence_seconds: 5
+  rounds_per_capture: 144
+  tick_fields: [bid, ask, time, time_msc, flags]
+  symbol_fields: [digits, point, trade_tick_size, trade_tick_value, trade_contract_size,
+    volume_min, volume_max, volume_step, trade_mode, trade_exemode, filling_mode,
+    currency_base, currency_profit, currency_margin, description, path]
+  m1_bars: copy_rates_range for both symbols over the capture window (parity only)
+  forbidden_calls: [order_check, order_send, symbol_select, positions_*, orders_*, trade_*]
+  row_validity: same precedence as Unit F (venue/server/DEMO, symbol, missing, non-finite,
+    non-positive, ask<bid, stale > 60 s)
+  spread: spread_pips = (ask - bid) / 0.0001; zero spread preserved and counted
+  raw_evidence: write-once JSONL + manifest, sha256-pinned, evidence dir `* -text`
+
+parity_criteria:   # evaluated over all valid paired rounds / matched minutes
+  required_static_equal: [digits, point, trade_tick_size, trade_contract_size,
+    trade_tick_value, currency_base, currency_profit, currency_margin]
+  price:
+    paired_round: both symbols VALID in the same round
+    mid_diff_pips: abs(mid_VIP - mid_EURUSD) / 0.0001
+    pass: median <= 0.2 AND p95 <= 0.5
+  m1:
+    matched_minute: same bar open time on both symbols
+    close_diff_pips_pass: median <= 0.2 AND p95 <= 0.5
+    high_low_diff_pips_pass: median <= 0.3 AND p95 <= 1.0
+  availability: each symbol VALID in >= 95% of rounds of every capture
+  known_difference_fields: [trade_mode, trade_exemode, filling_mode, volume_min, volume_max,
+    volume_step, description, path]   # recorded; do not fail parity
+  descriptive_only: [bid/ask ordering fractions, tick time_msc lag, zero-spread fractions]
+  minimum_evidence: "at least 1 complete capture (>= 120 valid paired rounds) in EACH of POST_ASIAN and POST_LONDON"
+  classification:
+    INSUFFICIENT_EVIDENCE: minimum_evidence not met
+    FAIL: any required_static_equal mismatch, or price/m1/availability criterion violated
+    PASS_WITH_KNOWN_DIFFERENCES: all criteria met and >= 1 known_difference_field differs
+    PASS: all criteria met and no field differs
+  spread_authority_rule: VIP spread may be used for the screen only if parity is PASS or
+    PASS_WITH_KNOWN_DIFFERENCES; otherwise STOP before the screen
+
+spread_distribution:   # per session, EURUSD-VIP VALID rows of all qualifying captures pooled
+  statistics: [N, min, median, mean, p75, p90, p95, p99, max, zero_fraction]
+  percentile_method: numpy.percentile linear (type 7)
+  reported_as: INITIAL when fewer than 5 distinct trading days per session
+
+screen:
+  development_source:
+    path: artifacts/validation/AG_FX_OPPORTUNITY_FOUNDATION_V1/ST_ASIAN_SWEEP_5R_V1_1_2_0_CANDIDATE_OUTCOMES_V2.json
+    git_blob: 889214bff352dc64de3ff2fcb2f70c45f6a3e677
+    sha256: b6d020b5fb416355ad48ebe09d0fd08c59ac590e4f2df5cbee4630a3f698b8ac
+    dataset: SSC_V1_0_1_G2_DEV_001 (development; already used for V1.2 research)
+  population: every observation with a finite risk_distance > 0; outcome fields
+    (gross_R, net_R, state, exit, MFE/MAE) are NOT read or used
+  stop_pips: risk_distance / 0.0001
+  session_mapping: an observation's `cycle` maps to the post-session window it trades in
+    (ASIAN_LONDON / POST_ASIAN -> POST_ASIAN; LONDON_NEWYORK / POST_LONDON -> POST_LONDON);
+    any other cycle is excluded and counted
+  ratio: S_q(session) / stop_pips
+  scenarios: {median: S_median, p90: S_p90, p95: S_p95}   # all three always reported
+  verdict_per_setup: PASS if ratio <= 0.25 else FAIL
+  report: pass fraction per scenario, per session and combined, plus the implied minimum
+    stop S_q / 0.25 per scenario
+  caveat_recorded: development stops come from VantageMarkets-Demo price data; VIP spreads
+    from VTMarkets-Demo
+
+sealed_oos: NOT_ACCESSED   # the V1.3 OOS dataset (SSC_V1_0_1_HIST_1Y_*) is not read
+authority: {proposal: NONE, demo: NONE, live: NONE, trade_ticket: NOT_CREATED}
