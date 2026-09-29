@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
-import { startReadOnlyProxy, startSetupErrorServer, isReadOnlyMt5Tool } from './readonly_mcp_proxy.mjs';
+import { startDeferredReadOnlyProxy, startSetupErrorServer, isReadOnlyMt5Tool } from './readonly_mcp_proxy.mjs';
 import { resolveDemoCredentials, isStrippedChildEnvKey } from './mt5_demo_credentials.mjs';
 
 function parseEnvFile(path) {
@@ -87,5 +87,11 @@ if (!credentials.ok) {
     process.exitCode = code ?? (signal ? 1 : 0);
   });
 
-  startReadOnlyProxy({ child, allowTool: isReadOnlyMt5Tool });
+  // metatrader-mcp-server logs in to MT5 before answering `initialize`; the deferred
+  // proxy answers the handshake itself so a slow or failed login cannot time it out.
+  const startupTimeoutMs = Number(env.MT5_MCP_STARTUP_TIMEOUT_MS) > 0 ? Number(env.MT5_MCP_STARTUP_TIMEOUT_MS) : 20000;
+  startDeferredReadOnlyProxy({
+    child, allowTool: isReadOnlyMt5Tool, serverName: 'mt5ReadOnly', startupTimeoutMs,
+    failureHint: 'Run `node web/scripts/check_mt5_mcp.mjs` for a setup diagnosis.'
+  });
 }

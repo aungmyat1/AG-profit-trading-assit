@@ -97,6 +97,40 @@ export const SETUP_STATUS_TOOL = {
   annotations: { readOnlyHint: true, destructiveHint: false }
 };
 
+function initializeResult(message, serverName, instructions) {
+  return {
+    protocolVersion: message.params?.protocolVersion || '2025-06-18',
+    capabilities: { tools: { listChanged: true } },
+    serverInfo: { name: serverName, version: '1.0.0' },
+    ...(instructions ? { instructions } : {})
+  };
+}
+
+// Answers one client request while the upstream server is unavailable.
+function replyUnavailable(message, reason, send, serverName) {
+  if (message.id === undefined) return; // notifications need no reply
+  switch (message.method) {
+    case 'initialize':
+      send({ id: message.id, result: initializeResult(message, `${serverName}-setup-error`, `MT5 MCP is not connected: ${reason}`) });
+      break;
+    case 'ping':
+      send({ id: message.id, result: {} });
+      break;
+    case 'tools/list':
+      send({ id: message.id, result: { tools: [SETUP_STATUS_TOOL] } });
+      break;
+    case 'tools/call':
+      if (message.params?.name === SETUP_STATUS_TOOL.name) {
+        send({ id: message.id, result: { isError: true, content: [{ type: 'text', text: `MT5 MCP is not connected: ${reason}` }] } });
+      } else {
+        send({ id: message.id, error: { code: -32601, message: `MT5 MCP is not connected: ${reason}` } });
+      }
+      break;
+    default:
+      send({ id: message.id, error: { code: -32601, message: 'Method not available while MT5 MCP setup is incomplete.' } });
+  }
+}
+
 export function startSetupErrorServer({ reason, input = process.stdin, output = process.stdout, serverName = 'mt5ReadOnly' }) {
   const send = message => output.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
   const lines = createInterface({ input, crlfDelay: Infinity });
@@ -107,32 +141,169 @@ export function startSetupErrorServer({ reason, input = process.stdin, output = 
     } catch {
       return;
     }
-    if (message.id === undefined) return; // notifications need no reply
-    switch (message.method) {
-      case 'initialize':
-        send({ id: message.id, result: {
-          protocolVersion: message.params?.protocolVersion || '2025-06-18',
-          capabilities: { tools: {} },
-          serverInfo: { name: `${serverName}-setup-error`, version: '1.0.0' },
-          instructions: `MT5 MCP is not connected: ${reason}`
-        } });
-        break;
-      case 'ping':
-        send({ id: message.id, result: {} });
-        break;
-      case 'tools/list':
-        send({ id: message.id, result: { tools: [SETUP_STATUS_TOOL] } });
-        break;
-      case 'tools/call':
-        if (message.params?.name === SETUP_STATUS_TOOL.name) {
-          send({ id: message.id, result: { isError: true, content: [{ type: 'text', text: `MT5 MCP is not connected: ${reason}` }] } });
-        } else {
-          send({ id: message.id, error: { code: -32601, message: `MT5 MCP is not connected: ${reason}` } });
+    replyUnavailable(message, reason, send, serverName);
+  });
+  return lines;
+}
+
+// Read-only proxy for an upstream server that is slow to initialize.
+// metatrader-mcp-server connects to the MT5 terminal before it answers `initialize`,
+// which can outlast the client's handshake timeout ("Request timed out") and never
+// answers at all if the executable is missing or the login fails. This proxy answers
+// `initialize` and `ping` itself, performs its own handshake with the child, and
+// queues client requests until the child is ready. If the child is still starting
+// after `startupTimeoutMs`, tools/list returns the setup-status tool (followed by
+// notifications/tools/list_changed once the child is ready) and tools/call fails fast.
+// If the child errors or exits, the proxy stays connected in setup-status mode.
+export const PROXY_INIT_ID = '__readonly_proxy_initialize__';
+
+export function startDeferredReadOnlyProxy({
+  child, input = process.stdin, output = process.stdout, allowTool = isReadOnlyTool,
+  serverName = 'mt5ReadOnly', startupTimeoutMs = 20000, failureHint = ''
+}) {
+  const send = message => output.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
+  const toChild = message => child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
+  const readOnlyTools = new Map();
+  const queue = [];
+  let state = 'starting';
+  let failureReason = '';
+  let timedOut = false;
+  let listedFallback = false;
+  let listedUpstream = false;
+  let childInitSent = false;
+  let clientInitParams = null;
+  let stdoutBuffer = '';
+  const startingReason = () => 'the MT5 MCP server is still connecting to the MetaTrader 5 terminal. ' +
+    'Open MT5, log in to the demo account, then retry (tools will refresh automatically).';
+
+  const sendChildInitialize = () => {
+    if (childInitSent) return;
+    childInitSent = true;
+    toChild({ id: PROXY_INIT_ID, method: 'initialize', params: {
+      protocolVersion: clientInitParams?.protocolVersion || '2025-06-18',
+      capabilities: {},
+      clientInfo: { name: `${serverName}-readonly-proxy`, version: '1.0.0' }
+    } });
+  };
+
+  const handleClient = message => {
+    if (message.method === 'initialize') {
+      clientInitParams = message.params || {};
+      if (state === 'failed') {
+        replyUnavailable(message, failureReason, send, serverName);
+      } else if (message.id !== undefined) {
+        send({ id: message.id, result: initializeResult(message, serverName) });
+      }
+      if (state !== 'failed') sendChildInitialize();
+      return;
+    }
+    if (message.method === 'notifications/initialized') return; // the proxy sends its own
+    if (message.method === 'ping' && message.id !== undefined) {
+      send({ id: message.id, result: {} });
+      return;
+    }
+    if (state === 'failed') {
+      replyUnavailable(message, failureReason, send, serverName);
+      return;
+    }
+    if (state === 'starting') {
+      if (!timedOut) {
+        queue.push(message);
+      } else if (message.method === 'tools/list') {
+        listedFallback = true;
+        replyUnavailable(message, startingReason(), send, serverName);
+      } else if (message.id !== undefined) {
+        replyUnavailable(message, startingReason(), send, serverName);
+      }
+      return;
+    }
+    if (message.method === 'tools/list') listedUpstream = true;
+    if (message.method === 'tools/call') {
+      const upstreamName = readOnlyTools.get(message.params?.name);
+      if (!upstreamName) {
+        if (message.id !== undefined) {
+          send({ id: message.id, error: { code: -32601, message: 'Tool is not available in this read-only MCP.' } });
         }
-        break;
-      default:
-        send({ id: message.id, error: { code: -32601, message: 'Method not available while MT5 MCP setup is incomplete.' } });
+        return;
+      }
+      message.params.name = upstreamName;
+    }
+    child.stdin.write(`${JSON.stringify(message)}\n`);
+  };
+
+  const flushQueue = () => {
+    for (const message of queue.splice(0)) handleClient(message);
+  };
+
+  const fail = reason => {
+    if (state === 'failed') return;
+    const wasReady = state === 'ready';
+    state = 'failed';
+    failureReason = reason;
+    clearTimeout(timer);
+    flushQueue();
+    if (wasReady && listedUpstream) send({ method: 'notifications/tools/list_changed' });
+  };
+
+  const timer = setTimeout(() => {
+    if (state !== 'starting') return;
+    timedOut = true;
+    flushQueue();
+  }, startupTimeoutMs);
+  timer.unref?.();
+
+  child.stdout.on('data', chunk => {
+    stdoutBuffer += chunk.toString('utf8');
+    let newline;
+    while ((newline = stdoutBuffer.indexOf('\n')) !== -1) {
+      const line = stdoutBuffer.slice(0, newline).trim();
+      stdoutBuffer = stdoutBuffer.slice(newline + 1);
+      if (!line) continue;
+      let message;
+      try {
+        message = JSON.parse(line);
+      } catch {
+        continue; // never pass unexpected stdout text through the MCP channel
+      }
+      if (message.id === PROXY_INIT_ID) {
+        if (message.error) {
+          fail(`the MT5 MCP server rejected initialization (${message.error.message || 'unknown error'}).${failureHint ? ` ${failureHint}` : ''}`);
+          continue;
+        }
+        toChild({ method: 'notifications/initialized' });
+        state = 'ready';
+        clearTimeout(timer);
+        flushQueue();
+        if (listedFallback) send({ method: 'notifications/tools/list_changed' });
+        continue;
+      }
+      if (message.id !== undefined && message.result?.tools) {
+        readOnlyTools.clear();
+        message.result.tools = message.result.tools.filter(allowTool).map(tool => {
+          const alias = `readonly_${tool.name}`;
+          readOnlyTools.set(alias, tool.name);
+          return { ...tool, name: alias };
+        });
+      }
+      output.write(`${JSON.stringify(message)}\n`);
     }
   });
+
+  child.on('error', () => fail(`the MT5 MCP executable could not be started.${failureHint ? ` ${failureHint}` : ''}`));
+  child.on('exit', (code, signal) => fail(`the MT5 MCP server exited (${signal || `code ${code}`}) before or while serving requests. ` +
+    `Usually MT5 is closed or not logged in to the demo account, or the demo credentials are wrong.${failureHint ? ` ${failureHint}` : ''}`));
+  child.stdin.on?.('error', () => {}); // writes after the child exits must not crash the proxy
+
+  const lines = createInterface({ input, crlfDelay: Infinity });
+  lines.on('line', line => {
+    let message;
+    try {
+      message = JSON.parse(line);
+    } catch {
+      return;
+    }
+    handleClient(message);
+  });
+  input.on('end', () => child.stdin.end());
   return lines;
 }
