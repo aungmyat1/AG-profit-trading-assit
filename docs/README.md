@@ -442,6 +442,12 @@ matching status document before assuming a version is active or frozen.
 Files in `status/` are dated evidence snapshots. They preserve the test counts and
 observations from the named milestone; they are not rolling dashboards.
 
+- [`status/AG_FX_STACK_GOVERNANCE_RECONCILIATION_2026-09-29.md`](status/AG_FX_STACK_GOVERNANCE_RECONCILIATION_2026-09-29.md)
+  — `FX_STACK_INTEGRATION_BLOCKED`: audit records for units A–G, tripwire and Unit-F
+  audit gaps, proposal-foundation inspection, VT EURUSD trade_mode snapshot. Audit index:
+  [`audit/AG_FX_STACK_AUDIT_RECORD_2026-09-29.md`](audit/AG_FX_STACK_AUDIT_RECORD_2026-09-29.md)
+  (byte-exact auditor reports in `audit/`).
+
 - [`status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md`](status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md)
   — repository health audit, test-failure classification, root-file relocation map
   (root MI/V2/validation docs now live under `market_intelligence/`, `v2/`,

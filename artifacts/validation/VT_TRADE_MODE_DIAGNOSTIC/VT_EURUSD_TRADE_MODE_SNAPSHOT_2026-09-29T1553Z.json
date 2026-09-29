@@ -1,0 +1,80 @@
+{
+  "schema": "AG_TRADE_MODE_SNAPSHOT_V1",
+  "captured_at_utc": "2026-09-29T15:53:06.071692+00:00",
+  "initialize_ok": true,
+  "calls_made": [
+    "initialize",
+    "terminal_info",
+    "account_info",
+    "symbol_info(EURUSD)",
+    "symbol_info(EURUSD-VIP)",
+    "shutdown"
+  ],
+  "order_check_calls": 0,
+  "order_send_calls": 0,
+  "symbol_select_calls": 0,
+  "terminal": {
+    "name": "MetaTrader 5",
+    "company": "MetaQuotes Ltd.",
+    "build": 6230,
+    "connected": true,
+    "trade_allowed": true,
+    "tradeapi_disabled": false
+  },
+  "account": {
+    "server": "VTMarkets-Demo",
+    "company": "VT Markets (Pty) Ltd",
+    "currency": "USD",
+    "trade_mode": 0,
+    "trade_allowed": true,
+    "trade_expert": true,
+    "margin_so_mode": 0,
+    "trade_mode_name": "DEMO"
+  },
+  "symbols": {
+    "EURUSD": {
+      "exposed": true,
+      "trade_mode": 0,
+      "trade_mode_name": "DISABLED",
+      "visible": true,
+      "select": true,
+      "path": "Forex Major\\Forex Major\\EURUSD",
+      "trade_exemode": 2,
+      "filling_mode": 2,
+      "order_mode": 127,
+      "expiration_mode": 15,
+      "digits": 5,
+      "point": 1e-05,
+      "trade_contract_size": 100000.0,
+      "volume_min": 0.01,
+      "volume_step": 0.01,
+      "volume_max": 100.0,
+      "spread": 1,
+      "spread_float": true,
+      "trade_stops_level": 0,
+      "trade_freeze_level": 0
+    },
+    "EURUSD-VIP": {
+      "exposed": true,
+      "trade_mode": 4,
+      "trade_mode_name": "FULL",
+      "visible": false,
+      "select": false,
+      "path": "VT\\Forex-VIP\\EURUSD-VIP",
+      "trade_exemode": 2,
+      "filling_mode": 2,
+      "order_mode": 127,
+      "expiration_mode": 15,
+      "digits": 5,
+      "point": 1e-05,
+      "trade_contract_size": 100000.0,
+      "volume_min": 0.01,
+      "volume_step": 0.01,
+      "volume_max": 100.0,
+      "spread": 0,
+      "spread_float": true,
+      "trade_stops_level": 0,
+      "trade_freeze_level": 0
+    }
+  }
+}

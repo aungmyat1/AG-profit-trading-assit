@@ -4,6 +4,31 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## FX stack governance reconciliation (2026-09-29) — `FX_STACK_INTEGRATION_BLOCKED`
+
+Independent audit results for the audited FX stack are now recorded in repo truth. The
+record is a separate governance commit: [`docs/audit/AG_FX_STACK_AUDIT_RECORD_2026-09-29.md`](docs/audit/AG_FX_STACK_AUDIT_RECORD_2026-09-29.md),
+with the reports copied byte-exact. It covers TradeTicket R1 PASS @ `1564769`, WP-7A PASS
+@ `9b185e7`, WP-7A R1 PASS (nonblocking) @ `471b1c0`, WP-7B PASS (nonblocking) @
+`4b450ff`, and A8 PASS_WITH_CAVEATS @ `6fdc921a` (covers units A/E/B).
+
+Integration A→E→B→F→C→D→G was **not** performed, for two reasons. The main-protection
+tripwire is not on main: a bounded version is built and UNAUDITED on
+`ci/main-protection-tripwire-v1`. Unit F's delta `6fdc921a..76348c7` also has no
+independent audit. A throwaway merge dry-run showed only a `PROJECT_STATUS.md` conflict.
+
+The proposal foundation `0f149c5` on main is self-declared unaudited. Builder inspection
+passed (75 tests, no execution imports); an independent audit is still owed.
+`ST_ASIAN_SWEEP_5R_V1` proposal authority remains NONE. Prospective EURUSD POST_ASIAN
+operation has not started.
+
+A read-only trade_mode snapshot explains the `trade_mode = 0` reading: plain `EURUSD` is
+symbol-DISABLED on VTMarkets-Demo (while the account `trade_mode 0` = DEMO), and
+`EURUSD-VIP` is FULL. This is diagnostic only. Order calls: 0.
+
+Details: [`docs/status/AG_FX_STACK_GOVERNANCE_RECONCILIATION_2026-09-29.md`](docs/status/AG_FX_STACK_GOVERNANCE_RECONCILIATION_2026-09-29.md).
+Does not enable or authorize trading.
+
 ## MT5 MCP: VT Markets Demo default + setup-status mode (2026-09-29, read-only configuration)
 
 The read-only MT5 MCP launcher (`web/scripts/start_mt5_mcp.mjs`) now defaults to the
