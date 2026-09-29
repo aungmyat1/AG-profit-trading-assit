@@ -1,0 +1,627 @@
+{
+  "VENUE_FILTER": "broker_server == 'VantageMarkets-Demo' (frozen campaign manifest)",
+  "VT_ROWS_EXCLUDED_FROM_WP3A1": 600,
+  "WP3A1_VANTAGE_VALID_DAYS": [
+    "2026-09-16",
+    "2026-09-17",
+    "2026-09-18",
+    "2026-09-22",
+    "2026-09-23"
+  ],
+  "WP3A1_VANTAGE_VALID_OBSERVATIONS": 2400,
+  "campaign_id": "LSMC_EURUSD_FRICTION_WP3A1_V1",
+  "campaign_manifest_hash": "6a34439f0e141bd691f724aa7c74ea3795684ef2d497ad064e29d7c183414345",
+  "day_rule": "every manifest window has >= 120 eligible spread rows",
+  "excluded_sessions": [
+    {
+      "file": "2026-09-28_WINDOW_C_LONDON_raw.jsonl",
+      "servers": {
+        "VTMarkets-Demo": 120
+      },
+      "status": "EXCLUDED_MIXED_OR_FOREIGN_VENUE"
+    },
+    {
+      "file": "2026-09-29_WINDOW_A_ASIAN_REFERENCE_raw.jsonl",
+      "servers": {
+        "VTMarkets-Demo": 120
+      },
+      "status": "EXCLUDED_MIXED_OR_FOREIGN_VENUE"
+    },
+    {
+      "file": "2026-09-29_WINDOW_B_PRE_LONDON_raw.jsonl",
+      "servers": {
+        "VTMarkets-Demo": 120
+      },
+      "status": "EXCLUDED_MIXED_OR_FOREIGN_VENUE"
+    },
+    {
+      "file": "2026-09-29_WINDOW_C_LONDON_raw.jsonl",
+      "servers": {
+        "VTMarkets-Demo": 120
+      },
+      "status": "EXCLUDED_MIXED_OR_FOREIGN_VENUE"
+    },
+    {
+      "file": "2026-09-29_WINDOW_D_LONDON_NEWYORK_raw.jsonl",
+      "servers": {
+        "VTMarkets-Demo": 120
+      },
+      "status": "EXCLUDED_MIXED_OR_FOREIGN_VENUE"
+    }
+  ],
+  "incomplete_days": {
+    "2026-09-21": {
+      "WINDOW_A_ASIAN_REFERENCE": 6,
+      "WINDOW_B_PRE_LONDON": 120,
+      "WINDOW_C_LONDON": 120,
+      "WINDOW_D_LONDON_NEWYORK": 120
+    },
+    "2026-09-24": {
+      "WINDOW_A_ASIAN_REFERENCE": "ABSENT",
+      "WINDOW_B_PRE_LONDON": "ABSENT",
+      "WINDOW_C_LONDON": "ABSENT",
+      "WINDOW_D_LONDON_NEWYORK": 120
+    }
+  },
+  "manifest_hash_verified": true,
+  "minimum_met": true,
+  "minimum_population": {
+    "minimum_days": 5,
+    "samples_per_window": 120,
+    "total_minimum_observations": 2400,
+    "windows_per_day": 4
+  },
+  "note": "read-only; source evidence not moved or edited; statistics are descriptive, not a friction policy",
+  "row_exclusions": {
+    "BROKER_IDENTITY_MISSING": 114,
+    "BROKER_SERVER_MISMATCH": 600
+  },
+  "schema": "AG_WP3A1_VENUE_FILTERED_AGGREGATE_V1",
+  "sessions": [
+    {
+      "day": "2026-09-16",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-16_WINDOW_A_ASIAN_REFERENCE_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "6396551917595f00e586aa3e217db7ce70574b086b56dcbd415cf4da9f4ecb7a",
+      "window_id": "WINDOW_A_ASIAN_REFERENCE"
+    },
+    {
+      "day": "2026-09-16",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-16_WINDOW_B_PRE_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "e2a182dc05d3796da1989be4c9ce2932ad4916328327a22ccbebb15bfaf31806",
+      "window_id": "WINDOW_B_PRE_LONDON"
+    },
+    {
+      "day": "2026-09-16",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-16_WINDOW_C_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "8ce19afbc4cbbc71eda19dc8ce6a125195ce5d1fe07cb5ce0e20de1e61b51200",
+      "window_id": "WINDOW_C_LONDON"
+    },
+    {
+      "day": "2026-09-16",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-16_WINDOW_D_LONDON_NEWYORK_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "d613ac51f2813c2a0d9914b5ae93875652ba66c69c746ac56e8a6ca2a43ca10d",
+      "window_id": "WINDOW_D_LONDON_NEWYORK"
+    },
+    {
+      "day": "2026-09-17",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-17_WINDOW_A_ASIAN_REFERENCE_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "79bfbb39921d97171e8259208d7fab9aceb96137a7d0c6d5b1c8246286280996",
+      "window_id": "WINDOW_A_ASIAN_REFERENCE"
+    },
+    {
+      "day": "2026-09-17",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-17_WINDOW_B_PRE_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "9d3fdbaefb5d6f551aa3d3149ea7287cc28ad9d7f86a5836f0ac0e3b54750225",
+      "window_id": "WINDOW_B_PRE_LONDON"
+    },
+    {
+      "day": "2026-09-17",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-17_WINDOW_C_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "a1239ff467170ce4fa134bac987c0bc1567ab3381f159b63135b3d9a3116b65b",
+      "window_id": "WINDOW_C_LONDON"
+    },
+    {
+      "day": "2026-09-17",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-17_WINDOW_D_LONDON_NEWYORK_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "de481e3fc7ace52c31b430e1bd72ffc87ecbfecfae4106241b3c794c942f7ff5",
+      "window_id": "WINDOW_D_LONDON_NEWYORK"
+    },
+    {
+      "day": "2026-09-18",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-18_WINDOW_A_ASIAN_REFERENCE_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "b437c5b26b1de12ca05efd5efbce2de17e67b433b47f8571efb29a325c32511a",
+      "window_id": "WINDOW_A_ASIAN_REFERENCE"
+    },
+    {
+      "day": "2026-09-18",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-18_WINDOW_B_PRE_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "2ae3887c6884bf3d7e06daa2c487427bb2d1183e9e6eba290783b6d1da9135dc",
+      "window_id": "WINDOW_B_PRE_LONDON"
+    },
+    {
+      "day": "2026-09-18",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-18_WINDOW_C_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "b739de0f890560782bb0e6cc9751dd7abf7daed34dc53f548753bc41e1747c01",
+      "window_id": "WINDOW_C_LONDON"
+    },
+    {
+      "day": "2026-09-18",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-18_WINDOW_D_LONDON_NEWYORK_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "2a1b87d118f34ac372e181b4e599039a35b3d27dd105b5a9c25165574b0276e0",
+      "window_id": "WINDOW_D_LONDON_NEWYORK"
+    },
+    {
+      "day": "2026-09-21",
+      "eligible_rows": 6,
+      "eligible_spread_rows": 6,
+      "file": "2026-09-21_WINDOW_A_ASIAN_REFERENCE_raw.jsonl",
+      "row_reasons": {
+        "BROKER_IDENTITY_MISSING": 114,
+        "ELIGIBLE": 6
+      },
+      "rows": 120,
+      "servers": {
+        "None": 114,
+        "VantageMarkets-Demo": 6
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "98e6f69ea97b5fff0b9a1d88bfa2f9e30ad410be7d3c99efa971aa193b5da23c",
+      "window_id": "WINDOW_A_ASIAN_REFERENCE"
+    },
+    {
+      "day": "2026-09-21",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-21_WINDOW_B_PRE_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "d84e7df04b96278a440b7d09938fdd9e831c0dc50b68d315fdc60f8ec2d64ba1",
+      "window_id": "WINDOW_B_PRE_LONDON"
+    },
+    {
+      "day": "2026-09-21",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-21_WINDOW_C_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "e9bb8752744d96083a3a696a8d0c558fb1ce4c583afbaaaf3bc906df19fd1155",
+      "window_id": "WINDOW_C_LONDON"
+    },
+    {
+      "day": "2026-09-21",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-21_WINDOW_D_LONDON_NEWYORK_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "6322f1a1ff5c34c68688505a618364862ae270edb8084f68565346222a91286c",
+      "window_id": "WINDOW_D_LONDON_NEWYORK"
+    },
+    {
+      "day": "2026-09-22",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-22_WINDOW_A_ASIAN_REFERENCE_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "51b3d268cfe0476463e3413ce8d4ecb9159bafe264a77ce5f2a15849409ca8af",
+      "window_id": "WINDOW_A_ASIAN_REFERENCE"
+    },
+    {
+      "day": "2026-09-22",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-22_WINDOW_B_PRE_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "c868bac1f7581e7432483f801d64bca201f96d84aa7d1b3c9319e3f5fd1ad4e2",
+      "window_id": "WINDOW_B_PRE_LONDON"
+    },
+    {
+      "day": "2026-09-22",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-22_WINDOW_C_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "f39834ec46fbc6808238954956c76788e32885a9431d7065592ac38787046f6d",
+      "window_id": "WINDOW_C_LONDON"
+    },
+    {
+      "day": "2026-09-22",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-22_WINDOW_D_LONDON_NEWYORK_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "94a6c73d4162ed167d17028804ba84978159d1d571ef2c8bfb1d06730f23e4fd",
+      "window_id": "WINDOW_D_LONDON_NEWYORK"
+    },
+    {
+      "day": "2026-09-23",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-23_WINDOW_A_ASIAN_REFERENCE_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "91713c8b2fa23d0e78b35224f03d340a7c9e13f43a680319b785455ad1120a7b",
+      "window_id": "WINDOW_A_ASIAN_REFERENCE"
+    },
+    {
+      "day": "2026-09-23",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-23_WINDOW_B_PRE_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "e8663a4133ba74e86fe4640fff380d254cffc850816126a7d503cc21fe828f12",
+      "window_id": "WINDOW_B_PRE_LONDON"
+    },
+    {
+      "day": "2026-09-23",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-23_WINDOW_C_LONDON_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "715a7a380b71d4fa837d84ef5b3206a741e578960cad3df3e40645d13697f79f",
+      "window_id": "WINDOW_C_LONDON"
+    },
+    {
+      "day": "2026-09-23",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-23_WINDOW_D_LONDON_NEWYORK_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "344d514b05fe5e52d8c700922e05e715d13b460826743fd093b09668505753f5",
+      "window_id": "WINDOW_D_LONDON_NEWYORK"
+    },
+    {
+      "day": "2026-09-24",
+      "eligible_rows": 120,
+      "eligible_spread_rows": 120,
+      "file": "2026-09-24_WINDOW_D_LONDON_NEWYORK_raw.jsonl",
+      "row_reasons": {
+        "ELIGIBLE": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VantageMarkets-Demo": 120
+      },
+      "session_status": "ELIGIBLE",
+      "sha256": "dcf5039ad86f1aaed24270dca4587a21c1b30852df42640f0b88eb83db6b89c9",
+      "window_id": "WINDOW_D_LONDON_NEWYORK"
+    },
+    {
+      "day": "2026-09-28",
+      "eligible_rows": 0,
+      "eligible_spread_rows": 0,
+      "file": "2026-09-28_WINDOW_C_LONDON_raw.jsonl",
+      "row_reasons": {
+        "BROKER_SERVER_MISMATCH": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VTMarkets-Demo": 120
+      },
+      "session_status": "EXCLUDED_MIXED_OR_FOREIGN_VENUE",
+      "sha256": "7873599088d8512005b7e501fbffec6827dae8e1208a0f71394f08732d3457f7",
+      "window_id": "WINDOW_C_LONDON"
+    },
+    {
+      "day": "2026-09-29",
+      "eligible_rows": 0,
+      "eligible_spread_rows": 0,
+      "file": "2026-09-29_WINDOW_A_ASIAN_REFERENCE_raw.jsonl",
+      "row_reasons": {
+        "BROKER_SERVER_MISMATCH": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VTMarkets-Demo": 120
+      },
+      "session_status": "EXCLUDED_MIXED_OR_FOREIGN_VENUE",
+      "sha256": "2676247913e70f531bc334a6212b630b2b9fa09df640e02268f6e4b05becbbeb",
+      "window_id": "WINDOW_A_ASIAN_REFERENCE"
+    },
+    {
+      "day": "2026-09-29",
+      "eligible_rows": 0,
+      "eligible_spread_rows": 0,
+      "file": "2026-09-29_WINDOW_B_PRE_LONDON_raw.jsonl",
+      "row_reasons": {
+        "BROKER_SERVER_MISMATCH": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VTMarkets-Demo": 120
+      },
+      "session_status": "EXCLUDED_MIXED_OR_FOREIGN_VENUE",
+      "sha256": "90d4c5b891e06743d85910c6948a32b43e8a5dc61337b39791f66c2fe4ebb553",
+      "window_id": "WINDOW_B_PRE_LONDON"
+    },
+    {
+      "day": "2026-09-29",
+      "eligible_rows": 0,
+      "eligible_spread_rows": 0,
+      "file": "2026-09-29_WINDOW_C_LONDON_raw.jsonl",
+      "row_reasons": {
+        "BROKER_SERVER_MISMATCH": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VTMarkets-Demo": 120
+      },
+      "session_status": "EXCLUDED_MIXED_OR_FOREIGN_VENUE",
+      "sha256": "d0719059fefe4e8ec5f374bd50c3f0dae1602b259a5c75c8a772c50b629b8d44",
+      "window_id": "WINDOW_C_LONDON"
+    },
+    {
+      "day": "2026-09-29",
+      "eligible_rows": 0,
+      "eligible_spread_rows": 0,
+      "file": "2026-09-29_WINDOW_D_LONDON_NEWYORK_raw.jsonl",
+      "row_reasons": {
+        "BROKER_SERVER_MISMATCH": 120
+      },
+      "rows": 120,
+      "servers": {
+        "VTMarkets-Demo": 120
+      },
+      "session_status": "EXCLUDED_MIXED_OR_FOREIGN_VENUE",
+      "sha256": "404d3f9a6bbe209942f4b866da60c5d5dcb429ae1fae75fb60f3a71a822c4879",
+      "window_id": "WINDOW_D_LONDON_NEWYORK"
+    }
+  ],
+  "sessions_dir": "D:\\ddev\\AG profit trading\\artifacts\\validation\\ST_LARGE_SMC_V1\\EURUSD_ADMISSION_CONTRACTS\\friction_campaign_wp3a1\\sessions",
+  "spread_pips_by_window": {
+    "WINDOW_A_ASIAN_REFERENCE": {
+      "N": 600,
+      "max": 1.500000000000945,
+      "mean": 1.3519999999998458,
+      "median": 1.3999999999980695,
+      "min": 1.2999999999996348,
+      "p75": 1.40000000000029,
+      "p90": 1.40000000000029,
+      "p95": 1.40000000000029,
+      "p99": 1.4010000000002734,
+      "zero_fraction": 0.0
+    },
+    "WINDOW_B_PRE_LONDON": {
+      "N": 600,
+      "max": 1.500000000000945,
+      "mean": 1.354000000000007,
+      "median": 1.3999999999980695,
+      "min": 1.2999999999996348,
+      "p75": 1.40000000000029,
+      "p90": 1.40000000000029,
+      "p95": 1.40000000000029,
+      "p99": 1.40000000000029,
+      "zero_fraction": 0.0
+    },
+    "WINDOW_C_LONDON": {
+      "N": 600,
+      "max": 1.40000000000029,
+      "mean": 1.352333333333296,
+      "median": 1.3999999999980695,
+      "min": 1.2999999999996348,
+      "p75": 1.40000000000029,
+      "p90": 1.40000000000029,
+      "p95": 1.40000000000029,
+      "p99": 1.40000000000029,
+      "zero_fraction": 0.0
+    },
+    "WINDOW_D_LONDON_NEWYORK": {
+      "N": 600,
+      "max": 1.500000000000945,
+      "mean": 1.3541666666666488,
+      "median": 1.3999999999980695,
+      "min": 1.2999999999996348,
+      "p75": 1.40000000000029,
+      "p90": 1.40000000000029,
+      "p95": 1.40000000000029,
+      "p99": 1.4010000000002734,
+      "zero_fraction": 0.0
+    }
+  },
+  "spread_pips_complete_days": {
+    "N": 2400,
+    "max": 1.500000000000945,
+    "mean": 1.3531249999999495,
+    "median": 1.3999999999980695,
+    "min": 1.2999999999996348,
+    "p75": 1.40000000000029,
+    "p90": 1.40000000000029,
+    "p95": 1.40000000000029,
+    "p99": 1.40000000000029,
+    "zero_fraction": 0.0
+  }
+}
