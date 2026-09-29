@@ -1,13 +1,24 @@
 """Capture immutable VT Markets Demo EURUSD/GBPUSD bid/ask evidence (P6-R2, evidence only).
 
-    python scripts/capture_vt_spread_evidence.py --session POST_ASIAN|POST_LONDON|OTHER \
+    python scripts/capture_vt_spread_evidence.py --session POST_ASIAN|POST_LONDON \
         [--duration-seconds 720] [--cadence-seconds 5]
 
-Session gate (P6-R3), checked BEFORE MT5 is initialized: the current UTC time must be
-inside the requested session (canonical scanner execution windows, see
-spread_capture.SESSION_WINDOWS) with at least --duration-seconds remaining, otherwise the
-run stops with TARGET_SESSION_NOT_ACTIVE and creates nothing. OTHER must be requested
-explicitly and must also match the actual time.
+Capture request sessions (R1, BF-F-001): only POST_ASIAN and POST_LONDON may start a new
+live capture. Any other request -- including OTHER -- stops with
+UNSUPPORTED_CAPTURE_SESSION before any broker call. OTHER stays a valid *observational*
+row/manifest classification (e.g. historical capture VT_SPREAD_20260928T190357Z_18ee81e6);
+it is no longer a request mode.
+
+Session containment, evaluated twice with exact datetime arithmetic (session_gate):
+  1. precheck, BEFORE lineage checks and MT5 initialize: fails -> TARGET_SESSION_NOT_ACTIVE,
+     no broker call at all;
+  2. (R1, BF-F-002) with a fresh UTC timestamp AFTER all setup (initialize, venue/spec
+     checks, server-time setup) and immediately BEFORE the first sample: fails ->
+     TARGET_SESSION_WINDOW_EXPIRED_DURING_SETUP, MT5 shut down, no sample read, nothing
+     written.
+A capture starting at `start` passes only if it is a weekday, window_start <= start and
+start + duration <= window_end (end may equal window_end: every sample is taken strictly
+before it). For 720 s: latest start POST_ASIAN 10:48:00, POST_LONDON 14:48:00 UTC.
 
 Attaches to the already-running, logged-in terminal (no credentials passed or read).
 Gates before any tick is read: real MetaTrader5 package (repo stub refused), Demo account,
@@ -119,19 +130,27 @@ def _metadata_counts(rows) -> dict:
     }}
 
 
+def _utcnow() -> dt.datetime:
+    """Wall-clock seam (tests inject a deterministic clock)."""
+    return dt.datetime.now(dt.timezone.utc)
+
+
 def _stop(status: str, **extra) -> int:
     print(json.dumps({"status": status, **extra, "broker_mutation_calls": dict(_calls)}, indent=2, default=str))
     return 2
 
 
+CAPTURE_REQUEST_SESSIONS = ("POST_ASIAN", "POST_LONDON")
+
+
 def session_gate(session: str, start: dt.datetime, duration_seconds: int):
     """None if a capture of `duration_seconds` starting at `start` stays inside `session`,
     else a reason code. Pure, so it is unit-tested without MT5."""
+    if session not in CAPTURE_REQUEST_SESSIONS:
+        return "UNSUPPORTED_CAPTURE_SESSION"
     end = start + dt.timedelta(seconds=duration_seconds)
     if sc.classify_session(start) != session:
         return "TARGET_SESSION_NOT_ACTIVE"
-    if session == "OTHER":
-        return None if sc.classify_session(end) == "OTHER" else "TARGET_SESSION_NOT_ACTIVE"
     window_end = next(e for name, _s, e in sc.SESSION_WINDOWS if name == session)
     if end > dt.datetime.combine(start.date(), window_end, tzinfo=dt.timezone.utc):
         return "INSUFFICIENT_REMAINING_SESSION_WINDOW"
@@ -140,16 +159,20 @@ def session_gate(session: str, start: dt.datetime, duration_seconds: int):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--session", required=True, choices=["POST_ASIAN", "POST_LONDON", "OTHER"])
+    ap.add_argument("--session", required=True)  # validated by session_gate, fail-closed as JSON
     ap.add_argument("--duration-seconds", type=int, default=720)
     ap.add_argument("--cadence-seconds", type=float, default=5.0)
     args = ap.parse_args()
     if not (60 <= args.duration_seconds <= 1800 and 1.0 <= args.cadence_seconds <= 60.0):
         return _stop("VT_CAPTURE_FAILED", reason="duration/cadence outside bounded limits")
-    gate = session_gate(args.session, dt.datetime.now(dt.timezone.utc), args.duration_seconds)
+    now = _utcnow()
+    gate = session_gate(args.session, now, args.duration_seconds)
+    if gate == "UNSUPPORTED_CAPTURE_SESSION":
+        return _stop(gate, requested_session=args.session, allowed=list(CAPTURE_REQUEST_SESSIONS),
+                     now_utc=now.isoformat())
     if gate is not None:
         return _stop("TARGET_SESSION_NOT_ACTIVE", requested_session=args.session, reason=gate,
-                     now_utc=dt.datetime.now(dt.timezone.utc).isoformat())
+                     now_utc=now.isoformat())
     lineage = _lineage()
     if lineage.endswith("+dirty"):
         return _stop("VT_CAPTURE_FAILED", reason="tracked worktree is dirty; lineage must be exact")
@@ -172,7 +195,7 @@ def main() -> int:
             spec[s] = {"broker_symbol": info.name, "digits": info.digits, "point": info.point,
                        "pip_size": instruments[s].pip_size}
 
-        start = dt.datetime.now(dt.timezone.utc)
+        start = _utcnow()
         try:
             clock = {s: server_time_provenance(broker_symbols[s], start, start) for s in SYMBOLS}
             offset = server_time_timeline(broker_symbols["EURUSD"], start, start).at_utc(start).utc_offset_hours
@@ -183,6 +206,11 @@ def main() -> int:
         last_msc = {s: None for s in SYMBOLS}
         rows = {s: [] for s in SYMBOLS}
         rounds = int(args.duration_seconds // args.cadence_seconds)
+        capture_start = _utcnow()
+        gate = session_gate(args.session, capture_start, args.duration_seconds)
+        if gate is not None:
+            return _stop("TARGET_SESSION_WINDOW_EXPIRED_DURING_SETUP", requested_session=args.session,
+                         reason=gate, precheck_utc=now.isoformat(), capture_start_utc=capture_start.isoformat())
         t0 = time.monotonic()
         seq = 0
         for k in range(rounds):
@@ -220,7 +248,6 @@ def main() -> int:
     sessions = sorted({r["session_classification"] for rs in rows.values() for r in rs})
     base_status = sc.capture_status(rows)
     status = (f"VT_{args.session}_CAPTURE_COMPLETE" if base_status == "VT_INITIAL_FRICTION_CAPTURE_COMPLETE"
-              else "VT_CAPTURE_OUTSIDE_TARGET_SESSION" if base_status == "VT_CAPTURE_OUTSIDE_TARGET_SESSION" and args.session == "OTHER"
               else "VT_SESSION_CAPTURE_FAILED")
     manifest = {
         "schema": "AG_VT_SPREAD_CAPTURE_MANIFEST_V2",

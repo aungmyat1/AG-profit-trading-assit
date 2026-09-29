@@ -4,6 +4,26 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Unit F R1 session containment (2026-09-29): UNIT_F_R1_READY_FOR_REAUDIT
+
+This remediates Arena's `UNIT_F_AUDIT_FAIL` blocking findings on `6fdc921a..76348c7`. Only
+`scripts/capture_vt_spread_evidence.py` changed in production code.
+
+- **BF-F-001:** only `POST_ASIAN` and `POST_LONDON` may start a live capture. `OTHER` or an
+  unknown session now gives `UNSUPPORTED_CAPTURE_SESSION` with zero broker calls. `OTHER`
+  remains a valid historical evidence classification.
+- **BF-F-002:** a second session gate runs, with a fresh UTC time, after all setup and just
+  before the first sample. When setup latency expires the window, the result is
+  `TARGET_SESSION_WINDOW_EXPIRED_DURING_SETUP`: one `initialize`, zero samples, a clean
+  `shutdown`, and nothing written.
+- **Latest valid 720 s start:** 10:48:00 UTC for POST_ASIAN and 14:48:00 UTC for
+  POST_LONDON (exact arithmetic).
+- **Tests:** `tests/test_fx_friction_capture.py` 69 passed; `tests/test_fx_*.py` 167 passed.
+  No live broker contact.
+- **Unchanged:** spread, zero-spread and hash semantics. Commission is UNKNOWN; authority
+  is NONE.
+- **Details:** [`docs/status/AG_UNIT_F_R1_SESSION_CONTAINMENT_REMEDIATION_STATUS.md`](docs/status/AG_UNIT_F_R1_SESSION_CONTAINMENT_REMEDIATION_STATUS.md).
+
 ## VT Markets spread evidence P6-R2 (2026-09-28): VT_CAPTURE_OUTSIDE_TARGET_SESSION
 
 - **What was captured:** immutable raw EURUSD and GBPUSD bid/ask from VTMarkets-Demo
