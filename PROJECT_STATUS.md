@@ -4,6 +4,21 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## WP-7B identity-gated live FX Opportunity (2026-09-29): READY_FOR_AUDIT
+
+- **What changed:** `scripts/run_fx_opportunity_once.py` now routes every symbol through
+  `instrument_registry.fx_gated_scan`. Opportunity is evaluated only after an exact canonical
+  identity RESOLVES and the MarketState is AUTHORITATIVE.
+- **Live run (read-only, VTMarkets-Demo, 15:11Z):**
+  - EURUSD resolved as `FX.EURUSD`, was AUTHORITATIVE, and evaluated to NO_OPPORTUNITY.
+  - GBPUSD and USDJPY report `CANONICAL_IDENTITY_NOT_CONFIGURED`, with no read.
+  - Broker mutation calls were 0.
+- **Unchanged:** the strategy, eligibility, ticket and registry. Proposal, Demo and Live
+  authority all remain NONE.
+- **Tests:** 25 focused and 476 regression, all passing.
+
+See `docs/status/AG_WP7B_IDENTITY_GATED_FX_OPPORTUNITY_STATUS.md`.
+
 ## WP-7A Canonical Instrument Registry V1 (2026-09-29): READY_FOR_AUDIT
 
 - **What it is:** `src/instrument_registry/` with the pinned, immutable

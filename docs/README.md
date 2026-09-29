@@ -54,6 +54,8 @@ ticket pipeline and the NO_PROPOSAL_AUTHORITY real-strategy result; its
 records the authority cross-check and ticket provenance fixes. The
 [WP-7A canonical instrument registry status](status/AG_WP7A_CANONICAL_INSTRUMENT_REGISTRY_V1_STATUS.md)
 records exact FX.EURUSD identity on VT Markets Demo and the symbol-drift gate. The
+[WP-7B identity-gated FX Opportunity status](status/AG_WP7B_IDENTITY_GATED_FX_OPPORTUNITY_STATUS.md)
+records the live runner wiring and the first identity-gated VTMarkets-Demo run. The
 [FX Opportunity qualification V1 status](status/AG_FX_OPPORTUNITY_QUALIFICATION_V1_STATUS.md)
 freezes the economic-qualification contract and lists the unsigned/contradictory fields
 that block it. The

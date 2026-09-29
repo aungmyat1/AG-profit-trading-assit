@@ -1,0 +1,293 @@
+{
+  "command": "python scripts/run_fx_opportunity_once.py --cycle POST_LONDON --symbol ALL (launched from a foreign cwd; candidate store outside the repo)",
+  "run_output": {
+    "account_environment": "DEMO",
+    "application_lineage": "5fc8d1fbc6499b62286c2a0b2967982983e1e9a8",
+    "broker": "VT_MARKETS",
+    "broker_mutation_calls": {
+      "order_check": 0,
+      "order_send": 0,
+      "orders_get": 0,
+      "orders_total": 0,
+      "positions_get": 0,
+      "positions_total": 0,
+      "trade_buy": 0,
+      "trade_cancel": 0,
+      "trade_close": 0,
+      "trade_modify": 0,
+      "trade_sell": 0
+    },
+    "cycle": "POST_LONDON",
+    "evaluated_at": "2026-09-29T15:11:10.014259+00:00",
+    "market_data_mode": "REAL",
+    "mode": "LIVE",
+    "proposal_authority": "NONE",
+    "results": [
+      {
+        "broker_metadata": {
+          "contract_size": 100000.0,
+          "currency_base": "EUR",
+          "currency_profit": "USD",
+          "digits": 5,
+          "execution_mode": 2,
+          "filling_mode": 2,
+          "observed_at": "2026-09-29T15:11:10.014259+00:00",
+          "point": 1e-05,
+          "server": "VTMarkets-Demo",
+          "symbol": "EURUSD",
+          "tick_size": 1e-05,
+          "tick_value": 1.0,
+          "trade_mode": 0,
+          "venue_id": "VT_MARKETS_MT5",
+          "volume_max": 100.0,
+          "volume_min": 0.01,
+          "volume_step": 0.01
+        },
+        "canonical_identity": {
+          "broker_metadata_fingerprint": "1455483dbb19566a070dff8e259e33c2bd2d2551679f95950725e89957d248d6",
+          "canonical_instrument_id": "FX.EURUSD",
+          "instrument_identity_fingerprint": "6a781d6092240571bb6a4636870fd8df5aaefc8438fb8f6543f069da275903c8",
+          "mismatched_fields": [],
+          "observed_server": "VTMarkets-Demo",
+          "observed_symbol": "EURUSD",
+          "registry_version": "instruments-v1.0.0",
+          "resolution": "RESOLVED",
+          "server": "VTMarkets-Demo",
+          "venue_id": "VT_MARKETS_MT5",
+          "venue_symbol": "EURUSD"
+        },
+        "cycle": "POST_LONDON",
+        "execution_authority": "NONE",
+        "market_data_readable": true,
+        "marketstate_authority": "AUTHORITATIVE",
+        "opportunity": "MAY_EVALUATE",
+        "proposal": "NO_PROPOSAL_AUTHORITY",
+        "reason_codes": [
+          "NO_SETUP_BY_WINDOW_END"
+        ],
+        "scan": {
+          "cycle": "POST_LONDON",
+          "execution_authority": "NONE",
+          "opportunity": {
+            "candidate_id": "cand_afb076dd70443a9e4d181b40",
+            "candidate_outcome": "EXPIRED",
+            "candidate_revision": 1,
+            "candidate_stage": "CONTEXT_VALID",
+            "cycle": "POST_LONDON",
+            "decision_reason_codes": [
+              "NO_SETUP_BY_WINDOW_END"
+            ],
+            "decision_status": "EXPIRED",
+            "direction": null,
+            "eligibility_reasons": [
+              "EXPIRED"
+            ],
+            "eligibility_status": "BLOCKED",
+            "entry": null,
+            "evaluated_at": "2026-09-29T15:11:10.014259+00:00",
+            "execution_authority": "NONE",
+            "invalidation": null,
+            "market_state": {
+              "as_of": "2026-09-29T15:11:10.014259+00:00",
+              "cycle": "POST_LONDON",
+              "execution_window_utc": [
+                "2026-09-29T12:00:00+00:00",
+                "2026-09-29T15:00:00+00:00"
+              ],
+              "fingerprint": "92a7b099c69d8432d1a890a5bf0be6cbf61d4a8bdbbd5cbdae689718eb94a753",
+              "instrument_fingerprint": "db532fe8797be4161e90d2d56d889bdc55c7664ed16626fd83c23d3108a137ad",
+              "last_closed_bar": {
+                "close": 1.13401,
+                "close_utc": "2026-09-29T15:00:00+00:00",
+                "high": 1.13431,
+                "low": 1.13384,
+                "open": 1.13427,
+                "open_utc": "2026-09-29T14:45:00+00:00"
+              },
+              "market_data_mode": "REAL",
+              "post_session_bar_count": 12,
+              "post_session_fingerprint": "c47b65502912133b9fbe54518416139eafcad23eed32729f94fbbd1afad6a4f9",
+              "post_session_high": 1.13581,
+              "post_session_low": 1.1338,
+              "reference_bar_count": 20,
+              "reference_bars_expected": 20,
+              "reference_complete": true,
+              "reference_fingerprint": "8f03f2ebe1a6e51c9c814aef5050703d2f5a3dfbae23bb6f6e93966b0749be1d",
+              "reference_high": 1.13664,
+              "reference_high_taken": false,
+              "reference_low": 1.13324,
+              "reference_low_taken": false,
+              "reference_mid": 1.13494,
+              "reference_range": 0.0034,
+              "reference_range_pips": 34.0,
+              "reference_session": "london_am",
+              "reference_window_utc": [
+                "2026-09-29T06:00:00+00:00",
+                "2026-09-29T11:00:00+00:00"
+              ],
+              "schema": "AG_FX_MARKET_STATE_V1",
+              "server_clock": [
+                {
+                  "broker": "VT Markets (Pty) Ltd",
+                  "effective_from_utc": "2026-09-27T21:00:00+00:00",
+                  "effective_until_basis": "WEEK_BOUND",
+                  "effective_until_utc": "2026-10-04T20:00:00+00:00",
+                  "evidence_symbols": [
+                    "EURUSD",
+                    "GBPUSD"
+                  ],
+                  "scope": "SERVER_SHARED",
+                  "server": "VTMarkets-Demo",
+                  "source": "SERVER_CONSENSUS",
+                  "utc_offset_hours": 3
+                }
+              ],
+              "source": "mt5.market_data.get_candles:VT_MARKETS:VTMarkets-Demo:EURUSD",
+              "spread_pips": 0.1,
+              "spread_source": "mt5.symbol_info_tick",
+              "symbol": "EURUSD",
+              "timeframe": "M15",
+              "trading_date": "2026-09-29"
+            },
+            "missing_condition": null,
+            "opportunity": "NO_OPPORTUNITY",
+            "pair_id": "LONDON_NEWYORK",
+            "proposal": "NO_PROPOSAL_AUTHORITY",
+            "provenance": {
+              "application_lineage": "5fc8d1fbc6499b62286c2a0b2967982983e1e9a8",
+              "evaluation_fingerprint": "fe908b350db9dfdfe0f09dd40b9735f67e4a71dbd4c457c1066478c5efcb8da4",
+              "execution_window_utc": [
+                "2026-09-29T12:00:00+00:00",
+                "2026-09-29T15:00:00+00:00"
+              ],
+              "instrument_fingerprint": "db532fe8797be4161e90d2d56d889bdc55c7664ed16626fd83c23d3108a137ad",
+              "last_closed_bar_close_utc": "2026-09-29T15:00:00+00:00",
+              "lineage_fingerprint": "6e6f3bbf4d16545eee5e9c2a8e8bbf3b3c6e3f8556c70b0212a9013e98a07795",
+              "market_data_mode": "REAL",
+              "market_state_fingerprint": "92a7b099c69d8432d1a890a5bf0be6cbf61d4a8bdbbd5cbdae689718eb94a753",
+              "pilot_config_fingerprint": "cc9de2325391865ca2d970787a95f73b0f64fcdbdf83fd3e5defb9c46c6d718d",
+              "pilot_id": "AG_POST_LONDON_NEWYORK_PILOT_V1_0_1",
+              "post_session_bar_count": 12,
+              "post_session_bars_dropped": 0,
+              "post_session_fingerprint": "c47b65502912133b9fbe54518416139eafcad23eed32729f94fbbd1afad6a4f9",
+              "reference_bar_count": 20,
+              "reference_bars_dropped": 0,
+              "reference_box": {
+                "high": 1.13664,
+                "low": 1.13324,
+                "mid": 1.13494,
+                "range": 0.0034000000000000696,
+                "range_pips": 34.0
+              },
+              "reference_fingerprint": "8f03f2ebe1a6e51c9c814aef5050703d2f5a3dfbae23bb6f6e93966b0749be1d",
+              "reference_session": "london_am",
+              "reference_window_utc": [
+                "2026-09-29T06:00:00+00:00",
+                "2026-09-29T11:00:00+00:00"
+              ],
+              "server_clock": [
+                {
+                  "broker": "VT Markets (Pty) Ltd",
+                  "effective_from_utc": "2026-09-27T21:00:00+00:00",
+                  "effective_until_basis": "WEEK_BOUND",
+                  "effective_until_utc": "2026-10-04T20:00:00+00:00",
+                  "evidence_symbols": [
+                    "EURUSD",
+                    "GBPUSD"
+                  ],
+                  "scope": "SERVER_SHARED",
+                  "server": "VTMarkets-Demo",
+                  "source": "SERVER_CONSENSUS",
+                  "utc_offset_hours": 3
+                }
+              ],
+              "session_snapshot_id": "SNAPSHOT-EURUSD-2026-09-29-b838fa9543293b63",
+              "source": "mt5.market_data.get_candles:VT_MARKETS:VTMarkets-Demo:EURUSD",
+              "strategy_config_fingerprint": "0bbad4c0bd6f2b2d1f0959c0dcde5b1c9445c5cca4ffe06cf5e5b349f26d0f52",
+              "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+              "strategy_source_path": "strategies/ST_ASIAN_SWEEP_5R_V1.yaml",
+              "strategy_version": "1.1.1",
+              "timeframe": "M15"
+            },
+            "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+            "strategy_role": "RESEARCH_STRATEGY",
+            "strategy_version": "1.1.1",
+            "symbol": "EURUSD",
+            "trade_ticket": "NOT_CREATED",
+            "trading_date": "2026-09-29"
+          },
+          "proposal": "NO_PROPOSAL_AUTHORITY",
+          "reason_codes": [
+            "NO_SETUP_BY_WINDOW_END"
+          ],
+          "status": "NO_OPPORTUNITY",
+          "symbol": "EURUSD",
+          "trade_ticket": "NOT_CREATED"
+        },
+        "status": "NO_OPPORTUNITY",
+        "symbol": "EURUSD",
+        "trade_ticket": "NOT_CREATED"
+      },
+      {
+        "broker_metadata": null,
+        "canonical_identity": {
+          "broker_metadata_fingerprint": null,
+          "canonical_instrument_id": null,
+          "instrument_identity_fingerprint": null,
+          "mismatched_fields": [],
+          "observed_server": null,
+          "observed_symbol": null,
+          "registry_version": "instruments-v1.0.0",
+          "resolution": "CANONICAL_IDENTITY_NOT_CONFIGURED",
+          "server": null,
+          "venue_id": null,
+          "venue_symbol": null
+        },
+        "cycle": "POST_LONDON",
+        "execution_authority": "NONE",
+        "market_data_readable": false,
+        "marketstate_authority": "BLOCKED",
+        "opportunity": "NOT_EVALUATED",
+        "proposal": "BLOCKED",
+        "reason_codes": [
+          "CANONICAL_IDENTITY_NOT_CONFIGURED"
+        ],
+        "status": "CANONICAL_IDENTITY_NOT_CONFIGURED",
+        "symbol": "GBPUSD",
+        "trade_ticket": "BLOCKED"
+      },
+      {
+        "broker_metadata": null,
+        "canonical_identity": {
+          "broker_metadata_fingerprint": null,
+          "canonical_instrument_id": null,
+          "instrument_identity_fingerprint": null,
+          "mismatched_fields": [],
+          "observed_server": null,
+          "observed_symbol": null,
+          "registry_version": "instruments-v1.0.0",
+          "resolution": "CANONICAL_IDENTITY_NOT_CONFIGURED",
+          "server": null,
+          "venue_id": null,
+          "venue_symbol": null
+        },
+        "cycle": "POST_LONDON",
+        "execution_authority": "NONE",
+        "market_data_readable": false,
+        "marketstate_authority": "BLOCKED",
+        "opportunity": "NOT_EVALUATED",
+        "proposal": "BLOCKED",
+        "reason_codes": [
+          "CANONICAL_IDENTITY_NOT_CONFIGURED"
+        ],
+        "status": "CANONICAL_IDENTITY_NOT_CONFIGURED",
+        "symbol": "USDJPY",
+        "trade_ticket": "BLOCKED"
+      }
+    ],
+    "server": "VTMarkets-Demo",
+    "source": "MT5_REAL",
+    "trade_ticket": "NOT_CREATED"
+  },
+  "schema": "AG_WP7B_LIVE_IDENTITY_GATED_RUN_EVIDENCE"
+}
