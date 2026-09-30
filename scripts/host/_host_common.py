@@ -15,9 +15,11 @@ from contextlib import contextmanager
 from typing import Iterator
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+# Appended, not prepended: the repo-root MetaTrader5.py stub must never shadow the real
+# installed package.
 for _p in (REPO_ROOT, os.path.join(REPO_ROOT, "src")):
     if _p not in sys.path:
-        sys.path.insert(0, _p)
+        sys.path.append(_p)
 
 LOG_DIR = os.path.join(REPO_ROOT, "logs")
 _SECRET_MARKERS = ("TOKEN", "PASSWORD", "SECRET", "KEY")
@@ -72,18 +74,45 @@ def single_instance(name: str, stale_after_s: int = 1800) -> Iterator[None]:
             pass
 
 
+def _is_repo_module(mt5) -> bool:
+    """True when the module file lives in the repo itself (the stub), not in an installed
+    site-packages -- a .venv inside the repo is still an installed package."""
+    path = os.path.normcase(os.path.abspath(str(getattr(mt5, "__file__", "") or "")))
+    root = os.path.normcase(REPO_ROOT)
+    try:
+        inside = os.path.commonpath([path, root]) == root
+    except ValueError:  # different drives
+        inside = False
+    return inside and "site-packages" not in path.split(os.sep)
+
+
 def import_mt5():
-    """Return the real MetaTrader5 module or None. Never falls back to the test stub."""
+    """Return the real MetaTrader5 module or None. Never falls back to the test stub.
+
+    The import runs with the repo root / src (and a cwd equal to either) removed from
+    sys.path and any cached stub evicted, so the installed package wins even when the stub
+    is first on the path. sys.path and sys.modules are restored afterwards."""
+    cached = sys.modules.get("MetaTrader5")
+    if cached is not None and _is_real(cached):
+        return cached
+    repo_dirs = {os.path.normcase(REPO_ROOT), os.path.normcase(os.path.join(REPO_ROOT, "src"))}
+    saved_path = sys.path[:]
+    sys.modules.pop("MetaTrader5", None)
+    sys.path[:] = [p for p in sys.path if os.path.normcase(os.path.abspath(p or os.getcwd())) not in repo_dirs]
     try:
         import MetaTrader5 as mt5  # noqa: N813
     except Exception:  # noqa: BLE001
-        return None
+        mt5 = None
+    finally:
+        sys.path[:] = saved_path
+        if cached is not None:
+            sys.modules["MetaTrader5"] = cached
+    return mt5 if mt5 is not None and _is_real(mt5) else None
+
+
+def _is_real(mt5) -> bool:
     names = getattr(mt5, "__dict__", {})
-    stub = ("MT5StubOperationAttempted" in names
-            or str(getattr(mt5, "__file__", "") or "").endswith(os.path.join(REPO_ROOT, "MetaTrader5.py")))
-    if stub or "initialize" not in names:
-        return None
-    return mt5
+    return "MT5StubOperationAttempted" not in names and not _is_repo_module(mt5) and "initialize" in names
 
 
 def mt5_initialize(mt5, terminal_path: str = "") -> "tuple[bool, str]":

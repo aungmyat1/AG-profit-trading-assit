@@ -241,8 +241,53 @@ def test_single_instance_lock():
         pass
 
 
+def _load_repo_stub():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("MetaTrader5", ROOT / "MetaTrader5.py")
+    stub = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(stub)
+    return stub
+
+
+def _stub_first_path(*extra):
+    rest = [p for p in sys.path if "site-packages" not in p and Path(p or ".").resolve() != ROOT]
+    return [str(ROOT), *map(str, extra), *rest]
+
+
 def test_import_mt5_never_returns_the_repo_stub():
-    assert hc.import_mt5() is None      # Linux CI: no real package; the repo stub is refused
+    mt5 = hc.import_mt5()               # Linux CI: None; Windows host: the installed package
+    assert mt5 is None or (not hc._is_repo_module(mt5) and "MT5StubOperationAttempted" not in vars(mt5))
+
+
+def test_import_mt5_skips_stub_on_path_and_resolves_installed_package(tmp_path, monkeypatch):
+    site = tmp_path / "site-packages"
+    (site / "MetaTrader5").mkdir(parents=True)
+    (site / "MetaTrader5" / "__init__.py").write_text("def initialize(*a, **k):\n    return True\n")
+    stub = _load_repo_stub()
+    monkeypatch.setitem(sys.modules, "MetaTrader5", stub)
+    path = _stub_first_path(site)
+    monkeypatch.setattr(sys, "path", path[:])
+    mt5 = hc.import_mt5()
+    assert mt5 is not None and Path(mt5.__file__).resolve().parent.parent == site.resolve()
+    assert sys.modules["MetaTrader5"] is stub and sys.path == path      # both restored
+
+
+def test_import_mt5_rejects_stub_when_no_package_is_installed(monkeypatch):
+    stub = _load_repo_stub()
+    monkeypatch.setitem(sys.modules, "MetaTrader5", stub)
+    monkeypatch.setattr(sys, "path", _stub_first_path())
+    assert hc.import_mt5() is None
+
+
+def test_import_mt5_real_package_wins_over_stub_first_on_path(monkeypatch):
+    from importlib.machinery import PathFinder
+    real = PathFinder.find_spec("MetaTrader5", [p for p in sys.path if Path(p or ".").resolve() != ROOT])
+    if real is None or "site-packages" not in (real.origin or ""):
+        pytest.skip("real MetaTrader5 package not installed on this host")
+    monkeypatch.setitem(sys.modules, "MetaTrader5", _load_repo_stub())
+    monkeypatch.setattr(sys, "path", [str(ROOT), *sys.path])
+    mt5 = hc.import_mt5()
+    assert mt5 is not None and "site-packages" in Path(mt5.__file__).parts
 
 
 # ------------------------------------------------------------------ 5 telegram
