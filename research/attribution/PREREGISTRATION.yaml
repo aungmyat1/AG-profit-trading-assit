@@ -1,0 +1,21 @@
+# Preregistration slot for AG_RULE_ATTRIBUTION_V1 (ONE hypothesis, max 3 variants).
+#
+# Order is binding: ledger -> categories -> ablation -> failure diagnosis (N>=30 cells
+# only) -> THIS FILE is written and committed -> variants are run. run_attribution.py
+# refuses to run variants unless status == PREREGISTERED, the commit that last touched
+# this file predates the run, and len(variants) <= 3. Variants are new candidate
+# versions expressed as frozen-engine relax/swap/exclude layers; frozen rules are never
+# edited. No parameter tuning beyond the listed variants.
+#
+# Current state: NOT_PREREGISTERED -- the data gate failed before a ledger existed, so
+# no failure diagnosis exists and no mechanism can honestly be named yet.
+
+status: NOT_PREREGISTERED
+blocked_by: DATA_GATE_FAIL_NO_ADMITTED_PUBLIC_DEV_DATA
+hypothesis: null        # one sentence, naming a single mechanism from the diagnosis
+mechanism_source: null  # diagnosis rank/cell the mechanism comes from (N>=30)
+decision_rule: >-
+  Per variant: DEMO_READY iff walk-forward OOS net expectancy > 0, PF > 1, OOS N >= 30,
+  DSR > 0.95 and PBO < 0.5 with ALL configurations tried counted; REJECT if OOS N >= 30
+  and expectancy <= 0 or PF <= 1, or PBO >= 0.5; otherwise RETEST.
+variants: []            # max 3; each {version, relax: [], swap: null, exclude: [{...}]}
