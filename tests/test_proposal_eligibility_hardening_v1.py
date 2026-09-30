@@ -402,6 +402,43 @@ def test_proposal_stage_modules_are_not_importable_execution_surfaces():
     # The execution-capable packages must not exist in the tree at all.
     src = Path(__file__).resolve().parent.parent / "src"
     for forbidden_dir in ("execution", "authorization", "owner_decision",
-                          "ticket_delivery", "trade_management", "svos"):
+                          "trade_management", "svos"):
         assert not (src / forbidden_dir).exists(), f"{forbidden_dir}/ must not exist"
     assert "api.app" not in sys.modules
+
+
+# AG V1 owner decision 1 (2026-09-30): the narrow exception to the forbidden-package list.
+# src/ticket_delivery may exist only in ARCHIVE_ONLY / message-only form: there is no
+# Telegram or transport module, no network, broker or execution import, and the configured
+# mode stays ARCHIVE_ONLY.
+_TICKET_DELIVERY_FORBIDDEN_MODULES = ("telegram_adapter.py", "scheduler_integration.py")
+_TICKET_DELIVERY_FORBIDDEN_IMPORTS = (
+    "execution", "trade_management", "authorization", "owner_decision", "svos",
+    "notifications", "telegram", "requests", "httpx", "urllib", "http", "socket", "aiohttp",
+    "MetaTrader5", "mt5", "api",
+)
+
+
+def test_ticket_delivery_exception_is_archive_only_and_transport_free():
+    import yaml
+
+    root = Path(__file__).resolve().parent.parent
+    pkg = root / "src" / "ticket_delivery"
+    if not pkg.exists():
+        return
+    for name in _TICKET_DELIVERY_FORBIDDEN_MODULES:
+        assert not (pkg / name).exists(), f"ticket_delivery/{name} must not exist"
+    for path in sorted(pkg.glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            names = []
+            if isinstance(node, ast.Import):
+                names = [a.name for a in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                names = [node.module]
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                assert not node.module.startswith(("telegram", "scheduler_integration")), path.name
+            for name in names:
+                assert not name.split(".")[0] in _TICKET_DELIVERY_FORBIDDEN_IMPORTS, f"{path.name} imports {name}"
+    config = yaml.safe_load((root / "config" / "ticket_delivery.yaml").read_text(encoding="utf-8"))
+    assert config["mode"] == "ARCHIVE_ONLY"

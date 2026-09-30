@@ -42,3 +42,6 @@ Thumbs.db
 
 # Local diagnostic outputs
 /artifacts/diagnostics/
+
+# Host-local overrides (scripts/host/enable_telegram.ps1) -- never commit
+/config/local/

@@ -1,109 +1,123 @@
 # AG V1 — Two Goals: Cloud (code-only) Status
 
-- Date: 2026-09-29, Linux cloud container, Python 3.11.15
-- Branch: `v1/two-goals-cloud`, cut from `origin/main`
+- Date: 2026-09-30, Linux cloud container, Python 3.11.15
+- Branch: `v1/two-goals-cloud` (draft PR aungmyat1/AG-profit-trading-assit#15). Not merged into main.
 - BASELINE_SHA: `ce09e8d8a1606e1c90cd0fbc23e49796902bfcc2`
-- Result: **BLOCKED_AT_T1**. The mission assumes code that is not on main. Everything after
-  the T1 gate is `NOT_EVALUATED` or `CUT` on this branch. The only commits are docs:
-  governance (T2) and this status record (T9).
-- Broker / exchange calls: 0. `order_send` = 0, `order_check` = 0, position mutations = 0.
-  No network market-data calls were made.
+- Result: **CODE_COMPLETE_FOR_CLOUD_SCOPE**, with T4 partial and USDJPY/XAUUSD at FIXTURE_ONLY
+  (details below).
+- Broker/exchange calls: 0. `order_send` = 0, `order_check` = 0, position mutations = 0. No private
+  exchange APIs. No network market-data calls; every feed test mocks HTTP. No Telegram,
+  scheduler, sealed, OOS or holdout change.
 
-## T1 — Baseline (FAILED gate)
+## Round 1 (2026-09-29): blocked at T1. Superseded by round 2.
 
-| Required on main | Found on `ce09e8d` |
-|------------------|--------------------|
-| `src/ticket_delivery` | **ABSENT**. Also **forbidden**: `tests/test_proposal_eligibility_hardening_v1.py::test_proposal_stage_modules_are_not_importable_execution_surfaces` asserts that `src/{execution,authorization,owner_decision,ticket_delivery,trade_management,svos}` do not exist. |
-| Asian Sweep engine | **PRESENT**. `src/strategy_engine/{engine,loader,models}.py` and `session/*` are byte-identical to `2b75bbf`, except that `session/candidate_stop_models.py` was removed. `strategies/` (registry + `ST_ASIAN_SWEEP_5R_V1.yaml`) is **ABSENT**, so the loader has no contract to read. |
-| BTC daily CLI | **ABSENT**. `scripts/run_btc_daily_report.py`, `src/btc_sweep_research/` and `src/strategy_engine/sweep_retest/` are not on main. |
-| `fx_discovery/features.py` | **ABSENT from main**. It is on unmerged branches only: `audit/tradeticket-vertical-slice-v1(-r1)`, `audit/wp7a…`, `audit/wp7b…`, `audit/vt-*`, `audit/unit-f…`. It is byte-identical on all of them (blob `f16baab`, introduced in `c38f53b`, 2026-09-28). |
+Main at `ce09e8d` lacked `strategies/`, `src/ticket_delivery`, the crypto engine,
+`large_smc_research` and `fx_discovery`. Commit `3f1f955` (ifashion101gm, 2026-09-27) had deleted
+1,047 files, and main's capability-zero test forbids execution-surface packages.
 
-**Why the code is missing.** Commit `3f1f955` ("feat: initialize project structure",
-author `ifashion101gm`, 2026-09-27) is the direct child of `2b75bbf` (PR #8). It deleted
-1,047 files (+2,767 / −931,870 lines), including `strategies/`, `src/ticket_delivery`,
-`src/large_smc_research`, `src/strategy_engine/sweep_retest`, `src/execution` and
-`src/trade_management`. Since then main has been rebuilt in audited
-"capability-zero restoration" slices (`92b4fd1`, `0f149c5`), under the no-execution-surface
-invariant above.
+Correction to round 1: `scripts/run_btc_daily_report.py` **was** on main. It could not run,
+because the modules it imports were absent.
 
-**The two PRs behind `ce09e8d`.**
+PRs #13 and #14 were opened by aungmyat1 (commits by Claude Code) and merged by ifashion101gm.
 
-| PR | Opened by | Commit author | Merged by | Scope |
-|----|-----------|---------------|-----------|-------|
-| [aungmyat1/AG-profit-trading-assit#14](https://github.com/aungmyat1/AG-profit-trading-assit/pull/14) | aungmyat1 | Claude Code | ifashion101gm | MT5 MCP startup timeout |
-| [aungmyat1/AG-profit-trading-assit#13](https://github.com/aungmyat1/AG-profit-trading-assit/pull/13) | aungmyat1 | Claude Code | ifashion101gm | Claude Desktop MCP installer |
+## Round 2 owner decisions (2026-09-30)
 
-Neither PR touches strategy or runtime code.
+These are recorded in `docs/governance/AG_V1_TWO_GOALS_OWNER_DECISIONS.md`.
 
-**Current-main regression baseline.** `python -m pytest -q tests`: 350 passed, 1 failed.
-The failure (`test_crypto_opportunity_scanner.py::test_actual_api_route_is_read_only_candidate_projection`)
-is pre-existing and not related to this mission.
+1. **Narrow exception.** `src/ticket_delivery` may exist in ARCHIVE_ONLY form. `execution`,
+   `trade_management`, `authorization`, `owner_decision` and `svos` stay forbidden.
+2. **Sizing/guard imports.** The frozen engines' sizing and guard imports move behind a pure
+   boundary, `src/sizing_math`.
+3. **`features.py`.** A byte-exact copy of blob `f16baab` is approved.
+4. **Rule authority.** The mission's written 1.1.0 rules are authoritative. The RMR-A branch was
+   never pushed.
+5. **Restores.** Restoring files from `2b75bbf` is approved.
 
-## T3 — Logical status (pre-wipe evidence only)
+## Task outcomes
 
-The engines cannot be reached on main, so the existing focused tests were run in a
-scratch worktree of `2b75bbf`, the last main commit before the wipe. This is historical
-evidence about the frozen code; it does not show that main can run it.
+| Task | Status | Evidence |
+|------|--------|----------|
+| T1 | DONE | Baseline `ce09e8d`. On main: Asian Sweep engine present; BTC CLI present but not runnable. Missing: `ticket_delivery`, `fx_discovery`. PR authors as listed above. |
+| T2 | DONE | Governance record (round 1 plus the round 2 decisions). |
+| T3 | DONE | Restored `strategies/` byte-exact. New `tests/test_v1_asian_sweep_logical.py` covers determinism, truncation invariance and no look-ahead, for 4 instruments × 2 pairs. Crypto engine restored byte-exact; only its 3 import lines moved to `sizing_math`. |
+| T4 | PARTIAL | Byte-exact C10 (`c10_stop_policy`), C11 (`target_model`) and `decision` are in `src/large_smc_core`. `entry_confirmation`, `supply_demand` and `liquidity` are restored byte-exact. Import-boundary test added. **Not restorable:** the v1.0.7 `engine`, `live_watch`, `watch_lifecycle`, `live_ledger` and `pending_entry`. They reach `trade_management` via `historical_replay.stage2` → `daytrading_runtime` → `daytrading.risk_management`, which is forbidden. |
+| T5 | DONE | `src/large_smc_watch` plus `strategies/ST_LARGE_SMC_V1_1_1_0.yaml`. 29 tests cover positive/negative fixtures, truncation invariance, no look-ahead, session-end expiry, invalidation, the NY 17:00 DST boundary, stale → suspend → expire, restart, duplicate poll, crash replay and market closed. Alerts are archived to the ticket_delivery journal (ARCHIVE_ONLY), one file per transition, exactly once. |
+| T6 | DONE | `execution_runtime/public_crypto_feed.py`: Bybit primary, Binance fallback, one venue per ticket, fail-closed with both reasons. ETHUSDT profile: an additive `symbol` keyword on the BTC pipeline; ETHUSDT was already a frozen CRYPTO_PERP instrument. |
+| T7 | DONE (FIXTURE_ONLY) | USDJPY and XAUUSD are covered by the Asian Sweep tickets (both pairs) and the Large-SMC watch. The repo has no symbol metadata for them, so they are stamped FIXTURE_ONLY. |
+| T8 | DONE | Hardening: restart, duplicate poll, stale, market closed and 403 fallback, plus a full regression run. |
+| T9 | DONE | This document, the `PROJECT_STATUS.md` snapshot, registry and ledger, and `docs/README.md`. |
 
-Command (at `2b75bbf`): `python -m pytest -q` on `test_strategy_engine`,
-`test_strategy_decision_no_lookahead`, `test_historical_replay_no_lookahead`,
-`test_fx_session_daytrade_eurusd`, `test_post_asian_pilot`, `test_post_london_newyork_pilot`,
-`test_session_tribranch_replay`, `test_td8c_session_replay_parity`,
-`test_liquidity_sweep_retest_strategy`, `test_btc_{daily_report,daily_cli,occurrence_identity,strategy_registration,sweep_research_pipeline}`,
-`test_binance_usdtm_feed`, `test_ticket_delivery_{fx_cycle_integration,identity_and_archive,concurrency_and_restart}`,
-`test_large_smc_{research_engine,watch_lifecycle,live_watch_hardening,registration}`.
+**D3.** `SESSION_TRADE_V1` now has `demo_authorized: false`, and its contract has
+`execution.demo: false` and `status: DEMO_WITHDRAWN`. The tests that asserted the old value
+(`test_opportunity_registry_binding`, `test_validation_orchestrator_status`) are not present on
+current main, so no test needed changing.
 
-Result: **403 passed, 4 skipped, 2 failed**. Both failures are environmental: the tests
-reach `MetaTrader5.initialize()` and the conftest MT5 stub refuses it on Linux.
+## LOGICAL_STATUS
 
-| Strategy | LOGICAL_STATUS |
-|----------|----------------|
-| ST_ASIAN_SWEEP_5R_V1@1.1.1 | `PASS_AT_2B75BBF` / `NOT_EVALUATED_ON_MAIN`. The engine is on main but its contract YAML is not. |
-| ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0 | `PASS_AT_2B75BBF` / `NOT_REACHABLE_ON_MAIN`. The engine is absent and imports `execution.risk`, `execution.daily_loss_guard` and `execution.position_guard`, which main forbids. |
-| ST_LARGE_SMC_V1@1.0.7 | `PASS_AT_2B75BBF` / `NOT_REACHABLE_ON_MAIN`. `src/large_smc_research` reaches `trade_management` through `historical_replay`→`daytrading`, which main forbids. |
-| ST_LARGE_SMC_V1@1.1.0 | `NOT_IMPLEMENTED`. See T5. |
-
-## T4–T8 — Outcome
-
-| Task | Status | Reason |
-|------|--------|--------|
-| T2 governance | DONE | `docs/governance/AG_V1_TWO_GOALS_OWNER_DECISIONS.md` |
-| T3 | PARTIAL | Evidence recorded only at `2b75bbf`; see above. |
-| T4 restore Large-SMC research modules | CUT | Restoring from `2b75bbf` pulls in `trade_management` (and via its package `__init__`s, `assistant`/`daytrading`). That breaks T4's own "no execution/mt5 management imports" boundary and main's forbidden-package test. Weakening that test is not a conservative choice. |
-| T5 Large-SMC 1.1.0 | NOT_STARTED | Missing inputs: (a) the rule-option catalogue (`9ed8135`) is unreachable; (b) `features.py` is only on unmerged `audit/*` branches (D8); (c) the "existing delivery journal" (`src/ticket_delivery`) is forbidden on main; (d) `AG_ORDER_BLOCK_V1` and `AG_ENTRY_DISPLACEMENT_V1` implementations sit in packages whose `__init__` pulls in the assistant/daytrading stack. |
-| T6 crypto fallback + ETHUSDT | NOT_STARTED | The crypto engine is not reachable on main (see T3). `src/execution_runtime/binance_usdtm_feed.py` at `2b75bbf` imports only modules already on main, so it is a candidate for a byte-exact single-file restore once the owner approves. |
-| T7 USDJPY / XAUUSD | NOT_STARTED | The frozen `ST_ASIAN_SWEEP_5R_V1@1.1.1` contract (at `2b75bbf`) already lists `instruments: [EURUSD, GBPUSD, USDJPY, AUDUSD, XAUUSD]` and a frozen `LONDON_NEWYORK` pair (06:00–11:00 → 12:00–15:00 GMT), so no window needs inventing. The ticket-cycle runner (`scripts/run_post_asian_pilot.py`) imports `execution.mt5_gateway`/`executor`, which main forbids. |
-| T8 hardening + full regression | NOT_EVALUATED | Nothing new to harden. The current-main baseline is recorded above. |
-
-Also not done: the D3 test update (`SESSION_TRADE_V1` `demo_authorized=false`). The registry
-and its tests are not on main, and the attempt to restore `strategies/` from `2b75bbf` was
-refused by the session's permission layer, so D3 has nothing to act on yet.
+| Strategy | Status |
+|----------|--------|
+| ST_ASIAN_SWEEP_5R_V1@1.1.1 | **PASS**. 5 restored tests plus 17 new V1 logical tests, run on main's engine (byte-identical to `2b75bbf`). |
+| ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0 (CRYPTO_PERP) | **PASS**. 151 restored engine, BTC and feed tests; they include deterministic replay, duplicate-replay idempotence and restart. Two execution-adapter tests are omitted because `src/execution` is forbidden. |
+| ST_LARGE_SMC_V1@1.1.0 | **PASS (logical, fixtures only)**. Economics NOT_EVALUATED (D30). |
+| ST_LARGE_SMC_V1@1.0.7 | **NOT_REACHABLE_ON_MAIN**. The engine needs `trade_management`. Evidence at `2b75bbf` is unchanged. |
 
 ## Per-instrument paths
 
 | Instrument | TICKET_PATH | WATCH_PATH |
 |------------|-------------|------------|
-| EURUSD | CUT (no contract/cycle runner on main) | CUT (no 1.1.0 implementation) |
-| GBPUSD | CUT (same) | CUT (same) |
-| USDJPY | CUT (same) | CUT (same) |
-| XAUUSD | CUT (same) | CUT (same) |
-| BTCUSDT | CUT (crypto engine forbidden-dependency) | CUT (same) |
-| ETHUSDT | CUT (same) | CUT (same) |
+| EURUSD | CODE_READY | CODE_READY |
+| GBPUSD | CODE_READY | CODE_READY |
+| USDJPY | FIXTURE_ONLY (no repo symbol metadata) | FIXTURE_ONLY (point must be caller-supplied) |
+| XAUUSD | FIXTURE_ONLY (no repo symbol metadata) | FIXTURE_ONLY (point must be caller-supplied) |
+| BTCUSDT | CODE_READY | CODE_READY |
+| ETHUSDT | CODE_READY (SHADOW) | CODE_READY |
 
-## Owner decisions needed to unblock
+CODE_READY means the code path is complete and fixture-verified. Live data is supplied by the
+host: MT5 candles for FX, public exchange klines for crypto.
 
-1. **Baseline.** Choose one:
-   - (a) Restore the pre-wipe stack onto a branch and change the capability-zero forbidden-package invariant.
-   - (b) Keep the invariant and have V1 re-host the frozen engines behind a boundary that does not import `execution`/`trade_management`. This means relocating `size_position` and the guards, which touches a frozen file's imports; the rules are unchanged.
-   - (c) Build V1 on the in-flight `audit/*` stack once it is audited and merged.
-2. **Audit branches.** Allow a byte-exact copy of `src/fx_discovery/features.py` (blob `f16baab`) from an `audit/*` branch, or wait for that branch to merge.
-3. **Rule catalogue.** Publish `spec/large-smc-rule-options-v1` (`9ed8135`) so that every D00–D34 `(rec)` option can be applied.
-4. **Session permissions.** Allow restoring files from `2b75bbf` (`git checkout 2b75bbf -- strategies`) in this environment.
+## Implementation choices (conservative, documented)
 
-## Host-only remaining (unchanged by this mission)
+- **Swing width.** Fractal width k = 2, the fx_discovery canonical value.
+- **Bias and context.** H1 bias is the latest close-confirmed H1 break. D1 is context only.
+- **Order blocks.** The `AG_ORDER_BLOCK_V1` rules are applied to the causal primitives. The
+  zone uses the frozen `_classify_family_and_zone`. The `smartmoneyconcepts` `ob()` detector is
+  not used. FLIP_OB is not identified, as in the frozen contract.
+- **C10 stop.** C10 runs only where a pip size is repo-evidenced (EURUSD, GBPUSD); elsewhere
+  `stop_reason = C10_PIP_SIZE_NOT_EVIDENCED`. SHORT needs a live bid/ask.
+- **C11 target.** The fallback tier runs on causal M5 swings. The primary tier (it needs
+  `smartmoneyconcepts` structure tiers) is NOT_EVALUATED.
+- **Expiry and staleness.** Opportunity expiry is the end of the canonical UTC session;
+  outside a session it is the next NY 17:00 boundary. Data counts as stale after 15 minutes
+  without a closed M5 bar. The FX market is closed from Friday 17:00 to Sunday 17:00 New York
+  time.
+- **V1 FX tickets.** Tickets are decision records in the existing journal, not the pilot
+  renderer, which needs sizing fields the frozen contract leaves unspecified. Position size is
+  `NOT_SPECIFIED`, and the spread check is `NOT_EVALUATED`.
+- **Registry.** The registry schema is pinned by a test, so ETHUSDT SHADOW and 1.1.0 are
+  recorded in the existing `note` fields.
+- **Journal paths.** The ticket_delivery journal identity rejects `/`, so the alert cycle id is
+  `LSMC_WATCH-<transition id>`.
 
-- Real MT5 symbol metadata for USDJPY / XAUUSD, if no repository evidence exists once the
-  baseline is resolved: `digits`, `point`, `trade_tick_size`, `trade_tick_value`,
-  `trade_contract_size`, `volume_min`, `volume_step`, `volume_max`, `spread`,
-  `trade_stops_level`, `currency_profit`, and the server-time offset.
-- Any live or demo run, Telegram activation, and scheduler installation. All are out of scope.
+## Test commands and results (Linux, 2026-09-30)
+
+- `python -m pytest -q tests/test_v1_*.py`: **86 passed**.
+- Restored suites (`test_strategy_engine`, `test_liquidity_sweep_retest_strategy`, `test_btc_*`,
+  `test_binance_usdtm_feed`, `test_ticket_delivery_*`): **233 passed, 1 skipped**.
+- `python -m pytest -q tests` (full): **670 passed, 1 skipped, 1 failed**. The failure,
+  `test_crypto_opportunity_scanner.py::test_actual_api_route_is_read_only_candidate_projection`,
+  also fails on the unchanged baseline `ce09e8d` and is not caused by this branch.
+- Live checks (MT5, exchange, Telegram): **NOT_EVALUATED** by design. Nothing here is
+  live-verified.
+
+## HOST_ONLY_REMAINING
+
+- **USDJPY and XAUUSD metadata.** Capture the MT5 `symbol_info()` fields `digits`, `point`,
+  `trade_tick_size`, `trade_tick_value`, `trade_contract_size`, `volume_min`, `volume_step`,
+  `volume_max`, `trade_stops_level`, `trade_freeze_level`, `spread` and `currency_profit`, plus
+  the server UTC offset. Record them as owner-approved manifests; the paths then flip from
+  FIXTURE_ONLY to CODE_READY.
+- **Scheduling.** Live candle sourcing and scheduling for the FX ticket cycles and the
+  Large-SMC watch poll. No scheduler was installed here.
+- **Live crypto fetches.** First live public fetches (Bybit, then Binance) from the host. This
+  container's Binance access was previously recorded as HTTP 451.
+- **Deferred.** Telegram transport (D2). Demo and live remain out of scope.
