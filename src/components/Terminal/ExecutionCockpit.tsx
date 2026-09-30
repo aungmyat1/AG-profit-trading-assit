@@ -27,6 +27,8 @@ interface ExecutionCockpitProps {
     userConfirmed: boolean;
   }) => void;
   activeSymbol: SymbolName;
+  // Positions are simulator/fixture data: P&L is labelled SIMULATED in mock mode and hidden in real mode.
+  apiMode: 'mock' | 'real';
 }
 
 export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
@@ -37,6 +39,7 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
   onClaimTicket,
   onSubmitOrder,
   activeSymbol,
+  apiMode,
 }) => {
   const [claimInput, setClaimInput] = useState('');
   const [claimMsg, setClaimMsg] = useState('');
@@ -105,14 +108,20 @@ export const ExecutionCockpit: React.FC<ExecutionCockpitProps> = ({
 
         <div className="flex items-center gap-3">
           <div className="bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-xs font-mono">
-            <span className="text-slate-400">Net Floating P&L: </span>
-            <span
-              className={`font-bold text-sm ${
-                totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'
-              }`}
-            >
-              {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)} USD
+            <span className="text-slate-400">
+              Net Floating P&L{apiMode === 'real' ? '' : ' (SIMULATED)'}:{' '}
             </span>
+            {apiMode === 'real' ? (
+              <span className="font-bold text-sm text-slate-500">— (no backend data)</span>
+            ) : (
+              <span
+                className={`font-bold text-sm ${
+                  totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                }`}
+              >
+                {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)} USD
+              </span>
+            )}
           </div>
 
           <button

@@ -476,7 +476,8 @@ result = assistant.commands.execute_command(command, user_confirmed=False)
         {activeTab === 'execution' && (
           <div className="flex flex-col gap-6">
             <ExecutionCockpit
-              positions={positions}
+              positions={apiMode === 'real' ? [] : positions}
+              apiMode={apiMode}
               onSetBreakeven={handleSetBreakeven}
               onPartialClose={handlePartialClose}
               onClosePosition={handleClosePosition}

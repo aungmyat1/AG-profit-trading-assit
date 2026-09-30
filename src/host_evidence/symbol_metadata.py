@@ -36,12 +36,52 @@ FIELDS = (
 # Not required in every record; _mt5_symbol_meta in v1_tickets.crypto refuses if absent for the MT5 venue.
 SWAP_FIELDS = ("swap_long", "swap_short", "swap_rollover3days")
 HOST_CAPTURED = "HOST_CAPTURED"
+# Absolute repo root. Evidence is resolved from here (or an absolute AG_EVIDENCE_ROOT), never the CWD.
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+# Specific host data failure reasons (audit 2): logged and stamped on tickets instead of a generic DATA_ERROR.
+METADATA_MISSING = "METADATA_MISSING"
+SWAP_FIELDS_MISSING = "SWAP_FIELDS_MISSING"
+SYMBOL_NOT_FOUND = "SYMBOL_NOT_FOUND"
+INCOMPLETE_CANDLES = "INCOMPLETE_CANDLES"
+CWD_LOOKUP = "CWD_LOOKUP"
+CONVERSION_ERROR = "CONVERSION_ERROR"
+DATA_REASON_CODES = (METADATA_MISSING, SWAP_FIELDS_MISSING, SYMBOL_NOT_FOUND, INCOMPLETE_CANDLES, CWD_LOOKUP,
+                     CONVERSION_ERROR)
+
+
+class HostDataError(RuntimeError):
+    """A host data/metadata failure carrying one of DATA_REASON_CODES."""
+
+    def __init__(self, code: str, detail: str = ""):
+        if code not in DATA_REASON_CODES:
+            raise ValueError(f"unknown host data reason code {code!r}")
+        super().__init__(f"{code} {detail}".strip())
+        self.code = code
+
+
+def evidence_root() -> str:
+    """AG_EVIDENCE_ROOT when set, else the repo root. A relative root would resolve against the
+    CWD, so it is refused with CWD_LOOKUP."""
+    root = os.environ.get("AG_EVIDENCE_ROOT") or REPO_ROOT
+    if not os.path.isabs(root):
+        raise HostDataError(CWD_LOOKUP, f"evidence root {root!r} is relative to the CWD")
+    return root
 
 
 def server_utc_offset_hours(at_utc: dt.datetime) -> int:
     """Broker server UTC offset at `at_utc` under OFFSET_RULE: 3 during US DST, else 2."""
     ny = at_utc.astimezone(NY).utcoffset()
     return int(ny.total_seconds() // 3600) + SERVER_MINUS_NY_HOURS
+
+
+def measured_server_offset_hours(tick_time: float, now_ts: float, tolerance_s: float = 300.0) -> Optional[int]:
+    """Whole-hour broker offset measured from a live tick (MT5 tick.time is server wall clock
+    encoded as epoch seconds) minus host time.time(). None when the difference is not within
+    `tolerance_s` of a whole hour (stale tick, closed market, skewed host clock)."""
+    delta = float(tick_time) - float(now_ts)
+    hours = round(delta / 3600.0)
+    return int(hours) if abs(delta - hours * 3600.0) <= tolerance_s else None
 
 
 def server_time_to_utc(server_wall_clock: dt.datetime) -> dt.datetime:
@@ -72,11 +112,11 @@ def build_record(canonical_symbol: str, broker_symbol: str, info: Dict[str, Any]
     return {**payload, "sha256": hashlib.sha256(_canonical(payload).encode("utf-8")).hexdigest()}
 
 
-def evidence_path(canonical_symbol: str, root: str = ".") -> str:
-    return os.path.join(root, EVIDENCE_DIR, f"{canonical_symbol}.json")
+def evidence_path(canonical_symbol: str, root: Optional[str] = None) -> str:
+    return os.path.join(root if root is not None else evidence_root(), EVIDENCE_DIR, f"{canonical_symbol}.json")
 
 
-def write_record(record: Dict[str, Any], root: str = ".") -> str:
+def write_record(record: Dict[str, Any], root: Optional[str] = None) -> str:
     path = evidence_path(record["canonical_symbol"], root)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     tmp = path + ".tmp"
@@ -98,7 +138,6 @@ def verify(record: Dict[str, Any]) -> bool:
 
 
 def load_record(canonical_symbol: str, root: Optional[str] = None) -> Optional[Dict[str, Any]]:
-    root = root if root is not None else os.environ.get("AG_EVIDENCE_ROOT", ".")
     path = evidence_path(canonical_symbol, root)
     try:
         with open(path, encoding="utf-8") as f:

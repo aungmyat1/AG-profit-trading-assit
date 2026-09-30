@@ -45,6 +45,8 @@ The [AG V1 Two Goals owner decisions](governance/AG_V1_TWO_GOALS_OWNER_DECISIONS
 D1–D8 and the Large-SMC 1.1.0 rules. The [cloud status](status/AG_V1_TWO_GOALS_CLOUD_STATUS.md)
 records the V1 cloud implementation status (tickets, Large-SMC 1.1.0 watch, per-instrument
 paths and host-only remaining work).
+The [host audit 2 fixes](status/AG_V1_HOST_AUDIT2_FIXES_2026-09-30.md) record the MT5 server-time
+verdict, crypto reason codes, -VIP resolution, STALE/spread gates and SIMULATED UI labels.
 
 The [repository structure audit](REPO_STRUCTURE_AUDIT.md) records the current layout,
 safe cache cleanup, and the recommended archival policy for historical documents and

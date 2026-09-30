@@ -4,6 +4,16 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Host kit: audit 2 fixes (2026-09-30)
+
+See `docs/status/AG_V1_HOST_AUDIT2_FIXES_2026-09-30.md`. The Codex CRITICAL on MT5 time is
+NOT_APPLICABLE: live measurement gives +3.0 h, which equals the rule offset, and
+`diagnose_mt5.py` now checks this live. Crypto DATA_ERRORs now carry specific reason codes,
+evidence resolves from the repo root, and BTCUSD/ETHUSD were recaptured with swaps. EURUSD/GBPUSD
+resolve only to their `-VIP` host captures, with no plain fallback. A READY is withheld as STALE
+(data or signal > 15 min) or SPREAD_TOO_WIDE (> 15% of risk), or as NO_TRADE when there is no
+quote. The UI labels fixture broker status and P&L SIMULATED. No authority change.
+
 ## Host kit: VT Markets server-time rule, -VIP symbols, crypto ticket config V2 (2026-09-30)
 
 - **Server time.** Host symbol captures and host candle fetches convert timestamps with the

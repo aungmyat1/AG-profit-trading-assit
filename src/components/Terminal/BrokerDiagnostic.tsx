@@ -24,6 +24,10 @@ export const BrokerDiagnostic: React.FC<BrokerDiagnosticProps> = ({
   onRefresh,
   apiMode,
 }) => {
+  // brokerStatus and deals are FIXTURE data (tradingStore INITIAL_*): labelled SIMULATED in mock
+  // mode and never shown in real mode, where no backend broker read-model is wired yet.
+  const simulated = apiMode !== 'real';
+  const shownDeals = simulated ? deals : [];
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{
     status: 'SUCCESS' | 'UNREACHABLE';
@@ -40,9 +44,9 @@ export const BrokerDiagnostic: React.FC<BrokerDiagnosticProps> = ({
       setTesting(false);
       if (apiMode === 'real') {
         setTestResult({
-          status: 'SUCCESS',
-          message: 'BACKEND CONNECTED / BROKER CONNECTED',
-          details: `Environment: ${brokerStatus.environment} | Server: ${brokerStatus.broker} | Account: ${brokerStatus.account} | Trade Allowed: YES`,
+          status: 'UNREACHABLE',
+          message: 'NO BACKEND BROKER DATA',
+          details: 'Broker status and deals here are SIMULATED fixtures; they are hidden in real mode until a backend broker read-model is wired.',
         });
       } else {
         setTestResult({
@@ -54,7 +58,7 @@ export const BrokerDiagnostic: React.FC<BrokerDiagnosticProps> = ({
     }, 600);
   };
 
-  const netRealized = deals.reduce((acc, d) => acc + d.profit + d.commission + d.swap, 0);
+  const netRealized = shownDeals.reduce((acc, d) => acc + d.profit + d.commission + d.swap, 0);
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col gap-5 shadow-sm">
@@ -68,7 +72,10 @@ export const BrokerDiagnostic: React.FC<BrokerDiagnosticProps> = ({
             </h3>
           </div>
           <p className="text-xs text-slate-400 font-mono">
-            Sanitized Read-Model: MetaTrader 5 & Vantage Demo Bridge
+            Sanitized Read-Model: MetaTrader 5 & Vantage Demo Bridge{' '}
+            <span className={simulated ? 'text-amber-400 font-bold' : 'text-rose-400 font-bold'}>
+              {simulated ? '[SIMULATED]' : '[NO BACKEND DATA]'}
+            </span>
           </p>
         </div>
 
@@ -104,28 +111,28 @@ export const BrokerDiagnostic: React.FC<BrokerDiagnosticProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
           <div className="text-slate-500 text-[10px]">BROKER / SERVER</div>
-          <div className="font-bold text-white text-sm mt-0.5">{brokerStatus.broker}</div>
-          <div className="text-[10px] text-emerald-400 font-semibold mt-1">
-            Status: {brokerStatus.connected ? 'ONLINE' : 'OFFLINE'}
+          <div className="font-bold text-white text-sm mt-0.5">{simulated ? brokerStatus.broker : '—'}</div>
+          <div className={`text-[10px] font-semibold mt-1 ${simulated ? 'text-amber-400' : 'text-rose-400'}`}>
+            Status: {simulated ? `SIMULATED (${brokerStatus.connected ? 'ONLINE' : 'OFFLINE'})` : 'NO BACKEND DATA'}
           </div>
         </div>
 
         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
           <div className="text-slate-500 text-[10px]">ACCOUNT LOGIN</div>
-          <div className="font-bold text-white text-sm mt-0.5">{brokerStatus.account}</div>
-          <div className="text-[10px] text-slate-400 mt-1">Env: {brokerStatus.environment}</div>
+          <div className="font-bold text-white text-sm mt-0.5">{simulated ? brokerStatus.account : '—'}</div>
+          <div className="text-[10px] text-slate-400 mt-1">Env: {simulated ? `${brokerStatus.environment} (SIMULATED)` : '—'}</div>
         </div>
 
         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
           <div className="text-slate-500 text-[10px]">BALANCE & EQUITY</div>
-          <div className="font-bold text-white text-sm mt-0.5">${brokerStatus.balance.toFixed(2)}</div>
-          <div className="text-[10px] text-slate-400 mt-1">Equity: ${brokerStatus.equity.toFixed(2)}</div>
+          <div className="font-bold text-white text-sm mt-0.5">{simulated ? `$${brokerStatus.balance.toFixed(2)} SIMULATED` : '—'}</div>
+          <div className="text-[10px] text-slate-400 mt-1">Equity: {simulated ? `$${brokerStatus.equity.toFixed(2)} SIMULATED` : '—'}</div>
         </div>
 
         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
           <div className="text-slate-500 text-[10px]">TRADE PERMISSION</div>
           <div className="font-bold text-emerald-400 text-sm mt-0.5">
-            {brokerStatus.tradeAllowed ? 'PERMITTED' : 'RESTRICTED'}
+            {simulated ? `${brokerStatus.tradeAllowed ? 'PERMITTED' : 'RESTRICTED'} (SIMULATED)` : '—'}
           </div>
           <div className="text-[10px] text-slate-400 mt-1">Live trading blocked</div>
         </div>
@@ -137,13 +144,18 @@ export const BrokerDiagnostic: React.FC<BrokerDiagnosticProps> = ({
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-slate-400" />
             <h4 className="font-bold text-xs uppercase tracking-wider text-slate-300 font-mono">
-              Live MT5 Deal History (Read-Only)
+              {simulated ? 'MT5 Deal History (SIMULATED FIXTURE)' : 'MT5 Deal History (no backend data)'}
             </h4>
           </div>
           <span className="text-xs font-mono text-slate-400">
-            Realized Net: <strong className={netRealized >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-              {netRealized >= 0 ? '+' : ''}${netRealized.toFixed(2)} USD
-            </strong>
+            Realized Net{simulated ? ' (SIMULATED)' : ''}:{' '}
+            {simulated ? (
+              <strong className={netRealized >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                {netRealized >= 0 ? '+' : ''}${netRealized.toFixed(2)} USD
+              </strong>
+            ) : (
+              <strong className="text-slate-500">—</strong>
+            )}
           </span>
         </div>
 
@@ -162,7 +174,7 @@ export const BrokerDiagnostic: React.FC<BrokerDiagnosticProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {deals.map((d) => (
+              {shownDeals.map((d) => (
                 <tr key={d.ticket} className="hover:bg-slate-800/30 transition">
                   <td className="py-2.5 px-3 text-slate-400">#{d.ticket}</td>
                   <td className="py-2.5 px-3 text-slate-300">{d.time}</td>

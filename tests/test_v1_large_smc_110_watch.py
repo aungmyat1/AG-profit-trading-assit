@@ -19,6 +19,12 @@ from large_smc_watch.watch import next_day_boundary, session_end, trading_date
 NEAR = dt.datetime(2026, 1, 6, 8, 35, tzinfo=UTC)
 
 
+@pytest.fixture(autouse=True)
+def _no_host_evidence(tmp_path, monkeypatch):
+    """Host captures on the machine running the tests (repo-root evidence) must never leak in."""
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "no_evidence"))
+
+
 def snap(now=NOW, symbol="EURUSD", k=1.0, point=None, **m5kw):
     return evaluate_snapshot(symbol, d1_bars(k), h1_bars(k), m5_bars(k, **m5kw), now, point=point)
 

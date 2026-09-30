@@ -3,7 +3,8 @@
     .venv\\Scripts\\python.exe scripts\\host\\diagnose_mt5.py [--terminal-path "C:\\...\\terminal64.exe"]
 
 Checks, in order: Python architecture, MetaTrader5 package, terminal path, initialize()
-against the VT Markets demo terminal, account_info, and last_error, plus a checklist for
+against the VT Markets demo terminal, account_info, the live server-time offset, and
+last_error, plus a checklist for
 the Claude Desktop mt5ReadOnly MCP entry. account_info prints ONLY login, server and
 trade_mode; balances and equity are never printed or logged. It prints an exact fix for
 each failure. Exit code 0 = all checks OK.
@@ -11,11 +12,13 @@ each failure. Exit code 0 = all checks OK.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 import platform
 import struct
 import sys
+import time
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _host_common import import_mt5, mt5_initialize, redact  # noqa: E402
@@ -32,6 +35,11 @@ FIXES = {
                      "(or set VTMARKETS-DEMO-LOGIN / -PASSWORD / -SERVER in src/.env).",
     "NOT_DEMO": "The connected account is not a DEMO account. V1 is informational-only; log in to the "
                 "VT Markets DEMO account before continuing.",
+    "SERVER_OFFSET": "MT5 tick.time - time.time() disagrees with the owner rule (server midnight = New York "
+                     "17:00, i.e. UTC+3 in US DST, UTC+2 otherwise). Check the host clock (w32tm /resync) and the "
+                     "broker's server-time convention before trusting any session box; do not patch the offset.",
+    "SERVER_OFFSET_NO_TICK": "No fresh tick on any probe symbol (market closed or symbols hidden). Re-run while "
+                             "BTCUSD is quoting (it trades 24/7) with the terminal connected.",
     "MCP_CONFIG": "Run: node web\\scripts\\claude_desktop_config.mjs --write  (adds mt5ReadOnly with absolute "
                   "paths), then fully quit and restart Claude Desktop.",
 }
@@ -48,6 +56,31 @@ def check_terminal_path(path: str) -> dict:
         return {"check": "terminal_path", "ok": True, "detail": "not given; initialize() will auto-detect", "fix": None}
     ok = os.path.isfile(path) and path.lower().endswith("terminal64.exe")
     return {"check": "terminal_path", "ok": ok, "detail": path, "fix": None if ok else FIXES["TERMINAL_PATH"]}
+
+
+OFFSET_PROBES = ("BTCUSD", "ETHUSD", "EURUSD-VIP")   # 24/7 crypto first: a fresh tick even on FX-closed days
+
+
+def check_server_offset(mt5, now_ts: "float | None" = None) -> dict:
+    """Live check: the offset measured from a fresh tick (MT5 tick.time is broker SERVER wall
+    clock as epoch seconds) must equal the owner-rule offset used by the single conversion
+    server_time_to_utc. Mismatch or no fresh tick = FAIL."""
+    from host_evidence.symbol_metadata import measured_server_offset_hours, server_utc_offset_hours
+    now_ts = time.time() if now_ts is None else now_ts
+    rule = server_utc_offset_hours(dt.datetime.fromtimestamp(now_ts, dt.timezone.utc))
+    for symbol in OFFSET_PROBES:
+        tick = mt5.symbol_info_tick(symbol) if hasattr(mt5, "symbol_info_tick") else None
+        if tick is None or not getattr(tick, "time", 0):
+            continue
+        measured = measured_server_offset_hours(tick.time, now_ts)
+        if measured is None:  # stale tick: not within 5 min of a whole hour -- try the next probe
+            continue
+        ok = measured == rule
+        return {"check": "server_time_offset", "ok": ok,
+                "detail": f"probe={symbol} tick.time-time.time()={tick.time - now_ts:+.0f}s measured=UTC{measured:+d} "
+                          f"rule=UTC{rule:+d}", "fix": None if ok else FIXES["SERVER_OFFSET"]}
+    return {"check": "server_time_offset", "ok": False, "detail": f"no fresh tick on {list(OFFSET_PROBES)}",
+            "fix": FIXES["SERVER_OFFSET_NO_TICK"]}
 
 
 def check_mt5(mt5, terminal_path: str) -> list:
@@ -68,6 +101,7 @@ def check_mt5(mt5, terminal_path: str) -> list:
                     "detail": f"login={acct.login} server={acct.server} trade_mode={acct.trade_mode}", "fix": None})
         out.append({"check": "demo_account", "ok": demo, "detail": "DEMO" if demo else "NOT DEMO",
                     "fix": None if demo else FIXES["NOT_DEMO"]})
+    out.append(check_server_offset(mt5))
     out.append({"check": "last_error", "ok": True, "detail": redact(str(mt5.last_error())), "fix": None})
     mt5.shutdown()
     return out

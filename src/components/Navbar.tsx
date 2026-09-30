@@ -124,9 +124,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
 
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-950 border border-slate-800 text-xs font-mono">
-                <Server className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-slate-300">Vantage Demo</span>
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <Server className={`w-3.5 h-3.5 ${apiMode === 'real' ? 'text-rose-400' : 'text-amber-400'}`} />
+                <span className="text-slate-300">
+                  {apiMode === 'real' ? 'Broker: NO BACKEND DATA' : 'Vantage Demo (SIMULATED)'}
+                </span>
               </div>
             </div>
           </div>
@@ -142,8 +143,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </div>
         <div className="hidden sm:flex items-center gap-3 text-slate-500 font-mono text-[10px]">
-          <span>Account: {brokerStatus.account}</span>
-          <span>Equity: ${brokerStatus.equity.toFixed(2)} USD</span>
+          {apiMode === 'real' ? (
+            <span>Account / Equity: — (no backend data)</span>
+          ) : (
+            <>
+              <span>Account: {brokerStatus.account} (SIMULATED)</span>
+              <span>Equity: ${brokerStatus.equity.toFixed(2)} USD (SIMULATED)</span>
+            </>
+          )}
           <span>Clean Collection: 2,666 PASS</span>
         </div>
       </div>

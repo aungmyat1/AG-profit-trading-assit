@@ -22,6 +22,12 @@ SCALE = {"EURUSD": 1.0, "GBPUSD": 1.2, "USDJPY": 140.0, "XAUUSD": 2400.0}
 REF_HOUR = {"ASIAN_LONDON": (0, 7), "LONDON_NEWYORK": (6, 12)}
 
 
+@pytest.fixture(autouse=True)
+def _no_repo_evidence(tmp_path, monkeypatch):
+    """Host captures on the machine running the tests must never leak in (evidence resolves from repo root)."""
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "no_evidence"))
+
+
 def _c(h, m, o, hi, lo, cl, k):
     return Candle(dt.datetime(2026, 1, 5, h, m, tzinfo=UTC), o * k, hi * k, lo * k, cl * k)
 
@@ -38,13 +44,36 @@ def _fx(symbol, cycle):
 @pytest.mark.parametrize("cycle", V1_CYCLES)
 def test_fx_ticket_ready_with_frozen_contract_targets(symbol, cycle):
     session, post = _fx(symbol, cycle)
-    t = build_fx_ticket(symbol, cycle, DAY, session, 2, post, data_source="FIXTURE", evaluated_at=dt.datetime(2026, 1, 5, 16, tzinfo=UTC))
+    at = dt.datetime(2026, 1, 5, REF_HOUR[cycle][1], 35, tzinfo=UTC)      # signal bar (h:15) closed 5 min ago
+    t = build_fx_ticket(symbol, cycle, DAY, session, 2, post, data_source="FIXTURE", evaluated_at=at,
+                        data_close=at, spread=0.0001 * SCALE[symbol])
     assert t["decision"] == "READY" and t["direction"] == "SHORT" and t["strategy_version"] == "1.1.1"
     assert t["targets"][0]["type"] == "OPPOSITE_SESSION_BOUNDARY" and t["targets"][1]["type"] == "FIXED_R_MULTIPLE_5"
     assert t["targets"][0]["price"] < t["entry"] < t["stop_loss"]          # SHORT geometry
     assert t["data_source"] == "FIXTURE" and t["label"].endswith("NOT A BROKER ORDER")
-    assert t["metadata_status"] == ("REPO_EVIDENCED" if symbol in ("EURUSD", "GBPUSD") else "FIXTURE_ONLY")
-    assert t["position_size"] == "NOT_SPECIFIED" and t["spread_check"] == "NOT_EVALUATED"
+    assert t["metadata_status"] == "FIXTURE_ONLY"                        # no host capture in the test root
+    assert t["position_size"] == "NOT_SPECIFIED" and t["spread_check"] == "PASS"
+    assert t["spread_risk_fraction"] <= 0.15
+
+
+def test_fx_ready_is_withheld_when_stale_or_spread_fails():
+    session, post = _fx("EURUSD", "ASIAN_LONDON")
+    at = dt.datetime(2026, 1, 5, 7, 35, tzinfo=UTC)
+    build = lambda **kw: build_fx_ticket("EURUSD", "ASIAN_LONDON", DAY, session, 2, post,  # noqa: E731
+                                         data_source="FIXTURE", **kw)
+    old = build(evaluated_at=at + dt.timedelta(minutes=11), data_close=at, spread=0.0001)       # signal closed 16 min ago
+    assert (old["decision"], old["reason_code"], old["suppressed_decision"]) == ("STALE", "STALE_SIGNAL", "READY")
+    stale_data = build(evaluated_at=at, data_close=at - dt.timedelta(minutes=16), spread=0.0001)
+    assert (stale_data["decision"], stale_data["reason_code"]) == ("STALE", "STALE_DATA")
+    risk = build(evaluated_at=at, data_close=at, spread=0.0)["risk_distance"]
+    wide = build(evaluated_at=at, data_close=at, spread=0.16 * risk)
+    assert (wide["decision"], wide["spread_check"], wide["reason_code"]) == ("SPREAD_TOO_WIDE",) * 3
+    edge = build(evaluated_at=at, data_close=at, spread=0.15 * risk)
+    assert edge["decision"] == "READY" and edge["spread_check"] == "PASS"
+    no_quote = build(evaluated_at=at, data_close=at)
+    assert (no_quote["decision"], no_quote["reason_code"]) == ("NO_TRADE", "SPREAD_NOT_EVALUATED")
+    assert old["engine_reason_code"] == edge["reason_code"]             # engine result preserved for audit
+    assert not any(t["decision"] == "READY" for t in (old, stale_data, wide, no_quote))
 
 
 def test_fx_ticket_no_trade_and_data_error_never_invent_a_setup():
@@ -224,8 +253,8 @@ def test_crypto_v2_outside_window_and_missing_metadata_fail_closed(tmp_path, mon
     blocked = build_crypto_ticket("BTCUSDT", sat.date(), sat, feed=feed, state_dir=str(tmp_path), config=cfg)
     assert blocked["decision"] == "BLOCKED" and blocked["reason_codes"] == ["OUTSIDE_CONFIG_WINDOW"] and not calls
     err = build_crypto_ticket("BTCUSDT", OBS, V2_IN, feed=feed, state_dir=str(tmp_path), config=cfg)
-    assert err["decision"] == "DATA_ERROR" and err["reason_codes"] == ["MT5_FEED_ERROR"]
-    assert "HOST_METADATA_MISSING BTCUSD" in err["detail"] and "entry" not in err
+    assert err["decision"] == "DATA_ERROR" and err["reason_codes"] == ["METADATA_MISSING"]
+    assert "METADATA_MISSING BTCUSD" in err["detail"] and "entry" not in err
 
 
 def test_crypto_v2_missing_swap_fields_is_data_error(tmp_path, monkeypatch):
@@ -237,5 +266,56 @@ def test_crypto_v2_missing_swap_fields_is_data_error(tmp_path, monkeypatch):
     feed = Mt5CryptoFeed(_mt5_fetch(calls), cfg["venue"]["symbols"], cfg["venue"]["source_id"])
     t = build_crypto_ticket("BTCUSDT", V2_IN.date() - dt.timedelta(days=1), V2_IN, feed=feed,
                             state_dir=str(tmp_path / "s"), config=cfg)
-    assert t["decision"] == "DATA_ERROR" and t["reason_codes"] == ["MT5_FEED_ERROR"]
-    assert "HOST_SWAP_METADATA_MISSING" in t["detail"]
+    assert t["decision"] == "DATA_ERROR" and t["reason_codes"] == ["SWAP_FIELDS_MISSING"]
+    assert "SWAP_FIELDS_MISSING BTCUSD" in t["detail"]
+
+
+def _raise(exc):
+    def fetch(broker, tf, count):
+        raise exc
+    return fetch
+
+
+@pytest.mark.parametrize("make_fetch,code", [
+    (lambda calls: (lambda b, tf, n: _mt5_fetch(calls)(b, tf, n)[1:]), "INCOMPLETE_CANDLES"),
+    (lambda calls: _raise(__import__("host_evidence.symbol_metadata", fromlist=["x"]).HostDataError(
+        "SYMBOL_NOT_FOUND", "'BTCUSD'")), "SYMBOL_NOT_FOUND"),
+    (lambda calls: _raise(ValueError("bad float")), "CONVERSION_ERROR"),
+])
+def test_crypto_v2_specific_reason_codes(tmp_path, monkeypatch, make_fetch, code):
+    from v1_tickets.crypto import Mt5CryptoFeed
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "ev"))
+    _write_host_record(str(tmp_path / "ev"), "BTCUSD")
+    cfg = _cfg(2)
+    feed = Mt5CryptoFeed(make_fetch([]), cfg["venue"]["symbols"], cfg["venue"]["source_id"])
+    t = build_crypto_ticket("BTCUSDT", OBS, V2_IN, feed=feed, state_dir=str(tmp_path / "s"), config=cfg)
+    assert t["decision"] == "DATA_ERROR" and t["reason_codes"] == [code] and "entry" not in t
+
+
+def test_crypto_v2_evidence_never_resolves_from_cwd(tmp_path, monkeypatch):
+    from host_evidence import symbol_metadata as sm
+    from v1_tickets.crypto import Mt5CryptoFeed
+    _write_host_record(str(tmp_path), "BTCUSD")
+    monkeypatch.chdir(tmp_path)                                         # a CWD that holds a valid capture
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", ".")
+    cfg = _cfg(2)
+    feed = Mt5CryptoFeed(_mt5_fetch([]), cfg["venue"]["symbols"], cfg["venue"]["source_id"])
+    t = build_crypto_ticket("BTCUSDT", OBS, V2_IN, feed=feed, state_dir=str(tmp_path / "s"), config=cfg)
+    assert t["decision"] == "DATA_ERROR" and t["reason_codes"] == ["CWD_LOOKUP"]
+    monkeypatch.delenv("AG_EVIDENCE_ROOT")
+    assert sm.evidence_root() == sm.REPO_ROOT and os.path.isabs(sm.REPO_ROOT)
+    assert sm.evidence_path("BTCUSD").startswith(sm.REPO_ROOT)
+
+
+def test_crypto_v2_stale_data_is_never_ready(tmp_path, monkeypatch):
+    from v1_tickets.crypto import Mt5CryptoFeed
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "ev"))
+    _write_host_record(str(tmp_path / "ev"), "BTCUSD")
+    cfg = _cfg(2)
+    feed = Mt5CryptoFeed(_mt5_fetch([]), cfg["venue"]["symbols"], cfg["venue"]["source_id"], quote=lambda b: (1.0, 1.0))
+    late = V2_IN + dt.timedelta(minutes=40)                             # last M5 bar closed > 15 min ago
+    t = build_crypto_ticket("BTCUSDT", OBS, late, feed=feed, state_dir=str(tmp_path / "s"), config=cfg)
+    assert t["decision"] == "STALE" and t["reason_codes"][0] == "STALE_DATA"
+    assert t["suppressed_decision"] in ("READY", "WATCH", "NO_TRADE")
+    from v1_tickets.crypto import archive_crypto_ticket
+    assert archive_crypto_ticket(t, str(tmp_path / "arch"))

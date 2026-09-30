@@ -156,18 +156,34 @@ def host_fetch(mt5):
     owner-stated rule: server midnight = New York 17:00), never with per-symbol weekly-reopen
     detection, which misreads XAUUSD (+4) and fails on a late first USDJPY bar. Read-only:
     copy_rates_from_pos plus symbol_select for Market Watch visibility."""
-    from host_evidence.symbol_metadata import server_time_to_utc
+    from host_evidence.symbol_metadata import (
+        CONVERSION_ERROR, INCOMPLETE_CANDLES, SYMBOL_NOT_FOUND, HostDataError, server_time_to_utc,
+    )
     from strategy_engine.session import Candle
 
     def fetch(symbol: str, timeframe: str, count: int) -> list:
         if timeframe not in _TF:
             raise ValueError(f"UNSUPPORTED_TIMEFRAME {timeframe!r}")
         if mt5.symbol_info(symbol) is None and not mt5.symbol_select(symbol, True):
-            raise RuntimeError(f"SYMBOL_NOT_FOUND {symbol!r}")
+            raise HostDataError(SYMBOL_NOT_FOUND, repr(symbol))
         rates = mt5.copy_rates_from_pos(symbol, getattr(mt5, f"TIMEFRAME_{timeframe}"), 1, count)
         if rates is None or len(rates) < count:
-            raise RuntimeError(f"DATA_MISSING {symbol}/{timeframe}: {mt5.last_error()}")
-        return [Candle(time=server_time_to_utc(_mt5_server_wall(int(r["time"]))),
-                       open=float(r["open"]), high=float(r["high"]), low=float(r["low"]),
-                       close=float(r["close"]), volume=float(r["tick_volume"])) for r in rates]
+            got = 0 if rates is None else len(rates)
+            raise HostDataError(INCOMPLETE_CANDLES, f"{symbol}/{timeframe} {got}<{count}: {mt5.last_error()}")
+        try:
+            return [Candle(time=server_time_to_utc(_mt5_server_wall(int(r["time"]))),
+                           open=float(r["open"]), high=float(r["high"]), low=float(r["low"]),
+                           close=float(r["close"]), volume=float(r["tick_volume"])) for r in rates]
+        except (KeyError, TypeError, ValueError, OverflowError, OSError) as exc:
+            raise HostDataError(CONVERSION_ERROR, f"{symbol}/{timeframe}: {type(exc).__name__} {exc}") from exc
     return fetch
+
+
+def host_quote(mt5):
+    """quote(broker_symbol) -> (bid, ask) from symbol_info_tick, or None. Read-only."""
+    def quote(symbol: str):
+        tick = mt5.symbol_info_tick(symbol)
+        if tick is None or not getattr(tick, "bid", 0) or not getattr(tick, "ask", 0):
+            return None
+        return float(tick.bid), float(tick.ask)
+    return quote

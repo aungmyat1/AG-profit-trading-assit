@@ -33,8 +33,17 @@ UTC = dt.timezone.utc
 def _isolate(tmp_path, monkeypatch):
     monkeypatch.setattr(hc, "LOG_DIR", str(tmp_path / "logs"))
     monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "evidence"))
+    for canonical in ("EURUSD", "GBPUSD"):                              # the VT Markets -VIP host captures
+        _vip_record(canonical, str(tmp_path / "evidence"))
     for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "MT5_PASSWORD", "VTMARKETS_DEMO_PASSWORD"):
         monkeypatch.delenv(k, raising=False)
+
+
+def _vip_record(canonical, root, broker=None):
+    fields = {f: 1 for f in sm.FIELDS}
+    fields.update(digits=5, point=0.00001, currency_profit="USD")
+    sm.write_record(sm.build_record(canonical, broker or f"{canonical}-VIP", fields, "VTMarkets-Demo", 3, "t",
+                                    trade_mode="FULL"), root)
 
 
 class FakeMT5(types.SimpleNamespace):
@@ -67,6 +76,14 @@ class FakeMT5(types.SimpleNamespace):
 
     def symbol_select(self, name, enable):
         return name in self._symbols
+
+    tick_offset_h = None                                                # None = the owner-rule offset now
+
+    def symbol_info_tick(self, name):
+        import time
+        off = self.tick_offset_h if self.tick_offset_h is not None else sm.server_utc_offset_hours(
+            dt.datetime.now(UTC))
+        return types.SimpleNamespace(time=int(time.time()) + 3600 * off, bid=1.0, ask=1.0001)
 
     def shutdown(self):
         self.calls.append(("shutdown",))
@@ -122,7 +139,7 @@ def test_initialize_passes_credentials_but_never_prints_password(monkeypatch):
 def test_capture_without_exact_name_only_lists_candidates(tmp_path, capsys):
     rc = cap.main(["--symbol", "USDJPY"], mt5=FakeMT5(), offset_fn=lambda s: 2, root=str(tmp_path / "evidence"))
     assert rc == 2 and "USDJPY.vip" in capsys.readouterr().out
-    assert not glob.glob(str(tmp_path / "evidence" / "**" / "*.json"), recursive=True)
+    assert not glob.glob(str(tmp_path / "evidence" / "**" / "USDJPY*.json"), recursive=True)
 
 
 def test_capture_writes_verified_record_and_promotes_to_code_ready(tmp_path, monkeypatch):
@@ -178,8 +195,8 @@ def fake_fetch(now=NOW):
     data = {"D1": d1_bars(), "H1": h1_bars(), "M5": m5_bars(), "M15": _m15_day(now)}
 
     def fetch(symbol, tf, count):
-        if symbol not in ("EURUSD", "GBPUSD"):
-            raise RuntimeError("SYMBOL_NOT_FOUND")
+        if symbol not in ("EURUSD-VIP", "GBPUSD-VIP"):                  # only the -VIP broker symbols exist
+            raise sm.HostDataError(sm.SYMBOL_NOT_FOUND, repr(symbol))
         return data[tf][-count:]
     return fetch
 
@@ -187,8 +204,8 @@ def fake_fetch(now=NOW):
 def test_smoke_prints_states_and_archives_only(tmp_path):
     lines = smoke.run_smoke(fake_fetch(), NOW, str(tmp_path / "journal"))
     text = "\n".join(lines)
-    assert "BARS EURUSD (EURUSD) status=FRESH" in text
-    assert re.search(r"FX EURUSD ASIAN_LONDON data=FRESH decision=(READY|NO_TRADE)", text)
+    assert "BARS EURUSD (EURUSD-VIP) status=FRESH" in text
+    assert re.search(r"FX EURUSD \(EURUSD-VIP\) ASIAN_LONDON data=FRESH decision=(READY|NO_TRADE|STALE) reason=", text)
     assert "LSMC EURUSD data=FRESH state=OPPORTUNITY" in text and "LSMC GBPUSD" in text
     assert "USDJPY" not in text                                     # no metadata -> not fetched
     assert glob.glob(str(tmp_path / "journal" / "ticket_delivery" / "archive" / "**" / "*.json"), recursive=True)
@@ -199,6 +216,27 @@ def test_smoke_includes_usdjpy_once_metadata_captured(tmp_path):
              root=str(tmp_path / "evidence"))
     lines = smoke.run_smoke(fake_fetch(), NOW, str(tmp_path / "journal"))
     assert any(ln.startswith("FX USDJPY") for ln in lines)          # attempted (fake has no USDJPY data)
+
+
+def test_fx_never_falls_back_to_plain_symbols(tmp_path):
+    for canonical in ("EURUSD", "GBPUSD"):
+        os.remove(sm.evidence_path(canonical))
+    _vip_record("EURUSD", sm.evidence_root(), broker="EURUSD")             # a plain-symbol capture is not accepted
+    from v1_tickets import fx
+    assert fx.metadata_status("EURUSD") == "FIXTURE_ONLY"
+    with pytest.raises(sm.HostDataError) as exc:
+        fx.broker_symbol("EURUSD")
+    assert exc.value.code == "METADATA_MISSING" and "EURUSD-VIP" in str(exc.value)
+    fetched = []
+    lines = smoke.run_fx(lambda s, tf, n: fetched.append(s) or [], NOW, str(tmp_path / "j"), gated=False)
+    assert not fetched and all("DATA_ERROR reason=METADATA_MISSING" in ln for ln in lines if ln.startswith("FX EUR"))
+
+
+def test_fx_mode_ready_requires_fresh_signal_and_spread(tmp_path):
+    lines = smoke.run_fx(fake_fetch(), NOW, str(tmp_path / "j"), gated=False, quote=lambda b: (1.1000, 1.1001))
+    assert lines and not any("decision=READY" in ln and "spread_check=PASS" not in ln for ln in lines)
+    no_quote = smoke.run_fx(fake_fetch(), NOW, str(tmp_path / "j2"), gated=False)
+    assert not any("decision=READY" in ln for ln in no_quote)
 
 
 def test_fx_mode_is_window_bounded_and_idempotent(tmp_path):
@@ -416,7 +454,7 @@ def test_capture_derives_offset_from_rule_and_records_it(tmp_path):
     assert rec["schema"] == "AG_HOST_SYMBOL_METADATA_V2" and rec["server_utc_offset_rule"] == sm.OFFSET_RULE
     assert rec["server_utc_offset_hours"] == sm.server_utc_offset_hours(at) and rec["trade_mode"] == "FULL"
     from v1_tickets import fx
-    assert fx.broker_symbol("EURUSD") == "EURUSD-VIP" and fx.metadata_status("EURUSD") == "REPO_EVIDENCED"
+    assert fx.broker_symbol("EURUSD") == "EURUSD-VIP" and fx.metadata_status("EURUSD") == "HOST_CAPTURED"
     assert set(cap.CAPTURABLE) == {"EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSD", "ETHUSD"}
 
 
@@ -427,6 +465,37 @@ def test_v1_schema_record_still_verifies():
     import hashlib
     old = {**payload, "sha256": hashlib.sha256(sm._canonical(payload).encode()).hexdigest()}
     assert sm.verify(old) and sm.verify(rec)
+
+
+def test_host_fetch_reason_codes():
+    mt5 = VenueMT5()
+    with pytest.raises(sm.HostDataError) as missing:
+        hc.host_fetch(mt5)("NOPE", "M5", 3)
+    mt5.copy_rates_from_pos = lambda *a: []
+    with pytest.raises(sm.HostDataError) as short:
+        hc.host_fetch(mt5)("BTCUSD", "M5", 3)
+    mt5.copy_rates_from_pos = lambda *a: [{"time": "x", "open": 1}] * 3
+    with pytest.raises(sm.HostDataError) as bad:
+        hc.host_fetch(mt5)("BTCUSD", "M5", 3)
+    assert (missing.value.code, short.value.code, bad.value.code) == (
+        "SYMBOL_NOT_FOUND", "INCOMPLETE_CANDLES", "CONVERSION_ERROR")
+
+
+def test_diagnose_server_offset_live_check():
+    """Audit 2 / Codex CRITICAL (818e3cd): measured tick.time - time.time() must equal the rule offset."""
+    now = dt.datetime(2026, 9, 30, 15, 0, tzinfo=UTC).timestamp()        # US DST -> rule UTC+3
+    ok = FakeMT5(symbols=("BTCUSD",))
+    ok.symbol_info_tick = lambda s: types.SimpleNamespace(time=int(now) + 10798)   # host evidence: +3.0h
+    r = diag.check_server_offset(ok, now)
+    assert r["ok"] and "measured=UTC+3 rule=UTC+3" in r["detail"]
+    bad = FakeMT5()
+    bad.symbol_info_tick = lambda s: types.SimpleNamespace(time=int(now) + 2 * 3600)
+    r = diag.check_server_offset(bad, now)
+    assert not r["ok"] and r["fix"] == diag.FIXES["SERVER_OFFSET"]
+    stale = FakeMT5()
+    stale.symbol_info_tick = lambda s: types.SimpleNamespace(time=int(now) - 3 * 86400 + 1234)
+    assert diag.check_server_offset(stale, now)["fix"] == diag.FIXES["SERVER_OFFSET_NO_TICK"]
+    assert sm.measured_server_offset_hours(now + 10798, now) == 3 and sm.measured_server_offset_hours(now + 5400, now) is None
 
 
 def test_host_fetch_uses_rule_and_closed_bars_only():
@@ -459,7 +528,7 @@ def test_smoke_includes_vt_crypto_with_v2_config(tmp_path):
     fetch = fake_fetch()
 
     def fetch_all(symbol, tf, count):
-        return fetch("EURUSD" if symbol in ("BTCUSD", "ETHUSD") else symbol, tf, count)
+        return fetch("EURUSD-VIP" if symbol in ("BTCUSD", "ETHUSD") else symbol, tf, count)
     lines = smoke.run_smoke(fetch_all, NOW, str(tmp_path / "journal"), _cfg(2))
     text = "\n".join(lines)
     assert "BARS BTCUSDT (BTCUSD) status=" in text and "BARS ETHUSDT (ETHUSD) status=" in text
