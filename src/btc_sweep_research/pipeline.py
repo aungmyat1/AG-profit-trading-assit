@@ -154,9 +154,10 @@ def _expiry_for(profile_config, trading_day: date) -> datetime:
 def _build_proposal(
     setup_state: SetupState, strategy_config: SweepRetestStrategyConfig, profile_config,
     reference_trading_day: date, symbol_meta, trading_day: date, now: datetime, exchange_id: str,
+    symbol: str = CANONICAL_SYMBOL,
 ) -> BTCSweepResearchProposal:
     occurrence_id = btc_occurrence_id(
-        strategy_config.strategy_id, strategy_config.version, exchange_id, CANONICAL_SYMBOL,
+        strategy_config.strategy_id, strategy_config.version, exchange_id, symbol,
         reference_trading_day, setup_state.direction, setup_state.sweep_time, setup_state.mss_time,
     )
     # Worst-case exit leg (stop_loss) for the cost estimate -- conservative (higher-cost)
@@ -168,7 +169,7 @@ def _build_proposal(
     )
     return BTCSweepResearchProposal(
         strategy=strategy_config.strategy_id, strategy_version=strategy_config.version,
-        authority=AUTHORITY_RESEARCH_ONLY, exchange=exchange_id, instrument=CANONICAL_SYMBOL,
+        authority=AUTHORITY_RESEARCH_ONLY, exchange=exchange_id, instrument=symbol,
         direction=setup_state.direction, reference_day=reference_trading_day,
         reference_high=setup_state.ref_high, reference_low=setup_state.ref_low,
         sweep={"level": setup_state.sweep_level, "extreme": setup_state.sweep_extreme,
@@ -198,6 +199,7 @@ def run_research_cycle(
     market_structure_config=None,
     exchange_id: str = EXCHANGE_ID,
     symbol_meta: Optional[SymbolMeta] = None,
+    symbol: str = CANONICAL_SYMBOL,
 ) -> ResearchCycleReport:
     """`exchange_id`/`symbol_meta` are additive, backward-compatible overrides
     (AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3): every existing
@@ -205,12 +207,17 @@ def run_research_cycle(
     metadata, unchanged) -- this lets a Bybit-fed cycle tag its proposals with the
     correct exchange identity and use Bybit's own verified tick/step-size metadata
     instead of silently mislabeling Bybit-sourced data as Binance's. No strategy/sweep/
-    trend/retest/entry/risk rule is touched by this parametrization."""
+    trend/retest/entry/risk rule is touched by this parametrization.
+
+    `symbol` (AG V1 D4, 2026-09-30) is likewise additive and backward-compatible: the
+    default is BTCUSDT (unchanged behavior). ETHUSDT is already an instrument of the
+    frozen CRYPTO_PERP profile; passing it runs the SAME engine and rules. Callers
+    supply ETHUSDT's own symbol_meta and ledger."""
     now = now or datetime.now(timezone.utc)
     strategy_config = strategy_config or load_sweep_retest_strategy(STRATEGY_YAML_PATH)
-    profile_config = strategy_config.profile_config_for_symbol(CANONICAL_SYMBOL)
+    profile_config = strategy_config.profile_config_for_symbol(symbol)
     if profile_config is None:
-        raise ValueError(f"{STRATEGY_YAML_PATH} has no CRYPTO_PERP profile entry for {CANONICAL_SYMBOL!r}")
+        raise ValueError(f"{STRATEGY_YAML_PATH} has no CRYPTO_PERP profile entry for {symbol!r}")
 
     runtime = runtime or SweepRetestRuntime(SweepRetestStateStore())
     ledger = ledger or BTCResearchLedger()
@@ -218,11 +225,11 @@ def run_research_cycle(
     open_position_guard = open_position_guard or OpenPositionGuard.default()
 
     trading_day = now.date()
-    symbol_meta = symbol_meta or to_symbol_meta(default_symbol_meta(CANONICAL_SYMBOL))
+    symbol_meta = symbol_meta or to_symbol_meta(default_symbol_meta(symbol))
     stop_buffer_price = symbol_meta.tick_size * (profile_config.buffer_ticks or 10.0)
 
-    h1_candles_raw = list(feed.get_latest_candles(CANONICAL_SYMBOL, "H1", H1_LOOKBACK_COUNT))
-    m5_candles_raw = list(feed.get_latest_candles(CANONICAL_SYMBOL, "M5", M5_LOOKBACK_COUNT))
+    h1_candles_raw = list(feed.get_latest_candles(symbol, "H1", H1_LOOKBACK_COUNT))
+    m5_candles_raw = list(feed.get_latest_candles(symbol, "M5", M5_LOOKBACK_COUNT))
 
     today_start = previous_utc_day_window(now)[1]
     # Scheduled/backfill callers may retrieve candles newer than the observation date.
@@ -234,7 +241,7 @@ def run_research_cycle(
 
     box = build_profile_reference_box(profile_config.profile, reference_candles, expected_bar_count=None)
     if box is None or not box.session_complete:
-        container = _container(strategy_config.strategy_id, CANONICAL_SYMBOL, trading_day, now,
+        container = _container(strategy_config.strategy_id, symbol, trading_day, now,
                                STATE_WAITING_REFERENCE, "REFERENCE_WINDOW_INCOMPLETE",
                                profile_id=profile_config.profile.profile_id)
         return ResearchCycleReport(trading_day, container, ())
@@ -242,7 +249,7 @@ def run_research_cycle(
     direction_gate = h1_trend_direction(h1_candles, market_structure_config)
     required_sweep_direction, trade_direction = sweep_requirement_for_h1_direction(direction_gate)
     if required_sweep_direction is None:
-        container = _container(strategy_config.strategy_id, CANONICAL_SYMBOL, trading_day, now,
+        container = _container(strategy_config.strategy_id, symbol, trading_day, now,
                                STATE_NO_TRADE_DIRECTION, STATE_NO_TRADE_DIRECTION,
                                profile_id=profile_config.profile.profile_id, ref_high=box.session_high,
                                ref_low=box.session_low, ref_mid=box.session_mid)
@@ -250,7 +257,7 @@ def run_research_cycle(
 
     window_candles = [c for c in m5_candles if in_execution_windows(c.time, profile_config.profile.execution_windows)]
     if not window_candles:
-        container = _container(strategy_config.strategy_id, CANONICAL_SYMBOL, trading_day, now,
+        container = _container(strategy_config.strategy_id, symbol, trading_day, now,
                                STATE_WAITING_WINDOW, "EXECUTION_WINDOW_NOT_REACHED",
                                profile_id=profile_config.profile.profile_id, ref_high=box.session_high,
                                ref_low=box.session_low, ref_mid=box.session_mid, direction=trade_direction)
@@ -261,7 +268,7 @@ def run_research_cycle(
         required_sweep_direction,
     )
     if not candidates:
-        container = _container(strategy_config.strategy_id, CANONICAL_SYMBOL, trading_day, now,
+        container = _container(strategy_config.strategy_id, symbol, trading_day, now,
                                STATE_WAITING_SWEEP, "NO_QUALIFIED_SWEEP_YET",
                                profile_id=profile_config.profile.profile_id, ref_high=box.session_high,
                                ref_low=box.session_low, ref_mid=box.session_mid, direction=trade_direction)
@@ -270,10 +277,10 @@ def run_research_cycle(
     results = []
     for i, candidate in enumerate(candidates):
         sweep_search_after = candidates[i - 1].candle_time if i > 0 else None
-        occurrence_setup_id = f"{CANONICAL_SYMBOL}:{trading_day.isoformat()}:{candidate.candle_time.isoformat()}"
+        occurrence_setup_id = f"{symbol}:{trading_day.isoformat()}:{candidate.candle_time.isoformat()}"
 
         setup_state = runtime.evaluate(
-            setup_id=occurrence_setup_id, strategy_id=strategy_config.strategy_id, symbol=CANONICAL_SYMBOL,
+            setup_id=occurrence_setup_id, strategy_id=strategy_config.strategy_id, symbol=symbol,
             trading_day=trading_day, profile=profile_config.profile,
             reference_candles=reference_candles, h1_candles=h1_candles, m5_candles=m5_candles,
             execution_windows=profile_config.profile.execution_windows, equity=equity,
@@ -287,7 +294,7 @@ def run_research_cycle(
         ledger_new_row = False
         if setup_state.strategy_qualified:
             proposal = _build_proposal(setup_state, strategy_config, profile_config, reference_trading_day,
-                                       symbol_meta, trading_day, now, exchange_id)
+                                       symbol_meta, trading_day, now, exchange_id, symbol=symbol)
             ledger_new_row = ledger.record(proposal)
 
         results.append(ResearchCycleResult(setup_state=setup_state, proposal=proposal,
