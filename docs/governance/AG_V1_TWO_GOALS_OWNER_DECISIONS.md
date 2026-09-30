@@ -60,6 +60,21 @@ not listed in the table above.
 - No sealed, out-of-sample or holdout data. Public data must end before 2025-09-14.
 - Never manufacture setups.
 
+## Round 2 owner decisions (approved 2026-09-30)
+
+1. **Baseline: narrow exception.** Main's capability-zero forbidden-package test is amended
+   to allow `src/ticket_delivery` only in ARCHIVE_ONLY / message-only form (no Telegram change).
+   `execution`, `trade_management`, `authorization`, `owner_decision` and `svos` stay forbidden.
+   The frozen engines' sizing/guard imports (e.g. `execution.risk.size_position`) move behind
+   a pure-math boundary module outside the forbidden packages. Strategy rules and parameters
+   are unchanged, and a test proves the boundary has no broker/order imports.
+2. **`features.py`:** approved; byte-exact copy from the audit branch (blob `f16baab`).
+3. **Rule spec:** the branch is unpushed; the 1.1.0 rules written in the mission are
+   authoritative.
+4. **Permissions:** restoring files from `2b75bbf` (e.g. `strategies/`) is approved.
+
+Nothing is merged into main. The work stays on `v1/two-goals-cloud` (PR #15, draft).
+
 ## Implementation status
 
 This record is data only. For what was and was not implemented on the branch, and why, see

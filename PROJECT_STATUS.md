@@ -4,19 +4,27 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## AG V1 Two Goals (cloud): BLOCKED at baseline gate (2026-09-29, docs only)
+## AG V1 Two Goals (cloud): code complete on branch, not merged (2026-09-30)
 
-Mission AG-V1-CLOUD expected `src/ticket_delivery`, the BTC daily CLI, the crypto
-sweep-retest engine, `src/large_smc_research`, `strategies/` and `fx_discovery/features.py`
-on main. None of these is on `ce09e8d`. `3f1f955` removed most of them, and main's
-capability-zero test forbids `src/{execution,ticket_delivery,trade_management,...}`.
-`fx_discovery` exists only on unmerged `audit/*` branches. The Asian Sweep engine is on main
-(byte-identical to `2b75bbf`), but its contract YAML is not. Branch `v1/two-goals-cloud` holds
-only the owner-decision record (`docs/governance/AG_V1_TWO_GOALS_OWNER_DECISIONS.md`) and the
-status/evidence record (`docs/status/AG_V1_TWO_GOALS_CLOUD_STATUS.md`). No code, strategy,
-registry, gate or Telegram change. Current-main baseline: `python -m pytest -q tests` gives
-350 passed and 1 pre-existing failure. Broker/exchange calls: 0. Unblocking needs owner
-decisions, listed in the status record.
+Branch `v1/two-goals-cloud` (draft PR #15, NOT merged) implements the cloud scope of AG V1
+under the round-2 owner decisions. See `docs/status/AG_V1_TWO_GOALS_CLOUD_STATUS.md`.
+
+- **Goal 1 tickets.** Informational tickets in `src/v1_tickets`, archived ARCHIVE_ONLY:
+  - FX/gold from the frozen ST_ASIAN_SWEEP_5R_V1@1.1.1 on ASIAN_LONDON and LONDON_NEWYORK;
+  - BTCUSDT and ETHUSDT (ETHUSDT SHADOW) from the frozen ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0
+    in the frozen daily window. Data comes from Bybit public, with Binance public as fallback,
+    and the source is printed on every ticket.
+- **Goal 2 alerts.** New ST_LARGE_SMC_V1@1.1.0 watch/alerts in `src/large_smc_watch`. v1.0.7
+  is unchanged. `proposal_generation_authorized` is false.
+- **Registry.** `SESSION_TRADE_V1` `demo_authorized` is now false (D3).
+- **Capability-zero test.** It now allows `src/ticket_delivery` only when transport-free and
+  in ARCHIVE_ONLY mode. The other forbidden packages are unchanged.
+- **Frozen crypto engine.** Its sizing and guard imports now go through the byte-exact
+  `src/sizing_math`. No rule changed.
+- **Metadata.** USDJPY and XAUUSD are FIXTURE_ONLY until the host captures MT5 symbol metadata.
+- **Tests.** Full suite: 670 passed, 1 skipped, 1 failed; the failure is pre-existing on
+  `ce09e8d`. Live checks are NOT_EVALUATED. Broker/exchange calls: 0. No Telegram, scheduler,
+  gate or authorization expansion.
 
 ## MT5 MCP: `Request timed out` startup fix (2026-09-29, read-only configuration)
 
