@@ -1,0 +1,40 @@
+# RULE-ATTRIBUTION OPTIMIZATION V1 -- admission record (research only).
+#
+# Owner directive 2026-09-30: only strategies with BACKTEST_STATUS=ECONOMIC_GATE_FAIL
+# are optimization-eligible. This file records that directive for this research mission
+# ONLY. It does not sign config/governance/optimization_admission_contract.yaml (still
+# PROPOSED), does not change strategies/registry.yaml, and grants no demo/live authority.
+
+mission_id: AG_RULE_ATTRIBUTION_V1
+recorded_utc: "2026-09-30"
+recorded_by: OWNER_DIRECTIVE   # mission text; not a signed governance contract
+
+strategies:
+  ST_SESSION_SWEEP_CONTINUATION_V1:
+    evaluation_id: GEN_001
+    frozen_version: "1.0.1"
+    backtest_status: ECONOMIC_GATE_FAIL
+    backtest_status_evidence:
+      - "HYP_002 Attempt 2: G3 FAIL, treatment net expectancy -0.3564R (docs/status/AG_SSC_SVOS_G0_G8_EVIDENCE_RECONCILIATION_STATUS.md)"
+      - "G2 DEV_002 population: 22 occurrences, net expectancy -0.47R, gross PF 0.56 (PROJECT_STATUS.md 2026-09-19)"
+    optimization_eligible: true
+    data_role: DEVELOPMENT_ONLY
+    holdout_access: FORBIDDEN          # also CONFIRM_001, OOS, H2 -- access_count must stay 0
+    canonical_negative_baseline: FROZEN   # v1.0.1 engine tree a11a9e49 @ 2b75bbf0, config blob 2ad318c4
+    governance_note: >-
+      Repo evaluator src/svos/optimization_admission.py (if restored) would still return
+      OPTIMIZATION_BLOCKED because optimization_admission_contract.yaml is PROPOSED. This
+      mission proceeds under the owner directive above, research-only, and must not be
+      cited as signed optimization admission.
+
+  ST_ASIAN_SWEEP_5R_V1:
+    frozen_version: "1.1.1"
+    backtest_status: NOT_EVALUABLE_MISSING_SIGNED_THRESHOLDS   # 13/13 losses, R6 not evaluable
+    optimization_eligible: false
+    scope: ADMISSION_DATA_SEMANTIC_CHECKS_ONLY
+
+public_dev_data:
+  allowed_sources: [DUKASCOPY, HISTDATA]
+  end_exclusive_utc: "2025-09-14T00:00:00Z"
+  manifest_path: data/research/public_dev/manifest.json
+  required_timeframes: [H1, M15, M1]

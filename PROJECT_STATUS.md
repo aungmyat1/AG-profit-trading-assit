@@ -4,6 +4,28 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## SSC rule-attribution pipeline: built, data gate FAIL (2026-09-30, research only)
+
+Branch `research/attribution-v1` (draft PR, not merged) adds `research/attribution/`:
+- a candidate ledger over the frozen SSC v1.0.1 engine, loaded read-only from git
+  `2b75bbf0` with its hashes checked, with a pass/fail flag for each rule and a
+  counterfactual outcome;
+- category, ablation and diagnosis tables;
+- walk-forward, CPCV, PBO and DSR validation, and a verdict rule.
+
+- **Admission.** SSC GEN_001 is `ECONOMIC_GATE_FAIL` and is eligible for optimization under an
+  owner directive (development data only, holdout forbidden). ST_ASIAN_SWEEP_5R_V1 got
+  admission, data and semantic checks only.
+- **Result.** The run stopped at G2: Dukascopy and HistData were blocked (403), and no
+  admissible pre-2025-09-14 public data exists in the repo. Ledger N=0, trials=0, no hypothesis,
+  no variants. Everything else is NOT_EVALUATED.
+- **Tests.** `tests/test_research_attribution.py` 15 passed, including the frozen-engine parity
+  check.
+- **Unchanged.** No strategy, registry, gate or authority change.
+  `optimization_admission_contract.yaml` stays PROPOSED.
+
+See `docs/status/AG_RULE_ATTRIBUTION_V1_STATUS.md`.
+
 ## AG V1 Two Goals (cloud): code complete on branch, not merged (2026-09-30)
 
 Branch `v1/two-goals-cloud` (draft PR #15, NOT merged) implements the cloud scope of AG V1

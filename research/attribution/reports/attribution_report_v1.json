@@ -1,0 +1,82 @@
+{
+  "G0_admission": {
+    "ST_ASIAN_SWEEP_5R_V1": {
+      "backtest_status": "NOT_EVALUABLE_MISSING_SIGNED_THRESHOLDS",
+      "optimization_eligible": false,
+      "status": "CHECKS_ONLY"
+    },
+    "ST_SESSION_SWEEP_CONTINUATION_V1": {
+      "backtest_status": "ECONOMIC_GATE_FAIL",
+      "optimization_eligible": true,
+      "status": "PASS"
+    }
+  },
+  "G1_semantic": {
+    "ST_ASIAN_SWEEP_5R_V1": {
+      "config_sha256": "baed22b718e9017f291808063c62d3eda6d00ceb3b8ea89cc071919b8530f9cf",
+      "engine_present": true,
+      "instruments": [
+        "EURUSD",
+        "GBPUSD",
+        "USDJPY",
+        "AUDUSD",
+        "XAUUSD"
+      ],
+      "registered": true,
+      "status": "PASS",
+      "version": "1.1.1"
+    },
+    "ST_SESSION_SWEEP_CONTINUATION_V1": {
+      "current_config_blob": "2ad318c4e1da07b577b3b0c5a775cd552feaccd9",
+      "engine_tree": "a11a9e49d4d4932191eac9217cf279cf52ec6700",
+      "frozen_commit": "2b75bbf0d290cbf3b52684f87770396442790639",
+      "frozen_config_blob": "2ad318c4e1da07b577b3b0c5a775cd552feaccd9",
+      "reason": "ENGINE_AND_CONFIG_BYTE_IDENTICAL",
+      "status": "PASS",
+      "strategy_id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+      "strategy_version": "1.0.1"
+    }
+  },
+  "G2_data": {
+    "ST_ASIAN_SWEEP_5R_V1": {
+      "manifest_path": "data/research/public_dev/manifest.json",
+      "reason": "PUBLIC_DEV_MANIFEST_MISSING",
+      "status": "FAIL"
+    },
+    "ST_SESSION_SWEEP_CONTINUATION_V1": {
+      "manifest_path": "data/research/public_dev/manifest.json",
+      "reason": "PUBLIC_DEV_MANIFEST_MISSING",
+      "status": "FAIL"
+    }
+  },
+  "G2_public_source_probe": {
+    "datafeed.dukascopy.com:443": "CONNECT 403 (network policy denial)",
+    "environment": "Claude Code cloud container (agent proxy)",
+    "in_repo_pre_cutoff_data": "none admissible: SSC1D_WP1_OOS_EURUSD_2024Q1 is OOS (protected); DEV_002 pre-2025-09-14 span is EURUSD H1 warm-up only (no M15/M1, broker source)",
+    "probed_utc": "2026-09-30T07:43:02Z",
+    "www.histdata.com:443": "CONNECT 403 (network policy denial)"
+  },
+  "ST_ASIAN_SWEEP_5R_V1_scope": "ADMISSION_DATA_SEMANTIC_CHECKS_ONLY -- not optimized",
+  "generated_utc": "2026-09-30T07:52:55Z",
+  "head": "4b5598d1e0ae2b84b551e9e974da66d385bd7be0",
+  "invariants": {
+    "broker_calls": 0,
+    "frozen_rules_edited": false,
+    "live_demo_code_changed": false,
+    "network_calls": 0,
+    "protected_data_access_count": 0
+  },
+  "ledger_n": 0,
+  "mission_id": "AG_RULE_ATTRIBUTION_V1",
+  "steps": {
+    "1_ledger": "NOT_EVALUATED",
+    "2_categories": "NOT_EVALUATED",
+    "3_ablation": "NOT_EVALUATED",
+    "4_diagnosis": "NOT_EVALUATED",
+    "5_preregistration": "NOT_EVALUATED",
+    "6_validation": "NOT_EVALUATED",
+    "7_verdicts": "NOT_EVALUATED"
+  },
+  "stopped_at": "G2_data",
+  "trial_count": 0
+}

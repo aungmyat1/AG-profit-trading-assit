@@ -565,6 +565,9 @@ strategies and unresolved strategy-authorship decisions. Strategy YAML remains t
 authoritative machine-readable source.
 # Status evidence
 
+- [AG rule-attribution V1 (SSC)](status/AG_RULE_ATTRIBUTION_V1_STATUS.md)
+  (`PIPELINE_BUILT_DATA_GATE_FAIL`, 2026-09-30: research-only ledger/ablation/validation
+  pipeline over the frozen SSC v1.0.1 engine; no public dev data admitted, ledger N=0)
 - [AG V2 pre-architecture baseline + core contracts](status/AG_V2_PRE_ARCHITECTURE_BASELINE_STATUS.md)
   (additive `src/opportunity/` contracts: MarketEvent, funnel vocabulary,
   OpportunityCandidate, ProposalEligibilityDecision, StrategyBinding, shared
