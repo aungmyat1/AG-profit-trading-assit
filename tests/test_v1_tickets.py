@@ -187,7 +187,66 @@ def test_crypto_config_v1_preserved_and_v2_active():
                            "symbols": {"BTCUSDT": "BTCUSD", "ETHUSDT": "ETHUSD"},
                            "server_time_rule": "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700"}
     from v1_tickets.crypto import ACTIVE_CONFIG
-    assert ACTIVE_CONFIG.replace("\\", "/") == "config/v1_tickets/crypto_ticket_v2.yaml"
+    assert ACTIVE_CONFIG.replace("\\", "/") == "config/v1_tickets/crypto_ticket_v3.yaml"
+
+
+def test_crypto_config_v3_is_v2_plus_weekend_shadow():
+    v2, v3 = _cfg(2), _cfg(3)
+    assert (v3["version"], v3["status"], v3["supersedes"]) == (3, "SHADOW", 2)
+    assert v3["venue"] == v2["venue"]                                  # same VT venue, metadata and costs
+    weekday, weekend = v3["window"]["windows"]
+    assert weekday["name"] == "WEEKDAY" and {k: v for k, v in weekday.items() if k != "name"} == v2["window"]
+    assert (weekend["name"], weekend["start"], weekend["end"], weekend["timezone"], weekend["weekdays"]) == \
+        ("WEEKEND", "21:00", "23:00", "UTC", [6, 7])
+    assert weekend["label"] == "WEEKEND — ~2x cost vs range"
+
+
+@pytest.mark.parametrize("now,expected,window", [
+    (V2_IN, "IN_WINDOW", "WEEKDAY"),
+    (dt.datetime(2025, 9, 6, 21, 0, tzinfo=UTC), "IN_WINDOW", "WEEKEND"),       # Sat 21:00 UTC (start inclusive)
+    (dt.datetime(2025, 9, 7, 22, 59, tzinfo=UTC), "IN_WINDOW", "WEEKEND"),      # Sun 22:59 UTC
+    (dt.datetime(2025, 9, 7, 23, 0, tzinfo=UTC), "AFTER_WINDOW", None),         # Sun 23:00 UTC (end exclusive)
+    (dt.datetime(2025, 9, 6, 20, 59, tzinfo=UTC), "BEFORE_WINDOW", None),       # Sat 20:59 UTC
+    (dt.datetime(2025, 9, 5, 21, 30, tzinfo=UTC), "AFTER_WINDOW", None),        # Fri 21:30 UTC: no weekend window
+    (dt.datetime(2025, 9, 6, 14, 0, tzinfo=UTC), "BEFORE_WINDOW", None),        # Sat 10:00 EDT: weekday window closed
+])
+def test_crypto_v3_windows_weekday_ny_plus_weekend_utc(now, expected, window):
+    from v1_tickets.crypto import active_window, window_status
+    assert window_status(_cfg(3), (now - dt.timedelta(days=1)).date(), now) == expected
+    assert (active_window(_cfg(3), now) or {}).get("name") == window
+
+
+@pytest.mark.parametrize("now,window,label", [
+    (V2_IN, "WEEKDAY", None),
+    (dt.datetime(2025, 9, 6, 21, 30, tzinfo=UTC), "WEEKEND", "WEEKEND — ~2x cost vs range"),
+])
+def test_crypto_v3_ticket_records_window_and_shadow_status(tmp_path, monkeypatch, now, window, label):
+    from host_delivery import telegram_message as tg
+    from v1_tickets.crypto import Mt5CryptoFeed, archive_crypto_ticket
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "ev"))
+    _write_host_record(str(tmp_path / "ev"), "BTCUSD")
+    cfg, calls = _cfg(3), []
+    feed = Mt5CryptoFeed(_mt5_fetch(calls), cfg["venue"]["symbols"], cfg["venue"]["source_id"])
+    t = build_crypto_ticket("BTCUSDT", now.date() - dt.timedelta(days=1), now, feed=feed,
+                            state_dir=str(tmp_path / "s"), config=cfg)
+    assert t["ticket_config"] == "AG_V1_CRYPTO_TICKET@v3" and t["window_status"] == "IN_WINDOW"
+    assert (t["window"], t["ticket_status"], t.get("window_label")) == (window, "SHADOW", label)
+    assert t["decision"] != "BLOCKED" and calls
+    path = archive_crypto_ticket(t, str(tmp_path / "archive"))          # shadow outcome keeps the window
+    with open(path, encoding="utf-8") as f:
+        assert f'"window": "{window}"' in f.read()
+    msg = tg.format_ticket(t)
+    assert f"window: {window}  status: SHADOW" in msg and (label is None or label in msg)
+
+
+def test_crypto_v2_tickets_unchanged_by_v3_fields(tmp_path, monkeypatch):
+    from v1_tickets.crypto import Mt5CryptoFeed
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "ev"))
+    _write_host_record(str(tmp_path / "ev"), "BTCUSD")
+    cfg = _cfg(2)
+    t = build_crypto_ticket("BTCUSDT", OBS, V2_IN, feed=Mt5CryptoFeed(_mt5_fetch([]), cfg["venue"]["symbols"]),
+                            state_dir=str(tmp_path / "s"), config=cfg)
+    assert not {"window", "ticket_status", "window_label"} & set(t)
 
 
 @pytest.mark.parametrize("now,expected", [

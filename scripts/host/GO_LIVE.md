@@ -86,9 +86,10 @@ under `journal\host_smoke\` (ARCHIVE_ONLY; nothing is sent). On a weekend, FX sh
 powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1
 ```
 
-Expected: three plan lines (`AG-V1-FX-Cycles` every 15 min at +1 min daily, `AG-V1-Crypto-Daily`
-every 5 min at +2 min daily, `AG-V1-LSMC-Watch` every 5 min at +3 min Mon-Fri; staggered so no two
-start together, 4-minute task limit, runner self-exits after 120 s), then
+Expected: four plan lines (`AG-V1-FX-Cycles` every 15 min at +1 min daily, `AG-V1-Crypto-Daily`
+every 5 min at +2 min daily, `AG-V1-LSMC-Watch` every 5 min at +3 min Mon-Fri,
+`AG-V1-LSMC-Crypto-Weekend` every 5 min at +3 min Sat+Sun 20:45-23:15 UTC with its local-time
+equivalent; staggered starts, 4-minute task limit, runner self-exits after 120 s), then
 `WhatIf: no changes made.`
 
 ## 5. Scheduled tasks: install

@@ -15,7 +15,9 @@
   the evaluation window; the engine is the same frozen 2.0.0 in every version. With no
   config, build_crypto_ticket behaves exactly as version 1 (public perp feed, frozen daily
   window). Version 2 (ACTIVE, owner decision 2026-09-30): VT Markets MT5 BTCUSD/ETHUSD
-  via Mt5CryptoFeed, weekdays 09:00-12:00 America/New_York, no weekend runs.
+  via Mt5CryptoFeed, weekdays 09:00-12:00 America/New_York, no weekend runs. Version 3 (ACTIVE,
+  SHADOW, owner decision 2026-10-01): version 2 plus a WEEKEND window Sat+Sun 21:00-23:00 UTC;
+  tickets record window=WEEKDAY|WEEKEND, ticket_status=SHADOW and, on weekends, a cost label.
 """
 from __future__ import annotations
 
@@ -55,7 +57,7 @@ SYMBOL_STATUS = {"BTCUSDT": "ACTIVE_INCUBATION", "ETHUSDT": "SHADOW"}
 CYCLE = "DAILY_WINDOW"
 APPLICATION_RELEASE = "AG_V1_CLOUD"
 CONFIG_DIR = os.path.join("config", "v1_tickets")
-ACTIVE_CONFIG = os.path.join(CONFIG_DIR, "crypto_ticket_v2.yaml")
+ACTIVE_CONFIG = os.path.join(CONFIG_DIR, "crypto_ticket_v3.yaml")
 MT5_SOURCE = "MT5_VT_MARKETS_DEMO"
 
 
@@ -76,6 +78,24 @@ def window_status(config: Optional[Dict[str, Any]], observation_date: dt.date, n
     w = (config or {}).get("window") or {"kind": "FROZEN_DAILY_REPORT_UTC"}
     if w["kind"] == "FROZEN_DAILY_REPORT_UTC":
         return daily_report.report_window_status(observation_date, now)
+    if w["kind"] == "MULTI":
+        states = [_local_window_status(sub, now) for sub in w["windows"]]
+        for s in ("IN_WINDOW", "BEFORE_WINDOW", "AFTER_WINDOW"):
+            if s in states:
+                return s
+        return "OUTSIDE_WEEKDAYS"
+    return _local_window_status(w, now)
+
+
+def active_window(config: Optional[Dict[str, Any]], now: dt.datetime) -> Optional[Dict[str, Any]]:
+    """The named MULTI sub-window (WEEKDAY / WEEKEND) that is IN_WINDOW at `now`, else None."""
+    w = (config or {}).get("window") or {}
+    if w.get("kind") != "MULTI":
+        return None
+    return next((sub for sub in w["windows"] if _local_window_status(sub, now) == "IN_WINDOW"), None)
+
+
+def _local_window_status(w: Dict[str, Any], now: dt.datetime) -> str:
     if w["kind"] != "LOCAL_WEEKDAY":
         raise ValueError(f"unknown window kind {w['kind']!r}")
     local = now.astimezone(ZoneInfo(w["timezone"]))
@@ -159,6 +179,11 @@ def build_crypto_ticket(
         base["ticket_config"] = f"{config['config_id']}@v{config['version']}"
     window = window_status(config, observation_date, now)
     base["window_status"] = window
+    named = active_window(config, now)
+    if named is not None:          # MULTI-window config (v3+): record which window, for shadow comparison
+        base.update(window=named["name"], ticket_status=config["status"])
+        if named.get("label"):
+            base["window_label"] = named["label"]
     if window != "IN_WINDOW":
         reason = "OUTSIDE_FROZEN_DAILY_WINDOW" if config is None or config["version"] == 1 else "OUTSIDE_CONFIG_WINDOW"
         return {**base, "decision": "BLOCKED", "reason_codes": [reason]}

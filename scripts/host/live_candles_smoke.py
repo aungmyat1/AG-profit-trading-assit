@@ -4,6 +4,7 @@
     .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode fx       # Task: FX cycles
     .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode crypto   # Task: crypto daily
     .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode lsmc     # Task: Large-SMC watch
+    .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode lsmc-weekend   # Task: Large-SMC BTC/ETH weekend
 
 - smoke: pulls the last closed D1/H1/M15/M5 bars for EURUSD and GBPUSD (plus USDJPY and
   XAUUSD once host metadata is captured), classifies each as FRESH / STALE /
@@ -21,7 +22,8 @@
 Read-only: MT5 candles come from _host_common.host_fetch (closed bars, timestamps converted
 with the owner-stated server-time rule: server midnight = New York 17:00). Crypto tickets
 follow the runner config version (--crypto-config, default config/v1_tickets/
-crypto_ticket_v2.yaml: VT Markets MT5 BTCUSD/ETHUSD, weekdays 09:00-12:00 America/New_York;
+crypto_ticket_v3.yaml: VT Markets MT5 BTCUSD/ETHUSD, weekdays 09:00-12:00 America/New_York plus
+Sat/Sun 21:00-23:00 UTC; version 2 (weekdays only) stays selectable;
 version 1, public perp klines in the frozen 06:30-06:45 UTC window, stays selectable).
 There are no order, position or account-mutation calls.
 """
@@ -179,11 +181,21 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
     return lines
 
 
-def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, notify: bool = True) -> List[str]:
+LSMC_WEEKEND_DAYS = (6, 7)                                   # ISO Sat, Sun (UTC)
+LSMC_WEEKEND_UTC = (dt.time(20, 45), dt.time(23, 15))        # start inclusive, end exclusive
+
+
+def lsmc_weekend_open(now: dt.datetime) -> bool:
+    u = now.astimezone(UTC)
+    return u.isoweekday() in LSMC_WEEKEND_DAYS and LSMC_WEEKEND_UTC[0] <= u.time() < LSMC_WEEKEND_UTC[1]
+
+
+def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, notify: bool = True,
+             fx: bool = True, window: Optional[str] = None) -> List[str]:
     tracker = WatchTracker(os.path.join(journal, "large_smc_watch", "state.json"),
                            os.path.join(journal, "ticket_delivery", "archive"))
     lines = []
-    for symbol in fx_symbols():
+    for symbol in (fx_symbols() if fx else []):
         try:
             broker = fx_tickets.broker_symbol(symbol)
             bars = {tf: fetch(broker, tf, COUNTS[tf]) for tf in ("D1", "H1", "M5")}
@@ -198,15 +210,16 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
             except Exception as exc:  # noqa: BLE001
                 lines.append(f"LSMC {symbol} DATA_ERROR {type(exc).__name__}")
                 continue
-            lines += _watch_once(tracker, symbol, {"D1": [], **b.candles}, now, notify, source=b.source)
+            lines += _watch_once(tracker, symbol, {"D1": [], **b.candles}, now, notify, source=b.source,
+                                 window=window)
     return lines
 
 
-def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO") -> List[str]:
+def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None) -> List[str]:
     snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now)
     events = tracker.poll(snap)
     out = [f"LSMC {symbol} data={classify(symbol, bars['M5'], now)} state={snap.state} source={source} "
-           f"alerts={[e.to_state + ':' + e.alert_level for e in events]}"]
+           f"{f'window={window} ' if window else ''}alerts={[e.to_state + ':' + e.alert_level for e in events]}"]
     if notify:
         for e in events:
             _notify("LSMC", e.alert_level, tg.format_alert(e.__dict__), REPO_ROOT)
@@ -224,11 +237,13 @@ def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config
         if t["decision"] == "BLOCKED":
             lines.append(f"CRYPTO {symbol} OUTSIDE_WINDOW ({t['window_status']})")
             continue
-        new = archive_if_changed(state, f"crypto:{symbol}:{obs.isoformat()}", t,
+        window = f":{t['window']}" if t.get("window") else ""          # v3+: WEEKDAY / WEEKEND kept apart
+        new = archive_if_changed(state, f"crypto:{symbol}:{obs.isoformat()}{window}", t,
                                  lambda x: archive_crypto_ticket(x, os.path.join(journal, "ticket_delivery", "archive")))
         detail = f" detail={t['detail'][:160]}" if t["decision"] == "DATA_ERROR" and t.get("detail") else ""
         lines.append(f"CRYPTO {symbol} decision={t['decision']} reason={','.join(t.get('reason_codes') or [])}"
-                     f" source={t['data_source']}{detail}{' ARCHIVED' if new else ''}")
+                     f" source={t['data_source']}{f' window={window[1:]}' if window else ''}{detail}"
+                     f"{' ARCHIVED' if new else ''}")
         if new and notify:
             _notify("TICKET", t["decision"], tg.format_ticket(t), REPO_ROOT)
     return lines
@@ -278,9 +293,9 @@ def run_smoke(fetch: Fetch, now: dt.datetime, journal: str, crypto_config: Optio
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--mode", choices=("smoke", "fx", "crypto", "lsmc"), default="smoke")
+    ap.add_argument("--mode", choices=("smoke", "fx", "crypto", "lsmc", "lsmc-weekend"), default="smoke")
     ap.add_argument("--terminal-path", default=os.environ.get("MT5_TERMINAL_PATH", ""))
-    ap.add_argument("--crypto-config", default=None, help="crypto ticket config version YAML (default: active V2)")
+    ap.add_argument("--crypto-config", default=None, help="crypto ticket config version YAML (default: active V3)")
     args = ap.parse_args(argv)
     log_name = f"ag_v1_{args.mode}"
     now = utcnow()
@@ -291,6 +306,10 @@ def main(argv=None) -> int:
         with single_instance(log_name):
             if args.mode == "crypto" and crypto_config["venue"]["kind"] != "MT5":
                 lines = run_crypto(now, journal, crypto_feed_for(crypto_config, None), config=crypto_config)
+            elif args.mode == "lsmc-weekend" and not lsmc_weekend_open(now):
+                lines = ["LSMC_WEEKEND OUTSIDE_WINDOW (Sat/Sun 20:45-23:15 UTC)"]    # no MT5 access
+            elif args.mode == "lsmc-weekend" and crypto_config["venue"]["kind"] != "MT5":
+                lines = ["LSMC_WEEKEND SKIPPED (crypto venue is not VT MT5; public feed not used)"]
             else:
                 mt5 = import_mt5()
                 if mt5 is None:
@@ -310,6 +329,9 @@ def main(argv=None) -> int:
                             lines = run_smoke(fetch, now, journal, crypto_config, quote)
                         elif args.mode == "fx":
                             lines = run_fx(fetch, now, journal, gated=True, quote=quote)
+                        elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
+                            lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
+                                             fx=False, window="WEEKEND")
                         else:
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote))
                     finally:

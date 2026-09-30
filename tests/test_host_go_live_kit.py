@@ -332,6 +332,30 @@ def test_mt5_access_lock_is_exclusive_and_reports_busy(tmp_path, monkeypatch):
         pass
 
 
+@pytest.mark.parametrize("now,open_", [
+    (dt.datetime(2026, 10, 3, 20, 45, tzinfo=UTC), True),     # Sat 20:45 UTC (start inclusive)
+    (dt.datetime(2026, 10, 4, 23, 14, tzinfo=UTC), True),     # Sun 23:14 UTC
+    (dt.datetime(2026, 10, 4, 23, 15, tzinfo=UTC), False),    # end exclusive
+    (dt.datetime(2026, 10, 3, 20, 44, tzinfo=UTC), False),
+    (dt.datetime(2026, 10, 2, 21, 0, tzinfo=UTC), False),     # Friday
+])
+def test_lsmc_weekend_gate_is_sat_sun_2045_2315_utc(now, open_):
+    assert smoke.lsmc_weekend_open(now) is open_
+
+
+def test_lsmc_weekend_mode_watches_btc_eth_only(tmp_path):
+    fetched = []
+
+    class Feed:
+        def fetch_bundle(self, symbol, req):
+            fetched.append(symbol)
+            raise RuntimeError("no data in test")
+
+    lines = smoke.run_lsmc(lambda s, tf, n: fetched.append(s) or [], dt.datetime(2026, 10, 3, 21, 0, tzinfo=UTC),
+                           str(tmp_path), crypto_feed=Feed(), notify=False, fx=False, window="WEEKEND")
+    assert fetched == ["BTCUSDT", "ETHUSDT"] and all(ln.startswith(("LSMC BTCUSDT", "LSMC ETHUSDT")) for ln in lines)
+
+
 def test_lsmc_crypto_uses_mt5_venue_never_public_feed():
     from v1_tickets.crypto import Mt5CryptoFeed
     mt5_cfg = {"venue": {"kind": "MT5", "symbols": {"BTCUSDT": "BTCUSD", "ETHUSDT": "ETHUSD"},
@@ -465,7 +489,9 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     runner = (HOST / "live_candles_smoke.py").read_text(encoding="utf-8")
     assert runner.index("start_run_watchdog(f\"ag_v1_") < runner.index("from large_smc_watch import")
     offsets = [int(o) for o in re.findall(r"Offset = (\d+);", install)]
-    assert offsets == [1, 2, 3]                                        # fx, crypto, lsmc: staggered starts
+    assert offsets == [1, 2, 3, 3]                     # fx, crypto, lsmc, lsmc-weekend (overlap serialized by MT5 lock)
+    assert "AG-V1-LSMC-Crypto-Weekend" in install and "AG-V1-LSMC-Crypto-Weekend" in uninstall
+    assert "Mode = 'lsmc-weekend'" in install and "UtcStart = '20:45'; UtcEnd = '23:15'" in install
     assert not re.search(r"Write-Host[^\n]*TELEGRAM_BOT_TOKEN\b(?!\s+and)", telegram.replace("MISSING TELEGRAM_BOT_TOKEN", ""))
     assert "reply_markup" not in telegram and "delivery_override.yaml" in telegram
     assert "ticket_delivery.yaml" in telegram and "Set-Content" in telegram

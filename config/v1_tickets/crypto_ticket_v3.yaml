@@ -1,0 +1,34 @@
+# AG V1 crypto informational ticket runner config -- VERSION 3 (active).
+# Owner decision 2026-10-01: add a weekend window to v2. Venue, symbols, engine and costs are
+# identical to version 2 (VT Markets MT5 BTCUSD / ETHUSD CFDs, host-captured metadata incl.
+# swaps); version 2 is preserved unchanged. Engine: ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0
+# CRYPTO_PERP, frozen and unchanged. Informational SHADOW tickets only: no proposal, demo or
+# live authority (strategies/registry.yaml is unchanged on authority).
+config_id: AG_V1_CRYPTO_TICKET
+version: 3
+# SHADOW: every ticket records window=WEEKDAY|WEEKEND so weekday and weekend shadow outcomes
+# can be compared before any promotion. Weekend tickets carry the owner-set cost label below
+# (an owner estimate, not a measured figure).
+status: SHADOW
+supersedes: 2
+venue:
+  kind: MT5
+  source_id: MT5_VT_MARKETS_DEMO
+  symbols: {BTCUSDT: BTCUSD, ETHUSDT: ETHUSD}   # canonical -> exact broker name (host-captured metadata)
+  server_time_rule: SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700
+window:
+  kind: MULTI                    # IN_WINDOW when any named window is in; the ticket records which
+  windows:
+    - name: WEEKDAY              # identical to version 2
+      kind: LOCAL_WEEKDAY
+      start: "09:00"             # inclusive
+      end: "12:00"               # exclusive
+      timezone: America/New_York
+      weekdays: [1, 2, 3, 4, 5]  # ISO: Mon-Fri
+    - name: WEEKEND
+      kind: LOCAL_WEEKDAY
+      start: "21:00"             # inclusive
+      end: "23:00"               # exclusive
+      timezone: UTC
+      weekdays: [6, 7]           # ISO: Sat, Sun
+      label: "WEEKEND — ~2x cost vs range"

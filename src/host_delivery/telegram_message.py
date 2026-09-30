@@ -74,6 +74,10 @@ def format_ticket(t: Dict[str, Any]) -> str:
     lines = [t.get("label", "INFORMATIONAL TICKET -- NOT A BROKER ORDER"),
              f"{t['symbol']} {t.get('direction', '')} ({t.get('cycle', '')})",
              f"{t['strategy_id']} v{t['strategy_version']}  decision={t['decision']}"]
+    if t.get("window"):
+        lines.append(f"window: {t['window']}  status: {t.get('ticket_status', '')}")
+    if t.get("window_label"):
+        lines.append(t["window_label"])
     for key in ("entry", "stop_loss", "tp1", "tp2"):
         if t.get(key) is not None:
             lines.append(f"{key}: {t[key]}")
