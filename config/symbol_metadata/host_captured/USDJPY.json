@@ -1,0 +1,26 @@
+{
+  "broker_symbol": "USDJPY-VIP",
+  "canonical_symbol": "USDJPY",
+  "captured_at_utc": "2026-09-30T08:37:27.947974+00:00",
+  "fields": {
+    "currency_profit": "JPY",
+    "digits": 3,
+    "point": 0.001,
+    "spread": 21,
+    "trade_contract_size": 100000.0,
+    "trade_freeze_level": 0,
+    "trade_stops_level": 0,
+    "trade_tick_size": 0.001,
+    "trade_tick_value": 0.6372673973999491,
+    "volume_max": 100.0,
+    "volume_min": 0.01,
+    "volume_step": 0.01
+  },
+  "schema": "AG_HOST_SYMBOL_METADATA_V2",
+  "server": "VTMarkets-Demo",
+  "server_utc_offset_hours": 3,
+  "server_utc_offset_rule": "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700: server_utc_offset_hours = America/New_York UTC offset + 7",
+  "sha256": "ef1dca4799de0261dddc02d024aa5f60e7df31753c02e85ebf014231b49795b7",
+  "source": "MetaTrader5.symbol_info (read-only)",
+  "trade_mode": "FULL"
+}

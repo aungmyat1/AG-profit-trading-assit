@@ -1,0 +1,29 @@
+{
+  "broker_symbol": "BTCUSD",
+  "canonical_symbol": "BTCUSD",
+  "captured_at_utc": "2026-09-30T15:12:03.313685+00:00",
+  "fields": {
+    "currency_profit": "USD",
+    "digits": 2,
+    "point": 0.01,
+    "spread": 1702,
+    "swap_long": -20.0,
+    "swap_rollover3days": 5,
+    "swap_short": 0.0,
+    "trade_contract_size": 1.0,
+    "trade_freeze_level": 0,
+    "trade_stops_level": 0,
+    "trade_tick_size": 0.01,
+    "trade_tick_value": 0.01,
+    "volume_max": 100.0,
+    "volume_min": 0.01,
+    "volume_step": 0.01
+  },
+  "schema": "AG_HOST_SYMBOL_METADATA_V2",
+  "server": "VTMarkets-Demo",
+  "server_utc_offset_hours": 3,
+  "server_utc_offset_rule": "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700: server_utc_offset_hours = America/New_York UTC offset + 7",
+  "sha256": "d6db928384ee017c465d4d7c0f607efa1901b9d7766c4667a0da674f2b99b666",
+  "source": "MetaTrader5.symbol_info (read-only)",
+  "trade_mode": "FULL"
+}

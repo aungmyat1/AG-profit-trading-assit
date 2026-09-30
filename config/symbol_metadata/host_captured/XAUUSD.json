@@ -1,0 +1,26 @@
+{
+  "broker_symbol": "XAUUSD-VIP",
+  "canonical_symbol": "XAUUSD",
+  "captured_at_utc": "2026-09-30T08:37:29.590817+00:00",
+  "fields": {
+    "currency_profit": "USD",
+    "digits": 2,
+    "point": 0.01,
+    "spread": 27,
+    "trade_contract_size": 100.0,
+    "trade_freeze_level": 0,
+    "trade_stops_level": 20,
+    "trade_tick_size": 0.01,
+    "trade_tick_value": 1.0,
+    "volume_max": 100.0,
+    "volume_min": 0.01,
+    "volume_step": 0.01
+  },
+  "schema": "AG_HOST_SYMBOL_METADATA_V2",
+  "server": "VTMarkets-Demo",
+  "server_utc_offset_hours": 3,
+  "server_utc_offset_rule": "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700: server_utc_offset_hours = America/New_York UTC offset + 7",
+  "sha256": "6da2e37881679bdf8b1f83dc247328ef1424a53766986c82e0e85d1e1ca20ef2",
+  "source": "MetaTrader5.symbol_info (read-only)",
+  "trade_mode": "FULL"
+}

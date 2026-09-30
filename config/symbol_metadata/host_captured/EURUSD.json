@@ -1,0 +1,26 @@
+{
+  "broker_symbol": "EURUSD-VIP",
+  "canonical_symbol": "EURUSD",
+  "captured_at_utc": "2026-09-30T08:37:24.649828+00:00",
+  "fields": {
+    "currency_profit": "USD",
+    "digits": 5,
+    "point": 1e-05,
+    "spread": 14,
+    "trade_contract_size": 100000.0,
+    "trade_freeze_level": 0,
+    "trade_stops_level": 0,
+    "trade_tick_size": 1e-05,
+    "trade_tick_value": 1.0,
+    "volume_max": 100.0,
+    "volume_min": 0.01,
+    "volume_step": 0.01
+  },
+  "schema": "AG_HOST_SYMBOL_METADATA_V2",
+  "server": "VTMarkets-Demo",
+  "server_utc_offset_hours": 3,
+  "server_utc_offset_rule": "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700: server_utc_offset_hours = America/New_York UTC offset + 7",
+  "sha256": "cd7992b8dfc0135f77bc33cdf108955c0b08055a5ddfc7a80acc37d5a3f40197",
+  "source": "MetaTrader5.symbol_info (read-only)",
+  "trade_mode": "FULL"
+}

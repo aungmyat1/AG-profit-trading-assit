@@ -72,6 +72,8 @@ Agent skills  -> ADVISORY ONLY
   context "looks" favorable.
 - Never modify files unrelated to the current task.
 - Prefer the smallest correct implementation over a general one.
+- Never edit files in D:/wp3-main-integ (live runtime tree). Develop in a separate worktree;
+  update the live tree only via git pull after tests pass.
 
 ## Frozen strategy version preservation
 

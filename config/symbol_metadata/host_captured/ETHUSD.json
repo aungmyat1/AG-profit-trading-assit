@@ -1,0 +1,29 @@
+{
+  "broker_symbol": "ETHUSD",
+  "canonical_symbol": "ETHUSD",
+  "captured_at_utc": "2026-09-30T15:12:06.104988+00:00",
+  "fields": {
+    "currency_profit": "USD",
+    "digits": 2,
+    "point": 0.01,
+    "spread": 250,
+    "swap_long": -25.0,
+    "swap_rollover3days": 5,
+    "swap_short": 0.0,
+    "trade_contract_size": 1.0,
+    "trade_freeze_level": 0,
+    "trade_stops_level": 0,
+    "trade_tick_size": 0.01,
+    "trade_tick_value": 0.01,
+    "volume_max": 100.0,
+    "volume_min": 0.01,
+    "volume_step": 0.01
+  },
+  "schema": "AG_HOST_SYMBOL_METADATA_V2",
+  "server": "VTMarkets-Demo",
+  "server_utc_offset_hours": 3,
+  "server_utc_offset_rule": "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700: server_utc_offset_hours = America/New_York UTC offset + 7",
+  "sha256": "4f60c0bd201ac6f183f4f673cfffc3360c9c2ff1f1e3a240b1d49321ddd72ef9",
+  "source": "MetaTrader5.symbol_info (read-only)",
+  "trade_mode": "FULL"
+}
