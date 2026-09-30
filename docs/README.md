@@ -43,7 +43,8 @@ authorization deltas, and the independent audit handoff.
 
 The [AG V1 Two Goals owner decisions](governance/AG_V1_TWO_GOALS_OWNER_DECISIONS.md) record
 D1–D8 and the Large-SMC 1.1.0 rules. The [cloud status](status/AG_V1_TWO_GOALS_CLOUD_STATUS.md)
-records why the code part is blocked at the baseline gate.
+records the V1 cloud implementation status (tickets, Large-SMC 1.1.0 watch, per-instrument
+paths and host-only remaining work).
 
 The [repository structure audit](REPO_STRUCTURE_AUDIT.md) records the current layout,
 safe cache cleanup, and the recommended archival policy for historical documents and
