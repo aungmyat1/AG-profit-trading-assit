@@ -76,7 +76,7 @@ def run_matrix(ledger: pd.DataFrame, cost_model, bars_by_symbol: dict | None = N
     base = _costs.apply_costs(ledger, cost_model, 1.0)
     out = {"baseline": {**summarize(base["net_R"]), "gross": summarize(base["gross_R"]),
                         "cost_breakdown_R": {c: float(base[c].sum()) for c in _costs.COST_COLUMNS}},
-           "rollover_hour_utc": cost_model.rollover_hour_utc}
+           "rollover_convention": _costs.ROLLOVER_CONVENTION}
     out["cost"] = {f"{m}x": summarize(_costs.apply_costs(ledger, cost_model, m)["net_R"])
                    for m in COST_MULTIPLIERS}
     if bars_by_symbol is None:

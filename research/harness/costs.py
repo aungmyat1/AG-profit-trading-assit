@@ -24,29 +24,38 @@ class SymbolCosts:
     stop_extra_slippage: float = 0.0    # added on exit when exit_reason == STOP
     swap_long_per_night: float = 0.0    # cost per rollover held (negative = credit)
     swap_short_per_night: float = 0.0
-    triple_swap_weekday: int = 2        # Wednesday rollover charged x3 (FX convention)
+    swap_rollover3days: int | None = None  # MT5 symbol_info.swap_rollover3days (0=Sun..6=Sat); required
 
 
 @dataclass(frozen=True)
 class CostModel:
     per_symbol: dict = field(default_factory=dict)
-    rollover_hour_utc: int = 21          # conservative fixed UTC rollover; recorded in output
 
     def for_symbol(self, symbol: str) -> SymbolCosts:
         if symbol not in self.per_symbol:
             raise KeyError(f"no cost entry for {symbol}: refusing to assume zero costs")
-        return self.per_symbol[symbol]
+        c = self.per_symbol[symbol]
+        if c.swap_rollover3days not in range(7):
+            raise KeyError(f"no swap_rollover3days (0=Sun..6=Sat) for {symbol}: refusing to assume a triple-swap day")
+        return c
 
 
-def rollover_nights(entry, exit_, hour: int, triple_weekday: int) -> int:
-    """Count rollovers crossed in (entry, exit]; the triple-swap weekday counts 3."""
-    first = entry.normalize() + pd.Timedelta(hours=hour)
-    if first <= entry:
-        first += pd.Timedelta(days=1)
-    if first > exit_:
-        return 0
-    rolls = pd.date_range(first, exit_, freq="D")
-    return int(sum(3 if r.weekday() == triple_weekday else 1 for r in rolls if r.weekday() < 5))
+ROLLOVER_TZ = "America/New_York"
+ROLLOVER_LOCAL_HOUR = 17
+ROLLOVER_CONVENTION = "17:00 America/New_York (DST-aware), Mon-Fri; triple day from swap_rollover3days"
+
+
+def rollover_nights(entry, exit_, rollover3days: int) -> int:
+    """Count 17:00 New York rollovers crossed in (entry, exit]; the MT5 swap_rollover3days
+    weekday (0=Sun..6=Sat, New York local date) counts 3. Weekend dates carry no rollover."""
+    triple = (rollover3days - 1) % 7  # MT5 Sunday=0 -> Python Monday=0 convention
+    n = 0
+    for d in pd.date_range(entry.tz_convert(ROLLOVER_TZ).date() - pd.Timedelta(days=1),
+                           exit_.tz_convert(ROLLOVER_TZ).date(), freq="D"):  # naive local dates
+        roll = (d + pd.Timedelta(hours=ROLLOVER_LOCAL_HOUR)).tz_localize(ROLLOVER_TZ)
+        if d.weekday() < 5 and entry < roll <= exit_:
+            n += 3 if d.weekday() == triple else 1
+    return n
 
 
 def apply_costs(ledger: pd.DataFrame, model: CostModel, multiplier: float = 1.0) -> pd.DataFrame:
@@ -59,7 +68,7 @@ def apply_costs(ledger: pd.DataFrame, model: CostModel, multiplier: float = 1.0)
     for r in out.itertuples(index=False):
         c = model.for_symbol(r.symbol)
         slip = 2 * c.slippage_per_side + (c.stop_extra_slippage if r.exit_reason == "STOP" else 0.0)
-        n = rollover_nights(r.entry_time, r.exit_time, model.rollover_hour_utc, c.triple_swap_weekday)
+        n = rollover_nights(r.entry_time, r.exit_time, c.swap_rollover3days)
         swap = n * (c.swap_long_per_night if r.direction == "LONG" else c.swap_short_per_night)
         nights.append(n)
         for col, v in zip(COST_COLUMNS, (c.spread, c.commission, slip, swap)):

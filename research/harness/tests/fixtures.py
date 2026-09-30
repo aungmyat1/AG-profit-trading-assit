@@ -22,5 +22,6 @@ def trade(i, symbol="EURUSD", direction="LONG", entry_time="2024-01-02T00:00:00Z
 
 
 def cost_model(**kw):
+    kw.setdefault("swap_rollover3days", 3)  # explicit fixture input (MT5 3 = Wednesday)
     c = SymbolCosts(**kw)
     return CostModel(per_symbol={"EURUSD": c, "GBPUSD": c})
