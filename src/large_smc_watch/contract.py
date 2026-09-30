@@ -64,6 +64,12 @@ C10_PIP_SIZE: Dict[str, float] = {"EURUSD": 0.0001, "GBPUSD": 0.0001}
 def resolve_point(symbol: str, supplied: Optional[float] = None) -> "tuple[Optional[float], str]":
     if symbol in EVIDENCED_POINT:
         return EVIDENCED_POINT[symbol], "REPO_EVIDENCED"
+    # Host go-live kit: a verified host capture (scripts/host/capture_symbol_metadata.py,
+    # sha256-checked) promotes USDJPY/XAUUSD from FIXTURE_ONLY. A bad or missing file fails closed.
+    from host_evidence.symbol_metadata import HOST_CAPTURED, load_record
+    record = load_record(symbol)
+    if record is not None:
+        return float(record["fields"]["point"]), HOST_CAPTURED
     if supplied is not None and supplied > 0:
         return float(supplied), "CALLER_SUPPLIED"
     return None, "MISSING"

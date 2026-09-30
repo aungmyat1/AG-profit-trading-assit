@@ -18,6 +18,7 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any, Dict, Optional, Sequence
 
+from host_evidence.symbol_metadata import HOST_CAPTURED, load_record
 from strategy_engine import evaluate, load_strategy
 from strategy_engine.session import Candle
 from ticket_delivery.archive import (
@@ -36,14 +37,28 @@ HOST_METADATA_FIELDS = (
 APPLICATION_RELEASE = "AG_V1_CLOUD"
 
 
+def _digits(symbol: str) -> Optional[int]:
+    if symbol in EVIDENCED_DIGITS:
+        return EVIDENCED_DIGITS[symbol]
+    record = load_record(symbol)  # host go-live kit capture, sha256-verified; missing/bad -> None
+    return int(record["fields"]["digits"]) if record is not None else None
+
+
 def metadata_status(symbol: str) -> str:
-    return "REPO_EVIDENCED" if symbol in EVIDENCED_DIGITS else "FIXTURE_ONLY"
+    if symbol in EVIDENCED_DIGITS:
+        return "REPO_EVIDENCED"
+    return HOST_CAPTURED if load_record(symbol) is not None else "FIXTURE_ONLY"
+
+
+def broker_symbol(symbol: str) -> str:
+    """Exact broker symbol for data fetches (host capture), else the canonical name."""
+    record = load_record(symbol)
+    return record["broker_symbol"] if record is not None else symbol
 
 
 def _r(symbol: str, value: Optional[float]) -> Optional[float]:
-    if value is None or symbol not in EVIDENCED_DIGITS:
-        return value
-    return round(value, EVIDENCED_DIGITS[symbol])
+    digits = _digits(symbol) if value is not None else None
+    return value if digits is None else round(value, digits)
 
 
 def build_fx_ticket(
