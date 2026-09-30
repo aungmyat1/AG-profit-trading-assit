@@ -41,6 +41,19 @@ from _host_common import (  # noqa: E402
     mt5_access_lock, mt5_initialize, single_instance, start_run_watchdog, utcnow,
 )
 
+
+def _argv_mode(argv: List[str]) -> str:
+    for i, a in enumerate(argv):
+        if a.startswith("--mode="):
+            return a.split("=", 1)[1]
+        if a == "--mode" and i + 1 < len(argv):
+            return argv[i + 1]
+    return "smoke"
+
+
+if __name__ == "__main__":   # bound the whole process, including the heavy imports below (pandas: ~15 s cold)
+    start_run_watchdog(f"ag_v1_{_argv_mode(sys.argv[1:])}")
+
 from host_delivery import telegram_message as tg  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
@@ -270,7 +283,6 @@ def main(argv=None) -> int:
     ap.add_argument("--crypto-config", default=None, help="crypto ticket config version YAML (default: active V2)")
     args = ap.parse_args(argv)
     log_name = f"ag_v1_{args.mode}"
-    start_run_watchdog(log_name)
     now = utcnow()
     journal = os.path.join(REPO_ROOT, "journal", "host_smoke" if args.mode == "smoke" else "")
     from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config

@@ -461,7 +461,9 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
         assert name in install and name in uninstall
     assert ".venv\\Scripts\\python.exe" in install and "MultipleInstances IgnoreNew" in install
     assert "--mode {1}" in install and "Monday,Tuesday,Wednesday,Thursday,Friday" in install
-    assert "ExecutionTimeLimit (New-TimeSpan -Minutes 4)" in install
+    assert "ExecutionTimeLimit (New-TimeSpan -Minutes 4) -Priority 4" in install   # default 7 = low I/O
+    runner = (HOST / "live_candles_smoke.py").read_text(encoding="utf-8")
+    assert runner.index("start_run_watchdog(f\"ag_v1_") < runner.index("from large_smc_watch import")
     offsets = [int(o) for o in re.findall(r"Offset = (\d+);", install)]
     assert offsets == [1, 2, 3]                                        # fx, crypto, lsmc: staggered starts
     assert not re.search(r"Write-Host[^\n]*TELEGRAM_BOT_TOKEN\b(?!\s+and)", telegram.replace("MISSING TELEGRAM_BOT_TOKEN", ""))
