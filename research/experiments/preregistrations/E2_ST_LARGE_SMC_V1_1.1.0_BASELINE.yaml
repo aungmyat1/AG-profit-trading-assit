@@ -1,0 +1,62 @@
+# Preregistration E2 — ST_LARGE_SMC_V1 v1.1.0 baseline
+# EURUSD + GBPUSD
+#
+# FROZEN — do not edit after creation. Any change invalidates the OOS guarantee.
+# holdout_runs_completed must be 0 before any HOLDOUT run is attempted.
+# See research/experiments/SCHEMA.md for governance rules.
+#
+# Note: v1.1.0 is the target version for this preregistration. Current production
+# version is v1.0.7 (FORWARD_RESEARCH, friction campaign WP3A.1 running as of
+# 2026-09-30). This preregistration must not be executed until v1.1.0 is tagged
+# and its code_hash is known.
+
+experiment_id:        E2
+preregistered_utc:    "2026-09-30T00:00:00Z"
+strategy_id:          ST_LARGE_SMC_V1
+version:              "1.1.0"
+status:               PREREGISTERED
+holdout_runs_completed: 0
+
+hypotheses:
+  - id: H-1
+    description: >-
+      The baseline ST_LARGE_SMC_V1 configuration at v1.1.0 produces positive net
+      expectancy on EURUSD across the full OOS holdout window.
+  - id: H-2
+    description: >-
+      The baseline ST_LARGE_SMC_V1 configuration at v1.1.0 produces positive net
+      expectancy on GBPUSD across the full OOS holdout window.
+  - id: H-3
+    description: >-
+      Combined (EURUSD + GBPUSD) profit factor net of costs exceeds the acceptance
+      threshold, indicating the edge generalises across pairs.
+  - id: H-4
+    description: >-
+      Maximum drawdown remains within the acceptance threshold on both symbols,
+      separately and combined.
+
+acceptance_thresholds:
+  expectancy_net_min:  "OWNER_DECISION_REQUIRED"
+  profit_factor_min:   "OWNER_DECISION_REQUIRED"
+  win_rate_min:        "OWNER_DECISION_REQUIRED"
+  max_drawdown_max:    "OWNER_DECISION_REQUIRED"
+  min_trades_N:        "OWNER_DECISION_REQUIRED"
+
+scope:
+  symbols:            [EURUSD, GBPUSD]
+  sessions:           "OWNER_DECISION_REQUIRED"    # to be specified with v1.1.0 config
+  date_range_start:   "OWNER_DECISION_REQUIRED"
+  date_range_end:     "OWNER_DECISION_REQUIRED"
+  data_role:          HOLDOUT
+
+costs_assumption:
+  spread_pips:        "OWNER_DECISION_REQUIRED"    # informed by friction campaign WP3A.1 results
+  commission_pips:    "OWNER_DECISION_REQUIRED"
+  slippage_pips:      "OWNER_DECISION_REQUIRED"
+  funding_pips:       null
+
+notes: >-
+  The friction campaign WP3A.1 (sessions/ evidence 2026-09-29 to 2026-09-30) should
+  inform the spread_pips assumption before costs are finalised. Costs must be locked
+  before the first HOLDOUT run begins — they are part of this preregistration.
+  EURUSD-VIP exposure should be evaluated separately (see WP-7A instrument registry).

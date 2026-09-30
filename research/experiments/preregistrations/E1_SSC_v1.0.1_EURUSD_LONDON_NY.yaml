@@ -1,0 +1,56 @@
+# Preregistration E1 — ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.1
+# EURUSD, London + London-New York sessions, normal exit, no time cap
+#
+# FROZEN — do not edit after creation. Any change invalidates the OOS guarantee.
+# holdout_runs_completed must be 0 before any HOLDOUT run is attempted.
+# See research/experiments/SCHEMA.md for governance rules.
+
+experiment_id:        E1
+preregistered_utc:    "2026-09-30T00:00:00Z"
+strategy_id:          ST_SESSION_SWEEP_CONTINUATION_V1
+version:              "1.0.1"
+status:               PREREGISTERED
+holdout_runs_completed: 0
+
+hypotheses:
+  - id: H-1
+    description: >-
+      The strategy produces positive net expectancy (> 0.0 R) on EURUSD across the
+      London and London-New York sessions when run with normal (TP/SL) exits and no
+      intraday time cap, using costs as itemised in the scope block.
+  - id: H-2
+    description: >-
+      Win rate exceeds the minimum required for the R:R target to achieve
+      positive expectancy net of costs.
+  - id: H-3
+    description: >-
+      Maximum drawdown remains within an acceptable range, indicating the edge is
+      consistent rather than a small cluster of outsized wins.
+
+acceptance_thresholds:
+  expectancy_net_min:  "OWNER_DECISION_REQUIRED"
+  profit_factor_min:   "OWNER_DECISION_REQUIRED"
+  win_rate_min:        "OWNER_DECISION_REQUIRED"
+  max_drawdown_max:    "OWNER_DECISION_REQUIRED"
+  min_trades_N:        "OWNER_DECISION_REQUIRED"
+
+scope:
+  symbol:             EURUSD
+  sessions:           [LONDON, LONDON_NEW_YORK]
+  date_range_start:   "OWNER_DECISION_REQUIRED"
+  date_range_end:     "OWNER_DECISION_REQUIRED"
+  data_role:          HOLDOUT
+  exit_mode:          normal         # TP/SL — no partial close, no time cap
+  time_cap_minutes:   null
+
+costs_assumption:
+  spread_pips:        "OWNER_DECISION_REQUIRED"
+  commission_pips:    "OWNER_DECISION_REQUIRED"
+  slippage_pips:      "OWNER_DECISION_REQUIRED"
+  funding_pips:       null
+
+notes: >-
+  Sessions excluded: ASIAN, PRE_LONDON. The strategy spec permits running ASIAN
+  session; this preregistration covers LONDON + LONDON_NEW_YORK only. A separate
+  experiment would be needed to test the ASIAN session independently.
+  No time cap means trades are held until TP or SL — no forced flat at session end.

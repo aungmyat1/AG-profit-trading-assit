@@ -8,12 +8,19 @@
 # active       -- currently the strategy being run/tracked (vs. dormant/archived)
 # research     -- no execution authority anywhere, analysis only
 # demo_authorized / live_authorized -- set independently; never conflate registration with permission
+#
+# research_lifecycle -- edge-program gate (separate from AG-EGSVF lifecycle_stage in
+#   config/governance/strategy_lifecycle.yaml). Stages (no skipping):
+#   IDEA → SPECIFIED → IMPLEMENTED → IN_SAMPLE_TESTED → PREREGISTERED →
+#   OOS_TESTED → FRICTION_TESTED → FORWARD_SHADOW → DEMO_ELIGIBLE → LIVE_ELIGIBLE
+#   Advancing a stage requires explicit owner authorization; this field is data-only.
 
 strategies:
   ST_ASIAN_SWEEP_5R_V1:
     registered: true
     active: true
     research: true
+    research_lifecycle: FORWARD_SHADOW   # AG-EGSVF OPERATIONAL_SHADOW maps here
     demo_authorized: false   # explicit-command demo execution exists project-wide, but this strategy
                              # remains independently blocked by its own open contract gaps
     live_authorized: false   #   independently by strategies/STRATEGY_LEDGER.md's own open gaps
@@ -25,6 +32,7 @@ strategies:
     registered: true
     active: true
     research: false
+    research_lifecycle: DEMO_ELIGIBLE    # demo_authorized: true (ASIAN_LONDON cycle)
     demo_authorized: true    # ASIAN_LONDON cycle only -- see contract.yaml, LONDON_NEWYORK is false
     live_authorized: false
     config_source: strategies/session_trade/contract.yaml
@@ -34,6 +42,7 @@ strategies:
     registered: true
     active: false
     research: true
+    research_lifecycle: SPECIFIED        # spec exists in external repo; no implementation here
     demo_authorized: false
     live_authorized: false
     config_source: "SMC_3R_V1_SPEC.md (D:\\ddev\\Session Trade Codex)"
@@ -44,6 +53,7 @@ strategies:
     registered: true
     active: false
     research: true
+    research_lifecycle: FRICTION_TESTED  # friction campaign WP3A.1 running/completed 2026-09-30; E2 preregistered for v1.1.0 OOS
     demo_authorized: false
     live_authorized: false
     config_source: strategies/ST_LARGE_SMC_V1.yaml
@@ -59,6 +69,7 @@ strategies:
                      # Crypto profile is proposal/observation-only via a dedicated runner
                      # (src/btc_sweep_research/), not a continuously "active" pilot cycle
     research: true
+    research_lifecycle: FORWARD_SHADOW   # AG-EGSVF FORWARD_RESEARCH with live BTC daily pipeline
     demo_authorized: false
     live_authorized: false
     config_source: strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml
@@ -80,6 +91,7 @@ strategies:
                      # no operating pilot/incubation cycle, matches ST_LARGE_SMC_V1's own
                      # active:false convention at an equivalent early lifecycle stage
     research: true
+    research_lifecycle: PREREGISTERED    # E1 preregistration filed 2026-09-30 for v1.0.1 OOS
     demo_authorized: false
     live_authorized: false
     config_source: strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml
@@ -113,6 +125,7 @@ strategies:
     registered: true
     active: false
     research: false
+    research_lifecycle: IMPLEMENTED      # external EA was running; removed 2026-08-27; no formal OOS evidence in this repo
     demo_authorized: false   # its .ex5/.mq5 were removed from the MT5 terminal's Experts folder
                               # by the owner (2026-08-27); an orphaned position from its prior
                               # runs may still exist on the demo account -- see chat history, not
@@ -120,3 +133,18 @@ strategies:
     live_authorized: false
     config_source: "R8_OBM_V1_SPEC.md (D:\\ddev\\Session Trade Codex)"
     engine: "compiled MQL5 EA, external to both Python repos"
+
+  ST_ASIAN_RANGE_REVERSAL_V1:
+    registered: true
+    active: false
+    research: true
+    research_lifecycle: SPECIFIED        # E3 preregistered 2026-09-30; no engine implementation yet
+    demo_authorized: false
+    live_authorized: false
+    config_source: "research/experiments/preregistrations/E3_ST_ASIAN_RANGE_REVERSAL_V1_0.1.0.yaml"
+    engine: "none -- v0.1.0 spec only; implementation pending owner decision on open parameters"
+    note: >-
+      New strategy. Spec: Asian range 00:00-06:00 UTC, London sweep + close back inside
+      + confirmation candle, stop beyond sweep extreme + ATR buffer, TP1 range mid,
+      TP2 opposite boundary. Buffer coefficient and partial-close fraction are
+      OWNER_DECISION_REQUIRED (see E3 preregistration).

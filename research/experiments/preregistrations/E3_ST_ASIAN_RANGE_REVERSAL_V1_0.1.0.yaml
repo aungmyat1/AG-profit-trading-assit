@@ -1,0 +1,94 @@
+# Preregistration E3 — ST_ASIAN_RANGE_REVERSAL_V1 v0.1.0
+# EURUSD (initial symbol)
+#
+# FROZEN — do not edit after creation. Any change invalidates the OOS guarantee.
+# holdout_runs_completed must be 0 before any HOLDOUT run is attempted.
+# See research/experiments/SCHEMA.md for governance rules.
+#
+# This is a new strategy with no prior implementation. The preregistration documents
+# the hypothesis and spec before any in-sample work begins, satisfying the
+# PREREGISTERED lifecycle gate from the start. No code_hash exists yet.
+
+experiment_id:        E3
+preregistered_utc:    "2026-09-30T00:00:00Z"
+strategy_id:          ST_ASIAN_RANGE_REVERSAL_V1
+version:              "0.1.0"
+status:               PREREGISTERED
+holdout_runs_completed: 0
+
+# ── Strategy spec (v0.1.0) ───────────────────────────────────────────────────
+# Captured here because no strategies/ST_ASIAN_RANGE_REVERSAL_V1.yaml exists yet.
+# When that file is created it must exactly match this spec; any divergence requires
+# a new experiment ID.
+
+strategy_spec:
+  asian_session_window:
+    start_utc: "00:00"
+    end_utc:   "06:00"
+    note: Fixed UTC window; does not adjust for DST.
+
+  setup_conditions:
+    - London open must produce a sweep of the Asian high or Asian low
+    - After the sweep, price must close back inside the Asian range on the sweep timeframe
+    - A confirmation signal (engulfing or rejection candle) must form inside the range
+      after the close-back
+
+  entry:
+    trigger: Confirmation candle close (close-back + confirmation both required)
+
+  stop_loss:
+    base: Beyond the sweep extreme (high of sweep candle for short; low for long)
+    buffer: ATR(14, M5) × 0.5 (buffer coefficient OWNER_DECISION_REQUIRED)
+
+  take_profit:
+    tp1: Asian range midpoint
+    tp2: Opposite boundary of the Asian range (Asian high for long, Asian low for short)
+
+  partial_close:
+    at_tp1: "OWNER_DECISION_REQUIRED"    # fraction to close at TP1
+
+  timeframe_for_setup: "OWNER_DECISION_REQUIRED"   # M5 or M15; to be decided by owner
+  timeframe_for_asian_range: M5            # Asian range defined on M5 OHLC
+
+hypotheses:
+  - id: H-1
+    description: >-
+      The Asian range sweep + close-back + confirmation setup on EURUSD produces
+      positive net expectancy (> 0.0 R) when TP1 is at the range midpoint and TP2
+      is at the opposite boundary, with SL beyond the sweep extreme plus ATR buffer.
+  - id: H-2
+    description: >-
+      Win rate on EURUSD is sufficient to produce positive expectancy at the
+      TP1/TP2 target geometry net of realistic costs.
+  - id: H-3
+    description: >-
+      The edge is present consistently across the OOS window (no heavy clustering
+      in a single sub-period), evidenced by max drawdown within the acceptance threshold.
+
+acceptance_thresholds:
+  expectancy_net_min:  "OWNER_DECISION_REQUIRED"
+  profit_factor_min:   "OWNER_DECISION_REQUIRED"
+  win_rate_min:        "OWNER_DECISION_REQUIRED"
+  max_drawdown_max:    "OWNER_DECISION_REQUIRED"
+  min_trades_N:        "OWNER_DECISION_REQUIRED"
+
+scope:
+  symbol:             EURUSD
+  sessions:           [LONDON]          # sweep must occur at London open
+  date_range_start:   "OWNER_DECISION_REQUIRED"
+  date_range_end:     "OWNER_DECISION_REQUIRED"
+  data_role:          HOLDOUT
+
+costs_assumption:
+  spread_pips:        "OWNER_DECISION_REQUIRED"
+  commission_pips:    "OWNER_DECISION_REQUIRED"
+  slippage_pips:      "OWNER_DECISION_REQUIRED"
+  funding_pips:       null                         # intraday only
+
+notes: >-
+  v0.1.0 is the initial spec. No engine implementation exists yet. This file must
+  not be used to gate a HOLDOUT run until: (a) an engine is implemented and tagged
+  v0.1.0, (b) DEV runs have been completed and reviewed, (c) the PREREGISTERED
+  lifecycle gate has been formally acknowledged by the owner.
+  Buffer coefficient and partial_close fraction require owner decision before
+  in-sample work can begin.
