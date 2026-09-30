@@ -279,6 +279,17 @@ def test_single_instance_lock():
         pass
 
 
+def test_single_instance_breaks_lock_of_dead_process(tmp_path, monkeypatch):
+    monkeypatch.setattr(hc, "LOG_DIR", str(tmp_path))
+    (tmp_path / "d.lock").write_text("2147480000")                    # no such pid: killed run
+    with hc.single_instance("d"):
+        pass
+    (tmp_path / "d.lock").write_text(str(os.getpid()))                 # live owner: still held
+    with pytest.raises(hc.AlreadyRunning):
+        with hc.single_instance("d"):
+            pass
+
+
 def test_call_with_timeout_bounds_a_stuck_call_and_passes_results():
     import threading
     assert hc.call_with_timeout(lambda a, b=0: a + b, 1, b=2, limit_s=1) == 3

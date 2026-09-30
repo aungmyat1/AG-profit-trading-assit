@@ -58,13 +58,47 @@ class AlreadyRunning(RuntimeError):
     pass
 
 
+def _lock_pid(path: str) -> int:
+    try:
+        with open(path, encoding="utf-8") as f:
+            return int(f.read().strip() or 0)
+    except (OSError, ValueError):
+        return 0
+
+
+def _pid_alive(pid: int) -> bool:
+    """True if `pid` is a running process. Unknown (0) counts as alive so only the age rule
+    applies. Never signals the process (os.kill(pid, 0) terminates it on Windows)."""
+    if pid <= 0:
+        return True
+    if os.name == "nt":
+        import ctypes
+        k32 = ctypes.windll.kernel32
+        h = k32.OpenProcess(0x1000, False, pid)            # PROCESS_QUERY_LIMITED_INFORMATION
+        if not h:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            return bool(k32.GetExitCodeProcess(h, ctypes.byref(code))) and code.value == 259   # STILL_ACTIVE
+        finally:
+            k32.CloseHandle(h)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
 @contextmanager
 def single_instance(name: str, stale_after_s: int = 1800) -> Iterator[None]:
-    """O_EXCL lock file in logs/. A lock older than `stale_after_s` (a crashed run) is broken."""
+    """O_EXCL lock file in logs/. A lock older than `stale_after_s`, or whose owner process is
+    gone (a run killed by Task Scheduler), is broken."""
     os.makedirs(LOG_DIR, exist_ok=True)
     path = os.path.join(LOG_DIR, f"{name}.lock")
     try:
-        if time.time() - os.path.getmtime(path) > stale_after_s:
+        if time.time() - os.path.getmtime(path) > stale_after_s or not _pid_alive(_lock_pid(path)):
             os.remove(path)
     except OSError:
         pass
