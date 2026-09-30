@@ -1,0 +1,11 @@
+# Owner lock for the MT5 MCP client registration (2026-09-30).
+# Changes to these paths need review by the owner.
+/.mcp.json                          @aungmyat1
+/.vscode/mcp.json                   @aungmyat1
+/.claude/settings.json              @aungmyat1
+/web/scripts/mcp_client_lock.mjs    @aungmyat1
+/web/scripts/readonly_mcp_proxy.mjs @aungmyat1
+/web/scripts/start_mt5_mcp.mjs      @aungmyat1
+/web/scripts/mt5_demo_credentials.mjs @aungmyat1
+/web/scripts/claude_desktop_config.mjs @aungmyat1
+/web/tests/mcp_client_lock.test.mjs @aungmyat1

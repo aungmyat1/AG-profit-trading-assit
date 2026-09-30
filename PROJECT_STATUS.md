@@ -4,7 +4,25 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Workspace MCP integrations (2026-09-27, read-only configuration)
+## MT5 MCP client lock (2026-09-30, owner decision, read-only)
+
+Every client now registers exactly one MT5 server, `mt5ReadOnly`, launched through
+`web/scripts/start_mt5_mcp.mjs` (VT Markets Demo from `src/.env`, deferred-handshake
+fix from main #14, 14-tool `get_*` allowlist): Claude Code `.mcp.json`, VS Code
+`.vscode/mcp.json`, Claude Desktop (absolute paths), and Codex (`~/.codex/config.toml`).
+Removed: Bybit from workspace configs; the old `mt5_mcp_config.mjs` /
+`setup_desktop_mcp` installer; and on the owner's PC the raw `metatrader-mcp-server`
+entries (Codex `mt5_readonly`, `metatrader-2`, `metatrader-2-2` HTTP bridge, unfiltered
+`bybit@latest`). Lock: `web/scripts/mcp_client_lock.mjs`, enforced by
+`check_mt5_mcp.mjs` (all four clients) and `web/tests/mcp_client_lock.test.mjs`;
+`.github/CODEOWNERS` assigns the paths to the owner. Evidence 2026-09-30 on the owner's
+Windows PC: handshake answered in 0.6 s, MT5 connected at ~19 s, 13 read-only tools
+listed, `readonly_get_account_info` returned `account_type: demo`;
+`node --test web/tests/*.mjs` 27/27 pass; `check_mt5_mcp.mjs` exit 0 (one warning: pip
+version not detected). No order tools are exposed and no order was placed; execution
+authority is unchanged (`AGENTS.md`).
+
+## Workspace MCP integrations (2026-09-27, read-only configuration — superseded 2026-09-30)
 
 `.mcp.json` and `.vscode/mcp.json` now configure a read-only MT5 Demo MCP launcher
 and an unauthenticated Bybit MCP pinned to `2.1.22` in forced testnet mode. Both

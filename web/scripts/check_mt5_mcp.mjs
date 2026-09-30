@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { resolveDemoCredentials, credentialAliases, DEFAULT_DEMO_BROKER } from './mt5_demo_credentials.mjs';
 import { desktopConfigPath, inspectDesktopEntry } from './claude_desktop_config.mjs';
+import { LOCKED_SERVER, inspectLockedServers, parseCodexMcpServers } from './mcp_client_lock.mjs';
 
 const results = [];
 const add = (ok, name, detail = '') => {
@@ -105,28 +106,22 @@ if (isWin) {
   add(false, 'Windows host', `MetaTrader 5 needs Windows; this host is ${process.platform}, so the launcher runs in setup-status mode`);
 }
 
-// 7. Workspace MCP configs -- are both intended integrations registered?
+// 7. Workspace MCP configs -- owner lock: exactly the read-only MT5 server, nothing else.
+const lockResult = (label, result, detail) =>
+  add(result.ok, `${label} locked to ${LOCKED_SERVER}`, result.ok ? detail : result.problems.join('; '));
 const configs = [
-  { path: resolve(process.cwd(), '.mcp.json'), serversKey: 'mcpServers' },
-  { path: resolve(process.cwd(), '.vscode', 'mcp.json'), serversKey: 'servers' },
+  { label: 'Claude Code .mcp.json', path: resolve(process.cwd(), '.mcp.json'), serversKey: 'mcpServers' },
+  { label: 'VS Code .vscode/mcp.json', path: resolve(process.cwd(), '.vscode', 'mcp.json'), serversKey: 'servers' },
 ];
-let checkedConfig = false;
-for (const { path: cfgPath, serversKey } of configs) {
-  if (!existsSync(cfgPath)) continue;
-  checkedConfig = true;
+for (const { label, path: cfgPath, serversKey } of configs) {
+  if (!existsSync(cfgPath)) { add(false, label, `${cfgPath} not found`); continue; }
   try {
-    const cfg = JSON.parse(readFileSync(cfgPath, 'utf8'));
-    const servers = cfg[serversKey] || {};
-    const names = Object.keys(servers);
-    const mt = names.find(name => /mt5readonly/i.test(name));
-    const bybit = names.find(name => /^bybit$/i.test(name));
-    add(!!mt, `${cfgPath} has read-only MT5 MCP`, mt || `servers present: ${names.join(', ') || 'none'}`);
-    add(!!bybit, `${cfgPath} has Bybit MCP`, bybit || `servers present: ${names.join(', ') || 'none'}`);
+    const servers = JSON.parse(readFileSync(cfgPath, 'utf8'))[serversKey] || {};
+    lockResult(label, inspectLockedServers(servers, { workspace: true }), cfgPath);
   } catch (e) {
     add(false, `${cfgPath} is valid JSON`, e.message);
   }
 }
-if (!checkedConfig) add(false, 'workspace MCP configuration', 'neither .mcp.json nor .vscode/mcp.json was found');
 
 // 8. Claude Desktop config (Windows only) -- Desktop ignores .mcp.json and needs absolute paths.
 if (isWin) {
@@ -135,12 +130,25 @@ if (isWin) {
     add(null, 'Claude Desktop config', `${desktopPath} not found; run: node web/scripts/claude_desktop_config.mjs --write`);
   } else {
     try {
-      const { ok, detail } = inspectDesktopEntry(JSON.parse(readFileSync(desktopPath, 'utf8')));
+      const desktop = JSON.parse(readFileSync(desktopPath, 'utf8').replace(/^﻿/, ''));
+      const { ok, detail } = inspectDesktopEntry(desktop);
       add(ok, 'Claude Desktop has read-only MT5 MCP', ok ? detail : `${detail}; run: node web/scripts/claude_desktop_config.mjs --write`);
+      lockResult('Claude Desktop', inspectLockedServers(desktop.mcpServers, { requireAbsolute: true }), desktopPath);
     } catch (e) {
       add(false, `${desktopPath} is valid JSON`, e.message);
     }
   }
+}
+
+// 9. Codex (~/.codex/config.toml) -- same lock; other non-trading servers are allowed.
+const codexPath = join(env.CODEX_HOME || join(homedir(), '.codex'), 'config.toml');
+if (existsSync(codexPath)) {
+  const codexServers = parseCodexMcpServers(readFileSync(codexPath, 'utf8'));
+  const result = inspectLockedServers(codexServers, { requireAbsolute: true });
+  if (!result.ok) result.problems.push(`fix with: codex mcp add ${LOCKED_SERVER} -- "${process.execPath}" "${resolve(import.meta.dirname, 'start_mt5_mcp.mjs')}"`);
+  lockResult('Codex', result, codexPath);
+} else {
+  add(null, 'Codex config', `${codexPath} not found (Codex not configured on this machine)`);
 }
 
 // Summary

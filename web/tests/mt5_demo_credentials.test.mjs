@@ -72,3 +72,14 @@ test('setup-error server stays connected and exposes only mt5_setup_status', asy
   assert.match(status.result.content[0].text, /no terminal/);
   assert.equal(blocked.error.code, -32601);
 });
+
+test('accepts the VTMARKET-DEMO-* spelling from src/.env and strips it from the child env', () => {
+  const result = resolveDemoCredentials({
+    MT5_ENVIRONMENT: 'DEMO', MT5_BROKER: 'VANTAGE',
+    'VTMARKET-DEMO-LOGIN': '1144985', 'VTMARKET-DEMO_PASSWORD': 'secret', 'VTMARKET-DEMO_SERVER': 'VTMarkets-Demo'
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.broker, 'VTMARKETS');
+  assert.equal(result.login, '1144985');
+  assert.equal(isStrippedChildEnvKey('VTMARKET-DEMO_PASSWORD'), true);
+});

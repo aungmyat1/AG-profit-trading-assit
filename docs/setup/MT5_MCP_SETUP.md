@@ -7,6 +7,15 @@
 
 **Current integration: workspace-configured, read-only MCP spot checks.**
 
+> **Owner lock (2026-09-30):** all clients (Claude Code `.mcp.json`, VS Code
+> `.vscode/mcp.json`, Claude Desktop, Codex) register only `mt5ReadOnly` ->
+> `web/scripts/start_mt5_mcp.mjs`. Bybit is no longer registered in the workspace configs
+> (the Bybit paragraph below is historical). Verify with
+> `node web/scripts/check_mt5_mcp.mjs`; register missing clients with
+> `node web/scripts/claude_desktop_config.mjs --write` (Desktop) and
+> `codex mcp add mt5ReadOnly -- "<node.exe>" "<repo>\web\scripts\start_mt5_mcp.mjs"` (Codex).
+> The lock lives in `web/scripts/mcp_client_lock.mjs`; changing it needs owner review.
+
 The repository's `.mcp.json` and `.vscode/mcp.json` configure an MT5 MCP launcher
 and Bybit MCP launcher for VS Code-compatible clients. The MT5 launcher requires
 `MT5_ENVIRONMENT=DEMO`, loads demo credentials from `src/.env`, and filters both
