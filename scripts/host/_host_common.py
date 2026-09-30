@@ -140,6 +140,15 @@ def mt5_initialize(mt5, terminal_path: str = "") -> "tuple[bool, str]":
 _TF = ("M1", "M5", "M15", "M30", "H1", "H4", "D1")
 
 
+def _mt5_server_wall(raw_time: int) -> dt.datetime:
+    """MT5 copy_rates 'time' is broker-server wall-clock stored as seconds from the UTC
+    epoch (EET/broker-local convention -- the server midnight is treated as epoch origin,
+    not true UTC midnight). fromtimestamp(t, utc).replace(tzinfo=None) extracts the
+    server wall-clock datetime; .replace() strips only the misleading UTC label so that
+    server_time_to_utc (the single conversion point) receives a plain server wall-clock value."""
+    return dt.datetime.fromtimestamp(raw_time, dt.timezone.utc).replace(tzinfo=None)
+
+
 def host_fetch(mt5):
     """fetch(broker_symbol, timeframe, count) -> the last `count` CLOSED bars, oldest first.
 
@@ -158,7 +167,7 @@ def host_fetch(mt5):
         rates = mt5.copy_rates_from_pos(symbol, getattr(mt5, f"TIMEFRAME_{timeframe}"), 1, count)
         if rates is None or len(rates) < count:
             raise RuntimeError(f"DATA_MISSING {symbol}/{timeframe}: {mt5.last_error()}")
-        return [Candle(time=server_time_to_utc(dt.datetime.fromtimestamp(int(r["time"]), dt.timezone.utc).replace(tzinfo=None)),
+        return [Candle(time=server_time_to_utc(_mt5_server_wall(int(r["time"]))),
                        open=float(r["open"]), high=float(r["high"]), low=float(r["low"]),
                        close=float(r["close"]), volume=float(r["tick_volume"])) for r in rates]
     return fetch

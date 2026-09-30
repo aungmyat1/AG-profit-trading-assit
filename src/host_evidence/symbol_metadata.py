@@ -32,6 +32,9 @@ FIELDS = (
     "digits", "point", "trade_tick_size", "trade_tick_value", "trade_contract_size", "volume_min",
     "volume_step", "volume_max", "trade_stops_level", "trade_freeze_level", "spread", "currency_profit",
 )
+# Overnight/rollover cost fields required for CFD venue cost modelling (e.g. VT Markets MT5 BTCUSD/ETHUSD).
+# Not required in every record; _mt5_symbol_meta in v1_tickets.crypto refuses if absent for the MT5 venue.
+SWAP_FIELDS = ("swap_long", "swap_short", "swap_rollover3days")
 HOST_CAPTURED = "HOST_CAPTURED"
 
 
@@ -57,10 +60,13 @@ def build_record(canonical_symbol: str, broker_symbol: str, info: Dict[str, Any]
     missing = [f for f in FIELDS if info.get(f) is None]
     if missing:
         raise ValueError(f"symbol_info missing fields: {missing}")
+    all_fields: Dict[str, Any] = {f: info[f] for f in FIELDS}
+    # Include swap/rollover fields when available; absent = field not in record (not None).
+    all_fields.update({f: info[f] for f in SWAP_FIELDS if info.get(f) is not None})
     payload = {
         "schema": SCHEMA, "canonical_symbol": canonical_symbol, "broker_symbol": broker_symbol,
         "server": server, "server_utc_offset_hours": server_utc_offset_hours,
-        "server_utc_offset_rule": OFFSET_RULE, "trade_mode": trade_mode, "captured_at_utc": captured_at_utc, "fields": {f: info[f] for f in FIELDS},
+        "server_utc_offset_rule": OFFSET_RULE, "trade_mode": trade_mode, "captured_at_utc": captured_at_utc, "fields": all_fields,
         "source": "MetaTrader5.symbol_info (read-only)",
     }
     return {**payload, "sha256": hashlib.sha256(_canonical(payload).encode("utf-8")).hexdigest()}

@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from _host_common import REPO_ROOT, import_mt5, mt5_initialize, utcnow  # noqa: E402
 
 from host_evidence.symbol_metadata import (  # noqa: E402
-    FIELDS, OFFSET_RULE, build_record, server_utc_offset_hours, write_record,
+    FIELDS, OFFSET_RULE, SWAP_FIELDS, build_record, server_utc_offset_hours, write_record,
 )
 
 CAPTURABLE = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSD", "ETHUSD")
@@ -54,6 +54,10 @@ def capture(mt5, canonical: str, broker_symbol: str, offset_fn, now_iso: str) ->
     if getattr(info, "name", broker_symbol) != broker_symbol:
         raise SystemExit(f"broker returned {info.name!r} for {broker_symbol!r}; refusing a non-exact match")
     fields = {f: getattr(info, f, None) for f in FIELDS}
+    for f in SWAP_FIELDS:
+        val = getattr(info, f, None)
+        if val is not None:
+            fields[f] = val
     try:
         offset = offset_fn(broker_symbol)
     except Exception as exc:  # noqa: BLE001 -- offset is required evidence, fail closed with the reason

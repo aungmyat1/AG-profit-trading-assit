@@ -153,7 +153,7 @@ def test_crypto_config_v1_preserved_and_v2_active():
     v1, v2 = _cfg(1), _cfg(2)
     assert (v1["version"], v1["status"], v1["venue"]["kind"]) == (1, "PRESERVED", "PUBLIC_PERP")
     assert (v1["window"]["start"], v1["window"]["end"], v1["window"]["timezone"]) == ("06:30", "06:45", "UTC")
-    assert (v2["version"], v2["status"], v2["supersedes"]) == (2, "ACTIVE", 1)
+    assert (v2["version"], v2["status"], v2["supersedes"]) == (2, "SHADOW_NEW_VENUE", 1)
     assert v2["venue"] == {"kind": "MT5", "source_id": "MT5_VT_MARKETS_DEMO",
                            "symbols": {"BTCUSDT": "BTCUSD", "ETHUSDT": "ETHUSD"},
                            "server_time_rule": "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700"}
@@ -181,11 +181,13 @@ def test_crypto_v1_window_matches_frozen_daily_report():
     assert window_status(_cfg(1), OBS, V2_IN) == "AFTER_WINDOW"
 
 
-def _write_host_record(root, broker):
+def _write_host_record(root, broker, include_swap=True):
     from host_evidence.symbol_metadata import build_record, write_record
     fields = {"digits": 2, "point": 0.01, "trade_tick_size": 0.01, "trade_tick_value": 0.01,
               "trade_contract_size": 1.0, "volume_min": 0.01, "volume_step": 0.01, "volume_max": 100.0,
               "trade_stops_level": 0, "trade_freeze_level": 0, "spread": 1694, "currency_profit": "USD"}
+    if include_swap:
+        fields.update({"swap_long": -25.0, "swap_short": 5.0, "swap_rollover3days": 3})
     write_record(build_record(broker, broker, fields, "VTMarkets-Demo", 3, "t", trade_mode="FULL"), root)
 
 
@@ -224,3 +226,16 @@ def test_crypto_v2_outside_window_and_missing_metadata_fail_closed(tmp_path, mon
     err = build_crypto_ticket("BTCUSDT", OBS, V2_IN, feed=feed, state_dir=str(tmp_path), config=cfg)
     assert err["decision"] == "DATA_ERROR" and err["reason_codes"] == ["MT5_FEED_ERROR"]
     assert "HOST_METADATA_MISSING BTCUSD" in err["detail"] and "entry" not in err
+
+
+def test_crypto_v2_missing_swap_fields_is_data_error(tmp_path, monkeypatch):
+    """HIGH-1 regression: Mt5CryptoFeed refuses to run if swap/rollover fields are absent."""
+    from v1_tickets.crypto import Mt5CryptoFeed
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "ev"))
+    _write_host_record(str(tmp_path / "ev"), "BTCUSD", include_swap=False)
+    cfg, calls = _cfg(2), []
+    feed = Mt5CryptoFeed(_mt5_fetch(calls), cfg["venue"]["symbols"], cfg["venue"]["source_id"])
+    t = build_crypto_ticket("BTCUSDT", V2_IN.date() - dt.timedelta(days=1), V2_IN, feed=feed,
+                            state_dir=str(tmp_path / "s"), config=cfg)
+    assert t["decision"] == "DATA_ERROR" and t["reason_codes"] == ["MT5_FEED_ERROR"]
+    assert "HOST_SWAP_METADATA_MISSING" in t["detail"]

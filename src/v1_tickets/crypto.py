@@ -33,6 +33,7 @@ from execution_runtime import bybit_linear_perp_feed as BY
 from execution_runtime.public_crypto_feed import (
     CandleBundle, FallbackPublicCryptoFeed, PrefetchedFeed, PublicCryptoFeedUnavailable,
 )
+from host_evidence.symbol_metadata import SWAP_FIELDS, load_record
 from mt5.symbol_resolver import METADATA_SOURCE_SYNTHETIC_RESEARCH, SymbolMeta
 from sizing_math.daily_loss_guard import DailyLossGuard
 from sizing_math.position_guard import OpenPositionGuard
@@ -95,12 +96,16 @@ class Mt5CryptoFeed:
 
 def _mt5_symbol_meta(symbol: str, broker_symbol: str) -> SymbolMeta:
     """SymbolMeta from the verified host capture of the broker symbol. Tagged
-    SYNTHETIC_RESEARCH like every crypto research record (never broker-order eligible)."""
-    from host_evidence.symbol_metadata import load_record
+    SYNTHETIC_RESEARCH like every crypto research record (never broker-order eligible).
+    Raises LookupError if swap/rollover fields are absent (required for CFD cost model)."""
     rec = load_record(broker_symbol)
     if rec is None or rec["broker_symbol"] != broker_symbol:
         raise LookupError(f"HOST_METADATA_MISSING {broker_symbol}")
     f = rec["fields"]
+    missing_swap = [sf for sf in SWAP_FIELDS if f.get(sf) is None]
+    if missing_swap:
+        raise LookupError(f"HOST_SWAP_METADATA_MISSING {broker_symbol}: {missing_swap} "
+                          f"-- re-run capture_symbol_metadata.py to update the record")
     return SymbolMeta(symbol=symbol, tick_size=float(f["trade_tick_size"]), tick_value=float(f["trade_tick_value"]),
                       contract_size=float(f["trade_contract_size"]), volume_min=float(f["volume_min"]),
                       volume_max=float(f["volume_max"]), volume_step=float(f["volume_step"]),

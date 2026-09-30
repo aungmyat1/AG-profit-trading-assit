@@ -6,7 +6,10 @@
 # proposal, demo or live authority (strategies/registry.yaml is unchanged on authority).
 config_id: AG_V1_CRYPTO_TICKET
 version: 2
-status: ACTIVE
+# SHADOW_NEW_VENUE: venue changed from public perp (Bybit/Binance) to VT Markets MT5 CFD.
+# Parity required before promoting to ACTIVE: compare signal populations on an overlapping
+# window between v1 (perp) and v2 (MT5 CFD) and document cost-model equivalence.
+status: SHADOW_NEW_VENUE
 supersedes: 1
 venue:
   kind: MT5

@@ -437,6 +437,23 @@ def test_host_fetch_uses_rule_and_closed_bars_only():
     assert ("copy_rates_from_pos", "BTCUSD", 5, 1, 3) in mt5.calls                   # position 1: forming bar excluded
 
 
+def test_mt5_server_wall_london_open_summer_and_winter():
+    """CRITICAL-1 regression: MT5 server-wall-clock extraction + rule conversion produces
+    correct UTC for London open in both US DST and non-DST seasons; no bar timestamped after
+    its data-available time (position=1 in copy_rates_from_pos excludes the forming bar)."""
+    # Summer 2026-09-29: EDT active, NY = UTC-4, VT server = UTC+3.
+    # London BST open 08:00 BST = 07:00 UTC = 10:00 server.
+    # MT5 stores server time as "server wall-clock seconds from UTC epoch".
+    summer_raw = int(dt.datetime(2026, 9, 29, 10, 0, tzinfo=UTC).timestamp())
+    # Winter 2026-12-01: EST active, NY = UTC-5, VT server = UTC+2.
+    # London winter open 08:00 UTC = 10:00 server.
+    winter_raw = int(dt.datetime(2026, 12, 1, 10, 0, tzinfo=UTC).timestamp())
+
+    from host_evidence.symbol_metadata import server_time_to_utc
+    assert server_time_to_utc(hc._mt5_server_wall(summer_raw)) == dt.datetime(2026, 9, 29, 7, 0, tzinfo=UTC)
+    assert server_time_to_utc(hc._mt5_server_wall(winter_raw)) == dt.datetime(2026, 12, 1, 8, 0, tzinfo=UTC)
+
+
 def test_smoke_includes_vt_crypto_with_v2_config(tmp_path):
     from test_v1_tickets import _cfg
     fetch = fake_fetch()
