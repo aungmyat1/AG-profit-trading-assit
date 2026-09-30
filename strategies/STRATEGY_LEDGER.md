@@ -72,7 +72,9 @@ from canonical session windows or other repo conventions at the time of registra
   `docs/specs/SESSION_TRADE_V1_SPEC.md` for the full frozen spec and
   `Session Trade Codex\SESSION_PAIR_STABILIZATION_STATUS.md` for that repo's own
   test/authority verification (313 passed / 4 failed there, independently maintained).
-- **Status:** demo-authorized for one of its two execution cycles; see spec for exact gates.
+- **Status:** demo authority WITHDRAWN (AG V1 owner decision D3, 2026-09-30): registry
+  `demo_authorized: false`, contract `execution.demo: false`, status `DEMO_WITHDRAWN`. Previously
+  demo-authorized for the `ASIAN_LONDON` cycle only (history below kept as recorded).
 - **Family:** Session reference-box trend-continuation / sweep / range-rejection (own classifier,
   NOT `ER_ONLY_V2` -- see `docs/architecture/ARCHITECTURE_CONFLICT_AUDIT.md` for why these are two legitimately
   distinct classifiers, not a duplication bug).
@@ -88,6 +90,16 @@ from canonical session windows or other repo conventions at the time of registra
   different execution authority. Do not merge them.
 
 ## ST_LARGE_SMC_V1 -- Large SMC Opportunity Service
+
+- **v1.1.0 (AG V1 Goal 2, 2026-09-30) -- NEW VERSION, v1.0.7 preserved unchanged.** Contract
+  `strategies/ST_LARGE_SMC_V1_1_1_0.yaml`, implementation `src/large_smc_watch/`. Implements the
+  owner-stated 1.1.0 rules (RMR-A catalogue branch was never pushed; owner decision 3). Status
+  `SHADOW_ALERTS_ONLY`; instruments EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSDT, ETHUSDT (USDJPY/
+  XAUUSD FIXTURE_ONLY until host symbol metadata exists). `proposal_generation_authorized: false`,
+  no demo/live authority; alerts archived ARCHIVE_ONLY in the ticket_delivery journal. Logical
+  verification only (fixtures, truncation invariance, no look-ahead); no economic evaluation.
+  v1.0.7 engine is not runnable on current main (reaches forbidden `trade_management`); its C10/
+  C11/decision modules are restored byte-exact in `src/large_smc_core/`.
 
 - **Registered:** 2026-09-01
 - **Config:** `strategies/ST_LARGE_SMC_V1.yaml`
@@ -249,6 +261,13 @@ from canonical session windows or other repo conventions at the time of registra
   `docs/status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md`.
 
 ## ST_LIQUIDITY_SWEEP_RETEST_V1 -- Liquidity Sweep + H1 Trend + M5 MSS + Retest (Forex + Crypto)
+
+- **AG V1 D4 (2026-09-30):** ETHUSDT (already an instrument of the frozen v2.0.0 CRYPTO_PERP
+  profile; no rule/parameter change) registered with symbol status `SHADOW` for informational
+  tickets only (`src/v1_tickets/crypto.py`, frozen daily window). Data: Bybit public primary,
+  Binance public fallback (`src/execution_runtime/public_crypto_feed.py`), source printed on
+  every ticket. Sizing/guard imports now resolve to the byte-exact `src/sizing_math/` boundary
+  (owner decision 1); engine rules unchanged.
 
 - **Registered:** 2026-08-30
 - **Config:** `strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml`

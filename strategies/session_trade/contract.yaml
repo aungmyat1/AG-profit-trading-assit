@@ -23,7 +23,7 @@ source_of_truth:
     strategy, which is exactly the duplicate-authority problem this registration is meant to
     prevent.
 
-status: PARTIAL_DEMO_AUTHORIZED   # one of two cycles signed and demo-authorized, the other UNSIGNED
+status: DEMO_WITHDRAWN   # AG V1 D3 (2026-09-30): was PARTIAL_DEMO_AUTHORIZED (ASIAN_LONDON signed + demo-authorized, LONDON_NEWYORK UNSIGNED)
 
 required_capabilities:
   - MARKET_DATA        # MT5 candles/tick, via the source repo's own mt5/ (not this repo's)
@@ -58,7 +58,7 @@ supported_cycles:
       until the owner signs an explicit window the same way ASIAN_LONDON's was signed.
 
 execution:
-  demo: true    # ASIAN_LONDON only; LONDON_NEWYORK stays analysis/order_check-only
+  demo: false   # AG V1 D3 (2026-09-30): withdrawn; was true for ASIAN_LONDON only
   live: false   # hard-blocked, both cycles, unconditionally
 
 owned_by_strategy_not_capability_layer:
