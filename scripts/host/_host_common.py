@@ -10,9 +10,10 @@ from __future__ import annotations
 import datetime as dt
 import os
 import sys
+import threading
 import time
 from contextlib import contextmanager
-from typing import Iterator
+from typing import Any, Callable, Iterator
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 # Appended, not prepended: the repo-root MetaTrader5.py stub must never shadow the real
@@ -23,6 +24,14 @@ for _p in (REPO_ROOT, os.path.join(REPO_ROOT, "src")):
 
 LOG_DIR = os.path.join(REPO_ROOT, "logs")
 _SECRET_MARKERS = ("TOKEN", "PASSWORD", "SECRET", "KEY")
+
+# Hard bounds for scheduled runs (a hung MT5 IPC call or interpreter exit once kept tasks alive
+# until Task Scheduler killed them, blocking the next cycle).
+MT5_INIT_TIMEOUT_S = 20
+MT5_CALL_TIMEOUT_S = 10
+RUN_TIMEOUT_S = 120
+MT5_LOCK_WAIT_S = 60
+_HELD_LOCKS: set = set()
 
 
 def utcnow() -> dt.datetime:
@@ -63,15 +72,109 @@ def single_instance(name: str, stale_after_s: int = 1800) -> Iterator[None]:
         fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     except FileExistsError as exc:
         raise AlreadyRunning(name) from exc
+    _HELD_LOCKS.add(path)
     try:
         os.write(fd, str(os.getpid()).encode())
         os.close(fd)
         yield
     finally:
+        _HELD_LOCKS.discard(path)
         try:
             os.remove(path)
         except OSError:
             pass
+
+
+class CallTimeout(RuntimeError):
+    code = "CALL_TIMEOUT"
+
+
+def call_with_timeout(fn: Callable[..., Any], *args: Any, limit_s: float = MT5_CALL_TIMEOUT_S, **kwargs: Any) -> Any:
+    """Run fn in a daemon thread; raise CallTimeout if it has not returned within `limit_s`
+    seconds. A stuck call is abandoned (the run watchdog ends the process)."""
+    box: dict = {}
+
+    def run() -> None:
+        try:
+            box["value"] = fn(*args, **kwargs)
+        except BaseException as exc:  # noqa: BLE001 -- re-raised in the caller's thread
+            box["error"] = exc
+
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
+    t.join(limit_s)
+    if t.is_alive():
+        raise CallTimeout(f"{getattr(fn, '__name__', fn)} exceeded {limit_s}s")
+    if "error" in box:
+        raise box["error"]
+    return box.get("value")
+
+
+def start_run_watchdog(name: str, timeout_s: float = RUN_TIMEOUT_S, _exit: Callable[[int], Any] = os._exit):
+    """Self-exit the whole process after `timeout_s`, logging TIMEOUT and releasing any
+    single_instance lock so the next scheduled cycle is not blocked."""
+    def fire() -> None:
+        log_line(name, f"TIMEOUT run exceeded {timeout_s}s; self-exit")
+        for path in list(_HELD_LOCKS):
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+        _exit(3)
+
+    timer = threading.Timer(timeout_s, fire)
+    timer.daemon = True
+    timer.start()
+    return timer
+
+
+class Mt5Busy(RuntimeError):
+    code = "MT5_BUSY"
+
+
+def _try_lock(f) -> bool:
+    try:
+        if os.name == "nt":
+            import msvcrt
+            f.seek(0)
+            msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except OSError:
+        return False
+
+
+def _unlock(f) -> None:
+    if os.name == "nt":
+        import msvcrt
+        f.seek(0)
+        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        import fcntl
+        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+
+@contextmanager
+def mt5_access_lock(wait_s: float = MT5_LOCK_WAIT_S, poll_s: float = 1.0) -> Iterator[None]:
+    """One cross-process OS file lock around all MT5 access (fx / crypto / lsmc share one
+    terminal). The OS drops it when the process dies, so a killed run never leaves it held.
+    Raises Mt5Busy if it cannot be acquired within `wait_s`."""
+    os.makedirs(LOG_DIR, exist_ok=True)
+    f = open(os.path.join(LOG_DIR, "mt5_access.lock"), "a+")
+    try:
+        deadline = time.monotonic() + wait_s
+        while not _try_lock(f):
+            if time.monotonic() >= deadline:
+                raise Mt5Busy(f"mt5_access.lock held > {wait_s}s")
+            time.sleep(poll_s)
+        try:
+            yield
+        finally:
+            _unlock(f)
+    finally:
+        f.close()
 
 
 def _is_repo_module(mt5) -> bool:
@@ -132,8 +235,12 @@ def mt5_initialize(mt5, terminal_path: str = "") -> "tuple[bool, str]":
     server = env("VTMARKETS-DEMO-SERVER", "VTMARKETS_DEMO_SERVER", "MT5_SERVER")
     if login and password and server:
         kwargs.update(login=int(login), password=password, server=server)
-    ok = bool(mt5.initialize(**kwargs))
-    code, msg = mt5.last_error() if hasattr(mt5, "last_error") else (None, "")
+    kwargs["timeout"] = MT5_INIT_TIMEOUT_S * 1000       # MT5's own ms timeout, plus a thread bound
+    try:
+        ok = bool(call_with_timeout(mt5.initialize, limit_s=MT5_INIT_TIMEOUT_S + 2, **kwargs))
+    except CallTimeout as exc:
+        return False, f"INIT_TIMEOUT {exc}"
+    code, msg = call_with_timeout(mt5.last_error) if hasattr(mt5, "last_error") else (None, "")
     return ok, redact(f"last_error=({code}, {msg})")
 
 
@@ -164,12 +271,13 @@ def host_fetch(mt5):
     def fetch(symbol: str, timeframe: str, count: int) -> list:
         if timeframe not in _TF:
             raise ValueError(f"UNSUPPORTED_TIMEFRAME {timeframe!r}")
-        if mt5.symbol_info(symbol) is None and not mt5.symbol_select(symbol, True):
+        if call_with_timeout(mt5.symbol_info, symbol) is None and not call_with_timeout(mt5.symbol_select, symbol, True):
             raise HostDataError(SYMBOL_NOT_FOUND, repr(symbol))
-        rates = mt5.copy_rates_from_pos(symbol, getattr(mt5, f"TIMEFRAME_{timeframe}"), 1, count)
+        rates = call_with_timeout(mt5.copy_rates_from_pos, symbol, getattr(mt5, f"TIMEFRAME_{timeframe}"), 1, count)
         if rates is None or len(rates) < count:
             got = 0 if rates is None else len(rates)
-            raise HostDataError(INCOMPLETE_CANDLES, f"{symbol}/{timeframe} {got}<{count}: {mt5.last_error()}")
+            raise HostDataError(INCOMPLETE_CANDLES,
+                                f"{symbol}/{timeframe} {got}<{count}: {call_with_timeout(mt5.last_error)}")
         try:
             return [Candle(time=server_time_to_utc(_mt5_server_wall(int(r["time"]))),
                            open=float(r["open"]), high=float(r["high"]), low=float(r["low"]),
@@ -182,7 +290,7 @@ def host_fetch(mt5):
 def host_quote(mt5):
     """quote(broker_symbol) -> (bid, ask) from symbol_info_tick, or None. Read-only."""
     def quote(symbol: str):
-        tick = mt5.symbol_info_tick(symbol)
+        tick = call_with_timeout(mt5.symbol_info_tick, symbol)
         if tick is None or not getattr(tick, "bid", 0) or not getattr(tick, "ask", 0):
             return None
         return float(tick.bid), float(tick.ask)

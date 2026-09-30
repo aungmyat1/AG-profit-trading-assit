@@ -12,7 +12,9 @@
   states only.
 - fx / crypto / lsmc are the scheduled modes. Each is window-bounded in UTC from the frozen
   configs, which makes it DST-safe whatever the host's local time zone. Each is
-  single-instance (lock file in logs/) and idempotent: a ticket or alert is archived
+  single-instance (lock file in logs/), serialized on one cross-process MT5 lock (MT5_BUSY
+  after 60 s), bounded by per-call MT5 timeouts and a 120 s whole-run TIMEOUT self-exit,
+  and idempotent: a ticket or alert is archived
   only when its content changes. Optional message-only Telegram delivery covers READY
   tickets and OPPORTUNITY alerts, and only if the host-local override enables it.
 
@@ -35,7 +37,8 @@ from typing import Callable, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _host_common import (  # noqa: E402
-    REPO_ROOT, AlreadyRunning, host_fetch, host_quote, import_mt5, log_line, mt5_initialize, single_instance, utcnow,
+    REPO_ROOT, AlreadyRunning, Mt5Busy, call_with_timeout, host_fetch, host_quote, import_mt5, log_line,
+    mt5_access_lock, mt5_initialize, single_instance, start_run_watchdog, utcnow,
 )
 
 from host_delivery import telegram_message as tg  # noqa: E402
@@ -218,6 +221,12 @@ def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config
     return lines
 
 
+def lsmc_crypto_feed(config: dict, fetch: Fetch, quote: Optional[Quote] = None):
+    """Large-SMC crypto watch reads the ticket venue (VT Markets MT5 BTCUSD/ETHUSD) only. The
+    public perp feed is never used in scheduled runs: a non-MT5 config skips crypto (None)."""
+    return crypto_feed_for(config, fetch, quote) if config["venue"]["kind"] == "MT5" else None
+
+
 def crypto_feed_for(config: dict, fetch: Optional[Fetch], quote: Optional[Quote] = None):
     from v1_tickets.crypto import Mt5CryptoFeed
     venue = config["venue"]
@@ -260,12 +269,14 @@ def main(argv=None) -> int:
     ap.add_argument("--terminal-path", default=os.environ.get("MT5_TERMINAL_PATH", ""))
     ap.add_argument("--crypto-config", default=None, help="crypto ticket config version YAML (default: active V2)")
     args = ap.parse_args(argv)
+    log_name = f"ag_v1_{args.mode}"
+    start_run_watchdog(log_name)
     now = utcnow()
     journal = os.path.join(REPO_ROOT, "journal", "host_smoke" if args.mode == "smoke" else "")
     from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config
     crypto_config = load_ticket_config(args.crypto_config or ACTIVE_CONFIG, REPO_ROOT)
     try:
-        with single_instance(f"ag_v1_{args.mode}"):
+        with single_instance(log_name):
             if args.mode == "crypto" and crypto_config["venue"]["kind"] != "MT5":
                 lines = run_crypto(now, journal, crypto_feed_for(crypto_config, None), config=crypto_config)
             else:
@@ -273,25 +284,32 @@ def main(argv=None) -> int:
                 if mt5 is None:
                     print("MetaTrader5 package missing -- run scripts/host/diagnose_mt5.py")
                     return 1
-                ok, err = mt5_initialize(mt5, args.terminal_path)
-                if not ok:
-                    log_line(f"ag_v1_{args.mode}", f"MT5_INITIALIZE_FAILED {err}")
-                    return 1
-                try:
-                    fetch, quote = host_fetch(mt5), host_quote(mt5)
-                    if args.mode == "crypto":
-                        lines = run_crypto(now, journal, crypto_feed_for(crypto_config, fetch, quote), config=crypto_config)
-                    elif args.mode == "smoke":
-                        lines = run_smoke(fetch, now, journal, crypto_config, quote)
-                    elif args.mode == "fx":
-                        lines = run_fx(fetch, now, journal, gated=True, quote=quote)
-                    else:
-                        from execution_runtime.public_crypto_feed import FallbackPublicCryptoFeed
-                        lines = run_lsmc(fetch, now, journal, crypto_feed=FallbackPublicCryptoFeed())
-                finally:
-                    mt5.shutdown()
+                with mt5_access_lock():
+                    ok, err = mt5_initialize(mt5, args.terminal_path)
+                    if not ok:
+                        log_line(log_name, f"MT5_INITIALIZE_FAILED {err}")
+                        return 1
+                    try:
+                        fetch, quote = host_fetch(mt5), host_quote(mt5)
+                        if args.mode == "crypto":
+                            lines = run_crypto(now, journal, crypto_feed_for(crypto_config, fetch, quote),
+                                               config=crypto_config)
+                        elif args.mode == "smoke":
+                            lines = run_smoke(fetch, now, journal, crypto_config, quote)
+                        elif args.mode == "fx":
+                            lines = run_fx(fetch, now, journal, gated=True, quote=quote)
+                        else:
+                            lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote))
+                    finally:
+                        try:
+                            call_with_timeout(mt5.shutdown)
+                        except Exception:  # noqa: BLE001 -- a stuck shutdown must not hold the run
+                            pass
     except AlreadyRunning:
-        print(f"ALREADY_RUNNING ag_v1_{args.mode}")
+        print(f"ALREADY_RUNNING {log_name}")
+        return 0
+    except Mt5Busy as exc:
+        log_line(log_name, f"MT5_BUSY {exc}")
         return 0
     for line in lines or [f"{args.mode.upper()} NOTHING_IN_WINDOW"]:
         log_line(f"ag_v1_{args.mode}", line)
@@ -299,4 +317,7 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    rc = main()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(rc)   # hard exit: a lingering MT5/HTTP thread must not keep the task alive after main()

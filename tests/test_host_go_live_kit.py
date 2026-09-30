@@ -130,7 +130,7 @@ def test_initialize_passes_credentials_but_never_prints_password(monkeypatch):
     monkeypatch.setenv("VTMARKETS_DEMO_SERVER", "VTMarkets-Demo")
     fake = FakeMT5()
     ok, detail = hc.mt5_initialize(fake)
-    assert ok and fake.calls[0] == ("initialize", ["login", "password", "server"])
+    assert ok and fake.calls[0] == ("initialize", ["login", "password", "server", "timeout"])
     assert "s3cretPass!" not in detail and hc.redact("pw=s3cretPass!") == "pw=***"
 
 
@@ -279,6 +279,58 @@ def test_single_instance_lock():
         pass
 
 
+def test_call_with_timeout_bounds_a_stuck_call_and_passes_results():
+    import threading
+    assert hc.call_with_timeout(lambda a, b=0: a + b, 1, b=2, limit_s=1) == 3
+    with pytest.raises(ZeroDivisionError):
+        hc.call_with_timeout(lambda: 1 / 0, limit_s=1)
+    gate = threading.Event()
+    with pytest.raises(hc.CallTimeout):
+        hc.call_with_timeout(gate.wait, limit_s=0.1)
+    gate.set()
+
+
+def test_initialize_timeout_fails_closed(monkeypatch):
+    import threading
+    gate = threading.Event()
+    monkeypatch.setattr(hc, "MT5_INIT_TIMEOUT_S", -1.9)          # thread bound = 0.1 s
+    fake = types.SimpleNamespace(initialize=lambda **kw: gate.wait(), last_error=lambda: (0, ""))
+    ok, detail = hc.mt5_initialize(fake)
+    gate.set()
+    assert not ok and detail.startswith("INIT_TIMEOUT")
+
+
+def test_run_watchdog_logs_timeout_and_releases_lock(tmp_path, monkeypatch):
+    import threading
+    monkeypatch.setattr(hc, "LOG_DIR", str(tmp_path))
+    exited = threading.Event()
+    with hc.single_instance("wd"):
+        hc.start_run_watchdog("wd", timeout_s=0.05, _exit=lambda rc: exited.set())
+        assert exited.wait(2)
+        assert not (tmp_path / "wd.lock").exists()
+    assert "TIMEOUT run exceeded" in (tmp_path / "wd.log").read_text()
+
+
+def test_mt5_access_lock_is_exclusive_and_reports_busy(tmp_path, monkeypatch):
+    monkeypatch.setattr(hc, "LOG_DIR", str(tmp_path))
+    with hc.mt5_access_lock(wait_s=0):
+        with pytest.raises(hc.Mt5Busy):
+            with hc.mt5_access_lock(wait_s=0.2, poll_s=0.05):
+                pass
+    with hc.mt5_access_lock(wait_s=0):
+        pass
+
+
+def test_lsmc_crypto_uses_mt5_venue_never_public_feed():
+    from v1_tickets.crypto import Mt5CryptoFeed
+    mt5_cfg = {"venue": {"kind": "MT5", "symbols": {"BTCUSDT": "BTCUSD", "ETHUSDT": "ETHUSD"},
+                         "source_id": "MT5_VT_MARKETS_DEMO"}}
+    feed = smoke.lsmc_crypto_feed(mt5_cfg, lambda s, tf, n: [])
+    assert isinstance(feed, Mt5CryptoFeed) and feed.symbols == {"BTCUSDT": "BTCUSD", "ETHUSDT": "ETHUSD"}
+    assert smoke.lsmc_crypto_feed({"venue": {"kind": "PUBLIC_PERP"}}, lambda s, tf, n: []) is None
+    assert "FallbackPublicCryptoFeed()" not in (HOST / "live_candles_smoke.py").read_text().split("def main")[1]
+
+
 def _load_repo_stub():
     import importlib.util
     spec = importlib.util.spec_from_file_location("MetaTrader5", ROOT / "MetaTrader5.py")
@@ -398,6 +450,9 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
         assert name in install and name in uninstall
     assert ".venv\\Scripts\\python.exe" in install and "MultipleInstances IgnoreNew" in install
     assert "--mode {1}" in install and "Monday,Tuesday,Wednesday,Thursday,Friday" in install
+    assert "ExecutionTimeLimit (New-TimeSpan -Minutes 4)" in install
+    offsets = [int(o) for o in re.findall(r"Offset = (\d+);", install)]
+    assert offsets == [1, 2, 3]                                        # fx, crypto, lsmc: staggered starts
     assert not re.search(r"Write-Host[^\n]*TELEGRAM_BOT_TOKEN\b(?!\s+and)", telegram.replace("MISSING TELEGRAM_BOT_TOKEN", ""))
     assert "reply_markup" not in telegram and "delivery_override.yaml" in telegram
     assert "ticket_delivery.yaml" in telegram and "Set-Content" in telegram
