@@ -1,0 +1,64 @@
+# ST_LARGE_SMC_V1 version 1.1.0 -- AG V1 Goal 2 (watch/alerts). New version; v1.0.7
+# (strategies/ST_LARGE_SMC_V1.yaml) is preserved unchanged and keeps its own evidence.
+#
+# Authority: the owner-stated 1.1.0 rules (docs/governance/AG_V1_TWO_GOALS_OWNER_DECISIONS.md;
+# owner decision 3, 2026-09-30: the RMR-A rule-option branch was never pushed, so the
+# mission's written rules are authoritative). Items not written in the mission are not
+# invented: they are listed under `not_specified` and handled as stated there.
+strategy_id: ST_LARGE_SMC_V1
+version: "1.1.0"
+status: SHADOW_ALERTS_ONLY
+registered_utc: "2026-09-30"
+supersedes: null                     # 1.0.7 is NOT replaced; promotion requires separate validation
+implementation: src/large_smc_watch/  # contract.py (constants), detect.py, watch.py
+proposal_generation_authorized: false
+demo_authorized: false
+live_authorized: false
+economic_status: NOT_EVALUATED       # D30
+
+instruments: [EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSDT, ETHUSDT]
+timeframes:                          # D00: keep D1/H1/M5
+  D1: TRADING_DAY_CONTEXT
+  H1: BIAS_AND_POI
+  M5: SWEEP_CHOCH_TRIGGER
+
+rules:
+  swings: {model: SW-A_STRICT_FRACTAL, causal: true, source: fx_discovery.features.swings, k: 2,
+           smartmoneyconcepts_signal_authority: false}
+  poi: {models: [AG_ORDER_BLOCK_V1, FVG], timeframe: H1, max_age_trading_days: 5}
+  sweep: {model: A, source: fx_discovery.features.sweeps}   # wick beyond a KNOWN swing, close back inside
+  break: {confirmation: CLOSE, tie_tolerance_points: 5, mss: CHOCH}
+  displacement: AG_ENTRY_DISPLACEMENT_V1
+  sweep_to_choch_window_m5_bars: 12
+  near_poi_band: {atr_timeframe: H1, atr_period: 14, multiplier: 0.5}
+  entry: BY_REFERENCE                # CHoCH bar close, a reference price; never an order
+  stop: C10                          # large_smc_core.c10_stop_policy (byte-exact from 2b75bbf)
+  targets: C11                       # structural-fallback semantics on causal M5 swings
+  day_boundary: {time: "17:00", tz: America/New_York, dst: IANA}
+  opportunity_expiry: SESSION_END    # config/canonical_sessions.yaml; outside sessions -> next day boundary
+  stale: SUSPEND_THEN_EXPIRE
+
+alerts:
+  delivery_mode: ARCHIVE_ONLY        # ticket_delivery journal; no transport exists (Telegram deferred, D2)
+  mapping: {DEVELOPING: INFO, NEAR_POI: WATCH, OPPORTUNITY: OPPORTUNITY, INVALIDATED: INFO, EXPIRED: INFO}
+
+implementation_choices_flagged:      # not in the owner-stated rules; conservative choices, documented
+  - "SW-A fractal width k=2: canonical fx_discovery value (families.py K = 2)."
+  - "H1 bias = direction of the latest close-confirmed H1 break; D1 break direction is reported as context only."
+  - "OB origin search: last opposing candle within 3 bars before the displacement (reuses MAX_CANDLES_TO_FVG = 3). FLIP_OB not identified (as in AG_ORDER_BLOCK_V1)."
+  - "smc.ob() candidates are not used; AG_ORDER_BLOCK_V1 requirements are applied over the causal fx_discovery primitives, and the zone uses the frozen _classify_family_and_zone."
+  - "C10 is evaluated only where a pip is repo-evidenced (EURUSD, GBPUSD); elsewhere stop_reason = C10_PIP_SIZE_NOT_EVIDENCED. SHORT requires live bid/ask (C10-B) and otherwise fails closed."
+  - "C11 primary external-liquidity tier needs smartmoneyconcepts structure tiers and is NOT_EVALUATED; the fallback (nearest unswept opposing M5 swing strictly beyond entry) is computed on causal swings."
+  - "Stale = no closed M5 bar for more than 15 minutes; FX market closed Fri 17:00 to Sun 17:00 New York."
+  - "POI age = distinct NY-17:00 trading dates since the POI origin (valid while <= 5)."
+
+not_specified:                       # D00-D34 items without an owner-stated option: listed, not invented
+  - "Every other D-item of the unpushed RMR-A catalogue. The owner-stated rules above are the full 1.1.0 rule set."
+
+symbol_metadata:
+  EURUSD: {point: 0.00001, source: config/historical_datasets/EURUSD_*_symbol_metadata.yaml}
+  GBPUSD: {point: 0.00001, source: "config/historical_datasets/GBPUSD_H1_symbol_metadata.yaml @ 2b75bbf"}
+  BTCUSDT: {point: 0.1, source: src/strategy_engine/sweep_retest/crypto_symbols.py}
+  ETHUSDT: {point: 0.01, source: src/strategy_engine/sweep_retest/crypto_symbols.py}
+  USDJPY: {point: null, status: FIXTURE_ONLY}   # host must capture MT5 symbol_info()
+  XAUUSD: {point: null, status: FIXTURE_ONLY}
