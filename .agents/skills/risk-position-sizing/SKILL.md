@@ -5,6 +5,17 @@ description: Design and review simulated portfolio sizing and risk controls for 
 
 # Risk and Position Sizing
 
+## Token minimum usage policy (owner rule, applies to every task)
+- Do only what the task asks; no extra features, refactors or docs.
+- No polling, scheduled check-ins or PR subscriptions unless explicitly asked.
+- Don't ask questions mid-task: make conservative choices, record them, continue.
+- Read only files needed; prefer grep/targeted reads over full-file or repo-wide dumps.
+- Don't re-run unchanged failing steps; report the blocker once and stop.
+- Batch tool calls; avoid repeated verification of the same fact.
+- Reports: concise — status, key results, blockers, next step. No restating the prompt,
+  no long learning sections unless asked.
+- Stop immediately when the task is done.
+
 Sizing transforms signals into portfolio risk. Treat it as a separate, testable layer.
 
 **Research/backtest scope only.** For a live/production sizing question (given account

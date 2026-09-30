@@ -5,6 +5,17 @@ description: Compose normalized higher-to-lower-timeframe market context (struct
 
 # Multi-Timeframe Market Context
 
+## Token minimum usage policy (owner rule, applies to every task)
+- Do only what the task asks; no extra features, refactors or docs.
+- No polling, scheduled check-ins or PR subscriptions unless explicitly asked.
+- Don't ask questions mid-task: make conservative choices, record them, continue.
+- Read only files needed; prefer grep/targeted reads over full-file or repo-wide dumps.
+- Don't re-run unchanged failing steps; report the blocker once and stop.
+- Batch tool calls; avoid repeated verification of the same fact.
+- Reports: concise — status, key results, blockers, next step. No restating the prompt,
+  no long learning sections unless asked.
+- Stop immediately when the task is done.
+
 Cross-cutting *orchestration* skill sitting across the existing pyramid
 (`market-structure-analysis` -> `supply-demand-analysis` -> `liquidity-analysis` ->
 `entry-confirmation-analysis`). It adds no new detection logic; it composes calls into

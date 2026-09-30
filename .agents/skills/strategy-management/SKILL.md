@@ -5,6 +5,17 @@ description: Resolve and invoke a registered deterministic strategy (list/inspec
 
 # Strategy Management
 
+## Token minimum usage policy (owner rule, applies to every task)
+- Do only what the task asks; no extra features, refactors or docs.
+- No polling, scheduled check-ins or PR subscriptions unless explicitly asked.
+- Don't ask questions mid-task: make conservative choices, record them, continue.
+- Read only files needed; prefer grep/targeted reads over full-file or repo-wide dumps.
+- Don't re-run unchanged failing steps; report the blocker once and stop.
+- Batch tool calls; avoid repeated verification of the same fact.
+- Reports: concise — status, key results, blockers, next step. No restating the prompt,
+  no long learning sections unless asked.
+- Stop immediately when the task is done.
+
 Strategy tooling skill (assistant use case, not core trading intelligence -- see
 `docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md`'s "Assistant skill taxonomy"). This is the thin,
 existing orchestration layer already implemented as `strategy_manager/` +
