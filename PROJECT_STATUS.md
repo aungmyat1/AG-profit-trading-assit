@@ -4,6 +4,20 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## AG V1 Two Goals (cloud): BLOCKED at baseline gate (2026-09-29, docs only)
+
+Mission AG-V1-CLOUD expected `src/ticket_delivery`, the BTC daily CLI, the crypto
+sweep-retest engine, `src/large_smc_research`, `strategies/` and `fx_discovery/features.py`
+on main. None of these is on `ce09e8d`. `3f1f955` removed most of them, and main's
+capability-zero test forbids `src/{execution,ticket_delivery,trade_management,...}`.
+`fx_discovery` exists only on unmerged `audit/*` branches. The Asian Sweep engine is on main
+(byte-identical to `2b75bbf`), but its contract YAML is not. Branch `v1/two-goals-cloud` holds
+only the owner-decision record (`docs/governance/AG_V1_TWO_GOALS_OWNER_DECISIONS.md`) and the
+status/evidence record (`docs/status/AG_V1_TWO_GOALS_CLOUD_STATUS.md`). No code, strategy,
+registry, gate or Telegram change. Current-main baseline: `python -m pytest -q tests` gives
+350 passed and 1 pre-existing failure. Broker/exchange calls: 0. Unblocking needs owner
+decisions, listed in the status record.
+
 ## MT5 MCP: `Request timed out` startup fix (2026-09-29, read-only configuration)
 
 Claude Code and Cowork reported `mt5ReadOnly: Couldn't start … Request timed out`. Cause:
