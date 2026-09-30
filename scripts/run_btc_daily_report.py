@@ -48,8 +48,8 @@ with contextlib.redirect_stdout(io.StringIO()):
         to_symbol_meta,
     )
     from btc_sweep_research.ledger import BTCResearchLedger  # noqa: E402
-    from execution.daily_loss_guard import DailyLossGuard  # noqa: E402
-    from execution.position_guard import OpenPositionGuard  # noqa: E402
+    from sizing_math.daily_loss_guard import DailyLossGuard  # noqa: E402
+    from sizing_math.position_guard import OpenPositionGuard  # noqa: E402
     from runtime_state.store import JsonKeyValueStore  # noqa: E402
     from strategy_engine.sweep_retest.engine import SweepRetestRuntime  # noqa: E402
     from strategy_engine.sweep_retest.state_store import SweepRetestStateStore  # noqa: E402
