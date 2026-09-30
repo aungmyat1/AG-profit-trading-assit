@@ -1,0 +1,18 @@
+# AG V1 crypto informational ticket runner config -- VERSION 1 (preserved, not active).
+# Records the behavior shipped before 2026-09-30 exactly; do not edit. Select it with
+#   live_candles_smoke.py --mode crypto --crypto-config config/v1_tickets/crypto_ticket_v1.yaml
+# Engine: ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0 CRYPTO_PERP (frozen, unchanged by any version here).
+config_id: AG_V1_CRYPTO_TICKET
+version: 1
+status: PRESERVED
+venue:
+  kind: PUBLIC_PERP              # execution_runtime.public_crypto_feed.FallbackPublicCryptoFeed
+  primary: BYBIT_LINEAR_PERP
+  fallback: BINANCE_USDT_M_PERP
+  symbols: {BTCUSDT: BTCUSDT, ETHUSDT: ETHUSDT}
+window:
+  kind: FROZEN_DAILY_REPORT_UTC  # btc_sweep_research.daily_report.report_window_status
+  start: "06:30"
+  end: "06:45"
+  timezone: UTC
+  weekdays: [1, 2, 3, 4, 5, 6, 7]

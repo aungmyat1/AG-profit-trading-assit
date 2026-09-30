@@ -323,3 +323,14 @@ from canonical session windows or other repo conventions at the time of registra
   Crypto simulated-trade lifecycle (fill simulation, R outcome tracking) is not built;
   only the research-observation ledger exists. No live/demo execution authority exists
   for either profile.
+- **Ticket runner config V2 -- VT Markets MT5 crypto venue (2026-09-30, owner decision,
+  no authority change):** the AG V1 informational crypto ticket runner gained versioned
+  configs. `config/v1_tickets/crypto_ticket_v1.yaml` (PRESERVED) records the prior behavior
+  exactly: Bybit linear perp primary, Binance USDT-M fallback, frozen 06:30-06:45 UTC daily
+  window. `config/v1_tickets/crypto_ticket_v2.yaml` (ACTIVE) feeds the SAME frozen 2.0.0
+  CRYPTO_PERP engine with VT Markets MT5 demo CFD candles (BTCUSDT->BTCUSD, ETHUSDT->ETHUSD,
+  fixed spread) with symbol metadata from the verified host capture, evaluated weekdays
+  09:00-12:00 America/New_York with no weekend runs. The MT5 CFD input is a new,
+  UNVALIDATED data source for informational tickets only: the perp-calibrated cost model and
+  all validation evidence are unchanged and do not transfer to it. research/demo/live
+  authority unchanged (demo_authorized=false, live_authorized=false).

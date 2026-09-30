@@ -79,6 +79,10 @@ strategies:
       STRATEGY_LEDGER.md since 2026-08-30, never entered here) -- reconciliation only,
       no authority change: research/demo/live/execution fields already matched the
       ledger's own long-standing statement.
+      2026-09-30: AG V1 informational crypto ticket runner config V2
+      (config/v1_tickets/crypto_ticket_v2.yaml) reads VT Markets MT5 demo BTCUSD/ETHUSD
+      CFD candles as a new, unvalidated ticket-only data source; config V1 (Bybit/Binance
+      perp) preserved. Engine and authority unchanged -- see STRATEGY_LEDGER.md.
       AG V1 D4 (2026-09-30): ETHUSDT (already a frozen CRYPTO_PERP instrument) has symbol
       status SHADOW -- informational tickets only (src/v1_tickets/crypto.py); BTCUSDT stays
       ACTIVE_INCUBATION. No rule/parameter or authority change.

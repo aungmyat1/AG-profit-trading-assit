@@ -7,6 +7,7 @@ from __future__ import annotations
 import datetime as dt
 import glob
 import math
+import os
 
 import pytest
 
@@ -135,3 +136,91 @@ def test_v1_ticket_modules_have_no_execution_or_transport_imports():
             for m in mods:
                 assert m.split(".")[0] not in {"execution", "trade_management", "notifications", "telegram", "api"}, m
                 assert m not in {"mt5.management_gateway", "MetaTrader5"}, m
+
+
+# ------------------------------------------------------------------ crypto ticket config versions
+
+def _cfg(version):
+    from v1_tickets.crypto import load_ticket_config
+    return load_ticket_config(f"config/v1_tickets/crypto_ticket_v{version}.yaml",
+                              os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+V2_IN = dt.datetime(2025, 9, 2, 13, 35, tzinfo=UTC)          # Tue 09:35 America/New_York (EDT)
+
+
+def test_crypto_config_v1_preserved_and_v2_active():
+    v1, v2 = _cfg(1), _cfg(2)
+    assert (v1["version"], v1["status"], v1["venue"]["kind"]) == (1, "PRESERVED", "PUBLIC_PERP")
+    assert (v1["window"]["start"], v1["window"]["end"], v1["window"]["timezone"]) == ("06:30", "06:45", "UTC")
+    assert (v2["version"], v2["status"], v2["supersedes"]) == (2, "ACTIVE", 1)
+    assert v2["venue"] == {"kind": "MT5", "source_id": "MT5_VT_MARKETS_DEMO",
+                           "symbols": {"BTCUSDT": "BTCUSD", "ETHUSDT": "ETHUSD"},
+                           "server_time_rule": "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700"}
+    from v1_tickets.crypto import ACTIVE_CONFIG
+    assert ACTIVE_CONFIG.replace("\\", "/") == "config/v1_tickets/crypto_ticket_v2.yaml"
+
+
+@pytest.mark.parametrize("now,expected", [
+    (V2_IN, "IN_WINDOW"),
+    (dt.datetime(2025, 9, 2, 12, 59, tzinfo=UTC), "BEFORE_WINDOW"),       # 08:59 EDT
+    (dt.datetime(2025, 9, 2, 16, 0, tzinfo=UTC), "AFTER_WINDOW"),         # 12:00 EDT (end exclusive)
+    (dt.datetime(2025, 9, 6, 14, 0, tzinfo=UTC), "OUTSIDE_WEEKDAYS"),     # Saturday
+    (dt.datetime(2025, 9, 7, 14, 0, tzinfo=UTC), "OUTSIDE_WEEKDAYS"),     # Sunday
+    (dt.datetime(2025, 12, 2, 14, 30, tzinfo=UTC), "IN_WINDOW"),          # 09:30 EST (winter)
+    (dt.datetime(2025, 12, 2, 13, 30, tzinfo=UTC), "BEFORE_WINDOW"),      # 08:30 EST
+])
+def test_crypto_v2_window_is_weekday_new_york_0900_1200(now, expected):
+    from v1_tickets.crypto import window_status
+    assert window_status(_cfg(2), (now - dt.timedelta(days=1)).date(), now) == expected
+
+
+def test_crypto_v1_window_matches_frozen_daily_report():
+    from v1_tickets.crypto import window_status
+    assert window_status(_cfg(1), OBS, IN_WINDOW) == window_status(None, OBS, IN_WINDOW) == "IN_WINDOW"
+    assert window_status(_cfg(1), OBS, V2_IN) == "AFTER_WINDOW"
+
+
+def _write_host_record(root, broker):
+    from host_evidence.symbol_metadata import build_record, write_record
+    fields = {"digits": 2, "point": 0.01, "trade_tick_size": 0.01, "trade_tick_value": 0.01,
+              "trade_contract_size": 1.0, "volume_min": 0.01, "volume_step": 0.01, "volume_max": 100.0,
+              "trade_stops_level": 0, "trade_freeze_level": 0, "spread": 1694, "currency_profit": "USD"}
+    write_record(build_record(broker, broker, fields, "VTMarkets-Demo", 3, "t", trade_mode="FULL"), root)
+
+
+def _mt5_fetch(calls):
+    def fetch(broker, tf, count):
+        calls.append((broker, tf))
+        end = V2_IN.replace(minute=30)
+        base = 60000.0 if broker == "BTCUSD" else 3000.0
+        minutes = {"H1": 60, "M5": 5}[tf]
+        return _series(minutes, count, end.replace(minute=0) if tf == "H1" else end, base)
+    return fetch
+
+
+@pytest.mark.parametrize("symbol,broker", [("BTCUSDT", "BTCUSD"), ("ETHUSDT", "ETHUSD")])
+def test_crypto_v2_runs_frozen_engine_on_vt_mt5(tmp_path, monkeypatch, symbol, broker):
+    from v1_tickets.crypto import Mt5CryptoFeed
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "ev"))
+    _write_host_record(str(tmp_path / "ev"), broker)
+    cfg, calls = _cfg(2), []
+    feed = Mt5CryptoFeed(_mt5_fetch(calls), cfg["venue"]["symbols"], cfg["venue"]["source_id"])
+    t = build_crypto_ticket(symbol, V2_IN.date() - dt.timedelta(days=1), V2_IN, feed=feed,
+                            state_dir=str(tmp_path / "s"), config=cfg)
+    assert t["ticket_config"] == "AG_V1_CRYPTO_TICKET@v2" and t["data_source"] == "MT5_VT_MARKETS_DEMO"
+    assert t["strategy_version"] == "2.0.0" and t["decision"] in ("READY", "WATCH", "NO_TRADE")
+    assert {b for b, _ in calls} == {broker}
+
+
+def test_crypto_v2_outside_window_and_missing_metadata_fail_closed(tmp_path, monkeypatch):
+    from v1_tickets.crypto import Mt5CryptoFeed
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "empty"))
+    cfg, calls = _cfg(2), []
+    feed = Mt5CryptoFeed(_mt5_fetch(calls), cfg["venue"]["symbols"])
+    sat = dt.datetime(2025, 9, 6, 14, 0, tzinfo=UTC)
+    blocked = build_crypto_ticket("BTCUSDT", sat.date(), sat, feed=feed, state_dir=str(tmp_path), config=cfg)
+    assert blocked["decision"] == "BLOCKED" and blocked["reason_codes"] == ["OUTSIDE_CONFIG_WINDOW"] and not calls
+    err = build_crypto_ticket("BTCUSDT", OBS, V2_IN, feed=feed, state_dir=str(tmp_path), config=cfg)
+    assert err["decision"] == "DATA_ERROR" and err["reason_codes"] == ["MT5_FEED_ERROR"]
+    assert "HOST_METADATA_MISSING BTCUSD" in err["detail"] and "entry" not in err

@@ -1,0 +1,21 @@
+# AG V1 crypto informational ticket runner config -- VERSION 2 (active).
+# Owner decision 2026-09-30: crypto venue = VT Markets MT5 demo (BTCUSD / ETHUSD CFDs,
+# fixed spread), recorded as a new ticket config version; version 1 is preserved unchanged.
+# Engine: ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0 CRYPTO_PERP, frozen and unchanged. The MT5 CFD
+# input is a NEW, UNVALIDATED data source for informational tickets only; it grants no
+# proposal, demo or live authority (strategies/registry.yaml is unchanged on authority).
+config_id: AG_V1_CRYPTO_TICKET
+version: 2
+status: ACTIVE
+supersedes: 1
+venue:
+  kind: MT5
+  source_id: MT5_VT_MARKETS_DEMO
+  symbols: {BTCUSDT: BTCUSD, ETHUSDT: ETHUSD}   # canonical -> exact broker name (host-captured metadata)
+  server_time_rule: SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700
+window:
+  kind: LOCAL_WEEKDAY
+  start: "09:00"                 # inclusive
+  end: "12:00"                   # exclusive
+  timezone: America/New_York
+  weekdays: [1, 2, 3, 4, 5]      # ISO: Mon-Fri; no weekend runs

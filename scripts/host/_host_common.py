@@ -135,3 +135,30 @@ def mt5_initialize(mt5, terminal_path: str = "") -> "tuple[bool, str]":
     ok = bool(mt5.initialize(**kwargs))
     code, msg = mt5.last_error() if hasattr(mt5, "last_error") else (None, "")
     return ok, redact(f"last_error=({code}, {msg})")
+
+
+_TF = ("M1", "M5", "M15", "M30", "H1", "H4", "D1")
+
+
+def host_fetch(mt5):
+    """fetch(broker_symbol, timeframe, count) -> the last `count` CLOSED bars, oldest first.
+
+    Timestamps are converted with host_evidence.symbol_metadata.server_time_to_utc (the
+    owner-stated rule: server midnight = New York 17:00), never with per-symbol weekly-reopen
+    detection, which misreads XAUUSD (+4) and fails on a late first USDJPY bar. Read-only:
+    copy_rates_from_pos plus symbol_select for Market Watch visibility."""
+    from host_evidence.symbol_metadata import server_time_to_utc
+    from strategy_engine.session import Candle
+
+    def fetch(symbol: str, timeframe: str, count: int) -> list:
+        if timeframe not in _TF:
+            raise ValueError(f"UNSUPPORTED_TIMEFRAME {timeframe!r}")
+        if mt5.symbol_info(symbol) is None and not mt5.symbol_select(symbol, True):
+            raise RuntimeError(f"SYMBOL_NOT_FOUND {symbol!r}")
+        rates = mt5.copy_rates_from_pos(symbol, getattr(mt5, f"TIMEFRAME_{timeframe}"), 1, count)
+        if rates is None or len(rates) < count:
+            raise RuntimeError(f"DATA_MISSING {symbol}/{timeframe}: {mt5.last_error()}")
+        return [Candle(time=server_time_to_utc(dt.datetime.fromtimestamp(int(r["time"]), dt.timezone.utc).replace(tzinfo=None)),
+                       open=float(r["open"]), high=float(r["high"]), low=float(r["low"]),
+                       close=float(r["close"]), volume=float(r["tick_volume"])) for r in rates]
+    return fetch

@@ -11,7 +11,8 @@ Tasks. All run the repo venv: .venv\Scripts\python.exe scripts\host\live_candles
                         LONDON_NEWYORK 12:00-15:00 GMT (13:00-16:00 Europe/London in BST)
                       Gating in UTC inside Python makes the schedule DST-safe and independent of the
                       host's time zone.
-  AG-V1-Crypto-Daily  every 5 min, daily. The runner acts only inside the frozen 06:30-06:45 UTC window.
+  AG-V1-Crypto-Daily  every 5 min, daily. The runner acts only inside the active crypto ticket config
+                      window (V2: weekdays 09:00-12:00 America/New_York; V1: 06:30-06:45 UTC).
   AG-V1-LSMC-Watch    every 5 min, Mon-Fri. ST_LARGE_SMC_V1@1.1.0 watch; alerts are ARCHIVE_ONLY.
 
 Every task:

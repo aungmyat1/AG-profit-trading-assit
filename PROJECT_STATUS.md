@@ -4,6 +4,22 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Host kit: VT Markets server-time rule, -VIP symbols, crypto ticket config V2 (2026-09-30)
+
+- **Server time.** Host symbol captures and host candle fetches convert timestamps with the
+  owner-stated rule "server midnight = New York 17:00" (UTC+3 in US DST, UTC+2 otherwise),
+  recorded in each capture (schema `AG_HOST_SYMBOL_METADATA_V2`). This replaces per-symbol
+  weekly-reopen detection in the host kit, which read XAUUSD as +4 and failed on USDJPY.
+  The shared `mt5/market_data.py` is unchanged.
+- **Symbols.** Host captures map EURUSD/GBPUSD/USDJPY/XAUUSD to the `-VIP` names (plain
+  EURUSD/GBPUSD are trade_mode DISABLED on VT Markets) and capture BTCUSD/ETHUSD.
+- **Crypto ticket config V2 (ACTIVE).** The same frozen ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0
+  reads VT Markets MT5 BTCUSD/ETHUSD, weekdays 09:00-12:00 America/New_York, no weekend
+  runs. Config V1 (Bybit/Binance, 06:30-06:45 UTC) is preserved. No authority change; the MT5
+  CFD input is unvalidated and ticket-only (see `strategies/STRATEGY_LEDGER.md`).
+- **Tests / live.** See the dated entry in the commit message for exact commands and the
+  host smoke states. No order, position or Telegram calls.
+
 ## AG V1 Two Goals (cloud): code complete on branch, not merged (2026-09-30)
 
 Branch `v1/two-goals-cloud` (draft PR #15, NOT merged) implements the cloud scope of AG V1

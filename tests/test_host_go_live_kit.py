@@ -373,3 +373,77 @@ def test_go_live_doc_lists_the_six_steps_in_order():
              "install_tasks.ps1", "install_tasks.ps1 -Apply", "enable_telegram.ps1"]
     idx = [doc.index(k) for k in order]
     assert idx == sorted(idx)
+
+
+# ------------------------------------------------------------------ server-time rule / VT venue
+
+def test_offset_rule_is_new_york_plus_seven():
+    assert sm.server_utc_offset_hours(dt.datetime(2026, 9, 30, 12, tzinfo=UTC)) == 3        # EDT
+    assert sm.server_utc_offset_hours(dt.datetime(2026, 12, 1, 12, tzinfo=UTC)) == 2        # EST
+    # FX weekly reopen: server 00:00 = 21:00 UTC (EDT); XAUUSD's later reopen 01:00 = 22:00 UTC, not "+4"
+    assert sm.server_time_to_utc(dt.datetime(2026, 9, 28, 0, 0)) == dt.datetime(2026, 9, 27, 21, 0, tzinfo=UTC)
+    assert sm.server_time_to_utc(dt.datetime(2026, 9, 28, 1, 0)) == dt.datetime(2026, 9, 27, 22, 0, tzinfo=UTC)
+    # USDJPY-VIP's late first bar (00:15) simply maps to 21:15 UTC -- no ambiguity error
+    assert sm.server_time_to_utc(dt.datetime(2026, 9, 14, 0, 15)) == dt.datetime(2026, 9, 13, 21, 15, tzinfo=UTC)
+    assert sm.server_time_to_utc(dt.datetime(2026, 11, 9, 0, 0)) == dt.datetime(2026, 11, 8, 22, 0, tzinfo=UTC)
+
+
+class VenueMT5(FakeMT5):
+    SYMBOL_TRADE_MODE_DISABLED, SYMBOL_TRADE_MODE_FULL = 0, 4
+    TIMEFRAME_M5 = 5
+
+    def __init__(self):
+        super().__init__(symbols=("EURUSD", "EURUSD-VIP", "BTCUSD"))
+
+    def symbol_info(self, name):
+        info = super().symbol_info(name)
+        if info is not None:
+            info.trade_mode = 0 if name == "EURUSD" else 4
+        return info
+
+    def copy_rates_from_pos(self, symbol, tf, start, count):
+        self.calls.append(("copy_rates_from_pos", symbol, tf, start, count))
+        t0 = int(dt.datetime(2026, 9, 28, 0, 0, tzinfo=UTC).timestamp())        # server wall clock 00:00
+        return [{"time": t0 + 300 * i, "open": 1.0, "high": 1.1, "low": 0.9, "close": 1.05, "tick_volume": 7}
+                for i in range(count)]
+
+
+def test_capture_derives_offset_from_rule_and_records_it(tmp_path):
+    rc = cap.main(["--symbol", "EURUSD", "--broker-symbol", "EURUSD-VIP"], mt5=VenueMT5(), root=str(tmp_path / "evidence"))
+    assert rc == 0
+    rec = sm.load_record("EURUSD")
+    at = dt.datetime.fromisoformat(rec["captured_at_utc"])
+    assert rec["schema"] == "AG_HOST_SYMBOL_METADATA_V2" and rec["server_utc_offset_rule"] == sm.OFFSET_RULE
+    assert rec["server_utc_offset_hours"] == sm.server_utc_offset_hours(at) and rec["trade_mode"] == "FULL"
+    from v1_tickets import fx
+    assert fx.broker_symbol("EURUSD") == "EURUSD-VIP" and fx.metadata_status("EURUSD") == "REPO_EVIDENCED"
+    assert set(cap.CAPTURABLE) == {"EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSD", "ETHUSD"}
+
+
+def test_v1_schema_record_still_verifies():
+    rec = sm.build_record("USDJPY", "USDJPY", {f: 1 for f in sm.FIELDS}, "S", 3, "t")
+    payload = {k: v for k, v in rec.items() if k not in ("sha256", "server_utc_offset_rule", "trade_mode")}
+    payload["schema"] = "AG_HOST_SYMBOL_METADATA_V1"
+    import hashlib
+    old = {**payload, "sha256": hashlib.sha256(sm._canonical(payload).encode()).hexdigest()}
+    assert sm.verify(old) and sm.verify(rec)
+
+
+def test_host_fetch_uses_rule_and_closed_bars_only():
+    mt5 = VenueMT5()
+    bars = hc.host_fetch(mt5)("BTCUSD", "M5", 3)
+    assert [b.time for b in bars] == [dt.datetime(2026, 9, 27, 21, 0, tzinfo=UTC) + dt.timedelta(minutes=5 * i)
+                                      for i in range(3)]
+    assert ("copy_rates_from_pos", "BTCUSD", 5, 1, 3) in mt5.calls                   # position 1: forming bar excluded
+
+
+def test_smoke_includes_vt_crypto_with_v2_config(tmp_path):
+    from test_v1_tickets import _cfg
+    fetch = fake_fetch()
+
+    def fetch_all(symbol, tf, count):
+        return fetch("EURUSD" if symbol in ("BTCUSD", "ETHUSD") else symbol, tf, count)
+    lines = smoke.run_smoke(fetch_all, NOW, str(tmp_path / "journal"), _cfg(2))
+    text = "\n".join(lines)
+    assert "BARS BTCUSDT (BTCUSD) status=" in text and "BARS ETHUSDT (ETHUSD) status=" in text
+    assert re.search(r"CRYPTO BTCUSDT (OUTSIDE_WINDOW|decision=)", text)

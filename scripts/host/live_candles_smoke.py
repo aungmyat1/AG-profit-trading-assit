@@ -16,8 +16,12 @@
   only when its content changes. Optional message-only Telegram delivery covers READY
   tickets and OPPORTUNITY alerts, and only if the host-local override enables it.
 
-Read-only: candles come from mt5.market_data.get_latest_candles (closed bars) and public
-crypto klines. There are no order, position or account-mutation calls.
+Read-only: MT5 candles come from _host_common.host_fetch (closed bars, timestamps converted
+with the owner-stated server-time rule: server midnight = New York 17:00). Crypto tickets
+follow the runner config version (--crypto-config, default config/v1_tickets/
+crypto_ticket_v2.yaml: VT Markets MT5 BTCUSD/ETHUSD, weekdays 09:00-12:00 America/New_York;
+version 1, public perp klines in the frozen 06:30-06:45 UTC window, stays selectable).
+There are no order, position or account-mutation calls.
 """
 from __future__ import annotations
 
@@ -31,7 +35,7 @@ from typing import Callable, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _host_common import (  # noqa: E402
-    REPO_ROOT, AlreadyRunning, import_mt5, log_line, mt5_initialize, single_instance, utcnow,
+    REPO_ROOT, AlreadyRunning, host_fetch, import_mt5, log_line, mt5_initialize, single_instance, utcnow,
 )
 
 from host_delivery import telegram_message as tg  # noqa: E402
@@ -175,15 +179,16 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
     return out
 
 
-def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True) -> List[str]:
+def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config: Optional[dict] = None) -> List[str]:
     from v1_tickets.crypto import archive_crypto_ticket, build_crypto_ticket
     state = JsonKeyValueStore(os.path.join(journal, "v1_host_state.json"))
     obs = (now.astimezone(UTC) - dt.timedelta(days=1)).date()
     lines = []
     for symbol in ("BTCUSDT", "ETHUSDT"):
-        t = build_crypto_ticket(symbol, obs, now, feed=feed, state_dir=os.path.join(journal, "v1_crypto"))
+        t = build_crypto_ticket(symbol, obs, now, feed=feed, state_dir=os.path.join(journal, "v1_crypto"),
+                                config=config)
         if t["decision"] == "BLOCKED":
-            lines.append(f"CRYPTO {symbol} OUTSIDE_WINDOW")
+            lines.append(f"CRYPTO {symbol} OUTSIDE_WINDOW ({t['window_status']})")
             continue
         new = archive_if_changed(state, f"crypto:{symbol}:{obs.isoformat()}", t,
                                  lambda x: archive_crypto_ticket(x, os.path.join(journal, "ticket_delivery", "archive")))
@@ -193,10 +198,21 @@ def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True) -> Lis
     return lines
 
 
-def run_smoke(fetch: Fetch, now: dt.datetime, journal: str) -> List[str]:
+def crypto_feed_for(config: dict, fetch: Optional[Fetch]):
+    from v1_tickets.crypto import Mt5CryptoFeed
+    venue = config["venue"]
+    if venue["kind"] == "MT5":
+        return Mt5CryptoFeed(fetch, venue["symbols"], venue["source_id"])
+    from execution_runtime.public_crypto_feed import FallbackPublicCryptoFeed
+    return FallbackPublicCryptoFeed()
+
+
+def run_smoke(fetch: Fetch, now: dt.datetime, journal: str, crypto_config: Optional[dict] = None) -> List[str]:
     lines = []
-    for symbol in fx_symbols():
-        broker = fx_tickets.broker_symbol(symbol)
+    crypto_map = (crypto_config or {}).get("venue", {}).get("symbols", {}) if (
+        (crypto_config or {}).get("venue", {}).get("kind") == "MT5") else {}
+    for symbol in fx_symbols() + list(crypto_map):
+        broker = crypto_map.get(symbol) or fx_tickets.broker_symbol(symbol)
         got = {}
         for tf in ("D1", "H1", "M15", "M5"):
             try:
@@ -208,6 +224,8 @@ def run_smoke(fetch: Fetch, now: dt.datetime, journal: str) -> List[str]:
         lines.append(f"BARS {symbol} ({broker}) status={classify(symbol, got['M5'], now)} last_closed={last}")
     lines += run_fx(fetch, now, journal, gated=False, notify=False)
     lines += run_lsmc(fetch, now, journal, crypto_feed=None, notify=False)
+    if crypto_map:
+        lines += run_crypto(now, journal, crypto_feed_for(crypto_config, fetch), notify=False, config=crypto_config)
     return lines
 
 
@@ -215,14 +233,16 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--mode", choices=("smoke", "fx", "crypto", "lsmc"), default="smoke")
     ap.add_argument("--terminal-path", default=os.environ.get("MT5_TERMINAL_PATH", ""))
+    ap.add_argument("--crypto-config", default=None, help="crypto ticket config version YAML (default: active V2)")
     args = ap.parse_args(argv)
     now = utcnow()
     journal = os.path.join(REPO_ROOT, "journal", "host_smoke" if args.mode == "smoke" else "")
+    from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config
+    crypto_config = load_ticket_config(args.crypto_config or ACTIVE_CONFIG, REPO_ROOT)
     try:
         with single_instance(f"ag_v1_{args.mode}"):
-            if args.mode == "crypto":
-                from execution_runtime.public_crypto_feed import FallbackPublicCryptoFeed
-                lines = run_crypto(now, journal, FallbackPublicCryptoFeed())
+            if args.mode == "crypto" and crypto_config["venue"]["kind"] != "MT5":
+                lines = run_crypto(now, journal, crypto_feed_for(crypto_config, None), config=crypto_config)
             else:
                 mt5 = import_mt5()
                 if mt5 is None:
@@ -233,9 +253,11 @@ def main(argv=None) -> int:
                     log_line(f"ag_v1_{args.mode}", f"MT5_INITIALIZE_FAILED {err}")
                     return 1
                 try:
-                    from mt5.market_data import get_latest_candles as fetch
-                    if args.mode == "smoke":
-                        lines = run_smoke(fetch, now, journal)
+                    fetch = host_fetch(mt5)
+                    if args.mode == "crypto":
+                        lines = run_crypto(now, journal, crypto_feed_for(crypto_config, fetch), config=crypto_config)
+                    elif args.mode == "smoke":
+                        lines = run_smoke(fetch, now, journal, crypto_config)
                     elif args.mode == "fx":
                         lines = run_fx(fetch, now, journal, gated=True)
                     else:
