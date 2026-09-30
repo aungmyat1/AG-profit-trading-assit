@@ -395,6 +395,7 @@ result = assistant.commands.execute_command(command, user_confirmed=False)
               />
               <ExecutionCockpit
                 positions={positions}
+                apiMode={apiMode}
                 onSetBreakeven={handleSetBreakeven}
                 onPartialClose={handlePartialClose}
                 onClosePosition={handleClosePosition}
