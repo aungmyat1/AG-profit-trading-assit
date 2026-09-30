@@ -1,0 +1,4 @@
+duckdb>=1.1  # research/harness catalog reader (not in root requirements.txt: folder-scoped change)
+pyarrow
+pandas
+numpy
