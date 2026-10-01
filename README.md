@@ -235,8 +235,9 @@ powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1 -Apply
 powershell -ExecutionPolicy Bypass -File scripts\host\verify_tasks.ps1
 ```
 
-See [`scripts/host/GO_LIVE.md`](scripts/host/GO_LIVE.md) for the host checklist and optional
-Telegram alert setup.
+See [`Install on the Windows MT5 Demo host`](docs/setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md) for
+the complete installation and Telegram proposal-validation procedure; the compact operator
+checklist remains in [`scripts/host/GO_LIVE.md`](scripts/host/GO_LIVE.md).
 
 Execution preview and manual-position management:
 

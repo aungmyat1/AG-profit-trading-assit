@@ -13,6 +13,7 @@ import io
 import json
 import os
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,7 @@ for path in (str(REPO_ROOT), str(REPO_ROOT / "src"), str(HOST_DIR)):
 # must keep --json output valid and deterministic.
 with contextlib.redirect_stdout(io.StringIO()):
     import live_candles_smoke as runner  # noqa: E402
+    from host_delivery import telegram_message as telegram  # noqa: E402
     from host_evidence.symbol_metadata import SWAP_FIELDS, load_record  # noqa: E402
     from large_smc_watch import contract as lsmc  # noqa: E402
     from strategy_engine import load_strategy  # noqa: E402
@@ -113,9 +115,34 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
     ))
 
     delivery = yaml.safe_load((root / "config" / "ticket_delivery.yaml").read_text(encoding="utf-8"))
+    override = root / telegram.OVERRIDE_PATH
+    gitignored = "/config/local/" in (root / ".gitignore").read_text(encoding="utf-8")
     checks.append(_check(
-        "safe_delivery_default", delivery.get("mode") == "ARCHIVE_ONLY",
-        f"mode={delivery.get('mode')} (Telegram remains host-local opt-in)",
+        "safe_delivery_default",
+        delivery.get("mode") == "ARCHIVE_ONLY" and not override.exists() and gitignored
+        and not (delivery.get("telegram_destination") or {}).get("authorized_chat_ids"),
+        f"mode={delivery.get('mode')} committed_override={override.exists()} "
+        f"gitignored={gitignored} (Telegram remains host-local opt-in)",
+    ))
+
+    # Reporting scope: only fresh READY proposals and Large-SMC OPPORTUNITY alerts may leave
+    # the host.  Everything else stays archive-only, and no path can authorize an order.
+    with tempfile.TemporaryDirectory() as probe:                     # fully-enabled probe host
+        enabled = Path(probe) / telegram.OVERRIDE_PATH
+        enabled.parent.mkdir(parents=True, exist_ok=True)
+        enabled.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n",
+                           encoding="utf-8")
+        scoped = {kind: tuple(v for v in values if telegram.should_send(kind, v, probe))
+                  for kind, values in (("TICKET", ("READY", "NO_TRADE", "BLOCKED", "STALE", "DATA_ERROR")),
+                                       ("LSMC", ("OPPORTUNITY", "WATCH", "INFO")))}
+    runner_src = (root / "scripts" / "host" / "live_candles_smoke.py").read_text(encoding="utf-8")
+    checks.append(_check(
+        "telegram_report_scope",
+        scoped == {"TICKET": ("READY",), "LSMC": ("OPPORTUNITY",)}
+        and tuple(telegram.SCOPES) == ("TICKET_READY", "LSMC_OPPORTUNITY")
+        and runner_src.count("if new and notify:") == 2 and "reply_markup" not in runner_src,
+        f"ticket={list(scoped['TICKET'])} lsmc={list(scoped['LSMC'])} "
+        "(message-only, newly-archived decisions only)",
     ))
 
     failures = [item["check"] for item in checks if item["status"] == "FAIL"]

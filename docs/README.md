@@ -82,8 +82,10 @@ generated evidence.
    timestamps, next-required evidence, reuse-first SMC watcher recovery, a downstream
    read-only Opportunity Board, outcome/funnel evidence, campaigns, prospective
    promotion, and cost-stress requirements; planning only and non-authorizing.
-10. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local MT5 integration setup.
-11. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
+10. [`setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md`](setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md)
+    — complete Windows VT Markets Demo installation, scheduler, and Telegram proposal-validation procedure.
+11. [`setup/MT5_MCP_SETUP.md`](setup/MT5_MCP_SETUP.md) — local read-only MT5 MCP setup.
+12. [`status/LIVE_STATUS_MAINTENANCE.md`](status/LIVE_STATUS_MAINTENANCE.md) — required
    update procedure for rolling status, dated evidence, strategy authorization, and
    live-validation claims.
    [`status/TD8_REPLAY_TEMPORAL_PARITY_STATUS.md`](status/TD8_REPLAY_TEMPORAL_PARITY_STATUS.md)

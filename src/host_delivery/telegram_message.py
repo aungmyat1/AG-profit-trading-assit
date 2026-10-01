@@ -180,16 +180,66 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
     return "\n".join(lines)
 
 
+def validation_proposal(now: Optional[dt.datetime] = None) -> Dict[str, Any]:
+    """A clearly simulated READY ticket used to validate the real Telegram render/send path.
+
+    It is never archived and never enters a strategy or execution component.
+    """
+    at = (now or dt.datetime.now(dt.timezone.utc)).astimezone(dt.timezone.utc)
+    signal_close = at - dt.timedelta(minutes=1)
+    return {
+        "label": "SIMULATED TELEGRAM DELIVERY VALIDATION -- NOT A MARKET SIGNAL",
+        "strategy_id": "TELEGRAM_DELIVERY_VALIDATION",
+        "strategy_version": "1.0.0",
+        "symbol": "EURUSD",
+        "cycle": "ASIAN_LONDON",
+        "session_date": at.date().isoformat(),
+        "decision": "READY",
+        "direction": "LONG",
+        "entry_order_type": "MARKET",
+        "entry": 1.10000,
+        "stop_loss": 1.09900,
+        "risk_distance": 0.001,
+        "targets": [
+            {"leg": 1, "volume_pct": 0.75, "type": "VALIDATION_TARGET", "price": 1.10100},
+            {"leg": 2, "volume_pct": 0.25, "type": "VALIDATION_5R", "price": 1.10500},
+        ],
+        "signal_close_utc": signal_close.isoformat(),
+        "time_invalidation_gmt": "15:00",
+        "spread_check": "PASS",
+        "spread": 0.00010,
+        "spread_risk_fraction": 0.10,
+        "spread_max_risk_fraction": 0.15,
+        "data_source": "SIMULATED_VALIDATION_ONLY",
+    }
+
+
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Send one Telegram test message (message-only).")
-    ap.add_argument("--test", action="store_true", required=True)
-    ap.parse_args(argv)
+    ap = argparse.ArgumentParser(description="Validate message-only Telegram delivery.")
+    group = ap.add_mutually_exclusive_group(required=True)
+    group.add_argument("--test", action="store_true", help="send a short connectivity message")
+    group.add_argument("--test-proposal", action="store_true",
+                       help="send a clearly simulated, fully-rendered READY proposal")
+    group.add_argument("--status", action="store_true",
+                       help="verify local scope configuration and credential presence without sending")
+    args = ap.parse_args(argv)
+    if args.status:
+        cfg = load_mode(os.getcwd())
+        credentials = bool(os.environ.get("TELEGRAM_BOT_TOKEN") and os.environ.get("TELEGRAM_CHAT_ID"))
+        scopes_ok = set(cfg["scopes"]) == set(SCOPES)
+        ok = cfg["mode"] == MESSAGE_DELIVERY and scopes_ok and credentials
+        print(f"TELEGRAM_STATUS: {'OK' if ok else 'NOT_READY'} mode={cfg['mode']} "
+              f"scopes={','.join(cfg['scopes']) or 'none'} credentials={'PRESENT' if credentials else 'MISSING'}")
+        return 0 if ok else 1
+    text = (format_ticket(validation_proposal()) if args.test_proposal
+            else "AG V1 host go-live: Telegram test message (message-only, no buttons).")
+    label = "TELEGRAM_PROPOSAL_TEST" if args.test_proposal else "TELEGRAM_TEST"
     try:
-        send_message("AG V1 host go-live: Telegram test message (message-only, no buttons).")
+        send_message(text)
     except TelegramSendError as exc:
-        print(f"TELEGRAM_TEST: FAILED {exc}")
+        print(f"{label}: FAILED {exc}")
         return 1
-    print("TELEGRAM_TEST: OK")
+    print(f"{label}: OK")
     return 0
 
 

@@ -498,6 +498,19 @@ def test_telegram_default_archive_only_and_scoped_override(tmp_path):
         assert not tg.should_send(kind, v, r)
 
 
+def test_host_notification_router_reports_only_ready_proposals_and_opportunities(tmp_path, monkeypatch):
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    sent = []
+    monkeypatch.setattr(tg, "send_message", sent.append)
+    smoke._notify("TICKET", "READY", "rendered proposal", str(tmp_path))
+    smoke._notify("TICKET", "NO_TRADE", "must not send", str(tmp_path))
+    smoke._notify("LSMC", "OPPORTUNITY", "rendered opportunity", str(tmp_path))
+    smoke._notify("LSMC", "WATCH", "must not send", str(tmp_path))
+    assert sent == ["rendered proposal", "rendered opportunity"]
+
+
 def test_telegram_send_is_message_only_and_never_leaks_token(monkeypatch):
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
     monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
@@ -509,6 +522,103 @@ def test_telegram_send_is_message_only_and_never_leaks_token(monkeypatch):
     assert "SECRET-TOKEN-VALUE" not in str(exc.value)
     with pytest.raises(tg.TelegramSendError):
         tg.send_message("x", session=_Sess(status=401, ok=False))
+
+
+def test_telegram_validation_proposal_uses_real_renderer_and_is_unambiguous():
+    ticket = tg.validation_proposal(dt.datetime(2026, 10, 1, 8, 0, tzinfo=UTC))
+    text = tg.format_ticket(ticket)
+    assert text.startswith("SIMULATED TELEGRAM DELIVERY VALIDATION -- NOT A MARKET SIGNAL")
+    assert "decision=READY" in text and "ticket_id:" in text
+    assert "entry: 1.1  stop: 1.099" in text
+    assert "target leg 1" in text and "target leg 2" in text
+    assert "spread_check: PASS" in text and "VALID UNTIL" in text
+
+
+def test_scheduled_lsmc_run_reports_rendered_opportunity_exactly_once(tmp_path, monkeypatch):
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    sent = []
+    monkeypatch.setattr(tg, "send_message", sent.append)
+    j = str(tmp_path / "journal")
+    first = smoke.run_lsmc(fake_fetch(), NOW, j)
+    after_first = list(sent)
+    second = smoke.run_lsmc(fake_fetch(), NOW, j)                      # same state: no repeat alert
+    assert any("LSMC EURUSD data=FRESH state=OPPORTUNITY" in ln for ln in first)
+    assert all("alerts=[]" in ln for ln in second if "alerts=" in ln)
+    assert sent == after_first and len(after_first) == 2                # EURUSD + GBPUSD, transition only
+    assert all(m.startswith("LARGE-SMC ALERT -- INFORMATIONAL -- NOT A BROKER ORDER") for m in after_first)
+    assert "EURUSD OPPORTUNITY (OPPORTUNITY)" in after_first[0] and "liquidity target:" in after_first[0]
+    assert "stop (C10):" in after_first[0] and "expires_at:" in after_first[0]
+
+
+def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, monkeypatch):
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    sent = []
+    monkeypatch.setattr(tg, "send_message", sent.append)
+    j = str(tmp_path / "journal")
+
+    archived = smoke.run_fx(fake_fetch(), NOW, j, gated=False)        # STALE + DATA_ERROR only
+    assert any("decision=STALE" in ln for ln in archived) and any("decision=DATA_ERROR" in ln for ln in archived)
+    assert all("ARCHIVED" in ln for ln in archived) and sent == []     # archived, never reported
+
+    ready = dict(tg.validation_proposal(NOW), strategy_id="ST_ASIAN_SWEEP_5R_V1", strategy_version="1.1.1",
+                 label="INFORMATIONAL TICKET -- NOT A BROKER ORDER", reason_code="SETUP_CONFIRMED",
+                 metadata_status="HOST_CAPTURED", data_source="MT5_VT_MARKETS_DEMO",
+                 evaluated_at=NOW.isoformat())
+    monkeypatch.setattr(smoke, "fx_ticket_for", lambda symbol, cycle, *a, **k: dict(ready, symbol=symbol, cycle=cycle))
+    first = smoke.run_fx(fake_fetch(), NOW, j, gated=False)
+    after_first = list(sent)
+    smoke.run_fx(fake_fetch(), NOW, j, gated=False)                   # replayed cycle: nothing re-sent
+    assert any("decision=READY" in ln for ln in first) and sent == after_first
+    assert [m.splitlines()[1] for m in after_first] == [
+        "EURUSD LONG (ASIAN_LONDON)", "GBPUSD LONG (ASIAN_LONDON)",
+        "EURUSD LONG (LONDON_NEWYORK)", "GBPUSD LONG (LONDON_NEWYORK)"]
+    for message in after_first:
+        assert "decision=READY" in message and "ticket_id:" in message and "VALID UNTIL" in message
+        assert "entry:" in message and "target leg 1" in message and "NOT A BROKER ORDER" in message
+
+
+def test_scheduled_telegram_send_failure_never_breaks_the_run(tmp_path, monkeypatch):
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(hc, "LOG_DIR", str(tmp_path / "logs"))
+
+    def boom(_text):
+        raise tg.TelegramSendError("send failed (ConnectionError)")
+
+    monkeypatch.setattr(tg, "send_message", boom)
+    lines = smoke.run_lsmc(fake_fetch(), NOW, str(tmp_path / "journal"))
+    assert any("state=OPPORTUNITY" in ln for ln in lines)              # archive/watch path unaffected
+    assert "TELEGRAM_SEND_FAILED" in (tmp_path / "logs" / "telegram.log").read_text()
+
+
+def test_telegram_proposal_cli_sends_rendered_validation(monkeypatch, capsys):
+    sent = []
+    monkeypatch.setattr(tg, "send_message", sent.append)
+    assert tg.main(["--test-proposal"]) == 0
+    assert len(sent) == 1 and sent[0].startswith("SIMULATED TELEGRAM DELIVERY VALIDATION")
+    assert "entry:" in sent[0] and "target leg 2" in sent[0] and "VALID UNTIL" in sent[0]
+    assert "TELEGRAM_PROPOSAL_TEST: OK" in capsys.readouterr().out
+
+
+def test_telegram_status_requires_override_scopes_and_credentials(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    assert tg.main(["--status"]) == 1
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    assert tg.main(["--status"]) == 0
+    output = capsys.readouterr().out
+    assert "credentials=PRESENT" in output and "SECRET-TOKEN-VALUE" not in output
 
 
 def test_telegram_missing_env_fails_closed():
@@ -528,6 +638,7 @@ def test_complete_six_instrument_objective_preflight(monkeypatch):
     monkeypatch.delenv("AG_EVIDENCE_ROOT", raising=False)  # verify committed host captures
     report = objective.verify(ROOT)
     assert report["result"] == "PASS", report["failures"]
+    assert {c["check"] for c in report["checks"]} >= {"telegram_report_scope", "safe_delivery_default"}
     assert report["objective"] == {
         "fx_majors": ["EURUSD", "GBPUSD", "USDJPY"], "gold": ["XAUUSD"],
         "crypto": ["BTCUSDT", "ETHUSDT"],
@@ -550,6 +661,7 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     uninstall = (HOST / "uninstall_tasks.ps1").read_text()
     verify = (HOST / "verify_tasks.ps1").read_text()
     telegram = (HOST / "enable_telegram.ps1").read_text()
+    verify_telegram = (HOST / "verify_telegram.ps1").read_text()
     for s in (install, uninstall):
         assert "param([switch]$Apply)" in s and "WhatIf: no changes made" in s
     for name in ("AG-V1-FX-Cycles", "AG-V1-Crypto-Daily", "AG-V1-LSMC-Watch"):
@@ -571,7 +683,9 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     assert not re.search(r"Write-Host[^\n]*TELEGRAM_BOT_TOKEN\b(?!\s+and)", telegram.replace("MISSING TELEGRAM_BOT_TOKEN", ""))
     assert "reply_markup" not in telegram and "delivery_override.yaml" in telegram
     assert "ticket_delivery.yaml" in telegram and "Set-Content" in telegram
-    for s in (install, uninstall, telegram):
+    assert "--test-proposal" in telegram and "--status" in verify_telegram and "--test-proposal" in verify_telegram
+    assert "RESULT: PASS -- simulated proposal rendered and accepted by Telegram." in verify_telegram
+    for s in (install, uninstall, telegram, verify_telegram):
         assert not re.search(r"\d{6,}:[A-Za-z0-9_-]{20,}", s)          # no bot-token-shaped literal
 
 

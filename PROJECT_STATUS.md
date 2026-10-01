@@ -4,6 +4,27 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Telegram proposal-report validation + Windows install guide (2026-10-01)
+
+Host-local Telegram delivery was re-audited end-to-end in code: scheduled FX and crypto runners
+route only newly archived `READY` tickets through `format_ticket()` and send them only when the
+`TICKET_READY` scope is enabled; Large-SMC routes only `OPPORTUNITY` alerts under
+`LSMC_OPPORTUNITY`. `NO_TRADE`, `BLOCKED`, `STALE`, `DATA_ERROR`, `WATCH`, and `INFO` remain
+archive-only. `enable_telegram.ps1` now proves the actual proposal renderer/API path by sending a
+clearly labelled simulated READY proposal before writing the gitignored host override. The new
+`verify_telegram.ps1` checks mode, both scopes, credential presence, and sends the same validation
+proposal, and `verify_objective.py` gained a `telegram_report_scope` check plus a stricter
+`safe_delivery_default` (no committed override, `/config/local/` gitignored, no authorized chat
+IDs in the committed config). Secrets remain environment-only and sanitized. Focused
+host/ticket/archive tests: **130 passed, 1 skipped**; full suite: **767 passed, 4 skipped,
+1 pre-existing missing-`api.app` failure**. Actual Telegram acceptance remains
+**HOST_VALIDATION_REQUIRED** because this container has no owner bot token/chat destination.
+
+The complete operator procedure is now
+`docs/setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md`, linked from both README indexes. It covers MT5 Demo
+credentials, objective/MT5/smoke checks, Telegram proposal validation, scheduler installation,
+expected archives/logs, and rollback. No strategy, execution, or authorization change.
+
 ## Complete six-instrument scheduled host objective (2026-10-01)
 
 The repository host setup now binds the owner objective explicitly: EURUSD, GBPUSD and USDJPY
@@ -21,7 +42,7 @@ fails closed as MARKET_CLOSED. `install_tasks.ps1 -Apply` refuses before mutatio
 objective preflight fails, removes the superseded narrow weekend-only watcher, and runs the new
 read-only `verify_tasks.ps1` afterward to prove exact actions, working directories, triggers,
 and single-instance settings. Default alert delivery remains ARCHIVE_ONLY; Telegram remains an
-explicit host-local opt-in. Repository preflight: **8/8 PASS**; focused host/ticket/archive
+explicit host-local opt-in. Repository preflight: **9/9 PASS**; focused host/ticket/archive
 suites: **123 passed, 1 skipped**; full suite: **760 passed, 4 skipped, 1 pre-existing missing-`api.app`
 failure**. Windows Task Scheduler and live MT5 execution remain
 **NOT_EVALUATED_HOST_REQUIRED** in this Linux container.

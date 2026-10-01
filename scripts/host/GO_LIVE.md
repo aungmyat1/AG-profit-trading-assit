@@ -19,7 +19,7 @@ off by default.
    py -3.11 -m venv .venv
    .venv\Scripts\pip install -r requirements.txt
    ```
-2. Credentials go in `src\.env` or user environment variables, never in git:
+2. Credentials go in persistent user environment variables, never in git:
    `VTMARKETS-DEMO-LOGIN`, `VTMARKETS-DEMO-PASSWORD`, `VTMARKETS-DEMO-SERVER`.
    The underscore forms `VTMARKETS_DEMO_*` also work.
 3. Optionally set `MT5_TERMINAL_PATH` to the VT Markets `terminal64.exe`.
@@ -94,9 +94,10 @@ under `journal\host_smoke\` (ARCHIVE_ONLY; nothing is sent). On a weekend, FX sh
 powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1
 ```
 
-The preflight must report eight PASS checks and `RESULT: PASS`; it verifies the complete
+The preflight must report nine PASS checks and `RESULT: PASS`; it verifies the complete
 six-instrument universe, both FX cycles, all six host metadata captures, the active two-symbol
-crypto config, Large-SMC coverage, and all three scheduler bindings. Expected from the installer:
+crypto config, Large-SMC coverage, all three scheduler bindings, the ARCHIVE_ONLY default, and
+the READY/OPPORTUNITY-only Telegram reporting scope. Expected from the installer:
 three plan lines (`AG-V1-FX-Cycles` every 15 min at +1 min daily, `AG-V1-Crypto-Daily`
 every 5 min at +2 min daily, and `AG-V1-LSMC-Watch` every 5 min at +3 min daily;
 staggered starts, 4-minute task limit, runner self-exits after 120 s), then
@@ -135,11 +136,20 @@ $env:TELEGRAM_BOT_TOKEN = '<token>'; $env:TELEGRAM_CHAT_ID = '<chat id>'
 powershell -ExecutionPolicy Bypass -File scripts\host\enable_telegram.ps1
 ```
 
-Expected: `TELEGRAM_TEST: OK`, a test message in the chat, and then
+Expected: `TELEGRAM_PROPOSAL_TEST: OK`, a message headed
+`SIMULATED TELEGRAM DELIVERY VALIDATION -- NOT A MARKET SIGNAL`, and then
 `Telegram MESSAGE_DELIVERY enabled on this host for READY tickets + Large-SMC OPPORTUNITY alerts only.`
+Validate the enabled override, credentials, formatter, and Telegram API path again with:
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\host\verify_telegram.ps1
+```
 
 - Only READY tickets and OPPORTUNITY alerts are sent; WATCH and INFO stay in the archive.
 - Messages are plain text, with no buttons.
 - The token and chat ID are never printed or written to disk.
 - For scheduled tasks, set both as persistent user environment variables.
 - To disable: delete `config\local\delivery_override.yaml`.
+
+For the complete installation procedure, expected outputs, archive paths, and rollback commands,
+see `docs/setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md`.
