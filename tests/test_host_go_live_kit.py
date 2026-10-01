@@ -239,6 +239,62 @@ def test_fx_mode_ready_requires_fresh_signal_and_spread(tmp_path):
     assert not any("decision=READY" in ln for ln in no_quote)
 
 
+def test_fx_runtime_projects_only_eligible_ready_to_idempotent_paper_ledger(tmp_path, monkeypatch):
+    now = dt.datetime(2026, 1, 6, 8, 0, tzinfo=UTC)
+    monkeypatch.setattr(smoke, "fx_symbols", lambda: ["EURUSD"])
+
+    def ready(symbol, cycle, m15, at, data_close=None, spread=None):
+        return {
+            "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
+            "strategy_id": "ST_ASIAN_SWEEP_5R_V1", "strategy_version": "1.1.1",
+            "symbol": symbol, "cycle": cycle, "session_date": at.date().isoformat(),
+            "signal_id": f"{cycle}-signal", "signal_close_utc": (at - dt.timedelta(minutes=5)).isoformat(),
+            "direction": "LONG", "entry_order_type": "MARKET", "entry": 1.1, "stop_loss": 1.09,
+            "risk_distance": 0.01,
+            "targets": [{"leg": 1, "volume_pct": 0.75, "type": "BOUNDARY", "price": 1.11},
+                        {"leg": 2, "volume_pct": 0.25, "type": "5R", "price": 1.15}],
+            "evaluated_at": at.isoformat(), "metadata_status": "HOST_CAPTURED", "spread_check": "PASS",
+            "decision": "READY", "reason_code": "SIGNAL", "data_source": "MT5_VT_MARKETS_DEMO",
+            "delivery_mode": "ARCHIVE_ONLY",
+        }
+
+    monkeypatch.setattr(smoke, "fx_ticket_for", ready)
+    journal = str(tmp_path / "journal")
+    first = smoke.run_fx(lambda *args: [], now, journal, gated=False, notify=False,
+                         quote=lambda b: (1.0, 1.0001))
+    second = smoke.run_fx(lambda *args: [], now, journal, gated=False, notify=False,
+                          quote=lambda b: (1.0, 1.0001))
+    assert sum("paper=OPENED" in line for line in first) == 2
+    assert sum("paper=ALREADY_RECORDED" in line for line in second) == 2
+    papers = glob.glob(str(tmp_path / "journal" / "paper_trades" / "**" / "*.json"), recursive=True)
+    assert len(papers) == 2
+    assert all(json.loads(Path(path).read_text())["label"] == "PAPER TRADE ONLY -- NO BROKER ORDER" for path in papers)
+
+
+def test_fx_data_acquisition_errors_are_archived_and_never_paper_traded(tmp_path):
+    def broken_fetch(symbol, timeframe, count):
+        raise sm.HostDataError(sm.INCOMPLETE_CANDLES, f"{symbol}/{timeframe} 0<{count}")
+
+    journal = str(tmp_path / "journal")
+    lines = smoke.run_fx(broken_fetch, NOW, journal, gated=False)
+    assert lines and all("decision=DATA_ERROR" in line and "ARCHIVED" in line for line in lines)
+    paths = glob.glob(str(tmp_path / "journal" / "ticket_delivery" / "archive" / "**" / "*.json"), recursive=True)
+    assert len(paths) == 4                         # 2 evidenced symbols x 2 cycles
+    assert not glob.glob(str(tmp_path / "journal" / "paper_trades" / "**" / "*.json"), recursive=True)
+    for path in paths:
+        record = json.loads(Path(path).read_text())
+        assert record["cycle_state"] == "DATA_ERROR"
+        assert record["payload"]["reason_code"] == sm.INCOMPLETE_CANDLES
+        assert "entry" not in record["payload"]
+
+
+def test_runtime_requires_demo_account():
+    assert hc.require_demo_account(FakeMT5())[0]
+    ok, reason = hc.require_demo_account(FakeMT5(trade_mode=2))
+    assert not ok and reason == "NON_DEMO_ACCOUNT_BLOCKED"
+    assert hc.require_demo_account(FakeMT5(account=False)) == (False, "ACCOUNT_INFO_UNAVAILABLE")
+
+
 def test_fx_mode_is_window_bounded_and_idempotent(tmp_path):
     j = str(tmp_path / "journal")
     assert smoke.run_fx(fake_fetch(), dt.datetime(2026, 1, 6, 5, 0, tzinfo=UTC), j, gated=True) == []

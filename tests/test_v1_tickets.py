@@ -122,6 +122,29 @@ def test_fx_archive_is_idempotent_archive_only(tmp_path):
     assert p1 == p2 and len(glob.glob(str(tmp_path / "**" / "*.json"), recursive=True)) == 1
 
 
+def test_paper_trade_requires_fresh_complete_host_ready_ticket(tmp_path):
+    from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility
+
+    session, post = _fx("EURUSD", "ASIAN_LONDON")
+    now = dt.datetime(2026, 1, 5, 7, 35, tzinfo=UTC)
+    ticket = build_fx_ticket("EURUSD", "ASIAN_LONDON", DAY, session, 2, post,
+                             data_source="MT5_VT_MARKETS_DEMO", evaluated_at=now,
+                             data_close=now, spread=0.0001)
+    ticket["metadata_status"] = "HOST_CAPTURED"       # isolate this pure projection from host evidence
+    eligible, reasons, valid_until = paper_eligibility(ticket, now)
+    assert eligible and not reasons and valid_until == dt.datetime(2026, 1, 5, 7, 45, tzinfo=UTC)
+    paper = build_paper_trade(ticket, now)
+    assert paper["label"] == "PAPER TRADE ONLY -- NO BROKER ORDER"
+    assert paper["risk_unit"] == "1R" and paper["position_size"].startswith("NOT_APPLICABLE")
+    assert os.path.exists(archive_paper_trade(paper, str(tmp_path)))
+
+    stale = {**ticket, "decision": "STALE", "reason_code": "STALE_SIGNAL"}
+    assert not paper_eligibility(stale, now)[0] and build_paper_trade(stale, now) is None
+    incomplete = {k: v for k, v in ticket.items() if k != "stop_loss"}
+    assert "MISSING_STOP_LOSS" in paper_eligibility(incomplete, now)[1]
+    assert build_paper_trade(incomplete, now) is None
+
+
 def test_host_metadata_field_list_is_explicit():
     for f in ("digits", "point", "trade_tick_size", "trade_tick_value", "trade_contract_size", "trade_stops_level"):
         assert f in HOST_METADATA_FIELDS

@@ -4,6 +4,25 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## MT5 Demo scanner/runtime repair + fail-closed paper ledger (2026-10-01)
+
+The broken compatibility runner (`scripts/run_fx_cycle_once.py`, which referenced missing
+`scheduling` and `run_post_asian_pilot.py` modules) now delegates to the maintained Windows
+host scanner in `scripts/host/live_candles_smoke.py`, with per-cycle filtering and a
+machine-readable dry run. The runtime verifies `account_info().trade_mode == DEMO` before
+reading candles. Every in-window FX result is archived before any notification or paper
+projection, including acquisition/runtime `DATA_ERROR` and market-closed `BLOCKED` records;
+`NO_TRADE` remains archived. `src/v1_tickets/paper.py` permits a 1R, un-sized paper record
+only for a complete `READY` ticket with host-captured metadata, `spread_check: PASS`, valid
+LONG/SHORT risk geometry, two targets, and an unexpired 15-minute signal window. The paper
+ledger is idempotent by signal ID and has no order/position API.
+
+Evidence in this Linux container: focused scanner/ticket/archive suites **122 passed, 1
+skipped**; full suite **759 passed, 4 skipped, 1 failed**, where the sole failure remains the
+pre-existing missing `api.app` route test. A real VT Markets Demo run is
+**NOT_EVALUATED_HOST_REQUIRED**: the MetaTrader5 wheel/terminal is Windows-only and the host
+diagnostic correctly reports it unavailable here. No execution or authorization change.
+
 ## Host kit: audit 2 fixes (2026-09-30)
 
 See `docs/status/AG_V1_HOST_AUDIT2_FIXES_2026-09-30.md`. The Codex CRITICAL on MT5 time is

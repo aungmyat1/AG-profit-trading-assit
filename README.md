@@ -204,6 +204,27 @@ python scripts/run_btc_daily_report.py --help
 node web/scripts/check_mt5_mcp.mjs
 ```
 
+### MT5 Demo scanner and paper ledger
+
+On the Windows MT5 host, diagnose the connection and run the read-only scanner:
+
+```powershell
+.venv\Scripts\python.exe scripts\host\diagnose_mt5.py
+.venv\Scripts\python.exe scripts\host\live_candles_smoke.py
+
+# Compatibility entry points used by the existing per-cycle scheduler:
+.venv\Scripts\python.exe scripts\run_fx_cycle_once.py --cycle ASIAN_LONDON
+.venv\Scripts\python.exe scripts\run_fx_cycle_once.py --cycle LONDON_NEWYORK
+```
+
+The runtime verifies that the connected account is Demo, then archives every evaluated FX
+result—including `NO_TRADE`, `BLOCKED`, and `DATA_ERROR`—under
+`journal/ticket_delivery/archive`. Only a `READY` ticket that is still within its 15-minute
+signal validity, has all required entry/stop/target fields, uses verified host metadata, and
+passes the live-spread gate is copied to `journal/paper_trades`. The paper record is expressed
+in 1R, has no position size, and cannot reach an order API. See
+[`scripts/host/GO_LIVE.md`](scripts/host/GO_LIVE.md).
+
 Execution preview and manual-position management:
 
 ```powershell

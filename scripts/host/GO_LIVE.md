@@ -2,8 +2,12 @@
 
 This kit runs on the Windows machine where the **VT Markets DEMO** MT5 terminal is installed,
 open and logged in. It is read-only: nothing here places, checks or modifies orders or
-positions. Tickets and alerts are informational and are archived to `journal\`. Telegram is
-optional and off by default.
+positions. Every scheduled FX result (`READY`, `NO_TRADE`, `BLOCKED`, or `DATA_ERROR`) is
+archived to `journal\ticket_delivery\archive`; the runtime fails closed unless
+`account_info().trade_mode` is DEMO. A fresh, complete `READY` ticket with host-captured
+metadata and a passing spread check is also projected into a 1R-only paper record under
+`journal\paper_trades`. No position size or broker order is created. Telegram is optional and
+off by default.
 
 ## Prerequisites (one time)
 
@@ -73,7 +77,7 @@ Commit the two JSON files. They are evidence and contain no secrets.
 
 Expected output: states only.
 - One `BARS <SYMBOL> (<broker name>) status=FRESH|STALE|MARKET_CLOSED last_closed={D1,H1,M15,M5}` line per symbol.
-- `FX <SYMBOL> <ASIAN_LONDON|LONDON_NEWYORK> data=… decision=READY|NO_TRADE|DATA_ERROR metadata=REPO_EVIDENCED|HOST_CAPTURED`.
+- `FX <SYMBOL> <ASIAN_LONDON|LONDON_NEWYORK> data=… decision=READY|NO_TRADE|BLOCKED|DATA_ERROR metadata=HOST_CAPTURED paper=OPENED|ALREADY_RECORDED|INELIGIBLE:…`.
 - `LSMC <SYMBOL> data=… state=IDLE|DEVELOPING|NEAR_POI|OPPORTUNITY|… alerts=[…]`.
 
 EURUSD and GBPUSD always run. USDJPY and XAUUSD run only after step 2. Results are archived
@@ -104,6 +108,8 @@ What happens once the tasks run:
 - The runner acts only inside the frozen UTC windows, so it is DST-safe:
   - FX `07:00–11:00` / `12:00–15:00` GMT (+30 min grace)
   - crypto `06:30–06:45` UTC
+- Existing tasks that call `scripts\run_fx_cycle_once.py --cycle <CYCLE>` are supported; that
+  command now delegates to the maintained host runtime instead of the removed pilot packages.
 - Logs go to `logs\ag_v1_<mode>.log`. The Windows user must stay logged on, with MT5 open.
 - To undo: `powershell -ExecutionPolicy Bypass -File scripts\host\uninstall_tasks.ps1 -Apply`.
 

@@ -25,7 +25,8 @@ from strategy_engine import evaluate, load_strategy
 from strategy_engine.session import Candle
 from v1_tickets.guards import gate_ready
 from ticket_delivery.archive import (
-    CYCLE_STATE_DATA_ERROR, CYCLE_STATE_NO_TRADE, CYCLE_STATE_READY, CycleDecisionRecord, archive_cycle_decision,
+    CYCLE_STATE_BLOCKED, CYCLE_STATE_DATA_ERROR, CYCLE_STATE_NO_TRADE, CYCLE_STATE_READY,
+    CycleDecisionRecord, archive_cycle_decision,
 )
 
 STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
@@ -73,6 +74,35 @@ def _r(symbol: str, value: Optional[float]) -> Optional[float]:
     return value if digits is None else round(value, digits)
 
 
+def build_fx_error_ticket(
+    symbol: str, cycle: str, session_date: dt.date, *, evaluated_at: dt.datetime,
+    reason_code: str, detail: str = "", decision: str = "DATA_ERROR",
+    data_source: str = "MT5_VT_MARKETS_DEMO",
+) -> Dict[str, Any]:
+    """Create an archivable fail-closed result when acquisition/runtime fails before
+    the strategy engine can run.  It deliberately contains no entry or price levels."""
+    if symbol not in V1_FX_SYMBOLS or cycle not in V1_CYCLES:
+        raise ValueError(f"{symbol}/{cycle} is not a V1 FX ticket cycle")
+    if decision not in ("DATA_ERROR", "BLOCKED"):
+        raise ValueError("external failure decision must be DATA_ERROR or BLOCKED")
+    strategy = load_strategy(STRATEGY_PATH)
+    return {
+        "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
+        "strategy_id": strategy.strategy_id,
+        "strategy_version": strategy.version,
+        "symbol": symbol,
+        "cycle": cycle,
+        "session_date": session_date.isoformat(),
+        "data_source": data_source,
+        "evaluated_at": evaluated_at.astimezone(dt.timezone.utc).isoformat(),
+        "metadata_status": metadata_status(symbol),
+        "delivery_mode": "ARCHIVE_ONLY",
+        "decision": decision,
+        "reason_code": reason_code,
+        "detail": detail[:300],
+    }
+
+
 def build_fx_ticket(
     symbol: str, cycle: str, session_date: dt.date, session_candles: Sequence[Candle], expected_bar_count: int,
     post_session_candles: Sequence[Candle], *, data_source: str, evaluated_at: dt.datetime,
@@ -118,6 +148,7 @@ def build_fx_ticket(
 
 
 _STATE = {"READY": CYCLE_STATE_READY, "NO_TRADE": CYCLE_STATE_NO_TRADE, "DATA_ERROR": CYCLE_STATE_DATA_ERROR,
+          "BLOCKED": CYCLE_STATE_BLOCKED,
           # Gate-withheld decisions archive as NO_TRADE; the payload/reason code keeps the specific state.
           "STALE": CYCLE_STATE_NO_TRADE, "SPREAD_TOO_WIDE": CYCLE_STATE_NO_TRADE}
 
