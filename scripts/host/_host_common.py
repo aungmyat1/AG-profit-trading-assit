@@ -252,6 +252,24 @@ def _is_real(mt5) -> bool:
     return "MT5StubOperationAttempted" not in names and not _is_repo_module(mt5) and "initialize" in names
 
 
+def require_demo_account(mt5) -> "tuple[bool, str]":
+    """Fail closed unless the connected terminal exposes a DEMO account.
+
+    Reading account_info is non-mutating.  No login, server, balance, or equity is
+    returned in the detail string, so callers can safely archive/log the result.
+    """
+    try:
+        account = call_with_timeout(mt5.account_info)
+    except Exception as exc:  # noqa: BLE001
+        return False, f"ACCOUNT_INFO_UNAVAILABLE {type(exc).__name__}"
+    if account is None:
+        return False, "ACCOUNT_INFO_UNAVAILABLE"
+    expected = getattr(mt5, "ACCOUNT_TRADE_MODE_DEMO", 0)
+    if getattr(account, "trade_mode", None) != expected:
+        return False, "NON_DEMO_ACCOUNT_BLOCKED"
+    return True, "DEMO_ACCOUNT_VERIFIED"
+
+
 def mt5_initialize(mt5, terminal_path: str = "") -> "tuple[bool, str]":
     """initialize() against the VT Markets demo terminal. Credentials come only from the
     environment (VTMARKETS-DEMO-LOGIN / VTMARKETS_DEMO_LOGIN / MT5_LOGIN, etc.). The

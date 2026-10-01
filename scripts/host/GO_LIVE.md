@@ -1,9 +1,16 @@
 # AG V1 host go-live kit (Windows MT5 host)
 
 This kit runs on the Windows machine where the **VT Markets DEMO** MT5 terminal is installed,
-open and logged in. It is read-only: nothing here places, checks or modifies orders or
-positions. Tickets and alerts are informational and are archived to `journal\`. Telegram is
-optional and off by default.
+open and logged in. The complete objective universe is three FX majors (EURUSD, GBPUSD,
+USDJPY), gold (XAUUSD), and two crypto instruments (BTCUSDT, ETHUSDT): both FX session cycles
+produce informational tickets, both crypto instruments produce daily-window tickets, and
+Large-SMC watches all six instruments. It is read-only: nothing here places, checks or
+modifies orders or positions. Every scheduled FX result (`READY`, `NO_TRADE`, `BLOCKED`, or `DATA_ERROR`) is
+archived to `journal\ticket_delivery\archive`; the runtime fails closed unless
+`account_info().trade_mode` is DEMO. A fresh, complete `READY` ticket with host-captured
+metadata and a passing spread check is also projected into a 1R-only paper record under
+`journal\paper_trades`. No position size or broker order is created. Telegram is optional and
+off by default.
 
 ## Prerequisites (one time)
 
@@ -12,7 +19,7 @@ optional and off by default.
    py -3.11 -m venv .venv
    .venv\Scripts\pip install -r requirements.txt
    ```
-2. Credentials go in `src\.env` or user environment variables, never in git:
+2. Credentials go in persistent user environment variables, never in git:
    `VTMARKETS-DEMO-LOGIN`, `VTMARKETS-DEMO-PASSWORD`, `VTMARKETS-DEMO-SERVER`.
    The underscore forms `VTMARKETS_DEMO_*` also work.
 3. Optionally set `MT5_TERMINAL_PATH` to the VT Markets `terminal64.exe`.
@@ -73,24 +80,29 @@ Commit the two JSON files. They are evidence and contain no secrets.
 
 Expected output: states only.
 - One `BARS <SYMBOL> (<broker name>) status=FRESH|STALE|MARKET_CLOSED last_closed={D1,H1,M15,M5}` line per symbol.
-- `FX <SYMBOL> <ASIAN_LONDON|LONDON_NEWYORK> data=… decision=READY|NO_TRADE|DATA_ERROR metadata=REPO_EVIDENCED|HOST_CAPTURED`.
+- `FX <SYMBOL> <ASIAN_LONDON|LONDON_NEWYORK> data=… decision=READY|NO_TRADE|BLOCKED|DATA_ERROR metadata=HOST_CAPTURED paper=OPENED|ALREADY_RECORDED|INELIGIBLE:…`.
 - `LSMC <SYMBOL> data=… state=IDLE|DEVELOPING|NEAR_POI|OPPORTUNITY|… alerts=[…]`.
 
 EURUSD and GBPUSD always run. USDJPY and XAUUSD run only after step 2. Results are archived
 under `journal\host_smoke\` (ARCHIVE_ONLY; nothing is sent). On a weekend, FX shows
 `MARKET_CLOSED`, which is expected.
 
-## 4. Scheduled tasks: preview
+## 4. Scheduled tasks: objective preflight and preview
 
 ```
+.venv\Scripts\python.exe scripts\host\verify_objective.py
 powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1
 ```
 
-Expected: four plan lines (`AG-V1-FX-Cycles` every 15 min at +1 min daily, `AG-V1-Crypto-Daily`
-every 5 min at +2 min daily, `AG-V1-LSMC-Watch` every 5 min at +3 min Mon-Fri,
-`AG-V1-LSMC-Crypto-Weekend` every 5 min at +3 min Sat+Sun 20:45-23:15 UTC with its local-time
-equivalent; staggered starts, 4-minute task limit, runner self-exits after 120 s), then
-`WhatIf: no changes made.`
+The preflight must report nine PASS checks and `RESULT: PASS`; it verifies the complete
+six-instrument universe, both FX cycles, all six host metadata captures, the active two-symbol
+crypto config, Large-SMC coverage, all three scheduler bindings, the ARCHIVE_ONLY default, and
+the READY/OPPORTUNITY-only Telegram reporting scope. Expected from the installer:
+three plan lines (`AG-V1-FX-Cycles` every 15 min at +1 min daily, `AG-V1-Crypto-Daily`
+every 5 min at +2 min daily, and `AG-V1-LSMC-Watch` every 5 min at +3 min daily;
+staggered starts, 4-minute task limit, runner self-exits after 120 s), then
+`WhatIf: no changes made.` The daily Large-SMC task watches crypto throughout weekends and
+returns `MARKET_CLOSED` for FX while its market is shut.
 
 ## 5. Scheduled tasks: install
 
@@ -98,12 +110,22 @@ equivalent; staggered starts, 4-minute task limit, runner self-exits after 120 s
 powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1 -Apply
 ```
 
-Expected: `INSTALLED …` three times and a table of the three `AG-V1-*` tasks in state `Ready`.
+Expected: the objective preflight passes, `INSTALLED …` appears three times, then the automatic
+post-install verification reports three `[PASS]` lines and
+`RESULT: PASS (3/3 scheduled task bindings valid; no duplicate weekend watcher)`. The installer
+also removes the superseded narrow weekend-only watcher if present. Verification can be rerun
+without changing tasks:
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\host\verify_tasks.ps1
+```
 
 What happens once the tasks run:
 - The runner acts only inside the frozen UTC windows, so it is DST-safe:
   - FX `07:00–11:00` / `12:00–15:00` GMT (+30 min grace)
   - crypto `06:30–06:45` UTC
+- Existing tasks that call `scripts\run_fx_cycle_once.py --cycle <CYCLE>` are supported; that
+  command now delegates to the maintained host runtime instead of the removed pilot packages.
 - Logs go to `logs\ag_v1_<mode>.log`. The Windows user must stay logged on, with MT5 open.
 - To undo: `powershell -ExecutionPolicy Bypass -File scripts\host\uninstall_tasks.ps1 -Apply`.
 
@@ -114,11 +136,20 @@ $env:TELEGRAM_BOT_TOKEN = '<token>'; $env:TELEGRAM_CHAT_ID = '<chat id>'
 powershell -ExecutionPolicy Bypass -File scripts\host\enable_telegram.ps1
 ```
 
-Expected: `TELEGRAM_TEST: OK`, a test message in the chat, and then
+Expected: `TELEGRAM_PROPOSAL_TEST: OK`, a message headed
+`SIMULATED TELEGRAM DELIVERY VALIDATION -- NOT A MARKET SIGNAL`, and then
 `Telegram MESSAGE_DELIVERY enabled on this host for READY tickets + Large-SMC OPPORTUNITY alerts only.`
+Validate the enabled override, credentials, formatter, and Telegram API path again with:
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\host\verify_telegram.ps1
+```
 
 - Only READY tickets and OPPORTUNITY alerts are sent; WATCH and INFO stay in the archive.
 - Messages are plain text, with no buttons.
 - The token and chat ID are never printed or written to disk.
 - For scheduled tasks, set both as persistent user environment variables.
 - To disable: delete `config\local\delivery_override.yaml`.
+
+For the complete installation procedure, expected outputs, archive paths, and rollback commands,
+see `docs/setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md`.

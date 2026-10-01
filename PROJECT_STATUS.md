@@ -4,6 +4,68 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Telegram proposal-report validation + Windows install guide (2026-10-01)
+
+Host-local Telegram delivery was re-audited end-to-end in code: scheduled FX and crypto runners
+route only newly archived `READY` tickets through `format_ticket()` and send them only when the
+`TICKET_READY` scope is enabled; Large-SMC routes only `OPPORTUNITY` alerts under
+`LSMC_OPPORTUNITY`. `NO_TRADE`, `BLOCKED`, `STALE`, `DATA_ERROR`, `WATCH`, and `INFO` remain
+archive-only. `enable_telegram.ps1` now proves the actual proposal renderer/API path by sending a
+clearly labelled simulated READY proposal before writing the gitignored host override. The new
+`verify_telegram.ps1` checks mode, both scopes, credential presence, and sends the same validation
+proposal, and `verify_objective.py` gained a `telegram_report_scope` check plus a stricter
+`safe_delivery_default` (no committed override, `/config/local/` gitignored, no authorized chat
+IDs in the committed config). Secrets remain environment-only and sanitized. Focused
+host/ticket/archive tests: **130 passed, 1 skipped**; full suite: **767 passed, 4 skipped,
+1 pre-existing missing-`api.app` failure**. Actual Telegram acceptance remains
+**HOST_VALIDATION_REQUIRED** because this container has no owner bot token/chat destination.
+
+The complete operator procedure is now
+`docs/setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md`, linked from both README indexes. It covers MT5 Demo
+credentials, objective/MT5/smoke checks, Telegram proposal validation, scheduler installation,
+expected archives/logs, and rollback. No strategy, execution, or authorization change.
+
+## Complete six-instrument scheduled host objective (2026-10-01)
+
+The repository host setup now binds the owner objective explicitly: EURUSD, GBPUSD and USDJPY
+(three FX majors) plus XAUUSD produce informational tickets for both ASIAN_LONDON and
+LONDON_NEWYORK; BTCUSDT and ETHUSDT produce active-config daily-window tickets; and
+ST_LARGE_SMC_V1@1.1.0 watches/alerts on all six instruments. The FX runner no longer silently
+omits USDJPY/XAUUSD when metadata is unavailable—it emits and archives per-cycle DATA_ERROR
+records. All six current VT Markets Demo symbol captures pass the new
+`scripts/host/verify_objective.py` preflight.
+
+The Windows schedule is consolidated to three non-overlapping tasks: FX tickets every 15
+minutes, crypto tickets every 5 minutes (both runners self-gate to their windows), and one
+Large-SMC task every 5 minutes daily. The daily watch covers crypto through weekends while FX
+fails closed as MARKET_CLOSED. `install_tasks.ps1 -Apply` refuses before mutation when the
+objective preflight fails, removes the superseded narrow weekend-only watcher, and runs the new
+read-only `verify_tasks.ps1` afterward to prove exact actions, working directories, triggers,
+and single-instance settings. Default alert delivery remains ARCHIVE_ONLY; Telegram remains an
+explicit host-local opt-in. Repository preflight: **9/9 PASS**; focused host/ticket/archive
+suites: **123 passed, 1 skipped**; full suite: **760 passed, 4 skipped, 1 pre-existing missing-`api.app`
+failure**. Windows Task Scheduler and live MT5 execution remain
+**NOT_EVALUATED_HOST_REQUIRED** in this Linux container.
+
+## MT5 Demo scanner/runtime repair + fail-closed paper ledger (2026-10-01)
+
+The broken compatibility runner (`scripts/run_fx_cycle_once.py`, which referenced missing
+`scheduling` and `run_post_asian_pilot.py` modules) now delegates to the maintained Windows
+host scanner in `scripts/host/live_candles_smoke.py`, with per-cycle filtering and a
+machine-readable dry run. The runtime verifies `account_info().trade_mode == DEMO` before
+reading candles. Every in-window FX result is archived before any notification or paper
+projection, including acquisition/runtime `DATA_ERROR` and market-closed `BLOCKED` records;
+`NO_TRADE` remains archived. `src/v1_tickets/paper.py` permits a 1R, un-sized paper record
+only for a complete `READY` ticket with host-captured metadata, `spread_check: PASS`, valid
+LONG/SHORT risk geometry, two targets, and an unexpired 15-minute signal window. The paper
+ledger is idempotent by signal ID and has no order/position API.
+
+Evidence in this Linux container: focused scanner/ticket/archive suites **122 passed, 1
+skipped**; full suite **759 passed, 4 skipped, 1 failed**, where the sole failure remains the
+pre-existing missing `api.app` route test. A real VT Markets Demo run is
+**NOT_EVALUATED_HOST_REQUIRED**: the MetaTrader5 wheel/terminal is Windows-only and the host
+diagnostic correctly reports it unavailable here. No execution or authorization change.
+
 ## Host kit: audit 2 fixes (2026-09-30)
 
 See `docs/status/AG_V1_HOST_AUDIT2_FIXES_2026-09-30.md`. The Codex CRITICAL on MT5 time is

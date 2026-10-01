@@ -204,6 +204,41 @@ python scripts/run_btc_daily_report.py --help
 node web/scripts/check_mt5_mcp.mjs
 ```
 
+### MT5 Demo scanner and paper ledger
+
+On the Windows MT5 host, diagnose the connection and run the read-only scanner:
+
+```powershell
+.venv\Scripts\python.exe scripts\host\diagnose_mt5.py
+.venv\Scripts\python.exe scripts\host\live_candles_smoke.py
+
+# Compatibility entry points used by the existing per-cycle scheduler:
+.venv\Scripts\python.exe scripts\run_fx_cycle_once.py --cycle ASIAN_LONDON
+.venv\Scripts\python.exe scripts\run_fx_cycle_once.py --cycle LONDON_NEWYORK
+```
+
+The runtime verifies that the connected account is Demo, then archives every evaluated FX
+result—including `NO_TRADE`, `BLOCKED`, and `DATA_ERROR`—under
+`journal/ticket_delivery/archive`. Only a `READY` ticket that is still within its 15-minute
+signal validity, has all required entry/stop/target fields, uses verified host metadata, and
+passes the live-spread gate is copied to `journal/paper_trades`. The paper record is expressed
+in 1R, has no position size, and cannot reach an order API.
+
+The complete scheduled objective is three FX majors (EURUSD, GBPUSD, USDJPY) plus XAUUSD on
+both session cycles, daily-window BTCUSDT and ETHUSDT tickets, and Large-SMC watch/alerts for
+all six instruments. Verify and install the three Windows host tasks with:
+
+```powershell
+.venv\Scripts\python.exe scripts\host\verify_objective.py
+powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1
+powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1 -Apply
+powershell -ExecutionPolicy Bypass -File scripts\host\verify_tasks.ps1
+```
+
+See [`Install on the Windows MT5 Demo host`](docs/setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md) for
+the complete installation and Telegram proposal-validation procedure; the compact operator
+checklist remains in [`scripts/host/GO_LIVE.md`](scripts/host/GO_LIVE.md).
+
 Execution preview and manual-position management:
 
 ```powershell

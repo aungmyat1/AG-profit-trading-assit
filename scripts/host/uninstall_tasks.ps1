@@ -1,5 +1,5 @@
 <#
-Removes the four AG V1 host tasks created by install_tasks.ps1.
+Removes the three current AG V1 host tasks plus the superseded weekend watcher, if present.
   powershell -ExecutionPolicy Bypass -File scripts\host\uninstall_tasks.ps1          # -WhatIf (default)
   powershell -ExecutionPolicy Bypass -File scripts\host\uninstall_tasks.ps1 -Apply
 #>
