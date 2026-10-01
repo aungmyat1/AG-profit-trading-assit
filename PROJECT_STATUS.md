@@ -4,6 +4,28 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Complete six-instrument scheduled host objective (2026-10-01)
+
+The repository host setup now binds the owner objective explicitly: EURUSD, GBPUSD and USDJPY
+(three FX majors) plus XAUUSD produce informational tickets for both ASIAN_LONDON and
+LONDON_NEWYORK; BTCUSDT and ETHUSDT produce active-config daily-window tickets; and
+ST_LARGE_SMC_V1@1.1.0 watches/alerts on all six instruments. The FX runner no longer silently
+omits USDJPY/XAUUSD when metadata is unavailable—it emits and archives per-cycle DATA_ERROR
+records. All six current VT Markets Demo symbol captures pass the new
+`scripts/host/verify_objective.py` preflight.
+
+The Windows schedule is consolidated to three non-overlapping tasks: FX tickets every 15
+minutes, crypto tickets every 5 minutes (both runners self-gate to their windows), and one
+Large-SMC task every 5 minutes daily. The daily watch covers crypto through weekends while FX
+fails closed as MARKET_CLOSED. `install_tasks.ps1 -Apply` refuses before mutation when the
+objective preflight fails, removes the superseded narrow weekend-only watcher, and runs the new
+read-only `verify_tasks.ps1` afterward to prove exact actions, working directories, triggers,
+and single-instance settings. Default alert delivery remains ARCHIVE_ONLY; Telegram remains an
+explicit host-local opt-in. Repository preflight: **8/8 PASS**; focused host/ticket/archive
+suites: **123 passed, 1 skipped**; full suite: **760 passed, 4 skipped, 1 pre-existing missing-`api.app`
+failure**. Windows Task Scheduler and live MT5 execution remain
+**NOT_EVALUATED_HOST_REQUIRED** in this Linux container.
+
 ## MT5 Demo scanner/runtime repair + fail-closed paper ledger (2026-10-01)
 
 The broken compatibility runner (`scripts/run_fx_cycle_once.py`, which referenced missing

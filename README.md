@@ -222,8 +222,21 @@ result—including `NO_TRADE`, `BLOCKED`, and `DATA_ERROR`—under
 `journal/ticket_delivery/archive`. Only a `READY` ticket that is still within its 15-minute
 signal validity, has all required entry/stop/target fields, uses verified host metadata, and
 passes the live-spread gate is copied to `journal/paper_trades`. The paper record is expressed
-in 1R, has no position size, and cannot reach an order API. See
-[`scripts/host/GO_LIVE.md`](scripts/host/GO_LIVE.md).
+in 1R, has no position size, and cannot reach an order API.
+
+The complete scheduled objective is three FX majors (EURUSD, GBPUSD, USDJPY) plus XAUUSD on
+both session cycles, daily-window BTCUSDT and ETHUSDT tickets, and Large-SMC watch/alerts for
+all six instruments. Verify and install the three Windows host tasks with:
+
+```powershell
+.venv\Scripts\python.exe scripts\host\verify_objective.py
+powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1
+powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1 -Apply
+powershell -ExecutionPolicy Bypass -File scripts\host\verify_tasks.ps1
+```
+
+See [`scripts/host/GO_LIVE.md`](scripts/host/GO_LIVE.md) for the host checklist and optional
+Telegram alert setup.
 
 Execution preview and manual-position management:
 

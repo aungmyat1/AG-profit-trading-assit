@@ -3,8 +3,8 @@
     .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py                 # --mode smoke
     .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode fx       # Task: FX cycles
     .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode crypto   # Task: crypto daily
-    .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode lsmc     # Task: Large-SMC watch
-    .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode lsmc-weekend   # Task: Large-SMC BTC/ETH weekend
+    .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode lsmc     # Task: daily six-symbol Large-SMC watch
+    .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode lsmc-weekend   # legacy/manual bounded crypto probe
 
 - smoke: pulls the last closed D1/H1/M15/M5 bars for EURUSD and GBPUSD (plus USDJPY and
   XAUUSD once host metadata is captured), classifies each as FRESH / STALE /
@@ -66,8 +66,11 @@ from v1_tickets import fx as fx_tickets  # noqa: E402
 from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility  # noqa: E402
 
 UTC = dt.timezone.utc
-FX_ALWAYS = ("EURUSD", "GBPUSD")
-FX_METADATA_GATED = ("USDJPY", "XAUUSD")
+# Binding objective universe: three FX majors + gold.  Never silently remove a symbol
+# when metadata is missing; its scheduled cycle must emit an explicit DATA_ERROR instead.
+FX_MAJORS = ("EURUSD", "GBPUSD", "USDJPY")
+FX_METALS = ("XAUUSD",)
+FX_TICKET_SYMBOLS = FX_MAJORS + FX_METALS
 TF_MIN = {"D1": 1440, "H1": 60, "M15": 15, "M5": 5}
 COUNTS = {"D1": 30, "H1": 200, "M15": 120, "M5": 300}
 STALE_MIN = 15
@@ -88,7 +91,8 @@ def _spread(quote: Optional[Quote], broker: str) -> Optional[float]:
 
 
 def fx_symbols() -> List[str]:
-    return list(FX_ALWAYS) + [s for s in FX_METADATA_GATED if fx_tickets.metadata_status(s) != "FIXTURE_ONLY"]
+    """The complete objective universe; unavailable symbols fail visibly per cycle."""
+    return list(FX_TICKET_SYMBOLS)
 
 
 def classify(symbol: str, m5: list, now: dt.datetime) -> str:

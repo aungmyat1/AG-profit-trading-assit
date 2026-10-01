@@ -21,6 +21,7 @@ import _host_common as hc  # noqa: E402
 import capture_symbol_metadata as cap  # noqa: E402
 import diagnose_mt5 as diag  # noqa: E402
 import live_candles_smoke as smoke  # noqa: E402
+import verify_objective as objective  # noqa: E402
 from _lsmc_v110_fixtures import NOW, d1_bars, h1_bars, m5_bars  # noqa: E402
 from host_delivery import telegram_message as tg  # noqa: E402
 from host_evidence import symbol_metadata as sm  # noqa: E402
@@ -207,7 +208,8 @@ def test_smoke_prints_states_and_archives_only(tmp_path):
     assert "BARS EURUSD (EURUSD-VIP) status=FRESH" in text
     assert re.search(r"FX EURUSD \(EURUSD-VIP\) ASIAN_LONDON data=FRESH decision=(READY|NO_TRADE|STALE) reason=", text)
     assert "LSMC EURUSD data=FRESH state=OPPORTUNITY" in text and "LSMC GBPUSD" in text
-    assert "USDJPY" not in text                                     # no metadata -> not fetched
+    # Objective symbols are never silently omitted: unavailable metadata/data is visible.
+    assert "FX USDJPY" in text and "decision=DATA_ERROR" in text
     assert glob.glob(str(tmp_path / "journal" / "ticket_delivery" / "archive" / "**" / "*.json"), recursive=True)
 
 
@@ -279,12 +281,12 @@ def test_fx_data_acquisition_errors_are_archived_and_never_paper_traded(tmp_path
     lines = smoke.run_fx(broken_fetch, NOW, journal, gated=False)
     assert lines and all("decision=DATA_ERROR" in line and "ARCHIVED" in line for line in lines)
     paths = glob.glob(str(tmp_path / "journal" / "ticket_delivery" / "archive" / "**" / "*.json"), recursive=True)
-    assert len(paths) == 4                         # 2 evidenced symbols x 2 cycles
+    assert len(paths) == 8                         # complete 4-symbol objective x 2 cycles
     assert not glob.glob(str(tmp_path / "journal" / "paper_trades" / "**" / "*.json"), recursive=True)
     for path in paths:
         record = json.loads(Path(path).read_text())
         assert record["cycle_state"] == "DATA_ERROR"
-        assert record["payload"]["reason_code"] == sm.INCOMPLETE_CANDLES
+        assert record["payload"]["reason_code"] in (sm.INCOMPLETE_CANDLES, sm.METADATA_MISSING)
         assert "entry" not in record["payload"]
 
 
@@ -522,6 +524,18 @@ def test_repo_default_delivery_stays_archive_only():
 
 # ------------------------------------------------------------------ static invariants (4, 5, 6)
 
+def test_complete_six_instrument_objective_preflight(monkeypatch):
+    monkeypatch.delenv("AG_EVIDENCE_ROOT", raising=False)  # verify committed host captures
+    report = objective.verify(ROOT)
+    assert report["result"] == "PASS", report["failures"]
+    assert report["objective"] == {
+        "fx_majors": ["EURUSD", "GBPUSD", "USDJPY"], "gold": ["XAUUSD"],
+        "crypto": ["BTCUSDT", "ETHUSDT"],
+        "watch_universe": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSDT", "ETHUSDT"],
+        "cycles": ["ASIAN_LONDON", "LONDON_NEWYORK"],
+    }
+
+
 def test_no_order_or_position_calls_anywhere_in_the_kit():
     files = list(HOST.glob("*.py")) + list((ROOT / "src" / "host_evidence").glob("*.py")) + \
         list((ROOT / "src" / "host_delivery").glob("*.py"))
@@ -534,20 +548,26 @@ def test_no_order_or_position_calls_anywhere_in_the_kit():
 def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     install = (HOST / "install_tasks.ps1").read_text()
     uninstall = (HOST / "uninstall_tasks.ps1").read_text()
+    verify = (HOST / "verify_tasks.ps1").read_text()
     telegram = (HOST / "enable_telegram.ps1").read_text()
     for s in (install, uninstall):
         assert "param([switch]$Apply)" in s and "WhatIf: no changes made" in s
     for name in ("AG-V1-FX-Cycles", "AG-V1-Crypto-Daily", "AG-V1-LSMC-Watch"):
         assert name in install and name in uninstall
     assert ".venv\\Scripts\\python.exe" in install and "MultipleInstances IgnoreNew" in install
-    assert "--mode {1}" in install and "Monday,Tuesday,Wednesday,Thursday,Friday" in install
+    assert "--mode {1}" in install and "Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc'" in install
     assert "ExecutionTimeLimit (New-TimeSpan -Minutes 4) -Priority 4" in install   # default 7 = low I/O
     runner = (HOST / "live_candles_smoke.py").read_text(encoding="utf-8")
     assert runner.index("start_run_watchdog(f\"ag_v1_") < runner.index("from large_smc_watch import")
-    offsets = [int(o) for o in re.findall(r"Offset = (\d+);", install)]
-    assert offsets == [1, 2, 3, 3]                     # fx, crypto, lsmc, lsmc-weekend (overlap serialized by MT5 lock)
+    offsets = [int(o) for o in re.findall(r"Offset = (\d+)", install)]
+    assert offsets == [1, 2, 3]                        # FX, crypto tickets, continuous six-symbol LSMC
     assert "AG-V1-LSMC-Crypto-Weekend" in install and "AG-V1-LSMC-Crypto-Weekend" in uninstall
-    assert "Mode = 'lsmc-weekend'" in install and "UtcStart = '20:45'; UtcEnd = '23:15'" in install
+    assert "REMOVED SUPERSEDED" in install             # prevent duplicate weekend watch polling
+    assert "verify_objective.py" in install and "verify_tasks.ps1" in install
+    assert "RESULT: PASS (3/3 scheduled task bindings valid; no duplicate weekend watcher)" in verify
+    for name in ("AG-V1-FX-Cycles", "AG-V1-Crypto-Daily", "AG-V1-LSMC-Watch"):
+        assert name in verify
+    assert "superseded duplicate task is still installed" in verify
     assert not re.search(r"Write-Host[^\n]*TELEGRAM_BOT_TOKEN\b(?!\s+and)", telegram.replace("MISSING TELEGRAM_BOT_TOKEN", ""))
     assert "reply_markup" not in telegram and "delivery_override.yaml" in telegram
     assert "ticket_delivery.yaml" in telegram and "Set-Content" in telegram
