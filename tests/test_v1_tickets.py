@@ -76,6 +76,31 @@ def test_fx_ready_is_withheld_when_stale_or_spread_fails():
     assert not any(t["decision"] == "READY" for t in (old, stale_data, wide, no_quote))
 
 
+def test_stale_is_measured_from_signal_bar_close_not_open():
+    """signal_timestamp is the M15 bar OPEN; STALE only when now - (open + 15m) > 15 min."""
+    session, _ = _fx("EURUSD", "ASIAN_LONDON")
+    post = [_c(7, 0, 1.1005, 1.1060, 1.1000, 1.1048, 1.0)]               # signal bar opens 07:00, closes 07:15
+    build = lambda at: build_fx_ticket("EURUSD", "ASIAN_LONDON", DAY, session, 2, post,  # noqa: E731
+                                       data_source="FIXTURE", evaluated_at=at, data_close=at, spread=0.0001)
+    fresh, late = build(dt.datetime(2026, 1, 5, 7, 16, tzinfo=UTC)), build(dt.datetime(2026, 1, 5, 7, 31, tzinfo=UTC))
+    assert fresh["signal_timestamp"] == "2026-01-05T07:00:00+00:00"
+    assert fresh["signal_close_utc"] == "2026-01-05T07:15:00+00:00"
+    assert fresh["decision"] == "READY"
+    assert (late["decision"], late["reason_code"], late["suppressed_decision"]) == ("STALE", "STALE_SIGNAL", "READY")
+
+
+def test_crypto_stale_gate_uses_mss_bar_close():
+    """Crypto passes mss_time (M5 bar open) + M5 as signal_close; same 15-min rule from that close."""
+    from v1_tickets.guards import gate_ready
+    mss_close = dt.datetime(2026, 1, 5, 7, 0, tzinfo=UTC) + dt.timedelta(minutes=5)
+    ready = {"decision": "READY", "reason_codes": []}
+    gate = lambda at: gate_ready(ready, now=at, data_close=at, signal_close=mss_close,  # noqa: E731
+                                 spread=0.1, risk=10.0, reason_key="reason_codes")
+    assert gate(dt.datetime(2026, 1, 5, 7, 20, tzinfo=UTC))["decision"] == "READY"
+    late = gate(dt.datetime(2026, 1, 5, 7, 20, 1, tzinfo=UTC))
+    assert (late["decision"], late["reason_codes"][0]) == ("STALE", "STALE_SIGNAL")
+
+
 def test_fx_ticket_no_trade_and_data_error_never_invent_a_setup():
     session, post = _fx("EURUSD", "ASIAN_LONDON")
     no_trade = build_fx_ticket("EURUSD", "ASIAN_LONDON", DAY, session, 2, post[:1], data_source="FIXTURE",
