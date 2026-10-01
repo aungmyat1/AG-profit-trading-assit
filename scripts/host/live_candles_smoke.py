@@ -222,7 +222,8 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
            f"{f'window={window} ' if window else ''}alerts={[e.to_state + ':' + e.alert_level for e in events]}"]
     if notify:
         for e in events:
-            _notify("LSMC", e.alert_level, tg.format_alert(e.__dict__), REPO_ROOT)
+            price = bars["M5"][-1].close if bars["M5"] else None
+            _notify("LSMC", e.alert_level, tg.format_alert(e.__dict__, price=price), REPO_ROOT)
     return out
 
 
