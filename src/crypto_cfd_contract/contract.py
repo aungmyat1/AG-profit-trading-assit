@@ -54,9 +54,13 @@ ALLOWED_POI_TYPES: Tuple[str, ...] = ("PREV_UTC_DAY_EXTREME", "BROKEN_M5_SWING")
 UNAUTHORIZED_POI_TYPES: Tuple[str, ...] = ("FVG", "ORDER_BLOCK", "RANGE_BOUNDARY")
 
 # ------------------------------------------------------------------ trigger geometry
-# Stop buffer FROZEN at zero broker points: the perp tick buffer is out of scope, FX pip
-# math is forbidden for crypto, and live CFD metadata returned tick_size=0.0 so no
-# tick-multiple buffer is computable from broker facts. SL is the exact sweep extreme.
+# STOP_BUFFER_POLICY_V1 = ZERO_PRICE_BUFFER -- a PREREGISTERED_RESEARCH_HYPOTHESIS.
+# Zero is frozen because it is the only buffer value that adds no invented number to
+# the geometry; it is NOT a claim that a zero buffer is economically correct. The
+# broker's reported tick_size/tick_value of 0.0 is insufficient metadata (a reporting
+# gap), not justification: whether the exact sweep extreme survives real spread/wick
+# noise is precisely what research must measure. Any non-zero buffer is a NEW
+# candidate/version under its own governance amendment, never an in-place edit.
 STOP_BUFFER_POINTS = 0
 STOP_BUFFER_PRICE = STOP_BUFFER_POINTS * BROKER_POINT
 

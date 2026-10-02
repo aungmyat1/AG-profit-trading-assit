@@ -164,12 +164,19 @@ stop_loss_contract:
   short: "SL = sweep candle high + stop_buffer"
   long: "SL = sweep candle low - stop_buffer"
   stop_buffer: 0.00 broker price units (0 broker points), FROZEN
+  stop_buffer_policy: "STOP_BUFFER_POLICY_V1 = ZERO_PRICE_BUFFER"
+  stop_buffer_epistemic_status: PREREGISTERED_RESEARCH_HYPOTHESIS
   stop_buffer_rationale: >-
-    The perp tick-buffer (10 ticks of the USDT-perp tick model) is out of scope and the
-    FX pip buffer is forbidden for crypto; live CFD metadata returned tick_size 0.0, so
-    no tick-multiple buffer is computable from broker facts. V1 freezes the only
-    evidence-free-of-invention geometry: the exact sweep extreme. Any non-zero buffer
-    requires a governance amendment with its own evidence.
+    ZERO_PRICE_BUFFER is a preregistered research hypothesis: it is the only buffer
+    value that adds no invented number to the geometry. It is NOT a claim of economic
+    correctness. The broker's reported tick_size/tick_value of 0.0 is INSUFFICIENT
+    METADATA (a reporting gap in the observed CFD contract metadata), not evidence
+    that a zero buffer is economically right -- a stop at the exact sweep extreme is
+    plausibly MORE exposed to spread and wick noise, and measuring that exposure is
+    research work, not contract work. The perp tick-buffer is out of scope and FX pip
+    buffers are forbidden for crypto. Any non-zero buffer is a NEW candidate/version
+    (with its own governance amendment and evidence), never an in-place edit of this
+    contract.
   subjective_placement: FORBIDDEN
 
 targets_contract:
