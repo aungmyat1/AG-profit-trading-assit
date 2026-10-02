@@ -572,3 +572,5 @@ authoritative machine-readable source.
   mapping-decision debt; parity checkpoint `READY_FOR_INDEPENDENT_AUDIT`,
   `SAFE_TO_ADVANCE_TO_V2_4 = NO` pending that audit)
 - [Web-to-Vantage Demo execution bridge](status/AG_WEB_VANTAGE_DEMO_EXECUTION_BRIDGE_V1.md)
+- [Read-only session scanner V1 (FX + Gold)](status/AG_READ_ONLY_SESSION_SCANNER_V1_STATUS.md)
+  (`LIVE_READ_ONLY_VERIFIED` 2026-10-02 on VT Markets Demo; no execution authority)

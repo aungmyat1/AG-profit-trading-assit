@@ -183,6 +183,10 @@ python scripts/run_strategy.py --help
 python scripts/trade_assistant.py --help
 python scripts/run_btc_daily_report.py --help
 
+# Read-only FX + Gold session scan via the Terminal MCP (needs MT5_APP_MCP_TOKEN);
+# decision states + non-executable proposals only, never orders.
+python scripts/run_session_scan.py --json scan.json
+
 # Read-only MetaTrader MCP setup diagnostic (Node/.env/credential-alias/PATH/terminal-
 # process/Claude Desktop config checks). Never prints secrets, never places orders,
 # never starts MT5.

@@ -4,6 +4,19 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Read-only session scanner V1 (2026-10-02, LIVE_READ_ONLY_VERIFIED, no execution authority)
+
+`scripts/run_session_scan.py` (`src/session_scanner/`) scans EURUSD/GBPUSD/USDJPY/XAUUSD on
+the VT Markets Demo broker feed through the local Terminal MCP (5-tool read-only
+allowlist), resolves `-VIP` symbols via `config/mt5.yaml` `symbol_map.VT_MARKETS`,
+derives the broker UTC offset at runtime, gates D1/H1/M15/M5 quality (one bounded sync
+retry), runs frozen `ST_ASIAN_SWEEP_5R_V1` through `strategy_engine.evaluate()`, and emits
+READY / NO_TRADE / INSUFFICIENT_DATA / OUT_OF_SESSION / STRATEGY_NOT_AUTHORIZED with a
+non-executable proposal (`execution_authorized: false`) only inside the V1.0.3 pilot scope
+(EURUSD/GBPUSD, 0.5%). Tests 23/23; live Demo smoke 2026-10-02 14:16 UTC: 4× NO_TRADE
+(`SIGNAL_ENTRY_WINDOW_PASSED`), all feeds VALID, 0 orders. Secondary/tertiary data sources
+not wired. See [`docs/status/AG_READ_ONLY_SESSION_SCANNER_V1_STATUS.md`](docs/status/AG_READ_ONLY_SESSION_SCANNER_V1_STATUS.md).
+
 ## MT5 MCP client lock (2026-09-30, owner decision, read-only)
 
 Every client now registers exactly one MT5 server, `mt5ReadOnly`, launched through
