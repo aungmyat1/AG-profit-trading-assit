@@ -1,0 +1,19 @@
+{
+  "candidate_id": "CRYPTO_CFD_C001",
+  "candidate_implementation_sha": "a5ce51d483b2a47cd723d64ab670eb42e0ed11f2",
+  "contract_file_sha256": {
+    "src/crypto_cfd_contract/contract.py": "daf948611ae22d0706f3b991a470f3340a6d8209d3a8f59cfe2d65b0b07bfb8d",
+    "src/crypto_cfd_contract/rules.py": "c5c988a48b60f8935296f644ae6fd5365b0b57214897d42ad0c2256739e0d953",
+    "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml": "395ede3926272cfe611285e84202a9961f2ad33eb3f48c40066ba4944f6bae84"
+  },
+  "contract_sha": "a4da28774035491112e63bdf90938b94fc8567de",
+  "contract_tree": "09e5340ece7bc3b09c913e3872576f856c106b53",
+  "created_before_results": true,
+  "edge_verified": false,
+  "fast_screen_status": "NOT_EVALUATED",
+  "frozen_utc": "2026-10-02T21:35:00+00:00",
+  "full_verification_status": "NOT_EVALUATED",
+  "manifest_path": "research/edge_discovery/candidates/CRYPTO_CFD_C001.yaml",
+  "manifest_sha256": "c7b9e9c164556c60e68457e35cf40ca5152cad6cc0d95c0b466c9298672677aa",
+  "mutation_rule": "Any post-result strategy-rule change is a NEW candidate (C002+), never an edit."
+}
