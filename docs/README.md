@@ -88,6 +88,11 @@ The [Crypto CFD Scanner V1 observation status](status/AG_CRYPTO_SCANNER_V1_OBSER
 records the merged BTCUSD/ETHUSD read-only observation path, live Demo market-data
 validation, incomplete CFD strategy/risk authority, and execution boundary.
 
+The [Edge Discovery R2 status](status/AG_EDGE_DISCOVERY_ACCELERATION_R2_STATUS.md)
+records the local-only immutable Crypto-CFD ingestion/quality/partition/firewall factory
+and its current dataset-unavailable boundary. The exporter input contract is
+[`../research/edge_discovery/OFFLINE_DATASET_INGESTION_CONTRACT.md`](../research/edge_discovery/OFFLINE_DATASET_INGESTION_CONTRACT.md).
+
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository; see also [agent invariants](agents/INVARIANTS.md) (v1).
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,
