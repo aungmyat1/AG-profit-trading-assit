@@ -122,6 +122,30 @@ strategies:
       AG_ST_SESSION_SWEEP_CONTINUATION_REGISTRATION_STATUS report for the full
       open-question writeup.
 
+  ST_CRYPTO_CFD_SWEEP_RETEST_V1:
+    registered: true
+    active: false            # deterministic contract only -- no runner/pilot exists yet
+    research: true           # RESEARCH_ONLY: reproducible logic, no edge claim
+    demo_authorized: false
+    live_authorized: false
+    config_source: strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml
+    engine: >-
+      src/crypto_cfd_contract/ (AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1 -- pure deterministic
+      rule functions for the VT Markets BTCUSD/ETHUSD CRYPTO_CFD instruments; reuses only
+      the asset-independent sweep/MSS/retest/targets/structure primitives, never the
+      USDT-perpetual profile, perp tick model, perp activity window, or any FX
+      session/pip convention). Non-executing: proposal authority BLOCKED while
+      SPREAD_POLICY_UNDEFINED and RISK_POLICY_AMBIGUOUS hold; execution_authorized is a
+      constant False. Tests: tests/test_crypto_cfd_strategy_contract_v1.py.
+    note: >-
+      Closes the STRATEGY_CONTRACT_INCOMPLETE gap reported by the frozen crypto
+      observation layer (src/session_scanner/crypto_adapter.py, PR #28) for BTCUSD/ETHUSD
+      CFDs with a dedicated contract rather than reusing ST_LIQUIDITY_SWEEP_RETEST_V1's
+      CRYPTO_PERP profile. Research separation: STRATEGY_CONTRACT_VALID=true,
+      EDGE_VERIFIED=false, RISK_AUTHORIZED=false. Wiring this contract into the scanner's
+      strategy_adapter / Checklist V1.1 phases is a separate, future authority decision
+      -- this registration changes no scanner behavior.
+
   R8_OBM_V1:
     registered: true
     active: false
