@@ -9,7 +9,10 @@
     },
     "mt5ReadOnly": {
       "command": "node",
-      "args": ["web/scripts/start_mt5_mcp.mjs"]
+      "args": ["web/scripts/start_mt5_mcp.mjs"],
+      "env": {
+        "NODE_USE_ENV_PROXY": "1"
+      }
     }
   }
 }

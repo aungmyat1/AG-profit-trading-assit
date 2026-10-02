@@ -57,7 +57,9 @@ orders or override strategy results.
 Workspace MCP integrations are configured for read-only MT5 Demo spot checks (VT Markets
 Demo by default) and
 unauthenticated public Bybit market data (testnet forced). The MCP launchers filter out
-trading/account tools and do not change strategy or execution authority. See
+trading/account tools and do not change strategy or execution authority. Cloud (Linux)
+sessions can reach the Windows PC's read-only MT5 MCP through a token-protected HTTPS bridge
+(`web/scripts/serve_mt5_mcp_remote.mjs`). See
 [`docs/setup/MT5_MCP_SETUP.md`](docs/setup/MT5_MCP_SETUP.md).
 
 Historical replay now has a unit-tested shared evaluation context for the Asian

@@ -1,28 +1,11 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { startDeferredReadOnlyProxy, startSetupErrorServer, isReadOnlyMt5Tool } from './readonly_mcp_proxy.mjs';
 import { resolveDemoCredentials, isStrippedChildEnvKey } from './mt5_demo_credentials.mjs';
-
-function parseEnvFile(path) {
-  const values = {};
-  if (!existsSync(path)) return values;
-  for (const line of readFileSync(path, 'utf8').split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    const separator = trimmed.indexOf('=');
-    if (separator < 1) continue;
-    const key = trimmed.slice(0, separator).trim();
-    let value = trimmed.slice(separator + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
-      value = value.slice(1, -1);
-    }
-    values[key] = value;
-  }
-  return values;
-}
+import { createRemoteHttpChild, resolveRemoteClientConfig } from './mt5_remote_bridge.mjs';
+import { loadWorkspaceEnv, workspaceRoot } from './workspace_env.mjs';
 
 function findServerCommand(env) {
   if (env.MT5_MCP_COMMAND) return env.MT5_MCP_COMMAND;
@@ -41,11 +24,7 @@ function findServerCommand(env) {
   return process.platform === 'win32' ? 'metatrader-mcp-server.exe' : 'metatrader-mcp-server';
 }
 
-const workspaceRoot = resolve(import.meta.dirname, '../..');
-const envFile = [join(workspaceRoot, 'src', '.env'), join(workspaceRoot, '.env')]
-  .find(existsSync);
-const fileEnv = envFile ? parseEnvFile(envFile) : {};
-const env = { ...fileEnv, ...process.env };
+const { envFile, env } = loadWorkspaceEnv();
 
 // Setup problems keep the MCP connected in a diagnostic mode (one read-only
 // mt5_setup_status tool) instead of exiting, which clients only show as
@@ -56,7 +35,23 @@ function setupError(reason) {
 }
 
 const credentials = resolveDemoCredentials(env);
-if (!credentials.ok) {
+if (env.MT5_MCP_REMOTE_URL) {
+  // Remote mode (e.g. a Linux cloud session): MT5 runs on the Windows PC, which serves
+  // this same launcher via serve_mt5_mcp_remote.mjs. No MT5 credentials are needed here.
+  const remote = resolveRemoteClientConfig(env);
+  if (!remote.ok) {
+    setupError(`${remote.error} (remote mode: MT5_MCP_REMOTE_URL is set)`);
+  } else {
+    console.error(`MT5 MCP: connecting read-only to remote MT5 MCP at ${new URL(remote.url).host}.`);
+    startDeferredReadOnlyProxy({
+      child: createRemoteHttpChild({ url: remote.url, token: remote.token }),
+      allowTool: isReadOnlyMt5Tool, serverName: 'mt5ReadOnly',
+      startupTimeoutMs: Number(env.MT5_MCP_STARTUP_TIMEOUT_MS) > 0 ? Number(env.MT5_MCP_STARTUP_TIMEOUT_MS) : 20000,
+      failureHint: 'Check that serve_mt5_mcp_remote.mjs is running on the Windows PC, the tunnel URL, ' +
+        'MT5_MCP_REMOTE_TOKEN, and that this environment\'s network policy allows the tunnel host.'
+    });
+  }
+} else if (!credentials.ok) {
   setupError(`${credentials.error}${envFile ? ` (env file: ${envFile})` : ' (no src/.env or .env found)'}`);
 } else if (process.platform !== 'win32' && !env.MT5_MCP_COMMAND) {
   // metatrader-mcp-server needs the Windows-only MetaTrader5 Python package and a

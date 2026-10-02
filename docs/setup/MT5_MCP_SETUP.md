@@ -185,8 +185,9 @@ it, and catching a broker that does not follow US DST.
 Claude Desktop does **not** read `.mcp.json` or `.vscode/mcp.json`. It reads
 `%APPDATA%\Claude\claude_desktop_config.json` and launches servers from its own working
 directory, so the workspace-relative `web/scripts/start_mt5_mcp.mjs` path fails there.
-Claude Code on the web (cloud) sessions run on Linux and always land in setup-status mode;
-MT5 chat access needs Claude Desktop (or Claude Code) on the Windows PC running MT5.
+Claude Code on the web (cloud) sessions run on Linux and land in setup-status mode unless
+they use the remote bridge below; otherwise MT5 chat access needs Claude Desktop (or Claude
+Code) on the Windows PC running MT5.
 
 On that Windows PC, from the project root:
 
@@ -215,3 +216,45 @@ Equivalent manual entry:
 These local MCP guardrails do not replace project execution authority, validation,
 or venue qualification. The third-party MT5 server may internally implement trading
 tools; they are not exposed through this workspace's MT5 launcher.
+
+## Remote access from cloud sessions (2026-10-02)
+
+A Linux client cannot run MT5, so the Windows PC serves its normal read-only launcher over
+HTTP and the cloud session's `mt5ReadOnly` launcher forwards to it. Tool names, the
+read-only allowlist (enforced on both ends) and the setup-status fallback are identical to a
+local run. Demo credentials never leave the Windows PC.
+
+1. **Windows PC** (MT5 open and logged in to the Demo account, local MCP already working).
+   Add a random token of at least 32 characters to `src/.env`, then start the server:
+
+   ```
+   MT5_MCP_REMOTE_TOKEN=<random 32+ characters>
+   # optional: MT5_MCP_REMOTE_PORT=8765  MT5_MCP_REMOTE_HOST=127.0.0.1
+   ```
+
+   ```
+   node web/scripts/serve_mt5_mcp_remote.mjs
+   ```
+
+   It binds `127.0.0.1:8765` and accepts only `POST /mcp` with
+   `Authorization: Bearer <token>`. Publish it through an HTTPS tunnel you control (for
+   example `cloudflared tunnel --url http://127.0.0.1:8765` or Tailscale Funnel); never open
+   a raw public port.
+2. **Cloud environment** (claude.ai/code environment settings → environment variables):
+
+   ```
+   MT5_ENVIRONMENT=DEMO
+   MT5_MCP_REMOTE_URL=https://<your-tunnel-host>/mcp
+   MT5_MCP_REMOTE_TOKEN=<same token>
+   ```
+
+   Allow `<your-tunnel-host>` in the environment's network policy. `.mcp.json` sets
+   `NODE_USE_ENV_PROXY=1` so the launcher's `fetch` uses the sandbox HTTPS proxy. Start a
+   new session; `mt5ReadOnly` then lists the same `readonly_*` tools as on Windows.
+
+The URL must be `https://` (plain `http://` only for localhost), the token is never logged,
+and a wrong token, unreachable tunnel or stopped server shows up as the
+`mt5_setup_status` reason. Server-initiated `tools/list_changed` notifications are not
+relayed; if MT5 was still connecting, list tools again. Code:
+`web/scripts/mt5_remote_bridge.mjs`, `web/scripts/serve_mt5_mcp_remote.mjs`; tests:
+`web/tests/mt5_remote_bridge.test.mjs`.
