@@ -271,7 +271,15 @@ variables on the machine running the client:
 | `terminal` | `http://127.0.0.1:22346/mcp` | `MT5_APP_MCP_TOKEN` | the Windows PC running MT5 only |
 | `marketdata` | `https://www.metatrader.com/mcp` | `METATRADER_MARKETDATA_MCP_TOKEN` | anywhere the host is allowed |
 
-On the Windows PC (new terminal / restart Claude Code afterwards):
+Claude Code and Codex read these from the **process environment, not `src/.env`**. If the
+tokens are kept in `src/.env`, copy them into user environment variables (values never
+printed; also checks that ports 22345/22346 are listening), then restart the client:
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\host\set_mt5_app_mcp_env.ps1
+```
+
+Or set them by hand on the Windows PC (new terminal / restart Claude Code afterwards):
 
 ```
 setx MT5_APP_MCP_TOKEN "<token shown by the MT5 app>"
