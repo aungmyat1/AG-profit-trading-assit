@@ -1,0 +1,34 @@
+# AG Edge Discovery -- candidate factory queue (R1 Phase 11).
+# FAMILY PLACEHOLDERS ONLY. No entry below has preregistered rules, and none may be
+# implemented or backtested until a deterministic manifest (schema
+# EDGE_DISCOVERY_CANDIDATE_MANIFEST_V0, created_before_results: true) is frozen for it.
+# The queue is asset-class generic: future FX candidates use the same schema with
+# asset_class: FX and FX-native cost assumptions (their own friction model -- the
+# crypto CFD spread scenarios never leak across asset classes).
+schema_version: EDGE_DISCOVERY_CANDIDATE_QUEUE_V0
+
+queue:
+  - candidate_id: CRYPTO_CFD_C001
+    family: liquidity_sweep_mss_retest
+    status: MANIFEST_FROZEN      # see candidates/CRYPTO_CFD_C001.yaml
+    preregistered: true
+    asset_class: CRYPTO_CFD
+
+  - {candidate_id: C002, family: donchian_breakout,                status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
+  - {candidate_id: C003, family: atr_volatility_breakout,          status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
+  - {candidate_id: C004, family: ema_trend_pullback,               status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
+  - {candidate_id: C005, family: previous_day_breakout,            status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
+  - {candidate_id: C006, family: rsi_mean_reversion,               status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
+  - {candidate_id: C007, family: bollinger_mean_reversion,         status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
+  - {candidate_id: C008, family: momentum_continuation,            status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
+  - {candidate_id: C009, family: volatility_contraction_expansion, status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
+  - {candidate_id: C010, family: trend_plus_breakout,              status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
+
+rules_of_the_queue:
+  - A placeholder acquires rules ONLY via a frozen manifest created before results.
+  - FAST_SCREEN_PASS is research prioritization, never EDGE_VERIFIED.
+  - A candidate that has seen economic results is immutable; improvements become a
+    new candidate_id (e.g. a C002 hypothesis referencing parent_candidate).
+  - FX candidates are supported by the same schema (asset_class: FX); they must bring
+    their own preregistered FX friction representation -- no crypto spread scenarios,
+    no pip/session assumptions imported silently in either direction.

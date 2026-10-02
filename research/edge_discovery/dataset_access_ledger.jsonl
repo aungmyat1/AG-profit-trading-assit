@@ -1,0 +1,1 @@
+{"ledger_event": "GENESIS", "candidate_id": "__GENESIS__", "created_utc": "2026-10-02T21:35:00+00:00", "schema": "DATASET_ACCESS_LEDGER_V0", "note": "Append-only JSONL. Every dataset access request (granted or denied) is recorded via src/edge_discovery/dataset_ledger.py. No access has occurred at creation time: no BTCUSD/ETHUSD CFD dataset exists in-repo (see datasets.yaml)."}
