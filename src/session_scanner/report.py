@@ -43,7 +43,14 @@ def render_text(scan: dict) -> str:
                f"{'OPEN' if it['engine']['signal_entry_open'] else it['engine']['signal_entry_reason']}"
                if it['engine'].get('signal_timestamp_utc') else ""),
             f"  Checklist: " + " ".join(f"{k}={v}" for k, v in it["checklist"].items()),
-            f"  Result: {it['result']}  ({it['reason']})", ""]
+            f"  Result: {it['result']}  ({it['reason']})"]
+        ck11 = it.get("checklist_v1_1")
+        if ck11:
+            ph = " ".join(f"{k}={v['status']}" for k, v in ck11["phases"].items())
+            lines += [f"  ChecklistV1.1: {ph}",
+                      f"  V1.1: {ck11['result']}  (setup_valid={ck11['setup_valid']}  "
+                      f"proposal_eligible={ck11['proposal_eligible']}  execution_authorized=False)"]
+        lines += [""]
     lines += [f"READY SETUPS: {len(scan.get('ready_setups', []))}",
               f"NO_TRADE: {len(scan.get('no_trade', []))}",
               f"BLOCKED_DATA: {len(scan.get('blocked', []))}"]

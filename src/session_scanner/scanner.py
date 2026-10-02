@@ -18,6 +18,7 @@ from market_structure.config import load_market_structure_config
 
 from . import market_state as ms
 from .checklist import PASS, READY, evaluate_checklist, signal_entry_status, spread_gate
+from .checklist_v1_1 import attach_checklist_v1_1
 from .proposal import build_ticket
 from .quality import FRESH, assess_quote, assess_series, fetch_with_sync, normalize_bars
 from .registry import InstrumentRegistryError, load_specs, verify_live
@@ -108,6 +109,7 @@ def _run_source_scan(source, cfg: Optional[dict] = None, local_utc_now: Optional
         account = {"error": type(exc).__name__}
     out["account"] = {k: account.get(k) for k in ("type", "currency", "equity", "error") if k in account}
 
+    facts_by_symbol = {}  # Checklist V1.1 fact bundles (JSON-safe; V1 outputs untouched)
     for canonical, spec in specs.items():
         item = {"canonical_symbol": canonical, "broker_symbol": spec.broker_symbol, "source": source_label}
         try:
@@ -116,6 +118,7 @@ def _run_source_scan(source, cfg: Optional[dict] = None, local_utc_now: Optional
             item.update(result="INSUFFICIENT_DATA", reason=str(exc))
             out["instruments"].append(item)
             out["blocked"].append({"canonical_symbol": canonical, "result": item["result"], "reason": item["reason"]})
+            facts_by_symbol[canonical] = None
             continue
         item["instrument"] = record.as_dict()
 
@@ -222,12 +225,46 @@ def _run_source_scan(source, cfg: Optional[dict] = None, local_utc_now: Optional
             out["blocked"].append({"canonical_symbol": canonical, "result": check["result"], "reason": check["reason"]})
         else:
             out["no_trade"].append({"canonical_symbol": canonical, "result": check["result"], "reason": check["reason"]})
+
+        # Checklist V1.1 fact bundle (captured only; the V1 item above is unchanged).
+        facts_by_symbol[canonical] = {
+            "scan_allowed": scan_allowed,
+            "strategy_id": adapter.strategy_id,
+            "strategy_version": adapter.strategy.version,
+            "strategy_timeframe": adapter.strategy.timeframe,
+            "adapter_status": res.status if res else None,
+            "adapter_reason": res.reason if res else None,
+            "reference_bars": res.reference_bars if res else None,
+            "expected_reference_bars": res.expected_reference_bars if res else None,
+            "signal": {"status": sig.status, "regime": sig.regime, "setup": sig.setup,
+                       "direction": sig.direction, "reason_code": sig.reason_code,
+                       "entry": sig.entry, "stop_loss": sig.stop_loss, "risk_distance": sig.risk_distance,
+                       "box_high": sig.box_high, "box_low": sig.box_low, "box_mid": sig.box_mid,
+                       "strategy_id": sig.strategy_id, "strategy_version": sig.strategy_version,
+                       "signal_timestamp_utc": sig.signal_timestamp.isoformat() if sig.signal_timestamp else None}
+            if sig is not None else None,
+            "scope": {"authorized": scope.authorized, "reason": scope.reason,
+                      "risk_per_trade_pct": scope.risk_per_trade_pct, "pilot_id": scope.pilot_id}
+            if scope is not None else None,
+            "spread": spread,
+            "last_closed_m15_utc": (series["M15"].quality.last_closed_bar_utc.isoformat()
+                                    if series["M15"].quality.last_closed_bar_utc else None),
+            "d1_structure": ms.structure(d1c, struct_cfg.swing_length, struct_cfg.close_break),
+            "contract_targets": {"total_target_r": adapter.strategy.total_target_r,
+                                 "legs": [{"leg_id": leg.leg_id, "volume_pct": leg.volume_pct,
+                                           "target_type": leg.target_type,
+                                           "fixed_r_multiple": leg.fixed_r_multiple}
+                                          for leg in adapter.strategy.legs],
+                                 "time_invalidation": adapter.strategy.time_invalidation,
+                                 "structural_invalidation": adapter.strategy.structural_invalidation},
+            "account": {"equity": account.get("equity"), "currency": account.get("currency")},
+        }
         out["instruments"].append(item)
 
     out["data_quality_gate"] = _aggregate_data_quality_gate(
         out.get("time", {}), out["instruments"], len(specs)
     )
-    return out
+    return attach_checklist_v1_1(out, facts_by_symbol)
 
 
 

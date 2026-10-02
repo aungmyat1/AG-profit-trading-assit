@@ -4,6 +4,23 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## AG Scanner Checklist V1.1 — structured phase gates over frozen Scanner V1 (2026-10-02)
+
+`src/session_scanner/checklist_v1_1.py` adds a read-only, deterministic, fail-closed
+sequential checklist on top of the frozen Scanner V1 base
+(`d1f23717f07ceb46acb6dde92135a2aeecd0c331`): PHASE 0 data integrity (consumes V1's final
+`time_gate`/aggregate/instrument gates only) → context (D1/H1 structure alignment as
+direction permission, not entry) → location (strategy-authorized POI engagement) →
+trigger (wraps the frozen engine; expired-signal and TREND-timing invariants preserved)
+→ risk (pilot 0.5% EURUSD/GBPUSD; USDJPY/XAUUSD stay `RISK_POLICY_AMBIGUOUS`) → proposal
+eligibility. Results: `READY_FOR_PROPOSAL | NO_TRADE | BLOCKED | INSUFFICIENT_DATA |
+OUT_OF_SESSION`, with `setup_valid` / `proposal_eligible` / `execution_authorized`
+(always `FALSE`) strictly separated. Scanner V1's outputs are untouched (additive only);
+no strategy, risk, source, or safety-gate change; no broker-mutation path
+(static-audited). Full suite: **846 passed, 4 skipped** (40 new tests; Scanner V1
+regression 38/38). Live validation: **deferred to local Windows MT5 host**. Evidence:
+`docs/status/AG_SCANNER_CHECKLIST_V1_1_IMPLEMENTATION_STATUS.md`.
+
 ## MT5 app built-in MCP servers registered (2026-10-02, configuration only)
 
 `.mcp.json` and new `.codex/config.toml` register the MT5 app's `metaeditor`
