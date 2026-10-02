@@ -52,6 +52,10 @@ The [repository structure audit](REPO_STRUCTURE_AUDIT.md) records the current la
 safe cache cleanup, and the recommended archival policy for historical documents and
 generated evidence.
 
+The [Scanner Checklist V1.1 status](status/AG_SCANNER_CHECKLIST_V1_1_IMPLEMENTATION_STATUS.md)
+records the read-only sequential phase-gate layer over frozen Scanner V1, its
+reason-code taxonomy, test evidence, and the deferred live-validation boundary.
+
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository.
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,
