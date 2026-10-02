@@ -1,0 +1,73 @@
+# AG Read-Only Session Scanner V1 -- scanner-only configuration.
+#
+# READ-ONLY. This file grants no execution, proposal-promotion, risk, or strategy
+# authority. Authorities it defers to (never redefined here):
+#   - broker symbol names     -> config/mt5.yaml symbol_map (mt5/broker_symbol_resolver.py, fail-closed)
+#   - session windows (UTC)   -> config/canonical_sessions.yaml + each strategy contract's session_pairs
+#   - entry/stop/regime rules -> strategy_engine.evaluate() on the frozen strategy YAML
+#   - spread ceiling          -> strategy contract risk_and_money_management.max_spread_allowed_pips
+#   - proposal scope + risk % -> the current release's pilot configs (config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml)
+#   - strategy registration   -> strategies/registry.yaml
+version: SESSION_SCANNER_V1
+status: READ_ONLY
+broker: VT_MARKETS
+
+data_authority:
+  # The primary is Terminal MCP. The secondary is a separately configured mt5ReadOnly
+  # endpoint used only after the primary candidate fails the complete quality gate.
+  # Source selection is atomic; bars are never combined across sources.
+  primary:
+    source: TERMINAL_MCP
+    url: http://127.0.0.1:22346/mcp
+    token_env: MT5_APP_MCP_TOKEN   # name only; the value is never stored or logged
+  secondary:
+    source: MT5_READONLY
+    url: null
+    url_env: MT5_READONLY_MCP_URL
+    token_env: MT5_READONLY_MCP_TOKEN
+  tertiary: METATRADER_PUBLIC_MARKETDATA_REFERENCE_ONLY_NOT_WIRED_V1
+
+instruments:
+  # expected_digits is checked against live symbol metadata; mismatch fails closed.
+  EURUSD: {asset_class: FX, expected_digits: 5, session_policy: FX_24x5}
+  GBPUSD: {asset_class: FX, expected_digits: 5, session_policy: FX_24x5}
+  USDJPY: {asset_class: FX, expected_digits: 3, session_policy: FX_24x5}
+  XAUUSD: {asset_class: METAL, expected_digits: 2, session_policy: METAL_DAILY_BREAK}
+
+# Expected market closures, in BROKER SERVER wall-clock time (the clock MT5 bars are stamped
+# in). A missing bar is an expected closure only if it falls entirely inside one of these.
+# Weekend = server Saturday 00:00 -> Monday 00:00 for every policy.
+# METAL_DAILY_BREAK: observed 2026-09-28..2026-10-02 on XAUUSD-VIP (Terminal MCP): M15 bars
+# 00:00-00:45 server time absent every day, first bar 01:00.
+session_policies:
+  FX_24x5: {daily_break_server: null}
+  METAL_DAILY_BREAK: {daily_break_server: ["00:00", "01:00"]}
+
+time:
+  offset_granularity_minutes: 15
+  max_server_clock_staleness_seconds: 120   # trade_server_last_known_time vs utc_time residual
+  max_local_clock_skew_seconds: 60          # terminal utc_time vs this process's UTC clock
+
+quality:
+  tick_max_age_seconds: 120
+  # One bounded wait before the single sync retry (never a loop). Live smoke 2026-10-02:
+  # an immediate re-read left two symbols' M5 head one bar behind.
+  sync_retry_delay_seconds: 2.0
+  history:
+    D1:  {lookback_hours: 1080, min_bars: 15}
+    H1:  {lookback_hours: 336, min_bars: 150}
+    M15: {lookback_hours: 96, min_bars: 150}
+    M5:  {lookback_hours: 12, min_bars: 60}
+
+market_state:
+  h1_ema_period: 50   # mirrors the contract's trend_bias_filter indicator (EMA_50); descriptive at H1
+
+# Strategies the scanner has a live adapter for. Every other registry entry is reported
+# with scanner_adapter NONE -> STRATEGY_NOT_AUTHORIZED for scanning in V1.
+strategy_adapters:
+  ST_ASIAN_SWEEP_5R_V1:
+    adapter: ENGINE_EVALUATE_V1
+    contract: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
+    proposal_scope:   # release V1.0.3 pilot authorities, one per session pair
+      ASIAN_LONDON: config/pilot/AG_POST_ASIAN_LONDON_PILOT_V1_0_1.yaml
+      LONDON_NEWYORK: config/pilot/AG_POST_LONDON_NEWYORK_PILOT_V1_0_1.yaml
