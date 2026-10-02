@@ -4,6 +4,21 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Edge Discovery offline research factory R2 — unit-tested, dataset-blocked (2026-10-02)
+
+The research branch now contains a **local-only** ingestion and Candidate Factory stage
+for immutable `BTCUSD`/`ETHUSD` Crypto-CFD M5 exports. It verifies exporter provenance
+and byte SHA-256, quality, UTC derived lineage, pre-outcome coverage, immutable
+chronological DEV/VALIDATION/HOLDOUT partitions, and a DEV-only C001 holdout firewall
+before replay. It makes no MT5/broker/live-market call and adds no proposal, risk, or
+execution authority. The committed repository still has no required Crypto-CFD raw
+bundle, so the actual C001 run is `BLOCKED_DATASET_UNAVAILABLE`; it has no fabricated
+coverage or profitability result and `EDGE_VERIFIED` remains false. See
+`docs/status/AG_EDGE_DISCOVERY_ACCELERATION_R2_STATUS.md` and
+`research/edge_discovery/OFFLINE_DATASET_INGESTION_CONTRACT.md`. Linux offline
+regression: **939 passed, 4 skipped, 1 warning**. This branch work is stacked on
+unmerged PR #30 and does not merge or alter that PR's frozen C001 contract.
+
 ## Crypto CFD observation scanner V1 — merged, observation-only (2026-10-03)
 
 PR #28 was merged into `main` at `5fa46102aabac97773ef66aa3f0ed10561ad66b1`
