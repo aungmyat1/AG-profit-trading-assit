@@ -25,6 +25,10 @@ from .models import (CandidateManifest, DatasetAccessRecord, DatasetRole, RESTRI
 ROLE_NOT_ALLOWED_FOR_CANDIDATE = "ROLE_NOT_ALLOWED_FOR_CANDIDATE"
 GOVERNANCE_APPROVAL_REQUIRED = "GOVERNANCE_APPROVAL_REQUIRED"
 HOLDOUT_REUSE_REQUIRES_NEW_GOVERNANCE_APPROVAL = "HOLDOUT_REUSE_REQUIRES_NEW_GOVERNANCE_APPROVAL"
+# The fast screen is a DEV-only falsification stage.  This remains true even if a
+# caller constructs a mutated manifest and supplies a governance approval id.
+FAST_SCREEN_ROLE_FORBIDDEN = "FAST_SCREEN_ROLE_FORBIDDEN"
+C001_FAST_SCREEN_STAGE = "C001_FAST_SCREEN"
 
 INDEPENDENT_FIRST_ACCESS = "INDEPENDENT_FIRST_ACCESS"
 NOT_INDEPENDENT_REPEAT_ACCESS = "NOT_INDEPENDENT_REPEAT_ACCESS"
@@ -74,7 +78,8 @@ class DatasetAccessLedger:
     def request_access(self, manifest: CandidateManifest, dataset_id: str, role: str,
                        access_reason: str, result_visibility: str,
                        governance_approval_id: Optional[str] = None,
-                       now: Optional[datetime] = None) -> DatasetAccessRecord:
+                       now: Optional[datetime] = None,
+                       access_stage: str = "UNSPECIFIED") -> DatasetAccessRecord:
         ts = (now or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat()
         prior = self.granted_count(manifest.candidate_id, dataset_id, role)
         restricted = role in tuple(r.value for r in RESTRICTED_ROLES)
@@ -86,7 +91,7 @@ class DatasetAccessLedger:
                 result_visibility="DENIED", granted=False, denial_reason=reason,
                 governance_approval_id=governance_approval_id,
                 repeat_access_count=prior,
-                independence_claim="NOT_APPLICABLE"))
+                independence_claim="NOT_APPLICABLE", access_stage=access_stage))
 
         if role not in [r.value for r in DatasetRole]:
             return deny(f"UNKNOWN_DATASET_ROLE:{role}")
@@ -110,4 +115,38 @@ class DatasetAccessLedger:
             access_reason=access_reason, timestamp_utc=ts,
             result_visibility=result_visibility, granted=True, denial_reason=None,
             governance_approval_id=governance_approval_id,
-            repeat_access_count=prior, independence_claim=independence))
+            repeat_access_count=prior, independence_claim=independence,
+            access_stage=access_stage))
+
+    def request_fast_screen_access(self, manifest: CandidateManifest, dataset_id: str,
+                                   role: str, access_reason: str,
+                                   now: Optional[datetime] = None) -> DatasetAccessRecord:
+        """The only C001 fast-screen access entry point.  It has a hard DEV-only
+        firewall before normal manifest/governance logic, records both grants and
+        denials, and deliberately accepts no governance override."""
+        if role != DatasetRole.DEV.value:
+            ts = (now or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat()
+            prior = self.granted_count(manifest.candidate_id, dataset_id, role)
+            return self._append(DatasetAccessRecord(
+                candidate_id=manifest.candidate_id, dataset_id=dataset_id, dataset_role=role,
+                access_reason=access_reason, timestamp_utc=ts, result_visibility="DENIED",
+                granted=False, denial_reason=FAST_SCREEN_ROLE_FORBIDDEN,
+                governance_approval_id=None, repeat_access_count=prior,
+                independence_claim="NOT_APPLICABLE", access_stage=C001_FAST_SCREEN_STAGE,
+            ))
+        return self.request_access(
+            manifest, dataset_id, role, access_reason, result_visibility="METRICS_VISIBLE",
+            governance_approval_id=None, now=now, access_stage=C001_FAST_SCREEN_STAGE,
+        )
+
+    def holdout_accessed_by_c001_fast_screen(self) -> bool:
+        """A denied request is evidence the firewall worked, not an access.  Any granted
+        C001 fast-screen HOLDOUT record is a release-blocking invariant violation."""
+        return any(
+            record.granted
+            and record.candidate_id == "CRYPTO_CFD_C001"
+            and record.dataset_role == DatasetRole.HOLDOUT.value
+            and (record.access_stage == C001_FAST_SCREEN_STAGE
+                 or record.access_reason.startswith("FAST_SCREEN"))
+            for record in self.records()
+        )

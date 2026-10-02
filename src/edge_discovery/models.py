@@ -55,8 +55,14 @@ FACTORY_EMITTABLE_STATUSES: Tuple[CandidateStatus, ...] = (
 
 class CandidateSource(str, Enum):
     INTERNAL_FROZEN_CONTRACT = "INTERNAL_FROZEN_CONTRACT"
-    EXTERNAL_SPEC = "EXTERNAL_SPEC"
-    FAMILY_PLACEHOLDER = "FAMILY_PLACEHOLDER"   # queue entries without preregistered rules
+    # Future queue metadata may identify a source; its external performance assertion
+    # is never evidence until AG preregisters and independently screens a contract.
+    OPEN_SOURCE = "OPEN_SOURCE"
+    ACADEMIC = "ACADEMIC"
+    PUBLIC_STRATEGY_LIBRARY = "PUBLIC_STRATEGY_LIBRARY"
+    INTERNAL_HYPOTHESIS = "INTERNAL_HYPOTHESIS"
+    EXTERNAL_SPEC = "EXTERNAL_SPEC"              # retained R1 compatibility
+    FAMILY_PLACEHOLDER = "FAMILY_PLACEHOLDER"    # queue entries without preregistered rules
 
 
 class DatasetRole(str, Enum):
@@ -212,6 +218,8 @@ class DatasetAccessRecord:
     governance_approval_id: Optional[str] = None
     repeat_access_count: int = 0                # prior GRANTED accesses of same candidate+dataset+role
     independence_claim: str = "NOT_APPLICABLE"  # restricted roles: INDEPENDENT_FIRST_ACCESS or not
+    # Explicit stage makes C001 fast-screen holdout-denial mechanically auditable.
+    access_stage: str = "UNSPECIFIED"
 
     def as_json_line(self) -> str:
         return json.dumps({f.name: getattr(self, f.name) for f in fields(self)},
