@@ -44,6 +44,20 @@ def _latest_tick(source, broker_symbol: str, server_now: datetime) -> Optional[d
     return ticks[-1] if ticks else None
 
 
+def _aggregate_data_quality_gate(time_authority: dict, instruments: list, mandatory_instrument_count: int) -> str:
+    """Aggregate only final mandatory instrument gates and the final time gate.
+
+    ``TimeAuthority.as_dict()`` exposes ``time_gate``; accepting only that canonical
+    field prevents a diagnostic/legacy key from silently turning a valid scan into FAIL.
+    Missing instruments remain fail-closed.
+    """
+    if time_authority.get("time_gate") != TIME_GATE_PASS:
+        return "FAIL"
+    if len(instruments) != mandatory_instrument_count:
+        return "FAIL"
+    return "PASS" if all(item.get("data_quality_gate") == "PASS" for item in instruments) else "FAIL"
+
+
 def _run_source_scan(source, cfg: Optional[dict] = None, local_utc_now: Optional[datetime] = None,
                      source_label: Optional[str] = None) -> dict:
     cfg = cfg or load_scanner_config()
@@ -210,10 +224,9 @@ def _run_source_scan(source, cfg: Optional[dict] = None, local_utc_now: Optional
             out["no_trade"].append({"canonical_symbol": canonical, "result": check["result"], "reason": check["reason"]})
         out["instruments"].append(item)
 
-    out["data_quality_gate"] = ("PASS" if out.get("time", {}).get("gate") == TIME_GATE_PASS
-                                 and len(out["instruments"]) == len(specs)
-                                 and all(i.get("data_quality_gate") == "PASS" for i in out["instruments"])
-                                 else "FAIL")
+    out["data_quality_gate"] = _aggregate_data_quality_gate(
+        out.get("time", {}), out["instruments"], len(specs)
+    )
     return out
 
 
