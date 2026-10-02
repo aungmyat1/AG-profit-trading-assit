@@ -33,6 +33,8 @@ instruments:
   GBPUSD: {asset_class: FX, expected_digits: 5, session_policy: FX_24x5}
   USDJPY: {asset_class: FX, expected_digits: 3, session_policy: FX_24x5}
   XAUUSD: {asset_class: METAL, expected_digits: 2, session_policy: METAL_DAILY_BREAK}
+  BTCUSD: {asset_class: CRYPTO, expected_digits: 2, session_policy: CRYPTO_24H_OBSERVATION}
+  ETHUSD: {asset_class: CRYPTO, expected_digits: 2, session_policy: CRYPTO_24H_OBSERVATION}
 
 # Expected market closures, in BROKER SERVER wall-clock time (the clock MT5 bars are stamped
 # in). A missing bar is an expected closure only if it falls entirely inside one of these.
@@ -42,6 +44,7 @@ instruments:
 session_policies:
   FX_24x5: {daily_break_server: null}
   METAL_DAILY_BREAK: {daily_break_server: ["00:00", "01:00"]}
+  CRYPTO_24H_OBSERVATION: {daily_break_server: null}
 
 time:
   offset_granularity_minutes: 15

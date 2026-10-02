@@ -224,6 +224,7 @@ class Quote:
     spread_points: int
     spread_price: float
     spread_pips: float
+    spread_pct: float
     status: str  # FRESH | STALE | INVALID
     age_seconds: float
     source: str = "TERMINAL_MCP.get_chart_ticks_history"
@@ -232,6 +233,7 @@ class Quote:
         return {"broker_symbol": self.broker_symbol, "bid": self.bid, "ask": self.ask,
                 "timestamp_utc": self.tick_time_utc.isoformat(), "spread_points": self.spread_points,
                 "spread_price": round(self.spread_price, 10), "spread_pips": round(self.spread_pips, 3),
+                "spread_pct": round(self.spread_pct, 8),
                 "status": self.status, "age_seconds": round(self.age_seconds, 1), "source": self.source}
 
 
@@ -250,4 +252,5 @@ def assess_quote(broker_symbol: str, tick: Optional[dict], ta: TimeAuthority, no
         status = STALE
     else:
         status = FRESH
-    return Quote(broker_symbol, bid, ask, t, int(round(spread / point)), spread, spread / pip_size, status, age, source)
+    return Quote(broker_symbol, bid, ask, t, int(round(spread / point)), spread, spread / pip_size,
+                 (spread / bid) * 100 if bid else 0.0, status, age, source)
