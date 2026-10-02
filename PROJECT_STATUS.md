@@ -4,6 +4,17 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Read-only `api.app` restored; full suite green (2026-10-02)
+
+The pre-existing missing-`api.app` failure is closed. `src/api/app.py` is now a minimal read-only
+FastAPI adapter exposing only `GET /api/opportunities` (projection of
+`api.crypto_opportunities.list_crypto_opportunities`); it imports no execution, broker,
+authorization, Telegram or order module, and is the target `scripts/run_api.py` already launches.
+The route test now unloads `api.app` after running so the proposal-hardening check that
+`api.app` is never left imported stays order-independent. Full suite (Linux container,
+`python -m pytest -q`): **770 passed, 2 skipped, 0 failed**. No strategy, execution, safety-gate
+or authorization change.
+
 ## Telegram proposal-report validation + Windows install guide (2026-10-01)
 
 Host-local Telegram delivery was re-audited end-to-end in code: scheduled FX and crypto runners

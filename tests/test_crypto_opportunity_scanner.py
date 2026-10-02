@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -405,8 +406,10 @@ def test_malformed_ohlc_fails_closed():
         scan_window(CryptoMarketWindow(tuple(candles), window.observed_at, "SYNTHETIC", "TEST_FIXTURE"))
 
 
-def test_actual_api_route_is_read_only_candidate_projection(tmp_path, monkeypatch):
+def test_actual_api_route_is_read_only_candidate_projection(tmp_path, monkeypatch, request):
     from fastapi.testclient import TestClient
+    # Unload afterwards: proposal-hardening tests assert api.app is never left imported.
+    request.addfinalizer(lambda: sys.modules.pop("api.app", None))
     import api.app as api_module
     from api.crypto_opportunities import list_crypto_opportunities
 
