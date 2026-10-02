@@ -130,6 +130,10 @@ for environment and troubleshooting details.
 Roadmap scope is broader than current implementation. Today the operational FX pilot
 and complete Entry Ticket cover EURUSD/GBPUSD; USDJPY/XAUUSD require candidate-version
 integration. Crypto reporting is BTCUSDT-only; ETHUSDT remains to be implemented.
+Separately, BTCUSD and ETHUSD are available in Scanner V1 as read-only VT Markets CFD
+observations. Their live data path was Demo-verified, but no CFD strategy or risk
+authority exists, so they cannot produce valid setups, proposals, position sizes, or
+execution authorization. See [crypto scanner observation status](docs/status/AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS.md).
 Large-SMC has a research engine and live-batch ledger but not yet the complete
 incremental funnel-status and external confirmation-alert service.
 
