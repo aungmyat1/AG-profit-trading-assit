@@ -258,3 +258,34 @@ and a wrong token, unreachable tunnel or stopped server shows up as the
 relayed; if MT5 was still connecting, list tools again. Code:
 `web/scripts/mt5_remote_bridge.mjs`, `web/scripts/serve_mt5_mcp_remote.mjs`; tests:
 `web/tests/mt5_remote_bridge.test.mjs`.
+
+## MetaTrader 5 app built-in MCP servers (2026-10-02)
+
+The MT5 app publishes its own MCP servers. They are registered in `.mcp.json` (Claude Code)
+and `.codex/config.toml` (Codex) **without tokens**; the bearer tokens come from environment
+variables on the machine running the client:
+
+| Server | URL | Token variable | Reachable from |
+| --- | --- | --- | --- |
+| `metaeditor` | `http://127.0.0.1:22345/mcp` | `MT5_APP_MCP_TOKEN` | the Windows PC running MT5 only |
+| `terminal` | `http://127.0.0.1:22346/mcp` | `MT5_APP_MCP_TOKEN` | the Windows PC running MT5 only |
+| `marketdata` | `https://www.metatrader.com/mcp` | `METATRADER_MARKETDATA_MCP_TOKEN` | anywhere the host is allowed |
+
+On the Windows PC (new terminal / restart Claude Code afterwards):
+
+```
+setx MT5_APP_MCP_TOKEN "<token shown by the MT5 app>"
+setx METATRADER_MARKETDATA_MCP_TOKEN "<mq-... token shown by the MT5 app>"
+```
+
+For a cloud session, only `marketdata` can work: set `METATRADER_MARKETDATA_MCP_TOKEN` in the
+environment settings and allow `www.metatrader.com` in its network policy. The `127.0.0.1`
+servers are unreachable from the cloud; use the remote bridge above for terminal data.
+
+Safety: the MT5 app's `terminal` server is not filtered by this project's read-only
+allowlist and may expose trading tools. `.claude/settings.json` therefore puts every
+`mcp__terminal` tool under `permissions.ask`, so each call needs the owner's explicit
+approval, and the authority order in `AGENTS.md` still applies: agents must not place,
+modify or close orders through it. Codex has no equivalent gate here; treat its `terminal`
+tools the same way. Never paste these tokens into committed files; regenerate them in the
+MT5 app if they are exposed.

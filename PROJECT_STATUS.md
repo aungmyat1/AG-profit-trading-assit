@@ -4,6 +4,17 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## MT5 app built-in MCP servers registered (2026-10-02, configuration only)
+
+`.mcp.json` and new `.codex/config.toml` register the MT5 app's `metaeditor`
+(`127.0.0.1:22345`), `terminal` (`127.0.0.1:22346`) and `marketdata`
+(`https://www.metatrader.com/mcp`) MCP servers with bearer tokens taken only from
+`MT5_APP_MCP_TOKEN` / `METATRADER_MARKETDATA_MCP_TOKEN` (no secrets committed). New
+`.claude/settings.json` puts all `mcp__terminal` tools under `permissions.ask` because that
+server is outside the project's read-only allowlist. Connectivity and tool lists:
+**NOT_EVALUATED_HOST_REQUIRED** (localhost servers exist only on the Windows PC). Does not
+enable or authorize trading.
+
 ## MT5 MCP remote bridge for cloud sessions (2026-10-02, read-only configuration)
 
 Cloud (Linux) sessions previously always landed in `mt5_setup_status` because MT5 is
