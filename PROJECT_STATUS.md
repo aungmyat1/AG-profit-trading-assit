@@ -4,6 +4,27 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Crypto CFD observation scanner V1 — merged, observation-only (2026-10-03)
+
+PR #28 was merged into `main` at `5fa46102aabac97773ef66aa3f0ed10561ad66b1`
+(parent `e64e887c063cca4ae911762037e70c04a380455c`; crypto implementation
+`e9d6d608369b24de3849575790c82f2bc7d96045`). BTCUSD and ETHUSD are configured
+VT Markets CFD observations in the existing Scanner V1 / Checklist V1.1 output model.
+They are **DEMO_VERIFIED for read-only market-data observation only**: exact broker
+identity and full trade mode were confirmed in VTMarkets-Demo; D1/H1/M15/M5 gates passed
+for both; the session context passed during `OFF_SESSION` without FX session gating.
+Broker metadata reported `tick_size=0.0` and `tick_value=0.0` for both, so native
+tick-contract metadata is incomplete and no substitute was inferred. D1 structural
+history was insufficient for D1 structure classification. See
+`docs/status/AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS.md` for quotes, data-quality
+evidence, tests, and limits.
+
+No registered strategy contract covers BTCUSD/ETHUSD CFDs: the registered crypto
+contract covers BTCUSDT/ETHUSDT perpetuals. Strategy status remains
+`STRATEGY_CONTRACT_INCOMPLETE`; crypto risk remains `RISK_POLICY_AMBIGUOUS`; position
+size is `NOT_CALCULATED`; proposal and execution authority remain false. This does not
+authorize Demo orders or change FX strategy/risk/source/execution policy.
+
 ## AG Scanner Checklist V1.1 — structured phase gates over frozen Scanner V1 (2026-10-02)
 
 `src/session_scanner/checklist_v1_1.py` adds a read-only, deterministic, fail-closed

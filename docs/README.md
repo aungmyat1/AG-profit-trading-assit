@@ -56,6 +56,10 @@ The [Scanner Checklist V1.1 status](status/AG_SCANNER_CHECKLIST_V1_1_IMPLEMENTAT
 records the read-only sequential phase-gate layer over frozen Scanner V1, its
 reason-code taxonomy, test evidence, and the deferred live-validation boundary.
 
+The [Crypto CFD Scanner V1 observation status](status/AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS.md)
+records the merged BTCUSD/ETHUSD read-only observation path, live Demo market-data
+validation, incomplete CFD strategy/risk authority, and execution boundary.
+
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository.
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,
