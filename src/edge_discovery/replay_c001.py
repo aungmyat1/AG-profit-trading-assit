@@ -37,7 +37,7 @@ substitutes for CFD data. Every replay must pass through the dataset-access ledg
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Sequence, Tuple
 
@@ -205,9 +205,10 @@ def replay_c001(manifest: CandidateManifest, dataset: CandleDataset,
         raise KeyError(f"unknown friction scenario {friction_scenario!r}")
     _check_isolation(manifest, dataset)
 
-    access = ledger.request_access(manifest, dataset.dataset_id, dataset.role,
-                                   access_reason, result_visibility="METRICS_VISIBLE",
-                                   governance_approval_id=governance_approval_id)
+    # C001 fast screening is DEV-only even if a caller passes a mutated manifest or a
+    # governance id.  The firewall records a denial rather than granting HOLDOUT.
+    access = ledger.request_fast_screen_access(manifest, dataset.dataset_id, dataset.role,
+                                               access_reason)
     if not access.granted:
         raise DatasetAccessDenied(access)
 
@@ -289,3 +290,20 @@ def replay_c001(manifest: CandidateManifest, dataset: CandleDataset,
                     m5[-1].time + _M5)
 
     return trades
+
+
+def reprice_friction_scenario(trades: Sequence[TradeRecord], friction_scenario: str) -> List[TradeRecord]:
+    """Apply one of the already-frozen spread scenarios to fixed replay geometry.
+
+    BASE/STRESS/SEVERE affect only ``cost_r`` by contract.  Repricing existing DEV
+    trade records avoids rereading price outcomes and makes the no-HOLDOUT invariant
+    auditable: each source partition is accessed once for C001 geometry, then cost-only
+    arithmetic is deterministic.
+    """
+    if friction_scenario not in SCENARIOS:
+        raise KeyError(f"unknown friction scenario {friction_scenario!r}")
+    return [replace(
+        trade, cost_r=cost_r(trade.symbol, friction_scenario, trade.risk_distance),
+        net_r=trade.gross_r - cost_r(trade.symbol, friction_scenario, trade.risk_distance),
+        friction_scenario=friction_scenario,
+    ) for trade in trades]
