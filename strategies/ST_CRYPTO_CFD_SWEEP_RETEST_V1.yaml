@@ -1,0 +1,231 @@
+strategy_id: ST_CRYPTO_CFD_SWEEP_RETEST_V1
+strategy_name: BTCUSD/ETHUSD CFD Previous-UTC-Day Sweep + H1 Structure + M5 MSS + Retest
+strategy_family: Liquidity_Sweep_MSS_Retest
+version: 1.0.0
+status: RESEARCH_ONLY_CONTRACT   # reproducible logic only -- see research_separation below
+registered_utc: "2026-10-02"
+updated_utc: "2026-10-02"
+
+# AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1. Deterministic, machine-testable strategy contract
+# for the VT Markets BTCUSD/ETHUSD crypto CFDs observed by the frozen crypto observation
+# layer (src/session_scanner/crypto_adapter.py, PR #28). This contract exists precisely
+# to close the STRATEGY_CONTRACT_INCOMPLETE gap that layer reports -- it does NOT reuse
+# the BTCUSDT/ETHUSDT USDT-perpetual profile of ST_LIQUIDITY_SWEEP_RETEST_V1 (no USDT
+# symbols, no perp tick model from crypto_symbols.py, no 13:30-16:00 perp activity
+# window, no perp funding assumptions, no perp risk contract). It REUSES only the
+# asset-independent engine primitives that profile.py documents as shared across asset
+# classes (sweep.py / mss.py / retest.py / targets.py / trend.py and the generic
+# reference-box formula).
+#
+# Executable rule authority: src/crypto_cfd_contract/ (contract.py constants + rules.py
+# pure functions). Tests: tests/test_crypto_cfd_strategy_contract_v1.py.
+
+instrument_authority:
+  asset_class: CRYPTO_CFD
+  instruments: [BTCUSD, ETHUSD]
+  broker: VT_MARKETS            # symbol authority: session-scanner registry, fail-closed
+  expected_digits: 2            # verified live 2026-10-02 (crypto observation status)
+  broker_point: 0.01
+  forbidden_identities:
+    # Any of these appearing in an input or evaluation is a contract violation:
+    symbols: [BTCUSDT, ETHUSDT]
+    perp_tick_model: strategy_engine/sweep_retest/crypto_symbols.py  # NOT imported
+    perp_activity_window: "13:30-16:00 UTC"                          # NOT inherited
+    perp_funding_model: NONE_EXISTS_FOR_CFD                          # NOT invented
+  contract_metadata_gap: >-
+    Live broker metadata returned tick_size=0.0 and tick_value=0.0 for both CFDs
+    (AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS, 2026-10-02). Recorded as returned; no
+    perp or FX substitute value is used. Consequence: position sizing is not computable
+    -- see risk_policy_interface.
+
+timeframe_responsibilities:
+  d1: CONTEXT_STRUCTURE_RECORD          # permission input, never an entry signal
+  h1: DIRECTIONAL_STRUCTURE_AUTHORITY   # direction permission, never an entry signal
+  m15: OBSERVATION_ONLY_STRUCTURE_RECORD  # recorded as evidence; gates NOTHING in V1
+  m5: SWEEP_MSS_RETEST_TRIGGER
+
+context_contract:
+  structure_authority: market_structure.structural_breaks_for_candles
+  structure_params:
+    swing_length: 5        # config/market_structure.yaml (shared frozen authority)
+    close_break: true
+  d1_structure_state: >-
+    Direction of the most recent CONFIRMED D1 structural break (BOS/CHOCH) by event
+    time: BULLISH | BEARISH; UNRESOLVED when no confirmed break exists in the supplied
+    closed-candle history. Same rule the frozen crypto observation layer already applies.
+  h1_structure_state: >-
+    Identical rule evaluated on closed H1 candles: BULLISH | BEARISH | UNRESOLVED.
+  direction_permission:
+    # Permission only -- context never converts into an entry.
+    h1_unresolved: NO_DIRECTION                     # reason H1_STRUCTURE_UNRESOLVED
+    d1_confirmed_and_opposes_h1: NO_DIRECTION       # reason HTF_DIRECTION_CONFLICT
+                                                    # (Checklist V1.1 taxonomy)
+    h1_bullish: LONG_ALLOWED                        # LOW sweeps only
+    h1_bearish: SHORT_ALLOWED                       # HIGH sweeps only
+    d1_unresolved: H1_GOVERNS_ALONE                 # observed live: D1 structural
+                                                    # history can be insufficient
+
+liquidity_contract:
+  # Only levels justified by current project evidence are defined. The single V1
+  # reference is a session-independent rolling level (crypto CFDs have no FX session):
+  levels:
+    - level_id: PREV_UTC_DAY_HIGH
+      definition: max(high) of all closed M5 candles of the previous UTC calendar day
+    - level_id: PREV_UTC_DAY_LOW
+      definition: min(low) of all closed M5 candles of the previous UTC calendar day
+    - level_id: PREV_UTC_DAY_MID
+      definition: (PREV_UTC_DAY_HIGH + PREV_UTC_DAY_LOW) / 2   # target use only
+  lookback: exactly the previous UTC calendar day, [D-1 00:00, D 00:00) UTC, half-open
+  swing_confirmation_rule: NOT_APPLICABLE  # window extremes, not swing points
+  completeness_rule: >-
+    Exactly 288 closed M5 bars must exist inside the window (CRYPTO_24H_OBSERVATION
+    declares no expected daily break), else REFERENCE_INCOMPLETE and no setup can form
+    that UTC day. Fail-closed by design; any tolerance would be an invented number.
+  minimum_penetration: >-
+    Strict float inequality on the sweep candle: high > PREV_UTC_DAY_HIGH (short side)
+    or low < PREV_UTC_DAY_LOW (long side). Prices are broker-quantized to 0.01, so the
+    minimum observable penetration is 1 broker point.
+  close_back_requirement: >-
+    The SAME M5 candle must close strictly back inside: close < PREV_UTC_DAY_HIGH
+    (short side) / close > PREV_UTC_DAY_LOW (long side).
+  maximum_age: >-
+    The reference is valid only during the UTC calendar day immediately following its
+    window. At the next UTC midnight it rotates and every incomplete sequence built on
+    it is invalidated.
+
+poi_contract:
+  allowed_poi_types:
+    - poi_id: PREV_UTC_DAY_EXTREME
+      detection: liquidity_contract levels PREV_UTC_DAY_HIGH / PREV_UTC_DAY_LOW
+      role: sweep engagement location (Phase-2 LOCATION event = the sweep predicate)
+    - poi_id: BROKEN_M5_SWING
+      detection: >-
+        Most recent CONFIRMED M5 swing (market_structure.smc_adapter.full_swings,
+        swing_length 5) located strictly from current-UTC-day closed M5 candles up to
+        and including the sweep candle: swing LOW for a HIGH sweep, swing HIGH for a
+        LOW sweep.
+      role: MSS break level and retest entry level
+  not_authorized:
+    # fvg_or_order_block_alternative=false is the frozen family evidence; no FVG/OB/
+    # range-boundary detection rule exists for these CFDs, so none is invented.
+    - FVG
+    - ORDER_BLOCK
+    - RANGE_BOUNDARY
+  discretionary_selection: FORBIDDEN
+
+m5_trigger_contract:
+  sequence: LIQUIDITY_SWEEP -> MSS -> RETEST -> ENTRY_VALID
+  sweep:
+    confirming_candle: the CLOSED M5 candle itself (never a forming bar)
+    short_candidate: "M5.high > PREV_UTC_DAY_HIGH AND M5.close < PREV_UTC_DAY_HIGH"
+    long_candidate: "M5.low < PREV_UTC_DAY_LOW AND M5.close > PREV_UTC_DAY_LOW"
+    dual_side_candle: SKIPPED_AS_AMBIGUOUS   # qualifies both sides -> not a candidate
+    direction_gate: from context_contract.direction_permission (wrong side is ignored,
+      scanning continues)
+    search_domain: closed M5 candles of the CURRENT UTC day only
+    wick_ratio_filter: DISABLED
+  mss:
+    break_level: the BROKEN_M5_SWING POI defined above
+    confirmation: "a SUBSEQUENT closed M5 candle with close < swing_low (short) /
+      close > swing_high (long)"
+    close_vs_wick: CLOSE_REQUIRED; intrabar wick penetration is explicitly insufficient
+    max_bars_between_sweep_and_mss: bounded by UTC-day rotation (liquidity maximum_age);
+      no confirmed MSS by the last closed M5 bar of the day -> sequence dies with the
+      reference
+  retest:
+    definition: "first closed M5 candle strictly after the MSS-confirming candle whose
+      wick reaches the broken swing: high >= swing (short) / low <= swing (long)"
+    tolerance: 0.00 broker price units (exact touch of the level; frozen from
+      strategy_engine/sweep_retest/retest.py)
+    max_bars_after_mss: 3 completed M5 candles (ENTRY_TTL_M5_BARS, frozen family value)
+    optional: false   # V1 entry is only at the retest; no market-chase alternative
+
+entry_timing_contract:
+  actionable_event: AT_FIRST_VALID_RETEST_TOUCH
+  entry_price: the broken swing price (limit level known at MSS confirmation)
+  evaluated_on: closed M5 candles only
+  displacement_candle_chase: FORBIDDEN
+
+signal_expiry_contract:
+  rule_1: no retest within 3 completed M5 candles after MSS confirmation
+  rule_2: UTC-day rotation before the sequence completes (reference maximum_age)
+  expired_signal_emits: SIGNAL_ENTRY_WINDOW_PASSED   # Checklist V1.1 reason code
+
+invalidation_contract:
+  - REFERENCE_INCOMPLETE (previous UTC day misses the 288-bar completeness rule)
+  - NO_DIRECTION (H1 unresolved, or confirmed D1 opposing H1 -> HTF_DIRECTION_CONFLICT)
+  - AMBIGUOUS_DUAL_SWEEP candle (skipped, never traded)
+  - SIGNAL_ENTRY_WINDOW_PASSED (signal_expiry_contract)
+  - NO_TRADE_TARGET_GEOMETRY (targets_contract guard)
+  - INVALID_STOP_DISTANCE (stop distance not strictly positive)
+  - DATA gate failure upstream (Checklist V1.1 Phase 0 remains authoritative)
+
+stop_loss_contract:
+  short: "SL = sweep candle high + stop_buffer"
+  long: "SL = sweep candle low - stop_buffer"
+  stop_buffer: 0.00 broker price units (0 broker points), FROZEN
+  stop_buffer_rationale: >-
+    The perp tick-buffer (10 ticks of the USDT-perp tick model) is out of scope and the
+    FX pip buffer is forbidden for crypto; live CFD metadata returned tick_size 0.0, so
+    no tick-multiple buffer is computable from broker facts. V1 freezes the only
+    evidence-free-of-invention geometry: the exact sweep extreme. Any non-zero buffer
+    requires a governance amendment with its own evidence.
+  subjective_placement: FORBIDDEN
+
+targets_contract:
+  structure: PARTIAL_PLUS_RUNNER  # frozen shared target-plan code path (targets.py)
+  tp1: PREV_UTC_DAY_MID
+  tp1_volume_pct: 0.5
+  tp1_action: MOVE_REMAINING_TO_BREAKEVEN
+  tp2_short: PREV_UTC_DAY_LOW    # opposing liquidity
+  tp2_long: PREV_UTC_DAY_HIGH    # opposing liquidity
+  min_tp2_r_multiple: 1.5        # contractually justified family value; NOT a generic RR>=2
+  geometry_guard: >-
+    TP1 and TP2 must be strictly beyond entry in the trade direction and the stop
+    distance strictly positive, else NO_TRADE_TARGET_GEOMETRY; no substitute target is
+    ever invented.
+
+session_time_policy:
+  policy: BROKER_DEFINED / 24H_OBSERVATION
+  fx_session_gate_applied: false      # CFDs must not inherit FX session gating
+  execution_windows: []               # none; no perp activity window either
+  research_time_windows: >-
+    Any intraday time-of-day hypothesis is research only and carries no proposal
+    authority under this contract.
+
+spread_cost_policy:
+  units: [BROKER_POINTS, PRICE, PERCENT]   # native broker units; FX pip conventions FORBIDDEN
+  observed_reference_2026_10_02:            # informational observation, NOT a threshold
+    BTCUSD: {spread_points: 1702, spread_price: 17.02, spread_pct: 0.02016267}
+    ETHUSD: {spread_points: 250, spread_price: 2.50, spread_pct: 0.09371790}
+  threshold: SPREAD_POLICY_UNDEFINED   # no validated threshold exists
+  consequence: proposal authority remains BLOCKED; spread is recorded OBSERVED_ONLY
+
+risk_policy_interface:
+  status: RISK_POLICY_AMBIGUOUS        # no governance-authorized risk percentage exists
+  risk_percent: NOT_ASSIGNED
+  position_size: NOT_CALCULATED
+  required_sizing_inputs:              # interface definition only, values NOT invented
+    - account_equity
+    - authorized_risk_percent          # must come from an explicit governance decision
+    - stop_distance_price              # produced by this contract
+    - tick_size                       # currently 0.0 from broker -> UNUSABLE
+    - tick_value                      # currently 0.0 from broker -> UNUSABLE
+    - volume_min
+    - volume_max
+    - volume_step
+
+research_separation:
+  STRATEGY_CONTRACT_VALID: true        # reproducible logic only
+  EDGE_VERIFIED: false
+  RISK_AUTHORIZED: false
+
+contract_status:
+  BTCUSD: CONTRACT_COMPLETE            # every rule above is deterministic and testable
+  ETHUSD: CONTRACT_COMPLETE
+  open_authorities:                    # completeness of logic, NOT authority
+    - SPREAD_POLICY_UNDEFINED
+    - RISK_POLICY_AMBIGUOUS
+    - SIZING_METADATA_INCOMPLETE (broker tick_size/tick_value = 0.0)
+  proposal_authority: BLOCKED
+  execution_authorized: false
