@@ -27,6 +27,12 @@ MANDATORY_TIMEFRAMES = ("D1", "H1", "M15", "M5")
 def spread_gate(quote, asset_class: str, max_spread_pips: Optional[float]) -> dict:
     if quote is None:
         return {"status": FAIL, "reason": "NO_QUOTE"}
+    if asset_class == "CRYPTO":
+        return {"status": "OBSERVED_ONLY", "reason": "SPREAD_POLICY_UNDEFINED",
+                "spread_points": quote.spread_points if quote else None,
+                "spread_price": quote.spread_price if quote else None,
+                "spread_pct": (quote.spread_price / quote.bid * 100) if quote and quote.bid else None,
+                "spread_pips": None}
     if asset_class != "FX" or max_spread_pips is None:
         # No signed pip convention / threshold for this asset class: observe, never invent a limit.
         return {"status": OBSERVED_ONLY, "reason": "SPREAD_OBSERVED", "spread_points": quote.spread_points}

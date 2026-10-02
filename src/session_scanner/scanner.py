@@ -68,8 +68,14 @@ def _run_source_scan(source, cfg: Optional[dict] = None, local_utc_now: Optional
            "data_source_degraded": False, "data_quality_gate": "FAIL",
            "execution_authorized": False, "instruments": [], "ready_setups": [], "no_trade": [], "blocked": []}
 
-    specs = load_specs(cfg)
-    first_symbol = next(iter(specs.values())).broker_symbol
+    all_specs = load_specs(cfg)
+    crypto_cfg = {**cfg, "instruments": {k: v for k, v in cfg["instruments"].items()
+                                          if v.get("asset_class") == "CRYPTO"}}
+    crypto_specs = load_specs(crypto_cfg, include_crypto=True) if crypto_cfg["instruments"] else {}
+    # Frozen Scanner V1 evaluates only its original four FX/metal instruments. Crypto
+    # is evaluated additively by Checklist V1.1 below, with its own registered adapter.
+    v1_specs = all_specs
+    first_symbol = next(iter(v1_specs.values())).broker_symbol
 
     # ---- time authority (probe with the first instrument's freshest tick)
     time_info = source.time_information()
@@ -86,7 +92,7 @@ def _run_source_scan(source, cfg: Optional[dict] = None, local_utc_now: Optional
     if ta.gate != TIME_GATE_PASS:
         out["scan_timestamp_utc"] = time_info.get("utc_time")
         out["session"] = None
-        for canonical in specs:
+        for canonical in v1_specs:
             out["blocked"].append({"canonical_symbol": canonical, "result": "INSUFFICIENT_DATA", "reason": "TIME_GATE_FAIL"})
         return out
 
@@ -110,8 +116,9 @@ def _run_source_scan(source, cfg: Optional[dict] = None, local_utc_now: Optional
     out["account"] = {k: account.get(k) for k in ("type", "currency", "equity", "error") if k in account}
 
     facts_by_symbol = {}  # Checklist V1.1 fact bundles (JSON-safe; V1 outputs untouched)
-    for canonical, spec in specs.items():
-        item = {"canonical_symbol": canonical, "broker_symbol": spec.broker_symbol, "source": source_label}
+    for canonical, spec in v1_specs.items():
+        item = {"canonical_symbol": canonical, "broker_symbol": spec.broker_symbol, "asset_class": spec.asset_class,
+                "source": source_label}
         try:
             record = verify_live(spec, source.symbol_info(spec.broker_symbol), price_source=source_label)
         except InstrumentRegistryError as exc:
@@ -262,8 +269,17 @@ def _run_source_scan(source, cfg: Optional[dict] = None, local_utc_now: Optional
         out["instruments"].append(item)
 
     out["data_quality_gate"] = _aggregate_data_quality_gate(
-        out.get("time", {}), out["instruments"], len(specs)
+        out.get("time", {}), out["instruments"], len(v1_specs)
     )
+    # Source doubles from frozen four-symbol regressions explicitly contain their
+    # configured FX universe and no listing API. Only add configured crypto when the
+    # source implements the existing read-only Terminal listing call.
+    if crypto_specs and callable(getattr(source, "call", None)):
+        from .crypto_adapter import scan_crypto_instruments
+        crypto_items, crypto_facts = scan_crypto_instruments(source, crypto_cfg, ta, now, server_now,
+                                                              source_label, struct_cfg)
+        out["instruments"].extend(crypto_items)
+        facts_by_symbol.update(crypto_facts)
     return attach_checklist_v1_1(out, facts_by_symbol)
 
 

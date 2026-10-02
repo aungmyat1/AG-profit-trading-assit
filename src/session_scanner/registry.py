@@ -48,16 +48,21 @@ class InstrumentRecord:
     currency_profit: str
     volume_min: float
     volume_step: float
+    tick_size: float
+    tick_value: float
+    volume_max: float
 
     def as_dict(self) -> dict:
         return asdict(self)
 
 
-def load_specs(scanner_cfg: dict, resolver=resolve_broker_symbol) -> Dict[str, InstrumentSpec]:
+def load_specs(scanner_cfg: dict, resolver=resolve_broker_symbol, *, include_crypto: bool = False) -> Dict[str, InstrumentSpec]:
     broker = scanner_cfg["broker"]
     policies = scanner_cfg["session_policies"]
     specs = {}
     for canonical, item in scanner_cfg["instruments"].items():
+        if item.get("asset_class") == "CRYPTO" and not include_crypto:
+            continue
         try:
             broker_symbol = resolver(canonical, broker)
         except BrokerSymbolMapError as exc:
@@ -85,6 +90,22 @@ def pip_size_for(point: float) -> float:
     return round(point * 10, 10)
 
 
+def spread_gate_values(asset_class: str, bid: float, ask: float, point: float, pip_size: float,
+                       max_spread_pips: Optional[float]) -> dict:
+    spread = ask - bid
+    if asset_class == "FX" and max_spread_pips is not None:
+        pips = spread / pip_size
+        return {"status": "PASS" if pips <= max_spread_pips else "FAIL",
+                "spread_pips": round(pips, 3), "max_spread_pips": max_spread_pips,
+                "reason": "SPREAD_WITHIN_LIMIT" if pips <= max_spread_pips else "SPREAD_EXCEEDS_LIMIT"}
+    values = {"spread_points": int(round(spread / point)), "spread_price": round(spread, 10),
+              "spread_pct": round((spread / bid) * 100, 8) if bid else None,
+              "spread_pips": None}
+    if asset_class == "CRYPTO":
+        return {"status": "OBSERVED_ONLY", "reason": "SPREAD_POLICY_UNDEFINED", **values}
+    return {"status": "OBSERVED_ONLY", "reason": "NO_ASSET_SPREAD_POLICY", "spread_pips": None}
+
+
 def verify_live(spec: InstrumentSpec, info: Optional[dict], price_source: str = PRICE_SOURCE) -> InstrumentRecord:
     if info is None:
         raise InstrumentRegistryError(f"FAIL_CLOSED: {spec.broker_symbol} not found or ambiguous on broker")
@@ -97,10 +118,16 @@ def verify_live(spec: InstrumentSpec, info: Optional[dict], price_source: str = 
     if trade_mode != "full":
         raise InstrumentRegistryError(f"FAIL_CLOSED: {spec.broker_symbol} trade_mode {trade_mode!r} is not 'full'")
     point = float(info["point"])
+    if spec.asset_class == "CRYPTO":
+        required = ("tick_size", "tick_value", "contract_size", "volume_min", "volume_max", "volume_step")
+        if any(info.get(key) is None for key in required):
+            raise InstrumentRegistryError(f"FAIL_CLOSED: incomplete native contract metadata for {spec.broker_symbol}")
     return InstrumentRecord(
         canonical_symbol=spec.canonical_symbol, broker_symbol=spec.broker_symbol, asset_class=spec.asset_class,
         digits=digits, point=point, pip_size=pip_size_for(point), trade_mode=trade_mode,
         session_policy=spec.session_policy, daily_break_server=spec.daily_break_server, price_source=price_source,
         contract_size=float(info.get("contract_size", 0.0)), currency_profit=str(info.get("currency_profit", "")),
         volume_min=float(info.get("volume_min", 0.0)), volume_step=float(info.get("volume_step", 0.0)),
+        tick_size=float(info.get("tick_size", 0.0)), tick_value=float(info.get("tick_value", 0.0)),
+        volume_max=float(info.get("volume_max", 0.0)),
     )

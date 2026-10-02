@@ -142,6 +142,23 @@ def _phase0_data(item: dict, scan: dict, facts: dict) -> PhaseOutcome:
     codes: List[ReasonCode] = []
     detail: List[str] = []
 
+    if item.get("asset_class") == "CRYPTO":
+        if (scan.get("time") or {}).get("time_gate") != TIME_GATE_PASS:
+            return PhaseOutcome("data", PhaseStatus.FAIL, (ReasonCode.TIME_AUTHORITY_INVALID,),
+                                {"time_gate": (scan.get("time") or {}).get("time_gate")})
+        series = item.get("data_quality") or {}
+        evidence.update({"series_status": {tf: q.get("status") for tf, q in series.items()},
+                         "history_retry": {tf: bool(q.get("retry_performed")) for tf, q in series.items()},
+                         "actual_source": scan.get("actual_source") or scan.get("source"),
+                         "data_source_degraded": bool(scan.get("data_source_degraded")),
+                         "time_gate": (scan.get("time") or {}).get("time_gate")})
+        required = {"D1", "H1", "M15", "M5"}
+        if (item.get("data_quality_gate") != "PASS" or facts.get("data_gate") != "PASS"
+                or not required.issubset(series)
+                or any(series[tf].get("status") != "VALID" for tf in required)):
+            return PhaseOutcome("data", PhaseStatus.FAIL, (ReasonCode.DATA_INVALID,), evidence)
+        return PhaseOutcome("data", PhaseStatus.PASS, (), evidence)
+
     time_gate = (scan.get("time") or {}).get("time_gate")  # canonical V1 key, no alias
     evidence["time_gate"] = time_gate
     if time_gate != TIME_GATE_PASS:
@@ -226,6 +243,21 @@ def _alignment_and_permission(d1: StructureState, h1: StructureState,
 
 
 def _phase1_context(item: dict, scan: dict, facts: dict) -> PhaseOutcome:
+    if item.get("asset_class") == "CRYPTO":
+        mstate = item.get("market_state") or {}
+        h1 = (mstate.get("H1") or {}).get("structure") or {}
+        d1 = facts.get("d1_structure") or {}
+        d1_state, h1_state = _structure_state(d1), _structure_state(h1)
+        alignment, permission, codes = _alignment_and_permission(d1_state, h1_state)
+        return PhaseOutcome("context", PhaseStatus.PASS, codes, {
+            "session_policy": "BROKER_DEFINED / 24H_OBSERVATION",
+            "current_session": (scan.get("session") or {}).get("current_session"),
+            "active_cycle": None, "fx_session_gate_applied": False,
+            "d1_structure": d1, "h1_structure": h1,
+            "structure_states": {"D1": d1_state.value, "H1": h1_state.value},
+            "alignment": alignment, "direction_permission": permission.value,
+            "direction_semantics": "PERMISSION_NOT_ENTRY",
+        })
     session = scan.get("session") or {}
     active_cycle = session.get("active_cycle")
     if not active_cycle:
@@ -271,6 +303,12 @@ def _phase2_location(item: dict, facts: dict) -> PhaseOutcome:
     box (Asian/London high/low) and strict-penetration sweep engagement. Previous-day
     high/low has NO defined role in this contract and is reported as a contract gap, never
     used as a decision. No generic indicators (fib/pivots/RSI/MACD/ADX/volume/OB/FVG)."""
+    if item.get("asset_class") == "CRYPTO":
+        return PhaseOutcome("location", PhaseStatus.INCOMPLETE_CONTRACT,
+                            (ReasonCode.STRATEGY_CONTRACT_INCOMPLETE,),
+                            {"strategy_id": None, "strategy_version": None,
+                             "detail": facts.get("contract_gap"),
+                             "previous_day_levels": "OBSERVED_ONLY_NO_CFD_STRATEGY_AUTHORITY"})
     mstate = item.get("market_state") or {}
     levels = item.get("session_levels") or {}
     box = (mstate.get("M15") or {}).get("reference_box")
@@ -325,6 +363,12 @@ def _phase3_trigger(item: dict, facts: dict) -> PhaseOutcome:
       * signal candle not current        -> FAIL / SIGNAL_ENTRY_WINDOW_PASSED / NO_TRADE
       * TREND condition without timing   -> INCOMPLETE_CONTRACT / ENTRY_TIMING_NOT_DEFINED_FOR_SETUP
     """
+    if item.get("asset_class") == "CRYPTO":
+        return PhaseOutcome("trigger", PhaseStatus.INCOMPLETE_CONTRACT,
+                            (ReasonCode.STRATEGY_CONTRACT_INCOMPLETE,),
+                            {"strategy_id": None, "strategy_version": None,
+                             "trigger_status": "NOT_EVALUATED",
+                             "detail": facts.get("contract_gap")})
     engine = item.get("engine") or {}
     signal = facts.get("signal")
     last_closed = facts.get("last_closed_m15_utc")
@@ -371,6 +415,20 @@ def _phase4_risk(item: dict, facts: dict) -> PhaseOutcome:
     0.5%; USDJPY/XAUUSD stay RISK_POLICY_AMBIGUOUS. There is never a silent 1.0% fallback.
     Geometry (entry/invalidation/SL/stop distance/targets/RR) comes from the engine signal
     and the frozen contract; no generic minimum-RR rule is imposed."""
+    if item.get("asset_class") == "CRYPTO":
+        signal = facts.get("crypto_signal") or {}
+        return PhaseOutcome("risk", PhaseStatus.BLOCKED, (ReasonCode.RISK_POLICY_AMBIGUOUS,), {
+            "risk_authority": {"authorized": False, "policy_source": None,
+                               "detail": "CRYPTO_RISK_POLICY_AMBIGUOUS", "generic_fallback_pct_used": False},
+            "geometry": {"entry": signal.get("entry"), "stop_loss": signal.get("stop_loss"),
+                         "risk_distance": signal.get("risk_distance")},
+            "position_size": "NOT_CALCULATED", "account_equity_available": False,
+        })
+    if item.get("asset_class") == "CRYPTO":
+        return PhaseOutcome("risk", PhaseStatus.BLOCKED, (ReasonCode.RISK_POLICY_AMBIGUOUS,), {
+            "risk_authority": {"authorized": False, "policy_source": None,
+                               "detail": "CRYPTO_RISK_POLICY_AMBIGUOUS", "generic_fallback_pct_used": False},
+            "position_size": "NOT_CALCULATED", "account_equity_available": False})
     scope = facts.get("scope")
     signal = facts.get("signal") or {}
     targets = facts.get("contract_targets") or {}
@@ -423,6 +481,10 @@ def _phase5_eligibility(item: dict, facts: dict) -> PhaseOutcome:
         "proposal_ticket_present": ticket_present,
         "execution_authorized": False,
     }
+    if item.get("asset_class") == "CRYPTO":
+        return PhaseOutcome("proposal_eligibility", PhaseStatus.BLOCKED,
+                            (ReasonCode.SPREAD_POLICY_UNDEFINED, ReasonCode.PROPOSAL_NOT_AUTHORIZED,
+                             ReasonCode.EXECUTION_NOT_AUTHORIZED), evidence)
     if spread.get("status") == "FAIL":
         return PhaseOutcome("proposal_eligibility", PhaseStatus.FAIL, (ReasonCode.SPREAD_TOO_WIDE,),
                             evidence)
@@ -464,6 +526,21 @@ def evaluate_instrument_checklist(scan: dict, item: dict, facts: Optional[dict])
         for name in PHASE_KEYS[1:]:
             phases[name] = _not_applicable(name, "data")
         return _final(canonical, item, phases, ChecklistResult.INSUFFICIENT_DATA, data)
+
+    if item.get("asset_class") == "CRYPTO":
+        phases["context"] = _phase1_context(item, scan, facts)
+        phases["location"] = _phase2_location(item, facts)
+        phases["trigger"] = _phase3_trigger(item, facts)
+        phases["risk"] = _phase4_risk(item, facts)
+        phases["proposal_eligibility"] = PhaseOutcome(
+            "proposal_eligibility", PhaseStatus.BLOCKED,
+            (ReasonCode.STRATEGY_CONTRACT_INCOMPLETE, ReasonCode.RISK_POLICY_AMBIGUOUS,
+             ReasonCode.SPREAD_POLICY_UNDEFINED, ReasonCode.PROPOSAL_NOT_AUTHORIZED,
+             ReasonCode.EXECUTION_NOT_AUTHORIZED),
+            {"proposal_authority": False, "position_size": "NOT_CALCULATED",
+             "execution_authorized": False, "spread": facts.get("spread")})
+        deciding = phases["location"]
+        return _final(canonical, item, phases, ChecklistResult.BLOCKED, deciding)
 
     context = _phase1_context(item, scan, facts)
     phases["context"] = context
@@ -515,11 +592,14 @@ def _final(canonical: Optional[str], item: dict, phases: Dict[str, PhaseOutcome]
     analytical phases; ``proposal_eligible`` additionally requires the risk authority and
     the proposal gate; ``execution_authorized`` is always False."""
     setup_valid = all(phases[k].status is PhaseStatus.PASS for k in _SETUP_PHASES)
-    proposal_eligible = (setup_valid and result is ChecklistResult.READY_FOR_PROPOSAL)
+    proposal_eligible = (setup_valid and result is ChecklistResult.READY_FOR_PROPOSAL
+                         and item.get("asset_class") != "CRYPTO")
     block = {
         "version": CHECKLIST_VERSION,
         "symbol": canonical,
         "broker_symbol": item.get("broker_symbol"),
+        "canonical_symbol": canonical,
+        "asset_class": item.get("asset_class"),
         "phases": {k: phases[k].as_dict() for k in PHASE_KEYS},
         "setup_valid": setup_valid,
         "proposal_eligible": proposal_eligible,
