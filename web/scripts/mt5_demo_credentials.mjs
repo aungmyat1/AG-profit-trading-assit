@@ -75,5 +75,5 @@ export function resolveDemoCredentials(env) {
 
 // Env keys that must never reach the MT5 MCP child process.
 export function isStrippedChildEnvKey(key) {
-  return /^(VANTAGE|VTMARKETS|BYBIT_API_|BYBIT_PAPER_|MT5_(PASSWORD|ACCOUNT_ID|LOGIN|SERVER|MCP_COMMAND))/i.test(key);
+  return /^(VANTAGE|VTMARKETS|BYBIT_API_|BYBIT_PAPER_|MT5_(PASSWORD|ACCOUNT_ID|LOGIN|SERVER|MCP_COMMAND|MCP_REMOTE_))/i.test(key);
 }

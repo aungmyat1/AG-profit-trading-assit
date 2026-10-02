@@ -185,8 +185,9 @@ it, and catching a broker that does not follow US DST.
 Claude Desktop does **not** read `.mcp.json` or `.vscode/mcp.json`. It reads
 `%APPDATA%\Claude\claude_desktop_config.json` and launches servers from its own working
 directory, so the workspace-relative `web/scripts/start_mt5_mcp.mjs` path fails there.
-Claude Code on the web (cloud) sessions run on Linux and always land in setup-status mode;
-MT5 chat access needs Claude Desktop (or Claude Code) on the Windows PC running MT5.
+Claude Code on the web (cloud) sessions run on Linux and land in setup-status mode unless
+they use the remote bridge below; otherwise MT5 chat access needs Claude Desktop (or Claude
+Code) on the Windows PC running MT5.
 
 On that Windows PC, from the project root:
 
@@ -215,3 +216,84 @@ Equivalent manual entry:
 These local MCP guardrails do not replace project execution authority, validation,
 or venue qualification. The third-party MT5 server may internally implement trading
 tools; they are not exposed through this workspace's MT5 launcher.
+
+## Remote access from cloud sessions (2026-10-02)
+
+A Linux client cannot run MT5, so the Windows PC serves its normal read-only launcher over
+HTTP and the cloud session's `mt5ReadOnly` launcher forwards to it. Tool names, the
+read-only allowlist (enforced on both ends) and the setup-status fallback are identical to a
+local run. Demo credentials never leave the Windows PC.
+
+1. **Windows PC** (MT5 open and logged in to the Demo account, local MCP already working).
+   Add a random token of at least 32 characters to `src/.env`, then start the server:
+
+   ```
+   MT5_MCP_REMOTE_TOKEN=<random 32+ characters>
+   # optional: MT5_MCP_REMOTE_PORT=8765  MT5_MCP_REMOTE_HOST=127.0.0.1
+   ```
+
+   ```
+   node web/scripts/serve_mt5_mcp_remote.mjs
+   ```
+
+   It binds `127.0.0.1:8765` and accepts only `POST /mcp` with
+   `Authorization: Bearer <token>`. Publish it through an HTTPS tunnel you control (for
+   example `cloudflared tunnel --url http://127.0.0.1:8765` or Tailscale Funnel); never open
+   a raw public port.
+2. **Cloud environment** (claude.ai/code environment settings → environment variables):
+
+   ```
+   MT5_ENVIRONMENT=DEMO
+   MT5_MCP_REMOTE_URL=https://<your-tunnel-host>/mcp
+   MT5_MCP_REMOTE_TOKEN=<same token>
+   ```
+
+   Allow `<your-tunnel-host>` in the environment's network policy. `.mcp.json` sets
+   `NODE_USE_ENV_PROXY=1` so the launcher's `fetch` uses the sandbox HTTPS proxy. Start a
+   new session; `mt5ReadOnly` then lists the same `readonly_*` tools as on Windows.
+
+The URL must be `https://` (plain `http://` only for localhost), the token is never logged,
+and a wrong token, unreachable tunnel or stopped server shows up as the
+`mt5_setup_status` reason. Server-initiated `tools/list_changed` notifications are not
+relayed; if MT5 was still connecting, list tools again. Code:
+`web/scripts/mt5_remote_bridge.mjs`, `web/scripts/serve_mt5_mcp_remote.mjs`; tests:
+`web/tests/mt5_remote_bridge.test.mjs`.
+
+## MetaTrader 5 app built-in MCP servers (2026-10-02)
+
+The MT5 app publishes its own MCP servers. They are registered in `.mcp.json` (Claude Code)
+and `.codex/config.toml` (Codex) **without tokens**; the bearer tokens come from environment
+variables on the machine running the client:
+
+| Server | URL | Token variable | Reachable from |
+| --- | --- | --- | --- |
+| `metaeditor` | `http://127.0.0.1:22345/mcp` | `MT5_APP_MCP_TOKEN` | the Windows PC running MT5 only |
+| `terminal` | `http://127.0.0.1:22346/mcp` | `MT5_APP_MCP_TOKEN` | the Windows PC running MT5 only |
+| `marketdata` | `https://www.metatrader.com/mcp` | `METATRADER_MARKETDATA_MCP_TOKEN` | anywhere the host is allowed |
+
+Claude Code and Codex read these from the **process environment, not `src/.env`**. If the
+tokens are kept in `src/.env`, copy them into user environment variables (values never
+printed; also checks that ports 22345/22346 are listening), then restart the client:
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\host\set_mt5_app_mcp_env.ps1
+```
+
+Or set them by hand on the Windows PC (new terminal / restart Claude Code afterwards):
+
+```
+setx MT5_APP_MCP_TOKEN "<token shown by the MT5 app>"
+setx METATRADER_MARKETDATA_MCP_TOKEN "<mq-... token shown by the MT5 app>"
+```
+
+For a cloud session, only `marketdata` can work: set `METATRADER_MARKETDATA_MCP_TOKEN` in the
+environment settings and allow `www.metatrader.com` in its network policy. The `127.0.0.1`
+servers are unreachable from the cloud; use the remote bridge above for terminal data.
+
+Safety: the MT5 app's `terminal` server is not filtered by this project's read-only
+allowlist and may expose trading tools. `.claude/settings.json` therefore puts every
+`mcp__terminal` tool under `permissions.ask`, so each call needs the owner's explicit
+approval, and the authority order in `AGENTS.md` still applies: agents must not place,
+modify or close orders through it. Codex has no equivalent gate here; treat its `terminal`
+tools the same way. Never paste these tokens into committed files; regenerate them in the
+MT5 app if they are exposed.

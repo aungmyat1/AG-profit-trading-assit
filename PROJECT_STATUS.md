@@ -4,6 +4,33 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## MT5 app built-in MCP servers registered (2026-10-02, configuration only)
+
+`.mcp.json` and new `.codex/config.toml` register the MT5 app's `metaeditor`
+(`127.0.0.1:22345`), `terminal` (`127.0.0.1:22346`) and `marketdata`
+(`https://www.metatrader.com/mcp`) MCP servers with bearer tokens taken only from
+`MT5_APP_MCP_TOKEN` / `METATRADER_MARKETDATA_MCP_TOKEN` (no secrets committed). New
+`.claude/settings.json` puts all `mcp__terminal` tools under `permissions.ask` because that
+server is outside the project's read-only allowlist. Connectivity and tool lists:
+**NOT_EVALUATED_HOST_REQUIRED** (localhost servers exist only on the Windows PC). Does not
+enable or authorize trading.
+
+## MT5 MCP remote bridge for cloud sessions (2026-10-02, read-only configuration)
+
+Cloud (Linux) sessions previously always landed in `mt5_setup_status` because MT5 is
+Windows-only. The Windows PC can now serve its existing read-only launcher over HTTP
+(`web/scripts/serve_mt5_mcp_remote.mjs`: loopback bind by default, bearer token of at least
+32 characters, `POST /mcp` only, method + read-only tool allowlist, body cap, id remapping),
+and `start_mt5_mcp.mjs` gains a remote mode (`MT5_MCP_REMOTE_URL` + `MT5_MCP_REMOTE_TOKEN`,
+still requires `MT5_ENVIRONMENT=DEMO`; https only except localhost) that reuses
+`startDeferredReadOnlyProxy`, so tool names, allowlist and setup-status fallback match a local
+run and the allowlist is enforced on both ends. Demo credentials stay on Windows; remote keys
+are stripped from the MT5 child env. Evidence (Linux cloud container, 2026-10-02):
+`node --test web/tests/*.test.mjs` **27/27 pass** (5 new); a stdio launcher in remote mode
+against a locally running `serve_mt5_mcp_remote.mjs` completed initialize/tools/list/tools/call
+and relayed the server's setup-status reason. Real Windows MT5 + tunnel + cloud network
+policy: **NOT_EVALUATED_HOST_REQUIRED**. Does not enable or authorize trading.
+
 ## Read-only `api.app` restored; full suite green (2026-10-02)
 
 The pre-existing missing-`api.app` failure is closed. `src/api/app.py` is now a minimal read-only

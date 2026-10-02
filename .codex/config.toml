@@ -1,0 +1,16 @@
+# MetaTrader 5 app MCP servers (MT5 > Tools > Options > AI/MCP). Tokens come from
+# environment variables only; never commit them. See docs/setup/MT5_MCP_SETUP.md.
+[mcp_servers.metaeditor]
+url = "http://127.0.0.1:22345/mcp"
+enabled = true
+bearer_token_env_var = "MT5_APP_MCP_TOKEN"
+
+[mcp_servers.terminal]
+url = "http://127.0.0.1:22346/mcp"
+enabled = true
+bearer_token_env_var = "MT5_APP_MCP_TOKEN"
+
+[mcp_servers.marketdata]
+url = "https://www.metatrader.com/mcp"
+enabled = true
+bearer_token_env_var = "METATRADER_MARKETDATA_MCP_TOKEN"
