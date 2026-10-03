@@ -57,6 +57,8 @@ entry:
   price: M15_ORDER_BLOCK_MIDPOINT
   stop_loss: M15_ORDER_BLOCK_EXTREME_PLUS_10PCT_OB_HEIGHT_BUFFER
   expiry: END_OF_ACTIVE_SESSION
+  max_entries_per_symbol_per_cycle_per_day: 1
+  signal_selection: EARLIEST_VALID_SIGNAL_WINS
   no_overnight: true
 
 management:
@@ -66,6 +68,7 @@ management:
   tp2_volume_pct: 0.50
   tp2: NEAREST_OPPOSING_H4_ZONE_OR_CONFIRMED_SWING_BEYOND_TP1
   move_runner_to_breakeven_after_tp1: true
+  forced_flat_time_utc: "21:00"
 
 execution:
   proposal_generation_authorized: true
@@ -76,6 +79,7 @@ execution:
 
 research_notes:
   - Parameters above are deterministic formalization choices for testing, not claimed source-video constants.
+  - One-entry-per-symbol/session/day and 21:00 UTC force-flat are V1 backtest formalizations.
   - No machine-learning classifier is part of V1; false-CHoCH labels are deterministic diagnostics.
   - Friction must be modeled by EdgeLab before any economic qualification.
   - No strategy rule may be optimized during the first frozen campaign.
