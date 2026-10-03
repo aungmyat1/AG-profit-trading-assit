@@ -24,7 +24,7 @@ UTC execution windows:
 - ASIAN_LONDON: 06:00 <= signal < 09:00
 - LONDON_NEWYORK: 11:00 <= signal < 14:00
 
-All signals expire at the end of the active window. No overnight holding.
+Unfilled limits expire at the end of the active session window. At most one entry is accepted per symbol/cycle/trading day; the earliest valid signal wins. Any still-open position is force-closed at 21:00 UTC so the candidate never holds overnight. These are V1 backtest formalization choices.
 
 ## Timeframe stack
 
@@ -87,7 +87,7 @@ Failure returns `NO_FRESH_H4_POI` or `HTF_POI_NOT_REACHED`.
 
 ## H1 control shift
 
-A valid control shift must create a new same-direction zone and close through a previously created opposing H1 zone.
+A valid control shift must create a new same-direction zone and close through a previously created **opposing H1 zone that was still active immediately before the break**.
 
 The new zone already requires BOS + FVG + OB by construction.
 
@@ -108,6 +108,8 @@ After the H1 control shift, require a same-direction M15 BOS/FVG/OB zone inside 
 Entry = midpoint of the latest qualifying M15 OB.
 
 Order type = LIMIT.
+
+For event-driven replay, evaluate closed M15 bars sequentially. Once the first valid signal for a symbol/cycle/day is accepted, later signals in that same symbol/cycle/day are ignored.
 
 ## Stop loss
 
@@ -139,6 +141,8 @@ Nearest opposing H4 structural level beyond TP1:
 - SHORT: nearest H4 demand-zone high below TP1; if none, nearest confirmed H4 swing low below TP1.
 
 If no structural target beyond TP1 exists, return `NO_VALID_HTF_FINAL_TARGET`.
+
+If neither SL nor final target resolves the remaining position, force-flat the open remainder at 21:00 UTC using the first executable price at/after that time under the replay engine's frozen fill semantics.
 
 ## Risk and friction
 
