@@ -126,6 +126,12 @@ def _invalidated(c: Candle, z: Zone) -> bool:
     return c.close < z.low if z.kind == "DEMAND" else c.close > z.high
 
 
+def _active_before(candles: Sequence[Candle], zone: Zone, before_index: int) -> bool:
+    """True when no closed candle invalidated the zone before `before_index`."""
+    created = next(i for i, c in enumerate(candles) if c.time == zone.created_time)
+    return not any(_invalidated(c, zone) for c in candles[created + 1:before_index])
+
+
 def latest_fresh_zone(candles: Sequence[Candle], kind: str) -> Zone | None:
     """Latest zone not invalidated and not previously mitigated.
 
@@ -144,7 +150,7 @@ def latest_fresh_zone(candles: Sequence[Candle], kind: str) -> Zone | None:
 
 
 def control_shift_zones(candles: Sequence[Candle], direction: str) -> tuple[Zone, ...]:
-    """Zones whose displacement also closes through a pre-existing opposing zone."""
+    """Zones whose displacement closes through an opposing zone still active before the break."""
     validate_series(candles)
     all_zones = zones(candles)
     wanted = "DEMAND" if direction == "BULLISH" else "SUPPLY"
@@ -154,7 +160,8 @@ def control_shift_zones(candles: Sequence[Candle], direction: str) -> tuple[Zone
         if z.kind != wanted:
             continue
         created_idx = next(i for i, c in enumerate(candles) if c.time == z.created_time)
-        prior = [p for p in all_zones if p.kind == opposite and p.created_time < z.created_time]
+        prior = [p for p in all_zones
+                 if p.kind == opposite and p.created_time < z.created_time and _active_before(candles, p, created_idx)]
         if not prior:
             continue
         active = prior[-1]
@@ -174,16 +181,17 @@ def classify_false_shift(candles: Sequence[Candle], direction: str) -> str | Non
     """Diagnostic false-CHoCH classification. It never creates an entry."""
     validate_series(candles)
     last = candles[-1]
-    all_zones = zones(candles[:-1]) if len(candles) > 1 else ()
+    history = candles[:-1]
+    all_zones = zones(history) if history else ()
     opposite = "SUPPLY" if direction == "BULLISH" else "DEMAND"
-    candidates = [z for z in all_zones if z.kind == opposite]
+    candidates = [z for z in all_zones if z.kind == opposite and _active_before(candles, z, len(candles) - 1)]
     if candidates:
         active = candidates[-1]
         if direction == "BULLISH" and last.high > active.high and last.close <= active.high:
             return "LIQUIDITY_SWEEP"
         if direction == "BEARISH" and last.low < active.low and last.close >= active.low:
             return "LIQUIDITY_SWEEP"
-    # A touch into an older gap without a valid close-through is diagnostic FVG rebalancing.
+    # Diagnostic only: touch an older FVG without a valid close-through.
     for z in reversed(all_zones):
         if last.high >= z.fvg_low and last.low <= z.fvg_high:
             return "FVG_REBALANCE"
