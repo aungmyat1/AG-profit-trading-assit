@@ -35,22 +35,42 @@ def _core(trades: Sequence[TradeRecord]) -> Dict:
         max_dd = min(max_dd, equity - peak)
 
     gross_wins = sum(t.gross_r for t in trades if t.gross_r > 0)
+    gross_losses = [t.gross_r for t in trades if t.gross_r <= 0]
+    profit_factor_gross = (_safe_div(gross_wins, abs(sum(gross_losses))) if gross_losses else
+                           (None if not gross_wins else float("inf")))
+    profit_factor_net = (_safe_div(sum(wins), abs(sum(losses))) if losses else
+                         (None if not wins else float("inf")))
+    long_count = sum(1 for t in trades if t.direction == "LONG")
+    short_count = sum(1 for t in trades if t.direction == "SHORT")
+    # Lower-case metric names are the Offline Research Factory report contract.  The
+    # legacy upper-case aliases remain for R1 callers and are direct aliases, not an
+    # alternate calculation.
     return {
-        "N": n,
-        "LONG_N": sum(1 for t in trades if t.direction == "LONG"),
-        "SHORT_N": sum(1 for t in trades if t.direction == "SHORT"),
-        "GROSS_R": gross,
-        "NET_R": net,
+        "N": n, "wins": len(wins), "losses": len(losses),
+        "win_rate": _safe_div(float(len(wins)), n),
+        "gross_R": gross, "net_R": net,
+        "gross_expectancy_R": _safe_div(gross, n),
+        "net_expectancy_R": _safe_div(net, n),
+        "profit_factor_gross": profit_factor_gross,
+        "profit_factor_net": profit_factor_net,
+        "max_drawdown_R": max_dd,
+        "average_win_R": _safe_div(sum(wins), len(wins)),
+        "average_loss_R": _safe_div(sum(losses), len(losses)),
+        "long_count": long_count, "short_count": short_count,
+        "BTCUSD_count": sum(1 for t in trades if t.symbol == "BTCUSD"),
+        "ETHUSD_count": sum(1 for t in trades if t.symbol == "ETHUSD"),
         "COST_R": cost,
+        "COST_TO_GROSS_PROFIT": _safe_div(cost, gross_wins),
+        "LONG_N": long_count, "SHORT_N": short_count,
+        "GROSS_R": gross, "NET_R": net,
         "GROSS_EXPECTANCY_R": _safe_div(gross, n),
         "NET_EXPECTANCY_R": _safe_div(net, n),
         "WIN_RATE": _safe_div(float(len(wins)), n),
         "AVG_WIN_R": _safe_div(sum(wins), len(wins)),
         "AVG_LOSS_R": _safe_div(sum(losses), len(losses)),
-        "PROFIT_FACTOR_NET": _safe_div(sum(wins), abs(sum(losses))) if losses else
-                             (None if not wins else float("inf")),
+        "PROFIT_FACTOR_GROSS": profit_factor_gross,
+        "PROFIT_FACTOR_NET": profit_factor_net,
         "MAX_DRAWDOWN_R": max_dd,
-        "COST_TO_GROSS_PROFIT": _safe_div(cost, gross_wins),
     }
 
 

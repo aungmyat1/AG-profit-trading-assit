@@ -1,34 +1,60 @@
-# AG Edge Discovery -- candidate factory queue (R1 Phase 11).
-# FAMILY PLACEHOLDERS ONLY. No entry below has preregistered rules, and none may be
-# implemented or backtested until a deterministic manifest (schema
-# EDGE_DISCOVERY_CANDIDATE_MANIFEST_V0, created_before_results: true) is frozen for it.
-# The queue is asset-class generic: future FX candidates use the same schema with
-# asset_class: FX and FX-native cost assumptions (their own friction model -- the
-# crypto CFD spread scenarios never leak across asset classes).
-schema_version: EDGE_DISCOVERY_CANDIDATE_QUEUE_V0
+# AG Edge Discovery -- Candidate Factory queue metadata (R2).
+# Queue entries are discovery metadata, not strategy rules or evidence.  A performance
+# claim from any external source must never be imported as AG edge evidence: only a new,
+# preregistered immutable candidate contract may enter the offline factory.
+schema_version: EDGE_DISCOVERY_CANDIDATE_QUEUE_V1
+
+metadata_contract:
+  required_fields:
+    [candidate_id, source_type, source_reference, asset_class, rule_family,
+     contract_status, preregistered, data_compatible, fast_screen_status,
+     verification_status]
+  permitted_source_types:
+    [OPEN_SOURCE, ACADEMIC, PUBLIC_STRATEGY_LIBRARY, INTERNAL_HYPOTHESIS,
+     INTERNAL_FROZEN_CONTRACT]
+  external_performance_claims_are_ag_evidence: false
+
+lanes:
+  LANE_FX:
+    asset_class: FX
+    symbols: [EURUSD, GBPUSD, USDJPY]
+    dataset_authority: existing locally exported FX datasets
+  LANE_CRYPTO_CFD:
+    asset_class: CRYPTO_CFD
+    symbols: [BTCUSD, ETHUSD]
+    dataset_authority: VT Markets CFD immutable exporter artifacts
+  LANE_CRYPTO_PERP:
+    asset_class: CRYPTO_USDT_PERP
+    symbols: [BTCUSDT, ETHUSDT]
+    dataset_authority: future public exchange export only
+    prohibited_for_crypto_cfd_verification: true
 
 queue:
   - candidate_id: CRYPTO_CFD_C001
-    family: liquidity_sweep_mss_retest
-    status: MANIFEST_FROZEN      # see candidates/CRYPTO_CFD_C001.yaml
-    preregistered: true
+    source_type: INTERNAL_FROZEN_CONTRACT
+    source_reference: research/edge_discovery/candidates/CRYPTO_CFD_C001.yaml
     asset_class: CRYPTO_CFD
+    rule_family: liquidity_sweep_mss_retest
+    contract_status: FROZEN
+    preregistered: true
+    data_compatible: AWAITS_PROVENANCE_VERIFIED_CRYPTO_CFD_M5
+    fast_screen_status: NOT_EVALUATED
+    verification_status: NOT_EVALUATED
 
-  - {candidate_id: C002, family: donchian_breakout,                status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
-  - {candidate_id: C003, family: atr_volatility_breakout,          status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
-  - {candidate_id: C004, family: ema_trend_pullback,               status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
-  - {candidate_id: C005, family: previous_day_breakout,            status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
-  - {candidate_id: C006, family: rsi_mean_reversion,               status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
-  - {candidate_id: C007, family: bollinger_mean_reversion,         status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
-  - {candidate_id: C008, family: momentum_continuation,            status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
-  - {candidate_id: C009, family: volatility_contraction_expansion, status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
-  - {candidate_id: C010, family: trend_plus_breakout,              status: QUEUE_PLACEHOLDER, preregistered: false, rules: NOT_DEFINED, asset_class: TBD}
+  # These are metadata-only placeholders.  `rule_family` is a queue label, not an
+  # entry/exit definition, parameter choice, or claim that the family will be tested.
+  - {candidate_id: C002, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: donchian_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C003, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: atr_volatility_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C004, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: ema_trend_pullback, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C005, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: previous_day_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C006, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: rsi_mean_reversion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C007, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: bollinger_mean_reversion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C008, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: momentum_continuation, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C009, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: volatility_contraction_expansion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C010, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: trend_plus_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
 
-rules_of_the_queue:
-  - A placeholder acquires rules ONLY via a frozen manifest created before results.
-  - FAST_SCREEN_PASS is research prioritization, never EDGE_VERIFIED.
-  - A candidate that has seen economic results is immutable; improvements become a
-    new candidate_id (e.g. a C002 hypothesis referencing parent_candidate).
-  - FX candidates are supported by the same schema (asset_class: FX); they must bring
-    their own preregistered FX friction representation -- no crypto spread scenarios,
-    no pip/session assumptions imported silently in either direction.
+queue_rules:
+  - A placeholder cannot be backtested until a deterministic immutable manifest is frozen before results.
+  - Any C001 rule/friction change after results requires C002+ or a versioned new candidate; C001 never mutates.
+  - FAST_SCREEN_PASS means FROZEN_FOR_VERIFICATION only, never EDGE_VERIFIED.
+  - Each candidate may consume data only from its exact asset-class research lane.

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from dataclasses import dataclass, field, fields
 from enum import Enum
 from pathlib import Path
@@ -55,8 +56,14 @@ FACTORY_EMITTABLE_STATUSES: Tuple[CandidateStatus, ...] = (
 
 class CandidateSource(str, Enum):
     INTERNAL_FROZEN_CONTRACT = "INTERNAL_FROZEN_CONTRACT"
-    EXTERNAL_SPEC = "EXTERNAL_SPEC"
-    FAMILY_PLACEHOLDER = "FAMILY_PLACEHOLDER"   # queue entries without preregistered rules
+    # Future queue metadata may identify a source; its external performance assertion
+    # is never evidence until AG preregisters and independently screens a contract.
+    OPEN_SOURCE = "OPEN_SOURCE"
+    ACADEMIC = "ACADEMIC"
+    PUBLIC_STRATEGY_LIBRARY = "PUBLIC_STRATEGY_LIBRARY"
+    INTERNAL_HYPOTHESIS = "INTERNAL_HYPOTHESIS"
+    EXTERNAL_SPEC = "EXTERNAL_SPEC"              # retained R1 compatibility
+    FAMILY_PLACEHOLDER = "FAMILY_PLACEHOLDER"    # queue entries without preregistered rules
 
 
 class DatasetRole(str, Enum):
@@ -137,13 +144,65 @@ def sha256_of_file(path: Path) -> str:
 
 
 def verify_freeze_record(manifest_path: Path, freeze_record_path: Path) -> dict:
-    """Byte-level immutability check: the manifest file must hash to the value captured
-    at freeze time. Returns {'frozen': bool, 'expected': ..., 'actual': ...}."""
-    record = json.loads(Path(freeze_record_path).read_text(encoding="utf-8"))
-    actual = sha256_of_file(manifest_path)
-    expected = record["manifest_sha256"]
-    return {"frozen": actual == expected, "expected": expected, "actual": actual,
-            "candidate_id": record.get("candidate_id")}
+    """Verify frozen bytes using Git blobs when both inputs are tracked.
+
+    Git blob identity is stable across ``core.autocrlf`` checkout representations. The
+    tracked paths must also be clean against HEAD, so a real staged or working-tree edit
+    still fails closed. Standalone fixture files outside a repository retain byte-level
+    verification.
+    """
+    manifest_path, freeze_record_path = Path(manifest_path), Path(freeze_record_path)
+    try:
+        root_text = subprocess.check_output(
+            ["git", "-C", str(manifest_path.parent), "rev-parse", "--show-toplevel"],
+            stderr=subprocess.DEVNULL, text=True,
+        ).strip()
+    except subprocess.SubprocessError:
+        record = json.loads(freeze_record_path.read_text(encoding="utf-8"))
+        actual = sha256_of_file(manifest_path)
+        expected = record["manifest_sha256"]
+        return {"frozen": actual == expected, "expected": expected, "actual": actual,
+                "candidate_id": record.get("candidate_id")}
+    try:
+        root = Path(root_text)
+        manifest_relative = manifest_path.resolve().relative_to(root.resolve()).as_posix()
+        freeze_relative = freeze_record_path.resolve().relative_to(root.resolve()).as_posix()
+        paths = (manifest_relative, freeze_relative)
+        for relative in paths:
+            subprocess.run(
+                ["git", "-C", str(root), "ls-files", "--error-unmatch", "--", relative],
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=True,
+            )
+        # Ignore only CR bytes at line endings: autocrlf may materialize the same blob
+        # as CRLF, while substantive staged or unstaged edits still differ.
+        clean = subprocess.run(
+            ["git", "-C", str(root), "diff", "--quiet", "--ignore-cr-at-eol",
+             "HEAD", "--", *paths],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=False,
+        ).returncode == 0
+        manifest_bytes = subprocess.check_output(
+            ["git", "-C", str(root), "cat-file", "blob", f"HEAD:{manifest_relative}"],
+            stderr=subprocess.DEVNULL,
+        )
+        freeze_bytes = subprocess.check_output(
+            ["git", "-C", str(root), "cat-file", "blob", f"HEAD:{freeze_relative}"],
+            stderr=subprocess.DEVNULL,
+        )
+        record = json.loads(freeze_bytes.decode("utf-8"))
+        expected = record["manifest_sha256"]
+        actual = hashlib.sha256(manifest_bytes).hexdigest()
+        return {"frozen": clean and actual == expected, "expected": expected, "actual": actual,
+                "candidate_id": record.get("candidate_id")}
+    except (subprocess.SubprocessError, ValueError, OSError):
+        try:
+            record = json.loads(freeze_record_path.read_text(encoding="utf-8"))
+            expected = record["manifest_sha256"]
+            candidate_id = record.get("candidate_id")
+        except (OSError, ValueError, KeyError):
+            expected, candidate_id = "", None
+        actual = sha256_of_file(manifest_path) if manifest_path.is_file() else ""
+        return {"frozen": False, "expected": expected, "actual": actual,
+                "candidate_id": candidate_id}
 
 
 @dataclass(frozen=True)
@@ -212,6 +271,8 @@ class DatasetAccessRecord:
     governance_approval_id: Optional[str] = None
     repeat_access_count: int = 0                # prior GRANTED accesses of same candidate+dataset+role
     independence_claim: str = "NOT_APPLICABLE"  # restricted roles: INDEPENDENT_FIRST_ACCESS or not
+    # Explicit stage makes C001 fast-screen holdout-denial mechanically auditable.
+    access_stage: str = "UNSPECIFIED"
 
     def as_json_line(self) -> str:
         return json.dumps({f.name: getattr(self, f.name) for f in fields(self)},
