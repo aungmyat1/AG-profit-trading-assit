@@ -67,6 +67,9 @@ class OhlcBar:
     low: float
     close: float
     volume: Optional[float] = None
+    # Raw exporter flags are retained only to quarantine a source-marked synthetic,
+    # filled, or interpolated bar. They never alter any price or timestamp.
+    synthetic: bool = False
 
 
 @dataclass(frozen=True)
@@ -242,6 +245,19 @@ def _as_number(value: Any, field: str, row_number: int) -> float:
     return number
 
 
+def _source_marks_synthetic(row: Mapping[str, Any]) -> bool:
+    """Preserve a source-side synthetic/fill/interpolation marker if one exists.
+    Missing markers do not manufacture a flag; true values are always quarantined."""
+    for field in ("synthetic", "is_synthetic", "filled", "is_filled", "interpolated", "is_interpolated"):
+        value = row.get(field)
+        if isinstance(value, str):
+            if value.strip().lower() in {"1", "true", "yes", "y"}:
+                return True
+        elif bool(value):
+            return True
+    return False
+
+
 def ingest_raw_m5(
     raw_path: Path,
     provenance_path: Path,
@@ -303,6 +319,7 @@ def ingest_raw_m5(
             close=_as_number(row.get("close"), "close", row_number),
             volume=(None if "volume" not in row or row["volume"] is None
                     else _as_number(row["volume"], "volume", row_number)),
+            synthetic=_source_marks_synthetic(row),
         ))
 
     if bars:
@@ -332,6 +349,7 @@ def _bar_payload(bar: OhlcBar) -> Mapping[str, Any]:
     return {
         "timestamp": _utc_string(bar.time), "open": bar.open, "high": bar.high,
         "low": bar.low, "close": bar.close, "volume": bar.volume,
+        "synthetic": bar.synthetic,
     }
 
 
