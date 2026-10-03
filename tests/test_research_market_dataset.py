@@ -135,6 +135,43 @@ def test_history_parse_preserves_source_and_normalizes_vt_rule():
         parse_candles([{"time": "2026-07-01 12:00:00", "open": 1, "high": 2, "low": 0, "close": 1}])
 
 
+def test_vectorized_timestamp_parser_large_fixture_and_vt_equivalence(monkeypatch):
+    from scripts.research import market_dataset
+    from datetime import datetime
+
+    samples = [
+        "2026-07-01 12:00:00", "2026-01-15 12:00:00Z",
+        "2026-11-01 05:30:00", "2026-03-08 09:30:00",
+    ]
+    records = [{"time": stamp, "open": 1, "high": 2, "low": 0, "close": 1,
+                "tick_volume": 3, "spread": 5, "real_volume": 7} for stamp in samples]
+    actual = parse_candles(records, source_semantics="VT_SERVER_WALL_CLOCK")
+    expected = [market_dataset.vt_server_wall_to_utc(
+        pd.to_datetime(stamp, utc=False).tz_convert(None).to_pydatetime()
+        if stamp.endswith("Z") else pd.to_datetime(stamp).to_pydatetime()) for stamp in samples]
+    assert list(actual.timestamp_utc) == expected
+    assert list(actual.source_timestamp) == samples
+    assert actual[["open", "high", "low", "close", "tick_volume", "spread", "real_volume"]].values.tolist() == [[1., 2., 0., 1., 3., 5., 7.]] * 4
+
+    def forbidden(_):
+        raise AssertionError("legacy per-row timestamp helper invoked")
+    monkeypatch.setattr(market_dataset, "vt_server_wall_to_utc", forbidden)
+    base = pd.date_range("2026-07-01", periods=50_000, freq="5min")
+    large = [{"time": t.strftime("%Y-%m-%d %H:%M:%S"), "open": 1, "high": 2,
+              "low": 0, "close": 1} for t in base]
+    parsed = parse_candles(large, source_semantics="VT_SERVER_WALL_CLOCK")
+    assert len(parsed) == 50_000
+    assert parsed.source_timestamp.iloc[0] == "2026-07-01 00:00:00"
+    assert parsed.timestamp_utc.is_monotonic_increasing
+
+
+def test_vectorized_parser_fails_closed_for_mixed_bad_timestamps():
+    rows = [{"time": "2026-07-01T12:00:00Z", "open": 1, "high": 2, "low": 0, "close": 1},
+            {"time": "not-a-time", "open": 1, "high": 2, "low": 0, "close": 1}]
+    with pytest.raises(DatasetError, match="invalid candle timestamp"):
+        parse_candles(rows, source_semantics="VT_SERVER_WALL_CLOCK")
+
+
 def test_mcp_csv_history_parsing(tmp_path):
     raw = ",time,open,high,low,close,tick_volume,spread,real_volume\n0,2026-07-01 12:00:00,1,2,0,1,3,5,0\n"
     result = {"content": [{"type": "text", "text": raw}]}
