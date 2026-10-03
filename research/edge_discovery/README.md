@@ -53,3 +53,8 @@ market call. Missing sources report `BLOCKED_DATASET_UNAVAILABLE` without a fall
 The currently committed dataset inventory contains no BTCUSD/ETHUSD Crypto-CFD historical
 bundle. Therefore there are no fabricated coverage values, no C001 profitability values,
 and no partition manifest in this repository at publication.
+
+R1 eligibility/quarantine keeps the raw finding `BLOCKED_UNKNOWN_GAPS` intact while
+making a later complete-only population check available. It neither creates a partition
+nor runs C001. See [RESEARCH_WINDOW_ELIGIBILITY_CONTRACT.md](RESEARCH_WINDOW_ELIGIBILITY_CONTRACT.md)
+and `eligibility_manifests/`.

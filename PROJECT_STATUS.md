@@ -277,6 +277,18 @@ USDJPY SHORT ASIAN_LONDON sweeps; L2 FAIL recorded; `TICKET_BLOCKED` with `SIGNA
 precedence; live-`symbol_info` sizing). Integration fixes I1/H3/I3/I4/I5/I6/I7 + stale/expiry
 semantics added; host task `AG-V1-FX-Cycles` still runs production main
 (`DEPLOYMENT_PENDING`). Telegram delivery gap H4 open (`TELEGRAM_DELIVERY_TRACE_R1`).
+## Crypto-CFD Research Eligibility + Quarantine R1 — unit-tested, raw files unavailable (2026-10-03)
+
+The research branch now separates raw source quality from bounded research-window
+eligibility. Raw Crypto-CFD quality remains `BLOCKED_UNKNOWN_GAPS`; only a reference day
+or observation interval whose exact M5 dependencies are present/valid may be eligible.
+The implementation creates deterministic quarantine manifests and complete-only
+M15/H1/D1 artifacts, and can hand eligible M5 bars to the existing R2 partition layer.
+It neither creates partitions nor runs C001. The immutable raw file hashes are pinned,
+but the source Parquet files are unavailable in this checkout, so no data-specific counts
+or profitability result has been invented. See
+`docs/status/AG_CRYPTO_CFD_RESEARCH_ELIGIBILITY_R1_STATUS.md`.
+
 ## Edge Discovery offline research factory R2 — unit-tested, dataset-blocked (2026-10-02)
 
 The research branch now contains a **local-only** ingestion and Candidate Factory stage
