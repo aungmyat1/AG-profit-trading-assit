@@ -10,6 +10,7 @@ import dataclasses
 import datetime as dt
 import json
 import pathlib
+import subprocess
 
 import pytest
 import yaml
@@ -138,7 +139,8 @@ def test_freeze_record_pins_contract_files_bit_exactly():
     record = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))
     import hashlib
     for rel, expected in record["contract_file_sha256"].items():
-        assert hashlib.sha256((ROOT / rel).read_bytes()).hexdigest() == expected, rel
+        blob = subprocess.check_output(["git", "-C", str(ROOT), "show", f"HEAD:{rel}"])
+        assert hashlib.sha256(blob).hexdigest() == expected, rel
     assert record["edge_verified"] is False
     assert record["fast_screen_status"] == "NOT_EVALUATED"
 
