@@ -10,6 +10,7 @@ import dataclasses
 import hashlib
 import json
 import shutil
+import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -242,3 +243,73 @@ def test_c001_and_friction_frozen_identity_and_mutation_version_bump_rejection(t
     rules.write_text(rules.read_text(encoding="utf-8") + "\n# attempted post-result mutation\n", encoding="utf-8")
     with pytest.raises(FrozenIdentityError, match=C001_MUTATION_REQUIRES_VERSION_BUMP):
         verify_c001_rule_identity(clone)
+
+
+def _git_identity_fixture(path):
+    files = {
+        "research/edge_discovery/candidates/CRYPTO_CFD_C001.yaml": b"candidate: frozen\n",
+        "research/edge_discovery/candidates/CRYPTO_CFD_C001.freeze.json": None,
+        "src/crypto_cfd_contract/contract.py": b"CONTRACT = 'frozen'\n",
+        "src/crypto_cfd_contract/rules.py": b"RULE = 'frozen'\n",
+        "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml": b"version: 1\n",
+    }
+    manifest = files["research/edge_discovery/candidates/CRYPTO_CFD_C001.yaml"]
+    contract_paths = tuple(p for p in files if p.startswith(("src/", "strategies/")))
+    freeze = {
+        "candidate_id": "CRYPTO_CFD_C001",
+        "manifest_sha256": hashlib.sha256(manifest).hexdigest(),
+        "contract_file_sha256": {
+            p: hashlib.sha256(files[p]).hexdigest() for p in contract_paths
+        },
+    }
+    files["research/edge_discovery/candidates/CRYPTO_CFD_C001.freeze.json"] = (
+        json.dumps(freeze, sort_keys=True).encode() + b"\n"
+    )
+    for relative, content in files.items():
+        target = path / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+    subprocess.run(["git", "init", "-q", str(path)], check=True)
+    subprocess.run(["git", "-C", str(path), "config", "user.email", "test@example.invalid"], check=True)
+    subprocess.run(["git", "-C", str(path), "config", "user.name", "Test"], check=True)
+    subprocess.run(["git", "-C", str(path), "config", "core.autocrlf", "true"], check=True)
+    subprocess.run(["git", "-C", str(path), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(path), "commit", "-qm", "freeze fixture"], check=True)
+    return files
+
+
+def test_frozen_identity_uses_git_blobs_and_accepts_crlf_checkout(tmp_path):
+    root = tmp_path / "crlf"
+    files = _git_identity_fixture(root)
+    manifest = root / "research/edge_discovery/candidates/CRYPTO_CFD_C001.yaml"
+    manifest.write_bytes(files[manifest.relative_to(root).as_posix()].replace(b"\n", b"\r\n"))
+    assert verify_c001_rule_identity(root).status == "PASS"
+
+
+def test_frozen_identity_rejects_committed_and_uncommitted_mutations(tmp_path):
+    committed = tmp_path / "committed"
+    _git_identity_fixture(committed)
+    rules = committed / "src/crypto_cfd_contract/rules.py"
+    rules.write_text("RULE = 'changed'\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(committed), "add", str(rules)], check=True)
+    subprocess.run(["git", "-C", str(committed), "commit", "-qm", "mutate rules"], check=True)
+    with pytest.raises(FrozenIdentityError, match=C001_MUTATION_REQUIRES_VERSION_BUMP):
+        verify_c001_rule_identity(committed)
+
+    uncommitted = tmp_path / "uncommitted"
+    _git_identity_fixture(uncommitted)
+    rules = uncommitted / "src/crypto_cfd_contract/rules.py"
+    rules.write_text("RULE = 'changed'\n", encoding="utf-8")
+    with pytest.raises(FrozenIdentityError, match=C001_MUTATION_REQUIRES_VERSION_BUMP):
+        verify_c001_rule_identity(uncommitted)
+
+
+def test_frozen_identity_rejects_uncommitted_freeze_record_tampering(tmp_path):
+    root = tmp_path / "tampered-freeze"
+    _git_identity_fixture(root)
+    freeze = root / "research/edge_discovery/candidates/CRYPTO_CFD_C001.freeze.json"
+    record = json.loads(freeze.read_text(encoding="utf-8"))
+    record["manifest_sha256"] = "0" * 64
+    freeze.write_text(json.dumps(record), encoding="utf-8")
+    with pytest.raises(FrozenIdentityError, match=C001_MUTATION_REQUIRES_VERSION_BUMP):
+        verify_c001_rule_identity(root)
