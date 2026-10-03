@@ -4,6 +4,18 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Crypto-CFD Research Eligibility + Quarantine R1 — unit-tested, raw files unavailable (2026-10-03)
+
+The research branch now separates raw source quality from bounded research-window
+eligibility. Raw Crypto-CFD quality remains `BLOCKED_UNKNOWN_GAPS`; only a reference day
+or observation interval whose exact M5 dependencies are present/valid may be eligible.
+The implementation creates deterministic quarantine manifests and complete-only
+M15/H1/D1 artifacts, and can hand eligible M5 bars to the existing R2 partition layer.
+It neither creates partitions nor runs C001. The immutable raw file hashes are pinned,
+but the source Parquet files are unavailable in this checkout, so no data-specific counts
+or profitability result has been invented. See
+`docs/status/AG_CRYPTO_CFD_RESEARCH_ELIGIBILITY_R1_STATUS.md`.
+
 ## Edge Discovery offline research factory R2 — unit-tested, dataset-blocked (2026-10-02)
 
 The research branch now contains a **local-only** ingestion and Candidate Factory stage

@@ -140,6 +140,10 @@ through quality/partition/holdout gates, and never downloads market data or send
 broker request. Real CFD source files are not committed, so its C001 result is currently
 `BLOCKED_DATASET_UNAVAILABLE`, not an edge claim. See the
 [offline ingestion contract](research/edge_discovery/OFFLINE_DATASET_INGESTION_CONTRACT.md).
+A separate eligibility/quarantine layer keeps an unexplained-gap raw dataset blocked
+while admitting only independently complete UTC reference/observation windows for later
+partitioning; it never fills data, creates partitions, or runs C001 itself. See the
+[research eligibility contract](research/edge_discovery/RESEARCH_WINDOW_ELIGIBILITY_CONTRACT.md).
 Large-SMC has a research engine and live-batch ledger but not yet the complete
 incremental funnel-status and external confirmation-alert service.
 
