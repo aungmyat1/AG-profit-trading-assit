@@ -71,49 +71,76 @@ def parse_candles(payload: Any, *, broker_utc_offset: int | None = None,
             raise DatasetError("MCP candle text is not JSON") from None
     if not isinstance(payload, list):
         raise DatasetError(f"candle response is not a list (type={type(payload).__name__})")
-    rows = []
-    for rec in payload:
-        if not isinstance(rec, dict):
-            raise DatasetError("candle row is not an object")
-        ts = next((rec[k] for k in ("time", "timestamp", "date", "datetime") if k in rec), None)
-        if ts is None:
-            raise DatasetError("candle timestamp is missing")
-        source = str(ts)
-        try:
-            if isinstance(ts, (int, float)):
-                unit = "ms" if abs(float(ts)) > 10**11 else "s"
-                t = pd.to_datetime(ts, unit=unit, utc=True, errors="raise")
-            else:
-                t = pd.to_datetime(ts, utc=False, errors="raise")
-            if source_semantics == "VT_SERVER_WALL_CLOCK":
-                # The proxy may append a UTC marker to fields that are still server wall time.
-                wall = t.tz_convert(None).to_pydatetime() if getattr(t, "tzinfo", None) is not None else t.to_pydatetime()
-                utc = vt_server_wall_to_utc(wall)
-            elif getattr(t, "tzinfo", None) is not None:
-                utc = t.tz_convert("UTC")
-            elif broker_utc_offset is not None:
-                utc = (t - pd.Timedelta(hours=broker_utc_offset)).tz_localize("UTC")
-            else:
+    if any(not isinstance(rec, dict) for rec in payload):
+        raise DatasetError("candle row is not an object")
+    if not payload:
+        return pd.DataFrame(columns=RAW_FIELDS)
+    records = pd.DataFrame.from_records(payload)
+    timestamp_col = next((k for k in ("time", "timestamp", "date", "datetime") if k in records.columns), None)
+    if timestamp_col is None:
+        raise DatasetError("candle timestamp is missing")
+    raw_ts = records[timestamp_col]
+    if raw_ts.isna().any():
+        raise DatasetError("candle timestamp is missing")
+    source = raw_ts.map(str)
+    try:
+        # MCP responses are normally homogeneous. Handle numeric epochs as vector
+        # groups, and date strings through pandas' vector parser; never convert per row.
+        numeric_mask = pd.Series(pd.api.types.is_numeric_dtype(raw_ts.dtype),
+                                 index=raw_ts.index, dtype=bool)
+        parsed_utc = pd.Series(pd.NaT, index=records.index, dtype="datetime64[ns, UTC]")
+        if numeric_mask.any():
+            nums = pd.to_numeric(raw_ts.loc[numeric_mask], errors="raise")
+            ms_mask = nums.abs() > 10**11
+            for mask, unit in ((~ms_mask, "s"), (ms_mask, "ms")):
+                selected = nums.loc[mask]
+                if len(selected):
+                    parsed_utc.loc[selected.index] = pd.to_datetime(selected, unit=unit, utc=True, errors="raise")
+        date_mask = ~numeric_mask
+        if date_mask.any():
+            parsed_dates = pd.to_datetime(raw_ts.loc[date_mask], format="mixed", utc=True, errors="raise")
+            parsed_utc.loc[parsed_dates.index] = parsed_dates
+        if parsed_utc.isna().any():
+            raise ValueError("timestamp parse produced NaT")
+        if source_semantics == "VT_SERVER_WALL_CLOCK":
+            # Legacy behavior treats aware fields as UTC-shaped server wall time,
+            # then applies the owner-stated New York 17:00 mapping (fold=0).
+            wall = parsed_utc.dt.tz_localize(None)
+            ny_wall = wall - pd.Timedelta(hours=7)
+            utc = ny_wall.dt.tz_localize("America/New_York", ambiguous=True,
+                                         nonexistent=pd.Timedelta(hours=1)).dt.tz_convert("UTC")
+        else:
+            # The old parser rejected naive strings without authority. Detect them
+            # vectorially; aware fields have already been normalized to UTC above.
+            text_values = raw_ts.loc[date_mask].astype(str)
+            aware = text_values.str.contains(r"(?:Z|[+-]\d{2}:?\d{2})$", case=False, regex=True)
+            naive_idx = text_values.index[~aware]
+            if len(naive_idx) and broker_utc_offset is None:
                 raise DatasetError("time authority required for naive source timestamps")
-        except DatasetError:
-            raise
-        except Exception as exc:
-            raise DatasetError("invalid candle timestamp") from exc
-        row = {"source_timestamp": source, "timestamp_utc": utc}
-        aliases = {"tick_volume": ("tick_volume", "tickVolume", "volume"),
-                   "real_volume": ("real_volume", "realVolume")}
-        for field in ("open", "high", "low", "close", "spread", "tick_volume", "real_volume"):
-            keys = aliases.get(field, (field,))
-            val = next((rec[k] for k in keys if k in rec), None)
-            if val is not None:
-                try:
-                    row[field] = float(val)
-                except (TypeError, ValueError) as exc:
-                    raise DatasetError(f"invalid numeric field {field}") from exc
-        if not all(k in row for k in ("open", "high", "low", "close")):
-            raise DatasetError("candle missing OHLC fields")
-        rows.append(row)
-    return pd.DataFrame(rows, columns=[c for c in RAW_FIELDS if c in set().union(*(r.keys() for r in rows))])
+            utc = parsed_utc.copy()
+            if len(naive_idx):
+                utc.loc[naive_idx] -= pd.Timedelta(hours=broker_utc_offset)
+    except DatasetError:
+        raise
+    except Exception as exc:
+        raise DatasetError("invalid candle timestamp") from exc
+
+    out = pd.DataFrame({"source_timestamp": source, "timestamp_utc": utc})
+    aliases = {"tick_volume": ("tick_volume", "tickVolume", "volume"),
+               "real_volume": ("real_volume", "realVolume")}
+    for field in ("open", "high", "low", "close", "spread", "tick_volume", "real_volume"):
+        col = next((k for k in aliases.get(field, (field,)) if k in records.columns), None)
+        if col is None:
+            continue
+        values = records[col]
+        try:
+            out[field] = pd.to_numeric(values, errors="raise").astype(float)
+        except (TypeError, ValueError) as exc:
+            raise DatasetError(f"invalid numeric field {field}") from exc
+    if not {"open", "high", "low", "close"}.issubset(out.columns):
+        raise DatasetError("candle missing OHLC fields")
+    return out[[c for c in RAW_FIELDS if c in out.columns]]
+
 
 
 def validate(frame: pd.DataFrame, timeframe_minutes=5) -> dict:
