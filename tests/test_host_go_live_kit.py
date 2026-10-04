@@ -632,6 +632,81 @@ def test_repo_default_delivery_stays_archive_only():
     assert not (ROOT / "config" / "local" / "delivery_override.yaml").exists()
 
 
+def test_notify_logs_sent_ok_and_failure_without_secrets(tmp_path, monkeypatch):
+    monkeypatch.setattr(tg, "should_send", lambda *a: True)
+    monkeypatch.setattr(tg, "send_message", lambda text: None)
+    smoke._notify("TICKET", "READY", "x", str(tmp_path))
+
+    def boom(text):
+        raise tg.TelegramSendError("send failed (HTTP 401)")
+    monkeypatch.setattr(tg, "send_message", boom)
+    smoke._notify("LSMC", "OPPORTUNITY", "x", str(tmp_path))
+    log = (tmp_path / "logs" / "telegram.log").read_text()
+    assert "TELEGRAM_SENT_OK TICKET=READY" in log
+    assert "TELEGRAM_SEND_FAILED LSMC=OPPORTUNITY send failed (HTTP 401)" in log
+
+
+def _status_host(tmp_path, override=True, venv=True, log="", runner_age_h=1.0):
+    import telegram_status as ts
+    now = dt.datetime(2026, 10, 4, 12, tzinfo=UTC)
+    if override:
+        (tmp_path / "config" / "local").mkdir(parents=True)
+        (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+            "﻿# comment\nmode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n",
+            encoding="utf-8")
+    if venv:
+        (tmp_path / ".venv" / "Scripts").mkdir(parents=True)
+        (tmp_path / ".venv" / "Scripts" / "python.exe").write_text("")
+    (tmp_path / "logs").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "logs" / "telegram.log").write_text(log)
+    runner = tmp_path / "logs" / "ag_v1_crypto.log"
+    runner.write_text("x")
+    stamp = (now - dt.timedelta(hours=runner_age_h)).timestamp()
+    os.utime(runner, (stamp, stamp))
+    creds = {n: {"process": False, "user": True} for n in ts.CRED_VARS}
+    return ts, ts.build_report(str(tmp_path), now=now, creds=creds)
+
+
+def test_telegram_status_ok_disabled_and_down(tmp_path):
+    ok_line = "2026-10-04T08:00:00+00:00 TELEGRAM_SENT_OK TICKET=READY\n"
+    ts, r = _status_host(tmp_path / "a", log=ok_line)
+    assert r["status"] == "OK" and r["reasons"] == []
+    assert r["telegram_log"]["last_ok"]["at"].startswith("2026-10-04T08")
+    _, r = _status_host(tmp_path / "b", override=False)
+    assert r["status"] == "DISABLED" and r["delivery"]["mode"] == "ARCHIVE_ONLY"
+    _, r = _status_host(tmp_path / "c", venv=False)
+    assert r["status"] == "DOWN" and any(".venv" in x for x in r["reasons"])
+    report = ts.build_report(str(tmp_path / "a"), now=dt.datetime(2026, 10, 4, 12, tzinfo=UTC),
+                             creds={n: {"process": True, "user": False} for n in ts.CRED_VARS})
+    assert report["status"] == "DOWN" and sum("User environment" in x for x in report["reasons"]) == 2
+
+
+def test_telegram_status_degraded_on_failure_or_silent_runner(tmp_path):
+    log = ("2026-10-03T08:00:00+00:00 TELEGRAM_SENT_OK TICKET=READY\n"
+           "2026-10-04T08:00:00+00:00 TELEGRAM_SEND_FAILED TICKET=READY send failed (HTTP 401)\n")
+    _, r = _status_host(tmp_path / "a", log=log)
+    assert r["status"] == "DEGRADED" and "HTTP 401" in r["reasons"][0]
+    _, r = _status_host(tmp_path / "b", runner_age_h=30)
+    assert r["status"] == "DEGRADED" and "26h" in r["reasons"][0]
+    manual = tmp_path / "b" / "logs" / "ag_v1_smoke.log"
+    manual.write_text("x")                                   # a manual smoke run is not runner activity
+    import telegram_status as ts
+    r = ts.build_report(str(tmp_path / "b"), now=dt.datetime(2026, 10, 4, 12, tzinfo=UTC),
+                        creds={n: {"process": False, "user": True} for n in ts.CRED_VARS})
+    assert r["status"] == "DEGRADED"
+
+
+def test_telegram_status_never_prints_credential_values(tmp_path, monkeypatch, capsys):
+    import telegram_status as ts
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "987654321")
+    _status_host(tmp_path)
+    ts.main(["--root", str(tmp_path)])
+    ts.main(["--root", str(tmp_path), "--json"])
+    out = capsys.readouterr().out
+    assert "SECRET-TOKEN-VALUE" not in out and "987654321" not in out and "TELEGRAM_REPORT_STATUS:" in out
+
+
 # ------------------------------------------------------------------ static invariants (4, 5, 6)
 
 def test_complete_six_instrument_objective_preflight(monkeypatch):
