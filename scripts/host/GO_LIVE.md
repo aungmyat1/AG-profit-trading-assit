@@ -150,6 +150,10 @@ powershell -ExecutionPolicy Bypass -File scripts\host\verify_telegram.ps1
 - The token and chat ID are never printed or written to disk.
 - For scheduled tasks, set both as persistent user environment variables.
 - To disable: delete `config\local\delivery_override.yaml`.
+- Check report health (read-only, sends nothing, works even if `.venv` is missing):
+  `py scripts\host\telegram_status.py` (add `--json` for machine output). It prints
+  `TELEGRAM_REPORT_STATUS: OK | DEGRADED | DOWN | DISABLED` with reasons, and exits 1 on DEGRADED/DOWN.
+  Every send is logged to `logs\telegram.log` as `TELEGRAM_SENT_OK` or `TELEGRAM_SEND_FAILED`.
 
 For the complete installation procedure, expected outputs, archive paths, and rollback commands,
 see `docs/setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md`.

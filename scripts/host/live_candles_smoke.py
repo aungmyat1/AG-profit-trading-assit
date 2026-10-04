@@ -150,7 +150,9 @@ def _notify(kind: str, value: str, text: str, root: str) -> None:
         try:
             tg.send_message(text)
         except tg.TelegramSendError as exc:
-            log_line("telegram", f"TELEGRAM_SEND_FAILED {exc}")
+            log_line("telegram", f"TELEGRAM_SEND_FAILED {kind}={value} {exc}")
+        else:
+            log_line("telegram", f"TELEGRAM_SENT_OK {kind}={value}")
 
 
 def _archive_fx_result(state: JsonKeyValueStore, journal: str, ticket: dict, now: dt.datetime) -> tuple[bool, bool, list[str]]:
