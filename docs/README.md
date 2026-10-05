@@ -43,6 +43,12 @@ The [repository structure audit](REPO_STRUCTURE_AUDIT.md) records the current la
 safe cache cleanup, and the recommended archival policy for historical documents and
 generated evidence.
 
+The [AG Resource Management Policy V1](governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md)
+is the shared local-compute contract for Claude Code, Codex Local, and Arena Web:
+R0–R3 workload classes with RAM gates, the one-heavy-job invariant, and the
+`scripts/resource_guard.py` runtime lock. Its R0–R3 resource classes are unrelated to
+the roadmap's R0–R9 capability gates.
+
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository.
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,

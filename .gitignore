@@ -42,3 +42,7 @@ Thumbs.db
 
 # Local diagnostic outputs
 /artifacts/diagnostics/
+
+# AG Resource Management Policy V1 runtime lock (never commit active lock state)
+/artifacts/runtime/resource_lock.json
+/artifacts/runtime/resource_lock.json.tmp

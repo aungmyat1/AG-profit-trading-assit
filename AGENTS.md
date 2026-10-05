@@ -62,6 +62,23 @@ Agent skills  -> ADVISORY ONLY
 - Never modify files unrelated to the current task.
 - Prefer the smallest correct implementation over a general one.
 
+## Local resource governance — MANDATORY
+
+The owner's workstation is shared and has about 7.4 GB of RAM. Before any substantial
+local execution, an agent MUST classify the work as resource class R0–R3 and obey
+[`docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md`](docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md).
+These classes are unrelated to the roadmap's R0–R9 capability gates.
+
+- Check the gate with `python scripts/resource_guard.py status`.
+- R1–R3 work requires `acquire` before it starts and `release` after it ends.
+- R2/R3 work requires exclusive heavy-compute ownership: at most one local R2/R3 job
+  runs at a time, and Codex Local is the default owner.
+- If the resource gate fails, or the lock is BUSY or UNKNOWN, heavy execution must not
+  start. Report `FULL_WORKLOAD_STARTED = FALSE`. The verdict `BLOCKED_RESOURCE` is
+  acceptable.
+- Never kill a process you can't prove your mission started. Never let resource
+  pressure shrink data, change parameters, or skip gates.
+
 ## Frozen strategy version preservation
 
 Do not modify a frozen production or current-authority strategy version in place. A
