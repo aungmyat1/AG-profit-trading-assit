@@ -300,7 +300,7 @@ validation, incomplete CFD strategy/risk authority, and execution boundary.
 - [`status/AG_MISSING_PLATFORM_PACKAGES_INTEGRATION_STATUS.md`](status/AG_MISSING_PLATFORM_PACKAGES_INTEGRATION_STATUS.md)
   — integration of the frontend rewire and R5C uniqueness into the platform lineage
   (cherry-pick provenance, current-tip semantic review, test and failure attribution).
-- [`status/AG_GITHUB_REPOSITORY_SYNC_STATUS.md`](status/AG_GITHUB_REPOSITORY_SYNC_STATUS.md)
+- [`status/AG_MISSING_PLATFORM_PACKAGES_INTEGRATION_STATUS.md`](status/AG_MISSING_PLATFORM_PACKAGES_INTEGRATION_STATUS.md)
   — publication of the integrated platform lineage to `origin/main` (publication is
   not strategy, Demo or Live authorization).
 - [`status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION_STATUS.md`](status/AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_SERIES_002_BACKLOG_RECONCILIATION_STATUS.md),
