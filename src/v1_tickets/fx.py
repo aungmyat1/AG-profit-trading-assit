@@ -20,14 +20,23 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any, Dict, Optional, Sequence
 
-from host_evidence.symbol_metadata import HOST_CAPTURED, METADATA_MISSING, HostDataError, load_record
+from host_evidence.symbol_metadata import (
+    HOST_CAPTURED,
+    METADATA_MISSING,
+    HostDataError,
+    load_record,
+)
 from strategy_engine import evaluate, load_strategy
 from strategy_engine.session import Candle
-from v1_tickets.guards import gate_ready
 from ticket_delivery.archive import (
-    CYCLE_STATE_BLOCKED, CYCLE_STATE_DATA_ERROR, CYCLE_STATE_NO_TRADE, CYCLE_STATE_READY,
-    CycleDecisionRecord, archive_cycle_decision,
+    CYCLE_STATE_BLOCKED,
+    CYCLE_STATE_DATA_ERROR,
+    CYCLE_STATE_NO_TRADE,
+    CYCLE_STATE_READY,
+    CycleDecisionRecord,
+    archive_cycle_decision,
 )
+from v1_tickets.guards import gate_ready
 
 STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
 V1_FX_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")

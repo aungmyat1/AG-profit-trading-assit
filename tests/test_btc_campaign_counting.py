@@ -156,7 +156,6 @@ def test_missed_day_calculated_from_expected_calendar_not_from_gaps(tmp_path):
 
 
 def test_no_missed_days_before_activation_date(tmp_path):
-    archive = tmp_path / "btc_archive"
     stats = _stats(tmp_path, activation="2026-09-05", as_of="2026-09-03")
     assert stats.missed_days == 0
     assert stats.missed_dates == ()

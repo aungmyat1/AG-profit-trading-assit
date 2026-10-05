@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional
+from typing import List
 
 # Binance USDT-M Futures standard (non-VIP0 base tier, no BNB fee discount applied) public
 # fee schedule -- source: Binance's published USDT-Margined Futures trading fee rate

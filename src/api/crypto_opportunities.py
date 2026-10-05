@@ -4,9 +4,8 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import Any, Optional
 
-from opportunity.candidate_store import CandidateStore
-
 from crypto_opportunity_scanner.constants import DEFAULT_STORE_PATH, STRATEGY_ID
+from opportunity.candidate_store import CandidateStore
 
 
 def list_crypto_opportunities(

@@ -24,16 +24,28 @@ import yaml
 
 from fx_discovery import features as F
 from large_smc_core.c10_stop_policy import C10StopPolicyViolation, compute_c10_stop
+from post_asian_pilot.report_archive import archive_path
 from runtime_state.store import JsonKeyValueStore
 from strategy_engine.session import Candle
-from post_asian_pilot.report_archive import archive_path
 from ticket_delivery.archive import (
-    CYCLE_STATE_DATA_ERROR, CYCLE_STATE_NO_TRADE, CYCLE_STATE_WATCH, CycleDecisionRecord, _report_type,
+    CYCLE_STATE_DATA_ERROR,
+    CYCLE_STATE_NO_TRADE,
+    CYCLE_STATE_WATCH,
+    CycleDecisionRecord,
+    _report_type,
     archive_cycle_decision,
 )
 
 from . import contract as C
-from .detect import POI, bias_at, c11_causal_target, close_time, h1_pois, m5_opportunities, tolerant_breaks
+from .detect import (
+    POI,
+    bias_at,
+    c11_causal_target,
+    close_time,
+    h1_pois,
+    m5_opportunities,
+    tolerant_breaks,
+)
 
 NY = ZoneInfo(C.DAY_BOUNDARY_TZ)
 UTC = dt.timezone.utc

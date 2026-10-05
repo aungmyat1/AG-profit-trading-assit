@@ -5,8 +5,13 @@ from __future__ import annotations
 
 import pytest
 
-from proposal_envelope.models import CanonicalProposal, PROPOSAL_BLOCKED, PROPOSAL_NO_TRADE, PROPOSAL_READY
 from proposal_envelope.ledger import ProposalLedger, ProposalLedgerError
+from proposal_envelope.models import (
+    PROPOSAL_BLOCKED,
+    PROPOSAL_NO_TRADE,
+    PROPOSAL_READY,
+    CanonicalProposal,
+)
 
 
 def _ready(proposal_envelope_id="FX:DECISION-1", entry=1.0850, stop=1.0830, targets=(1.0900,), **overrides):

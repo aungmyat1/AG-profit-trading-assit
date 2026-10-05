@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import time
-from typing import Sequence, Tuple
+from typing import Tuple
 
 import yaml
 

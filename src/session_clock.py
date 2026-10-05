@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
+
 import yaml
 
 CONTRACT_VERSION = "CANONICAL_SESSION_WINDOWS_V1"

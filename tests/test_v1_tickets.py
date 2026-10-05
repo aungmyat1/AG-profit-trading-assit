@@ -11,10 +11,19 @@ import os
 
 import pytest
 
-from execution_runtime.public_crypto_feed import CandleBundle, PublicCryptoFeedUnavailable
+from execution_runtime.public_crypto_feed import (
+    CandleBundle,
+    PublicCryptoFeedUnavailable,
+)
 from strategy_engine.session import Candle
 from v1_tickets.crypto import archive_crypto_ticket, build_crypto_ticket
-from v1_tickets.fx import HOST_METADATA_FIELDS, V1_CYCLES, V1_FX_SYMBOLS, archive_fx_ticket, build_fx_ticket
+from v1_tickets.fx import (
+    HOST_METADATA_FIELDS,
+    V1_CYCLES,
+    V1_FX_SYMBOLS,
+    archive_fx_ticket,
+    build_fx_ticket,
+)
 
 UTC = dt.timezone.utc
 DAY = dt.date(2026, 1, 5)
@@ -123,7 +132,11 @@ def test_fx_archive_is_idempotent_archive_only(tmp_path):
 
 
 def test_paper_trade_requires_fresh_complete_host_ready_ticket(tmp_path):
-    from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility
+    from v1_tickets.paper import (
+        archive_paper_trade,
+        build_paper_trade,
+        paper_eligibility,
+    )
 
     session, post = _fx("EURUSD", "ASIAN_LONDON")
     now = dt.datetime(2026, 1, 5, 7, 35, tzinfo=UTC)

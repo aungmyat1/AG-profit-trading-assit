@@ -4,7 +4,6 @@ import datetime as dt
 import importlib.util
 from pathlib import Path
 
-
 UTC = dt.timezone.utc
 ROOT = Path(__file__).resolve().parents[1]
 

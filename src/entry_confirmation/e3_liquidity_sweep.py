@@ -34,6 +34,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from liquidity.models import LiquidityLevel, LiquiditySide, LiquidityStatus
+
 from .entry_models_v1 import CHECK_TIMEFRAME, EConditionResult, EntryModelState
 from .models import CandidateDirection
 

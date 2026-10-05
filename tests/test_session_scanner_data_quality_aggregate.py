@@ -2,7 +2,13 @@
 from __future__ import annotations
 
 from session_scanner import scanner as scanner_module
-from session_scanner.quality import INVALID, STALE, VALID, SeriesQuality, fetch_with_sync
+from session_scanner.quality import (
+    INVALID,
+    STALE,
+    VALID,
+    SeriesQuality,
+    fetch_with_sync,
+)
 from session_scanner.timebase import TIME_GATE_PASS
 
 SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
