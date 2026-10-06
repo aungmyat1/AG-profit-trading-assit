@@ -61,6 +61,7 @@ from host_delivery import telegram_message as tg  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
+from strategy_engine import load_strategy  # noqa: E402
 from v1_tickets import fx as fx_tickets  # noqa: E402
 from v1_tickets import manual_ticket  # noqa: E402
 from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility  # noqa: E402
@@ -345,7 +346,33 @@ def run_manual_jobs(fetch: Fetch, now: dt.datetime, journal: str) -> List[str]:
                 lines.append(f"MANUAL_RESOLVER {day} resolved={len(summary['resolved'])} "
                              f"pending={len(summary['pending'])} tag=VIRTUAL_FORWARD")
         state.put(key, "DONE")
+    report_key = f"manual_report:{now.date().isoformat()}"
+    if now >= manual_report_after_utc(now) and state.get(report_key) is None:
+        from post_asian_pilot.report_archive import write_report
+        from v1_tickets.manual_report import REPORT_TYPE, build_report
+        report = build_report(journal, now.date(), now=now, expected=manual_expected())
+        path = write_report(REPORT_TYPE, now.date(), report, root=os.path.join(journal, "reports"))
+        state.put(report_key, path)
+        lines.append(f"MANUAL_REPORT {now.date()} tickets_ready={report['tickets_ready']} "
+                     f"missing_records={len(report['system_health']['missing_records'])} archived")
     return lines
+
+
+def manual_report_after_utc(now: dt.datetime) -> dt.datetime:
+    """After the last frozen session window closes, plus the FX task's 30 min grace."""
+    return max(w["trade"][1] for w in cycle_windows(now).values()) + dt.timedelta(minutes=30)
+
+
+def manual_expected() -> Dict[tuple, List[str]]:
+    from v1_tickets.scan_record import adapterless_scan_records
+    strategy = load_strategy(fx_tickets.STRATEGY_PATH)
+    out: Dict[tuple, List[str]] = {(f"{strategy.strategy_id}@{strategy.version}", c): fx_symbols()
+                                   for c in fx_tickets.V1_CYCLES}
+    for cycle in fx_tickets.V1_CYCLES:
+        recs = adapterless_scan_records(run_id="expected", cycle=cycle, now=utcnow())
+        if recs:
+            out[(recs[0].strategy, cycle)] = [r.symbol for r in recs]
+    return out
 
 
 LSMC_WEEKEND_DAYS = (6, 7)                                   # ISO Sat, Sun (UTC)
