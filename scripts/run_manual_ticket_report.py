@@ -4,10 +4,12 @@
 
 The scheduled FX task also builds it once per day after the last session window. Never
 touches MT5; EDGE_VERIFIED is always FALSE and orders sent by system is always 0.
+With --json, stdout is exactly one JSON document; everything else goes to stderr.
 """
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as dt
 import json
 import os
@@ -18,9 +20,6 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts" / "host"))
 
-from post_asian_pilot.report_archive import write_report  # noqa: E402
-from v1_tickets.manual_report import REPORT_TYPE, build_report, render_report  # noqa: E402
-
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -30,10 +29,19 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     now = dt.datetime.now(dt.timezone.utc)
     day = dt.date.fromisoformat(args.date) if args.date else now.date()
-    import live_candles_smoke as host   # expected symbol/session universe of the scheduled runner
-    report = build_report(args.journal, day, now=now, expected=host.manual_expected())
-    path = write_report(REPORT_TYPE, day, report, root=os.path.join(args.journal, "reports"))
-    print(json.dumps(report, indent=2, default=str) if args.json else render_report(report))
+    out = sys.stdout
+    if hasattr(out, "reconfigure"):
+        out.reconfigure(encoding="utf-8")    # the report contains non-ASCII; a Windows pipe defaults to cp1252
+    # stdout carries exactly one document: third-party import chatter (the smartmoneyconcepts
+    # import banner) and any diagnostics produced while building go to stderr instead.
+    with contextlib.redirect_stdout(sys.stderr):
+        from post_asian_pilot.report_archive import write_report
+        from v1_tickets.manual_report import REPORT_TYPE, build_report, render_report
+        import live_candles_smoke as host   # expected symbol/session universe of the scheduled runner
+        report = build_report(args.journal, day, now=now, expected=host.manual_expected())
+        path = write_report(REPORT_TYPE, day, report, root=os.path.join(args.journal, "reports"))
+        text = json.dumps(report, indent=2, default=str) if args.json else render_report(report)
+    print(text, file=out)
     print(f"\n(archived: {path})", file=sys.stderr)
     return 0
 

@@ -155,3 +155,28 @@ def test_report_counts_data_error_separately_and_not_run(tmp_path):
     assert eur["state"] == "TICKET_BLOCKED" and eur["stage"] == "DATA" and eur["reason"].startswith("DATA_ERROR:")
     assert counts["NOT_RUN"] >= len(smoke.fx_symbols())                    # LONDON_NEWYORK never ran
     assert counts["NO_SETUP"] == 0 and "DATA_ERROR " + str(counts["DATA_ERROR"]) in render_report(rep)
+
+
+def _run_report_cli(tmp_path, *extra):
+    import subprocess
+    import sys
+    journal = tmp_path / "j"
+    journal.mkdir()
+    return subprocess.run([sys.executable, str(ROOT / "scripts" / "run_manual_ticket_report.py"), "--date",
+                           "2026-06-24", "--journal", str(journal), *extra],
+                          capture_output=True, text=True, encoding="utf-8", timeout=120, check=True)
+
+
+def test_report_cli_json_stdout_is_exactly_one_json_document(tmp_path):
+    """I6: import banners/diagnostics must not reach stdout in --json mode."""
+    import json
+    proc = _run_report_cli(tmp_path, "--json")
+    rep = json.loads(proc.stdout)
+    assert rep["report"] == "manual_ticket_daily" and rep["EDGE_VERIFIED"] is False
+    assert "archived:" in proc.stderr
+
+
+def test_report_cli_human_mode_still_renders_report(tmp_path):
+    proc = _run_report_cli(tmp_path)
+    assert proc.stdout.startswith("AG MANUAL TICKET DAILY REPORT — 2026-06-24")
+    assert "EDGE_VERIFIED FALSE" in proc.stdout and "smart-money-concepts" not in proc.stdout
