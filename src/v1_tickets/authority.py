@@ -32,6 +32,9 @@ ALLOWED = {
     "demo_order_authority": {"NONE"},      # this path never carries order authority
 }
 
+# Registry flags that must be present and exactly `false` on any ticket strategy (missing,
+# true or any non-bool value fails closed). Read only; never written here.
+NO_ORDER_FLAGS = ("demo_authorized", "live_authorized")
 REASON_NOT_REGISTERED = "STRATEGY_NOT_REGISTERED"
 REASON_AUTHORITY_INVALID = "REGISTRY_TICKET_AUTHORITY_INVALID"
 REASON_NOT_MANUAL_ONLY = "TICKET_AUTHORITY_NOT_MANUAL_ONLY"
@@ -99,7 +102,10 @@ def resolve_ticket_authority(strategy_id: str, strategy_version: Optional[str] =
         return TicketAuthority(strategy_id, False, False, False, False, REASON_NOT_REGISTERED)
     visible = dict(registry_visible=True, scanner_visible=entry.get("active") is True)
     fields = {k: entry.get(k) for k in ALLOWED}
-    invalid = sorted(k for k, v in fields.items() if v not in ALLOWED[k])
+    invalid = sorted([k for k, v in fields.items() if v not in ALLOWED[k]]
+                     # Order authority is expressed only as demo_order_authority NONE: a ticket
+                     # strategy must also carry explicit demo/live flags that are exactly false.
+                     + [k for k in NO_ORDER_FLAGS if entry.get(k) is not False])
     if invalid:
         return TicketAuthority(strategy_id, **visible, logic_evaluable=False, ticket_eligible=False,
                                reason=f"{REASON_AUTHORITY_INVALID}:{','.join(invalid)}", **fields)
