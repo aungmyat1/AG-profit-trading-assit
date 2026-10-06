@@ -1,0 +1,876 @@
+{
+ "basis": "GEOMETRY_ONLY_NO_OUTCOME",
+ "rows": [
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.0002,
+     "tp1": 1.16239,
+     "tp1_R": 10.45,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.1613
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.00054,
+     "tp1": 1.16239,
+     "tp1_R": 3.87,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.163
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.16239,
+   "box_low": 1.16023,
+   "direction": "LONG",
+   "entry": 1.1602999999999999,
+   "entry_inside_box": true,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-01",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 4e-05,
+     "tp1": 1.15913,
+     "tp1_R": 46.0,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.15749
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000455,
+     "tp1": 1.15913,
+     "tp1_R": 4.044,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.159565
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.15913,
+   "box_low": 1.15731,
+   "direction": "LONG",
+   "entry": 1.15729,
+   "entry_inside_box": false,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-02",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 6e-05,
+     "tp1": 1.15829,
+     "tp1_R": 29.167,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.15974
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000425,
+     "tp1": 1.15829,
+     "tp1_R": 4.118,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.157915
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.15999,
+   "box_low": 1.15829,
+   "direction": "SHORT",
+   "entry": 1.16004,
+   "entry_inside_box": false,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-03",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00015,
+     "tp1": 1.16326,
+     "tp1_R": 7.0,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.16296
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000267,
+     "tp1": 1.16326,
+     "tp1_R": 3.925,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.163547
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.16326,
+   "box_low": 1.16219,
+   "direction": "LONG",
+   "entry": 1.16221,
+   "entry_inside_box": true,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-09-04",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00037,
+     "tp1": 1.35589,
+     "tp1_R": 6.757,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.35524
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000538,
+     "tp1": 1.35589,
+     "tp1_R": 4.651,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.356078
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.35589,
+   "box_low": 1.35374,
+   "direction": "LONG",
+   "entry": 1.35339,
+   "entry_inside_box": false,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-01",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00031,
+     "tp1": 1.35142,
+     "tp1_R": 7.161,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.35075
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.00051,
+     "tp1": 1.35142,
+     "tp1_R": 4.353,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.35175
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.35142,
+   "box_low": 1.34938,
+   "direction": "LONG",
+   "entry": 1.3492,
+   "entry_inside_box": false,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-02",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00084,
+     "tp1": 1.34798,
+     "tp1_R": 1.714,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.34522
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.00045,
+     "tp1": 1.34798,
+     "tp1_R": 3.2,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.34717
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.34978,
+   "box_low": 1.34798,
+   "direction": "SHORT",
+   "entry": 1.34942,
+   "entry_inside_box": true,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-03",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.0001,
+     "tp1": 1.35243,
+     "tp1_R": 21.7,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.3541
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000315,
+     "tp1": 1.35243,
+     "tp1_R": 6.889,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.353025
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.35369,
+   "box_low": 1.35243,
+   "direction": "SHORT",
+   "entry": 1.3546,
+   "entry_inside_box": false,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-09-04",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00033,
+     "tp1": 1.1565699999999999,
+     "tp1_R": 4.848,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.15652
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000468,
+     "tp1": 1.1565699999999999,
+     "tp1_R": 3.422,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.155832
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.15844,
+   "box_low": 1.1565699999999999,
+   "direction": "SHORT",
+   "entry": 1.15817,
+   "entry_inside_box": true,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-02",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00036,
+     "tp1": 1.15957,
+     "tp1_R": 4.75,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.15948
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.00046,
+     "tp1": 1.15957,
+     "tp1_R": 3.717,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.15898
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.16141,
+   "box_low": 1.15957,
+   "direction": "SHORT",
+   "entry": 1.16128,
+   "entry_inside_box": true,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-03",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 8e-05,
+     "tp1": 1.16296,
+     "tp1_R": 18.25,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.1619
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.00035,
+     "tp1": 1.16296,
+     "tp1_R": 4.171,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.16325
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.16296,
+   "box_low": 1.16156,
+   "direction": "LONG",
+   "entry": 1.1615,
+   "entry_inside_box": false,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:EURUSD:2026-09-04",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00012,
+     "tp1": 1.3513899999999999,
+     "tp1_R": 31.0,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.34827
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000937,
+     "tp1": 1.3513899999999999,
+     "tp1_R": 3.968,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.352357
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.3513899999999999,
+   "box_low": 1.34764,
+   "direction": "LONG",
+   "entry": 1.34767,
+   "entry_inside_box": true,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:GBPUSD:2026-09-02",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00016,
+     "tp1": 1.34828,
+     "tp1_R": 17.188,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.35023
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000598,
+     "tp1": 1.34828,
+     "tp1_R": 4.603,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.348042
+    }
+   },
+   "SPEC_BODY_CLOSE": null,
+   "box_high": 1.35067,
+   "box_low": 1.34828,
+   "direction": "SHORT",
+   "entry": 1.35103,
+   "entry_inside_box": false,
+   "key": "PROPOSAL-ST_ASIAN_SWEEP_5R_V1:LONDON_NEWYORK:GBPUSD:2026-09-03",
+   "source": "R5_FORWARD_SHADOW",
+   "sweep_close": null
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00073,
+     "tp1": 1.12305,
+     "tp1_R": 2.849,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.12462
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000483,
+     "tp1": 1.12305,
+     "tp1_R": 4.311,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.123383
+    }
+   },
+   "SPEC_BODY_CLOSE": {
+    "ENGINE_WICK": {
+     "risk": 0.00115,
+     "tp1": 1.12305,
+     "tp1_R": 1.443,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.12714
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000483,
+     "tp1": 1.12305,
+     "tp1_R": 3.44,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.123803
+    }
+   },
+   "box_high": 1.12305,
+   "box_low": 1.12112,
+   "direction": "LONG",
+   "entry": 1.12097,
+   "entry_inside_box": false,
+   "key": "EURUSD:ASIAN_LONDON:2026-10-06",
+   "source": "PASS_B_REPLAY",
+   "sweep_close": 1.1213899999999999
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00063,
+     "tp1": 1.32311,
+     "tp1_R": 2.444,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.32472
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000507,
+     "tp1": 1.32311,
+     "tp1_R": 3.034,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.324107
+    }
+   },
+   "SPEC_BODY_CLOSE": {
+    "ENGINE_WICK": {
+     "risk": 0.00112,
+     "tp1": 1.32311,
+     "tp1_R": 0.937,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.32766
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000507,
+     "tp1": 1.32311,
+     "tp1_R": 2.069,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.324597
+    }
+   },
+   "box_high": 1.32311,
+   "box_low": 1.32108,
+   "direction": "LONG",
+   "entry": 1.32157,
+   "entry_inside_box": true,
+   "key": "GBPUSD:ASIAN_LONDON:2026-10-06",
+   "source": "PASS_B_REPLAY",
+   "sweep_close": 1.32206
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.076,
+     "tp1": 157.762,
+     "tp1_R": 5.079,
+     "tp1_beyond_tp2": true,
+     "tp2": 157.768
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.112,
+     "tp1": 157.762,
+     "tp1_R": 3.446,
+     "tp1_beyond_tp2": false,
+     "tp2": 157.588
+    }
+   },
+   "SPEC_BODY_CLOSE": {
+    "ENGINE_WICK": {
+     "risk": 0.076,
+     "tp1": 157.762,
+     "tp1_R": 5.079,
+     "tp1_beyond_tp2": true,
+     "tp2": 157.768
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.112,
+     "tp1": 157.762,
+     "tp1_R": 3.446,
+     "tp1_beyond_tp2": false,
+     "tp2": 157.588
+    }
+   },
+   "box_high": 158.21,
+   "box_low": 157.762,
+   "direction": "SHORT",
+   "entry": 158.148,
+   "entry_inside_box": true,
+   "key": "USDJPY:ASIAN_LONDON:2026-10-06",
+   "source": "PASS_B_REPLAY",
+   "sweep_close": 158.148
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00043,
+     "tp1": 1.15965,
+     "tp1_R": 4.256,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.15933
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000522,
+     "tp1": 1.15965,
+     "tp1_R": 3.502,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.158868
+    }
+   },
+   "SPEC_BODY_CLOSE": {
+    "ENGINE_WICK": {
+     "risk": 0.00043,
+     "tp1": 1.15965,
+     "tp1_R": 4.256,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.15933
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000522,
+     "tp1": 1.15965,
+     "tp1_R": 3.502,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.158868
+    }
+   },
+   "box_high": 1.16174,
+   "box_low": 1.15965,
+   "direction": "SHORT",
+   "entry": 1.16148,
+   "entry_inside_box": true,
+   "key": "EURUSD:LONDON_NEWYORK:2026-06-15",
+   "source": "FIXTURE_EURUSD",
+   "sweep_close": 1.16148
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00014,
+     "tp1": 1.1616,
+     "tp1_R": 6.071,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.16145
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000205,
+     "tp1": 1.1616,
+     "tp1_R": 4.146,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.161775
+    }
+   },
+   "SPEC_BODY_CLOSE": {
+    "ENGINE_WICK": {
+     "risk": 0.00073,
+     "tp1": 1.1616,
+     "tp1_R": 0.356,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.16499
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000205,
+     "tp1": 1.1616,
+     "tp1_R": 1.268,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.162365
+    }
+   },
+   "box_high": 1.1616,
+   "box_low": 1.16078,
+   "direction": "LONG",
+   "entry": 1.16075,
+   "entry_inside_box": false,
+   "key": "EURUSD:ASIAN_LONDON:2026-06-17",
+   "source": "FIXTURE_EURUSD",
+   "sweep_close": 1.16134
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.0001,
+     "tp1": 1.16144,
+     "tp1_R": 22.8,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.15966
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000488,
+     "tp1": 1.16144,
+     "tp1_R": 4.677,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.161598
+    }
+   },
+   "SPEC_BODY_CLOSE": {
+    "ENGINE_WICK": {
+     "risk": 0.00055,
+     "tp1": 1.16144,
+     "tp1_R": 3.327,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.16236
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000488,
+     "tp1": 1.16144,
+     "tp1_R": 3.754,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.162048
+    }
+   },
+   "box_high": 1.16144,
+   "box_low": 1.15949,
+   "direction": "LONG",
+   "entry": 1.15916,
+   "entry_inside_box": false,
+   "key": "EURUSD:LONDON_NEWYORK:2026-06-17",
+   "source": "FIXTURE_EURUSD",
+   "sweep_close": 1.15961
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.00051,
+     "tp1": 1.14181,
+     "tp1_R": 2.333,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.14045
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.00033,
+     "tp1": 1.14181,
+     "tp1_R": 3.606,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.14135
+    }
+   },
+   "SPEC_BODY_CLOSE": {
+    "ENGINE_WICK": {
+     "risk": 0.00051,
+     "tp1": 1.14181,
+     "tp1_R": 2.333,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.14045
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.00033,
+     "tp1": 1.14181,
+     "tp1_R": 3.606,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.14135
+    }
+   },
+   "box_high": 1.14313,
+   "box_low": 1.14181,
+   "direction": "SHORT",
+   "entry": 1.143,
+   "entry_inside_box": true,
+   "key": "EURUSD:ASIAN_LONDON:2026-06-23",
+   "source": "FIXTURE_EURUSD",
+   "sweep_close": 1.143
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.0001,
+     "tp1": 1.14385,
+     "tp1_R": 48.0,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.13955
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.001082,
+     "tp1": 1.14385,
+     "tp1_R": 4.434,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.144462
+    }
+   },
+   "SPEC_BODY_CLOSE": {
+    "ENGINE_WICK": {
+     "risk": 0.00071,
+     "tp1": 1.14385,
+     "tp1_R": 5.901,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.14321
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.001082,
+     "tp1": 1.14385,
+     "tp1_R": 3.871,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.145072
+    }
+   },
+   "box_high": 1.14385,
+   "box_low": 1.13952,
+   "direction": "LONG",
+   "entry": 1.13905,
+   "entry_inside_box": false,
+   "key": "EURUSD:LONDON_NEWYORK:2026-06-23",
+   "source": "FIXTURE_EURUSD",
+   "sweep_close": 1.13966
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.0,
+     "tp1": 1.1434,
+     "tp1_R": null,
+     "tp1_beyond_tp2": null,
+     "tp2": 1.14485
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.00034,
+     "tp1": 1.1434,
+     "tp1_R": 4.265,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.14315
+    }
+   },
+   "SPEC_BODY_CLOSE": {
+    "ENGINE_WICK": {
+     "risk": 0.00023,
+     "tp1": 1.1434,
+     "tp1_R": 5.304,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.14347
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.00034,
+     "tp1": 1.1434,
+     "tp1_R": 3.588,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.14292
+    }
+   },
+   "box_high": 1.14476,
+   "box_low": 1.1434,
+   "direction": "SHORT",
+   "entry": 1.14485,
+   "entry_inside_box": false,
+   "key": "EURUSD:ASIAN_LONDON:2026-07-17",
+   "source": "FIXTURE_EURUSD",
+   "sweep_close": 1.14462
+  },
+  {
+   "ENGINE_BODY_EDGE": {
+    "ENGINE_WICK": {
+     "risk": 0.0001,
+     "tp1": 1.14516,
+     "tp1_R": 25.3,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.14313
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000653,
+     "tp1": 1.14516,
+     "tp1_R": 3.877,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.145892
+    }
+   },
+   "SPEC_BODY_CLOSE": {
+    "ENGINE_WICK": {
+     "risk": 0.0001,
+     "tp1": 1.14516,
+     "tp1_R": 25.3,
+     "tp1_beyond_tp2": true,
+     "tp2": 1.14313
+    },
+    "SPEC_RANGE_25": {
+     "risk": 0.000653,
+     "tp1": 1.14516,
+     "tp1_R": 3.877,
+     "tp1_beyond_tp2": false,
+     "tp2": 1.145892
+    }
+   },
+   "box_high": 1.14516,
+   "box_low": 1.14255,
+   "direction": "LONG",
+   "entry": 1.14263,
+   "entry_inside_box": true,
+   "key": "EURUSD:LONDON_NEWYORK:2026-07-17",
+   "source": "FIXTURE_EURUSD",
+   "sweep_close": 1.14263
+  }
+ ],
+ "schema": "AG_PHASE_B_TARGET_ORDER_GEOMETRY_V1",
+ "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.1",
+ "summary": {
+  "ALL": {
+   "ENGINE_BODY_EDGE+ENGINE_WICK": {
+    "evaluable": 23,
+    "tp1_beyond_tp2": 15,
+    "zero_stop": 1
+   },
+   "ENGINE_BODY_EDGE+SPEC_RANGE_25": {
+    "evaluable": 23,
+    "tp1_beyond_tp2": 1,
+    "zero_stop": 0
+   },
+   "SPEC_BODY_CLOSE+ENGINE_WICK": {
+    "evaluable": 10,
+    "tp1_beyond_tp2": 4,
+    "zero_stop": 0
+   },
+   "SPEC_BODY_CLOSE+SPEC_RANGE_25": {
+    "evaluable": 10,
+    "tp1_beyond_tp2": 0,
+    "zero_stop": 0
+   },
+   "engine_entry_outside_box": 12,
+   "sweeps": 23
+  },
+  "FIXTURE_EURUSD": {
+   "ENGINE_BODY_EDGE+ENGINE_WICK": {
+    "evaluable": 7,
+    "tp1_beyond_tp2": 4,
+    "zero_stop": 1
+   },
+   "ENGINE_BODY_EDGE+SPEC_RANGE_25": {
+    "evaluable": 7,
+    "tp1_beyond_tp2": 0,
+    "zero_stop": 0
+   },
+   "SPEC_BODY_CLOSE+ENGINE_WICK": {
+    "evaluable": 7,
+    "tp1_beyond_tp2": 3,
+    "zero_stop": 0
+   },
+   "SPEC_BODY_CLOSE+SPEC_RANGE_25": {
+    "evaluable": 7,
+    "tp1_beyond_tp2": 0,
+    "zero_stop": 0
+   },
+   "engine_entry_outside_box": 4,
+   "sweeps": 7
+  },
+  "PASS_B_REPLAY": {
+   "ENGINE_BODY_EDGE+ENGINE_WICK": {
+    "evaluable": 3,
+    "tp1_beyond_tp2": 1,
+    "zero_stop": 0
+   },
+   "ENGINE_BODY_EDGE+SPEC_RANGE_25": {
+    "evaluable": 3,
+    "tp1_beyond_tp2": 0,
+    "zero_stop": 0
+   },
+   "SPEC_BODY_CLOSE+ENGINE_WICK": {
+    "evaluable": 3,
+    "tp1_beyond_tp2": 1,
+    "zero_stop": 0
+   },
+   "SPEC_BODY_CLOSE+SPEC_RANGE_25": {
+    "evaluable": 3,
+    "tp1_beyond_tp2": 0,
+    "zero_stop": 0
+   },
+   "engine_entry_outside_box": 1,
+   "sweeps": 3
+  },
+  "R5_FORWARD_SHADOW": {
+   "ENGINE_BODY_EDGE+ENGINE_WICK": {
+    "evaluable": 13,
+    "tp1_beyond_tp2": 10,
+    "zero_stop": 0
+   },
+   "ENGINE_BODY_EDGE+SPEC_RANGE_25": {
+    "evaluable": 13,
+    "tp1_beyond_tp2": 1,
+    "zero_stop": 0
+   },
+   "SPEC_BODY_CLOSE+ENGINE_WICK": {
+    "evaluable": 0,
+    "tp1_beyond_tp2": 0,
+    "zero_stop": 0
+   },
+   "SPEC_BODY_CLOSE+SPEC_RANGE_25": {
+    "evaluable": 0,
+    "tp1_beyond_tp2": 0,
+    "zero_stop": 0
+   },
+   "engine_entry_outside_box": 7,
+   "sweeps": 13
+  }
+ }
+}
