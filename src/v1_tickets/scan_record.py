@@ -48,6 +48,7 @@ class ScanRecord:
     block_reasons: Tuple[str, ...] = ()          # ordered by severity; stop_reason == block_reasons[0] alias
     primary_block_reason: Optional[str] = None
     warnings: Tuple[str, ...] = ()               # advisory only (e.g. L5_WARN); never blocks
+    code_sha: str = "UNKNOWN"                    # git HEAD at process start (code_identity), never fatal
 
     def __post_init__(self) -> None:
         if self.state not in STATES:
@@ -88,6 +89,7 @@ def build_scan_record(*, run_id: str, session: str, symbol: str, strategy_id: st
                       ticket_id: Optional[str] = None,
                       block_reasons: Optional[Sequence[str]] = None,
                       warnings: Sequence[str] = ()) -> ScanRecord:
+    from v1_tickets.code_identity import code_sha
     from v1_tickets.logic_gate import LIFECYCLE_STATES, order_block_reasons
     ordered = tuple(order_block_reasons(block_reasons if block_reasons is not None else [stop_reason]))
     return ScanRecord(
@@ -100,7 +102,7 @@ def build_scan_record(*, run_id: str, session: str, symbol: str, strategy_id: st
         ticket_id=ticket_id, block_reasons=ordered,
         primary_block_reason=(stop_reason if state not in (TICKET_READY, REFERENCE_NOT_READY)
                               and stop_reason not in LIFECYCLE_STATES else None),
-        warnings=tuple(warnings),
+        warnings=tuple(warnings), code_sha=code_sha(),
     )
 
 

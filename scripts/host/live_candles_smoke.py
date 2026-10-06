@@ -65,6 +65,7 @@ from strategy_engine import load_strategy  # noqa: E402
 from v1_tickets import fx as fx_tickets  # noqa: E402
 from mt5.symbol_resolver import SymbolMeta  # noqa: E402
 from v1_tickets import manual_ticket  # noqa: E402
+from v1_tickets.code_identity import code_sha  # noqa: E402
 from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility  # noqa: E402
 from v1_tickets.scan_record import (  # noqa: E402
     adapterless_scan_records, append_jsonl, build_scan_record, classify_fx_ticket, write_scan_record,
@@ -207,7 +208,7 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
         try:
             append_jsonl(os.path.join(journal, DELIVERY_DIR, f"{at.date().isoformat()}.jsonl"),
                          {"channel": "telegram", "kind": kind, "value": value, "ref": ref, "status": status,
-                          "error": error, "recorded_at": at.isoformat()})
+                          "error": error, "recorded_at": at.isoformat(), "code_sha": code_sha()})
         except OSError as exc:
             log_line("telegram", f"DELIVERY_STATUS_WRITE_FAILED {kind}={value} {type(exc).__name__}")
     return status
