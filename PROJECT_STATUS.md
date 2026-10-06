@@ -28,6 +28,14 @@ captures) has **no evidence committed to this repository**, so it is recorded as
 `HOST_EVIDENCE_NOT_IN_REPO` — not live-verified here. Evidence:
 `docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md`.
 
+**Host acceptance (2026-10-06, VT Markets Demo, read-only):** PASS A PASS (guarded runs,
+`DEMO_ACCOUNT_VERIFIED`, 12/12 scan records, 0 NOT_RUN, append-only proven, positions/orders
+unchanged, no Telegram send); PASS B `REAL_SIGNAL_PATH = OBSERVED` (EURUSD/GBPUSD LONG,
+USDJPY SHORT ASIAN_LONDON sweeps; L2 FAIL recorded; `TICKET_BLOCKED` with `SIGNAL_STALE`
+precedence; live-`symbol_info` sizing). Integration fixes I1/H3/I3/I4/I5/I6/I7 + stale/expiry
+semantics added; host task `AG-V1-FX-Cycles` still runs production main
+(`DEPLOYMENT_PENDING`). Telegram delivery gap H4 open (`TELEGRAM_DELIVERY_TRACE_R1`).
+
 ## Crypto CFD observation scanner V1 — merged, observation-only (2026-10-03)
 
 PR #28 was merged into `main` at `5fa46102aabac97773ef66aa3f0ed10561ad66b1`

@@ -153,3 +153,50 @@ container). `BROKER_MUTATION_COUNT = 0`; the static no-broker test still passes.
 | Row | Rule | YAML says | Engine does | Evidence | Linked to |
 |---|---|---|---|---|---|
 | B-TGT-ORDER | Target ordering (TP1 vs TP2) | Leg 1 `OPPOSITE_SESSION_BOUNDARY`; leg 2 `FIXED_R_MULTIPLE 5` — no ordering rule between them | Emits both as computed; nothing stops TP1 lying beyond TP2 | Recorded EURUSD 2026-06-17 LONG: entry 1.16075, SL 1.16061 (14-point wick stop), TP1 = box high 1.16160 (6.07R), TP2 = 1.16145 (5R) → `L3.target_order` FAIL (`tests/test_manual_ticket_logic_gate.py::test_l3_target_order_fails_on_recorded_inverted_long`); owner USDJPY SHORT fixture fails the same way | **B-STOP** (stop geometry: YAML `PERCENT_OF_SESSION_RANGE 0.25` vs engine sweep-wick stop). Because TP2 is a multiple of the stop distance, a narrow wick stop pulls the 5R TP2 inside the opposite box edge; the stop-rule choice changes how often this row fires. Options are presented in Phase B; no choice is made here. |
+
+## Local Windows host acceptance (2026-10-06, VT Markets Demo, read-only)
+
+Worktree `D:\AG-pr37-host-acceptance` at PR head `8ff7709` plus local commits `85fbd38`,
+`b69777d`, `8c98414`, `f662e3e` (not pushed). Interpreter: the host task venv (Python 3.11.9,
+`MetaTrader5` 5.0.5735). Each run used the PR's own `run_manual_jobs` + `run_fx`
+(`gated=False`, as smoke mode), an isolated scratch journal, Telegram calls captured and
+never sent, and an MT5 proxy refusing any `order_*`/`positions_*`/`orders_*`/`history_*`
+attribute. Resource class R1 under `scripts/resource_guard.py`.
+
+**PASS A — infrastructure: PASS.** VTMarkets-Demo, `DEMO_ACCOUNT_VERIFIED`, terminal
+connected; MT5 calls only `initialize, account_info, terminal_info, symbol_info,
+symbol_info_tick, copy_rates_from_pos, last_error, shutdown`; refused 0. Owner config
+`config/local/owner_ticket.yaml` (risk 0.5 %, warn 0.15 R) loaded; `risk_per_trade_pct` never
+read. Live `symbol_info` for EURUSD-VIP, GBPUSD-VIP, USDJPY-VIP (tick value 0.63258 vs stale
+capture 0.63727), XAUUSD-VIP. Run 05:54 UTC (before box close): 12/12 records, 8 DATA_ERROR
+(incomplete box, now `REFERENCE_NOT_READY` after I7). Run 06:06 UTC: 12/12 records,
+ASIAN_LONDON `WATCH`, 0 NOT_RUN. Append-only proven (seeded journal byte-prefix intact; report
+archive writes `correction-001`). Positions/orders empty before and after. 12 legacy non-READY
+notifications captured; none would send under production or PR config. Narrow tests 181/181.
+
+**PASS B — real signal path: `REAL_SIGNAL_PATH = OBSERVED`.** Run 07:40 UTC (earlier slots
+skipped by the RAM gate). Three ASIAN_LONDON SWEEP signals on the 07:00 M15 bar:
+
+| Symbol | Dir | Entry / SL / TP1 / TP2 | L1–L6 | L2 FAIL | State | Lot (live meta) |
+|---|---|---|---|---|---|---|
+| EURUSD | LONG | 1.12097 / 1.12024 / 1.12305 / 1.12462 | ✓ ✗ ✓ ✓ ⚠ ✓ | entry_level, stop_loss | TICKET_BLOCKED `SIGNAL_STALE` | 0.06 |
+| GBPUSD | LONG | 1.32157 / 1.32094 / 1.32311 / 1.32472 | ✓ ✗ ✓ ✓ ⚠ ✓ | entry_level, stop_loss | TICKET_BLOCKED `SIGNAL_STALE` | 0.07 |
+| USDJPY | SHORT | 158.148 / 158.224 / 157.762 / 157.768 | ✓ ✗ ✓ ✓ ⚠ ✓ | stop_loss | TICKET_BLOCKED `SIGNAL_STALE` | 0.10 |
+
+The run was after `valid_until` (07:30), so `SIGNAL_STALE` takes precedence over
+`LOGIC_GATE_FAIL:L2`; L2 failure is recorded as gate evidence. No manual-ticket delivery;
+legacy STALE/NO_TRADE/REFERENCE_NOT_READY notifications captured, none would send. MT5 calls
+read-only, refused 0. `EDGE_VERIFIED = FALSE`, orders sent 0.
+
+**Integration fixes (local commits):** I1 pythonw-safe stream flush; H3 host-wide MT5 lock
+(`%ProgramData%\AG\locks`; other projects' MT5 clients not migrated); I3 live `symbol_info`
+sizing with provenance-stamped capture fallback; I4 `MANUAL_TICKET`/`MANUAL_TICKET_READY`
+opt-in scope separate from legacy `TICKET`/`READY` (legacy `SCOPES` pin unchanged); I5
+`state_counts` with distinct `DATA_ERROR`/`NOT_RUN`; I6 `--json` stdout is one JSON document;
+I7 `REFERENCE_NOT_READY` (clock-decided); stale/expiry semantics (`SIGNAL_STALE` at build,
+`TICKET_EXPIRED` for actionable tickets). Freshness invariant tests added.
+
+**Open:** `AG-V1-FX-Cycles` runs `D:\wp3-main-integ` production main (`DEPLOYMENT_PENDING`
+until merge); H4 production Telegram delivery gap (old READY decisions without a send trace) —
+follow-up `TELEGRAM_DELIVERY_TRACE_R1`; frozen v1.1.1 contract blocker (see R2A packet on
+branch `r2a/session-candidate-v1.2.0`). Full suite not run on the host (resource policy).
