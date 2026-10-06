@@ -181,6 +181,23 @@ adoption rules, and the complete skill-to-workflow matrix.
 inspect → implement → targeted tests → concise report. Stop when the requested
 acceptance criteria pass; don't expand scope into an unrequested audit or rewrite.
 
+## Branch, push and merge discipline (owner rule)
+
+1. **PR must be open before a push.** Before pushing to a PR's branch, check the PR state.
+   If it is MERGED or CLOSED, do not push; stop and report. Follow-up work goes on a new
+   branch and a new PR from current `main`.
+2. **Report the final HEAD.** After every push, report the exact pushed SHA. The owner
+   merges only when CI is green on that exact SHA.
+3. **One writer per branch.** Only the agent that owns a branch pushes to it. Other agents
+   push to their own branches and hand over by SHA or branch name. They never push to
+   someone else's branch, and never force-push.
+4. **Redact evidence at capture time.** Host evidence records host-specific paths as
+   `<HOST_SCRATCHPAD>/...` and account identifiers as suffixes only (e.g. `login_suffix`),
+   when the evidence is written. Do not capture raw values and redact them later.
+5. **Verify every merge.** After a PR is merged, confirm its final head is in `main`:
+   `git merge-base --is-ancestor <PR head SHA> origin/main`. If it is not (e.g. later
+   commits were left out of the merge), stop and report the missing commits.
+
 ## Live-status documentation maintenance
 
 Any change that affects implemented capability, runtime reachability, execution
