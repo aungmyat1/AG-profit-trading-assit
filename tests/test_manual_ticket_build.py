@@ -232,3 +232,30 @@ def test_spread_too_wide_survives_the_stale_guard_in_its_tier():
 def test_spread_inside_guard_adds_no_spread_reason():
     t = manual(READY_DAY, "07:40", owner=OWNER, balance=10000.0, meta=META)            # 0.2 pip spread
     assert "SPREAD_TOO_WIDE" not in t["block_reasons"]
+
+
+PASS_B = (Path(__file__).resolve().parent.parent / "docs" / "status" / "evidence" / "pass_b_replay_b92f529_0740Z"
+          / "journal" / "ticket_delivery" / "manual" / "tickets" / "2026-10-06.jsonl")
+
+
+@pytest.mark.parametrize("symbol,expected", [
+    ("EURUSD", ["LOGIC_GATE_FAIL:L2", "SPREAD_TOO_WIDE", "SIGNAL_STALE", "TICKET_EXPIRED"]),
+    ("GBPUSD", ["LOGIC_GATE_FAIL:L2", "SPREAD_TOO_WIDE", "SIGNAL_STALE", "TICKET_EXPIRED"]),
+    ("USDJPY", ["LOGIC_GATE_FAIL:L2", "LOGIC_GATE_FAIL:L3", "SPREAD_TOO_WIDE", "SIGNAL_STALE", "TICKET_EXPIRED"]),
+])
+def test_pass_b_values_keep_spread_too_wide(symbol, expected):
+    """Regression on the sealed PASS B replay (b92f529, clock 07:40:00Z, replayed spreads): the
+    tickets recorded there dropped SPREAD_TOO_WIDE. Recollecting from the recorded fields restores it."""
+    import json
+    from v1_tickets.logic_gate import blocking_failures
+    from v1_tickets.scan_record import classify_fx_ticket
+    t = next(json.loads(line) for line in PASS_B.open(encoding="utf-8")
+             if json.loads(line).get("symbol") == symbol and json.loads(line).get("direction"))
+    assert "SPREAD_TOO_WIDE" not in t["block_reasons"] and t["spread_check"] == "SPREAD_TOO_WIDE"   # defect as sealed
+    now = dt.datetime(2026, 10, 6, 7, 40, tzinfo=dt.timezone.utc)
+    state, _, reason = classify_fx_ticket(t, now=now, window_end=dt.datetime.fromisoformat(t["window_utc"]["trade"][1]))
+    blocks, warns = mt.collect_block_reasons(
+        failed_gates=blocking_failures(t["logic_gate"]), base_state=state, base_reason=reason,
+        lot_status=t["risk"]["status"], spread_check=t["spread_check"],
+        expired=now >= dt.datetime.fromisoformat(t["valid_until"]), l5_status=t["logic_gate"]["L5"]["status"])
+    assert blocks == expected and warns == ["L5_WARN"]

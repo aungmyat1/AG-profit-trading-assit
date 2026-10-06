@@ -133,6 +133,25 @@ def lot_size(entry: Optional[float], sl: Optional[float], owner: Dict[str, Any],
             "risk_amount": round(risk_amount, 2) if risk_amount is not None else None, "balance": balance}
 
 
+def collect_block_reasons(*, failed_gates: Sequence[str], base_state: str, base_reason: Optional[str],
+                          lot_status: str, spread_check: Optional[str], expired: bool,
+                          l5_status: str) -> "tuple[List[str], List[str]]":
+    """(block_reasons, warnings) for a ticket with a signal. Pure; ordered by severity (A2)."""
+    reasons: List[Optional[str]] = ["LOGIC_GATE_FAIL:" + g for g in failed_gates]
+    if base_state != TICKET_READY:
+        reasons.append(base_reason)
+    if lot_status != "OK":
+        reasons.append(lot_status)
+    # The legacy guard returns one decision (stale fires before spread), but it records the
+    # spread result first; a too-wide spread is a block reason in its own tier either way.
+    if spread_check == SPREAD_TOO_WIDE:
+        reasons.append(SPREAD_TOO_WIDE)
+    if expired:
+        reasons.append(TICKET_EXPIRED)
+    warnings = [L5_WARN] if l5_status != PASS else []      # advisory: never a block reason (owner decision 3)
+    return order_block_reasons(reasons), warnings
+
+
 # ------------------------------------------------------------------------- build
 
 def _iso(t: Optional[dt.datetime]) -> Optional[str]:
@@ -218,22 +237,11 @@ def build_manual_ticket(
             "logic_gate": gates, "valid_until": _iso(valid_until), "stale_if": stale_if, "invalid_if": invalid_if,
             "signal_close_utc": _iso(signal_close),
         })
-        failed = blocking_failures(gates)
-        # Collect every blocking reason (A2), then order by severity; the primary is the most severe.
-        reasons: List[Optional[str]] = ["LOGIC_GATE_FAIL:" + g for g in failed]
-        if state != TICKET_READY:
-            reasons.append(reason)
-        if lot["status"] != "OK":
-            reasons.append(lot["status"])
-        # The legacy guard returns one decision (stale fires before spread), but it records the
-        # spread result first; a too-wide spread is a block reason in its own tier either way.
-        if base.get("spread_check") == SPREAD_TOO_WIDE:
-            reasons.append(SPREAD_TOO_WIDE)
-        if now >= valid_until:
-            reasons.append(TICKET_EXPIRED)
-        if gates["L5"]["status"] != PASS:
-            warnings.append(L5_WARN)            # advisory: never a block reason (owner decision 3)
-        block_reasons = order_block_reasons(reasons)
+        block_reasons, gate_warnings = collect_block_reasons(
+            failed_gates=blocking_failures(gates), base_state=state, base_reason=reason,
+            lot_status=lot["status"], spread_check=base.get("spread_check"), expired=now >= valid_until,
+            l5_status=gates["L5"]["status"])
+        warnings.extend(gate_warnings)
         if block_reasons:
             state, reason = TICKET_BLOCKED, block_reasons[0]
             stage = ("LOGIC_GATE" if reason.startswith("LOGIC_GATE_FAIL:") else

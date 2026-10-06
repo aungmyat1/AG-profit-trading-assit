@@ -257,3 +257,36 @@ definition belongs to Phase D.
 
 Tests: `python -m pytest -q tests/test_manual_ticket_*.py` → 154 passed;
 `python -m pytest -q` → **1034 passed, 2 skipped**. `BROKER_MUTATION_COUNT = 0`.
+
+## Host acceptance evidence — PASS B `REPLAY_PINNED_0740Z` on `b92f529` (2026-10-06)
+
+Supersedes the `OWNER_REPORTED_EVIDENCE_PENDING` line above: the evidence branch
+`host/pass-b-evidence-b92f529` (`b0adb0a`) has been cherry-picked into this PR.
+
+| Field | Value |
+|---|---|
+| Label | `REPLAY_PINNED_0740Z` — **PASSED** (owner) |
+| Code under test | `b92f529` (PR #37 head at the time) |
+| Evidence | `docs/status/evidence/pass_b_replay_b92f529_0740Z/` (byte-exact, `* -text`; `SHA256SUMS` 12/12 OK on this checkout) |
+| Harness | `scripts/host/replay_pinned_cycle.py` (preserved verbatim; host paths kept as run; read-only MT5 proxy, demo-only, isolated journal, Telegram captured not sent) |
+| Environment | VTMarkets-Demo, `DEMO_ACCOUNT_VERIFIED`, MetaTrader5 5.0.5735 (installed package, not the placeholder) |
+| Inputs that differed from the original 07:39:57 run | evaluation clock pinned to **07:40:00 UTC**; bars fetched live and cut to those closed by the pinned clock; **spreads replayed** from the original run (EURUSD 0.00014, GBPUSD 0.00015, USDJPY 0.016); **live account balance and `symbol_info` read at 15:18 UTC** (real clock 15:18:49) |
+| MT5 | calls: initialize 1, account_info 3, symbol_info 24, copy_rates_from_pos 16, symbol_info_tick 8, last_error 1, shutdown 1; refused 0; **BROKER_MUTATION_COUNT 0** |
+| Scan records | 12/12: ST_ASIAN_SWEEP ASIAN_LONDON 3 `TICKET_BLOCKED` (EURUSD, GBPUSD, USDJPY) + 1 `WATCH` (XAUUSD, setup window open); LONDON_NEWYORK 4 `REFERENCE_NOT_READY`; SESSION_TRADE_V1 4 `TICKET_BLOCKED` (`STRATEGY_ADAPTER_NOT_IMPLEMENTED`) |
+| Recorded tickets at `b92f529` | EURUSD/GBPUSD `[LOGIC_GATE_FAIL:L2, SIGNAL_STALE, TICKET_EXPIRED]`, USDJPY `[LOGIC_GATE_FAIL:L2, LOGIC_GATE_FAIL:L3, SIGNAL_STALE, TICKET_EXPIRED]` (A1 confirmed on host data); all `warnings = [L5_WARN]` |
+| Telegram | 8 notify calls captured (4 legacy `TICKET/REFERENCE_NOT_READY`, 3 `TICKET/STALE`, 1 `TICKET/NO_TRADE`); none passes `should_send` under any scope; 0 manual-ticket sends |
+
+**Defect found in this evidence and fixed after it:** every recorded ticket has
+`spread_check = SPREAD_TOO_WIDE` (spread/stop 19.2 %, 23.8 %, 21.1 % > 15 %), but `SPREAD_TOO_WIDE`
+is missing from `block_reasons`, because the legacy stale guard returned first. Fixed in this PR;
+`test_pass_b_values_keep_spread_too_wide` replays the sealed fields through
+`manual_ticket.collect_block_reasons` and now gets EURUSD/GBPUSD
+`[LOGIC_GATE_FAIL:L2, SPREAD_TOO_WIDE, SIGNAL_STALE, TICKET_EXPIRED]`, USDJPY with `LOGIC_GATE_FAIL:L3`
+after L2. The sealed files are unchanged; they remain attributed to `b92f529`.
+
+The four legacy `TICKET/REFERENCE_NOT_READY` notify calls are the source of the earlier "four
+`REFERENCE_NOT_READY` Telegram captures" (A3): they are policy-refused, never sent.
+
+Tests at the PR head: `python -m pytest -q tests/test_manual_ticket_*.py` → 157 passed;
+`python -m pytest -q` → **1037 passed, 2 skipped** (Linux cloud container). PASS B was not re-run on
+the post-fix head; the fix only adds a reason to already-blocked tickets.
