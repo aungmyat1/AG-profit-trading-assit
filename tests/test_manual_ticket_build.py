@@ -141,10 +141,14 @@ def test_scheduled_run_archives_manual_ticket_and_records_its_state(tmp_path, mo
     assert len(calls) == 1                                                   # balance read once per run
     rows = read_jsonl(scan_path(journal, HOST_NOW.date()))
     eur = [r for r in rows if r["symbol"] == "EURUSD" and r["strategy"].startswith("ST_ASIAN")]
-    assert eur and all(r["state"] in ("NO_SETUP", "WATCH", "TICKET_BLOCKED", "TICKET_READY") for r in eur)
+    assert eur and all(r["state"] in ("NO_SETUP", "WATCH", "TICKET_BLOCKED", "TICKET_READY") for r in eur
+                       if r["session"] == "ASIAN_LONDON")
+    # 09:30 UTC: the LONDON_NEWYORK reference window (06:00-11:00) is still open -> lifecycle, not DATA_ERROR
+    assert all(r["state"] == "REFERENCE_NOT_READY" and r["stage_reached"] == "SESSION"
+               for r in eur if r["session"] == "LONDON_NEWYORK")
     tickets = read_jsonl(mt.ticket_path(journal, HOST_NOW.date()))
     assert tickets and all(t["invariants"]["order_ready"] is False for t in tickets)
-    assert {t["state"] for t in tickets} <= {"NO_SETUP", "WATCH", "TICKET_BLOCKED", "TICKET_READY"}
+    assert {t["state"] for t in tickets} <= {"NO_SETUP", "WATCH", "TICKET_BLOCKED", "TICKET_READY", "REFERENCE_NOT_READY"}
 
 
 def test_pass_b_shape_l2_primary_with_signal_stale_secondary():
@@ -189,10 +193,12 @@ def test_ticket_ready_always_carries_usable_freshness_fields(l2_pass):
 
 
 def test_ticket_past_valid_until_is_never_ready(l2_pass):
-    """valid_until = signal close + STALE_AFTER, the same threshold as the existing V1 stale guard,
-    so the legacy guard blocks first (STALE_SIGNAL); TICKET_EXPIRED is the manual backstop."""
+    """valid_until = signal close + STALE_AFTER, the same threshold as the existing V1 stale guard.
+    Precedence: at build time the signal aged out before any actionable ticket existed -> SIGNAL_STALE;
+    TICKET_EXPIRED is reserved for an already-actionable ticket (backstop test below)."""
     t = manual(at="07:31", owner=OWNER, balance=10000.0, meta=META)       # valid_until 07:30 on 2026-06-17
-    assert t["state"] == "TICKET_BLOCKED" and t["stop_reason"] in ("STALE_SIGNAL", "TICKET_EXPIRED")
+    assert t["state"] == "TICKET_BLOCKED" and t["stop_reason"] == "SIGNAL_STALE"
+    assert t["reason_code"] == "STALE_SIGNAL"                              # legacy ticket reason unchanged
     assert t["ticket_status"] == "EXPIRED" and t["owner_accept_allowed"] is False
 
 

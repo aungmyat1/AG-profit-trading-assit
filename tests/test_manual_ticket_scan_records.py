@@ -33,6 +33,7 @@ def _no_repo_evidence(tmp_path, monkeypatch):
     ({"decision": "DATA_ERROR", "reason_code": "X"}, NOW, (TICKET_BLOCKED, "DATA")),
     ({"decision": "STALE", "reason_code": "STALE_DATA", "suppressed_decision": "NO_TRADE"}, NOW, (TICKET_BLOCKED, "DATA")),
     ({"decision": "STALE", "reason_code": "STALE_SIGNAL", "suppressed_decision": "READY"}, NOW, (TICKET_BLOCKED, "TICKET")),
+    ({"decision": "REFERENCE_NOT_READY", "reason_code": "REFERENCE_NOT_READY"}, NOW, ("REFERENCE_NOT_READY", "SESSION")),
     ({"decision": "READY", "reason_code": "UPPER_SWEEP_STRICT_PENETRATION"}, NOW, (TICKET_READY, "TICKET")),
     ({"decision": "SOMETHING_NEW"}, NOW, (TICKET_BLOCKED, "ENGINE")),
 ])

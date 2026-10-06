@@ -18,9 +18,12 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 NO_SETUP, WATCH, OPPORTUNITY, TICKET_BLOCKED, TICKET_READY = (
     "NO_SETUP", "WATCH", "OPPORTUNITY", "TICKET_BLOCKED", "TICKET_READY")
-STATES = (NO_SETUP, WATCH, OPPORTUNITY, TICKET_BLOCKED, TICKET_READY)
+REFERENCE_NOT_READY = "REFERENCE_NOT_READY"     # ran before the reference window closed (lifecycle)
+SIGNAL_STALE = "SIGNAL_STALE"                   # signal aged out before an actionable ticket existed
+TICKET_EXPIRED = "TICKET_EXPIRED"               # actionable ticket past valid_until
+STATES = (REFERENCE_NOT_READY, NO_SETUP, WATCH, OPPORTUNITY, TICKET_BLOCKED, TICKET_READY)
 NOT_RUN = "NOT_RUN"
-STAGES = ("AUTHORITY", "DATA", "ENGINE", "LOGIC_GATE", "RISK", "TICKET")
+STAGES = ("AUTHORITY", "SESSION", "DATA", "ENGINE", "LOGIC_GATE", "RISK", "TICKET")
 # Engine reasons that are final regardless of the clock; others may still change before window end.
 _OPEN_WINDOW_REASONS = {"NO_QUALIFIED_SWEEP_IN_WINDOW", "NO_SETUP_BY_WINDOW_END"}
 SCAN_DIR = os.path.join("ticket_delivery", "manual", "scan_records")
@@ -56,12 +59,19 @@ def classify_fx_ticket(ticket: Dict[str, Any], *, now: dt.datetime, window_end: 
     """(state, stage_reached, stop_reason) from an existing V1 FX ticket, before manual gates."""
     decision = ticket.get("decision")
     reason = ticket.get("reason_code")
+    if decision == REFERENCE_NOT_READY:
+        return REFERENCE_NOT_READY, "SESSION", reason
     if decision == "DATA_ERROR":
         return TICKET_BLOCKED, "DATA", f"DATA_ERROR:{reason}"
     if decision == "BLOCKED":
         return TICKET_BLOCKED, "DATA", reason
     if ticket.get("suppressed_decision") == "READY" or decision == "READY":
-        return (TICKET_READY, "TICKET", None) if decision == "READY" else (TICKET_BLOCKED, "TICKET", reason)
+        if decision == "READY":
+            return TICKET_READY, "TICKET", None
+        # Canonical stale/expiry semantics: a signal that aged out before any actionable ticket
+        # existed is SIGNAL_STALE (legacy reason code STALE_SIGNAL stays on the legacy ticket);
+        # TICKET_EXPIRED is reserved for an already-actionable ticket past valid_until.
+        return TICKET_BLOCKED, "TICKET", SIGNAL_STALE if decision == "STALE" else reason
     if decision == "STALE":
         return TICKET_BLOCKED, "DATA", reason
     if decision == "NO_TRADE":

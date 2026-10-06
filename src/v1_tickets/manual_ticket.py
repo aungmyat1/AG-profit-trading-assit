@@ -33,7 +33,8 @@ from v1_tickets.logic_gate import (
     l3_geometry, l4_data_session, l5_cost, l6_freshness, order_block_reasons,
 )
 from v1_tickets.scan_record import (
-    NO_SETUP, OPPORTUNITY, TICKET_BLOCKED, TICKET_READY, WATCH, append_jsonl, classify_fx_ticket,
+    NO_SETUP, OPPORTUNITY, REFERENCE_NOT_READY, TICKET_BLOCKED, TICKET_READY, WATCH, append_jsonl,
+    classify_fx_ticket,
 )
 
 EDGE_STATUS = "NOT VERIFIED — logic only"
@@ -243,7 +244,8 @@ def build_manual_ticket(
                                    {TICKET_READY: "READY", OPPORTUNITY: "OPPORTUNITY"}.get(state, "BLOCKED"))
     else:
         block_reasons = order_block_reasons([reason])
-        ticket["ticket_status"] = {NO_SETUP: "NO_SETUP", WATCH: "WATCH"}.get(state, "BLOCKED")
+        ticket["ticket_status"] = {NO_SETUP: "NO_SETUP", WATCH: "WATCH",
+                                   REFERENCE_NOT_READY: REFERENCE_NOT_READY}.get(state, "BLOCKED")
     primary = reason if reason in block_reasons else (block_reasons[0] if block_reasons and state != TICKET_READY
                                                        else None)
     if state == TICKET_READY:
