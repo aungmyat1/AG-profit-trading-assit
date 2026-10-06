@@ -48,6 +48,29 @@ def test_unknown_or_missing_values_fail_closed(field, value):
     assert not a.ticket_eligible and a.reason == f"{REASON_AUTHORITY_INVALID}:{field}"
 
 
+@pytest.mark.parametrize("strategy_id,version", [(ASIAN, "1.1.1"), ("SESSION_TRADE_V1", "1")])
+@pytest.mark.parametrize("field,value", [
+    ("demo_authorized", True), ("demo_authorized", None), ("demo_authorized", "false"), ("demo_authorized", 0),
+    ("live_authorized", True), ("live_authorized", None),
+])
+def test_demo_or_live_flag_not_exactly_false_fails_closed(strategy_id, version, field, value):
+    """Authority PR (2026-10-06): a ticket strategy carries order authority only as
+    demo_order_authority NONE; demo_authorized/live_authorized must be present and exactly false."""
+    reg = copy.deepcopy(load_registry())
+    if value is None:
+        del reg[strategy_id][field]
+    else:
+        reg[strategy_id][field] = value
+    a = resolve_ticket_authority(strategy_id, version, registry=reg)
+    assert not a.ticket_eligible and a.reason == f"{REASON_AUTHORITY_INVALID}:{field}"
+
+
+def test_session_trade_v1_registry_is_manual_only_without_order_authority():
+    e = load_registry()["SESSION_TRADE_V1"]
+    assert e["ticket_authority"] == "MANUAL_ONLY" and e["demo_order_authority"] == "NONE"
+    assert e["demo_authorized"] is False and e["live_authorized"] is False
+
+
 def test_unregistered_and_not_manual_only():
     assert resolve_ticket_authority("NOPE").reason == REASON_NOT_REGISTERED
     reg = copy.deepcopy(load_registry())
