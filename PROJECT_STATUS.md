@@ -4,6 +4,43 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Manual Trade Ticket V1 — pre-edge manual-ticket path (2026-10-06)
+
+`ST_ASIAN_SWEEP_5R_V1@1.1.1` now produces owner-facing MANUAL tickets on the existing FX
+task: registry ticket authority (fail closed), a scan record per symbol per run, Logic
+Gate L1–L6, owner risk % with no default (`config/owner_ticket.yaml`, unset →
+`RISK_CONFIG_MISSING`), append-only owner decisions, a `VIRTUAL_FORWARD` outcome
+resolver, and a daily report. `SESSION_TRADE_V1` is registry/scanner-visible only
+(`STRATEGY_ADAPTER_NOT_IMPLEMENTED`). DST is display-only; rules stay fixed UTC.
+**Finding:** L2 fails on frozen v1.1.1 spec/engine divergences that were already
+documented (wick stop vs 25 % range stop, unconsumed EMA_50, and others), so production
+emits **zero `TICKET_READY`**. `logic_status = NOT_VERIFIED`, `EDGE_VERIFIED = FALSE`.
+No authority change, no broker-mutation path (static import-graph test). Full suite:
+**980 passed, 2 skipped** at Phase 8. **Phase A close-out (2026-10-06):** L3 now enforces
+target ordering (LONG entry < TP1 ≤ TP2, SHORT entry > TP1 ≥ TP2; the recorded 2026-06-17
+EURUSD LONG fails it), ordered `block_reasons[]` + `primary_block_reason` replace the single
+`stop_reason` (kept as an alias), with advisory `warnings[]` (L5) kept separate so a
+`TICKET_READY` ticket has no block reasons (owner decision 2026-10-06), and Telegram delivery
+status is persisted separately and can no longer abort a scan loop. Full suite
+**1037 passed, 2 skipped** (Linux cloud container). `SPREAD_TOO_WIDE` is kept as a block reason
+when the stale guard fires; setup-window WATCH is a lifecycle state; lifecycle states never send
+Telegram. **Host acceptance:** PASS B `REPLAY_PINNED_0740Z` on `b92f529` PASSED (VTMarkets-Demo,
+read-only, BROKER_MUTATION_COUNT 0); its evidence is committed under
+`docs/status/evidence/pass_b_replay_b92f529_0740Z/`.
+A3 `REFERENCE_NOT_READY` is **RESOLVED**: it is a clock-decided lifecycle state, counted
+separately in the daily report and never a block reason (host I7). Host evidence is now
+committed (see below). The PASS B states recorded there predate A1/A2, so a host re-run of
+PASS B on this branch is still needed. Evidence:
+`docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md`.
+
+**Host acceptance (2026-10-06, VT Markets Demo, read-only):** PASS A PASS (guarded runs,
+`DEMO_ACCOUNT_VERIFIED`, 12/12 scan records, 0 NOT_RUN, append-only proven, positions/orders
+unchanged, no Telegram send); PASS B `REAL_SIGNAL_PATH = OBSERVED` (EURUSD/GBPUSD LONG,
+USDJPY SHORT ASIAN_LONDON sweeps; L2 FAIL recorded; `TICKET_BLOCKED` with `SIGNAL_STALE`
+precedence; live-`symbol_info` sizing). Integration fixes I1/H3/I3/I4/I5/I6/I7 + stale/expiry
+semantics added; host task `AG-V1-FX-Cycles` still runs production main
+(`DEPLOYMENT_PENDING`). Telegram delivery gap H4 open (`TELEGRAM_DELIVERY_TRACE_R1`).
+
 ## Crypto CFD observation scanner V1 — merged, observation-only (2026-10-03)
 
 PR #28 was merged into `main` at `5fa46102aabac97773ef66aa3f0ed10561ad66b1`

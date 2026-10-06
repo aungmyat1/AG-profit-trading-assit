@@ -1,0 +1,310 @@
+"""Manual Trade Ticket V1 Phase 4 -- Logic Gate L1-L6 (pure functions, per-check evidence).
+
+Each gate returns {"gate", "status", "checks": [{id, rule, value, expected, verdict, note}]}.
+L1-L4 FAIL -> no TICKET_READY. L5 (cost) and L6 (freshness fields) are displayed flags only.
+
+LOGIC_VERIFIED is a statement about rule conformance and internal consistency -- never
+about profitability or authorization. The gate reads the frozen strategy YAML and the
+engine output; it never changes a rule. Where the YAML and the frozen engine disagree,
+or the YAML is not evaluable, L2 records the divergence and FAILS (fail closed) instead of
+choosing an interpretation. Known, pre-existing examples for ST_ASIAN_SWEEP_5R_V1@1.1.1:
+`stop_loss_mode: PERCENT_OF_SESSION_RANGE 0.25` vs the engine's sweep-wick stop
+(docs/status/AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION_STATUS.md) and the
+declared-but-unconsumed EMA_50 trend filter (no timeframe/price source in the YAML).
+"""
+from __future__ import annotations
+
+import datetime as dt
+from typing import Any, Callable, Dict, List, Optional, Sequence
+
+import yaml
+
+from strategy_engine.models import StrategyConfig
+from strategy_engine.session import Candle
+from ticket_delivery.renderer import payload_hash
+from v1_tickets.guards import LEGACY_STALE_SIGNAL, SIGNAL_STALE, STALE_AFTER
+
+PASS, FAIL, WARN, NOT_EVALUABLE = "PASS", "FAIL", "WARN", "NOT_EVALUABLE"
+NOT_APPLICABLE = "NOT_APPLICABLE"   # post-fill / execution-time rule: recorded, not part of a manual ticket decision
+M15 = dt.timedelta(minutes=15)
+# Pip size only where the repo already evidences it (large_smc_watch.contract.C10_PIP_SIZE).
+EVIDENCED_PIP = {"EURUSD": 0.0001, "GBPUSD": 0.0001}
+
+
+def _check(cid: str, rule: str, value: Any, expected: Any, verdict: str, note: str = "") -> Dict[str, Any]:
+    return {"id": cid, "rule": rule, "value": value, "expected": expected, "verdict": verdict, "note": note}
+
+
+def _gate(name: str, checks: List[Dict[str, Any]], *, advisory: bool = False) -> Dict[str, Any]:
+    bad = [c for c in checks if c["verdict"] in (FAIL, NOT_EVALUABLE)]
+    warn = [c for c in checks if c["verdict"] == WARN]
+    status = (WARN if bad or warn else PASS) if advisory else (FAIL if bad else (WARN if warn else PASS))
+    return {"gate": name, "status": status, "checks": checks}
+
+
+def _point(digits: Optional[int]) -> float:
+    return 10.0 ** -digits if digits is not None else 0.0
+
+
+def _eq(a: Optional[float], b: Optional[float], digits: Optional[int]) -> bool:
+    """Equal up to the ticket's own price rounding (half a point), or float precision when unrounded."""
+    if a is None or b is None:
+        return False
+    return abs(a - b) <= max(_point(digits) / 2.0, 1e-9 * max(1.0, abs(a), abs(b)))
+
+
+def _signal_candle(ticket: Dict[str, Any], post: Sequence[Candle]) -> Optional[Candle]:
+    ts = ticket.get("signal_timestamp")
+    return next((c for c in post if c.time.isoformat() == ts), None) if ts else None
+
+
+# ---------------------------------------------------------------------------------- L1
+
+def l1_determinism(build: Callable[[], Dict[str, Any]], candles: Sequence[Candle],
+                   evaluated_at: dt.datetime, bar: dt.timedelta = M15) -> Dict[str, Any]:
+    """Same inputs -> identical payload (hash of two independent builds); closed bars only."""
+    first, second = build(), build()
+    h1, h2 = payload_hash(first), payload_hash(second)
+    last_close = max((c.time + bar for c in candles), default=None)
+    return _gate("L1", [
+        _check("L1.replay_hash", "two builds from identical inputs hash identically", h1, h2,
+               PASS if h1 == h2 else FAIL),
+        _check("L1.closed_bars_only", "every input bar closed at decision time (no look-ahead)",
+               last_close.isoformat() if last_close else None, f"<= {evaluated_at.isoformat()}",
+               PASS if last_close is None or last_close <= evaluated_at else FAIL),
+    ])
+
+
+# ---------------------------------------------------------------------------------- L2
+
+def _raw_spec(strategy: StrategyConfig) -> Dict[str, Any]:
+    from v1_tickets.authority import REPO_ROOT
+    path = strategy.source_path if strategy.source_path.startswith("/") else str(REPO_ROOT / strategy.source_path)
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+def l2_rule_conformance(strategy: StrategyConfig, ticket: Dict[str, Any], session: Sequence[Candle],
+                        expected_bar_count: int, post: Sequence[Candle], *, digits: Optional[int],
+                        spread: Optional[float]) -> Dict[str, Any]:
+    """Every rule declared in the strategy YAML, with its measured value. Not evaluable = FAIL."""
+    spec = _raw_spec(strategy)
+    symbol, box = ticket["symbol"], ticket.get("box") or {}
+    hi, lo, mid = box.get("high"), box.get("low"), box.get("mid")
+    rng = (hi - lo) if hi is not None and lo is not None else None
+    long = ticket.get("direction") == "LONG"
+    entry, sl, risk = ticket.get("entry"), ticket.get("stop_loss"), ticket.get("risk_distance")
+    sig = _signal_candle(ticket, post)
+    pair = next(p for p in strategy.session_pairs if p.pair_id == ticket["cycle"])
+    checks: List[Dict[str, Any]] = []
+
+    checks.append(_check("R.reference_session", f"{pair.reference_session.name} box complete",
+                         len(session), expected_bar_count,
+                         PASS if len(session) >= expected_bar_count else FAIL))
+    trend = (spec.get("regime_classification") or {}).get("trend_bias_filter") or {}
+    checks.append(_check("R.trend_bias_filter", f"{trend.get('indicator')}: {trend.get('bullish_condition')} / "
+                         f"{trend.get('bearish_condition')}", None, None, NOT_EVALUABLE,
+                         "spec gives no timeframe/price source; frozen engine does not consume it"))
+    range_cap = strategy.max_range_pips_eurusd
+    pip = EVIDENCED_PIP.get(symbol) if symbol == "EURUSD" else None
+    range_pips = round(rng / pip, 1) if rng is not None and pip else None
+    checks.append(_check("R.range_session_check", "Reference_Session_Range_Pips <= Max_Allowed_Pips",
+                         range_pips, range_cap if symbol == "EURUSD" else None, NOT_EVALUABLE,
+                         "spec defines no gating semantics for the regime result"
+                         + ("" if symbol == "EURUSD" else "; max_range_pips defined for EURUSD only")))
+
+    trigger = "SWEEP_REFERENCE_LOW" if long else "SWEEP_REFERENCE_HIGH"
+    if ticket.get("setup") != "SWEEP" or sig is None:
+        checks.append(_check("R.entry_trigger", trigger, ticket.get("setup"), "SWEEP", FAIL,
+                             "only sweep entries are declared in entry_rules"))
+    else:
+        swept = (sig.low < lo and sig.close > lo) if long else (sig.high > hi and sig.close < hi)
+        checks.append(_check("R.entry_trigger", "wick breaches reference boundary and closes back inside",
+                             {"high": sig.high, "low": sig.low, "close": sig.close}, {"box_high": hi, "box_low": lo},
+                             PASS if swept else FAIL))
+    checks.append(_check("R.entry_order_type", "entry_order_type", ticket.get("entry_order_type"),
+                         strategy.entry_order_type,
+                         PASS if ticket.get("entry_order_type") == strategy.entry_order_type else FAIL))
+    checks.append(_check("R.entry_level", "Sweep_Candle_Body_Close", entry, sig.close if sig else None,
+                         PASS if sig is not None and _eq(entry, sig.close, digits) else FAIL))
+    want_dist = rng * strategy.risk.stop_loss_range_pct if rng is not None else None
+    got_dist = abs(entry - sl) if entry is not None and sl is not None else None
+    checks.append(_check("R.stop_loss", f"{strategy.risk.stop_loss_mode} {strategy.risk.stop_loss_range_pct}",
+                         got_dist, want_dist, PASS if _eq(got_dist, want_dist, digits) else FAIL))
+    targets = {t["leg"]: t for t in ticket.get("targets") or []}
+    tp1 = (targets.get(1) or {}).get("price")
+    checks.append(_check("R.target_leg1", "OPPOSITE_SESSION_BOUNDARY", tp1, hi if long else lo,
+                         PASS if _eq(tp1, hi if long else lo, digits) else FAIL))
+    leg2 = next((leg for leg in strategy.legs if leg.target_type == "FIXED_R_MULTIPLE"), None)
+    want_tp2 = (entry + (1 if long else -1) * leg2.fixed_r_multiple * risk) if leg2 and entry is not None and risk else None
+    tp2 = (targets.get(2) or {}).get("price")
+    checks.append(_check("R.target_leg2", f"FIXED_R_MULTIPLE {leg2.fixed_r_multiple if leg2 else None}", tp2, want_tp2,
+                         PASS if _eq(tp2, want_tp2, digits) else FAIL))
+    vols = [t.get("volume_pct") for t in targets.values()]
+    checks.append(_check("R.position_split", "leg volume_pct", vols, [leg.volume_pct for leg in strategy.legs],
+                         PASS if vols == [leg.volume_pct for leg in strategy.legs] else FAIL))
+    checks.append(_check("R.max_entries_per_session", "max_entries_per_session", 1, pair.max_entries_per_session,
+                         PASS if pair.max_entries_per_session >= 1 else FAIL, "engine emits one decision per session"))
+    spread_pips = round(spread / EVIDENCED_PIP[symbol], 2) if spread is not None and symbol in EVIDENCED_PIP else None
+    cap = strategy.risk.max_spread_allowed_pips
+    checks.append(_check("R.max_spread", "spread_pips <= max_spread_allowed_pips", spread_pips, cap,
+                         (PASS if spread_pips <= cap else FAIL) if spread_pips is not None else NOT_EVALUABLE,
+                         "" if spread_pips is not None else "no live spread or no evidenced pip size"))
+    checks.append(_check("R.time_invalidation", strategy.time_invalidation, ticket.get("time_invalidation_gmt"),
+                         "15:00", PASS if ticket.get("time_invalidation_gmt") == "15:00" else FAIL))
+    checks.append(_check("R.risk_mode", strategy.risk.risk_mode, None, None, NOT_APPLICABLE,
+                         "no percentage in the spec; owner manual-ticket risk is separate (decision C4)"))
+    checks.append(_check("R.slippage_limit", f"slippage_limit_points {strategy.risk.slippage_limit_points}",
+                         None, strategy.risk.slippage_limit_points, NOT_APPLICABLE, "fill-time rule; owner enters manually"))
+    checks.append(_check("R.post_fill_management", "leg actions after fill",
+                         [(leg.action_on_fill, leg.trailing_rule) for leg in strategy.legs], None, NOT_APPLICABLE,
+                         "post-fill trade management; displayed only"))
+    checks.append(_check("R.structural_invalidation", strategy.structural_invalidation, None, None, NOT_EVALUABLE,
+                         "'expansion volume' has no measurable definition in the spec"))
+    return _gate("L2", checks)
+
+
+# ---------------------------------------------------------------------------------- L3
+
+def l3_geometry(ticket: Dict[str, Any], post: Sequence[Candle], *, digits: Optional[int],
+                declared_rr: Optional[float]) -> Dict[str, Any]:
+    long = ticket.get("direction") == "LONG"
+    entry, sl, risk = ticket.get("entry"), ticket.get("stop_loss"), ticket.get("risk_distance")
+    targets = {t["leg"]: t.get("price") for t in ticket.get("targets") or []}
+    tp1, tp2 = targets.get(1), targets.get(2)
+    sig = _signal_candle(ticket, post)
+    side = lambda a, b: a is not None and b is not None and (a > b if long else a < b)  # noqa: E731
+    checks = [
+        _check("L3.sl_side", "SL on the loss side of entry", sl, f"{'<' if long else '>'} {entry}",
+               PASS if side(entry, sl) else FAIL),
+        _check("L3.sl_beyond_invalidation", "SL at or beyond the trigger candle extreme", sl,
+               (sig.low if long else sig.high) if sig else None,
+               PASS if sig is not None and sl is not None and ((sl <= sig.low) if long else (sl >= sig.high)) else FAIL),
+        _check("L3.entry_in_trigger_zone", "entry inside the trigger candle range", entry,
+               [sig.low, sig.high] if sig else None,
+               PASS if sig is not None and entry is not None and sig.low <= entry <= sig.high else FAIL),
+        _check("L3.tp1_direction", "TP1 in trade direction", tp1, f"{'>' if long else '<'} {entry}",
+               PASS if side(tp1, entry) else FAIL),
+        _check("L3.tp2_direction", "TP2 in trade direction", tp2, f"{'>' if long else '<'} {entry}",
+               PASS if side(tp2, entry) else FAIL),
+        _check("L3.target_order", "LONG entry < TP1 <= TP2 / SHORT entry > TP1 >= TP2", [entry, tp1, tp2],
+               "entry < TP1 <= TP2" if long else "entry > TP1 >= TP2",
+               PASS if side(tp1, entry) and tp2 is not None and (tp1 <= tp2 if long else tp1 >= tp2) else FAIL),
+    ]
+    rr2 = abs(tp2 - entry) / risk if tp2 is not None and entry is not None and risk else None
+    rr_ok = rr2 is not None and declared_rr is not None and abs(rr2 - declared_rr) * risk <= max(_point(digits), 1e-9)
+    checks.append(_check("L3.rr_tp2", "computed RR equals declared RR", round(rr2, 6) if rr2 is not None else None,
+                         declared_rr, PASS if rr_ok else FAIL,
+                         "spec declares no RR tolerance; only price rounding (<= 1 point) is allowed"))
+    return _gate("L3", checks)
+
+
+# ---------------------------------------------------------------------------------- L4
+
+def l4_data_session(ticket: Dict[str, Any], *, ref_window, trade_window, reference_name: str,
+                    session: Sequence[Candle], expected_bar_count: int, post: Sequence[Candle],
+                    data_close: Optional[dt.datetime], now: dt.datetime) -> Dict[str, Any]:
+    age = (now - data_close).total_seconds() if data_close else None
+    checks = [
+        _check("L4.data_fresh", f"latest bar closed within {int(STALE_AFTER.total_seconds())} s",
+               age, int(STALE_AFTER.total_seconds()),
+               PASS if age is not None and 0 <= age <= STALE_AFTER.total_seconds() else FAIL),
+        _check("L4.reference_bars_in_window", "reference bars inside the fixed-UTC reference window",
+               [session[0].time.isoformat(), session[-1].time.isoformat()] if session else None,
+               [ref_window[0].isoformat(), ref_window[1].isoformat()],
+               PASS if session and all(ref_window[0] <= c.time and c.time + M15 <= ref_window[1] for c in session)
+               else FAIL),
+        _check("L4.reference_complete", "reference bar count", len(session), expected_bar_count,
+               PASS if len(session) == expected_bar_count else FAIL),
+        _check("L4.trade_bars_in_window", "decision bars inside the fixed-UTC trade window",
+               len(post), [trade_window[0].isoformat(), trade_window[1].isoformat()],
+               PASS if all(trade_window[0] <= c.time < trade_window[1] for c in post) else FAIL),
+        _check("L4.reference_source", "box built from the pair's own reference session",
+               ticket.get("cycle"), reference_name,
+               PASS if session and all(c.time < trade_window[0] for c in session) else FAIL),
+    ]
+    return _gate("L4", checks)
+
+
+# ---------------------------------------------------------------------------------- L5 / L6
+
+def l5_cost(spread: Optional[float], risk: Optional[float], *, commission_r: Optional[float],
+            warn_r: Optional[float]) -> Dict[str, Any]:
+    """Cost in R. Advisory only: never blocks. Owner warn level has no default."""
+    spread_r = spread / risk if spread is not None and risk else None
+    cost_r = spread_r + commission_r if spread_r is not None and commission_r is not None else spread_r
+    complete = spread_r is not None and commission_r is not None
+    checks = [
+        _check("L5.spread_R", "spread / stop distance", round(spread_r, 4) if spread_r is not None else None, None,
+               PASS if spread_r is not None else WARN, "" if spread_r is not None else "SPREAD NOT AVAILABLE"),
+        _check("L5.commission_R", "commission in R", commission_r, None,
+               PASS if commission_r is not None else WARN, "" if commission_r is not None else "COMMISSION NOT AVAILABLE"),
+        _check("L5.cost_vs_warn_level", "cost_in_R <= owner_ticket.cost_warn_R",
+               round(cost_r, 4) if cost_r is not None else None, warn_r,
+               PASS if complete and warn_r is not None and cost_r <= warn_r else WARN,
+               "WARN LEVEL NOT SET" if warn_r is None else ("" if complete else "COST INCOMPLETE")),
+    ]
+    return _gate("L5", checks, advisory=True)
+
+
+def l6_freshness(valid_until: Optional[str], stale_if: Any, invalid_if: Any) -> Dict[str, Any]:
+    checks = [_check(f"L6.{name}", f"{name} set", value, "set", PASS if value else WARN)
+              for name, value in (("valid_until", valid_until), ("stale_if", stale_if), ("invalid_if", invalid_if))]
+    return _gate("L6", checks, advisory=True)
+
+
+BLOCKING = ("L1", "L2", "L3", "L4")
+
+
+def blocking_failures(gates: Dict[str, Dict[str, Any]]) -> List[str]:
+    return [g for g in BLOCKING if gates.get(g, {}).get("status") != PASS]
+
+
+# ---------------------------------------------------------------------------------- block reasons
+
+TICKET_EXPIRED, L5_WARN = "TICKET_EXPIRED", "L5_WARN"
+# Data/metadata absent or unusable (fail closed). STALE_DATA is a data-freshness failure, not a signal one.
+DATA_METADATA_REASONS = {"STALE_DATA", "MARKET_CLOSED", "SPREAD_NOT_EVALUATED", "SYMBOL_METADATA_MISSING",
+                         "ACCOUNT_BALANCE_UNAVAILABLE"}
+_NORMALISE = {LEGACY_STALE_SIGNAL: SIGNAL_STALE}
+# Lifecycle states are not reasons: a scan before the reference window closes (I7), or while the
+# trade window is still open with no setup yet (scan_record.classify_fx_ticket WATCH), is neither
+# blocked nor warned, so these never enter block_reasons[] or warnings[].
+LIFECYCLE_STATES = frozenset({"REFERENCE_NOT_READY",
+                              "SETUP_WINDOW_OPEN:NO_SETUP_BY_WINDOW_END",
+                              "SETUP_WINDOW_OPEN:NO_QUALIFIED_SWEEP_IN_WINDOW"})
+
+
+def normalise_reason(reason: str) -> str:
+    return _NORMALISE.get(reason, reason)
+
+
+def reason_severity(reason: str) -> int:
+    """Lower = more severe. L1-L4 FAIL > DATA/METADATA missing > RISK_CONFIG_MISSING >
+    any other blocking reason (e.g. SPREAD_TOO_WIDE, authority) > SIGNAL_STALE/EXPIRED.
+    Owner-approved 2026-10-06. L5_WARN ranks last but is a warning, never a block reason."""
+    if reason.startswith("LOGIC_GATE_FAIL:"):
+        return 0
+    if reason.startswith("DATA_ERROR:") or reason in DATA_METADATA_REASONS:
+        return 1
+    if reason == "RISK_CONFIG_MISSING":
+        return 2
+    if reason == L5_WARN:
+        return 5
+    if reason in (SIGNAL_STALE, TICKET_EXPIRED):
+        return 4
+    return 3
+
+
+def order_block_reasons(reasons: Sequence[Optional[str]]) -> List[str]:
+    """Blocking reasons only (warnings dropped), deduplicated, ordered by severity; original
+    order breaks ties (L1 before L2 ...)."""
+    seen: List[str] = []
+    for r in reasons:
+        if r and is_blocking(normalise_reason(r)) and normalise_reason(r) not in seen:
+            seen.append(normalise_reason(r))
+    return sorted(seen, key=lambda r: (reason_severity(r), seen.index(r)))
+
+
+def is_blocking(reason: str) -> bool:
+    return reason not in LIFECYCLE_STATES and reason_severity(reason) < reason_severity(L5_WARN)

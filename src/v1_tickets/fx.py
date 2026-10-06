@@ -32,6 +32,7 @@ from ticket_delivery.archive import (
 STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
 V1_FX_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
 V1_CYCLES = ("ASIAN_LONDON", "LONDON_NEWYORK")
+REFERENCE_NOT_READY = "REFERENCE_NOT_READY"   # evaluated before the reference window closed (lifecycle)
 EVIDENCED_DIGITS = {"EURUSD": 5, "GBPUSD": 5}   # point 1e-05, owner-approved dataset manifests (rounding only)
 REQUIRED_BROKER_SYMBOL = {"EURUSD": "EURUSD-VIP", "GBPUSD": "GBPUSD-VIP"}   # VT Markets tradable -VIP symbols
 M15 = dt.timedelta(minutes=15)
@@ -72,6 +73,16 @@ def broker_symbol(symbol: str) -> str:
 def _r(symbol: str, value: Optional[float]) -> Optional[float]:
     digits = _digits(symbol) if value is not None else None
     return value if digits is None else round(value, digits)
+
+
+def session_windows_utc(day: dt.date) -> Dict[str, Dict[str, tuple]]:
+    """Fixed-UTC windows of the frozen session pairs (GMT in the YAML), half-open [start, end).
+    Never DST-shifted (owner decision C3); local time is display-only via session_clock."""
+    def at(t: str) -> dt.datetime:
+        return dt.datetime.combine(day, dt.time(*map(int, str(t).split(":"))), tzinfo=dt.timezone.utc)
+    return {p.pair_id: {"ref": (at(p.reference_session.start_time_gmt), at(p.reference_session.end_time_gmt)),
+                        "trade": (at(p.trade_session.start_time_gmt), at(p.trade_session.end_time_gmt))}
+            for p in load_strategy(STRATEGY_PATH).session_pairs}
 
 
 def build_fx_error_ticket(
@@ -120,6 +131,13 @@ def build_fx_ticket(
         "evaluated_at": evaluated_at.astimezone(dt.timezone.utc).isoformat(),
         "metadata_status": metadata_status(symbol), "delivery_mode": "ARCHIVE_ONLY",
     }
+    ref_end = session_windows_utc(session_date)[cycle]["ref"][1]
+    if evaluated_at < ref_end:
+        # Lifecycle, not a data fault: the reference box cannot be complete before its window
+        # closes. Decided on the clock alone, so missing/corrupt bars after ref_end still reach
+        # the engine and stay DATA_ERROR.
+        return {**base, "decision": REFERENCE_NOT_READY, "reason_code": REFERENCE_NOT_READY,
+                "detail": f"reference window closes {ref_end.isoformat()}"}
     try:
         sig = evaluate(strategy, cycle, symbol, session_date, session_candles, expected_bar_count,
                        post_session_candles)
@@ -150,7 +168,8 @@ def build_fx_ticket(
 _STATE = {"READY": CYCLE_STATE_READY, "NO_TRADE": CYCLE_STATE_NO_TRADE, "DATA_ERROR": CYCLE_STATE_DATA_ERROR,
           "BLOCKED": CYCLE_STATE_BLOCKED,
           # Gate-withheld decisions archive as NO_TRADE; the payload/reason code keeps the specific state.
-          "STALE": CYCLE_STATE_NO_TRADE, "SPREAD_TOO_WIDE": CYCLE_STATE_NO_TRADE}
+          "STALE": CYCLE_STATE_NO_TRADE, "SPREAD_TOO_WIDE": CYCLE_STATE_NO_TRADE,
+          REFERENCE_NOT_READY: CYCLE_STATE_NO_TRADE}
 
 
 def archive_fx_ticket(ticket: Dict[str, Any], root: str) -> str:

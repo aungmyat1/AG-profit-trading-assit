@@ -16,6 +16,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
+from zoneinfo import ZoneInfo
 import yaml
 
 CONTRACT_VERSION = "CANONICAL_SESSION_WINDOWS_V1"
@@ -163,3 +164,28 @@ def expected_bar_count(name: str, timeframe: str = "M15") -> int:
     if timeframe == "M1":
         return d.expected_m15_bars * 15
     raise SessionContractConflict(f"SESSION_CONTRACT_CONFLICT: unsupported timeframe {timeframe!r}")
+
+
+# --------------------------------------------------------------------------- display only
+# Manual Trade Ticket V1 owner decision C3 (2026-10-06): local market time is DISPLAY /
+# VERIFICATION ONLY. Nothing below feeds session eligibility, reference-range or
+# execution-window candle selection, or any strategy boundary -- those stay fixed UTC above.
+DISPLAY_ZONES = {"london": "Europe/London", "new_york": "America/New_York", "mmt": "Asia/Yangon"}
+
+
+def _offset(delta: Optional[timedelta]) -> str:
+    minutes = int((delta or timedelta(0)).total_seconds() // 60)
+    sign = "+" if minutes >= 0 else "-"
+    return f"{sign}{abs(minutes) // 60:02d}:{abs(minutes) % 60:02d}"
+
+
+def local_time_diagnostics(ts_utc: datetime) -> dict:
+    """UTC instant -> London / New York / MMT wall clock with offset and DST flag."""
+    if ts_utc.tzinfo is None:
+        raise ValueError("local_time_diagnostics requires a timezone-aware UTC datetime")
+    out: dict = {"utc": ts_utc.astimezone(timezone.utc).isoformat()}
+    for key, zone in DISPLAY_ZONES.items():
+        local = ts_utc.astimezone(ZoneInfo(zone))
+        out[key] = {"zone": zone, "local": local.strftime("%Y-%m-%d %H:%M"),
+                    "utc_offset": _offset(local.utcoffset()), "dst": bool(local.dst())}
+    return out

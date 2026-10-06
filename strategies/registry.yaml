@@ -20,6 +20,14 @@ strategies:
                               #   (entry_order_type undefined, risk_per_trade_pct unspecified)
     config_source: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
     engine: strategy_engine (this repo)
+    # Manual Trade Ticket V1 (owner decisions 2026-10-06, docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md).
+    # Read by src/v1_tickets/authority.py; unknown/missing values fail closed (no tickets).
+    # A manual ticket is never an order: demo_order_authority NONE, demo/live flags unchanged.
+    ticket_authority: MANUAL_ONLY
+    logic_status: NOT_VERIFIED          # LOGIC_VERIFIED only with a matching logic_verified_identity
+    logic_verified_identity: null
+    economic_status: NOT_EVALUATED
+    demo_order_authority: NONE
 
   SESSION_TRADE_V1:
     registered: true
@@ -30,6 +38,15 @@ strategies:
     live_authorized: false
     config_source: strategies/session_trade/contract.yaml
     engine: "session_strategy (D:\\ddev\\Session Trade Codex -- separate repository, referenced not vendored)"
+    # Manual Trade Ticket V1 (owner decisions 2026-10-06, docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md).
+    # Read by src/v1_tickets/authority.py; unknown/missing values fail closed (no tickets).
+    # Engine is not in this repo: tickets fail closed with STRATEGY_ADAPTER_NOT_IMPLEMENTED.
+    # A manual ticket is never an order: demo_order_authority NONE, demo/live flags unchanged.
+    ticket_authority: MANUAL_ONLY
+    logic_status: NOT_VERIFIED          # LOGIC_VERIFIED only with a matching logic_verified_identity
+    logic_verified_identity: null
+    economic_status: NOT_EVALUATED
+    demo_order_authority: NONE
 
   SMC_3R_V1:
     registered: true

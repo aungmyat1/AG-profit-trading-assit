@@ -63,7 +63,12 @@ from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
 from strategy_engine import load_strategy  # noqa: E402
 from v1_tickets import fx as fx_tickets  # noqa: E402
+from mt5.symbol_resolver import SymbolMeta  # noqa: E402
+from v1_tickets import manual_ticket  # noqa: E402
 from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility  # noqa: E402
+from v1_tickets.scan_record import (  # noqa: E402
+    adapterless_scan_records, append_jsonl, build_scan_record, classify_fx_ticket, write_scan_record,
+)
 
 UTC = dt.timezone.utc
 # Binding objective universe: three FX majors + gold.  Never silently remove a symbol
@@ -104,31 +109,60 @@ def classify(symbol: str, m5: list, now: dt.datetime) -> str:
     return "STALE" if age > dt.timedelta(minutes=STALE_MIN) else "FRESH"
 
 
-def _hhmm(value) -> dt.time:
-    return value if isinstance(value, dt.time) else dt.time(*map(int, str(value).split(":")))
-
-
 def cycle_windows(now: dt.datetime) -> Dict[str, dict]:
     """UTC windows of the frozen ST_ASIAN_SWEEP_5R_V1 session pairs (GMT in the YAML)."""
-    out = {}
-    day = now.astimezone(UTC).date()
-    for pair in load_strategy(fx_tickets.STRATEGY_PATH).session_pairs:
-        at = lambda t: dt.datetime.combine(day, _hhmm(t), tzinfo=UTC)  # noqa: E731
-        out[pair.pair_id] = {"ref": (at(pair.reference_session.start_time_gmt), at(pair.reference_session.end_time_gmt)),
-                             "trade": (at(pair.trade_session.start_time_gmt), at(pair.trade_session.end_time_gmt))}
-    return out
+    return fx_tickets.session_windows_utc(now.astimezone(UTC).date())
 
 
-def fx_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_close: Optional[dt.datetime] = None,
-                  spread: Optional[float] = None) -> dict:
+def _fx_inputs(cycle: str, m15: list, now: dt.datetime):
     w = cycle_windows(now)[cycle]
     (rs, re_), (ts, te) = w["ref"], w["trade"]
     session = [c for c in m15 if rs <= c.time < re_]
     post = [c for c in m15 if ts <= c.time < te and c.time + dt.timedelta(minutes=15) <= now]
-    expected = int((re_ - rs).total_seconds() // 900)
-    return fx_tickets.build_fx_ticket(symbol, cycle, rs.date(), session, expected, post,
+    return rs.date(), session, int((re_ - rs).total_seconds() // 900), post
+
+
+def fx_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_close: Optional[dt.datetime] = None,
+                  spread: Optional[float] = None) -> dict:
+    day, session, expected, post = _fx_inputs(cycle, m15, now)
+    return fx_tickets.build_fx_ticket(symbol, cycle, day, session, expected, post,
                                       data_source="MT5_VT_MARKETS_DEMO", evaluated_at=now,
                                       data_close=data_close, spread=spread)
+
+
+def manual_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_close: Optional[dt.datetime],
+                      spread: Optional[float], balance: Optional[float], live_meta: Optional[SymbolMeta] = None) -> dict:
+    """Manual Trade Ticket V1: same inputs as fx_ticket_for, plus owner risk, read-only balance and
+    sizing metadata (live symbol_info first, captured snapshot only as a stamped fallback)."""
+    day, session, expected, post = _fx_inputs(cycle, m15, now)
+    meta, provenance = manual_ticket.resolve_symbol_meta(symbol, live_meta, now)
+    return manual_ticket.build_manual_ticket(
+        symbol, cycle, day, session, expected, post, now=now, data_close=data_close, spread=spread,
+        owner=manual_ticket.load_owner_config(), balance=balance, meta=meta, meta_provenance=provenance)
+
+
+def live_symbol_meta(mt5, broker: str) -> Optional[SymbolMeta]:
+    """Read-only symbol_info(broker) -> SymbolMeta; None on any failure (caller falls back/fails closed)."""
+    try:
+        i = call_with_timeout(mt5.symbol_info, broker)
+        if i is None:
+            return None
+        return SymbolMeta(symbol=broker, tick_size=float(i.trade_tick_size), tick_value=float(i.trade_tick_value),
+                          contract_size=float(i.trade_contract_size), volume_min=float(i.volume_min),
+                          volume_max=float(i.volume_max), volume_step=float(i.volume_step), digits=int(i.digits),
+                          point=float(i.point), trade_stops_level=int(i.trade_stops_level),
+                          trade_freeze_level=int(i.trade_freeze_level))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def account_balance(mt5) -> Optional[float]:
+    """Read-only account_info().balance; None on any failure (sizing then fails closed)."""
+    try:
+        info = call_with_timeout(mt5.account_info)
+        return float(info.balance) if info is not None and info.balance is not None else None
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def _content_hash(d: dict) -> str:
@@ -145,14 +179,38 @@ def archive_if_changed(state: JsonKeyValueStore, key: str, ticket: dict, archive
     return True
 
 
-def _notify(kind: str, value: str, text: str, root: str) -> None:
-    if tg.should_send(kind, value, root):
-        try:
-            tg.send_message(text)
-        except tg.TelegramSendError as exc:
-            log_line("telegram", f"TELEGRAM_SEND_FAILED {kind}={value} {exc}")
+DELIVERY_DIR = os.path.join("ticket_delivery", "delivery_status")
+
+
+def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] = None,
+            ref: Optional[str] = None, now: Optional[dt.datetime] = None) -> str:
+    """Best-effort Telegram delivery (TELEGRAM_DELIVERY_TRACE_R1). Callers persist the scan /
+    ticket record first; this never raises, so a Telegram or policy failure cannot hide a scan
+    record or stop the remaining symbols. The status is persisted separately (append-only JSONL,
+    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text."""
+    error = None
+    try:
+        if not tg.should_send(kind, value, root):
+            status = "NOT_SENT_POLICY"
         else:
-            log_line("telegram", f"TELEGRAM_SENT_OK {kind}={value}")
+            tg.send_message(text)
+            status = "SENT"
+    except tg.TelegramSendError as exc:
+        status, error = "FAILED", str(exc)       # send_message already sanitizes (class / HTTP code only)
+    except Exception as exc:  # noqa: BLE001 -- never let delivery break the scan loop
+        status, error = "ERROR", type(exc).__name__
+    if status != "NOT_SENT_POLICY":
+        log_line("telegram", f"TELEGRAM_{'SENT_OK' if status == 'SENT' else 'SEND_' + status} {kind}={value}"
+                             f"{' ' + error if error else ''}")
+    if journal:
+        at = (now or dt.datetime.now(UTC)).astimezone(UTC)
+        try:
+            append_jsonl(os.path.join(journal, DELIVERY_DIR, f"{at.date().isoformat()}.jsonl"),
+                         {"channel": "telegram", "kind": kind, "value": value, "ref": ref, "status": status,
+                          "error": error, "recorded_at": at.isoformat()})
+        except OSError as exc:
+            log_line("telegram", f"DELIVERY_STATUS_WRITE_FAILED {kind}={value} {type(exc).__name__}")
+    return status
 
 
 def _archive_fx_result(state: JsonKeyValueStore, journal: str, ticket: dict, now: dt.datetime) -> tuple[bool, bool, list[str]]:
@@ -177,31 +235,58 @@ def _archive_fx_result(state: JsonKeyValueStore, journal: str, ticket: dict, now
     return new, paper_opened, reasons
 
 
+def fx_run_id(now: dt.datetime) -> str:
+    return f"fx:{now.astimezone(UTC):%Y%m%dT%H%M%SZ}"
+
+
+def _scan_fx(journal: str, run_id: str, cycle: str, window: dict, ticket: dict, now: dt.datetime,
+             data_close: Optional[dt.datetime] = None) -> str:
+    """Manual Trade Ticket V1 Phase 3: one scan record per symbol per run, even with nothing found."""
+    state, stage, reason = classify_fx_ticket(ticket, now=now, window_end=window["trade"][1])
+    write_scan_record(journal, build_scan_record(
+        run_id=run_id, session=cycle, symbol=ticket["symbol"], strategy_id=ticket["strategy_id"],
+        strategy_version=ticket["strategy_version"], window=window["trade"], data_close=data_close,
+        state=state, stage=stage, stop_reason=reason, now=now))
+    return state
+
+
+def _scan_adapterless(journal: str, run_id: str, cycle: str, window: dict, now: dt.datetime) -> None:
+    for rec in adapterless_scan_records(run_id=run_id, cycle=cycle, now=now, window=window["trade"]):
+        write_scan_record(journal, rec)
+
+
 def archive_fx_runtime_failure(now: dt.datetime, journal: str, reason: str, detail: str,
                                *, gated: bool = True, cycle_filter: Optional[str] = None) -> List[str]:
     """Persist per-symbol DATA_ERROR decisions when MT5 fails before candle acquisition."""
     lines: List[str] = []
     state = JsonKeyValueStore(os.path.join(journal, "v1_host_state.json"))
+    run_id = fx_run_id(now)
     for cycle, w in cycle_windows(now).items():
         if cycle_filter and cycle != cycle_filter:
             continue
         ts, te = w["trade"]
         if gated and not (ts <= now <= te + dt.timedelta(minutes=30)):
             continue
+        _scan_adapterless(journal, run_id, cycle, w, now)
         for symbol in fx_symbols():
             ticket = fx_tickets.build_fx_error_ticket(
                 symbol, cycle, ts.date(), evaluated_at=now, reason_code=reason, detail=detail,
             )
             new, _, _ = _archive_fx_result(state, journal, ticket, now)
+            _scan_fx(journal, run_id, cycle, w, ticket, now)
             lines.append(f"FX {symbol} {cycle} decision=DATA_ERROR reason={reason}{' ARCHIVED' if new else ''}")
     return lines
 
 
 def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bool = True,
-           quote: Optional[Quote] = None, cycle_filter: Optional[str] = None) -> List[str]:
+           quote: Optional[Quote] = None, cycle_filter: Optional[str] = None,
+           balance: Optional[Callable[[], Optional[float]]] = None,
+           symbol_meta: Optional[Callable[[str], Optional[SymbolMeta]]] = None) -> List[str]:
     lines = []
+    balance_value: List[Optional[float]] = []
     state = JsonKeyValueStore(os.path.join(journal, "v1_host_state.json"))
     windows = cycle_windows(now)
+    run_id = fx_run_id(now)
     if cycle_filter is not None and cycle_filter not in windows:
         raise ValueError(f"unknown FX cycle {cycle_filter!r}")
     for cycle, w in windows.items():
@@ -210,6 +295,7 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
         ts, te = w["trade"]
         if gated and not (ts <= now <= te + dt.timedelta(minutes=30)):
             continue
+        _scan_adapterless(journal, run_id, cycle, w, now)
         for symbol in fx_symbols():
             broker = None
             try:
@@ -222,6 +308,7 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                     reason_code=_reason(exc), detail=str(exc),
                 )
                 new, _, _ = _archive_fx_result(state, journal, ticket, now)
+                _scan_fx(journal, run_id, cycle, w, ticket, now)
                 lines.append(f"FX {symbol} {cycle} decision=DATA_ERROR reason={_reason(exc)}"
                              f" detail={str(exc)[:160]}{' ARCHIVED' if new else ''}")
                 continue
@@ -232,15 +319,29 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                     reason_code="MARKET_CLOSED", detail="FX market is closed",
                 )
                 new, _, _ = _archive_fx_result(state, journal, ticket, now)
+                _scan_fx(journal, run_id, cycle, w, ticket, now)
                 lines.append(f"FX {symbol} {cycle} decision=BLOCKED reason=MARKET_CLOSED"
                              f"{' ARCHIVED' if new else ''}")
                 continue
-            ticket = fx_ticket_for(
-                symbol, cycle, m15, now,
-                data_close=m5[-1].time + dt.timedelta(minutes=5) if m5 else None,
-                spread=_spread(quote, broker),
-            )
+            data_close = m5[-1].time + dt.timedelta(minutes=5) if m5 else None
+            spread = _spread(quote, broker)
+            ticket = fx_ticket_for(symbol, cycle, m15, now, data_close=data_close, spread=spread)
             new, paper_opened, paper_reasons = _archive_fx_result(state, journal, ticket, now)
+            if not balance_value:
+                balance_value.append(balance() if balance is not None else None)
+            manual = manual_ticket_for(symbol, cycle, m15, now, data_close, spread, balance_value[0],
+                                       symbol_meta(broker) if symbol_meta is not None else None)
+            manual_new = archive_if_changed(state, f"manual:{manual['ticket_id']}", manual,
+                                            lambda x: manual_ticket.archive_manual_ticket(journal, x))
+            write_scan_record(journal, build_scan_record(
+                run_id=run_id, session=cycle, symbol=symbol, strategy_id=manual["strategy_id"],
+                strategy_version=manual["strategy_version"], window=w["trade"], data_close=data_close,
+                state=manual["state"], stage=manual["stage_reached"], stop_reason=manual["stop_reason"],
+                now=now, ticket_id=manual["ticket_id"] if manual.get("direction") else None,
+                block_reasons=manual["block_reasons"], warnings=manual.get("warnings", ())))
+            if manual_new and notify and manual["state"] == "TICKET_READY":
+                _notify(tg.MANUAL_TICKET, tg.MANUAL_TICKET_READY, manual_ticket.render_text(manual), REPO_ROOT,
+                        journal=journal, ref=f"manual:{manual['ticket_id']}", now=now)
             paper_status = "OPENED" if paper_opened else (
                 "ALREADY_RECORDED" if not paper_reasons
                 else "INELIGIBLE:" + ",".join(paper_reasons)
@@ -250,8 +351,75 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                          f" metadata={ticket['metadata_status']} paper={paper_status}"
                          f"{' ARCHIVED' if new else ''}")
             if new and notify:
-                _notify("TICKET", ticket["decision"], tg.format_ticket(ticket), REPO_ROOT)
+                _notify("TICKET", ticket["decision"], tg.format_ticket(ticket), REPO_ROOT, journal=journal,
+                        ref=f"fx:{symbol}:{cycle}:{ticket['session_date']}", now=now)
     return lines
+
+
+MANUAL_LOOKBACK_DAYS = 7
+MANUAL_RESOLVER_M5_BARS = 2400          # ~8 days of M5, enough for the look-back plus a weekend
+
+
+def run_manual_jobs(fetch: Fetch, now: dt.datetime, journal: str) -> List[str]:
+    """Manual Trade Ticket V1 daily jobs on the existing FX task (no parallel scheduler):
+    auto-EXPIRED owner decisions every run; the VIRTUAL_FORWARD outcome resolver once per UTC day
+    (first FX run of the day, i.e. before the 07:00 UTC window). Read-only bars; no order path."""
+    from v1_tickets.outcome import resolve_day
+    from v1_tickets.owner_decision import expire_undecided
+    from v1_tickets.scan_record import read_jsonl
+
+    lines: List[str] = []
+    state = JsonKeyValueStore(os.path.join(journal, "v1_host_state.json"))
+    days = [now.date() - dt.timedelta(days=i) for i in range(MANUAL_LOOKBACK_DAYS + 1)]
+    for day in days:
+        rows = read_jsonl(manual_ticket.ticket_path(journal, day))
+        for e in expire_undecided(journal, rows, now):
+            lines.append(f"MANUAL {e['symbol']} {e['session']} {e['ticket_id']} decision=EXPIRED (auto)")
+    key = f"manual_resolver:{now.date().isoformat()}"
+    if state.get(key) is None:
+        cache: Dict[str, list] = {}
+
+        def bars(symbol: str) -> list:
+            if symbol not in cache:
+                cache[symbol] = fetch(fx_tickets.broker_symbol(symbol), "M5", MANUAL_RESOLVER_M5_BARS)
+            return cache[symbol]
+        for day in days[1:]:
+            try:
+                summary = resolve_day(journal, day, bars, now=now)
+            except Exception as exc:  # noqa: BLE001 -- data failure leaves tickets pending for the next day
+                lines.append(f"MANUAL_RESOLVER {day} ERROR {_reason(exc)}")
+                continue
+            if summary["resolved"] or summary["pending"]:
+                lines.append(f"MANUAL_RESOLVER {day} resolved={len(summary['resolved'])} "
+                             f"pending={len(summary['pending'])} tag=VIRTUAL_FORWARD")
+        state.put(key, "DONE")
+    report_key = f"manual_report:{now.date().isoformat()}"
+    if now >= manual_report_after_utc(now) and state.get(report_key) is None:
+        from post_asian_pilot.report_archive import write_report
+        from v1_tickets.manual_report import REPORT_TYPE, build_report
+        report = build_report(journal, now.date(), now=now, expected=manual_expected())
+        path = write_report(REPORT_TYPE, now.date(), report, root=os.path.join(journal, "reports"))
+        state.put(report_key, path)
+        lines.append(f"MANUAL_REPORT {now.date()} tickets_ready={report['tickets_ready']} "
+                     f"missing_records={len(report['system_health']['missing_records'])} archived")
+    return lines
+
+
+def manual_report_after_utc(now: dt.datetime) -> dt.datetime:
+    """After the last frozen session window closes, plus the FX task's 30 min grace."""
+    return max(w["trade"][1] for w in cycle_windows(now).values()) + dt.timedelta(minutes=30)
+
+
+def manual_expected() -> Dict[tuple, List[str]]:
+    from v1_tickets.scan_record import adapterless_scan_records
+    strategy = load_strategy(fx_tickets.STRATEGY_PATH)
+    out: Dict[tuple, List[str]] = {(f"{strategy.strategy_id}@{strategy.version}", c): fx_symbols()
+                                   for c in fx_tickets.V1_CYCLES}
+    for cycle in fx_tickets.V1_CYCLES:
+        recs = adapterless_scan_records(run_id="expected", cycle=cycle, now=utcnow())
+        if recs:
+            out[(recs[0].strategy, cycle)] = [r.symbol for r in recs]
+    return out
 
 
 LSMC_WEEKEND_DAYS = (6, 7)                                   # ISO Sat, Sun (UTC)
@@ -319,7 +487,8 @@ def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config
                      f" source={t['data_source']}{f' window={window[1:]}' if window else ''}{detail}"
                      f"{' ARCHIVED' if new else ''}")
         if new and notify:
-            _notify("TICKET", t["decision"], tg.format_ticket(t), REPO_ROOT)
+            _notify("TICKET", t["decision"], tg.format_ticket(t), REPO_ROOT, journal=journal,
+                    ref=f"crypto:{symbol}:{obs.isoformat()}{window}", now=now)
     return lines
 
 
@@ -426,8 +595,10 @@ def main(argv=None) -> int:
                         elif args.mode == "smoke":
                             lines = run_smoke(fetch, now, journal, crypto_config, quote)
                         elif args.mode == "fx":
-                            lines = run_fx(fetch, now, journal, gated=True, quote=quote,
-                                           cycle_filter=args.cycle)
+                            lines = run_manual_jobs(fetch, now, journal) + run_fx(
+                                fetch, now, journal, gated=True, quote=quote, cycle_filter=args.cycle,
+                                balance=lambda: account_balance(mt5),
+                                symbol_meta=lambda broker: live_symbol_meta(mt5, broker))
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
                                              fx=False, window="WEEKEND")
@@ -452,8 +623,14 @@ def main(argv=None) -> int:
     return 0
 
 
+def flush_std_streams() -> None:
+    """sys.stdout / sys.stderr are None under pythonw.exe (windowless scheduled runs)."""
+    for stream in (sys.stdout, sys.stderr):
+        if stream is not None:
+            stream.flush()
+
+
 if __name__ == "__main__":
     rc = main()
-    sys.stdout.flush()
-    sys.stderr.flush()
+    flush_std_streams()
     os._exit(rc)   # hard exit: a lingering MT5/HTTP thread must not keep the task alive after main()

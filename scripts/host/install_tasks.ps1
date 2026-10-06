@@ -24,7 +24,8 @@ contract. After registration, verify_tasks.ps1 checks all three exact actions an
 Every task:
 - runs single-instance (MultipleInstances IgnoreNew, plus a Python lock file in logs\);
 - starts at a staggered minute offset (fx +1, crypto +2, lsmc +3) so no two tasks start together,
-  and all MT5 access is serialized on one cross-process lock (logs\mt5_access.lock);
+  and all MT5 access is serialized on one host-wide cross-process lock
+  (%ProgramData%\AG\locks\mt5_access.lock, shared by every checkout);
 - has a 4-minute time limit (the runner itself self-exits after 120 s with TIMEOUT);
 - runs at normal priority 4 (the Task Scheduler default 7 is below-normal CPU and low I/O
   priority, which stretched a 35 s run to ~250 s);

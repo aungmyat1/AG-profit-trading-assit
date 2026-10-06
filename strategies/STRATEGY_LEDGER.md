@@ -61,6 +61,11 @@ from canonical session windows or other repo conventions at the time of registra
     consume `LONDON_NEWYORK`'s independent per-cycle quota for the same symbol/day. No
     strategy-file change. `PROPOSAL_ONLY`, no live/demo authorization change. See
     `tests/test_post_london_newyork_pilot.py`.
+- **Manual Trade Ticket V1 authority (2026-10-06, owner decision C1):** registry gains
+  `ticket_authority: MANUAL_ONLY`, `logic_status: NOT_VERIFIED`, `economic_status:
+  NOT_EVALUATED`, `demo_order_authority: NONE`. Manual tickets are analysis artifacts only;
+  `demo_authorized`/`live_authorized` unchanged (false), no strategy-file change. See
+  `docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md`.
 
 ## SESSION_TRADE_V1 -- Asian/London session trend-continuation & sweep strategy
 
@@ -88,6 +93,11 @@ from canonical session windows or other repo conventions at the time of registra
   (`session_router` -> this repo's `strategy_engine/session/`), but they are **separate,
   independently-signed strategies** with different session windows, different classifiers, and
   different execution authority. Do not merge them.
+- **Manual Trade Ticket V1 authority (2026-10-06, owner decisions C1/C2):** grandfathered as
+  `ticket_authority: MANUAL_ONLY` with `demo_order_authority: NONE`, `logic_status:
+  NOT_VERIFIED`, `economic_status: NOT_EVALUATED`. No in-repo adapter exists, so it is
+  registry/scanner-visible only and fails closed with `STRATEGY_ADAPTER_NOT_IMPLEMENTED`
+  (zero `TICKET_READY`). No logic ported; `demo_authorized` stays false.
 
 ## ST_LARGE_SMC_V1 -- Large SMC Opportunity Service
 

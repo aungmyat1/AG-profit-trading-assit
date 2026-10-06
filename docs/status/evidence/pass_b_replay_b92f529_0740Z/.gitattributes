@@ -1,0 +1,2 @@
+# Byte-exact evidence: no EOL normalisation, so SHA256SUMS stays verifiable on any checkout.
+* -text

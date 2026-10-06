@@ -241,6 +241,17 @@ powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1 -Apply
 powershell -ExecutionPolicy Bypass -File scripts\host\verify_tasks.ps1
 ```
 
+The same FX task also builds MANUAL trade tickets (owner decides; never an order), writes a
+scan record for every symbol, resolves `VIRTUAL_FORWARD` outcomes once a day, and archives a
+daily report. Owner risk % has no default: set it in `config/local/owner_ticket.yaml`.
+
+```powershell
+python scripts\manual_ticket_decision.py --date 2026-10-06 --ticket-id <id> --decision SKIPPED --reason NEWS
+python scripts\run_manual_ticket_report.py --date 2026-10-06
+```
+
+See [manual ticket status](docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md).
+
 See [`Install on the Windows MT5 Demo host`](docs/setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md) for
 the complete installation and Telegram proposal-validation procedure; the compact operator
 checklist remains in [`scripts/host/GO_LIVE.md`](scripts/host/GO_LIVE.md).

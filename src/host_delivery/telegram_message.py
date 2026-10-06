@@ -27,7 +27,15 @@ from v1_tickets.guards import STALE_AFTER
 OVERRIDE_PATH = os.path.join("config", "local", "delivery_override.yaml")
 MESSAGE_DELIVERY = "MESSAGE_DELIVERY"
 ARCHIVE_ONLY = "ARCHIVE_ONLY"
-SCOPES = ("TICKET_READY", "LSMC_OPPORTUNITY")
+SCOPES = ("TICKET_READY", "LSMC_OPPORTUNITY")          # legacy informational surface (pinned by verify_objective)
+MANUAL_SCOPES = ("MANUAL_TICKET_READY",)              # Manual Trade Ticket V1, separate opt-in
+# Two distinct notification semantics that must never share a state:
+#   kind TICKET / value READY            -> LEGACY_INFORMATIONAL_READY (V1 informational ticket; scope TICKET_READY)
+#   kind MANUAL_TICKET / MANUAL_TICKET_READY -> Manual Trade Ticket V1 readiness (own scope, opt-in)
+# A signal can be legacy READY while its manual ticket is TICKET_BLOCKED (e.g. LOGIC_GATE_FAIL:L2).
+LEGACY_INFORMATIONAL_READY = "LEGACY_INFORMATIONAL_READY"
+MANUAL_TICKET = "MANUAL_TICKET"
+MANUAL_TICKET_READY = "MANUAL_TICKET_READY"
 API = "https://api.telegram.org"
 
 
@@ -43,7 +51,7 @@ def load_mode(root: str = ".") -> Dict[str, Any]:
         return {"mode": ARCHIVE_ONLY, "scopes": ()}
     if raw.get("mode") != MESSAGE_DELIVERY:
         return {"mode": ARCHIVE_ONLY, "scopes": ()}
-    return {"mode": MESSAGE_DELIVERY, "scopes": tuple(s for s in raw.get("scopes", ()) if s in SCOPES)}
+    return {"mode": MESSAGE_DELIVERY, "scopes": tuple(s for s in raw.get("scopes", ()) if s in SCOPES + MANUAL_SCOPES)}
 
 
 def should_send(kind: str, value: str, root: str = ".") -> bool:
@@ -52,6 +60,8 @@ def should_send(kind: str, value: str, root: str = ".") -> bool:
         return False
     if kind == "TICKET":
         return value == "READY" and "TICKET_READY" in cfg["scopes"]
+    if kind == MANUAL_TICKET:
+        return value == MANUAL_TICKET_READY and MANUAL_TICKET_READY in cfg["scopes"]
     if kind == "LSMC":
         return value == "OPPORTUNITY" and "LSMC_OPPORTUNITY" in cfg["scopes"]
     return False
@@ -226,7 +236,7 @@ def main(argv=None) -> int:
     if args.status:
         cfg = load_mode(os.getcwd())
         credentials = bool(os.environ.get("TELEGRAM_BOT_TOKEN") and os.environ.get("TELEGRAM_CHAT_ID"))
-        scopes_ok = set(cfg["scopes"]) == set(SCOPES)
+        scopes_ok = {s for s in cfg["scopes"] if s in SCOPES} == set(SCOPES)   # optional MANUAL_SCOPES ignored
         ok = cfg["mode"] == MESSAGE_DELIVERY and scopes_ok and credentials
         print(f"TELEGRAM_STATUS: {'OK' if ok else 'NOT_READY'} mode={cfg['mode']} "
               f"scopes={','.join(cfg['scopes']) or 'none'} credentials={'PRESENT' if credentials else 'MISSING'}")
