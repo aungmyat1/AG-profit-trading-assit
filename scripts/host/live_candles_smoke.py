@@ -61,7 +61,6 @@ from host_delivery import telegram_message as tg  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
-from strategy_engine import load_strategy  # noqa: E402
 from v1_tickets import fx as fx_tickets  # noqa: E402
 from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility  # noqa: E402
 
@@ -104,19 +103,9 @@ def classify(symbol: str, m5: list, now: dt.datetime) -> str:
     return "STALE" if age > dt.timedelta(minutes=STALE_MIN) else "FRESH"
 
 
-def _hhmm(value) -> dt.time:
-    return value if isinstance(value, dt.time) else dt.time(*map(int, str(value).split(":")))
-
-
 def cycle_windows(now: dt.datetime) -> Dict[str, dict]:
     """UTC windows of the frozen ST_ASIAN_SWEEP_5R_V1 session pairs (GMT in the YAML)."""
-    out = {}
-    day = now.astimezone(UTC).date()
-    for pair in load_strategy(fx_tickets.STRATEGY_PATH).session_pairs:
-        at = lambda t: dt.datetime.combine(day, _hhmm(t), tzinfo=UTC)  # noqa: E731
-        out[pair.pair_id] = {"ref": (at(pair.reference_session.start_time_gmt), at(pair.reference_session.end_time_gmt)),
-                             "trade": (at(pair.trade_session.start_time_gmt), at(pair.trade_session.end_time_gmt))}
-    return out
+    return fx_tickets.session_windows_utc(now.astimezone(UTC).date())
 
 
 def fx_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_close: Optional[dt.datetime] = None,

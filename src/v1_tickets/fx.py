@@ -74,6 +74,16 @@ def _r(symbol: str, value: Optional[float]) -> Optional[float]:
     return value if digits is None else round(value, digits)
 
 
+def session_windows_utc(day: dt.date) -> Dict[str, Dict[str, tuple]]:
+    """Fixed-UTC windows of the frozen session pairs (GMT in the YAML), half-open [start, end).
+    Never DST-shifted (owner decision C3); local time is display-only via session_clock."""
+    def at(t: str) -> dt.datetime:
+        return dt.datetime.combine(day, dt.time(*map(int, str(t).split(":"))), tzinfo=dt.timezone.utc)
+    return {p.pair_id: {"ref": (at(p.reference_session.start_time_gmt), at(p.reference_session.end_time_gmt)),
+                        "trade": (at(p.trade_session.start_time_gmt), at(p.trade_session.end_time_gmt))}
+            for p in load_strategy(STRATEGY_PATH).session_pairs}
+
+
 def build_fx_error_ticket(
     symbol: str, cycle: str, session_date: dt.date, *, evaluated_at: dt.datetime,
     reason_code: str, detail: str = "", decision: str = "DATA_ERROR",
