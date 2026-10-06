@@ -118,7 +118,7 @@ def test_telegram_policy_off_is_recorded_as_not_sent(tmp_path, monkeypatch):
     assert smoke._notify("TICKET", "READY", "text", ".", journal=str(tmp_path), ref="x", now=NOW) == "NOT_SENT_POLICY"
     rows = read_jsonl(str(tmp_path / smoke.DELIVERY_DIR / f"{NOW.date().isoformat()}.jsonl"))
     assert rows == [{"channel": "telegram", "kind": "TICKET", "value": "READY", "ref": "x", "status": "NOT_SENT_POLICY",
-                     "error": None, "recorded_at": NOW.isoformat()}]
+                     "error": None, "recorded_at": NOW.isoformat(), "code_sha": smoke.code_sha()}]
 
 
 def test_scan_record_keeps_warnings_out_of_block_reasons():

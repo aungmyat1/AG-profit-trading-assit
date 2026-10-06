@@ -27,6 +27,7 @@ from strategy_engine.session import Candle
 from ticket_delivery.identity import logical_ticket_id
 from v1_tickets import fx
 from v1_tickets.authority import REPO_ROOT, TicketAuthority, resolve_ticket_authority
+from v1_tickets.code_identity import code_sha
 from v1_tickets.guards import SPREAD_TOO_WIDE, STALE_AFTER
 from v1_tickets.logic_gate import (
     FAIL, L5_WARN, PASS, TICKET_EXPIRED, WARN, blocking_failures, l1_determinism, l2_rule_conformance,
@@ -339,5 +340,6 @@ def ticket_path(journal: str, day: dt.date) -> str:
 def archive_manual_ticket(journal: str, ticket: Dict[str, Any]) -> str:
     """Append-only: a changed ticket is a new line; nothing is overwritten."""
     path = ticket_path(journal, dt.date.fromisoformat(ticket["session_date"]))
-    append_jsonl(path, {**ticket, "content_hash": content_hash(ticket)})
+    # code_sha is provenance, kept outside content_hash so a deploy alone never re-archives a ticket.
+    append_jsonl(path, {**ticket, "code_sha": code_sha(), "content_hash": content_hash(ticket)})
     return path
