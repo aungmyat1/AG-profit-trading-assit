@@ -62,6 +62,7 @@ from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
 from v1_tickets import fx as fx_tickets  # noqa: E402
+from v1_tickets import manual_ticket  # noqa: E402
 from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility  # noqa: E402
 from v1_tickets.scan_record import (  # noqa: E402
     adapterless_scan_records, build_scan_record, classify_fx_ticket, write_scan_record,
@@ -111,16 +112,38 @@ def cycle_windows(now: dt.datetime) -> Dict[str, dict]:
     return fx_tickets.session_windows_utc(now.astimezone(UTC).date())
 
 
-def fx_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_close: Optional[dt.datetime] = None,
-                  spread: Optional[float] = None) -> dict:
+def _fx_inputs(cycle: str, m15: list, now: dt.datetime):
     w = cycle_windows(now)[cycle]
     (rs, re_), (ts, te) = w["ref"], w["trade"]
     session = [c for c in m15 if rs <= c.time < re_]
     post = [c for c in m15 if ts <= c.time < te and c.time + dt.timedelta(minutes=15) <= now]
-    expected = int((re_ - rs).total_seconds() // 900)
-    return fx_tickets.build_fx_ticket(symbol, cycle, rs.date(), session, expected, post,
+    return rs.date(), session, int((re_ - rs).total_seconds() // 900), post
+
+
+def fx_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_close: Optional[dt.datetime] = None,
+                  spread: Optional[float] = None) -> dict:
+    day, session, expected, post = _fx_inputs(cycle, m15, now)
+    return fx_tickets.build_fx_ticket(symbol, cycle, day, session, expected, post,
                                       data_source="MT5_VT_MARKETS_DEMO", evaluated_at=now,
                                       data_close=data_close, spread=spread)
+
+
+def manual_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_close: Optional[dt.datetime],
+                      spread: Optional[float], balance: Optional[float]) -> dict:
+    """Manual Trade Ticket V1: same inputs as fx_ticket_for, plus owner risk and read-only balance."""
+    day, session, expected, post = _fx_inputs(cycle, m15, now)
+    return manual_ticket.build_manual_ticket(
+        symbol, cycle, day, session, expected, post, now=now, data_close=data_close, spread=spread,
+        owner=manual_ticket.load_owner_config(), balance=balance, meta=manual_ticket.symbol_meta_from_host(symbol))
+
+
+def account_balance(mt5) -> Optional[float]:
+    """Read-only account_info().balance; None on any failure (sizing then fails closed)."""
+    try:
+        info = call_with_timeout(mt5.account_info)
+        return float(info.balance) if info is not None and info.balance is not None else None
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def _content_hash(d: dict) -> str:
@@ -213,8 +236,10 @@ def archive_fx_runtime_failure(now: dt.datetime, journal: str, reason: str, deta
 
 
 def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bool = True,
-           quote: Optional[Quote] = None, cycle_filter: Optional[str] = None) -> List[str]:
+           quote: Optional[Quote] = None, cycle_filter: Optional[str] = None,
+           balance: Optional[Callable[[], Optional[float]]] = None) -> List[str]:
     lines = []
+    balance_value: List[Optional[float]] = []
     state = JsonKeyValueStore(os.path.join(journal, "v1_host_state.json"))
     windows = cycle_windows(now)
     run_id = fx_run_id(now)
@@ -255,9 +280,21 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                              f"{' ARCHIVED' if new else ''}")
                 continue
             data_close = m5[-1].time + dt.timedelta(minutes=5) if m5 else None
-            ticket = fx_ticket_for(symbol, cycle, m15, now, data_close=data_close, spread=_spread(quote, broker))
+            spread = _spread(quote, broker)
+            ticket = fx_ticket_for(symbol, cycle, m15, now, data_close=data_close, spread=spread)
             new, paper_opened, paper_reasons = _archive_fx_result(state, journal, ticket, now)
-            _scan_fx(journal, run_id, cycle, w, ticket, now, data_close)
+            if not balance_value:
+                balance_value.append(balance() if balance is not None else None)
+            manual = manual_ticket_for(symbol, cycle, m15, now, data_close, spread, balance_value[0])
+            manual_new = archive_if_changed(state, f"manual:{manual['ticket_id']}", manual,
+                                            lambda x: manual_ticket.archive_manual_ticket(journal, x))
+            write_scan_record(journal, build_scan_record(
+                run_id=run_id, session=cycle, symbol=symbol, strategy_id=manual["strategy_id"],
+                strategy_version=manual["strategy_version"], window=w["trade"], data_close=data_close,
+                state=manual["state"], stage=manual["stage_reached"], stop_reason=manual["stop_reason"],
+                now=now, ticket_id=manual["ticket_id"] if manual.get("direction") else None))
+            if manual_new and notify and manual["state"] == "TICKET_READY":
+                _notify("TICKET", "READY", manual_ticket.render_text(manual), REPO_ROOT)
             paper_status = "OPENED" if paper_opened else (
                 "ALREADY_RECORDED" if not paper_reasons
                 else "INELIGIBLE:" + ",".join(paper_reasons)
@@ -444,7 +481,7 @@ def main(argv=None) -> int:
                             lines = run_smoke(fetch, now, journal, crypto_config, quote)
                         elif args.mode == "fx":
                             lines = run_fx(fetch, now, journal, gated=True, quote=quote,
-                                           cycle_filter=args.cycle)
+                                           cycle_filter=args.cycle, balance=lambda: account_balance(mt5))
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
                                              fx=False, window="WEEKEND")
