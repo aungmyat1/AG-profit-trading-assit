@@ -6,7 +6,7 @@ stays the frozen authority. Nothing here chooses a rule. Every row needs a writt
 before Phase C (successor version) can start. `EDGE_VERIFIED = FALSE`; `economic_status =
 NOT_EVALUATED` for any successor.
 
-Base: `main` at `d063ff1` (PR #37 merge). Builds on, and does not replace,
+Base: `main` at `13ffc38` (PR #37 and PR #39 merged). Builds on, and does not replace,
 `AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION_STATUS.md`
 (`ROOT_CAUSE_VERIFIED = ENGINE_GEOMETRY_DEFECT`, Model A `1.1.2-RC1`, never wired or promoted).
 
