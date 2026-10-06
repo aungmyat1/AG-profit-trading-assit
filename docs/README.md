@@ -56,6 +56,10 @@ The [Scanner Checklist V1.1 status](status/AG_SCANNER_CHECKLIST_V1_1_IMPLEMENTAT
 records the read-only sequential phase-gate layer over frozen Scanner V1, its
 reason-code taxonomy, test evidence, and the deferred live-validation boundary.
 
+The [Manual Trade Ticket V1 status](status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md) records the
+owner decisions, the pre-edge manual-ticket path (logic gate, owner decisions, VIRTUAL_FORWARD
+outcomes, daily report) and the L2 finding that frozen v1.1.1 is not logic-verifiable.
+
 The [Crypto CFD Scanner V1 observation status](status/AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS.md)
 records the merged BTCUSD/ETHUSD read-only observation path, live Demo market-data
 validation, incomplete CFD strategy/risk authority, and execution boundary.

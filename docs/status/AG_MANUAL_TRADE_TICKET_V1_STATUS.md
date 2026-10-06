@@ -55,3 +55,67 @@ Repository conflicts found (repo wins):
 | Shadow outcomes | Skipped/expired/rejected tickets resolve as `VIRTUAL_FORWARD` observations, never as executed trades; raw proposal, owner decision and virtual outcome are kept side by side. No optimization from them. |
 | Expiry | `valid_until` is strategy/session-derived; after it `ticket_status = EXPIRED`, `owner_accept_allowed = false`. |
 | Delivery | One PR, commits separated by phase. |
+
+## Phases 1–8 — implemented (2026-10-06, Linux cloud container, unit/fixture-tested only)
+
+| Phase | Result | Code | Tests |
+|---|---|---|---|
+| 1 Registry authority | `ticket_authority`, `logic_status`, `logic_verified_identity`, `economic_status`, `demo_order_authority` on `ST_ASIAN_SWEEP_5R_V1` and `SESSION_TRADE_V1`; unknown/missing → fail closed; `SESSION_TRADE_V1` → `STRATEGY_ADAPTER_NOT_IMPLEMENTED`; `LOGIC_VERIFIED` bound to strategy+version+engine+contract hash | `src/v1_tickets/authority.py`, `strategies/registry.yaml` | `tests/test_manual_ticket_authority.py` |
+| 2 DST display | `session_clock.local_time_diagnostics` (London/New York/MMT); `v1_tickets.fx.session_windows_utc` single fixed-UTC source; eligibility unchanged on 2026-03-10, 04-14, 10-23, 10-27, 11-03 | `src/session_clock.py`, `src/v1_tickets/fx.py` | `tests/test_manual_ticket_dst_clock.py` |
+| 3 Scan records | One append-only record per strategy/session/symbol per scheduled run; `coverage()` → `NOT_RUN` for a missing record | `src/v1_tickets/scan_record.py` | `tests/test_manual_ticket_scan_records.py` |
+| 4 Logic gate | L1–L6 pure functions with per-check evidence | `src/v1_tickets/logic_gate.py` | `tests/test_manual_ticket_logic_gate.py` (recorded EURUSD M15 sessions) |
+| 5 Manual ticket | Extends the V1 FX ticket dict; owner layout; existing Telegram channel only for `TICKET_READY` | `src/v1_tickets/manual_ticket.py`, `config/owner_ticket.yaml` | `tests/test_manual_ticket_build.py` |
+| 6 Owner decision | `AG_MANUAL_TICKET_DECISION_V1`, append-only; auto `EXPIRED` | `src/v1_tickets/owner_decision.py`, `scripts/manual_ticket_decision.py` | `tests/test_manual_ticket_owner_decision.py` |
+| 7 Outcomes | `VIRTUAL_FORWARD` first-touch resolver, `AMBIGUOUS` same bar, once per UTC day on the FX task | `src/v1_tickets/outcome.py` | `tests/test_manual_ticket_outcome.py` |
+| 8 Daily report + boundary | Report after last window + 30 min; static import-graph proof of no broker mutation | `src/v1_tickets/manual_report.py`, `scripts/run_manual_ticket_report.py` | `tests/test_manual_ticket_report_and_boundary.py` |
+
+Scheduling: no new task or orchestrator. The existing `AG-V1-FX-Cycles` task
+(`live_candles_smoke.py --mode fx`) runs the daily jobs (`run_manual_jobs`) before the
+FX cycle: auto-expiry every run, the resolver once per UTC day, the report once per day
+after 15:30 UTC.
+
+### Finding — frozen v1.1.1 is not logic-verifiable (repo wins; nothing repaired)
+
+L2 evaluates every rule declared in `strategies/ST_ASIAN_SWEEP_5R_V1.yaml`. On every
+recorded sweep it **fails** for reasons that were already documented in the repository
+before this change:
+
+- `stop_loss_mode: PERCENT_OF_SESSION_RANGE 0.25` vs the engine's sweep-wick stop
+  (`docs/status/AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION_STATUS.md`).
+- `trend_bias_filter: EMA_50` declares no timeframe/price source and is not consumed.
+- `entry_level: Sweep_Candle_Body_Close` vs the engine's body edge (`min/max(open, close)`)
+  whenever the sweep candle closes in the trade direction.
+- `TREND`/`RANGE` engine branches are not declared in the YAML `entry_rules`.
+- `range_session_check` (25 pips, EURUSD only) has no stated gating effect.
+- `structural_invalidation` ("expansion volume") has no measurable definition.
+
+Effect: `ST_ASIAN_SWEEP_5R_V1@1.1.1` produces `TICKET_BLOCKED` with
+`LOGIC_GATE_FAIL:L2` and **zero `TICKET_READY`** in production. `logic_status` stays
+`NOT_VERIFIED`. The fix is a new candidate version whose spec and engine agree, which is
+out of scope. The `TICKET_READY` path (risk, lot, expiry, decision, delivery) is tested
+with an explicit test-only L2 stub.
+
+Other recorded observations: the existing 15 % spread/stop guard blocks many tight-stop
+sweeps (`SPREAD_TOO_WIDE`); the recorded 2026-07-17 sweep has zero stop distance (L3 FAIL).
+The existing informational READY Telegram message (`tg.format_ticket`) is unchanged.
+
+### Tests
+
+`python -m pytest -q` → **980 passed, 2 skipped** (baseline 878 passed, 2 skipped; +102
+new). Frozen strategy files: `git diff main -- strategies/` changes only `registry.yaml`
+and `STRATEGY_LEDGER.md` (additive authority fields/notes); `ST_ASIAN_SWEEP_5R_V1.yaml`,
+`session_trade/contract.yaml` and `src/strategy_engine/` are unchanged.
+
+Not performed: live MT5 host run, Windows Task Scheduler run, Telegram delivery. These
+paths are **unit-tested only, not live-verified**.
+
+### Owner actions still open
+
+1. Set `owner_ticket.risk_pct` / `cost_warn_R` in `config/local/owner_ticket.yaml` on the
+   host (until then tickets are `RISK_CONFIG_MISSING`).
+2. Decide on the L2 divergences: a new candidate version of the strategy, or an explicit
+   owner ruling on which source (YAML or engine) is the authority.
+3. Decide whether the existing informational READY message should continue while the
+   manual gate blocks.
+4. Commission per symbol is not available in the repo; `cost_in_R` is spread-only and L5
+   shows `COMMISSION NOT AVAILABLE`.

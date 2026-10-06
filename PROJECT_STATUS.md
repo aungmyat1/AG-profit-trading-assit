@@ -4,6 +4,21 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Manual Trade Ticket V1 — pre-edge manual-ticket path (2026-10-06)
+
+`ST_ASIAN_SWEEP_5R_V1@1.1.1` now produces owner-facing MANUAL tickets on the existing FX
+task: registry ticket authority (fail closed), a scan record per symbol per run, Logic
+Gate L1–L6, owner risk % with no default (`config/owner_ticket.yaml`, unset →
+`RISK_CONFIG_MISSING`), append-only owner decisions, a `VIRTUAL_FORWARD` outcome
+resolver, and a daily report. `SESSION_TRADE_V1` is registry/scanner-visible only
+(`STRATEGY_ADAPTER_NOT_IMPLEMENTED`). DST is display-only; rules stay fixed UTC.
+**Finding:** L2 fails on frozen v1.1.1 spec/engine divergences that were already
+documented (wick stop vs 25 % range stop, unconsumed EMA_50, and others), so production
+emits **zero `TICKET_READY`**. `logic_status = NOT_VERIFIED`, `EDGE_VERIFIED = FALSE`.
+No authority change, no broker-mutation path (static import-graph test). Full suite:
+**980 passed, 2 skipped**. Unit-tested only; live host run deferred. Evidence:
+`docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md`.
+
 ## Crypto CFD observation scanner V1 — merged, observation-only (2026-10-03)
 
 PR #28 was merged into `main` at `5fa46102aabac97773ef66aa3f0ed10561ad66b1`
