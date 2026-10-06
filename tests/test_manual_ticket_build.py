@@ -44,7 +44,8 @@ def l2_pass(monkeypatch):
 def test_real_v1_1_1_ticket_is_blocked_by_l2_and_renders_not_set_fields():
     t = manual()
     assert t["state"] == "TICKET_BLOCKED" and t["primary_block_reason"] == "LOGIC_GATE_FAIL:L2"
-    assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "LOGIC_GATE_FAIL:L3", "RISK_CONFIG_MISSING", "L5_WARN"]
+    assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "LOGIC_GATE_FAIL:L3", "RISK_CONFIG_MISSING"]
+    assert t["warnings"] == ["L5_WARN"]
     assert t["stop_reason"] == t["primary_block_reason"]
     assert t["owner_accept_allowed"] is False and t["logic_status"] == "NOT_VERIFIED"
     assert t["invariants"] == {"order_ready": False, "broker_authorized": False, "edge_verified": False,
@@ -80,7 +81,7 @@ def test_unset_owner_risk_blocks_with_explicit_not_set(l2_pass):
 def test_owner_risk_set_gives_manual_ticket_ready(l2_pass):
     t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)
     assert t["state"] == "TICKET_READY" and t["owner_accept_allowed"] is True and t["ticket_status"] == "READY"
-    assert t["primary_block_reason"] is None and t["block_reasons"] == ["L5_WARN"]      # advisory only
+    assert t["primary_block_reason"] is None and t["block_reasons"] == [] and t["warnings"] == ["L5_WARN"]
     assert t["lot_size"] == pytest.approx(0.98) and t["risk"]["risk_amount"] <= 50.0
     assert t["valid_until"] == "2026-06-23T07:30:00+00:00" and t["rr_tp2"] == 5.0
     assert t["invariants"]["order_ready"] is False and t["edge_status"] == "NOT VERIFIED — logic only"
@@ -151,7 +152,8 @@ def test_pass_b_shape_l2_primary_with_signal_stale_secondary():
     (previously the single stop_reason was STALE_SIGNAL and hid the logic failure)."""
     t = manual(READY_DAY, "07:40", owner=OWNER, balance=10000.0, meta=META)
     assert t["state"] == "TICKET_BLOCKED" and t["primary_block_reason"] == "LOGIC_GATE_FAIL:L2"
-    assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "SIGNAL_STALE", "TICKET_EXPIRED", "L5_WARN"]
+    assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "SIGNAL_STALE", "TICKET_EXPIRED"]
+    assert t["warnings"] == ["L5_WARN"]
     assert t["stage_reached"] == "LOGIC_GATE" and "also: SIGNAL_STALE" in mt.render_text(t)
 
 
@@ -161,5 +163,13 @@ def test_block_reason_precedence_tiers():
            "SYMBOL_METADATA_MISSING", "DATA_ERROR:MT5_DOWN", "LOGIC_GATE_FAIL:L3", "LOGIC_GATE_FAIL:L1", "L5_WARN"]
     assert order_block_reasons(raw) == [
         "LOGIC_GATE_FAIL:L3", "LOGIC_GATE_FAIL:L1", "SYMBOL_METADATA_MISSING", "DATA_ERROR:MT5_DOWN",
-        "RISK_CONFIG_MISSING", "SPREAD_TOO_WIDE", "TICKET_EXPIRED", "SIGNAL_STALE", "L5_WARN"]
+        "RISK_CONFIG_MISSING", "SPREAD_TOO_WIDE", "TICKET_EXPIRED", "SIGNAL_STALE"]   # L5_WARN dropped
     assert not is_blocking("L5_WARN") and is_blocking("SIGNAL_STALE")
+
+
+def test_ticket_ready_has_no_block_reasons_and_l5_warning_only_in_warnings(l2_pass):
+    """Owner decision 3 (2026-10-06): warnings[] is separate; TICKET_READY => block_reasons == []."""
+    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)       # cost_warn_R 0.25, no commission
+    assert t["state"] == "TICKET_READY" and t["logic_gate"]["L5"]["status"] == "WARN"
+    assert t["block_reasons"] == [] and t["primary_block_reason"] is None and t["stop_reason"] is None
+    assert t["warnings"] == ["L5_WARN"] and "warn: L5_WARN" in mt.render_text(t)

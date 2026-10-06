@@ -118,3 +118,10 @@ def test_telegram_policy_off_is_recorded_as_not_sent(tmp_path, monkeypatch):
     rows = read_jsonl(str(tmp_path / smoke.DELIVERY_DIR / f"{NOW.date().isoformat()}.jsonl"))
     assert rows == [{"channel": "telegram", "kind": "TICKET", "value": "READY", "ref": "x", "status": "NOT_SENT_POLICY",
                      "error": None, "recorded_at": NOW.isoformat()}]
+
+
+def test_scan_record_keeps_warnings_out_of_block_reasons():
+    rec = build_scan_record(run_id="r", session="ASIAN_LONDON", symbol="EURUSD", strategy_id="S", strategy_version="1",
+                            window=None, data_close=None, state=TICKET_READY, stage="TICKET", stop_reason=None,
+                            now=NOW, block_reasons=["L5_WARN"], warnings=["L5_WARN"])
+    assert rec.block_reasons == () and rec.warnings == ("L5_WARN",) and rec.primary_block_reason is None

@@ -43,6 +43,7 @@ class ScanRecord:
     ticket_id: Optional[str] = None
     block_reasons: Tuple[str, ...] = ()          # ordered by severity; stop_reason == block_reasons[0] alias
     primary_block_reason: Optional[str] = None
+    warnings: Tuple[str, ...] = ()               # advisory only (e.g. L5_WARN); never blocks
 
     def __post_init__(self) -> None:
         if self.state not in STATES:
@@ -74,7 +75,8 @@ def build_scan_record(*, run_id: str, session: str, symbol: str, strategy_id: st
                       window: Optional[Tuple[dt.datetime, dt.datetime]], data_close: Optional[dt.datetime],
                       state: str, stage: str, stop_reason: Optional[str], now: dt.datetime,
                       ticket_id: Optional[str] = None,
-                      block_reasons: Optional[Sequence[str]] = None) -> ScanRecord:
+                      block_reasons: Optional[Sequence[str]] = None,
+                      warnings: Sequence[str] = ()) -> ScanRecord:
     from v1_tickets.logic_gate import order_block_reasons
     ordered = tuple(order_block_reasons(block_reasons if block_reasons is not None else [stop_reason]))
     return ScanRecord(
@@ -85,7 +87,7 @@ def build_scan_record(*, run_id: str, session: str, symbol: str, strategy_id: st
         data_freshness_s=round((now - data_close).total_seconds(), 3) if data_close else None,
         stage_reached=stage, state=state, stop_reason=stop_reason, created_at=now.isoformat(),
         ticket_id=ticket_id, block_reasons=ordered,
-        primary_block_reason=stop_reason if state != TICKET_READY else None,
+        primary_block_reason=stop_reason if state != TICKET_READY else None, warnings=tuple(warnings),
     )
 
 

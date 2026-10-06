@@ -275,9 +275,8 @@ def normalise_reason(reason: str) -> str:
 
 def reason_severity(reason: str) -> int:
     """Lower = more severe. L1-L4 FAIL > DATA/METADATA missing > RISK_CONFIG_MISSING >
-    any other blocking reason (e.g. SPREAD_TOO_WIDE, authority) > SIGNAL_STALE/EXPIRED > L5 WARN.
-    Placing unlisted blocking reasons between risk and staleness is a conservative choice:
-    a structural block outranks a time-decay one."""
+    any other blocking reason (e.g. SPREAD_TOO_WIDE, authority) > SIGNAL_STALE/EXPIRED.
+    Owner-approved 2026-10-06. L5_WARN ranks last but is a warning, never a block reason."""
     if reason.startswith("LOGIC_GATE_FAIL:"):
         return 0
     if reason.startswith("DATA_ERROR:") or reason in DATA_METADATA_REASONS:
@@ -292,10 +291,11 @@ def reason_severity(reason: str) -> int:
 
 
 def order_block_reasons(reasons: Sequence[Optional[str]]) -> List[str]:
-    """Deduplicated, ordered by severity; original order breaks ties (L1 before L2 ...)."""
+    """Blocking reasons only (warnings dropped), deduplicated, ordered by severity; original
+    order breaks ties (L1 before L2 ...)."""
     seen: List[str] = []
     for r in reasons:
-        if r and normalise_reason(r) not in seen:
+        if r and is_blocking(normalise_reason(r)) and normalise_reason(r) not in seen:
             seen.append(normalise_reason(r))
     return sorted(seen, key=lambda r: (reason_severity(r), seen.index(r)))
 

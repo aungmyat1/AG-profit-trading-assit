@@ -29,7 +29,7 @@ from v1_tickets import fx
 from v1_tickets.authority import REPO_ROOT, TicketAuthority, resolve_ticket_authority
 from v1_tickets.guards import STALE_AFTER
 from v1_tickets.logic_gate import (
-    FAIL, L5_WARN, PASS, TICKET_EXPIRED, WARN, blocking_failures, is_blocking, l1_determinism, l2_rule_conformance,
+    FAIL, L5_WARN, PASS, TICKET_EXPIRED, WARN, blocking_failures, l1_determinism, l2_rule_conformance,
     l3_geometry, l4_data_session, l5_cost, l6_freshness, order_block_reasons,
 )
 from v1_tickets.scan_record import (
@@ -144,6 +144,7 @@ def build_manual_ticket(
         "logic_gate": {}, "owner_accept_allowed": False,
     }
     has_signal = base.get("direction") is not None
+    warnings: List[str] = []
     if has_signal:
         digits = fx._digits(symbol)
         long = base["direction"] == "LONG"
@@ -187,7 +188,7 @@ def build_manual_ticket(
             "signal_close_utc": _iso(signal_close),
         })
         failed = blocking_failures(gates)
-        # Collect every reason (A2), then order by severity; the primary is the most severe.
+        # Collect every blocking reason (A2), then order by severity; the primary is the most severe.
         reasons: List[Optional[str]] = ["LOGIC_GATE_FAIL:" + g for g in failed]
         if state != TICKET_READY:
             reasons.append(reason)
@@ -196,11 +197,10 @@ def build_manual_ticket(
         if now >= valid_until:
             reasons.append(TICKET_EXPIRED)
         if gates["L5"]["status"] != PASS:
-            reasons.append(L5_WARN)
+            warnings.append(L5_WARN)            # advisory: never a block reason (owner decision 3)
         block_reasons = order_block_reasons(reasons)
-        blocking = [r for r in block_reasons if is_blocking(r)]
-        if blocking:
-            state, reason = TICKET_BLOCKED, blocking[0]
+        if block_reasons:
+            state, reason = TICKET_BLOCKED, block_reasons[0]
             stage = ("LOGIC_GATE" if reason.startswith("LOGIC_GATE_FAIL:") else
                      "RISK" if reason == lot["status"] else "TICKET" if reason == TICKET_EXPIRED else stage)
         elif state == TICKET_READY:
@@ -216,7 +216,10 @@ def build_manual_ticket(
         ticket["ticket_status"] = {NO_SETUP: "NO_SETUP", WATCH: "WATCH"}.get(state, "BLOCKED")
     primary = reason if reason in block_reasons else (block_reasons[0] if block_reasons and state != TICKET_READY
                                                        else None)
-    ticket.update({"block_reasons": block_reasons, "primary_block_reason": primary})
+    if state == TICKET_READY:
+        if block_reasons:                               # invariant: a READY ticket carries no block reason
+            raise RuntimeError(f"TICKET_READY with block_reasons {block_reasons}")
+    ticket.update({"block_reasons": block_reasons, "primary_block_reason": primary, "warnings": warnings})
     # `stop_reason` is kept only as an alias of primary_block_reason for existing readers.
     ticket.update({"state": state, "stage_reached": stage, "stop_reason": primary})
     return ticket
@@ -239,7 +242,8 @@ def render_text(t: Dict[str, Any]) -> str:
         "AG TRADE TICKET — MANUAL DECISION",
         f"#{t['ticket_id']}  Strategy {t['strategy']}  Session {t['session']}",
         f"State       {t['state']}" + (f" ({t['primary_block_reason']})" if t.get("primary_block_reason") else "")
-        + (f"  also: {', '.join(t['block_reasons'][1:])}" if len(t.get("block_reasons") or []) > 1 else ""),
+        + (f"  also: {', '.join(t['block_reasons'][1:])}" if len(t.get("block_reasons") or []) > 1 else "")
+        + (f"  warn: {', '.join(t['warnings'])}" if t.get("warnings") else ""),
         f"Logic gate  {gate_line(t)}",
         f"Logic status {t['logic_status']} (strategy)   Economic {t['economic_status']}",
         f"Edge status {t['edge_status']}",

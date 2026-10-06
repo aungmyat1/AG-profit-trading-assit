@@ -318,7 +318,7 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                 strategy_version=manual["strategy_version"], window=w["trade"], data_close=data_close,
                 state=manual["state"], stage=manual["stage_reached"], stop_reason=manual["stop_reason"],
                 now=now, ticket_id=manual["ticket_id"] if manual.get("direction") else None,
-                block_reasons=manual["block_reasons"]))
+                block_reasons=manual["block_reasons"], warnings=manual.get("warnings", ())))
             if manual_new and notify and manual["state"] == "TICKET_READY":
                 _notify("TICKET", "READY", manual_ticket.render_text(manual), REPO_ROOT, journal=journal,
                         ref=f"manual:{manual['ticket_id']}", now=now)

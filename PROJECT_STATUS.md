@@ -19,8 +19,10 @@ No authority change, no broker-mutation path (static import-graph test). Full su
 **980 passed, 2 skipped** at Phase 8. **Phase A close-out (2026-10-06):** L3 now enforces
 target ordering (LONG entry < TP1 ≤ TP2, SHORT entry > TP1 ≥ TP2; the recorded 2026-06-17
 EURUSD LONG fails it), ordered `block_reasons[]` + `primary_block_reason` replace the single
-`stop_reason` (kept as an alias), and Telegram delivery status is persisted separately and
-can no longer abort a scan loop. Full suite **995 passed, 2 skipped** (Linux cloud container).
+`stop_reason` (kept as an alias), with advisory `warnings[]` (L5) kept separate so a
+`TICKET_READY` ticket has no block reasons (owner decision 2026-10-06), and Telegram delivery
+status is persisted separately and can no longer abort a scan loop. Full suite
+**997 passed, 2 skipped** (Linux cloud container).
 Host status: the owner-reported host run (PASS B, four `REFERENCE_NOT_READY` Telegram
 captures) has **no evidence committed to this repository**, so it is recorded as
 `HOST_EVIDENCE_NOT_IN_REPO` — not live-verified here. Evidence:
