@@ -63,6 +63,7 @@ from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
 from strategy_engine import load_strategy  # noqa: E402
 from v1_tickets import fx as fx_tickets  # noqa: E402
+from mt5.symbol_resolver import SymbolMeta  # noqa: E402
 from v1_tickets import manual_ticket  # noqa: E402
 from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility  # noqa: E402
 from v1_tickets.scan_record import (  # noqa: E402
@@ -130,12 +131,29 @@ def fx_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_clo
 
 
 def manual_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_close: Optional[dt.datetime],
-                      spread: Optional[float], balance: Optional[float]) -> dict:
-    """Manual Trade Ticket V1: same inputs as fx_ticket_for, plus owner risk and read-only balance."""
+                      spread: Optional[float], balance: Optional[float], live_meta: Optional[SymbolMeta] = None) -> dict:
+    """Manual Trade Ticket V1: same inputs as fx_ticket_for, plus owner risk, read-only balance and
+    sizing metadata (live symbol_info first, captured snapshot only as a stamped fallback)."""
     day, session, expected, post = _fx_inputs(cycle, m15, now)
+    meta, provenance = manual_ticket.resolve_symbol_meta(symbol, live_meta, now)
     return manual_ticket.build_manual_ticket(
         symbol, cycle, day, session, expected, post, now=now, data_close=data_close, spread=spread,
-        owner=manual_ticket.load_owner_config(), balance=balance, meta=manual_ticket.symbol_meta_from_host(symbol))
+        owner=manual_ticket.load_owner_config(), balance=balance, meta=meta, meta_provenance=provenance)
+
+
+def live_symbol_meta(mt5, broker: str) -> Optional[SymbolMeta]:
+    """Read-only symbol_info(broker) -> SymbolMeta; None on any failure (caller falls back/fails closed)."""
+    try:
+        i = call_with_timeout(mt5.symbol_info, broker)
+        if i is None:
+            return None
+        return SymbolMeta(symbol=broker, tick_size=float(i.trade_tick_size), tick_value=float(i.trade_tick_value),
+                          contract_size=float(i.trade_contract_size), volume_min=float(i.volume_min),
+                          volume_max=float(i.volume_max), volume_step=float(i.volume_step), digits=int(i.digits),
+                          point=float(i.point), trade_stops_level=int(i.trade_stops_level),
+                          trade_freeze_level=int(i.trade_freeze_level))
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def account_balance(mt5) -> Optional[float]:
@@ -262,7 +280,8 @@ def archive_fx_runtime_failure(now: dt.datetime, journal: str, reason: str, deta
 
 def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bool = True,
            quote: Optional[Quote] = None, cycle_filter: Optional[str] = None,
-           balance: Optional[Callable[[], Optional[float]]] = None) -> List[str]:
+           balance: Optional[Callable[[], Optional[float]]] = None,
+           symbol_meta: Optional[Callable[[str], Optional[SymbolMeta]]] = None) -> List[str]:
     lines = []
     balance_value: List[Optional[float]] = []
     state = JsonKeyValueStore(os.path.join(journal, "v1_host_state.json"))
@@ -310,7 +329,8 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
             new, paper_opened, paper_reasons = _archive_fx_result(state, journal, ticket, now)
             if not balance_value:
                 balance_value.append(balance() if balance is not None else None)
-            manual = manual_ticket_for(symbol, cycle, m15, now, data_close, spread, balance_value[0])
+            manual = manual_ticket_for(symbol, cycle, m15, now, data_close, spread, balance_value[0],
+                                       symbol_meta(broker) if symbol_meta is not None else None)
             manual_new = archive_if_changed(state, f"manual:{manual['ticket_id']}", manual,
                                             lambda x: manual_ticket.archive_manual_ticket(journal, x))
             write_scan_record(journal, build_scan_record(
@@ -320,8 +340,8 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                 now=now, ticket_id=manual["ticket_id"] if manual.get("direction") else None,
                 block_reasons=manual["block_reasons"], warnings=manual.get("warnings", ())))
             if manual_new and notify and manual["state"] == "TICKET_READY":
-                _notify("TICKET", "READY", manual_ticket.render_text(manual), REPO_ROOT, journal=journal,
-                        ref=f"manual:{manual['ticket_id']}", now=now)
+                _notify(tg.MANUAL_TICKET, tg.MANUAL_TICKET_READY, manual_ticket.render_text(manual), REPO_ROOT,
+                        journal=journal, ref=f"manual:{manual['ticket_id']}", now=now)
             paper_status = "OPENED" if paper_opened else (
                 "ALREADY_RECORDED" if not paper_reasons
                 else "INELIGIBLE:" + ",".join(paper_reasons)
@@ -577,7 +597,8 @@ def main(argv=None) -> int:
                         elif args.mode == "fx":
                             lines = run_manual_jobs(fetch, now, journal) + run_fx(
                                 fetch, now, journal, gated=True, quote=quote, cycle_filter=args.cycle,
-                                balance=lambda: account_balance(mt5))
+                                balance=lambda: account_balance(mt5),
+                                symbol_meta=lambda broker: live_symbol_meta(mt5, broker))
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
                                              fx=False, window="WEEKEND")
@@ -602,8 +623,14 @@ def main(argv=None) -> int:
     return 0
 
 
+def flush_std_streams() -> None:
+    """sys.stdout / sys.stderr are None under pythonw.exe (windowless scheduled runs)."""
+    for stream in (sys.stdout, sys.stderr):
+        if stream is not None:
+            stream.flush()
+
+
 if __name__ == "__main__":
     rc = main()
-    sys.stdout.flush()
-    sys.stderr.flush()
+    flush_std_streams()
     os._exit(rc)   # hard exit: a lingering MT5/HTTP thread must not keep the task alive after main()

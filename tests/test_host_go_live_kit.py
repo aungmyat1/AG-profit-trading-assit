@@ -381,13 +381,24 @@ def test_run_watchdog_logs_timeout_and_releases_lock(tmp_path, monkeypatch):
 
 
 def test_mt5_access_lock_is_exclusive_and_reports_busy(tmp_path, monkeypatch):
-    monkeypatch.setattr(hc, "LOG_DIR", str(tmp_path))
+    monkeypatch.setattr(hc, "MT5_LOCK_DIR", str(tmp_path))
     with hc.mt5_access_lock(wait_s=0):
         with pytest.raises(hc.Mt5Busy):
             with hc.mt5_access_lock(wait_s=0.2, poll_s=0.05):
                 pass
     with hc.mt5_access_lock(wait_s=0):
         pass
+
+
+def test_mt5_access_lock_is_host_wide_not_checkout_relative():
+    """Two checkouts share one MT5 terminal, so the lock must live outside every checkout."""
+    root = os.path.normcase(os.path.abspath(hc.REPO_ROOT))
+    lock_dir = os.path.normcase(os.path.abspath(hc.MT5_LOCK_DIR))
+    try:
+        inside = os.path.commonpath([lock_dir, root]) == root
+    except ValueError:      # different drives
+        inside = False
+    assert not inside
 
 
 @pytest.mark.parametrize("now,open_", [
@@ -892,3 +903,10 @@ def test_smoke_includes_vt_crypto_with_v2_config(tmp_path):
     text = "\n".join(lines)
     assert "BARS BTCUSDT (BTCUSD) status=" in text and "BARS ETHUSDT (ETHUSD) status=" in text
     assert re.search(r"CRYPTO BTCUSDT (OUTSIDE_WINDOW|decision=)", text)
+
+
+def test_flush_std_streams_tolerates_pythonw_none_streams(monkeypatch):
+    """pythonw.exe (Task Scheduler) runs with sys.stdout/sys.stderr = None; exit must not raise."""
+    monkeypatch.setattr(sys, "stdout", None)
+    monkeypatch.setattr(sys, "stderr", None)
+    smoke.flush_std_streams()

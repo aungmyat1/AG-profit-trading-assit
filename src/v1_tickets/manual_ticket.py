@@ -89,6 +89,34 @@ def symbol_meta_from_host(symbol: str) -> Optional[SymbolMeta]:
         return None
 
 
+META_LIVE = "LIVE_SYMBOL_INFO"
+META_CAPTURE_FALLBACK = "HOST_CAPTURE_FALLBACK"
+META_NONE = "NONE"
+
+
+def _usable(meta: Optional[SymbolMeta]) -> bool:
+    return meta is not None and meta.tick_size > 0 and meta.tick_value > 0 and meta.volume_step > 0
+
+
+def resolve_symbol_meta(symbol: str, live: Optional[SymbolMeta], now: dt.datetime) -> tuple:
+    """Sizing metadata authority: fresh read-only broker symbol_info first; the verified host
+    capture only as an explicit, provenance-stamped fallback; otherwise None (fail closed)."""
+    expected = fx.REQUIRED_BROKER_SYMBOL.get(symbol)
+    if _usable(live) and (expected is None or live.symbol == expected):
+        return live, {"source": META_LIVE, "broker_symbol": live.symbol}
+    record = fx.host_record(symbol)
+    meta = symbol_meta_from_host(symbol)
+    if _usable(meta):
+        captured = record.get("captured_at_utc")
+        try:
+            age_h = int((now - dt.datetime.fromisoformat(captured)).total_seconds() // 3600)
+        except (TypeError, ValueError):
+            age_h = None
+        return meta, {"source": META_CAPTURE_FALLBACK, "broker_symbol": meta.symbol, "captured_at": captured,
+                      "capture_age_h": age_h, "live_unavailable": live is None}
+    return None, {"source": META_NONE, "broker_symbol": None}
+
+
 def lot_size(entry: Optional[float], sl: Optional[float], owner: Dict[str, Any], balance: Optional[float],
              meta: Optional[SymbolMeta]) -> Dict[str, Any]:
     if owner["risk_pct"] is None:
@@ -115,7 +143,7 @@ def build_manual_ticket(
     post: Sequence[Candle], *, now: dt.datetime, data_close: Optional[dt.datetime], spread: Optional[float],
     owner: Dict[str, Any], balance: Optional[float] = None, meta: Optional[SymbolMeta] = None,
     commission_r: Optional[float] = None, data_source: str = "MT5_VT_MARKETS_DEMO",
-    authority: Optional[TicketAuthority] = None,
+    authority: Optional[TicketAuthority] = None, meta_provenance: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     strategy = load_strategy(fx.STRATEGY_PATH)
     windows = fx.session_windows_utc(session_date)[cycle]
@@ -174,6 +202,8 @@ def build_manual_ticket(
             "L6": l6_freshness(_iso(valid_until), stale_if, invalid_if),
         }
         lot = lot_size(entry, sl, owner, balance, meta)
+        lot["symbol_meta"] = meta_provenance or {"source": "CALLER_SUPPLIED" if meta is not None else META_NONE,
+                                                 "broker_symbol": meta.symbol if meta is not None else None}
         spread_r = spread / risk if spread is not None and risk else None
         ticket.update({
             "branch": f"{base['setup']}:{base['reason_code'] if base['decision'] == 'READY' else base.get('engine_reason_code', base['reason_code'])}",
@@ -221,7 +251,10 @@ def build_manual_ticket(
             raise RuntimeError(f"TICKET_READY with block_reasons {block_reasons}")
     ticket.update({"block_reasons": block_reasons, "primary_block_reason": primary, "warnings": warnings})
     # `stop_reason` is kept only as an alias of primary_block_reason for existing readers.
-    ticket.update({"state": state, "stage_reached": stage, "stop_reason": primary})
+    ticket.update({"state": state, "stage_reached": stage, "stop_reason": primary,
+                   # The legacy informational decision is recorded beside, never merged into, the manual state.
+                   "legacy_informational_decision": base["decision"],
+                   "legacy_informational_ready": base["decision"] == "READY"})
     return ticket
 
 
@@ -234,6 +267,14 @@ def gate_line(ticket: Dict[str, Any]) -> str:
 
 def _p(value: Any) -> str:
     return "-" if value is None else str(value)
+
+
+def _meta_note(prov: Optional[Dict[str, Any]]) -> str:
+    if not prov or prov.get("source") == META_LIVE:
+        return ""
+    if prov.get("source") == META_CAPTURE_FALLBACK:
+        return f" [SIZED FROM CAPTURED METADATA {prov.get('captured_at')}, age {prov.get('capture_age_h')} h]"
+    return " [SYMBOL METADATA UNAVAILABLE]"
 
 
 def render_text(t: Dict[str, Any]) -> str:
@@ -263,7 +304,8 @@ def render_text(t: Dict[str, Any]) -> str:
         f"RISK: stop {_p(t['stop_distance'])}, lot {_p(t['lot_size'])} @ "
         f"{_p(t['risk']['risk_pct']) + ' %' if t['risk']['risk_pct'] is not None else RISK_NOT_SET_TEXT}"
         f" [{t['risk_status']}], cost {_p(t['cost_in_R'])} R"
-        f" (warn {t['cost_warn_R']}; {l5['L5.commission_R']['note'] or 'commission incl.'})",
+        f" (warn {t['cost_warn_R']}; {l5['L5.commission_R']['note'] or 'commission incl.'})"
+        + _meta_note(t['risk'].get('symbol_meta')),
         f"VALID UNTIL {t['valid_until']} / STALE IF {t['stale_if']['rule']} / "
         f"INVALID IF SL {t['invalid_if']['sl_touched_before_fill']} touched before fill or after "
         f"{t['invalid_if']['time_invalidation_utc']}",

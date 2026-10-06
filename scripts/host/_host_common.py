@@ -10,6 +10,7 @@ from __future__ import annotations
 import datetime as dt
 import os
 import sys
+import tempfile
 import threading
 import time
 from contextlib import contextmanager
@@ -23,6 +24,12 @@ for _p in (REPO_ROOT, os.path.join(REPO_ROOT, "src")):
         sys.path.append(_p)
 
 LOG_DIR = os.path.join(REPO_ROOT, "logs")
+# Host-wide lock directory, deliberately OUTSIDE any checkout: every AG checkout on this host
+# (production, PR worktrees, audits) talks to the same MT5 terminal, so their MT5 access must
+# serialize on one lock. A checkout-relative path (the old logs/mt5_access.lock) let two
+# checkouts hit the terminal concurrently. AG_HOST_LOCK_DIR overrides (tests, unusual hosts).
+MT5_LOCK_DIR = os.environ.get("AG_HOST_LOCK_DIR") or os.path.join(
+    os.environ.get("PROGRAMDATA") or tempfile.gettempdir(), "AG", "locks")
 _SECRET_MARKERS = ("TOKEN", "PASSWORD", "SECRET", "KEY")
 
 # Hard bounds for scheduled runs (a hung MT5 IPC call or interpreter exit once kept tasks alive
@@ -192,11 +199,11 @@ def _unlock(f) -> None:
 
 @contextmanager
 def mt5_access_lock(wait_s: float = MT5_LOCK_WAIT_S, poll_s: float = 1.0) -> Iterator[None]:
-    """One cross-process OS file lock around all MT5 access (fx / crypto / lsmc share one
-    terminal). The OS drops it when the process dies, so a killed run never leaves it held.
+    """One host-wide cross-process OS file lock around all MT5 access (fx / crypto / lsmc, from
+    any checkout, share one terminal). The OS drops it when the process dies, so a killed run never leaves it held.
     Raises Mt5Busy if it cannot be acquired within `wait_s`."""
-    os.makedirs(LOG_DIR, exist_ok=True)
-    f = open(os.path.join(LOG_DIR, "mt5_access.lock"), "a+")
+    os.makedirs(MT5_LOCK_DIR, exist_ok=True)
+    f = open(os.path.join(MT5_LOCK_DIR, "mt5_access.lock"), "a+")
     try:
         deadline = time.monotonic() + wait_s
         while not _try_lock(f):
