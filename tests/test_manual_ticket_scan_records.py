@@ -71,3 +71,50 @@ def test_every_scheduled_run_records_every_configured_symbol(tmp_path):
     cov = coverage(rows, run_id, expected)
     assert NOT_RUN not in cov.values() and len(rows) == len(expected)
     assert all(r["state"] == TICKET_BLOCKED for r in rows)
+
+
+def test_scan_record_carries_ordered_block_reasons():
+    rec = build_scan_record(run_id="r", session="ASIAN_LONDON", symbol="EURUSD", strategy_id="S", strategy_version="1",
+                            window=None, data_close=None, state=TICKET_BLOCKED, stage="LOGIC_GATE",
+                            stop_reason="LOGIC_GATE_FAIL:L2", now=NOW,
+                            block_reasons=["STALE_SIGNAL", "LOGIC_GATE_FAIL:L2"])
+    assert rec.block_reasons == ("LOGIC_GATE_FAIL:L2", "SIGNAL_STALE")
+    assert rec.primary_block_reason == "LOGIC_GATE_FAIL:L2" == rec.stop_reason
+
+
+@pytest.mark.parametrize("raiser,status,error", [
+    (smoke.tg.TelegramSendError("send failed (HTTP 401)"), "FAILED", "send failed (HTTP 401)"),
+    (RuntimeError("boom https://api.telegram.org/botSECRET123/sendMessage"), "ERROR", "RuntimeError"),
+])
+def test_telegram_failure_never_hides_scan_records_and_is_traced(tmp_path, monkeypatch, raiser, status, error):
+    """A4 / TELEGRAM_DELIVERY_TRACE_R1: scan records persist first; a delivery failure is recorded
+    separately, never raised, and carries no token/URL/message text."""
+    from test_manual_ticket_logic_gate import CANDLES     # recorded EURUSD M15; used only to drive the loop
+    monkeypatch.delenv("AG_EVIDENCE_ROOT")                 # committed host metadata -> tickets, not DATA_ERROR
+    now = dt.datetime(2026, 6, 23, 7, 20, tzinfo=UTC)
+    fetch = lambda symbol, tf, n: CANDLES                  # noqa: E731
+    logged = []
+    monkeypatch.setattr(smoke, "log_line", lambda name, msg: logged.append(msg))
+    monkeypatch.setattr(smoke.tg, "should_send", lambda *a, **k: True)
+
+    def boom(text, session=None):
+        raise raiser
+    monkeypatch.setattr(smoke.tg, "send_message", boom)
+    quiet, loud = str(tmp_path / "quiet"), str(tmp_path / "loud")
+    smoke.run_fx(fetch, now, quiet, gated=False, notify=False)
+    smoke.run_fx(fetch, now, loud, gated=False, notify=True)
+    quiet_rows, loud_rows = read_jsonl(scan_path(quiet, now.date())), read_jsonl(scan_path(loud, now.date()))
+    assert len(loud_rows) == len(quiet_rows) == 12      # 4 symbols x 2 cycles + 4 SESSION_TRADE_V1 visibility
+    path = tmp_path / "loud" / smoke.DELIVERY_DIR / f"{now.date().isoformat()}.jsonl"
+    rows = read_jsonl(str(path))
+    assert len(rows) == 8 and all(r["status"] == status and r["error"] == error and r["channel"] == "telegram" for r in rows)
+    assert {r["ref"].split(":")[0] for r in rows} == {"fx"}
+    assert "SECRET123" not in path.read_text() and not any("SECRET123" in m for m in logged)
+
+
+def test_telegram_policy_off_is_recorded_as_not_sent(tmp_path, monkeypatch):
+    monkeypatch.setattr(smoke.tg, "should_send", lambda *a, **k: False)
+    assert smoke._notify("TICKET", "READY", "text", ".", journal=str(tmp_path), ref="x", now=NOW) == "NOT_SENT_POLICY"
+    rows = read_jsonl(str(tmp_path / smoke.DELIVERY_DIR / f"{NOW.date().isoformat()}.jsonl"))
+    assert rows == [{"channel": "telegram", "kind": "TICKET", "value": "READY", "ref": "x", "status": "NOT_SENT_POLICY",
+                     "error": None, "recorded_at": NOW.isoformat()}]

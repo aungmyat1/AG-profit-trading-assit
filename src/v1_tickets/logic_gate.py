@@ -187,6 +187,9 @@ def l3_geometry(ticket: Dict[str, Any], post: Sequence[Candle], *, digits: Optio
                PASS if side(tp1, entry) else FAIL),
         _check("L3.tp2_direction", "TP2 in trade direction", tp2, f"{'>' if long else '<'} {entry}",
                PASS if side(tp2, entry) else FAIL),
+        _check("L3.target_order", "LONG entry < TP1 <= TP2 / SHORT entry > TP1 >= TP2", [entry, tp1, tp2],
+               "entry < TP1 <= TP2" if long else "entry > TP1 >= TP2",
+               PASS if side(tp1, entry) and tp2 is not None and (tp1 <= tp2 if long else tp1 >= tp2) else FAIL),
     ]
     rr2 = abs(tp2 - entry) / risk if tp2 is not None and entry is not None and risk else None
     rr_ok = rr2 is not None and declared_rr is not None and abs(rr2 - declared_rr) * risk <= max(_point(digits), 1e-9)
@@ -255,3 +258,47 @@ BLOCKING = ("L1", "L2", "L3", "L4")
 
 def blocking_failures(gates: Dict[str, Dict[str, Any]]) -> List[str]:
     return [g for g in BLOCKING if gates.get(g, {}).get("status") != PASS]
+
+
+# ---------------------------------------------------------------------------------- block reasons
+
+SIGNAL_STALE, TICKET_EXPIRED, L5_WARN = "SIGNAL_STALE", "TICKET_EXPIRED", "L5_WARN"
+# Data/metadata absent or unusable (fail closed). STALE_DATA is a data-freshness failure, not a signal one.
+DATA_METADATA_REASONS = {"STALE_DATA", "MARKET_CLOSED", "SPREAD_NOT_EVALUATED", "SYMBOL_METADATA_MISSING",
+                         "ACCOUNT_BALANCE_UNAVAILABLE"}
+_NORMALISE = {"STALE_SIGNAL": SIGNAL_STALE}
+
+
+def normalise_reason(reason: str) -> str:
+    return _NORMALISE.get(reason, reason)
+
+
+def reason_severity(reason: str) -> int:
+    """Lower = more severe. L1-L4 FAIL > DATA/METADATA missing > RISK_CONFIG_MISSING >
+    any other blocking reason (e.g. SPREAD_TOO_WIDE, authority) > SIGNAL_STALE/EXPIRED > L5 WARN.
+    Placing unlisted blocking reasons between risk and staleness is a conservative choice:
+    a structural block outranks a time-decay one."""
+    if reason.startswith("LOGIC_GATE_FAIL:"):
+        return 0
+    if reason.startswith("DATA_ERROR:") or reason in DATA_METADATA_REASONS:
+        return 1
+    if reason == "RISK_CONFIG_MISSING":
+        return 2
+    if reason == L5_WARN:
+        return 5
+    if reason in (SIGNAL_STALE, TICKET_EXPIRED):
+        return 4
+    return 3
+
+
+def order_block_reasons(reasons: Sequence[Optional[str]]) -> List[str]:
+    """Deduplicated, ordered by severity; original order breaks ties (L1 before L2 ...)."""
+    seen: List[str] = []
+    for r in reasons:
+        if r and normalise_reason(r) not in seen:
+            seen.append(normalise_reason(r))
+    return sorted(seen, key=lambda r: (reason_severity(r), seen.index(r)))
+
+
+def is_blocking(reason: str) -> bool:
+    return reason_severity(reason) < reason_severity(L5_WARN)

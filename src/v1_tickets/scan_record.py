@@ -41,6 +41,8 @@ class ScanRecord:
     stop_reason: Optional[str]
     created_at: str
     ticket_id: Optional[str] = None
+    block_reasons: Tuple[str, ...] = ()          # ordered by severity; stop_reason == block_reasons[0] alias
+    primary_block_reason: Optional[str] = None
 
     def __post_init__(self) -> None:
         if self.state not in STATES:
@@ -71,7 +73,10 @@ def classify_fx_ticket(ticket: Dict[str, Any], *, now: dt.datetime, window_end: 
 def build_scan_record(*, run_id: str, session: str, symbol: str, strategy_id: str, strategy_version: str,
                       window: Optional[Tuple[dt.datetime, dt.datetime]], data_close: Optional[dt.datetime],
                       state: str, stage: str, stop_reason: Optional[str], now: dt.datetime,
-                      ticket_id: Optional[str] = None) -> ScanRecord:
+                      ticket_id: Optional[str] = None,
+                      block_reasons: Optional[Sequence[str]] = None) -> ScanRecord:
+    from v1_tickets.logic_gate import order_block_reasons
+    ordered = tuple(order_block_reasons(block_reasons if block_reasons is not None else [stop_reason]))
     return ScanRecord(
         scheduler_run_id=run_id, session=session, symbol=symbol, strategy=f"{strategy_id}@{strategy_version}",
         session_anchor_tz="UTC",
@@ -79,7 +84,8 @@ def build_scan_record(*, run_id: str, session: str, symbol: str, strategy_id: st
         window_end_utc=window[1].isoformat() if window else None,
         data_freshness_s=round((now - data_close).total_seconds(), 3) if data_close else None,
         stage_reached=stage, state=state, stop_reason=stop_reason, created_at=now.isoformat(),
-        ticket_id=ticket_id,
+        ticket_id=ticket_id, block_reasons=ordered,
+        primary_block_reason=stop_reason if state != TICKET_READY else None,
     )
 
 

@@ -119,3 +119,22 @@ paths are **unit-tested only, not live-verified**.
    manual gate blocks.
 4. Commission per symbol is not available in the repo; `cost_in_R` is spread-only and L5
    shows `COMMISSION NOT AVAILABLE`.
+
+## Phase A close-out (2026-10-06, Linux cloud container, unit/fixture-tested only)
+
+Additive; Phases 0–8 above are unchanged historical evidence.
+
+| Item | Result | Code | Tests |
+|---|---|---|---|
+| A1 L3 target ordering | New check `L3.target_order`: LONG `entry < TP1 <= TP2`, SHORT `entry > TP1 >= TP2`, else L3 FAIL. Owner fixture USDJPY SHORT 158.148 / SL 158.224 / TP1 157.762 / TP2 157.768 → FAIL. **New finding on recorded data:** 2026-06-17 EURUSD LONG (entry 1.16075, TP1 = box high 1.16160 = 6.07R, TP2 = 5R 1.16145) also fails; the Phase 4 test that asserted L3 PASS there encoded the defect and was replaced. READY-path composition tests moved to 2026-06-23 (SHORT, L3 passes); no extra stub was added. | `src/v1_tickets/logic_gate.py` | `tests/test_manual_ticket_logic_gate.py` |
+| A2 block reasons | Ticket and scan record carry ordered `block_reasons[]` and `primary_block_reason`. Severity: L1–L4 FAIL > DATA/METADATA missing (`DATA_ERROR:*`, `STALE_DATA`, `MARKET_CLOSED`, `SPREAD_NOT_EVALUATED`, `SYMBOL_METADATA_MISSING`, `ACCOUNT_BALANCE_UNAVAILABLE`) > `RISK_CONFIG_MISSING` > other blocking (e.g. `SPREAD_TOO_WIDE`, authority) > `SIGNAL_STALE` / `TICKET_EXPIRED` > `L5_WARN` (advisory, never blocks). `STALE_SIGNAL` is normalised to `SIGNAL_STALE`. `stop_reason` remains as an alias of the primary for existing readers. Gates are now evaluated even when the base ticket was already withheld, so a stale signal no longer hides an L2 failure. | `logic_gate.py`, `manual_ticket.py`, `scan_record.py`, `live_candles_smoke.py` | `tests/test_manual_ticket_build.py`, `tests/test_manual_ticket_scan_records.py` |
+| A2 PASS B re-run | Recorded EURUSD 2026-06-23 at 07:40 (stale signal): primary `LOGIC_GATE_FAIL:L2`, then `SIGNAL_STALE`, `TICKET_EXPIRED`, `L5_WARN`. GBPUSD/USDJPY PASS B inputs are not in the repository; their re-run needs the host capture. | | `test_pass_b_shape_l2_primary_with_signal_stale_secondary` |
+| A3 `REFERENCE_NOT_READY` | **Not diagnosable from the repository.** No code path in `src/` or `scripts/` emits `REFERENCE_NOT_READY` (closest: `REFERENCE_SESSION_NOT_COMPLETE` in `session_scanner/strategy_adapter.py`, `REFERENCE_BOX_INCOMPLETE` in `session_scanner/checklist*.py`), and the four captures are not committed. Classification: `UNRESOLVED_EVIDENCE_NOT_IN_REPO`, possibly a message from a different subsystem. Needs the four raw captures (symbol, timestamp, full text). | — | — |
+| A4 TELEGRAM_DELIVERY_TRACE_R1 | Existing subsystem only. Scan/ticket records are written before `_notify`; `_notify` never raises (send error → `FAILED`, any other exception → `ERROR` with class name only, policy off → `NOT_SENT_POLICY`) and appends a separate record to `journal/ticket_delivery/delivery_status/<date>.jsonl` (`channel, kind, value, ref, status, error, recorded_at`). No token, chat id, URL or message text is stored. LSMC alerts stay log-only (no journal in that path). | `scripts/host/live_candles_smoke.py` | `tests/test_manual_ticket_scan_records.py` |
+| A5 status line | `PROJECT_STATUS.md` snapshot updated; host run recorded as `HOST_EVIDENCE_NOT_IN_REPO`. | | |
+
+Tests: `python -m pytest -q tests/test_manual_ticket_*.py` → 117 passed;
+`python -m pytest -q` → **995 passed, 2 skipped** (was 980 passed, 2 skipped).
+Not performed: MT5 host run, Task Scheduler run, Telegram delivery (no host in this
+container). `BROKER_MUTATION_COUNT = 0`; the static no-broker test still passes.
+`ST_ASIAN_SWEEP_5R_V1.yaml` and `src/strategy_engine/` unchanged. `EDGE_VERIFIED = FALSE`.

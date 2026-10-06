@@ -16,7 +16,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 import yaml
 
@@ -29,8 +29,8 @@ from v1_tickets import fx
 from v1_tickets.authority import REPO_ROOT, TicketAuthority, resolve_ticket_authority
 from v1_tickets.guards import STALE_AFTER
 from v1_tickets.logic_gate import (
-    FAIL, PASS, WARN, blocking_failures, l1_determinism, l2_rule_conformance, l3_geometry, l4_data_session,
-    l5_cost, l6_freshness,
+    FAIL, L5_WARN, PASS, TICKET_EXPIRED, WARN, blocking_failures, is_blocking, l1_determinism, l2_rule_conformance,
+    l3_geometry, l4_data_session, l5_cost, l6_freshness, order_block_reasons,
 )
 from v1_tickets.scan_record import (
     NO_SETUP, OPPORTUNITY, TICKET_BLOCKED, TICKET_READY, WATCH, append_jsonl, classify_fx_ticket,
@@ -187,21 +187,38 @@ def build_manual_ticket(
             "signal_close_utc": _iso(signal_close),
         })
         failed = blocking_failures(gates)
-        if state == TICKET_READY:
-            if failed:
-                state, stage, reason = TICKET_BLOCKED, "LOGIC_GATE", "LOGIC_GATE_FAIL:" + ",".join(failed)
-            elif lot["status"] != "OK":
-                state, stage, reason = TICKET_BLOCKED, "RISK", lot["status"]
-            elif now >= valid_until:
-                state, stage, reason = TICKET_BLOCKED, "TICKET", "TICKET_EXPIRED"
+        # Collect every reason (A2), then order by severity; the primary is the most severe.
+        reasons: List[Optional[str]] = ["LOGIC_GATE_FAIL:" + g for g in failed]
+        if state != TICKET_READY:
+            reasons.append(reason)
+        if lot["status"] != "OK":
+            reasons.append(lot["status"])
+        if now >= valid_until:
+            reasons.append(TICKET_EXPIRED)
+        if gates["L5"]["status"] != PASS:
+            reasons.append(L5_WARN)
+        block_reasons = order_block_reasons(reasons)
+        blocking = [r for r in block_reasons if is_blocking(r)]
+        if blocking:
+            state, reason = TICKET_BLOCKED, blocking[0]
+            stage = ("LOGIC_GATE" if reason.startswith("LOGIC_GATE_FAIL:") else
+                     "RISK" if reason == lot["status"] else "TICKET" if reason == TICKET_EXPIRED else stage)
+        elif state == TICKET_READY:
+            reason = None
         if state == TICKET_READY and not authority.ticket_eligible:
             state, stage, reason = OPPORTUNITY, "AUTHORITY", authority.reason
+            block_reasons = order_block_reasons([reason] + block_reasons)
         ticket["owner_accept_allowed"] = state == TICKET_READY and now < valid_until
         ticket["ticket_status"] = ("EXPIRED" if now >= valid_until else
                                    {TICKET_READY: "READY", OPPORTUNITY: "OPPORTUNITY"}.get(state, "BLOCKED"))
     else:
+        block_reasons = order_block_reasons([reason])
         ticket["ticket_status"] = {NO_SETUP: "NO_SETUP", WATCH: "WATCH"}.get(state, "BLOCKED")
-    ticket.update({"state": state, "stage_reached": stage, "stop_reason": reason})
+    primary = reason if reason in block_reasons else (block_reasons[0] if block_reasons and state != TICKET_READY
+                                                       else None)
+    ticket.update({"block_reasons": block_reasons, "primary_block_reason": primary})
+    # `stop_reason` is kept only as an alias of primary_block_reason for existing readers.
+    ticket.update({"state": state, "stage_reached": stage, "stop_reason": primary})
     return ticket
 
 
@@ -221,7 +238,8 @@ def render_text(t: Dict[str, Any]) -> str:
     lines = [
         "AG TRADE TICKET — MANUAL DECISION",
         f"#{t['ticket_id']}  Strategy {t['strategy']}  Session {t['session']}",
-        f"State       {t['state']}" + (f" ({t['stop_reason']})" if t.get("stop_reason") else ""),
+        f"State       {t['state']}" + (f" ({t['primary_block_reason']})" if t.get("primary_block_reason") else "")
+        + (f"  also: {', '.join(t['block_reasons'][1:])}" if len(t.get("block_reasons") or []) > 1 else ""),
         f"Logic gate  {gate_line(t)}",
         f"Logic status {t['logic_status']} (strategy)   Economic {t['economic_status']}",
         f"Edge status {t['edge_status']}",

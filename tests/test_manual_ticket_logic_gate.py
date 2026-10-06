@@ -95,12 +95,43 @@ def test_l2_trend_setup_is_not_a_declared_entry_rule():
     assert checks["R.entry_trigger"]["verdict"] == FAIL and checks["R.entry_trigger"]["value"] == "TREND"
 
 
-@pytest.mark.parametrize("day", ["2026-06-17", "2026-06-23"])
-def test_l3_geometry_passes_on_recorded_sweeps(day):
-    d, w, now, session, post, build = replay(day)
+def test_l3_geometry_passes_on_recorded_sweep():
+    d, w, now, session, post, build = replay("2026-06-23")
     gate = l3_geometry(build(), post, digits=5, declared_rr=5.0)
     assert gate["status"] == PASS, gate
     assert "no RR tolerance" in by_id(gate)["L3.rr_tp2"]["note"]
+
+
+def test_l3_target_order_fails_on_recorded_inverted_long():
+    """A1 on recorded data: 2026-06-17 LONG TP1 (box high 1.16160) lies beyond TP2 (5R, 1.16145)."""
+    d, w, now, session, post, build = replay("2026-06-17")
+    gate = l3_geometry(build(), post, digits=5, declared_rr=5.0)
+    checks = by_id(gate)
+    assert gate["status"] == FAIL and checks["L3.target_order"]["verdict"] == FAIL
+    assert all(c["verdict"] == PASS for k, c in checks.items() if k != "L3.target_order")
+
+
+def _short(entry, sl, tp1, tp2):
+    return {"direction": "SHORT", "entry": entry, "stop_loss": sl, "risk_distance": round(sl - entry, 6),
+            "targets": [{"leg": 1, "price": tp1}, {"leg": 2, "price": tp2}], "signal_timestamp": None}
+
+
+def test_l3_target_order_usdjpy_short_regression():
+    """A1 fixture: USDJPY SHORT entry 158.148, SL 158.224, TP1 157.762, TP2 157.768 -> L3 FAIL."""
+    gate = l3_geometry(_short(158.148, 158.224, 157.762, 157.768), [], digits=3, declared_rr=5.0)
+    assert gate["status"] == FAIL and by_id(gate)["L3.target_order"]["verdict"] == FAIL
+    assert by_id(gate)["L3.tp1_direction"]["verdict"] == PASS and by_id(gate)["L3.tp2_direction"]["verdict"] == PASS
+
+
+@pytest.mark.parametrize("direction,entry,tp1,tp2,verdict", [
+    ("LONG", 1.1000, 1.1010, 1.1050, PASS), ("LONG", 1.1000, 1.1050, 1.1050, PASS),
+    ("LONG", 1.1000, 1.1060, 1.1050, FAIL), ("LONG", 1.1000, 1.0990, 1.1050, FAIL),
+    ("SHORT", 1.1000, 1.0990, 1.0950, PASS), ("SHORT", 1.1000, 1.0950, 1.0950, PASS),
+    ("SHORT", 1.1000, 1.0940, 1.0950, FAIL), ("SHORT", 1.1000, 1.1010, 1.0950, FAIL),
+])
+def test_l3_target_order_boundaries(direction, entry, tp1, tp2, verdict):
+    t = {"direction": direction, "entry": entry, "targets": [{"leg": 1, "price": tp1}, {"leg": 2, "price": tp2}]}
+    assert by_id(l3_geometry(t, [], digits=5, declared_rr=5.0))["L3.target_order"]["verdict"] == verdict
 
 
 def test_l3_zero_stop_distance_fails():

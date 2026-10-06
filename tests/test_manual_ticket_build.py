@@ -18,6 +18,9 @@ META = SymbolMeta(symbol="EURUSD-VIP", tick_size=0.00001, tick_value=1.0, contra
                   volume_max=100.0, volume_step=0.01, digits=5, point=0.00001)
 UNSET = {"risk_pct": None, "risk_status": mt.RISK_CONFIG_MISSING, "cost_warn_R": None, "warn_status": "NOT_SET"}
 OWNER = {"risk_pct": 0.5, "risk_status": "SET", "cost_warn_R": 0.25, "warn_status": "SET"}
+# READY-path composition uses 2026-06-23 (SHORT): L3 passes there. 2026-06-17 (LONG) fails L3.target_order
+# (TP1 box high 1.16160 is beyond TP2 1.16145 at 5R) -- the A1 regression on recorded data.
+READY_DAY = "2026-06-23"
 
 
 @pytest.fixture(autouse=True)
@@ -40,7 +43,9 @@ def l2_pass(monkeypatch):
 
 def test_real_v1_1_1_ticket_is_blocked_by_l2_and_renders_not_set_fields():
     t = manual()
-    assert t["state"] == "TICKET_BLOCKED" and t["stop_reason"] == "LOGIC_GATE_FAIL:L2"
+    assert t["state"] == "TICKET_BLOCKED" and t["primary_block_reason"] == "LOGIC_GATE_FAIL:L2"
+    assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "LOGIC_GATE_FAIL:L3", "RISK_CONFIG_MISSING", "L5_WARN"]
+    assert t["stop_reason"] == t["primary_block_reason"]
     assert t["owner_accept_allowed"] is False and t["logic_status"] == "NOT_VERIFIED"
     assert t["invariants"] == {"order_ready": False, "broker_authorized": False, "edge_verified": False,
                                "orders_sent_by_system": 0}
@@ -50,7 +55,7 @@ def test_real_v1_1_1_ticket_is_blocked_by_l2_and_renders_not_set_fields():
     lines = text.splitlines()
     assert lines[0] == "AG TRADE TICKET — MANUAL DECISION"
     assert lines[1].startswith(f"#{t['ticket_id']}  Strategy ST_ASIAN_SWEEP_5R_V1@1.1.1  Session ASIAN_LONDON")
-    assert "Logic gate  L1 ✓ L2 ✗ L3 ✓ L4 ✓ L5 ⚠ L6 ✓" in text
+    assert "Logic gate  L1 ✓ L2 ✗ L3 ✗ L4 ✓ L5 ⚠ L6 ✓" in text
     assert "Edge status NOT VERIFIED — logic only" in text and "Authority   MANUAL — no automatic order" in text
     assert "EURUSD LONG" in text and "WHY: context" in text and "ORDER FIELDS: type MARKET" in text
     assert "OWNER RISK % NOT SET" in text and "WARN LEVEL NOT SET" in text and "VALID UNTIL" in text
@@ -67,34 +72,35 @@ def test_no_setup_day_renders_without_order_fields():
 
 
 def test_unset_owner_risk_blocks_with_explicit_not_set(l2_pass):
-    t = manual(balance=10000.0, meta=META)
+    t = manual(READY_DAY, "07:20", balance=10000.0, meta=META)
     assert t["state"] == "TICKET_BLOCKED" and t["stop_reason"] == "RISK_CONFIG_MISSING"
     assert t["lot_size"] == "OWNER RISK % NOT SET"
 
 
 def test_owner_risk_set_gives_manual_ticket_ready(l2_pass):
-    t = manual(owner=OWNER, balance=10000.0, meta=META)
+    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)
     assert t["state"] == "TICKET_READY" and t["owner_accept_allowed"] is True and t["ticket_status"] == "READY"
-    assert t["lot_size"] == pytest.approx(3.57) and t["risk"]["risk_amount"] <= 50.0
-    assert t["valid_until"] == "2026-06-17T07:30:00+00:00" and t["rr_tp2"] == 5.0
+    assert t["primary_block_reason"] is None and t["block_reasons"] == ["L5_WARN"]      # advisory only
+    assert t["lot_size"] == pytest.approx(0.98) and t["risk"]["risk_amount"] <= 50.0
+    assert t["valid_until"] == "2026-06-23T07:30:00+00:00" and t["rr_tp2"] == 5.0
     assert t["invariants"]["order_ready"] is False and t["edge_status"] == "NOT VERIFIED — logic only"
 
 
 @pytest.mark.parametrize("balance,meta,status", [(None, META, "ACCOUNT_BALANCE_UNAVAILABLE"),
                                                  (10000.0, None, "SYMBOL_METADATA_MISSING")])
 def test_lot_inputs_missing_block(l2_pass, balance, meta, status):
-    t = manual(owner=OWNER, balance=balance, meta=meta)
+    t = manual(READY_DAY, "07:20", owner=OWNER, balance=balance, meta=meta)
     assert t["state"] == "TICKET_BLOCKED" and t["stop_reason"] == status
 
 
 def test_expired_ticket_cannot_be_accepted(l2_pass):
-    t = manual(at="07:31", owner=OWNER, balance=10000.0, meta=META)
+    t = manual(READY_DAY, "07:31", owner=OWNER, balance=10000.0, meta=META)
     assert t["ticket_status"] == "EXPIRED" and t["owner_accept_allowed"] is False and t["state"] != "TICKET_READY"
 
 
 def test_strategy_without_manual_authority_is_opportunity_only(l2_pass):
     other = resolve_ticket_authority("ST_LARGE_SMC_V1", "1.0.7")
-    t = manual(owner=OWNER, balance=10000.0, meta=META, authority=other)
+    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META, authority=other)
     assert t["state"] == "OPPORTUNITY" and t["owner_accept_allowed"] is False
 
 
@@ -138,3 +144,22 @@ def test_scheduled_run_archives_manual_ticket_and_records_its_state(tmp_path, mo
     tickets = read_jsonl(mt.ticket_path(journal, HOST_NOW.date()))
     assert tickets and all(t["invariants"]["order_ready"] is False for t in tickets)
     assert {t["state"] for t in tickets} <= {"NO_SETUP", "WATCH", "TICKET_BLOCKED", "TICKET_READY"}
+
+
+def test_pass_b_shape_l2_primary_with_signal_stale_secondary():
+    """A2: a stale-signal sweep that also fails L2 reports L2 as primary, SIGNAL_STALE secondary
+    (previously the single stop_reason was STALE_SIGNAL and hid the logic failure)."""
+    t = manual(READY_DAY, "07:40", owner=OWNER, balance=10000.0, meta=META)
+    assert t["state"] == "TICKET_BLOCKED" and t["primary_block_reason"] == "LOGIC_GATE_FAIL:L2"
+    assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "SIGNAL_STALE", "TICKET_EXPIRED", "L5_WARN"]
+    assert t["stage_reached"] == "LOGIC_GATE" and "also: SIGNAL_STALE" in mt.render_text(t)
+
+
+def test_block_reason_precedence_tiers():
+    from v1_tickets.logic_gate import is_blocking, order_block_reasons
+    raw = ["L5_WARN", "TICKET_EXPIRED", "STALE_SIGNAL", "SPREAD_TOO_WIDE", "RISK_CONFIG_MISSING",
+           "SYMBOL_METADATA_MISSING", "DATA_ERROR:MT5_DOWN", "LOGIC_GATE_FAIL:L3", "LOGIC_GATE_FAIL:L1", "L5_WARN"]
+    assert order_block_reasons(raw) == [
+        "LOGIC_GATE_FAIL:L3", "LOGIC_GATE_FAIL:L1", "SYMBOL_METADATA_MISSING", "DATA_ERROR:MT5_DOWN",
+        "RISK_CONFIG_MISSING", "SPREAD_TOO_WIDE", "TICKET_EXPIRED", "SIGNAL_STALE", "L5_WARN"]
+    assert not is_blocking("L5_WARN") and is_blocking("SIGNAL_STALE")

@@ -13,7 +13,7 @@ from v1_tickets.outcome import (
 from v1_tickets.owner_decision import ManualTicketDecision, record_decision
 from v1_tickets.scan_record import read_jsonl
 
-from test_manual_ticket_build import META, OWNER, l2_pass, manual  # noqa: F401
+from test_manual_ticket_build import META, OWNER, READY_DAY, l2_pass, manual  # noqa: F401
 from test_manual_ticket_logic_gate import CANDLES
 
 UTC = dt.timezone.utc
@@ -67,13 +67,13 @@ def test_unresolvable_inputs_fail_closed():
 
 def test_resolve_day_covers_taken_and_shadow_tickets_idempotently(tmp_path, l2_pass):  # noqa: F811
     journal = str(tmp_path / "j")
-    ready = manual(owner=OWNER, balance=10000.0, meta=META)
+    ready = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)
     mt.archive_manual_ticket(journal, ready)
-    stored = read_jsonl(mt.ticket_path(journal, dt.date(2026, 6, 17)))[-1]
+    stored = read_jsonl(mt.ticket_path(journal, dt.date(2026, 6, 23)))[-1]
     record_decision(journal, stored, ManualTicketDecision(
-        ticket_id=ready["ticket_id"], decision="TAKEN", recorded_at="2026-06-17T08:00:00+00:00",
-        fill_time="2026-06-17T07:22:00+00:00", actual_fill=1.16080, actual_sl=1.16061))
-    shadow = manual("2026-06-23", "07:20")                    # real v1.1.1 ticket: blocked, no decision
+        ticket_id=ready["ticket_id"], decision="TAKEN", recorded_at="2026-06-23T08:00:00+00:00",
+        fill_time="2026-06-23T07:22:00+00:00", actual_fill=1.14295, actual_sl=1.14351))
+    shadow = manual("2026-06-17", "07:20")                    # real v1.1.1 ticket: blocked, no decision
     mt.archive_manual_ticket(journal, shadow)
 
     m15 = dt.timedelta(minutes=15)
@@ -82,12 +82,12 @@ def test_resolve_day_covers_taken_and_shadow_tickets_idempotently(tmp_path, l2_p
         assert len(s["resolved"]) == 1, s
         assert resolve_day(journal, day, lambda sym: CANDLES, now=dt.datetime.combine(day, dt.time(23), UTC),
                            tf=m15)["resolved"] == []                      # idempotent
-    taken = read_jsonl(outcome_path(journal, dt.date(2026, 6, 17)))[0]
+    taken = read_jsonl(outcome_path(journal, dt.date(2026, 6, 23)))[0]
     assert taken["tag"] == "VIRTUAL_FORWARD" and taken["executed_by_system"] is False
     assert taken["is_demo_or_live_performance"] is False
     assert taken["raw_proposal"]["state"] == "TICKET_READY" and taken["owner_decision"]["decision"] == "TAKEN"
     assert taken["virtual_outcome"]["result"] in (TP1, SL, EXPIRY, AMBIGUOUS) and "owner_trade_outcome" in taken
-    sh = read_jsonl(outcome_path(journal, dt.date(2026, 6, 23)))[0]
+    sh = read_jsonl(outcome_path(journal, dt.date(2026, 6, 17)))[0]
     assert sh["owner_decision"] is None and sh["raw_proposal"]["state"] == "TICKET_BLOCKED"
     assert sh["cost_basis"] == "SPREAD_ONLY_COMMISSION_NOT_AVAILABLE"
 

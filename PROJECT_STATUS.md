@@ -16,7 +16,14 @@ resolver, and a daily report. `SESSION_TRADE_V1` is registry/scanner-visible onl
 documented (wick stop vs 25 % range stop, unconsumed EMA_50, and others), so production
 emits **zero `TICKET_READY`**. `logic_status = NOT_VERIFIED`, `EDGE_VERIFIED = FALSE`.
 No authority change, no broker-mutation path (static import-graph test). Full suite:
-**980 passed, 2 skipped**. Unit-tested only; live host run deferred. Evidence:
+**980 passed, 2 skipped** at Phase 8. **Phase A close-out (2026-10-06):** L3 now enforces
+target ordering (LONG entry < TP1 ≤ TP2, SHORT entry > TP1 ≥ TP2; the recorded 2026-06-17
+EURUSD LONG fails it), ordered `block_reasons[]` + `primary_block_reason` replace the single
+`stop_reason` (kept as an alias), and Telegram delivery status is persisted separately and
+can no longer abort a scan loop. Full suite **995 passed, 2 skipped** (Linux cloud container).
+Host status: the owner-reported host run (PASS B, four `REFERENCE_NOT_READY` Telegram
+captures) has **no evidence committed to this repository**, so it is recorded as
+`HOST_EVIDENCE_NOT_IN_REPO` — not live-verified here. Evidence:
 `docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md`.
 
 ## Crypto CFD observation scanner V1 — merged, observation-only (2026-10-03)

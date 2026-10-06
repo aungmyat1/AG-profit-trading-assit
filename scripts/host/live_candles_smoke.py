@@ -66,7 +66,7 @@ from v1_tickets import fx as fx_tickets  # noqa: E402
 from v1_tickets import manual_ticket  # noqa: E402
 from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility  # noqa: E402
 from v1_tickets.scan_record import (  # noqa: E402
-    adapterless_scan_records, build_scan_record, classify_fx_ticket, write_scan_record,
+    adapterless_scan_records, append_jsonl, build_scan_record, classify_fx_ticket, write_scan_record,
 )
 
 UTC = dt.timezone.utc
@@ -161,14 +161,38 @@ def archive_if_changed(state: JsonKeyValueStore, key: str, ticket: dict, archive
     return True
 
 
-def _notify(kind: str, value: str, text: str, root: str) -> None:
-    if tg.should_send(kind, value, root):
-        try:
-            tg.send_message(text)
-        except tg.TelegramSendError as exc:
-            log_line("telegram", f"TELEGRAM_SEND_FAILED {kind}={value} {exc}")
+DELIVERY_DIR = os.path.join("ticket_delivery", "delivery_status")
+
+
+def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] = None,
+            ref: Optional[str] = None, now: Optional[dt.datetime] = None) -> str:
+    """Best-effort Telegram delivery (TELEGRAM_DELIVERY_TRACE_R1). Callers persist the scan /
+    ticket record first; this never raises, so a Telegram or policy failure cannot hide a scan
+    record or stop the remaining symbols. The status is persisted separately (append-only JSONL,
+    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text."""
+    error = None
+    try:
+        if not tg.should_send(kind, value, root):
+            status = "NOT_SENT_POLICY"
         else:
-            log_line("telegram", f"TELEGRAM_SENT_OK {kind}={value}")
+            tg.send_message(text)
+            status = "SENT"
+    except tg.TelegramSendError as exc:
+        status, error = "FAILED", str(exc)       # send_message already sanitizes (class / HTTP code only)
+    except Exception as exc:  # noqa: BLE001 -- never let delivery break the scan loop
+        status, error = "ERROR", type(exc).__name__
+    if status != "NOT_SENT_POLICY":
+        log_line("telegram", f"TELEGRAM_{'SENT_OK' if status == 'SENT' else 'SEND_' + status} {kind}={value}"
+                             f"{' ' + error if error else ''}")
+    if journal:
+        at = (now or dt.datetime.now(UTC)).astimezone(UTC)
+        try:
+            append_jsonl(os.path.join(journal, DELIVERY_DIR, f"{at.date().isoformat()}.jsonl"),
+                         {"channel": "telegram", "kind": kind, "value": value, "ref": ref, "status": status,
+                          "error": error, "recorded_at": at.isoformat()})
+        except OSError as exc:
+            log_line("telegram", f"DELIVERY_STATUS_WRITE_FAILED {kind}={value} {type(exc).__name__}")
+    return status
 
 
 def _archive_fx_result(state: JsonKeyValueStore, journal: str, ticket: dict, now: dt.datetime) -> tuple[bool, bool, list[str]]:
@@ -293,9 +317,11 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                 run_id=run_id, session=cycle, symbol=symbol, strategy_id=manual["strategy_id"],
                 strategy_version=manual["strategy_version"], window=w["trade"], data_close=data_close,
                 state=manual["state"], stage=manual["stage_reached"], stop_reason=manual["stop_reason"],
-                now=now, ticket_id=manual["ticket_id"] if manual.get("direction") else None))
+                now=now, ticket_id=manual["ticket_id"] if manual.get("direction") else None,
+                block_reasons=manual["block_reasons"]))
             if manual_new and notify and manual["state"] == "TICKET_READY":
-                _notify("TICKET", "READY", manual_ticket.render_text(manual), REPO_ROOT)
+                _notify("TICKET", "READY", manual_ticket.render_text(manual), REPO_ROOT, journal=journal,
+                        ref=f"manual:{manual['ticket_id']}", now=now)
             paper_status = "OPENED" if paper_opened else (
                 "ALREADY_RECORDED" if not paper_reasons
                 else "INELIGIBLE:" + ",".join(paper_reasons)
@@ -305,7 +331,8 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                          f" metadata={ticket['metadata_status']} paper={paper_status}"
                          f"{' ARCHIVED' if new else ''}")
             if new and notify:
-                _notify("TICKET", ticket["decision"], tg.format_ticket(ticket), REPO_ROOT)
+                _notify("TICKET", ticket["decision"], tg.format_ticket(ticket), REPO_ROOT, journal=journal,
+                        ref=f"fx:{symbol}:{cycle}:{ticket['session_date']}", now=now)
     return lines
 
 
@@ -440,7 +467,8 @@ def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config
                      f" source={t['data_source']}{f' window={window[1:]}' if window else ''}{detail}"
                      f"{' ARCHIVED' if new else ''}")
         if new and notify:
-            _notify("TICKET", t["decision"], tg.format_ticket(t), REPO_ROOT)
+            _notify("TICKET", t["decision"], tg.format_ticket(t), REPO_ROOT, journal=journal,
+                    ref=f"crypto:{symbol}:{obs.isoformat()}{window}", now=now)
     return lines
 
 
