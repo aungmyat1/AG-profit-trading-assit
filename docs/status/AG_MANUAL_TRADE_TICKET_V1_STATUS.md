@@ -268,6 +268,7 @@ Supersedes the `OWNER_REPORTED_EVIDENCE_PENDING` line above: the evidence branch
 | Label | `REPLAY_PINNED_0740Z` — **PASSED** (owner) |
 | Code under test | `b92f529` (PR #37 head at the time) |
 | Evidence | `docs/status/evidence/pass_b_replay_b92f529_0740Z/` (byte-exact, `* -text`; `SHA256SUMS` 12/12 OK on this checkout) |
+| Redaction (2026-10-06, owner-approved) | `run_result.json` `journal` path: the local username was replaced by `<HOST_SCRATCHPAD>`; `SHA256SUMS` covers the redacted set (12/12 OK), the original is in `SHA256SUMS.original` and the unredacted file stays at `398a169`; see `REDACTION.md` |
 | Harness | `scripts/host/replay_pinned_cycle.py` (preserved verbatim; host paths kept as run; read-only MT5 proxy, demo-only, isolated journal, Telegram captured not sent) |
 | Environment | VTMarkets-Demo, `DEMO_ACCOUNT_VERIFIED`, MetaTrader5 5.0.5735 (installed package, not the placeholder) |
 | Inputs that differed from the original 07:39:57 run | evaluation clock pinned to **07:40:00 UTC**; bars fetched live and cut to those closed by the pinned clock; **spreads replayed** from the original run (EURUSD 0.00014, GBPUSD 0.00015, USDJPY 0.016); **live account balance and `symbol_info` read at 15:18 UTC** (real clock 15:18:49) |
