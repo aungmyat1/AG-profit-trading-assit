@@ -274,6 +274,8 @@ validation, incomplete CFD strategy/risk authority, and execution boundary.
 - [`status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_RECONCILIATION_2026-10-06.md`](status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_RECONCILIATION_2026-10-06.md)
   — ST_ASIAN_SWEEP_5R_V1@1.1.1 Phase B spec/engine reconciliation table (owner decision packet;
   no behavior change), TP1>TP2 geometry counts, evidence lineage, session anchoring options.
+- [`status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md`](status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md)
+  — Phase B owner decision template (all choices `PENDING_OWNER` until the owner fills them).
 - [`status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md)
   and [`status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md)
   — Large-SMC EURUSD friction campaign WP3A/3A.1 evidence.
