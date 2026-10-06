@@ -13,7 +13,9 @@ from session_clock import local_time_diagnostics
 from v1_tickets.manual_ticket import ticket_path
 from v1_tickets.outcome import outcome_path
 from v1_tickets.owner_decision import load_decisions
-from v1_tickets.scan_record import NOT_RUN, coverage, read_jsonl, scan_path
+from v1_tickets.scan_record import NOT_RUN, STATES, coverage, read_jsonl, scan_path
+
+DATA_ERROR = "DATA_ERROR"
 
 REPORT_TYPE = "manual_ticket_daily"
 
@@ -47,6 +49,11 @@ def build_report(journal: str, day: dt.date, *, now: dt.datetime,
               for k, r in sorted(latest.items())]
     sessions_run = {(s, sess) for s, sess, _ in latest}
     never_run = [{"strategy": s, "session": sess} for (s, sess) in expected if (s, sess) not in sessions_run]
+    # DATA_ERROR is counted on its own (not folded into TICKET_BLOCKED); records keep stage/reason.
+    counts = {k: 0 for k in (*STATES, DATA_ERROR, NOT_RUN)}
+    for r in latest.values():
+        counts[DATA_ERROR if str(r.get("stop_reason") or "").startswith(DATA_ERROR + ":") else r["state"]] += 1
+    counts[NOT_RUN] = len(gaps) + sum(len(expected[(n["strategy"], n["session"])]) for n in never_run)
 
     tickets: Dict[str, Dict[str, Any]] = {}
     for t in read_jsonl(ticket_path(journal, day)):
@@ -77,6 +84,7 @@ def build_report(journal: str, day: dt.date, *, now: dt.datetime,
         "system_health": {"scheduled_runs": len(runs), "scan_records": len(scans), "missing_records": gaps,
                           "sessions_without_any_run": never_run,
                           "data_blocked": sum(1 for r in latest.values() if r["stage_reached"] == "DATA")},
+        "state_counts": counts,
         "session_states": states,
         "tickets_issued": issued,
         "tickets_ready": sum(1 for t in issued if t["state"] == "TICKET_READY"),
@@ -95,6 +103,7 @@ def render_report(rep: Dict[str, Any]) -> str:
            f"SYSTEM HEALTH: runs {h['scheduled_runs']}, scan records {h['scan_records']}, "
            f"missing records {len(h['missing_records'])}, sessions never run {len(h['sessions_without_any_run'])}, "
            f"data-blocked {h['data_blocked']}",
+           "STATES: " + ", ".join(f"{k} {v}" for k, v in rep["state_counts"].items()),
            "SESSIONS:"]
     for s in rep["session_states"]:
         local = s["window_local"]

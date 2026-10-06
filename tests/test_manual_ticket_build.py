@@ -173,3 +173,37 @@ def test_ticket_ready_has_no_block_reasons_and_l5_warning_only_in_warnings(l2_pa
     assert t["state"] == "TICKET_READY" and t["logic_gate"]["L5"]["status"] == "WARN"
     assert t["block_reasons"] == [] and t["primary_block_reason"] is None and t["stop_reason"] is None
     assert t["warnings"] == ["L5_WARN"] and "warn: L5_WARN" in mt.render_text(t)
+
+
+def test_ticket_ready_always_carries_usable_freshness_fields(l2_pass):
+    """Host acceptance Phase 7: L6 is advisory, so READY must not depend on it -- every
+    TICKET_READY carries a parseable valid_until in the future plus non-empty stale_if/invalid_if."""
+    t = manual(owner=OWNER, balance=10000.0, meta=META)
+    assert t["state"] == "TICKET_READY"
+    valid_until = dt.datetime.fromisoformat(t["valid_until"])
+    assert dt.datetime.fromisoformat(t["evaluated_at"]) < valid_until
+    assert t["stale_if"] and t["stale_if"]["rule"] and t["stale_if"]["or_after"] == t["valid_until"]
+    assert t["invalid_if"] and t["invalid_if"]["sl_touched_before_fill"] == t["sl"]
+    assert t["invalid_if"]["time_invalidation_utc"]
+    assert t["logic_gate"]["L6"]["status"] == PASS
+
+
+def test_ticket_past_valid_until_is_never_ready(l2_pass):
+    """valid_until = signal close + STALE_AFTER, the same threshold as the existing V1 stale guard,
+    so the legacy guard blocks first (STALE_SIGNAL); TICKET_EXPIRED is the manual backstop."""
+    t = manual(at="07:31", owner=OWNER, balance=10000.0, meta=META)       # valid_until 07:30 on 2026-06-17
+    assert t["state"] == "TICKET_BLOCKED" and t["stop_reason"] in ("STALE_SIGNAL", "TICKET_EXPIRED")
+    assert t["ticket_status"] == "EXPIRED" and t["owner_accept_allowed"] is False
+
+
+def test_manual_expiry_backstop_blocks_when_legacy_guard_does_not(l2_pass, monkeypatch):
+    """If the legacy decision were still READY past valid_until, the manual layer itself blocks."""
+    real = mt.fx.build_fx_ticket
+
+    def still_ready(*a, **k):
+        t = real(*a, **k)
+        return {**t, "decision": "READY", "reason_code": t.get("engine_reason_code", t["reason_code"])}             if t["decision"] == "STALE" else t
+    monkeypatch.setattr(mt.fx, "build_fx_ticket", still_ready)
+    t = manual(at="07:31", owner=OWNER, balance=10000.0, meta=META)
+    assert t["state"] == "TICKET_BLOCKED" and t["stop_reason"] == "TICKET_EXPIRED"
+    assert t["ticket_status"] == "EXPIRED" and t["owner_accept_allowed"] is False

@@ -137,3 +137,21 @@ def test_no_order_send_call_site_anywhere_in_repo():
                         node.func.attr in ("order_send", "order_check"):
                     hits.append(f"{path}:{node.lineno}")
     assert hits == []
+
+
+def test_report_counts_data_error_separately_and_not_run(tmp_path):
+    journal = str(tmp_path / "j")
+    now = dt.datetime(2026, 6, 24, 8, 0, tzinfo=UTC)
+
+    def broken(*a):
+        raise RuntimeError("copy_rates failed")
+    smoke.run_fx(broken, now, journal, gated=True, notify=False)          # ASIAN_LONDON only (gated)
+    rep = build_report(journal, now.date(), now=dt.datetime(2026, 6, 24, 15, 30, tzinfo=UTC),
+                       expected=smoke.manual_expected())
+    counts = rep["state_counts"]
+    assert counts["DATA_ERROR"] == len(smoke.fx_symbols())
+    st = {(s["strategy"], s["session"], s["symbol"]): s for s in rep["session_states"]}
+    eur = st[("ST_ASIAN_SWEEP_5R_V1@1.1.1", "ASIAN_LONDON", "EURUSD")]
+    assert eur["state"] == "TICKET_BLOCKED" and eur["stage"] == "DATA" and eur["reason"].startswith("DATA_ERROR:")
+    assert counts["NOT_RUN"] >= len(smoke.fx_symbols())                    # LONDON_NEWYORK never ran
+    assert counts["NO_SETUP"] == 0 and "DATA_ERROR " + str(counts["DATA_ERROR"]) in render_report(rep)
