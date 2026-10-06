@@ -22,7 +22,10 @@ EURUSD LONG fails it), ordered `block_reasons[]` + `primary_block_reason` replac
 `stop_reason` (kept as an alias), with advisory `warnings[]` (L5) kept separate so a
 `TICKET_READY` ticket has no block reasons (owner decision 2026-10-06), and Telegram delivery
 status is persisted separately and can no longer abort a scan loop. Full suite
-**1023 passed, 2 skipped** (Linux cloud container, rebased acceptance branch).
+**1034 passed, 2 skipped** (Linux cloud container). `SPREAD_TOO_WIDE` is kept as a block reason
+when the stale guard fires; setup-window WATCH is a lifecycle state; lifecycle states never send
+Telegram. PASS B `REPLAY_PINNED_0740Z` on `b92f529` is owner-reported PASSED, with its evidence
+branch not yet on the remote.
 A3 `REFERENCE_NOT_READY` is **RESOLVED**: it is a clock-decided lifecycle state, counted
 separately in the daily report and never a block reason (host I7). Host evidence is now
 committed (see below). The PASS B states recorded there predate A1/A2, so a host re-run of

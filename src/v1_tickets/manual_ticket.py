@@ -27,7 +27,7 @@ from strategy_engine.session import Candle
 from ticket_delivery.identity import logical_ticket_id
 from v1_tickets import fx
 from v1_tickets.authority import REPO_ROOT, TicketAuthority, resolve_ticket_authority
-from v1_tickets.guards import STALE_AFTER
+from v1_tickets.guards import SPREAD_TOO_WIDE, STALE_AFTER
 from v1_tickets.logic_gate import (
     FAIL, L5_WARN, PASS, TICKET_EXPIRED, WARN, blocking_failures, l1_determinism, l2_rule_conformance,
     l3_geometry, l4_data_session, l5_cost, l6_freshness, order_block_reasons,
@@ -225,6 +225,10 @@ def build_manual_ticket(
             reasons.append(reason)
         if lot["status"] != "OK":
             reasons.append(lot["status"])
+        # The legacy guard returns one decision (stale fires before spread), but it records the
+        # spread result first; a too-wide spread is a block reason in its own tier either way.
+        if base.get("spread_check") == SPREAD_TOO_WIDE:
+            reasons.append(SPREAD_TOO_WIDE)
         if now >= valid_until:
             reasons.append(TICKET_EXPIRED)
         if gates["L5"]["status"] != PASS:

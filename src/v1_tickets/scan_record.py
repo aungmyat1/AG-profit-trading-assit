@@ -88,7 +88,7 @@ def build_scan_record(*, run_id: str, session: str, symbol: str, strategy_id: st
                       ticket_id: Optional[str] = None,
                       block_reasons: Optional[Sequence[str]] = None,
                       warnings: Sequence[str] = ()) -> ScanRecord:
-    from v1_tickets.logic_gate import order_block_reasons
+    from v1_tickets.logic_gate import LIFECYCLE_STATES, order_block_reasons
     ordered = tuple(order_block_reasons(block_reasons if block_reasons is not None else [stop_reason]))
     return ScanRecord(
         scheduler_run_id=run_id, session=session, symbol=symbol, strategy=f"{strategy_id}@{strategy_version}",
@@ -98,7 +98,9 @@ def build_scan_record(*, run_id: str, session: str, symbol: str, strategy_id: st
         data_freshness_s=round((now - data_close).total_seconds(), 3) if data_close else None,
         stage_reached=stage, state=state, stop_reason=stop_reason, created_at=now.isoformat(),
         ticket_id=ticket_id, block_reasons=ordered,
-        primary_block_reason=stop_reason if state not in (TICKET_READY, REFERENCE_NOT_READY) else None, warnings=tuple(warnings),
+        primary_block_reason=(stop_reason if state not in (TICKET_READY, REFERENCE_NOT_READY)
+                              and stop_reason not in LIFECYCLE_STATES else None),
+        warnings=tuple(warnings),
     )
 
 

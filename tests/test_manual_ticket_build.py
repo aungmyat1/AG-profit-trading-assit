@@ -214,3 +214,21 @@ def test_manual_expiry_backstop_blocks_when_legacy_guard_does_not(l2_pass, monke
     t = manual(READY_DAY, "07:31", owner=OWNER, balance=10000.0, meta=META)
     assert t["state"] == "TICKET_BLOCKED" and t["stop_reason"] == "TICKET_EXPIRED"
     assert t["ticket_status"] == "EXPIRED" and t["owner_accept_allowed"] is False
+
+
+def test_spread_too_wide_survives_the_stale_guard_in_its_tier():
+    """Owner fix (PASS B review): the legacy guard returns STALE before SPREAD_TOO_WIDE, but the
+    spread result is still a block reason in its approved tier (below RISK_CONFIG_MISSING, above
+    SIGNAL_STALE). Recorded 2026-06-23 at 07:40 with a 1.0-pip spread on a 5.1-pip stop (19.6% > 15%)."""
+    d, w, now, session, post, _ = replay(READY_DAY, "07:40")
+    t = mt.build_manual_ticket("EURUSD", "ASIAN_LONDON", d, session, 24, post, now=now, data_close=now,
+                               spread=0.00010, owner=OWNER, balance=10000.0, meta=META)
+    assert t["decision"] == "STALE" and t["reason_code"] == LEGACY_STALE_SIGNAL      # legacy: stale wins
+    assert t["spread_check"] == "SPREAD_TOO_WIDE"
+    assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "SPREAD_TOO_WIDE", "SIGNAL_STALE", "TICKET_EXPIRED"]
+    assert t["primary_block_reason"] == "LOGIC_GATE_FAIL:L2" and "L5_WARN" not in t["block_reasons"]
+
+
+def test_spread_inside_guard_adds_no_spread_reason():
+    t = manual(READY_DAY, "07:40", owner=OWNER, balance=10000.0, meta=META)            # 0.2 pip spread
+    assert "SPREAD_TOO_WIDE" not in t["block_reasons"]

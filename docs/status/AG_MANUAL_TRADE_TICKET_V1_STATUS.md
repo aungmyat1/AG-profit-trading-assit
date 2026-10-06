@@ -233,3 +233,27 @@ current behavior. A host re-run of PASS B on this branch is still needed.
 
 Tests: `python -m pytest -q tests/test_manual_ticket_*.py` → 143 passed;
 `python -m pytest -q` → **1023 passed, 2 skipped**. Not run on the host. `BROKER_MUTATION_COUNT = 0`.
+
+## Pre-merge fixes after PASS B review (2026-10-06, Linux cloud container)
+
+**PASS B host acceptance:** the owner reports `REPLAY_PINNED_0740Z` on `b92f529` **PASSED**.
+Its evidence and replay harness (`host/pass-b-evidence-b92f529`) were **not on the remote** when
+this change was made, so they are not yet recorded here. Status: `OWNER_REPORTED_EVIDENCE_PENDING`.
+The record will carry the label, the SHA and the inputs that differed (clock 07:40:00, replayed
+spreads, live balance/`symbol_info` at 15:18 UTC) once the branch is available to cherry-pick.
+
+| Fix | Detail | Tests |
+|---|---|---|
+| SPREAD_TOO_WIDE survives the stale guard | The legacy guard records `spread_check` and then returns `STALE` first. The manual layer now adds `SPREAD_TOO_WIDE` to `block_reasons` whenever `spread_check == SPREAD_TOO_WIDE`, in its approved tier (below `RISK_CONFIG_MISSING`, above `SIGNAL_STALE`). The legacy ticket is unchanged. | `test_spread_too_wide_survives_the_stale_guard_in_its_tier` (recorded 2026-06-23 07:40, 1.0 pip spread on a 5.1 pip stop → `[LOGIC_GATE_FAIL:L2, SPREAD_TOO_WIDE, SIGNAL_STALE, TICKET_EXPIRED]`). A test with the replayed PASS B spreads needs the harness branch. |
+| Setup-window lifecycle | `SETUP_WINDOW_OPEN:NO_SETUP_BY_WINDOW_END` and `SETUP_WINDOW_OPEN:NO_QUALIFIED_SWEEP_IN_WINDOW` are in `LIFECYCLE_STATES`: never in `block_reasons`/`warnings`, never `TICKET_BLOCKED`, no `primary_block_reason`. The state stays `WATCH`, and `stop_reason` still shows it. | `test_setup_window_open_is_lifecycle_never_a_reason_or_blocked` (also checks the set stays in sync with `scan_record._OPEN_WINDOW_REASONS`) |
+| Telegram policy for lifecycle states | No code change needed. `telegram_message.should_send` is an allowlist (`TICKET/READY`, `MANUAL_TICKET/MANUAL_TICKET_READY`, `LSMC/OPPORTUNITY`), and with no `config/local/delivery_override.yaml` the mode is `ARCHIVE_ONLY`. Lifecycle states therefore go to scan records, the daily report and the delivery trace (`NOT_SENT_POLICY`) only. | `test_lifecycle_states_never_send_even_with_every_scope_enabled`, `test_scheduled_run_in_lifecycle_states_sends_nothing_but_records_everything` |
+
+**Where the XAUUSD "WATCH" label comes from:** `scan_record.classify_fx_ticket`, added in PR #37
+Phase 3 (`f3b66d1`). It is **not legacy engine logic**. The frozen engine returns `NO_TRADE` with
+reason `NO_SETUP_BY_WINDOW_END` (`strategy_engine/session/setups.py:182`). The manual-ticket layer
+relabels that as `WATCH` while the trade window is still open. It means "no setup yet, window
+open". It is not the mission's WATCH definition (rules satisfied up to the trigger); that
+definition belongs to Phase D.
+
+Tests: `python -m pytest -q tests/test_manual_ticket_*.py` → 154 passed;
+`python -m pytest -q` → **1034 passed, 2 skipped**. `BROKER_MUTATION_COUNT = 0`.

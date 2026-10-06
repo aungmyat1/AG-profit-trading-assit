@@ -267,9 +267,12 @@ TICKET_EXPIRED, L5_WARN = "TICKET_EXPIRED", "L5_WARN"
 DATA_METADATA_REASONS = {"STALE_DATA", "MARKET_CLOSED", "SPREAD_NOT_EVALUATED", "SYMBOL_METADATA_MISSING",
                          "ACCOUNT_BALANCE_UNAVAILABLE"}
 _NORMALISE = {LEGACY_STALE_SIGNAL: SIGNAL_STALE}
-# Lifecycle states are not reasons: a scan before the reference window closes is neither blocked
-# nor warned, so these never enter block_reasons[] or warnings[] (I7).
-LIFECYCLE_STATES = frozenset({"REFERENCE_NOT_READY"})
+# Lifecycle states are not reasons: a scan before the reference window closes (I7), or while the
+# trade window is still open with no setup yet (scan_record.classify_fx_ticket WATCH), is neither
+# blocked nor warned, so these never enter block_reasons[] or warnings[].
+LIFECYCLE_STATES = frozenset({"REFERENCE_NOT_READY",
+                              "SETUP_WINDOW_OPEN:NO_SETUP_BY_WINDOW_END",
+                              "SETUP_WINDOW_OPEN:NO_QUALIFIED_SWEEP_IN_WINDOW"})
 
 
 def normalise_reason(reason: str) -> str:

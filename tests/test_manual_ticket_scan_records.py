@@ -126,3 +126,54 @@ def test_scan_record_keeps_warnings_out_of_block_reasons():
                             window=None, data_close=None, state=TICKET_READY, stage="TICKET", stop_reason=None,
                             now=NOW, block_reasons=["L5_WARN"], warnings=["L5_WARN"])
     assert rec.block_reasons == () and rec.warnings == ("L5_WARN",) and rec.primary_block_reason is None
+
+
+def test_setup_window_open_is_lifecycle_never_a_reason_or_blocked():
+    from v1_tickets import scan_record as sr
+    from v1_tickets.logic_gate import LIFECYCLE_STATES, is_blocking, order_block_reasons
+    assert {f"SETUP_WINDOW_OPEN:{r}" for r in sr._OPEN_WINDOW_REASONS} <= LIFECYCLE_STATES   # kept in sync
+    st, stage, reason = classify_fx_ticket({"decision": "NO_TRADE", "reason_code": "NO_SETUP_BY_WINDOW_END"},
+                                           now=NOW, window_end=END)
+    assert (st, reason) == (WATCH, "SETUP_WINDOW_OPEN:NO_SETUP_BY_WINDOW_END") and st != TICKET_BLOCKED
+    assert not is_blocking(reason) and order_block_reasons([reason]) == []
+    rec = build_scan_record(run_id="r", session="ASIAN_LONDON", symbol="XAUUSD", strategy_id="S", strategy_version="1",
+                            window=(NOW, END), data_close=NOW, state=st, stage=stage, stop_reason=reason, now=NOW)
+    assert rec.block_reasons == () and rec.warnings == () and rec.primary_block_reason is None
+    assert rec.state == WATCH and rec.stop_reason == reason                 # still visible as the scan's reason
+
+
+@pytest.mark.parametrize("kind,value", [
+    ("TICKET", "REFERENCE_NOT_READY"), ("TICKET", "NO_TRADE"), ("TICKET", "SETUP_WINDOW_OPEN:NO_SETUP_BY_WINDOW_END"),
+    ("TICKET", "WATCH"), ("MANUAL_TICKET", "REFERENCE_NOT_READY"), ("MANUAL_TICKET", "WATCH"),
+    ("MANUAL_TICKET", "SETUP_WINDOW_OPEN:NO_SETUP_BY_WINDOW_END"),
+])
+def test_lifecycle_states_never_send_even_with_every_scope_enabled(tmp_path, kind, value):
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY, MANUAL_TICKET_READY]\n")
+    assert not smoke.tg.should_send(kind, value, str(tmp_path))
+    assert not smoke.tg.should_send(kind, value, str(tmp_path / "no_override"))   # production default: ARCHIVE_ONLY
+
+
+def test_scheduled_run_in_lifecycle_states_sends_nothing_but_records_everything(tmp_path, monkeypatch):
+    """Before the reference box closes (REFERENCE_NOT_READY) and with the trade window open and no
+    setup yet (WATCH / SETUP_WINDOW_OPEN): scan records + delivery trace only, zero sends."""
+    from test_manual_ticket_logic_gate import CANDLES
+    monkeypatch.delenv("AG_EVIDENCE_ROOT")
+    monkeypatch.setattr(smoke, "log_line", lambda *a: None)
+    every = {"mode": smoke.tg.MESSAGE_DELIVERY, "scopes": smoke.tg.SCOPES + smoke.tg.MANUAL_SCOPES}
+    monkeypatch.setattr(smoke.tg, "load_mode", lambda root=".": every)
+    sent = []
+    monkeypatch.setattr(smoke.tg, "send_message", lambda text, session=None: sent.append(text))
+    journal = str(tmp_path / "j")
+    for now in (dt.datetime(2026, 6, 15, 6, 50, tzinfo=UTC),       # LONDON_NEWYORK reference (06-11) still open
+                dt.datetime(2026, 6, 15, 7, 50, tzinfo=UTC)):      # ASIAN_LONDON: no setup yet, trade window open
+        fetch = lambda symbol, tf, n, now=now: [c for c in CANDLES if c.time + dt.timedelta(minutes=15) <= now]  # noqa: E731
+        smoke.run_fx(fetch, now, journal, gated=False, notify=True)
+    rows = read_jsonl(scan_path(journal, dt.date(2026, 6, 15)))
+    al = [r for r in rows if r["strategy"].startswith("ST_ASIAN")]
+    assert {r["state"] for r in al} >= {"REFERENCE_NOT_READY", WATCH}
+    assert all(r["block_reasons"] == [] and r["warnings"] == [] for r in al if r["state"] in ("REFERENCE_NOT_READY", WATCH))
+    assert sent == []
+    trace = read_jsonl(str(tmp_path / "j" / smoke.DELIVERY_DIR / "2026-06-15.jsonl"))
+    assert trace and all(t["status"] == "NOT_SENT_POLICY" for t in trace)
