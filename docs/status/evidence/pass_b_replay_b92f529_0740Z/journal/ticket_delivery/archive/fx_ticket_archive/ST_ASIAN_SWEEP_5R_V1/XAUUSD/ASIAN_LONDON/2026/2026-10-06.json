@@ -1,0 +1,37 @@
+{
+  "application_release": "AG_V1_CLOUD",
+  "cycle": "ASIAN_LONDON",
+  "cycle_state": "NO_TRADE",
+  "evaluation_time_utc": "2026-10-06T07:40:00+00:00",
+  "logical_ticket_id": "ST_ASIAN_SWEEP_5R_V1|1.1.1|XAUUSD|ASIAN_LONDON|2026-10-06",
+  "payload": {
+    "box": {
+      "high": 4152.17,
+      "low": 4104.24,
+      "mid": 4128.2
+    },
+    "cycle": "ASIAN_LONDON",
+    "data_source": "MT5_VT_MARKETS_DEMO",
+    "decision": "NO_TRADE",
+    "delivery_mode": "ARCHIVE_ONLY",
+    "evaluated_at": "2026-10-06T07:40:00+00:00",
+    "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
+    "metadata_status": "HOST_CAPTURED",
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "session_date": "2026-10-06",
+    "setup": "NONE",
+    "signal_id": "ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:XAUUSD:2026-10-06",
+    "signal_timestamp": null,
+    "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+    "strategy_version": "1.1.1",
+    "symbol": "XAUUSD"
+  },
+  "reason_codes": [
+    "NO_SETUP_BY_WINDOW_END"
+  ],
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "strategy_version": "1.1.1",
+  "symbol": "XAUUSD",
+  "trading_date": "2026-10-06"
+}
