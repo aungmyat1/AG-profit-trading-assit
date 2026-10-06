@@ -97,7 +97,7 @@ def build_scan_record(*, run_id: str, session: str, symbol: str, strategy_id: st
         data_freshness_s=round((now - data_close).total_seconds(), 3) if data_close else None,
         stage_reached=stage, state=state, stop_reason=stop_reason, created_at=now.isoformat(),
         ticket_id=ticket_id, block_reasons=ordered,
-        primary_block_reason=stop_reason if state != TICKET_READY else None, warnings=tuple(warnings),
+        primary_block_reason=stop_reason if state not in (TICKET_READY, REFERENCE_NOT_READY) else None, warnings=tuple(warnings),
     )
 
 

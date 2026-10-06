@@ -7,7 +7,8 @@ import datetime as dt
 import math
 
 from v1_tickets.fx import REFERENCE_NOT_READY, build_fx_ticket, session_windows_utc
-from v1_tickets.scan_record import classify_fx_ticket
+from v1_tickets.logic_gate import is_blocking, order_block_reasons
+from v1_tickets.scan_record import TICKET_BLOCKED, build_scan_record, classify_fx_ticket
 
 from test_manual_ticket_logic_gate import CANDLES
 
@@ -72,3 +73,15 @@ def test_malformed_candle_is_never_reference_not_ready():
     after = ticket(REF_END + dt.timedelta(minutes=30), session=bad)
     assert before["decision"] == REFERENCE_NOT_READY           # the clock, not the data, decides pre-close
     assert after["decision"] != REFERENCE_NOT_READY             # post-close data quality is the engine's call
+
+
+def test_reference_not_ready_is_never_a_block_reason_or_warning():
+    assert not is_blocking(REFERENCE_NOT_READY)
+    assert order_block_reasons([REFERENCE_NOT_READY]) == []
+    now = REF_END - dt.timedelta(minutes=6)
+    st, stage, reason = state(ticket(now), now)
+    rec = build_scan_record(run_id="r", session="ASIAN_LONDON", symbol="EURUSD", strategy_id="S",
+                            strategy_version="1", window=(TRADE_START, TRADE_END), data_close=now, state=st,
+                            stage=stage, stop_reason=reason, now=now)
+    assert rec.state == REFERENCE_NOT_READY and rec.state != TICKET_BLOCKED
+    assert rec.block_reasons == () and rec.warnings == () and rec.primary_block_reason is None
