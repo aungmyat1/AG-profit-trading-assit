@@ -4,6 +4,17 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## SESSION_TRADE_V1 ticket authority — fail closed on demo/live flags (2026-10-06)
+
+`SESSION_TRADE_V1` is `ticket_authority: MANUAL_ONLY`, `demo_order_authority: NONE`, with
+`demo_authorized: false` since owner decision D3 (2026-09-30), so **the demo-authority decision
+is resolved by D3**. The manual-ticket loader now also requires `demo_authorized` and
+`live_authorized` to be present and exactly `false` on every ticket strategy (otherwise
+`REGISTRY_TICKET_AUTHORITY_INVALID`, zero tickets). Current behavior is unchanged. Full suite
+**1050 passed, 2 skipped** (Linux cloud container; unit-tested only). Evidence:
+`docs/status/AG_SESSION_TRADE_V1_TICKET_AUTHORITY_2026-10-06.md`. **Next open item:** owner
+choices on the Phase B reconciliation table for `ST_ASIAN_SWEEP_5R_V1@1.1.1` (PR #40).
+
 ## Manual Trade Ticket V1 — pre-edge manual-ticket path (2026-10-06)
 
 `ST_ASIAN_SWEEP_5R_V1@1.1.1` now produces owner-facing MANUAL tickets on the existing FX
