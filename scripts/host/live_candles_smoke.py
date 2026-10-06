@@ -63,6 +63,9 @@ from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
 from v1_tickets import fx as fx_tickets  # noqa: E402
 from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility  # noqa: E402
+from v1_tickets.scan_record import (  # noqa: E402
+    adapterless_scan_records, build_scan_record, classify_fx_ticket, write_scan_record,
+)
 
 UTC = dt.timezone.utc
 # Binding objective universe: three FX majors + gold.  Never silently remove a symbol
@@ -166,22 +169,45 @@ def _archive_fx_result(state: JsonKeyValueStore, journal: str, ticket: dict, now
     return new, paper_opened, reasons
 
 
+def fx_run_id(now: dt.datetime) -> str:
+    return f"fx:{now.astimezone(UTC):%Y%m%dT%H%M%SZ}"
+
+
+def _scan_fx(journal: str, run_id: str, cycle: str, window: dict, ticket: dict, now: dt.datetime,
+             data_close: Optional[dt.datetime] = None) -> str:
+    """Manual Trade Ticket V1 Phase 3: one scan record per symbol per run, even with nothing found."""
+    state, stage, reason = classify_fx_ticket(ticket, now=now, window_end=window["trade"][1])
+    write_scan_record(journal, build_scan_record(
+        run_id=run_id, session=cycle, symbol=ticket["symbol"], strategy_id=ticket["strategy_id"],
+        strategy_version=ticket["strategy_version"], window=window["trade"], data_close=data_close,
+        state=state, stage=stage, stop_reason=reason, now=now))
+    return state
+
+
+def _scan_adapterless(journal: str, run_id: str, cycle: str, window: dict, now: dt.datetime) -> None:
+    for rec in adapterless_scan_records(run_id=run_id, cycle=cycle, now=now, window=window["trade"]):
+        write_scan_record(journal, rec)
+
+
 def archive_fx_runtime_failure(now: dt.datetime, journal: str, reason: str, detail: str,
                                *, gated: bool = True, cycle_filter: Optional[str] = None) -> List[str]:
     """Persist per-symbol DATA_ERROR decisions when MT5 fails before candle acquisition."""
     lines: List[str] = []
     state = JsonKeyValueStore(os.path.join(journal, "v1_host_state.json"))
+    run_id = fx_run_id(now)
     for cycle, w in cycle_windows(now).items():
         if cycle_filter and cycle != cycle_filter:
             continue
         ts, te = w["trade"]
         if gated and not (ts <= now <= te + dt.timedelta(minutes=30)):
             continue
+        _scan_adapterless(journal, run_id, cycle, w, now)
         for symbol in fx_symbols():
             ticket = fx_tickets.build_fx_error_ticket(
                 symbol, cycle, ts.date(), evaluated_at=now, reason_code=reason, detail=detail,
             )
             new, _, _ = _archive_fx_result(state, journal, ticket, now)
+            _scan_fx(journal, run_id, cycle, w, ticket, now)
             lines.append(f"FX {symbol} {cycle} decision=DATA_ERROR reason={reason}{' ARCHIVED' if new else ''}")
     return lines
 
@@ -191,6 +217,7 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
     lines = []
     state = JsonKeyValueStore(os.path.join(journal, "v1_host_state.json"))
     windows = cycle_windows(now)
+    run_id = fx_run_id(now)
     if cycle_filter is not None and cycle_filter not in windows:
         raise ValueError(f"unknown FX cycle {cycle_filter!r}")
     for cycle, w in windows.items():
@@ -199,6 +226,7 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
         ts, te = w["trade"]
         if gated and not (ts <= now <= te + dt.timedelta(minutes=30)):
             continue
+        _scan_adapterless(journal, run_id, cycle, w, now)
         for symbol in fx_symbols():
             broker = None
             try:
@@ -211,6 +239,7 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                     reason_code=_reason(exc), detail=str(exc),
                 )
                 new, _, _ = _archive_fx_result(state, journal, ticket, now)
+                _scan_fx(journal, run_id, cycle, w, ticket, now)
                 lines.append(f"FX {symbol} {cycle} decision=DATA_ERROR reason={_reason(exc)}"
                              f" detail={str(exc)[:160]}{' ARCHIVED' if new else ''}")
                 continue
@@ -221,15 +250,14 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                     reason_code="MARKET_CLOSED", detail="FX market is closed",
                 )
                 new, _, _ = _archive_fx_result(state, journal, ticket, now)
+                _scan_fx(journal, run_id, cycle, w, ticket, now)
                 lines.append(f"FX {symbol} {cycle} decision=BLOCKED reason=MARKET_CLOSED"
                              f"{' ARCHIVED' if new else ''}")
                 continue
-            ticket = fx_ticket_for(
-                symbol, cycle, m15, now,
-                data_close=m5[-1].time + dt.timedelta(minutes=5) if m5 else None,
-                spread=_spread(quote, broker),
-            )
+            data_close = m5[-1].time + dt.timedelta(minutes=5) if m5 else None
+            ticket = fx_ticket_for(symbol, cycle, m15, now, data_close=data_close, spread=_spread(quote, broker))
             new, paper_opened, paper_reasons = _archive_fx_result(state, journal, ticket, now)
+            _scan_fx(journal, run_id, cycle, w, ticket, now, data_close)
             paper_status = "OPENED" if paper_opened else (
                 "ALREADY_RECORDED" if not paper_reasons
                 else "INELIGIBLE:" + ",".join(paper_reasons)
