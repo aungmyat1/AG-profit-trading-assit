@@ -200,3 +200,36 @@ I7 `REFERENCE_NOT_READY` (clock-decided); stale/expiry semantics (`SIGNAL_STALE`
 until merge); H4 production Telegram delivery gap (old READY decisions without a send trace) —
 follow-up `TELEGRAM_DELIVERY_TRACE_R1`; frozen v1.1.1 contract blocker (see R2A packet on
 branch `r2a/session-candidate-v1.2.0`). Full suite not run on the host (resource policy).
+
+## Rebased acceptance branch — test fixes and A3 closure (2026-10-06, Linux cloud container)
+
+Branch `host/pr37-acceptance-rebased` = `efa512c` + host commits `9acf577` (I1/H3/I3/I4),
+`d637125` (I5), `7ad9a5a` (I6), `0969a46` (I7), `37e9327` (docs), `6d5bf90`. Additive; the
+host evidence above is unchanged.
+
+**A3 `REFERENCE_NOT_READY`: RESOLVED.** The A3 row above ("not diagnosable") was correct for
+`efa512c`. Cause: before the reference window closed, an incomplete box was reported as a
+`DATA_ERROR` (the host's 05:54 UTC run: 8 such records). Fix (host I7, `src/v1_tickets/fx.py`):
+the clock decides. Before the reference window closes the result is the lifecycle state
+`REFERENCE_NOT_READY` (stage `SESSION`). After it closes, missing or malformed bars stay
+`DATA_ERROR`. It is never a block reason or a warning, and the daily report counts it as its own
+category, separate from `NOT_RUN`, `DATA_ERROR` and `TICKET_BLOCKED`.
+
+Test fixes (no strategy behavior changed):
+
+| Fix | Detail |
+|---|---|
+| READY-path tests moved to 2026-06-23 | `test_ticket_ready_always_carries_usable_freshness_fields`, `test_ticket_past_valid_until_is_never_ready`, `test_manual_expiry_backstop_blocks_when_legacy_guard_does_not` (build) and `test_ticket_exposes_sizing_metadata_provenance` (host integration) assumed a READY ticket on 2026-06-17, which fails `L3.target_order` since A1. |
+| One stale-signal name | `SIGNAL_STALE` is canonical and defined once (`v1_tickets/guards.py`); the duplicate constants in `logic_gate.py` and `scan_record.py` now import it. The legacy V1 ticket reason `STALE_SIGNAL` is unchanged (archived evidence, `tests/test_v1_tickets.py`) and is named once as `guards.LEGACY_STALE_SIGNAL`; manual layers only map it. |
+| Report CLI subprocess tests | Off-Windows, the subprocess now gets the same `MetaTrader5` placeholder the test process uses (repo-root `MetaTrader5.py`, import-only, raises on use). A real installed package is never shadowed. Script unchanged. |
+| New tests | `test_daily_report_counts_reference_not_ready_as_its_own_category`, `test_manual_ticket_before_reference_close_has_no_block_reasons_or_warnings`. |
+
+**Note on the PASS B table above (not rewritten):** it was observed on pre-rebase host code.
+Under the current branch, A2 makes `LOGIC_GATE_FAIL:L2` the primary reason, with
+`SIGNAL_STALE` second (`test_pass_b_shape_l2_primary_with_signal_stale_secondary`). A1 makes the
+USDJPY row (TP1 157.762 beyond TP2 157.768) an L3 FAIL (`test_l3_target_order_usdjpy_short_regression`).
+The statement "`SIGNAL_STALE` takes precedence over `LOGIC_GATE_FAIL:L2`" does not describe
+current behavior. A host re-run of PASS B on this branch is still needed.
+
+Tests: `python -m pytest -q tests/test_manual_ticket_*.py` → 143 passed;
+`python -m pytest -q` → **1023 passed, 2 skipped**. Not run on the host. `BROKER_MUTATION_COUNT = 0`.

@@ -162,9 +162,18 @@ def _run_report_cli(tmp_path, *extra):
     import sys
     journal = tmp_path / "j"
     journal.mkdir()
+    import os
+
+    import MetaTrader5
+    env = dict(os.environ)
+    origin = getattr(MetaTrader5, "__file__", None)
+    if origin is None or Path(origin).resolve().parent == ROOT:
+        # This process uses a placeholder (repo-root MetaTrader5.py, import-only, raises on use);
+        # give the subprocess the same one. A real installed package is never shadowed.
+        env["PYTHONPATH"] = os.pathsep.join(p for p in (str(ROOT), env.get("PYTHONPATH")) if p)
     return subprocess.run([sys.executable, str(ROOT / "scripts" / "run_manual_ticket_report.py"), "--date",
                            "2026-06-24", "--journal", str(journal), *extra],
-                          capture_output=True, text=True, encoding="utf-8", timeout=120, check=True)
+                          capture_output=True, text=True, encoding="utf-8", timeout=120, check=True, env=env)
 
 
 def test_report_cli_json_stdout_is_exactly_one_json_document(tmp_path):

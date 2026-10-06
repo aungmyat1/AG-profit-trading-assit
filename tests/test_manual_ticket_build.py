@@ -9,6 +9,7 @@ import pytest
 from mt5.symbol_resolver import SymbolMeta
 from v1_tickets import manual_ticket as mt
 from v1_tickets.authority import resolve_ticket_authority
+from v1_tickets.guards import LEGACY_STALE_SIGNAL
 from v1_tickets.logic_gate import PASS
 
 from test_manual_ticket_logic_gate import replay  # noqa: E402  (shared recorded-session fixture)
@@ -182,7 +183,7 @@ def test_ticket_ready_has_no_block_reasons_and_l5_warning_only_in_warnings(l2_pa
 def test_ticket_ready_always_carries_usable_freshness_fields(l2_pass):
     """Host acceptance Phase 7: L6 is advisory, so READY must not depend on it -- every
     TICKET_READY carries a parseable valid_until in the future plus non-empty stale_if/invalid_if."""
-    t = manual(owner=OWNER, balance=10000.0, meta=META)
+    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)
     assert t["state"] == "TICKET_READY"
     valid_until = dt.datetime.fromisoformat(t["valid_until"])
     assert dt.datetime.fromisoformat(t["evaluated_at"]) < valid_until
@@ -196,9 +197,9 @@ def test_ticket_past_valid_until_is_never_ready(l2_pass):
     """valid_until = signal close + STALE_AFTER, the same threshold as the existing V1 stale guard.
     Precedence: at build time the signal aged out before any actionable ticket existed -> SIGNAL_STALE;
     TICKET_EXPIRED is reserved for an already-actionable ticket (backstop test below)."""
-    t = manual(at="07:31", owner=OWNER, balance=10000.0, meta=META)       # valid_until 07:30 on 2026-06-17
+    t = manual(READY_DAY, "07:31", owner=OWNER, balance=10000.0, meta=META)  # valid_until 07:30 on 2026-06-23
     assert t["state"] == "TICKET_BLOCKED" and t["stop_reason"] == "SIGNAL_STALE"
-    assert t["reason_code"] == "STALE_SIGNAL"                              # legacy ticket reason unchanged
+    assert t["reason_code"] == LEGACY_STALE_SIGNAL                         # legacy ticket reason unchanged
     assert t["ticket_status"] == "EXPIRED" and t["owner_accept_allowed"] is False
 
 
@@ -210,6 +211,6 @@ def test_manual_expiry_backstop_blocks_when_legacy_guard_does_not(l2_pass, monke
         t = real(*a, **k)
         return {**t, "decision": "READY", "reason_code": t.get("engine_reason_code", t["reason_code"])}             if t["decision"] == "STALE" else t
     monkeypatch.setattr(mt.fx, "build_fx_ticket", still_ready)
-    t = manual(at="07:31", owner=OWNER, balance=10000.0, meta=META)
+    t = manual(READY_DAY, "07:31", owner=OWNER, balance=10000.0, meta=META)
     assert t["state"] == "TICKET_BLOCKED" and t["stop_reason"] == "TICKET_EXPIRED"
     assert t["ticket_status"] == "EXPIRED" and t["owner_accept_allowed"] is False

@@ -16,10 +16,11 @@ import os
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
+from v1_tickets.guards import SIGNAL_STALE  # noqa: F401  (canonical; re-exported for readers)
+
 NO_SETUP, WATCH, OPPORTUNITY, TICKET_BLOCKED, TICKET_READY = (
     "NO_SETUP", "WATCH", "OPPORTUNITY", "TICKET_BLOCKED", "TICKET_READY")
 REFERENCE_NOT_READY = "REFERENCE_NOT_READY"     # ran before the reference window closed (lifecycle)
-SIGNAL_STALE = "SIGNAL_STALE"                   # signal aged out before an actionable ticket existed
 TICKET_EXPIRED = "TICKET_EXPIRED"               # actionable ticket past valid_until
 STATES = (REFERENCE_NOT_READY, NO_SETUP, WATCH, OPPORTUNITY, TICKET_BLOCKED, TICKET_READY)
 NOT_RUN = "NOT_RUN"

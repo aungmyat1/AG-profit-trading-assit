@@ -22,7 +22,7 @@ import yaml
 from strategy_engine.models import StrategyConfig
 from strategy_engine.session import Candle
 from ticket_delivery.renderer import payload_hash
-from v1_tickets.guards import STALE_AFTER
+from v1_tickets.guards import LEGACY_STALE_SIGNAL, SIGNAL_STALE, STALE_AFTER
 
 PASS, FAIL, WARN, NOT_EVALUABLE = "PASS", "FAIL", "WARN", "NOT_EVALUABLE"
 NOT_APPLICABLE = "NOT_APPLICABLE"   # post-fill / execution-time rule: recorded, not part of a manual ticket decision
@@ -262,11 +262,11 @@ def blocking_failures(gates: Dict[str, Dict[str, Any]]) -> List[str]:
 
 # ---------------------------------------------------------------------------------- block reasons
 
-SIGNAL_STALE, TICKET_EXPIRED, L5_WARN = "SIGNAL_STALE", "TICKET_EXPIRED", "L5_WARN"
+TICKET_EXPIRED, L5_WARN = "TICKET_EXPIRED", "L5_WARN"
 # Data/metadata absent or unusable (fail closed). STALE_DATA is a data-freshness failure, not a signal one.
 DATA_METADATA_REASONS = {"STALE_DATA", "MARKET_CLOSED", "SPREAD_NOT_EVALUATED", "SYMBOL_METADATA_MISSING",
                          "ACCOUNT_BALANCE_UNAVAILABLE"}
-_NORMALISE = {"STALE_SIGNAL": SIGNAL_STALE}
+_NORMALISE = {LEGACY_STALE_SIGNAL: SIGNAL_STALE}
 # Lifecycle states are not reasons: a scan before the reference window closes is neither blocked
 # nor warned, so these never enter block_reasons[] or warnings[] (I7).
 LIFECYCLE_STATES = frozenset({"REFERENCE_NOT_READY"})

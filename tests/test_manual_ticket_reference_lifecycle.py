@@ -85,3 +85,50 @@ def test_reference_not_ready_is_never_a_block_reason_or_warning():
                             stage=stage, stop_reason=reason, now=now)
     assert rec.state == REFERENCE_NOT_READY and rec.state != TICKET_BLOCKED
     assert rec.block_reasons == () and rec.warnings == () and rec.primary_block_reason is None
+
+
+def _rec(symbol, now, st, stage, reason, run_id="fx:r1"):
+    return build_scan_record(run_id=run_id, session="ASIAN_LONDON", symbol=symbol, strategy_id="S",
+                             strategy_version="1", window=(TRADE_START, TRADE_END), data_close=now, state=st,
+                             stage=stage, stop_reason=reason, now=now)
+
+
+def test_daily_report_counts_reference_not_ready_as_its_own_category(tmp_path):
+    """REFERENCE_NOT_READY is a lifecycle category in the coverage report: not NOT_RUN, not
+    DATA_ERROR, not TICKET_BLOCKED; and it contributes no block reason or warning."""
+    from v1_tickets.manual_report import build_report, render_report
+    from v1_tickets.scan_record import write_scan_record
+    journal = str(tmp_path / "j")
+    now = REF_END - dt.timedelta(minutes=6)                               # reference box still open
+    st, stage, reason = state(ticket(now), now)
+    records = [
+        _rec("EURUSD", now, st, stage, reason),                                     # lifecycle
+        _rec("GBPUSD", now, TICKET_BLOCKED, "DATA", "DATA_ERROR:MT5_DOWN"),          # data error
+        _rec("USDJPY", now, TICKET_BLOCKED, "LOGIC_GATE", "LOGIC_GATE_FAIL:L2"),     # blocked
+    ]                                                                               # XAUUSD: no record -> NOT_RUN
+    for r in records:
+        write_scan_record(journal, r)
+    rep = build_report(journal, DAY, now=now, expected={("S@1", "ASIAN_LONDON"): ["EURUSD", "GBPUSD", "USDJPY",
+                                                                                 "XAUUSD"]})
+    counts = rep["state_counts"]
+    assert counts[REFERENCE_NOT_READY] == 1
+    assert counts["DATA_ERROR"] == 1 and counts[TICKET_BLOCKED] == 1 and counts["NOT_RUN"] == 1
+    assert sum(counts.values()) == 4                                       # each symbol counted exactly once
+    eur = next(s for s in rep["session_states"] if s["symbol"] == "EURUSD")
+    assert eur["state"] == REFERENCE_NOT_READY and eur["stage"] == "SESSION"
+    assert f"{REFERENCE_NOT_READY} 1" in render_report(rep)
+    assert records[0].block_reasons == () and records[0].warnings == ()
+    assert all(REFERENCE_NOT_READY not in r.block_reasons + r.warnings for r in records)
+
+
+def test_manual_ticket_before_reference_close_has_no_block_reasons_or_warnings():
+    from v1_tickets import manual_ticket as mt
+    owner = {"risk_pct": 0.5, "risk_status": "SET", "cost_warn_R": 0.25, "warn_status": "SET"}
+    now = REF_END - dt.timedelta(minutes=6)
+    closed = [c for c in CANDLES if c.time + dt.timedelta(minutes=15) <= now]
+    box = [c for c in closed if REF_START <= c.time < REF_END]
+    t = mt.build_manual_ticket("EURUSD", "ASIAN_LONDON", DAY, box, 24, [], now=now, data_close=now,
+                               spread=0.00002, owner=owner)
+    assert t["state"] == REFERENCE_NOT_READY and t["ticket_status"] == REFERENCE_NOT_READY
+    assert t["block_reasons"] == [] and t["warnings"] == [] and t["primary_block_reason"] is None
+    assert t["owner_accept_allowed"] is False

@@ -8,7 +8,7 @@ from mt5.symbol_resolver import SymbolMeta
 from host_delivery import telegram_message as tg
 from v1_tickets import manual_ticket as mt
 
-from test_manual_ticket_build import META, OWNER, l2_pass, manual  # noqa: F401  (fixture re-export)
+from test_manual_ticket_build import META, OWNER, READY_DAY, l2_pass, manual  # noqa: F401  (fixture re-export)
 
 UTC = dt.timezone.utc
 NOW = dt.datetime(2026, 10, 6, 7, 30, tzinfo=UTC)
@@ -43,7 +43,7 @@ def test_no_live_and_no_capture_fails_closed(monkeypatch, tmp_path):
 def test_ticket_exposes_sizing_metadata_provenance(l2_pass):  # noqa: F811
     prov = {"source": mt.META_CAPTURE_FALLBACK, "broker_symbol": "EURUSD-VIP",
             "captured_at": "2026-09-30T08:37:24+00:00", "capture_age_h": 143, "live_unavailable": True}
-    t = manual(owner=OWNER, balance=10000.0, meta=META, meta_provenance=prov)
+    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META, meta_provenance=prov)
     assert t["state"] == "TICKET_READY" and t["risk"]["symbol_meta"] == prov
     assert "SIZED FROM CAPTURED METADATA 2026-09-30T08:37:24+00:00, age 143 h" in mt.render_text(t)
 

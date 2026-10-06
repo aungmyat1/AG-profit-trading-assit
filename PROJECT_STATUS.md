@@ -22,10 +22,11 @@ EURUSD LONG fails it), ordered `block_reasons[]` + `primary_block_reason` replac
 `stop_reason` (kept as an alias), with advisory `warnings[]` (L5) kept separate so a
 `TICKET_READY` ticket has no block reasons (owner decision 2026-10-06), and Telegram delivery
 status is persisted separately and can no longer abort a scan loop. Full suite
-**997 passed, 2 skipped** (Linux cloud container).
-Host status: the owner-reported host run (PASS B, four `REFERENCE_NOT_READY` Telegram
-captures) has **no evidence committed to this repository**, so it is recorded as
-`HOST_EVIDENCE_NOT_IN_REPO` — not live-verified here. Evidence:
+**1023 passed, 2 skipped** (Linux cloud container, rebased acceptance branch).
+A3 `REFERENCE_NOT_READY` is **RESOLVED**: it is a clock-decided lifecycle state, counted
+separately in the daily report and never a block reason (host I7). Host evidence is now
+committed (see below). The PASS B states recorded there predate A1/A2, so a host re-run of
+PASS B on this branch is still needed. Evidence:
 `docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md`.
 
 **Host acceptance (2026-10-06, VT Markets Demo, read-only):** PASS A PASS (guarded runs,
