@@ -1,7 +1,7 @@
 {
   "pinned_now": "2026-10-06T07:40:00+00:00",
   "real_now": "2026-10-06T15:18:49.208381+00:00",
-  "journal": "C:/Users/aungp/AppData/Local/Temp/claude/d--ddev-AG-profit-trading/cd5090bc-681f-43bd-80d4-d6958a2ddfb6/scratchpad/PASS_B_REPLAY_b92f529\\journal",
+  "journal": "<HOST_SCRATCHPAD>/PASS_B_REPLAY_b92f529\\journal",
   "MetaTrader5.__file__": "D:\\wp3-main-integ\\.venv\\Lib\\site-packages\\MetaTrader5\\__init__.py",
   "MetaTrader5.__version__": "5.0.5735",
   "initialize": [
