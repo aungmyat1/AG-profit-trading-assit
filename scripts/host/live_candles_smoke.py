@@ -308,6 +308,46 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
     return lines
 
 
+MANUAL_LOOKBACK_DAYS = 7
+MANUAL_RESOLVER_M5_BARS = 2400          # ~8 days of M5, enough for the look-back plus a weekend
+
+
+def run_manual_jobs(fetch: Fetch, now: dt.datetime, journal: str) -> List[str]:
+    """Manual Trade Ticket V1 daily jobs on the existing FX task (no parallel scheduler):
+    auto-EXPIRED owner decisions every run; the VIRTUAL_FORWARD outcome resolver once per UTC day
+    (first FX run of the day, i.e. before the 07:00 UTC window). Read-only bars; no order path."""
+    from v1_tickets.outcome import resolve_day
+    from v1_tickets.owner_decision import expire_undecided
+    from v1_tickets.scan_record import read_jsonl
+
+    lines: List[str] = []
+    state = JsonKeyValueStore(os.path.join(journal, "v1_host_state.json"))
+    days = [now.date() - dt.timedelta(days=i) for i in range(MANUAL_LOOKBACK_DAYS + 1)]
+    for day in days:
+        rows = read_jsonl(manual_ticket.ticket_path(journal, day))
+        for e in expire_undecided(journal, rows, now):
+            lines.append(f"MANUAL {e['symbol']} {e['session']} {e['ticket_id']} decision=EXPIRED (auto)")
+    key = f"manual_resolver:{now.date().isoformat()}"
+    if state.get(key) is None:
+        cache: Dict[str, list] = {}
+
+        def bars(symbol: str) -> list:
+            if symbol not in cache:
+                cache[symbol] = fetch(fx_tickets.broker_symbol(symbol), "M5", MANUAL_RESOLVER_M5_BARS)
+            return cache[symbol]
+        for day in days[1:]:
+            try:
+                summary = resolve_day(journal, day, bars, now=now)
+            except Exception as exc:  # noqa: BLE001 -- data failure leaves tickets pending for the next day
+                lines.append(f"MANUAL_RESOLVER {day} ERROR {_reason(exc)}")
+                continue
+            if summary["resolved"] or summary["pending"]:
+                lines.append(f"MANUAL_RESOLVER {day} resolved={len(summary['resolved'])} "
+                             f"pending={len(summary['pending'])} tag=VIRTUAL_FORWARD")
+        state.put(key, "DONE")
+    return lines
+
+
 LSMC_WEEKEND_DAYS = (6, 7)                                   # ISO Sat, Sun (UTC)
 LSMC_WEEKEND_UTC = (dt.time(20, 45), dt.time(23, 15))        # start inclusive, end exclusive
 
@@ -480,8 +520,9 @@ def main(argv=None) -> int:
                         elif args.mode == "smoke":
                             lines = run_smoke(fetch, now, journal, crypto_config, quote)
                         elif args.mode == "fx":
-                            lines = run_fx(fetch, now, journal, gated=True, quote=quote,
-                                           cycle_filter=args.cycle, balance=lambda: account_balance(mt5))
+                            lines = run_manual_jobs(fetch, now, journal) + run_fx(
+                                fetch, now, journal, gated=True, quote=quote, cycle_filter=args.cycle,
+                                balance=lambda: account_balance(mt5))
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
                                              fx=False, window="WEEKEND")
