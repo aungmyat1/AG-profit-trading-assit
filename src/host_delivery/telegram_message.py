@@ -71,7 +71,9 @@ def should_send(kind: str, value: str, root: str = ".") -> bool:
     return False
 
 
-def send_message(text: str, session: Optional[Any] = None) -> None:
+def send_message(text: str, session: Optional[Any] = None) -> Optional[str]:
+    """Send one plain-text message. Returns Telegram's `result.message_id` (as str) when the API
+    reports it, else None; raises TelegramSendError (sanitized) on any failure."""
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
     if not token or not chat_id:
@@ -81,11 +83,14 @@ def send_message(text: str, session: Optional[Any] = None) -> None:
     try:
         resp = session.post(f"{API}/bot{token}/sendMessage", timeout=10,
                             data={"chat_id": chat_id, "text": text[:4000], "disable_web_page_preview": True})
-        ok = getattr(resp, "status_code", 0) == 200 and bool((resp.json() or {}).get("ok"))
+        body = resp.json() or {}
+        ok = getattr(resp, "status_code", 0) == 200 and bool(body.get("ok"))
     except Exception as exc:  # noqa: BLE001 -- sanitize: never surface the URL/token
         raise TelegramSendError(f"send failed ({type(exc).__name__})") from None
     if not ok:
         raise TelegramSendError(f"send failed (HTTP {getattr(resp, 'status_code', '?')})")
+    message_id = (body.get("result") or {}).get("message_id") if isinstance(body.get("result"), dict) else None
+    return None if message_id is None else str(message_id)
 
 
 MMT = dt.timezone(dt.timedelta(hours=6, minutes=30))
@@ -284,6 +289,13 @@ def _actionability_lines(sym: str, a: Dict[str, Any], px) -> list:
         out.append(f"send price ({a.get('send_price_side')}): {px(a['send_price'])} at {_ts(a.get('send_ts'))}")
     else:
         out.append(f"send price: n/a at {_ts(a.get('send_ts'))}")
+    if a.get("CORRELATION_CLUSTER_ID"):
+        line = f"exposure: {a.get('CORRELATED_EXPOSURE')}  cluster: {a['CORRELATION_CLUSTER_ID']}"
+        if a.get("correlation_warning"):
+            line += (f"  WARNING {a['correlation_warning']} with {', '.join(a.get('correlated_with') or [])}"
+                     f"  informational rank {a.get('informational_rank')}/{a.get('cluster_size')}"
+                     " (no suppression; costs NOT_EVALUATED)")
+        out.append(line)
     return out
 
 

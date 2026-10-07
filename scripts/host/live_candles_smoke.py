@@ -37,6 +37,7 @@ import json
 import os
 import sys
 import time
+import uuid
 from typing import Callable, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -60,6 +61,8 @@ if __name__ == "__main__":   # bound the whole process, including the heavy impo
 
 from host_delivery import telegram_message as tg  # noqa: E402
 from host_delivery import lsmc_actionability as act  # noqa: E402
+from host_delivery import lsmc_outcome  # noqa: E402
+from ticket_delivery.attempt_journal import AttemptJournal  # noqa: E402
 from host_delivery.lsmc_alert_dedup import AlertLedger, confirmation_key, deliver_once  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
@@ -191,13 +194,17 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
     """Best-effort Telegram delivery (TELEGRAM_DELIVERY_TRACE_R1). Callers persist the scan /
     ticket record first; this never raises, so a Telegram or policy failure cannot hide a scan
     record or stop the remaining symbols. The status is persisted separately (append-only JSONL,
-    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text."""
-    error = None
+    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text.
+    Every attempted send gets an attempt_id and, when Telegram returns one, its message_id; both
+    are written to the delivery-status row and the WP7 AttemptJournal (HOST_DELIVERY_ATTEMPT_V1)."""
+    error, attempt_id, message_id = None, None, None
     try:
         if not tg.should_send(kind, value, root):
             status = "NOT_SENT_POLICY"
         else:
-            tg.send_message(text)
+            attempt_id = uuid.uuid4().hex
+            mid = tg.send_message(text)
+            message_id = str(mid) if isinstance(mid, (str, int)) and not isinstance(mid, bool) else None
             status = "SENT"
     except tg.TelegramSendError as exc:
         status, error = "FAILED", str(exc)       # send_message already sanitizes (class / HTTP code only)
@@ -211,7 +218,12 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
         try:
             append_jsonl(os.path.join(journal, DELIVERY_DIR, f"{at.date().isoformat()}.jsonl"),
                          {"channel": "telegram", "kind": kind, "value": value, "ref": ref, "status": status,
-                          "error": error, "recorded_at": at.isoformat(), "code_sha": code_sha()})
+                          "error": error, "recorded_at": at.isoformat(), "code_sha": code_sha(),
+                          **({"attempt_id": attempt_id, "provider_message_id": message_id} if attempt_id else {})})
+            if attempt_id is not None:
+                AttemptJournal(os.path.join(journal, "ticket_delivery", "attempt_journal.jsonl")).record_host_attempt(
+                    attempt_id=attempt_id, kind=kind, value=value, ref=ref, status=status,
+                    provider_message_id=message_id, error=error, code_sha=code_sha(), now=at)
         except OSError as exc:
             log_line("telegram", f"DELIVERY_STATUS_WRITE_FAILED {kind}={value} {type(exc).__name__}")
     return status
@@ -495,6 +507,7 @@ def _actionability_gate(now: dt.datetime, journal: str, lines: List[str]) -> dic
             "last_heartbeat": heartbeat.last(), "missed": [], "bid_ask": {},
             "pending": JsonKeyValueStore(os.path.join(lsmc_dir, "pending_bar_close.json")),
             "digests": act.MissedDigestLedger(os.path.join(lsmc_dir, "missed_digests.json")),
+            "open": JsonKeyValueStore(os.path.join(lsmc_dir, "open_alerts.json")),   # sent, not yet resolved
             # send_ts: the run's evaluation clock plus real elapsed time (deterministic under a fixed `now`)
             "clock": lambda: now.astimezone(UTC) + dt.timedelta(seconds=time.monotonic() - t0)}
 
@@ -512,6 +525,10 @@ def _deliver_opportunity(ev: dict, gate: dict, ledger: AlertLedger, bid_ask: Cal
     bid, ask = bid_ask()
     a = act.assess(opp, send_ts=gate["clock"](), bid=bid, ask=ask, policy=gate["policy"],
                    last_heartbeat_ts=gate["last_heartbeat"])
+    send_ts = dt.datetime.fromisoformat(a["send_ts"])
+    active = [v for v in gate["open"].all().values()
+              if not v.get("expires_at") or dt.datetime.fromisoformat(v["expires_at"]) > send_ts]
+    a = {**a, **act.correlation(sym, a, ev.get("trading_date") or send_ts.date().isoformat(), active)}   # D7: warn only
     record = {**a, "symbol": sym, "confirmation_key": key, "transition_id": ev.get("transition_id"),
               "reference_id": ev.get("reference_id"), "evaluated_at": ev.get("evaluated_at"),
               "strategy_id": ev.get("strategy_id"), "strategy_version": ev.get("strategy_version"),
@@ -536,8 +553,36 @@ def _deliver_opportunity(ev: dict, gate: dict, ledger: AlertLedger, bid_ask: Cal
     status = deliver_once(ev, ledger, lambda: _notify(
         "LSMC", ev["alert_level"], tg.format_alert(ev, price=price, actionability=a), REPO_ROOT,
         journal=gate["journal"], ref=key or ev.get("reference_id"), now=gate["clock"]()))
+    if status == "SENT":                            # tracked for correlation (D7) and the outcome resolver
+        gate["open"].put(held_key, {
+            "symbol": sym, "direction": a["direction"], "outcome": a["outcome"], "state": a["state"],
+            "R_AT_SEND": a["R_AT_SEND"], "target": a["target"], "sweep_extreme": opp.get("sweep_extreme"),
+            "stop_c10": opp.get("stop_c10"), "trigger_bar_close_ts": a["trigger_bar_close_ts"],
+            "expires_at": a["expires_at"], "send_ts": a["send_ts"], "reference_id": ev.get("reference_id")})
     if status == "SUPPRESSED_DUPLICATE_CONFIRMATION":
         out.append(f"LSMC {sym} ALERT_SUPPRESSED_DUPLICATE_CONFIRMATION ref={ev.get('reference_id')}")
+    return out
+
+
+def _resolve_outcomes(gate: dict, symbol: str, m5: list, now: dt.datetime) -> List[str]:
+    """P1 outcome resolver: measure each sent, unresolved alert of `symbol` against closed M5 bars.
+    Resolved alerts are appended to large_smc_watch/outcomes/<date>.jsonl and leave the open set."""
+    out: List[str] = []
+    for key, alert in sorted(dict(gate["open"].all()).items()):
+        if alert.get("symbol") != symbol:
+            continue
+        res = lsmc_outcome.resolve(alert, m5, now)
+        if res is None:
+            continue
+        try:
+            append_jsonl(os.path.join(gate["journal"], "large_smc_watch", "outcomes",
+                                      f"{now.astimezone(UTC).date().isoformat()}.jsonl"),
+                         {**alert, **res, "confirmation_key": key, "code_sha": code_sha()})
+        except OSError as exc:
+            log_line("telegram", f"OUTCOME_WRITE_FAILED {symbol} {type(exc).__name__}")
+            continue
+        gate["open"].remove(key)
+        out.append(f"LSMC {symbol} OUTCOME {res['outcome']} ref={alert.get('reference_id')}")
     return out
 
 
@@ -574,6 +619,7 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
            f"{f'window={window} ' if window else ''}alerts={[e.to_state + ':' + e.alert_level for e in events]}"]
     if gate is not None:
         gate["bid_ask"][symbol] = bid_ask          # live quote for re-assessing a held PENDING_BAR_CLOSE event
+        out += _resolve_outcomes(gate, symbol, bars["M5"], now)
     if notify:
         for e in events:
             price = bars["M5"][-1].close if bars["M5"] else None

@@ -294,3 +294,156 @@ def test_pending_bar_close_is_held_and_reassessed_on_the_next_run(host):
     later = _run(host, _snap("2026-10-06T17:48:00+00:00", o=o))                # no new transition; held one re-run
     assert len(host.sent) == 1 and any("state=FRESH" in ln for ln in later)
     assert json.loads((host.j / "large_smc_watch" / "pending_bar_close.json").read_text() or "{}") == {}
+
+
+# =============================================================================== P1
+from host_delivery import lsmc_outcome  # noqa: E402
+from ticket_delivery.attempt_journal import OwnerCommandIdentity  # noqa: E402
+
+
+def _bar(hhmm: str, o: float, h: float, l: float, c: float) -> Candle:  # noqa: E741
+    return Candle(t(f"2026-10-06T{hhmm}:00"), o, h, l, c)
+
+
+ALERT = {"direction": "LONG", "target": 1.3285, "sweep_extreme": 1.3247, "stop_c10": None,
+         "trigger_bar_close_ts": "2026-10-06T17:45:00+00:00", "expires_at": "2026-10-06T21:00:00+00:00"}
+
+
+# ------------------------------------------------------------------------------- T4 outcome resolver
+
+def test_outcome_resolver_target_invalidation_ambiguous_expired_and_open():
+    before = _bar("17:35", 1.3250, 1.3300, 1.3240, 1.3255)                 # before trigger close: ignored
+    quiet = _bar("17:45", 1.3260, 1.3270, 1.3255, 1.3265)
+    hit = _bar("17:50", 1.3265, 1.3290, 1.3260, 1.3280)
+    now = t("2026-10-06T18:00:00")
+    r = lsmc_outcome.resolve(ALERT, [before, quiet, hit], now)
+    assert (r["outcome"], r["event_bar_close_ts"]) == ("TARGET_REACHED", "2026-10-06T17:55:00+00:00")
+    broke = _bar("17:50", 1.3260, 1.3262, 1.3240, 1.3245)                 # close below the sweep extreme
+    assert lsmc_outcome.resolve(ALERT, [quiet, broke], now)["outcome"] == "INVALIDATED"
+    both = _bar("17:50", 1.3260, 1.3290, 1.3240, 1.3245)
+    assert lsmc_outcome.resolve(ALERT, [both], now)["outcome"] == "AMBIGUOUS_SAME_BAR"
+    stop = _bar("17:50", 1.3260, 1.3262, 1.3249, 1.3255)
+    assert lsmc_outcome.resolve({**ALERT, "stop_c10": 1.3250}, [stop], now)["outcome"] == "STOP_TOUCHED"
+    assert lsmc_outcome.resolve(ALERT, [quiet], now) is None                       # still open
+    forming = _bar("17:55", 1.3265, 1.3290, 1.3260, 1.3280)                     # closes 18:00, after `now`
+    assert lsmc_outcome.resolve(ALERT, [quiet, forming], t("2026-10-06T17:59:59")) is None
+    assert lsmc_outcome.resolve(ALERT, [quiet], t("2026-10-06T21:00:00"))["outcome"] == "EXPIRED"
+
+
+def test_sent_alert_is_resolved_on_a_later_run_and_leaves_the_open_set(host):
+    _run(host, _snap("2026-10-06T17:43:00+00:00", state="IDLE"))
+    _run(host, _snap("2026-10-06T17:48:00+00:00"))
+    assert len(host.sent) == 1
+    open_path = host.j / "large_smc_watch" / "open_alerts.json"
+    assert len(json.loads(open_path.read_text())) == 1
+    gate = smoke._actionability_gate(t("2026-10-06T18:00:00"), str(host.j), [])
+    lines = smoke._resolve_outcomes(gate, "GBPUSD", [_bar("17:50", 1.3262, 1.3290, 1.3260, 1.3285)],
+                                    t("2026-10-06T18:00:00"))
+    assert lines and "OUTCOME TARGET_REACHED" in lines[0]
+    assert json.loads(open_path.read_text()) == {}
+    rows = [json.loads(x) for x in next((host.j / "large_smc_watch" / "outcomes").glob("*.jsonl"))
+            .read_text(encoding="utf-8").splitlines()]
+    assert rows[0]["outcome"] == "TARGET_REACHED" and rows[0]["confirmation_key"]
+
+
+# ------------------------------------------------------------------------------- T5 correlation (D7)
+
+def _ready(symbol, direction, r):
+    return {"symbol": symbol, "direction": direction, "outcome": act.WATCH_READY, "state": act.FRESH, "R_AT_SEND": r}
+
+
+def test_correlation_classifies_warns_and_ranks_without_suppression():
+    active = [_ready("GBPUSD", "LONG", 2.0), _ready("XAUUSD", "LONG", 1.8), _ready("USDJPY", "LONG", 3.0)]
+    new = {"direction": "LONG", "outcome": act.WATCH_READY, "state": act.FRESH, "R_AT_SEND": 1.9}
+    c = act.correlation("EURUSD", new, "2026-10-07", active)
+    assert (c["CORRELATED_EXPOSURE"], c["CORRELATION_CLUSTER_ID"]) == ("USD_SHORT", "USD_SHORT:2026-10-07")
+    assert c["correlation_warning"] == "CORRELATED_EXPOSURE" and c["correlated_with"] == ["GBPUSD", "XAUUSD"]
+    assert (c["informational_rank"], c["cluster_size"]) == (2, 3)               # GBPUSD 2.0 > EURUSD 1.9 > XAU 1.8
+    assert act.exposure("XAUUSD", "LONG") == "USD_SHORT_SENSITIVE"
+    jpy = act.correlation("USDJPY", {**new, "R_AT_SEND": 2.5}, "2026-10-07", [_ready("EURUSD", "LONG", 2.0)])
+    assert jpy["CORRELATED_EXPOSURE"] == "USD_LONG" and jpy["correlation_warning"] is None
+    btc = act.correlation("BTCUSDT", new, "2026-10-07", active)
+    assert btc["CORRELATED_EXPOSURE"] == "UNCLASSIFIED" and btc["CORRELATION_CLUSTER_ID"] is None
+    info = act.correlation("EURUSD", {**new, "outcome": act.INFO_ONLY}, "2026-10-07", active)
+    assert info["correlation_warning"] is None                                  # only an actionable alert warns
+
+
+def test_correlated_alerts_are_both_sent_with_a_warning(host):
+    _run(host, _snap("2026-10-06T17:43:00+00:00", state="IDLE"))
+    _run(host, _snap("2026-10-06T17:48:00+00:00"))                              # GBPUSD LONG WATCH_READY
+    eur_poi = "EURUSD:H1:FVG:LONG:2026-10-06T11:00:00+00:00"
+    eur = Snapshot(symbol="EURUSD", evaluated_at="2026-10-06T17:49:00+00:00", state="OPPORTUNITY", bias="LONG",
+                   poi={"poi_id": eur_poi, "direction": "LONG", "low": 1.1640, "high": 1.1650},
+                   opportunity={**_gbp_opp(), "opp_id": f"{eur_poi}|x", "poi_id": eur_poi,
+                                "sweep_extreme": 1.1647, "entry_reference": 1.1660, "target_c11": 1.1690})
+    _run(host, eur, quote=(1.1659, 1.1660))
+    assert len(host.sent) == 2                                                  # no suppression
+    assert "WARNING CORRELATED_EXPOSURE with GBPUSD" in host.sent[1] and "informational rank" in host.sent[1]
+    rec = _records(host)[-1]
+    # trading date follows the watch NY 17:00 boundary: 17:49 UTC is still 2026-10-06
+    assert rec["CORRELATION_CLUSTER_ID"] == "USD_SHORT:2026-10-06" and rec["correlated_with"] == ["GBPUSD"]
+    assert (rec["informational_rank"], rec["cluster_size"]) == (1, 2)          # EURUSD R 2.31 > GBPUSD 1.90
+
+
+# ------------------------------------------------------------------------------- T6 attempt journal
+
+class _Resp:
+    def __init__(self, body, status=200):
+        self.status_code, self._body = status, body
+
+    def json(self):
+        return self._body
+
+
+class _Sess:
+    def __init__(self, body):
+        self.body = body
+
+    def post(self, url, data=None, timeout=None):
+        return _Resp(self.body)
+
+
+def test_send_message_returns_telegram_message_id(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "t")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "c")
+    assert tg.send_message("x", session=_Sess({"ok": True, "result": {"message_id": 4711}})) == "4711"
+    assert tg.send_message("x", session=_Sess({"ok": True})) is None
+
+
+def test_every_attempted_send_is_journaled_with_attempt_id_and_message_id(tmp_path, monkeypatch):
+    monkeypatch.setattr(tg, "should_send", lambda *a, **k: True)
+    monkeypatch.setattr(tg, "send_message", lambda text, session=None: "4711")
+    now = t("2026-10-06T17:48:00")
+    assert smoke._notify("LSMC", "OPPORTUNITY", "x", ".", journal=str(tmp_path), ref="k1", now=now) == "SENT"
+
+    def boom(text, session=None):
+        raise tg.TelegramSendError("send failed (HTTP 502)")
+    monkeypatch.setattr(tg, "send_message", boom)
+    assert smoke._notify("LSMC", "OPPORTUNITY", "x", ".", journal=str(tmp_path), ref="k2", now=now) == "FAILED"
+    lines = (tmp_path / "ticket_delivery" / "attempt_journal.jsonl").read_text(encoding="utf-8").splitlines()
+    ok, failed = (json.loads(x) for x in lines)
+    assert ok["schema"] == "HOST_DELIVERY_ATTEMPT_V1" and len(ok["attempt_id"]) == 32
+    assert (ok["final_state"], ok["provider_response_id"], ok["ref"]) == ("SENT", "4711", "k1")
+    assert (failed["final_state"], failed["provider_response_id"], failed["error"]) == (
+        "FAILED", None, "send failed (HTTP 502)")
+    assert failed["attempt_id"] != ok["attempt_id"]
+    rows = [json.loads(x) for x in (tmp_path / smoke.DELIVERY_DIR / "2026-10-06.jsonl").read_text().splitlines()]
+    assert [(r["attempt_id"], r["provider_message_id"]) for r in rows] == [(ok["attempt_id"], "4711"),
+                                                                           (failed["attempt_id"], None)]
+
+
+def test_owner_command_identity_is_schema_only_and_grants_nothing():
+    hexd = "a" * 64
+    good = OwnerCommandIdentity(command_id="c1", reply_to_message_id="4711", attempt_id="ab" * 16,
+                                logical_ref="k1", owner_chat_id_sha256=hexd, command_text_sha256=hexd,
+                                received_at="2026-10-06T17:50:00+00:00")
+    assert good.validate() == [] and good.execution_authorized is False
+    bad = OwnerCommandIdentity(command_id="c1", reply_to_message_id="", attempt_id="a", logical_ref="k",
+                               owner_chat_id_sha256="raw-chat-id", command_text_sha256=hexd,
+                               received_at="x", execution_authorized=True)
+    errors = bad.validate()
+    assert "reply_to_message_id missing" in errors
+    assert "owner_chat_id_sha256 is not a SHA-256 hex digest" in errors
+    assert any(e.startswith("execution_authorized must be False") for e in errors)
+    src = (ROOT / "src" / "ticket_delivery" / "attempt_journal.py").read_text(encoding="utf-8")
+    assert "execution" not in "".join(ln for ln in src.splitlines() if ln.startswith(("import", "from")))

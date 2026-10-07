@@ -231,3 +231,52 @@ class MissedDigestLedger:
 
 def digest_id(items: Iterable[Dict[str, Any]]) -> str:
     return hashlib.sha256("|".join(sorted(i["key"] for i in items)).encode()).hexdigest()[:16]
+
+
+# ---------------------------------------------------------------------------------- D7 correlation
+# Classify and warn only: never suppresses or selects. Exposure follows the owner examples
+# (USD_SHORT; USD_SHORT_SENSITIVE for XAUUSD). Symbols without an owner mapping (crypto) are
+# UNCLASSIFIED and never clustered.
+CORRELATED_EXPOSURE = "CORRELATED_EXPOSURE"
+UNCLASSIFIED = "UNCLASSIFIED"
+_EXPOSURE = {
+    ("EURUSD", "LONG"): "USD_SHORT", ("EURUSD", "SHORT"): "USD_LONG",
+    ("GBPUSD", "LONG"): "USD_SHORT", ("GBPUSD", "SHORT"): "USD_LONG",
+    ("USDJPY", "LONG"): "USD_LONG", ("USDJPY", "SHORT"): "USD_SHORT",
+    ("XAUUSD", "LONG"): "USD_SHORT_SENSITIVE", ("XAUUSD", "SHORT"): "USD_LONG_SENSITIVE",
+}
+
+
+def exposure(symbol: str, direction: Optional[str]) -> str:
+    return _EXPOSURE.get((symbol, direction), UNCLASSIFIED)
+
+
+def exposure_family(exp: str) -> Optional[str]:
+    return None if exp == UNCLASSIFIED else exp.replace("_SENSITIVE", "")
+
+
+def _rank_key(m: Dict[str, Any]) -> tuple:
+    """Informational rank only. Gate order validity > freshness > geometry > remaining R > costs >
+    correlation; costs are NOT_EVALUATED here, so ties after remaining R keep symbol order."""
+    r = m.get("R_AT_SEND")
+    return (m.get("outcome") != WATCH_READY, m.get("state") != FRESH, r is None, -(r or 0.0), m.get("symbol"))
+
+
+def correlation(symbol: str, assessment: Dict[str, Any], trading_date: str,
+                active: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
+    """CORRELATION_CLUSTER_ID / CORRELATED_EXPOSURE for one opportunity against the currently
+    active WATCH_READY alerts (`active`: dicts with symbol, direction, outcome, state, R_AT_SEND)."""
+    exp = exposure(symbol, assessment.get("direction"))
+    fam = exposure_family(exp)
+    base = {"CORRELATED_EXPOSURE": exp, "CORRELATION_CLUSTER_ID": None, "correlation_warning": None,
+            "correlated_with": [], "informational_rank": None, "cluster_size": None}
+    if fam is None:
+        return base
+    peers = [a for a in active if a.get("symbol") != symbol and a.get("outcome") == WATCH_READY
+             and exposure_family(exposure(a.get("symbol"), a.get("direction"))) == fam]
+    members = sorted(peers + [{**assessment, "symbol": symbol}], key=_rank_key)
+    rank = next(i for i, m in enumerate(members, 1) if m["symbol"] == symbol)
+    warn = CORRELATED_EXPOSURE if peers and assessment.get("outcome") == WATCH_READY else None
+    return {**base, "CORRELATION_CLUSTER_ID": f"{fam}:{trading_date}", "correlation_warning": warn,
+            "correlated_with": sorted({p["symbol"] for p in peers}), "informational_rank": rank,
+            "cluster_size": len(members)}
