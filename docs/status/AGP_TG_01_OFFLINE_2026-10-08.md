@@ -60,7 +60,7 @@ levels. An explicit HTML-format rejection falls back to the original plain text;
 no fallback follows ambiguous failures or unrelated HTTP errors. No inline buttons.
 
 SQLite commits a pending claim before network, then marks acknowledged sends sent.
-HTTP 429/500/502/503/504 retry at 1s/2s (default three attempts).
+HTTP 429 retries at 1s/2s (default three attempts); HTTP 5xx is uncertain with no retry.
 Ambiguous failures (timeout after the send attempt, crash-equivalent transport errors)
 persist state DELIVERY_UNCERTAIN plus the exception *class name* (never the message)
 while keeping the dedupe claim: restart does not auto-resend. The next session
@@ -79,7 +79,7 @@ PSF License Version 2 (bundled SQLite public domain). Existing Python >=3.10 sup
 unchanged. Bot API is hosted and has no client package version to pin; offline
 verification runtime is pinned in `tests/fixtures/telegram_delivery/python-version.txt`.
 
-## Verification
+## Historical verification (superseded by final review results below)
 
 `.venv/bin/python -m pytest -q tests/test_telegram_delivery_adapter.py tests/test_actionability_and_canonical_ticket.py tests/test_ticket_delivery_execution_boundary.py`
 
@@ -91,7 +91,7 @@ Golden files cover all ten decisions plus complete summary. Transport tests are 
 no Telegram, broker or market-data network request occurred. The full regression
 baseline was not changed or claimed. No live authorization granted.
 
-## Rebase verification — 2026-10-08
+## Historical rebase verification — 2026-10-08
 
 Rebased onto main `96f4aa6a8470f86b876294bfa27b89989467842d`. Preserved the
 DELIVERY_UNCERTAIN and owner-resend review changes. Decision-based routing fixes
@@ -103,7 +103,7 @@ No strategy/session/threshold/authority changes relative to that main snapshot.
 Focused command: `python -m pytest -q tests/test_telegram_delivery_adapter.py tests/test_actionability_and_canonical_ticket.py tests/test_mt5_candles_readonly.py tests/test_mt5_provider_integration.py tests/test_stale_gate_trigger_close.py tests/test_ticket_delivery_execution_boundary.py`
 
 135 passed, zero skips (47 adapter tests). Full default suite result recorded below.
-Open review: draft CodeRabbit review has not run; live Telegram remains unverified;
+At that historical checkpoint CodeRabbit review had not run; live Telegram remains unverified;
 plain-text ladder alignment is client-font dependent; ambiguous-delivery recovery
 requires owner investigation and a deliberate forced resend.
 
@@ -124,7 +124,23 @@ the next session summary lists `possibly undelivered: <ticket_id>`. Unit tests
 inspect dispatched HTTP payloads and durable SQLite keys. No live sends.
 Focused canonical/market-data/boundary suite: 141 passed (53 adapter tests).
 
-Final full default suite: `python -m pytest -q` — 1197 passed, 2 live-MT5
-skips, 1 existing Starlette warning, 23.31s. Local network permission permits
-FastAPI/AnyIO test-client sockets; adapter requests are mocked. Strategy, session,
-threshold and authority files are unchanged by this update.
+## Correctness review disposition — 2026-10-08
+
+CodeRabbit returned two actionable findings, both fixed: network attempts no longer
+hold a write transaction on the main journal (per-key SQLite sidecar locks serialize
+only that ticket); terminal explicit HTTP rejection/exhausted 429 retries now persist
+DELIVERY_FAILED and permit deliberate owner force-resend. The 5xx duplicate-delivery
+concern is also fixed: server errors become DELIVERY_UNCERTAIN without retry.
+Codex review findings are fixed: crash-left pending claims recover to uncertainty,
+remain consumed and appear in summaries; the stale documentation-index count is removed.
+Pending recovery takes the per-key lock, skips active sends and does not auto-resend.
+Tests cover unrelated-key sends during network, same-key dedupe, active-pending
+exclusion, crash recovery, failed owner resend and 500/502/503/504 uncertainty.
+Subprocess tests retain the platform environment and use explicit repository paths.
+Style/docstring/CLI niceties remain out of scope. Earlier figures above are historical.
+
+Final post-review verification: **149 focused tests passed (61 adapter tests)**;
+**1205 full default-suite tests passed, 2 live-MT5 skips, 1 existing Starlette
+warning**, 23.41s, Linux CPython 3.12.14. Same commands as above. All delivery
+requests remain mocked. PR is ready for review; CodeRabbit review completed with
+two actionable findings, both fixed. Strategy/session/threshold/authority unchanged.

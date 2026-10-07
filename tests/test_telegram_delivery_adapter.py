@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import urllib.error
@@ -8,7 +9,8 @@ import pytest
 
 from telegram_delivery.adapter import Config, Sender, STATUSES, render_summary, render_ticket
 
-FIXTURES = Path(__file__).parent / 'fixtures' / 'telegram_delivery'
+ROOT = Path(__file__).resolve().parents[1]
+FIXTURES = ROOT / 'tests' / 'fixtures' / 'telegram_delivery'
 TICKETS = json.loads((FIXTURES / 'tickets.json').read_text())
 
 
@@ -161,7 +163,7 @@ def test_oversize_summary_preserves_rows_and_sends_nothing(tmp_path):
 
 def test_import_boundary():
     code = "import sys; import telegram_delivery.adapter; assert not any(x.startswith(('mt5', 'MetaTrader5', 'execution', 'strategy_engine')) for x in sys.modules)"
-    subprocess.run([sys.executable, '-c', code], env={'PYTHONPATH': 'src'}, check=True)
+    subprocess.run([sys.executable, '-c', code], cwd=ROOT, env=dict(os.environ, PYTHONPATH=str(ROOT / 'src')), check=True)
 
 
 def test_status_key_distinct(tmp_path):
@@ -203,7 +205,7 @@ def test_retry_exhaustion_logged(tmp_path, caplog):
     calls, delays = [], []
     def transport(*args):
         calls.append(args)
-        raise urllib.error.HTTPError('secret', 503, 'secret', {}, None)
+        raise urllib.error.HTTPError('secret', 429, 'secret', {}, None)
     sender = Sender(tmp_path / 'dedupe.sqlite', config(), transport, delays.append)
     assert sender.send_ticket(watch()) == 'failed'
     assert len(calls) == 3 and delays == [1, 2]
@@ -231,7 +233,7 @@ sender = Sender(sys.argv[1], Config(True, 'fake', '123', frozenset({'123'})), la
 print(json.dumps([sender.send_ticket(ticket), len(calls)]))
 """
     for expected in [['sent', 1], ['duplicate', 0]]:
-        result = subprocess.run([sys.executable, '-c', code, store], env={'PYTHONPATH': 'src'},
+        result = subprocess.run([sys.executable, '-c', code, store], cwd=ROOT, env=dict(os.environ, PYTHONPATH=str(ROOT / 'src')),
                                 capture_output=True, text=True, check=True)
         assert json.loads(result.stdout) == expected
 
@@ -331,3 +333,69 @@ def test_html_json_rejection_fallback(monkeypatch):
     assert len(payloads) == 2
     assert payloads[0]['text'] == '<pre>&amp;&lt;&gt;</pre>'
     assert payloads[1] == {'chat_id': '123', 'text': '&<>'}
+
+
+def test_crash_pending_recovered_as_consumed_uncertain(tmp_path):
+    import sqlite3
+    calls = []
+    def transport(*args):
+        calls.append(args)
+        raise SystemExit('simulated crash after request dispatch')
+    path = tmp_path / 'dedupe.sqlite'
+    with pytest.raises(SystemExit): Sender(path, config(), transport).send_ticket(watch())
+    with sqlite3.connect(path) as db:
+        assert db.execute('SELECT state FROM sent').fetchone() == ('pending',)
+    restarted = Sender(path, config(), lambda *args: calls.append(args))
+    assert restarted.list_uncertain()[0]['error_class'] == 'InterruptedSend'
+    assert restarted.send_ticket(watch()) == 'duplicate'
+    with sqlite3.connect(path) as db:
+        assert db.execute('SELECT state FROM sent').fetchone() == ('DELIVERY_UNCERTAIN',)
+    assert len(calls) == 1
+    assert restarted.send_summary([dict(watch(), session_date='2026-10-09')]) == 'sent'
+    assert 'possibly undelivered: ' + watch()['ticket_id'] in calls[1][2]
+    assert restarted.resend_ticket(watch(), force=True, actor='owner') == 'sent'
+    assert len(calls) == 3
+
+
+@pytest.mark.parametrize('code', [400, 429])
+def test_explicit_failure_consumed_with_owner_recovery(tmp_path, code):
+    import sqlite3
+    calls = []
+    def transport(*args):
+        calls.append(args)
+        raise urllib.error.HTTPError('secret', code, 'rejected', {}, None)
+    path = tmp_path / 'dedupe.sqlite'
+    sender = Sender(path, config(), transport, lambda _: None)
+    assert sender.send_ticket(watch()) == 'failed'
+    with sqlite3.connect(path) as db:
+        assert db.execute('SELECT state FROM sent').fetchone() == ('DELIVERY_FAILED',)
+    recovered = Sender(path, config(), lambda *args: calls.append(args))
+    assert recovered.send_ticket(watch()) == 'duplicate'
+    assert recovered.resend_ticket(watch(), force=True, actor='owner') == 'sent'
+
+
+@pytest.mark.parametrize('code', [500, 502, 503, 504])
+def test_server_error_consumes_uncertain_without_retry(tmp_path, code):
+    calls, delays = [], []
+    def transport(*args):
+        calls.append(args)
+        raise urllib.error.HTTPError('secret', code, 'server error', {}, None)
+    sender = Sender(tmp_path / 'dedupe.sqlite', config(), transport, delays.append)
+    assert sender.send_ticket(watch()) == 'uncertain'
+    assert len(calls) == 1 and delays == []
+    assert sender.list_uncertain()[0]['identity'] == watch()['ticket_id']
+    assert sender.send_ticket(watch()) == 'duplicate'
+
+
+def test_network_does_not_hold_global_journal_lock(tmp_path):
+    path = tmp_path / 'dedupe.sqlite'
+    other = dict(watch(), ticket_id='another-ticket')
+    results = []
+    def transport(*args):
+        nested = Sender(path, config(), lambda *args: None)
+        results.append(nested.send_ticket(other))
+        results.append(nested.send_ticket(watch()))
+        # Active pending is not prematurely recovered as crash-left uncertainty.
+        assert nested.list_uncertain() == []
+    assert Sender(path, config(), transport).send_ticket(watch()) == 'sent'
+    assert results == ['sent', 'duplicate']

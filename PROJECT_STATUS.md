@@ -2,10 +2,10 @@
 
 ## AGP-TG-01 — offline Telegram adapter (2026-10-08)
 
-Standalone canonical renderer/sender is UNIT_TESTED: 53 adapter tests; focused canonical/market-data/boundary suite 141 passed.
+Standalone canonical renderer/sender is UNIT_TESTED: 61 adapter tests; focused canonical/market-data/boundary suite 149 passed.
 HTML <pre> preserves the ladder; explicit HTML rejection falls back to plain text.
 Ambiguous sends consume their key and next summaries list possibly undelivered tickets.
-Rebased onto main `96f4aa6`; full default suite 1197 passed, 2 skipped (Linux). Ambiguous sends persist DELIVERY_UNCERTAIN.
+Rebased onto main `96f4aa6`; full default suite 1205 passed, 2 skipped (Linux). Ambiguous sends persist DELIVERY_UNCERTAIN.
 Delivery defaults disabled, credentials and owner allowlist fail closed; SQLite
 dedupe survives restart. No scheduler wiring or live Telegram validation.
 [Schema gaps and evidence](docs/status/AGP_TG_01_OFFLINE_2026-10-08.md).

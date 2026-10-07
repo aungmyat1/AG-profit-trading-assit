@@ -1,7 +1,7 @@
 # Documentation Index
 
 [AGP-TG-01 offline Telegram delivery](status/AGP_TG_01_OFFLINE_2026-10-08.md)
-records the canonical fields, schema gaps, disabled defaults and 63-test evidence.
+records the canonical fields, schema gaps, disabled defaults and current focused/full-suite evidence.
 
 [MT5 provider/evaluator R1 offline integration](status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md)
 records the M15 data contract, fixture verification and pending Windows live

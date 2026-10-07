@@ -5,6 +5,7 @@ No canonical builder import: evaluation, market data and authority stay upstream
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
 import io
 import json
@@ -14,6 +15,7 @@ import sqlite3
 import time
 import urllib.error
 import urllib.request
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,6 +28,11 @@ STATE_PENDING = "pending"
 STATE_SENT = "sent"
 STATE_DELIVERED = "DELIVERED"
 STATE_UNCERTAIN = "DELIVERY_UNCERTAIN"
+STATE_FAILED = "DELIVERY_FAILED"
+
+
+class DeliveryInProgress(Exception):
+    """Another process holds the delivery-key lock."""
 DELIVERED_STATES = frozenset({STATE_SENT, STATE_DELIVERED})
 
 
@@ -176,10 +183,47 @@ class Sender:
             db.execute("ALTER TABLE sent ADD COLUMN updated_at TEXT")
         return db
 
+    @contextmanager
+    def _key_lock(self, kind, identity, status):
+        # A separate SQLite lock per key serializes retries/recovery of that key,
+        # without blocking unrelated tickets in the main journal during network I/O.
+        directory = Path(str(self.path) + ".locks")
+        directory.mkdir(parents=True, exist_ok=True)
+        key = hashlib.sha256(json.dumps([kind, identity, status]).encode()).hexdigest()
+        lock = sqlite3.connect(directory / (key + ".sqlite"), timeout=0)
+        try:
+            try:
+                lock.execute("BEGIN IMMEDIATE")
+            except sqlite3.OperationalError as error:
+                if error.sqlite_errorcode in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED):
+                    raise DeliveryInProgress from error
+                raise
+            yield
+        finally:
+            lock.rollback()
+            lock.close()
+
+    @staticmethod
+    def _recover_pending(db, kind, identity, status):
+        # Caller holds the key lock: a surviving pending claim has no active sender.
+        db.execute("UPDATE sent SET state=?, updated_at=?, error_class=? "
+                   "WHERE kind=? AND identity=? AND status=? AND state=?",
+                   (STATE_UNCERTAIN, _utc_now(), "InterruptedSend", kind, identity,
+                    status, STATE_PENDING))
+
     def list_uncertain(self):
         if not self.path.exists():
             return []
-        with sqlite3.connect(self.path, timeout=15) as db:
+        with self._connect() as db:
+            rows = db.execute("SELECT kind, identity, status FROM sent WHERE state=?",
+                              (STATE_PENDING,)).fetchall()
+            for kind, identity, status in rows:
+                try:
+                    with self._key_lock(kind, identity, status):
+                        self._recover_pending(db, kind, identity, status)
+                        db.commit()
+                except DeliveryInProgress:
+                    continue  # An active request is not a crash-left pending claim.
             rows = db.execute(
                 "SELECT kind, identity, status, error_class FROM sent WHERE state=?",
                 (STATE_UNCERTAIN,),
@@ -199,12 +243,13 @@ class Sender:
             LOG.error("Telegram delivery blocked: message exceeds 4096 units")
             return "blocked"
         try:
-            with self._connect() as db:
+            with self._key_lock(kind, identity, status), self._connect() as db:
                 db.execute("BEGIN IMMEDIATE")
+                self._recover_pending(db, kind, identity, status)
                 row = db.execute("SELECT state FROM sent WHERE kind=? AND identity=? AND status=?",
                                  (kind, identity, status)).fetchone()
                 if row:
-                    if force and row[0] == STATE_UNCERTAIN:
+                    if force and row[0] in (STATE_UNCERTAIN, STATE_FAILED):
                         LOG.info("Owner force resend actor=%s when=%s identity=%s",
                                  actor or "unspecified", _utc_now(), identity)
                     elif force and row[0] in DELIVERED_STATES and allow_duplicate:
@@ -228,8 +273,12 @@ class Sender:
                         "VALUES (?, ?, ?, ?, ?, ?, ?)",
                         (kind, identity, status, STATE_PENDING, actor, _utc_now(), None),
                     )
-                    db.commit()
-                    db.execute("BEGIN IMMEDIATE")
+                # Commit both new claims and forced-resend claims before network.
+                if force:
+                    db.execute("UPDATE sent SET state=?, actor=?, updated_at=?, error_class=NULL "
+                               "WHERE kind=? AND identity=? AND status=?",
+                               (STATE_PENDING, actor, _utc_now(), kind, identity, status))
+                db.commit()
                 for attempt in range(self.attempts):
                     try:
                         self.transport(cfg.token, cfg.chat_id, message)
@@ -240,8 +289,14 @@ class Sender:
                         return "sent"
                     except urllib.error.HTTPError as error:
                         LOG.error("Telegram HTTP failure: status=%s attempt=%s", error.code, attempt + 1)
-                        # Explicit rejection is safe to retry; ambiguous network failures are not.
-                        if error.code not in (429, 500, 502, 503, 504) or attempt + 1 == self.attempts:
+                        # A 5xx may follow acceptance: preserve ambiguity without another send.
+                        if error.code >= 500:
+                            db.execute("UPDATE sent SET state=?, updated_at=?, error_class=? "
+                                       "WHERE kind=? AND identity=? AND status=?",
+                                       (STATE_UNCERTAIN, _utc_now(), "HTTPError", kind, identity, status))
+                            db.commit()
+                            return "uncertain"
+                        if error.code != 429 or attempt + 1 == self.attempts:
                             break
                         self.sleep(2 ** attempt)
                     except Exception as error:
@@ -253,7 +308,14 @@ class Sender:
                                     kind, identity, status))
                         db.commit()
                         return "uncertain"
+                db.execute("UPDATE sent SET state=?, updated_at=?, error_class=? "
+                           "WHERE kind=? AND identity=? AND status=?",
+                           (STATE_FAILED, _utc_now(), "HTTPError", kind, identity, status))
+                db.commit()
                 return "failed"
+        except DeliveryInProgress:
+            LOG.info("Telegram dedupe: delivery already in progress")
+            return "duplicate"
         except (OSError, sqlite3.Error):
             LOG.error("Telegram dedupe persistence failure; delivery stopped")
             return "failed"
