@@ -157,3 +157,17 @@ powershell -ExecutionPolicy Bypass -File scripts\host\verify_telegram.ps1
 
 For the complete installation procedure, expected outputs, archive paths, and rollback commands,
 see `docs/setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md`.
+
+## Daily health snapshot (read-only)
+
+`scripts/host/ag_daily_health.ps1` writes one JSON per UTC day: HEAD SHA, `git status`
+clean flag (`--no-optional-locks`, no index refresh), AG-* task results, FX decision counts
+(`decision=(\S+)`), Large-SMC alerts sent and duplicate suppressions, journal file counts
+grouped by `fx_ticket_archive`/`paper_trades` + strategy + symbol (else two path levels),
+`ERROR|Traceback` lines and `order_send|ORDER_SENT` lines.
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\host\ag_daily_health.ps1 `
+        [-RepoRoot D:\wp3-main-integ] [-OutDir <dir>] [-Date yyyy-MM-dd]
+
+Output defaults to `%LOCALAPPDATA%\AG\health\ag_health_<date>.json`; an `-OutDir` inside
+the runtime tree is refused. The script never touches MT5, Telegram or scheduled tasks.
