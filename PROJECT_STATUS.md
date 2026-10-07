@@ -1,5 +1,13 @@
 # Project Status — AG Profit Trading
 
+## AGP-TG-01 — offline Telegram adapter (2026-10-08)
+
+Standalone canonical renderer/sender is UNIT_TESTED: 47 adapter tests; focused canonical/market-data/boundary suite 135 passed.
+Rebased onto main `96f4aa6`; full default suite 1191 passed, 2 skipped (Linux). Ambiguous sends persist DELIVERY_UNCERTAIN.
+Delivery defaults disabled, credentials and owner allowlist fail closed; SQLite
+dedupe survives restart. No scheduler wiring or live Telegram validation.
+[Schema gaps and evidence](docs/status/AGP_TG_01_OFFLINE_2026-10-08.md).
+
 AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.

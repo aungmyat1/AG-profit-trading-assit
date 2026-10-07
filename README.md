@@ -1,5 +1,9 @@
 # AG Profit Trading
 
+Standalone canonical-ticket Telegram delivery is offline tested and disabled by
+default (`TELEGRAM_DELIVERY_ENABLED=false`). See [configuration, schema gaps and
+limits](docs/status/AGP_TG_01_OFFLINE_2026-10-08.md); no live delivery is validated.
+
 AG Profit Trading is a deterministic FX and crypto trading assistant designed to
 produce four complementary decision products:
 
