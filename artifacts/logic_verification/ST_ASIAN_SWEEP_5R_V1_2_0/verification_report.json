@@ -22,7 +22,7 @@
   "broker_mutation_count": 0,
   "logic_verified": false,
   "verdict": "NOT_VERIFIED",
-  "failing_check_ids": ["REFERENCE_ENGINE_PARITY_23_RECORDED_CASES", "GOLDEN_FIXTURE_DECISION_TIME_COMPLETENESS", "RECORDED_SPREAD_COMPLETENESS"],
+  "failing_check_ids": ["BLIND_REFERENCE_AGENT_INDEPENDENCE_NOT_PROVEN", "REFERENCE_ENGINE_PARITY_23_RECORDED_CASES", "GOLDEN_FIXTURE_DECISION_TIME_COMPLETENESS", "RECORDED_SPREAD_COMPLETENESS"],
   "economic_status": "NOT_VERIFIED",
   "edge_status": "NOT_VERIFIED",
   "ticket_ready_authority": false

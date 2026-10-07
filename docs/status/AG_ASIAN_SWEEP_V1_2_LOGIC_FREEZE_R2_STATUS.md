@@ -38,9 +38,11 @@ inputs. Of 23 rows:
 - part of the set is `LONDON_NEWYORK`, outside the frozen V1.2 `ASIAN_LONDON` scope.
 
 Only 10 rows permit close-based geometry reconstruction, and none permits the complete
-required signal-by-signal comparison. Missing data was not inferred. Therefore
-`REFERENCE_ENGINE_PARITY` for all 23 and complete golden replay evidence are blocked,
-which makes `LOGIC_VERIFIED = FALSE` under the all-mandatory-proofs rule.
+required signal-by-signal comparison. A parallel blind agent/worktree was not available;
+the reference is a separate pure code path, but blind authorship is not claimed. Missing
+data was not inferred. Therefore `REFERENCE_ENGINE_PARITY` for all 23, blind-reference
+independence, and complete golden replay evidence are blocked, which makes
+`LOGIC_VERIFIED = FALSE` under the all-mandatory-proofs rule.
 
 ## Recorded diagnostic funnel
 
