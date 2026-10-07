@@ -1,12 +1,29 @@
 """Actionability policy loader (injected; no hardcoded production threshold).
 
-Implements the versioned operational policy schema at config/policy/actionability_policy.yaml.
-A host-local override can be placed at config/local/actionability_policy.yaml (gitignored);
-that file wins.
+Implements the versioned operational-policy schema. Paths:
 
-The loader NEVER chooses a threshold.  A missing/invalid/conflicting policy is reported with
-an explicit status and actionability falls back to INFO_ONLY_POLICY_UNRESOLVED for every
-would-be WATCH_READY decision.
+    REPO_POLICY_SCHEMA        = config/policy/actionability_policy.yaml
+                                (committed schema/default; signed_by = null,
+                                 min_remaining_r = null; NEVER authorizes WATCH_READY)
+    OWNER_RUNTIME_OVERRIDE    = config/local/actionability_policy.yaml
+                                (host-local, gitignored, owner-signed; wins when present
+                                 and signed_by is non-null)
+
+Policy precedence (highest to lowest):
+
+    1. owner-signed local override (config/local/actionability_policy.yaml), signed_by != null
+            ↓ usable policy → WATCH_READY path enabled
+    2. unsigned repo policy (config/policy/actionability_policy.yaml), signed_by = null
+            ↓ schema/default only → POLICY_MISSING → INFO_ONLY_POLICY_UNRESOLVED
+    3. missing / malformed / conflicting policy
+            ↓ POLICY_MISSING / POLICY_INVALID / POLICY_CONFLICT → INFO_ONLY_POLICY_UNRESOLVED
+
+DI (dependency injection) for tests: ``override_dict`` and ``override_path`` parameters
+accept a fixture policy dictionary/file without creating a signed on-disk policy.
+
+The loader NEVER chooses a numeric threshold.  A missing/invalid/conflicting policy is
+reported with an explicit status and actionability falls back to INFO_ONLY_POLICY_UNRESOLVED
+for every would-be WATCH_READY decision.  Arena does not create or sign the owner policy.
 """
 from __future__ import annotations
 

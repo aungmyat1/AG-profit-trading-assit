@@ -6,6 +6,7 @@ deterministic decisions:
     WATCH_READY
     INFO_ONLY_STALE
     INFO_ONLY_INSUFFICIENT_REMAINING_R
+    INFO_ONLY_POLICY_UNRESOLVED
     NO_TRADE
     EXPIRED
     MISSED
@@ -20,13 +21,27 @@ Owner freshness policy (mission):
 For ST_ASIAN_SWEEP_5R_V1 and ST_LIQUIDITY_SWEEP_RETEST_V1 the trigger timeframe is M15 (FX)
 and M5 (crypto).  A 2-bar window is therefore 30 min / 10 min respectively.
 
-Remaining-R policy: informational WATCH_READY requires price to still have at least
-MIN_REMAINING_R of R-space before TP1 is reached (fail-closed conservative default of
-1.0 R when no owner-signed threshold exists on the contract).  When TP1 has already been
-taken out or price blew past SL, the ticket falls to MISSED or EXPIRED.
+Remaining-R policy: WATCH_READY REQUIRES an owner-signed actionability policy supplying
+``min_remaining_r``.  If no usable signed policy exists, classification fails closed to
+``INFO_ONLY_POLICY_UNRESOLVED``.  There is NO built-in numeric fallback (the committed
+repo policy carries ``min_remaining_r: null`` and ``signed_by: null``).  The production
+owner-signed override lives at ``config/local/actionability_policy.yaml`` (gitignored).
+
+Policy precedence (see v1_tickets.policy_loader):
+
+    owner-signed local override (config/local/actionability_policy.yaml) [signed_by != null]
+        ↓ usable policy → WATCH_READY path enabled
+    unsigned repo policy (config/policy/actionability_policy.yaml) [signed_by = null]
+        ↓ schema/default only
+        ↓ POLICY_MISSING → INFO_ONLY_POLICY_UNRESOLVED
+    missing / malformed / conflicting policy
+        ↓ POLICY_MISSING / POLICY_INVALID / POLICY_CONFLICT → INFO_ONLY_POLICY_UNRESOLVED
+
+When TP1 has already been taken out or price blew past SL, the ticket falls to MISSED or
+EXPIRED.
 
 This module never changes strategy logic or prices.  It is a pure classification over a
-precomputed ticket plus a `current_price` (None means the caller has no live quote ->
+precomputed ticket plus a ``current_price`` (None means the caller has no live quote ->
 BLOCKED/INSUFFICIENT_DATA), and never calls a broker.
 """
 from __future__ import annotations
