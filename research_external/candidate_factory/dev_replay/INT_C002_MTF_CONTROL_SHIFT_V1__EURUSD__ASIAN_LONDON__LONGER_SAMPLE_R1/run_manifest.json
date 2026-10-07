@@ -1,0 +1,68 @@
+{
+  "run_id": "INT_C002_MTF_CONTROL_SHIFT_V1__EURUSD__ASIAN_LONDON__LONGER_SAMPLE_R1",
+  "candidate_id": "INT_C002",
+  "strategy_id": "ST_MTF_CONTROL_SHIFT_V1",
+  "strategy_version": "1.0.0",
+  "trial_id": "ASIAN_LONDON_EURUSD_LONGER_SAMPLE_R1_v1",
+  "prereg_id": "AG_INT_MTF_CONTROL_SHIFT_V1_LONGER_DEV_SAMPLE_R1_PREREG_V1",
+  "prereg_sha256": "dbce2679d3564e25ee32ee2aa523f3e417940ce80c628005f85bda5cf749acf5",
+  "parent_prereg_id": "AG_OSS_STRATEGY_CANDIDATE_FACTORY_R1_PREREG_V1",
+  "parent_prereg_sha256": "342482c9972d1029d85b5ce4ab4792d4d147617d110aa88a6b020e32b707912b",
+  "dataset_id": "DEV_EURUSD_H1_D1H4_WARMUP_EXTENDED_V1 (D1/H4) + DEV_EURUSD_H1_M15_HIST1Y_V1 (M15 decision population, unchanged)",
+  "dataset_sha256": {
+    "EURUSD_H1_WARMUP_EXTENDED_JAN2025_SEP2026.csv": "61107dc1abf2ac081d5778a6968f6e1205dc713fa8a16881b1311dc4156c99b7",
+    "HIST1Y_EURUSD_H1.csv": "3ee3dbff1fdf81b578c6ff43e7f9586996c7fb796db80105a059504b052fd2aa",
+    "HIST1Y_EURUSD_M15.csv": "087c64cb2bf291230d525cd6e2f8d6471bb8499c685a24df5525c70c3a1ad6fe"
+  },
+  "engine_source": "research_external/candidate_factory/internal_reference/mtf_control_shift (copy of PR #34 @ 1d1c75c92a7fda80696a56d4e1ccbe402f3ab71a) -- IDENTICAL to parent run, not modified",
+  "symbol": "EURUSD",
+  "cycle": "ASIAN_LONDON",
+  "n_days_evaluated": 314,
+  "n_signals_total": 0,
+  "n_signals_unfilled_limit": 0,
+  "n_trades_filled": 0,
+  "fill_rate": null,
+  "replay_assumptions": [
+    "D1/H4 derived from a longer, real H1 series (2025-01-01..2026-09-15) by causal OHLC resample",
+    "D1/H4 passed to evaluate() as the FULL closed-to-date series (no tail-window truncation) -- the only deliberate change vs the parent run",
+    "H1 and M15 still passed as bounded tail windows (60/150 bars), unchanged from the parent run",
+    "stop-first-on-same-bar-collision (not defined by source spec), unchanged from parent run",
+    "force-flat fill approximated at the bar OPEN of the first M15 bar at/after 21:00 UTC, unchanged from parent run"
+  ],
+  "metrics_gross_r": {
+    "n": 0,
+    "note": "no trades"
+  },
+  "diagnostic_funnel": {
+    "stages": [
+      "CONTEXT",
+      "LOCATION",
+      "H1_CONTROL_SHIFT",
+      "M15_REFINEMENT",
+      "GEOMETRY",
+      "SESSION",
+      "TRADE"
+    ],
+    "n_days_evaluated": 314,
+    "reached_count": {
+      "CONTEXT": 314,
+      "LOCATION": 50,
+      "H1_CONTROL_SHIFT": 4,
+      "M15_REFINEMENT": 0,
+      "GEOMETRY": 0,
+      "SESSION": 0,
+      "TRADE": 0
+    },
+    "failed_at_count": {
+      "CONTEXT": 264,
+      "LOCATION": 46,
+      "H1_CONTROL_SHIFT": 4,
+      "M15_REFINEMENT": 0,
+      "GEOMETRY": 0,
+      "SESSION": 0,
+      "TRADE": 0
+    },
+    "unmapped_reasons": {}
+  },
+  "generated_at_utc": "2026-10-07T09:17:34.766185+00:00"
+}

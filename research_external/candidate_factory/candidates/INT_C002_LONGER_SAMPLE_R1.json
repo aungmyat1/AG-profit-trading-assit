@@ -1,0 +1,53 @@
+{
+  "candidate_id": "INT_C002",
+  "trial_scope": "AG_INT_MTF_CONTROL_SHIFT_V1_LONGER_DEV_SAMPLE_R1 (diagnostic follow-up, not a new candidate)",
+  "strategy_id": "ST_MTF_CONTROL_SHIFT_V1",
+  "strategy_version": "1.0.0",
+  "source": "PR #34 @ 1d1c75c92a7fda80696a56d4e1ccbe402f3ab71a (byte-identical engine, unchanged)",
+  "prereg_id": "AG_INT_MTF_CONTROL_SHIFT_V1_LONGER_DEV_SAMPLE_R1_PREREG_V1",
+  "prereg_sha256_file": "research_external/candidate_factory/PREREG_MTF_LONGER_SAMPLE_R1.sha256.txt",
+  "parent_candidate_record": "research_external/candidate_factory/candidates/INT_C002.json (verdict HOLD_SAMPLE_REQUIRED, unchanged by this follow-up)",
+
+  "experiment": "D1/H4 derived from a genuinely longer H1 series (2025-01-01..2026-09-15, extended backward via SSC_V1_0_1_G2_DEV_002's own WARMUP_CONTEXT_ONLY H1 history) and passed to the UNMODIFIED engine as the FULL closed-to-date series at each decision point (no TAIL_D1=40/TAIL_H4=80 bounded-window truncation, unlike the parent run). M15 decision population, session windows, and strategy rules are all unchanged from the parent run.",
+
+  "results": {
+    "LONDON_NEWYORK": {
+      "n_days_evaluated": 314,
+      "n_signals_total": 0,
+      "n_trades_filled": 0,
+      "funnel_reached": {"CONTEXT": 314, "LOCATION": 55, "H1_CONTROL_SHIFT": 5, "M15_REFINEMENT": 0, "GEOMETRY": 0, "SESSION": 0, "TRADE": 0},
+      "funnel_failed_at": {"CONTEXT": 259, "LOCATION": 50, "H1_CONTROL_SHIFT": 5, "M15_REFINEMENT": 0, "GEOMETRY": 0, "SESSION": 0, "TRADE": 0}
+    },
+    "ASIAN_LONDON": {
+      "n_days_evaluated": 314,
+      "n_signals_total": 0,
+      "n_trades_filled": 0,
+      "funnel_reached": {"CONTEXT": 314, "LOCATION": 50, "H1_CONTROL_SHIFT": 4, "M15_REFINEMENT": 0, "GEOMETRY": 0, "SESSION": 0, "TRADE": 0},
+      "funnel_failed_at": {"CONTEXT": 264, "LOCATION": 46, "H1_CONTROL_SHIFT": 4, "M15_REFINEMENT": 0, "GEOMETRY": 0, "SESSION": 0, "TRADE": 0}
+    }
+  },
+
+  "comparison_to_parent_run": {
+    "parent_run_context_pass_rate": "53/305 = 17.4% (305-252 days passed HTF_BIAS_NOT_ALIGNED check, parent run with 40/80-bar D1/H4 tail windows)",
+    "this_run_context_pass_rate": "55/314 = 17.5% (LONDON_NEWYORK), 50/314 = 15.9% (ASIAN_LONDON), with full closed-to-date D1/H4 history",
+    "interpretation": "The CONTEXT (D1/H4 bias-alignment) pass rate is essentially UNCHANGED by a ~7.7x longer D1/H4 warm-up (40/80 bounded bars -> full history back to 2025-01-01, confirmed by n_d1_bars=220 already on the first evaluated day vs the parent run's bounded 40). This rules OUT explanations C (timeframe derivation/data inadequacy) and D (adapter/replay mismatch via bounded tail windows) as material causes of the dominant HTF_BIAS_NOT_ALIGNED blocker."
+  },
+
+  "new_bottleneck_identified": "In both cycles, every day that reaches the H1_CONTROL_SHIFT stage (5 LONDON_NEWYORK, 4 ASIAN_LONDON, out of 314 evaluated) fails there -- zero days ever reach M15_REFINEMENT. The engine's H1_SHIFT_MAX_AGE_BARS=4 requires a control-shift zone created within the last 4 H1 bars at evaluation time; combined with the LOCATION-stage requirement (fresh H4 POI + H1 touch), this is a very tight joint condition. This is recorded as an observation for a future diagnostic, NOT as a proposal to loosen the 4-bar recency window -- no rule or threshold is changed by this record.",
+
+  "explanations_resolution": {
+    "A_genuinely_selective": "SUPPORTED by this run's evidence (stable low pass-rate at CONTEXT regardless of warm-up length; sharp narrowing at H1_CONTROL_SHIFT)",
+    "B_sample_insufficient": "NOT RESOLVED by this run (M15 decision population unchanged, still ~314 days, single symbol; a genuinely larger M15 population was out of scope -- no additional EURUSD M15 history exists in this checkout beyond the HIST1Y window)",
+    "C_timeframe_derivation_inadequate": "REJECTED by this run's evidence (CONTEXT pass-rate unchanged despite ~7.7x longer D1/H4 history)",
+    "D_adapter_replay_mismatch_bounded_windows": "REJECTED for the CONTEXT stage specifically by this run (removing the bounded-tail-window approximation did not change the dominant blocker's rate); NOT fully excluded for other stages (M15_REFINEMENT/GEOMETRY never reached, so untested there)",
+    "E_session_restriction": "NOT_VERIFIED by this run (both cycles behave similarly; no cross-session-removed-population test performed)",
+    "F_not_verified": "Residual: the new H1_CONTROL_SHIFT bottleneck itself is not yet decomposed further"
+  },
+
+  "verdict": "HOLD_SAMPLE_REQUIRED (UNCHANGED from parent run) -- min_trade_count=30 not met (0 trades, both cycles). This diagnostic experiment resolves part of the open explanation set (rules out C/D for the CONTEXT stage) but does not change the verdict, the kill-policy thresholds, or any strategy rule. No freeze campaign is proposed.",
+  "logic_verified": false,
+  "economic_status": "NOT_EVALUATED",
+  "demo_authorized": false,
+  "live_authorized": false,
+  "broker_mutation_count": 0
+}

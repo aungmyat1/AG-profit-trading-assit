@@ -1,4 +1,18 @@
-# ST_MTF_CONTROL_SHIFT_V1 — Sample Adequacy Packet (future experiment, not run)
+# ST_MTF_CONTROL_SHIFT_V1 — Sample Adequacy Packet
+
+> **UPDATE (AG_INT_MTF_CONTROL_SHIFT_V1_LONGER_DEV_SAMPLE_R1, run):** the experiment
+> described below has been executed once, under its own new, frozen prereg
+> (`research_external/candidate_factory/PREREG_MTF_LONGER_SAMPLE_R1.json`). Result:
+> **explanations C and D are REJECTED** for the dominant CONTEXT-stage blocker (D1/H4
+> bias-alignment pass rate was ~17% both with bounded 40/80-bar tail windows and with a
+> full, ~7.7x longer closed-to-date D1/H4 history). A **new, sharper bottleneck** was
+> found one stage later: of the few days that reach `H1_CONTROL_SHIFT`, zero ever pass
+> it (0/314 days reach `M15_REFINEMENT` in either cycle). Verdict remains
+> `HOLD_SAMPLE_REQUIRED` (0 trades, both cycles) — unchanged, no rule/threshold change.
+> Full record: `research_external/candidate_factory/candidates/INT_C002_LONGER_SAMPLE_R1.json`
+> and `docs/status/AG_MTF_CONTROL_SHIFT_V1_LONGER_DEV_SAMPLE_R1_STATUS.md`. The
+> remainder of this document is kept as originally written for context.
+
 
 PR #46 (`research_external/candidate_factory/candidates/INT_C002.json`) reported
 `HOLD_SAMPLE_REQUIRED`: ~1 year of EURUSD DEV data (`DEV_EURUSD_H1_M15_HIST1Y_V1`)
