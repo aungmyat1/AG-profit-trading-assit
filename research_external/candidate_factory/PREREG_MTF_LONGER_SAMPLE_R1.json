@@ -1,0 +1,125 @@
+{
+  "schema_version": "AG_CANDIDATE_FACTORY_PREREG_V1",
+  "prereg_id": "AG_INT_MTF_CONTROL_SHIFT_V1_LONGER_DEV_SAMPLE_R1_PREREG_V1",
+  "mission": "AG_INT_MTF_CONTROL_SHIFT_V1_LONGER_DEV_SAMPLE_R1",
+  "parent_mission": "AG_OSS_STRATEGY_CANDIDATE_FACTORY_R1",
+  "parent_prereg_id": "AG_OSS_STRATEGY_CANDIDATE_FACTORY_R1_PREREG_V1",
+  "parent_prereg_sha256": "342482c9972d1029d85b5ce4ab4792d4d147617d110aa88a6b020e32b707912b",
+  "frozen_at_utc": "2026-10-07T09:20:00Z",
+  "frozen_before_any_replay": true,
+  "purpose": "Single-candidate diagnostic follow-up to INT_C002 (ST_MTF_CONTROL_SHIFT_V1, PR #34) HOLD_SAMPLE_REQUIRED verdict from the parent campaign. Tests explanations C (timeframe derivation/data inadequacy) and D (adapter/replay mismatch via bounded tail windows) from docs/plans/AG_MTF_CONTROL_SHIFT_SAMPLE_ADEQUACY_R1.md by giving the engine genuine longer D1/H4 warm-up history instead of a bounded tail-window approximation. Does NOT change any strategy rule, threshold, or the parent prereg. This is NOT an EdgeLab economic gate, NOT LOGIC_VERIFIED criteria, and NOT a production promotion authority.",
+  "non_authority": [
+    "Does not grant DEMO_AUTHORIZED",
+    "Does not grant LIVE_AUTHORIZED",
+    "Does not set LOGIC_VERIFIED",
+    "Does not set EDGE_VERIFIED",
+    "Does not open or touch SEALED/OOS/FINAL_HOLDOUT data",
+    "Does not change strategies/registry.yaml or any production registry",
+    "Does not edit AG_OSS_STRATEGY_CANDIDATE_FACTORY_R1_PREREG_V1 (immutable, parent campaign closed)"
+  ],
+  "amendment_policy": "This file is immutable once committed. A further policy change requires a new PREREG_ID and a new campaign.",
+
+  "dev_datasets": [
+    {
+      "dataset_id": "DEV_EURUSD_H1_D1H4_WARMUP_EXTENDED_V1",
+      "symbol": "EURUSD",
+      "asset_class": "FX",
+      "purpose": "D1/H4 derivation ONLY (never used to generate M15 decision occurrences or extend the decision population)",
+      "composition": "G2_DEV_002 EURUSD_H1.csv rows with timestamp_utc < 2025-09-14T21:00:00Z (2025-01-01T21:00:00Z .. 2025-09-12T20:00:00Z, 4368 rows) CONCATENATED with the unchanged HIST1Y EURUSD_H1.csv (2025-09-14T21:00:00Z .. 2026-09-15T21:00:00Z, 6241 rows). The two source files were verified byte-identical in their overlap window before concatenation (spot-checked candles match exactly) to rule out a silent data discontinuity.",
+      "source_files": [
+        "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_002/raw/EURUSD_H1.csv",
+        "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001/raw/EURUSD_H1.csv"
+      ],
+      "source_file_sha256": {
+        "SSC_V1_0_1_G2_DEV_002/raw/EURUSD_H1.csv": "9cb7c2da900e958ec092327d08e4506007146bda611c4b056c396f0e121dfa6f",
+        "SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001/raw/EURUSD_H1.csv": "3ee3dbff1fdf81b578c6ff43e7f9586996c7fb796db80105a059504b052fd2aa"
+      },
+      "materialized_file": "research_external/candidate_factory/data/EURUSD_H1_WARMUP_EXTENDED_JAN2025_SEP2026.csv",
+      "materialized_file_sha256": "61107dc1abf2ac081d5778a6968f6e1205dc713fa8a16881b1311dc4156c99b7",
+      "date_range_utc": ["2025-01-01T21:00:00Z", "2026-09-15T21:00:00Z"],
+      "row_count": 10609,
+      "role": "DEV / WARMUP_CONTEXT_ONLY for D1/H4 derivation. SSC_V1_0_1_G2_DEV_002's own dataset_manifest.json (built originally for a different strategy, ST_SESSION_SWEEP_CONTINUATION_V1) labels its pre-2026-06-21 H1 history as warmup_role.WARMUP_CONTEXT_ONLY=true, may_initialize_h1_bias=true, may_initialize_h1_structure=true, may_NOT_contribute_economic_sample_N, may_NOT_generate_decision_occurrence. This campaign independently adopts the identical restriction for the pre-HIST1Y portion: it is used only to seed D1/H4 structure/bias computation further back in time, never to add a new decision day outside the HIST1Y M15 window below.",
+      "sealed_status": "NOT_SEALED (data_role: DEVELOPMENT in its own manifest)",
+      "broker_source": "REAL_OBSERVED_MARKET (MT5-derived, same provenance chain as the parent campaign's HIST1Y dataset)"
+    },
+    {
+      "dataset_id": "DEV_EURUSD_H1_M15_HIST1Y_V1",
+      "note": "UNCHANGED from the parent campaign (same files, same hashes). Used for the actual M15 decision population; this campaign does not extend or alter the decision window.",
+      "source_files": [
+        "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001/raw/EURUSD_H1.csv",
+        "data/research/ssc_fresh_dev/SSC_V1_0_1_HIST_1Y_H1M15_DERIVED_001/raw/EURUSD_M15.csv"
+      ],
+      "file_sha256": {
+        "EURUSD_H1.csv": "3ee3dbff1fdf81b578c6ff43e7f9586996c7fb796db80105a059504b052fd2aa",
+        "EURUSD_M15.csv": "087c64cb2bf291230d525cd6e2f8d6471bb8499c685a24df5525c70c3a1ad6fe"
+      },
+      "date_range_utc_observed": ["2025-09-14T21:00:00Z", "2026-09-15T21:00:00Z"]
+    }
+  ],
+
+  "replay_change_vs_parent_run": {
+    "unchanged": [
+      "strategy engine (byte-identical copy of PR #34, same provenance)",
+      "strategy rules, thresholds, session windows, symbol (EURUSD), cycles (ASIAN_LONDON, LONDON_NEWYORK)",
+      "M15 decision population (same days, same HIST1Y file)",
+      "H1 and M15 tail windows passed to evaluate() (H1=60, M15=150 bars, as in the parent run)",
+      "kill_policy thresholds (reused by reference from AG_CF_R1_DEV_SCREEN_V1, not re-derived)"
+    ],
+    "changed": [
+      "D1 and H4 are now derived from the full closed-to-date EXTENDED H1 series (no bounded tail window truncation: TAIL_D1/TAIL_H4 from the parent run, 40/80 bars, are REMOVED for this campaign) -- this directly tests whether the parent run's bounded-tail-window approximation (documented there as 'towards MORE NO_TRADE, never towards fabricating a signal') was material."
+    ]
+  },
+
+  "cost_model": {
+    "cost_model_id": "AG_CF_R1_SPREAD_SNAPSHOT_SCENARIO_V1",
+    "note": "UNCHANGED, reused by reference from the parent campaign. Only applied if min_trade_count is reached below; otherwise NOT_EVALUATED."
+  },
+
+  "kill_policy": {
+    "kill_policy_id": "AG_CF_R1_DEV_SCREEN_V1",
+    "note": "UNCHANGED, reused by reference from the parent campaign. Values copied verbatim for operator convenience; this file does not redefine them.",
+    "thresholds": {
+      "min_trade_count": 30,
+      "net_expectancy_r_must_exceed": 0.0,
+      "min_profit_factor": 1.30,
+      "max_drawdown_r": 15.0,
+      "max_single_trade_concentration_pct_of_total_net_r": 50,
+      "friction_requirement": "Net expectancy_R must remain > 0 under the BASE spread scenario with commission UNKNOWN explicitly disclosed (not zeroed)."
+    },
+    "if_sample_too_small": "HOLD_SAMPLE_REQUIRED. min_trade_count is never lowered after seeing a result.",
+    "amendment": "Any change to these thresholds requires a new kill_policy_id in a new prereg file; this campaign does not amend them."
+  },
+
+  "diagnostic_funnel_protocol": {
+    "stages": ["CONTEXT", "LOCATION", "H1_CONTROL_SHIFT", "M15_REFINEMENT", "GEOMETRY", "SESSION", "TRADE"],
+    "stage_to_engine_mapping": {
+      "CONTEXT": "series validated + D1/H4 structure_bias computed (fails as HTF_BIAS_NOT_ALIGNED if NEUTRAL or mismatched)",
+      "LOCATION": "fresh H4 POI exists and H1 has touched it (NO_FRESH_H4_POI, HTF_POI_NOT_REACHED)",
+      "H1_CONTROL_SHIFT": "a recent, valid H1 control-shift zone exists (NO_VALID_H1_CONTROL_SHIFT, FALSE_CHOCH_*)",
+      "M15_REFINEMENT": "an M15 entry refinement zone exists in-window after the H1 shift (NO_M15_ENTRY_REFINEMENT)",
+      "GEOMETRY": "entry zone height and computed risk are positive (NON_POSITIVE_ENTRY_ZONE, NON_POSITIVE_RISK) and a valid HTF final target exists (NO_VALID_HTF_FINAL_TARGET)",
+      "SESSION": "signal falls inside the declared session window (enforced structurally by the refinement filter, not a separate reason code)",
+      "TRADE": "status == SIGNAL, reason_code == READY_RESEARCH_SHADOW"
+    },
+    "purpose": "Diagnose WHERE population reaches zero, not to optimize or loosen any filter. No threshold is adjusted based on funnel counts observed."
+  },
+
+  "explanations_under_test": {
+    "A": "strategy genuinely extremely selective",
+    "B": "admitted sample insufficient",
+    "C": "required timeframe derivation/data inadequate",
+    "D": "adapter/replay mismatch (bounded tail windows)",
+    "E": "session restriction removes population",
+    "F": "NOT_VERIFIED"
+  },
+
+  "caps": {
+    "max_discovered": 0,
+    "max_dev_replays": 2,
+    "n_trials_initial": 0,
+    "note": "This is a single-candidate (INT_C002) diagnostic follow-up: 2 replays = 2 cycles (ASIAN_LONDON, LONDON_NEWYORK). No new candidates are discovered or searched for."
+  },
+
+  "gates": ["G4_CAUSALITY_WARMUP"],
+  "gates_note": "G1/G2/G3/G5 are unchanged from the parent campaign's INT_C002 record (research_external/candidate_factory/candidates/INT_C002.json) and are not re-run. Only G4 (causality/warm-up) is re-examined, since that is exactly what this experiment tests."
+}
