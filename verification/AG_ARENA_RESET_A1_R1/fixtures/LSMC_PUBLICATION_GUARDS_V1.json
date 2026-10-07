@@ -1,0 +1,132 @@
+{
+  "fixture_id": "LSMC_PUBLICATION_GUARDS_V1",
+  "fixture_version": "1.0.0",
+  "required_by": "Owner batch 3 (2026-10-08): fixtures for SKIPPED_ATR_NOT_READY, SKIPPED_PRE_CLOSURE, and the ATR14 floor case.",
+  "spec": "docs/specs/LSMC_SPEC_V2_FROZEN.md v2.0.0, section 3.6",
+  "governance": "docs/governance/OWNER_DECISIONS_2026-10-08_LSMC_SPEC_V1_0_2.md, Batch 3",
+  "status": "DATA_AND_WORKED_PROOF_ONLY -- not wired into tests/ (out of this session's scope)",
+
+  "note": "A guard result is a PUBLICATION DECISION, not an outcome. It never enters the section 5 outcome taxonomy and is counted separately.",
+
+  "cases": [
+    {
+      "case_id": "G1",
+      "guard": "GUARD 1 -- ATR14 warm-up",
+      "purpose": "SKIPPED_ATR_NOT_READY when fewer than 15 closed M5 bars precede the CHoCH bar.",
+      "symbol_class": "NON_C10",
+      "inputs": {
+        "closed_m5_bars_before_choch": 12,
+        "required": 15,
+        "atr14_m5": null
+      },
+      "checks": {
+        "warmup_satisfied": "12 >= 15 -> false"
+      },
+      "expected": "NOT PUBLISHED",
+      "reason": "SKIPPED_ATR_NOT_READY",
+      "sub_reason": "INSUFFICIENT_WARMUP",
+      "significance": "ATR14 is computed over m5[: choch_index + 1]. With MIN_M5_BARS = 30 overall, an early CHoCH inside the loaded window can still leave the ATR slice short. Counted separately; see BACKLOG B5 on replay-window truncation."
+    },
+    {
+      "case_id": "G2",
+      "guard": "GUARD 2 -- ATR14 validity",
+      "purpose": "SKIPPED_ATR_NOT_READY when ATR14 is zero.",
+      "symbol_class": "NON_C10",
+      "inputs": {
+        "closed_m5_bars_before_choch": 40,
+        "atr14_m5": 0.0
+      },
+      "checks": {
+        "warmup_satisfied": "40 >= 15 -> true",
+        "atr_positive": "0.0 > 0 -> false"
+      },
+      "expected": "NOT PUBLISHED",
+      "reason": "SKIPPED_ATR_NOT_READY",
+      "sub_reason": "NON_POSITIVE_ATR",
+      "significance": "Stricter than c10_stop_policy.compute_c10_stop, which raises INVALID_ATR only for atr < 0 and would accept atr == 0. Without this guard the buffer collapses to the 1-point floor alone on a flat series, and before OD-28 it collapsed to zero -- the exact unreachability LSMC-OD-21 was raised to fix."
+    },
+    {
+      "case_id": "G3",
+      "guard": "GUARD 2 passes -- 1-point floor binds",
+      "purpose": "The PROVISIONAL 1-point floor changes the outcome when 0.35 x ATR14 < 1 point.",
+      "symbol": "BTCUSDT",
+      "symbol_class": "NON_C10",
+      "inputs": {
+        "point": 0.1,
+        "point_source": "REPO_EVIDENCED (contract.EVIDENCED_POINT)",
+        "atr14_m5": 0.2,
+        "atr_term": 0.07,
+        "floor_term": 0.1,
+        "buffer": 0.1,
+        "buffer_floor_applied": true,
+        "sweep_extreme": 60000.0,
+        "direction": "LONG",
+        "stop_with_floor": 59999.9,
+        "stop_without_floor": 59999.93,
+        "target_c11": 60010.0
+      },
+      "bar": { "open": 60000.5, "high": 60000.6, "low": 59999.92, "close": 59999.98 },
+      "checks": {
+        "target_hit": "high 60000.60 >= 60010.00 -> false",
+        "stopped_with_floor": "low 59999.92 <= 59999.90 -> false",
+        "stopped_without_floor": "low 59999.92 <= 59999.93 -> true",
+        "invalidated": "close 59999.98 < 60000.00 -> true"
+      },
+      "expected_outcome": "INVALIDATED",
+      "outcome_without_floor": "STOP_REACHED",
+      "significance": "buffer = max(0.35 x 0.2, 1 x 0.1) = max(0.07, 0.1) = 0.1. The floor widens the stop from 59999.93 to 59999.90, which is what keeps the INVALIDATED window open on this bar. Demonstrates the floor is load-bearing, not decorative."
+    },
+    {
+      "case_id": "G4",
+      "guard": "GUARD 3 -- pre-closure",
+      "purpose": "SKIPPED_PRE_CLOSURE when fewer than 6 tradable M5 bars remain before a scheduled closure.",
+      "symbol_class": "FX",
+      "inputs": {
+        "scheduled_closure": "Friday 17:00 America/New_York (watch.fx_market_closed)",
+        "choch_close": "Friday 16:40 America/New_York",
+        "tradable_m5_remaining": 4,
+        "required": 6
+      },
+      "checks": {
+        "guard": "4 < 6 -> skip"
+      },
+      "expected": "NOT PUBLISHED",
+      "reason": "SKIPPED_PRE_CLOSURE",
+      "significance": "Without this guard the LSMC-OD-06 floor of 6 M5 bars would be consumed entirely by the weekend closure, producing a guaranteed EXPIRY_IN_MARKET_CLOSED with zero resolvable bars."
+    },
+    {
+      "case_id": "G5",
+      "guard": "GUARD 3 -- boundary control",
+      "purpose": "Exactly 6 tradable M5 bars remaining PUBLISHES (the test is < 6, not <= 6).",
+      "symbol_class": "FX",
+      "inputs": {
+        "scheduled_closure": "Friday 17:00 America/New_York",
+        "choch_close": "Friday 16:30 America/New_York",
+        "tradable_m5_remaining": 6,
+        "required": 6
+      },
+      "checks": {
+        "guard": "6 < 6 -> false, publish"
+      },
+      "expected": "PUBLISHED",
+      "reason": null,
+      "significance": "The < 6 convention makes the LSMC-OD-06 floor exactly satisfiable in tradable bars, which is the guard's stated purpose. Recorded as BACKLOG B7 in case the inclusive reading was intended."
+    },
+    {
+      "case_id": "G6",
+      "guard": "GUARD 3 -- crypto",
+      "purpose": "Crypto is subject to broker maintenance closures only, and none are defined.",
+      "symbol": "BTCUSDT",
+      "inputs": {
+        "scheduled_closures_known": [],
+        "choch_close": "Friday 16:40 America/New_York"
+      },
+      "checks": {
+        "guard": "no scheduled closure in the calendar -> never fires"
+      },
+      "expected": "PUBLISHED",
+      "reason": null,
+      "significance": "The FX weekly close does not apply to crypto (watch.evaluate_snapshot bypasses fx_market_closed for CRYPTO_SYMBOLS). No broker maintenance calendar exists in this repository, so the guard evaluates vacuously and FAILS OPEN. Recorded as BACKLOG B2, non-blocking."
+    }
+  ]
+}

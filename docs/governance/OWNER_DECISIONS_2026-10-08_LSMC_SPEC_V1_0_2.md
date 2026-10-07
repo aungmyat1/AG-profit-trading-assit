@@ -97,7 +97,7 @@ None was resolved. Summary:
 | `LSMC-OD-30` | v1.0.2 amends four rules v1.0.1 marked `FROZEN` (3.3, 4.1, 7.1, 7.2). Spec section 9.2 requires a **new file** (`LSMC_SPEC_V2_...`) for any `FROZEN` change, but this batch directs an in-file v1.0.2. |
 | `LSMC-OD-31` | `LSMC-OD-06`'s floor is counted in wall-clock M5 bars, so a Friday-evening trigger can have its entire 30-minute floor fall inside the weekend closure -- defeating the floor's stated purpose. |
 
-## 5. Fixture required by `LSMC-OD-21`
+## 5. Fixture required by `LSMC-OD-21` (batch 2)
 
 `verification/AG_ARENA_RESET_A1_R1/fixtures/LSMC_INVALIDATED_REACHABLE_V1.json`, with the
 worked arithmetic in the companion `.md`. It demonstrates LONG and SHORT bars that close
@@ -106,3 +106,103 @@ resolving as `STOP_REACHED` under the replaced `LSMC-OD-02` basis.
 
 The fixture is **data plus worked proof only**. Wiring it into `tests/` requires a
 code-touching mission; this session's scope is `docs/` and `verification/`.
+
+---
+
+# Batch 3
+
+- **Owner:** Aung
+- **Status:** SIGNED
+- **Provenance:** **Transcribed by Arena on explicit owner instruction; text authored by owner.**
+  Arena did not originate, edit, summarize or reorder any decision text in section B3.1.
+- **Applies to:** `docs/specs/LSMC_SPEC_V1_FROZEN.md` v1.0.2,
+  SHA-256 `ffd003d116c5353521f4d31b900eae27f02dcb9e4e4923fd2d3e828f6413ba3e`
+- **Produces:** `docs/specs/LSMC_SPEC_V2_FROZEN.md` v2.0.0 (new major file, per `LSMC-OD-30`)
+
+## B3.1 Decision text (verbatim, authored by owner)
+
+```text
+OWNER DECISIONS on LSMC_SPEC_V1.0.2 (SHA-256 ffd003d1…ba3e). Append verbatim to
+docs/governance/OWNER_DECISIONS_2026-10-08_LSMC_SPEC_V1_0_2.md as section "Batch 3", same
+transcription marking.
+
+OD-27: watch must load >=15 M5 bars before CHoCH for ATR14 warm-up; if ATR14 still not ready, do
+not publish -> SKIPPED_ATR_NOT_READY, counted separately.
+
+OD-28: buffer = max(0.35 x ATR14, 1 x point); 1-point floor PROVISIONAL. ATR14 <= 0 ->
+SKIPPED_ATR_NOT_READY.
+
+OD-29: every SHORT outcome (target and stop) carries SIDE_APPROX_BID; all LSMC statistics must be
+reported separately for LONG and SHORT.
+
+OD-30: comply with §9.2. Create docs/specs/LSMC_SPEC_V2_FROZEN.md (v2.0.0) with current content +
+all Batch 3 rulings + SHA-256 sidecar; mark LSMC_SPEC_V1_FROZEN.md SUPERSEDED (do not delete). In
+§9 add: OPEN rows may close in-file; any FROZEN change requires a new major file.
+
+OD-31: CHoCH within 6 tradable M5 bars of a scheduled closure -> not published,
+SKIPPED_PRE_CLOSURE. Crypto: applies only to broker maintenance closures.
+
+STOP_BASIS unification: DEFERRED to V3 (after R4B); record in backlog.
+
+CONVERGENCE RULE (add to V2 §9): V2 is the last pre-verification version. After its hash, only
+LOGICAL CONTRADICTIONS (unreachable state, self-contradiction, unevaluable rule) block R4A;
+everything else goes to a V2.1_BACKLOG section, non-blocking.
+```
+
+## B3.2 Execution directives as received (verbatim, not decisions)
+
+```text
+TASKS: apply; add fixtures for SKIPPED_ATR_NOT_READY, SKIPPED_PRE_CLOSURE, ATR14=0 floor case;
+classify any new finding as BLOCKING or BACKLOG per the convergence rule. Commit to PR #51 only.
+STOP.
+
+REPORT: V2 SHA-256, BLOCKING list (expected empty), BACKLOG list.
+```
+
+## B3.3 Rows closed by batch 3
+
+| Row | Disposition |
+|---|---|
+| `LSMC-OD-27` | ATR14 warm-up >= 15 M5 bars before CHoCH; otherwise `SKIPPED_ATR_NOT_READY`, counted separately |
+| `LSMC-OD-28` | `buffer = max(0.35 x ATR14, 1 x point)`; 1-point floor **PROVISIONAL**; `ATR14 <= 0` -> `SKIPPED_ATR_NOT_READY` |
+| `LSMC-OD-29` | `SIDE_APPROX_BID` on every SHORT target and stop outcome; all statistics reported separately for LONG and SHORT |
+| `LSMC-OD-30` | Comply with 9.2 -- new major file `LSMC_SPEC_V2_FROZEN.md` v2.0.0; V1 marked SUPERSEDED, not deleted |
+| `LSMC-OD-31` | CHoCH within 6 tradable M5 bars of a scheduled closure -> `SKIPPED_PRE_CLOSURE` |
+
+Also recorded: STOP_BASIS unification **DEFERRED to V3** (after R4B), and the **convergence
+rule** governing what may block R4A from V2's hash onward.
+
+## B3.4 One BLOCKING finding raised, not resolved
+
+Applying batch 3 required re-deriving the price scale of the C10 SHORT stop. That
+derivation **contradicts a justification this spec has carried since v1.0.0** and which
+informed the batch-1 `LSMC-OD-13` ruling.
+
+> `stop_c10_short = anchor + buffer + (ask - bid)`. A short position's stop is triggered by
+> the **ask**. At that trigger the bid sits at `anchor + buffer` -- the intended structural
+> distance, symmetric with the LONG side. The SHORT stop is therefore an **ask-scale
+> level**. Measuring it against the **bid** requires the bid itself to reach
+> `anchor + buffer + spread`, which is **one full spread wider** than the designed stop and
+> breaks LONG/SHORT symmetry.
+
+v1.0.0 section 7.3 asserted the opposite -- that resolving the SHORT stop on ask would
+"double-count" the spread. That assertion was **wrong**, and `LSMC-OD-13` ("short stop =
+bid (C10-B embeds spread)") rests on it.
+
+Raised as **`LSMC-OD-32`** in `docs/specs/LSMC_SPEC_V2_FROZEN.md` section 8.2, classified
+**BLOCKING** under the convergence rule (self-contradiction). **Not resolved.** The bid
+measurement rule is left exactly as signed; only the false justification is corrected, and
+two remedy options are put to the owner.
+
+## B3.5 Artifacts produced by batch 3
+
+| Artifact | Identity |
+|---|---|
+| `docs/specs/LSMC_SPEC_V2_FROZEN.md` v2.0.0 | SHA-256 `6c7e9d0292c38b1e5a314e9c5a14740974143fdcba0e295b62d6472d06896208` |
+| `docs/specs/LSMC_SPEC_V2_FROZEN.sha256.txt` | sidecar, `sha256sum -c` OK |
+| `docs/specs/LSMC_SPEC_V1_FROZEN.md` | **SUPERSEDED banner added, file retained.** Owner-signed v1.0.2 content remains `ffd003d1…ba3e`, recoverable at `git show b2f0ca7:docs/specs/LSMC_SPEC_V1_FROZEN.md`. Current file hashes `6516e3ba9f5ea0487b192ca164258ee69b9c2cd59e0276105384b06aaf6819af` (banner only). |
+| `docs/specs/LSMC_SPEC_V1_FROZEN.sha256.txt` | regenerated; carries both hashes, the signed one as a comment |
+| `verification/AG_ARENA_RESET_A1_R1/fixtures/LSMC_PUBLICATION_GUARDS_V1.json` / `.md` | six cases: `SKIPPED_ATR_NOT_READY` (warm-up, `ATR14 = 0`), 1-point floor flipping an outcome, `SKIPPED_PRE_CLOSURE` + boundary control + crypto |
+
+Classification of findings per the convergence rule: **1 BLOCKING** (`LSMC-OD-32`),
+**7 BACKLOG** (`V2.1_BACKLOG`, `LSMC_SPEC_V2_FROZEN.md` section 10).

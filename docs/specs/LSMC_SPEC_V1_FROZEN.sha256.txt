@@ -1,1 +1,5 @@
-ffd003d116c5353521f4d31b900eae27f02dcb9e4e4923fd2d3e828f6413ba3e  docs/specs/LSMC_SPEC_V1_FROZEN.md
+# SUPERSEDED by docs/specs/LSMC_SPEC_V2_FROZEN.md v2.0.0 (owner decision LSMC-OD-30, 2026-10-08).
+# Owner-signed v1.0.2 content hash: ffd003d116c5353521f4d31b900eae27f02dcb9e4e4923fd2d3e828f6413ba3e
+#   recoverable at: git show b2f0ca7:docs/specs/LSMC_SPEC_V1_FROZEN.md
+# The line below is the current file, which differs from the signed hash by the SUPERSEDED banner only.
+6516e3ba9f5ea0487b192ca164258ee69b9c2cd59e0276105384b06aaf6819af  docs/specs/LSMC_SPEC_V1_FROZEN.md

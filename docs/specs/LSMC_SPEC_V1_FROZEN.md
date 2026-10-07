@@ -1,4 +1,26 @@
-# LSMC_SPEC_V1_FROZEN -- ST_LARGE_SMC_V1 strategy-logic freeze
+> # ⛔ SUPERSEDED -- DO NOT USE AS AUTHORITY
+>
+> **Superseded by [`docs/specs/LSMC_SPEC_V2_FROZEN.md`](LSMC_SPEC_V2_FROZEN.md) v2.0.0**
+> on 2026-10-08, per owner decision `LSMC-OD-30`
+> (`docs/governance/OWNER_DECISIONS_2026-10-08_LSMC_SPEC_V1_0_2.md`, Batch 3).
+> Retained unaltered for history; **not deleted**.
+>
+> **Signed content hash.** This file was signed by the owner at v1.0.2 with SHA-256
+> `ffd003d116c5353521f4d31b900eae27f02dcb9e4e4923fd2d3e828f6413ba3e`. This banner is the
+> only change made since, so the file's current hash necessarily differs. The exact signed
+> v1.0.2 content is recoverable at git commit `b2f0ca7`:
+> `git show b2f0ca7:docs/specs/LSMC_SPEC_V1_FROZEN.md | sha256sum`.
+>
+> **Known correction.** Section 7.3 of v1.0.0, carried into this file at 3.2 and 7.1,
+> claimed `stop_c10` is "BID-comparable in both directions" and that resolving the SHORT
+> stop on ask would "double-count" the spread. **That claim is wrong** -- the C10 SHORT
+> stop is an ask-scale level. See `LSMC_SPEC_V2_FROZEN.md` 3.2 and the BLOCKING row
+> `LSMC-OD-32`.
+>
+> Change control for this lane now lives in `LSMC_SPEC_V2_FROZEN.md` section 9:
+> `OPEN` rows may close in-file; any `FROZEN` change requires a new major file.
+
+# LSMC_SPEC_V1_FROZEN -- ST_LARGE_SMC_V1 strategy-logic freeze (SUPERSEDED)
 
 | Field | Value |
 |---|---|
