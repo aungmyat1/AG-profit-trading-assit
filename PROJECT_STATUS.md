@@ -4,6 +4,20 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## ST_ASIAN_SWEEP_5R_V1 v1.1.2 candidate — Logic Gate L2 closed (2026-10-07)
+
+New candidate `strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml` resolves every Phase B spec/engine
+divergence. The engine's behavior becomes the spec; unsafe outputs fail closed: TREND and
+range-rejection entries, a body-edge entry that is the pre-signal open, a zero stop, TP1 beyond
+TP2, and an unmeasurable spread. EMA_50, `range_session_check` and the volume-based structural
+invalidation are removed. Logic Gate L1–L6 on the recorded EURUSD fixtures: the conforming sweep
+passes L1–L4, and every other FAIL is a declared fail-closed rule. The candidate is registered
+`LOGIC_VERIFIED`, with an identity digest. v1.1.1 stays the frozen authority and stays
+`NOT_VERIFIED`, so **Asian Sweep READY stays paused** until the owner confirms the recommended
+Phase B values (`PENDING_OWNER_CONFIRM`). `EDGE_VERIFIED = FALSE`; demo/live unchanged.
+Tests: focused **10 passed**; full suite **1154 passed, 2 skipped**. Evidence:
+`docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md`.
+
 ## Stale-data gate keeps trigger close — TRIGGER_TIMEFRAME_UNKNOWN resolved (2026-10-08)
 
 The seven `INSUFFICIENT_DATA / TRIGGER_TIMEFRAME_UNKNOWN` records in the R2 smoke were not

@@ -118,12 +118,14 @@ def build_fx_ticket(
     symbol: str, cycle: str, session_date: dt.date, session_candles: Sequence[Candle], expected_bar_count: int,
     post_session_candles: Sequence[Candle], *, data_source: str, evaluated_at: dt.datetime,
     data_close: Optional[dt.datetime] = None, spread: Optional[float] = None,
+    strategy_path: str = STRATEGY_PATH,
 ) -> Dict[str, Any]:
     """`data_close`: close time of the latest live bar (None = no data-age gate); `spread`: live
-    ask - bid in price units (None = SPREAD_NOT_EVALUATED, no READY)."""
+    ask - bid in price units (None = SPREAD_NOT_EVALUATED, no READY). `strategy_path`: offline
+    logic-gate replay of a registered candidate version only; runtime callers keep the default."""
     if symbol not in V1_FX_SYMBOLS or cycle not in V1_CYCLES:
         raise ValueError(f"{symbol}/{cycle} is not a V1 FX ticket cycle")
-    strategy = load_strategy(STRATEGY_PATH)
+    strategy = load_strategy(strategy_path)
     base: Dict[str, Any] = {
         "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER", "strategy_id": strategy.strategy_id,
         "strategy_version": strategy.version, "symbol": symbol, "cycle": cycle,

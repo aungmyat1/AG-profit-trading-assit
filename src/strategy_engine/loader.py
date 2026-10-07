@@ -30,7 +30,11 @@ def load_strategy(path: str) -> StrategyConfig:
     risk = RiskConfig(
         risk_mode=risk_raw["risk_mode"],
         stop_loss_mode=risk_raw["stop_loss_mode"],
-        stop_loss_range_pct=risk_raw["stop_loss_range_pct"],
+        # Required only for the range-based stop it parameterizes (v1.1.1); v1.1.2 declares
+        # SWEEP_CANDLE_WICK_EXTREME and omits it.
+        stop_loss_range_pct=(risk_raw["stop_loss_range_pct"]
+                             if risk_raw["stop_loss_mode"] == "PERCENT_OF_SESSION_RANGE"
+                             else risk_raw.get("stop_loss_range_pct")),
         max_spread_allowed_pips=risk_raw["max_spread_allowed_pips"],
         slippage_limit_points=risk_raw["slippage_limit_points"],
     )
@@ -73,7 +77,9 @@ def load_strategy(path: str) -> StrategyConfig:
         entry_order_type=long_type,
         total_target_r=targets_raw["total_target_r"],
         legs=legs,
-        max_range_pips_eurusd=raw["regime_classification"]["range_session_check"]["max_range_pips_eurusd"],
+        # v1.1.2 removed the unconsumed range_session_check; when the block is declared its value is required.
+        max_range_pips_eurusd=(raw["regime_classification"]["range_session_check"]["max_range_pips_eurusd"]
+                               if "range_session_check" in raw["regime_classification"] else None),
         time_invalidation=invalidation_raw["time_invalidation"],
         structural_invalidation=invalidation_raw["structural_invalidation"],
         source_path=path,

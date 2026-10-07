@@ -1,0 +1,161 @@
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+strategy_name: Asian Session Liquidity Sweep 5R
+strategy_family: Liquidity_Sweep
+version: 1.1.2
+status: CANDIDATE_PENDING_OWNER_CONFIRM
+registered_utc: "2026-08-26"
+updated_utc: "2026-10-07"
+
+# Additive cross-strategy semantic guard. These invariants document and regression-pin
+# existing behavior; they do not add an entry filter or change this strategy's version.
+semantic_safety_contract:
+  version: SMC_TRAP_GUARD_V1
+  authority_boundary: STRATEGY_ENGINE_ONLY
+  invariants:
+    liquidity_event_is_not_trade_signal: true
+    bias_is_not_entry: true
+    future_evidence_cannot_create_past_qualification: true
+    lower_timeframe_cannot_override_higher_timeframe: true
+    silent_rule_changes_prohibited: true
+  strategy_specific:
+    authoritative_liquidity: [REFERENCE_SESSION_HIGH, REFERENCE_SESSION_LOW]
+    penetration_without_close_back_inside: NO_TRADE
+    dual_side_same_candle_sweep: AMBIGUOUS_NO_TRADE
+    immutable_reference_box_required: true
+
+# v1.1.0: added a second reference/trade session pair so the same sweep logic also runs
+# off the London range during the New York session, not only off the Asian range during
+# London Open. Both pairs share identical entry, risk, sizing, and invalidation rules --
+# only the reference/trade session windows differ per pair.
+
+instruments: [EURUSD, GBPUSD, USDJPY, AUDUSD, XAUUSD]
+timeframe: M15
+magic_number: 777001
+
+# Session-window conformance vs ../config/canonical_sessions.yaml:
+#   ASIAN_LONDON pair  -- reference_session (00:00-06:00) matches canonical `asian` exactly.
+#                          trade_session (London_Open, 07:00-11:00) does NOT match canonical
+#                          `london_am` (06:00-11:00) -- starts one hour later. Recorded as a
+#                          deviation in canonical_sessions.yaml legacy_session_windows.
+#   LONDON_NEWYORK pair -- reference_session (06:00-11:00) matches canonical `london_am` exactly.
+#                          trade_session (New_York_Open, 12:00-15:00) matches canonical
+#                          `new_york_am` exactly. No deviation.
+session_pairs:
+  - pair_id: ASIAN_LONDON
+    reference_session:
+      name: Asian
+      start_time_gmt: "00:00"
+      end_time_gmt: "06:00"
+      metrics_tracked: [High, Low, Midline, RangePips]
+    trade_session:
+      name: London_Open
+      start_time_gmt: "07:00"
+      end_time_gmt: "11:00"
+      max_entries_per_session: 1
+  - pair_id: LONDON_NEWYORK
+    reference_session:
+      name: London
+      start_time_gmt: "06:00"
+      end_time_gmt: "11:00"
+      metrics_tracked: [High, Low, Midline, RangePips]
+    trade_session:
+      name: New_York_Open
+      start_time_gmt: "12:00"
+      end_time_gmt: "15:00"
+      max_entries_per_session: 1
+
+# ---------------------------------------------------------------------------------------
+# v1.1.2 CANDIDATE (2026-10-07) -- closes Logic Gate L2 (spec/engine conformance).
+# v1.1.1 (strategies/ST_ASIAN_SWEEP_5R_V1.yaml) stays the frozen current authority, unmodified.
+# Resolution rule (owner instruction 2026-10-07): the frozen engine's behavior becomes the
+# spec, EXCEPT where that behavior is undefined/unsafe -- there the spec fails closed (no
+# ticket). Every resolution below is a RECOMMENDATION marked PENDING_OWNER_CONFIRM in
+# docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md (Phase B table).
+# No engine rule changed: strategy_engine/session/* decides exactly as for v1.1.1.
+# EDGE_VERIFIED = FALSE; economic_status NOT_EVALUATED; ticket READY paused until owner confirms.
+# Not the same artifact as the never-registered research label "1.1.2-RC1" (Model A, 25% stop;
+# AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION_STATUS.md).
+#
+# Changelog v1.1.1 -> v1.1.2 (one entry per Phase B divergence row):
+#   B-REGIME    engine wins: TREND (Entry 1) and RANGE boundary rejection (Entry 3) declared as
+#               engine branches. Their MARKET entry is a level (box mid / box boundary) the
+#               market is not at when the signal fires -> unsafe -> FAIL_CLOSED (no ticket).
+#   B-ENTRY     engine wins: entry = sweep-candle body edge (min/max(open, close)). When the
+#               body edge is not the close it is a pre-signal price (unsafe for MARKET) ->
+#               FAIL_CLOSED. Net effect: a ticket exists only when body edge == close.
+#   B-STOP      engine wins: stop = sweep-candle wick extreme; stop_loss_range_pct removed.
+#               Zero/negative risk distance is undefined -> FAIL_CLOSED.
+#   B-TGT-ORDER engine has no rule (TP1 may pass TP2: unsafe) -> FAIL_CLOSED on inversion.
+#   B-EMA       removed (declared, never consumed; not measurable as written).
+#   B-RANGECHK  engine wins: removed (parsed, never consumed; no gating semantics).
+#   B-MINRANGE  engine wins: no minimum; risk_distance must be > 0 (see B-STOP).
+#   B-SPREAD    implemented behavior declared: 2.0-pip cap (where pip size is evidenced) AND
+#               spread <= 15% of stop distance; spread not measurable -> FAIL_CLOSED.
+#   B-EXPIRY    implemented behavior declared: signal expires 15 min after the signal bar closes.
+#   B-TIMEINV   spec and ticket agree (15:00 GMT global); unchanged. R5 evidence used per-pair
+#               session end and stays attributed to v1.1.1.
+#   B-STRUCT    engine wins: removed. Unmeasurable as written ("expansion volume"), and a close
+#               beyond the wick extreme already implies the wick-extreme stop was hit.
+#   Agreeing rows unchanged: B-REF, B-TRADE, B-SWEEP, B-DIR, B-SPLIT, B-MAXENTRY, B-INSTR.
+# ---------------------------------------------------------------------------------------
+
+# Applies independently to each session_pairs entry, evaluated against that pair's own
+# reference_session. ER_ONLY_V2 (strategy_engine/session/classifier.py): ER >= 0.40 TREND else RANGE.
+regime_classification:
+  classifier: ER_ONLY_V2
+  branches:
+    TREND:
+      engine_setup: TREND             # Entry 1: box direction, entry = box mid, stop = box extreme
+      ticket: FAIL_CLOSED
+      reason: ENTRY_LEVEL_NOT_MARKET_AT_SIGNAL
+    RANGE_SWEEP:
+      engine_setup: SWEEP             # Entry 2: entry_rules below
+      ticket: ELIGIBLE
+    RANGE_REJECTION:
+      engine_setup: RANGE             # Entry 3: entry = box boundary, stop = candle extreme, target = box mid
+      ticket: FAIL_CLOSED
+      reason: ENTRY_LEVEL_NOT_MARKET_AT_SIGNAL
+
+# "Reference" below means whichever session_pairs[].reference_session is in play for that pair.
+entry_rules:
+  long_setup:
+    trigger: SWEEP_REFERENCE_LOW
+    condition: "low < Reference Session Low and close > Reference Session Low (strict, first qualifying M15 candle)"
+    entry_order_type: MARKET
+    entry_level: SWEEP_CANDLE_BODY_EDGE          # min(open, close)
+    entry_must_equal_close: true                 # else FAIL_CLOSED (ENTRY_NOT_AVAILABLE_AT_SIGNAL)
+  short_setup:
+    trigger: SWEEP_REFERENCE_HIGH
+    condition: "high > Reference Session High and close < Reference Session High (strict, first qualifying M15 candle)"
+    entry_order_type: MARKET
+    entry_level: SWEEP_CANDLE_BODY_EDGE          # max(open, close)
+    entry_must_equal_close: true
+  dual_side_same_candle: AMBIGUOUS_NO_TRADE
+
+risk_and_money_management:
+  risk_mode: FIXED_PERCENT_OR_CONTRACT
+  stop_loss_mode: SWEEP_CANDLE_WICK_EXTREME      # LONG: sweep candle low; SHORT: sweep candle high
+  min_risk_distance: POSITIVE                    # risk_distance <= 0 -> FAIL_CLOSED
+  max_spread_allowed_pips: 2.0
+  max_spread_fraction_of_stop: 0.15
+  spread_not_measurable: FAIL_CLOSED
+  slippage_limit_points: 10
+  signal_expiry_minutes: 15
+
+position_split_and_targets:
+  total_target_r: 5.0
+  target_order_rule: FAIL_CLOSED_IF_TP1_BEYOND_TP2
+  legs:
+    - leg_id: 1
+      volume_pct: 0.75
+      target_type: OPPOSITE_SESSION_BOUNDARY
+      action_on_fill: MOVE_RUNNER_SL_TO_BREAKEVEN
+    - leg_id: 2
+      volume_pct: 0.25
+      target_type: FIXED_R_MULTIPLE
+      fixed_r_multiple: 5.0
+      trailing_rule: NONE_OR_MANUAL_BE
+
+invalidation_rules:
+  time_invalidation: "15:00 GMT (New York Open Pre-market)"
+  structural_invalidation: NONE
