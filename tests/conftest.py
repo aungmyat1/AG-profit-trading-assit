@@ -131,7 +131,7 @@ def pytest_collection_modifyitems(config, items):
 
 # --- D6 READY authority (owner decision 2026-10-07) -------------------------------------------
 # Production config/v1_tickets/ready_authority.yaml sets ST_ASIAN_SWEEP_5R_V1 READY authority OFF.
-# OPT-IN, by file: only the six test files below were written before D6 and exercise the
+# OPT-IN, by file: only the nine test files below (all present at fc60cdb, before D6) exercise the
 # engine/gate READY logic; they run with the switch ON (pre-D6 behaviour, assertions unchanged).
 # Every other test, including all new tests, sees the real production file (READY OFF).
 PRE_D6_READY_ON_FILES = frozenset({
@@ -139,6 +139,9 @@ PRE_D6_READY_ON_FILES = frozenset({
     "test_host_go_live_kit.py",
     "test_manual_ticket_build.py",
     "test_manual_ticket_dst_clock.py",
+    "test_manual_ticket_host_integration.py",
+    "test_manual_ticket_outcome.py",
+    "test_manual_ticket_owner_decision.py",
     "test_manual_ticket_scan_records.py",
     "test_v1_tickets.py",
 })
