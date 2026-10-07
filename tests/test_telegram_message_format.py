@@ -89,3 +89,53 @@ def test_lsmc_alert_inside_zone_and_without_price_or_target():
     assert "distance to POI: inside zone" in tg.format_alert(e, price=1.1305)
     msg = tg.format_alert(e)
     assert "current price" not in msg and "liquidity target: none (REJECT_NO_TARGET)" in msg
+
+
+def test_displayed_levels_are_tick_normalized_and_reproduce_displayed_r():
+    """Audit 2026-10-07 (EURUSD READY 07:16 UTC): engine risk 0.001355 was printed as '13.5 pips'
+    beside levels 13.6 pips apart. Risk and R now come from the displayed (tick-normalized) levels."""
+    t = {**FX_READY, "symbol": "EURUSD", "direction": "SHORT", "entry": 1.12403, "stop_loss": 1.12539,
+         "risk_distance": 0.001354999999999995,
+         "targets": [{"leg": 1, "volume_pct": 0.75, "type": "OPPOSITE_SESSION_BOUNDARY", "price": 1.12268},
+                     {"leg": 2, "volume_pct": 0.25, "type": "FIXED_R_MULTIPLE_5", "price": 1.1172599999999999}]}
+    msg = tg.format_ticket(t)
+    assert "entry: 1.12403  stop: 1.12539  risk: 13.6 pips (engine 13.55 pips before rounding)" in msg
+    assert "target leg 2 (FIXED_R_MULTIPLE_5, 25%): 1.11726  = +4.98R" in msg   # (1.12403-1.11726)/0.00136
+    assert "target leg 1 (OPPOSITE_SESSION_BOUNDARY, 75%): 1.12268  = +0.99R" in msg
+
+
+def test_lsmc_alert_prices_print_at_symbol_digits_not_raw_floats():
+    e = _lsmc_event()
+    e["symbol"] = "GBPUSD"
+    e["payload"]["opportunity"].update(sweep_extreme=1.3247499999999999, target_c11=1.3284700000000001)
+    msg = tg.format_alert(e, price=1.3261000000000001)
+    assert "invalidation: M5 close below 1.32475" in msg and "liquidity target: 1.32847" in msg
+    assert "current price: 1.3261" in msg and "99999" not in msg and "00001" not in msg
+
+
+def test_missing_or_coarse_metadata_renders_raw_levels_unnormalized(monkeypatch):
+    """Owner steer 2026-10-07: fallback metadata (tick 1.0) must not flatten entry/stop to 1.0."""
+    t = {**FX_READY, "symbol": "EURUSD", "direction": "LONG", "entry": 1.1, "stop_loss": 1.099,
+         "risk_distance": 0.001, "targets": [{"leg": 1, "type": "X", "price": 1.102}]}
+    monkeypatch.setattr(tg, "load_record", lambda s: {"fields": {"trade_tick_size": 1.0, "digits": 5}})
+    msg = tg.format_ticket(t)
+    assert "entry: 1.1  stop: 1.099  risk: 10.0 pips (unnormalized: no symbol metadata)" in msg
+    assert "target leg 1 (X): 1.102  = +2.00R" in msg
+    monkeypatch.setattr(tg, "load_record", lambda s: None)                       # no capture at all
+    assert "(unnormalized: no symbol metadata)" in tg.format_ticket(t)
+
+
+def test_long_rounds_stop_away_and_targets_toward_entry_r_from_displayed_levels():
+    t = {**FX_READY, "symbol": "EURUSD", "direction": "LONG", "entry": 1.124035, "stop_loss": 1.122671,
+         "risk_distance": 0.001364, "targets": [{"leg": 2, "type": "T", "price": 1.130009}]}
+    msg = tg.format_ticket(t)
+    assert "entry: 1.12404  stop: 1.12267  risk: 13.7 pips (engine 13.64 pips before rounding)" in msg
+    assert "target leg 2 (T): 1.13  = +4.35R" in msg                            # (1.13-1.12404)/0.00137
+
+
+def test_short_rounds_stop_away_and_targets_toward_entry_r_from_displayed_levels():
+    t = {**FX_READY, "symbol": "EURUSD", "direction": "SHORT", "entry": 1.124035, "stop_loss": 1.125391,
+         "risk_distance": 0.001356, "targets": [{"leg": 2, "type": "T", "price": 1.117261}]}
+    msg = tg.format_ticket(t)
+    assert "entry: 1.12404  stop: 1.1254  risk: 13.6 pips (engine 13.56 pips before rounding)" in msg
+    assert "target leg 2 (T): 1.11727  = +4.98R" in msg                         # (1.12404-1.11727)/0.00136

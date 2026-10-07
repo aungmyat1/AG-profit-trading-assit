@@ -20,7 +20,9 @@ import sys
 from typing import Any, Dict, Optional
 
 import yaml
+from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal
 
+from host_evidence.symbol_metadata import load_record
 from ticket_delivery.identity import logical_ticket_id
 from v1_tickets.guards import STALE_AFTER
 
@@ -98,9 +100,53 @@ def _ts(value: Optional[Any]) -> str:
     return f"{t.astimezone(MMT):%H:%M} MMT / {t:%H:%M} UTC ({t:%Y-%m-%d})"
 
 
-def _dist(symbol: str, value: float) -> str:
+def _dist(symbol: str, value: float, decimals: int = 1) -> str:
     pip = _PIP.get(symbol)
-    return f"{value / pip:.1f} pips" if pip else f"{value:g} (price units)"
+    return f"{value / pip:.{decimals}f} pips" if pip else f"{value:g} (price units)"
+
+
+UNNORMALIZED = "(unnormalized: no symbol metadata)"
+_ROUNDING = {"nearest": ROUND_HALF_UP, "floor": ROUND_FLOOR, "ceil": ROUND_CEILING}
+
+
+def _tick_digits(symbol: str) -> "tuple[Optional[float], Optional[int]]":
+    """(trade_tick_size, digits) from the verified host capture of `symbol`; (None, None) when
+    there is no capture or no positive tick size."""
+    record = load_record(symbol)
+    if record is None:
+        return None, None
+    f = record["fields"]
+    try:
+        tick, digits = float(f.get("trade_tick_size") or 0), int(f["digits"])
+    except (TypeError, ValueError):
+        return None, None
+    return (tick, digits) if tick > 0 else (None, None)
+
+
+def _normalizer(symbol: str, risk: Optional[float]):
+    """Display-only price normalizer `(value, mode) -> float`, or None when levels must render raw:
+    no symbol metadata, or a tick not smaller than the risk distance (normalizing would collapse
+    entry and stop)."""
+    tick, digits = _tick_digits(symbol)
+    if tick is None or (risk is not None and tick >= abs(risk)):
+        return None
+
+    def snap(value: Optional[float], mode: str = "nearest") -> Optional[float]:
+        if value is None:
+            return None
+        step = Decimal(repr(tick))
+        n = (Decimal(repr(round(float(value), 10))) / step).to_integral_value(rounding=_ROUNDING[mode])
+        return round(float(n * step), digits)
+    return snap
+
+
+def _modes(direction: Optional[str]) -> "tuple[str, str]":
+    """(stop mode, target mode): conservative rounding -- stop AWAY from entry, targets TOWARD it."""
+    if direction == "LONG":
+        return "floor", "floor"
+    if direction == "SHORT":
+        return "ceil", "ceil"
+    return "nearest", "nearest"
 
 
 def _ticket_id(t: Dict[str, Any]) -> str:
@@ -113,8 +159,18 @@ def _ticket_id(t: Dict[str, Any]) -> str:
 
 
 def format_ticket(t: Dict[str, Any]) -> str:
-    """Formatting only: every value is read from the ticket or derived from guards.STALE_AFTER."""
-    sym, entry, stop = t["symbol"], t.get("entry"), t.get("stop_loss")
+    """Formatting only: every value is read from the ticket or derived from guards.STALE_AFTER.
+    Displayed prices are tick-normalized; risk and R are computed from the displayed entry/stop so
+    the printed levels reproduce the printed R (the unrounded engine risk is shown when it differs)."""
+    sym = t["symbol"]
+    raw_entry, raw_stop, engine_risk = t.get("entry"), t.get("stop_loss"), t.get("risk_distance")
+    raw_risk = engine_risk or (abs(raw_entry - raw_stop) if raw_entry is not None and raw_stop is not None else None)
+    snap = _normalizer(sym, raw_risk)
+    stop_mode, target_mode = _modes(t.get("direction"))
+    if snap is None:
+        entry, stop, tgt = raw_entry, raw_stop, (lambda v: v)
+    else:
+        entry, stop, tgt = snap(raw_entry), snap(raw_stop, stop_mode), (lambda v: snap(v, target_mode))
     expires = (dt.datetime.fromisoformat(t["signal_close_utc"]) + STALE_AFTER) if t.get("signal_close_utc") else None
     lines = [t.get("label", "INFORMATIONAL TICKET -- NOT A BROKER ORDER"),
              f"{sym} {t.get('direction', '')} ({t.get('cycle', '')})",
@@ -128,17 +184,22 @@ def format_ticket(t: Dict[str, Any]) -> str:
     if t.get("window_label"):
         lines.append(t["window_label"])
     lines += [f"signal close: {_ts(t.get('signal_close_utc'))}", f"expires_at: {_ts(expires)}"]
-    risk = t.get("risk_distance") or (abs(entry - stop) if entry is not None and stop is not None else None)
+    risk = (abs(entry - stop) if entry is not None and stop is not None else engine_risk) if snap else raw_risk
     if entry is not None:
-        lines.append(f"entry: {entry}  stop: {stop}" + (f"  risk: {_dist(sym, risk)}" if risk else ""))
+        note = f" {UNNORMALIZED}" if snap is None else ""
+        if snap and risk and engine_risk and abs(engine_risk - risk) > 1e-9 * max(abs(risk), 1.0):
+            note = f" (engine {_dist(sym, engine_risk, 2)} before rounding)"
+        lines.append(f"entry: {entry}  stop: {stop}" + (f"  risk: {_dist(sym, risk)}{note}" if risk else ""))
     sign = -1.0 if t.get("direction") == "SHORT" else 1.0
     r_of = lambda p: f"  = {sign * (p - entry) / risk:+.2f}R" if risk and entry is not None and p is not None else ""  # noqa: E731
     for key in ("tp1", "tp2"):
         if t.get(key) is not None:
-            lines.append(f"{key}: {t[key]}{r_of(t[key])}")
+            p = tgt(t[key])
+            lines.append(f"{key}: {p}{r_of(p)}")
     for leg in t.get("targets") or ():
         pct = f", {leg['volume_pct']:.0%}" if leg.get("volume_pct") is not None else ""
-        lines.append(f"target leg {leg['leg']} ({leg['type']}{pct}): {leg['price']}{r_of(leg['price'])}")
+        p = tgt(leg["price"])
+        lines.append(f"target leg {leg['leg']} ({leg['type']}{pct}): {p}{r_of(p)}")
     if t.get("spread_check"):
         sp = ""
         if t.get("spread") is not None:
@@ -161,6 +222,11 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
     poi, opp = p.get("poi") or {}, p.get("opportunity") or {}
     sym = e["symbol"]
     direction = opp.get("direction") or poi.get("direction") or p.get("bias") or "n/a"
+    ref, ext = opp.get("entry_reference"), opp.get("sweep_extreme")
+    snap = _normalizer(sym, abs(ref - ext) if ref is not None and ext is not None else None)
+    stop_mode, target_mode = _modes(direction)
+    # display-only; without metadata only float noise is removed (10 decimals), no precision invented
+    px = snap or (lambda v, mode="nearest": None if v is None else round(float(v), 10))
     lines = ["LARGE-SMC ALERT -- INFORMATIONAL -- NOT A BROKER ORDER",
              f"{sym} {e['to_state']} ({e['alert_level']})  direction: {direction}",
              f"{e['strategy_id']} v{e['strategy_version']}  economic_status=NOT_EVALUATED",
@@ -168,24 +234,26 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
              f"timeframes: {TIMEFRAME_CHAIN}"]
     lo, hi = poi.get("low"), poi.get("high")
     if lo is not None and hi is not None:
-        lines.append(f"POI zone ({poi.get('kind', 'H1')}): {lo} - {hi}")
+        lines.append(f"POI zone ({poi.get('kind', 'H1')}): {px(lo)} - {px(hi)}")
     if opp.get("sweep_extreme") is not None:
         side = "below" if direction == "LONG" else "above"
-        lines.append(f"invalidation: M5 close {side} {opp['sweep_extreme']}")
+        lines.append(f"invalidation: M5 close {side} {px(opp['sweep_extreme'], stop_mode)}")
     elif lo is not None and hi is not None:
-        lines.append(f"invalidation: close beyond POI far edge {lo if direction == 'LONG' else hi}")
+        lines.append(f"invalidation: close beyond POI far edge {px(lo if direction == 'LONG' else hi, stop_mode)}")
     if opp:
         tgt = opp.get("target_c11")
-        lines.append(f"liquidity target: {tgt}" if tgt is not None else f"liquidity target: none ({opp.get('target_reason')})")
+        lines.append(f"liquidity target: {px(tgt, target_mode)}" if tgt is not None else f"liquidity target: none ({opp.get('target_reason')})")
         if opp.get("stop_c10") is not None:
-            lines.append(f"stop (C10): {opp['stop_c10']}")
+            lines.append(f"stop (C10): {px(opp['stop_c10'], stop_mode)}")
         if opp.get("entry_reference") is not None:
-            lines.append(f"entry reference (CHoCH close): {opp['entry_reference']}")
+            lines.append(f"entry reference (CHoCH close): {px(opp['entry_reference'])}")
     if price is not None:
-        lines.append(f"current price: {price}")
+        lines.append(f"current price: {px(price)}")
         if lo is not None and hi is not None:
             d = 0.0 if lo <= price <= hi else (price - hi if price > hi else lo - price)
             lines.append("distance to POI: inside zone" if d == 0 else f"distance to POI: {_dist(sym, d)}")
+    if snap is None:
+        lines.append(f"prices {UNNORMALIZED}")
     lines.append(f"expires_at: {_ts(opp.get('expires_at') or p.get('expires_at'))}")
     return "\n".join(lines)
 
