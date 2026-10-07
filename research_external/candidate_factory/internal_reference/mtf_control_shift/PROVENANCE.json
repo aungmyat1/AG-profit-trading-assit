@@ -1,0 +1,17 @@
+{
+  "candidate_id": "INT_C002",
+  "strategy_id": "ST_MTF_CONTROL_SHIFT_V1",
+  "copied_from": "PR #34 (feat/mtf-control-shift-v1), OPEN, not merged into main",
+  "copied_from_commit": "1d1c75c92a7fda80696a56d4e1ccbe402f3ab71a",
+  "copied_at_utc": "2026-10-07",
+  "note": "This is a read-only reference snapshot for R1 DEV replay only. The source PR/branch was never written to, pushed to, or checked out as this agent's working tree. This repository's own code (not an external OSS repository), so the EXTERNAL CODE RULE (no pip install / no execution of external setup) does not apply; this is a direct copy of AG's own unmerged candidate source, not a third-party dependency.",
+  "files": {
+    "__init__.py": "46dc5ed9b3094e98258097ce56358301b964ec2781843572a7b38628084f5d82",
+    "engine.py": "679d46aaa3ae0a7f85a8a9f98389d348ca6e5d4c9bc520fcd656dd3b9fe22c59",
+    "models.py": "b72fba136d997472089ed738ac03853e9ba0b92128f5f8949d0faed566ac4288",
+    "structure.py": "9c923789e38e9c422334dd2ed1a1d24816091cb77dc3a1c209f2e5c623a79fce",
+    "ticket.py": "c5e6c51581ae02d0dbd2e6cffb5eea498843cb4909758d9fd14e137f6bdbfd8f"
+  },
+  "modifications_made": "NONE. Byte-identical to the PR #34 commit above.",
+  "production_dependency": "NONE. src/ does not import research_external/ (see tests/test_research_external_boundary.py). This copy exists only under research_external/candidate_factory/ for this mission's replay harness."
+}

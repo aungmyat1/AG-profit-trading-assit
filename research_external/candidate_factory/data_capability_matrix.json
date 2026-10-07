@@ -1,0 +1,98 @@
+{
+  "schema_version": "AG_DATA_CAPABILITY_MATRIX_V1",
+  "generated_at_utc": "2026-10-07",
+  "scope": "What this repository checkout can actually replay today, for this mission's six target symbols. Metadata-only inspection of dataset manifests was used to confirm SEALED/role status; no sealed/OOS file content was opened.",
+  "symbols": [
+    {
+      "symbol": "EURUSD", "asset_class": "FX",
+      "venue_source": "VantageMarkets-Demo / MT5 (research_external TRAIN/VALIDATION/FINAL_HOLDOUT); separate Vantage-Markets-sourced H1/M15 1yr derived set (data/research/ssc_fresh_dev)",
+      "historical_period": "M5: 2025-06-30 to 2026-09-11 (90000 rows, split TRAIN/VALIDATION/FINAL_HOLDOUT). H1+M15: 2025-09-14 to 2026-09-15 (~1yr, derived from M1 authority).",
+      "timeframes_physically_present": ["M1 (partial, other packages)", "M5", "M15", "H1"],
+      "ohlc": true, "bid_ask": false, "spread_series": "tick-level spread column present in M5 TRAIN parquet (per-bar, in points) but not a full bid/ask quote series",
+      "commission": "UNKNOWN (no commission field in any symbol-metadata snapshot)",
+      "funding": "N/A (FX spot/CFD, no funding mechanism)",
+      "volume_type": "MT5 tick_volume (tick count proxy), NOT true centralized exchange volume; real_volume column present but all zero in observed files",
+      "session_coverage": "24/5 broker feed; both ASIAN_LONDON and LONDON_NEWYORK UTC windows fall inside the covered period",
+      "symbol_metadata": "config/symbol_metadata/host_captured/EURUSD.json: digits=5, point=1e-5, spread=14 points (1.4 pips) at capture 2026-09-30T15:12:03Z (VTMarkets-Demo) -- POINT-IN-TIME SNAPSHOT, not an averaged/representative spread",
+      "dataset_role": "TRAIN/VALIDATION/FINAL_HOLDOUT declared (M5 parquet); H1/M15 1yr set has no formal TRAIN/VALIDATION/HOLDOUT partition of its own (role=DEV, not OOS-labeled anywhere in its manifest)",
+      "dev_availability": "YES - both datasets used by this mission (TRAIN only, FINAL_HOLDOUT never touched; VALIDATION partition of the M5 parquet intentionally left unused and unopened by this mission)",
+      "oos_existence": "YES - FINAL_HOLDOUT partition of the M5 parquet (2026-07-01 to 2026-12-31), locked:true in its own manifest. A SEPARATE sealed set also exists at data/research/ssc1d_pilot/SSC1D_WP1_OOS_EURUSD_2024Q1/ (name alone signals OOS) -- NEITHER was opened by this mission.",
+      "sealed_status": "SEALED (FINAL_HOLDOUT + SSC1D OOS dir) co-exists with NOT_SEALED (TRAIN, VALIDATION, HIST1Y set) in the same symbol; this mission only reads the NOT_SEALED ones, and only TRAIN (not VALIDATION) of the M5 parquet."
+    },
+    {
+      "symbol": "GBPUSD", "asset_class": "FX",
+      "venue_source": "Vantage Markets (Pty) Ltd / MT5, data/research/ssc_fresh_dev packages",
+      "historical_period": "H1/M15/M1: 2026-08-01 to 2026-09-14 (~6 weeks) in SSC_FRESH_DEV_GEN_002; a separate short H1 warm-up package also exists (2026-05-28 to 2026-08-02)",
+      "timeframes_physically_present": ["M1", "M15", "H1"],
+      "ohlc": true, "bid_ask": false, "spread_series": "per-bar spread column present (points)",
+      "commission": "UNKNOWN", "funding": "N/A",
+      "volume_type": "MT5 tick_volume only",
+      "session_coverage": "~6 weeks only; too short for a formally separated TRAIN/VALIDATION/HOLDOUT campaign",
+      "symbol_metadata": "config/symbol_metadata/host_captured/GBPUSD.json: digits=5, point=1e-5, spread=15 points (1.5 pips), captured 2026-09-30T15:12Z, VTMarkets-Demo",
+      "dataset_role": "DEV only, not partitioned",
+      "dev_availability": "LIMITED (short window only; not used for a DEV replay in this mission -- see HOLD_SAMPLE_REQUIRED note)",
+      "oos_existence": "None known for GBPUSD in this checkout",
+      "sealed_status": "NOT_SEALED, but DATA_LIMITED (insufficient span for this mission's own min_trade_count=30 DEV screen within a single session window)"
+    },
+    {
+      "symbol": "USDJPY", "asset_class": "FX",
+      "venue_source": "VT Markets Demo (symbol metadata only)",
+      "historical_period": "NONE - no OHLC history file of any kind found in this repository checkout",
+      "timeframes_physically_present": [],
+      "ohlc": false, "bid_ask": false, "spread_series": "none",
+      "commission": "UNKNOWN", "funding": "N/A", "volume_type": "N/A",
+      "session_coverage": "N/A",
+      "symbol_metadata": "config/symbol_metadata/host_captured/USDJPY.json: digits=3, point=0.001, spread=21 points (~2.1 pips), captured 2026-09-30T15:12Z",
+      "dataset_role": "NONE",
+      "dev_availability": "NO",
+      "oos_existence": "UNKNOWN (not found in this checkout; may exist only on the owner's Windows host, per config/historical_datasets manifests that reference D:\\\\ source files not present here)",
+      "sealed_status": "NOT_EVALUATED - no data to evaluate"
+    },
+    {
+      "symbol": "XAUUSD", "asset_class": "METALS/CFD",
+      "venue_source": "VT Markets Demo (symbol metadata only)",
+      "historical_period": "NONE - no OHLC history file found in this repository checkout",
+      "timeframes_physically_present": [],
+      "ohlc": false, "bid_ask": false, "spread_series": "none",
+      "commission": "UNKNOWN", "funding": "N/A", "volume_type": "N/A",
+      "session_coverage": "N/A",
+      "symbol_metadata": "config/symbol_metadata/host_captured/XAUUSD.json: digits=2, point=0.01, spread=27 points ($0.27), captured 2026-09-30T15:12Z",
+      "dataset_role": "NONE", "dev_availability": "NO",
+      "oos_existence": "UNKNOWN (not found in this checkout)",
+      "sealed_status": "NOT_EVALUATED - no data to evaluate"
+    },
+    {
+      "symbol": "BTCUSD", "asset_class": "CRYPTO_CFD",
+      "venue_source": "VT Markets Demo / MT5 CFD (symbol metadata only; NOT a spot exchange)",
+      "historical_period": "NONE - no OHLC price history of any kind found in this repository checkout",
+      "timeframes_physically_present": [],
+      "ohlc": false, "bid_ask": false, "spread_series": "none (single point-in-time snapshot only)",
+      "commission": "UNKNOWN",
+      "funding": "VT Markets models this as an overnight CFD SWAP (swap_long=-20.0, swap_short=0.0, swap_rollover3days=5), NOT a perpetual-style funding rate. Any OSS strategy sourced from a spot/perp exchange's funding-rate mechanics does not transfer to this venue without explicit translation.",
+      "volume_type": "N/A (no history)",
+      "session_coverage": "N/A",
+      "symbol_metadata": "config/symbol_metadata/host_captured/BTCUSD.json: digits=2, point=0.01, spread=1702 points ($17.02), contract_size=1.0, captured 2026-09-30T15:12:03Z",
+      "dataset_role": "NONE", "dev_availability": "NO",
+      "oos_existence": "N/A - no data exists to be OOS or not",
+      "sealed_status": "NOT_EVALUATED - no data to evaluate. DATA_MISSING for any DEV replay in this environment."
+    },
+    {
+      "symbol": "ETHUSD", "asset_class": "CRYPTO_CFD",
+      "venue_source": "VT Markets Demo / MT5 CFD (symbol metadata only; NOT a spot exchange)",
+      "historical_period": "NONE - no OHLC price history of any kind found in this repository checkout",
+      "timeframes_physically_present": [],
+      "ohlc": false, "bid_ask": false, "spread_series": "none (single point-in-time snapshot only)",
+      "commission": "UNKNOWN",
+      "funding": "VT Markets overnight CFD SWAP (swap_long=-25.0, swap_short=0.0), NOT a perpetual funding rate. Same translation caveat as BTCUSD.",
+      "volume_type": "N/A (no history)",
+      "session_coverage": "N/A",
+      "symbol_metadata": "config/symbol_metadata/host_captured/ETHUSD.json: digits=2, point=0.01, spread=250 points ($2.50), contract_size=1.0, captured 2026-09-30T15:12:06Z",
+      "dataset_role": "NONE", "dev_availability": "NO",
+      "oos_existence": "N/A", "sealed_status": "NOT_EVALUATED - no data to evaluate. DATA_MISSING for any DEV replay in this environment."
+    }
+  ],
+  "cross_cutting_findings": [
+    "config/historical_datasets/EURUSD_H1_202501020000_202607310000.yaml and GBPUSD_H1_symbol_metadata.yaml both declare a wider ~19-month H1 history, but their source_file fields point to D:\\\\EURUSD_H1_...csv / D:\\\\GBPUSD...csv on the project owner's Windows host -- those bytes are NOT present in this git checkout. This mission could not use them and does not claim to have validated them.",
+    "docs/status/AG_EXTERNAL_CANDIDATE_VALIDATION_LAYER_V1_STATUS.md and docs/specs/AG_RESEARCH_FACTORY_V1_GOVERNANCE_SPEC.md both describe a `src/external_candidate/` package (admission, parity, OOS/walk-forward, friction, evidence envelope) and a `performance/` package (calculator, cost_model, models) as already built and tested. Neither physically exists anywhere in this repository's git history on any branch reachable from this checkout (`git log --all -- src/external_candidate` returns nothing; no directory named `performance` exists under `src/` or elsewhere; `scripts/generate_economic_evidence_report.py` and `research_external/run_s2r_baseline.py` both fail today with `ModuleNotFoundError: No module named 'performance'`). This mission does not attempt to resurrect or silently reimplement that package under its old name; the small `replay/common.py` and `replay/friction.py` modules built for this mission are intentionally scoped, new, and separately named."
+  ]
+}

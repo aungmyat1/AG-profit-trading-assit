@@ -1,0 +1,52 @@
+{
+  "run_id": "OSS_FX_C001_ORB_NY_OPEN__EURUSD__LONDON_NEWYORK__TRAIN",
+  "symbol": "EURUSD",
+  "cost_model_id": "AG_CF_R1_SPREAD_SNAPSHOT_SCENARIO_V1",
+  "commission_per_round_turn": "UNKNOWN",
+  "slippage": "UNKNOWN (not modeled in this pass; base scenario=0, stress scenario adds 1.0 pip, applied as additional spread-equivalent cost in the STRESS row only)",
+  "gross_metrics": {
+    "n": 176,
+    "wins": 37,
+    "losses": 139,
+    "win_rate": 0.21022727272727273,
+    "gross_r": 7.9491630644987765,
+    "net_r": 7.9491630644987765,
+    "expectancy_r": 0.04516569923010669,
+    "profit_factor": 1.0577692057557178,
+    "max_drawdown_r": 26.22482466154044,
+    "largest_single_trade_r": 10.0,
+    "largest_trade_pct_of_total_abs_net_r": 0.035316554495383484,
+    "cost_r_per_trade_applied": 0.0
+  },
+  "net_base_spread_metrics": {
+    "n": 176,
+    "wins": 30,
+    "losses": 146,
+    "win_rate": 0.17045454545454544,
+    "gross_r": 7.9491630644987765,
+    "net_r": -75.6746052223148,
+    "expectancy_r": -0.4299693478540613,
+    "profit_factor": 0.631357993645988,
+    "max_drawdown_r": 95.69628404640753,
+    "largest_single_trade_r": 9.52486495291583,
+    "largest_trade_pct_of_total_abs_net_r": 0.028442266968816275,
+    "cost_r_per_trade_applied": 0.47513504708416926
+  },
+  "net_stress_2x_spread_metrics": {
+    "n": 176,
+    "wins": 27,
+    "losses": 149,
+    "win_rate": 0.1534090909090909,
+    "gross_r": 7.9491630644987765,
+    "net_r": -159.2983735091283,
+    "expectancy_r": -0.905104394938229,
+    "profit_factor": 0.4210772834648442,
+    "max_drawdown_r": 170.08733923411074,
+    "largest_single_trade_r": 9.049729905831661,
+    "largest_trade_pct_of_total_abs_net_r": 0.02314340046646076,
+    "cost_r_per_trade_applied": 0.9502700941683385
+  },
+  "note": "cost_r_per_trade above uses the MEAN of (spread_price / each trade's own risk distance) across the sample, applied uniformly for compute_metrics' flat-cost signature; per-trade net values are also computed (net_base/net_stress lists) but the summary metrics use the mean-cost approximation, both reported for transparency.",
+  "per_trade_net_base_r_mean": -0.4299693478540627,
+  "per_trade_net_stress_r_mean": -0.9051043949382321
+}

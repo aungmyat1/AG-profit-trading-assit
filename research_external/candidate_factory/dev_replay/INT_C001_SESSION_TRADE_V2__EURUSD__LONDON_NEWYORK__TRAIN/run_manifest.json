@@ -1,0 +1,40 @@
+{
+  "run_id": "INT_C001_SESSION_TRADE_V2__EURUSD__LONDON_NEWYORK__TRAIN",
+  "candidate_id": "INT_C001",
+  "strategy_id": "SESSION_TRADE_V2",
+  "strategy_version": "2.0.0",
+  "trial_id": "LONDON_NEWYORK_EURUSD_TRAIN_v1",
+  "prereg_id": "AG_OSS_STRATEGY_CANDIDATE_FACTORY_R1_PREREG_V1",
+  "prereg_sha256": "342482c9972d1029d85b5ce4ab4792d4d147617d110aa88a6b020e32b707912b",
+  "dataset_id": "DEV_EURUSD_M5_TRAIN_V1",
+  "dataset_sha256_parent": "34c3296cefd4715c6c742210a36f3afe4261b53e24fa91dd02e8d3884bb240ef",
+  "engine_source": "research_external/candidate_factory/internal_reference/session_trade_v2 (copy of PR #33 @ e1ffe9f1e5ccfb9a336f1b4ae4289d41901ec5d2)",
+  "symbol": "EURUSD",
+  "cycle": "LONDON_NEWYORK",
+  "n_decisions_evaluated": 194,
+  "n_signals_total": 96,
+  "n_signals_unfilled_limit": 31,
+  "n_trades_filled": 65,
+  "fill_rate": 0.6770833333333334,
+  "replay_assumptions": [
+    "stop-first-on-same-bar-collision (not defined by source spec)",
+    "unfilled LIMIT expires at end of that day's trade window (not defined by SESSION_TRADE_V2 spec; borrowed from sibling ST_MTF_CONTROL_SHIFT_V1 spec's explicit rule)",
+    "C_TREND_EXPANSION runner leg modeled as breakeven-or-5R, not true swing trailing (TRANSLATION_FIDELITY=SEMANTICALLY_EQUIVALENT, conservative)",
+    "max 700 M15 bars (~7 days) walk-forward before OPEN_AT_CUTOFF mark-to-market"
+  ],
+  "metrics_gross_r": {
+    "n": 65,
+    "wins": 10,
+    "losses": 55,
+    "win_rate": 0.15384615384615385,
+    "gross_r": -16.25,
+    "net_r": -16.25,
+    "expectancy_r": -0.25,
+    "profit_factor": 0.7045454545454546,
+    "max_drawdown_r": 25.25,
+    "largest_single_trade_r": 4.25,
+    "largest_trade_pct_of_total_abs_net_r": 0.04533333333333334,
+    "cost_r_per_trade_applied": 0.0
+  },
+  "generated_at_utc": "2026-10-07T07:52:28.644266+00:00"
+}

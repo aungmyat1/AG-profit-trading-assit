@@ -1,0 +1,59 @@
+{
+  "candidate_id": "INT_C001",
+  "strategy_id": "SESSION_TRADE_V2",
+  "source_type": "INTERNAL",
+  "source": "PR #33 (feat/session-trade-v2-unified), OPEN, not merged; commit e1ffe9f1e5ccfb9a336f1b4ae4289d41901ec5d2",
+  "symbols_in_spec": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD"],
+  "sessions_in_spec": ["ASIAN_LONDON", "LONDON_NEWYORK"],
+  "setups": ["A_SWEEP_REENTRY", "B_RANGE_REJECTION", "C_TREND_EXPANSION"],
+  "source_backtest_class": "SB0_NO_BACKTEST (internal research/shadow design; the PR itself reports no prior backtest claim -- this mission's DEV replay is the first evidence of any kind)",
+
+  "gates": {
+    "G1_CONTRACTABLE": {"verdict": "PASS", "reason": "Exact entry/stop/target geometry, exact decision timestamp (M15 candle close), closed-bar semantics, deterministic A->B->C priority."},
+    "G2_TICKETABLE": {"verdict": "PASS", "reason": "Discrete entry (MARKET or LIMIT), fixed initial SL, two-leg target structure (75% @ 4R / 25% @ 5R acts as TP1/TP2), at most one qualifying setup per symbol/cycle by construction, M15 decision window (>=5 minutes)."},
+    "G3_DATA_VENUE_FIT": {
+      "EURUSD": "PASS (DEV_EURUSD_M5_TRAIN_V1 resampled to M15)",
+      "GBPUSD": "HOLD_DATA (only ~6-week DEV window physically present; insufficient for a 2-cycle min_trade_count=30 DEV screen)",
+      "USDJPY": "HOLD_DATA (no OHLC history present in this checkout)",
+      "XAUUSD": "HOLD_DATA (no OHLC history present in this checkout)"
+    },
+    "G4_CAUSALITY_WARMUP": {
+      "verdict": "PASS",
+      "causality_reason": "Reference window strictly precedes trade window; evaluate() scans trade_candles in chronological order and returns on the first qualifying candle, never inspecting later candles to decide on an earlier one.",
+      "warmup_invariance": "PASS (trivial/by construction: each day's decision depends only on that day's own reference+trade candle set, with zero cross-day state; there is no warm-up window to vary)."
+    },
+    "G5_TRANSLATION_FIDELITY": {"verdict": "EXACT", "reason": "This mission's internal_reference copy is byte-identical to PR #33's own source; no translation performed."}
+  },
+
+  "ag_reproduced": true,
+  "ag_reproduced_basis": "Deterministic execution of the byte-identical PR #33 engine against a hashed, declared DEV dataset partition; run identity recorded in dev_replay/INT_C001_SESSION_TRADE_V2__EURUSD__{LONDON_NEWYORK,ASIAN_LONDON}__TRAIN/run_manifest.json.",
+
+  "dev_replay_runs": [
+    {"run_id": "INT_C001_SESSION_TRADE_V2__EURUSD__LONDON_NEWYORK__TRAIN", "n_trades_filled": 65, "gross_expectancy_r": -0.25, "gross_profit_factor": 0.705, "net_base_spread_expectancy_r": -0.458, "net_stress_expectancy_r": -0.667, "max_drawdown_r_gross": 25.25},
+    {"run_id": "INT_C001_SESSION_TRADE_V2__EURUSD__ASIAN_LONDON__TRAIN", "n_trades_filled": 89, "gross_expectancy_r": -0.143, "gross_profit_factor": 0.828, "net_base_spread_expectancy_r": -0.405, "net_stress_expectancy_r": -0.667, "max_drawdown_r_gross": 24.5}
+  ],
+
+  "friction_screened": true,
+  "friction_result": "FAIL under both BASE and STRESS spread scenarios (net expectancy more negative than gross in both cycles). Commission UNKNOWN throughout -- not set to zero; true net result is likely worse, not better.",
+
+  "kill_policy_check": {
+    "min_trade_count_30": "PASS (65, 89 >= 30 in both cycles)",
+    "net_expectancy_r_gt_0": "FAIL (both cycles, gross AND net)",
+    "min_profit_factor_1_30": "FAIL (0.705, 0.828 gross; worse net)",
+    "max_drawdown_r_15": "FAIL (24.5-25.25R gross, before cost)",
+    "friction_requirement": "FAIL"
+  },
+
+  "verdict": "REJECTED",
+  "verdict_reason": "DEV replay of the actual PR #33 engine against real EURUSD M15 data over 9 months (TRAIN partition) shows a decisively negative gross expectancy in BOTH supported sessions (-0.25R LONDON_NEWYORK, -0.14R ASIAN_LONDON), well below the preregistered kill thresholds, before any friction is even applied. This is DEV-stage evidence only (not EDGE_VERIFIED, not a claim about the owner's discretionary interpretation of the underlying price-action idea) but is sufficient under the preregistered policy to reject this specific deterministic formalization for a freeze campaign without further replay spend.",
+
+  "status_taxonomy": {
+    "source_backtested": false,
+    "ag_reproduced": true,
+    "friction_screened": true,
+    "contract_frozen": false,
+    "logic_verified": false,
+    "economic_status": "NOT_VERIFIED",
+    "edge_verified": false
+  }
+}
