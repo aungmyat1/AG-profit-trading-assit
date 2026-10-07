@@ -225,6 +225,12 @@ incremental funnel-status and external confirmation-alert service.
 
 ## Quick start
 
+The read-only MT5 provider/evaluator bridge is offline verified. On the Windows
+Demo host, `python scripts/host/live_eval_smoke.py` evaluates all eight FX
+instrument/session pairs and writes sanitized acceptance evidence. It has not
+yet been host accepted; it grants no demo/live execution authority. See
+[R1 integration evidence](docs/status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md).
+
 Requirements: Python 3.10 or newer and, for live market-data checks, a running and
 logged-in MetaTrader 5 terminal.
 

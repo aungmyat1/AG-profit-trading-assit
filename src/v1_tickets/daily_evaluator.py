@@ -6,7 +6,7 @@ deterministic BLOCKED / INSUFFICIENT_DATA / OUT_OF_SESSION record — there is N
 silent session.
 
 Supported data inputs:
-  - MT5 live candles via `scripts/host/live_candles_smoke.py` (when connected)
+  - MT5 read-only candles via `scripts/host/live_eval_smoke.py` (Windows host)
   - injected/pre-canned candles (test/dry-run) for offline determinism
 
 The runner NEVER calls the broker for orders, never changes strategy logic, and never
@@ -21,7 +21,6 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from strategy_engine import evaluate as engine_evaluate, load_strategy
 from strategy_engine.session import Candle
-from v1_tickets import crypto as v1_crypto
 from v1_tickets import fx as v1_fx
 from v1_tickets.canonical_ticket import append_archive, build_canonical_ticket
 from v1_tickets.actionability import (
@@ -34,8 +33,16 @@ STRATEGY_PATH = v1_fx.STRATEGY_PATH
 FX_PAIRS: List[Tuple[str, str]] = [
     (sym, cyc) for cyc in v1_fx.V1_CYCLES for sym in v1_fx.V1_FX_SYMBOLS
 ]
-CRYPTO_SYMBOLS: List[str] = list(v1_crypto.V1_CRYPTO_SYMBOLS)
 ARCHIVE_SUBDIR = os.path.join("ticket_delivery", "daily_evaluator")
+
+
+def __getattr__(name: str):
+    # Preserve the public constant without loading crypto's native MT5 dependency
+    # when an offline caller needs only the FX evaluator.
+    if name == "CRYPTO_SYMBOLS":
+        from v1_tickets import crypto
+        return list(crypto.V1_CRYPTO_SYMBOLS)
+    raise AttributeError(name)
 
 
 @dataclass
@@ -131,6 +138,7 @@ def evaluate_crypto_symbol(
 ) -> EvalResult:
     """Evaluate one crypto symbol deterministically.  feed_provider must return a
     FallbackPublicCryptoFeed-compatible feed (or None, which yields a BLOCKED record)."""
+    from v1_tickets import crypto as v1_crypto
     import yaml
     now = now if now.tzinfo else now.replace(tzinfo=dt.timezone.utc)
     cfg = None
@@ -184,6 +192,7 @@ def evaluate_crypto_symbol(
 
 
 def _eval_crypto_with_error(symbol, *, now, day, state_dir, archive_root, cfg, exc, policy=None):
+    from v1_tickets import crypto as v1_crypto
     ticket = {
         "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
         "strategy_id": v1_crypto.daily_report.STRATEGY_ID,
@@ -266,7 +275,8 @@ def run_daily_evaluation(
                                      archive_root=archive_root, venue=fx_data_source,
                                      policy=policy, exc=exc))
     if include_crypto:
-        for sym in CRYPTO_SYMBOLS:
+        from v1_tickets import crypto as v1_crypto
+        for sym in v1_crypto.V1_CRYPTO_SYMBOLS:
             try:
                 results.append(evaluate_crypto_symbol(
                     sym, now=now, day=day, feed_provider=crypto_feed_provider,
