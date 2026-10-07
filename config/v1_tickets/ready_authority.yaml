@@ -1,0 +1,14 @@
+# READY authority switch for V1 informational tickets -- READY_AUTHORITY_V1, version 1.
+# Authority: owner decision D6 (2026-10-07), docs/governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md:
+#   "ST_ASIAN_SWEEP_5R_V1: READY authority is OFF until logical verification (R4B) passes.
+#    SHADOW, DIAGNOSTIC and INFO_ONLY outputs are allowed if clearly labelled."
+# Operational config only: it never changes strategy logic, levels or thresholds. With ready: OFF
+# a READY the engine produced is archived as SHADOW_INFO_ONLY (levels kept, labelled, not sent,
+# no paper trade, manual ticket TICKET_BLOCKED). Only the literal value ON restores READY;
+# a missing file, entry or any other value is OFF (fail closed).
+config_id: READY_AUTHORITY_V1
+version: 1
+strategies:
+  ST_ASIAN_SWEEP_5R_V1:
+    ready: OFF
+    reason: READY_AUTHORITY_OFF_D6
