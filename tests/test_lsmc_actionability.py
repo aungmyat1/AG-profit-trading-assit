@@ -43,8 +43,9 @@ def opp(direction: str, choch: str, entry: float, extreme: float, target, expire
 # ------------------------------------------------------------------------------- policy / config
 
 def test_policy_is_versioned_operational_config_with_signed_values():
-    assert (POLICY.policy_id, POLICY.policy_version) == ("LSMC_ACTIONABILITY_POLICY_V1", 1)
-    assert (POLICY.min_remaining_r, POLICY.freshness_max_bars, POLICY.trigger_timeframe) == (1.5, 2, "M5")
+    assert (POLICY.policy_id, POLICY.policy_version) == ("LSMC_ACTIONABILITY_POLICY_V1", 2)
+    assert (POLICY.min_remaining_r, POLICY.freshness_max_bars, POLICY.watch_poll_interval_minutes) == (1.5, 2, 5)
+    assert act.trigger_timeframe("ST_LARGE_SMC_V1") == "M5"           # (a) derived from the strategy, not config
 
 
 def test_min_remaining_r_lives_only_in_the_policy_config():
@@ -112,7 +113,7 @@ def test_short_uses_bid_and_price_through_invalidation_is_info_only():
     through = act.assess(o, send_ts=send, bid=1.1011, ask=1.1012, policy=POLICY, last_heartbeat_ts=hb)
     assert (through["outcome"], through["reason"]) == (act.INFO_ONLY, act.PRICE_BEYOND_INVALIDATION)
     no_quote = act.assess(o, send_ts=send, bid=None, ask=None, policy=POLICY, last_heartbeat_ts=hb)
-    assert (no_quote["outcome"], no_quote["reason"]) == (act.INFO_ONLY, act.SEND_PRICE_UNAVAILABLE)
+    assert (no_quote["outcome"], no_quote["reason"]) == (act.INFO_ONLY, act.NO_LIVE_QUOTE)          # (c)
     no_target = act.assess({**o, "target_c11": None}, send_ts=send, bid=1.1, ask=1.1, policy=POLICY,
                            last_heartbeat_ts=hb)
     assert (no_target["outcome"], no_target["reason"]) == (act.INFO_ONLY, act.GEOMETRY_INCOMPLETE)
@@ -362,8 +363,8 @@ def test_correlation_classifies_warns_and_ranks_without_suppression():
     assert act.exposure("XAUUSD", "LONG") == "USD_SHORT_SENSITIVE"
     jpy = act.correlation("USDJPY", {**new, "R_AT_SEND": 2.5}, "2026-10-07", [_ready("EURUSD", "LONG", 2.0)])
     assert jpy["CORRELATED_EXPOSURE"] == "USD_LONG" and jpy["correlation_warning"] is None
-    btc = act.correlation("BTCUSDT", new, "2026-10-07", active)
-    assert btc["CORRELATED_EXPOSURE"] == "UNCLASSIFIED" and btc["CORRELATION_CLUSTER_ID"] is None
+    btc = act.correlation("BTCUSDT", new, "2026-10-07", active)                # no crypto peer active
+    assert btc["CORRELATED_EXPOSURE"] == "CRYPTO_DIRECTIONAL_LONG" and btc["correlation_warning"] is None
     info = act.correlation("EURUSD", {**new, "outcome": act.INFO_ONLY}, "2026-10-07", active)
     assert info["correlation_warning"] is None                                  # only an actionable alert warns
 
@@ -447,3 +448,49 @@ def test_owner_command_identity_is_schema_only_and_grants_nothing():
     assert any(e.startswith("execution_authorized must be False") for e in errors)
     src = (ROOT / "src" / "ticket_delivery" / "attempt_journal.py").read_text(encoding="utf-8")
     assert "execution" not in "".join(ln for ln in src.splitlines() if ln.startswith(("import", "from")))
+
+
+
+# =============================================================================== owner interpretations 2026-10-07
+
+def test_a_freshness_window_is_derived_from_the_strategy_trigger_timeframe():
+    o = opp("LONG", "2026-10-06T10:00:00", 1.1000, 1.0990, 1.1030, "2026-10-06T12:00:00")
+    kw = dict(bid=1.0999, ask=1.1000, policy=POLICY, last_heartbeat_ts=t("2026-10-06T10:08:00"))
+    a = act.assess(o, send_ts=t("2026-10-06T10:15:00"), strategy_id="ST_LARGE_SMC_V1", **kw)
+    assert (a["trigger_timeframe"], a["state"]) == ("M5", act.FRESH)              # 2 x M5 = 10 min
+    unknown = act.assess(o, send_ts=t("2026-10-06T10:06:00"), strategy_id="ST_SOMETHING_ELSE", **kw)
+    assert (unknown["outcome"], unknown["reason"]) == (act.INFO_ONLY, act.TRIGGER_TIMEFRAME_UNKNOWN)
+
+
+def test_b_risk_anchor_is_marked_provisional():
+    o = opp("LONG", "2026-10-06T10:00:00", 1.1000, 1.0990, 1.1030, "2026-10-06T12:00:00")
+    a = act.assess(o, send_ts=t("2026-10-06T10:06:00"), bid=1.0999, ask=1.1, policy=POLICY,
+                   last_heartbeat_ts=t("2026-10-06T10:03:00"))
+    assert a["risk_anchor_status"] == "PROVISIONAL_PENDING_LSMC_SPEC_V1_FROZEN"
+
+
+def test_d_downtime_is_a_heartbeat_gap_over_two_poll_intervals():
+    o = opp("LONG", "2026-10-06T09:55:15", 1.1000, 1.0990, 1.1030, "2026-10-06T12:00:00")   # closes 10:00:15
+    send = t("2026-10-06T10:10:30")                                                         # age 10.25 min: stale
+    gap = act.assess(o, send_ts=send, bid=1.0999, ask=1.1, policy=POLICY, last_heartbeat_ts=t("2026-10-06T10:00:00"))
+    assert gap["heartbeat_gap_seconds"] == 630 and gap["downtime"] is True                 # 10.5 min > 2 x 5
+    assert (gap["state"], gap["outcome"]) == (act.MISSED_DOWNTIME, act.MISSED_NOT_ACTIONABLE)
+    up = act.assess(o, send_ts=send, bid=1.0999, ask=1.1, policy=POLICY, last_heartbeat_ts=t("2026-10-06T10:01:00"))
+    assert up["downtime"] is False                                                          # 9.5 min: host was up
+    assert (up["state"], up["outcome"]) == (act.STALE, act.INFO_ONLY_STALE)
+    # run_ts (the run start) defines the gap, not the later send instant
+    run = act.assess(o, send_ts=send, bid=1.0999, ask=1.1, policy=POLICY,
+                     last_heartbeat_ts=t("2026-10-06T10:00:00"), run_ts=t("2026-10-06T10:09:00"))
+    assert run["downtime"] is False and run["state"] == act.STALE
+
+
+def test_f_crypto_directional_cluster_warns_only_for_same_direction():
+    new = {"direction": "LONG", "outcome": act.WATCH_READY, "state": act.FRESH, "R_AT_SEND": 2.0}
+    same = act.correlation("BTCUSDT", new, "2026-10-07", [_ready("ETHUSDT", "LONG", 1.6)])
+    assert (same["CORRELATED_EXPOSURE"], same["CORRELATION_CLUSTER_ID"]) == (
+        "CRYPTO_DIRECTIONAL_LONG", "CRYPTO_DIRECTIONAL_LONG:2026-10-07")
+    assert same["correlation_warning"] == "CORRELATED_EXPOSURE" and same["correlated_with"] == ["ETHUSDT"]
+    opposite = act.correlation("BTCUSDT", new, "2026-10-07", [_ready("ETHUSDT", "SHORT", 1.6)])
+    assert opposite["correlation_warning"] is None
+    fx = act.correlation("BTCUSDT", new, "2026-10-07", [_ready("EURUSD", "LONG", 1.6)])
+    assert fx["correlation_warning"] is None                                                # crypto never clusters with USD FX

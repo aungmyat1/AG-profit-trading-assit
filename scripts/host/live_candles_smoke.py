@@ -524,7 +524,8 @@ def _deliver_opportunity(ev: dict, gate: dict, ledger: AlertLedger, bid_ask: Cal
     opp = (ev.get("payload") or {}).get("opportunity") or {}
     bid, ask = bid_ask()
     a = act.assess(opp, send_ts=gate["clock"](), bid=bid, ask=ask, policy=gate["policy"],
-                   last_heartbeat_ts=gate["last_heartbeat"])
+                   last_heartbeat_ts=gate["last_heartbeat"], strategy_id=ev.get("strategy_id"),
+                   run_ts=gate["now"])
     send_ts = dt.datetime.fromisoformat(a["send_ts"])
     active = [v for v in gate["open"].all().values()
               if not v.get("expires_at") or dt.datetime.fromisoformat(v["expires_at"]) > send_ts]

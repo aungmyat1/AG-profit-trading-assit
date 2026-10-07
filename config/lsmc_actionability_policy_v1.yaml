@@ -5,9 +5,12 @@
 # archive records. The owner may change values here without a strategy version change;
 # bump policy_version on every change so each persisted assessment names the values it used.
 policy_id: LSMC_ACTIONABILITY_POLICY_V1
-policy_version: 1
-# D1: READY only if send_ts - trigger_bar_close_ts <= freshness_max_bars x trigger timeframe.
+# v2 (2026-10-07 owner interpretations a, d): the trigger timeframe is no longer configured here; it
+# is derived per strategy (ST_LARGE_SMC_V1: M5 CHoCH bar). Downtime uses the watch poll interval.
+policy_version: 2
+# D1: READY only if send_ts - trigger_bar_close_ts <= freshness_max_bars x the strategy's trigger timeframe.
 freshness_max_bars: 2
-trigger_timeframe: M5
+# D3 (d): downtime = heartbeat gap > 2 x this interval (AG-V1-LSMC-Watch runs every 5 min).
+watch_poll_interval_minutes: 5
 # D2: READY requires R_AT_SEND >= min_remaining_r (owner-signed initial value).
 min_remaining_r: 1.5
