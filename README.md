@@ -22,6 +22,40 @@ separately authorized gates. The current primary product target is the R2–R4 c
 scanner proposal pipeline, ending at an observation-only STOP boundary. See
 [`docs/PROJECT_ROADMAP.md`](docs/PROJECT_ROADMAP.md).
 
+## Active objective: logically verified strategies during edge validation
+
+The immediate product objective is to operate the read-only session scanner and manual
+trade-ticket assistant **while a strategy is undergoing economic and edge validation**.
+A strategy with `LOGIC_VERIFIED` status may produce `WATCH`, `OPPORTUNITY`, and
+`TICKET_READY` informational outputs, subject to every existing data, timing, strategy
+identity, geometry, cost, risk, and proposal eligibility gate. `LOGIC_VERIFIED`
+means the deterministic strategy contract matches the implementation and passes
+appropriate logic/replay acceptance; it does **not** mean profitability or
+`EDGE_VERIFIED`.
+
+- Scope: Asian→London and London→New York session decisions for EURUSD, GBPUSD,
+  USDJPY, and XAUUSD, where each instrument has an admitted strategy, data and
+  risk contract. Do not force tickets when a gate blocks or no setup exists.
+- Produce timely WATCH/no-setup lifecycle records and, only where all gates pass,
+  informational BUY/SELL proposals with entry, SL, TP1/TP2, RR, invalidation,
+  structure/path visualization, confidence/evidence labels, strategy/version,
+  contract/code provenance, and explicit economic/edge-validation status.
+- Record user decisions, virtual-forward outcomes, costs, and daily funnel reports
+  as prospective evidence for further strategy research and independent EdgeLab
+  qualification. Keep validation datasets and unseen holdouts protected.
+- Strategies at `NOT_VERIFIED` or with a strategy/engine mismatch may be observed
+  and diagnosed but may **not** be relabeled `LOGIC_VERIFIED` or bypass gate L2.
+  Currently frozen `ST_ASIAN_SWEEP_5R_V1@1.1.1` remains blocked for
+  `TICKET_READY` until a separately versioned, reconciled successor passes gates.
+- Informational proposals never authorize broker orders. Demo/live automation
+  stays disabled and requires separately documented authority and safety gates;
+  neither logical verification nor ticket readiness implies trading edge.
+
+**Acceptance condition:** across configured session runs, expected per-symbol scan
+records, distinguishable `WATCH`/`NO_TRADE`/`NOT_RUN`/error states, an auditable
+ticket whenever an admitted logically verified setup meets all gates, delivery
+evidence, and virtual outcome tracking — with **zero broker mutations**.
+
 ## Fastest path to the project objective
 
 The repo is high-signal but dense. For the quickest path to real progress, use this order:
