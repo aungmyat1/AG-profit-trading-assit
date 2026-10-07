@@ -53,6 +53,10 @@ def gate_ready(ticket: Dict[str, Any], *, now: dt.datetime, data_close: Optional
     and spread gates apply to READY only. `data_close` None skips the data-age gate (caller has
     no live bar); `signal_close` None is STALE."""
     if data_close is not None and is_stale(data_close, now) and ticket.get("decision") in ("READY", "WATCH", "NO_TRADE"):
+        if ticket.get("decision") == "READY":
+            # Keep the already-computed trigger close so actionability can still resolve the
+            # trigger bar; the ticket stays withheld as STALE.
+            ticket = {**ticket, "signal_close_utc": signal_close.isoformat() if signal_close else None}
         return _withhold(ticket, STALE, "STALE_DATA", reason_key)
     if ticket.get("decision") != "READY":
         return ticket
