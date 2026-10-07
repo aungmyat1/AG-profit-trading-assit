@@ -161,7 +161,10 @@ def test_adapter_boundary_no_suffix_guessing_or_synthetic_data(tmp_path):
         def __init__(self): self.calls = []
         def symbol_info(self, symbol):
             self.calls.append(symbol)
-            return SimpleNamespace(bid=1.1, ask=1.1001, time=NOW.timestamp())
+            from host_evidence.symbol_metadata import server_utc_offset_hours
+            offset = server_utc_offset_hours(NOW)
+            return SimpleNamespace(bid=1.1, ask=1.1001,
+                                   time=(NOW + dt.timedelta(hours=offset)).timestamp())
         def copy_rates_range(self, *args): return []
 
     mt5 = FakeMT5()
@@ -173,6 +176,47 @@ def test_adapter_boundary_no_suffix_guessing_or_synthetic_data(tmp_path):
     with pytest.raises(adapter.CandleAdapterError, match="SYMBOL_MAPPING_MISSING"):
         missing.fetch_range("EURUSD", "M15", NOW, NOW)
     assert one(tmp_path, missing).decision == "INSUFFICIENT_DATA"
+
+
+@pytest.mark.parametrize(
+    ("reader", "expected_code", "expected_detail", "expected_layer"),
+    [
+        (FakeReader(missing="ref"), "DATA_MISSING", "M15_WINDOW_INCOMPLETE", "WINDOW_COMPLETENESS"),
+        (None, "SYMBOL_MAPPING_MISSING", "no broker symbol mapped for 'EURUSD'", "SYMBOL_RESOLUTION"),
+    ],
+)
+def test_adapter_errors_are_preserved_without_changing_ticket_authority(
+        tmp_path, reader, expected_code, expected_detail, expected_layer):
+    if reader is None:
+        reader = MT5ReadOnlyCandleAdapter(
+            type("ReadOnlyMT5", (), {"symbol_info": lambda self, name: None})(), {})
+    first = one(tmp_path / "first", reader)
+    second = one(tmp_path / "second", reader)
+    assert first.decision == second.decision == "INSUFFICIENT_DATA"
+    assert first.canonical["reason_code"] == "CandleAdapterError"
+    assert first.canonical["data_error"] == {
+        "code": expected_code, "detail": expected_detail, "layer": expected_layer,
+    }
+    assert first.ticket_id == second.ticket_id == "ST_ASIAN_SWEEP_5R_V1|1.1.1|EURUSD|ASIAN_LONDON|2026-10-07"
+    assert first.canonical["actionability"] == second.canonical["actionability"]
+    for key in ("execution_authorization", "demo_authorized", "live_authorized"):
+        assert first.canonical[key] is second.canonical[key] is False
+
+
+@pytest.mark.parametrize("utc_time", [
+    dt.datetime(2026, 10, 7, 7, 0, tzinfo=UTC),
+    dt.datetime(2026, 12, 7, 7, 0, tzinfo=UTC),
+])
+def test_quote_timestamp_uses_accepted_server_time_normalization(utc_time):
+    from host_evidence.symbol_metadata import server_utc_offset_hours
+    server_offset = server_utc_offset_hours(utc_time)
+    server_epoch = (utc_time + dt.timedelta(hours=server_offset)).timestamp()
+    mt5 = type("ReadOnlyMT5", (), {
+        "TIMEFRAME_M15": 15,
+        "symbol_info": lambda self, name: SimpleNamespace(bid=1.1, ask=1.1001, time=server_epoch),
+    })()
+    reader = MT5ReadOnlyCandleAdapter(mt5, {"EURUSD": "EURUSD-VIP"})
+    assert reader.quote("EURUSD")[2] == utc_time
 
 
 @pytest.mark.parametrize("bad", ["stale", "future", "nan", "inverted"])
@@ -213,13 +257,14 @@ def test_london_history_is_twenty_reference_bars():
 
 
 def test_real_adapter_shaped_rates_reach_evaluator(tmp_path, monkeypatch):
-    from host_evidence.symbol_metadata import server_time_to_utc
+    from host_evidence.symbol_metadata import server_time_to_utc, server_utc_offset_hours
     fixture = FakeReader()
     class FakeMT5:
         TIMEFRAME_M15 = 15
         def symbol_info(self, symbol):
             assert symbol == "OWNER_EXACT_SYMBOL"
-            return SimpleNamespace(bid=1.16335, ask=1.16345, time=NOW.timestamp())
+            server_wall_epoch = (NOW + dt.timedelta(hours=server_utc_offset_hours(NOW))).timestamp()
+            return SimpleNamespace(bid=1.16335, ask=1.16345, time=server_wall_epoch)
         def copy_rates_range(self, symbol, timeframe, start, end):
             assert symbol == "OWNER_EXACT_SYMBOL" and timeframe == 15
             rows = (fixture.fetch_range("EURUSD", "M15", NOW.replace(hour=0, minute=0),

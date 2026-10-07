@@ -65,6 +65,8 @@ def evaluate_report(provider, *, now, archive_root, policy_root=ROOT, policy=Non
             "policy_version": action["policy_version"], "policy_status": action["policy_status"],
             "data_source": result.venue, "evaluated_at_utc": ticket["created_at"],
         }
+        if "data_error" in ticket:
+            row["data_error"] = ticket["data_error"]
         for key in ("current_send_raw", "entry_reference_raw", "sl_raw", "tp1_raw", "tp2_raw"):
             value = ticket["prices"].get(key)
             if value is not None:

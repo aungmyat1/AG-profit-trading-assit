@@ -1,0 +1,36 @@
+{
+  "broker_mutation_count": 0,
+  "demo": true,
+  "initialize": "PASS",
+  "quotes": {
+    "EURUSD": {
+      "age_seconds": -10791.47153,
+      "bid_ask_valid": true,
+      "observed_utc": "2026-10-07T20:35:31+00:00",
+      "status": "QUOTE_INVALID_OR_STALE",
+      "valid_15m": false
+    },
+    "GBPUSD": {
+      "age_seconds": -10791.47153,
+      "bid_ask_valid": true,
+      "observed_utc": "2026-10-07T20:35:31+00:00",
+      "status": "QUOTE_INVALID_OR_STALE",
+      "valid_15m": false
+    },
+    "USDJPY": {
+      "age_seconds": -10790.47153,
+      "bid_ask_valid": true,
+      "observed_utc": "2026-10-07T20:35:30+00:00",
+      "status": "QUOTE_INVALID_OR_STALE",
+      "valid_15m": false
+    },
+    "XAUUSD": {
+      "age_seconds": -10792.47153,
+      "bid_ask_valid": true,
+      "observed_utc": "2026-10-07T20:35:32+00:00",
+      "status": "QUOTE_INVALID_OR_STALE",
+      "valid_15m": false
+    }
+  },
+  "refused": []
+}

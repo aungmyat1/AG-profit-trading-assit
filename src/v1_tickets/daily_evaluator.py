@@ -79,6 +79,29 @@ def _expected_bar_count(cycle: str) -> int:
     return {"ASIAN_LONDON": 24, "LONDON_NEWYORK": 20}.get(cycle, 24)
 
 
+def _data_error_provenance(exc: BaseException) -> Dict[str, str]:
+    """Keep acquisition failures machine-readable without changing their fail-closed result."""
+    code = str(getattr(exc, "code", type(exc).__name__))[:80]
+    detail = str(getattr(exc, "detail", str(exc)))[:300]
+    if code == "SYMBOL_MAPPING_MISSING":
+        layer = "SYMBOL_RESOLUTION"
+    elif code in ("DUPLICATE_TIMESTAMP", "NON_MONOTONIC"):
+        layer = "BAR_ORDER"
+    elif code == "OFF_GRID_TIMESTAMP":
+        layer = "BAR_GRID"
+    elif code == "CONVERSION_ERROR":
+        layer = "TIME_NORMALIZATION"
+    elif code == "DATA_MISSING" and "M15_WINDOW_INCOMPLETE" in detail:
+        layer = "WINDOW_COMPLETENESS"
+    elif code == "DATA_MISSING" and "QUOTE_" in detail:
+        layer = "QUOTE_VALIDATION"
+    elif code == "DATA_MISSING":
+        layer = "MT5_FETCH"
+    else:
+        layer = "OTHER"
+    return {"code": code, "detail": detail, "layer": layer}
+
+
 def evaluate_fx_pair(
     symbol: str,
     cycle: str,
@@ -103,6 +126,7 @@ def evaluate_fx_pair(
             symbol, cycle, day, evaluated_at=now, reason_code=type(exc).__name__,
             detail=str(exc)[:300], decision="DATA_ERROR", data_source=data_source,
         )
+        ticket["data_error"] = _data_error_provenance(exc)
         return _finalize(ticket, now=now, current_price=None, window_end=trade_end,
                          archive_root=archive_root, venue=data_source, policy=policy, exc=exc)
 

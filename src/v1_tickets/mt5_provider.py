@@ -10,6 +10,7 @@ import math
 from typing import Any, Mapping, Protocol, Sequence
 
 from mt5 import mt5_candles_readonly as adapter
+from host_evidence.symbol_metadata import server_time_to_utc
 from v1_tickets.daily_evaluator import CandleBundle
 from v1_tickets.fx import M15, session_windows_utc
 
@@ -39,8 +40,11 @@ class MT5ReadOnlyCandleAdapter:
         if info is None:
             raise adapter.CandleAdapterError(adapter.SYMBOL_MAPPING_MISSING)
         try:
-            return (float(info.bid), float(info.ask),
-                    dt.datetime.fromtimestamp(info.time, dt.timezone.utc))
+            # MT5 quote timestamps are broker-server wall time encoded as epoch seconds,
+            # matching the accepted candle conversion authority. Do not label the raw
+            # server wall value as UTC.
+            server_wall = dt.datetime.fromtimestamp(info.time, dt.timezone.utc).replace(tzinfo=None)
+            return (float(info.bid), float(info.ask), server_time_to_utc(server_wall))
         except (AttributeError, TypeError, ValueError, OverflowError) as exc:
             raise adapter.CandleAdapterError(adapter.DATA_MISSING, "QUOTE_MISSING") from exc
 

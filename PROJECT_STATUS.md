@@ -4,7 +4,21 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## MT5 provider/evaluator integration R1 — offline verified (2026-10-07)
+## MT5 market-data contract R2 — Demo data verified (2026-10-08)
+
+The real VT Markets Demo read-only market-data path now normalizes broker quote
+timestamps through the existing DST-aware `server_time_to_utc` authority. Four
+mapped symbols returned usable M15 reference/trade data (16/16 windows matched
+the exact expected timestamp grid) and fresh quotes (all four passed freshness).
+The live evaluator emitted all eight records with zero refused MT5 calls and zero
+broker mutations. Outcomes were seven `INSUFFICIENT_DATA / TRIGGER_TIMEFRAME_UNKNOWN`
+and one `EXPIRED / TRADE_WINDOW_CLOSED`; no quote-time failure remained. This
+verifies the candle/quote data pipeline only; it does not establish a trade
+opportunity, strategy readiness, or execution authority. Focused market-data and
+canonical tests: **66 passed**. Evidence:
+[R2 market-data contract](docs/status/AG_MARKET_DATA_CONTRACT_R2_2026-10-08.md).
+
+## MT5 provider/evaluator integration R1 — historical offline evidence (2026-10-07)
 
 `v1_tickets.mt5_provider.MT5CandleProvider` now implements the existing FX
 `CandleProvider` boundary using the accepted read-only adapter. M15 reference and

@@ -1,0 +1,57 @@
+{
+  "broker_mutation_count": 0,
+  "captured_at_host_utc": "2026-10-07T17:55:52.739384+00:00",
+  "demo_account_confirmed": true,
+  "mt5_initialize": "PASS",
+  "refused_mt5_calls": [],
+  "symbols": {
+    "EURUSD": {
+      "bid_ask_valid": true,
+      "broker_symbol": "EURUSD-VIP",
+      "normalized_quote_age_seconds": 9.739384,
+      "normalized_quote_utc": "2026-10-07T17:55:43+00:00",
+      "quote_time_normalized": true,
+      "quote_usable": true,
+      "raw_quote_interpretation_utc_if_epoch": "2026-10-07T20:55:43+00:00",
+      "raw_quote_timestamp": 1791406543,
+      "status": "PASS",
+      "symbol_info_available": true
+    },
+    "GBPUSD": {
+      "bid_ask_valid": true,
+      "broker_symbol": "GBPUSD-VIP",
+      "normalized_quote_age_seconds": 11.739384,
+      "normalized_quote_utc": "2026-10-07T17:55:41+00:00",
+      "quote_time_normalized": true,
+      "quote_usable": true,
+      "raw_quote_interpretation_utc_if_epoch": "2026-10-07T20:55:41+00:00",
+      "raw_quote_timestamp": 1791406541,
+      "status": "PASS",
+      "symbol_info_available": true
+    },
+    "USDJPY": {
+      "bid_ask_valid": true,
+      "broker_symbol": "USDJPY-VIP",
+      "normalized_quote_age_seconds": 9.739384,
+      "normalized_quote_utc": "2026-10-07T17:55:43+00:00",
+      "quote_time_normalized": true,
+      "quote_usable": true,
+      "raw_quote_interpretation_utc_if_epoch": "2026-10-07T20:55:43+00:00",
+      "raw_quote_timestamp": 1791406543,
+      "status": "PASS",
+      "symbol_info_available": true
+    },
+    "XAUUSD": {
+      "bid_ask_valid": true,
+      "broker_symbol": "XAUUSD-VIP",
+      "normalized_quote_age_seconds": 7.739384,
+      "normalized_quote_utc": "2026-10-07T17:55:45+00:00",
+      "quote_time_normalized": true,
+      "quote_usable": true,
+      "raw_quote_interpretation_utc_if_epoch": "2026-10-07T20:55:45+00:00",
+      "raw_quote_timestamp": 1791406545,
+      "status": "PASS",
+      "symbol_info_available": true
+    }
+  }
+}
