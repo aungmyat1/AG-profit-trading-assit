@@ -1,0 +1,35 @@
+{
+  "schema_id": "CRYPTO_CFD_TURTLE_BREAKOUT_D1_V1_IO_SCHEMA",
+  "version": "1.0.0",
+  "input": {
+    "Bar": {
+      "time": "ISO-8601 timestamp, timezone-aware UTC, represents the bar's CLOSE time",
+      "open": "float", "high": "float", "low": "float", "close": "float",
+      "constraint": "low <= open <= high AND low <= close <= high"
+    },
+    "tick_size": "float, e.g. 0.01 for BTCUSD/ETHUSD VT Markets CFD"
+  },
+  "output": {
+    "Decision": {
+      "status": "one of: NO_TRIGGER | TRIGGER_LONG | TRIGGER_SHORT | INSUFFICIENT_WARMUP | TRIGGER_DEFERRED_WEEKEND",
+      "reason": "free-text explanation string",
+      "bar_time": "ISO-8601 timestamp of the evaluated bar",
+      "entry_price": "float or null",
+      "stop_loss": "float or null",
+      "tp1": "float or null",
+      "expiry": "ISO-8601 timestamp or null",
+      "direction": "LONG | SHORT | null"
+    },
+    "Ticket": {
+      "direction": "LONG | SHORT",
+      "entry_price": "float", "stop_loss": "float", "tp1": "float",
+      "trigger_time": "ISO-8601 timestamp", "expiry": "ISO-8601 timestamp"
+    },
+    "TickResolution": {
+      "filled": "boolean",
+      "outcome": "one of: EXPIRED_UNFILLED | TP1_HIT | STOP_HIT | UNRESOLVED_AT_HORIZON",
+      "realized_r": "float or null",
+      "detail": "free-text explanation string"
+    }
+  }
+}

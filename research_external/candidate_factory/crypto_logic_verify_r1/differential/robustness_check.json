@@ -1,0 +1,5 @@
+{
+  "note": "The committed swing_differential_report.json uses seed=42. For robustness, the same script was re-run with seeds 1, 7, 99, 123, 2026 (not separately committed as files, reproducible by editing make_synthetic_series' default seed). All five additional runs produced identical structure: agreement_rate_pct=98.33, n_disagreements=2, disagreements_by_classification={SPEC_DIFF: 2, BUG: 0, UNEXPLAINED: 0}, both disagreements at the series' first and last bar index (boundary SPEC_DIFF). No BUG or UNEXPLAINED disagreement was found across any of the 6 total seeds tested.",
+  "seeds_tested": [42, 1, 7, 99, 123, 2026],
+  "result_identical_across_all_seeds": true
+}
