@@ -58,6 +58,7 @@ if __name__ == "__main__":   # bound the whole process, including the heavy impo
     start_run_watchdog(f"ag_v1_{_argv_mode(sys.argv[1:])}")
 
 from host_delivery import telegram_message as tg  # noqa: E402
+from host_delivery.lsmc_alert_dedup import AlertLedger, deliver_once  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
@@ -436,6 +437,7 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
              fx: bool = True, window: Optional[str] = None) -> List[str]:
     tracker = WatchTracker(os.path.join(journal, "large_smc_watch", "state.json"),
                            os.path.join(journal, "ticket_delivery", "archive"))
+    ledger = AlertLedger(os.path.join(journal, "large_smc_watch", "delivered_confirmations.json"))
     lines = []
     for symbol in (fx_symbols() if fx else []):
         try:
@@ -444,7 +446,7 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
         except Exception as exc:  # noqa: BLE001
             lines.append(f"LSMC {symbol} DATA_ERROR {_reason(exc)}")
             continue
-        lines += _watch_once(tracker, symbol, bars, now, notify)
+        lines += _watch_once(tracker, symbol, bars, now, notify, ledger=ledger)
     if crypto_feed is not None:
         for symbol in ("BTCUSDT", "ETHUSDT"):
             try:
@@ -453,11 +455,12 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
                 lines.append(f"LSMC {symbol} DATA_ERROR {type(exc).__name__}")
                 continue
             lines += _watch_once(tracker, symbol, {"D1": [], **b.candles}, now, notify, source=b.source,
-                                 window=window)
+                                 window=window, ledger=ledger)
     return lines
 
 
-def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None) -> List[str]:
+def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None,
+                ledger: Optional[AlertLedger] = None) -> List[str]:
     snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now)
     events = tracker.poll(snap)
     out = [f"LSMC {symbol} data={classify(symbol, bars['M5'], now)} state={snap.state} source={source} "
@@ -465,7 +468,10 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
     if notify:
         for e in events:
             price = bars["M5"][-1].close if bars["M5"] else None
-            _notify("LSMC", e.alert_level, tg.format_alert(e.__dict__, price=price), REPO_ROOT)
+            status = deliver_once(e.__dict__, ledger, lambda e=e: _notify(
+                "LSMC", e.alert_level, tg.format_alert(e.__dict__, price=price), REPO_ROOT))
+            if status == "SUPPRESSED_DUPLICATE_CONFIRMATION":
+                out.append(f"LSMC {symbol} ALERT_SUPPRESSED_DUPLICATE_CONFIRMATION ref={e.reference_id}")
     return out
 
 
