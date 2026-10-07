@@ -64,39 +64,55 @@ def _venue(ticket: Dict[str, Any]) -> str:
     return "MT5_VT_MARKETS_DEMO"
 
 
+NOT_AVAILABLE = "NOT_AVAILABLE"
+
+
 def _context_labels(ticket: Dict[str, Any]) -> Dict[str, str]:
-    """D1/H1 context + POI labels from the available ticket fields.  These are labels
-    only; the frozen strategy computes regime/setup, we never invent a trend."""
-    regime = ticket.get("regime") or "—"
-    box = ticket.get("box") or {}
-    setup = ticket.get("setup") or "—"
-    direction = ticket.get("direction") or "—"
-    if direction == "LONG":
-        loc = f"H1 discount (sweep of ref low)"
-    elif direction == "SHORT":
-        loc = f"H1 premium (sweep of ref high)"
-    else:
-        loc = "—"
+    """Market-context fields are PASS-THROUGH ONLY from the source ticket (Phase B).
+
+    If a source did not supply a fact, we emit NOT_AVAILABLE rather than inventing a
+    plausible interpretation (no \"H1 discount\"/\"H1 premium\", no synthetic POI).
+    Source-supplied facts are copied verbatim.
+    """
+    src = ticket.get("context") if isinstance(ticket.get("context"), dict) else {}
+    d1 = src.get("d1_context")
+    h1 = src.get("h1_context")
+    structure = src.get("structure")
+    poi = src.get("poi")
+    # Legacy: a manual_ticket may carry `regime` from the engine; that is SOURCE_FACT.
+    if d1 is None and ticket.get("regime"):
+        d1 = str(ticket.get("regime"))
+    if structure is None and ticket.get("setup"):
+        structure = str(ticket.get("setup"))
     return {
-        "d1_context": regime,
-        "h1_context": loc,
-        "structure": f"{setup} → reclaim → displacement" if ticket.get("direction") else setup,
-        "poi": _poi_label(ticket),
+        "d1_context": d1 if d1 is not None else NOT_AVAILABLE,
+        "h1_context": h1 if h1 is not None else NOT_AVAILABLE,
+        "structure": structure if structure is not None else NOT_AVAILABLE,
+        "poi": poi if poi is not None else NOT_AVAILABLE,
     }
 
 
-def _poi_label(ticket: Dict[str, Any]) -> str:
-    box = ticket.get("box") or {}
-    lo, hi = box.get("low"), box.get("high")
-    direction = ticket.get("direction")
-    if lo is None or hi is None:
-        return "—"
-    # POI is the liquidity zone just outside the reference box that was swept.
-    if direction == "LONG":
-        return f"{lo}–{_fmt(lo + (hi - lo) * 0.10, ticket.get('symbol'))}" if hi > lo else f"{lo}"
-    if direction == "SHORT":
-        return f"{_fmt(hi - (hi - lo) * 0.10, ticket.get('symbol'))}–{hi}"
-    return f"{_fmt(lo, ticket.get('symbol'))}–{_fmt(hi, ticket.get('symbol'))}"
+def _fact_provenance(ticket: Dict[str, Any], ctx: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
+    """Lightweight provenance record for market-context facts (Phase C).
+
+    Status values: SOURCE_FACT, RUNTIME_FACT, POLICY_FACT, NOT_AVAILABLE.
+    Formatting does not require separate provenance.  No INFERRED category.
+    """
+    src = ticket.get("context") if isinstance(ticket.get("context"), dict) else {}
+
+    def _status_for(key: str, fallback_key: Optional[str] = None) -> Dict[str, Any]:
+        if src.get(key) is not None:
+            return {"status": "SOURCE_FACT", "source": "ticket.context"}
+        if fallback_key is not None and ticket.get(fallback_key) is not None:
+            return {"status": "RUNTIME_FACT", "source": f"ticket.{fallback_key}"}
+        return {"status": "NOT_AVAILABLE", "source": None}
+
+    return {
+        "d1_context": _status_for("d1_context", "regime"),
+        "h1_context": _status_for("h1_context"),
+        "structure": _status_for("structure", "setup"),
+        "poi": _status_for("poi"),
+    }
 
 
 def _fmt(value: Optional[float], symbol: Optional[str]) -> str:
@@ -130,16 +146,25 @@ def build_canonical_ticket(
     current_price: Optional[float] = None,
     window_end: Optional[dt.datetime] = None,
     proposal_eligibility: str = "INFORMATIONAL_WATCH",
+    policy=None,
+    policy_root: str = ".",
+    policy_override_path: Optional[str] = None,
+    policy_override_dict: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Return a deterministic canonical ticket dict combining strategy output + actionability.
 
     `ticket` is the raw V1 FX/crypto ticket (from v1_tickets.fx.build_fx_ticket or
     v1_tickets.crypto.build_crypto_ticket) or a manual_ticket dict.  This function never
-    calls strategy engines, brokers or network.
+    calls strategy engines, brokers or network.  Policy is injected via `policy` (a
+    preloaded ActionabilityPolicy) or loaded from `policy_root` / override paths for DI.
     """
-    action = evaluate_actionability(ticket, now=now, current_price=current_price, window_end=window_end)
+    action = evaluate_actionability(ticket, now=now, current_price=current_price, window_end=window_end,
+                                    policy=policy, policy_root=policy_root,
+                                    policy_override_path=policy_override_path,
+                                    policy_override_dict=policy_override_dict)
     meta = _strategy_meta(ticket)
     ctx = _context_labels(ticket)
+    provenance = _fact_provenance(ticket, ctx)
     sym = ticket.get("symbol")
     entry = action.get("entry_reference_price")
     sl = _safe_get(ticket, ("stop_loss", "sl"))
@@ -200,6 +225,7 @@ def build_canonical_ticket(
         "direction": direction,
         "context": ctx,
         "poi": ctx["poi"],
+        "fact_provenance": provenance,
         "trigger": {
             "setup": ticket.get("setup"),
             "trigger_timestamp": trigger_ts,
@@ -236,6 +262,12 @@ def build_canonical_ticket(
             "reason": action["actionability_reason"],
             "valid_at_trigger": action.get("valid_at_trigger"),
             "actionability_at_send": action.get("actionability_at_send"),
+            "policy_id": action.get("actionability_policy_id"),
+            "policy_version": action.get("actionability_policy_version"),
+            "policy_status": action.get("policy_status"),
+            "policy_reason": action.get("policy_reason"),
+            "min_remaining_r": action.get("min_remaining_r"),
+            "policy_source_identity": action.get("policy_source_identity"),
         },
         "setup_status": setup_status,
         "proposal_eligibility": proposal_eligibility,
@@ -361,6 +393,9 @@ def render_structure_visual(canonical: Dict[str, Any], *, width: int = 32) -> st
     sym = canonical.get("instrument")
     if direction not in ("LONG", "SHORT") or entry is None or sl is None or tp1 is None:
         return "(no structure — no directional signal)"
+    # If source did not supply a POI, the diagram POI band is a structural estimate only
+    # (between SL and entry by the visual heuristic) and is so labelled.
+    poi_supplied = (canonical.get("context") or {}).get("poi") not in (None, NOT_AVAILABLE)
     levels: List[tuple] = []
     if tp2 is not None:
         levels.append(("TP2", tp2))
@@ -404,8 +439,10 @@ def render_structure_visual(canonical: Dict[str, Any], *, width: int = 32) -> st
         insert_at = _find_insert(levels_sorted, "NOW") if "NOW" in labels else 0
     # Insert note at a sensible spot.
     lines.insert(min(insert_at + 1, len(lines)), note)
-    footer = "(dotted line is a structural estimate, not a forecast)"
-    return "\n".join(lines) + "\n" + footer
+    footer_parts = ["(dotted line is a structural estimate, not a forecast)"]
+    if not poi_supplied:
+        footer_parts.append("(POI zone not supplied by source; band shown is a structural estimate)")
+    return "\n".join(lines) + "\n" + "\n".join(footer_parts)
 
 
 def _find_insert(levels_sorted: List[tuple], name: str) -> int:
@@ -443,7 +480,7 @@ def render_watch_ready(canonical: Dict[str, Any]) -> str:
         session.replace("_", "→"),
         "",
         "Context",
-        f"D1 {ctx['d1_context']} | {ctx['h1_context']}",
+        f"D1 {ctx['d1_context']} | H1 {ctx['h1_context']}",
         "",
         "Structure",
         ctx["structure"],

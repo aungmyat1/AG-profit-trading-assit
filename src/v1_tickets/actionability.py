@@ -34,6 +34,11 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any, Dict, Optional
 
+from v1_tickets.policy_loader import (
+    POLICY_CONFLICT, POLICY_INVALID, POLICY_MISSING, POLICY_OK, ActionabilityPolicy,
+    load_policy,
+)
+
 # Trigger timeframe for each supported strategy -> timedelta of one bar.
 TRIGGER_TF: Dict[str, dt.timedelta] = {
     "ST_ASIAN_SWEEP_5R_V1": dt.timedelta(minutes=15),
@@ -41,13 +46,13 @@ TRIGGER_TF: Dict[str, dt.timedelta] = {
 }
 # WATCH_READY freshness multiplier: N completed bars of the trigger TF after signal close.
 FRESHNESS_BARS = 2
-# Minimum remaining R before TP1 for informational WATCH_READY.  Without an owner-signed
-# value we fail closed to 1.0 R (owner sees INFO_ONLY_INSUFFICIENT_REMAINING_R otherwise).
-MIN_REMAINING_R = 1.0
+# NO BUILT-IN NUMERIC FALLBACK for min_remaining_r.  Production threshold must come from a
+# signed actionability policy; without one the decision is INFO_ONLY_POLICY_UNRESOLVED.
 
 WATCH_READY = "WATCH_READY"
 INFO_ONLY_STALE = "INFO_ONLY_STALE"
 INFO_ONLY_INSUFFICIENT_REMAINING_R = "INFO_ONLY_INSUFFICIENT_REMAINING_R"
+INFO_ONLY_POLICY_UNRESOLVED = "INFO_ONLY_POLICY_UNRESOLVED"
 NO_TRADE = "NO_TRADE"
 EXPIRED = "EXPIRED"
 MISSED = "MISSED"
@@ -55,7 +60,8 @@ BLOCKED = "BLOCKED"
 INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
 OUT_OF_SESSION = "OUT_OF_SESSION"
 
-ACTIONABILITY_VERSION = "AG_ACTIONABILITY_V1"
+ACTIONABILITY_VERSION = "AG_ACTIONABILITY_V2"
+_POLICY_UNRESOLVED_SET = {INFO_ONLY_POLICY_UNRESOLVED, BLOCKED, INSUFFICIENT_DATA, OUT_OF_SESSION, EXPIRED, MISSED}
 
 
 def _parse(ts: Any) -> Optional[dt.datetime]:
@@ -141,39 +147,51 @@ def evaluate_actionability(
     now: dt.datetime,
     current_price: Optional[float] = None,
     window_end: Optional[dt.datetime] = None,
-    min_remaining_r: float = MIN_REMAINING_R,
+    policy: Optional[ActionabilityPolicy] = None,
+    policy_root: str = ".",
+    policy_override_path: Optional[str] = None,
+    policy_override_dict: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Classify an already-produced V1/manual ticket into an owner-facing decision.
 
-    Pure: no I/O, no broker, no network.  Returns a dict with `actionability_decision`,
-    `actionability_reason`, `freshness_age_s`, `remaining_r`, and supporting geometry.
-    Does not mutate `ticket`.
+    Pure: no I/O, no broker, no network (policy file is read once via load_policy which is
+    itself pure-once-loaded; callers may inject a preloaded ActionabilityPolicy for DI).
+    Returns a dict with `actionability_decision`, `actionability_reason`, `freshness_age_s`,
+    `remaining_r`, and supporting geometry.  Does not mutate `ticket`.
     """
     now = now if now.tzinfo else now.replace(tzinfo=dt.timezone.utc)
+    if policy is None:
+        policy = load_policy(policy_root, override_path=policy_override_path,
+                             override_dict=policy_override_dict)
     decision = ticket.get("decision")
     reason_code = ticket.get("reason_code")
     strategy_id = ticket.get("strategy_id", "")
 
     # Lifecycle / hard data / session states map 1:1 first.
     if decision == "REFERENCE_NOT_READY":
-        return _out(OUT_OF_SESSION, "REFERENCE_WINDOW_NOT_CLOSED", ticket, now, current_price, window_end)
+        return _out(OUT_OF_SESSION, "REFERENCE_WINDOW_NOT_CLOSED", ticket, now, current_price, window_end,
+                    policy=policy)
     if decision == "DATA_ERROR":
-        return _out(INSUFFICIENT_DATA, reason_code or "DATA_ERROR", ticket, now, current_price, window_end)
+        return _out(INSUFFICIENT_DATA, reason_code or "DATA_ERROR", ticket, now, current_price, window_end,
+                    policy=policy)
     if decision == "BLOCKED":
-        return _out(BLOCKED, reason_code or "BLOCKED", ticket, now, current_price, window_end)
+        return _out(BLOCKED, reason_code or "BLOCKED", ticket, now, current_price, window_end,
+                    policy=policy)
     if decision == "NO_TRADE":
         # Distinguish EXPIRED when the window has closed.
         win_end = window_end or _trade_window_end(ticket)
         if win_end is not None and now >= win_end and reason_code in (
                 "NO_SETUP_BY_WINDOW_END", "NO_QUALIFIED_SWEEP_IN_WINDOW"):
-            return _out(NO_TRADE, reason_code, ticket, now, current_price, window_end)
-        return _out(NO_TRADE, reason_code or "NO_TRADE", ticket, now, current_price, window_end)
+            return _out(NO_TRADE, reason_code, ticket, now, current_price, window_end, policy=policy)
+        return _out(NO_TRADE, reason_code or "NO_TRADE", ticket, now, current_price, window_end,
+                    policy=policy)
 
     # At this point a signal exists (READY or a gate-withheld READY -> STALE / SPREAD_TOO_WIDE).
     trigger_close = _trigger_bar_close(ticket)
     tf = TRIGGER_TF.get(strategy_id)
     if tf is None or trigger_close is None:
-        return _out(INSUFFICIENT_DATA, "TRIGGER_TIMEFRAME_UNKNOWN", ticket, now, current_price, window_end)
+        return _out(INSUFFICIENT_DATA, "TRIGGER_TIMEFRAME_UNKNOWN", ticket, now, current_price, window_end,
+                    policy=policy)
 
     freshness_limit = FRESHNESS_BARS * tf
     age = now - trigger_close
@@ -186,50 +204,65 @@ def evaluate_actionability(
     win_end = window_end or _trade_window_end(ticket)
     if win_end is not None and now >= win_end:
         return _out(EXPIRED, "TRADE_WINDOW_CLOSED", ticket, now, current_price, window_end,
-                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s)
+                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
 
     # Stale signal (beyond freshness window): INFO_ONLY_STALE, but record that the
     # signal was valid at trigger time.
     if age > freshness_limit:
         return _out(INFO_ONLY_STALE, "FRESHNESS_EXCEEDED", ticket, now, current_price, window_end,
-                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s)
+                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
 
     # Need live current_price for remaining-R geometry; without it we cannot declare WATCH_READY.
     if current_price is None or prices["entry"] is None or geom["risk"] is None:
         return _out(INSUFFICIENT_DATA, "CURRENT_PRICE_MISSING", ticket, now, current_price, window_end,
-                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s)
+                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
 
     entry, sl = prices["entry"], prices["sl"]
     long = prices["direction"] == "LONG"
     # MISSED: price has already blown through SL (invalidated before we could watch).
     if sl is not None and ((long and current_price <= sl) or (not long and current_price >= sl)):
         return _out(MISSED, "SL_TOUCHED_BEFORE_WATCH", ticket, now, current_price, window_end,
-                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s)
+                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
     # EXPIRED setup-equivalent: price already past TP1 -> no remaining R to TP1.
     rem1 = geom["remaining_to_tp1"]
     if rem1 is not None and rem1 <= 0:
         return _out(MISSED, "TP1_ALREADY_REACHED", ticket, now, current_price, window_end,
-                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s)
-    # Insufficient remaining R to TP1.
-    if rem1 is not None and rem1 < min_remaining_r:
-        return _out(INFO_ONLY_INSUFFICIENT_REMAINING_R, "REMAINING_R_BELOW_THRESHOLD",
-                    ticket, now, current_price, window_end, trigger_close=trigger_close,
-                    prices=prices, geom=geom, age_s=age_s)
+                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
 
-    # Spread / legacy gates that withheld READY become INFO_ONLY (they record their own reason).
+    # Spread / legacy gates that withheld READY become INFO_ONLY/BLOCKED (they record their own reason).
     legacy = ticket.get("decision")
-    if legacy in ("STALE", "SPREAD_TOO_WIDE"):
-        return _out(INFO_ONLY_STALE if legacy == "STALE" else BLOCKED,
-                    ticket.get("reason_code") or legacy,
-                    ticket, now, current_price, window_end,
-                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s)
+    if legacy == "STALE":
+        return _out(INFO_ONLY_STALE, ticket.get("reason_code") or legacy,
+                    ticket, now, current_price, window_end, trigger_close=trigger_close,
+                    prices=prices, geom=geom, age_s=age_s, policy=policy)
+    if legacy == "SPREAD_TOO_WIDE":
+        return _out(BLOCKED, ticket.get("reason_code") or legacy,
+                    ticket, now, current_price, window_end, trigger_close=trigger_close,
+                    prices=prices, geom=geom, age_s=age_s, policy=policy)
     if ticket.get("spread_check") not in (None, "PASS"):
         return _out(BLOCKED, ticket.get("spread_check") or "SPREAD_NOT_EVALUATED",
                     ticket, now, current_price, window_end, trigger_close=trigger_close,
-                    prices=prices, geom=geom, age_s=age_s)
+                    prices=prices, geom=geom, age_s=age_s, policy=policy)
+
+    # ---- Policy gate: a usable, signed min_remaining_r is REQUIRED for WATCH_READY.
+    if policy.status != POLICY_OK or not policy.usable:
+        reason = {
+            POLICY_MISSING: "ACTIONABILITY_POLICY_MISSING",
+            POLICY_INVALID: "ACTIONABILITY_POLICY_INVALID",
+            POLICY_CONFLICT: "ACTIONABILITY_POLICY_CONFLICT",
+        }.get(policy.status, "ACTIONABILITY_POLICY_MISSING")
+        return _out(INFO_ONLY_POLICY_UNRESOLVED, reason, ticket, now, current_price, window_end,
+                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
+
+    # Insufficient remaining R to TP1 against the signed policy threshold.
+    threshold = policy.min_remaining_r
+    if rem1 is None or threshold is None or rem1 < threshold:
+        return _out(INFO_ONLY_INSUFFICIENT_REMAINING_R, "REMAINING_R_BELOW_THRESHOLD",
+                    ticket, now, current_price, window_end, trigger_close=trigger_close,
+                    prices=prices, geom=geom, age_s=age_s, policy=policy)
 
     return _out(WATCH_READY, "WATCH_READY", ticket, now, current_price, window_end,
-                trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s)
+                trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
 
 
 def _trade_window_end(ticket: Dict[str, Any]) -> Optional[dt.datetime]:
@@ -246,6 +279,7 @@ def _out(
     current_price: Optional[float], window_end: Optional[dt.datetime],
     *, trigger_close: Optional[dt.datetime] = None, prices: Optional[Dict[str, Any]] = None,
     geom: Optional[Dict[str, Any]] = None, age_s: Optional[float] = None,
+    policy: Optional[ActionabilityPolicy] = None,
 ) -> Dict[str, Any]:
     if trigger_close is None:
         trigger_close = _trigger_bar_close(ticket)
@@ -256,19 +290,20 @@ def _out(
     if age_s is None and trigger_close is not None:
         age_s = (now - trigger_close).total_seconds()
     tf = TRIGGER_TF.get(ticket.get("strategy_id", ""))
-    return {
+    fresh_pass = (decision == WATCH_READY or (
+        age_s is not None and tf is not None and age_s <= (FRESHNESS_BARS * tf).total_seconds()
+    ))
+    out = {
         "actionability_decision": decision,
         "actionability_reason": reason,
         "actionability_version": ACTIONABILITY_VERSION,
-        "policy_version": "OWNER_FRESHNESS_2xBAR;MIN_REMAINING_R_1.0",
+        "policy_version": "OWNER_FRESHNESS_2xBAR",
         "evaluated_at": now.isoformat(),
         "trigger_bar_close_utc": trigger_close.isoformat() if trigger_close else None,
         "send_timestamp_utc": now.isoformat(),
         "freshness_age_s": round(max(0.0, age_s), 1) if age_s is not None else None,
         "freshness_limit_s": int((FRESHNESS_BARS * tf).total_seconds()) if tf else None,
-        "freshness_status": "PASS" if (decision == WATCH_READY or (
-            age_s is not None and tf is not None and age_s <= (FRESHNESS_BARS * tf).total_seconds()
-        )) else "FAIL",
+        "freshness_status": "PASS" if fresh_pass else "FAIL",
         "current_price": current_price,
         "entry_reference_price": prices["entry"],
         "reference_price": prices["entry"],
@@ -280,6 +315,30 @@ def _out(
         "valid_at_trigger": _valid_at_trigger(ticket),
         "actionability_at_send": decision,
     }
+    # Attach policy identity fields (always present, null when unresolved).
+    if policy is not None:
+        out.update({
+            "actionability_policy_id": policy.policy_id,
+            "actionability_policy_version": policy.version,
+            "min_remaining_r": policy.min_remaining_r if policy.usable else None,
+            "policy_source_identity": policy.source_path,
+            "policy_status": policy.status,
+            "policy_reason": policy.reason,
+            "policy_signed_by": policy.signed_by,
+            "policy_signed_at": policy.signed_at,
+        })
+    else:
+        out.update({
+            "actionability_policy_id": None,
+            "actionability_policy_version": None,
+            "min_remaining_r": None,
+            "policy_source_identity": None,
+            "policy_status": POLICY_MISSING,
+            "policy_reason": None,
+            "policy_signed_by": None,
+            "policy_signed_at": None,
+        })
+    return out
 
 
 def _valid_at_trigger(ticket: Dict[str, Any]) -> bool:

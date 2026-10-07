@@ -27,6 +27,7 @@ from v1_tickets.canonical_ticket import append_archive, build_canonical_ticket
 from v1_tickets.actionability import (
     BLOCKED, EXPIRED, INSUFFICIENT_DATA, NO_TRADE, OUT_OF_SESSION, WATCH_READY,
 )
+from v1_tickets.policy_loader import ActionabilityPolicy, load_policy
 
 STRATEGY_PATH = v1_fx.STRATEGY_PATH
 
@@ -80,6 +81,7 @@ def evaluate_fx_pair(
     candle_provider: CandleProvider,
     archive_root: str,
     data_source: str = "MT5_VT_MARKETS_DEMO",
+    policy=None,
 ) -> EvalResult:
     """Evaluate one FX (symbol, cycle) deterministically. On missing data returns a
     BLOCKED/INSUFFICIENT_DATA record rather than raising."""
@@ -95,7 +97,7 @@ def evaluate_fx_pair(
             detail=str(exc)[:300], decision="DATA_ERROR", data_source=data_source,
         )
         return _finalize(ticket, now=now, current_price=None, window_end=trade_end,
-                         archive_root=archive_root, venue=data_source, exc=exc)
+                         archive_root=archive_root, venue=data_source, policy=policy, exc=exc)
 
     if bundle is None:
         # No data available but we still produce a deterministic archived decision.
@@ -105,7 +107,7 @@ def evaluate_fx_pair(
             data_source=data_source,
         )
         return _finalize(ticket, now=now, current_price=None, window_end=trade_end,
-                         archive_root=archive_root, venue=data_source)
+                         archive_root=archive_root, venue=data_source, policy=policy)
 
     ticket = v1_fx.build_fx_ticket(
         symbol, cycle, day, list(bundle.session_candles), bundle.expected_bar_count,
@@ -113,7 +115,7 @@ def evaluate_fx_pair(
         evaluated_at=now, data_close=bundle.data_close, spread=bundle.spread,
     )
     return _finalize(ticket, now=now, current_price=bundle.current_price,
-                     window_end=trade_end, archive_root=archive_root, venue=data_source)
+                     window_end=trade_end, archive_root=archive_root, venue=data_source, policy=policy)
 
 
 def evaluate_crypto_symbol(
@@ -125,6 +127,7 @@ def evaluate_crypto_symbol(
     state_dir: str,
     archive_root: str,
     config_path: Optional[str] = None,
+    policy: Optional[ActionabilityPolicy] = None,
 ) -> EvalResult:
     """Evaluate one crypto symbol deterministically.  feed_provider must return a
     FallbackPublicCryptoFeed-compatible feed (or None, which yields a BLOCKED record)."""
@@ -159,7 +162,7 @@ def evaluate_crypto_symbol(
             ticket["window_status"] = w
             ticket["reason_codes"] = ["OUTSIDE_CONFIG_WINDOW"]
         return _finalize(ticket, now=now, current_price=None, window_end=None,
-                         archive_root=archive_root, venue=ticket["data_source"])
+                         archive_root=archive_root, venue=ticket["data_source"], policy=policy)
     try:
         ticket = v1_crypto.build_crypto_ticket(symbol, day, now, feed=feed, state_dir=state_dir, config=cfg)
     except Exception as exc:  # noqa: BLE001
@@ -177,10 +180,10 @@ def evaluate_crypto_symbol(
         current = float(last.close)
     venue = ticket.get("data_source") or "CRYPTO_PERP"
     return _finalize(ticket, now=now, current_price=current, window_end=None,
-                     archive_root=archive_root, venue=venue)
+                     archive_root=archive_root, venue=venue, policy=policy)
 
 
-def _eval_crypto_with_error(symbol, *, now, day, state_dir, archive_root, cfg, exc):
+def _eval_crypto_with_error(symbol, *, now, day, state_dir, archive_root, cfg, exc, policy=None):
     ticket = {
         "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
         "strategy_id": v1_crypto.daily_report.STRATEGY_ID,
@@ -196,14 +199,14 @@ def _eval_crypto_with_error(symbol, *, now, day, state_dir, archive_root, cfg, e
     if cfg is not None:
         ticket["ticket_config"] = f"{cfg['config_id']}@v{cfg['version']}"
     return _finalize(ticket, now=now, current_price=None, window_end=None,
-                     archive_root=archive_root, venue="NONE")
+                     archive_root=archive_root, venue="NONE", policy=policy)
 
 
 def _finalize(ticket: Dict[str, Any], *, now: dt.datetime, current_price: Optional[float],
               window_end: Optional[dt.datetime], archive_root: str, venue: str,
-              exc: Optional[BaseException] = None) -> EvalResult:
+              policy=None, exc: Optional[BaseException] = None) -> EvalResult:
     canonical = build_canonical_ticket(ticket, now=now, current_price=current_price,
-                                       window_end=window_end)
+                                       window_end=window_end, policy=policy)
     from v1_tickets.canonical_ticket import render_canonical
     text = render_canonical(canonical)
     sym = canonical["instrument"]
@@ -226,15 +229,25 @@ def run_daily_evaluation(
     state_dir: str = os.path.join("artifacts", "crypto_state"),
     include_crypto: bool = True,
     fx_data_source: str = "MT5_VT_MARKETS_DEMO",
+    policy: Optional[ActionabilityPolicy] = None,
+    policy_root: str = ".",
+    policy_override_path: Optional[str] = None,
+    policy_override_dict: Optional[Dict] = None,
 ) -> List[EvalResult]:
     """Run every required (instrument, session) pair deterministically.
 
     Always returns one EvalResult per configured pair; never raises data errors to the
     caller (they become INSUFFICIENT_DATA records).  This guarantees NO SILENT SESSION.
+
+    Policy is loaded once and threaded to every pair; DI via `policy` (preloaded
+    ActionabilityPolicy) or override path/dict is supported for tests.
     """
     now = now or dt.datetime.now(dt.timezone.utc)
     now = now if now.tzinfo else now.replace(tzinfo=dt.timezone.utc)
     day = day or now.date()
+    if policy is None:
+        policy = load_policy(policy_root, override_path=policy_override_path,
+                             override_dict=policy_override_dict)
     results: List[EvalResult] = []
     provider = candle_provider or _null_candle_provider
     for sym, cyc in FX_PAIRS:
@@ -242,26 +255,28 @@ def run_daily_evaluation(
             results.append(evaluate_fx_pair(sym, cyc, now=now, day=day,
                                             candle_provider=provider,
                                             archive_root=archive_root,
-                                            data_source=fx_data_source))
+                                            data_source=fx_data_source,
+                                            policy=policy))
         except Exception as exc:  # noqa: BLE001 — emergency fail-closed: still produce a record
             ticket = v1_fx.build_fx_error_ticket(
                 sym, cyc, day, evaluated_at=now, reason_code="EVALUATION_EXCEPTION",
                 detail=f"{type(exc).__name__}: {exc!s}"[:300], decision="DATA_ERROR",
                 data_source=fx_data_source)
             results.append(_finalize(ticket, now=now, current_price=None, window_end=None,
-                                     archive_root=archive_root, venue=fx_data_source, exc=exc))
+                                     archive_root=archive_root, venue=fx_data_source,
+                                     policy=policy, exc=exc))
     if include_crypto:
         for sym in CRYPTO_SYMBOLS:
             try:
                 results.append(evaluate_crypto_symbol(
                     sym, now=now, day=day, feed_provider=crypto_feed_provider,
                     state_dir=state_dir, archive_root=archive_root,
-                    config_path=v1_crypto.ACTIVE_CONFIG,
+                    config_path=v1_crypto.ACTIVE_CONFIG, policy=policy,
                 ))
             except Exception as exc:  # noqa: BLE001
                 results.append(_eval_crypto_with_error(
                     sym, now=now, day=day, state_dir=state_dir, archive_root=archive_root,
-                    cfg=None, exc=exc))
+                    cfg=None, exc=exc, policy=policy))
     return results
 
 

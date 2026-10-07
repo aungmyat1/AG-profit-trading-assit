@@ -66,6 +66,7 @@ def main(argv=None) -> int:
     results = run_daily_evaluation(
         now=now, day=day, archive_root=args.archive_root,
         include_crypto=not args.no_crypto,
+        policy_root=_REPO,
     )
     summary = [{
         "instrument": r.instrument, "session": r.session, "venue": r.venue,

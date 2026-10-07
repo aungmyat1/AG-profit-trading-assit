@@ -1,0 +1,20 @@
+# Actionability policy (Phase D — AG_OBJECTIVE_FAST_TRACK_R1 / PR #55).
+#
+# This file is the MECHANISM DEFAULT for repository parity and test portability.
+# It does NOT choose a production threshold. `signed_by: null` means no owner has
+# signed this value; the actionability loader will treat this as MISSING and every
+# evaluation will end in INFO_ONLY_POLICY_UNRESOLVED (never WATCH_READY) until a
+# host-local, owner-signed override is placed at config/local/actionability_policy.yaml
+# (gitignored) with the same schema and a non-null signed_by.
+#
+# Schema fields:
+#   policy_id     fixed identifier LSMC_ACTIONABILITY_POLICY_V1
+#   version       positive integer, bump on any policy value change
+#   min_remaining_r  minimum R-multiple remaining to TP1 required for WATCH_READY
+#   signed_by     owner identifier who signed this policy; null = unsigned
+#   signed_at     ISO-8601 date/time of signing; null = unsigned
+policy_id: LSMC_ACTIONABILITY_POLICY_V1
+version: 1
+min_remaining_r: null
+signed_by: null
+signed_at: null
