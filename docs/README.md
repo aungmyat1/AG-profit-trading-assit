@@ -47,6 +47,8 @@ records the V1 cloud implementation status (tickets, Large-SMC 1.1.0 watch, per-
 paths and host-only remaining work).
 The [host audit 2 fixes](status/AG_V1_HOST_AUDIT2_FIXES_2026-09-30.md) record the MT5 server-time
 verdict, crypto reason codes, -VIP resolution, STALE/spread gates and SIMULATED UI labels.
+The [first natural READY evidence and audit follow-up](status/AG_V1_FIRST_NATURAL_READY_EVIDENCE_2026-10-07.md)
+records the 2026-10-07 READY tickets, FX/Large-SMC reconciliation and overnight power facts.
 
 The [repository structure audit](REPO_STRUCTURE_AUDIT.md) records the current layout,
 safe cache cleanup, and the recommended archival policy for historical documents and
