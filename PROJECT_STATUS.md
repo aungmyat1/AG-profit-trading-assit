@@ -4,6 +4,22 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## MT5 provider/evaluator integration R1 — offline verified (2026-10-07)
+
+`v1_tickets.mt5_provider.MT5CandleProvider` now implements the existing FX
+`CandleProvider` boundary using the accepted read-only adapter. M15 reference and
+completed trade-window bars are required; D1/H1 are optional context. Missing bars
+or invalid quotes fail closed. All eight instrument/session outcomes, unresolved
+policy, signed TEST policy, provenance, deterministic identity and execution
+firewall are fixture-tested (**24 focused tests; 38 existing regression tests**).
+The shared import-boundary regression run passed **1120 tests, 2 skipped** before
+the final two focused direction-only provenance cases were added.
+The Windows handoff is `scripts/host/live_eval_smoke.py`; **live evaluator is NOT
+YET HOST ACCEPTED**. The MT5 adapter was live-host accepted independently per the
+mission evidence. Economic edge and demo/live execution authority are unchanged;
+this path keeps both execution flags disabled. Evidence:
+[R1 offline integration](docs/status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md).
+
 ## SESSION_TRADE_V1 ticket authority — fail closed on demo/live flags (2026-10-06)
 
 `SESSION_TRADE_V1` is `ticket_authority: MANUAL_ONLY`, `demo_order_authority: NONE`, with
