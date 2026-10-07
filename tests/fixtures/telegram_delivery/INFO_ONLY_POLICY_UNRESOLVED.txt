@@ -1,0 +1,16 @@
+Ticket: fixture-INFO_ONLY_POLICY_UNRESOLVED
+EURUSD | INFO_ONLY_POLICY_UNRESOLVED | LONG
+Session: 2026-10-08 / ASIAN_LONDON
+Reason: fixture_reason_INFO_ONLY_POLICY_UNRESOLVED
+Levels (supplied prices only):
+TP2   +---------------- 1.10500
+TP1   +---------------- 1.10300
+NOW   +---------------- 1.10010
+ENTRY +---------------- 1.10000
+SL    +---------------- 1.09900
+Remaining R TP1: 2.6
+Remaining R TP2: 4.4
+Logic: LOGIC_VERIFIED
+Edge: NOT VERIFIED (NOT_EVALUATED)
+Actionability: INFO_ONLY_POLICY_UNRESOLVED / fixture_reason_INFO_ONLY_POLICY_UNRESOLVED
+EXECUTION: DISABLED

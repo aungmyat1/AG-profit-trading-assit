@@ -1,5 +1,9 @@
 # AG Profit Trading
 
+Standalone canonical-ticket Telegram delivery is offline tested and disabled by
+default (`TELEGRAM_DELIVERY_ENABLED=false`). See [configuration, schema gaps and
+limits](docs/status/AGP_TG_01_OFFLINE_2026-10-08.md); no live delivery is validated.
+
 AG Profit Trading is a deterministic FX and crypto trading assistant designed to
 produce four complementary decision products:
 
@@ -220,12 +224,6 @@ incremental funnel-status and external confirmation-alert service.
   live operational snapshot; dated totals elsewhere are milestone evidence.
 
 ## Quick start
-
-The read-only MT5 provider/evaluator bridge is offline verified. On the Windows
-Demo host, `python scripts/host/live_eval_smoke.py` evaluates all eight FX
-instrument/session pairs and writes sanitized acceptance evidence. It has not
-yet been host accepted; it grants no demo/live execution authority. See
-[R1 integration evidence](docs/status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md).
 
 Requirements: Python 3.10 or newer and, for live market-data checks, a running and
 logged-in MetaTrader 5 terminal.
