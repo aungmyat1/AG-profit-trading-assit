@@ -127,3 +127,32 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "live_mt5" in item.keywords:
             item.add_marker(skip_live)
+
+
+# --- D6 READY authority (owner decision 2026-10-07) -------------------------------------------
+# Production config/v1_tickets/ready_authority.yaml sets ST_ASIAN_SWEEP_5R_V1 READY authority OFF.
+# Tests written before D6 exercise the engine/gate READY logic, so they run with the switch ON
+# (pre-D6 behaviour, assertions unchanged). Tests that request `production_ready_authority` use
+# the real production file and prove that no READY is emitted.
+@pytest.fixture(scope="session")
+def _ready_authority_on_file(tmp_path_factory):
+    path = tmp_path_factory.mktemp("ready_authority") / "ready_authority.yaml"
+    path.write_text("strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    ready: 'ON'\n", encoding="utf-8")
+    return str(path)
+
+
+@pytest.fixture(autouse=True)
+def _pre_d6_ready_authority_on(request, monkeypatch, _ready_authority_on_file):
+    if "production_ready_authority" in request.fixturenames:
+        return
+    try:
+        import v1_tickets.ready_authority as ready_authority
+    except Exception:  # noqa: BLE001 -- package not importable in this test: nothing to switch
+        return
+    monkeypatch.setattr(ready_authority, "CONFIG_PATH", _ready_authority_on_file)
+
+
+@pytest.fixture
+def production_ready_authority():
+    import v1_tickets.ready_authority as ready_authority
+    return ready_authority.CONFIG_PATH
