@@ -60,13 +60,16 @@ Telegram clients may display plain text with proportional fonts.
 SQLite commits a pending claim before network, then marks acknowledged sends sent.
 HTTP 429/500/502/503/504 retry at 1s/2s (default three attempts).
 Ambiguous failures (timeout after the send attempt, crash-equivalent transport errors)
-persist state DELIVERY_UNCERTAIN while keeping the dedupe claim: restart does not
-auto-resend. The next session summary lists uncertain identities. Owner-only CLI
+persist state DELIVERY_UNCERTAIN plus the exception *class name* (never the message)
+while keeping the dedupe claim: restart does not auto-resend. The next session
+summary lists uncertain identities. Owner-only CLI
 `python -m telegram_delivery.adapter resend --ticket-id X --force --store PATH
---ticket-file FILE --actor WHO` may deliver once; actor and timestamp are logged.
-Token values are never logged or rendered. Exhausted explicit HTTP retries remain
-failed without auto-resend. Telegram sendMessage has no server idempotency key.
-No exception text/token URL is logged. Transport is injectable for offline tests.
+--ticket-file FILE --actor WHO` is allowed only when state is DELIVERY_UNCERTAIN.
+`--actor` is an audit label, not authentication. A DELIVERED row is refused unless
+`--allow-duplicate` is also given; refusals are logged. Token values are never
+logged or rendered. Exhausted explicit HTTP retries remain failed without auto-resend.
+Telegram sendMessage has no server idempotency key. No exception text/token URL is
+logged. Transport is injectable for offline tests.
 
 Dependency: plain HTTPS Telegram Bot API via Python standard library urllib/json/
 sqlite3; no third-party delivery dependency. Verified interpreter CPython 3.12.14,
@@ -78,8 +81,10 @@ verification runtime is pinned in `tests/fixtures/telegram_delivery/python-versi
 
 `.venv/bin/python -m pytest -q tests/test_telegram_delivery_adapter.py tests/test_actionability_and_canonical_ticket.py tests/test_ticket_delivery_execution_boundary.py`
 
-64 adapter+regression tests targeted (41 adapter including UNCERTAIN/force-resend,
-23 existing canonical/boundary). Golden files cover all ten decisions plus complete summary.
+65 focused tests: 42 adapter (UNCERTAIN class-name, force vs DELIVERED refuse,
+`--allow-duplicate`) plus 23 existing canonical/boundary. Full default suite
+1162 passed, 4 skipped (live_mt5/slow deselected). Golden files cover all ten
+decisions plus complete summary.
 Golden files cover all ten decisions plus complete summary. Transport tests are fakes;
 no Telegram, broker or market-data network request occurred. The full regression
 baseline was not changed or claimed. No live authorization granted.

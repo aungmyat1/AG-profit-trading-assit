@@ -2,7 +2,7 @@
 
 ## AGP-TG-01 — offline Telegram adapter (2026-10-08)
 
-Standalone canonical renderer/sender is UNIT_TESTED: 41 adapter tests plus
+Standalone canonical renderer/sender is UNIT_TESTED: 42 adapter tests plus
 canonical/boundary regressions. Ambiguous sends persist DELIVERY_UNCERTAIN.
 Delivery defaults disabled, credentials and owner allowlist fail closed; SQLite
 dedupe survives restart. No scheduler wiring or live Telegram validation.

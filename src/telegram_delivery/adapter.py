@@ -22,7 +22,9 @@ STATUSES = frozenset({"WATCH_READY", "INFO_ONLY_STALE", "INFO_ONLY_INSUFFICIENT_
                       "BLOCKED", "INSUFFICIENT_DATA", "OUT_OF_SESSION"})
 STATE_PENDING = "pending"
 STATE_SENT = "sent"
+STATE_DELIVERED = "DELIVERED"
 STATE_UNCERTAIN = "DELIVERY_UNCERTAIN"
+DELIVERED_STATES = frozenset({STATE_SENT, STATE_DELIVERED})
 
 
 def value(ticket, *path):
@@ -131,7 +133,15 @@ class Sender:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         db = sqlite3.connect(self.path, timeout=15)
         db.execute("CREATE TABLE IF NOT EXISTS sent (kind TEXT, identity TEXT, status TEXT, "
-                   "state TEXT, actor TEXT, updated_at TEXT, PRIMARY KEY(kind, identity, status))")
+                   "state TEXT, actor TEXT, updated_at TEXT, error_class TEXT, "
+                   "PRIMARY KEY(kind, identity, status))")
+        cols = {row[1] for row in db.execute("PRAGMA table_info(sent)")}
+        if "error_class" not in cols:
+            db.execute("ALTER TABLE sent ADD COLUMN error_class TEXT")
+        if "actor" not in cols:
+            db.execute("ALTER TABLE sent ADD COLUMN actor TEXT")
+        if "updated_at" not in cols:
+            db.execute("ALTER TABLE sent ADD COLUMN updated_at TEXT")
         return db
 
     def list_uncertain(self):
@@ -139,12 +149,12 @@ class Sender:
             return []
         with sqlite3.connect(self.path, timeout=15) as db:
             rows = db.execute(
-                "SELECT kind, identity, status FROM sent WHERE state=?",
+                "SELECT kind, identity, status, error_class FROM sent WHERE state=?",
                 (STATE_UNCERTAIN,),
             ).fetchall()
-        return [{"kind": k, "identity": i, "status": s} for k, i, s in rows]
+        return [{"kind": k, "identity": i, "status": s, "error_class": e} for k, i, s, e in rows]
 
-    def _send(self, kind, identity, status, message, *, force=False, actor=""):
+    def _send(self, kind, identity, status, message, *, force=False, actor="", allow_duplicate=False):
         cfg = self.config
         if not cfg.enabled:
             LOG.info("Telegram delivery disabled")
@@ -165,21 +175,35 @@ class Sender:
                     if force and row[0] == STATE_UNCERTAIN:
                         LOG.info("Owner force resend actor=%s when=%s identity=%s",
                                  actor or "unspecified", _utc_now(), identity)
+                    elif force and row[0] in DELIVERED_STATES and allow_duplicate:
+                        LOG.info("Owner allow-duplicate resend actor=%s when=%s identity=%s",
+                                 actor or "unspecified", _utc_now(), identity)
+                    elif force:
+                        LOG.error("Force resend refused: state=%s identity=%s actor=%s when=%s",
+                                  row[0], identity, actor or "unspecified", _utc_now())
+                        return "refused"
                     else:
                         LOG.info("Telegram dedupe: %s", row[0])
                         return "duplicate"
                 else:
+                    if force:
+                        LOG.error("Force resend refused: no UNCERTAIN claim identity=%s actor=%s",
+                                  identity, actor or "unspecified")
+                        return "refused"
                     # Durable claim before network: a crash/ambiguous timeout cannot resend on restart.
-                    db.execute("INSERT INTO sent VALUES (?, ?, ?, ?, ?, ?)",
-                               (kind, identity, status, STATE_PENDING, actor, _utc_now()))
+                    db.execute(
+                        "INSERT INTO sent (kind, identity, status, state, actor, updated_at, error_class) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (kind, identity, status, STATE_PENDING, actor, _utc_now(), None),
+                    )
                     db.commit()
                     db.execute("BEGIN IMMEDIATE")
                 for attempt in range(self.attempts):
                     try:
                         self.transport(cfg.token, cfg.chat_id, message)
-                        db.execute("UPDATE sent SET state=?, actor=?, updated_at=? "
+                        db.execute("UPDATE sent SET state=?, actor=?, updated_at=?, error_class=? "
                                    "WHERE kind=? AND identity=? AND status=?",
-                                   (STATE_SENT, actor, _utc_now(), kind, identity, status))
+                                   (STATE_DELIVERED, actor, _utc_now(), None, kind, identity, status))
                         db.commit()
                         return "sent"
                     except urllib.error.HTTPError as error:
@@ -188,12 +212,13 @@ class Sender:
                         if error.code not in (429, 500, 502, 503, 504) or attempt + 1 == self.attempts:
                             break
                         self.sleep(2 ** attempt)
-                    except Exception:
-                        # Never log exception text: transport errors can contain the token URL.
+                    except Exception as error:
+                        # Persist class name only — never the message (may contain token URL).
                         LOG.error("Telegram delivery ambiguous; automatic resend suppressed")
-                        db.execute("UPDATE sent SET state=?, actor=?, updated_at=? "
+                        db.execute("UPDATE sent SET state=?, actor=?, updated_at=?, error_class=? "
                                    "WHERE kind=? AND identity=? AND status=?",
-                                   (STATE_UNCERTAIN, actor, _utc_now(), kind, identity, status))
+                                   (STATE_UNCERTAIN, actor, _utc_now(), type(error).__name__,
+                                    kind, identity, status))
                         db.commit()
                         return "uncertain"
                 return "failed"
@@ -217,20 +242,21 @@ class Sender:
         identity = json.dumps([tickets[0]["session_date"], tickets[0]["session"]], separators=(",", ":"))
         return self._send("session", identity, "", message)
 
-    def resend_ticket(self, ticket, *, force, actor):
+    def resend_ticket(self, ticket, *, force, actor, allow_duplicate=False):
         if not force:
             raise ValueError("owner-invoked --force required")
         if not actor or not str(actor).strip():
-            raise ValueError("owner actor required")
+            raise ValueError("owner actor is an audit label and is required")
         cfg = self.config
         if not cfg.enabled or cfg.chat_id not in cfg.owner_chat_ids:
             LOG.error("Telegram force resend refused: not owner-invoked")
             return "blocked"
         validate(ticket)
-        LOG.info("Force resend requested actor=%s when=%s ticket_id=%s",
-                 actor, _utc_now(), ticket["ticket_id"])
+        LOG.info("Force resend requested actor=%s when=%s ticket_id=%s allow_duplicate=%s",
+                 actor, _utc_now(), ticket["ticket_id"], allow_duplicate)
         return self._send("ticket", ticket["ticket_id"], ticket["decision"],
-                          render_ticket(ticket), force=True, actor=actor)
+                          render_ticket(ticket), force=True, actor=actor,
+                          allow_duplicate=allow_duplicate)
 
 
 def main(argv=None):
@@ -241,14 +267,18 @@ def main(argv=None):
     resend.add_argument("--force", action="store_true")
     resend.add_argument("--store", required=True)
     resend.add_argument("--ticket-file", required=True, help="JSON object or array containing the ticket")
-    resend.add_argument("--actor", default=os.getenv("USER", "owner"))
+    resend.add_argument("--actor", default=os.getenv("USER", "owner"),
+                        help="Audit label only; not authentication")
+    resend.add_argument("--allow-duplicate", action="store_true",
+                        help="Permit force resend when state is already DELIVERED")
     args = parser.parse_args(argv)
     payload = json.loads(Path(args.ticket_file).read_text())
     tickets = payload if isinstance(payload, list) else [payload]
     ticket = next((t for t in tickets if t.get("ticket_id") == args.ticket_id), None)
     if ticket is None:
         raise SystemExit("ticket-id not found")
-    result = Sender(args.store).resend_ticket(ticket, force=args.force, actor=args.actor)
+    result = Sender(args.store).resend_ticket(
+        ticket, force=args.force, actor=args.actor, allow_duplicate=args.allow_duplicate)
     print(result)
     return result
 

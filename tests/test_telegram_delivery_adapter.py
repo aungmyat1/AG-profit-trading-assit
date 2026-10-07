@@ -104,7 +104,9 @@ def test_timeout_after_send_uncertain_listed_no_autoresend_force_once(tmp_path, 
     path = tmp_path / 'dedupe.sqlite'
     sender = Sender(path, config(), transport)
     assert sender.send_ticket(watch()) == 'uncertain'
-    assert sender.list_uncertain()[0]['identity'] == watch()['ticket_id']
+    row = sender.list_uncertain()[0]
+    assert row['identity'] == watch()['ticket_id']
+    assert row['error_class'] == 'TimeoutError'
     assert sender.send_ticket(watch()) == 'duplicate'
     summary = render_summary([watch()], uncertain=sender.list_uncertain())
     assert 'DELIVERY_UNCERTAIN' in summary and watch()['ticket_id'] in summary
@@ -114,11 +116,32 @@ def test_timeout_after_send_uncertain_listed_no_autoresend_force_once(tmp_path, 
     assert Sender(path, config(), transport).resend_ticket(
         watch(), force=True, actor='owner-cli') == 'sent'
     assert Sender(path, config(), transport).resend_ticket(
-        watch(), force=True, actor='owner-cli') == 'duplicate'
-    assert len(calls) == 3
+        watch(), force=True, actor='owner-cli') == 'refused'
+    assert 'Force resend refused' in caplog.text
+    assert Sender(path, config(), transport).resend_ticket(
+        watch(), force=True, actor='owner-cli', allow_duplicate=True) == 'sent'
+    assert len(calls) == 4
     assert 'Force resend' in caplog.text and 'owner-cli' in caplog.text
     assert 'secret-token-url' not in caplog.text
     assert sender.list_uncertain() == []
+
+
+def test_force_resend_uncertain_vs_delivered(tmp_path, caplog):
+    caplog.set_level('INFO')
+    calls = []
+    def transport(*args):
+        calls.append(args)
+        if len(calls) == 1:
+            raise TimeoutError('secret-token-url')
+    path = tmp_path / 'dedupe.sqlite'
+    sender = Sender(path, config(), transport)
+    assert sender.send_ticket(watch()) == 'uncertain'
+    assert sender.resend_ticket(watch(), force=True, actor='owner') == 'sent'
+    assert sender.resend_ticket(watch(), force=True, actor='owner') == 'refused'
+    assert 'refused' in caplog.text
+    assert sender.resend_ticket(watch(), force=True, actor='owner', allow_duplicate=True) == 'sent'
+    assert len(calls) == 3
+    assert 'secret-token-url' not in caplog.text
 
 
 def test_schema_gap_no_calculation():
