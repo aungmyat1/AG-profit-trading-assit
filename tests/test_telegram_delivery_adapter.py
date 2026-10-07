@@ -192,7 +192,9 @@ def test_bot_api_plain_payload(monkeypatch):
     bot_api('fake', '123', render_ticket(watch()))
     request, timeout = captured[0]
     payload = json.loads(request.data)
-    assert set(payload) == {'chat_id', 'text'}
+    assert set(payload) == {'chat_id', 'text', 'parse_mode'}
+    assert payload['parse_mode'] == 'HTML'
+    assert payload['text'].startswith('<pre>') and payload['text'].endswith('</pre>')
     assert payload['chat_id'] == '123' and timeout == 15
     assert request.full_url == 'https://api.telegram.org/botfake/sendMessage'
 
@@ -241,3 +243,91 @@ def test_force_resend_keeps_summary_only(tmp_path, status):
     sender = Sender(tmp_path / 'dedupe.sqlite', config(), lambda *x: calls.append(x))
     assert sender.resend_ticket(ticket, force=True, actor='owner') == 'summary_only'
     assert calls == []
+
+
+def test_html_escape_and_plain_fallback(monkeypatch, caplog):
+    import io
+    from telegram_delivery.adapter import bot_api
+    payloads = []
+    message = '<levels> & raw > price'
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def read(self): return b'{"ok": true}'
+    def transport(request, timeout):
+        payloads.append(json.loads(request.data))
+        if len(payloads) == 1:
+            raise urllib.error.HTTPError('secret-token-url', 400, 'bad HTML', {},
+                io.BytesIO(b'{"description": "Bad Request: can\'t parse entities"}'))
+        return Response()
+    monkeypatch.setattr('urllib.request.urlopen', transport)
+    bot_api('fake', '123', message)
+    assert payloads == [
+        {'chat_id': '123', 'text': '<pre>&lt;levels&gt; &amp; raw &gt; price</pre>', 'parse_mode': 'HTML'},
+        {'chat_id': '123', 'text': message}]
+    assert 'falling back to plain text' in caplog.text
+    assert 'secret-token-url' not in caplog.text
+
+
+@pytest.mark.parametrize('error', [TimeoutError('secret'), ConnectionResetError('secret'),
+                                 urllib.error.URLError(ConnectionResetError('secret'))])
+def test_html_ambiguous_dispatched_consumed_and_next_summary(tmp_path, monkeypatch, error):
+    import sqlite3
+    from telegram_delivery.adapter import bot_api
+    payloads, delays = [], []
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def read(self): return b'{"ok": true}'
+    def transport(request, timeout):
+        payloads.append(json.loads(request.data))  # request dispatched
+        if len(payloads) == 1:
+            raise error
+        return Response()
+    monkeypatch.setattr('urllib.request.urlopen', transport)
+    path = tmp_path / 'dedupe.sqlite'
+    sender = Sender(path, config(), bot_api, delays.append)
+    assert sender.send_ticket(watch()) == 'uncertain'
+    assert len(payloads) == 1 and delays == []  # no HTML fallback or retry
+    with sqlite3.connect(path) as db:
+        assert db.execute('SELECT identity,status,state FROM sent').fetchone() == (
+            watch()['ticket_id'], 'WATCH_READY', 'DELIVERY_UNCERTAIN')
+    restarted = Sender(path, config(), bot_api, delays.append)
+    assert restarted.send_ticket(watch()) == 'duplicate'
+    assert len(payloads) == 1
+    next_session = dict(watch(), session_date='2026-10-09')
+    assert restarted.send_summary([next_session]) == 'sent'
+    assert 'possibly undelivered: ' + watch()['ticket_id'] in payloads[1]['text']
+    assert len(payloads) == 2 and delays == []
+
+
+def test_html_other_rejection_has_no_fallback(monkeypatch):
+    import io
+    from telegram_delivery.adapter import bot_api
+    payloads = []
+    def transport(request, timeout):
+        payloads.append(json.loads(request.data))
+        raise urllib.error.HTTPError('secret', 400, 'bad chat', {},
+                                    io.BytesIO(b'{"description": "Bad Request: chat not found"}'))
+    monkeypatch.setattr('urllib.request.urlopen', transport)
+    with pytest.raises(urllib.error.HTTPError): bot_api('fake', '123', 'text')
+    assert len(payloads) == 1
+
+
+def test_html_json_rejection_fallback(monkeypatch):
+    from telegram_delivery.adapter import bot_api
+    payloads = []
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def read(self):
+            return (b'{"ok": false, "error_code": 400, "description": "cannot parse entities"}'
+                    if len(payloads) == 1 else b'{"ok": true}')
+    def transport(request, timeout):
+        payloads.append(json.loads(request.data))
+        return Response()
+    monkeypatch.setattr('urllib.request.urlopen', transport)
+    bot_api('fake', '123', '&<>')
+    assert len(payloads) == 2
+    assert payloads[0]['text'] == '<pre>&amp;&lt;&gt;</pre>'
+    assert payloads[1] == {'chat_id': '123', 'text': '&<>'}

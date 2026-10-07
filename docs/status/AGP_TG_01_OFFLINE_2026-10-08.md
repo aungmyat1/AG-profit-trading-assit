@@ -55,8 +55,9 @@ those as INFO_ONLY. Every input row and reason appears in a single-session summa
 Summary identity is session_date + session, persisted once, including across restart.
 Caller supplies the complete final session batch; subsequent batches do not replace it.
 Messages above Telegram's 4096 UTF-16 unit limit fail closed without truncation/splitting.
-ASCII ladder is aligned plain text; no Telegram parse_mode or inline buttons are sent.
-Telegram clients may display plain text with proportional fonts.
+Ticket and summary bodies use escaped HTML <pre> with parse_mode=HTML for monospace
+levels. An explicit HTML-format rejection falls back to the original plain text;
+no fallback follows ambiguous failures or unrelated HTTP errors. No inline buttons.
 
 SQLite commits a pending claim before network, then marks acknowledged sends sent.
 HTTP 429/500/502/503/504 retry at 1s/2s (default three attempts).
@@ -112,3 +113,18 @@ slow-marker exclusions remain unchanged. Initial restricted-sandbox run stalled
 in the existing FastAPI/AnyIO local event loop; diagnostic passed with local
 network permission and the complete suite was rerun with that permission.
 The two live-MT5 skips are deferred host checks, not passes.
+
+## HTML and ambiguous delivery — 2026-10-08
+
+Bodies escape &, < and > inside <pre>. HTML parse rejection (HTTP 400 or explicit
+Bot API error) falls back to plain text. Timeout, ConnectionResetError and a
+URLError wrapping reset after request dispatch consume the ticket_id + decision
+claim as DELIVERY_UNCERTAIN, without retry or fallback. Restart returns duplicate;
+the next session summary lists `possibly undelivered: <ticket_id>`. Unit tests
+inspect dispatched HTTP payloads and durable SQLite keys. No live sends.
+Focused canonical/market-data/boundary suite: 141 passed (53 adapter tests).
+
+Final full default suite: `python -m pytest -q` — 1197 passed, 2 live-MT5
+skips, 1 existing Starlette warning, 23.31s. Local network permission permits
+FastAPI/AnyIO test-client sockets; adapter requests are mocked. Strategy, session,
+threshold and authority files are unchanged by this update.

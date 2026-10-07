@@ -5,6 +5,8 @@ No canonical builder import: evaluation, market data and authority stay upstream
 from __future__ import annotations
 
 import argparse
+import html
+import io
 import json
 import logging
 import os
@@ -84,7 +86,7 @@ def render_summary(tickets, uncertain=()):
         for item in uncertain:
             identity = item["identity"] if isinstance(item, dict) else item[0]
             status = item.get("status", "") if isinstance(item, dict) else item[1]
-            lines.append(f"- {identity} | {status} | {STATE_UNCERTAIN}")
+            lines.append(f"- possibly undelivered: {identity} | {status} | {STATE_UNCERTAIN}")
     lines += ["Logic: see each row", "Edge: see each row", "Actionability: see each row",
               "EXECUTION: DISABLED"]
     return "\n".join(lines)
@@ -106,13 +108,43 @@ class Config:
 
 
 def bot_api(token, chat_id, message):
-    body = json.dumps({"chat_id": chat_id, "text": message}).encode()
-    request = urllib.request.Request(f"https://api.telegram.org/bot{token}/sendMessage",
-                                     data=body, headers={"Content-Type": "application/json"}, method="POST")
-    with urllib.request.urlopen(request, timeout=15) as response:
-        result = json.load(response)
-    if result.get("ok") is not True:
-        raise RuntimeError("Telegram rejected message")
+    """Use monospace HTML; fallback only after an explicit HTML-format rejection.
+
+    A timeout/reset may follow acceptance and must propagate to the durable journal.
+    Never try a fallback for ambiguous transport failures or unrelated API errors.
+    """
+    def post(text, parse_mode=None):
+        payload = {"chat_id": chat_id, "text": text}
+        if parse_mode:
+            payload["parse_mode"] = parse_mode
+        request = urllib.request.Request(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            data=json.dumps(payload).encode(),
+            headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(request, timeout=15) as response:
+            result = json.load(response)
+        if result.get("ok") is not True:
+            raise urllib.error.HTTPError("<redacted>", result.get("error_code", 500),
+                                         "Telegram rejected message", {},
+                                         io.BytesIO(json.dumps(result).encode()))
+
+    try:
+        post("<pre>" + html.escape(message, quote=False) + "</pre>", "HTML")
+    except urllib.error.HTTPError as error:
+        # Telegram explicitly rejects malformed/unsupported HTML with HTTP 400.
+        # Do not downgrade authorization, chat, length, rate-limit or server errors.
+        description = ""
+        if error.code == 400 and error.fp is not None:
+            try:
+                description = json.loads(error.read()).get("description", "").lower()
+            except (ValueError, TypeError, AttributeError):
+                pass
+        if error.code != 400 or not any(term in description for term in (
+                "can't parse entities", "cannot parse entities", "unsupported start tag",
+                "parse_mode", "parse mode")):
+            raise
+        LOG.warning("Telegram HTML rejected; falling back to plain text")
+        post(message)
 
 
 def _utc_now():
