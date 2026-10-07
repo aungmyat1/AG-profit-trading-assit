@@ -131,9 +131,19 @@ def pytest_collection_modifyitems(config, items):
 
 # --- D6 READY authority (owner decision 2026-10-07) -------------------------------------------
 # Production config/v1_tickets/ready_authority.yaml sets ST_ASIAN_SWEEP_5R_V1 READY authority OFF.
-# Tests written before D6 exercise the engine/gate READY logic, so they run with the switch ON
-# (pre-D6 behaviour, assertions unchanged). Tests that request `production_ready_authority` use
-# the real production file and prove that no READY is emitted.
+# OPT-IN, by file: only the six test files below were written before D6 and exercise the
+# engine/gate READY logic; they run with the switch ON (pre-D6 behaviour, assertions unchanged).
+# Every other test, including all new tests, sees the real production file (READY OFF).
+PRE_D6_READY_ON_FILES = frozenset({
+    "test_code_identity_provenance.py",
+    "test_host_go_live_kit.py",
+    "test_manual_ticket_build.py",
+    "test_manual_ticket_dst_clock.py",
+    "test_manual_ticket_scan_records.py",
+    "test_v1_tickets.py",
+})
+
+
 @pytest.fixture(scope="session")
 def _ready_authority_on_file(tmp_path_factory):
     path = tmp_path_factory.mktemp("ready_authority") / "ready_authority.yaml"
@@ -142,14 +152,11 @@ def _ready_authority_on_file(tmp_path_factory):
 
 
 @pytest.fixture(autouse=True)
-def _pre_d6_ready_authority_on(request, monkeypatch, _ready_authority_on_file):
-    if "production_ready_authority" in request.fixturenames:
+def _pre_d6_ready_authority_on(request, monkeypatch):
+    if request.node.path.name not in PRE_D6_READY_ON_FILES:
         return
-    try:
-        import v1_tickets.ready_authority as ready_authority
-    except Exception:  # noqa: BLE001 -- package not importable in this test: nothing to switch
-        return
-    monkeypatch.setattr(ready_authority, "CONFIG_PATH", _ready_authority_on_file)
+    import v1_tickets.ready_authority as ready_authority
+    monkeypatch.setattr(ready_authority, "CONFIG_PATH", request.getfixturevalue("_ready_authority_on_file"))
 
 
 @pytest.fixture
