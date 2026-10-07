@@ -200,6 +200,15 @@ def evaluate_actionability(
             return _out(NO_TRADE, reason_code, ticket, now, current_price, window_end, policy=policy)
         return _out(NO_TRADE, reason_code or "NO_TRADE", ticket, now, current_price, window_end,
                     policy=policy)
+    if decision == "STALE" and ticket.get("suppressed_decision") == "NO_TRADE":
+        # No signal exists, so there is no trigger bar.  The engine's NO_TRADE is restored
+        # only once the trade window has closed; while it is open the stale data fails closed.
+        win_end = window_end or _trade_window_end(ticket)
+        if win_end is not None and now >= win_end:
+            return _out(NO_TRADE, ticket.get("engine_reason_code") or "NO_TRADE", ticket, now,
+                        current_price, window_end, policy=policy)
+        return _out(INFO_ONLY_STALE, reason_code or (ticket.get("reason_codes") or ["STALE_DATA"])[0],
+                    ticket, now, current_price, window_end, policy=policy)
 
     # At this point a signal exists (READY or a gate-withheld READY -> STALE / SPREAD_TOO_WIDE).
     trigger_close = _trigger_bar_close(ticket)

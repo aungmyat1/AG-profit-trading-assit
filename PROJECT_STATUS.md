@@ -4,6 +4,25 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Stale-data gate keeps trigger close — TRIGGER_TIMEFRAME_UNKNOWN resolved (2026-10-08)
+
+The seven `INSUFFICIENT_DATA / TRIGGER_TIMEFRAME_UNKNOWN` records in the R2 smoke were not
+a timeframe lookup failure. The stale-data gate withheld READY/NO_TRADE tickets as
+`STALE / STALE_DATA` before attaching the already-computed `signal_close_utc`, so TREND
+signals (no `signal_timestamp`) and engine NO_TRADE tickets had no trigger close.
+`guards.gate_ready` now keeps `signal_close_utc` on stale-withheld READY tickets, and
+`actionability` restores a stale engine `NO_TRADE` only once the trade window has closed.
+While the window is open, both stay fail-closed as `INFO_ONLY_STALE / STALE_DATA`. They are never
+`WATCH_READY`. An unknown strategy timeframe still yields `TRIGGER_TIMEFRAME_UNKNOWN`.
+Stale-data READY tickets now carry `signal_close_utc`, so outcome grading treats
+them the same as stale-signal tickets. A frozen replay of the 2026-10-07T17:56Z eight-
+evaluation run, reconstructed from the archived journal, gives `EXPIRED=6, NO_TRADE=2`
+(unfixed main reproduces the recorded `TTU=7, EXPIRED=1`). Both windows were closed, so this
+does not exercise live opportunity generation. Strategy rules, sessions, thresholds and
+execution authority are unchanged. Tests: `tests/test_stale_gate_trigger_close.py`
+**18 passed**; focused market-data/canonical suite **66 passed** (Windows host, Python 3.14).
+An open-window live evaluator run has not been done yet.
+
 ## MT5 market-data contract R2 — Demo data verified (2026-10-08)
 
 The real VT Markets Demo read-only market-data path now normalizes broker quote
