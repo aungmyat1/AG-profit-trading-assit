@@ -16,7 +16,7 @@ import os
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from v1_tickets.guards import SIGNAL_STALE  # noqa: F401  (canonical; re-exported for readers)
+from v1_tickets.guards import PENDING_BAR_CLOSE, SIGNAL_STALE  # noqa: F401  (canonical; re-exported for readers)
 
 NO_SETUP, WATCH, OPPORTUNITY, TICKET_BLOCKED, TICKET_READY = (
     "NO_SETUP", "WATCH", "OPPORTUNITY", "TICKET_BLOCKED", "TICKET_READY")
@@ -70,6 +70,8 @@ def classify_fx_ticket(ticket: Dict[str, Any], *, now: dt.datetime, window_end: 
     if ticket.get("suppressed_decision") == "READY" or decision == "READY":
         if decision == "READY":
             return TICKET_READY, "TICKET", None
+        if decision == PENDING_BAR_CLOSE:          # D4: not stale; re-evaluated once the bar closes
+            return WATCH, "TICKET", f"{PENDING_BAR_CLOSE}:{reason}"
         # Canonical stale/expiry semantics: a signal that aged out before any actionable ticket
         # existed is SIGNAL_STALE (legacy reason code STALE_SIGNAL stays on the legacy ticket);
         # TICKET_EXPIRED is reserved for an already-actionable ticket past valid_until.

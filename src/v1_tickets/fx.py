@@ -23,7 +23,7 @@ from typing import Any, Dict, Optional, Sequence
 from host_evidence.symbol_metadata import HOST_CAPTURED, METADATA_MISSING, HostDataError, load_record
 from strategy_engine import evaluate, load_strategy
 from strategy_engine.session import Candle
-from v1_tickets.guards import gate_ready
+from v1_tickets.guards import PENDING_BAR_CLOSE, gate_ready
 from ticket_delivery.archive import (
     CYCLE_STATE_BLOCKED, CYCLE_STATE_DATA_ERROR, CYCLE_STATE_NO_TRADE, CYCLE_STATE_READY,
     CycleDecisionRecord, archive_cycle_decision,
@@ -160,16 +160,19 @@ def build_fx_ticket(
         })
     # entry_2/entry_3 stamp the qualifying M15 bar's open; entry_1 (box-based) has none -> first trade-session bar.
     signal_open = sig.signal_timestamp or (post_session_candles[0].time if post_session_candles else None)
+    # D4: entry_1 with no closed trade-session bar yet -> PENDING_BAR_CLOSE until that bar closes.
+    trade_start = session_windows_utc(session_date)[cycle]["trade"][0]
+    pending = trade_start + M15 if sig.signal_timestamp is None and not post_session_candles else None
     return gate_ready(ticket, now=evaluated_at, data_close=data_close,
                       signal_close=signal_open + M15 if signal_open is not None else None,
-                      spread=spread, risk=sig.risk_distance)
+                      spread=spread, risk=sig.risk_distance, pending_bar_close=pending)
 
 
 _STATE = {"READY": CYCLE_STATE_READY, "NO_TRADE": CYCLE_STATE_NO_TRADE, "DATA_ERROR": CYCLE_STATE_DATA_ERROR,
           "BLOCKED": CYCLE_STATE_BLOCKED,
           # Gate-withheld decisions archive as NO_TRADE; the payload/reason code keeps the specific state.
           "STALE": CYCLE_STATE_NO_TRADE, "SPREAD_TOO_WIDE": CYCLE_STATE_NO_TRADE,
-          REFERENCE_NOT_READY: CYCLE_STATE_NO_TRADE}
+          REFERENCE_NOT_READY: CYCLE_STATE_NO_TRADE, PENDING_BAR_CLOSE: CYCLE_STATE_NO_TRADE}
 
 
 def archive_fx_ticket(ticket: Dict[str, Any], root: str) -> str:

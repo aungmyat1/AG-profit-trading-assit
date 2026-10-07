@@ -36,6 +36,7 @@ import hashlib
 import json
 import os
 import sys
+import time
 from typing import Callable, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -58,7 +59,8 @@ if __name__ == "__main__":   # bound the whole process, including the heavy impo
     start_run_watchdog(f"ag_v1_{_argv_mode(sys.argv[1:])}")
 
 from host_delivery import telegram_message as tg  # noqa: E402
-from host_delivery.lsmc_alert_dedup import AlertLedger, deliver_once  # noqa: E402
+from host_delivery import lsmc_actionability as act  # noqa: E402
+from host_delivery.lsmc_alert_dedup import AlertLedger, confirmation_key, deliver_once  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
@@ -433,12 +435,17 @@ def lsmc_weekend_open(now: dt.datetime) -> bool:
     return u.isoweekday() in LSMC_WEEKEND_DAYS and LSMC_WEEKEND_UTC[0] <= u.time() < LSMC_WEEKEND_UTC[1]
 
 
+POLICY_ROOT = REPO_ROOT          # code-shipped operational policy (not the host-local override root)
+ACTIONABILITY_DIR = "actionability"
+
+
 def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, notify: bool = True,
-             fx: bool = True, window: Optional[str] = None) -> List[str]:
-    tracker = WatchTracker(os.path.join(journal, "large_smc_watch", "state.json"),
-                           os.path.join(journal, "ticket_delivery", "archive"))
-    ledger = AlertLedger(os.path.join(journal, "large_smc_watch", "delivered_confirmations.json"))
-    lines = []
+             fx: bool = True, window: Optional[str] = None, quote: Optional[Quote] = None) -> List[str]:
+    lsmc_dir = os.path.join(journal, "large_smc_watch")
+    tracker = WatchTracker(os.path.join(lsmc_dir, "state.json"), os.path.join(journal, "ticket_delivery", "archive"))
+    ledger = AlertLedger(os.path.join(lsmc_dir, "delivered_confirmations.json"))
+    lines: List[str] = []
+    gate = _actionability_gate(now, journal, lines) if notify else None
     for symbol in (fx_symbols() if fx else []):
         try:
             broker = fx_tickets.broker_symbol(symbol)
@@ -446,7 +453,8 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
         except Exception as exc:  # noqa: BLE001
             lines.append(f"LSMC {symbol} DATA_ERROR {_reason(exc)}")
             continue
-        lines += _watch_once(tracker, symbol, bars, now, notify, ledger=ledger)
+        lines += _watch_once(tracker, symbol, bars, now, notify, ledger=ledger, gate=gate,
+                             bid_ask=lambda b=broker: _bid_ask(quote, b))
     if crypto_feed is not None:
         for symbol in ("BTCUSDT", "ETHUSDT"):
             try:
@@ -455,19 +463,123 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
                 lines.append(f"LSMC {symbol} DATA_ERROR {type(exc).__name__}")
                 continue
             lines += _watch_once(tracker, symbol, {"D1": [], **b.candles}, now, notify, source=b.source,
-                                 window=window, ledger=ledger)
+                                 window=window, ledger=ledger, gate=gate,
+                                 bid_ask=lambda s=symbol: _bid_ask(getattr(crypto_feed, "quote", None),
+                                                                   getattr(crypto_feed, "symbols", {}).get(s)))
+    if gate is not None:
+        lines += _finish_actionability(gate, ledger)
     return lines
 
 
+def _bid_ask(quote: Optional[Quote], broker: Optional[str]) -> tuple:
+    """Live (bid, ask) at send time; (None, None) when unavailable (the gate then fails closed)."""
+    try:
+        q = quote(broker) if quote is not None and broker else None
+    except Exception:  # noqa: BLE001
+        return None, None
+    return (None, None) if q is None else (float(q[0]), float(q[1]))
+
+
+def _actionability_gate(now: dt.datetime, journal: str, lines: List[str]) -> dict:
+    """LSMC_ACTIONABILITY_POLICY_V1 context for one watch run. A missing or invalid policy fails
+    closed: every opportunity is INFO_ONLY(POLICY_UNAVAILABLE), never WATCH_READY."""
+    t0 = time.monotonic()
+    lsmc_dir = os.path.join(journal, "large_smc_watch")
+    try:
+        policy = act.load_policy(POLICY_ROOT)
+    except act.PolicyError as exc:
+        policy = None
+        lines.append(f"LSMC ACTIONABILITY_POLICY_UNAVAILABLE {exc}")
+    heartbeat = act.Heartbeat(os.path.join(lsmc_dir, "heartbeat.json"))
+    return {"now": now, "journal": journal, "policy": policy, "heartbeat": heartbeat,
+            "last_heartbeat": heartbeat.last(), "missed": [], "bid_ask": {},
+            "pending": JsonKeyValueStore(os.path.join(lsmc_dir, "pending_bar_close.json")),
+            "digests": act.MissedDigestLedger(os.path.join(lsmc_dir, "missed_digests.json")),
+            # send_ts: the run's evaluation clock plus real elapsed time (deterministic under a fixed `now`)
+            "clock": lambda: now.astimezone(UTC) + dt.timedelta(seconds=time.monotonic() - t0)}
+
+
+def _deliver_opportunity(ev: dict, gate: dict, ledger: AlertLedger, bid_ask: Callable[[], tuple],
+                         price: Optional[float]) -> List[str]:
+    """Assess, persist, then deliver one OPPORTUNITY event (at most once per confirmation)."""
+    sym, key = ev["symbol"], confirmation_key(ev)
+    gate["bid_ask"][sym] = bid_ask
+    if key is not None and ledger.delivered(key):
+        return [f"LSMC {sym} ALERT_SUPPRESSED_DUPLICATE_CONFIRMATION ref={ev.get('reference_id')}"]
+    if key is not None and gate["digests"].reported(key):     # already in a sent missed digest (D3)
+        return [f"LSMC {sym} ALERT_SUPPRESSED_ALREADY_DIGESTED ref={ev.get('reference_id')}"]
+    opp = (ev.get("payload") or {}).get("opportunity") or {}
+    bid, ask = bid_ask()
+    a = act.assess(opp, send_ts=gate["clock"](), bid=bid, ask=ask, policy=gate["policy"],
+                   last_heartbeat_ts=gate["last_heartbeat"])
+    record = {**a, "symbol": sym, "confirmation_key": key, "transition_id": ev.get("transition_id"),
+              "reference_id": ev.get("reference_id"), "evaluated_at": ev.get("evaluated_at"),
+              "strategy_id": ev.get("strategy_id"), "strategy_version": ev.get("strategy_version"),
+              "code_sha": code_sha()}
+    try:
+        append_jsonl(os.path.join(gate["journal"], "large_smc_watch", ACTIONABILITY_DIR,
+                                  f"{gate['now'].astimezone(UTC).date().isoformat()}.jsonl"), record)
+    except OSError as exc:
+        log_line("telegram", f"ACTIONABILITY_WRITE_FAILED {sym} {type(exc).__name__}")
+    out = [f"LSMC {sym} ACTIONABILITY state={a['state']} outcome={a['outcome']} reason={a['reason']} "
+           f"R_AT_TRIGGER={_fmt_r(a['R_AT_TRIGGER'])} R_AT_SEND={_fmt_r(a['R_AT_SEND'])} ref={ev.get('reference_id')}"]
+    held_key = key or ev.get("transition_id")
+    if a["state"] == act.PENDING_BAR_CLOSE:        # D4: hold; re-assessed on a later run once the bar has closed
+        gate["pending"].put(held_key, {"event": ev, "price": price})
+        return out
+    gate["pending"].remove(held_key)
+    if a["outcome"] == act.MISSED_NOT_ACTIONABLE:   # D3: never an individual alert, digest only
+        gate["missed"].append({**record, "key": held_key})
+        return out
+    if a["outcome"] not in act.SENT_OUTCOMES:
+        return out
+    status = deliver_once(ev, ledger, lambda: _notify(
+        "LSMC", ev["alert_level"], tg.format_alert(ev, price=price, actionability=a), REPO_ROOT,
+        journal=gate["journal"], ref=key or ev.get("reference_id"), now=gate["clock"]()))
+    if status == "SUPPRESSED_DUPLICATE_CONFIRMATION":
+        out.append(f"LSMC {sym} ALERT_SUPPRESSED_DUPLICATE_CONFIRMATION ref={ev.get('reference_id')}")
+    return out
+
+
+def _fmt_r(v: Optional[float]) -> str:
+    return "n/a" if v is None else f"{v:.2f}"
+
+
+def _finish_actionability(gate: dict, ledger: AlertLedger) -> List[str]:
+    """Re-assess held PENDING_BAR_CLOSE events, send at most one deduplicated missed digest (D3),
+    then record this run as the watch heartbeat."""
+    out: List[str] = []
+    for _key, held in sorted(dict(gate["pending"].all()).items()):
+        ev = held["event"]
+        out += _deliver_opportunity(ev, gate, ledger, gate["bid_ask"].get(ev["symbol"], lambda: (None, None)),
+                                    held.get("price"))
+    items = gate["digests"].pending(gate["missed"])
+    if items:
+        digest = act.digest_id(items)
+        status = _notify("LSMC", tg.LSMC_MISSED_DIGEST, tg.format_missed_digest(items, gate["clock"]()),
+                         REPO_ROOT, journal=gate["journal"], ref=f"lsmc-missed:{digest}", now=gate["clock"]())
+        if status == "SENT":
+            gate["digests"].mark(items, digest)
+        out.append(f"LSMC MISSED_NOT_ACTIONABLE_DIGEST id={digest} items={len(items)} status={status}")
+    gate["heartbeat"].beat(gate["now"])
+    return out
+
+
 def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None,
-                ledger: Optional[AlertLedger] = None) -> List[str]:
+                ledger: Optional[AlertLedger] = None, gate: Optional[dict] = None,
+                bid_ask: Callable[[], tuple] = lambda: (None, None)) -> List[str]:
     snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now)
     events = tracker.poll(snap)
     out = [f"LSMC {symbol} data={classify(symbol, bars['M5'], now)} state={snap.state} source={source} "
            f"{f'window={window} ' if window else ''}alerts={[e.to_state + ':' + e.alert_level for e in events]}"]
+    if gate is not None:
+        gate["bid_ask"][symbol] = bid_ask          # live quote for re-assessing a held PENDING_BAR_CLOSE event
     if notify:
         for e in events:
             price = bars["M5"][-1].close if bars["M5"] else None
+            if gate is not None and ledger is not None and e.to_state == "OPPORTUNITY":
+                out += _deliver_opportunity(e.__dict__, gate, ledger, bid_ask, price)
+                continue
             status = deliver_once(e.__dict__, ledger, lambda e=e: _notify(
                 "LSMC", e.alert_level, tg.format_alert(e.__dict__, price=price), REPO_ROOT))
             if status == "SUPPRESSED_DUPLICATE_CONFIRMATION":
@@ -608,9 +720,10 @@ def main(argv=None) -> int:
                                 symbol_meta=lambda broker: live_symbol_meta(mt5, broker))
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
-                                             fx=False, window="WEEKEND")
+                                             fx=False, window="WEEKEND", quote=quote)
                         else:
-                            lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote))
+                            lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
+                                             quote=quote)
                     finally:
                         try:
                             call_with_timeout(mt5.shutdown)

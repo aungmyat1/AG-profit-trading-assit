@@ -39,6 +39,7 @@ LEGACY_INFORMATIONAL_READY = "LEGACY_INFORMATIONAL_READY"
 MANUAL_TICKET = "MANUAL_TICKET"
 MANUAL_TICKET_READY = "MANUAL_TICKET_READY"
 API = "https://api.telegram.org"
+LSMC_MISSED_DIGEST = "MISSED_NOT_ACTIONABLE"
 
 
 class TelegramSendError(RuntimeError):
@@ -65,7 +66,8 @@ def should_send(kind: str, value: str, root: str = ".") -> bool:
     if kind == MANUAL_TICKET:
         return value == MANUAL_TICKET_READY and MANUAL_TICKET_READY in cfg["scopes"]
     if kind == "LSMC":
-        return value == "OPPORTUNITY" and "LSMC_OPPORTUNITY" in cfg["scopes"]
+        # MISSED_NOT_ACTIONABLE is the D3 downtime digest of OPPORTUNITY alerts: same scope.
+        return value in ("OPPORTUNITY", LSMC_MISSED_DIGEST) and "LSMC_OPPORTUNITY" in cfg["scopes"]
     return False
 
 
@@ -216,8 +218,10 @@ def format_ticket(t: Dict[str, Any]) -> str:
 TIMEFRAME_CHAIN = "D1 context -> H1 bias + POI -> M5 sweep/CHoCH"
 
 
-def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
-    """Formatting only. `price` is the latest M5 close the runner already holds (display, not a rule input)."""
+def format_alert(e: Dict[str, Any], price: Optional[float] = None,
+                 actionability: Optional[Dict[str, Any]] = None) -> str:
+    """Formatting only. `price` is the latest M5 close the runner already holds (display, not a rule input).
+    `actionability` is the persisted LSMC_ACTIONABILITY_POLICY_V1 assessment (host_delivery.lsmc_actionability)."""
     p = e.get("payload") or {}
     poi, opp = p.get("poi") or {}, p.get("opportunity") or {}
     sym = e["symbol"]
@@ -232,6 +236,8 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
              f"{e['strategy_id']} v{e['strategy_version']}  economic_status=NOT_EVALUATED",
              f"ref: {e.get('reference_id')}",
              f"timeframes: {TIMEFRAME_CHAIN}"]
+    if actionability is not None:
+        lines[2:2] = _actionability_lines(sym, actionability, px)
     lo, hi = poi.get("low"), poi.get("high")
     if lo is not None and hi is not None:
         lines.append(f"POI zone ({poi.get('kind', 'H1')}): {px(lo)} - {px(hi)}")
@@ -255,6 +261,41 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
     if snap is None:
         lines.append(f"prices {UNNORMALIZED}")
     lines.append(f"expires_at: {_ts(opp.get('expires_at') or p.get('expires_at'))}")
+    return "\n".join(lines)
+
+
+def _r(v: Optional[float]) -> str:
+    return "n/a" if v is None else f"{v:.2f}"
+
+
+def _actionability_lines(sym: str, a: Dict[str, Any], px) -> list:
+    outcome, reason = a.get("outcome"), a.get("reason")
+    head = f"ACTIONABILITY: {outcome}" + (f" ({reason})" if reason else "")
+    if outcome != "WATCH_READY":
+        head += " -- NOT ACTIONABLE"
+    age = a.get("freshness_age_seconds")
+    max_bars, tf = a.get("freshness_max_bars"), a.get("trigger_timeframe")
+    out = [head,
+           f"R_AT_TRIGGER: {_r(a.get('R_AT_TRIGGER'))}  R_AT_SEND: {_r(a.get('R_AT_SEND'))}  "
+           f"(min {a.get('min_remaining_r')}, {a.get('policy_id')} v{a.get('policy_version')})",
+           f"trigger bar close: {_ts(a.get('trigger_bar_close_ts'))}  age: "
+           + ("n/a" if age is None else f"{age / 60:.1f} min") + f" (max {max_bars} x {tf})"]
+    if a.get("send_price") is not None:
+        out.append(f"send price ({a.get('send_price_side')}): {px(a['send_price'])} at {_ts(a.get('send_ts'))}")
+    else:
+        out.append(f"send price: n/a at {_ts(a.get('send_ts'))}")
+    return out
+
+
+def format_missed_digest(items: list, at: dt.datetime) -> str:
+    """D3: one digest after downtime. Lists missed opportunities; none of them is actionable."""
+    lines = ["LARGE-SMC MISSED - NOT ACTIONABLE -- INFORMATIONAL -- NOT A BROKER ORDER",
+             f"{len(items)} opportunity alert(s) triggered while the host was not watching.",
+             f"Digest at {_ts(at)}. These are history, not signals."]
+    for it in items:
+        lines.append(f"- {it['symbol']} {it.get('direction') or 'n/a'}  trigger bar close {_ts(it.get('trigger_bar_close_ts'))}"
+                     f"  R_AT_TRIGGER {_r(it.get('R_AT_TRIGGER'))}  R_AT_SEND {_r(it.get('R_AT_SEND'))}"
+                     f"  ref {it.get('reference_id')}")
     return "\n".join(lines)
 
 

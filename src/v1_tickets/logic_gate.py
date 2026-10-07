@@ -272,7 +272,8 @@ _NORMALISE = {LEGACY_STALE_SIGNAL: SIGNAL_STALE}
 # blocked nor warned, so these never enter block_reasons[] or warnings[].
 LIFECYCLE_STATES = frozenset({"REFERENCE_NOT_READY",
                               "SETUP_WINDOW_OPEN:NO_SETUP_BY_WINDOW_END",
-                              "SETUP_WINDOW_OPEN:NO_QUALIFIED_SWEEP_IN_WINDOW"})
+                              "SETUP_WINDOW_OPEN:NO_QUALIFIED_SWEEP_IN_WINDOW",
+                              "PENDING_BAR_CLOSE:SIGNAL_BAR_NOT_CLOSED"})          # D4, 2026-10-07
 
 
 def normalise_reason(reason: str) -> str:
