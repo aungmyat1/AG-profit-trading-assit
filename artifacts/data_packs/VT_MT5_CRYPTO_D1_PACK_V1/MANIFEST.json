@@ -1,0 +1,220 @@
+{
+  "chunking": "one CSV per symbol per calendar year of open_time_utc; last bar may still be forming",
+  "exported_at_utc": "2026-10-07T11:28:19.107486+00:00",
+  "files": [
+    {
+      "bytes": 27166,
+      "path": "BTCUSD_D1_2024.csv",
+      "sha256": "e53871352fac3b7b6b594774f414f84b38a586b324956b002b82c435bf8b729d"
+    },
+    {
+      "bytes": 32004,
+      "path": "BTCUSD_D1_2025.csv",
+      "sha256": "29ff9286f6767cb45126df8b2f91a6924fb3641b4b0aa150c5dfef9697f1f7f3"
+    },
+    {
+      "bytes": 23934,
+      "path": "BTCUSD_D1_2026.csv",
+      "sha256": "8b4bb3f66d7535998e980d6400c33d0bc6fa24edfb65728fa89e976e28a64daf"
+    },
+    {
+      "bytes": 2339,
+      "path": "BTCUSD_symbol_info.json",
+      "sha256": "78228c002ae85a2f995468fa78fcee73467c63aa2b9a49f1b7eb62c264c25254"
+    },
+    {
+      "bytes": 25551,
+      "path": "ETHUSD_D1_2024.csv",
+      "sha256": "eeb3389c7f0b8ad6c595ddebfe5aac55946dc4961f2f2de59169fac86aa6b9f2"
+    },
+    {
+      "bytes": 29424,
+      "path": "ETHUSD_D1_2025.csv",
+      "sha256": "aab288e9a4b570229a3362203fa2cb5a42ced28d95796a8401f73508267e729f"
+    },
+    {
+      "bytes": 22554,
+      "path": "ETHUSD_D1_2026.csv",
+      "sha256": "6b2e0339651cc22b1fb46b33da133e172b6ed4e62bb06dd6c2c5214e4ca56897"
+    },
+    {
+      "bytes": 2330,
+      "path": "ETHUSD_symbol_info.json",
+      "sha256": "5bc02125c0b2b31381f8318f47da3bef2e765a417ef6682487dea5572e3ef1f1"
+    }
+  ],
+  "pack_id": "VT_MT5_CRYPTO_D1_PACK_V1",
+  "pack_sha256": "6078e3c51013196339070157182e4605d4b4ddea5377a4966883fe368d098d6b",
+  "read_only_calls": [
+    "initialize",
+    "account_info",
+    "terminal_info",
+    "symbol_info",
+    "copy_rates_range",
+    "shutdown"
+  ],
+  "server": "VTMarkets-Demo",
+  "symbols": {
+    "BTCUSD": {
+      "bars": 950,
+      "bars_by_utc_open_weekday": {
+        "Fri": 128,
+        "Mon": 138,
+        "Sat": 135,
+        "Sun": 137,
+        "Thu": 137,
+        "Tue": 138,
+        "Wed": 137
+      },
+      "closed_bars": 949,
+      "digits": 2,
+      "first_open_utc": "2024-02-19T22:00:00+00:00",
+      "gap_count": 9,
+      "largest_gaps": [
+        {
+          "after": "2024-02-29",
+          "before": "2024-03-03",
+          "missing_days": 2
+        },
+        {
+          "after": "2025-11-06",
+          "before": "2025-11-09",
+          "missing_days": 2
+        },
+        {
+          "after": "2024-03-14",
+          "before": "2024-03-16",
+          "missing_days": 1
+        },
+        {
+          "after": "2025-07-24",
+          "before": "2025-07-26",
+          "missing_days": 1
+        },
+        {
+          "after": "2025-08-21",
+          "before": "2025-08-23",
+          "missing_days": 1
+        },
+        {
+          "after": "2025-09-04",
+          "before": "2025-09-06",
+          "missing_days": 1
+        },
+        {
+          "after": "2026-03-19",
+          "before": "2026-03-21",
+          "missing_days": 1
+        },
+        {
+          "after": "2026-03-26",
+          "before": "2026-03-28",
+          "missing_days": 1
+        },
+        {
+          "after": "2026-05-07",
+          "before": "2026-05-09",
+          "missing_days": 1
+        }
+      ],
+      "last_bar_forming": true,
+      "last_open_utc": "2026-10-06T21:00:00+00:00",
+      "missing_days_total": 11,
+      "spread_now": 1711,
+      "status": "OK",
+      "swap_long": -20.0,
+      "swap_short": 0.0,
+      "trade_contract_size": 1.0,
+      "trade_mode": 4,
+      "trade_tick_size": 0.01,
+      "years": {
+        "2024": 314,
+        "2025": 360,
+        "2026": 276
+      }
+    },
+    "ETHUSD": {
+      "bars": 950,
+      "bars_by_utc_open_weekday": {
+        "Fri": 128,
+        "Mon": 138,
+        "Sat": 135,
+        "Sun": 137,
+        "Thu": 137,
+        "Tue": 138,
+        "Wed": 137
+      },
+      "closed_bars": 949,
+      "digits": 2,
+      "first_open_utc": "2024-02-19T22:00:00+00:00",
+      "gap_count": 9,
+      "largest_gaps": [
+        {
+          "after": "2024-02-29",
+          "before": "2024-03-03",
+          "missing_days": 2
+        },
+        {
+          "after": "2025-11-06",
+          "before": "2025-11-09",
+          "missing_days": 2
+        },
+        {
+          "after": "2024-03-14",
+          "before": "2024-03-16",
+          "missing_days": 1
+        },
+        {
+          "after": "2025-07-24",
+          "before": "2025-07-26",
+          "missing_days": 1
+        },
+        {
+          "after": "2025-08-21",
+          "before": "2025-08-23",
+          "missing_days": 1
+        },
+        {
+          "after": "2025-09-04",
+          "before": "2025-09-06",
+          "missing_days": 1
+        },
+        {
+          "after": "2026-03-19",
+          "before": "2026-03-21",
+          "missing_days": 1
+        },
+        {
+          "after": "2026-03-26",
+          "before": "2026-03-28",
+          "missing_days": 1
+        },
+        {
+          "after": "2026-05-07",
+          "before": "2026-05-09",
+          "missing_days": 1
+        }
+      ],
+      "last_bar_forming": true,
+      "last_open_utc": "2026-10-06T21:00:00+00:00",
+      "missing_days_total": 11,
+      "spread_now": 247,
+      "status": "OK",
+      "swap_long": -25.0,
+      "swap_short": 0.0,
+      "trade_contract_size": 1.0,
+      "trade_mode": 4,
+      "trade_tick_size": 0.01,
+      "years": {
+        "2024": 314,
+        "2025": 360,
+        "2026": 276
+      }
+    }
+  },
+  "terminal_build": 6230,
+  "time_rule": "open_time_utc = host_evidence.symbol_metadata.server_time_to_utc(server wall time); server midnight = New York 17:00 (owner-stated rule)",
+  "timeframe": "D1",
+  "trading_hours": "NOT_AVAILABLE_VIA_MT5_PYTHON_API (symbol_info has no session table); weekend coverage is reported from bar weekdays",
+  "venue": "VT Markets MT5 demo"
+}
