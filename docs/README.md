@@ -4,6 +4,11 @@
 records the M15 data contract, fixture verification and pending Windows live
 acceptance. It grants no execution or economic authority.
 
+[MT5 market-data contract R2](status/AG_MARKET_DATA_CONTRACT_R2_2026-10-08.md)
+records Demo verification of quote-time normalization, exact M15 windows, and
+the eight-record evaluator smoke. It does not establish a trade opportunity or
+execution authority.
+
 This directory contains design contracts, implementation architecture, setup guidance,
 and dated verification evidence. Read documents according to their authority, not just
 their age. For the shortest path to the active objective, start with the repo priority

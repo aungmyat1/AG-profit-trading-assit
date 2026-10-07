@@ -280,6 +280,12 @@ def build_canonical_ticket(
         "expires_at": expires,
         "send_timestamp": action.get("send_timestamp_utc"),
     }
+    if isinstance(ticket.get("data_error"), dict):
+        canonical["data_error"] = {
+            "code": str(ticket["data_error"].get("code", "OTHER"))[:80],
+            "detail": str(ticket["data_error"].get("detail", ""))[:300],
+            "layer": str(ticket["data_error"].get("layer", "OTHER"))[:80],
+        }
     canonical["structure_visual"] = render_structure_visual(canonical)
     canonical["checklist"] = _checklist_summary(ticket, canonical)
     return canonical
