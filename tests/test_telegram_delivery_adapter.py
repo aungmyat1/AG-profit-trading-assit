@@ -89,9 +89,36 @@ def test_ambiguous_restart(tmp_path, caplog):
         calls.append(args)
         raise TimeoutError('secret-token-url')
     path = tmp_path / 'dedupe.sqlite'
-    assert Sender(path, config(), transport).send_ticket(watch()) == 'failed'
+    assert Sender(path, config(), transport).send_ticket(watch()) == 'uncertain'
     assert Sender(path, config(), transport).send_ticket(watch()) == 'duplicate'
     assert len(calls) == 1 and 'ambiguous' in caplog.text and 'secret-token-url' not in caplog.text
+
+
+def test_timeout_after_send_uncertain_listed_no_autoresend_force_once(tmp_path, caplog):
+    caplog.set_level('INFO')
+    calls = []
+    def transport(*args):
+        calls.append(args)
+        if len(calls) == 1:
+            raise TimeoutError('secret-token-url')
+    path = tmp_path / 'dedupe.sqlite'
+    sender = Sender(path, config(), transport)
+    assert sender.send_ticket(watch()) == 'uncertain'
+    assert sender.list_uncertain()[0]['identity'] == watch()['ticket_id']
+    assert sender.send_ticket(watch()) == 'duplicate'
+    summary = render_summary([watch()], uncertain=sender.list_uncertain())
+    assert 'DELIVERY_UNCERTAIN' in summary and watch()['ticket_id'] in summary
+    assert sender.send_summary([watch()]) == 'sent'
+    sent_text = calls[1][2]
+    assert 'Uncertain delivery:' in sent_text and 'DELIVERY_UNCERTAIN' in sent_text
+    assert Sender(path, config(), transport).resend_ticket(
+        watch(), force=True, actor='owner-cli') == 'sent'
+    assert Sender(path, config(), transport).resend_ticket(
+        watch(), force=True, actor='owner-cli') == 'duplicate'
+    assert len(calls) == 3
+    assert 'Force resend' in caplog.text and 'owner-cli' in caplog.text
+    assert 'secret-token-url' not in caplog.text
+    assert sender.list_uncertain() == []
 
 
 def test_schema_gap_no_calculation():

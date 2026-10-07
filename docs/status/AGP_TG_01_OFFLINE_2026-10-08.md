@@ -59,10 +59,13 @@ Telegram clients may display plain text with proportional fonts.
 
 SQLite commits a pending claim before network, then marks acknowledged sends sent.
 HTTP 429/500/502/503/504 retry at 1s/2s (default three attempts).
-Ambiguous network failures, crashes and exhausted attempts retain the pending claim
-and log failure; restart cannot blindly resend. Manual investigation is required
-before deleting such a claim. Telegram sendMessage has no server idempotency key:
-an explicit transient rejection retry cannot guarantee exactly-once remote delivery.
+Ambiguous failures (timeout after the send attempt, crash-equivalent transport errors)
+persist state DELIVERY_UNCERTAIN while keeping the dedupe claim: restart does not
+auto-resend. The next session summary lists uncertain identities. Owner-only CLI
+`python -m telegram_delivery.adapter resend --ticket-id X --force --store PATH
+--ticket-file FILE --actor WHO` may deliver once; actor and timestamp are logged.
+Token values are never logged or rendered. Exhausted explicit HTTP retries remain
+failed without auto-resend. Telegram sendMessage has no server idempotency key.
 No exception text/token URL is logged. Transport is injectable for offline tests.
 
 Dependency: plain HTTPS Telegram Bot API via Python standard library urllib/json/
@@ -75,7 +78,8 @@ verification runtime is pinned in `tests/fixtures/telegram_delivery/python-versi
 
 `.venv/bin/python -m pytest -q tests/test_telegram_delivery_adapter.py tests/test_actionability_and_canonical_ticket.py tests/test_ticket_delivery_execution_boundary.py`
 
-63/63 passed, zero skips: 40 adapter tests, 23 existing canonical/boundary regressions.
+64 adapter+regression tests targeted (41 adapter including UNCERTAIN/force-resend,
+23 existing canonical/boundary). Golden files cover all ten decisions plus complete summary.
 Golden files cover all ten decisions plus complete summary. Transport tests are fakes;
 no Telegram, broker or market-data network request occurred. The full regression
 baseline was not changed or claimed. No live authorization granted.
