@@ -1,5 +1,9 @@
 # Documentation Index
 
+[MT5 provider/evaluator R1 offline integration](status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md)
+records the M15 data contract, fixture verification and pending Windows live
+acceptance. It grants no execution or economic authority.
+
 This directory contains design contracts, implementation architecture, setup guidance,
 and dated verification evidence. Read documents according to their authority, not just
 their age. For the shortest path to the active objective, start with the repo priority
