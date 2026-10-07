@@ -49,6 +49,9 @@ The [host audit 2 fixes](status/AG_V1_HOST_AUDIT2_FIXES_2026-09-30.md) record th
 verdict, crypto reason codes, -VIP resolution, STALE/spread gates and SIMULATED UI labels.
 The [first natural READY evidence and audit follow-up](status/AG_V1_FIRST_NATURAL_READY_EVIDENCE_2026-10-07.md)
 records the 2026-10-07 READY tickets, FX/Large-SMC reconciliation and overnight power facts.
+The [owner decisions 2026-10-07 (LSMC actionability V1)](governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md)
+are the signed authority for delivery actionability; the
+[actionability P0/P1 status](status/AG_V1_ACTIONABILITY_P0_P1_R1_2026-10-07.md) records their implementation.
 
 The [repository structure audit](REPO_STRUCTURE_AUDIT.md) records the current layout,
 safe cache cleanup, and the recommended archival policy for historical documents and

@@ -4,6 +4,18 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## LSMC actionability gate P0/P1 — draft PR #49, not deployed (2026-10-07)
+
+Owner decisions D1–D4/D7 (`docs/governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md`)
+are implemented as a post-signal delivery layer (`LSMC_ACTIONABILITY_POLICY_V1`,
+`min_remaining_r 1.5` in operational config). Large-SMC alerts are now WATCH_READY only when fresh
+(≤ 2 M5 bars) with `R_AT_SEND ≥ 1.5`; otherwise INFO_ONLY with the reason and both R values.
+Downtime produces one MISSED - NOT ACTIONABLE digest, never a catch-up READY. FX entry_1 with
+an unclosed first bar is PENDING_BAR_CLOSE (was STALE). Also included: an outcome resolver,
+correlation warnings, and the attempt_id + Telegram message_id journal. No strategy logic, threshold,
+order path or authority changes. CI **1090 passed, 4 skipped** (unit only). **Not deployed and not
+live-verified.** Evidence: `docs/status/AG_V1_ACTIONABILITY_P0_P1_R1_2026-10-07.md`.
+
 ## SESSION_TRADE_V1 ticket authority — fail closed on demo/live flags (2026-10-06)
 
 `SESSION_TRADE_V1` is `ticket_authority: MANUAL_ONLY`, `demo_order_authority: NONE`, with
