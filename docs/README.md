@@ -65,7 +65,7 @@ records the merged BTCUSD/ETHUSD read-only observation path, live Demo market-da
 validation, incomplete CFD strategy/risk authority, and execution boundary.
 
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
-2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository.
+2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository; see also [agent invariants](agents/INVARIANTS.md) (v1).
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,
    safety gates, known gaps, latest regression baseline, and rolling classification
    against the master readiness gates.

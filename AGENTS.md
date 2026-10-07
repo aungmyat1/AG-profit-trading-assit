@@ -1,5 +1,7 @@
 # AG Profit Trading — Agent Instructions
 
+All missions implicitly apply docs/agents/INVARIANTS.md (v1). Missions state only deltas.
+
 ## Token minimum usage policy (owner rule, applies to every task)
 - Do only what the task asks; no extra features, refactors or docs.
 - No polling, scheduled check-ins or PR subscriptions unless explicitly asked.
