@@ -42,8 +42,8 @@ from typing import Callable, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _host_common import (  # noqa: E402
-    REPO_ROOT, AlreadyRunning, Mt5Busy, call_with_timeout, host_fetch, host_quote, import_mt5, log_line,
-    mt5_access_lock, mt5_initialize, require_demo_account, single_instance, start_run_watchdog, utcnow,
+    REPO_ROOT, AlreadyRunning, Mt5Busy, call_with_timeout, host_fetch, host_quote, import_mt5, keep_awake,
+    log_line, mt5_access_lock, mt5_initialize, require_demo_account, single_instance, start_run_watchdog, utcnow,
 )
 
 
@@ -700,6 +700,20 @@ def run_smoke(fetch: Fetch, now: dt.datetime, journal: str, crypto_config: Optio
     return lines
 
 
+def run_is_active(mode: str, now: dt.datetime, crypto_config: dict, cycle: Optional[str] = None) -> bool:
+    """Keep-awake scope: a watch run (lsmc; lsmc-weekend inside its window on the MT5 venue), a
+    crypto ticket run, or an FX run while one of its session windows is open (the same gate as
+    run_fx). Smoke tests and out-of-window runs never hold the host awake."""
+    if mode in ("lsmc", "crypto"):
+        return True
+    if mode == "lsmc-weekend":
+        return lsmc_weekend_open(now) and crypto_config["venue"]["kind"] == "MT5"
+    if mode == "fx":
+        return any(w["trade"][0] <= now <= w["trade"][1] + dt.timedelta(minutes=30)
+                   for c, w in cycle_windows(now).items() if cycle is None or c == cycle)
+    return False
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--mode", choices=("smoke", "fx", "crypto", "lsmc", "lsmc-weekend"), default="smoke")
@@ -716,7 +730,7 @@ def main(argv=None) -> int:
     from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config
     crypto_config = load_ticket_config(args.crypto_config or ACTIVE_CONFIG, REPO_ROOT)
     try:
-        with single_instance(log_name):
+        with single_instance(log_name), keep_awake(run_is_active(args.mode, now, crypto_config, args.cycle)):
             if args.mode == "crypto" and crypto_config["venue"]["kind"] != "MT5":
                 lines = run_crypto(now, journal, crypto_feed_for(crypto_config, None), config=crypto_config)
             elif args.mode == "lsmc-weekend" and not lsmc_weekend_open(now):
