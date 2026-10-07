@@ -1,7 +1,7 @@
 # AG V1 — LSMC actionability P0/P1 (AG_V1_ACTIONABILITY_P0_P1_R1, 2026-10-07)
 
-Authority: `docs/governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md` (committed unchanged
-as f4ec100, SHA-256 `67bb1a57a7bc38335fdb18d7bdf7880c39331247a44abbc473e35cf1eecb7b56`).
+Authority: `docs/governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md` (canonical, on PR #48 as
+256774e, SHA-256 `67bb1a57a7bc38335fdb18d7bdf7880c39331247a44abbc473e35cf1eecb7b56`).
 Branch `feat/ag-v1-host-hardening-r1` (draft PR #49, base `audit/v1-followup-2026-10-07` = PR #48).
 Separations: IMPLEMENTED ≠ VALIDATED ≠ AUTHORIZED. Unit-tested in CI only; **not deployed to the live
 host and not live-verified.** No order path, Demo or strategy rule/threshold/YAML change.
@@ -41,10 +41,28 @@ heartbeat (their fixture CHoCH is older than the D1 window).
 0x2a30 (180 min). The owner-reported mouse-wake disable and AC sleep/hibernate = 0 were **not in
 effect** at that check. `/lastwake`: count 0. `/waketimers`: NOT_VERIFIED (needs elevation).
 
+## Owner interpretations (2026-10-07, PR #49 review) — commit 30cc288, policy v2
+
+| Item | Implemented as |
+|---|---|
+| a | Freshness = 2 x the strategy's trigger timeframe, derived per strategy (ST_LARGE_SMC_V1: M5 CHoCH bar). `trigger_timeframe` removed from config; unmapped strategy → INFO_ONLY(`TRIGGER_TIMEFRAME_UNKNOWN`). |
+| b | Risk anchor C10 stop else sweep extreme, persisted with `risk_anchor_status = PROVISIONAL_PENDING_LSMC_SPEC_V1_FROZEN`. |
+| c | LONG=ask / SHORT=bid; missing quote → INFO_ONLY(`NO_LIVE_QUOTE`). |
+| d | Downtime = heartbeat gap > 2 x `watch_poll_interval_minutes` (5) at run start; stale trigger inside the gap → MISSED_DOWNTIME; stale while up → INFO_ONLY_STALE. |
+| e | SUPERSEDED by Arena's LSMC spec — not implemented (awaiting v1.0.1 hash). |
+| f | Warn-only `CRYPTO_DIRECTIONAL_<dir>` cluster for BTC/ETH in the same direction. |
+
+Keep-awake (commit ab150d4): `SetThreadExecutionState(ES_CONTINUOUS|ES_SYSTEM_REQUIRED)` held only
+for active runs (lsmc, crypto, in-window fx, in-window lsmc-weekend), released after every run.
+Idle sleep only; the explicit AG-Sleep-Night suspend is not opposed (Windows documentation; NOT
+live-verified). CI run 37618702494: **1099 passed, 4 skipped**.
+
+Existing-test changes: two LSMC runner tests in `tests/test_host_go_live_kit.py` gained a heartbeat
+seed (setup) and one added assertion; no assertion was removed or weakened.
+
 ## Not done / open
 
-- MT5 BTCUSD/ETHUSD history + symbol_info data pack: NOT_STARTED (resource guard < 1200 MB).
-- Two different signed versions of the decision record exist: 00caa9c on PR #48 (54 lines) and
-  f4ec100 here (94 lines, includes "Canonical names"). Owner to choose; branches conflict on that file.
-- D6: on the live host, `TICKET_READY` scope sent three ST_ASIAN_SWEEP_5R_V1 READY tickets at
-  2026-10-07 07:16 UTC. D6 sets READY authority OFF; this PR does not change that path.
+- Decision-record conflict RESOLVED: PR #48 carries the canonical 94-line record (256774e, blob
+  identical to the owner-supplied text); this branch was rebased onto it.
+- Not deployed to the live host; not live-verified.
+- D6 (ST_ASIAN_SWEEP_5R_V1 READY OFF) is handled separately in PR #50 (deployed 2026-10-07 11:34Z).

@@ -13,7 +13,8 @@ are implemented as a post-signal delivery layer (`LSMC_ACTIONABILITY_POLICY_V1`,
 Downtime produces one MISSED - NOT ACTIONABLE digest, never a catch-up READY. FX entry_1 with
 an unclosed first bar is PENDING_BAR_CLOSE (was STALE). Also included: an outcome resolver,
 correlation warnings, and the attempt_id + Telegram message_id journal. No strategy logic, threshold,
-order path or authority changes. CI **1090 passed, 4 skipped** (unit only). **Not deployed and not
+order path or authority changes. Owner interpretations a-d/f (policy v2) and run-scoped keep-awake
+added. CI **1099 passed, 4 skipped** (unit only). **Not deployed and not
 live-verified.** Evidence: `docs/status/AG_V1_ACTIONABILITY_P0_P1_R1_2026-10-07.md`.
 
 ## SESSION_TRADE_V1 ticket authority — fail closed on demo/live flags (2026-10-06)
