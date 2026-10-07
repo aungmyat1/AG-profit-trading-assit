@@ -657,6 +657,79 @@ def test_notify_logs_sent_ok_and_failure_without_secrets(tmp_path, monkeypatch):
     assert "TELEGRAM_SEND_FAILED LSMC=OPPORTUNITY send failed (HTTP 401)" in log
 
 
+def _attempt_journal_entries(journal_root):
+    path = Path(journal_root) / "ticket_delivery" / "attempt_journal.jsonl"
+    if not path.exists():
+        return []
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
+def test_wp7_attempt_journal_captures_attempt_id_and_message_id(tmp_path, monkeypatch):
+    """AG_V1_HOST_HARDENING_R1 T1: a real send writes one AttemptJournal line per alert with a
+    deterministic attempt id and the provider's message_id -- the exact evidence PR48 reported
+    as NOT_CAPTURED by the live path."""
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(tg, "send_message", lambda text: "999888777")
+    j = str(tmp_path / "journal")
+    lines = smoke.run_lsmc(fake_fetch(), NOW, j)
+    assert any("state=OPPORTUNITY" in ln for ln in lines)
+    entries = _attempt_journal_entries(j)
+    assert len(entries) == 2  # EURUSD + GBPUSD OPPORTUNITY alerts, matching the sent-count fixture above
+    for e in entries:
+        assert e["final_state"] == "DELIVERED"
+        assert e["provider_response_id"] == "999888777"
+        assert e["delivery_attempt_id"].endswith("|attempt-001")
+        assert e["delivery_attempt_id"].startswith(e["logical_ticket_id"])
+        assert e["symbol"] in ("EURUSD", "GBPUSD") and e["cycle"] == "LSMC_WATCH"
+        assert e["strategy_id"] and e["strategy_version"]
+
+
+def test_wp7_attempt_journal_records_failure_reason_without_secrets(tmp_path, monkeypatch):
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+
+    def boom(_text):
+        raise tg.TelegramSendError("send failed (HTTP 401)")
+
+    monkeypatch.setattr(tg, "send_message", boom)
+    j = str(tmp_path / "journal")
+    smoke.run_lsmc(fake_fetch(), NOW, j)
+    entries = _attempt_journal_entries(j)
+    assert entries and all(e["final_state"] == "DELIVERY_FAILED_RETRYABLE" for e in entries)
+    assert all(e["reason_code"] == "send failed (HTTP 401)" for e in entries)
+    assert all(e["provider_response_id"] is None for e in entries)
+    assert "SECRET" not in json.dumps(entries) and "token" not in json.dumps(entries).lower()
+
+
+def test_wp7_attempt_journal_skipped_when_policy_blocks_send(tmp_path):
+    j = str(tmp_path / "journal")
+    smoke.run_lsmc(fake_fetch(), NOW, j)  # no delivery_override.yaml -> ARCHIVE_ONLY -> NOT_SENT_POLICY, no attempt
+    assert _attempt_journal_entries(j) == []
+
+
+def test_power_scripts_are_read_only_or_gated_and_hold_no_secrets():
+    """AG_V1_HOST_HARDENING_R1 T3: report script never mutates; proposal script only prints a
+    plan unless BOTH -Apply and a separate owner-approval env var are present."""
+    report = (HOST / "report_power_settings.ps1").read_text()
+    propose = (HOST / "propose_power_hardening.ps1").read_text()
+    assert "powercfg /lastwake" in report and "powercfg /devicequery wake_armed" in report
+    for mutating in ("/change", "/devicedisablewake", "Register-ScheduledTask", "Set-"):
+        assert mutating not in report
+    assert "param([switch]$Apply)" in propose
+    assert "WhatIf: no changes made" in propose
+    assert "AG_OWNER_APPROVED_POWER_HARDENING" in propose
+    assert "REFUSED: -Apply was given but AG_OWNER_APPROVED_POWER_HARDENING is not set to YES" in propose
+    for s in (report, propose):
+        assert not re.search(r"\d{6,}:[A-Za-z0-9_-]{20,}", s)  # no bot-token-shaped literal
+        for call in ("order_send(", "order_check(", "positions_get(", "position_close(", "orders_get("):
+            assert call not in s
+
+
 def _status_host(tmp_path, override=True, venv=True, log="", runner_age_h=1.0):
     import telegram_status as ts
     now = dt.datetime(2026, 10, 4, 12, tzinfo=UTC)
