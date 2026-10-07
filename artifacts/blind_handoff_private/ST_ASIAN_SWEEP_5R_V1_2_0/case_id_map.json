@@ -1,0 +1,8 @@
+{
+  "handoff_to_source_case_ids": {
+    "C001": "EURUSD_ASIAN_LONDON_2026-06-17",
+    "C002": "EURUSD_ASIAN_LONDON_2026-06-23",
+    "C003": "EURUSD_ASIAN_LONDON_2026-07-17"
+  },
+  "public_dataset_sha256": "987e628c8fa13af72d25fe1d5b54af8a32910d9db52ffbbb261d80d16251b788"
+}
