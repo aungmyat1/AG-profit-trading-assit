@@ -70,6 +70,9 @@ from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligi
 from v1_tickets.scan_record import (  # noqa: E402
     adapterless_scan_records, append_jsonl, build_scan_record, classify_fx_ticket, write_scan_record,
 )
+from ticket_delivery import AttemptJournal  # noqa: E402
+from ticket_delivery.identity import delivery_attempt_id as _attempt_identity, logical_ticket_id  # noqa: E402
+from ticket_delivery.models import STATE_DELIVERY_CLAIMED, DeliveryRecord  # noqa: E402
 
 UTC = dt.timezone.utc
 # Binding objective universe: three FX majors + gold.  Never silently remove a symbol
@@ -181,20 +184,60 @@ def archive_if_changed(state: JsonKeyValueStore, key: str, ticket: dict, archive
 
 
 DELIVERY_DIR = os.path.join("ticket_delivery", "delivery_status")
+ATTEMPT_JOURNAL_SUBPATH = os.path.join("ticket_delivery", "attempt_journal.jsonl")
+
+
+def _attempt_outcome(status: str, error: Optional[str], message_id: Optional[str]):
+    """Maps the host script's best-effort send status to the WP1 vocabulary AttemptJournal
+    expects on its `outcome` argument (duck-typed -- see attempt_journal.py). SENT only means
+    the Telegram API itself acknowledged `ok: true`, which is the closest this best-effort path
+    (no claim/retry loop) gets to a confirmed delivery."""
+    from types import SimpleNamespace
+    final_state = {"SENT": "DELIVERED", "FAILED": "DELIVERY_FAILED_RETRYABLE",
+                   "ERROR": "DELIVERY_AMBIGUOUS"}.get(status, "DELIVERY_AMBIGUOUS")
+    return SimpleNamespace(final_state=final_state, reason_code=error, provider_response_id=message_id)
+
+
+def _attempt_record(*, strategy_id: str, strategy_version: str, symbol: str, cycle: str,
+                    trading_date: dt.date, text: str, at: dt.datetime) -> DeliveryRecord:
+    """Builds a WP7-journaled record for one host-script delivery attempt. Not a WP6
+    claim/state-store record (no exactly-once claim happens here -- `_notify` is best-effort,
+    never retried) -- `state`/`attempt_number` are fixed, informational placeholders; the
+    journal line's purpose is audit evidence (attempt id + provider message id), not dedup."""
+    ticket_id = logical_ticket_id(strategy_id=strategy_id, strategy_version=strategy_version,
+                                  symbol=symbol, cycle=cycle, trading_date=trading_date)
+    return DeliveryRecord(
+        logical_ticket_id=ticket_id, delivery_attempt_id=_attempt_identity(logical_ticket_id_=ticket_id, attempt_number=1),
+        state=STATE_DELIVERY_CLAIMED, attempt_number=1, created_at=at, updated_at=at,
+        strategy_id=strategy_id, strategy_version=strategy_version, application_release=code_sha(),
+        symbol=symbol, cycle=cycle, trading_date=trading_date.isoformat(),
+        payload_hash=hashlib.sha256(text.encode()).hexdigest(),
+    )
 
 
 def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] = None,
-            ref: Optional[str] = None, now: Optional[dt.datetime] = None) -> str:
+            ref: Optional[str] = None, now: Optional[dt.datetime] = None, *,
+            strategy_id: Optional[str] = None, strategy_version: Optional[str] = None,
+            symbol: Optional[str] = None, cycle: Optional[str] = None,
+            trading_date: Optional[dt.date] = None) -> str:
     """Best-effort Telegram delivery (TELEGRAM_DELIVERY_TRACE_R1). Callers persist the scan /
     ticket record first; this never raises, so a Telegram or policy failure cannot hide a scan
     record or stop the remaining symbols. The status is persisted separately (append-only JSONL,
-    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text."""
+    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text.
+
+    AG_V1_HOST_HARDENING_R1 T1: when `journal` and the full ticket identity
+    (strategy_id/strategy_version/symbol/cycle/trading_date) are supplied, every actually-
+    attempted send (SENT/FAILED/ERROR -- never NOT_SENT_POLICY, which never calls send_message
+    at all) is additionally appended to ticket_delivery.AttemptJournal with a deterministic
+    attempt id and the Telegram message_id captured on success. Best-effort: a journal write
+    failure is logged, never raised -- it cannot hide or break the underlying send outcome."""
     error = None
+    message_id = None
     try:
         if not tg.should_send(kind, value, root):
             status = "NOT_SENT_POLICY"
         else:
-            tg.send_message(text)
+            message_id = tg.send_message(text)
             status = "SENT"
     except tg.TelegramSendError as exc:
         status, error = "FAILED", str(exc)       # send_message already sanitizes (class / HTTP code only)
@@ -211,6 +254,15 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
                           "error": error, "recorded_at": at.isoformat(), "code_sha": code_sha()})
         except OSError as exc:
             log_line("telegram", f"DELIVERY_STATUS_WRITE_FAILED {kind}={value} {type(exc).__name__}")
+        if status != "NOT_SENT_POLICY" and strategy_id and symbol and cycle and trading_date is not None:
+            try:
+                record = _attempt_record(strategy_id=strategy_id, strategy_version=strategy_version or "UNKNOWN",
+                                         symbol=symbol, cycle=cycle, trading_date=trading_date, text=text, at=at)
+                outcome = _attempt_outcome(status, error, message_id)
+                AttemptJournal(path=os.path.join(journal, ATTEMPT_JOURNAL_SUBPATH)).record(
+                    record=record, outcome=outcome, now=at)
+            except Exception as exc:  # noqa: BLE001 -- audit-only; never breaks the send outcome
+                log_line("telegram", f"ATTEMPT_JOURNAL_WRITE_FAILED {kind}={value} {type(exc).__name__}")
     return status
 
 
@@ -342,7 +394,9 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                 block_reasons=manual["block_reasons"], warnings=manual.get("warnings", ())))
             if manual_new and notify and manual["state"] == "TICKET_READY":
                 _notify(tg.MANUAL_TICKET, tg.MANUAL_TICKET_READY, manual_ticket.render_text(manual), REPO_ROOT,
-                        journal=journal, ref=f"manual:{manual['ticket_id']}", now=now)
+                        journal=journal, ref=f"manual:{manual['ticket_id']}", now=now,
+                        strategy_id=manual["strategy_id"], strategy_version=manual["strategy_version"],
+                        symbol=symbol, cycle=cycle, trading_date=dt.date.fromisoformat(manual["session_date"]))
             paper_status = "OPENED" if paper_opened else (
                 "ALREADY_RECORDED" if not paper_reasons
                 else "INELIGIBLE:" + ",".join(paper_reasons)
@@ -353,7 +407,9 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                          f"{' ARCHIVED' if new else ''}")
             if new and notify:
                 _notify("TICKET", ticket["decision"], tg.format_ticket(ticket), REPO_ROOT, journal=journal,
-                        ref=f"fx:{symbol}:{cycle}:{ticket['session_date']}", now=now)
+                        ref=f"fx:{symbol}:{cycle}:{ticket['session_date']}", now=now,
+                        strategy_id=ticket["strategy_id"], strategy_version=ticket["strategy_version"],
+                        symbol=symbol, cycle=cycle, trading_date=dt.date.fromisoformat(ticket["session_date"]))
     return lines
 
 
@@ -444,7 +500,7 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
         except Exception as exc:  # noqa: BLE001
             lines.append(f"LSMC {symbol} DATA_ERROR {_reason(exc)}")
             continue
-        lines += _watch_once(tracker, symbol, bars, now, notify)
+        lines += _watch_once(tracker, symbol, bars, now, notify, journal=journal)
     if crypto_feed is not None:
         for symbol in ("BTCUSDT", "ETHUSDT"):
             try:
@@ -453,11 +509,12 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
                 lines.append(f"LSMC {symbol} DATA_ERROR {type(exc).__name__}")
                 continue
             lines += _watch_once(tracker, symbol, {"D1": [], **b.candles}, now, notify, source=b.source,
-                                 window=window)
+                                 window=window, journal=journal)
     return lines
 
 
-def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None) -> List[str]:
+def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None,
+                journal: Optional[str] = None) -> List[str]:
     snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now)
     events = tracker.poll(snap)
     out = [f"LSMC {symbol} data={classify(symbol, bars['M5'], now)} state={snap.state} source={source} "
@@ -465,7 +522,10 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
     if notify:
         for e in events:
             price = bars["M5"][-1].close if bars["M5"] else None
-            _notify("LSMC", e.alert_level, tg.format_alert(e.__dict__, price=price), REPO_ROOT)
+            _notify("LSMC", e.alert_level, tg.format_alert(e.__dict__, price=price), REPO_ROOT,
+                    journal=journal, ref=f"lsmc:{symbol}:{e.to_state}:{e.transition_id}", now=now,
+                    strategy_id=e.strategy_id, strategy_version=e.strategy_version, symbol=symbol,
+                    cycle="LSMC_WATCH", trading_date=dt.date.fromisoformat(e.trading_date))
     return out
 
 
@@ -489,7 +549,9 @@ def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config
                      f"{' ARCHIVED' if new else ''}")
         if new and notify:
             _notify("TICKET", t["decision"], tg.format_ticket(t), REPO_ROOT, journal=journal,
-                    ref=f"crypto:{symbol}:{obs.isoformat()}{window}", now=now)
+                    ref=f"crypto:{symbol}:{obs.isoformat()}{window}", now=now,
+                    strategy_id=t["strategy_id"], strategy_version=t["strategy_version"],
+                    symbol=symbol, cycle=t.get("cycle") or "CRYPTO", trading_date=obs)
     return lines
 
 

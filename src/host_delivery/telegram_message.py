@@ -67,7 +67,12 @@ def should_send(kind: str, value: str, root: str = ".") -> bool:
     return False
 
 
-def send_message(text: str, session: Optional[Any] = None) -> None:
+def send_message(text: str, session: Optional[Any] = None) -> Optional[str]:
+    """Returns the Telegram `result.message_id` as a string when the API response carries one
+    (WP7 AttemptJournal evidence -- AG_V1_HOST_HARDENING_R1 T1), else None. The return value is
+    purely additional evidence: every existing caller that ignores it (pre-T1 behavior) is
+    unaffected, and a missing/unparsable message_id never turns a successful send into a failure
+    -- only a non-200/non-ok response still raises TelegramSendError, exactly as before."""
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
     if not token or not chat_id:
@@ -77,11 +82,17 @@ def send_message(text: str, session: Optional[Any] = None) -> None:
     try:
         resp = session.post(f"{API}/bot{token}/sendMessage", timeout=10,
                             data={"chat_id": chat_id, "text": text[:4000], "disable_web_page_preview": True})
-        ok = getattr(resp, "status_code", 0) == 200 and bool((resp.json() or {}).get("ok"))
+        body = resp.json() or {}
+        ok = getattr(resp, "status_code", 0) == 200 and bool(body.get("ok"))
     except Exception as exc:  # noqa: BLE001 -- sanitize: never surface the URL/token
         raise TelegramSendError(f"send failed ({type(exc).__name__})") from None
     if not ok:
         raise TelegramSendError(f"send failed (HTTP {getattr(resp, 'status_code', '?')})")
+    try:
+        message_id = (body.get("result") or {}).get("message_id")
+    except AttributeError:  # body.get("result") was not a dict (test doubles, malformed response)
+        message_id = None
+    return str(message_id) if message_id is not None else None
 
 
 MMT = dt.timezone(dt.timedelta(hours=6, minutes=30))
