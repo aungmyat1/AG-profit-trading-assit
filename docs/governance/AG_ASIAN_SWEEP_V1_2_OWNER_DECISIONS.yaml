@@ -1,0 +1,43 @@
+packet_id: AG_ASIAN_SWEEP_V1_2_OWNER_DECISIONS_R2
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+strategy_version: 1.2.0
+authority_date: "2026-10-07"
+status: COMPLETE
+source: OWNER_MISSION_AG_ASIAN_SWEEP_V1_2_LOGIC_FREEZE_R2
+decisions:
+  B_REGIME: {choice: A, value: SWEEP_ONLY}
+  B_ENTRY: {choice: A, value: CONFIRMED_SWEEP_RECLAIM_CANDLE_CLOSE}
+  B_STOP: {choice: A, value: REFERENCE_RANGE_TIMES_0_25}
+  B_WICKCLEAR: {choice: A_REJECT, reason: SL_DOES_NOT_CLEAR_SWEEP_EXTREME}
+  B_TGT_ORDER: {choice: A_REJECT_INVALID_GEOMETRY}
+  B_SPLIT: {confirmed: true, tp1_exit_pct: 75, runner_pct: 25, after_tp1: MOVE_SL_TO_BREAKEVEN, tp2_R: 5.0}
+  B_EMA: {choice: B_REMOVE}
+  B_RANGECHK: {choice: B_REMOVE}
+  B_MINRANGE: {choice: B_NONE}
+  B_SPREAD: {choice: C_BOTH, max_pips: 2.0, max_R: 0.15}
+  COMMISSION: {value_when_unavailable: UNKNOWN, blocking: false, advisory: true}
+  B_EXPIRY: {choice: A, minutes: 15, expiry_boundary: EXCLUSIVE}
+  B_TIMEINV: {choice: B, value: PER_SESSION_END}
+  SESSION_ANCHOR: {value: FIXED_UTC}
+  B_STRUCT: {choice: B_REMOVE_VOLUME_CLAUSE}
+  B_REF: {confirmed: true, value: EXISTING_DETERMINISTIC_CLOSED_REFERENCE_HIGH_LOW}
+  B_TRADE: {confirmed: true, value: PROPOSAL_ONLY_MANUAL_TICKET}
+  B_SWEEP: {confirmed: true, value: STRICT_PENETRATION_AND_CLOSE_RECLAIM}
+  B_DIR: {confirmed: true, lower: LONG, upper: SHORT}
+  B_MAXENTRY: {confirmed: true, interpretation: FIRST_QUALIFYING_CLOSED_CANDLE_MAX_ONE_PER_SESSION, numeric_threshold: NONE}
+  INSTRUMENTS:
+    include: [EURUSD, GBPUSD, USDJPY, XAUUSD]
+    exclude: [AUDUSD]
+  RISK: {risk_pct: 0.5, affects_signal_generation: false}
+  WATCH_NAME: {value: AWAITING_TRIGGER, actionable: false}
+  SESSION_SCOPE: {active_pairs: [ASIAN_LONDON], london_newyork_strategy_semantics: NOT_AUTHORIZED_BY_THIS_PACKET}
+safety:
+  economic_status: NOT_VERIFIED
+  edge_status: NOT_VERIFIED
+  demo_authorized: false
+  live_authorized: false
+  automated_order_execution: false
+  broker_mutation_count: 0
+change_control:
+  semantic_change_after_freeze_requires_new_version: true
+  replay_result_must_not_change_v1_2_0_rules: true
