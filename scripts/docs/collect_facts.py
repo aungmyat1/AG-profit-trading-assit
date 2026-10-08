@@ -25,8 +25,8 @@ def read_objective(path: Path) -> dict[str, str]:
     return {"source": "docs/PROJECT_OBJECTIVE.md#objective", "text": body}
 
 
-def collect(root: Path, source_sha: str) -> dict[str, Any]:
-    shared = collect_live_status_facts(root, source_sha)
+def collect(root: Path) -> dict[str, Any]:
+    shared = collect_live_status_facts(root)
     strategies: list[dict[str, Any]] = []
     for item in shared["strategies"]:
         strategies.append({
@@ -51,8 +51,8 @@ def collect(root: Path, source_sha: str) -> dict[str, Any]:
     }
 
     return {
-        "schema": "AG_DOC_FACTS_V2",
-        "source_snapshot": shared["source_snapshot"],
+        "schema": "AG_DOC_FACTS_V3",
+        "inputs_sha256": shared["inputs_sha256"],
         "objective": read_objective(root / "docs" / "PROJECT_OBJECTIVE.md"),
         "strategies": strategies,
         "schedule": schedule,
@@ -63,11 +63,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--output", type=Path, default=None)
-    parser.add_argument("--source-sha", required=True, help="explicit commit SHA represented by this snapshot")
     args = parser.parse_args()
     root = args.repo_root.resolve()
     out = args.output or (root / "status" / "facts.json")
-    facts = collect(root, args.source_sha)
+    facts = collect(root)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(facts, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
     return 0

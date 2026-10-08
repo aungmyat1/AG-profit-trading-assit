@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
-import subprocess
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -15,10 +14,35 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_PATH = REPO_ROOT / "docs" / "status" / "PROJECT_LIVE_STATUS.md"
 
 
-def _git_date(root: Path, source_sha: str) -> str:
-    return subprocess.check_output(
-        ["git", "show", "-s", "--format=%cI", f"{source_sha}^{{commit}}"], cwd=root, text=True
-    ).strip()
+def collector_input_paths(root: Path) -> list[str]:
+    """Sorted authorities, including config sources used for strategy versions."""
+    paths = {"strategies/registry.yaml", "docs/PROJECT_OBJECTIVE.md",
+             "config/ag_scheduler_v2.yaml", "scripts/docs/advisory_allowlist.json"}
+    registry = yaml.safe_load((root / "strategies/registry.yaml").read_text()) or {}
+    for row in (registry.get("strategies") or {}).values():
+        source = row.get("config_source")
+        if isinstance(source, str) and source.lower().endswith((".yaml", ".yml")):
+            path = (root / source).resolve()
+            path.relative_to(root.resolve())
+            if path.is_file():
+                paths.add(path.relative_to(root.resolve()).as_posix())
+    for base in ("docs", "config"):
+        paths.update(path.relative_to(root).as_posix()
+                     for path in (root / base).rglob("*.supersession.yaml"))
+    return sorted(paths)
+
+
+def inputs_sha256(root: Path) -> str:
+    """Hash sorted UTF-8 paths + NUL + byte length + NUL + exact file bytes.
+
+    Length framing prevents ambiguous boundaries; paths are repository-relative.
+    """
+    digest = hashlib.sha256()
+    for relative in collector_input_paths(root):
+        data = (root / relative).read_bytes()
+        digest.update(relative.encode("utf-8") + b"\0")
+        digest.update(str(len(data)).encode("ascii") + b"\0" + data)
+    return digest.hexdigest()
 
 
 def _version_for(root: Path, source: Any) -> str | None:
@@ -34,10 +58,8 @@ def _version_for(root: Path, source: Any) -> str | None:
     return None if value is None else str(value)
 
 
-def collect_live_status_facts(root: Path, source_sha: str) -> dict[str, Any]:
+def collect_live_status_facts(root: Path) -> dict[str, Any]:
     """Return fields shared by PROJECT_LIVE_STATUS and status/facts.json."""
-    if not re.fullmatch(r"[0-9a-fA-F]{40}", source_sha):
-        raise ValueError("--source-sha must be an explicit 40-character commit SHA")
     registry = yaml.safe_load((root / "strategies" / "registry.yaml").read_text(encoding="utf-8")) or {}
     strategies = []
     for strategy_id, item in sorted((registry.get("strategies") or {}).items()):
@@ -50,20 +72,19 @@ def collect_live_status_facts(root: Path, source_sha: str) -> dict[str, Any]:
             "live_authorized": live if isinstance(live, bool) else None,
         })
     return {
-        "schema": "AG_PROJECT_LIVE_STATUS_V3",
-        "source_snapshot": {"sha": source_sha, "date": _git_date(root, source_sha)},
+        "schema": "AG_PROJECT_LIVE_STATUS_V4",
+        "inputs_sha256": inputs_sha256(root),
         "strategies": strategies,
     }
 
 
 def render_markdown(facts: dict[str, Any]) -> str:
-    source = facts["source_snapshot"]
     lines = [
         "<!-- GENERATED FILE — DO NOT MANUALLY EDIT. Regenerate with scripts/generate_live_status.py -->",
         "# Project Live Status",
         "",
         f"Schema: `{facts['schema']}`",
-        f"source_snapshot: `{source['sha']}` ({source['date']})",
+        f"inputs_sha256: `{facts['inputs_sha256']}`",
         "",
         "## Strategy authority",
         "",
@@ -86,11 +107,10 @@ def render_markdown(facts: dict[str, Any]) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source-sha", required=True)
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
-    facts = collect_live_status_facts(REPO_ROOT, args.source_sha)
+    facts = collect_live_status_facts(REPO_ROOT)
     if args.json:
         print(json.dumps(facts, indent=2, sort_keys=True))
         return 0

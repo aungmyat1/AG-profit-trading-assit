@@ -1,8 +1,8 @@
 <!-- GENERATED FILE — DO NOT MANUALLY EDIT. Regenerate with scripts/generate_live_status.py -->
 # Project Live Status
 
-Schema: `AG_PROJECT_LIVE_STATUS_V3`
-source_snapshot: `cf0ce0f3804b550b74544c769f4b979902e496e4` (2026-10-08T14:07:04+06:30)
+Schema: `AG_PROJECT_LIVE_STATUS_V4`
+inputs_sha256: `72fd02593e2acd0f7a1b1699376543792ee240b311c471054d430f688d6c55ee`
 
 ## Strategy authority
 
