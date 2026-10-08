@@ -107,16 +107,16 @@ $Declared = @(
   @{ Name = 'AG_FX_LONDON_NEWYORK_SHADOW'; Path = '\'; Managed = 'HOST_ONLY'; Enabled = $false
      Trigger = 'Mon-Fri 18:30:20-21:30:20 MMT (12:00:20-15:00:20Z), 13 calendar triggers 15 min apart'; Limit = 'PT10M'
      Action = '"{DEV}\scripts\scheduled\run_london_newyork_once.bat"'; WorkDir = '' },
-  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowA_AsianRef'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $true
+  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowA_AsianRef'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $false; State = 'DISABLED_2026-10-08'; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection'
      Trigger = 'Mon-Fri 12:00 MMT (05:30Z)'; Limit = 'PT15M'
      Action = 'cmd.exe /c ""{DEV}\.venv\Scripts\python.exe" "{DEV}\scripts\run_eurusd_friction_campaign_window.py" --window-id WINDOW_A_ASIAN_REFERENCE >> "{DEV}\logs\friction_campaign_WINDOW_A_ASIAN_REFERENCE.log" 2>&1"'; WorkDir = '{DEV}' },
-  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowB_PreLondon'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $true
+  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowB_PreLondon'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $false; State = 'DISABLED_2026-10-08'; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection'
      Trigger = 'Mon-Fri 13:20 MMT (06:50Z)'; Limit = 'PT15M'
      Action = 'cmd.exe /c ""{DEV}\.venv\Scripts\python.exe" "{DEV}\scripts\run_eurusd_friction_campaign_window.py" --window-id WINDOW_B_PRE_LONDON >> "{DEV}\logs\friction_campaign_WINDOW_B_PRE_LONDON.log" 2>&1"'; WorkDir = '{DEV}' },
-  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowC_London'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $true
+  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowC_London'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $false; State = 'DISABLED_2026-10-08'; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection'
      Trigger = 'Mon-Fri 15:30 MMT (09:00Z)'; Limit = 'PT15M'
      Action = 'cmd.exe /c ""{DEV}\.venv\Scripts\python.exe" "{DEV}\scripts\run_eurusd_friction_campaign_window.py" --window-id WINDOW_C_LONDON >> "{DEV}\logs\friction_campaign_WINDOW_C_LONDON.log" 2>&1"'; WorkDir = '{DEV}' },
-  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowD_LondonNY'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $true
+  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowD_LondonNY'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $false; State = 'DISABLED_2026-10-08'; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection'
      Trigger = 'Mon-Fri 19:00 MMT (12:30Z)'; Limit = 'PT15M'
      Action = 'cmd.exe /c ""{DEV}\.venv\Scripts\python.exe" "{DEV}\scripts\run_eurusd_friction_campaign_window.py" --window-id WINDOW_D_LONDON_NEWYORK >> "{DEV}\logs\friction_campaign_WINDOW_D_LONDON_NEWYORK.log" 2>&1"'; WorkDir = '{DEV}' }
 )
