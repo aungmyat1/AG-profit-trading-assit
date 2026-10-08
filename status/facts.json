@@ -1,11 +1,11 @@
 {
   "input_paths": [
-    "config/ag_scheduler_v2.yaml",
     "docs/PROJECT_OBJECTIVE.md",
     "docs/agents/INVARIANTS.md",
     "docs/governance/OWNER_DECISION_REGISTER.md",
     "docs/v2/AG_V2_BASELINE_MANIFEST_V1.supersession.yaml",
     "scripts/docs/advisory_allowlist.json",
+    "scripts/host/install_tasks.ps1",
     "strategies/ST_ASIAN_SWEEP_5R_V1.yaml",
     "strategies/ST_LARGE_SMC_V1.yaml",
     "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
@@ -13,7 +13,7 @@
     "strategies/registry.yaml",
     "strategies/session_trade/contract.yaml"
   ],
-  "inputs_sha256": "a50e8271a10ac16668c6d64b2ea5d4482d18e84ea4e978bf8bd1df55ffce3933",
+  "inputs_sha256": "07e7a2cd5a42a026196783329adcfb2ffe76bfbcded77b49fb31013949c39d3d",
   "objective": {
     "source": "docs/PROJECT_OBJECTIVE.md#objective",
     "text": "Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.\n\nThe owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.\n\n`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
@@ -26,82 +26,67 @@
     "pending_decisions": 11
   },
   "schedule": {
-    "scheduler": "AG_DAILY_OPPORTUNITY_SCHEDULER_V2",
+    "live_host_state": "scripts/host/heartbeat.py output (not yet published)",
+    "source": "scripts/host/install_tasks.ps1",
     "tasks": [
       {
-        "cadence": "daily",
-        "end": "06:30",
-        "name": "PRE_FLIGHT",
-        "start": "06:25"
+        "cadence": {
+          "raw_line": "$repeat = (New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval (New-TimeSpan -Minutes $t.Minutes) -RepetitionDuration (New-TimeSpan -Hours 24)).Repetition",
+          "value": "every 15 minutes, daily for 24 hours"
+        },
+        "name": "AG-V1-FX-Cycles",
+        "start": {
+          "raw_line": "$at = '00:{0:D2}' -f $t.Offset",
+          "value": "00:01"
+        },
+        "time_zone": {
+          "raw_line": "$trigger = New-ScheduledTaskTrigger -Daily -At $at",
+          "value": "UNPARSED"
+        },
+        "trigger": {
+          "raw_line": "$trigger = New-ScheduledTaskTrigger -Daily -At $at",
+          "value": "Daily trigger with a repeated interval"
+        }
       },
       {
-        "cadence": "daily",
-        "end": "06:45",
-        "name": "BTC_OBSERVE",
-        "start": "06:30"
+        "cadence": {
+          "raw_line": "$repeat = (New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval (New-TimeSpan -Minutes $t.Minutes) -RepetitionDuration (New-TimeSpan -Hours 24)).Repetition",
+          "value": "every 5 minutes, daily for 24 hours"
+        },
+        "name": "AG-V1-Crypto-Daily",
+        "start": {
+          "raw_line": "$at = '00:{0:D2}' -f $t.Offset",
+          "value": "00:02"
+        },
+        "time_zone": {
+          "raw_line": "$trigger = New-ScheduledTaskTrigger -Daily -At $at",
+          "value": "UNPARSED"
+        },
+        "trigger": {
+          "raw_line": "$trigger = New-ScheduledTaskTrigger -Daily -At $at",
+          "value": "Daily trigger with a repeated interval"
+        }
       },
       {
-        "cadence": "daily",
-        "end": "06:50",
-        "name": "BTC_FINALIZE",
-        "start": "06:45"
-      },
-      {
-        "cadence": "daily",
-        "end": "06:55",
-        "name": "PRE_LONDON_REFERENCE",
-        "start": "06:50"
-      },
-      {
-        "cadence": "daily",
-        "end": "07:00",
-        "name": "PRE_LONDON_READINESS",
-        "start": "06:55"
-      },
-      {
-        "cadence": "daily",
-        "end": "11:00",
-        "name": "WINDOW_ASIAN_LONDON",
-        "start": "07:00"
-      },
-      {
-        "cadence": "daily",
-        "end": "11:05",
-        "name": "POST_LONDON",
-        "start": "11:00"
-      },
-      {
-        "cadence": "daily",
-        "end": "11:55",
-        "name": "STANDBY",
-        "start": "11:05"
-      },
-      {
-        "cadence": "daily",
-        "end": "12:00",
-        "name": "PRE_NEW_YORK",
-        "start": "11:55"
-      },
-      {
-        "cadence": "daily",
-        "end": "15:00",
-        "name": "WINDOW_LONDON_NEWYORK",
-        "start": "12:00"
-      },
-      {
-        "cadence": "daily",
-        "end": "15:10",
-        "name": "POST_NEW_YORK",
-        "start": "15:00"
-      },
-      {
-        "cadence": "daily",
-        "end": null,
-        "name": "P1_RESEARCH",
-        "start": "15:10"
+        "cadence": {
+          "raw_line": "$repeat = (New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval (New-TimeSpan -Minutes $t.Minutes) -RepetitionDuration (New-TimeSpan -Hours 24)).Repetition",
+          "value": "every 5 minutes, daily for 24 hours"
+        },
+        "name": "AG-V1-LSMC-Watch",
+        "start": {
+          "raw_line": "$at = '00:{0:D2}' -f $t.Offset",
+          "value": "00:03"
+        },
+        "time_zone": {
+          "raw_line": "$trigger = New-ScheduledTaskTrigger -Daily -At $at",
+          "value": "UNPARSED"
+        },
+        "trigger": {
+          "raw_line": "$trigger = New-ScheduledTaskTrigger -Daily -At $at",
+          "value": "Daily trigger with a repeated interval"
+        }
       }
-    ],
-    "timezone": "UTC"
+    ]
   },
   "schema": "AG_DOC_FACTS_V3",
   "strategies": [
