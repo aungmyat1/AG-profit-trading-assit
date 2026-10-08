@@ -206,7 +206,9 @@ def test_smoke_prints_states_and_archives_only(tmp_path):
     lines = smoke.run_smoke(fake_fetch(), NOW, str(tmp_path / "journal"))
     text = "\n".join(lines)
     assert "BARS EURUSD (EURUSD-VIP) status=FRESH" in text
-    assert re.search(r"FX EURUSD \(EURUSD-VIP\) ASIAN_LONDON data=FRESH decision=(READY|NO_TRADE|STALE) reason=", text)
+    # The fixture's box-direction SIGNAL carries no engine signal time: STALE-FIX-1 fails it closed
+    # instead of borrowing the first trade-session bar.
+    assert "FX EURUSD (EURUSD-VIP) ASIAN_LONDON data=FRESH decision=DATA_ERROR reason=SIGNAL_TIME_UNAVAILABLE" in text
     assert "LSMC EURUSD data=FRESH state=OPPORTUNITY" in text and "LSMC GBPUSD" in text
     # Objective symbols are never silently omitted: unavailable metadata/data is visible.
     assert "FX USDJPY" in text and "decision=DATA_ERROR" in text
@@ -644,8 +646,10 @@ def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, mon
     monkeypatch.setattr(tg, "send_message", sent.append)
     j = str(tmp_path / "journal")
 
-    archived = smoke.run_fx(fake_fetch(), NOW, j, gated=False)        # STALE + DATA_ERROR only
-    assert any("decision=STALE" in ln for ln in archived) and any("decision=DATA_ERROR" in ln for ln in archived)
+    archived = smoke.run_fx(fake_fetch(), NOW, j, gated=False)        # DATA_ERROR only (two causes)
+    assert any("decision=DATA_ERROR reason=SIGNAL_TIME_UNAVAILABLE" in ln for ln in archived)
+    assert any("decision=DATA_ERROR reason=" in ln and "SIGNAL_TIME_UNAVAILABLE" not in ln
+               for ln in archived)                                     # acquisition failure, distinct cause
     assert all("ARCHIVED" in ln for ln in archived) and sent == []     # archived, never reported
 
     ready = dict(tg.validation_proposal(NOW), strategy_id="ST_ASIAN_SWEEP_5R_V1", strategy_version="1.1.1",
