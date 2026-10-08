@@ -16,6 +16,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence
 from v1_tickets.manual_ticket import ticket_path
 from v1_tickets.owner_decision import _decision_version, load_decisions
 from v1_tickets.scan_record import append_jsonl, read_jsonl
+from ticket_store.store import REPLAY, TicketStore, build_outcome
 
 TAG = "VIRTUAL_FORWARD"
 TP1, SL, EXPIRY, AMBIGUOUS = "TP1", "SL", "EXPIRY", "AMBIGUOUS"
@@ -127,5 +128,12 @@ def resolve_day(journal: str, day: dt.date, fetch_bars: Callable[[str], Sequence
             summary["pending"].append((tid, rec["virtual_outcome"]["reason"]))
             continue
         append_jsonl(outcome_path(journal, day), rec)
+        # The legacy VIRTUAL_FORWARD journal remains append-only; mirror its immutable
+        # outcome into TICKET_STORE_V1 so reports have one canonical outcome surface.
+        store_record = build_outcome(ticket_id=tid, source=REPLAY, outcome_kind=TAG,
+                                     recorded_at_utc=now.astimezone(dt.timezone.utc).isoformat(),
+                                     result=rec["virtual_outcome"].get("result"), payload=rec,
+                                     provenance={"writer": "v1_tickets.outcome.resolve_day"})
+        TicketStore(os.path.join(journal, "ticket_store")).append_outcome(store_record)
         summary["resolved"].append(tid)
     return summary

@@ -121,6 +121,20 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## AGP-GRADE-01 — M1 replay outcomes over TICKET_STORE_V1 (2026-10-08; stacked on PR #64)
+
+The offline grader reads TICKET_STORE_V1 evaluations and closed MT5 M1 CSV history (preferring REPLAY over a same-identity LIVE record), then
+appends immutable `source=REPLAY` OUTCOME records. It records first-touch SL/TP1/TP2 after
+an entry fill, treats same-bar SL plus target as `AMBIGUOUS` graded SL-first, subtracts
+`spread_at_signal` in R, and reports MFE/MAE and minutes to outcome. An entry that remains
+unfilled through expiry is `EXPIRED`; BLOCKED/NO_TRADE records with valid levels form a
+separate counterfactual cohort. Reports group state and block counts, expectancy, win rate,
+excursion quantiles, counterfactual R by block reason, spread timing flags, and LIVE/REPLAY
+bar-hash parity. The tool has no broker access. Offline fixture tests: 10 passed; manual
+outcome/store integration: targeted checks passed. No live MT5 validation was performed.
+PR dependency: #64 (`TICKET_STORE_V1`), still open when this evidence was written.
+See `docs/status/AGP_GRADE_01_STATUS_2026-10-08.md` and the checked-in fixture report.
+
 ## TICKET_STORE_V1 — append-only ticket evaluation store (2026-10-08)
 
 The canonical-ticket path (`daily_evaluator._finalize`) now also appends one
