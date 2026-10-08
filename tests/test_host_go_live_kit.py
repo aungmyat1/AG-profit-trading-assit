@@ -573,6 +573,21 @@ def test_objective_reports_both_sender_scopes_independently(monkeypatch):
     assert "canonical effective=['LSMC_OPPORTUNITY']" in row["detail"]
 
 
+def test_objective_fails_when_legacy_override_widens_policy(monkeypatch):
+    from telegram_delivery.scope_policy import resolve
+
+    def widened_legacy(root=".", sender="legacy"):
+        if sender == "legacy":
+            return {"tracked": ("TICKET_READY", "LSMC_OPPORTUNITY"), "disabled": (),
+                    "effective": (), "error": "SCOPE_WIDENING_REJECTED"}
+        return resolve(root, sender=sender)
+    monkeypatch.setattr(objective, "resolve_immediate_scope", widened_legacy)
+    report = objective.verify()
+    row = next(item for item in report["checks"] if item["check"] == "telegram_report_scope")
+    assert row["status"] == "FAIL"
+    assert "legacy effective=[] error=SCOPE_WIDENING_REJECTED" in row["detail"]
+
+
 def test_objective_fails_when_canonical_effective_scope_exceeds_policy(monkeypatch):
     from telegram_delivery.adapter import Config
 
