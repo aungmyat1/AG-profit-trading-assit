@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[AGP-MERGE-GATE-RECOVERY-R3](status/AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md) records the PR-based regeneration contract, merge-gate post-merge states, and the PR #91 handoff.
+[AGP-MERGE-GATE-REMEDIATION-R2](status/AGP_MERGE_GATE_REMEDIATION_R2_2026-10-09.md) records the merge-gate F01–F02 repairs (its F03 is superseded by R3).
 [AGP-GRADE-01 offline M1 outcome grading](status/AGP_GRADE_01_STATUS_2026-10-08.md) records the store-native replay evaluator, fixture report, and bounded verification.
 [MT5 provider/evaluator R1 offline integration](status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md)
 records the M15 data contract, fixture verification and pending Windows live

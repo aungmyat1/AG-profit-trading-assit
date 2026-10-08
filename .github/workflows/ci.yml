@@ -1,8 +1,18 @@
 name: CI
 
+# Dispatched runs carry the merge gate's correlation id so it can bind exactly one run.
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('CI dispatch {0}', inputs.correlation_id) || github.event.pull_request.title || github.event.head_commit.message }}
+
 on:
   push:
   pull_request:
+  # Dispatched by manual-pr-merge.yml: its GITHUB_TOKEN merge emits no push-triggered runs.
+  workflow_dispatch:
+    inputs:
+      correlation_id:
+        description: Merge-gate correlation id echoed in run-name
+        required: true
+        type: string
 
 jobs:
   python-tests:

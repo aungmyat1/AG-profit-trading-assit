@@ -12,7 +12,9 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-from pr_readiness import classify_pull_request, explicit_dependencies
+from pr_readiness import checks_state, classify_pull_request, explicit_dependencies, review_decision
+
+MAX_COUNTED_PAGES = 50
 
 
 class GitHubAPI:
@@ -60,6 +62,13 @@ class GitHubAPI:
                 return result
             page += 1
 
+    def counted(self, path: str, key: str) -> list:
+        """All rows of a ``total_count``-carrying list endpoint (check runs, statuses)."""
+        def fetch(page: int, per_page: int):
+            delimiter = "&" if "?" in path else "?"
+            return self.request("GET", f"{path}{delimiter}per_page={per_page}&page={page}")
+        return counted_pages(fetch, key)
+
     def review_thread_count(self, number: int) -> int:
         query = "query($owner:String!,$name:String!,$number:Int!,$cursor:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:100,after:$cursor){nodes{isResolved}pageInfo{hasNextPage endCursor}}}}}"
         count, cursor = 0, None
@@ -74,6 +83,27 @@ class GitHubAPI:
             if not connection["pageInfo"]["hasNextPage"]:
                 return count
             cursor = connection["pageInfo"]["endCursor"]
+
+
+def counted_pages(fetch, key: str, per_page: int = 100, max_pages: int = MAX_COUNTED_PAGES) -> list:
+    """Collect every page of ``key`` until ``total_count`` rows are held; fail closed otherwise."""
+    items: list = []
+    total = None
+    for page in range(1, max_pages + 1):
+        body = fetch(page, per_page)
+        if not isinstance(body, dict) or not isinstance(body.get("total_count"), int) \
+                or not isinstance(body.get(key), list):
+            raise RuntimeError(f"{key}: page {page} response lacks total_count or {key}")
+        if total is None:
+            total = body["total_count"]
+        elif body["total_count"] != total:
+            raise RuntimeError(f"{key}: total_count changed during pagination ({total} -> {body['total_count']})")
+        items.extend(body[key])
+        if len(items) >= total or not body[key]:
+            break
+    if total is None or len(items) != total:
+        raise RuntimeError(f"{key}: pagination incomplete, collected {len(items)} of {total}")
+    return items
 
 
 def _token() -> str:
@@ -117,20 +147,15 @@ def audit(repo: str) -> dict:
             reviews = api.paged(f"/repos/{repo}/pulls/{number}/reviews")
             comments = api.paged(f"/repos/{repo}/issues/{number}/comments")
             record["issue_comments"] = [str(comment.get("body") or "") for comment in comments]
-            latest_by_user = {}
-            for review in reviews:
-                login = (review.get("user") or {}).get("login")
-                if login:
-                    latest_by_user[login] = review.get("state", "")
+            changes_requested, approvals = review_decision(reviews)
             record["data"] = {
                 "mergeable": detail.get("mergeable"), "mergeable_state": detail.get("mergeable_state"),
                 "unresolved_review_threads": api.review_thread_count(number),
-                "changes_requested": any(state == "CHANGES_REQUESTED" for state in latest_by_user.values()),
-                "approvals": sum(1 for state in latest_by_user.values() if state == "APPROVED"),
+                "changes_requested": changes_requested,
+                "approvals": approvals,
             }
-            check_runs = api.request("GET", f"/repos/{repo}/commits/{record['head_sha']}/check-runs").get("check_runs", [])
-            statuses = api.request("GET", f"/repos/{repo}/commits/{record['head_sha']}/status").get("statuses", [])
-            from pr_readiness import checks_state
+            check_runs = api.counted(f"/repos/{repo}/commits/{record['head_sha']}/check-runs", "check_runs")
+            statuses = api.counted(f"/repos/{repo}/commits/{record['head_sha']}/status", "statuses")
             record["data"]["checks_state"] = checks_state(check_runs, statuses)
             for dep in record["dependencies"]:
                 dependency = next((p for p in listed if p.get("number") == dep), None)

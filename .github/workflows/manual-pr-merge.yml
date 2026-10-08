@@ -12,7 +12,10 @@ on:
         required: true
         type: string
 
+# actions: write is the only addition (R2): it lets the job dispatch the regeneration workflow
+# and main CI, because a merge made with GITHUB_TOKEN triggers no push-event workflows.
 permissions:
+  actions: write
   contents: write
   deployments: write
   pull-requests: write
@@ -27,6 +30,7 @@ jobs:
   merge:
     if: github.actor == 'aungmyat1' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     environment:
       name: merge-gate
     steps:
@@ -58,15 +62,16 @@ jobs:
           current_main = subprocess.check_output(['gh', 'api', f"repos/{os.environ['GH_REPO']}/git/ref/heads/main", '--jq', '.object.sha'], text=True).strip()
           if report['main_sha'] != report['main_sha_after'] or report['main_sha'] != current_main:
               sys.exit('Main changed during readiness audit; rerun after reevaluating dependencies')
+          # Refuse before merging when main would lack a dispatchable CI or regeneration workflow.
+          subprocess.run([sys.executable, 'scripts/governance/post_merge_verify.py', 'preflight', '--head-sha', sha], check=True)
           subprocess.run(['gh', 'pr', 'merge', str(number), '--squash', '--match-head-commit', sha], check=True)
           PY
         shell: bash
-      - name: Verify main CI after merge
+      # Exit 0 only for INTEGRATED. MERGED_PENDING_REGEN_PR (exit 3) means generated-file changes
+      # await their own reviewed PR; POST_MERGE_FAILED (exit 1) names the failing gate.
+      - name: Dispatch and verify regeneration and main CI on the exact merged SHA
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr_number }}
-        run: |
-          set -euo pipefail
-          merge_sha=$(gh pr view "$PR_NUMBER" --json mergeCommit --jq '.mergeCommit.oid')
-          test -n "$merge_sha"
-          gh run list --branch main --commit "$merge_sha" --json databaseId,conclusion,status --jq 'if length == 0 or any(.[]; .status != "completed" or .conclusion != "success") then error("main CI missing or failed") else . end'
+          EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+        run: python scripts/governance/post_merge_verify.py verify --repo "$GITHUB_REPOSITORY" --pr "$PR_NUMBER" --expected-head-sha "$EXPECTED_HEAD_SHA" --timeout-seconds 2700 --poll-seconds 20

@@ -123,6 +123,25 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Merge-gate recovery R3 (2026-10-09, PR #96 branch `claude/merge-gate-remediation-r2`, not merged)
+
+This builds on R2's fixes to the PR #92 merge gate. R2's F01 (a `COMMENTED` review cannot
+clear `CHANGES_REQUESTED`) and F02 (all check-run pages are read, fail closed) stand.
+
+R3 replaces R2's direct-to-`main` regeneration assumption with **PR-based regeneration**
+(`AG_REGEN_OUTCOME_V1`):
+
+- The merge gate dispatches regeneration and main CI with per-dispatch correlation ids and
+  binds each run by exact SHA.
+- It reports `INTEGRATED`, `MERGED_PENDING_REGEN_PR` (generated changes awaiting their own
+  reviewed PR), or `POST_MERGE_FAILED`.
+
+Merging stays owner-only. Gated merges fail closed at preflight until PR #91 adopts the
+contract. Everything is unit-tested only; no live gated run has happened. Evidence:
+
+- [`AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md`](docs/status/AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md)
+- R2: [`AGP_MERGE_GATE_REMEDIATION_R2_2026-10-09.md`](docs/status/AGP_MERGE_GATE_REMEDIATION_R2_2026-10-09.md)
+
 ## Crypto MT5 window preflight (2026-10-09)
 
 `scripts/host/live_candles_smoke.py --mode crypto` checks the selected MT5 crypto config window
