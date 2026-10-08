@@ -1,5 +1,99 @@
 # Project Status — AG Profit Trading
 
+## Generated facts
+
+### Authority table
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+cog.outl("| Strategy | demo_authorized | Authority source |")
+cog.outl("|---|---:|---|")
+for row in facts["strategies"]:
+    value = "true" if row["demo_authorized"] is True else "false" if row["demo_authorized"] is False else "unspecified"
+    cog.outl(f"| `{row['id']}` | {value} | [`strategies/registry.yaml`](strategies/registry.yaml) |")
+ci = facts.get("last_ci_result")
+cog.outl("")
+cog.outl("Last local CI result: " + (f"`{json.dumps(ci, sort_keys=True)}`" if ci is not None else "unavailable (no local result file; network lookup disabled)"))
+]]] -->
+| Strategy | demo_authorized | Authority source |
+|---|---:|---|
+| `R8_OBM_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `SESSION_TRADE_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `SMC_3R_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_ASIAN_SWEEP_5R_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_LARGE_SMC_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_LIQUIDITY_SWEEP_RETEST_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_SESSION_SWEEP_CONTINUATION_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+
+Last local CI result: unavailable (no local result file; network lookup disabled)
+<!-- [[[end]]] -->
+
+### Strategy verdicts
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+cog.outl("| Strategy | Version | Verdict |")
+cog.outl("|---|---|---|")
+for row in facts["strategies"]:
+    version = row["version"] or "unspecified"
+    cog.outl(f"| `{row['id']}` | `{version}` | `{row['verdict']}` |")
+]]] -->
+| Strategy | Version | Verdict |
+|---|---|---|
+| `R8_OBM_V1` | `unspecified` | `NOT_DEMO_AUTHORIZED` |
+| `SESSION_TRADE_V1` | `1` | `NOT_DEMO_AUTHORIZED` |
+| `SMC_3R_V1` | `unspecified` | `NOT_DEMO_AUTHORIZED` |
+| `ST_ASIAN_SWEEP_5R_V1` | `1.1.1` | `NOT_DEMO_AUTHORIZED` |
+| `ST_LARGE_SMC_V1` | `1.0.7` | `NOT_DEMO_AUTHORIZED` |
+| `ST_LIQUIDITY_SWEEP_RETEST_V1` | `2.0.0` | `NOT_DEMO_AUTHORIZED` |
+| `ST_SESSION_SWEEP_CONTINUATION_V1` | `1.0.1` | `NOT_DEMO_AUTHORIZED` |
+<!-- [[[end]]] -->
+
+### Schedule
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+schedule = facts["schedule"]
+cog.outl(f"Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `{schedule['timezone']}`; scheduler `{schedule['scheduler']}`.")
+cog.outl("")
+cog.outl("| Task name | Cadence | Start UTC | End UTC |")
+cog.outl("|---|---|---:|---:|")
+for row in schedule["tasks"]:
+    cog.outl(f"| `{row['name']}` | {row['cadence']} | {row['start']} | {row['end'] or 'open'} |")
+]]] -->
+Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `UTC`; scheduler `AG_DAILY_OPPORTUNITY_SCHEDULER_V2`.
+
+| Task name | Cadence | Start UTC | End UTC |
+|---|---|---:|---:|
+| `PRE_FLIGHT` | daily | 06:25 | 06:30 |
+| `BTC_OBSERVE` | daily | 06:30 | 06:45 |
+| `BTC_FINALIZE` | daily | 06:45 | 06:50 |
+| `PRE_LONDON_REFERENCE` | daily | 06:50 | 06:55 |
+| `PRE_LONDON_READINESS` | daily | 06:55 | 07:00 |
+| `WINDOW_ASIAN_LONDON` | daily | 07:00 | 11:00 |
+| `POST_LONDON` | daily | 11:00 | 11:05 |
+| `STANDBY` | daily | 11:05 | 11:55 |
+| `PRE_NEW_YORK` | daily | 11:55 | 12:00 |
+| `WINDOW_LONDON_NEWYORK` | daily | 12:00 | 15:00 |
+| `POST_NEW_YORK` | daily | 15:00 | 15:10 |
+| `P1_RESEARCH` | daily | 15:10 | open |
+<!-- [[[end]]] -->
+
+### Last-updated source revision
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+git = facts["git"]
+cog.outl(f"Facts snapshot HEAD: `{git['head_sha']}` ({git['head_date']}).")
+]]] -->
+Facts snapshot HEAD: `cf0ce0f3804b550b74544c769f4b979902e496e4` (2026-10-08T14:07:04+06:30).
+<!-- [[[end]]] -->
+
+
 AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
