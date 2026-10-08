@@ -16,3 +16,14 @@ DEV_REPLAY_COUNT = 5 (of MAX_DEV_REPLAYS=6). PROMOTE_TO_FREEZE_CAMPAIGN = 0.
 
 No candidate reached `WATCH`, `OPPORTUNITY`, or `TICKET_READY`. No candidate's
 `LOGIC_VERIFIED` or `EDGE_VERIFIED` changed from its default `FALSE`.
+
+## Addendum: INT_C002 diagnostic follow-up (AG_INT_MTF_CONTROL_SHIFT_V1_LONGER_DEV_SAMPLE_R1)
+
+A separate, later mission re-ran INT_C002 under its own new, frozen prereg
+(`PREREG_MTF_LONGER_SAMPLE_R1.json`) with genuinely longer D1/H4 warm-up history (no
+bounded tail-window truncation). Verdict is unchanged (`HOLD_SAMPLE_REQUIRED`, 0
+trades both cycles); the longer history ruled out "insufficient D1/H4 warm-up" as the
+cause and located a sharper bottleneck one stage later (`H1_CONTROL_SHIFT`). See
+`candidates/INT_C002_LONGER_SAMPLE_R1.json` and
+`docs/status/AG_MTF_CONTROL_SHIFT_V1_LONGER_DEV_SAMPLE_R1_STATUS.md`. This row above
+(INT_C002) is left exactly as originally reported; this addendum does not edit it.

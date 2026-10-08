@@ -1,0 +1,34 @@
+{
+  "n_bars": 120,
+  "swing_length_param": 2,
+  "agreements": {
+    "HIGH": 6,
+    "LOW": 5,
+    "NEITHER": 107
+  },
+  "n_disagreements": 2,
+  "agreement_rate_pct": 98.33,
+  "disagreements_by_classification": {
+    "SPEC_DIFF": 2,
+    "BUG": 0,
+    "UNEXPLAINED": 0
+  },
+  "disagreements": [
+    {
+      "index": 0,
+      "time": "2026-01-05 00:00:00+00:00",
+      "ours": "NEITHER",
+      "smc": "LOW",
+      "classification": "SPEC_DIFF",
+      "detail": "boundary bar: our confirmed_swings() only evaluates range(strength, n-strength) and never labels edge bars; smc.swing_highs_lows() explicitly force-flips the first/last labelled position regardless of the underlying comparison."
+    },
+    {
+      "index": 119,
+      "time": "2026-05-04 00:00:00+00:00",
+      "ours": "NEITHER",
+      "smc": "LOW",
+      "classification": "SPEC_DIFF",
+      "detail": "boundary bar: our confirmed_swings() only evaluates range(strength, n-strength) and never labels edge bars; smc.swing_highs_lows() explicitly force-flips the first/last labelled position regardless of the underlying comparison."
+    }
+  ]
+}

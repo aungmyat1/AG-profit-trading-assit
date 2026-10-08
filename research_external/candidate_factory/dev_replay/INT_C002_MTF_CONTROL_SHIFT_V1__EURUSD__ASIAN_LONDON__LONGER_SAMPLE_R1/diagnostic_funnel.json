@@ -1,0 +1,31 @@
+{
+  "stages": [
+    "CONTEXT",
+    "LOCATION",
+    "H1_CONTROL_SHIFT",
+    "M15_REFINEMENT",
+    "GEOMETRY",
+    "SESSION",
+    "TRADE"
+  ],
+  "n_days_evaluated": 314,
+  "reached_count": {
+    "CONTEXT": 314,
+    "LOCATION": 50,
+    "H1_CONTROL_SHIFT": 4,
+    "M15_REFINEMENT": 0,
+    "GEOMETRY": 0,
+    "SESSION": 0,
+    "TRADE": 0
+  },
+  "failed_at_count": {
+    "CONTEXT": 264,
+    "LOCATION": 46,
+    "H1_CONTROL_SHIFT": 4,
+    "M15_REFINEMENT": 0,
+    "GEOMETRY": 0,
+    "SESSION": 0,
+    "TRADE": 0
+  },
+  "unmapped_reasons": {}
+}
