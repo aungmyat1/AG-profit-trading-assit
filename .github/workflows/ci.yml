@@ -68,12 +68,14 @@ jobs:
       - name: Collect deterministic documentation facts
         run: |
           git rev-parse HEAD
-          python scripts/generate_live_status.py --check
           python scripts/docs/collect_facts.py
-          git diff --exit-code -- status/facts.json
+          python scripts/generate_live_status.py
+          cog -r PROJECT_STATUS.md
+          python scripts/docs/build_context_pack.py
+          python scripts/docs/generated_files.py
 
-      - name: Check generated status blocks
-        run: cog --check PROJECT_STATUS.md
+      - name: Generated-file fingerprint warning and content gate
+        run: python scripts/docs/check_generated_files.py
 
       - name: Check authority claims against registry
         run: python scripts/docs/check_drift.py
@@ -82,7 +84,7 @@ jobs:
         run: python scripts/docs/check_prose_drift.py
 
       - name: Run documentation fixture tests
-        run: pytest -q tests/test_docs_live.py
+        run: pytest -q tests/test_docs_live.py tests/test_context_pack.py tests/test_generated_files_ci.py
 
       - name: Check links (warn only)
         uses: lycheeverse/lychee-action@v2
