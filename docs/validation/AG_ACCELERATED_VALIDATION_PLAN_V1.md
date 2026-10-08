@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG PROFIT TRADING — ACCELERATED VALIDATION PLAN V1
 
 **Repository:** `aungmyat1/AG-profit-trading-assit`  

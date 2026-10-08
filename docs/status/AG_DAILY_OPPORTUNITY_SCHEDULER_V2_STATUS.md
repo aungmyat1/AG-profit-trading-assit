@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_DAILY_OPPORTUNITY_SCHEDULER_V2 -- Implementation Status
 
 Package: `src/ag_scheduler_v2/`

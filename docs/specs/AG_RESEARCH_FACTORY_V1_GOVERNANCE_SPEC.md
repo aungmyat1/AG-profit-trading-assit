@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG Research Factory V1 Governance Specification
 
 Status: normative infrastructure contract, implemented 2026-09-14. This specification

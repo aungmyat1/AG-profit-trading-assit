@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # FIVE_SKILL_ASSISTANT_RUNTIME_V1 — Status / Evidence Report
 
 2026-08-28. Evidence only — see `docs/specs/FIVE_SKILL_ASSISTANT_RUNTIME_V1_SPEC.md` for

@@ -1,3 +1,9 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # AG Profit Trading
 
 AG Profit Trading is a deterministic FX and crypto trading assistant designed to

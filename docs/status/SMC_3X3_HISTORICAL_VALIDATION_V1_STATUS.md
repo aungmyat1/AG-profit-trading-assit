@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SMC_3X3_HISTORICAL_VALIDATION_V1 — Status
 
 Interim status after the second work session (chronological replay + setup ledger +

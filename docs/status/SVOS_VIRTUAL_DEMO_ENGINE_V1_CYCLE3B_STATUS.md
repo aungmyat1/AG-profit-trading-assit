@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SVOS Virtual Demo Engine V1 — Cycle 3B isolated exchange core
 
 Date: 2026-09-20. Classification: **VD_EXCHANGE_CORE_READY** for deterministic engineering fixtures only.

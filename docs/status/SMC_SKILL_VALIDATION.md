@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SMC Foundational Skills Validation — Structure / Supply & Demand / Liquidity
 
 2026-08-27. Scope: prove Structure → Supply & Demand → Liquidity are deterministic,

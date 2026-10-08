@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SSC_V1_0_1_ONE_YEAR_HISTORICAL_BACKTEST_STATUS
 
 ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.1 — one-year historical research backtest

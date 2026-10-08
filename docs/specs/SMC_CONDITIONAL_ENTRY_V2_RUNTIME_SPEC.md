@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # SMC_CONDITIONAL_ENTRY_V2 Runtime Wiring — 2026-08-29
 
 Preserves `SMC_CONDITIONAL_ENTRY_V2`'s architecture unchanged (`docs/specs/SMC_CONDITIONAL_ENTRY_V2_SPEC.md`).

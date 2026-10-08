@@ -1,3 +1,9 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # AG Profit Trading — Master Project Readiness Plan V4
 
 Status: **AUTHORITATIVE MASTER PLAN — V2 INTEGRATED 2026-09-21**

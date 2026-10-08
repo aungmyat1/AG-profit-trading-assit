@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG_STRATEGY_DIRECTION_CONTRACT_V1 -- Governance Contract
 
 Status: **M1 (canonical contract) IMPLEMENTED**. M2-M6 (skill consolidation, Session

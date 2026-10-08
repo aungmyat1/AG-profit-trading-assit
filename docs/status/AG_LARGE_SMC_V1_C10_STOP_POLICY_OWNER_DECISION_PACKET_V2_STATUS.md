@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 — C10 Broker Stop-Loss Distance: Owner Decision Packet V2 (2026-09-07)
 
 Status: **UNSIGNED — OWNER DECISION REQUIRED**. This is a decision packet, not a

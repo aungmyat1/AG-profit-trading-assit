@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_OBJECTIVE_INTEGRATION_R1_OFFLINE — 2026-10-07
 
 STATUS_EVIDENCE: deterministic Linux fixture validation only; no live MT5 run,

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Panel-R3 Owner Decision Bridge -- Status (2026-09-22)
 
 PANEL_R2_FROZEN_SHA = `40376ce51afc819951aebc7438511421cf6fe48e`

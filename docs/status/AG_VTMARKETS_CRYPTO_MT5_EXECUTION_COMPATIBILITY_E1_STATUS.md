@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_VTMARKETS_CRYPTO_MT5_EXECUTION_COMPATIBILITY_V1 -- E1 Read-Only Audit (2026-09-07)
 
 Read-only broker inspection only. No `order_send`, no position open/close, no SL/TP

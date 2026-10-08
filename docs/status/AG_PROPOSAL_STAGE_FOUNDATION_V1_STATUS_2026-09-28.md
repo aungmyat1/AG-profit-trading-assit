@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG PROPOSAL STAGE FOUNDATION V1 — STATUS (2026-09-28)
 
 **Classification:** PROPOSAL_STAGE_FOUNDATION_V1 (implementation checkpoint, local

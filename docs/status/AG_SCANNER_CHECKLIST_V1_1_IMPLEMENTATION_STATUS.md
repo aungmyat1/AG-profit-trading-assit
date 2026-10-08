@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Scanner Checklist V1.1 — Implementation Status (2026-10-02)
 
 Authority: Scanner V1 is frozen at commit `d1f23717f07ceb46acb6dde92135a2aeecd0c331`

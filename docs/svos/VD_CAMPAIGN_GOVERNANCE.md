@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # VD V1 campaign governance contract
 
 Campaign states: `VIRTUAL_DEMO_SEALED → AUTHORIZED_ACCESS → VIRTUAL_DEMO_CONSUMED`. `SEALED` stores hashes and a private dataset location without exposing bars or economic summaries. Authorization requires a signed, immutable manifest binding candidate ID/hash, SSC version/config hash, TD-8E and MI release IDs/hashes, dataset ID/hash and source-quality manifest, execution profile ID/hash, account/risk profile IDs/hashes, code/environment hash, access budget/count, scope, approver, and preregistered gates/thresholds. No default authorization. The authorization record precedes any dataset read.

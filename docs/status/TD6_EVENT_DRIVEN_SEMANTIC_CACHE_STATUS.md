@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-6 — Event-Driven Semantic Cache
 
 **Status:** COMPLETE (scoped). Prerequisite verified: `18c3f30`

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # LARGE_SMC_SHARED_VALIDATION_FREEZE_SCOPE_REMEDIATION_STATUS
 
 ```

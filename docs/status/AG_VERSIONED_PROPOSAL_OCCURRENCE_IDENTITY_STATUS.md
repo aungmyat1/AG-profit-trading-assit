@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Versioned Proposal Occurrence Identity — Candidate (2026-09-20)
 
 Mission `AG_VERSIONED_PROPOSAL_OCCURRENCE_IDENTITY_V1`. Prepares and validates a

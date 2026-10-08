@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # LARGE_SMC_FROZEN_CONTRACT_DRIFT_ADJUDICATION_STATUS
 
 Isolated from SSC/SVOS prospective archive work. Nothing under

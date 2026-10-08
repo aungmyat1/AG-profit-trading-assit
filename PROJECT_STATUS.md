@@ -1,3 +1,9 @@
+---
+class: status
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # Project Status — AG Profit Trading
 
 AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See

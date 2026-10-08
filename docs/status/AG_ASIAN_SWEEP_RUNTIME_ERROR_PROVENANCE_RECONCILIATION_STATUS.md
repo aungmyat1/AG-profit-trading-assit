@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Asian Sweep -- Runtime-Error Provenance Reconciliation (2026-09-23)
 
 Dated evidence snapshot per `docs/status/LIVE_STATUS_MAINTENANCE.md`. Continuation of

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # MT5 Symbol-Metadata Replay Gap — Discovered During ST_LARGE_SMC_V1 OUTCOME_LIFECYCLE_V1
 
 Status: **RESOLVED (2026-09-02, `ST_LARGE_SMC_V1_REPLAY_METADATA_DECOUPLING_V1`)**, per

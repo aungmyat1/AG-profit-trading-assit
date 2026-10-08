@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Frontend Owner-Decision Rewire — R1 Independent Re-Audit Status
 
 Date: 2026-09-23

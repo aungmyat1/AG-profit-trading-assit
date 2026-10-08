@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SSC ONE-DAY DEMO PILOT V2 — SPECIFICATION
 
 pilot_id: `SSC_ONE_DAY_OPTIMIZATION_PILOT_V1`

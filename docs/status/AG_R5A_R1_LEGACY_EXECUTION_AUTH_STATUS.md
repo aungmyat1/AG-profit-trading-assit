@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG R5A-R1 Legacy Execution Auth -- Status (2026-09-23)
 
 R5A_R1_BASE_SHA = `083399df0644ebe7a38c1a2d9b0174da6dcb18ac` (PANEL-R5A implementation,

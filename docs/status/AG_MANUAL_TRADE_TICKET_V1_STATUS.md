@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Manual Trade Ticket V1 — Status (2026-10-06)
 
 Pre-edge phase. `EDGE_VERIFIED = FALSE` for every strategy. A manual ticket is an

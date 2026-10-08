@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 -- Forward-Research Lifecycle Promotion (2026-09-07)
 
 Governance/lifecycle transition only. No strategy version change (remains `1.0.7`), no

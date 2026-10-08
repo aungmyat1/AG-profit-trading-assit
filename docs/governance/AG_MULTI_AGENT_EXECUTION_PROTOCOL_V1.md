@@ -1,3 +1,9 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # AG Multi-Agent Execution Protocol V1
 
 Status: **APPROVED GOVERNANCE / NON-AUTHORIZING**

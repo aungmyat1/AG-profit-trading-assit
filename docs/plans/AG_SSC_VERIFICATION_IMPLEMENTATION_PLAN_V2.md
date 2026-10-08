@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 The 5-stage collapse is a good improvement, but I would **not adopt it exactly as written**. It can reduce agent turns substantially, but three parts need correction so speed does not weaken validation.
 
 The best architecture is a **5-stage pipeline with internal hard checkpoints**. In other words, collapse agent sessions and data loading—not scientific gates.

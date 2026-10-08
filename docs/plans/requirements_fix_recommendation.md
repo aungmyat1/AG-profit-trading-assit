@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # How to Fix `requirements.txt` — Detailed Recommendation
 
 **Repo:** aungmyat1/AG-profit-trading-assit · **Date:** 2026-09-21 · **Verified:** all commands below were actually run

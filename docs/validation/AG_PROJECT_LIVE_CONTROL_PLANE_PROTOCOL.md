@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Project Live Control Plane — Operating Protocol
 
 Status: CURRENT_PLAN / AUTHORITATIVE_CONTRACT for the live-status generator and

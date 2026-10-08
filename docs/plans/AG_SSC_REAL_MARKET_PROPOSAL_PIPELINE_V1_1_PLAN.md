@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # SSC Real-Market Proposal-Only Pipeline (V1.1)
 
 ## Context

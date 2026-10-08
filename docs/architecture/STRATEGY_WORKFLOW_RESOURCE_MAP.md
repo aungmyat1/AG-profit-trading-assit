@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Strategy Workflow and D-Drive Resource Map
 
 Status: operational organization guide. This document does not authorize trading or

@@ -1,3 +1,9 @@
+---
+class: status
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # AG Profit Trading — Project Capability Completeness
 
 > **Roadmap supersession notice (2026-09-07):** capability evidence and authority

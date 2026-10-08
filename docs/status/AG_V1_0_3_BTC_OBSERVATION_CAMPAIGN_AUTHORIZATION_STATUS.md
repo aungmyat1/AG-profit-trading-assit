@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG V1.0.3 BTC Observation Campaign Authorization Status
 
 **Decision date:** 2026-09-06  

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-8D canonical MarketSnapshot replay bridge — 2026-09-19
 
 Status: `COMPLETE_SCOPED`, uncommitted for owner review. TD-8C freeze commit:

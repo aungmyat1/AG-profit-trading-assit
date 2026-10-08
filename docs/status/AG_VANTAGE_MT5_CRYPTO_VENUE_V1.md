@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Vantage MT5 Crypto Venue V1
 
 Date: 2026-09-13

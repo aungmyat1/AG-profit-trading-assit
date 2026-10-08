@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # VD V1 virtual account contract
 
 `VirtualAccount(AccountProfile, InstrumentMetadata)` is an isolated deterministic state reducer. The profile freezes starting balance and currency, permitted symbols, max open positions, per-symbol and aggregate exposure, margin mode if supported, mark-price source, and rounding rules. It receives validated fills and admitted market marks, never strategy decisions directly. The profile cannot relax SSC's own risk allocation or create a proposal; account limits may only reject or reduce an order under an explicitly frozen partial-admission rule.

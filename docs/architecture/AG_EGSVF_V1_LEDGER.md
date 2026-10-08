@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG_EGSVF_V1 -- Evidence-Gated Strategy Validation Framework: discovery + design ledger
 
 This ledger records the resource-first discovery trail behind `src/validation_framework/`

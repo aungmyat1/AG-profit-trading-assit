@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # EXP_EXPOSURE_EFFICIENCY_V1 / GEN_001
 
 ## Purpose and authority

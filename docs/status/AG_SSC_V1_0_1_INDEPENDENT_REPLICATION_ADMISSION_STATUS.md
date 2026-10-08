@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SSC v1.0.1 Independent Development Replication Admission — Status (2026-09-19)
 
 ## Result

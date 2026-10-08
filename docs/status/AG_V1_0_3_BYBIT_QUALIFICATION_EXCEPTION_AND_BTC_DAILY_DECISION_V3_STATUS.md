@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3 -- Status (2026-09-05)
 
 Dated evidence snapshot per `docs/status/LIVE_STATUS_MAINTENANCE.md`. Owner-approved,

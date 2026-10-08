@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # VD V1 future qualification gates (unexecuted)
 
 All gates are `NOT_EVALUATED` in Cycle 1. Gate definitions and exact economic thresholds must be frozen before sealed VD access. Gates are evaluated in order; a failed earlier gate leaves dependent gates `NOT_EVALUATED`. Passing tests or a favorable P&L alone cannot authorize Demo/Live trading.

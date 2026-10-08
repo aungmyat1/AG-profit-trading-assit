@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_ASIAN_SWEEP_5R_V1@1.1.1 — Phase B spec/engine reconciliation (2026-10-06)
 
 Mission `AG_TRADE_TICKET_AND_WATCH_READINESS_R2`, Phase B. **Decision packet only: no behavior
