@@ -141,8 +141,8 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
     tracked_scope = delivery.get("immediate_send_scope") or {}
     policy_enabled = tuple(tracked_scope.get("enabled", ()))
     policy_disabled = tracked_scope.get("disabled", {})
-    # Report both sender paths against the same tracked ceiling. Any local scope override is
-    # resolved by the shared fail-closed policy code; recipient credentials remain local.
+    # Resolve each sender independently against the same tracked ceiling. Overrides are
+    # sender-local; one sender's requested narrowing cannot disable the other.
     with tempfile.TemporaryDirectory() as probe:                     # fully-enabled probe host
         enabled = Path(probe) / telegram.OVERRIDE_PATH
         enabled.parent.mkdir(parents=True, exist_ok=True)
@@ -151,8 +151,8 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
         scoped = {kind: tuple(v for v in values if telegram.should_send(kind, v, probe))
                   for kind, values in (("TICKET", ("READY", "NO_TRADE", "BLOCKED", "STALE", "DATA_ERROR")),
                                        ("LSMC", ("OPPORTUNITY", "WATCH", "INFO")))}
-        probe_scope = resolve_immediate_scope(probe)
-    legacy_scope = resolve_immediate_scope(root)
+        probe_scope = resolve_immediate_scope(probe, sender="legacy")
+    legacy_scope = resolve_immediate_scope(root, sender="legacy")
     canonical_config = CanonicalDeliveryConfig.from_env(str(root))
     canonical_scope = tuple(sorted(canonical_config.immediate_scopes))
     canonical_calls = []
@@ -169,7 +169,7 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
     canonical_opt_in = ("config/local/canonical_ticket_delivery.yaml" in canonical_src
                         and "env_chat in env_allow" in canonical_src and "env_chat in local_ids" in canonical_src
                         and "TELEGRAM_DELIVERY_ENABLED" in canonical_src
-                        and "resolve_immediate_scope(root)" in canonical_src)
+                        and "resolve_immediate_scope(root, sender=\"canonical\")" in canonical_src)
     checks.append(_check(
         "telegram_report_scope",
         policy_enabled == ("TICKET_READY", "LSMC_OPPORTUNITY")
@@ -183,9 +183,10 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
         and tuple(telegram.SCOPES) == ("TICKET_READY", "LSMC_OPPORTUNITY")
         and runner_src.count("if new and notify:") == 2 and "reply_markup" not in runner_src
         and canonical_opt_in,
-        f"legacy effective={list(legacy_scope['effective'])}; canonical effective={list(canonical_scope)}; "
+        f"legacy effective={list(legacy_scope['effective'])} error={legacy_scope['error']}; "
+        f"canonical effective={list(canonical_scope)} error={canonical_config.scope_error}; "
         f"policy={list(policy_enabled)}; ticket={list(scoped['TICKET'])} lsmc={list(scoped['LSMC'])}; "
-        f"canonical_send_results={canonical_results}; canonical_error={canonical_config.scope_error}; "
+        f"canonical_send_results={canonical_results}; "
         f"canonical_opt_in={canonical_opt_in}",
     ))
 

@@ -86,7 +86,7 @@ def build_sender(journal: str, *, root: str, transport=None, sleep=None) -> Send
     env_allow = frozenset(part.strip() for part in os.getenv("TELEGRAM_OWNER_CHAT_IDS", "").split(",")
                           if part.strip())
     local_path = Path(root) / CANONICAL_OVERRIDE
-    scope = resolve_immediate_scope(root)
+    scope = resolve_immediate_scope(root, sender="canonical")
     watch_info_flag = False
     try:
         raw = yaml.safe_load(local_path.read_text(encoding="utf-8")) or {}

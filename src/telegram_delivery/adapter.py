@@ -181,7 +181,7 @@ class Config:
 
     @classmethod
     def from_env(cls, root="."):
-        scope = resolve_immediate_scope(root)
+        scope = resolve_immediate_scope(root, sender="canonical")
         return cls(os.getenv("TELEGRAM_DELIVERY_ENABLED", "false").lower() == "true",
                    os.getenv("TELEGRAM_BOT_TOKEN", "").strip(),
                    os.getenv("TELEGRAM_CHAT_ID", "").strip(),

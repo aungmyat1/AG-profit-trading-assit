@@ -55,7 +55,7 @@ def load_mode(root: str = ".") -> Dict[str, Any]:
             raw = yaml.safe_load(f) or {}
     except (OSError, ValueError):
         return {"mode": ARCHIVE_ONLY, "scopes": ()}
-    scope = resolve_immediate_scope(root)
+    scope = resolve_immediate_scope(root, sender="legacy")
     if scope["error"]:
         return {"mode": ARCHIVE_ONLY, "scopes": (), "error": scope["error"]}
     if raw.get("mode") != MESSAGE_DELIVERY:

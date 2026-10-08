@@ -5,10 +5,16 @@ from pathlib import Path
 import yaml
 
 POLICY_PATH = Path("config/ticket_delivery.yaml")
-OVERRIDE_PATH = Path("config/local/delivery_override.yaml")
+OVERRIDE_PATHS = {
+    "legacy": Path("config/local/delivery_override.yaml"),
+    "canonical": Path("config/local/canonical_ticket_delivery.yaml"),
+}
 
 
-def resolve(root="."):
+def resolve(root=".", sender="legacy"):
+    """Resolve one sender's scope against policy and only its own local override."""
+    if sender not in OVERRIDE_PATHS:
+        raise ValueError(f"unknown delivery sender: {sender}")
     root = Path(root)
     policy_path = root / POLICY_PATH
     if not policy_path.exists():
@@ -21,8 +27,7 @@ def resolve(root="."):
     disabled = tuple(policy.get("disabled", ()))
     effective = allowed
     error = None
-    override_paths = (root / OVERRIDE_PATH, root / "config/local/canonical_ticket_delivery.yaml")
-    for override_path in override_paths:
+    for override_path in (root / OVERRIDE_PATHS[sender],):
         if not override_path.exists():
             continue
         try:
