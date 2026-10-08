@@ -246,6 +246,16 @@ precedence; live-`symbol_info` sizing). Integration fixes I1/H3/I3/I4/I5/I6/I7 +
 semantics added; host task `AG-V1-FX-Cycles` still runs production main
 (`DEPLOYMENT_PENDING`). Telegram delivery gap H4 open (`TELEGRAM_DELIVERY_TRACE_R1`).
 
+**Telegram TICKET_READY confirmation (2026-10-08):** Inline Accept/Reject controls now
+render canonical ticket fields only and bind callbacks to the archived ticket ID, strategy
+version, code SHA, and expiry. Chat authorization reads the explicit ticket-delivery
+allowlist (empty by default); duplicate taps append one ACCEPTED/REJECTED decision. Accept
+returns `BLOCKED_NOT_AUTHORIZED` while strategy demo authority is false or order-send is
+disabled; Reject records without handoff. Execution remains OFF and this path made zero
+broker calls in static/runtime tests. Unit-tested only; no Telegram callback receiver is
+currently running or host-verified. See the dated addendum in
+`docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md`.
+
 ## Crypto CFD observation scanner V1 — merged, observation-only (2026-10-03)
 
 PR #28 was merged into `main` at `5fa46102aabac97773ef66aa3f0ed10561ad66b1`
