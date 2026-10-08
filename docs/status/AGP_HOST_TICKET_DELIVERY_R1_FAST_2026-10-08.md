@@ -219,3 +219,14 @@ not push.** Local backup taken before the hold, outside the repository (the requ
 
 No authority is granted by this document: no Demo execution, no Live execution, no economic edge
 claim (`EDGE_VERIFIED=FALSE`), and no Windows host acceptance.
+
+## Update 2026-10-08 — rebased
+
+- **Base:** `main` @ `4012d8f` (merge of PR #60, `mergedAt` 2026-10-08T13:47:14Z).
+- **#60 dependency:** resolved. The five `src/telegram_delivery/` files now equal #60's blobs plus this branch's deltas. Main was authoritative during the rebase; no #60 code was duplicated.
+- **HOLD:** lifted. PR #79 is ready for review, not a draft. Its title no longer carries "HOLD". The section above, "HOLD accountability", is unchanged and remains the record of the pre-rebase hold.
+- **Rebased feature commit:** `1b04e42`. Doc commit on top: `ef626a4`.
+- **Scope fix (C16), commit `3b94753`:** the rebase review found that the scheduled canonical path had no informational scope gate. With delivery enabled it sent `WATCH_READY` and non-suppressed `INFO_ONLY_*` immediately. This contradicted the `ticket=['READY'] lsmc=['OPPORTUNITY']` contract. Both scheduled delivery and owner `resend --force` now require the default-OFF flag `watch_info_scope: true` in the host-local override, plus recipient authorization. With the flag OFF, scheduled informational decisions become `summary_only`, and owner resend returns `SCOPE_NOT_ENABLED`. C16 is still `PENDING_OWNER` in `docs/governance/OWNER_DECISION_REGISTER.md`; this flag implements the default-OFF side only.
+- **Head SHA:** this section is committed on top of `3b94753`. The current PR #79 head is the tip of the branch; the owner-facing report carries that SHA.
+- **Gates on the rebased head:** see the final report and PR #79. Host acceptance remains `NOT_EVALUATED`. Telegram live acceptance remains `NOT_AUTHORIZED`.
+- **Authority:** unchanged. No Demo or Live execution, no `EDGE_VERIFIED` claim, no broker mutation path.
