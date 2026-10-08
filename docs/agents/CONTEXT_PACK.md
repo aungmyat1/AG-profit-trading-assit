@@ -40,9 +40,10 @@ Global gates (`config/trading.yaml`): mode `ANALYSIS`, allow_live_trading `false
 | `ST_LIQUIDITY_SWEEP_RETEST_V1` | `false` | `false` | — | — |
 | `ST_SESSION_SWEEP_CONTINUATION_V1` | `false` | `false` | — | — |
 
-## Open owner decisions (rows still `PENDING_OWNER`)
+## Open owner decisions (0 rows still `PENDING_OWNER`, templates excluded)
 
-- `docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md`: 24 pending — B-REGIME, B-ENTRY, B-STOP, B-TGT-ORDER, B-EMA, B-RANGECHK, B-MINRANGE, B-SPREAD, B-EXPIRY, B-TIMEINV, B-STRUCT, B-REF, B-TRADE, B-SWEEP, B-DIR, B-SPLIT, B-MAXENTRY, B-INSTR (AUDUSD in spec but not in the ticket universe), Anchor, Time invalidation anchoring, Rename of the "no setup yet, window open" WATCH, Owner, Date, Successor version id (e.g. 1.2.0)
+- none
+- Template (not counted): `docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md`
 
 ## Schedule (host tasks, `scripts/host/install_tasks.ps1`)
 

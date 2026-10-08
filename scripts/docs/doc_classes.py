@@ -26,6 +26,7 @@ BASE_DATE = dt.date(2026, 10, 8)
 REVIEW_DAYS = {"authority": 30, "status": 30, "design": 90, "evidence": None, "archive": None}
 
 EXCLUDED = (
+    "README.md",                                   # root README: front-matter renders on the repo page (owner, DOCS-LIVE-2-FIX)
     "docs/status/PROJECT_LIVE_STATUS.md",          # rewritten by scripts/generate_live_status.py
     "docs/status/evidence/*",                      # raw captured evidence (byte-for-byte)
     "docs/plans/AG_mission1_extract/*",            # extracted copy of docs/plans/AG_mission1_package.zip
@@ -34,7 +35,7 @@ EXCLUDED = (
 # First matching rule wins.
 RULES = (
     ("docs/archive/*", "archive"),
-    ("AGENTS.md", "authority"), ("README.md", "authority"), ("docs/README.md", "authority"),
+    ("AGENTS.md", "authority"), ("docs/README.md", "authority"),
     ("docs/DOCUMENTATION_GOVERNANCE.md", "authority"), ("docs/PROJECT_OBJECTIVE.md", "authority"),
     ("docs/PROJECT_ROADMAP.md", "authority"), ("docs/governance/*", "authority"),
     ("docs/status/LIVE_STATUS_MAINTENANCE.md", "authority"),

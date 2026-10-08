@@ -343,7 +343,7 @@ branch point (`63938cc`) and by `PROJECT_STATUS.md`'s own reconciliation.
 | Strategy / component | proposal | demo | live |
 |---|---|---|---|
 | `ST_ASIAN_SWEEP_5R_V1` | PROPOSAL_ONLY (active) | BLOCKED (`demo_authorized: false`) | BLOCKED (`live_authorized: false`) |
-| `SESSION_TRADE_V1` (separate strategy, separate repository engine — not part of this repository's core FX pipeline) | N/A here | `ASIAN_LONDON` cycle only: `demo_authorized: true`; `LONDON_NEWYORK`: `false` (`strategies/session_trade/contract.yaml`) | BLOCKED (`live_authorized: false`) |
+| `SESSION_TRADE_V1` (separate strategy, separate repository engine — not part of this repository's core FX pipeline) | N/A here | BLOCKED (`demo_authorized: false`; owner decision D3, 2026-09-30; source `strategies/registry.yaml`) | BLOCKED (`live_authorized: false`) |
 | `ST_LIQUIDITY_SWEEP_RETEST_V1` | research=RESEARCH_ONLY (BTC profile active), Forex profile has no operating pilot yet | BLOCKED (`demo_authorized: false`) | BLOCKED (`live_authorized: false`) |
 | `ST_LARGE_SMC_V1` | research=RESEARCH_ONLY (proposal generation itself `proposal_generation_authorized: false`) | NONE | NONE |
 | MT5 infrastructure | implemented=YES | demo_verified=YES (2026-08-28, generic path); strategy_authority=N/A (infra doesn't self-authorize any strategy) | N/A |
@@ -356,8 +356,8 @@ BLOCKED/DISABLED/NOT_IMPLEMENTED value above is read directly from
 
 **No-authority-borrowing principle (binding):** strategy authorization and
 execution-channel authorization are independent gates, and authority is never
-inherited across strategies. `SESSION_TRADE_V1` being `demo_authorized: true` for its
-`ASIAN_LONDON` cycle does not grant, share, or imply any execution authority for
+inherited across strategies. `SESSION_TRADE_V1` is `demo_authorized: false` (owner decision D3, 2026-09-30; source `strategies/registry.yaml`);
+any future demo authorization of it would not grant, share, or imply any execution authority for
 `ST_ASIAN_SWEEP_5R_V1` (the active V1.0.3 FX pilot strategy), `ST_LIQUIDITY_SWEEP_RETEST_V1`,
 `ST_LARGE_SMC_V1`, or any other strategy — they are independently registered,
 independently gated, and run on different engines. Each strategy row in this matrix
@@ -549,8 +549,8 @@ executor, gateway, journal, duplicate protection, reconciliation) is implemented
 demo-verified — but `ST_ASIAN_SWEEP_5R_V1`, the active V1.0.3 FX pilot strategy, is not
 `demo_authorized` and cannot use this repository's execution infrastructure
 (`demo_authorized: false` is the binding constraint, not the infrastructure).
-`SESSION_TRADE_V1` is independently `demo_authorized: true` for its `ASIAN_LONDON`
-cycle only (`LONDON_NEWYORK` remains `false`), but it runs on its own separate engine
+`SESSION_TRADE_V1` is also `demo_authorized: false` (owner decision D3, 2026-09-30; source `strategies/registry.yaml`),
+and it runs on its own separate engine
 and execution ledger in a different repository (`D:\ddev\Session Trade Codex`) and does
 not use, share, or grant this repository's MT5 execution infrastructure or
 `ST_ASIAN_SWEEP_5R_V1`'s authority in any direction — strategy authorization and
@@ -644,9 +644,9 @@ the surrounding software pipeline is substantially implemented.
 - `SECTION_B_DEMO_AUTOMATION_45_55`: **SUPPORTED, at the low-to-mid end**. Generic MT5
   Demo infrastructure in this repository is fully built and demo-verified, but
   `ST_ASIAN_SWEEP_5R_V1` (the active V1.0.3 FX pilot strategy) is not authorized to use
-  it (`demo_authorized: false`); `SESSION_TRADE_V1` is separately `demo_authorized: true`
-  for its own `ASIAN_LONDON` cycle only, on its own separate engine, and this does not
-  extend to `ST_ASIAN_SWEEP_5R_V1` or any other strategy. Crypto execution is
+  it (`demo_authorized: false`); `SESSION_TRADE_V1` is also `demo_authorized: false`
+  (owner decision D3, 2026-09-30; source `strategies/registry.yaml`); it runs on its own separate engine, and no authority would
+  extend from it to `ST_ASIAN_SWEEP_5R_V1` or any other strategy. Crypto execution is
   explicitly unimplemented, and Telegram (the most complete approval-interface
   candidate) is paused with a known pre-execution-authorization blocking defect.
   "Automation" in the full sense (strategy-authorized, end-to-end, unattended) is
@@ -671,7 +671,7 @@ precision this audit cannot support. Report exact, machine-derivable counters in
   table above; largest uncertainty: BTC scheduler's actual installed/running state is
   unconfirmed.
 - `SECTION_B_DEMO_AUTOMATION`: `ST_ASIAN_SWEEP_5R_V1: demo_authorized=false`;
-  `SESSION_TRADE_V1: demo_authorized=true, authorized_cycle=ASIAN_LONDON` (separate
+  `SESSION_TRADE_V1: demo_authorized=false` (owner decision D3, 2026-09-30; separate
   engine, does not extend to other strategies); `Crypto execution: NOT_IMPLEMENTED,
   fail_closed=true`. This repository's MT5 Demo execution infrastructure exists and is
   demo-verified, but no strategy that uses it directly is currently `demo_authorized`;

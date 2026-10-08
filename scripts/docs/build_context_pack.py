@@ -8,7 +8,9 @@ Inputs (offline, deterministic):
              config/trading.yaml, scripts/host/install_tasks.ps1)
   objective  the `## Objective` section of docs/PROJECT_OBJECTIVE.md, copied verbatim
              (PROJECT_STATUS.md carries no current objective section)
-  decisions  table rows still marked PENDING_OWNER in docs/**/*OWNER_DECISIONS*.md
+  decisions  table rows still marked PENDING_OWNER in docs/**/*OWNER_DECISIONS*.md, excluding
+             templates: a file whose H1 or status line says "template", and any section whose
+             heading says "template" (unfilled placeholders are not open decisions)
 The output is capped at 150 lines; the build fails rather than truncating facts.
 --check exits 1 when the committed file differs from a fresh build.
 """
@@ -39,6 +41,8 @@ def _read(rel: str) -> str:
         return f.read()
 
 
+# TODO(DOCS-LIVE-1, PR #69): once #69 merges, read docs/status/facts.json from
+# scripts/docs/collect_facts.py only and delete this stub reader.
 def _stub_facts() -> dict:
     reg = (yaml.safe_load(_read("strategies/registry.yaml")) or {}).get("strategies") or {}
     trading = yaml.safe_load(_read("config/trading.yaml")) or {}
@@ -71,15 +75,33 @@ def objective_section() -> str:
     return m.group(1).strip("\n")
 
 
-def pending_decisions() -> list:
-    rows = []
+_TEMPLATE = re.compile(r"\btemplate\b", re.I)
+
+
+def _is_template_doc(text: str) -> bool:
+    head = [ln for ln in text.splitlines()[:20] if ln.startswith("# ") or ln.lower().startswith("status:")]
+    return any(_TEMPLATE.search(ln) for ln in head)
+
+
+def pending_decisions() -> tuple:
+    """(rows, excluded template files)."""
+    rows, templates = [], []
     for path in sorted(glob.glob(os.path.join(ROOT, "docs", "**", "*OWNER_DECISIONS*.md"), recursive=True)):
         rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
-        for line in _read(rel).splitlines():
+        text = _read(rel)
+        if _is_template_doc(text):
+            templates.append(rel)
+            continue
+        in_template_section = False
+        for line in text.splitlines():
+            if line.startswith("#"):
+                in_template_section = bool(_TEMPLATE.search(line))
+                continue
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            if line.lstrip().startswith("|") and "PENDING_OWNER" in line and cells and cells[0]:
+            if (not in_template_section and line.lstrip().startswith("|") and "PENDING_OWNER" in line
+                    and cells and cells[0]):
                 rows.append((rel, cells[0]))
-    return rows
+    return rows, templates
 
 
 def _b(v) -> str:
@@ -116,11 +138,13 @@ def build() -> str:
              "|---|---|---|---|---|"]
     lines += [f"| `{s['id']}` | {_b(s.get('demo_authorized'))} | {_b(s.get('live_authorized'))} | "
               f"{_b(s.get('logic_status'))} | {_b(s.get('verdict'))} |" for s in f["strategies"]]
-    lines += ["", "## Open owner decisions (rows still `PENDING_OWNER`)", ""]
+    rows, templates = pending_decisions()
+    lines += ["", f"## Open owner decisions ({len(rows)} rows still `PENDING_OWNER`, templates excluded)", ""]
     by_doc: dict = {}
-    for rel, row in pending_decisions():
+    for rel, row in rows:
         by_doc.setdefault(rel, []).append(row)
-    lines += [f"- `{rel}`: {len(rows)} pending — " + ", ".join(rows) for rel, rows in by_doc.items()] or ["- none"]
+    lines += [f"- `{rel}`: {len(r)} pending — " + ", ".join(r) for rel, r in by_doc.items()] or ["- none"]
+    lines += [f"- Template (not counted): `{rel}`" for rel in templates]
     lines += ["", "## Schedule (host tasks, `scripts/host/install_tasks.ps1`)", "",
               "| Task | mode | every (min) |", "|---|---|---|"]
     lines += [f"| `{t['name']}` | `{t['mode']}` | {t['every_minutes']} |" for t in f["scheduled_tasks"]]

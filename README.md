@@ -1,9 +1,3 @@
----
-class: authority
-state: DESIGN
-owner_reviewed: null
-review_by: 2026-11-07
----
 # AG Profit Trading
 
 AG Profit Trading is a deterministic FX and crypto trading assistant designed to
@@ -153,8 +147,8 @@ particular its "Current rolling classification" section and the R0–R9 gate tab
 which distinguish IMPLEMENTED from VERIFIED from ENABLED from AUTHORIZED, and separate
 the proposal-only FX runtime from the independently-gated MT5 Demo execution
 subsystem. `ST_ASIAN_SWEEP_5R_V1` is `demo_authorized: false` in
-`strategies/registry.yaml`; `SESSION_TRADE_V1` is independently `demo_authorized: true`
-for its `ASIAN_LONDON` cycle only.
+`strategies/registry.yaml`; `SESSION_TRADE_V1` is also `demo_authorized: false`
+(owner decision D3, 2026-09-30; source `strategies/registry.yaml`).
 
 ## Run locally from VS Code
 
