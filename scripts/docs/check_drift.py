@@ -36,9 +36,89 @@ def _sections(text: str) -> list[tuple[str, str]]:
     return [(heading, "\n".join(lines)) for heading, lines in sections]
 
 
+def _advisory_policy(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return data if data.get("schema") == "AG_ADVISORY_SCAN_ALLOWLIST_V1" else None
+
+
+def _range_contains(entry: dict[str, Any], rel: str, line: int) -> bool:
+    bounds = entry.get("lines")
+    return (
+        entry.get("file") == rel
+        and isinstance(bounds, list)
+        and len(bounds) == 2
+        and all(isinstance(value, int) for value in bounds)
+        and bounds[0] <= line <= bounds[1]
+    )
+
+
+def _policy_suppresses(policy: dict[str, Any] | None, rel: str, line: int, text: str) -> bool:
+    if not policy:
+        return False
+    if any(_range_contains(entry, rel, line) for entry in policy.get("never_suppress", [])):
+        return False
+    allowlisted = False
+    for entry in [*policy.get("allowlisted_ranges", []), *policy.get("verified_label_free", [])]:
+        if not _range_contains(entry, rel, line):
+            continue
+        carve_outs = [
+            {**carve_out, "file": entry.get("file")}
+            for carve_out in entry.get("carve_outs", [])
+        ]
+        if any(_range_contains(carve_out, rel, line) for carve_out in carve_outs):
+            return False
+        allowlisted = True
+    for carve_out in policy.get("carve_outs", []):
+        if _range_contains(carve_out, rel, line):
+            return False
+    if allowlisted:
+        return True
+    for note in policy.get("disambiguation_notes", []):
+        token = note.get("token")
+        related = note.get("related_lines", [])
+        location_matches = _range_contains(note, rel, line) or (
+            note.get("file") == rel and isinstance(related, list) and line in related
+        )
+        if location_matches and isinstance(token, str) and token.lower() in text.lower():
+            return True
+    return False
+
+
+def _paragraphs(text: str):
+    heading = ""
+    start = 1
+    buffer: list[str] = []
+    for line_number, line in enumerate(text.splitlines(), 1):
+        if line.startswith("## "):
+            if buffer:
+                yield heading, start, "\n".join(buffer)
+                buffer = []
+            heading = line[3:].strip()
+            start = line_number + 1
+            continue
+        if not line.strip():
+            if buffer:
+                yield heading, start, "\n".join(buffer)
+                buffer = []
+            start = line_number + 1
+            continue
+        if not buffer:
+            start = line_number
+        buffer.append(line)
+    if buffer:
+        yield heading, start, "\n".join(buffer)
+
+
 def _historical_policy(path: Path) -> tuple[set[str], set[str]]:
-    classes: set[str] = set()
+    classes: set[str] = {"evidence"}
     dated_files: set[str] = set()
+    if not path.is_file():
+        return classes, dated_files
     for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         if not line.strip() or line.lstrip().startswith("#"):
             continue
@@ -63,6 +143,7 @@ def current_truth_contradictions(
     classes, dated_files = _historical_policy(
         allowlist_path or root / "scripts" / "docs" / "docs_drift_allowlist.txt"
     )
+    advisory = _advisory_policy(root / "scripts" / "docs" / "advisory_allowlist.json")
     documents = [root / "README.md", root / "PROJECT_STATUS.md"]
     documents.extend(sorted((root / "docs").rglob("*.md")))
     failures: list[str] = []
@@ -73,17 +154,19 @@ def current_truth_contradictions(
         if _frontmatter_class(text) in classes:
             continue
         rel = str(path.relative_to(root))
-        for heading, body in _sections(text):
+        for heading, paragraph_start, paragraph in _paragraphs(text):
             if rel in dated_files and DATE.search(heading):
                 continue
-            for paragraph in re.split(r"\n\s*\n", body):
-                for match in AFFIRMATIVE_DEMO.finditer(paragraph):
-                    prefix = paragraph[:match.start()]
-                    positions = [(prefix.rfind(strategy_id), strategy_id) for strategy_id in registry_rows]
-                    position, strategy_id = max(positions, default=(-1, ""))
-                    if position >= 0 and strategy_id in false_ids:
-                        excerpt = " ".join(paragraph.split())[:240]
-                        failures.append(f"{rel} [{strategy_id}]: {excerpt}")
+            for match in AFFIRMATIVE_DEMO.finditer(paragraph):
+                line = paragraph_start + paragraph[:match.start()].count("\n")
+                prefix = paragraph[:match.start()]
+                positions = [(prefix.rfind(strategy_id), strategy_id) for strategy_id in registry_rows]
+                position, strategy_id = max(positions, default=(-1, ""))
+                if position >= 0 and strategy_id in false_ids:
+                    if _policy_suppresses(advisory, rel, line, paragraph):
+                        continue
+                    excerpt = " ".join(paragraph.split())[:240]
+                    failures.append(f"{rel}:{line} [{strategy_id}]: {excerpt}")
     return failures
 
 

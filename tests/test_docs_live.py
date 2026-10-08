@@ -105,7 +105,10 @@ def test_machine_authority_mismatch_is_blocking_unless_superseded(tmp_path: Path
     strategy_id = facts["strategies"][0]["id"]
     current = facts["strategies"][0]["demo_authorized"]["value"]
     manifest = root / "docs/fixture.json"
-    manifest.write_text(json.dumps({"strategies": {strategy_id: {"demo_authorized": not current}}}), encoding="utf-8")
+    manifest.write_text(json.dumps({
+        "class": "evidence",
+        "strategies": {strategy_id: {"demo_authorized": not current}},
+    }), encoding="utf-8")
 
     result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
     assert result.returncode == 1
@@ -118,6 +121,48 @@ def test_machine_authority_mismatch_is_blocking_unless_superseded(tmp_path: Path
     }), encoding="utf-8")
     result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
     assert result.returncode == 0
+
+
+def test_never_suppress_overrides_allowlisted_range(tmp_path: Path) -> None:
+    root = drift_fixture(tmp_path)
+    readme = root / "README.md"
+    readme.write_text(
+        "---\nclass: authority\n---\n"
+        "`SESSION_TRADE_V1` is `demo_authorized: true`.\n",
+        encoding="utf-8",
+    )
+    policy_path = root / "scripts/docs/advisory_allowlist.json"
+    policy = {
+        "schema": "AG_ADVISORY_SCAN_ALLOWLIST_V1",
+        "allowlisted_ranges": [{"id": "all", "file": "README.md", "lines": [1, 10]}],
+        "verified_label_free": [],
+        "disambiguation_notes": [],
+        "never_suppress": [],
+    }
+    policy_path.write_text(json.dumps(policy), encoding="utf-8")
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 0
+
+    policy["allowlisted_ranges"][0]["carve_outs"] = [{"lines": [4, 4]}]
+    policy_path.write_text(json.dumps(policy), encoding="utf-8")
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 1
+
+    policy["allowlisted_ranges"] = []
+    policy["disambiguation_notes"] = [{
+        "file": "README.md", "lines": [4, 4], "token": "demo_authorized"
+    }]
+    policy_path.write_text(json.dumps(policy), encoding="utf-8")
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 0
+
+    policy["allowlisted_ranges"] = [{"id": "all", "file": "README.md", "lines": [1, 10]}]
+    policy["disambiguation_notes"] = []
+    policy["never_suppress"] = [{"file": "README.md", "lines": [4, 4], "ref": "test"}]
+    policy_path.write_text(json.dumps(policy), encoding="utf-8")
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 1
+    assert "current-truth contradiction" in result.stdout
 
 
 def test_baseline_sidecar_is_exact_and_removal_restores_blocking(tmp_path: Path) -> None:
