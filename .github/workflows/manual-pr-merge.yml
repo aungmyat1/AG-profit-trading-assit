@@ -67,6 +67,8 @@ jobs:
           subprocess.run(['gh', 'pr', 'merge', str(number), '--squash', '--match-head-commit', sha], check=True)
           PY
         shell: bash
+      # Exit 0 only for INTEGRATED. MERGED_PENDING_REGEN_PR (exit 3) means generated-file changes
+      # await their own reviewed PR; POST_MERGE_FAILED (exit 1) names the failing gate.
       - name: Dispatch and verify regeneration and main CI on the exact merged SHA
         env:
           GH_TOKEN: ${{ github.token }}

@@ -6,6 +6,10 @@ review_by: null
 ---
 # AGP-MERGE-GATE-REMEDIATION-R2 — merge-gate defect repair (2026-10-09)
 
+> **Superseded in part by R3** ([`AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md`](AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md)):
+> the F03 assumption below that regeneration may add one bot commit to `main` is replaced by
+> PR-based regeneration. F01 and F02 stand unchanged. This record is kept as historical evidence.
+
 Repairs four defects in the merge-readiness system merged by PR #92 (`d7b4995`). The audit is
 still advisory (`merge_authorized: false`). Merging stays owner-only through
 `manual-pr-merge.yml`: actor `aungmyat1`, the `merge-gate` environment, and one exact
