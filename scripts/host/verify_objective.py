@@ -140,9 +140,11 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
         "telegram_report_scope",
         scoped == {"TICKET": ("READY",), "LSMC": ("OPPORTUNITY",)}
         and tuple(telegram.SCOPES) == ("TICKET_READY", "LSMC_OPPORTUNITY")
-        and runner_src.count("if new and notify:") == 2 and "reply_markup" not in runner_src,
+        and runner_src.count("if new and notify:") == 2
+        and "if manual_new and notify and manual[\"state\"] == \"TICKET_READY\":" in runner_src
+        and "reply_markup=confirmation_markup" in runner_src,
         f"ticket={list(scoped['TICKET'])} lsmc={list(scoped['LSMC'])} "
-        "(message-only, newly-archived decisions only)",
+        "(legacy scopes stay message-only; manual inline controls require newly-archived TICKET_READY)",
     ))
 
     failures = [item["check"] for item in checks if item["status"] == "FAIL"]
