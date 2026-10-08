@@ -509,6 +509,57 @@ def test_telegram_default_archive_only_and_scoped_override(tmp_path):
         assert not tg.should_send(kind, v, r)
 
 
+def test_local_delivery_scope_can_only_narrow_tracked_policy(tmp_path):
+    import shutil
+    from telegram_delivery.adapter import Config
+    from telegram_delivery.scope_policy import resolve
+
+    (tmp_path / "config").mkdir()
+    shutil.copy2(ROOT / "config/ticket_delivery.yaml", tmp_path / "config/ticket_delivery.yaml")
+    local = tmp_path / "config/local"
+    local.mkdir()
+    override = local / "delivery_override.yaml"
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY]\n", encoding="utf-8")
+    resolved = resolve(tmp_path)
+    assert resolved["effective"] == ("TICKET_READY",)
+    assert resolved["error"] is None
+    assert tg.should_send("TICKET", "READY", str(tmp_path))
+    assert not tg.should_send("LSMC", "OPPORTUNITY", str(tmp_path))
+
+    override.unlink()
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [LSMC_OPPORTUNITY]\n", encoding="utf-8")
+    canonical = Config.from_env(str(tmp_path))
+    assert canonical.immediate_scopes == frozenset({"LSMC_OPPORTUNITY"})
+    assert canonical.scope_error is None
+
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [WATCH_READY]\n", encoding="utf-8")
+    canonical_widening = Config.from_env(str(tmp_path))
+    assert canonical_widening.immediate_scopes == frozenset()
+    assert canonical_widening.scope_error == "SCOPE_WIDENING_REJECTED"
+
+    (local / "canonical_ticket_delivery.yaml").unlink()
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, MANUAL_TICKET_READY]\n",
+                        encoding="utf-8")
+    rejected = resolve(tmp_path)
+    assert rejected["effective"] == ()
+    assert rejected["error"] == "SCOPE_WIDENING_REJECTED"
+    assert tg.load_mode(str(tmp_path))["error"] == "SCOPE_WIDENING_REJECTED"
+    assert not tg.should_send("TICKET", "READY", str(tmp_path))
+
+
+def test_objective_fails_when_canonical_effective_scope_exceeds_policy(monkeypatch):
+    from telegram_delivery.adapter import Config
+
+    monkeypatch.setattr(Config, "from_env", classmethod(
+        lambda cls, root=".": cls(immediate_scopes=frozenset({"WATCH_READY"}))))
+    report = objective.verify()
+    scope_check = next(row for row in report["checks"] if row["check"] == "telegram_report_scope")
+    assert scope_check["status"] == "FAIL"
+    assert "canonical effective=['WATCH_READY']" in scope_check["detail"]
+
+
 def test_host_notification_router_reports_only_ready_proposals_and_opportunities(tmp_path, monkeypatch):
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(

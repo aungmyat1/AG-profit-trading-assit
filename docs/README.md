@@ -6,6 +6,9 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[TG-SCOPE-POLICY-1](status/AG_TG_SCOPE_POLICY_1_STATUS_2026-10-08.md) records the tracked
+Telegram immediate-send ceiling, fail-closed host-local narrowing, and offline verification.
+
 [AGP-GRADE-01 offline M1 outcome grading](status/AGP_GRADE_01_STATUS_2026-10-08.md) records the store-native replay evaluator, fixture report, and bounded verification.
 [MT5 provider/evaluator R1 offline integration](status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md)
 records the M15 data contract, fixture verification and pending Windows live

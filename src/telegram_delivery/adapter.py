@@ -19,6 +19,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 
 LOG = logging.getLogger(__name__)
 STATUSES = frozenset({"WATCH_READY", "INFO_ONLY_STALE", "INFO_ONLY_INSUFFICIENT_REMAINING_R",
@@ -175,13 +176,17 @@ class Config:
     # are informational. They are sent (scheduled or owner-resent) only when this default-OFF
     # flag is explicitly enabled; otherwise they stay archive/summary-only.
     watch_info_scope: bool = False
+    immediate_scopes: frozenset[str] = frozenset()
+    scope_error: str | None = None
 
     @classmethod
-    def from_env(cls):
+    def from_env(cls, root="."):
+        scope = resolve_immediate_scope(root)
         return cls(os.getenv("TELEGRAM_DELIVERY_ENABLED", "false").lower() == "true",
                    os.getenv("TELEGRAM_BOT_TOKEN", "").strip(),
                    os.getenv("TELEGRAM_CHAT_ID", "").strip(),
-                   frozenset(x.strip() for x in os.getenv("TELEGRAM_OWNER_CHAT_IDS", "").split(",") if x.strip()))
+                   frozenset(x.strip() for x in os.getenv("TELEGRAM_OWNER_CHAT_IDS", "").split(",") if x.strip()),
+                   immediate_scopes=frozenset(scope["effective"]), scope_error=scope["error"])
 
 
 def bot_api(token, chat_id, message):
@@ -459,12 +464,17 @@ class Sender:
         if not _known_decision(ticket.get("decision")):
             return self._record_compatibility_error(ticket)
         validate(ticket)
+        if self.config.scope_error:
+            LOG.error("Telegram scope rejected: %s", self.config.scope_error)
+            return "blocked"
         # The authority-suppressed READY is durable but must never become an immediate alert.
         if ticket["decision"] == "INFO_ONLY_SUPPRESSED":
             return "summary_only"
         # Other INFO_ONLY states remain explicitly informational (the renderer stamps execution
         # disabled); terminal non-alert decisions are visible through the session summary only.
         if ticket["decision"] != "WATCH_READY" and not ticket["decision"].startswith("INFO_ONLY_"):
+            return "summary_only"
+        if self.config.immediate_scopes and ticket["decision"] not in self.config.immediate_scopes:
             return "summary_only"
         # Same C16 scope flag as owner resend: informational states stay summary-only unless enabled.
         if not self.config.watch_info_scope:
@@ -496,12 +506,18 @@ class Sender:
         if not _known_decision(ticket.get("decision")):
             return self._record_compatibility_error(ticket)
         validate(ticket)
+        if cfg.scope_error:
+            LOG.error("Telegram scope rejected: %s", cfg.scope_error)
+            return "blocked"
         if ticket["decision"] == "INFO_ONLY_SUPPRESSED":
             return "summary_only"
         if ticket["decision"] != "WATCH_READY" and not ticket["decision"].startswith("INFO_ONLY_"):
             return "summary_only"
         if _informational_scope(ticket["decision"]) and not cfg.watch_info_scope:
             LOG.error("Telegram force resend refused: C16 informational scope not enabled")
+            return "SCOPE_NOT_ENABLED"
+        if cfg.immediate_scopes and ticket["decision"] not in cfg.immediate_scopes:
+            LOG.error("Telegram force resend refused: decision is outside tracked immediate scope")
             return "SCOPE_NOT_ENABLED"
         LOG.info("Force resend requested actor=%s when=%s ticket_id=%s allow_duplicate=%s",
                  actor, _utc_now(), ticket["ticket_id"], allow_duplicate)

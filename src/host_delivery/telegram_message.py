@@ -22,6 +22,7 @@ from typing import Any, Dict, Optional
 
 import yaml
 
+from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 from host_evidence.symbol_metadata import load_record
 from ticket_delivery.identity import logical_ticket_id
 from v1_tickets.guards import STALE_AFTER
@@ -54,9 +55,15 @@ def load_mode(root: str = ".") -> Dict[str, Any]:
             raw = yaml.safe_load(f) or {}
     except (OSError, ValueError):
         return {"mode": ARCHIVE_ONLY, "scopes": ()}
+    scope = resolve_immediate_scope(root)
+    if scope["error"]:
+        return {"mode": ARCHIVE_ONLY, "scopes": (), "error": scope["error"]}
     if raw.get("mode") != MESSAGE_DELIVERY:
         return {"mode": ARCHIVE_ONLY, "scopes": ()}
-    return {"mode": MESSAGE_DELIVERY, "scopes": tuple(s for s in raw.get("scopes", ()) if s in SCOPES + MANUAL_SCOPES)}
+    effective = set(scope["effective"])
+    return {"mode": MESSAGE_DELIVERY,
+            "scopes": tuple(s for s in raw.get("scopes", ()) if s in SCOPES + MANUAL_SCOPES
+                             and s in effective)}
 
 
 def should_send(kind: str, value: str, root: str = ".") -> bool:
