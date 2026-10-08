@@ -5,7 +5,10 @@ Step 4 of scripts/host/GO_LIVE.md -- Windows Task Scheduler tasks for AG V1 (inf
   powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1 -Apply   # installs / replaces the three tasks
 
 Tasks. All run the repo venv: .venv\Scripts\python.exe scripts\host\live_candles_smoke.py --mode <m>
-  AG-V1-FX-Cycles     every 15 min, daily. The runner acts only inside the frozen ST_ASIAN_SWEEP_5R_V1
+  AG-V1-FX-Cycles     adds --canonical to the scheduled FX mode. It retains run_manual_jobs,
+                      then uses the canonical daily evaluator and TICKET_STORE_V1; the legacy
+                      run_fx path remains available for unscheduled/manual invocations only.
+                      It acts only inside the frozen ST_ASIAN_SWEEP_5R_V1
                       trade sessions in UTC, plus 30 min grace:
                         ASIAN_LONDON   07:00-11:00 GMT (08:00-12:00 Europe/London in BST)
                         LONDON_NEWYORK 12:00-15:00 GMT (13:00-16:00 Europe/London in BST)
@@ -43,9 +46,9 @@ $Preflight = Join-Path $Repo 'scripts\host\verify_objective.py'
 $VerifyTasks = Join-Path $Repo 'scripts\host\verify_tasks.ps1'
 
 $Plan = @(
-  @{ Name = 'AG-V1-FX-Cycles';    Mode = 'fx';     Minutes = 15; Offset = 1 },
-  @{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Minutes = 5;  Offset = 2 },
-  @{ Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc';   Minutes = 5;  Offset = 3 }
+  @{ Name = 'AG-V1-FX-Cycles';    Mode = 'fx';     Minutes = 15; Canonical = $true;  Offset = 1 },
+  @{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Minutes = 5;  Canonical = $false; Offset = 2 },
+  @{ Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc';   Minutes = 5;  Canonical = $false; Offset = 3 }
 )
 
 if (-not (Test-Path $Python)) {
@@ -62,8 +65,10 @@ if ($Apply) {
 }
 
 foreach ($t in $Plan) {
-  Write-Host ("{0}: every {1} min at +{5} min daily -> `"{2}`" `"{3}`" --mode {4}" -f `
-    $t.Name, $t.Minutes, $Python, $Runner, $t.Mode, $t.Offset)
+  $ModeSuffix = if ($t.Canonical) { ' --canonical' } else { '' }
+  $Arguments = ("`"{0}`" --mode {1}{2}" -f $Runner, $t.Mode, $ModeSuffix)
+  Write-Host ("{0}: every {1} min at +{5} min daily -> `"{2}`" `"{3}`" --mode {4}{6}" -f `
+    $t.Name, $t.Minutes, $Python, $Runner, $t.Mode, $t.Offset, $ModeSuffix)
 }
 if (-not $Apply) { Write-Host 'WhatIf: no changes made. Re-run with -Apply to install.'; exit 0 }
 
@@ -76,7 +81,9 @@ if (Get-ScheduledTask -TaskName $LegacyWeekendTask -ErrorAction SilentlyContinue
   Write-Host "REMOVED SUPERSEDED $LegacyWeekendTask"
 }
 foreach ($t in $Plan) {
-  $action = New-ScheduledTaskAction -Execute $Python -Argument ("`"{0}`" --mode {1}" -f $Runner, $t.Mode) -WorkingDirectory $Repo
+  $ModeSuffix = if ($t.Canonical) { ' --canonical' } else { '' }
+  $Arguments = ("`"{0}`" --mode {1}{2}" -f $Runner, $t.Mode, $ModeSuffix)
+  $action = New-ScheduledTaskAction -Execute $Python -Argument $Arguments -WorkingDirectory $Repo
   $at = '00:{0:D2}' -f $t.Offset
   $repeat = (New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval (New-TimeSpan -Minutes $t.Minutes) -RepetitionDuration (New-TimeSpan -Hours 24)).Repetition
   $trigger = New-ScheduledTaskTrigger -Daily -At $at

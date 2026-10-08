@@ -17,10 +17,12 @@ import argparse
 import datetime as dt
 import os
 import sys
+from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP
 from typing import Any, Dict, Optional
 
 import yaml
 
+from host_evidence.symbol_metadata import load_record
 from ticket_delivery.identity import logical_ticket_id
 from v1_tickets.guards import STALE_AFTER
 
@@ -40,7 +42,10 @@ API = "https://api.telegram.org"
 
 
 class TelegramSendError(RuntimeError):
-    pass
+    """Sanitized Telegram failure with a conservative delivery classification."""
+    def __init__(self, message: str, delivery_state: str = "DELIVERY_UNCERTAIN"):
+        super().__init__(message)
+        self.delivery_state = delivery_state
 
 
 def load_mode(root: str = ".") -> Dict[str, Any]:
@@ -71,17 +76,27 @@ def send_message(text: str, session: Optional[Any] = None) -> None:
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
     if not token or not chat_id:
-        raise TelegramSendError("TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not set in the environment")
+        raise TelegramSendError("TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not set in the environment",
+                                delivery_state="BLOCKED")
     if session is None:
         import requests as session  # noqa: N813
     try:
         resp = session.post(f"{API}/bot{token}/sendMessage", timeout=10,
                             data={"chat_id": chat_id, "text": text[:4000], "disable_web_page_preview": True})
-        ok = getattr(resp, "status_code", 0) == 200 and bool((resp.json() or {}).get("ok"))
+        status_code = getattr(resp, "status_code", 0)
+        ok = status_code == 200 and bool((resp.json() or {}).get("ok"))
     except Exception as exc:  # noqa: BLE001 -- sanitize: never surface the URL/token
-        raise TelegramSendError(f"send failed ({type(exc).__name__})") from None
+        raise TelegramSendError(f"send failed ({type(exc).__name__})",
+                                delivery_state="DELIVERY_UNCERTAIN") from None
     if not ok:
-        raise TelegramSendError(f"send failed (HTTP {getattr(resp, 'status_code', '?')})")
+        if status_code == 429:
+            delivery_state = "RETRYABLE_REJECTED"
+        elif status_code >= 500 or status_code == 408:
+            # The server may have processed a request before its ambiguous error response.
+            delivery_state = "DELIVERY_UNCERTAIN"
+        else:
+            delivery_state = "DELIVERY_FAILED"
+        raise TelegramSendError(f"send failed (HTTP {status_code})", delivery_state=delivery_state)
 
 
 MMT = dt.timezone(dt.timedelta(hours=6, minutes=30))
@@ -98,9 +113,89 @@ def _ts(value: Optional[Any]) -> str:
     return f"{t.astimezone(MMT):%H:%M} MMT / {t:%H:%M} UTC ({t:%Y-%m-%d})"
 
 
-def _dist(symbol: str, value: float) -> str:
+def _dist(symbol: str, value: float, decimals: int = 1) -> str:
     pip = _PIP.get(symbol)
-    return f"{value / pip:.1f} pips" if pip else f"{value:g} (price units)"
+    return f"{value / pip:.{decimals}f} pips" if pip else f"{value:g} (price units)"
+
+
+UNNORMALIZED = "(unnormalized: no verified symbol metadata)"
+_ROUNDING = {"nearest": ROUND_HALF_UP, "floor": ROUND_FLOOR, "ceil": ROUND_CEILING}
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+
+def _configured_broker_symbol(ticket: Dict[str, Any]) -> Optional[str]:
+    """Resolve the exact configured MT5 symbol for a versioned crypto ticket, if present."""
+    tag = ticket.get("ticket_config")
+    if not isinstance(tag, str):
+        return None
+    config_id, sep, raw_version = tag.rpartition("@v")
+    if not sep or config_id != "AG_V1_CRYPTO_TICKET" or not raw_version.isdigit():
+        return None
+    version = int(raw_version)
+    path = os.path.join(REPO_ROOT, "config", "v1_tickets", f"crypto_ticket_v{version}.yaml")
+    try:
+        with open(path, encoding="utf-8") as stream:
+            config = yaml.safe_load(stream) or {}
+    except (OSError, ValueError, yaml.YAMLError):
+        return None
+    if not isinstance(config, dict):
+        return None
+    venue = config.get("venue")
+    if (config.get("config_id") != config_id or config.get("version") != version
+            or not isinstance(venue, dict) or venue.get("kind") != "MT5"):
+        return None
+    symbols = venue.get("symbols")
+    if not isinstance(symbols, dict):
+        return None
+    broker = symbols.get(ticket.get("symbol"))
+    return broker if isinstance(broker, str) and broker else None
+
+
+def _display_record(symbol: str, broker_symbol: Optional[str] = None):
+    """Return verified capture only when its recorded broker name matches the selected mapping."""
+    record = load_record(symbol)
+    if broker_symbol is None:
+        return record
+    if record is not None and record.get("broker_symbol") == broker_symbol:
+        return record
+    record = load_record(broker_symbol)
+    return record if record is not None and record.get("broker_symbol") == broker_symbol else None
+
+
+def _tick_digits(symbol: str, broker_symbol: Optional[str] = None):
+    record = _display_record(symbol, broker_symbol)
+    if record is None:
+        return None, None
+    fields = record.get("fields") or {}
+    try:
+        tick, digits = float(fields.get("trade_tick_size") or 0), int(fields["digits"])
+    except (TypeError, ValueError, KeyError):
+        return None, None
+    return (tick, digits) if tick > 0 and digits >= 0 else (None, None)
+
+
+def _normalizer(symbol: str, risk: Optional[float], broker_symbol: Optional[str] = None):
+    """Display-only conservative tick snap, or None when verified metadata is unavailable."""
+    tick, digits = _tick_digits(symbol, broker_symbol)
+    if tick is None or (risk is not None and tick >= abs(risk)):
+        return None
+
+    def snap(value: Optional[float], mode: str = "nearest") -> Optional[float]:
+        if value is None:
+            return None
+        step = Decimal(repr(tick))
+        units = (Decimal(repr(round(float(value), 10))) / step).to_integral_value(rounding=_ROUNDING[mode])
+        return round(float(units * step), digits)
+    return snap
+
+
+def _rounding_modes(direction: Optional[str]):
+    """(stop, target): conservative display rounding, away from entry for stops."""
+    if direction == "LONG":
+        return "floor", "floor"
+    if direction == "SHORT":
+        return "ceil", "ceil"
+    return "nearest", "nearest"
 
 
 def _ticket_id(t: Dict[str, Any]) -> str:
@@ -113,8 +208,19 @@ def _ticket_id(t: Dict[str, Any]) -> str:
 
 
 def format_ticket(t: Dict[str, Any]) -> str:
-    """Formatting only: every value is read from the ticket or derived from guards.STALE_AFTER."""
-    sym, entry, stop = t["symbol"], t.get("entry"), t.get("stop_loss")
+    """Formatting only: values come from the ticket; verified metadata only snaps display prices."""
+    sym = t["symbol"]
+    raw_entry, raw_stop, engine_risk = t.get("entry"), t.get("stop_loss"), t.get("risk_distance")
+    raw_risk = engine_risk or (abs(raw_entry - raw_stop)
+                               if raw_entry is not None and raw_stop is not None else None)
+    broker_symbol = t.get("display_broker_symbol") or _configured_broker_symbol(t)
+    snap = _normalizer(sym, raw_risk, broker_symbol)
+    stop_mode, target_mode = _rounding_modes(t.get("direction"))
+    if snap is None:
+        entry, stop, target = raw_entry, raw_stop, lambda value: value
+    else:
+        entry, stop = snap(raw_entry), snap(raw_stop, stop_mode)
+        target = lambda value: snap(value, target_mode)
     expires = (dt.datetime.fromisoformat(t["signal_close_utc"]) + STALE_AFTER) if t.get("signal_close_utc") else None
     lines = [t.get("label", "INFORMATIONAL TICKET -- NOT A BROKER ORDER"),
              f"{sym} {t.get('direction', '')} ({t.get('cycle', '')})",
@@ -123,29 +229,34 @@ def format_ticket(t: Dict[str, Any]) -> str:
     if t.get("window"):
         lines.append(f"window: {t['window']}  status: {t.get('ticket_status', '')}")
     elif t.get("cycle"):
-        inv = f"  time invalidation {t['time_invalidation_gmt']} GMT" if t.get("time_invalidation_gmt") else ""
-        lines.append(f"window: {t['cycle']} trade session{inv}")
+        invalidation = f"  time invalidation {t['time_invalidation_gmt']} GMT" if t.get("time_invalidation_gmt") else ""
+        lines.append(f"window: {t['cycle']} trade session{invalidation}")
     if t.get("window_label"):
         lines.append(t["window_label"])
     lines += [f"signal close: {_ts(t.get('signal_close_utc'))}", f"expires_at: {_ts(expires)}"]
-    risk = t.get("risk_distance") or (abs(entry - stop) if entry is not None and stop is not None else None)
+    risk = abs(entry - stop) if snap and entry is not None and stop is not None else raw_risk
     if entry is not None:
-        lines.append(f"entry: {entry}  stop: {stop}" + (f"  risk: {_dist(sym, risk)}" if risk else ""))
+        note = f" {UNNORMALIZED}" if snap is None else ""
+        if snap and risk and engine_risk and abs(engine_risk - risk) > 1e-9 * max(abs(risk), 1.0):
+            note = f" (engine {_dist(sym, engine_risk, 2)} before rounding)"
+        lines.append(f"entry: {entry}  stop: {stop}" + (f"  risk: {_dist(sym, risk)}{note}" if risk else ""))
     sign = -1.0 if t.get("direction") == "SHORT" else 1.0
-    r_of = lambda p: f"  = {sign * (p - entry) / risk:+.2f}R" if risk and entry is not None and p is not None else ""  # noqa: E731
+    r_of = lambda price: f"  = {sign * (price - entry) / risk:+.2f}R" if risk and entry is not None and price is not None else ""  # noqa: E731
     for key in ("tp1", "tp2"):
         if t.get(key) is not None:
-            lines.append(f"{key}: {t[key]}{r_of(t[key])}")
+            price = target(t[key])
+            lines.append(f"{key}: {price}{r_of(price)}")
     for leg in t.get("targets") or ():
         pct = f", {leg['volume_pct']:.0%}" if leg.get("volume_pct") is not None else ""
-        lines.append(f"target leg {leg['leg']} ({leg['type']}{pct}): {leg['price']}{r_of(leg['price'])}")
+        price = target(leg["price"])
+        lines.append(f"target leg {leg['leg']} ({leg['type']}{pct}): {price}{r_of(price)}")
     if t.get("spread_check"):
-        sp = ""
+        spread_text = ""
         if t.get("spread") is not None:
-            sp = f"  spread {_dist(sym, t['spread'])}"
+            spread_text = f"  spread {_dist(sym, t['spread'])}"
             if t.get("spread_risk_fraction") is not None:
-                sp += f" = {t['spread_risk_fraction']:.1%} of risk (max {t.get('spread_max_risk_fraction', 0.15):.0%})"
-        lines.append(f"spread_check: {t['spread_check']}{sp}")
+                spread_text += f" = {t['spread_risk_fraction']:.1%} of risk (max {t.get('spread_max_risk_fraction', 0.15):.0%})"
+        lines.append(f"spread_check: {t['spread_check']}{spread_text}")
     lines.append(f"data source: {t.get('data_source')}")
     lines.append(f"VALID UNTIL {_ts(expires)} -- STALE after; re-check before acting." if expires
                  else "VALID UNTIL: n/a (signal close not recorded) -- re-check before acting.")
@@ -156,37 +267,55 @@ TIMEFRAME_CHAIN = "D1 context -> H1 bias + POI -> M5 sweep/CHoCH"
 
 
 def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
-    """Formatting only. `price` is the latest M5 close the runner already holds (display, not a rule input)."""
-    p = e.get("payload") or {}
-    poi, opp = p.get("poi") or {}, p.get("opportunity") or {}
-    sym = e["symbol"]
-    direction = opp.get("direction") or poi.get("direction") or p.get("bias") or "n/a"
+    """Formatting only; tick snapping is based on the exact verified broker-symbol capture."""
+    payload = e.get("payload") or {}
+    poi, opportunity = payload.get("poi") or {}, payload.get("opportunity") or {}
+    symbol = e["symbol"]
+    direction = opportunity.get("direction") or poi.get("direction") or payload.get("bias") or "n/a"
+    entry_reference, stop_c10 = opportunity.get("entry_reference"), opportunity.get("stop_c10")
+    raw_risk = abs(entry_reference - stop_c10) if entry_reference is not None and stop_c10 is not None else None
+    broker_symbol = e.get("display_broker_symbol")
+    snap = _normalizer(symbol, raw_risk, broker_symbol)
+    stop_mode, target_mode = _rounding_modes(direction)
+    if snap is None:
+        def display(value, _mode="nearest"):
+            return None if value is None else round(float(value), 10)
+    else:
+        def display(value, mode="nearest"):
+            return snap(value, mode)
+
     lines = ["LARGE-SMC ALERT -- INFORMATIONAL -- NOT A BROKER ORDER",
-             f"{sym} {e['to_state']} ({e['alert_level']})  direction: {direction}",
+             f"{symbol} {e['to_state']} ({e['alert_level']})  direction: {direction}",
              f"{e['strategy_id']} v{e['strategy_version']}  economic_status=NOT_EVALUATED",
              f"ref: {e.get('reference_id')}",
              f"timeframes: {TIMEFRAME_CHAIN}"]
-    lo, hi = poi.get("low"), poi.get("high")
-    if lo is not None and hi is not None:
-        lines.append(f"POI zone ({poi.get('kind', 'H1')}): {lo} - {hi}")
-    if opp.get("sweep_extreme") is not None:
+    low, high = poi.get("low"), poi.get("high")
+    if low is not None and high is not None:
+        lines.append(f"POI zone ({poi.get('kind', 'H1')}): {display(low)} - {display(high)}")
+    if opportunity.get("sweep_extreme") is not None:
         side = "below" if direction == "LONG" else "above"
-        lines.append(f"invalidation: M5 close {side} {opp['sweep_extreme']}")
-    elif lo is not None and hi is not None:
-        lines.append(f"invalidation: close beyond POI far edge {lo if direction == 'LONG' else hi}")
-    if opp:
-        tgt = opp.get("target_c11")
-        lines.append(f"liquidity target: {tgt}" if tgt is not None else f"liquidity target: none ({opp.get('target_reason')})")
-        if opp.get("stop_c10") is not None:
-            lines.append(f"stop (C10): {opp['stop_c10']}")
-        if opp.get("entry_reference") is not None:
-            lines.append(f"entry reference (CHoCH close): {opp['entry_reference']}")
+        lines.append(f"invalidation: M5 close {side} {display(opportunity['sweep_extreme'], stop_mode)}")
+    elif low is not None and high is not None:
+        far_edge = low if direction == "LONG" else high
+        lines.append(f"invalidation: close beyond POI far edge {display(far_edge, stop_mode)}")
+    if opportunity:
+        target_price = opportunity.get("target_c11")
+        lines.append(f"liquidity target: {display(target_price, target_mode)}" if target_price is not None
+                     else f"liquidity target: none ({opportunity.get('target_reason')})")
+        if stop_c10 is not None:
+            lines.append(f"stop (C10): {display(stop_c10, stop_mode)}")
+        if entry_reference is not None:
+            lines.append(f"entry reference (CHoCH close): {display(entry_reference)}")
     if price is not None:
-        lines.append(f"current price: {price}")
-        if lo is not None and hi is not None:
-            d = 0.0 if lo <= price <= hi else (price - hi if price > hi else lo - price)
-            lines.append("distance to POI: inside zone" if d == 0 else f"distance to POI: {_dist(sym, d)}")
-    lines.append(f"expires_at: {_ts(opp.get('expires_at') or p.get('expires_at'))}")
+        shown_price = display(price)
+        lines.append(f"current price: {shown_price}")
+        if low is not None and high is not None:
+            distance = 0.0 if low <= price <= high else (price - high if price > high else low - price)
+            lines.append("distance to POI: inside zone" if distance == 0
+                         else f"distance to POI: {_dist(symbol, distance)}")
+    if snap is None:
+        lines.append(f"prices {UNNORMALIZED}")
+    lines.append(f"expires_at: {_ts(opportunity.get('expires_at') or payload.get('expires_at'))}")
     return "\n".join(lines)
 
 

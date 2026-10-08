@@ -16,6 +16,14 @@ records Demo verification of quote-time normalization, exact M15 windows, and
 the eight-record evaluator smoke. It does not establish a trade opportunity or
 execution authority.
 
+[AGP Host Ticket Delivery R1 (FAST)](status/AGP_HOST_TICKET_DELIVERY_R1_FAST_2026-10-08.md)
+records the scheduled canonical FX path from read-only MT5 Demo candles through durable
+TICKET_STORE_V1 records to the delivery/session journals, its offline test evidence, and the
+Windows host acceptance that remains NOT_EVALUATED. It grants no execution or economic authority.
+
+[AGP Evidence Integrity R1](status/AGP_EVIDENCE_INTEGRITY_R1.md) reconciles and quarantines the
+four stale or ambiguous MT5 evidence artifacts and the stale mission label behind the R2 contract.
+
 This directory contains design contracts, implementation architecture, setup guidance,
 and dated verification evidence. Read documents according to their authority, not just
 their age. For the shortest path to the active objective, start with the repo priority

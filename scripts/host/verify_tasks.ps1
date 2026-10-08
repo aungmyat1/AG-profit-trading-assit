@@ -11,9 +11,9 @@ $Repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $Python = (Join-Path $Repo '.venv\Scripts\python.exe')
 $Runner = (Join-Path $Repo 'scripts\host\live_candles_smoke.py')
 $Expected = @(
-  @{ Name = 'AG-V1-FX-Cycles';    Mode = 'fx' },
-  @{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto' },
-  @{ Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc' }
+  @{ Name = 'AG-V1-FX-Cycles';    Mode = 'fx';     Canonical = $true },
+  @{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Canonical = $false },
+  @{ Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc';   Canonical = $false }
 )
 $Failures = 0
 foreach ($e in $Expected) {
@@ -24,7 +24,8 @@ foreach ($e in $Expected) {
     continue
   }
   $actions = @($task.Actions)
-  $expectedArg = "`"$Runner`" --mode $($e.Mode)"
+  $suffix = if ($e.Canonical) { ' --canonical' } else { '' }
+  $expectedArg = "`"$Runner`" --mode $($e.Mode)$suffix"
   $actionOk = $actions.Count -eq 1 -and $actions[0].Execute -eq $Python -and `
               $actions[0].Arguments -eq $expectedArg -and $actions[0].WorkingDirectory -eq $Repo
   $triggerOk = @($task.Triggers).Count -ge 1

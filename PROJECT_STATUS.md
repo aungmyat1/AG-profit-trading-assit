@@ -121,6 +121,38 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## AGP Host Ticket Delivery R1 (FAST) — canonical FX ticket + delivery pipeline (2026-10-08; branch `arena/ca7a6ec4-ag-profit-trading-assit`, not merged)
+
+Read-only VT Markets MT5 Demo candles now reach durable canonical ticket records and a separate
+delivery/session journal through one scheduled path: `live_candles_smoke.py --mode fx --canonical`
+preserves `run_manual_jobs`, evaluates only the active frozen FX cycle via `daily_evaluator`,
+appends to `TICKET_STORE_V1`, verifies the persisted row, and records one typed terminal outcome
+per instrument × session (missing data is `MISSED`, never rewritten as `NO_TRADE`). The delivery
+adapter carries the full canonical taxonomy including `INFO_ONLY_SUPPRESSED`, routes it to
+`summary_only`, fails closed on unknown decisions, and records compatibility errors. Deterministic
+session summaries, audited per-identity delivery attempts, an LSMC alert dedup ledger
+(no blind retry after an ambiguous outcome, no network call under the journal lock) and typed
+`TelegramSendError.delivery_state` complete the pipeline. Immediate sends remain limited to
+`TICKET_READY` + `LSMC_OPPORTUNITY`; canonical delivery and summaries stay default-OFF
+(`mode=ARCHIVE_ONLY`, no committed override). The legacy delivery-status row schema is unchanged;
+only `logs/telegram.log` gained the typed outcome. Owner decisions keep using the existing
+append-only mechanism in `src/v1_tickets/owner_decision.py`, and the session summary no longer
+reports an always-zero `owner_decision_counts`. Two self-inflicted regressions were caught and
+fixed before commit: the legacy delivery-journal `status` vocabulary (`FAILED`/`ERROR`) is
+unchanged, with the typed outcome in `logs/telegram.log` only, and the `install_tasks.ps1` plan
+rows keep `Minutes` adjacent to `Mode` so `build_context_pack.py` still reads all three tasks
+(`CONTEXT_PACK UP_TO_DATE`). Production READY authority stays OFF
+(`READY_AUTHORITY_OFF_D6`), so every canonical decision here is `INFO_ONLY_SUPPRESSED` with 0
+immediate sends. Offline evidence: `1338 passed, 3 skipped` without `cogapp` / `1339 passed,
+2 skipped` with it (CI's docs job installs it); the 2 skips are the live network smoke and the
+real `MetaTrader5` package, so no live-host path was exercised offline.
+`verify_objective.py` → `RESULT: PASS`; 0 broker mutations; `demo_authorized`/`live_authorized`
+unchanged. Windows host acceptance is **NOT_EVALUATED** (no authorized host/window in this
+session) and Telegram live acceptance is **NOT_AUTHORIZED**. `src/telegram_delivery/` derives from
+PR #60 (must be frozen before merge) and this work remediates PR #48's crypto-metadata and
+rolling-status findings. See `docs/status/AGP_HOST_TICKET_DELIVERY_R1_FAST_2026-10-08.md` and
+`docs/status/AGP_EVIDENCE_INTEGRITY_R1.md`.
+
 ## AGP-GRADE-01 — M1 replay outcomes over TICKET_STORE_V1 (2026-10-08; stacked on PR #64)
 
 The offline grader reads TICKET_STORE_V1 evaluations and closed MT5 M1 CSV history (preferring REPLAY over a same-identity LIVE record), then
