@@ -36,3 +36,4 @@ does not replace them. Nothing here authorizes trading or changes a safety gate.
 | ID | Question | Status | Decision / date / source |
 |---|---|---|---|
 | D3 | `SESSION_TRADE_V1` demo authority | RESOLVED | `demo_authorized: false` (revoked 2026-09-30); source `strategies/registry.yaml`, recorded in `AG_V1_TWO_GOALS_OWNER_DECISIONS.md` |
+| C001-PRE-RESULT-CORRECTION | Pre-result correction of frozen candidate `CRYPTO_CFD_C001` | RATIFIED | Ratified by merge of [#85](https://github.com/aungmyat1/AG-profit-trading-assit/pull/85) (2026-10-08); no C001 economic result existed. Precedent limited: any future change to a frozen candidate's rule bytes requires a new candidate ID (C002+), never an in-place correction. |
