@@ -14,10 +14,39 @@ EXECUTION_PATHS = (
 )
 STRATEGY_EVIDENCE_PATHS = ("strategies/", "artifacts/validation/")
 GREEN_CONCLUSIONS = {"success", "neutral", "skipped"}
+# GitHub review semantics: only APPROVED, CHANGES_REQUESTED, or a dismissal changes a
+# reviewer's standing decision. COMMENTED/PENDING reviews never clear CHANGES_REQUESTED.
+DECISIVE_REVIEW_STATES = {"APPROVED", "CHANGES_REQUESTED", "DISMISSED"}
+NON_DECISIVE_REVIEW_STATES = {"COMMENTED", "PENDING"}
 
 
 def explicit_dependencies(title: str, body: str) -> list[int]:
     return sorted({int(match) for match in DEPENDENCY.findall(f"{title}\n{body or ''}")})
+
+
+def review_decision(reviews: list[dict]) -> tuple[bool | None, int | None]:
+    """(changes_requested, approvals) from each reviewer's latest decisive review.
+
+    Returns (None, None) when the review state cannot be established (an unknown review
+    state, or a decisive review without a reviewer login), so callers fail closed.
+    """
+    ordered = sorted(enumerate(reviews), key=lambda item: (str(item[1].get("submitted_at") or ""), item[0]))
+    standing: dict[str, str] = {}
+    for _, review in ordered:
+        state = str(review.get("state") or "").upper()
+        if state in NON_DECISIVE_REVIEW_STATES:
+            continue
+        if state not in DECISIVE_REVIEW_STATES:
+            return None, None
+        login = (review.get("user") or {}).get("login")
+        if not login:
+            return None, None
+        if state == "DISMISSED":
+            standing.pop(login, None)
+        else:
+            standing[login] = state
+    values = list(standing.values())
+    return "CHANGES_REQUESTED" in values, values.count("APPROVED")
 
 
 def checks_state(check_runs: list[dict], statuses: list[dict]) -> str:

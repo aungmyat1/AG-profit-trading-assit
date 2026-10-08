@@ -3,6 +3,8 @@ name: CI
 on:
   push:
   pull_request:
+  # Dispatched by manual-pr-merge.yml: its GITHUB_TOKEN merge emits no push-triggered runs.
+  workflow_dispatch:
 
 jobs:
   python-tests:
