@@ -144,6 +144,10 @@ PRE_D6_READY_ON_FILES = frozenset({
     "test_manual_ticket_owner_decision.py",
     "test_manual_ticket_scan_records.py",
     "test_v1_tickets.py",
+    # Present on main (3496ec3) before the D6 port; they exercise engine READY -> actionability
+    # (WATCH_READY) with the switch ON. The OFF path is pinned by test_d6_actionability_suppressed.py.
+    "test_actionability_and_canonical_ticket.py",
+    "test_mt5_provider_integration.py",
 })
 
 

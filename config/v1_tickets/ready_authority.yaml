@@ -6,6 +6,10 @@
 # a READY the engine produced is archived as SHADOW_INFO_ONLY (levels kept, labelled, not sent,
 # no paper trade, manual ticket TICKET_BLOCKED). Only the literal value ON restores READY;
 # a missing file, entry or any other value is OFF (fail closed).
+# AGP-LOGIC-AS-02: re-enabling (ready: ON) requires explicit owner confirmation recorded in
+# docs/governance/ -- passing tests, a logic-verified candidate (e.g. v1.1.2, PR #62) or an agent's
+# judgement never re-enable it. While OFF, actionability maps the suppressed READY to terminal
+# INFO_ONLY_SUPPRESSED (never WATCH_READY, even under a signed policy).
 config_id: READY_AUTHORITY_V1
 version: 1
 strategies:

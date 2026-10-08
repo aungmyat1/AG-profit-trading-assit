@@ -4,6 +4,15 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## D6 ported to main — Asian Sweep READY authority OFF (2026-10-08)
+
+`config/v1_tickets/ready_authority.yaml` now turns ST_ASIAN_SWEEP_5R_V1 READY into
+SHADOW_INFO_ONLY on main (hotfix `9419b21` and its two test commits, patch-equivalent).
+Actionability maps it to terminal `INFO_ONLY_SUPPRESSED`. It is never `WATCH_READY`, even under
+a signed policy, which closes a gap the hotfix predated. Re-enabling requires owner confirmation
+(AGP-LOGIC-AS-02). Strategy logic unchanged. Tests: **1165 passed, 2 skipped**. Evidence:
+`docs/status/AG_D6_ASIAN_SWEEP_READY_OFF_PORT_2026-10-08.md`.
+
 ## Stale-data gate keeps trigger close — TRIGGER_TIMEFRAME_UNKNOWN resolved (2026-10-08)
 
 The seven `INSUFFICIENT_DATA / TRIGGER_TIMEFRAME_UNKNOWN` records in the R2 smoke were not

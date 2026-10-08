@@ -7,6 +7,7 @@ deterministic decisions:
     INFO_ONLY_STALE
     INFO_ONLY_INSUFFICIENT_REMAINING_R
     INFO_ONLY_POLICY_UNRESOLVED
+    INFO_ONLY_SUPPRESSED
     NO_TRADE
     EXPIRED
     MISSED
@@ -49,6 +50,7 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any, Dict, Optional
 
+from v1_tickets.ready_authority import SHADOW_INFO_ONLY
 from v1_tickets.policy_loader import (
     POLICY_CONFLICT, POLICY_INVALID, POLICY_MISSING, POLICY_OK, ActionabilityPolicy,
     load_policy,
@@ -68,6 +70,9 @@ WATCH_READY = "WATCH_READY"
 INFO_ONLY_STALE = "INFO_ONLY_STALE"
 INFO_ONLY_INSUFFICIENT_REMAINING_R = "INFO_ONLY_INSUFFICIENT_REMAINING_R"
 INFO_ONLY_POLICY_UNRESOLVED = "INFO_ONLY_POLICY_UNRESOLVED"
+# Terminal: the strategy's READY authority is OFF (config/v1_tickets/ready_authority.yaml, D6), so
+# the engine READY was archived as SHADOW_INFO_ONLY. Never WATCH_READY, whatever the policy says.
+INFO_ONLY_SUPPRESSED = "INFO_ONLY_SUPPRESSED"
 NO_TRADE = "NO_TRADE"
 EXPIRED = "EXPIRED"
 MISSED = "MISSED"
@@ -200,6 +205,9 @@ def evaluate_actionability(
             return _out(NO_TRADE, reason_code, ticket, now, current_price, window_end, policy=policy)
         return _out(NO_TRADE, reason_code or "NO_TRADE", ticket, now, current_price, window_end,
                     policy=policy)
+    if decision == SHADOW_INFO_ONLY or ticket.get("ready_authority") == "OFF":
+        return _out(INFO_ONLY_SUPPRESSED, reason_code or "READY_AUTHORITY_OFF", ticket, now, current_price,
+                    window_end, policy=policy)
     if decision == "STALE" and ticket.get("suppressed_decision") == "NO_TRADE":
         # No signal exists, so there is no trigger bar.  The engine's NO_TRADE is restored
         # only once the trade window has closed; while it is open the stale data fails closed.
