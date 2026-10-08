@@ -86,8 +86,10 @@ def test_session_digest_sender_restart_uses_stable_session_key(tmp_path):
 
 
 def config(**overrides):
+    # C16 scope flag is ON here so the pre-existing informational tests keep exercising the
+    # enabled path; default-OFF behaviour is pinned separately below.
     return Config(**({'enabled': True, 'token': 'fake', 'chat_id': '123',
-                      'owner_chat_ids': frozenset({'123'})} | overrides))
+                      'owner_chat_ids': frozenset({'123'}), 'watch_info_scope': True} | overrides))
 
 
 def watch():
@@ -107,7 +109,9 @@ def test_dedupe_restart(tmp_path):
 def test_closed(tmp_path, cfg):
     calls = []
     sender = Sender(tmp_path / 'dedupe.sqlite', cfg, transport=lambda *x: calls.append(x))
-    assert sender.send_ticket(watch()) in {'disabled', 'blocked'}
+    # 'summary_only' is also closed: with the C16 flag OFF (Config() default) informational
+    # routing short-circuits before the enabled gate. Either way nothing is sent or created.
+    assert sender.send_ticket(watch()) in {'disabled', 'blocked', 'summary_only'}
     assert calls == [] and not sender.path.exists()
 
 
@@ -335,7 +339,7 @@ from pathlib import Path
 tickets = json.loads(Path('tests/fixtures/telegram_delivery/tickets.json').read_text())
 ticket = next(t for t in tickets if t['decision'] == 'WATCH_READY')
 calls = []
-sender = Sender(sys.argv[1], Config(True, 'fake', '123', frozenset({'123'})), lambda *x: calls.append(x))
+sender = Sender(sys.argv[1], Config(True, 'fake', '123', frozenset({'123'}), True), lambda *x: calls.append(x))
 print(json.dumps([sender.send_ticket(ticket), len(calls)]))
 """
     for expected in [['sent', 1], ['duplicate', 0]]:
@@ -505,3 +509,47 @@ def test_network_does_not_hold_global_journal_lock(tmp_path):
         assert nested.list_uncertain() == []
     assert Sender(path, config(), transport).send_ticket(watch()) == 'sent'
     assert results == ['sent', 'duplicate']
+
+
+def test_c16_scope_default_off_scheduled_informational_is_summary_only(tmp_path):
+    calls = []
+    sender = Sender(tmp_path / 'dedupe.sqlite', Config(enabled=True, token='fake', chat_id='123',
+                                                       owner_chat_ids=frozenset({'123'})),
+                    transport=lambda *x: calls.append(x))
+    assert sender.send_ticket(watch()) == 'summary_only'
+    stale = dict(watch(), decision='INFO_ONLY_STALE', presentation='INFO_ONLY')
+    assert sender.send_ticket(stale) == 'summary_only'
+    assert calls == []
+
+
+def test_c16_scope_default_off_refuses_owner_resend_with_scope_not_enabled(tmp_path):
+    calls = []
+    sender = Sender(tmp_path / 'dedupe.sqlite', config(watch_info_scope=False),
+                    transport=lambda *x: calls.append(x))
+    for ticket in (watch(), dict(watch(), decision='INFO_ONLY_STALE', presentation='INFO_ONLY')):
+        assert sender.resend_ticket(ticket, force=True, actor='owner') == 'SCOPE_NOT_ENABLED'
+    assert calls == []
+
+
+def test_c16_scope_enabled_allows_owner_resend_of_informational(tmp_path):
+    calls = []
+    path = tmp_path / 'dedupe.sqlite'
+    def ambiguous(*x):
+        raise RuntimeError('network ambiguous')
+    # Force resend only applies to an UNCERTAIN claim: seed one, then resend under the flag.
+    assert Sender(path, config(watch_info_scope=True), transport=ambiguous).send_ticket(watch()) == 'uncertain'
+    sender = Sender(path, config(watch_info_scope=True), transport=lambda *x: calls.append(x))
+    assert sender.resend_ticket(watch(), force=True, actor='owner') == 'sent'
+    assert len(calls) == 1
+
+
+def test_c16_scope_never_gates_suppressed_or_ready_states(tmp_path):
+    calls = []
+    sender = Sender(tmp_path / 'dedupe.sqlite', config(watch_info_scope=False),
+                    transport=lambda *x: calls.append(x))
+    suppressed = dict(watch(), decision='INFO_ONLY_SUPPRESSED', presentation='INFO_ONLY')
+    assert sender.resend_ticket(suppressed, force=True, actor='owner') == 'summary_only'
+    no_trade = dict(watch(), decision='NO_TRADE', presentation='OTHER')
+    assert sender.resend_ticket(no_trade, force=True, actor='owner') == 'summary_only'
+    assert calls == []
+

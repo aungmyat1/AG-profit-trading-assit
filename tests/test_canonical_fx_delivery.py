@@ -47,7 +47,8 @@ def sender(tmp_path, *, enabled=True, calls=None, transport=None):
     def fake(token, chat_id, message):
         calls.append((chat_id, message))
 
-    cfg = (Config(enabled=True, token="fake-token", chat_id="123", owner_chat_ids=frozenset({"123"}))
+    cfg = (Config(enabled=True, token="fake-token", chat_id="123", owner_chat_ids=frozenset({"123"}),
+                  watch_info_scope=True)
            if enabled else Config())
     return Sender(tmp_path / "delivery.sqlite", cfg, transport or fake), calls
 
@@ -500,6 +501,34 @@ def test_sender_requires_local_recipient_authorization_and_environment_gate(tmp_
     assert cfd.build_sender(journal, root=str(root)).config.enabled is False      # unparseable override
 
 
+def test_c16_watch_info_scope_flag_is_default_off_and_needs_full_authorization(tmp_path, monkeypatch):
+    root, journal = tmp_path / "root", tmp_path / "journal"
+    local = root / "config" / "local"
+    local.mkdir(parents=True)
+    for key in ("TELEGRAM_DELIVERY_ENABLED", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "TELEGRAM_OWNER_CHAT_IDS"):
+        monkeypatch.setenv(key, {"TELEGRAM_DELIVERY_ENABLED": "true", "TELEGRAM_BOT_TOKEN": "fake-token",
+                                 "TELEGRAM_CHAT_ID": "123", "TELEGRAM_OWNER_CHAT_IDS": "123"}[key])
+    override = local / "canonical_ticket_delivery.yaml"
+
+    def scope():
+        return cfd.build_sender(journal, root=str(root)).config.watch_info_scope
+
+    override.write_text("mode: MESSAGE_DELIVERY\nauthorized_chat_ids: ['123']\n", encoding="utf-8")
+    assert scope() is False                                   # absent flag -> default OFF
+    override.write_text("mode: MESSAGE_DELIVERY\nauthorized_chat_ids: ['123']\nwatch_info_scope: 'true'\n",
+                        encoding="utf-8")
+    assert scope() is False                                   # only boolean true enables
+    override.write_text("mode: MESSAGE_DELIVERY\nauthorized_chat_ids: ['123']\nwatch_info_scope: true\n",
+                        encoding="utf-8")
+    assert scope() is True
+    override.write_text("mode: ARCHIVE_ONLY\nauthorized_chat_ids: ['123']\nwatch_info_scope: true\n",
+                        encoding="utf-8")
+    assert scope() is False                                   # flag alone never authorizes delivery
+    override.write_text("mode: MESSAGE_DELIVERY\nauthorized_chat_ids: ['456']\nwatch_info_scope: true\n",
+                        encoding="utf-8")
+    assert scope() is False                                   # recipient not authorized
+
+
 def test_disabled_sender_writes_no_journal_and_sends_nothing(tmp_path):
     send, calls = sender(tmp_path, enabled=False)
     results, lines, journal, _, _ = run(tmp_path, send=send)
@@ -519,7 +548,7 @@ def test_unauthorized_recipient_never_sends_and_records_stay_durable(tmp_path):
     calls = []
     blocked = Sender(tmp_path / "delivery.sqlite",
                      Config(enabled=True, token="fake-token", chat_id="999",
-                            owner_chat_ids=frozenset({"123"})),
+                            owner_chat_ids=frozenset({"123"}), watch_info_scope=True),
                      transport=lambda *a: calls.append(a))
     results, lines, journal, _, _ = run(tmp_path, send=blocked)
     assert len(results) == 4 and calls == []

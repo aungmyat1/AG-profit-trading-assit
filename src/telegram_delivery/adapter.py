@@ -50,6 +50,12 @@ def _known_decision(decision):
     return isinstance(decision, str) and decision in STATUSES
 
 
+def _informational_scope(decision):
+    """WATCH_READY and non-suppressed INFO_ONLY_* -- gated by the C16 scope flag."""
+    return isinstance(decision, str) and decision != "INFO_ONLY_SUPPRESSED" and (
+        decision == "WATCH_READY" or decision.startswith("INFO_ONLY_"))
+
+
 def validate(ticket):
     if ticket.get("schema") != "AG_CANONICAL_TICKET_V1":
         raise ValueError("Unsupported canonical schema")
@@ -165,6 +171,10 @@ class Config:
     token: str = ""
     chat_id: str = ""
     owner_chat_ids: frozenset[str] = frozenset()
+    # C16 (OWNER_DECISION_REGISTER, PENDING_OWNER): WATCH_READY and non-suppressed INFO_ONLY_*
+    # are informational. They are sent (scheduled or owner-resent) only when this default-OFF
+    # flag is explicitly enabled; otherwise they stay archive/summary-only.
+    watch_info_scope: bool = False
 
     @classmethod
     def from_env(cls):
@@ -456,6 +466,9 @@ class Sender:
         # disabled); terminal non-alert decisions are visible through the session summary only.
         if ticket["decision"] != "WATCH_READY" and not ticket["decision"].startswith("INFO_ONLY_"):
             return "summary_only"
+        # Same C16 scope flag as owner resend: informational states stay summary-only unless enabled.
+        if not self.config.watch_info_scope:
+            return "summary_only"
         return self._send("ticket", ticket["ticket_id"], ticket["decision"], render_ticket(ticket))
 
     def send_summary(self, tickets):
@@ -487,6 +500,9 @@ class Sender:
             return "summary_only"
         if ticket["decision"] != "WATCH_READY" and not ticket["decision"].startswith("INFO_ONLY_"):
             return "summary_only"
+        if _informational_scope(ticket["decision"]) and not cfg.watch_info_scope:
+            LOG.error("Telegram force resend refused: C16 informational scope not enabled")
+            return "SCOPE_NOT_ENABLED"
         LOG.info("Force resend requested actor=%s when=%s ticket_id=%s allow_duplicate=%s",
                  actor, _utc_now(), ticket["ticket_id"], allow_duplicate)
         return self._send("ticket", ticket["ticket_id"], ticket["decision"],

@@ -85,9 +85,12 @@ def build_sender(journal: str, *, root: str, transport=None, sleep=None) -> Send
     env_allow = frozenset(part.strip() for part in os.getenv("TELEGRAM_OWNER_CHAT_IDS", "").split(",")
                           if part.strip())
     local_path = Path(root) / CANONICAL_OVERRIDE
+    watch_info_flag = False
     try:
         raw = yaml.safe_load(local_path.read_text(encoding="utf-8")) or {}
         mode = raw.get("mode") if isinstance(raw, dict) else None
+        # C16 informational scope (WATCH_READY / INFO_ONLY_*): default OFF, must be explicitly true.
+        watch_info_flag = isinstance(raw, dict) and raw.get("watch_info_scope") is True
         local_ids_raw = raw.get("authorized_chat_ids") if isinstance(raw, dict) else None
         if not isinstance(local_ids_raw, list) or any(not isinstance(item, (str, int)) for item in local_ids_raw):
             local_ids = frozenset()
@@ -99,7 +102,8 @@ def build_sender(journal: str, *, root: str, transport=None, sleep=None) -> Send
                   and env_chat in env_allow and env_chat in local_ids)
     config = Config(enabled=authorized, token=env_token if authorized else "",
                     chat_id=env_chat if authorized else "",
-                    owner_chat_ids=(env_allow & local_ids) if authorized else frozenset())
+                    owner_chat_ids=(env_allow & local_ids) if authorized else frozenset(),
+                    watch_info_scope=bool(authorized and watch_info_flag))
     kwargs = {"config": config}
     if transport is not None:
         kwargs["transport"] = transport
