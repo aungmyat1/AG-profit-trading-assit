@@ -43,42 +43,79 @@ def _advisory_policy(path: Path) -> dict[str, Any] | None:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
-    return data if data.get("schema") == "AG_ADVISORY_SCAN_ALLOWLIST_V1" else None
+    if data.get("schema") != "AG_ADVISORY_SCAN_ALLOWLIST_V1":
+        return None
+    resolve_advisory_policy(data, path.parents[2])
+    return data
 
 
 _ANCHOR_WARNINGS: list[str] = []
 
+def resolve_advisory_policy(policy: dict[str, Any], root: Path) -> None:
+    """Resolve every selector eagerly, including unused and resolved annotations.
+
+    Unresolved exclusions disable suppression in that file. Warnings remain advisory.
+    """
+    texts: dict[str, str] = {}
+    resolved, missing = 0, 0
+    policy["_unsafe_files"] = set()
+
+    def resolve(entry: dict[str, Any], inherited: str | None = None, protected: bool = False):
+        nonlocal resolved, missing
+        relative = entry.get("file", inherited)
+        entry["file"] = relative
+        selectors = entry.get("anchors", [])
+        if "anchor" in entry:
+            selectors = [{"anchor": entry["anchor"]}]
+        entry["_bounds"] = []
+        for selector in selectors:
+            rel = selector.get("file", relative)
+            if rel not in texts:
+                path = root / rel
+                texts[rel] = path.read_text(encoding="utf-8") if path.is_file() else ""
+            text = texts[rel]
+            anchor = selector.get("anchor", "")
+            end = selector.get("end_anchor", anchor)
+            start_at, end_at = text.find(anchor), text.find(end)
+            if not anchor or text.count(anchor) != 1 or text.count(end) != 1 or end_at < start_at:
+                missing += 1
+                warning = f"ALLOWLIST_ANCHOR_MISSING {entry.get('origin', entry.get('id', 'entry'))} {rel}: {anchor[:100]}"
+                if warning not in _ANCHOR_WARNINGS:
+                    _ANCHOR_WARNINGS.append(warning)
+                if protected:
+                    policy["_unsafe_files"].add(rel)
+                continue
+            first = text[:start_at].count("\n") + 1
+            last = text[:end_at + len(end)].count("\n") + 1
+            if "end_anchor" not in selector and re.match(r"^#{1,6} ", anchor):
+                level = len(anchor) - len(anchor.lstrip("#"))
+                next_heading = re.search(r"^#{1," + str(level) + r"} ", text[start_at+len(anchor):], re.M)
+                last = (text[:start_at+len(anchor)+next_heading.start()].count("\n")
+                        if next_heading else len(text.splitlines()))
+            entry["_bounds"].append((rel, first, last))
+            resolved += 1
+        for child in entry.get("carve_outs", []):
+            resolve(child, relative, True)
+
+    for section in ("allowlisted_ranges", "verified_label_free", "never_suppress", "disambiguation_notes", "resolved"):
+        for entry in policy.get(section, []):
+            resolve(entry, protected=section == "never_suppress")
+    policy["_anchor_counts"] = {"resolved": resolved, "missing": missing}
+
 def _range_contains(entry: dict[str, Any], rel: str, line: int, root: Path = ROOT) -> bool:
-    if entry.get("file") != rel:
-        return False
-    anchor = entry.get("anchor")
-    if isinstance(anchor, str):
-        path = root / rel
-        lines = path.read_text(encoding="utf-8").splitlines() if path.is_file() else []
-        hits = [n for n, value in enumerate(lines, 1) if value.strip() == anchor.strip()]
-        if not hits:
-            warning = f"ALLOWLIST_ANCHOR_MISSING {rel}: {anchor}"
-            if warning not in _ANCHOR_WARNINGS:
-                _ANCHOR_WARNINGS.append(warning)
-            return False
-        # Anchors on headings protect the complete section, so inserted lines remain covered.
-        hit = max((n for n in hits if n <= line), default=None)
-        if hit is None:
-            return False
-        if anchor.startswith("#"):
-            level = len(anchor) - len(anchor.lstrip("#"))
-            for n in range(hit + 1, len(lines) + 1):
-                if lines[n-1].startswith("#" * level + " "):
-                    return line < n
+    if "_bounds" in entry:
+        if any(path == rel and first <= line <= last for path, first, last in entry["_bounds"]):
             return True
-        return line == hit
+        # Compatibility with old fixture policies only; migrated entries have no lines.
+        if "lines" not in entry:
+            return False
     bounds = entry.get("lines")
     return (entry.get("file") == rel and isinstance(bounds, list) and len(bounds) == 2
             and all(isinstance(value, int) for value in bounds) and bounds[0] <= line <= bounds[1])
 
 
 def _policy_suppresses(policy: dict[str, Any] | None, rel: str, line: int, text: str, root: Path = ROOT) -> bool:
-    if not policy:
+    if not policy or rel in policy.get("_unsafe_files", set()):
         return False
     if any(_range_contains(entry, rel, line, root) for entry in policy.get("never_suppress", [])):
         return False
@@ -305,7 +342,6 @@ def check(root: Path, facts_path: Path, registry_path: Path, objective_path: Pat
     if facts.get("objective") != read_objective(objective_path):
         errors.append("objective differs between facts.json and docs/PROJECT_OBJECTIVE.md")
     errors.extend(f"current-truth contradiction: {item}" for item in current_truth_contradictions(root, registry_rows))
-    errors.extend(_ANCHOR_WARNINGS)
     errors.extend(f"machine contradiction: {item}" for item in machine_authority_contradictions(root, registry_rows))
     return errors
 
@@ -326,6 +362,8 @@ def main() -> int:
     )
     for error in errors:
         print(f"BLOCKING: {error}")
+    for warning in _ANCHOR_WARNINGS:
+        print(f"ADVISORY: {warning}")
     print(f"docs-drift blocking: {len(errors)} error(s)")
     return 1 if errors else 0
 

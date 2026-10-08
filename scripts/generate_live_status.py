@@ -6,12 +6,14 @@ import argparse
 import json
 import hashlib
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
 OUTPUT_PATH = REPO_ROOT / "docs" / "status" / "PROJECT_LIVE_STATUS.md"
 
 
@@ -30,28 +32,36 @@ def tracked_paths(root: Path, *patterns: str) -> set[str]:
         raise RuntimeError("tracked collector input path is not valid UTF-8") from exc
 
 
+class InputRecorder:
+    """Verify on read and retain the exact bytes used, independently of path prefixes."""
+
+    def __init__(self, root: Path):
+        self.root = root.resolve()
+        self.tracked = tracked_paths(self.root)
+        self.inputs: dict[str, bytes] = {}
+
+    def read_text(self, path: Path) -> str:
+        try:
+            relative = path.resolve().relative_to(self.root).as_posix()
+        except ValueError as exc:
+            raise RuntimeError(f"collector input escapes repository: {path}") from exc
+        if relative not in self.tracked:
+            raise RuntimeError(f"collector input is not tracked: {relative}")
+        if relative not in self.inputs:
+            self.inputs[relative] = path.read_bytes()
+        return self.inputs[relative].decode("utf-8")
+
+    def digest(self) -> str:
+        digest = hashlib.sha256()
+        for relative, data in sorted(self.inputs.items()):
+            digest.update(relative.encode("utf-8") + b"\0")
+            digest.update(str(len(data)).encode("ascii") + b"\0" + data)
+        return digest.hexdigest()
+
+
 def collector_input_paths(root: Path) -> list[str]:
-    """Sorted tracked authorities, including sidecars and strategy config sources."""
-    tracked = tracked_paths(root, "docs", "config", "strategies", "scripts/docs/advisory_allowlist.json")
-    paths = {"strategies/registry.yaml", "docs/PROJECT_OBJECTIVE.md",
-             "config/ag_scheduler_v2.yaml", "scripts/docs/advisory_allowlist.json"}
-    for required in paths:
-        if required not in tracked:
-            raise RuntimeError(f"required collector input is not tracked: {required}")
-    registry = yaml.safe_load((root / "strategies/registry.yaml").read_text(encoding="utf-8")) or {}
-    for row in (registry.get("strategies") or {}).values():
-        source = row.get("config_source")
-        if isinstance(source, str) and source.lower().endswith((".yaml", ".yml")):
-            path = (root / source).resolve()
-            path.relative_to(root.resolve())
-            relative = path.relative_to(root.resolve()).as_posix()
-            if relative not in tracked:
-                raise RuntimeError(f"collector input is not tracked: {relative}")
-            paths.add(relative)
-    paths.update(path for path in tracked
-                 if path.startswith(("docs/", "config/"))
-                 and path.endswith(".supersession.yaml"))
-    return sorted(paths)
+    from scripts.docs.collect_facts import collect
+    return collect(root)["input_paths"]
 
 
 def inputs_sha256(root: Path) -> str:
@@ -59,43 +69,37 @@ def inputs_sha256(root: Path) -> str:
 
     Length framing prevents ambiguous boundaries; paths are repository-relative.
     """
-    digest = hashlib.sha256()
-    for relative in collector_input_paths(root):
-        data = (root / relative).read_bytes()
-        digest.update(relative.encode("utf-8") + b"\0")
-        digest.update(str(len(data)).encode("ascii") + b"\0" + data)
-    return digest.hexdigest()
+    from scripts.docs.collect_facts import collect
+    return collect(root)["inputs_sha256"]
 
 
-def _version_for(root: Path, source: Any) -> str | None:
+def _version_for(root: Path, source: Any, recorder: InputRecorder) -> str | None:
     if not isinstance(source, str) or not source.lower().endswith((".yaml", ".yml")):
         return None
     path = (root / source).resolve()
-    try:
-        path.relative_to(root.resolve())
-        content = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    except (ValueError, OSError, yaml.YAMLError):
-        return None
+    content = yaml.safe_load(recorder.read_text(path)) or {}
     value = content.get("version") if isinstance(content, dict) else None
     return None if value is None else str(value)
 
 
-def collect_live_status_facts(root: Path) -> dict[str, Any]:
+def collect_live_status_facts(root: Path, recorder: InputRecorder | None = None) -> dict[str, Any]:
     """Return fields shared by PROJECT_LIVE_STATUS and status/facts.json."""
-    registry = yaml.safe_load((root / "strategies" / "registry.yaml").read_text(encoding="utf-8")) or {}
+    standalone = recorder is None
+    recorder = recorder or InputRecorder(root)
+    registry = yaml.safe_load(recorder.read_text(root / "strategies" / "registry.yaml")) or {}
     strategies = []
     for strategy_id, item in sorted((registry.get("strategies") or {}).items()):
         demo = item.get("demo_authorized")
         live = item.get("live_authorized")
         strategies.append({
             "id": strategy_id,
-            "version": _version_for(root, item.get("config_source")),
+            "version": _version_for(root, item.get("config_source"), recorder),
             "demo_authorized": demo if isinstance(demo, bool) else None,
             "live_authorized": live if isinstance(live, bool) else None,
         })
     return {
         "schema": "AG_PROJECT_LIVE_STATUS_V4",
-        "inputs_sha256": inputs_sha256(root),
+        "inputs_sha256": inputs_sha256(root) if standalone else recorder.digest(),
         "strategies": strategies,
     }
 

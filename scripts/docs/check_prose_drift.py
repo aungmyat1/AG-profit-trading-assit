@@ -8,7 +8,7 @@ from pathlib import Path
 
 import yaml
 
-from check_drift import ROOT, current_truth_contradictions
+from check_drift import ROOT, _ANCHOR_WARNINGS, current_truth_contradictions
 
 
 def _route_paths(context: dict) -> list[str]:
@@ -42,6 +42,7 @@ def main() -> int:
     registry_path = args.registry or root / "strategies" / "registry.yaml"
     registry = yaml.safe_load(registry_path.read_text(encoding="utf-8")) or {}
     warnings = current_truth_contradictions(root, registry.get("strategies") or {})
+    warnings.extend(_ANCHOR_WARNINGS)
     for warning in warnings:
         print(f"ADVISORY: {warning}")
     missing_routes = missing_routes_at_snapshot(root)

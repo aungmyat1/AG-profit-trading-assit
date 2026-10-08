@@ -32,8 +32,16 @@ def drift_fixture(tmp_path: Path) -> Path:
         target = tmp_path / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
+    registry = yaml.safe_load((ROOT / "strategies/registry.yaml").read_text())
+    for row in registry["strategies"].values():
+        relative = row.get("config_source")
+        if isinstance(relative, str) and relative.endswith((".yaml", ".yml")):
+            target = tmp_path / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / relative, target)
     run("git", "init", "-q", cwd=tmp_path)
     run("git", "add", ".", cwd=tmp_path)
+    run(sys.executable, "scripts/docs/collect_facts.py", cwd=tmp_path)
     return tmp_path
 
 
@@ -225,6 +233,114 @@ def test_baseline_sidecar_is_exact_and_removal_restores_blocking(tmp_path: Path)
     )
     result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
     assert result.returncode == 1
+
+
+def test_tracked_input_outside_standard_directories_invalidates_check(tmp_path: Path) -> None:
+    root = drift_fixture(tmp_path)
+    source = root / "external_authority.yaml"
+    source.write_text("version: 1\n", encoding="utf-8")
+    registry = root / "strategies/registry.yaml"
+    data = yaml.safe_load(registry.read_text())
+    data["strategies"]["SESSION_TRADE_V1"]["config_source"] = source.name
+    registry.write_text(yaml.safe_dump(data, sort_keys=False))
+    run("git", "add", source.name, cwd=root)
+    run(sys.executable, "scripts/docs/collect_facts.py", cwd=root)
+    facts = json.loads((root / "status/facts.json").read_text())
+    assert source.name in facts["input_paths"]
+    source.write_text("version: 2\n", encoding="utf-8")
+    result = run(sys.executable, "scripts/docs/collect_facts.py", "--check", cwd=root, check=False)
+    assert result.returncode == 1 and "FACTS_STALE" in result.stdout
+
+
+def test_untracked_input_outside_standard_directories_fails_closed(tmp_path: Path) -> None:
+    root = drift_fixture(tmp_path)
+    source = root / "untracked_authority.yaml"
+    source.write_text("version: 1\n", encoding="utf-8")
+    registry = root / "strategies/registry.yaml"
+    data = yaml.safe_load(registry.read_text())
+    data["strategies"]["SESSION_TRADE_V1"]["config_source"] = source.name
+    registry.write_text(yaml.safe_dump(data, sort_keys=False))
+    result = run(sys.executable, "scripts/docs/collect_facts.py", cwd=root, check=False)
+    assert result.returncode == 1 and "collector input is not tracked: untracked_authority.yaml" in result.stderr
+
+
+def anchored_fixture(root: Path, protected: bool = False) -> Path:
+    readme = root / "README.md"
+    readme.write_text("# Fixture\n\n## Historical example\n\n"
+                      "`SESSION_TRADE_V1` is `demo_authorized: true`.\n", encoding="utf-8")
+    policy = {"schema": "AG_ADVISORY_SCAN_ALLOWLIST_V1",
+              "allowlisted_ranges": [{"file": "README.md", "anchor": "## Historical example",
+                                      "labels": ["DEMO_AUTHORIZED"], "reason": "Fixture"}],
+              "never_suppress": []}
+    if protected:
+        policy["never_suppress"] = [{"file": "README.md", "anchor": "`SESSION_TRADE_V1` is `demo_authorized: true`.",
+                                     "labels": ["DEMO_AUTHORIZED"], "reason": "Keep scanning"}]
+    (root / "scripts/docs/advisory_allowlist.json").write_text(json.dumps(policy))
+    return readme
+
+
+def test_fifty_lines_above_allowlisted_section_preserve_suppression(tmp_path: Path) -> None:
+    root = drift_fixture(tmp_path)
+    readme = anchored_fixture(root)
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root)
+    assert "0 error(s)" in result.stdout
+    readme.write_text("\n" * 50 + readme.read_text())
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root)
+    assert "0 error(s)" in result.stdout and "ALLOWLIST_ANCHOR_MISSING" not in result.stdout
+
+
+def test_removed_anchor_emits_advisory_warning(tmp_path: Path) -> None:
+    root = drift_fixture(tmp_path)
+    readme = anchored_fixture(root)
+    # No contradiction remains: eager validation must still report the missing anchor.
+    readme.write_text("# Fixture\n\n## Renamed example\n\nNo current assertion.\n")
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root)
+    assert "ADVISORY: ALLOWLIST_ANCHOR_MISSING" in result.stdout
+    assert "0 error(s)" in result.stdout
+
+
+def test_anchored_never_suppress_survives_fifty_line_insertion(tmp_path: Path) -> None:
+    root = drift_fixture(tmp_path)
+    readme = anchored_fixture(root, protected=True)
+    readme.write_text("\n" * 50 + readme.read_text())
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 1 and "current-truth contradiction" in result.stdout
+
+
+@pytest.mark.parametrize("relative", ["docs/governance/OWNER_DECISION_REGISTER.md", "docs/agents/INVARIANTS.md"])
+def test_context_pack_dependencies_are_recorded_and_invalidate_digest(tmp_path: Path, relative: str) -> None:
+    root = drift_fixture(tmp_path)
+    path = root / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("# Dependency\n", encoding="utf-8")
+    run("git", "add", relative, cwd=root)
+    run(sys.executable, "scripts/docs/collect_facts.py", cwd=root)
+    facts = json.loads((root / "status/facts.json").read_text())
+    assert relative in facts["input_paths"]
+    path.write_text(path.read_text() + "\nChanged dependency.\n")
+    result = run(sys.executable, "scripts/docs/collect_facts.py", "--check", cwd=root, check=False)
+    assert result.returncode == 1 and "FACTS_STALE" in result.stdout
+
+
+def test_allowlist_migration_accounts_for_all_original_entries():
+    data = json.loads((ROOT / "scripts/docs/advisory_allowlist.json").read_text())
+    mappings = data["migration"]["mapping"]
+    counts = {section: sum(row["original"].startswith(section+"/") for row in mappings)
+              for section in ("allowlisted_ranges", "carve_outs", "verified_label_free", "never_suppress", "disambiguation_notes")}
+    assert counts == {"allowlisted_ranges": 39, "carve_outs": 29, "verified_label_free": 2,
+                      "never_suppress": 30, "disambiguation_notes": 9}
+    entries = [entry for section in ("allowlisted_ranges", "verified_label_free", "never_suppress", "disambiguation_notes", "resolved")
+               for entry in data[section]]
+    entries += [child for entry in data["allowlisted_ranges"] for child in entry.get("carve_outs", [])]
+    assert len(entries) == 109
+    assert {row["original"] for row in mappings} == {entry["origin"] for entry in entries}
+    destinations = {entry["origin"] for entry in entries if entry not in data["resolved"]}
+    destinations.update(f"resolved/{n}" for n in range(len(data["resolved"])))
+    assert {row["destination"] for row in mappings} == destinations
+    assert len(data["never_suppress"]) == 28
+    assert {(entry["origin"], entry["ref"]) for entry in data["resolved"]} == {
+        ("never_suppress/0", "C15"), ("never_suppress/4", "C2"), ("carve_outs/10/0", "C2")}
+    assert data["migration"]["merged_entries"] == []
 
 
 def test_committing_generated_file_does_not_change_cog_check(tmp_path: Path) -> None:
