@@ -24,6 +24,12 @@ Windows host acceptance that remains NOT_EVALUATED. It grants no execution or ec
 [AGP Evidence Integrity R1](status/AGP_EVIDENCE_INTEGRITY_R1.md) reconciles and quarantines the
 four stale or ambiguous MT5 evidence artifacts and the stale mission label behind the R2 contract.
 
+[AGP PR Backlog Closure R1](status/AGP_PR_BACKLOG_CLOSURE_R1.md) is the disposition of record for
+the 18 non-delivery PRs resolved in this mission: a per-PR table of original SHA, final SHA,
+action, tests, CI, merge status and remaining blocker, the review findings remediated on the two
+published remediation branches, and the owner decisions still outstanding. It merges nothing and
+authorizes nothing.
+
 This directory contains design contracts, implementation architecture, setup guidance,
 and dated verification evidence. Read documents according to their authority, not just
 their age. For the shortest path to the active objective, start with the repo priority
