@@ -13,7 +13,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.generate_live_status import collect_live_status_facts  # noqa: E402
+from scripts.generate_live_status import collect_live_status_facts, tracked_paths  # noqa: E402
 
 
 def read_objective(path: Path) -> dict[str, str]:

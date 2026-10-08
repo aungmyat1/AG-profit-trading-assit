@@ -21,16 +21,47 @@ def drift_fixture(tmp_path: Path) -> Path:
         "scripts/docs/check_drift.py",
         "scripts/docs/collect_facts.py",
         "scripts/docs/docs_drift_allowlist.txt",
+        "scripts/docs/advisory_allowlist.json",
         "scripts/generate_live_status.py",
         "strategies/registry.yaml",
         "docs/PROJECT_OBJECTIVE.md",
         "status/facts.json",
+        "config/ag_scheduler_v2.yaml",
     ):
         source = ROOT / relative
         target = tmp_path / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
+    run("git", "init", "-q", cwd=tmp_path)
+    run("git", "add", ".", cwd=tmp_path)
     return tmp_path
+
+
+def test_untracked_supersession_sidecar_does_not_change_digest_or_suppress(tmp_path: Path) -> None:
+    root = drift_fixture(tmp_path)
+    # Track a machine-readable contradiction; add a valid-looking but untracked sidecar.
+    manifest_rel = "docs/v2/AG_V2_BASELINE_MANIFEST_V1.json"
+    target = root / manifest_rel
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps({"strategies": {"SESSION_TRADE_V1": {
+        "demo_authorized": True, "manager_dispatchable": True
+    }}}), encoding="utf-8")
+    run("git", "add", manifest_rel, cwd=root)
+    before = run(sys.executable, "scripts/docs/collect_facts.py", "--repo-root", str(root), "--output", str(root / "facts.json"), cwd=root)
+    digest_before = json.loads((root / "facts.json").read_text())["inputs_sha256"]
+    sidecar = target.with_suffix(".supersession.yaml")
+    sidecar.write_text(
+        "target: AG_V2_BASELINE_MANIFEST_V1.json\n"
+        "json_path: [strategies.SESSION_TRADE_V1.demo_authorized, strategies.SESSION_TRADE_V1.manager_dispatchable]\n"
+        "superseded_by: current\ndate: 2026-10-08\nauthority_source: strategies/registry.yaml\n",
+        encoding="utf-8",
+    )
+    run(sys.executable, "scripts/docs/collect_facts.py", "--repo-root", str(root), "--output", str(root / "facts.json"), cwd=root)
+    digest_after = json.loads((root / "facts.json").read_text())["inputs_sha256"]
+    assert digest_after == digest_before
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 1
+    assert result.stdout.count("machine contradiction") == 2
 
 
 def test_registry_demo_authorized_flip_is_blocking(tmp_path: Path) -> None:
@@ -109,6 +140,7 @@ def test_machine_authority_mismatch_is_blocking_unless_superseded(tmp_path: Path
         "class": "evidence",
         "strategies": {strategy_id: {"demo_authorized": not current}},
     }), encoding="utf-8")
+    run("git", "add", "docs/fixture.json", cwd=root)
 
     result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
     assert result.returncode == 1
@@ -173,6 +205,7 @@ def test_baseline_sidecar_is_exact_and_removal_restores_blocking(tmp_path: Path)
         target = root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / relative, target)
+    run("git", "add", manifest_rel, sidecar_rel, cwd=root)
 
     result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
     assert result.returncode == 0
@@ -205,15 +238,19 @@ def test_committing_generated_file_does_not_change_cog_check(tmp_path: Path) -> 
     for directory in ("scripts/docs", "strategies", "config"):
         shutil.copytree(ROOT / directory, root / directory)
     shutil.copy2(ROOT / "scripts/generate_live_status.py", root / "scripts/generate_live_status.py")
-    # Collection and Cog work before this fixture even has a .git directory.
-    run(sys.executable, "scripts/docs/collect_facts.py", cwd=root)
-    run("cog", "-r", "PROJECT_STATUS.md", cwd=root)
-    before = (root / "status/facts.json").read_bytes()
-    run("cog", "--check", "PROJECT_STATUS.md", cwd=root)
+    # Missing index fails closed; once initialized and staged, collection is stable.
+    unavailable = run(sys.executable, "scripts/docs/collect_facts.py", cwd=root, check=False)
+    assert unavailable.returncode == 1
+    assert "cannot enumerate tracked collector inputs" in unavailable.stderr
     run("git", "init", "-q", cwd=root)
     run("git", "config", "user.name", "Docs Test", cwd=root)
     run("git", "config", "user.email", "docs-test@example.invalid", cwd=root)
     run("git", "add", ".", cwd=root)
+    run(sys.executable, "scripts/docs/collect_facts.py", cwd=root)
+    run("cog", "-r", "PROJECT_STATUS.md", cwd=root)
+    before = (root / "status/facts.json").read_bytes()
+    run("cog", "--check", "PROJECT_STATUS.md", cwd=root)
+    run("git", "add", "PROJECT_STATUS.md", "status/facts.json", cwd=root)
     run("git", "commit", "-qm", "generated docs", cwd=root)
     first_sha = run("git", "rev-parse", "HEAD", cwd=root).stdout.strip()
     for _ in range(2):

@@ -10,7 +10,7 @@ from typing import Any
 
 import yaml
 
-from collect_facts import read_objective
+from collect_facts import read_objective, tracked_paths
 
 ROOT = Path(__file__).resolve().parents[2]
 DATE = re.compile(r"20\d\d-\d\d-\d\d")
@@ -201,9 +201,9 @@ def _machine_assertions(node: Any, registry_ids: set[str], inherited: str | None
             yield from _machine_assertions(value, registry_ids, inherited)
 
 
-def _sidecar_supersessions(path: Path) -> set[str]:
+def _sidecar_supersessions(path: Path, tracked: set[str], root: Path) -> set[str]:
     sidecar = path.with_suffix(".supersession.yaml")
-    if not sidecar.is_file():
+    if sidecar.relative_to(root).as_posix() not in tracked or not sidecar.is_file():
         return set()
     try:
         data = yaml.safe_load(sidecar.read_text(encoding="utf-8")) or {}
@@ -226,9 +226,11 @@ def machine_authority_contradictions(root: Path, registry_rows: dict[str, Any]) 
     """Compare strategy authority in docs/config JSON/YAML with the canonical registry."""
     failures: list[str] = []
     paths = []
+    tracked = tracked_paths(root, "docs", "config")
     for base in (root / "docs", root / "config"):
         for pattern in ("*.json", "*.yaml", "*.yml"):
-            paths.extend(base.rglob(pattern))
+            paths.extend(path for path in base.rglob(pattern)
+                         if path.relative_to(root).as_posix() in tracked)
     for path in sorted(set(paths)):
         try:
             content = path.read_text(encoding="utf-8")
@@ -237,7 +239,7 @@ def machine_authority_contradictions(root: Path, registry_rows: dict[str, Any]) 
             continue
         if isinstance(data, dict) and data.get("superseded_by") and data.get("date"):
             continue
-        superseded_paths = _sidecar_supersessions(path)
+        superseded_paths = _sidecar_supersessions(path, tracked, root)
         seen: set[tuple[str, str, str]] = set()
         for strategy_id, field, actual, logical_path in _machine_assertions(data, set(registry_rows)):
             expected_field = "demo_authorized" if field == "manager_dispatchable" else field
