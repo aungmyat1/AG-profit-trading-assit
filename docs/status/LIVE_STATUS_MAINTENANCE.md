@@ -1,3 +1,9 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # Live Status Documentation Maintenance
 
 This document defines how AG Profit Trading's operational documentation stays aligned

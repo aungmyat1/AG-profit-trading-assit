@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Panel-R2 Opportunity Analysis Read Model
 
 `GET /api/opportunity-analysis` is an observation-only projection of the existing

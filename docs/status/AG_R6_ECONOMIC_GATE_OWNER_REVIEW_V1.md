@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_R6_ECONOMIC_GATE_OWNER_REVIEW_V1
 
 Recorded: 2026-09-11

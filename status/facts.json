@@ -1,0 +1,200 @@
+{
+  "inputs_sha256": "d8df0fbafdf6da09615058a4afca0c9187e70fcd98cc53931d36f3fa13ab3638",
+  "objective": {
+    "source": "docs/PROJECT_OBJECTIVE.md#objective",
+    "text": "Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.\n\nThe owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.\n\n`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
+  },
+  "schedule": {
+    "scheduler": "AG_DAILY_OPPORTUNITY_SCHEDULER_V2",
+    "tasks": [
+      {
+        "cadence": "daily",
+        "end": "06:30",
+        "name": "PRE_FLIGHT",
+        "start": "06:25"
+      },
+      {
+        "cadence": "daily",
+        "end": "06:45",
+        "name": "BTC_OBSERVE",
+        "start": "06:30"
+      },
+      {
+        "cadence": "daily",
+        "end": "06:50",
+        "name": "BTC_FINALIZE",
+        "start": "06:45"
+      },
+      {
+        "cadence": "daily",
+        "end": "06:55",
+        "name": "PRE_LONDON_REFERENCE",
+        "start": "06:50"
+      },
+      {
+        "cadence": "daily",
+        "end": "07:00",
+        "name": "PRE_LONDON_READINESS",
+        "start": "06:55"
+      },
+      {
+        "cadence": "daily",
+        "end": "11:00",
+        "name": "WINDOW_ASIAN_LONDON",
+        "start": "07:00"
+      },
+      {
+        "cadence": "daily",
+        "end": "11:05",
+        "name": "POST_LONDON",
+        "start": "11:00"
+      },
+      {
+        "cadence": "daily",
+        "end": "11:55",
+        "name": "STANDBY",
+        "start": "11:05"
+      },
+      {
+        "cadence": "daily",
+        "end": "12:00",
+        "name": "PRE_NEW_YORK",
+        "start": "11:55"
+      },
+      {
+        "cadence": "daily",
+        "end": "15:00",
+        "name": "WINDOW_LONDON_NEWYORK",
+        "start": "12:00"
+      },
+      {
+        "cadence": "daily",
+        "end": "15:10",
+        "name": "POST_NEW_YORK",
+        "start": "15:00"
+      },
+      {
+        "cadence": "daily",
+        "end": null,
+        "name": "P1_RESEARCH",
+        "start": "15:10"
+      }
+    ],
+    "timezone": "UTC"
+  },
+  "schema": "AG_DOC_FACTS_V3",
+  "strategies": [
+    {
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "id": "R8_OBM_V1",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "version": null
+    },
+    {
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "id": "SESSION_TRADE_V1",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "version": "1"
+    },
+    {
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "id": "SMC_3R_V1",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "version": null
+    },
+    {
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "id": "ST_ASIAN_SWEEP_5R_V1",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "version": "1.1.1"
+    },
+    {
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "id": "ST_LARGE_SMC_V1",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "version": "1.0.7"
+    },
+    {
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "id": "ST_LIQUIDITY_SWEEP_RETEST_V1",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "version": "2.0.0"
+    },
+    {
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "id": "ST_SESSION_SWEEP_CONTINUATION_V1",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "version": "1.0.1"
+    }
+  ]
+}

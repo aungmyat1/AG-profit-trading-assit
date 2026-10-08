@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-5 — Shared Feature Semantic Review
 
 **Status:** COMPLETE (audit + classification + evidence tests only; no production code

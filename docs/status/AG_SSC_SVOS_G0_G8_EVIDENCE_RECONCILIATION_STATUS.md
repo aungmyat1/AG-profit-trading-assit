@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG SSC — SVOS/AG-G0-G8 Evidence Reconciliation (Cycle 1, WORK PACKAGE A)
 
 `ST_SESSION_SWEEP_CONTINUATION_V1`, `lifecycle_stage=OFFLINE_RESEARCH`, `semantic_version=1.0.0`

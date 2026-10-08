@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # SVOS Authority Map — P1
 
 Permanent Strategy Validation Operating System authority map for the

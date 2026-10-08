@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Restructure src/ into trade_assist / research / shared
 
 Status: PROPOSED — not yet executed. Written 2026-09-14.

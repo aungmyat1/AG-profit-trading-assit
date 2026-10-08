@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Panel R5C-R2 Shared Broker Identity Status
 
 Date: 2026-09-24

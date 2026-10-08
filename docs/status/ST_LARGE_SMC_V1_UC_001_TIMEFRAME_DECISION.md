@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 — UC-001 Timeframe Roles: Owner Decision Packet (2026-09-01)
 
 Status: **OWNER_DECISION_REQUIRED**. This document does not resolve UC-001. No file

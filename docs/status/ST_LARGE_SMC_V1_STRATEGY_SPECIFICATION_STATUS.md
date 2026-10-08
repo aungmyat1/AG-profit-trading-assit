@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 Strategy Specification — Status (2026-09-01)
 
 ## Scope

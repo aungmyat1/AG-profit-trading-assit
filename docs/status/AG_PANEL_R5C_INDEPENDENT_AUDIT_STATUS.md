@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG PANEL R5C — Proposal-Level Owner-Decision Uniqueness — Independent Audit
 
 Status: **R5C_PROPOSAL_DECISION_UNIQUENESS_INDEPENDENT_AUDIT_PASS**

@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG Post-R4 Expansion and Delivery Plan V1
 
 Status: **DEFERRED FOLLOW-ON PLAN — NOT CURRENT IMPLEMENTATION AUTHORITY**  

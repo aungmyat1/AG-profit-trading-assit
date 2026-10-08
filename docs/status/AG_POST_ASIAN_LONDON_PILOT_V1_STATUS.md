@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_POST_ASIAN_LONDON_PILOT_V1 / AG_TRADE_ASSISTANT_V1_0 Status (2026-09-01)
 
 Scope: turn `ST_ASIAN_SWEEP_5R_V1` into a daily, read-only, PROPOSAL_ONLY trading

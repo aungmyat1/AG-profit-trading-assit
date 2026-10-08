@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # DEEPSEEK_REVIEW_PACKET — SVOS/AG-G0-G10 Cycle 1 (Foundation), Remediation V2
 
 ## Repository HEAD

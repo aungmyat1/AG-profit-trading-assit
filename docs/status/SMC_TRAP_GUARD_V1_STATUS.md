@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SMC Trap Guard V1 Status (2026-09-01)
 
 Status: **UNIT_TESTED / ADDITIVE SAFETY VALIDATION**.

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 — C12 Expiry Contract Resolution (2026-09-01)
 
 Status: **C12_RESOLVED_BY_REUSE**. `strategies/ST_LARGE_SMC_V1.yaml` version

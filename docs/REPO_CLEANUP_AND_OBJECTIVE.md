@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Repo cleanup and objective-first path
 
 This repository is already rich in evidence, but the current structure creates a false choice between "read the latest status" and "read the historical design archive." The fastest way to reach the actual objective is to make the active path explicit and keep legacy material clearly labelled as historical context.

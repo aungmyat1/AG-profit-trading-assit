@@ -1,3 +1,9 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # Documentation Index
 
 [MT5 provider/evaluator R1 offline integration](status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md)
@@ -164,6 +170,11 @@ validation, incomplete CFD strategy/risk authority, and execution boundary.
    — records the observation-only skill classification/interface refactor and focused
    compatibility evidence.
 
+- [`agents/CONTEXT_PACK.md`](agents/CONTEXT_PACK.md) — generated context pack (objective, invariants
+  pointer, authority, open owner decisions, schedule); the only doc synced to Claude project knowledge.
+  Regenerate with `python scripts/docs/build_context_pack.py`; doc hygiene report:
+  `python scripts/docs/stale_check.py`.
+
 ## SVOS (Strategy Validation Operating System)
 
 - [`svos/SVOS_AUTHORITY_MAP.md`](svos/SVOS_AUTHORITY_MAP.md) — P1 authority map:
@@ -283,10 +294,13 @@ validation, incomplete CFD strategy/risk authority, and execution boundary.
 - [`status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_RECONCILIATION_2026-10-06.md`](status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_RECONCILIATION_2026-10-06.md)
   — ST_ASIAN_SWEEP_5R_V1@1.1.1 Phase B spec/engine reconciliation table (owner decision packet;
   no behavior change), TP1>TP2 geometry counts, evidence lineage, session anchoring options.
-- [`status/AG_D6_ASIAN_SWEEP_READY_OFF_PORT_2026-10-08.md`](status/AG_D6_ASIAN_SWEEP_READY_OFF_PORT_2026-10-08.md)
-  — D6 port: Asian Sweep READY authority OFF on main, actionability INFO_ONLY_SUPPRESSED guard, equivalence vs 9419b21.
+- [`status/AG_TICKET_STORE_V1_STATUS_2026-10-08.md`](status/AG_TICKET_STORE_V1_STATUS_2026-10-08.md)
+  — TICKET_STORE_V1: store audit, append-only evaluation/outcome schema, SQLite reindex, LEGACY migration.
 - [`status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md`](status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md)
   — Phase B owner decision template (all choices `PENDING_OWNER` until the owner fills them).
+- [`status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md`](status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md)
+  — v1.1.2 candidate L2 closure: recommended Phase B resolutions (PENDING_OWNER_CONFIRM), L1–L6
+  fixture results, candidate `LOGIC_VERIFIED`; READY paused; v1.1.1 unchanged.
 - [`status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md)
   and [`status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md)
   — Large-SMC EURUSD friction campaign WP3A/3A.1 evidence.

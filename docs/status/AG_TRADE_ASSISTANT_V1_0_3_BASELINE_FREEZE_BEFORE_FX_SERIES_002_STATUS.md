@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_TRADE_ASSISTANT_V1_0_3 -- Baseline Freeze Before FX Series 002 Status (2026-09-04)
 
 Dated evidence snapshot per `docs/status/LIVE_STATUS_MAINTENANCE.md`. Closes the

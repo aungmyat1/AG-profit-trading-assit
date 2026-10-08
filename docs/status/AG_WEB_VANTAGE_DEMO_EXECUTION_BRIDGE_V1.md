@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Web Vantage Demo Execution Bridge V1
 
 Date: 2026-09-10

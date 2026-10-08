@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG VALIDATION — CYCLE 1 FOUNDATION FREEZE RECORD
 
 **Status: FOUNDATION_FREEZE = COMPLETE. CYCLE_1 = CLOSED. CYCLE_2 = NOT_AUTHORIZED.**

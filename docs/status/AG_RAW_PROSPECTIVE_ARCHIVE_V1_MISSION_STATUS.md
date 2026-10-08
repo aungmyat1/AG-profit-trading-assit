@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # RAW_PROSPECTIVE_ARCHIVE_V1 — Mission Status
 
 Mission: implement the read-only prospective raw market-data archive for

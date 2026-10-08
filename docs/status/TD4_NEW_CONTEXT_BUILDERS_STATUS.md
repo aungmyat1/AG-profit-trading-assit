@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-4 — New Context Builders (W1/H4/M15)
 
 **Status:** COMPLETE. Follows TD-0 (audit), TD-1 (`07743b6e`), TD-2 (`232e901`), TD-3

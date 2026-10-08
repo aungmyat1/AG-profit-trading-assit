@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # PANEL-R3 Independent Audit Status
 
 Date: 2026-09-22

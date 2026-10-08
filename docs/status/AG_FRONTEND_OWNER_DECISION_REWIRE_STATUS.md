@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Frontend Owner-Decision Canonical Rewire — Status
 
 **Class:** `STATUS_EVIDENCE`. **Current as of:** 2026-09-23, branch

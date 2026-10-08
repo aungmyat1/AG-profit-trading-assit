@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Skill Optimization Status — 2026-08-27
 
 Scope: logical skill-boundary optimization of the AG Profit Trading Assistant's

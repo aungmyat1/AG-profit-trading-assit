@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Install on the Windows MT5 Demo host
 
 This procedure installs the read-only scheduled host for the complete AG V1 objective:

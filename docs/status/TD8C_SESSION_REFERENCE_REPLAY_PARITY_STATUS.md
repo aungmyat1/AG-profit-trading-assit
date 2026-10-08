@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-8C session-reference replay parity — 2026-09-19
 
 Status: `COMPLETE_SCOPED`, uncommitted for owner review. TD-8B freeze commit:

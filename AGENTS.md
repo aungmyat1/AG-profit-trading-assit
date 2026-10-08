@@ -1,3 +1,9 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # AG Profit Trading — Agent Instructions
 
 ## Token minimum usage policy (owner rule, applies to every task)
@@ -84,6 +90,35 @@ code, a higher version number, or passing tests do not by themselves make a cand
 production/current authority. Historical evidence remains permanently attributed to the
 exact application version and strategy version that generated it and must never be
 silently rewritten or reattributed.
+
+## Open-source first (OSS-FIRST) — standing rule
+
+Before writing new trading logic, data tooling, backtest, grading or indicator code,
+the agent MUST check for a maintained open-source implementation or dataset and prefer
+reuse over rebuild. Record the check in the mission report (one line per component).
+
+1. Search order: (a) existing repo code/registry; (b) pinned OSS already in
+   requirements; (c) maintained OSS (e.g. backtesting/event engines, SMC/ICT indicator
+   libs, TA libs, ccxt, Dukascopy/HistData loaders); (d) write new code only if none fit.
+   Report: COMPONENT | OSS_CANDIDATE | DECISION (REUSED/WRAPPED/REJECTED) | REASON.
+2. Authority stays local. OSS results are ORACLE/REFERENCE evidence, never authority.
+   Strategy rules, sessions, thresholds and the sizing authority come only from the
+   registered spec and repo. Divergence between OSS and our engine is documented in a
+   divergence table and resolved by owner decision; it is never silently adopted.
+3. Data provenance. Live tickets, sizing and outcome grading for LIVE cohorts use VT
+   Markets MT5 data only. External OSS data (Dukascopy, HistData, exchange/ccxt) may be
+   used for research, replay backfill and cross-checks, labelled source=EXTERNAL:<name>,
+   kept as a separate cohort, never mixed into LIVE statistics. Note known differences
+   (spread, session close, CFD vs spot/perp pricing).
+4. Dependency hygiene. Pin exact versions; check license (no GPL/AGPL code copied into
+   runtime packages; wrapping as an isolated research tool is allowed); no new network
+   egress on the Windows MT5 host; respect resource_guard classes; no OSS code path may
+   import broker/order modules.
+5. Efficiency. Prefer vectorized/batch OSS tools for research and replay; keep the host
+   runtime minimal (OSS heavy tooling runs on web agents, not the MT5 host).
+6. Fail closed. If an OSS component is unavailable, unpinned, license-unclear or
+   disagrees with the spec, report OSS_BLOCKED/DIVERGENT and continue with existing
+   repo authority — never invent values to bridge the gap.
 
 ## Minimum-context principle
 
@@ -236,3 +271,5 @@ Discovery defaults are at most 5 initial authoritative project files, 2 initial 
 Use the manifest for the initial route. Minimum reads are: strategy (registry, named contract, engine, focused test); validation/research (contract, current validation profile/status, runner, focused test); trade proposal (registry, current contract, proposal/strategy engine, authorized market-data source); execution (`config/trading.yaml`, canonical execution and risk authority, focused tests); trade management (relevant management module/gateway, named skill, focused tests); scheduler (canonical config, runner/state machine, focused tests); frontend/API (named module, client/boundary, endpoint, focused tests); documentation/status (current implementation/evidence, latest status, and `LIVE_STATUS_MAINTENANCE.md` when applicable).
 
 Historical evidence, holdout/OOS data, and unrelated strategy histories are opt-in. The manifest routes discovery only; strategy, configuration, code, and status authorities remain authoritative. A HEAD mismatch alone does not invalidate the manifest; refresh an entry only when its routing authority materially changed.
+
+OSS-FIRST: before writing new trading, data, backtest, grading or indicator code, apply the "Open-source first (OSS-FIRST)" rule above and include its `COMPONENT | OSS_CANDIDATE | DECISION | REASON` table in the mission report.

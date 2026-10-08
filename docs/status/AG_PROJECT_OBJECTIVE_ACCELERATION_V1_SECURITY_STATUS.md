@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_PROJECT_OBJECTIVE_ACCELERATION_V1 -- Security Status (2026-09-02)
 
 Dated evidence snapshot per `docs/status/LIVE_STATUS_MAINTENANCE.md`. Records the

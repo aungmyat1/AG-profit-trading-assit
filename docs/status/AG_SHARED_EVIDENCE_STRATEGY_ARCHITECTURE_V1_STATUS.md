@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Shared Evidence + Multi-Strategy Engine Architecture V1 — Status (2026-09-01)
 
 ## Scope

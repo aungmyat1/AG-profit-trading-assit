@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # FX Occurrence Identity Promotion Readiness (2026-09-20)
 
 Mission `AG_FX_OCCURRENCE_IDENTITY_PROMOTION_READINESS_V1`. Determines whether

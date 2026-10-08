@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # SMC_CONDITIONAL_ENTRY_V2 Spec — 2026-08-29
 
 Supersedes `SMC_ENTRY_MODELS_V1`'s hard-wired E1→M1 / E2→M2 / E3→M3 pairing rule

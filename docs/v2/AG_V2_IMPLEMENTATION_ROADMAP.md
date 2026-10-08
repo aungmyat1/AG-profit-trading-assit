@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG Profit Trading V2 — Implementation Roadmap
 
 Status: **PROGRAM PLAN / NON-AUTHORIZING**  

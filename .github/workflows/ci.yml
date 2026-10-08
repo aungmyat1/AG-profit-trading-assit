@@ -40,3 +40,43 @@ jobs:
 
       - name: Run TypeScript checks
         run: npm run lint
+
+  docs-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install documentation tooling
+        run: python -m pip install cogapp PyYAML pytest==8.3.5
+
+      - name: Collect deterministic documentation facts
+        run: |
+          git rev-parse HEAD
+          python scripts/generate_live_status.py --check
+          python scripts/docs/collect_facts.py
+          git diff --exit-code -- status/facts.json
+
+      - name: Check generated status blocks
+        run: cog --check PROJECT_STATUS.md
+
+      - name: Check authority claims against registry
+        run: python scripts/docs/check_drift.py
+
+      - name: Check prose claims (advisory)
+        run: python scripts/docs/check_prose_drift.py
+
+      - name: Run documentation fixture tests
+        run: pytest -q tests/test_docs_live.py
+
+      - name: Check links (warn only)
+        uses: lycheeverse/lychee-action@v2
+        continue-on-error: true
+        with:
+          args: --no-progress README.md PROJECT_STATUS.md docs
+          fail: false

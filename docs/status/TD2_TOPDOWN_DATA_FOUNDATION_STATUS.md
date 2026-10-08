@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-2 — Top-Down Data Foundation
 
 **Status:** COMPLETE. Follows TD-0 (audit, READY_FOR_TD1) and TD-1 (contract freeze,

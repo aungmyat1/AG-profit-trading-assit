@@ -1,3 +1,9 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # AG V1 — Two Goals: Owner Decisions
 
 - Recorded: 2026-09-29 (owner authorization dated 2026-09-30, mission AG-V1-CLOUD)
