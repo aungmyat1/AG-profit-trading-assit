@@ -123,6 +123,23 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## STALE-FIX-1 verification — stale-gate fix landed and regression-green (2026-10-08)
+
+The coordinator designation STALE-FIX-1 resolves to AGP-TTU-02 (PR #61, merged
+2026-10-07T19:47Z via `96f4aa6`, fix head `34af0bfb` on `fix/stale-gate-trigger-close`).
+An independent re-verification on a fresh Linux container confirmed: the fix is already
+applied to `main` and to this checkout (both ancestor checks true; the three code/test
+files byte-identical to `origin/main`); no standalone patch artifact or unpushed rescue
+work exists anywhere in the repository. Semantics re-verified: stale-withheld READY
+tickets keep the real, bar-derived `signal_close_utc` (probe: `2026-10-07T07:15Z`
+preserved exactly); engine NO_TRADE tickets get **no** invented trigger close; with no
+real close anywhere, classification still fails closed as `TRIGGER_TIMEFRAME_UNKNOWN`.
+Six regression suites guarding the stale-gate path: **106 passed** (18 + 19 + 29 + 19 +
+8 + 13); full suite **1496 passed, 3 skipped, 0 failed** (Python 3.11.2 cloud container;
+4 initial failures were missing venv packages, not code defects). No strategy admission,
+registry, threshold, session, risk, or broker/execution authority change.
+Evidence: [STALE-FIX-1 verification](docs/status/AG_STALE_FIX_1_VERIFICATION_2026-10-08.md).
+
 ## Crypto MT5 window preflight (2026-10-09)
 
 `scripts/host/live_candles_smoke.py --mode crypto` checks the selected MT5 crypto config window

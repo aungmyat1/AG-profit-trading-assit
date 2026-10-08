@@ -16,6 +16,11 @@ records Demo verification of quote-time normalization, exact M15 windows, and
 the eight-record evaluator smoke. It does not establish a trade opportunity or
 execution authority.
 
+[STALE-FIX-1 verification](status/AG_STALE_FIX_1_VERIFICATION_2026-10-08.md)
+records the independent re-verification of the merged AGP-TTU-02 stale-gate fix
+(PR #61): source commit, branch state, timestamp semantics, and regression evidence.
+It changes no strategy admission or broker execution authority.
+
 [AGP Host Ticket Delivery R1 (FAST)](status/AGP_HOST_TICKET_DELIVERY_R1_FAST_2026-10-08.md)
 records the scheduled canonical FX path from read-only MT5 Demo candles through durable
 TICKET_STORE_V1 records to the delivery/session journals, its offline test evidence, and the
