@@ -36,7 +36,9 @@ def test_open_decisions_counted_from_the_register_never_a_bare_zero(tmp_path):
     assert "Open decisions in registered tables: 11 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
     # No registered table -> UNKNOWN, not 0.
     assert pack.open_decisions(str(tmp_path)) == (None, [])
-    assert "Open decisions in registered tables: UNKNOWN" in pack.build(FACTS, root=str(tmp_path))
+    no_sources = {**FACTS, "pack_context": {"pending_decisions": None, "decision_sources": [],
+                                          "invariants_present": False}}
+    assert "Open decisions in registered tables: UNKNOWN" in pack.build(no_sources, root=str(tmp_path))
 
 
 def test_missing_or_incomplete_facts_fail_closed(tmp_path):
@@ -46,3 +48,16 @@ def test_missing_or_incomplete_facts_fail_closed(tmp_path):
     bad.write_text(json.dumps({k: v for k, v in FACTS.items() if k != "inputs_sha256"}))
     with pytest.raises(SystemExit, match="FACTS_INCOMPLETE"):
         pack.load_facts(str(bad))
+
+
+def test_pack_render_reads_no_sources_outside_collected_facts(monkeypatch):
+    import builtins
+
+    def unexpected_read(*args, **kwargs):
+        raise AssertionError("pack rendering opened a source outside the digest")
+
+    monkeypatch.setattr(builtins, "open", unexpected_read)
+    monkeypatch.setattr(Path, "read_text", unexpected_read)
+    monkeypatch.setattr(Path, "read_bytes", unexpected_read)
+    monkeypatch.setattr(pack.os.path, "exists", unexpected_read)
+    assert f"inputs_sha256: `{FACTS['inputs_sha256']}`" in pack.build(FACTS)

@@ -5,9 +5,9 @@
 Inputs (offline, deterministic; no git, no clock):
   facts      status/facts.json from scripts/docs/collect_facts.py (objective, strategies,
              schedule, inputs_sha256). Missing or unreadable facts fail closed: no pack.
-  decisions  rows of the registered owner-decision tables (REGISTERED_DECISION_SOURCES)
-             whose Status cell is PENDING_OWNER. When no registered table exists the
-             count is reported as UNKNOWN, never as zero.
+  decisions  and invariants presence are captured in facts.pack_context by the collector;
+             the pack reads no source documents outside facts.json. Missing registered
+             decision tables are reported as UNKNOWN, never as zero.
 The header carries facts.json's inputs_sha256 -- never a git SHA -- so identical inputs give
 a byte-identical pack. The output is capped at 150 lines; the build fails rather than
 truncating facts. --check exits 1 when the committed file differs from a fresh build.
@@ -38,7 +38,7 @@ def load_facts(path: str) -> dict:
             facts = json.load(f)
     except (OSError, ValueError) as exc:
         raise SystemExit(f"FACTS_UNAVAILABLE: {path}: {exc} -- run scripts/docs/collect_facts.py") from exc
-    for key in ("inputs_sha256", "objective", "strategies", "schedule"):
+    for key in ("inputs_sha256", "objective", "strategies", "schedule", "pack_context"):
         if key not in facts:
             raise SystemExit(f"FACTS_INCOMPLETE: {path} has no {key!r}")
     return facts
@@ -69,7 +69,8 @@ def _value(field) -> object:
 
 
 def build(facts: dict, root: str = ROOT) -> str:
-    count, sources = open_decisions(root)
+    context = facts["pack_context"]
+    count, sources = context["pending_decisions"], context["decision_sources"]
     decisions = (f"Open decisions in registered tables: {count} (sources: "
                  + ", ".join(f"`{s}`" for s in sources) + ")." if sources
                  else "Open decisions in registered tables: UNKNOWN (no registered decision table found).")
@@ -90,7 +91,7 @@ def build(facts: dict, root: str = ROOT) -> str:
              "- Agent rules and authority order: `AGENTS.md`; non-collapsible states:",
              "  `docs/DOCUMENTATION_GOVERNANCE.md`; " + (
                  "also `docs/agents/INVARIANTS.md` (which document is authoritative is open: REG-INVARIANTS)."
-                 if os.path.exists(os.path.join(root, "docs", "agents", "INVARIANTS.md"))
+                 if context["invariants_present"]
                  else "`docs/agents/INVARIANTS.md` does not exist."),
              "- Strategy authorization is owned by `strategies/registry.yaml`; this pack only mirrors it.",
              "",
