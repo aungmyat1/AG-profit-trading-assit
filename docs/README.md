@@ -18,8 +18,11 @@ execution authority.
 
 [STALE-FIX-1 verification](status/AG_STALE_FIX_1_VERIFICATION_2026-10-08.md)
 records the independent re-verification of the merged AGP-TTU-02 stale-gate fix
-(PR #61): source commit, branch state, timestamp semantics, and regression evidence.
-It changes no strategy admission or broker execution authority.
+(PR #61). Its initial identification as "STALE-FIX-1" was
+[corrected on record](status/AG_STALE_FIX_1_SIGNAL_TIME_TRUTH_2026-10-08.md): STALE-FIX-1
+is the separate truthful-signal-time + funnel-fields patch for `fx.py`'s
+first-trade-bar substitution. Neither record changes strategy admission or broker
+execution authority.
 
 [AGP Host Ticket Delivery R1 (FAST)](status/AGP_HOST_TICKET_DELIVERY_R1_FAST_2026-10-08.md)
 records the scheduled canonical FX path from read-only MT5 Demo candles through durable

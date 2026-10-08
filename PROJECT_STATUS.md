@@ -123,10 +123,31 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## STALE-FIX-1 — truthful signal time + funnel fields (2026-10-08)
+
+**Correction:** the entry below ("STALE-FIX-1 verification") misidentified STALE-FIX-1 as
+the merged AGP-TTU-02 fix (PR #61). STALE-FIX-1 is a separate, previously unapplied patch:
+`main` still substituted the first trade-session bar when the engine supplied no signal time
+(`fx.py` `signal_open = sig.signal_timestamp or post_session_candles[0].time`), and nothing
+recorded that substitution. Now applied: FX tickets carry `signal_time_source`
+(`ENGINE_M15_SIGNAL_BAR` / `FIRST_TRADE_SESSION_BAR` / `NONE`) and `signal_time_basis_utc`
+(the bar open behind the gate close); the engine's `signal_timestamp` is never overwritten.
+Actionability passes the fields through (`None` when absent); the canonical `trigger` block
+emits them or `NOT_AVAILABLE`. No invented timestamps: honest absence everywhere, historical
+archives untouched. Empirical pre/post parity run on six gate scenarios: identical
+decisions, only the two added keys. Gate math, freshness windows, AGP-TTU-02 RC1/RC2 and the
+D6 READY switch unchanged (fresh engine READY still archives as `SHADOW_INFO_ONLY`; no
+strategy admission change; no broker/execution authority change). New tests 10 passed; the
+six stale-gate suites **106 passed**; full suite **1506 passed, 3 skipped, 0 failed**.
+Evidence: [STALE-FIX-1 signal-time truth](docs/status/AG_STALE_FIX_1_SIGNAL_TIME_TRUTH_2026-10-08.md).
+
 ## STALE-FIX-1 verification — stale-gate fix landed and regression-green (2026-10-08)
 
-The coordinator designation STALE-FIX-1 resolves to AGP-TTU-02 (PR #61, merged
-2026-10-07T19:47Z via `96f4aa6`, fix head `34af0bfb` on `fix/stale-gate-trigger-close`).
+The coordinator designation STALE-FIX-1 was **resolved in error** to AGP-TTU-02 (PR #61,
+merged 2026-10-07T19:47Z via `96f4aa6`, fix head `34af0bfb` on
+`fix/stale-gate-trigger-close`) — see the dated correction in the entry above. What follows
+remains an accurate verification record of the **merged AGP-TTU-02 fix only** (identified as
+a separate, later-distinguished work item):
 An independent re-verification on a fresh Linux container confirmed: the fix is already
 applied to `main` and to this checkout (both ancestor checks true; the three code/test
 files byte-identical to `origin/main`); no standalone patch artifact or unpushed rescue

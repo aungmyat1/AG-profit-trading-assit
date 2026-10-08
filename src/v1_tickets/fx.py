@@ -44,6 +44,13 @@ HOST_METADATA_FIELDS = (
 )
 APPLICATION_RELEASE = "AG_V1_CLOUD"
 
+# STALE-FIX-1 signal-time provenance. The engine truth lives in `signal_timestamp`; these
+# labels say what the gate's `signal_close` input actually IS, so no funnel stage can
+# mistake a derived window-start time for an engine signal time. Gate math is unchanged.
+SIGNAL_TIME_SOURCE_ENGINE_BAR = "ENGINE_M15_SIGNAL_BAR"          # entry_2/entry_3: engine stamped the qualifying M15 bar
+SIGNAL_TIME_SOURCE_FIRST_TRADE_BAR = "FIRST_TRADE_SESSION_BAR"   # entry_1 (box-based): derived, no engine signal time exists
+SIGNAL_TIME_SOURCE_NONE = "NONE"                                 # no post-session candles at all
+
 
 def host_record(symbol: str) -> Optional[Dict[str, Any]]:
     """Verified host capture (sha256-checked); for EURUSD/GBPUSD only the -VIP capture counts."""
@@ -161,8 +168,20 @@ def build_fx_ticket(
                         {"leg": 2, "volume_pct": 0.25, "type": "FIXED_R_MULTIPLE_5", "price": _r(symbol, tp2)}],
             "time_invalidation_gmt": "15:00", "spread_check": "NOT_EVALUATED", "position_size": "NOT_SPECIFIED",
         })
-    # entry_2/entry_3 stamp the qualifying M15 bar's open; entry_1 (box-based) has none -> first trade-session bar.
+    # STALE-FIX-1 (truthful signal time): entry_2/entry_3 stamp the qualifying M15 bar's
+    # open; entry_1 (box-based) supplies NO engine signal time. The first-trade-session-bar
+    # substitute below is only the gate's freshness reference -- it is recorded with
+    # explicit provenance (signal_time_source / signal_time_basis_utc) instead of being
+    # presented as a signal time. Gate inputs and decisions are exactly as before.
+    if sig.signal_timestamp is not None:
+        signal_time_source = SIGNAL_TIME_SOURCE_ENGINE_BAR
+    elif post_session_candles:
+        signal_time_source = SIGNAL_TIME_SOURCE_FIRST_TRADE_BAR
+    else:
+        signal_time_source = SIGNAL_TIME_SOURCE_NONE
     signal_open = sig.signal_timestamp or (post_session_candles[0].time if post_session_candles else None)
+    ticket = {**ticket, "signal_time_source": signal_time_source,
+              "signal_time_basis_utc": signal_open.isoformat() if signal_open is not None else None}
     gated = gate_ready(ticket, now=evaluated_at, data_close=data_close,
                        signal_close=signal_open + M15 if signal_open is not None else None,
                        spread=spread, risk=sig.risk_distance)

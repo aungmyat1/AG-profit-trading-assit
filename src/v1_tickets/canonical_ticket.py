@@ -231,6 +231,10 @@ def build_canonical_ticket(
             "setup": ticket.get("setup"),
             "trigger_timestamp": trigger_ts,
             "trigger_bar_close_utc": action.get("trigger_bar_close_utc"),
+            # STALE-FIX-1: provenance of the trigger time; NOT_AVAILABLE when the
+            # source ticket carries none (crypto/manual paths) -- never invented.
+            "signal_time_source": action.get("signal_time_source") or NOT_AVAILABLE,
+            "signal_time_basis_utc": action.get("signal_time_basis_utc") or NOT_AVAILABLE,
         },
         "prices": {
             "entry_reference": _fmt(entry, sym),
