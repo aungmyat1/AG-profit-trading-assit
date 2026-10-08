@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from ticket_delivery.identity import logical_ticket_id
 from v1_tickets.actionability import (
-    BLOCKED, EXPIRED, INSUFFICIENT_DATA, INFO_ONLY_INSUFFICIENT_REMAINING_R, INFO_ONLY_STALE,
+    BLOCKED, EXPIRED, INSUFFICIENT_DATA, INFO_ONLY_INSUFFICIENT_REMAINING_R, INFO_ONLY_STALE, INFO_ONLY_SUPPRESSED,
     MISSED, NO_TRADE, OUT_OF_SESSION, WATCH_READY, evaluate_actionability,
 )
 from v1_tickets.authority import resolve_ticket_authority
@@ -29,6 +29,7 @@ PRESENTATION_OTHER = "OTHER"
 
 _INFO_REASONS = {
     INFO_ONLY_STALE: "INFO_ONLY_STALE",
+    INFO_ONLY_SUPPRESSED: "INFO_ONLY_SUPPRESSED",
     INFO_ONLY_INSUFFICIENT_REMAINING_R: "INFO_ONLY_INSUFFICIENT_REMAINING_R",
     MISSED: "MISSED",
     EXPIRED: "EXPIRED",
