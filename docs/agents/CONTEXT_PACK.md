@@ -21,7 +21,7 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 ## Invariants
 
 - Agent rules and authority order: `AGENTS.md`; non-collapsible states:
-  `docs/DOCUMENTATION_GOVERNANCE.md`. `docs/agents/INVARIANTS.md` does not exist.
+  `docs/DOCUMENTATION_GOVERNANCE.md`; also `docs/agents/INVARIANTS.md` (which document is authoritative is open: REG-INVARIANTS).
 - Strategy authorization is owned by `strategies/registry.yaml`; this pack only mirrors it.
 
 ## Authority

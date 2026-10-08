@@ -88,7 +88,10 @@ def build(facts: dict, root: str = ROOT) -> str:
              "## Invariants",
              "",
              "- Agent rules and authority order: `AGENTS.md`; non-collapsible states:",
-             "  `docs/DOCUMENTATION_GOVERNANCE.md`. `docs/agents/INVARIANTS.md` does not exist.",
+             "  `docs/DOCUMENTATION_GOVERNANCE.md`; " + (
+                 "also `docs/agents/INVARIANTS.md` (which document is authoritative is open: REG-INVARIANTS)."
+                 if os.path.exists(os.path.join(root, "docs", "agents", "INVARIANTS.md"))
+                 else "`docs/agents/INVARIANTS.md` does not exist."),
              "- Strategy authorization is owned by `strategies/registry.yaml`; this pack only mirrors it.",
              "",
              "## Authority",
