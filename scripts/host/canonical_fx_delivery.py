@@ -429,9 +429,14 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
     }
     for attempt in sender.delivery_attempts("ticket", ticket_ids):
         delivery_states[(attempt["identity"], attempt["status"])] = attempt["state"]
-    delivery_counts = Counter(_delivery_bucket(state) for state in delivery_states.values())
     expected_delivery_keys = {(row["ticket_id"], row["state"]) for row in latest.values()
                               if row.get("ticket_id") and row.get("state")}
+    # A symbol may be evaluated more than once inside one session (e.g. INFO_ONLY_STALE ->
+    # WATCH_READY). Only the latest terminal decision per symbol is counted; superseded
+    # (ticket_id, decision) pairs stay in the audit journal and in `delivery_states`, but they
+    # must never add a second delivery outcome for the same instrument.
+    delivery_counts = Counter(_delivery_bucket(state) for key, state in delivery_states.items()
+                              if key in expected_delivery_keys)
     for key in expected_delivery_keys - set(delivery_states):
         delivery_counts["not_attempted"] += 1
 

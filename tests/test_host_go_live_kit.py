@@ -623,6 +623,48 @@ def test_scheduled_telegram_send_failure_never_breaks_the_run(tmp_path, monkeypa
     assert "TELEGRAM_SEND_DELIVERY_UNCERTAIN" in (tmp_path / "logs" / "telegram.log").read_text()
 
 
+@pytest.mark.parametrize(("mode", "journal_status"),
+                         [("http_500", "FAILED"), ("timeout", "FAILED"), ("unknown", "ERROR")])
+def test_ambiguous_lsmc_delivery_is_never_auto_resent(tmp_path, monkeypatch, mode, journal_status):
+    """A 5xx/timed-out/unknown OPPORTUNITY send is DELIVERY_UNCERTAIN in the dedup ledger.
+
+    The legacy JSONL row keeps its frozen FAILED / ERROR vocabulary, but the ledger must never
+    treat the ambiguous confirmation as a known failure eligible for a later blind resend.
+    """
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    attempts = []
+    original = tg.send_message
+
+    def ambiguous(text):
+        attempts.append(text)
+        if mode == "unknown":
+            raise RuntimeError("transport outcome unknown")
+        original(text, session=_Sess(status=500, ok=False) if mode == "http_500" else _Sess(boom=True))
+
+    monkeypatch.setattr(tg, "send_message", ambiguous)
+    journal = tmp_path / "journal"
+    first = smoke.run_lsmc(fake_fetch(), NOW, str(journal))
+    assert len(attempts) == 2                                     # EURUSD + GBPUSD OPPORTUNITY
+    assert any("LSMC_DELIVERY EURUSD DELIVERY_UNCERTAIN" in ln for ln in first)
+    ledger = json.loads((journal / "large_smc_watch" / "delivered_confirmations.json").read_text())
+    assert {row["state"] for row in ledger.values()} == {"DELIVERY_UNCERTAIN"}
+    rows = [json.loads(ln) for ln in (journal / "ticket_delivery" / "delivery_status" /
+                                      f"{NOW.date().isoformat()}.jsonl").read_text().splitlines()]
+    assert len(rows) == 2 and {row["status"] for row in rows} == {journal_status}
+
+    # A later cycle re-enters OPPORTUNITY for the same confirmation (tracker restart): the
+    # ambiguous send is suppressed, never retried.
+    os.remove(journal / "large_smc_watch" / "state.json")
+    second = smoke.run_lsmc(fake_fetch(), NOW, str(journal))
+    assert len(attempts) == 2
+    assert any("LSMC_DELIVERY EURUSD SUPPRESSED_UNCERTAIN_CONFIRMATION" in ln for ln in second)
+
+
 def test_telegram_proposal_cli_sends_rendered_validation(monkeypatch, capsys):
     sent = []
     monkeypatch.setattr(tg, "send_message", sent.append)
