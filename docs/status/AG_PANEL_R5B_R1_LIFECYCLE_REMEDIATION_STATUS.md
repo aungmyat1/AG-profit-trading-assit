@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Panel R5B-R1 Execution Lifecycle Remediation -- Status (2026-09-23)
 
 R5B_R1_BASE_SHA = `2ff13af2cc0fe3f46ce81c49d88dbb575f9442ba` (PANEL_R5B implementation,

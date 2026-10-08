@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG V2-2A / V2-2B Implementation Status
 
 Date: 2026-09-21

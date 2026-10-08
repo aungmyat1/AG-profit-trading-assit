@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SESSION_TRADE_V1 ticket authority — MANUAL_ONLY, no order authority (2026-10-06)
 
 Owner-requested authority change. Base: `main` at `13ffc38`.

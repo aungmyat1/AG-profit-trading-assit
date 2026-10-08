@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Stage 1 — Catch-Up and Retry Policy Decision Packet V1
 
 Dated: 2026-09-08. For owner review only. This document does not authorize, activate,

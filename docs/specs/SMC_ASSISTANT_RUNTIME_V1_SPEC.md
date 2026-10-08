@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # SMC_ASSISTANT_RUNTIME_V1
 
 Assistant-usability layer on top of the frozen `SMC_CONDITIONAL_ENTRY_V2` entry engine

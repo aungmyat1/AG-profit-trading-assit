@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Architecture Conflict Audit — 2026-08-27
 
 > Historical evidence snapshot. Statements about execution being paused describe the

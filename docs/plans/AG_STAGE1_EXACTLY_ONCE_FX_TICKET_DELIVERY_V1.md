@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG Stage 1 — Exactly-Once FX Ticket Delivery V1
 
 Status (2026-09-08): **WP1/WP2/WP3/WP5 COMPLETE. WP4 (scheduler call-site integration)

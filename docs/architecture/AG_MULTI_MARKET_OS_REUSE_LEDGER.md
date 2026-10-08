@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG Multi-Market Strategy OS — Reuse Ledger
 
 Discovery-only pass. No strategy economics, versions, authority, or execution gates

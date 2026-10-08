@@ -1,3 +1,9 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # AG Profit Trading — Project Objective (rev 2026-10-08)
 
 **Repository:** `aungmyat1/AG-profit-trading-assit`  

@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # MI V1 migration plan
 
 ## Phase 1 — contract and adapters

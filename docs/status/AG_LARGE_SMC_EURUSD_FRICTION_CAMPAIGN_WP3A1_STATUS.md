@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Large SMC EURUSD Friction Policy -- WP3A.1 Multi-Session Evidence Campaign (2026-09-16)
 
 Extends WP3A's single-snapshot spread evidence into a predeclared, deterministic,

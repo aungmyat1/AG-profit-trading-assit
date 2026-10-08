@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG_BTC_DAILY_OBSERVATION_CONTRACT_V1
 
 ## Purpose

@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG Profit Trading — Current Roadmap Implementation Action Plan V1
 
 Status: **PROGRAM-LEVEL STATUS AND HANDOFF PLAN — R2-R4 IS THE CURRENT PRIORITY;

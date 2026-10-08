@@ -1,3 +1,9 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # AG Profit Trading Documentation Governance
 
 **Status:** `ACTIVE_MAINTENANCE_CONTRACT`  

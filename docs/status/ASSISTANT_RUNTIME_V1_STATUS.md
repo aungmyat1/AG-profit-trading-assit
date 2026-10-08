@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ASSISTANT_RUNTIME_V1 — Status / Evidence Report
 
 2026-08-27. Evidence only — see `docs/status/ASSISTANT_RUNTIME_V1.md` for architecture/design.

@@ -1,3 +1,9 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # Documentation Index
 
 [MT5 provider/evaluator R1 offline integration](status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md)
@@ -163,6 +169,11 @@ validation, incomplete CFD strategy/risk authority, and execution boundary.
 18. [`status/AG_DETERMINISTIC_TRADING_SKILLS_REFACTOR_V1_STATUS.md`](status/AG_DETERMINISTIC_TRADING_SKILLS_REFACTOR_V1_STATUS.md)
    — records the observation-only skill classification/interface refactor and focused
    compatibility evidence.
+
+- [`agents/CONTEXT_PACK.md`](agents/CONTEXT_PACK.md) — generated context pack (objective, invariants
+  pointer, authority, open owner decisions, schedule); the only doc synced to Claude project knowledge.
+  Regenerate with `python scripts/docs/build_context_pack.py`; doc hygiene report:
+  `python scripts/docs/stale_check.py`.
 
 ## SVOS (Strategy Validation Operating System)
 

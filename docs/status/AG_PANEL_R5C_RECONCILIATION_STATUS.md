@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Panel R5C Reconciliation and Uncertain-Submission Recovery -- Status (2026-09-23)
 
 R5C_BASE_SHA = `87e2da798f827caf95e8c6e58916b394641c98fb` (PANEL_R5B_R1, frozen,

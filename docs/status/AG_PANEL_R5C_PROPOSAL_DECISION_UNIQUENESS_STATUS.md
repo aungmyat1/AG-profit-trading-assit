@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_PANEL_R5C_PROPOSAL_DECISION_UNIQUENESS_V2 — Status
 
 STATUS_EVIDENCE. Current as of 2026-09-23. Branch

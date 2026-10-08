@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # ADR: AG Edge + AI Runtime V1 foundation
 
 Status: ACCEPTED FOUNDATION BASELINE / P0–P2 ONLY

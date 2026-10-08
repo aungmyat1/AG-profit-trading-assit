@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Panel R5C-R1 Broker Identity Remediation Status
 
 `R5C_R1_BASE_SHA`: `ff6f3ca2dfb5378318bd949fc19a33ba2249808b`

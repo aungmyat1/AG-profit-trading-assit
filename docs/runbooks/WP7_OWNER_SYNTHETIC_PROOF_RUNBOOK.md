@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # WP7 Owner-Machine Synthetic Telegram Delivery Proof — Runbook
 
 ## Purpose

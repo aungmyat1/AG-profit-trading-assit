@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG V2-3A / V2-3B Adapter Implementation and Parity Status
 
 Date: 2026-09-22 (remediated 2026-09-22 following AG_V2_INDEPENDENT_AUDIT_02; independently re-audited 2026-09-22, AG_V2_3A_REMEDIATION_REAUDIT)

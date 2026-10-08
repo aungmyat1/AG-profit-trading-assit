@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Large-SMC Forward Observation Runner -- Implementation Plan (not implemented)
 
 Status: **PLAN_ONLY, NOT_IMPLEMENTED**. This task searched for an existing natural

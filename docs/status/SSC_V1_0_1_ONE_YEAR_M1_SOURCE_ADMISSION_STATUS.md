@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SSC_V1_0_1_ONE_YEAR_M1_SOURCE_ADMISSION_STATUS
 
 ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.1 — admission status for the missing EURUSD M1

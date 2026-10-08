@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # MI V1 contract
 
 Schema identifier: `AG_MARKET_INTELLIGENCE_SNAPSHOT_V1`. The snapshot is a frozen,

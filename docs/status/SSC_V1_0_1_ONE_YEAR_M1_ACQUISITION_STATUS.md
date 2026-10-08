@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SSC_V1_0_1_ONE_YEAR_M1_ACQUISITION_STATUS
 
 Acquisition of the missing EURUSD M1 `FILL_RESOLUTION_INPUT` leg for the SSC v1.0.1

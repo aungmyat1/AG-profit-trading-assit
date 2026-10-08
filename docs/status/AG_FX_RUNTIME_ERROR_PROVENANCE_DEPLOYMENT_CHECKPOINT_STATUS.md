@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG FX Runtime-Error Provenance Deployment Checkpoint (2026-09-23)
 
 Deployment of the independently audited structured runtime-error provenance

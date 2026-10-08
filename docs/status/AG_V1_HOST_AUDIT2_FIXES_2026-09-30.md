@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG V1 host kit — audit 2 fixes (2026-09-30)
 
 Branch `fix/audit2-v1` from `main` 421ec9d. Host: Windows, VT Markets demo MT5

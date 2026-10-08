@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-1 — Top-Down Market Context: Contract Freeze
 
 **Status:** COMPLETE (contract-only). Follows TD-0 (`AG_TD0_TOPDOWN_CONTEXT_AUDIT`,

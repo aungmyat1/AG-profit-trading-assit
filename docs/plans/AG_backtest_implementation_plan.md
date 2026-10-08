@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Implementation Plan — Bringing the AG Profit Trading Backtest System to First Trustworthy Evidence
 
 **Repo:** aungmyat1/AG-profit-trading-assit · **Date:** 2026-09-21 · **Companion doc:** `AG_backtest_system_readiness.md`

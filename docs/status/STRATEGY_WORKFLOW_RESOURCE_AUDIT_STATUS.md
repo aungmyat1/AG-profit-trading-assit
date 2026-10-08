@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Strategy Workflow Resource Audit Status (2026-09-01)
 
 ## Scope

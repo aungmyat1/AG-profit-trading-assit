@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG SSC — HYP_001_EXIT_CAPTURE Lineage Audit
 
 Mission type: **governance/lineage audit**, not an economic evaluation. No new backtests, populations, or holdout access were performed. Full machine-readable record: `artifacts/validation/ST_SESSION_SWEEP_CONTINUATION_V1/HYP_001_LINEAGE_AUDIT/hyp001_lineage_audit.json` (sha256 `ebc7a99f84646362acb7d73367089146bb6d0ecbc4ea7d6bf9612e0554969ba7`).

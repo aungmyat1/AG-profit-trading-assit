@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 — C11 Contract Finalization (2026-09-01)
 
 Status: **C11_RESOLVED**. Owner decision (Candidate 2,

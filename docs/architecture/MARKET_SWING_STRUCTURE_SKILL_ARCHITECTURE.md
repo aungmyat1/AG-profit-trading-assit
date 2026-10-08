@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Market Swing Structure Skill — Architecture
 
 `market-swing-structure-analysis` (skill) / `src/market_swing_structure/` (runtime) is an

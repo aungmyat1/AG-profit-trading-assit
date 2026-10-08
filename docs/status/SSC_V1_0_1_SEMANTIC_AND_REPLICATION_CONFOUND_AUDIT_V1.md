@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SSC_V1_0_1_SEMANTIC_AND_REPLICATION_CONFOUND_AUDIT_V1
 
 Read-only audit of ST_SESSION_SWEEP_CONTINUATION_V1 (SSC) v1.0.1 semantics and
