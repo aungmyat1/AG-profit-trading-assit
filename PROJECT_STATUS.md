@@ -26,6 +26,7 @@ for row in facts["strategies"]:
 | `SESSION_TRADE_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `SMC_3R_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `ST_ASIAN_SWEEP_5R_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_CRYPTO_CFD_SWEEP_RETEST_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `ST_LARGE_SMC_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `ST_LIQUIDITY_SWEEP_RETEST_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `ST_SESSION_SWEEP_CONTINUATION_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
@@ -51,6 +52,7 @@ for row in facts["strategies"]:
 | `SESSION_TRADE_V1` | `1` | unknown | unknown | false |
 | `SMC_3R_V1` | `unspecified` | unknown | unknown | false |
 | `ST_ASIAN_SWEEP_5R_V1` | `1.1.1` | unknown | unknown | false |
+| `ST_CRYPTO_CFD_SWEEP_RETEST_V1` | `1.0.0` | unknown | unknown | false |
 | `ST_LARGE_SMC_V1` | `1.0.7` | unknown | unknown | false |
 | `ST_LIQUIDITY_SWEEP_RETEST_V1` | `2.0.0` | unknown | unknown | false |
 | `ST_SESSION_SWEEP_CONTINUATION_V1` | `1.0.1` | unknown | unknown | false |
@@ -95,7 +97,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `a50e8271a10ac16668c6d64b2ea5d4482d18e84ea4e978bf8bd1df55ffce3933`.
+inputs_sha256: `b447c02b76b5022ddad891145432574de023b8af1655b2c3db038d7e03add5a7`.
 <!-- [[[end]]] -->
 
 ### Objective
