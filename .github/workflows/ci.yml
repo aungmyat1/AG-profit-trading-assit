@@ -56,11 +56,11 @@ jobs:
         run: python -m pip install cogapp PyYAML pytest==8.3.5
 
       - name: Collect deterministic documentation facts
-        env:
-          SOURCE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
         run: |
-          python scripts/generate_live_status.py --source-sha "$SOURCE_SHA" --check
-          python scripts/docs/collect_facts.py --source-sha "$SOURCE_SHA"
+          git rev-parse HEAD
+          python scripts/generate_live_status.py --check
+          python scripts/docs/collect_facts.py
+          git diff --exit-code -- status/facts.json
 
       - name: Check generated status blocks
         run: cog --check PROJECT_STATUS.md

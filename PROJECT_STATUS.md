@@ -87,15 +87,15 @@ Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `
 | `P1_RESEARCH` | daily | 15:10 | open |
 <!-- [[[end]]] -->
 
-### Source revision
+### Collector inputs
 <!-- [[[cog
 import json
 from pathlib import Path
 facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
-source = facts["source_snapshot"]
-cog.outl(f"source_snapshot: `{source['sha']}` ({source['date']}).")
+from scripts.generate_live_status import inputs_sha256
+cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-source_snapshot: `cf0ce0f3804b550b74544c769f4b979902e496e4` (2026-10-08T14:07:04+06:30).
+inputs_sha256: `72fd02593e2acd0f7a1b1699376543792ee240b311c471054d430f688d6c55ee`.
 <!-- [[[end]]] -->
 
 ### Objective

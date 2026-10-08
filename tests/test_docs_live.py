@@ -205,20 +205,30 @@ def test_committing_generated_file_does_not_change_cog_check(tmp_path: Path) -> 
     for directory in ("scripts/docs", "strategies", "config"):
         shutil.copytree(ROOT / directory, root / directory)
     shutil.copy2(ROOT / "scripts/generate_live_status.py", root / "scripts/generate_live_status.py")
+    # Collection and Cog work before this fixture even has a .git directory.
+    run(sys.executable, "scripts/docs/collect_facts.py", cwd=root)
+    run("cog", "-r", "PROJECT_STATUS.md", cwd=root)
+    before = (root / "status/facts.json").read_bytes()
+    run("cog", "--check", "PROJECT_STATUS.md", cwd=root)
     run("git", "init", "-q", cwd=root)
     run("git", "config", "user.name", "Docs Test", cwd=root)
     run("git", "config", "user.email", "docs-test@example.invalid", cwd=root)
     run("git", "add", ".", cwd=root)
-    run("git", "commit", "-qm", "source snapshot", cwd=root)
-    source_sha = run("git", "rev-parse", "HEAD", cwd=root).stdout.strip()
+    run("git", "commit", "-qm", "generated docs", cwd=root)
+    first_sha = run("git", "rev-parse", "HEAD", cwd=root).stdout.strip()
+    for _ in range(2):
+        run(sys.executable, "scripts/docs/collect_facts.py", cwd=root)
+        assert (root / "status/facts.json").read_bytes() == before
+        run("cog", "--check", "PROJECT_STATUS.md", cwd=root)
+        run("git", "commit", "--allow-empty", "-qm", "SHA independence", cwd=root)
+    assert run("git", "rev-parse", "HEAD", cwd=root).stdout.strip() != first_sha
 
-    run(sys.executable, "scripts/docs/collect_facts.py", "--source-sha", source_sha, cwd=root)
+    # Even an input-only registry edit must fail Cog before collection repairs JSON.
+    registry = root / "strategies/registry.yaml"
+    registry.write_bytes(registry.read_bytes() + b"\n# input freshness test\n")
+    stale = run("cog", "--check", "PROJECT_STATUS.md", cwd=root, check=False)
+    assert stale.returncode != 0
+    run(sys.executable, "scripts/docs/collect_facts.py", cwd=root)
     run("cog", "-r", "PROJECT_STATUS.md", cwd=root)
-    before = (root / "PROJECT_STATUS.md").read_bytes()
-    run("git", "add", "PROJECT_STATUS.md", "status/facts.json", cwd=root)
-    run("git", "commit", "-qm", "commit generated docs", cwd=root)
-
     run("cog", "--check", "PROJECT_STATUS.md", cwd=root)
-    assert (root / "PROJECT_STATUS.md").read_bytes() == before
-    facts = json.loads((root / "status/facts.json").read_text(encoding="utf-8"))
-    assert facts["source_snapshot"]["sha"] == source_sha
+    assert (root / "status/facts.json").read_bytes() != before
