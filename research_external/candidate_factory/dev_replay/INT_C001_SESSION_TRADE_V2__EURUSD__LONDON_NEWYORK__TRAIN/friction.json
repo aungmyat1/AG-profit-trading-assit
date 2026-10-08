@@ -1,0 +1,52 @@
+{
+  "run_id": "INT_C001_SESSION_TRADE_V2__EURUSD__LONDON_NEWYORK__TRAIN",
+  "symbol": "EURUSD",
+  "cost_model_id": "AG_CF_R1_SPREAD_SNAPSHOT_SCENARIO_V1",
+  "commission_per_round_turn": "UNKNOWN",
+  "slippage": "UNKNOWN (not modeled in this pass; base scenario=0, stress scenario adds 1.0 pip, applied as additional spread-equivalent cost in the STRESS row only)",
+  "gross_metrics": {
+    "n": 65,
+    "wins": 10,
+    "losses": 55,
+    "win_rate": 0.15384615384615385,
+    "gross_r": -16.25,
+    "net_r": -16.25,
+    "expectancy_r": -0.25,
+    "profit_factor": 0.7045454545454546,
+    "max_drawdown_r": 25.25,
+    "largest_single_trade_r": 4.25,
+    "largest_trade_pct_of_total_abs_net_r": 0.04533333333333334,
+    "cost_r_per_trade_applied": 0.0
+  },
+  "net_base_spread_metrics": {
+    "n": 65,
+    "wins": 10,
+    "losses": 55,
+    "win_rate": 0.15384615384615385,
+    "gross_r": -16.25,
+    "net_r": -29.800145882703596,
+    "expectancy_r": -0.45846378281082456,
+    "profit_factor": 0.5516449545796671,
+    "max_drawdown_r": 34.63087022648711,
+    "largest_single_trade_r": 4.041536217189175,
+    "largest_trade_pct_of_total_abs_net_r": 0.03918842348865575,
+    "cost_r_per_trade_applied": 0.208463782810825
+  },
+  "net_stress_2x_spread_metrics": {
+    "n": 65,
+    "wins": 10,
+    "losses": 55,
+    "win_rate": 0.15384615384615385,
+    "gross_r": -16.25,
+    "net_r": -43.35029176540719,
+    "expectancy_r": -0.6669275656216491,
+    "profit_factor": 0.44373506301177656,
+    "max_drawdown_r": 44.0987263716773,
+    "largest_single_trade_r": 3.8330724343783498,
+    "largest_trade_pct_of_total_abs_net_r": 0.034068199629179445,
+    "cost_r_per_trade_applied": 0.41692756562165
+  },
+  "note": "cost_r_per_trade above uses the MEAN of (spread_price / each trade's own risk distance) across the sample, applied uniformly for compute_metrics' flat-cost signature; per-trade net values are also computed (net_base/net_stress lists) but the summary metrics use the mean-cost approximation, both reported for transparency.",
+  "per_trade_net_base_r_mean": -0.4584637828108249,
+  "per_trade_net_stress_r_mean": -0.6669275656216499
+}
