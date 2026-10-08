@@ -394,8 +394,7 @@ Contract status is `CONTRACT_COMPLETE` and `STRATEGY_CONTRACT_VALID = TRUE`
 contract registration:** the scanner/checklist wiring is still absent, so no scheduled
 crypto CFD evaluation exists. `EDGE_VERIFIED = FALSE`, `RISK_POLICY_AMBIGUOUS`, position
 size `NOT_CALCULATED`, proposal authority `BLOCKED`, `EXECUTION_AUTHORIZED = FALSE`,
-`BROKER_ORDERS_SENT = 0`. This does not authorize Demo orders or change FX
-strategy/risk/source/execution policy.
+`BROKER_ORDERS_SENT = 0`. This does not authorize Demo orders or change FX strategy/risk/source/execution policy.
 
 ## AG Scanner Checklist V1.1 — structured phase gates over frozen Scanner V1 (2026-10-02)
 
