@@ -330,9 +330,8 @@ def test_crypto_mode_window_and_idempotence(tmp_path):
 
 def test_crypto_main_outside_window_takes_no_runner_or_mt5_lock_and_never_imports_mt5(monkeypatch):
     now = dt.datetime(2026, 11, 2, 13, 59, tzinfo=UTC)  # 08:59 EST, before the V3 weekday window
-    calls = []
     monkeypatch.setattr(smoke, "utcnow", lambda: now)
-    monkeypatch.setattr(smoke, "log_line", lambda name, message: calls.append((name, message)))
+    monkeypatch.setattr(hc, "utcnow", lambda: now)
 
     def forbidden(*args, **kwargs):
         pytest.fail("outside-window crypto run must not acquire a lock or touch MT5")
@@ -343,7 +342,8 @@ def test_crypto_main_outside_window_takes_no_runner_or_mt5_lock_and_never_import
     monkeypatch.setattr(smoke, "mt5_initialize", forbidden)
 
     assert smoke.main(["--mode", "crypto"]) == 0
-    assert calls == [("ag_v1_crypto", "CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)")]
+    log = (Path(hc.LOG_DIR) / "ag_v1_crypto.log").read_text(encoding="utf-8").splitlines()
+    assert log == [f"{now.isoformat()} CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)"]
 
 
 def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
