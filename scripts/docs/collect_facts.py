@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,50 @@ def read_objective(path: Path, recorder: InputRecorder | None = None) -> dict[st
     return {"source": "docs/PROJECT_OBJECTIVE.md#objective", "text": body}
 
 
+def parse_host_schedule(script_text: str) -> dict[str, Any]:
+    """Parse declared task rows without inferring omitted trigger or zone details."""
+    lines = script_text.splitlines()
+    trigger_line = next((line.strip() for line in lines
+                         if "New-ScheduledTaskTrigger" in line and "$trigger" in line), None)
+    repeat_line = next((line.strip() for line in lines if "New-ScheduledTaskTrigger -Once" in line), None)
+    at_line = next((line.strip() for line in lines if "$at =" in line and "Offset" in line), None)
+    daily_supported = trigger_line is not None and re.search(
+        r"New-ScheduledTaskTrigger\s+-Daily\s+-At\s+\$at\b", trigger_line
+    ) is not None
+    interval_match = re.search(r"-RepetitionInterval\s+\(New-TimeSpan\s+-Minutes\s+\$t\.Minutes\)", repeat_line or "")
+    duration_match = re.search(r"-RepetitionDuration\s+\(New-TimeSpan\s+-Hours\s+(\d+)\)", repeat_line or "")
+    offset_supported = at_line is not None and re.search(r"'00:\{0:D2\}'\s+-f\s+\$t\.Offset", at_line)
+
+    plan_start = script_text.find("$Plan = @(")
+    plan_body = script_text[plan_start:].split("$Plan = @(", 1)[-1].split("\n)", 1)[0] if plan_start >= 0 else ""
+    plan_lines = [line.strip() for line in plan_body.splitlines() if "@{" in line]
+    tasks = []
+    for line in plan_lines:
+        name = re.search(r"Name\s*=\s*'([^']+)'", line)
+        if not name or not name.group(1).startswith("AG-"):
+            continue
+        minute = re.search(r"Minutes\s*=\s*(\d+)\b", line)
+        offset = re.search(r"Offset\s*=\s*(\d+)\b", line)
+        cadence = (f"every {minute.group(1)} minutes, daily"
+                   if minute and daily_supported and interval_match and duration_match
+                   else "UNPARSED")
+        if cadence != "UNPARSED":
+            cadence += f" for {duration_match.group(1)} hours"
+        start = (f"00:{int(offset.group(1)):02d}" if offset and offset_supported else "UNPARSED")
+        trigger = "Daily trigger with a repeated interval" if daily_supported and interval_match and duration_match else "UNPARSED"
+        tasks.append({
+            "name": name.group(1),
+            "cadence": {"value": cadence, "raw_line": (repeat_line or line) if cadence == "UNPARSED" else repeat_line},
+            "start": {"value": start, "raw_line": line if start == "UNPARSED" else at_line},
+            "trigger": {"value": trigger, "raw_line": trigger_line or line},
+            # The Task Scheduler trigger omits a time-zone argument; do not infer host zone.
+            "time_zone": {"value": "UNPARSED", "raw_line": trigger_line or line},
+        })
+    return {"source": "scripts/host/install_tasks.ps1",
+            "live_host_state": "scripts/host/heartbeat.py output (not yet published)",
+            "tasks": tasks}
+
+
 def collect(root: Path) -> dict[str, Any]:
     recorder = InputRecorder(root)
     shared = collect_live_status_facts(root, recorder)
@@ -41,15 +86,7 @@ def collect(root: Path) -> dict[str, Any]:
             },
         })
 
-    schedule_config = yaml.safe_load(recorder.read_text(root / "config" / "ag_scheduler_v2.yaml")) or {}
-    schedule = {
-        "scheduler": schedule_config.get("version"),
-        "timezone": schedule_config.get("timezone"),
-        "tasks": [
-            {"name": row.get("state"), "cadence": "daily", "start": row.get("start"), "end": row.get("end")}
-            for row in schedule_config.get("schedule", [])
-        ],
-    }
+    schedule = parse_host_schedule(recorder.read_text(root / "scripts" / "host" / "install_tasks.ps1"))
 
     objective = read_objective(root / "docs" / "PROJECT_OBJECTIVE.md", recorder)
     # These policy authorities are read by the docs gate; keep their freshness covered too.

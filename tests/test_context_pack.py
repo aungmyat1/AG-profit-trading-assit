@@ -29,6 +29,36 @@ def test_committed_pack_matches_a_fresh_build():
     assert (REPO / pack.OUT).read_text(encoding="utf-8") == pack.build(FACTS)
 
 
+def test_pack_schedule_lists_host_tasks_and_excludes_v2_phase_names():
+    from scripts.docs.collect_facts import collect, parse_host_schedule
+
+    host_script = (REPO / "scripts/host/install_tasks.ps1").read_text(encoding="utf-8")
+    expected = [task["name"] for task in parse_host_schedule(host_script)["tasks"]]
+    assert "scripts/host/install_tasks.ps1" in collect(REPO)["input_paths"]
+    schedule = pack.build(FACTS).split("## Schedule\n", 1)[1]
+    assert "Repo-declared tasks (install_tasks.ps1). Live host state: scripts/host/heartbeat.py output (not yet published)." in schedule
+    assert all(f"`{name}`" in schedule for name in expected)
+    import yaml
+    config = yaml.safe_load((REPO / "config/ag_scheduler_v2.yaml").read_text(encoding="utf-8"))
+    phase_names = [row.get("state") for row in config.get("schedule", [])]
+    assert not any(name and f"`{name}`" in schedule for name in phase_names)
+
+
+def test_unparsed_host_trigger_keeps_the_source_line():
+    from scripts.docs.collect_facts import parse_host_schedule
+
+    source = (REPO / "scripts/host/install_tasks.ps1").read_text(encoding="utf-8")
+    malformed = source.replace(
+        "$trigger = New-ScheduledTaskTrigger -Daily -At $at",
+        "$trigger = New-ScheduledTaskTrigger -CalendarKind Weekly",
+    )
+    schedule = parse_host_schedule(malformed)
+    assert len(schedule["tasks"]) == 3
+    assert all(task["trigger"]["value"] == "UNPARSED" for task in schedule["tasks"])
+    assert all(task["trigger"]["raw_line"] == "$trigger = New-ScheduledTaskTrigger -CalendarKind Weekly"
+               for task in schedule["tasks"])
+
+
 def test_open_decisions_counted_from_the_register_never_a_bare_zero(tmp_path):
     out = pack.build(FACTS)
     count, sources = pack.open_decisions()

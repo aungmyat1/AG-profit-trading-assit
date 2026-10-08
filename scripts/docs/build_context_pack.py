@@ -4,7 +4,7 @@
 
 Inputs (offline, deterministic; no git, no clock):
   facts      status/facts.json from scripts/docs/collect_facts.py (objective, strategies,
-             schedule, inputs_sha256). Missing or unreadable facts fail closed: no pack.
+             host-declared task schedule, inputs_sha256). Missing facts fail closed.
   decisions  and invariants presence are captured in facts.pack_context by the collector;
              the pack reads no source documents outside facts.json. Missing registered
              decision tables are reported as UNKNOWN, never as zero.
@@ -68,6 +68,13 @@ def _value(field) -> object:
     return field.get("value") if isinstance(field, dict) else field
 
 
+def _schedule_value(field: dict) -> str:
+    value = field.get("value", "UNPARSED")
+    if value == "UNPARSED":
+        return f"UNPARSED (raw: `{field.get('raw_line', '')}`)"
+    return str(value)
+
+
 def build(facts: dict, root: str = ROOT) -> str:
     context = facts["pack_context"]
     count, sources = context["pending_decisions"], context["decision_sources"]
@@ -103,9 +110,11 @@ def build(facts: dict, root: str = ROOT) -> str:
               f"{_b(_value(s.get('logic_verified')))} | {_b(_value(s.get('edge_verified')))} |"
               for s in facts["strategies"]]
     lines += ["", "## Open owner decisions", "", decisions,
-              "", f"## Schedule (`{schedule.get('scheduler')}`, {schedule.get('timezone')})", "",
-              "| Task | cadence | start | end |", "|---|---|---|---|"]
-    lines += [f"| `{t.get('name')}` | {t.get('cadence')} | {t.get('start')} | {t.get('end') or '—'} |"
+              "", "## Schedule", "",
+              f"Repo-declared tasks (install_tasks.ps1). Live host state: {schedule['live_host_state']}.", "",
+              "| Task | Cadence | Start | Trigger | Time zone |", "|---|---|---|---|---|"]
+    lines += [f"| `{t['name']}` | {_schedule_value(t['cadence'])} | {_schedule_value(t['start'])} | "
+              f"{_schedule_value(t['trigger'])} | {_schedule_value(t['time_zone'])} |"
               for t in schedule.get("tasks", [])]
     out = "\n".join(lines) + "\n"
     n = out.count("\n")

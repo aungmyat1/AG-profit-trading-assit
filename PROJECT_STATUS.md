@@ -62,29 +62,20 @@ import json
 from pathlib import Path
 facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 schedule = facts["schedule"]
-cog.outl(f"Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `{schedule['timezone']}`; scheduler `{schedule['scheduler']}`.")
+cog.outl(f"Source: [`scripts/host/install_tasks.ps1`](scripts/host/install_tasks.ps1). Live host state: {schedule['live_host_state']}.")
 cog.outl("")
-cog.outl("| Task name | Cadence | Start UTC | End UTC |")
-cog.outl("|---|---|---:|---:|")
+cog.outl("| Task name | Cadence | Start | Trigger | Time zone |")
+cog.outl("|---|---|---|---|---|")
 for row in schedule["tasks"]:
-    cog.outl(f"| `{row['name']}` | {row['cadence']} | {row['start']} | {row['end'] or 'open'} |")
+    cog.outl(f"| `{row['name']}` | {row['cadence']['value']} | {row['start']['value']} | {row['trigger']['value']} | {row['time_zone']['value']} |")
 ]]] -->
-Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `UTC`; scheduler `AG_DAILY_OPPORTUNITY_SCHEDULER_V2`.
+Source: [`scripts/host/install_tasks.ps1`](scripts/host/install_tasks.ps1). Live host state: scripts/host/heartbeat.py output (not yet published).
 
-| Task name | Cadence | Start UTC | End UTC |
-|---|---|---:|---:|
-| `PRE_FLIGHT` | daily | 06:25 | 06:30 |
-| `BTC_OBSERVE` | daily | 06:30 | 06:45 |
-| `BTC_FINALIZE` | daily | 06:45 | 06:50 |
-| `PRE_LONDON_REFERENCE` | daily | 06:50 | 06:55 |
-| `PRE_LONDON_READINESS` | daily | 06:55 | 07:00 |
-| `WINDOW_ASIAN_LONDON` | daily | 07:00 | 11:00 |
-| `POST_LONDON` | daily | 11:00 | 11:05 |
-| `STANDBY` | daily | 11:05 | 11:55 |
-| `PRE_NEW_YORK` | daily | 11:55 | 12:00 |
-| `WINDOW_LONDON_NEWYORK` | daily | 12:00 | 15:00 |
-| `POST_NEW_YORK` | daily | 15:00 | 15:10 |
-| `P1_RESEARCH` | daily | 15:10 | open |
+| Task name | Cadence | Start | Trigger | Time zone |
+|---|---|---|---|---|
+| `AG-V1-FX-Cycles` | every 15 minutes, daily for 24 hours | 00:01 | Daily trigger with a repeated interval | UNPARSED |
+| `AG-V1-Crypto-Daily` | every 5 minutes, daily for 24 hours | 00:02 | Daily trigger with a repeated interval | UNPARSED |
+| `AG-V1-LSMC-Watch` | every 5 minutes, daily for 24 hours | 00:03 | Daily trigger with a repeated interval | UNPARSED |
 <!-- [[[end]]] -->
 
 ### Collector inputs
@@ -95,7 +86,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `a50e8271a10ac16668c6d64b2ea5d4482d18e84ea4e978bf8bd1df55ffce3933`.
+inputs_sha256: `07e7a2cd5a42a026196783329adcfb2ffe76bfbcded77b49fb31013949c39d3d`.
 <!-- [[[end]]] -->
 
 ### Objective
