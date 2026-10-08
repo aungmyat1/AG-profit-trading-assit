@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Universal Market Direction Architecture V1 -- M2 (Skill Consolidation) + M3 (Session Trade Migration) Status
 
 Scope: **M2 (skill/bias authority boundaries) + M3 (Session Trade migration)**. M4-M6

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Manual-Demo Route Containment (Gate 1) -- Final Status (2026-09-25)
 
 ## Baseline

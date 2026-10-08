@@ -1,0 +1,175 @@
+"""Build docs/agents/CONTEXT_PACK.md (DOCS-LIVE-2): the ONLY doc synced to Claude project knowledge.
+
+    python scripts/docs/build_context_pack.py [--check]
+
+Inputs (offline, deterministic):
+  facts      docs/status/facts.json from DOCS-LIVE-1's scripts/docs/collect_facts.py when present;
+             otherwise a stub reader of the same sources (strategies/registry.yaml,
+             config/trading.yaml, scripts/host/install_tasks.ps1)
+  objective  the `## Objective` section of docs/PROJECT_OBJECTIVE.md, copied verbatim
+             (PROJECT_STATUS.md carries no current objective section)
+  decisions  table rows still marked PENDING_OWNER in docs/**/*OWNER_DECISIONS*.md, excluding
+             templates: a file whose H1 or status line says "template", and any section whose
+             heading says "template" (unfilled placeholders are not open decisions)
+The output is capped at 150 lines; the build fails rather than truncating facts.
+--check exits 1 when the committed file differs from a fresh build.
+"""
+from __future__ import annotations
+
+import argparse
+import glob
+import json
+import os
+import re
+import sys
+
+import yaml
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from doc_classes import default_frontmatter  # noqa: E402
+from frontmatter import render  # noqa: E402
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUT = os.path.join("docs", "agents", "CONTEXT_PACK.md")
+FACTS = os.path.join("docs", "status", "facts.json")
+MAX_LINES = 150
+_PLAN_ROW = re.compile(r"@\{\s*Name\s*=\s*'([^']+)';\s*Mode\s*=\s*'([^']+)';\s*Minutes\s*=\s*(\d+);")
+
+
+def _read(rel: str) -> str:
+    with open(os.path.join(ROOT, rel), encoding="utf-8") as f:
+        return f.read()
+
+
+# TODO(DOCS-LIVE-1, PR #69): once #69 merges, read docs/status/facts.json from
+# scripts/docs/collect_facts.py only and delete this stub reader.
+def _stub_facts() -> dict:
+    reg = (yaml.safe_load(_read("strategies/registry.yaml")) or {}).get("strategies") or {}
+    trading = yaml.safe_load(_read("config/trading.yaml")) or {}
+    tasks = [{"name": n, "mode": m, "every_minutes": int(x)}
+             for n, m, x in _PLAN_ROW.findall(_read("scripts/host/install_tasks.ps1"))]
+    return {"source": "STUB_READER (DOCS-LIVE-1 facts.json not present)",
+            "strategies": [{"id": k, "demo_authorized": v.get("demo_authorized"),
+                            "live_authorized": v.get("live_authorized"), "logic_status": v.get("logic_status"),
+                            "verdict": v.get("economic_status")} for k, v in sorted(reg.items())],
+            "execution_gates": {"mode": trading.get("mode"),
+                                "allow_live_trading": (trading.get("account") or {}).get("allow_live_trading")},
+            "scheduled_tasks": tasks}
+
+
+def load_facts() -> dict:
+    path = os.path.join(ROOT, FACTS)
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            facts = json.load(f)
+        facts["source"] = f"{FACTS} (source_digest {facts.get('source_digest')})"
+        return facts
+    return _stub_facts()
+
+
+def objective_section() -> str:
+    text = _read("docs/PROJECT_OBJECTIVE.md")
+    m = re.search(r"^## Objective\n(.*?)(?=^## )", text, re.S | re.M)
+    if not m:
+        raise ValueError("docs/PROJECT_OBJECTIVE.md has no '## Objective' section")
+    return m.group(1).strip("\n")
+
+
+_TEMPLATE = re.compile(r"\btemplate\b", re.I)
+
+
+def _is_template_doc(text: str) -> bool:
+    head = [ln for ln in text.splitlines()[:20] if ln.startswith("# ") or ln.lower().startswith("status:")]
+    return any(_TEMPLATE.search(ln) for ln in head)
+
+
+def pending_decisions() -> tuple:
+    """(rows, excluded template files)."""
+    rows, templates = [], []
+    for path in sorted(glob.glob(os.path.join(ROOT, "docs", "**", "*OWNER_DECISIONS*.md"), recursive=True)):
+        rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
+        text = _read(rel)
+        if _is_template_doc(text):
+            templates.append(rel)
+            continue
+        in_template_section = False
+        for line in text.splitlines():
+            if line.startswith("#"):
+                in_template_section = bool(_TEMPLATE.search(line))
+                continue
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if (not in_template_section and line.lstrip().startswith("|") and "PENDING_OWNER" in line
+                    and cells and cells[0]):
+                rows.append((rel, cells[0]))
+    return rows, templates
+
+
+def _b(v) -> str:
+    return "—" if v is None else (f"`{str(v).lower()}`" if isinstance(v, bool) else f"`{v}`")
+
+
+def build() -> str:
+    f = load_facts()
+    g = f["execution_gates"]
+    lines = [render(default_frontmatter("status")).rstrip("\n"),
+             "# AG Profit Trading — Context Pack",
+             "",
+             "Generated by `scripts/docs/build_context_pack.py`; do not edit by hand. This is the only",
+             "document synced to Claude project knowledge. Authority stays with the sources named below.",
+             f"Facts: {f['source']}.",
+             "",
+             "## Objective (verbatim from `docs/PROJECT_OBJECTIVE.md`)",
+             "",
+             objective_section(),
+             "",
+             "## Invariants",
+             "",
+             "- Agent rules and authority order: `AGENTS.md` (Authority order, Default safety, Frozen strategy",
+             "  version preservation). `docs/agents/INVARIANTS.md` does not exist yet.",
+             "- Non-collapsible states: `docs/DOCUMENTATION_GOVERNANCE.md` (DESIGN != IMPLEMENTED != VALIDATED",
+             "  != STRATEGY_AUTHORIZED; LOGIC_VERIFIED, EDGE_VERIFIED, DEMO_AUTHORIZED, LIVE_AUTHORIZED independent).",
+             "- Strategy authorization is owned by `strategies/registry.yaml`; this pack only mirrors it.",
+             "",
+             "## Authority",
+             "",
+             f"Global gates (`config/trading.yaml`): mode {_b(g.get('mode'))}, allow_live_trading {_b(g.get('allow_live_trading'))}.",
+             "",
+             "| Strategy | demo_authorized | live_authorized | logic_status | verdict |",
+             "|---|---|---|---|---|"]
+    lines += [f"| `{s['id']}` | {_b(s.get('demo_authorized'))} | {_b(s.get('live_authorized'))} | "
+              f"{_b(s.get('logic_status'))} | {_b(s.get('verdict'))} |" for s in f["strategies"]]
+    rows, templates = pending_decisions()
+    lines += ["", f"## Open owner decisions ({len(rows)} rows still `PENDING_OWNER`, templates excluded)", ""]
+    by_doc: dict = {}
+    for rel, row in rows:
+        by_doc.setdefault(rel, []).append(row)
+    lines += [f"- `{rel}`: {len(r)} pending — " + ", ".join(r) for rel, r in by_doc.items()] or ["- none"]
+    lines += [f"- Template (not counted): `{rel}`" for rel in templates]
+    lines += ["", "## Schedule (host tasks, `scripts/host/install_tasks.ps1`)", "",
+              "| Task | mode | every (min) |", "|---|---|---|"]
+    lines += [f"| `{t['name']}` | `{t['mode']}` | {t['every_minutes']} |" for t in f["scheduled_tasks"]]
+    out = "\n".join(lines) + "\n"
+    n = out.count("\n")
+    if n > MAX_LINES:
+        raise ValueError(f"context pack is {n} lines (> {MAX_LINES}); shorten a section rather than truncate facts")
+    return out
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--check", action="store_true")
+    args = ap.parse_args(argv)
+    content, path = build(), os.path.join(ROOT, OUT)
+    if args.check:
+        current = open(path, encoding="utf-8").read() if os.path.exists(path) else None
+        print("CONTEXT_PACK", "UP_TO_DATE" if current == content else "STALE")
+        return 0 if current == content else 1
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(content)
+    print(f"{OUT} {content.count(chr(10))} lines")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

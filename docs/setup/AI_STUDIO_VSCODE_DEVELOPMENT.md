@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AI Studio + VS Code development workflow
 
 Status: setup guide, additive. Does not change execution authority, strategy semantics,

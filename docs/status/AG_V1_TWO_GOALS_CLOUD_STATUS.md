@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG V1 — Two Goals: Cloud (code-only) Status
 
 - Date: 2026-09-30, Linux cloud container, Python 3.11.15

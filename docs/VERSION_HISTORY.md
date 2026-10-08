@@ -1,3 +1,9 @@
+---
+class: status
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # AG Profit Trading — Version History
 
 > **This document is historical/version authority, not current-state authority.** For

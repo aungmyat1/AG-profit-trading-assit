@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_MARKET_INTELLIGENCE_V1 — Cycle 2 core implementation status
 
 `FINAL_CLASSIFICATION = MI_V1_CORE_READY`

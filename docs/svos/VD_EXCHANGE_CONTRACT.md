@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # VD V1 virtual exchange contract
 
 `VirtualExchange` consumes admitted proposals, clock events, execution observations, an immutable `ExecutionProfile`, and account pretrade limits. It emits order transitions and fills; `VirtualAccount` owns cash, exposure, and positions. All models are pure, versioned, and hash-bound. No exchange component imports or calls MT5, `execution/`, `order_check`, or `order_send`.

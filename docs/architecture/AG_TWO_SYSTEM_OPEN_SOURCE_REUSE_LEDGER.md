@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG Two-System Architecture & Open-Source Reuse Ledger
 
 Discovery + logical-classification pass only. No file was physically moved, no

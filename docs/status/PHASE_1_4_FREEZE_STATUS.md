@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Phase 1-4 Freeze Status (2026-08-27)
 
 Scope: resolve the observed USDJPY `TIME_NORMALIZATION_ERROR`, establish

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Market Data Contract R2 — Demo Verification (2026-10-08)
 
 STATUS_EVIDENCE: bounded read-only Windows validation against the connected VT

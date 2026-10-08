@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Phase 5 — Entry & Confirmation Freeze Status (2026-08-28)
 
 Scope: freeze the verified `AG_ENTRY_CONFIRMATION_V1` implementation as the stable

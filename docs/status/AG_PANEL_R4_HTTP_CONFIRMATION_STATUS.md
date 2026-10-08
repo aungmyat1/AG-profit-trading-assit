@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Panel-R4 HTTP Confirmation -- Status (2026-09-22)
 
 R4_BASE_SHA = `1b55a234d6f31ae6384825b11b5c0deb8d0fde4b` (PANEL-R3 implementation,

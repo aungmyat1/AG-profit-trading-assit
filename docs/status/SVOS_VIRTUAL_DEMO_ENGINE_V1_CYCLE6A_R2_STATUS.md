@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SVOS Virtual Demo Engine V1 — Cycle 6A-R2
 
 Date: 2026-09-20

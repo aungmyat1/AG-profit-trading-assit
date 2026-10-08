@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Final Demo Execution Gate — Status (2026-09-23)
 
 Branch: `feat/demo-execution-bridge` (off `wp/v2-3c-asian-sweep-remediation`,

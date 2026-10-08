@@ -1,0 +1,7 @@
+target: AG_V2_BASELINE_MANIFEST_V1.json
+json_path:
+  - strategies.SESSION_TRADE_V1.demo_authorized
+  - strategies.SESSION_TRADE_V1.manager_dispatchable
+superseded_by: "owner decision D3"
+date: "2026-09-30"
+authority_source: strategies/registry.yaml

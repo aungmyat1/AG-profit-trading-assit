@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG PROFIT TRADING — AUTO VALIDATION ORCHESTRATOR V1
 
 **Repository:** `aungmyat1/AG-profit-trading-assit`  

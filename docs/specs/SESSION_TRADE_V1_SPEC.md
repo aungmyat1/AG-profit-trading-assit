@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # SESSION_TRADE_V1 — Strategy Spec
 
 Registered here by reference (`strategies/session_trade/contract.yaml`). Authoritative

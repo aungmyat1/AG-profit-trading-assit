@@ -24,6 +24,7 @@ from host_evidence.symbol_metadata import HOST_CAPTURED, METADATA_MISSING, HostD
 from strategy_engine import evaluate, load_strategy
 from strategy_engine.session import Candle
 from v1_tickets.guards import gate_ready
+from v1_tickets.ready_authority import SHADOW_INFO_ONLY, apply_ready_authority
 from ticket_delivery.archive import (
     CYCLE_STATE_BLOCKED, CYCLE_STATE_DATA_ERROR, CYCLE_STATE_NO_TRADE, CYCLE_STATE_READY,
     CycleDecisionRecord, archive_cycle_decision,
@@ -118,12 +119,14 @@ def build_fx_ticket(
     symbol: str, cycle: str, session_date: dt.date, session_candles: Sequence[Candle], expected_bar_count: int,
     post_session_candles: Sequence[Candle], *, data_source: str, evaluated_at: dt.datetime,
     data_close: Optional[dt.datetime] = None, spread: Optional[float] = None,
+    strategy_path: str = STRATEGY_PATH,
 ) -> Dict[str, Any]:
     """`data_close`: close time of the latest live bar (None = no data-age gate); `spread`: live
-    ask - bid in price units (None = SPREAD_NOT_EVALUATED, no READY)."""
+    ask - bid in price units (None = SPREAD_NOT_EVALUATED, no READY). `strategy_path`: offline
+    logic-gate replay of a registered candidate version only; runtime callers keep the default."""
     if symbol not in V1_FX_SYMBOLS or cycle not in V1_CYCLES:
         raise ValueError(f"{symbol}/{cycle} is not a V1 FX ticket cycle")
-    strategy = load_strategy(STRATEGY_PATH)
+    strategy = load_strategy(strategy_path)
     base: Dict[str, Any] = {
         "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER", "strategy_id": strategy.strategy_id,
         "strategy_version": strategy.version, "symbol": symbol, "cycle": cycle,
@@ -160,16 +163,17 @@ def build_fx_ticket(
         })
     # entry_2/entry_3 stamp the qualifying M15 bar's open; entry_1 (box-based) has none -> first trade-session bar.
     signal_open = sig.signal_timestamp or (post_session_candles[0].time if post_session_candles else None)
-    return gate_ready(ticket, now=evaluated_at, data_close=data_close,
-                      signal_close=signal_open + M15 if signal_open is not None else None,
-                      spread=spread, risk=sig.risk_distance)
+    gated = gate_ready(ticket, now=evaluated_at, data_close=data_close,
+                       signal_close=signal_open + M15 if signal_open is not None else None,
+                       spread=spread, risk=sig.risk_distance)
+    return apply_ready_authority(gated)            # D6: READY authority switch (config, fail closed)
 
 
 _STATE = {"READY": CYCLE_STATE_READY, "NO_TRADE": CYCLE_STATE_NO_TRADE, "DATA_ERROR": CYCLE_STATE_DATA_ERROR,
           "BLOCKED": CYCLE_STATE_BLOCKED,
           # Gate-withheld decisions archive as NO_TRADE; the payload/reason code keeps the specific state.
           "STALE": CYCLE_STATE_NO_TRADE, "SPREAD_TOO_WIDE": CYCLE_STATE_NO_TRADE,
-          REFERENCE_NOT_READY: CYCLE_STATE_NO_TRADE}
+          REFERENCE_NOT_READY: CYCLE_STATE_NO_TRADE, SHADOW_INFO_ONLY: CYCLE_STATE_NO_TRADE}
 
 
 def archive_fx_ticket(ticket: Dict[str, Any], root: str) -> str:

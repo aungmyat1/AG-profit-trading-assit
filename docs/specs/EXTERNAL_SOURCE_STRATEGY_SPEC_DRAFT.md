@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # EXTERNAL_SOURCE_STRATEGY_SPEC_DRAFT
 
 **Provisional ID:** `ST_EXTERNAL_SOURCE_ASIAN_SESSION_V1`

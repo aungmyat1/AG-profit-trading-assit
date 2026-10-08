@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # LARGE_SMC_FORWARD_TO_SHADOW_EVIDENCE_CONTRACT_V1 -- Owner Decision Packet (DRAFT)
 
 Status: **DRAFT_OWNER_DECISION_REQUIRED**. This is a decision packet, not a signed

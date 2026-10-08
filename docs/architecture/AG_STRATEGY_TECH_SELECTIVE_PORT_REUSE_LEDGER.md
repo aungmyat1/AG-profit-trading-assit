@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG_STRATEGY_TECH_SELECTIVE_PORT_REUSE_LEDGER
 
 Produced by AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_V1 (2026-09-06). Records the

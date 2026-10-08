@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_TRADE_ASSISTANT_V1_0_1 Status (2026-09-01)
 
 Scope: operational hardening of `AG_TRADE_ASSISTANT_V1_0` for the 2026-09-02 pilot --

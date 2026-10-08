@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # ST_LARGE_SMC_V1 — Research Strategy Specification
 
 Status: **RESEARCH_DRAFT / ADVISORY_ONLY** &nbsp; Version: **1.0.6** &nbsp; Authority: `strategies/ST_LARGE_SMC_V1.yaml`

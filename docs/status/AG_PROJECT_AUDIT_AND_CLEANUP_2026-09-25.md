@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Project Audit and Cleanup — 2026-09-25
 
 Branch: `claude/stoic-feynman-4kczs6` (from `main` @ `8dea18e`, PR #2 merge).

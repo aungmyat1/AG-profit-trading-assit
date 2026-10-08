@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG Profit Trading — Project Implementation Plan, Roadmap, Status & Next Execution
 
 **Document status:** Current execution index; non-authorizing  

@@ -46,10 +46,11 @@ def snapshot_provider(guard):
     return MT5CandleProvider(reader, quote_snapshot=quotes)
 
 
-def evaluate_report(provider, *, now, archive_root, policy_root=ROOT, policy=None):
+def evaluate_report(provider, *, now, archive_root, policy_root=ROOT, policy=None, ticket_source="REPLAY"):
     results = run_daily_evaluation(
         now=now, day=now.date(), candle_provider=provider, include_crypto=False,
-        archive_root=str(archive_root), policy_root=str(policy_root), policy=policy)
+        archive_root=str(archive_root), policy_root=str(policy_root), policy=policy,
+        ticket_source=ticket_source)
     actual = Counter((r.instrument, r.session) for r in results)
     expected = Counter(FX_PAIRS)
     rows = []
@@ -119,7 +120,8 @@ def main(argv=None):
                 return 2
             guard = GuardedMT5(mt5)
             provider = snapshot_provider(guard)
-            report = evaluate_report(provider, now=utcnow(), archive_root=ROOT / "journal")
+            report = evaluate_report(provider, now=utcnow(), archive_root=ROOT / "journal",
+                                     ticket_source="LIVE")     # real MT5 snapshot provider only
             report["refused_mt5_calls"] = guard.refused
             report["broker_mutation_attempts"] = len(guard.refused)
         finally:

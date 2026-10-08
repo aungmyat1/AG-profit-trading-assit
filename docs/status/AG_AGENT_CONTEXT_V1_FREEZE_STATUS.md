@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_AGENT_CONTEXT_V1 Freeze Status
 
 Date: 2026-09-20  

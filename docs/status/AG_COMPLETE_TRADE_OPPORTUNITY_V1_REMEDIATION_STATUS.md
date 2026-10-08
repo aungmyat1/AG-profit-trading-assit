@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_COMPLETE_TRADE_OPPORTUNITY_V1 -- Remediation Status (2026-09-02)
 
 Dated evidence snapshot per `docs/status/LIVE_STATUS_MAINTENANCE.md`. This document

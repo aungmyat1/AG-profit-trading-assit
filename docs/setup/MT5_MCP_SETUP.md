@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # MT5 MCP — decision and setup
 
 > **Note (2026-08-25):** "automated execution" below means the demo-only execution layer added

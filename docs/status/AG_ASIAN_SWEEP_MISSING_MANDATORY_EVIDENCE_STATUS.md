@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Asian Sweep -- MISSING_MANDATORY_EVIDENCE Investigation + Continuation Gate (2026-09-23)
 
 Dated evidence record per `docs/status/LIVE_STATUS_MAINTENANCE.md`. Campaign:

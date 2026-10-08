@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION
 
 RESEARCH_CANDIDATE work only. `ST_ASIAN_SWEEP_5R_V1` v1.1.1 remains

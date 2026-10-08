@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # BTC Research-to-Execution Economic Reconciliation -- Vantage BTCUSD (2026-09-07)
 
 Read-only audit + owner-review reconciliation contract. No order placed, no execution

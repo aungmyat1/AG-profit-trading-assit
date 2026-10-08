@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG SSC HYP_001 Control-Arm Comparability Amendment — Status
 
 Status: HISTORICAL_STATUS (dated evidence snapshot per `docs/status/LIVE_STATUS_MAINTENANCE.md`).

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Deterministic Trading Skills Refactor V1 — 2026-09-11
 
 Status: **PASS — architecture/interface preparation only**.

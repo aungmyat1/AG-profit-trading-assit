@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Strategy Capacity VD — Cycle 1 status
 
 Date: 2026-09-20. Classification: `VD_STRATEGY_CAPACITY_SIMULATOR_NOT_READY`.

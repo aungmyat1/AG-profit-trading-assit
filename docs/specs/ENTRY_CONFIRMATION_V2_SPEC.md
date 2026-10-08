@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # ENTRY_CONFIRMATION_V2 Spec — 2026-08-29
 
 Package: `entry_confirmation/` (same package as V1). New public entry point:

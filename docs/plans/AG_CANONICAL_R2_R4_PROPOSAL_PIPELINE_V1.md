@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG Canonical R2-R4 Proposal Pipeline V1
 
 Status: **CURRENT PRIORITY IMPLEMENTATION PLAN — PLANNING AUTHORITY ONLY**  

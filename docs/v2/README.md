@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG Profit Trading V2 — Documentation Index
 
 V2 is the backend/domain migration that reorganizes AG Profit Trading around two primary capabilities: **Opportunity Finder** and **Execution Engine**, while preserving existing canonical strategy/proposal/execution authorities and keeping the existing frontend unchanged.

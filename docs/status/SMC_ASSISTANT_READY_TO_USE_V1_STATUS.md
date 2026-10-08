@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SMC_ASSISTANT_READY_TO_USE_V1_STATUS
 
 ## BASELINE

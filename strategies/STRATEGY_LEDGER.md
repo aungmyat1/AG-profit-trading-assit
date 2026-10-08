@@ -35,6 +35,13 @@ from canonical session windows or other repo conventions at the time of registra
   causal backtest contract (data timestamps, fill model, cost model, train/validation/
   test partition, baselines, acceptance criteria) -- see the `strategy-specification`
   skill before backtesting.
+- **v1.1.2 candidate (2026-10-07, L2 closure):** `strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml`.
+  Engine behavior becomes the spec; unsafe outputs fail closed. EMA_50, `range_session_check`
+  and the structural invalidation are removed. Registered under `candidate_versions."1.1.2"`
+  as `LOGIC_VERIFIED`, `economic_status NOT_EVALUATED`, `edge_verified false`,
+  `ticket_ready PAUSED_PENDING_OWNER_CONFIRM`. Not promoted: v1.1.1 stays the current
+  authority. Evidence and the Phase B recommendations (PENDING_OWNER_CONFIRM):
+  `docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md`.
 - **Open gaps found building `execution/` (2026-08-26):**
   - `risk_and_money_management.risk_mode: FIXED_PERCENT_OR_CONTRACT` never states an
     actual risk-per-trade percentage or contract size. `execution/risk.py` currently

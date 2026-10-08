@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Stage 1 — Exactly-Once FX Ticket Foundation V1 — Status
 
 Dated: 2026-09-08

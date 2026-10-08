@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 — C14B Occurrence Identity Hardening (2026-09-01)
 
 Status: **C14 identity layer hardened (`SHARED_CHANGE_REQUIRED` for the one remaining

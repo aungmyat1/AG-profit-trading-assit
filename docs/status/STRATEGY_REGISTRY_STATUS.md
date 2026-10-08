@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Strategy Registry Status — 2026-08-27
 
 > Historical evidence snapshot. The statement below that no runtime caller existed was

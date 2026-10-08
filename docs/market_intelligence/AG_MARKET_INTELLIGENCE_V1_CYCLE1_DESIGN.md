@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG_MARKET_INTELLIGENCE_V1 — Cycle 1 design
 
 Status: `MI_V1_DESIGN_READY` (design only; no MI engine implemented).

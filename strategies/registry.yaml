@@ -28,6 +28,18 @@ strategies:
     logic_verified_identity: null
     economic_status: NOT_EVALUATED
     demo_order_authority: NONE
+    # L2 closure candidate (2026-10-07, docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md).
+    # Not the current authority: the runtime still loads config_source (v1.1.1, NOT_VERIFIED),
+    # so no TICKET_READY can come from this block. Promotion needs the owner's Phase B confirmation.
+    candidate_versions:
+      "1.1.2":
+        config_source: strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml
+        status: CANDIDATE_PENDING_OWNER_CONFIRM
+        logic_status: LOGIC_VERIFIED            # Logic Gate L1-L6 on recorded fixtures; bound to the identity below
+        logic_verified_identity: d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5
+        economic_status: NOT_EVALUATED
+        edge_verified: false
+        ticket_ready: PAUSED_PENDING_OWNER_CONFIRM
 
   SESSION_TRADE_V1:
     registered: true

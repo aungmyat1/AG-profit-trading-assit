@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Agent Prompt — AG Edge + AI Runtime V1 Foundation (P0 + P1 + P2)
 
 You are the primary repository builder for AG Profit Trading. Execute only the bounded foundation mission below. Do not continue into MT5 indicator implementation, strategy migration, risk migration, Control API implementation, or Demo execution changes.
