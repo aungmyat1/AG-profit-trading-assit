@@ -109,13 +109,34 @@ def _machine_assertions(node: Any, registry_ids: set[str], inherited: str | None
         if local:
             for field in AUTHORITY_FIELDS:
                 if field in node:
-                    yield local, field, node[field]
+                    yield local, field, node[field], f"strategies.{local}.{field}"
         for key, value in node.items():
             child_identity = key if key in registry_ids and isinstance(value, dict) else local
             yield from _machine_assertions(value, registry_ids, child_identity)
     elif isinstance(node, list):
         for value in node:
             yield from _machine_assertions(value, registry_ids, inherited)
+
+
+def _sidecar_supersessions(path: Path) -> set[str]:
+    sidecar = path.with_suffix(".supersession.yaml")
+    if not sidecar.is_file():
+        return set()
+    try:
+        data = yaml.safe_load(sidecar.read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError):
+        return set()
+    raw_paths = data.get("json_path")
+    paths = {raw_paths} if isinstance(raw_paths, str) else set(raw_paths or [])
+    if (
+        data.get("target") != path.name
+        or data.get("authority_source") != "strategies/registry.yaml"
+        or not data.get("superseded_by")
+        or not re.fullmatch(r"20\d\d-\d\d-\d\d", str(data.get("date", "")))
+        or not all(isinstance(item, str) for item in paths)
+    ):
+        return set()
+    return paths
 
 
 def machine_authority_contradictions(root: Path, registry_rows: dict[str, Any]) -> list[str]:
@@ -133,11 +154,13 @@ def machine_authority_contradictions(root: Path, registry_rows: dict[str, Any]) 
             continue
         if isinstance(data, dict) and data.get("superseded_by") and data.get("date"):
             continue
+        superseded_paths = _sidecar_supersessions(path)
         seen: set[tuple[str, str, str]] = set()
-        for strategy_id, field, actual in _machine_assertions(data, set(registry_rows)):
-            expected = registry_rows[strategy_id].get(field, "<missing>")
+        for strategy_id, field, actual, logical_path in _machine_assertions(data, set(registry_rows)):
+            expected_field = "demo_authorized" if field == "manager_dispatchable" else field
+            expected = registry_rows[strategy_id].get(expected_field, "<missing>")
             identity = (strategy_id, field, repr(actual))
-            if actual == expected or identity in seen:
+            if actual == expected or identity in seen or logical_path in superseded_paths:
                 continue
             seen.add(identity)
             line = _machine_line(path, strategy_id, field)

@@ -120,6 +120,35 @@ def test_machine_authority_mismatch_is_blocking_unless_superseded(tmp_path: Path
     assert result.returncode == 0
 
 
+def test_baseline_sidecar_is_exact_and_removal_restores_blocking(tmp_path: Path) -> None:
+    root = drift_fixture(tmp_path)
+    manifest_rel = "docs/v2/AG_V2_BASELINE_MANIFEST_V1.json"
+    sidecar_rel = "docs/v2/AG_V2_BASELINE_MANIFEST_V1.supersession.yaml"
+    for relative in (manifest_rel, sidecar_rel):
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / relative, target)
+
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 0
+
+    sidecar = root / sidecar_rel
+    sidecar.unlink()
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 1
+    assert result.stdout.count("machine contradiction") == 2
+
+    shutil.copy2(ROOT / sidecar_rel, sidecar)
+    sidecar.write_text(
+        sidecar.read_text(encoding="utf-8").replace(
+            "authority_source: strategies/registry.yaml", "authority_source: docs/obsolete.json"
+        ),
+        encoding="utf-8",
+    )
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 1
+
+
 def test_committing_generated_file_does_not_change_cog_check(tmp_path: Path) -> None:
     pytest.importorskip("cogapp")
     root = tmp_path / "repo"
