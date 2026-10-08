@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AGP-GRADE-01 — M1 replay outcome grader
 
 Status: implemented on branch `codex/agp-grade-01`, based on TICKET_STORE_V1 PR #64 head

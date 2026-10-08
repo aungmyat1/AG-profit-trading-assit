@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # D6 port to main — ST_ASIAN_SWEEP_5R_V1 READY authority OFF (2026-10-08)
 
 Ports `hotfix/d6-asian-sweep-ready-off` onto `main` (`3496ec3`) as a registry/config flag

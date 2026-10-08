@@ -46,42 +46,62 @@ def _advisory_policy(path: Path) -> dict[str, Any] | None:
     return data if data.get("schema") == "AG_ADVISORY_SCAN_ALLOWLIST_V1" else None
 
 
-def _range_contains(entry: dict[str, Any], rel: str, line: int) -> bool:
+_ANCHOR_WARNINGS: list[str] = []
+
+def _range_contains(entry: dict[str, Any], rel: str, line: int, root: Path = ROOT) -> bool:
+    if entry.get("file") != rel:
+        return False
+    anchor = entry.get("anchor")
+    if isinstance(anchor, str):
+        path = root / rel
+        lines = path.read_text(encoding="utf-8").splitlines() if path.is_file() else []
+        hits = [n for n, value in enumerate(lines, 1) if value.strip() == anchor.strip()]
+        if not hits:
+            warning = f"ALLOWLIST_ANCHOR_MISSING {rel}: {anchor}"
+            if warning not in _ANCHOR_WARNINGS:
+                _ANCHOR_WARNINGS.append(warning)
+            return False
+        # Anchors on headings protect the complete section, so inserted lines remain covered.
+        hit = max((n for n in hits if n <= line), default=None)
+        if hit is None:
+            return False
+        if anchor.startswith("#"):
+            level = len(anchor) - len(anchor.lstrip("#"))
+            for n in range(hit + 1, len(lines) + 1):
+                if lines[n-1].startswith("#" * level + " "):
+                    return line < n
+            return True
+        return line == hit
     bounds = entry.get("lines")
-    return (
-        entry.get("file") == rel
-        and isinstance(bounds, list)
-        and len(bounds) == 2
-        and all(isinstance(value, int) for value in bounds)
-        and bounds[0] <= line <= bounds[1]
-    )
+    return (entry.get("file") == rel and isinstance(bounds, list) and len(bounds) == 2
+            and all(isinstance(value, int) for value in bounds) and bounds[0] <= line <= bounds[1])
 
 
-def _policy_suppresses(policy: dict[str, Any] | None, rel: str, line: int, text: str) -> bool:
+def _policy_suppresses(policy: dict[str, Any] | None, rel: str, line: int, text: str, root: Path = ROOT) -> bool:
     if not policy:
         return False
-    if any(_range_contains(entry, rel, line) for entry in policy.get("never_suppress", [])):
+    if any(_range_contains(entry, rel, line, root) for entry in policy.get("never_suppress", [])):
         return False
     allowlisted = False
     for entry in [*policy.get("allowlisted_ranges", []), *policy.get("verified_label_free", [])]:
-        if not _range_contains(entry, rel, line):
+        if not _range_contains(entry, rel, line, root):
             continue
         carve_outs = [
             {**carve_out, "file": entry.get("file")}
             for carve_out in entry.get("carve_outs", [])
         ]
-        if any(_range_contains(carve_out, rel, line) for carve_out in carve_outs):
+        if any(_range_contains(carve_out, rel, line, root) for carve_out in carve_outs):
             return False
         allowlisted = True
     for carve_out in policy.get("carve_outs", []):
-        if _range_contains(carve_out, rel, line):
+        if _range_contains(carve_out, rel, line, root):
             return False
     if allowlisted:
         return True
     for note in policy.get("disambiguation_notes", []):
         token = note.get("token")
         related = note.get("related_lines", [])
-        location_matches = _range_contains(note, rel, line) or (
+        location_matches = _range_contains(note, rel, line, root) or (
             note.get("file") == rel and isinstance(related, list) and line in related
         )
         if location_matches and isinstance(token, str) and token.lower() in text.lower():
@@ -139,6 +159,7 @@ def current_truth_contradictions(
     root: Path, registry_rows: dict[str, Any], allowlist_path: Path | None = None
 ) -> list[str]:
     """Find current-truth prose assertions; evidence docs and dated sections are historical."""
+    _ANCHOR_WARNINGS.clear()
     false_ids = {key for key, row in registry_rows.items() if row.get("demo_authorized") is False}
     classes, dated_files = _historical_policy(
         allowlist_path or root / "scripts" / "docs" / "docs_drift_allowlist.txt"
@@ -163,7 +184,7 @@ def current_truth_contradictions(
                 positions = [(prefix.rfind(strategy_id), strategy_id) for strategy_id in registry_rows]
                 position, strategy_id = max(positions, default=(-1, ""))
                 if position >= 0 and strategy_id in false_ids:
-                    if _policy_suppresses(advisory, rel, line, paragraph):
+                    if _policy_suppresses(advisory, rel, line, paragraph, root):
                         continue
                     excerpt = " ".join(paragraph.split())[:240]
                     failures.append(f"{rel}:{line} [{strategy_id}]: {excerpt}")
@@ -284,6 +305,7 @@ def check(root: Path, facts_path: Path, registry_path: Path, objective_path: Pat
     if facts.get("objective") != read_objective(objective_path):
         errors.append("objective differs between facts.json and docs/PROJECT_OBJECTIVE.md")
     errors.extend(f"current-truth contradiction: {item}" for item in current_truth_contradictions(root, registry_rows))
+    errors.extend(_ANCHOR_WARNINGS)
     errors.extend(f"machine contradiction: {item}" for item in machine_authority_contradictions(root, registry_rows))
     return errors
 

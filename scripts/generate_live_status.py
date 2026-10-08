@@ -45,8 +45,9 @@ def collector_input_paths(root: Path) -> list[str]:
             path = (root / source).resolve()
             path.relative_to(root.resolve())
             relative = path.relative_to(root.resolve()).as_posix()
-            if relative in tracked:
-                paths.add(relative)
+            if relative not in tracked:
+                raise RuntimeError(f"collector input is not tracked: {relative}")
+            paths.add(relative)
     paths.update(path for path in tracked
                  if path.startswith(("docs/", "config/"))
                  and path.endswith(".supersession.yaml"))

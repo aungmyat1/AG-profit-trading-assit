@@ -46,400 +46,696 @@
     {
       "id": "PS-META",
       "file": "PROJECT_STATUS.md",
-      "lines": [3, 5],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "Self-declaration that the first section is the rolling summary and later sections preserve dated milestone evidence and may contain older test totals. This is the rule that makes the rest of this allowlist legitimate.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "state: DESIGN",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "PS-2026-10-07-R1",
       "file": "PROJECT_STATUS.md",
-      "lines": [40, 55],
-      "claim_types": ["historical", "gate"],
+      "claim_types": [
+        "historical",
+        "gate"
+      ],
       "reason": "Heading itself says 'historical offline evidence (2026-10-07)'. Offline fixture evidence; live evaluator explicitly NOT YET HOST ACCEPTED.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "cog.outl(\"|---|---|---:|---:|---:|\")",
+      "labels": [
+        "historical",
+        "gate"
+      ]
     },
     {
       "id": "PS-2026-10-01..03-MILESTONES",
       "file": "PROJECT_STATUS.md",
-      "lines": [104, 178],
-      "claim_types": ["historical", "authority", "gate"],
+      "claim_types": [
+        "historical",
+        "authority",
+        "gate"
+      ],
       "reason": "Dated milestones 2026-10-01..2026-10-03 (crypto CFD observation scanner, Scanner Checklist V1.1, MT5 MCP configuration, api.app restoration). Evidence of their date, not current authority.",
       "carve_outs": [
         {
-          "lines": [104, 123],
           "reason": "Still the live statement that no registered contract covers BTCUSD/ETHUSD CFDs (STRATEGY_CONTRACT_INCOMPLETE, RISK_POLICY_AMBIGUOUS). Matches owner objective ISSUE #47 R2 'not yet qualified'.",
           "severity": "keep_scanning"
         }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "text = Path(\"docs/PROJECT_OBJECTIVE.md\").read_text(encoding=\"utf-8\")",
+      "labels": [
+        "historical",
+        "authority",
+        "gate"
+      ]
     },
     {
       "id": "PS-HOSTKIT-MCP",
       "file": "PROJECT_STATUS.md",
-      "lines": [242, 357],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "Host kit and MCP/workspace configuration records, 2026-09-27..2026-09-30. Read-only configuration; each states it does not enable or authorize trading.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "`DEMO_ACCOUNT_VERIFIED`, 12/12 scan records, 0 NOT_RUN, append-only proven, positions/orders",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "PS-CANDIDATE-BRANCHES",
       "file": "PROJECT_STATUS.md",
-      "lines": [358, 870],
-      "claim_types": ["historical", "example"],
+      "claim_types": [
+        "historical",
+        "example"
+      ],
       "reason": "Dated candidate/branch milestone records 2026-09-22..2026-09-26, including all PANEL_* entries explicitly marked 'worktree branch, not merged' or 'candidate'. Unmerged-branch state, not repository authority.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "Large-SMC task every 5 minutes daily. The daily watch covers crypto through weekends while FX",
+      "labels": [
+        "historical",
+        "example"
+      ]
     },
     {
       "id": "PS-SSC-SVOS-G2",
       "file": "PROJECT_STATUS.md",
-      "lines": [1297, 1374],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "SSC v1.0.1 SVOS G2 dated subsections (2026-09-19/2026-09-21): population freeze, failure decomposition, replication admission blocked, authority synchronization.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "`docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_STATUS.md`.",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "PS-HISTORICAL-ROLLING-2026-09-14",
       "file": "PROJECT_STATUS.md",
-      "lines": [1375, 1581],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "Heading is 'Historical rolling classification (2026-09-14, superseded)' plus its dated subsections (SSC HYP_002 validated negative, platform-finalization remediation, readiness validation infrastructure, deterministic trading skills, frontend demo-ticket surface, live MT5 sync, VS Code startup, frontend simulation boundary).",
       "severity": "info"
     },
     {
       "id": "PS-MASTER-PLAN-2026-09-10-CLASS",
       "file": "PROJECT_STATUS.md",
-      "lines": [1590, 1598],
-      "claim_types": ["historical", "gate"],
+      "claim_types": [
+        "historical",
+        "gate"
+      ],
       "reason": "Explicitly 'Classification as recorded on 2026-09-10 (superseded ... preserved here as dated historical context)'. R0-R9 values here are the 2026-09-10 snapshot, not current.",
       "carve_outs": [
         {
-          "lines": [1582, 1589],
           "reason": "C8: claims the owner adopted Master Readiness Plan V3 as authoritative while docs/PROJECT_ROADMAP.md:1 is V4.",
           "severity": "critical_contradiction",
           "ref": "C8"
         },
         {
-          "lines": [1590, 1591],
           "reason": "C8: cross-reference points to 'Current rolling classification (2026-09-12) at the top of this file'; the real heading is line 871 and is dated 2026-09-21.",
           "severity": "critical_contradiction",
           "ref": "C8"
         }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "`src/trade_management/` logic are preserved — only the alternate Node authority path",
+      "labels": [
+        "historical",
+        "gate"
+      ]
     },
     {
       "id": "PS-HISTORICAL-OBJECTIVE-2026-09-07",
       "file": "PROJECT_STATUS.md",
-      "lines": [1624, 1674],
-      "claim_types": ["historical", "objective"],
+      "claim_types": [
+        "historical",
+        "objective"
+      ],
       "reason": "Heading is 'Historical owner-directed profit-seeking objective (regenerated 2026-09-07; superseded as master ordering)'. Superseded by owner objective ISSUE #47 (2026-10-07), not merely by docs/PROJECT_OBJECTIVE.md. Contains the narrower universe (3 FX majors + gold 'pending final contract freeze', 'preset Large-SMC pair universe', Major FX V1 = EURUSD/GBPUSD).",
-      "severity": "objective_divergence_superseded"
+      "severity": "objective_divergence_superseded",
+      "anchor": "failing on the correctly-served last bar of the trading week. No strategy rule,",
+      "labels": [
+        "historical",
+        "objective"
+      ]
     },
     {
       "id": "PS-SNAPSHOT-2026-09-05",
       "file": "PROJECT_STATUS.md",
-      "lines": [1719, 1770],
-      "claim_types": ["historical", "schedule", "authority"],
+      "claim_types": [
+        "historical",
+        "schedule",
+        "authority"
+      ],
       "reason": "'Current operational snapshot (2026-09-05)' plus the multi-KB single-line dated ledger entries at 1745-1769. Dated snapshot; test totals and campaign counters belong to 2026-09-05.",
       "carve_outs": [
         {
-          "lines": [1741, 1741],
           "reason": "C9: 'FULL REGRESSION 1356 passed' conflicts with later dated totals (770 / 1050 / 1120). Any reuse must be date- and SHA-bound.",
           "severity": "critical_contradiction",
           "ref": "C9"
         },
         {
-          "lines": [1733, 1733],
           "reason": "Host-only claim (Windows Task Scheduler task installed/enabled, State=Ready). NO_SOURCE from a cloud checkout; never re-verify by assumption.",
           "severity": "no_source_host_only"
         }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "fixtures, and mock API successes explicitly state that no broker action occurred.",
+      "labels": [
+        "historical",
+        "schedule",
+        "authority"
+      ]
     },
     {
       "id": "PS-RECONCILIATION-2026-09-06",
       "file": "PROJECT_STATUS.md",
-      "lines": [1772, 2321],
-      "claim_types": ["historical", "authority", "objective", "gate"],
+      "claim_types": [
+        "historical",
+        "authority",
+        "objective",
+        "gate"
+      ],
       "reason": "Heading is 'Capability & Roadmap Reconciliation (dated 2026-09-06)'. The largest stale-currency risk in the repository: subsections inside it are titled 'Current capability classification table', 'Telegram - current owner directive' and 'Core project objective' while the parent section is dated and superseded by ISSUE #47.",
       "carve_outs": [
-        {"lines": [1825, 1828], "reason": "C1/C2: asserts SESSION_TRADE_V1 is 'separately demo_authorized: true for its ASIAN_LONDON cycle'. Registry says false (D3, 2026-09-30).", "severity": "critical_contradiction", "ref": "C2"},
-        {"lines": [1866, 1886], "reason": "C6: Large-SMC 'BLOCKED at C10', 'C10 UNSIGNED', 'v1.0.6 RESEARCH_DRAFT' while ST_LARGE_SMC_V1.yaml:28 is SIGNED_AND_LOCKED (2026-09-07) at v1.0.7.", "severity": "critical_contradiction", "ref": "C6"},
-        {"lines": [2178, 2178], "reason": "C6: 'LARGE_SMC_RESEARCH IMPLEMENTED, RESEARCH_ONLY, BLOCKED at C10' in a table titled 'Current-state summary'.", "severity": "critical_contradiction", "ref": "C6"},
-        {"lines": [2011, 2054], "reason": "C1: Telegram PAUSE directive, development_state=PAUSED, 'main still has zero Telegram files' (false at cf0ce0f). Contradicts owner objective ISSUE #47 R4 and the open PR #60.", "severity": "critical_contradiction", "ref": "C1"},
-        {"lines": [2056, 2065], "reason": "Objective text != owner objective 2026-10-07: 10-step proposal-to-demo 'Core project objective'; 'Telegram is one possible future approval interface'.", "severity": "objective_divergence", "ref": "flag-2"},
-        {"lines": [2189, 2196], "reason": "Objective text != owner objective: 'two deterministic decision services'; omits crypto tickets (O2), Telegram (O4) and the demo-authorization gate (O5).", "severity": "objective_divergence", "ref": "flag-3"},
-        {"lines": [1991, 2009], "reason": "C3/C7: 'verified from code' claims about execution/risk.py, intent_builder.py, validator.py - none of these modules exist at cf0ce0f.", "severity": "no_source", "ref": "C3"},
-        {"lines": [1805, 1806], "reason": "C3: matrix cells cite execution/executor.py and execution/mt5_gateway.py as the verification source; both absent.", "severity": "no_source", "ref": "C3"},
-        {"lines": [2198, 2203], "reason": "C3: claims the execution runtime provides explicit-confirmation FX routing and supersedes documents saying the registry has no caller; src/execution_runtime holds only crypto feeds and registry.yaml:1-5 still says no caller.", "severity": "critical_contradiction", "ref": "C3"}
+        {
+          "reason": "C1/C2: asserts SESSION_TRADE_V1 is 'separately demo_authorized: true for its ASIAN_LONDON cycle'. Registry says false (D3, 2026-09-30).",
+          "severity": "critical_contradiction",
+          "ref": "C2"
+        },
+        {
+          "reason": "C6: Large-SMC 'BLOCKED at C10', 'C10 UNSIGNED', 'v1.0.6 RESEARCH_DRAFT' while ST_LARGE_SMC_V1.yaml:28 is SIGNED_AND_LOCKED (2026-09-07) at v1.0.7.",
+          "severity": "critical_contradiction",
+          "ref": "C6"
+        },
+        {
+          "reason": "C6: 'LARGE_SMC_RESEARCH IMPLEMENTED, RESEARCH_ONLY, BLOCKED at C10' in a table titled 'Current-state summary'.",
+          "severity": "critical_contradiction",
+          "ref": "C6"
+        },
+        {
+          "reason": "C1: Telegram PAUSE directive, development_state=PAUSED, 'main still has zero Telegram files' (false at cf0ce0f). Contradicts owner objective ISSUE #47 R4 and the open PR #60.",
+          "severity": "critical_contradiction",
+          "ref": "C1"
+        },
+        {
+          "reason": "Objective text != owner objective 2026-10-07: 10-step proposal-to-demo 'Core project objective'; 'Telegram is one possible future approval interface'.",
+          "severity": "objective_divergence",
+          "ref": "flag-2"
+        },
+        {
+          "reason": "Objective text != owner objective: 'two deterministic decision services'; omits crypto tickets (O2), Telegram (O4) and the demo-authorization gate (O5).",
+          "severity": "objective_divergence",
+          "ref": "flag-3"
+        },
+        {
+          "reason": "C3/C7: 'verified from code' claims about execution/risk.py, intent_builder.py, validator.py - none of these modules exist at cf0ce0f.",
+          "severity": "no_source",
+          "ref": "C3"
+        },
+        {
+          "reason": "C3: matrix cells cite execution/executor.py and execution/mt5_gateway.py as the verification source; both absent.",
+          "severity": "no_source",
+          "ref": "C3"
+        },
+        {
+          "reason": "C3: claims the execution runtime provides explicit-confirmation FX routing and supersedes documents saying the registry has no caller; src/execution_runtime holds only crypto feeds and registry.yaml:1-5 still says no caller.",
+          "severity": "critical_contradiction",
+          "ref": "C3"
+        }
       ],
       "severity": "info"
     },
     {
       "id": "PS-REPO-REORG-2026-08-28",
       "file": "PROJECT_STATUS.md",
-      "lines": [2322, 2337],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "'Repository reorganization (2026-08-28)': 11 packages moved into src/. Describes a tree that no longer matches cf0ce0f (see C11).",
       "carve_outs": [
-        {"lines": [2324, 2331], "reason": "C11: names execution/mt5_gateway.py, mt5/management_gateway.py and 11 src/ packages that are not in the tree at cf0ce0f.", "severity": "critical_contradiction", "ref": "C11"}
+        {
+          "reason": "C11: names execution/mt5_gateway.py, mt5/management_gateway.py and 11 src/ packages that are not in the tree at cf0ce0f.",
+          "severity": "critical_contradiction",
+          "ref": "C11"
+        }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "BTC_EXECUTION                    NOT_IMPLEMENTED, DISABLED",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "PS-AUTHORITY-ORDER-AND-EXEC-RESTRUCTURE",
       "file": "PROJECT_STATUS.md",
-      "lines": [2338, 2446],
-      "claim_types": ["historical", "authority", "gate"],
+      "claim_types": [
+        "historical",
+        "authority",
+        "gate"
+      ],
       "reason": "'Authority order (permanent project principle)', 'Execution authority restructure (2026-08-28)', ASSISTANT_RUNTIME_V1 (2026-08-27) and SMC foundational skills validation (2026-08-27).",
       "carve_outs": [
-        {"lines": [2338, 2360], "reason": "C3: permanent authority order names execution/executor.py via assistant/commands.py and trade_management/ -> mt5.management_gateway; none importable at cf0ce0f.", "severity": "critical_contradiction", "ref": "C3"},
-        {"lines": [2368, 2368], "reason": "C3/label-merge risk: 'ORDER_SEND = ENABLED for DEMO accounts' while config/trading.yaml:20-21 has allow_order_send: false and mode ANALYSIS.", "severity": "critical_contradiction", "ref": "C3"},
-        {"lines": [2399, 2400], "reason": "DEMO_VERIFIED historical infrastructure claim (one real demo round trip, ticket 1879685149). Must never be read as DEMO_AUTHORIZED.", "severity": "label_separation", "ref": "section-6"}
+        {
+          "reason": "C3: permanent authority order names execution/executor.py via assistant/commands.py and trade_management/ -> mt5.management_gateway; none importable at cf0ce0f.",
+          "severity": "critical_contradiction",
+          "ref": "C3"
+        },
+        {
+          "reason": "C3/label-merge risk: 'ORDER_SEND = ENABLED for DEMO accounts' while config/trading.yaml:20-21 has allow_order_send: false and mode ANALYSIS.",
+          "severity": "critical_contradiction",
+          "ref": "C3"
+        },
+        {
+          "reason": "DEMO_VERIFIED historical infrastructure claim (one real demo round trip, ticket 1879685149). Must never be read as DEMO_AUTHORIZED.",
+          "severity": "label_separation",
+          "ref": "section-6"
+        }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "Each evaluation must end in an explicit actionable or non-actionable state; the system",
+      "labels": [
+        "historical",
+        "authority",
+        "gate"
+      ]
     },
     {
       "id": "PS-PHASE-ROADMAP-2026-08",
       "file": "PROJECT_STATUS.md",
-      "lines": [2447, 2731],
-      "claim_types": ["historical", "schedule"],
+      "claim_types": [
+        "historical",
+        "schedule"
+      ],
       "reason": "'Trading Assistant capability roadmap' PHASE 1-6 and the order-block contract record, 2026-08-26..2026-08-28.",
       "carve_outs": [
-        {"lines": [2459, 2469], "reason": "C3: PHASE 6 'BUILT' names the trade_management/ package, mt5/deals.py and mt5/management_gateway.py; all absent at cf0ce0f.", "severity": "critical_contradiction", "ref": "C3"}
+        {
+          "reason": "C3: PHASE 6 'BUILT' names the trade_management/ package, mt5/deals.py and mt5/management_gateway.py; all absent at cf0ce0f.",
+          "severity": "critical_contradiction",
+          "ref": "C3"
+        }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "**Resolved same day (`REPLAY_METADATA_DECOUPLING_V1`):** the owner authorized a",
+      "labels": [
+        "historical",
+        "schedule"
+      ]
     },
     {
       "id": "PS-PHASEB-GAPS-AND-NEXT-DECISION",
       "file": "PROJECT_STATUS.md",
-      "lines": [2740, 2753],
-      "claim_types": ["historical", "example"],
+      "claim_types": [
+        "historical",
+        "example"
+      ],
       "reason": "'Next owner decision' (2026-08-27 era): AG_ORDER_BLOCK_V1 / AG_LIQUIDITY_V1 freeze items, PIVOT/SHADOW body-ratio and FLIP_OB open questions.",
       "carve_outs": [
-        {"lines": [2732, 2738], "reason": "C7: 'Strategy-config gaps (found building Phase B, still open)' claims entry_order_type MARKET_OR_LIMIT is ambiguous and that a config/trading.yaml account-wide default is used; the strategy YAML says MARKET and no code performs that fallback.", "severity": "critical_contradiction", "ref": "C7"}
+        {
+          "reason": "C7: 'Strategy-config gaps (found building Phase B, still open)' claims entry_order_type MARKET_OR_LIMIT is ambiguous and that a config/trading.yaml account-wide default is used; the strategy YAML says MARKET and no code performs that fallback.",
+          "severity": "critical_contradiction",
+          "ref": "C7"
+        }
       ],
       "severity": "info"
     },
     {
       "id": "PS-VANTAGE-BRIDGE-2026-09-10",
       "file": "PROJECT_STATUS.md",
-      "lines": [2754, 2774],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "'Web-to-MT5 Vantage Demo bridge (2026-09-10)': UNIT_TESTED / connection verified, order send not exercised. Cites scripts/web_execute_trade.py and assistant.commands.execute_command(), neither of which exists at cf0ce0f.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "New top-level package `supply_demand/`: `smc_adapter.py` (ONLY module here allowed to",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "RG-HEADER-2026-08-27",
       "file": "strategies/registry.yaml",
-      "lines": [1, 5],
-      "claim_types": ["historical", "authority"],
+      "claim_types": [
+        "historical",
+        "authority"
+      ],
       "reason": "'data only (2026-08-27)' header. Its statement that nothing calls a strategy-manager runtime is literally true at cf0ce0f but is contradicted in-file at lines 120-129 and by PROJECT_STATUS.md:2198-2203.",
       "carve_outs": [
-        {"lines": [1, 5], "reason": "C3/internal contradiction: keep visible; do not treat the 'no caller' wording as settled.", "severity": "critical_contradiction", "ref": "C3"}
+        {
+          "reason": "C3/internal contradiction: keep visible; do not treat the 'no caller' wording as settled.",
+          "severity": "critical_contradiction",
+          "ref": "C3"
+        }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "# Strategy registry -- data only (2026-08-27). Lists every strategy the Trade Assistant is",
+      "labels": [
+        "historical",
+        "authority"
+      ]
     },
     {
       "id": "RG-NOTES-DATED",
       "file": "strategies/registry.yaml",
-      "lines": [59, 59],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "SMC_3R_V1 independence note.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "logic_verified_identity: null",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "RG-LSMC-GOAL2-2026-09-30",
       "file": "strategies/registry.yaml",
-      "lines": [73, 77],
-      "claim_types": ["historical", "objective"],
+      "claim_types": [
+        "historical",
+        "objective"
+      ],
       "reason": "AG V1 Goal 2 (2026-09-30) note recording that 1.1.0 was registered alongside an unchanged 1.0.7. The substantive claim matches machine source and is the O3 binding; the dated framing is historical.",
       "carve_outs": [
-        {"lines": [75, 76], "reason": "C12/C13: instrument list is BTCUSDT/ETHUSDT (perp identity) while owner objective ISSUE #47 names BTCUSD/ETHUSD CFDs; and the watch is universe-complete but not gate-complete for USDJPY/XAUUSD.", "severity": "critical_contradiction", "ref": "C12"}
+        {
+          "reason": "C12/C13: instrument list is BTCUSDT/ETHUSDT (perp identity) while owner objective ISSUE #47 names BTCUSD/ETHUSD CFDs; and the watch is universe-complete but not gate-complete for USDJPY/XAUUSD.",
+          "severity": "critical_contradiction",
+          "ref": "C12"
+        }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "ST_LARGE_SMC_V1:",
+      "labels": [
+        "historical",
+        "objective"
+      ]
     },
     {
       "id": "RG-SWEEPRETEST-RECONCILIATION-2026-09-05",
       "file": "strategies/registry.yaml",
-      "lines": [94, 98],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "2026-09-05 reconciliation-only note (AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3): 'no authority change'.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "# Crypto profile is proposal/observation-only via a dedicated runner",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "RG-CRYPTO-CONFIG-V2-2026-09-30",
       "file": "strategies/registry.yaml",
-      "lines": [99, 105],
-      "claim_types": ["historical", "schedule"],
+      "claim_types": [
+        "historical",
+        "schedule"
+      ],
       "reason": "2026-09-30 note describing crypto ticket config V2 and owner decision D4 (ETHUSDT SHADOW). Superseded: the active config is config/v1_tickets/crypto_ticket_v3.yaml (src/v1_tickets/crypto.py:60; v3 header says 'active', supersedes 2).",
       "carve_outs": [
-        {"lines": [99, 102], "reason": "C12: this note is the in-scope endorsement of deriving CFD tickets from the frozen CRYPTO_PERP contract, which owner objective ISSUE #47 section 2 forbids borrowing implicitly.", "severity": "critical_contradiction", "ref": "C12"},
-        {"lines": [93, 93], "reason": "C9: cites tests/test_btc_proposal_execution_boundary.py, which does not exist at cf0ce0f (nearest: tests/test_btc_research_runner_boundary.py).", "severity": "critical_contradiction", "ref": "C9"}
+        {
+          "reason": "C12: this note is the in-scope endorsement of deriving CFD tickets from the frozen CRYPTO_PERP contract, which owner objective ISSUE #47 section 2 forbids borrowing implicitly.",
+          "severity": "critical_contradiction",
+          "ref": "C12"
+        },
+        {
+          "reason": "C9: cites tests/test_btc_proposal_execution_boundary.py, which does not exist at cf0ce0f (nearest: tests/test_btc_research_runner_boundary.py).",
+          "severity": "critical_contradiction",
+          "ref": "C9"
+        }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "config_source: strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
+      "labels": [
+        "historical",
+        "schedule"
+      ]
     },
     {
       "id": "RG-SSC-IDENTITY-NOTE-2026-09-10",
       "file": "strategies/registry.yaml",
-      "lines": [130, 140],
-      "claim_types": ["historical", "example"],
+      "claim_types": [
+        "historical",
+        "example"
+      ],
       "reason": "Identity note (registered 2026-09-10) explaining why the bare id ST_SESSION_SWEEP_CONTINUATION@1.1.1 was not fabricated. Dated rationale for a decision already taken.",
       "carve_outs": [
-        {"lines": [134, 134], "reason": "C5: states the real identity is v1.0.0; strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml:22 says version 1.0.1.", "severity": "critical_contradiction", "ref": "C5"}
+        {
+          "reason": "C5: states the real identity is v1.0.0; strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml:22 says version 1.0.1.",
+          "severity": "critical_contradiction",
+          "ref": "C5"
+        }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "outcome-resolution engine; RESEARCH_ONLY -- see",
+      "labels": [
+        "historical",
+        "example"
+      ]
     },
     {
       "id": "RG-R8-OBM-CHAT-HISTORY",
       "file": "strategies/registry.yaml",
-      "lines": [142, 152],
-      "claim_types": ["historical", "example"],
+      "claim_types": [
+        "historical",
+        "example"
+      ],
       "reason": "R8_OBM_V1 entry: .ex5/.mq5 removed from the MT5 terminal by the owner (2026-08-27); an orphaned demo position may still exist; provenance is explicitly 'see chat history, not tracked by this registry'. Canonical example of a claim with no repository source - never report as a drift finding.",
-      "severity": "example_no_repo_source"
+      "severity": "example_no_repo_source",
+      "anchor": "note: >-",
+      "labels": [
+        "historical",
+        "example"
+      ]
     },
     {
       "id": "RG-EXTERNAL-REPO-PATHS",
       "file": "strategies/registry.yaml",
-      "lines": [40, 40],
-      "claim_types": ["example"],
+      "claim_types": [
+        "example"
+      ],
       "reason": "D:\\ddev\\Session Trade Codex engine reference: an out-of-repository authority, referenced not vendored. Same class at lines 57, 58 and 151.",
-      "related_lines": [57, 58, 151],
-      "severity": "example_out_of_repo"
+      "severity": "example_out_of_repo",
+      "anchor": "economic_status: NOT_EVALUATED",
+      "labels": [
+        "example"
+      ]
     },
     {
       "id": "RM-V3-SUPERSESSION",
       "file": "docs/PROJECT_ROADMAP.md",
-      "lines": [5, 5],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "'supersedes the V3 implementation ordering' - V3 is not a live authority.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "review_by: 2026-11-07",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "RM-READINESS-DATE-STAMP",
       "file": "docs/PROJECT_ROADMAP.md",
-      "lines": [130, 130],
-      "claim_types": ["historical", "gate"],
+      "claim_types": [
+        "historical",
+        "gate"
+      ],
       "reason": "'R2/R3/R4 reached READY/PASS on 2026-09-11' - dated platform-gate evidence. Note the axis caveat: R3 platform readiness is not strategy logic verification (registry logic_status is NOT_VERIFIED).",
-      "severity": "label_separation"
+      "severity": "label_separation",
+      "anchor": "| Proposal/outcome evidence | `PARTIAL / STRATEGY_DEPENDENT` | R5 |",
+      "labels": [
+        "historical",
+        "gate"
+      ]
     },
     {
       "id": "RM-V2-PHASE-DATE-STAMPS",
       "file": "docs/PROJECT_ROADMAP.md",
-      "lines": [330, 358],
-      "claim_types": ["historical", "gate"],
+      "claim_types": [
+        "historical",
+        "gate"
+      ],
       "reason": "Dated V2 phase stamps in headings and bodies: V2-2A/2B VERIFIED (2026-09-21), V2-3A RE_AUDIT_PASS (2026-09-22), V2-3B IMPLEMENTED_AND_LOCALLY_VERIFIED (2026-09-22), Parity Checkpoint #1 PASS (2026-09-22).",
       "carve_outs": [
-        {"lines": [346, 356], "reason": "C3/row 22: the V2-3A/3B adapters and their upstream modules (src/opportunity/large_smc_adapter.py, ssc_adapter.py, large_smc_research.watch_lifecycle, session_sweep_continuation.replay.run_replay) do not exist at cf0ce0f.", "severity": "critical_contradiction", "ref": "C3"}
+        {
+          "reason": "C3/row 22: the V2-3A/3B adapters and their upstream modules (src/opportunity/large_smc_adapter.py, ssc_adapter.py, large_smc_research.watch_lifecycle, session_sweep_continuation.replay.run_replay) do not exist at cf0ce0f.",
+          "severity": "critical_contradiction",
+          "ref": "C3"
+        }
       ],
       "severity": "info"
     },
     {
       "id": "RM-AUTO-DEMO-REPLACED",
       "file": "docs/PROJECT_ROADMAP.md",
-      "lines": [535, 535],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "'Replace the earlier concept of automatic AUTO_DEMO promotion' - the earlier concept is retired, not current.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "```",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "RM-DIAGRAMS",
       "file": "docs/PROJECT_ROADMAP.md",
-      "lines": [27, 52],
-      "claim_types": ["example"],
+      "claim_types": [
+        "example"
+      ],
       "reason": "ASCII target-architecture diagram. Illustrative, not state. Same class at lines 64-91, 97-109, 144-150, 158-160, 178-186, 198-208, 226-231, 237-245, 255-275, 417-427, 446-468, 502-529, 539-549, 559-575, 583-591, 603-623, 633-651, 657-701.",
-      "related_lines": [64, 91, 97, 109, 144, 150, 158, 160, 178, 186, 198, 208, 226, 231, 237, 245, 255, 275, 417, 427, 446, 468, 502, 529, 539, 549, 559, 575, 583, 591, 603, 623, 633, 651, 657, 701],
-      "severity": "example_illustrative"
+      "severity": "example_illustrative",
+      "anchor": "5. Has execution **PRESERVED THE EDGE**?",
+      "labels": [
+        "example"
+      ]
     },
     {
       "id": "AG-TOKEN-POLICY",
       "file": "AGENTS.md",
-      "lines": [5, 13],
-      "claim_types": ["example"],
+      "claim_types": [
+        "example"
+      ],
       "reason": "Owner token-minimum usage policy: agent behaviour rules, not project state claims.",
-      "severity": "example_process_rule"
+      "severity": "example_process_rule",
+      "anchor": "review_by: 2026-11-07",
+      "labels": [
+        "example"
+      ]
     },
     {
       "id": "AG-EXEC-EXAMPLES-2026-08-28",
       "file": "AGENTS.md",
-      "lines": [41, 49],
-      "claim_types": ["historical", "example"],
+      "claim_types": [
+        "historical",
+        "example"
+      ],
       "reason": "'as of the 2026-08-28 Execution authority restructure' plus example execution commands ('execute it', 'sell EURUSD 0.31 lots...', 'close this position'). The EURUSD mention is illustrative, not an instrument-universe claim.",
       "carve_outs": [
-        {"lines": [41, 49], "reason": "C11: asserts entry-side OPEN is implemented in execution/mt5_gateway.py and executor.py, reachable only via assistant.commands.execute_command(). None of these modules exist at cf0ce0f, yet owner objective ISSUE #47 section 4 mandates this exact path.", "severity": "critical_contradiction", "ref": "C11"}
+        {
+          "reason": "C11: asserts entry-side OPEN is implemented in execution/mt5_gateway.py and executor.py, reachable only via assistant.commands.execute_command(). None of these modules exist at cf0ce0f, yet owner objective ISSUE #47 section 4 mandates this exact path.",
+          "severity": "critical_contradiction",
+          "ref": "C11"
+        }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "guaranteed output is an explicit decision state, not a forced trade, and a ticket is",
+      "labels": [
+        "historical",
+        "example"
+      ]
     },
     {
       "id": "AG-PHASE6-AND-HOSTPATH",
       "file": "AGENTS.md",
-      "lines": [56, 56],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "'(Phase 6, manual-entry only)' phase label from the 2026-08-27 capability roadmap.",
-      "related_lines": [75],
       "related_reason": "Line 75 names the host path D:/wp3-main-integ (live runtime tree). Host-local, outside the repository: NO_SOURCE, never a drift finding.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "3. `execution/` controls MT5 orders (via `mt5/`). Entry-side OPEN is implemented",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "AG-TOKEN-EFFICIENCY-RULES",
       "file": "AGENTS.md",
-      "lines": [118, 158],
-      "claim_types": ["example"],
+      "claim_types": [
+        "example"
+      ],
       "reason": "Token-efficiency rules: agent process guidance, no project state.",
-      "severity": "example_process_rule"
+      "severity": "example_process_rule",
+      "anchor": "Markets MT5 data only. External OSS data (Dukascopy, HistData, exchange/ccxt) may be",
+      "labels": [
+        "example"
+      ]
     },
     {
       "id": "AG-SKILL-GROUPING",
       "file": "AGENTS.md",
-      "lines": [159, 215],
-      "claim_types": ["example"],
+      "claim_types": [
+        "example"
+      ],
       "reason": "Skill load-order guidance ('load when a registered strategy is named'), not capability or authority claims.",
       "carve_outs": [
-        {"lines": [173, 178], "reason": "Flag 7: describes ST_LARGE_SMC_V1 only as RESEARCH_DRAFT that cannot emit an actionable READY proposal, omitting the delivered src/large_smc_watch v1.1.0 SHADOW_ALERTS_ONLY six-instrument watch (owner objective O3).", "severity": "objective_divergence", "ref": "flag-7"},
-        {"lines": [162, 163], "reason": "C4/row 30: the referenced .agents/skills/strategy-management/SKILL.md:47 names strategy_manager/manager.py, which does not exist.", "severity": "no_source", "ref": "C4"}
+        {
+          "reason": "Flag 7: describes ST_LARGE_SMC_V1 only as RESEARCH_DRAFT that cannot emit an actionable READY proposal, omitting the delivered src/large_smc_watch v1.1.0 SHADOW_ALERTS_ONLY six-instrument watch (owner objective O3).",
+          "severity": "objective_divergence",
+          "ref": "flag-7"
+        },
+        {
+          "reason": "C4/row 30: the referenced .agents/skills/strategy-management/SKILL.md:47 names strategy_manager/manager.py, which does not exist.",
+          "severity": "no_source",
+          "ref": "C4"
+        }
       ],
-      "severity": "info"
+      "severity": "info",
+      "anchor": "explicit user request. Preserve the prior HTTP/error evidence otherwise.",
+      "labels": [
+        "example"
+      ]
     },
     {
       "id": "AG-BRANCH-DISCIPLINE",
       "file": "AGENTS.md",
-      "lines": [203, 229],
-      "claim_types": ["example"],
+      "claim_types": [
+        "example"
+      ],
       "reason": "Branch/push/merge discipline with example placeholders such as '<PR head SHA>'. Process rules, not project state.",
       "severity": "example_process_rule"
     },
     {
       "id": "SKILLREG-HEADER-NOTES",
       "file": ".agents/skills/SKILL_REGISTRY.yaml",
-      "lines": [1, 34],
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "Dated header notes (2026-08-27 taxonomy, 2026-08-28 FIVE_SKILL_ASSISTANT_RUNTIME_V1, 2026-09-07 UNIVERSAL_AGENT_SKILLS_FRAMEWORK_V1 and canonical-source designation). The authority block at lines 44-52 is current and is NOT allowlisted.",
-      "severity": "info"
+      "severity": "info",
+      "anchor": "# Skill taxonomy registry -- data only (2026-08-27).",
+      "labels": [
+        "historical"
+      ]
     },
     {
       "id": "SKILL-STRATEGY-MANAGER-PATH",
       "file": ".agents/skills/strategy-management/SKILL.md",
-      "lines": [47, 47],
-      "claim_types": ["example"],
+      "claim_types": [
+        "example"
+      ],
       "reason": "Names strategy_manager/manager.py as the registry + dispatch component. No such module exists at cf0ce0f; treat as an example of intended structure, not a live path.",
-      "severity": "example_stale_path"
+      "severity": "example_stale_path",
+      "anchor": "strategy_manager/manager.py  registry + contract cycle-authority check + dispatch",
+      "labels": [
+        "example"
+      ]
     },
     {
       "id": "SKILL-AUDIT-REPORTS-2026-09-01",
       "file": ".agents/reports/workflow_skill_audit/",
-      "lines": null,
       "glob": "*_2026-09-01_143835.{json,md}",
       "file_count": 35,
-      "claim_types": ["historical"],
+      "claim_types": [
+        "historical"
+      ],
       "reason": "Dated workflow/skill audit snapshot (2026-09-01 14:38:35). Whole-directory allowlist; line ranges not applicable.",
       "severity": "info"
     },
     {
       "id": "SKILL-MIRROR-NOTICES",
       "file": ".agents/skills/_CANONICAL_SOURCE.md",
-      "lines": null,
-      "claim_types": ["example"],
+      "claim_types": [
+        "example"
+      ],
       "reason": "Mirror-contract notice text. Companion file .claude/skills/_MIRROR_NOTICE.md is the same class. Parity itself is machine-verified (scripts/check_skill_mirror_drift.py -> NO_DRIFT: 33 files identical).",
       "severity": "example_process_rule"
     }
@@ -447,57 +743,72 @@
   "verified_label_free": [
     {
       "file": "PROJECT_STATUS.md",
-      "lines": [242, 870],
-      "labels_checked": ["LOGIC_VERIFIED", "EDGE_VERIFIED", "DEMO_AUTHORIZED", "LIVE_AUTHORIZED"],
+      "labels_checked": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
       "result": "ZERO assertions found",
       "note": "Safe to allowlist for protected-label drift scans. Contains the AUTHORIZED-token collisions listed in disambiguation_notes.",
-      "verified_by": "range scan at cf0ce0f (DOCS-LIVE-4 row A12)"
+      "verified_by": "range scan at cf0ce0f (DOCS-LIVE-4 row A12)",
+      "anchor": "`DEMO_ACCOUNT_VERIFIED`, 12/12 scan records, 0 NOT_RUN, append-only proven, positions/orders",
+      "labels": []
     },
     {
       "file": "PROJECT_STATUS.md",
-      "lines": [1297, 1581],
-      "labels_checked": ["LOGIC_VERIFIED", "EDGE_VERIFIED", "DEMO_AUTHORIZED", "LIVE_AUTHORIZED"],
+      "labels_checked": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
       "result": "ZERO assertions found",
       "note": "Safe to allowlist for protected-label drift scans.",
-      "verified_by": "range scan at cf0ce0f (DOCS-LIVE-4 row A12)"
+      "verified_by": "range scan at cf0ce0f (DOCS-LIVE-4 row A12)",
+      "anchor": "`docs/status/SVOS_VIRTUAL_DEMO_ENGINE_V1_CYCLE6A_STATUS.md`.",
+      "labels": []
     }
   ],
   "disambiguation_notes": [
     {
       "file": "PROJECT_STATUS.md",
-      "lines": [562, 562],
       "token": "AUTHORIZED",
       "meaning_here": "Demo-execution-bridge proposal-approval lifecycle state (PREPARED -> {AUTHORIZED, REJECT}); every validation/gating rejection is non-DEMO.",
       "not_this": "strategy DEMO_AUTHORIZED in strategies/registry.yaml",
-      "origin": "feat/demo-execution-bridge candidate records, 2026-09-23..25"
+      "origin": "feat/demo-execution-bridge candidate records, 2026-09-23..25",
+      "anchor": "`test_api_owner_decision_auth`, `test_api_owner_decision`,",
+      "labels": []
     },
     {
       "file": "PROJECT_STATUS.md",
-      "lines": [616, 616],
       "token": "AUTHORIZED",
       "meaning_here": "'an AUTHORIZED decision across a process restart' - durability of the proposal-approval record.",
       "not_this": "strategy DEMO_AUTHORIZED",
-      "origin": "AG_PANEL_R5B_DURABLE_IDEMPOTENCY (2026-09-23, unmerged worktree branch)"
+      "origin": "AG_PANEL_R5B_DURABLE_IDEMPOTENCY (2026-09-23, unmerged worktree branch)",
+      "anchor": "**FX shadow snapshot authority:** of the three 2026-09-23 campaign sections below, the",
+      "labels": []
     },
     {
       "file": "PROJECT_STATUS.md",
-      "lines": [741, 742],
       "token": "AUTHORIZED",
       "meaning_here": "State-graph enumeration 'PREPARED->{AUTHORIZED,REJECTED}' and 'AUTHORIZED->{SUBMISSION_PENDING,REJECTED}'.",
       "not_this": "strategy DEMO_AUTHORIZED",
-      "origin": "PANEL_R5C reconciliation records (2026-09-23/24, unmerged)"
+      "origin": "PANEL_R5C reconciliation records (2026-09-23/24, unmerged)",
+      "anchor": "this is explicitly documented as NOT a system-wide guarantee",
+      "labels": []
     },
     {
       "file": "PROJECT_STATUS.md",
-      "lines": [784, 784],
       "token": "AUTHORIZED",
       "meaning_here": "'(but only partially activates) the PREPARED -> AUTHORIZED -> SUBMISSION_PENDING -> ...' transition chain.",
       "not_this": "strategy DEMO_AUTHORIZED",
-      "origin": "PANEL_R5B_R1 lifecycle remediation (2026-09-23, unmerged)"
+      "origin": "PANEL_R5B_R1 lifecycle remediation (2026-09-23, unmerged)",
+      "anchor": "previously `current_proposal_count=3`, expected `<=1`). Root cause:",
+      "labels": []
     },
     {
       "file": "PROJECT_STATUS.md",
-      "lines": [816, 816],
       "token": "BLOCKED_STRATEGY_NOT_DEMO_AUTHORIZED",
       "meaning_here": "Correct usage: the demo gate blocking a strategy whose registry demo_authorized is false.",
       "not_this": "not a collision - listed so a scanner does not treat it as an authorization grant",
@@ -505,68 +816,247 @@
     },
     {
       "file": "PROJECT_STATUS.md",
-      "lines": [470, 470],
       "token": "AUTHORIZED",
       "meaning_here": "Negative statement: components 'are not AUTHORIZED'.",
       "not_this": "strategy DEMO_AUTHORIZED",
-      "origin": "AG_MISSING_PLATFORM_PACKAGES_INTEGRATION (2026-09-24)"
+      "origin": "AG_MISSING_PLATFORM_PACKAGES_INTEGRATION (2026-09-24)",
+      "anchor": "environment). Does not enable or authorize trading.",
+      "labels": []
     },
     {
       "file": "PROJECT_STATUS.md",
-      "lines": [266, 266],
       "token": "Telegram",
       "meaning_here": "'No order, position or Telegram calls' - a zero-mutation assertion, not a delivery capability claim.",
       "not_this": "not evidence about owner objective O4",
-      "related_lines": [287, 1463]
+      "anchor": "`STRATEGY_CONTRACT_INCOMPLETE`; crypto risk remains `RISK_POLICY_AMBIGUOUS`; position",
+      "labels": []
     },
     {
       "file": "PROJECT_STATUS.md",
-      "lines": [1881, 1881],
       "token": "ENABLED / DEMO_VERIFIED",
       "meaning_here": "Infrastructure readiness wording for the MT5 demo subsystem (2026-08-28 round trip).",
       "not_this": "DEMO_AUTHORIZED for any strategy; config/trading.yaml:20-21 keeps allow_order_send false",
-      "related_lines": [1805, 1806, 1882, 2092, 2097, 2368, 2399]
+      "anchor": "CRYPTO EXECUTION              NOT IMPLEMENTED, fail-closed (execution.adapter.CryptoExecutionAdapter remains NOT_IMPLEMENTED; execution.executor now explicitly rejects any non-TradeCommand object, not just BTC proposals)",
+      "labels": []
     },
     {
       "file": "docs/PROJECT_ROADMAP.md",
-      "lines": [122, 122],
       "token": "READY",
       "meaning_here": "R3 platform-axis readiness ('Canonical strategy decisions').",
-      "not_this": "LOGIC_VERIFIED for any strategy version (registry.yaml:27,46 are NOT_VERIFIED)",
-      "related_lines": [113, 130, 174, 190]
+      "not_this": "LOGIC_VERIFIED for any strategy version (registry.yaml:27,46 are NOT_VERIFIED)"
     }
   ],
   "never_suppress": [
-    {"file": "PROJECT_STATUS.md", "lines": [66, 66], "ref": "C15", "reason": "'Next open item ... (PR #40)' - PR #40 is merged; the live FX remedy is open PR #62 (v1.1.2 closes Logic Gate L2)."},
-    {"file": "PROJECT_STATUS.md", "lines": [77, 79], "ref": "A10", "reason": "Live LOGIC_VERIFIED / EDGE_VERIFIED state for ST_ASIAN_SWEEP_5R_V1@1.1.1: NOT_VERIFIED, EDGE_VERIFIED FALSE, zero TICKET_READY."},
-    {"file": "PROJECT_STATUS.md", "lines": [871, 959], "ref": "C3", "reason": "Rolling classification: strategy_manager dispatch claim and V2-3A/3B parity gates whose adapter code is absent."},
-    {"file": "PROJECT_STATUS.md", "lines": [1582, 1613], "ref": "C8", "reason": "Master-plan version (V3 vs V4) and the stale '(2026-09-12) at the top of this file' pointer."},
-    {"file": "PROJECT_STATUS.md", "lines": [1825, 1828], "ref": "C2", "reason": "SESSION_TRADE_V1 demo_authorized: true - contradicts registry.yaml:36 (D3 withdrawal)."},
-    {"file": "PROJECT_STATUS.md", "lines": [1866, 1886], "ref": "C6", "reason": "Large-SMC C10 UNSIGNED / BLOCKED wording inside tables titled 'current'."},
-    {"file": "PROJECT_STATUS.md", "lines": [2011, 2065], "ref": "C1", "reason": "Telegram PAUSE directive and the 10-step 'Core project objective' - both diverge from owner objective ISSUE #47."},
-    {"file": "PROJECT_STATUS.md", "lines": [2178, 2178], "ref": "C6", "reason": "'LARGE_SMC_RESEARCH ... BLOCKED at C10' in Current-state summary."},
-    {"file": "PROJECT_STATUS.md", "lines": [2189, 2248], "ref": "C3", "reason": "'Product objective' divergence plus the execution-runtime and registry-caller claims."},
-    {"file": "PROJECT_STATUS.md", "lines": [2338, 2400], "ref": "C11", "reason": "Permanent authority order, ORDER_SEND ENABLED wording, and the DEMO_VERIFIED round-trip record."},
-    {"file": "PROJECT_STATUS.md", "lines": [2447, 2469], "ref": "C3", "reason": "PHASE 6 'BUILT' claims for an absent package set."},
-    {"file": "PROJECT_STATUS.md", "lines": [2732, 2738], "ref": "C7", "reason": "entry_order_type ambiguity and the supposed config/trading.yaml risk fallback."},
-    {"file": "AGENTS.md", "lines": [27, 31], "ref": "flag-6", "reason": "'crypto remains proposal/interface-only' diverges from owner objective O2 as built."},
-    {"file": "AGENTS.md", "lines": [32, 66], "ref": "C11", "reason": "Authority order points 1-5: the canonical execution and trade-management paths required by ISSUE #47 section 4 are absent from main."},
-    {"file": "AGENTS.md", "lines": [159, 178], "ref": "flag-7", "reason": "Skill grouping omits the delivered Large-SMC v1.1.0 six-instrument watch (O3)."},
-    {"file": "AGENTS.md", "lines": [230, 269], "ref": "C4", "reason": "Bootstrap routes every agent through config/agent_context.json, whose four module routes are absent and whose stamp predates cf0ce0f."},
-    {"file": "strategies/registry.yaml", "lines": [17, 20], "ref": "C3", "reason": "'explicit-command demo execution exists project-wide' and 'entry_order_type undefined'."},
-    {"file": "strategies/registry.yaml", "lines": [61, 68], "ref": "C3", "reason": "ST_LARGE_SMC_V1 engine and lifecycle paths (src/large_smc_research, src/validation_framework/adapters) are absent."},
-    {"file": "strategies/registry.yaml", "lines": [99, 105], "ref": "C12", "reason": "Endorsement of deriving CFD tickets from the frozen CRYPTO_PERP contract."},
-    {"file": "strategies/registry.yaml", "lines": [107, 140], "ref": "C5", "reason": "SSC engine/adapter/API paths absent; version stated as 1.0.0 against 1.0.1 in the contract."},
-    {"file": "docs/PROJECT_ROADMAP.md", "lines": [599, 707], "ref": "C8", "reason": "Part IV strategy_readiness schema not materialized anywhere, and the immediate implementation order is stale relative to PS:922-959."},
-    {"file": "docs/v2/AG_V2_BASELINE_MANIFEST_V1.json", "lines": [50, 50], "ref": "C2", "reason": "Machine-readable demo_authorized: true / manager_dispatchable: true for SESSION_TRADE_V1, frozen before D3."},
-    {"file": "config/ag_scheduler_v2.yaml", "lines": [82, 96], "ref": "C5", "reason": "Asserts SSC does not exist in the repository and caps symbols at EURUSD/GBPUSD, contradicting registry.yaml:107-140 and owner objective O1."},
-    {"file": "config/agent_context.json", "lines": [4, 5], "ref": "C4", "reason": "generated_from_head 933921fa != cf0ce0f; last_verified_utc 2026-09-20."},
-    {"file": "config/agent_context.json", "lines": [20, 20], "ref": "C4", "reason": "Route to src/session_sweep_continuation (absent). Also lines 33, 46, 57 -> src/proposals, src/execution, src/scheduling (absent).", "related_lines": [33, 46, 57]},
-    {"file": "config/v1_tickets/crypto_ticket_v3.yaml", "lines": [4, 17], "ref": "C12", "reason": "Active crypto ticket config maps BTCUSDT/ETHUSDT perpetual contract authority onto BTCUSD/ETHUSD CFD symbols."},
-    {"file": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml", "lines": [63, 64], "ref": "C13", "reason": "USDJPY/XAUUSD point null FIXTURE_ONLY while host-captured values already exist in config/symbol_metadata/host_captured/."},
-    {"file": "strategies/ST_LARGE_SMC_V1.yaml", "lines": [81, 82], "ref": "C6", "reason": "Inline changelog comment still says C10 remains UNSIGNED, against line 28 SIGNED_AND_LOCKED in the same file."},
-    {"file": "config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml", "lines": [301, 304], "ref": "C6", "reason": "engine_runtime_status UNSIGNED_BLOCKED / implementation_status PENDING for Large-SMC C10."},
-    {"file": "docs/PROJECT_OBJECTIVE.md", "lines": [88, 95], "ref": "C14", "reason": "Soak gate (>=10 cycles, broker_mutations=0) precedes demo authorization, conflicting with ISSUE #47 R5/R6 sequencing. Also line 139."  , "related_lines": [139]}
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C15",
+      "reason": "'Next open item ... (PR #40)' - PR #40 is merged; the live FX remedy is open PR #62 (v1.1.2 closes Logic Gate L2).",
+      "anchor": "cog.outl(\"\")",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "A10",
+      "reason": "Live LOGIC_VERIFIED / EDGE_VERIFIED state for ST_ASIAN_SWEEP_5R_V1@1.1.1: NOT_VERIFIED, EDGE_VERIFIED FALSE, zero TICKET_READY.",
+      "anchor": "| `BTC_OBSERVE` | daily | 06:30 | 06:45 |",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C3",
+      "reason": "Rolling classification: strategy_manager dispatch claim and V2-3A/3B parity gates whose adapter code is absent.",
+      "anchor": "18 new focused tests pass; R5B/R5B-R1 (52 passed), R5A/R5A-R1 auth (58 passed), and",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C8",
+      "reason": "Master-plan version (V3 vs V4) and the stale '(2026-09-12) at the top of this file' pointer.",
+      "anchor": "- **Position-management authority containment (WP0B).** `web/server.ts`'s real-mode",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C2",
+      "reason": "SESSION_TRADE_V1 demo_authorized: true - contradicts registry.yaml:36 (D3 withdrawal).",
+      "anchor": "qualification counters, priorities, owner decisions — do not duplicate those matrices",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C6",
+      "reason": "Large-SMC C10 UNSIGNED / BLOCKED wording inside tables titled 'current'.",
+      "anchor": "This section is the rolling summary. Test totals elsewhere in this document belong to",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C1",
+      "reason": "Telegram PAUSE directive and the 10-step 'Core project objective' - both diverge from owner objective ISSUE #47.",
+      "anchor": "Large-SMC:  ST_LARGE_SMC_V1 v1.0.6 RESEARCH_DRAFT -> large_smc_research engine ->",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C6",
+      "reason": "'LARGE_SMC_RESEARCH ... BLOCKED at C10' in Current-state summary.",
+      "anchor": "authoritative TradeProposal source ... replaces Phase C's placeholder JSON-file",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C3",
+      "reason": "'Product objective' divergence plus the execution-runtime and registry-caller claims.",
+      "anchor": "grep, both clean. See `docs/status/AG_TELEGRAM_DEMO_EXECUTION_GATEWAY_V1_PHASE_D1_FROZEN_STATUS.md`",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C11",
+      "reason": "Permanent authority order, ORDER_SEND ENABLED wording, and the DEMO_VERIFIED round-trip record.",
+      "anchor": "Each evaluation must end in an explicit actionable or non-actionable state; the system",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C3",
+      "reason": "PHASE 6 'BUILT' claims for an absent package set.",
+      "anchor": "**Resolved same day (`REPLAY_METADATA_DECOUPLING_V1`):** the owner authorized a",
+      "labels": []
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C7",
+      "reason": "entry_order_type ambiguity and the supposed config/trading.yaml risk fallback.",
+      "anchor": "Report tool: `scripts/analyze_structure.py --symbol X --timeframe Y [--count N] [--json]`.",
+      "labels": []
+    },
+    {
+      "file": "AGENTS.md",
+      "ref": "flag-6",
+      "reason": "'crypto remains proposal/interface-only' diverges from owner objective O2 as built.",
+      "anchor": "- `config/agent_context.json` routes may be stale — verify paths exist before use, until it is regenerated.",
+      "labels": []
+    },
+    {
+      "file": "AGENTS.md",
+      "ref": "C11",
+      "reason": "Authority order points 1-5: the canonical execution and trade-management paths required by ISSUE #47 section 4 are absent from main.",
+      "anchor": "decision products are post-Asian and post-London Session Trade tickets, preset-time",
+      "labels": []
+    },
+    {
+      "file": "AGENTS.md",
+      "ref": "flag-7",
+      "reason": "Skill grouping omits the delivered Large-SMC v1.1.0 six-instrument watch (O3).",
+      "anchor": "explicit user request. Preserve the prior HTTP/error evidence otherwise.",
+      "labels": []
+    },
+    {
+      "file": "AGENTS.md",
+      "ref": "C4",
+      "reason": "Bootstrap routes every agent through config/agent_context.json, whose four module routes are absent and whose stamp predates cf0ce0f.",
+      "anchor": "1. **PR must be open before a push.** Before pushing to a PR's branch, check the PR state.",
+      "labels": []
+    },
+    {
+      "file": "strategies/registry.yaml",
+      "ref": "C3",
+      "reason": "'explicit-command demo execution exists project-wide' and 'entry_order_type undefined'.",
+      "anchor": "demo_authorized: false   # explicit-command demo execution exists project-wide, but this strategy",
+      "labels": []
+    },
+    {
+      "file": "strategies/registry.yaml",
+      "ref": "C3",
+      "reason": "ST_LARGE_SMC_V1 engine and lifecycle paths (src/large_smc_research, src/validation_framework/adapters) are absent.",
+      "anchor": "demo_order_authority: NONE",
+      "labels": []
+    },
+    {
+      "file": "strategies/registry.yaml",
+      "ref": "C12",
+      "reason": "Endorsement of deriving CFD tickets from the frozen CRYPTO_PERP contract.",
+      "anchor": "config_source: strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
+      "labels": []
+    },
+    {
+      "file": "strategies/registry.yaml",
+      "ref": "C5",
+      "reason": "SSC engine/adapter/API paths absent; version stated as 1.0.0 against 1.0.1 in the contract.",
+      "anchor": "(2026-09-05) to reconcile a pre-existing inconsistency (documented in",
+      "labels": []
+    },
+    {
+      "file": "docs/PROJECT_ROADMAP.md",
+      "ref": "C8",
+      "reason": "Part IV strategy_readiness schema not materialized anywhere, and the immediate implementation order is stale relative to PS:922-959.",
+      "anchor": "From V2-3 onward, each integrated strategy should continue collecting admissible evidence. Do not complete the entire platform before asking whether the strategies have economic edge.",
+      "labels": []
+    },
+    {
+      "file": "docs/v2/AG_V2_BASELINE_MANIFEST_V1.json",
+      "ref": "C2",
+      "reason": "Machine-readable demo_authorized: true / manager_dispatchable: true for SESSION_TRADE_V1, frozen before D3.",
+      "anchor": "\"SESSION_TRADE_V1\": {\"registered\": true, \"active\": true, \"research\": false, \"demo_authorized\": true, \"live_authorized\": false, \"manager_dispatchable\": true},",
+      "labels": []
+    },
+    {
+      "file": "config/ag_scheduler_v2.yaml",
+      "ref": "C5",
+      "reason": "Asserts SSC does not exist in the repository and caps symbols at EURUSD/GBPUSD, contradicting registry.yaml:107-140 and owner objective O1.",
+      "anchor": "strategy_integration:",
+      "labels": []
+    },
+    {
+      "file": "config/agent_context.json",
+      "ref": "C4",
+      "reason": "generated_from_head 933921fa != cf0ce0f; last_verified_utc 2026-09-20.",
+      "anchor": "\"routes_freshness\": \"may be stale \\u2014 verify paths exist before use, until regenerated\",",
+      "labels": []
+    },
+    {
+      "file": "config/agent_context.json",
+      "ref": "C4",
+      "reason": "Route to src/session_sweep_continuation (absent). Also lines 33, 46, 57 -> src/proposals, src/execution, src/scheduling (absent).",
+      "anchor": "\"strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml\",",
+      "labels": []
+    },
+    {
+      "file": "config/v1_tickets/crypto_ticket_v3.yaml",
+      "ref": "C12",
+      "reason": "Active crypto ticket config maps BTCUSDT/ETHUSDT perpetual contract authority onto BTCUSD/ETHUSD CFD symbols.",
+      "anchor": "# swaps); version 2 is preserved unchanged. Engine: ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0",
+      "labels": []
+    },
+    {
+      "file": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
+      "ref": "C13",
+      "reason": "USDJPY/XAUUSD point null FIXTURE_ONLY while host-captured values already exist in config/symbol_metadata/host_captured/.",
+      "anchor": "USDJPY: {point: null, status: FIXTURE_ONLY}   # host must capture MT5 symbol_info()",
+      "labels": []
+    },
+    {
+      "file": "strategies/ST_LARGE_SMC_V1.yaml",
+      "ref": "C6",
+      "reason": "Inline changelog comment still says C10 remains UNSIGNED, against line 28 SIGNED_AND_LOCKED in the same file.",
+      "anchor": "# C10 (broker stop-loss distance) and post-READY pending-entry expiry remain UNSIGNED",
+      "labels": []
+    },
+    {
+      "file": "config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml",
+      "ref": "C6",
+      "reason": "engine_runtime_status UNSIGNED_BLOCKED / implementation_status PENDING for Large-SMC C10.",
+      "anchor": "implementation_status: PENDING       # next milestone: ST_LARGE_SMC_V1_C10_AG_NATIVE_CONTRACT_FREEZE",
+      "labels": []
+    },
+    {
+      "file": "docs/PROJECT_OBJECTIVE.md",
+      "ref": "C14",
+      "reason": "Soak gate (>=10 cycles, broker_mutations=0) precedes demo authorization, conflicting with ISSUE #47 R5/R6 sequencing. Also line 139.",
+      "anchor": "- `broker_mutations = 0` throughout the PRE-EDGE/read-only soak.",
+      "labels": []
+    }
   ],
   "verification": {
     "methods": [

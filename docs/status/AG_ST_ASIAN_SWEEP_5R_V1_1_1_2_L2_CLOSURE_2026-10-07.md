@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_ASIAN_SWEEP_5R_V1@1.1.2 — Logic Gate L2 closure (2026-10-07)
 
 **Candidate only. Asian Sweep READY stays paused until the owner confirms the Phase B table.**

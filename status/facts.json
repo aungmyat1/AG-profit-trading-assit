@@ -1,5 +1,17 @@
 {
-  "inputs_sha256": "d8df0fbafdf6da09615058a4afca0c9187e70fcd98cc53931d36f3fa13ab3638",
+  "input_paths": [
+    "config/ag_scheduler_v2.yaml",
+    "docs/PROJECT_OBJECTIVE.md",
+    "docs/v2/AG_V2_BASELINE_MANIFEST_V1.supersession.yaml",
+    "scripts/docs/advisory_allowlist.json",
+    "strategies/ST_ASIAN_SWEEP_5R_V1.yaml",
+    "strategies/ST_LARGE_SMC_V1.yaml",
+    "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
+    "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
+    "strategies/registry.yaml",
+    "strategies/session_trade/contract.yaml"
+  ],
+  "inputs_sha256": "6b15f9a27f2a53e50ce152b9b0a47cf6cc451f82200c980e6f2782f325a3cc6c",
   "objective": {
     "source": "docs/PROJECT_OBJECTIVE.md#objective",
     "text": "Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.\n\nThe owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.\n\n`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."

@@ -13,7 +13,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.generate_live_status import collect_live_status_facts, tracked_paths  # noqa: E402
+from scripts.generate_live_status import collect_live_status_facts, collector_input_paths, tracked_paths  # noqa: E402
 
 
 def read_objective(path: Path) -> dict[str, str]:
@@ -50,9 +50,11 @@ def collect(root: Path) -> dict[str, Any]:
         ],
     }
 
+    input_paths = collector_input_paths(root)
     return {
         "schema": "AG_DOC_FACTS_V3",
         "inputs_sha256": shared["inputs_sha256"],
+        "input_paths": input_paths,
         "objective": read_objective(root / "docs" / "PROJECT_OBJECTIVE.md"),
         "strategies": strategies,
         "schedule": schedule,
