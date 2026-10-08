@@ -460,8 +460,11 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
             item = {"symbol": symbol, "ticket_id": row.get("ticket_id"),
                     "decision": row.get("state") if known else "COMPATIBILITY_ERROR",
                     "source": row.get("source"),
-                    "reason_code": ((row.get("block_reasons") or [None])[0] if known else
-                                    "UNKNOWN_CANONICAL_DECISION"),
+                    # The event row carries the ticket's own reason code, so a SIGNAL_TIME_UNAVAILABLE
+                    # DATA_ERROR stays distinguishable from an acquisition DATA_ERROR; the stored
+                    # block_reasons are the fallback when no session event exists.
+                    "reason_code": ((event.get("reason_code") or (row.get("block_reasons") or [None])[0])
+                                    if known else "UNKNOWN_CANONICAL_DECISION"),
                     "acquisition_error_code": event.get("acquisition_error_code"),
                     "record_source": row.get("record_source", "TICKET_STORE"),
                     "ticket_store_status": event.get("ticket_store_status")
