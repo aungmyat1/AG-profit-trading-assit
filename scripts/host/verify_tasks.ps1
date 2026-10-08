@@ -8,7 +8,7 @@ Read-only: this script never creates, starts, stops, or removes a task.
 param()
 $ErrorActionPreference = 'Stop'
 $Repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$Python = (Join-Path $Repo '.venv\Scripts\python.exe')
+$Python = (Join-Path $Repo '.venv\Scripts\pythonw.exe')     # windowless, as install_tasks.ps1 registers it
 $Runner = (Join-Path $Repo 'scripts\host\live_candles_smoke.py')
 $Expected = @(
   @{ Name = 'AG-V1-FX-Cycles';    Mode = 'fx' },
