@@ -606,6 +606,11 @@ observations from the named milestone; they are not rolling dashboards.
   [`status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md`](status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md)
   (frozen UTC contract, public/read-only Bybit adapter, production-data-connectivity-confirmed scheduler-ready
   daily decision and informational proposal-ticket path; crypto execution disabled)
+- Crypto CFD strategy contract: [`contracts/AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1.md`](contracts/AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1.md)
+  (deterministic `CRYPTO_CFD` contract for the VT Markets BTCUSD/ETHUSD CFDs, `strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml`;
+  no perp reuse, no FX leakage, evaluation-time causal filtering on every supplied timeframe. Contract
+  registration only — scanner wiring, `EDGE_VERIFIED`, risk authority and execution authority all remain
+  absent, and it authorizes no Demo order)
 
 When a historical test total differs from the current baseline, retain the historical
 number and use `PROJECT_STATUS.md` for the latest result.

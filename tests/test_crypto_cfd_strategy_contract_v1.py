@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import datetime as dt
 import pathlib
+import re
 
 import pytest
 import yaml
@@ -444,3 +445,106 @@ def test_evaluate_is_deterministic():
     a = _run("ETHUSD", ETH_REF_LONG, ETH_LONG_DAY, ETH_H1_BULLISH)
     b = _run("ETHUSD", ETH_REF_LONG, ETH_LONG_DAY, ETH_H1_BULLISH)
     assert a == b
+
+
+# ------------------------------------------------------------------ causal (no look-ahead) gate
+
+def _without_causal_filter(result: dict) -> dict:
+    """Result minus the input-composition accounting block.
+
+    `causal_filter` legitimately reports how many candles were supplied and dropped, so it is the
+    one block that may differ between two calls that differ only in their unclosed inputs. Every
+    market fact, decision, reason code and level must be identical.
+    """
+    out = dict(result)
+    evidence = dict(out.get("evidence") or {})
+    evidence.pop("causal_filter", None)
+    out["evidence"] = evidence
+    return out
+
+
+def _future_h1(count=4, start=90000.0, step=500.0):
+    """`count` H1 bars timestamped at/after NOW, forming a strong bullish break."""
+    out = []
+    for i in range(count):
+        t = NOW + dt.timedelta(hours=i + 1)
+        price = start + step * i
+        out.append(Candle(time=t, open=price, high=price + 50.0, low=price - 50.0,
+                          close=price, volume=1.0))
+    return out
+
+
+def test_future_h1_break_cannot_grant_direction_permission():
+    """P1 (PR #30 review): HTF inputs must be filtered at the evaluation timestamp.
+
+    A bullish H1 break that has not happened yet at `now` must not turn an unresolved
+    historical setup into a direction-permitted one.
+    """
+    before = _run("BTCUSD", BTC_REF_SHORT, BTC_SHORT_DAY, BTC_H1_BEARISH)
+    after = _run("BTCUSD", BTC_REF_SHORT, BTC_SHORT_DAY, BTC_H1_BEARISH + _future_h1())
+    assert _without_causal_filter(before) == _without_causal_filter(after)
+    assert before["evidence"]["causal_filter"]["dropped_unclosed"]["h1"] == 0
+    assert after["evidence"]["causal_filter"]["dropped_unclosed"]["h1"] == 4
+    assert after["evidence"]["context"]["h1_structure"] == before["evidence"]["context"]["h1_structure"]
+    # The future bars must not even be counted as closed evidence.
+    assert after["evidence"]["causal_filter"]["closed_candles"]["h1"] == len(BTC_H1_BEARISH)
+
+
+def test_future_d1_break_cannot_change_the_result():
+    future_d1 = D1_FLAT + [Candle(time=NOW + dt.timedelta(days=1), open=1.0, high=9.0,
+                                  low=1.0, close=9.0, volume=1.0)]
+    before = _run("BTCUSD", BTC_REF_SHORT, BTC_SHORT_DAY, BTC_H1_BEARISH)
+    after = _run("BTCUSD", BTC_REF_SHORT, BTC_SHORT_DAY, BTC_H1_BEARISH, d1=future_d1)
+    assert _without_causal_filter(before) == _without_causal_filter(after)
+    assert after["evidence"]["causal_filter"]["dropped_unclosed"]["d1"] == 1
+    assert after["evidence"]["context"]["d1_structure"] == before["evidence"]["context"]["d1_structure"]
+
+
+def test_future_m15_candles_cannot_change_the_result():
+    """M15 is observation-only in V1, but it is still recorded as evidence, so a future
+    M15 bar must not appear in that evidence either."""
+    future_m15 = [Candle(time=NOW + dt.timedelta(minutes=15 * (i + 1)), open=1.0, high=9.0,
+                         low=1.0, close=9.0, volume=1.0) for i in range(3)]
+    m5 = _prev_day_m5(**BTC_REF_SHORT) + list(BTC_SHORT_DAY)
+    before = evaluate("BTCUSD", NOW, D1_FLAT, BTC_H1_BEARISH, m5, structure_config=CFG)
+    after = evaluate("BTCUSD", NOW, D1_FLAT, BTC_H1_BEARISH, m5, future_m15, structure_config=CFG)
+    assert _without_causal_filter(before) == _without_causal_filter(after)
+    assert after["evidence"]["causal_filter"]["dropped_unclosed"]["m15"] == 3
+    assert "m15_structure" not in after["evidence"]["context"]
+
+
+def test_causal_filter_records_what_it_dropped_for_every_timeframe():
+    """The filter must be auditable: each timeframe reports what it kept and what it dropped."""
+    m5 = _prev_day_m5(**BTC_REF_SHORT) + list(BTC_SHORT_DAY)
+    late_m5 = [Candle(time=NOW + dt.timedelta(minutes=5), open=1.0, high=1.0, low=1.0,
+                      close=1.0, volume=1.0)]
+    r = evaluate("BTCUSD", NOW,
+                 D1_FLAT + [Candle(time=NOW, open=1.0, high=1.0, low=1.0, close=1.0, volume=1.0)],
+                 BTC_H1_BEARISH + _future_h1(), m5 + late_m5, (), structure_config=CFG)
+    assert r["evidence"]["causal_filter"]["dropped_unclosed"] == {"d1": 1, "h1": 4, "m5": 1, "m15": 0}
+    assert r["evidence"]["causal_filter"]["closed_candles"] == {
+        "d1": 2, "h1": len(BTC_H1_BEARISH), "m5": len(m5), "m15": 0}
+
+
+def test_unclosed_current_m5_bar_is_ignored_but_closed_history_is_kept():
+    """Regression guard: the pre-existing M5 filter still behaves exactly as before."""
+    m5 = _prev_day_m5(**BTC_REF_SHORT) + list(BTC_SHORT_DAY)
+    r = evaluate("BTCUSD", NOW, D1_FLAT, BTC_H1_BEARISH, m5, structure_config=CFG)
+    assert r["evidence"]["causal_filter"]["dropped_unclosed"]["m5"] == 0
+    assert r["evidence"]["causal_filter"]["closed_candles"]["m5"] == len(m5)
+
+
+def test_every_supplied_timeframe_is_filtered_not_just_m5():
+    """The regression the review asked for: no timeframe may bypass the evaluation-time filter."""
+    source = (pathlib.Path(__file__).resolve().parents[1] / "src" / "crypto_cfd_contract"
+              / "rules.py").read_text(encoding="utf-8")
+    body = source.split("def evaluate(", 1)[1]
+    # Exactly one place may compare a candle time to `now`, and every timeframe must be routed
+    # through it -- otherwise a new HTF input can silently bypass the causal filter again.
+    comparisons = [line.strip() for line in body.splitlines() if "c.time < now" in line]
+    assert len(comparisons) == 1 and comparisons[0].startswith("return [c for c in candles"), comparisons
+    assign = re.search(r"^\s*m5, d1_candles, h1_candles, m15_candles = \(", body, re.M)
+    assert assign, "every supplied timeframe must be reassigned from the causal filter"
+    assert body[assign.start():].count("_closed(") >= 4, "one timeframe bypasses the filter"
+    # ...and the filtered values, not the raw parameters, are what the rest of evaluate() uses.
+    assert "confirmed_direction(d1_candles" in body and "confirmed_direction(h1_candles" in body

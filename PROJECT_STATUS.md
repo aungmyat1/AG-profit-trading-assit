@@ -293,11 +293,22 @@ history was insufficient for D1 structure classification. See
 `docs/status/AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS.md` for quotes, data-quality
 evidence, tests, and limits.
 
-No registered strategy contract covers BTCUSD/ETHUSD CFDs: the registered crypto
-contract covers BTCUSDT/ETHUSDT perpetuals. Strategy status remains
-`STRATEGY_CONTRACT_INCOMPLETE`; crypto risk remains `RISK_POLICY_AMBIGUOUS`; position
-size is `NOT_CALCULATED`; proposal and execution authority remain false. This does not
-authorize Demo orders or change FX strategy/risk/source/execution policy.
+**Pre-change finding (2026-10-03, PR #28):** no registered strategy contract covered
+BTCUSD/ETHUSD CFDs; the registered crypto contract covered BTCUSDT/ETHUSDT perpetuals,
+and strategy status was `STRATEGY_CONTRACT_INCOMPLETE`.
+
+**Resolved by PR #30 (`AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1`, 2026-10-08, unmerged at the
+time of writing):** a dedicated deterministic contract
+`strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml` /
+`docs/contracts/AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1.md` now covers the VT Markets
+BTCUSD/ETHUSD CFDs as `asset_class = CRYPTO_CFD`, with no perp reuse and no FX leakage.
+Contract status is `CONTRACT_COMPLETE` and `STRATEGY_CONTRACT_VALID = TRUE`
+(reproducible logic only). **The runtime gap is unchanged and must not be conflated with
+contract registration:** the scanner/checklist wiring is still absent, so no scheduled
+crypto CFD evaluation exists. `EDGE_VERIFIED = FALSE`, `RISK_POLICY_AMBIGUOUS`, position
+size `NOT_CALCULATED`, proposal authority `BLOCKED`, `EXECUTION_AUTHORIZED = FALSE`,
+`BROKER_ORDERS_SENT = 0`. This does not authorize Demo orders or change FX
+strategy/risk/source/execution policy.
 
 ## AG Scanner Checklist V1.1 — structured phase gates over frozen Scanner V1 (2026-10-02)
 

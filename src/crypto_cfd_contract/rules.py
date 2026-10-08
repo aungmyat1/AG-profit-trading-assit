@@ -168,13 +168,35 @@ def evaluate(symbol: str, now: datetime, d1_candles: Sequence[Candle],
 
     Chain: instrument authority -> previous-UTC-day reference -> D1/H1 permission ->
     M5 sweep -> M5 MSS -> M5 retest (TTL 3) -> SL/TP geometry. M15 structure, when
-    supplied, is recorded as evidence only -- it gates nothing in V1."""
+    supplied, is recorded as evidence only -- it gates nothing in V1.
+
+    The evaluation-time filter is applied to EVERY supplied timeframe, not just M5. A
+    candle whose timestamp is at or after `now` has not closed yet, so it may not
+    influence the result -- a future D1/H1 break would otherwise grant direction
+    permission retroactively and turn an unresolved historical setup into an entry,
+    which is look-ahead bias. `tests/test_crypto_cfd_strategy_contract_v1.py` proves a
+    future HTF candle cannot change an earlier evaluation's outcome."""
     if symbol not in INSTRUMENTS:
         return _result(symbol, RESULT_SYMBOL_NOT_IN_CONTRACT, ["SYMBOL_NOT_IN_CONTRACT"],
                        {"instruments": list(INSTRUMENTS), "asset_class": ASSET_CLASS})
 
-    m5 = [c for c in m5_candles if c.time < now]
-    evidence: dict = {"now_utc": now.astimezone(timezone.utc).isoformat()}
+    # Evaluation-time causal filter, applied uniformly to every supplied timeframe.
+    def _closed(candles: Sequence[Candle]) -> List[Candle]:
+        return [c for c in candles if c.time < now]
+
+    supplied = {"d1": list(d1_candles), "h1": list(h1_candles), "m5": list(m5_candles),
+                "m15": list(m15_candles)}
+    m5, d1_candles, h1_candles, m15_candles = (_closed(supplied["m5"]), _closed(supplied["d1"]),
+                                               _closed(supplied["h1"]), _closed(supplied["m15"]))
+    dropped = {name: len(raw) - len(kept) for name, raw, kept in
+               (("d1", supplied["d1"], d1_candles), ("h1", supplied["h1"], h1_candles),
+                ("m5", supplied["m5"], m5), ("m15", supplied["m15"], m15_candles))}
+    evidence: dict = {"now_utc": now.astimezone(timezone.utc).isoformat(),
+                      "causal_filter": {
+                          "rule": "a candle timestamped at or after `now` has not closed and is ignored",
+                          "closed_candles": {"d1": len(d1_candles), "h1": len(h1_candles),
+                                             "m5": len(m5), "m15": len(m15_candles)},
+                          "dropped_unclosed": dropped}}
 
     reference = previous_day_reference(m5, now)
     if reference is None:
