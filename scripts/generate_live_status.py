@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import hashlib
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -14,21 +15,41 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_PATH = REPO_ROOT / "docs" / "status" / "PROJECT_LIVE_STATUS.md"
 
 
+def tracked_paths(root: Path, *patterns: str) -> set[str]:
+    """Return tracked paths only; an unavailable Git index is an explicit error."""
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "--cached", "-z", "--", *patterns],
+            cwd=root, check=True, capture_output=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RuntimeError(f"cannot enumerate tracked collector inputs: {exc}") from exc
+    try:
+        return {item.decode("utf-8") for item in result.stdout.split(b"\0") if item}
+    except UnicodeDecodeError as exc:
+        raise RuntimeError("tracked collector input path is not valid UTF-8") from exc
+
+
 def collector_input_paths(root: Path) -> list[str]:
-    """Sorted authorities, including config sources used for strategy versions."""
+    """Sorted tracked authorities, including sidecars and strategy config sources."""
+    tracked = tracked_paths(root, "docs", "config", "strategies", "scripts/docs/advisory_allowlist.json")
     paths = {"strategies/registry.yaml", "docs/PROJECT_OBJECTIVE.md",
              "config/ag_scheduler_v2.yaml", "scripts/docs/advisory_allowlist.json"}
-    registry = yaml.safe_load((root / "strategies/registry.yaml").read_text()) or {}
+    for required in paths:
+        if required not in tracked:
+            raise RuntimeError(f"required collector input is not tracked: {required}")
+    registry = yaml.safe_load((root / "strategies/registry.yaml").read_text(encoding="utf-8")) or {}
     for row in (registry.get("strategies") or {}).values():
         source = row.get("config_source")
         if isinstance(source, str) and source.lower().endswith((".yaml", ".yml")):
             path = (root / source).resolve()
             path.relative_to(root.resolve())
-            if path.is_file():
-                paths.add(path.relative_to(root.resolve()).as_posix())
-    for base in ("docs", "config"):
-        paths.update(path.relative_to(root).as_posix()
-                     for path in (root / base).rglob("*.supersession.yaml"))
+            relative = path.relative_to(root.resolve()).as_posix()
+            if relative in tracked:
+                paths.add(relative)
+    paths.update(path for path in tracked
+                 if path.startswith(("docs/", "config/"))
+                 and path.endswith(".supersession.yaml"))
     return sorted(paths)
 
 
