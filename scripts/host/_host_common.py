@@ -218,6 +218,49 @@ def mt5_access_lock(wait_s: float = MT5_LOCK_WAIT_S, poll_s: float = 1.0) -> Ite
         f.close()
 
 
+# Keep-awake (owner decision 2026-10-07): while one active run (session window or watch run)
+# executes, hold ES_SYSTEM_REQUIRED so the idle-sleep timer cannot suspend the host mid-run;
+# release it (ES_CONTINUOUS alone) when the run ends, success or not. Per the Windows
+# documentation an execution-state request defers IDLE sleep only and does not block an
+# explicit suspend, so the scheduled AG-Sleep-Night (SetSuspendState) is not opposed. No
+# ES_DISPLAY_REQUIRED / ES_AWAYMODE_REQUIRED.
+ES_CONTINUOUS = 0x80000000
+ES_SYSTEM_REQUIRED = 0x00000001
+
+
+def _execution_state_setter() -> "Callable[[int], int] | None":
+    if os.name != "nt":
+        return None
+    try:
+        import ctypes
+        fn = ctypes.windll.kernel32.SetThreadExecutionState
+        fn.argtypes, fn.restype = [ctypes.c_uint], ctypes.c_uint
+        return fn
+    except (AttributeError, OSError):
+        return None
+
+
+@contextmanager
+def keep_awake(enabled: bool = True, setter: "Callable[[int], int] | None" = None) -> Iterator[bool]:
+    """Yield True while ES_SYSTEM_REQUIRED is held for this thread; always released on exit.
+    No-op (yields False) when disabled, off Windows, or if the call fails."""
+    setter = setter if setter is not None else (_execution_state_setter() if enabled else None)
+    held = False
+    if enabled and setter is not None:
+        try:
+            held = bool(setter(ES_CONTINUOUS | ES_SYSTEM_REQUIRED))
+        except Exception:  # noqa: BLE001 -- keep-awake is best effort; never break a run
+            held = False
+    try:
+        yield held
+    finally:
+        if held:
+            try:
+                setter(ES_CONTINUOUS)
+            except Exception:  # noqa: BLE001
+                pass
+
+
 def _is_repo_module(mt5) -> bool:
     """True when the module file lives in the repo itself (the stub), not in an installed
     site-packages -- a .venv inside the repo is still an installed package."""

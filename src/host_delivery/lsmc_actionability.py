@@ -1,0 +1,305 @@
+"""Post-signal ACTIONABILITY gate for Large-SMC OPPORTUNITY alerts (LSMC_ACTIONABILITY_POLICY_V1).
+
+Authority: docs/governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md. Signal validity
+(strategy) and actionability (delivery) are separate layers: an opportunity that was VALID at its
+trigger bar may be NOT ACTIONABLE at send time, and both facts are persisted. This module only
+decides how an already-detected opportunity is delivered. It never changes detection, watch state
+transitions, archive records or any strategy threshold; `min_remaining_r` lives only in the
+versioned operational policy config.
+
+Pipeline: Strategy -> deterministic opportunity -> assess() -> WATCH_READY | INFO_ONLY_STALE |
+INFO_ONLY(reason) | EXPIRED | MISSED_NOT_ACTIONABLE (digest only) | none (PENDING_BAR_CLOSE).
+Gate order (D7): validity > freshness > geometry > remaining R.
+"""
+from __future__ import annotations
+
+import datetime as dt
+import hashlib
+import os
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, List, Optional, Tuple
+
+import yaml
+
+from large_smc_watch import contract as LSMC
+from runtime_state.store import JsonKeyValueStore
+
+POLICY_PATH = os.path.join("config", "lsmc_actionability_policy_v1.yaml")
+POLICY_ID = "LSMC_ACTIONABILITY_POLICY_V1"
+# (a) Freshness window = freshness_max_bars x the STRATEGY's trigger timeframe, derived per strategy.
+# ST_LARGE_SMC_V1 opportunities are triggered by the M5 CHoCH bar (large_smc_watch.detect.m5_opportunities).
+STRATEGY_TRIGGER_TIMEFRAME = {LSMC.STRATEGY_ID: "M5"}
+TIMEFRAME_MINUTES = dict(LSMC.TIMEFRAME_MINUTES)
+# (b) owner-approved PROVISIONAL; re-check against LSMC_SPEC_V1_FROZEN when it lands.
+RISK_ANCHOR_STATUS = "PROVISIONAL_PENDING_LSMC_SPEC_V1_FROZEN"
+UTC = dt.timezone.utc
+
+# Opportunity states (D4)
+PENDING_BAR_CLOSE = "PENDING_BAR_CLOSE"
+FRESH = "FRESH"
+STALE = "STALE"
+EXPIRED = "EXPIRED"
+MISSED_DOWNTIME = "MISSED_DOWNTIME"
+
+# Delivery outcomes
+WATCH_READY = "WATCH_READY"
+INFO_ONLY_STALE = "INFO_ONLY_STALE"
+INFO_ONLY = "INFO_ONLY"
+MISSED_NOT_ACTIONABLE = "MISSED_NOT_ACTIONABLE"
+SENT_OUTCOMES = (WATCH_READY, INFO_ONLY_STALE, INFO_ONLY)      # delivered as an individual alert
+
+# INFO_ONLY reasons
+INSUFFICIENT_REMAINING_R = "INSUFFICIENT_REMAINING_R"           # D2
+GEOMETRY_INCOMPLETE = "GEOMETRY_INCOMPLETE"                     # no target / no risk anchor
+NO_LIVE_QUOTE = "NO_LIVE_QUOTE"                                 # (c) no live bid/ask: fail closed
+PRICE_BEYOND_INVALIDATION = "PRICE_BEYOND_INVALIDATION"         # send price at/through the risk anchor
+POLICY_UNAVAILABLE = "POLICY_UNAVAILABLE"                       # config missing/invalid: fail closed
+TRIGGER_TIMEFRAME_UNKNOWN = "TRIGGER_TIMEFRAME_UNKNOWN"         # (a) strategy has no derived trigger TF
+
+
+class PolicyError(ValueError):
+    pass
+
+
+@dataclass(frozen=True)
+class Policy:
+    policy_id: str
+    policy_version: int
+    freshness_max_bars: int
+    min_remaining_r: float
+    watch_poll_interval_minutes: int
+
+
+def trigger_timeframe(strategy_id: Optional[str]) -> Optional[str]:
+    """(a) The strategy's own trigger timeframe, or None when not derivable (fail closed)."""
+    return STRATEGY_TRIGGER_TIMEFRAME.get(strategy_id or "")
+
+
+def load_policy(root: str = ".") -> Policy:
+    """Strict load: any missing or malformed field raises PolicyError (callers fail closed)."""
+    try:
+        with open(os.path.join(root, POLICY_PATH), encoding="utf-8") as f:
+            raw = yaml.safe_load(f) or {}
+        policy = Policy(
+            policy_id=str(raw["policy_id"]), policy_version=int(raw["policy_version"]),
+            freshness_max_bars=int(raw["freshness_max_bars"]), min_remaining_r=float(raw["min_remaining_r"]),
+            watch_poll_interval_minutes=int(raw["watch_poll_interval_minutes"]),
+        )
+    except (OSError, ValueError, TypeError, KeyError, yaml.YAMLError) as exc:
+        raise PolicyError(f"{POLICY_PATH}: {type(exc).__name__}") from None
+    if (policy.policy_id != POLICY_ID or policy.freshness_max_bars < 0 or not policy.min_remaining_r > 0
+            or policy.watch_poll_interval_minutes <= 0):
+        raise PolicyError(f"{POLICY_PATH}: invalid values")
+    return policy
+
+
+def _ts(v: Any) -> Optional[dt.datetime]:
+    if v is None:
+        return None
+    t = v if isinstance(v, dt.datetime) else dt.datetime.fromisoformat(str(v))
+    return t.astimezone(UTC) if t.tzinfo else t.replace(tzinfo=UTC)
+
+
+def send_price(direction: Optional[str], bid: Optional[float], ask: Optional[float]) -> Tuple[Optional[float], Optional[str]]:
+    """Executable side of a market entry: LONG buys at ASK, SHORT sells at BID."""
+    price, side = (ask, "ASK") if direction == "LONG" else (bid, "BID") if direction == "SHORT" else (None, None)
+    if price is None or not float(price) > 0:
+        return None, None
+    return float(price), side
+
+
+def r_multiple(direction: Optional[str], price: Optional[float], anchor: Optional[float],
+               target: Optional[float]) -> Optional[float]:
+    """Reward / risk measured from `price`. None when undefined (missing level, or price at or
+    beyond the risk anchor). Negative when price has already passed the target."""
+    if direction not in ("LONG", "SHORT") or price is None or anchor is None or target is None:
+        return None
+    sign = 1.0 if direction == "LONG" else -1.0
+    risk = sign * (price - anchor)
+    if not risk > 0:
+        return None
+    return sign * (target - price) / risk
+
+
+def risk_anchor(opportunity: Dict[str, Any]) -> Tuple[Optional[float], Optional[str]]:
+    """The C10 stop when the strategy produced one, else the opportunity invalidation level
+    (sweep extreme). The source is persisted with every assessment."""
+    if opportunity.get("stop_c10") is not None:
+        return float(opportunity["stop_c10"]), "STOP_C10"
+    if opportunity.get("sweep_extreme") is not None:
+        return float(opportunity["sweep_extreme"]), "INVALIDATION_SWEEP_EXTREME"
+    return None, None
+
+
+def assess(opportunity: Dict[str, Any], *, send_ts: dt.datetime, bid: Optional[float], ask: Optional[float],
+           policy: Optional[Policy], last_heartbeat_ts: Optional[dt.datetime],
+           strategy_id: Optional[str] = LSMC.STRATEGY_ID, run_ts: Optional[dt.datetime] = None) -> Dict[str, Any]:
+    """Deterministic actionability of one opportunity at `send_ts`. Pure: no I/O.
+
+    (d) Downtime: the host was down when the gap between the previous watch-run heartbeat
+    (`last_heartbeat_ts`) and this run (`run_ts`, default `send_ts`) exceeds 2 x the poll interval,
+    or when no earlier run is on record. A trigger bar that closed inside that gap and is no longer
+    fresh is MISSED_DOWNTIME (digest only); a trigger that went stale while the host was up is
+    STALE (INFO_ONLY_STALE)."""
+    send = _ts(send_ts)
+    tf_name = trigger_timeframe(strategy_id)
+    direction = opportunity.get("direction")
+    reference = opportunity.get("entry_reference")
+    anchor, anchor_source = risk_anchor(opportunity)
+    target = opportunity.get("target_c11")
+    price, side = send_price(direction, bid, ask)
+    rec: Dict[str, Any] = {
+        "policy_id": policy.policy_id if policy else POLICY_ID,
+        "policy_version": policy.policy_version if policy else None,
+        "min_remaining_r": policy.min_remaining_r if policy else None,
+        "freshness_max_bars": policy.freshness_max_bars if policy else None,
+        "trigger_timeframe": tf_name, "strategy_id": strategy_id,
+        "watch_poll_interval_minutes": policy.watch_poll_interval_minutes if policy else None,
+        "direction": direction, "send_ts": send.isoformat(),
+        "reference_price": reference, "send_price": price, "send_price_side": side, "bid": bid, "ask": ask,
+        "risk_anchor": anchor, "risk_anchor_source": anchor_source, "risk_anchor_status": RISK_ANCHOR_STATUS,
+        "target": target,
+        "R_AT_TRIGGER": r_multiple(direction, reference, anchor, target),
+        "R_AT_SEND": r_multiple(direction, price, anchor, target),
+        "expires_at": opportunity.get("expires_at"),
+        "last_heartbeat_ts": last_heartbeat_ts.isoformat() if last_heartbeat_ts else None,
+        "heartbeat_gap_seconds": None, "downtime": None,
+        "trigger_bar_close_ts": None, "freshness_age_seconds": None, "completed_bars_since_trigger": None,
+        "state": None, "outcome": None, "reason": None,
+    }
+    if policy is None:
+        return {**rec, "outcome": INFO_ONLY, "reason": POLICY_UNAVAILABLE}
+    if tf_name is None or tf_name not in TIMEFRAME_MINUTES:
+        return {**rec, "outcome": INFO_ONLY, "reason": TRIGGER_TIMEFRAME_UNKNOWN}
+
+    tf = dt.timedelta(minutes=TIMEFRAME_MINUTES[tf_name])
+    trigger_open = _ts(opportunity.get("choch_time"))
+    trigger_close = trigger_open + tf if trigger_open is not None else None
+    rec["trigger_bar_close_ts"] = trigger_close.isoformat() if trigger_close else None
+    # D4: a required bar that has not closed is PENDING_BAR_CLOSE (never STALE); nothing is sent.
+    if trigger_close is None or send < trigger_close:
+        return {**rec, "state": PENDING_BAR_CLOSE}
+    age = send - trigger_close
+    rec.update(freshness_age_seconds=age.total_seconds(), completed_bars_since_trigger=int(age // tf))
+    last = _ts(last_heartbeat_ts)
+    gap = (_ts(run_ts or send) - last) if last is not None else None
+    downtime = gap is None or gap > 2 * dt.timedelta(minutes=policy.watch_poll_interval_minutes)
+    missed = downtime and (last is None or trigger_close > last)          # trigger inside the gap
+    rec.update(heartbeat_gap_seconds=gap.total_seconds() if gap is not None else None, downtime=downtime)
+    expires = _ts(opportunity.get("expires_at"))
+    if expires is not None and send >= expires:
+        state = MISSED_DOWNTIME if missed else EXPIRED
+    elif age <= policy.freshness_max_bars * tf:                 # D1
+        state = FRESH
+    else:
+        state = MISSED_DOWNTIME if missed else STALE
+    if state == MISSED_DOWNTIME:
+        return {**rec, "state": state, "outcome": MISSED_NOT_ACTIONABLE}    # D3: digest only
+    if state == EXPIRED:
+        return {**rec, "state": state, "outcome": EXPIRED}
+    if state == STALE:
+        return {**rec, "state": state, "outcome": INFO_ONLY_STALE}
+    if anchor is None or target is None or rec["R_AT_TRIGGER"] is None:
+        return {**rec, "state": state, "outcome": INFO_ONLY, "reason": GEOMETRY_INCOMPLETE}
+    if price is None:
+        return {**rec, "state": state, "outcome": INFO_ONLY, "reason": NO_LIVE_QUOTE}
+    if rec["R_AT_SEND"] is None:
+        return {**rec, "state": state, "outcome": INFO_ONLY, "reason": PRICE_BEYOND_INVALIDATION}
+    if rec["R_AT_SEND"] < policy.min_remaining_r:              # D2
+        return {**rec, "state": state, "outcome": INFO_ONLY, "reason": INSUFFICIENT_REMAINING_R}
+    return {**rec, "state": state, "outcome": WATCH_READY}
+
+
+class Heartbeat:
+    """Evaluation time of the last completed watch run (any run means the host was watching)."""
+
+    KEY = "LSMC"
+
+    def __init__(self, path: str):
+        self.store = JsonKeyValueStore(path)
+
+    def last(self) -> Optional[dt.datetime]:
+        v = self.store.get(self.KEY)
+        return _ts(v.get("evaluated_at")) if isinstance(v, dict) else None
+
+    def beat(self, at: dt.datetime) -> None:
+        self.store.put(self.KEY, {"evaluated_at": _ts(at).isoformat()})
+
+
+class MissedDigestLedger:
+    """Confirmation keys already reported in a SENT missed digest (D3 dedup)."""
+
+    def __init__(self, path: str):
+        self.store = JsonKeyValueStore(path)
+
+    def reported(self, key: str) -> bool:
+        return self.store.get(key) is not None
+
+    def pending(self, items: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Items not yet reported, de-duplicated by key, in a stable order."""
+        seen, out = set(), []
+        for it in sorted(items, key=lambda i: (i["trigger_bar_close_ts"] or "", i["key"])):
+            if it["key"] in seen or self.store.get(it["key"]) is not None:
+                continue
+            seen.add(it["key"])
+            out.append(it)
+        return out
+
+    def mark(self, items: Iterable[Dict[str, Any]], digest_id: str) -> None:
+        for it in items:
+            self.store.put(it["key"], {"digest_id": digest_id})
+
+
+def digest_id(items: Iterable[Dict[str, Any]]) -> str:
+    return hashlib.sha256("|".join(sorted(i["key"] for i in items)).encode()).hexdigest()[:16]
+
+
+# ---------------------------------------------------------------------------------- D7 correlation
+# Classify and warn only: never suppresses or selects. Exposure follows the owner examples
+# (USD_SHORT; USD_SHORT_SENSITIVE for XAUUSD) and CRYPTO_DIRECTIONAL_<dir> for BTC/ETH. Symbols
+# without an owner mapping are UNCLASSIFIED and never clustered.
+CORRELATED_EXPOSURE = "CORRELATED_EXPOSURE"
+UNCLASSIFIED = "UNCLASSIFIED"
+_EXPOSURE = {
+    ("EURUSD", "LONG"): "USD_SHORT", ("EURUSD", "SHORT"): "USD_LONG",
+    ("GBPUSD", "LONG"): "USD_SHORT", ("GBPUSD", "SHORT"): "USD_LONG",
+    ("USDJPY", "LONG"): "USD_LONG", ("USDJPY", "SHORT"): "USD_SHORT",
+    ("XAUUSD", "LONG"): "USD_SHORT_SENSITIVE", ("XAUUSD", "SHORT"): "USD_LONG_SENSITIVE",
+    # (f) owner 2026-10-07: BTC/ETH in the same direction form a warn-only CRYPTO_DIRECTIONAL cluster
+    **{(s, d): f"CRYPTO_DIRECTIONAL_{d}" for s in ("BTCUSDT", "ETHUSDT", "BTCUSD", "ETHUSD") for d in ("LONG", "SHORT")},
+}
+
+
+def exposure(symbol: str, direction: Optional[str]) -> str:
+    return _EXPOSURE.get((symbol, direction), UNCLASSIFIED)
+
+
+def exposure_family(exp: str) -> Optional[str]:
+    return None if exp == UNCLASSIFIED else exp.replace("_SENSITIVE", "")
+
+
+def _rank_key(m: Dict[str, Any]) -> tuple:
+    """Informational rank only. Gate order validity > freshness > geometry > remaining R > costs >
+    correlation; costs are NOT_EVALUATED here, so ties after remaining R keep symbol order."""
+    r = m.get("R_AT_SEND")
+    return (m.get("outcome") != WATCH_READY, m.get("state") != FRESH, r is None, -(r or 0.0), m.get("symbol"))
+
+
+def correlation(symbol: str, assessment: Dict[str, Any], trading_date: str,
+                active: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
+    """CORRELATION_CLUSTER_ID / CORRELATED_EXPOSURE for one opportunity against the currently
+    active WATCH_READY alerts (`active`: dicts with symbol, direction, outcome, state, R_AT_SEND)."""
+    exp = exposure(symbol, assessment.get("direction"))
+    fam = exposure_family(exp)
+    base = {"CORRELATED_EXPOSURE": exp, "CORRELATION_CLUSTER_ID": None, "correlation_warning": None,
+            "correlated_with": [], "informational_rank": None, "cluster_size": None}
+    if fam is None:
+        return base
+    peers = [a for a in active if a.get("symbol") != symbol and a.get("outcome") == WATCH_READY
+             and exposure_family(exposure(a.get("symbol"), a.get("direction"))) == fam]
+    members = sorted(peers + [{**assessment, "symbol": symbol}], key=_rank_key)
+    rank = next(i for i, m in enumerate(members, 1) if m["symbol"] == symbol)
+    warn = CORRELATED_EXPOSURE if peers and assessment.get("outcome") == WATCH_READY else None
+    return {**base, "CORRELATION_CLUSTER_ID": f"{fam}:{trading_date}", "correlation_warning": warn,
+            "correlated_with": sorted({p["symbol"] for p in peers}), "informational_rank": rank,
+            "cluster_size": len(members)}

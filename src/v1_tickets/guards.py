@@ -2,6 +2,8 @@
 
 The frozen engines decide; these gates only withhold a READY they produced, never create one:
 - data or signal older than STALE_AFTER (15 min) -> decision STALE;
+- signal bar not yet closed -> decision PENDING_BAR_CLOSE (owner decision D4, 2026-10-07: never
+  STALE; the next scheduled run after that bar closes re-evaluates deterministically);
 - spread > MAX_SPREAD_RISK_FRACTION (15%) of the stop distance -> decision SPREAD_TOO_WIDE;
 - spread not measurable -> decision NO_TRADE, reason SPREAD_NOT_EVALUATED (fail closed).
 A withheld decision keeps its levels for audit and records `suppressed_decision`.
@@ -21,6 +23,9 @@ SIGNAL_STALE = "SIGNAL_STALE"
 LEGACY_STALE_SIGNAL = "STALE_SIGNAL"
 SPREAD_TOO_WIDE = "SPREAD_TOO_WIDE"
 SPREAD_NOT_EVALUATED = "SPREAD_NOT_EVALUATED"
+# D4 (docs/governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md)
+PENDING_BAR_CLOSE = "PENDING_BAR_CLOSE"
+SIGNAL_BAR_NOT_CLOSED = "SIGNAL_BAR_NOT_CLOSED"
 
 
 def is_stale(close_time: Optional[dt.datetime], now: dt.datetime) -> bool:
@@ -48,16 +53,21 @@ def _withhold(ticket: Dict[str, Any], decision: str, reason: str, reason_key: st
 
 def gate_ready(ticket: Dict[str, Any], *, now: dt.datetime, data_close: Optional[dt.datetime],
                signal_close: Optional[dt.datetime], spread: Optional[float], risk: Optional[float],
-               reason_key: str = "reason_code") -> Dict[str, Any]:
+               reason_key: str = "reason_code", pending_bar_close: Optional[dt.datetime] = None,
+               ) -> Dict[str, Any]:
     """Stale data turns any evaluated decision (READY/WATCH/NO_TRADE) into STALE; the signal
     and spread gates apply to READY only. `data_close` None skips the data-age gate (caller has
-    no live bar); `signal_close` None is STALE."""
+    no live bar); `signal_close` None is STALE unless the caller states the signal bar has not
+    closed yet (`pending_bar_close` = its close time), which is PENDING_BAR_CLOSE (D4)."""
     if data_close is not None and is_stale(data_close, now) and ticket.get("decision") in ("READY", "WATCH", "NO_TRADE"):
         return _withhold(ticket, STALE, "STALE_DATA", reason_key)
     if ticket.get("decision") != "READY":
         return ticket
     ticket = {**ticket, **spread_check(spread, risk),
               "signal_close_utc": signal_close.isoformat() if signal_close else None}
+    if signal_close is None and pending_bar_close is not None and now < pending_bar_close:
+        ticket = {**ticket, "pending_bar_close_utc": pending_bar_close.isoformat()}
+        return _withhold(ticket, PENDING_BAR_CLOSE, SIGNAL_BAR_NOT_CLOSED, reason_key)
     if is_stale(signal_close, now):
         return _withhold(ticket, STALE, LEGACY_STALE_SIGNAL, reason_key)
     if ticket["spread_check"] == SPREAD_TOO_WIDE:

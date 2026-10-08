@@ -545,6 +545,12 @@ def test_telegram_validation_proposal_uses_real_renderer_and_is_unambiguous():
     assert "spread_check: PASS" in text and "VALID UNTIL" in text
 
 
+def _seed_lsmc_heartbeat(journal: str) -> None:
+    """The host was watching 5 min before NOW, so the fixture CHoCH (older than the D1 freshness
+    window) is INFO_ONLY_STALE, not a D3 missed-downtime digest item."""
+    smoke.act.Heartbeat(os.path.join(journal, "large_smc_watch", "heartbeat.json")).beat(NOW - dt.timedelta(minutes=5))
+
+
 def test_scheduled_lsmc_run_reports_rendered_opportunity_exactly_once(tmp_path, monkeypatch):
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
@@ -553,6 +559,7 @@ def test_scheduled_lsmc_run_reports_rendered_opportunity_exactly_once(tmp_path, 
     sent = []
     monkeypatch.setattr(tg, "send_message", sent.append)
     j = str(tmp_path / "journal")
+    _seed_lsmc_heartbeat(j)
     first = smoke.run_lsmc(fake_fetch(), NOW, j)
     after_first = list(sent)
     second = smoke.run_lsmc(fake_fetch(), NOW, j)                      # same state: no repeat alert
@@ -562,6 +569,7 @@ def test_scheduled_lsmc_run_reports_rendered_opportunity_exactly_once(tmp_path, 
     assert all(m.startswith("LARGE-SMC ALERT -- INFORMATIONAL -- NOT A BROKER ORDER") for m in after_first)
     assert "EURUSD OPPORTUNITY (OPPORTUNITY)" in after_first[0] and "liquidity target:" in after_first[0]
     assert "stop (C10):" in after_first[0] and "expires_at:" in after_first[0]
+    assert "ACTIONABILITY: INFO_ONLY_STALE -- NOT ACTIONABLE" in after_first[0]          # D1 (fixture CHoCH is old)
 
 
 def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, monkeypatch):
@@ -605,6 +613,7 @@ def test_scheduled_telegram_send_failure_never_breaks_the_run(tmp_path, monkeypa
         raise tg.TelegramSendError("send failed (ConnectionError)")
 
     monkeypatch.setattr(tg, "send_message", boom)
+    _seed_lsmc_heartbeat(str(tmp_path / "journal"))
     lines = smoke.run_lsmc(fake_fetch(), NOW, str(tmp_path / "journal"))
     assert any("state=OPPORTUNITY" in ln for ln in lines)              # archive/watch path unaffected
     assert "TELEGRAM_SEND_FAILED" in (tmp_path / "logs" / "telegram.log").read_text()
