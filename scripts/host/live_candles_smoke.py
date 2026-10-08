@@ -584,8 +584,18 @@ def main(argv=None) -> int:
     journal = os.path.join(REPO_ROOT, "journal", "host_smoke" if args.mode == "smoke" else "")
     canonical_sender = (build_sender(journal, root=REPO_ROOT)
                         if args.mode == "fx" and args.canonical else None)
-    from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config
+    from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config, window_status
     crypto_config = load_ticket_config(args.crypto_config or ACTIVE_CONFIG, REPO_ROOT)
+
+    # MT5-backed crypto jobs must be window-gated before either the runner lock or the
+    # host-wide MT5 lock. The ticket evaluator applies the same config window later, but
+    # evaluating it only after attach needlessly starts MT5 outside the authorized window.
+    if args.mode == "crypto" and crypto_config["venue"]["kind"] == "MT5":
+        status = window_status(crypto_config, now.date(), now)
+        if status != "IN_WINDOW":
+            line = f"CRYPTO OUTSIDE_WINDOW ({status})"
+            log_line(log_name, line)
+            return 0
 
     def canonical_failure_lines(reason: str) -> List[str]:
         if canonical_sender is None:

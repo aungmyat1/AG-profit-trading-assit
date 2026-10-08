@@ -328,6 +328,64 @@ def test_crypto_mode_window_and_idempotence(tmp_path):
     assert all("OUTSIDE_WINDOW" in ln for ln in smoke.run_crypto(IN_WINDOW + dt.timedelta(hours=3), j, _FakeFeed()))
 
 
+def test_crypto_main_outside_window_takes_no_runner_or_mt5_lock_and_never_imports_mt5(monkeypatch):
+    now = dt.datetime(2026, 11, 2, 13, 59, tzinfo=UTC)  # 08:59 EST, before the V3 weekday window
+    calls = []
+    monkeypatch.setattr(smoke, "utcnow", lambda: now)
+    monkeypatch.setattr(smoke, "log_line", lambda name, message: calls.append((name, message)))
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("outside-window crypto run must not acquire a lock or touch MT5")
+
+    monkeypatch.setattr(smoke, "single_instance", forbidden)
+    monkeypatch.setattr(smoke, "mt5_access_lock", forbidden)
+    monkeypatch.setattr(smoke, "import_mt5", forbidden)
+    monkeypatch.setattr(smoke, "mt5_initialize", forbidden)
+
+    assert smoke.main(["--mode", "crypto"]) == 0
+    assert calls == [("ag_v1_crypto", "CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)")]
+
+
+def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
+    from contextlib import contextmanager
+
+    now = dt.datetime(2026, 11, 2, 14, 0, tzinfo=UTC)  # 09:00 EST, inclusive V3 weekday start
+    calls, logged = [], []
+    monkeypatch.setattr(smoke, "utcnow", lambda: now)
+
+    @contextmanager
+    def single_lock(name):
+        calls.append(("single_instance", name))
+        yield
+
+    @contextmanager
+    def mt5_lock():
+        calls.append(("mt5_access_lock",))
+        yield
+
+    mt5 = types.SimpleNamespace(shutdown=lambda: calls.append(("shutdown",)))
+    monkeypatch.setattr(smoke, "single_instance", single_lock)
+    monkeypatch.setattr(smoke, "mt5_access_lock", mt5_lock)
+    monkeypatch.setattr(smoke, "import_mt5", lambda: calls.append(("import_mt5",)) or mt5)
+    monkeypatch.setattr(smoke, "mt5_initialize", lambda *_: calls.append(("initialize",)) or (True, "ok"))
+    monkeypatch.setattr(smoke, "require_demo_account", lambda *_: calls.append(("demo",)) or (True, "ok"))
+    monkeypatch.setattr(smoke, "host_fetch", lambda _: lambda *_: [])
+    monkeypatch.setattr(smoke, "host_quote", lambda _: lambda *_: None)
+
+    def run_crypto(run_now, journal, feed, config=None, **kwargs):
+        calls.append(("run_crypto", run_now, config["version"], type(feed).__name__))
+        return ["CRYPTO IN_WINDOW"]
+
+    monkeypatch.setattr(smoke, "run_crypto", run_crypto)
+    monkeypatch.setattr(smoke, "log_line", lambda name, message: logged.append((name, message)))
+
+    assert smoke.main(["--mode", "crypto"]) == 0
+    assert [call[0] for call in calls] == ["single_instance", "import_mt5", "mt5_access_lock",
+                                          "initialize", "demo", "run_crypto", "shutdown"]
+    assert calls[-2][1:] == (now, 3, "Mt5CryptoFeed")
+    assert logged == [("ag_v1_crypto", "CRYPTO IN_WINDOW")]
+
+
 def test_single_instance_lock():
     with hc.single_instance("t"):
         with pytest.raises(hc.AlreadyRunning):
