@@ -133,10 +133,10 @@ def build(facts: dict, root: str = ROOT) -> str:
             lines += [f"| `{t['name']}` | {t.get('managed', 'UNKNOWN')} | {t.get('status', 'UNKNOWN')} | "
                       f"{t.get('registered') or 'UNKNOWN'} |" for t in rows]
         else:
-            lines += ["| Task | Target state | Days | Start | Every min |", "|---|---|---|---|---|"]
+            lines += ["| Task | Target state | Days | Start | Every min | Note |", "|---|---|---|---|---|---|"]
             lines += [f"| `{t['name']}` | {(t.get('target') or {}).get('State', 'UNKNOWN')} | "
                       f"{(t.get('target') or {}).get('Days', '—')} | {(t.get('target') or {}).get('Start', '—')} | "
-                      f"{(t.get('target') or {}).get('EveryMin', '—')} |" for t in rows]
+                      f"{(t.get('target') or {}).get('EveryMin', '—')} | {t.get('note') or '—'} |" for t in rows]
         lines += [""]
     drift = schedule.get("drift") or []
     lines += ["### Declared drift (registered vs target)", ""]

@@ -121,7 +121,7 @@ The four layers below are deliberately kept apart: a repository declaration is n
 | Task name | Cadence | Start | Trigger | Time zone |
 |---|---|---|---|---|
 | `AG-V1-FX-Cycles` | every 15 minutes, daily for 24 hours | 00:01:00 | Daily trigger with a repeated interval | UNPARSED |
-| `AG-V1-Crypto-Daily` | every 5 minutes, daily for 24 hours | 00:02:30 | Daily trigger with a repeated interval | UNPARSED |
+| `AG-V1-Crypto-Daily` | every 15 minutes, daily for 24 hours | 00:02:30 | Daily trigger with a repeated interval | UNPARSED |
 | `AG-V1-LSMC-Watch` | every 5 minutes, daily for 24 hours | 00:04:15 | Daily trigger with a repeated interval | UNPARSED |
 
 #### 2. REGISTERED - what Task Scheduler actually held on the capture date
@@ -155,7 +155,7 @@ The four layers below are deliberately kept apart: a repository declaration is n
 | Task name | Target state | Days | Start | Every min |
 |---|---|---|---|---|
 | `AG-V1-FX-Cycles` | ENABLED | DAILY | 00:01:00 | 15 |
-| `AG-V1-Crypto-Daily` | ENABLED | DAILY | 00:02:30 | 5 |
+| `AG-V1-Crypto-Daily` | ENABLED | DAILY | 00:02:30 | 15 |
 | `AG-V1-LSMC-Watch` | ENABLED | DAILY | 00:04:15 | 5 |
 | `AG-V1-LSMC-Crypto-Weekend` | ABSENT | - | - | - |
 | `AG-Wake-MT5` | ABSENT | - | - | - |
@@ -176,7 +176,6 @@ The four layers below are deliberately kept apart: a repository declaration is n
 
 | Task name | Field | Registered | Target |
 |---|---|---|---|
-| `AG-V1-Crypto-Daily` | every_min | 15 | 5 |
 | `AG-V1-LSMC-Watch` | days | Mon-Fri | DAILY |
 | `AG-V1-LSMC-Watch` | start | 00:03 | 00:04:15 |
 | `AG-V1-LSMC-Crypto-Weekend` | state | ENABLED | ABSENT |
@@ -197,7 +196,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `44f8cae9a4023197b3ba9787591bc42256f49b11539470405d7fea2936ffc4e4`.
+inputs_sha256: `512eb92050ac0e7c615e39aa5d038baf66cab3497b74b9217ce64de5b34d9741`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -232,18 +231,21 @@ is no longer presented as schedule truth anywhere in the generated status or con
 **`install_tasks.ps1 -Apply` was NOT run by this change.** No task was registered, changed, disabled
 or removed; no power setting was touched. Everything below is declaration and observed capture only.
 
-### Observed scheduler gaps (recorded, not corrected — owner decision required)
+### Observed scheduler gaps and target
 
 | Task | Registered on 2026-10-08 | `-Apply` would write |
 |---|---|---|
-| `AG-V1-Crypto-Daily` | every 15 min | every 5 min |
+| `AG-V1-Crypto-Daily` | every 15 min | every 15 min |
 | `AG-V1-LSMC-Watch` | Mon–Fri only | daily |
+
+Five-minute crypto cadence is deferred until the crypto runner checks its active window before
+MT5 attach. The registered-vs-target comparison remains in the generated facts; the captured
+registered cadence is still 15 minutes and is not a claim about current host state.
 
 Weekday/weekend coverage therefore differs from `scripts/host/GO_LIVE.md`, which describes the daily
 `AG-V1-LSMC-Watch` as providing weekend crypto coverage. On the host as observed, the LSMC watch does
 **not** run on Saturday or Sunday; the retired `AG-V1-LSMC-Crypto-Weekend` task is still registered and
-is the only weekend coverage. Cadence drift is likewise recorded rather than corrected: the crypto
-task's observed 15-minute cadence is half the declared 5-minute cadence. Because
+is the only weekend coverage. Because
 `scripts/host/heartbeat.py` output is **not yet published**, observed runtime cadence cannot be
 stated from this repository and is not inferred here.
 

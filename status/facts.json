@@ -13,7 +13,7 @@
     "strategies/registry.yaml",
     "strategies/session_trade/contract.yaml"
   ],
-  "inputs_sha256": "44f8cae9a4023197b3ba9787591bc42256f49b11539470405d7fea2936ffc4e4",
+  "inputs_sha256": "512eb92050ac0e7c615e39aa5d038baf66cab3497b74b9217ce64de5b34d9741",
   "objective": {
     "source": "docs/PROJECT_OBJECTIVE.md#objective",
     "text": "Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.\n\nThe owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.\n\n`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
@@ -28,12 +28,6 @@
   "schedule": {
     "captured": "2026-10-08",
     "drift": [
-      {
-        "field": "every_min",
-        "registered": 15,
-        "target": 5,
-        "task": "AG-V1-Crypto-Daily"
-      },
       {
         "field": "days",
         "registered": "Mon-Fri",
@@ -281,10 +275,10 @@
           {
             "cadence": {
               "raw_line": "$repeat = (New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval (New-TimeSpan -Minutes $t.Minutes) -RepetitionDuration (New-TimeSpan -Hours 24)).Repetition",
-              "value": "every 5 minutes, daily for 24 hours"
+              "value": "every 15 minutes, daily for 24 hours"
             },
             "canonical": "false",
-            "minutes": 5,
+            "minutes": 15,
             "mode": "crypto",
             "name": "AG-V1-Crypto-Daily",
             "start": {
@@ -341,11 +335,11 @@
           },
           {
             "name": "AG-V1-Crypto-Daily",
-            "note": "cadence = ST_LIQUIDITY_SWEEP_RETEST_V1 M5 entry timeframe; windows gated in the runner (zoneinfo)",
+            "note": "15-minute cadence; 5-minute cadence deferred until the crypto runner checks its active window before MT5 attach; windows gated in the runner (zoneinfo)",
             "target": {
               "Args": "\"{PROD}\\scripts\\host\\live_candles_smoke.py\" --mode crypto",
               "Days": "DAILY",
-              "EveryMin": "5",
+              "EveryMin": "15",
               "Exe": "{PROD}\\.venv\\Scripts\\pythonw.exe",
               "Start": "00:02:30",
               "State": "ENABLED"
@@ -507,10 +501,10 @@
       {
         "cadence": {
           "raw_line": "$repeat = (New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval (New-TimeSpan -Minutes $t.Minutes) -RepetitionDuration (New-TimeSpan -Hours 24)).Repetition",
-          "value": "every 5 minutes, daily for 24 hours"
+          "value": "every 15 minutes, daily for 24 hours"
         },
         "canonical": "false",
-        "minutes": 5,
+        "minutes": 15,
         "mode": "crypto",
         "name": "AG-V1-Crypto-Daily",
         "start": {

@@ -15,7 +15,8 @@ Tasks. All run the repo venv windowless: .venv\Scripts\pythonw.exe scripts\host\
                         LONDON_NEWYORK 12:00-15:00 GMT (13:00-16:00 Europe/London in BST)
                       Gating in UTC inside Python makes the schedule DST-safe and independent of the
                       host's time zone.
-  AG-V1-Crypto-Daily  every 5 min, daily. The runner acts only inside the active crypto ticket config
+  AG-V1-Crypto-Daily  every 15 min, daily. Five-minute cadence is deferred until the crypto runner
+                      checks its active window before MT5 attach. The runner acts only inside the active crypto ticket config
                       windows (V3: weekdays 09:00-12:00 America/New_York + Sat/Sun 21:00-23:00 UTC;
                       V2: weekdays only; V1: 06:30-06:45 UTC).
   AG-V1-LSMC-Watch    every 5 min, daily. ST_LARGE_SMC_V1@1.1.0 watches the complete six-
@@ -49,7 +50,7 @@ $VerifyTasks = Join-Path $Repo 'scripts\host\verify_tasks.ps1'
 
 $Plan = @(
   @{ Name = 'AG-V1-FX-Cycles';    Mode = 'fx';     Minutes = 15; Canonical = $true;  StartAt = '00:01:00' },
-  @{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Minutes = 5;  Canonical = $false; StartAt = '00:02:30' },
+  @{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Minutes = 15; Canonical = $false; StartAt = '00:02:30' },
   @{ Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc';   Minutes = 5;  Canonical = $false; StartAt = '00:04:15' }
 )
 
@@ -93,8 +94,8 @@ $Declared = @(
   @{ Name = 'AG-V1-Crypto-Daily'; Path = '\'; Managed = 'INSTALLER'; Status = 'ACTIVE'
      Registered = 'ENABLED; pythonw; daily 00:02 every 15 min'
      Target = @{ State = 'ENABLED'; Exe = '{PROD}\.venv\Scripts\pythonw.exe'; Args = '"{PROD}\scripts\host\live_candles_smoke.py" --mode crypto'
-                 Days = 'DAILY'; Start = '00:02:30'; EveryMin = 5 }
-     Note = 'cadence = ST_LIQUIDITY_SWEEP_RETEST_V1 M5 entry timeframe; windows gated in the runner (zoneinfo)' },
+                 Days = 'DAILY'; Start = '00:02:30'; EveryMin = 15 }
+     Note = '15-minute cadence; 5-minute cadence deferred until the crypto runner checks its active window before MT5 attach; windows gated in the runner (zoneinfo)' },
   @{ Name = 'AG-V1-LSMC-Watch'; Path = '\'; Managed = 'INSTALLER'; Status = 'ACTIVE'
      Registered = 'ENABLED; pythonw; Mon-Fri 00:03 every 5 min'
      Target = @{ State = 'ENABLED'; Exe = '{PROD}\.venv\Scripts\pythonw.exe'; Args = '"{PROD}\scripts\host\live_candles_smoke.py" --mode lsmc'

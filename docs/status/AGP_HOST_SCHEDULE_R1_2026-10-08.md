@@ -56,11 +56,14 @@ comparison it cannot make honestly; `State`, `Days`, `Start` and `EveryMin` are 
 Task identity (name, path, managed class, status, trigger, cadence, enabled state) is preserved
 exactly.
 
-### 3. Scheduler gaps recorded in the rolling status (PR #78 review P1)
+### 3. Scheduler gaps recorded in the rolling status (PR #78 review P1; Crypto-Daily target updated by FIX-84)
 
 `PROJECT_STATUS.md` now records, as observed 2026-10-08 and deliberately **not corrected**:
 
-- `AG-V1-Crypto-Daily`: registered every 15 min vs declared every 5 min.
+- `AG-V1-Crypto-Daily`: the 2026-10-08 capture showed registered every 15 min vs the then-declared
+  every 5 min. FIX-84 changes the repository plan and target to every 15 min; five-minute cadence is
+  deferred until the crypto runner checks its active window before MT5 attach. The registered value
+  remains a historical capture, not a claim about current host state.
 - `AG-V1-LSMC-Watch`: registered Mon–Fri only vs declared daily.
 - `scripts/host/GO_LIVE.md` describes the daily LSMC watch as providing weekend crypto coverage; on
   the host as observed it does not, and the retired `AG-V1-LSMC-Crypto-Weekend` task is still the only
@@ -108,8 +111,7 @@ verification was performed; `verify_tasks.ps1` / `Get-TaskDiff` / `-WhatIf` rema
 
 ## Remaining approval decisions
 
-1. Owner: resolve the `AG-V1-Crypto-Daily` cadence drift (15 min registered vs 5 min declared).
-2. Owner: resolve the `AG-V1-LSMC-Watch` weekday-only coverage vs the daily declared target and the
+1. Owner: resolve the `AG-V1-LSMC-Watch` weekday-only coverage vs the daily declared target and the
    weekend-coverage claim in `scripts/host/GO_LIVE.md`.
-3. Owner: apply the always-on target (retire the wake/sleep tasks, apply the power policy) and only
+2. Owner: apply the always-on target (retire the wake/sleep tasks, apply the power policy) and only
    then switch the scheduled heartbeat to `--host-power-mode always_on`.

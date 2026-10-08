@@ -42,6 +42,7 @@ def test_pack_schedule_lists_host_tasks_and_excludes_v2_phase_names():
         assert f"### {layer}" in schedule, layer
     assert "Value: **NOT_PUBLISHED**" in schedule
     assert all(f"`{name}`" in schedule for name in expected)
+    assert "5-minute cadence deferred until the crypto runner checks its active window before MT5 attach" in schedule
     import yaml
     config = yaml.safe_load((REPO / "config/ag_scheduler_v2.yaml").read_text(encoding="utf-8"))
     phase_names = [row.get("state") for row in config.get("schedule", [])]
