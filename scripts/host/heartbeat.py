@@ -3,11 +3,15 @@
     .venv\\Scripts\\python.exe scripts\\host\\heartbeat.py
     .venv\\Scripts\\python.exe scripts\\host\\heartbeat.py --host-repo D:\\wp3-main-integ --out D:\\ag-telemetry\\heartbeat.json
 
-    --no-broker-history   skip the MT5 history read (broker_history_24h / broker_order_calls -> UNKNOWN)
+    --history-backend attach|mcp|none   broker history source (default attach)
 
-Never imports MetaTrader5 and never sends or publishes anything. Its only broker contact is the
-existing read-only mt5ReadOnly MCP proxy (web/scripts/start_mt5_mcp.mjs), calling only the
-history tools in HISTORY_TOOLS, under the host-wide MT5 access lock.
+Never sends or publishes anything, never touches orders or positions. Broker history (counts only):
+- attach (default): the MetaTrader5 package attaches to the already-running terminal exactly like the
+  AG runners (initialize() with no login/password/server, MT5_TERMINAL_PATH rule, host-wide MT5 lock,
+  shutdown() in finally), touching only MT5_ATTRIBUTE_ALLOWLIST. Source label LIVE_ATTACH.
+- mcp (optional): the read-only mt5ReadOnly MCP proxy (web/scripts/start_mt5_mcp.mjs), only the
+  tools in MCP_TOOL_ALLOWLIST. Needs proxy credentials; source label MCP_PROXY.
+Both allowlists are enforced by AST tests in tests/test_host_heartbeat.py.
 Sources (all read-only), each reported "UNKNOWN" when absent or unreadable -- never inferred:
 - <host-repo>/logs/ag_v1_{fx,crypto,lsmc,lsmc-weekend}.log    last-24h counts, runner errors, mt5_connected
 - <host-repo>/journal/ticket_delivery/delivery_status/*.jsonl  same-ref Telegram sends (duplicates)
@@ -15,7 +19,8 @@ Sources (all read-only), each reported "UNKNOWN" when absent or unreadable -- ne
 - Get-ScheduledTask 'AG-*' | Get-ScheduledTaskInfo           LastTaskResult / LastRunTime / NextRunTime
 - git -C <host-repo> rev-parse / symbolic-ref                host_head_sha, host_ref, host_on_main
 - v1_tickets.fx.session_windows_utc (frozen config)          FX trade windows for missed_windows
-- mt5ReadOnly MCP readonly_get_orders / readonly_get_deals    broker_history_24h (counts only)
+- MetaTrader5 attach history_orders_get / history_deals_get  broker_history_24h (counts only)
+- GlobalMemoryStatusEx, shutil.disk_usage (fixed drives)      host_resources
 Log counts are lines (one per symbol per runner pass, "per_cycle"), not unique tickets.
 
 Redaction: no account number, server name, ticket, price or log text is copied out.
@@ -26,7 +31,8 @@ observed_broker_order_calls is separately what the AG-V1 runner logs show.
 
 Source staleness is schedule-aware: each runner log declares SOURCE_WINDOWS (Myanmar time). Outside
 them a quiet log is INACTIVE_EXPECTED; inside one it is STALE after 2 h without a line.
-Top-level status is HOST_NOT_ON_MAIN when the host checkout is not on branch main.
+Top-level status: first of status_reasons [HOST_NOT_ON_MAIN, DEGRADED_RESOURCES], else OK (UNKNOWN when
+the host ref cannot be read). DEGRADED_RESOURCES thresholds are PROPOSED_OWNER_CONFIRM.
 
 READER-SIDE RULE (consumers of heartbeat.json):
     age_seconds = now_utc - observed_at_utc
@@ -51,7 +57,10 @@ import threading
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 sys.path.insert(0, os.path.dirname(__file__))
-from _host_common import REPO_ROOT, Mt5Busy, mt5_access_lock, utcnow  # noqa: E402  (also puts src/ on sys.path)
+from _host_common import (  # noqa: E402  (also puts this checkout's src/ on sys.path)
+    MT5_INIT_TIMEOUT_S, REPO_ROOT, CallTimeout, Mt5Busy, _mt5_server_wall, call_with_timeout, import_mt5,
+    mt5_access_lock, utcnow,
+)
 
 UNKNOWN = "UNKNOWN"
 UTC = dt.timezone.utc
@@ -74,6 +83,15 @@ MCP_TOOL_ALLOWLIST = frozenset({
     "readonly_get_account_info", "mt5_setup_status",        # terminal/account connection status (not called)
 })
 HISTORY_TOOLS = ("readonly_get_orders", "readonly_get_deals")
+# The only MetaTrader5 attributes the attach backend may touch (test-enforced via AST): connection,
+# connection-status and history reads. Nothing that lists live orders/positions or sends anything.
+MT5_ATTRIBUTE_ALLOWLIST = frozenset({"initialize", "shutdown", "terminal_info", "account_info",
+                                     "history_orders_get", "history_deals_get", "last_error"})
+HISTORY_BACKENDS = ("attach", "mcp", "none")
+# PROPOSED_OWNER_CONFIRM: DEGRADED_RESOURCES thresholds. 1200 MB = resource class R1 gate
+# (docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md); 10 GB free per fixed drive is a proposal.
+FREE_RAM_MIN_MB = 1200
+FREE_DISK_MIN_GB = 10
 DEFAULT_MCP_LAUNCHER = os.path.join(REPO_ROOT, "web", "scripts", "start_mt5_mcp.mjs")
 MCP_TIMEOUT_S = 60
 LSMC_ARCHIVE = os.path.join("journal", "ticket_delivery", "archive", "fx_ticket_archive", "ST_LARGE_SMC_V1")
@@ -318,12 +336,25 @@ def _server_to_utc(text: str) -> Optional[dt.datetime]:
         return None
 
 
+def count_history(orders: List[Tuple[Optional[dt.datetime], str]], deals: List[Tuple[Optional[dt.datetime], str]],
+                  now: dt.datetime, source: str) -> Dict[str, Any]:
+    """Counts only, from (utc_time, magic) orders and (utc_time, deal_type) deals. Deals count trade
+    deals only (type 0 buy / 1 sell; balance and credit rows are excluded)."""
+    since = now - dt.timedelta(hours=24)
+    recent = [m.strip() for t, m in orders if t is not None and since <= t <= now]
+    by_magic: Dict[str, int] = {}
+    for m in recent:
+        if m not in ("", "0"):
+            by_magic[m] = by_magic.get(m, 0) + 1
+    n_deals = sum(1 for t, k in deals if t is not None and since <= t <= now and k.strip() in ("0", "1"))
+    return {"source": source, "orders": len(recent), "deals": n_deals, "by_magic": dict(sorted(by_magic.items())),
+            "manual_or_zero_magic": sum(1 for m in recent if m in ("", "0"))}
+
+
 def summarize_history(orders_csv: Optional[str], deals_csv: Optional[str], now: dt.datetime) -> Any:
-    """Counts only. Orders by time_setup, deals by time (broker server wall-clock -> UTC). Deals count
-    trade deals only (type 0 buy / 1 sell; balance and credit rows are excluded)."""
+    """MCP proxy CSV (broker server wall-clock text) -> count_history."""
     if orders_csv is None or deals_csv is None:
         return UNKNOWN
-    since = now - dt.timedelta(hours=24)
 
     def rows(text: str, need: Tuple[str, ...]) -> Optional[list]:
         text = text.strip()
@@ -338,18 +369,108 @@ def summarize_history(orders_csv: Optional[str], deals_csv: Optional[str], now: 
     deals = rows(deals_csv, ("time", "type"))
     if orders is None or deals is None:
         return UNKNOWN
-    def within(server_time: str) -> bool:
-        t = _server_to_utc(server_time)
-        return t is not None and since <= t <= now
+    return count_history([(_server_to_utc(o["time_setup"]), o["magic"]) for o in orders],
+                         [(_server_to_utc(d["time"]), d["type"]) for d in deals], now, "MCP_PROXY")
 
-    recent = [o for o in orders if within(o["time_setup"])]
-    by_magic: Dict[str, int] = {}
-    for o in recent:
-        if o["magic"].strip() not in ("", "0"):
-            by_magic[o["magic"].strip()] = by_magic.get(o["magic"].strip(), 0) + 1
-    n_deals = sum(1 for d in deals if d["type"].strip() in ("0", "1") and within(d["time"]))
-    return {"orders": len(recent), "deals": n_deals, "by_magic": dict(sorted(by_magic.items())),
-            "manual_or_zero_magic": sum(1 for o in recent if o["magic"].strip() in ("", "0"))}
+
+def attach_history(now: dt.datetime, terminal_path: Optional[str] = None) -> Any:
+    """LIVE_ATTACH backend, mirroring the AG runners' mt5_initialize: initialize() with NO login /
+    password / server (attach to the terminal session already running), same terminal path rule
+    (MT5_TERMINAL_PATH, else the package default), under the host-wide MT5 lock, shutdown() always.
+    Only MT5_ATTRIBUTE_ALLOWLIST attributes are touched (tests/test_host_heartbeat.py enforces it)."""
+    from host_evidence.symbol_metadata import server_time_to_utc
+    mt5 = import_mt5()
+    if mt5 is None:
+        return {"error": "MT5_PACKAGE_MISSING"}
+    path = terminal_path or os.environ.get("MT5_TERMINAL_PATH", "")
+    kwargs: Dict[str, Any] = {"timeout": MT5_INIT_TIMEOUT_S * 1000}
+    if path:
+        kwargs["path"] = path
+
+    def utc(raw: Any) -> Optional[dt.datetime]:
+        try:
+            return server_time_to_utc(_mt5_server_wall(int(raw)))
+        except (TypeError, ValueError, OverflowError, OSError):
+            return None
+
+    try:
+        with mt5_access_lock():
+            try:
+                if not call_with_timeout(mt5.initialize, limit_s=MT5_INIT_TIMEOUT_S + 2, **kwargs):
+                    return {"error": f"INITIALIZE_FAILED {_last_error(mt5)}"}
+                term = call_with_timeout(mt5.terminal_info)
+                acct = call_with_timeout(mt5.account_info)
+                lo, hi = now - dt.timedelta(days=3), now + dt.timedelta(days=2)   # wide: server-time offset
+                orders = call_with_timeout(mt5.history_orders_get, lo, hi)
+                deals = call_with_timeout(mt5.history_deals_get, lo, hi)
+                if orders is None or deals is None:          # None = error; () = no rows
+                    return {"error": f"HISTORY_READ_FAILED {_last_error(mt5)}"}
+                out = count_history([(utc(o.time_setup), str(o.magic)) for o in orders],
+                                    [(utc(d.time), str(d.type)) for d in deals], now, "LIVE_ATTACH")
+                out["connection"] = {"terminal_connected": bool(getattr(term, "connected", False)),
+                                     "account_attached": acct is not None,
+                                     "terminal_path": getattr(term, "path", UNKNOWN)}
+                return out
+            finally:
+                try:
+                    call_with_timeout(mt5.shutdown)
+                except Exception:  # noqa: BLE001 -- a stuck shutdown must not hold the run
+                    pass
+    except (Mt5Busy, CallTimeout, OSError, AttributeError) as exc:
+        return {"error": type(exc).__name__}
+
+
+def _last_error(mt5) -> str:
+    try:
+        code, _msg = call_with_timeout(mt5.last_error)
+    except Exception:  # noqa: BLE001
+        return "code=UNKNOWN"
+    return f"code={code}"          # code only: MT5 messages can carry account text
+
+
+def host_resources(thresholds: Tuple[int, int] = (FREE_RAM_MIN_MB, FREE_DISK_MIN_GB)) -> Dict[str, Any]:
+    """Free physical RAM (GlobalMemoryStatusEx) and free space on every fixed drive (stdlib only)."""
+    import ctypes
+    import shutil
+    import string
+
+    class MemStatus(ctypes.Structure):
+        _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong),
+                    ("ullTotalPhys", ctypes.c_ulonglong), ("ullAvailPhys", ctypes.c_ulonglong),
+                    ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
+                    ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong),
+                    ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+
+    ram: Any = UNKNOWN
+    disks: Dict[str, Any] = {}
+    try:
+        st = MemStatus()
+        st.dwLength = ctypes.sizeof(MemStatus)
+        if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(st)):
+            ram = int(st.ullAvailPhys // 2**20)
+        mask = ctypes.windll.kernel32.GetLogicalDrives()
+        for i, letter in enumerate(string.ascii_uppercase):
+            if mask & (1 << i) and ctypes.windll.kernel32.GetDriveTypeW(f"{letter}:\\") == 3:   # DRIVE_FIXED
+                try:
+                    disks[letter] = round(shutil.disk_usage(f"{letter}:\\").free / 2**30, 1)
+                except OSError:
+                    disks[letter] = UNKNOWN
+    except (AttributeError, OSError):          # not Windows
+        pass
+    return assess_resources(ram, disks or UNKNOWN, thresholds)
+
+
+def assess_resources(free_ram_mb: Any, free_disk_gb: Any, thresholds: Tuple[int, int] = (FREE_RAM_MIN_MB, FREE_DISK_MIN_GB)) -> Dict[str, Any]:
+    ram_min, disk_min = thresholds
+    reasons = []
+    if isinstance(free_ram_mb, int) and free_ram_mb < ram_min:
+        reasons.append(f"RAM<{ram_min}MB")
+    if isinstance(free_disk_gb, dict):
+        reasons += [f"{d}:<{disk_min}GB" for d, gb in sorted(free_disk_gb.items()) if isinstance(gb, float) and gb < disk_min]
+    known = isinstance(free_ram_mb, int) and isinstance(free_disk_gb, dict)
+    return {"free_ram_mb": free_ram_mb, "free_disk_gb": free_disk_gb,
+            "thresholds": {"free_ram_mb": ram_min, "free_disk_gb": disk_min, "state": "PROPOSED_OWNER_CONFIRM"},
+            "status": "DEGRADED_RESOURCES" if reasons else ("OK" if known else UNKNOWN), "reasons": reasons}
 
 
 def mcp_history(launcher: str, from_date: str, to_date: str, timeout: float = MCP_TIMEOUT_S) -> Optional[Dict[str, str]]:
@@ -494,23 +615,30 @@ def head_sha(root: str) -> Any:
 
 
 def build(host_repo: str = DEFAULT_HOST_REPO, now: Optional[dt.datetime] = None, tasks: Any = None,
-          history_fetch: Optional[Callable[[str, str], Optional[Dict[str, str]]]] = None) -> Dict[str, Any]:
+          history: Optional[Callable[[dt.datetime], Any]] = None, resources: Any = None) -> Dict[str, Any]:
+    """`history(now)` -> count_history dict, {"error": ...} or UNKNOWN; None = not read."""
     now = (now or utcnow()).astimezone(UTC)
     since = now - dt.timedelta(hours=24)
     full = {name: read_log(host_repo, f"ag_v1_{name}") for name in RUNNER_LOGS}
     logs = {name: _since(v, since) for name, v in full.items()}
     sha = head_sha(host_repo)
     ref, on_main = host_ref(host_repo, sha)
-    history = broker_history(now, history_fetch)
+    raw = history(now) if history is not None else UNKNOWN
+    hist = raw if isinstance(raw, dict) and "orders" in raw else UNKNOWN
+    res = host_resources() if resources is None else resources
+    reasons = (["HOST_NOT_ON_MAIN"] if on_main is False else []) + (
+        ["DEGRADED_RESOURCES"] if isinstance(res, dict) and res.get("status") == "DEGRADED_RESOURCES" else [])
     return {
         "schema": SCHEMA,
-        "status": UNKNOWN if on_main == UNKNOWN else ("OK" if on_main else "HOST_NOT_ON_MAIN"),
+        "status": reasons[0] if reasons else (UNKNOWN if on_main == UNKNOWN else "OK"),
+        "status_reasons": reasons,
         "observed_at_utc": now.isoformat(),
         "reader_rule": f"age_seconds = now - observed_at_utc; > {READER_STALE_AFTER_S} while scheduled awake -> STALE",
         "host_head_sha": sha,
         "host_ref": ref,
         "host_on_main": on_main,
         "mt5_connected": mt5_connected(logs, now),
+        "host_resources": res,
         "tasks": scheduled_tasks() if tasks is None else tasks,
         "sources": {f"ag_v1_{n}.log": source_status(v, now, SOURCE_WINDOWS[n]) for n, v in full.items()},
         "last_24h": {
@@ -523,8 +651,9 @@ def build(host_repo: str = DEFAULT_HOST_REPO, now: Optional[dt.datetime] = None,
         "duplicates": {"fx_archive": fx_archive_duplicates(logs["fx"]),
                        "telegram_same_ref_sends": telegram_duplicates(host_repo, since)},
         "missed_windows": missed_windows(logs["fx"], now),
-        "broker_history_24h": history,
-        "broker_order_calls": history["orders"] if isinstance(history, dict) else UNKNOWN,
+        "broker_history_24h": hist,
+        "broker_history_error": raw.get("error", UNKNOWN) if isinstance(raw, dict) and hist == UNKNOWN else None,
+        "broker_order_calls": hist["orders"] if isinstance(hist, dict) else UNKNOWN,
         "observed_broker_order_calls": observed_order_calls(logs),
         "execution_paths": list(EXECUTION_PATHS),
     }
@@ -544,14 +673,19 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--host-repo", default=DEFAULT_HOST_REPO)
     ap.add_argument("--out", default=DEFAULT_OUT)
+    ap.add_argument("--history-backend", choices=HISTORY_BACKENDS, default="attach",
+                    help="attach (default): MetaTrader5 attach like the runners; mcp: mt5ReadOnly proxy; none: skip")
     ap.add_argument("--mcp-launcher", default=DEFAULT_MCP_LAUNCHER, help="mt5ReadOnly MCP launcher (start_mt5_mcp.mjs)")
-    ap.add_argument("--no-broker-history", action="store_true")
+    ap.add_argument("--no-broker-history", action="store_true", help="same as --history-backend none")
     args = ap.parse_args(argv)
     if os.path.commonpath([os.path.abspath(args.out), os.path.abspath(args.host_repo)]) == os.path.abspath(args.host_repo):
         print("REFUSED --out is inside the host repo")
         return 2
-    fetch = None if args.no_broker_history else (lambda a, b: mcp_history(args.mcp_launcher, a, b))
-    print(f"HEARTBEAT_WRITTEN {write(build(args.host_repo, history_fetch=fetch), args.out)}")
+    backend = "none" if args.no_broker_history else args.history_backend
+    history = {"attach": attach_history,
+               "mcp": lambda now: broker_history(now, lambda a, b: mcp_history(args.mcp_launcher, a, b)),
+               "none": None}[backend]
+    print(f"HEARTBEAT_WRITTEN {write(build(args.host_repo, history=history), args.out)}")
     return 0
 
 
