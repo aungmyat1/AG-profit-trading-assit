@@ -298,6 +298,9 @@ validation, incomplete CFD strategy/risk authority, and execution boundary.
   — TICKET_STORE_V1: store audit, append-only evaluation/outcome schema, SQLite reindex, LEGACY migration.
 - [`status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md`](status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md)
   — Phase B owner decision template (all choices `PENDING_OWNER` until the owner fills them).
+- [`status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md`](status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md)
+  — v1.1.2 candidate L2 closure: recommended Phase B resolutions (PENDING_OWNER_CONFIRM), L1–L6
+  fixture results, candidate `LOGIC_VERIFIED`; READY paused; v1.1.1 unchanged.
 - [`status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md)
   and [`status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md)
   — Large-SMC EURUSD friction campaign WP3A/3A.1 evidence.
