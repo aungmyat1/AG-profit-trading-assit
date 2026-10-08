@@ -26,6 +26,7 @@ for row in facts["strategies"]:
 | `SESSION_TRADE_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `SMC_3R_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `ST_ASIAN_SWEEP_5R_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_CRYPTO_CFD_SWEEP_RETEST_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `ST_LARGE_SMC_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `ST_LIQUIDITY_SWEEP_RETEST_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `ST_SESSION_SWEEP_CONTINUATION_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
@@ -51,6 +52,7 @@ for row in facts["strategies"]:
 | `SESSION_TRADE_V1` | `1` | unknown | unknown | false |
 | `SMC_3R_V1` | `unspecified` | unknown | unknown | false |
 | `ST_ASIAN_SWEEP_5R_V1` | `1.1.1` | unknown | unknown | false |
+| `ST_CRYPTO_CFD_SWEEP_RETEST_V1` | `1.0.0` | unknown | unknown | false |
 | `ST_LARGE_SMC_V1` | `1.0.7` | unknown | unknown | false |
 | `ST_LIQUIDITY_SWEEP_RETEST_V1` | `2.0.0` | unknown | unknown | false |
 | `ST_SESSION_SWEEP_CONTINUATION_V1` | `1.0.1` | unknown | unknown | false |
@@ -95,7 +97,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `a50e8271a10ac16668c6d64b2ea5d4482d18e84ea4e978bf8bd1df55ffce3933`.
+inputs_sha256: `b447c02b76b5022ddad891145432574de023b8af1655b2c3db038d7e03add5a7`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -277,6 +279,93 @@ USDJPY SHORT ASIAN_LONDON sweeps; L2 FAIL recorded; `TICKET_BLOCKED` with `SIGNA
 precedence; live-`symbol_info` sizing). Integration fixes I1/H3/I3/I4/I5/I6/I7 + stale/expiry
 semantics added; host task `AG-V1-FX-Cycles` still runs production main
 (`DEPLOYMENT_PENDING`). Telegram delivery gap H4 open (`TELEGRAM_DELIVERY_TRACE_R1`).
+## AGP-PR-BACKLOG-CLOSURE-R1 Workstream B — Crypto-CFD contract + Edge Discovery review remediation (2026-10-08, branch `arena/863d367a-crypto-r1`, not merged)
+
+Read-only offline research work. It fixes the review findings against the unmerged PR #30
+(strategy contract) and PR #31 (Edge Discovery R2) branches without adding any broker,
+runtime, proposal, risk, or execution authority. **No economic result is claimed anywhere in
+this section**; `EDGE_VERIFIED` stays false and no strategy is admitted.
+
+**Look-ahead fix (PR #30 P1, `src/crypto_cfd_contract/rules.py`).** `evaluate()` filtered only
+the M5 series at the evaluation timestamp, so D1/H1/M15 candles timestamped at or after `now`
+could still grant direction permission and turn an unresolved historical setup into
+`ENTRY_VALID`. The causal filter now applies uniformly to all four supplied timeframes and the
+report carries an auditable `evidence["causal_filter"]` block (`rule`, `closed_candles`,
+`dropped_unclosed`) per timeframe.
+
+**Declared pre-result correction to the frozen C001 identity.** That fix changes bytes the
+C001 freeze record pins, so `verify_c001_rule_identity()` correctly raised
+`C001_RULE_MUTATION_REQUIRES_C002_PLUS`. The correction was recorded, not silently applied:
+`CRYPTO_CFD_C001.freeze.json` now carries a `pre_result_corrections` entry (previous SHA-256,
+corrected SHA-256, reason, authority, review reference) and the new pinned hash. This is
+permitted only because no C001 economic result exists yet (`edge_verified: false`,
+`fast_screen_status: NOT_EVALUATED`, `full_verification_status: NOT_EVALUATED`). Once any
+result exists the same edit must become a new C002+ candidate; the verifier now fails closed on
+a correction recorded after results exist, and a test pins that rule.
+
+**Frozen identity gap (PR #31 P1, `src/edge_discovery/freeze.py`).** The verifier hashed only
+the paths already listed in `contract_file_sha256`, which omitted
+`src/edge_discovery/replay_c001.py` even though that module declares
+`REPLAY_FILL_MODEL_V1` frozen and directly determines fills, exits, and gross R. The identity
+now has an `outcome_defining_file_sha256` section for outcome-deciding modules, checked with the
+same strictness as the contract files. A missing pin is a hard failure
+(`C001_OUTCOME_MODEL_NOT_PINNED`), not a warning, so the gap cannot silently reopen. Negative
+tests cover mutation of the replay model, an unpinned model, and an undeclared pre-result
+correction.
+
+**Excluded-day leak (PR #31 P1, `src/edge_discovery/partitions.py`).** `slice_partition()`
+filtered by the partition's outer time bounds instead of its frozen day set. A day can be
+complete for one symbol and gap-declared for the other, so the cohort excludes it for both
+symbols while that symbol's own bars still exist inside the same time range — a range slice
+would hand those bars to the fast screen as if they were frozen observations. The slice now
+tests exact frozen UTC-day membership, which is the "never silently convert missing data into
+valid observations" rule made enforceable.
+
+**Report identity (PR #31 P1, `src/edge_discovery/offline_pipeline.py`).** Every offline run
+report, including blocked ones, now records the content SHA-256 of the outcome-deciding
+modules (`application_sha256`, `application_files`) and the `strategy_version` read from the
+frozen C001 manifest. An unreadable identity is a hard failure
+(`C001_APPLICATION_IDENTITY_INCOMPLETE`), and an unreadable manifest yields
+`STRATEGY_VERSION_UNKNOWN` rather than a fabricated version, so a report that cannot be tied to
+its code and strategy version no longer looks reproducible.
+
+**Queue vocabulary (PR #31 P1, `research/edge_discovery/candidate_queue.yaml`).** Nine
+metadata-only placeholders used `source_type: UNASSIGNED`, which is not a member of
+`CandidateSource` at all, so no manifest could ever be built from such a row. They now use
+`FAMILY_PLACEHOLDER` — the vocabulary value meaning "no source identified yet" — and the
+queue's declared `permitted_source_types` matches the enum exactly.
+
+Offline evidence: full suite **1481 passed, 2 skipped, 0 failed** (baseline on the parent
+commit was 1357 passed, 3 skipped). `EDGE_VERIFIED = FALSE`, `EXECUTION_AUTHORIZED = FALSE`,
+`BROKER_ORDERS_SENT = 0`, `demo_authorized`/`live_authorized` unchanged. No host scheduled
+task, Telegram credential, or production-config change.
+
+## Crypto-CFD Research Eligibility + Quarantine R1 — unit-tested, raw files unavailable (2026-10-03)
+
+The research branch now separates raw source quality from bounded research-window
+eligibility. Raw Crypto-CFD quality remains `BLOCKED_UNKNOWN_GAPS`; only a reference day
+or observation interval whose exact M5 dependencies are present/valid may be eligible.
+The implementation creates deterministic quarantine manifests and complete-only
+M15/H1/D1 artifacts, and can hand eligible M5 bars to the existing R2 partition layer.
+It neither creates partitions nor runs C001. The immutable raw file hashes are pinned,
+but the source Parquet files are unavailable in this checkout, so no data-specific counts
+or profitability result has been invented. See
+`docs/status/AG_CRYPTO_CFD_RESEARCH_ELIGIBILITY_R1_STATUS.md`.
+
+## Edge Discovery offline research factory R2 — unit-tested, dataset-blocked (2026-10-02)
+
+The research branch now contains a **local-only** ingestion and Candidate Factory stage
+for immutable `BTCUSD`/`ETHUSD` Crypto-CFD M5 exports. It verifies exporter provenance
+and byte SHA-256, quality, UTC derived lineage, pre-outcome coverage, immutable
+chronological DEV/VALIDATION/HOLDOUT partitions, and a DEV-only C001 holdout firewall
+before replay. It makes no MT5/broker/live-market call and adds no proposal, risk, or
+execution authority. The committed repository still has no required Crypto-CFD raw
+bundle, so the actual C001 run is `BLOCKED_DATASET_UNAVAILABLE`; it has no fabricated
+coverage or profitability result and `EDGE_VERIFIED` remains false. See
+`docs/status/AG_EDGE_DISCOVERY_ACCELERATION_R2_STATUS.md` and
+`research/edge_discovery/OFFLINE_DATASET_INGESTION_CONTRACT.md`. Linux offline
+regression: **939 passed, 4 skipped, 1 warning**. This branch work is stacked on
+unmerged PR #30 and does not merge or alter that PR's frozen C001 contract.
 
 ## Crypto CFD observation scanner V1 — merged, observation-only (2026-10-03)
 
@@ -293,11 +382,21 @@ history was insufficient for D1 structure classification. See
 `docs/status/AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS.md` for quotes, data-quality
 evidence, tests, and limits.
 
-No registered strategy contract covers BTCUSD/ETHUSD CFDs: the registered crypto
-contract covers BTCUSDT/ETHUSDT perpetuals. Strategy status remains
-`STRATEGY_CONTRACT_INCOMPLETE`; crypto risk remains `RISK_POLICY_AMBIGUOUS`; position
-size is `NOT_CALCULATED`; proposal and execution authority remain false. This does not
-authorize Demo orders or change FX strategy/risk/source/execution policy.
+**Pre-change finding (2026-10-03, PR #28):** no registered strategy contract covered
+BTCUSD/ETHUSD CFDs; the registered crypto contract covered BTCUSDT/ETHUSDT perpetuals,
+and strategy status was `STRATEGY_CONTRACT_INCOMPLETE`.
+
+**Resolved by PR #30 (`AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1`, 2026-10-08, unmerged at the
+time of writing):** a dedicated deterministic contract
+`strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml` /
+`docs/contracts/AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1.md` now covers the VT Markets
+BTCUSD/ETHUSD CFDs as `asset_class = CRYPTO_CFD`, with no perp reuse and no FX leakage.
+Contract status is `CONTRACT_COMPLETE` and `STRATEGY_CONTRACT_VALID = TRUE`
+(reproducible logic only). **The runtime gap is unchanged and must not be conflated with
+contract registration:** the scanner/checklist wiring is still absent, so no scheduled
+crypto CFD evaluation exists. `EDGE_VERIFIED = FALSE`, `RISK_POLICY_AMBIGUOUS`, position
+size `NOT_CALCULATED`, proposal authority `BLOCKED`, `EXECUTION_AUTHORIZED = FALSE`,
+`BROKER_ORDERS_SENT = 0`. This does not authorize Demo orders or change FX strategy/risk/source/execution policy.
 
 ## AG Scanner Checklist V1.1 — structured phase gates over frozen Scanner V1 (2026-10-02)
 

@@ -1,0 +1,67 @@
+# CRYPTO_CFD_C001 -- frozen candidate identity (AG_EDGE_DISCOVERY_ACCELERATION_R1 Phase 2).
+# IMMUTABLE after creation: this manifest was written BEFORE any BTCUSD/ETHUSD CFD
+# economic result existed anywhere in this repository (created_before_results: true,
+# byte-level freeze record alongside: CRYPTO_CFD_C001.freeze.json). Any strategy-rule
+# change after economic results exist is a NEW candidate (C002+ / new version), never
+# an edit of this file.
+schema_version: EDGE_DISCOVERY_CANDIDATE_MANIFEST_V0
+candidate_id: CRYPTO_CFD_C001
+strategy_id: ST_CRYPTO_CFD_SWEEP_RETEST_V1
+strategy_version: "1.0.0"
+source_type: INTERNAL_FROZEN_CONTRACT
+source_reference:
+  contract_yaml: strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml
+  contract_package: src/crypto_cfd_contract/
+  contract_doc: docs/contracts/AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1.md
+  candidate_implementation_sha: a5ce51d483b2a47cd723d64ab670eb42e0ed11f2
+  contract_sha: a4da28774035491112e63bdf90938b94fc8567de
+  contract_tree: 09e5340ece7bc3b09c913e3872576f856c106b53
+  pr: 30
+asset_class: CRYPTO_CFD
+symbols: [BTCUSD, ETHUSD]
+timeframes: [D1, H1, M15, M5]
+hypothesis: >-
+  Previous-UTC-day liquidity sweep with M5 MSS confirmation and retest entry on
+  BTCUSD/ETHUSD CFDs retains positive net expectancy after deterministic spread
+  friction. Embedded sub-hypothesis: STOP_BUFFER_POLICY_V1 = ZERO_PRICE_BUFFER is a
+  PREREGISTERED_RESEARCH_HYPOTHESIS (the broker's zero tick metadata is insufficient
+  metadata, not economic justification; the zero-buffer stop's exposure to spread/wick
+  noise is exactly what this research must measure).
+entry_contract: "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml#m5_trigger_contract + #entry_timing_contract"
+exit_contract: "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml#stop_loss_contract + #targets_contract + #signal_expiry_contract"
+parameters:
+  swing_length: 5
+  close_break: true
+  reference_kind: PREVIOUS_UTC_DAY
+  reference_expected_m5_bars: 288
+  entry_ttl_m5_bars: 3
+  retest_tolerance_price: 0.0
+  stop_buffer_points: 0
+  tp1: PREV_UTC_DAY_MID
+  tp1_volume_pct: 0.5
+  tp1_action: MOVE_REMAINING_TO_BREAKEVEN
+  tp2: OPPOSING_PREV_UTC_DAY_EXTREME
+  min_tp2_r_multiple: 1.5
+  session_policy: BROKER_DEFINED / 24H_OBSERVATION
+parameters_frozen: true
+cost_assumptions:
+  friction_model: CRYPTO_CFD_SPREAD_SCENARIOS_V1
+  evidence_kind: OBSERVED_LIVE_SPREAD_SNAPSHOT_2026_10_02
+  historical_bid_ask_available: false
+  scenarios: {BASE: 1.0, STRESS: 2.0, SEVERE: 4.0}
+  screen_scenario: BASE          # fixed BEFORE results; never chosen after seeing P&L
+  units: BROKER_PRICE_UNITS      # never FX pips
+dataset_roles_allowed: [DEV]     # VALIDATION/HOLDOUT/FINAL_OOS require governance approval
+created_before_results: true
+parent_candidate: null
+discretionary_conditions: []
+future_data_dependencies: []
+status:
+  candidate_status: DISCOVERED   # contractability blocked on REQUIRED_DATA_UNAVAILABLE
+  edge_verified: false
+  fast_screen_status: NOT_EVALUATED
+  full_verification_status: NOT_EVALUATED
+governance:
+  research_only: true
+  execution_authorized: false
+  proposal_authority: BLOCKED

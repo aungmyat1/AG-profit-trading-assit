@@ -1,0 +1,67 @@
+# AG Edge Discovery -- Candidate Factory queue metadata (R2).
+# Queue entries are discovery metadata, not strategy rules or evidence.  A performance
+# claim from any external source must never be imported as AG edge evidence: only a new,
+# preregistered immutable candidate contract may enter the offline factory.
+schema_version: EDGE_DISCOVERY_CANDIDATE_QUEUE_V1
+
+metadata_contract:
+  required_fields:
+    [candidate_id, source_type, source_reference, asset_class, rule_family,
+     contract_status, preregistered, data_compatible, fast_screen_status,
+     verification_status]
+  # Exactly the CandidateSource vocabulary (src/edge_discovery/models.py).  A row whose
+  # source_type is outside this list cannot be loaded as a manifest, so a placeholder must use
+  # FAMILY_PLACEHOLDER rather than a value that does not exist at all.
+  permitted_source_types:
+    [OPEN_SOURCE, ACADEMIC, PUBLIC_STRATEGY_LIBRARY, INTERNAL_HYPOTHESIS,
+     INTERNAL_FROZEN_CONTRACT, FAMILY_PLACEHOLDER, EXTERNAL_SPEC]
+  external_performance_claims_are_ag_evidence: false
+
+lanes:
+  LANE_FX:
+    asset_class: FX
+    symbols: [EURUSD, GBPUSD, USDJPY]
+    dataset_authority: existing locally exported FX datasets
+  LANE_CRYPTO_CFD:
+    asset_class: CRYPTO_CFD
+    symbols: [BTCUSD, ETHUSD]
+    dataset_authority: VT Markets CFD immutable exporter artifacts
+  LANE_CRYPTO_PERP:
+    asset_class: CRYPTO_USDT_PERP
+    symbols: [BTCUSDT, ETHUSDT]
+    dataset_authority: future public exchange export only
+    prohibited_for_crypto_cfd_verification: true
+
+queue:
+  - candidate_id: CRYPTO_CFD_C001
+    source_type: INTERNAL_FROZEN_CONTRACT
+    source_reference: research/edge_discovery/candidates/CRYPTO_CFD_C001.yaml
+    asset_class: CRYPTO_CFD
+    rule_family: liquidity_sweep_mss_retest
+    contract_status: FROZEN
+    preregistered: true
+    data_compatible: AWAITS_PROVENANCE_VERIFIED_CRYPTO_CFD_M5
+    fast_screen_status: NOT_EVALUATED
+    verification_status: NOT_EVALUATED
+
+  # These are metadata-only placeholders.  `rule_family` is a queue label, not an
+  # entry/exit definition, parameter choice, or claim that the family will be tested.
+  # `source_type: FAMILY_PLACEHOLDER` is the only vocabulary value that means "no source
+  # has been identified yet"; `UNASSIGNED` was not a member of CandidateSource at all, so
+  # any manifest built from such a row would fail validation rather than load as a
+  # placeholder. See src/edge_discovery/models.py::CandidateSource.
+  - {candidate_id: C002, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: donchian_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C003, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: atr_volatility_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C004, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: ema_trend_pullback, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C005, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: previous_day_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C006, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: rsi_mean_reversion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C007, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: bollinger_mean_reversion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C008, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: momentum_continuation, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C009, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: volatility_contraction_expansion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C010, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: trend_plus_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+
+queue_rules:
+  - A placeholder cannot be backtested until a deterministic immutable manifest is frozen before results.
+  - Any C001 rule/friction change after results requires C002+ or a versioned new candidate; C001 never mutates.
+  - FAST_SCREEN_PASS means FROZEN_FOR_VERIFICATION only, never EDGE_VERIFIED.
+  - Each candidate may consume data only from its exact asset-class research lane.

@@ -88,6 +88,16 @@ The [Crypto CFD Scanner V1 observation status](status/AG_CRYPTO_SCANNER_V1_OBSER
 records the merged BTCUSD/ETHUSD read-only observation path, live Demo market-data
 validation, incomplete CFD strategy/risk authority, and execution boundary.
 
+The [Edge Discovery R2 status](status/AG_EDGE_DISCOVERY_ACCELERATION_R2_STATUS.md)
+records the local-only immutable Crypto-CFD ingestion/quality/partition/firewall factory
+and its current dataset-unavailable boundary. The exporter input contract is
+[`../research/edge_discovery/OFFLINE_DATASET_INGESTION_CONTRACT.md`](../research/edge_discovery/OFFLINE_DATASET_INGESTION_CONTRACT.md).
+
+The [Crypto-CFD eligibility/quarantine R1 status](status/AG_CRYPTO_CFD_RESEARCH_ELIGIBILITY_R1_STATUS.md)
+records the strict separation between raw unknown-gap quality and complete-window
+research eligibility. Its contract is
+[`../research/edge_discovery/RESEARCH_WINDOW_ELIGIBILITY_CONTRACT.md`](../research/edge_discovery/RESEARCH_WINDOW_ELIGIBILITY_CONTRACT.md).
+
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository; see also [agent invariants](agents/INVARIANTS.md) (v1).
 3. [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current implementation state,
@@ -606,6 +616,11 @@ observations from the named milestone; they are not rolling dashboards.
   [`status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md`](status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md)
   (frozen UTC contract, public/read-only Bybit adapter, production-data-connectivity-confirmed scheduler-ready
   daily decision and informational proposal-ticket path; crypto execution disabled)
+- Crypto CFD strategy contract: [`contracts/AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1.md`](contracts/AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1.md)
+  (deterministic `CRYPTO_CFD` contract for the VT Markets BTCUSD/ETHUSD CFDs, `strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml`;
+  no perp reuse, no FX leakage, evaluation-time causal filtering on every supplied timeframe. Contract
+  registration only — scanner wiring, `EDGE_VERIFIED`, risk authority and execution authority all remain
+  absent, and it authorizes no Demo order)
 
 When a historical test total differs from the current baseline, retain the historical
 number and use `PROJECT_STATUS.md` for the latest result.
