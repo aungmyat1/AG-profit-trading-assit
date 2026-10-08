@@ -1,18 +1,34 @@
 name: regenerate-generated-files
 
+run-name: regenerate at ${{ inputs.target_sha || github.sha }}
+
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: Exact main commit whose generated files should be checked
+        required: true
+        type: string
 
 permissions:
   contents: write
 
+concurrency:
+  group: regenerate-generated-files-main
+  cancel-in-progress: false
+
 jobs:
   regenerate:
     runs-on: ubuntu-latest
+    env:
+      TARGET_SHA: ${{ inputs.target_sha || github.sha }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_sha || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -40,6 +56,7 @@ jobs:
       - name: Commit generated files when changed
         shell: bash
         run: |
+          set -euo pipefail
           git add -- PROJECT_STATUS.md docs/status/PROJECT_LIVE_STATUS.md status/facts.json docs/agents/CONTEXT_PACK.md
           if git diff --cached --quiet; then
             echo "Generated files are already current."
@@ -52,7 +69,32 @@ jobs:
               *) echo "Unexpected staged path: $path" >&2; exit 1 ;;
             esac
           done <<< "$changed"
+
+          git fetch origin main:refs/remotes/origin/main
+          remote_main="$(git rev-parse origin/main)"
+          if [[ "$remote_main" != "$TARGET_SHA" ]]; then
+            matches_remote=true
+            while IFS= read -r path; do
+              if ! git show "origin/main:$path" | cmp -s - "$path"; then
+                matches_remote=false
+              fi
+            done <<< "$changed"
+            if [[ "$matches_remote" == true ]]; then
+              echo "Another serialized regeneration run already published these exact outputs."
+              exit 0
+            fi
+            echo "main advanced past $TARGET_SHA with different generated outputs; refusing a stale bot commit." >&2
+            exit 1
+          fi
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore(docs): regenerate generated files [skip ci]"
-          git push
+
+          # The bot commit uses [skip ci], so validate it here in the same job.
+          python scripts/docs/collect_facts.py --check
+          python scripts/generate_live_status.py --check
+          cog --check PROJECT_STATUS.md
+          python scripts/docs/build_context_pack.py --check
+
+          git push origin HEAD:refs/heads/main
