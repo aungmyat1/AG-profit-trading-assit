@@ -834,7 +834,11 @@ def test_install_tasks_declarations_parse_to_the_always_on_target():
     assert {d["status"] for d in decl} <= statuses
     for d in decl:
         assert d["state"] == {"RETIRED": "ABSENT", "REMOVE": "ABSENT", "DISABLED": "DISABLED"}.get(d["status"], "ENABLED")
-    plan = re.findall(r"Name = '(AG-V1-[\w-]+)';\s+Mode = '(\w+)';\s+Minutes = (\d+);\s+StartAt = '([\d:]+)'", text)
+    # The optional Canonical field (main) sits between Minutes and StartAt (SCHED-R1-B); the regex
+    # must tolerate it or the loop below silently passes on an empty match.
+    plan = re.findall(r"Name = '(AG-V1-[\w-]+)';\s+Mode = '(\w+)';\s+Minutes = (\d+);"
+                      r"(?:\s*Canonical = \$(?:true|false);)?\s*StartAt = '([\d:]+)'", text)
+    assert len(plan) == 3, plan                                     # never accept a vacuous match
     for name, mode, minutes, start in plan:                          # $Plan and its declaration agree
         d = by[name]
         assert (d["managed"], d["status"]) == ("INSTALLER", "ACTIVE")
@@ -849,8 +853,10 @@ def test_install_tasks_declarations_parse_to_the_always_on_target():
     assert by["AG Profit Trading - BTC Daily Decision"]["status"] == "DISABLE_AFTER_PARITY"
     hb = by["AG-Heartbeat-Local"]
     assert hb["status"] == "NEW" and "heartbeat.py" in hb["rest"] and "EveryMin = 60" in hb["rest"]
-    assert "{TELEMETRY}" in hb["rest"] and "D:\\ag-telemetry\\repo" in text
+    assert "{TELEMETRY}" in hb["rest"] and "<HOST_SCRATCHPAD>" in hb["rest"]
     assert not re.search(r"S-1-5-\d|C:\\Users\\(?!%)[A-Za-z]", text)  # sanitized: no SIDs or user-profile paths
+    # AGENTS.md host-evidence rule: a private checkout root is never committed (PR #78 review P1).
+    assert not re.search(r"[A-Z]:\\\\(wp3-main-integ|ddev|ag-telemetry)", text), text
 
 
 def test_go_live_doc_lists_the_six_steps_in_order():

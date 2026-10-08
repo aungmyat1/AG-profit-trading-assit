@@ -36,7 +36,11 @@ def test_pack_schedule_lists_host_tasks_and_excludes_v2_phase_names():
     expected = [task["name"] for task in parse_host_schedule(host_script)["tasks"]]
     assert "scripts/host/install_tasks.ps1" in collect(REPO)["input_paths"]
     schedule = pack.build(FACTS).split("## Schedule\n", 1)[1]
-    assert "Repo-declared tasks (install_tasks.ps1). Live host state: scripts/host/heartbeat.py output (not yet published)." in schedule
+    # The four layers must stay distinguishable: a declaration, a registration, an observed run and
+    # a target are different facts and must never be collapsed into one table.
+    for layer in ("REPO_DECLARED", "REGISTERED", "TARGET", "OBSERVED"):
+        assert f"### {layer}" in schedule, layer
+    assert "Value: **NOT_PUBLISHED**" in schedule
     assert all(f"`{name}`" in schedule for name in expected)
     import yaml
     config = yaml.safe_load((REPO / "config/ag_scheduler_v2.yaml").read_text(encoding="utf-8"))
@@ -57,6 +61,7 @@ def test_unparsed_host_trigger_keeps_the_source_line():
     assert all(task["trigger"]["value"] == "UNPARSED" for task in schedule["tasks"])
     assert all(task["trigger"]["raw_line"] == "$trigger = New-ScheduledTaskTrigger -CalendarKind Weekly"
                for task in schedule["tasks"])
+    assert schedule["layers"]["REPO_DECLARED"]["tasks"] == schedule["tasks"]
 
 
 def test_open_decisions_counted_from_the_register_never_a_bare_zero(tmp_path):

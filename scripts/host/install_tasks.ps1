@@ -69,8 +69,12 @@ $HostTimeZone = @{ Id = 'Myanmar Standard Time'; Abbrev = 'MMT'; UtcOffset = '+0
 $HostPowerPolicy = @{ AcStandbyTimeoutMin = 0; AcHibernateTimeoutMin = 0; Mode = 'ALWAYS_ON' }
 # Roots as observed on the host. PROD = deployed checkout, DEV = owner's working checkout,
 # TELEMETRY = separate main checkout for the local heartbeat (absent on 2026-10-08).
-$HostRoots = @{ PROD = 'D:\wp3-main-integ'; DEV = 'D:\ddev\AG profit trading'; TELEMETRY = 'D:\ag-telemetry\repo'
-                USERPROFILE = $env:USERPROFILE }
+# REDACTED AT CAPTURE TIME (AGENTS.md host-evidence rule): a host-specific checkout root is never
+# committed. The committed value is a `<HOST_SCRATCHPAD>` placeholder that preserves the root's role
+# and the task's identity, never the private path. Get-TaskDiff therefore reports the executable and
+# argument fields as REDACTED rather than inventing a path comparison it cannot make honestly.
+$HostRoots = @{ PROD = '<HOST_SCRATCHPAD>\prod'; DEV = '<HOST_SCRATCHPAD>\dev'
+                TELEMETRY = '<HOST_SCRATCHPAD>\telemetry'; USERPROFILE = $env:USERPROFILE }
 # START STAGGER RULE (runner logs 2026-10-01..08, duration = last log line - scheduled start):
 #   every M5 close (UTC :00/:05 = MMT :00/:05) opens a 300 s cycle. Runners start in priority order
 #   fx -> crypto -> lsmc: the first 60 s after the close, each next one at the previous start plus the
@@ -142,7 +146,7 @@ $Declared = @(
   @{ Name = 'AG-Heartbeat-Local'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'NEW'
      Registered = 'ABSENT'
      Target = @{ State = 'ENABLED'; Exe = '{TELEMETRY}\.venv\Scripts\pythonw.exe'
-                 Args = '"{TELEMETRY}\scripts\host\heartbeat.py" --host-repo "{PROD}" --out "D:\ag-telemetry\heartbeat.json"'
+                 Args = '"{TELEMETRY}\scripts\host\heartbeat.py" --host-repo "{PROD}" --out "<HOST_SCRATCHPAD>\ag-telemetry\heartbeat.json"'
                  Days = 'DAILY'; Start = '00:00:20'; EveryMin = 60 }
      Note = 'local output only (heartbeat.json; nothing is sent). Needs the TELEMETRY checkout + venv first' }
 )
@@ -150,6 +154,12 @@ $Declared = @(
 function Expand-HostRoot([string]$s) {
   foreach ($k in $HostRoots.Keys) { $s = $s.Replace("{$k}", [string]$HostRoots[$k]) }
   $s
+}
+
+function Test-HostPathRedacted([string]$s) {
+  # True when the value still carries an unredacted `<HOST_SCRATCHPAD>` placeholder, i.e. when the
+  # committed declaration cannot state the real host path and must not pretend to compare one.
+  return ($s -like '*<HOST_SCRATCHPAD>*')
 }
 
 function Get-RegisteredTaskFacts($d) {
@@ -175,12 +185,16 @@ function Get-RegisteredTaskFacts($d) {
 
 function Get-TaskDiff($d) {
   # Fields that differ between the registered task and its declared target ('' when none differ).
+  # Read-only: Get-ScheduledTask only. A redacted host path is reported as REDACTED, never guessed.
   $r = Get-RegisteredTaskFacts $d
   $diff = @()
   if ($r.State -ne $d.Target.State) { $diff += "State: $($r.State) -> $($d.Target.State)" }
   if ($r.State -ne 'ABSENT' -and $d.Target.State -eq 'ENABLED') {
     foreach ($f in 'Exe', 'Args', 'Days', 'Start', 'EveryMin') {
-      $want = if ($f -in 'Exe', 'Args') { Expand-HostRoot $d.Target[$f] } else { [string]$d.Target[$f] }
+      if ($f -in 'Exe', 'Args') {
+        $want = Expand-HostRoot $d.Target[$f]
+        if (Test-HostPathRedacted $want) { $diff += "${f}: REDACTED (host path not committed)"; continue }
+      } else { $want = [string]$d.Target[$f] }
       if ([string]$r[$f] -ne $want) { $diff += "${f}: $($r[$f]) -> $want" }
     }
   }

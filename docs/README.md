@@ -24,6 +24,12 @@ Windows host acceptance that remains NOT_EVALUATED. It grants no execution or ec
 [AGP Evidence Integrity R1](status/AGP_EVIDENCE_INTEGRITY_R1.md) reconciles and quarantines the
 four stale or ambiguous MT5 evidence artifacts and the stale mission label behind the R2 contract.
 
+[Host schedule authority and always-on target (SCHED-R1)](status/AGP_HOST_SCHEDULE_R1_2026-10-08.md)
+records the installer as the authoritative schedule declaration source, the four separated schedule
+layers (declared / registered / observed / target), the redaction of host checkout roots, the
+recorded cadence and weekday/weekend drift, and the power-mode-aware heartbeat staleness rule.
+Declaration and capture only: `install_tasks.ps1 -Apply` was not run.
+
 This directory contains design contracts, implementation architecture, setup guidance,
 and dated verification evidence. Read documents according to their authority, not just
 their age. For the shortest path to the active objective, start with the repo priority

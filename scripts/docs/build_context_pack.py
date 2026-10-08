@@ -111,11 +111,40 @@ def build(facts: dict, root: str = ROOT) -> str:
               for s in facts["strategies"]]
     lines += ["", "## Open owner decisions", "", decisions,
               "", "## Schedule", "",
-              f"Repo-declared tasks (install_tasks.ps1). Live host state: {schedule['live_host_state']}.", "",
-              "| Task | Cadence | Start | Trigger | Time zone |", "|---|---|---|---|---|"]
-    lines += [f"| `{t['name']}` | {_schedule_value(t['cadence'])} | {_schedule_value(t['start'])} | "
-              f"{_schedule_value(t['trigger'])} | {_schedule_value(t['time_zone'])} |"
-              for t in schedule.get("tasks", [])]
+              f"Source: `{schedule.get('source', 'UNKNOWN')}` (host task installer), captured "
+              f"{schedule.get('captured', 'UNPARSED')}. The four layers below are deliberately kept "
+              "apart: a repository declaration is not a registration, a registration is not an "
+              "observed run, and a target is not a fact.", ""]
+    layers = schedule.get("layers", {})
+    for key in ("REPO_DECLARED", "REGISTERED", "TARGET", "OBSERVED"):
+        layer = layers.get(key) or {}
+        lines += [f"### {key}", "", layer.get("meaning", "UNKNOWN"), ""]
+        if key == "OBSERVED":
+            lines += [f"Value: **{layer.get('value', 'UNKNOWN')}** "
+                      f"({layer.get('source', 'UNKNOWN')}).", ""]
+            continue
+        rows = layer.get("tasks", [])
+        if key == "REPO_DECLARED":
+            lines += ["| Task | Cadence | Start | Trigger | Time zone |", "|---|---|---|---|---|"]
+            lines += [f"| `{t['name']}` | {_schedule_value(t['cadence'])} | {_schedule_value(t['start'])} | "
+                      f"{_schedule_value(t['trigger'])} | {_schedule_value(t['time_zone'])} |" for t in rows]
+        elif key == "REGISTERED":
+            lines += ["| Task | Managed | Status | Registered |", "|---|---|---|---|"]
+            lines += [f"| `{t['name']}` | {t.get('managed', 'UNKNOWN')} | {t.get('status', 'UNKNOWN')} | "
+                      f"{t.get('registered') or 'UNKNOWN'} |" for t in rows]
+        else:
+            lines += ["| Task | Target state | Days | Start | Every min |", "|---|---|---|---|---|"]
+            lines += [f"| `{t['name']}` | {(t.get('target') or {}).get('State', 'UNKNOWN')} | "
+                      f"{(t.get('target') or {}).get('Days', '—')} | {(t.get('target') or {}).get('Start', '—')} | "
+                      f"{(t.get('target') or {}).get('EveryMin', '—')} |" for t in rows]
+        lines += [""]
+    drift = schedule.get("drift") or []
+    lines += ["### Declared drift (registered vs target)", ""]
+    if drift:
+        lines += ["| Task | Field | Registered | Target |", "|---|---|---|---|"]
+        lines += [f"| `{d['task']}` | {d['field']} | {d['registered']} | {d['target']} |" for d in drift]
+    else:
+        lines += ["No registered-vs-target difference is stated by the declaration."]
     out = "\n".join(lines) + "\n"
     n = out.count("\n")
     if n > MAX_LINES:
