@@ -90,6 +90,10 @@ def test_resolve_day_covers_taken_and_shadow_tickets_idempotently(tmp_path, l2_p
     sh = read_jsonl(outcome_path(journal, dt.date(2026, 6, 17)))[0]
     assert sh["owner_decision"] is None and sh["raw_proposal"]["state"] == "TICKET_BLOCKED"
     assert sh["cost_basis"] == "SPREAD_ONLY_COMMISSION_NOT_AVAILABLE"
+    from ticket_store.store import TicketStore, REPLAY
+    stored_outcomes = TicketStore(str(__import__("os").path.join(journal, "ticket_store"))).outcomes()
+    assert {o["source"] for o in stored_outcomes} == {REPLAY}
+    assert {o["outcome_kind"] for o in stored_outcomes} == {"VIRTUAL_FORWARD"}
 
 
 def test_before_horizon_stays_pending(tmp_path):

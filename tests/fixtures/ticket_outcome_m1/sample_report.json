@@ -1,0 +1,125 @@
+{
+  "groups": [
+    {
+      "block_reason_histogram": {},
+      "counterfactual_R_by_block_reason": {},
+      "counts_by_state": {
+        "READY": 1
+      },
+      "evaluations": 1,
+      "expectancy_R": 1.9,
+      "flag": "DIRECTIONAL_ONLY",
+      "mae_R_quantiles": {
+        "0.1": 0.2,
+        "0.5": 0.2,
+        "0.9": 0.2
+      },
+      "mfe_R_quantiles": {
+        "0.1": 2.2,
+        "0.5": 2.2,
+        "0.9": 2.2
+      },
+      "n": 1,
+      "outcome_flags": {
+        "SPREAD_TIMING_GAP": 1
+      },
+      "session": "ASIAN_LONDON",
+      "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.1",
+      "symbol": "BTCUSD",
+      "win_pct": 100.0
+    },
+    {
+      "block_reason_histogram": {
+        "SPREAD_TOO_WIDE": 1
+      },
+      "counterfactual_R_by_block_reason": {
+        "SPREAD_TOO_WIDE": {
+          "expectancy_R": -1.1,
+          "n": 1
+        }
+      },
+      "counts_by_state": {
+        "BLOCKED": 1
+      },
+      "evaluations": 1,
+      "expectancy_R": null,
+      "flag": "DIRECTIONAL_ONLY",
+      "mae_R_quantiles": {
+        "0.1": null,
+        "0.5": null,
+        "0.9": null
+      },
+      "mfe_R_quantiles": {
+        "0.1": null,
+        "0.5": null,
+        "0.9": null
+      },
+      "n": 0,
+      "outcome_flags": {
+        "SPREAD_TIMING_GAP": 0
+      },
+      "session": "ASIAN_LONDON",
+      "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.1",
+      "symbol": "GBPUSD",
+      "win_pct": null
+    },
+    {
+      "block_reason_histogram": {},
+      "counterfactual_R_by_block_reason": {},
+      "counts_by_state": {
+        "READY": 1
+      },
+      "evaluations": 1,
+      "expectancy_R": -1.1,
+      "flag": "DIRECTIONAL_ONLY",
+      "mae_R_quantiles": {
+        "0.1": 1.2,
+        "0.5": 1.2,
+        "0.9": 1.2
+      },
+      "mfe_R_quantiles": {
+        "0.1": 2.2,
+        "0.5": 2.2,
+        "0.9": 2.2
+      },
+      "n": 1,
+      "outcome_flags": {
+        "SPREAD_TIMING_GAP": 0
+      },
+      "session": "ASIAN_LONDON",
+      "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.1",
+      "symbol": "USDJPY",
+      "win_pct": 0.0
+    },
+    {
+      "block_reason_histogram": {},
+      "counterfactual_R_by_block_reason": {},
+      "counts_by_state": {
+        "READY": 1
+      },
+      "evaluations": 1,
+      "expectancy_R": null,
+      "flag": "DIRECTIONAL_ONLY",
+      "mae_R_quantiles": {
+        "0.1": null,
+        "0.5": null,
+        "0.9": null
+      },
+      "mfe_R_quantiles": {
+        "0.1": null,
+        "0.5": null,
+        "0.9": null
+      },
+      "n": 0,
+      "outcome_flags": {
+        "SPREAD_TIMING_GAP": 0
+      },
+      "session": "ASIAN_LONDON",
+      "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.1",
+      "symbol": "XAUUSD",
+      "win_pct": null
+    }
+  ],
+  "replay_parity": [],
+  "schema": "AGP_GRADE_REPORT_V1"
+}
