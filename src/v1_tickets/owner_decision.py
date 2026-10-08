@@ -20,7 +20,8 @@ from v1_tickets.scan_record import append_jsonl, read_jsonl
 
 SCHEMA = "AG_MANUAL_TICKET_DECISION_V1"
 TAKEN, SKIPPED, MISSED, EXPIRED = "TAKEN", "SKIPPED", "MISSED", "EXPIRED"
-DECISIONS = (TAKEN, SKIPPED, MISSED, EXPIRED)
+ACCEPTED, REJECTED = "ACCEPTED", "REJECTED"  # Telegram confirmation; no order is implied.
+DECISIONS = (TAKEN, SKIPPED, MISSED, EXPIRED, ACCEPTED, REJECTED)
 SKIP_REASONS = ("NEWS", "DISAGREE_CONTEXT", "COST_TOO_HIGH", "TIME", "OTHER")
 DECISION_FILE = os.path.join("ticket_delivery", "manual", "owner_decisions.jsonl")
 
@@ -95,6 +96,11 @@ def record_decision(journal: str, ticket: Dict[str, Any], decision: ManualTicket
             raise DecisionError(f"TAKEN refused: ticket state {ticket.get('state')} is not TICKET_READY")
         if _parse(decision.fill_time) >= _parse(ticket["valid_until"]):
             raise DecisionError("TAKEN refused: fill_time is at/after valid_until (ticket EXPIRED)")
+    if decision.decision in (ACCEPTED, REJECTED):
+        if ticket.get("state") != "TICKET_READY":
+            raise DecisionError(f"{decision.decision} refused: ticket state {ticket.get('state')} is not TICKET_READY")
+        if _parse(decision.recorded_at) >= _parse(ticket["valid_until"]):
+            raise DecisionError(f"{decision.decision} refused: ticket EXPIRED")
     entry = {**asdict(decision), "strategy": ticket.get("strategy"), "symbol": ticket.get("symbol"),
              "session": ticket.get("session"), "session_date": ticket.get("session_date"),
              "ticket_state": ticket.get("state"), "ticket_content_hash": ticket.get("content_hash")}
