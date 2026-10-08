@@ -13,6 +13,7 @@ on:
         type: string
 
 permissions:
+  actions: write
   contents: write
   deployments: write
   pull-requests: write
@@ -61,12 +62,12 @@ jobs:
           subprocess.run(['gh', 'pr', 'merge', str(number), '--squash', '--match-head-commit', sha], check=True)
           PY
         shell: bash
-      - name: Verify main CI after merge
+      - name: Dispatch main CI and regeneration and wait for both
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ inputs.pr_number }}
         run: |
-          set -euo pipefail
           merge_sha=$(gh pr view "$PR_NUMBER" --json mergeCommit --jq '.mergeCommit.oid')
           test -n "$merge_sha"
-          gh run list --branch main --commit "$merge_sha" --json databaseId,conclusion,status --jq 'if length == 0 or any(.[]; .status != "completed" or .conclusion != "success") then error("main CI missing or failed") else . end'
+          python scripts/governance/wait_for_post_merge_workflows.py --repo "$GH_REPO" --sha "$merge_sha"
