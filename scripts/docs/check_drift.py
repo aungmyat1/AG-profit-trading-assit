@@ -15,6 +15,7 @@ from collect_facts import read_objective
 ROOT = Path(__file__).resolve().parents[2]
 DATE = re.compile(r"20\d\d-\d\d-\d\d")
 AFFIRMATIVE_DEMO = re.compile(r"demo_authorized\s*[:=]\s*(?:`?true`?|yes)\b", re.I)
+AUTHORITY_FIELDS = ("demo_authorized", "live_authorized", "manager_dispatchable")
 
 
 def _frontmatter_class(text: str) -> str | None:
@@ -86,6 +87,66 @@ def current_truth_contradictions(
     return failures
 
 
+def _machine_line(path: Path, strategy_id: str, field: str) -> int:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    for number, line in enumerate(lines, 1):
+        if strategy_id in line and field in line:
+            return number
+    for number, line in enumerate(lines, 1):
+        if strategy_id in line:
+            return number
+    return 1
+
+
+def _machine_assertions(node: Any, registry_ids: set[str], inherited: str | None = None):
+    if isinstance(node, dict):
+        local = inherited
+        for identity_key in ("strategy_id", "id"):
+            candidate = node.get(identity_key)
+            if isinstance(candidate, str) and candidate in registry_ids:
+                local = candidate
+                break
+        if local:
+            for field in AUTHORITY_FIELDS:
+                if field in node:
+                    yield local, field, node[field]
+        for key, value in node.items():
+            child_identity = key if key in registry_ids and isinstance(value, dict) else local
+            yield from _machine_assertions(value, registry_ids, child_identity)
+    elif isinstance(node, list):
+        for value in node:
+            yield from _machine_assertions(value, registry_ids, inherited)
+
+
+def machine_authority_contradictions(root: Path, registry_rows: dict[str, Any]) -> list[str]:
+    """Compare strategy authority in docs/config JSON/YAML with the canonical registry."""
+    failures: list[str] = []
+    paths = []
+    for base in (root / "docs", root / "config"):
+        for pattern in ("*.json", "*.yaml", "*.yml"):
+            paths.extend(base.rglob(pattern))
+    for path in sorted(set(paths)):
+        try:
+            content = path.read_text(encoding="utf-8")
+            data = json.loads(content) if path.suffix == ".json" else yaml.safe_load(content)
+        except (OSError, json.JSONDecodeError, yaml.YAMLError):
+            continue
+        if isinstance(data, dict) and data.get("superseded_by") and data.get("date"):
+            continue
+        seen: set[tuple[str, str, str]] = set()
+        for strategy_id, field, actual in _machine_assertions(data, set(registry_rows)):
+            expected = registry_rows[strategy_id].get(field, "<missing>")
+            identity = (strategy_id, field, repr(actual))
+            if actual == expected or identity in seen:
+                continue
+            seen.add(identity)
+            line = _machine_line(path, strategy_id, field)
+            failures.append(
+                f"{path.relative_to(root)}:{line} [{strategy_id}].{field}={actual!r}; registry={expected!r}"
+            )
+    return failures
+
+
 def check(root: Path, facts_path: Path, registry_path: Path, objective_path: Path) -> list[str]:
     facts = json.loads(facts_path.read_text(encoding="utf-8"))
     registry = yaml.safe_load(registry_path.read_text(encoding="utf-8")) or {}
@@ -115,6 +176,7 @@ def check(root: Path, facts_path: Path, registry_path: Path, objective_path: Pat
     if facts.get("objective") != read_objective(objective_path):
         errors.append("objective differs between facts.json and docs/PROJECT_OBJECTIVE.md")
     errors.extend(f"current-truth contradiction: {item}" for item in current_truth_contradictions(root, registry_rows))
+    errors.extend(f"machine contradiction: {item}" for item in machine_authority_contradictions(root, registry_rows))
     return errors
 
 

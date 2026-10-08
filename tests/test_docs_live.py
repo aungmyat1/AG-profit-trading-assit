@@ -99,6 +99,27 @@ def test_evidence_class_and_dated_status_section_are_historical(tmp_path: Path) 
     assert result.returncode == 0
 
 
+def test_machine_authority_mismatch_is_blocking_unless_superseded(tmp_path: Path) -> None:
+    root = drift_fixture(tmp_path)
+    facts = json.loads((root / "status/facts.json").read_text(encoding="utf-8"))
+    strategy_id = facts["strategies"][0]["id"]
+    current = facts["strategies"][0]["demo_authorized"]["value"]
+    manifest = root / "docs/fixture.json"
+    manifest.write_text(json.dumps({"strategies": {strategy_id: {"demo_authorized": not current}}}), encoding="utf-8")
+
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 1
+    assert "machine contradiction" in result.stdout
+
+    manifest.write_text(json.dumps({
+        "superseded_by": "docs/current.json",
+        "date": "2026-10-08",
+        "strategies": {strategy_id: {"demo_authorized": not current}},
+    }), encoding="utf-8")
+    result = run(sys.executable, "scripts/docs/check_drift.py", "--repo-root", str(root), cwd=root, check=False)
+    assert result.returncode == 0
+
+
 def test_committing_generated_file_does_not_change_cog_check(tmp_path: Path) -> None:
     pytest.importorskip("cogapp")
     root = tmp_path / "repo"
