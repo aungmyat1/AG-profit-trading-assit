@@ -778,8 +778,9 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     assert "--canonical" in runner and "manual_lines = run_manual_jobs(fetch, now, journal)" in runner
     assert runner.index("manual_lines = run_manual_jobs(fetch, now, journal)") < runner.index("provider = snapshot_provider(GuardedMT5(mt5))")
     assert "--canonical" in verify and "$e.Canonical" in verify
-    offsets = [int(o) for o in re.findall(r"Offset = (\d+)", install)]
-    assert offsets == [1, 2, 3]                        # FX, crypto tickets, continuous six-symbol LSMC
+    starts = re.findall(r"StartAt = '(\d\d:\d\d:\d\d)'", install)
+    assert starts == ["00:01:00", "00:02:30", "00:04:15"]   # FX, crypto tickets, six-symbol LSMC (stagger rule)
+    assert "-Execute $PythonW" in install and ".venv\\Scripts\\pythonw.exe" in verify
     assert "AG-V1-LSMC-Crypto-Weekend" in install and "AG-V1-LSMC-Crypto-Weekend" in uninstall
     assert "REMOVED SUPERSEDED" in install             # prevent duplicate weekend watch polling
     assert "verify_objective.py" in install and "verify_tasks.ps1" in install
@@ -794,6 +795,62 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     assert "RESULT: PASS -- simulated proposal rendered and accepted by Telegram." in verify_telegram
     for s in (install, uninstall, telegram, verify_telegram):
         assert not re.search(r"\d{6,}:[A-Za-z0-9_-]{20,}", s)          # no bot-token-shaped literal
+
+
+DECL_RE = re.compile(r"@\{ Name = '([^']+)'; Path = '([^']*)'; Managed = '(\w+)'; Status = '(\w+)'\s*"
+                     r"Registered = '[^']*'(?:; DeleteAfter = '([\d-]+)')?\s*Target = @\{ State = '(\w+)'(.*?)\}\s*;?\s*Note = ",
+                     re.S)
+
+
+def _host_declarations():
+    text = (HOST / "install_tasks.ps1").read_text(encoding="utf-8")
+    return text, [dict(zip(("name", "path", "managed", "status", "delete_after", "state", "rest"), m))
+                  for m in DECL_RE.findall(text)]
+
+
+def _comment_facts(text: str, tag: str) -> dict:
+    """`# <tag>: K=V; K=V` -> {K: V}; the format the host facts collector parses."""
+    line = re.search(rf"^# {tag}: (.+)$", text, re.M).group(1)
+    return dict(kv.strip().split("=", 1) for kv in line.split(";"))
+
+
+def test_install_tasks_declares_host_timezone_and_always_on_power_policy_without_applying_it():
+    text, _ = _host_declarations()
+    assert _comment_facts(text, "AG-HOST-TIMEZONE") == {
+        "Id": "Myanmar Standard Time", "Abbrev": "MMT", "UtcOffset": "+06:30", "DST": "false"}
+    assert _comment_facts(text, "AG-HOST-POWER-POLICY") == {
+        "AC_STANDBY_TIMEOUT_MIN": "0", "AC_HIBERNATE_TIMEOUT_MIN": "0", "MODE": "ALWAYS_ON"}
+    script = text.split("#>", 1)[1]                                  # after the header comment block
+    code = [re.sub(r"'[^']*'", "''", ln) for ln in script.splitlines() if not ln.lstrip().startswith("#")]
+    assert not any(re.search(r"powercfg|SetSuspendState|Set-.*Power", ln, re.I) for ln in code)  # declared data only
+
+
+def test_install_tasks_declarations_parse_to_the_always_on_target():
+    text, decl = _host_declarations()
+    assert text.count("@{ Name = '") - 3 == len(decl) == 17     # 3 $Plan rows + 16 registered + 1 new
+    by = {d["name"]: d for d in decl}
+    assert len(by) == len(decl)
+    statuses = {"ACTIVE", "NEW", "RETIRED", "REMOVE", "DISABLED", "DISABLE_AFTER_PARITY"}
+    assert {d["status"] for d in decl} <= statuses
+    for d in decl:
+        assert d["state"] == {"RETIRED": "ABSENT", "REMOVE": "ABSENT", "DISABLED": "DISABLED"}.get(d["status"], "ENABLED")
+    plan = re.findall(r"Name = '(AG-V1-[\w-]+)';\s+Mode = '(\w+)';\s+Minutes = (\d+);\s+StartAt = '([\d:]+)'", text)
+    for name, mode, minutes, start in plan:                          # $Plan and its declaration agree
+        d = by[name]
+        assert (d["managed"], d["status"]) == ("INSTALLER", "ACTIVE")
+        assert "pythonw.exe" in d["rest"] and f"--mode {mode}'" in d["rest"]
+        assert f"Days = 'DAILY'; Start = '{start}'; EveryMin = {minutes} " in d["rest"]
+    assert by["AG-V1-LSMC-Crypto-Weekend"]["managed"] == "RETIRE"
+    assert {n for n, d in by.items() if d["status"] == "RETIRED"} == {
+        "AG-V1-LSMC-Crypto-Weekend", "AG-Wake-MT5", "AG-Wake-Weekend-Crypto", "AG-Sleep-Night", "AG-Sleep-Weekend-Crypto"}
+    friction = [d for n, d in by.items() if n.startswith("AG_LSMC_EURUSD_Friction_Window")]
+    assert len(friction) == 4 and all(d["status"] == "DISABLED" and d["delete_after"] == "2026-10-15" for d in friction)
+    assert {n for n, d in by.items() if d["status"] == "REMOVE"} == {"AG_FX_ASIAN_LONDON_SHADOW", "AG_FX_LONDON_NEWYORK_SHADOW"}
+    assert by["AG Profit Trading - BTC Daily Decision"]["status"] == "DISABLE_AFTER_PARITY"
+    hb = by["AG-Heartbeat-Local"]
+    assert hb["status"] == "NEW" and "heartbeat.py" in hb["rest"] and "EveryMin = 60" in hb["rest"]
+    assert "{TELEMETRY}" in hb["rest"] and "D:\\ag-telemetry\\repo" in text
+    assert not re.search(r"S-1-5-\d|C:\\Users\\(?!%)[A-Za-z]", text)  # sanitized: no SIDs or user-profile paths
 
 
 def test_go_live_doc_lists_the_six_steps_in_order():
