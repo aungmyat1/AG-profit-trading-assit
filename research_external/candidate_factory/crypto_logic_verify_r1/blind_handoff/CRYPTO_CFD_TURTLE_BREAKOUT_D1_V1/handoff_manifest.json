@@ -1,0 +1,23 @@
+{
+  "HANDOFF_ID": "AG_CRYPTO_CFD_TURTLE_BREAKOUT_D1_V1_BLIND_HANDOFF_001",
+  "STRATEGY_ID": "CRYPTO_CFD_TURTLE_BREAKOUT_D1_V1",
+  "DERIVED_FROM_CANDIDATE": "OSS_CRYPTO_C001_D1_TICKETIZED_V1",
+  "SPEC_SHA256": "5bc8eccca6c90f4002a7c75b5c5e9046df7f61ce42097b0416050d5b2630ba52",
+  "SPEC_FILE": "spec.md (verbatim copy of research_external/candidate_factory/crypto_logic_verify_r1/spec/CRYPTO_CFD_TURTLE_BREAKOUT_D1_V1_SPEC.md)",
+  "PAYLOAD_FILE_SHA256": {
+    "BLIND_TASK.md": "da19802d866b90d523bfc4bd51279c25c1877ccea1698336dc772b3d02a7532d",
+    "spec.md": "5bc8eccca6c90f4002a7c75b5c5e9046df7f61ce42097b0416050d5b2630ba52",
+    "schema.json": "5a157c059f1a5a3590d0d8df5d739f5a933c0d2cd34857a5fbed97057eda59c7",
+    "fixtures/fixture_01.csv": "9afe581cd3279637701e1a06f491b1b61f0bb85c7e9e6e5be634e5bf51bca223",
+    "fixtures/fixture_02.csv": "012f27d7dd599da2a25a9b306e08eb95c52f2f899bcfb12c19b58299cd42f725",
+    "fixtures/fixture_03.csv": "2979fe0a8e6bef27ef66c1dd93e06028c578941b69a7fea44b927b2873710c4b",
+    "fixtures/fixture_04.csv": "615b9e204fe43d20fcbcc779416b07f2db8cbbfa2211300ee420d524a9f5e1a5",
+    "fixtures/fixture_05.csv": "b273fed0b5f521519eb5f5a97fc1e1ebbf099a67461f0d01ecec5bb798909bb6",
+    "dataset.json": "eb94324038a7f84e665b25a23ec16cd02c744f9b8f0535533719c8794ea273ef"
+  },
+  "PACKAGE_IDENTITY_SCOPE": "sorted relative_path:file_sha256 lines for all payload files (BLIND_TASK.md, spec.md, schema.json, dataset.json, fixtures/*.csv); handoff_manifest.json is the identity descriptor and is excluded to avoid self-reference (same convention as PR #45's Asian Sweep R4A handoff).",
+  "PACKAGE_SHA256": "03b19a8d44bbd87616fef0242d2dbbe554139c548e0a4ce3520ea2b76e34665f",
+  "NO_REFERENCE_IMPL_INCLUDED": true,
+  "NO_EXPECTED_OUTPUTS_INCLUDED": true,
+  "R4B_STATUS": "NOT_RUN (this package only prepares the sanitized input; the actual blind comparison requires a separate agent/session context, consistent with PR #45's own R4A/R4B precedent)"
+}

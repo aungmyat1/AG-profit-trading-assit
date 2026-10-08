@@ -1,0 +1,12 @@
+{
+  "dataset_id": "CRYPTO_CFD_TURTLE_BREAKOUT_D1_V1_BLIND_FIXTURES_R1",
+  "fixture_file_sha256": {
+    "fixtures/fixture_01.csv": "9afe581cd3279637701e1a06f491b1b61f0bb85c7e9e6e5be634e5bf51bca223",
+    "fixtures/fixture_02.csv": "012f27d7dd599da2a25a9b306e08eb95c52f2f899bcfb12c19b58299cd42f725",
+    "fixtures/fixture_03.csv": "2979fe0a8e6bef27ef66c1dd93e06028c578941b69a7fea44b927b2873710c4b",
+    "fixtures/fixture_04.csv": "615b9e204fe43d20fcbcc779416b07f2db8cbbfa2211300ee420d524a9f5e1a5",
+    "fixtures/fixture_05.csv": "b273fed0b5f521519eb5f5a97fc1e1ebbf099a67461f0d01ecec5bb798909bb6"
+  },
+  "fixture_count": 5,
+  "note": "All fixtures are synthetic/hand-constructed (never real market data). Filenames are anonymized (fixture_01..05) relative to the named versions used internally (see research_external/candidate_factory/crypto_logic_verify_r1/fixtures/README.md) so the blind recipient has no label-derived hint about expected behavior."
+}
