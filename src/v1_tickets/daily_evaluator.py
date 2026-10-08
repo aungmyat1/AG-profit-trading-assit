@@ -55,6 +55,10 @@ class EvalResult:
     canonical: Dict[str, Any]
     archive_path: str
     rendered_text: str
+    # TICKET_STORE_V1 write (ticket_store.adapter). A store failure never changes the decision:
+    # it is reported here instead of becoming an EVALUATION_EXCEPTION.
+    ticket_store_written: Optional[bool] = None
+    ticket_store_error: Optional[str] = None
 
 
 @dataclass
@@ -112,6 +116,7 @@ def evaluate_fx_pair(
     archive_root: str,
     data_source: str = "MT5_VT_MARKETS_DEMO",
     policy=None,
+    ticket_source: str = "REPLAY",
 ) -> EvalResult:
     """Evaluate one FX (symbol, cycle) deterministically. On missing data returns a
     BLOCKED/INSUFFICIENT_DATA record rather than raising."""
@@ -128,7 +133,8 @@ def evaluate_fx_pair(
         )
         ticket["data_error"] = _data_error_provenance(exc)
         return _finalize(ticket, now=now, current_price=None, window_end=trade_end,
-                         archive_root=archive_root, venue=data_source, policy=policy, exc=exc)
+                         archive_root=archive_root, venue=data_source, policy=policy, exc=exc,
+                         ticket_source=ticket_source)
 
     if bundle is None:
         # No data available but we still produce a deterministic archived decision.
@@ -138,7 +144,8 @@ def evaluate_fx_pair(
             data_source=data_source,
         )
         return _finalize(ticket, now=now, current_price=None, window_end=trade_end,
-                         archive_root=archive_root, venue=data_source, policy=policy)
+                         archive_root=archive_root, venue=data_source, policy=policy,
+                         ticket_source=ticket_source)
 
     ticket = v1_fx.build_fx_ticket(
         symbol, cycle, day, list(bundle.session_candles), bundle.expected_bar_count,
@@ -146,7 +153,9 @@ def evaluate_fx_pair(
         evaluated_at=now, data_close=bundle.data_close, spread=bundle.spread,
     )
     return _finalize(ticket, now=now, current_price=bundle.current_price,
-                     window_end=trade_end, archive_root=archive_root, venue=data_source, policy=policy)
+                     window_end=trade_end, archive_root=archive_root, venue=data_source, policy=policy,
+                     ticket_source=ticket_source, reference_bars=list(bundle.session_candles),
+                     trade_bars=list(bundle.post_session_candles))
 
 
 def evaluate_crypto_symbol(
@@ -159,6 +168,7 @@ def evaluate_crypto_symbol(
     archive_root: str,
     config_path: Optional[str] = None,
     policy: Optional[ActionabilityPolicy] = None,
+    ticket_source: str = "REPLAY",
 ) -> EvalResult:
     """Evaluate one crypto symbol deterministically.  feed_provider must return a
     FallbackPublicCryptoFeed-compatible feed (or None, which yields a BLOCKED record)."""
@@ -175,7 +185,8 @@ def evaluate_crypto_symbol(
     except Exception as exc:  # noqa: BLE001
         # Build a synthetic error ticket via v1_crypto by raising inside the call.
         return _eval_crypto_with_error(symbol, now=now, day=day, state_dir=state_dir,
-                                       archive_root=archive_root, cfg=cfg, exc=exc)
+                                       archive_root=archive_root, cfg=cfg, exc=exc, policy=policy,
+                                       ticket_source=ticket_source)
     if feed is None:
         # Build a BLOCKED ticket manually matching the v1_crypto shape.
         ticket = {
@@ -194,12 +205,14 @@ def evaluate_crypto_symbol(
             ticket["window_status"] = w
             ticket["reason_codes"] = ["OUTSIDE_CONFIG_WINDOW"]
         return _finalize(ticket, now=now, current_price=None, window_end=None,
-                         archive_root=archive_root, venue=ticket["data_source"], policy=policy)
+                         archive_root=archive_root, venue=ticket["data_source"], policy=policy,
+                         ticket_source=ticket_source)
     try:
         ticket = v1_crypto.build_crypto_ticket(symbol, day, now, feed=feed, state_dir=state_dir, config=cfg)
     except Exception as exc:  # noqa: BLE001
         return _eval_crypto_with_error(symbol, now=now, day=day, state_dir=state_dir,
-                                       archive_root=archive_root, cfg=cfg, exc=exc)
+                                       archive_root=archive_root, cfg=cfg, exc=exc, policy=policy,
+                                       ticket_source=ticket_source)
     current = None
     m5 = []
     try:
@@ -212,10 +225,11 @@ def evaluate_crypto_symbol(
         current = float(last.close)
     venue = ticket.get("data_source") or "CRYPTO_PERP"
     return _finalize(ticket, now=now, current_price=current, window_end=None,
-                     archive_root=archive_root, venue=venue, policy=policy)
+                     archive_root=archive_root, venue=venue, policy=policy, ticket_source=ticket_source)
 
 
-def _eval_crypto_with_error(symbol, *, now, day, state_dir, archive_root, cfg, exc, policy=None):
+def _eval_crypto_with_error(symbol, *, now, day, state_dir, archive_root, cfg, exc, policy=None,
+                            ticket_source: str = "REPLAY"):
     from v1_tickets import crypto as v1_crypto
     ticket = {
         "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
@@ -232,12 +246,13 @@ def _eval_crypto_with_error(symbol, *, now, day, state_dir, archive_root, cfg, e
     if cfg is not None:
         ticket["ticket_config"] = f"{cfg['config_id']}@v{cfg['version']}"
     return _finalize(ticket, now=now, current_price=None, window_end=None,
-                     archive_root=archive_root, venue="NONE", policy=policy)
+                     archive_root=archive_root, venue="NONE", policy=policy, ticket_source=ticket_source)
 
 
 def _finalize(ticket: Dict[str, Any], *, now: dt.datetime, current_price: Optional[float],
               window_end: Optional[dt.datetime], archive_root: str, venue: str,
-              policy=None, exc: Optional[BaseException] = None) -> EvalResult:
+              policy=None, exc: Optional[BaseException] = None, ticket_source: str = "REPLAY",
+              reference_bars=None, trade_bars=None) -> EvalResult:
     canonical = build_canonical_ticket(ticket, now=now, current_price=current_price,
                                        window_end=window_end, policy=policy)
     from v1_tickets.canonical_ticket import render_canonical
@@ -247,9 +262,17 @@ def _finalize(ticket: Dict[str, Any], *, now: dt.datetime, current_price: Option
     day = (canonical.get("session_date") or now.date().isoformat())[:10]
     path = os.path.join(archive_root, ARCHIVE_SUBDIR, f"{day}_{sym}_{session}.jsonl")
     append_archive(path, canonical)
+    written, store_error = None, None
+    try:
+        from ticket_store.adapter import write_canonical
+        written = write_canonical(archive_root, canonical, ticket, source=ticket_source,
+                                  reference_bars=reference_bars, trade_bars=trade_bars)
+    except Exception as store_exc:  # noqa: BLE001 -- reported on the result, never alters the decision
+        store_error = f"{type(store_exc).__name__}: {store_exc!s}"[:300]
     return EvalResult(instrument=sym, session=session, venue=venue,
                       decision=canonical["decision"], ticket_id=canonical["ticket_id"],
-                      canonical=canonical, archive_path=path, rendered_text=text)
+                      canonical=canonical, archive_path=path, rendered_text=text,
+                      ticket_store_written=written, ticket_store_error=store_error)
 
 
 def run_daily_evaluation(
@@ -266,6 +289,7 @@ def run_daily_evaluation(
     policy_root: str = ".",
     policy_override_path: Optional[str] = None,
     policy_override_dict: Optional[Dict] = None,
+    ticket_source: str = "REPLAY",
 ) -> List[EvalResult]:
     """Run every required (instrument, session) pair deterministically.
 
@@ -274,6 +298,9 @@ def run_daily_evaluation(
 
     Policy is loaded once and threaded to every pair; DI via `policy` (preloaded
     ActionabilityPolicy) or override path/dict is supported for tests.
+
+    `ticket_source` labels the TICKET_STORE_V1 evaluation records: LIVE only when the caller
+    is the real broker-data run (scripts/host/live_eval_smoke.py passes it); REPLAY otherwise.
     """
     now = now or dt.datetime.now(dt.timezone.utc)
     now = now if now.tzinfo else now.replace(tzinfo=dt.timezone.utc)
@@ -289,7 +316,7 @@ def run_daily_evaluation(
                                             candle_provider=provider,
                                             archive_root=archive_root,
                                             data_source=fx_data_source,
-                                            policy=policy))
+                                            policy=policy, ticket_source=ticket_source))
         except Exception as exc:  # noqa: BLE001 — emergency fail-closed: still produce a record
             ticket = v1_fx.build_fx_error_ticket(
                 sym, cyc, day, evaluated_at=now, reason_code="EVALUATION_EXCEPTION",
@@ -297,7 +324,7 @@ def run_daily_evaluation(
                 data_source=fx_data_source)
             results.append(_finalize(ticket, now=now, current_price=None, window_end=None,
                                      archive_root=archive_root, venue=fx_data_source,
-                                     policy=policy, exc=exc))
+                                     policy=policy, exc=exc, ticket_source=ticket_source))
     if include_crypto:
         from v1_tickets import crypto as v1_crypto
         for sym in v1_crypto.V1_CRYPTO_SYMBOLS:
@@ -305,12 +332,12 @@ def run_daily_evaluation(
                 results.append(evaluate_crypto_symbol(
                     sym, now=now, day=day, feed_provider=crypto_feed_provider,
                     state_dir=state_dir, archive_root=archive_root,
-                    config_path=v1_crypto.ACTIVE_CONFIG, policy=policy,
+                    config_path=v1_crypto.ACTIVE_CONFIG, policy=policy, ticket_source=ticket_source,
                 ))
             except Exception as exc:  # noqa: BLE001
                 results.append(_eval_crypto_with_error(
                     sym, now=now, day=day, state_dir=state_dir, archive_root=archive_root,
-                    cfg=None, exc=exc, policy=policy))
+                    cfg=None, exc=exc, policy=policy, ticket_source=ticket_source))
     return results
 
 

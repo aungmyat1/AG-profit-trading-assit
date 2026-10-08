@@ -121,6 +121,20 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## TICKET_STORE_V1 — append-only ticket evaluation store (2026-10-08)
+
+The canonical-ticket path (`daily_evaluator._finalize`) now also appends one
+`TICKET_STORE_V1_EVALUATION` per strategy×symbol×session evaluation, for every terminal state,
+to `<archive_root>/ticket_store/evaluations/<day>.jsonl`. Each record carries the spec and code
+SHA, the source (LIVE only from the real MT5 host run, otherwise REPLAY), the levels, the
+measured spread and input-bar hashes. Unmeasured facts are null. Writes are idempotent;
+records are never mutated. OUTCOME records are separate, keyed by `ticket_id`. The SQLite index
+(`scripts/ticket_store_reindex.py`) is rebuildable, with a JSONL == index integrity check.
+Legacy migration (`scripts/ticket_store_migrate.py`, source=LEGACY) of the committed evidence
+journal: 28 lines → 12 evaluations; a re-run writes 0. Host journal migration NOT_EVALUATED.
+Decisions, strategies and authority unchanged. Tests: focused **13 passed**; full suite
+**1157 passed, 2 skipped**. Evidence: `docs/status/AG_TICKET_STORE_V1_STATUS_2026-10-08.md`.
+
 ## Stale-data gate keeps trigger close — TRIGGER_TIMEFRAME_UNKNOWN resolved (2026-10-08)
 
 The seven `INSUFFICIENT_DATA / TRIGGER_TIMEFRAME_UNKNOWN` records in the R2 smoke were not
