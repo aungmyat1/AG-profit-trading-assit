@@ -62,7 +62,7 @@ if __name__ == "__main__":   # bound the whole process, including the heavy impo
     start_run_watchdog(f"ag_v1_{_argv_mode(sys.argv[1:])}")
 
 from host_delivery import telegram_message as tg  # noqa: E402
-from host_delivery.lsmc_alert_dedup import AlertLedger, deliver_once  # noqa: E402
+from host_delivery.lsmc_alert_dedup import AlertLedger, DELIVERY_UNCERTAIN, deliver_once  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
@@ -193,7 +193,12 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
     """Best-effort Telegram delivery (TELEGRAM_DELIVERY_TRACE_R1). Callers persist the scan /
     ticket record first; this never raises, so a Telegram or policy failure cannot hide a scan
     record or stop the remaining symbols. The status is persisted separately (append-only JSONL,
-    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text."""
+    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text.
+
+    Returns the legacy journal status, except that an ambiguous transport outcome (timeout,
+    5xx, unknown) is returned as DELIVERY_UNCERTAIN: the durable row keeps its frozen FAILED /
+    ERROR vocabulary, but a deduplicating caller must never treat the send as a known failure
+    that may be retried."""
     error = None
     # The persisted journal keeps its frozen status vocabulary (SENT / NOT_SENT_POLICY / FAILED /
     # ERROR); the conservative typed transport outcome is reported in the telegram log only, so
@@ -221,7 +226,7 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
                           "error": error, "recorded_at": at.isoformat(), "code_sha": code_sha()})
         except OSError as exc:
             log_line("telegram", f"DELIVERY_STATUS_WRITE_FAILED {kind}={value} {type(exc).__name__}")
-    return status
+    return DELIVERY_UNCERTAIN if typed == DELIVERY_UNCERTAIN else status
 
 
 def _archive_fx_result(state: JsonKeyValueStore, journal: str, ticket: dict, now: dt.datetime) -> tuple[bool, bool, list[str]]:
