@@ -191,11 +191,19 @@ def freeze_partition_manifest(manifest: PartitionManifest, path: Path) -> Partit
 
 
 def slice_partition(dataset: DerivedDataset, partition: Partition) -> Tuple[OhlcBar, ...]:
-    """Return a read-only-by-convention M5 slice.  The caller receives no dates outside
-    the frozen boundary; HOLDOUT remains inaccessible to the fast-screen guard."""
-    start = datetime.fromisoformat(partition.start_utc.replace("Z", "+00:00"))
-    end = datetime.fromisoformat(partition.end_utc.replace("Z", "+00:00"))
-    return tuple(bar for bar in dataset.bars if start <= bar.time < end)
+    """Return a read-only-by-convention M5 slice of exactly the frozen UTC days.
+
+    Membership is tested against the frozen *day set*, not against the partition's outer
+    time bounds.  The bounds alone are not sufficient: a day can be complete for one symbol
+    and gap-declared for the other, so it is excluded from the common-day partition for the
+    whole cohort while that symbol's own bars still exist inside the same time range.  A
+    range slice would hand those bars to the caller as if they were frozen observations,
+    which is exactly the "never silently convert missing data into valid observations" rule.
+    """
+    frozen_days = frozenset(partition.days)
+    if not frozen_days:
+        raise PartitionFreezeError("PARTITION_EMPTY", partition.name)
+    return tuple(bar for bar in dataset.bars if bar.time.date().isoformat() in frozen_days)
 
 
 def partition_dataset_id(dataset: DerivedDataset, partition: Partition) -> str:

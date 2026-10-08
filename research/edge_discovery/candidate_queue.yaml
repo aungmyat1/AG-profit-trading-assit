@@ -9,9 +9,12 @@ metadata_contract:
     [candidate_id, source_type, source_reference, asset_class, rule_family,
      contract_status, preregistered, data_compatible, fast_screen_status,
      verification_status]
+  # Exactly the CandidateSource vocabulary (src/edge_discovery/models.py).  A row whose
+  # source_type is outside this list cannot be loaded as a manifest, so a placeholder must use
+  # FAMILY_PLACEHOLDER rather than a value that does not exist at all.
   permitted_source_types:
     [OPEN_SOURCE, ACADEMIC, PUBLIC_STRATEGY_LIBRARY, INTERNAL_HYPOTHESIS,
-     INTERNAL_FROZEN_CONTRACT]
+     INTERNAL_FROZEN_CONTRACT, FAMILY_PLACEHOLDER, EXTERNAL_SPEC]
   external_performance_claims_are_ag_evidence: false
 
 lanes:
@@ -43,15 +46,19 @@ queue:
 
   # These are metadata-only placeholders.  `rule_family` is a queue label, not an
   # entry/exit definition, parameter choice, or claim that the family will be tested.
-  - {candidate_id: C002, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: donchian_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
-  - {candidate_id: C003, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: atr_volatility_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
-  - {candidate_id: C004, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: ema_trend_pullback, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
-  - {candidate_id: C005, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: previous_day_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
-  - {candidate_id: C006, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: rsi_mean_reversion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
-  - {candidate_id: C007, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: bollinger_mean_reversion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
-  - {candidate_id: C008, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: momentum_continuation, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
-  - {candidate_id: C009, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: volatility_contraction_expansion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
-  - {candidate_id: C010, source_type: UNASSIGNED, source_reference: null, asset_class: TBD, rule_family: trend_plus_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  # `source_type: FAMILY_PLACEHOLDER` is the only vocabulary value that means "no source
+  # has been identified yet"; `UNASSIGNED` was not a member of CandidateSource at all, so
+  # any manifest built from such a row would fail validation rather than load as a
+  # placeholder. See src/edge_discovery/models.py::CandidateSource.
+  - {candidate_id: C002, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: donchian_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C003, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: atr_volatility_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C004, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: ema_trend_pullback, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C005, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: previous_day_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C006, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: rsi_mean_reversion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C007, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: bollinger_mean_reversion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C008, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: momentum_continuation, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C009, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: volatility_contraction_expansion, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
+  - {candidate_id: C010, source_type: FAMILY_PLACEHOLDER, source_reference: null, asset_class: TBD, rule_family: trend_plus_breakout, contract_status: NOT_DEFINED, preregistered: false, data_compatible: NOT_EVALUATED, fast_screen_status: NOT_EVALUATED, verification_status: NOT_EVALUATED}
 
 queue_rules:
   - A placeholder cannot be backtested until a deterministic immutable manifest is frozen before results.

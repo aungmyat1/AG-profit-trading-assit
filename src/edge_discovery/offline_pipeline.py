@@ -7,14 +7,18 @@ falsification path; it has no broker, runtime, proposal, risk, or execution auth
 """
 from __future__ import annotations
 
+import hashlib
 import json
-from dataclasses import asdict, dataclass, is_dataclass
+from dataclasses import asdict, dataclass, field, is_dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, Mapping, Optional, Sequence
 
 from .contractability import AvailableDataset, evaluate_contractability
 from .dataset_ledger import DatasetAccessLedger
-from .freeze import FrozenIdentityError, verify_c001_rule_identity, verify_friction_identity
+from .freeze import (
+    APPLICATION_IDENTITY_INCOMPLETE, FrozenIdentityError,
+    verify_c001_rule_identity, verify_friction_identity,
+)
 from .friction import SCENARIOS, SCREEN_SCENARIO
 from .ingestion import DatasetIngestionError, DerivedDataset, OhlcBar, RawDataset, ingest_raw_m5
 from .lanes import LaneIsolationError, assert_lane_compatible
@@ -29,6 +33,67 @@ from .promotion import decide
 
 C001_ID = "CRYPTO_CFD_C001"
 C001_STRATEGY_ID = "ST_CRYPTO_CFD_SWEEP_RETEST_V1"
+STRATEGY_VERSION_UNKNOWN = "UNKNOWN"
+# Modules whose bytes decide a C001 outcome.  Keeping the list beside the freeze check that
+# already pins them means a report and a freeze verification can never disagree.
+APPLICATION_IDENTITY_FILES = (
+    "src/crypto_cfd_contract/rules.py",
+    "src/edge_discovery/replay_c001.py",
+    "src/edge_discovery/friction.py",
+)
+
+
+def _application_sha256(repository_root: Path) -> str:
+    """Content SHA-256 of the application modules that decide the outcome.
+
+    The value is derived from committed bytes so that a report can be tied to the exact
+    code that produced it.  A missing module is recorded as an explicit gap rather than a
+    fabricated identifier, and an unreadable tree is a hard failure: a report whose code
+    identity cannot be established must not be written as if it were reproducible.
+    """
+    root = Path(repository_root)
+    digest = hashlib.sha256()
+    missing = []
+    for relative in APPLICATION_IDENTITY_FILES:
+        path = root / relative
+        if not path.is_file():
+            missing.append(relative)
+            continue
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\x00")
+        digest.update(path.read_bytes())
+    if missing:
+        raise FrozenIdentityError(
+            APPLICATION_IDENTITY_INCOMPLETE, ",".join(sorted(missing)),
+        )
+    return digest.hexdigest()
+
+
+def _application_file_hashes(repository_root: Path) -> Dict[str, str]:
+    """Per-file SHA-256 map for the outcome-deciding modules, or {} when unavailable."""
+    root = Path(repository_root)
+    hashes = {}
+    for relative in APPLICATION_IDENTITY_FILES:
+        path = root / relative
+        if path.is_file():
+            hashes[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashes
+
+
+def _c001_strategy_version(repository_root: Path) -> str:
+    """Read ``strategy_version`` from the frozen C001 manifest.
+
+    The manifest is the single source of truth for the version.  When it cannot be read the
+    report records STRATEGY_VERSION_UNKNOWN rather than a guess: a report that does not know
+    its own strategy version must not look reproducible.
+    """
+    manifest = Path(repository_root) / "research/edge_discovery/candidates/CRYPTO_CFD_C001.yaml"
+    if not manifest.is_file():
+        return STRATEGY_VERSION_UNKNOWN
+    try:
+        return load_manifest(manifest).strategy_version
+    except Exception:
+        return STRATEGY_VERSION_UNKNOWN
 
 
 @dataclass(frozen=True)
@@ -42,6 +107,9 @@ class OfflineRunReport:
     datasets: Mapping[str, Any]
     partitions: Mapping[str, Any]
     c001: Mapping[str, Any]
+    application_sha256: str = ""
+    application_files: Mapping[str, str] = field(default_factory=dict)
+    strategy_version: str = STRATEGY_VERSION_UNKNOWN
 
     def as_dict(self) -> Mapping[str, Any]:
         return _jsonable(asdict(self))
@@ -74,7 +142,8 @@ def _dataset_summary(dataset: RawDataset, quality: Optional[QualityGateReport] =
 
 
 def _block(
-    verdict: str, gates: Mapping[str, Any], datasets: Mapping[str, Any] | None = None,
+    verdict: str, gates: Mapping[str, Any], root: Path,
+    datasets: Mapping[str, Any] | None = None,
     partitions: Mapping[str, Any] | None = None, c001: Mapping[str, Any] | None = None,
 ) -> OfflineRunReport:
     return OfflineRunReport(
@@ -85,6 +154,9 @@ def _block(
             "C001_RUN": False, "C001_RULES_CHANGED": False, "FAST_SCREEN_STATUS": "NOT_EVALUATED",
             "EDGE_VERIFIED": False,
         },
+        application_sha256=_application_sha256(root),
+        application_files=_application_file_hashes(root),
+        strategy_version=_c001_strategy_version(root),
     )
 
 
@@ -111,6 +183,7 @@ def run_crypto_cfd_c001_offline(
     closed with a structured report.  ``frame_loader`` is solely a test fixture seam.
     """
     root = Path(repository_root)
+    application_sha256 = _application_sha256(root)
     btc_raw_path, eth_raw_path, provenance_path = map(Path, (btc_raw_path, eth_raw_path, provenance_path))
     missing = [str(path) for path in (btc_raw_path, eth_raw_path, provenance_path) if not path.is_file()]
     if missing:
@@ -124,6 +197,7 @@ def run_crypto_cfd_c001_offline(
                 "PARTITION_FREEZE": _gate("NOT_EVALUATED"),
                 "HOLDOUT_FIREWALL": _gate("NOT_EVALUATED"),
             },
+            root,
         )
 
     # Gate 1: local bytes + exporter provenance.  No fallback instrument exists.
@@ -143,7 +217,8 @@ def run_crypto_cfd_c001_offline(
                 "RESEARCH_SUFFICIENCY": _gate("NOT_EVALUATED"),
                 "PARTITION_FREEZE": _gate("NOT_EVALUATED"),
                 "HOLDOUT_FIREWALL": _gate("NOT_EVALUATED"),
-            }, datasets={symbol: _dataset_summary(dataset) for symbol, dataset in raw.items()},
+            }, root,
+            datasets={symbol: _dataset_summary(dataset) for symbol, dataset in raw.items()},
         )
 
     datasets = {symbol: _dataset_summary(dataset) for symbol, dataset in raw.items()}
@@ -162,7 +237,7 @@ def run_crypto_cfd_c001_offline(
     datasets = {symbol: {**datasets[symbol], "coverage": quality[symbol].coverage}
                 for symbol in datasets}
     if gates["QUALITY_GATE"]["status"] != "PASS":
-        return _block("BLOCKED_DATA_QUALITY", gates, datasets=datasets)
+        return _block("BLOCKED_DATA_QUALITY", gates, root, datasets=datasets)
 
     derived = {
         symbol: normalize_and_derive(dataset, None if artifact_root is None else str(artifact_root / symbol))
@@ -184,7 +259,7 @@ def run_crypto_cfd_c001_offline(
         sufficiency.status, sufficiency.reason_codes, report=_jsonable(sufficiency),
     )
     if sufficiency.status != "PASS":
-        return _block("BLOCKED_RESEARCH_INSUFFICIENCY", gates, datasets=datasets)
+        return _block("BLOCKED_RESEARCH_INSUFFICIENCY", gates, root, datasets=datasets)
 
     # Gate 4: immutable, chronological, strategy-blind partition freeze.
     try:
@@ -195,7 +270,7 @@ def run_crypto_cfd_c001_offline(
         partition = freeze_partition_manifest(partition, partition_path)
     except PartitionFreezeError as exc:
         gates["PARTITION_FREEZE"] = _gate("FAIL", [exc.code], detail=str(exc))
-        return _block("BLOCKED_RESEARCH_INSUFFICIENCY", gates, datasets=datasets)
+        return _block("BLOCKED_RESEARCH_INSUFFICIENCY", gates, root, datasets=datasets)
     partitions = {
         "partition_policy_id": partition.policy_id, "manifest_sha256": partition.manifest_sha256,
         "manifest_path": str(partition.path),
@@ -212,7 +287,7 @@ def run_crypto_cfd_c001_offline(
         HOLDOUT_ACCESSED_BY_C001_FAST_SCREEN=holdout_touched,
     )
     if holdout_touched:
-        return _block("BLOCKED_DATA_QUALITY", gates, datasets=datasets, partitions=partitions)
+        return _block("BLOCKED_DATA_QUALITY", gates, root, datasets=datasets, partitions=partitions)
 
     # Existing C001/frozen-friction identities are gates too.  A rule/model mutation is
     # not a configuration option: it needs C002+ and stops this C001 run.
@@ -221,7 +296,7 @@ def run_crypto_cfd_c001_offline(
         friction_identity = verify_friction_identity(root)
     except FrozenIdentityError as exc:
         gates["C001_FROZEN_IDENTITY"] = _gate("FAIL", [exc.code], detail=str(exc))
-        return _block("BLOCKED_PROVENANCE", gates, datasets=datasets, partitions=partitions)
+        return _block("BLOCKED_PROVENANCE", gates, root, datasets=datasets, partitions=partitions)
     gates["C001_FROZEN_IDENTITY"] = _gate("PASS", checked_files=_jsonable(c001_identity.checked_files))
     gates["FRICTION_FREEZE"] = _gate("PASS", checked_files=_jsonable(friction_identity.checked_files))
 
@@ -234,7 +309,7 @@ def run_crypto_cfd_c001_offline(
     )
     gates["CONTRACTABILITY"] = _gate(contractability.status, contractability.reason_codes)
     if contractability.status != "PASS":
-        return _block("BLOCKED_RESEARCH_INSUFFICIENCY", gates, datasets=datasets, partitions=partitions)
+        return _block("BLOCKED_RESEARCH_INSUFFICIENCY", gates, root, datasets=datasets, partitions=partitions)
 
     # Gates pass.  C001 reads only the frozen DEV partition; VALIDATION/HOLDOUT are never
     # converted to CandleDataset objects in this fast-screen function. Delaying these
@@ -292,6 +367,9 @@ def run_crypto_cfd_c001_offline(
         report_schema="AG_EDGE_DISCOVERY_OFFLINE_RUN_V1", candidate_id=C001_ID,
         final_verdict=verdict, c001_run=True, edge_verified=False, gates=gates,
         datasets=datasets, partitions=partitions, c001=c001,
+        application_sha256=application_sha256,
+        application_files=_application_file_hashes(root),
+        strategy_version=_c001_strategy_version(root),
     )
 
 

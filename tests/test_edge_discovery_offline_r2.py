@@ -9,6 +9,8 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import json
+
+import yaml
 import shutil
 import subprocess
 from datetime import datetime, timedelta, timezone
@@ -20,16 +22,21 @@ from edge_discovery.dataset_ledger import (
     C001_FAST_SCREEN_STAGE, FAST_SCREEN_ROLE_FORBIDDEN, DatasetAccessLedger,
 )
 from edge_discovery.freeze import (
-    C001_MUTATION_REQUIRES_VERSION_BUMP, FrozenIdentityError,
+    CORRECTION_AFTER_RESULTS, C001_MUTATION_REQUIRES_VERSION_BUMP,
+    OUTCOME_DEFINING_FILES, OUTCOME_MODEL_NOT_PINNED, FrozenIdentityError,
     verify_c001_rule_identity, verify_friction_identity,
 )
 from edge_discovery.ingestion import DatasetIngestionError, ingest_raw_m5
-from edge_discovery.models import load_manifest
-from edge_discovery.offline_pipeline import run_crypto_cfd_c001_offline
+from edge_discovery.models import CandidateSource, load_manifest
+from edge_discovery.offline_pipeline import (
+    APPLICATION_IDENTITY_FILES, STRATEGY_VERSION_UNKNOWN,
+    run_crypto_cfd_c001_offline, write_run_report,
+)
 from edge_discovery.partitions import (
     PartitionFreezeError, build_partition_manifest, freeze_partition_manifest,
+    slice_partition,
 )
-from edge_discovery.quality import normalize_and_derive, quality_gate
+from edge_discovery.quality import complete_utc_days, normalize_and_derive, quality_gate
 
 UTC = timezone.utc
 ROOT = Path(__file__).resolve().parents[1]
@@ -228,7 +235,9 @@ def test_c001_and_friction_frozen_identity_and_mutation_version_bump_rejection(t
     assert verify_friction_identity(ROOT).status == "PASS"
     record = json.loads((ROOT / "research/edge_discovery/candidates/CRYPTO_CFD_C001.freeze.json").read_text())
     clone = tmp_path / "clone"
-    for relative in record["contract_file_sha256"]:
+    pinned = dict(record["contract_file_sha256"])
+    pinned.update(record["outcome_defining_file_sha256"])
+    for relative in pinned:
         source, target = ROOT / relative, clone / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
@@ -252,14 +261,22 @@ def _git_identity_fixture(path):
         "src/crypto_cfd_contract/contract.py": b"CONTRACT = 'frozen'\n",
         "src/crypto_cfd_contract/rules.py": b"RULE = 'frozen'\n",
         "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml": b"version: 1\n",
+        # The replay/fill model decides fills, exits and gross R, so it belongs to the frozen
+        # identity exactly like the contract files (PR #31 review P1).
+        "src/edge_discovery/replay_c001.py": b"REPLAY_FILL_MODEL_V1 = 'frozen'\n",
     }
     manifest = files["research/edge_discovery/candidates/CRYPTO_CFD_C001.yaml"]
     contract_paths = tuple(p for p in files if p.startswith(("src/", "strategies/")))
     freeze = {
         "candidate_id": "CRYPTO_CFD_C001",
+        "edge_verified": False,
         "manifest_sha256": hashlib.sha256(manifest).hexdigest(),
         "contract_file_sha256": {
             p: hashlib.sha256(files[p]).hexdigest() for p in contract_paths
+        },
+        "outcome_defining_file_sha256": {
+            "src/edge_discovery/replay_c001.py":
+                hashlib.sha256(files["src/edge_discovery/replay_c001.py"]).hexdigest(),
         },
     }
     files["research/edge_discovery/candidates/CRYPTO_CFD_C001.freeze.json"] = (
@@ -313,3 +330,190 @@ def test_frozen_identity_rejects_uncommitted_freeze_record_tampering(tmp_path):
     freeze.write_text(json.dumps(record), encoding="utf-8")
     with pytest.raises(FrozenIdentityError, match=C001_MUTATION_REQUIRES_VERSION_BUMP):
         verify_c001_rule_identity(root)
+
+
+def test_frozen_identity_rejects_mutation_of_the_replay_fill_model(tmp_path):
+    """PR #31 review P1: the replay model determines fills, exits and gross R, so an edit to it
+    must be rejected exactly like a contract edit -- not silently accepted under the same identity."""
+    root = tmp_path / "replay-mutation"
+    _git_identity_fixture(root)
+    replay = root / "src/edge_discovery/replay_c001.py"
+    replay.write_text("REPLAY_FILL_MODEL_V1 = 'changed'\n", encoding="utf-8")
+    with pytest.raises(FrozenIdentityError, match=C001_MUTATION_REQUIRES_VERSION_BUMP):
+        verify_c001_rule_identity(root)
+
+
+def test_frozen_identity_rejects_a_freeze_record_that_does_not_pin_the_replay_model(tmp_path):
+    """The pin must be present, not merely correct when present: an unpinned outcome model is a
+    hard failure, otherwise the gap the review found could silently reopen."""
+    root = tmp_path / "unpinned-replay"
+    _git_identity_fixture(root)
+    freeze = root / "research/edge_discovery/candidates/CRYPTO_CFD_C001.freeze.json"
+    record = json.loads(freeze.read_text(encoding="utf-8"))
+    record.pop("outcome_defining_file_sha256")
+    freeze.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+    # Commit the tamper so the freeze-record cleanliness check is not what fires; the failure must
+    # come from the missing outcome-model pin specifically.
+    subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "drop the replay pin"], check=True)
+    with pytest.raises(FrozenIdentityError, match=OUTCOME_MODEL_NOT_PINNED):
+        verify_c001_rule_identity(root)
+
+
+def test_frozen_identity_rejects_an_undeclared_pre_result_correction(tmp_path):
+    """A pinned hash may only change while no economic result exists, and only when the freeze
+    record carries the correction. An unlogged difference still fails closed."""
+    root = tmp_path / "undeclared-correction"
+    _git_identity_fixture(root)
+    freeze = root / "research/edge_discovery/candidates/CRYPTO_CFD_C001.freeze.json"
+    record = json.loads(freeze.read_text(encoding="utf-8"))
+    rules = root / "src/crypto_cfd_contract/rules.py"
+    corrected = hashlib.sha256(rules.read_bytes()).hexdigest()
+    record["contract_file_sha256"]["src/crypto_cfd_contract/rules.py"] = corrected
+    rules.write_text("RULE = 'corrected before any result existed'\n", encoding="utf-8")
+    freeze.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+    with pytest.raises(FrozenIdentityError, match=C001_MUTATION_REQUIRES_VERSION_BUMP):
+        verify_c001_rule_identity(root)
+
+
+def test_frozen_identity_accepts_a_declared_pre_result_correction_but_not_after_results(tmp_path):
+    root = tmp_path / "declared-correction"
+    _git_identity_fixture(root)
+    freeze = root / "research/edge_discovery/candidates/CRYPTO_CFD_C001.freeze.json"
+    record = json.loads(freeze.read_text(encoding="utf-8"))
+    rules = root / "src/crypto_cfd_contract/rules.py"
+    previous = record["contract_file_sha256"]["src/crypto_cfd_contract/rules.py"]
+    rules.write_text("RULE = 'corrected before any result existed'\n", encoding="utf-8")
+    corrected = hashlib.sha256(rules.read_bytes()).hexdigest()
+    record["contract_file_sha256"]["src/crypto_cfd_contract/rules.py"] = corrected
+    record["pre_result_corrections"] = [{
+        "path": "src/crypto_cfd_contract/rules.py", "previous_sha256": previous,
+        "corrected_sha256": corrected, "recorded_utc": "2026-10-08T00:00:00+00:00",
+        "reason": "test", "authority": "test",
+    }]
+    freeze.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "declared correction"], check=True)
+    assert verify_c001_rule_identity(root).status == "PASS"
+
+    # Once an economic result exists, the same declared correction is no longer permitted.
+    record["edge_verified"] = True
+    freeze.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "results exist"], check=True)
+    with pytest.raises(FrozenIdentityError, match=CORRECTION_AFTER_RESULTS):
+        verify_c001_rule_identity(root)
+
+
+def test_committed_freeze_record_has_no_correction_once_results_exist():
+    """Guards the gate above against the repository's own record: a correction entry and
+    `edge_verified: true` must never coexist."""
+    record = json.loads((ROOT / "research/edge_discovery/candidates/CRYPTO_CFD_C001.freeze.json").read_text())
+    assert (record.get("edge_verified") is False) or not record.get("pre_result_corrections")
+
+
+def test_repository_freeze_record_pins_the_replay_model_and_declares_its_correction():
+    """The committed record must actually carry both sections the verifier now requires."""
+    record = json.loads((ROOT / "research/edge_discovery/candidates/CRYPTO_CFD_C001.freeze.json").read_text())
+    for relative in OUTCOME_DEFINING_FILES:
+        assert relative in record["outcome_defining_file_sha256"], relative
+    for entry in record.get("pre_result_corrections", []):
+        pinned = dict(record["contract_file_sha256"])
+        pinned.update(record["outcome_defining_file_sha256"])
+        assert entry["corrected_sha256"] == pinned[entry["path"]], entry["path"]
+        assert record.get("edge_verified") is False
+
+
+def test_slice_partition_returns_only_frozen_days_not_the_outer_time_range(tmp_path):
+    """PR #31 review P1: a day can be complete for one symbol and gap-declared for the other.
+
+    Such a day is excluded from the common-day partition for the whole cohort, but the other
+    symbol still has bars inside the same time range.  Slicing by the outer bounds would hand
+    those bars to the caller as if they were frozen observations -- the exact failure mode of
+    "silently convert missing data into valid observations".
+    """
+    btc, eth, provenance, rows = _fixture_bundle(tmp_path, days=10)
+    gap_rows = {key: [dict(row) for row in value] for key, value in rows.items()}
+    # ETHUSD day 2 loses one bar, so it is no longer a complete UTC day and is excluded from the
+    # cohort -- but it still sits inside the DEV time range, which is what makes the range-based
+    # slice leak.  Day 2 is chosen (not day 0) so the excluded day is inside DEV, not before it.
+    gap_rows["ETHUSD"].pop(2 * 288 + 20)
+    doc = json.loads(provenance.read_text(encoding="utf-8"))
+    doc["datasets"][1]["row_count"] -= 1
+    provenance.write_text(json.dumps(doc), encoding="utf-8")
+    btc_raw = ingest_raw_m5(btc, provenance, "BTCUSD", _loader(rows))
+    eth_raw = ingest_raw_m5(eth, provenance, "ETHUSD", _loader(gap_rows))
+    normalized = {
+        "BTCUSD": normalize_and_derive(btc_raw)["NORMALIZED_M5"],
+        "ETHUSD": normalize_and_derive(eth_raw)["NORMALIZED_M5"],
+    }
+    manifest = build_partition_manifest(normalized)
+    dev = manifest.partitions["DEV"]
+    partitioned = set()
+    for part in manifest.partitions.values():
+        partitioned.update(part.days)
+    # Days ETHUSD has *bars* for but that are in no frozen partition: the cohort excluded them
+    # because ETHUSD's copy is incomplete, so those bars must never reach the fast screen.
+    present = {bar.time.date().isoformat() for bar in normalized["ETHUSD"].bars}
+    excluded_day = sorted(present - partitioned)
+    assert excluded_day, "fixture no longer exercises the excluded-day case"
+
+    assert len(excluded_day) == 1, "fixture no longer excludes exactly one day"
+    leaked_day = excluded_day[0]
+
+    # The excluded day lies inside the DEV outer time range, so a range-based slice would have
+    # returned it as if it were a frozen observation.
+    start = datetime.fromisoformat(dev.start_utc.replace("Z", "+00:00"))
+    end = datetime.fromisoformat(dev.end_utc.replace("Z", "+00:00"))
+    range_days = {bar.time.date().isoformat() for bar in normalized["ETHUSD"].bars
+                  if start <= bar.time < end}
+    assert leaked_day in range_days, "the excluded day is not inside the DEV time range"
+
+    eth_bars = slice_partition(normalized["ETHUSD"], dev)
+    returned_days = {bar.time.date().isoformat() for bar in eth_bars}
+    assert returned_days == set(dev.days), "slice did not return exactly the frozen DEV days"
+    assert leaked_day not in returned_days, (
+        "slice_partition returned bars from a day the cohort excluded"
+    )
+
+
+def test_blocked_report_states_its_own_code_identity_and_strategy_version(tmp_path):
+    """PR #31 review P1: a blocked report must record the exact application and strategy
+    version that produced the negative result, otherwise it cannot be reproduced or audited."""
+    report = run_crypto_cfd_c001_offline(
+        tmp_path / "missing-btc.csv", tmp_path / "missing-eth.csv",
+        tmp_path / "missing-provenance.yaml", ROOT,
+    )
+    payload = report.as_dict()
+    assert payload["final_verdict"] == "BLOCKED_DATASET_UNAVAILABLE"
+    assert payload["application_sha256"], "blocked report carries no application identity"
+    assert payload["strategy_version"] and payload["strategy_version"] != STRATEGY_VERSION_UNKNOWN
+    assert set(payload["application_files"]) == set(APPLICATION_IDENTITY_FILES)
+    assert payload["application_files"]["src/crypto_cfd_contract/rules.py"]
+
+
+def test_run_report_omits_no_identity_when_written_to_disk(tmp_path):
+    report = run_crypto_cfd_c001_offline(
+        tmp_path / "missing-btc.csv", tmp_path / "missing-eth.csv",
+        tmp_path / "missing-provenance.yaml", ROOT,
+    )
+    path = write_run_report(report, tmp_path / "nested" / "run.json")
+    written = json.loads(path.read_text(encoding="utf-8"))
+    assert written == report.as_dict()
+    assert written["application_sha256"] == report.as_dict()["application_sha256"]
+    assert written["strategy_version"] == report.as_dict()["strategy_version"]
+
+
+def test_candidate_queue_placeholders_use_a_valid_source_type():
+    """PR #31 review P1: `UNASSIGNED` was never a CandidateSource member, so a queue row using
+    it could not be loaded as a placeholder.  Every queue row must use the vocabulary."""
+    queue = ROOT / "research/edge_discovery/candidate_queue.yaml"
+    doc = yaml.safe_load(queue.read_text(encoding="utf-8"))
+    valid = {member.value for member in CandidateSource}
+    declared = set(doc["metadata_contract"]["permitted_source_types"])
+    assert declared == valid, "queue vocabulary drifted from CandidateSource"
+    for entry in doc["queue"]:
+        assert entry["source_type"] in valid, (entry["candidate_id"], entry["source_type"])
+        if entry["source_type"] == CandidateSource.FAMILY_PLACEHOLDER.value:
+            assert entry["contract_status"] == "NOT_DEFINED", entry["candidate_id"]
+            assert entry["preregistered"] is False, entry["candidate_id"]
