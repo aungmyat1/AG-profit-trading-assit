@@ -150,7 +150,8 @@ def audit(repo: str) -> dict:
         result = classify_pull_request(record, records)
         result.update({"title": record.get("title"), "url": f"https://github.com/{repo}/pull/{record['number']}",
                        "head_sha": record.get("head_sha"), "base_ref": record.get("base_ref"), "base_sha": record.get("base_sha"),
-                       "paths": record.get("paths", []), "error": record.get("error")})
+                       "paths": record.get("paths", []), "labels": record.get("labels", []),
+                       "error": record.get("error")})
         report_prs.append(result)
     main_after = api.request("GET", f"/repos/{repo}/git/ref/heads/main")["object"]["sha"]
     if main_after != main_sha:

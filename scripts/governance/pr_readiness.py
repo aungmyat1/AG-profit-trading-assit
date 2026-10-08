@@ -110,3 +110,23 @@ def classify_pull_request(pr: dict, peers: list[dict]) -> dict:
         classification = "MERGE_NOW"
         reasons.append("ALL_READINESS_GATES_PASS")
     return {"number": number, "classification": classification, "reasons": reasons, "merge_authorized": False}
+
+
+def validate_dispatch(pr: dict, requested_number: int, expected_head_sha: str,
+                      denylist: dict | None = None) -> list[str]:
+    """Validate one invocation's PR/SHA pair, readiness, and permanent deny rules."""
+    reasons: list[str] = []
+    if not pr or pr.get("number") != requested_number:
+        reasons.append("PR_NUMBER_MISMATCH")
+    if not pr or pr.get("head_sha") != expected_head_sha:
+        reasons.append("EXPECTED_HEAD_SHA_MISMATCH")
+    if not pr or pr.get("classification") != "MERGE_NOW":
+        reasons.append("READINESS_NOT_MERGE_NOW")
+
+    denylist = denylist or {}
+    if requested_number in denylist.get("blocked_pr_numbers", []):
+        reasons.append("PR_NUMBER_DENYLISTED")
+    denied_labels = {str(label).strip().casefold() for label in denylist.get("blocked_labels", [])}
+    pr_labels = {str(label).strip().casefold() for label in (pr or {}).get("labels", [])}
+    reasons.extend(f"PR_LABEL_DENYLISTED:{label}" for label in sorted(pr_labels & denied_labels))
+    return reasons

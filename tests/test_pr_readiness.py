@@ -3,7 +3,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.governance.pr_readiness import checks_state, classify_pull_request, explicit_dependencies
+from scripts.governance.pr_readiness import (
+    checks_state, classify_pull_request, explicit_dependencies, validate_dispatch,
+)
 
 
 def ready(number=1, **overrides):
@@ -72,3 +74,20 @@ def test_checks_and_dependency_parser_fail_closed():
     assert checks_state([{"conclusion": "failure"}], []) == "FAIL"
     assert checks_state([{"conclusion": "success"}], []) == "PASS"
     assert explicit_dependencies("task", "Depends-On: #12\nblocked-by #8") == [8, 12]
+
+
+def test_dispatch_inputs_are_the_one_run_allowlist():
+    pr = {"number": 7, "head_sha": "abc123", "classification": "MERGE_NOW", "labels": []}
+    assert validate_dispatch(pr, 7, "abc123") == []
+    assert "PR_NUMBER_MISMATCH" in validate_dispatch(pr, 8, "abc123")
+    assert "EXPECTED_HEAD_SHA_MISMATCH" in validate_dispatch(pr, 7, "changed")
+    assert "READINESS_NOT_MERGE_NOW" in validate_dispatch(
+        {**pr, "classification": "HOLD"}, 7, "abc123")
+
+
+def test_committed_denylist_blocks_numbers_and_labels_case_insensitively():
+    pr = {"number": 7, "head_sha": "abc123", "classification": "MERGE_NOW", "labels": ["Do-Not-Merge"]}
+    denylist = {"blocked_pr_numbers": [7], "blocked_labels": ["do-not-merge"]}
+    reasons = validate_dispatch(pr, 7, "abc123", denylist)
+    assert "PR_NUMBER_DENYLISTED" in reasons
+    assert "PR_LABEL_DENYLISTED:do-not-merge" in reasons
