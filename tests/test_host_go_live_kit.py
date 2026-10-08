@@ -535,6 +535,19 @@ def test_telegram_send_is_message_only_and_never_leaks_token(monkeypatch):
         tg.send_message("x", session=_Sess(status=401, ok=False))
 
 
+@pytest.mark.parametrize(("status", "expected"), [
+    (401, "DELIVERY_FAILED"), (429, "RETRYABLE_REJECTED"), (500, "DELIVERY_UNCERTAIN"),
+    (408, "DELIVERY_UNCERTAIN"),
+])
+def test_telegram_send_classifies_http_outcomes_conservatively(monkeypatch, status, expected):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    with pytest.raises(tg.TelegramSendError) as exc:
+        tg.send_message("x", session=_Sess(status=status, ok=False))
+    assert exc.value.delivery_state == expected
+    assert "SECRET-TOKEN-VALUE" not in str(exc.value)
+
+
 def test_telegram_validation_proposal_uses_real_renderer_and_is_unambiguous():
     ticket = tg.validation_proposal(dt.datetime(2026, 10, 1, 8, 0, tzinfo=UTC))
     text = tg.format_ticket(ticket)
@@ -607,7 +620,7 @@ def test_scheduled_telegram_send_failure_never_breaks_the_run(tmp_path, monkeypa
     monkeypatch.setattr(tg, "send_message", boom)
     lines = smoke.run_lsmc(fake_fetch(), NOW, str(tmp_path / "journal"))
     assert any("state=OPPORTUNITY" in ln for ln in lines)              # archive/watch path unaffected
-    assert "TELEGRAM_SEND_FAILED" in (tmp_path / "logs" / "telegram.log").read_text()
+    assert "TELEGRAM_SEND_DELIVERY_UNCERTAIN" in (tmp_path / "logs" / "telegram.log").read_text()
 
 
 def test_telegram_proposal_cli_sends_rendered_validation(monkeypatch, capsys):
@@ -649,12 +662,12 @@ def test_notify_logs_sent_ok_and_failure_without_secrets(tmp_path, monkeypatch):
     smoke._notify("TICKET", "READY", "x", str(tmp_path))
 
     def boom(text):
-        raise tg.TelegramSendError("send failed (HTTP 401)")
+        raise tg.TelegramSendError("send failed (HTTP 401)", delivery_state="DELIVERY_FAILED")
     monkeypatch.setattr(tg, "send_message", boom)
     smoke._notify("LSMC", "OPPORTUNITY", "x", str(tmp_path))
     log = (tmp_path / "logs" / "telegram.log").read_text()
     assert "TELEGRAM_SENT_OK TICKET=READY" in log
-    assert "TELEGRAM_SEND_FAILED LSMC=OPPORTUNITY send failed (HTTP 401)" in log
+    assert "TELEGRAM_SEND_DELIVERY_FAILED LSMC=OPPORTUNITY send failed (HTTP 401)" in log
 
 
 def _status_host(tmp_path, override=True, venv=True, log="", runner_age_h=1.0):
@@ -753,10 +766,18 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     for name in ("AG-V1-FX-Cycles", "AG-V1-Crypto-Daily", "AG-V1-LSMC-Watch"):
         assert name in install and name in uninstall
     assert ".venv\\Scripts\\python.exe" in install and "MultipleInstances IgnoreNew" in install
-    assert "--mode {1}" in install and "Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc'" in install
+    assert "--mode {1}" in install and "--mode {1}{2}" in install
+    assert "Name = 'AG-V1-FX-Cycles';    Mode = 'fx';     Minutes = 15; Canonical = $true" in install
+    # scripts/docs/build_context_pack.py reads the plan rows positionally (Name; Mode; Minutes;),
+    # so a new field must never be inserted between Mode and Minutes or CONTEXT_PACK loses the tasks.
+    assert len(re.findall(r"@\{\s*Name\s*=\s*'([^']+)';\s*Mode\s*=\s*'([^']+)';\s*Minutes\s*=\s*(\d+);", install)) == 3
+    assert "Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc'" in install
     assert "ExecutionTimeLimit (New-TimeSpan -Minutes 4) -Priority 4" in install   # default 7 = low I/O
     runner = (HOST / "live_candles_smoke.py").read_text(encoding="utf-8")
     assert runner.index("start_run_watchdog(f\"ag_v1_") < runner.index("from large_smc_watch import")
+    assert "--canonical" in runner and "manual_lines = run_manual_jobs(fetch, now, journal)" in runner
+    assert runner.index("manual_lines = run_manual_jobs(fetch, now, journal)") < runner.index("provider = snapshot_provider(GuardedMT5(mt5))")
+    assert "--canonical" in verify and "$e.Canonical" in verify
     offsets = [int(o) for o in re.findall(r"Offset = (\d+)", install)]
     assert offsets == [1, 2, 3]                        # FX, crypto tickets, continuous six-symbol LSMC
     assert "AG-V1-LSMC-Crypto-Weekend" in install and "AG-V1-LSMC-Crypto-Weekend" in uninstall

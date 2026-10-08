@@ -286,7 +286,23 @@ def test_real_adapter_shaped_rates_reach_evaluator(tmp_path, monkeypatch):
     assert result.decision == "WATCH_READY" and not guard.refused
     report = smoke.evaluate_report(provider, now=NOW, archive_root=tmp_path, policy=SIGNED_TEST_POLICY)
     assert report["matrix_complete"] and len(report["results"]) == 8
+    assert report["mission"] == "AG_OBJECTIVE_INTEGRATION_R1"
+    assert report["ticket_store_source"] == "REPLAY"
+    assert report["host_acceptance_status"] == "NOT_EVALUATED"
     assert sum(r["decision"] == "INSUFFICIENT_DATA" for r in report["results"]) == 3
+
+
+def test_scheduled_cycle_filter_is_backward_compatible_and_complete(tmp_path):
+    report = smoke.evaluate_report(MT5CandleProvider(FakeReader()), now=NOW,
+                                   archive_root=tmp_path, policy=SIGNED_TEST_POLICY,
+                                   cycles=("ASIAN_LONDON",))
+    assert report["matrix_complete"]
+    assert report["expected_evaluations"] == report["actual_evaluations"] == 4
+    assert {row["session"] for row in report["results"]} == {"ASIAN_LONDON"}
+    with pytest.raises(ValueError, match="unknown FX cycles"):
+        smoke.evaluate_report(MT5CandleProvider(FakeReader()), now=NOW,
+                              archive_root=tmp_path / "invalid", policy=SIGNED_TEST_POLICY,
+                              cycles=("UNREGISTERED",))
 
 
 def test_host_report_fake_provider_and_sanitized_evidence(tmp_path):

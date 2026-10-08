@@ -57,13 +57,15 @@ stable ticket identity/actionability, and the read-only execution firewall.
 No full test suite, economic backtest, strategy/session/risk change, or trade
 execution was performed.
 
-## Live evidence
+## Preserved artifact claims (quarantined)
 
-All evidence files below are sanitized and contain no login or account identifier.
-Their timestamps are UTC on 2026-10-07; the host-local verification date was
-2026-10-08.
+The original document described the files below as sanitized and timestamped on 2026-10-07.
+Their payloads and original hash claims are preserved, but neither sanitation nor capture
+provenance was independently authenticated in this review. The `SHA256` column is therefore
+a manifest claim, not a verified digest; see the exact recomputed values in
+[AGP_EVIDENCE_INTEGRITY_R1](AGP_EVIDENCE_INTEGRITY_R1.md).
 
-| Evidence | SHA256 | Result |
+| Evidence | Manifest SHA256 (unreconciled) | Previously reported result |
 |---|---|---|
 | `artifacts/validation/live_market_data_contract_r2/2026-10-07_raw_m15_diagnostic.json` | `73e7913b9de2f9ab108c0caf46421d942a9f04932d5582cbc979cf85738e084c` | 16/16 exact M15 windows; zero missing/extra opens |
 | `artifacts/validation/live_market_data_contract_r2/2026-10-07_quote_diagnostic.json` | `8b7028beaf3d93789e5a22f847398822d04bc397d85fd553a3ffd0938830241a` | Pre-fix raw quote timestamp mismatch evidence |

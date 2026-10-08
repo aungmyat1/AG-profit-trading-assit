@@ -7,7 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from telegram_delivery.adapter import Config, Sender, STATUSES, render_summary, render_ticket
+from telegram_delivery.adapter import (Config, Sender, STATUSES, render_session_summary,
+                                       render_summary, render_ticket)
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / 'tests' / 'fixtures' / 'telegram_delivery'
@@ -23,7 +24,20 @@ def test_fixture_status_coverage():
     assert {t['decision'] for t in TICKETS} == STATUSES
 
 
+def test_adapter_taxonomy_matches_canonical_actionability():
+    from v1_tickets import actionability as canonical
+    expected = {canonical.WATCH_READY, canonical.INFO_ONLY_STALE,
+                canonical.INFO_ONLY_INSUFFICIENT_REMAINING_R,
+                canonical.INFO_ONLY_POLICY_UNRESOLVED, canonical.INFO_ONLY_SUPPRESSED,
+                canonical.NO_TRADE, canonical.EXPIRED, canonical.MISSED,
+                canonical.BLOCKED, canonical.INSUFFICIENT_DATA, canonical.OUT_OF_SESSION}
+    assert STATUSES == expected
+    suppressed = next(t for t in TICKETS if t['decision'] == canonical.INFO_ONLY_SUPPRESSED)
+    assert render_ticket(suppressed).startswith('Ticket: fixture-INFO_ONLY_SUPPRESSED')
+
+
 def test_summary():
+
     message = render_summary(TICKETS)
     assert message + '\n' == (FIXTURES / 'summary.txt').read_text()
     assert len([line for line in message.splitlines() if line[:1].isdigit()]) == len(TICKETS)
@@ -31,9 +45,51 @@ def test_summary():
         assert t['decision'] in message and t['reason_code'] in message
 
 
+def session_digest():
+    return {
+        'schema': 'AGP_HOST_TICKET_DELIVERY_R1_SESSION_SUMMARY_V1',
+        'session_date': '2026-10-08', 'session': 'ASIAN_LONDON',
+        'status': 'INCOMPLETE_WITH_MISSED', 'expected_evaluations': 4,
+        'recorded_evaluations': 3,
+        'terminal_counts': {'INSUFFICIENT_DATA': 3},
+        'missed_pairs': [{'symbol': 'XAUUSD', 'reason_code': 'SCHEDULED_EVALUATION_NOT_RECOVERED'}],
+        'delivery_counts': {'succeeded': 1, 'failed': 0, 'uncertain': 1, 'disabled': 0,
+                            'blocked': 0, 'summary_only': 1, 'persistence_failed': 0, 'not_attempted': 0},
+        'uncertain_deliveries': [{'identity': 'ticket-1', 'status': 'WATCH_READY'}],
+        'delivery_enabled': True,
+    }
+
+
+def test_deterministic_session_digest_reports_missing_and_uncertain_without_inventing_levels():
+    first = render_session_summary(session_digest())
+    assert first == render_session_summary(session_digest())
+    assert 'Durable evaluations: 3/4' in first
+    assert 'MISSED XAUUSD | SCHEDULED_EVALUATION_NOT_RECOVERED' in first
+    assert 'Delivery enabled: true' in first
+    assert 'Delivery UNCERTAIN: 1' in first
+    assert 'Possibly undelivered (no automatic retry)' in first
+    assert 'EXECUTION: DISABLED' in first
+    assert '1.10000' not in first
+
+
+def test_session_digest_sender_restart_uses_stable_session_key(tmp_path):
+    calls = []
+    path = tmp_path / 'delivery.sqlite'
+    first = Sender(path, config(), lambda *args: calls.append(args))
+    assert first.send_session_summary(session_digest()) == 'sent'
+    assert len(calls) == 1 and 'MISSED XAUUSD' in calls[0][2]
+    rows = first.delivery_attempts('session_summary')
+    assert len(rows) == 1 and rows[0]['state'] == 'DELIVERED'
+    restarted = Sender(path, config(), lambda *args: calls.append(args))
+    assert restarted.send_session_summary(session_digest()) == 'duplicate'
+    assert len(calls) == 1
+
+
 def config(**overrides):
+    # C16 scope flag is ON here so the pre-existing informational tests keep exercising the
+    # enabled path; default-OFF behaviour is pinned separately below.
     return Config(**({'enabled': True, 'token': 'fake', 'chat_id': '123',
-                      'owner_chat_ids': frozenset({'123'})} | overrides))
+                      'owner_chat_ids': frozenset({'123'}), 'watch_info_scope': True} | overrides))
 
 
 def watch():
@@ -53,7 +109,16 @@ def test_dedupe_restart(tmp_path):
 def test_closed(tmp_path, cfg):
     calls = []
     sender = Sender(tmp_path / 'dedupe.sqlite', cfg, transport=lambda *x: calls.append(x))
-    assert sender.send_ticket(watch()) in {'disabled', 'blocked'}
+    # 'summary_only' is also closed: with the C16 flag OFF (Config() default) informational
+    # routing short-circuits before the enabled gate. Either way nothing is sent or created.
+    assert sender.send_ticket(watch()) in {'disabled', 'blocked', 'summary_only'}
+    assert calls == [] and not sender.path.exists()
+
+
+def test_session_summary_disabled_is_closed_by_default(tmp_path):
+    calls = []
+    sender = Sender(tmp_path / 'dedupe.sqlite', Config(), lambda *x: calls.append(x))
+    assert sender.send_session_summary(session_digest()) == 'disabled'
     assert calls == [] and not sender.path.exists()
 
 
@@ -69,9 +134,35 @@ def test_summary_once(tmp_path):
 def test_per_ticket_selection(tmp_path, ticket):
     calls = []
     result = Sender(tmp_path / 'dedupe.sqlite', config(), transport=lambda *x: calls.append(x)).send_ticket(ticket)
-    eligible = ticket['decision'] == 'WATCH_READY' or ticket['decision'].startswith('INFO_ONLY_')
+    eligible = (ticket['decision'] == 'WATCH_READY'
+                or ticket['decision'].startswith('INFO_ONLY_') and ticket['decision'] != 'INFO_ONLY_SUPPRESSED')
     assert result == ('sent' if eligible else 'summary_only')
     assert len(calls) == int(eligible)
+
+
+def test_info_only_suppressed_is_persistable_but_never_immediately_sent(tmp_path):
+    suppressed = next(t for t in TICKETS if t['decision'] == 'INFO_ONLY_SUPPRESSED')
+    calls = []
+    path = tmp_path / 'delivery.sqlite'
+    sender = Sender(path, config(), transport=lambda *args: calls.append(args))
+    assert sender.send_ticket(suppressed) == 'summary_only'
+    assert calls == [] and not path.exists()
+
+
+def test_unknown_decision_fails_closed_with_durable_compatibility_error(tmp_path):
+    unknown = dict(watch(), decision='FUTURE_CANONICAL_STATE')
+    calls = []
+    path = tmp_path / 'delivery.sqlite'
+    sender = Sender(path, config(), transport=lambda *args: calls.append(args))
+    assert sender.send_ticket(unknown) == 'compatibility_error'
+    assert calls == []
+    diagnostics = sender.compatibility_errors()
+    assert len(diagnostics) == 1
+    assert diagnostics[0]['identity'] == unknown['ticket_id']
+    assert diagnostics[0]['error_code'] == 'UNKNOWN_CANONICAL_DECISION'
+    assert diagnostics[0]['observed_decision'] == 'FUTURE_CANONICAL_STATE'
+    assert sender.send_ticket(unknown) == 'compatibility_error'
+    assert len(sender.compatibility_errors()) == 1 and calls == []
 
 
 def test_retry_backoff_and_redaction(tmp_path, caplog):
@@ -201,6 +292,25 @@ def test_bot_api_plain_payload(monkeypatch):
     assert request.full_url == 'https://api.telegram.org/botfake/sendMessage'
 
 
+def test_bot_api_html_escapes_source_text(monkeypatch):
+    from telegram_delivery.adapter import bot_api
+    captured = []
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def read(self): return b'{"ok": true}'
+    def open_request(request, timeout):
+        captured.append((request, timeout))
+        return Response()
+    monkeypatch.setattr('urllib.request.urlopen', open_request)
+    bot_api('fake-token', '123', '<signal> & "source"')
+    request, timeout = captured[0]
+    payload = json.loads(request.data)
+    assert payload['text'] == '<pre>&lt;signal&gt; &amp; "source"</pre>'
+    assert payload['chat_id'] == '123' and timeout == 15
+    assert request.full_url == 'https://api.telegram.org/botfake-token/sendMessage'
+
+
 def test_retry_exhaustion_logged(tmp_path, caplog):
     calls, delays = [], []
     def transport(*args):
@@ -229,7 +339,7 @@ from pathlib import Path
 tickets = json.loads(Path('tests/fixtures/telegram_delivery/tickets.json').read_text())
 ticket = next(t for t in tickets if t['decision'] == 'WATCH_READY')
 calls = []
-sender = Sender(sys.argv[1], Config(True, 'fake', '123', frozenset({'123'})), lambda *x: calls.append(x))
+sender = Sender(sys.argv[1], Config(True, 'fake', '123', frozenset({'123'}), True), lambda *x: calls.append(x))
 print(json.dumps([sender.send_ticket(ticket), len(calls)]))
 """
     for expected in [['sent', 1], ['duplicate', 0]]:
@@ -399,3 +509,47 @@ def test_network_does_not_hold_global_journal_lock(tmp_path):
         assert nested.list_uncertain() == []
     assert Sender(path, config(), transport).send_ticket(watch()) == 'sent'
     assert results == ['sent', 'duplicate']
+
+
+def test_c16_scope_default_off_scheduled_informational_is_summary_only(tmp_path):
+    calls = []
+    sender = Sender(tmp_path / 'dedupe.sqlite', Config(enabled=True, token='fake', chat_id='123',
+                                                       owner_chat_ids=frozenset({'123'})),
+                    transport=lambda *x: calls.append(x))
+    assert sender.send_ticket(watch()) == 'summary_only'
+    stale = dict(watch(), decision='INFO_ONLY_STALE', presentation='INFO_ONLY')
+    assert sender.send_ticket(stale) == 'summary_only'
+    assert calls == []
+
+
+def test_c16_scope_default_off_refuses_owner_resend_with_scope_not_enabled(tmp_path):
+    calls = []
+    sender = Sender(tmp_path / 'dedupe.sqlite', config(watch_info_scope=False),
+                    transport=lambda *x: calls.append(x))
+    for ticket in (watch(), dict(watch(), decision='INFO_ONLY_STALE', presentation='INFO_ONLY')):
+        assert sender.resend_ticket(ticket, force=True, actor='owner') == 'SCOPE_NOT_ENABLED'
+    assert calls == []
+
+
+def test_c16_scope_enabled_allows_owner_resend_of_informational(tmp_path):
+    calls = []
+    path = tmp_path / 'dedupe.sqlite'
+    def ambiguous(*x):
+        raise RuntimeError('network ambiguous')
+    # Force resend only applies to an UNCERTAIN claim: seed one, then resend under the flag.
+    assert Sender(path, config(watch_info_scope=True), transport=ambiguous).send_ticket(watch()) == 'uncertain'
+    sender = Sender(path, config(watch_info_scope=True), transport=lambda *x: calls.append(x))
+    assert sender.resend_ticket(watch(), force=True, actor='owner') == 'sent'
+    assert len(calls) == 1
+
+
+def test_c16_scope_never_gates_suppressed_or_ready_states(tmp_path):
+    calls = []
+    sender = Sender(tmp_path / 'dedupe.sqlite', config(watch_info_scope=False),
+                    transport=lambda *x: calls.append(x))
+    suppressed = dict(watch(), decision='INFO_ONLY_SUPPRESSED', presentation='INFO_ONLY')
+    assert sender.resend_ticket(suppressed, force=True, actor='owner') == 'summary_only'
+    no_trade = dict(watch(), decision='NO_TRADE', presentation='OTHER')
+    assert sender.resend_ticket(no_trade, force=True, actor='owner') == 'summary_only'
+    assert calls == []
+

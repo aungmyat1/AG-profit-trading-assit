@@ -108,25 +108,36 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
     uninstall = (root / "scripts" / "host" / "uninstall_tasks.ps1").read_text(encoding="utf-8")
     schedule_ok = all(name in install and name in uninstall and f"Mode = '{mode}'" in install
                       for name, mode in EXPECTED_TASKS.items())
-    schedule_ok = schedule_ok and "verify_tasks.ps1" in install and "MultipleInstances IgnoreNew" in install
+    schedule_ok = (schedule_ok and "Canonical = $true" in install
+                   and "--mode {1}{2}" in install and "--canonical" in install
+                   and "$e.Canonical" in (root / "scripts" / "host" / "verify_tasks.ps1").read_text(encoding="utf-8")
+                   and "verify_tasks.ps1" in install and "MultipleInstances IgnoreNew" in install)
+    runner_src = (root / "scripts" / "host" / "live_candles_smoke.py").read_text(encoding="utf-8")
+    canonical_fx_ok = ("manual_lines = run_manual_jobs(fetch, now, journal)" in runner_src
+                       and "run_canonical_fx_cycle(" in runner_src
+                       and "ticket_source=\"LIVE\"" in runner_src
+                       and "ticket_source=\"REPLAY\"" in runner_src)
+    schedule_ok = schedule_ok and canonical_fx_ok
     checks.append(_check(
         "scheduled_tasks", schedule_ok,
-        ", ".join(f"{name}:{mode}" for name, mode in EXPECTED_TASKS.items()),
+        ", ".join(f"{name}:{mode}" for name, mode in EXPECTED_TASKS.items()) + "; FX=canonical+manual-jobs",
     ))
 
     delivery = yaml.safe_load((root / "config" / "ticket_delivery.yaml").read_text(encoding="utf-8"))
     override = root / telegram.OVERRIDE_PATH
+    canonical_override = root / "config" / "local" / "canonical_ticket_delivery.yaml"
     gitignored = "/config/local/" in (root / ".gitignore").read_text(encoding="utf-8")
     checks.append(_check(
         "safe_delivery_default",
-        delivery.get("mode") == "ARCHIVE_ONLY" and not override.exists() and gitignored
-        and not (delivery.get("telegram_destination") or {}).get("authorized_chat_ids"),
+        delivery.get("mode") == "ARCHIVE_ONLY" and not override.exists() and not canonical_override.exists()
+        and gitignored and not (delivery.get("telegram_destination") or {}).get("authorized_chat_ids"),
         f"mode={delivery.get('mode')} committed_override={override.exists()} "
-        f"gitignored={gitignored} (Telegram remains host-local opt-in)",
+        f"canonical_override={canonical_override.exists()} gitignored={gitignored} "
+        "(Telegram remains host-local opt-in)",
     ))
 
-    # Reporting scope: only fresh READY proposals and Large-SMC OPPORTUNITY alerts may leave
-    # the host.  Everything else stays archive-only, and no path can authorize an order.
+    # Legacy reporting keeps its existing scope. Canonical FX delivery has a separate
+    # host-local recipient allowlist plus environment feature gate; no buttons/callbacks.
     with tempfile.TemporaryDirectory() as probe:                     # fully-enabled probe host
         enabled = Path(probe) / telegram.OVERRIDE_PATH
         enabled.parent.mkdir(parents=True, exist_ok=True)
@@ -136,13 +147,18 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
                   for kind, values in (("TICKET", ("READY", "NO_TRADE", "BLOCKED", "STALE", "DATA_ERROR")),
                                        ("LSMC", ("OPPORTUNITY", "WATCH", "INFO")))}
     runner_src = (root / "scripts" / "host" / "live_candles_smoke.py").read_text(encoding="utf-8")
+    canonical_src = (root / "scripts" / "host" / "canonical_fx_delivery.py").read_text(encoding="utf-8")
+    canonical_opt_in = ("config/local/canonical_ticket_delivery.yaml" in canonical_src
+                        and "env_chat in env_allow" in canonical_src and "env_chat in local_ids" in canonical_src
+                        and "TELEGRAM_DELIVERY_ENABLED" in canonical_src)
     checks.append(_check(
         "telegram_report_scope",
         scoped == {"TICKET": ("READY",), "LSMC": ("OPPORTUNITY",)}
         and tuple(telegram.SCOPES) == ("TICKET_READY", "LSMC_OPPORTUNITY")
-        and runner_src.count("if new and notify:") == 2 and "reply_markup" not in runner_src,
+        and runner_src.count("if new and notify:") == 2 and "reply_markup" not in runner_src
+        and canonical_opt_in,
         f"ticket={list(scoped['TICKET'])} lsmc={list(scoped['LSMC'])} "
-        "(message-only, newly-archived decisions only)",
+        f"canonical_opt_in={canonical_opt_in} (message-only, owner-allowlisted)",
     ))
 
     failures = [item["check"] for item in checks if item["status"] == "FAIL"]

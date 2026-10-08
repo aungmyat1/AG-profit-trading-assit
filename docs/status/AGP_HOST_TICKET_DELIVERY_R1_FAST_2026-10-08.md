@@ -1,0 +1,232 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
+# AGP Host Ticket Delivery R1 (FAST) — canonical FX ticket + delivery pipeline (2026-10-08)
+
+Mission `AGP_HOST_TICKET_DELIVERY_R1_FAST` (P0). Shortest safe path: read-only VT Markets MT5
+Demo candles → deterministic canonical FX evaluation → durable ticket records → canonical
+delivery → delivery/session journals → owner decision capture. This is an **informational
+ticket pipeline**, not an execution system. No strategy logic, session definition,
+entry/SL/TP formula, risk rule, eligibility rule, economic threshold or verification state was
+changed. `demo_authorized` and `live_authorized` remain `false`; `order_send`, `order_check`
+and every broker mutation path remain uncalled (0 broker mutations).
+
+## Snapshot
+
+| Field | Value |
+| --- | --- |
+| Base | `main` @ `ed0252dbf21da73231e7a1f89f13e0ccc5e6210b` |
+| Work branch | `arena/ca7a6ec4-ag-profit-trading-assit` |
+| Code + offline tests | COMPLETE on the branch |
+| Full offline suite | `1338 passed, 3 skipped` (no `cogapp`) / `1339 passed, 2 skipped` (with `cogapp`, as CI's docs job runs it); identical in deterministic **and** randomized order |
+| `scripts/host/verify_objective.py` | `RESULT: PASS` |
+| Windows host acceptance | **NOT_EVALUATED** — no authorized Windows MT5 host or open window in this session; Linux fixtures were not substituted for live evidence |
+| Telegram live acceptance | **NOT_AUTHORIZED** — transport mocked in every test; no destination approved by the owner |
+| Broker mutations | 0 |
+
+## What changed
+
+- **Delivery taxonomy (`src/telegram_delivery/adapter.py`, derived from PR #60).** The adapter now
+  carries the full canonical taxonomy, including the previously unsupported `INFO_ONLY_SUPPRESSED`,
+  and routes it to `summary_only`: a suppressed READY (production READY authority OFF, reason
+  `READY_AUTHORITY_OFF_D6`) is persisted and counted in the session summary but is never an
+  immediate alert. `_known_decision` fails closed on an unknown decision string, and unknown or
+  incompatible states are recorded through `compatibility_errors()` instead of being silently
+  dropped or promoted.
+- **Delivery attempts and session summaries.** `delivery_attempts(kind, identities)` gives an
+  audited per-identity attempt record, and `build_session_summary` / `render_session_summary` /
+  `send_session_summary` produce a deterministic per-session digest (one typed terminal outcome
+  per instrument × session, explicit `Delivery enabled:` line, explicit
+  `Missing scheduled evaluations (MISSED):` line, persistence-failure and compatibility-error
+  lines). Summaries are a separate delivery kind, deduplicated by session key and disabled by
+  default; missing data is reported as `MISSED`, never rewritten into `NO_TRADE`.
+- **Persistence verification (`scripts/host/canonical_fx_delivery.py`).** `_verify_persisted_result`
+  re-reads the ticket store after a write and reports `ticket_store_status`; a store failure is
+  surfaced as `delivery_state="persistence_failed"` and never as a delivered or dropped ticket.
+- **Scheduled canonical FX path.** `scripts/host/live_candles_smoke.py --mode fx --canonical`
+  preserves `run_manual_jobs`, evaluates only the active frozen FX cycle through `daily_evaluator`,
+  appends canonical results to `TICKET_STORE_V1`, and writes the separate durable
+  delivery/session journals. `--mode fx` without `--canonical` stays the unscheduled legacy
+  compatibility path. Restart/idempotency is covered: an interrupted cycle re-runs without
+  duplicate tickets or duplicate alerts, and one typed terminal outcome is recorded per
+  instrument × session.
+- **LSMC alert dedup ledger (`src/host_delivery/lsmc_alert_dedup.py`).** `AlertLedger` +
+  `deliver_once` record the attempt before the network call and resolve it afterwards, so a
+  `DELIVERY_UNCERTAIN` or `SENT` outcome is never blind-retried, a definite rejection may be
+  retried, and a confirmation identity that cannot be derived fails closed as
+  `IDENTITY_UNAVAILABLE`. No network call happens under the main journal transaction lock.
+- **Typed transport outcome (`src/host_delivery/telegram_message.py`).** `TelegramSendError`
+  carries `delivery_state` ∈ {`BLOCKED`, `RETRYABLE_REJECTED`, `DELIVERY_UNCERTAIN`,
+  `DELIVERY_FAILED`}: missing credentials or an unauthorized recipient fail closed as `BLOCKED`,
+  HTTP 429 is `RETRYABLE_REJECTED`, 5xx/408/timeout stay `DELIVERY_UNCERTAIN`, other non-OK
+  responses are `DELIVERY_FAILED`. Rendering is tick-normalized and uses the configured broker
+  symbol (`_configured_broker_symbol`, `_display_record`) so crypto alerts carry correct metadata
+  (PR #48 review finding).
+- **Legacy journal contract preserved.** The legacy `ticket_delivery/delivery_status` rows keep
+  their frozen `status` vocabulary (`SENT` / `NOT_SENT_POLICY` / `FAILED` / `ERROR`); the typed
+  transport outcome is reported in `logs/telegram.log` only
+  (`TELEGRAM_SEND_DELIVERY_UNCERTAIN`, `TELEGRAM_SEND_DELIVERY_FAILED`, …). No durable row schema
+  was changed.
+- **Host task wiring and docs.** `install_tasks.ps1` / `verify_tasks.ps1` install and verify the
+  canonical FX task alongside the crypto and LSMC tasks; `GO_LIVE.md`, `verify_objective.py` and
+  `live_eval_smoke.py` were updated to match. `CANONICAL_OVERRIDE` is the literal
+  `config/local/canonical_ticket_delivery.yaml`, and no override file is committed
+  (`config/local/` stays gitignored).
+- **Evidence integrity.** The four stale/ambiguous artifacts and the stale mission label in
+  `docs/status/AG_MARKET_DATA_CONTRACT_R2_2026-10-08.md` were reconciled and quarantined in
+  [AGP_EVIDENCE_INTEGRITY_R1](AGP_EVIDENCE_INTEGRITY_R1.md).
+
+## Delivery scope (unchanged authority)
+
+`verify_objective.py` reports `telegram_report_scope: ticket=['READY'] lsmc=['OPPORTUNITY']
+canonical_opt_in=True` and `safe_delivery_default: mode=ARCHIVE_ONLY committed_override=False
+canonical_override=False`. Immediate sends remain limited to `TICKET_READY` and
+`LSMC_OPPORTUNITY` on the legacy host path; canonical `WATCH_READY` / `INFO_ONLY_*` delivery sits
+behind a default-OFF local flag plus recipient authorization and the environment gate; session
+summaries are permitted as their own kind and are also default-OFF. Production READY authority is
+OFF, so every canonical decision in this build is `INFO_ONLY_SUPPRESSED` and produces 0 immediate
+sends (see `tests/test_canonical_fx_delivery.py::test_suppressed_ready_is_persisted_but_never_alerted`).
+The D6 pause is carried on `main` independently of PR #50 (still open/draft): `config/v1_tickets/ready_authority.yaml`
+and `src/v1_tickets/{ready_authority,actionability}.py` are byte-identical to `main`, and
+`ready_authority('ST_ASIAN_SWEEP_5R_V1')` returns `(False, 'READY_AUTHORITY_OFF_D6')`.
+
+## Offline test evidence
+
+- Full suite: `python -m pytest -q` → `1338 passed, 3 skipped` in this sandbox (`cogapp` absent) and
+  `1339 passed, 2 skipped` after installing `cogapp`, which is how CI's docs job runs it. The two
+  remaining skips are the live Binance network smoke and the real `MetaTrader5` package: no
+  live-host path was exercised offline.
+- New/changed focused suites: `tests/test_canonical_fx_delivery.py` 29 passed;
+  `tests/test_telegram_delivery_adapter.py` 70 passed; `tests/test_lsmc_alert_dedup.py` 6 passed;
+  `tests/test_telegram_message_metadata.py` 5 passed; `tests/test_mt5_provider_integration.py`
+  29 passed; `tests/test_host_go_live_kit.py` 71 passed, 1 skipped.
+- Suppression evidence: `tests/test_d6_ready_authority.py` + `tests/test_d6_actionability_suppressed.py`
+  + `test_suppressed_ready_is_persisted_but_never_alerted` → 22 passed (no `ASIAN_LONDON`
+  `ST_ASIAN_SWEEP_5R_V1` READY can be emitted; the shadow decision never reaches Telegram scope).
+- Delivery-gate evidence: `tests/test_host_go_live_kit.py -k "telegram or notify"` → 15 passed;
+  `tests/test_canonical_fx_delivery.py -k "sender or disabled or unauthorized or repo_delivery"` → 5 passed.
+
+## Behavior changes an owner must note
+
+1. The session summary no longer reports `owner_decision_counts`. Nothing in this build writes
+   `outcome_kind == "OWNER_DECISION"` rows for canonical tickets, so the field was always 0 and
+   was removed rather than reported as a misleading zero. Owner decisions continue to use the
+   existing append-only mechanism in `src/v1_tickets/owner_decision.py` (preserved, untouched).
+2. `INFO_ONLY_SUPPRESSED` is now a first-class supported state and is excluded from the
+   per-ticket immediate-alert selection (`test_per_ticket_selection` narrowed accordingly).
+3. Telegram failure logging is typed (`TELEGRAM_SEND_<delivery_state>`) instead of the single
+   `TELEGRAM_SEND_FAILED` string.
+
+## Known limitation recorded honestly
+
+An in-session extension of the owner-decision capture path (a canonical capture script, a ticket
+store decision module and its test) was deleted by an explicit `rm -f` before it was ever
+committed, so its content is unrecoverable. A7 is therefore delivered as *existing append-only
+owner-decision mechanism preserved*, not extended. No other file loss occurred; the reflog,
+stash list and history were checked to confirm the deletion was the only cause.
+
+## HOLD accountability (owner-requested, 2026-10-08)
+
+The owner placed a HOLD before commit/push and required four read-only answers on the record.
+They are reproduced here so the answers survive independently of the chat transcript.
+
+### 1. Three files that disappeared from the worktree — EXPLAINED, deleted by the agent
+
+`scripts/capture_canonical_ticket_decision.py`, `src/ticket_store/owner_decision.py` and
+`tests/test_ticket_store_owner_decision.py` were removed by one explicit command run in this
+session: `rm -f scripts/capture_canonical_ticket_decision.py src/ticket_store/owner_decision.py
+tests/test_ticket_store_owner_decision.py`. This is therefore **not** `WORKTREE_INTEGRITY_UNKNOWN`.
+Forensics: `git reflog --date=iso` held exactly two entries (clone, checkout to
+`arena/ca7a6ec4-ag-profit-trading-assit`), so no reset or checkout could have dropped them;
+`git stash list` was empty; `git log --all -- <the three paths>` was empty (never committed on any
+ref); `git worktree list` showed a single worktree; no other process held the checkout; no shell
+history file exists. Because they were never committed, their content is unrecoverable, so A7 is
+delivered as *the existing append-only owner-decision mechanism preserved and untouched*
+(`src/v1_tickets/owner_decision.py`), not extended — see the limitation section above.
+
+### 2. Assertions removed or weakened on this branch
+
+| Location | Old → New | Verdict |
+| --- | --- | --- |
+| `tests/test_telegram_delivery_adapter.py::test_bot_api_plain_payload` (:287–288) | `chat_id == '123' and timeout == 15` and `request.full_url == '…/botfake/sendMessage'` had drifted into the newer HTML test only → **restored** | Real weakening, fixed before commit |
+| `tests/test_telegram_delivery_adapter.py::test_per_ticket_selection` (:134) | eligible = `WATCH_READY` or `INFO_ONLY_*` → additionally excludes `INFO_ONLY_SUPPRESSED` | Intentional A1 behavior change |
+| `src/telegram_delivery/adapter.py` session summary | `owner_decision_counts` field and `assert 'CONFIRM=1 REJECT=0'` removed | **Behavior change**: always 0 (nothing writes `OWNER_DECISION` rows for canonical tickets) |
+| `tests/test_host_go_live_kit.py` (:623, :665, :670) | `TELEGRAM_SEND_FAILED` → `TELEGRAM_SEND_DELIVERY_UNCERTAIN`; `TelegramSendError(…)` → `TelegramSendError(…, delivery_state="DELIVERY_FAILED")`; log text → `TELEGRAM_SEND_DELIVERY_FAILED` | Stricter (typed), not weaker |
+| `tests/test_host_go_live_kit.py` (:769–772) | single `--mode {1}` + LSMC row → `--mode {1}`, `--mode {1}{2}`, FX `Minutes = 15; Canonical = $true`, LSMC row, runner-order and `verify` assertions, plus a positional-parse assertion | Net stronger |
+| `tests/test_lsmc_alert_dedup.py` vs `origin/pr-48` | one comment reworded; two tests added (ambiguous/restart `PENDING` never resends; missing confirmation identity → `IDENTITY_UNAVAILABLE`) | No assertion removed |
+| `tests/test_mt5_provider_integration.py` | +16 lines, none removed | Additive |
+
+### 3. Suppression and Telegram-scope evidence
+
+ASIAN_LONDON `ST_ASIAN_SWEEP_5R_V1` READY cannot be emitted: PR #50 is still open/draft/unmerged,
+but the D6 pause is carried on `main` — `git diff --stat ed0252d -- config/v1_tickets/ready_authority.yaml
+src/v1_tickets/ready_authority.py src/v1_tickets/actionability.py` is empty (byte-identical) and
+`ready_authority('ST_ASIAN_SWEEP_5R_V1')` returns `(False, 'READY_AUTHORITY_OFF_D6')`.
+`pytest tests/test_d6_ready_authority.py tests/test_d6_actionability_suppressed.py
+tests/test_canonical_fx_delivery.py::test_suppressed_ready_is_persisted_but_never_alerted -q` →
+22 passed (all four symbols `INFO_ONLY_SUPPRESSED`, 0 sends).
+Immediate sends are limited to `TICKET_READY` + `LSMC_OPPORTUNITY` with canonical
+`WATCH_READY`/`INFO_ONLY_*` behind a default-OFF flag and session summaries as their own kind:
+`pytest tests/test_host_go_live_kit.py -k "telegram or notify"` → 15 passed;
+`pytest tests/test_canonical_fx_delivery.py -k "sender or disabled or unauthorized or repo_delivery"`
+→ 5 passed; `verify_objective.py` → `telegram_report_scope: ticket=['READY'] lsmc=['OPPORTUNITY']
+canonical_opt_in=True`, `safe_delivery_default: mode=ARCHIVE_ONLY committed_override=False
+canonical_override=False`, `RESULT: PASS`. `order_send(` / `order_check(` call sites in `src/` and
+`scripts/host/`: 0.
+
+### 4. Derivation from PR #60 and the push HOLD
+
+`src/telegram_delivery/` is derived from PR #60 (`__init__.py` and 12 of 13 fixtures byte-identical
+to `origin/pr-60` @ `80dd66a16917b3e304a707e8dc492e8dafd9e062`; `adapter.py` and its test carry
+this mission's changes). #60 was still OPEN and unmerged with a head updated on 2026-10-08, so the
+owner directed: **wait for #60 to merge, then rebase this branch onto it and re-run the suite; do
+not push.** Local backup taken before the hold, outside the repository (the requested Windows path
+`D:\ag-telemetry\` is not reachable from this Linux session):
+
+- File: `/home/user/ag-telemetry/arena-ca7a6ec4-2026-10-08.bundle` (`git bundle create … --all`, 17,919,496 bytes)
+- SHA-256: `99c3f80113699dbcfd6288404a90e0fc38c1d56c17891cfd3382d08d799cc1b9`
+- `git bundle verify`: "The bundle records a complete history." Heads: `52a890a…` (this branch),
+  `ed0252d…` (`main` / `origin/main`), `256774e0…` (`origin/pr-48`), `80dd66a1…` (`origin/pr-60`).
+
+## Corrections caught before commit
+
+1. `scripts/host/live_candles_smoke.py::_notify` first shipped the typed `delivery_state` as the
+   legacy journal `status`, which broke the frozen row contract pinned by
+   `tests/test_manual_ticket_scan_records.py::test_telegram_failure_never_hides_scan_records_and_is_traced`
+   (`FAILED` / `ERROR`). The journal vocabulary was restored and the typed outcome moved to
+   `logs/telegram.log` only.
+2. `scripts/host/install_tasks.ps1` first inserted `Canonical = $true` between `Mode` and
+   `Minutes`, which silently broke the positional parse in `scripts/docs/build_context_pack.py`
+   and would have published a CONTEXT_PACK listing zero scheduled tasks. The rows were reordered
+   (`Name; Mode; Minutes; Canonical; Offset`) and the ordering is now pinned by assertions in
+   `tests/test_host_go_live_kit.py` and `tests/test_canonical_fx_delivery.py`;
+   `build_context_pack.py --check` reports `UP_TO_DATE`.
+3. `tests/test_telegram_delivery_adapter.py::test_bot_api_plain_payload` had lost its
+   `chat_id`/`timeout`/endpoint assertions (they only existed in the newer HTML-escaping test);
+   both were restored, so the transport contract is asserted on both paths.
+
+## Dependencies
+
+- `src/telegram_delivery/` is derived from **PR #60** (head `80dd66a1`): `__init__.py` and 12 of 13
+  fixtures are byte-identical to `origin/pr-60`; `adapter.py` and its test carry this mission's
+  changes. #60 must be frozen (or this branch rebased onto it) before merge.
+- PR **#48** (head `256774e0`) review findings addressed: crypto symbol metadata fixed; this
+  document plus the new dated `PROJECT_STATUS.md` section provide the rolling status update.
+- PR **#50** remains open/draft/unmerged; the D6 pause it carries is already on `main`.
+
+No authority is granted by this document: no Demo execution, no Live execution, no economic edge
+claim (`EDGE_VERIFIED=FALSE`), and no Windows host acceptance.
+
+## Update 2026-10-08 — rebased
+
+- **Base:** `main` @ `4012d8f` (merge of PR #60, `mergedAt` 2026-10-08T13:47:14Z).
+- **#60 dependency:** resolved. The five `src/telegram_delivery/` files now equal #60's blobs plus this branch's deltas. Main was authoritative during the rebase; no #60 code was duplicated.
+- **HOLD:** lifted. PR #79 is ready for review, not a draft. Its title no longer carries "HOLD". The section above, "HOLD accountability", is unchanged and remains the record of the pre-rebase hold.
+- **Rebased feature commit:** `1b04e42`. Doc commit on top: `ef626a4`.
+- **Scope fix (C16), commit `3b94753`:** the rebase review found that the scheduled canonical path had no informational scope gate. With delivery enabled it sent `WATCH_READY` and non-suppressed `INFO_ONLY_*` immediately. This contradicted the `ticket=['READY'] lsmc=['OPPORTUNITY']` contract. Both scheduled delivery and owner `resend --force` now require the default-OFF flag `watch_info_scope: true` in the host-local override, plus recipient authorization. With the flag OFF, scheduled informational decisions become `summary_only`, and owner resend returns `SCOPE_NOT_ENABLED`. C16 is still `PENDING_OWNER` in `docs/governance/OWNER_DECISION_REGISTER.md`; this flag implements the default-OFF side only.
+- **Head SHA:** this section is committed on top of `3b94753`. The current PR #79 head is the tip of the branch; the owner-facing report carries that SHA.
+- **Gates on the rebased head:** see the final report and PR #79. Host acceptance remains `NOT_EVALUATED`. Telegram live acceptance remains `NOT_AUTHORIZED`.
+- **Authority:** unchanged. No Demo or Live execution, no `EDGE_VERIFIED` claim, no broker mutation path.
