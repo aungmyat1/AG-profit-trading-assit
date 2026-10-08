@@ -1,22 +1,139 @@
+---
+class: status
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # Project Status — AG Profit Trading
+
+## Generated facts
+
+### Authority table
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+cog.outl("| Strategy | demo_authorized | Authority source |")
+cog.outl("|---|---:|---|")
+for row in facts["strategies"]:
+    assertion = row["demo_authorized"]
+    value = "true" if assertion["value"] is True else "false" if assertion["value"] is False else "unspecified"
+    cog.outl(f"| `{row['id']}` | {value} | [`{assertion['evidence_source']}`]({assertion['evidence_source']}) |")
+]]] -->
+| Strategy | demo_authorized | Authority source |
+|---|---:|---|
+| `R8_OBM_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `SESSION_TRADE_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `SMC_3R_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_ASIAN_SWEEP_5R_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_LARGE_SMC_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_LIQUIDITY_SWEEP_RETEST_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_SESSION_SWEEP_CONTINUATION_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+<!-- [[[end]]] -->
+
+### Strategy verification and authorization
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+cog.outl("| Strategy | Version | Logic verified | Edge verified | Demo authorized |")
+cog.outl("|---|---|---:|---:|---:|")
+for row in facts["strategies"]:
+    version = row["version"] or "unspecified"
+    def rendered(assertion):
+        value = assertion["value"]
+        return "unknown" if value is None else str(value).lower()
+    cog.outl(f"| `{row['id']}` | `{version}` | {rendered(row['logic_verified'])} | {rendered(row['edge_verified'])} | {rendered(row['demo_authorized'])} |")
+]]] -->
+| Strategy | Version | Logic verified | Edge verified | Demo authorized |
+|---|---|---:|---:|---:|
+| `R8_OBM_V1` | `unspecified` | unknown | unknown | false |
+| `SESSION_TRADE_V1` | `1` | unknown | unknown | false |
+| `SMC_3R_V1` | `unspecified` | unknown | unknown | false |
+| `ST_ASIAN_SWEEP_5R_V1` | `1.1.1` | unknown | unknown | false |
+| `ST_LARGE_SMC_V1` | `1.0.7` | unknown | unknown | false |
+| `ST_LIQUIDITY_SWEEP_RETEST_V1` | `2.0.0` | unknown | unknown | false |
+| `ST_SESSION_SWEEP_CONTINUATION_V1` | `1.0.1` | unknown | unknown | false |
+<!-- [[[end]]] -->
+
+### Schedule
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+schedule = facts["schedule"]
+cog.outl(f"Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `{schedule['timezone']}`; scheduler `{schedule['scheduler']}`.")
+cog.outl("")
+cog.outl("| Task name | Cadence | Start UTC | End UTC |")
+cog.outl("|---|---|---:|---:|")
+for row in schedule["tasks"]:
+    cog.outl(f"| `{row['name']}` | {row['cadence']} | {row['start']} | {row['end'] or 'open'} |")
+]]] -->
+Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `UTC`; scheduler `AG_DAILY_OPPORTUNITY_SCHEDULER_V2`.
+
+| Task name | Cadence | Start UTC | End UTC |
+|---|---|---:|---:|
+| `PRE_FLIGHT` | daily | 06:25 | 06:30 |
+| `BTC_OBSERVE` | daily | 06:30 | 06:45 |
+| `BTC_FINALIZE` | daily | 06:45 | 06:50 |
+| `PRE_LONDON_REFERENCE` | daily | 06:50 | 06:55 |
+| `PRE_LONDON_READINESS` | daily | 06:55 | 07:00 |
+| `WINDOW_ASIAN_LONDON` | daily | 07:00 | 11:00 |
+| `POST_LONDON` | daily | 11:00 | 11:05 |
+| `STANDBY` | daily | 11:05 | 11:55 |
+| `PRE_NEW_YORK` | daily | 11:55 | 12:00 |
+| `WINDOW_LONDON_NEWYORK` | daily | 12:00 | 15:00 |
+| `POST_NEW_YORK` | daily | 15:00 | 15:10 |
+| `P1_RESEARCH` | daily | 15:10 | open |
+<!-- [[[end]]] -->
+
+### Collector inputs
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+from scripts.generate_live_status import inputs_sha256
+cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
+]]] -->
+inputs_sha256: `72fd02593e2acd0f7a1b1699376543792ee240b311c471054d430f688d6c55ee`.
+<!-- [[[end]]] -->
+
+### Objective
+<!-- [[[cog
+from pathlib import Path
+text = Path("docs/PROJECT_OBJECTIVE.md").read_text(encoding="utf-8")
+body = text.split("## Objective\n", 1)[1].split("\n## ", 1)[0]
+cog.outl(body.strip())
+cog.outl("")
+cog.outl("Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).")
+]]] -->
+Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
+
+The owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.
+
+`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority.
+
+Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
+<!-- [[[end]]] -->
+
 
 AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## ST_ASIAN_SWEEP_5R_V1 v1.1.2 candidate — Logic Gate L2 closed (2026-10-07)
+## TICKET_STORE_V1 — append-only ticket evaluation store (2026-10-08)
 
-New candidate `strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml` resolves every Phase B spec/engine
-divergence. The engine's behavior becomes the spec; unsafe outputs fail closed: TREND and
-range-rejection entries, a body-edge entry that is the pre-signal open, a zero stop, TP1 beyond
-TP2, and an unmeasurable spread. EMA_50, `range_session_check` and the volume-based structural
-invalidation are removed. Logic Gate L1–L6 on the recorded EURUSD fixtures: the conforming sweep
-passes L1–L4, and every other FAIL is a declared fail-closed rule. The candidate is registered
-`LOGIC_VERIFIED`, with an identity digest. v1.1.1 stays the frozen authority and stays
-`NOT_VERIFIED`, so **Asian Sweep READY stays paused** until the owner confirms the recommended
-Phase B values (`PENDING_OWNER_CONFIRM`). `EDGE_VERIFIED = FALSE`; demo/live unchanged.
-Tests: focused **10 passed**; full suite **1154 passed, 2 skipped**. Evidence:
-`docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md`.
+The canonical-ticket path (`daily_evaluator._finalize`) now also appends one
+`TICKET_STORE_V1_EVALUATION` per strategy×symbol×session evaluation, for every terminal state,
+to `<archive_root>/ticket_store/evaluations/<day>.jsonl`. Each record carries the spec and code
+SHA, the source (LIVE only from the real MT5 host run, otherwise REPLAY), the levels, the
+measured spread and input-bar hashes. Unmeasured facts are null. Writes are idempotent;
+records are never mutated. OUTCOME records are separate, keyed by `ticket_id`. The SQLite index
+(`scripts/ticket_store_reindex.py`) is rebuildable, with a JSONL == index integrity check.
+Legacy migration (`scripts/ticket_store_migrate.py`, source=LEGACY) of the committed evidence
+journal: 28 lines → 12 evaluations; a re-run writes 0. Host journal migration NOT_EVALUATED.
+Decisions, strategies and authority unchanged. Tests: focused **13 passed**; full suite
+**1157 passed, 2 skipped**. Evidence: `docs/status/AG_TICKET_STORE_V1_STATUS_2026-10-08.md`.
 
 ## Stale-data gate keeps trigger close — TRIGGER_TIMEFRAME_UNKNOWN resolved (2026-10-08)
 

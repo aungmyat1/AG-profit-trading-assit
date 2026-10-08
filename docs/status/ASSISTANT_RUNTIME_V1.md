@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ASSISTANT_RUNTIME_V1
 
 Runtime that lets the Trade Assistant coordinate `SESSION_TRADE_V1` (`ASIAN_LONDON`

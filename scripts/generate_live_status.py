@@ -1,95 +1,131 @@
-"""AG_PROJECT_LIVE_CONTROL_PLANE_V1 -- thin orchestration entrypoint.
-
-Derives a LiveStatusSnapshot (src/validation_orchestrator/live_status.py), computes
-its state fingerprint, renders it to Markdown (src/validation_orchestrator/render.py),
-and writes docs/status/PROJECT_LIVE_STATUS.md only if the rendered content actually
-changed (write-if-changed, keyed on the embedded fingerprint comment, so unrelated
-`generated_at_utc` churn never produces a spurious diff).
-
-Contains no evaluation logic of its own -- see the imported modules for the real
-implementation. Read-only against strategy/evidence/git state; writes only the one
-generated status file.
-
-Usage:
-    python scripts/generate_live_status.py            # write if changed
-    python scripts/generate_live_status.py --check     # exit 1 if stale/missing, no write
-    python scripts/generate_live_status.py --json       # print snapshot as JSON, no write
-"""
+#!/usr/bin/env python3
+"""Generate the deterministic project live-status authority summary."""
 from __future__ import annotations
 
 import argparse
 import json
-import re
-import sys
-from dataclasses import asdict
+import hashlib
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "src"))
-
-from validation_orchestrator.live_status import compute_fingerprint, derive_snapshot  # noqa: E402
-from validation_orchestrator.render import render_markdown  # noqa: E402
-from runtime_status.probe import probe_runtime, runtime_status_as_dict  # noqa: E402
-
 OUTPUT_PATH = REPO_ROOT / "docs" / "status" / "PROJECT_LIVE_STATUS.md"
-_FINGERPRINT_RE = re.compile(r"<!-- LIVE_STATE_FINGERPRINT: ([0-9a-f]{64}) -->")
 
 
-def _existing_fingerprint(path: Path) -> str:
-    if not path.exists():
-        return ""
-    match = _FINGERPRINT_RE.search(path.read_text(encoding="utf-8"))
-    return match.group(1) if match else ""
+def collector_input_paths(root: Path) -> list[str]:
+    """Sorted authorities, including config sources used for strategy versions."""
+    paths = {"strategies/registry.yaml", "docs/PROJECT_OBJECTIVE.md",
+             "config/ag_scheduler_v2.yaml", "scripts/docs/advisory_allowlist.json"}
+    registry = yaml.safe_load((root / "strategies/registry.yaml").read_text()) or {}
+    for row in (registry.get("strategies") or {}).values():
+        source = row.get("config_source")
+        if isinstance(source, str) and source.lower().endswith((".yaml", ".yml")):
+            path = (root / source).resolve()
+            path.relative_to(root.resolve())
+            if path.is_file():
+                paths.add(path.relative_to(root.resolve()).as_posix())
+    for base in ("docs", "config"):
+        paths.update(path.relative_to(root).as_posix()
+                     for path in (root / base).rglob("*.supersession.yaml"))
+    return sorted(paths)
 
 
-def freshness(path: Path, fingerprint: str) -> str:
-    if not path.exists():
-        return "LIVE_STATUS_MISSING"
-    if _existing_fingerprint(path) != fingerprint:
-        return "LIVE_STATUS_STALE"
-    return "LIVE_STATUS_FRESH"
+def inputs_sha256(root: Path) -> str:
+    """Hash sorted UTF-8 paths + NUL + byte length + NUL + exact file bytes.
+
+    Length framing prevents ambiguous boundaries; paths are repository-relative.
+    """
+    digest = hashlib.sha256()
+    for relative in collector_input_paths(root):
+        data = (root / relative).read_bytes()
+        digest.update(relative.encode("utf-8") + b"\0")
+        digest.update(str(len(data)).encode("ascii") + b"\0" + data)
+    return digest.hexdigest()
 
 
-def _snapshot_to_jsonable(snapshot) -> dict:
-    data = asdict(snapshot)
-    return data
+def _version_for(root: Path, source: Any) -> str | None:
+    if not isinstance(source, str) or not source.lower().endswith((".yaml", ".yml")):
+        return None
+    path = (root / source).resolve()
+    try:
+        path.relative_to(root.resolve())
+        content = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except (ValueError, OSError, yaml.YAMLError):
+        return None
+    value = content.get("version") if isinstance(content, dict) else None
+    return None if value is None else str(value)
 
 
-def main(argv=None) -> int:
+def collect_live_status_facts(root: Path) -> dict[str, Any]:
+    """Return fields shared by PROJECT_LIVE_STATUS and status/facts.json."""
+    registry = yaml.safe_load((root / "strategies" / "registry.yaml").read_text(encoding="utf-8")) or {}
+    strategies = []
+    for strategy_id, item in sorted((registry.get("strategies") or {}).items()):
+        demo = item.get("demo_authorized")
+        live = item.get("live_authorized")
+        strategies.append({
+            "id": strategy_id,
+            "version": _version_for(root, item.get("config_source")),
+            "demo_authorized": demo if isinstance(demo, bool) else None,
+            "live_authorized": live if isinstance(live, bool) else None,
+        })
+    return {
+        "schema": "AG_PROJECT_LIVE_STATUS_V4",
+        "inputs_sha256": inputs_sha256(root),
+        "strategies": strategies,
+    }
+
+
+def render_markdown(facts: dict[str, Any]) -> str:
+    lines = [
+        "<!-- GENERATED FILE — DO NOT MANUALLY EDIT. Regenerate with scripts/generate_live_status.py -->",
+        "# Project Live Status",
+        "",
+        f"Schema: `{facts['schema']}`",
+        f"inputs_sha256: `{facts['inputs_sha256']}`",
+        "",
+        "## Strategy authority",
+        "",
+        "| strategy_id | version | demo_authorized | live_authorized |",
+        "|---|---|---:|---:|",
+    ]
+    for row in facts["strategies"]:
+        version = row["version"] or "unspecified"
+        demo = "unknown" if row["demo_authorized"] is None else str(row["demo_authorized"]).lower()
+        live = "unknown" if row["live_authorized"] is None else str(row["live_authorized"]).lower()
+        lines.append(f"| `{row['id']}` | `{version}` | {demo} | {live} |")
+    lines += [
+        "",
+        "Authority source: [`strategies/registry.yaml`](../../strategies/registry.yaml).",
+        "Logic and economic-edge verification are intentionally outside this generated authority table.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check", action="store_true", help="exit 1 if stale/missing; never writes")
-    parser.add_argument("--json", action="store_true", help="print the snapshot as JSON; never writes")
+    parser.add_argument("--check", action="store_true")
+    parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
-
-    snapshot = derive_snapshot(repo_root=REPO_ROOT)
-    fp = compute_fingerprint(snapshot)
-
+    facts = collect_live_status_facts(REPO_ROOT)
     if args.json:
-        runtime = probe_runtime(repo_root=REPO_ROOT)
-        payload = {
-            "governance": _snapshot_to_jsonable(snapshot),
-            "runtime": runtime_status_as_dict(runtime),
-        }
-        print(json.dumps(payload, indent=2, sort_keys=True, default=str))
+        print(json.dumps(facts, indent=2, sort_keys=True))
         return 0
-
-    state = freshness(OUTPUT_PATH, fp)
-
+    rendered = render_markdown(facts)
     if args.check:
-        print(json.dumps({"state": state, "fingerprint": fp, "path": str(OUTPUT_PATH)}, indent=2))
-        return 0 if state == "LIVE_STATUS_FRESH" else 1
-
-    if state == "LIVE_STATUS_FRESH":
-        print(json.dumps({"written": False, "state": state, "fingerprint": fp}, indent=2))
+        current = OUTPUT_PATH.read_text(encoding="utf-8") if OUTPUT_PATH.exists() else ""
+        if current != rendered:
+            print(f"LIVE_STATUS_STALE: {OUTPUT_PATH}")
+            return 1
+        print(f"LIVE_STATUS_FRESH: {OUTPUT_PATH}")
         return 0
-
-    runtime = probe_runtime(repo_root=REPO_ROOT)
-    rendered = render_markdown(snapshot, fp, runtime_status=runtime)
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(rendered, encoding="utf-8")
-    print(json.dumps({"written": True, "state": state, "fingerprint": fp, "path": str(OUTPUT_PATH)}, indent=2))
+    print(f"LIVE_STATUS_WRITTEN: {OUTPUT_PATH}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

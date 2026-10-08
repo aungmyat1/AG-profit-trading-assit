@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Large SMC EURUSD Friction Policy -- WP3A Empirical Friction Evidence (2026-09-16)
 
 Read-only evidence-gathering mission against the WP2-frozen admission contracts. No

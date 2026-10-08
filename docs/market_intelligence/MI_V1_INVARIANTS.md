@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # MI V1 invariants and test plan
 
 1. Same-event identity: all component evidence carries the caller event ID; mixed IDs

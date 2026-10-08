@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # VD V1 immutable ledger contract
 
 The ledger is append-only, schema-versioned, and content addressed. Canonical serialization uses UTF-8 JSON with sorted keys, normalized UTC ISO-8601 timestamps, decimal strings for prices/quantities/money, explicit nulls, and no NaN/Infinity. `id = SHA256(namespace | schema_version | canonical immutable payload)`. The record envelope carries `record_id`, `record_type`, `campaign_id`, `event_ordinal`, `created_at_virtual`, `prior_record_hash`, `payload_hash`, and source parent IDs. Wall-clock telemetry is outside the semantic hash. Duplicate ID with different payload fails closed. Corrections append a superseding record and retain the original.

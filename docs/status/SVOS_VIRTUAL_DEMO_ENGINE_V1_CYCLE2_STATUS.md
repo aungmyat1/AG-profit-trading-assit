@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SVOS Virtual Demo Engine V1 Cycle 2 — Virtual Time and Feed
 
 Date: 2026-09-20. Classification: **VD_TIME_FEED_READY** (`UNIT_TESTED` temporal infrastructure only).

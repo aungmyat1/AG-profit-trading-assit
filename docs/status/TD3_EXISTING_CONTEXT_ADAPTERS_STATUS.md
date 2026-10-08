@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-3 — Existing Context Adapters
 
 **Status:** COMPLETE. Follows TD-0 (audit), TD-1 (contract freeze,

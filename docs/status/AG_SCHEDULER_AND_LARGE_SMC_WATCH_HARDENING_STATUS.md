@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Scheduler + Large SMC Watch Hardening (2026-09-20)
 
 Mission `AG_SCHEDULER_AND_LARGE_SMC_WATCH_HARDENING_V1`. Prepares the repository for

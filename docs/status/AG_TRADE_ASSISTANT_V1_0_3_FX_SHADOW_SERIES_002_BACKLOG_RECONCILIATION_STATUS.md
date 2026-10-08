@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_TRADE_ASSISTANT_V1_0_3 -- FX Shadow Series 002 Backlog Reconciliation (2026-09-23)
 
 Dated evidence snapshot per `docs/status/LIVE_STATUS_MAINTENANCE.md`. Continuation of

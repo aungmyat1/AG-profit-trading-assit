@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-3A — Top-Down Fact Contract Gap Audit
 
 **Status:** COMPLETE. Follows TD-0 (audit), TD-1 (contract freeze,

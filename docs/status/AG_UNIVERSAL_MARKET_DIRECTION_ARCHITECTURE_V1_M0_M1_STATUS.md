@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Universal Market Direction Architecture V1 -- M0 (Audit) + M1 (Canonical Contract) Status
 
 Scope executed this pass: **M0 (audit only, no behavioral changes) + M1 (canonical

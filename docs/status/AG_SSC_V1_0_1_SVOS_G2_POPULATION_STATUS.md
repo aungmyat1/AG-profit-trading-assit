@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SSC v1.0.1 SVOS G2 Population — Status (2026-09-19)
 
 ## Summary

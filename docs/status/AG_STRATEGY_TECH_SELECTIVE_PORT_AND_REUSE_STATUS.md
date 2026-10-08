@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_STRATEGY_TECH_SELECTIVE_PORT_AND_REUSE_STATUS
 
 2026-09-06. Full discovery doc: `docs/architecture/AG_STRATEGY_TECH_SELECTIVE_PORT_REUSE_LEDGER.md`.

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 — C14A Candidate Occurrence Identity Audit (2026-09-01)
 
 Status: **OWNER_DECISION_REQUIRED**. This is a correction to the prior C14 phase's

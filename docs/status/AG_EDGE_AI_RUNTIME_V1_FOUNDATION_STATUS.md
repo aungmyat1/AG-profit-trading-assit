@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Edge + AI Runtime V1 Foundation Status
 
 Date: 2026-09-26

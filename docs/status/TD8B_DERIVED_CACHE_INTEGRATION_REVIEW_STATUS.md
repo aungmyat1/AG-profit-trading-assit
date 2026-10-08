@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-8B derived cache integration review — 2026-09-19
 
 Status: `COMPLETE_SCOPED`, owner-approved for freeze. Branch `main`; starting

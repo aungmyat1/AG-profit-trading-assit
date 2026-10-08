@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_MARKET_INTELLIGENCE_V1 release and freeze
 
 `FINAL_CLASSIFICATION = MI_V1_FROZEN`

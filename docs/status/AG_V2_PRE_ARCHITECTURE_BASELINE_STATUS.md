@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG V2 Pre-Architecture Baseline + Core Contracts — Status (2026-09-21)
 
 ## Classification

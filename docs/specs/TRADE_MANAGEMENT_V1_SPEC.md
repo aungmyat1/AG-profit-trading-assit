@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # TRADE_MANAGEMENT_V1 Spec — 2026-08-28
 
 Package: `trade_management/` (new modules: `geometry.py`, `sizing.py`,

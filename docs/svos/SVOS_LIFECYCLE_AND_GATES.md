@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # SVOS Lifecycle and Gates — P2 / P18
 
 The permanent SVOS flow, reconciled onto the repository's canonical authorities.

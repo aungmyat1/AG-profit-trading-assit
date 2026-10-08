@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TD-8 — Replay Temporal Parity & Dataset Identity
 
 **Status:** COMPLETE. Prerequisite verified: TD-7 (`4aefc73c7c56e304fdff3c3634d27646031d0c79`)

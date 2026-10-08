@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_ASIAN_SWEEP_5R_V1@1.1.1 — Phase B owner decisions (template)
 
 Status: **PENDING_OWNER**. Not filled in. Every `Choice` below is `PENDING_OWNER` until the owner

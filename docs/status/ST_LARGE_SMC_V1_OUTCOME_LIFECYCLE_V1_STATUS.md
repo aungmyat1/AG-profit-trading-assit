@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS
 
 Date: 2026-09-02. Strategy version: **1.0.6**. Environment: Python 3.14.0, pytest

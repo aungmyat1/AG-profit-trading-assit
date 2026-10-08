@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # Panel-R5A Owner Auth -- Status (2026-09-23)
 
 R5A_BASE_SHA = `609e92f07ef2fac6333df3d14ee91648b4e3b8d1` (PANEL-R4 implementation,

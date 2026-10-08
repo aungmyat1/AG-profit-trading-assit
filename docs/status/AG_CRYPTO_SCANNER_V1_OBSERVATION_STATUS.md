@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Crypto Scanner V1 — BTCUSD / ETHUSD Observation Status
 
 **Date:** 2026-10-03

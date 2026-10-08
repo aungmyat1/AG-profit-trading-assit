@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Panel R5B Durable Execution Idempotency -- Status (2026-09-23)
 
 R5B_BASE_SHA = `c94beb8e38928de25f105a086806f98ab7485c59` (PANEL-R5A-R1 implementation,

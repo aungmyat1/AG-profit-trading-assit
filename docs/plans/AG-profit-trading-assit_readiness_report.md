@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Project Readiness Report — aungmyat1/AG-profit-trading-assit
 
 **Checked:** 2026-09-21 · **Clone:** full history, 277 commits, 1,805 files
