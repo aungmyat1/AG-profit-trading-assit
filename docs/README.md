@@ -6,9 +6,7 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
-[AGP-TG-01 offline Telegram delivery](status/AGP_TG_01_OFFLINE_2026-10-08.md)
-records the canonical fields, schema gaps, disabled defaults and current focused/full-suite evidence.
-
+[AGP-GRADE-01 offline M1 outcome grading](status/AGP_GRADE_01_STATUS_2026-10-08.md) records the store-native replay evaluator, fixture report, and bounded verification.
 [MT5 provider/evaluator R1 offline integration](status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md)
 records the M15 data contract, fixture verification and pending Windows live
 acceptance. It grants no execution or economic authority.
