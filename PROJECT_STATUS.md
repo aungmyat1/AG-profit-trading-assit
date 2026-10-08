@@ -10,11 +10,9 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 cog.outl("| Strategy | demo_authorized | Authority source |")
 cog.outl("|---|---:|---|")
 for row in facts["strategies"]:
-    value = "true" if row["demo_authorized"] is True else "false" if row["demo_authorized"] is False else "unspecified"
-    cog.outl(f"| `{row['id']}` | {value} | [`strategies/registry.yaml`](strategies/registry.yaml) |")
-ci = facts.get("last_ci_result")
-cog.outl("")
-cog.outl("Last local CI result: " + (f"`{json.dumps(ci, sort_keys=True)}`" if ci is not None else "unavailable (no local result file; network lookup disabled)"))
+    assertion = row["demo_authorized"]
+    value = "true" if assertion["value"] is True else "false" if assertion["value"] is False else "unspecified"
+    cog.outl(f"| `{row['id']}` | {value} | [`{assertion['evidence_source']}`]({assertion['evidence_source']}) |")
 ]]] -->
 | Strategy | demo_authorized | Authority source |
 |---|---:|---|
@@ -25,30 +23,31 @@ cog.outl("Last local CI result: " + (f"`{json.dumps(ci, sort_keys=True)}`" if ci
 | `ST_LARGE_SMC_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `ST_LIQUIDITY_SWEEP_RETEST_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
 | `ST_SESSION_SWEEP_CONTINUATION_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
-
-Last local CI result: unavailable (no local result file; network lookup disabled)
 <!-- [[[end]]] -->
 
-### Strategy verdicts
+### Strategy verification and authorization
 <!-- [[[cog
 import json
 from pathlib import Path
 facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
-cog.outl("| Strategy | Version | Verdict |")
-cog.outl("|---|---|---|")
+cog.outl("| Strategy | Version | Logic verified | Edge verified | Demo authorized |")
+cog.outl("|---|---|---:|---:|---:|")
 for row in facts["strategies"]:
     version = row["version"] or "unspecified"
-    cog.outl(f"| `{row['id']}` | `{version}` | `{row['verdict']}` |")
+    def rendered(assertion):
+        value = assertion["value"]
+        return "unknown" if value is None else str(value).lower()
+    cog.outl(f"| `{row['id']}` | `{version}` | {rendered(row['logic_verified'])} | {rendered(row['edge_verified'])} | {rendered(row['demo_authorized'])} |")
 ]]] -->
-| Strategy | Version | Verdict |
-|---|---|---|
-| `R8_OBM_V1` | `unspecified` | `NOT_DEMO_AUTHORIZED` |
-| `SESSION_TRADE_V1` | `1` | `NOT_DEMO_AUTHORIZED` |
-| `SMC_3R_V1` | `unspecified` | `NOT_DEMO_AUTHORIZED` |
-| `ST_ASIAN_SWEEP_5R_V1` | `1.1.1` | `NOT_DEMO_AUTHORIZED` |
-| `ST_LARGE_SMC_V1` | `1.0.7` | `NOT_DEMO_AUTHORIZED` |
-| `ST_LIQUIDITY_SWEEP_RETEST_V1` | `2.0.0` | `NOT_DEMO_AUTHORIZED` |
-| `ST_SESSION_SWEEP_CONTINUATION_V1` | `1.0.1` | `NOT_DEMO_AUTHORIZED` |
+| Strategy | Version | Logic verified | Edge verified | Demo authorized |
+|---|---|---:|---:|---:|
+| `R8_OBM_V1` | `unspecified` | unknown | unknown | false |
+| `SESSION_TRADE_V1` | `1` | unknown | unknown | false |
+| `SMC_3R_V1` | `unspecified` | unknown | unknown | false |
+| `ST_ASIAN_SWEEP_5R_V1` | `1.1.1` | unknown | unknown | false |
+| `ST_LARGE_SMC_V1` | `1.0.7` | unknown | unknown | false |
+| `ST_LIQUIDITY_SWEEP_RETEST_V1` | `2.0.0` | unknown | unknown | false |
+| `ST_SESSION_SWEEP_CONTINUATION_V1` | `1.0.1` | unknown | unknown | false |
 <!-- [[[end]]] -->
 
 ### Schedule
@@ -82,15 +81,33 @@ Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `
 | `P1_RESEARCH` | daily | 15:10 | open |
 <!-- [[[end]]] -->
 
-### Last-updated source revision
+### Source revision
 <!-- [[[cog
 import json
 from pathlib import Path
 facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
-git = facts["git"]
-cog.outl(f"Facts snapshot HEAD: `{git['head_sha']}` ({git['head_date']}).")
+source = facts["source_snapshot"]
+cog.outl(f"source_snapshot: `{source['sha']}` ({source['date']}).")
 ]]] -->
-Facts snapshot HEAD: `cf0ce0f3804b550b74544c769f4b979902e496e4` (2026-10-08T14:07:04+06:30).
+source_snapshot: `cf0ce0f3804b550b74544c769f4b979902e496e4` (2026-10-08T14:07:04+06:30).
+<!-- [[[end]]] -->
+
+### Objective
+<!-- [[[cog
+from pathlib import Path
+text = Path("docs/PROJECT_OBJECTIVE.md").read_text(encoding="utf-8")
+body = text.split("## Objective\n", 1)[1].split("\n## ", 1)[0]
+cog.outl(body.strip())
+cog.outl("")
+cog.outl("Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).")
+]]] -->
+Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
+
+The owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.
+
+`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority.
+
+Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
 <!-- [[[end]]] -->
 
 

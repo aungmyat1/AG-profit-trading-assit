@@ -1,96 +1,141 @@
 #!/usr/bin/env python3
-"""Grep-like guard for documentation authority claims that contradict the registry."""
+"""Blocking structured documentation checks against canonical local sources."""
 from __future__ import annotations
 
 import argparse
-import fnmatch
+import json
 import re
-import subprocess
 from pathlib import Path
+from typing import Any
+
+import yaml
+
+from collect_facts import read_objective
 
 ROOT = Path(__file__).resolve().parents[2]
-CLAIM = re.compile(
-    r"(?i)(?:demo_authorized\s*[:=]\s*(?:true|yes)\b|"
-    r"\bdemo[- _](?:authorized|eligible|qualified)\s*(?:[:=]\s*)?(?:true|yes|authorized|eligible|qualified)\b|"
-    r"\bDEMO_QUALIFIED\b)"
-)
+DATE = re.compile(r"20\d\d-\d\d-\d\d")
+AFFIRMATIVE_DEMO = re.compile(r"demo_authorized\s*[:=]\s*(?:`?true`?|yes)\b", re.I)
 
 
-def tracked_docs(root: Path) -> list[str]:
-    paths = subprocess.check_output(
-        ["git", "ls-files", "-co", "--exclude-standard", "--", "*.md"], cwd=root, text=True
-    ).splitlines()
-    return sorted(p for p in paths if p == "PROJECT_STATUS.md" or p == "README.md" or p.startswith("docs/"))
+def _frontmatter_class(text: str) -> str | None:
+    if not text.startswith("---\n") or "\n---\n" not in text[4:]:
+        return None
+    metadata = yaml.safe_load(text[4:].split("\n---\n", 1)[0]) or {}
+    value = metadata.get("class")
+    return str(value).lower() if value is not None else None
 
 
-def outside_cog_blocks(text: str) -> str:
-    output, in_cog = [], False
+def _sections(text: str) -> list[tuple[str, str]]:
+    sections: list[tuple[str, list[str]]] = [("", [])]
     for line in text.splitlines():
-        if "<!-- [[[cog" in line:
-            in_cog = True
-            continue
-        if in_cog:
-            if "<!-- [[[end]]] -->" in line:
-                in_cog = False
-            continue
-        output.append(line)
-    return "\n".join(output)
+        if line.startswith("## "):
+            sections.append((line[3:].strip(), []))
+        else:
+            sections[-1][1].append(line)
+    return [(heading, "\n".join(lines)) for heading, lines in sections]
 
 
-def allowlist(path: Path) -> list[tuple[str, re.Pattern[str], str]]:
-    rows = []
+def _historical_policy(path: Path) -> tuple[set[str], set[str]]:
+    classes: set[str] = set()
+    dated_files: set[str] = set()
     for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         fields = line.split("|", 2)
-        if len(fields) != 3 or not all(x.strip() for x in fields):
-            raise ValueError(f"{path}:{number}: expected path-glob|regex|reason")
-        rows.append((fields[0].strip(), re.compile(fields[1].strip(), re.IGNORECASE), fields[2].strip()))
-    return rows
+        if len(fields) != 3:
+            raise ValueError(f"{path}:{number}: expected kind|selector|reason")
+        kind, selector, _ = (field.strip() for field in fields)
+        if kind == "class":
+            classes.add(selector.lower())
+        elif kind == "section" and selector.endswith("#dated-heading"):
+            dated_files.add(selector.removesuffix("#dated-heading"))
+        else:
+            raise ValueError(f"{path}:{number}: unsupported allowlist rule")
+    return classes, dated_files
+
+
+def current_truth_contradictions(
+    root: Path, registry_rows: dict[str, Any], allowlist_path: Path | None = None
+) -> list[str]:
+    """Find current-truth prose assertions; evidence docs and dated sections are historical."""
+    false_ids = {key for key, row in registry_rows.items() if row.get("demo_authorized") is False}
+    classes, dated_files = _historical_policy(
+        allowlist_path or root / "scripts" / "docs" / "docs_drift_allowlist.txt"
+    )
+    documents = [root / "README.md", root / "PROJECT_STATUS.md"]
+    documents.extend(sorted((root / "docs").rglob("*.md")))
+    failures: list[str] = []
+    for path in documents:
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        if _frontmatter_class(text) in classes:
+            continue
+        rel = str(path.relative_to(root))
+        for heading, body in _sections(text):
+            if rel in dated_files and DATE.search(heading):
+                continue
+            for paragraph in re.split(r"\n\s*\n", body):
+                for match in AFFIRMATIVE_DEMO.finditer(paragraph):
+                    prefix = paragraph[:match.start()]
+                    positions = [(prefix.rfind(strategy_id), strategy_id) for strategy_id in registry_rows]
+                    position, strategy_id = max(positions, default=(-1, ""))
+                    if position >= 0 and strategy_id in false_ids:
+                        excerpt = " ".join(paragraph.split())[:240]
+                        failures.append(f"{rel} [{strategy_id}]: {excerpt}")
+    return failures
+
+
+def check(root: Path, facts_path: Path, registry_path: Path, objective_path: Path) -> list[str]:
+    facts = json.loads(facts_path.read_text(encoding="utf-8"))
+    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8")) or {}
+    errors: list[str] = []
+    fact_rows = {row.get("id"): row for row in facts.get("strategies", [])}
+    registry_rows = registry.get("strategies") or {}
+    if set(fact_rows) != set(registry_rows):
+        errors.append("strategy IDs differ between facts.json and registry.yaml")
+    for strategy_id, registry_row in sorted(registry_rows.items()):
+        fact_row = fact_rows.get(strategy_id)
+        if fact_row is None:
+            continue
+        expected_demo = registry_row.get("demo_authorized")
+        demo = fact_row.get("demo_authorized") or {}
+        if demo.get("value") != expected_demo or demo.get("evidence_source") != "strategies/registry.yaml":
+            errors.append(f"{strategy_id}: demo_authorized differs from registry authority")
+        for field in ("logic_verified", "edge_verified"):
+            assertion = fact_row.get(field) or {}
+            evidence = assertion.get("evidence_source")
+            if assertion.get("value") is not None and not evidence:
+                errors.append(f"{strategy_id}: {field} has a value without dated evidence_source")
+            if evidence:
+                evidence_path = root / evidence
+                if (not evidence.startswith("docs/status/") or not evidence_path.is_file()
+                        or not re.search(r"20\d\d-\d\d-\d\d", evidence)):
+                    errors.append(f"{strategy_id}: {field} evidence_source is not a dated docs/status file")
+    if facts.get("objective") != read_objective(objective_path):
+        errors.append("objective differs between facts.json and docs/PROJECT_OBJECTIVE.md")
+    errors.extend(f"current-truth contradiction: {item}" for item in current_truth_contradictions(root, registry_rows))
+    return errors
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--registry", type=Path, default=ROOT / "strategies" / "registry.yaml")
-    parser.add_argument("--allowlist", type=Path, default=ROOT / "scripts" / "docs" / "docs_drift_allowlist.txt")
+    parser.add_argument("--repo-root", type=Path, default=ROOT)
+    parser.add_argument("--facts", type=Path)
+    parser.add_argument("--registry", type=Path)
+    parser.add_argument("--objective", type=Path)
     args = parser.parse_args()
-    import yaml
-    registry = yaml.safe_load(args.registry.read_text(encoding="utf-8")) or {}
-    false_ids = sorted(
-        strategy_id for strategy_id, entry in (registry.get("strategies") or {}).items()
-        if entry.get("demo_authorized") is False
+    root = args.repo_root.resolve()
+    errors = check(
+        root,
+        args.facts or root / "status" / "facts.json",
+        args.registry or root / "strategies" / "registry.yaml",
+        args.objective or root / "docs" / "PROJECT_OBJECTIVE.md",
     )
-    allowed = allowlist(args.allowlist)
-    failures, ignored = [], 0
-    for rel in tracked_docs(ROOT):
-        content = outside_cog_blocks((ROOT / rel).read_text(encoding="utf-8"))
-        for line_number, line in enumerate(content.splitlines(), 1):
-            claim = CLAIM.search(line)
-            if not claim:
-                continue
-            # Require the strategy ID before the affirmative claim on the same line.
-            # This avoids attributing a different strategy's authority in prose/tables.
-            prefix = line[:claim.start()]
-            # A compact key/value row may place the ID immediately before the value.
-            # Accept only an explicitly labeled ID assignment, not another ID elsewhere.
-            for strategy_id in false_ids:
-                id_position = prefix.rfind(strategy_id)
-                if id_position < 0:
-                    continue
-                between = prefix[id_position + len(strategy_id):]
-                if re.search(r"\b(?:only|other|separately|independently|different|not for)\b", between, re.I):
-                    continue
-                if strategy_id in {"ST_ASIAN_SWEEP_5R_V1", "ST_LIQUIDITY_SWEEP_RETEST_V1"} and "SESSION_TRADE_V1" in line:
-                    continue
-                if any(fnmatch.fnmatch(rel, glob) and pattern.search(line) and strategy_id in pattern.pattern
-                       for glob, pattern, _ in allowed):
-                    ignored += 1
-                    continue
-                failures.append((rel, line_number, strategy_id, " ".join(line.split())[:240]))
-    for rel, line_number, strategy_id, excerpt in failures:
-        print(f"CONTRADICTION {rel}:{line_number} [{strategy_id}]: {excerpt}")
-    print(f"docs-drift: {len(failures)} contradiction(s), {ignored} allowlisted historical/context claim(s)")
-    return 1 if failures else 0
+    for error in errors:
+        print(f"BLOCKING: {error}")
+    print(f"docs-drift blocking: {len(errors)} error(s)")
+    return 1 if errors else 0
 
 
 if __name__ == "__main__":

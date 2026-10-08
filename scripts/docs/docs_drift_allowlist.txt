@@ -1,7 +1,3 @@
-# path|Python regular expression over one line|reason
-# Dated status snapshots preserve authority as it was reported before owner decision D3 (2026-09-30).
-PROJECT_STATUS.md|SESSION_TRADE_V1.*demo_authorized: true|Historical SESSION_TRADE_V1 authority text predates D3; rolling status above records false.
-README.md|SESSION_TRADE_V1.*demo_authorized: true|Historical SESSION_TRADE_V1 authority text predates D3; registry is current authority.
-docs/PROJECT_CAPABILITY_COMPLETENESS.md|SESSION_TRADE_V1.*demo_authorized: true|Historical capability matrix retained as evidence; SESSION_TRADE_V1 authority was withdrawn D3.
-docs/PROJECT_CAPABILITY_COMPLETENESS.md|SESSION_TRADE_V1: demo_authorized=true|Historical project-state summary retained as evidence; authority was withdrawn D3.
-docs/status/RECONCILIATION_AUDIT_POST_BB6AC0F.md|SESSION_TRADE_V1.*demo_authorized: true|Snapshot records pre-D3 authority state.
+# kind|selector|reason
+class|evidence|Evidence-class documents are historical and never current authority.
+section|PROJECT_STATUS.md#dated-heading|Dated PROJECT_STATUS sections preserve historical truth.

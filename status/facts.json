@@ -1,9 +1,8 @@
 {
-  "git": {
-    "head_date": "2026-10-08T14:07:04+06:30",
-    "head_sha": "cf0ce0f3804b550b74544c769f4b979902e496e4"
+  "objective": {
+    "source": "docs/PROJECT_OBJECTIVE.md#objective",
+    "text": "Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.\n\nThe owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.\n\n`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
   },
-  "last_ci_result": null,
   "schedule": {
     "scheduler": "AG_DAILY_OPPORTUNITY_SCHEDULER_V2",
     "tasks": [
@@ -82,48 +81,122 @@
     ],
     "timezone": "UTC"
   },
-  "schema": "AG_DOC_FACTS_V1",
+  "schema": "AG_DOC_FACTS_V2",
+  "source_snapshot": {
+    "date": "2026-10-08T14:07:04+06:30",
+    "sha": "cf0ce0f3804b550b74544c769f4b979902e496e4"
+  },
   "strategies": [
     {
-      "demo_authorized": false,
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "id": "R8_OBM_V1",
-      "verdict": "NOT_DEMO_AUTHORIZED",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "version": null
     },
     {
-      "demo_authorized": false,
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "id": "SESSION_TRADE_V1",
-      "verdict": "NOT_DEMO_AUTHORIZED",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "version": "1"
     },
     {
-      "demo_authorized": false,
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "id": "SMC_3R_V1",
-      "verdict": "NOT_DEMO_AUTHORIZED",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "version": null
     },
     {
-      "demo_authorized": false,
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "id": "ST_ASIAN_SWEEP_5R_V1",
-      "verdict": "NOT_DEMO_AUTHORIZED",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "version": "1.1.1"
     },
     {
-      "demo_authorized": false,
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "id": "ST_LARGE_SMC_V1",
-      "verdict": "NOT_DEMO_AUTHORIZED",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "version": "1.0.7"
     },
     {
-      "demo_authorized": false,
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "id": "ST_LIQUIDITY_SWEEP_RETEST_V1",
-      "verdict": "NOT_DEMO_AUTHORIZED",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "version": "2.0.0"
     },
     {
-      "demo_authorized": false,
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "id": "ST_SESSION_SWEEP_CONTINUATION_V1",
-      "verdict": "NOT_DEMO_AUTHORIZED",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "version": "1.0.1"
     }
   ]
