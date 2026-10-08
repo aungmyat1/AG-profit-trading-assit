@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 12956)
-Total output lines: 1008
-
 """AG V1 host go-live kit: every script path that can run without MT5 (MetaTrader5 is faked),
 plus static checks on the PowerShell scripts and on the read-only / no-secret invariants."""
 from __future__ import annotations
@@ -218,7 +215,631 @@ def test_smoke_prints_states_and_archives_only(tmp_path):
 
 def test_smoke_includes_usdjpy_once_metadata_captured(tmp_path):
     cap.main(["--symbol", "USDJPY", "--broker-symbol", "USDJPY"], mt5=FakeMT5(), offset_fn=lambda s: 2,
-             root=s…7956 tokens truncated…      assert name in install and name in uninstall
+             root=str(tmp_path / "evidence"))
+    lines = smoke.run_smoke(fake_fetch(), NOW, str(tmp_path / "journal"))
+    assert any(ln.startswith("FX USDJPY") for ln in lines)          # attempted (fake has no USDJPY data)
+
+
+def test_fx_never_falls_back_to_plain_symbols(tmp_path):
+    for canonical in ("EURUSD", "GBPUSD"):
+        os.remove(sm.evidence_path(canonical))
+    _vip_record("EURUSD", sm.evidence_root(), broker="EURUSD")             # a plain-symbol capture is not accepted
+    from v1_tickets import fx
+    assert fx.metadata_status("EURUSD") == "FIXTURE_ONLY"
+    with pytest.raises(sm.HostDataError) as exc:
+        fx.broker_symbol("EURUSD")
+    assert exc.value.code == "METADATA_MISSING" and "EURUSD-VIP" in str(exc.value)
+    fetched = []
+    lines = smoke.run_fx(lambda s, tf, n: fetched.append(s) or [], NOW, str(tmp_path / "j"), gated=False)
+    assert not fetched and all("DATA_ERROR reason=METADATA_MISSING" in ln for ln in lines if ln.startswith("FX EUR"))
+
+
+def test_fx_mode_ready_requires_fresh_signal_and_spread(tmp_path):
+    lines = smoke.run_fx(fake_fetch(), NOW, str(tmp_path / "j"), gated=False, quote=lambda b: (1.1000, 1.1001))
+    assert lines and not any("decision=READY" in ln and "spread_check=PASS" not in ln for ln in lines)
+    no_quote = smoke.run_fx(fake_fetch(), NOW, str(tmp_path / "j2"), gated=False)
+    assert not any("decision=READY" in ln for ln in no_quote)
+
+
+def test_fx_runtime_projects_only_eligible_ready_to_idempotent_paper_ledger(tmp_path, monkeypatch):
+    now = dt.datetime(2026, 1, 6, 8, 0, tzinfo=UTC)
+    monkeypatch.setattr(smoke, "fx_symbols", lambda: ["EURUSD"])
+
+    def ready(symbol, cycle, m15, at, data_close=None, spread=None):
+        return {
+            "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
+            "strategy_id": "ST_ASIAN_SWEEP_5R_V1", "strategy_version": "1.1.1",
+            "symbol": symbol, "cycle": cycle, "session_date": at.date().isoformat(),
+            "signal_id": f"{cycle}-signal", "signal_close_utc": (at - dt.timedelta(minutes=5)).isoformat(),
+            "direction": "LONG", "entry_order_type": "MARKET", "entry": 1.1, "stop_loss": 1.09,
+            "risk_distance": 0.01,
+            "targets": [{"leg": 1, "volume_pct": 0.75, "type": "BOUNDARY", "price": 1.11},
+                        {"leg": 2, "volume_pct": 0.25, "type": "5R", "price": 1.15}],
+            "evaluated_at": at.isoformat(), "metadata_status": "HOST_CAPTURED", "spread_check": "PASS",
+            "decision": "READY", "reason_code": "SIGNAL", "data_source": "MT5_VT_MARKETS_DEMO",
+            "delivery_mode": "ARCHIVE_ONLY",
+        }
+
+    monkeypatch.setattr(smoke, "fx_ticket_for", ready)
+    journal = str(tmp_path / "journal")
+    first = smoke.run_fx(lambda *args: [], now, journal, gated=False, notify=False,
+                         quote=lambda b: (1.0, 1.0001))
+    second = smoke.run_fx(lambda *args: [], now, journal, gated=False, notify=False,
+                          quote=lambda b: (1.0, 1.0001))
+    assert sum("paper=OPENED" in line for line in first) == 2
+    assert sum("paper=ALREADY_RECORDED" in line for line in second) == 2
+    papers = glob.glob(str(tmp_path / "journal" / "paper_trades" / "**" / "*.json"), recursive=True)
+    assert len(papers) == 2
+    assert all(json.loads(Path(path).read_text())["label"] == "PAPER TRADE ONLY -- NO BROKER ORDER" for path in papers)
+
+
+def test_fx_data_acquisition_errors_are_archived_and_never_paper_traded(tmp_path):
+    def broken_fetch(symbol, timeframe, count):
+        raise sm.HostDataError(sm.INCOMPLETE_CANDLES, f"{symbol}/{timeframe} 0<{count}")
+
+    journal = str(tmp_path / "journal")
+    lines = smoke.run_fx(broken_fetch, NOW, journal, gated=False)
+    assert lines and all("decision=DATA_ERROR" in line and "ARCHIVED" in line for line in lines)
+    paths = glob.glob(str(tmp_path / "journal" / "ticket_delivery" / "archive" / "**" / "*.json"), recursive=True)
+    assert len(paths) == 8                         # complete 4-symbol objective x 2 cycles
+    assert not glob.glob(str(tmp_path / "journal" / "paper_trades" / "**" / "*.json"), recursive=True)
+    for path in paths:
+        record = json.loads(Path(path).read_text())
+        assert record["cycle_state"] == "DATA_ERROR"
+        assert record["payload"]["reason_code"] in (sm.INCOMPLETE_CANDLES, sm.METADATA_MISSING)
+        assert "entry" not in record["payload"]
+
+
+def test_runtime_requires_demo_account():
+    assert hc.require_demo_account(FakeMT5())[0]
+    ok, reason = hc.require_demo_account(FakeMT5(trade_mode=2))
+    assert not ok and reason == "NON_DEMO_ACCOUNT_BLOCKED"
+    assert hc.require_demo_account(FakeMT5(account=False)) == (False, "ACCOUNT_INFO_UNAVAILABLE")
+
+
+def test_fx_mode_is_window_bounded_and_idempotent(tmp_path):
+    j = str(tmp_path / "journal")
+    assert smoke.run_fx(fake_fetch(), dt.datetime(2026, 1, 6, 5, 0, tzinfo=UTC), j, gated=True) == []
+    first = smoke.run_fx(fake_fetch(), NOW, j, gated=True)
+    second = smoke.run_fx(fake_fetch(), NOW, j, gated=True)
+    assert any("ARCHIVED" in ln for ln in first) and not any("ARCHIVED" in ln for ln in second)
+
+
+def test_market_closed_and_stale_classification():
+    sat = dt.datetime(2026, 1, 10, 12, 0, tzinfo=UTC)
+    assert smoke.classify("EURUSD", m5_bars(), sat) == "MARKET_CLOSED"
+    assert smoke.classify("BTCUSDT", m5_bars(), sat) == "STALE"
+    assert smoke.classify("EURUSD", m5_bars(), NOW) == "FRESH"
+    assert smoke.classify("EURUSD", [], NOW) == "NO_DATA"
+
+
+def test_cycle_windows_follow_frozen_gmt_config():
+    w = smoke.cycle_windows(NOW)
+    assert (w["ASIAN_LONDON"]["trade"][0].hour, w["ASIAN_LONDON"]["trade"][1].hour) == (7, 11)
+    assert (w["LONDON_NEWYORK"]["trade"][0].hour, w["LONDON_NEWYORK"]["trade"][1].hour) == (12, 15)
+
+
+def test_crypto_mode_window_and_idempotence(tmp_path):
+    from test_v1_tickets import IN_WINDOW, _FakeFeed
+    j = str(tmp_path / "journal")
+    first = smoke.run_crypto(IN_WINDOW, j, _FakeFeed())
+    assert any("source=BYBIT_LINEAR_PERP ARCHIVED" in ln for ln in first)
+    assert not any("ARCHIVED" in ln for ln in smoke.run_crypto(IN_WINDOW, j, _FakeFeed()))
+    assert all("OUTSIDE_WINDOW" in ln for ln in smoke.run_crypto(IN_WINDOW + dt.timedelta(hours=3), j, _FakeFeed()))
+
+
+def test_single_instance_lock():
+    with hc.single_instance("t"):
+        with pytest.raises(hc.AlreadyRunning):
+            with hc.single_instance("t"):
+                pass
+    with hc.single_instance("t"):
+        pass
+
+
+def test_single_instance_breaks_lock_of_dead_process(tmp_path, monkeypatch):
+    monkeypatch.setattr(hc, "LOG_DIR", str(tmp_path))
+    (tmp_path / "d.lock").write_text("2147480000")                    # no such pid: killed run
+    with hc.single_instance("d"):
+        pass
+    (tmp_path / "d.lock").write_text(str(os.getpid()))                 # live owner: still held
+    with pytest.raises(hc.AlreadyRunning):
+        with hc.single_instance("d"):
+            pass
+
+
+def test_call_with_timeout_bounds_a_stuck_call_and_passes_results():
+    import threading
+    assert hc.call_with_timeout(lambda a, b=0: a + b, 1, b=2, limit_s=1) == 3
+    with pytest.raises(ZeroDivisionError):
+        hc.call_with_timeout(lambda: 1 / 0, limit_s=1)
+    gate = threading.Event()
+    with pytest.raises(hc.CallTimeout):
+        hc.call_with_timeout(gate.wait, limit_s=0.1)
+    gate.set()
+
+
+def test_initialize_timeout_fails_closed(monkeypatch):
+    import threading
+    gate = threading.Event()
+    monkeypatch.setattr(hc, "MT5_INIT_TIMEOUT_S", -1.9)          # thread bound = 0.1 s
+    fake = types.SimpleNamespace(initialize=lambda **kw: gate.wait(), last_error=lambda: (0, ""))
+    ok, detail = hc.mt5_initialize(fake)
+    gate.set()
+    assert not ok and detail.startswith("INIT_TIMEOUT")
+
+
+def test_run_watchdog_logs_timeout_and_releases_lock(tmp_path, monkeypatch):
+    import threading
+    monkeypatch.setattr(hc, "LOG_DIR", str(tmp_path))
+    exited = threading.Event()
+    with hc.single_instance("wd"):
+        hc.start_run_watchdog("wd", timeout_s=0.05, _exit=lambda rc: exited.set())
+        assert exited.wait(2)
+        assert not (tmp_path / "wd.lock").exists()
+    assert "TIMEOUT run exceeded" in (tmp_path / "wd.log").read_text()
+
+
+def test_mt5_access_lock_is_exclusive_and_reports_busy(tmp_path, monkeypatch):
+    monkeypatch.setattr(hc, "MT5_LOCK_DIR", str(tmp_path))
+    with hc.mt5_access_lock(wait_s=0):
+        with pytest.raises(hc.Mt5Busy):
+            with hc.mt5_access_lock(wait_s=0.2, poll_s=0.05):
+                pass
+    with hc.mt5_access_lock(wait_s=0):
+        pass
+
+
+def test_mt5_access_lock_is_host_wide_not_checkout_relative():
+    """Two checkouts share one MT5 terminal, so the lock must live outside every checkout."""
+    root = os.path.normcase(os.path.abspath(hc.REPO_ROOT))
+    lock_dir = os.path.normcase(os.path.abspath(hc.MT5_LOCK_DIR))
+    try:
+        inside = os.path.commonpath([lock_dir, root]) == root
+    except ValueError:      # different drives
+        inside = False
+    assert not inside
+
+
+@pytest.mark.parametrize("now,open_", [
+    (dt.datetime(2026, 10, 3, 20, 45, tzinfo=UTC), True),     # Sat 20:45 UTC (start inclusive)
+    (dt.datetime(2026, 10, 4, 23, 14, tzinfo=UTC), True),     # Sun 23:14 UTC
+    (dt.datetime(2026, 10, 4, 23, 15, tzinfo=UTC), False),    # end exclusive
+    (dt.datetime(2026, 10, 3, 20, 44, tzinfo=UTC), False),
+    (dt.datetime(2026, 10, 2, 21, 0, tzinfo=UTC), False),     # Friday
+])
+def test_lsmc_weekend_gate_is_sat_sun_2045_2315_utc(now, open_):
+    assert smoke.lsmc_weekend_open(now) is open_
+
+
+def test_lsmc_weekend_mode_watches_btc_eth_only(tmp_path):
+    fetched = []
+
+    class Feed:
+        def fetch_bundle(self, symbol, req):
+            fetched.append(symbol)
+            raise RuntimeError("no data in test")
+
+    lines = smoke.run_lsmc(lambda s, tf, n: fetched.append(s) or [], dt.datetime(2026, 10, 3, 21, 0, tzinfo=UTC),
+                           str(tmp_path), crypto_feed=Feed(), notify=False, fx=False, window="WEEKEND")
+    assert fetched == ["BTCUSDT", "ETHUSDT"] and all(ln.startswith(("LSMC BTCUSDT", "LSMC ETHUSDT")) for ln in lines)
+
+
+def test_lsmc_crypto_uses_mt5_venue_never_public_feed():
+    from v1_tickets.crypto import Mt5CryptoFeed
+    mt5_cfg = {"venue": {"kind": "MT5", "symbols": {"BTCUSDT": "BTCUSD", "ETHUSDT": "ETHUSD"},
+                         "source_id": "MT5_VT_MARKETS_DEMO"}}
+    feed = smoke.lsmc_crypto_feed(mt5_cfg, lambda s, tf, n: [])
+    assert isinstance(feed, Mt5CryptoFeed) and feed.symbols == {"BTCUSDT": "BTCUSD", "ETHUSDT": "ETHUSD"}
+    assert smoke.lsmc_crypto_feed({"venue": {"kind": "PUBLIC_PERP"}}, lambda s, tf, n: []) is None
+    assert "FallbackPublicCryptoFeed()" not in (HOST / "live_candles_smoke.py").read_text().split("def main")[1]
+
+
+def _load_repo_stub():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("MetaTrader5", ROOT / "MetaTrader5.py")
+    stub = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(stub)
+    return stub
+
+
+def _stub_first_path(*extra):
+    rest = [p for p in sys.path if "site-packages" not in p and Path(p or ".").resolve() != ROOT]
+    return [str(ROOT), *map(str, extra), *rest]
+
+
+def test_import_mt5_never_returns_the_repo_stub():
+    mt5 = hc.import_mt5()               # Linux CI: None; Windows host: the installed package
+    assert mt5 is None or (not hc._is_repo_module(mt5) and "MT5StubOperationAttempted" not in vars(mt5))
+
+
+def test_import_mt5_skips_stub_on_path_and_resolves_installed_package(tmp_path, monkeypatch):
+    site = tmp_path / "site-packages"
+    (site / "MetaTrader5").mkdir(parents=True)
+    (site / "MetaTrader5" / "__init__.py").write_text("def initialize(*a, **k):\n    return True\n")
+    stub = _load_repo_stub()
+    monkeypatch.setitem(sys.modules, "MetaTrader5", stub)
+    path = _stub_first_path(site)
+    monkeypatch.setattr(sys, "path", path[:])
+    mt5 = hc.import_mt5()
+    assert mt5 is not None and Path(mt5.__file__).resolve().parent.parent == site.resolve()
+    assert sys.modules["MetaTrader5"] is stub and sys.path == path      # both restored
+
+
+def test_import_mt5_rejects_stub_when_no_package_is_installed(monkeypatch):
+    stub = _load_repo_stub()
+    monkeypatch.setitem(sys.modules, "MetaTrader5", stub)
+    monkeypatch.setattr(sys, "path", _stub_first_path())
+    assert hc.import_mt5() is None
+
+
+def test_import_mt5_real_package_wins_over_stub_first_on_path(monkeypatch):
+    from importlib.machinery import PathFinder
+    real = PathFinder.find_spec("MetaTrader5", [p for p in sys.path if Path(p or ".").resolve() != ROOT])
+    if real is None or "site-packages" not in (real.origin or ""):
+        pytest.skip("real MetaTrader5 package not installed on this host")
+    monkeypatch.setitem(sys.modules, "MetaTrader5", _load_repo_stub())
+    monkeypatch.setattr(sys, "path", [str(ROOT), *sys.path])
+    mt5 = hc.import_mt5()
+    assert mt5 is not None and "site-packages" in Path(mt5.__file__).parts
+
+
+# ------------------------------------------------------------------ 5 telegram
+
+class _Sess:
+    def __init__(self, status=200, ok=True, boom=False):
+        self.status, self.ok, self.boom, self.posts = status, ok, boom, []
+
+    def post(self, url, data=None, timeout=None):
+        if self.boom:
+            raise ConnectionError(f"failed to reach {url}")
+        self.posts.append((url, data))
+        return types.SimpleNamespace(status_code=self.status, json=lambda: {"ok": self.ok})
+
+
+def test_telegram_default_archive_only_and_scoped_override(tmp_path):
+    assert tg.load_mode(str(tmp_path))["mode"] == "ARCHIVE_ONLY"
+    assert not tg.should_send("TICKET", "READY", str(tmp_path))
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    r = str(tmp_path)
+    assert tg.should_send("TICKET", "READY", r) and tg.should_send("LSMC", "OPPORTUNITY", r)
+    for kind, v in (("TICKET", "NO_TRADE"), ("TICKET", "DATA_ERROR"), ("LSMC", "WATCH"), ("LSMC", "INFO")):
+        assert not tg.should_send(kind, v, r)
+
+
+def test_local_delivery_scope_can_only_narrow_tracked_policy(tmp_path):
+    import shutil
+    from telegram_delivery.adapter import Config
+    from telegram_delivery.scope_policy import resolve
+
+    (tmp_path / "config").mkdir()
+    shutil.copy2(ROOT / "config/ticket_delivery.yaml", tmp_path / "config/ticket_delivery.yaml")
+    local = tmp_path / "config/local"
+    local.mkdir()
+    override = local / "delivery_override.yaml"
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY]\n", encoding="utf-8")
+    resolved = resolve(tmp_path, sender="legacy")
+    assert resolved["effective"] == ("TICKET_READY",)
+    assert resolved["error"] is None
+    assert tg.should_send("TICKET", "READY", str(tmp_path))
+    assert not tg.should_send("LSMC", "OPPORTUNITY", str(tmp_path))
+
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY]\n", encoding="utf-8")
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [LSMC_OPPORTUNITY]\n", encoding="utf-8")
+    legacy = resolve(tmp_path, sender="legacy")
+    canonical = Config.from_env(str(tmp_path))
+    assert legacy["effective"] == ("TICKET_READY",) and legacy["error"] is None
+    assert canonical.immediate_scopes == frozenset({"LSMC_OPPORTUNITY"})
+    assert canonical.scope_error is None
+
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [WATCH_READY]\n", encoding="utf-8")
+    canonical_widening = Config.from_env(str(tmp_path))
+    assert canonical_widening.immediate_scopes == frozenset()
+    assert canonical_widening.scope_error == "SCOPE_WIDENING_REJECTED"
+    assert resolve(tmp_path, sender="legacy")["effective"] == ("TICKET_READY",)
+
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, MANUAL_TICKET_READY]\n",
+                        encoding="utf-8")
+    rejected = resolve(tmp_path, sender="legacy")
+    assert rejected["effective"] == ()
+    assert rejected["error"] == "SCOPE_WIDENING_REJECTED"
+    assert tg.load_mode(str(tmp_path))["error"] == "SCOPE_WIDENING_REJECTED"
+    assert not tg.should_send("TICKET", "READY", str(tmp_path))
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [LSMC_OPPORTUNITY]\n", encoding="utf-8")
+    assert Config.from_env(str(tmp_path)).immediate_scopes == frozenset({"LSMC_OPPORTUNITY"})
+
+
+def test_objective_reports_both_sender_scopes_independently(monkeypatch):
+    from telegram_delivery.adapter import Config
+    from telegram_delivery.scope_policy import resolve
+
+    def distinct(root=".", sender="legacy"):
+        if sender == "legacy" and Path(root) == Path(objective.REPO_ROOT):
+            return {"tracked": ("TICKET_READY", "LSMC_OPPORTUNITY"), "disabled": (),
+                    "effective": ("TICKET_READY",), "error": None}
+        return resolve(root, sender=sender)
+    monkeypatch.setattr(objective, "resolve_immediate_scope", distinct)
+    monkeypatch.setattr(Config, "from_env", classmethod(
+        lambda cls, root=".": cls(immediate_scopes=frozenset({"LSMC_OPPORTUNITY"}))))
+    report = objective.verify()
+    row = next(item for item in report["checks"] if item["check"] == "telegram_report_scope")
+    assert row["status"] == "PASS"
+    assert "legacy effective=['TICKET_READY']" in row["detail"]
+    assert "canonical effective=['LSMC_OPPORTUNITY']" in row["detail"]
+
+
+def test_objective_fails_when_canonical_effective_scope_exceeds_policy(monkeypatch):
+    from telegram_delivery.adapter import Config
+
+    monkeypatch.setattr(Config, "from_env", classmethod(
+        lambda cls, root=".": cls(immediate_scopes=frozenset({"WATCH_READY"}))))
+    report = objective.verify()
+    scope_check = next(row for row in report["checks"] if row["check"] == "telegram_report_scope")
+    assert scope_check["status"] == "FAIL"
+    assert "canonical effective=['WATCH_READY']" in scope_check["detail"]
+
+
+def test_host_notification_router_reports_only_ready_proposals_and_opportunities(tmp_path, monkeypatch):
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    sent = []
+    monkeypatch.setattr(tg, "send_message", sent.append)
+    smoke._notify("TICKET", "READY", "rendered proposal", str(tmp_path))
+    smoke._notify("TICKET", "NO_TRADE", "must not send", str(tmp_path))
+    smoke._notify("LSMC", "OPPORTUNITY", "rendered opportunity", str(tmp_path))
+    smoke._notify("LSMC", "WATCH", "must not send", str(tmp_path))
+    assert sent == ["rendered proposal", "rendered opportunity"]
+
+
+def test_telegram_send_is_message_only_and_never_leaks_token(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    s = _Sess()
+    tg.send_message("hello", session=s)
+    assert set(s.posts[0][1]) == {"chat_id", "text", "disable_web_page_preview"}   # no reply_markup / buttons
+    with pytest.raises(tg.TelegramSendError) as exc:
+        tg.send_message("x", session=_Sess(boom=True))
+    assert "SECRET-TOKEN-VALUE" not in str(exc.value)
+    with pytest.raises(tg.TelegramSendError):
+        tg.send_message("x", session=_Sess(status=401, ok=False))
+
+
+@pytest.mark.parametrize(("status", "expected"), [
+    (401, "DELIVERY_FAILED"), (429, "RETRYABLE_REJECTED"), (500, "DELIVERY_UNCERTAIN"),
+    (408, "DELIVERY_UNCERTAIN"),
+])
+def test_telegram_send_classifies_http_outcomes_conservatively(monkeypatch, status, expected):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    with pytest.raises(tg.TelegramSendError) as exc:
+        tg.send_message("x", session=_Sess(status=status, ok=False))
+    assert exc.value.delivery_state == expected
+    assert "SECRET-TOKEN-VALUE" not in str(exc.value)
+
+
+def test_telegram_validation_proposal_uses_real_renderer_and_is_unambiguous():
+    ticket = tg.validation_proposal(dt.datetime(2026, 10, 1, 8, 0, tzinfo=UTC))
+    text = tg.format_ticket(ticket)
+    assert text.startswith("SIMULATED TELEGRAM DELIVERY VALIDATION -- NOT A MARKET SIGNAL")
+    assert "decision=READY" in text and "ticket_id:" in text
+    assert "entry: 1.1  stop: 1.099" in text
+    assert "target leg 1" in text and "target leg 2" in text
+    assert "spread_check: PASS" in text and "VALID UNTIL" in text
+
+
+def test_scheduled_lsmc_run_reports_rendered_opportunity_exactly_once(tmp_path, monkeypatch):
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    sent = []
+    monkeypatch.setattr(tg, "send_message", sent.append)
+    j = str(tmp_path / "journal")
+    first = smoke.run_lsmc(fake_fetch(), NOW, j)
+    after_first = list(sent)
+    second = smoke.run_lsmc(fake_fetch(), NOW, j)                      # same state: no repeat alert
+    assert any("LSMC EURUSD data=FRESH state=OPPORTUNITY" in ln for ln in first)
+    assert all("alerts=[]" in ln for ln in second if "alerts=" in ln)
+    assert sent == after_first and len(after_first) == 2                # EURUSD + GBPUSD, transition only
+    assert all(m.startswith("LARGE-SMC ALERT -- INFORMATIONAL -- NOT A BROKER ORDER") for m in after_first)
+    assert "EURUSD OPPORTUNITY (OPPORTUNITY)" in after_first[0] and "liquidity target:" in after_first[0]
+    assert "stop (C10):" in after_first[0] and "expires_at:" in after_first[0]
+
+
+def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, monkeypatch):
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    sent = []
+    monkeypatch.setattr(tg, "send_message", sent.append)
+    j = str(tmp_path / "journal")
+
+    archived = smoke.run_fx(fake_fetch(), NOW, j, gated=False)        # STALE + DATA_ERROR only
+    assert any("decision=STALE" in ln for ln in archived) and any("decision=DATA_ERROR" in ln for ln in archived)
+    assert all("ARCHIVED" in ln for ln in archived) and sent == []     # archived, never reported
+
+    ready = dict(tg.validation_proposal(NOW), strategy_id="ST_ASIAN_SWEEP_5R_V1", strategy_version="1.1.1",
+                 label="INFORMATIONAL TICKET -- NOT A BROKER ORDER", reason_code="SETUP_CONFIRMED",
+                 metadata_status="HOST_CAPTURED", data_source="MT5_VT_MARKETS_DEMO",
+                 evaluated_at=NOW.isoformat())
+    monkeypatch.setattr(smoke, "fx_ticket_for", lambda symbol, cycle, *a, **k: dict(ready, symbol=symbol, cycle=cycle))
+    first = smoke.run_fx(fake_fetch(), NOW, j, gated=False)
+    after_first = list(sent)
+    smoke.run_fx(fake_fetch(), NOW, j, gated=False)                   # replayed cycle: nothing re-sent
+    assert any("decision=READY" in ln for ln in first) and sent == after_first
+    assert [m.splitlines()[1] for m in after_first] == [
+        "EURUSD LONG (ASIAN_LONDON)", "GBPUSD LONG (ASIAN_LONDON)",
+        "EURUSD LONG (LONDON_NEWYORK)", "GBPUSD LONG (LONDON_NEWYORK)"]
+    for message in after_first:
+        assert "decision=READY" in message and "ticket_id:" in message and "VALID UNTIL" in message
+        assert "entry:" in message and "target leg 1" in message and "NOT A BROKER ORDER" in message
+
+
+def test_scheduled_telegram_send_failure_never_breaks_the_run(tmp_path, monkeypatch):
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(hc, "LOG_DIR", str(tmp_path / "logs"))
+
+    def boom(_text):
+        raise tg.TelegramSendError("send failed (ConnectionError)")
+
+    monkeypatch.setattr(tg, "send_message", boom)
+    lines = smoke.run_lsmc(fake_fetch(), NOW, str(tmp_path / "journal"))
+    assert any("state=OPPORTUNITY" in ln for ln in lines)              # archive/watch path unaffected
+    assert "TELEGRAM_SEND_DELIVERY_UNCERTAIN" in (tmp_path / "logs" / "telegram.log").read_text()
+
+
+def test_telegram_proposal_cli_sends_rendered_validation(monkeypatch, capsys):
+    sent = []
+    monkeypatch.setattr(tg, "send_message", sent.append)
+    assert tg.main(["--test-proposal"]) == 0
+    assert len(sent) == 1 and sent[0].startswith("SIMULATED TELEGRAM DELIVERY VALIDATION")
+    assert "entry:" in sent[0] and "target leg 2" in sent[0] and "VALID UNTIL" in sent[0]
+    assert "TELEGRAM_PROPOSAL_TEST: OK" in capsys.readouterr().out
+
+
+def test_telegram_status_requires_override_scopes_and_credentials(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    assert tg.main(["--status"]) == 1
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    assert tg.main(["--status"]) == 0
+    output = capsys.readouterr().out
+    assert "credentials=PRESENT" in output and "SECRET-TOKEN-VALUE" not in output
+
+
+def test_telegram_missing_env_fails_closed():
+    with pytest.raises(tg.TelegramSendError):
+        tg.send_message("x", session=_Sess())
+
+
+def test_repo_default_delivery_stays_archive_only():
+    import yaml
+    assert yaml.safe_load((ROOT / "config" / "ticket_delivery.yaml").read_text())["mode"] == "ARCHIVE_ONLY"
+    assert not (ROOT / "config" / "local" / "delivery_override.yaml").exists()
+
+
+def test_notify_logs_sent_ok_and_failure_without_secrets(tmp_path, monkeypatch):
+    monkeypatch.setattr(tg, "should_send", lambda *a: True)
+    monkeypatch.setattr(tg, "send_message", lambda text: None)
+    smoke._notify("TICKET", "READY", "x", str(tmp_path))
+
+    def boom(text):
+        raise tg.TelegramSendError("send failed (HTTP 401)", delivery_state="DELIVERY_FAILED")
+    monkeypatch.setattr(tg, "send_message", boom)
+    smoke._notify("LSMC", "OPPORTUNITY", "x", str(tmp_path))
+    log = (tmp_path / "logs" / "telegram.log").read_text()
+    assert "TELEGRAM_SENT_OK TICKET=READY" in log
+    assert "TELEGRAM_SEND_DELIVERY_FAILED LSMC=OPPORTUNITY send failed (HTTP 401)" in log
+
+
+def _status_host(tmp_path, override=True, venv=True, log="", runner_age_h=1.0):
+    import telegram_status as ts
+    now = dt.datetime(2026, 10, 4, 12, tzinfo=UTC)
+    if override:
+        (tmp_path / "config" / "local").mkdir(parents=True)
+        (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+            "﻿# comment\nmode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n",
+            encoding="utf-8")
+    if venv:
+        (tmp_path / ".venv" / "Scripts").mkdir(parents=True)
+        (tmp_path / ".venv" / "Scripts" / "python.exe").write_text("")
+    (tmp_path / "logs").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "logs" / "telegram.log").write_text(log)
+    runner = tmp_path / "logs" / "ag_v1_crypto.log"
+    runner.write_text("x")
+    stamp = (now - dt.timedelta(hours=runner_age_h)).timestamp()
+    os.utime(runner, (stamp, stamp))
+    creds = {n: {"process": False, "user": True} for n in ts.CRED_VARS}
+    return ts, ts.build_report(str(tmp_path), now=now, creds=creds)
+
+
+def test_telegram_status_ok_disabled_and_down(tmp_path):
+    ok_line = "2026-10-04T08:00:00+00:00 TELEGRAM_SENT_OK TICKET=READY\n"
+    ts, r = _status_host(tmp_path / "a", log=ok_line)
+    assert r["status"] == "OK" and r["reasons"] == []
+    assert r["telegram_log"]["last_ok"]["at"].startswith("2026-10-04T08")
+    _, r = _status_host(tmp_path / "b", override=False)
+    assert r["status"] == "DISABLED" and r["delivery"]["mode"] == "ARCHIVE_ONLY"
+    _, r = _status_host(tmp_path / "c", venv=False)
+    assert r["status"] == "DOWN" and any(".venv" in x for x in r["reasons"])
+    report = ts.build_report(str(tmp_path / "a"), now=dt.datetime(2026, 10, 4, 12, tzinfo=UTC),
+                             creds={n: {"process": True, "user": False} for n in ts.CRED_VARS})
+    assert report["status"] == "DOWN" and sum("User environment" in x for x in report["reasons"]) == 2
+
+
+def test_telegram_status_degraded_on_failure_or_silent_runner(tmp_path):
+    log = ("2026-10-03T08:00:00+00:00 TELEGRAM_SENT_OK TICKET=READY\n"
+           "2026-10-04T08:00:00+00:00 TELEGRAM_SEND_FAILED TICKET=READY send failed (HTTP 401)\n")
+    _, r = _status_host(tmp_path / "a", log=log)
+    assert r["status"] == "DEGRADED" and "HTTP 401" in r["reasons"][0]
+    _, r = _status_host(tmp_path / "b", runner_age_h=30)
+    assert r["status"] == "DEGRADED" and "26h" in r["reasons"][0]
+    manual = tmp_path / "b" / "logs" / "ag_v1_smoke.log"
+    manual.write_text("x")                                   # a manual smoke run is not runner activity
+    import telegram_status as ts
+    r = ts.build_report(str(tmp_path / "b"), now=dt.datetime(2026, 10, 4, 12, tzinfo=UTC),
+                        creds={n: {"process": False, "user": True} for n in ts.CRED_VARS})
+    assert r["status"] == "DEGRADED"
+
+
+def test_telegram_status_never_prints_credential_values(tmp_path, monkeypatch, capsys):
+    import telegram_status as ts
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "987654321")
+    _status_host(tmp_path)
+    ts.main(["--root", str(tmp_path)])
+    ts.main(["--root", str(tmp_path), "--json"])
+    out = capsys.readouterr().out
+    assert "SECRET-TOKEN-VALUE" not in out and "987654321" not in out and "TELEGRAM_REPORT_STATUS:" in out
+
+
+# ------------------------------------------------------------------ static invariants (4, 5, 6)
+
+def test_complete_six_instrument_objective_preflight(monkeypatch):
+    monkeypatch.delenv("AG_EVIDENCE_ROOT", raising=False)  # verify committed host captures
+    report = objective.verify(ROOT)
+    assert report["result"] == "PASS", report["failures"]
+    assert {c["check"] for c in report["checks"]} >= {"telegram_report_scope", "safe_delivery_default"}
+    assert report["objective"] == {
+        "fx_majors": ["EURUSD", "GBPUSD", "USDJPY"], "gold": ["XAUUSD"],
+        "crypto": ["BTCUSDT", "ETHUSDT"],
+        "watch_universe": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSDT", "ETHUSDT"],
+        "cycles": ["ASIAN_LONDON", "LONDON_NEWYORK"],
+    }
+
+
+def test_no_order_or_position_calls_anywhere_in_the_kit():
+    files = list(HOST.glob("*.py")) + list((ROOT / "src" / "host_evidence").glob("*.py")) + \
+        list((ROOT / "src" / "host_delivery").glob("*.py"))
+    for f in files:
+        src = f.read_text(encoding="utf-8")
+        for call in ("order_send(", "order_check(", "positions_get(", "position_close(", "orders_get("):
+            assert call not in src, f"{f.name}: {call}"
+
+
+def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
+    install = (HOST / "install_tasks.ps1").read_text()
+    uninstall = (HOST / "uninstall_tasks.ps1").read_text()
+    verify = (HOST / "verify_tasks.ps1").read_text()
+    telegram = (HOST / "enable_telegram.ps1").read_text()
+    verify_telegram = (HOST / "verify_telegram.ps1").read_text()
+    for s in (install, uninstall):
+        assert "param([switch]$Apply)" in s and "WhatIf: no changes made" in s
+    for name in ("AG-V1-FX-Cycles", "AG-V1-Crypto-Daily", "AG-V1-LSMC-Watch"):
+        assert name in install and name in uninstall
     assert ".venv\\Scripts\\python.exe" in install and "MultipleInstances IgnoreNew" in install
     assert "--mode {1}" in install and "--mode {1}{2}" in install
     assert "Name = 'AG-V1-FX-Cycles';    Mode = 'fx';     Minutes = 15; Canonical = $true" in install
