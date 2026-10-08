@@ -1,0 +1,3 @@
+# kind|selector|reason
+class|evidence|Evidence-class documents are historical and never current authority.
+section|PROJECT_STATUS.md#dated-heading|Dated PROJECT_STATUS sections preserve historical truth.

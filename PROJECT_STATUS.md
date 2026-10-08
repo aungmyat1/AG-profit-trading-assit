@@ -6,6 +6,117 @@ review_by: 2026-11-07
 ---
 # Project Status — AG Profit Trading
 
+## Generated facts
+
+### Authority table
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+cog.outl("| Strategy | demo_authorized | Authority source |")
+cog.outl("|---|---:|---|")
+for row in facts["strategies"]:
+    assertion = row["demo_authorized"]
+    value = "true" if assertion["value"] is True else "false" if assertion["value"] is False else "unspecified"
+    cog.outl(f"| `{row['id']}` | {value} | [`{assertion['evidence_source']}`]({assertion['evidence_source']}) |")
+]]] -->
+| Strategy | demo_authorized | Authority source |
+|---|---:|---|
+| `R8_OBM_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `SESSION_TRADE_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `SMC_3R_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_ASIAN_SWEEP_5R_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_LARGE_SMC_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_LIQUIDITY_SWEEP_RETEST_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+| `ST_SESSION_SWEEP_CONTINUATION_V1` | false | [`strategies/registry.yaml`](strategies/registry.yaml) |
+<!-- [[[end]]] -->
+
+### Strategy verification and authorization
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+cog.outl("| Strategy | Version | Logic verified | Edge verified | Demo authorized |")
+cog.outl("|---|---|---:|---:|---:|")
+for row in facts["strategies"]:
+    version = row["version"] or "unspecified"
+    def rendered(assertion):
+        value = assertion["value"]
+        return "unknown" if value is None else str(value).lower()
+    cog.outl(f"| `{row['id']}` | `{version}` | {rendered(row['logic_verified'])} | {rendered(row['edge_verified'])} | {rendered(row['demo_authorized'])} |")
+]]] -->
+| Strategy | Version | Logic verified | Edge verified | Demo authorized |
+|---|---|---:|---:|---:|
+| `R8_OBM_V1` | `unspecified` | unknown | unknown | false |
+| `SESSION_TRADE_V1` | `1` | unknown | unknown | false |
+| `SMC_3R_V1` | `unspecified` | unknown | unknown | false |
+| `ST_ASIAN_SWEEP_5R_V1` | `1.1.1` | unknown | unknown | false |
+| `ST_LARGE_SMC_V1` | `1.0.7` | unknown | unknown | false |
+| `ST_LIQUIDITY_SWEEP_RETEST_V1` | `2.0.0` | unknown | unknown | false |
+| `ST_SESSION_SWEEP_CONTINUATION_V1` | `1.0.1` | unknown | unknown | false |
+<!-- [[[end]]] -->
+
+### Schedule
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+schedule = facts["schedule"]
+cog.outl(f"Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `{schedule['timezone']}`; scheduler `{schedule['scheduler']}`.")
+cog.outl("")
+cog.outl("| Task name | Cadence | Start UTC | End UTC |")
+cog.outl("|---|---|---:|---:|")
+for row in schedule["tasks"]:
+    cog.outl(f"| `{row['name']}` | {row['cadence']} | {row['start']} | {row['end'] or 'open'} |")
+]]] -->
+Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `UTC`; scheduler `AG_DAILY_OPPORTUNITY_SCHEDULER_V2`.
+
+| Task name | Cadence | Start UTC | End UTC |
+|---|---|---:|---:|
+| `PRE_FLIGHT` | daily | 06:25 | 06:30 |
+| `BTC_OBSERVE` | daily | 06:30 | 06:45 |
+| `BTC_FINALIZE` | daily | 06:45 | 06:50 |
+| `PRE_LONDON_REFERENCE` | daily | 06:50 | 06:55 |
+| `PRE_LONDON_READINESS` | daily | 06:55 | 07:00 |
+| `WINDOW_ASIAN_LONDON` | daily | 07:00 | 11:00 |
+| `POST_LONDON` | daily | 11:00 | 11:05 |
+| `STANDBY` | daily | 11:05 | 11:55 |
+| `PRE_NEW_YORK` | daily | 11:55 | 12:00 |
+| `WINDOW_LONDON_NEWYORK` | daily | 12:00 | 15:00 |
+| `POST_NEW_YORK` | daily | 15:00 | 15:10 |
+| `P1_RESEARCH` | daily | 15:10 | open |
+<!-- [[[end]]] -->
+
+### Source revision
+<!-- [[[cog
+import json
+from pathlib import Path
+facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
+source = facts["source_snapshot"]
+cog.outl(f"source_snapshot: `{source['sha']}` ({source['date']}).")
+]]] -->
+source_snapshot: `cf0ce0f3804b550b74544c769f4b979902e496e4` (2026-10-08T14:07:04+06:30).
+<!-- [[[end]]] -->
+
+### Objective
+<!-- [[[cog
+from pathlib import Path
+text = Path("docs/PROJECT_OBJECTIVE.md").read_text(encoding="utf-8")
+body = text.split("## Objective\n", 1)[1].split("\n## ", 1)[0]
+cog.outl(body.strip())
+cog.outl("")
+cog.outl("Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).")
+]]] -->
+Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
+
+The owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.
+
+`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority.
+
+Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
+<!-- [[[end]]] -->
+
+
 AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
