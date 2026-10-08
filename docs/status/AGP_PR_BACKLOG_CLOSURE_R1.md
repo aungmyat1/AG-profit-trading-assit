@@ -47,8 +47,8 @@ published as two **draft** PRs against `main` for owner review.
 | PR | Original SHA | Final SHA | Action | Tests | CI | Merge status | Remaining blocker |
 |---|---|---|---|---|---|---|---|
 | [#19](https://github.com/aungmyat1/AG-profit-trading-assit/pull/19) | `462e6d4a836513a8858107aad2ebe5263c5ee223` | `462e6d4a836513a8858107aad2ebe5263c5ee223` | OWNER_HOLD — read-only security/integration review only | 1 file, +912/−37348 net | python-tests SUCCESS | **NOT MERGED** | Owner approval for disabled Demo Stage-B MT5 execution; see Owner decision 1 |
-| [#30](https://github.com/aungmyat1/AG-profit-trading-assit/pull/30) | `866825a8470cb9292de12834a20e1428c6776b38` | `c82f2df35514141c4ce6b1d195f8e5868861479a` | REMEDIATED + integrated onto current `main` (draft PR #85) | 1481 passed, 2 skipped, 0 failed | all SUCCESS | **NOT MERGED — draft PR #85** | Owner approval to merge #85 |
-| [#31](https://github.com/aungmyat1/AG-profit-trading-assit/pull/31) | `2a3f5641e078e79ea712bb3e1589ecb7a25cf286` | `c82f2df35514141c4ce6b1d195f8e5868861479a` | REMEDIATED + integrated onto current `main` (draft PR #85) | 1481 passed, 2 skipped, 0 failed | all SUCCESS | **NOT MERGED — draft PR #85** | Owner approval to merge #85 |
+| [#30](https://github.com/aungmyat1/AG-profit-trading-assit/pull/30) | `866825a8470cb9292de12834a20e1428c6776b38` | `96ce1aa74f709672b71f67a115493a728fb94b74` | REMEDIATED + integrated onto current `main` (draft PR #85) | 1481 passed, 2 skipped, 0 failed | all SUCCESS | **NOT MERGED — draft PR #85** | Owner approval to merge #85 |
+| [#31](https://github.com/aungmyat1/AG-profit-trading-assit/pull/31) | `2a3f5641e078e79ea712bb3e1589ecb7a25cf286` | `96ce1aa74f709672b71f67a115493a728fb94b74` | REMEDIATED + integrated onto current `main` (draft PR #85) | 1481 passed, 2 skipped, 0 failed | all SUCCESS | **NOT MERGED — draft PR #85** | Owner approval to merge #85 |
 | [#32](https://github.com/aungmyat1/AG-profit-trading-assit/pull/32) | `8570c957fc387c99704ea0d697a6e730296a3ff8` | `8570c957fc387c99704ea0d697a6e730296a3ff8` | RESEARCH_HOLD — read-only MT5 research history pipeline reviewed | +1569/−29142 net | python-tests SUCCESS | **NOT MERGED** | Branch is 110 commits behind `main`; extracting it would delete 147 `main` files. Needs a rebase decision |
 | [#34](https://github.com/aungmyat1/AG-profit-trading-assit/pull/34) | `1d1c75c92a7fda80696a56d4e1ccbe402f3ab71a` | `1d1c75c92a7fda80696a56d4e1ccbe402f3ab71a` | RESEARCH_HOLD — research-shadow strategy reviewed; 4 findings recorded | 4 commits, 8 files | python-tests SUCCESS | **NOT MERGED** | Draft. M15 window uses bar-open times (look-ahead); `control_shift_zones` can select an already-invalidated opposing zone; strategy absent from `registry.yaml` and `STRATEGY_LEDGER.md`; capability absent from `PROJECT_STATUS.md` |
 | [#36](https://github.com/aungmyat1/AG-profit-trading-assit/pull/36) | `4103c6b310007ceeddbbaf6f6f6526807fee4096` | `4103c6b310007ceeddbbaf6f6f6526807fee4096` | RESEARCH_HOLD — dependency/lint optimization reviewed; 2 findings recorded | 1 commit, 87 files | 5 checks SUCCESS | **NOT MERGED** | Draft. Pins `numpy==2.5.3` (requires Python ≥3.11) while README/pyproject advertise ≥3.10; new `docs/architecture/THIRD_PARTY_STRATEGY_DEPENDENCIES.md` is not in `docs/README.md` |
@@ -73,7 +73,7 @@ SUPERSEDED and BLOCKED rows it is the PR head unchanged.
 | Branch | Head | Draft PR | Carries |
 |---|---|---|---|
 | `arena/863d367a-sched-r1` | `937173677301f194a81f53eacb2739ec6100ba99` | [#84](https://github.com/aungmyat1/AG-profit-trading-assit/pull/84) | #77, #78, #81 |
-| `arena/863d367a-crypto-r1` | `c82f2df35514141c4ce6b1d195f8e5868861479a` | [#85](https://github.com/aungmyat1/AG-profit-trading-assit/pull/85) | #30, #31 |
+| `arena/863d367a-crypto-r1` | `96ce1aa74` | [#85](https://github.com/aungmyat1/AG-profit-trading-assit/pull/85) | #30, #31 |
 
 Both are stacked on `origin/main` (`bae2ced`). They touch disjoint source files and overlap only
 in `PROJECT_STATUS.md`, which is resolved by union on both branches. Merge order does not matter;
@@ -423,7 +423,7 @@ result without relaxing anything.
 2. **Revalidate PR #85** after #84 merges. The two branches touch disjoint source files and
    overlap only in `PROJECT_STATUS.md`; a re-run of the full suite plus `docs-drift` on the
    rebased branch is the required post-merge revalidation.
-3. **Approve and merge draft PR #85** (`arena/863d367a-crypto-r1`, head `c82f2df`). This lands the
+3. **Approve and merge draft PR #85** (`arena/863d367a-crypto-r1`, head `96ce1aa`). This lands the
    causal evaluation-time filter, the frozen-identity fix for the replay model, the excluded-day
    slice fix, report code/strategy identity, and the queue vocabulary fix.
 4. **Run the read-only M7 smoke on the Windows host**, in this order, each step read-only:
