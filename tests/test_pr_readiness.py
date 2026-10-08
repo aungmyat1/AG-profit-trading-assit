@@ -71,4 +71,4 @@ def test_checks_and_dependency_parser_fail_closed():
     assert checks_state([], []) == "UNKNOWN"
     assert checks_state([{"conclusion": "failure"}], []) == "FAIL"
     assert checks_state([{"conclusion": "success"}], []) == "PASS"
-    assert explicit_dependencies("task", "Depends-On: #12\nblocked-by #8") == [12]
+    assert explicit_dependencies("task", "Depends-On: #12\nblocked-by #8") == [8, 12]
