@@ -171,6 +171,8 @@ validation, incomplete CFD strategy/risk authority, and execution boundary.
    — records the observation-only skill classification/interface refactor and focused
    compatibility evidence.
 
+- [`governance/OWNER_DECISION_REGISTER.md`](governance/OWNER_DECISION_REGISTER.md) — running owner
+  decision register (open rows `PENDING_OWNER`, options as stated by the owner, no recommendation).
 - [`agents/CONTEXT_PACK.md`](agents/CONTEXT_PACK.md) — generated context pack (objective, invariants
   pointer, authority, open owner decisions, schedule); the only doc synced to Claude project knowledge.
   Regenerate with `python scripts/docs/build_context_pack.py`; doc hygiene report:

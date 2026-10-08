@@ -1,29 +1,24 @@
 """Build docs/agents/CONTEXT_PACK.md (DOCS-LIVE-2): the ONLY doc synced to Claude project knowledge.
 
-    python scripts/docs/build_context_pack.py [--check]
+    python scripts/docs/build_context_pack.py [--check] [--facts status/facts.json]
 
-Inputs (offline, deterministic):
-  facts      docs/status/facts.json from DOCS-LIVE-1's scripts/docs/collect_facts.py when present;
-             otherwise a stub reader of the same sources (strategies/registry.yaml,
-             config/trading.yaml, scripts/host/install_tasks.ps1)
-  objective  the `## Objective` section of docs/PROJECT_OBJECTIVE.md, copied verbatim
-             (PROJECT_STATUS.md carries no current objective section)
-  decisions  table rows still marked PENDING_OWNER in docs/**/*OWNER_DECISIONS*.md, excluding
-             templates: a file whose H1 or status line says "template", and any section whose
-             heading says "template" (unfilled placeholders are not open decisions)
-The output is capped at 150 lines; the build fails rather than truncating facts.
---check exits 1 when the committed file differs from a fresh build.
+Inputs (offline, deterministic; no git, no clock):
+  facts      status/facts.json from scripts/docs/collect_facts.py (objective, strategies,
+             schedule, inputs_sha256). Missing or unreadable facts fail closed: no pack.
+  decisions  rows of the registered owner-decision tables (REGISTERED_DECISION_SOURCES)
+             whose Status cell is PENDING_OWNER. When no registered table exists the
+             count is reported as UNKNOWN, never as zero.
+The header carries facts.json's inputs_sha256 -- never a git SHA -- so identical inputs give
+a byte-identical pack. The output is capped at 150 lines; the build fails rather than
+truncating facts. --check exits 1 when the committed file differs from a fresh build.
 """
 from __future__ import annotations
 
 import argparse
-import glob
 import json
 import os
-import re
 import sys
-
-import yaml
+from typing import List, Optional, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from doc_classes import default_frontmatter  # noqa: E402
@@ -31,123 +26,83 @@ from frontmatter import render  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join("docs", "agents", "CONTEXT_PACK.md")
-FACTS = os.path.join("docs", "status", "facts.json")
+FACTS = os.path.join("status", "facts.json")
+REGISTERED_DECISION_SOURCES = ("docs/governance/OWNER_DECISION_REGISTER.md",)
+PENDING = "PENDING_OWNER"
 MAX_LINES = 150
-_PLAN_ROW = re.compile(r"@\{\s*Name\s*=\s*'([^']+)';\s*Mode\s*=\s*'([^']+)';\s*Minutes\s*=\s*(\d+);")
 
 
-def _read(rel: str) -> str:
-    with open(os.path.join(ROOT, rel), encoding="utf-8") as f:
-        return f.read()
-
-
-# TODO(DOCS-LIVE-1, PR #69): once #69 merges, read docs/status/facts.json from
-# scripts/docs/collect_facts.py only and delete this stub reader.
-def _stub_facts() -> dict:
-    reg = (yaml.safe_load(_read("strategies/registry.yaml")) or {}).get("strategies") or {}
-    trading = yaml.safe_load(_read("config/trading.yaml")) or {}
-    tasks = [{"name": n, "mode": m, "every_minutes": int(x)}
-             for n, m, x in _PLAN_ROW.findall(_read("scripts/host/install_tasks.ps1"))]
-    return {"source": "STUB_READER (DOCS-LIVE-1 facts.json not present)",
-            "strategies": [{"id": k, "demo_authorized": v.get("demo_authorized"),
-                            "live_authorized": v.get("live_authorized"), "logic_status": v.get("logic_status"),
-                            "verdict": v.get("economic_status")} for k, v in sorted(reg.items())],
-            "execution_gates": {"mode": trading.get("mode"),
-                                "allow_live_trading": (trading.get("account") or {}).get("allow_live_trading")},
-            "scheduled_tasks": tasks}
-
-
-def load_facts() -> dict:
-    path = os.path.join(ROOT, FACTS)
-    if os.path.exists(path):
+def load_facts(path: str) -> dict:
+    try:
         with open(path, encoding="utf-8") as f:
             facts = json.load(f)
-        facts["source"] = f"{FACTS} (source_digest {facts.get('source_digest')})"
-        return facts
-    return _stub_facts()
+    except (OSError, ValueError) as exc:
+        raise SystemExit(f"FACTS_UNAVAILABLE: {path}: {exc} -- run scripts/docs/collect_facts.py") from exc
+    for key in ("inputs_sha256", "objective", "strategies", "schedule"):
+        if key not in facts:
+            raise SystemExit(f"FACTS_INCOMPLETE: {path} has no {key!r}")
+    return facts
 
 
-def objective_section() -> str:
-    text = _read("docs/PROJECT_OBJECTIVE.md")
-    m = re.search(r"^## Objective\n(.*?)(?=^## )", text, re.S | re.M)
-    if not m:
-        raise ValueError("docs/PROJECT_OBJECTIVE.md has no '## Objective' section")
-    return m.group(1).strip("\n")
-
-
-_TEMPLATE = re.compile(r"\btemplate\b", re.I)
-
-
-def _is_template_doc(text: str) -> bool:
-    head = [ln for ln in text.splitlines()[:20] if ln.startswith("# ") or ln.lower().startswith("status:")]
-    return any(_TEMPLATE.search(ln) for ln in head)
-
-
-def pending_decisions() -> tuple:
-    """(rows, excluded template files)."""
-    rows, templates = [], []
-    for path in sorted(glob.glob(os.path.join(ROOT, "docs", "**", "*OWNER_DECISIONS*.md"), recursive=True)):
-        rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
-        text = _read(rel)
-        if _is_template_doc(text):
-            templates.append(rel)
+def open_decisions(root: str = ROOT) -> Tuple[Optional[int], List[str]]:
+    """(count of PENDING_OWNER rows, sources read). Count None when no registered table exists."""
+    count, sources = 0, []
+    for rel in REGISTERED_DECISION_SOURCES:
+        path = os.path.join(root, rel)
+        if not os.path.exists(path):
             continue
-        in_template_section = False
-        for line in text.splitlines():
-            if line.startswith("#"):
-                in_template_section = bool(_TEMPLATE.search(line))
-                continue
-            cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            if (not in_template_section and line.lstrip().startswith("|") and "PENDING_OWNER" in line
-                    and cells and cells[0]):
-                rows.append((rel, cells[0]))
-    return rows, templates
+        sources.append(rel)
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                cells = [c.strip() for c in line.strip().strip("|").split("|")]
+                if line.lstrip().startswith("|") and PENDING in cells:
+                    count += 1
+    return (count if sources else None), sources
 
 
 def _b(v) -> str:
     return "—" if v is None else (f"`{str(v).lower()}`" if isinstance(v, bool) else f"`{v}`")
 
 
-def build() -> str:
-    f = load_facts()
-    g = f["execution_gates"]
+def _value(field) -> object:
+    return field.get("value") if isinstance(field, dict) else field
+
+
+def build(facts: dict, root: str = ROOT) -> str:
+    count, sources = open_decisions(root)
+    decisions = (f"Open decisions in registered tables: {count} (sources: "
+                 + ", ".join(f"`{s}`" for s in sources) + ")." if sources
+                 else "Open decisions in registered tables: UNKNOWN (no registered decision table found).")
+    schedule = facts["schedule"]
     lines = [render(default_frontmatter("status")).rstrip("\n"),
              "# AG Profit Trading — Context Pack",
              "",
-             "Generated by `scripts/docs/build_context_pack.py`; do not edit by hand. This is the only",
-             "document synced to Claude project knowledge. Authority stays with the sources named below.",
-             f"Facts: {f['source']}.",
+             "Generated by `scripts/docs/build_context_pack.py` from `status/facts.json`; do not edit by hand.",
+             "This is the only document synced to Claude project knowledge. Authority stays with the sources.",
+             f"inputs_sha256: `{facts['inputs_sha256']}`.",
              "",
-             "## Objective (verbatim from `docs/PROJECT_OBJECTIVE.md`)",
+             f"## Objective (verbatim from `{facts['objective'].get('source', 'docs/PROJECT_OBJECTIVE.md')}`)",
              "",
-             objective_section(),
+             facts["objective"]["text"],
              "",
              "## Invariants",
              "",
-             "- Agent rules and authority order: `AGENTS.md` (Authority order, Default safety, Frozen strategy",
-             "  version preservation). `docs/agents/INVARIANTS.md` does not exist yet.",
-             "- Non-collapsible states: `docs/DOCUMENTATION_GOVERNANCE.md` (DESIGN != IMPLEMENTED != VALIDATED",
-             "  != STRATEGY_AUTHORIZED; LOGIC_VERIFIED, EDGE_VERIFIED, DEMO_AUTHORIZED, LIVE_AUTHORIZED independent).",
+             "- Agent rules and authority order: `AGENTS.md`; non-collapsible states:",
+             "  `docs/DOCUMENTATION_GOVERNANCE.md`. `docs/agents/INVARIANTS.md` does not exist.",
              "- Strategy authorization is owned by `strategies/registry.yaml`; this pack only mirrors it.",
              "",
              "## Authority",
              "",
-             f"Global gates (`config/trading.yaml`): mode {_b(g.get('mode'))}, allow_live_trading {_b(g.get('allow_live_trading'))}.",
-             "",
-             "| Strategy | demo_authorized | live_authorized | logic_status | verdict |",
+             "| Strategy | version | demo_authorized | logic_verified | edge_verified |",
              "|---|---|---|---|---|"]
-    lines += [f"| `{s['id']}` | {_b(s.get('demo_authorized'))} | {_b(s.get('live_authorized'))} | "
-              f"{_b(s.get('logic_status'))} | {_b(s.get('verdict'))} |" for s in f["strategies"]]
-    rows, templates = pending_decisions()
-    lines += ["", f"## Open owner decisions ({len(rows)} rows still `PENDING_OWNER`, templates excluded)", ""]
-    by_doc: dict = {}
-    for rel, row in rows:
-        by_doc.setdefault(rel, []).append(row)
-    lines += [f"- `{rel}`: {len(r)} pending — " + ", ".join(r) for rel, r in by_doc.items()] or ["- none"]
-    lines += [f"- Template (not counted): `{rel}`" for rel in templates]
-    lines += ["", "## Schedule (host tasks, `scripts/host/install_tasks.ps1`)", "",
-              "| Task | mode | every (min) |", "|---|---|---|"]
-    lines += [f"| `{t['name']}` | `{t['mode']}` | {t['every_minutes']} |" for t in f["scheduled_tasks"]]
+    lines += [f"| `{s['id']}` | {_b(s.get('version'))} | {_b(_value(s.get('demo_authorized')))} | "
+              f"{_b(_value(s.get('logic_verified')))} | {_b(_value(s.get('edge_verified')))} |"
+              for s in facts["strategies"]]
+    lines += ["", "## Open owner decisions", "", decisions,
+              "", f"## Schedule (`{schedule.get('scheduler')}`, {schedule.get('timezone')})", "",
+              "| Task | cadence | start | end |", "|---|---|---|---|"]
+    lines += [f"| `{t.get('name')}` | {t.get('cadence')} | {t.get('start')} | {t.get('end') or '—'} |"
+              for t in schedule.get("tasks", [])]
     out = "\n".join(lines) + "\n"
     n = out.count("\n")
     if n > MAX_LINES:
@@ -158,8 +113,9 @@ def build() -> str:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--facts", default=os.path.join(ROOT, FACTS))
     args = ap.parse_args(argv)
-    content, path = build(), os.path.join(ROOT, OUT)
+    content, path = build(load_facts(args.facts)), os.path.join(ROOT, OUT)
     if args.check:
         current = open(path, encoding="utf-8").read() if os.path.exists(path) else None
         print("CONTEXT_PACK", "UP_TO_DATE" if current == content else "STALE")

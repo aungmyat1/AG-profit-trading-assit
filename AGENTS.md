@@ -19,6 +19,13 @@ All missions implicitly apply docs/agents/INVARIANTS.md (v1). Missions state onl
   no long learning sections unless asked.
 - Stop immediately when the task is done.
 
+## Current objective (pointers)
+
+- Objective: `docs/PROJECT_OBJECTIVE.md`; owner objective: Issue #47; generated summary: `docs/agents/CONTEXT_PACK.md`.
+- Verbatim from `docs/PROJECT_OBJECTIVE.md`: "`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
+- That file has no separate one-line definitions of `LOGIC_VERIFIED` / `EDGE_VERIFIED` / `DEMO_AUTHORIZED`; none are authored here.
+- `config/agent_context.json` routes may be stale — verify paths exist before use, until it is regenerated.
+
 ## Purpose
 
 AG Profit Trading is a deterministic FX and crypto trading assistant whose target

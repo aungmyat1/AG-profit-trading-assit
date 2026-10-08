@@ -206,8 +206,8 @@ is resolved by D3**. The manual-ticket loader now also requires `demo_authorized
 `live_authorized` to be present and exactly `false` on every ticket strategy (otherwise
 `REGISTRY_TICKET_AUTHORITY_INVALID`, zero tickets). Current behavior is unchanged. Full suite
 **1050 passed, 2 skipped** (Linux cloud container; unit-tested only). Evidence:
-`docs/status/AG_SESSION_TRADE_V1_TICKET_AUTHORITY_2026-10-06.md`. **Next open item:** owner
-choices on the Phase B reconciliation table for `ST_ASIAN_SWEEP_5R_V1@1.1.1` (PR #40).
+`docs/status/AG_SESSION_TRADE_V1_TICKET_AUTHORITY_2026-10-06.md`. **Next open item:** PR #62
+— `ST_ASIAN_SWEEP_5R_V1` v1.1.2 candidate (owner confirmation of its Phase B table).
 
 ## Manual Trade Ticket V1 — pre-edge manual-ticket path (2026-10-06)
 
@@ -1967,10 +1967,10 @@ execution funnel is `assistant.commands.execute_command(command, user_confirmed=
 Do **not** publish "FX Trade Proposal → Risk/Safety Gates → Execution System → MT5
 Demo" as one seamless, strategy-authorized pipeline for `ST_ASIAN_SWEEP_5R_V1` — the
 repository does not prove that exact integration exists for it (`demo_authorized:
-false`). `SESSION_TRADE_V1` is separately `demo_authorized: true` for its
-`ASIAN_LONDON` cycle, but it runs on a different engine in a different repository and
-does not use this repository's FX proposal/execution pipeline — its authorization does
-not extend to `ST_ASIAN_SWEEP_5R_V1` or vice versa; strategy authority is never
+false`). `SESSION_TRADE_V1` is also `demo_authorized: false` (owner decision D3,
+2026-09-30; source `strategies/registry.yaml`), and it runs on a different engine in a
+different repository and does not use this repository's FX proposal/execution pipeline —
+no authorization would extend from it to `ST_ASIAN_SWEEP_5R_V1` or vice versa; strategy authority is never
 inherited across strategies. The accurate picture for this repository's own pipeline is
 two separated domains plus a documented, narrower bridge:
 
