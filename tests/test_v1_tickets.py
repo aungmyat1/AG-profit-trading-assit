@@ -264,6 +264,30 @@ def test_crypto_v3_windows_weekday_ny_plus_weekend_utc(now, expected, window):
     assert (active_window(_cfg(3), now) or {}).get("name") == window
 
 
+def test_crypto_v3_window_timezones_are_independent_of_london_and_follow_ny_dst():
+    from v1_tickets.crypto import active_window, window_status
+
+    cfg = _cfg(3)
+    # London changes clocks on Oct 25, but V3 weekend hours remain 21:00-23:00 UTC.
+    london_shift = dt.datetime(2026, 10, 25, 21, 0, tzinfo=UTC)
+    assert window_status(cfg, london_shift.date(), london_shift) == "IN_WINDOW"
+    assert (active_window(cfg, london_shift) or {}).get("name") == "WEEKEND"
+    monday_after_london = dt.datetime(2026, 10, 26, 13, 0, tzinfo=UTC)  # 09:00 EDT in New York
+    assert window_status(cfg, monday_after_london.date(), monday_after_london) == "IN_WINDOW"
+    assert (active_window(cfg, monday_after_london) or {}).get("name") == "WEEKDAY"
+
+    # NY falls back on Nov 1. Weekend UTC stays fixed; the next weekday's 09:00 New York
+    # start moves from 13:00 UTC (EDT) to 14:00 UTC (EST).
+    ny_fallback = dt.datetime(2026, 11, 1, 21, 0, tzinfo=UTC)
+    assert window_status(cfg, ny_fallback.date(), ny_fallback) == "IN_WINDOW"
+    assert (active_window(cfg, ny_fallback) or {}).get("name") == "WEEKEND"
+    monday_before = dt.datetime(2026, 11, 2, 13, 59, tzinfo=UTC)
+    monday_start = dt.datetime(2026, 11, 2, 14, 0, tzinfo=UTC)
+    assert window_status(cfg, monday_before.date(), monday_before) == "BEFORE_WINDOW"
+    assert window_status(cfg, monday_start.date(), monday_start) == "IN_WINDOW"
+    assert (active_window(cfg, monday_start) or {}).get("name") == "WEEKDAY"
+
+
 @pytest.mark.parametrize("now,window,label", [
     (V2_IN, "WEEKDAY", None),
     (dt.datetime(2025, 9, 6, 21, 30, tzinfo=UTC), "WEEKEND", "WEEKEND — ~2x cost vs range"),

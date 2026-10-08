@@ -123,6 +123,15 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## Crypto MT5 window preflight (2026-10-09)
+
+`scripts/host/live_candles_smoke.py --mode crypto` checks the selected MT5 crypto config window
+before acquiring either the runner single-instance lock or the host-wide MT5 lock. Outside its
+configured window it reports `CRYPTO OUTSIDE_WINDOW` and exits without importing or initializing
+MT5. V3 weekday windows remain New York zoneinfo based; its weekend window remains UTC. The
+evaluation window, strategy and thresholds are unchanged. Offline evidence is in
+[`AG_V1_CRYPTO_WINDOW_GATE_2026-10-09.md`](docs/status/AG_V1_CRYPTO_WINDOW_GATE_2026-10-09.md).
+
 ## AGP Host Ticket Delivery R1 (FAST) — canonical FX ticket + delivery pipeline (2026-10-08; branch `arena/ca7a6ec4-ag-profit-trading-assit`, not merged)
 
 Read-only VT Markets MT5 Demo candles now reach durable canonical ticket records and a separate
