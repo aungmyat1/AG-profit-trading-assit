@@ -4,7 +4,8 @@ Step 4 of scripts/host/GO_LIVE.md -- Windows Task Scheduler tasks for AG V1 (inf
   powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1          # -WhatIf (default): prints the plan, changes nothing
   powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1 -Apply   # installs / replaces the three tasks
 
-Tasks. All run the repo venv: .venv\Scripts\python.exe scripts\host\live_candles_smoke.py --mode <m>
+Tasks. All run the repo venv windowless: .venv\Scripts\pythonw.exe scripts\host\live_candles_smoke.py --mode <m>
+(the objective preflight still runs .venv\Scripts\python.exe so its output is visible)
   AG-V1-FX-Cycles     every 15 min, daily. The runner acts only inside the frozen ST_ASIAN_SWEEP_5R_V1
                       trade sessions in UTC, plus 30 min grace:
                         ASIAN_LONDON   07:00-11:00 GMT (08:00-12:00 Europe/London in BST)
@@ -23,8 +24,8 @@ contract. After registration, verify_tasks.ps1 checks all three exact actions an
 
 Every task:
 - runs single-instance (MultipleInstances IgnoreNew, plus a Python lock file in logs\);
-- starts at a staggered minute offset (fx +1, crypto +2, lsmc +3) so no two tasks start together,
-  and all MT5 access is serialized on one host-wide cross-process lock
+- starts at a staggered offset after each M5 close (fx +1:00, crypto +2:30, lsmc +4:15; see START
+  STAGGER RULE below) so runs rarely overlap, and all MT5 access is serialized on one host-wide cross-process lock
   (%ProgramData%\AG\locks\mt5_access.lock, shared by every checkout);
 - has a 4-minute time limit (the runner itself self-exits after 120 s with TIMEOUT);
 - runs at normal priority 4 (the Task Scheduler default 7 is below-normal CPU and low I/O
@@ -38,85 +39,150 @@ param([switch]$Apply)
 $ErrorActionPreference = 'Stop'
 $Repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $Python = Join-Path $Repo '.venv\Scripts\python.exe'
+$PythonW = Join-Path $Repo '.venv\Scripts\pythonw.exe'
 $Runner = Join-Path $Repo 'scripts\host\live_candles_smoke.py'
 $Preflight = Join-Path $Repo 'scripts\host\verify_objective.py'
 $VerifyTasks = Join-Path $Repo 'scripts\host\verify_tasks.ps1'
 
 $Plan = @(
-  @{ Name = 'AG-V1-FX-Cycles';    Mode = 'fx';     Minutes = 15; Offset = 1 },
-  @{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Minutes = 5;  Offset = 2 },
-  @{ Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc';   Minutes = 5;  Offset = 3 }
+  @{ Name = 'AG-V1-FX-Cycles';    Mode = 'fx';     Minutes = 15; StartAt = '00:01:00' },
+  @{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Minutes = 5;  StartAt = '00:02:30' },
+  @{ Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc';   Minutes = 5;  StartAt = '00:04:15' }
 )
 
 # ---------------------------------------------------------------------------------------------
-# HOST TASK DECLARATIONS (declaration only -- -Apply never registers, changes or removes these).
-# Every AG* task registered on the host, exported via `schtasks /query /tn <name> /xml` on
-# 2026-10-08 and sanitized: no SIDs, user names, author, machine name or password. All tasks run
-# as the current interactive user (LogonType InteractiveToken, only while logged on).
-# Trigger times are host local time; UTC equivalents are given because the host has no DST.
+# HOST TASK DECLARATIONS -- always-on target (SCHED-R1-B, 2026-10-08).
+# Registered = what `schtasks /query /tn <name> /xml` showed on 2026-10-08, sanitized: no SIDs, user
+# names, author, machine name or password; every task runs as the current interactive user
+# (LogonType InteractiveToken, only while logged on). Target = the always-on host.
+# -Apply acts only on Managed INSTALLER/RETIRE rows ($Plan + AG-V1-LSMC-Crypto-Weekend); every other
+# target is reached by a separate owner-run change. WhatIf prints a read-only registered-vs-target diff.
+# Trigger times are host local time (MMT). MMT has no DST, so UTC = MMT - 06:30 all year.
 # AG-HOST-TIMEZONE: Id=Myanmar Standard Time; Abbrev=MMT; UtcOffset=+06:30; DST=false
+# AG-HOST-POWER-POLICY: AC_STANDBY_TIMEOUT_MIN=0; AC_HIBERNATE_TIMEOUT_MIN=0; MODE=ALWAYS_ON
+#   Declaration only: this script never changes power settings (tests/test_host_go_live_kit.py checks
+#   that it never calls powercfg). Owner-applied 2026-10-08 (SCHED-R1-A2).
 $HostTimeZone = @{ Id = 'Myanmar Standard Time'; Abbrev = 'MMT'; UtcOffset = '+06:30'; Dst = $false }
-# Roots as observed on the host. PROD = deployed checkout, DEV = owner's working checkout.
-$HostRoots = @{ PROD = 'D:\wp3-main-integ'; DEV = 'D:\ddev\AG profit trading'; USERPROFILE = '%USERPROFILE%' }
-# Managed: INSTALLER = registered by -Apply from $Plan; RETIRE = -Apply unregisters it;
-#          HOST_ONLY = registered by hand / another tool, not touched by -Apply.
-# Drift: registered state differs from what -Apply would install (recorded, not corrected here).
+$HostPowerPolicy = @{ AcStandbyTimeoutMin = 0; AcHibernateTimeoutMin = 0; Mode = 'ALWAYS_ON' }
+# Roots as observed on the host. PROD = deployed checkout, DEV = owner's working checkout,
+# TELEMETRY = separate main checkout for the local heartbeat (absent on 2026-10-08).
+$HostRoots = @{ PROD = 'D:\wp3-main-integ'; DEV = 'D:\ddev\AG profit trading'; TELEMETRY = 'D:\ag-telemetry\repo'
+                USERPROFILE = $env:USERPROFILE }
+# START STAGGER RULE (runner logs 2026-10-01..08, duration = last log line - scheduled start):
+#   every M5 close (UTC :00/:05 = MMT :00/:05) opens a 300 s cycle. Runners start in priority order
+#   fx -> crypto -> lsmc: the first 60 s after the close, each next one at the previous start plus the
+#   previous runner's p95 duration, rounded up to 15 s. fx +1:00 (p95 78 s), crypto +2:30 (p95 103 s),
+#   lsmc +4:15 (p95 62 s, ends ~+0:17 of the next cycle). The hourly heartbeat takes the idle head of
+#   a cycle at +0:20. MT5 access stays serialized on the host-wide mt5_access.lock.
+# Status: ACTIVE | NEW | RETIRED (superseded, target ABSENT) | REMOVE (target ABSENT) |
+#         DISABLED (target DISABLED, DeleteAfter) | DISABLE_AFTER_PARITY (ENABLED until parity, then DISABLED).
+# Target.State: ENABLED | DISABLED | ABSENT. Target.Days: DAILY | ONCE | Mon,Tue,... list.
 $Declared = @(
-  @{ Name = 'AG-V1-FX-Cycles'; Path = '\'; Managed = 'INSTALLER'; Enabled = $true
-     Trigger = 'daily 00:01 MMT, every 15 min for 24 h'; Limit = 'PT4M'; Priority = 4
-     Action = '{PROD}\.venv\Scripts\pythonw.exe "{PROD}\scripts\host\live_candles_smoke.py" --mode fx'; WorkDir = '{PROD}'
-     Drift = 'registered runs pythonw.exe; installer writes python.exe' },
-  @{ Name = 'AG-V1-Crypto-Daily'; Path = '\'; Managed = 'INSTALLER'; Enabled = $true
-     Trigger = 'daily 00:02 MMT, every 15 min for 24 h'; Limit = 'PT4M'; Priority = 4
-     Action = '{PROD}\.venv\Scripts\pythonw.exe "{PROD}\scripts\host\live_candles_smoke.py" --mode crypto'; WorkDir = '{PROD}'
-     Drift = 'registered interval 15 min; installer writes 5 min; pythonw.exe vs python.exe' },
-  @{ Name = 'AG-V1-LSMC-Watch'; Path = '\'; Managed = 'INSTALLER'; Enabled = $true
-     Trigger = 'Mon-Fri 00:03 MMT, every 5 min for 24 h'; Limit = 'PT4M'; Priority = 4
-     Action = '{PROD}\.venv\Scripts\pythonw.exe "{PROD}\scripts\host\live_candles_smoke.py" --mode lsmc'; WorkDir = '{PROD}'
-     Drift = 'registered weekdays only; installer writes daily; pythonw.exe vs python.exe' },
-  @{ Name = 'AG-V1-LSMC-Crypto-Weekend'; Path = '\'; Managed = 'RETIRE'; Enabled = $true
-     Trigger = 'Sun,Mon 03:18 MMT (Sat,Sun 20:48Z), every 5 min for 2 h 26 min'; Limit = 'PT4M'; Priority = 4
-     Action = '{PROD}\.venv\Scripts\pythonw.exe "{PROD}\scripts\host\live_candles_smoke.py" --mode lsmc-weekend'; WorkDir = '{PROD}'
-     Drift = 'still registered although -Apply retires it as superseded' },
-  @{ Name = 'AG-Wake-MT5'; Path = '\'; Managed = 'HOST_ONLY'; Enabled = $true; WakeToRun = $true
-     Trigger = 'Mon-Fri 12:25 MMT (05:55Z)'; Limit = 'PT72H'
-     Action = 'cmd.exe /c start "" "C:\Program Files\MetaTrader 5\terminal64.exe"'; WorkDir = '' },
-  @{ Name = 'AG-Wake-Weekend-Crypto'; Path = '\'; Managed = 'HOST_ONLY'; Enabled = $true; WakeToRun = $true
-     Trigger = 'Sun,Mon 03:10 MMT (Sat,Sun 20:40Z)'; Limit = 'PT72H'
-     Action = 'cmd.exe /c start "" "C:\Program Files\MetaTrader 5\terminal64.exe"'; WorkDir = '' },
-  @{ Name = 'AG-Sleep-Night'; Path = '\'; Managed = 'HOST_ONLY'; Enabled = $true
-     Trigger = 'daily 00:45 MMT (18:15Z previous day)'; Limit = 'PT72H'
-     Action = 'rundll32.exe powrprof.dll,SetSuspendState 0,1,0'; WorkDir = '' },
-  @{ Name = 'AG-Sleep-Weekend-Crypto'; Path = '\'; Managed = 'HOST_ONLY'; Enabled = $true
-     Trigger = 'Sun,Mon 05:45 MMT (Sat,Sun 23:15Z)'; Limit = 'PT72H'
-     Action = 'rundll32.exe powrprof.dll,SetSuspendState 0,1,0'; WorkDir = '' },
-  @{ Name = 'AG Profit Trading - BTC Daily Decision'; Path = '\'; Managed = 'HOST_ONLY'; Enabled = $true
-     Trigger = 'daily 13:05 MMT (06:35Z)'; Limit = 'PT72H'
-     Action = 'C:\Python314\python.exe "{DEV}\scripts\run_btc_daily_report.py" --json'; WorkDir = '{DEV}'
-     Drift = 'system Python 3.14 and DEV checkout, not the PROD venv' },
-  @{ Name = 'AGX-HealthExport'; Path = '\'; Managed = 'HOST_ONLY'; Enabled = $true
-     Trigger = 'one-time 2026-10-01 19:50:23 MMT, every 30 min indefinitely'; Limit = 'PT72H'
-     Action = 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{USERPROFILE}\Scripts\export-ag-health.ps1"'; WorkDir = ''
-     Drift = 'script lives outside the repository; its content is not declared here' },
-  @{ Name = 'AG_FX_ASIAN_LONDON_SHADOW'; Path = '\'; Managed = 'HOST_ONLY'; Enabled = $false
-     Trigger = 'Mon-Fri 13:30:20-17:30:20 MMT (07:00:20-11:00:20Z), 17 calendar triggers 15 min apart'; Limit = 'PT10M'
-     Action = '"{DEV}\scripts\scheduled\run_asian_london_once.bat"'; WorkDir = '' },
-  @{ Name = 'AG_FX_LONDON_NEWYORK_SHADOW'; Path = '\'; Managed = 'HOST_ONLY'; Enabled = $false
-     Trigger = 'Mon-Fri 18:30:20-21:30:20 MMT (12:00:20-15:00:20Z), 13 calendar triggers 15 min apart'; Limit = 'PT10M'
-     Action = '"{DEV}\scripts\scheduled\run_london_newyork_once.bat"'; WorkDir = '' },
-  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowA_AsianRef'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $false; State = 'DISABLED_2026-10-08'; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection'
-     Trigger = 'Mon-Fri 12:00 MMT (05:30Z)'; Limit = 'PT15M'
-     Action = 'cmd.exe /c ""{DEV}\.venv\Scripts\python.exe" "{DEV}\scripts\run_eurusd_friction_campaign_window.py" --window-id WINDOW_A_ASIAN_REFERENCE >> "{DEV}\logs\friction_campaign_WINDOW_A_ASIAN_REFERENCE.log" 2>&1"'; WorkDir = '{DEV}' },
-  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowB_PreLondon'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $false; State = 'DISABLED_2026-10-08'; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection'
-     Trigger = 'Mon-Fri 13:20 MMT (06:50Z)'; Limit = 'PT15M'
-     Action = 'cmd.exe /c ""{DEV}\.venv\Scripts\python.exe" "{DEV}\scripts\run_eurusd_friction_campaign_window.py" --window-id WINDOW_B_PRE_LONDON >> "{DEV}\logs\friction_campaign_WINDOW_B_PRE_LONDON.log" 2>&1"'; WorkDir = '{DEV}' },
-  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowC_London'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $false; State = 'DISABLED_2026-10-08'; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection'
-     Trigger = 'Mon-Fri 15:30 MMT (09:00Z)'; Limit = 'PT15M'
-     Action = 'cmd.exe /c ""{DEV}\.venv\Scripts\python.exe" "{DEV}\scripts\run_eurusd_friction_campaign_window.py" --window-id WINDOW_C_LONDON >> "{DEV}\logs\friction_campaign_WINDOW_C_LONDON.log" 2>&1"'; WorkDir = '{DEV}' },
-  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowD_LondonNY'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Enabled = $false; State = 'DISABLED_2026-10-08'; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection'
-     Trigger = 'Mon-Fri 19:00 MMT (12:30Z)'; Limit = 'PT15M'
-     Action = 'cmd.exe /c ""{DEV}\.venv\Scripts\python.exe" "{DEV}\scripts\run_eurusd_friction_campaign_window.py" --window-id WINDOW_D_LONDON_NEWYORK >> "{DEV}\logs\friction_campaign_WINDOW_D_LONDON_NEWYORK.log" 2>&1"'; WorkDir = '{DEV}' }
+  @{ Name = 'AG-V1-FX-Cycles'; Path = '\'; Managed = 'INSTALLER'; Status = 'ACTIVE'
+     Registered = 'ENABLED; pythonw; daily 00:01 every 15 min'
+     Target = @{ State = 'ENABLED'; Exe = '{PROD}\.venv\Scripts\pythonw.exe'; Args = '"{PROD}\scripts\host\live_candles_smoke.py" --mode fx'
+                 Days = 'DAILY'; Start = '00:01:00'; EveryMin = 15 }
+     Note = 'FX windows are fixed UTC inside the runner; cadence = the M15 trigger timeframe' },
+  @{ Name = 'AG-V1-Crypto-Daily'; Path = '\'; Managed = 'INSTALLER'; Status = 'ACTIVE'
+     Registered = 'ENABLED; pythonw; daily 00:02 every 15 min'
+     Target = @{ State = 'ENABLED'; Exe = '{PROD}\.venv\Scripts\pythonw.exe'; Args = '"{PROD}\scripts\host\live_candles_smoke.py" --mode crypto'
+                 Days = 'DAILY'; Start = '00:02:30'; EveryMin = 5 }
+     Note = 'cadence = ST_LIQUIDITY_SWEEP_RETEST_V1 M5 entry timeframe; windows gated in the runner (zoneinfo)' },
+  @{ Name = 'AG-V1-LSMC-Watch'; Path = '\'; Managed = 'INSTALLER'; Status = 'ACTIVE'
+     Registered = 'ENABLED; pythonw; Mon-Fri 00:03 every 5 min'
+     Target = @{ State = 'ENABLED'; Exe = '{PROD}\.venv\Scripts\pythonw.exe'; Args = '"{PROD}\scripts\host\live_candles_smoke.py" --mode lsmc'
+                 Days = 'DAILY'; Start = '00:04:15'; EveryMin = 5 }
+     Note = 'daily: the runner reports FX MARKET_CLOSED in the FX weekend and keeps watching BTC/ETH' },
+  @{ Name = 'AG-V1-LSMC-Crypto-Weekend'; Path = '\'; Managed = 'RETIRE'; Status = 'RETIRED'
+     Registered = 'ENABLED; pythonw; Sun,Mon 03:18 every 5 min for 2 h 26 min'
+     Target = @{ State = 'ABSENT' }; Note = 'superseded by the daily AG-V1-LSMC-Watch' },
+  @{ Name = 'AG-Wake-MT5'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'RETIRED'
+     Registered = 'ENABLED; WakeToRun; Mon-Fri 12:25; starts the MT5 terminal'
+     Target = @{ State = 'ABSENT' }; Note = 'always-on host' },
+  @{ Name = 'AG-Wake-Weekend-Crypto'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'RETIRED'
+     Registered = 'ENABLED; WakeToRun; Sun,Mon 03:10; starts the MT5 terminal'
+     Target = @{ State = 'ABSENT' }; Note = 'always-on host' },
+  @{ Name = 'AG-Sleep-Night'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'RETIRED'
+     Registered = 'ENABLED; daily 00:45; rundll32 powrprof.dll,SetSuspendState 0,1,0'
+     Target = @{ State = 'ABSENT' }; Note = 'always-on host; the sleep lasted only 3-11 s each night' },
+  @{ Name = 'AG-Sleep-Weekend-Crypto'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'RETIRED'
+     Registered = 'ENABLED; Sun,Mon 05:45; rundll32 powrprof.dll,SetSuspendState 0,1,0'
+     Target = @{ State = 'ABSENT' }; Note = 'always-on host' },
+  @{ Name = 'AG Profit Trading - BTC Daily Decision'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'DISABLE_AFTER_PARITY'
+     Registered = 'ENABLED; daily 13:05 (06:35Z); system Python 3.14; DEV checkout'
+     Target = @{ State = 'ENABLED'; Exe = 'C:\Python314\python.exe'; Args = '"{DEV}\scripts\run_btc_daily_report.py" --json'
+                 Days = 'DAILY'; Start = '13:05:00'; EveryMin = 0 }
+     Note = 'disable once the VT MT5 crypto ticket has shown parity with this Bybit report' },
+  @{ Name = 'AGX-HealthExport'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'ACTIVE'
+     Registered = 'ENABLED; one-time 2026-10-01 19:50:23, every 30 min indefinitely; script outside the repo'
+     Target = @{ State = 'ENABLED'; Exe = 'powershell.exe'; Args = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{USERPROFILE}\Scripts\export-ag-health.ps1"'
+                 Days = 'ONCE'; Start = '19:50:23'; EveryMin = 30 }
+     Note = 'script content is not in the repository' },
+  @{ Name = 'AG_FX_ASIAN_LONDON_SHADOW'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'REMOVE'
+     Registered = 'DISABLED; Mon-Fri 13:30:20-17:30:20 (17 triggers); DEV run_asian_london_once.bat'
+     Target = @{ State = 'ABSENT' }; Note = 'superseded by AG-V1-FX-Cycles' },
+  @{ Name = 'AG_FX_LONDON_NEWYORK_SHADOW'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'REMOVE'
+     Registered = 'DISABLED; Mon-Fri 18:30:20-21:30:20 (13 triggers); DEV run_london_newyork_once.bat'
+     Target = @{ State = 'ABSENT' }; Note = 'superseded by AG-V1-FX-Cycles' },
+  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowA_AsianRef'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Status = 'DISABLED'
+     Registered = 'DISABLED_2026-10-08; Mon-Fri 12:00 (05:30Z); DEV venv'; DeleteAfter = '2026-10-15'
+     Target = @{ State = 'DISABLED' }; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection' },
+  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowB_PreLondon'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Status = 'DISABLED'
+     Registered = 'DISABLED_2026-10-08; Mon-Fri 13:20 (06:50Z); DEV venv'; DeleteAfter = '2026-10-15'
+     Target = @{ State = 'DISABLED' }; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection' },
+  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowC_London'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Status = 'DISABLED'
+     Registered = 'DISABLED_2026-10-08; Mon-Fri 15:30 (09:00Z); DEV venv'; DeleteAfter = '2026-10-15'
+     Target = @{ State = 'DISABLED' }; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection' },
+  @{ Name = 'AG_LSMC_EURUSD_Friction_WindowD_LondonNY'; Path = '\AG_LSMC_Friction_Campaign\'; Managed = 'HOST_ONLY'; Status = 'DISABLED'
+     Registered = 'DISABLED_2026-10-08; Mon-Fri 19:00 (12:30Z); DEV venv'; DeleteAfter = '2026-10-15'
+     Target = @{ State = 'DISABLED' }; Note = 'campaign ended 2026-09-30; delete after 2026-10-15 if no objection' },
+  @{ Name = 'AG-Heartbeat-Local'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'NEW'
+     Registered = 'ABSENT'
+     Target = @{ State = 'ENABLED'; Exe = '{TELEMETRY}\.venv\Scripts\pythonw.exe'
+                 Args = '"{TELEMETRY}\scripts\host\heartbeat.py" --host-repo "{PROD}" --out "D:\ag-telemetry\heartbeat.json"'
+                 Days = 'DAILY'; Start = '00:00:20'; EveryMin = 60 }
+     Note = 'local output only (heartbeat.json; nothing is sent). Needs the TELEMETRY checkout + venv first' }
 )
+
+function Expand-HostRoot([string]$s) {
+  foreach ($k in $HostRoots.Keys) { $s = $s.Replace("{$k}", [string]$HostRoots[$k]) }
+  $s
+}
+
+function Get-RegisteredTaskFacts($d) {
+  # Read-only: Get-ScheduledTask only. Summarizes the first trigger and first action.
+  $t = Get-ScheduledTask -TaskPath $d.Path -TaskName $d.Name -ErrorAction SilentlyContinue
+  if ($null -eq $t) { return @{ State = 'ABSENT' } }
+  $tr = @($t.Triggers)[0]; $a = @($t.Actions)[0]
+  $days = switch ($tr.CimClass.CimClassName) {
+    'MSFT_TaskDailyTrigger' { 'DAILY' }
+    'MSFT_TaskTimeTrigger' { 'ONCE' }
+    'MSFT_TaskWeeklyTrigger' {
+      $names = 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+      (0..6 | Where-Object { $tr.DaysOfWeek -band (1 -shl $_) } | ForEach-Object { $names[$_] }) -join ','
+    }
+    default { $tr.CimClass.CimClassName }
+  }
+  $every = 0
+  if ($tr.Repetition.Interval -match '^PT(?:(\d+)H)?(?:(\d+)M)?$') { $every = 60 * [int]$Matches[1] + [int]$Matches[2] }
+  @{ State = $(if ($t.State -eq 'Disabled') { 'DISABLED' } else { 'ENABLED' })
+     Exe = $a.Execute; Args = $a.Arguments; Days = $days; EveryMin = $every
+     Start = $(if ($tr.StartBoundary -match 'T(\d\d:\d\d:\d\d)') { $Matches[1] } else { '' }) }
+}
+
+function Get-TaskDiff($d) {
+  # Fields that differ between the registered task and its declared target ('' when none differ).
+  $r = Get-RegisteredTaskFacts $d
+  $diff = @()
+  if ($r.State -ne $d.Target.State) { $diff += "State: $($r.State) -> $($d.Target.State)" }
+  if ($r.State -ne 'ABSENT' -and $d.Target.State -eq 'ENABLED') {
+    foreach ($f in 'Exe', 'Args', 'Days', 'Start', 'EveryMin') {
+      $want = if ($f -in 'Exe', 'Args') { Expand-HostRoot $d.Target[$f] } else { [string]$d.Target[$f] }
+      if ([string]$r[$f] -ne $want) { $diff += "${f}: $($r[$f]) -> $want" }
+    }
+  }
+  $diff -join '; '
+}
 
 if (-not (Test-Path $Python)) {
   Write-Host "MISSING venv python: $Python  (py -3.11 -m venv .venv; .venv\Scripts\pip install -r requirements.txt)"
@@ -132,13 +198,14 @@ if ($Apply) {
 }
 
 foreach ($t in $Plan) {
-  Write-Host ("{0}: every {1} min at +{5} min daily -> `"{2}`" `"{3}`" --mode {4}" -f `
-    $t.Name, $t.Minutes, $Python, $Runner, $t.Mode, $t.Offset)
+  Write-Host ("{0}: every {1} min from {5} daily -> `"{2}`" `"{3}`" --mode {4}" -f `
+    $t.Name, $t.Minutes, $PythonW, $Runner, $t.Mode, $t.StartAt)
 }
-Write-Host ("=== HOST TASK DECLARATIONS ({0}, UTC{1}; {2} tasks, -Apply manages only INSTALLER/RETIRE) ===" -f `
+Write-Host ("=== HOST TASK DECLARATIONS vs REGISTERED ({0}, UTC{1}; {2} declared; -Apply acts only on INSTALLER/RETIRE) ===" -f `
   $HostTimeZone.Abbrev, $HostTimeZone.UtcOffset, $Declared.Count)
 foreach ($d in $Declared) {
-  Write-Host ("{0}{1} [{2}{3}] {4}" -f $d.Path, $d.Name, $d.Managed, $(if ($d.Enabled) { '' } else { ', DISABLED' }), $d.Trigger)
+  $diff = Get-TaskDiff $d
+  Write-Host ("{0}{1} [{2}/{3}] {4}" -f $d.Path, $d.Name, $d.Managed, $d.Status, $(if ($diff) { "CHANGE $diff" } else { 'MATCHES TARGET' }))
 }
 if (-not $Apply) { Write-Host 'WhatIf: no changes made. Re-run with -Apply to install.'; exit 0 }
 
@@ -151,8 +218,8 @@ if (Get-ScheduledTask -TaskName $LegacyWeekendTask -ErrorAction SilentlyContinue
   Write-Host "REMOVED SUPERSEDED $LegacyWeekendTask"
 }
 foreach ($t in $Plan) {
-  $action = New-ScheduledTaskAction -Execute $Python -Argument ("`"{0}`" --mode {1}" -f $Runner, $t.Mode) -WorkingDirectory $Repo
-  $at = '00:{0:D2}' -f $t.Offset
+  $action = New-ScheduledTaskAction -Execute $PythonW -Argument ("`"{0}`" --mode {1}" -f $Runner, $t.Mode) -WorkingDirectory $Repo
+  $at = $t.StartAt
   $repeat = (New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval (New-TimeSpan -Minutes $t.Minutes) -RepetitionDuration (New-TimeSpan -Hours 24)).Repetition
   $trigger = New-ScheduledTaskTrigger -Daily -At $at
   $trigger.Repetition = $repeat
