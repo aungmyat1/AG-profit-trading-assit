@@ -70,10 +70,10 @@ from opportunity.contracts import (
     ELIGIBILITY_BLOCKED,
     ELIGIBILITY_ELIGIBLE,
     ELIGIBILITY_INCOMPLETE,
-    OpportunityCandidate,
-    ProposalEligibilityDecision,
     REPLAY_DATA_NOT_BROKER_EXECUTABLE,
     SYNTHETIC_DATA_NOT_PROPOSAL_ELIGIBLE,
+    OpportunityCandidate,
+    ProposalEligibilityDecision,
 )
 from opportunity.proposal_eligibility import (
     REASON_EXPIRED,
@@ -92,8 +92,6 @@ from proposal_envelope.strategy_authority import StrategyAuthority
 
 from ..models import (
     AUTHORITY_NONE,
-    CanonicalProposal,
-    DataProvenance,
     PROPOSAL_BLOCKED,
     PROPOSAL_INCOMPLETE,
     PROPOSAL_READY,
@@ -106,6 +104,8 @@ from ..models import (
     WATCHER_SCANNING,
     WATCHER_SETUP_QUALIFIED,
     WATCHER_STRUCTURE_CONFIRMING,
+    CanonicalProposal,
+    DataProvenance,
     WatcherOccurrenceTimestamps,
 )
 

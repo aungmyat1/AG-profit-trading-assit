@@ -25,7 +25,12 @@ from market_structure.models import StructureTier
 from strategy_engine.session import Candle
 
 from .models import ConfirmationState, DisplacementEvidence, StructureAlignment
-from .models_v2_1 import PivotContext, PivotRole, StructureShiftQuality, StructureShiftQualityStatus
+from .models_v2_1 import (
+    PivotContext,
+    PivotRole,
+    StructureShiftQuality,
+    StructureShiftQualityStatus,
+)
 
 _PRICE_TOLERANCE = 1e-9
 

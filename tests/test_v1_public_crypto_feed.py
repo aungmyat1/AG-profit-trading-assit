@@ -8,7 +8,11 @@ import pytest
 import requests
 
 from execution_runtime.public_crypto_feed import (
-    FALLBACK_SOURCE, PRIMARY_SOURCE, FallbackPublicCryptoFeed, PrefetchedFeed, PublicCryptoFeedUnavailable,
+    FALLBACK_SOURCE,
+    PRIMARY_SOURCE,
+    FallbackPublicCryptoFeed,
+    PrefetchedFeed,
+    PublicCryptoFeedUnavailable,
 )
 
 M5_MS, H1_MS = 5 * 60 * 1000, 60 * 60 * 1000

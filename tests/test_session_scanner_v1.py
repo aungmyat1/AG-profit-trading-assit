@@ -9,15 +9,42 @@ import pytest
 
 from session_scanner import checklist as ck
 from session_scanner.proposal import build_ticket
-from session_scanner.quality import (FRESH, GAPPED, INVALID, STALE, VALID, Bar, assess_quote, assess_series,
-                                     fetch_with_sync)
-from session_scanner.registry import (InstrumentRegistryError, load_specs, resolve_spec, verify_live)
+from session_scanner.quality import (
+    FRESH,
+    GAPPED,
+    INVALID,
+    STALE,
+    VALID,
+    Bar,
+    assess_quote,
+    assess_series,
+    fetch_with_sync,
+)
+from session_scanner.registry import (
+    InstrumentRegistryError,
+    load_specs,
+    resolve_spec,
+    verify_live,
+)
 from session_scanner.scanner import load_scanner_config
 from session_scanner.sessions import classify, load_canonical_windows
-from session_scanner.strategy_adapter import (ADAPTER_SIGNAL, AsianSweepAdapter, resolve_proposal_scope,
-                                              strategy_catalog)
-from session_scanner.terminal_client import READ_ONLY_TOOLS, TerminalMcpClient, TerminalToolBlocked
-from session_scanner.timebase import TIME_GATE_FAIL, TIME_GATE_PASS, derive_time_authority, parse_server_wallclock
+from session_scanner.strategy_adapter import (
+    ADAPTER_SIGNAL,
+    AsianSweepAdapter,
+    resolve_proposal_scope,
+    strategy_catalog,
+)
+from session_scanner.terminal_client import (
+    READ_ONLY_TOOLS,
+    TerminalMcpClient,
+    TerminalToolBlocked,
+)
+from session_scanner.timebase import (
+    TIME_GATE_FAIL,
+    TIME_GATE_PASS,
+    derive_time_authority,
+    parse_server_wallclock,
+)
 
 UTC = timezone.utc
 PKG = Path(__file__).resolve().parents[1] / "src" / "session_scanner"

@@ -30,9 +30,12 @@ does not replace them. Nothing here authorizes trading or changes a safety gate.
 | REG-ARCHIVE-PLANS | Archive move of the 5 unreferenced plans (listed in PR #68) | Not stated | PENDING_OWNER | — |
 | REG-INVARIANTS | Invariants authority | `AGENTS.md` + `docs/DOCUMENTATION_GOVERNANCE.md` / a new `INVARIANTS.md` | PENDING_OWNER | — |
 | REG-HEARTBEAT | Host heartbeat thresholds | 1200 MB RAM / 10 GB disk (values to confirm or replace) | PENDING_OWNER | — |
+| REG-REGEN-BOOTSTRAP | Regeneration bot: allow one empty bootstrap commit on `regen/generated-files-<sha>` before its PR exists (`docs/governance/REGENERATION_BOT_POLICY.md` E1) | Approve the narrow exception / owner opens regeneration PRs manually / waive PR-before-push for these branches | PENDING_OWNER | — |
+| REG-REGEN-STALE-CLOSE | Regeneration bot: close its own superseded `regen/generated-files-<sha>` PRs with a comment (`REGENERATION_BOT_POLICY.md` E2) | Approve bot closure / comment only, owner closes | PENDING_OWNER | — |
 
 ## Resolved
 
 | ID | Question | Status | Decision / date / source |
 |---|---|---|---|
 | D3 | `SESSION_TRADE_V1` demo authority | RESOLVED | `demo_authorized: false` (revoked 2026-09-30); source `strategies/registry.yaml`, recorded in `AG_V1_TWO_GOALS_OWNER_DECISIONS.md` |
+| C001-PRE-RESULT-CORRECTION | Pre-result correction of frozen candidate `CRYPTO_CFD_C001` | RATIFIED | Ratified by merge of [#85](https://github.com/aungmyat1/AG-profit-trading-assit/pull/85) (2026-10-08); no C001 economic result existed. Precedent limited: any future change to a frozen candidate's rule bytes requires a new candidate ID (C002+), never an in-place correction. |

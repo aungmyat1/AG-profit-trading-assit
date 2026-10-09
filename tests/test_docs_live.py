@@ -27,6 +27,8 @@ def drift_fixture(tmp_path: Path) -> Path:
         "docs/PROJECT_OBJECTIVE.md",
         "status/facts.json",
         "config/ag_scheduler_v2.yaml",
+        "scripts/host/install_tasks.ps1",
+        "config/ticket_delivery.yaml",
     ):
         source = ROOT / relative
         target = tmp_path / relative
@@ -353,6 +355,9 @@ def test_committing_generated_file_does_not_change_cog_check(tmp_path: Path) -> 
         shutil.copy2(ROOT / relative, target)
     for directory in ("scripts/docs", "strategies", "config"):
         shutil.copytree(ROOT / directory, root / directory)
+    host_script = root / "scripts/host/install_tasks.ps1"
+    host_script.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "scripts/host/install_tasks.ps1", host_script)
     shutil.copy2(ROOT / "scripts/generate_live_status.py", root / "scripts/generate_live_status.py")
     # Missing index fails closed; once initialized and staged, collection is stable.
     unavailable = run(sys.executable, "scripts/docs/collect_facts.py", cwd=root, check=False)

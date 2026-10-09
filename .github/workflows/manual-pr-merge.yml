@@ -1,0 +1,77 @@
+name: Owner controlled single PR merge
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: The one PR number authorized for this invocation
+        required: true
+        type: number
+      expected_head_sha:
+        description: Exact reviewed head SHA for this one invocation
+        required: true
+        type: string
+
+# actions: write is the only addition (R2): it lets the job dispatch the regeneration workflow
+# and main CI, because a merge made with GITHUB_TOKEN triggers no push-event workflows.
+permissions:
+  actions: write
+  contents: write
+  deployments: write
+  pull-requests: write
+  issues: read
+  checks: read
+
+concurrency:
+  group: single-pr-merge-main
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: github.actor == 'aungmyat1' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment:
+      name: merge-gate
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify invocation, denylist, and audited readiness
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess, sys
+          from scripts.governance.pr_readiness import validate_dispatch
+          denylist = json.load(open('config/governance/pr_merge_denylist.json', encoding='utf-8'))
+          number = int(os.environ['PR_NUMBER'])
+          sha = os.environ['EXPECTED_HEAD_SHA']
+          subprocess.run([sys.executable, 'scripts/governance/audit_pr_readiness.py', '--json', os.path.join(os.environ['RUNNER_TEMP'], 'audit.json'), '--markdown', os.path.join(os.environ['RUNNER_TEMP'], 'audit.md')], check=True)
+          report = json.load(open(os.path.join(os.environ['RUNNER_TEMP'], 'audit.json'), encoding='utf-8'))
+          pr = next((x for x in report['pull_requests'] if x['number'] == number), None)
+          failures = validate_dispatch(pr, number, sha, denylist)
+          if failures:
+              sys.exit('Dispatch denied: ' + ', '.join(failures))
+          current_main = subprocess.check_output(['gh', 'api', f"repos/{os.environ['GH_REPO']}/git/ref/heads/main", '--jq', '.object.sha'], text=True).strip()
+          if report['main_sha'] != report['main_sha_after'] or report['main_sha'] != current_main:
+              sys.exit('Main changed during readiness audit; rerun after reevaluating dependencies')
+          # Refuse before merging when main would lack a dispatchable CI or regeneration workflow.
+          subprocess.run([sys.executable, 'scripts/governance/post_merge_verify.py', 'preflight', '--head-sha', sha], check=True)
+          subprocess.run(['gh', 'pr', 'merge', str(number), '--squash', '--match-head-commit', sha], check=True)
+          PY
+        shell: bash
+      # Exit 0 only for INTEGRATED. MERGED_PENDING_REGEN_PR (exit 3) means generated-file changes
+      # await their own reviewed PR; POST_MERGE_FAILED (exit 1) names the failing gate.
+      - name: Dispatch and verify regeneration and main CI on the exact merged SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+        run: python scripts/governance/post_merge_verify.py verify --repo "$GITHUB_REPOSITORY" --pr "$PR_NUMBER" --expected-head-sha "$EXPECTED_HEAD_SHA" --timeout-seconds 2700 --poll-seconds 20

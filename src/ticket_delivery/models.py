@@ -15,7 +15,7 @@ name in WP1's own list -- both are additive to, not a replacement of, the WP1 vo
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 

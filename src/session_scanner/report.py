@@ -42,7 +42,7 @@ def render_text(scan: dict) -> str:
             + (f", signal bar {it['engine']['signal_timestamp_utc']}, entry "
                f"{'OPEN' if it['engine']['signal_entry_open'] else it['engine']['signal_entry_reason']}"
                if it['engine'].get('signal_timestamp_utc') else ""),
-            f"  Checklist: " + " ".join(f"{k}={v}" for k, v in it["checklist"].items()),
+            "  Checklist: " + " ".join(f"{k}={v}" for k, v in it["checklist"].items()),
             f"  Result: {it['result']}  ({it['reason']})"]
         ck11 = it.get("checklist_v1_1")
         if ck11:

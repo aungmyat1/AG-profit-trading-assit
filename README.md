@@ -3,6 +3,11 @@
 Standalone canonical-ticket Telegram delivery is offline tested and disabled by
 default (`TELEGRAM_DELIVERY_ENABLED=false`). See [configuration, schema gaps and
 limits](docs/status/AGP_TG_01_OFFLINE_2026-10-08.md); no live delivery is validated.
+The canonical ticket's `trigger` block carries `signal_time_source`. It is `ENGINE` when the
+engine stamped the signal bar, `MISSING` when a signal has no engine time (that ticket is
+`DATA_ERROR` / `SIGNAL_TIME_UNAVAILABLE`), and `NOT_APPLICABLE` for non-signal outcomes. Tickets
+that never recorded it (crypto/manual paths, pre-fix archives) show `NOT_AVAILABLE`; it is
+never inferred.
 
 AG Profit Trading is a deterministic FX and crypto trading assistant designed to
 produce four complementary decision products:
@@ -301,6 +306,10 @@ powershell -ExecutionPolicy Bypass -File scripts\host\verify_tasks.ps1
 The same FX task also builds MANUAL trade tickets (owner decides; never an order), writes a
 scan record for every symbol, resolves `VIRTUAL_FORWARD` outcomes once a day, and archives a
 daily report. Owner risk % has no default: set it in `config/local/owner_ticket.yaml`.
+When delivery is explicitly enabled, `TICKET_READY` manual tickets include inline Accept /
+Reject controls. Accept records owner intent and remains blocked from execution by the
+default-off authority gates; Reject records without a handoff. Telegram callback handling
+is unit-tested, not host-verified.
 
 ```powershell
 python scripts\manual_ticket_decision.py --date 2026-10-06 --ticket-id <id> --decision SKIPPED --reason NEWS

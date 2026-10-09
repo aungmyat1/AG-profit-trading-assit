@@ -1,0 +1,25 @@
+{
+  "basis": "RECORDED_GEOMETRY_DIAGNOSTIC_ONLY",
+  "total_recorded_sweeps": 23,
+  "entry_confirm_pass": 10,
+  "entry_confirm_pass_pct": 43.4783,
+  "stop_formula_pass": 10,
+  "stop_formula_pass_pct": 43.4783,
+  "wick_clear_pass": 5,
+  "wick_clear_pass_pct": 21.7391,
+  "target_order_pass": 10,
+  "target_order_pass_pct": 43.4783,
+  "spread_absolute_pass": 0,
+  "spread_absolute_pass_pct": 0.0,
+  "spread_R_pass": 0,
+  "spread_R_pass_pct": 0.0,
+  "all_logic_gates_pass": 0,
+  "all_logic_gates_pass_pct": 0.0,
+  "limitations": [
+    "13 records omit confirmation-candle close",
+    "23-case aggregate omits decision timestamps",
+    "authoritative contemporaneous spread is not present for all 23",
+    "some recorded cases are LONDON_NEWYORK, outside the frozen V1.2 ASIAN_LONDON scope"
+  ],
+  "missing values policy": "NOT_INFERRED"
+}

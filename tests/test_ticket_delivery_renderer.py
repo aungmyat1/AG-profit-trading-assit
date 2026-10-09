@@ -15,7 +15,6 @@ from ticket_delivery.renderer import (
     REASON_MISSING_FIELDS,
     REASON_NOT_READY,
     format_message_text,
-    payload_hash,
     render_informational_ticket,
 )
 

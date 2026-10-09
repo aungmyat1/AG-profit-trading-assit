@@ -18,6 +18,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 import yaml
 
 from telegram_delivery.adapter import Config, Sender
+from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 from ticket_store.store import SCHEMA_EVALUATION, TicketStore, evaluation_id, read_jsonl
 from v1_tickets.actionability import (
     BLOCKED, EXPIRED, INFO_ONLY_INSUFFICIENT_REMAINING_R, INFO_ONLY_POLICY_UNRESOLVED,
@@ -85,6 +86,7 @@ def build_sender(journal: str, *, root: str, transport=None, sleep=None) -> Send
     env_allow = frozenset(part.strip() for part in os.getenv("TELEGRAM_OWNER_CHAT_IDS", "").split(",")
                           if part.strip())
     local_path = Path(root) / CANONICAL_OVERRIDE
+    scope = resolve_immediate_scope(root, sender="canonical")
     watch_info_flag = False
     try:
         raw = yaml.safe_load(local_path.read_text(encoding="utf-8")) or {}
@@ -103,7 +105,8 @@ def build_sender(journal: str, *, root: str, transport=None, sleep=None) -> Send
     config = Config(enabled=authorized, token=env_token if authorized else "",
                     chat_id=env_chat if authorized else "",
                     owner_chat_ids=(env_allow & local_ids) if authorized else frozenset(),
-                    watch_info_scope=bool(authorized and watch_info_flag))
+                    watch_info_scope=bool(authorized and watch_info_flag),
+                    immediate_scopes=frozenset(scope["effective"]), scope_error=scope["error"])
     kwargs = {"config": config}
     if transport is not None:
         kwargs["transport"] = transport
@@ -460,8 +463,11 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
             item = {"symbol": symbol, "ticket_id": row.get("ticket_id"),
                     "decision": row.get("state") if known else "COMPATIBILITY_ERROR",
                     "source": row.get("source"),
-                    "reason_code": ((row.get("block_reasons") or [None])[0] if known else
-                                    "UNKNOWN_CANONICAL_DECISION"),
+                    # The event row carries the ticket's own reason code, so a SIGNAL_TIME_UNAVAILABLE
+                    # DATA_ERROR stays distinguishable from an acquisition DATA_ERROR; the stored
+                    # block_reasons are the fallback when no session event exists.
+                    "reason_code": ((event.get("reason_code") or (row.get("block_reasons") or [None])[0])
+                                    if known else "UNKNOWN_CANONICAL_DECISION"),
                     "acquisition_error_code": event.get("acquisition_error_code"),
                     "record_source": row.get("record_source", "TICKET_STORE"),
                     "ticket_store_status": event.get("ticket_store_status")

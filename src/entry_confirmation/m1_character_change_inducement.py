@@ -39,7 +39,11 @@ from typing import Optional, Sequence, Tuple
 
 from liquidity.hierarchy import InducementCandidate
 from liquidity.models import LiquidityLevel, LiquiditySide, LiquidityStatus
-from market_structure import MarketStructureConfig, StructurePointKind, structural_breaks_for_candles
+from market_structure import (
+    MarketStructureConfig,
+    StructurePointKind,
+    structural_breaks_for_candles,
+)
 from strategy_engine.session import Candle
 from supply_demand import ValidatedOrderBlock, ZoneResult
 

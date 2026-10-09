@@ -37,7 +37,11 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, Sequence, Tuple
 
-from market_structure import MarketStructureConfig, StructurePointKind, structural_breaks_for_candles
+from market_structure import (
+    MarketStructureConfig,
+    StructurePointKind,
+    structural_breaks_for_candles,
+)
 from strategy_engine.session import Candle
 from supply_demand import ValidatedOrderBlock, ZoneResult
 from supply_demand.models import ZoneRole, ZoneStatus, zone_id

@@ -6,6 +6,16 @@ review_by: 2026-11-07
 ---
 # STALE-FIX-1 — truthful signal time + funnel fields (2026-10-08)
 
+> **Superseded in part (2026-10-09).** STALE-FIX-1 merged through #94: `fx.py` no longer
+> substitutes the first trade-session bar, and a SIGNAL without an engine time is
+> `DATA_ERROR` / `SIGNAL_TIME_UNAVAILABLE`. The `FIRST_TRADE_SESSION_BAR` /
+> `ENGINE_M15_SIGNAL_BAR` / `NONE` labelling and `signal_time_basis_utc` described below
+> were therefore not applied.
+>
+> PR #95 now carries only the pass-through of #94's `signal_time_source` (`ENGINE` /
+> `MISSING` / `NOT_APPLICABLE`) into actionability and the canonical `trigger` block. The
+> record below is kept as historical evidence of the proposal.
+
 **Mission correction of record.** A same-day record
 ([AG_STALE_FIX_1_VERIFICATION_2026-10-08.md](AG_STALE_FIX_1_VERIFICATION_2026-10-08.md),
 PR #93, closed unmerged) misidentified STALE-FIX-1 as the already-merged AGP-TTU-02 fix
