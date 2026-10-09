@@ -1,0 +1,90 @@
+{
+  "mission": "AGP-C1b-HOST",
+  "captured_at_utc": "2026-10-09T12:02:57+00:00",
+  "source": "MetaTrader5.history_deals_get (python, read-only), magic==0 BUY/SELL deals, last 72h",
+  "account": {
+    "server": "VTMarkets-Demo",
+    "trade_mode": "DEMO",
+    "currency": "USD"
+  },
+  "deals": [
+    {
+      "ticket": 587172446,
+      "order": 798328269,
+      "position_id": 798328269,
+      "time_utc": "2026-10-08T13:44:16+00:00",
+      "symbol": "GBPUSD-VIP",
+      "type": "SELL",
+      "entry": "IN",
+      "volume": 0.01,
+      "price": 1.31955,
+      "commission": 0.0,
+      "fee": 0.0,
+      "swap": 0.0,
+      "profit": 0.0
+    },
+    {
+      "ticket": 587354325,
+      "order": 798595791,
+      "position_id": 798328269,
+      "time_utc": "2026-10-08T15:06:39+00:00",
+      "symbol": "GBPUSD-VIP",
+      "type": "BUY",
+      "entry": "OUT",
+      "volume": 0.01,
+      "price": 1.32077,
+      "commission": 0.0,
+      "fee": 0.0,
+      "swap": 0.0,
+      "profit": -1.22
+    },
+    {
+      "ticket": 589232305,
+      "order": 802393463,
+      "position_id": 802393463,
+      "time_utc": "2026-10-09T08:02:46+00:00",
+      "symbol": "USDJPY-VIP",
+      "type": "SELL",
+      "entry": "IN",
+      "volume": 0.01,
+      "price": 158.09,
+      "commission": 0.0,
+      "fee": 0.0,
+      "swap": 0.0,
+      "profit": 0.0
+    },
+    {
+      "ticket": 589357211,
+      "order": 802733323,
+      "position_id": 802393463,
+      "time_utc": "2026-10-09T08:51:48+00:00",
+      "symbol": "USDJPY-VIP",
+      "type": "BUY",
+      "entry": "OUT",
+      "volume": 0.01,
+      "price": 158.129,
+      "commission": 0.0,
+      "fee": 0.0,
+      "swap": 0.0,
+      "profit": -0.25
+    }
+  ],
+  "commission_per_lot_per_side": {
+    "EURUSD": "COMMISSION_UNAVAILABLE",
+    "GBPUSD-VIP": {
+      "commission_per_lot_per_side": 0.0,
+      "currency": "USD",
+      "n_deals": 2,
+      "basis": "abs(deal.commission)/deal.volume, mean over observed deals"
+    },
+    "USDJPY-VIP": {
+      "commission_per_lot_per_side": 0.0,
+      "currency": "USD",
+      "n_deals": 2,
+      "basis": "abs(deal.commission)/deal.volume, mean over observed deals"
+    },
+    "XAUUSD": "COMMISSION_UNAVAILABLE",
+    "BTCUSD": "COMMISSION_UNAVAILABLE",
+    "ETHUSD": "COMMISSION_UNAVAILABLE"
+  }
+}

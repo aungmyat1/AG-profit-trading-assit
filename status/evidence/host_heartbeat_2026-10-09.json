@@ -1,0 +1,254 @@
+{
+ "schema": "ag.host.heartbeat.v1",
+ "status": "HOST_NOT_ON_MAIN",
+ "status_reasons": [
+  "HOST_NOT_ON_MAIN",
+  "DEGRADED_RESOURCES"
+ ],
+ "observed_at_utc": "2026-10-09T11:51:43.429059+00:00",
+ "host_power_mode": "wake_sleep",
+ "host_power_mode_source": "observed host state 2026-10-08: AG-Wake-MT5 / AG-Sleep-Night still registered",
+ "reader_rule": "age_seconds = now - observed_at_utc; > 7200 while the host is scheduled awake -> STALE (wake_sleep: asleep between AG-Sleep-Night and AG-Wake-MT5)",
+ "host_head_sha": "9419b21d66eaf026dce29b4218eaaed3cdde73a0",
+ "host_ref": "DETACHED@9419b21",
+ "host_on_main": false,
+ "mt5_connected": {
+  "value": true,
+  "as_of_utc": "2026-10-09T11:48:24.379059+00:00"
+ },
+ "host_resources": {
+  "free_ram_mb": 448,
+  "free_disk_gb": {
+   "C": 1.5,
+   "D": 5.5
+  },
+  "thresholds": {
+   "free_ram_mb": 1200,
+   "free_disk_gb": 10,
+   "state": "PROPOSED_OWNER_CONFIRM"
+  },
+  "status": "DEGRADED_RESOURCES",
+  "reasons": [
+   "RAM<1200MB",
+   "C:<10GB",
+   "D:<10GB"
+  ]
+ },
+ "tasks": {
+  "AG-Sleep-Night": {
+   "LastTaskResult": 0,
+   "LastRunTime": "2026-10-08T18:15:15.0000000Z",
+   "NextRunTime": "2026-10-09T18:15:15.0000000Z"
+  },
+  "AG-Sleep-Weekend-Crypto": {
+   "LastTaskResult": 0,
+   "LastRunTime": "2026-10-04T23:15:15.0000000Z",
+   "NextRunTime": "2026-10-10T23:15:15.0000000Z"
+  },
+  "AG-V1-Crypto-Daily": {
+   "LastTaskResult": 0,
+   "LastRunTime": "2026-10-09T11:47:47.0000000Z",
+   "NextRunTime": "2026-10-09T12:02:02.0000000Z"
+  },
+  "AG-V1-FX-Cycles": {
+   "LastTaskResult": 0,
+   "LastRunTime": "2026-10-09T11:46:46.0000000Z",
+   "NextRunTime": "2026-10-09T12:01:01.0000000Z"
+  },
+  "AG-V1-LSMC-Crypto-Weekend": {
+   "LastTaskResult": 0,
+   "LastRunTime": "2026-10-04T23:13:13.0000000Z",
+   "NextRunTime": "2026-10-10T20:48:48.0000000Z"
+  },
+  "AG-V1-LSMC-Watch": {
+   "LastTaskResult": 0,
+   "LastRunTime": "2026-10-09T11:48:48.0000000Z",
+   "NextRunTime": "2026-10-09T11:53:53.0000000Z"
+  },
+  "AG-Wake-MT5": {
+   "LastTaskResult": 0,
+   "LastRunTime": "2026-10-09T05:55:55.0000000Z",
+   "NextRunTime": "2026-10-12T05:55:55.0000000Z"
+  },
+  "AG-Wake-Weekend-Crypto": {
+   "LastTaskResult": 0,
+   "LastRunTime": "2026-10-04T20:40:40.0000000Z",
+   "NextRunTime": "2026-10-10T20:40:40.0000000Z"
+  }
+ },
+ "source_windows": {
+  "fx": [
+   "AWAKE_DAILY",
+   "WEEKEND_CRYPTO"
+  ],
+  "crypto": [
+   "AWAKE_DAILY",
+   "WEEKEND_CRYPTO"
+  ],
+  "lsmc": [
+   "AWAKE_DAILY",
+   "WEEKEND_CRYPTO"
+  ],
+  "lsmc-weekend": [
+   "WEEKEND_CRYPTO"
+  ]
+ },
+ "sources": {
+  "ag_v1_fx.log": {
+   "status": "OK",
+   "power_mode": "wake_sleep",
+   "last_line_utc": "2026-10-09T11:46:33.299680+00:00"
+  },
+  "ag_v1_crypto.log": {
+   "status": "OK",
+   "power_mode": "wake_sleep",
+   "last_line_utc": "2026-10-09T11:47:24.027676+00:00"
+  },
+  "ag_v1_lsmc.log": {
+   "status": "OK",
+   "power_mode": "wake_sleep",
+   "last_line_utc": "2026-10-09T11:48:24.379059+00:00"
+  },
+  "ag_v1_lsmc-weekend.log": {
+   "status": "INACTIVE_EXPECTED",
+   "power_mode": "wake_sleep",
+   "last_line_utc": "2026-10-04T23:13:11.796052+00:00"
+  }
+ },
+ "last_24h": {
+  "fx_by_window_per_cycle": {
+   "LONDON_NEWYORK": {
+    "READY": 0,
+    "NO_TRADE": 35,
+    "STALE": 18,
+    "SPREAD_TOO_WIDE": 2,
+    "errors": 0,
+    "other": 1
+   },
+   "ASIAN_LONDON": {
+    "READY": 0,
+    "NO_TRADE": 41,
+    "STALE": 28,
+    "SPREAD_TOO_WIDE": 2,
+    "errors": 0,
+    "other": 1
+   }
+  },
+  "lsmc_states_per_cycle": {
+   "DEVELOPING": 527,
+   "NEAR_POI": 670,
+   "OPPORTUNITY": 310,
+   "IDLE": 176,
+   "STALE": 39
+  },
+  "lsmc_unique_opportunities_24h": {
+   "count": 10,
+   "by_symbol": {
+    "BTCUSDT": 6,
+    "EURUSD": 2,
+    "USDJPY": 2
+   }
+  },
+  "crypto_decisions_per_cycle": {
+   "OUTSIDE_WINDOW": 164,
+   "WATCH": 24
+  },
+  "runner_errors": {
+   "fx": {
+    "TIMEOUT": 0,
+    "MT5_INITIALIZE_FAILED": 1,
+    "MT5_BUSY": 0,
+    "DEMO_ACCOUNT_REQUIRED": 0,
+    "MT5_PACKAGE_MISSING": 0
+   },
+   "crypto": {
+    "TIMEOUT": 0,
+    "MT5_INITIALIZE_FAILED": 1,
+    "MT5_BUSY": 0,
+    "DEMO_ACCOUNT_REQUIRED": 0,
+    "MT5_PACKAGE_MISSING": 0
+   },
+   "lsmc": {
+    "TIMEOUT": 0,
+    "MT5_INITIALIZE_FAILED": 1,
+    "MT5_BUSY": 0,
+    "DEMO_ACCOUNT_REQUIRED": 0,
+    "MT5_PACKAGE_MISSING": 0
+   },
+   "lsmc-weekend": {
+    "TIMEOUT": 0,
+    "MT5_INITIALIZE_FAILED": 0,
+    "MT5_BUSY": 0,
+    "DEMO_ACCOUNT_REQUIRED": 0,
+    "MT5_PACKAGE_MISSING": 0
+   }
+  }
+ },
+ "duplicates": {
+  "fx_archive": {
+   "ready_ticket_duplicates": 0,
+   "non_ready_rearchives": 30
+  },
+  "telegram_same_ref_sends": 0
+ },
+ "missed_windows": [],
+ "broker_history_24h": {
+  "source": "LIVE_ATTACH",
+  "orders": 3,
+  "deals": 3,
+  "by_magic": {},
+  "manual_or_zero_magic": 3,
+  "connection": {
+   "terminal_connected": true,
+   "account_attached": true,
+   "terminal_path": "C:\\Users\\aungp\\AppData\\Roaming\\MetaTrader 5"
+  }
+ },
+ "broker_history_error": null,
+ "broker_order_calls": 3,
+ "observed_broker_order_calls": 0,
+ "execution_paths": [
+  {
+   "path": "D:/wp3-main-integ scheduled AG-V1 runners (scripts/host/*)",
+   "order_capable": false,
+   "logged": true,
+   "note": "no order/position call sites in host HEAD; tests/test_host_go_live_kit.py guards it"
+  },
+  {
+   "path": "dev checkout src/execution/mt5_gateway.py (assistant.commands.execute_command)",
+   "order_capable": true,
+   "logged": false,
+   "note": "calls mt5.order_send; writes nothing to the AG-V1 runner logs"
+  },
+  {
+   "path": "dev checkout src/mt5/management_gateway.py (trade_management.manager)",
+   "order_capable": true,
+   "logged": false,
+   "note": "calls mt5.order_send for SL modify / partial / close; not in runner logs"
+  },
+  {
+   "path": "dev checkout web/server.ts -> management_gateway",
+   "order_capable": true,
+   "logged": false,
+   "note": "server-side bridge to the management gateway; not in runner logs"
+  },
+  {
+   "path": "MT5 terminal manual trading (owner)",
+   "order_capable": true,
+   "logged": false,
+   "note": "terminal journal only; not read by this script"
+  },
+  {
+   "path": "MT5 Expert Advisors (MQL5/Experts, e.g. ContinuationBreakout_EA.ex5)",
+   "order_capable": true,
+   "logged": false,
+   "note": "attachment state not observable here"
+  },
+  {
+   "path": "mt5ReadOnly MCP proxy",
+   "order_capable": false,
+   "logged": true,
+   "note": "read-only proxy refuses order_send (web/tests/readonly_mcp_proxy.test.mjs)"
+  }
+ ]
+}

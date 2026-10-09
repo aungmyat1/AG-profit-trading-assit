@@ -1,0 +1,41 @@
+MISSING venv python: D:\ddev\_wt_agp_c1\.venv\Scripts\python.exe  (py -3.11 -m venv .venv; .venv\Scripts\pip install -r requirements.txt)
+AG-V1-FX-Cycles: every 15 min from 00:01:00 daily -> "D:\ddev\_wt_agp_c1\.venv\Scripts\pythonw.exe" "D:\ddev\_wt_agp_c1\scripts\host\live_candles_smoke.py" --mode fx --canonical
+AG-V1-Crypto-Daily: every 15 min from 00:02:30 daily -> "D:\ddev\_wt_agp_c1\.venv\Scripts\pythonw.exe" "D:\ddev\_wt_agp_c1\scripts\host\live_candles_smoke.py" --mode crypto
+AG-V1-LSMC-Watch: every 5 min from 00:04:15 daily -> "D:\ddev\_wt_agp_c1\.venv\Scripts\pythonw.exe" "D:\ddev\_wt_agp_c1\scripts\host\live_candles_smoke.py" --mode lsmc
+=== HOST TASK DECLARATIONS vs REGISTERED (MMT, UTC+06:30; 17 declared; -Apply acts only on INSTALLER/RETIRE) ===
+\AG-V1-FX-Cycles [INSTALLER/ACTIVE] CHANGE Exe: REDACTED (host path not committed); Args: REDACTED (host path not committed)
+\AG-V1-Crypto-Daily [INSTALLER/ACTIVE] CHANGE Exe: REDACTED (host path not committed); Args: REDACTED (host path not committed); Start: 00:02:00 -> 00:02:30
+\AG-V1-LSMC-Watch [INSTALLER/ACTIVE] CHANGE Exe: REDACTED (host path not committed); Args: REDACTED (host path not committed); Days: Mon,Tue,Wed,Thu,Fri -> DAILY; Start: 00:03:00 -> 00:04:15
+\AG-V1-LSMC-Crypto-Weekend [RETIRE/RETIRED] CHANGE State: ENABLED -> ABSENT
+\AG-Wake-MT5 [HOST_ONLY/RETIRED] CHANGE State: ENABLED -> ABSENT
+\AG-Wake-Weekend-Crypto [HOST_ONLY/RETIRED] CHANGE State: ENABLED -> ABSENT
+\AG-Sleep-Night [HOST_ONLY/RETIRED] CHANGE State: ENABLED -> ABSENT
+\AG-Sleep-Weekend-Crypto [HOST_ONLY/RETIRED] CHANGE State: ENABLED -> ABSENT
+\AG Profit Trading - BTC Daily Decision [HOST_ONLY/DISABLE_AFTER_PARITY] CHANGE Args: REDACTED (host path not committed)
+\AGX-HealthExport [HOST_ONLY/ACTIVE] MATCHES TARGET
+\AG_FX_ASIAN_LONDON_SHADOW [HOST_ONLY/REMOVE] CHANGE State: DISABLED -> ABSENT
+\AG_FX_LONDON_NEWYORK_SHADOW [HOST_ONLY/REMOVE] CHANGE State: DISABLED -> ABSENT
+\AG_LSMC_Friction_Campaign\AG_LSMC_EURUSD_Friction_WindowA_AsianRef [HOST_ONLY/DISABLED] MATCHES TARGET
+\AG_LSMC_Friction_Campaign\AG_LSMC_EURUSD_Friction_WindowB_PreLondon [HOST_ONLY/DISABLED] MATCHES TARGET
+\AG_LSMC_Friction_Campaign\AG_LSMC_EURUSD_Friction_WindowC_London [HOST_ONLY/DISABLED] MATCHES TARGET
+\AG_LSMC_Friction_Campaign\AG_LSMC_EURUSD_Friction_WindowD_LondonNY [HOST_ONLY/DISABLED] MATCHES TARGET
+\AG-Heartbeat-Local [HOST_ONLY/NEW] CHANGE State: ABSENT -> ENABLED
+=== HOST TASK DECLARATIONS (MMT, UTC+06:30; 17 tasks, -Apply manages only INSTALLER/RETIRE) ===
+\AG-V1-FX-Cycles [INSTALLER, DISABLED] 
+\AG-V1-Crypto-Daily [INSTALLER, DISABLED] 
+\AG-V1-LSMC-Watch [INSTALLER, DISABLED] 
+\AG-V1-LSMC-Crypto-Weekend [RETIRE, DISABLED] 
+\AG-Wake-MT5 [HOST_ONLY, DISABLED] 
+\AG-Wake-Weekend-Crypto [HOST_ONLY, DISABLED] 
+\AG-Sleep-Night [HOST_ONLY, DISABLED] 
+\AG-Sleep-Weekend-Crypto [HOST_ONLY, DISABLED] 
+\AG Profit Trading - BTC Daily Decision [HOST_ONLY, DISABLED] 
+\AGX-HealthExport [HOST_ONLY, DISABLED] 
+\AG_FX_ASIAN_LONDON_SHADOW [HOST_ONLY, DISABLED] 
+\AG_FX_LONDON_NEWYORK_SHADOW [HOST_ONLY, DISABLED] 
+\AG_LSMC_Friction_Campaign\AG_LSMC_EURUSD_Friction_WindowA_AsianRef [HOST_ONLY, DISABLED] 
+\AG_LSMC_Friction_Campaign\AG_LSMC_EURUSD_Friction_WindowB_PreLondon [HOST_ONLY, DISABLED] 
+\AG_LSMC_Friction_Campaign\AG_LSMC_EURUSD_Friction_WindowC_London [HOST_ONLY, DISABLED] 
+\AG_LSMC_Friction_Campaign\AG_LSMC_EURUSD_Friction_WindowD_LondonNY [HOST_ONLY, DISABLED] 
+\AG-Heartbeat-Local [HOST_ONLY, DISABLED] 
+WhatIf: no changes made. Re-run with -Apply to install.
