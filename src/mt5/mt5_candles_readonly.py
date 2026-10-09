@@ -28,7 +28,7 @@ import datetime as dt
 import json
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from host_evidence.symbol_metadata import NY, server_time_to_utc
 from mt5 import canonical_broker_map
