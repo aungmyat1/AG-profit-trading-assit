@@ -6,6 +6,7 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[Regeneration first-PR bootstrap runbook](agents/REGEN_BOOTSTRAP.md) gives the owner's manual steps to open the first bot PR while `bootstrap_push` is denied.
 [Regeneration bot policy (PROPOSED)](governance/REGENERATION_BOT_POLICY.md) records the bootstrap exception and superseded-PR closure proposed for regeneration branches only, pending owner decision.
 [AGP-GITHUB-INTEGRATION-R5 regeneration](status/AGP_GITHUB_INTEGRATION_R5_REGEN_2026-10-09.md) records the PR-based regeneration workflow that implements AG_REGEN_OUTCOME_V1 and supersedes PR #91.
 [AGP-MERGE-GATE-RECOVERY-R3](status/AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md) records the PR-based regeneration contract, merge-gate post-merge states, and the PR #91 handoff.

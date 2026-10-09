@@ -570,3 +570,28 @@ def test_main_writes_failed_outcome_on_invalid_config(tmp_path, monkeypatch, rep
                     "--out", str(out), "--root", str(work)])
     body = json.loads(out.read_text())
     assert code == 1 and body["status"] == rc.REGEN_FAILED
+
+
+@pytest.mark.denied
+def test_owner_manual_bootstrap_runbook_works_with_committed_allowlist(repo, pushes):
+    """docs/agents/REGEN_BOOTSTRAP.md: the owner pushes the empty bootstrap and opens the PR; the
+    bot then publishes content and dispatches CI with no allowlist change."""
+    work, _ = repo
+    base = head(work)
+    branch = rc.regen_branch(base)
+    subprocess.run(["git", "-c", f"user.name={rp.BOT_NAME}", "-c", f"user.email={rp.BOT_EMAIL}",
+                    "commit", "-q", "--allow-empty", "-m", rp.bootstrap_message(base)], cwd=work, check=True)
+    sh(work, "push", "-q", "origin", f"HEAD:refs/heads/{branch}")
+    pulls = FakePulls(work)
+    pulls.prs = [{"number": 42, "title": title_for(base), "headRefName": branch,
+                  "headRefOid": Git(work).remote_sha(branch)}]
+    reset_to(work, base)
+    regen(work)
+    out = publish(Git(work), pulls, base, "owner-1")
+    assert out["status"] == rc.REGEN_PR_UPDATED and out["pr_number"] == 42
+    assert out["ci_state"] == rp.CI_PENDING and pulls.created == [] and pulls.superseded == []
+    pulls.sync()
+    reset_to(work, base)
+    regen(work)
+    again = publish(Git(work), pulls, base, "owner-2")  # retry passes provenance, no re-dispatch
+    assert again["status"] == rc.REGEN_PENDING_REVIEW and len(pulls.ci) == 1
