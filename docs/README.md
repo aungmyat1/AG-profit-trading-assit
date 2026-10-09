@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[PR #94 follow-up S01/S02](status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md) records the signal-time identity classification (pending owner) and the LIVE/REPLAY digest reason fix.
+
 [TG-SCOPE-POLICY-1](status/AG_TG_SCOPE_POLICY_1_STATUS_2026-10-08.md) records the tracked
 Telegram immediate-send ceiling, fail-closed host-local narrowing, and offline verification.
 

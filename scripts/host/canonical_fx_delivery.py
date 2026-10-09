@@ -364,6 +364,9 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
 
     event_rows = _read_session_events(journal, day, session)
     latest_event: Dict[Tuple[str, str], Dict[str, Any]] = {}
+    # Reason lookup is keyed by the evaluation source too: LIVE and REPLAY rows may share a
+    # ticket id and decision, and the digest must report the reason of the selected record.
+    latest_event_by_source: Dict[Tuple[str, str, str], Dict[str, Any]] = {}
     persistence_failures: Dict[str, Dict[str, Any]] = {}
     for event in event_rows:
         if event.get("event_type") != "TICKET_DELIVERY" or event.get("stage") != "RESULT":
@@ -372,6 +375,10 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
         prior = latest_event.get(key)
         if prior is None or str(event.get("recorded_at_utc", "")) >= str(prior.get("recorded_at_utc", "")):
             latest_event[key] = event
+        source_key = (*key, event.get("source") or "")
+        prior = latest_event_by_source.get(source_key)
+        if prior is None or str(event.get("recorded_at_utc", "")) >= str(prior.get("recorded_at_utc", "")):
+            latest_event_by_source[source_key] = event
         symbol = event.get("symbol")
         if (event.get("ticket_store_status") == "FAILED" and symbol in candidates
                 and event.get("source") in ("LIVE", "REPLAY")):
@@ -459,7 +466,7 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
             known = _known_canonical_decision(row.get("state"))
             # The typed acquisition code and the persistence verification live on the fsynced
             # session event; TICKET_STORE_V1 keeps its frozen schema and canonical reason codes.
-            event = latest_event.get((row.get("ticket_id"), row.get("state"))) or {}
+            event = latest_event_by_source.get((row.get("ticket_id"), row.get("state"), row.get("source"))) or {}
             item = {"symbol": symbol, "ticket_id": row.get("ticket_id"),
                     "decision": row.get("state") if known else "COMPATIBILITY_ERROR",
                     "source": row.get("source"),

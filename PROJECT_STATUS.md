@@ -198,7 +198,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `70e80c0e09dd317a4c04999c0b3d4e6775e33b80c6561f4b5b6c02ec304ae2b9`.
+inputs_sha256: `dfbc104918f361b14567f7a649c598e7b95a0612ea248d156d0d930ca98585ff`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -232,6 +232,17 @@ docs-gate evidence: [TG-SCOPE-POLICY-1](docs/status/AG_TG_SCOPE_POLICY_1_STATUS_
 AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
+
+## PR #94 follow-up S01/S02 (2026-10-09, branch `claude/pr94-followup-r5`, not merged)
+
+- **S02 fixed:** the session digest now takes each instrument's reason from the event whose
+  source (LIVE/REPLAY) matches the selected evaluation record. A regression test covers it.
+- **S01 classified, not decided:** recommended as a ticket-layer correctness fix, because #94
+  changed no strategy-engine or contract file. Owner decision `REG-S01-SIGNAL-TIME` is
+  pending. Archived records without `signal_time_source` are not reattributed.
+
+No execution or broker path changed. Evidence:
+[`AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md`](docs/status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md).
 
 ## Regeneration permissions: default deny — R6B (2026-10-09, branches `fix/r6b-step0-deny` → `fix/r6b-default-deny`, not merged)
 
