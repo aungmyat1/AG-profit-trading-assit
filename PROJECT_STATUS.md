@@ -97,7 +97,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `b447c02b76b5022ddad891145432574de023b8af1655b2c3db038d7e03add5a7`.
+inputs_sha256: `295fc30baad07c6ee497d5c1939991976f1e360150f7efd9f9894d03904ff40c`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -122,6 +122,17 @@ Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#obj
 AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
+
+## PR #94 follow-up S01/S02 (2026-10-09, branch `claude/pr94-followup-r5`, not merged)
+
+- **S02 fixed:** the session digest now takes each instrument's reason from the event whose
+  source (LIVE/REPLAY) matches the selected evaluation record. A regression test covers it.
+- **S01 classified, not decided:** recommended as a ticket-layer correctness fix, because #94
+  changed no strategy-engine or contract file. Owner decision `REG-S01-SIGNAL-TIME` is
+  pending. Archived records without `signal_time_source` are not reattributed.
+
+No execution or broker path changed. Evidence:
+[`AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md`](docs/status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md).
 
 ## Merge-gate recovery R3 (2026-10-09, PR #96 branch `claude/merge-gate-remediation-r2`, not merged)
 

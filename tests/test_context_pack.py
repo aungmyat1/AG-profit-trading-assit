@@ -32,8 +32,8 @@ def test_committed_pack_matches_a_fresh_build():
 def test_open_decisions_counted_from_the_register_never_a_bare_zero(tmp_path):
     out = pack.build(FACTS)
     count, sources = pack.open_decisions()
-    assert sources == list(pack.REGISTERED_DECISION_SOURCES) and count == 11
-    assert "Open decisions in registered tables: 11 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
+    assert sources == list(pack.REGISTERED_DECISION_SOURCES) and count == 12
+    assert "Open decisions in registered tables: 12 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
     # No registered table -> UNKNOWN, not 0.
     assert pack.open_decisions(str(tmp_path)) == (None, [])
     no_sources = {**FACTS, "pack_context": {"pending_decisions": None, "decision_sources": [],

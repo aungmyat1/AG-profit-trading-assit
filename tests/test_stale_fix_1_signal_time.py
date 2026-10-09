@@ -118,3 +118,58 @@ def test_digest_takes_reason_code_from_the_event_row(tmp_path):
                             "recorded_at_utc": NOW.isoformat(), "reason_code": fx.SIGNAL_TIME_UNAVAILABLE,
                             "acquisition_error_code": None}) + "\n")
     assert _digest_row(journal, send)["reason_code"] == fx.SIGNAL_TIME_UNAVAILABLE
+
+
+def test_digest_reason_matches_the_selected_live_record_not_a_later_replay_event(tmp_path):
+    """S02: LIVE and REPLAY share ticket id, decision and timestamp but differ in reason.
+
+    _latest_record selects LIVE; the REPLAY event is appended last. The digest must report the
+    LIVE event's reason, not the most recently recorded event for (ticket_id, decision).
+    """
+    import json
+    import os
+    from ticket_store.store import LIVE, REPLAY, TicketStore, build_evaluation
+    send, _ = sender(tmp_path, enabled=False)
+    journal = str(tmp_path / "journal")
+    day = NOW.date().isoformat()
+    tid = f"ST_ASIAN_SWEEP_5R_V1|1.1.1|EURUSD|ASIAN_LONDON|{day}"
+    store = TicketStore(os.path.join(journal, "ticket_store"))
+    for source, reason in ((LIVE, "LIVE_STORE_REASON"), (REPLAY, "REPLAY_STORE_REASON")):
+        store.append_evaluation(build_evaluation(
+            ticket_id=tid, strategy="ST_ASIAN_SWEEP_5R_V1@1.1.1", source=source, symbol="EURUSD",
+            session="ASIAN_LONDON", evaluated_at_utc=NOW.isoformat(), state="INSUFFICIENT_DATA",
+            block_reasons=[reason]))
+    path = cfd._session_event_path(journal, day, "ASIAN_LONDON")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "a", encoding="utf-8") as f:
+        for source, reason in (("LIVE", fx.SIGNAL_TIME_UNAVAILABLE), ("REPLAY", "REPLAY_EVENT_REASON")):
+            f.write(json.dumps({"event_type": "TICKET_DELIVERY", "stage": "RESULT", "ticket_id": tid,
+                                "decision": "INSUFFICIENT_DATA", "symbol": "EURUSD", "source": source,
+                                "recorded_at_utc": NOW.isoformat(), "reason_code": reason,
+                                "acquisition_error_code": None}) + "\n")
+    row = _digest_row(journal, send)
+    assert row["source"] == "LIVE"
+    assert row["reason_code"] == fx.SIGNAL_TIME_UNAVAILABLE
+
+
+def test_digest_without_a_source_matched_event_falls_back_to_the_selected_record(tmp_path):
+    """S02: a REPLAY-only event never lends its reason to the selected LIVE record."""
+    import json
+    import os
+    from ticket_store.store import LIVE, TicketStore, build_evaluation
+    send, _ = sender(tmp_path, enabled=False)
+    journal = str(tmp_path / "journal")
+    day = NOW.date().isoformat()
+    tid = f"ST_ASIAN_SWEEP_5R_V1|1.1.1|EURUSD|ASIAN_LONDON|{day}"
+    TicketStore(os.path.join(journal, "ticket_store")).append_evaluation(build_evaluation(
+        ticket_id=tid, strategy="ST_ASIAN_SWEEP_5R_V1@1.1.1", source=LIVE, symbol="EURUSD",
+        session="ASIAN_LONDON", evaluated_at_utc=NOW.isoformat(), state="INSUFFICIENT_DATA",
+        block_reasons=["LIVE_STORE_REASON"]))
+    path = cfd._session_event_path(journal, day, "ASIAN_LONDON")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps({"event_type": "TICKET_DELIVERY", "stage": "RESULT", "ticket_id": tid,
+                            "decision": "INSUFFICIENT_DATA", "symbol": "EURUSD", "source": "REPLAY",
+                            "recorded_at_utc": NOW.isoformat(), "reason_code": "REPLAY_EVENT_REASON",
+                            "acquisition_error_code": None}) + "\n")
+    assert _digest_row(journal, send)["reason_code"] == "LIVE_STORE_REASON"

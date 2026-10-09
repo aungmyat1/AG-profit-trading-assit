@@ -6,6 +6,7 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[PR #94 follow-up S01/S02](status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md) records the signal-time identity classification (pending owner) and the LIVE/REPLAY digest reason fix.
 [AGP-MERGE-GATE-RECOVERY-R3](status/AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md) records the PR-based regeneration contract, merge-gate post-merge states, and the PR #91 handoff.
 [AGP-MERGE-GATE-REMEDIATION-R2](status/AGP_MERGE_GATE_REMEDIATION_R2_2026-10-09.md) records the merge-gate F01–F02 repairs (its F03 is superseded by R3).
 [AGP-GRADE-01 offline M1 outcome grading](status/AGP_GRADE_01_STATUS_2026-10-08.md) records the store-native replay evaluator, fixture report, and bounded verification.
