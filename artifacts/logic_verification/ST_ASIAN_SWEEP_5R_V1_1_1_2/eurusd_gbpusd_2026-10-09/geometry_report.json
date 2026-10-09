@@ -1,4 +1,20 @@
 {
+  "by_symbol": {
+    "EURUSD": {
+      "admitted": 2,
+      "admitted_bad_geometry": 0,
+      "leaked_to_admitted": [],
+      "raw_tp_inversion": 5,
+      "raw_zero_stop": 1
+    },
+    "GBPUSD": {
+      "admitted": 1,
+      "admitted_bad_geometry": 0,
+      "leaked_to_admitted": [],
+      "raw_tp_inversion": 7,
+      "raw_zero_stop": 1
+    }
+  },
   "recorded_failures": [
     {
       "blocked_by_candidate": true,
@@ -68,5 +84,8 @@
     "tickets_with_levels": 285,
     "undeclared_l2_failures": 0
   },
-  "verdict": "PASS"
+  "verdict_by_symbol": {
+    "EURUSD": "PASS",
+    "GBPUSD": "PASS"
+  }
 }

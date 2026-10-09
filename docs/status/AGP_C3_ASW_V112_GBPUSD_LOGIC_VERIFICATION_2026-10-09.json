@@ -1319,8 +1319,7 @@
         "engine_identity": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
         "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
         "strategy_version": "1.1.2"
-      },
-      "verdict": "PASS"
+      }
     },
     "L2_specification_engine_equivalence": {
       "evidence": {
@@ -1343,7 +1342,7 @@
         }
       },
       "reused": "docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md",
-      "verdict": "PASS"
+      "rule": "no undeclared/NOT_EVALUABLE check AND a conforming sweep passing L1-L4 in both windows"
     },
     "L3_temporal_causality": {
       "by_symbol": {
@@ -1372,8 +1371,7 @@
         "prefix_mismatches": 0,
         "streaming_batch_mismatches": 0
       },
-      "seed": 112,
-      "verdict": "PASS"
+      "seed": 112
     },
     "L4_price_geometry": {
       "by_symbol": {
@@ -1462,8 +1460,7 @@
         "sessions": 400,
         "tickets_with_levels": 285,
         "undeclared_l2_failures": 0
-      },
-      "verdict": "PASS"
+      }
     },
     "L5_risk_and_friction": {
       "block_reasons": [],
@@ -1479,8 +1476,20 @@
       ]
     },
     "L6_freshness_fields": {
-      "evidence": "owner-ticket L6 (logic_gate.l6_freshness) on 22 signal cases: ['PASS']",
-      "verdict": "PASS"
+      "evidence": {
+        "EURUSD": {
+          "cases": 9,
+          "statuses": [
+            "PASS"
+          ]
+        },
+        "GBPUSD": {
+          "cases": 13,
+          "statuses": [
+            "PASS"
+          ]
+        }
+      }
     }
   },
   "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
@@ -1506,8 +1515,8 @@
       }
     },
     "instruments": {
-      "EURUSD": "VERIFIED_RECORDED_FIXTURE",
-      "GBPUSD": "VERIFIED_RECORDED_FIXTURE (10 days); conforming ticket NOT_EVIDENCED in LONDON_NEWYORK",
+      "EURUSD": "LOGIC_VERIFIED",
+      "GBPUSD": "PARTIAL: 10 recorded days; conforming ticket NOT_EVIDENCED in LONDON_NEWYORK",
       "USDJPY": "PENDING_AGP-C2-SYMMAP",
       "XAUUSD": "PENDING_AGP-C2-SYMMAP"
     }
@@ -1629,6 +1638,24 @@
   "edge_status": "NOT_VERIFIED",
   "edge_verified": false,
   "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+  "gates_by_symbol": {
+    "EURUSD": {
+      "L1": "PASS",
+      "L2": "PASS",
+      "L3": "PASS",
+      "L4": "PASS",
+      "L5": "WARN",
+      "L6": "PASS"
+    },
+    "GBPUSD": {
+      "L1": "PASS",
+      "L2": "NOT_EVIDENCED",
+      "L3": "PASS",
+      "L4": "PASS",
+      "L5": "WARN",
+      "L6": "PASS"
+    }
+  },
   "generated_at": "2026-10-09T00:00:00Z",
   "live_authorized": false,
   "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
@@ -1777,7 +1804,10 @@
     "EURUSD",
     "GBPUSD"
   ],
-  "verdict": "LOGIC_VERIFIED",
-  "verification_code_sha": "f4eb475a473abbfc037fe3b82c2905e7495d3bb0",
+  "verdicts": {
+    "EURUSD": "LOGIC_VERIFIED",
+    "GBPUSD": "PARTIAL"
+  },
+  "verification_code_sha": "8100d59a9455624d19fd96753f5a5f855ac1f5af",
   "version": "1.1.2"
 }

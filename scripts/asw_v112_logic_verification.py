@@ -76,6 +76,7 @@ SYMBOLS = {
 FIXTURE = SYMBOLS["EURUSD"]["fixture"]
 L4_FAILURES = SYMBOLS["EURUSD"]["l4_failures"]
 DAY_TYPES = ("long-sweep", "short-sweep", "TREND", "no-setup")
+NOT_EVIDENCED = "NOT_EVIDENCED"    # no recorded case exercises the rule; never reported as PASS
 CYCLES = {"ASIAN_LONDON": ("Asian", 24), "LONDON_NEWYORK": ("London", 20)}
 TEST_SPREAD = 0.00002          # L2-closure test input (0.2 pip), not recorded data
 SEMANTIC = ("decision", "reason_code", "regime", "setup", "signal_id", "box", "signal_timestamp", "direction",
@@ -404,20 +405,7 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
         "replay_determinism": all(c["ticket_gate_status"] is None or c["ticket_gate_status"]["L1"] == PASS for c in cases),
         "fixture_provenance_verified": all(provenance[s] is not None for s in SYMBOLS if SYMBOLS[s]["provenance"]),
     }
-    # L2 (closure reused): no undeclared divergence or NOT_EVALUABLE check on any symbol, and each window has a
-    # conforming sweep passing L1-L4 on at least one symbol. A symbol without a conforming ticket in a window
-    # is NOT_EVIDENCED there (absence of a case), never a divergence.
-    l2_ok = (all(not p["l2_undeclared_cases"] for p in per_symbol.values())
-             and set(CYCLES) <= {cy for p in per_symbol.values() for cy in p["conforming_cycles"]})
     l3 = {k: sum(p["l3"][k] for p in per_symbol.values()) for k in per_symbol["EURUSD"]["l3"]}
-    l3_ok = all(not (p["l3"]["prefix_mismatches"] or p["l3"]["pre_emission_signals"]
-                     or p["l3"]["streaming_batch_mismatches"] or p["l3"]["future_mutation_mismatches"])
-                and p["l3"]["future_mutations"] > 0 for p in per_symbol.values())
-    l4_ok = (all(r["reproduces_in_engine"] and r["blocked_by_candidate"] and r["fail_closed_rule"] for r in rec)
-             and all(not p["l4"]["leaked_to_admitted"] and p["l4"]["admitted_bad_geometry"] == 0
-                     for p in per_symbol.values())
-             and synth["admitted_zero_stop"] == 0 and synth["admitted_tp_inversion"] == 0
-             and synth["undeclared_l2_failures"] == 0)
     # L5 risk and friction from the single D2 carrier; absent inputs are WARN with a reason, never 0.
     l5_warn = [
         "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0"]
@@ -431,31 +419,52 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
     missing_pip = sorted(set(SYMBOLS) - set(EVIDENCED_PIP))
     if missing_pip:
         l5_block.append(f"SYMBOL_EVIDENCE_MISSING: pip size not evidenced for {missing_pip}")
-    # L6 per logic_gate.l6_freshness on the owner ticket path.
-    l6_status = [c["_l6"]["L6"]["status"] for c in cases if c["_l6"]["L6"]]
-    l6_ok = bool(l6_status) and all(s == PASS for s in l6_status)
-    edge_false = all(p["edge_verified_false"] for p in per_symbol.values())
     for c in cases:
         c.pop("_l6")
         c.pop("_first_setup")
     day_types = {sym: {"counts": p["day_types"], "by_cycle": p["day_types_by_cycle"],
                        "by_case": {c["case_id"]: c.pop("_day_type") for c in by_symbol[sym]}}
                  for sym, p in per_symbol.items()}
+    # Per-symbol gate table. L2 keeps the original rule: no undeclared divergence AND a conforming sweep
+    # passing L1-L4 in BOTH windows. A window without a conforming ticket is NOT_EVIDENCED (never PASS).
+    # No cross-symbol verdict is formed: each symbol stands on its own evidence.
+    l1_global = all(v for k, v in l1_checks.items() if k not in ("replay_determinism", "fixture_provenance_verified"))
+    l5_verdict = "BLOCK" if l5_block else (WARN if l5_warn else PASS)
+    gates_by_symbol, verdicts, l2_evidence = {}, {}, {}
+    for sym, p in per_symbol.items():
+        sym_cases = by_symbol[sym]
+        missing = [cy for cy in CYCLES if cy not in p["conforming_cycles"]]
+        l2_evidence[sym] = {"undeclared_cases": p["l2_undeclared_cases"], "conforming_cycles": p["conforming_cycles"],
+                            "conforming_not_evidenced": missing}
+        l4_ok = not p["l4"]["leaked_to_admitted"] and p["l4"]["admitted_bad_geometry"] == 0
+        if sym == "EURUSD":
+            l4_ok = l4_ok and all(r["reproduces_in_engine"] and r["blocked_by_candidate"] and r["fail_closed_rule"]
+                                  for r in rec) and synth["admitted_zero_stop"] == 0 \
+                and synth["admitted_tp_inversion"] == 0 and synth["undeclared_l2_failures"] == 0
+        g = {
+            "L1": PASS if l1_global and all(c["ticket_gate_status"] is None or c["ticket_gate_status"]["L1"] == PASS
+                                            for c in sym_cases)
+            and (SYMBOLS[sym]["provenance"] is None or provenance[sym] is not None) else FAIL,
+            "L2": FAIL if p["l2_undeclared_cases"] else (NOT_EVIDENCED if missing else PASS),
+            "L3": PASS if not (p["l3"]["prefix_mismatches"] or p["l3"]["pre_emission_signals"]
+                               or p["l3"]["streaming_batch_mismatches"] or p["l3"]["future_mutation_mismatches"])
+            and p["l3"]["future_mutations"] > 0 else FAIL,
+            "L4": PASS if l4_ok else FAIL,
+            "L5": l5_verdict,
+            "L6": PASS if p["l6_statuses"] == [PASS] else FAIL,
+        }
+        gates_by_symbol[sym] = g
+        if any(g[k] == FAIL for k in ("L1", "L2", "L3", "L4", "L6")) or g["L5"] == "BLOCK" or not p["edge_verified_false"]:
+            verdicts[sym] = "NOT_VERIFIED"
+        elif NOT_EVIDENCED in g.values():
+            verdicts[sym] = "PARTIAL"
+        else:
+            verdicts[sym] = "LOGIC_VERIFIED"
     coverage = json.loads(json.dumps(COVERAGE))
     for sym, p in per_symbol.items():
-        missing = [cy for cy in CYCLES if cy not in p["conforming_cycles"]]
-        sym_fail = [g for g, ok in (
-            ("L2", not p["l2_undeclared_cases"]),
-            ("L3", not (p["l3"]["prefix_mismatches"] or p["l3"]["pre_emission_signals"]
-                        or p["l3"]["streaming_batch_mismatches"] or p["l3"]["future_mutation_mismatches"])),
-            ("L4", not p["l4"]["leaked_to_admitted"] and p["l4"]["admitted_bad_geometry"] == 0),
-            ("L6", p["l6_statuses"] == [PASS])) if not ok]
-        revised = {k: v["revised"] for k, v in p["l3_by_first_emitted_setup"].items() if v["revised"]}
-        coverage["instruments"][sym] = (
-            (f"RECORDED_FIXTURE_GATE_FAIL: {','.join(sym_fail)}"
-             + (f" (revised first emissions by setup: {revised})" if revised else "")) if sym_fail else
-            "VERIFIED_RECORDED_FIXTURE" if not missing else
-            f"VERIFIED_RECORDED_FIXTURE ({p['days']} days); conforming ticket NOT_EVIDENCED in {', '.join(missing)}")
+        missing = l2_evidence[sym]["conforming_not_evidenced"]
+        coverage["instruments"][sym] = verdicts[sym] if not missing else \
+            f"{verdicts[sym]}: {p['days']} recorded days; conforming ticket NOT_EVIDENCED in {', '.join(missing)}"
     range_seen = {sym: (d["counts"]["range-rejection"], p["l3_by_first_emitted_setup"].get("RANGE", {}).get("cases", 0))
                   for (sym, d), p in zip(day_types.items(), per_symbol.values())}
     if any(a or b for a, b in range_seen.values()):
@@ -466,31 +475,25 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
                              for sym, d in day_types.items()}
 
     checks = {
-        "L1_identity_and_contract": {"verdict": PASS if all(l1_checks.values()) else FAIL, "evidence": l1_checks,
-                                     "logic_identity": ident},
+        "L1_identity_and_contract": {"evidence": l1_checks, "logic_identity": ident},
         "L2_specification_engine_equivalence": {
-            "verdict": PASS if l2_ok else FAIL, "reused": "docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md",
-            "evidence": {sym: {"undeclared_cases": p["l2_undeclared_cases"], "conforming_cycles": p["conforming_cycles"],
-                               "conforming_not_evidenced": [cy for cy in CYCLES if cy not in p["conforming_cycles"]]}
-                         for sym, p in per_symbol.items()}},
-        "L3_temporal_causality": {"verdict": PASS if l3_ok else FAIL, "evidence": l3,
-                                  "by_symbol": {sym: p["l3"] for sym, p in per_symbol.items()}, "seed": SEED},
-        "L4_price_geometry": {"verdict": PASS if l4_ok else FAIL, "recorded_failures": rec, "synthetic": synth,
+            "reused": "docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md",
+            "rule": "no undeclared/NOT_EVALUABLE check AND a conforming sweep passing L1-L4 in both windows",
+            "evidence": l2_evidence},
+        "L3_temporal_causality": {"evidence": l3, "by_symbol": {sym: p["l3"] for sym, p in per_symbol.items()},
+                                  "seed": SEED},
+        "L4_price_geometry": {"recorded_failures": rec, "synthetic": synth,
                               "by_symbol": {sym: p["l4"] for sym, p in per_symbol.items()},
                               "seed": SEED,
                               "fix": "no engine change (shared with frozen 1.1.1); 1.1.2 declared fail-closed rules "
                                      "R.stop_loss (risk_distance > 0) and R.target_order block every reproduced case"},
-        "L5_risk_and_friction": {"verdict": "BLOCK" if l5_block else (WARN if l5_warn else PASS),
+        "L5_risk_and_friction": {"verdict": l5_verdict,
                                  "d2_source": OWNER_CONFIG, "risk_pct": owner["risk_pct"], "cost_warn_R": owner["cost_warn_R"],
                                  "cost_block_R": owner["cost_block_R"], "warn_reasons": l5_warn,
                                  "block_reasons": l5_block},
-        "L6_freshness_fields": {"verdict": PASS if l6_ok else FAIL,
-                                "evidence": f"owner-ticket L6 (logic_gate.l6_freshness) on {len(l6_status)} signal cases: "
-                                            f"{sorted(set(l6_status))}"},
+        "L6_freshness_fields": {"evidence": {sym: {"cases": p["l6_cases"], "statuses": p["l6_statuses"]}
+                                             for sym, p in per_symbol.items()}},
     }
-    blocking_ok = all(checks[k]["verdict"] == PASS for k in list(checks)[:4])
-    verdict = "LOGIC_VERIFIED" if blocking_ok and checks["L5_risk_and_friction"]["verdict"] != "BLOCK" \
-        and checks["L6_freshness_fields"]["verdict"] == PASS and edge_false else "NOT_VERIFIED"
     return {
         "schema": "AG_LOGIC_VERIFICATION_REPORT_V1", "generated_at": generated_at,
         "strategy_id": STRATEGY_ID, "version": VERSION, "strategy": f"{STRATEGY_ID}@{VERSION}",
@@ -502,7 +505,8 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
                                    "provenance_sha256_verified": provenance[sym] is not None}
                              for sym, spec in SYMBOLS.items()},
         "cycles": list(CYCLES), "symbols": list(SYMBOLS), "coverage": coverage, "per_symbol": per_symbol,
-        "day_types": day_types, "checks": checks, "cases": cases, "verdict": verdict,
+        "day_types": day_types, "gates_by_symbol": gates_by_symbol, "verdicts": verdicts,
+        "checks": checks, "cases": cases,
         "edge_status": "NOT_VERIFIED", "edge_verified": False, "economic_status": "NOT_EVALUATED",
         "admission": "NOT_ADMITTED (runtime loads v1.1.1; owner decision required)",
         "ready_authority": "OFF (D6; config/v1_tickets/ready_authority.yaml unchanged)",
@@ -512,23 +516,25 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
 
 def artifacts(report: Dict[str, Any]) -> Dict[str, Any]:
     c = report["checks"]
+    l3 = c["L3_temporal_causality"]["by_symbol"]
+    ok = lambda sym, *keys: PASS if not any(l3[sym][k] for k in keys) else FAIL  # noqa: E731
     return {
         "contract_identity.json": {"strategy_id": STRATEGY_ID, "strategy_version": VERSION,
                                    "canonicalization": "v1_tickets.authority._sha256_text (path + LF-normalized bytes)",
                                    "contract_path": CANDIDATE, "contract_hash": report["contract_hash"],
                                    "engine_identity": report["engine_hash"], "logic_identity": report["logic_identity"]},
-        "prefix_invariance.json": {k: c["L3_temporal_causality"]["evidence"][k]
-                                   for k in ("cases", "prefix_mismatches", "pre_emission_signals")}
-                                  | {"verdict": PASS if not (c["L3_temporal_causality"]["evidence"]["prefix_mismatches"]
-                                                             or c["L3_temporal_causality"]["evidence"]["pre_emission_signals"]) else FAIL},
-        "future_mutation.json": {"seed": SEED, "iterations": c["L3_temporal_causality"]["evidence"]["future_mutations"],
-                                 "semantic_mismatches": c["L3_temporal_causality"]["evidence"]["future_mutation_mismatches"],
-                                 "verdict": PASS if not c["L3_temporal_causality"]["evidence"]["future_mutation_mismatches"] else FAIL},
+        "prefix_invariance.json": {sym: {k: l3[sym][k] for k in ("cases", "prefix_mismatches", "pre_emission_signals")}
+                                   | {"verdict": ok(sym, "prefix_mismatches", "pre_emission_signals")} for sym in l3},
+        "future_mutation.json": {sym: {"seed": SEED, "iterations": l3[sym]["future_mutations"],
+                                       "semantic_mismatches": l3[sym]["future_mutation_mismatches"],
+                                       "verdict": ok(sym, "future_mutation_mismatches")} for sym in l3},
         "streaming_parity.json": {"semantic_fields": list(SEMANTIC), "implementation_path": "src/v1_tickets/fx.py -> strategy_engine",
-                                  "batch_stream_mismatches": c["L3_temporal_causality"]["evidence"]["streaming_batch_mismatches"],
-                                  "verdict": PASS if not c["L3_temporal_causality"]["evidence"]["streaming_batch_mismatches"] else FAIL},
+                                  "by_symbol": {sym: {"batch_stream_mismatches": l3[sym]["streaming_batch_mismatches"],
+                                                      "verdict": ok(sym, "streaming_batch_mismatches")} for sym in l3}},
         "geometry_report.json": {"recorded_failures": c["L4_price_geometry"]["recorded_failures"],
-                                 "synthetic": c["L4_price_geometry"]["synthetic"], "verdict": c["L4_price_geometry"]["verdict"]},
+                                 "synthetic": c["L4_price_geometry"]["synthetic"],
+                                 "by_symbol": c["L4_price_geometry"]["by_symbol"],
+                                 "verdict_by_symbol": {sym: g["L4"] for sym, g in report["gates_by_symbol"].items()}},
     }
 
 
@@ -549,10 +555,10 @@ def main(argv=None) -> int:
             (art / name).write_text(json.dumps(body, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
         (out / f"{args.report_name}_{args.date}.json").write_text(
             json.dumps(report, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
-    print(f"{report['schema']} {report['strategy']} verdict={report['verdict']}")
-    for k, v in report["checks"].items():
-        print(f"  {k:<40} {v['verdict']}")
-    return 0 if report["verdict"] == "LOGIC_VERIFIED" else 1
+    print(f"{report['schema']} {report['strategy']}")
+    for sym, g in report["gates_by_symbol"].items():
+        print(f"  {sym}: {report['verdicts'][sym]:<15} " + " ".join(f"{k}={v}" for k, v in g.items()))
+    return 1 if "NOT_VERIFIED" in report["verdicts"].values() else 0
 
 
 if __name__ == "__main__":

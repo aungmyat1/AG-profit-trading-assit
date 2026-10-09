@@ -222,18 +222,18 @@ def report():
 
 def test_report_l1_identity_binds_candidate_and_frozen_contract(report):
     l1 = report["checks"]["L1_identity_and_contract"]
-    assert l1["verdict"] == PASS and all(l1["evidence"].values())
+    assert all(l1["evidence"].values())
+    assert {sym: g["L1"] for sym, g in report["gates_by_symbol"].items()} == {"EURUSD": PASS, "GBPUSD": PASS}
 
 
 def test_report_l3_prefix_future_mutation_streaming_parity_per_symbol(report):
     l3 = report["checks"]["L3_temporal_causality"]
-    assert l3["verdict"] == PASS
+    assert all(g["L3"] == PASS for g in report["gates_by_symbol"].values())
     for sym, ev in l3["by_symbol"].items():
         assert ev["future_mutations"] > 0, sym
         assert (ev["prefix_mismatches"], ev["pre_emission_signals"], ev["streaming_batch_mismatches"],
                 ev["future_mutation_mismatches"]) == (0, 0, 0, 0), sym
-    # Scope: the committed fixtures contain no RANGE (Entry 3) emission, so L3 says nothing about that
-    # branch. A provisional RANGE emission was observed on an uncommitted owner upload (see the report).
+    # Scope: RANGE behaviour untested on recorded data (0 RANGE days in fixture).
     for sym, p in report["per_symbol"].items():
         assert "RANGE" not in p["l3_by_first_emitted_setup"], sym
 
@@ -246,7 +246,8 @@ def test_report_l4_recorded_zero_stop_and_tp_order_failures_reproduce_and_are_bl
     syn = l4["synthetic"]
     assert syn["raw_zero_stop"] > 0 and min(syn["raw_tp_inversion"].values()) > 0   # failure class reproduces
     assert (syn["admitted_zero_stop"], syn["admitted_tp_inversion"], syn["undeclared_l2_failures"]) == (0, 0, 0)
-    assert syn["admitted_by_gates"] > 0 and l4["verdict"] == PASS
+    assert syn["admitted_by_gates"] > 0
+    assert all(g["L4"] == PASS for g in report["gates_by_symbol"].values())
 
 
 def test_report_l5_reads_the_single_d2_carrier_and_absent_costs_warn_never_zero(report):
@@ -266,9 +267,9 @@ def test_report_scopes_instrument_and_branch_coverage_truthfully(report):
     l2 = report["checks"]["L2_specification_engine_equivalence"]["evidence"]
     assert l2["GBPUSD"]["undeclared_cases"] == [] and l2["GBPUSD"]["conforming_not_evidenced"] == ["LONDON_NEWYORK"]
     cov = report["coverage"]
-    assert cov["instruments"]["EURUSD"] == "VERIFIED_RECORDED_FIXTURE"
+    assert cov["instruments"]["EURUSD"] == "LOGIC_VERIFIED"
     assert cov["instruments"]["GBPUSD"] == \
-        "VERIFIED_RECORDED_FIXTURE (10 days); conforming ticket NOT_EVIDENCED in LONDON_NEWYORK"
+        "PARTIAL: 10 recorded days; conforming ticket NOT_EVIDENCED in LONDON_NEWYORK"
     assert (cov["instruments"]["USDJPY"], cov["instruments"]["XAUUSD"]) == ("PENDING_AGP-C2-SYMMAP",) * 2
     assert "AUDUSD" not in cov["instruments"]
     assert cov["branches"]["RANGE_REJECTION"].startswith("UNIT_ONLY")
@@ -311,8 +312,13 @@ def test_gbpusd_fixture_is_used_only_when_its_sha256_matches_the_provenance_note
         mod.verify_provenance("GBPUSD")
 
 
-def test_report_l6_and_overall_verdict_without_edge(report):
-    assert report["checks"]["L6_freshness_fields"]["verdict"] == PASS
-    assert report["verdict"] == "LOGIC_VERIFIED"         # committed fixtures only; RANGE branch out of L3 scope
+def test_report_per_symbol_gates_and_verdicts_without_edge(report):
+    # Original L2 rule: a window without a conforming ticket is NOT_EVIDENCED, never PASS; no aggregate verdict.
+    assert report["gates_by_symbol"] == {
+        "EURUSD": {"L1": PASS, "L2": PASS, "L3": PASS, "L4": PASS, "L5": WARN, "L6": PASS},
+        "GBPUSD": {"L1": PASS, "L2": "NOT_EVIDENCED", "L3": PASS, "L4": PASS, "L5": WARN, "L6": PASS},
+    }
+    assert report["verdicts"] == {"EURUSD": "LOGIC_VERIFIED", "GBPUSD": "PARTIAL"}
+    assert "verdict" not in report
     assert report["edge_verified"] is False and report["economic_status"] == "NOT_EVALUATED"
     assert all(c["edge_verified"] is False and c["owner_ticket_state"] != "TICKET_READY" for c in report["cases"])

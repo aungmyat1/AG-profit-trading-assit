@@ -206,7 +206,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `bac19b4cb3d1f291e24ce360c2aea2e287eee397f6e522bb3bd0d741cd727f9a`.
+inputs_sha256: `7045d72cd57c60e727f67b2e29cd2b2468d7120f04cc35759b5b19b007b36b6d`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -230,10 +230,10 @@ Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#obj
 ## AGP-C3-ASW GBPUSD — ST_ASIAN_SWEEP_5R_V1@1.1.2 second symbol (2026-10-09, branch `agp/c3-asw-gbpusd`, not merged)
 
 The 1.1.2 logic-verification harness is now data-driven per symbol and runs GBPUSD on the #114
-fixture (10 recorded VT days, sha256-checked). L1-L6 pass on the committed fixtures (L5 WARN); GBPUSD
-has no conforming LONDON_NEWYORK ticket in those days (NOT_EVIDENCED). EURUSD results are byte-identical
-to #108 (regression test). Open finding: on an uncommitted owner upload, a RANGE (Entry 3) emission was
-replaced by a later SWEEP in 6 sessions; the committed fixture has no RANGE day, so L3 does not cover it.
+fixture (10 recorded VT days, sha256-checked). Verdicts per symbol, no aggregate: EURUSD LOGIC_VERIFIED
+(byte-identical to #108, regression test); GBPUSD PARTIAL — L1 L3 L4 L6 PASS, L5 WARN, L2 NOT_EVIDENCED
+in LONDON_NEWYORK (no conforming ticket). RANGE behaviour untested on recorded data (0 RANGE days in
+fixture). L2 absence semantics proposal: `docs/proposals/l2-absence-semantics.md` (OWNER_DECISION_PENDING).
 Registry `logic_status` unchanged; not admitted; READY OFF.
 Evidence: `docs/status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md`.
 
