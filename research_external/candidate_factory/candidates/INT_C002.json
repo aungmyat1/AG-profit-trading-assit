@@ -1,0 +1,58 @@
+{
+  "candidate_id": "INT_C002",
+  "strategy_id": "ST_MTF_CONTROL_SHIFT_V1",
+  "source_type": "INTERNAL",
+  "source": "PR #34 (feat/mtf-control-shift-v1), OPEN, not merged; commit 1d1c75c92a7fda80696a56d4e1ccbe402f3ab71a",
+  "symbols_in_spec": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD"],
+  "sessions_in_spec": ["ASIAN_LONDON", "LONDON_NEWYORK"],
+  "source_backtest_class": "SB0_NO_BACKTEST (internal research/shadow design; the PR itself reports no prior backtest claim)",
+
+  "gates": {
+    "G1_CONTRACTABLE": {"verdict": "PASS", "reason": "Exact D1/H4/H1/M15 primitives (swing strength=2, 3-candle FVG, OB lookback=6, shift max age=4 H1 bars), exact entry (OB midpoint LIMIT), exact SL (10% of OB height buffer), exact TP1 (2R) and TP2 (nearest structural level) rules, exact 21:00 UTC force-flat."},
+    "G2_TICKETABLE": {"verdict": "PASS", "reason": "Discrete LIMIT entry, fixed initial SL, TP1 + TP2 two-leg structure, at most one entry per symbol/cycle/day, M15 decision window, explicit same-session LIMIT expiry."},
+    "G3_DATA_VENUE_FIT": {
+      "EURUSD": "PASS (DEV_EURUSD_H1_M15_HIST1Y_V1; D1/H4 derived by causal resample of the real H1 series)",
+      "GBPUSD": "HOLD_DATA (no coherent multi-month D1/H4/H1/M15 stack physically present)",
+      "USDJPY": "HOLD_DATA (no OHLC history present)",
+      "XAUUSD": "HOLD_DATA (no OHLC history present)"
+    },
+    "G4_CAUSALITY_WARMUP": {
+      "verdict": "PASS",
+      "causality_reason": "Harness passes only D1/H4/H1/M15 candles whose bar PERIOD has fully closed at/before each evaluation cutoff; code-read of structure.py confirms every helper (confirmed_swings, zones, control_shift_zones, zone_touched, structural_target) only ever looks backward from the end of whatever array it is given.",
+      "warmup_invariance": "PASS (tested: re-ran LONDON_NEWYORK with tail windows doubled, D1/H4/H1/M15 = 80/160/120/300 bars instead of 40/80/60/150; result was 0 signals in both configurations -- a degenerate/vacuous PASS, reported honestly as such rather than as a strong positive invariance proof, since no non-trivial decision existed to compare bar-for-bar.)"
+    },
+    "G5_TRANSLATION_FIDELITY": {"verdict": "EXACT", "reason": "Byte-identical copy of PR #34's own source; D1/H4 derivation via simple OHLC resample of the real H1 series is a data-preparation step, not a rule change."}
+  },
+
+  "ag_reproduced": true,
+  "ag_reproduced_basis": "Deterministic execution of the byte-identical PR #34 engine against a hashed DEV dataset; run identity recorded in dev_replay/INT_C002_MTF_CONTROL_SHIFT_V1__EURUSD__{LONDON_NEWYORK,ASIAN_LONDON}__HIST1Y/run_manifest.json.",
+
+  "dev_replay_runs": [
+    {"run_id": "INT_C002_MTF_CONTROL_SHIFT_V1__EURUSD__LONDON_NEWYORK__HIST1Y", "n_days_evaluated": 305, "n_signals_total": 0, "note": "zero SIGNAL decisions in ~1 year; dominant reason_code = HTF_BIAS_NOT_ALIGNED (252/305 days), i.e. D1 and H4 structure_bias rarely agree simultaneously on real EURUSD data within the bounded tail windows used."},
+    {"run_id": "INT_C002_MTF_CONTROL_SHIFT_V1__EURUSD__ASIAN_LONDON__HIST1Y", "n_days_evaluated": "comparable", "n_signals_total": 0}
+  ],
+
+  "friction_screened": false,
+  "friction_result": "NOT_EVALUATED (no trades to apply a cost model to)",
+
+  "kill_policy_check": {
+    "min_trade_count_30": "FAIL (0 trades in both cycles over ~1 year of real EURUSD data)",
+    "net_expectancy_r_gt_0": "NOT_EVALUATED",
+    "min_profit_factor_1_30": "NOT_EVALUATED",
+    "max_drawdown_r_15": "NOT_EVALUATED",
+    "friction_requirement": "NOT_EVALUATED"
+  },
+
+  "verdict": "HOLD_SAMPLE_REQUIRED",
+  "verdict_reason": "The actual PR #34 engine, run causally against ~1 year of real EURUSD D1/H4/H1/M15 data (derived from a real H1 series) in both supported sessions, produced zero qualifying SIGNAL decisions. The dominant blocking gate is the strict D1+H4 structure_bias alignment requirement. This is NOT evidence the candidate is unprofitable -- it is evidence this mission's admitted DEV data/window could not produce enough samples to evaluate it at all. min_trade_count=30 is not lowered to force a verdict. A longer admitted DEV history (ideally multi-year D1/H4 context) or a second symbol would be required before this candidate can be screened economically.",
+
+  "status_taxonomy": {
+    "source_backtested": false,
+    "ag_reproduced": true,
+    "friction_screened": false,
+    "contract_frozen": false,
+    "logic_verified": false,
+    "economic_status": "NOT_VERIFIED",
+    "edge_verified": false
+  }
+}

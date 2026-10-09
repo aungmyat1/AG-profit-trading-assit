@@ -10,13 +10,21 @@ still change would be a moving target.
 """
 from __future__ import annotations
 
-from importlib.metadata import PackageNotFoundError, version as _pkg_version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _pkg_version
 from typing import Optional
 
 from mt5.market_data import MarketDataError, get_latest_candles
 
 from .config import load_market_structure_config
-from .models import STATE_BEARISH, STATE_BULLISH, STATE_UNDEFINED, MarketStructureConfig, StructurePoint, StructureResult
+from .models import (
+    STATE_BEARISH,
+    STATE_BULLISH,
+    STATE_UNDEFINED,
+    MarketStructureConfig,
+    StructurePoint,
+    StructureResult,
+)
 from .smc_adapter import (
     StructureLibraryError,
     StructureOutputInvalid,
@@ -33,6 +41,7 @@ def _structure_cache_key(symbol, timeframe, candles, count, fetch_count, config)
     """Use the actual fetched population, plus replay dataset and clock when present."""
     from historical_replay.data_source_patch import active_replay_identity
     from historical_replay.dataset_identity import compute_candle_series_fingerprint
+
     from shared_cache.derived_fact_cache import build_key
 
     replay = active_replay_identity(symbol, timeframe)

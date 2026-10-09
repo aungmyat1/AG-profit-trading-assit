@@ -1,0 +1,5 @@
+{
+  "schema": "AG_REGEN_PERMISSIONS_V1",
+  "comment": "Default deny: a regeneration side effect runs only if listed here. bootstrap_push (REG-REGEN-BOOTSTRAP) and close_superseded_pr (REG-REGEN-STALE-CLOSE) stay unlisted until the owner approves them.",
+  "allow": ["push_regen_branch", "create_pr", "dispatch_ci"]
+}

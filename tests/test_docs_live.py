@@ -28,6 +28,7 @@ def drift_fixture(tmp_path: Path) -> Path:
         "status/facts.json",
         "config/ag_scheduler_v2.yaml",
         "scripts/host/install_tasks.ps1",
+        "config/ticket_delivery.yaml",
     ):
         source = ROOT / relative
         target = tmp_path / relative

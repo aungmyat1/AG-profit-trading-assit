@@ -23,10 +23,12 @@ from __future__ import annotations
 import datetime as dt
 from typing import List
 
-from sizing_math.daily_loss_guard import DailyLossGuard
-from sizing_math.position_guard import OpenPositionGuard
+from btc_sweep_research.ledger import BTCResearchLedger
+from btc_sweep_research.pipeline import run_research_cycle
 from market_structure.models import MarketStructureConfig
 from runtime_state.store import JsonKeyValueStore
+from sizing_math.daily_loss_guard import DailyLossGuard
+from sizing_math.position_guard import OpenPositionGuard
 from strategy_engine.session import Candle
 from strategy_engine.sweep_retest.engine import SweepRetestRuntime
 from strategy_engine.sweep_retest.models import (
@@ -36,9 +38,6 @@ from strategy_engine.sweep_retest.models import (
 )
 from strategy_engine.sweep_retest.profile import filter_previous_day_candles
 from strategy_engine.sweep_retest.state_store import SweepRetestStateStore
-
-from btc_sweep_research.ledger import BTCResearchLedger
-from btc_sweep_research.pipeline import run_research_cycle
 
 UTC = dt.timezone.utc
 NOW = dt.datetime(2026, 1, 5, 16, 5, tzinfo=UTC)  # after the 13:30-16:00 activity window closes

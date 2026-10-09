@@ -1,9 +1,10 @@
 """Rendered Telegram message content (formatting only -- no rule changes)."""
 from __future__ import annotations
 
+import datetime as dt
+
 from host_delivery import telegram_message as tg
 from ticket_delivery.identity import logical_ticket_id
-import datetime as dt
 
 FX_READY = {  # shape of the 2026-10-01 07:16 UTC USDJPY READY ticket
     "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER", "strategy_id": "ST_ASIAN_SWEEP_5R_V1",

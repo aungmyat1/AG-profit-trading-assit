@@ -15,11 +15,14 @@ from functools import lru_cache
 from typing import List, Optional
 
 import MetaTrader5 as mt5
-
 from shared_cache.bounded_cache import BoundedCache
 from strategy_engine.session import Candle
 
-from .broker_time import BrokerTimeError, NoWeekendGapError, detect_broker_utc_offset_hours
+from .broker_time import (
+    BrokerTimeError,
+    NoWeekendGapError,
+    detect_broker_utc_offset_hours,
+)
 
 # A 24/7 instrument (crypto CFDs: BTCUSD/ETHUSD on Vantage) has no weekly reopen gap for
 # detect_broker_utc_offset_hours() to derive an offset from -- see AG_VANTAGE_MT5_CRYPTO_VENUE_V1

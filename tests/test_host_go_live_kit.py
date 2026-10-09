@@ -23,6 +23,7 @@ import diagnose_mt5 as diag  # noqa: E402
 import live_candles_smoke as smoke  # noqa: E402
 import verify_objective as objective  # noqa: E402
 from _lsmc_v110_fixtures import NOW, d1_bars, h1_bars, m5_bars  # noqa: E402
+
 from host_delivery import telegram_message as tg  # noqa: E402
 from host_evidence import symbol_metadata as sm  # noqa: E402
 from strategy_engine.session import Candle  # noqa: E402
@@ -206,7 +207,9 @@ def test_smoke_prints_states_and_archives_only(tmp_path):
     lines = smoke.run_smoke(fake_fetch(), NOW, str(tmp_path / "journal"))
     text = "\n".join(lines)
     assert "BARS EURUSD (EURUSD-VIP) status=FRESH" in text
-    assert re.search(r"FX EURUSD \(EURUSD-VIP\) ASIAN_LONDON data=FRESH decision=(READY|NO_TRADE|STALE) reason=", text)
+    # The fixture's box-direction SIGNAL carries no engine signal time: STALE-FIX-1 fails it closed
+    # instead of borrowing the first trade-session bar.
+    assert "FX EURUSD (EURUSD-VIP) ASIAN_LONDON data=FRESH decision=DATA_ERROR reason=SIGNAL_TIME_UNAVAILABLE" in text
     assert "LSMC EURUSD data=FRESH state=OPPORTUNITY" in text and "LSMC GBPUSD" in text
     # Objective symbols are never silently omitted: unavailable metadata/data is visible.
     assert "FX USDJPY" in text and "decision=DATA_ERROR" in text
@@ -326,6 +329,64 @@ def test_crypto_mode_window_and_idempotence(tmp_path):
     assert any("source=BYBIT_LINEAR_PERP ARCHIVED" in ln for ln in first)
     assert not any("ARCHIVED" in ln for ln in smoke.run_crypto(IN_WINDOW, j, _FakeFeed()))
     assert all("OUTSIDE_WINDOW" in ln for ln in smoke.run_crypto(IN_WINDOW + dt.timedelta(hours=3), j, _FakeFeed()))
+
+
+def test_crypto_main_outside_window_takes_no_runner_or_mt5_lock_and_never_imports_mt5(monkeypatch):
+    now = dt.datetime(2026, 11, 2, 13, 59, tzinfo=UTC)  # 08:59 EST, before the V3 weekday window
+    monkeypatch.setattr(smoke, "utcnow", lambda: now)
+    monkeypatch.setattr(hc, "utcnow", lambda: now)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("outside-window crypto run must not acquire a lock or touch MT5")
+
+    monkeypatch.setattr(smoke, "single_instance", forbidden)
+    monkeypatch.setattr(smoke, "mt5_access_lock", forbidden)
+    monkeypatch.setattr(smoke, "import_mt5", forbidden)
+    monkeypatch.setattr(smoke, "mt5_initialize", forbidden)
+
+    assert smoke.main(["--mode", "crypto"]) == 0
+    log = (Path(hc.LOG_DIR) / "ag_v1_crypto.log").read_text(encoding="utf-8").splitlines()
+    assert log == [f"{now.isoformat()} CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)"]
+
+
+def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
+    from contextlib import contextmanager
+
+    now = dt.datetime(2026, 11, 2, 14, 0, tzinfo=UTC)  # 09:00 EST, inclusive V3 weekday start
+    calls, logged = [], []
+    monkeypatch.setattr(smoke, "utcnow", lambda: now)
+
+    @contextmanager
+    def single_lock(name):
+        calls.append(("single_instance", name))
+        yield
+
+    @contextmanager
+    def mt5_lock():
+        calls.append(("mt5_access_lock",))
+        yield
+
+    mt5 = types.SimpleNamespace(shutdown=lambda: calls.append(("shutdown",)))
+    monkeypatch.setattr(smoke, "single_instance", single_lock)
+    monkeypatch.setattr(smoke, "mt5_access_lock", mt5_lock)
+    monkeypatch.setattr(smoke, "import_mt5", lambda: calls.append(("import_mt5",)) or mt5)
+    monkeypatch.setattr(smoke, "mt5_initialize", lambda *_: calls.append(("initialize",)) or (True, "ok"))
+    monkeypatch.setattr(smoke, "require_demo_account", lambda *_: calls.append(("demo",)) or (True, "ok"))
+    monkeypatch.setattr(smoke, "host_fetch", lambda _: lambda *_: [])
+    monkeypatch.setattr(smoke, "host_quote", lambda _: lambda *_: None)
+
+    def run_crypto(run_now, journal, feed, config=None, **kwargs):
+        calls.append(("run_crypto", run_now, config["version"], type(feed).__name__))
+        return ["CRYPTO IN_WINDOW"]
+
+    monkeypatch.setattr(smoke, "run_crypto", run_crypto)
+    monkeypatch.setattr(smoke, "log_line", lambda name, message: logged.append((name, message)))
+
+    assert smoke.main(["--mode", "crypto"]) == 0
+    assert [call[0] for call in calls] == ["single_instance", "import_mt5", "mt5_access_lock",
+                                          "initialize", "demo", "run_crypto", "shutdown"]
+    assert calls[-2][1:] == (now, 3, "Mt5CryptoFeed")
+    assert logged == [("ag_v1_crypto", "CRYPTO IN_WINDOW")]
 
 
 def test_single_instance_lock():
@@ -509,6 +570,96 @@ def test_telegram_default_archive_only_and_scoped_override(tmp_path):
         assert not tg.should_send(kind, v, r)
 
 
+def test_local_delivery_scope_can_only_narrow_tracked_policy(tmp_path):
+    import shutil
+    from telegram_delivery.adapter import Config
+    from telegram_delivery.scope_policy import resolve
+
+    (tmp_path / "config").mkdir()
+    shutil.copy2(ROOT / "config/ticket_delivery.yaml", tmp_path / "config/ticket_delivery.yaml")
+    local = tmp_path / "config/local"
+    local.mkdir()
+    override = local / "delivery_override.yaml"
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY]\n", encoding="utf-8")
+    resolved = resolve(tmp_path, sender="legacy")
+    assert resolved["effective"] == ("TICKET_READY",)
+    assert resolved["error"] is None
+    assert tg.should_send("TICKET", "READY", str(tmp_path))
+    assert not tg.should_send("LSMC", "OPPORTUNITY", str(tmp_path))
+
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY]\n", encoding="utf-8")
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [LSMC_OPPORTUNITY]\n", encoding="utf-8")
+    legacy = resolve(tmp_path, sender="legacy")
+    canonical = Config.from_env(str(tmp_path))
+    assert legacy["effective"] == ("TICKET_READY",) and legacy["error"] is None
+    assert canonical.immediate_scopes == frozenset({"LSMC_OPPORTUNITY"})
+    assert canonical.scope_error is None
+
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [WATCH_READY]\n", encoding="utf-8")
+    canonical_widening = Config.from_env(str(tmp_path))
+    assert canonical_widening.immediate_scopes == frozenset()
+    assert canonical_widening.scope_error == "SCOPE_WIDENING_REJECTED"
+    assert resolve(tmp_path, sender="legacy")["effective"] == ("TICKET_READY",)
+
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, MANUAL_TICKET_READY]\n",
+                        encoding="utf-8")
+    rejected = resolve(tmp_path, sender="legacy")
+    assert rejected["effective"] == ()
+    assert rejected["error"] == "SCOPE_WIDENING_REJECTED"
+    assert tg.load_mode(str(tmp_path))["error"] == "SCOPE_WIDENING_REJECTED"
+    assert not tg.should_send("TICKET", "READY", str(tmp_path))
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [LSMC_OPPORTUNITY]\n", encoding="utf-8")
+    assert Config.from_env(str(tmp_path)).immediate_scopes == frozenset({"LSMC_OPPORTUNITY"})
+
+
+def test_objective_reports_both_sender_scopes_independently(monkeypatch):
+    from telegram_delivery.adapter import Config
+    from telegram_delivery.scope_policy import resolve
+
+    def distinct(root=".", sender="legacy"):
+        if sender == "legacy" and Path(root) == Path(objective.REPO_ROOT):
+            return {"tracked": ("TICKET_READY", "LSMC_OPPORTUNITY"), "disabled": (),
+                    "effective": ("TICKET_READY",), "error": None}
+        return resolve(root, sender=sender)
+    monkeypatch.setattr(objective, "resolve_immediate_scope", distinct)
+    monkeypatch.setattr(Config, "from_env", classmethod(
+        lambda cls, root=".": cls(immediate_scopes=frozenset({"LSMC_OPPORTUNITY"}))))
+    report = objective.verify()
+    row = next(item for item in report["checks"] if item["check"] == "telegram_report_scope")
+    assert row["status"] == "PASS"
+    assert "legacy effective=['TICKET_READY']" in row["detail"]
+    assert "canonical effective=['LSMC_OPPORTUNITY']" in row["detail"]
+
+
+def test_objective_fails_when_legacy_override_widens_policy(monkeypatch):
+    from telegram_delivery.scope_policy import resolve
+
+    def widened_legacy(root=".", sender="legacy"):
+        if sender == "legacy":
+            return {"tracked": ("TICKET_READY", "LSMC_OPPORTUNITY"), "disabled": (),
+                    "effective": (), "error": "SCOPE_WIDENING_REJECTED"}
+        return resolve(root, sender=sender)
+    monkeypatch.setattr(objective, "resolve_immediate_scope", widened_legacy)
+    report = objective.verify()
+    row = next(item for item in report["checks"] if item["check"] == "telegram_report_scope")
+    assert row["status"] == "FAIL"
+    assert "legacy effective=[] error=SCOPE_WIDENING_REJECTED" in row["detail"]
+
+
+def test_objective_fails_when_canonical_effective_scope_exceeds_policy(monkeypatch):
+    from telegram_delivery.adapter import Config
+
+    monkeypatch.setattr(Config, "from_env", classmethod(
+        lambda cls, root=".": cls(immediate_scopes=frozenset({"WATCH_READY"}))))
+    report = objective.verify()
+    scope_check = next(row for row in report["checks"] if row["check"] == "telegram_report_scope")
+    assert scope_check["status"] == "FAIL"
+    assert "canonical effective=['WATCH_READY']" in scope_check["detail"]
+
+
 def test_host_notification_router_reports_only_ready_proposals_and_opportunities(tmp_path, monkeypatch):
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
@@ -586,8 +737,10 @@ def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, mon
     monkeypatch.setattr(tg, "send_message", sent.append)
     j = str(tmp_path / "journal")
 
-    archived = smoke.run_fx(fake_fetch(), NOW, j, gated=False)        # STALE + DATA_ERROR only
-    assert any("decision=STALE" in ln for ln in archived) and any("decision=DATA_ERROR" in ln for ln in archived)
+    archived = smoke.run_fx(fake_fetch(), NOW, j, gated=False)        # DATA_ERROR only (two causes)
+    assert any("decision=DATA_ERROR reason=SIGNAL_TIME_UNAVAILABLE" in ln for ln in archived)
+    assert any("decision=DATA_ERROR reason=" in ln and "SIGNAL_TIME_UNAVAILABLE" not in ln
+               for ln in archived)                                     # acquisition failure, distinct cause
     assert all("ARCHIVED" in ln for ln in archived) and sent == []     # archived, never reported
 
     ready = dict(tg.validation_proposal(NOW), strategy_id="ST_ASIAN_SWEEP_5R_V1", strategy_version="1.1.1",
@@ -603,7 +756,8 @@ def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, mon
         "EURUSD LONG (ASIAN_LONDON)", "GBPUSD LONG (ASIAN_LONDON)",
         "EURUSD LONG (LONDON_NEWYORK)", "GBPUSD LONG (LONDON_NEWYORK)"]
     for message in after_first:
-        assert "decision=READY" in message and "ticket_id:" in message and "VALID UNTIL" in message
+        assert "decision=NOT_READY" in message and "ticket_id:" in message and "VALID UNTIL" in message
+        assert "logic_status: NOT_VERIFIED" in message and "EDGE_VERIFIED=FALSE" in message
         assert "entry:" in message and "target leg 1" in message and "NOT A BROKER ORDER" in message
 
 
@@ -621,6 +775,48 @@ def test_scheduled_telegram_send_failure_never_breaks_the_run(tmp_path, monkeypa
     lines = smoke.run_lsmc(fake_fetch(), NOW, str(tmp_path / "journal"))
     assert any("state=OPPORTUNITY" in ln for ln in lines)              # archive/watch path unaffected
     assert "TELEGRAM_SEND_DELIVERY_UNCERTAIN" in (tmp_path / "logs" / "telegram.log").read_text()
+
+
+@pytest.mark.parametrize(("mode", "journal_status"),
+                         [("http_500", "FAILED"), ("timeout", "FAILED"), ("unknown", "ERROR")])
+def test_ambiguous_lsmc_delivery_is_never_auto_resent(tmp_path, monkeypatch, mode, journal_status):
+    """A 5xx/timed-out/unknown OPPORTUNITY send is DELIVERY_UNCERTAIN in the dedup ledger.
+
+    The legacy JSONL row keeps its frozen FAILED / ERROR vocabulary, but the ledger must never
+    treat the ambiguous confirmation as a known failure eligible for a later blind resend.
+    """
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    attempts = []
+    original = tg.send_message
+
+    def ambiguous(text):
+        attempts.append(text)
+        if mode == "unknown":
+            raise RuntimeError("transport outcome unknown")
+        original(text, session=_Sess(status=500, ok=False) if mode == "http_500" else _Sess(boom=True))
+
+    monkeypatch.setattr(tg, "send_message", ambiguous)
+    journal = tmp_path / "journal"
+    first = smoke.run_lsmc(fake_fetch(), NOW, str(journal))
+    assert len(attempts) == 2                                     # EURUSD + GBPUSD OPPORTUNITY
+    assert any("LSMC_DELIVERY EURUSD DELIVERY_UNCERTAIN" in ln for ln in first)
+    ledger = json.loads((journal / "large_smc_watch" / "delivered_confirmations.json").read_text())
+    assert {row["state"] for row in ledger.values()} == {"DELIVERY_UNCERTAIN"}
+    rows = [json.loads(ln) for ln in (journal / "ticket_delivery" / "delivery_status" /
+                                      f"{NOW.date().isoformat()}.jsonl").read_text().splitlines()]
+    assert len(rows) == 2 and {row["status"] for row in rows} == {journal_status}
+
+    # A later cycle re-enters OPPORTUNITY for the same confirmation (tracker restart): the
+    # ambiguous send is suppressed, never retried.
+    os.remove(journal / "large_smc_watch" / "state.json")
+    second = smoke.run_lsmc(fake_fetch(), NOW, str(journal))
+    assert len(attempts) == 2
+    assert any("LSMC_DELIVERY EURUSD SUPPRESSED_UNCERTAIN_CONFIRMATION" in ln for ln in second)
 
 
 def test_telegram_proposal_cli_sends_rendered_validation(monkeypatch, capsys):
@@ -837,12 +1033,14 @@ def test_install_tasks_declarations_parse_to_the_always_on_target():
     # The optional Canonical field (main) sits between Minutes and StartAt (SCHED-R1-B); the regex
     # must tolerate it or the loop below silently passes on an empty match.
     plan = re.findall(r"Name = '(AG-V1-[\w-]+)';\s+Mode = '(\w+)';\s+Minutes = (\d+);"
-                      r"(?:\s*Canonical = \$(?:true|false);)?\s*StartAt = '([\d:]+)'", text)
+                      r"(?:\s*Canonical = \$(true|false);)?\s*StartAt = '([\d:]+)'", text)
     assert len(plan) == 3, plan                                     # never accept a vacuous match
-    for name, mode, minutes, start in plan:                          # $Plan and its declaration agree
+    for name, mode, minutes, canonical, start in plan:               # $Plan and its declaration agree
         d = by[name]
         assert (d["managed"], d["status"]) == ("INSTALLER", "ACTIVE")
-        assert "pythonw.exe" in d["rest"] and f"--mode {mode}'" in d["rest"]
+        # The target action is what -Apply installs: $Plan Canonical = true adds --canonical.
+        suffix = " --canonical" if canonical == "true" else ""
+        assert "pythonw.exe" in d["rest"] and f"--mode {mode}{suffix}'" in d["rest"], (name, d["rest"])
         assert f"Days = 'DAILY'; Start = '{start}'; EveryMin = {minutes} " in d["rest"]
     assert by["AG-V1-LSMC-Crypto-Weekend"]["managed"] == "RETIRE"
     assert {n for n, d in by.items() if d["status"] == "RETIRED"} == {

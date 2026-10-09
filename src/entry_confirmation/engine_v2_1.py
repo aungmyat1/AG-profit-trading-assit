@@ -24,7 +24,7 @@ neither -> UNRESOLVED, never guessed).
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
@@ -33,17 +33,29 @@ from market_structure.models import StructureTier
 from strategy_engine.session import Candle
 from supply_demand import ValidatedOrderBlock
 
-from .entry_array import evaluate_entry_array, fvg_associated_with_leg, ob_associated_with_shift
-from .models import CandidateDirection, ConfirmationState, DisplacementEvidence, StructureAlignment
+from .entry_array import (
+    evaluate_entry_array,
+    fvg_associated_with_leg,
+    ob_associated_with_shift,
+)
+from .models import (
+    CandidateDirection,
+    ConfirmationState,
+    DisplacementEvidence,
+    StructureAlignment,
+)
 from .models_v2 import GapContext, TypedEvent
 from .models_v2_1 import (
     DisplacementLeg,
-    PivotContext,
     SetupFamily,
     SMCSweepShiftArrayResult,
     StructureShiftQualityStatus,
 )
-from .sweep_shift import classify_wick_or_close, evaluate_pivot_context, evaluate_structure_shift_quality
+from .sweep_shift import (
+    classify_wick_or_close,
+    evaluate_pivot_context,
+    evaluate_structure_shift_quality,
+)
 
 
 @dataclass(frozen=True)

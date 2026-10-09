@@ -10,7 +10,8 @@ ENTRY +---------------- 1.10000
 SL    +---------------- 1.09900
 Remaining R TP1: 2.6
 Remaining R TP2: 4.4
-Logic: LOGIC_VERIFIED
+logic_status: LOGIC_VERIFIED
 Edge: NOT VERIFIED (NOT_EVALUATED)
 Actionability: WATCH_READY / fixture_reason_WATCH_READY
+EDGE_VERIFIED=FALSE
 EXECUTION: DISABLED

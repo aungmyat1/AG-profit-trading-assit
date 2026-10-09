@@ -38,7 +38,7 @@ def load_facts(path: str) -> dict:
             facts = json.load(f)
     except (OSError, ValueError) as exc:
         raise SystemExit(f"FACTS_UNAVAILABLE: {path}: {exc} -- run scripts/docs/collect_facts.py") from exc
-    for key in ("inputs_sha256", "objective", "strategies", "schedule", "pack_context"):
+    for key in ("inputs_sha256", "objective", "strategies", "schedule", "telegram_scope", "pack_context"):
         if key not in facts:
             raise SystemExit(f"FACTS_INCOMPLETE: {path} has no {key!r}")
     return facts
@@ -82,6 +82,7 @@ def build(facts: dict, root: str = ROOT) -> str:
                  + ", ".join(f"`{s}`" for s in sources) + ")." if sources
                  else "Open decisions in registered tables: UNKNOWN (no registered decision table found).")
     schedule = facts["schedule"]
+    telegram_scope = facts["telegram_scope"]
     lines = [render(default_frontmatter("status")).rstrip("\n"),
              "# AG Profit Trading — Context Pack",
              "",
@@ -145,6 +146,12 @@ def build(facts: dict, root: str = ROOT) -> str:
         lines += [f"| `{d['task']}` | {d['field']} | {d['registered']} | {d['target']} |" for d in drift]
     else:
         lines += ["No registered-vs-target difference is stated by the declaration."]
+    lines += ["", "## Telegram immediate-send scope", "",
+              "Tracked policy ceiling (host-local overrides may narrow only): "
+              + ", ".join(f"`{scope}`" for scope in telegram_scope.get("immediate_send_enabled", [])) + ".",
+              "Disabled informational scope:"]
+    lines += [f"- `{scope}`: {reason}" for scope, reason in
+              sorted(telegram_scope.get("informational_disabled", {}).items())]
     out = "\n".join(lines) + "\n"
     n = out.count("\n")
     if n > MAX_LINES:

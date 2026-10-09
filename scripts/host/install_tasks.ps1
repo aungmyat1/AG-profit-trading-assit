@@ -87,10 +87,10 @@ $HostRoots = @{ PROD = '<HOST_SCRATCHPAD>\prod'; DEV = '<HOST_SCRATCHPAD>\dev'
 # Target.State: ENABLED | DISABLED | ABSENT. Target.Days: DAILY | ONCE | Mon,Tue,... list.
 $Declared = @(
   @{ Name = 'AG-V1-FX-Cycles'; Path = '\'; Managed = 'INSTALLER'; Status = 'ACTIVE'
-     Registered = 'ENABLED; pythonw; daily 00:01 every 15 min'
-     Target = @{ State = 'ENABLED'; Exe = '{PROD}\.venv\Scripts\pythonw.exe'; Args = '"{PROD}\scripts\host\live_candles_smoke.py" --mode fx'
+     Registered = 'ENABLED; pythonw; daily 00:01 every 15 min; action --mode fx (no --canonical)'
+     Target = @{ State = 'ENABLED'; Exe = '{PROD}\.venv\Scripts\pythonw.exe'; Args = '"{PROD}\scripts\host\live_candles_smoke.py" --mode fx --canonical'
                  Days = 'DAILY'; Start = '00:01:00'; EveryMin = 15 }
-     Note = 'FX windows are fixed UTC inside the runner; cadence = the M15 trigger timeframe' },
+     Note = 'FX windows are fixed UTC inside the runner; cadence = the M15 trigger timeframe. $Plan Canonical = true: the 2026-10-08 registration lacks --canonical, so it runs the legacy run_fx sender (NOT_SENT_POLICY records)' },
   @{ Name = 'AG-V1-Crypto-Daily'; Path = '\'; Managed = 'INSTALLER'; Status = 'ACTIVE'
      Registered = 'ENABLED; pythonw; daily 00:02 every 15 min'
      Target = @{ State = 'ENABLED'; Exe = '{PROD}\.venv\Scripts\pythonw.exe'; Args = '"{PROD}\scripts\host\live_candles_smoke.py" --mode crypto'
@@ -226,6 +226,11 @@ Write-Host ("=== HOST TASK DECLARATIONS vs REGISTERED ({0}, UTC{1}; {2} declared
 foreach ($d in $Declared) {
   $diff = Get-TaskDiff $d
   Write-Host ("{0}{1} [{2}/{3}] {4}" -f $d.Path, $d.Name, $d.Managed, $d.Status, $(if ($diff) { "CHANGE $diff" } else { 'MATCHES TARGET' }))
+}
+Write-Host ("=== HOST TASK DECLARATIONS ({0}, UTC{1}; {2} tasks, -Apply manages only INSTALLER/RETIRE) ===" -f `
+  $HostTimeZone.Abbrev, $HostTimeZone.UtcOffset, $Declared.Count)
+foreach ($d in $Declared) {
+  Write-Host ("{0}{1} [{2}{3}] {4}" -f $d.Path, $d.Name, $d.Managed, $(if ($d.Enabled) { '' } else { ', DISABLED' }), $d.Trigger)
 }
 if (-not $Apply) { Write-Host 'WhatIf: no changes made. Re-run with -Apply to install.'; exit 0 }
 

@@ -1,0 +1,14 @@
+{
+  "n": 89,
+  "wins": 15,
+  "losses": 74,
+  "win_rate": 0.16853932584269662,
+  "gross_r": -12.75,
+  "net_r": -12.75,
+  "expectancy_r": -0.14325842696629212,
+  "profit_factor": 0.8277027027027027,
+  "max_drawdown_r": 24.5,
+  "largest_single_trade_r": 4.25,
+  "largest_trade_pct_of_total_abs_net_r": 0.031423290203327174,
+  "cost_r_per_trade_applied": 0.0
+}

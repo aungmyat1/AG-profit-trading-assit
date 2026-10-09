@@ -18,7 +18,7 @@ never guesses.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, Sequence, Tuple
+from typing import Optional, Tuple
 
 from liquidity import LiquidityLevel, LiquiditySide
 

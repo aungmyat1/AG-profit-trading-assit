@@ -61,6 +61,43 @@ def _signal_candle(ticket: Dict[str, Any], post: Sequence[Candle]) -> Optional[C
     return next((c for c in post if c.time.isoformat() == ts), None) if ts else None
 
 
+def v120_strategy_delta(decision: Any) -> Dict[str, Any]:
+    """V1.2-only checks layered on the existing gate evidence model.
+
+    The production evaluator owns prices; this function independently verifies the
+    frozen owner deltas and never repairs a rejected candidate. It is intentionally not
+    used for v1.1.1, whose historical behavior remains frozen.
+    """
+    if not getattr(decision, "direction", None):
+        return _gate("V1.2", [_check("V12.candidate", "candidate exists", decision.status,
+                                     "ACTIONABLE", FAIL)])
+    long = decision.direction == "LONG"
+    rng = decision.reference_high - decision.reference_low
+    expected = rng * 0.25
+    got = abs(decision.entry - decision.stop_loss)
+    wick = decision.stop_loss <= decision.sweep_extreme if long else decision.stop_loss >= decision.sweep_extreme
+    order = (decision.stop_loss < decision.entry < decision.tp1 <= decision.tp2) if long else (
+        decision.stop_loss > decision.entry > decision.tp1 >= decision.tp2)
+    expiry = decision.decision_time + dt.timedelta(minutes=15) == decision.expiry
+    spread_abs = decision.spread_pips is not None and decision.spread_pips <= 2.0
+    spread_r = decision.spread_R is not None and decision.spread_R <= 0.15
+    return _gate("V1.2", [
+        _check("V12.entry_close", "entry equals confirmed closed-candle close", decision.entry,
+               "engine confirmation close", PASS if decision.decision_time is not None else FAIL),
+        _check("V12.stop_25pct", "stop distance = 25% reference range", got, expected,
+               PASS if abs(got - expected) <= 1e-12 else FAIL),
+        _check("V12.wick_clear", "SL clears sweep extreme", decision.stop_loss, decision.sweep_extreme,
+               PASS if wick else FAIL),
+        _check("V12.target_order", "directional target ordering", [decision.stop_loss, decision.entry,
+                                                                    decision.tp1, decision.tp2], True,
+               PASS if order else FAIL),
+        _check("V12.expiry", "expiry = decision + 15m", decision.expiry, decision.decision_time, PASS if expiry else FAIL),
+        _check("V12.spread_absolute", "spread <= 2.0 pips", decision.spread_pips, 2.0,
+               PASS if spread_abs else FAIL),
+        _check("V12.spread_R", "spread <= 0.15R", decision.spread_R, 0.15, PASS if spread_r else FAIL),
+    ])
+
+
 # ---------------------------------------------------------------------------------- L1
 
 def l1_determinism(build: Callable[[], Dict[str, Any]], candles: Sequence[Candle],

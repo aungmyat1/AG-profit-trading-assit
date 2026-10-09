@@ -1,0 +1,16 @@
+{
+  "production_engine": "src/asian_sweep_v1_2/engine.py",
+  "blind_reference": "src/asian_sweep_v1_2/reference.py",
+  "synthetic_deterministic_cases": 200,
+  "synthetic_mismatches": 0,
+  "recorded_cases_total": 23,
+  "recorded_cases_fully_admitted": 0,
+  "recorded_cases_partial_geometry_only": 10,
+  "recorded_cases_missing_sweep_close": 13,
+  "recorded_cases_missing_decision_timestamp": 23,
+  "verdict": "BLOCKED_INSUFFICIENT_RECORDED_INPUT",
+  "machine_readable_diffs": [],
+  "separate_blind_agent_available": false,
+  "independence_status": "STRUCTURALLY_INDEPENDENT_CODE_PATH_BUT_BLIND_AUTHORSHIP_NOT_PROVEN",
+  "note": "No production/reference disagreement was observed, but mandatory 23-case signal-by-signal parity cannot be claimed from the committed evidence. A parallel blind agent/worktree was unavailable, so blind authorship is also not claimed. Missing values were not invented."
+}

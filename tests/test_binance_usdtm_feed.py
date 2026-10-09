@@ -13,11 +13,11 @@ import pytest
 from execution_runtime.binance_usdtm_feed import (
     BTCUSDT_STEP_SIZE,
     BTCUSDT_TICK_SIZE,
+    CANONICAL_SYMBOL,
     BinanceFeedDataError,
     BinanceFeedRequestError,
     BinanceFeedStaleData,
     BinanceUSDTMFeed,
-    CANONICAL_SYMBOL,
     default_symbol_meta,
     fetch_exchange_symbol_meta,
 )

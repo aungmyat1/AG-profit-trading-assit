@@ -13,6 +13,9 @@ spec = importlib.util.spec_from_file_location("build_context_pack", REPO / "scri
 pack = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(pack)
 FACTS = json.loads((REPO / "status" / "facts.json").read_text(encoding="utf-8"))
+_collector = importlib.util.spec_from_file_location("collect_facts", REPO / "scripts" / "docs" / "collect_facts.py")
+collect_facts = importlib.util.module_from_spec(_collector)
+_collector.loader.exec_module(collect_facts)
 
 
 def test_same_inputs_give_a_byte_identical_pack():
@@ -66,10 +69,12 @@ def test_unparsed_host_trigger_keeps_the_source_line():
 
 
 def test_open_decisions_counted_from_the_register_never_a_bare_zero(tmp_path):
-    out = pack.build(FACTS)
+    # Built from freshly collected facts: a source PR that edits the register must not depend on
+    # committed generated outputs, which the post-merge regeneration PR publishes (R5.1).
+    out = pack.build(collect_facts.collect(REPO))
     count, sources = pack.open_decisions()
-    assert sources == list(pack.REGISTERED_DECISION_SOURCES) and count == 11
-    assert "Open decisions in registered tables: 11 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
+    assert sources == list(pack.REGISTERED_DECISION_SOURCES) and count == 13
+    assert "Open decisions in registered tables: 13 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
     # No registered table -> UNKNOWN, not 0.
     assert pack.open_decisions(str(tmp_path)) == (None, [])
     no_sources = {**FACTS, "pack_context": {"pending_decisions": None, "decision_sources": [],

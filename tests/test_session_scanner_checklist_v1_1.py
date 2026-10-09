@@ -19,15 +19,27 @@ import pytest
 
 from session_scanner import checklist as v1_ck
 from session_scanner import checklist_v1_1 as ck11
-from session_scanner.checklist_v1_1 import (ChecklistResult, DirectionPermission, PHASE_KEYS, PhaseOutcome,
-                                            PhaseStatus, ReasonCode, StructureState, attach_checklist_v1_1,
-                                            evaluate_instrument_checklist)
+from session_scanner.checklist_v1_1 import (
+    PHASE_KEYS,
+    ChecklistResult,
+    DirectionPermission,
+    PhaseOutcome,
+    PhaseStatus,
+    ReasonCode,
+    StructureState,
+    attach_checklist_v1_1,
+    evaluate_instrument_checklist,
+)
 from session_scanner.proposal import build_ticket
-from session_scanner.quality import FRESH, VALID, Bar, assess_quote
+from session_scanner.quality import FRESH, VALID, assess_quote
 from session_scanner.registry import load_specs, resolve_spec, verify_live
 from session_scanner.scanner import load_scanner_config
-from session_scanner.strategy_adapter import (ADAPTER_NO_TRADE, ADAPTER_SIGNAL, AsianSweepAdapter,
-                                              resolve_proposal_scope)
+from session_scanner.strategy_adapter import (
+    ADAPTER_NO_TRADE,
+    ADAPTER_SIGNAL,
+    AsianSweepAdapter,
+    resolve_proposal_scope,
+)
 
 UTC = timezone.utc
 PKG = Path(__file__).resolve().parents[1] / "src" / "session_scanner"
