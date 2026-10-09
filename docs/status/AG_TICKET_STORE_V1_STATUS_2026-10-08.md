@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TICKET_STORE_V1 — append-only ticket evaluation store (2026-10-08)
 
 Storage only. No strategy, decision, actionability, delivery or authority logic changed.

@@ -127,3 +127,46 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "live_mt5" in item.keywords:
             item.add_marker(skip_live)
+
+
+# --- D6 READY authority (owner decision 2026-10-07) -------------------------------------------
+# Production config/v1_tickets/ready_authority.yaml sets ST_ASIAN_SWEEP_5R_V1 READY authority OFF.
+# OPT-IN, by file: only the nine test files below (all present at fc60cdb, before D6) exercise the
+# engine/gate READY logic; they run with the switch ON (pre-D6 behaviour, assertions unchanged).
+# Every other test, including all new tests, sees the real production file (READY OFF).
+PRE_D6_READY_ON_FILES = frozenset({
+    "test_code_identity_provenance.py",
+    "test_host_go_live_kit.py",
+    "test_manual_ticket_build.py",
+    "test_manual_ticket_dst_clock.py",
+    "test_manual_ticket_host_integration.py",
+    "test_manual_ticket_outcome.py",
+    "test_manual_ticket_owner_decision.py",
+    "test_manual_ticket_scan_records.py",
+    "test_v1_tickets.py",
+    # Present on main (3496ec3) before the D6 port; they exercise engine READY -> actionability
+    # (WATCH_READY) with the switch ON. The OFF path is pinned by test_d6_actionability_suppressed.py.
+    "test_actionability_and_canonical_ticket.py",
+    "test_mt5_provider_integration.py",
+})
+
+
+@pytest.fixture(scope="session")
+def _ready_authority_on_file(tmp_path_factory):
+    path = tmp_path_factory.mktemp("ready_authority") / "ready_authority.yaml"
+    path.write_text("strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    ready: 'ON'\n", encoding="utf-8")
+    return str(path)
+
+
+@pytest.fixture(autouse=True)
+def _pre_d6_ready_authority_on(request, monkeypatch):
+    if request.node.path.name not in PRE_D6_READY_ON_FILES:
+        return
+    import v1_tickets.ready_authority as ready_authority
+    monkeypatch.setattr(ready_authority, "CONFIG_PATH", request.getfixturevalue("_ready_authority_on_file"))
+
+
+@pytest.fixture
+def production_ready_authority():
+    import v1_tickets.ready_authority as ready_authority
+    return ready_authority.CONFIG_PATH

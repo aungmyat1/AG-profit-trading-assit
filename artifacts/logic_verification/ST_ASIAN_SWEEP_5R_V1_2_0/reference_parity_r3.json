@@ -1,0 +1,13 @@
+{
+  "dataset_id": "AG_ASIAN_SWEEP_V1_2_R3_LOGIC_PARITY_001",
+  "dataset_sha256": "a3c1ee5b04792dcea4defbd868cb0ed1a048927deddb68b9b67ecf842856fd80",
+  "production_results": "r3_dataset/production_results.json",
+  "blind_reference_results": "r3_dataset/blind_reference_results.json",
+  "cases_compared": 0,
+  "cases_equal": 0,
+  "cases_different": null,
+  "difference_details": [],
+  "verdict": "BLOCKED_BLIND_REFERENCE_UNAVAILABLE",
+  "normalization": "NOT_APPLIED",
+  "golden_fixture_promotion": "NOT_PERMITTED"
+}

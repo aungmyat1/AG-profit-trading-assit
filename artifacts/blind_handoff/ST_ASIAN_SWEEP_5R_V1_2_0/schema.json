@@ -1,0 +1,70 @@
+{
+  "schema_id": "AG_ASIAN_SWEEP_V1_2_BLIND_SCHEMA_V1",
+  "input": {
+    "case_id": "neutral identifier matching ^C[0-9]{3}$",
+    "symbol": "contract-admitted symbol",
+    "session_id": "ASIAN_LONDON",
+    "session_date": "UTC calendar date",
+    "reference_start_utc": "UTC ISO-8601",
+    "reference_end_utc": "UTC ISO-8601; half-open boundary",
+    "reference_candles": "chronological closed OHLC bars",
+    "trade_candles": "chronological OHLC bars; evaluator must use only bars available at each decision",
+    "spread_observation": "null or {value, unit, timestamp_utc, source, provenance_sha256}",
+    "precision_metadata": "null or authoritative precision metadata",
+    "raw_source_sha256": "source-data provenance only"
+  },
+  "candle": {
+    "timestamp_utc": "bar-open timestamp in UTC ISO-8601",
+    "open": "JSON number",
+    "high": "JSON number",
+    "low": "JSON number",
+    "close": "JSON number",
+    "bar_duration_minutes": 15
+  },
+  "output": {
+    "case_id": "input case identifier",
+    "status": "semantic lifecycle status",
+    "direction": "LONG, SHORT, or null",
+    "decision_timestamp": "UTC ISO-8601 or null",
+    "entry": "number or null",
+    "stop_loss": "number or null",
+    "tp1": "number or null",
+    "tp2": "number or null",
+    "expiry": "UTC ISO-8601 or null",
+    "stop_distance": "number or null",
+    "wick_clear": "boolean or null",
+    "target_order_valid": "boolean or null",
+    "spread_status": "PASS, FAIL, UNKNOWN, or NOT_APPLICABLE",
+    "commission_status": "UNKNOWN when absent",
+    "reason_codes": "ordered array of contract-defined semantic reason codes"
+  },
+  "numeric_semantics": {
+    "arithmetic": "deterministic decimal arithmetic is preferred; preserve input precision",
+    "precision_metadata": "MISSING in an input case when precision_metadata is null",
+    "rounding": "NO_STRATEGY_LEVEL_ROUNDING_RULE_DEFINED",
+    "instruction": "Do not invent broker digits, tick size, or hidden rounding. Log any material numeric ambiguity."
+  },
+  "time_semantics": {
+    "serialization": "UTC ISO-8601",
+    "canonical_output_example": "2026-01-02T03:04:05Z",
+    "decision_availability": "M15 confirmation bar-open timestamp plus 15 minutes",
+    "expiry_interval": "decision_timestamp <= now < expiry"
+  },
+  "reason_code_vocabulary": [
+    "AWAITING_TRIGGER",
+    "AMBIGUOUS_DUAL_SWEEP",
+    "INVALID_REFERENCE_RANGE",
+    "SL_DOES_NOT_CLEAR_SWEEP_EXTREME",
+    "INVALID_TARGET_ORDER",
+    "SPREAD_ABSOLUTE_EXCEEDED",
+    "SPREAD_R_EXCEEDED",
+    "SPREAD_UNKNOWN"
+  ],
+  "management_contract": {
+    "tp1_exit_fraction": "0.75",
+    "remaining_fraction": "0.25",
+    "after_tp1": "MOVE_REMAINING_STOP_TO_BREAKEVEN",
+    "tp2_multiple_R": "5.0",
+    "outcome_simulation_required": false
+  }
+}

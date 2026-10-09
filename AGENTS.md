@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # AG Profit Trading — Agent Instructions
 
+All missions implicitly apply docs/agents/INVARIANTS.md (v1). Missions state only deltas.
+
 ## Token minimum usage policy (owner rule, applies to every task)
 - Do only what the task asks; no extra features, refactors or docs.
 - No polling, scheduled check-ins or PR subscriptions unless explicitly asked.
@@ -16,6 +18,13 @@ review_by: 2026-11-07
 - Reports: concise — status, key results, blockers, next step. No restating the prompt,
   no long learning sections unless asked.
 - Stop immediately when the task is done.
+
+## Current objective (pointers)
+
+- Objective: `docs/PROJECT_OBJECTIVE.md`; owner objective: Issue #47; generated summary: `docs/agents/CONTEXT_PACK.md`.
+- Verbatim from `docs/PROJECT_OBJECTIVE.md`: "`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
+- That file has no separate one-line definitions of `LOGIC_VERIFIED` / `EDGE_VERIFIED` / `DEMO_AUTHORIZED`; none are authored here.
+- `config/agent_context.json` routes may be stale — verify paths exist before use, until it is regenerated.
 
 ## Purpose
 

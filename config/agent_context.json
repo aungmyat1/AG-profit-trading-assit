@@ -1,6 +1,7 @@
 {
   "schema": "AG_AGENT_CONTEXT_V1",
   "purpose": "minimal agent context routing",
+  "routes_freshness": "may be stale \u2014 verify paths exist before use, until regenerated",
   "generated_from_head": "933921fa3a8a0f322ed7b5c9714626140982d02b",
   "last_verified_utc": "2026-09-20",
   "authorities": {

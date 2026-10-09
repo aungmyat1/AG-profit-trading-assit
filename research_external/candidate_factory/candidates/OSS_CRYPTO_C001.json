@@ -1,0 +1,40 @@
+{
+  "candidate_id": "OSS_CRYPTO_C001",
+  "strategy_label": "Volatility-adjusted Donchian Channel breakout (Turtle Trading System Two, N=55/M=20/ATR=20)",
+  "source_type": "EXTERNAL (crypto priority)",
+  "source": {
+    "repo": "https://github.com/CoenTan/Donchian-Breakout-Strategy-with-Turtle-Trading-System-2",
+    "license": "No LICENSE file found in the repository at retrieval time -> LICENSE_UNKNOWN -> CODE_REUSE_ALLOWED=FALSE for this mission; rule extraction from the public README only, no code imported or executed.",
+    "retrieval_date": "2026-10-07",
+    "underlying_system": "Turtle Trading System Two (Dennis & Eckhardt, 1983); theoretical grounding also cites Moskowitz, Ooi & Pedersen (2012) 'Time Series Momentum' and Baltas & Kosowski (2013).",
+    "original_venue": "8 liquid FUTURES instruments (CL, GC, 6E, SI, 6J, ES, ZN and one more), NOT crypto and NOT CFD."
+  },
+  "rule_extracted": "Entry: flat position opens LONG if today's close > max close of prior N=55 days; SHORT if close < min close of prior N=55 days. Exit: while long, close if close < min close of prior M=20 days; while short, close if close > max close of prior M=20 days (M<N by design). Position size inversely scaled to ATR(20); leverage capped at 5x. All decision inputs use data up to t-1 (explicit no-look-ahead design in the source's own README). Parameters are the fixed, published Turtle System Two values -- the source author explicitly states no tuning was performed against their own data.",
+  "source_backtest_class": "SB5_OOS_OR_WALK_FORWARD (source reports explicit in-sample vs out-of-sample Sharpe/return comparison per instrument and for the combined 8-instrument portfolio, e.g. combined portfolio Sharpe 0.531 in-sample -> 0.209 out-of-sample).",
+
+  "gates": {
+    "G1_CONTRACTABLE": {"verdict": "PASS", "reason": "Fully deterministic, exact N/M/ATR parameters, exact entry/exit/position-sizing formulas, explicit no-look-ahead design."},
+    "G2_TICKETABLE": {"verdict": "FAIL_AS_SOURCED", "reason": "This is a continuously-held trend-following position with an exit rule based on a rolling M-day extreme, not a discrete entry with a single fixed TP. It fails this mission's ticketability gate (AG's informational-ticket workflow needs a discrete entry + fixed SL + TP1/TP2) unless deterministically translated into a new derived ticket-style candidate (e.g. ATR-based initial stop + fixed R target substituted for the rolling-exit rule) -- which this mission does NOT do, per the instruction not to silently rewrite a candidate."},
+    "G3_DATA_VENUE_FIT": {"verdict": "HOLD_DATA / FAIL", "reason": "No BTC or ETH OHLC price history of any kind is physically present in this repository checkout (see data_capability_matrix.json) -- only a single point-in-time VT Markets symbol-metadata snapshot. Separately, the source instruments are FUTURES, not spot or CFD; VT Markets BTCUSD/ETHUSD are CFDs with an overnight SWAP, not futures margining -- an explicit venue translation (contract size, leverage mechanics, overnight cost) would be required even if data existed. Neither gap is resolved in R1."},
+    "G4_CAUSALITY_WARMUP": {"verdict": "PASS_BY_SOURCE_DESIGN_NOT_INDEPENDENTLY_RE-EXECUTED", "reason": "Source README explicitly states all decision inputs use data up to t-1; per the EXTERNAL CODE RULE this mission does not execute the source repository's code to independently re-verify, only reads and records the stated design."},
+    "G5_TRANSLATION_FIDELITY": {"verdict": "NOT_EVALUATED", "reason": "No replay was attempted (blocked at G2/G3), so no translated rule set exists yet to classify EXACT/SEMANTICALLY_EQUIVALENT/MATERIAL_DEVIATION against."}
+  },
+
+  "ag_reproduced": false,
+  "dev_replay_runs": [],
+  "friction_screened": false,
+  "friction_result": "NOT_EVALUATED (no data, no replay)",
+
+  "verdict": "HOLD_DATA",
+  "verdict_reason": "Blocked at the data/venue-fit gate: this environment has zero historical OHLC bars for BTCUSD/ETHUSD, so no DEV replay is possible regardless of how well-specified the source rule is. Independently, the rule as literally sourced also fails ticketability (G2) and would require a deliberate, explicitly-labeled derived-candidate translation before any replay could even be meaningful. Both gaps are recorded rather than silently resolved.",
+
+  "status_taxonomy": {
+    "source_backtested": true,
+    "ag_reproduced": false,
+    "friction_screened": false,
+    "contract_frozen": false,
+    "logic_verified": false,
+    "economic_status": "NOT_VERIFIED",
+    "edge_verified": false
+  }
+}

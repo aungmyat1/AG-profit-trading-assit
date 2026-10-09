@@ -11,6 +11,9 @@ choosing an interpretation. Known, pre-existing examples for ST_ASIAN_SWEEP_5R_V
 `stop_loss_mode: PERCENT_OF_SESSION_RANGE 0.25` vs the engine's sweep-wick stop
 (docs/status/AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION_STATUS.md) and the
 declared-but-unconsumed EMA_50 trend filter (no timeframe/price source in the YAML).
+Checks are driven by what the YAML declares: the v1.1.2 candidate
+(strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml) declares the engine's own geometry and its
+fail-closed rules, so its L2 evaluates those instead.
 """
 from __future__ import annotations
 
@@ -22,7 +25,7 @@ import yaml
 from strategy_engine.models import StrategyConfig
 from strategy_engine.session import Candle
 from ticket_delivery.renderer import payload_hash
-from v1_tickets.guards import LEGACY_STALE_SIGNAL, SIGNAL_STALE, STALE_AFTER
+from v1_tickets.guards import LEGACY_STALE_SIGNAL, MAX_SPREAD_RISK_FRACTION, SIGNAL_STALE, STALE_AFTER
 
 PASS, FAIL, WARN, NOT_EVALUABLE = "PASS", "FAIL", "WARN", "NOT_EVALUABLE"
 NOT_APPLICABLE = "NOT_APPLICABLE"   # post-fill / execution-time rule: recorded, not part of a manual ticket decision
@@ -56,6 +59,43 @@ def _eq(a: Optional[float], b: Optional[float], digits: Optional[int]) -> bool:
 def _signal_candle(ticket: Dict[str, Any], post: Sequence[Candle]) -> Optional[Candle]:
     ts = ticket.get("signal_timestamp")
     return next((c for c in post if c.time.isoformat() == ts), None) if ts else None
+
+
+def v120_strategy_delta(decision: Any) -> Dict[str, Any]:
+    """V1.2-only checks layered on the existing gate evidence model.
+
+    The production evaluator owns prices; this function independently verifies the
+    frozen owner deltas and never repairs a rejected candidate. It is intentionally not
+    used for v1.1.1, whose historical behavior remains frozen.
+    """
+    if not getattr(decision, "direction", None):
+        return _gate("V1.2", [_check("V12.candidate", "candidate exists", decision.status,
+                                     "ACTIONABLE", FAIL)])
+    long = decision.direction == "LONG"
+    rng = decision.reference_high - decision.reference_low
+    expected = rng * 0.25
+    got = abs(decision.entry - decision.stop_loss)
+    wick = decision.stop_loss <= decision.sweep_extreme if long else decision.stop_loss >= decision.sweep_extreme
+    order = (decision.stop_loss < decision.entry < decision.tp1 <= decision.tp2) if long else (
+        decision.stop_loss > decision.entry > decision.tp1 >= decision.tp2)
+    expiry = decision.decision_time + dt.timedelta(minutes=15) == decision.expiry
+    spread_abs = decision.spread_pips is not None and decision.spread_pips <= 2.0
+    spread_r = decision.spread_R is not None and decision.spread_R <= 0.15
+    return _gate("V1.2", [
+        _check("V12.entry_close", "entry equals confirmed closed-candle close", decision.entry,
+               "engine confirmation close", PASS if decision.decision_time is not None else FAIL),
+        _check("V12.stop_25pct", "stop distance = 25% reference range", got, expected,
+               PASS if abs(got - expected) <= 1e-12 else FAIL),
+        _check("V12.wick_clear", "SL clears sweep extreme", decision.stop_loss, decision.sweep_extreme,
+               PASS if wick else FAIL),
+        _check("V12.target_order", "directional target ordering", [decision.stop_loss, decision.entry,
+                                                                    decision.tp1, decision.tp2], True,
+               PASS if order else FAIL),
+        _check("V12.expiry", "expiry = decision + 15m", decision.expiry, decision.decision_time, PASS if expiry else FAIL),
+        _check("V12.spread_absolute", "spread <= 2.0 pips", decision.spread_pips, 2.0,
+               PASS if spread_abs else FAIL),
+        _check("V12.spread_R", "spread <= 0.15R", decision.spread_R, 0.15, PASS if spread_r else FAIL),
+    ])
 
 
 # ---------------------------------------------------------------------------------- L1
@@ -101,17 +141,26 @@ def l2_rule_conformance(strategy: StrategyConfig, ticket: Dict[str, Any], sessio
     checks.append(_check("R.reference_session", f"{pair.reference_session.name} box complete",
                          len(session), expected_bar_count,
                          PASS if len(session) >= expected_bar_count else FAIL))
-    trend = (spec.get("regime_classification") or {}).get("trend_bias_filter") or {}
-    checks.append(_check("R.trend_bias_filter", f"{trend.get('indicator')}: {trend.get('bullish_condition')} / "
-                         f"{trend.get('bearish_condition')}", None, None, NOT_EVALUABLE,
-                         "spec gives no timeframe/price source; frozen engine does not consume it"))
-    range_cap = strategy.max_range_pips_eurusd
-    pip = EVIDENCED_PIP.get(symbol) if symbol == "EURUSD" else None
-    range_pips = round(rng / pip, 1) if rng is not None and pip else None
-    checks.append(_check("R.range_session_check", "Reference_Session_Range_Pips <= Max_Allowed_Pips",
-                         range_pips, range_cap if symbol == "EURUSD" else None, NOT_EVALUABLE,
-                         "spec defines no gating semantics for the regime result"
-                         + ("" if symbol == "EURUSD" else "; max_range_pips defined for EURUSD only")))
+    regime_spec = spec.get("regime_classification") or {}
+    if "trend_bias_filter" in regime_spec:
+        trend = regime_spec["trend_bias_filter"] or {}
+        checks.append(_check("R.trend_bias_filter", f"{trend.get('indicator')}: {trend.get('bullish_condition')} / "
+                             f"{trend.get('bearish_condition')}", None, None, NOT_EVALUABLE,
+                             "spec gives no timeframe/price source; frozen engine does not consume it"))
+    if "range_session_check" in regime_spec:
+        range_cap = strategy.max_range_pips_eurusd
+        pip = EVIDENCED_PIP.get(symbol) if symbol == "EURUSD" else None
+        range_pips = round(rng / pip, 1) if rng is not None and pip else None
+        checks.append(_check("R.range_session_check", "Reference_Session_Range_Pips <= Max_Allowed_Pips",
+                             range_pips, range_cap if symbol == "EURUSD" else None, NOT_EVALUABLE,
+                             "spec defines no gating semantics for the regime result"
+                             + ("" if symbol == "EURUSD" else "; max_range_pips defined for EURUSD only")))
+    branches = regime_spec.get("branches")
+    if branches is not None:
+        branch = next((b for b in branches.values() if b.get("engine_setup") == ticket.get("setup")), None)
+        checks.append(_check("R.regime_branch", "engine branch declared and ticket-eligible", ticket.get("setup"),
+                             "ELIGIBLE", PASS if branch and branch.get("ticket") == "ELIGIBLE" else FAIL,
+                             (branch or {}).get("reason") or ("" if branch else "engine branch not declared")))
 
     trigger = "SWEEP_REFERENCE_LOW" if long else "SWEEP_REFERENCE_HIGH"
     if ticket.get("setup") != "SWEEP" or sig is None:
@@ -125,12 +174,31 @@ def l2_rule_conformance(strategy: StrategyConfig, ticket: Dict[str, Any], sessio
     checks.append(_check("R.entry_order_type", "entry_order_type", ticket.get("entry_order_type"),
                          strategy.entry_order_type,
                          PASS if ticket.get("entry_order_type") == strategy.entry_order_type else FAIL))
-    checks.append(_check("R.entry_level", "Sweep_Candle_Body_Close", entry, sig.close if sig else None,
-                         PASS if sig is not None and _eq(entry, sig.close, digits) else FAIL))
-    want_dist = rng * strategy.risk.stop_loss_range_pct if rng is not None else None
+    side_spec = (spec.get("entry_rules") or {}).get("long_setup" if long else "short_setup") or {}
+    if side_spec.get("entry_level") == "SWEEP_CANDLE_BODY_EDGE":
+        edge = (min(sig.open, sig.close) if long else max(sig.open, sig.close)) if sig else None
+        at_edge = sig is not None and _eq(entry, edge, digits)
+        at_close = sig is not None and _eq(edge, sig.close, digits)
+        need_close = side_spec.get("entry_must_equal_close") is True
+        checks.append(_check("R.entry_level", "SWEEP_CANDLE_BODY_EDGE" + (" == close" if need_close else ""),
+                             entry, {"body_edge": edge, "close": sig.close if sig else None},
+                             PASS if at_edge and (at_close or not need_close) else FAIL,
+                             "" if not at_edge or at_close or not need_close
+                             else "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)"))
+    else:
+        checks.append(_check("R.entry_level", "Sweep_Candle_Body_Close", entry, sig.close if sig else None,
+                             PASS if sig is not None and _eq(entry, sig.close, digits) else FAIL))
     got_dist = abs(entry - sl) if entry is not None and sl is not None else None
-    checks.append(_check("R.stop_loss", f"{strategy.risk.stop_loss_mode} {strategy.risk.stop_loss_range_pct}",
-                         got_dist, want_dist, PASS if _eq(got_dist, want_dist, digits) else FAIL))
+    if strategy.risk.stop_loss_mode == "SWEEP_CANDLE_WICK_EXTREME":
+        wick = (sig.low if long else sig.high) if sig else None
+        positive = risk is not None and risk > 0
+        checks.append(_check("R.stop_loss", "SWEEP_CANDLE_WICK_EXTREME, risk_distance > 0", sl, wick,
+                             PASS if _eq(sl, wick, digits) and positive else FAIL,
+                             "" if positive else "risk_distance <= 0 (fail closed)"))
+    else:
+        want_dist = rng * strategy.risk.stop_loss_range_pct if rng is not None else None
+        checks.append(_check("R.stop_loss", f"{strategy.risk.stop_loss_mode} {strategy.risk.stop_loss_range_pct}",
+                             got_dist, want_dist, PASS if _eq(got_dist, want_dist, digits) else FAIL))
     targets = {t["leg"]: t for t in ticket.get("targets") or []}
     tp1 = (targets.get(1) or {}).get("price")
     checks.append(_check("R.target_leg1", "OPPOSITE_SESSION_BOUNDARY", tp1, hi if long else lo,
@@ -150,6 +218,23 @@ def l2_rule_conformance(strategy: StrategyConfig, ticket: Dict[str, Any], sessio
     checks.append(_check("R.max_spread", "spread_pips <= max_spread_allowed_pips", spread_pips, cap,
                          (PASS if spread_pips <= cap else FAIL) if spread_pips is not None else NOT_EVALUABLE,
                          "" if spread_pips is not None else "no live spread or no evidenced pip size"))
+    rm = spec.get("risk_and_money_management") or {}
+    if "max_spread_fraction_of_stop" in rm:
+        frac = rm["max_spread_fraction_of_stop"]
+        measured = round(spread / risk, 4) if spread is not None and risk else None
+        conforms = frac == MAX_SPREAD_RISK_FRACTION
+        checks.append(_check("R.max_spread_fraction", f"spread / stop <= {frac}", measured, frac,
+                             (PASS if measured <= frac else FAIL) if measured is not None and conforms else FAIL,
+                             "" if conforms else f"implemented guard is {MAX_SPREAD_RISK_FRACTION}"))
+    if "signal_expiry_minutes" in rm:
+        implemented = int(STALE_AFTER.total_seconds() // 60)
+        checks.append(_check("R.signal_expiry", "signal_expiry_minutes", implemented, rm["signal_expiry_minutes"],
+                             PASS if implemented == rm["signal_expiry_minutes"] else FAIL))
+    if (spec.get("position_split_and_targets") or {}).get("target_order_rule") == "FAIL_CLOSED_IF_TP1_BEYOND_TP2":
+        ordered = (tp1 is not None and tp2 is not None and entry is not None
+                   and ((entry < tp1 <= tp2) if long else (entry > tp1 >= tp2)))
+        checks.append(_check("R.target_order", "FAIL_CLOSED_IF_TP1_BEYOND_TP2", [entry, tp1, tp2],
+                             "entry < TP1 <= TP2" if long else "entry > TP1 >= TP2", PASS if ordered else FAIL))
     checks.append(_check("R.time_invalidation", strategy.time_invalidation, ticket.get("time_invalidation_gmt"),
                          "15:00", PASS if ticket.get("time_invalidation_gmt") == "15:00" else FAIL))
     checks.append(_check("R.risk_mode", strategy.risk.risk_mode, None, None, NOT_APPLICABLE,
@@ -159,8 +244,12 @@ def l2_rule_conformance(strategy: StrategyConfig, ticket: Dict[str, Any], sessio
     checks.append(_check("R.post_fill_management", "leg actions after fill",
                          [(leg.action_on_fill, leg.trailing_rule) for leg in strategy.legs], None, NOT_APPLICABLE,
                          "post-fill trade management; displayed only"))
-    checks.append(_check("R.structural_invalidation", strategy.structural_invalidation, None, None, NOT_EVALUABLE,
-                         "'expansion volume' has no measurable definition in the spec"))
+    if strategy.structural_invalidation == "NONE":
+        checks.append(_check("R.structural_invalidation", "NONE", None, None, NOT_APPLICABLE,
+                             "removed in the spec; a close beyond the wick extreme implies the stop was hit"))
+    else:
+        checks.append(_check("R.structural_invalidation", strategy.structural_invalidation, None, None, NOT_EVALUABLE,
+                             "'expansion volume' has no measurable definition in the spec"))
     return _gate("L2", checks)
 
 

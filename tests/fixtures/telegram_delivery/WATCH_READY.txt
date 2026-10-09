@@ -1,0 +1,17 @@
+Ticket: fixture-WATCH_READY
+EURUSD | WATCH_READY | LONG
+Session: 2026-10-08 / ASIAN_LONDON
+Reason: fixture_reason_WATCH_READY
+Levels (supplied prices only):
+TP2   +---------------- 1.10500
+TP1   +---------------- 1.10300
+NOW   +---------------- 1.10010
+ENTRY +---------------- 1.10000
+SL    +---------------- 1.09900
+Remaining R TP1: 2.6
+Remaining R TP2: 4.4
+logic_status: LOGIC_VERIFIED
+Edge: NOT VERIFIED (NOT_EVALUATED)
+Actionability: WATCH_READY / fixture_reason_WATCH_READY
+EDGE_VERIFIED=FALSE
+EXECUTION: DISABLED

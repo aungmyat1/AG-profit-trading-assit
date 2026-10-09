@@ -51,6 +51,14 @@ ADAPTERS: Dict[str, Tuple[str, Tuple[str, ...]]] = {
 }
 
 
+# Registered candidate versions whose contract lives in its own file (the frozen authority
+# file above is never edited in place). Identity only: a candidate never changes which
+# contract the runtime loads, so it cannot by itself make a ticket READY.
+CANDIDATE_CONTRACTS: Dict[Tuple[str, str], str] = {
+    ("ST_ASIAN_SWEEP_5R_V1", "1.1.2"): "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+}
+
+
 def _sha256_text(paths, root: Path) -> str:
     """Line-ending-normalized so a Windows (CRLF) checkout hashes like a Linux one."""
     h = hashlib.sha256()
@@ -64,6 +72,7 @@ def logic_identity(strategy_id: str, strategy_version: str, root: Path = REPO_RO
     if strategy_id not in ADAPTERS:
         return None
     contract, engine_files = ADAPTERS[strategy_id]
+    contract = CANDIDATE_CONTRACTS.get((strategy_id, strategy_version), contract)
     parts = {"strategy_id": strategy_id, "strategy_version": strategy_version,
              "engine_identity": _sha256_text(engine_files, root),
              "contract_hash": _sha256_text((contract,), root)}
