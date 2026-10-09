@@ -84,9 +84,12 @@ strategies:
       ST_LIQUIDITY_SWEEP_RETEST_V1 authority or validation evidence.
       AG V1 Goal 2 (2026-09-30): NEW version 1.1.0 registered alongside, v1.0.7 unchanged --
       config strategies/ST_LARGE_SMC_V1_1_1_0.yaml, engine src/large_smc_watch/ (watch/alerts
-      only, status SHADOW_ALERTS_ONLY, instruments EURUSD GBPUSD USDJPY XAUUSD BTCUSDT
-      ETHUSDT, proposal_generation_authorized=false, alerts ARCHIVE_ONLY). No demo/live
-      authority for either version.
+      only, status SHADOW_ALERTS_ONLY, instruments EURUSD GBPUSD USDJPY XAUUSD BTCUSD
+      ETHUSD -- VT Markets MT5 only since AGP-C1-LSMC 2026-10-09, was BTCUSDT/ETHUSDT; point
+      sizes from the verified host symbol_info() capture only, missing -> DATA_ERROR;
+      proposal_generation_authorized=false, alerts ARCHIVE_ONLY). 1.1.0 LOGIC_VERIFIED
+      (rule conformance only) per docs/status/AGP_C1_LSMC_V110_LOGIC_VERIFICATION_2026-10-09.md;
+      EDGE not evaluated. No demo/live authority for either version.
 
   ST_LIQUIDITY_SWEEP_RETEST_V1:
     registered: true

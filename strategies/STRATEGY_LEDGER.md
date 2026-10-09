@@ -390,3 +390,18 @@ from canonical session windows or other repo conventions at the time of registra
 - **Research separation:** `STRATEGY_CONTRACT_VALID=true` means reproducible logic only
   -- `EDGE_VERIFIED=false`, `RISK_AUTHORIZED=false`. Not wired into the session
   scanner's strategy adapters; doing so is a separate future authority decision.
+
+## ST_LARGE_SMC_V1@1.1.0 -- AGP-C1-LSMC VT-only symbols + logic verification (2026-10-09)
+
+- **Owner-directed in-place contract edit** (mission AGP-C1-LSMC): `instruments` BTCUSDT/ETHUSDT ->
+  VT Markets MT5 BTCUSD/ETHUSD; `symbol_metadata` now names the verified host `symbol_info()`
+  capture as the only point source, missing -> `DATA_ERROR SYMBOL_METADATA_MISSING` (no repo
+  constant or caller-supplied fallback). Crypto tie tolerance therefore uses the VT point 0.01
+  (was the exchange tick 0.1). Pre-edit 1.1.0 bytes stay attributed by sha256
+  `15e13a62...0591ebd` (referenced by the 1.1.1 candidate); prior 1.1.0 evidence is not
+  re-attributed.
+- **LOGIC_VERIFIED** (rule conformance and internal consistency only) by the L1-L6 gate
+  `src/v1_tickets/lsmc_logic_gate.py`; report and hashes in
+  `docs/status/AGP_C1_LSMC_V110_LOGIC_VERIFICATION_2026-10-09.md`.
+- No change to `proposal_generation_authorized`, `demo_authorized`, `live_authorized` (all
+  false) or `economic_status` (`NOT_EVALUATED`). EDGE_VERIFIED is not implied.

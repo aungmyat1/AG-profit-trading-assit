@@ -19,6 +19,7 @@ import json
 import math
 import os
 import sys
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 from zoneinfo import ZoneInfo
@@ -95,17 +96,20 @@ def _evaluate_with_captured_points(
     """
     original_resolver = C.resolve_point
 
-    def captured_resolver(candidate_symbol: str, _supplied: Optional[float] = None):
-        record = load_host_symbol_metadata(_broker_symbol_for(spec, candidate_symbol))
+    def captured_resolver(runtime_symbol: str):
+        record = load_host_symbol_metadata(runtime_symbol)
         if record is None:
             return None, "MISSING"
         return float(record["fields"]["point"]), "HOST_CAPTURED"
 
+    # The 1.1.0 runtime universe is VT broker names only (BTCUSD/ETHUSD); the candidate keeps
+    # its canonical names, so the runtime is called with the broker alias and relabelled back.
     C.resolve_point = captured_resolver
     try:
-        return evaluate_snapshot(symbol, d1, h1, m5, now)
+        snap = evaluate_snapshot(_broker_symbol_for(spec, symbol), d1, h1, m5, now)
     finally:
         C.resolve_point = original_resolver
+    return replace(snap, symbol=symbol)
 
 
 def _parse_candidate_time(value: Any) -> Optional[dt.datetime]:
@@ -466,7 +470,7 @@ def _candidate_evaluation(spec: dict, bars: Dict[str, Any], crypto_config: dict)
         if signal_close is not None:
             expiry = (
                 _crypto_session_end(signal_close, crypto_config)
-                if symbol in C.CRYPTO_SYMBOLS
+                if _broker_symbol_for(spec, symbol) in C.CRYPTO_SYMBOLS
                 else session_end(signal_close)
             )
             opportunity["expires_at"] = expiry.isoformat()
@@ -682,7 +686,7 @@ def _l4(snapshot, bars: Dict[str, Any], ticket: Dict[str, Any], config: dict, ha
             signal_close = dt.datetime.fromisoformat(ticket["signal_close_utc"])
             expected_expiry = (
                 _crypto_session_end(signal_close, config)
-                if snapshot.symbol in C.CRYPTO_SYMBOLS
+                if snapshot.symbol in C.CRYPTO_SYMBOLS + ("BTCUSDT", "ETHUSDT")  # candidate canonical names
                 else session_end(signal_close)
             )
             actual_expiry = dt.datetime.fromisoformat(ticket["expires_at"])

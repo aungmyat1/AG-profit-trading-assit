@@ -198,7 +198,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `dfbc104918f361b14567f7a649c598e7b95a0612ea248d156d0d930ca98585ff`.
+inputs_sha256: `c00174b1ca9a1fc6efe41682643c43ab7a54c08d3b0321ecde6853b563aa132b`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -218,6 +218,16 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 
 Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
 <!-- [[[end]]] -->
+
+## AGP-C1-LSMC — ST_LARGE_SMC_V1@1.1.0 VT-only + LOGIC_VERIFIED (2026-10-09, branch `claude/focused-volta-yjneth`, not merged)
+
+LSMC 1.1.0 now watches VT MT5 `BTCUSD`/`ETHUSD` (was `BTCUSDT`/`ETHUSDT`) with points from the
+verified host `symbol_info()` capture only (missing → `DATA_ERROR`). The L1–L6 gate
+(`src/v1_tickets/lsmc_logic_gate.py`) reports **LOGIC_VERIFIED** for contract sha256 `78285f9f…`
+/ engine sha256 `ec0b2f3d…`; EDGE not evaluated, proposal/demo/live authority unchanged (false).
+A warn-only correlated-READY layer (`src/v1_tickets/correlation_guard.py`) was added, not yet wired
+into delivery. Evidence: [AGP-C1-LSMC](docs/status/AGP_C1_LSMC_V110_LOGIC_VERIFICATION_2026-10-09.md).
+Host acceptance NOT_EVALUATED.
 
 ## TG-SCOPE-POLICY-1 — tracked Telegram immediate-send ceiling (2026-10-08)
 
