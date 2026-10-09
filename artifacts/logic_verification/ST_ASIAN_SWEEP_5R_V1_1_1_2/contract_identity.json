@@ -1,0 +1,9 @@
+{
+  "canonicalization": "v1_tickets.authority._sha256_text (path + LF-normalized bytes)",
+  "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+  "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+  "engine_identity": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+  "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "strategy_version": "1.1.2"
+}

@@ -42,6 +42,10 @@ from canonical session windows or other repo conventions at the time of registra
   `ticket_ready PAUSED_PENDING_OWNER_CONFIRM`. Not promoted: v1.1.1 stays the current
   authority. Evidence and the Phase B recommendations (PENDING_OWNER_CONFIRM):
   `docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md`.
+  2026-10-09 (AGP-C3-ASW-RATIFY): LOGIC_VERIFICATION_REPORT on both windows: L1–L4 and L6
+  PASS, L5 WARN (no BLOCK); `LOGIC_VERIFIED` for EURUSD only (GBPUSD NOT_EVIDENCED, USDJPY/XAUUSD
+  PENDING_AGP-C2-SYMMAP), EDGE false; still not admitted, READY OFF:
+  `docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md`.
 - **Open gaps found building `execution/` (2026-08-26):**
   - `risk_and_money_management.risk_mode: FIXED_PERCENT_OR_CONTRACT` never states an
     actual risk-per-trade percentage or contract size. `execution/risk.py` currently

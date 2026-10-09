@@ -206,7 +206,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `9ecd3261df18ff899e717d2cc19d6a242a871cdecfca867824574c93e22e0efc`.
+inputs_sha256: `2ed6633397b37eaf2d7de4ccfb85fb375f96cec0f8ca72da9608e533395b4076`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -226,6 +226,19 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 
 Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
 <!-- [[[end]]] -->
+
+## AGP-C3-ASW-RATIFY — ST_ASIAN_SWEEP_5R_V1@1.1.2 logic verification, both windows (2026-10-09, branch `agp/c3-asw-ratify`, not merged)
+
+LOGIC_VERIFICATION_REPORT for candidate 1.1.2 on ASIAN→LONDON and LONDON→NEW YORK (recorded EURUSD
+fixture + seeded synthetic sessions): L1 identity PASS, L2 (closure reused) PASS, L3 prefix /
+future-mutation / streaming parity PASS, L4 geometry PASS (recorded zero-stop and TP-order failures
+reproduce in the shared engine and are blocked by 1.1.2's declared fail-closed rules; no engine
+change), L5 WARN (D2 risk 0.5 % / cost 0.10R warn / 0.25R block read from
+`config/owner_ticket.yaml`; commission and spread absent), L6 PASS → `LOGIC_VERIFIED`. Coverage:
+EURUSD verified; GBPUSD NOT_EVIDENCED; USDJPY/XAUUSD PENDING_AGP-C2-SYMMAP; RANGE_REJECTION UNIT_ONLY.
+`EDGE_VERIFIED=FALSE`. **Not admitted**: runtime still loads v1.1.1, READY OFF
+(D6), demo/live false, FX runtime risk config unchanged. Evidence:
+`docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md` (+ `.json`); unit/fixture only.
 
 ## AGP-C1-LSMC — ST_LARGE_SMC_V1@1.1.0 VT-only + LOGIC_VERIFIED (2026-10-09, branch `claude/focused-volta-yjneth`, not merged)
 
