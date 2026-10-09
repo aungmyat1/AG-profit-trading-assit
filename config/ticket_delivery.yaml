@@ -51,6 +51,16 @@
 #   change (WP7).
 mode: ARCHIVE_ONLY
 
+# Tracked ceiling for immediate Telegram delivery. Host-local delivery_override.yaml
+# may select a subset only; widening it fails closed with SCOPE_WIDENING_REJECTED.
+immediate_send_scope:
+  enabled:
+    - TICKET_READY
+    - LSMC_OPPORTUNITY
+  disabled:
+    WATCH_READY: "PENDING_OWNER_DECISION C16"
+    INFO_ONLY_*: "PENDING_OWNER_DECISION C16"
+
 # Where per-cycle decisions are archived (post_asian_pilot.report_archive's existing
 # atomic-write/idempotent/correction convention, unchanged).
 archive_root: journal/ticket_delivery/archive

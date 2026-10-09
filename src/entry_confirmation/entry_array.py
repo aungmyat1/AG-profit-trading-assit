@@ -11,11 +11,16 @@ being evaluated. A nearby-but-unrelated older zone is never silently promoted.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Optional
 
 from entry_confirmation.models import CandidateDirection
 from entry_confirmation.models_v2 import GapContext
-from entry_confirmation.models_v2_1 import ConfluenceRelation, EntryArrayContext, EntryArrayType, EntryMethodV21
+from entry_confirmation.models_v2_1 import (
+    ConfluenceRelation,
+    EntryArrayContext,
+    EntryArrayType,
+    EntryMethodV21,
+)
 from supply_demand import ValidatedOrderBlock
 
 
@@ -40,8 +45,6 @@ def _confluence(fvg_low, fvg_high, ob_low, ob_high) -> str:
     if fvg_low <= ob_high and ob_low <= fvg_high:
         overlap_low = max(fvg_low, ob_low)
         overlap_high = min(fvg_high, ob_high)
-        full = overlap_low <= fvg_low + 1e-12 and overlap_high >= fvg_high - 1e-12 and \
-            overlap_low <= ob_low + 1e-12 and overlap_high >= ob_high - 1e-12
         return ConfluenceRelation.OVERLAP.value if overlap_high > overlap_low else ConfluenceRelation.PARTIAL_OVERLAP.value
     return ConfluenceRelation.SAME_LEG_NO_OVERLAP.value
 

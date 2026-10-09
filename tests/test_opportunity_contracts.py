@@ -13,6 +13,8 @@ import datetime as dt
 import pytest
 
 from opportunity.contracts import (
+    ELIGIBILITY_BLOCKED,
+    ELIGIBILITY_ELIGIBLE,
     MARKET_DATA_MODE_REAL,
     MARKET_DATA_MODE_REPLAY,
     MARKET_DATA_MODE_SYNTHETIC,
@@ -20,8 +22,6 @@ from opportunity.contracts import (
     SYNTHETIC_DATA_NOT_PROPOSAL_ELIGIBLE,
     CandidateGeometry,
     DataAuthority,
-    ELIGIBILITY_BLOCKED,
-    ELIGIBILITY_ELIGIBLE,
     FrictionEvidence,
     MarketEvent,
     OpportunityCandidate,

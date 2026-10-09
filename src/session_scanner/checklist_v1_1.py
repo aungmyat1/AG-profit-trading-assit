@@ -26,7 +26,11 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
-from .strategy_adapter import (ADAPTER_BOX_INCOMPLETE, ADAPTER_SIGNAL, ADAPTER_SYMBOL_NOT_IN_CONTRACT)
+from .strategy_adapter import (
+    ADAPTER_BOX_INCOMPLETE,
+    ADAPTER_SIGNAL,
+    ADAPTER_SYMBOL_NOT_IN_CONTRACT,
+)
 from .timebase import TIME_GATE_PASS
 
 CHECKLIST_VERSION = "AG_SCANNER_CHECKLIST_V1_1"

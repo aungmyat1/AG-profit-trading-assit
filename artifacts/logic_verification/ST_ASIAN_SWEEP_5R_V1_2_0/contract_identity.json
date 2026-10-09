@@ -1,0 +1,11 @@
+{
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "strategy_version": "1.2.0",
+  "canonicalization": "UTF-8 YAML bytes with CRLF normalized to LF",
+  "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_2_0.yaml",
+  "contract_hash": "c96221e69ad10bd016d072688c3cf791caaac9afe4bdb74be289cc50f5b34770",
+  "freeze_commit_sha": "6c483fd834e772f9f41179ef939dd4eb4d082286",
+  "freeze_tree_sha": "905e13b018a896de9ee82238cd887620a2335966",
+  "owner_packet": "docs/governance/AG_ASIAN_SWEEP_V1_2_OWNER_DECISIONS.yaml",
+  "frozen_before_replay": true
+}

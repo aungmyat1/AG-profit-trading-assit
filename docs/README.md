@@ -6,6 +6,14 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[TG-SCOPE-POLICY-1](status/AG_TG_SCOPE_POLICY_1_STATUS_2026-10-08.md) records the tracked
+Telegram immediate-send ceiling, fail-closed host-local narrowing, and offline verification.
+
+[Regeneration first-PR bootstrap runbook](agents/REGEN_BOOTSTRAP.md) gives the owner's manual steps to open the first bot PR while `bootstrap_push` is denied.
+[Regeneration bot policy (PROPOSED)](governance/REGENERATION_BOT_POLICY.md) records the bootstrap exception and superseded-PR closure proposed for regeneration branches only, pending owner decision.
+[AGP-GITHUB-INTEGRATION-R5 regeneration](status/AGP_GITHUB_INTEGRATION_R5_REGEN_2026-10-09.md) records the PR-based regeneration workflow that implements AG_REGEN_OUTCOME_V1 and supersedes PR #91.
+[AGP-MERGE-GATE-RECOVERY-R3](status/AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md) records the PR-based regeneration contract, merge-gate post-merge states, and the PR #91 handoff.
+[AGP-MERGE-GATE-REMEDIATION-R2](status/AGP_MERGE_GATE_REMEDIATION_R2_2026-10-09.md) records the merge-gate F01–F02 repairs (its F03 is superseded by R3).
 [AGP-GRADE-01 offline M1 outcome grading](status/AGP_GRADE_01_STATUS_2026-10-08.md) records the store-native replay evaluator, fixture report, and bounded verification.
 [MT5 provider/evaluator R1 offline integration](status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md)
 records the M15 data contract, fixture verification and pending Windows live
@@ -26,6 +34,11 @@ four stale or ambiguous MT5 evidence artifacts and the stale mission label behin
 
 [Crypto V3 window preflight (2026-10-09)](status/AG_V1_CRYPTO_WINDOW_GATE_2026-10-09.md)
 records the pre-lock MT5 gate, DST boundary checks, and measured outside-window run.
+[Host schedule authority and always-on target (SCHED-R1)](status/AGP_HOST_SCHEDULE_R1_2026-10-08.md)
+records the installer as the authoritative schedule declaration source, the four separated schedule
+layers (declared / registered / observed / target), the redaction of host checkout roots, the
+recorded cadence and weekday/weekend drift, and the power-mode-aware heartbeat staleness rule.
+Declaration and capture only: `install_tasks.ps1 -Apply` was not run.
 
 This directory contains design contracts, implementation architecture, setup guidance,
 and dated verification evidence. Read documents according to their authority, not just
@@ -486,6 +499,8 @@ research eligibility. Its contract is
 - [`architecture/DETERMINISTIC_TRADING_SKILLS.md`](architecture/DETERMINISTIC_TRADING_SKILLS.md)
   — canonical separation of deterministic observations, strategy decisions, AI diagnostics,
   governance, and authorized execution.
+- [`architecture/THIRD_PARTY_STRATEGY_DEPENDENCIES.md`](architecture/THIRD_PARTY_STRATEGY_DEPENDENCIES.md)
+  — pinned strategy-library dependencies and upstream-change risks.
 
 Architecture descriptions do not override Strategy YAML, frozen specifications, or
 the execution gates in code and configuration.

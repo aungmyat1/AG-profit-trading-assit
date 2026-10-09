@@ -8,8 +8,13 @@ from __future__ import annotations
 from typing import List, Optional
 
 from .quality import FRESH, VALID
-from .strategy_adapter import (ADAPTER_BOX_INCOMPLETE, ADAPTER_SIGNAL, ADAPTER_SYMBOL_NOT_IN_CONTRACT,
-                               AdapterResult, ProposalScope)
+from .strategy_adapter import (
+    ADAPTER_BOX_INCOMPLETE,
+    ADAPTER_SIGNAL,
+    ADAPTER_SYMBOL_NOT_IN_CONTRACT,
+    AdapterResult,
+    ProposalScope,
+)
 
 PASS, FAIL = "PASS", "FAIL"
 NOT_AUTHORIZED = "NOT_AUTHORIZED"

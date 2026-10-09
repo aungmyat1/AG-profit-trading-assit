@@ -21,8 +21,8 @@ from crypto_opportunity_scanner.scanner import (
     scan_live_once,
     scan_window,
 )
-from opportunity.candidate_store import CandidateStore
 from execution_runtime.bybit_linear_perp_feed import BybitFeedRequestError
+from opportunity.candidate_store import CandidateStore
 from strategy_engine.session import Candle
 
 

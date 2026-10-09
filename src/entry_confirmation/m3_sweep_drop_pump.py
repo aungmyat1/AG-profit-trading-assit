@@ -55,7 +55,12 @@ from typing import Optional, Sequence, Tuple
 
 from liquidity import level_id
 from liquidity.models import LiquidityLevel, LiquiditySide
-from market_structure import MarketStructureConfig, StructurePointKind, StructureResult, structural_breaks_for_candles
+from market_structure import (
+    MarketStructureConfig,
+    StructurePointKind,
+    StructureResult,
+    structural_breaks_for_candles,
+)
 from strategy_engine.session import Candle
 from supply_demand import ValidatedOrderBlock, ZoneResult
 

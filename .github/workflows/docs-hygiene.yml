@@ -20,5 +20,3 @@ jobs:
         run: python scripts/docs/apply_frontmatter.py --check || echo "::warning::docs missing front-matter"
       - name: Stale / unclassified / duplicate-topic docs (warn)
         run: python scripts/docs/stale_check.py
-      - name: Context pack freshness (warn)
-        run: python scripts/docs/build_context_pack.py --check || echo "::warning::docs/agents/CONTEXT_PACK.md is stale; run scripts/docs/build_context_pack.py"

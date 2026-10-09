@@ -1,0 +1,115 @@
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+strategy_name: Asian Session Liquidity Sweep 5R
+strategy_family: Liquidity_Sweep
+version: 1.2.0
+status: LOGIC_FREEZE
+authority: PROPOSAL_ONLY_MANUAL_TICKET
+session_anchor: FIXED_UTC
+timeframe: M15
+instruments: [EURUSD, GBPUSD, USDJPY, XAUUSD]
+excluded_instruments: [AUDUSD]
+
+session_pairs:
+  - pair_id: ASIAN_LONDON
+    reference_session:
+      name: Asian
+      start_time_utc: "00:00"
+      end_time_utc: "06:00"
+      interval: HALF_OPEN
+      source: CLOSED_BARS_ONLY
+      high: MAX_HIGH
+      low: MIN_LOW
+      immutable_after_close: true
+    trade_session:
+      name: London_Open
+      start_time_utc: "07:00"
+      end_time_utc: "11:00"
+      interval: HALF_OPEN
+      max_entries_per_session: 1
+      invalidation_at: SESSION_END
+
+setup:
+  regime: SWEEP_ONLY
+  setup_type: LIQUIDITY_SWEEP_RECLAIM
+  first_qualifying_candle_only: true
+  ambiguous_dual_side_sweep: REJECT
+  ambiguous_reason: AMBIGUOUS_DUAL_SWEEP
+  long:
+    direction: LONG
+    sweep: candle.low < reference.low
+    reclaim: candle.close > reference.low
+    entry: CONFIRMATION_CANDLE_CLOSE
+    stop: entry - ((reference.high - reference.low) * 0.25)
+    wick_clear_required: "stop_loss <= candle.low"
+  short:
+    direction: SHORT
+    sweep: candle.high > reference.high
+    reclaim: candle.close < reference.high
+    entry: CONFIRMATION_CANDLE_CLOSE
+    stop: entry + ((reference.high - reference.low) * 0.25)
+    wick_clear_required: "stop_loss >= candle.high"
+  confirmation:
+    candle_must_be_closed: true
+    decision_time: CONFIRMATION_CANDLE_CLOSE_TIME
+    no_future_data: true
+
+rejection_reasons:
+  no_trigger: AWAITING_TRIGGER
+  dual_sweep: AMBIGUOUS_DUAL_SWEEP
+  zero_or_negative_reference_range: INVALID_REFERENCE_RANGE
+  wick_clear: SL_DOES_NOT_CLEAR_SWEEP_EXTREME
+  target_order: INVALID_TARGET_ORDER
+  spread_absolute: SPREAD_ABSOLUTE_EXCEEDED
+  spread_r: SPREAD_R_EXCEEDED
+
+risk_and_cost:
+  owner_risk_pct: 0.5
+  signal_generation_independent_of_risk_pct: true
+  stop_loss_mode: PERCENT_OF_REFERENCE_RANGE
+  stop_loss_range_pct: 0.25
+  spread:
+    pip_sizes:
+      EURUSD: 0.0001
+      GBPUSD: 0.0001
+      USDJPY: 0.01
+      XAUUSD: 0.1
+    max_pips: 2.0
+    max_R: 0.15
+    both_must_pass: true
+  commission:
+    unavailable_value: UNKNOWN
+    blocking: false
+    advisory: true
+  sizing_metadata_required: [tick_size, tick_value, lot_step, volume_min, volume_max]
+  missing_sizing_metadata: RISK_METADATA_MISSING
+
+position_split_and_targets:
+  target_order:
+    long: "SL < ENTRY < TP1 <= TP2"
+    short: "SL > ENTRY > TP1 >= TP2"
+    invalid_action: REJECT
+  legs:
+    - leg_id: 1
+      volume_pct: 0.75
+      target_type: OPPOSITE_REFERENCE_BOUNDARY
+      action_on_fill: MOVE_REMAINING_STOP_TO_BREAKEVEN
+    - leg_id: 2
+      volume_pct: 0.25
+      target_type: FIXED_R_MULTIPLE
+      fixed_r_multiple: 5.0
+      action_on_fill: EXIT_REMAINDER
+
+expiry:
+  duration_minutes: 15
+  valid_interval: "decision_time <= now < expiry_time"
+  boundary_at_expiry: EXPIRED
+
+lifecycle:
+  reference_ready_session_active_no_trigger: AWAITING_TRIGGER
+  watch_actionable: false
+  automatic_execution: false
+  demo_authorized: false
+  live_authorized: false
+
+economic_status: NOT_VERIFIED
+edge_status: NOT_VERIFIED

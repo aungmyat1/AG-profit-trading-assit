@@ -1,0 +1,37 @@
+name: PR merge readiness audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 3 * * 1-5"
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+  checks: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Collect readiness evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/governance/audit_pr_readiness.py --json "$RUNNER_TEMP/pr-merge-readiness.json" --markdown "$RUNNER_TEMP/pr-merge-readiness.md"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr-merge-readiness-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/pr-merge-readiness.json
+            ${{ runner.temp }}/pr-merge-readiness.md
+          if-no-files-found: warn
