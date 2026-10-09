@@ -301,6 +301,10 @@ powershell -ExecutionPolicy Bypass -File scripts\host\verify_tasks.ps1
 The same FX task also builds MANUAL trade tickets (owner decides; never an order), writes a
 scan record for every symbol, resolves `VIRTUAL_FORWARD` outcomes once a day, and archives a
 daily report. Owner risk % has no default: set it in `config/local/owner_ticket.yaml`.
+When delivery is explicitly enabled, `TICKET_READY` manual tickets include inline Accept /
+Reject controls. Accept records owner intent and remains blocked from execution by the
+default-off authority gates; Reject records without a handoff. Telegram callback handling
+is unit-tested, not host-verified.
 
 ```powershell
 python scripts\manual_ticket_decision.py --date 2026-10-06 --ticket-id <id> --decision SKIPPED --reason NEWS

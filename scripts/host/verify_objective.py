@@ -181,13 +181,16 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
         and canonical_send_ok
         and scoped == {"TICKET": ("READY",), "LSMC": ("OPPORTUNITY",)}
         and tuple(telegram.SCOPES) == ("TICKET_READY", "LSMC_OPPORTUNITY")
-        and runner_src.count("if new and notify:") == 2 and "reply_markup" not in runner_src
+        and runner_src.count("if new and notify:") == 2
+        and "if manual_new and notify and manual[\"state\"] == \"TICKET_READY\":" in runner_src
+        and "reply_markup=confirmation_markup" in runner_src
         and canonical_opt_in,
         f"legacy effective={list(legacy_scope['effective'])} error={legacy_scope['error']}; "
         f"canonical effective={list(canonical_scope)} error={canonical_config.scope_error}; "
         f"policy={list(policy_enabled)}; ticket={list(scoped['TICKET'])} lsmc={list(scoped['LSMC'])}; "
         f"canonical_send_results={canonical_results}; "
-        f"canonical_opt_in={canonical_opt_in}",
+        f"canonical_opt_in={canonical_opt_in} "
+        "(legacy scopes stay message-only; manual inline controls require newly-archived TICKET_READY)",
     ))
 
     failures = [item["check"] for item in checks if item["status"] == "FAIL"]
