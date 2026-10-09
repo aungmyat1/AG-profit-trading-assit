@@ -117,6 +117,35 @@
   },
   {
     "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-INFO_ONLY_SUPPRESSED",
+    "decision": "INFO_ONLY_SUPPRESSED",
+    "presentation": "INFO_ONLY",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "READY_AUTHORITY_OFF_D6",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "INFO_ONLY_SUPPRESSED",
+      "reason": "READY_AUTHORITY_OFF_D6"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
     "ticket_id": "fixture-INFO_ONLY_STALE",
     "decision": "INFO_ONLY_STALE",
     "presentation": "INFO_ONLY",

@@ -6,6 +6,14 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[TG-SCOPE-POLICY-1](status/AG_TG_SCOPE_POLICY_1_STATUS_2026-10-08.md) records the tracked
+Telegram immediate-send ceiling, fail-closed host-local narrowing, and offline verification.
+
+[Regeneration first-PR bootstrap runbook](agents/REGEN_BOOTSTRAP.md) gives the owner's manual steps to open the first bot PR while `bootstrap_push` is denied.
+[Regeneration bot policy (PROPOSED)](governance/REGENERATION_BOT_POLICY.md) records the bootstrap exception and superseded-PR closure proposed for regeneration branches only, pending owner decision.
+[AGP-GITHUB-INTEGRATION-R5 regeneration](status/AGP_GITHUB_INTEGRATION_R5_REGEN_2026-10-09.md) records the PR-based regeneration workflow that implements AG_REGEN_OUTCOME_V1 and supersedes PR #91.
+[AGP-MERGE-GATE-RECOVERY-R3](status/AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md) records the PR-based regeneration contract, merge-gate post-merge states, and the PR #91 handoff.
+[AGP-MERGE-GATE-REMEDIATION-R2](status/AGP_MERGE_GATE_REMEDIATION_R2_2026-10-09.md) records the merge-gate F01–F02 repairs (its F03 is superseded by R3).
 [AGP-GRADE-01 offline M1 outcome grading](status/AGP_GRADE_01_STATUS_2026-10-08.md) records the store-native replay evaluator, fixture report, and bounded verification.
 [MT5 provider/evaluator R1 offline integration](status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md)
 records the M15 data contract, fixture verification and pending Windows live
@@ -15,6 +23,17 @@ acceptance. It grants no execution or economic authority.
 records Demo verification of quote-time normalization, exact M15 windows, and
 the eight-record evaluator smoke. It does not establish a trade opportunity or
 execution authority.
+
+[AGP Host Ticket Delivery R1 (FAST)](status/AGP_HOST_TICKET_DELIVERY_R1_FAST_2026-10-08.md)
+records the scheduled canonical FX path from read-only MT5 Demo candles through durable
+TICKET_STORE_V1 records to the delivery/session journals, its offline test evidence, and the
+Windows host acceptance that remains NOT_EVALUATED. It grants no execution or economic authority.
+
+[AGP Evidence Integrity R1](status/AGP_EVIDENCE_INTEGRITY_R1.md) reconciles and quarantines the
+four stale or ambiguous MT5 evidence artifacts and the stale mission label behind the R2 contract.
+
+[Crypto V3 window preflight (2026-10-09)](status/AG_V1_CRYPTO_WINDOW_GATE_2026-10-09.md)
+records the pre-lock MT5 gate, DST boundary checks, and measured outside-window run.
 
 This directory contains design contracts, implementation architecture, setup guidance,
 and dated verification evidence. Read documents according to their authority, not just
@@ -79,6 +98,16 @@ outcomes, daily report) and the L2 finding that frozen v1.1.1 is not logic-verif
 The [Crypto CFD Scanner V1 observation status](status/AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS.md)
 records the merged BTCUSD/ETHUSD read-only observation path, live Demo market-data
 validation, incomplete CFD strategy/risk authority, and execution boundary.
+
+The [Edge Discovery R2 status](status/AG_EDGE_DISCOVERY_ACCELERATION_R2_STATUS.md)
+records the local-only immutable Crypto-CFD ingestion/quality/partition/firewall factory
+and its current dataset-unavailable boundary. The exporter input contract is
+[`../research/edge_discovery/OFFLINE_DATASET_INGESTION_CONTRACT.md`](../research/edge_discovery/OFFLINE_DATASET_INGESTION_CONTRACT.md).
+
+The [Crypto-CFD eligibility/quarantine R1 status](status/AG_CRYPTO_CFD_RESEARCH_ELIGIBILITY_R1_STATUS.md)
+records the strict separation between raw unknown-gap quality and complete-window
+research eligibility. Its contract is
+[`../research/edge_discovery/RESEARCH_WINDOW_ELIGIBILITY_CONTRACT.md`](../research/edge_discovery/RESEARCH_WINDOW_ELIGIBILITY_CONTRACT.md).
 
 1. [`../README.md`](../README.md) — project purpose, safety model, quick start, and map.
 2. [`../AGENTS.md`](../AGENTS.md) — mandatory rules for agents working in this repository; see also [agent invariants](agents/INVARIANTS.md) (v1).
@@ -598,6 +627,11 @@ observations from the named milestone; they are not rolling dashboards.
   [`status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md`](status/AG_V1_0_3_BTC_DAILY_OPERATIONALIZATION_V1_STATUS.md)
   (frozen UTC contract, public/read-only Bybit adapter, production-data-connectivity-confirmed scheduler-ready
   daily decision and informational proposal-ticket path; crypto execution disabled)
+- Crypto CFD strategy contract: [`contracts/AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1.md`](contracts/AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1.md)
+  (deterministic `CRYPTO_CFD` contract for the VT Markets BTCUSD/ETHUSD CFDs, `strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml`;
+  no perp reuse, no FX leakage, evaluation-time causal filtering on every supplied timeframe. Contract
+  registration only — scanner wiring, `EDGE_VERIFIED`, risk authority and execution authority all remain
+  absent, and it authorizes no Demo order)
 
 When a historical test total differs from the current baseline, retain the historical
 number and use `PROJECT_STATUS.md` for the latest result.

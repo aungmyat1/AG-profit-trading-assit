@@ -1,19 +1,21 @@
 {
   "input_paths": [
     "config/ag_scheduler_v2.yaml",
+    "config/ticket_delivery.yaml",
     "docs/PROJECT_OBJECTIVE.md",
     "docs/agents/INVARIANTS.md",
     "docs/governance/OWNER_DECISION_REGISTER.md",
     "docs/v2/AG_V2_BASELINE_MANIFEST_V1.supersession.yaml",
     "scripts/docs/advisory_allowlist.json",
     "strategies/ST_ASIAN_SWEEP_5R_V1.yaml",
+    "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml",
     "strategies/ST_LARGE_SMC_V1.yaml",
     "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
     "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
     "strategies/registry.yaml",
     "strategies/session_trade/contract.yaml"
   ],
-  "inputs_sha256": "a50e8271a10ac16668c6d64b2ea5d4482d18e84ea4e978bf8bd1df55ffce3933",
+  "inputs_sha256": "df99626b53473bdffe70e7109ea9f5f9cea06d02396e305c40687b87556c0cab",
   "objective": {
     "source": "docs/PROJECT_OBJECTIVE.md#objective",
     "text": "Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.\n\nThe owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.\n\n`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
@@ -23,7 +25,7 @@
       "docs/governance/OWNER_DECISION_REGISTER.md"
     ],
     "invariants_present": true,
-    "pending_decisions": 11
+    "pending_decisions": 13
   },
   "schedule": {
     "scheduler": "AG_DAILY_OPPORTUNITY_SCHEDULER_V2",
@@ -178,6 +180,22 @@
         "evidence_source": null,
         "value": null
       },
+      "id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "version": "1.0.0"
+    },
+    {
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "id": "ST_LARGE_SMC_V1",
       "logic_verified": {
         "evidence_source": null,
@@ -217,5 +235,15 @@
       },
       "version": "1.0.1"
     }
-  ]
+  ],
+  "telegram_scope": {
+    "immediate_send_enabled": [
+      "TICKET_READY",
+      "LSMC_OPPORTUNITY"
+    ],
+    "informational_disabled": {
+      "INFO_ONLY_*": "PENDING_OWNER_DECISION C16",
+      "WATCH_READY": "PENDING_OWNER_DECISION C16"
+    }
+  }
 }

@@ -1,0 +1,14 @@
+{
+  "candidate_id": "CRYPTO_CFD_C001",
+  "friction_file": "src/edge_discovery/friction.py",
+  "friction_file_sha256": "383c62380a4d6fe1362014ac4a87885c20fd9fb4e8d5f710de9f77d16b33632d",
+  "friction_model_id": "CRYPTO_CFD_SPREAD_SCENARIOS_V1",
+  "mutation_rule": "Any scenario/model change after C001 results is a new candidate/version; C001 remains immutable.",
+  "scenarios": {
+    "BASE": 1.0,
+    "SEVERE": 4.0,
+    "STRESS": 2.0
+  },
+  "schema_version": "AG_EDGE_DISCOVERY_FRICTION_FREEZE_V1",
+  "screen_scenario": "BASE"
+}

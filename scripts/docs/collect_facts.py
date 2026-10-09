@@ -52,6 +52,8 @@ def collect(root: Path) -> dict[str, Any]:
     }
 
     objective = read_objective(root / "docs" / "PROJECT_OBJECTIVE.md", recorder)
+    delivery_config = yaml.safe_load(recorder.read_text(root / "config" / "ticket_delivery.yaml")) or {}
+    tracked_scope = delivery_config.get("immediate_send_scope") or {}
     # These policy authorities are read by the docs gate; keep their freshness covered too.
     json.loads(recorder.read_text(root / "scripts/docs/advisory_allowlist.json"))
     for relative in sorted(recorder.tracked):
@@ -76,6 +78,10 @@ def collect(root: Path) -> dict[str, Any]:
         "objective": objective,
         "strategies": strategies,
         "schedule": schedule,
+        "telegram_scope": {
+            "immediate_send_enabled": tracked_scope.get("enabled", []),
+            "informational_disabled": tracked_scope.get("disabled", {}),
+        },
     }
 
 
@@ -94,7 +100,7 @@ def main() -> int:
         print("FACTS_FRESH" if fresh else "FACTS_STALE")
         return 0 if fresh else 1
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(content, encoding="utf-8")
+    out.write_text(content, encoding="utf-8", newline="\n")
     return 0
 
 

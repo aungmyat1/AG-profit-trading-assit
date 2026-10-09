@@ -1,0 +1,65 @@
+{
+  "mission": "AG_ASIAN_SWEEP_V1_2_EVIDENCE_SEAL_AND_BLIND_PARITY_R3",
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "strategy_version": "1.2.0",
+  "contract_hash": "c96221e69ad10bd016d072688c3cf791caaac9afe4bdb74be289cc50f5b34770",
+  "freeze_sha": "6c483fd834e772f9f41179ef939dd4eb4d082286",
+  "freeze_identity_match": "PASS",
+  "dataset": {
+    "dataset_id": "AG_ASIAN_SWEEP_V1_2_R3_LOGIC_PARITY_001",
+    "dataset_sha256": "a3c1ee5b04792dcea4defbd868cb0ed1a048927deddb68b9b67ecf842856fd80",
+    "dataset_freeze_commit": "6cc247ed3397d91746a7fea2514f7dd635d801bd",
+    "source_rows_total": 23,
+    "asian_london_admitted": 3,
+    "out_of_scope_excluded": 9,
+    "insufficient_data_excluded": 11,
+    "logic_parity_cases": 3,
+    "full_cost_cases": 0
+  },
+  "blind_reference_isolation": "BLOCKED_SEPARATE_AGENT_CONTEXT_UNAVAILABLE",
+  "reference_engine_parity": "NOT_RUN",
+  "parity_cases": 0,
+  "parity_mismatches": null,
+  "r2_proof_regression": "PASS_87_TESTS",
+  "proofs": {
+    "entry_close": "PASS",
+    "stop_25_percent": "PASS",
+    "wick_clear": "PASS",
+    "target_order": "PASS",
+    "split_exit": "PASS",
+    "expiry": "PASS",
+    "fixed_utc": "PASS",
+    "future_mutation": "PASS",
+    "streaming_parity": "PASS",
+    "determinism": "PASS"
+  },
+  "spread_evidence": {
+    "spread_cases_total": 3,
+    "spread_authority_present": 0,
+    "spread_authority_missing": 3,
+    "absolute_spread_pass": "N/A",
+    "relative_spread_pass": "N/A",
+    "both_pass": "N/A",
+    "full_historical_l5_cost_evidence": "MISSING"
+  },
+  "core_logic_funnel": [
+    {"stage":"REFERENCE_VALID","n":3,"pct_prior":100.0,"pct_admitted":100.0},
+    {"stage":"SWEEP_VALID","n":3,"pct_prior":100.0,"pct_admitted":100.0},
+    {"stage":"ENTRY_CONFIRM","n":3,"pct_prior":100.0,"pct_admitted":100.0},
+    {"stage":"STOP_FORMULA","n":3,"pct_prior":100.0,"pct_admitted":100.0},
+    {"stage":"WICK_CLEAR","n":1,"pct_prior":33.3333,"pct_admitted":33.3333},
+    {"stage":"TARGET_ORDER","n":1,"pct_prior":100.0,"pct_admitted":33.3333},
+    {"stage":"CORE_LOGIC_PASS","n":1,"pct_prior":100.0,"pct_admitted":33.3333}
+  ],
+  "full_ticket_funnel": [
+    {"stage":"SPREAD_AUTHORITY_AVAILABLE","n":0,"pct_prior":0.0,"pct_admitted":0.0},
+    {"stage":"SPREAD_PASS","n":"N/A","pct_prior":"N/A","pct_admitted":"N/A"},
+    {"stage":"FULL_TICKET_ELIGIBILITY","n":"NOT_EVALUATED","pct_prior":"N/A","pct_admitted":"N/A"}
+  ],
+  "broker_mutation_count": 0,
+  "logic_verified": false,
+  "ticket_ready_authority": false,
+  "economic_status": "NOT_VERIFIED",
+  "edge_status": "NOT_VERIFIED",
+  "blockers": ["BLIND_REFERENCE_ISOLATION_REQUIRED"]
+}

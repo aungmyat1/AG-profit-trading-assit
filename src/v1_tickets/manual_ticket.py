@@ -297,13 +297,20 @@ def _meta_note(prov: Optional[Dict[str, Any]]) -> str:
 
 def render_text(t: Dict[str, Any]) -> str:
     """Plain text in the owner's layout. Delivered only through the existing channel."""
+    display_state = t["state"]
+    display_reason = t.get("primary_block_reason")
+    if display_state == TICKET_READY and t.get("logic_status") != "LOGIC_VERIFIED":
+        display_state = TICKET_BLOCKED
+        display_reason = display_reason or "LOGIC_STATUS_NOT_VERIFIED"
     lines = [
         "AG TRADE TICKET — MANUAL DECISION",
         f"#{t['ticket_id']}  Strategy {t['strategy']}  Session {t['session']}",
-        f"State       {t['state']}" + (f" ({t['primary_block_reason']})" if t.get("primary_block_reason") else "")
+        f"State       {display_state}" + (f" ({display_reason})" if display_reason else "")
         + (f"  also: {', '.join(t['block_reasons'][1:])}" if len(t.get("block_reasons") or []) > 1 else "")
         + (f"  warn: {', '.join(t['warnings'])}" if t.get("warnings") else ""),
         f"Logic gate  {gate_line(t)}",
+        f"logic_status: {t['logic_status']}",
+        "EDGE_VERIFIED=FALSE",
         f"Logic status {t['logic_status']} (strategy)   Economic {t['economic_status']}",
         f"Edge status {t['edge_status']}",
         f"Authority   {t['authority']}",
@@ -329,6 +336,52 @@ def render_text(t: Dict[str, Any]) -> str:
         f"{t['invalid_if']['time_invalidation_utc']}",
     ]
     return "\n".join(lines)
+
+
+def render_market_structure(t: Dict[str, Any], *, unicode_safe: bool = True) -> str:
+    """Render validated ticket levels as a mobile-safe scenario diagram.
+
+    This is presentation only: levels are copied from the ticket and never calculated or
+    repaired here. Incomplete or non-actionable geometry fails gracefully. The word
+    ``SCENARIO`` is deliberate; the diagram is not a price forecast or broker order.
+    """
+    direction = t.get("direction")
+    entry, sl, tp1, tp2 = (t.get("entry"), t.get("sl"), t.get("tp1"), t.get("tp2"))
+    if direction not in ("LONG", "SHORT") or any(v is None for v in (entry, sl, tp1, tp2)):
+        return "MARKET STRUCTURE UNAVAILABLE — incomplete validated levels" if unicode_safe else \
+            "MARKET STRUCTURE UNAVAILABLE - incomplete validated levels"
+    valid = (sl < entry < tp1 <= tp2) if direction == "LONG" else (sl > entry > tp1 >= tp2)
+    if not valid:
+        return "MARKET STRUCTURE UNAVAILABLE — invalid level geometry" if unicode_safe else \
+            "MARKET STRUCTURE UNAVAILABLE - invalid level geometry"
+
+    rule = "─────────" if unicode_safe else "---------"
+    arrow = "▲" if direction == "LONG" and unicode_safe else "▼" if unicode_safe else \
+        "^" if direction == "LONG" else "v"
+    liquidity = "SWEEP LOW" if direction == "LONG" else "SWEEP HIGH"
+    setup = t.get("setup") or "VALIDATED TRIGGER"
+    return "\n".join([
+        f"{t.get('symbol', 'UNKNOWN')} {direction} — MARKET STRUCTURE SCENARIO"
+        if unicode_safe else f"{t.get('symbol', 'UNKNOWN')} {direction} - MARKET STRUCTURE SCENARIO",
+        "NOT A PRICE FORECAST | BROKER ORDER: NONE", "",
+        f"{_p(tp2):>12}  {rule} TP2", f"{'':>16}{arrow}",
+        f"{_p(tp1):>12}  {rule} TP1", f"{'':>16}{arrow}",
+        f"{_p(entry):>12}  {rule} ENTRY", f"{'':>16}{arrow}",
+        f"{_p(sl):>12}  {rule} SL  {liquidity}", "",
+        f"Scenario: Liquidity Sweep -> {setup} -> Proposed Entry -> Liquidity Objective",
+        f"Invalidation: {t.get('invalid_if') or 'UNAVAILABLE'}",
+        f"Expiration: {t.get('valid_until') or 'UNAVAILABLE'}",
+        "OWNER DECISION REQUIRED | EXECUTION AUTHORIZED = FALSE",
+    ])
+
+
+def render_mobile(t: Dict[str, Any], *, layout: str = "COMPACT", unicode_safe: bool = True) -> str:
+    """Owner-selectable compact or expanded manual-ticket text."""
+    if layout == "COMPACT":
+        return render_text(t)
+    if layout == "EXPANDED":
+        return render_text(t) + "\n\n" + render_market_structure(t, unicode_safe=unicode_safe)
+    raise ValueError("layout must be COMPACT or EXPANDED")
 
 
 def content_hash(ticket: Dict[str, Any]) -> str:

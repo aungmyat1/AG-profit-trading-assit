@@ -19,11 +19,12 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 
 LOG = logging.getLogger(__name__)
 STATUSES = frozenset({"WATCH_READY", "INFO_ONLY_STALE", "INFO_ONLY_INSUFFICIENT_REMAINING_R",
-                      "INFO_ONLY_POLICY_UNRESOLVED", "NO_TRADE", "EXPIRED", "MISSED",
-                      "BLOCKED", "INSUFFICIENT_DATA", "OUT_OF_SESSION"})
+                      "INFO_ONLY_POLICY_UNRESOLVED", "INFO_ONLY_SUPPRESSED", "NO_TRADE",
+                      "EXPIRED", "MISSED", "BLOCKED", "INSUFFICIENT_DATA", "OUT_OF_SESSION"})
 STATE_PENDING = "pending"
 STATE_SENT = "sent"
 STATE_DELIVERED = "DELIVERED"
@@ -46,26 +47,48 @@ def value(ticket, *path):
     return " ".join(str(current).splitlines())
 
 
+def _known_decision(decision):
+    return isinstance(decision, str) and decision in STATUSES
+
+
+def _informational_scope(decision):
+    """WATCH_READY and non-suppressed INFO_ONLY_* -- gated by the C16 scope flag."""
+    return isinstance(decision, str) and decision != "INFO_ONLY_SUPPRESSED" and (
+        decision == "WATCH_READY" or decision.startswith("INFO_ONLY_"))
+
+
+def displayed_decision(ticket):
+    decision = ticket.get("decision")
+    if decision in {"READY", "TICKET_READY", "WATCH_READY"} and ticket.get("logic_status") != "LOGIC_VERIFIED":
+        return "NOT_READY"
+    return decision
+
+
 def validate(ticket):
     if ticket.get("schema") != "AG_CANONICAL_TICKET_V1":
         raise ValueError("Unsupported canonical schema")
-    if ticket.get("decision") not in STATUSES:
+    if not _known_decision(ticket.get("decision")):
         raise ValueError("Unsupported canonical decision")
     if not isinstance(ticket.get("ticket_id"), str) or not ticket["ticket_id"]:
         raise ValueError("SCHEMA_GAP: ticket_id")
 
 
 def footer(ticket):
-    return [f"Logic: {value(ticket, 'logic_status')}",
+    logic_status = value(ticket, 'logic_status')
+    actionability_decision = value(ticket, 'actionability', 'decision')
+    actionability_reason = value(ticket, 'actionability', 'reason')
+    if logic_status != "LOGIC_VERIFIED" and actionability_decision in {"READY", "TICKET_READY", "WATCH_READY"}:
+        actionability_decision, actionability_reason = "NOT_READY", "LOGIC_STATUS_NOT_VERIFIED"
+    return [f"logic_status: {logic_status}",
             f"Edge: {value(ticket, 'economic_edge')} ({value(ticket, 'economic_status')})",
-            f"Actionability: {value(ticket, 'actionability', 'decision')} / "
-            f"{value(ticket, 'actionability', 'reason')}", "EXECUTION: DISABLED"]
+            f"Actionability: {actionability_decision} / {actionability_reason}",
+            "EDGE_VERIFIED=FALSE", "EXECUTION: DISABLED"]
 
 
 def render_ticket(ticket):
     validate(ticket)
     lines = [f"Ticket: {ticket['ticket_id']}",
-             f"{value(ticket, 'instrument')} | {ticket['decision']} | {value(ticket, 'direction')}",
+             f"{value(ticket, 'instrument')} | {displayed_decision(ticket)} | {value(ticket, 'direction')}",
              f"Session: {value(ticket, 'session_date')} / {value(ticket, 'session')}",
              f"Reason: {value(ticket, 'reason_code')}", "Levels (supplied prices only):"]
     for label, key in (("TP2", "tp2"), ("TP1", "tp1"), ("NOW", "current_send"),
@@ -85,8 +108,8 @@ def render_summary(tickets, uncertain=()):
     lines = ["Session summary", f"Rows: {len(tickets)}"]
     for index, ticket in enumerate(tickets, 1):
         lines.append(f"{index}. {ticket['ticket_id']} | {value(ticket, 'instrument')} | "
-                     f"{ticket['decision']} | {value(ticket, 'reason_code')} | "
-                     + " | ".join(footer(ticket)[:3]))
+                     f"{displayed_decision(ticket)} | {value(ticket, 'reason_code')} | "
+                     + " | ".join(footer(ticket)[:3] + footer(ticket)[3:4]))
     uncertain = list(uncertain)
     if uncertain:
         lines.append("Uncertain delivery:")
@@ -95,7 +118,64 @@ def render_summary(tickets, uncertain=()):
             status = item.get("status", "") if isinstance(item, dict) else item[1]
             lines.append(f"- possibly undelivered: {identity} | {status} | {STATE_UNCERTAIN}")
     lines += ["Logic: see each row", "Edge: see each row", "Actionability: see each row",
+              "EDGE_VERIFIED=FALSE",
               "EXECUTION: DISABLED"]
+    return "\n".join(lines)
+
+
+def render_session_summary(summary):
+    """Render one deterministic per-session digest from already-aggregated durable facts."""
+    if summary.get("schema") != "AGP_HOST_TICKET_DELIVERY_R1_SESSION_SUMMARY_V1":
+        raise ValueError("Unsupported session summary schema")
+    session_date, session = summary.get("session_date"), summary.get("session")
+    if not isinstance(session_date, str) or not session_date or not isinstance(session, str) or not session:
+        raise ValueError("SCHEMA_GAP: session identity")
+    expected, recorded = summary.get("expected_evaluations"), summary.get("recorded_evaluations")
+    if not isinstance(expected, int) or isinstance(expected, bool) or expected < 0:
+        raise ValueError("SCHEMA_GAP: expected_evaluations")
+    if not isinstance(recorded, int) or isinstance(recorded, bool) or recorded < 0 or recorded > expected:
+        raise ValueError("Invalid recorded_evaluations")
+    terminal = summary.get("terminal_counts") or {}
+    delivery = summary.get("delivery_counts") or {}
+    lines = ["Canonical FX session summary -- INFORMATIONAL",
+             f"Session: {session_date} / {session}",
+             f"Durable evaluations: {recorded}/{expected}",
+             f"Session status: {value(summary, 'status')}", "Terminal outcomes:"]
+    nonzero = [(state, terminal.get(state, 0)) for state in sorted(STATUSES) if terminal.get(state, 0)]
+    compatibility_count = summary.get("compatibility_error_count", terminal.get("COMPATIBILITY_ERROR", 0))
+    if compatibility_count:
+        nonzero.append(("COMPATIBILITY_ERROR", compatibility_count))
+    lines += [f"- {state}: {count}" for state, count in nonzero] or ["- none recorded"]
+    missed = list(summary.get("missed_pairs") or ())
+    missed_count = summary.get("missed_count", len(missed))
+    if not isinstance(missed_count, int) or isinstance(missed_count, bool) or missed_count < 0:
+        raise ValueError("Invalid missed_count")
+    lines.append(f"Missing scheduled evaluations (MISSED): {missed_count}")
+    for item in missed:
+        lines.append(f"- MISSED {item.get('symbol', 'SCHEMA_GAP')} | {item.get('reason_code', 'SCHEMA_GAP')}")
+    out_of_session = list(summary.get("out_of_session_pairs") or ())
+    lines.append(f"Out-of-session pairs: {len(out_of_session)}")
+    for item in out_of_session:
+        lines.append(f"- OUT_OF_SESSION {item.get('symbol', 'SCHEMA_GAP')} | "
+                     f"{item.get('reason_code', 'SCHEMA_GAP')}")
+    lines.append(f"Data failures: {summary.get('data_failure_count', 0)}")
+    lines.append(f"Delivery enabled: {str(bool(summary.get('delivery_enabled', False))).lower()}")
+    lines.append(f"TICKET_STORE persistence failures: {summary.get('persistence_failure_count', 0)}")
+    lines.append(f"Compatibility errors: {summary.get('compatibility_error_count', 0)}")
+    for label, key in (("SUCCEEDED", "succeeded"), ("FAILED", "failed"),
+                       ("UNCERTAIN", "uncertain"), ("DISABLED", "disabled"),
+                       ("BLOCKED", "blocked"), ("SUMMARY_ONLY", "summary_only"),
+                       ("PERSISTENCE_FAILED", "persistence_failed"), ("NOT_ATTEMPTED", "not_attempted")):
+        count = delivery.get(key, 0)
+        if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+            raise ValueError(f"Invalid delivery count {key}")
+        lines.append(f"Delivery {label}: {count}")
+    uncertain = list(summary.get("uncertain_deliveries") or ())
+    if uncertain:
+        lines.append("Possibly undelivered (no automatic retry):")
+        for item in sorted(uncertain, key=lambda x: (str(x.get("identity", "")), str(x.get("status", "")))):
+            lines.append(f"- {item.get('identity', 'SCHEMA_GAP')} | {item.get('status', STATE_UNCERTAIN)}")
+    lines.append("EXECUTION: DISABLED")
     return "\n".join(lines)
 
 
@@ -105,13 +185,21 @@ class Config:
     token: str = ""
     chat_id: str = ""
     owner_chat_ids: frozenset[str] = frozenset()
+    # C16 (OWNER_DECISION_REGISTER, PENDING_OWNER): WATCH_READY and non-suppressed INFO_ONLY_*
+    # are informational. They are sent (scheduled or owner-resent) only when this default-OFF
+    # flag is explicitly enabled; otherwise they stay archive/summary-only.
+    watch_info_scope: bool = False
+    immediate_scopes: frozenset[str] = frozenset()
+    scope_error: str | None = None
 
     @classmethod
-    def from_env(cls):
+    def from_env(cls, root="."):
+        scope = resolve_immediate_scope(root, sender="canonical")
         return cls(os.getenv("TELEGRAM_DELIVERY_ENABLED", "false").lower() == "true",
                    os.getenv("TELEGRAM_BOT_TOKEN", "").strip(),
                    os.getenv("TELEGRAM_CHAT_ID", "").strip(),
-                   frozenset(x.strip() for x in os.getenv("TELEGRAM_OWNER_CHAT_IDS", "").split(",") if x.strip()))
+                   frozenset(x.strip() for x in os.getenv("TELEGRAM_OWNER_CHAT_IDS", "").split(",") if x.strip()),
+                   immediate_scopes=frozenset(scope["effective"]), scope_error=scope["error"])
 
 
 def bot_api(token, chat_id, message):
@@ -181,7 +269,49 @@ class Sender:
             db.execute("ALTER TABLE sent ADD COLUMN actor TEXT")
         if "updated_at" not in cols:
             db.execute("ALTER TABLE sent ADD COLUMN updated_at TEXT")
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS compatibility_errors ("
+            "kind TEXT NOT NULL, identity TEXT NOT NULL, error_code TEXT NOT NULL, "
+            "observed_decision TEXT NOT NULL, expected_decisions TEXT NOT NULL, created_at TEXT NOT NULL, "
+            "PRIMARY KEY(kind, identity, observed_decision))"
+        )
         return db
+
+    def _record_compatibility_error(self, ticket):
+        decision = ticket.get("decision")
+        observed = str(decision)[:120] if decision is not None else "<missing>"
+        identity = ticket.get("ticket_id")
+        if not isinstance(identity, str) or not identity:
+            identity = "unkeyed:" + hashlib.sha256(
+                json.dumps(ticket, sort_keys=True, separators=(",", ":"), default=str).encode()
+            ).hexdigest()
+        expected = json.dumps(sorted(STATUSES), separators=(",", ":"))
+        try:
+            with self._connect() as db:
+                db.execute(
+                    "INSERT OR IGNORE INTO compatibility_errors "
+                    "(kind, identity, error_code, observed_decision, expected_decisions, created_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    ("ticket", identity, "UNKNOWN_CANONICAL_DECISION", observed, expected, _utc_now()),
+                )
+            LOG.error("Canonical delivery compatibility error: UNKNOWN_CANONICAL_DECISION identity=%s", identity)
+            return "compatibility_error"
+        except (OSError, sqlite3.Error):
+            LOG.error("Canonical compatibility diagnostic persistence failed; delivery stopped")
+            return "compatibility_error_unpersisted"
+
+    def compatibility_errors(self):
+        if not self.path.exists():
+            return []
+        with self._connect() as db:
+            rows = db.execute(
+                "SELECT kind, identity, error_code, observed_decision, expected_decisions, created_at "
+                "FROM compatibility_errors ORDER BY created_at, identity"
+            ).fetchall()
+        return [{"kind": kind, "identity": identity, "error_code": code,
+                 "observed_decision": observed, "expected_decisions": json.loads(expected),
+                 "created_at": created}
+                for kind, identity, code, observed, expected, created in rows]
 
     @contextmanager
     def _key_lock(self, kind, identity, status):
@@ -229,6 +359,27 @@ class Sender:
                 (STATE_UNCERTAIN,),
             ).fetchall()
         return [{"kind": k, "identity": i, "status": s, "error_class": e} for k, i, s, e in rows]
+
+    def delivery_attempts(self, kind, identities=()):
+        """Read durable attempt state without creating a journal or exposing credentials."""
+        if not self.path.exists():
+            return []
+        identities = tuple(sorted(set(identities)))
+        with self._connect() as db:
+            if identities:
+                marks = ",".join("?" for _ in identities)
+                rows = db.execute(
+                    f"SELECT identity, status, state, error_class, updated_at FROM sent "
+                    f"WHERE kind=? AND identity IN ({marks}) ORDER BY identity, status",
+                    (kind, *identities),
+                ).fetchall()
+            else:
+                rows = db.execute(
+                    "SELECT identity, status, state, error_class, updated_at FROM sent "
+                    "WHERE kind=? ORDER BY identity, status", (kind,)
+                ).fetchall()
+        return [{"identity": i, "status": s, "state": state, "error_class": error, "updated_at": at}
+                for i, s, state, error, at in rows]
 
     def _send(self, kind, identity, status, message, *, force=False, actor="", allow_duplicate=False):
         cfg = self.config
@@ -321,9 +472,25 @@ class Sender:
             return "failed"
 
     def send_ticket(self, ticket):
+        # The canonical store is written upstream before this router is called. Unknown taxonomy
+        # values fail closed and leave a durable compatibility diagnostic in this adapter journal.
+        if not _known_decision(ticket.get("decision")):
+            return self._record_compatibility_error(ticket)
         validate(ticket)
-        # Routing uses canonical decisions; presentation may be OTHER for policy-unresolved.
+        if self.config.scope_error:
+            LOG.error("Telegram scope rejected: %s", self.config.scope_error)
+            return "blocked"
+        # The authority-suppressed READY is durable but must never become an immediate alert.
+        if ticket["decision"] == "INFO_ONLY_SUPPRESSED":
+            return "summary_only"
+        # Other INFO_ONLY states remain explicitly informational (the renderer stamps execution
+        # disabled); terminal non-alert decisions are visible through the session summary only.
         if ticket["decision"] != "WATCH_READY" and not ticket["decision"].startswith("INFO_ONLY_"):
+            return "summary_only"
+        if self.config.immediate_scopes and ticket["decision"] not in self.config.immediate_scopes:
+            return "summary_only"
+        # Same C16 scope flag as owner resend: informational states stay summary-only unless enabled.
+        if not self.config.watch_info_scope:
             return "summary_only"
         return self._send("ticket", ticket["ticket_id"], ticket["decision"], render_ticket(ticket))
 
@@ -335,6 +502,11 @@ class Sender:
         identity = json.dumps([tickets[0]["session_date"], tickets[0]["session"]], separators=(",", ":"))
         return self._send("session", identity, "", message)
 
+    def send_session_summary(self, summary):
+        message = render_session_summary(summary)
+        identity = json.dumps([summary["session_date"], summary["session"]], separators=(",", ":"))
+        return self._send("session_summary", identity, "AGP_HOST_TICKET_DELIVERY_R1", message)
+
     def resend_ticket(self, ticket, *, force, actor, allow_duplicate=False):
         if not force:
             raise ValueError("owner-invoked --force required")
@@ -344,9 +516,22 @@ class Sender:
         if not cfg.enabled or cfg.chat_id not in cfg.owner_chat_ids:
             LOG.error("Telegram force resend refused: not owner-invoked")
             return "blocked"
+        if not _known_decision(ticket.get("decision")):
+            return self._record_compatibility_error(ticket)
         validate(ticket)
+        if cfg.scope_error:
+            LOG.error("Telegram scope rejected: %s", cfg.scope_error)
+            return "blocked"
+        if ticket["decision"] == "INFO_ONLY_SUPPRESSED":
+            return "summary_only"
         if ticket["decision"] != "WATCH_READY" and not ticket["decision"].startswith("INFO_ONLY_"):
             return "summary_only"
+        if _informational_scope(ticket["decision"]) and not cfg.watch_info_scope:
+            LOG.error("Telegram force resend refused: C16 informational scope not enabled")
+            return "SCOPE_NOT_ENABLED"
+        if cfg.immediate_scopes and ticket["decision"] not in cfg.immediate_scopes:
+            LOG.error("Telegram force resend refused: decision is outside tracked immediate scope")
+            return "SCOPE_NOT_ENABLED"
         LOG.info("Force resend requested actor=%s when=%s ticket_id=%s allow_duplicate=%s",
                  actor, _utc_now(), ticket["ticket_id"], allow_duplicate)
         return self._send("ticket", ticket["ticket_id"], ticket["decision"],

@@ -1,0 +1,81 @@
+# AG Edge Discovery -- data authority inventory (R1 Phase 3, captured 2026-10-02/03 UTC).
+# Inventory of every historical market dataset physically present in this repository,
+# with the roles existing governance has already assigned. This file ASSIGNS no new
+# roles to third-party instruments and fabricates nothing.
+schema_version: EDGE_DISCOVERY_DATASET_INVENTORY_V0
+
+datasets:
+  - dataset_id: EURUSD_M5_S2R_RESEARCH
+    symbols: [EURUSD]
+    asset_class: FX
+    timeframes: [M5]
+    start: "2025-06-30T10:35:00Z"
+    end: "2026-09-11T23:55:00Z"
+    source: REAL_OBSERVED_MARKET (MT5 VantageMarkets-Demo, research_external/tooling/mt5_capture.py)
+    quality: sha256-verified parquet, 90000 rows, cross-checked vs smc-lss CSV
+    current_role: partitioned by existing manifests -- TRAIN (DEV-equivalent),
+      VALIDATION, FINAL_HOLDOUT (locked)
+    location: research_external/datasets/EURUSD_M5_S2R_RESEARCH.parquet
+    usable_for_c001: false   # FX instrument; wrong asset class for CRYPTO_CFD
+
+  - dataset_id: SSC_FX_DATASET_PACKAGES
+    symbols: [EURUSD, GBPUSD]
+    asset_class: FX
+    timeframes: [H1, M15, M5, M1]
+    start: various (2024Q1 .. 2026-09)
+    end: various
+    source: MT5 captures under data/research/ssc1d_pilot + data/research/ssc_fresh_dev
+      (per-package dataset_manifest.json / quarantine records)
+    quality: manifest-verified CSV packages; roles per their own manifests
+    current_role: DEV / OOS per existing SSC governance
+    usable_for_c001: false   # FX instrument
+
+  - dataset_id: BTCUSDT_BYBIT_LINEAR_PERP_LIVE_FETCH
+    symbols: [BTCUSDT]
+    asset_class: CRYPTO_USDT_PERP
+    timeframes: [fetched on demand]
+    start: not stored
+    end: not stored
+    source: src/execution_runtime/bybit_linear_perp_feed.py (public REST, live fetch;
+      no historical capture is committed to this repository)
+    quality: feed-level checks only; no frozen research partition exists
+    current_role: ST_LIQUIDITY_SWEEP_RETEST_V1 CRYPTO_PERP research/ticket input
+    usable_for_c001: false
+    prohibition: CROSS_INSTRUMENT_SUBSTITUTION_FORBIDDEN -- BTCUSDT perpetual data
+      never substitutes for BTCUSD CFD without an explicit provenance record and an
+      approved cross-instrument research contract. No such contract exists.
+
+  - dataset_id: ETHUSD_CFD_HISTORY
+    symbols: [ETHUSD]
+    asset_class: CRYPTO_CFD
+    timeframes: []
+    start: null
+    end: null
+    source: NONE -- no stored ETHUSD CFD history exists in this repository; the
+      scanner reads live MT5/Terminal-MCP data only (bounded lookback, not archived)
+    quality: N/A
+    current_role: NONE_AVAILABLE
+    usable_for_c001: false
+
+  - dataset_id: BTCUSD_CFD_HISTORY
+    symbols: [BTCUSD]
+    asset_class: CRYPTO_CFD
+    timeframes: []
+    start: null
+    end: null
+    source: NONE -- no stored BTCUSD CFD history exists in this repository; the
+      scanner reads live MT5/Terminal-MCP data only (bounded lookback, not archived)
+    quality: N/A
+    current_role: NONE_AVAILABLE
+    usable_for_c001: false
+
+conclusion:
+  c001_dev_data: BLOCKED_INSUFFICIENT_RESEARCH_DATA
+  detail: >-
+    No uncontaminated BTCUSD/ETHUSD CFD historical dataset exists in this repository
+    in any role, and the MT5/Terminal-MCP data authority (owner's Windows host,
+    127.0.0.1) is not reachable from this research environment. Economic fast-screen
+    phases are blocked; no perpetual dataset was substituted. Required next step: a
+    provenance-verified BTCUSD/ETHUSD CFD M5 capture via the existing
+    research_external/tooling/mt5_capture.py workflow on the MT5 host, partitioned
+    DEV/VALIDATION/HOLDOUT before any candidate reads it.

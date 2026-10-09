@@ -1,7 +1,8 @@
 """Step 3 of scripts/host/GO_LIVE.md: live candle smoke test. It is also the scheduled-task runner.
 
     .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py                 # --mode smoke
-    .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode fx       # Task: FX cycles
+    .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode fx --canonical # scheduled canonical FX cycles
+    .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode fx       # legacy/manual compatibility path
     .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode crypto   # Task: crypto daily
     .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode lsmc     # Task: daily six-symbol Large-SMC watch
     .venv\\Scripts\\python.exe scripts\\host\\live_candles_smoke.py --mode lsmc-weekend   # legacy/manual bounded crypto probe
@@ -11,14 +12,13 @@
   MARKET_CLOSED, runs the FX ticket builder (both frozen cycles) and the Large-SMC 1.1.0
   watch once, and archives to journal/host_smoke (ARCHIVE_ONLY; never sends). It prints
   states only.
-- fx / crypto / lsmc are the scheduled modes. Each is window-bounded in UTC from the frozen
-  configs, which makes it DST-safe whatever the host's local time zone. Each is
-  single-instance (lock file in logs/), serialized on one cross-process MT5 lock (MT5_BUSY
-  after 60 s), bounded by per-call MT5 timeouts and a 120 s whole-run TIMEOUT self-exit,
-  and idempotent: every FX decision (including DATA_ERROR/BLOCKED) is archived when its
-  content changes. Only fresh, complete READY tickets with host metadata and a passing
-  spread check create 1R paper-ledger entries. Optional message-only Telegram delivery
-  covers READY tickets and OPPORTUNITY alerts, and only if the host-local override enables it.
+- The installed FX task uses `--mode fx --canonical`: it preserves `run_manual_jobs`, then
+  evaluates only the active frozen FX cycle through `daily_evaluator`, appends canonical results
+  to TICKET_STORE_V1, and uses the separate durable delivery/session journal. `--mode fx`
+  without `--canonical` remains the unscheduled legacy compatibility path. Crypto/LSMC scheduled
+  modes remain separate. All are UTC-window-bounded, single-instance, serialized on the shared
+  MT5 lock, per-call time-bounded, and bounded by the 120 s whole-run TIMEOUT. Canonical Telegram
+  delivery is off unless local recipient authorization and the environment enable/allowlist agree.
 
 Read-only: MT5 candles come from _host_common.host_fetch (closed bars, timestamps converted
 with the owner-stated server-time rule: server midnight = New York 17:00). Crypto tickets
@@ -43,6 +43,10 @@ from _host_common import (  # noqa: E402
     REPO_ROOT, AlreadyRunning, Mt5Busy, call_with_timeout, host_fetch, host_quote, import_mt5, log_line,
     mt5_access_lock, mt5_initialize, require_demo_account, single_instance, start_run_watchdog, utcnow,
 )
+from canonical_fx_delivery import (  # noqa: E402
+    active_cycles, build_sender, failure_provider,
+    process_due_session_summaries, run_canonical_fx_cycle,
+)
 
 
 def _argv_mode(argv: List[str]) -> str:
@@ -59,6 +63,7 @@ if __name__ == "__main__":   # bound the whole process, including the heavy impo
 
 from host_delivery import telegram_message as tg  # noqa: E402
 from host_delivery import telegram_confirm as tg_confirm  # noqa: E402
+from host_delivery.lsmc_alert_dedup import AlertLedger, DELIVERY_UNCERTAIN, deliver_once  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
@@ -190,8 +195,18 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
     """Best-effort Telegram delivery (TELEGRAM_DELIVERY_TRACE_R1). Callers persist the scan /
     ticket record first; this never raises, so a Telegram or policy failure cannot hide a scan
     record or stop the remaining symbols. The status is persisted separately (append-only JSONL,
-    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text."""
+    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text.
+
+    Returns the legacy journal status, except that an ambiguous transport outcome (timeout,
+    5xx, unknown) is returned as DELIVERY_UNCERTAIN: the durable row keeps its frozen FAILED /
+    ERROR vocabulary, but a deduplicating caller must never treat the send as a known failure
+    that may be retried."""
     error = None
+    # The persisted journal keeps its frozen status vocabulary (SENT / NOT_SENT_POLICY / FAILED /
+    # ERROR); the conservative typed transport outcome is reported in the telegram log only, so
+    # an ambiguous 5xx/timeout is distinguishable from a definite rejection without changing the
+    # durable row schema.
+    typed = None
     try:
         if not tg.should_send(kind, value, root):
             status = "NOT_SENT_POLICY"
@@ -202,11 +217,11 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
                 tg_confirm.send_confirmation(text, reply_markup, root=root)
             status = "SENT"
     except tg.TelegramSendError as exc:
-        status, error = "FAILED", str(exc)       # send_message already sanitizes (class / HTTP code only)
-    except Exception as exc:  # noqa: BLE001 -- never let delivery break the scan loop
-        status, error = "ERROR", type(exc).__name__
+        status, error, typed = "FAILED", str(exc), exc.delivery_state  # message is sanitized
+    except Exception as exc:  # noqa: BLE001 -- unknown transport outcome is conservatively ambiguous
+        status, error, typed = "ERROR", type(exc).__name__, "DELIVERY_UNCERTAIN"
     if status != "NOT_SENT_POLICY":
-        log_line("telegram", f"TELEGRAM_{'SENT_OK' if status == 'SENT' else 'SEND_' + status} {kind}={value}"
+        log_line("telegram", f"TELEGRAM_{'SENT_OK' if status == 'SENT' else 'SEND_' + typed} {kind}={value}"
                              f"{' ' + error if error else ''}")
     if journal:
         at = (now or dt.datetime.now(UTC)).astimezone(UTC)
@@ -216,7 +231,7 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
                           "error": error, "recorded_at": at.isoformat(), "code_sha": code_sha()})
         except OSError as exc:
             log_line("telegram", f"DELIVERY_STATUS_WRITE_FAILED {kind}={value} {type(exc).__name__}")
-    return status
+    return DELIVERY_UNCERTAIN if typed == DELIVERY_UNCERTAIN else status
 
 
 def _archive_fx_result(state: JsonKeyValueStore, journal: str, ticket: dict, now: dt.datetime) -> tuple[bool, bool, list[str]]:
@@ -444,6 +459,7 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
              fx: bool = True, window: Optional[str] = None) -> List[str]:
     tracker = WatchTracker(os.path.join(journal, "large_smc_watch", "state.json"),
                            os.path.join(journal, "ticket_delivery", "archive"))
+    ledger = AlertLedger(os.path.join(journal, "large_smc_watch", "delivered_confirmations.json"))
     lines = []
     for symbol in (fx_symbols() if fx else []):
         try:
@@ -452,7 +468,8 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
         except Exception as exc:  # noqa: BLE001
             lines.append(f"LSMC {symbol} DATA_ERROR {_reason(exc)}")
             continue
-        lines += _watch_once(tracker, symbol, bars, now, notify)
+        lines += _watch_once(tracker, symbol, bars, now, notify, ledger=ledger, journal=journal,
+                             display_broker_symbol=broker)
     if crypto_feed is not None:
         for symbol in ("BTCUSDT", "ETHUSDT"):
             try:
@@ -460,22 +477,35 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
             except Exception as exc:  # noqa: BLE001
                 lines.append(f"LSMC {symbol} DATA_ERROR {type(exc).__name__}")
                 continue
+            broker = getattr(crypto_feed, "symbols", {}).get(symbol)
             lines += _watch_once(tracker, symbol, {"D1": [], **b.candles}, now, notify, source=b.source,
-                                 window=window)
+                                 window=window, ledger=ledger, journal=journal,
+                                 display_broker_symbol=broker)
     return lines
 
 
-def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None) -> List[str]:
+def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None,
+                ledger=None, journal=None, display_broker_symbol=None) -> List[str]:
     snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now)
     events = tracker.poll(snap)
     out = [f"LSMC {symbol} data={classify(symbol, bars['M5'], now)} state={snap.state} source={source} "
            f"{f'window={window} ' if window else ''}alerts={[e.to_state + ':' + e.alert_level for e in events]}"]
     if notify:
-        for e in events:
+        for event in events:
             price = bars["M5"][-1].close if bars["M5"] else None
-            _notify("LSMC", e.alert_level, tg.format_alert(e.__dict__, price=price), REPO_ROOT)
+            payload = dict(event.__dict__)
+            if display_broker_symbol:
+                payload["display_broker_symbol"] = display_broker_symbol
+            text = tg.format_alert(payload, price=price)
+            status = deliver_once(
+                event.__dict__, ledger,
+                lambda e=event, message=text: _notify(
+                    "LSMC", e.alert_level, message, REPO_ROOT, journal=journal,
+                    ref=e.reference_id, now=now),
+            )
+            if status not in ("SENT", "NOT_SENT_POLICY"):
+                out.append(f"LSMC_DELIVERY {symbol} {status} reference={event.reference_id}")
     return out
-
 
 def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config: Optional[dict] = None) -> List[str]:
     from v1_tickets.crypto import archive_crypto_ticket, build_crypto_ticket
@@ -550,14 +580,47 @@ def main(argv=None) -> int:
     ap.add_argument("--crypto-config", default=None, help="crypto ticket config version YAML (default: active V3)")
     ap.add_argument("--cycle", choices=fx_tickets.V1_CYCLES, default=None,
                     help="limit FX mode to one session cycle (scheduler compatibility)")
+    ap.add_argument("--canonical", action="store_true",
+                    help="use the canonical FX evaluator/TICKET_STORE/delivery path (scheduled FX mode)")
     args = ap.parse_args(argv)
     if args.cycle and args.mode != "fx":
         ap.error("--cycle is only valid with --mode fx")
+    if args.canonical and args.mode != "fx":
+        ap.error("--canonical is only valid with --mode fx")
     log_name = f"ag_v1_{args.mode}"
     now = utcnow()
     journal = os.path.join(REPO_ROOT, "journal", "host_smoke" if args.mode == "smoke" else "")
-    from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config
+    canonical_sender = (build_sender(journal, root=REPO_ROOT)
+                        if args.mode == "fx" and args.canonical else None)
+    from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config, window_status
     crypto_config = load_ticket_config(args.crypto_config or ACTIVE_CONFIG, REPO_ROOT)
+
+    # MT5-backed crypto jobs must be window-gated before either the runner lock or the
+    # host-wide MT5 lock. The ticket evaluator applies the same config window later, but
+    # evaluating it only after attach needlessly starts MT5 outside the authorized window.
+    if args.mode == "crypto" and crypto_config["venue"]["kind"] == "MT5":
+        status = window_status(crypto_config, now.date(), now)
+        if status != "IN_WINDOW":
+            line = f"CRYPTO OUTSIDE_WINDOW ({status})"
+            log_line(log_name, line)
+            return 0
+
+    def canonical_failure_lines(reason: str) -> List[str]:
+        if canonical_sender is None:
+            return []
+        details = {
+            "MT5_PACKAGE_MISSING": "MetaTrader5 package unavailable",
+            "MT5_INITIALIZE_FAILED": "MT5 initialization failed",
+            "DEMO_ACCOUNT_REQUIRED": "verified Demo account not confirmed",
+            "MT5_BUSY": "host-wide MT5 data lock unavailable",
+        }
+        _, failures = run_canonical_fx_cycle(
+            failure_provider(reason, details.get(reason, "host prerequisite unavailable")),
+            now=now, journal=journal, sender=canonical_sender,
+            cycles=active_cycles(now, args.cycle), cycle_filter=args.cycle,
+            ticket_source="REPLAY", fx_data_source="NONE", policy_root=REPO_ROOT)
+        return failures + process_due_session_summaries(now, journal=journal, sender=canonical_sender)
+
     try:
         with single_instance(log_name):
             if args.mode == "crypto" and crypto_config["venue"]["kind"] != "MT5":
@@ -570,9 +633,9 @@ def main(argv=None) -> int:
                 mt5 = import_mt5()
                 if mt5 is None:
                     message = "MetaTrader5 package missing -- run scripts/host/diagnose_mt5.py"
-                    lines = (archive_fx_runtime_failure(now, journal, "MT5_PACKAGE_MISSING", message,
-                                                        cycle_filter=args.cycle)
-                             if args.mode == "fx" else [])
+                    lines = (canonical_failure_lines("MT5_PACKAGE_MISSING") if args.canonical else
+                             archive_fx_runtime_failure(now, journal, "MT5_PACKAGE_MISSING", message,
+                                                        cycle_filter=args.cycle)) if args.mode == "fx" else []
                     for line in lines:
                         log_line(log_name, line)
                     print(message)
@@ -580,9 +643,9 @@ def main(argv=None) -> int:
                 with mt5_access_lock():
                     ok, err = mt5_initialize(mt5, args.terminal_path)
                     if not ok:
-                        lines = (archive_fx_runtime_failure(now, journal, "MT5_INITIALIZE_FAILED", err,
-                                                            cycle_filter=args.cycle)
-                                 if args.mode == "fx" else [])
+                        lines = (canonical_failure_lines("MT5_INITIALIZE_FAILED") if args.canonical else
+                                 archive_fx_runtime_failure(now, journal, "MT5_INITIALIZE_FAILED", err,
+                                                            cycle_filter=args.cycle)) if args.mode == "fx" else []
                         for line in lines:
                             log_line(log_name, line)
                         log_line(log_name, f"MT5_INITIALIZE_FAILED {err}")
@@ -590,9 +653,9 @@ def main(argv=None) -> int:
                     try:
                         demo_ok, demo_status = require_demo_account(mt5)
                         if not demo_ok:
-                            lines = (archive_fx_runtime_failure(now, journal, "DEMO_ACCOUNT_REQUIRED", demo_status,
-                                                                cycle_filter=args.cycle)
-                                     if args.mode == "fx" else [])
+                            lines = (canonical_failure_lines("DEMO_ACCOUNT_REQUIRED") if args.canonical else
+                                     archive_fx_runtime_failure(now, journal, "DEMO_ACCOUNT_REQUIRED", demo_status,
+                                                                cycle_filter=args.cycle)) if args.mode == "fx" else []
                             for line in lines:
                                 log_line(log_name, line)
                             log_line(log_name, f"DEMO_ACCOUNT_REQUIRED {demo_status}")
@@ -604,10 +667,23 @@ def main(argv=None) -> int:
                         elif args.mode == "smoke":
                             lines = run_smoke(fetch, now, journal, crypto_config, quote)
                         elif args.mode == "fx":
-                            lines = run_manual_jobs(fetch, now, journal) + run_fx(
-                                fetch, now, journal, gated=True, quote=quote, cycle_filter=args.cycle,
-                                balance=lambda: account_balance(mt5),
-                                symbol_meta=lambda broker: live_symbol_meta(mt5, broker))
+                            manual_lines = run_manual_jobs(fetch, now, journal)
+                            if args.canonical:
+                                from live_eval_smoke import GuardedMT5, snapshot_provider
+                                provider = snapshot_provider(GuardedMT5(mt5))
+                                _, canonical_lines = run_canonical_fx_cycle(
+                                    provider, now=now, journal=journal, sender=canonical_sender,
+                                    cycles=active_cycles(now, args.cycle), cycle_filter=args.cycle,
+                                    ticket_source="LIVE", fx_data_source="MT5_VT_MARKETS_DEMO",
+                                    policy_root=REPO_ROOT)
+                                summary_lines = process_due_session_summaries(
+                                    now, journal=journal, sender=canonical_sender)
+                                lines = manual_lines + canonical_lines + summary_lines
+                            else:
+                                lines = manual_lines + run_fx(
+                                    fetch, now, journal, gated=True, quote=quote, cycle_filter=args.cycle,
+                                    balance=lambda: account_balance(mt5),
+                                    symbol_meta=lambda broker: live_symbol_meta(mt5, broker))
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
                                              fx=False, window="WEEKEND")
@@ -623,7 +699,9 @@ def main(argv=None) -> int:
         return 0
     except Mt5Busy as exc:
         if args.mode == "fx":
-            for line in archive_fx_runtime_failure(now, journal, "MT5_BUSY", str(exc), cycle_filter=args.cycle):
+            failure_lines = (canonical_failure_lines("MT5_BUSY") if args.canonical else
+                             archive_fx_runtime_failure(now, journal, "MT5_BUSY", str(exc), cycle_filter=args.cycle))
+            for line in failure_lines:
                 log_line(log_name, line)
         log_line(log_name, f"MT5_BUSY {exc}")
         return 0

@@ -1,0 +1,34 @@
+{
+  "candidate_id": "CRYPTO_CFD_C001",
+  "candidate_implementation_sha": "a5ce51d483b2a47cd723d64ab670eb42e0ed11f2",
+  "contract_file_sha256": {
+    "src/crypto_cfd_contract/contract.py": "daf948611ae22d0706f3b991a470f3340a6d8209d3a8f59cfe2d65b0b07bfb8d",
+    "src/crypto_cfd_contract/rules.py": "9a38f2be1760052e9b1d4c1f2fbea77a61425b371511dd646e0b7e0c4ed35b52",
+    "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml": "395ede3926272cfe611285e84202a9961f2ad33eb3f48c40066ba4944f6bae84"
+  },
+  "contract_sha": "a4da28774035491112e63bdf90938b94fc8567de",
+  "contract_tree": "09e5340ece7bc3b09c913e3872576f856c106b53",
+  "created_before_results": true,
+  "edge_verified": false,
+  "fast_screen_status": "NOT_EVALUATED",
+  "frozen_identity_note": "outcome_defining_file_sha256 pins the replay/fill model that determines C001 fills, exits and gross R; it is checked with the same strictness as the contract files and a gap is a hard failure. pre_result_corrections is the only way a pinned hash may change while no economic result exists; once edge_verified is true, any change is a new candidate (C002+).",
+  "frozen_utc": "2026-10-02T21:35:00+00:00",
+  "full_verification_status": "NOT_EVALUATED",
+  "manifest_path": "research/edge_discovery/candidates/CRYPTO_CFD_C001.yaml",
+  "manifest_sha256": "c7b9e9c164556c60e68457e35cf40ca5152cad6cc0d95c0b466c9298672677aa",
+  "mutation_rule": "Any post-result strategy-rule change is a NEW candidate (C002+), never an edit.",
+  "outcome_defining_file_sha256": {
+    "src/edge_discovery/replay_c001.py": "f9d8bbc384570ed9decc5eb8cfd751e18a3fed687dae4b7ee45194c167112b7a"
+  },
+  "pre_result_corrections": [
+    {
+      "authority": "AGP-PR-BACKLOG-CLOSURE-R1 Workstream B; recorded before any C001 economic result exists (edge_verified=false, fast_screen_status=NOT_EVALUATED, full_verification_status=NOT_EVALUATED).",
+      "corrected_sha256": "9a38f2be1760052e9b1d4c1f2fbea77a61425b371511dd646e0b7e0c4ed35b52",
+      "path": "src/crypto_cfd_contract/rules.py",
+      "previous_sha256": "c5c988a48b60f8935296f644ae6fd5365b0b57214897d42ad0c2256739e0d953",
+      "reason": "P1 look-ahead fix: evaluate() filtered only the M5 series at the evaluation timestamp, so D1/H1/M15 candles timestamped at or after `now` could still grant direction permission and turn an unresolved historical setup into ENTRY_VALID.",
+      "recorded_utc": "2026-10-08T16:00:00+00:00",
+      "review_reference": "PR #30 inline review, src/crypto_cfd_contract/rules.py:194"
+    }
+  ]
+}

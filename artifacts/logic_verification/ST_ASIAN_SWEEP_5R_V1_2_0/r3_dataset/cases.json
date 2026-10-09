@@ -1,0 +1,971 @@
+{
+  "cases": [
+    {
+      "case_hash": "199ff912a0fe1556ab6a159baf964163d7502dbb1d4c35db9a9f15b031310a11",
+      "case_id": "EURUSD_ASIAN_LONDON_2026-06-17",
+      "confirmation_candle": {
+        "close": 1.16134,
+        "high": 1.16135,
+        "low": 1.16061,
+        "open": 1.16075,
+        "timestamp_utc": "2026-06-17T07:00:00+00:00"
+      },
+      "confirmation_close": 1.16134,
+      "confirmation_close_timestamp_utc": "2026-06-17T07:15:00+00:00",
+      "data_source": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "dataset_role": "LOGIC_PARITY_ONLY",
+      "decision_timestamp_utc": "2026-06-17T07:15:00+00:00",
+      "raw_source_hash": "ee70c7b78792a20db542204392a6c16979ac237c02162db5f772d50e1c8de189",
+      "reference_candles": [
+        {
+          "close": 1.16128,
+          "high": 1.16136,
+          "low": 1.16082,
+          "open": 1.16092,
+          "timestamp_utc": "2026-06-17T00:00:00+00:00"
+        },
+        {
+          "close": 1.1615,
+          "high": 1.1616,
+          "low": 1.16127,
+          "open": 1.16129,
+          "timestamp_utc": "2026-06-17T00:15:00+00:00"
+        },
+        {
+          "close": 1.16147,
+          "high": 1.16154,
+          "low": 1.16137,
+          "open": 1.1615,
+          "timestamp_utc": "2026-06-17T00:30:00+00:00"
+        },
+        {
+          "close": 1.16141,
+          "high": 1.1615,
+          "low": 1.16119,
+          "open": 1.16147,
+          "timestamp_utc": "2026-06-17T00:45:00+00:00"
+        },
+        {
+          "close": 1.16134,
+          "high": 1.16155,
+          "low": 1.16131,
+          "open": 1.16141,
+          "timestamp_utc": "2026-06-17T01:00:00+00:00"
+        },
+        {
+          "close": 1.16116,
+          "high": 1.16138,
+          "low": 1.16116,
+          "open": 1.16136,
+          "timestamp_utc": "2026-06-17T01:15:00+00:00"
+        },
+        {
+          "close": 1.16128,
+          "high": 1.16129,
+          "low": 1.16097,
+          "open": 1.16116,
+          "timestamp_utc": "2026-06-17T01:30:00+00:00"
+        },
+        {
+          "close": 1.16118,
+          "high": 1.16136,
+          "low": 1.16109,
+          "open": 1.16126,
+          "timestamp_utc": "2026-06-17T01:45:00+00:00"
+        },
+        {
+          "close": 1.16121,
+          "high": 1.16125,
+          "low": 1.16114,
+          "open": 1.16118,
+          "timestamp_utc": "2026-06-17T02:00:00+00:00"
+        },
+        {
+          "close": 1.16132,
+          "high": 1.16145,
+          "low": 1.16113,
+          "open": 1.16121,
+          "timestamp_utc": "2026-06-17T02:15:00+00:00"
+        },
+        {
+          "close": 1.16123,
+          "high": 1.16135,
+          "low": 1.16116,
+          "open": 1.16132,
+          "timestamp_utc": "2026-06-17T02:30:00+00:00"
+        },
+        {
+          "close": 1.16087,
+          "high": 1.16123,
+          "low": 1.16087,
+          "open": 1.16123,
+          "timestamp_utc": "2026-06-17T02:45:00+00:00"
+        },
+        {
+          "close": 1.16104,
+          "high": 1.16106,
+          "low": 1.16078,
+          "open": 1.16087,
+          "timestamp_utc": "2026-06-17T03:00:00+00:00"
+        },
+        {
+          "close": 1.16101,
+          "high": 1.16105,
+          "low": 1.16086,
+          "open": 1.16104,
+          "timestamp_utc": "2026-06-17T03:15:00+00:00"
+        },
+        {
+          "close": 1.16104,
+          "high": 1.16117,
+          "low": 1.16097,
+          "open": 1.16101,
+          "timestamp_utc": "2026-06-17T03:30:00+00:00"
+        },
+        {
+          "close": 1.16098,
+          "high": 1.16111,
+          "low": 1.16097,
+          "open": 1.16104,
+          "timestamp_utc": "2026-06-17T03:45:00+00:00"
+        },
+        {
+          "close": 1.16119,
+          "high": 1.16126,
+          "low": 1.16094,
+          "open": 1.16098,
+          "timestamp_utc": "2026-06-17T04:00:00+00:00"
+        },
+        {
+          "close": 1.16109,
+          "high": 1.1613,
+          "low": 1.16109,
+          "open": 1.16119,
+          "timestamp_utc": "2026-06-17T04:15:00+00:00"
+        },
+        {
+          "close": 1.16108,
+          "high": 1.16117,
+          "low": 1.16101,
+          "open": 1.16109,
+          "timestamp_utc": "2026-06-17T04:30:00+00:00"
+        },
+        {
+          "close": 1.16119,
+          "high": 1.16124,
+          "low": 1.16105,
+          "open": 1.16108,
+          "timestamp_utc": "2026-06-17T04:45:00+00:00"
+        },
+        {
+          "close": 1.16114,
+          "high": 1.16132,
+          "low": 1.16107,
+          "open": 1.16119,
+          "timestamp_utc": "2026-06-17T05:00:00+00:00"
+        },
+        {
+          "close": 1.16117,
+          "high": 1.16139,
+          "low": 1.16109,
+          "open": 1.16115,
+          "timestamp_utc": "2026-06-17T05:15:00+00:00"
+        },
+        {
+          "close": 1.16136,
+          "high": 1.16137,
+          "low": 1.16109,
+          "open": 1.16117,
+          "timestamp_utc": "2026-06-17T05:30:00+00:00"
+        },
+        {
+          "close": 1.16116,
+          "high": 1.16144,
+          "low": 1.16099,
+          "open": 1.16136,
+          "timestamp_utc": "2026-06-17T05:45:00+00:00"
+        }
+      ],
+      "reference_end_utc": "2026-06-17T06:00:00+00:00",
+      "reference_high": 1.1616,
+      "reference_low": 1.16078,
+      "reference_start_utc": "2026-06-17T00:00:00+00:00",
+      "risk_metadata": null,
+      "session_date": "2026-06-17",
+      "session_id": "ASIAN_LONDON",
+      "spread_authority": "MISSING",
+      "spread_provenance_hash": null,
+      "spread_source": null,
+      "spread_timestamp_utc": null,
+      "spread_unit": null,
+      "spread_value": null,
+      "sweep_candle": {
+        "close": 1.16134,
+        "high": 1.16135,
+        "low": 1.16061,
+        "open": 1.16075,
+        "timestamp_utc": "2026-06-17T07:00:00+00:00"
+      },
+      "symbol": "EURUSD",
+      "trade_candles": [
+        {
+          "close": 1.16134,
+          "high": 1.16135,
+          "low": 1.16061,
+          "open": 1.16075,
+          "timestamp_utc": "2026-06-17T07:00:00+00:00"
+        },
+        {
+          "close": 1.16063,
+          "high": 1.16144,
+          "low": 1.16063,
+          "open": 1.16135,
+          "timestamp_utc": "2026-06-17T07:15:00+00:00"
+        },
+        {
+          "close": 1.16054,
+          "high": 1.16081,
+          "low": 1.16039,
+          "open": 1.16063,
+          "timestamp_utc": "2026-06-17T07:30:00+00:00"
+        },
+        {
+          "close": 1.16078,
+          "high": 1.16086,
+          "low": 1.16044,
+          "open": 1.16053,
+          "timestamp_utc": "2026-06-17T07:45:00+00:00"
+        },
+        {
+          "close": 1.1604,
+          "high": 1.16079,
+          "low": 1.16002,
+          "open": 1.16077,
+          "timestamp_utc": "2026-06-17T08:00:00+00:00"
+        },
+        {
+          "close": 1.16016,
+          "high": 1.16045,
+          "low": 1.15975,
+          "open": 1.1604,
+          "timestamp_utc": "2026-06-17T08:15:00+00:00"
+        },
+        {
+          "close": 1.16007,
+          "high": 1.16027,
+          "low": 1.15999,
+          "open": 1.16015,
+          "timestamp_utc": "2026-06-17T08:30:00+00:00"
+        },
+        {
+          "close": 1.16013,
+          "high": 1.16024,
+          "low": 1.15995,
+          "open": 1.16006,
+          "timestamp_utc": "2026-06-17T08:45:00+00:00"
+        },
+        {
+          "close": 1.16009,
+          "high": 1.16028,
+          "low": 1.16002,
+          "open": 1.16014,
+          "timestamp_utc": "2026-06-17T09:00:00+00:00"
+        },
+        {
+          "close": 1.16041,
+          "high": 1.16053,
+          "low": 1.16008,
+          "open": 1.16009,
+          "timestamp_utc": "2026-06-17T09:15:00+00:00"
+        },
+        {
+          "close": 1.16013,
+          "high": 1.16052,
+          "low": 1.1601,
+          "open": 1.16041,
+          "timestamp_utc": "2026-06-17T09:30:00+00:00"
+        },
+        {
+          "close": 1.16033,
+          "high": 1.16036,
+          "low": 1.16008,
+          "open": 1.16012,
+          "timestamp_utc": "2026-06-17T09:45:00+00:00"
+        },
+        {
+          "close": 1.16035,
+          "high": 1.16041,
+          "low": 1.16014,
+          "open": 1.16033,
+          "timestamp_utc": "2026-06-17T10:00:00+00:00"
+        },
+        {
+          "close": 1.15955,
+          "high": 1.16036,
+          "low": 1.15951,
+          "open": 1.16035,
+          "timestamp_utc": "2026-06-17T10:15:00+00:00"
+        },
+        {
+          "close": 1.15978,
+          "high": 1.15997,
+          "low": 1.15954,
+          "open": 1.15955,
+          "timestamp_utc": "2026-06-17T10:30:00+00:00"
+        },
+        {
+          "close": 1.15966,
+          "high": 1.16002,
+          "low": 1.15949,
+          "open": 1.15977,
+          "timestamp_utc": "2026-06-17T10:45:00+00:00"
+        }
+      ]
+    },
+    {
+      "case_hash": "2b91d7a0a6c07f363de91729b7c1630c20360e25c4856b346a36474775efd97b",
+      "case_id": "EURUSD_ASIAN_LONDON_2026-06-23",
+      "confirmation_candle": {
+        "close": 1.143,
+        "high": 1.14351,
+        "low": 1.14218,
+        "open": 1.14224,
+        "timestamp_utc": "2026-06-23T07:00:00+00:00"
+      },
+      "confirmation_close": 1.143,
+      "confirmation_close_timestamp_utc": "2026-06-23T07:15:00+00:00",
+      "data_source": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "dataset_role": "LOGIC_PARITY_ONLY",
+      "decision_timestamp_utc": "2026-06-23T07:15:00+00:00",
+      "raw_source_hash": "ee70c7b78792a20db542204392a6c16979ac237c02162db5f772d50e1c8de189",
+      "reference_candles": [
+        {
+          "close": 1.14219,
+          "high": 1.14263,
+          "low": 1.14219,
+          "open": 1.14263,
+          "timestamp_utc": "2026-06-23T00:00:00+00:00"
+        },
+        {
+          "close": 1.14248,
+          "high": 1.14249,
+          "low": 1.1422,
+          "open": 1.1422,
+          "timestamp_utc": "2026-06-23T00:15:00+00:00"
+        },
+        {
+          "close": 1.14255,
+          "high": 1.1427,
+          "low": 1.14238,
+          "open": 1.14248,
+          "timestamp_utc": "2026-06-23T00:30:00+00:00"
+        },
+        {
+          "close": 1.14263,
+          "high": 1.14272,
+          "low": 1.1425,
+          "open": 1.14255,
+          "timestamp_utc": "2026-06-23T00:45:00+00:00"
+        },
+        {
+          "close": 1.14229,
+          "high": 1.14273,
+          "low": 1.14229,
+          "open": 1.14263,
+          "timestamp_utc": "2026-06-23T01:00:00+00:00"
+        },
+        {
+          "close": 1.14231,
+          "high": 1.14245,
+          "low": 1.14219,
+          "open": 1.14229,
+          "timestamp_utc": "2026-06-23T01:15:00+00:00"
+        },
+        {
+          "close": 1.14247,
+          "high": 1.14249,
+          "low": 1.14218,
+          "open": 1.14231,
+          "timestamp_utc": "2026-06-23T01:30:00+00:00"
+        },
+        {
+          "close": 1.14262,
+          "high": 1.14278,
+          "low": 1.14228,
+          "open": 1.14247,
+          "timestamp_utc": "2026-06-23T01:45:00+00:00"
+        },
+        {
+          "close": 1.14301,
+          "high": 1.14303,
+          "low": 1.14258,
+          "open": 1.14261,
+          "timestamp_utc": "2026-06-23T02:00:00+00:00"
+        },
+        {
+          "close": 1.14293,
+          "high": 1.14313,
+          "low": 1.1429,
+          "open": 1.143,
+          "timestamp_utc": "2026-06-23T02:15:00+00:00"
+        },
+        {
+          "close": 1.14285,
+          "high": 1.14301,
+          "low": 1.1428,
+          "open": 1.14294,
+          "timestamp_utc": "2026-06-23T02:30:00+00:00"
+        },
+        {
+          "close": 1.14252,
+          "high": 1.14285,
+          "low": 1.14249,
+          "open": 1.14285,
+          "timestamp_utc": "2026-06-23T02:45:00+00:00"
+        },
+        {
+          "close": 1.14239,
+          "high": 1.14266,
+          "low": 1.14219,
+          "open": 1.14253,
+          "timestamp_utc": "2026-06-23T03:00:00+00:00"
+        },
+        {
+          "close": 1.14249,
+          "high": 1.14257,
+          "low": 1.14181,
+          "open": 1.14239,
+          "timestamp_utc": "2026-06-23T03:15:00+00:00"
+        },
+        {
+          "close": 1.14263,
+          "high": 1.14266,
+          "low": 1.14234,
+          "open": 1.1425,
+          "timestamp_utc": "2026-06-23T03:30:00+00:00"
+        },
+        {
+          "close": 1.1429,
+          "high": 1.14294,
+          "low": 1.14254,
+          "open": 1.14263,
+          "timestamp_utc": "2026-06-23T03:45:00+00:00"
+        },
+        {
+          "close": 1.14271,
+          "high": 1.14296,
+          "low": 1.14268,
+          "open": 1.1429,
+          "timestamp_utc": "2026-06-23T04:00:00+00:00"
+        },
+        {
+          "close": 1.14251,
+          "high": 1.14272,
+          "low": 1.14239,
+          "open": 1.14271,
+          "timestamp_utc": "2026-06-23T04:15:00+00:00"
+        },
+        {
+          "close": 1.14245,
+          "high": 1.14255,
+          "low": 1.1423,
+          "open": 1.1425,
+          "timestamp_utc": "2026-06-23T04:30:00+00:00"
+        },
+        {
+          "close": 1.14204,
+          "high": 1.14251,
+          "low": 1.14191,
+          "open": 1.14245,
+          "timestamp_utc": "2026-06-23T04:45:00+00:00"
+        },
+        {
+          "close": 1.14205,
+          "high": 1.14225,
+          "low": 1.14184,
+          "open": 1.14204,
+          "timestamp_utc": "2026-06-23T05:00:00+00:00"
+        },
+        {
+          "close": 1.14238,
+          "high": 1.14246,
+          "low": 1.14204,
+          "open": 1.14205,
+          "timestamp_utc": "2026-06-23T05:15:00+00:00"
+        },
+        {
+          "close": 1.14228,
+          "high": 1.14252,
+          "low": 1.14208,
+          "open": 1.14238,
+          "timestamp_utc": "2026-06-23T05:30:00+00:00"
+        },
+        {
+          "close": 1.14224,
+          "high": 1.14228,
+          "low": 1.14188,
+          "open": 1.14227,
+          "timestamp_utc": "2026-06-23T05:45:00+00:00"
+        }
+      ],
+      "reference_end_utc": "2026-06-23T06:00:00+00:00",
+      "reference_high": 1.14313,
+      "reference_low": 1.14181,
+      "reference_start_utc": "2026-06-23T00:00:00+00:00",
+      "risk_metadata": null,
+      "session_date": "2026-06-23",
+      "session_id": "ASIAN_LONDON",
+      "spread_authority": "MISSING",
+      "spread_provenance_hash": null,
+      "spread_source": null,
+      "spread_timestamp_utc": null,
+      "spread_unit": null,
+      "spread_value": null,
+      "sweep_candle": {
+        "close": 1.143,
+        "high": 1.14351,
+        "low": 1.14218,
+        "open": 1.14224,
+        "timestamp_utc": "2026-06-23T07:00:00+00:00"
+      },
+      "symbol": "EURUSD",
+      "trade_candles": [
+        {
+          "close": 1.143,
+          "high": 1.14351,
+          "low": 1.14218,
+          "open": 1.14224,
+          "timestamp_utc": "2026-06-23T07:00:00+00:00"
+        },
+        {
+          "close": 1.14371,
+          "high": 1.14385,
+          "low": 1.143,
+          "open": 1.143,
+          "timestamp_utc": "2026-06-23T07:15:00+00:00"
+        },
+        {
+          "close": 1.14154,
+          "high": 1.14371,
+          "low": 1.14118,
+          "open": 1.14371,
+          "timestamp_utc": "2026-06-23T07:30:00+00:00"
+        },
+        {
+          "close": 1.14111,
+          "high": 1.14175,
+          "low": 1.14092,
+          "open": 1.14154,
+          "timestamp_utc": "2026-06-23T07:45:00+00:00"
+        },
+        {
+          "close": 1.1413,
+          "high": 1.14169,
+          "low": 1.14093,
+          "open": 1.14113,
+          "timestamp_utc": "2026-06-23T08:00:00+00:00"
+        },
+        {
+          "close": 1.14071,
+          "high": 1.14135,
+          "low": 1.14042,
+          "open": 1.1413,
+          "timestamp_utc": "2026-06-23T08:15:00+00:00"
+        },
+        {
+          "close": 1.1406,
+          "high": 1.14084,
+          "low": 1.14041,
+          "open": 1.14067,
+          "timestamp_utc": "2026-06-23T08:30:00+00:00"
+        },
+        {
+          "close": 1.14077,
+          "high": 1.14088,
+          "low": 1.14052,
+          "open": 1.1406,
+          "timestamp_utc": "2026-06-23T08:45:00+00:00"
+        },
+        {
+          "close": 1.14089,
+          "high": 1.14098,
+          "low": 1.14054,
+          "open": 1.14077,
+          "timestamp_utc": "2026-06-23T09:00:00+00:00"
+        },
+        {
+          "close": 1.14091,
+          "high": 1.14105,
+          "low": 1.1406,
+          "open": 1.14089,
+          "timestamp_utc": "2026-06-23T09:15:00+00:00"
+        },
+        {
+          "close": 1.14076,
+          "high": 1.14107,
+          "low": 1.14062,
+          "open": 1.1409,
+          "timestamp_utc": "2026-06-23T09:30:00+00:00"
+        },
+        {
+          "close": 1.14104,
+          "high": 1.14107,
+          "low": 1.14071,
+          "open": 1.14076,
+          "timestamp_utc": "2026-06-23T09:45:00+00:00"
+        },
+        {
+          "close": 1.14072,
+          "high": 1.14121,
+          "low": 1.14055,
+          "open": 1.14104,
+          "timestamp_utc": "2026-06-23T10:00:00+00:00"
+        },
+        {
+          "close": 1.14045,
+          "high": 1.14098,
+          "low": 1.14042,
+          "open": 1.14071,
+          "timestamp_utc": "2026-06-23T10:15:00+00:00"
+        },
+        {
+          "close": 1.14041,
+          "high": 1.14066,
+          "low": 1.14037,
+          "open": 1.14045,
+          "timestamp_utc": "2026-06-23T10:30:00+00:00"
+        },
+        {
+          "close": 1.14,
+          "high": 1.14052,
+          "low": 1.13952,
+          "open": 1.14043,
+          "timestamp_utc": "2026-06-23T10:45:00+00:00"
+        }
+      ]
+    },
+    {
+      "case_hash": "c61f51380cba054b1005601a104aa3872a4abd00048ccf14c8dd8a1d5bbf45a3",
+      "case_id": "EURUSD_ASIAN_LONDON_2026-07-17",
+      "confirmation_candle": {
+        "close": 1.14462,
+        "high": 1.14485,
+        "low": 1.14436,
+        "open": 1.14485,
+        "timestamp_utc": "2026-07-17T07:15:00+00:00"
+      },
+      "confirmation_close": 1.14462,
+      "confirmation_close_timestamp_utc": "2026-07-17T07:30:00+00:00",
+      "data_source": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "dataset_role": "LOGIC_PARITY_ONLY",
+      "decision_timestamp_utc": "2026-07-17T07:30:00+00:00",
+      "raw_source_hash": "ee70c7b78792a20db542204392a6c16979ac237c02162db5f772d50e1c8de189",
+      "reference_candles": [
+        {
+          "close": 1.14439,
+          "high": 1.14457,
+          "low": 1.14432,
+          "open": 1.14445,
+          "timestamp_utc": "2026-07-17T00:00:00+00:00"
+        },
+        {
+          "close": 1.14414,
+          "high": 1.14453,
+          "low": 1.14412,
+          "open": 1.14438,
+          "timestamp_utc": "2026-07-17T00:15:00+00:00"
+        },
+        {
+          "close": 1.14408,
+          "high": 1.14428,
+          "low": 1.14407,
+          "open": 1.14414,
+          "timestamp_utc": "2026-07-17T00:30:00+00:00"
+        },
+        {
+          "close": 1.14462,
+          "high": 1.14463,
+          "low": 1.14407,
+          "open": 1.14408,
+          "timestamp_utc": "2026-07-17T00:45:00+00:00"
+        },
+        {
+          "close": 1.1444,
+          "high": 1.14476,
+          "low": 1.14429,
+          "open": 1.14462,
+          "timestamp_utc": "2026-07-17T01:00:00+00:00"
+        },
+        {
+          "close": 1.14429,
+          "high": 1.14461,
+          "low": 1.14428,
+          "open": 1.1444,
+          "timestamp_utc": "2026-07-17T01:15:00+00:00"
+        },
+        {
+          "close": 1.14427,
+          "high": 1.14439,
+          "low": 1.14411,
+          "open": 1.1443,
+          "timestamp_utc": "2026-07-17T01:30:00+00:00"
+        },
+        {
+          "close": 1.14387,
+          "high": 1.14427,
+          "low": 1.14368,
+          "open": 1.14427,
+          "timestamp_utc": "2026-07-17T01:45:00+00:00"
+        },
+        {
+          "close": 1.14405,
+          "high": 1.14409,
+          "low": 1.14383,
+          "open": 1.14386,
+          "timestamp_utc": "2026-07-17T02:00:00+00:00"
+        },
+        {
+          "close": 1.14385,
+          "high": 1.14408,
+          "low": 1.14384,
+          "open": 1.14404,
+          "timestamp_utc": "2026-07-17T02:15:00+00:00"
+        },
+        {
+          "close": 1.14375,
+          "high": 1.14395,
+          "low": 1.14359,
+          "open": 1.14385,
+          "timestamp_utc": "2026-07-17T02:30:00+00:00"
+        },
+        {
+          "close": 1.14363,
+          "high": 1.1439,
+          "low": 1.14361,
+          "open": 1.14375,
+          "timestamp_utc": "2026-07-17T02:45:00+00:00"
+        },
+        {
+          "close": 1.14373,
+          "high": 1.14396,
+          "low": 1.14358,
+          "open": 1.14363,
+          "timestamp_utc": "2026-07-17T03:00:00+00:00"
+        },
+        {
+          "close": 1.14387,
+          "high": 1.14395,
+          "low": 1.14374,
+          "open": 1.14374,
+          "timestamp_utc": "2026-07-17T03:15:00+00:00"
+        },
+        {
+          "close": 1.14358,
+          "high": 1.14393,
+          "low": 1.14353,
+          "open": 1.14387,
+          "timestamp_utc": "2026-07-17T03:30:00+00:00"
+        },
+        {
+          "close": 1.14387,
+          "high": 1.14389,
+          "low": 1.14352,
+          "open": 1.14358,
+          "timestamp_utc": "2026-07-17T03:45:00+00:00"
+        },
+        {
+          "close": 1.14374,
+          "high": 1.14388,
+          "low": 1.14371,
+          "open": 1.14387,
+          "timestamp_utc": "2026-07-17T04:00:00+00:00"
+        },
+        {
+          "close": 1.14358,
+          "high": 1.14378,
+          "low": 1.14354,
+          "open": 1.14374,
+          "timestamp_utc": "2026-07-17T04:15:00+00:00"
+        },
+        {
+          "close": 1.14362,
+          "high": 1.14375,
+          "low": 1.14354,
+          "open": 1.14358,
+          "timestamp_utc": "2026-07-17T04:30:00+00:00"
+        },
+        {
+          "close": 1.14355,
+          "high": 1.14373,
+          "low": 1.1434,
+          "open": 1.14362,
+          "timestamp_utc": "2026-07-17T04:45:00+00:00"
+        },
+        {
+          "close": 1.14359,
+          "high": 1.14365,
+          "low": 1.14351,
+          "open": 1.14355,
+          "timestamp_utc": "2026-07-17T05:00:00+00:00"
+        },
+        {
+          "close": 1.14364,
+          "high": 1.14374,
+          "low": 1.1435,
+          "open": 1.14359,
+          "timestamp_utc": "2026-07-17T05:15:00+00:00"
+        },
+        {
+          "close": 1.14412,
+          "high": 1.1443,
+          "low": 1.14364,
+          "open": 1.14364,
+          "timestamp_utc": "2026-07-17T05:30:00+00:00"
+        },
+        {
+          "close": 1.14392,
+          "high": 1.14428,
+          "low": 1.14386,
+          "open": 1.14412,
+          "timestamp_utc": "2026-07-17T05:45:00+00:00"
+        }
+      ],
+      "reference_end_utc": "2026-07-17T06:00:00+00:00",
+      "reference_high": 1.14476,
+      "reference_low": 1.1434,
+      "reference_start_utc": "2026-07-17T00:00:00+00:00",
+      "risk_metadata": null,
+      "session_date": "2026-07-17",
+      "session_id": "ASIAN_LONDON",
+      "spread_authority": "MISSING",
+      "spread_provenance_hash": null,
+      "spread_source": null,
+      "spread_timestamp_utc": null,
+      "spread_unit": null,
+      "spread_value": null,
+      "sweep_candle": {
+        "close": 1.14462,
+        "high": 1.14485,
+        "low": 1.14436,
+        "open": 1.14485,
+        "timestamp_utc": "2026-07-17T07:15:00+00:00"
+      },
+      "symbol": "EURUSD",
+      "trade_candles": [
+        {
+          "close": 1.14484,
+          "high": 1.14516,
+          "low": 1.14466,
+          "open": 1.14493,
+          "timestamp_utc": "2026-07-17T07:00:00+00:00"
+        },
+        {
+          "close": 1.14462,
+          "high": 1.14485,
+          "low": 1.14436,
+          "open": 1.14485,
+          "timestamp_utc": "2026-07-17T07:15:00+00:00"
+        },
+        {
+          "close": 1.14463,
+          "high": 1.14493,
+          "low": 1.14438,
+          "open": 1.14463,
+          "timestamp_utc": "2026-07-17T07:30:00+00:00"
+        },
+        {
+          "close": 1.14443,
+          "high": 1.14489,
+          "low": 1.14442,
+          "open": 1.14463,
+          "timestamp_utc": "2026-07-17T07:45:00+00:00"
+        },
+        {
+          "close": 1.14403,
+          "high": 1.14473,
+          "low": 1.14397,
+          "open": 1.14442,
+          "timestamp_utc": "2026-07-17T08:00:00+00:00"
+        },
+        {
+          "close": 1.14396,
+          "high": 1.14404,
+          "low": 1.1435,
+          "open": 1.14403,
+          "timestamp_utc": "2026-07-17T08:15:00+00:00"
+        },
+        {
+          "close": 1.1442,
+          "high": 1.14431,
+          "low": 1.14391,
+          "open": 1.14396,
+          "timestamp_utc": "2026-07-17T08:30:00+00:00"
+        },
+        {
+          "close": 1.14406,
+          "high": 1.14427,
+          "low": 1.14387,
+          "open": 1.1442,
+          "timestamp_utc": "2026-07-17T08:45:00+00:00"
+        },
+        {
+          "close": 1.1438,
+          "high": 1.14417,
+          "low": 1.14365,
+          "open": 1.14405,
+          "timestamp_utc": "2026-07-17T09:00:00+00:00"
+        },
+        {
+          "close": 1.14412,
+          "high": 1.14418,
+          "low": 1.14366,
+          "open": 1.1438,
+          "timestamp_utc": "2026-07-17T09:15:00+00:00"
+        },
+        {
+          "close": 1.14373,
+          "high": 1.14414,
+          "low": 1.14357,
+          "open": 1.14412,
+          "timestamp_utc": "2026-07-17T09:30:00+00:00"
+        },
+        {
+          "close": 1.144,
+          "high": 1.144,
+          "low": 1.14369,
+          "open": 1.14372,
+          "timestamp_utc": "2026-07-17T09:45:00+00:00"
+        },
+        {
+          "close": 1.14387,
+          "high": 1.14399,
+          "low": 1.14351,
+          "open": 1.14399,
+          "timestamp_utc": "2026-07-17T10:00:00+00:00"
+        },
+        {
+          "close": 1.14318,
+          "high": 1.14398,
+          "low": 1.14307,
+          "open": 1.14386,
+          "timestamp_utc": "2026-07-17T10:15:00+00:00"
+        },
+        {
+          "close": 1.14321,
+          "high": 1.14333,
+          "low": 1.14303,
+          "open": 1.14318,
+          "timestamp_utc": "2026-07-17T10:30:00+00:00"
+        },
+        {
+          "close": 1.14261,
+          "high": 1.14326,
+          "low": 1.14255,
+          "open": 1.1432,
+          "timestamp_utc": "2026-07-17T10:45:00+00:00"
+        }
+      ]
+    }
+  ],
+  "schema": "AG_ASIAN_SWEEP_V1_2_R3_SEALED_CASES_V1"
+}
