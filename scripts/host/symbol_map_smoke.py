@@ -37,11 +37,13 @@ class ReadOnlyMT5:
         self.calls: dict = {}
 
     def __getattr__(self, name):
+        if name not in ALLOWED_MT5_CALLS and name != "__version__":
+            raise PermissionError(f"MT5 attribute {name!r} is not allowed in this read-only mission")
         attr = getattr(self._mt5, name)
+        if name == "__version__":
+            return attr
         if not callable(attr):
-            return attr  # constants
-        if name not in ALLOWED_MT5_CALLS:
-            raise PermissionError(f"MT5 call {name!r} is not allowed in this read-only mission")
+            raise PermissionError(f"MT5 operation {name!r} must be callable")
 
         def wrapped(*a, **k):
             self.calls[name] = self.calls.get(name, 0) + 1
@@ -113,6 +115,15 @@ def run(mode: str) -> int:
         finally:
             call_with_timeout(mt5.shutdown)
     visibility_unchanged = _visibility(first) == _visibility(second)
+    snapshot_differences = []
+    for canonical in CANONICALS:
+        one = derive_map(first, (canonical,))[canonical]
+        two = derive_map(second, (canonical,))[canonical]
+        if one != two:
+            snapshot_differences.append(canonical)
+    if snapshot_differences:
+        print(f"BLOCKED: unstable symbol metadata for {snapshot_differences}")
+        return 1
     forbidden = sorted(set(mt5.calls) - ALLOWED_MT5_CALLS)
     guard = {"mt5_calls": dict(sorted(mt5.calls.items())), "forbidden_calls": forbidden,
              "market_watch_visibility_unchanged": visibility_unchanged,
