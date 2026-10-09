@@ -1126,3 +1126,38 @@ def test_flush_std_streams_tolerates_pythonw_none_streams(monkeypatch):
     monkeypatch.setattr(sys, "stdout", None)
     monkeypatch.setattr(sys, "stderr", None)
     smoke.flush_std_streams()
+
+
+# AGP-TG-CONFIRM-FIX-03: inline buttons only on the newly-archived manual TICKET_READY path.
+RUNNER = (ROOT / "scripts" / "host" / "live_candles_smoke.py").read_text(encoding="utf-8")
+EXTRA_SEND = ("            if new and notify:\n",
+              "            if new and notify:\n"
+              "                _notify(tg.TICKET, \"READY\", text, REPO_ROOT, reply_markup=confirmation_markup)\n")
+
+
+def _fix02_predicate(src):
+    """The FIX-02 assertion this replaces: substring presence only."""
+    return ('if manual_new and notify and manual["state"] == "TICKET_READY":' in src
+            and "reply_markup=confirmation_markup" in src)
+
+
+def test_runner_reply_markup_is_scoped_to_the_manual_ready_path():
+    assert objective.runner_reply_markup_scoped(RUNNER) == []
+
+
+def test_second_button_send_on_any_other_runner_path_fails_the_check():
+    mutated = RUNNER.replace(*EXTRA_SEND, 1)
+    assert mutated != RUNNER
+    assert _fix02_predicate(mutated)  # the previous assertion let this through
+    problems = objective.runner_reply_markup_scoped(mutated)
+    assert any("outside the newly-archived TICKET_READY path" in p for p in problems)
+    assert any("keyword sends 2 != 1" in p for p in problems)
+
+
+def test_direct_send_confirmation_or_rebound_markup_fails_the_check():
+    direct = RUNNER + "\n\ndef _other(text, markup):\n    tg_confirm.send_confirmation(text, markup, root=REPO_ROOT)\n"
+    assert any("send_confirmation called outside _notify" in p
+               for p in objective.runner_reply_markup_scoped(direct))
+    rebound = RUNNER.replace("reply_markup=confirmation_markup)", "reply_markup=other_markup)", 1)
+    assert rebound != RUNNER
+    assert any("not bound to confirmation_markup" in p for p in objective.runner_reply_markup_scoped(rebound))

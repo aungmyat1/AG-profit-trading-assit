@@ -56,6 +56,51 @@ def _check(name: str, ok: bool, detail: str) -> dict[str, Any]:
     return {"check": name, "status": "PASS" if ok else "FAIL", "detail": detail}
 
 
+MANUAL_READY_GUARD = 'manual_new and notify and manual["state"] == "TICKET_READY"'
+REPLY_MARKUP_TEXT_OCCURRENCES = 4  # _notify param, its None check, its send_confirmation arg, the one keyword use
+
+
+def runner_reply_markup_scoped(src: str) -> list:
+    """Problems with inline-button sends in live_candles_smoke.py ([] when correctly scoped).
+
+    Replaces c48dc0f's blanket `"reply_markup" not in runner_src`: buttons are allowed only for
+    the newly-archived manual TICKET_READY path, only bound to confirmation_markup, exactly once;
+    tg_confirm.send_confirmation may be called only from _notify.
+    """
+    import ast
+    problems = []
+    if src.count("reply_markup") != REPLY_MARKUP_TEXT_OCCURRENCES:
+        problems.append(f"reply_markup occurrences {src.count('reply_markup')} != {REPLY_MARKUP_TEXT_OCCURRENCES}")
+    tree = ast.parse(src)
+    parents = {}
+    for node in ast.walk(tree):
+        for child in ast.iter_child_nodes(node):
+            parents[child] = node
+
+    def ancestors(node):
+        while node in parents:
+            node = parents[node]
+            yield node
+
+    keyword_calls = [call for call in ast.walk(tree) if isinstance(call, ast.Call)
+                     and any(k.arg == "reply_markup" for k in call.keywords)]
+    if len(keyword_calls) != 1:
+        problems.append(f"reply_markup= keyword sends {len(keyword_calls)} != 1")
+    for call in keyword_calls:
+        value = next(k.value for k in call.keywords if k.arg == "reply_markup")
+        if not (isinstance(value, ast.Name) and value.id == "confirmation_markup"):
+            problems.append(f"line {call.lineno}: reply_markup not bound to confirmation_markup")
+        guards = [ast.unparse(a.test) for a in ancestors(call) if isinstance(a, ast.If)]
+        if ast.unparse(ast.parse(MANUAL_READY_GUARD, mode="eval").body) not in guards:
+            problems.append(f"line {call.lineno}: reply_markup send outside the newly-archived TICKET_READY path")
+    for call in ast.walk(tree):
+        if isinstance(call, ast.Call) and getattr(call.func, "attr", getattr(call.func, "id", "")) == "send_confirmation":
+            funcs = [a.name for a in ancestors(call) if isinstance(a, ast.FunctionDef)]
+            if funcs[:1] != ["_notify"]:
+                problems.append(f"line {call.lineno}: send_confirmation called outside _notify")
+    return problems
+
+
 def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     checks.append(_check(
@@ -182,14 +227,13 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
         and scoped == {"TICKET": ("READY",), "LSMC": ("OPPORTUNITY",)}
         and tuple(telegram.SCOPES) == ("TICKET_READY", "LSMC_OPPORTUNITY")
         and runner_src.count("if new and notify:") == 2
-        and "if manual_new and notify and manual[\"state\"] == \"TICKET_READY\":" in runner_src
-        and "reply_markup=confirmation_markup" in runner_src
+        and runner_reply_markup_scoped(runner_src) == []
         and canonical_opt_in,
         f"legacy effective={list(legacy_scope['effective'])} error={legacy_scope['error']}; "
         f"canonical effective={list(canonical_scope)} error={canonical_config.scope_error}; "
         f"policy={list(policy_enabled)}; ticket={list(scoped['TICKET'])} lsmc={list(scoped['LSMC'])}; "
         f"canonical_send_results={canonical_results}; "
-        f"canonical_opt_in={canonical_opt_in} "
+        f"canonical_opt_in={canonical_opt_in}; reply_markup_scope={runner_reply_markup_scoped(runner_src) or 'OK'} "
         "(legacy scopes stay message-only; manual inline controls require newly-archived TICKET_READY)",
     ))
 
