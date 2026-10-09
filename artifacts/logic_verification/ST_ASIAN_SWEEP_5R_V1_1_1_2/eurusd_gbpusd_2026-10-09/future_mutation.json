@@ -1,0 +1,14 @@
+{
+  "EURUSD": {
+    "iterations": 225,
+    "seed": 112,
+    "semantic_mismatches": 0,
+    "verdict": "PASS"
+  },
+  "GBPUSD": {
+    "iterations": 325,
+    "seed": 112,
+    "semantic_mismatches": 0,
+    "verdict": "PASS"
+  }
+}

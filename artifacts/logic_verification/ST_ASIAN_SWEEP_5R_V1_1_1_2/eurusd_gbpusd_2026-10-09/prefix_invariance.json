@@ -1,0 +1,14 @@
+{
+  "EURUSD": {
+    "cases": 10,
+    "pre_emission_signals": 0,
+    "prefix_mismatches": 0,
+    "verdict": "PASS"
+  },
+  "GBPUSD": {
+    "cases": 20,
+    "pre_emission_signals": 0,
+    "prefix_mismatches": 0,
+    "verdict": "PASS"
+  }
+}

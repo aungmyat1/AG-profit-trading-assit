@@ -1,0 +1,91 @@
+{
+  "by_symbol": {
+    "EURUSD": {
+      "admitted": 2,
+      "admitted_bad_geometry": 0,
+      "leaked_to_admitted": [],
+      "raw_tp_inversion": 5,
+      "raw_zero_stop": 1
+    },
+    "GBPUSD": {
+      "admitted": 1,
+      "admitted_bad_geometry": 0,
+      "leaked_to_admitted": [],
+      "raw_tp_inversion": 7,
+      "raw_zero_stop": 1
+    }
+  },
+  "recorded_failures": [
+    {
+      "blocked_by_candidate": true,
+      "cycle": "ASIAN_LONDON",
+      "direction": "SHORT",
+      "fail_closed_rule": true,
+      "kind": "ZERO_STOP",
+      "reproduces_in_engine": true,
+      "session_date": "2026-07-17"
+    },
+    {
+      "blocked_by_candidate": true,
+      "cycle": "ASIAN_LONDON",
+      "direction": "SHORT",
+      "fail_closed_rule": true,
+      "kind": "TP_ORDER",
+      "reproduces_in_engine": true,
+      "session_date": "2026-07-17"
+    },
+    {
+      "blocked_by_candidate": true,
+      "cycle": "ASIAN_LONDON",
+      "direction": "LONG",
+      "fail_closed_rule": true,
+      "kind": "TP_ORDER",
+      "reproduces_in_engine": true,
+      "session_date": "2026-06-17"
+    },
+    {
+      "blocked_by_candidate": true,
+      "cycle": "LONDON_NEWYORK",
+      "direction": "LONG",
+      "fail_closed_rule": true,
+      "kind": "TP_ORDER",
+      "reproduces_in_engine": true,
+      "session_date": "2026-06-17"
+    },
+    {
+      "blocked_by_candidate": true,
+      "cycle": "LONDON_NEWYORK",
+      "direction": "LONG",
+      "fail_closed_rule": true,
+      "kind": "TP_ORDER",
+      "reproduces_in_engine": true,
+      "session_date": "2026-06-23"
+    },
+    {
+      "blocked_by_candidate": true,
+      "cycle": "LONDON_NEWYORK",
+      "direction": "LONG",
+      "fail_closed_rule": true,
+      "kind": "TP_ORDER",
+      "reproduces_in_engine": true,
+      "session_date": "2026-07-17"
+    }
+  ],
+  "synthetic": {
+    "admitted_by_gates": 13,
+    "admitted_tp_inversion": 0,
+    "admitted_zero_stop": 0,
+    "raw_tp_inversion": {
+      "LONG": 94,
+      "SHORT": 111
+    },
+    "raw_zero_stop": 22,
+    "sessions": 400,
+    "tickets_with_levels": 285,
+    "undeclared_l2_failures": 0
+  },
+  "verdict_by_symbol": {
+    "EURUSD": "PASS",
+    "GBPUSD": "PASS"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "by_symbol": {
+    "EURUSD": {
+      "batch_stream_mismatches": 0,
+      "verdict": "PASS"
+    },
+    "GBPUSD": {
+      "batch_stream_mismatches": 0,
+      "verdict": "PASS"
+    }
+  },
+  "implementation_path": "src/v1_tickets/fx.py -> strategy_engine",
+  "semantic_fields": [
+    "decision",
+    "reason_code",
+    "regime",
+    "setup",
+    "signal_id",
+    "box",
+    "signal_timestamp",
+    "direction",
+    "entry",
+    "stop_loss",
+    "risk_distance",
+    "targets"
+  ]
+}

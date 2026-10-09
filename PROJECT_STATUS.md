@@ -206,7 +206,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `2ed6633397b37eaf2d7de4ccfb85fb375f96cec0f8ca72da9608e533395b4076`.
+inputs_sha256: `7045d72cd57c60e727f67b2e29cd2b2468d7120f04cc35759b5b19b007b36b6d`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -226,6 +226,16 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 
 Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
 <!-- [[[end]]] -->
+
+## AGP-C3-ASW GBPUSD — ST_ASIAN_SWEEP_5R_V1@1.1.2 second symbol (2026-10-09, branch `agp/c3-asw-gbpusd`, not merged)
+
+The 1.1.2 logic-verification harness is now data-driven per symbol and runs GBPUSD on the #114
+fixture (10 recorded VT days, sha256-checked). Verdicts per symbol, no aggregate: EURUSD LOGIC_VERIFIED
+(byte-identical to #108, regression test); GBPUSD PARTIAL — L1 L3 L4 L6 PASS, L5 WARN, L2 NOT_EVIDENCED
+in LONDON_NEWYORK (no conforming ticket). RANGE behaviour untested on recorded data (0 RANGE days in
+fixture). L2 absence semantics proposal: `docs/proposals/l2-absence-semantics.md` (OWNER_DECISION_PENDING).
+Registry `logic_status` unchanged; not admitted; READY OFF.
+Evidence: `docs/status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md`.
 
 ## AGP-C3-ASW-RATIFY — ST_ASIAN_SWEEP_5R_V1@1.1.2 logic verification, both windows (2026-10-09, branch `agp/c3-asw-ratify`, not merged)
 

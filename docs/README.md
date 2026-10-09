@@ -356,6 +356,10 @@ research eligibility. Its contract is
   remains paused and v1.1.1 remains unchanged.
 - [`status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md`](status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md)
   — v1.1.2 LOGIC_VERIFICATION_REPORT (L1–L6) on both windows, L4 failure→test map; not admitted, READY OFF.
+- [`status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md`](status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md)
+  — v1.1.2 per symbol: EURUSD LOGIC_VERIFIED (unchanged), GBPUSD PARTIAL (10 recorded days; LONDON_NEWYORK L2 NOT_EVIDENCED).
+- [`proposals/l2-absence-semantics.md`](proposals/l2-absence-semantics.md)
+  — proposal (OWNER_DECISION_PENDING, not implemented): how L2 reports a window with no conforming ticket.
 - [`status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md)
   and [`status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md)
   — Large-SMC EURUSD friction campaign WP3A/3A.1 evidence.
