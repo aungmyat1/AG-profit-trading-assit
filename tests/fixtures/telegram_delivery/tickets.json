@@ -1,0 +1,321 @@
+[
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-BLOCKED",
+    "decision": "BLOCKED",
+    "presentation": "OTHER",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "fixture_reason_BLOCKED",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "BLOCKED",
+      "reason": "fixture_reason_BLOCKED"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-EXPIRED",
+    "decision": "EXPIRED",
+    "presentation": "INFO_ONLY",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "fixture_reason_EXPIRED",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "EXPIRED",
+      "reason": "fixture_reason_EXPIRED"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-INFO_ONLY_INSUFFICIENT_REMAINING_R",
+    "decision": "INFO_ONLY_INSUFFICIENT_REMAINING_R",
+    "presentation": "INFO_ONLY",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "fixture_reason_INFO_ONLY_INSUFFICIENT_REMAINING_R",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "INFO_ONLY_INSUFFICIENT_REMAINING_R",
+      "reason": "fixture_reason_INFO_ONLY_INSUFFICIENT_REMAINING_R"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-INFO_ONLY_POLICY_UNRESOLVED",
+    "decision": "INFO_ONLY_POLICY_UNRESOLVED",
+    "presentation": "OTHER",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "fixture_reason_INFO_ONLY_POLICY_UNRESOLVED",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "INFO_ONLY_POLICY_UNRESOLVED",
+      "reason": "fixture_reason_INFO_ONLY_POLICY_UNRESOLVED"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-INFO_ONLY_SUPPRESSED",
+    "decision": "INFO_ONLY_SUPPRESSED",
+    "presentation": "INFO_ONLY",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "READY_AUTHORITY_OFF_D6",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "INFO_ONLY_SUPPRESSED",
+      "reason": "READY_AUTHORITY_OFF_D6"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-INFO_ONLY_STALE",
+    "decision": "INFO_ONLY_STALE",
+    "presentation": "INFO_ONLY",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "fixture_reason_INFO_ONLY_STALE",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "INFO_ONLY_STALE",
+      "reason": "fixture_reason_INFO_ONLY_STALE"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-INSUFFICIENT_DATA",
+    "decision": "INSUFFICIENT_DATA",
+    "presentation": "OTHER",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "fixture_reason_INSUFFICIENT_DATA",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "INSUFFICIENT_DATA",
+      "reason": "fixture_reason_INSUFFICIENT_DATA"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-MISSED",
+    "decision": "MISSED",
+    "presentation": "INFO_ONLY",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "fixture_reason_MISSED",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "MISSED",
+      "reason": "fixture_reason_MISSED"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-NO_TRADE",
+    "decision": "NO_TRADE",
+    "presentation": "INFO_ONLY",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "fixture_reason_NO_TRADE",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "NO_TRADE",
+      "reason": "fixture_reason_NO_TRADE"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-OUT_OF_SESSION",
+    "decision": "OUT_OF_SESSION",
+    "presentation": "OTHER",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "fixture_reason_OUT_OF_SESSION",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "OUT_OF_SESSION",
+      "reason": "fixture_reason_OUT_OF_SESSION"
+    }
+  },
+  {
+    "schema": "AG_CANONICAL_TICKET_V1",
+    "ticket_id": "fixture-WATCH_READY",
+    "decision": "WATCH_READY",
+    "presentation": "WATCH_READY",
+    "instrument": "EURUSD",
+    "direction": "LONG",
+    "session": "ASIAN_LONDON",
+    "session_date": "2026-10-08",
+    "reason_code": "fixture_reason_WATCH_READY",
+    "logic_status": "LOGIC_VERIFIED",
+    "economic_edge": "NOT VERIFIED",
+    "economic_status": "NOT_EVALUATED",
+    "prices": {
+      "tp2": "1.10500",
+      "tp1": "1.10300",
+      "current_send": "1.10010",
+      "entry_reference": "1.10000",
+      "sl": "1.09900"
+    },
+    "risk": {
+      "remaining_R_tp1": 2.6,
+      "remaining_R_tp2": 4.4
+    },
+    "actionability": {
+      "decision": "WATCH_READY",
+      "reason": "fixture_reason_WATCH_READY"
+    }
+  }
+]

@@ -32,10 +32,10 @@ from typing import Any, Dict, List, Optional
 from runtime_state.store import JsonKeyValueStore
 
 from .models import (
+    PROPOSAL_READY,
     CanonicalProposal,
     CostAssumptions,
     DataProvenance,
-    PROPOSAL_READY,
     WatcherOccurrenceTimestamps,
 )
 

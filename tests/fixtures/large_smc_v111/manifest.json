@@ -1,0 +1,153 @@
+{
+  "decision_time_utc": "2026-08-03T00:00:00Z",
+  "fixtures": [
+    {
+      "bar_counts": {
+        "D1": 24,
+        "H1": 120,
+        "M5": 600
+      },
+      "fixture_file": "tests/fixtures/large_smc_v111/EURUSD.json",
+      "fixture_sha256": "a8bf11a9b8a8237d3c392ed16380c7a407d9f58c73d387d7ca97da7c4c2323d1",
+      "symbol": "EURUSD"
+    },
+    {
+      "bar_counts": {
+        "D1": 10,
+        "H1": 120,
+        "M5": 220
+      },
+      "fixture_file": "tests/fixtures/large_smc_v111/GBPUSD.json",
+      "fixture_sha256": "8cbdcb2df29915aba498594249e8df4a6a041ec7a1a26f9fa8eb9afcb8640743",
+      "symbol": "GBPUSD"
+    },
+    {
+      "bar_counts": {
+        "D1": 10,
+        "H1": 33,
+        "M5": 220
+      },
+      "fixture_file": "tests/fixtures/large_smc_v111/USDJPY.json",
+      "fixture_sha256": "ba3404e571c09d611fc404feea9d6b6263aa10a8331897494c0f81e8517c3015",
+      "symbol": "USDJPY"
+    },
+    {
+      "bar_counts": {
+        "D1": 10,
+        "H1": 33,
+        "M5": 220
+      },
+      "fixture_file": "tests/fixtures/large_smc_v111/XAUUSD.json",
+      "fixture_sha256": "95208bc41e34f699f3714057beafa4a6b493ad52e79e7ddd4d3e0e9fe48d32fb",
+      "symbol": "XAUUSD"
+    },
+    {
+      "bar_counts": {
+        "D1": 10,
+        "H1": 33,
+        "M5": 220
+      },
+      "fixture_file": "tests/fixtures/large_smc_v111/BTCUSDT.json",
+      "fixture_sha256": "84a5f9ca4604bb2954e3fa91689ca15e1996a240e93bd494ce3c23e7a4fad6f5",
+      "symbol": "BTCUSDT"
+    },
+    {
+      "bar_counts": {
+        "D1": 10,
+        "H1": 33,
+        "M5": 220
+      },
+      "fixture_file": "tests/fixtures/large_smc_v111/ETHUSDT.json",
+      "fixture_sha256": "01ec9010e962df0b766ae35158344b87683971cbda7d36230f6a829b2d5c4f32",
+      "symbol": "ETHUSDT"
+    }
+  ],
+  "pip_size_policy": "Every pip_size remains PIP_SIZE_UNCONFIRMED; fixture price increments are not pip or sizing evidence.",
+  "purpose": "Read-only 1.1.1 candidate logic audit; not a performance sample, production replay, or execution input.",
+  "schema": "LSMC_V111_PER_SYMBOL_FIXTURE_MANIFEST_V1",
+  "sources": [
+    {
+      "classification": "HOST_CAPTURED_DERIVED",
+      "cross_timeframe_status": "PASS",
+      "files": {
+        "H1": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_H1.csv",
+        "M1": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_M1.csv",
+        "manifest": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/dataset_manifest.json"
+      },
+      "notes": "Only closed UTC-aligned bars retained; 120 H1, 600 complete M5 derived from captured M1, and 24 complete D1 aggregates.",
+      "package_id": "SSC_V1_0_1_G2_DEV_001",
+      "sha256": {
+        "H1": "63d8227541909adff009f121e7b3ed1cb4e12c718aaeea53b8e55426917bb55c",
+        "M1": "0b07b52ad1554b308d07207774884d1e284aaf5609c6943846918c4bc36de86b",
+        "manifest": "cc87303fe36369c3db8c4787d38d6315410cebaa01984245f82caa41959c9d96"
+      },
+      "symbol": "EURUSD",
+      "timeframes": {
+        "D1": "DERIVED_FROM_24_COMPLETE_UTC_H1_BARS",
+        "H1": "HOST_CAPTURED",
+        "M5": "HOST_CAPTURED_M1_RESAMPLED_COMPLETE_5_MINUTES"
+      }
+    },
+    {
+      "admission_role": "WARMUP_CONTEXT_ONLY",
+      "classification": "MIXED_HOST_CONTEXT_AND_SYNTHETIC",
+      "files": {
+        "H1": "data/research/ssc_fresh_dev/SSC_HYP001_GBPUSD_R1_H1_WARMUP_CONTEXT_20260528_20260802/raw/GBPUSD_H1.csv",
+        "admission_report": "data/research/ssc_fresh_dev/SSC_HYP001_GBPUSD_R1_H1_WARMUP_CONTEXT_20260528_20260802/warmup_admission_report.json"
+      },
+      "notes": "Captured H1 may be used only as context; it has no decision-window overlap. Synthetic D1/M5 are logic probes and are not paired as host market history.",
+      "package_id": "SSC_HYP001_GBPUSD_R1_H1_WARMUP_CONTEXT_20260528_20260802",
+      "sha256": {
+        "H1": "d943aaeb290aa3914ebfc5ef7c00ebced164e6ee71bc2a0e00e1948e52057c81",
+        "admission_report": "408bd496f5e9cf25310f510123c0f9687a0b559ac66c481183a580941329f93e"
+      },
+      "symbol": "GBPUSD",
+      "timeframes": {
+        "D1": "SYNTHETIC",
+        "H1": "HOST_CAPTURED_WARMUP_CONTEXT_ONLY",
+        "M5": "SYNTHETIC"
+      }
+    },
+    {
+      "classification": "SYNTHETIC",
+      "scenario": "Distinct USDJPY-only deterministic CHoCH fixture; synthetic external buy-side level remains unswept.",
+      "symbol": "USDJPY",
+      "timeframes": {
+        "D1": "SYNTHETIC",
+        "H1": "SYNTHETIC",
+        "M5": "SYNTHETIC"
+      }
+    },
+    {
+      "classification": "SYNTHETIC",
+      "scenario": "Distinct XAUUSD-only deterministic CHoCH fixture; external buy-side level is wick-swept/reclaimed to exercise H1 fallback.",
+      "symbol": "XAUUSD",
+      "timeframes": {
+        "D1": "SYNTHETIC",
+        "H1": "SYNTHETIC",
+        "M5": "SYNTHETIC"
+      }
+    },
+    {
+      "classification": "SYNTHETIC",
+      "scenario": "Distinct BTCUSDT-only deterministic CHoCH fixture; synthetic external buy-side level remains unswept.",
+      "symbol": "BTCUSDT",
+      "timeframes": {
+        "D1": "SYNTHETIC",
+        "H1": "SYNTHETIC",
+        "M5": "SYNTHETIC"
+      }
+    },
+    {
+      "classification": "SYNTHETIC",
+      "scenario": "Distinct ETHUSDT-only deterministic CHoCH fixture; synthetic external buy-side level remains unswept.",
+      "symbol": "ETHUSDT",
+      "timeframes": {
+        "D1": "SYNTHETIC",
+        "H1": "SYNTHETIC",
+        "M5": "SYNTHETIC"
+      }
+    }
+  ],
+  "symbol_distinctness": "All fixture OHLC values are pairwise disjoint across symbols; timestamps are intentionally aligned."
+}

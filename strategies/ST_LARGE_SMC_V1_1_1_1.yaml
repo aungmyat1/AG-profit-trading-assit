@@ -1,0 +1,348 @@
+# ST_LARGE_SMC_V1 version 1.1.1 -- non-authoritative candidate specification.
+# Based on committed 1.1.0 bytes (SHA-256 15e13a628752eabb01b8072973bede4974feec918a0def71755ce76570591ebd).
+# C10/C11 candidate deltas are deliberately not wired into the watch/runtime engine.
+strategy_id: ST_LARGE_SMC_V1
+version: "1.1.1"
+status: CANDIDATE_PENDING_OWNER_CONFIRM
+candidate_created_local_date: "2026-10-08"
+based_on: strategies/ST_LARGE_SMC_V1_1_1_0.yaml
+based_on_sha256: 15e13a628752eabb01b8072973bede4974feec918a0def71755ce76570591ebd
+supersedes: null                     # candidate does not replace 1.1.0 until separately approved
+implementation: SPEC_ONLY_NOT_WIRED
+registered: false
+active: false
+proposal_generation_authorized: false
+demo_authorized: false
+live_authorized: false
+economic_status: NOT_EVALUATED
+owner_confirmation: PENDING_OWNER_CONFIRM
+parameter_provenance: "assistant-recommended under owner delegation, PENDING_OWNER_CONFIRM, 2026-10-08"
+candidate_provenance:
+  source_main_commit: 7060e33b0a62f39b9faf7d506b32801b6463a64c
+  broker_symbol_aliases: "ported from uncommitted 1.1.0 worktree diff 3673bad3"
+  host_captured_metadata_status: "ported from uncommitted 1.1.0 worktree diff 3673bad3"
+  host_metadata_file_set: config/symbol_metadata/host_captured
+
+instruments: [EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSDT, ETHUSDT]
+# Broker-symbol -> canonical strategy-symbol aliases, ported as documented above.
+broker_symbol_aliases: {BTCUSD: BTCUSDT, ETHUSD: ETHUSDT}
+pip_size_rules:
+  status: PENDING_OWNER_CONFIRM
+  provenance: "assistant-recommended under owner delegation, PENDING_OWNER_CONFIRM, 2026-10-08"
+  proposals:
+    FX_5_OR_3_DIGIT:
+      symbols: [EURUSD, GBPUSD, USDJPY]
+      proposed_formula: "pip_size = 10 * host_captured_point"
+      status: PENDING_OWNER_CONFIRM
+      apply_formula_before_owner_confirmation: false
+    XAUUSD:
+      proposed_pip_size: 0.1
+      status: PENDING_OWNER_CONFIRM
+      apply_before_owner_confirmation: false
+    BTCUSD:
+      proposed_price_unit: 1.0
+      status: PENDING_OWNER_CONFIRM
+      apply_before_owner_confirmation: false
+    ETHUSD:
+      proposed_price_unit: 0.1
+      status: PENDING_OWNER_CONFIRM
+      apply_before_owner_confirmation: false
+
+timeframes:
+timeframes:
+  D1: TRADING_DAY_CONTEXT
+  H1: BIAS_AND_POI
+  M5: SWEEP_CHOCH_TRIGGER
+
+rules:
+  swings:
+    model: SW-A_STRICT_FRACTAL
+    causal: true
+    source: fx_discovery.features.swings
+    k: 2
+    smartmoneyconcepts_signal_authority: false
+  poi:
+    models: [AG_ORDER_BLOCK_V1, FVG]
+    timeframe: H1
+    max_age_trading_days: 5
+  sweep:
+    model: A
+    source: fx_discovery.features.sweeps
+    definition: wick_beyond_known_swing_and_close_back_inside
+  break:
+    confirmation: CLOSE
+    tie_tolerance_points: 5
+    mss: CHOCH
+  displacement: AG_ENTRY_DISPLACEMENT_V1
+  sweep_to_choch_window_m5_bars: 12
+  near_poi_band:
+    atr_timeframe: H1
+    atr_period: 14
+    multiplier: 0.5
+  entry:
+    mode: BY_REFERENCE
+    price: CHOCH_BAR_CLOSE
+    order: NEVER_CREATED_BY_THIS_CONTRACT
+
+  stop:
+    id: C10
+    status: CANDIDATE_RULE_RETAINED_WITH_CONFIGURED_UNITS
+    implementation_reference: large_smc_core.c10_stop_policy.compute_c10_stop
+    structural_anchor: opportunity.sweep_extreme
+    pip_size:
+      source_id: candidate.pip_size_rules
+      lookup: canonical_symbol_to_owner_confirmed_pip_size
+      runtime_value_source: owner_confirmed_pip_size_only
+      point_evidence_path: config/symbol_metadata/host_captured/<broker_symbol>.json
+      point_capture_status: HOST_CAPTURED_FOR_ALL_SIX_STRATEGY_SYMBOLS_ON_MAIN
+      no_point_or_digits_conversion_before_owner_confirmation: true
+      no_asset_class_or_broker_convention_fallback: true
+      no_c10_eurusd_default_fallback: true
+      no_host_capture_point_substitution_for_pip_size: true
+      missing_point_capture_result: C10_PIP_SIZE_NOT_EVIDENCED
+      captured_point_with_pending_pip_rule_result: PIP_SIZE_UNCONFIRMED
+      missing_or_invalid_pip_size_result: PIP_SIZE_UNCONFIRMED
+      owner_confirmation: PENDING_OWNER_CONFIRM
+      parameter_provenance: "assistant-recommended under owner delegation, PENDING_OWNER_CONFIRM, 2026-10-08"
+    point_size:
+      use_in_c10_formula: false
+      may_be_used_as_pip_size: false
+      proposed_conversion_rules: PENDING_OWNER_CONFIRM
+      runtime_conversion_before_owner_confirmation: PROHIBITED
+    buffer:
+      formula: max(1.5 * pip_size, 0.35 * ATR14_M5)
+      atr_timeframe: M5
+      atr_period: 14
+      atr_method: WILDER
+      candles: CLOSED_ONLY
+      cutoff: CHOCH_CANDLE_INCLUSIVE
+      atr_required: true
+      insufficient_atr_result: ATR_NOT_READY
+      floor_only_fallback: PROHIBITED
+    direction:
+      LONG: structural_anchor_minus_buffer
+      SHORT: structural_anchor_plus_buffer_plus_live_spread
+      LONG_spread_addition: false
+    spread:
+      SHORT_requires_live_bid_and_ask: true
+      SHORT_missing_bid_or_ask_result: MISSING_SPREAD
+      ask_less_than_bid_result: INVALID_SPREAD
+    broker_minimum_stop:
+      if_verified_distance_is_supplied: REJECT_IF_COMPUTED_STOP_TOO_CLOSE
+      if_no_broker_distance_is_supplied: NOT_APPLICABLE
+      widen_stop: false
+    other_fail_closed_conditions:
+      missing_structural_anchor: MISSING_STRUCTURAL_ANCHOR
+      invalid_direction: INVALID_DIRECTION
+      invalid_atr: INVALID_ATR
+      min_stop_distance_without_entry: MISSING_ENTRY_FOR_MIN_STOP_CHECK
+
+  targets:
+    id: C11
+    selection_mode: STATIC_AT_OPPORTUNITY_EVALUATION
+    anchor: opportunity.entry_reference
+    primary:
+      source: large_smc_core.target_model.select_target
+      accepted_result_tier: PRIMARY_EXTERNAL_LIQUIDITY
+      underlying_source: liquidity.hierarchy.external_swing_liquidity
+      timeframe: M5
+      structure_tier: EXTERNAL
+      eligibility:
+        status: UNSWEPT
+        direction:
+          LONG: BUY_SIDE_STRICTLY_ABOVE_ANCHOR
+          SHORT: SELL_SIDE_STRICTLY_BELOW_ANCHOR
+      selection: accept_the_engine_primary_tier_result_if_present
+      external_tier_missing: PRIMARY_UNAVAILABLE
+      legacy_fallback_m5_swing_result: IGNORE_AND_CONTINUE_TO_H1_FALLBACK
+    fallback:
+      condition: no_eligible_primary_external_liquidity
+      timeframe: H1
+      source: fx_discovery.features.swings
+      model: SW-A_STRICT_FRACTAL
+      k: 2
+      candles: CLOSED_ONLY
+      confirmation: swing.known_at_must_not_exceed_decision_bar_index
+      eligibility:
+        direction:
+          LONG: confirmed_swing_high_strictly_above_anchor
+          SHORT: confirmed_swing_low_strictly_below_anchor
+        sweep_state_filter: NONE_SPECIFIED
+      nearest_rule: minimum_absolute_price_distance_from_anchor
+      equal_distance_tie: FAIL_CLOSED_AMBIGUOUS_TARGET
+      no_eligible_swing: FAIL_CLOSED_TARGET_UNAVAILABLE
+    no_lookahead: true
+    recording:
+      ticket_field: c11_source
+      required_for_every_opportunity_ticket: true
+      primary_value: PRIMARY_EXTERNAL_LIQUIDITY
+      fallback_value: CONFIRMED_OPPOSING_H1_SWING
+      no_ticket_value: NO_TICKET
+    retarget_after_selection: false
+    synthetic_fixed_r_target: PROHIBITED
+
+  reward_risk:
+    formula: abs(target_price - entry_price) / abs(entry_price - stop_price)
+    minimum_rr_source: rules.reward_risk.minimum_rr
+    minimum_rr: 2.0
+    minimum_rr_status: PENDING_OWNER_CONFIRM
+    owner_confirmation: PENDING_OWNER_CONFIRM
+    minimum_rr_provenance: "assistant-recommended under owner delegation, PENDING_OWNER_CONFIRM, 2026-10-08"
+    acceptance: computed_rr_must_be_greater_than_or_equal_to_minimum_rr
+    below_minimum: FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM
+    missing_minimum: FAIL_CLOSED_RR_MINIMUM_UNCONFIRMED
+    missing_target_or_stop_or_zero_risk: FAIL_CLOSED_RR_UNDEFINED
+    threshold_value_inferred: false
+
+  day_boundary:
+    time: "17:00"
+    timezone: America/New_York
+    dst: IANA
+  opportunity_expiry: SESSION_END
+  expiry_rules:
+    FX: config/canonical_sessions.yaml
+    crypto: active_crypto_ticket_window_end
+    crypto_outside_window: next_configured_window_end
+  stale: SUSPEND_THEN_EXPIRE
+  stale_after_minutes: 15
+  FX_market_closed: Friday_17_00_to_Sunday_17_00_America_New_York
+  POI_age:
+    unit: distinct_NY_17_00_trading_dates
+    maximum: 5
+
+alerts:
+  delivery_mode: ARCHIVE_ONLY
+  mapping:
+    DEVELOPING: INFO
+    NEAR_POI: WATCH
+    OPPORTUNITY: OPPORTUNITY
+    INVALIDATED: INFO
+    EXPIRED: INFO
+
+candidate_gates:
+  all_fixture_rows: PENDING_OWNER_CONFIRM
+  missing_point_capture_gate: C10_PIP_SIZE_NOT_EVIDENCED
+  captured_point_with_pending_pip_rule_gate: PIP_SIZE_UNCONFIRMED
+  missing_pip_size_gate: PIP_SIZE_UNCONFIRMED
+  missing_rr_minimum_gate: FAIL_CLOSED_RR_MINIMUM_UNCONFIRMED
+  c11_tie_gate: FAIL_CLOSED_AMBIGUOUS_TARGET
+  no_target_gate: FAIL_CLOSED_TARGET_UNAVAILABLE
+  runtime_activation: PROHIBITED_UNTIL_SEPARATE_OWNER_APPROVAL
+  orders_or_execution: OUT_OF_SCOPE_AND_UNCHANGED
+
+implementation_choices_flagged:
+  - "SW-A fractal width k=2 is reused from the 1.1.0 contract (fx_discovery.features.SWING_K)."
+  - "H1 bias remains the direction of the latest close-confirmed H1 break; D1 break direction remains context only."
+  - "OB origin search remains the last opposing candle within 3 bars before displacement; FLIP_OB remains unidentified."
+  - "smartmoneyconcepts OB candidates remain unused; AG_ORDER_BLOCK_V1 is applied over causal fx_discovery primitives and the frozen zone classifier."
+  - "C10 retains the current 1.1.0 formula, requires host-captured point provenance, and passes only an independently owner-confirmed pip_size; a missing capture returns C10_PIP_SIZE_NOT_EVIDENCED and a present capture with a pending pip rule returns PIP_SIZE_UNCONFIRMED."
+  - "C11 accepts only the existing core model's PRIMARY_EXTERNAL_LIQUIDITY result; its legacy M5 fallback is ignored, then the nearest confirmed opposing H1 SW-A swing is used."
+  - "A tie between equally near H1 fallback swings fails closed; the owner has not confirmed a tie-break."
+  - "The current 1.1.0 watch does not call the core primary target model; this candidate spec is not runtime-wired."
+  - "The 1.1.0 contract/spec had no RR minimum; this candidate declares minimum_rr=2.0 as PENDING_OWNER_CONFIRM and fails closed below it."
+  - "Stale = no closed M5 bar for more than 15 minutes; FX market closed Friday 17:00 through Sunday 17:00 New York."
+  - "FX expiry uses config/canonical_sessions.yaml; BTC/ETH expiry uses the active crypto ticket-window config and next configured window end when outside a window."
+
+not_specified:
+  - "Host-captured points are available from main for all six candidate instruments (BTCUSDT/ETHUSDT through BTCUSD/ETHUSD aliases), but the proposed pip rules remain PENDING_OWNER_CONFIRM and are not applied to pip_size."
+  - "The candidate RR minimum of 2.0 is PENDING_OWNER_CONFIRM; it is not represented as a confirmed 1.1.0 rule."
+  - "The H1 fallback sweep-state filter and equal-distance tie-break have no owner-signed value; the candidate specifies no sweep filter and fails closed on a tie."
+  - "Every other D-item of the unpushed RMR-A catalogue remains outside this candidate."
+
+symbol_metadata:
+  EURUSD:
+    point: 0.00001
+    point_source: config/symbol_metadata/host_captured/EURUSD.json
+    point_status: HOST_CAPTURED
+    status: HOST_CAPTURED
+    broker_symbol: EURUSD-VIP
+    captured_at_utc: "2026-09-30T08:37:24.649828+00:00"
+    point_record_sha256: cd7992b8dfc0135f77bc33cdf108955c0b08055a5ddfc7a80acc37d5a3f40197
+    pip_size: null
+    pip_size_status: PIP_SIZE_UNCONFIRMED
+    pip_size_rule_ref: pip_size_rules.proposals.FX_5_OR_3_DIGIT
+  GBPUSD:
+    point: 0.00001
+    point_source: config/symbol_metadata/host_captured/GBPUSD.json
+    point_status: HOST_CAPTURED
+    status: HOST_CAPTURED
+    broker_symbol: GBPUSD-VIP
+    captured_at_utc: "2026-09-30T08:37:26.354340+00:00"
+    point_record_sha256: 836bd3f0d1d1f0f256420b6f6206d2e23b792fbcf061b806e000a64eee56a617
+    pip_size: null
+    pip_size_status: PIP_SIZE_UNCONFIRMED
+    pip_size_rule_ref: pip_size_rules.proposals.FX_5_OR_3_DIGIT
+  USDJPY:
+    point: 0.001
+    point_source: config/symbol_metadata/host_captured/USDJPY.json
+    point_status: HOST_CAPTURED
+    status: HOST_CAPTURED
+    broker_symbol: USDJPY-VIP
+    captured_at_utc: "2026-09-30T08:37:27.947974+00:00"
+    point_record_sha256: ef1dca4799de0261dddc02d024aa5f60e7df31753c02e85ebf014231b49795b7
+    pip_size: null
+    pip_size_status: PIP_SIZE_UNCONFIRMED
+    pip_size_rule_ref: pip_size_rules.proposals.FX_5_OR_3_DIGIT
+  XAUUSD:
+    point: 0.01
+    point_source: config/symbol_metadata/host_captured/XAUUSD.json
+    point_status: HOST_CAPTURED
+    status: HOST_CAPTURED
+    broker_symbol: XAUUSD-VIP
+    captured_at_utc: "2026-09-30T08:37:29.590817+00:00"
+    point_record_sha256: 6da2e37881679bdf8b1f83dc247328ef1424a53766986c82e0e85d1e1ca20ef2
+    pip_size: null
+    pip_size_status: PIP_SIZE_UNCONFIRMED
+    pip_size_rule_ref: pip_size_rules.proposals.XAUUSD
+  BTCUSDT:
+    point: 0.1
+    point_source: src/strategy_engine/sweep_retest/crypto_symbols.py
+    point_status: FALLBACK_ONLY
+    fallback_only_without_vt_capture: true
+    broker_symbol: BTCUSD
+    broker_metadata_status: HOST_CAPTURED
+    broker_point: 0.01
+    broker_point_source: config/symbol_metadata/host_captured/BTCUSD.json
+    broker_metadata_captured_at_utc: "2026-09-30T15:12:03.313685+00:00"
+    broker_metadata_record_sha256: d6db928384ee017c465d4d7c0f607efa1901b9d7766c4667a0da674f2b99b666
+    pip_size: null
+    pip_size_status: PIP_SIZE_UNCONFIRMED
+    pip_size_rule_ref: pip_size_rules.proposals.BTCUSD
+  ETHUSDT:
+    point: 0.01
+    point_source: src/strategy_engine/sweep_retest/crypto_symbols.py
+    point_status: FALLBACK_ONLY
+    fallback_only_without_vt_capture: true
+    broker_symbol: ETHUSD
+    broker_metadata_status: HOST_CAPTURED
+    broker_point: 0.01
+    broker_point_source: config/symbol_metadata/host_captured/ETHUSD.json
+    broker_metadata_captured_at_utc: "2026-09-30T15:12:06.104988+00:00"
+    broker_metadata_record_sha256: 4f60c0bd201ac6f183f4f673cfffc3360c9c2ff1f1e3a240b1d49321ddd72ef9
+    pip_size: null
+    pip_size_status: PIP_SIZE_UNCONFIRMED
+    pip_size_rule_ref: pip_size_rules.proposals.ETHUSD
+  BTCUSD:
+    point: 0.01
+    point_source: config/symbol_metadata/host_captured/BTCUSD.json
+    point_status: HOST_CAPTURED
+    status: HOST_CAPTURED
+    alias_of: BTCUSDT
+    broker_symbol: BTCUSD
+    captured_at_utc: "2026-09-30T15:12:03.313685+00:00"
+    point_record_sha256: d6db928384ee017c465d4d7c0f607efa1901b9d7766c4667a0da674f2b99b666
+    pip_size: null
+    pip_size_status: PIP_SIZE_UNCONFIRMED
+    pip_size_rule_ref: pip_size_rules.proposals.BTCUSD
+  ETHUSD:
+    point: 0.01
+    point_source: config/symbol_metadata/host_captured/ETHUSD.json
+    point_status: HOST_CAPTURED
+    status: HOST_CAPTURED
+    alias_of: ETHUSDT
+    broker_symbol: ETHUSD
+    captured_at_utc: "2026-09-30T15:12:06.104988+00:00"
+    point_record_sha256: 4f60c0bd201ac6f183f4f673cfffc3360c9c2ff1f1e3a240b1d49321ddd72ef9
+    pip_size: null
+    pip_size_status: PIP_SIZE_UNCONFIRMED
+    pip_size_rule_ref: pip_size_rules.proposals.ETHUSD

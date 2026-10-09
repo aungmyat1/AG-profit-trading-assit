@@ -290,11 +290,14 @@ def run_daily_evaluation(
     policy_override_path: Optional[str] = None,
     policy_override_dict: Optional[Dict] = None,
     ticket_source: str = "REPLAY",
+    cycles: Optional[Sequence[str]] = None,
 ) -> List[EvalResult]:
     """Run every required (instrument, session) pair deterministically.
 
-    Always returns one EvalResult per configured pair; never raises data errors to the
-    caller (they become INSUFFICIENT_DATA records).  This guarantees NO SILENT SESSION.
+    By default this covers the complete configured FX matrix. `cycles` is a backward-
+    compatible host-scheduler filter; it changes only which existing session pairs run,
+    not their strategy/session rules. Always returns one EvalResult per selected pair and
+    never raises market-data errors to the caller (they become terminal records).
 
     Policy is loaded once and threaded to every pair; DI via `policy` (preloaded
     ActionabilityPolicy) or override path/dict is supported for tests.
@@ -305,12 +308,18 @@ def run_daily_evaluation(
     now = now or dt.datetime.now(dt.timezone.utc)
     now = now if now.tzinfo else now.replace(tzinfo=dt.timezone.utc)
     day = day or now.date()
+    configured_cycles = set(v1_fx.V1_CYCLES)
+    requested_cycles = configured_cycles if cycles is None else set(cycles)
+    unknown_cycles = requested_cycles - configured_cycles
+    if unknown_cycles:
+        raise ValueError(f"unknown FX cycles: {sorted(unknown_cycles)}")
+    selected_pairs = [(sym, cyc) for sym, cyc in FX_PAIRS if cyc in requested_cycles]
     if policy is None:
         policy = load_policy(policy_root, override_path=policy_override_path,
                              override_dict=policy_override_dict)
     results: List[EvalResult] = []
     provider = candle_provider or _null_candle_provider
-    for sym, cyc in FX_PAIRS:
+    for sym, cyc in selected_pairs:
         try:
             results.append(evaluate_fx_pair(sym, cyc, now=now, day=day,
                                             candle_provider=provider,

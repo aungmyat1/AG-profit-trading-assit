@@ -13,6 +13,9 @@ spec = importlib.util.spec_from_file_location("build_context_pack", REPO / "scri
 pack = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(pack)
 FACTS = json.loads((REPO / "status" / "facts.json").read_text(encoding="utf-8"))
+_collector = importlib.util.spec_from_file_location("collect_facts", REPO / "scripts" / "docs" / "collect_facts.py")
+collect_facts = importlib.util.module_from_spec(_collector)
+_collector.loader.exec_module(collect_facts)
 
 
 def test_same_inputs_give_a_byte_identical_pack():
@@ -33,11 +36,19 @@ def test_pack_schedule_lists_host_tasks_and_excludes_v2_phase_names():
     from scripts.docs.collect_facts import collect, parse_host_schedule
 
     host_script = (REPO / "scripts/host/install_tasks.ps1").read_text(encoding="utf-8")
-    expected = [task["name"] for task in parse_host_schedule(host_script)["tasks"]]
+    facts = parse_host_schedule(host_script)
+    expected = [task["name"] for task in facts["repo_declared"]]
+    captured = [task["name"] for task in facts["registered_snapshot"]["tasks"]]
     assert "scripts/host/install_tasks.ps1" in collect(REPO)["input_paths"]
     schedule = pack.build(FACTS).split("## Schedule\n", 1)[1]
-    assert "Repo-declared tasks (install_tasks.ps1). Live host state: scripts/host/heartbeat.py output (not yet published)." in schedule
+    assert "Repository declaration source: `scripts/host/install_tasks.ps1`. This is not proof of current host state." in schedule
+    assert "Captured registration snapshot (2026-10-08; source: installer file)" in schedule
+    assert "Runtime observation: NOT_PUBLISHED" in schedule
+    assert "Power registration snapshot: REGISTRATION_SNAPSHOT_ONLY" in schedule
+    assert "AG-Wake-MT5" in schedule and "AG-Sleep-Night" in schedule
+    assert "Desired power target: NO_SEPARATE_TARGET_CAPTURED" in schedule
     assert all(f"`{name}`" in schedule for name in expected)
+    assert all(f"`{name}`" in schedule for name in captured)
     import yaml
     config = yaml.safe_load((REPO / "config/ag_scheduler_v2.yaml").read_text(encoding="utf-8"))
     phase_names = [row.get("state") for row in config.get("schedule", [])]
@@ -53,17 +64,19 @@ def test_unparsed_host_trigger_keeps_the_source_line():
         "$trigger = New-ScheduledTaskTrigger -CalendarKind Weekly",
     )
     schedule = parse_host_schedule(malformed)
-    assert len(schedule["tasks"]) == 3
-    assert all(task["trigger"]["value"] == "UNPARSED" for task in schedule["tasks"])
+    assert len(schedule["repo_declared"]) == 3
+    assert all(task["trigger"]["value"] == "UNPARSED" for task in schedule["repo_declared"])
     assert all(task["trigger"]["raw_line"] == "$trigger = New-ScheduledTaskTrigger -CalendarKind Weekly"
-               for task in schedule["tasks"])
+               for task in schedule["repo_declared"])
 
 
 def test_open_decisions_counted_from_the_register_never_a_bare_zero(tmp_path):
-    out = pack.build(FACTS)
+    # Built from freshly collected facts: a source PR that edits the register must not depend on
+    # committed generated outputs, which the post-merge regeneration PR publishes (R5.1).
+    out = pack.build(collect_facts.collect(REPO))
     count, sources = pack.open_decisions()
-    assert sources == list(pack.REGISTERED_DECISION_SOURCES) and count == 11
-    assert "Open decisions in registered tables: 11 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
+    assert sources == list(pack.REGISTERED_DECISION_SOURCES) and count == 13
+    assert "Open decisions in registered tables: 13 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
     # No registered table -> UNKNOWN, not 0.
     assert pack.open_decisions(str(tmp_path)) == (None, [])
     no_sources = {**FACTS, "pack_context": {"pending_decisions": None, "decision_sources": [],

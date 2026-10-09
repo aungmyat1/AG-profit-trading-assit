@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from market_structure.models import STATE_BEARISH, STATE_BULLISH
 from market_structure import structural_breaks_for_candles
+from market_structure.models import STATE_BEARISH, STATE_BULLISH
 
 from .market_state import structure, to_engine_candles
 from .quality import assess_series, fetch_with_sync, normalize_bars

@@ -38,7 +38,7 @@ def load_facts(path: str) -> dict:
             facts = json.load(f)
     except (OSError, ValueError) as exc:
         raise SystemExit(f"FACTS_UNAVAILABLE: {path}: {exc} -- run scripts/docs/collect_facts.py") from exc
-    for key in ("inputs_sha256", "objective", "strategies", "schedule", "pack_context"):
+    for key in ("inputs_sha256", "objective", "strategies", "schedule", "telegram_scope", "pack_context"):
         if key not in facts:
             raise SystemExit(f"FACTS_INCOMPLETE: {path} has no {key!r}")
     return facts
@@ -82,6 +82,7 @@ def build(facts: dict, root: str = ROOT) -> str:
                  + ", ".join(f"`{s}`" for s in sources) + ")." if sources
                  else "Open decisions in registered tables: UNKNOWN (no registered decision table found).")
     schedule = facts["schedule"]
+    telegram_scope = facts["telegram_scope"]
     lines = [render(default_frontmatter("status")).rstrip("\n"),
              "# AG Profit Trading — Context Pack",
              "",
@@ -111,11 +112,27 @@ def build(facts: dict, root: str = ROOT) -> str:
               for s in facts["strategies"]]
     lines += ["", "## Open owner decisions", "", decisions,
               "", "## Schedule", "",
-              f"Repo-declared tasks (install_tasks.ps1). Live host state: {schedule['live_host_state']}.", "",
+              f"Repository declaration source: `{schedule['source']}`. This is not proof of current host state.", "",
               "| Task | Cadence | Start | Trigger | Time zone |", "|---|---|---|---|---|"]
     lines += [f"| `{t['name']}` | {_schedule_value(t['cadence'])} | {_schedule_value(t['start'])} | "
               f"{_schedule_value(t['trigger'])} | {_schedule_value(t['time_zone'])} |"
-              for t in schedule.get("tasks", [])]
+              for t in schedule.get("repo_declared", [])]
+    snapshot = schedule["registered_snapshot"]
+    lines += ["", f"Captured registration snapshot ({snapshot['captured_at']}; source: installer file):",
+              "| Task | Management | Captured trigger | Recorded drift |", "|---|---|---|---|"]
+    lines += [f"| `{t['name']}` | {t['management']} | {t['trigger']} | {t['drift']} |"
+              for t in snapshot["tasks"]]
+    lines += ["", f"Runtime observation: {schedule['runtime_observation']['status']} "
+              f"({schedule['runtime_observation']['source']}).",
+              f"Power registration snapshot: {schedule['power_policy']['state']} "
+              f"(tasks: {', '.join(schedule['power_policy']['captured_task_names']) or 'none recorded'}).",
+              f"Desired power target: {schedule['target_policy']}."]
+    lines += ["", "## Telegram immediate-send scope", "",
+              "Tracked policy ceiling (host-local overrides may narrow only): "
+              + ", ".join(f"`{scope}`" for scope in telegram_scope.get("immediate_send_enabled", [])) + ".",
+              "Disabled informational scope:"]
+    lines += [f"- `{scope}`: {reason}" for scope, reason in
+              sorted(telegram_scope.get("informational_disabled", {}).items())]
     out = "\n".join(lines) + "\n"
     n = out.count("\n")
     if n > MAX_LINES:

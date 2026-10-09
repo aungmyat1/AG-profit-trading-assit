@@ -297,3 +297,25 @@ The four legacy `TICKET/REFERENCE_NOT_READY` notify calls are the source of the 
 Tests at the PR head: `python -m pytest -q tests/test_manual_ticket_*.py` → 157 passed;
 `python -m pytest -q` → **1037 passed, 2 skipped** (Linux cloud container). PASS B was not re-run on
 the post-fix head; the fix only adds a reason to already-blocked tickets.
+
+## Telegram confirmation addendum (2026-10-08)
+
+`TICKET_READY` manual-ticket delivery can include Accept / Reject inline controls when the
+existing host-local delivery override enables that scope and the destination is in
+`config/ticket_delivery.yaml`'s explicit authorized chat list. The canonical rendering is
+limited to symbol, session, direction, entry/SL/TP, R, spread, data freshness, strategy
+identity, logic status, the `NOT EDGE-VERIFIED` banner, and UTC/MMT expiry. Callback data is
+HMAC-bound to archived ticket ID, strategy version, code SHA, and expiry. Unauthorized chats,
+invalid callbacks, expired tickets, and host-offline handling fail closed with an explicit
+reason. ACCEPTED and REJECTED use the append-only owner-decision journal; repeat identical
+callbacks do not append a second line. Accept reports `BLOCKED_NOT_AUTHORIZED` while demo
+authority is false or `allow_order_send` is false; Reject never requests a handoff.
+
+Verification on 2026-10-08, Linux cloud container, fixture-only: focused command
+`.venv/bin/python -m pytest -q tests/test_telegram_confirmation.py tests/test_manual_ticket_build.py
+tests/test_manual_ticket_owner_decision.py tests/test_manual_ticket_host_integration.py
+tests/test_manual_ticket_scan_records.py tests/test_host_go_live_kit.py` → 147 passed,
+1 skipped. Full suite `PATH="$PWD/.venv/bin:$PATH" .venv/bin/python -m pytest -q` →
+1,305 passed, 2 skipped. Static import/call inspection and runtime MT5 order-send sentinels
+observed zero broker calls. No Telegram callback receiver is running or host-verified;
+message delivery remains disabled by default and registry `demo_authorized` remains false.

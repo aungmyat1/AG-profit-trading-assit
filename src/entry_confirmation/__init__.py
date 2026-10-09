@@ -18,29 +18,30 @@ this package reports the objective measurement and an explicit
 `ConfirmationState.UNSIGNED_RULE` rather than inventing one -- see contract.py's
 ENTRY_CONFIRMATION_CONTRACT_GAPS.
 """
-from .contract import CONTRACT_VERSION, ENTRY_CONFIRMATION_CONTRACT_GAPS, EntryConfirmationContractGap
+from .composer import compose, evaluate_entry_combinations
+from .contract import (
+    CONTRACT_VERSION,
+    ENTRY_CONFIRMATION_CONTRACT_GAPS,
+    EntryConfirmationContractGap,
+)
+from .e1_daily_gap_reaction import (
+    E1Result,
+    e1_to_econdition,
+    evaluate_e1_daily_gap_reaction,
+)
+from .e2_h1_poi_reaction import (
+    E2PoiReactionRequest,
+    E2Result,
+    e2_to_econdition,
+    evaluate_e2_h1_poi_reaction,
+)
+from .e3_liquidity_sweep import (
+    E3Result,
+    e3_to_econdition,
+    evaluate_e3_htf_liquidity_sweep,
+)
 from .engine import evaluate_entry_confirmation
 from .engine_v2 import EntryConfirmationV2Request, evaluate_entry_confirmation_v2
-from .gap import evaluate_gap_context, evaluate_inverted_gap_context, gap_midpoint
-from .models_v2 import (
-    CONTRACT_VERSION_V2,
-    ConfirmationModel,
-    ConfirmationRoute,
-    DirectionalContext,
-    EntryConfirmationV2Result,
-    EntryGeometry,
-    EntryMethod,
-    GapContext,
-    InvertedGapContext,
-    POIContext,
-    RouteResult,
-    SpreadContext,
-    StructuralInvalidationType,
-    TypedEvent,
-)
-from .poi import evaluate_poi_context
-from .route import classify_route, evaluate_e1, evaluate_e2, evaluate_e3
-from .spread import evaluate_spread_context
 from .engine_v2_1 import (
     SweepShiftArrayRequest,
     determine_setup_family,
@@ -48,22 +49,11 @@ from .engine_v2_1 import (
     evaluate_reversal_sweep_shift,
     evaluate_sweep_shift_array,
 )
-from .entry_array import evaluate_entry_array, fvg_associated_with_leg, ob_associated_with_shift
-from .models_v2_1 import (
-    CONTRACT_VERSION_V2_1,
-    ConfluenceRelation,
-    DisplacementLeg,
-    EntryArrayContext,
-    EntryArrayType,
-    EntryMethodV21,
-    PivotContext,
-    PivotRole,
-    SetupFamily,
-    SMCSweepShiftArrayResult,
-    StructureShiftQuality,
-    StructureShiftQualityStatus,
+from .entry_array import (
+    evaluate_entry_array,
+    fvg_associated_with_leg,
+    ob_associated_with_shift,
 )
-from .sweep_shift import classify_wick_or_close, evaluate_pivot_context, evaluate_structure_shift_quality
 from .entry_models_v1 import (
     CHECK_TIMEFRAME,
     COMBINATIONS,
@@ -81,13 +71,17 @@ from .entry_models_v1 import (
     SMCConditionalEntryAnalysis,
     SMCEntryCombinationResult,
 )
-from .e1_daily_gap_reaction import E1Result, e1_to_econdition, evaluate_e1_daily_gap_reaction
-from .m1_character_change_inducement import M1Result, evaluate_m1_character_change_with_inducement
-from .e2_h1_poi_reaction import E2PoiReactionRequest, E2Result, e2_to_econdition, evaluate_e2_h1_poi_reaction
+from .gap import evaluate_gap_context, evaluate_inverted_gap_context, gap_midpoint
+from .m1_character_change_inducement import (
+    M1Result,
+    evaluate_m1_character_change_with_inducement,
+)
 from .m2_supply_demand_shift import M2Result, evaluate_m2_supply_demand_shift
-from .e3_liquidity_sweep import E3Result, e3_to_econdition, evaluate_e3_htf_liquidity_sweep
-from .m3_sweep_drop_pump import M3_INVERTED_GAP_POLICY, M3Result, evaluate_m3_sweep_drop_pump
-from .composer import compose, evaluate_entry_combinations
+from .m3_sweep_drop_pump import (
+    M3_INVERTED_GAP_POLICY,
+    M3Result,
+    evaluate_m3_sweep_drop_pump,
+)
 from .models import (
     ALL_CONFIRMATIONS,
     DISPLACEMENT,
@@ -104,6 +98,44 @@ from .models import (
     OverallState,
     RejectionEvidence,
     StructureAlignment,
+)
+from .models_v2 import (
+    CONTRACT_VERSION_V2,
+    ConfirmationModel,
+    ConfirmationRoute,
+    DirectionalContext,
+    EntryConfirmationV2Result,
+    EntryGeometry,
+    EntryMethod,
+    GapContext,
+    InvertedGapContext,
+    POIContext,
+    RouteResult,
+    SpreadContext,
+    StructuralInvalidationType,
+    TypedEvent,
+)
+from .models_v2_1 import (
+    CONTRACT_VERSION_V2_1,
+    ConfluenceRelation,
+    DisplacementLeg,
+    EntryArrayContext,
+    EntryArrayType,
+    EntryMethodV21,
+    PivotContext,
+    PivotRole,
+    SetupFamily,
+    SMCSweepShiftArrayResult,
+    StructureShiftQuality,
+    StructureShiftQualityStatus,
+)
+from .poi import evaluate_poi_context
+from .route import classify_route, evaluate_e1, evaluate_e2, evaluate_e3
+from .spread import evaluate_spread_context
+from .sweep_shift import (
+    classify_wick_or_close,
+    evaluate_pivot_context,
+    evaluate_structure_shift_quality,
 )
 
 __all__ = [

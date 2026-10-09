@@ -27,7 +27,7 @@ def read_objective(path: Path, recorder: InputRecorder | None = None) -> dict[st
 
 
 def parse_host_schedule(script_text: str) -> dict[str, Any]:
-    """Parse declared task rows without inferring omitted trigger or zone details."""
+    """Keep installer intent, captured registration, and runtime observation distinct."""
     lines = script_text.splitlines()
     trigger_line = next((line.strip() for line in lines
                          if "New-ScheduledTaskTrigger" in line and "$trigger" in line), None)
@@ -65,9 +65,40 @@ def parse_host_schedule(script_text: str) -> dict[str, Any]:
             # The Task Scheduler trigger omits a time-zone argument; do not infer host zone.
             "time_zone": {"value": "UNPARSED", "raw_line": trigger_line or line},
         })
-    return {"source": "scripts/host/install_tasks.ps1",
-            "live_host_state": "scripts/host/heartbeat.py output (not yet published)",
-            "tasks": tasks}
+    declared_start = script_text.find("$Declared = @(")
+    declared_body = (script_text[declared_start:].split("$Declared = @(", 1)[-1]
+                     .split("\n)", 1)[0] if declared_start >= 0 else "")
+    registered = []
+    for row in re.findall(r"@\{(.*?)(?=\n  @\{|\Z)", declared_body, flags=re.DOTALL):
+        name = re.search(r"Name\s*=\s*'([^']+)'", row)
+        managed = re.search(r"Managed\s*=\s*'([^']+)'", row)
+        if not name or not managed:
+            continue
+        registered.append({
+            "name": name.group(1),
+            "management": managed.group(1),
+            "trigger": (re.search(r"Trigger\s*=\s*'([^']+)'", row) or [None, "NOT_RECORDED"])[1],
+            "drift": (re.search(r"Drift\s*=\s*'([^']+)'", row) or [None, "NONE_RECORDED"])[1],
+        })
+    capture_date = re.search(r"exported via[^\n]*\n#\s*(\d{4}-\d{2}-\d{2})", script_text)
+    return {
+        "source": "scripts/host/install_tasks.ps1",
+        "repo_declared": tasks,
+        "registered_snapshot": {
+            "captured_at": capture_date.group(1) if capture_date else "DATE_UNPARSED",
+            "tasks": registered,
+        },
+        "runtime_observation": {
+            "status": "NOT_PUBLISHED",
+            "source": "scripts/host/heartbeat.py output",
+        },
+        "power_policy": {
+            "captured_task_names": [row["name"] for row in registered
+                                    if row["name"].startswith(("AG-Wake-", "AG-Sleep-"))],
+            "state": "REGISTRATION_SNAPSHOT_ONLY",
+        },
+        "target_policy": "NO_SEPARATE_TARGET_CAPTURED",
+    }
 
 
 def collect(root: Path) -> dict[str, Any]:
@@ -89,6 +120,8 @@ def collect(root: Path) -> dict[str, Any]:
     schedule = parse_host_schedule(recorder.read_text(root / "scripts" / "host" / "install_tasks.ps1"))
 
     objective = read_objective(root / "docs" / "PROJECT_OBJECTIVE.md", recorder)
+    delivery_config = yaml.safe_load(recorder.read_text(root / "config" / "ticket_delivery.yaml")) or {}
+    tracked_scope = delivery_config.get("immediate_send_scope") or {}
     # These policy authorities are read by the docs gate; keep their freshness covered too.
     json.loads(recorder.read_text(root / "scripts/docs/advisory_allowlist.json"))
     for relative in sorted(recorder.tracked):
@@ -113,6 +146,10 @@ def collect(root: Path) -> dict[str, Any]:
         "objective": objective,
         "strategies": strategies,
         "schedule": schedule,
+        "telegram_scope": {
+            "immediate_send_enabled": tracked_scope.get("enabled", []),
+            "informational_disabled": tracked_scope.get("disabled", {}),
+        },
     }
 
 
@@ -131,7 +168,7 @@ def main() -> int:
         print("FACTS_FRESH" if fresh else "FACTS_STALE")
         return 0 if fresh else 1
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(content, encoding="utf-8")
+    out.write_text(content, encoding="utf-8", newline="\n")
     return 0
 
 

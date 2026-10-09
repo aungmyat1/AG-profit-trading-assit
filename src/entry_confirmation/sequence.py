@@ -16,7 +16,13 @@ liquidity_reclaim, and displacement have all been requested; see engine.py.
 """
 from __future__ import annotations
 
-from .models import ConfirmationState, DisplacementEvidence, EventSequenceEvidence, LiquidityAlignment, StructureAlignment
+from .models import (
+    ConfirmationState,
+    DisplacementEvidence,
+    EventSequenceEvidence,
+    LiquidityAlignment,
+    StructureAlignment,
+)
 
 
 def evaluate_event_sequence(

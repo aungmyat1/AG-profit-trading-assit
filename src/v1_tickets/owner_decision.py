@@ -10,8 +10,10 @@ It is accepted only for a ticket that was TICKET_READY and filled before valid_u
 """
 from __future__ import annotations
 
+import contextlib
 import datetime as dt
 import os
+import threading
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -20,7 +22,11 @@ from v1_tickets.scan_record import append_jsonl, read_jsonl
 
 SCHEMA = "AG_MANUAL_TICKET_DECISION_V1"
 TAKEN, SKIPPED, MISSED, EXPIRED = "TAKEN", "SKIPPED", "MISSED", "EXPIRED"
-DECISIONS = (TAKEN, SKIPPED, MISSED, EXPIRED)
+ACCEPTED, REJECTED = "ACCEPTED", "REJECTED"  # Telegram confirmation; no order is implied.
+# An Accept tap that current authority or the execution handoff would refuse. It records the
+# owner's attempt and the deterministic refusal reason; it never implies execution authority.
+REFUSED = "REFUSED"
+DECISIONS = (TAKEN, SKIPPED, MISSED, EXPIRED, ACCEPTED, REJECTED, REFUSED)
 SKIP_REASONS = ("NEWS", "DISAGREE_CONTEXT", "COST_TOO_HIGH", "TIME", "OTHER")
 DECISION_FILE = os.path.join("ticket_delivery", "manual", "owner_decisions.jsonl")
 
@@ -42,6 +48,7 @@ class ManualTicketDecision:
     deviation_note: Optional[str] = None
     skip_reason: Optional[str] = None
     note: Optional[str] = None
+    refusal_reason: Optional[str] = None
     schema: str = SCHEMA
 
     def __post_init__(self) -> None:
@@ -54,6 +61,10 @@ class ManualTicketDecision:
                 raise DecisionError(f"SKIPPED requires skip_reason in {SKIP_REASONS}")
             if self.skip_reason == "OTHER" and not self.note:
                 raise DecisionError("skip_reason OTHER requires a note")
+        if self.decision == REFUSED and not self.refusal_reason:
+            raise DecisionError("REFUSED requires a refusal_reason")
+        if self.decision != REFUSED and self.refusal_reason is not None:
+            raise DecisionError(f"{self.decision} cannot carry a refusal_reason")
         if self.decision != TAKEN and any(v is not None for v in (self.actual_fill, self.actual_sl, self.actual_tp)):
             raise DecisionError(f"{self.decision} cannot carry fill prices")
 
@@ -83,7 +94,39 @@ def _parse(ts: str) -> dt.datetime:
     return t.astimezone(dt.timezone.utc)
 
 
+_THREAD_LOCK = threading.Lock()
+
+
+@contextlib.contextmanager
+def _decision_lock(journal: str):
+    """Serialize check-then-append across threads and processes (one decision per ticket)."""
+    path = decision_path(journal) + ".lock"
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with _THREAD_LOCK, open(path, "a+b") as handle:
+        if os.name == "nt":  # the Windows MT5 host
+            import msvcrt
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            try:
+                yield
+            finally:
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
 def record_decision(journal: str, ticket: Dict[str, Any], decision: ManualTicketDecision) -> Dict[str, Any]:
+    with _decision_lock(journal):
+        return _record_decision_locked(journal, ticket, decision)
+
+
+def _record_decision_locked(journal: str, ticket: Dict[str, Any], decision: ManualTicketDecision) -> Dict[str, Any]:
     if decision.ticket_id != ticket.get("ticket_id"):
         raise DecisionError("decision ticket_id does not match the ticket")
     if decision.ticket_id in load_decisions(journal):
@@ -95,6 +138,11 @@ def record_decision(journal: str, ticket: Dict[str, Any], decision: ManualTicket
             raise DecisionError(f"TAKEN refused: ticket state {ticket.get('state')} is not TICKET_READY")
         if _parse(decision.fill_time) >= _parse(ticket["valid_until"]):
             raise DecisionError("TAKEN refused: fill_time is at/after valid_until (ticket EXPIRED)")
+    if decision.decision in (ACCEPTED, REJECTED, REFUSED):
+        if ticket.get("state") != "TICKET_READY":
+            raise DecisionError(f"{decision.decision} refused: ticket state {ticket.get('state')} is not TICKET_READY")
+        if _parse(decision.recorded_at) >= _parse(ticket["valid_until"]):
+            raise DecisionError(f"{decision.decision} refused: ticket EXPIRED")
     entry = {**asdict(decision), "strategy": ticket.get("strategy"), "symbol": ticket.get("symbol"),
              "session": ticket.get("session"), "session_date": ticket.get("session_date"),
              "ticket_state": ticket.get("state"), "ticket_content_hash": ticket.get("content_hash")}

@@ -1,5 +1,6 @@
 {
   "input_paths": [
+    "config/ticket_delivery.yaml",
     "docs/PROJECT_OBJECTIVE.md",
     "docs/agents/INVARIANTS.md",
     "docs/governance/OWNER_DECISION_REGISTER.md",
@@ -7,13 +8,14 @@
     "scripts/docs/advisory_allowlist.json",
     "scripts/host/install_tasks.ps1",
     "strategies/ST_ASIAN_SWEEP_5R_V1.yaml",
+    "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml",
     "strategies/ST_LARGE_SMC_V1.yaml",
     "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
     "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
     "strategies/registry.yaml",
     "strategies/session_trade/contract.yaml"
   ],
-  "inputs_sha256": "07e7a2cd5a42a026196783329adcfb2ffe76bfbcded77b49fb31013949c39d3d",
+  "inputs_sha256": "3137beff3b9d81f3ca50380d4acf3068641c2ae9df6460bcb323d3a61f251659",
   "objective": {
     "source": "docs/PROJECT_OBJECTIVE.md#objective",
     "text": "Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.\n\nThe owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.\n\n`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
@@ -23,12 +25,120 @@
       "docs/governance/OWNER_DECISION_REGISTER.md"
     ],
     "invariants_present": true,
-    "pending_decisions": 11
+    "pending_decisions": 13
   },
   "schedule": {
-    "live_host_state": "scripts/host/heartbeat.py output (not yet published)",
-    "source": "scripts/host/install_tasks.ps1",
-    "tasks": [
+    "power_policy": {
+      "captured_task_names": [
+        "AG-Wake-MT5",
+        "AG-Wake-Weekend-Crypto",
+        "AG-Sleep-Night",
+        "AG-Sleep-Weekend-Crypto"
+      ],
+      "state": "REGISTRATION_SNAPSHOT_ONLY"
+    },
+    "registered_snapshot": {
+      "captured_at": "2026-10-08",
+      "tasks": [
+        {
+          "drift": "registered runs pythonw.exe; installer writes python.exe",
+          "management": "INSTALLER",
+          "name": "AG-V1-FX-Cycles",
+          "trigger": "daily 00:01 MMT, every 15 min for 24 h"
+        },
+        {
+          "drift": "registered interval 15 min; installer writes 5 min; pythonw.exe vs python.exe",
+          "management": "INSTALLER",
+          "name": "AG-V1-Crypto-Daily",
+          "trigger": "daily 00:02 MMT, every 15 min for 24 h"
+        },
+        {
+          "drift": "registered weekdays only; installer writes daily; pythonw.exe vs python.exe",
+          "management": "INSTALLER",
+          "name": "AG-V1-LSMC-Watch",
+          "trigger": "Mon-Fri 00:03 MMT, every 5 min for 24 h"
+        },
+        {
+          "drift": "still registered although -Apply retires it as superseded",
+          "management": "RETIRE",
+          "name": "AG-V1-LSMC-Crypto-Weekend",
+          "trigger": "Sun,Mon 03:18 MMT (Sat,Sun 20:48Z), every 5 min for 2 h 26 min"
+        },
+        {
+          "drift": "NONE_RECORDED",
+          "management": "HOST_ONLY",
+          "name": "AG-Wake-MT5",
+          "trigger": "Mon-Fri 12:25 MMT (05:55Z)"
+        },
+        {
+          "drift": "NONE_RECORDED",
+          "management": "HOST_ONLY",
+          "name": "AG-Wake-Weekend-Crypto",
+          "trigger": "Sun,Mon 03:10 MMT (Sat,Sun 20:40Z)"
+        },
+        {
+          "drift": "NONE_RECORDED",
+          "management": "HOST_ONLY",
+          "name": "AG-Sleep-Night",
+          "trigger": "daily 00:45 MMT (18:15Z previous day)"
+        },
+        {
+          "drift": "NONE_RECORDED",
+          "management": "HOST_ONLY",
+          "name": "AG-Sleep-Weekend-Crypto",
+          "trigger": "Sun,Mon 05:45 MMT (Sat,Sun 23:15Z)"
+        },
+        {
+          "drift": "system Python 3.14 and DEV checkout, not the PROD venv",
+          "management": "HOST_ONLY",
+          "name": "AG Profit Trading - BTC Daily Decision",
+          "trigger": "daily 13:05 MMT (06:35Z)"
+        },
+        {
+          "drift": "script lives outside the repository; its content is not declared here",
+          "management": "HOST_ONLY",
+          "name": "AGX-HealthExport",
+          "trigger": "one-time 2026-10-01 19:50:23 MMT, every 30 min indefinitely"
+        },
+        {
+          "drift": "NONE_RECORDED",
+          "management": "HOST_ONLY",
+          "name": "AG_FX_ASIAN_LONDON_SHADOW",
+          "trigger": "Mon-Fri 13:30:20-17:30:20 MMT (07:00:20-11:00:20Z), 17 calendar triggers 15 min apart"
+        },
+        {
+          "drift": "NONE_RECORDED",
+          "management": "HOST_ONLY",
+          "name": "AG_FX_LONDON_NEWYORK_SHADOW",
+          "trigger": "Mon-Fri 18:30:20-21:30:20 MMT (12:00:20-15:00:20Z), 13 calendar triggers 15 min apart"
+        },
+        {
+          "drift": "NONE_RECORDED",
+          "management": "HOST_ONLY",
+          "name": "AG_LSMC_EURUSD_Friction_WindowA_AsianRef",
+          "trigger": "Mon-Fri 12:00 MMT (05:30Z)"
+        },
+        {
+          "drift": "NONE_RECORDED",
+          "management": "HOST_ONLY",
+          "name": "AG_LSMC_EURUSD_Friction_WindowB_PreLondon",
+          "trigger": "Mon-Fri 13:20 MMT (06:50Z)"
+        },
+        {
+          "drift": "NONE_RECORDED",
+          "management": "HOST_ONLY",
+          "name": "AG_LSMC_EURUSD_Friction_WindowC_London",
+          "trigger": "Mon-Fri 15:30 MMT (09:00Z)"
+        },
+        {
+          "drift": "NONE_RECORDED",
+          "management": "HOST_ONLY",
+          "name": "AG_LSMC_EURUSD_Friction_WindowD_LondonNY",
+          "trigger": "Mon-Fri 19:00 MMT (12:30Z)"
+        }
+      ]
+    },
+    "repo_declared": [
       {
         "cadence": {
           "raw_line": "$repeat = (New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval (New-TimeSpan -Minutes $t.Minutes) -RepetitionDuration (New-TimeSpan -Hours 24)).Repetition",
@@ -86,7 +196,13 @@
           "value": "Daily trigger with a repeated interval"
         }
       }
-    ]
+    ],
+    "runtime_observation": {
+      "source": "scripts/host/heartbeat.py output",
+      "status": "NOT_PUBLISHED"
+    },
+    "source": "scripts/host/install_tasks.ps1",
+    "target_policy": "NO_SEPARATE_TARGET_CAPTURED"
   },
   "schema": "AG_DOC_FACTS_V3",
   "strategies": [
@@ -163,6 +279,22 @@
         "evidence_source": null,
         "value": null
       },
+      "id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+      "logic_verified": {
+        "evidence_source": null,
+        "value": null
+      },
+      "version": "1.0.0"
+    },
+    {
+      "demo_authorized": {
+        "evidence_source": "strategies/registry.yaml",
+        "value": false
+      },
+      "edge_verified": {
+        "evidence_source": null,
+        "value": null
+      },
       "id": "ST_LARGE_SMC_V1",
       "logic_verified": {
         "evidence_source": null,
@@ -202,5 +334,15 @@
       },
       "version": "1.0.1"
     }
-  ]
+  ],
+  "telegram_scope": {
+    "immediate_send_enabled": [
+      "TICKET_READY",
+      "LSMC_OPPORTUNITY"
+    ],
+    "informational_disabled": {
+      "INFO_ONLY_*": "PENDING_OWNER_DECISION C16",
+      "WATCH_READY": "PENDING_OWNER_DECISION C16"
+    }
+  }
 }

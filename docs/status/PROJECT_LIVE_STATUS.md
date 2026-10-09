@@ -2,7 +2,7 @@
 # Project Live Status
 
 Schema: `AG_PROJECT_LIVE_STATUS_V4`
-inputs_sha256: `07e7a2cd5a42a026196783329adcfb2ffe76bfbcded77b49fb31013949c39d3d`
+inputs_sha256: `3137beff3b9d81f3ca50380d4acf3068641c2ae9df6460bcb323d3a61f251659`
 
 ## Strategy authority
 
@@ -12,6 +12,7 @@ inputs_sha256: `07e7a2cd5a42a026196783329adcfb2ffe76bfbcded77b49fb31013949c39d3d
 | `SESSION_TRADE_V1` | `1` | false | false |
 | `SMC_3R_V1` | `unspecified` | false | false |
 | `ST_ASIAN_SWEEP_5R_V1` | `1.1.1` | false | false |
+| `ST_CRYPTO_CFD_SWEEP_RETEST_V1` | `1.0.0` | false | false |
 | `ST_LARGE_SMC_V1` | `1.0.7` | false | false |
 | `ST_LIQUIDITY_SWEEP_RETEST_V1` | `2.0.0` | false | false |
 | `ST_SESSION_SWEEP_CONTINUATION_V1` | `1.0.1` | false | false |

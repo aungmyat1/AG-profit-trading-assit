@@ -1,0 +1,14 @@
+{
+  "n": 65,
+  "wins": 10,
+  "losses": 55,
+  "win_rate": 0.15384615384615385,
+  "gross_r": -16.25,
+  "net_r": -16.25,
+  "expectancy_r": -0.25,
+  "profit_factor": 0.7045454545454546,
+  "max_drawdown_r": 25.25,
+  "largest_single_trade_r": 4.25,
+  "largest_trade_pct_of_total_abs_net_r": 0.04533333333333334,
+  "cost_r_per_trade_applied": 0.0
+}

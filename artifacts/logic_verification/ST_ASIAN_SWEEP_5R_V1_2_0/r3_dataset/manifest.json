@@ -1,0 +1,18 @@
+{
+  "asian_london_source_rows": 14,
+  "canonicalization": "sorted-key compact JSON UTF-8; timestamps UTC ISO-8601",
+  "case_count": 3,
+  "cases_file": "cases.json",
+  "cases_file_sha256": "ebe466e31af7e891bd66036e399470eb18836ed903ee86084ef3b5eec871f53e",
+  "contract_hash": "c96221e69ad10bd016d072688c3cf791caaac9afe4bdb74be289cc50f5b34770",
+  "dataset_id": "AG_ASIAN_SWEEP_V1_2_R3_LOGIC_PARITY_001",
+  "dataset_sha256": "a3c1ee5b04792dcea4defbd868cb0ed1a048927deddb68b9b67ecf842856fd80",
+  "full_ticket_eligibility_cases": 0,
+  "insufficient_raw_data_excluded": 11,
+  "logic_parity_cases": 3,
+  "no_case_edits_after_freeze": true,
+  "out_of_scope_excluded": 9,
+  "source_rows_total": 23,
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "strategy_version": "1.2.0"
+}

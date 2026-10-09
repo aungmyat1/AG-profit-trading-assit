@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields
-from datetime import datetime, timezone
 import hashlib
 import json
 import math
 import re
+from dataclasses import dataclass, fields
+from datetime import datetime, timezone
 from types import MappingProxyType
 from typing import Any, ClassVar, Mapping
-
 
 SCHEMA_VERSION = "1.0"
 _PROVENANCE_FIELDS = {"event_id", "created_at", "source", "correlation_id"}

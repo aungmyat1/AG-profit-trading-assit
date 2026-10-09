@@ -29,7 +29,7 @@ closed-candle close-beyond check (`ZoneStatus.INVALIDATED`'s own frozen definiti
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Optional
 
 from supply_demand.models import ZoneResult, ZoneRole, ZoneStatus
 

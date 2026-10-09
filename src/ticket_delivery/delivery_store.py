@@ -24,7 +24,6 @@ from typing import Optional
 from runtime_state.store import JsonKeyValueStore
 
 from .models import (
-    ALL_STATES,
     AUTOMATIC_TERMINAL_STATES,
     REASON_ALREADY_CLAIMED,
     REASON_EXPIRED,

@@ -148,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         print(f"LIVE_STATUS_FRESH: {OUTPUT_PATH}")
         return 0
-    OUTPUT_PATH.write_text(rendered, encoding="utf-8")
+    OUTPUT_PATH.write_text(rendered, encoding="utf-8", newline="\n")
     print(f"LIVE_STATUS_WRITTEN: {OUTPUT_PATH}")
     return 0
 
