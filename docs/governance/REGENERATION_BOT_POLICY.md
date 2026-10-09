@@ -10,12 +10,22 @@ review_by: 2026-11-07
 decision in `docs/governance/OWNER_DECISION_REGISTER.md` (rows `REG-REGEN-BOOTSTRAP` and
 `REG-REGEN-STALE-CLOSE`). It does not amend `AGENTS.md`.
 
-**Shipped state (R6B step 0): both E1 and E2 are DENIED.** In `scripts/governance/regen_publish.py`:
+**Shipped state (R6B): default deny.** Every regeneration side effect runs only if it is listed
+in `config/governance/regen_permissions.json`. The actions are `bootstrap_push`,
+`push_regen_branch`, `create_pr`, `close_superseded_pr` and `dispatch_ci`.
 
-- `ALLOW_BOOTSTRAP_PUSH = False`: a first publication fails closed with `REGEN_BOOTSTRAP_DENIED` and pushes nothing.
-- `ALLOW_SUPERSEDE_CLOSE = False`: stale bot PRs are left untouched.
+A missing or invalid config, or any unknown action name, denies everything. The checks live
+in `scripts/governance/regen_permissions.py`. `regen_publish.publish()` applies them, and
+again inside every `GhPulls`/`Git` mutating call.
 
-The owner opens regeneration PRs until E1 is approved. It grants no general permission to
+The committed allowlist is `push_regen_branch`, `create_pr` and `dispatch_ci`. **E1
+`bootstrap_push` and E2 `close_superseded_pr` are not listed:**
+
+- A first publication fails closed with `REGEN_BOOTSTRAP_DENIED` and pushes nothing.
+- Stale bot PRs are left untouched.
+
+Approving E1 or E2 means the owner records the decision, and a reviewed PR then adds the
+action to the allowlist. It grants no general permission to
 push before a PR exists, to close PRs, or to bypass branch protection.
 
 ## Scope
