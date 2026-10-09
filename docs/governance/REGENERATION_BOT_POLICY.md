@@ -8,7 +8,14 @@ review_by: 2026-11-07
 
 **Status: PROPOSED.** Nothing in this document is authorized until the owner records a
 decision in `docs/governance/OWNER_DECISION_REGISTER.md` (rows `REG-REGEN-BOOTSTRAP` and
-`REG-REGEN-STALE-CLOSE`). It does not amend `AGENTS.md`. It grants no general permission to
+`REG-REGEN-STALE-CLOSE`). It does not amend `AGENTS.md`.
+
+**Shipped state (R6B step 0): both E1 and E2 are DENIED.** In `scripts/governance/regen_publish.py`:
+
+- `ALLOW_BOOTSTRAP_PUSH = False`: a first publication fails closed with `REGEN_BOOTSTRAP_DENIED` and pushes nothing.
+- `ALLOW_SUPERSEDE_CLOSE = False`: stale bot PRs are left untouched.
+
+The owner opens regeneration PRs until E1 is approved. It grants no general permission to
 push before a PR exists, to close PRs, or to bypass branch protection.
 
 ## Scope

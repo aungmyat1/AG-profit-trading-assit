@@ -41,6 +41,10 @@ CI_PENDING = "CI_PENDING"
 CI_SUCCESS = "CI_SUCCESS"
 CI_FAILED = "CI_FAILED"
 CI_UNKNOWN = "CI_UNKNOWN"
+# R6B step 0: both pending-owner permissions (REG-REGEN-BOOTSTRAP, REG-REGEN-STALE-CLOSE) are
+# denied until the owner approves them. Denied bootstrap fails closed; denied closure is a no-op.
+ALLOW_BOOTSTRAP_PUSH = False
+ALLOW_SUPERSEDE_CLOSE = False
 BOT_NAME = "github-actions[bot]"
 BOT_EMAIL = "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -194,6 +198,8 @@ def _verify_provenance(git: Git, target_sha: str, head: str) -> None:
 
 
 def _supersede_others(pulls, others: list[dict], by: str) -> None:
+    if not ALLOW_SUPERSEDE_CLOSE:
+        return  # denied: stale bot PRs stay open; the readiness audit holds them
     for pr in others:
         pulls.supersede(pr["number"], by)
 
@@ -226,6 +232,9 @@ def publish(git: Git, pulls, target_sha: str, correlation_id: str) -> dict:
         raise RegenError("REGEN_PR_HEAD_MOVED")
 
     if observed is None:
+        if not ALLOW_BOOTSTRAP_PUSH:
+            raise RegenError("REGEN_BOOTSTRAP_DENIED: pushing a branch before its PR exists is not "
+                             "approved (REG-REGEN-BOOTSTRAP); the owner must open the regeneration PR")
         bootstrap = _commit(git, git("rev-parse", f"{target_sha}^{{tree}}"), target_sha,
                             bootstrap_message(target_sha))
         git.push_fast_forward(bootstrap, branch)  # rejected if a concurrent run created the branch
