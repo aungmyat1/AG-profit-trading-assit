@@ -20,6 +20,7 @@ import importlib.util
 import json
 import os
 import random
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -56,22 +57,31 @@ OWNER_CONFIG = "config/owner_ticket.yaml"       # single D2 carrier (OD1009-D2),
 COVERAGE = {
     "instruments": {
         "EURUSD": "VERIFIED_RECORDED_FIXTURE",
-        "GBPUSD": "NOT_EVIDENCED: no usable recorded GBPUSD M15 sessions on main (SSC_FRESH_DEV_GEN_002 package is "
-                  "QUARANTINED, +3h misaligned; ticket_outcome_m1 is 5 synthetic bars); no external data fetched",
+        "GBPUSD": "RECORDED_FIXTURE (status computed per run from its own gate results)",
         "USDJPY": "PENDING_AGP-C2-SYMMAP",
         "XAUUSD": "PENDING_AGP-C2-SYMMAP",
     },
     "branches": {"SWEEP": "VERIFIED_RECORDED_FIXTURE", "TREND": "VERIFIED_RECORDED_FIXTURE (fails closed)",
                  "RANGE_REJECTION": "UNIT_ONLY (no recorded day yields Entry 3)"},
 }
-FIXTURE = "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv"
-L4_FAILURES = "tests/fixtures/asian_sweep_v1_1_2/l4_recorded_failures.json"
-DAYS = ("2026-06-15", "2026-06-16", "2026-06-17", "2026-06-23", "2026-07-17")
+# Data-driven symbol table. EURUSD runs first on the shared seed (byte-identical to the #108 report);
+# every further symbol draws from its own seeded stream so adding one never perturbs another.
+SYMBOLS = {
+    "EURUSD": {"fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv", "provenance": None,
+               "l4_failures": "tests/fixtures/asian_sweep_v1_1_2/l4_recorded_failures.json", "seed": None},
+    "GBPUSD": {"fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded.csv",
+               "provenance": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded.PROVENANCE.md",
+               "l4_failures": None, "seed": "112:GBPUSD"},
+}
+FIXTURE = SYMBOLS["EURUSD"]["fixture"]
+L4_FAILURES = SYMBOLS["EURUSD"]["l4_failures"]
+DAY_TYPES = ("long-sweep", "short-sweep", "TREND", "no-setup")
 CYCLES = {"ASIAN_LONDON": ("Asian", 24), "LONDON_NEWYORK": ("London", 20)}
 TEST_SPREAD = 0.00002          # L2-closure test input (0.2 pip), not recorded data
 SEMANTIC = ("decision", "reason_code", "regime", "setup", "signal_id", "box", "signal_timestamp", "direction",
             "entry", "stop_loss", "risk_distance", "targets")
 SEED, MUTATIONS_PER_CASE, SYNTHETIC_SESSIONS = 112, 25, 400
+SYMBOLS["EURUSD"]["seed"] = SEED
 DECLARED_FAIL_CLOSED = {"R.regime_branch", "R.entry_trigger", "R.entry_level", "R.stop_loss", "R.target_leg2",
                         "R.max_spread", "R.max_spread_fraction", "R.target_order"}
 
@@ -84,10 +94,28 @@ def canon(obj: Any) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True, default=str).encode()).hexdigest()
 
 
-def load_candles() -> List[Candle]:
-    with (ROOT / FIXTURE).open() as fh:
+def verify_provenance(symbol: str) -> Optional[Dict[str, Any]]:
+    """Fail closed: a fixture with a provenance note is used only if its byte sha256 equals the note's
+    `- sha256:` line (the note hashes the git blob; the file is `-text`, so disk bytes are the blob)."""
+    note_path = SYMBOLS[symbol]["provenance"]
+    if note_path is None:
+        return None
+    m = re.search(r"^- sha256: `([0-9a-f]{64})`", (ROOT / note_path).read_text(encoding="utf-8"), re.M)
+    want = m.group(1) if m else None
+    got = hashlib.sha256((ROOT / SYMBOLS[symbol]["fixture"]).read_bytes()).hexdigest()
+    if want != got:
+        raise RuntimeError(f"PROVENANCE_MISMATCH: {symbol} fixture sha256 {got} != note {want}")
+    return {"note": note_path, "fixture_sha256": got}
+
+
+def load_candles(symbol: str) -> List[Candle]:
+    with (ROOT / SYMBOLS[symbol]["fixture"]).open() as fh:
         return [Candle(dt.datetime.fromisoformat(r["timestamp_utc"]).replace(tzinfo=UTC), float(r["open"]),
                        float(r["high"]), float(r["low"]), float(r["close"])) for r in csv.DictReader(fh)]
+
+
+def fixture_days(candles: List[Candle]) -> List[str]:
+    return sorted({c.time.date().isoformat() for c in candles})
 
 
 def split(candles: List[Candle], cycle: str, day: dt.date):
@@ -98,9 +126,23 @@ def split(candles: List[Candle], cycle: str, day: dt.date):
     return w, now, session, post
 
 
-def ticket(cycle: str, day: dt.date, session, post, now, spread: Optional[float] = TEST_SPREAD) -> Dict[str, Any]:
-    return fx.build_fx_ticket("EURUSD", cycle, day, session, CYCLES[cycle][1], post, data_source="FIXTURE",
+def ticket(cycle: str, day: dt.date, session, post, now, spread: Optional[float] = TEST_SPREAD, *,
+           symbol: str) -> Dict[str, Any]:
+    return fx.build_fx_ticket(symbol, cycle, day, session, CYCLES[cycle][1], post, data_source="FIXTURE",
                               evaluated_at=now, data_close=now, spread=spread, strategy_path=CANDIDATE)
+
+
+def day_type(t: Dict[str, Any]) -> str:
+    """Harness classification only (engine ticket fields); no new market logic."""
+    if t.get("setup") == "SWEEP" and t.get("direction") in ("LONG", "SHORT"):
+        return "long-sweep" if t["direction"] == "LONG" else "short-sweep"
+    if t.get("setup") == "TREND":
+        return "TREND"
+    if t.get("setup") == "RANGE":
+        return "range-rejection"
+    if t.get("direction") is None and t.get("decision") == "NO_TRADE":
+        return "no-setup"
+    return "insufficient-data"
 
 
 def semantic(t: Dict[str, Any]) -> Dict[str, Any]:
@@ -118,12 +160,13 @@ def geometry_ok(t: Dict[str, Any]) -> Dict[str, bool]:
             "target_order": bool(order)}
 
 
-def ticket_gates(strategy, cycle, day, session, post, now, w, t, spread, warn_r) -> Optional[Dict[str, Any]]:
+def ticket_gates(strategy, cycle, day, session, post, now, w, t, spread, warn_r,
+                 symbol: str) -> Optional[Dict[str, Any]]:
     if t.get("direction") is None:
         return None
     ref_name, bars = CYCLES[cycle]
     return {
-        "L1": l1_determinism(lambda: ticket(cycle, day, session, post, now, spread), session + post, now),
+        "L1": l1_determinism(lambda: ticket(cycle, day, session, post, now, spread, symbol=symbol), session + post, now),
         "L2": l2_rule_conformance(strategy, t, session, bars, post, digits=5, spread=spread),
         "L3": l3_geometry(t, post, digits=5, declared_rr=5.0),
         "L4": l4_data_session(t, ref_window=w["ref"], trade_window=w["trade"], reference_name=ref_name,
@@ -133,13 +176,13 @@ def ticket_gates(strategy, cycle, day, session, post, now, w, t, spread, warn_r)
     }
 
 
-def manual_l6(cycle, day, session, post, now) -> Optional[Dict[str, Any]]:
+def manual_l6(cycle, day, session, post, now, symbol: str) -> Optional[Dict[str, Any]]:
     """L6 exactly as the owner ticket computes it (logic_gate.l6_freshness), candidate replayed test-locally."""
     from v1_tickets.manual_ticket import build_manual_ticket, load_owner_config
     saved = fx.STRATEGY_PATH, fx.build_fx_ticket
     fx.STRATEGY_PATH, fx.build_fx_ticket = CANDIDATE, functools.partial(saved[1], strategy_path=CANDIDATE)
     try:
-        t = build_manual_ticket("EURUSD", cycle, day, session, CYCLES[cycle][1], post, now=now, data_close=now,
+        t = build_manual_ticket(symbol, cycle, day, session, CYCLES[cycle][1], post, now=now, data_close=now,
                                 spread=TEST_SPREAD, owner=load_owner_config(ROOT),
                                 data_source="FIXTURE")
     finally:
@@ -151,9 +194,10 @@ def manual_l6(cycle, day, session, post, now) -> Optional[Dict[str, Any]]:
 
 # ------------------------------------------------------------------------------- L3 causality
 
-def causality(cycle: str, day: dt.date, session, post, now, rng: random.Random) -> Dict[str, Any]:
-    full = semantic(ticket(cycle, day, session, post, now))
-    stream = [semantic(ticket(cycle, day, session, post[:k], now)) for k in range(len(post) + 1)]
+def causality(cycle: str, day: dt.date, session, post, now, rng: random.Random,
+              symbol: str) -> Dict[str, Any]:
+    full = semantic(ticket(cycle, day, session, post, now, symbol=symbol))
+    stream = [semantic(ticket(cycle, day, session, post[:k], now, symbol=symbol)) for k in range(len(post) + 1)]
     first = next((k for k, s in enumerate(stream) if s["direction"] is not None), None)
     # Prefix: once emitted, every longer prefix carries the identical decision; before it, none.
     prefix_mismatch = sum(1 for k, s in enumerate(stream) if first is not None and k >= first and s != full)
@@ -170,10 +214,11 @@ def causality(cycle: str, day: dt.date, session, post, now, rng: random.Random) 
                 fut.append(Candle(c.time, round(o, 5), round(max(o, cl) + rng.uniform(0, 0.003), 5),
                                   round(min(o, cl) - rng.uniform(0, 0.003), 5), round(cl, 5)))
             mutated += 1
-            mismatch += semantic(ticket(cycle, day, session, post[:first] + fut, now)) != full
+            mismatch += semantic(ticket(cycle, day, session, post[:first] + fut, now, symbol=symbol)) != full
     return {"bars": len(post), "first_emission_prefix_len": first, "prefix_mismatches": prefix_mismatch,
             "pre_emission_signals": pre_emission, "streaming_hash_parity": stream_parity,
-            "future_mutations": mutated, "future_mutation_mismatches": mismatch}
+            "future_mutations": mutated, "future_mutation_mismatches": mismatch,
+            "_first_setup": stream[first]["setup"] if first is not None else None}
 
 
 # ------------------------------------------------------------------------------- L4 synthetic geometry
@@ -200,7 +245,7 @@ def l4_geometry(strategy, rng: random.Random) -> Dict[str, Any]:
     for i in range(SYNTHETIC_SESSIONS):
         cycle = ("ASIAN_LONDON", "LONDON_NEWYORK")[i % 2]
         w, now, session, post = synthetic_session(rng, cycle, day)
-        t = ticket(cycle, day, session, post, now, spread=0.0)
+        t = ticket(cycle, day, session, post, now, spread=0.0, symbol="EURUSD")   # synthetic, EURUSD-scaled
         out["sessions"] += 1
         g = geometry_ok(t)
         if not g["has_levels"]:
@@ -222,29 +267,25 @@ def l4_geometry(strategy, rng: random.Random) -> Dict[str, Any]:
 
 # ------------------------------------------------------------------------------- report
 
-def build_report(generated_at: str) -> Dict[str, Any]:
-    strategy = load_strategy(CANDIDATE)
-    from v1_tickets.manual_ticket import load_owner_config
-    owner = load_owner_config(ROOT)
-    registry = load_registry()[STRATEGY_ID]
-    ident = logic_identity(STRATEGY_ID, VERSION)
-    candles = load_candles()
-    rng = random.Random(SEED)
-    cases, causal, l6s = [], [], []
+def _run_symbol(symbol: str, strategy, owner, rng: random.Random) -> List[Dict[str, Any]]:
+    candles = load_candles(symbol)
+    by_day: Dict[str, List[Candle]] = {}
+    for c in candles:
+        by_day.setdefault(c.time.date().isoformat(), []).append(c)
+    cases = []
     for cycle in CYCLES:
-        for ds in DAYS:
+        for ds in fixture_days(candles):
             day = dt.date.fromisoformat(ds)
-            w, now, session, post = split(candles, cycle, day)
-            t = ticket(cycle, day, session, post, now)
-            gates = ticket_gates(strategy, cycle, day, session, post, now, w, t, TEST_SPREAD, owner["cost_warn_R"])
+            w, now, session, post = split(by_day[ds], cycle, day)
+            t = ticket(cycle, day, session, post, now, symbol=symbol)
+            gates = ticket_gates(strategy, cycle, day, session, post, now, w, t, TEST_SPREAD, owner["cost_warn_R"],
+                                 symbol)
             l2_fail = sorted({c["id"] for c in gates["L2"]["checks"] if c["verdict"] in (FAIL, NOT_EVALUABLE)}) if gates else []
-            c3 = causality(cycle, day, session, post, now, rng)
-            m6 = manual_l6(cycle, day, session, post, now)
-            causal.append(c3)
-            l6s.append(m6)
+            c3 = causality(cycle, day, session, post, now, rng, symbol)
+            m6 = manual_l6(cycle, day, session, post, now, symbol)
             cases.append({
-                "case_id": f"recorded:EURUSD:{cycle}:{ds}", "cycle": cycle, "session_date": ds,
-                "fixture": FIXTURE, "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+                "case_id": f"recorded:{symbol}:{cycle}:{ds}", "cycle": cycle, "session_date": ds,
+                "fixture": SYMBOLS[symbol]["fixture"], "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
                 "setup": t.get("setup"), "direction": t.get("direction"), "entry": t.get("entry"),
                 "stop_loss": t.get("stop_loss"), "decision": t["decision"],
                 "ticket_gate_status": {k: v["status"] for k, v in gates.items()} if gates else None,
@@ -255,6 +296,104 @@ def build_report(generated_at: str) -> Dict[str, Any]:
                 "edge_verified": m6["edge_verified"],
                 "owner_ticket_L6": m6["L6"]["status"] if m6["L6"] else None,
             })
+            cases[-1]["_day_type"] = day_type(t)
+            cases[-1]["_first_setup"] = c3.pop("_first_setup")
+            cases[-1]["_l6"] = m6
+    return cases
+
+
+def _cached_strategy_loads():
+    """Verification-local memo of load_strategy (pure for an unchanged file); restored afterwards."""
+    from v1_tickets import manual_ticket
+    saved = fx.load_strategy, manual_ticket.load_strategy
+    cached = functools.lru_cache(maxsize=None)(saved[0])
+    fx.load_strategy = manual_ticket.load_strategy = cached
+    return lambda: (setattr(fx, "load_strategy", saved[0]), setattr(manual_ticket, "load_strategy", saved[1]))
+
+
+def _symbol_checks(symbol: str, cases: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Per-symbol L2/L3/L4/L6 evidence over that symbol's recorded cases."""
+    conforming = sorted({c["cycle"] for c in cases if c["ticket_gate_blocking_failures"] == []})
+    causal = [c["causality"] for c in cases]
+    l3 = {"cases": len(causal),
+          "prefix_mismatches": sum(c["prefix_mismatches"] for c in causal),
+          "pre_emission_signals": sum(c["pre_emission_signals"] for c in causal),
+          "streaming_batch_mismatches": sum(not c["streaming_hash_parity"] for c in causal),
+          "future_mutations": sum(c["future_mutations"] for c in causal),
+          "future_mutation_mismatches": sum(c["future_mutation_mismatches"] for c in causal)}
+    raw_zero = [c["case_id"] for c in cases if c["geometry"]["has_levels"] and not c["geometry"]["positive_stop"]]
+    raw_inv = [c["case_id"] for c in cases if c["geometry"]["has_levels"] and not c["geometry"]["target_order"]]
+    by_id = {c["case_id"]: c for c in cases}
+    leaked = [i for i in raw_zero + raw_inv if not by_id[i]["ticket_gate_blocking_failures"]]
+    admitted = [c for c in cases if c["ticket_gate_blocking_failures"] == []]
+    l6 = [c["_l6"]["L6"]["status"] for c in cases if c["_l6"]["L6"]]
+    counts = {k: 0 for k in DAY_TYPES + ("range-rejection", "insufficient-data")}
+    per_cycle = {cy: dict(counts) for cy in CYCLES}
+    for c in cases:
+        counts[c["_day_type"]] += 1
+        per_cycle[c["cycle"]][c["_day_type"]] += 1
+    # Which branch was emitted first, and was that emission later revised (prefix or future-mutation)?
+    revision = {}
+    for c in cases:
+        fs = c["_first_setup"]
+        if fs is None:
+            continue
+        r = revision.setdefault(fs, {"cases": 0, "revised": 0, "revised_case_ids": []})
+        r["cases"] += 1
+        cz = c["causality"]
+        if cz["prefix_mismatches"] or cz["future_mutation_mismatches"] or not cz["streaming_hash_parity"]:
+            r["revised"] += 1
+            r["revised_case_ids"].append(c["case_id"])
+    return {
+        "cases": len(cases), "days": len({c["session_date"] for c in cases}),
+        "l3_by_first_emitted_setup": revision,
+        "l2_undeclared_cases": [c["case_id"] for c in cases if c["l2_undeclared"]],
+        "conforming_cycles": conforming,
+        "l3": l3,
+        "l4": {"raw_zero_stop": len(raw_zero), "raw_tp_inversion": len(raw_inv), "leaked_to_admitted": leaked,
+               "admitted": len(admitted),
+               "admitted_bad_geometry": sum(not (c["geometry"]["positive_stop"] and c["geometry"]["target_order"])
+                                            for c in admitted)},
+        "l6_statuses": sorted(set(l6)), "l6_cases": len(l6),
+        "edge_verified_false": all(c["edge_verified"] is False for c in cases),
+        "ticket_ready_cases": sum(c["owner_ticket_state"] == "TICKET_READY" for c in cases),
+        "day_types": counts, "day_types_by_cycle": per_cycle,
+    }
+
+
+def build_report(generated_at: str) -> Dict[str, Any]:
+    restore = _cached_strategy_loads()
+    try:
+        return _build_report(generated_at)
+    finally:
+        restore()
+
+
+def _build_report(generated_at: str) -> Dict[str, Any]:
+    strategy = load_strategy(CANDIDATE)
+    from v1_tickets.manual_ticket import load_owner_config
+    owner = load_owner_config(ROOT)
+    registry = load_registry()[STRATEGY_ID]
+    ident = logic_identity(STRATEGY_ID, VERSION)
+    provenance = {sym: verify_provenance(sym) for sym in SYMBOLS}
+    # EURUSD first on the shared stream, then the synthetic L4 sessions (unchanged order), then other symbols.
+    rng = random.Random(SEED)
+    by_symbol = {"EURUSD": _run_symbol("EURUSD", strategy, owner, rng)}
+    recorded_fail = json.loads((ROOT / L4_FAILURES).read_text())["cases"]
+    eur = {(c["cycle"], c["session_date"]): c for c in by_symbol["EURUSD"]}
+    rec = []
+    for f in recorded_fail:
+        c = eur[(f["cycle"], f["session_date"])]
+        reproduces = (not c["geometry"]["positive_stop"]) if f["kind"] == "ZERO_STOP" else (not c["geometry"]["target_order"])
+        rec.append({**f, "reproduces_in_engine": reproduces,
+                    "blocked_by_candidate": bool(c["ticket_gate_blocking_failures"]),
+                    "fail_closed_rule": f["fail_closed_rule"] in c["l2_fail_ids"]})
+    synth = l4_geometry(strategy, rng)
+    for sym, spec in SYMBOLS.items():
+        if sym != "EURUSD":
+            by_symbol[sym] = _run_symbol(sym, strategy, owner, random.Random(spec["seed"]))
+    per_symbol = {sym: _symbol_checks(sym, cases) for sym, cases in by_symbol.items()}
+    cases = [c for sym in SYMBOLS for c in by_symbol[sym]]
 
     # L1 identity
     l1_checks = {
@@ -263,61 +402,81 @@ def build_report(generated_at: str) -> Dict[str, Any]:
         "frozen_v1_1_1_contract_unchanged": _sha256_text((FROZEN,), ROOT) == FROZEN_CONTRACT_HASH,
         "runtime_binding_v1_1_1": registry["config_source"] == FROZEN and fx.STRATEGY_PATH == FROZEN,
         "replay_determinism": all(c["ticket_gate_status"] is None or c["ticket_gate_status"]["L1"] == PASS for c in cases),
+        "fixture_provenance_verified": all(provenance[s] is not None for s in SYMBOLS if SYMBOLS[s]["provenance"]),
     }
-    # L2 (closure reused): no undeclared divergence, nothing NOT_EVALUABLE, conforming sweep per cycle passes.
-    conforming = {c["cycle"] for c in cases if c["ticket_gate_blocking_failures"] == []}
-    l2_ok = all(not c["l2_undeclared"] for c in cases) and conforming == set(CYCLES)
-    # L3 causality
-    l3 = {"cases": len(causal),
-          "prefix_mismatches": sum(c["prefix_mismatches"] for c in causal),
-          "pre_emission_signals": sum(c["pre_emission_signals"] for c in causal),
-          "streaming_batch_mismatches": sum(not c["streaming_hash_parity"] for c in causal),
-          "future_mutations": sum(c["future_mutations"] for c in causal),
-          "future_mutation_mismatches": sum(c["future_mutation_mismatches"] for c in causal)}
-    l3_ok = not (l3["prefix_mismatches"] or l3["pre_emission_signals"] or l3["streaming_batch_mismatches"]
-                 or l3["future_mutation_mismatches"]) and l3["future_mutations"] > 0
-    # L4 geometry: recorded failures reproduce in the engine output, and are never admitted by the gates.
-    recorded_fail = json.loads((ROOT / L4_FAILURES).read_text())["cases"]
-    by_id = {(c["cycle"], c["session_date"]): c for c in cases}
-    rec = []
-    for f in recorded_fail:
-        c = by_id[(f["cycle"], f["session_date"])]
-        reproduces = (not c["geometry"]["positive_stop"]) if f["kind"] == "ZERO_STOP" else (not c["geometry"]["target_order"])
-        rec.append({**f, "reproduces_in_engine": reproduces,
-                    "blocked_by_candidate": bool(c["ticket_gate_blocking_failures"]),
-                    "fail_closed_rule": f["fail_closed_rule"] in c["l2_fail_ids"]})
-    synth = l4_geometry(strategy, rng)
-    admitted = [c for c in cases if c["ticket_gate_blocking_failures"] == []]
+    # L2 (closure reused): no undeclared divergence or NOT_EVALUABLE check on any symbol, and each window has a
+    # conforming sweep passing L1-L4 on at least one symbol. A symbol without a conforming ticket in a window
+    # is NOT_EVIDENCED there (absence of a case), never a divergence.
+    l2_ok = (all(not p["l2_undeclared_cases"] for p in per_symbol.values())
+             and set(CYCLES) <= {cy for p in per_symbol.values() for cy in p["conforming_cycles"]})
+    l3 = {k: sum(p["l3"][k] for p in per_symbol.values()) for k in per_symbol["EURUSD"]["l3"]}
+    l3_ok = all(not (p["l3"]["prefix_mismatches"] or p["l3"]["pre_emission_signals"]
+                     or p["l3"]["streaming_batch_mismatches"] or p["l3"]["future_mutation_mismatches"])
+                and p["l3"]["future_mutations"] > 0 for p in per_symbol.values())
     l4_ok = (all(r["reproduces_in_engine"] and r["blocked_by_candidate"] and r["fail_closed_rule"] for r in rec)
-             and all(c["geometry"]["positive_stop"] and c["geometry"]["target_order"] for c in admitted)
+             and all(not p["l4"]["leaked_to_admitted"] and p["l4"]["admitted_bad_geometry"] == 0
+                     for p in per_symbol.values())
              and synth["admitted_zero_stop"] == 0 and synth["admitted_tp_inversion"] == 0
              and synth["undeclared_l2_failures"] == 0)
     # L5 risk and friction from the single D2 carrier; absent inputs are WARN with a reason, never 0.
     l5_warn = [
         "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0"]
-    l5_warn.append("SPREAD_NOT_RECORDED: the recorded fixture has no bid/ask; cost_in_R not evaluable on recorded "
+    l5_warn.append("SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded "
                    "data (L2 closure uses a 0.2-pip test input only)")
     pending = sorted(s for s, v in COVERAGE["instruments"].items() if v == "PENDING_AGP-C2-SYMMAP")
     l5_warn.append(f"SYMBOL_METADATA_PENDING: {', '.join(pending)} -> PENDING_AGP-C2-SYMMAP (not invented)")
     l5_block = []
     if owner["risk_status"] != "SET":
         l5_block.append("RISK_CONFIG_MISSING: owner_ticket risk_pct/cost_warn_R/cost_block_R incomplete")
-    if not {"EURUSD"} <= set(EVIDENCED_PIP):
-        l5_block.append("SYMBOL_EVIDENCE_MISSING: EURUSD pip size not evidenced")
+    missing_pip = sorted(set(SYMBOLS) - set(EVIDENCED_PIP))
+    if missing_pip:
+        l5_block.append(f"SYMBOL_EVIDENCE_MISSING: pip size not evidenced for {missing_pip}")
     # L6 per logic_gate.l6_freshness on the owner ticket path.
-    l6_status = [m["L6"]["status"] for m in l6s if m["L6"]]
+    l6_status = [c["_l6"]["L6"]["status"] for c in cases if c["_l6"]["L6"]]
     l6_ok = bool(l6_status) and all(s == PASS for s in l6_status)
-    edge_false = all(m["edge_verified"] is False for m in l6s)
+    edge_false = all(p["edge_verified_false"] for p in per_symbol.values())
+    for c in cases:
+        c.pop("_l6")
+        c.pop("_first_setup")
+    day_types = {sym: {"counts": p["day_types"], "by_cycle": p["day_types_by_cycle"],
+                       "by_case": {c["case_id"]: c.pop("_day_type") for c in by_symbol[sym]}}
+                 for sym, p in per_symbol.items()}
+    coverage = json.loads(json.dumps(COVERAGE))
+    for sym, p in per_symbol.items():
+        missing = [cy for cy in CYCLES if cy not in p["conforming_cycles"]]
+        sym_fail = [g for g, ok in (
+            ("L2", not p["l2_undeclared_cases"]),
+            ("L3", not (p["l3"]["prefix_mismatches"] or p["l3"]["pre_emission_signals"]
+                        or p["l3"]["streaming_batch_mismatches"] or p["l3"]["future_mutation_mismatches"])),
+            ("L4", not p["l4"]["leaked_to_admitted"] and p["l4"]["admitted_bad_geometry"] == 0),
+            ("L6", p["l6_statuses"] == [PASS])) if not ok]
+        revised = {k: v["revised"] for k, v in p["l3_by_first_emitted_setup"].items() if v["revised"]}
+        coverage["instruments"][sym] = (
+            (f"RECORDED_FIXTURE_GATE_FAIL: {','.join(sym_fail)}"
+             + (f" (revised first emissions by setup: {revised})" if revised else "")) if sym_fail else
+            "VERIFIED_RECORDED_FIXTURE" if not missing else
+            f"VERIFIED_RECORDED_FIXTURE ({p['days']} days); conforming ticket NOT_EVIDENCED in {', '.join(missing)}")
+    range_seen = {sym: (d["counts"]["range-rejection"], p["l3_by_first_emitted_setup"].get("RANGE", {}).get("cases", 0))
+                  for (sym, d), p in zip(day_types.items(), per_symbol.values())}
+    if any(a or b for a, b in range_seen.values()):
+        coverage["branches"]["RANGE_REJECTION"] = "RECORDED: " + "; ".join(
+            f"{sym} {a} final / {b} first-emitted" for sym, (a, b) in range_seen.items() if a or b) + " (fails closed in L2)"
+    coverage["day_types"] = {sym: {t: (f"EVIDENCED ({n})" if n else "NOT_EVIDENCED")
+                                   for t, n in ((t, d["counts"][t]) for t in DAY_TYPES)}
+                             for sym, d in day_types.items()}
 
     checks = {
         "L1_identity_and_contract": {"verdict": PASS if all(l1_checks.values()) else FAIL, "evidence": l1_checks,
                                      "logic_identity": ident},
         "L2_specification_engine_equivalence": {
             "verdict": PASS if l2_ok else FAIL, "reused": "docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md",
-            "evidence": "no undeclared or NOT_EVALUABLE L2 check on any recorded case; conforming sweep passes "
-                        f"L1-L4 in {sorted(conforming)}"},
-        "L3_temporal_causality": {"verdict": PASS if l3_ok else FAIL, "evidence": l3, "seed": SEED},
+            "evidence": {sym: {"undeclared_cases": p["l2_undeclared_cases"], "conforming_cycles": p["conforming_cycles"],
+                               "conforming_not_evidenced": [cy for cy in CYCLES if cy not in p["conforming_cycles"]]}
+                         for sym, p in per_symbol.items()}},
+        "L3_temporal_causality": {"verdict": PASS if l3_ok else FAIL, "evidence": l3,
+                                  "by_symbol": {sym: p["l3"] for sym, p in per_symbol.items()}, "seed": SEED},
         "L4_price_geometry": {"verdict": PASS if l4_ok else FAIL, "recorded_failures": rec, "synthetic": synth,
+                              "by_symbol": {sym: p["l4"] for sym, p in per_symbol.items()},
                               "seed": SEED,
                               "fix": "no engine change (shared with frozen 1.1.1); 1.1.2 declared fail-closed rules "
                                      "R.stop_loss (risk_distance > 0) and R.target_order block every reproduced case"},
@@ -337,9 +496,13 @@ def build_report(generated_at: str) -> Dict[str, Any]:
         "strategy_id": STRATEGY_ID, "version": VERSION, "strategy": f"{STRATEGY_ID}@{VERSION}",
         "contract_path": CANDIDATE, "contract_hash": ident["contract_hash"], "engine_hash": ident["engine_identity"],
         "logic_identity": ident["digest"], "verification_code_sha": code_sha(),
-        "dataset_identity": {"path": FIXTURE, "sha256": sha256_file(FIXTURE),
-                             "classification": "RECORDED_DEVELOPMENT_FIXTURE"},
-        "cycles": list(CYCLES), "coverage": COVERAGE, "checks": checks, "cases": cases, "verdict": verdict,
+        "dataset_identity": {sym: {"path": spec["fixture"], "sha256": sha256_file(spec["fixture"]),
+                                   "classification": "RECORDED_DEVELOPMENT_FIXTURE",
+                                   "provenance": spec["provenance"],
+                                   "provenance_sha256_verified": provenance[sym] is not None}
+                             for sym, spec in SYMBOLS.items()},
+        "cycles": list(CYCLES), "symbols": list(SYMBOLS), "coverage": coverage, "per_symbol": per_symbol,
+        "day_types": day_types, "checks": checks, "cases": cases, "verdict": verdict,
         "edge_status": "NOT_VERIFIED", "edge_verified": False, "economic_status": "NOT_EVALUATED",
         "admission": "NOT_ADMITTED (runtime loads v1.1.1; owner decision required)",
         "ready_authority": "OFF (D6; config/v1_tickets/ready_authority.yaml unchanged)",
@@ -373,15 +536,18 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-dir", help="write report JSON + artifact set here")
     ap.add_argument("--date", default=dt.date.today().isoformat())
+    ap.add_argument("--report-name", default="AGP_C3_ASW_V112_LOGIC_VERIFICATION",
+                    help="report file stem; dated evidence from earlier runs is never overwritten")
+    ap.add_argument("--artifact-dir", default="artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2")
     args = ap.parse_args(argv)
     report = build_report(f"{args.date}T00:00:00Z")
     if args.out_dir:
         out = ROOT / args.out_dir
-        art = ROOT / "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2"
+        art = ROOT / args.artifact_dir
         art.mkdir(parents=True, exist_ok=True)
         for name, body in artifacts(report).items():
             (art / name).write_text(json.dumps(body, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
-        (out / f"AGP_C3_ASW_V112_LOGIC_VERIFICATION_{args.date}.json").write_text(
+        (out / f"{args.report_name}_{args.date}.json").write_text(
             json.dumps(report, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
     print(f"{report['schema']} {report['strategy']} verdict={report['verdict']}")
     for k, v in report["checks"].items():

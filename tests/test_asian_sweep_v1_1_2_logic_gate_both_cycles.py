@@ -7,6 +7,7 @@ Spread values are test inputs, not recorded data. LOGIC_VERIFIED never implies E
 from __future__ import annotations
 
 import csv
+import json
 import functools
 import datetime as dt
 from pathlib import Path
@@ -224,12 +225,17 @@ def test_report_l1_identity_binds_candidate_and_frozen_contract(report):
     assert l1["verdict"] == PASS and all(l1["evidence"].values())
 
 
-def test_report_l3_prefix_future_mutation_streaming_parity(report):
+def test_report_l3_prefix_future_mutation_streaming_parity_per_symbol(report):
     l3 = report["checks"]["L3_temporal_causality"]
-    ev = l3["evidence"]
-    assert l3["verdict"] == PASS and ev["future_mutations"] > 0
-    assert (ev["prefix_mismatches"], ev["pre_emission_signals"], ev["streaming_batch_mismatches"],
-            ev["future_mutation_mismatches"]) == (0, 0, 0, 0)
+    assert l3["verdict"] == PASS
+    for sym, ev in l3["by_symbol"].items():
+        assert ev["future_mutations"] > 0, sym
+        assert (ev["prefix_mismatches"], ev["pre_emission_signals"], ev["streaming_batch_mismatches"],
+                ev["future_mutation_mismatches"]) == (0, 0, 0, 0), sym
+    # Scope: the committed fixtures contain no RANGE (Entry 3) emission, so L3 says nothing about that
+    # branch. A provisional RANGE emission was observed on an uncommitted owner upload (see the report).
+    for sym, p in report["per_symbol"].items():
+        assert "RANGE" not in p["l3_by_first_emitted_setup"], sym
 
 
 def test_report_l4_recorded_zero_stop_and_tp_order_failures_reproduce_and_are_blocked(report):
@@ -257,17 +263,56 @@ def test_report_l5_reads_the_single_d2_carrier_and_absent_costs_warn_never_zero(
 
 
 def test_report_scopes_instrument_and_branch_coverage_truthfully(report):
+    l2 = report["checks"]["L2_specification_engine_equivalence"]["evidence"]
+    assert l2["GBPUSD"]["undeclared_cases"] == [] and l2["GBPUSD"]["conforming_not_evidenced"] == ["LONDON_NEWYORK"]
     cov = report["coverage"]
     assert cov["instruments"]["EURUSD"] == "VERIFIED_RECORDED_FIXTURE"
-    assert cov["instruments"]["GBPUSD"].startswith("NOT_EVIDENCED")
+    assert cov["instruments"]["GBPUSD"] == \
+        "VERIFIED_RECORDED_FIXTURE (10 days); conforming ticket NOT_EVIDENCED in LONDON_NEWYORK"
     assert (cov["instruments"]["USDJPY"], cov["instruments"]["XAUUSD"]) == ("PENDING_AGP-C2-SYMMAP",) * 2
     assert "AUDUSD" not in cov["instruments"]
     assert cov["branches"]["RANGE_REJECTION"].startswith("UNIT_ONLY")
-    assert {c["case_id"].split(":")[1] for c in report["cases"]} == {"EURUSD"}
+    assert {c["case_id"].split(":")[1] for c in report["cases"]} == {"EURUSD", "GBPUSD"}
+
+
+def test_report_day_types_come_from_the_harness_and_unseen_types_are_not_evidenced(report):
+    for sym, dtypes in report["coverage"]["day_types"].items():
+        counts = report["day_types"][sym]["counts"]
+        for t in ("long-sweep", "short-sweep", "TREND", "no-setup"):
+            assert dtypes[t] == (f"EVIDENCED ({counts[t]})" if counts[t] else "NOT_EVIDENCED")
+        assert sum(counts.values()) == report["per_symbol"][sym]["cases"]
+
+
+def test_report_eurusd_results_byte_identical_to_the_108_report(report):
+    root = Path(__file__).resolve().parents[1]
+    old = json.loads((root / "docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.json").read_text())
+    dump = lambda x: json.dumps(x, sort_keys=True, default=str)  # noqa: E731
+    new = json.loads(dump(report))
+    assert dump([c for c in new["cases"] if c["case_id"].startswith("recorded:EURUSD:")]) == dump(old["cases"])
+    for key in ("recorded_failures", "synthetic"):
+        assert dump(new["checks"]["L4_price_geometry"][key]) == dump(old["checks"]["L4_price_geometry"][key])
+    assert dump(new["checks"]["L3_temporal_causality"]["by_symbol"]["EURUSD"]) == \
+        dump(old["checks"]["L3_temporal_causality"]["evidence"])
+
+
+def test_gbpusd_fixture_is_used_only_when_its_sha256_matches_the_provenance_note(tmp_path, monkeypatch):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "asw_v112_logic_verification_prov", Path(__file__).resolve().parents[1] / "scripts/asw_v112_logic_verification.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert mod.verify_provenance("GBPUSD")["fixture_sha256"] == \
+        "f0b15f864a8bea72ad287427109106996f431047e2b283ad0777e804133b0cfe"
+    root = Path(__file__).resolve().parents[1]
+    tampered = tmp_path / "GBPUSD_M15_recorded.csv"
+    tampered.write_bytes((root / mod.SYMBOLS["GBPUSD"]["fixture"]).read_bytes() + b"\n")
+    monkeypatch.setitem(mod.SYMBOLS["GBPUSD"], "fixture", str(tampered))
+    with pytest.raises(RuntimeError, match="PROVENANCE_MISMATCH"):
+        mod.verify_provenance("GBPUSD")
 
 
 def test_report_l6_and_overall_verdict_without_edge(report):
     assert report["checks"]["L6_freshness_fields"]["verdict"] == PASS
-    assert report["verdict"] == "LOGIC_VERIFIED"
+    assert report["verdict"] == "LOGIC_VERIFIED"         # committed fixtures only; RANGE branch out of L3 scope
     assert report["edge_verified"] is False and report["economic_status"] == "NOT_EVALUATED"
     assert all(c["edge_verified"] is False and c["owner_ticket_state"] != "TICKET_READY" for c in report["cases"])

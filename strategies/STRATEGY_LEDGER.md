@@ -46,6 +46,10 @@ from canonical session windows or other repo conventions at the time of registra
   PASS, L5 WARN (no BLOCK); `LOGIC_VERIFIED` for EURUSD only (GBPUSD NOT_EVIDENCED, USDJPY/XAUUSD
   PENDING_AGP-C2-SYMMAP), EDGE false; still not admitted, READY OFF:
   `docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md`.
+  2026-10-09 GBPUSD (10 recorded days, #114 VT capture): L1-L6 pass on committed fixtures, conforming
+  LONDON_NEWYORK ticket NOT_EVIDENCED; RANGE branch not in the fixture. A provisional RANGE emission seen
+  on an uncommitted owner upload is recorded as an open finding; logic_status unchanged:
+  `docs/status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md`.
 - **Open gaps found building `execution/` (2026-08-26):**
   - `risk_and_money_management.risk_mode: FIXED_PERCENT_OR_CONTRACT` never states an
     actual risk-per-trade percentage or contract size. `execution/risk.py` currently
