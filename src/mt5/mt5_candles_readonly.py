@@ -6,8 +6,8 @@ Read-only by construction: the only MT5 calls are ``symbol_info`` (symbol existe
 Nothing here calls order_send, order_check, symbol_select, positions_*, orders_*, history_*
 or any account function (tests/test_mt5_candles_readonly.py enforces this).
 
-Symbol identity: canonical -> broker symbols come only from the committed host-captured
-metadata (config/symbol_metadata/host_captured/<CANONICAL>.json "broker_symbol"). No suffix is
+Symbol identity: canonical -> broker symbols come only from the versioned
+CANONICAL_TO_BROKER_MAP (mt5.canonical_broker_map, default_symbol_map()). No suffix is
 ever guessed; a missing/mismatched mapping or a broker symbol the terminal does not know is
 SYMBOL_MAPPING_MISSING, never a substitute symbol.
 
@@ -31,6 +31,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from host_evidence.symbol_metadata import NY, server_time_to_utc
+from mt5 import canonical_broker_map
 from strategy_engine.session import Candle
 
 UTC = dt.timezone.utc
@@ -226,7 +227,9 @@ def as_rows(candles: List[CanonicalCandle]) -> List[Dict[str, Any]]:
 
 
 def default_symbol_map() -> Dict[str, str]:
-    return load_symbol_map(DEFAULT_METADATA_DIR)
+    """MAPPED entries of the versioned CANONICAL_TO_BROKER_MAP for SUPPORTED_SYMBOLS. An UNMAPPED
+    canonical is absent, so resolve_broker_symbol() raises SYMBOL_MAPPING_MISSING for it."""
+    return canonical_broker_map.load_map().mapped_symbols(SUPPORTED_SYMBOLS)
 
 
 __all__ = [
