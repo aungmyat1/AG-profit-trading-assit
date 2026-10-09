@@ -28,8 +28,6 @@ from host_evidence.symbol_metadata import (
 )
 from strategy_engine import evaluate, load_strategy
 from strategy_engine.session import Candle
-from v1_tickets.guards import gate_ready
-from v1_tickets.ready_authority import SHADOW_INFO_ONLY, apply_ready_authority
 from ticket_delivery.archive import (
     CYCLE_STATE_BLOCKED,
     CYCLE_STATE_DATA_ERROR,
@@ -38,6 +36,8 @@ from ticket_delivery.archive import (
     CycleDecisionRecord,
     archive_cycle_decision,
 )
+from v1_tickets.guards import gate_ready
+from v1_tickets.ready_authority import SHADOW_INFO_ONLY, apply_ready_authority
 
 STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
 V1_FX_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")

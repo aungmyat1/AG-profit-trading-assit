@@ -52,3 +52,7 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/strategy_engine/__init__.py" = ["I001"]
+"src/strategy_engine/session/__init__.py" = ["I001"]
