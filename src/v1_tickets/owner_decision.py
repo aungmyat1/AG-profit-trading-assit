@@ -23,12 +23,14 @@ from v1_tickets.scan_record import append_jsonl, read_jsonl
 SCHEMA = "AG_MANUAL_TICKET_DECISION_V1"
 TAKEN, SKIPPED, MISSED, EXPIRED = "TAKEN", "SKIPPED", "MISSED", "EXPIRED"
 ACCEPTED, REJECTED = "ACCEPTED", "REJECTED"  # Telegram confirmation; no order is implied.
-# An Accept tap that current authority or the execution handoff would refuse. It records the
-# owner's attempt and the deterministic refusal reason; it never implies execution authority.
+DECISIONS = (TAKEN, SKIPPED, MISSED, EXPIRED, ACCEPTED, REJECTED)
+# A refused Accept tap is NOT an owner decision: it is logged with its deterministic reason in a
+# separate append-only file and leaves the ticket decidable. It never implies execution authority.
 REFUSED = "REFUSED"
-DECISIONS = (TAKEN, SKIPPED, MISSED, EXPIRED, ACCEPTED, REJECTED, REFUSED)
+REFUSAL_SCHEMA = "AG_MANUAL_TICKET_CONFIRMATION_REFUSAL_V1"
 SKIP_REASONS = ("NEWS", "DISAGREE_CONTEXT", "COST_TOO_HIGH", "TIME", "OTHER")
 DECISION_FILE = os.path.join("ticket_delivery", "manual", "owner_decisions.jsonl")
+REFUSAL_FILE = os.path.join("ticket_delivery", "manual", "confirmation_refusals.jsonl")
 
 
 class DecisionError(ValueError):
@@ -48,7 +50,6 @@ class ManualTicketDecision:
     deviation_note: Optional[str] = None
     skip_reason: Optional[str] = None
     note: Optional[str] = None
-    refusal_reason: Optional[str] = None
     schema: str = SCHEMA
 
     def __post_init__(self) -> None:
@@ -61,10 +62,6 @@ class ManualTicketDecision:
                 raise DecisionError(f"SKIPPED requires skip_reason in {SKIP_REASONS}")
             if self.skip_reason == "OTHER" and not self.note:
                 raise DecisionError("skip_reason OTHER requires a note")
-        if self.decision == REFUSED and not self.refusal_reason:
-            raise DecisionError("REFUSED requires a refusal_reason")
-        if self.decision != REFUSED and self.refusal_reason is not None:
-            raise DecisionError(f"{self.decision} cannot carry a refusal_reason")
         if self.decision != TAKEN and any(v is not None for v in (self.actual_fill, self.actual_sl, self.actual_tp)):
             raise DecisionError(f"{self.decision} cannot carry fill prices")
 
@@ -138,7 +135,7 @@ def _record_decision_locked(journal: str, ticket: Dict[str, Any], decision: Manu
             raise DecisionError(f"TAKEN refused: ticket state {ticket.get('state')} is not TICKET_READY")
         if _parse(decision.fill_time) >= _parse(ticket["valid_until"]):
             raise DecisionError("TAKEN refused: fill_time is at/after valid_until (ticket EXPIRED)")
-    if decision.decision in (ACCEPTED, REJECTED, REFUSED):
+    if decision.decision in (ACCEPTED, REJECTED):
         if ticket.get("state") != "TICKET_READY":
             raise DecisionError(f"{decision.decision} refused: ticket state {ticket.get('state')} is not TICKET_READY")
         if _parse(decision.recorded_at) >= _parse(ticket["valid_until"]):
@@ -147,6 +144,23 @@ def _record_decision_locked(journal: str, ticket: Dict[str, Any], decision: Manu
              "session": ticket.get("session"), "session_date": ticket.get("session_date"),
              "ticket_state": ticket.get("state"), "ticket_content_hash": ticket.get("content_hash")}
     append_jsonl(decision_path(journal), entry)
+    return entry
+
+
+def refusal_path(journal: str) -> str:
+    return os.path.join(journal, REFUSAL_FILE)
+
+
+def record_refusal(journal: str, ticket: Dict[str, Any], reason: str, recorded_at: str) -> Dict[str, Any]:
+    """Log one refused Accept tap. Never touches the owner-decision record or its one-per-ticket slot."""
+    if not reason:
+        raise DecisionError("a refusal requires a reason")
+    entry = {"schema": REFUSAL_SCHEMA, "outcome": REFUSED, "ticket_id": ticket.get("ticket_id"),
+             "refusal_reason": reason, "recorded_at": recorded_at, "source": "OWNER",
+             "strategy": ticket.get("strategy"), "symbol": ticket.get("symbol"),
+             "ticket_content_hash": ticket.get("content_hash")}
+    with _decision_lock(journal):
+        append_jsonl(refusal_path(journal), entry)
     return entry
 
 

@@ -83,8 +83,8 @@ def _config_root(base, demo_authorized, allow_order_send):
 
 
 def test_accept_is_idempotent_and_stays_blocked_when_execution_flag_is_off(ready, monkeypatch):
-    """Owner decision 2026-10-09: a confirmation the handoff would refuse is recorded as REFUSED
-    with a deterministic reason, never ACCEPTED; a repeated tap stays one decision."""
+    """A confirmation that current authority refuses is never recorded as ACCEPTED: each tap is
+    logged as a refusal with a deterministic reason and the ticket stays undecided (FIX-02)."""
     journal, ticket = ready
     # The forbidden MT5 order-send sentinel makes any attempted broker call observable.
     import mt5
@@ -99,12 +99,10 @@ def test_accept_is_idempotent_and_stays_blocked_when_execution_flag_is_off(ready
     second = confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
                                      now=dt.datetime(2026, 10, 8, 10, 1, tzinfo=UTC), secret=SECRET,
                                      chat_allowlist={"owner"}, root=config_root)
-    decisions = load_decisions(journal)
     assert "EXECUTION_ORDER_SEND_DISABLED" in first and "EXECUTION_ORDER_SEND_DISABLED" in second
-    assert len(decisions) == 1
-    recorded = decisions[ticket["ticket_id"]]
-    assert recorded["decision"] == "REFUSED" and recorded["refusal_reason"] == "EXECUTION_ORDER_SEND_DISABLED"
-    assert "ACCEPTED" not in Path(journal, "ticket_delivery/manual/owner_decisions.jsonl").read_text()
+    assert load_decisions(journal) == {}  # no ACCEPTED, and the decision slot is not consumed
+    assert not Path(journal, "ticket_delivery/manual/owner_decisions.jsonl").exists()
+    assert [r["refusal_reason"] for r in _refusals(journal)] == ["EXECUTION_ORDER_SEND_DISABLED"] * 2
     assert calls == []
 
 
@@ -115,9 +113,9 @@ def test_accept_with_demo_unauthorized_records_refusal_not_acceptance(ready, mon
     reply = confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
                                     now=dt.datetime(2026, 10, 8, 10, tzinfo=UTC), secret=SECRET,
                                     chat_allowlist={"owner"}, root=root)
-    recorded = load_decisions(journal)[ticket["ticket_id"]]
-    assert recorded["decision"] == "REFUSED" and recorded["refusal_reason"] == "STRATEGY_DEMO_NOT_AUTHORIZED"
-    assert reply.startswith("Accept refused and recorded")
+    assert load_decisions(journal) == {}
+    assert [r["refusal_reason"] for r in _refusals(journal)] == ["STRATEGY_DEMO_NOT_AUTHORIZED"]
+    assert reply.startswith("Accept refused; BLOCKED_NOT_AUTHORIZED: STRATEGY_DEMO_NOT_AUTHORIZED.")
 
 
 def test_accept_rechecks_current_authority_not_the_archived_ticket(ready):
@@ -128,8 +126,8 @@ def test_accept_rechecks_current_authority_not_the_archived_ticket(ready):
     reply = confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
                                     now=dt.datetime(2026, 10, 8, 10, tzinfo=UTC), secret=SECRET,
                                     chat_allowlist={"owner"}, root=str(ROOT))
-    recorded = load_decisions(journal)[ticket["ticket_id"]]
-    assert recorded["decision"] == "REFUSED" and recorded["refusal_reason"] == "LOGIC_NOT_VERIFIED"
+    assert load_decisions(journal) == {}
+    assert [r["refusal_reason"] for r in _refusals(journal)] == ["LOGIC_NOT_VERIFIED"]
     assert "LOGIC_NOT_VERIFIED" in reply
 
 
@@ -139,9 +137,8 @@ def test_accept_refused_when_current_ticket_authority_is_off(ready):
     confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
                             now=dt.datetime(2026, 10, 8, 10, tzinfo=UTC), secret=SECRET,
                             chat_allowlist={"owner"}, root=root)
-    recorded = load_decisions(journal)[ticket["ticket_id"]]
-    assert recorded["decision"] == "REFUSED"
-    assert recorded["refusal_reason"].startswith("TICKET_AUTHORITY_OFF:")
+    assert load_decisions(journal) == {}
+    assert _refusals(journal)[0]["refusal_reason"].startswith("TICKET_AUTHORITY_OFF:")
 
 
 @pytest.mark.parametrize("actions", [("accept", "accept"), ("accept", "reject")])
@@ -152,7 +149,7 @@ def test_concurrent_confirms_record_exactly_one_decision(ready, monkeypatch, act
     from v1_tickets import owner_decision
     journal, ticket = ready
     _eligible(monkeypatch)
-    root = _config_root(journal, demo_authorized=False, allow_order_send=False)
+    root = _config_root(journal, demo_authorized=True, allow_order_send=True)  # real decisions race
     real_load = owner_decision.load_decisions
     gate = threading.Barrier(len(actions))
 
@@ -176,6 +173,26 @@ def test_concurrent_confirms_record_exactly_one_decision(ready, monkeypatch, act
         thread.join()
     lines = Path(journal, "ticket_delivery/manual/owner_decisions.jsonl").read_text().splitlines()
     assert len(lines) == 1, replies
+
+
+def test_concurrent_refused_taps_log_refusals_and_record_no_decision(ready, monkeypatch):
+    import threading
+    journal, ticket = ready
+    _eligible(monkeypatch)
+    root = _config_root(journal, demo_authorized=True, allow_order_send=False)
+    gate = threading.Barrier(2)
+
+    def tap():
+        gate.wait()
+        confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
+                                now=dt.datetime(2026, 10, 8, 10, tzinfo=UTC), secret=SECRET,
+                                chat_allowlist={"owner"}, root=root)
+    threads = [threading.Thread(target=tap) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert load_decisions(journal) == {} and len(_refusals(journal)) == 2
 
 
 def test_expired_and_host_offline_callbacks_fail_closed(ready):
@@ -244,3 +261,28 @@ def test_confirmation_module_is_statically_broker_free_and_runtime_has_zero_orde
     assert not any(isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
                    and node.func.attr in {"order_send", "order_check", "execute"} for node in ast.walk(tree))
 
+
+
+def _refusals(journal):
+    from v1_tickets.scan_record import read_jsonl
+    return read_jsonl(str(Path(journal, "ticket_delivery/manual/confirmation_refusals.jsonl")))
+
+
+def test_refusal_does_not_consume_the_decision_slot_and_later_tap_decides(ready, monkeypatch):
+    """FIX-02: Accept while allow_order_send is false is refused and logged; after it becomes true
+    the next Accept must still produce a real decision (one decision only)."""
+    journal, ticket = ready
+    _eligible(monkeypatch)
+    root = _config_root(journal, demo_authorized=True, allow_order_send=False)
+    first = confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
+                                    now=dt.datetime(2026, 10, 8, 10, tzinfo=UTC), secret=SECRET,
+                                    chat_allowlist={"owner"}, root=root)
+    assert "EXECUTION_ORDER_SEND_DISABLED" in first and load_decisions(journal) == {}
+    Path(root, "config/trading.yaml").write_text("execution:\n  allow_order_send: true\n", encoding="utf-8")
+    second = confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
+                                     now=dt.datetime(2026, 10, 8, 10, 5, tzinfo=UTC), secret=SECRET,
+                                     chat_allowlist={"owner"}, root=root)
+    decisions = load_decisions(journal)
+    assert decisions[ticket["ticket_id"]]["decision"] == "ACCEPTED" and len(decisions) == 1
+    assert second == "Accepted and recorded; BLOCKED_NOT_AUTHORIZED: HANDOFF_NOT_IMPLEMENTED."
+    assert [r["refusal_reason"] for r in _refusals(journal)] == ["EXECUTION_ORDER_SEND_DISABLED"]

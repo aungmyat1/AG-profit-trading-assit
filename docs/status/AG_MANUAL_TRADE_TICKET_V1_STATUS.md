@@ -311,6 +311,22 @@ reason. ACCEPTED and REJECTED use the append-only owner-decision journal; repeat
 callbacks do not append a second line. Accept reports `BLOCKED_NOT_AUTHORIZED` while demo
 authority is false or `allow_order_send` is false; Reject never requests a handoff.
 
+**Addendum (2026-10-09, AGP-TG-CONFIRM-FIX-01/02, unit-tested only).** Each Accept is now checked
+at confirmation time, against the current registry and configuration rather than the
+archived ticket:
+
+- ticket authority and effective logic status (`v1_tickets.authority.resolve_ticket_authority`);
+- the handoff's `demo_authorized` and `allow_order_send` gates, evaluated before anything is
+  recorded.
+
+A refused Accept is **not** an owner decision. It is logged with its reason in
+`ticket_delivery/manual/confirmation_refusals.jsonl` and replied to the owner, and the
+ticket stays decidable. When every gate passes, ACCEPTED is recorded and the unchanged stub
+reports `HANDOFF_NOT_IMPLEMENTED`, so nothing executes.
+
+Decision check-then-append runs under a thread and file lock, so concurrent taps record one
+decision.
+
 Verification on 2026-10-08, Linux cloud container, fixture-only: focused command
 `.venv/bin/python -m pytest -q tests/test_telegram_confirmation.py tests/test_manual_ticket_build.py
 tests/test_manual_ticket_owner_decision.py tests/test_manual_ticket_host_integration.py

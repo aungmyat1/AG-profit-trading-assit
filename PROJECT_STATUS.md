@@ -437,9 +437,10 @@ unmerged PR #30 and does not merge or alter that PR's frozen C001 contract.
 **Telegram TICKET_READY confirmation (2026-10-08):** Inline Accept/Reject controls now
 render canonical ticket fields only and bind callbacks to the archived ticket ID, strategy
 version, code SHA, and expiry. Chat authorization reads the explicit ticket-delivery
-allowlist (empty by default); duplicate taps append one ACCEPTED/REJECTED decision. Accept
-returns `BLOCKED_NOT_AUTHORIZED` while strategy demo authority is false or order-send is
-disabled; Reject records without handoff. Execution remains OFF and this path made zero
+allowlist (empty by default); duplicate or concurrent taps append one ACCEPTED/REJECTED
+decision (locked). Each Accept rechecks current ticket authority, logic status, demo authority
+and order-send. A refusal is logged separately with its reason and does not use the ticket's
+decision slot; Reject records without handoff. Execution remains OFF and this path made zero
 broker calls in static/runtime tests. Unit-tested only; no Telegram callback receiver is
 currently running or host-verified. See the dated addendum in
 `docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md`.

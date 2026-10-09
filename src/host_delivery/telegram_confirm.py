@@ -18,8 +18,8 @@ import yaml
 
 from v1_tickets.authority import LOGIC_VERIFIED, resolve_ticket_authority
 from v1_tickets.code_identity import code_sha
-from v1_tickets.owner_decision import (ACCEPTED, REFUSED, REJECTED, DecisionError, ManualTicketDecision,
-                                       decision_path, load_decisions, record_decision)
+from v1_tickets.owner_decision import (ACCEPTED, REJECTED, DecisionError, ManualTicketDecision,
+                                       decision_path, load_decisions, record_decision, record_refusal)
 from v1_tickets.scan_record import read_jsonl
 
 UTC = dt.timezone.utc
@@ -174,14 +174,18 @@ def handle_callback(*, callback: str, chat_id: str, journal: str, now: dt.dateti
     existing = load_decisions(journal).get(matched["ticket_id"])
     if existing:
         return _already_recorded(existing, action, matched, root)
-    refusal = _accept_refusal(matched, root) if action == "accept" else None
-    decision = REJECTED if action == "reject" else (REFUSED if refusal else ACCEPTED)
+    if action == "accept":
+        refusal = _accept_refusal(matched, root)
+        if refusal:
+            # A refusal is logged separately and does not consume the ticket's decision slot.
+            record_refusal(journal, matched, refusal, now.astimezone(UTC).isoformat())
+            return (f"Accept refused; {BLOCKED_NOT_AUTHORIZED}: {refusal}. No decision was recorded; "
+                    "the ticket can still be decided.")
+    decision = ACCEPTED if action == "accept" else REJECTED
     try:
-        # Authority and handoff checks above run BEFORE this append: a refused Accept is
-        # recorded as REFUSED with its reason and is never recorded as ACCEPTED.
+        # Authority checks above run BEFORE this append; only a decision that passed them is recorded.
         record_decision(journal, matched, ManualTicketDecision(
-            ticket_id=matched["ticket_id"], decision=decision, recorded_at=now.astimezone(UTC).isoformat(),
-            refusal_reason=refusal))
+            ticket_id=matched["ticket_id"], decision=decision, recorded_at=now.astimezone(UTC).isoformat()))
     except DecisionError as exc:
         if str(exc).startswith("DECISION_ALREADY_RECORDED"):  # lost a concurrent race: one decision stands
             current = load_decisions(journal).get(matched["ticket_id"])
@@ -190,8 +194,6 @@ def handle_callback(*, callback: str, chat_id: str, journal: str, now: dt.dateti
         return f"Confirmation refused: {str(exc)}."
     if decision == REJECTED:
         return "Rejected and recorded; no execution handoff was made."
-    if decision == REFUSED:
-        return f"Accept refused and recorded; {BLOCKED_NOT_AUTHORIZED}: {refusal}."
     handoff = execution_handoff(matched, root=root)  # append-only order kept for a proceeding Accept
     return f"Accepted and recorded; {handoff['status']}: {handoff['reason']}."
 
@@ -202,6 +204,8 @@ def _accept_refusal(ticket: Dict[str, Any], root: str) -> Optional[str]:
     Resolved at confirmation time from the current registry and configuration, never from the
     archived ticket: current ticket authority, effective logic status, then the handoff's own
     demo-authority and allow_order_send checks (execution_handoff is a side-effect-free stub).
+    HANDOFF_NOT_IMPLEMENTED means every authority gate passed: the decision proceeds and the
+    stub reports that no execution follows.
     """
     try:
         authority = resolve_ticket_authority(ticket.get("strategy_id"), ticket.get("strategy_version"),
@@ -213,7 +217,7 @@ def _accept_refusal(ticket: Dict[str, Any], root: str) -> Optional[str]:
     if authority.logic_status_effective != LOGIC_VERIFIED:
         return "LOGIC_NOT_VERIFIED"
     handoff = execution_handoff(ticket, root=root)
-    if handoff["status"] == BLOCKED_NOT_AUTHORIZED:
+    if handoff["status"] == BLOCKED_NOT_AUTHORIZED and handoff["reason"] != "HANDOFF_NOT_IMPLEMENTED":
         return handoff["reason"]
     return None
 
@@ -222,8 +226,6 @@ def _already_recorded(existing: Dict[str, Any], action: str, ticket: Dict[str, A
     recorded = existing.get("decision")
     if action == "reject" and recorded == REJECTED:
         return "Reject already recorded; no execution handoff was made."
-    if action == "accept" and recorded == REFUSED:
-        return f"Accept already refused; {BLOCKED_NOT_AUTHORIZED}: {existing.get('refusal_reason')}."
     if action == "accept" and recorded == ACCEPTED:
         handoff = execution_handoff(ticket, root=root)
         return f"Accept already recorded; {handoff['status']}: {handoff['reason']}."
