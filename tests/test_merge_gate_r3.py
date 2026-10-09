@@ -63,7 +63,7 @@ def outcome_for(status=rc.REGEN_NO_CHANGE, **overrides):
         api_dispatch = fetch.api.dispatched[0][1]["inputs"]
         body = rc.build_outcome(status, api_dispatch["target_sha"], api_dispatch["correlation_id"])
         if status in rc.PR_STATUSES:
-            body.update(changed_paths=["status/facts.json"], branch=rc.REGEN_BRANCH, pr_number=101,
+            body.update(changed_paths=["status/facts.json"], branch=rc.regen_branch(MERGE), pr_number=101,
                         pr_head_sha=PR_HEAD)
         body.update(overrides)
         return body
@@ -92,7 +92,7 @@ def test_regen_pr_stops_pending_review_and_never_runs_main_ci(status):
     api = FakeAPI()
     report = go(api, outcome_for(status))
     assert report["state"] == MERGED_PENDING_REGEN_PR
-    assert report["regen_pr"] == {"status": status, "branch": rc.REGEN_BRANCH, "pr_number": 101,
+    assert report["regen_pr"] == {"status": status, "branch": rc.regen_branch(MERGE), "pr_number": 101,
                                   "pr_head_sha": PR_HEAD, "source_sha": MERGE}
     assert [w for w, _ in api.dispatched] == ["regenerate-generated-files.yml"]
 

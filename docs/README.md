@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[Regeneration bot policy (PROPOSED)](governance/REGENERATION_BOT_POLICY.md) records the bootstrap exception and superseded-PR closure proposed for regeneration branches only, pending owner decision.
+[AGP-GITHUB-INTEGRATION-R5 regeneration](status/AGP_GITHUB_INTEGRATION_R5_REGEN_2026-10-09.md) records the PR-based regeneration workflow that implements AG_REGEN_OUTCOME_V1 and supersedes PR #91.
 [AGP-MERGE-GATE-RECOVERY-R3](status/AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md) records the PR-based regeneration contract, merge-gate post-merge states, and the PR #91 handoff.
 [AGP-MERGE-GATE-REMEDIATION-R2](status/AGP_MERGE_GATE_REMEDIATION_R2_2026-10-09.md) records the merge-gate F01–F02 repairs (its F03 is superseded by R3).
 [AGP-GRADE-01 offline M1 outcome grading](status/AGP_GRADE_01_STATUS_2026-10-08.md) records the store-native replay evaluator, fixture report, and bounded verification.

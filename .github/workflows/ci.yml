@@ -56,6 +56,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # pull_request merge commit and its base parent
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -68,12 +70,24 @@ jobs:
       - name: Collect deterministic documentation facts
         run: |
           git rev-parse HEAD
-          python scripts/generate_live_status.py --check
           python scripts/docs/collect_facts.py
-          git diff --exit-code -- status/facts.json
+          python scripts/generate_live_status.py
+          cog -r PROJECT_STATUS.md
+          python scripts/docs/build_context_pack.py
+          python scripts/docs/generated_files.py
 
-      - name: Check generated status blocks
-        run: cog --check PROJECT_STATUS.md
+      # Source PRs may leave outputs for the post-merge regeneration PR; regeneration PRs and
+      # merge-gate dispatches (main CI) must match the generators exactly.
+      - name: Generated-file policy gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          case "$EVENT_NAME" in
+            pull_request) python scripts/docs/check_generated_files.py --mode pr --head-ref "$HEAD_REF" ;;
+            workflow_dispatch) python scripts/docs/check_generated_files.py --mode strict ;;
+            *) python scripts/docs/check_generated_files.py --mode advisory ;;
+          esac
 
       - name: Check authority claims against registry
         run: python scripts/docs/check_drift.py
@@ -82,7 +96,7 @@ jobs:
         run: python scripts/docs/check_prose_drift.py
 
       - name: Run documentation fixture tests
-        run: pytest -q tests/test_docs_live.py
+        run: pytest -q tests/test_docs_live.py tests/test_context_pack.py tests/test_generated_files_ci.py
 
       - name: Check links (warn only)
         uses: lycheeverse/lychee-action@v2

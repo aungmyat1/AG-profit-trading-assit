@@ -97,7 +97,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `b447c02b76b5022ddad891145432574de023b8af1655b2c3db038d7e03add5a7`.
+inputs_sha256: `cf5d0af4c1098fcebe994cb69e9746e1da09028a9cb4b7019ce74ae0b38339b9`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -122,6 +122,23 @@ Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#obj
 AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
+
+## PR-based regeneration workflow R5 (2026-10-09, branch `claude/regen-pr-contract-r5`, not merged)
+
+`.github/workflows/regenerate-generated-files.yml` and `scripts/governance/regen_publish.py`
+implement `AG_REGEN_OUTCOME_V1`:
+
+- Generated files reach `main` only through a per-source bot PR, `regen/generated-files-<sha>`. The
+  PR is opened on an empty bootstrap commit before any content is pushed, and every push is a
+  fast-forward (never forced).
+- Source PRs may leave outputs for that post-merge PR; CI fails hand edits and stale
+  regeneration PRs.
+- Every run records an exact-SHA, correlated outcome artifact.
+- Duplicate, stale and unexpected-path cases fail closed.
+
+The workflow passes the merge gate's static preflight. This change supersedes PR #91 and
+carries its commits. It is unit-tested only; no live gated run has happened. Evidence:
+[`AGP_GITHUB_INTEGRATION_R5_REGEN_2026-10-09.md`](docs/status/AGP_GITHUB_INTEGRATION_R5_REGEN_2026-10-09.md).
 
 ## Merge-gate recovery R3 (2026-10-09, PR #96 branch `claude/merge-gate-remediation-r2`, not merged)
 
