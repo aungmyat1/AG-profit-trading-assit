@@ -62,20 +62,37 @@ def test_unauthorized_chat_and_tampered_callback_do_not_record(ready):
     assert load_decisions(journal) == {}
 
 
+def _eligible(monkeypatch):
+    """Current registry authority resolves as eligible and LOGIC_VERIFIED (isolates later checks)."""
+    from v1_tickets.authority import TicketAuthority
+    monkeypatch.setattr(confirm, "resolve_ticket_authority", lambda sid, ver=None, **kw: TicketAuthority(
+        sid, True, True, True, True, None, logic_status="LOGIC_VERIFIED",
+        logic_status_effective="LOGIC_VERIFIED"), raising=False)
+
+
+def _config_root(base, demo_authorized, allow_order_send):
+    root = base + "-config"
+    Path(root, "strategies").mkdir(parents=True)
+    Path(root, "config").mkdir()
+    Path(root, "strategies/registry.yaml").write_text(
+        f"strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    demo_authorized: {str(demo_authorized).lower()}\n",
+        encoding="utf-8")
+    Path(root, "config/trading.yaml").write_text(
+        f"execution:\n  allow_order_send: {str(allow_order_send).lower()}\n", encoding="utf-8")
+    return root
+
+
 def test_accept_is_idempotent_and_stays_blocked_when_execution_flag_is_off(ready, monkeypatch):
+    """Owner decision 2026-10-09: a confirmation the handoff would refuse is recorded as REFUSED
+    with a deterministic reason, never ACCEPTED; a repeated tap stays one decision."""
     journal, ticket = ready
     # The forbidden MT5 order-send sentinel makes any attempted broker call observable.
     import mt5
     calls = []
     monkeypatch.setattr(mt5, "order_send", lambda *a, **kw: calls.append((a, kw)), raising=False)
     monkeypatch.setattr(mt5, "order_check", lambda *a, **kw: calls.append((a, kw)), raising=False)
-    config_root = ready[0] + "-config"
-    Path(config_root, "strategies").mkdir(parents=True)
-    Path(config_root, "config").mkdir()
-    Path(config_root, "strategies/registry.yaml").write_text(
-        "strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    demo_authorized: true\n", encoding="utf-8")
-    Path(config_root, "config/trading.yaml").write_text(
-        "execution:\n  allow_order_send: false\n", encoding="utf-8")
+    _eligible(monkeypatch)
+    config_root = _config_root(journal, demo_authorized=True, allow_order_send=False)
     first = confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
                                     now=dt.datetime(2026, 10, 8, 10, tzinfo=UTC), secret=SECRET,
                                     chat_allowlist={"owner"}, root=config_root)
@@ -84,8 +101,81 @@ def test_accept_is_idempotent_and_stays_blocked_when_execution_flag_is_off(ready
                                      chat_allowlist={"owner"}, root=config_root)
     decisions = load_decisions(journal)
     assert "EXECUTION_ORDER_SEND_DISABLED" in first and "EXECUTION_ORDER_SEND_DISABLED" in second
-    assert len(decisions) == 1 and decisions[ticket["ticket_id"]]["decision"] == "ACCEPTED"
+    assert len(decisions) == 1
+    recorded = decisions[ticket["ticket_id"]]
+    assert recorded["decision"] == "REFUSED" and recorded["refusal_reason"] == "EXECUTION_ORDER_SEND_DISABLED"
+    assert "ACCEPTED" not in Path(journal, "ticket_delivery/manual/owner_decisions.jsonl").read_text()
     assert calls == []
+
+
+def test_accept_with_demo_unauthorized_records_refusal_not_acceptance(ready, monkeypatch):
+    journal, ticket = ready
+    _eligible(monkeypatch)
+    root = _config_root(journal, demo_authorized=False, allow_order_send=True)
+    reply = confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
+                                    now=dt.datetime(2026, 10, 8, 10, tzinfo=UTC), secret=SECRET,
+                                    chat_allowlist={"owner"}, root=root)
+    recorded = load_decisions(journal)[ticket["ticket_id"]]
+    assert recorded["decision"] == "REFUSED" and recorded["refusal_reason"] == "STRATEGY_DEMO_NOT_AUTHORIZED"
+    assert reply.startswith("Accept refused and recorded")
+
+
+def test_accept_rechecks_current_authority_not_the_archived_ticket(ready):
+    """The ticket was archived LOGIC_VERIFIED; the committed registry now resolves
+    ST_ASIAN_SWEEP_5R_V1@1.1.1 as NOT_VERIFIED (demoted afterwards). Confirm must refuse."""
+    journal, ticket = ready
+    assert ticket["logic_status"] == "LOGIC_VERIFIED"
+    reply = confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
+                                    now=dt.datetime(2026, 10, 8, 10, tzinfo=UTC), secret=SECRET,
+                                    chat_allowlist={"owner"}, root=str(ROOT))
+    recorded = load_decisions(journal)[ticket["ticket_id"]]
+    assert recorded["decision"] == "REFUSED" and recorded["refusal_reason"] == "LOGIC_NOT_VERIFIED"
+    assert "LOGIC_NOT_VERIFIED" in reply
+
+
+def test_accept_refused_when_current_ticket_authority_is_off(ready):
+    journal, ticket = ready
+    root = _config_root(journal, demo_authorized=True, allow_order_send=True)  # strategy not registered there
+    confirm.handle_callback(callback=_cb(ticket, "accept"), chat_id="owner", journal=journal,
+                            now=dt.datetime(2026, 10, 8, 10, tzinfo=UTC), secret=SECRET,
+                            chat_allowlist={"owner"}, root=root)
+    recorded = load_decisions(journal)[ticket["ticket_id"]]
+    assert recorded["decision"] == "REFUSED"
+    assert recorded["refusal_reason"].startswith("TICKET_AUTHORITY_OFF:")
+
+
+@pytest.mark.parametrize("actions", [("accept", "accept"), ("accept", "reject")])
+def test_concurrent_confirms_record_exactly_one_decision(ready, monkeypatch, actions):
+    """Two Confirms race through check-then-append at the same time; one decision survives."""
+    import threading
+    import time
+    from v1_tickets import owner_decision
+    journal, ticket = ready
+    _eligible(monkeypatch)
+    root = _config_root(journal, demo_authorized=False, allow_order_send=False)
+    real_load = owner_decision.load_decisions
+    gate = threading.Barrier(len(actions))
+
+    def slow_load(path):  # widen the check-then-append window so both threads overlap in it
+        rows = real_load(path)
+        time.sleep(0.05)
+        return rows
+    monkeypatch.setattr(owner_decision, "load_decisions", slow_load)
+    monkeypatch.setattr(confirm, "load_decisions", slow_load)
+    replies = []
+
+    def tap(action):
+        gate.wait()
+        replies.append(confirm.handle_callback(callback=_cb(ticket, action), chat_id="owner",
+                                               journal=journal, now=dt.datetime(2026, 10, 8, 10, tzinfo=UTC),
+                                               secret=SECRET, chat_allowlist={"owner"}, root=root))
+    threads = [threading.Thread(target=tap, args=(a,)) for a in actions]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    lines = Path(journal, "ticket_delivery/manual/owner_decisions.jsonl").read_text().splitlines()
+    assert len(lines) == 1, replies
 
 
 def test_expired_and_host_offline_callbacks_fail_closed(ready):
