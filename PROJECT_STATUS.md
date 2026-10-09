@@ -128,7 +128,11 @@ later sections preserve dated milestone evidence and may contain older test tota
 `.github/workflows/regenerate-generated-files.yml` and `scripts/governance/regen_publish.py`
 implement `AG_REGEN_OUTCOME_V1`:
 
-- Generated files reach `main` only through the bot PR `regen/generated-files`.
+- Generated files reach `main` only through a per-source bot PR, `regen/generated-files-<sha>`. The
+  PR is opened on an empty bootstrap commit before any content is pushed, and every push is a
+  fast-forward (never forced).
+- Source PRs may leave outputs for that post-merge PR; CI fails hand edits and stale
+  regeneration PRs.
 - Every run records an exact-SHA, correlated outcome artifact.
 - Duplicate, stale and unexpected-path cases fail closed.
 

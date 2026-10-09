@@ -1,9 +1,11 @@
-"""AGP-GITHUB-INTEGRATION-R5: regeneration publishes only through the bot PR (AG_REGEN_OUTCOME_V1)."""
+"""AGP-REGEN-R5.1: regeneration publishes only through a per-source bot PR, PR before content,
+fast-forward only (no force-push), never main (AG_REGEN_OUTCOME_V1)."""
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts" / "governance"))
@@ -18,21 +20,34 @@ def sh(cwd, *args):
 
 
 class FakePulls:
-    def __init__(self):
-        self.prs, self.created, self.edited, self.ci = [], [], [], []
+    """Records the order of GitHub actions against the remote branch state."""
+
+    def __init__(self, work, fail_create=False):
+        self.work, self.fail_create = work, fail_create
+        self.prs, self.created, self.superseded, self.ci, self.events = [], [], [], [], []
 
     def open_regen_prs(self):
         return list(self.prs)
 
-    def create(self, title, body):
+    def create(self, branch, title, body):
+        self.events.append(("create", Git(self.work).remote_sha(branch)))
+        if self.fail_create:
+            raise RegenError("gh pr create failed: HTTP 502")
         self.created.append(title)
-        return 101
+        self.prs.append({"number": 101 + len(self.created) - 1, "title": title, "headRefName": branch,
+                         "headRefOid": Git(self.work).remote_sha(branch)})
+        return self.prs[-1]["number"]
 
-    def edit(self, number, title, body):
-        self.edited.append((number, title))
+    def supersede(self, number, by):
+        self.superseded.append(number)
+        self.prs = [p for p in self.prs if p["number"] != number]
 
-    def dispatch_ci(self, correlation_id):
-        self.ci.append(correlation_id)
+    def dispatch_ci(self, branch, correlation_id):
+        self.ci.append((branch, correlation_id))
+
+    def sync(self):
+        for pr in self.prs:
+            pr["headRefOid"] = Git(self.work).remote_sha(pr["headRefName"])
 
 
 @pytest.fixture
@@ -52,7 +67,7 @@ def repo(tmp_path):
     return work, origin
 
 
-def target(work):
+def head(work):
     return sh(work, "rev-parse", "HEAD")
 
 
@@ -65,110 +80,205 @@ def reset_to(work, sha):
     sh(work, "reset", "-q", "--hard", sha)
 
 
-def test_no_change_is_no_change_and_publishes_nothing(repo):
-    work, origin = repo
-    pulls = FakePulls()
-    out = publish(Git(work), pulls, target(work), "c1")
-    assert out["status"] == rc.REGEN_NO_CHANGE and rc.validate_outcome(out, target(work), "c1") == []
-    assert pulls.created == [] and Git(work).remote_sha(rc.REGEN_BRANCH) is None
+def advance_main(work, base, text):
+    reset_to(work, base)
+    (work / "src/app.py").write_text(text, encoding="utf-8")
+    sh(work, "commit", "-qam", f"source {text.strip()}")
+    sh(work, "push", "-q", "origin", "HEAD:refs/heads/main")
+    return head(work)
 
 
-def test_changed_output_creates_bot_branch_and_pr_never_main(repo):
-    work, origin = repo
-    base = target(work)
+@pytest.fixture
+def pushes(monkeypatch):
+    """Record every push and assert none is forced or targets main."""
+    seen = []
+    original = Git.__call__
+
+    def call(self, *args, **kw):
+        if args and args[0] == "push":
+            seen.append(args)
+            assert not any(a.startswith(("--force", "-f", "+")) or ":+" in a or a.startswith("+") for a in args[1:])
+            assert not any(a.endswith("refs/heads/main") or a == "main" for a in args[1:])
+        return original(self, *args, **kw)
+    monkeypatch.setattr(Git, "__call__", call)
+    return seen
+
+
+def test_no_change_publishes_nothing(repo, pushes):
+    work, _ = repo
+    pulls = FakePulls(work)
+    out = publish(Git(work), pulls, head(work), "c1")
+    assert out["status"] == rc.REGEN_NO_CHANGE and rc.validate_outcome(out, head(work), "c1") == []
+    assert pushes == [] and pulls.created == []
+
+
+def test_first_publication_opens_pr_on_empty_bootstrap_before_any_content(repo, pushes):
+    work, _ = repo
+    base = head(work)
     regen(work)
-    pulls = FakePulls()
+    pulls = FakePulls(work)
     out = publish(Git(work), pulls, base, "c1")
-    assert out["status"] == rc.REGEN_PR_CREATED and out["pr_number"] == 101
-    assert out["changed_paths"] == ["status/facts.json"] and rc.validate_outcome(out, base, "c1") == []
-    assert Git(work).remote_sha("main") == base  # main untouched
-    bot = Git(work).remote_sha(rc.REGEN_BRANCH)
-    assert out["pr_head_sha"] == bot and sh(work, "rev-parse", f"{bot}^") == base
-    assert pulls.created == [title_for(base)] and pulls.ci
+    branch = rc.regen_branch(base)
+    assert out["status"] == rc.REGEN_PR_CREATED and out["branch"] == branch and out["pr_number"] == 101
+    assert rc.validate_outcome(out, base, "c1") == []
+    # The PR was opened while the branch held only the bootstrap: no file changes vs base.
+    (_, at_create), = pulls.events
+    assert sh(work, "diff", "--name-only", base, at_create) == ""
+    assert sh(work, "rev-parse", f"{at_create}^") == base
+    # Content was pushed afterwards, as a fast-forward on the bootstrap.
+    assert sh(work, "rev-parse", f"{out['pr_head_sha']}^") == at_create
+    assert sh(work, "diff", "--name-only", base, out["pr_head_sha"]) == "status/facts.json"
+    assert Git(work).remote_sha("main") == base and len(pushes) == 2
+    assert pulls.ci == [(branch, f"regen-{out['pr_head_sha'][:12]}")]
 
 
-def test_identical_redispatch_is_pending_review_without_push(repo):
-    work, origin = repo
-    base = target(work)
+def test_pr_creation_failure_leaves_only_the_empty_bootstrap_and_retry_recovers(repo, pushes):
+    work, _ = repo
+    base = head(work)
     regen(work)
-    pulls = FakePulls()
+    pulls = FakePulls(work, fail_create=True)
+    with pytest.raises(RegenError, match="REGEN_PR_CREATE_FAILED"):
+        publish(Git(work), pulls, base, "c1")
+    published = Git(work).remote_sha(rc.regen_branch(base))
+    assert sh(work, "diff", "--name-only", base, published) == ""  # no unreviewed change
+    pulls.fail_create = False
+    out = publish(Git(work), pulls, base, "c2")
+    assert out["status"] == rc.REGEN_PR_CREATED
+    assert sh(work, "rev-parse", f"{out['pr_head_sha']}^") == published  # reused, fast-forward
+
+
+def test_duplicate_dispatch_is_pending_review_without_push(repo, pushes):
+    work, _ = repo
+    base = head(work)
+    regen(work)
+    pulls = FakePulls(work)
     first = publish(Git(work), pulls, base, "c1")
-    pulls.prs = [{"number": 101, "title": title_for(base), "headRefOid": first["pr_head_sha"]}]
+    pulls.sync()
+    count = len(pushes)
     reset_to(work, base)
     regen(work)
     again = publish(Git(work), pulls, base, "c2")
     assert again["status"] == rc.REGEN_PENDING_REVIEW and again["pr_head_sha"] == first["pr_head_sha"]
-    assert again["correlation_id"] == "c2" and pulls.edited == [] and len(pulls.created) == 1
+    assert again["correlation_id"] == "c2" and len(pushes) == count and len(pulls.created) == 1
 
 
-def test_new_source_updates_the_one_pr_with_lease(repo):
-    work, origin = repo
-    base = target(work)
+def test_existing_pr_with_bootstrap_only_is_completed_as_update(repo, pushes):
+    work, _ = repo
+    base = head(work)
+    pulls = FakePulls(work, fail_create=True)
     regen(work)
-    pulls = FakePulls()
+    with pytest.raises(RegenError):
+        publish(Git(work), pulls, base, "c1")
+    branch = rc.regen_branch(base)
+    pulls.prs = [{"number": 7, "title": title_for(base), "headRefName": branch,
+                  "headRefOid": Git(work).remote_sha(branch)}]
+    out = publish(Git(work), pulls, base, "c2")
+    assert out["status"] == rc.REGEN_PR_UPDATED and out["pr_number"] == 7
+
+
+def test_main_advancement_supersedes_old_pr_and_opens_a_new_one_without_rewriting(repo, pushes):
+    work, _ = repo
+    base = head(work)
+    regen(work)
+    pulls = FakePulls(work)
     first = publish(Git(work), pulls, base, "c1")
-    pulls.prs = [{"number": 101, "title": title_for(base), "headRefOid": first["pr_head_sha"]}]
-    reset_to(work, base)
-    (work / "src/app.py").write_text("v2\n", encoding="utf-8")
-    sh(work, "commit", "-qam", "source change")
-    sh(work, "push", "-q", "origin", "HEAD:refs/heads/main")
-    new_base = target(work)
+    pulls.sync()
+    new_base = advance_main(work, base, "v2\n")
     regen(work, "v3\n")
     out = publish(Git(work), pulls, new_base, "c3")
-    assert out["status"] == rc.REGEN_PR_UPDATED and out["pr_number"] == 101
-    assert sh(work, "rev-parse", f"{out['pr_head_sha']}^") == new_base
-    assert pulls.edited == [(101, title_for(new_base))] and len(pulls.created) == 1
+    assert out["status"] == rc.REGEN_PR_CREATED and out["branch"] == rc.regen_branch(new_base)
+    assert pulls.superseded == [101]
+    assert Git(work).remote_sha(rc.regen_branch(base)) == first["pr_head_sha"]  # old branch untouched
 
 
-def test_stale_target_fails_closed(repo):
-    work, origin = repo
-    base = target(work)
-    (work / "src/app.py").write_text("later\n", encoding="utf-8")
-    sh(work, "commit", "-qam", "later")
-    sh(work, "push", "-q", "origin", "HEAD:refs/heads/main")
+def test_stale_target_fails_closed(repo, pushes):
+    work, _ = repo
+    base = head(work)
+    advance_main(work, base, "later\n")
     reset_to(work, base)
     regen(work)
     with pytest.raises(RegenError, match="STALE_TARGET_SHA"):
-        publish(Git(work), FakePulls(), base, "c1")
+        publish(Git(work), FakePulls(work), base, "c1")
+    assert pushes == []
 
 
-def test_unexpected_changed_path_fails_closed(repo):
-    work, origin = repo
+def test_unexpected_changed_path_fails_closed(repo, pushes):
+    work, _ = repo
     (work / "src/app.py").write_text("tampered\n", encoding="utf-8")
     with pytest.raises(RegenError, match="UNEXPECTED_CHANGED_PATH:src/app.py"):
-        publish(Git(work), FakePulls(), target(work), "c1")
+        publish(Git(work), FakePulls(work), head(work), "c1")
+    assert pushes == []
 
 
-def test_duplicate_open_prs_and_moved_pr_head_fail_closed(repo):
-    work, origin = repo
+def test_concurrent_publication_is_rejected_not_overwritten(repo, pushes, monkeypatch):
+    work, _ = repo
+    base = head(work)
+    branch = rc.regen_branch(base)
+    # Another run created the branch between our check and our push.
+    sh(work, "commit", "-q", "--allow-empty", "-m", "other run")
+    sh(work, "push", "-q", "origin", f"HEAD:refs/heads/{branch}")
+    other = head(work)
+    reset_to(work, base)
     regen(work)
-    pulls = FakePulls()
-    pulls.prs = [{"number": 1}, {"number": 2}]
+    real = Git.remote_sha
+    monkeypatch.setattr(Git, "remote_sha", lambda self, ref: None if ref == branch else real(self, ref))
+    with pytest.raises(RegenError, match="git push failed"):
+        publish(Git(work), FakePulls(work), base, "c1")
+    assert real(Git(work), branch) == other
+
+
+def test_foreign_content_on_regen_branch_fails_closed(repo, pushes):
+    work, _ = repo
+    base = head(work)
+    (work / "src/app.py").write_text("smuggled\n", encoding="utf-8")
+    sh(work, "commit", "-qam", "smuggled")
+    sh(work, "push", "-q", "origin", f"HEAD:refs/heads/{rc.regen_branch(base)}")
+    reset_to(work, base)
+    regen(work)
+    with pytest.raises(RegenError, match="REGEN_BRANCH_UNEXPECTED_PATH:src/app.py"):
+        publish(Git(work), FakePulls(work), base, "c1")
+
+
+def test_duplicate_open_prs_and_moved_head_fail_closed(repo, pushes):
+    work, _ = repo
+    base = head(work)
+    regen(work)
+    branch = rc.regen_branch(base)
+    pulls = FakePulls(work)
+    pulls.prs = [{"number": 1, "headRefName": branch}, {"number": 2, "headRefName": branch}]
     with pytest.raises(RegenError, match="DUPLICATE_REGEN_PRS_OPEN"):
-        publish(Git(work), pulls, target(work), "c1")
-    pulls.prs = [{"number": 1, "title": "x", "headRefOid": "f" * 40}]
+        publish(Git(work), pulls, base, "c1")
+    pulls.prs = [{"number": 1, "headRefName": branch, "headRefOid": "f" * 40}]
     with pytest.raises(RegenError, match="REGEN_PR_HEAD_MOVED"):
-        publish(Git(work), pulls, target(work), "c1")
+        publish(Git(work), pulls, base, "c1")
 
 
-def test_checkout_and_sha_identity(repo):
-    work, origin = repo
+def test_sha_identity_and_push_target_guard(repo):
+    work, _ = repo
     with pytest.raises(RegenError, match="TARGET_SHA_INVALID"):
-        publish(Git(work), FakePulls(), "abc", "c1")
+        publish(Git(work), FakePulls(work), "abc", "c1")
     with pytest.raises(RegenError, match="CHECKOUT_NOT_TARGET_SHA"):
-        publish(Git(work), FakePulls(), "a" * 40, "c1")
+        publish(Git(work), FakePulls(work), "a" * 40, "c1")
+    for target in ("main", "feature/x"):
+        with pytest.raises(RegenError, match="REFUSED_PUSH_TARGET"):
+            Git(work).push_fast_forward(head(work), target)
+
+
+def test_publisher_source_has_no_force_or_main_push():
+    source = (ROOT / "scripts/governance/regen_publish.py").read_text(encoding="utf-8")
+    code = "\n".join(line for line in source.splitlines() if not line.strip().startswith(("#", '"""')))
+    assert "--force" not in code and "force-with-lease" not in source
+    assert "refs/heads/main" not in source
 
 
 def test_regeneration_workflow_passes_merge_gate_preflight():
     ci = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     regen_text = (ROOT / ".github/workflows/regenerate-generated-files.yml").read_text(encoding="utf-8")
     assert workflow_contract_failures(ci, regen_text) == []
-    publisher = (ROOT / "scripts/governance/regen_publish.py").read_text(encoding="utf-8")
-    assert "refs/heads/main" not in publisher and "[skip ci]" not in regen_text
+    assert "[skip ci]" not in regen_text and "git push" not in regen_text
 
 
 def test_regeneration_workflow_permissions_are_minimal():
-    import yaml
     wf = yaml.safe_load((ROOT / ".github/workflows/regenerate-generated-files.yml").read_text(encoding="utf-8"))
     assert wf["permissions"] == {"contents": "write", "pull-requests": "write", "actions": "write"}
     assert wf["concurrency"] == {"group": "regenerate-generated-files", "cancel-in-progress": False}

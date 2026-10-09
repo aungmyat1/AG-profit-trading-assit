@@ -21,15 +21,15 @@ No merge, dispatch, broker or host action was taken.
 
 | Requirement | Implementation |
 |---|---|
-| Never push `main` | `regen_publish.py` pushes only `HEAD:refs/heads/regen/generated-files`. The workflow contains no `git push`. |
-| Dedicated branch + PR | One bot branch `regen/generated-files`; one draft PR titled `chore(docs): regenerate generated files for <target_sha>` |
+| Never push `main` | `regen_publish.py` pushes only to `regen/generated-files-<target_sha>` (`push_fast_forward` refuses any other ref). The workflow contains no `git push`. |
+| Dedicated branch + PR | One bot branch per source identity, `regen/generated-files-<target_sha>`, with one draft PR titled `chore(docs): regenerate generated files for <target_sha>`. Older open regeneration PRs are superseded (comment + close), never rewritten. |
 | Outcomes | `REGEN_NO_CHANGE`, `REGEN_PR_CREATED`, `REGEN_PR_UPDATED`, `REGEN_PENDING_REVIEW`, `REGEN_FAILED` (always written; artifact `regen-outcome` uploaded with `if: always()`) |
 | Exact identity | `workflow_dispatch` inputs `target_sha` + `correlation_id`; checkout must equal `target_sha`; `run-name: regenerate at <target_sha> [<correlation_id>]` (push runs: `push-<run_id>`) |
 | Duplicate prevention | Re-dispatch with identical outputs on the same `target_sha` is `REGEN_PENDING_REVIEW`, with no push and no edit. More than one open bot PR, or a bot PR head that differs from the branch, means `REGEN_FAILED`. |
 | Stale source | `origin/main != target_sha` → `REGEN_FAILED: STALE_TARGET_SHA` |
 | Path allowlist | Any changed path outside the four generated outputs → `REGEN_FAILED: UNEXPECTED_CHANGED_PATH` |
 | No loop | Generated outputs are not generator inputs (enforced by R3's test), so after a bot PR merges the next run is `REGEN_NO_CHANGE` |
-| Overwrite safety | `--force-with-lease=refs/heads/regen/generated-files:<observed head>` (empty lease when the branch must not exist) |
+| Overwrite safety | No force-push of any kind (R5.1). Every push is a plain fast-forward, so a concurrent writer's push is rejected and the run fails closed. |
 | CI on the bot PR | A PR opened with `GITHUB_TOKEN` gets no `pull_request` CI, so the publisher dispatches `ci.yml` on the bot branch |
 | Permissions | `contents: write`, `pull-requests: write`, `actions: write`; concurrency `regenerate-generated-files`, no cancel; job timeout 20 min |
 
@@ -55,3 +55,28 @@ record is live-verified.
 1. The owner reviews and merges this PR by hand at an exact head SHA.
 2. The owner closes #91 as superseded. Its commits are carried here, and its P1 finding is
    resolved by this implementation.
+
+## R5.1 review remediation (2026-10-09)
+
+This resolves the three P1 findings raised on PR #97 at `6970650`.
+
+| Finding | Fix | Evidence |
+|---|---|---|
+| CI deadlock: source PRs that change generator inputs failed `CONTENT_STALE`, though only the post-merge regeneration PR may publish outputs | `check_generated_files.py` now applies one policy per event (details below). `test_context_pack` builds its pack from freshly collected facts instead of committed outputs. | `tests/test_generated_files_ci.py` (6 new policy tests). A real merge-commit run of a register-changing source PR gives `--mode pr`: 0 failures (`REGEN_REQUIRED_AFTER_MERGE` warnings) and `--mode strict`: 2 failures. |
+| PR before push: the bot branch was pushed before its PR existed | GitHub cannot open a PR for a branch that does not exist or has no commits. The publisher therefore pushes the branch holding only an **empty bootstrap commit** on `target_sha` (no file changes), opens the draft PR, and only then pushes the generated commit. If PR creation fails, only the empty bootstrap is published, and the next run reuses it. | `test_first_publication_opens_pr_on_empty_bootstrap_before_any_content`, `test_pr_creation_failure_leaves_only_the_empty_bootstrap_and_retry_recovers` |
+| Force-push of the shared branch | Branch per source SHA. Plain fast-forward pushes only. When main advances, a new PR is opened and the old one is superseded with its branch untouched. | `test_main_advancement_supersedes_old_pr_and_opens_a_new_one_without_rewriting`, `test_concurrent_publication_is_rejected_not_overwritten`, the `pushes` fixture (asserts no forced or main push on every test), `test_publisher_source_has_no_force_or_main_push` |
+
+**CI policy per event:**
+
+- **`pull_request`:**
+  - A regeneration PR must be built for the current base, change only the four outputs, and
+    be byte-exact `FRESH`.
+  - Any other PR may change outputs only to their exact generated content. Drift in outputs it
+    does not change is `REGEN_REQUIRED_AFTER_MERGE` (warning).
+- **`workflow_dispatch`** (merge-gate main CI and the bot-branch CI): strict.
+- **`push`:** advisory.
+
+The bootstrap commit is a documented, reviewable exception. It carries no file change, and
+it is the minimum GitHub requires before a PR can exist. If the owner rejects it, the
+alternative is an owner decision to waive PR-before-push for bot regeneration branches.
+`regen_contract.validate_outcome` now requires `branch == regen/generated-files-<target_sha>`.

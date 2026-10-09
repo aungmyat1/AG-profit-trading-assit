@@ -1,28 +1,38 @@
-"""Publish regenerated files through the dedicated bot PR (AG_REGEN_OUTCOME_V1); never push main.
+"""Publish regenerated files through a per-source bot PR (AG_REGEN_OUTCOME_V1).
 
-    python scripts/governance/regen_publish.py --target-sha <sha> --correlation-id <id> --out regen-outcome.json
+    python scripts/governance/regen_publish.py --repo owner/name --target-sha <sha> \
+        --correlation-id <id> --out regen-outcome.json
 
 Run after the generators in a checkout of ``target_sha``. Always writes an outcome (also on
-failure) and exits non-zero only for REGEN_FAILED. The only ref this script ever pushes is
-``refs/heads/regen/generated-files``, with an explicit lease on the head it observed.
+failure) and exits non-zero only for REGEN_FAILED.
+
+Lifecycle (no force-push, no push to main, PR before content):
+1. Branch ``regen/generated-files-<target_sha>`` is created holding only an empty bootstrap
+   commit on ``target_sha`` (no file changes), because GitHub cannot open a PR for a branch
+   that does not exist or has no commits.
+2. The draft PR is opened. If that fails, nothing but the empty bootstrap is published; the
+   next run reuses the branch and retries.
+3. Only then is the generated commit pushed, as a fast-forward on the observed branch head.
+Older open regeneration PRs for other sources are superseded (comment + close), never
+rewritten. Every push is a plain fast-forward, so a concurrent writer makes it fail closed.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from regen_contract import (  # noqa: E402
-    GENERATED_PATHS, REGEN_BRANCH, REGEN_FAILED, REGEN_NO_CHANGE, REGEN_PENDING_REVIEW,
-    REGEN_PR_CREATED, REGEN_PR_UPDATED, SHA, build_outcome, validate_outcome,
+    GENERATED_PATHS, REGEN_BRANCH_PREFIX, REGEN_FAILED, REGEN_NO_CHANGE, REGEN_PENDING_REVIEW,
+    REGEN_PR_CREATED, REGEN_PR_UPDATED, SHA, build_outcome, regen_branch, validate_outcome,
 )
 
 BOT_NAME = "github-actions[bot]"
 BOT_EMAIL = "41898282+github-actions[bot]@users.noreply.github.com"
-PUSH_REFSPEC = f"HEAD:refs/heads/{REGEN_BRANCH}"
 
 
 class RegenError(RuntimeError):
@@ -37,8 +47,8 @@ class Git:
     def __init__(self, cwd: Path):
         self.cwd = cwd
 
-    def __call__(self, *args: str, check: bool = True) -> str:
-        done = subprocess.run(["git", *args], cwd=self.cwd, capture_output=True, text=True)
+    def __call__(self, *args: str, check: bool = True, env: dict | None = None) -> str:
+        done = subprocess.run(["git", *args], cwd=self.cwd, capture_output=True, text=True, env=env)
         if check and done.returncode:
             raise RegenError(f"git {args[0]} failed: {done.stderr.strip()[:300]}")
         return done.stdout.strip() if done.returncode == 0 else ""
@@ -46,6 +56,12 @@ class Git:
     def remote_sha(self, ref: str) -> str | None:
         out = self("ls-remote", "origin", f"refs/heads/{ref}")
         return out.split()[0] if out else None
+
+    def push_fast_forward(self, sha: str, branch: str) -> None:
+        """Plain push (no --force, no lease): rejected unless it fast-forwards the branch."""
+        if branch == "main" or not branch.startswith(REGEN_BRANCH_PREFIX):
+            raise RegenError(f"REFUSED_PUSH_TARGET:{branch}")
+        self("push", "--quiet", "origin", f"{sha}:refs/heads/{branch}")
 
 
 class GhPulls:
@@ -61,20 +77,22 @@ class GhPulls:
         return done.stdout.strip()
 
     def open_regen_prs(self) -> list[dict]:
-        return json.loads(self._gh("pr", "list", "--state", "open", "--head", REGEN_BRANCH,
-                                   "--json", "number,title,headRefOid,author"))
+        rows = json.loads(self._gh("pr", "list", "--state", "open", "--limit", "100", "--base", "main",
+                                   "--json", "number,title,headRefName,headRefOid"))
+        return [row for row in rows if str(row.get("headRefName", "")).startswith(REGEN_BRANCH_PREFIX)]
 
-    def create(self, title: str, body: str) -> int:
-        url = self._gh("pr", "create", "--draft", "--base", "main", "--head", REGEN_BRANCH,
+    def create(self, branch: str, title: str, body: str) -> int:
+        url = self._gh("pr", "create", "--draft", "--base", "main", "--head", branch,
                        "--title", title, "--body", body)
         return int(url.rstrip("/").rsplit("/", 1)[-1])
 
-    def edit(self, number: int, title: str, body: str) -> None:
-        self._gh("pr", "edit", str(number), "--title", title, "--body", body)
+    def supersede(self, number: int, by: str) -> None:
+        self._gh("pr", "comment", str(number), "--body", f"Superseded: {by}. This branch is left unmodified.")
+        self._gh("pr", "close", str(number))
 
-    def dispatch_ci(self, correlation_id: str) -> None:
+    def dispatch_ci(self, branch: str, correlation_id: str) -> None:
         # A GITHUB_TOKEN-opened PR gets no pull_request CI; run CI on the bot branch head.
-        self._gh("workflow", "run", "ci.yml", "--ref", REGEN_BRANCH, "-f", f"correlation_id={correlation_id}")
+        self._gh("workflow", "run", "ci.yml", "--ref", branch, "-f", f"correlation_id={correlation_id}")
 
 
 def changed_paths(git: Git) -> list[str]:
@@ -102,6 +120,27 @@ def _same_outputs(git: Git, ref: str) -> bool:
     return True
 
 
+def _commit(git: Git, tree: str, parent: str, message: str) -> str:
+    env = {**os.environ, "GIT_AUTHOR_NAME": BOT_NAME, "GIT_AUTHOR_EMAIL": BOT_EMAIL,
+           "GIT_COMMITTER_NAME": BOT_NAME, "GIT_COMMITTER_EMAIL": BOT_EMAIL}
+    return git("commit-tree", tree, "-p", parent, "-m", message, env=env)
+
+
+def _verify_branch(git: Git, branch: str, head: str, target_sha: str) -> None:
+    """An existing branch must descend from target_sha and differ from it only in outputs."""
+    git("fetch", "--quiet", "origin", f"refs/heads/{branch}")
+    if subprocess.run(["git", "merge-base", "--is-ancestor", target_sha, head], cwd=git.cwd).returncode:
+        raise RegenError("REGEN_BRANCH_NOT_ON_TARGET")
+    extra = set(git("diff", "--name-only", target_sha, head).splitlines()) - GENERATED_PATHS
+    if extra:
+        raise RegenError("REGEN_BRANCH_UNEXPECTED_PATH:" + ",".join(sorted(extra)))
+
+
+def _supersede_others(pulls, others: list[dict], by: str) -> None:
+    for pr in others:
+        pulls.supersede(pr["number"], by)
+
+
 def publish(git: Git, pulls, target_sha: str, correlation_id: str) -> dict:
     """Return an AG_REGEN_OUTCOME_V1 dict. Raises RegenError for fail-closed conditions."""
     if not SHA.match(target_sha):
@@ -114,39 +153,56 @@ def publish(git: Git, pulls, target_sha: str, correlation_id: str) -> dict:
         raise RegenError("UNEXPECTED_CHANGED_PATH:" + ",".join(unexpected))
     if git.remote_sha("main") != target_sha:
         raise RegenError("STALE_TARGET_SHA: main is no longer target_sha")
-    if not paths:
-        return build_outcome(REGEN_NO_CHANGE, target_sha, correlation_id)
 
-    prs = pulls.open_regen_prs()
-    if len(prs) > 1:
+    branch = regen_branch(target_sha)
+    open_prs = pulls.open_regen_prs()
+    mine = [pr for pr in open_prs if pr.get("headRefName") == branch]
+    others = [pr for pr in open_prs if pr.get("headRefName") != branch]
+    if not paths:
+        _supersede_others(pulls, others, f"regeneration at {target_sha} found no change")
+        return build_outcome(REGEN_NO_CHANGE, target_sha, correlation_id)
+    if len(mine) > 1:
         raise RegenError("DUPLICATE_REGEN_PRS_OPEN")
-    observed = git.remote_sha(REGEN_BRANCH)
-    pr = prs[0] if prs else None
+    pr = mine[0] if mine else None
+    observed = git.remote_sha(branch)
     if pr and pr.get("headRefOid") != observed:
         raise RegenError("REGEN_PR_HEAD_MOVED")
-    if pr and observed:
-        git("fetch", "--quiet", "origin", f"+refs/heads/{REGEN_BRANCH}:refs/remotes/origin/{REGEN_BRANCH}")
-        parent = git("rev-parse", f"origin/{REGEN_BRANCH}^")
-        if parent == target_sha and pr.get("title") == title_for(target_sha) \
-                and _same_outputs(git, f"origin/{REGEN_BRANCH}"):
-            return build_outcome(REGEN_PENDING_REVIEW, target_sha, correlation_id, paths,
-                                 REGEN_BRANCH, pr["number"], observed)
 
-    git("add", "--", *paths)
-    git("-c", f"user.name={BOT_NAME}", "-c", f"user.email={BOT_EMAIL}", "commit", "--quiet",
-        "-m", f"{title_for(target_sha)}\n\nSource: {target_sha}\nCorrelation: {correlation_id}")
-    head = git("rev-parse", "HEAD")
-    # Lease on the observed bot head ("" = the branch must not exist). Never any other ref.
-    git("push", "--quiet", f"--force-with-lease=refs/heads/{REGEN_BRANCH}:{observed or ''}", "origin", PUSH_REFSPEC)
-    body = (f"Generated-file regeneration for `{target_sha}` (correlation `{correlation_id}`).\n\n"
-            f"Changed: {', '.join(paths)}. Merge only through the owner merge gate.")
-    if pr:
-        pulls.edit(pr["number"], title_for(target_sha), body)
-        number, status = pr["number"], REGEN_PR_UPDATED
+    if observed is None:
+        bootstrap = _commit(git, git("rev-parse", f"{target_sha}^{{tree}}"), target_sha,
+                            f"chore(regen): open regeneration PR for {target_sha} (no file changes)")
+        git.push_fast_forward(bootstrap, branch)  # rejected if a concurrent run created the branch
+        observed = bootstrap
     else:
-        number, status = pulls.create(title_for(target_sha), body), REGEN_PR_CREATED
-    pulls.dispatch_ci(f"regen-{head[:12]}")
-    return build_outcome(status, target_sha, correlation_id, paths, REGEN_BRANCH, number, head)
+        _verify_branch(git, branch, observed, target_sha)
+
+    created = False
+    if pr is None:
+        body = (f"Generated-file regeneration for `{target_sha}` (correlation `{correlation_id}`).\n\n"
+                f"Changed: {', '.join(paths)}. Merge only through the owner merge gate.")
+        try:
+            number = pulls.create(branch, title_for(target_sha), body)
+        except RegenError as exc:
+            # Only the empty bootstrap (or an earlier reviewed commit) is published; retry reuses it.
+            raise RegenError(f"REGEN_PR_CREATE_FAILED: {exc}") from None
+        created = True
+    else:
+        number = pr["number"]
+
+    git("fetch", "--quiet", "origin", f"refs/heads/{branch}")
+    if _same_outputs(git, observed):
+        head = observed
+    else:
+        git("add", "--", *paths)
+        head = _commit(git, git("write-tree"), observed,
+                       f"{title_for(target_sha)}\n\nSource: {target_sha}\nCorrelation: {correlation_id}")
+        git.push_fast_forward(head, branch)
+    _supersede_others(pulls, others, f"#{number} regenerates the newer source {target_sha}")
+    if head == observed and not created:
+        return build_outcome(REGEN_PENDING_REVIEW, target_sha, correlation_id, paths, branch, number, head)
+    pulls.dispatch_ci(branch, f"regen-{head[:12]}")
+    status = REGEN_PR_CREATED if created else REGEN_PR_UPDATED
+    return build_outcome(status, target_sha, correlation_id, paths, branch, number, head)
 
 
 def main(argv=None) -> int:
