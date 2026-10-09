@@ -25,5 +25,6 @@ markers = [
     # only where the genuine package is absent, so a non-Windows run reports SKIP
     # instead of a misleading FAIL -- and never hides a failure where it is observable.
     "live_mt5: requires the real MetaTrader5 package / a live MT5 terminal",
+    "denied: regeneration-publisher test that runs with the shipped default-deny permissions",
 ]
 addopts = "-m 'not slow'"

@@ -100,7 +100,7 @@ def main() -> int:
         print("FACTS_FRESH" if fresh else "FACTS_STALE")
         return 0 if fresh else 1
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(content, encoding="utf-8")
+    out.write_text(content, encoding="utf-8", newline="\n")
     return 0
 
 

@@ -1,0 +1,8 @@
+{
+  "seed": 120,
+  "iterations": 250,
+  "mutated_future_bar_sets": 250,
+  "semantic_mismatches": 0,
+  "hypothesis_dependency_added": false,
+  "verdict": "PASS"
+}

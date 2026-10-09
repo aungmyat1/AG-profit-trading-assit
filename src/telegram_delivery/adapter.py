@@ -57,6 +57,13 @@ def _informational_scope(decision):
         decision == "WATCH_READY" or decision.startswith("INFO_ONLY_"))
 
 
+def displayed_decision(ticket):
+    decision = ticket.get("decision")
+    if decision in {"READY", "TICKET_READY", "WATCH_READY"} and ticket.get("logic_status") != "LOGIC_VERIFIED":
+        return "NOT_READY"
+    return decision
+
+
 def validate(ticket):
     if ticket.get("schema") != "AG_CANONICAL_TICKET_V1":
         raise ValueError("Unsupported canonical schema")
@@ -67,16 +74,21 @@ def validate(ticket):
 
 
 def footer(ticket):
-    return [f"Logic: {value(ticket, 'logic_status')}",
+    logic_status = value(ticket, 'logic_status')
+    actionability_decision = value(ticket, 'actionability', 'decision')
+    actionability_reason = value(ticket, 'actionability', 'reason')
+    if logic_status != "LOGIC_VERIFIED" and actionability_decision in {"READY", "TICKET_READY", "WATCH_READY"}:
+        actionability_decision, actionability_reason = "NOT_READY", "LOGIC_STATUS_NOT_VERIFIED"
+    return [f"logic_status: {logic_status}",
             f"Edge: {value(ticket, 'economic_edge')} ({value(ticket, 'economic_status')})",
-            f"Actionability: {value(ticket, 'actionability', 'decision')} / "
-            f"{value(ticket, 'actionability', 'reason')}", "EXECUTION: DISABLED"]
+            f"Actionability: {actionability_decision} / {actionability_reason}",
+            "EDGE_VERIFIED=FALSE", "EXECUTION: DISABLED"]
 
 
 def render_ticket(ticket):
     validate(ticket)
     lines = [f"Ticket: {ticket['ticket_id']}",
-             f"{value(ticket, 'instrument')} | {ticket['decision']} | {value(ticket, 'direction')}",
+             f"{value(ticket, 'instrument')} | {displayed_decision(ticket)} | {value(ticket, 'direction')}",
              f"Session: {value(ticket, 'session_date')} / {value(ticket, 'session')}",
              f"Reason: {value(ticket, 'reason_code')}", "Levels (supplied prices only):"]
     for label, key in (("TP2", "tp2"), ("TP1", "tp1"), ("NOW", "current_send"),
@@ -96,8 +108,8 @@ def render_summary(tickets, uncertain=()):
     lines = ["Session summary", f"Rows: {len(tickets)}"]
     for index, ticket in enumerate(tickets, 1):
         lines.append(f"{index}. {ticket['ticket_id']} | {value(ticket, 'instrument')} | "
-                     f"{ticket['decision']} | {value(ticket, 'reason_code')} | "
-                     + " | ".join(footer(ticket)[:3]))
+                     f"{displayed_decision(ticket)} | {value(ticket, 'reason_code')} | "
+                     + " | ".join(footer(ticket)[:3] + footer(ticket)[3:4]))
     uncertain = list(uncertain)
     if uncertain:
         lines.append("Uncertain delivery:")
@@ -106,6 +118,7 @@ def render_summary(tickets, uncertain=()):
             status = item.get("status", "") if isinstance(item, dict) else item[1]
             lines.append(f"- possibly undelivered: {identity} | {status} | {STATE_UNCERTAIN}")
     lines += ["Logic: see each row", "Edge: see each row", "Actionability: see each row",
+              "EDGE_VERIFIED=FALSE",
               "EXECUTION: DISABLED"]
     return "\n".join(lines)
 

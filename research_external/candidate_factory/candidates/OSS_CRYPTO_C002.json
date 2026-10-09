@@ -1,0 +1,40 @@
+{
+  "candidate_id": "OSS_CRYPTO_C002",
+  "strategy_label": "DoubleEMACrossoverWithTrend (EMA-crossover trend-following freqtrade strategy)",
+  "source_type": "EXTERNAL (crypto priority)",
+  "source": {
+    "repo": "https://github.com/paulcpk/freqtrade-strategies-that-work",
+    "file": "DoubleEMACrossoverWithTrend.py (listed in repo index; file body NOT fetched/read by this mission -- see note below)",
+    "license": "MIT (LICENSE file fetched and confirmed: 'Copyright (c) 2020 Paul Csapak')",
+    "retrieval_date": "2026-10-07",
+    "reported_backtest": "1h timeframe, 2018-03-01 to 2020-03-01, buy count 655, avg profit 0.56%, total profit 122.50% (per repo README table)."
+  },
+  "note_on_evidence_depth": "This mission read the repository's README/result table and LICENSE but did NOT fetch the strategy .py file's exact EMA periods/trend-filter condition (time budget; this is the single external crypto candidate beyond the Donchian one, and both are already blocked at G3 by data absence regardless of rule precision). Exact entry/exit rule parameters are therefore UNKNOWN to this mission, not invented.",
+  "source_backtest_class": "SB3_CODE_PLUS_IDENTIFIABLE_DATA_PERIOD (reproducible freqtrade strategy code exists at a known commit; backtest period and pair universe are identified; whether freqtrade's default fee assumption was included in the reported figures is UNKNOWN to this mission, so this is not scored SB4).",
+
+  "gates": {
+    "G1_CONTRACTABLE": {"verdict": "HOLD_SPEC", "reason": "Exact EMA periods and the exact 'with trend' filter condition were not extracted by this mission (see note above); cannot certify exact entry/exit without reading the actual source file."},
+    "G2_TICKETABLE": {"verdict": "FAIL_AS_SOURCED_PRESUMED", "reason": "freqtrade strategies default to an ROI table and/or trailing-stop exit paradigm unless a strategy explicitly overrides this with a fixed single TP; this was not confirmed either way for this specific file, so this mission treats it conservatively as presumptively failing the discrete-fixed-TP ticketability requirement rather than assuming it passes."},
+    "G3_DATA_VENUE_FIT": {"verdict": "HOLD_DATA / FAIL", "reason": "No BTC or ETH OHLC history is physically present in this repository checkout. Separately, the source was backtested on a spot exchange (implied by freqtrade's typical Binance-spot default; not independently confirmed for this file) -- VT Markets BTCUSD/ETHUSD are CFDs with overnight SWAP financing, not spot settlement; this venue translation is also unresolved."},
+    "G4_CAUSALITY_WARMUP": {"verdict": "NOT_EVALUATED", "reason": "Source file was not read; no causality claim can be made either way without fabricating one."},
+    "G5_TRANSLATION_FIDELITY": {"verdict": "NOT_EVALUATED", "reason": "No replay attempted."}
+  },
+
+  "ag_reproduced": false,
+  "dev_replay_runs": [],
+  "friction_screened": false,
+  "friction_result": "NOT_EVALUATED (no data, no replay)",
+
+  "verdict": "HOLD_DATA",
+  "verdict_reason": "Blocked at the data/venue-fit gate (no BTCUSD/ETHUSD OHLC history in this environment) and independently incomplete at the spec-extraction gate (G1_HOLD_SPEC -- exact rule parameters not read from source in the time available). Recorded as a discovered, classified candidate for a future mission to either complete the rule extraction or replace with a better-specified crypto comparator; not rejected, since nothing here demonstrates the underlying idea is uneconomic -- only that this mission could not evaluate it.",
+
+  "status_taxonomy": {
+    "source_backtested": true,
+    "ag_reproduced": false,
+    "friction_screened": false,
+    "contract_frozen": false,
+    "logic_verified": false,
+    "economic_status": "NOT_VERIFIED",
+    "edge_verified": false
+  }
+}

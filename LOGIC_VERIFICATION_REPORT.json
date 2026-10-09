@@ -1,0 +1,41 @@
+{
+  "schema": "AG_LOGIC_VERIFICATION_REPORT_V1",
+  "generated_at": "2026-10-07T05:00:00Z",
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "version": "1.1.1",
+  "contract_hash": "a1f331a23dd4494422aa9edde0f4a62985486f173561ca93e8c234d41730f550",
+  "engine_hash": "913504bab66c8c1867e5f552fc70319eb2bc8e363e3dc1eff1399d6e221eb27c",
+  "logic_identity": "ffd4db6d3f8c0878db0c6152769ab22ca77a107983744915351787dd9e14b636",
+  "verification_code_sha": "fc60cdbf603146b1408dba9184e6c146bdcf4ea5",
+  "dataset_identity": {
+    "path": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+    "sha256": "ee70c7b78792a20db542204392a6c16979ac237c02162db5f772d50e1c8de189",
+    "classification": "RECORDED_DEVELOPMENT_FIXTURE"
+  },
+  "test_evidence": [
+    "tests/test_manual_ticket_logic_gate.py",
+    "tests/test_manual_ticket_authority.py",
+    "tests/test_manual_ticket_build.py",
+    "docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md"
+  ],
+  "checks": {
+    "L1_identity_and_contract": {"verdict":"PASS","evidence":"exact contract and normalized engine hashes are bound by authority.logic_identity"},
+    "L2_specification_engine_equivalence": {"verdict":"FAIL","reasons":["declared EMA_50 is not consumed and has no timeframe/price source","declared 25%-of-reference-range stop differs from sweep-wick engine stop","declared sweep candle close differs from body-edge entry on affected candles","TREND/RANGE branches are not fully declared","range gate and structural volume semantics are unresolved"]},
+    "L3_temporal_causality": {"verdict":"PARTIAL","evidence":"closed-bar and deterministic-session tests pass","missing":"approved successor contract and complete prefix/future-mutation/streaming parity evidence"},
+    "L4_price_geometry": {"verdict":"FAIL","reasons":["recorded zero-stop case","recorded TP1/TP2 ordering failures"]},
+    "L5_risk_and_friction": {"verdict":"BLOCKED","reasons":["owner_ticket.risk_pct is unset","commission metadata unavailable","USDJPY/XAUUSD complete metadata requires host acceptance"]},
+    "L6_determinism_and_replay_parity": {"verdict":"PARTIAL","evidence":"same-input payload hashing passes recorded fixtures","missing":"host shadow parity for exact approved successor"}
+  },
+  "verdict": "NOT_VERIFIED",
+  "deterministic_failure_reasons": [
+    "L2_CONTRACT_ENGINE_DIVERGENCE",
+    "L4_INVALID_RECORDED_GEOMETRY",
+    "RISK_CONFIG_MISSING",
+    "OWNER_SUCCESSOR_SEMANTICS_PENDING"
+  ],
+  "economic_status": "NOT_EVALUATED",
+  "edge_status": "NOT_VERIFIED",
+  "ticket_ready_eligible": false,
+  "broker_execution_authorized": false,
+  "note": "Passing tests do not confer LOGIC_VERIFIED. Frozen v1.1.1 remains unchanged. Candidate promotion is BLOCKED_BY_OWNER."
+}

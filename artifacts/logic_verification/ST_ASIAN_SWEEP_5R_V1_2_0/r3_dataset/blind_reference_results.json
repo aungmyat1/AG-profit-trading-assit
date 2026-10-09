@@ -1,0 +1,10 @@
+{
+  "status": "NOT_RUN",
+  "reason": "SEPARATE_AGENT_CONTEXT_UNAVAILABLE",
+  "reference_author_context": null,
+  "reference_source_hash": null,
+  "dataset_id": "AG_ASIAN_SWEEP_V1_2_R3_LOGIC_PARITY_001",
+  "dataset_sha256": "a3c1ee5b04792dcea4defbd868cb0ed1a048927deddb68b9b67ecf842856fd80",
+  "results": [],
+  "note": "The primary agent did not reuse or relabel the R2 reference evaluator as blind evidence."
+}

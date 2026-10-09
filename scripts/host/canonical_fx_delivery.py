@@ -432,9 +432,14 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
     }
     for attempt in sender.delivery_attempts("ticket", ticket_ids):
         delivery_states[(attempt["identity"], attempt["status"])] = attempt["state"]
-    delivery_counts = Counter(_delivery_bucket(state) for state in delivery_states.values())
     expected_delivery_keys = {(row["ticket_id"], row["state"]) for row in latest.values()
                               if row.get("ticket_id") and row.get("state")}
+    # A symbol may be evaluated more than once inside one session (e.g. INFO_ONLY_STALE ->
+    # WATCH_READY). Only the latest terminal decision per symbol is counted; superseded
+    # (ticket_id, decision) pairs stay in the audit journal and in `delivery_states`, but they
+    # must never add a second delivery outcome for the same instrument.
+    delivery_counts = Counter(_delivery_bucket(state) for key, state in delivery_states.items()
+                              if key in expected_delivery_keys)
     for key in expected_delivery_keys - set(delivery_states):
         delivery_counts["not_attempted"] += 1
 
@@ -458,8 +463,11 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
             item = {"symbol": symbol, "ticket_id": row.get("ticket_id"),
                     "decision": row.get("state") if known else "COMPATIBILITY_ERROR",
                     "source": row.get("source"),
-                    "reason_code": ((row.get("block_reasons") or [None])[0] if known else
-                                    "UNKNOWN_CANONICAL_DECISION"),
+                    # The event row carries the ticket's own reason code, so a SIGNAL_TIME_UNAVAILABLE
+                    # DATA_ERROR stays distinguishable from an acquisition DATA_ERROR; the stored
+                    # block_reasons are the fallback when no session event exists.
+                    "reason_code": ((event.get("reason_code") or (row.get("block_reasons") or [None])[0])
+                                    if known else "UNKNOWN_CANONICAL_DECISION"),
                     "acquisition_error_code": event.get("acquisition_error_code"),
                     "record_source": row.get("record_source", "TICKET_STORE"),
                     "ticket_store_status": event.get("ticket_store_status")

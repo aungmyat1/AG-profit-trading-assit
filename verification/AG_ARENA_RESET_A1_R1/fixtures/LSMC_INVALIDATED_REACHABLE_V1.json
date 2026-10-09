@@ -1,0 +1,100 @@
+{
+  "fixture_id": "LSMC_INVALIDATED_REACHABLE_V1",
+  "fixture_version": "1.0.0",
+  "required_by": "LSMC-OD-21 (owner decision 2026-10-08): \"INVALIDATED must be reachable; add a fixture proving it.\"",
+  "spec": "docs/specs/LSMC_SPEC_V1_FROZEN.md v1.0.2",
+  "governance": "docs/governance/OWNER_DECISIONS_2026-10-08_LSMC_SPEC_V1_0_2.md",
+  "status": "DATA_AND_WORKED_PROOF_ONLY -- not wired into tests/ (out of this session's scope)",
+
+  "symbol_profile": {
+    "symbol_class": "NON_C10",
+    "note": "Any of USDJPY, XAUUSD, BTCUSDT, ETHUSDT. Values are synthetic and chosen for clean decimal arithmetic; no pip or tick size is required because the ATR term is already in price units.",
+    "stop_basis": "SWEEP_EXTREME_ATR_BUFFER"
+  },
+
+  "inputs": {
+    "sweep_extreme": 150.0,
+    "atr14_m5": 0.04,
+    "atr_multiplier": 0.35,
+    "buffer": 0.014,
+    "buffer_derivation": "0.35 * 0.040 = 0.014 (pip floor NOT applied, per LSMC-OD-21)",
+    "stop_long_new": 149.986,
+    "stop_short_new": 150.014,
+    "stop_replaced_basis": 150.0,
+    "stop_replaced_basis_note": "SWEEP_EXTREME, the LSMC-OD-02 ruling replaced on 2026-10-08"
+  },
+
+  "resolver_precedence": "AMBIGUOUS_SAME_BAR if target_hit and (stopped or invalidated); else TARGET_REACHED if target_hit; else STOP_REACHED if stopped; else INVALIDATED if invalidated; else OPEN",
+
+  "cases": [
+    {
+      "case_id": "L1",
+      "purpose": "PROOF: INVALIDATED is reachable for a LONG under SWEEP_EXTREME_ATR_BUFFER.",
+      "direction": "LONG",
+      "target_c11": 150.2,
+      "stop": 149.986,
+      "bar": { "open": 150.02, "high": 150.03, "low": 149.99, "close": 149.995 },
+      "checks": {
+        "target_hit": "high 150.030 >= 150.200 -> false",
+        "stopped": "low 149.990 <= 149.986 -> false",
+        "invalidated": "close 149.995 < 150.000 -> true"
+      },
+      "expected_outcome": "INVALIDATED",
+      "outcome_under_replaced_basis": "STOP_REACHED",
+      "significance": "Under the replaced SWEEP_EXTREME basis the same bar resolved STOP_REACHED, because low 149.990 <= stop 150.000. The ATR buffer is what makes INVALIDATED reachable."
+    },
+    {
+      "case_id": "S1",
+      "purpose": "PROOF: INVALIDATED is reachable for a SHORT under SWEEP_EXTREME_ATR_BUFFER.",
+      "direction": "SHORT",
+      "target_c11": 149.8,
+      "stop": 150.014,
+      "bar": { "open": 149.98, "high": 150.01, "low": 149.97, "close": 150.005 },
+      "checks": {
+        "target_hit": "low 149.970 <= 149.800 -> false",
+        "stopped": "high 150.010 >= 150.014 -> false",
+        "invalidated": "close 150.005 > 150.000 -> true"
+      },
+      "expected_outcome": "INVALIDATED",
+      "outcome_under_replaced_basis": "STOP_REACHED",
+      "significance": "Mirror of L1. Note the stop carries no spread term: SWEEP_EXTREME_ATR_BUFFER is not C10-B. See LSMC-OD-29."
+    },
+    {
+      "case_id": "L2",
+      "purpose": "CONTROL: the buffer does not make STOP_REACHED unreachable.",
+      "direction": "LONG",
+      "target_c11": 150.2,
+      "stop": 149.986,
+      "bar": { "open": 150.01, "high": 150.015, "low": 149.98, "close": 150.005 },
+      "checks": {
+        "target_hit": "high 150.015 >= 150.200 -> false",
+        "stopped": "low 149.980 <= 149.986 -> true",
+        "invalidated": "close 150.005 < 150.000 -> false"
+      },
+      "expected_outcome": "STOP_REACHED",
+      "outcome_under_replaced_basis": "STOP_REACHED"
+    },
+    {
+      "case_id": "L3",
+      "purpose": "CONTROL: a genuine same-bar tie still resolves to AMBIGUOUS_SAME_BAR (LSMC-OD-12 / LSMC-OD-26).",
+      "direction": "LONG",
+      "target_c11": 150.2,
+      "stop": 149.986,
+      "bar": { "open": 150.0, "high": 150.25, "low": 149.98, "close": 150.1 },
+      "checks": {
+        "target_hit": "high 150.250 >= 150.200 -> true",
+        "stopped": "low 149.980 <= 149.986 -> true",
+        "invalidated": "close 150.100 < 150.000 -> false"
+      },
+      "expected_outcome": "AMBIGUOUS_SAME_BAR",
+      "outcome_under_replaced_basis": "AMBIGUOUS_SAME_BAR",
+      "significance": "Stays unresolved and is counted separately. M1 resolution is deferred to v1.1 (LSMC-OD-26)."
+    }
+  ],
+
+  "reachability_window": {
+    "long": "INVALIDATED fires when bar.low > (sweep_extreme - buffer) AND bar.close < sweep_extreme. Window width is exactly `buffer`.",
+    "short": "INVALIDATED fires when bar.high < (sweep_extreme + buffer) AND bar.close > sweep_extreme. Window width is exactly `buffer`.",
+    "degenerate_case": "As atr -> 0 the window width -> 0 and INVALIDATED becomes unreachable again. c10_stop_policy.compute_c10_stop raises only on atr < 0, never on atr == 0. Raised as LSMC-OD-28; NOT resolved."
+  }
+}

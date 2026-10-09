@@ -1,0 +1,33 @@
+{
+  "run_id": "INT_C002_MTF_CONTROL_SHIFT_V1__EURUSD__ASIAN_LONDON__HIST1Y",
+  "candidate_id": "INT_C002",
+  "strategy_id": "ST_MTF_CONTROL_SHIFT_V1",
+  "strategy_version": "1.0.0",
+  "trial_id": "ASIAN_LONDON_EURUSD_HIST1Y_v1",
+  "prereg_id": "AG_OSS_STRATEGY_CANDIDATE_FACTORY_R1_PREREG_V1",
+  "prereg_sha256": "342482c9972d1029d85b5ce4ab4792d4d147617d110aa88a6b020e32b707912b",
+  "dataset_id": "DEV_EURUSD_H1_M15_HIST1Y_V1",
+  "dataset_sha256": {
+    "EURUSD_H1.csv": "3ee3dbff1fdf81b578c6ff43e7f9586996c7fb796db80105a059504b052fd2aa",
+    "EURUSD_M15.csv": "087c64cb2bf291230d525cd6e2f8d6471bb8499c685a24df5525c70c3a1ad6fe"
+  },
+  "engine_source": "research_external/candidate_factory/internal_reference/mtf_control_shift (copy of PR #34 @ 1d1c75c92a7fda80696a56d4e1ccbe402f3ab71a)",
+  "symbol": "EURUSD",
+  "cycle": "ASIAN_LONDON",
+  "n_days_evaluated": 305,
+  "n_signals_total": 0,
+  "n_signals_unfilled_limit": 0,
+  "n_trades_filled": 0,
+  "fill_rate": null,
+  "replay_assumptions": [
+    "D1/H4 derived from real H1 by causal OHLC resample; no separate D1/H4 acquisition in this checkout",
+    "bounded tail windows passed to evaluate(): D1=40 H4=80 H1=60 M15=150 bars (see module docstring)",
+    "stop-first-on-same-bar-collision (not defined by source spec)",
+    "force-flat fill approximated at the bar OPEN of the first M15 bar at/after 21:00 UTC (no intrabar price available)"
+  ],
+  "metrics_gross_r": {
+    "n": 0,
+    "note": "no trades"
+  },
+  "generated_at_utc": "2026-10-07T07:59:44.312124+00:00"
+}

@@ -1,0 +1,36 @@
+{
+  "run_id": "OSS_FX_C001_ORB_NY_OPEN__EURUSD__LONDON_NEWYORK__TRAIN",
+  "candidate_id": "OSS_FX_C001",
+  "strategy_id": "OSS_FX_C001_ORB_NY_OPEN",
+  "source": "Zarattini & Aziz 2023 (SSRN 4416622); rule extracted, no code imported/executed",
+  "trial_id": "EURUSD_LONDON_NEWYORK_TRAIN_v1",
+  "prereg_id": "AG_OSS_STRATEGY_CANDIDATE_FACTORY_R1_PREREG_V1",
+  "prereg_sha256": "342482c9972d1029d85b5ce4ab4792d4d147617d110aa88a6b020e32b707912b",
+  "dataset_id": "DEV_EURUSD_M5_TRAIN_V1",
+  "dataset_sha256_parent": "34c3296cefd4715c6c742210a36f3afe4261b53e24fa91dd02e8d3884bb240ef",
+  "symbol": "EURUSD",
+  "cycle": "LONDON_NEWYORK",
+  "n_days_evaluated": 194,
+  "n_trades_filled": 176,
+  "replay_assumptions": [
+    "doji filter threshold |close-open|<0.10*range is this harness's own operationalization, not sourced from the paper (UNKNOWN exact threshold)",
+    "venue/instrument translation is MATERIAL_DEVIATION (US equities 5-min ORB -> FX EURUSD M5 at the LONDON_NEWYORK window open); source paper's reported results are NOT inherited as evidence",
+    "stop-first-on-same-bar-collision",
+    "flat at window end (14:00 UTC) if unresolved, mark-to-market at that bar's open"
+  ],
+  "metrics_gross_r": {
+    "n": 176,
+    "wins": 37,
+    "losses": 139,
+    "win_rate": 0.21022727272727273,
+    "gross_r": 7.9491630644987765,
+    "net_r": 7.9491630644987765,
+    "expectancy_r": 0.04516569923010669,
+    "profit_factor": 1.0577692057557178,
+    "max_drawdown_r": 26.22482466154044,
+    "largest_single_trade_r": 10.0,
+    "largest_trade_pct_of_total_abs_net_r": 0.035316554495383484,
+    "cost_r_per_trade_applied": 0.0
+  },
+  "generated_at_utc": "2026-10-07T07:54:37.894853+00:00"
+}

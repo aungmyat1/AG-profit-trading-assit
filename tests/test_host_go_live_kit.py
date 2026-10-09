@@ -206,7 +206,9 @@ def test_smoke_prints_states_and_archives_only(tmp_path):
     lines = smoke.run_smoke(fake_fetch(), NOW, str(tmp_path / "journal"))
     text = "\n".join(lines)
     assert "BARS EURUSD (EURUSD-VIP) status=FRESH" in text
-    assert re.search(r"FX EURUSD \(EURUSD-VIP\) ASIAN_LONDON data=FRESH decision=(READY|NO_TRADE|STALE) reason=", text)
+    # The fixture's box-direction SIGNAL carries no engine signal time: STALE-FIX-1 fails it closed
+    # instead of borrowing the first trade-session bar.
+    assert "FX EURUSD (EURUSD-VIP) ASIAN_LONDON data=FRESH decision=DATA_ERROR reason=SIGNAL_TIME_UNAVAILABLE" in text
     assert "LSMC EURUSD data=FRESH state=OPPORTUNITY" in text and "LSMC GBPUSD" in text
     # Objective symbols are never silently omitted: unavailable metadata/data is visible.
     assert "FX USDJPY" in text and "decision=DATA_ERROR" in text
@@ -326,6 +328,64 @@ def test_crypto_mode_window_and_idempotence(tmp_path):
     assert any("source=BYBIT_LINEAR_PERP ARCHIVED" in ln for ln in first)
     assert not any("ARCHIVED" in ln for ln in smoke.run_crypto(IN_WINDOW, j, _FakeFeed()))
     assert all("OUTSIDE_WINDOW" in ln for ln in smoke.run_crypto(IN_WINDOW + dt.timedelta(hours=3), j, _FakeFeed()))
+
+
+def test_crypto_main_outside_window_takes_no_runner_or_mt5_lock_and_never_imports_mt5(monkeypatch):
+    now = dt.datetime(2026, 11, 2, 13, 59, tzinfo=UTC)  # 08:59 EST, before the V3 weekday window
+    monkeypatch.setattr(smoke, "utcnow", lambda: now)
+    monkeypatch.setattr(hc, "utcnow", lambda: now)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("outside-window crypto run must not acquire a lock or touch MT5")
+
+    monkeypatch.setattr(smoke, "single_instance", forbidden)
+    monkeypatch.setattr(smoke, "mt5_access_lock", forbidden)
+    monkeypatch.setattr(smoke, "import_mt5", forbidden)
+    monkeypatch.setattr(smoke, "mt5_initialize", forbidden)
+
+    assert smoke.main(["--mode", "crypto"]) == 0
+    log = (Path(hc.LOG_DIR) / "ag_v1_crypto.log").read_text(encoding="utf-8").splitlines()
+    assert log == [f"{now.isoformat()} CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)"]
+
+
+def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
+    from contextlib import contextmanager
+
+    now = dt.datetime(2026, 11, 2, 14, 0, tzinfo=UTC)  # 09:00 EST, inclusive V3 weekday start
+    calls, logged = [], []
+    monkeypatch.setattr(smoke, "utcnow", lambda: now)
+
+    @contextmanager
+    def single_lock(name):
+        calls.append(("single_instance", name))
+        yield
+
+    @contextmanager
+    def mt5_lock():
+        calls.append(("mt5_access_lock",))
+        yield
+
+    mt5 = types.SimpleNamespace(shutdown=lambda: calls.append(("shutdown",)))
+    monkeypatch.setattr(smoke, "single_instance", single_lock)
+    monkeypatch.setattr(smoke, "mt5_access_lock", mt5_lock)
+    monkeypatch.setattr(smoke, "import_mt5", lambda: calls.append(("import_mt5",)) or mt5)
+    monkeypatch.setattr(smoke, "mt5_initialize", lambda *_: calls.append(("initialize",)) or (True, "ok"))
+    monkeypatch.setattr(smoke, "require_demo_account", lambda *_: calls.append(("demo",)) or (True, "ok"))
+    monkeypatch.setattr(smoke, "host_fetch", lambda _: lambda *_: [])
+    monkeypatch.setattr(smoke, "host_quote", lambda _: lambda *_: None)
+
+    def run_crypto(run_now, journal, feed, config=None, **kwargs):
+        calls.append(("run_crypto", run_now, config["version"], type(feed).__name__))
+        return ["CRYPTO IN_WINDOW"]
+
+    monkeypatch.setattr(smoke, "run_crypto", run_crypto)
+    monkeypatch.setattr(smoke, "log_line", lambda name, message: logged.append((name, message)))
+
+    assert smoke.main(["--mode", "crypto"]) == 0
+    assert [call[0] for call in calls] == ["single_instance", "import_mt5", "mt5_access_lock",
+                                          "initialize", "demo", "run_crypto", "shutdown"]
+    assert calls[-2][1:] == (now, 3, "Mt5CryptoFeed")
+    assert logged == [("ag_v1_crypto", "CRYPTO IN_WINDOW")]
 
 
 def test_single_instance_lock():
@@ -676,8 +736,10 @@ def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, mon
     monkeypatch.setattr(tg, "send_message", sent.append)
     j = str(tmp_path / "journal")
 
-    archived = smoke.run_fx(fake_fetch(), NOW, j, gated=False)        # STALE + DATA_ERROR only
-    assert any("decision=STALE" in ln for ln in archived) and any("decision=DATA_ERROR" in ln for ln in archived)
+    archived = smoke.run_fx(fake_fetch(), NOW, j, gated=False)        # DATA_ERROR only (two causes)
+    assert any("decision=DATA_ERROR reason=SIGNAL_TIME_UNAVAILABLE" in ln for ln in archived)
+    assert any("decision=DATA_ERROR reason=" in ln and "SIGNAL_TIME_UNAVAILABLE" not in ln
+               for ln in archived)                                     # acquisition failure, distinct cause
     assert all("ARCHIVED" in ln for ln in archived) and sent == []     # archived, never reported
 
     ready = dict(tg.validation_proposal(NOW), strategy_id="ST_ASIAN_SWEEP_5R_V1", strategy_version="1.1.1",
@@ -693,7 +755,8 @@ def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, mon
         "EURUSD LONG (ASIAN_LONDON)", "GBPUSD LONG (ASIAN_LONDON)",
         "EURUSD LONG (LONDON_NEWYORK)", "GBPUSD LONG (LONDON_NEWYORK)"]
     for message in after_first:
-        assert "decision=READY" in message and "ticket_id:" in message and "VALID UNTIL" in message
+        assert "decision=NOT_READY" in message and "ticket_id:" in message and "VALID UNTIL" in message
+        assert "logic_status: NOT_VERIFIED" in message and "EDGE_VERIFIED=FALSE" in message
         assert "entry:" in message and "target leg 1" in message and "NOT A BROKER ORDER" in message
 
 
@@ -711,6 +774,48 @@ def test_scheduled_telegram_send_failure_never_breaks_the_run(tmp_path, monkeypa
     lines = smoke.run_lsmc(fake_fetch(), NOW, str(tmp_path / "journal"))
     assert any("state=OPPORTUNITY" in ln for ln in lines)              # archive/watch path unaffected
     assert "TELEGRAM_SEND_DELIVERY_UNCERTAIN" in (tmp_path / "logs" / "telegram.log").read_text()
+
+
+@pytest.mark.parametrize(("mode", "journal_status"),
+                         [("http_500", "FAILED"), ("timeout", "FAILED"), ("unknown", "ERROR")])
+def test_ambiguous_lsmc_delivery_is_never_auto_resent(tmp_path, monkeypatch, mode, journal_status):
+    """A 5xx/timed-out/unknown OPPORTUNITY send is DELIVERY_UNCERTAIN in the dedup ledger.
+
+    The legacy JSONL row keeps its frozen FAILED / ERROR vocabulary, but the ledger must never
+    treat the ambiguous confirmation as a known failure eligible for a later blind resend.
+    """
+    (tmp_path / "config" / "local").mkdir(parents=True)
+    (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-TOKEN-VALUE")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    attempts = []
+    original = tg.send_message
+
+    def ambiguous(text):
+        attempts.append(text)
+        if mode == "unknown":
+            raise RuntimeError("transport outcome unknown")
+        original(text, session=_Sess(status=500, ok=False) if mode == "http_500" else _Sess(boom=True))
+
+    monkeypatch.setattr(tg, "send_message", ambiguous)
+    journal = tmp_path / "journal"
+    first = smoke.run_lsmc(fake_fetch(), NOW, str(journal))
+    assert len(attempts) == 2                                     # EURUSD + GBPUSD OPPORTUNITY
+    assert any("LSMC_DELIVERY EURUSD DELIVERY_UNCERTAIN" in ln for ln in first)
+    ledger = json.loads((journal / "large_smc_watch" / "delivered_confirmations.json").read_text())
+    assert {row["state"] for row in ledger.values()} == {"DELIVERY_UNCERTAIN"}
+    rows = [json.loads(ln) for ln in (journal / "ticket_delivery" / "delivery_status" /
+                                      f"{NOW.date().isoformat()}.jsonl").read_text().splitlines()]
+    assert len(rows) == 2 and {row["status"] for row in rows} == {journal_status}
+
+    # A later cycle re-enters OPPORTUNITY for the same confirmation (tracker restart): the
+    # ambiguous send is suppressed, never retried.
+    os.remove(journal / "large_smc_watch" / "state.json")
+    second = smoke.run_lsmc(fake_fetch(), NOW, str(journal))
+    assert len(attempts) == 2
+    assert any("LSMC_DELIVERY EURUSD SUPPRESSED_UNCERTAIN_CONFIRMATION" in ln for ln in second)
 
 
 def test_telegram_proposal_cli_sends_rendered_validation(monkeypatch, capsys):

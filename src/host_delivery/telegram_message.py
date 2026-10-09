@@ -25,6 +25,7 @@ import yaml
 from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 from host_evidence.symbol_metadata import load_record
 from ticket_delivery.identity import logical_ticket_id
+from v1_tickets.authority import LOGIC_VERIFIED, resolve_ticket_authority
 from v1_tickets.guards import STALE_AFTER
 
 OVERRIDE_PATH = os.path.join("config", "local", "delivery_override.yaml")
@@ -215,8 +216,17 @@ def _ticket_id(t: Dict[str, Any]) -> str:
 
 
 def format_ticket(t: Dict[str, Any]) -> str:
-    """Formatting only: values come from the ticket; verified metadata only snaps display prices."""
+    """Render ticket facts and verified strategy authority; never label unverified logic READY."""
     sym = t["symbol"]
+    simulated = str(t.get("label", "")).startswith("SIMULATED TELEGRAM DELIVERY VALIDATION")
+    try:
+        logic_status = ("NOT_APPLICABLE" if simulated else resolve_ticket_authority(
+            t.get("strategy_id", ""), t.get("strategy_version")).logic_status_effective)
+    except Exception:  # noqa: BLE001 -- display status fails closed
+        logic_status = "NOT_VERIFIED"
+    display_decision = t.get("decision", "NOT_AVAILABLE")
+    if display_decision == "READY" and logic_status != LOGIC_VERIFIED and not simulated:
+        display_decision = "NOT_READY"
     raw_entry, raw_stop, engine_risk = t.get("entry"), t.get("stop_loss"), t.get("risk_distance")
     raw_risk = engine_risk or (abs(raw_entry - raw_stop)
                                if raw_entry is not None and raw_stop is not None else None)
@@ -231,7 +241,8 @@ def format_ticket(t: Dict[str, Any]) -> str:
     expires = (dt.datetime.fromisoformat(t["signal_close_utc"]) + STALE_AFTER) if t.get("signal_close_utc") else None
     lines = [t.get("label", "INFORMATIONAL TICKET -- NOT A BROKER ORDER"),
              f"{sym} {t.get('direction', '')} ({t.get('cycle', '')})",
-             f"{t['strategy_id']} v{t['strategy_version']}  decision={t['decision']}",
+             f"{t.get('strategy_id', 'NOT_AVAILABLE')} v{t.get('strategy_version', 'NOT_AVAILABLE')}  decision={display_decision}",
+             f"logic_status: {logic_status}", "EDGE_VERIFIED=FALSE",
              f"ticket_id: {_ticket_id(t)}"]
     if t.get("window"):
         lines.append(f"window: {t['window']}  status: {t.get('ticket_status', '')}")
