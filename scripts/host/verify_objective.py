@@ -28,6 +28,8 @@ for path in (str(REPO_ROOT), str(REPO_ROOT / "src"), str(HOST_DIR)):
 with contextlib.redirect_stdout(io.StringIO()):
     import live_candles_smoke as runner  # noqa: E402
     from host_delivery import telegram_message as telegram  # noqa: E402
+    from telegram_delivery.adapter import Config as CanonicalDeliveryConfig, Sender as CanonicalSender  # noqa: E402
+    from telegram_delivery.scope_policy import resolve as resolve_immediate_scope  # noqa: E402
     from host_evidence.symbol_metadata import SWAP_FIELDS, load_record  # noqa: E402
     from large_smc_watch import contract as lsmc  # noqa: E402
     from strategy_engine import load_strategy  # noqa: E402
@@ -136,8 +138,11 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
         "(Telegram remains host-local opt-in)",
     ))
 
-    # Legacy reporting keeps its existing scope. Canonical FX delivery has a separate
-    # host-local recipient allowlist plus environment feature gate; no buttons/callbacks.
+    tracked_scope = delivery.get("immediate_send_scope") or {}
+    policy_enabled = tuple(tracked_scope.get("enabled", ()))
+    policy_disabled = tracked_scope.get("disabled", {})
+    # Resolve each sender independently against the same tracked ceiling. Overrides are
+    # sender-local; one sender's requested narrowing cannot disable the other.
     with tempfile.TemporaryDirectory() as probe:                     # fully-enabled probe host
         enabled = Path(probe) / telegram.OVERRIDE_PATH
         enabled.parent.mkdir(parents=True, exist_ok=True)
@@ -146,19 +151,43 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
         scoped = {kind: tuple(v for v in values if telegram.should_send(kind, v, probe))
                   for kind, values in (("TICKET", ("READY", "NO_TRADE", "BLOCKED", "STALE", "DATA_ERROR")),
                                        ("LSMC", ("OPPORTUNITY", "WATCH", "INFO")))}
+        probe_scope = resolve_immediate_scope(probe, sender="legacy")
+    legacy_scope = resolve_immediate_scope(root, sender="legacy")
+    canonical_config = CanonicalDeliveryConfig.from_env(str(root))
+    canonical_scope = tuple(sorted(canonical_config.immediate_scopes))
+    canonical_calls = []
+    canonical_rows = json.loads((root / "tests/fixtures/telegram_delivery/tickets.json").read_text(encoding="utf-8"))
+    with tempfile.TemporaryDirectory() as canonical_probe:
+        sender = CanonicalSender(Path(canonical_probe) / "delivery.sqlite", canonical_config,
+                                 lambda *args: canonical_calls.append(args))
+        canonical_results = [sender.send_ticket(row) for row in canonical_rows
+                             if row["decision"] == "WATCH_READY" or row["decision"].startswith("INFO_ONLY_")]
+    canonical_send_ok = bool(canonical_results) and all(result in ("summary_only", "blocked")
+                                                        for result in canonical_results) and not canonical_calls
     runner_src = (root / "scripts" / "host" / "live_candles_smoke.py").read_text(encoding="utf-8")
     canonical_src = (root / "scripts" / "host" / "canonical_fx_delivery.py").read_text(encoding="utf-8")
     canonical_opt_in = ("config/local/canonical_ticket_delivery.yaml" in canonical_src
                         and "env_chat in env_allow" in canonical_src and "env_chat in local_ids" in canonical_src
-                        and "TELEGRAM_DELIVERY_ENABLED" in canonical_src)
+                        and "TELEGRAM_DELIVERY_ENABLED" in canonical_src
+                        and "resolve_immediate_scope(root, sender=\"canonical\")" in canonical_src)
     checks.append(_check(
         "telegram_report_scope",
-        scoped == {"TICKET": ("READY",), "LSMC": ("OPPORTUNITY",)}
+        policy_enabled == ("TICKET_READY", "LSMC_OPPORTUNITY")
+        and policy_disabled.get("WATCH_READY") == "PENDING_OWNER_DECISION C16"
+        and policy_disabled.get("INFO_ONLY_*") == "PENDING_OWNER_DECISION C16"
+        and set(legacy_scope["effective"]).issubset(policy_enabled) and legacy_scope["error"] is None
+        and probe_scope["effective"] == policy_enabled and probe_scope["error"] is None
+        and set(canonical_scope).issubset(policy_enabled) and canonical_config.scope_error is None
+        and canonical_send_ok
+        and scoped == {"TICKET": ("READY",), "LSMC": ("OPPORTUNITY",)}
         and tuple(telegram.SCOPES) == ("TICKET_READY", "LSMC_OPPORTUNITY")
         and runner_src.count("if new and notify:") == 2 and "reply_markup" not in runner_src
         and canonical_opt_in,
-        f"ticket={list(scoped['TICKET'])} lsmc={list(scoped['LSMC'])} "
-        f"canonical_opt_in={canonical_opt_in} (message-only, owner-allowlisted)",
+        f"legacy effective={list(legacy_scope['effective'])} error={legacy_scope['error']}; "
+        f"canonical effective={list(canonical_scope)} error={canonical_config.scope_error}; "
+        f"policy={list(policy_enabled)}; ticket={list(scoped['TICKET'])} lsmc={list(scoped['LSMC'])}; "
+        f"canonical_send_results={canonical_results}; "
+        f"canonical_opt_in={canonical_opt_in}",
     ))
 
     failures = [item["check"] for item in checks if item["status"] == "FAIL"]

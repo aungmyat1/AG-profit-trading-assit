@@ -1,6 +1,7 @@
 {
   "input_paths": [
     "config/ag_scheduler_v2.yaml",
+    "config/ticket_delivery.yaml",
     "docs/PROJECT_OBJECTIVE.md",
     "docs/agents/INVARIANTS.md",
     "docs/governance/OWNER_DECISION_REGISTER.md",
@@ -14,7 +15,7 @@
     "strategies/registry.yaml",
     "strategies/session_trade/contract.yaml"
   ],
-  "inputs_sha256": "cf5d0af4c1098fcebe994cb69e9746e1da09028a9cb4b7019ce74ae0b38339b9",
+  "inputs_sha256": "df99626b53473bdffe70e7109ea9f5f9cea06d02396e305c40687b87556c0cab",
   "objective": {
     "source": "docs/PROJECT_OBJECTIVE.md#objective",
     "text": "Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.\n\nThe owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.\n\n`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
@@ -234,5 +235,15 @@
       },
       "version": "1.0.1"
     }
-  ]
+  ],
+  "telegram_scope": {
+    "immediate_send_enabled": [
+      "TICKET_READY",
+      "LSMC_OPPORTUNITY"
+    ],
+    "informational_disabled": {
+      "INFO_ONLY_*": "PENDING_OWNER_DECISION C16",
+      "WATCH_READY": "PENDING_OWNER_DECISION C16"
+    }
+  }
 }

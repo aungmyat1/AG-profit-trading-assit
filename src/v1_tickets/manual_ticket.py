@@ -294,13 +294,20 @@ def _meta_note(prov: Optional[Dict[str, Any]]) -> str:
 
 def render_text(t: Dict[str, Any]) -> str:
     """Plain text in the owner's layout. Delivered only through the existing channel."""
+    display_state = t["state"]
+    display_reason = t.get("primary_block_reason")
+    if display_state == TICKET_READY and t.get("logic_status") != "LOGIC_VERIFIED":
+        display_state = TICKET_BLOCKED
+        display_reason = display_reason or "LOGIC_STATUS_NOT_VERIFIED"
     lines = [
         "AG TRADE TICKET — MANUAL DECISION",
         f"#{t['ticket_id']}  Strategy {t['strategy']}  Session {t['session']}",
-        f"State       {t['state']}" + (f" ({t['primary_block_reason']})" if t.get("primary_block_reason") else "")
+        f"State       {display_state}" + (f" ({display_reason})" if display_reason else "")
         + (f"  also: {', '.join(t['block_reasons'][1:])}" if len(t.get("block_reasons") or []) > 1 else "")
         + (f"  warn: {', '.join(t['warnings'])}" if t.get("warnings") else ""),
         f"Logic gate  {gate_line(t)}",
+        f"logic_status: {t['logic_status']}",
+        "EDGE_VERIFIED=FALSE",
         f"Logic status {t['logic_status']} (strategy)   Economic {t['economic_status']}",
         f"Edge status {t['edge_status']}",
         f"Authority   {t['authority']}",
