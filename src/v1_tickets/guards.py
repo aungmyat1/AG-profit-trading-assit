@@ -14,6 +14,11 @@ from typing import Any, Dict, Optional
 STALE_AFTER = dt.timedelta(minutes=15)
 MAX_SPREAD_RISK_FRACTION = 0.15
 STALE = "STALE"
+# Stale-signal naming: SIGNAL_STALE is the single canonical manual-ticket reason. The legacy V1
+# ticket keeps its archived reason code STALE_SIGNAL unchanged; manual layers map it via
+# logic_gate.normalise_reason and never emit it themselves.
+SIGNAL_STALE = "SIGNAL_STALE"
+LEGACY_STALE_SIGNAL = "STALE_SIGNAL"
 SPREAD_TOO_WIDE = "SPREAD_TOO_WIDE"
 SPREAD_NOT_EVALUATED = "SPREAD_NOT_EVALUATED"
 
@@ -48,13 +53,17 @@ def gate_ready(ticket: Dict[str, Any], *, now: dt.datetime, data_close: Optional
     and spread gates apply to READY only. `data_close` None skips the data-age gate (caller has
     no live bar); `signal_close` None is STALE."""
     if data_close is not None and is_stale(data_close, now) and ticket.get("decision") in ("READY", "WATCH", "NO_TRADE"):
+        if ticket.get("decision") == "READY":
+            # Keep the already-computed trigger close so actionability can still resolve the
+            # trigger bar; the ticket stays withheld as STALE.
+            ticket = {**ticket, "signal_close_utc": signal_close.isoformat() if signal_close else None}
         return _withhold(ticket, STALE, "STALE_DATA", reason_key)
     if ticket.get("decision") != "READY":
         return ticket
     ticket = {**ticket, **spread_check(spread, risk),
               "signal_close_utc": signal_close.isoformat() if signal_close else None}
     if is_stale(signal_close, now):
-        return _withhold(ticket, STALE, "STALE_SIGNAL", reason_key)
+        return _withhold(ticket, STALE, LEGACY_STALE_SIGNAL, reason_key)
     if ticket["spread_check"] == SPREAD_TOO_WIDE:
         return _withhold(ticket, SPREAD_TOO_WIDE, SPREAD_TOO_WIDE, reason_key)
     if ticket["spread_check"] != "PASS":

@@ -5,12 +5,13 @@ open and logged in. The complete objective universe is three FX majors (EURUSD, 
 USDJPY), gold (XAUUSD), and two crypto instruments (BTCUSDT, ETHUSDT): both FX session cycles
 produce informational tickets, both crypto instruments produce daily-window tickets, and
 Large-SMC watches all six instruments. It is read-only: nothing here places, checks or
-modifies orders or positions. Every scheduled FX result (`READY`, `NO_TRADE`, `BLOCKED`, or `DATA_ERROR`) is
-archived to `journal\ticket_delivery\archive`; the runtime fails closed unless
-`account_info().trade_mode` is DEMO. A fresh, complete `READY` ticket with host-captured
-metadata and a passing spread check is also projected into a 1R-only paper record under
-`journal\paper_trades`. No position size or broker order is created. Telegram is optional and
-off by default.
+modifies orders or positions. The installed scheduled FX task keeps `run_manual_jobs`, then
+uses the canonical daily evaluator; each selected result is archived and appended to
+`journal\ticket_store` before any optional message-only delivery. The host fails closed unless
+`account_info().trade_mode` is DEMO. Telegram is off by default and requires both the
+host-local canonical recipient allowlist and the environment feature/owner allowlist. The
+unscheduled legacy `--mode fx` path remains available without `--canonical`; its separate
+paper-ledger behavior is not part of the canonical scheduled path.
 
 ## Prerequisites (one time)
 
@@ -96,8 +97,9 @@ powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1
 
 The preflight must report nine PASS checks and `RESULT: PASS`; it verifies the complete
 six-instrument universe, both FX cycles, all six host metadata captures, the active two-symbol
-crypto config, Large-SMC coverage, all three scheduler bindings, the ARCHIVE_ONLY default, and
-the READY/OPPORTUNITY-only Telegram reporting scope. Expected from the installer:
+crypto config, Large-SMC coverage, all three scheduler bindings (including `--canonical` on
+FX), the ARCHIVE_ONLY default, and the legacy READY/OPPORTUNITY scopes. Canonical FX messages
+remain disabled unless a host-local authorized-recipient file and the environment gates agree. Expected from the installer:
 three plan lines (`AG-V1-FX-Cycles` every 15 min at +1 min daily, `AG-V1-Crypto-Daily`
 every 5 min at +2 min daily, and `AG-V1-LSMC-Watch` every 5 min at +3 min daily;
 staggered starts, 4-minute task limit, runner self-exits after 120 s), then
@@ -121,6 +123,12 @@ powershell -ExecutionPolicy Bypass -File scripts\host\verify_tasks.ps1
 ```
 
 What happens once the tasks run:
+- The scheduled FX action is `live_candles_smoke.py --mode fx --canonical`. It runs the existing
+  Manual Trade Ticket daily jobs, then evaluates only the active frozen cycle with the read-only
+  MT5 provider. Canonical evaluation records are archived and persisted to `TICKET_STORE_V1`
+  before ticket delivery. Append-only session events record store/delivery outcomes; deterministic
+  session summaries reconcile missing weekday pairs as `MISSED` and weekend closures as
+  `OUT_OF_SESSION`. Summary sends are deduplicated and uncertain outcomes are never auto-retried.
 - The runner acts only inside the frozen UTC windows, so it is DST-safe:
   - FX `07:00–11:00` / `12:00–15:00` GMT (+30 min grace)
   - crypto `06:30–06:45` UTC

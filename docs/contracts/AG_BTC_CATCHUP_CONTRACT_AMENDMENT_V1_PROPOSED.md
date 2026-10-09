@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG_BTC_CATCHUP_CONTRACT_AMENDMENT_V1 -- PROPOSED, NOT YET AUTHORIZED
 
 STATUS: **PROPOSED**. This document is a draft prospective amendment to

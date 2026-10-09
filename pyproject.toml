@@ -9,6 +9,7 @@ requires-python = ">=3.10"
 dependencies = [
     "PyYAML==6.0.3",
     "pandas==2.3.3",
+    "numpy==2.2.6",
     "MetaTrader5==5.0.5735; sys_platform == 'win32'",
     "smartmoneyconcepts==0.0.27",
     "requests==2.34.2",
@@ -42,11 +43,12 @@ markers = [
     # only where the genuine package is absent, so a non-Windows run reports SKIP
     # instead of a misleading FAIL -- and never hides a failure where it is observable.
     "live_mt5: requires the real MetaTrader5 package / a live MT5 terminal",
+    "denied: regeneration-publisher test that runs with the shipped default-deny permissions",
 ]
 addopts = "-m 'not slow'"
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["F", "I"]

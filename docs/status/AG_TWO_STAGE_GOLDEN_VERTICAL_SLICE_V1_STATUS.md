@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_TWO_STAGE_GOLDEN_VERTICAL_SLICE_V1 Status (2026-09-01)
 
 Scope: a small, deterministic, production-style regression lock proving the

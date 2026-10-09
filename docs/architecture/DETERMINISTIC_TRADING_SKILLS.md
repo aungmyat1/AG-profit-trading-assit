@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Deterministic Trading Skills
 
 The canonical classification is `.agents/skills/SKILL_REGISTRY.yaml` (with its

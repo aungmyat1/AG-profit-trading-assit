@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Stage 1 WP7 — Readiness, Reconciliation & Activation Packet V1 (Status)
 
 Dated 2026-09-09. **This document does not authorize `MESSAGE_DELIVERY`, a destination

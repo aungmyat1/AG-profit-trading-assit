@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # SVOS Virtual Demo Engine V1 — Cycle 1 design
 
 Date: 2026-09-20. Classification: **VD_V1_DESIGN_READY** (contracts only; implementation and qualification are pending).

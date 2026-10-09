@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_TRADE_ASSISTANT_V1_0_3_FX_SHADOW_DAY_STATUS -- Day 002 attempt (2026-09-03)
 
 `VALIDATION_SERIES_ID`: `AG_V1_0_3_FX_SHADOW_SERIES_001`

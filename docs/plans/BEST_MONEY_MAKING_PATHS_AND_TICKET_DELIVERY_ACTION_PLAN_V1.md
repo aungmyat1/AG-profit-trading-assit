@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # Best Money-Making Paths and Ticket Delivery Action Plan V1
 
 Status: **OWNER-DIRECTED PLAN — NOT EXECUTION OR PROFITABILITY AUTHORITY**  

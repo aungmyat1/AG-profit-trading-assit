@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 — C14 Duplicate/Re-entry Contract Resolution (2026-09-01)
 
 Status: **C14_RESOLVED_WITH_POST_FILL_DEFERRED**. `strategies/ST_LARGE_SMC_V1.yaml`

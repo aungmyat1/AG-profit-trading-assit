@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 — C11 Target Model Resolution (2026-09-01)
 
 Status: **OWNER_DECISION_REQUIRED**. C11 remains `UNRESOLVED_CONTRACT`; no target logic

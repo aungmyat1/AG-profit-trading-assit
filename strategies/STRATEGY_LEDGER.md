@@ -35,6 +35,13 @@ from canonical session windows or other repo conventions at the time of registra
   causal backtest contract (data timestamps, fill model, cost model, train/validation/
   test partition, baselines, acceptance criteria) -- see the `strategy-specification`
   skill before backtesting.
+- **v1.1.2 candidate (2026-10-07, L2 closure):** `strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml`.
+  Engine behavior becomes the spec; unsafe outputs fail closed. EMA_50, `range_session_check`
+  and the structural invalidation are removed. Registered under `candidate_versions."1.1.2"`
+  as `LOGIC_VERIFIED`, `economic_status NOT_EVALUATED`, `edge_verified false`,
+  `ticket_ready PAUSED_PENDING_OWNER_CONFIRM`. Not promoted: v1.1.1 stays the current
+  authority. Evidence and the Phase B recommendations (PENDING_OWNER_CONFIRM):
+  `docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md`.
 - **Open gaps found building `execution/` (2026-08-26):**
   - `risk_and_money_management.risk_mode: FIXED_PERCENT_OR_CONTRACT` never states an
     actual risk-per-trade percentage or contract size. `execution/risk.py` currently
@@ -61,6 +68,11 @@ from canonical session windows or other repo conventions at the time of registra
     consume `LONDON_NEWYORK`'s independent per-cycle quota for the same symbol/day. No
     strategy-file change. `PROPOSAL_ONLY`, no live/demo authorization change. See
     `tests/test_post_london_newyork_pilot.py`.
+- **Manual Trade Ticket V1 authority (2026-10-06, owner decision C1):** registry gains
+  `ticket_authority: MANUAL_ONLY`, `logic_status: NOT_VERIFIED`, `economic_status:
+  NOT_EVALUATED`, `demo_order_authority: NONE`. Manual tickets are analysis artifacts only;
+  `demo_authorized`/`live_authorized` unchanged (false), no strategy-file change. See
+  `docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md`.
 
 ## SESSION_TRADE_V1 -- Asian/London session trend-continuation & sweep strategy
 
@@ -88,6 +100,11 @@ from canonical session windows or other repo conventions at the time of registra
   (`session_router` -> this repo's `strategy_engine/session/`), but they are **separate,
   independently-signed strategies** with different session windows, different classifiers, and
   different execution authority. Do not merge them.
+- **Manual Trade Ticket V1 authority (2026-10-06, owner decisions C1/C2):** grandfathered as
+  `ticket_authority: MANUAL_ONLY` with `demo_order_authority: NONE`, `logic_status:
+  NOT_VERIFIED`, `economic_status: NOT_EVALUATED`. No in-repo adapter exists, so it is
+  registry/scanner-visible only and fails closed with `STRATEGY_ADAPTER_NOT_IMPLEMENTED`
+  (zero `TICKET_READY`). No logic ported; `demo_authorized` stays false.
 
 ## ST_LARGE_SMC_V1 -- Large SMC Opportunity Service
 
@@ -334,3 +351,42 @@ from canonical session windows or other repo conventions at the time of registra
   UNVALIDATED data source for informational tickets only: the perp-calibrated cost model and
   all validation evidence are unchanged and do not transfer to it. research/demo/live
   authority unchanged (demo_authorized=false, live_authorized=false).
+
+## ST_CRYPTO_CFD_SWEEP_RETEST_V1 -- BTCUSD/ETHUSD CFD Previous-UTC-Day Sweep + H1 Structure + M5 MSS + Retest
+
+- **Registered:** 2026-10-02 (AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1)
+- **Config:** `strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml`
+- **Status:** RESEARCH_ONLY_CONTRACT (deterministic contract only; no runner, no pilot)
+- **Family:** Liquidity_Sweep_MSS_Retest
+- **Instruments:** BTCUSD, ETHUSD -- `asset_class = CRYPTO_CFD` (VT Markets MT5 CFDs
+  verified by `docs/status/AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS.md`)
+- **Engine:** `src/crypto_cfd_contract/` (pure functions; tests
+  `tests/test_crypto_cfd_strategy_contract_v1.py`)
+- **Why it exists:** the frozen crypto observation layer (PR #28) fails closed with
+  `STRATEGY_CONTRACT_INCOMPLETE` because no registered contract covered these CFDs --
+  the registered crypto strategy profile covers the USDT perpetuals only. This entry
+  defines the dedicated CFD contract instead of reusing the perp profile.
+- **Perp/FX separation (hard):** no USDT-perpetual symbol, perp tick model
+  (`strategy_engine/sweep_retest/crypto_symbols.py`), perp activity window, or perp
+  funding/risk assumption is reused; no FX session gating or pip convention applies.
+  Reused pieces are ONLY the asset-independent primitives `sweep.py`/`mss.py`/
+  `retest.py`/`targets.py` and `market_structure.structural_breaks_for_candles`, which
+  `strategy_engine/sweep_retest/profile.py` documents as shared across asset classes.
+- **Frozen rules (summary; the YAML is authoritative):** previous-UTC-day H/L/M reference
+  (exactly 288 closed M5 bars else `REFERENCE_INCOMPLETE`, valid one UTC day);
+  H1 confirmed-break direction permission with confirmed-D1 conflict veto
+  (`HTF_DIRECTION_CONFLICT`); M5 close-back sweep (dual-side candle ambiguous); MSS =
+  subsequent closed M5 candle closing beyond the located swing (intrabar insufficient);
+  retest entry at the broken swing with zero tolerance within 3 completed M5 bars else
+  `SIGNAL_ENTRY_WINDOW_PASSED`; SL = sweep extreme with a FROZEN zero-point buffer (live
+  CFD tick metadata returned 0.0, so no tick-multiple buffer is computable -- any
+  non-zero buffer needs a governance amendment); TP1 = reference mid (50%, move to
+  breakeven), TP2 = opposing day extreme, min TP2 R 1.5 with the shared geometry guard.
+- **Open authorities (deliberately NOT defined here):** `SPREAD_POLICY_UNDEFINED`
+  (native-unit spreads recorded observed-only; no validated threshold),
+  `RISK_POLICY_AMBIGUOUS` (sizing-input interface defined, no risk percent assigned),
+  sizing metadata incomplete (broker tick_size/tick_value = 0.0). Proposal authority
+  BLOCKED; `execution_authorized=false` everywhere.
+- **Research separation:** `STRATEGY_CONTRACT_VALID=true` means reproducible logic only
+  -- `EDGE_VERIFIED=false`, `RISK_AUTHORIZED=false`. Not wired into the session
+  scanner's strategy adapters; doing so is a separate future authority decision.

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # TRUE_STAGE2 Oracle Reconciliation Status (2026-09-01)
 
 Scope: reconcile a discrepancy found while preparing the two-stage golden vertical

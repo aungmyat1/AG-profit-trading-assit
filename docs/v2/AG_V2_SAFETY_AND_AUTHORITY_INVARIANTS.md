@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # AG V2 — Safety and Authority Invariants
 
 Status: **BINDING V2 ENGINEERING CONSTRAINTS / NON-AUTHORIZING**  

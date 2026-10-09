@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SSC_ONE_YEAR_CROSS_LEG_AUTHORITY_REMEDIATION_STATUS
 
 ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.1 — one-year H1/M15 authority remediation

@@ -1,0 +1,65 @@
+{
+  "application_release": "AG_V1_CLOUD",
+  "cycle": "ASIAN_LONDON",
+  "cycle_state": "NO_TRADE",
+  "evaluation_time_utc": "2026-10-06T07:40:00+00:00",
+  "logical_ticket_id": "ST_ASIAN_SWEEP_5R_V1|1.1.1|GBPUSD|ASIAN_LONDON|2026-10-06",
+  "payload": {
+    "box": {
+      "high": 1.32311,
+      "low": 1.32108,
+      "mid": 1.3221
+    },
+    "cycle": "ASIAN_LONDON",
+    "data_source": "MT5_VT_MARKETS_DEMO",
+    "decision": "STALE",
+    "delivery_mode": "ARCHIVE_ONLY",
+    "direction": "LONG",
+    "engine_reason_code": "LOWER_SWEEP_STRICT_PENETRATION",
+    "entry": 1.32157,
+    "entry_order_type": "MARKET",
+    "evaluated_at": "2026-10-06T07:40:00+00:00",
+    "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
+    "metadata_status": "HOST_CAPTURED",
+    "position_size": "NOT_SPECIFIED",
+    "reason_code": "STALE_SIGNAL",
+    "regime": "RANGE",
+    "risk_distance": 0.0006299999999999084,
+    "session_date": "2026-10-06",
+    "setup": "SWEEP",
+    "signal_close_utc": "2026-10-06T07:15:00+00:00",
+    "signal_id": "ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:GBPUSD:2026-10-06",
+    "signal_timestamp": "2026-10-06T07:00:00+00:00",
+    "spread": 0.00014999999999987246,
+    "spread_check": "SPREAD_TOO_WIDE",
+    "spread_max_risk_fraction": 0.15,
+    "spread_risk_fraction": 0.2381,
+    "stop_loss": 1.32094,
+    "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+    "strategy_version": "1.1.1",
+    "suppressed_decision": "READY",
+    "symbol": "GBPUSD",
+    "targets": [
+      {
+        "leg": 1,
+        "price": 1.32311,
+        "type": "OPPOSITE_SESSION_BOUNDARY",
+        "volume_pct": 0.75
+      },
+      {
+        "leg": 2,
+        "price": 1.32472,
+        "type": "FIXED_R_MULTIPLE_5",
+        "volume_pct": 0.25
+      }
+    ],
+    "time_invalidation_gmt": "15:00"
+  },
+  "reason_codes": [
+    "STALE_SIGNAL"
+  ],
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "strategy_version": "1.1.1",
+  "symbol": "GBPUSD",
+  "trading_date": "2026-10-06"
+}

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_FX_SESSION_DAYTRADE_EURUSD_V1 — Implementation Status
 
 Date: 2026-09-21

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Missing Platform Packages Integration (2026-09-24)
 
 Dated evidence record per `docs/status/LIVE_STATUS_MAINTENANCE.md`. It covers

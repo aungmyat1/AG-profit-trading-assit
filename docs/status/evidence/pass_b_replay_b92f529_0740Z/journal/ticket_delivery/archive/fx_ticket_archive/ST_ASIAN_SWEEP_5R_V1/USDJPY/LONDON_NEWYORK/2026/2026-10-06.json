@@ -1,0 +1,29 @@
+{
+  "application_release": "AG_V1_CLOUD",
+  "cycle": "LONDON_NEWYORK",
+  "cycle_state": "NO_TRADE",
+  "evaluation_time_utc": "2026-10-06T07:40:00+00:00",
+  "logical_ticket_id": "ST_ASIAN_SWEEP_5R_V1|1.1.1|USDJPY|LONDON_NEWYORK|2026-10-06",
+  "payload": {
+    "cycle": "LONDON_NEWYORK",
+    "data_source": "MT5_VT_MARKETS_DEMO",
+    "decision": "REFERENCE_NOT_READY",
+    "delivery_mode": "ARCHIVE_ONLY",
+    "detail": "reference window closes 2026-10-06T11:00:00+00:00",
+    "evaluated_at": "2026-10-06T07:40:00+00:00",
+    "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
+    "metadata_status": "HOST_CAPTURED",
+    "reason_code": "REFERENCE_NOT_READY",
+    "session_date": "2026-10-06",
+    "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+    "strategy_version": "1.1.1",
+    "symbol": "USDJPY"
+  },
+  "reason_codes": [
+    "REFERENCE_NOT_READY"
+  ],
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "strategy_version": "1.1.1",
+  "symbol": "USDJPY",
+  "trading_date": "2026-10-06"
+}

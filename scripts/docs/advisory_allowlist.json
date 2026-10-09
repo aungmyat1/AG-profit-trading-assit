@@ -1,0 +1,3921 @@
+{
+  "schema": "AG_ADVISORY_SCAN_ALLOWLIST_V1",
+  "version": "2.0.0",
+  "class": "evidence",
+  "governance_class": "STATUS_EVIDENCE",
+  "mission": "DOCS-LIVE-4",
+  "generated_utc": "2026-10-08",
+  "source_head_sha": "cf0ce0f3804b550b74544c769f4b979902e496e4",
+  "source_head_short": "cf0ce0f",
+  "narrative_record": "docs/status/DOCS_LIVE_4_CLAIM_AUDIT_2026-10-08.md",
+  "objective_authority": {
+    "kind": "github_issue",
+    "id": 47,
+    "title": "AG Profit Trading - Operational Objective V5",
+    "url": "https://github.com/aungmyat1/AG-profit-trading-assit/issues/47",
+    "author": "aungmyat1",
+    "created_at": "2026-10-07T08:11:49Z",
+    "state": "open",
+    "own_baseline": "main fc60cdb",
+    "in_repo_restatement": "docs/PROJECT_OBJECTIVE.md (rev 2026-10-08)"
+  },
+  "authority_granted": "NONE",
+  "purpose": "Tell an advisory/drift scanner which documented locations are dated evidence or illustrative example text, so their wording is not reported as a live contradiction of current authority. Allowlisting suppresses currency only. It never suppresses the four protected labels inside the ranges listed in verified_label_free, and it never applies to any range listed in never_suppress.",
+  "scanner_contract": {
+    "labels_covered": [
+      "LOGIC_VERIFIED",
+      "EDGE_VERIFIED",
+      "DEMO_AUTHORIZED",
+      "LIVE_AUTHORIZED"
+    ],
+    "labels_never_merged": {
+      "LOGIC_VERIFIED": "frozen contract and deterministic implementation agree on all signal-producing and SL/TP rules, required inputs consumed, tests/replay prove determinism, ticket geometry complete. Not profitable. 0 strategies at cf0ce0f (registry.yaml:27,46 logic_status NOT_VERIFIED with logic_verified_identity null; src/v1_tickets/authority.py:113-123).",
+      "EDGE_VERIFIED": "sufficient OOS/friction/robustness evidence supports economic use. 0 strategies at cf0ce0f (registry.yaml:29,48 economic_status NOT_EVALUATED; PROJECT_STATUS.md:77 EDGE_VERIFIED=FALSE; PROJECT_ROADMAP.md:125 NOT_PASS/NOT_ESTABLISHED).",
+      "DEMO_AUTHORIZED": "strategy-specific owner authorization recorded in strategies/registry.yaml. 0 strategies at cf0ce0f (registry.yaml:17,36,55,65,85,113,146 all false; src/v1_tickets/authority.py:37 requires present-and-exactly-false).",
+      "DEMO_VERIFIED": "NOT one of the protected labels. Infrastructure/market-data proof only (9 occurrences: PROJECT_STATUS.md:110,1805,1806,1881,1882,2092,2097,2399). Must never be folded into DEMO_AUTHORIZED.",
+      "DEMO_QUALIFIED": "NOT one of the protected labels. Roadmap gate R8 (PROJECT_ROADMAP.md:108,279-287,560). Never implies LIVE_AUTHORIZED.",
+      "AUTHORIZED_token": "In PROJECT_STATUS.md:562,616,741-742,784 this is a proposal-approval lifecycle state (PREPARED -> AUTHORIZED -> SUBMISSION_PENDING), not strategy DEMO_AUTHORIZED. See disambiguation_notes."
+    },
+    "rule_1": "Resolve exact content anchors at runtime; anchor spans retain their bounds after insertions above them.",
+    "rule_2": "Anchored never_suppress and carve_outs override all suppressions. Missing or ambiguous anchors emit ALLOWLIST_ANCHOR_MISSING advisory warnings.",
+    "rule_3": "verified_label_free ranges contain no assertion about the four protected labels, so they are safe to allowlist for label-drift scans specifically.",
+    "rule_4": "Verdicts and contradictions in the narrative record are dated to source_head_sha. Re-verify before reuse at a different SHA.",
+    "rule_5": "This file grants no trading, demo, live, strategy, or promotion authority (docs/DOCUMENTATION_GOVERNANCE.md:79)."
+  },
+  "allowlisted_ranges": [
+    {
+      "id": "PS-META",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "Self-declaration that the first section is the rolling summary and later sections preserve dated milestone evidence and may contain older test totals. This is the rule that makes the rest of this allowlist legitimate.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/0",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See",
+          "end_anchor": "later sections preserve dated milestone evidence and may contain older test totals."
+        }
+      ]
+    },
+    {
+      "id": "PS-2026-10-07-R1",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical",
+        "gate"
+      ],
+      "reason": "Heading itself says 'historical offline evidence (2026-10-07)'. Offline fixture evidence; live evaluator explicitly NOT YET HOST ACCEPTED.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/1",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## MT5 provider/evaluator integration R1 — historical offline evidence (2026-10-07)",
+          "end_anchor": "[R1 offline integration](docs/status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md)."
+        }
+      ]
+    },
+    {
+      "id": "PS-2026-10-01..03-MILESTONES",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical",
+        "authority",
+        "gate"
+      ],
+      "reason": "Dated milestones 2026-10-01..2026-10-03 (crypto CFD observation scanner, Scanner Checklist V1.1, MT5 MCP configuration, api.app restoration). Evidence of their date, not current authority.",
+      "carve_outs": [
+        {
+          "reason": "Still the live statement that no registered contract covers BTCUSD/ETHUSD CFDs (STRATEGY_CONTRACT_INCOMPLETE, RISK_POLICY_AMBIGUOUS). Matches owner objective ISSUE #47 R2 'not yet qualified'.",
+          "severity": "keep_scanning",
+          "origin": "carve_outs/2/0",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "## Crypto CFD observation scanner V1 — merged, observation-only (2026-10-03)",
+              "end_anchor": "authorize Demo orders or change FX strategy/risk/source/execution policy."
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/2",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Crypto CFD observation scanner V1 — merged, observation-only (2026-10-03)",
+          "end_anchor": "`python -m pytest -q`): **770 passed, 2 skipped, 0 failed**. No strategy, execution, safety-gate\nor authorization change."
+        }
+      ]
+    },
+    {
+      "id": "PS-HOSTKIT-MCP",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "Host kit and MCP/workspace configuration records, 2026-09-27..2026-09-30. Read-only configuration; each states it does not enable or authorize trading.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/3",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Host kit: audit 2 fixes (2026-09-30)",
+          "end_anchor": "[`docs/setup/MT5_MCP_SETUP.md`](docs/setup/MT5_MCP_SETUP.md)."
+        }
+      ]
+    },
+    {
+      "id": "PS-CANDIDATE-BRANCHES",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical",
+        "example"
+      ],
+      "reason": "Dated candidate/branch milestone records 2026-09-22..2026-09-26, including all PANEL_* entries explicitly marked 'worktree branch, not merged' or 'candidate'. Unmerged-branch state, not repository authority.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/4",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## AG_EDGE_AI_RUNTIME_V1_FOUNDATION (2026-09-26, additive P0–P2 candidate)",
+          "end_anchor": "documented against the R2 baseline)."
+        }
+      ]
+    },
+    {
+      "id": "PS-SSC-SVOS-G2",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "SSC v1.0.1 SVOS G2 dated subsections (2026-09-19/2026-09-21): population freeze, failure decomposition, replication admission blocked, authority synchronization.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/5",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "### SSC v1.0.1 SVOS G2 population frozen (2026-09-19)",
+          "end_anchor": "of the ledger's per-symbol cap combined with this book's EURUSD-only universe."
+        }
+      ]
+    },
+    {
+      "id": "PS-HISTORICAL-ROLLING-2026-09-14",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "Heading is 'Historical rolling classification (2026-09-14, superseded)' plus its dated subsections (SSC HYP_002 validated negative, platform-finalization remediation, readiness validation infrastructure, deterministic trading skills, frontend demo-ticket surface, live MT5 sync, VS Code startup, frontend simulation boundary).",
+      "severity": "info",
+      "origin": "allowlisted_ranges/6",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Historical rolling classification (2026-09-14, superseded)",
+          "end_anchor": "`docs/status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`."
+        }
+      ]
+    },
+    {
+      "id": "PS-MASTER-PLAN-2026-09-10-CLASS",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical",
+        "gate"
+      ],
+      "reason": "Explicitly 'Classification as recorded on 2026-09-10 (superseded ... preserved here as dated historical context)'. R0-R9 values here are the 2026-09-10 snapshot, not current.",
+      "carve_outs": [
+        {
+          "reason": "C8: claims the owner adopted Master Readiness Plan V3 as authoritative while docs/PROJECT_ROADMAP.md:1 is V4.",
+          "severity": "critical_contradiction",
+          "ref": "C8",
+          "origin": "carve_outs/7/0",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "## Master capability-gated readiness plan (owner adopted 2026-09-10)",
+              "end_anchor": "Ready, R8 Demo Auto-Execution Validated, and R9 Controlled Live."
+            }
+          ]
+        },
+        {
+          "reason": "C8: cross-reference points to 'Current rolling classification (2026-09-12) at the top of this file'; the real heading is line 871 and is dated 2026-09-21.",
+          "severity": "critical_contradiction",
+          "ref": "C8",
+          "origin": "carve_outs/7/1",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "Classification as recorded on 2026-09-10 (**superseded** — see \"Current rolling",
+              "end_anchor": "classification (2026-09-12)\" at the top of this file; preserved here as dated"
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/7",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "Classification as recorded on 2026-09-10 (**superseded** — see \"Current rolling",
+          "end_anchor": "scanner-driven execution readiness."
+        }
+      ]
+    },
+    {
+      "id": "PS-HISTORICAL-OBJECTIVE-2026-09-07",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical",
+        "objective"
+      ],
+      "reason": "Heading is 'Historical owner-directed profit-seeking objective (regenerated 2026-09-07; superseded as master ordering)'. Superseded by owner objective ISSUE #47 (2026-10-07), not merely by docs/PROJECT_OBJECTIVE.md. Contains the narrower universe (3 FX majors + gold 'pending final contract freeze', 'preset Large-SMC pair universe', Major FX V1 = EURUSD/GBPUSD).",
+      "severity": "objective_divergence_superseded",
+      "origin": "allowlisted_ranges/8",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Historical owner-directed profit-seeking objective (regenerated 2026-09-07; superseded as master ordering)",
+          "end_anchor": "Demo/LIVE, message-delivery, or broker-execution authority."
+        }
+      ]
+    },
+    {
+      "id": "PS-SNAPSHOT-2026-09-05",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical",
+        "schedule",
+        "authority"
+      ],
+      "reason": "'Current operational snapshot (2026-09-05)' plus the multi-KB single-line dated ledger entries at 1745-1769. Dated snapshot; test totals and campaign counters belong to 2026-09-05.",
+      "carve_outs": [
+        {
+          "reason": "C9: 'FULL REGRESSION 1356 passed' conflicts with later dated totals (770 / 1050 / 1120). Any reuse must be date- and SHA-bound.",
+          "severity": "critical_contradiction",
+          "ref": "C9",
+          "origin": "carve_outs/9/0",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "FULL REGRESSION               1356 passed / 1 skipped / 0 failed (2026-09-02/03, `python -m pytest -q`, AG_COMPLETE_TRADE_OPPORTUNITY_V1 remediation milestone -- see docs/status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md); previous dated milestone baseline: 979 passed / 5 skipped / 0 failed, 2026-08-30 -- see dated sections below",
+              "end_anchor": "FULL REGRESSION               1356 passed / 1 skipped / 0 failed (2026-09-02/03, `python -m pytest -q`, AG_COMPLETE_TRADE_OPPORTUNITY_V1 remediation milestone -- see docs/status/AG_COMPLETE_TRADE_OPPORTUNITY_V1_REMEDIATION_STATUS.md); previous dated milestone baseline: 979 passed / 5 skipped / 0 failed, 2026-08-30 -- see dated sections below"
+            }
+          ]
+        },
+        {
+          "reason": "Host-only claim (Windows Task Scheduler task installed/enabled, State=Ready). NO_SOURCE from a cloud checkout; never re-verify by assumption.",
+          "severity": "no_source_host_only",
+          "origin": "carve_outs/9/1",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "CRYPTO DAILY DECISION         OPERATIONAL CLI READY, scripts/run_btc_daily_report.py enforces the owner-adjusted 06:30-06:45 UTC next-day window (13:00-13:15 MMT), previous-UTC-date evaluation, complete 24 H1 reference + 288 M5 observation audit, immutable archive, and informational proposal ticket on READY. Campaign is owner-authorized (2026-09-06T06:52:42Z) and the Windows Task Scheduler daily task (\"AG Profit Trading - BTC Daily Decision\", 13:05 MMT/06:35 UTC, State=Ready) is now installed and enabled; campaign_status=ACTIVE_0_OF_30 -- remains 0/30 until the first in-window observation is actually archived (no diagnostic or scheduler-installation event counts by itself).",
+              "end_anchor": "CRYPTO DAILY DECISION         OPERATIONAL CLI READY, scripts/run_btc_daily_report.py enforces the owner-adjusted 06:30-06:45 UTC next-day window (13:00-13:15 MMT), previous-UTC-date evaluation, complete 24 H1 reference + 288 M5 observation audit, immutable archive, and informational proposal ticket on READY. Campaign is owner-authorized (2026-09-06T06:52:42Z) and the Windows Task Scheduler daily task (\"AG Profit Trading - BTC Daily Decision\", 13:05 MMT/06:35 UTC, State=Ready) is now installed and enabled; campaign_status=ACTIVE_0_OF_30 -- remains 0/30 until the first in-window observation is actually archived (no diagnostic or scheduler-installation event counts by itself)."
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/9",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Current operational snapshot (2026-09-05)",
+          "end_anchor": "AG_STAGE1_WP7_READINESS_RECONCILIATION_V1 -- FLAKE ROOT-CAUSE FIX (2026-09-09)  WP7_RUNTIME_VERIFIED_219_OF_219_TESTS_PASS_ARCHIVE_ONLY_UNCHANGED. Follow-up to the entry directly above, same task, per explicit owner direction to resolve the flake rather than leave it open. Root cause: `DeliveryOutcome.final_state`/`PairOutcome.delivery_state` had two conflated meanings -- \"the durable ticket's current state\" (what `tests/test_ticket_delivery_wp7_scheduler_message_delivery.py::test_second_identical_invocation_is_idempotent_zero_provider_calls` deliberately relies on for a sequential re-invocation) and \"what this invocation itself did\" (what the concurrency test needed) -- so under thread contention more than one of 10 concurrent callers could correctly report `\"DELIVERED\"`, and a test built on the second meaning failed intermittently. Fixed by freezing the semantics explicitly rather than picking a side that breaks the other test: `final_state`/`delivery_state` now unambiguously means \"the durable ticket state, regardless of caller ownership\" (unchanged from before, matches the sequential test as-is); a new field `delivery_performed_by_this_invocation: bool` was added to `DeliveryOutcome` (`src/ticket_delivery/telegram_adapter.py`, `True` only from the `mark_delivered()` branch) and threaded through `PairOutcome` (`src/ticket_delivery/fx_cycle_integration.py`) and the scheduler's per-pair output dict (`src/ticket_delivery/scheduler_integration.py`, additive key, does not change `mode`/`config/ticket_delivery.yaml`/any activation state). `tests/test_ticket_delivery_fx_cycle_overlap.py`'s concurrency test now asserts `delivery_performed_by_this_invocation` count instead of counting `delivery_state == \"DELIVERED\"` occurrences, and no longer asserts a specific `delivery_state` per losing caller (a loser can correctly observe either the terminal `\"DELIVERED\"` or the transient `\"DELIVERY_CLAIMED\"` depending on scheduling -- both correct; only the transport-call count (`session.send_count == 1`) and record count matter and are still asserted, deterministically). Ran the full 219-test focused ticket-delivery suite 3 consecutive times: 219 passed / 0 failed each time -- the flake is resolved, not hidden (the real invariant, exactly one real transport call, is still checked every run). No `mode`, destination allow-list, or execution-authority change; `config/ticket_delivery.yaml` untouched; zero real/synthetic Telegram sends; zero broker/MT5 calls; `git diff --check` clean. Updated `docs/status/AG_STAGE1_WP7_READINESS_RECONCILIATION_V1_STATUS.md` in place to record the fix (its dated content, not deleted, corrected to reflect final state since it documents this same still-open task rather than a separately closed historical milestone). See that document for full before/after test evidence.\n```"
+        }
+      ]
+    },
+    {
+      "id": "PS-RECONCILIATION-2026-09-06",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical",
+        "authority",
+        "objective",
+        "gate"
+      ],
+      "reason": "Heading is 'Capability & Roadmap Reconciliation (dated 2026-09-06)'. The largest stale-currency risk in the repository: subsections inside it are titled 'Current capability classification table', 'Telegram - current owner directive' and 'Core project objective' while the parent section is dated and superseded by ISSUE #47.",
+      "carve_outs": [
+        {
+          "reason": "C6: Large-SMC 'BLOCKED at C10', 'C10 UNSIGNED', 'v1.0.6 RESEARCH_DRAFT' while ST_LARGE_SMC_V1.yaml:28 is SIGNED_AND_LOCKED (2026-09-07) at v1.0.7.",
+          "severity": "critical_contradiction",
+          "ref": "C6",
+          "origin": "carve_outs/10/1",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "Large-SMC:  ST_LARGE_SMC_V1 v1.0.6 RESEARCH_DRAFT -> large_smc_research engine ->",
+              "end_anchor": "| Large-SMC | IMPLEMENTED (research engine) | Corrected replay baseline recorded | Standalone research pipeline, no execution/broker call anywhere | `proposal_generation_authorized: false`, C10 UNSIGNED | RESEARCH_ONLY, BLOCKED at C10 for any candidate needing it |"
+            }
+          ]
+        },
+        {
+          "reason": "C6: 'LARGE_SMC_RESEARCH IMPLEMENTED, RESEARCH_ONLY, BLOCKED at C10' in a table titled 'Current-state summary'.",
+          "severity": "critical_contradiction",
+          "ref": "C6",
+          "origin": "carve_outs/10/2",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "LARGE_SMC_RESEARCH                IMPLEMENTED, RESEARCH_ONLY, BLOCKED at C10",
+              "end_anchor": "LARGE_SMC_RESEARCH                IMPLEMENTED, RESEARCH_ONLY, BLOCKED at C10"
+            }
+          ]
+        },
+        {
+          "reason": "C1: Telegram PAUSE directive, development_state=PAUSED, 'main still has zero Telegram files' (false at cf0ce0f). Contradicts owner objective ISSUE #47 R4 and the open PR #60.",
+          "severity": "critical_contradiction",
+          "ref": "C1",
+          "origin": "carve_outs/10/3",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "### Telegram — current owner directive",
+              "end_anchor": "the preservation commit itself. Telegram is not a core-completion dependency."
+            }
+          ]
+        },
+        {
+          "reason": "Objective text != owner objective 2026-10-07: 10-step proposal-to-demo 'Core project objective'; 'Telegram is one possible future approval interface'.",
+          "severity": "objective_divergence",
+          "ref": "flag-2",
+          "origin": "carve_outs/10/4",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "### Core project objective",
+              "end_anchor": "future approval interface, not the definition of the core system."
+            }
+          ]
+        },
+        {
+          "reason": "Objective text != owner objective: 'two deterministic decision services'; omits crypto tickets (O2), Telegram (O4) and the demo-authorization gate (O5).",
+          "severity": "objective_divergence",
+          "ref": "flag-3",
+          "origin": "carve_outs/10/5",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "### Product objective",
+              "end_anchor": "human-authorized action."
+            }
+          ]
+        },
+        {
+          "reason": "C3/C7: 'verified from code' claims about execution/risk.py, intent_builder.py, validator.py - none of these modules exist at cf0ce0f.",
+          "severity": "no_source",
+          "ref": "C3",
+          "origin": "carve_outs/10/6",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "- **Account-level risk fallback — verified from code, not assumed.** Contrary to",
+              "end_anchor": "risk value was changed."
+            }
+          ]
+        },
+        {
+          "reason": "C3: matrix cells cite execution/executor.py and execution/mt5_gateway.py as the verification source; both absent.",
+          "severity": "no_source",
+          "ref": "C3",
+          "origin": "carve_outs/10/7",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "| MT5 Demo execution subsystem | IMPLEMENTED, disabled by default, every send requires a fresh explicit user command | unchanged | N/A — application infrastructure, not strategy-scoped | Yes (`execution/executor.py`, `execution/mt5_gateway.py`) | DEMO_VERIFIED 2026-08-28 (ticket 1879685149; a real MT5 Demo-account round trip, not real-money execution evidence) | Disabled by default; explicit-command-gated |  |",
+              "end_anchor": "| FX proposal→MT5 integration | not separately called out | Generic `ASSISTANT_PROPOSAL` plumbing exists and was DEMO_VERIFIED 2026-08-28 (ticket 1880212783); see architecture note below | not strategy-scoped by itself | Yes, generically | DEMO_VERIFIED, but from the assistant's own analysis-derived `TradeProposal`, not from an `ST_ASIAN_SWEEP_5R_V1` pilot-cycle proposal | Requires fresh explicit command AND the specific strategy to be `demo_authorized` | `ST_ASIAN_SWEEP_5R_V1` is not `demo_authorized`, so its pilot proposals cannot use this path as of 2026-09-06 even though the generic plumbing works |"
+            }
+          ]
+        },
+        {
+          "reason": "C3: claims the execution runtime provides explicit-confirmation FX routing and supersedes documents saying the registry has no caller; src/execution_runtime holds only crypto feeds and registry.yaml:1-5 still says no caller.",
+          "severity": "critical_contradiction",
+          "ref": "C3",
+          "origin": "carve_outs/10/8",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "The current implementation is FX/MT5-first. `scripts/run_daytrading_runtime.py` provides",
+              "end_anchor": "no caller or orchestrator."
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/10",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Capability & Roadmap Reconciliation (dated 2026-09-06)",
+          "end_anchor": "`.claude/skills` remain path-for-path mirrors; no skill or strategy code was moved."
+        }
+      ]
+    },
+    {
+      "id": "PS-REPO-REORG-2026-08-28",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "'Repository reorganization (2026-08-28)': 11 packages moved into src/. Describes a tree that no longer matches cf0ce0f (see C11).",
+      "carve_outs": [
+        {
+          "reason": "C11: names execution/mt5_gateway.py, mt5/management_gateway.py and 11 src/ packages that are not in the tree at cf0ce0f.",
+          "severity": "critical_contradiction",
+          "ref": "C11",
+          "origin": "carve_outs/11/0",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "All 11 Python packages + `session_clock.py` moved from repo root into `src/` (flat --",
+              "end_anchor": "assumed a fixed distance to repo root that changed by one level) plus five hardcoded"
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/11",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Repository reorganization (2026-08-28)",
+          "end_anchor": "had zero history). 448 passed / 0 failed, unchanged from pre-move baseline."
+        }
+      ]
+    },
+    {
+      "id": "PS-AUTHORITY-ORDER-AND-EXEC-RESTRUCTURE",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical",
+        "authority",
+        "gate"
+      ],
+      "reason": "'Authority order (permanent project principle)', 'Execution authority restructure (2026-08-28)', ASSISTANT_RUNTIME_V1 (2026-08-27) and SMC foundational skills validation (2026-08-27).",
+      "carve_outs": [
+        {
+          "reason": "C3: permanent authority order names execution/executor.py via assistant/commands.py and trade_management/ -> mt5.management_gateway; none importable at cf0ce0f.",
+          "severity": "critical_contradiction",
+          "ref": "C3",
+          "origin": "carve_outs/12/0",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "## Authority order (permanent project principle)",
+              "end_anchor": "`execution/`'s gates."
+            }
+          ]
+        },
+        {
+          "reason": "C3/label-merge risk: 'ORDER_SEND = ENABLED for DEMO accounts' while config/trading.yaml:20-21 has allow_order_send: false and mode ANALYSIS.",
+          "severity": "critical_contradiction",
+          "ref": "C3",
+          "origin": "carve_outs/12/1",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "ORDER_SEND               = ENABLED for DEMO accounts, gated by config/trading.yaml AND",
+              "end_anchor": "ORDER_SEND               = ENABLED for DEMO accounts, gated by config/trading.yaml AND"
+            }
+          ]
+        },
+        {
+          "reason": "DEMO_VERIFIED historical infrastructure claim (one real demo round trip, ticket 1879685149). Must never be read as DEMO_AUTHORIZED.",
+          "severity": "label_separation",
+          "ref": "section-6",
+          "origin": "carve_outs/12/2",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "**AG_DEMO_EXECUTION_V1 (2026-08-28): PASSED.** One real, explicit-user-command DEMO",
+              "end_anchor": "round trip verified live: order_check -> order_send -> broker-confirmed open (ticket"
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/12",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Authority order (permanent project principle)",
+          "end_anchor": "252 passed / 0 failed (was 213 before this pass)."
+        }
+      ]
+    },
+    {
+      "id": "PS-PHASE-ROADMAP-2026-08",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical",
+        "schedule"
+      ],
+      "reason": "'Trading Assistant capability roadmap' PHASE 1-6 and the order-block contract record, 2026-08-26..2026-08-28.",
+      "carve_outs": [
+        {
+          "reason": "C3: PHASE 6 'BUILT' names the trade_management/ package, mt5/deals.py and mt5/management_gateway.py; all absent at cf0ce0f.",
+          "severity": "critical_contradiction",
+          "ref": "C3",
+          "origin": "carve_outs/13/0",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "### PHASE 6 — TRADE MANAGEMENT (manual-entry only): BUILT (2026-08-27)",
+              "end_anchor": "order_check/order_send for modify/partial-close/close on an existing position)."
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/13",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Trading Assistant capability roadmap",
+          "end_anchor": "terminology and the full lifecycle — see that skill's revised section."
+        }
+      ]
+    },
+    {
+      "id": "PS-PHASEB-GAPS-AND-NEXT-DECISION",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical",
+        "example"
+      ],
+      "reason": "'Next owner decision' (2026-08-27 era): AG_ORDER_BLOCK_V1 / AG_LIQUIDITY_V1 freeze items, PIVOT/SHADOW body-ratio and FLIP_OB open questions.",
+      "carve_outs": [
+        {
+          "reason": "C7: 'Strategy-config gaps (found building Phase B, still open)' claims entry_order_type MARKET_OR_LIMIT is ambiguous and that a config/trading.yaml account-wide default is used; the strategy YAML says MARKET and no code performs that fallback.",
+          "severity": "critical_contradiction",
+          "ref": "C7",
+          "origin": "carve_outs/14/0",
+          "file": "PROJECT_STATUS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "## Strategy-config gaps (found building Phase B, still open)",
+              "end_anchor": "decisions, not something to invent while building the Assistant."
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/14",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Next owner decision",
+          "end_anchor": "subsystem already ships independently of Phase 5 -- see PHASE 6 above) -- not started\nin this pass."
+        }
+      ]
+    },
+    {
+      "id": "PS-VANTAGE-BRIDGE-2026-09-10",
+      "file": "PROJECT_STATUS.md",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "'Web-to-MT5 Vantage Demo bridge (2026-09-10)': UNIT_TESTED / connection verified, order send not exercised. Cites scripts/web_execute_trade.py and assistant.commands.execute_command(), neither of which exists at cf0ce0f.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/15",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "# Web-to-MT5 Vantage Demo bridge (2026-09-10)",
+          "end_anchor": "before `order_check` or `order_send`. No execution or management order was sent during\nverification."
+        }
+      ]
+    },
+    {
+      "id": "RG-HEADER-2026-08-27",
+      "file": "strategies/registry.yaml",
+      "claim_types": [
+        "historical",
+        "authority"
+      ],
+      "reason": "'data only (2026-08-27)' header. Its statement that nothing calls a strategy-manager runtime is literally true at cf0ce0f but is contradicted in-file at lines 120-129 and by PROJECT_STATUS.md:2198-2203.",
+      "carve_outs": [
+        {
+          "reason": "C3/internal contradiction: keep visible; do not treat the 'no caller' wording as settled.",
+          "severity": "critical_contradiction",
+          "ref": "C3",
+          "origin": "carve_outs/16/0",
+          "file": "strategies/registry.yaml",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "# Strategy registry -- data only (2026-08-27). Lists every strategy the Trade Assistant is",
+              "end_anchor": "# infrastructure, not a real boundary. Add a manager/loader when a real caller needs one."
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/16",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "# Strategy registry -- data only (2026-08-27). Lists every strategy the Trade Assistant is",
+          "end_anchor": "# infrastructure, not a real boundary. Add a manager/loader when a real caller needs one."
+        }
+      ]
+    },
+    {
+      "id": "RG-NOTES-DATED",
+      "file": "strategies/registry.yaml",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "SMC_3R_V1 independence note.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/17",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "note: independence preserved; not merged into SESSION_TRADE_V1's rules.",
+          "end_anchor": "note: independence preserved; not merged into SESSION_TRADE_V1's rules."
+        }
+      ]
+    },
+    {
+      "id": "RG-LSMC-GOAL2-2026-09-30",
+      "file": "strategies/registry.yaml",
+      "claim_types": [
+        "historical",
+        "objective"
+      ],
+      "reason": "AG V1 Goal 2 (2026-09-30) note recording that 1.1.0 was registered alongside an unchanged 1.0.7. The substantive claim matches machine source and is the O3 binding; the dated framing is historical.",
+      "carve_outs": [
+        {
+          "reason": "C12/C13: instrument list is BTCUSDT/ETHUSDT (perp identity) while owner objective ISSUE #47 names BTCUSD/ETHUSD CFDs; and the watch is universe-complete but not gate-complete for USDJPY/XAUUSD.",
+          "severity": "critical_contradiction",
+          "ref": "C12",
+          "origin": "carve_outs/18/0",
+          "file": "strategies/registry.yaml",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "only, status SHADOW_ALERTS_ONLY, instruments EURUSD GBPUSD USDJPY XAUUSD BTCUSDT",
+              "end_anchor": "ETHUSDT, proposal_generation_authorized=false, alerts ARCHIVE_ONLY). No demo/live"
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/18",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "AG V1 Goal 2 (2026-09-30): NEW version 1.1.0 registered alongside, v1.0.7 unchanged --",
+          "end_anchor": "authority for either version."
+        }
+      ]
+    },
+    {
+      "id": "RG-SWEEPRETEST-RECONCILIATION-2026-09-05",
+      "file": "strategies/registry.yaml",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "2026-09-05 reconciliation-only note (AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3): 'no authority change'.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/19",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "entry added AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION_AND_BTC_DAILY_DECISION_V3",
+          "end_anchor": "ledger's own long-standing statement."
+        }
+      ]
+    },
+    {
+      "id": "RG-CRYPTO-CONFIG-V2-2026-09-30",
+      "file": "strategies/registry.yaml",
+      "claim_types": [
+        "historical",
+        "schedule"
+      ],
+      "reason": "2026-09-30 note describing crypto ticket config V2 and owner decision D4 (ETHUSDT SHADOW). Superseded: the active config is config/v1_tickets/crypto_ticket_v3.yaml (src/v1_tickets/crypto.py:60; v3 header says 'active', supersedes 2).",
+      "carve_outs": [
+        {
+          "reason": "C12: this note is the in-scope endorsement of deriving CFD tickets from the frozen CRYPTO_PERP contract, which owner objective ISSUE #47 section 2 forbids borrowing implicitly.",
+          "severity": "critical_contradiction",
+          "ref": "C12",
+          "origin": "carve_outs/20/0",
+          "file": "strategies/registry.yaml",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "2026-09-30: AG V1 informational crypto ticket runner config V2",
+              "end_anchor": "perp) preserved. Engine and authority unchanged -- see STRATEGY_LEDGER.md."
+            }
+          ]
+        },
+        {
+          "reason": "C9: cites tests/test_btc_proposal_execution_boundary.py, which does not exist at cf0ce0f (nearest: tests/test_btc_research_runner_boundary.py).",
+          "severity": "critical_contradiction",
+          "ref": "C9",
+          "origin": "carve_outs/20/1",
+          "file": "strategies/registry.yaml",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "behaviorally verified, tests/test_btc_proposal_execution_boundary.py). Registry",
+              "end_anchor": "behaviorally verified, tests/test_btc_proposal_execution_boundary.py). Registry"
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/20",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "2026-09-30: AG V1 informational crypto ticket runner config V2",
+          "end_anchor": "ACTIVE_INCUBATION. No rule/parameter or authority change."
+        }
+      ]
+    },
+    {
+      "id": "RG-SSC-IDENTITY-NOTE-2026-09-10",
+      "file": "strategies/registry.yaml",
+      "claim_types": [
+        "historical",
+        "example"
+      ],
+      "reason": "Identity note (registered 2026-09-10) explaining why the bare id ST_SESSION_SWEEP_CONTINUATION@1.1.1 was not fabricated. Dated rationale for a decision already taken.",
+      "carve_outs": [
+        {
+          "reason": "C5: states the real identity is v1.0.0; strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml:22 says version 1.0.1.",
+          "severity": "critical_contradiction",
+          "ref": "C5",
+          "origin": "carve_outs/21/0",
+          "file": "strategies/registry.yaml",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "implemented and tested identity is ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.0 (see",
+              "end_anchor": "implemented and tested identity is ST_SESSION_SWEEP_CONTINUATION_V1 v1.0.0 (see"
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/21",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "note: >-\n      Identity note (registered 2026-09-10): the owner request that prompted this entry",
+          "end_anchor": "open-question writeup."
+        }
+      ]
+    },
+    {
+      "id": "RG-R8-OBM-CHAT-HISTORY",
+      "file": "strategies/registry.yaml",
+      "claim_types": [
+        "historical",
+        "example"
+      ],
+      "reason": "R8_OBM_V1 entry: .ex5/.mq5 removed from the MT5 terminal by the owner (2026-08-27); an orphaned demo position may still exist; provenance is explicitly 'see chat history, not tracked by this registry'. Canonical example of a claim with no repository source - never report as a drift finding.",
+      "severity": "example_no_repo_source",
+      "origin": "allowlisted_ranges/22",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "R8_OBM_V1:",
+          "end_anchor": "engine: \"compiled MQL5 EA, external to both Python repos\""
+        }
+      ]
+    },
+    {
+      "id": "RG-EXTERNAL-REPO-PATHS",
+      "file": "strategies/registry.yaml",
+      "claim_types": [
+        "example"
+      ],
+      "reason": "D:\\ddev\\Session Trade Codex engine reference: an out-of-repository authority, referenced not vendored. Same class at lines 57, 58 and 151.",
+      "severity": "example_out_of_repo",
+      "origin": "allowlisted_ranges/23",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "engine: \"session_strategy (D:\\\\ddev\\\\Session Trade Codex -- separate repository, referenced not vendored)\"",
+          "end_anchor": "engine: \"session_strategy (D:\\\\ddev\\\\Session Trade Codex -- separate repository, referenced not vendored)\""
+        },
+        {
+          "anchor": "config_source: \"SMC_3R_V1_SPEC.md (D:\\\\ddev\\\\Session Trade Codex)\"",
+          "end_anchor": "config_source: \"SMC_3R_V1_SPEC.md (D:\\\\ddev\\\\Session Trade Codex)\""
+        },
+        {
+          "anchor": "engine: \"smc_3r_v1 (D:\\\\ddev\\\\Session Trade Codex)\"",
+          "end_anchor": "engine: \"smc_3r_v1 (D:\\\\ddev\\\\Session Trade Codex)\""
+        },
+        {
+          "anchor": "config_source: \"R8_OBM_V1_SPEC.md (D:\\\\ddev\\\\Session Trade Codex)\"",
+          "end_anchor": "config_source: \"R8_OBM_V1_SPEC.md (D:\\\\ddev\\\\Session Trade Codex)\""
+        }
+      ]
+    },
+    {
+      "id": "RM-V3-SUPERSESSION",
+      "file": "docs/PROJECT_ROADMAP.md",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "'supersedes the V3 implementation ordering' - V3 is not a live authority.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/24",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "This plan supersedes the V3 implementation ordering while preserving the R0–R9 readiness gates and their safety meaning. Historical plans and dated status documents remain evidence of earlier decisions.",
+          "end_anchor": "This plan supersedes the V3 implementation ordering while preserving the R0–R9 readiness gates and their safety meaning. Historical plans and dated status documents remain evidence of earlier decisions."
+        }
+      ]
+    },
+    {
+      "id": "RM-READINESS-DATE-STAMP",
+      "file": "docs/PROJECT_ROADMAP.md",
+      "claim_types": [
+        "historical",
+        "gate"
+      ],
+      "reason": "'R2/R3/R4 reached READY/PASS on 2026-09-11' - dated platform-gate evidence. Note the axis caveat: R3 platform readiness is not strategy logic verification (registry logic_status is NOT_VERIFIED).",
+      "severity": "label_separation",
+      "origin": "allowlisted_ranges/25",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "R2/R3/R4 reached `READY`/`PASS` on 2026-09-11. V2 modernizes and generalizes the architecture without revoking that evidence and without treating V2 engineering completion as economic validation.",
+          "end_anchor": "R2/R3/R4 reached `READY`/`PASS` on 2026-09-11. V2 modernizes and generalizes the architecture without revoking that evidence and without treating V2 engineering completion as economic validation."
+        }
+      ]
+    },
+    {
+      "id": "RM-V2-PHASE-DATE-STAMPS",
+      "file": "docs/PROJECT_ROADMAP.md",
+      "claim_types": [
+        "historical",
+        "gate"
+      ],
+      "reason": "Dated V2 phase stamps in headings and bodies: V2-2A/2B VERIFIED (2026-09-21), V2-3A RE_AUDIT_PASS (2026-09-22), V2-3B IMPLEMENTED_AND_LOCALLY_VERIFIED (2026-09-22), Parity Checkpoint #1 PASS (2026-09-22).",
+      "carve_outs": [
+        {
+          "reason": "C3/row 22: the V2-3A/3B adapters and their upstream modules (src/opportunity/large_smc_adapter.py, ssc_adapter.py, large_smc_research.watch_lifecycle, session_sweep_continuation.replay.run_replay) do not exist at cf0ce0f.",
+          "severity": "critical_contradiction",
+          "ref": "C3",
+          "origin": "carve_outs/26/0",
+          "file": "docs/PROJECT_ROADMAP.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "## V2-3A — Large-SMC Shadow Adapter (`RE_AUDIT_PASS`, 2026-09-22)",
+              "end_anchor": "Require canonical/V2 parity for decisions, time, provenance, replay behavior, candidate determinism, future-data isolation, and strategy identity. An independent audit found one blocking Large-SMC defect; the shared-engine remediation was independently re-audited and confirmed clean, and SSC remained clean throughout. See `docs/status/AG_V2_3A_3B_ADAPTER_PARITY_STATUS.md` for the full audit findings, remediation, re-audit evidence, and remaining non-blocking debt."
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/26",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## V2-2A — Pure Funnel Transition Engine (`VERIFIED`, 2026-09-21)",
+          "end_anchor": "`SAFE_TO_ADVANCE_TO_V2_4 = YES` for the bounded, non-authorizing ProposalEligibility bridge. No proposal, Demo, Live, broker, or execution authority is granted, and this does not by itself authorize V2-5."
+        }
+      ]
+    },
+    {
+      "id": "RM-AUTO-DEMO-REPLACED",
+      "file": "docs/PROJECT_ROADMAP.md",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "'Replace the earlier concept of automatic AUTO_DEMO promotion' - the earlier concept is retired, not current.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/27",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "Replace the earlier concept of automatic `AUTO_DEMO` promotion with controlled, strategy-specific Demo qualification.",
+          "end_anchor": "Replace the earlier concept of automatic `AUTO_DEMO` promotion with controlled, strategy-specific Demo qualification."
+        }
+      ]
+    },
+    {
+      "id": "RM-DIAGRAMS",
+      "file": "docs/PROJECT_ROADMAP.md",
+      "claim_types": [
+        "example"
+      ],
+      "reason": "ASCII target-architecture diagram. Illustrative, not state. Same class at lines 64-91, 97-109, 144-150, 158-160, 178-186, 198-208, 226-231, 237-245, 255-275, 417-427, 446-468, 502-529, 539-549, 559-575, 583-591, 603-623, 633-651, 657-701.",
+      "severity": "example_illustrative",
+      "origin": "allowlisted_ranges/28",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "```text\nMarket/Data Authority\n        ↓\nMarketEvent\n        ↓\nStrategyBinding\n        ↓\nStrategy Adapter\n        ↓\nUniversal Funnel\n        ↓\nOpportunityCandidate\n        ↓\nProposal Eligibility\n        ↓\nCanonicalProposal\n        ↓\nPortfolio RiskDecision\n        ↓\nExecutionDecision\n        ↓\n┌────────────┬───────────────┐\n│            │               │\nSVOS       Manual          Broker\nfirst      execution       later\n```",
+          "end_anchor": "first      execution       later\n```"
+        },
+        {
+          "anchor": "```text\nMARKET / DATA TRUTH",
+          "end_anchor": "SVOS first; owner/manual path independently governed; broker automation later\n```"
+        },
+        {
+          "anchor": "```text\nDESIGN != IMPLEMENTED",
+          "end_anchor": "DEMO_QUALIFIED != LIVE_AUTHORIZED\n```"
+        },
+        {
+          "anchor": "```text\nresearch/synthetic/replay capability",
+          "end_anchor": "NO implicit broker authority\n```"
+        },
+        {
+          "anchor": "```text\nresearch data → MarketEvent → strategy research → opportunity evidence → STOP",
+          "end_anchor": "research data → MarketEvent → strategy research → opportunity evidence → STOP\n```"
+        },
+        {
+          "anchor": "```text\nMarketEvent\n   ↓",
+          "end_anchor": "canonical strategy implementation\n```"
+        },
+        {
+          "anchor": "```text\nUniversal Funnel",
+          "end_anchor": "persistent proposal ledger\n```"
+        },
+        {
+          "anchor": "```text\nPASS",
+          "end_anchor": "FAIL / VALIDATED_NEGATIVE\nINSUFFICIENT_EVIDENCE\nBLOCKED\n```"
+        },
+        {
+          "anchor": "```text\nimplementation = READY",
+          "end_anchor": "live_authorization = BLOCKED\n```"
+        },
+        {
+          "anchor": "```text\nDEMO_ELIGIBILITY_GATE",
+          "end_anchor": "controlled owner-authorized Demo execution\n```"
+        },
+        {
+          "anchor": "```text\nExecutionDecision\n       ↓",
+          "end_anchor": "lifecycle outcome\n```"
+        },
+        {
+          "anchor": "```text\nMarket/Data Authority\n        ↓\nMarketEvent\n        ↓\nStrategyBinding\n        ↓\nStrategy Adapter\n        ↓\nUniversal Funnel\n        ↓\nOpportunityCandidate\n        ↓\nProposal Eligibility\n        ↓\nCanonicalProposal\n        ↓\nPortfolio RiskDecision\n        ↓\nExecutionDecision\n        ↓\nSVOS first / Manual execution / Broker later\n```",
+          "end_anchor": "SVOS first / Manual execution / Broker later\n```"
+        },
+        {
+          "anchor": "```text\ndevelopment evidence",
+          "end_anchor": "QUALIFIED\nVALIDATED_NEGATIVE\nINSUFFICIENT_EVIDENCE\nBLOCKED\n```"
+        },
+        {
+          "anchor": "```text\nV2 engineering gates PASS",
+          "end_anchor": "controlled Demo campaign\n```"
+        },
+        {
+          "anchor": "```text\nDEMO_QUALIFIED",
+          "end_anchor": "possible strategy-specific LIVE_QUALIFIED\n```"
+        },
+        {
+          "anchor": "```text\nV2 ENGINEERING",
+          "end_anchor": "STRATEGY VALIDATION\n```"
+        },
+        {
+          "anchor": "```yaml",
+          "end_anchor": "execution: READY | PARTIAL | BLOCKED\n```"
+        },
+        {
+          "anchor": "```text\ntrustworthy market/data authority",
+          "end_anchor": "separately authorized controlled Live\n```"
+        },
+        {
+          "anchor": "```text\nDocumentation maintenance (parallel, non-blocking where safe)",
+          "end_anchor": "Future R9 Live qualification\n```"
+        }
+      ]
+    },
+    {
+      "id": "AG-TOKEN-POLICY",
+      "file": "AGENTS.md",
+      "claim_types": [
+        "example"
+      ],
+      "reason": "Owner token-minimum usage policy: agent behaviour rules, not project state claims.",
+      "severity": "example_process_rule",
+      "origin": "allowlisted_ranges/29",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "- No polling, scheduled check-ins or PR subscriptions unless explicitly asked.",
+          "end_anchor": "- Stop immediately when the task is done."
+        }
+      ]
+    },
+    {
+      "id": "AG-EXEC-EXAMPLES-2026-08-28",
+      "file": "AGENTS.md",
+      "claim_types": [
+        "historical",
+        "example"
+      ],
+      "reason": "'as of the 2026-08-28 Execution authority restructure' plus example execution commands ('execute it', 'sell EURUSD 0.31 lots...', 'close this position'). The EURUSD mention is illustrative, not an instrument-universe claim.",
+      "carve_outs": [
+        {
+          "reason": "C11: asserts entry-side OPEN is implemented in execution/mt5_gateway.py and executor.py, reachable only via assistant.commands.execute_command(). None of these modules exist at cf0ce0f, yet owner objective ISSUE #47 section 4 mandates this exact path.",
+          "severity": "critical_contradiction",
+          "ref": "C11",
+          "origin": "carve_outs/30/0",
+          "file": "AGENTS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "3. `execution/` controls MT5 orders (via `mt5/`). Entry-side OPEN is implemented",
+              "end_anchor": "analysis or a proposal being generated is never sufficient on its own."
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/30",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "3. `execution/` controls MT5 orders (via `mt5/`). Entry-side OPEN is implemented",
+          "end_anchor": "analysis or a proposal being generated is never sufficient on its own."
+        }
+      ]
+    },
+    {
+      "id": "AG-PHASE6-AND-HOSTPATH",
+      "file": "AGENTS.md",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "'(Phase 6, manual-entry only)' phase label from the 2026-08-27 capability roadmap.",
+      "related_reason": "Line 75 names the host path D:/wp3-main-integ (live runtime tree). Host-local, outside the repository: NO_SOURCE, never a drift finding.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/31",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "5. `trade_management/` (Phase 6, manual-entry only) is a separate, independently-gated",
+          "end_anchor": "5. `trade_management/` (Phase 6, manual-entry only) is a separate, independently-gated"
+        },
+        {
+          "anchor": "- Never edit files in D:/wp3-main-integ (live runtime tree). Develop in a separate worktree;",
+          "end_anchor": "- Never edit files in D:/wp3-main-integ (live runtime tree). Develop in a separate worktree;"
+        }
+      ]
+    },
+    {
+      "id": "AG-TOKEN-EFFICIENCY-RULES",
+      "file": "AGENTS.md",
+      "claim_types": [
+        "example"
+      ],
+      "reason": "Token-efficiency rules: agent process guidance, no project state.",
+      "severity": "example_process_rule",
+      "origin": "allowlisted_ranges/32",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "For every task:",
+          "end_anchor": "features, unrelated audits, extra documentation, or repeated confirmation work."
+        }
+      ]
+    },
+    {
+      "id": "AG-SKILL-GROUPING",
+      "file": "AGENTS.md",
+      "claim_types": [
+        "example"
+      ],
+      "reason": "Skill load-order guidance ('load when a registered strategy is named'), not capability or authority claims.",
+      "carve_outs": [
+        {
+          "reason": "Flag 7: describes ST_LARGE_SMC_V1 only as RESEARCH_DRAFT that cannot emit an actionable READY proposal, omitting the delivered src/large_smc_watch v1.1.0 SHADOW_ALERTS_ONLY six-instrument watch (owner objective O3).",
+          "severity": "objective_divergence",
+          "ref": "flag-7",
+          "origin": "carve_outs/33/0",
+          "file": "AGENTS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "**Large SMC research/advisory** (`ST_LARGE_SMC_V1`, currently `RESEARCH_DRAFT`):",
+              "end_anchor": "proposal and must not borrow rules from another D-drive repository implicitly."
+            }
+          ]
+        },
+        {
+          "reason": "C4/row 30: the referenced .agents/skills/strategy-management/SKILL.md:47 names strategy_manager/manager.py, which does not exist.",
+          "severity": "no_source",
+          "ref": "C4",
+          "origin": "carve_outs/33/1",
+          "file": "AGENTS.md",
+          "labels": [
+            "LOGIC_VERIFIED",
+            "EDGE_VERIFIED",
+            "DEMO_AUTHORIZED",
+            "LIVE_AUTHORIZED"
+          ],
+          "anchors": [
+            {
+              "anchor": "`strategy-management`. Read `strategies/registry.yaml` and the named contract first.",
+              "end_anchor": "Registration, advisory analysis, proposal authority, demo authorization, and live"
+            }
+          ]
+        }
+      ],
+      "severity": "info",
+      "origin": "allowlisted_ranges/33",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Skill grouping (conceptual — both dirs stay flat, this is about which to load)",
+          "end_anchor": "1. **PR must be open before a push.** Before pushing to a PR's branch, check the PR state."
+        }
+      ]
+    },
+    {
+      "id": "AG-BRANCH-DISCIPLINE",
+      "file": "AGENTS.md",
+      "claim_types": [
+        "example"
+      ],
+      "reason": "Branch/push/merge discipline with example placeholders such as '<PR head SHA>'. Process rules, not project state.",
+      "severity": "example_process_rule",
+      "origin": "allowlisted_ranges/34",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "and strategy ledger.",
+          "end_anchor": "commits were left out of the merge), stop and report the missing commits."
+        }
+      ]
+    },
+    {
+      "id": "SKILLREG-HEADER-NOTES",
+      "file": ".agents/skills/SKILL_REGISTRY.yaml",
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "Dated header notes (2026-08-27 taxonomy, 2026-08-28 FIVE_SKILL_ASSISTANT_RUNTIME_V1, 2026-09-07 UNIVERSAL_AGENT_SKILLS_FRAMEWORK_V1 and canonical-source designation). The authority block at lines 44-52 is current and is NOT allowlisted.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/35",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "# Skill taxonomy registry -- data only (2026-08-27).",
+          "end_anchor": "# .agents/skills/_CANONICAL_SOURCE.md / .claude/skills/_MIRROR_NOTICE.md."
+        }
+      ]
+    },
+    {
+      "id": "SKILL-STRATEGY-MANAGER-PATH",
+      "file": ".agents/skills/strategy-management/SKILL.md",
+      "claim_types": [
+        "example"
+      ],
+      "reason": "Names strategy_manager/manager.py as the registry + dispatch component. No such module exists at cf0ce0f; treat as an example of intended structure, not a live path.",
+      "severity": "example_stale_path",
+      "origin": "allowlisted_ranges/36",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "strategy_manager/manager.py  registry + contract cycle-authority check + dispatch",
+          "end_anchor": "strategy_manager/manager.py  registry + contract cycle-authority check + dispatch"
+        }
+      ]
+    },
+    {
+      "id": "SKILL-AUDIT-REPORTS-2026-09-01",
+      "file": ".agents/reports/workflow_skill_audit/",
+      "glob": "*_2026-09-01_143835.{json,md}",
+      "file_count": 35,
+      "claim_types": [
+        "historical"
+      ],
+      "reason": "Dated workflow/skill audit snapshot (2026-09-01 14:38:35). Whole-directory allowlist; line ranges not applicable.",
+      "severity": "info",
+      "origin": "allowlisted_ranges/37",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_all_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "]\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_backtest-engineering_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_backtest-engineering_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "8. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_entry-confirmation-analysis_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_entry-confirmation-analysis_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "9. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_liquidity-analysis_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_liquidity-analysis_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "8. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_market-data-quality_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_market-data-quality_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "6. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_market-data_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_market-data_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "9. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_market-structure-analysis_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_market-structure-analysis_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "8. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_multi-asset-conventions_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_multi-asset-conventions_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "8. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_performance-analysis_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_performance-analysis_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "6. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_risk-position-sizing_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_risk-position-sizing_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "7. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_robustness-validation_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_robustness-validation_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "8. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_session-box-drawing_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_session-box-drawing_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "8. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_strategy-management_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_strategy-management_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "7. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_strategy-specification_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_strategy-specification_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "8. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_supply-demand-analysis_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_supply-demand-analysis_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "8. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_sweep-detection-range-v2_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_sweep-detection-range-v2_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "9. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_trade-management-analysis_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_trade-management-analysis_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "9. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_trend-range-classification_2026-09-01_143835.json",
+          "anchor": "{\n  \"generated_at\": \"2026-09-01 14:38:35\",",
+          "end_anchor": "\"llm_prompt_file\": null\n}"
+        },
+        {
+          "file": ".agents/reports/workflow_skill_audit/skill_review_trend-range-classification_2026-09-01_143835.md",
+          "anchor": "# Dual-Axis Skill Review",
+          "end_anchor": "9. No `test_*.py` tests found for skill scripts. -> Add skill-level tests under `scripts/tests/` or `tests/`."
+        }
+      ]
+    },
+    {
+      "id": "SKILL-MIRROR-NOTICES",
+      "file": ".agents/skills/_CANONICAL_SOURCE.md",
+      "claim_types": [
+        "example"
+      ],
+      "reason": "Mirror-contract notice text. Companion file .claude/skills/_MIRROR_NOTICE.md is the same class. Parity itself is machine-verified (scripts/check_skill_mirror_drift.py -> NO_DRIFT: 33 files identical).",
+      "severity": "example_process_rule",
+      "origin": "allowlisted_ranges/38",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "file": ".agents/skills/_CANONICAL_SOURCE.md",
+          "anchor": "# Canonical universal skill root",
+          "end_anchor": "(vendor/model/runtime neutrality)\") for the full architectural rule."
+        }
+      ]
+    }
+  ],
+  "verified_label_free": [
+    {
+      "file": "PROJECT_STATUS.md",
+      "labels_checked": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "result": "ZERO assertions found",
+      "note": "Safe to allowlist for protected-label drift scans. Contains the AUTHORIZED-token collisions listed in disambiguation_notes.",
+      "verified_by": "range scan at cf0ce0f (DOCS-LIVE-4 row A12)",
+      "origin": "verified_label_free/0",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "Safe to allowlist for protected-label drift scans. Contains the AUTHORIZED-token collisions listed in disambiguation_notes.",
+      "anchors": [
+        {
+          "anchor": "## Host kit: audit 2 fixes (2026-09-30)",
+          "end_anchor": "documented against the R2 baseline)."
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "labels_checked": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "result": "ZERO assertions found",
+      "note": "Safe to allowlist for protected-label drift scans.",
+      "verified_by": "range scan at cf0ce0f (DOCS-LIVE-4 row A12)",
+      "origin": "verified_label_free/1",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "Safe to allowlist for protected-label drift scans.",
+      "anchors": [
+        {
+          "anchor": "### SSC v1.0.1 SVOS G2 population frozen (2026-09-19)",
+          "end_anchor": "`docs/status/AG_FRONTEND_SIMULATION_BOUNDARY_V1_STATUS.md`."
+        }
+      ]
+    }
+  ],
+  "disambiguation_notes": [
+    {
+      "file": "PROJECT_STATUS.md",
+      "token": "AUTHORIZED",
+      "meaning_here": "Demo-execution-bridge proposal-approval lifecycle state (PREPARED -> {AUTHORIZED, REJECT}); every validation/gating rejection is non-DEMO.",
+      "not_this": "strategy DEMO_AUTHORIZED in strategies/registry.yaml",
+      "origin": "disambiguation_notes/0",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "Demo-execution-bridge proposal-approval lifecycle state (PREPARED -> {AUTHORIZED, REJECT}); every validation/gating rejection is non-DEMO.",
+      "anchors": [
+        {
+          "anchor": "(`AUTHORIZED`, explicit `REJECT`); every validation/gating rejection (non-DEMO",
+          "end_anchor": "(`AUTHORIZED`, explicit `REJECT`); every validation/gating rejection (non-DEMO"
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "token": "AUTHORIZED",
+      "meaning_here": "'an AUTHORIZED decision across a process restart' - durability of the proposal-approval record.",
+      "not_this": "strategy DEMO_AUTHORIZED",
+      "origin": "disambiguation_notes/1",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "'an AUTHORIZED decision across a process restart' - durability of the proposal-approval record.",
+      "anchors": [
+        {
+          "anchor": "an AUTHORIZED decision across a process restart. It is now optionally durable via the",
+          "end_anchor": "an AUTHORIZED decision across a process restart. It is now optionally durable via the"
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "token": "AUTHORIZED",
+      "meaning_here": "State-graph enumeration 'PREPARED->{AUTHORIZED,REJECTED}' and 'AUTHORIZED->{SUBMISSION_PENDING,REJECTED}'.",
+      "not_this": "strategy DEMO_AUTHORIZED",
+      "origin": "disambiguation_notes/2",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "State-graph enumeration 'PREPARED->{AUTHORIZED,REJECTED}' and 'AUTHORIZED->{SUBMISSION_PENDING,REJECTED}'.",
+      "anchors": [
+        {
+          "anchor": "graph: `PREPARED->{AUTHORIZED,REJECTED}`,",
+          "end_anchor": "`AUTHORIZED->{SUBMISSION_PENDING,REJECTED}`,"
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "token": "AUTHORIZED",
+      "meaning_here": "'(but only partially activates) the PREPARED -> AUTHORIZED -> SUBMISSION_PENDING -> ...' transition chain.",
+      "not_this": "strategy DEMO_AUTHORIZED",
+      "origin": "disambiguation_notes/3",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "'(but only partially activates) the PREPARED -> AUTHORIZED -> SUBMISSION_PENDING -> ...' transition chain.",
+      "anchors": [
+        {
+          "anchor": "(but only partially activates) the `PREPARED -> AUTHORIZED -> SUBMISSION_PENDING ->",
+          "end_anchor": "(but only partially activates) the `PREPARED -> AUTHORIZED -> SUBMISSION_PENDING ->"
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "token": "BLOCKED_STRATEGY_NOT_DEMO_AUTHORIZED",
+      "meaning_here": "Correct usage: the demo gate blocking a strategy whose registry demo_authorized is false.",
+      "not_this": "not a collision - listed so a scanner does not treat it as an authorization grant",
+      "origin": "disambiguation_notes/4",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "Correct usage: the demo gate blocking a strategy whose registry demo_authorized is false.",
+      "anchors": [
+        {
+          "anchor": "blocks with `BLOCKED_STRATEGY_NOT_DEMO_AUTHORIZED` -- the existing confirmation",
+          "end_anchor": "blocks with `BLOCKED_STRATEGY_NOT_DEMO_AUTHORIZED` -- the existing confirmation"
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "token": "AUTHORIZED",
+      "meaning_here": "Negative statement: components 'are not AUTHORIZED'.",
+      "not_this": "strategy DEMO_AUTHORIZED",
+      "origin": "disambiguation_notes/5",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "Negative statement: components 'are not AUTHORIZED'.",
+      "anchors": [
+        {
+          "anchor": "are not AUTHORIZED. No strategy, registry, Demo or Live authorization changed.",
+          "end_anchor": "are not AUTHORIZED. No strategy, registry, Demo or Live authorization changed."
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "token": "Telegram",
+      "meaning_here": "'No order, position or Telegram calls' - a zero-mutation assertion, not a delivery capability claim.",
+      "not_this": "not evidence about owner objective O4",
+      "origin": "disambiguation_notes/6",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "'No order, position or Telegram calls' - a zero-mutation assertion, not a delivery capability claim.",
+      "anchors": [
+        {
+          "anchor": "host smoke states. No order, position or Telegram calls.",
+          "end_anchor": "host smoke states. No order, position or Telegram calls."
+        },
+        {
+          "anchor": "`ce09e8d`. Live checks are NOT_EVALUATED. Broker/exchange calls: 0. No Telegram, scheduler,",
+          "end_anchor": "`ce09e8d`. Live checks are NOT_EVALUATED. Broker/exchange calls: 0. No Telegram, scheduler,"
+        },
+        {
+          "anchor": "`CLOSE_CONFIRMED` exit is not double-reported. A Telegram failure cannot affect the",
+          "end_anchor": "`CLOSE_CONFIRMED` exit is not double-reported. A Telegram failure cannot affect the"
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "token": "ENABLED / DEMO_VERIFIED",
+      "meaning_here": "Infrastructure readiness wording for the MT5 demo subsystem (2026-08-28 round trip).",
+      "not_this": "DEMO_AUTHORIZED for any strategy; config/trading.yaml:20-21 keeps allow_order_send false",
+      "origin": "disambiguation_notes/7",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "Infrastructure readiness wording for the MT5 demo subsystem (2026-08-28 round trip).",
+      "anchors": [
+        {
+          "anchor": "| MT5 Demo execution subsystem | IMPLEMENTED | DEMO_VERIFIED (2026-08-28; a real MT5 Demo-account round trip, not real-money execution evidence) | Standalone, explicit-command-only | Application infrastructure, not strategy-gated | ENABLED, explicit-command-gated, disabled by default absent a fresh command |",
+          "end_anchor": "| MT5 Demo execution subsystem | IMPLEMENTED | DEMO_VERIFIED (2026-08-28; a real MT5 Demo-account round trip, not real-money execution evidence) | Standalone, explicit-command-only | Application infrastructure, not strategy-gated | ENABLED, explicit-command-gated, disabled by default absent a fresh command |"
+        },
+        {
+          "anchor": "| MT5 Demo execution subsystem | IMPLEMENTED, disabled by default, every send requires a fresh explicit user command | unchanged | N/A — application infrastructure, not strategy-scoped | Yes (`execution/executor.py`, `execution/mt5_gateway.py`) | DEMO_VERIFIED 2026-08-28 (ticket 1879685149; a real MT5 Demo-account round trip, not real-money execution evidence) | Disabled by default; explicit-command-gated |  |",
+          "end_anchor": "| MT5 Demo execution subsystem | IMPLEMENTED, disabled by default, every send requires a fresh explicit user command | unchanged | N/A — application infrastructure, not strategy-scoped | Yes (`execution/executor.py`, `execution/mt5_gateway.py`) | DEMO_VERIFIED 2026-08-28 (ticket 1879685149; a real MT5 Demo-account round trip, not real-money execution evidence) | Disabled by default; explicit-command-gated |  |"
+        },
+        {
+          "anchor": "| FX proposal→MT5 integration | not separately called out | Generic `ASSISTANT_PROPOSAL` plumbing exists and was DEMO_VERIFIED 2026-08-28 (ticket 1880212783); see architecture note below | not strategy-scoped by itself | Yes, generically | DEMO_VERIFIED, but from the assistant's own analysis-derived `TradeProposal`, not from an `ST_ASIAN_SWEEP_5R_V1` pilot-cycle proposal | Requires fresh explicit command AND the specific strategy to be `demo_authorized` | `ST_ASIAN_SWEEP_5R_V1` is not `demo_authorized`, so its pilot proposals cannot use this path as of 2026-09-06 even though the generic plumbing works |",
+          "end_anchor": "| FX proposal→MT5 integration | not separately called out | Generic `ASSISTANT_PROPOSAL` plumbing exists and was DEMO_VERIFIED 2026-08-28 (ticket 1880212783); see architecture note below | not strategy-scoped by itself | Yes, generically | DEMO_VERIFIED, but from the assistant's own analysis-derived `TradeProposal`, not from an `ST_ASIAN_SWEEP_5R_V1` pilot-cycle proposal | Requires fresh explicit command AND the specific strategy to be `demo_authorized` | `ST_ASIAN_SWEEP_5R_V1` is not `demo_authorized`, so its pilot proposals cannot use this path as of 2026-09-06 even though the generic plumbing works |"
+        },
+        {
+          "anchor": "| FX proposal→MT5 execution (generic bridge) | IMPLEMENTED | DEMO_VERIFIED (2026-08-28), generically, not for `ST_ASIAN_SWEEP_5R_V1` specifically | NOT_GENERALLY_WIRED to any pilot-cycle proposal | Requires per-strategy `demo_authorized` in addition | PARTIAL — infrastructure works, no strategy authorized to use this repository's execution path can use it (`SESSION_TRADE_V1`'s separate `demo_authorized: true` is on a different engine and does not apply here) |",
+          "end_anchor": "| FX proposal→MT5 execution (generic bridge) | IMPLEMENTED | DEMO_VERIFIED (2026-08-28), generically, not for `ST_ASIAN_SWEEP_5R_V1` specifically | NOT_GENERALLY_WIRED to any pilot-cycle proposal | Requires per-strategy `demo_authorized` in addition | PARTIAL — infrastructure works, no strategy authorized to use this repository's execution path can use it (`SESSION_TRADE_V1`'s separate `demo_authorized: true` is on a different engine and does not apply here) |"
+        },
+        {
+          "anchor": "→ execution subsystem, DEMO_VERIFIED 2026-08-28 (a real MT5 Demo-account round trip,",
+          "end_anchor": "→ execution subsystem, DEMO_VERIFIED 2026-08-28 (a real MT5 Demo-account round trip,"
+        },
+        {
+          "anchor": "- **CORE-D4 — MT5 Demo firewall.** Status: implemented and DEMO_VERIFIED for the",
+          "end_anchor": "- **CORE-D4 — MT5 Demo firewall.** Status: implemented and DEMO_VERIFIED for the"
+        },
+        {
+          "anchor": "ORDER_SEND               = ENABLED for DEMO accounts, gated by config/trading.yaml AND",
+          "end_anchor": "ORDER_SEND               = ENABLED for DEMO accounts, gated by config/trading.yaml AND"
+        },
+        {
+          "anchor": "**AG_DEMO_EXECUTION_V1 (2026-08-28): PASSED.** One real, explicit-user-command DEMO",
+          "end_anchor": "**AG_DEMO_EXECUTION_V1 (2026-08-28): PASSED.** One real, explicit-user-command DEMO"
+        }
+      ]
+    },
+    {
+      "file": "docs/PROJECT_ROADMAP.md",
+      "token": "READY",
+      "meaning_here": "R3 platform-axis readiness ('Canonical strategy decisions').",
+      "not_this": "LOGIC_VERIFIED for any strategy version (registry.yaml:27,46 are NOT_VERIFIED)",
+      "origin": "disambiguation_notes/8",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "reason": "R3 platform-axis readiness ('Canonical strategy decisions').",
+      "anchors": [
+        {
+          "anchor": "| Canonical strategy decisions | `READY` | R3 |",
+          "end_anchor": "| Canonical strategy decisions | `READY` | R3 |"
+        },
+        {
+          "anchor": "## Current readiness matrix",
+          "end_anchor": "## Current readiness matrix"
+        },
+        {
+          "anchor": "R2/R3/R4 reached `READY`/`PASS` on 2026-09-11. V2 modernizes and generalizes the architecture without revoking that evidence and without treating V2 engineering completion as economic validation.",
+          "end_anchor": "R2/R3/R4 reached `READY`/`PASS` on 2026-09-11. V2 modernizes and generalizes the architecture without revoking that evidence and without treating V2 engineering completion as economic validation."
+        },
+        {
+          "anchor": "## R3 — Canonical Strategy Ready",
+          "end_anchor": "## R3 — Canonical Strategy Ready"
+        },
+        {
+          "anchor": "Current classification: **READY** for the established canonical runtime scope since 2026-09-11.",
+          "end_anchor": "Current classification: **READY** for the established canonical runtime scope since 2026-09-11."
+        }
+      ]
+    }
+  ],
+  "never_suppress": [
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "A10",
+      "reason": "Live LOGIC_VERIFIED / EDGE_VERIFIED state for ST_ASIAN_SWEEP_5R_V1@1.1.1: NOT_VERIFIED, EDGE_VERIFIED FALSE, zero TICKET_READY.",
+      "origin": "never_suppress/1",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "emits **zero `TICKET_READY`**. `logic_status = NOT_VERIFIED`, `EDGE_VERIFIED = FALSE`.",
+          "end_anchor": "**980 passed, 2 skipped** at Phase 8. **Phase A close-out (2026-10-06):** L3 now enforces"
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C3",
+      "reason": "Rolling classification: strategy_manager dispatch claim and V2-3A/3B parity gates whose adapter code is absent.",
+      "origin": "never_suppress/2",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Current rolling classification (2026-09-21)",
+          "end_anchor": "execution authority granted)."
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C8",
+      "reason": "Master-plan version (V3 vs V4) and the stale '(2026-09-12) at the top of this file' pointer.",
+      "origin": "never_suppress/3",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Master capability-gated readiness plan (owner adopted 2026-09-10)",
+          "end_anchor": "historical context where it conflicts with this 2026-09-10 owner direction."
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C6",
+      "reason": "Large-SMC C10 UNSIGNED / BLOCKED wording inside tables titled 'current'.",
+      "origin": "never_suppress/5",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "Large-SMC:  ST_LARGE_SMC_V1 v1.0.6 RESEARCH_DRAFT -> large_smc_research engine ->",
+          "end_anchor": "| Large-SMC | IMPLEMENTED (research engine) | Corrected replay baseline recorded | Standalone research pipeline, no execution/broker call anywhere | `proposal_generation_authorized: false`, C10 UNSIGNED | RESEARCH_ONLY, BLOCKED at C10 for any candidate needing it |"
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C1",
+      "reason": "Telegram PAUSE directive and the 10-step 'Core project objective' - both diverge from owner objective ISSUE #47.",
+      "origin": "never_suppress/6",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "### Telegram — current owner directive",
+          "end_anchor": "future approval interface, not the definition of the core system."
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C6",
+      "reason": "'LARGE_SMC_RESEARCH ... BLOCKED at C10' in Current-state summary.",
+      "origin": "never_suppress/7",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "LARGE_SMC_RESEARCH                IMPLEMENTED, RESEARCH_ONLY, BLOCKED at C10",
+          "end_anchor": "LARGE_SMC_RESEARCH                IMPLEMENTED, RESEARCH_ONLY, BLOCKED at C10"
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C3",
+      "reason": "'Product objective' divergence plus the execution-runtime and registry-caller claims.",
+      "origin": "never_suppress/8",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "### Product objective",
+          "end_anchor": "manual trade management in `DRY_RUN` with `allow_live_management: false`."
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C11",
+      "reason": "Permanent authority order, ORDER_SEND ENABLED wording, and the DEMO_VERIFIED round-trip record.",
+      "origin": "never_suppress/9",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Authority order (permanent project principle)",
+          "end_anchor": "round trip verified live: order_check -> order_send -> broker-confirmed open (ticket"
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C3",
+      "reason": "PHASE 6 'BUILT' claims for an absent package set.",
+      "origin": "never_suppress/10",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Trading Assistant capability roadmap",
+          "end_anchor": "order_check/order_send for modify/partial-close/close on an existing position)."
+        }
+      ]
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C7",
+      "reason": "entry_order_type ambiguity and the supposed config/trading.yaml risk fallback.",
+      "origin": "never_suppress/11",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Strategy-config gaps (found building Phase B, still open)",
+          "end_anchor": "decisions, not something to invent while building the Assistant."
+        }
+      ]
+    },
+    {
+      "file": "AGENTS.md",
+      "ref": "flag-6",
+      "reason": "'crypto remains proposal/interface-only' diverges from owner objective O2 as built.",
+      "origin": "never_suppress/12",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "not a broker order. The current operational implementation is FX/MT5-first; crypto",
+          "end_anchor": "`docs/PROJECT_ROADMAP.md` for current state and delivery order."
+        }
+      ]
+    },
+    {
+      "file": "AGENTS.md",
+      "ref": "C11",
+      "reason": "Authority order points 1-5: the canonical execution and trade-management paths required by ISSUE #47 section 4 are absent from main.",
+      "origin": "never_suppress/13",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Authority order",
+          "end_anchor": "`trade_management.validator.validate()`."
+        }
+      ]
+    },
+    {
+      "file": "AGENTS.md",
+      "ref": "flag-7",
+      "reason": "Skill grouping omits the delivered Large-SMC v1.1.0 six-instrument watch (O3).",
+      "origin": "never_suppress/14",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Skill grouping (conceptual — both dirs stay flat, this is about which to load)",
+          "end_anchor": "proposal and must not borrow rules from another D-drive repository implicitly."
+        }
+      ]
+    },
+    {
+      "file": "AGENTS.md",
+      "ref": "C4",
+      "reason": "Bootstrap routes every agent through config/agent_context.json, whose four module routes are absent and whose stamp predates cf0ce0f.",
+      "origin": "never_suppress/15",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "## Live-status documentation maintenance",
+          "end_anchor": "OSS-FIRST: before writing new trading, data, backtest, grading or indicator code, apply the \"Open-source first (OSS-FIRST)\" rule above and include its `COMPONENT | OSS_CANDIDATE | DECISION | REASON` table in the mission report."
+        }
+      ]
+    },
+    {
+      "file": "strategies/registry.yaml",
+      "ref": "C3",
+      "reason": "'explicit-command demo execution exists project-wide' and 'entry_order_type undefined'.",
+      "origin": "never_suppress/16",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "demo_authorized: false   # explicit-command demo execution exists project-wide, but this strategy",
+          "end_anchor": "#   (entry_order_type undefined, risk_per_trade_pct unspecified)"
+        }
+      ]
+    },
+    {
+      "file": "strategies/registry.yaml",
+      "ref": "C3",
+      "reason": "ST_LARGE_SMC_V1 engine and lifecycle paths (src/large_smc_research, src/validation_framework/adapters) are absent.",
+      "origin": "never_suppress/17",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "ST_LARGE_SMC_V1:",
+          "end_anchor": "engine: \"src/large_smc_research/engine.py (RESEARCH_ONLY -- no proposal/demo/live/execution/risk-sizing authority; C10 stop-loss SIGNED and implemented as of v1.0.7 (c10_stop_policy.py, 2026-09-07), RESEARCH_QUALIFIED now reachable; pending-entry expiry RESOLVED_BY_REUSE as of v1.0.6, see historical_replay/fill_simulator.py). AG-EGSVF lifecycle stage (recorded only in src/validation_framework/adapters/large_smc_adapter.py -- this registry has no lifecycle_stage/version field): owner-promoted OFFLINE_RESEARCH -> FORWARD_RESEARCH 2026-09-07, see strategies/STRATEGY_LEDGER.md's AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_V1 entry. Next transition (FORWARD_RESEARCH -> OPERATIONAL_SHADOW) is evaluated, not executed, and blocks on an unresolved shadow-entry-evidence gate.\""
+        }
+      ]
+    },
+    {
+      "file": "strategies/registry.yaml",
+      "ref": "C12",
+      "reason": "Endorsement of deriving CFD tickets from the frozen CRYPTO_PERP contract.",
+      "origin": "never_suppress/18",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "2026-09-30: AG V1 informational crypto ticket runner config V2",
+          "end_anchor": "ACTIVE_INCUBATION. No rule/parameter or authority change."
+        }
+      ]
+    },
+    {
+      "file": "strategies/registry.yaml",
+      "ref": "C5",
+      "reason": "SSC engine/adapter/API paths absent; version stated as 1.0.0 against 1.0.1 in the contract.",
+      "origin": "never_suppress/19",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "ST_SESSION_SWEEP_CONTINUATION_V1:",
+          "end_anchor": "open-question writeup."
+        }
+      ]
+    },
+    {
+      "file": "docs/PROJECT_ROADMAP.md",
+      "ref": "C8",
+      "reason": "Part IV strategy_readiness schema not materialized anywhere, and the immediate implementation order is stale relative to PS:922-959.",
+      "origin": "never_suppress/20",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "# Part IV — Strategy readiness remains independent",
+          "end_anchor": "The target system is therefore not merely a strategy runner. It is a governed chain from authoritative market data to strategy identity, opportunity lifecycle, canonical proposals, portfolio risk, explicit execution decisions, virtual proof, controlled human execution, and only later separately authorized broker automation."
+        }
+      ]
+    },
+    {
+      "file": "docs/v2/AG_V2_BASELINE_MANIFEST_V1.json",
+      "ref": "C2",
+      "reason": "Machine-readable demo_authorized: true / manager_dispatchable: true for SESSION_TRADE_V1, frozen before D3.",
+      "origin": "never_suppress/21",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "\"SESSION_TRADE_V1\": {\"registered\": true, \"active\": true, \"research\": false, \"demo_authorized\": true, \"live_authorized\": false, \"manager_dispatchable\": true},",
+          "end_anchor": "\"SESSION_TRADE_V1\": {\"registered\": true, \"active\": true, \"research\": false, \"demo_authorized\": true, \"live_authorized\": false, \"manager_dispatchable\": true},"
+        }
+      ]
+    },
+    {
+      "file": "config/ag_scheduler_v2.yaml",
+      "ref": "C5",
+      "reason": "Asserts SSC does not exist in the repository and caps symbols at EURUSD/GBPUSD, contradicting registry.yaml:107-140 and owner objective O1.",
+      "origin": "never_suppress/22",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "strategy_integration:",
+          "end_anchor": "WINDOW_LONDON_NEWYORK: LONDON_NEWYORK"
+        }
+      ]
+    },
+    {
+      "file": "config/agent_context.json",
+      "ref": "C4",
+      "reason": "generated_from_head 933921fa != cf0ce0f; last_verified_utc 2026-09-20.",
+      "origin": "never_suppress/23",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "\"generated_from_head\": \"933921fa3a8a0f322ed7b5c9714626140982d02b\",",
+          "end_anchor": "\"last_verified_utc\": \"2026-09-20\","
+        }
+      ]
+    },
+    {
+      "file": "config/agent_context.json",
+      "ref": "C4",
+      "reason": "Route to src/session_sweep_continuation (absent). Also lines 33, 46, 57 -> src/proposals, src/execution, src/scheduling (absent).",
+      "origin": "never_suppress/24",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "\"src/session_sweep_continuation\"",
+          "end_anchor": "\"src/session_sweep_continuation\""
+        },
+        {
+          "anchor": "\"src/proposals\",",
+          "end_anchor": "\"src/proposals\","
+        },
+        {
+          "anchor": "\"src/execution\",",
+          "end_anchor": "\"src/execution\","
+        },
+        {
+          "anchor": "\"src/scheduling\"",
+          "end_anchor": "\"src/scheduling\""
+        }
+      ]
+    },
+    {
+      "file": "config/v1_tickets/crypto_ticket_v3.yaml",
+      "ref": "C12",
+      "reason": "Active crypto ticket config maps BTCUSDT/ETHUSDT perpetual contract authority onto BTCUSD/ETHUSD CFD symbols.",
+      "origin": "never_suppress/25",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "# swaps); version 2 is preserved unchanged. Engine: ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0",
+          "end_anchor": "symbols: {BTCUSDT: BTCUSD, ETHUSDT: ETHUSD}   # canonical -> exact broker name (host-captured metadata)"
+        }
+      ]
+    },
+    {
+      "file": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
+      "ref": "C13",
+      "reason": "USDJPY/XAUUSD point null FIXTURE_ONLY while host-captured values already exist in config/symbol_metadata/host_captured/.",
+      "origin": "never_suppress/26",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "USDJPY: {point: null, status: FIXTURE_ONLY}   # host must capture MT5 symbol_info()",
+          "end_anchor": "XAUUSD: {point: null, status: FIXTURE_ONLY}"
+        }
+      ]
+    },
+    {
+      "file": "strategies/ST_LARGE_SMC_V1.yaml",
+      "ref": "C6",
+      "reason": "Inline changelog comment still says C10 remains UNSIGNED, against line 28 SIGNED_AND_LOCKED in the same file.",
+      "origin": "never_suppress/27",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "# C10 (broker stop-loss distance) and post-READY pending-entry expiry remain UNSIGNED",
+          "end_anchor": "# by explicit owner decision (2026-09-01): the engine fails closed to BLOCKED for any"
+        }
+      ]
+    },
+    {
+      "file": "config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml",
+      "ref": "C6",
+      "reason": "engine_runtime_status UNSIGNED_BLOCKED / implementation_status PENDING for Large-SMC C10.",
+      "origin": "never_suppress/28",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "implementation_status: PENDING       # next milestone: ST_LARGE_SMC_V1_C10_AG_NATIVE_CONTRACT_FREEZE",
+          "end_anchor": "engine_runtime_status: UNSIGNED_BLOCKED   # unchanged -- still fails closed until implemented"
+        }
+      ]
+    },
+    {
+      "file": "docs/PROJECT_OBJECTIVE.md",
+      "ref": "C14",
+      "reason": "Soak gate (>=10 cycles, broker_mutations=0) precedes demo authorization, conflicting with ISSUE #47 R5/R6 sequencing. Also line 139.",
+      "origin": "never_suppress/29",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "coordinate_correction": "Original related line 139 exceeded cf0ce0f file length; anchored the soak and post-soak demo decision named in the original reason.",
+      "anchors": [
+        {
+          "anchor": "### Soak",
+          "end_anchor": "- `broker_mutations = 0` throughout the PRE-EDGE/read-only soak."
+        },
+        {
+          "anchor": "9. **Owner demo-authorization decision** — separate post-soak governance decision. Authorization is not implied by successful tickets, logic verification, edge status, Telegram confirmation, or soak completion."
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "methods": [
+      "targeted grep/awk line reads (no repo-wide dumps)",
+      "file and directory existence checks",
+      "YAML/JSON field reads",
+      "PYTHONPATH=src import probe of 8 modules -> 8/8 ModuleNotFoundError (mt5.account, trade_management.claims, execution.executor, strategy_manager.manager, session_sweep_continuation.replay, large_smc_research.engine, assistant.commands, api.telegram_service)",
+      "python scripts/check_skill_mirror_drift.py -> NO_DRIFT: 33 files identical",
+      "diff -rq .agents/skills .claude/skills -> only _CANONICAL_SOURCE.md / _MIRROR_NOTICE.md differ",
+      ".gitignore and pyproject.toml inspection: the missing packages are not ignored and would be auto-discovered under src/",
+      "config/symbol_metadata/host_captured/*.json field reads (point/digits/broker_symbol/server/trade_mode)",
+      "range scans of PROJECT_STATUS.md 242-870 and 1297-1581 for the four protected labels",
+      "read-only GitHub API: main HEAD sha/date, contents/docs?ref=main, PR #66 file list, PR #28/#40/#60/#62/#63/#66 state, open PR and issue lists, ISSUE #47 body"
+    ],
+    "not_verifiable_from_cloud_checkout": [
+      "Windows Task Scheduler task state",
+      "MT5 terminal / broker facts",
+      "Telegram bot token and chat IDs",
+      "D:\\ host trees (wp3-main-integ, ddev\\Session Trade Codex)",
+      "config/local/ host-local overrides (gitignored by design)"
+    ],
+    "out_of_scope_not_scanned": [
+      "PROJECT_STATUS.md dated bodies 242-870 and 1297-1581 (line-by-line)",
+      "docs/status/** (except where cited as a machine source)",
+      "docs/PROJECT_CAPABILITY_COMPLETENESS.md",
+      "README.md",
+      "docs/README.md"
+    ]
+  },
+  "deferred_by_owner_instruction": [
+    "docs/README.md navigation link for the narrative record (AGENTS.md:230-245 and docs/DOCUMENTATION_GOVERNANCE.md:54-60 would normally require it) - close-out instruction was 'No other edits'",
+    "PROJECT_STATUS.md rolling-snapshot entry - not required: this audit changes no implemented capability, runtime reachability, execution authority, safety gate, strategy authorization, or regression baseline"
+  ],
+  "resolved": [
+    {
+      "reason": "C1/C2: asserts SESSION_TRADE_V1 is 'separately demo_authorized: true for its ASIAN_LONDON cycle'. Registry says false (D3, 2026-09-30).",
+      "severity": "critical_contradiction",
+      "ref": "C2",
+      "origin": "carve_outs/10/0",
+      "file": "PROJECT_STATUS.md",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "false`). `SESSION_TRADE_V1` is also `demo_authorized: false` (owner decision D3,"
+        }
+      ],
+      "status": "RESOLVED",
+      "resolved_by": "PR #75",
+      "resolution": "SESSION_TRADE_V1 is demo_authorized: false per D3"
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C15",
+      "reason": "'Next open item ... (PR #40)' - PR #40 is merged; the live FX remedy is open PR #62 (v1.1.2 closes Logic Gate L2).",
+      "origin": "never_suppress/0",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "`docs/status/AG_SESSION_TRADE_V1_TICKET_AUTHORITY_2026-10-06.md`. **Next open item:** PR #62"
+        }
+      ],
+      "status": "RESOLVED",
+      "resolved_by": "PR #75",
+      "resolution": "Next open item now points to PR #62"
+    },
+    {
+      "file": "PROJECT_STATUS.md",
+      "ref": "C2",
+      "reason": "SESSION_TRADE_V1 demo_authorized: true - contradicts registry.yaml:36 (D3 withdrawal).",
+      "origin": "never_suppress/4",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "anchors": [
+        {
+          "anchor": "false`). `SESSION_TRADE_V1` is also `demo_authorized: false` (owner decision D3,"
+        }
+      ],
+      "status": "RESOLVED",
+      "resolved_by": "PR #75",
+      "resolution": "SESSION_TRADE_V1 is demo_authorized: false per D3"
+    }
+  ],
+  "migration": {
+    "baseline": "783cb87",
+    "coordinate_source": "cf0ce0f",
+    "mapping": [
+      {
+        "original": "allowlisted_ranges/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          3,
+          5
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-META",
+        "destination": "allowlisted_ranges/0"
+      },
+      {
+        "original": "allowlisted_ranges/1",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          40,
+          55
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-2026-10-07-R1",
+        "destination": "allowlisted_ranges/1"
+      },
+      {
+        "original": "allowlisted_ranges/2",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          104,
+          178
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-2026-10-01..03-MILESTONES",
+        "destination": "allowlisted_ranges/2"
+      },
+      {
+        "original": "carve_outs/2/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          104,
+          123
+        ],
+        "original_related_lines": [],
+        "id_or_ref": null,
+        "destination": "carve_outs/2/0"
+      },
+      {
+        "original": "allowlisted_ranges/3",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          242,
+          357
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-HOSTKIT-MCP",
+        "destination": "allowlisted_ranges/3"
+      },
+      {
+        "original": "allowlisted_ranges/4",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          358,
+          870
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-CANDIDATE-BRANCHES",
+        "destination": "allowlisted_ranges/4"
+      },
+      {
+        "original": "allowlisted_ranges/5",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1297,
+          1374
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-SSC-SVOS-G2",
+        "destination": "allowlisted_ranges/5"
+      },
+      {
+        "original": "allowlisted_ranges/6",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1375,
+          1581
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-HISTORICAL-ROLLING-2026-09-14",
+        "destination": "allowlisted_ranges/6"
+      },
+      {
+        "original": "allowlisted_ranges/7",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1590,
+          1598
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-MASTER-PLAN-2026-09-10-CLASS",
+        "destination": "allowlisted_ranges/7"
+      },
+      {
+        "original": "carve_outs/7/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1582,
+          1589
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C8",
+        "destination": "carve_outs/7/0"
+      },
+      {
+        "original": "carve_outs/7/1",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1590,
+          1591
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C8",
+        "destination": "carve_outs/7/1"
+      },
+      {
+        "original": "allowlisted_ranges/8",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1624,
+          1674
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-HISTORICAL-OBJECTIVE-2026-09-07",
+        "destination": "allowlisted_ranges/8"
+      },
+      {
+        "original": "allowlisted_ranges/9",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1719,
+          1770
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-SNAPSHOT-2026-09-05",
+        "destination": "allowlisted_ranges/9"
+      },
+      {
+        "original": "carve_outs/9/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1741,
+          1741
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C9",
+        "destination": "carve_outs/9/0"
+      },
+      {
+        "original": "carve_outs/9/1",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1733,
+          1733
+        ],
+        "original_related_lines": [],
+        "id_or_ref": null,
+        "destination": "carve_outs/9/1"
+      },
+      {
+        "original": "allowlisted_ranges/10",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1772,
+          2321
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-RECONCILIATION-2026-09-06",
+        "destination": "allowlisted_ranges/10"
+      },
+      {
+        "original": "carve_outs/10/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1825,
+          1828
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C2",
+        "destination": "resolved/0"
+      },
+      {
+        "original": "carve_outs/10/1",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1866,
+          1886
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C6",
+        "destination": "carve_outs/10/1"
+      },
+      {
+        "original": "carve_outs/10/2",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2178,
+          2178
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C6",
+        "destination": "carve_outs/10/2"
+      },
+      {
+        "original": "carve_outs/10/3",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2011,
+          2054
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C1",
+        "destination": "carve_outs/10/3"
+      },
+      {
+        "original": "carve_outs/10/4",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2056,
+          2065
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "flag-2",
+        "destination": "carve_outs/10/4"
+      },
+      {
+        "original": "carve_outs/10/5",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2189,
+          2196
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "flag-3",
+        "destination": "carve_outs/10/5"
+      },
+      {
+        "original": "carve_outs/10/6",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1991,
+          2009
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "carve_outs/10/6"
+      },
+      {
+        "original": "carve_outs/10/7",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1805,
+          1806
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "carve_outs/10/7"
+      },
+      {
+        "original": "carve_outs/10/8",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2198,
+          2203
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "carve_outs/10/8"
+      },
+      {
+        "original": "allowlisted_ranges/11",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2322,
+          2337
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-REPO-REORG-2026-08-28",
+        "destination": "allowlisted_ranges/11"
+      },
+      {
+        "original": "carve_outs/11/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2324,
+          2331
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C11",
+        "destination": "carve_outs/11/0"
+      },
+      {
+        "original": "allowlisted_ranges/12",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2338,
+          2446
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-AUTHORITY-ORDER-AND-EXEC-RESTRUCTURE",
+        "destination": "allowlisted_ranges/12"
+      },
+      {
+        "original": "carve_outs/12/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2338,
+          2360
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "carve_outs/12/0"
+      },
+      {
+        "original": "carve_outs/12/1",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2368,
+          2368
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "carve_outs/12/1"
+      },
+      {
+        "original": "carve_outs/12/2",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2399,
+          2400
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "section-6",
+        "destination": "carve_outs/12/2"
+      },
+      {
+        "original": "allowlisted_ranges/13",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2447,
+          2731
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-PHASE-ROADMAP-2026-08",
+        "destination": "allowlisted_ranges/13"
+      },
+      {
+        "original": "carve_outs/13/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2459,
+          2469
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "carve_outs/13/0"
+      },
+      {
+        "original": "allowlisted_ranges/14",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2740,
+          2753
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-PHASEB-GAPS-AND-NEXT-DECISION",
+        "destination": "allowlisted_ranges/14"
+      },
+      {
+        "original": "carve_outs/14/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2732,
+          2738
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C7",
+        "destination": "carve_outs/14/0"
+      },
+      {
+        "original": "allowlisted_ranges/15",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2754,
+          2774
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "PS-VANTAGE-BRIDGE-2026-09-10",
+        "destination": "allowlisted_ranges/15"
+      },
+      {
+        "original": "allowlisted_ranges/16",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          1,
+          5
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RG-HEADER-2026-08-27",
+        "destination": "allowlisted_ranges/16"
+      },
+      {
+        "original": "carve_outs/16/0",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          1,
+          5
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "carve_outs/16/0"
+      },
+      {
+        "original": "allowlisted_ranges/17",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          59,
+          59
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RG-NOTES-DATED",
+        "destination": "allowlisted_ranges/17"
+      },
+      {
+        "original": "allowlisted_ranges/18",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          73,
+          77
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RG-LSMC-GOAL2-2026-09-30",
+        "destination": "allowlisted_ranges/18"
+      },
+      {
+        "original": "carve_outs/18/0",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          75,
+          76
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C12",
+        "destination": "carve_outs/18/0"
+      },
+      {
+        "original": "allowlisted_ranges/19",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          94,
+          98
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RG-SWEEPRETEST-RECONCILIATION-2026-09-05",
+        "destination": "allowlisted_ranges/19"
+      },
+      {
+        "original": "allowlisted_ranges/20",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          99,
+          105
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RG-CRYPTO-CONFIG-V2-2026-09-30",
+        "destination": "allowlisted_ranges/20"
+      },
+      {
+        "original": "carve_outs/20/0",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          99,
+          102
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C12",
+        "destination": "carve_outs/20/0"
+      },
+      {
+        "original": "carve_outs/20/1",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          93,
+          93
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C9",
+        "destination": "carve_outs/20/1"
+      },
+      {
+        "original": "allowlisted_ranges/21",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          130,
+          140
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RG-SSC-IDENTITY-NOTE-2026-09-10",
+        "destination": "allowlisted_ranges/21"
+      },
+      {
+        "original": "carve_outs/21/0",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          134,
+          134
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C5",
+        "destination": "carve_outs/21/0"
+      },
+      {
+        "original": "allowlisted_ranges/22",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          142,
+          152
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RG-R8-OBM-CHAT-HISTORY",
+        "destination": "allowlisted_ranges/22"
+      },
+      {
+        "original": "allowlisted_ranges/23",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          40,
+          40
+        ],
+        "original_related_lines": [
+          57,
+          58,
+          151
+        ],
+        "id_or_ref": "RG-EXTERNAL-REPO-PATHS",
+        "destination": "allowlisted_ranges/23"
+      },
+      {
+        "original": "allowlisted_ranges/24",
+        "file": "docs/PROJECT_ROADMAP.md",
+        "original_lines": [
+          5,
+          5
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RM-V3-SUPERSESSION",
+        "destination": "allowlisted_ranges/24"
+      },
+      {
+        "original": "allowlisted_ranges/25",
+        "file": "docs/PROJECT_ROADMAP.md",
+        "original_lines": [
+          130,
+          130
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RM-READINESS-DATE-STAMP",
+        "destination": "allowlisted_ranges/25"
+      },
+      {
+        "original": "allowlisted_ranges/26",
+        "file": "docs/PROJECT_ROADMAP.md",
+        "original_lines": [
+          330,
+          358
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RM-V2-PHASE-DATE-STAMPS",
+        "destination": "allowlisted_ranges/26"
+      },
+      {
+        "original": "carve_outs/26/0",
+        "file": "docs/PROJECT_ROADMAP.md",
+        "original_lines": [
+          346,
+          356
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "carve_outs/26/0"
+      },
+      {
+        "original": "allowlisted_ranges/27",
+        "file": "docs/PROJECT_ROADMAP.md",
+        "original_lines": [
+          535,
+          535
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "RM-AUTO-DEMO-REPLACED",
+        "destination": "allowlisted_ranges/27"
+      },
+      {
+        "original": "allowlisted_ranges/28",
+        "file": "docs/PROJECT_ROADMAP.md",
+        "original_lines": [
+          27,
+          52
+        ],
+        "original_related_lines": [
+          64,
+          91,
+          97,
+          109,
+          144,
+          150,
+          158,
+          160,
+          178,
+          186,
+          198,
+          208,
+          226,
+          231,
+          237,
+          245,
+          255,
+          275,
+          417,
+          427,
+          446,
+          468,
+          502,
+          529,
+          539,
+          549,
+          559,
+          575,
+          583,
+          591,
+          603,
+          623,
+          633,
+          651,
+          657,
+          701
+        ],
+        "id_or_ref": "RM-DIAGRAMS",
+        "destination": "allowlisted_ranges/28"
+      },
+      {
+        "original": "allowlisted_ranges/29",
+        "file": "AGENTS.md",
+        "original_lines": [
+          5,
+          13
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "AG-TOKEN-POLICY",
+        "destination": "allowlisted_ranges/29"
+      },
+      {
+        "original": "allowlisted_ranges/30",
+        "file": "AGENTS.md",
+        "original_lines": [
+          41,
+          49
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "AG-EXEC-EXAMPLES-2026-08-28",
+        "destination": "allowlisted_ranges/30"
+      },
+      {
+        "original": "carve_outs/30/0",
+        "file": "AGENTS.md",
+        "original_lines": [
+          41,
+          49
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C11",
+        "destination": "carve_outs/30/0"
+      },
+      {
+        "original": "allowlisted_ranges/31",
+        "file": "AGENTS.md",
+        "original_lines": [
+          56,
+          56
+        ],
+        "original_related_lines": [
+          75
+        ],
+        "id_or_ref": "AG-PHASE6-AND-HOSTPATH",
+        "destination": "allowlisted_ranges/31"
+      },
+      {
+        "original": "allowlisted_ranges/32",
+        "file": "AGENTS.md",
+        "original_lines": [
+          118,
+          158
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "AG-TOKEN-EFFICIENCY-RULES",
+        "destination": "allowlisted_ranges/32"
+      },
+      {
+        "original": "allowlisted_ranges/33",
+        "file": "AGENTS.md",
+        "original_lines": [
+          159,
+          215
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "AG-SKILL-GROUPING",
+        "destination": "allowlisted_ranges/33"
+      },
+      {
+        "original": "carve_outs/33/0",
+        "file": "AGENTS.md",
+        "original_lines": [
+          173,
+          178
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "flag-7",
+        "destination": "carve_outs/33/0"
+      },
+      {
+        "original": "carve_outs/33/1",
+        "file": "AGENTS.md",
+        "original_lines": [
+          162,
+          163
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C4",
+        "destination": "carve_outs/33/1"
+      },
+      {
+        "original": "allowlisted_ranges/34",
+        "file": "AGENTS.md",
+        "original_lines": [
+          203,
+          229
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "AG-BRANCH-DISCIPLINE",
+        "destination": "allowlisted_ranges/34"
+      },
+      {
+        "original": "allowlisted_ranges/35",
+        "file": ".agents/skills/SKILL_REGISTRY.yaml",
+        "original_lines": [
+          1,
+          34
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "SKILLREG-HEADER-NOTES",
+        "destination": "allowlisted_ranges/35"
+      },
+      {
+        "original": "allowlisted_ranges/36",
+        "file": ".agents/skills/strategy-management/SKILL.md",
+        "original_lines": [
+          47,
+          47
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "SKILL-STRATEGY-MANAGER-PATH",
+        "destination": "allowlisted_ranges/36"
+      },
+      {
+        "original": "allowlisted_ranges/37",
+        "file": ".agents/reports/workflow_skill_audit/",
+        "original_lines": null,
+        "original_related_lines": [],
+        "id_or_ref": "SKILL-AUDIT-REPORTS-2026-09-01",
+        "destination": "allowlisted_ranges/37"
+      },
+      {
+        "original": "allowlisted_ranges/38",
+        "file": ".agents/skills/_CANONICAL_SOURCE.md",
+        "original_lines": null,
+        "original_related_lines": [],
+        "id_or_ref": "SKILL-MIRROR-NOTICES",
+        "destination": "allowlisted_ranges/38"
+      },
+      {
+        "original": "verified_label_free/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          242,
+          870
+        ],
+        "original_related_lines": [],
+        "id_or_ref": null,
+        "destination": "verified_label_free/0"
+      },
+      {
+        "original": "verified_label_free/1",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1297,
+          1581
+        ],
+        "original_related_lines": [],
+        "id_or_ref": null,
+        "destination": "verified_label_free/1"
+      },
+      {
+        "original": "never_suppress/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          66,
+          66
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C15",
+        "destination": "resolved/1"
+      },
+      {
+        "original": "never_suppress/1",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          77,
+          79
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "A10",
+        "destination": "never_suppress/1"
+      },
+      {
+        "original": "never_suppress/2",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          871,
+          959
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "never_suppress/2"
+      },
+      {
+        "original": "never_suppress/3",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1582,
+          1613
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C8",
+        "destination": "never_suppress/3"
+      },
+      {
+        "original": "never_suppress/4",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1825,
+          1828
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C2",
+        "destination": "resolved/2"
+      },
+      {
+        "original": "never_suppress/5",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1866,
+          1886
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C6",
+        "destination": "never_suppress/5"
+      },
+      {
+        "original": "never_suppress/6",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2011,
+          2065
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C1",
+        "destination": "never_suppress/6"
+      },
+      {
+        "original": "never_suppress/7",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2178,
+          2178
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C6",
+        "destination": "never_suppress/7"
+      },
+      {
+        "original": "never_suppress/8",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2189,
+          2248
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "never_suppress/8"
+      },
+      {
+        "original": "never_suppress/9",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2338,
+          2400
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C11",
+        "destination": "never_suppress/9"
+      },
+      {
+        "original": "never_suppress/10",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2447,
+          2469
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "never_suppress/10"
+      },
+      {
+        "original": "never_suppress/11",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          2732,
+          2738
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C7",
+        "destination": "never_suppress/11"
+      },
+      {
+        "original": "never_suppress/12",
+        "file": "AGENTS.md",
+        "original_lines": [
+          27,
+          31
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "flag-6",
+        "destination": "never_suppress/12"
+      },
+      {
+        "original": "never_suppress/13",
+        "file": "AGENTS.md",
+        "original_lines": [
+          32,
+          66
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C11",
+        "destination": "never_suppress/13"
+      },
+      {
+        "original": "never_suppress/14",
+        "file": "AGENTS.md",
+        "original_lines": [
+          159,
+          178
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "flag-7",
+        "destination": "never_suppress/14"
+      },
+      {
+        "original": "never_suppress/15",
+        "file": "AGENTS.md",
+        "original_lines": [
+          230,
+          269
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C4",
+        "destination": "never_suppress/15"
+      },
+      {
+        "original": "never_suppress/16",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          17,
+          20
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "never_suppress/16"
+      },
+      {
+        "original": "never_suppress/17",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          61,
+          68
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C3",
+        "destination": "never_suppress/17"
+      },
+      {
+        "original": "never_suppress/18",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          99,
+          105
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C12",
+        "destination": "never_suppress/18"
+      },
+      {
+        "original": "never_suppress/19",
+        "file": "strategies/registry.yaml",
+        "original_lines": [
+          107,
+          140
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C5",
+        "destination": "never_suppress/19"
+      },
+      {
+        "original": "never_suppress/20",
+        "file": "docs/PROJECT_ROADMAP.md",
+        "original_lines": [
+          599,
+          707
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C8",
+        "destination": "never_suppress/20"
+      },
+      {
+        "original": "never_suppress/21",
+        "file": "docs/v2/AG_V2_BASELINE_MANIFEST_V1.json",
+        "original_lines": [
+          50,
+          50
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C2",
+        "destination": "never_suppress/21"
+      },
+      {
+        "original": "never_suppress/22",
+        "file": "config/ag_scheduler_v2.yaml",
+        "original_lines": [
+          82,
+          96
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C5",
+        "destination": "never_suppress/22"
+      },
+      {
+        "original": "never_suppress/23",
+        "file": "config/agent_context.json",
+        "original_lines": [
+          4,
+          5
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C4",
+        "destination": "never_suppress/23"
+      },
+      {
+        "original": "never_suppress/24",
+        "file": "config/agent_context.json",
+        "original_lines": [
+          20,
+          20
+        ],
+        "original_related_lines": [
+          33,
+          46,
+          57
+        ],
+        "id_or_ref": "C4",
+        "destination": "never_suppress/24"
+      },
+      {
+        "original": "never_suppress/25",
+        "file": "config/v1_tickets/crypto_ticket_v3.yaml",
+        "original_lines": [
+          4,
+          17
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C12",
+        "destination": "never_suppress/25"
+      },
+      {
+        "original": "never_suppress/26",
+        "file": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
+        "original_lines": [
+          63,
+          64
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C13",
+        "destination": "never_suppress/26"
+      },
+      {
+        "original": "never_suppress/27",
+        "file": "strategies/ST_LARGE_SMC_V1.yaml",
+        "original_lines": [
+          81,
+          82
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C6",
+        "destination": "never_suppress/27"
+      },
+      {
+        "original": "never_suppress/28",
+        "file": "config/releases/AG_TRADE_ASSISTANT_V1_0_3.yaml",
+        "original_lines": [
+          301,
+          304
+        ],
+        "original_related_lines": [],
+        "id_or_ref": "C6",
+        "destination": "never_suppress/28"
+      },
+      {
+        "original": "never_suppress/29",
+        "file": "docs/PROJECT_OBJECTIVE.md",
+        "original_lines": [
+          88,
+          95
+        ],
+        "original_related_lines": [
+          139
+        ],
+        "id_or_ref": "C14",
+        "destination": "never_suppress/29"
+      },
+      {
+        "original": "disambiguation_notes/0",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          562,
+          562
+        ],
+        "original_related_lines": [],
+        "id_or_ref": null,
+        "destination": "disambiguation_notes/0"
+      },
+      {
+        "original": "disambiguation_notes/1",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          616,
+          616
+        ],
+        "original_related_lines": [],
+        "id_or_ref": null,
+        "destination": "disambiguation_notes/1"
+      },
+      {
+        "original": "disambiguation_notes/2",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          741,
+          742
+        ],
+        "original_related_lines": [],
+        "id_or_ref": null,
+        "destination": "disambiguation_notes/2"
+      },
+      {
+        "original": "disambiguation_notes/3",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          784,
+          784
+        ],
+        "original_related_lines": [],
+        "id_or_ref": null,
+        "destination": "disambiguation_notes/3"
+      },
+      {
+        "original": "disambiguation_notes/4",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          816,
+          816
+        ],
+        "original_related_lines": [],
+        "id_or_ref": null,
+        "destination": "disambiguation_notes/4"
+      },
+      {
+        "original": "disambiguation_notes/5",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          470,
+          470
+        ],
+        "original_related_lines": [],
+        "id_or_ref": null,
+        "destination": "disambiguation_notes/5"
+      },
+      {
+        "original": "disambiguation_notes/6",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          266,
+          266
+        ],
+        "original_related_lines": [
+          287,
+          1463
+        ],
+        "id_or_ref": null,
+        "destination": "disambiguation_notes/6"
+      },
+      {
+        "original": "disambiguation_notes/7",
+        "file": "PROJECT_STATUS.md",
+        "original_lines": [
+          1881,
+          1881
+        ],
+        "original_related_lines": [
+          1805,
+          1806,
+          1882,
+          2092,
+          2097,
+          2368,
+          2399
+        ],
+        "id_or_ref": null,
+        "destination": "disambiguation_notes/7"
+      },
+      {
+        "original": "disambiguation_notes/8",
+        "file": "docs/PROJECT_ROADMAP.md",
+        "original_lines": [
+          122,
+          122
+        ],
+        "original_related_lines": [
+          113,
+          130,
+          174,
+          190
+        ],
+        "id_or_ref": null,
+        "destination": "disambiguation_notes/8"
+      }
+    ],
+    "merged_entries": []
+  }
+}

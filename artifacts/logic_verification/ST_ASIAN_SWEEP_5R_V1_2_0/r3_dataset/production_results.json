@@ -1,0 +1,53 @@
+{
+  "dataset_sha256": "a3c1ee5b04792dcea4defbd868cb0ed1a048927deddb68b9b67ecf842856fd80",
+  "results": [
+    {
+      "SL": 1.161135,
+      "TP1": 1.1616,
+      "TP2": 1.162365,
+      "case_id": "EURUSD_ASIAN_LONDON_2026-06-17",
+      "decision_time": "2026-06-17T07:15:00+00:00",
+      "direction": "LONG",
+      "entry": 1.16134,
+      "expiry": "2026-06-17T07:30:00+00:00",
+      "reason_codes": [
+        "SL_DOES_NOT_CLEAR_SWEEP_EXTREME"
+      ],
+      "status": "REJECTED",
+      "target_order": true,
+      "wick_clear": false
+    },
+    {
+      "SL": 1.14333,
+      "TP1": 1.14181,
+      "TP2": 1.14135,
+      "case_id": "EURUSD_ASIAN_LONDON_2026-06-23",
+      "decision_time": "2026-06-23T07:15:00+00:00",
+      "direction": "SHORT",
+      "entry": 1.143,
+      "expiry": "2026-06-23T07:30:00+00:00",
+      "reason_codes": [
+        "SL_DOES_NOT_CLEAR_SWEEP_EXTREME"
+      ],
+      "status": "REJECTED",
+      "target_order": true,
+      "wick_clear": false
+    },
+    {
+      "SL": 1.14496,
+      "TP1": 1.1434,
+      "TP2": 1.14292,
+      "case_id": "EURUSD_ASIAN_LONDON_2026-07-17",
+      "decision_time": "2026-07-17T07:30:00+00:00",
+      "direction": "SHORT",
+      "entry": 1.14462,
+      "expiry": "2026-07-17T07:45:00+00:00",
+      "reason_codes": [
+        "SPREAD_UNKNOWN"
+      ],
+      "status": "BLOCKED",
+      "target_order": true,
+      "wick_clear": true
+    }
+  ]
+}

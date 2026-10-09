@@ -1,0 +1,35 @@
+# Actionability policy (Phase D — AG_OBJECTIVE_FAST_TRACK_R1 / PR #55).
+#
+# THIS FILE IS THE COMMITTED REPO SCHEMA/DEFAULT ONLY.  It does NOT authorize
+# WATCH_READY.  It ships with:
+#   min_remaining_r: null
+#   signed_by:      null
+# which the loader treats as ACTIONABILITY_POLICY_MISSING → INFO_ONLY_POLICY_UNRESOLVED.
+# No committed code path turns this into WATCH_READY.
+#
+# Production/runtime thresholds live exclusively in the OWNER_RUNTIME_OVERRIDE:
+#   config/local/actionability_policy.yaml   (gitignored; host-local; signed_by != null)
+# When present and correctly signed, that file wins and unlocks WATCH_READY subject to
+# every other gate (freshness, remaining-R, spread, SL/TP geometry, etc.).
+# Arena does not create or sign this file.
+#
+# Policy precedence:
+#   owner-signed local override (config/local/actionability_policy.yaml), signed_by != null
+#       ↓ usable policy → WATCH_READY path enabled
+#   unsigned repo policy (this file), signed_by = null
+#       ↓ schema/default only → POLICY_MISSING → INFO_ONLY_POLICY_UNRESOLVED
+#   missing / malformed / conflicting policy
+#       ↓ POLICY_MISSING / POLICY_INVALID / POLICY_CONFLICT → INFO_ONLY_POLICY_UNRESOLVED
+#
+# Schema fields:
+#   policy_id         fixed identifier LSMC_ACTIONABILITY_POLICY_V1
+#   version           positive integer; bump on any policy value change
+#   min_remaining_r   minimum R-multiple remaining to TP1 required for WATCH_READY
+#                     (null = no threshold chosen → POLICY_MISSING)
+#   signed_by         owner identifier who signed this policy; null = unsigned
+#   signed_at         ISO-8601 date/time of signing; null = unsigned
+policy_id: LSMC_ACTIONABILITY_POLICY_V1
+version: 1
+min_remaining_r: null
+signed_by: null
+signed_at: null

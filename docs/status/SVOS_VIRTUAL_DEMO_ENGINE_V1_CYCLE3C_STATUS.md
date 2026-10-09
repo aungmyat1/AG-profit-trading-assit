@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # SVOS Virtual Demo Engine V1 — Cycle 3C canonical SSC bridge
 
 Date: 2026-09-20. Classification: **VD_SSC_BRIDGE_READY**.

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Profit Trading — Manual Demo Route Containment Independent Runtime Audit R2
 
 ## Classification

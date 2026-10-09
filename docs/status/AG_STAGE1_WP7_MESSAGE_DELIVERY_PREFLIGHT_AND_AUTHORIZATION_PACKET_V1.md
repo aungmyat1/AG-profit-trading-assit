@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Stage 1 WP7 — Message-Delivery Preflight and Authorization Packet V1
 
 Dated 2026-09-08. **This document does not authorize `MESSAGE_DELIVERY`, a real or

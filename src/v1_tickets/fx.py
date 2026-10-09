@@ -28,6 +28,8 @@ from host_evidence.symbol_metadata import (
 )
 from strategy_engine import evaluate, load_strategy
 from strategy_engine.session import Candle
+from v1_tickets.guards import gate_ready
+from v1_tickets.ready_authority import SHADOW_INFO_ONLY, apply_ready_authority
 from ticket_delivery.archive import (
     CYCLE_STATE_BLOCKED,
     CYCLE_STATE_DATA_ERROR,
@@ -36,11 +38,17 @@ from ticket_delivery.archive import (
     CycleDecisionRecord,
     archive_cycle_decision,
 )
-from v1_tickets.guards import gate_ready
 
 STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
 V1_FX_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
 V1_CYCLES = ("ASIAN_LONDON", "LONDON_NEWYORK")
+REFERENCE_NOT_READY = "REFERENCE_NOT_READY"   # evaluated before the reference window closed (lifecycle)
+# STALE-FIX-1: where a ticket's signal time came from. A signal age is measured only from the
+# engine's own signal timestamp; there is no fallback to a trade-session bar.
+SIGNAL_TIME_ENGINE = "ENGINE"
+SIGNAL_TIME_MISSING = "MISSING"
+SIGNAL_TIME_NOT_APPLICABLE = "NOT_APPLICABLE"
+SIGNAL_TIME_UNAVAILABLE = "SIGNAL_TIME_UNAVAILABLE"   # SIGNAL without an engine timestamp -> DATA_ERROR
 EVIDENCED_DIGITS = {"EURUSD": 5, "GBPUSD": 5}   # point 1e-05, owner-approved dataset manifests (rounding only)
 REQUIRED_BROKER_SYMBOL = {"EURUSD": "EURUSD-VIP", "GBPUSD": "GBPUSD-VIP"}   # VT Markets tradable -VIP symbols
 M15 = dt.timedelta(minutes=15)
@@ -83,6 +91,16 @@ def _r(symbol: str, value: Optional[float]) -> Optional[float]:
     return value if digits is None else round(value, digits)
 
 
+def session_windows_utc(day: dt.date) -> Dict[str, Dict[str, tuple]]:
+    """Fixed-UTC windows of the frozen session pairs (GMT in the YAML), half-open [start, end).
+    Never DST-shifted (owner decision C3); local time is display-only via session_clock."""
+    def at(t: str) -> dt.datetime:
+        return dt.datetime.combine(day, dt.time(*map(int, str(t).split(":"))), tzinfo=dt.timezone.utc)
+    return {p.pair_id: {"ref": (at(p.reference_session.start_time_gmt), at(p.reference_session.end_time_gmt)),
+                        "trade": (at(p.trade_session.start_time_gmt), at(p.trade_session.end_time_gmt))}
+            for p in load_strategy(STRATEGY_PATH).session_pairs}
+
+
 def build_fx_error_ticket(
     symbol: str, cycle: str, session_date: dt.date, *, evaluated_at: dt.datetime,
     reason_code: str, detail: str = "", decision: str = "DATA_ERROR",
@@ -109,6 +127,7 @@ def build_fx_error_ticket(
         "decision": decision,
         "reason_code": reason_code,
         "detail": detail[:300],
+        "signal_time_source": SIGNAL_TIME_NOT_APPLICABLE,
     }
 
 
@@ -116,19 +135,29 @@ def build_fx_ticket(
     symbol: str, cycle: str, session_date: dt.date, session_candles: Sequence[Candle], expected_bar_count: int,
     post_session_candles: Sequence[Candle], *, data_source: str, evaluated_at: dt.datetime,
     data_close: Optional[dt.datetime] = None, spread: Optional[float] = None,
+    strategy_path: str = STRATEGY_PATH,
 ) -> Dict[str, Any]:
     """`data_close`: close time of the latest live bar (None = no data-age gate); `spread`: live
-    ask - bid in price units (None = SPREAD_NOT_EVALUATED, no READY)."""
+    ask - bid in price units (None = SPREAD_NOT_EVALUATED, no READY). `strategy_path`: offline
+    logic-gate replay of a registered candidate version only; runtime callers keep the default."""
     if symbol not in V1_FX_SYMBOLS or cycle not in V1_CYCLES:
         raise ValueError(f"{symbol}/{cycle} is not a V1 FX ticket cycle")
-    strategy = load_strategy(STRATEGY_PATH)
+    strategy = load_strategy(strategy_path)
     base: Dict[str, Any] = {
         "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER", "strategy_id": strategy.strategy_id,
         "strategy_version": strategy.version, "symbol": symbol, "cycle": cycle,
         "session_date": session_date.isoformat(), "data_source": data_source,
         "evaluated_at": evaluated_at.astimezone(dt.timezone.utc).isoformat(),
         "metadata_status": metadata_status(symbol), "delivery_mode": "ARCHIVE_ONLY",
+        "signal_time_source": SIGNAL_TIME_NOT_APPLICABLE,
     }
+    ref_end = session_windows_utc(session_date)[cycle]["ref"][1]
+    if evaluated_at < ref_end:
+        # Lifecycle, not a data fault: the reference box cannot be complete before its window
+        # closes. Decided on the clock alone, so missing/corrupt bars after ref_end still reach
+        # the engine and stay DATA_ERROR.
+        return {**base, "decision": REFERENCE_NOT_READY, "reason_code": REFERENCE_NOT_READY,
+                "detail": f"reference window closes {ref_end.isoformat()}"}
     try:
         sig = evaluate(strategy, cycle, symbol, session_date, session_candles, expected_bar_count,
                        post_session_candles)
@@ -139,6 +168,7 @@ def build_fx_ticket(
               "box": {"high": _r(symbol, sig.box_high), "low": _r(symbol, sig.box_low), "mid": _r(symbol, sig.box_mid)},
               "signal_timestamp": sig.signal_timestamp.isoformat() if sig.signal_timestamp else None}
     if sig.status == "SIGNAL":
+        ticket["signal_time_source"] = SIGNAL_TIME_ENGINE if sig.signal_timestamp else SIGNAL_TIME_MISSING
         long = sig.direction == "LONG"
         tp1 = sig.box_high if long else sig.box_low
         tp2 = sig.entry + (5.0 if long else -5.0) * sig.risk_distance
@@ -149,17 +179,25 @@ def build_fx_ticket(
                         {"leg": 2, "volume_pct": 0.25, "type": "FIXED_R_MULTIPLE_5", "price": _r(symbol, tp2)}],
             "time_invalidation_gmt": "15:00", "spread_check": "NOT_EVALUATED", "position_size": "NOT_SPECIFIED",
         })
-    # entry_2/entry_3 stamp the qualifying M15 bar's open; entry_1 (box-based) has none -> first trade-session bar.
-    signal_open = sig.signal_timestamp or (post_session_candles[0].time if post_session_candles else None)
-    return gate_ready(ticket, now=evaluated_at, data_close=data_close,
-                      signal_close=signal_open + M15 if signal_open is not None else None,
-                      spread=spread, risk=sig.risk_distance)
+    # entry_2/entry_3 stamp the qualifying M15 bar's open. A SIGNAL without that engine time
+    # (e.g. entry_1, box-based) has no signal age, so it fails closed instead of borrowing a bar time.
+    signal_open = sig.signal_timestamp if sig.status == "SIGNAL" else None
+    if sig.status == "SIGNAL" and signal_open is None:
+        ticket.update({"decision": "DATA_ERROR", "reason_code": SIGNAL_TIME_UNAVAILABLE,
+                       "engine_reason_code": sig.reason_code, "signal_close_utc": None,
+                       "detail": "engine supplied no signal timestamp; no signal age exists"})
+        return apply_ready_authority(ticket)
+    gated = gate_ready(ticket, now=evaluated_at, data_close=data_close,
+                       signal_close=signal_open + M15 if signal_open is not None else None,
+                       spread=spread, risk=sig.risk_distance)
+    return apply_ready_authority(gated)            # D6: READY authority switch (config, fail closed)
 
 
 _STATE = {"READY": CYCLE_STATE_READY, "NO_TRADE": CYCLE_STATE_NO_TRADE, "DATA_ERROR": CYCLE_STATE_DATA_ERROR,
           "BLOCKED": CYCLE_STATE_BLOCKED,
           # Gate-withheld decisions archive as NO_TRADE; the payload/reason code keeps the specific state.
-          "STALE": CYCLE_STATE_NO_TRADE, "SPREAD_TOO_WIDE": CYCLE_STATE_NO_TRADE}
+          "STALE": CYCLE_STATE_NO_TRADE, "SPREAD_TOO_WIDE": CYCLE_STATE_NO_TRADE,
+          REFERENCE_NOT_READY: CYCLE_STATE_NO_TRADE, SHADOW_INFO_ONLY: CYCLE_STATE_NO_TRADE}
 
 
 def archive_fx_ticket(ticket: Dict[str, Any], root: str) -> str:

@@ -20,6 +20,26 @@ strategies:
                               #   (entry_order_type undefined, risk_per_trade_pct unspecified)
     config_source: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
     engine: strategy_engine (this repo)
+    # Manual Trade Ticket V1 (owner decisions 2026-10-06, docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md).
+    # Read by src/v1_tickets/authority.py; unknown/missing values fail closed (no tickets).
+    # A manual ticket is never an order: demo_order_authority NONE, demo/live flags unchanged.
+    ticket_authority: MANUAL_ONLY
+    logic_status: NOT_VERIFIED          # LOGIC_VERIFIED only with a matching logic_verified_identity
+    logic_verified_identity: null
+    economic_status: NOT_EVALUATED
+    demo_order_authority: NONE
+    # L2 closure candidate (2026-10-07, docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md).
+    # Not the current authority: the runtime still loads config_source (v1.1.1, NOT_VERIFIED),
+    # so no TICKET_READY can come from this block. Promotion needs the owner's Phase B confirmation.
+    candidate_versions:
+      "1.1.2":
+        config_source: strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml
+        status: CANDIDATE_PENDING_OWNER_CONFIRM
+        logic_status: LOGIC_VERIFIED            # Logic Gate L1-L6 on recorded fixtures; bound to the identity below
+        logic_verified_identity: d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5
+        economic_status: NOT_EVALUATED
+        edge_verified: false
+        ticket_ready: PAUSED_PENDING_OWNER_CONFIRM
 
   SESSION_TRADE_V1:
     registered: true
@@ -30,6 +50,15 @@ strategies:
     live_authorized: false
     config_source: strategies/session_trade/contract.yaml
     engine: "session_strategy (D:\\ddev\\Session Trade Codex -- separate repository, referenced not vendored)"
+    # Manual Trade Ticket V1 (owner decisions 2026-10-06, docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md).
+    # Read by src/v1_tickets/authority.py; unknown/missing values fail closed (no tickets).
+    # Engine is not in this repo: tickets fail closed with STRATEGY_ADAPTER_NOT_IMPLEMENTED.
+    # A manual ticket is never an order: demo_order_authority NONE, demo/live flags unchanged.
+    ticket_authority: MANUAL_ONLY
+    logic_status: NOT_VERIFIED          # LOGIC_VERIFIED only with a matching logic_verified_identity
+    logic_verified_identity: null
+    economic_status: NOT_EVALUATED
+    demo_order_authority: NONE
 
   SMC_3R_V1:
     registered: true
@@ -121,6 +150,30 @@ strategies:
       bare-id/v1.1.1 identity with no implementation behind it -- see the
       AG_ST_SESSION_SWEEP_CONTINUATION_REGISTRATION_STATUS report for the full
       open-question writeup.
+
+  ST_CRYPTO_CFD_SWEEP_RETEST_V1:
+    registered: true
+    active: false            # deterministic contract only -- no runner/pilot exists yet
+    research: true           # RESEARCH_ONLY: reproducible logic, no edge claim
+    demo_authorized: false
+    live_authorized: false
+    config_source: strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml
+    engine: >-
+      src/crypto_cfd_contract/ (AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1 -- pure deterministic
+      rule functions for the VT Markets BTCUSD/ETHUSD CRYPTO_CFD instruments; reuses only
+      the asset-independent sweep/MSS/retest/targets/structure primitives, never the
+      USDT-perpetual profile, perp tick model, perp activity window, or any FX
+      session/pip convention). Non-executing: proposal authority BLOCKED while
+      SPREAD_POLICY_UNDEFINED and RISK_POLICY_AMBIGUOUS hold; execution_authorized is a
+      constant False. Tests: tests/test_crypto_cfd_strategy_contract_v1.py.
+    note: >-
+      Closes the STRATEGY_CONTRACT_INCOMPLETE gap reported by the frozen crypto
+      observation layer (src/session_scanner/crypto_adapter.py, PR #28) for BTCUSD/ETHUSD
+      CFDs with a dedicated contract rather than reusing ST_LIQUIDITY_SWEEP_RETEST_V1's
+      CRYPTO_PERP profile. Research separation: STRATEGY_CONTRACT_VALID=true,
+      EDGE_VERIFIED=false, RISK_AUTHORIZED=false. Wiring this contract into the scanner's
+      strategy_adapter / Checklist V1.1 phases is a separate, future authority decision
+      -- this registration changes no scanner behavior.
 
   R8_OBM_V1:
     registered: true

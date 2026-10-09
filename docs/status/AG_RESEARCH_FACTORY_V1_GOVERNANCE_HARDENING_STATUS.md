@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Research Factory V1 Governance Hardening — Status
 
 Recorded: 2026-09-14

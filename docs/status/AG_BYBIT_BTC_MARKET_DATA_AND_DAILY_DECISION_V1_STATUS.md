@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_BYBIT_BTC_MARKET_DATA_AND_DAILY_DECISION_V1 -- Status (2026-09-05)
 
 Dated evidence snapshot per `docs/status/LIVE_STATUS_MAINTENANCE.md`. **Stopped at the

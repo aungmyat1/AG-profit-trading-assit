@@ -31,7 +31,7 @@ class SessionPair:
 class RiskConfig:
     risk_mode: str
     stop_loss_mode: str
-    stop_loss_range_pct: float
+    stop_loss_range_pct: Optional[float]
     max_spread_allowed_pips: float
     slippage_limit_points: int
 
@@ -61,7 +61,7 @@ class StrategyConfig:
     entry_order_type: str
     total_target_r: float
     legs: Sequence[TargetLeg]
-    max_range_pips_eurusd: float
+    max_range_pips_eurusd: Optional[float]
     time_invalidation: str
     structural_invalidation: str
     source_path: str

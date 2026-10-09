@@ -1,5 +1,9 @@
 # AG Profit Trading
 
+Standalone canonical-ticket Telegram delivery is offline tested and disabled by
+default (`TELEGRAM_DELIVERY_ENABLED=false`). See [configuration, schema gaps and
+limits](docs/status/AGP_TG_01_OFFLINE_2026-10-08.md); no live delivery is validated.
+
 AG Profit Trading is a deterministic FX and crypto trading assistant designed to
 produce four complementary decision products:
 
@@ -21,6 +25,40 @@ and edge validation follow; scanner-driven Demo and controlled Live remain later
 separately authorized gates. The current primary product target is the R2–R4 canonical
 scanner proposal pipeline, ending at an observation-only STOP boundary. See
 [`docs/PROJECT_ROADMAP.md`](docs/PROJECT_ROADMAP.md).
+
+## Active objective: logically verified strategies during edge validation
+
+The immediate product objective is to operate the read-only session scanner and manual
+trade-ticket assistant **while a strategy is undergoing economic and edge validation**.
+A strategy with `LOGIC_VERIFIED` status may produce `WATCH`, `OPPORTUNITY`, and
+`TICKET_READY` informational outputs, subject to every existing data, timing, strategy
+identity, geometry, cost, risk, and proposal eligibility gate. `LOGIC_VERIFIED`
+means the deterministic strategy contract matches the implementation and passes
+appropriate logic/replay acceptance; it does **not** mean profitability or
+`EDGE_VERIFIED`.
+
+- Scope: Asian→London and London→New York session decisions for EURUSD, GBPUSD,
+  USDJPY, and XAUUSD, where each instrument has an admitted strategy, data and
+  risk contract. Do not force tickets when a gate blocks or no setup exists.
+- Produce timely WATCH/no-setup lifecycle records and, only where all gates pass,
+  informational BUY/SELL proposals with entry, SL, TP1/TP2, RR, invalidation,
+  structure/path visualization, confidence/evidence labels, strategy/version,
+  contract/code provenance, and explicit economic/edge-validation status.
+- Record user decisions, virtual-forward outcomes, costs, and daily funnel reports
+  as prospective evidence for further strategy research and independent EdgeLab
+  qualification. Keep validation datasets and unseen holdouts protected.
+- Strategies at `NOT_VERIFIED` or with a strategy/engine mismatch may be observed
+  and diagnosed but may **not** be relabeled `LOGIC_VERIFIED` or bypass gate L2.
+  Currently frozen `ST_ASIAN_SWEEP_5R_V1@1.1.1` remains blocked for
+  `TICKET_READY` until a separately versioned, reconciled successor passes gates.
+- Informational proposals never authorize broker orders. Demo/live automation
+  stays disabled and requires separately documented authority and safety gates;
+  neither logical verification nor ticket readiness implies trading edge.
+
+**Acceptance condition:** across configured session runs, expected per-symbol scan
+records, distinguishable `WATCH`/`NO_TRADE`/`NOT_RUN`/error states, an auditable
+ticket whenever an admitted logically verified setup meets all gates, delivery
+evidence, and virtual outcome tracking — with **zero broker mutations**.
 
 ## Fastest path to the project objective
 
@@ -113,8 +151,8 @@ particular its "Current rolling classification" section and the R0–R9 gate tab
 which distinguish IMPLEMENTED from VERIFIED from ENABLED from AUTHORIZED, and separate
 the proposal-only FX runtime from the independently-gated MT5 Demo execution
 subsystem. `ST_ASIAN_SWEEP_5R_V1` is `demo_authorized: false` in
-`strategies/registry.yaml`; `SESSION_TRADE_V1` is independently `demo_authorized: true`
-for its `ASIAN_LONDON` cycle only.
+`strategies/registry.yaml`; `SESSION_TRADE_V1` is also `demo_authorized: false`
+(owner decision D3, 2026-09-30; source `strategies/registry.yaml`).
 
 ## Run locally from VS Code
 
@@ -134,6 +172,16 @@ Separately, BTCUSD and ETHUSD are available in Scanner V1 as read-only VT Market
 observations. Their live data path was Demo-verified, but no CFD strategy or risk
 authority exists, so they cannot produce valid setups, proposals, position sizes, or
 execution authorization. See [crypto scanner observation status](docs/status/AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS.md).
+An offline Crypto-CFD research factory is unit-tested on the research branch: it accepts
+only locally exported immutable BTCUSD/ETHUSD M5 files plus provenance, fails closed
+through quality/partition/holdout gates, and never downloads market data or sends a
+broker request. Real CFD source files are not committed, so its C001 result is currently
+`BLOCKED_DATASET_UNAVAILABLE`, not an edge claim. See the
+[offline ingestion contract](research/edge_discovery/OFFLINE_DATASET_INGESTION_CONTRACT.md).
+A separate eligibility/quarantine layer keeps an unexplained-gap raw dataset blocked
+while admitting only independently complete UTC reference/observation windows for later
+partitioning; it never fills data, creates partitions, or runs C001 itself. See the
+[research eligibility contract](research/edge_discovery/RESEARCH_WINDOW_ELIGIBILITY_CONTRACT.md).
 Large-SMC has a research engine and live-batch ledger but not yet the complete
 incremental funnel-status and external confirmation-alert service.
 
@@ -186,6 +234,15 @@ incremental funnel-status and external confirmation-alert service.
   live operational snapshot; dated totals elsewhere are milestone evidence.
 
 ## Quick start
+
+The read-only MT5 candle/quote data path has been Demo-verified on the Windows
+host: all four mapped M15 feeds and fresh quote timestamps passed, and
+`python scripts/host/live_eval_smoke.py` produced all eight FX instrument/session
+records with no quote-time failures. This validates market-data plumbing only;
+the observed evaluator outcomes were seven `INSUFFICIENT_DATA` records and one
+`EXPIRED`, with no opportunity established. It grants no demo/live execution
+authority. See [R2 market-data evidence](docs/status/AG_MARKET_DATA_CONTRACT_R2_2026-10-08.md)
+and [R1 offline integration evidence](docs/status/AG_OBJECTIVE_INTEGRATION_R1_OFFLINE_2026-10-07.md).
 
 Requirements: Python 3.10 or newer and, for live market-data checks, a running and
 logged-in MetaTrader 5 terminal.
@@ -240,6 +297,21 @@ powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1
 powershell -ExecutionPolicy Bypass -File scripts\host\install_tasks.ps1 -Apply
 powershell -ExecutionPolicy Bypass -File scripts\host\verify_tasks.ps1
 ```
+
+The same FX task also builds MANUAL trade tickets (owner decides; never an order), writes a
+scan record for every symbol, resolves `VIRTUAL_FORWARD` outcomes once a day, and archives a
+daily report. Owner risk % has no default: set it in `config/local/owner_ticket.yaml`.
+When delivery is explicitly enabled, `TICKET_READY` manual tickets include inline Accept /
+Reject controls. Accept records owner intent and remains blocked from execution by the
+default-off authority gates; Reject records without a handoff. Telegram callback handling
+is unit-tested, not host-verified.
+
+```powershell
+python scripts\manual_ticket_decision.py --date 2026-10-06 --ticket-id <id> --decision SKIPPED --reason NEWS
+python scripts\run_manual_ticket_report.py --date 2026-10-06
+```
+
+See [manual ticket status](docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md).
 
 See [`Install on the Windows MT5 Demo host`](docs/setup/INSTALL_WINDOWS_MT5_DEMO_HOST.md) for
 the complete installation and Telegram proposal-validation procedure; the compact operator

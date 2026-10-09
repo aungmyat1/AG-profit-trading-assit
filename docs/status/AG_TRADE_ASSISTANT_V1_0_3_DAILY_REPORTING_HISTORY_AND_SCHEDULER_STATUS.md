@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG_TRADE_ASSISTANT_V1_0_3 -- Daily Reporting/History/Scheduler Status (2026-09-03)
 
 Dated evidence snapshot per `docs/status/LIVE_STATUS_MAINTENANCE.md`. **Scope was

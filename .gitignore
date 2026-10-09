@@ -43,5 +43,9 @@ Thumbs.db
 # Local diagnostic outputs
 /artifacts/diagnostics/
 
+# Locally acquired, uncommitted research datasets (raw and derived).
+/data/research/raw/crypto_cfd/
+/data/research/derived/crypto_cfd/
+
 # Host-local overrides (scripts/host/enable_telegram.ps1) -- never commit
 /config/local/

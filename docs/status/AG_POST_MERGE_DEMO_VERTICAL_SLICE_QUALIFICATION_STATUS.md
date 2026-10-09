@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG Post-Merge Demo Vertical Slice Qualification (2026-09-25)
 
 Scope: prepare-only qualification (Phases 0-3 + security), by explicit owner choice.

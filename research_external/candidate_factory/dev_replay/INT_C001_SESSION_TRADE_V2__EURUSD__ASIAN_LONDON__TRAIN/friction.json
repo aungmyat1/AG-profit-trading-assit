@@ -1,0 +1,52 @@
+{
+  "run_id": "INT_C001_SESSION_TRADE_V2__EURUSD__ASIAN_LONDON__TRAIN",
+  "symbol": "EURUSD",
+  "cost_model_id": "AG_CF_R1_SPREAD_SNAPSHOT_SCENARIO_V1",
+  "commission_per_round_turn": "UNKNOWN",
+  "slippage": "UNKNOWN (not modeled in this pass; base scenario=0, stress scenario adds 1.0 pip, applied as additional spread-equivalent cost in the STRESS row only)",
+  "gross_metrics": {
+    "n": 89,
+    "wins": 15,
+    "losses": 74,
+    "win_rate": 0.16853932584269662,
+    "gross_r": -12.75,
+    "net_r": -12.75,
+    "expectancy_r": -0.14325842696629212,
+    "profit_factor": 0.8277027027027027,
+    "max_drawdown_r": 24.5,
+    "largest_single_trade_r": 4.25,
+    "largest_trade_pct_of_total_abs_net_r": 0.031423290203327174,
+    "cost_r_per_trade_applied": 0.0
+  },
+  "net_base_spread_metrics": {
+    "n": 89,
+    "wins": 15,
+    "losses": 74,
+    "win_rate": 0.16853932584269662,
+    "gross_r": -12.75,
+    "net_r": -36.07352633265555,
+    "expectancy_r": -0.40532052059163537,
+    "profit_factor": 0.6137431842389672,
+    "max_drawdown_r": 40.0614642390302,
+    "largest_single_trade_r": 3.9879379063746567,
+    "largest_trade_pct_of_total_abs_net_r": 0.026460711886060313,
+    "cost_r_per_trade_applied": 0.26206209362534333
+  },
+  "net_stress_2x_spread_metrics": {
+    "n": 89,
+    "wins": 15,
+    "losses": 74,
+    "win_rate": 0.16853932584269662,
+    "gross_r": -12.75,
+    "net_r": -59.397052665311016,
+    "expectancy_r": -0.6673826142169778,
+    "profit_factor": 0.473361238821719,
+    "max_drawdown_r": 63.12292847806033,
+    "largest_single_trade_r": 3.7258758127493135,
+    "largest_trade_pct_of_total_abs_net_r": 0.022421623728324153,
+    "cost_r_per_trade_applied": 0.5241241872506867
+  },
+  "note": "cost_r_per_trade above uses the MEAN of (spread_price / each trade's own risk distance) across the sample, applied uniformly for compute_metrics' flat-cost signature; per-trade net values are also computed (net_base/net_stress lists) but the summary metrics use the mean-cost approximation, both reported for transparency.",
+  "per_trade_net_base_r_mean": -0.40532052059163526,
+  "per_trade_net_stress_r_mean": -0.6673826142169786
+}

@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_SESSION_SWEEP_CONTINUATION_V1 — HYP_002_SETUP_SELECTIVITY Validation (2026-09-15)
 
 ## Summary

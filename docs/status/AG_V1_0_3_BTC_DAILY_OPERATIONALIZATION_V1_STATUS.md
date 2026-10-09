@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # AG V1.0.3 BTC Daily Operationalization V1 — Status (2026-09-05)
 
 ## Result

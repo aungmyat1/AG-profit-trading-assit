@@ -1,0 +1,14 @@
+{
+  "n": 176,
+  "wins": 37,
+  "losses": 139,
+  "win_rate": 0.21022727272727273,
+  "gross_r": 7.9491630644987765,
+  "net_r": 7.9491630644987765,
+  "expectancy_r": 0.04516569923010669,
+  "profit_factor": 1.0577692057557178,
+  "max_drawdown_r": 26.22482466154044,
+  "largest_single_trade_r": 10.0,
+  "largest_trade_pct_of_total_abs_net_r": 0.035316554495383484,
+  "cost_r_per_trade_applied": 0.0
+}

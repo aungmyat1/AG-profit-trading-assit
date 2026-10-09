@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # External Candidate Validation Layer — Status
 
 Recorded: 2026-09-12

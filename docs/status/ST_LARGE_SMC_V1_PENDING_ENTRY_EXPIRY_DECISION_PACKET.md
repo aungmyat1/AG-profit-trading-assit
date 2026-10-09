@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # ST_LARGE_SMC_V1 — Post-READY Pending-Entry Expiry: Decision Packet
 
 Status: **UNSIGNED — OWNER DECISION REQUIRED**. Date: 2026-09-02.

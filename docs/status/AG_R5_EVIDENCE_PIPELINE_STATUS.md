@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # R5 — Trustworthy Evidence Pipeline Status
 
 Recorded: 2026-09-11

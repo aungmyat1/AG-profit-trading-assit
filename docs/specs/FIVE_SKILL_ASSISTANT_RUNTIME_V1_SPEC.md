@@ -1,3 +1,9 @@
+---
+class: design
+state: DESIGN
+owner_reviewed: null
+review_by: 2027-01-06
+---
 # FIVE_SKILL_ASSISTANT_RUNTIME_V1 Spec — 2026-08-28
 
 Package: `assistant/` (new modules: `analysis_models.py`, `five_skill_runtime.py`,

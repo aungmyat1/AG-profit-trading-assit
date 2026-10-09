@@ -1,3 +1,9 @@
+---
+class: evidence
+state: DESIGN
+owner_reviewed: null
+review_by: null
+---
 # WP0 — Baseline Reconciliation Status
 
 Program: `AG_CANONICAL_SCANNER_PROPOSAL_PIPELINE_V1`
