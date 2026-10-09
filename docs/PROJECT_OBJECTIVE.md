@@ -12,6 +12,11 @@ review_by: 2026-11-07
 **Product phase:** PRE-EDGE  
 **Owner ratification:** RATIFIED 2026-10-09 by the owner — register entry `OBJ-RATIFY-2026-10-09` in [`docs/governance/OWNER_DECISION_REGISTER.md`](governance/OWNER_DECISION_REGISTER.md). Ratification is not execution authorization; demo and live execution stay disabled.
 
+
+## Proposed successor objective — AGP-C6 (not yet ratified)
+
+Owner-requested on 2026-10-10: qualify three distinct strategy lanes (FX/gold Asian Sweep 1.1.2; VT CFD Crypto Sweep Retest; six-instrument Large-SMC 1.1.0), then permit automatic **DEMO-only** ticket execution after per-strategy L1–L6 verification, broker symbol mapping, real-host acceptance, at least 10 clean shadow cycles and separately recorded standing owner demo authorization. Large-SMC without verified entry/stop/target remains ALERT_ONLY. All orders route through the canonical execution authority and require send-time DEMO, freshness, risk, cost, duplicate and broker checks. Every attempt and result is reported to Telegram; owner may securely edit/close/cancel and halt new orders. Owner caps and notification-failure policy remain PENDING_OWNER; unset limits block execution. This proposed successor does **not** supersede the currently ratified owner-confirm-per-entry requirement or authorize execution until separately approved and merged. Full proposal: [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md).
+
 ## Objective
 
 Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
