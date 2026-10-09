@@ -48,6 +48,13 @@ _ENGINE_FILES = ("__init__.py", "engine.py", "loader.py", "models.py", "session/
 ADAPTERS: Dict[str, Tuple[str, Tuple[str, ...]]] = {
     "ST_ASIAN_SWEEP_5R_V1": ("strategies/ST_ASIAN_SWEEP_5R_V1.yaml",
                              tuple(f"src/strategy_engine/{f}" for f in _ENGINE_FILES)),
+    "ST_CRYPTO_CFD_SWEEP_RETEST_V1": (
+        "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml",
+        ("src/crypto_cfd_contract/contract.py", "src/crypto_cfd_contract/rules.py",
+         "src/v1_tickets/crypto_cfd.py", "src/v1_tickets/crypto_cfd_policy.py",
+         "config/v1_tickets/crypto_cfd_ticket_policy.yaml", "src/v1_tickets/manual_ticket.py",
+         "src/strategy_engine/sweep_retest/sweep.py", "src/strategy_engine/sweep_retest/mss.py",
+         "src/strategy_engine/sweep_retest/retest.py", "src/strategy_engine/sweep_retest/targets.py")),
 }
 
 
