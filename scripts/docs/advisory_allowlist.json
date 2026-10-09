@@ -859,27 +859,7 @@
         "objective"
       ],
       "reason": "AG V1 Goal 2 (2026-09-30) note recording that 1.1.0 was registered alongside an unchanged 1.0.7. The substantive claim matches machine source and is the O3 binding; the dated framing is historical.",
-      "carve_outs": [
-        {
-          "reason": "C12/C13: instrument list is BTCUSDT/ETHUSDT (perp identity) while owner objective ISSUE #47 names BTCUSD/ETHUSD CFDs; and the watch is universe-complete but not gate-complete for USDJPY/XAUUSD.",
-          "severity": "critical_contradiction",
-          "ref": "C12",
-          "origin": "carve_outs/18/0",
-          "file": "strategies/registry.yaml",
-          "labels": [
-            "LOGIC_VERIFIED",
-            "EDGE_VERIFIED",
-            "DEMO_AUTHORIZED",
-            "LIVE_AUTHORIZED"
-          ],
-          "anchors": [
-            {
-              "anchor": "only, status SHADOW_ALERTS_ONLY, instruments EURUSD GBPUSD USDJPY XAUUSD BTCUSDT",
-              "end_anchor": "ETHUSDT, proposal_generation_authorized=false, alerts ARCHIVE_ONLY). No demo/live"
-            }
-          ]
-        }
-      ],
+      "carve_outs": [],
       "severity": "info",
       "origin": "allowlisted_ranges/18",
       "labels": [
@@ -2478,24 +2458,6 @@
         {
           "anchor": "# swaps); version 2 is preserved unchanged. Engine: ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0",
           "end_anchor": "symbols: {BTCUSDT: BTCUSD, ETHUSDT: ETHUSD}   # canonical -> exact broker name (host-captured metadata)"
-        }
-      ]
-    },
-    {
-      "file": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
-      "ref": "C13",
-      "reason": "USDJPY/XAUUSD point null FIXTURE_ONLY while host-captured values already exist in config/symbol_metadata/host_captured/.",
-      "origin": "never_suppress/26",
-      "labels": [
-        "LOGIC_VERIFIED",
-        "EDGE_VERIFIED",
-        "DEMO_AUTHORIZED",
-        "LIVE_AUTHORIZED"
-      ],
-      "anchors": [
-        {
-          "anchor": "USDJPY: {point: null, status: FIXTURE_ONLY}   # host must capture MT5 symbol_info()",
-          "end_anchor": "XAUUSD: {point: null, status: FIXTURE_ONLY}"
         }
       ]
     },

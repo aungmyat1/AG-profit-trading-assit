@@ -34,6 +34,10 @@ is the separate truthful-signal-time + funnel-fields patch for `fx.py`'s
 first-trade-bar substitution. Neither record changes strategy admission or broker
 execution authority.
 
+[AGP-C1-LSMC](status/AGP_C1_LSMC_V110_LOGIC_VERIFICATION_2026-10-09.md) records
+ST_LARGE_SMC_V1@1.1.0's move to VT-only symbols with host-captured points and its L1–L6
+LOGIC_VERIFIED report (contract + engine sha256). Logic only; no edge or execution authority.
+
 [AGP Host Ticket Delivery R1 (FAST)](status/AGP_HOST_TICKET_DELIVERY_R1_FAST_2026-10-08.md)
 records the scheduled canonical FX path from read-only MT5 Demo candles through durable
 TICKET_STORE_V1 records to the delivery/session journals, its offline test evidence, and the
