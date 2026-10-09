@@ -66,6 +66,14 @@ def test_evidence_is_demo_read_only(evidence):
 def test_prior_c1_capture_derives_the_same_names():
     with open(C1_EVIDENCE, encoding="utf-8") as f:
         c1 = json.load(f)["symbols"]
+    # The C1 capture predates trade_calc_mode, so it cannot pin a complete mapping on its own ...
+    derived = cbm.derive_map(c1)
+    assert {c: e.get("reason") for c, e in derived.items()} == {
+        c: f"{cbm.REASON_INCOMPLETE}: trade_calc_mode" for c in EXPECTED}
+    # ... but its candidate selection agrees with the symmap capture once that field is supplied.
+    for rec in c1.values():
+        if rec is not None:
+            rec.setdefault("trade_calc_mode", 0)
     derived = cbm.derive_map(c1)
     assert {c: e.get("broker_symbol") for c, e in derived.items()} == EXPECTED
 
@@ -350,6 +358,9 @@ def test_symbol_lookup_classification(info_name, error, inventory, expected):
 
 def test_package_result_codes_match_installed_package():
     mt5 = pytest.importorskip("MetaTrader5")  # import only; no terminal contact
+    mod_path = os.path.normcase(os.path.abspath(mt5.__file__))
+    if mod_path.startswith(os.path.normcase(ROOT) + os.sep) and "site-packages" not in mod_path:
+        pytest.skip("repo MetaTrader5 stub, not the installed package")
     smoke, _ = _load_smoke()
     assert (smoke.RES_S_OK, smoke.RES_E_NOT_FOUND, smoke.RES_E_INTERNAL_FAIL_TIMEOUT) == (
         mt5.RES_S_OK, mt5.RES_E_NOT_FOUND, mt5.RES_E_INTERNAL_FAIL_TIMEOUT)
