@@ -26,6 +26,7 @@ import argparse
 import ctypes
 import hashlib
 import os
+import re
 import sys
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -230,6 +231,13 @@ def sha256_file(path: str) -> str:
     return h.hexdigest()
 
 
+def redact_host_path(raw: str | None) -> str:
+    """AGENTS.md rule 4: record host paths as <HOST_SCRATCHPAD>/<file name> at capture time, never raw."""
+    if not raw:
+        return "default"
+    return "<HOST_SCRATCHPAD>/" + re.split(r"[\\/]", raw.rstrip("\\/"))[-1]
+
+
 def write_note(path: str, args, out: str, digest: str, results: list[dict], captured: datetime,
                peak_mb: float | None) -> None:
     lines = [
@@ -237,7 +245,7 @@ def write_note(path: str, args, out: str, digest: str, results: list[dict], capt
         "",
         f"- sha256: `{digest}`",
         f"- capture date (UTC): {captured.strftime('%Y-%m-%d %H:%M:%SZ')}",
-        f"- terminal/server: {args.server_name} (terminal `{args.terminal_path or 'default'}`)",
+        f"- terminal/server: {args.server_name} (terminal `{redact_host_path(args.terminal_path)}`)",
         f"- symbol: {args.symbol}; timeframe M15; window 00:00-15:45 UTC per day",
         f"- day set: {len(results)} contiguous weekdays ending {results[-1]['date']}, "
         "fixed before capture; dropped days are not replaced",

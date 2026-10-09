@@ -93,3 +93,13 @@ def test_day_set_is_fixed_contiguous_weekdays():
     assert days[0] == date(2026, 9, 28) and days[-1] == date(2026, 10, 9) and len(days) == 10
     assert m.last_completed_weekday(datetime(2026, 10, 10, 12, tzinfo=timezone.utc)) == date(2026, 10, 9)
     assert not re.search(r"\d", m.HEADER)
+
+
+def test_terminal_path_is_redacted_in_provenance():
+    mod = _load()
+    assert mod.redact_host_path(r"C:\\Users\\someone\\AppData\\Roaming\\MetaTrader 5\\terminal64.exe") == \
+        "<HOST_SCRATCHPAD>/terminal64.exe"
+    assert mod.redact_host_path("/home/someone/mt5/terminal64.exe") == "<HOST_SCRATCHPAD>/terminal64.exe"
+    assert mod.redact_host_path(None) == "default"
+    note = (SCRIPT.parents[1] / "tests/fixtures/manual_ticket/GBPUSD_M15_recorded.PROVENANCE.md").read_text()
+    assert "Users" not in note and ":\\" not in note

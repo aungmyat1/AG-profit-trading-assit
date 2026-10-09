@@ -4,7 +4,7 @@
   - computed over the committed git blob (LF line endings): `git show HEAD:tests/fixtures/manual_ticket/GBPUSD_M15_recorded.csv | sha256sum`.
     `.gitattributes` marks this file `-text`, so no checkout (including Windows `core.autocrlf`) converts its line endings.
 - capture date (UTC): 2026-10-09 21:04:48Z
-- terminal/server: VTMarkets-Demo, server name read from the terminal journal log (logs/20261010.log; the capture's allowed MT5 calls cannot read it); terminal build 6063 (terminal `C:\Users\aungp\AppData\Roaming\MetaTrader 5\terminal64.exe`)
+- terminal/server: VTMarkets-Demo, server name read from the terminal journal log (logs/20261010.log; the capture's allowed MT5 calls cannot read it); terminal build 6063 (terminal `<HOST_SCRATCHPAD>/terminal64.exe`)
 - symbol: GBPUSD; timeframe M15; window 00:00-15:45 UTC per day
 - day set: 10 contiguous weekdays ending 2026-10-09, fixed before capture; dropped days are not replaced
 - offset validity: the measured +3h applies only to captures before 2026-10-25. Any later capture must
