@@ -1,0 +1,12 @@
+# AGP-C12-CRY: ticket-only owner policy (2026-10-09, Aung).
+# Not a strategy-contract amendment; ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.0.0
+# and frozen research candidate C001 retain their original identities.
+strategy_id: ST_CRYPTO_CFD_SWEEP_RETEST_V1
+strategy_version: 1.0.0
+# D4: spread is expressed as percent of the proposed entry-to-stop distance.
+spread_ok_pct: 10
+spread_block_pct: 20  # exactly 20 is WARN; only >20 is BLOCKED
+# D2: risk and cost gates (R = proposed entry-to-stop risk).
+risk_pct: 0.5
+cost_warn_R: 0.10
+cost_block_R: 0.25

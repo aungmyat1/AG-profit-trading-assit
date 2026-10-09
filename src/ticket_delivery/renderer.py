@@ -73,6 +73,7 @@ def payload_hash(payload: Dict[str, Any]) -> str:
 def render_informational_ticket(
     *, logical_ticket_id: str, cycle: str, trading_date: str, decision_status: str,
     proposal: Dict[str, Any], venue: str = "MT5", freshness_status: str = "UNKNOWN",
+    warnings: tuple[str, ...] | list[str] = (),
 ) -> RenderResult:
     """`proposal` is the EXISTING render_entry_ticket()-shaped dict (or an equivalent
     subset) -- read verbatim, never recomputed. `decision_status` gates rendering:
@@ -108,6 +109,7 @@ def render_informational_ticket(
         "risk_percent": _get_path(proposal, ("risk", "risk_percent")),
         "normalized_volume": _get_path(proposal, ("risk", "normalized_volume")),
         "reason_codes": list(_get_path(proposal, ("evidence", "reason_codes")) or []),
+        **({"warnings": list(warnings)} if warnings else {}),
         "created_at": _get_path(proposal, ("timing", "created_at")),
         "expires_at": _get_path(proposal, ("timing", "expires_at")),
         "venue": venue,
@@ -131,6 +133,7 @@ def format_message_text(payload: Dict[str, Any]) -> str:
         + (f"   TP2: {payload['tp2_runner']}" if payload.get("tp2_runner") is not None else ""),
         f"Risk: {payload['risk_percent']}%   Volume: {payload['normalized_volume']}",
         f"Reason: {', '.join(payload['reason_codes']) if payload['reason_codes'] else 'N/A'}",
+        *((f"Warnings: {', '.join(payload['warnings'])}",) if payload.get("warnings") else ()),
         f"Created: {payload['created_at']}   Expires: {payload['expires_at']}",
         f"Venue: {payload['venue']}   Freshness: {payload['freshness_status']}",
         "", f"Ticket: {payload['logical_ticket_id']}",
