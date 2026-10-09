@@ -10,3 +10,4 @@
 src/large_smc_core/c10_stop_policy.py text eol=lf
 src/large_smc_core/target_model.py text eol=lf
 src/large_smc_core/decision.py text eol=lf
+tests/fixtures/manual_ticket/GBPUSD_M15_recorded.csv -text
