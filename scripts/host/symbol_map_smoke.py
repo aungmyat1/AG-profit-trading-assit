@@ -75,6 +75,12 @@ def capture_symbols(mt5) -> dict:
         for name in candidate_names(canonical):
             info = call_with_timeout(mt5.symbol_info, name)
             if info is None:
+                error = call_with_timeout(mt5.last_error)
+                # MT5 error 4301 identifies an unknown symbol; ambiguous errors must not
+                # silently become an UNMAPPED trading decision.
+                code = error[0] if isinstance(error, (tuple, list)) and error else None
+                if code not in (4301,):
+                    raise RuntimeError(f"symbol_info({name!r}) failed or ambiguous: {error!r}")
                 out[name] = None
                 continue
             rec = {f: getattr(info, f, None) for f in INFO_FIELDS}
