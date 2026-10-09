@@ -201,7 +201,7 @@
   "connection": {
    "terminal_connected": true,
    "account_attached": true,
-   "terminal_path": "C:\\Users\\aungp\\AppData\\Roaming\\MetaTrader 5"
+   "terminal_path": "<USER_APPDATA>\\MetaTrader 5"
   }
  },
  "broker_history_error": null,
