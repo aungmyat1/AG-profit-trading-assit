@@ -34,7 +34,6 @@ if "MetaTrader5" not in sys.modules:
     if _spec is not None and _spec.loader is not None:
         _spec.loader.exec_module(importlib.util.module_from_spec(_spec))
 
-import yaml  # noqa: E402
 
 from strategy_engine import load_strategy  # noqa: E402
 from strategy_engine.session import Candle  # noqa: E402
@@ -52,7 +51,19 @@ STRATEGY_ID, VERSION = "ST_ASIAN_SWEEP_5R_V1", "1.1.2"
 CANDIDATE = "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml"
 FROZEN = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
 FROZEN_CONTRACT_HASH = "a1f331a23dd4494422aa9edde0f4a62985486f173561ca93e8c234d41730f550"  # LOGIC_VERIFICATION_REPORT.json
-POLICY = "config/v1_tickets/asw_v112_candidate_ticket_policy.yaml"
+OWNER_CONFIG = "config/owner_ticket.yaml"       # single D2 carrier (OD1009-D2), read via manual_ticket.load_owner_config
+# Verified instrument / branch coverage of this report (scoped truthfully; nothing is inferred).
+COVERAGE = {
+    "instruments": {
+        "EURUSD": "VERIFIED_RECORDED_FIXTURE",
+        "GBPUSD": "NOT_EVIDENCED: no usable recorded GBPUSD M15 sessions on main (SSC_FRESH_DEV_GEN_002 package is "
+                  "QUARANTINED, +3h misaligned; ticket_outcome_m1 is 5 synthetic bars); no external data fetched",
+        "USDJPY": "PENDING_AGP-C2-SYMMAP",
+        "XAUUSD": "PENDING_AGP-C2-SYMMAP",
+    },
+    "branches": {"SWEEP": "VERIFIED_RECORDED_FIXTURE", "TREND": "VERIFIED_RECORDED_FIXTURE (fails closed)",
+                 "RANGE_REJECTION": "UNIT_ONLY (no recorded day yields Entry 3)"},
+}
 FIXTURE = "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv"
 L4_FAILURES = "tests/fixtures/asian_sweep_v1_1_2/l4_recorded_failures.json"
 DAYS = ("2026-06-15", "2026-06-16", "2026-06-17", "2026-06-23", "2026-07-17")
@@ -124,16 +135,17 @@ def ticket_gates(strategy, cycle, day, session, post, now, w, t, spread, warn_r)
 
 def manual_l6(cycle, day, session, post, now) -> Optional[Dict[str, Any]]:
     """L6 exactly as the owner ticket computes it (logic_gate.l6_freshness), candidate replayed test-locally."""
-    from v1_tickets.manual_ticket import build_manual_ticket
+    from v1_tickets.manual_ticket import build_manual_ticket, load_owner_config
     saved = fx.STRATEGY_PATH, fx.build_fx_ticket
     fx.STRATEGY_PATH, fx.build_fx_ticket = CANDIDATE, functools.partial(saved[1], strategy_path=CANDIDATE)
     try:
         t = build_manual_ticket("EURUSD", cycle, day, session, CYCLES[cycle][1], post, now=now, data_close=now,
-                                spread=TEST_SPREAD, owner={"risk_pct": None, "cost_warn_R": None},
+                                spread=TEST_SPREAD, owner=load_owner_config(ROOT),
                                 data_source="FIXTURE")
     finally:
         fx.STRATEGY_PATH, fx.build_fx_ticket = saved
-    return {"state": t["state"], "edge_verified": t["invariants"]["edge_verified"],
+    return {"state": t["state"], "primary_block_reason": t.get("primary_block_reason"),
+            "edge_verified": t["invariants"]["edge_verified"],
             "L6": (t.get("logic_gate") or {}).get("L6")}
 
 
@@ -212,7 +224,8 @@ def l4_geometry(strategy, rng: random.Random) -> Dict[str, Any]:
 
 def build_report(generated_at: str) -> Dict[str, Any]:
     strategy = load_strategy(CANDIDATE)
-    policy = yaml.safe_load((ROOT / POLICY).read_text())
+    from v1_tickets.manual_ticket import load_owner_config
+    owner = load_owner_config(ROOT)
     registry = load_registry()[STRATEGY_ID]
     ident = logic_identity(STRATEGY_ID, VERSION)
     candles = load_candles()
@@ -223,7 +236,7 @@ def build_report(generated_at: str) -> Dict[str, Any]:
             day = dt.date.fromisoformat(ds)
             w, now, session, post = split(candles, cycle, day)
             t = ticket(cycle, day, session, post, now)
-            gates = ticket_gates(strategy, cycle, day, session, post, now, w, t, TEST_SPREAD, policy["cost_warn_R"])
+            gates = ticket_gates(strategy, cycle, day, session, post, now, w, t, TEST_SPREAD, owner["cost_warn_R"])
             l2_fail = sorted({c["id"] for c in gates["L2"]["checks"] if c["verdict"] in (FAIL, NOT_EVALUABLE)}) if gates else []
             c3 = causality(cycle, day, session, post, now, rng)
             m6 = manual_l6(cycle, day, session, post, now)
@@ -238,7 +251,8 @@ def build_report(generated_at: str) -> Dict[str, Any]:
                 "ticket_gate_blocking_failures": blocking_failures(gates) if gates else None,
                 "l2_fail_ids": l2_fail, "l2_undeclared": sorted(set(l2_fail) - DECLARED_FAIL_CLOSED),
                 "geometry": geometry_ok(t), "causality": c3,
-                "owner_ticket_state": m6["state"], "edge_verified": m6["edge_verified"],
+                "owner_ticket_state": m6["state"], "owner_ticket_primary_block_reason": m6["primary_block_reason"],
+                "edge_verified": m6["edge_verified"],
                 "owner_ticket_L6": m6["L6"]["status"] if m6["L6"] else None,
             })
 
@@ -278,19 +292,18 @@ def build_report(generated_at: str) -> Dict[str, Any]:
              and all(c["geometry"]["positive_stop"] and c["geometry"]["target_order"] for c in admitted)
              and synth["admitted_zero_stop"] == 0 and synth["admitted_tp_inversion"] == 0
              and synth["undeclared_l2_failures"] == 0)
-    # L5 risk and friction (candidate policy only; absent inputs are WARN with a reason, never 0).
-    l5_warn = []
-    if policy.get("commission_R") is None:
-        l5_warn.append("COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0")
+    # L5 risk and friction from the single D2 carrier; absent inputs are WARN with a reason, never 0.
+    l5_warn = [
+        "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0"]
     l5_warn.append("SPREAD_NOT_RECORDED: the recorded fixture has no bid/ask; cost_in_R not evaluable on recorded "
                    "data (L2 closure uses a 0.2-pip test input only)")
-    pending = sorted(s for s, v in policy["symbol_metadata"].items() if v != "EVIDENCED")
+    pending = sorted(s for s, v in COVERAGE["instruments"].items() if v == "PENDING_AGP-C2-SYMMAP")
     l5_warn.append(f"SYMBOL_METADATA_PENDING: {', '.join(pending)} -> PENDING_AGP-C2-SYMMAP (not invented)")
     l5_block = []
-    if policy.get("risk_pct") != 0.5 or policy.get("cost_warn_R") != 0.10 or policy.get("cost_block_R") != 0.25:
-        l5_block.append("CANDIDATE_POLICY_NOT_D2")
-    if set(EVIDENCED_PIP) != {s for s, v in policy["symbol_metadata"].items() if v == "EVIDENCED"}:
-        l5_block.append("SYMBOL_EVIDENCE_MISMATCH")
+    if owner["risk_status"] != "SET":
+        l5_block.append("RISK_CONFIG_MISSING: owner_ticket risk_pct/cost_warn_R/cost_block_R incomplete")
+    if not {"EURUSD"} <= set(EVIDENCED_PIP):
+        l5_block.append("SYMBOL_EVIDENCE_MISSING: EURUSD pip size not evidenced")
     # L6 per logic_gate.l6_freshness on the owner ticket path.
     l6_status = [m["L6"]["status"] for m in l6s if m["L6"]]
     l6_ok = bool(l6_status) and all(s == PASS for s in l6_status)
@@ -309,8 +322,8 @@ def build_report(generated_at: str) -> Dict[str, Any]:
                               "fix": "no engine change (shared with frozen 1.1.1); 1.1.2 declared fail-closed rules "
                                      "R.stop_loss (risk_distance > 0) and R.target_order block every reproduced case"},
         "L5_risk_and_friction": {"verdict": "BLOCK" if l5_block else (WARN if l5_warn else PASS),
-                                 "policy": POLICY, "risk_pct": policy["risk_pct"], "cost_warn_R": policy["cost_warn_R"],
-                                 "cost_block_R": policy["cost_block_R"], "warn_reasons": l5_warn,
+                                 "d2_source": OWNER_CONFIG, "risk_pct": owner["risk_pct"], "cost_warn_R": owner["cost_warn_R"],
+                                 "cost_block_R": owner["cost_block_R"], "warn_reasons": l5_warn,
                                  "block_reasons": l5_block},
         "L6_freshness_fields": {"verdict": PASS if l6_ok else FAIL,
                                 "evidence": f"owner-ticket L6 (logic_gate.l6_freshness) on {len(l6_status)} signal cases: "
@@ -326,7 +339,7 @@ def build_report(generated_at: str) -> Dict[str, Any]:
         "logic_identity": ident["digest"], "verification_code_sha": code_sha(),
         "dataset_identity": {"path": FIXTURE, "sha256": sha256_file(FIXTURE),
                              "classification": "RECORDED_DEVELOPMENT_FIXTURE"},
-        "cycles": list(CYCLES), "checks": checks, "cases": cases, "verdict": verdict,
+        "cycles": list(CYCLES), "coverage": COVERAGE, "checks": checks, "cases": cases, "verdict": verdict,
         "edge_status": "NOT_VERIFIED", "edge_verified": False, "economic_status": "NOT_EVALUATED",
         "admission": "NOT_ADMITTED (runtime loads v1.1.1; owner decision required)",
         "ready_authority": "OFF (D6; config/v1_tickets/ready_authority.yaml unchanged)",

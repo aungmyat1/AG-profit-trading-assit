@@ -22,7 +22,7 @@ from v1_tickets.logic_gate import (
     FAIL, NOT_APPLICABLE, NOT_EVALUABLE, PASS, WARN, blocking_failures, l1_determinism, l2_rule_conformance,
     l3_geometry, l4_data_session, l5_cost, l6_freshness,
 )
-from v1_tickets.manual_ticket import build_manual_ticket
+from v1_tickets.manual_ticket import build_manual_ticket, load_owner_config
 
 UTC = dt.timezone.utc
 CANDIDATE = "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml"
@@ -192,7 +192,7 @@ def test_every_owner_ticket_path_carries_edge_verified_false(monkeypatch, cycle,
     _, bars = CYCLES[cycle]
     d, _, now, session, post = windows(cycle, day)
     t = build_manual_ticket("EURUSD", cycle, d, session, bars, post, now=now, data_close=now, spread=TIGHT,
-                            owner={"risk_pct": None, "cost_warn_R": None}, data_source="FIXTURE")
+                            owner=load_owner_config(), data_source="FIXTURE")
     assert t["strategy_version"] == "1.1.2"
     assert t["invariants"]["edge_verified"] is False and t["invariants"]["orders_sent_by_system"] == 0
     assert t["state"] != "TICKET_READY" and t["owner_accept_allowed"] is False
@@ -243,17 +243,27 @@ def test_report_l4_recorded_zero_stop_and_tp_order_failures_reproduce_and_are_bl
     assert syn["admitted_by_gates"] > 0 and l4["verdict"] == PASS
 
 
-def test_report_l5_candidate_policy_d2_and_absent_costs_warn_never_zero(report):
+def test_report_l5_reads_the_single_d2_carrier_and_absent_costs_warn_never_zero(report):
+    root = Path(__file__).resolve().parents[1]
     l5 = report["checks"]["L5_risk_and_friction"]
+    assert l5["d2_source"] == "config/owner_ticket.yaml"                       # OD1009-D2, one carrier only
+    assert not (root / "config/v1_tickets/asw_v112_candidate_ticket_policy.yaml").exists()
     assert (l5["risk_pct"], l5["cost_warn_R"], l5["cost_block_R"]) == (0.5, 0.10, 0.25)
     assert l5["verdict"] == WARN and l5["block_reasons"] == []
     reasons = " ".join(l5["warn_reasons"])
     assert "COMMISSION_NOT_AVAILABLE" in reasons and "SPREAD_NOT_RECORDED" in reasons
     assert "USDJPY" in reasons and "XAUUSD" in reasons and "PENDING_AGP-C2-SYMMAP" in reasons
-    # FX runtime owner config untouched (no default, no fallback).
-    import yaml as _yaml
-    owner = _yaml.safe_load((Path(__file__).resolve().parents[1] / "config/owner_ticket.yaml").read_text())
-    assert owner["owner_ticket"] == {"risk_pct": None, "cost_warn_R": None}
+    assert "AUDUSD" not in reasons
+
+
+def test_report_scopes_instrument_and_branch_coverage_truthfully(report):
+    cov = report["coverage"]
+    assert cov["instruments"]["EURUSD"] == "VERIFIED_RECORDED_FIXTURE"
+    assert cov["instruments"]["GBPUSD"].startswith("NOT_EVIDENCED")
+    assert (cov["instruments"]["USDJPY"], cov["instruments"]["XAUUSD"]) == ("PENDING_AGP-C2-SYMMAP",) * 2
+    assert "AUDUSD" not in cov["instruments"]
+    assert cov["branches"]["RANGE_REJECTION"].startswith("UNIT_ONLY")
+    assert {c["case_id"].split(":")[1] for c in report["cases"]} == {"EURUSD"}
 
 
 def test_report_l6_and_overall_verdict_without_edge(report):

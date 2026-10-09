@@ -28,6 +28,7 @@
       "l2_fail_ids": [],
       "l2_undeclared": [],
       "owner_ticket_L6": null,
+      "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
       "owner_ticket_state": "NO_SETUP",
       "session_date": "2026-06-15",
       "setup": "NONE",
@@ -66,6 +67,7 @@
       ],
       "l2_undeclared": [],
       "owner_ticket_L6": "PASS",
+      "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
       "owner_ticket_state": "TICKET_BLOCKED",
       "session_date": "2026-06-16",
       "setup": "TREND",
@@ -112,6 +114,7 @@
       ],
       "l2_undeclared": [],
       "owner_ticket_L6": "PASS",
+      "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
       "owner_ticket_state": "TICKET_BLOCKED",
       "session_date": "2026-06-17",
       "setup": "SWEEP",
@@ -155,6 +158,7 @@
       "l2_fail_ids": [],
       "l2_undeclared": [],
       "owner_ticket_L6": "PASS",
+      "owner_ticket_primary_block_reason": "ACCOUNT_BALANCE_UNAVAILABLE",
       "owner_ticket_state": "TICKET_BLOCKED",
       "session_date": "2026-06-23",
       "setup": "SWEEP",
@@ -201,6 +205,7 @@
       ],
       "l2_undeclared": [],
       "owner_ticket_L6": "PASS",
+      "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
       "owner_ticket_state": "TICKET_BLOCKED",
       "session_date": "2026-07-17",
       "setup": "SWEEP",
@@ -244,6 +249,7 @@
       "l2_fail_ids": [],
       "l2_undeclared": [],
       "owner_ticket_L6": "PASS",
+      "owner_ticket_primary_block_reason": "ACCOUNT_BALANCE_UNAVAILABLE",
       "owner_ticket_state": "TICKET_BLOCKED",
       "session_date": "2026-06-15",
       "setup": "SWEEP",
@@ -289,6 +295,7 @@
       ],
       "l2_undeclared": [],
       "owner_ticket_L6": "PASS",
+      "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
       "owner_ticket_state": "TICKET_BLOCKED",
       "session_date": "2026-06-16",
       "setup": "TREND",
@@ -336,6 +343,7 @@
       ],
       "l2_undeclared": [],
       "owner_ticket_L6": "PASS",
+      "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
       "owner_ticket_state": "TICKET_BLOCKED",
       "session_date": "2026-06-17",
       "setup": "SWEEP",
@@ -383,6 +391,7 @@
       ],
       "l2_undeclared": [],
       "owner_ticket_L6": "PASS",
+      "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
       "owner_ticket_state": "TICKET_BLOCKED",
       "session_date": "2026-06-23",
       "setup": "SWEEP",
@@ -429,6 +438,7 @@
       ],
       "l2_undeclared": [],
       "owner_ticket_L6": "PASS",
+      "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
       "owner_ticket_state": "TICKET_BLOCKED",
       "session_date": "2026-07-17",
       "setup": "SWEEP",
@@ -560,13 +570,13 @@
       "block_reasons": [],
       "cost_block_R": 0.25,
       "cost_warn_R": 0.1,
-      "policy": "config/v1_tickets/asw_v112_candidate_ticket_policy.yaml",
+      "d2_source": "config/owner_ticket.yaml",
       "risk_pct": 0.5,
       "verdict": "WARN",
       "warn_reasons": [
         "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
         "SPREAD_NOT_RECORDED: the recorded fixture has no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
-        "SYMBOL_METADATA_PENDING: AUDUSD, USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+        "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
       ]
     },
     "L6_freshness_fields": {
@@ -576,6 +586,19 @@
   },
   "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
   "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+  "coverage": {
+    "branches": {
+      "RANGE_REJECTION": "UNIT_ONLY (no recorded day yields Entry 3)",
+      "SWEEP": "VERIFIED_RECORDED_FIXTURE",
+      "TREND": "VERIFIED_RECORDED_FIXTURE (fails closed)"
+    },
+    "instruments": {
+      "EURUSD": "VERIFIED_RECORDED_FIXTURE",
+      "GBPUSD": "NOT_EVIDENCED: no usable recorded GBPUSD M15 sessions on main (SSC_FRESH_DEV_GEN_002 package is QUARANTINED, +3h misaligned; ticket_outcome_m1 is 5 synthetic bars); no external data fetched",
+      "USDJPY": "PENDING_AGP-C2-SYMMAP",
+      "XAUUSD": "PENDING_AGP-C2-SYMMAP"
+    }
+  },
   "cycles": [
     "ASIAN_LONDON",
     "LONDON_NEWYORK"
@@ -598,6 +621,6 @@
   "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
   "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
   "verdict": "LOGIC_VERIFIED",
-  "verification_code_sha": "e4b97b6e3287e8dc8fca4963f044498dd41ed229",
+  "verification_code_sha": "982bc4d7b4b5f64ef847eb9ecf610af35dcc47e6",
   "version": "1.1.2"
 }
