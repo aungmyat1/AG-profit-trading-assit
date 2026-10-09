@@ -173,3 +173,49 @@ def test_smoke_proxy_refuses_mutating_calls():
         src = f.read()
     for banned in (".order_send", ".order_check", ".symbol_select", ".positions_", ".orders_"):
         assert banned not in src
+
+
+def test_explicit_partial_mapping_fails_closed():
+    symbol_map = cbm.load_map()
+    for requested in (("EURUSD", "UNKNOWN"), ("EURUSD", "AUDUSD")):
+        with pytest.raises(cbm.SymbolUnmapped) as exc:
+            symbol_map.mapped_symbols(requested)
+        assert exc.value.terminal_status == "BLOCKED"
+        assert exc.value.reason_code == cbm.REASON_UNMAPPED
+
+
+def test_smoke_proxy_checks_allowlist_before_underlying_getattr():
+    smoke, _ = _load_smoke()
+
+    class Probe:
+        def __init__(self):
+            self.accessed = []
+
+        def __getattr__(self, name):
+            self.accessed.append(name)
+            raise AssertionError("unexpected underlying attribute read")
+
+        def symbol_info(self, symbol):
+            return None
+
+    target = Probe()
+    proxy = smoke.ReadOnlyMT5(target)
+    for forbidden in ("order_send", "symbol_select", "account_password", "positions_get"):
+        with pytest.raises(PermissionError):
+            getattr(proxy, forbidden)
+    assert target.accessed == []
+    assert proxy.symbol_info("EURUSD") is None
+
+
+def test_two_snapshots_detect_pinned_metadata_drift(symbols):
+    other = copy.deepcopy(symbols)
+    other["EURUSD-VIP"]["volume_step"] = 0.02
+    smoke, _ = _load_smoke()
+    assert smoke.snapshot_mapping_differences(symbols, other) == ["EURUSD"]
+
+
+def test_two_snapshots_ignore_market_ticks(symbols):
+    other = copy.deepcopy(symbols)
+    other["EURUSD-VIP"]["tick"]["bid"] += 0.0001
+    smoke, _ = _load_smoke()
+    assert smoke.snapshot_mapping_differences(symbols, other) == []
