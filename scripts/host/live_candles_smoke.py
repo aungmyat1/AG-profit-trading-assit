@@ -65,6 +65,7 @@ from host_delivery import telegram_message as tg  # noqa: E402
 from host_delivery import telegram_confirm as tg_confirm  # noqa: E402
 from host_delivery.lsmc_alert_dedup import AlertLedger, DELIVERY_UNCERTAIN, deliver_once  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
+from large_smc_watch.contract import CRYPTO_SYMBOLS as LSMC_CRYPTO_SYMBOLS  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
 from strategy_engine import load_strategy  # noqa: E402
@@ -108,7 +109,7 @@ def fx_symbols() -> List[str]:
 
 
 def classify(symbol: str, m5: list, now: dt.datetime) -> str:
-    if symbol not in ("BTCUSDT", "ETHUSDT") and fx_market_closed(now):
+    if symbol not in ("BTCUSDT", "ETHUSDT", "BTCUSD", "ETHUSD") and fx_market_closed(now):
         return "MARKET_CLOSED"
     if not m5:
         return "NO_DATA"
@@ -471,13 +472,20 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
         lines += _watch_once(tracker, symbol, bars, now, notify, ledger=ledger, journal=journal,
                              display_broker_symbol=broker)
     if crypto_feed is not None:
-        for symbol in ("BTCUSDT", "ETHUSDT"):
+        # LSMC 1.1.0 is VT-only: its crypto symbols are the VT broker names (BTCUSD/ETHUSD). The
+        # shared feed is keyed by the V1 crypto ticket names, so look up the key mapped to each.
+        feed_keys = {b: k for k, b in getattr(crypto_feed, "symbols", {}).items()}
+        for symbol in LSMC_CRYPTO_SYMBOLS:
+            key = feed_keys.get(symbol)
+            if key is None:
+                lines.append(f"LSMC {symbol} DATA_ERROR SYMBOL_NOT_FOUND")
+                continue
             try:
-                b = crypto_feed.fetch_bundle(symbol, [("H1", COUNTS["H1"]), ("M5", COUNTS["M5"])])
+                b = crypto_feed.fetch_bundle(key, [("H1", COUNTS["H1"]), ("M5", COUNTS["M5"])])
             except Exception as exc:  # noqa: BLE001
                 lines.append(f"LSMC {symbol} DATA_ERROR {type(exc).__name__}")
                 continue
-            broker = getattr(crypto_feed, "symbols", {}).get(symbol)
+            broker = symbol
             lines += _watch_once(tracker, symbol, {"D1": [], **b.candles}, now, notify, source=b.source,
                                  window=window, ledger=ledger, journal=journal,
                                  display_broker_symbol=broker)

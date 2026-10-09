@@ -477,13 +477,16 @@ def test_lsmc_weekend_mode_watches_btc_eth_only(tmp_path):
     fetched = []
 
     class Feed:
+        symbols = {"BTCUSDT": "BTCUSD", "ETHUSDT": "ETHUSD"}
+
         def fetch_bundle(self, symbol, req):
             fetched.append(symbol)
             raise RuntimeError("no data in test")
 
     lines = smoke.run_lsmc(lambda s, tf, n: fetched.append(s) or [], dt.datetime(2026, 10, 3, 21, 0, tzinfo=UTC),
                            str(tmp_path), crypto_feed=Feed(), notify=False, fx=False, window="WEEKEND")
-    assert fetched == ["BTCUSDT", "ETHUSDT"] and all(ln.startswith(("LSMC BTCUSDT", "LSMC ETHUSDT")) for ln in lines)
+    # LSMC 1.1.0 is VT-only: it watches BTCUSD/ETHUSD, fetched through the feed keys mapped to them.
+    assert fetched == ["BTCUSDT", "ETHUSDT"] and all(ln.startswith(("LSMC BTCUSD ", "LSMC ETHUSD ")) for ln in lines)
 
 
 def test_lsmc_crypto_uses_mt5_venue_never_public_feed():
@@ -937,7 +940,7 @@ def test_complete_six_instrument_objective_preflight(monkeypatch):
     assert report["objective"] == {
         "fx_majors": ["EURUSD", "GBPUSD", "USDJPY"], "gold": ["XAUUSD"],
         "crypto": ["BTCUSDT", "ETHUSDT"],
-        "watch_universe": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSDT", "ETHUSDT"],
+        "watch_universe": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSD", "ETHUSD"],
         "cycles": ["ASIAN_LONDON", "LONDON_NEWYORK"],
     }
 

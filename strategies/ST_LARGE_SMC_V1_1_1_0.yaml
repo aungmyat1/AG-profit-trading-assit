@@ -16,7 +16,7 @@ demo_authorized: false
 live_authorized: false
 economic_status: NOT_EVALUATED       # D30
 
-instruments: [EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSDT, ETHUSDT]
+instruments: [EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSD, ETHUSD]   # VT Markets MT5 only (AGP-C1-LSMC, 2026-10-09)
 timeframes:                          # D00: keep D1/H1/M5
   D1: TRADING_DAY_CONTEXT
   H1: BIAS_AND_POI
@@ -47,6 +47,7 @@ implementation_choices_flagged:      # not in the owner-stated rules; conservati
   - "H1 bias = direction of the latest close-confirmed H1 break; D1 break direction is reported as context only."
   - "OB origin search: last opposing candle within 3 bars before the displacement (reuses MAX_CANDLES_TO_FVG = 3). FLIP_OB not identified (as in AG_ORDER_BLOCK_V1)."
   - "smc.ob() candidates are not used; AG_ORDER_BLOCK_V1 requirements are applied over the causal fx_discovery primitives, and the zone uses the frozen _classify_family_and_zone."
+  - "Point size comes only from the verified host MT5 symbol_info() capture; missing -> DATA_ERROR SYMBOL_METADATA_MISSING (no repo or caller fallback)."
   - "C10 is evaluated only where a pip is repo-evidenced (EURUSD, GBPUSD); elsewhere stop_reason = C10_PIP_SIZE_NOT_EVIDENCED. SHORT requires live bid/ask (C10-B) and otherwise fails closed."
   - "C11 primary external-liquidity tier needs smartmoneyconcepts structure tiers and is NOT_EVALUATED; the fallback (nearest unswept opposing M5 swing strictly beyond entry) is computed on causal swings."
   - "Stale = no closed M5 bar for more than 15 minutes; FX market closed Fri 17:00 to Sun 17:00 New York."
@@ -55,10 +56,7 @@ implementation_choices_flagged:      # not in the owner-stated rules; conservati
 not_specified:                       # D00-D34 items without an owner-stated option: listed, not invented
   - "Every other D-item of the unpushed RMR-A catalogue. The owner-stated rules above are the full 1.1.0 rule set."
 
-symbol_metadata:
-  EURUSD: {point: 0.00001, source: config/historical_datasets/EURUSD_*_symbol_metadata.yaml}
-  GBPUSD: {point: 0.00001, source: "config/historical_datasets/GBPUSD_H1_symbol_metadata.yaml @ 2b75bbf"}
-  BTCUSDT: {point: 0.1, source: src/strategy_engine/sweep_retest/crypto_symbols.py}
-  ETHUSDT: {point: 0.01, source: src/strategy_engine/sweep_retest/crypto_symbols.py}
-  USDJPY: {point: null, status: FIXTURE_ONLY}   # host must capture MT5 symbol_info()
-  XAUUSD: {point: null, status: FIXTURE_ONLY}
+symbol_metadata:                     # VT Markets MT5 symbol_info() host capture is the ONLY point source
+  source: config/symbol_metadata/host_captured/<SYMBOL>.json   # sha256-verified (host_evidence.symbol_metadata)
+  on_missing: DATA_ERROR             # reason SYMBOL_METADATA_MISSING; no repo constant / caller value fallback
+  symbols: [EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSD, ETHUSD]
