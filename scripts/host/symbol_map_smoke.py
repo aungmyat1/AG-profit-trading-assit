@@ -93,6 +93,15 @@ def _visibility(symbols: dict) -> dict:
     return {n: (r["visible"] if r else None) for n, r in symbols.items()}
 
 
+def snapshot_mapping_differences(first: dict, second: dict) -> list[str]:
+    """Compare only mapping-critical metadata, not fast-moving market prices."""
+    changed = []
+    for canonical in CANONICALS:
+        if derive_map(first, (canonical,))[canonical] != derive_map(second, (canonical,))[canonical]:
+            changed.append(canonical)
+    return changed
+
+
 def run(mode: str) -> int:
     real = import_mt5()
     if real is None:
@@ -115,12 +124,7 @@ def run(mode: str) -> int:
         finally:
             call_with_timeout(mt5.shutdown)
     visibility_unchanged = _visibility(first) == _visibility(second)
-    snapshot_differences = []
-    for canonical in CANONICALS:
-        one = derive_map(first, (canonical,))[canonical]
-        two = derive_map(second, (canonical,))[canonical]
-        if one != two:
-            snapshot_differences.append(canonical)
+    snapshot_differences = snapshot_mapping_differences(first, second)
     if snapshot_differences:
         print(f"BLOCKED: unstable symbol metadata for {snapshot_differences}")
         return 1
