@@ -211,6 +211,27 @@ def test_smoke_proxy_checks_allowlist_before_underlying_getattr():
     assert proxy.symbol_info("EURUSD") is None
 
 
+def test_smoke_proxy_explicitly_allows_demo_constant_only():
+    smoke, _ = _load_smoke()
+
+    class Probe:
+        ACCOUNT_TRADE_MODE_DEMO = 0
+
+        def __init__(self):
+            self.accessed = []
+
+        def __getattr__(self, name):
+            self.accessed.append(name)
+            raise AssertionError("unexpected underlying attribute read")
+
+    target = Probe()
+    proxy = smoke.ReadOnlyMT5(target)
+    assert proxy.ACCOUNT_TRADE_MODE_DEMO == 0
+    with pytest.raises(PermissionError):
+        _ = proxy.account_password
+    assert target.accessed == []
+
+
 def test_two_snapshots_detect_pinned_metadata_drift(symbols):
     other = copy.deepcopy(symbols)
     other["EURUSD-VIP"]["volume_step"] = 0.02

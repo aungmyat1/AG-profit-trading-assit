@@ -22,6 +22,7 @@ from _host_common import REPO_ROOT, call_with_timeout, import_mt5, mt5_access_lo
 from mt5.canonical_broker_map import CANONICALS, DEFAULT_MAP_PATH, candidate_names, derive_map, diff_map, load_map  # noqa: E402
 
 ALLOWED_MT5_CALLS = frozenset({"initialize", "shutdown", "last_error", "account_info", "symbol_info", "symbol_info_tick"})
+ALLOWED_MT5_ATTRIBUTES = frozenset({"__version__", "ACCOUNT_TRADE_MODE_DEMO"})
 INFO_FIELDS = ("visible", "select", "trade_mode", "digits", "point", "trade_contract_size", "volume_min", "volume_step",
                "volume_max", "trade_tick_value", "trade_tick_size", "spread", "spread_float", "swap_mode", "swap_long",
                "swap_short", "swap_rollover3days", "trade_calc_mode", "trade_stops_level", "trade_freeze_level",
@@ -37,10 +38,12 @@ class ReadOnlyMT5:
         self.calls: dict = {}
 
     def __getattr__(self, name):
-        if name not in ALLOWED_MT5_CALLS and name != "__version__":
+        if name not in ALLOWED_MT5_CALLS and name not in ALLOWED_MT5_ATTRIBUTES:
             raise PermissionError(f"MT5 attribute {name!r} is not allowed in this read-only mission")
         attr = getattr(self._mt5, name)
-        if name == "__version__":
+        if name in ALLOWED_MT5_ATTRIBUTES:
+            if callable(attr):
+                raise PermissionError(f"MT5 attribute {name!r} must be noncallable")
             return attr
         if not callable(attr):
             raise PermissionError(f"MT5 operation {name!r} must be callable")
