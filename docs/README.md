@@ -34,6 +34,11 @@ four stale or ambiguous MT5 evidence artifacts and the stale mission label behin
 
 [Crypto V3 window preflight (2026-10-09)](status/AG_V1_CRYPTO_WINDOW_GATE_2026-10-09.md)
 records the pre-lock MT5 gate, DST boundary checks, and measured outside-window run.
+[Host schedule authority and always-on target (SCHED-R1)](status/AGP_HOST_SCHEDULE_R1_2026-10-08.md)
+records the installer as the authoritative schedule declaration source, the four separated schedule
+layers (declared / registered / observed / target), the redaction of host checkout roots, the
+recorded cadence and weekday/weekend drift, and the power-mode-aware heartbeat staleness rule.
+Declaration and capture only: `install_tasks.ps1 -Apply` was not run.
 
 This directory contains design contracts, implementation architecture, setup guidance,
 and dated verification evidence. Read documents according to their authority, not just

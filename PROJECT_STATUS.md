@@ -64,29 +64,130 @@ import json
 from pathlib import Path
 facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 schedule = facts["schedule"]
-cog.outl(f"Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `{schedule['timezone']}`; scheduler `{schedule['scheduler']}`.")
+cog.outl(f"Source: [`scripts/host/install_tasks.ps1`](scripts/host/install_tasks.ps1), captured "
+         f"{schedule.get('captured', 'UNPARSED')}. Live host state: {schedule['live_host_state']}.")
 cog.outl("")
-cog.outl("| Task name | Cadence | Start UTC | End UTC |")
-cog.outl("|---|---|---:|---:|")
-for row in schedule["tasks"]:
-    cog.outl(f"| `{row['name']}` | {row['cadence']} | {row['start']} | {row['end'] or 'open'} |")
+cog.outl("The four layers below are deliberately kept apart: a repository declaration is not a "
+         "registration, a registration is not an observed run, and a target is not a fact.")
+layers = schedule.get("layers", {})
+cog.outl("")
+cog.outl("#### 1. REPO_DECLARED - what `-Apply` would install")
+cog.outl("")
+cog.outl("| Task name | Cadence | Start | Trigger | Time zone |")
+cog.outl("|---|---|---|---|---|")
+for row in layers.get("REPO_DECLARED", {}).get("tasks", []):
+    cog.outl(f"| `{row['name']}` | {row['cadence']['value']} | {row['start']['value']} | "
+             f"{row['trigger']['value']} | {row['time_zone']['value']} |")
+cog.outl("")
+cog.outl("#### 2. REGISTERED - what Task Scheduler actually held on the capture date")
+cog.outl("")
+cog.outl("| Task name | Managed | Status | Registered |")
+cog.outl("|---|---|---|---|")
+for row in layers.get("REGISTERED", {}).get("tasks", []):
+    cog.outl(f"| `{row['name']}` | {row.get('managed', 'UNKNOWN')} | {row.get('status', 'UNKNOWN')} | "
+             f"{row.get('registered') or 'UNKNOWN'} |")
+cog.outl("")
+cog.outl("#### 3. OBSERVED - runtime execution evidence")
+cog.outl("")
+observed = layers.get("OBSERVED", {})
+cog.outl(f"**{observed.get('value', 'UNKNOWN')}** - {observed.get('source', 'UNKNOWN')}. "
+         "Observed cadence and weekday/weekend coverage therefore cannot be stated from this "
+         "repository alone and are not inferred here.")
+cog.outl("")
+cog.outl("#### 4. TARGET - proposed always-on end state (declaration only; `-Apply` not run)")
+cog.outl("")
+cog.outl("| Task name | Target state | Days | Start | Every min |")
+cog.outl("|---|---|---|---|---|")
+for row in layers.get("TARGET", {}).get("tasks", []):
+    target = row.get("target") or {}
+    cog.outl(f"| `{row['name']}` | {target.get('State', 'UNKNOWN')} | {target.get('Days', '-')} | "
+             f"{target.get('Start', '-')} | {target.get('EveryMin', '-')} |")
+cog.outl("")
+cog.outl("#### Declared drift (registered vs target)")
+cog.outl("")
+drift = schedule.get("drift") or []
+if drift:
+    cog.outl("| Task name | Field | Registered | Target |")
+    cog.outl("|---|---|---|---|")
+    for row in drift:
+        cog.outl(f"| `{row['task']}` | {row['field']} | {row['registered']} | {row['target']} |")
+else:
+    cog.outl("No registered-vs-target difference is stated by the declaration.")
 ]]] -->
-Source: [`config/ag_scheduler_v2.yaml`](config/ag_scheduler_v2.yaml), timezone `UTC`; scheduler `AG_DAILY_OPPORTUNITY_SCHEDULER_V2`.
+Source: [`scripts/host/install_tasks.ps1`](scripts/host/install_tasks.ps1), captured 2026-10-08. Live host state: scripts/host/heartbeat.py output (not yet published).
 
-| Task name | Cadence | Start UTC | End UTC |
-|---|---|---:|---:|
-| `PRE_FLIGHT` | daily | 06:25 | 06:30 |
-| `BTC_OBSERVE` | daily | 06:30 | 06:45 |
-| `BTC_FINALIZE` | daily | 06:45 | 06:50 |
-| `PRE_LONDON_REFERENCE` | daily | 06:50 | 06:55 |
-| `PRE_LONDON_READINESS` | daily | 06:55 | 07:00 |
-| `WINDOW_ASIAN_LONDON` | daily | 07:00 | 11:00 |
-| `POST_LONDON` | daily | 11:00 | 11:05 |
-| `STANDBY` | daily | 11:05 | 11:55 |
-| `PRE_NEW_YORK` | daily | 11:55 | 12:00 |
-| `WINDOW_LONDON_NEWYORK` | daily | 12:00 | 15:00 |
-| `POST_NEW_YORK` | daily | 15:00 | 15:10 |
-| `P1_RESEARCH` | daily | 15:10 | open |
+The four layers below are deliberately kept apart: a repository declaration is not a registration, a registration is not an observed run, and a target is not a fact.
+
+#### 1. REPO_DECLARED - what `-Apply` would install
+
+| Task name | Cadence | Start | Trigger | Time zone |
+|---|---|---|---|---|
+| `AG-V1-FX-Cycles` | every 15 minutes, daily for 24 hours | 00:01:00 | Daily trigger with a repeated interval | UNPARSED |
+| `AG-V1-Crypto-Daily` | every 15 minutes, daily for 24 hours | 00:02:30 | Daily trigger with a repeated interval | UNPARSED |
+| `AG-V1-LSMC-Watch` | every 5 minutes, daily for 24 hours | 00:04:15 | Daily trigger with a repeated interval | UNPARSED |
+
+#### 2. REGISTERED - what Task Scheduler actually held on the capture date
+
+| Task name | Managed | Status | Registered |
+|---|---|---|---|
+| `AG-V1-FX-Cycles` | INSTALLER | ACTIVE | ENABLED; pythonw; daily 00:01 every 15 min; action --mode fx (no --canonical) |
+| `AG-V1-Crypto-Daily` | INSTALLER | ACTIVE | ENABLED; pythonw; daily 00:02 every 15 min |
+| `AG-V1-LSMC-Watch` | INSTALLER | ACTIVE | ENABLED; pythonw; Mon-Fri 00:03 every 5 min |
+| `AG-V1-LSMC-Crypto-Weekend` | RETIRE | RETIRED | ENABLED; pythonw; Sun,Mon 03:18 every 5 min for 2 h 26 min |
+| `AG-Wake-MT5` | HOST_ONLY | RETIRED | ENABLED; WakeToRun; Mon-Fri 12:25; starts the MT5 terminal |
+| `AG-Wake-Weekend-Crypto` | HOST_ONLY | RETIRED | ENABLED; WakeToRun; Sun,Mon 03:10; starts the MT5 terminal |
+| `AG-Sleep-Night` | HOST_ONLY | RETIRED | ENABLED; daily 00:45; rundll32 powrprof.dll,SetSuspendState 0,1,0 |
+| `AG-Sleep-Weekend-Crypto` | HOST_ONLY | RETIRED | ENABLED; Sun,Mon 05:45; rundll32 powrprof.dll,SetSuspendState 0,1,0 |
+| `AG Profit Trading - BTC Daily Decision` | HOST_ONLY | DISABLE_AFTER_PARITY | ENABLED; daily 13:05 (06:35Z); system Python 3.14; DEV checkout |
+| `AGX-HealthExport` | HOST_ONLY | ACTIVE | ENABLED; one-time 2026-10-01 19:50:23, every 30 min indefinitely; script outside the repo |
+| `AG_FX_ASIAN_LONDON_SHADOW` | HOST_ONLY | REMOVE | DISABLED; Mon-Fri 13:30:20-17:30:20 (17 triggers); DEV run_asian_london_once.bat |
+| `AG_FX_LONDON_NEWYORK_SHADOW` | HOST_ONLY | REMOVE | DISABLED; Mon-Fri 18:30:20-21:30:20 (13 triggers); DEV run_london_newyork_once.bat |
+| `AG_LSMC_EURUSD_Friction_WindowA_AsianRef` | HOST_ONLY | DISABLED | DISABLED_2026-10-08; Mon-Fri 12:00 (05:30Z); DEV venv |
+| `AG_LSMC_EURUSD_Friction_WindowB_PreLondon` | HOST_ONLY | DISABLED | DISABLED_2026-10-08; Mon-Fri 13:20 (06:50Z); DEV venv |
+| `AG_LSMC_EURUSD_Friction_WindowC_London` | HOST_ONLY | DISABLED | DISABLED_2026-10-08; Mon-Fri 15:30 (09:00Z); DEV venv |
+| `AG_LSMC_EURUSD_Friction_WindowD_LondonNY` | HOST_ONLY | DISABLED | DISABLED_2026-10-08; Mon-Fri 19:00 (12:30Z); DEV venv |
+| `AG-Heartbeat-Local` | HOST_ONLY | NEW | ABSENT |
+
+#### 3. OBSERVED - runtime execution evidence
+
+**NOT_PUBLISHED** - scripts/host/heartbeat.py output (not yet published). Observed cadence and weekday/weekend coverage therefore cannot be stated from this repository alone and are not inferred here.
+
+#### 4. TARGET - proposed always-on end state (declaration only; `-Apply` not run)
+
+| Task name | Target state | Days | Start | Every min |
+|---|---|---|---|---|
+| `AG-V1-FX-Cycles` | ENABLED | DAILY | 00:01:00 | 15 |
+| `AG-V1-Crypto-Daily` | ENABLED | DAILY | 00:02:30 | 15 |
+| `AG-V1-LSMC-Watch` | ENABLED | DAILY | 00:04:15 | 5 |
+| `AG-V1-LSMC-Crypto-Weekend` | ABSENT | - | - | - |
+| `AG-Wake-MT5` | ABSENT | - | - | - |
+| `AG-Wake-Weekend-Crypto` | ABSENT | - | - | - |
+| `AG-Sleep-Night` | ABSENT | - | - | - |
+| `AG-Sleep-Weekend-Crypto` | ABSENT | - | - | - |
+| `AG Profit Trading - BTC Daily Decision` | ENABLED | DAILY | 13:05:00 | 0 |
+| `AGX-HealthExport` | ENABLED | ONCE | 19:50:23 | 30 |
+| `AG_FX_ASIAN_LONDON_SHADOW` | ABSENT | - | - | - |
+| `AG_FX_LONDON_NEWYORK_SHADOW` | ABSENT | - | - | - |
+| `AG_LSMC_EURUSD_Friction_WindowA_AsianRef` | DISABLED | - | - | - |
+| `AG_LSMC_EURUSD_Friction_WindowB_PreLondon` | DISABLED | - | - | - |
+| `AG_LSMC_EURUSD_Friction_WindowC_London` | DISABLED | - | - | - |
+| `AG_LSMC_EURUSD_Friction_WindowD_LondonNY` | DISABLED | - | - | - |
+| `AG-Heartbeat-Local` | ENABLED | DAILY | 00:00:20 | 60 |
+
+#### Declared drift (registered vs target)
+
+| Task name | Field | Registered | Target |
+|---|---|---|---|
+| `AG-V1-LSMC-Watch` | days | Mon-Fri | DAILY |
+| `AG-V1-LSMC-Watch` | start | 00:03 | 00:04:15 |
+| `AG-V1-LSMC-Crypto-Weekend` | state | ENABLED | ABSENT |
+| `AG-Wake-MT5` | state | ENABLED | ABSENT |
+| `AG-Wake-Weekend-Crypto` | state | ENABLED | ABSENT |
+| `AG-Sleep-Night` | state | ENABLED | ABSENT |
+| `AG-Sleep-Weekend-Crypto` | state | ENABLED | ABSENT |
+| `AG_FX_ASIAN_LONDON_SHADOW` | state | DISABLED | ABSENT |
+| `AG_FX_LONDON_NEWYORK_SHADOW` | state | DISABLED | ABSENT |
+| `AG-Heartbeat-Local` | state | ABSENT | ENABLED |
 <!-- [[[end]]] -->
 
 ### Collector inputs
@@ -97,7 +198,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `df99626b53473bdffe70e7109ea9f5f9cea06d02396e305c40687b87556c0cab`.
+inputs_sha256: `bdb6e70aae1f16281572edfaa2075ba7c6ab029db32302614371efe21843a20c`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -189,6 +290,46 @@ configured window it reports `CRYPTO OUTSIDE_WINDOW` and exits without importing
 MT5. V3 weekday windows remain New York zoneinfo based; its weekend window remains UTC. The
 evaluation window, strategy and thresholds are unchanged. Offline evidence is in
 [`AG_V1_CRYPTO_WINDOW_GATE_2026-10-09.md`](docs/status/AG_V1_CRYPTO_WINDOW_GATE_2026-10-09.md).
+
+## Host scheduler authority and always-on target (SCHED-R1, 2026-10-08)
+
+`scripts/host/install_tasks.ps1` is the **authoritative repository declaration source** for the host
+schedule. `config/ag_scheduler_v2.yaml` is a scheduler *configuration*, not a registration record, and
+is no longer presented as schedule truth anywhere in the generated status or context pack.
+
+**`install_tasks.ps1 -Apply` was NOT run by this change.** No task was registered, changed, disabled
+or removed; no power setting was touched. Everything below is declaration and observed capture only.
+
+### Observed scheduler gaps and target
+
+| Task | Registered on 2026-10-08 | `-Apply` would write |
+|---|---|---|
+| `AG-V1-Crypto-Daily` | every 15 min | every 15 min |
+| `AG-V1-LSMC-Watch` | Mon–Fri only | daily |
+
+Five-minute crypto cadence is deferred until the crypto runner checks its active window before
+MT5 attach. The registered-vs-target comparison remains in the generated facts; the captured
+registered cadence is still 15 minutes and is not a claim about current host state.
+
+Weekday/weekend coverage therefore differs from `scripts/host/GO_LIVE.md`, which describes the daily
+`AG-V1-LSMC-Watch` as providing weekend crypto coverage. On the host as observed, the LSMC watch does
+**not** run on Saturday or Sunday; the retired `AG-V1-LSMC-Crypto-Weekend` task is still registered and
+is the only weekend coverage. Because
+`scripts/host/heartbeat.py` output is **not yet published**, observed runtime cadence cannot be
+stated from this repository and is not inferred here.
+
+### Always-on target (declared, not applied)
+
+The declared target retires `AG-Wake-MT5`, `AG-Wake-Weekend-Crypto`, `AG-Sleep-Night` and
+`AG-Sleep-Weekend-Crypto` and sets `AC_STANDBY_TIMEOUT_MIN=0`, `AC_HIBERNATE_TIMEOUT_MIN=0`,
+`MODE=ALWAYS_ON` as a declaration only. Until the owner applies it, `heartbeat.py` still models the
+host as asleep between 00:45 and 12:25 MMT and defaults to `--host-power-mode wake_sleep`. Under
+`--host-power-mode always_on` there is no sleep span, so overnight runner silence is `STALE` and never
+`INACTIVE_EXPECTED`.
+
+Regression evidence: `tests/test_host_heartbeat.py` (21 passed, Linux, 2026-10-08) and
+`tests/test_host_go_live_kit.py` (73 passed, 1 skipped, Linux, 2026-10-08). Full suite
+`1366 passed, 2 skipped`. No live-host or Task Scheduler verification was performed.
 
 ## AGP Host Ticket Delivery R1 (FAST) — canonical FX ticket + delivery pipeline (2026-10-08; branch `arena/ca7a6ec4-ag-profit-trading-assit`, not merged)
 

@@ -4,7 +4,7 @@
 
 Inputs (offline, deterministic; no git, no clock):
   facts      status/facts.json from scripts/docs/collect_facts.py (objective, strategies,
-             schedule, inputs_sha256). Missing or unreadable facts fail closed: no pack.
+             host-declared task schedule, inputs_sha256). Missing facts fail closed.
   decisions  and invariants presence are captured in facts.pack_context by the collector;
              the pack reads no source documents outside facts.json. Missing registered
              decision tables are reported as UNKNOWN, never as zero.
@@ -68,6 +68,13 @@ def _value(field) -> object:
     return field.get("value") if isinstance(field, dict) else field
 
 
+def _schedule_value(field: dict) -> str:
+    value = field.get("value", "UNPARSED")
+    if value == "UNPARSED":
+        return f"UNPARSED (raw: `{field.get('raw_line', '')}`)"
+    return str(value)
+
+
 def build(facts: dict, root: str = ROOT) -> str:
     context = facts["pack_context"]
     count, sources = context["pending_decisions"], context["decision_sources"]
@@ -104,10 +111,41 @@ def build(facts: dict, root: str = ROOT) -> str:
               f"{_b(_value(s.get('logic_verified')))} | {_b(_value(s.get('edge_verified')))} |"
               for s in facts["strategies"]]
     lines += ["", "## Open owner decisions", "", decisions,
-              "", f"## Schedule (`{schedule.get('scheduler')}`, {schedule.get('timezone')})", "",
-              "| Task | cadence | start | end |", "|---|---|---|---|"]
-    lines += [f"| `{t.get('name')}` | {t.get('cadence')} | {t.get('start')} | {t.get('end') or '—'} |"
-              for t in schedule.get("tasks", [])]
+              "", "## Schedule", "",
+              f"Source: `{schedule.get('source', 'UNKNOWN')}` (host task installer), captured "
+              f"{schedule.get('captured', 'UNPARSED')}. The four layers below are deliberately kept "
+              "apart: a repository declaration is not a registration, a registration is not an "
+              "observed run, and a target is not a fact.", ""]
+    layers = schedule.get("layers", {})
+    for key in ("REPO_DECLARED", "REGISTERED", "TARGET", "OBSERVED"):
+        layer = layers.get(key) or {}
+        lines += [f"### {key}", "", layer.get("meaning", "UNKNOWN"), ""]
+        if key == "OBSERVED":
+            lines += [f"Value: **{layer.get('value', 'UNKNOWN')}** "
+                      f"({layer.get('source', 'UNKNOWN')}).", ""]
+            continue
+        rows = layer.get("tasks", [])
+        if key == "REPO_DECLARED":
+            lines += ["| Task | Cadence | Start | Trigger | Time zone |", "|---|---|---|---|---|"]
+            lines += [f"| `{t['name']}` | {_schedule_value(t['cadence'])} | {_schedule_value(t['start'])} | "
+                      f"{_schedule_value(t['trigger'])} | {_schedule_value(t['time_zone'])} |" for t in rows]
+        elif key == "REGISTERED":
+            lines += ["| Task | Managed | Status | Registered |", "|---|---|---|---|"]
+            lines += [f"| `{t['name']}` | {t.get('managed', 'UNKNOWN')} | {t.get('status', 'UNKNOWN')} | "
+                      f"{t.get('registered') or 'UNKNOWN'} |" for t in rows]
+        else:
+            lines += ["| Task | Target state | Days | Start | Every min | Note |", "|---|---|---|---|---|---|"]
+            lines += [f"| `{t['name']}` | {(t.get('target') or {}).get('State', 'UNKNOWN')} | "
+                      f"{(t.get('target') or {}).get('Days', '—')} | {(t.get('target') or {}).get('Start', '—')} | "
+                      f"{(t.get('target') or {}).get('EveryMin', '—')} | {t.get('note') or '—'} |" for t in rows]
+        lines += [""]
+    drift = schedule.get("drift") or []
+    lines += ["### Declared drift (registered vs target)", ""]
+    if drift:
+        lines += ["| Task | Field | Registered | Target |", "|---|---|---|---|"]
+        lines += [f"| `{d['task']}` | {d['field']} | {d['registered']} | {d['target']} |" for d in drift]
+    else:
+        lines += ["No registered-vs-target difference is stated by the declaration."]
     lines += ["", "## Telegram immediate-send scope", "",
               "Tracked policy ceiling (host-local overrides may narrow only): "
               + ", ".join(f"`{scope}`" for scope in telegram_scope.get("immediate_send_enabled", [])) + ".",

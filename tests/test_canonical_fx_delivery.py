@@ -613,7 +613,7 @@ def test_scheduled_fx_task_uses_canonical_once_and_preserves_other_modes():
 
     # Minutes stays adjacent to Mode: scripts/docs/build_context_pack.py parses the rows positionally.
     assert "@{ Name = 'AG-V1-FX-Cycles';    Mode = 'fx';     Minutes = 15; Canonical = $true;" in install
-    assert "@{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Minutes = 5;  Canonical = $false;" in install
+    assert "@{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Minutes = 15; Canonical = $false;" in install
     assert "@{ Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc';   Minutes = 5;  Canonical = $false;" in install
     assert "Canonical = $true" in verify and "$e.Canonical" in verify
 

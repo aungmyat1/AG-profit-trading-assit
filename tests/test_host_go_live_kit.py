@@ -974,8 +974,9 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     assert "--canonical" in runner and "manual_lines = run_manual_jobs(fetch, now, journal)" in runner
     assert runner.index("manual_lines = run_manual_jobs(fetch, now, journal)") < runner.index("provider = snapshot_provider(GuardedMT5(mt5))")
     assert "--canonical" in verify and "$e.Canonical" in verify
-    offsets = [int(o) for o in re.findall(r"Offset = (\d+)", install)]
-    assert offsets == [1, 2, 3]                        # FX, crypto tickets, continuous six-symbol LSMC
+    starts = re.findall(r"StartAt = '(\d\d:\d\d:\d\d)'", install)
+    assert starts == ["00:01:00", "00:02:30", "00:04:15"]   # FX, crypto tickets, six-symbol LSMC (stagger rule)
+    assert "-Execute $PythonW" in install and ".venv\\Scripts\\pythonw.exe" in verify
     assert "AG-V1-LSMC-Crypto-Weekend" in install and "AG-V1-LSMC-Crypto-Weekend" in uninstall
     assert "REMOVED SUPERSEDED" in install             # prevent duplicate weekend watch polling
     assert "verify_objective.py" in install and "verify_tasks.ps1" in install
@@ -990,6 +991,74 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     assert "RESULT: PASS -- simulated proposal rendered and accepted by Telegram." in verify_telegram
     for s in (install, uninstall, telegram, verify_telegram):
         assert not re.search(r"\d{6,}:[A-Za-z0-9_-]{20,}", s)          # no bot-token-shaped literal
+
+
+DECL_RE = re.compile(r"@\{ Name = '([^']+)'; Path = '([^']*)'; Managed = '(\w+)'; Status = '(\w+)'\s*"
+                     r"Registered = '[^']*'(?:; DeleteAfter = '([\d-]+)')?\s*Target = @\{ State = '(\w+)'(.*?)\}\s*;?\s*Note = ",
+                     re.S)
+
+
+def _host_declarations():
+    text = (HOST / "install_tasks.ps1").read_text(encoding="utf-8")
+    return text, [dict(zip(("name", "path", "managed", "status", "delete_after", "state", "rest"), m))
+                  for m in DECL_RE.findall(text)]
+
+
+def _comment_facts(text: str, tag: str) -> dict:
+    """`# <tag>: K=V; K=V` -> {K: V}; the format the host facts collector parses."""
+    line = re.search(rf"^# {tag}: (.+)$", text, re.M).group(1)
+    return dict(kv.strip().split("=", 1) for kv in line.split(";"))
+
+
+def test_install_tasks_declares_host_timezone_and_always_on_power_policy_without_applying_it():
+    text, _ = _host_declarations()
+    assert _comment_facts(text, "AG-HOST-TIMEZONE") == {
+        "Id": "Myanmar Standard Time", "Abbrev": "MMT", "UtcOffset": "+06:30", "DST": "false"}
+    assert _comment_facts(text, "AG-HOST-POWER-POLICY") == {
+        "AC_STANDBY_TIMEOUT_MIN": "0", "AC_HIBERNATE_TIMEOUT_MIN": "0", "MODE": "ALWAYS_ON"}
+    script = text.split("#>", 1)[1]                                  # after the header comment block
+    code = [re.sub(r"'[^']*'", "''", ln) for ln in script.splitlines() if not ln.lstrip().startswith("#")]
+    assert not any(re.search(r"powercfg|SetSuspendState|Set-.*Power", ln, re.I) for ln in code)  # declared data only
+
+
+def test_install_tasks_declarations_parse_to_the_always_on_target():
+    text, decl = _host_declarations()
+    assert text.count("@{ Name = '") - 3 == len(decl) == 17     # 3 $Plan rows + 16 registered + 1 new
+    by = {d["name"]: d for d in decl}
+    assert len(by) == len(decl)
+    statuses = {"ACTIVE", "NEW", "RETIRED", "REMOVE", "DISABLED", "DISABLE_AFTER_PARITY"}
+    assert {d["status"] for d in decl} <= statuses
+    for d in decl:
+        assert d["state"] == {"RETIRED": "ABSENT", "REMOVE": "ABSENT", "DISABLED": "DISABLED"}.get(d["status"], "ENABLED")
+    # The optional Canonical field (main) sits between Minutes and StartAt (SCHED-R1-B); the regex
+    # must tolerate it or the loop below silently passes on an empty match.
+    plan = re.findall(r"Name = '(AG-V1-[\w-]+)';\s+Mode = '(\w+)';\s+Minutes = (\d+);"
+                      r"(?:\s*Canonical = \$(true|false);)?\s*StartAt = '([\d:]+)'", text)
+    assert len(plan) == 3, plan                                     # never accept a vacuous match
+    for name, mode, minutes, canonical, start in plan:               # $Plan and its declaration agree
+        d = by[name]
+        assert (d["managed"], d["status"]) == ("INSTALLER", "ACTIVE")
+        # The target action is what -Apply installs: $Plan Canonical = true adds --canonical.
+        suffix = " --canonical" if canonical == "true" else ""
+        assert "pythonw.exe" in d["rest"] and f"--mode {mode}{suffix}'" in d["rest"], (name, d["rest"])
+        assert f"Days = 'DAILY'; Start = '{start}'; EveryMin = {minutes} " in d["rest"]
+    assert by["AG-V1-LSMC-Crypto-Weekend"]["managed"] == "RETIRE"
+    assert {n for n, d in by.items() if d["status"] == "RETIRED"} == {
+        "AG-V1-LSMC-Crypto-Weekend", "AG-Wake-MT5", "AG-Wake-Weekend-Crypto", "AG-Sleep-Night", "AG-Sleep-Weekend-Crypto"}
+    friction = [d for n, d in by.items() if n.startswith("AG_LSMC_EURUSD_Friction_Window")]
+    assert len(friction) == 4 and all(d["status"] == "DISABLED" and d["delete_after"] == "2026-10-15" for d in friction)
+    assert {n for n, d in by.items() if d["status"] == "REMOVE"} == {"AG_FX_ASIAN_LONDON_SHADOW", "AG_FX_LONDON_NEWYORK_SHADOW"}
+    assert by["AG Profit Trading - BTC Daily Decision"]["status"] == "DISABLE_AFTER_PARITY"
+    hb = by["AG-Heartbeat-Local"]
+    assert hb["status"] == "NEW" and "heartbeat.py" in hb["rest"] and "EveryMin = 60" in hb["rest"]
+    assert "{TELEMETRY}" in hb["rest"] and "<HOST_SCRATCHPAD>" in hb["rest"]
+    # PR #84 review P1: the always-on target heartbeat must not fall back to the wake_sleep default,
+    # or overnight runner silence would read INACTIVE_EXPECTED instead of STALE.
+    target_args = re.search(r"Args = '([^']*)'", hb["rest"]).group(1)
+    assert target_args.count("--host-power-mode always_on") == 1, target_args
+    assert not re.search(r"S-1-5-\d|C:\\Users\\(?!%)[A-Za-z]", text)  # sanitized: no SIDs or user-profile paths
+    # AGENTS.md host-evidence rule: a private checkout root is never committed (PR #78 review P1).
+    assert not re.search(r"[A-Z]:\\\\(wp3-main-integ|ddev|ag-telemetry)", text), text
 
 
 def test_go_live_doc_lists_the_six_steps_in_order():
@@ -1127,3 +1196,27 @@ def test_flush_std_streams_tolerates_pythonw_none_streams(monkeypatch):
     monkeypatch.setattr(sys, "stdout", None)
     monkeypatch.setattr(sys, "stderr", None)
     smoke.flush_std_streams()
+
+
+def test_target_heartbeat_args_parse_to_always_on_mode():
+    """PR #84 P1: the declared AG-Heartbeat-Local target arguments, parsed by heartbeat.py's own
+    CLI, select always_on, so a stopped runner overnight is STALE, never INACTIVE_EXPECTED."""
+    import shlex
+    import heartbeat as hb_module
+    _, decl = _host_declarations()
+    rest = {d["name"]: d for d in decl}["AG-Heartbeat-Local"]["rest"]
+    args = shlex.split(re.search(r"Args = '([^']*)'", rest).group(1), posix=True)[1:]  # drop the script path
+    captured = {}
+
+    def fake_build(*a, **kw):
+        captured.update(kw)
+        return {}
+    import pytest as _pytest
+    with _pytest.MonkeyPatch.context() as mp:
+        mp.setattr(hb_module, "build", fake_build)
+        mp.setattr(hb_module, "write", lambda payload, out: out)
+        try:
+            hb_module.main(args)
+        except SystemExit as exc:
+            assert exc.code in (0, None), exc
+    assert captured.get("power_mode") == "always_on", captured
