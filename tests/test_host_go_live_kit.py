@@ -854,6 +854,10 @@ def test_install_tasks_declarations_parse_to_the_always_on_target():
     hb = by["AG-Heartbeat-Local"]
     assert hb["status"] == "NEW" and "heartbeat.py" in hb["rest"] and "EveryMin = 60" in hb["rest"]
     assert "{TELEMETRY}" in hb["rest"] and "<HOST_SCRATCHPAD>" in hb["rest"]
+    # PR #84 review P1: the always-on target heartbeat must not fall back to the wake_sleep default,
+    # or overnight runner silence would read INACTIVE_EXPECTED instead of STALE.
+    target_args = re.search(r"Args = '([^']*)'", hb["rest"]).group(1)
+    assert target_args.count("--host-power-mode always_on") == 1, target_args
     assert not re.search(r"S-1-5-\d|C:\\Users\\(?!%)[A-Za-z]", text)  # sanitized: no SIDs or user-profile paths
     # AGENTS.md host-evidence rule: a private checkout root is never committed (PR #78 review P1).
     assert not re.search(r"[A-Z]:\\\\(wp3-main-integ|ddev|ag-telemetry)", text), text
@@ -994,3 +998,27 @@ def test_flush_std_streams_tolerates_pythonw_none_streams(monkeypatch):
     monkeypatch.setattr(sys, "stdout", None)
     monkeypatch.setattr(sys, "stderr", None)
     smoke.flush_std_streams()
+
+
+def test_target_heartbeat_args_parse_to_always_on_mode():
+    """PR #84 P1: the declared AG-Heartbeat-Local target arguments, parsed by heartbeat.py's own
+    CLI, select always_on, so a stopped runner overnight is STALE, never INACTIVE_EXPECTED."""
+    import shlex
+    import heartbeat as hb_module
+    _, decl = _host_declarations()
+    rest = {d["name"]: d for d in decl}["AG-Heartbeat-Local"]["rest"]
+    args = shlex.split(re.search(r"Args = '([^']*)'", rest).group(1), posix=True)[1:]  # drop the script path
+    captured = {}
+
+    def fake_build(*a, **kw):
+        captured.update(kw)
+        return {}
+    import pytest as _pytest
+    with _pytest.MonkeyPatch.context() as mp:
+        mp.setattr(hb_module, "build", fake_build)
+        mp.setattr(hb_module, "write", lambda payload, out: out)
+        try:
+            hb_module.main(args)
+        except SystemExit as exc:
+            assert exc.code in (0, None), exc
+    assert captured.get("power_mode") == "always_on", captured

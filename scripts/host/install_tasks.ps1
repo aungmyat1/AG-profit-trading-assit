@@ -147,7 +147,7 @@ $Declared = @(
   @{ Name = 'AG-Heartbeat-Local'; Path = '\'; Managed = 'HOST_ONLY'; Status = 'NEW'
      Registered = 'ABSENT'
      Target = @{ State = 'ENABLED'; Exe = '{TELEMETRY}\.venv\Scripts\pythonw.exe'
-                 Args = '"{TELEMETRY}\scripts\host\heartbeat.py" --host-repo "{PROD}" --out "<HOST_SCRATCHPAD>\ag-telemetry\heartbeat.json"'
+                 Args = '"{TELEMETRY}\scripts\host\heartbeat.py" --host-repo "{PROD}" --out "<HOST_SCRATCHPAD>\ag-telemetry\heartbeat.json" --host-power-mode always_on'
                  Days = 'DAILY'; Start = '00:00:20'; EveryMin = 60 }
      Note = 'local output only (heartbeat.json; nothing is sent). Needs the TELEMETRY checkout + venv first' }
 )

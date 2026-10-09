@@ -115,3 +115,5 @@ verification was performed; `verify_tasks.ps1` / `Get-TaskDiff` / `-WhatIf` rema
    weekend-coverage claim in `scripts/host/GO_LIVE.md`.
 2. Owner: apply the always-on target (retire the wake/sleep tasks, apply the power policy) and only
    then switch the scheduled heartbeat to `--host-power-mode always_on`.
+   (FIX-84b, 2026-10-09: the declared `AG-Heartbeat-Local` Target `Args` now carries
+   `--host-power-mode always_on`, so installing the target cannot fall back to `wake_sleep`; still not applied.)
