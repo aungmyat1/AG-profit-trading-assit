@@ -10,8 +10,8 @@ import glob
 import os
 
 import pytest
-
 from _lsmc_v110_fixtures import NOW, UTC, d1_bars, h1_bars, m5_bars
+
 from large_smc_watch import WatchTracker, evaluate_snapshot
 from large_smc_watch import contract as C
 from large_smc_watch.watch import next_day_boundary, session_end, trading_date

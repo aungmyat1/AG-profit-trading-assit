@@ -6,6 +6,24 @@ build-backend = "setuptools.build_meta"
 name = "ag-trade-assistant"
 version = "0.1.0"
 requires-python = ">=3.10"
+dependencies = [
+    "PyYAML==6.0.3",
+    "pandas==2.3.3",
+    "numpy==2.2.6",
+    "MetaTrader5==5.0.5735; sys_platform == 'win32'",
+    "smartmoneyconcepts==0.0.27",
+    "requests==2.34.2",
+    "fastapi==0.135.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.5",
+    "httpx==0.28.1",
+    "ruff==0.16.10",
+    "uvicorn==0.41.0",
+]
+research = ["pyarrow==25.0.1"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -28,3 +46,13 @@ markers = [
     "denied: regeneration-publisher test that runs with the shipped default-deny permissions",
 ]
 addopts = "-m 'not slow'"
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/strategy_engine/__init__.py" = ["I001"]
+"src/strategy_engine/session/__init__.py" = ["I001"]

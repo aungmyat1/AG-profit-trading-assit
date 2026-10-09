@@ -494,6 +494,8 @@ research eligibility. Its contract is
 - [`architecture/DETERMINISTIC_TRADING_SKILLS.md`](architecture/DETERMINISTIC_TRADING_SKILLS.md)
   — canonical separation of deterministic observations, strategy decisions, AI diagnostics,
   governance, and authorized execution.
+- [`architecture/THIRD_PARTY_STRATEGY_DEPENDENCIES.md`](architecture/THIRD_PARTY_STRATEGY_DEPENDENCIES.md)
+  — pinned strategy-library dependencies and upstream-change risks.
 
 Architecture descriptions do not override Strategy YAML, frozen specifications, or
 the execution gates in code and configuration.

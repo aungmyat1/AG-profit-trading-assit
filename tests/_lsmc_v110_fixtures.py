@@ -14,6 +14,7 @@ EURUSD-scaled prices. The fixture is built so that:
 from __future__ import annotations
 
 import datetime as dt
+
 from strategy_engine.session import Candle
 
 UTC = dt.timezone.utc

@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from opportunity.contracts import CandidateGeometry, OpportunityCandidate
 from opportunity.candidate_store import CandidateConflictError, CandidateStore
+from opportunity.contracts import CandidateGeometry, OpportunityCandidate
 from opportunity.stages import OUTCOME_ACTIVE, STAGE_SETUP_DETECTED, STAGE_TRIGGER_ARMED
 from opportunity.transitions import FunnelTransition
 from runtime_state.store import StateStoreCorrupted
