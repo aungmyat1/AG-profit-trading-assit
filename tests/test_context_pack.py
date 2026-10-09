@@ -13,6 +13,9 @@ spec = importlib.util.spec_from_file_location("build_context_pack", REPO / "scri
 pack = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(pack)
 FACTS = json.loads((REPO / "status" / "facts.json").read_text(encoding="utf-8"))
+_collector = importlib.util.spec_from_file_location("collect_facts", REPO / "scripts" / "docs" / "collect_facts.py")
+collect_facts = importlib.util.module_from_spec(_collector)
+_collector.loader.exec_module(collect_facts)
 
 
 def test_same_inputs_give_a_byte_identical_pack():
@@ -29,11 +32,49 @@ def test_committed_pack_matches_a_fresh_build():
     assert (REPO / pack.OUT).read_text(encoding="utf-8") == pack.build(FACTS)
 
 
+def test_pack_schedule_lists_host_tasks_and_excludes_v2_phase_names():
+    from scripts.docs.collect_facts import collect, parse_host_schedule
+
+    host_script = (REPO / "scripts/host/install_tasks.ps1").read_text(encoding="utf-8")
+    expected = [task["name"] for task in parse_host_schedule(host_script)["tasks"]]
+    assert "scripts/host/install_tasks.ps1" in collect(REPO)["input_paths"]
+    schedule = pack.build(FACTS).split("## Schedule\n", 1)[1]
+    # The four layers must stay distinguishable: a declaration, a registration, an observed run and
+    # a target are different facts and must never be collapsed into one table.
+    for layer in ("REPO_DECLARED", "REGISTERED", "TARGET", "OBSERVED"):
+        assert f"### {layer}" in schedule, layer
+    assert "Value: **NOT_PUBLISHED**" in schedule
+    assert all(f"`{name}`" in schedule for name in expected)
+    assert "5-minute cadence deferred until the crypto runner checks its active window before MT5 attach" in schedule
+    import yaml
+    config = yaml.safe_load((REPO / "config/ag_scheduler_v2.yaml").read_text(encoding="utf-8"))
+    phase_names = [row.get("state") for row in config.get("schedule", [])]
+    assert not any(name and f"`{name}`" in schedule for name in phase_names)
+
+
+def test_unparsed_host_trigger_keeps_the_source_line():
+    from scripts.docs.collect_facts import parse_host_schedule
+
+    source = (REPO / "scripts/host/install_tasks.ps1").read_text(encoding="utf-8")
+    malformed = source.replace(
+        "$trigger = New-ScheduledTaskTrigger -Daily -At $at",
+        "$trigger = New-ScheduledTaskTrigger -CalendarKind Weekly",
+    )
+    schedule = parse_host_schedule(malformed)
+    assert len(schedule["tasks"]) == 3
+    assert all(task["trigger"]["value"] == "UNPARSED" for task in schedule["tasks"])
+    assert all(task["trigger"]["raw_line"] == "$trigger = New-ScheduledTaskTrigger -CalendarKind Weekly"
+               for task in schedule["tasks"])
+    assert schedule["layers"]["REPO_DECLARED"]["tasks"] == schedule["tasks"]
+
+
 def test_open_decisions_counted_from_the_register_never_a_bare_zero(tmp_path):
-    out = pack.build(FACTS)
+    # Built from freshly collected facts: a source PR that edits the register must not depend on
+    # committed generated outputs, which the post-merge regeneration PR publishes (R5.1).
+    out = pack.build(collect_facts.collect(REPO))
     count, sources = pack.open_decisions()
-    assert sources == list(pack.REGISTERED_DECISION_SOURCES) and count == 12
-    assert "Open decisions in registered tables: 12 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
+    assert sources == list(pack.REGISTERED_DECISION_SOURCES) and count == 14
+    assert "Open decisions in registered tables: 14 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
     # No registered table -> UNKNOWN, not 0.
     assert pack.open_decisions(str(tmp_path)) == (None, [])
     no_sources = {**FACTS, "pack_context": {"pending_decisions": None, "decision_sources": [],

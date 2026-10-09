@@ -26,10 +26,14 @@ from typing import List, Optional
 import pandas as pd
 from smartmoneyconcepts import smc
 
-from market_structure.smc_adapter import StructureLibraryError, StructureOutputInvalid, candles_to_dataframe
+from market_structure.smc_adapter import (
+    StructureLibraryError,
+    StructureOutputInvalid,
+    candles_to_dataframe,
+)
 from strategy_engine.session import Candle
 
-from .models import ZoneDirection, ZoneFamily, ZoneRole, ZoneResult, ZoneStatus
+from .models import ZoneDirection, ZoneFamily, ZoneResult, ZoneRole, ZoneStatus
 
 _REQUIRED_OB_COLUMNS = {"OB", "Top", "Bottom", "OBVolume", "MitigatedIndex", "Percentage"}
 _REQUIRED_FVG_COLUMNS = {"FVG", "Top", "Bottom", "MitigatedIndex"}

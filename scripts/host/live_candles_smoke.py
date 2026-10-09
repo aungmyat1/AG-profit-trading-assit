@@ -62,6 +62,7 @@ if __name__ == "__main__":   # bound the whole process, including the heavy impo
     start_run_watchdog(f"ag_v1_{_argv_mode(sys.argv[1:])}")
 
 from host_delivery import telegram_message as tg  # noqa: E402
+from host_delivery import telegram_confirm as tg_confirm  # noqa: E402
 from host_delivery.lsmc_alert_dedup import AlertLedger, DELIVERY_UNCERTAIN, deliver_once  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
@@ -189,7 +190,8 @@ DELIVERY_DIR = os.path.join("ticket_delivery", "delivery_status")
 
 
 def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] = None,
-            ref: Optional[str] = None, now: Optional[dt.datetime] = None) -> str:
+            ref: Optional[str] = None, now: Optional[dt.datetime] = None,
+            reply_markup: Optional[Dict[str, object]] = None) -> str:
     """Best-effort Telegram delivery (TELEGRAM_DELIVERY_TRACE_R1). Callers persist the scan /
     ticket record first; this never raises, so a Telegram or policy failure cannot hide a scan
     record or stop the remaining symbols. The status is persisted separately (append-only JSONL,
@@ -209,7 +211,10 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
         if not tg.should_send(kind, value, root):
             status = "NOT_SENT_POLICY"
         else:
-            tg.send_message(text)
+            if reply_markup is None:
+                tg.send_message(text)
+            else:
+                tg_confirm.send_confirmation(text, reply_markup, root=root)
             status = "SENT"
     except tg.TelegramSendError as exc:
         status, error, typed = "FAILED", str(exc), exc.delivery_state  # message is sanitized
@@ -356,8 +361,11 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                 now=now, ticket_id=manual["ticket_id"] if manual.get("direction") else None,
                 block_reasons=manual["block_reasons"], warnings=manual.get("warnings", ())))
             if manual_new and notify and manual["state"] == "TICKET_READY":
-                _notify(tg.MANUAL_TICKET, tg.MANUAL_TICKET_READY, manual_ticket.render_text(manual), REPO_ROOT,
-                        journal=journal, ref=f"manual:{manual['ticket_id']}", now=now)
+                confirmation_text, confirmation_markup = tg_confirm.render_confirmation(
+                    manual, os.environ.get("TELEGRAM_BOT_TOKEN", ""))
+                _notify(tg.MANUAL_TICKET, tg.MANUAL_TICKET_READY, confirmation_text, REPO_ROOT,
+                        journal=journal, ref=f"manual:{manual['ticket_id']}", now=now,
+                        reply_markup=confirmation_markup)
             paper_status = "OPENED" if paper_opened else (
                 "ALREADY_RECORDED" if not paper_reasons
                 else "INELIGIBLE:" + ",".join(paper_reasons)

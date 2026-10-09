@@ -29,19 +29,20 @@ from liquidity import LiquidityLevel
 from strategy_engine.session import Candle
 from supply_demand import ZoneResult
 
-from .models import CandidateDirection, ConfirmationState, EntryConfirmationResult, StructureAlignment
+from .gap import evaluate_gap_context
+from .models import (
+    CandidateDirection,
+    ConfirmationState,
+    EntryConfirmationResult,
+    StructureAlignment,
+)
 from .models_v2 import (
     ConfirmationModel,
     ConfirmationRoute,
     DirectionalContext,
     EntryConfirmationV2Result,
     EntryGeometry,
-    GapContext,
-    POIContext,
-    RouteResult,
-    SpreadContext,
 )
-from .gap import evaluate_gap_context
 from .poi import evaluate_poi_context
 from .route import classify_route, evaluate_e1, evaluate_e2, evaluate_e3
 from .spread import evaluate_spread_context

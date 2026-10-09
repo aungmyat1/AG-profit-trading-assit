@@ -1,0 +1,7 @@
+{
+  "semantic_fields": ["status", "reason", "symbol", "direction", "decision_time", "entry", "stop_loss", "tp1", "tp2", "expiry", "sweep_extreme", "reference_high", "reference_low", "spread_distance", "spread_pips", "spread_R"],
+  "implementation_path": "src/asian_sweep_v1_2/engine.py",
+  "batch_stream_mismatches": 0,
+  "canonical_hash_parity": true,
+  "verdict": "PASS"
+}

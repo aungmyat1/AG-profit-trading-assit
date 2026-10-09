@@ -65,7 +65,11 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Sequence, Tuple
 
-from market_structure import StructurePoint, StructurePointKind, structural_breaks_for_candles
+from market_structure import (
+    StructurePoint,
+    StructurePointKind,
+    structural_breaks_for_candles,
+)
 from strategy_engine.session import Candle
 
 from .models import ZoneDirection, ZoneResult

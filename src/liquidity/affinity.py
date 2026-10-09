@@ -30,7 +30,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional, Sequence, Tuple
 
-from market_structure.models import STATE_BEARISH, STATE_BULLISH, STATE_UNDEFINED, StructureTier
+from market_structure.models import (
+    STATE_BEARISH,
+    STATE_BULLISH,
+    STATE_UNDEFINED,
+)
 
 from .hierarchy import SCOPE_EXTERNAL, SCOPE_INTERNAL, ScopedLiquidityLevel
 from .models import LiquiditySide, LiquidityStatus
@@ -172,7 +176,10 @@ def _imbalance_candidate(imbalances: Sequence["ZoneResult"], bias: str, current_
     """FVG only (spec section 2C) -- an imbalance, never blindly relabeled as liquidity.
     Bullish bias wants a BULLISH FVG at/below current price (a pullback target below a
     rising move); bearish mirrors with a BEARISH FVG at/above current price."""
-    from supply_demand.models import ZoneDirection, ZoneStatus  # deferred, see module docstring
+    from supply_demand.models import (  # deferred, see module docstring
+        ZoneDirection,
+        ZoneStatus,
+    )
 
     direction = {STATE_BULLISH: ZoneDirection.BULLISH, STATE_BEARISH: ZoneDirection.BEARISH}.get(bias)
     if direction is None:

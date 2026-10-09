@@ -43,20 +43,18 @@ from dataclasses import replace
 from datetime import date, datetime
 from typing import Optional, Sequence
 
-from sizing_math.daily_loss_guard import DailyLossGuard
-from sizing_math.position_guard import OpenPositionGuard
-from sizing_math.risk import size_position
 from market_structure.config import load_market_structure_config
 from market_structure.models import MarketStructureConfig
 from mt5.symbol_resolver import SymbolMeta
+from sizing_math.daily_loss_guard import DailyLossGuard
+from sizing_math.position_guard import OpenPositionGuard
+from sizing_math.risk import size_position
 from strategy_engine.session import Candle
 
-from .profile import MarketProfile, build_profile_reference_box
 from .models import (
     STATE_BLOCKED_DAILY_LOSS,
     STATE_BLOCKED_OPEN_POSITION,
     STATE_ENTRY_READY,
-    STATE_MSS_CONFIRMED,
     STATE_NO_TRADE_DIRECTION,
     STATE_NO_TRADE_TARGET_GEOMETRY,
     STATE_POSITION_OPEN,
@@ -76,6 +74,7 @@ from .models import (
     SetupState,
 )
 from .mss import find_mss
+from .profile import MarketProfile, build_profile_reference_box
 from .retest import ENTRY_TTL_M5_BARS, find_retest
 from .state_store import SweepRetestStateStore
 from .sweep import SWEEP_HIGH, SWEEP_LOW, find_qualified_sweep

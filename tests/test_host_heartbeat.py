@@ -114,6 +114,60 @@ def test_schedule_aware_staleness():
         == "INACTIVE_EXPECTED"                                                  # Friday 02:00 MMT: host asleep
 
 
+OVERNIGHT_LAST = dt.datetime(2026, 10, 7, 12, 0, tzinfo=hb.MMT).astimezone(UTC)   # last runner line
+OVERNIGHT_NOW = dt.datetime(2026, 10, 8, 3, 0, tzinfo=hb.MMT).astimezone(UTC)     # inside the old sleep span
+
+
+def test_overnight_silence_is_expected_only_under_the_observed_wake_sleep_mode():
+    """2026-10-08 01:30 MMT sits inside the retired AG-Sleep-Night span (00:45-12:25 MMT)."""
+    lines = [(OVERNIGHT_LAST, "FX EURUSD (EURUSD-VIP) ASIAN_LONDON data=FRESH decision=NO_TRADE")]
+    windows = hb.SOURCE_WINDOWS["fx"]
+    assert hb.active_window_start(windows, OVERNIGHT_NOW) is None
+    assert hb.source_status(lines, OVERNIGHT_NOW, windows, "wake_sleep")["status"] == "INACTIVE_EXPECTED"
+
+
+def test_always_on_mode_never_reports_overnight_silence_as_inactive_expected():
+    """SCHED-R1-B: the wake/sleep tasks are retired, so the sleep span no longer exists.
+
+    A runner that stopped overnight must be STALE, not INACTIVE_EXPECTED -- otherwise a dead
+    runner is relabelled "expected quiet" for the whole 00:45-12:25 MMT span (PR #81 review P1).
+    """
+    lines = [(OVERNIGHT_LAST, "FX EURUSD (EURUSD-VIP) ASIAN_LONDON data=FRESH decision=NO_TRADE")]
+    windows = hb.source_windows("always_on", "fx")
+    assert windows == hb.ALWAYS_ON_WINDOWS
+    assert hb.active_window_start(windows, OVERNIGHT_NOW) is not None      # no minute is "asleep"
+    got = hb.source_status(lines, OVERNIGHT_NOW, windows, "always_on")
+    assert got["status"] == "STALE" and got["power_mode"] == "always_on"
+    # Every runner, including the weekend-only one, loses its sleep exemption under always_on.
+    for name in hb.RUNNER_LOGS:
+        quiet = [(OVERNIGHT_LAST, "LSMC BTCUSDT data=FRESH state=IDLE")]
+        assert hb.source_status(quiet, OVERNIGHT_NOW, hb.source_windows("always_on", name),
+                                "always_on")["status"] == "STALE", name
+
+
+def test_unknown_power_mode_fails_closed_to_the_always_on_rule():
+    """An unrecognised mode must not invent a sleep span that hides a stopped runner."""
+    lines = [(OVERNIGHT_LAST, "FX EURUSD (EURUSD-VIP) ASIAN_LONDON data=FRESH decision=NO_TRADE")]
+    windows = hb.source_windows("definitely_not_a_mode", "fx")
+    assert windows == hb.ALWAYS_ON_WINDOWS
+    assert hb.source_status(lines, OVERNIGHT_NOW, windows, "definitely_not_a_mode")["status"] == "STALE"
+
+
+def test_build_records_the_power_mode_and_the_windows_it_actually_applied(tmp_path):
+    _log(tmp_path, "ag_v1_fx", [(OVERNIGHT_LAST, "FX EURUSD (EURUSD-VIP) ASIAN_LONDON data=FRESH decision=NO_TRADE")])
+    out = hb.build(str(tmp_path), now=OVERNIGHT_NOW, tasks={}, resources=OK_RES, power_mode="always_on")
+    assert out["host_power_mode"] == "always_on"
+    assert "SCHED-R1-B" in out["host_power_mode_source"]
+    assert "always_on" in out["reader_rule"] and "no sleep span" in out["reader_rule"]
+    assert out["source_windows"]["fx"] == ["ALWAYS_ON"]
+    assert out["sources"]["ag_v1_fx.log"]["status"] == "STALE"          # not INACTIVE_EXPECTED
+    assert out["sources"]["ag_v1_fx.log"]["power_mode"] == "always_on"
+    legacy = hb.build(str(tmp_path), now=OVERNIGHT_NOW, tasks={}, resources=OK_RES)
+    assert legacy["host_power_mode"] == "wake_sleep"                     # default = observed state
+    assert legacy["sources"]["ag_v1_fx.log"]["status"] == "INACTIVE_EXPECTED"
+    assert legacy["source_windows"]["fx"] == ["AWAKE_DAILY", "WEEKEND_CRYPTO"]
+
+
 def test_mt5_connect_failure_reports_false(tmp_path):
     _log(tmp_path, "ag_v1_lsmc", [(NOW - dt.timedelta(minutes=20), "LSMC EURUSD data=FRESH state=IDLE source=X"),
                                   (NOW - dt.timedelta(minutes=2), "MT5_INITIALIZE_FAILED last_error=(-6, x)")])

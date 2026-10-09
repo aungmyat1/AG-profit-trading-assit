@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from typing import TYPE_CHECKING, Optional, Sequence
 
+from contracts.v1 import SCHEMA_VERSION, MarketState
 from execution_runtime.bybit_linear_perp_feed import (
     BybitCandleBatch,
     BybitFeedDataError,
@@ -21,8 +22,6 @@ from execution_runtime.bybit_linear_perp_feed import (
     BybitFeedRequestError,
     BybitFeedStaleData,
     BybitLinearPerpFeed,
-    CANONICAL_SYMBOL,
-    EXCHANGE_ID,
 )
 from opportunity.adapter import (
     FunnelProjection,
@@ -40,7 +39,6 @@ from opportunity.contracts import (
 from opportunity.engine import evaluate_funnel
 from opportunity.registry_binding import StrategyBinding
 from opportunity.stages import OUTCOME_ACTIVE, STAGE_SETUP_DETECTED
-from contracts.v1 import MarketState, SCHEMA_VERSION
 
 if TYPE_CHECKING:
     from strategy_engine.session import Candle
@@ -55,7 +53,6 @@ from .constants import (
     TIMEFRAME,
     VENUE,
 )
-
 
 _BAR = timedelta(minutes=5)
 _DAY_BARS = 24 * 60 // 5
@@ -366,7 +363,6 @@ def _form_offline_opportunity(
         raise ScannerInputError(
             "INVALID_RESPONSE", "REAL_MODE_REQUIRES_PUBLIC_FEED_ENTRYPOINT"
         )
-    latest = evaluation.latest
     latest_open = evaluation.latest_open
     current_day_start = evaluation.current_day_start
     previous_day_start = evaluation.previous_day_start

@@ -25,7 +25,10 @@ from typing import Optional
 
 import yaml
 
-from validation_framework.lifecycle_registry import LifecycleRegistryError, get_lifecycle_stage
+from validation_framework.lifecycle_registry import (
+    LifecycleRegistryError,
+    get_lifecycle_stage,
+)
 
 DEFAULT_REGISTRY_PATH = os.path.join("strategies", "registry.yaml")
 

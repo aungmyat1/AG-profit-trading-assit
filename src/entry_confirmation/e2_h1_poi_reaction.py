@@ -29,7 +29,7 @@ direction.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Sequence
 
@@ -37,7 +37,12 @@ from strategy_engine.session import Candle
 from supply_demand import ZoneResult
 
 from .displacement import evaluate_displacement
-from .entry_models_v1 import REFERENCE_TIMEFRAME_E2, CHECK_TIMEFRAME, EConditionResult, EntryModelState
+from .entry_models_v1 import (
+    CHECK_TIMEFRAME,
+    REFERENCE_TIMEFRAME_E2,
+    EConditionResult,
+    EntryModelState,
+)
 from .models import CandidateDirection, ConfirmationState
 from .poi import evaluate_poi_context
 

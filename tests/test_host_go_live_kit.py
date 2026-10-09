@@ -23,6 +23,7 @@ import diagnose_mt5 as diag  # noqa: E402
 import live_candles_smoke as smoke  # noqa: E402
 import verify_objective as objective  # noqa: E402
 from _lsmc_v110_fixtures import NOW, d1_bars, h1_bars, m5_bars  # noqa: E402
+
 from host_delivery import telegram_message as tg  # noqa: E402
 from host_evidence import symbol_metadata as sm  # noqa: E402
 from strategy_engine.session import Candle  # noqa: E402
@@ -569,6 +570,96 @@ def test_telegram_default_archive_only_and_scoped_override(tmp_path):
         assert not tg.should_send(kind, v, r)
 
 
+def test_local_delivery_scope_can_only_narrow_tracked_policy(tmp_path):
+    import shutil
+    from telegram_delivery.adapter import Config
+    from telegram_delivery.scope_policy import resolve
+
+    (tmp_path / "config").mkdir()
+    shutil.copy2(ROOT / "config/ticket_delivery.yaml", tmp_path / "config/ticket_delivery.yaml")
+    local = tmp_path / "config/local"
+    local.mkdir()
+    override = local / "delivery_override.yaml"
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY]\n", encoding="utf-8")
+    resolved = resolve(tmp_path, sender="legacy")
+    assert resolved["effective"] == ("TICKET_READY",)
+    assert resolved["error"] is None
+    assert tg.should_send("TICKET", "READY", str(tmp_path))
+    assert not tg.should_send("LSMC", "OPPORTUNITY", str(tmp_path))
+
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY]\n", encoding="utf-8")
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [LSMC_OPPORTUNITY]\n", encoding="utf-8")
+    legacy = resolve(tmp_path, sender="legacy")
+    canonical = Config.from_env(str(tmp_path))
+    assert legacy["effective"] == ("TICKET_READY",) and legacy["error"] is None
+    assert canonical.immediate_scopes == frozenset({"LSMC_OPPORTUNITY"})
+    assert canonical.scope_error is None
+
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [WATCH_READY]\n", encoding="utf-8")
+    canonical_widening = Config.from_env(str(tmp_path))
+    assert canonical_widening.immediate_scopes == frozenset()
+    assert canonical_widening.scope_error == "SCOPE_WIDENING_REJECTED"
+    assert resolve(tmp_path, sender="legacy")["effective"] == ("TICKET_READY",)
+
+    override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, MANUAL_TICKET_READY]\n",
+                        encoding="utf-8")
+    rejected = resolve(tmp_path, sender="legacy")
+    assert rejected["effective"] == ()
+    assert rejected["error"] == "SCOPE_WIDENING_REJECTED"
+    assert tg.load_mode(str(tmp_path))["error"] == "SCOPE_WIDENING_REJECTED"
+    assert not tg.should_send("TICKET", "READY", str(tmp_path))
+    (local / "canonical_ticket_delivery.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nimmediate_send_scopes: [LSMC_OPPORTUNITY]\n", encoding="utf-8")
+    assert Config.from_env(str(tmp_path)).immediate_scopes == frozenset({"LSMC_OPPORTUNITY"})
+
+
+def test_objective_reports_both_sender_scopes_independently(monkeypatch):
+    from telegram_delivery.adapter import Config
+    from telegram_delivery.scope_policy import resolve
+
+    def distinct(root=".", sender="legacy"):
+        if sender == "legacy" and Path(root) == Path(objective.REPO_ROOT):
+            return {"tracked": ("TICKET_READY", "LSMC_OPPORTUNITY"), "disabled": (),
+                    "effective": ("TICKET_READY",), "error": None}
+        return resolve(root, sender=sender)
+    monkeypatch.setattr(objective, "resolve_immediate_scope", distinct)
+    monkeypatch.setattr(Config, "from_env", classmethod(
+        lambda cls, root=".": cls(immediate_scopes=frozenset({"LSMC_OPPORTUNITY"}))))
+    report = objective.verify()
+    row = next(item for item in report["checks"] if item["check"] == "telegram_report_scope")
+    assert row["status"] == "PASS"
+    assert "legacy effective=['TICKET_READY']" in row["detail"]
+    assert "canonical effective=['LSMC_OPPORTUNITY']" in row["detail"]
+
+
+def test_objective_fails_when_legacy_override_widens_policy(monkeypatch):
+    from telegram_delivery.scope_policy import resolve
+
+    def widened_legacy(root=".", sender="legacy"):
+        if sender == "legacy":
+            return {"tracked": ("TICKET_READY", "LSMC_OPPORTUNITY"), "disabled": (),
+                    "effective": (), "error": "SCOPE_WIDENING_REJECTED"}
+        return resolve(root, sender=sender)
+    monkeypatch.setattr(objective, "resolve_immediate_scope", widened_legacy)
+    report = objective.verify()
+    row = next(item for item in report["checks"] if item["check"] == "telegram_report_scope")
+    assert row["status"] == "FAIL"
+    assert "legacy effective=[] error=SCOPE_WIDENING_REJECTED" in row["detail"]
+
+
+def test_objective_fails_when_canonical_effective_scope_exceeds_policy(monkeypatch):
+    from telegram_delivery.adapter import Config
+
+    monkeypatch.setattr(Config, "from_env", classmethod(
+        lambda cls, root=".": cls(immediate_scopes=frozenset({"WATCH_READY"}))))
+    report = objective.verify()
+    scope_check = next(row for row in report["checks"] if row["check"] == "telegram_report_scope")
+    assert scope_check["status"] == "FAIL"
+    assert "canonical effective=['WATCH_READY']" in scope_check["detail"]
+
+
 def test_host_notification_router_reports_only_ready_proposals_and_opportunities(tmp_path, monkeypatch):
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
@@ -665,7 +756,8 @@ def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, mon
         "EURUSD LONG (ASIAN_LONDON)", "GBPUSD LONG (ASIAN_LONDON)",
         "EURUSD LONG (LONDON_NEWYORK)", "GBPUSD LONG (LONDON_NEWYORK)"]
     for message in after_first:
-        assert "decision=READY" in message and "ticket_id:" in message and "VALID UNTIL" in message
+        assert "decision=NOT_READY" in message and "ticket_id:" in message and "VALID UNTIL" in message
+        assert "logic_status: NOT_VERIFIED" in message and "EDGE_VERIFIED=FALSE" in message
         assert "entry:" in message and "target leg 1" in message and "NOT A BROKER ORDER" in message
 
 
@@ -882,8 +974,9 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     assert "--canonical" in runner and "manual_lines = run_manual_jobs(fetch, now, journal)" in runner
     assert runner.index("manual_lines = run_manual_jobs(fetch, now, journal)") < runner.index("provider = snapshot_provider(GuardedMT5(mt5))")
     assert "--canonical" in verify and "$e.Canonical" in verify
-    offsets = [int(o) for o in re.findall(r"Offset = (\d+)", install)]
-    assert offsets == [1, 2, 3]                        # FX, crypto tickets, continuous six-symbol LSMC
+    starts = re.findall(r"StartAt = '(\d\d:\d\d:\d\d)'", install)
+    assert starts == ["00:01:00", "00:02:30", "00:04:15"]   # FX, crypto tickets, six-symbol LSMC (stagger rule)
+    assert "-Execute $PythonW" in install and ".venv\\Scripts\\pythonw.exe" in verify
     assert "AG-V1-LSMC-Crypto-Weekend" in install and "AG-V1-LSMC-Crypto-Weekend" in uninstall
     assert "REMOVED SUPERSEDED" in install             # prevent duplicate weekend watch polling
     assert "verify_objective.py" in install and "verify_tasks.ps1" in install
@@ -898,6 +991,74 @@ def test_powershell_scripts_default_to_whatif_and_hold_no_secrets():
     assert "RESULT: PASS -- simulated proposal rendered and accepted by Telegram." in verify_telegram
     for s in (install, uninstall, telegram, verify_telegram):
         assert not re.search(r"\d{6,}:[A-Za-z0-9_-]{20,}", s)          # no bot-token-shaped literal
+
+
+DECL_RE = re.compile(r"@\{ Name = '([^']+)'; Path = '([^']*)'; Managed = '(\w+)'; Status = '(\w+)'\s*"
+                     r"Registered = '[^']*'(?:; DeleteAfter = '([\d-]+)')?\s*Target = @\{ State = '(\w+)'(.*?)\}\s*;?\s*Note = ",
+                     re.S)
+
+
+def _host_declarations():
+    text = (HOST / "install_tasks.ps1").read_text(encoding="utf-8")
+    return text, [dict(zip(("name", "path", "managed", "status", "delete_after", "state", "rest"), m))
+                  for m in DECL_RE.findall(text)]
+
+
+def _comment_facts(text: str, tag: str) -> dict:
+    """`# <tag>: K=V; K=V` -> {K: V}; the format the host facts collector parses."""
+    line = re.search(rf"^# {tag}: (.+)$", text, re.M).group(1)
+    return dict(kv.strip().split("=", 1) for kv in line.split(";"))
+
+
+def test_install_tasks_declares_host_timezone_and_always_on_power_policy_without_applying_it():
+    text, _ = _host_declarations()
+    assert _comment_facts(text, "AG-HOST-TIMEZONE") == {
+        "Id": "Myanmar Standard Time", "Abbrev": "MMT", "UtcOffset": "+06:30", "DST": "false"}
+    assert _comment_facts(text, "AG-HOST-POWER-POLICY") == {
+        "AC_STANDBY_TIMEOUT_MIN": "0", "AC_HIBERNATE_TIMEOUT_MIN": "0", "MODE": "ALWAYS_ON"}
+    script = text.split("#>", 1)[1]                                  # after the header comment block
+    code = [re.sub(r"'[^']*'", "''", ln) for ln in script.splitlines() if not ln.lstrip().startswith("#")]
+    assert not any(re.search(r"powercfg|SetSuspendState|Set-.*Power", ln, re.I) for ln in code)  # declared data only
+
+
+def test_install_tasks_declarations_parse_to_the_always_on_target():
+    text, decl = _host_declarations()
+    assert text.count("@{ Name = '") - 3 == len(decl) == 17     # 3 $Plan rows + 16 registered + 1 new
+    by = {d["name"]: d for d in decl}
+    assert len(by) == len(decl)
+    statuses = {"ACTIVE", "NEW", "RETIRED", "REMOVE", "DISABLED", "DISABLE_AFTER_PARITY"}
+    assert {d["status"] for d in decl} <= statuses
+    for d in decl:
+        assert d["state"] == {"RETIRED": "ABSENT", "REMOVE": "ABSENT", "DISABLED": "DISABLED"}.get(d["status"], "ENABLED")
+    # The optional Canonical field (main) sits between Minutes and StartAt (SCHED-R1-B); the regex
+    # must tolerate it or the loop below silently passes on an empty match.
+    plan = re.findall(r"Name = '(AG-V1-[\w-]+)';\s+Mode = '(\w+)';\s+Minutes = (\d+);"
+                      r"(?:\s*Canonical = \$(true|false);)?\s*StartAt = '([\d:]+)'", text)
+    assert len(plan) == 3, plan                                     # never accept a vacuous match
+    for name, mode, minutes, canonical, start in plan:               # $Plan and its declaration agree
+        d = by[name]
+        assert (d["managed"], d["status"]) == ("INSTALLER", "ACTIVE")
+        # The target action is what -Apply installs: $Plan Canonical = true adds --canonical.
+        suffix = " --canonical" if canonical == "true" else ""
+        assert "pythonw.exe" in d["rest"] and f"--mode {mode}{suffix}'" in d["rest"], (name, d["rest"])
+        assert f"Days = 'DAILY'; Start = '{start}'; EveryMin = {minutes} " in d["rest"]
+    assert by["AG-V1-LSMC-Crypto-Weekend"]["managed"] == "RETIRE"
+    assert {n for n, d in by.items() if d["status"] == "RETIRED"} == {
+        "AG-V1-LSMC-Crypto-Weekend", "AG-Wake-MT5", "AG-Wake-Weekend-Crypto", "AG-Sleep-Night", "AG-Sleep-Weekend-Crypto"}
+    friction = [d for n, d in by.items() if n.startswith("AG_LSMC_EURUSD_Friction_Window")]
+    assert len(friction) == 4 and all(d["status"] == "DISABLED" and d["delete_after"] == "2026-10-15" for d in friction)
+    assert {n for n, d in by.items() if d["status"] == "REMOVE"} == {"AG_FX_ASIAN_LONDON_SHADOW", "AG_FX_LONDON_NEWYORK_SHADOW"}
+    assert by["AG Profit Trading - BTC Daily Decision"]["status"] == "DISABLE_AFTER_PARITY"
+    hb = by["AG-Heartbeat-Local"]
+    assert hb["status"] == "NEW" and "heartbeat.py" in hb["rest"] and "EveryMin = 60" in hb["rest"]
+    assert "{TELEMETRY}" in hb["rest"] and "<HOST_SCRATCHPAD>" in hb["rest"]
+    # PR #84 review P1: the always-on target heartbeat must not fall back to the wake_sleep default,
+    # or overnight runner silence would read INACTIVE_EXPECTED instead of STALE.
+    target_args = re.search(r"Args = '([^']*)'", hb["rest"]).group(1)
+    assert target_args.count("--host-power-mode always_on") == 1, target_args
+    assert not re.search(r"S-1-5-\d|C:\\Users\\(?!%)[A-Za-z]", text)  # sanitized: no SIDs or user-profile paths
+    # AGENTS.md host-evidence rule: a private checkout root is never committed (PR #78 review P1).
+    assert not re.search(r"[A-Z]:\\\\(wp3-main-integ|ddev|ag-telemetry)", text), text
 
 
 def test_go_live_doc_lists_the_six_steps_in_order():
@@ -1035,3 +1196,27 @@ def test_flush_std_streams_tolerates_pythonw_none_streams(monkeypatch):
     monkeypatch.setattr(sys, "stdout", None)
     monkeypatch.setattr(sys, "stderr", None)
     smoke.flush_std_streams()
+
+
+def test_target_heartbeat_args_parse_to_always_on_mode():
+    """PR #84 P1: the declared AG-Heartbeat-Local target arguments, parsed by heartbeat.py's own
+    CLI, select always_on, so a stopped runner overnight is STALE, never INACTIVE_EXPECTED."""
+    import shlex
+    import heartbeat as hb_module
+    _, decl = _host_declarations()
+    rest = {d["name"]: d for d in decl}["AG-Heartbeat-Local"]["rest"]
+    args = shlex.split(re.search(r"Args = '([^']*)'", rest).group(1), posix=True)[1:]  # drop the script path
+    captured = {}
+
+    def fake_build(*a, **kw):
+        captured.update(kw)
+        return {}
+    import pytest as _pytest
+    with _pytest.MonkeyPatch.context() as mp:
+        mp.setattr(hb_module, "build", fake_build)
+        mp.setattr(hb_module, "write", lambda payload, out: out)
+        try:
+            hb_module.main(args)
+        except SystemExit as exc:
+            assert exc.code in (0, None), exc
+    assert captured.get("power_mode") == "always_on", captured

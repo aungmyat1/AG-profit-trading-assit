@@ -31,6 +31,8 @@ does not replace them. Nothing here authorizes trading or changes a safety gate.
 | REG-INVARIANTS | Invariants authority | `AGENTS.md` + `docs/DOCUMENTATION_GOVERNANCE.md` / a new `INVARIANTS.md` | PENDING_OWNER | — |
 | REG-HEARTBEAT | Host heartbeat thresholds | 1200 MB RAM / 10 GB disk (values to confirm or replace) | PENDING_OWNER | — |
 | REG-S01-SIGNAL-TIME | PR #94 removal of the first-trade-bar signal-time fallback: ticket-layer correctness fix or `ST_ASIAN_SWEEP_5R_V1` contract change (evidence: `docs/status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md`) | Ticket-layer fix, recorded explicitly / contract change via candidate version and admission governance | PENDING_OWNER | — |
+| REG-REGEN-BOOTSTRAP | Regeneration bot: allow one empty bootstrap commit on `regen/generated-files-<sha>` before its PR exists (`docs/governance/REGENERATION_BOT_POLICY.md` E1) | Approve the narrow exception / owner opens regeneration PRs manually / waive PR-before-push for these branches | PENDING_OWNER | — |
+| REG-REGEN-STALE-CLOSE | Regeneration bot: close its own superseded `regen/generated-files-<sha>` PRs with a comment (`REGENERATION_BOT_POLICY.md` E2) | Approve bot closure / comment only, owner closes | PENDING_OWNER | — |
 
 ## Resolved
 

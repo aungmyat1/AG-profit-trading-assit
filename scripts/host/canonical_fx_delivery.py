@@ -18,6 +18,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 import yaml
 
 from telegram_delivery.adapter import Config, Sender
+from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 from ticket_store.store import SCHEMA_EVALUATION, TicketStore, evaluation_id, read_jsonl
 from v1_tickets.actionability import (
     BLOCKED, EXPIRED, INFO_ONLY_INSUFFICIENT_REMAINING_R, INFO_ONLY_POLICY_UNRESOLVED,
@@ -85,6 +86,7 @@ def build_sender(journal: str, *, root: str, transport=None, sleep=None) -> Send
     env_allow = frozenset(part.strip() for part in os.getenv("TELEGRAM_OWNER_CHAT_IDS", "").split(",")
                           if part.strip())
     local_path = Path(root) / CANONICAL_OVERRIDE
+    scope = resolve_immediate_scope(root, sender="canonical")
     watch_info_flag = False
     try:
         raw = yaml.safe_load(local_path.read_text(encoding="utf-8")) or {}
@@ -103,7 +105,8 @@ def build_sender(journal: str, *, root: str, transport=None, sleep=None) -> Send
     config = Config(enabled=authorized, token=env_token if authorized else "",
                     chat_id=env_chat if authorized else "",
                     owner_chat_ids=(env_allow & local_ids) if authorized else frozenset(),
-                    watch_info_scope=bool(authorized and watch_info_flag))
+                    watch_info_scope=bool(authorized and watch_info_flag),
+                    immediate_scopes=frozenset(scope["effective"]), scope_error=scope["error"])
     kwargs = {"config": config}
     if transport is not None:
         kwargs["transport"] = transport

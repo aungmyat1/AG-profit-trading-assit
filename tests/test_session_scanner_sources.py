@@ -8,11 +8,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
-import pytest
-
 from session_scanner import checklist
 from session_scanner import scanner as scanner_module
-from session_scanner.quality import Bar, INVALID, STALE, VALID, assess_series, fetch_with_sync
+from session_scanner.quality import (
+    INVALID,
+    Bar,
+    assess_series,
+    fetch_with_sync,
+)
 from session_scanner.registry import load_specs, resolve_spec, verify_live
 from session_scanner.scanner import load_scanner_config, run_scan
 from session_scanner.strategy_adapter import AsianSweepAdapter, resolve_proposal_scope
