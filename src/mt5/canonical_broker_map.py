@@ -87,8 +87,10 @@ class BrokerSymbolMap:
 
     def mapped_symbols(self, canonicals: Optional[Iterable[str]] = None) -> Dict[str, str]:
         names = self.entries if canonicals is None else canonicals
-        return {c: self.entries[c].broker_symbol for c in names
-                if c in self.entries and self.entries[c].status == MAPPED}
+        resolved: Dict[str, str] = {}
+        for canonical in names:
+            resolved[canonical] = self.resolve(canonical)
+        return resolved
 
 
 def derive_map(symbols: Mapping[str, Optional[Mapping[str, object]]],
