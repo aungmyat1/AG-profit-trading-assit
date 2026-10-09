@@ -109,7 +109,11 @@ def test_unmapped_resolve_is_typed_blocked(tmp_path):
         with pytest.raises(cbm.SymbolUnmapped) as e:
             m.resolve(canonical)
         assert e.value.terminal_status == "BLOCKED" and e.value.reason_code == cbm.REASON_UNMAPPED
-    assert m.mapped_symbols() == {}
+    with pytest.raises(cbm.SymbolUnmapped) as exc:
+        m.mapped_symbols()
+    assert exc.value.canonical == "XAUUSD"
+    assert exc.value.terminal_status == "BLOCKED"
+    assert exc.value.reason_code == cbm.REASON_UNMAPPED
 
 
 @pytest.mark.parametrize("entries, over", [
