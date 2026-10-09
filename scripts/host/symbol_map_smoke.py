@@ -37,11 +37,13 @@ class ReadOnlyMT5:
         self.calls: dict = {}
 
     def __getattr__(self, name):
+        if name not in ALLOWED_MT5_CALLS and name != "__version__":
+            raise PermissionError(f"MT5 attribute {name!r} is not allowed in this read-only mission")
         attr = getattr(self._mt5, name)
+        if name == "__version__":
+            return attr
         if not callable(attr):
-            return attr  # constants
-        if name not in ALLOWED_MT5_CALLS:
-            raise PermissionError(f"MT5 call {name!r} is not allowed in this read-only mission")
+            raise PermissionError(f"MT5 operation {name!r} must be callable")
 
         def wrapped(*a, **k):
             self.calls[name] = self.calls.get(name, 0) + 1
@@ -73,6 +75,12 @@ def capture_symbols(mt5) -> dict:
         for name in candidate_names(canonical):
             info = call_with_timeout(mt5.symbol_info, name)
             if info is None:
+                error = call_with_timeout(mt5.last_error)
+                # MT5 error 4301 identifies an unknown symbol; ambiguous errors must not
+                # silently become an UNMAPPED trading decision.
+                code = error[0] if isinstance(error, (tuple, list)) and error else None
+                if code not in (4301,):
+                    raise RuntimeError(f"symbol_info({name!r}) failed or ambiguous: {error!r}")
                 out[name] = None
                 continue
             rec = {f: getattr(info, f, None) for f in INFO_FIELDS}
@@ -89,6 +97,15 @@ def capture_symbols(mt5) -> dict:
 
 def _visibility(symbols: dict) -> dict:
     return {n: (r["visible"] if r else None) for n, r in symbols.items()}
+
+
+def snapshot_mapping_differences(first: dict, second: dict) -> list[str]:
+    """Compare only mapping-critical metadata, not fast-moving market prices."""
+    changed = []
+    for canonical in CANONICALS:
+        if derive_map(first, (canonical,))[canonical] != derive_map(second, (canonical,))[canonical]:
+            changed.append(canonical)
+    return changed
 
 
 def run(mode: str) -> int:
@@ -113,6 +130,10 @@ def run(mode: str) -> int:
         finally:
             call_with_timeout(mt5.shutdown)
     visibility_unchanged = _visibility(first) == _visibility(second)
+    snapshot_differences = snapshot_mapping_differences(first, second)
+    if snapshot_differences:
+        print(f"BLOCKED: unstable symbol metadata for {snapshot_differences}")
+        return 1
     forbidden = sorted(set(mt5.calls) - ALLOWED_MT5_CALLS)
     guard = {"mt5_calls": dict(sorted(mt5.calls.items())), "forbidden_calls": forbidden,
              "market_watch_visibility_unchanged": visibility_unchanged,
