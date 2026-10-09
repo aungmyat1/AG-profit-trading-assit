@@ -1,7 +1,7 @@
 ---
 class: authority
 state: DESIGN
-owner_reviewed: null
+owner_reviewed: 2026-10-09
 review_by: 2026-11-07
 ---
 # AG Profit Trading — Project Objective (rev 2026-10-08)
@@ -9,7 +9,8 @@ review_by: 2026-11-07
 **Repository:** `aungmyat1/AG-profit-trading-assit`  
 **Target branch:** `main`  
 **Venue:** VT Markets MT5 Demo  
-**Product phase:** PRE-EDGE
+**Product phase:** PRE-EDGE  
+**Owner ratification:** RATIFIED 2026-10-09 by the owner — register entry `OBJ-RATIFY-2026-10-09` in [`docs/governance/OWNER_DECISION_REGISTER.md`](governance/OWNER_DECISION_REGISTER.md). Ratification is not execution authorization; demo and live execution stay disabled.
 
 ## Objective
 
@@ -20,6 +21,8 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 `LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority.
 
 ## Scope
+
+**Logical instruments:** EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSD, ETHUSD. These canonical names are the objective's identities. Host-observed VT Markets broker symbols are recorded in [`status/evidence/host_symbol_info_2026-10-09.json`](../status/evidence/host_symbol_info_2026-10-09.json). The canonical-to-broker symbol map is **PENDING AGP-C2-SYMMAP**; it is neither implemented nor verified, and no broker symbol is implied here.
 
 1. **Session tickets — FX + Gold**
    - EURUSD
@@ -35,6 +38,7 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
    - ETHUSD
    - Daily, including weekends, at strategy-defined times.
    - This is a target production capability, not a claim that the current crypto runtime is already accepted. Venue/contract identity, market-data semantics, sizing and strategy admission must be validated before operational acceptance.
+   - Intended runtime strategy: `ST_CRYPTO_CFD_SWEEP_RETEST_V1`. Admission requires Logic Gate L1–L6 evidence; it is **not admitted** today (see `strategies/registry.yaml`).
 
 3. **Large-SMC watch / alerts — all six instruments (target capability)**
    - Use a separately versioned `ST_LARGE_SMC` strategy only after its contract/engine passes the required Logic Gate and is admitted for ticketing.
@@ -49,6 +53,10 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
    - Confirm/Reject appends an owner decision and may hand off only to the canonical execution boundary.
    - Demo execution remains disabled/no-op unless separately recorded owner authorization enables it.
    - No Telegram control may independently bypass execution/risk/authorization gates.
+
+## Owner decisions D1–D6
+
+The approved V1 decisions D1–D6 stay authoritative in their dated record, [`docs/governance/AG_V1_TWO_GOALS_OWNER_DECISIONS.md`](governance/AG_V1_TWO_GOALS_OWNER_DECISIONS.md); this objective references them and does not restate or amend them. Where this objective's target differs from a dated decision, the difference is not resolved here: D2 (Telegram DEFERRED) is subject to rescission row C1, and D4/D5 (crypto perp contract, Bybit/Binance data) differ from the VT Markets CFD target above. Open rows stay in [`OWNER_DECISION_REGISTER.md`](governance/OWNER_DECISION_REGISTER.md) until the owner records them.
 
 ## Definition of Done
 
@@ -71,7 +79,7 @@ For each acceptance:
 - duplicate owner messages = 0;
 - broker mutation remains 0 unless a later, separately authorized execution acceptance explicitly changes the mission.
 
-A live acceptance run does **not** require a trade signal. `NO_TRADE`, `INFO_ONLY`, `EXPIRED`, `BLOCKED`, `INSUFFICIENT_DATA`, and other canonical fail-closed states are valid outcomes when produced truthfully.
+A live acceptance run does **not** require a trade signal. `NO_TRADE`, `INFO_ONLY`, `EXPIRED`, `BLOCKED`, `INSUFFICIENT_DATA`, and other canonical fail-closed states are valid outcomes when produced truthfully. The existing canonical outcome taxonomy is unchanged; this objective adds no terminal state.
 
 ### Automation
 
@@ -82,6 +90,8 @@ A live acceptance run does **not** require a trade signal. `NO_TRADE`, `INFO_ONL
 ### Soak
 
 - At least 10 clean scheduled cycles across the admitted FX, crypto and Large-SMC scope.
+- At least 10 clean scheduled cycles **per admitted strategy**.
+- Coverage includes every applicable session (ASIAN → LONDON, LONDON → NEW YORK) and, for admitted crypto, weekend days.
 - Expected evaluations equal terminal evaluations.
 - Silent cycles = 0.
 - Duplicate owner messages = 0.
@@ -123,7 +133,7 @@ These tracks may progress independently but must not be used to bypass this obje
 
 ## Critical Path
 
-1. **#60 Telegram delivery** — rebase onto current `main`, reconcile, run focused + full regression suite, review and merge.
+1. **#60 Telegram delivery** — **DONE**: merged to `main` at merge commit `4012d8f` (verified 2026-10-09: `git merge-base --is-ancestor 4012d8f origin/main`).
 2. **Asian Sweep Logic Gate reconciliation** — resolve L2 contract/engine divergences in a separately versioned successor; pass L1–L6 before actionable ticket admission.
 3. **Crypto CFD contract + sizing** — define and validate BTCUSD/ETHUSD VT Markets CFD identity, data semantics, risk/sizing and strategy admission.
 4. **Large-SMC verification on six instruments** — resolve unsigned/research-only contract fields, provide deterministic engine authority and pass the required Logic Gate before actionable ticketing.
