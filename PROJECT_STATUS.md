@@ -6,6 +6,14 @@ review_by: 2026-11-07
 ---
 # Project Status — AG Profit Trading
 
+## Current snapshot (2026-10-09)
+
+OD1009-D1–OD1009-D6 are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`; G1–G6 are
+defined in `docs/PROJECT_OBJECTIVE.md`. The FX/gold manual-ticket risk/cost gate is implemented
+but awaits focused verification. Current strategy bindings, readiness values, demo/live flags,
+host tasks, and broker state are unchanged. Host-side execution artifacts remain `UNTRACKED_HOST`
+under C11 until brought into the repository through a reviewed PR before G6.
+
 ## Generated facts
 
 ### Authority table
@@ -385,6 +393,11 @@ The declared target retires `AG-Wake-MT5`, `AG-Wake-Weekend-Crypto`, `AG-Sleep-N
 host as asleep between 00:45 and 12:25 MMT and defaults to `--host-power-mode wake_sleep`. Under
 `--host-power-mode always_on` there is no sleep span, so overnight runner silence is `STALE` and never
 `INACTIVE_EXPECTED`.
+
+OD1009-D4 records the daily 00:04:15 UTC `AG-V1-LSMC-Watch` schedule and retirement of
+`AG-V1-LSMC-Crypto-Weekend` as a target only; no host task or installer was changed. Separately,
+`scripts/host/live_candles_smoke.py:15-18` documents the canonical FX runner path; neither source
+proves host task registration.
 
 Regression evidence: `tests/test_host_heartbeat.py` (21 passed, Linux, 2026-10-08) and
 `tests/test_host_go_live_kit.py` (73 passed, 1 skipped, Linux, 2026-10-08). Full suite
