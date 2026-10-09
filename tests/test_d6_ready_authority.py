@@ -29,7 +29,8 @@ AT = dt.datetime(2026, 10, 7, 7, 16, 8, tzinfo=UTC)          # the 2026-10-07 07
 def engine_signal(monkeypatch):
     sig = types.SimpleNamespace(status="SIGNAL", reason_code="BOX_DIRECTION_V1", regime="RANGE", setup="entry_1",
                                 signal_id="s1", box_high=1.1720, box_low=1.1660, box_mid=1.1690,
-                                signal_timestamp=None, direction="LONG", entry=1.1665, stop_loss=1.16515,
+                                # engine bar time (STALE-FIX-1): keeps this stub on the READY-authority path
+                                signal_timestamp=dt.datetime(2026, 10, 7, 7, 0, tzinfo=UTC), direction="LONG", entry=1.1665, stop_loss=1.16515,
                                 risk_distance=0.00135)
     monkeypatch.setattr(fx_tickets, "evaluate", lambda *a, **k: sig)
     return sig

@@ -12,14 +12,14 @@ import datetime as dt
 import pytest
 
 from execution_runtime.bybit_linear_perp_feed import (
-    BybitCandleBatch,
     BTCUSDT_STEP_SIZE,
     BTCUSDT_TICK_SIZE,
+    CANONICAL_SYMBOL,
+    BybitCandleBatch,
     BybitFeedDataError,
     BybitFeedRequestError,
     BybitFeedStaleData,
     BybitLinearPerpFeed,
-    CANONICAL_SYMBOL,
     default_symbol_meta,
     fetch_exchange_symbol_meta,
 )

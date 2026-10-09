@@ -62,8 +62,10 @@ if __name__ == "__main__":   # bound the whole process, including the heavy impo
     start_run_watchdog(f"ag_v1_{_argv_mode(sys.argv[1:])}")
 
 from host_delivery import telegram_message as tg  # noqa: E402
-from host_delivery.lsmc_alert_dedup import AlertLedger, deliver_once  # noqa: E402
+from host_delivery import telegram_confirm as tg_confirm  # noqa: E402
+from host_delivery.lsmc_alert_dedup import AlertLedger, DELIVERY_UNCERTAIN, deliver_once  # noqa: E402
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
+from large_smc_watch.contract import CRYPTO_SYMBOLS as LSMC_CRYPTO_SYMBOLS  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
 from strategy_engine import load_strategy  # noqa: E402
@@ -107,7 +109,7 @@ def fx_symbols() -> List[str]:
 
 
 def classify(symbol: str, m5: list, now: dt.datetime) -> str:
-    if symbol not in ("BTCUSDT", "ETHUSDT") and fx_market_closed(now):
+    if symbol not in ("BTCUSDT", "ETHUSDT", "BTCUSD", "ETHUSD") and fx_market_closed(now):
         return "MARKET_CLOSED"
     if not m5:
         return "NO_DATA"
@@ -189,11 +191,17 @@ DELIVERY_DIR = os.path.join("ticket_delivery", "delivery_status")
 
 
 def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] = None,
-            ref: Optional[str] = None, now: Optional[dt.datetime] = None) -> str:
+            ref: Optional[str] = None, now: Optional[dt.datetime] = None,
+            reply_markup: Optional[Dict[str, object]] = None) -> str:
     """Best-effort Telegram delivery (TELEGRAM_DELIVERY_TRACE_R1). Callers persist the scan /
     ticket record first; this never raises, so a Telegram or policy failure cannot hide a scan
     record or stop the remaining symbols. The status is persisted separately (append-only JSONL,
-    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text."""
+    when a journal is given). Only sanitized fields are kept: no token, chat id, URL or text.
+
+    Returns the legacy journal status, except that an ambiguous transport outcome (timeout,
+    5xx, unknown) is returned as DELIVERY_UNCERTAIN: the durable row keeps its frozen FAILED /
+    ERROR vocabulary, but a deduplicating caller must never treat the send as a known failure
+    that may be retried."""
     error = None
     # The persisted journal keeps its frozen status vocabulary (SENT / NOT_SENT_POLICY / FAILED /
     # ERROR); the conservative typed transport outcome is reported in the telegram log only, so
@@ -204,7 +212,10 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
         if not tg.should_send(kind, value, root):
             status = "NOT_SENT_POLICY"
         else:
-            tg.send_message(text)
+            if reply_markup is None:
+                tg.send_message(text)
+            else:
+                tg_confirm.send_confirmation(text, reply_markup, root=root)
             status = "SENT"
     except tg.TelegramSendError as exc:
         status, error, typed = "FAILED", str(exc), exc.delivery_state  # message is sanitized
@@ -221,7 +232,7 @@ def _notify(kind: str, value: str, text: str, root: str, journal: Optional[str] 
                           "error": error, "recorded_at": at.isoformat(), "code_sha": code_sha()})
         except OSError as exc:
             log_line("telegram", f"DELIVERY_STATUS_WRITE_FAILED {kind}={value} {type(exc).__name__}")
-    return status
+    return DELIVERY_UNCERTAIN if typed == DELIVERY_UNCERTAIN else status
 
 
 def _archive_fx_result(state: JsonKeyValueStore, journal: str, ticket: dict, now: dt.datetime) -> tuple[bool, bool, list[str]]:
@@ -351,8 +362,11 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
                 now=now, ticket_id=manual["ticket_id"] if manual.get("direction") else None,
                 block_reasons=manual["block_reasons"], warnings=manual.get("warnings", ())))
             if manual_new and notify and manual["state"] == "TICKET_READY":
-                _notify(tg.MANUAL_TICKET, tg.MANUAL_TICKET_READY, manual_ticket.render_text(manual), REPO_ROOT,
-                        journal=journal, ref=f"manual:{manual['ticket_id']}", now=now)
+                confirmation_text, confirmation_markup = tg_confirm.render_confirmation(
+                    manual, os.environ.get("TELEGRAM_BOT_TOKEN", ""))
+                _notify(tg.MANUAL_TICKET, tg.MANUAL_TICKET_READY, confirmation_text, REPO_ROOT,
+                        journal=journal, ref=f"manual:{manual['ticket_id']}", now=now,
+                        reply_markup=confirmation_markup)
             paper_status = "OPENED" if paper_opened else (
                 "ALREADY_RECORDED" if not paper_reasons
                 else "INELIGIBLE:" + ",".join(paper_reasons)
@@ -458,13 +472,20 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
         lines += _watch_once(tracker, symbol, bars, now, notify, ledger=ledger, journal=journal,
                              display_broker_symbol=broker)
     if crypto_feed is not None:
-        for symbol in ("BTCUSDT", "ETHUSDT"):
+        # LSMC 1.1.0 is VT-only: its crypto symbols are the VT broker names (BTCUSD/ETHUSD). The
+        # shared feed is keyed by the V1 crypto ticket names, so look up the key mapped to each.
+        feed_keys = {b: k for k, b in getattr(crypto_feed, "symbols", {}).items()}
+        for symbol in LSMC_CRYPTO_SYMBOLS:
+            key = feed_keys.get(symbol)
+            if key is None:
+                lines.append(f"LSMC {symbol} DATA_ERROR SYMBOL_NOT_FOUND")
+                continue
             try:
-                b = crypto_feed.fetch_bundle(symbol, [("H1", COUNTS["H1"]), ("M5", COUNTS["M5"])])
+                b = crypto_feed.fetch_bundle(key, [("H1", COUNTS["H1"]), ("M5", COUNTS["M5"])])
             except Exception as exc:  # noqa: BLE001
                 lines.append(f"LSMC {symbol} DATA_ERROR {type(exc).__name__}")
                 continue
-            broker = getattr(crypto_feed, "symbols", {}).get(symbol)
+            broker = symbol
             lines += _watch_once(tracker, symbol, {"D1": [], **b.candles}, now, notify, source=b.source,
                                  window=window, ledger=ledger, journal=journal,
                                  display_broker_symbol=broker)
@@ -579,8 +600,18 @@ def main(argv=None) -> int:
     journal = os.path.join(REPO_ROOT, "journal", "host_smoke" if args.mode == "smoke" else "")
     canonical_sender = (build_sender(journal, root=REPO_ROOT)
                         if args.mode == "fx" and args.canonical else None)
-    from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config
+    from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config, window_status
     crypto_config = load_ticket_config(args.crypto_config or ACTIVE_CONFIG, REPO_ROOT)
+
+    # MT5-backed crypto jobs must be window-gated before either the runner lock or the
+    # host-wide MT5 lock. The ticket evaluator applies the same config window later, but
+    # evaluating it only after attach needlessly starts MT5 outside the authorized window.
+    if args.mode == "crypto" and crypto_config["venue"]["kind"] == "MT5":
+        status = window_status(crypto_config, now.date(), now)
+        if status != "IN_WINDOW":
+            line = f"CRYPTO OUTSIDE_WINDOW ({status})"
+            log_line(log_name, line)
+            return 0
 
     def canonical_failure_lines(reason: str) -> List[str]:
         if canonical_sender is None:

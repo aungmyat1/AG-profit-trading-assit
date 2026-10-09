@@ -312,6 +312,47 @@ def test_summary_labels_a_closed_market_out_of_session_not_missed(tmp_path):
     assert digest["recorded_evaluations"] == 0
 
 
+def test_summary_counts_delivery_only_for_the_latest_decision_per_symbol(tmp_path):
+    """Superseded decisions (INFO_ONLY_STALE -> WATCH_READY) add no second delivery outcome."""
+    send, _ = sender(tmp_path)
+    journal = str(tmp_path / "journal")
+    store = TicketStore(os.path.join(journal, "ticket_store"))
+    day = THURSDAY.isoformat()
+    eurusd = f"ST_ASIAN_SWEEP_5R_V1|1.1.1|EURUSD|ASIAN_LONDON|{day}"
+
+    def row(symbol, ticket_id, state, at):
+        store.append_evaluation(build_evaluation(
+            ticket_id=ticket_id, strategy="ST_ASIAN_SWEEP_5R_V1@1.1.1", source=REPLAY, symbol=symbol,
+            session="ASIAN_LONDON", evaluated_at_utc=f"{day}T{at}+00:00", state=state))
+
+    def event(ticket_id, symbol, state, delivery_state, at):
+        cfd.append_session_event(journal, {
+            "event_type": "TICKET_DELIVERY", "stage": "RESULT", "session_date": day,
+            "session": "ASIAN_LONDON", "ticket_id": ticket_id, "decision": state, "symbol": symbol,
+            "source": REPLAY, "delivery_state": delivery_state,
+            "evaluated_at_utc": f"{day}T{at}+00:00", "recorded_at_utc": f"{day}T{at}+00:00"})
+
+    row("EURUSD", eurusd, "INFO_ONLY_STALE", "07:20:00")          # superseded by the row below
+    event(eurusd, "EURUSD", "INFO_ONLY_STALE", "sent", "07:20:05")
+    row("EURUSD", eurusd, "WATCH_READY", "08:10:00")              # latest terminal decision
+    event(eurusd, "EURUSD", "WATCH_READY", "summary_only", "08:10:05")
+    for symbol in (s for s in V1_FX_SYMBOLS if s != "EURUSD"):
+        ticket_id = f"ST_ASIAN_SWEEP_5R_V1|1.1.1|{symbol}|ASIAN_LONDON|{day}"
+        row(symbol, ticket_id, "INFO_ONLY_SUPPRESSED", "07:20:00")
+        event(ticket_id, symbol, "INFO_ONLY_SUPPRESSED", "summary_only", "07:20:05")
+
+    digest = cfd.build_session_summary(journal, session_date=THURSDAY, session="ASIAN_LONDON",
+                                       sender=send)
+    counts = digest["delivery_counts"]
+    assert digest["recorded_evaluations"] == 4
+    assert digest["terminal_counts"] == {"INFO_ONLY_SUPPRESSED": 3, "WATCH_READY": 1}
+    assert sum(counts.values()) == digest["recorded_evaluations"]  # one outcome per instrument
+    assert counts["succeeded"] == 0 and counts["summary_only"] == 4
+    assert len(store.evaluations()) == 5                          # superseded row kept for audit
+    assert next(r for r in digest["per_instrument"]
+                if r["symbol"] == "EURUSD")["decision"] == "WATCH_READY"
+
+
 def test_summary_reports_an_unknown_stored_decision_as_a_compatibility_error(tmp_path):
     send, _ = sender(tmp_path, enabled=False)
     journal = str(tmp_path / "journal")
@@ -572,7 +613,7 @@ def test_scheduled_fx_task_uses_canonical_once_and_preserves_other_modes():
 
     # Minutes stays adjacent to Mode: scripts/docs/build_context_pack.py parses the rows positionally.
     assert "@{ Name = 'AG-V1-FX-Cycles';    Mode = 'fx';     Minutes = 15; Canonical = $true;" in install
-    assert "@{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Minutes = 5;  Canonical = $false;" in install
+    assert "@{ Name = 'AG-V1-Crypto-Daily'; Mode = 'crypto'; Minutes = 15; Canonical = $false;" in install
     assert "@{ Name = 'AG-V1-LSMC-Watch';   Mode = 'lsmc';   Minutes = 5;  Canonical = $false;" in install
     assert "Canonical = $true" in verify and "$e.Canonical" in verify
 

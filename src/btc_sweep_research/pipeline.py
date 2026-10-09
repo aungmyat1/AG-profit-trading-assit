@@ -52,13 +52,25 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Optional, Tuple
 
-from sizing_math.daily_loss_guard import DailyLossGuard
-from sizing_math.position_guard import OpenPositionGuard
-from execution_runtime.binance_usdtm_feed import CANONICAL_SYMBOL, EXCHANGE_ID, default_symbol_meta, to_symbol_meta
+from execution_runtime.binance_usdtm_feed import (
+    CANONICAL_SYMBOL,
+    EXCHANGE_ID,
+    default_symbol_meta,
+    to_symbol_meta,
+)
 from execution_runtime.crypto_feed import CryptoCandleFeed
 from mt5.symbol_resolver import SymbolMeta
-from strategy_engine.sweep_retest.config import SweepRetestStrategyConfig, load_sweep_retest_strategy
-from strategy_engine.sweep_retest.engine import SweepRetestRuntime, in_execution_windows, sweep_requirement_for_h1_direction
+from sizing_math.daily_loss_guard import DailyLossGuard
+from sizing_math.position_guard import OpenPositionGuard
+from strategy_engine.sweep_retest.config import (
+    SweepRetestStrategyConfig,
+    load_sweep_retest_strategy,
+)
+from strategy_engine.sweep_retest.engine import (
+    SweepRetestRuntime,
+    in_execution_windows,
+    sweep_requirement_for_h1_direction,
+)
 from strategy_engine.sweep_retest.models import (
     STATE_NO_TRADE_DIRECTION,
     STATE_WAITING_REFERENCE,
@@ -66,7 +78,9 @@ from strategy_engine.sweep_retest.models import (
     STATE_WAITING_WINDOW,
     SetupState,
 )
-from strategy_engine.sweep_retest.occurrence_enumerator import enumerate_sweep_candidates
+from strategy_engine.sweep_retest.occurrence_enumerator import (
+    enumerate_sweep_candidates,
+)
 from strategy_engine.sweep_retest.occurrence_identity import btc_occurrence_id
 from strategy_engine.sweep_retest.profile import (
     build_profile_reference_box,

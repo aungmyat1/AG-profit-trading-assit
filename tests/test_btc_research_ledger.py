@@ -6,7 +6,10 @@ from __future__ import annotations
 import datetime as dt
 
 from btc_sweep_research.ledger import BTCResearchLedger
-from btc_sweep_research.proposal import AUTHORITY_RESEARCH_ONLY, BTCSweepResearchProposal
+from btc_sweep_research.proposal import (
+    AUTHORITY_RESEARCH_ONLY,
+    BTCSweepResearchProposal,
+)
 
 UTC = dt.timezone.utc
 

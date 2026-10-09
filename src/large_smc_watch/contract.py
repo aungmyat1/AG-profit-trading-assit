@@ -44,32 +44,24 @@ ALERT_LEVEL = {
     "EXPIRED": "INFO",
 }
 
-CRYPTO_SYMBOLS = ("BTCUSDT", "ETHUSDT")
-V1_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSDT", "ETHUSDT")
+# VT Markets MT5 symbols only (AGP-C1-LSMC, 2026-10-09): crypto runs on the VT CFDs BTCUSD/ETHUSD,
+# never on exchange BTCUSDT/ETHUSDT. Canonical names; broker names live in the host capture.
+CRYPTO_SYMBOLS = ("BTCUSD", "ETHUSD")
+V1_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSD", "ETHUSD")
 
-# Symbol point sizes already evidenced in this repository. USDJPY and XAUUSD have none:
-# their watch path is FIXTURE_ONLY until the host captures MT5 symbol_info() (see
-# docs/status/AG_V1_TWO_GOALS_CLOUD_STATUS.md). A caller may pass an explicit point for
-# fixtures; it is then stamped metadata_source=CALLER_SUPPLIED.
-EVIDENCED_POINT: Dict[str, float] = {
-    "EURUSD": 0.00001,  # config/historical_datasets/EURUSD_*_symbol_metadata.yaml (owner-approved)
-    "GBPUSD": 0.00001,  # config/historical_datasets/GBPUSD_H1_symbol_metadata.yaml @ 2b75bbf (owner-approved)
-    "BTCUSDT": 0.1,     # strategy_engine/sweep_retest/crypto_symbols.py CRYPTO_TICK_SIZE (frozen)
-    "ETHUSDT": 0.01,    # strategy_engine/sweep_retest/crypto_symbols.py CRYPTO_TICK_SIZE (frozen)
-}
 # C10's hard floor is expressed in pips; a pip is only evidenced for 5-digit FX majors.
 C10_PIP_SIZE: Dict[str, float] = {"EURUSD": 0.0001, "GBPUSD": 0.0001}
 
+METADATA_MISSING = "MISSING"
 
-def resolve_point(symbol: str, supplied: Optional[float] = None) -> "tuple[Optional[float], str]":
-    if symbol in EVIDENCED_POINT:
-        return EVIDENCED_POINT[symbol], "REPO_EVIDENCED"
-    # Host go-live kit: a verified host capture (scripts/host/capture_symbol_metadata.py,
-    # sha256-checked) promotes USDJPY/XAUUSD from FIXTURE_ONLY. A bad or missing file fails closed.
+
+def resolve_point(symbol: str) -> "tuple[Optional[float], str]":
+    """Point size from the verified host MT5 symbol_info() capture only
+    (config/symbol_metadata/host_captured/<SYMBOL>.json, sha256-checked by
+    host_evidence.symbol_metadata). No repo constant and no caller value is a fallback:
+    a missing, malformed or hash-mismatched capture returns (None, MISSING) -> DATA_ERROR."""
     from host_evidence.symbol_metadata import HOST_CAPTURED, load_record
     record = load_record(symbol)
-    if record is not None:
-        return float(record["fields"]["point"]), HOST_CAPTURED
-    if supplied is not None and supplied > 0:
-        return float(supplied), "CALLER_SUPPLIED"
-    return None, "MISSING"
+    if record is None:
+        return None, METADATA_MISSING
+    return float(record["fields"]["point"]), HOST_CAPTURED

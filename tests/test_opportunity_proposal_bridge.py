@@ -30,7 +30,12 @@ from opportunity.proposal_eligibility import (
     evaluate_proposal_eligibility,
 )
 from opportunity.registry_binding import StrategyBinding
-from opportunity.stages import OUTCOME_ACTIVE, OUTCOME_REJECT, STAGE_ENTRY_CONFIRMED, STAGE_TRIGGER_ARMED
+from opportunity.stages import (
+    OUTCOME_ACTIVE,
+    OUTCOME_REJECT,
+    STAGE_ENTRY_CONFIRMED,
+    STAGE_TRIGGER_ARMED,
+)
 from proposal_envelope.adapters.opportunity_adapter import (
     BRIDGE_VERSION,
     BridgeIdentityMismatch,

@@ -10,8 +10,8 @@ import glob
 import os
 
 import pytest
-
 from _lsmc_v110_fixtures import NOW, UTC, d1_bars, h1_bars, m5_bars
+
 from large_smc_watch import WatchTracker, evaluate_snapshot
 from large_smc_watch import contract as C
 from large_smc_watch.watch import next_day_boundary, session_end, trading_date
@@ -19,14 +19,31 @@ from large_smc_watch.watch import next_day_boundary, session_end, trading_date
 NEAR = dt.datetime(2026, 1, 6, 8, 35, tzinfo=UTC)
 
 
+# VT Markets MT5 points (the committed host captures carry the same values).
+HOST_POINT = {"EURUSD": 0.00001, "GBPUSD": 0.00001, "USDJPY": 0.001, "XAUUSD": 0.01, "BTCUSD": 0.01, "ETHUSD": 0.01}
+
+
+def _write_capture(root, symbol, point):
+    from host_evidence.symbol_metadata import build_record, write_record
+    info = {"digits": 5, "point": point, "trade_tick_size": point, "trade_tick_value": 1.0,
+            "trade_contract_size": 1.0, "volume_min": 0.01, "volume_step": 0.01, "volume_max": 100.0,
+            "trade_stops_level": 0, "trade_freeze_level": 0, "spread": 10, "currency_profit": "USD"}
+    write_record(build_record(symbol, symbol, info, "TEST", 3, "2026-01-01T00:00:00+00:00"), str(root))
+
+
 @pytest.fixture(autouse=True)
-def _no_host_evidence(tmp_path, monkeypatch):
-    """Host captures on the machine running the tests (repo-root evidence) must never leak in."""
-    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "no_evidence"))
+def evidence_root(tmp_path, monkeypatch):
+    """Host captures on the machine running the tests (repo-root evidence) must never leak in:
+    each test gets its own evidence root holding synthetic host captures for the V1 universe."""
+    root = tmp_path / "evidence"
+    for symbol, point in HOST_POINT.items():
+        _write_capture(root, symbol, point)
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(root))
+    return root
 
 
-def snap(now=NOW, symbol="EURUSD", k=1.0, point=None, **m5kw):
-    return evaluate_snapshot(symbol, d1_bars(k), h1_bars(k), m5_bars(k, **m5kw), now, point=point)
+def snap(now=NOW, symbol="EURUSD", k=1.0, **m5kw):
+    return evaluate_snapshot(symbol, d1_bars(k), h1_bars(k), m5_bars(k, **m5kw), now)
 
 
 def _truncate(bars, minutes, now):
@@ -126,24 +143,44 @@ def test_session_end_outside_canonical_sessions_rolls_to_day_boundary():
 def test_market_closed_fx_weekend_but_crypto_open():
     saturday = dt.datetime(2026, 1, 10, 12, 0, tzinfo=UTC)
     assert snap(saturday).state == "MARKET_CLOSED"
-    assert snap(saturday, symbol="BTCUSDT", k=60000.0).state != "MARKET_CLOSED"
+    assert snap(saturday, symbol="BTCUSD", k=60000.0).state != "MARKET_CLOSED"
 
 
 # ------------------------------------------------------------------ instruments / metadata
 
-def test_usdjpy_xauusd_require_caller_point_fixture_only():
-    assert snap(NOW, symbol="USDJPY", k=140.0).reason_codes == ("SYMBOL_METADATA_MISSING",)
-    jpy = snap(NOW, symbol="USDJPY", k=140.0, point=0.001)
-    assert jpy.metadata_source == "CALLER_SUPPLIED" and jpy.state == "OPPORTUNITY"
-    assert jpy.opportunity["stop_reason"] == "C10_PIP_SIZE_NOT_EVIDENCED"
-    xau = snap(NOW, symbol="XAUUSD", k=2400.0, point=0.01)
-    assert xau.metadata_source == "CALLER_SUPPLIED" and xau.state == "OPPORTUNITY"
+def test_universe_is_vt_symbols_only():
+    assert C.V1_SYMBOLS == ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSD", "ETHUSD")
+    for exchange_symbol in ("BTCUSDT", "ETHUSDT"):
+        assert snap(NOW, symbol=exchange_symbol, k=60000.0).reason_codes == ("SYMBOL_NOT_IN_V1_UNIVERSE",)
 
 
-@pytest.mark.parametrize("symbol,k", [("GBPUSD", 1.2), ("BTCUSDT", 60000.0), ("ETHUSDT", 3000.0)])
-def test_repo_evidenced_symbols_run_on_the_same_rules(symbol, k):
+@pytest.mark.parametrize("symbol,k", [("EURUSD", 1.0), ("GBPUSD", 1.2), ("USDJPY", 140.0), ("XAUUSD", 2400.0),
+                                      ("BTCUSD", 60000.0), ("ETHUSD", 3000.0)])
+def test_point_comes_from_host_capture(symbol, k):
     s = snap(NOW, symbol=symbol, k=k)
-    assert s.metadata_source == "REPO_EVIDENCED" and s.state == "OPPORTUNITY"
+    assert s.metadata_source == "HOST_CAPTURED" and s.point == HOST_POINT[symbol]
+    assert s.state == "OPPORTUNITY"
+    if symbol not in C.C10_PIP_SIZE:
+        assert s.opportunity["stop_reason"] == "C10_PIP_SIZE_NOT_EVIDENCED"
+
+
+@pytest.mark.parametrize("symbol,k", [("EURUSD", 1.0), ("BTCUSD", 60000.0), ("XAUUSD", 2400.0)])
+def test_missing_host_capture_is_data_error_never_a_fallback(evidence_root, symbol, k):
+    from host_evidence.symbol_metadata import evidence_path
+    os.remove(evidence_path(symbol, str(evidence_root)))
+    s = snap(NOW, symbol=symbol, k=k)
+    assert (s.state, s.reason_codes, s.point, s.metadata_source) == (
+        "DATA_ERROR", ("SYMBOL_METADATA_MISSING",), None, "MISSING")
+
+
+def test_tampered_host_capture_is_data_error(evidence_root):
+    from host_evidence.symbol_metadata import evidence_path
+    path = evidence_path("ETHUSD", str(evidence_root))
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text.replace('"point": 0.01', '"point": 0.1'))
+    assert snap(NOW, symbol="ETHUSD", k=3000.0).reason_codes == ("SYMBOL_METADATA_MISSING",)
 
 
 # ------------------------------------------------------------------ tracker / journal (T8 hardening)

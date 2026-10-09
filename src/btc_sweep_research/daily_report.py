@@ -20,19 +20,17 @@ same boundary already proven for btc_sweep_research.pipeline
 """
 from __future__ import annotations
 
-import dataclasses
 import datetime as dt
 from typing import Any, Dict, Optional
 
 from execution_runtime.crypto_feed import CryptoCandleFeed
+from post_asian_pilot.report_archive import write_report
 from strategy_engine.sweep_retest.models import (
     STATE_NO_TRADE_DIRECTION,
     STATE_WAITING_REFERENCE,
     STATE_WAITING_SWEEP,
     STATE_WAITING_WINDOW,
 )
-
-from post_asian_pilot.report_archive import write_report
 
 from . import pipeline
 from .pipeline import ResearchCycleReport

@@ -30,11 +30,28 @@ from v1_tickets.authority import REPO_ROOT, TicketAuthority, resolve_ticket_auth
 from v1_tickets.code_identity import code_sha
 from v1_tickets.guards import SPREAD_TOO_WIDE, STALE_AFTER
 from v1_tickets.logic_gate import (
-    FAIL, L5_WARN, PASS, TICKET_EXPIRED, WARN, blocking_failures, l1_determinism, l2_rule_conformance,
-    l3_geometry, l4_data_session, l5_cost, l6_freshness, order_block_reasons,
+    FAIL,
+    L5_WARN,
+    PASS,
+    TICKET_EXPIRED,
+    WARN,
+    blocking_failures,
+    l1_determinism,
+    l2_rule_conformance,
+    l3_geometry,
+    l4_data_session,
+    l5_cost,
+    l6_freshness,
+    order_block_reasons,
 )
 from v1_tickets.scan_record import (
-    NO_SETUP, OPPORTUNITY, REFERENCE_NOT_READY, TICKET_BLOCKED, TICKET_READY, WATCH, append_jsonl,
+    NO_SETUP,
+    OPPORTUNITY,
+    REFERENCE_NOT_READY,
+    TICKET_BLOCKED,
+    TICKET_READY,
+    WATCH,
+    append_jsonl,
     classify_fx_ticket,
 )
 
@@ -187,6 +204,9 @@ def build_manual_ticket(
         "authority": AUTHORITY_TEXT, "ticket_authority": authority.ticket_authority,
         "logic_status": authority.logic_status_effective,
         "logic_identity": (authority.logic_identity or {}).get("digest"),
+        "spread": spread,
+        "data_close_utc": _iso(data_close),
+        "data_freshness_s": round((now - data_close).total_seconds(), 3) if data_close is not None else None,
         "invariants": {"order_ready": False, "broker_authorized": False, "edge_verified": False,
                        "orders_sent_by_system": 0},
         "window_utc": {"ref": [_iso(t) for t in windows["ref"]], "trade": [_iso(t) for t in windows["trade"]]},
@@ -196,7 +216,6 @@ def build_manual_ticket(
     warnings: List[str] = []
     if has_signal:
         digits = fx._digits(symbol)
-        long = base["direction"] == "LONG"
         entry, sl, risk = base["entry"], base["stop_loss"], base["risk_distance"]
         targets = {t["leg"]: t["price"] for t in base["targets"]}
         sig_open = (dt.datetime.fromisoformat(base["signal_timestamp"]) if base.get("signal_timestamp")
@@ -294,13 +313,27 @@ def _meta_note(prov: Optional[Dict[str, Any]]) -> str:
 
 def render_text(t: Dict[str, Any]) -> str:
     """Plain text in the owner's layout. Delivered only through the existing channel."""
+    if t.get("strategy_id") == "ST_CRYPTO_CFD_SWEEP_RETEST_V1":
+        return "\n".join([t["label"], f"{t['symbol']} {t['cycle']} {t['decision']}",
+                          f"Reasons: {', '.join(t['reason_codes']) or 'NONE'}",
+                          f"Warnings: {', '.join(t['warnings']) or 'NONE'}",
+                          f"Entry {t.get('entry')} SL {t.get('stop_loss')} TP1 {t.get('tp1')} TP2 {t.get('tp2')}",
+                          f"Cost {t.get('cost_in_R')} R; volume {t.get('volume')}",
+                          "EDGE_VERIFIED=FALSE | EXECUTION AUTHORIZED=FALSE"])
+    display_state = t["state"]
+    display_reason = t.get("primary_block_reason")
+    if display_state == TICKET_READY and t.get("logic_status") != "LOGIC_VERIFIED":
+        display_state = TICKET_BLOCKED
+        display_reason = display_reason or "LOGIC_STATUS_NOT_VERIFIED"
     lines = [
         "AG TRADE TICKET — MANUAL DECISION",
         f"#{t['ticket_id']}  Strategy {t['strategy']}  Session {t['session']}",
-        f"State       {t['state']}" + (f" ({t['primary_block_reason']})" if t.get("primary_block_reason") else "")
+        f"State       {display_state}" + (f" ({display_reason})" if display_reason else "")
         + (f"  also: {', '.join(t['block_reasons'][1:])}" if len(t.get("block_reasons") or []) > 1 else "")
         + (f"  warn: {', '.join(t['warnings'])}" if t.get("warnings") else ""),
         f"Logic gate  {gate_line(t)}",
+        f"logic_status: {t['logic_status']}",
+        "EDGE_VERIFIED=FALSE",
         f"Logic status {t['logic_status']} (strategy)   Economic {t['economic_status']}",
         f"Edge status {t['edge_status']}",
         f"Authority   {t['authority']}",
@@ -328,6 +361,52 @@ def render_text(t: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def render_market_structure(t: Dict[str, Any], *, unicode_safe: bool = True) -> str:
+    """Render validated ticket levels as a mobile-safe scenario diagram.
+
+    This is presentation only: levels are copied from the ticket and never calculated or
+    repaired here. Incomplete or non-actionable geometry fails gracefully. The word
+    ``SCENARIO`` is deliberate; the diagram is not a price forecast or broker order.
+    """
+    direction = t.get("direction")
+    entry, sl, tp1, tp2 = (t.get("entry"), t.get("sl"), t.get("tp1"), t.get("tp2"))
+    if direction not in ("LONG", "SHORT") or any(v is None for v in (entry, sl, tp1, tp2)):
+        return "MARKET STRUCTURE UNAVAILABLE — incomplete validated levels" if unicode_safe else \
+            "MARKET STRUCTURE UNAVAILABLE - incomplete validated levels"
+    valid = (sl < entry < tp1 <= tp2) if direction == "LONG" else (sl > entry > tp1 >= tp2)
+    if not valid:
+        return "MARKET STRUCTURE UNAVAILABLE — invalid level geometry" if unicode_safe else \
+            "MARKET STRUCTURE UNAVAILABLE - invalid level geometry"
+
+    rule = "─────────" if unicode_safe else "---------"
+    arrow = "▲" if direction == "LONG" and unicode_safe else "▼" if unicode_safe else \
+        "^" if direction == "LONG" else "v"
+    liquidity = "SWEEP LOW" if direction == "LONG" else "SWEEP HIGH"
+    setup = t.get("setup") or "VALIDATED TRIGGER"
+    return "\n".join([
+        f"{t.get('symbol', 'UNKNOWN')} {direction} — MARKET STRUCTURE SCENARIO"
+        if unicode_safe else f"{t.get('symbol', 'UNKNOWN')} {direction} - MARKET STRUCTURE SCENARIO",
+        "NOT A PRICE FORECAST | BROKER ORDER: NONE", "",
+        f"{_p(tp2):>12}  {rule} TP2", f"{'':>16}{arrow}",
+        f"{_p(tp1):>12}  {rule} TP1", f"{'':>16}{arrow}",
+        f"{_p(entry):>12}  {rule} ENTRY", f"{'':>16}{arrow}",
+        f"{_p(sl):>12}  {rule} SL  {liquidity}", "",
+        f"Scenario: Liquidity Sweep -> {setup} -> Proposed Entry -> Liquidity Objective",
+        f"Invalidation: {t.get('invalid_if') or 'UNAVAILABLE'}",
+        f"Expiration: {t.get('valid_until') or 'UNAVAILABLE'}",
+        "OWNER DECISION REQUIRED | EXECUTION AUTHORIZED = FALSE",
+    ])
+
+
+def render_mobile(t: Dict[str, Any], *, layout: str = "COMPACT", unicode_safe: bool = True) -> str:
+    """Owner-selectable compact or expanded manual-ticket text."""
+    if layout == "COMPACT":
+        return render_text(t)
+    if layout == "EXPANDED":
+        return render_text(t) + "\n\n" + render_market_structure(t, unicode_safe=unicode_safe)
+    raise ValueError("layout must be COMPACT or EXPANDED")
+
+
 def content_hash(ticket: Dict[str, Any]) -> str:
     stable = {k: v for k, v in ticket.items() if k not in ("evaluated_at",)}
     return hashlib.sha256(json.dumps(stable, sort_keys=True, default=str).encode()).hexdigest()
@@ -343,3 +422,134 @@ def archive_manual_ticket(journal: str, ticket: Dict[str, Any]) -> str:
     # code_sha is provenance, kept outside content_hash so a deploy alone never re-archives a ticket.
     append_jsonl(path, {**ticket, "code_sha": code_sha(), "content_hash": content_hash(ticket)})
     return path
+
+
+M5_CRYPTO = dt.timedelta(minutes=5)
+
+# Crypto-CFD manual proposal adapter. The FX builder above and its frozen rules are
+# deliberately untouched; this path consumes only the dedicated CFD contract result.
+def crypto_cfd_commission(symbol: str, root: Path = REPO_ROOT) -> Optional[float]:
+    """Only an explicit, symbol-bound host symbol_info commission in R is usable.
+
+    MT5 symbol_info usually does not expose commission. Missing/unsupported evidence is
+    UNKNOWN, never zero and never inferred from swap or a perp/FX fee schedule.
+    """
+    import math
+
+    path = root / "status" / "evidence" / f"host_symbol_info_{symbol}.json"
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(record, dict) or record.get("symbol") != symbol or record.get("commission_status") != "AVAILABLE":
+        return None
+    value = record.get("commission_R")
+    return float(value) if type(value) in (int, float) and math.isfinite(value) and value >= 0 else None
+
+
+def crypto_cfd_cost_gate(distance: float, spread: float, commission_r: Optional[float],
+                         policy: Dict[str, Any]) -> tuple[List[str], List[str], float, float]:
+    """Owner D4/D2 friction thresholds; unknown commission contributes no invented fee."""
+    import math
+
+    if not all(math.isfinite(x) for x in (distance, spread)) or distance <= 0 or spread < 0:
+        return ["SPREAD_NOT_EVALUATED"], [], float("nan"), float("nan")
+    pct = spread / distance * 100
+    cost = spread / distance + (commission_r if commission_r is not None else 0)
+    blocks, warnings = [], []
+    if policy["spread_block_pct"] is not None and pct > policy["spread_block_pct"]:
+        blocks.append("SPREAD_TOO_WIDE")
+    elif policy["spread_ok_pct"] is not None and pct >= policy["spread_ok_pct"]:
+        warnings.append("SPREAD_WARN")
+    if policy["cost_block_R"] is not None and cost >= policy["cost_block_R"]:
+        blocks.append("COST_TOO_HIGH")
+    elif policy["cost_warn_R"] is not None and cost >= policy["cost_warn_R"]:
+        warnings.append("COST_WARN")
+    return blocks, warnings, pct, cost
+
+
+def build_crypto_cfd_manual_ticket(
+    result: Dict[str, Any], *, now: dt.datetime, window: str, spread: Optional[float],
+    balance: Optional[float] = None, meta: Optional[SymbolMeta] = None,
+    commission_r: Optional[float] = None, policy: Optional[Dict[str, Any]] = None,
+    quote_time: Optional[dt.datetime] = None,
+) -> Dict[str, Any]:
+    """Map the dedicated closed-candle engine result to a non-executing manual ticket.
+
+    No strategy version can become READY until a matching L1-L6 identity has been
+    registered and ticket_ready explicitly activated. Neither this adapter nor the
+    evidence source can grant that authority.
+    """
+    import math
+
+    from crypto_cfd_contract.contract import CONTRACT_ID, CONTRACT_VERSION
+    from v1_tickets.authority import load_registry, logic_identity
+    from v1_tickets.crypto_cfd_policy import load_ticket_policy
+
+    if result.get("contract_id") != CONTRACT_ID or result.get("contract_version") != CONTRACT_VERSION:
+        raise ValueError("crypto CFD contract identity mismatch")
+    symbol = result["symbol"]
+    cfg = policy if policy is not None else load_ticket_policy()
+    if commission_r is not None and (not math.isfinite(commission_r) or commission_r < 0):
+        commission_r = None
+    reasons = [r for r in ("SPREAD_POLICY_UNDEFINED", "RISK_POLICY_AMBIGUOUS")
+               if r in cfg["open_authorities"]]
+    warnings = ["COMMISSION_UNKNOWN"] if commission_r is None else []
+    lot = None
+    plan = result.get("evidence", {}).get("target_plan") or {}
+    entry, sl = plan.get("entry"), plan.get("stop_loss")
+    distance = abs(entry - sl) if entry is not None and sl is not None else None
+    spread_pct = spread_r = cost_r = None
+    if result["result"] == "REFERENCE_INCOMPLETE":
+        decision = "DATA_ERROR"
+        reasons.extend(result["reason_codes"])
+    elif result["result"] != "ENTRY_VALID":
+        decision = "NO_TRADE"
+        reasons.extend(result["reason_codes"])
+    else:
+        decision = "READY"
+        if distance is None or not math.isfinite(distance) or distance <= 0:
+            reasons.append("INVALID_STOP_DISTANCE")
+        if spread is None or distance is None:
+            reasons.append("SPREAD_NOT_EVALUATED")
+        else:
+            cost_blocks, cost_warnings, spread_pct, cost_r = crypto_cfd_cost_gate(
+                distance, spread, commission_r, cfg)
+            reasons.extend(cost_blocks)
+            warnings.extend(cost_warnings)
+            spread_r = spread / distance if distance > 0 else None
+        if quote_time is None or quote_time.tzinfo is None or not dt.timedelta(0) <= now - quote_time <= M15:
+            reasons.append("QUOTE_STALE_OR_MISSING")
+        signal_time = dt.datetime.fromisoformat(result["evidence"]["retest"]["candle_time_utc"])
+        if now > signal_time + M5_CRYPTO + M15:
+            reasons.append("SIGNAL_STALE")
+        lot = lot_size(entry, sl, {"risk_pct": cfg["risk_pct"]}, balance, meta) if cfg["risk_pct"] else None
+        if lot is not None and lot["status"] != "OK":
+            reasons.append(lot["status"])
+        registry = load_registry(REPO_ROOT).get(CONTRACT_ID) or {}
+        identity = logic_identity(CONTRACT_ID, CONTRACT_VERSION)
+        verified = (identity is not None and registry.get("logic_status") == "LOGIC_VERIFIED"
+                    and registry.get("logic_verified_identity") == identity["digest"])
+        if not (verified and registry.get("active") is True and registry.get("ticket_ready") == "ACTIVE"):
+            reasons.append("LOGIC_STATUS_NOT_VERIFIED")
+        if reasons:
+            decision = "BLOCKED"
+    if reasons and decision in ("NO_TRADE", "DATA_ERROR") and any(r in reasons for r in
+                                                   ("SPREAD_POLICY_UNDEFINED", "RISK_POLICY_AMBIGUOUS")):
+        decision = "BLOCKED"
+    if decision == "READY" and reasons:
+        raise RuntimeError("READY with blocking reasons")
+    return {
+        "label": "INFORMATIONAL PROPOSAL -- NOT A BROKER ORDER",
+        "strategy_id": CONTRACT_ID, "strategy_version": CONTRACT_VERSION,
+        "symbol": symbol, "cycle": window, "evaluated_at": now.astimezone(dt.timezone.utc).isoformat(),
+        "decision": decision, "reason_codes": list(dict.fromkeys(reasons)), "warnings": list(dict.fromkeys(warnings)),
+        "engine_result": result, "spread_pct_of_stop": spread_pct, "spread_R": spread_r,
+        "cost_in_R": cost_r, "commission_R": commission_r,
+        "risk_pct": cfg["risk_pct"], "volume": lot["lot"] if result["result"] == "ENTRY_VALID" and lot else None,
+        "entry": entry, "stop_loss": sl, "tp1": plan.get("tp1"), "tp2": plan.get("tp2"),
+        "direction": plan.get("direction"), "valid_until": (
+            (dt.datetime.fromisoformat(result["evidence"]["retest"]["candle_time_utc"]) + M5_CRYPTO + M15).isoformat()
+            if result["result"] == "ENTRY_VALID" else None), "execution_authorized": False,
+        "owner_accept_allowed": decision == "READY", "edge_verified": False,
+    }

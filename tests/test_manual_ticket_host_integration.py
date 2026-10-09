@@ -55,7 +55,7 @@ def test_legacy_ready_and_manual_blocked_are_distinguishable():
     assert t["legacy_informational_ready"] is (t["decision"] == "READY")
 
 
-def test_manual_ticket_telegram_has_its_own_opt_in_scope(tmp_path):
+def test_manual_ticket_telegram_scope_cannot_widen_tracked_policy(tmp_path):
     (tmp_path / "config" / "local").mkdir(parents=True)
     override = tmp_path / "config" / "local" / "delivery_override.yaml"
     override.write_text("mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY]\n")
@@ -64,6 +64,7 @@ def test_manual_ticket_telegram_has_its_own_opt_in_scope(tmp_path):
     assert not tg.should_send(tg.MANUAL_TICKET, tg.MANUAL_TICKET_READY, r)  # legacy scope never sends manual
     assert not tg.should_send("TICKET", tg.MANUAL_TICKET_READY, r)
     override.write_text("mode: MESSAGE_DELIVERY\nscopes: [MANUAL_TICKET_READY]\n")
-    assert tg.should_send(tg.MANUAL_TICKET, tg.MANUAL_TICKET_READY, r)
+    assert tg.load_mode(r)["error"] == "SCOPE_WIDENING_REJECTED"
+    assert not tg.should_send(tg.MANUAL_TICKET, tg.MANUAL_TICKET_READY, r)
     assert not tg.should_send("TICKET", "READY", r)                        # manual scope never sends legacy
     assert tg.SCOPES == ("TICKET_READY", "LSMC_OPPORTUNITY")              # legacy surface pin unchanged

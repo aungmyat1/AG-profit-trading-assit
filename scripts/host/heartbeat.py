@@ -29,16 +29,22 @@ broker_order_calls = broker_history_24h.orders (every execution path in EXECUTIO
 not, lands in the account's order history), or "UNKNOWN" when that history cannot be read.
 observed_broker_order_calls is separately what the AG-V1 runner logs show.
 
-Source staleness is schedule-aware: each runner log declares SOURCE_WINDOWS (Myanmar time). Outside
-them a quiet log is INACTIVE_EXPECTED; inside one it is STALE after 2 h without a line.
+Source staleness is power-mode aware (--host-power-mode). Under `wake_sleep` (the mode the host was
+observed in on 2026-10-08) each runner log keeps its declared SOURCE_WINDOWS (Myanmar time): outside
+them a quiet log is INACTIVE_EXPECTED, inside one it is STALE after 2 h without a line. Under
+`always_on` (SCHED-R1-B target) there is no sleep span at all, so every minute is an expected-active
+minute and overnight runner silence is STALE -- never INACTIVE_EXPECTED. The mode is recorded in
+`host_power_mode` and the windows actually used are recorded in `source_windows`, so a reader can
+always see which rule produced a status instead of having to infer it.
 Top-level status: first of status_reasons [HOST_NOT_ON_MAIN, DEGRADED_RESOURCES], else OK (UNKNOWN when
 the host ref cannot be read). DEGRADED_RESOURCES thresholds are PROPOSED_OWNER_CONFIRM.
 
 READER-SIDE RULE (consumers of heartbeat.json):
     age_seconds = now_utc - observed_at_utc
-    age_seconds > 7200 while the host is scheduled awake  ->  treat the heartbeat as STALE
-    (the host is scheduled asleep between AG-Sleep-Night and AG-Wake-MT5; a stale file in that
-    span is expected, not a fault). A STALE heartbeat's fields must not be read as current.
+    age_seconds > 7200 while the host is expected active  ->  treat the heartbeat as STALE
+    (`wake_sleep`: the host sleeps between AG-Sleep-Night and AG-Wake-MT5, so a stale file in that
+    span is expected, not a fault. `always_on`: no such span exists, so the exemption never applies).
+    A STALE heartbeat's fields must not be read as current.
 """
 from __future__ import annotations
 
@@ -76,6 +82,29 @@ AWAKE_DAILY = (tuple(range(7)), "12:25", 740)     # AG-Wake-MT5 12:25 -> AG-Slee
 WEEKEND_CRYPTO = ((6, 0), "03:10", 155)           # AG-Wake-Weekend-Crypto Sun+Mon 03:10 -> sleep 05:45
 SOURCE_WINDOWS = {"fx": (AWAKE_DAILY, WEEKEND_CRYPTO), "crypto": (AWAKE_DAILY, WEEKEND_CRYPTO),
                   "lsmc": (AWAKE_DAILY, WEEKEND_CRYPTO), "lsmc-weekend": (WEEKEND_CRYPTO,)}
+# Host power modes. `wake_sleep` is what the host was observed running on 2026-10-08 (AG-Wake-MT5 /
+# AG-Sleep-Night registered). `always_on` is the SCHED-R1-B declared target, in which those wake and
+# sleep tasks are retired: the host never sleeps, so no minute may be classified INACTIVE_EXPECTED.
+POWER_MODES = ("wake_sleep", "always_on")
+DEFAULT_POWER_MODE = "wake_sleep"                 # observed host state; the target needs an explicit flag
+ALWAYS_ON_WINDOWS = ((tuple(range(7)), "00:00", 24 * 60),)   # every minute is an expected-active minute
+POWER_MODE_SOURCE = {
+    "wake_sleep": "observed host state 2026-10-08: AG-Wake-MT5 / AG-Sleep-Night still registered",
+    "always_on": "SCHED-R1-B declared target (scripts/host/install_tasks.ps1 $HostPowerPolicy)",
+}
+
+
+def source_windows(power_mode: str, name: str) -> tuple:
+    """Declared source windows for `name` under `power_mode`; unknown modes fail closed to always_on.
+
+    Failing closed matters: a mode we do not recognise must never manufacture a sleep span that would
+    relabel a stopped runner as INACTIVE_EXPECTED.
+    """
+    if power_mode not in POWER_MODES:
+        return ALWAYS_ON_WINDOWS
+    if power_mode == "always_on":
+        return ALWAYS_ON_WINDOWS
+    return SOURCE_WINDOWS[name]
 # The only MCP tool names this module may invoke (tests/test_host_heartbeat.py enforces that no other
 # tool-shaped name appears in this file): history orders/deals plus connection-status tools.
 MCP_TOOL_ALLOWLIST = frozenset({
@@ -168,16 +197,24 @@ def active_window_start(windows, now: dt.datetime) -> Optional[dt.datetime]:
     return None
 
 
-def source_status(lines: Optional[list], now: dt.datetime, windows=(AWAKE_DAILY,)) -> Dict[str, Any]:
+def source_status(lines: Optional[list], now: dt.datetime, windows=(AWAKE_DAILY,),
+                  power_mode: str = DEFAULT_POWER_MODE) -> Dict[str, Any]:
+    """OK / STALE / INACTIVE_EXPECTED / MISSING for one runner log.
+
+    `windows` is the resolved window tuple (see source_windows). Under `always_on` the resolved
+    window covers the whole day, so a quiet log can only ever be OK or STALE -- overnight silence is
+    never INACTIVE_EXPECTED just because the retired sleep window used to cover it.
+    """
     if lines is None:
-        return {"status": "MISSING", "last_line_utc": UNKNOWN}
+        return {"status": "MISSING", "last_line_utc": UNKNOWN, "power_mode": power_mode}
     last = max((t for t, _ in lines), default=None)
     out = {"last_line_utc": last.isoformat() if last else UNKNOWN}
     start = active_window_start(windows, now)
     if start is None:
-        return {"status": "INACTIVE_EXPECTED", **out}
+        return {"status": "INACTIVE_EXPECTED", "power_mode": power_mode, **out}
     quiet_since = max(last, start) if last else start
-    return {"status": "STALE" if now - quiet_since > SOURCE_STALE_AFTER else "OK", **out}
+    return {"status": "STALE" if now - quiet_since > SOURCE_STALE_AFTER else "OK",
+            "power_mode": power_mode, **out}
 
 
 def _decision(msg: str) -> Optional[str]:
@@ -614,9 +651,40 @@ def head_sha(root: str) -> Any:
     return sha if r.returncode == 0 and re.fullmatch(r"[0-9a-f]{40}", sha) else UNKNOWN
 
 
+def _window_names(windows: tuple) -> list:
+    """Readable names for the resolved windows, so the applied rule is auditable in the output."""
+    names = []
+    for window in windows:
+        if window == ALWAYS_ON_WINDOWS[0]:
+            names.append("ALWAYS_ON")
+        elif window == AWAKE_DAILY:
+            names.append("AWAKE_DAILY")
+        elif window == WEEKEND_CRYPTO:
+            names.append("WEEKEND_CRYPTO")
+        else:
+            names.append("UNKNOWN")
+    return names
+
+
+def reader_rule(power_mode: str) -> str:
+    """Reader-side staleness rule text, stated for the power mode actually in force."""
+    if power_mode == "always_on":
+        return (f"age_seconds = now - observed_at_utc; > {READER_STALE_AFTER_S} while the host is "
+                "expected active -> STALE (always_on: no sleep span, so no exemption applies)")
+    return (f"age_seconds = now - observed_at_utc; > {READER_STALE_AFTER_S} while the host is "
+            "scheduled awake -> STALE (wake_sleep: asleep between AG-Sleep-Night and AG-Wake-MT5)")
+
+
 def build(host_repo: str = DEFAULT_HOST_REPO, now: Optional[dt.datetime] = None, tasks: Any = None,
-          history: Optional[Callable[[dt.datetime], Any]] = None, resources: Any = None) -> Dict[str, Any]:
-    """`history(now)` -> count_history dict, {"error": ...} or UNKNOWN; None = not read."""
+          history: Optional[Callable[[dt.datetime], Any]] = None, resources: Any = None,
+          power_mode: str = DEFAULT_POWER_MODE) -> Dict[str, Any]:
+    """`history(now)` -> count_history dict, {"error": ...} or UNKNOWN; None = not read.
+
+    `power_mode` selects the staleness rule (see source_windows). An unrecognised value fails closed
+    to the always_on rule rather than inventing a sleep span.
+    """
+    if power_mode not in POWER_MODES:
+        power_mode = "always_on"
     now = (now or utcnow()).astimezone(UTC)
     since = now - dt.timedelta(hours=24)
     full = {name: read_log(host_repo, f"ag_v1_{name}") for name in RUNNER_LOGS}
@@ -633,14 +701,18 @@ def build(host_repo: str = DEFAULT_HOST_REPO, now: Optional[dt.datetime] = None,
         "status": reasons[0] if reasons else (UNKNOWN if on_main == UNKNOWN else "OK"),
         "status_reasons": reasons,
         "observed_at_utc": now.isoformat(),
-        "reader_rule": f"age_seconds = now - observed_at_utc; > {READER_STALE_AFTER_S} while scheduled awake -> STALE",
+        "host_power_mode": power_mode,
+        "host_power_mode_source": POWER_MODE_SOURCE[power_mode],
+        "reader_rule": reader_rule(power_mode),
         "host_head_sha": sha,
         "host_ref": ref,
         "host_on_main": on_main,
         "mt5_connected": mt5_connected(logs, now),
         "host_resources": res,
         "tasks": scheduled_tasks() if tasks is None else tasks,
-        "sources": {f"ag_v1_{n}.log": source_status(v, now, SOURCE_WINDOWS[n]) for n, v in full.items()},
+        "source_windows": {n: _window_names(source_windows(power_mode, n)) for n in RUNNER_LOGS},
+        "sources": {f"ag_v1_{n}.log": source_status(v, now, source_windows(power_mode, n), power_mode)
+                    for n, v in full.items()},
         "last_24h": {
             "fx_by_window_per_cycle": fx_counts(logs["fx"]),
             "lsmc_states_per_cycle": state_counts(logs["lsmc"], "LSMC", "state"),
@@ -677,6 +749,10 @@ def main(argv=None) -> int:
                     help="attach (default): MetaTrader5 attach like the runners; mcp: mt5ReadOnly proxy; none: skip")
     ap.add_argument("--mcp-launcher", default=DEFAULT_MCP_LAUNCHER, help="mt5ReadOnly MCP launcher (start_mt5_mcp.mjs)")
     ap.add_argument("--no-broker-history", action="store_true", help="same as --history-backend none")
+    ap.add_argument("--host-power-mode", choices=POWER_MODES, default=DEFAULT_POWER_MODE,
+                    help="staleness rule to apply. wake_sleep (default) = the host state observed "
+                         "2026-10-08; always_on = the SCHED-R1-B target, where retired wake/sleep "
+                         "tasks mean overnight runner silence is STALE, never INACTIVE_EXPECTED")
     args = ap.parse_args(argv)
     if os.path.commonpath([os.path.abspath(args.out), os.path.abspath(args.host_repo)]) == os.path.abspath(args.host_repo):
         print("REFUSED --out is inside the host repo")
@@ -685,7 +761,8 @@ def main(argv=None) -> int:
     history = {"attach": attach_history,
                "mcp": lambda now: broker_history(now, lambda a, b: mcp_history(args.mcp_launcher, a, b)),
                "none": None}[backend]
-    print(f"HEARTBEAT_WRITTEN {write(build(args.host_repo, history=history), args.out)}")
+    payload = build(args.host_repo, history=history, power_mode=args.host_power_mode)
+    print(f"HEARTBEAT_WRITTEN {write(payload, args.out)}")
     return 0
 
 

@@ -1,0 +1,167 @@
+{
+  "mission": "AGP-C1b-HOST",
+  "captured_at_utc": "2026-10-09T12:11:40Z",
+  "main_head": "4c95ec1",
+  "prod_head": "9419b21",
+  "prod_venv_python": "3.11.9",
+  "main_requirements_compiled_with": "Python 3.12 (pip-compile header in requirements.txt)",
+  "fresh_venv_and_focused_tests": {
+    "status": "BLOCKED_RESOURCE",
+    "FULL_WORKLOAD_STARTED": false,
+    "reason": "venv creation + pip install + pytest classified R1; resource_guard R1 gate failed (available RAM below 1200 MB). Not started per AG_RESOURCE_MANAGEMENT_POLICY_V1.",
+    "resource_guard": {
+      "AVAILABLE_RAM_MB": "321",
+      "R1_GATE": "BLOCKED_RESOURCE",
+      "R2_GATE": "BLOCKED_RESOURCE",
+      "LOCK_STATUS": "NO_LOCK"
+    },
+    "tests_requested": [
+      "tests/test_manual_ticket_logic_gate.py",
+      "FX ticket tests",
+      "delivery tests"
+    ],
+    "tests_result": "NOT_EVALUATED"
+  },
+  "static_parity": {
+    "method": "R0: prod venv `pip freeze` vs main requirements.txt pins (names normalized); no venv created, prod venv untouched",
+    "main_pinned_count": 35,
+    "prod_installed_count": 44,
+    "differences": [
+      {
+        "package": "colorama",
+        "main_pin": null,
+        "prod_installed": "0.4.6",
+        "kind": "EXTRA_IN_PROD"
+      },
+      {
+        "package": "contourpy",
+        "main_pin": null,
+        "prod_installed": "1.3.3",
+        "kind": "EXTRA_IN_PROD"
+      },
+      {
+        "package": "cycler",
+        "main_pin": null,
+        "prod_installed": "0.12.1",
+        "kind": "EXTRA_IN_PROD"
+      },
+      {
+        "package": "fonttools",
+        "main_pin": null,
+        "prod_installed": "4.66.1",
+        "kind": "EXTRA_IN_PROD"
+      },
+      {
+        "package": "kiwisolver",
+        "main_pin": null,
+        "prod_installed": "1.5.1",
+        "kind": "EXTRA_IN_PROD"
+      },
+      {
+        "package": "matplotlib",
+        "main_pin": null,
+        "prod_installed": "3.11.0",
+        "kind": "EXTRA_IN_PROD"
+      },
+      {
+        "package": "metatrader5",
+        "main_pin": null,
+        "prod_installed": "5.0.5735",
+        "kind": "EXTRA_IN_PROD"
+      },
+      {
+        "package": "numpy",
+        "main_pin": "2.2.6",
+        "prod_installed": "2.4.6",
+        "kind": "VERSION_MISMATCH"
+      },
+      {
+        "package": "pillow",
+        "main_pin": null,
+        "prod_installed": "12.3.0",
+        "kind": "EXTRA_IN_PROD"
+      },
+      {
+        "package": "pyparsing",
+        "main_pin": null,
+        "prod_installed": "3.3.3",
+        "kind": "EXTRA_IN_PROD"
+      },
+      {
+        "package": "python-dotenv",
+        "main_pin": null,
+        "prod_installed": "1.1.1",
+        "kind": "EXTRA_IN_PROD"
+      },
+      {
+        "package": "ruff",
+        "main_pin": "0.16.10",
+        "prod_installed": null,
+        "kind": "MISSING_IN_PROD"
+      }
+    ],
+    "findings": [
+      "numpy: main pins 2.2.6, prod venv has 2.4.6 (only runtime version mismatch).",
+      "MetaTrader5 is absent from main requirements.txt although pyproject.toml declares MetaTrader5==5.0.5735; sys_platform==win32 (matches prod). requirements.txt header says pip-compile on Python 3.12; the win32-marked dependency was dropped, so a fresh `pip install -r requirements.txt` on this Windows host would not install MetaTrader5.",
+      "ruff (dev extra) missing in prod: not a runtime dependency.",
+      "EXTRA_IN_PROD matplotlib/pillow/contourpy/cycler/fonttools/kiwisolver/pyparsing/python-dotenv/colorama: unpinned on main; not removed."
+    ]
+  },
+  "ram": {
+    "total_mb": 7379.0,
+    "free_mb": 754.0,
+    "top10_by_working_set": [
+      {
+        "name": "chrome",
+        "pid": 8724,
+        "working_set_mb": 448.0
+      },
+      {
+        "name": "Code",
+        "pid": 17016,
+        "working_set_mb": 432.0
+      },
+      {
+        "name": "chrome",
+        "pid": 15944,
+        "working_set_mb": 417.0
+      },
+      {
+        "name": "chrome",
+        "pid": 15608,
+        "working_set_mb": 352.0
+      },
+      {
+        "name": "chrome",
+        "pid": 2020,
+        "working_set_mb": 313.0
+      },
+      {
+        "name": "Code",
+        "pid": 17964,
+        "working_set_mb": 271.0
+      },
+      {
+        "name": "chrome",
+        "pid": 8300,
+        "working_set_mb": 259.0
+      },
+      {
+        "name": "Code",
+        "pid": 19340,
+        "working_set_mb": 225.0
+      },
+      {
+        "name": "chrome",
+        "pid": 10660,
+        "working_set_mb": 214.0
+      },
+      {
+        "name": "chrome",
+        "pid": 10384,
+        "working_set_mb": 210.0
+      }
+    ],
+    "action": "observed only; nothing killed"
+  }
+}

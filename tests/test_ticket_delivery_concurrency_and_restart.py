@@ -7,8 +7,7 @@ from __future__ import annotations
 import datetime as dt
 from concurrent.futures import ThreadPoolExecutor
 
-import pytest
-
+from ticket_delivery.delivery_store import TicketDeliveryStore
 from ticket_delivery.identity import logical_ticket_id
 from ticket_delivery.models import (
     STATE_DELIVERED,
@@ -19,7 +18,6 @@ from ticket_delivery.models import (
     STATE_NOT_APPLICABLE,
     STATE_READY_TO_DELIVER,
 )
-from ticket_delivery.delivery_store import TicketDeliveryStore
 
 UTC = dt.timezone.utc
 
@@ -43,7 +41,7 @@ def _ensure_ready(store: TicketDeliveryStore, ticket_id: str) -> None:
 def test_duplicate_scheduler_trigger_creates_only_one_record(tmp_path):
     store = TicketDeliveryStore(state_dir=str(tmp_path))
     ticket_id = _ticket_id()
-    first = _ensure_ready(store, ticket_id) or store.get(ticket_id)
+    _ensure_ready(store, ticket_id) or store.get(ticket_id)
     _ensure_ready(store, ticket_id)  # second, duplicate trigger for the same occurrence
     record = store.get(ticket_id)
     assert record.state == STATE_READY_TO_DELIVER

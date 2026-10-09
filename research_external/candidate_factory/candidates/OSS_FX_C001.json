@@ -1,0 +1,58 @@
+{
+  "candidate_id": "OSS_FX_C001",
+  "strategy_label": "Opening Range Breakout (ORB), 5-minute, first-bar-direction variant",
+  "source_type": "EXTERNAL (LONDON_NEWYORK comparator -- the single external comparator this mission's internal-first shortcut allows)",
+  "source": {
+    "paper": "Zarattini, C. & Aziz, A. (2023), 'Can Day Trading Really Be Profitable? ...', SSRN 4416622",
+    "secondary_summary_used_for_rule_extraction": "https://www.cxoadvisory.com/technical-trading/day-trading-with-an-opening-range-breakout-strategy/ (2023-05-08)",
+    "independent_replication_read_only_reference": "https://github.com/giovannibrusco/zarattini-2023-orb-qqq (MIT license; NOT executed, NOT imported -- read-only reference only, per the EXTERNAL CODE RULE)",
+    "license": "MIT (replication repo only; the paper itself is SSRN-hosted academic work, no software license applies to the rule description)",
+    "retrieval_date": "2026-10-07"
+  },
+  "original_venue": "US equities (QQQ / TQQQ), NYSE cash session open, 2016-02-17 (sic, backtest window 2016-01-01 to 2023-02-17 per CXO summary)",
+  "this_mission_venue": "EURUSD, FX, AG's own LONDON_NEWYORK trade-window open (11:00 UTC), M5 bars",
+  "source_backtest_class": "SB4_COST_AWARE (original paper models commission explicitly, $25,000 capital, up to 4x leverage; explicitly does NOT model bid-ask spread or slippage. The independent replication explicitly stress-tests execution cost/slippage sensitivity, which is the evidence this mission relies on more heavily than the original paper's no-friction headline figure.)",
+
+  "gates": {
+    "G1_CONTRACTABLE": {
+      "verdict": "PASS_FOR_AG_OPERATIONALIZED_VERSION",
+      "reason": "Entry (2nd 5-min bar open), stop (1st bar extreme), target (10x risk) are exact. The source's 'about the same' doji threshold is UNKNOWN (not quantified in the available secondary summary); this mission adopted |close-open|<0.10*range as its OWN operational threshold, explicitly flagged as not sourced from the paper.",
+      "source_rule_as_literally_stated": "HOLD_SPEC (doji threshold undefined)"
+    },
+    "G2_TICKETABLE": {"verdict": "PASS", "reason": "Single discrete MARKET entry, fixed initial SL, single TP (10R), at most one signal per day by construction, 5-minute decision bar (meets the >=5 minute floor exactly)."},
+    "G3_DATA_VENUE_FIT": {"EURUSD": "PASS (DEV_EURUSD_M5_TRAIN_V1)", "GBPUSD/USDJPY/XAUUSD": "NOT_ATTEMPTED (external comparator budget limited to one symbol per the internal-first shortcut)"},
+    "G4_CAUSALITY_WARMUP": {"verdict": "PASS", "causality_reason": "Entry fires at the OPEN of the bar immediately after the fully-closed opening bar; no same-bar or future-bar information used.", "warmup_invariance": "PASS (trivial/by construction: each day's opening range uses only that day's own first two M5 bars, zero cross-day state)."},
+    "G5_TRANSLATION_FIDELITY": {"verdict": "MATERIAL_DEVIATION", "reason": "Instrument (US equity ETF -> FX spot/CFD), venue (NYSE cash session -> 24-hour FX), 'opening' definition (market open -> AG's own LONDON_NEWYORK window start), and an invented doji threshold. The source paper's reported 33% net annualized alpha (QQQ, 2016-2023) is explicitly NOT inherited as evidence for this candidate; this mission treats OSS_FX_C001's DEV replay as the only evidence that counts for a promotion decision."}
+  },
+
+  "ag_reproduced": true,
+  "ag_reproduced_basis": "Deterministic rule-extraction implementation (no external code imported/executed) run against a hashed DEV dataset partition; run_manifest.json in dev_replay/OSS_FX_C001_ORB_NY_OPEN__EURUSD__LONDON_NEWYORK__TRAIN/.",
+
+  "dev_replay_runs": [
+    {"run_id": "OSS_FX_C001_ORB_NY_OPEN__EURUSD__LONDON_NEWYORK__TRAIN", "n_trades_filled": 176, "gross_expectancy_r": 0.045, "gross_profit_factor": 1.058, "net_base_spread_expectancy_r": -0.430, "net_stress_expectancy_r": -0.905, "max_drawdown_r_gross": 26.2}
+  ],
+
+  "friction_screened": true,
+  "friction_result": "FAIL. Gross expectancy is barely positive (+0.045R) and already below the min_profit_factor=1.30 kill threshold (1.058) before any cost. Median per-trade risk distance (~3.5 pips) is small enough that even the BASE 1.4-pip spread scenario alone consumes roughly 0.35-0.41R per trade on average, flipping net expectancy decisively negative (-0.43R base, -0.91R stress). Commission UNKNOWN throughout -- not assumed zero; true result is likely worse, not better.",
+
+  "kill_policy_check": {
+    "min_trade_count_30": "PASS (176)",
+    "net_expectancy_r_gt_0": "PASS gross / FAIL net",
+    "min_profit_factor_1_30": "FAIL (1.058 gross; worse net)",
+    "max_drawdown_r_15": "FAIL (26.2R gross)",
+    "friction_requirement": "FAIL"
+  },
+
+  "verdict": "REJECTED",
+  "verdict_reason": "Even before this mission's own friction scenario is applied, this AG-operationalized ORB-at-NY-open variant fails the preregistered profit-factor and max-drawdown kill thresholds on 176 real EURUSD DEV trades. Applying the point-in-time VT Markets spread snapshot (friction only, no commission/slippage assumed) turns the already-marginal gross edge decisively negative. This specific 5-minute-ORB formalization on EURUSD at the LONDON_NEWYORK open is rejected for freeze-campaign promotion; this does not evaluate the source paper's own US-equity claim, which this mission never attempted to reproduce.",
+
+  "status_taxonomy": {
+    "source_backtested": true,
+    "ag_reproduced": true,
+    "friction_screened": true,
+    "contract_frozen": false,
+    "logic_verified": false,
+    "economic_status": "NOT_VERIFIED",
+    "edge_verified": false
+  }
+}

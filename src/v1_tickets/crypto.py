@@ -33,24 +33,39 @@ from btc_sweep_research.ledger import BTCResearchLedger
 from execution_runtime import binance_usdtm_feed as BN
 from execution_runtime import bybit_linear_perp_feed as BY
 from execution_runtime.public_crypto_feed import (
-    CandleBundle, FallbackPublicCryptoFeed, PrefetchedFeed, PublicCryptoFeedUnavailable,
+    CandleBundle,
+    FallbackPublicCryptoFeed,
+    PrefetchedFeed,
+    PublicCryptoFeedUnavailable,
 )
 from host_evidence.symbol_metadata import (
-    CONVERSION_ERROR, INCOMPLETE_CANDLES, METADATA_MISSING, REPO_ROOT, SWAP_FIELDS, SWAP_FIELDS_MISSING,
-    SYMBOL_NOT_FOUND, HostDataError, load_record,
+    CONVERSION_ERROR,
+    INCOMPLETE_CANDLES,
+    METADATA_MISSING,
+    REPO_ROOT,
+    SWAP_FIELDS,
+    SWAP_FIELDS_MISSING,
+    SYMBOL_NOT_FOUND,
+    HostDataError,
+    load_record,
 )
 from mt5.symbol_resolver import METADATA_SOURCE_SYNTHETIC_RESEARCH, SymbolMeta
+from runtime_state.store import JsonKeyValueStore
 from sizing_math.daily_loss_guard import DailyLossGuard
 from sizing_math.position_guard import OpenPositionGuard
-from runtime_state.store import JsonKeyValueStore
 from strategy_engine.sweep_retest.crypto_symbols import crypto_symbol_meta
 from strategy_engine.sweep_retest.engine import SweepRetestRuntime
 from strategy_engine.sweep_retest.state_store import SweepRetestStateStore
-from v1_tickets.guards import gate_ready
 from ticket_delivery.archive import (
-    CYCLE_STATE_BLOCKED, CYCLE_STATE_DATA_ERROR, CYCLE_STATE_NO_TRADE, CYCLE_STATE_READY, CYCLE_STATE_WATCH,
-    CycleDecisionRecord, archive_cycle_decision,
+    CYCLE_STATE_BLOCKED,
+    CYCLE_STATE_DATA_ERROR,
+    CYCLE_STATE_NO_TRADE,
+    CYCLE_STATE_READY,
+    CYCLE_STATE_WATCH,
+    CycleDecisionRecord,
+    archive_cycle_decision,
 )
+from v1_tickets.guards import gate_ready
 
 V1_CRYPTO_SYMBOLS = ("BTCUSDT", "ETHUSDT")
 SYMBOL_STATUS = {"BTCUSDT": "ACTIVE_INCUBATION", "ETHUSDT": "SHADOW"}

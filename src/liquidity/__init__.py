@@ -24,11 +24,13 @@ from .affinity import (
     BULLISH_INTERNAL_TO_EXTERNAL,
     EXTERNAL_LIQUIDITY_REACHED,
     EXTERNAL_TO_INTERNAL,
-    INDETERMINATE as AFFINITY_INDETERMINATE,
     INTERNAL_REBALANCING,
     LiquidityAffinityResult,
     evaluate_liquidity_affinity,
     liquidity_affinity_result,
+)
+from .affinity import (
+    INDETERMINATE as AFFINITY_INDETERMINATE,
 )
 from .analyzer import liquidity_result
 from .contract import CONTRACT_VERSION, LIQUIDITY_CONTRACT_GAPS, LiquidityContractGap

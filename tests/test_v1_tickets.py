@@ -11,10 +11,19 @@ import os
 
 import pytest
 
-from execution_runtime.public_crypto_feed import CandleBundle, PublicCryptoFeedUnavailable
+from execution_runtime.public_crypto_feed import (
+    CandleBundle,
+    PublicCryptoFeedUnavailable,
+)
 from strategy_engine.session import Candle
 from v1_tickets.crypto import archive_crypto_ticket, build_crypto_ticket
-from v1_tickets.fx import HOST_METADATA_FIELDS, V1_CYCLES, V1_FX_SYMBOLS, archive_fx_ticket, build_fx_ticket
+from v1_tickets.fx import (
+    HOST_METADATA_FIELDS,
+    V1_CYCLES,
+    V1_FX_SYMBOLS,
+    archive_fx_ticket,
+    build_fx_ticket,
+)
 
 UTC = dt.timezone.utc
 DAY = dt.date(2026, 1, 5)
@@ -123,7 +132,11 @@ def test_fx_archive_is_idempotent_archive_only(tmp_path):
 
 
 def test_paper_trade_requires_fresh_complete_host_ready_ticket(tmp_path):
-    from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility
+    from v1_tickets.paper import (
+        archive_paper_trade,
+        build_paper_trade,
+        paper_eligibility,
+    )
 
     session, post = _fx("EURUSD", "ASIAN_LONDON")
     now = dt.datetime(2026, 1, 5, 7, 35, tzinfo=UTC)
@@ -262,6 +275,30 @@ def test_crypto_v3_windows_weekday_ny_plus_weekend_utc(now, expected, window):
     from v1_tickets.crypto import active_window, window_status
     assert window_status(_cfg(3), (now - dt.timedelta(days=1)).date(), now) == expected
     assert (active_window(_cfg(3), now) or {}).get("name") == window
+
+
+def test_crypto_v3_window_timezones_are_independent_of_london_and_follow_ny_dst():
+    from v1_tickets.crypto import active_window, window_status
+
+    cfg = _cfg(3)
+    # London changes clocks on Oct 25, but V3 weekend hours remain 21:00-23:00 UTC.
+    london_shift = dt.datetime(2026, 10, 25, 21, 0, tzinfo=UTC)
+    assert window_status(cfg, london_shift.date(), london_shift) == "IN_WINDOW"
+    assert (active_window(cfg, london_shift) or {}).get("name") == "WEEKEND"
+    monday_after_london = dt.datetime(2026, 10, 26, 13, 0, tzinfo=UTC)  # 09:00 EDT in New York
+    assert window_status(cfg, monday_after_london.date(), monday_after_london) == "IN_WINDOW"
+    assert (active_window(cfg, monday_after_london) or {}).get("name") == "WEEKDAY"
+
+    # NY falls back on Nov 1. Weekend UTC stays fixed; the next weekday's 09:00 New York
+    # start moves from 13:00 UTC (EDT) to 14:00 UTC (EST).
+    ny_fallback = dt.datetime(2026, 11, 1, 21, 0, tzinfo=UTC)
+    assert window_status(cfg, ny_fallback.date(), ny_fallback) == "IN_WINDOW"
+    assert (active_window(cfg, ny_fallback) or {}).get("name") == "WEEKEND"
+    monday_before = dt.datetime(2026, 11, 2, 13, 59, tzinfo=UTC)
+    monday_start = dt.datetime(2026, 11, 2, 14, 0, tzinfo=UTC)
+    assert window_status(cfg, monday_before.date(), monday_before) == "BEFORE_WINDOW"
+    assert window_status(cfg, monday_start.date(), monday_start) == "IN_WINDOW"
+    assert (active_window(cfg, monday_start) or {}).get("name") == "WEEKDAY"
 
 
 @pytest.mark.parametrize("now,window,label", [

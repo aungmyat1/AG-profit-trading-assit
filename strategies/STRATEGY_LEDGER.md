@@ -351,3 +351,57 @@ from canonical session windows or other repo conventions at the time of registra
   UNVALIDATED data source for informational tickets only: the perp-calibrated cost model and
   all validation evidence are unchanged and do not transfer to it. research/demo/live
   authority unchanged (demo_authorized=false, live_authorized=false).
+
+## ST_CRYPTO_CFD_SWEEP_RETEST_V1 -- BTCUSD/ETHUSD CFD Previous-UTC-Day Sweep + H1 Structure + M5 MSS + Retest
+
+- **Registered:** 2026-10-02 (AG_CRYPTO_CFD_STRATEGY_CONTRACT_V1)
+- **Config:** `strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml`
+- **Status:** RESEARCH_ONLY_CONTRACT (deterministic contract only; no runner, no pilot)
+- **Family:** Liquidity_Sweep_MSS_Retest
+- **Instruments:** BTCUSD, ETHUSD -- `asset_class = CRYPTO_CFD` (VT Markets MT5 CFDs
+  verified by `docs/status/AG_CRYPTO_SCANNER_V1_OBSERVATION_STATUS.md`)
+- **Engine:** `src/crypto_cfd_contract/` (pure functions; tests
+  `tests/test_crypto_cfd_strategy_contract_v1.py`)
+- **Why it exists:** the frozen crypto observation layer (PR #28) fails closed with
+  `STRATEGY_CONTRACT_INCOMPLETE` because no registered contract covered these CFDs --
+  the registered crypto strategy profile covers the USDT perpetuals only. This entry
+  defines the dedicated CFD contract instead of reusing the perp profile.
+- **Perp/FX separation (hard):** no USDT-perpetual symbol, perp tick model
+  (`strategy_engine/sweep_retest/crypto_symbols.py`), perp activity window, or perp
+  funding/risk assumption is reused; no FX session gating or pip convention applies.
+  Reused pieces are ONLY the asset-independent primitives `sweep.py`/`mss.py`/
+  `retest.py`/`targets.py` and `market_structure.structural_breaks_for_candles`, which
+  `strategy_engine/sweep_retest/profile.py` documents as shared across asset classes.
+- **Frozen rules (summary; the YAML is authoritative):** previous-UTC-day H/L/M reference
+  (exactly 288 closed M5 bars else `REFERENCE_INCOMPLETE`, valid one UTC day);
+  H1 confirmed-break direction permission with confirmed-D1 conflict veto
+  (`HTF_DIRECTION_CONFLICT`); M5 close-back sweep (dual-side candle ambiguous); MSS =
+  subsequent closed M5 candle closing beyond the located swing (intrabar insufficient);
+  retest entry at the broken swing with zero tolerance within 3 completed M5 bars else
+  `SIGNAL_ENTRY_WINDOW_PASSED`; SL = sweep extreme with a FROZEN zero-point buffer (live
+  CFD tick metadata returned 0.0, so no tick-multiple buffer is computable -- any
+  non-zero buffer needs a governance amendment); TP1 = reference mid (50%, move to
+  breakeven), TP2 = opposing day extreme, min TP2 R 1.5 with the shared geometry guard.
+- **Open authorities (deliberately NOT defined here):** `SPREAD_POLICY_UNDEFINED`
+  (native-unit spreads recorded observed-only; no validated threshold),
+  `RISK_POLICY_AMBIGUOUS` (sizing-input interface defined, no risk percent assigned),
+  sizing metadata incomplete (broker tick_size/tick_value = 0.0). Proposal authority
+  BLOCKED; `execution_authorized=false` everywhere.
+- **Research separation:** `STRATEGY_CONTRACT_VALID=true` means reproducible logic only
+  -- `EDGE_VERIFIED=false`, `RISK_AUTHORIZED=false`. Not wired into the session
+  scanner's strategy adapters; doing so is a separate future authority decision.
+
+## ST_LARGE_SMC_V1@1.1.0 -- AGP-C1-LSMC VT-only symbols + logic verification (2026-10-09)
+
+- **Owner-directed in-place contract edit** (mission AGP-C1-LSMC): `instruments` BTCUSDT/ETHUSDT ->
+  VT Markets MT5 BTCUSD/ETHUSD; `symbol_metadata` now names the verified host `symbol_info()`
+  capture as the only point source, missing -> `DATA_ERROR SYMBOL_METADATA_MISSING` (no repo
+  constant or caller-supplied fallback). Crypto tie tolerance therefore uses the VT point 0.01
+  (was the exchange tick 0.1). Pre-edit 1.1.0 bytes stay attributed by sha256
+  `15e13a62...0591ebd` (referenced by the 1.1.1 candidate); prior 1.1.0 evidence is not
+  re-attributed.
+- **LOGIC_VERIFIED** (rule conformance and internal consistency only) by the L1-L6 gate
+  `src/v1_tickets/lsmc_logic_gate.py`; report and hashes in
+  `docs/status/AGP_C1_LSMC_V110_LOGIC_VERIFICATION_2026-10-09.md`.
+- No change to `proposal_generation_authorized`, `demo_authorized`, `live_authorized` (all
+  false) or `economic_status` (`NOT_EVALUATED`). EDGE_VERIFIED is not implied.

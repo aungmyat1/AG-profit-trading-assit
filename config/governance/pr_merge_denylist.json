@@ -1,0 +1,5 @@
+{
+  "schema": "AG_PR_MERGE_DENYLIST_V1",
+  "blocked_pr_numbers": [],
+  "blocked_labels": []
+}

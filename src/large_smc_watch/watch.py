@@ -24,16 +24,28 @@ import yaml
 
 from fx_discovery import features as F
 from large_smc_core.c10_stop_policy import C10StopPolicyViolation, compute_c10_stop
+from post_asian_pilot.report_archive import archive_path
 from runtime_state.store import JsonKeyValueStore
 from strategy_engine.session import Candle
-from post_asian_pilot.report_archive import archive_path
 from ticket_delivery.archive import (
-    CYCLE_STATE_DATA_ERROR, CYCLE_STATE_NO_TRADE, CYCLE_STATE_WATCH, CycleDecisionRecord, _report_type,
+    CYCLE_STATE_DATA_ERROR,
+    CYCLE_STATE_NO_TRADE,
+    CYCLE_STATE_WATCH,
+    CycleDecisionRecord,
+    _report_type,
     archive_cycle_decision,
 )
 
 from . import contract as C
-from .detect import POI, bias_at, c11_causal_target, close_time, h1_pois, m5_opportunities, tolerant_breaks
+from .detect import (
+    POI,
+    bias_at,
+    c11_causal_target,
+    close_time,
+    h1_pois,
+    m5_opportunities,
+    tolerant_breaks,
+)
 
 NY = ZoneInfo(C.DAY_BOUNDARY_TZ)
 UTC = dt.timezone.utc
@@ -114,7 +126,7 @@ def _poi_age_days(poi: POI, h1: Sequence[Candle], now: dt.datetime) -> int:
 
 def evaluate_snapshot(
     symbol: str, d1: Sequence[Candle], h1: Sequence[Candle], m5: Sequence[Candle], now_utc: dt.datetime,
-    point: Optional[float] = None, bid: Optional[float] = None, ask: Optional[float] = None,
+    bid: Optional[float] = None, ask: Optional[float] = None,
 ) -> Snapshot:
     now = now_utc.astimezone(UTC)
     base = dict(symbol=symbol, evaluated_at=now.isoformat())
@@ -122,7 +134,7 @@ def evaluate_snapshot(
         return Snapshot(state="DATA_ERROR", reason_codes=("SYMBOL_NOT_IN_V1_UNIVERSE",), **base)
     if symbol not in C.CRYPTO_SYMBOLS and fx_market_closed(now):
         return Snapshot(state="MARKET_CLOSED", reason_codes=("FX_WEEKEND",), **base)
-    pt, src = C.resolve_point(symbol, point)
+    pt, src = C.resolve_point(symbol)
     if pt is None:
         return Snapshot(state="DATA_ERROR", reason_codes=("SYMBOL_METADATA_MISSING",), **base)
     base.update(point=pt, metadata_source=src)

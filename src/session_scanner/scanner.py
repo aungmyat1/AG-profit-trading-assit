@@ -9,7 +9,7 @@ There is no broker-mutation import or call anywhere in this package.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Optional
 
 import yaml
@@ -22,8 +22,17 @@ from .checklist_v1_1 import attach_checklist_v1_1
 from .proposal import build_ticket
 from .quality import FRESH, assess_quote, assess_series, fetch_with_sync, normalize_bars
 from .registry import InstrumentRegistryError, load_specs, verify_live
-from .sessions import classify, load_canonical_windows, previous_day_levels, window_levels
-from .strategy_adapter import AsianSweepAdapter, resolve_proposal_scope, strategy_catalog
+from .sessions import (
+    classify,
+    load_canonical_windows,
+    previous_day_levels,
+    window_levels,
+)
+from .strategy_adapter import (
+    AsianSweepAdapter,
+    resolve_proposal_scope,
+    strategy_catalog,
+)
 from .timebase import TIME_GATE_PASS, derive_time_authority, parse_server_wallclock
 
 SCANNER_CONFIG_PATH = "config/session_scanner_v1.yaml"
