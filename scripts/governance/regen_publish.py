@@ -31,6 +31,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import regen_permissions  # noqa: E402
+from regen_permissions import Permissions, PermissionDenied  # noqa: E402
 from regen_contract import (  # noqa: E402
     GENERATED_PATHS, REGEN_BRANCH_PREFIX, REGEN_FAILED, REGEN_NO_CHANGE, REGEN_PENDING_REVIEW,
     REGEN_PR_CREATED, REGEN_PR_UPDATED, SHA, build_outcome, regen_branch, validate_outcome,
@@ -41,10 +43,6 @@ CI_PENDING = "CI_PENDING"
 CI_SUCCESS = "CI_SUCCESS"
 CI_FAILED = "CI_FAILED"
 CI_UNKNOWN = "CI_UNKNOWN"
-# R6B step 0: both pending-owner permissions (REG-REGEN-BOOTSTRAP, REG-REGEN-STALE-CLOSE) are
-# denied until the owner approves them. Denied bootstrap fails closed; denied closure is a no-op.
-ALLOW_BOOTSTRAP_PUSH = False
-ALLOW_SUPERSEDE_CLOSE = False
 BOT_NAME = "github-actions[bot]"
 BOT_EMAIL = "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -96,8 +94,11 @@ class Git:
         out = self("ls-remote", "origin", f"refs/heads/{ref}")
         return out.split()[0] if out else None
 
-    def push_fast_forward(self, sha: str, branch: str) -> None:
+    def push_fast_forward(self, sha: str, branch: str, perms: Permissions, action: str = "push_regen_branch") -> None:
         """Plain push (no --force, no lease): rejected unless it fast-forwards the branch."""
+        if action not in ("push_regen_branch", "bootstrap_push"):
+            raise RegenError(f"REFUSED_PUSH_ACTION:{action}")
+        perms.require(action)
         if branch == "main" or not branch.startswith(REGEN_BRANCH_PREFIX):
             raise RegenError(f"REFUSED_PUSH_TARGET:{branch}")
         self("push", "--quiet", "origin", f"{sha}:refs/heads/{branch}")
@@ -106,8 +107,9 @@ class Git:
 class GhPulls:
     """The only GitHub API surface the publisher needs (gh CLI; GH_TOKEN from the workflow)."""
 
-    def __init__(self, repo: str):
+    def __init__(self, repo: str, perms: Permissions):
         self.repo = repo
+        self.perms = perms
 
     def _gh(self, *args: str) -> str:
         done = subprocess.run(["gh", *args, "-R", self.repo], capture_output=True, text=True)
@@ -121,11 +123,13 @@ class GhPulls:
         return [row for row in rows if str(row.get("headRefName", "")).startswith(REGEN_BRANCH_PREFIX)]
 
     def create(self, branch: str, title: str, body: str) -> int:
+        self.perms.require("create_pr")
         url = self._gh("pr", "create", "--draft", "--base", "main", "--head", branch,
                        "--title", title, "--body", body)
         return int(url.rstrip("/").rsplit("/", 1)[-1])
 
     def supersede(self, number: int, by: str) -> None:
+        self.perms.require("close_superseded_pr")
         self._gh("pr", "comment", str(number), "--body", f"Superseded: {by}. This branch is left unmodified.")
         self._gh("pr", "close", str(number))
 
@@ -140,6 +144,7 @@ class GhPulls:
 
     def dispatch_ci(self, branch: str, correlation_id: str) -> None:
         # A GITHUB_TOKEN-opened PR gets no pull_request CI; run CI on the bot branch head.
+        self.perms.require("dispatch_ci")
         self._gh("workflow", "run", "ci.yml", "--ref", branch, "-f", f"correlation_id={correlation_id}")
 
 
@@ -197,15 +202,19 @@ def _verify_provenance(git: Git, target_sha: str, head: str) -> None:
         raise RegenError("REGEN_BRANCH_HEAD_IS_BOOTSTRAP")
 
 
-def _supersede_others(pulls, others: list[dict], by: str) -> None:
-    if not ALLOW_SUPERSEDE_CLOSE:
-        return  # denied: stale bot PRs stay open; the readiness audit holds them
+def _supersede_others(pulls, others: list[dict], by: str, perms: Permissions) -> None:
+    if not perms.allows("close_superseded_pr"):
+        return  # denied: stale bot PRs stay untouched; the readiness audit holds them
     for pr in others:
         pulls.supersede(pr["number"], by)
 
 
-def publish(git: Git, pulls, target_sha: str, correlation_id: str) -> dict:
-    """Return an AG_REGEN_OUTCOME_V1 dict. Raises RegenError for fail-closed conditions."""
+def publish(git: Git, pulls, target_sha: str, correlation_id: str, perms: Permissions | None = None) -> dict:
+    """Return an AG_REGEN_OUTCOME_V1 dict. Raises RegenError for fail-closed conditions.
+
+    ``perms`` defaults to the committed allowlist; every side effect is checked against it.
+    """
+    perms = perms if perms is not None else regen_permissions.load()
     if not SHA.match(target_sha):
         raise RegenError("TARGET_SHA_INVALID")
     if git("rev-parse", "HEAD") != target_sha:
@@ -222,7 +231,7 @@ def publish(git: Git, pulls, target_sha: str, correlation_id: str) -> dict:
     mine = [pr for pr in open_prs if pr.get("headRefName") == branch]
     others = [pr for pr in open_prs if pr.get("headRefName") != branch]
     if not paths:
-        _supersede_others(pulls, others, f"regeneration at {target_sha} found no change")
+        _supersede_others(pulls, others, f"regeneration at {target_sha} found no change", perms)
         return build_outcome(REGEN_NO_CHANGE, target_sha, correlation_id)
     if len(mine) > 1:
         raise RegenError("DUPLICATE_REGEN_PRS_OPEN")
@@ -232,12 +241,12 @@ def publish(git: Git, pulls, target_sha: str, correlation_id: str) -> dict:
         raise RegenError("REGEN_PR_HEAD_MOVED")
 
     if observed is None:
-        if not ALLOW_BOOTSTRAP_PUSH:
+        if not perms.allows("bootstrap_push"):
             raise RegenError("REGEN_BOOTSTRAP_DENIED: pushing a branch before its PR exists is not "
-                             "approved (REG-REGEN-BOOTSTRAP); the owner must open the regeneration PR")
+                             "allowlisted (REG-REGEN-BOOTSTRAP); the owner must open the regeneration PR")
         bootstrap = _commit(git, git("rev-parse", f"{target_sha}^{{tree}}"), target_sha,
                             bootstrap_message(target_sha))
-        git.push_fast_forward(bootstrap, branch)  # rejected if a concurrent run created the branch
+        git.push_fast_forward(bootstrap, branch, perms, "bootstrap_push")  # rejected if a concurrent run created the branch
         observed = bootstrap
     else:
         _verify_branch(git, branch, observed, target_sha)
@@ -246,6 +255,7 @@ def publish(git: Git, pulls, target_sha: str, correlation_id: str) -> dict:
     if pr is None:
         body = (f"Generated-file regeneration for `{target_sha}` (correlation `{correlation_id}`).\n\n"
                 f"Changed: {', '.join(paths)}. Merge only through the owner merge gate.")
+        perms.require("create_pr")
         try:
             number = pulls.create(branch, title_for(target_sha), body)
         except RegenError as exc:
@@ -264,14 +274,15 @@ def publish(git: Git, pulls, target_sha: str, correlation_id: str) -> dict:
         git("add", "--", *paths)
         head = _commit(git, git("write-tree"), observed,
                        f"{title_for(target_sha)}\n\nSource: {target_sha}\nCorrelation: {correlation_id}")
-        git.push_fast_forward(head, branch)
+        git.push_fast_forward(head, branch, perms)
         ci = CI_NOT_DISPATCHED
-    _supersede_others(pulls, others, f"#{number} regenerates the newer source {target_sha}")
+    _supersede_others(pulls, others, f"#{number} regenerates the newer source {target_sha}", perms)
     if ci == CI_FAILED:
         raise RegenError(f"REGEN_PR_CI_FAILED: CI failed on {head}; not re-dispatched")
     if ci == CI_UNKNOWN:
         raise RegenError(f"REGEN_PR_CI_UNKNOWN: cannot establish CI state of {head}")
     if ci == CI_NOT_DISPATCHED:
+        perms.require("dispatch_ci")
         try:
             pulls.dispatch_ci(branch, ci_correlation(head))
         except RegenError as exc:
@@ -292,11 +303,13 @@ def main(argv=None) -> int:
     parser.add_argument("--root", default=".")
     args = parser.parse_args(argv)
     try:
-        outcome = publish(Git(Path(args.root).resolve()), GhPulls(args.repo), args.target_sha, args.correlation_id)
+        perms = regen_permissions.load()
+        outcome = publish(Git(Path(args.root).resolve()), GhPulls(args.repo, perms), args.target_sha,
+                          args.correlation_id, perms)
         failures = validate_outcome(outcome, args.target_sha, args.correlation_id)
         if failures:
             raise RegenError("OUTCOME_INVALID:" + ",".join(failures))
-    except RegenError as exc:
+    except (RegenError, PermissionDenied) as exc:
         outcome = build_outcome(REGEN_FAILED, args.target_sha, args.correlation_id, reason=str(exc))
     Path(args.out).write_text(json.dumps(outcome, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"{outcome['status']} {outcome.get('reason') or ''}".strip())

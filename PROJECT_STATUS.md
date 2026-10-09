@@ -123,16 +123,17 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
-## Regeneration permissions denied by default — R6B step 0 (2026-10-09, branch `fix/r6b-step0-deny`, not merged)
+## Regeneration permissions: default deny — R6B (2026-10-09, branches `fix/r6b-step0-deny` → `fix/r6b-default-deny`, not merged)
 
-The regeneration publisher's two pending-owner permissions are now off:
+Every regeneration side effect needs an entry in `config/governance/regen_permissions.json`:
+bootstrap push, branch push, PR creation, superseded-PR closure, and CI dispatch. A missing
+or invalid config denies everything.
 
-- **Bootstrap push** (`REG-REGEN-BOOTSTRAP`): denied, so a first publication fails closed
-  with `REGEN_BOOTSTRAP_DENIED` and pushes nothing.
-- **Closing superseded bot PRs** (`REG-REGEN-STALE-CLOSE`): denied, so stale bot PRs are
-  left untouched.
+The committed allowlist omits the two pending-owner actions, `bootstrap_push`
+(`REG-REGEN-BOOTSTRAP`) and `close_superseded_pr` (`REG-REGEN-STALE-CLOSE`). So a first
+publication fails closed and stale bot PRs are untouched.
 
-Both stay off until the owner records a decision. Unit-tested only. See
+Unit-tested only; no live run. See
 [`REGENERATION_BOT_POLICY.md`](docs/governance/REGENERATION_BOT_POLICY.md).
 
 ## PR-based regeneration workflow R5 (2026-10-09, branch `claude/regen-pr-contract-r5`, not merged)
