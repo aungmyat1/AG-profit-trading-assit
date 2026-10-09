@@ -123,7 +123,8 @@ def test_daily_report_counts_reference_not_ready_as_its_own_category(tmp_path):
 
 def test_manual_ticket_before_reference_close_has_no_block_reasons_or_warnings():
     from v1_tickets import manual_ticket as mt
-    owner = {"risk_pct": 0.5, "risk_status": "SET", "cost_warn_R": 0.25, "warn_status": "SET"}
+    owner = {"risk_pct": 0.5, "risk_status": "SET", "cost_warn_R": 0.25,
+             "cost_block_R": 0.25, "warn_status": "SET"}
     now = REF_END - dt.timedelta(minutes=6)
     closed = [c for c in CANDLES if c.time + dt.timedelta(minutes=15) <= now]
     box = [c for c in closed if REF_START <= c.time < REF_END]

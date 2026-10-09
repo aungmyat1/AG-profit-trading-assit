@@ -369,14 +369,14 @@ def normalise_reason(reason: str) -> str:
 
 
 def reason_severity(reason: str) -> int:
-    """Lower = more severe. L1-L4 FAIL > DATA/METADATA missing > RISK_CONFIG_MISSING >
-    any other blocking reason (e.g. SPREAD_TOO_WIDE, authority) > SIGNAL_STALE/EXPIRED.
+    """Lower = more severe. L1-L4 FAIL > DATA/METADATA missing > missing risk/cost config or
+    COST_ABOVE_BLOCK_R > other blocking reasons (e.g. SPREAD_TOO_WIDE, authority) > stale/expired.
     Owner-approved 2026-10-06. L5_WARN ranks last but is a warning, never a block reason."""
     if reason.startswith("LOGIC_GATE_FAIL:"):
         return 0
     if reason.startswith("DATA_ERROR:") or reason in DATA_METADATA_REASONS:
         return 1
-    if reason == "RISK_CONFIG_MISSING":
+    if reason in ("RISK_CONFIG_MISSING", "COST_ABOVE_BLOCK_R"):
         return 2
     if reason == L5_WARN:
         return 5

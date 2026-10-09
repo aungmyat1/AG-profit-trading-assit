@@ -17,8 +17,10 @@ from test_manual_ticket_logic_gate import replay  # noqa: E402  (shared recorded
 UTC = dt.timezone.utc
 META = SymbolMeta(symbol="EURUSD-VIP", tick_size=0.00001, tick_value=1.0, contract_size=100000, volume_min=0.01,
                   volume_max=100.0, volume_step=0.01, digits=5, point=0.00001)
-UNSET = {"risk_pct": None, "risk_status": mt.RISK_CONFIG_MISSING, "cost_warn_R": None, "warn_status": "NOT_SET"}
-OWNER = {"risk_pct": 0.5, "risk_status": "SET", "cost_warn_R": 0.25, "warn_status": "SET"}
+UNSET = {"risk_pct": None, "risk_status": mt.RISK_CONFIG_MISSING, "cost_warn_R": None,
+         "cost_block_R": None, "warn_status": "NOT_SET"}
+OWNER = {"risk_pct": 0.5, "risk_status": "SET", "cost_warn_R": 0.10,
+         "cost_block_R": 0.25, "warn_status": "SET"}
 # READY-path composition uses 2026-06-23 (SHORT): L3 passes there. 2026-06-17 (LONG) fails L3.target_order
 # (TP1 box high 1.16160 is beyond TP2 1.16145 at 5R) -- the A1 regression on recorded data.
 READY_DAY = "2026-06-23"
@@ -29,10 +31,10 @@ def _no_repo_evidence(tmp_path, monkeypatch):
     monkeypatch.setenv("AG_EVIDENCE_ROOT", str(tmp_path / "no_evidence"))
 
 
-def manual(day="2026-06-17", at="07:20", owner=UNSET, **kw):
+def manual(day="2026-06-17", at="07:20", owner=UNSET, spread=0.00002, **kw):
     d, w, now, session, post, _ = replay(day, at)
     return mt.build_manual_ticket("EURUSD", "ASIAN_LONDON", d, session, 24, post, now=now, data_close=now,
-                                  spread=0.00002, owner=owner, **kw)     # 0.2 pip: inside the existing 15% gate
+                                  spread=spread, owner=owner, **kw)     # 0.2 pip: inside the existing 15% gate
 
 
 @pytest.fixture
@@ -88,6 +90,26 @@ def test_owner_risk_set_gives_manual_ticket_ready(l2_pass):
     assert t["invariants"]["order_ready"] is False and t["edge_status"] == "NOT VERIFIED — logic only"
 
 
+def test_fx_cost_block_exact_boundary_blocks_ticket(l2_pass):
+    probe = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)
+    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META,
+               spread=probe["stop_distance"] * OWNER["cost_block_R"])
+    assert t["cost_in_R"] == pytest.approx(0.25)
+    assert t["state"] == "TICKET_BLOCKED" and t["primary_block_reason"] == mt.COST_ABOVE_BLOCK_R
+
+
+def test_missing_fx_cost_block_key_fails_closed(l2_pass, tmp_path):
+    config = tmp_path / "config"
+    config.mkdir()
+    (config / "owner_ticket.yaml").write_text(
+        "owner_ticket:\n  risk_pct: 0.5\n  cost_warn_R: 0.10\n", encoding="utf-8")
+    owner = mt.load_owner_config(tmp_path)
+    assert owner["risk_status"] == mt.RISK_CONFIG_MISSING
+    t = manual(READY_DAY, "07:20", owner=owner, balance=10000.0, meta=META)
+    assert t["state"] == "TICKET_BLOCKED" and t["primary_block_reason"] == mt.RISK_CONFIG_MISSING
+    assert t["risk_status"] == mt.RISK_CONFIG_MISSING
+
+
 @pytest.mark.parametrize("balance,meta,status", [(None, META, "ACCOUNT_BALANCE_UNAVAILABLE"),
                                                  (10000.0, None, "SYMBOL_METADATA_MISSING")])
 def test_lot_inputs_missing_block(l2_pass, balance, meta, status):
@@ -110,7 +132,7 @@ def test_strategy_without_manual_authority_is_opportunity_only(l2_pass):
     (None, None), ("owner_ticket:\n  risk_pct: null\n", None), ("owner_ticket:\n  risk_pct: abc\n", None),
     ("owner_ticket:\n  risk_pct: 0\n", None), ("owner_ticket:\n  risk_pct: -1\n", None),
     ("owner_ticket:\n  risk_pct: true\n", None), ("owner_ticket: [1]\n", None), (":::bad", None),
-    ("owner_ticket:\n  risk_pct: 0.5\n  cost_warn_R: 0.2\n", 0.5),
+    ("owner_ticket:\n  risk_pct: 0.5\n  cost_warn_R: 0.2\n  cost_block_R: 0.25\n", 0.5),
 ])
 def test_owner_config_has_no_default(tmp_path, body, expected):
     if body is not None:
@@ -121,10 +143,11 @@ def test_owner_config_has_no_default(tmp_path, body, expected):
     assert cfg["risk_status"] == ("SET" if expected else mt.RISK_CONFIG_MISSING)
 
 
-def test_repo_owner_config_is_unset_and_never_falls_back_to_trading_yaml():
+def test_repo_owner_config_uses_explicit_values_and_never_falls_back_to_trading_yaml():
     cfg = mt.load_owner_config()
     if not (Path(mt.REPO_ROOT) / mt.OWNER_CONFIG_LOCAL).exists():
-        assert cfg["risk_pct"] is None and cfg["cost_warn_R"] is None
+        assert cfg["risk_pct"] == 0.5 and cfg["cost_warn_R"] == 0.10 and cfg["cost_block_R"] == 0.25
+        assert cfg["risk_status"] == "SET"
     assert "trading.yaml" not in Path(mt.__file__).read_text().replace("config/trading.yaml risk", "")
 
 
@@ -174,7 +197,7 @@ def test_block_reason_precedence_tiers():
 
 def test_ticket_ready_has_no_block_reasons_and_l5_warning_only_in_warnings(l2_pass):
     """Owner decision 3 (2026-10-06): warnings[] is separate; TICKET_READY => block_reasons == []."""
-    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)       # cost_warn_R 0.25, no commission
+    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)       # cost_warn_R 0.10, no commission
     assert t["state"] == "TICKET_READY" and t["logic_gate"]["L5"]["status"] == "WARN"
     assert t["block_reasons"] == [] and t["primary_block_reason"] is None and t["stop_reason"] is None
     assert t["warnings"] == ["L5_WARN"] and "warn: L5_WARN" in mt.render_text(t)
