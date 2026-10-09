@@ -1,34 +1,47 @@
 name: regenerate-generated-files
 
-run-name: regenerate at ${{ inputs.target_sha || github.sha }}
+# Identity the merge gate binds to (scripts/governance/regen_contract.run_name).
+run-name: regenerate at ${{ inputs.target_sha || github.sha }} [${{ inputs.correlation_id || format('push-{0}', github.run_id) }}]
 
+# Policy AG_REGEN_OUTCOME_V1: generated files reach main only through the bot PR from
+# regen/generated-files. This workflow never pushes main. Outputs are a pure function of
+# non-generated inputs, so regenerating after a regeneration PR merges is REGEN_NO_CHANGE.
 on:
   push:
     branches: [main]
   workflow_dispatch:
     inputs:
       target_sha:
-        description: Exact main commit whose generated files should be checked
+        description: Exact main commit to regenerate from
+        required: true
+        type: string
+      correlation_id:
+        description: Merge-gate correlation id echoed in run-name and the outcome
         required: true
         type: string
 
 permissions:
   contents: write
+  pull-requests: write
+  actions: write
 
 concurrency:
-  group: regenerate-generated-files-main
+  group: regenerate-generated-files
   cancel-in-progress: false
 
 jobs:
   regenerate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       TARGET_SHA: ${{ inputs.target_sha || github.sha }}
+      CORRELATION_ID: ${{ inputs.correlation_id || format('push-{0}', github.run_id) }}
     steps:
-      - name: Check out repository
+      - name: Check out target commit
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.target_sha || github.sha }}
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -36,7 +49,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install generator dependencies
-        run: python -m pip install cogapp PyYAML
+        run: python -m pip install cogapp PyYAML==6.0.3
 
       - name: Regenerate the four generated files
         run: |
@@ -46,55 +59,27 @@ jobs:
           python scripts/docs/build_context_pack.py
           python scripts/docs/generated_files.py
 
-      - name: Enforce generated-file checks on main
+      - name: Check regenerated outputs are self-consistent
         run: |
           python scripts/docs/collect_facts.py --check
           python scripts/generate_live_status.py --check
           cog --check PROJECT_STATUS.md
           python scripts/docs/build_context_pack.py --check
 
-      - name: Commit generated files when changed
-        shell: bash
+      - name: Publish through the regeneration PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/governance/regen_publish.py --repo "$GITHUB_REPOSITORY" --target-sha "$TARGET_SHA" --correlation-id "$CORRELATION_ID" --out "$RUNNER_TEMP/regen-outcome.json"
+
+      - name: Record failure outcome when publishing did not run
+        if: failure()
         run: |
-          set -euo pipefail
-          git add -- PROJECT_STATUS.md docs/status/PROJECT_LIVE_STATUS.md status/facts.json docs/agents/CONTEXT_PACK.md
-          if git diff --cached --quiet; then
-            echo "Generated files are already current."
-            exit 0
-          fi
-          changed="$(git diff --cached --name-only | sort)"
-          while IFS= read -r path; do
-            case "$path" in
-              PROJECT_STATUS.md|docs/agents/CONTEXT_PACK.md|docs/status/PROJECT_LIVE_STATUS.md|status/facts.json) ;;
-              *) echo "Unexpected staged path: $path" >&2; exit 1 ;;
-            esac
-          done <<< "$changed"
+          test -f "$RUNNER_TEMP/regen-outcome.json" || python scripts/governance/regen_contract.py emit --out "$RUNNER_TEMP/regen-outcome.json" --status REGEN_FAILED --target-sha "$TARGET_SHA" --correlation-id "$CORRELATION_ID" --reason "step failed before publish"
 
-          git fetch origin main:refs/remotes/origin/main
-          remote_main="$(git rev-parse origin/main)"
-          if [[ "$remote_main" != "$TARGET_SHA" ]]; then
-            matches_remote=true
-            while IFS= read -r path; do
-              if ! git show "origin/main:$path" | cmp -s - "$path"; then
-                matches_remote=false
-              fi
-            done <<< "$changed"
-            if [[ "$matches_remote" == true ]]; then
-              echo "Another serialized regeneration run already published these exact outputs."
-              exit 0
-            fi
-            echo "main advanced past $TARGET_SHA with different generated outputs; refusing a stale bot commit." >&2
-            exit 1
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore(docs): regenerate generated files [skip ci]"
-
-          # The bot commit uses [skip ci], so validate it here in the same job.
-          python scripts/docs/collect_facts.py --check
-          python scripts/generate_live_status.py --check
-          cog --check PROJECT_STATUS.md
-          python scripts/docs/build_context_pack.py --check
-
-          git push origin HEAD:refs/heads/main
+      - name: Upload regen-outcome
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regen-outcome
+          path: ${{ runner.temp }}/regen-outcome.json
+          if-no-files-found: error

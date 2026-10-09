@@ -123,6 +123,19 @@ AG Profit Trading is a **Trading Assistant + Strategy Execution Platform**. See
 `README.md` for the folder map. The first section is the current rolling summary;
 later sections preserve dated milestone evidence and may contain older test totals.
 
+## PR-based regeneration workflow R5 (2026-10-09, branch `claude/regen-pr-contract-r5`, not merged)
+
+`.github/workflows/regenerate-generated-files.yml` and `scripts/governance/regen_publish.py`
+implement `AG_REGEN_OUTCOME_V1`:
+
+- Generated files reach `main` only through the bot PR `regen/generated-files`.
+- Every run records an exact-SHA, correlated outcome artifact.
+- Duplicate, stale and unexpected-path cases fail closed.
+
+The workflow passes the merge gate's static preflight. This change supersedes PR #91 and
+carries its commits. It is unit-tested only; no live gated run has happened. Evidence:
+[`AGP_GITHUB_INTEGRATION_R5_REGEN_2026-10-09.md`](docs/status/AGP_GITHUB_INTEGRATION_R5_REGEN_2026-10-09.md).
+
 ## Merge-gate recovery R3 (2026-10-09, PR #96 branch `claude/merge-gate-remediation-r2`, not merged)
 
 This builds on R2's fixes to the PR #92 merge gate. R2's F01 (a `COMMENTED` review cannot
