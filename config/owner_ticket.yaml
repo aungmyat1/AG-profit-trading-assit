@@ -1,9 +1,10 @@
-# Manual Trade Ticket V1 -- owner manual-ticket risk authorization (owner decision C4, 2026-10-06).
+# Manual Trade Ticket V1 -- owner manual-ticket risk authorization (OD1009-D2, 2026-10-09).
 # Separate from strategy risk assumptions and from config/trading.yaml risk.risk_per_trade_pct,
 # which is NEVER used as a fallback. No defaults: while risk_pct is null/invalid every ticket is
-# TICKET_BLOCKED with risk_status RISK_CONFIG_MISSING; while cost_warn_R is null L5 shows
-# "WARN LEVEL NOT SET". cost_warn_R is advisory only and never blocks a ticket.
+# TICKET_BLOCKED with RISK_CONFIG_MISSING if any required risk/cost key is absent. The FX cost
+# block is applied at cost_in_R >= cost_block_R; cost_warn_R remains an advisory L5 threshold.
 # Set real values host-locally in config/local/owner_ticket.yaml (gitignored), same shape.
 owner_ticket:
-  risk_pct: null       # percent of account balance per manual ticket, e.g. 0.5 means 0.5 %
-  cost_warn_R: null    # warn when spread + commission exceeds this many R
+  risk_pct: 0.5        # percent of account balance per manual ticket
+  cost_warn_R: 0.10    # warn when spread + commission reaches this many R
+  cost_block_R: 0.25  # block when spread + commission reaches this many R

@@ -25,7 +25,12 @@ import yaml
 from strategy_engine.models import StrategyConfig
 from strategy_engine.session import Candle
 from ticket_delivery.renderer import payload_hash
-from v1_tickets.guards import LEGACY_STALE_SIGNAL, MAX_SPREAD_RISK_FRACTION, SIGNAL_STALE, STALE_AFTER
+from v1_tickets.guards import (
+    LEGACY_STALE_SIGNAL,
+    MAX_SPREAD_RISK_FRACTION,
+    SIGNAL_STALE,
+    STALE_AFTER,
+)
 
 PASS, FAIL, WARN, NOT_EVALUABLE = "PASS", "FAIL", "WARN", "NOT_EVALUABLE"
 NOT_APPLICABLE = "NOT_APPLICABLE"   # post-fill / execution-time rule: recorded, not part of a manual ticket decision
@@ -130,7 +135,7 @@ def l2_rule_conformance(strategy: StrategyConfig, ticket: Dict[str, Any], sessio
     """Every rule declared in the strategy YAML, with its measured value. Not evaluable = FAIL."""
     spec = _raw_spec(strategy)
     symbol, box = ticket["symbol"], ticket.get("box") or {}
-    hi, lo, mid = box.get("high"), box.get("low"), box.get("mid")
+    hi, lo = box.get("high"), box.get("low")
     rng = (hi - lo) if hi is not None and lo is not None else None
     long = ticket.get("direction") == "LONG"
     entry, sl, risk = ticket.get("entry"), ticket.get("stop_loss"), ticket.get("risk_distance")
@@ -369,14 +374,14 @@ def normalise_reason(reason: str) -> str:
 
 
 def reason_severity(reason: str) -> int:
-    """Lower = more severe. L1-L4 FAIL > DATA/METADATA missing > RISK_CONFIG_MISSING >
-    any other blocking reason (e.g. SPREAD_TOO_WIDE, authority) > SIGNAL_STALE/EXPIRED.
+    """Lower = more severe. L1-L4 FAIL > DATA/METADATA missing > missing risk/cost config or
+    COST_ABOVE_BLOCK_R > other blocking reasons (e.g. SPREAD_TOO_WIDE, authority) > stale/expired.
     Owner-approved 2026-10-06. L5_WARN ranks last but is a warning, never a block reason."""
     if reason.startswith("LOGIC_GATE_FAIL:"):
         return 0
     if reason.startswith("DATA_ERROR:") or reason in DATA_METADATA_REASONS:
         return 1
-    if reason == "RISK_CONFIG_MISSING":
+    if reason in ("RISK_CONFIG_MISSING", "COST_ABOVE_BLOCK_R"):
         return 2
     if reason == L5_WARN:
         return 5

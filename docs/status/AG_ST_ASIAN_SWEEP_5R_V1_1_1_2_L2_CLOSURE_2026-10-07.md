@@ -1,12 +1,13 @@
 ---
 class: evidence
 state: DESIGN
-owner_reviewed: null
+owner_reviewed: 2026-10-09
 review_by: null
 ---
 # ST_ASIAN_SWEEP_5R_V1@1.1.2 — Logic Gate L2 closure (2026-10-07)
 
-**Candidate only. Asian Sweep READY stays paused until the owner confirms the Phase B table.**
+**Candidate only.** The owner confirmed the Phase B table under OD1009-D1 on 2026-10-09.
+Asian Sweep READY remains paused until the separately defined Logic and cost/risk gates pass.
 `strategies/ST_ASIAN_SWEEP_5R_V1.yaml` (v1.1.1) remains the frozen current authority and is
 byte-for-byte unchanged. The runtime still loads it, and its registry `logic_status` stays
 `NOT_VERIFIED`, so no `TICKET_READY` can come from this change. `EDGE_VERIFIED = FALSE`;
@@ -17,6 +18,11 @@ Owner instruction (2026-10-07): for each divergence in
 becomes the spec. Where engine behavior is undefined or unsafe, the spec fails closed instead.
 The unconsumed EMA_50 filter is removed. Every resolution is a **recommendation** pending
 owner confirmation (Phase B table below).
+
+Owner confirmation (OD1009-D1, 2026-10-09): every Phase B row is
+`CONFIRMED_AS_RECOMMENDED`; session anchoring is fixed UTC; Phase D carry-in accepts the packet
+proposal (`SETUP_WINDOW_OPEN`); successor is v1.1.2. This confirms the candidate contract only;
+it does not promote the candidate or enable READY.
 
 Version naming: this `1.1.2` is not the never-registered research label `1.1.2-RC1` (Model A,
 25 % stop, `AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION_STATUS.md`).
@@ -54,8 +60,8 @@ contract invalidates it. A test pins this.
 | B-STRUCT | Close beyond wick "with expansion volume" | Not consumed (unmeasurable) | `NONE`: removed. A close beyond the wick extreme means the wick-extreme stop was already hit | engine | PENDING_OWNER_CONFIRM |
 | B-REF, B-TRADE, B-SWEEP, B-DIR, B-SPLIT, B-MAXENTRY, B-INSTR | — | agree | Unchanged | agree | PENDING_OWNER_CONFIRM |
 
-Not decided here, still in the owner template: session anchoring (packet §4) and the Phase D
-rename of `SETUP_WINDOW_OPEN` (packet §5).
+Resolved by OD1009-D1: session anchoring (packet §4) is fixed UTC; the Phase D rename (packet §5)
+is `SETUP_WINDOW_OPEN`.
 
 ## Logic Gate L1–L6 on the recorded EURUSD fixtures (ASIAN_LONDON, evaluated 11:00Z)
 
@@ -88,6 +94,6 @@ No live MT5 or host run was performed. Only unit tests on the recorded fixtures 
 
 ## Next
 
-Owner fills `AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md` (confirm or amend each
-row above). Promotion of 1.1.2, i.e. switching `config_source` and un-pausing READY, is a
-separate, explicit owner step.
+OD1009-D1 is recorded in `AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md`. Promotion of
+1.1.2, including switching `config_source` or enabling READY, remains a separate step gated by
+the project objective and registry authority.

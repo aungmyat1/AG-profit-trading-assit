@@ -60,6 +60,8 @@ AUTHORITY_TEXT = "MANUAL — no automatic order"
 RISK_CONFIG_MISSING = "RISK_CONFIG_MISSING"
 RISK_NOT_SET_TEXT = "OWNER RISK % NOT SET"
 WARN_NOT_SET_TEXT = "WARN LEVEL NOT SET"
+COST_ABOVE_BLOCK_R = "COST_ABOVE_BLOCK_R"
+REQUIRED_OWNER_KEYS = ("risk_pct", "cost_warn_R", "cost_block_R")
 OWNER_CONFIG = "config/owner_ticket.yaml"
 OWNER_CONFIG_LOCAL = "config/local/owner_ticket.yaml"
 TICKET_DIR = os.path.join("ticket_delivery", "manual", "tickets")
@@ -88,9 +90,13 @@ def load_owner_config(root: Path = REPO_ROOT) -> Dict[str, Any]:
             break
     block = raw.get("owner_ticket") if isinstance(raw, dict) else None
     block = block if isinstance(block, dict) else {}
-    risk, warn = _positive(block.get("risk_pct")), _positive(block.get("cost_warn_R"))
-    return {"risk_pct": risk, "risk_status": "SET" if risk is not None else RISK_CONFIG_MISSING,
-            "cost_warn_R": warn, "warn_status": "SET" if warn is not None else "NOT_SET"}
+    risk = _positive(block.get("risk_pct"))
+    warn = _positive(block.get("cost_warn_R"))
+    cost_block = _positive(block.get("cost_block_R"))
+    config_status = "SET" if all(x is not None for x in (risk, warn, cost_block)) else RISK_CONFIG_MISSING
+    return {"risk_pct": risk, "risk_status": config_status,
+            "cost_warn_R": warn, "cost_block_R": cost_block,
+            "warn_status": "SET" if warn is not None else "NOT_SET"}
 
 
 def symbol_meta_from_host(symbol: str) -> Optional[SymbolMeta]:
@@ -153,13 +159,18 @@ def lot_size(entry: Optional[float], sl: Optional[float], owner: Dict[str, Any],
 
 def collect_block_reasons(*, failed_gates: Sequence[str], base_state: str, base_reason: Optional[str],
                           lot_status: str, spread_check: Optional[str], expired: bool,
-                          l5_status: str) -> "tuple[List[str], List[str]]":
+                          l5_status: str, owner_config_missing: bool = False,
+                          cost_blocked: bool = False) -> "tuple[List[str], List[str]]":
     """(block_reasons, warnings) for a ticket with a signal. Pure; ordered by severity (A2)."""
     reasons: List[Optional[str]] = ["LOGIC_GATE_FAIL:" + g for g in failed_gates]
     if base_state != TICKET_READY:
         reasons.append(base_reason)
+    if owner_config_missing:
+        reasons.append(RISK_CONFIG_MISSING)
     if lot_status != "OK":
         reasons.append(lot_status)
+    if cost_blocked:
+        reasons.append(COST_ABOVE_BLOCK_R)
     # The legacy guard returns one decision (stale fires before spread), but it records the
     # spread result first; a too-wide spread is a block reason in its own tier either way.
     if spread_check == SPREAD_TOO_WIDE:
@@ -242,25 +253,32 @@ def build_manual_ticket(
             "L6": l6_freshness(_iso(valid_until), stale_if, invalid_if),
         }
         lot = lot_size(entry, sl, owner, balance, meta)
+        owner_config_missing = any(_positive(owner.get(key)) is None for key in REQUIRED_OWNER_KEYS)
         lot["symbol_meta"] = meta_provenance or {"source": "CALLER_SUPPLIED" if meta is not None else META_NONE,
                                                  "broker_symbol": meta.symbol if meta is not None else None}
         spread_r = spread / risk if spread is not None and risk else None
+        cost_r = spread_r + (commission_r or 0.0) if spread_r is not None else None
+        cost_block_r = _positive(owner.get("cost_block_R"))
+        cost_blocked = cost_at_or_above_block(cost_r, cost_block_r)
         ticket.update({
             "branch": f"{base['setup']}:{base['reason_code'] if base['decision'] == 'READY' else base.get('engine_reason_code', base['reason_code'])}",
             "rule_evidence": gates["L2"]["checks"],
             "order_type": base["entry_order_type"], "sl": sl, "tp1": targets.get(1), "tp2": targets.get(2),
             "rr_tp1": round(abs(targets[1] - entry) / risk, 2) if risk else None,
             "rr_tp2": round(abs(targets[2] - entry) / risk, 2) if risk else None,
-            "stop_distance": risk, "lot_size": lot["lot"], "risk_status": lot["status"], "risk": lot,
-            "cost_in_R": round(spread_r + (commission_r or 0.0), 4) if spread_r is not None else None,
+            "stop_distance": risk, "lot_size": lot["lot"],
+            "risk_status": RISK_CONFIG_MISSING if owner_config_missing else lot["status"], "risk": lot,
+            "cost_in_R": round(cost_r, 4) if cost_r is not None else None,
             "cost_warn_R": owner["cost_warn_R"] if owner["cost_warn_R"] is not None else WARN_NOT_SET_TEXT,
+            "cost_block_R": cost_block_r if cost_block_r is not None else RISK_CONFIG_MISSING,
             "logic_gate": gates, "valid_until": _iso(valid_until), "stale_if": stale_if, "invalid_if": invalid_if,
             "signal_close_utc": _iso(signal_close),
         })
         block_reasons, gate_warnings = collect_block_reasons(
             failed_gates=blocking_failures(gates), base_state=state, base_reason=reason,
             lot_status=lot["status"], spread_check=base.get("spread_check"), expired=now >= valid_until,
-            l5_status=gates["L5"]["status"])
+            l5_status=gates["L5"]["status"], owner_config_missing=owner_config_missing,
+            cost_blocked=cost_blocked)
         warnings.extend(gate_warnings)
         if block_reasons:
             state, reason = TICKET_BLOCKED, block_reasons[0]
@@ -447,6 +465,11 @@ def crypto_cfd_commission(symbol: str, root: Path = REPO_ROOT) -> Optional[float
     return float(value) if type(value) in (int, float) and math.isfinite(value) and value >= 0 else None
 
 
+def cost_at_or_above_block(cost_r: Optional[float], block_r: Optional[float]) -> bool:
+    """Shared FX/crypto threshold predicate: the configured boundary itself blocks."""
+    return cost_r is not None and block_r is not None and cost_r >= block_r
+
+
 def crypto_cfd_cost_gate(distance: float, spread: float, commission_r: Optional[float],
                          policy: Dict[str, Any]) -> tuple[List[str], List[str], float, float]:
     """Owner D4/D2 friction thresholds; unknown commission contributes no invented fee."""
@@ -461,7 +484,7 @@ def crypto_cfd_cost_gate(distance: float, spread: float, commission_r: Optional[
         blocks.append("SPREAD_TOO_WIDE")
     elif policy["spread_ok_pct"] is not None and pct >= policy["spread_ok_pct"]:
         warnings.append("SPREAD_WARN")
-    if policy["cost_block_R"] is not None and cost >= policy["cost_block_R"]:
+    if cost_at_or_above_block(cost, policy["cost_block_R"]):
         blocks.append("COST_TOO_HIGH")
     elif policy["cost_warn_R"] is not None and cost >= policy["cost_warn_R"]:
         warnings.append("COST_WARN")
