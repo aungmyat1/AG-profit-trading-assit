@@ -223,3 +223,51 @@ def test_two_snapshots_ignore_market_ticks(symbols):
     other["EURUSD-VIP"]["tick"]["bid"] += 0.0001
     smoke, _ = _load_smoke()
     assert smoke.snapshot_mapping_differences(symbols, other) == []
+
+
+# --- MT5 symbol_info error classification (hermetic, no terminal) -------------------------
+
+@pytest.mark.parametrize("error_code, expect_missing", [
+    (4301, True),    # Current policy: symbol not found (requires host confirmation)
+    (0, False),      # Ambiguous result: do not treat as absent
+    (-1, False),     # Generic API failure
+    (4302, False),   # Not selected / visibility error, not absence
+    (None, False),   # Missing last_error details
+])
+def test_symbol_info_none_error_classification(monkeypatch, error_code, expect_missing):
+    smoke, _ = _load_smoke()
+    monkeypatch.setattr(smoke, "CANONICALS", ("EURUSD",))
+    monkeypatch.setattr(smoke, "candidate_names", lambda _: ["EURUSD"])
+    monkeypatch.setattr(smoke, "call_with_timeout", lambda func, *args: func(*args))
+
+    class Fake:
+        def symbol_info(self, name):
+            assert name == "EURUSD"
+            return None
+
+        def last_error(self):
+            return (error_code, "simulated error") if error_code is not None else None
+
+    if expect_missing:
+        assert smoke.capture_symbols(Fake()) == {"EURUSD": None}
+    else:
+        with pytest.raises(RuntimeError, match="symbol_info"):
+            smoke.capture_symbols(Fake())
+
+
+def test_symbol_info_timeout_does_not_turn_into_absence(monkeypatch):
+    smoke, _ = _load_smoke()
+    monkeypatch.setattr(smoke, "CANONICALS", ("EURUSD",))
+    monkeypatch.setattr(smoke, "candidate_names", lambda _: ["EURUSD"])
+
+    def timeout(func, *args):
+        raise TimeoutError("simulated MT5 timeout")
+
+    monkeypatch.setattr(smoke, "call_with_timeout", timeout)
+
+    class Fake:
+        def symbol_info(self, name):
+            raise AssertionError("must be intercepted")
+
+    with pytest.raises(TimeoutError):
+        smoke.capture_symbols(Fake())
