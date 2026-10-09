@@ -80,3 +80,37 @@ The bootstrap commit is a documented, reviewable exception. It carries no file c
 it is the minimum GitHub requires before a PR can exist. If the owner rejects it, the
 alternative is an owner decision to waive PR-before-push for bot regeneration branches.
 `regen_contract.validate_outcome` now requires `branch == regen/generated-files-<target_sha>`.
+
+## R5.2 retry recovery (2026-10-09)
+
+This fixes the P1 finding raised on `a62dffe`. Previously, if a generated commit was pushed
+and then CI dispatch failed or the process stopped, every retry returned
+`REGEN_PENDING_REVIEW` and never dispatched CI for that head.
+
+A retry that finds the head already published now does the following:
+
+1. It verifies provenance. Every commit in `target..head` must be authored by the bot and be
+   either the bootstrap or a generated commit carrying `Source: <target>`. A head that is
+   only the bootstrap does not count as published.
+2. It asks GitHub for the CI state of that exact head, matching `ci.yml` runs by head SHA and
+   by `run-name`, which is `CI dispatch regen-<head12>`:
+   - `CI_NOT_DISPATCHED`: dispatch now.
+   - `CI_PENDING` or `CI_SUCCESS`: no re-dispatch.
+   - `CI_FAILED`: `REGEN_FAILED: REGEN_PR_CI_FAILED`.
+   - `CI_UNKNOWN`: `REGEN_FAILED: REGEN_PR_CI_UNKNOWN`.
+3. A dispatch failure is reported as `REGEN_CI_DISPATCH_FAILED`, and the next run retries
+   it. The outcome records `ci_state`.
+
+Tests in `tests/test_regen_publish.py`:
+
+- dispatch fails, then a retry dispatches the exact head;
+- the process stops after the push, then is recovered;
+- CI is already running or already green, so there is no re-dispatch;
+- failed or unknown CI fails closed;
+- runs for other heads or titles are ignored;
+- a wrong source SHA in the commit provenance is rejected;
+- no duplicate commit, PR or dispatch.
+
+The proposed bootstrap exception and bot-PR closure policy are recorded in
+`docs/governance/REGENERATION_BOT_POLICY.md` as PENDING_OWNER (`REG-REGEN-BOOTSTRAP`,
+`REG-REGEN-STALE-CLOSE`).

@@ -56,10 +56,11 @@ def run_name(target_sha: str, correlation_id: str) -> str:
 
 
 def build_outcome(status: str, target_sha: str, correlation_id: str, changed_paths=(), branch=None,
-                  pr_number=None, pr_head_sha=None, reason=None) -> dict:
+                  pr_number=None, pr_head_sha=None, reason=None, ci_state=None) -> dict:
     return {"schema": SCHEMA, "status": status, "target_sha": target_sha,
             "correlation_id": correlation_id, "changed_paths": sorted(set(changed_paths)),
-            "branch": branch, "pr_number": pr_number, "pr_head_sha": pr_head_sha, "reason": reason}
+            "branch": branch, "pr_number": pr_number, "pr_head_sha": pr_head_sha, "reason": reason,
+            "ci_state": ci_state}
 
 
 def validate_outcome(outcome, target_sha: str, correlation_id: str) -> list[str]:

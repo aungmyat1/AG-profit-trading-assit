@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts" / "governance"))
 
 import regen_contract as rc  # noqa: E402
+import regen_publish as rp  # noqa: E402
 from post_merge_verify import workflow_contract_failures  # noqa: E402
 from regen_publish import Git, RegenError, publish, title_for  # noqa: E402
 
@@ -25,6 +26,7 @@ class FakePulls:
     def __init__(self, work, fail_create=False):
         self.work, self.fail_create = work, fail_create
         self.prs, self.created, self.superseded, self.ci, self.events = [], [], [], [], []
+        self.runs, self.fail_dispatch, self.ci_unknown = [], False, False
 
     def open_regen_prs(self):
         return list(self.prs)
@@ -42,8 +44,17 @@ class FakePulls:
         self.superseded.append(number)
         self.prs = [p for p in self.prs if p["number"] != number]
 
+    def ci_state(self, branch, head_sha):
+        return rp.CI_UNKNOWN if self.ci_unknown else rp.classify_ci_runs(self.runs, head_sha)
+
     def dispatch_ci(self, branch, correlation_id):
+        if self.fail_dispatch:
+            raise RegenError("gh workflow run failed: HTTP 500")
         self.ci.append((branch, correlation_id))
+        head_sha = Git(self.work).remote_sha(branch)
+        assert correlation_id == rp.ci_correlation(head_sha)
+        self.runs.append({"headSha": head_sha, "displayTitle": rp.ci_title(head_sha),
+                          "status": "queued", "conclusion": None})
 
     def sync(self):
         for pr in self.prs:
@@ -160,6 +171,7 @@ def test_duplicate_dispatch_is_pending_review_without_push(repo, pushes):
     again = publish(Git(work), pulls, base, "c2")
     assert again["status"] == rc.REGEN_PENDING_REVIEW and again["pr_head_sha"] == first["pr_head_sha"]
     assert again["correlation_id"] == "c2" and len(pushes) == count and len(pulls.created) == 1
+    assert again["ci_state"] == rp.CI_PENDING and len(pulls.ci) == 1  # no duplicate dispatch
 
 
 def test_existing_pr_with_bootstrap_only_is_completed_as_update(repo, pushes):
@@ -284,3 +296,119 @@ def test_regeneration_workflow_permissions_are_minimal():
     assert wf["concurrency"] == {"group": "regenerate-generated-files", "cancel-in-progress": False}
     upload = [s for s in wf["jobs"]["regenerate"]["steps"] if s.get("uses", "").startswith("actions/upload-artifact")]
     assert upload and upload[0]["if"] == "always()" and upload[0]["with"]["name"] == rc.ARTIFACT_NAME
+
+
+# R5.2: interrupted publication recovery -----------------------------------------------------
+def _published_then(work, pulls, base):
+    """Publish once; return the first outcome (or None if it raised) and the remote head."""
+    regen(work)
+    try:
+        first = publish(Git(work), pulls, base, "c1")
+    except RegenError:
+        first = None
+    pulls.sync()
+    return first, Git(work).remote_sha(rc.regen_branch(base))
+
+
+def _retry(work, pulls, base, correlation="c2"):
+    reset_to(work, base)
+    regen(work)
+    return publish(Git(work), pulls, base, correlation)
+
+
+def test_push_succeeds_dispatch_fails_then_retry_dispatches_exact_head_without_new_commit(repo, pushes):
+    work, _ = repo
+    base = head(work)
+    pulls = FakePulls(work)
+    pulls.fail_dispatch = True
+    regen(work)
+    with pytest.raises(RegenError, match="REGEN_CI_DISPATCH_FAILED"):
+        publish(Git(work), pulls, base, "c1")
+    pulls.sync()
+    published = Git(work).remote_sha(rc.regen_branch(base))
+    count = len(pushes)
+    pulls.fail_dispatch = False
+    out = _retry(work, pulls, base)
+    assert out["status"] == rc.REGEN_PENDING_REVIEW and out["pr_head_sha"] == published
+    assert out["ci_state"] == rp.CI_PENDING
+    assert pulls.ci == [(rc.regen_branch(base), rp.ci_correlation(published))]
+    assert len(pushes) == count and len(pulls.created) == 1  # no new commit, no new PR
+
+
+def test_process_stopped_after_push_before_dispatch_is_recovered(repo, pushes, monkeypatch):
+    work, _ = repo
+    base = head(work)
+    pulls = FakePulls(work)
+
+    def crash(*a, **k):
+        raise KeyboardInterrupt("runner lost")
+    monkeypatch.setattr(pulls, "dispatch_ci", crash)
+    with pytest.raises(KeyboardInterrupt):
+        _published_then(work, pulls, base)
+    monkeypatch.undo()
+    pulls.sync()
+    published = Git(work).remote_sha(rc.regen_branch(base))
+    out = _retry(work, pulls, base)
+    assert out["pr_head_sha"] == published and out["ci_state"] == rp.CI_PENDING
+    assert [corr for _, corr in pulls.ci] == [rp.ci_correlation(published)]
+
+
+@pytest.mark.parametrize("status,conclusion,state", [
+    ("in_progress", None, rp.CI_PENDING), ("completed", "success", rp.CI_SUCCESS)])
+def test_retry_with_ci_running_or_green_does_not_redispatch(repo, pushes, status, conclusion, state):
+    work, _ = repo
+    base = head(work)
+    pulls = FakePulls(work)
+    first, published = _published_then(work, pulls, base)
+    pulls.runs[0].update(status=status, conclusion=conclusion)
+    out = _retry(work, pulls, base)
+    assert out["status"] == rc.REGEN_PENDING_REVIEW and out["ci_state"] == state and len(pulls.ci) == 1
+
+
+def test_retry_with_failed_or_unknown_ci_fails_closed_without_redispatch(repo, pushes):
+    work, _ = repo
+    base = head(work)
+    pulls = FakePulls(work)
+    _published_then(work, pulls, base)
+    pulls.runs[0].update(status="completed", conclusion="failure")
+    with pytest.raises(RegenError, match="REGEN_PR_CI_FAILED"):
+        _retry(work, pulls, base)
+    pulls.runs[0].update(conclusion="success")
+    pulls.ci_unknown = True
+    with pytest.raises(RegenError, match="REGEN_PR_CI_UNKNOWN"):
+        _retry(work, pulls, base)
+    assert len(pulls.ci) == 1
+
+
+def test_ci_runs_for_other_heads_or_titles_do_not_count():
+    sha = "a" * 40
+    other = {"headSha": "b" * 40, "displayTitle": rp.ci_title("b" * 40), "status": "completed", "conclusion": "success"}
+    wrong_title = {"headSha": sha, "displayTitle": "CI dispatch something-else", "status": "completed",
+                   "conclusion": "success"}
+    assert rp.classify_ci_runs([other, wrong_title], sha) == rp.CI_NOT_DISPATCHED
+    from post_merge_verify import ci_run_name
+    assert rp.ci_title(sha) == ci_run_name(rp.ci_correlation(sha))
+
+
+def test_retry_rejects_published_head_with_wrong_source_or_foreign_author(repo, pushes):
+    work, _ = repo
+    base = head(work)
+    pulls = FakePulls(work, fail_create=True)
+    regen(work)
+    with pytest.raises(RegenError):
+        publish(Git(work), pulls, base, "c1")  # leaves the bootstrap only
+    branch = rc.regen_branch(base)
+    boot = Git(work).remote_sha(branch)
+    # A generated-looking commit that names the wrong source SHA.
+    reset_to(work, boot)
+    regen(work)
+    env_bot = ["-c", f"user.name={rp.BOT_NAME}", "-c", f"user.email={rp.BOT_EMAIL}"]
+    subprocess.run(["git", *env_bot, "commit", "-qam", f"{title_for(base)}\n\nSource: {'c' * 40}"],
+                   cwd=work, check=True)
+    sh(work, "push", "-q", "origin", f"HEAD:refs/heads/{branch}")
+    pulls.fail_create = False
+    pulls.prs = [{"number": 9, "title": title_for(base), "headRefName": branch,
+                  "headRefOid": Git(work).remote_sha(branch)}]
+    with pytest.raises(RegenError, match="REGEN_BRANCH_PROVENANCE_INVALID"):
+        _retry(work, pulls, base)
+    assert pulls.ci == []

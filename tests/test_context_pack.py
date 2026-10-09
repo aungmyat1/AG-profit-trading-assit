@@ -37,8 +37,8 @@ def test_open_decisions_counted_from_the_register_never_a_bare_zero(tmp_path):
     # committed generated outputs, which the post-merge regeneration PR publishes (R5.1).
     out = pack.build(collect_facts.collect(REPO))
     count, sources = pack.open_decisions()
-    assert sources == list(pack.REGISTERED_DECISION_SOURCES) and count == 11
-    assert "Open decisions in registered tables: 11 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
+    assert sources == list(pack.REGISTERED_DECISION_SOURCES) and count == 13
+    assert "Open decisions in registered tables: 13 (sources: `docs/governance/OWNER_DECISION_REGISTER.md`)." in out
     # No registered table -> UNKNOWN, not 0.
     assert pack.open_decisions(str(tmp_path)) == (None, [])
     no_sources = {**FACTS, "pack_context": {"pending_decisions": None, "decision_sources": [],

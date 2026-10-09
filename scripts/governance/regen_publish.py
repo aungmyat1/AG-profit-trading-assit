@@ -13,6 +13,11 @@ Lifecycle (no force-push, no push to main, PR before content):
 2. The draft PR is opened. If that fails, nothing but the empty bootstrap is published; the
    next run reuses the branch and retries.
 3. Only then is the generated commit pushed, as a fast-forward on the observed branch head.
+4. CI is dispatched for that exact head. A retry that finds the head already published
+   verifies its provenance and asks GitHub for the CI state of that exact head: it dispatches
+   only when no run exists (CI_NOT_DISPATCHED), reports CI_PENDING / CI_SUCCESS without
+   re-dispatching, and fails closed on CI_FAILED or CI_UNKNOWN. An existing PR is never taken
+   as a verified publication.
 Older open regeneration PRs for other sources are superseded (comment + close), never
 rewritten. Every push is a plain fast-forward, so a concurrent writer makes it fail closed.
 """
@@ -31,6 +36,11 @@ from regen_contract import (  # noqa: E402
     REGEN_PR_CREATED, REGEN_PR_UPDATED, SHA, build_outcome, regen_branch, validate_outcome,
 )
 
+CI_NOT_DISPATCHED = "CI_NOT_DISPATCHED"
+CI_PENDING = "CI_PENDING"
+CI_SUCCESS = "CI_SUCCESS"
+CI_FAILED = "CI_FAILED"
+CI_UNKNOWN = "CI_UNKNOWN"
 BOT_NAME = "github-actions[bot]"
 BOT_EMAIL = "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -41,6 +51,31 @@ class RegenError(RuntimeError):
 
 def title_for(target_sha: str) -> str:
     return f"chore(docs): regenerate generated files for {target_sha}"
+
+
+def bootstrap_message(target_sha: str) -> str:
+    return f"chore(regen): open regeneration PR for {target_sha} (no file changes)"
+
+
+def ci_correlation(head_sha: str) -> str:
+    return f"regen-{head_sha[:12]}"
+
+
+def ci_title(head_sha: str) -> str:
+    """ci.yml's run-name for a dispatched run (post_merge_verify.ci_run_name)."""
+    return f"CI dispatch {ci_correlation(head_sha)}"
+
+
+def classify_ci_runs(runs: list[dict], head_sha: str) -> str:
+    """CI state of exactly ``head_sha`` from its correlated workflow_dispatch runs."""
+    mine = [run for run in runs if run.get("headSha") == head_sha and run.get("displayTitle") == ci_title(head_sha)]
+    if not mine:
+        return CI_NOT_DISPATCHED
+    if any(run.get("status") != "completed" for run in mine):
+        return CI_PENDING
+    if all(run.get("conclusion") == "success" for run in mine):
+        return CI_SUCCESS
+    return CI_FAILED
 
 
 class Git:
@@ -90,6 +125,15 @@ class GhPulls:
         self._gh("pr", "comment", str(number), "--body", f"Superseded: {by}. This branch is left unmodified.")
         self._gh("pr", "close", str(number))
 
+    def ci_state(self, branch: str, head_sha: str) -> str:
+        try:
+            runs = json.loads(self._gh("run", "list", "--workflow", "ci.yml", "--branch", branch,
+                                       "--event", "workflow_dispatch", "--limit", "100",
+                                       "--json", "headSha,status,conclusion,displayTitle"))
+        except (RegenError, ValueError):
+            return CI_UNKNOWN
+        return classify_ci_runs(runs, head_sha) if isinstance(runs, list) else CI_UNKNOWN
+
     def dispatch_ci(self, branch: str, correlation_id: str) -> None:
         # A GITHUB_TOKEN-opened PR gets no pull_request CI; run CI on the bot branch head.
         self._gh("workflow", "run", "ci.yml", "--ref", branch, "-f", f"correlation_id={correlation_id}")
@@ -136,6 +180,19 @@ def _verify_branch(git: Git, branch: str, head: str, target_sha: str) -> None:
         raise RegenError("REGEN_BRANCH_UNEXPECTED_PATH:" + ",".join(sorted(extra)))
 
 
+def _verify_provenance(git: Git, target_sha: str, head: str) -> None:
+    """Every bot-branch commit is the bootstrap or a generated commit for exactly target_sha."""
+    for line in git("log", "--format=%H%x00%an%x00%B%x1e", f"{target_sha}..{head}").split("\x1e"):
+        if not line.strip():
+            continue
+        sha, author, message = line.strip().split("\x00", 2)
+        generated = message.startswith(title_for(target_sha)) and f"Source: {target_sha}" in message
+        if author != BOT_NAME or not (generated or message.strip() == bootstrap_message(target_sha)):
+            raise RegenError(f"REGEN_BRANCH_PROVENANCE_INVALID:{sha[:12]}")
+    if git("log", "-1", "--format=%B", head).strip() == bootstrap_message(target_sha):
+        raise RegenError("REGEN_BRANCH_HEAD_IS_BOOTSTRAP")
+
+
 def _supersede_others(pulls, others: list[dict], by: str) -> None:
     for pr in others:
         pulls.supersede(pr["number"], by)
@@ -170,7 +227,7 @@ def publish(git: Git, pulls, target_sha: str, correlation_id: str) -> dict:
 
     if observed is None:
         bootstrap = _commit(git, git("rev-parse", f"{target_sha}^{{tree}}"), target_sha,
-                            f"chore(regen): open regeneration PR for {target_sha} (no file changes)")
+                            bootstrap_message(target_sha))
         git.push_fast_forward(bootstrap, branch)  # rejected if a concurrent run created the branch
         observed = bootstrap
     else:
@@ -192,17 +249,29 @@ def publish(git: Git, pulls, target_sha: str, correlation_id: str) -> dict:
     git("fetch", "--quiet", "origin", f"refs/heads/{branch}")
     if _same_outputs(git, observed):
         head = observed
+        _verify_provenance(git, target_sha, head)  # already published: prove it, never assume it
+        ci = pulls.ci_state(branch, head)
     else:
         git("add", "--", *paths)
         head = _commit(git, git("write-tree"), observed,
                        f"{title_for(target_sha)}\n\nSource: {target_sha}\nCorrelation: {correlation_id}")
         git.push_fast_forward(head, branch)
+        ci = CI_NOT_DISPATCHED
     _supersede_others(pulls, others, f"#{number} regenerates the newer source {target_sha}")
-    if head == observed and not created:
-        return build_outcome(REGEN_PENDING_REVIEW, target_sha, correlation_id, paths, branch, number, head)
-    pulls.dispatch_ci(branch, f"regen-{head[:12]}")
-    status = REGEN_PR_CREATED if created else REGEN_PR_UPDATED
-    return build_outcome(status, target_sha, correlation_id, paths, branch, number, head)
+    if ci == CI_FAILED:
+        raise RegenError(f"REGEN_PR_CI_FAILED: CI failed on {head}; not re-dispatched")
+    if ci == CI_UNKNOWN:
+        raise RegenError(f"REGEN_PR_CI_UNKNOWN: cannot establish CI state of {head}")
+    if ci == CI_NOT_DISPATCHED:
+        try:
+            pulls.dispatch_ci(branch, ci_correlation(head))
+        except RegenError as exc:
+            # The content is published on the PR; the next run finds it and dispatches again.
+            raise RegenError(f"REGEN_CI_DISPATCH_FAILED: {exc}") from None
+        ci = CI_PENDING
+    pushed = head != observed
+    status = REGEN_PR_CREATED if created else REGEN_PR_UPDATED if pushed else REGEN_PENDING_REVIEW
+    return build_outcome(status, target_sha, correlation_id, paths, branch, number, head, ci_state=ci)
 
 
 def main(argv=None) -> int:
