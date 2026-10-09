@@ -99,6 +99,14 @@ def advance_main(work, base, text):
     return head(work)
 
 
+@pytest.fixture(autouse=True)
+def granted(monkeypatch, request):
+    """Lifecycle tests run with both permissions granted; deny tests opt out with @pytest.mark.denied."""
+    if "denied" not in request.keywords:
+        monkeypatch.setattr(rp, "ALLOW_BOOTSTRAP_PUSH", True)
+        monkeypatch.setattr(rp, "ALLOW_SUPERSEDE_CLOSE", True)
+
+
 @pytest.fixture
 def pushes(monkeypatch):
     """Record every push and assert none is forced or targets main."""
@@ -412,3 +420,29 @@ def test_retry_rejects_published_head_with_wrong_source_or_foreign_author(repo, 
     with pytest.raises(RegenError, match="REGEN_BRANCH_PROVENANCE_INVALID"):
         _retry(work, pulls, base)
     assert pulls.ci == []
+
+
+# R6B step 0: pending-owner permissions are denied by default ---------------------------------
+def test_shipped_defaults_deny_bootstrap_and_closure():
+    source = (ROOT / "scripts/governance/regen_publish.py").read_text(encoding="utf-8")
+    assert "\nALLOW_BOOTSTRAP_PUSH = False\n" in source and "\nALLOW_SUPERSEDE_CLOSE = False\n" in source
+
+
+@pytest.mark.denied
+def test_denied_bootstrap_fails_closed_without_any_push(repo, pushes):
+    work, _ = repo
+    base = head(work)
+    regen(work)
+    pulls = FakePulls(work)
+    with pytest.raises(RegenError, match="REGEN_BOOTSTRAP_DENIED"):
+        publish(Git(work), pulls, base, "c1")
+    assert pushes == [] and pulls.created == [] and Git(work).remote_sha(rc.regen_branch(base)) is None
+
+
+@pytest.mark.denied
+def test_denied_closure_leaves_stale_bot_prs_untouched(repo, pushes):
+    work, _ = repo
+    pulls = FakePulls(work)
+    pulls.prs = [{"number": 5, "headRefName": rc.regen_branch("d" * 40), "headRefOid": "d" * 40}]
+    out = publish(Git(work), pulls, head(work), "c1")  # no change -> would supersede when allowed
+    assert out["status"] == rc.REGEN_NO_CHANGE and pulls.superseded == [] and len(pulls.prs) == 1
