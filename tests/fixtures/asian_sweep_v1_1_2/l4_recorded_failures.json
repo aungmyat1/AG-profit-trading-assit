@@ -1,0 +1,12 @@
+{
+  "source": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+  "note": "Recorded EURUSD M15 days on which the shared engine emits invalid geometry (the v1.1.1 L4 failures). v1.1.2 must reproduce the raw engine output and block it by a declared fail-closed rule; no engine change.",
+  "cases": [
+    {"cycle": "ASIAN_LONDON", "session_date": "2026-07-17", "direction": "SHORT", "kind": "ZERO_STOP", "fail_closed_rule": "R.stop_loss"},
+    {"cycle": "ASIAN_LONDON", "session_date": "2026-07-17", "direction": "SHORT", "kind": "TP_ORDER", "fail_closed_rule": "R.target_order"},
+    {"cycle": "ASIAN_LONDON", "session_date": "2026-06-17", "direction": "LONG", "kind": "TP_ORDER", "fail_closed_rule": "R.target_order"},
+    {"cycle": "LONDON_NEWYORK", "session_date": "2026-06-17", "direction": "LONG", "kind": "TP_ORDER", "fail_closed_rule": "R.target_order"},
+    {"cycle": "LONDON_NEWYORK", "session_date": "2026-06-23", "direction": "LONG", "kind": "TP_ORDER", "fail_closed_rule": "R.target_order"},
+    {"cycle": "LONDON_NEWYORK", "session_date": "2026-07-17", "direction": "LONG", "kind": "TP_ORDER", "fail_closed_rule": "R.target_order"}
+  ]
+}

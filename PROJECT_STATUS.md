@@ -227,6 +227,18 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
 <!-- [[[end]]] -->
 
+## AGP-C3-ASW-RATIFY — ST_ASIAN_SWEEP_5R_V1@1.1.2 logic verification, both windows (2026-10-09, branch `agp/c3-asw-ratify`, not merged)
+
+LOGIC_VERIFICATION_REPORT for candidate 1.1.2 on ASIAN→LONDON and LONDON→NEW YORK (recorded EURUSD
+fixture + seeded synthetic sessions): L1 identity PASS, L2 (closure reused) PASS, L3 prefix /
+future-mutation / streaming parity PASS, L4 geometry PASS (recorded zero-stop and TP-order failures
+reproduce in the shared engine and are blocked by 1.1.2's declared fail-closed rules; no engine
+change), L5 WARN (D2 risk 0.5 % / cost 0.10R warn / 0.25R block in a candidate-only policy file;
+commission and spread absent, USDJPY/XAUUSD/AUDUSD metadata PENDING_AGP-C2-SYMMAP), L6 PASS →
+`LOGIC_VERIFIED`. `EDGE_VERIFIED=FALSE`. **Not admitted**: runtime still loads v1.1.1, READY OFF
+(D6), demo/live false, FX runtime risk config unchanged. Evidence:
+`docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md` (+ `.json`); unit/fixture only.
+
 ## AGP-C1-LSMC — ST_LARGE_SMC_V1@1.1.0 VT-only + LOGIC_VERIFIED (2026-10-09, branch `claude/focused-volta-yjneth`, not merged)
 
 LSMC 1.1.0 now watches VT MT5 `BTCUSD`/`ETHUSD` (was `BTCUSDT`/`ETHUSDT`) with points from the

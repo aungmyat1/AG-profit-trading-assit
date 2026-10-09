@@ -1,0 +1,603 @@
+{
+  "admission": "NOT_ADMITTED (runtime loads v1.1.1; owner decision required)",
+  "broker_calls": 0,
+  "cases": [
+    {
+      "case_id": "recorded:EURUSD:ASIAN_LONDON:2026-06-15",
+      "causality": {
+        "bars": 16,
+        "first_emission_prefix_len": null,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 0,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_hash_parity": true
+      },
+      "cycle": "ASIAN_LONDON",
+      "decision": "NO_TRADE",
+      "direction": null,
+      "edge_verified": false,
+      "entry": null,
+      "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "geometry": {
+        "has_levels": false,
+        "positive_stop": true,
+        "target_order": true
+      },
+      "l2_fail_ids": [],
+      "l2_undeclared": [],
+      "owner_ticket_L6": null,
+      "owner_ticket_state": "NO_SETUP",
+      "session_date": "2026-06-15",
+      "setup": "NONE",
+      "stop_loss": null,
+      "ticket_gate_blocking_failures": null,
+      "ticket_gate_status": null
+    },
+    {
+      "case_id": "recorded:EURUSD:ASIAN_LONDON:2026-06-16",
+      "causality": {
+        "bars": 16,
+        "first_emission_prefix_len": 0,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 25,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_hash_parity": true
+      },
+      "cycle": "ASIAN_LONDON",
+      "decision": "DATA_ERROR",
+      "direction": "SHORT",
+      "edge_verified": false,
+      "entry": 1.15846,
+      "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "geometry": {
+        "has_levels": true,
+        "positive_stop": true,
+        "target_order": true
+      },
+      "l2_fail_ids": [
+        "R.entry_level",
+        "R.entry_trigger",
+        "R.regime_branch",
+        "R.stop_loss"
+      ],
+      "l2_undeclared": [],
+      "owner_ticket_L6": "PASS",
+      "owner_ticket_state": "TICKET_BLOCKED",
+      "session_date": "2026-06-16",
+      "setup": "TREND",
+      "stop_loss": 1.15945,
+      "ticket_gate_blocking_failures": [
+        "L2",
+        "L3"
+      ],
+      "ticket_gate_status": {
+        "L1": "PASS",
+        "L2": "FAIL",
+        "L3": "FAIL",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      }
+    },
+    {
+      "case_id": "recorded:EURUSD:ASIAN_LONDON:2026-06-17",
+      "causality": {
+        "bars": 16,
+        "first_emission_prefix_len": 1,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 25,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_hash_parity": true
+      },
+      "cycle": "ASIAN_LONDON",
+      "decision": "STALE",
+      "direction": "LONG",
+      "edge_verified": false,
+      "entry": 1.16075,
+      "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "geometry": {
+        "has_levels": true,
+        "positive_stop": true,
+        "target_order": false
+      },
+      "l2_fail_ids": [
+        "R.entry_level",
+        "R.target_order"
+      ],
+      "l2_undeclared": [],
+      "owner_ticket_L6": "PASS",
+      "owner_ticket_state": "TICKET_BLOCKED",
+      "session_date": "2026-06-17",
+      "setup": "SWEEP",
+      "stop_loss": 1.16061,
+      "ticket_gate_blocking_failures": [
+        "L2",
+        "L3"
+      ],
+      "ticket_gate_status": {
+        "L1": "PASS",
+        "L2": "FAIL",
+        "L3": "FAIL",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      }
+    },
+    {
+      "case_id": "recorded:EURUSD:ASIAN_LONDON:2026-06-23",
+      "causality": {
+        "bars": 16,
+        "first_emission_prefix_len": 1,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 25,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_hash_parity": true
+      },
+      "cycle": "ASIAN_LONDON",
+      "decision": "STALE",
+      "direction": "SHORT",
+      "edge_verified": false,
+      "entry": 1.143,
+      "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "geometry": {
+        "has_levels": true,
+        "positive_stop": true,
+        "target_order": true
+      },
+      "l2_fail_ids": [],
+      "l2_undeclared": [],
+      "owner_ticket_L6": "PASS",
+      "owner_ticket_state": "TICKET_BLOCKED",
+      "session_date": "2026-06-23",
+      "setup": "SWEEP",
+      "stop_loss": 1.14351,
+      "ticket_gate_blocking_failures": [],
+      "ticket_gate_status": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      }
+    },
+    {
+      "case_id": "recorded:EURUSD:ASIAN_LONDON:2026-07-17",
+      "causality": {
+        "bars": 16,
+        "first_emission_prefix_len": 2,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 25,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_hash_parity": true
+      },
+      "cycle": "ASIAN_LONDON",
+      "decision": "STALE",
+      "direction": "SHORT",
+      "edge_verified": false,
+      "entry": 1.14485,
+      "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "geometry": {
+        "has_levels": true,
+        "positive_stop": false,
+        "target_order": false
+      },
+      "l2_fail_ids": [
+        "R.entry_level",
+        "R.max_spread_fraction",
+        "R.stop_loss",
+        "R.target_leg2",
+        "R.target_order"
+      ],
+      "l2_undeclared": [],
+      "owner_ticket_L6": "PASS",
+      "owner_ticket_state": "TICKET_BLOCKED",
+      "session_date": "2026-07-17",
+      "setup": "SWEEP",
+      "stop_loss": 1.14485,
+      "ticket_gate_blocking_failures": [
+        "L2",
+        "L3"
+      ],
+      "ticket_gate_status": {
+        "L1": "PASS",
+        "L2": "FAIL",
+        "L3": "FAIL",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      }
+    },
+    {
+      "case_id": "recorded:EURUSD:LONDON_NEWYORK:2026-06-15",
+      "causality": {
+        "bars": 12,
+        "first_emission_prefix_len": 4,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 25,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_hash_parity": true
+      },
+      "cycle": "LONDON_NEWYORK",
+      "decision": "STALE",
+      "direction": "SHORT",
+      "edge_verified": false,
+      "entry": 1.16148,
+      "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "geometry": {
+        "has_levels": true,
+        "positive_stop": true,
+        "target_order": true
+      },
+      "l2_fail_ids": [],
+      "l2_undeclared": [],
+      "owner_ticket_L6": "PASS",
+      "owner_ticket_state": "TICKET_BLOCKED",
+      "session_date": "2026-06-15",
+      "setup": "SWEEP",
+      "stop_loss": 1.16191,
+      "ticket_gate_blocking_failures": [],
+      "ticket_gate_status": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      }
+    },
+    {
+      "case_id": "recorded:EURUSD:LONDON_NEWYORK:2026-06-16",
+      "causality": {
+        "bars": 12,
+        "first_emission_prefix_len": 0,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 25,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_hash_parity": true
+      },
+      "cycle": "LONDON_NEWYORK",
+      "decision": "DATA_ERROR",
+      "direction": "LONG",
+      "edge_verified": false,
+      "entry": 1.15934,
+      "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "geometry": {
+        "has_levels": true,
+        "positive_stop": true,
+        "target_order": true
+      },
+      "l2_fail_ids": [
+        "R.entry_level",
+        "R.entry_trigger",
+        "R.regime_branch",
+        "R.stop_loss"
+      ],
+      "l2_undeclared": [],
+      "owner_ticket_L6": "PASS",
+      "owner_ticket_state": "TICKET_BLOCKED",
+      "session_date": "2026-06-16",
+      "setup": "TREND",
+      "stop_loss": 1.15744,
+      "ticket_gate_blocking_failures": [
+        "L2",
+        "L3"
+      ],
+      "ticket_gate_status": {
+        "L1": "PASS",
+        "L2": "FAIL",
+        "L3": "FAIL",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      }
+    },
+    {
+      "case_id": "recorded:EURUSD:LONDON_NEWYORK:2026-06-17",
+      "causality": {
+        "bars": 12,
+        "first_emission_prefix_len": 2,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 25,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_hash_parity": true
+      },
+      "cycle": "LONDON_NEWYORK",
+      "decision": "STALE",
+      "direction": "LONG",
+      "edge_verified": false,
+      "entry": 1.15916,
+      "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "geometry": {
+        "has_levels": true,
+        "positive_stop": true,
+        "target_order": false
+      },
+      "l2_fail_ids": [
+        "R.entry_level",
+        "R.max_spread_fraction",
+        "R.target_order"
+      ],
+      "l2_undeclared": [],
+      "owner_ticket_L6": "PASS",
+      "owner_ticket_state": "TICKET_BLOCKED",
+      "session_date": "2026-06-17",
+      "setup": "SWEEP",
+      "stop_loss": 1.15906,
+      "ticket_gate_blocking_failures": [
+        "L2",
+        "L3"
+      ],
+      "ticket_gate_status": {
+        "L1": "PASS",
+        "L2": "FAIL",
+        "L3": "FAIL",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      }
+    },
+    {
+      "case_id": "recorded:EURUSD:LONDON_NEWYORK:2026-06-23",
+      "causality": {
+        "bars": 12,
+        "first_emission_prefix_len": 7,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 25,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_hash_parity": true
+      },
+      "cycle": "LONDON_NEWYORK",
+      "decision": "STALE",
+      "direction": "LONG",
+      "edge_verified": false,
+      "entry": 1.13905,
+      "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "geometry": {
+        "has_levels": true,
+        "positive_stop": true,
+        "target_order": false
+      },
+      "l2_fail_ids": [
+        "R.entry_level",
+        "R.max_spread_fraction",
+        "R.target_order"
+      ],
+      "l2_undeclared": [],
+      "owner_ticket_L6": "PASS",
+      "owner_ticket_state": "TICKET_BLOCKED",
+      "session_date": "2026-06-23",
+      "setup": "SWEEP",
+      "stop_loss": 1.13895,
+      "ticket_gate_blocking_failures": [
+        "L2",
+        "L3"
+      ],
+      "ticket_gate_status": {
+        "L1": "PASS",
+        "L2": "FAIL",
+        "L3": "FAIL",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      }
+    },
+    {
+      "case_id": "recorded:EURUSD:LONDON_NEWYORK:2026-07-17",
+      "causality": {
+        "bars": 12,
+        "first_emission_prefix_len": 3,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 25,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_hash_parity": true
+      },
+      "cycle": "LONDON_NEWYORK",
+      "decision": "STALE",
+      "direction": "LONG",
+      "edge_verified": false,
+      "entry": 1.14263,
+      "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "geometry": {
+        "has_levels": true,
+        "positive_stop": true,
+        "target_order": false
+      },
+      "l2_fail_ids": [
+        "R.max_spread_fraction",
+        "R.target_order"
+      ],
+      "l2_undeclared": [],
+      "owner_ticket_L6": "PASS",
+      "owner_ticket_state": "TICKET_BLOCKED",
+      "session_date": "2026-07-17",
+      "setup": "SWEEP",
+      "stop_loss": 1.14253,
+      "ticket_gate_blocking_failures": [
+        "L2",
+        "L3"
+      ],
+      "ticket_gate_status": {
+        "L1": "PASS",
+        "L2": "FAIL",
+        "L3": "FAIL",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      }
+    }
+  ],
+  "checks": {
+    "L1_identity_and_contract": {
+      "evidence": {
+        "candidate_contract_sha256": true,
+        "frozen_v1_1_1_contract_unchanged": true,
+        "registry_identity_matches": true,
+        "replay_determinism": true,
+        "runtime_binding_v1_1_1": true
+      },
+      "logic_identity": {
+        "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+        "digest": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+        "engine_identity": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+        "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+        "strategy_version": "1.1.2"
+      },
+      "verdict": "PASS"
+    },
+    "L2_specification_engine_equivalence": {
+      "evidence": "no undeclared or NOT_EVALUABLE L2 check on any recorded case; conforming sweep passes L1-L4 in ['ASIAN_LONDON', 'LONDON_NEWYORK']",
+      "reused": "docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md",
+      "verdict": "PASS"
+    },
+    "L3_temporal_causality": {
+      "evidence": {
+        "cases": 10,
+        "future_mutation_mismatches": 0,
+        "future_mutations": 225,
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "streaming_batch_mismatches": 0
+      },
+      "seed": 112,
+      "verdict": "PASS"
+    },
+    "L4_price_geometry": {
+      "fix": "no engine change (shared with frozen 1.1.1); 1.1.2 declared fail-closed rules R.stop_loss (risk_distance > 0) and R.target_order block every reproduced case",
+      "recorded_failures": [
+        {
+          "blocked_by_candidate": true,
+          "cycle": "ASIAN_LONDON",
+          "direction": "SHORT",
+          "fail_closed_rule": true,
+          "kind": "ZERO_STOP",
+          "reproduces_in_engine": true,
+          "session_date": "2026-07-17"
+        },
+        {
+          "blocked_by_candidate": true,
+          "cycle": "ASIAN_LONDON",
+          "direction": "SHORT",
+          "fail_closed_rule": true,
+          "kind": "TP_ORDER",
+          "reproduces_in_engine": true,
+          "session_date": "2026-07-17"
+        },
+        {
+          "blocked_by_candidate": true,
+          "cycle": "ASIAN_LONDON",
+          "direction": "LONG",
+          "fail_closed_rule": true,
+          "kind": "TP_ORDER",
+          "reproduces_in_engine": true,
+          "session_date": "2026-06-17"
+        },
+        {
+          "blocked_by_candidate": true,
+          "cycle": "LONDON_NEWYORK",
+          "direction": "LONG",
+          "fail_closed_rule": true,
+          "kind": "TP_ORDER",
+          "reproduces_in_engine": true,
+          "session_date": "2026-06-17"
+        },
+        {
+          "blocked_by_candidate": true,
+          "cycle": "LONDON_NEWYORK",
+          "direction": "LONG",
+          "fail_closed_rule": true,
+          "kind": "TP_ORDER",
+          "reproduces_in_engine": true,
+          "session_date": "2026-06-23"
+        },
+        {
+          "blocked_by_candidate": true,
+          "cycle": "LONDON_NEWYORK",
+          "direction": "LONG",
+          "fail_closed_rule": true,
+          "kind": "TP_ORDER",
+          "reproduces_in_engine": true,
+          "session_date": "2026-07-17"
+        }
+      ],
+      "seed": 112,
+      "synthetic": {
+        "admitted_by_gates": 13,
+        "admitted_tp_inversion": 0,
+        "admitted_zero_stop": 0,
+        "raw_tp_inversion": {
+          "LONG": 94,
+          "SHORT": 111
+        },
+        "raw_zero_stop": 22,
+        "sessions": 400,
+        "tickets_with_levels": 285,
+        "undeclared_l2_failures": 0
+      },
+      "verdict": "PASS"
+    },
+    "L5_risk_and_friction": {
+      "block_reasons": [],
+      "cost_block_R": 0.25,
+      "cost_warn_R": 0.1,
+      "policy": "config/v1_tickets/asw_v112_candidate_ticket_policy.yaml",
+      "risk_pct": 0.5,
+      "verdict": "WARN",
+      "warn_reasons": [
+        "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
+        "SPREAD_NOT_RECORDED: the recorded fixture has no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
+        "SYMBOL_METADATA_PENDING: AUDUSD, USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+      ]
+    },
+    "L6_freshness_fields": {
+      "evidence": "owner-ticket L6 (logic_gate.l6_freshness) on 9 signal cases: ['PASS']",
+      "verdict": "PASS"
+    }
+  },
+  "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+  "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+  "cycles": [
+    "ASIAN_LONDON",
+    "LONDON_NEWYORK"
+  ],
+  "dataset_identity": {
+    "classification": "RECORDED_DEVELOPMENT_FIXTURE",
+    "path": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+    "sha256": "390fe14944f9eeecffd74771d5516ef0f3702abe2e2a90044e4ed202ea6df3b9"
+  },
+  "demo_authorized": false,
+  "economic_status": "NOT_EVALUATED",
+  "edge_status": "NOT_VERIFIED",
+  "edge_verified": false,
+  "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+  "generated_at": "2026-10-09T00:00:00Z",
+  "live_authorized": false,
+  "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+  "ready_authority": "OFF (D6; config/v1_tickets/ready_authority.yaml unchanged)",
+  "schema": "AG_LOGIC_VERIFICATION_REPORT_V1",
+  "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "verdict": "LOGIC_VERIFIED",
+  "verification_code_sha": "e4b97b6e3287e8dc8fca4963f044498dd41ed229",
+  "version": "1.1.2"
+}

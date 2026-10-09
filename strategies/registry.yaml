@@ -40,6 +40,8 @@ strategies:
         economic_status: NOT_EVALUATED
         edge_verified: false
         ticket_ready: PAUSED_PENDING_OWNER_CONFIRM
+        # AGP-C3-ASW-RATIFY (2026-10-09): L1-L6 on both ASIAN_LONDON and LONDON_NEWYORK; not admitted.
+        logic_verification_report: docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md
 
   SESSION_TRADE_V1:
     registered: true

@@ -1,0 +1,20 @@
+# AGP-C3-ASW-RATIFY v2: ticket-only owner policy for the UNADMITTED candidate
+# ST_ASIAN_SWEEP_5R_V1@1.1.2 (owner decision D2, 2026-10-09, docs/PROJECT_OBJECTIVE.md).
+# Read only by scripts/asw_v112_logic_verification.py (L5 evidence). Not a contract amendment:
+# the 1.1.2 contract keeps its identity. The runtime (v1.1.1, config/owner_ticket.yaml,
+# config/trading.yaml) never reads this file; FX runtime risk config is unchanged.
+strategy_id: ST_ASIAN_SWEEP_5R_V1
+strategy_version: 1.1.2
+risk_pct: 0.5
+cost_warn_R: 0.10
+cost_block_R: 0.25
+# Absent cost inputs are an explicit WARN with a reason, never assumed 0.
+commission_R: null
+# Pip/metadata evidence. Only EURUSD/GBPUSD pip size is evidenced in-repo
+# (v1_tickets.logic_gate.EVIDENCED_PIP); the rest wait on the canonical->broker symbol map.
+symbol_metadata:
+  EURUSD: EVIDENCED
+  GBPUSD: EVIDENCED
+  USDJPY: PENDING_AGP-C2-SYMMAP
+  XAUUSD: PENDING_AGP-C2-SYMMAP
+  AUDUSD: PENDING_AGP-C2-SYMMAP
