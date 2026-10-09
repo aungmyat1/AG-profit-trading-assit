@@ -25,7 +25,12 @@ import yaml
 from strategy_engine.models import StrategyConfig
 from strategy_engine.session import Candle
 from ticket_delivery.renderer import payload_hash
-from v1_tickets.guards import LEGACY_STALE_SIGNAL, MAX_SPREAD_RISK_FRACTION, SIGNAL_STALE, STALE_AFTER
+from v1_tickets.guards import (
+    LEGACY_STALE_SIGNAL,
+    MAX_SPREAD_RISK_FRACTION,
+    SIGNAL_STALE,
+    STALE_AFTER,
+)
 
 PASS, FAIL, WARN, NOT_EVALUABLE = "PASS", "FAIL", "WARN", "NOT_EVALUABLE"
 NOT_APPLICABLE = "NOT_APPLICABLE"   # post-fill / execution-time rule: recorded, not part of a manual ticket decision
@@ -130,7 +135,7 @@ def l2_rule_conformance(strategy: StrategyConfig, ticket: Dict[str, Any], sessio
     """Every rule declared in the strategy YAML, with its measured value. Not evaluable = FAIL."""
     spec = _raw_spec(strategy)
     symbol, box = ticket["symbol"], ticket.get("box") or {}
-    hi, lo, mid = box.get("high"), box.get("low"), box.get("mid")
+    hi, lo = box.get("high"), box.get("low")
     rng = (hi - lo) if hi is not None and lo is not None else None
     long = ticket.get("direction") == "LONG"
     entry, sl, risk = ticket.get("entry"), ticket.get("stop_loss"), ticket.get("risk_distance")
