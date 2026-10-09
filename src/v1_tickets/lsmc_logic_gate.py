@@ -25,7 +25,16 @@ from large_smc_watch.detect import close_time
 from large_smc_watch.watch import session_end
 from strategy_engine.session import Candle
 from v1_tickets.logic_gate import (
-    BLOCKING, FAIL, NOT_APPLICABLE, PASS, _check, _gate, blocking_failures, l1_determinism, l5_cost, l6_freshness,
+    BLOCKING,
+    FAIL,
+    NOT_APPLICABLE,
+    PASS,
+    _check,
+    _gate,
+    blocking_failures,
+    l1_determinism,
+    l5_cost,
+    l6_freshness,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
