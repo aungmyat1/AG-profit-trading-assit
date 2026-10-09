@@ -332,6 +332,10 @@ def _out(
         "policy_version": "OWNER_FRESHNESS_2xBAR",
         "evaluated_at": now.isoformat(),
         "trigger_bar_close_utc": trigger_close.isoformat() if trigger_close else None,
+        # STALE-FIX-1 funnel field: provenance of the signal time (ENGINE / MISSING /
+        # NOT_APPLICABLE, set by fx.py), passed through verbatim; None when the ticket never
+        # supplied it (pre-fix archives, crypto/manual paths) -- never inferred here.
+        "signal_time_source": ticket.get("signal_time_source"),
         "send_timestamp_utc": now.isoformat(),
         "freshness_age_s": round(max(0.0, age_s), 1) if age_s is not None else None,
         "freshness_limit_s": int((FRESHNESS_BARS * tf).total_seconds()) if tf else None,

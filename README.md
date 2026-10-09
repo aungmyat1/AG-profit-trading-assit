@@ -3,6 +3,11 @@
 Standalone canonical-ticket Telegram delivery is offline tested and disabled by
 default (`TELEGRAM_DELIVERY_ENABLED=false`). See [configuration, schema gaps and
 limits](docs/status/AGP_TG_01_OFFLINE_2026-10-08.md); no live delivery is validated.
+The canonical ticket's `trigger` block carries `signal_time_source`. It is `ENGINE` when the
+engine stamped the signal bar, `MISSING` when a signal has no engine time (that ticket is
+`DATA_ERROR` / `SIGNAL_TIME_UNAVAILABLE`), and `NOT_APPLICABLE` for non-signal outcomes. Tickets
+that never recorded it (crypto/manual paths, pre-fix archives) show `NOT_AVAILABLE`; it is
+never inferred.
 
 AG Profit Trading is a deterministic FX and crypto trading assistant designed to
 produce four complementary decision products:

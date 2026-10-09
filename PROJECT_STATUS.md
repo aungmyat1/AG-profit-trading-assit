@@ -281,6 +281,44 @@ contract. Everything is unit-tested only; no live gated run has happened. Eviden
 
 - [`AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md`](docs/status/AGP_MERGE_GATE_RECOVERY_R3_2026-10-09.md)
 - R2: [`AGP_MERGE_GATE_REMEDIATION_R2_2026-10-09.md`](docs/status/AGP_MERGE_GATE_REMEDIATION_R2_2026-10-09.md)
+## STALE-FIX-1 signal-time provenance reaches the canonical ticket (2026-10-09, PR #95 reconciled, not merged)
+
+STALE-FIX-1 itself is merged (#94): `fx.py` no longer substitutes the first trade-session bar.
+A SIGNAL without an engine signal time is `DATA_ERROR` / `SIGNAL_TIME_UNAVAILABLE`, and every
+FX ticket records `signal_time_source` (`ENGINE` / `MISSING` / `NOT_APPLICABLE`).
+
+PR #95 was written before #94 merged. It proposed keeping the substitution and labelling it
+`FIRST_TRADE_SESSION_BAR`. That design is superseded and dropped here: `fx.py` is unchanged
+from `main`.
+
+What #95 still contributes is pass-through. Actionability and the canonical ticket's
+`trigger` block carry #94's `signal_time_source`. The canonical ticket shows `NOT_AVAILABLE`
+when the source ticket has none (crypto/manual paths, pre-fix archives); nothing is inferred.
+The originally proposed `signal_time_basis_utc` is not added, because `main` never produces it.
+
+No gate, strategy, registry, threshold or authority change. Evidence:
+[STALE-FIX-1 signal-time truth](docs/status/AG_STALE_FIX_1_SIGNAL_TIME_TRUTH_2026-10-08.md)
+(with its 2026-10-09 supersession note).
+
+## STALE-FIX-1 verification — stale-gate fix landed and regression-green (2026-10-08)
+
+The coordinator designation STALE-FIX-1 was **resolved in error** to AGP-TTU-02 (PR #61,
+merged 2026-10-07T19:47Z via `96f4aa6`, fix head `34af0bfb` on
+`fix/stale-gate-trigger-close`) — see the dated correction in the entry above. What follows
+remains an accurate verification record of the **merged AGP-TTU-02 fix only** (identified as
+a separate, later-distinguished work item):
+An independent re-verification on a fresh Linux container confirmed: the fix is already
+applied to `main` and to this checkout (both ancestor checks true; the three code/test
+files byte-identical to `origin/main`); no standalone patch artifact or unpushed rescue
+work exists anywhere in the repository. Semantics re-verified: stale-withheld READY
+tickets keep the real, bar-derived `signal_close_utc` (probe: `2026-10-07T07:15Z`
+preserved exactly); engine NO_TRADE tickets get **no** invented trigger close; with no
+real close anywhere, classification still fails closed as `TRIGGER_TIMEFRAME_UNKNOWN`.
+Six regression suites guarding the stale-gate path: **106 passed** (18 + 19 + 29 + 19 +
+8 + 13); full suite **1496 passed, 3 skipped, 0 failed** (Python 3.11.2 cloud container;
+4 initial failures were missing venv packages, not code defects). No strategy admission,
+registry, threshold, session, risk, or broker/execution authority change.
+Evidence: [STALE-FIX-1 verification](docs/status/AG_STALE_FIX_1_VERIFICATION_2026-10-08.md).
 
 ## Crypto MT5 window preflight (2026-10-09)
 
