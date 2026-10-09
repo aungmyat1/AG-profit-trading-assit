@@ -328,6 +328,52 @@ def render_text(t: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def render_market_structure(t: Dict[str, Any], *, unicode_safe: bool = True) -> str:
+    """Render validated ticket levels as a mobile-safe scenario diagram.
+
+    This is presentation only: levels are copied from the ticket and never calculated or
+    repaired here. Incomplete or non-actionable geometry fails gracefully. The word
+    ``SCENARIO`` is deliberate; the diagram is not a price forecast or broker order.
+    """
+    direction = t.get("direction")
+    entry, sl, tp1, tp2 = (t.get("entry"), t.get("sl"), t.get("tp1"), t.get("tp2"))
+    if direction not in ("LONG", "SHORT") or any(v is None for v in (entry, sl, tp1, tp2)):
+        return "MARKET STRUCTURE UNAVAILABLE — incomplete validated levels" if unicode_safe else \
+            "MARKET STRUCTURE UNAVAILABLE - incomplete validated levels"
+    valid = (sl < entry < tp1 <= tp2) if direction == "LONG" else (sl > entry > tp1 >= tp2)
+    if not valid:
+        return "MARKET STRUCTURE UNAVAILABLE — invalid level geometry" if unicode_safe else \
+            "MARKET STRUCTURE UNAVAILABLE - invalid level geometry"
+
+    rule = "─────────" if unicode_safe else "---------"
+    arrow = "▲" if direction == "LONG" and unicode_safe else "▼" if unicode_safe else \
+        "^" if direction == "LONG" else "v"
+    liquidity = "SWEEP LOW" if direction == "LONG" else "SWEEP HIGH"
+    setup = t.get("setup") or "VALIDATED TRIGGER"
+    return "\n".join([
+        f"{t.get('symbol', 'UNKNOWN')} {direction} — MARKET STRUCTURE SCENARIO"
+        if unicode_safe else f"{t.get('symbol', 'UNKNOWN')} {direction} - MARKET STRUCTURE SCENARIO",
+        "NOT A PRICE FORECAST | BROKER ORDER: NONE", "",
+        f"{_p(tp2):>12}  {rule} TP2", f"{'':>16}{arrow}",
+        f"{_p(tp1):>12}  {rule} TP1", f"{'':>16}{arrow}",
+        f"{_p(entry):>12}  {rule} ENTRY", f"{'':>16}{arrow}",
+        f"{_p(sl):>12}  {rule} SL  {liquidity}", "",
+        f"Scenario: Liquidity Sweep -> {setup} -> Proposed Entry -> Liquidity Objective",
+        f"Invalidation: {t.get('invalid_if') or 'UNAVAILABLE'}",
+        f"Expiration: {t.get('valid_until') or 'UNAVAILABLE'}",
+        "OWNER DECISION REQUIRED | EXECUTION AUTHORIZED = FALSE",
+    ])
+
+
+def render_mobile(t: Dict[str, Any], *, layout: str = "COMPACT", unicode_safe: bool = True) -> str:
+    """Owner-selectable compact or expanded manual-ticket text."""
+    if layout == "COMPACT":
+        return render_text(t)
+    if layout == "EXPANDED":
+        return render_text(t) + "\n\n" + render_market_structure(t, unicode_safe=unicode_safe)
+    raise ValueError("layout must be COMPACT or EXPANDED")
+
+
 def content_hash(ticket: Dict[str, Any]) -> str:
     stable = {k: v for k, v in ticket.items() if k not in ("evaluated_at",)}
     return hashlib.sha256(json.dumps(stable, sort_keys=True, default=str).encode()).hexdigest()

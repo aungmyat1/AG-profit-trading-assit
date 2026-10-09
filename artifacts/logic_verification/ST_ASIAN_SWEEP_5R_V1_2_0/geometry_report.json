@@ -1,0 +1,21 @@
+{
+  "unit_property_verdict": "PASS",
+  "entry_close_proof": "PASS",
+  "stop_25_percent_proof": "PASS",
+  "wick_clear_rule_proof": "PASS",
+  "target_order_proof": "PASS",
+  "partial_exit_contract_proof": "PASS",
+  "expiry_15m_half_open_proof": "PASS",
+  "fixed_utc_proof": "PASS",
+  "spread_absolute_proof": "PASS",
+  "spread_R_proof": "PASS",
+  "commission_unknown_advisory": "PASS",
+  "recorded_geometry": {
+    "total": 23,
+    "close_evaluable": 10,
+    "stop_formula_evaluable_and_pass": 10,
+    "wick_clear_pass": 5,
+    "target_order_pass": 10,
+    "decision_time_evaluable": 0
+  }
+}
