@@ -24,6 +24,7 @@ dev = [
     "uvicorn==0.41.0",
 ]
 research = ["pyarrow==25.0.1"]
+ticket-history = ["duckdb==1.4.1"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[TICKET_STORE_V2](status/AG_TICKET_STORE_V2_STATUS_2026-10-10.md) documents append-only lifecycle records, source-filtered statistics and read-only query/export.
+
 [Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
 records stop/target rejection, the owner-set 50% remaining-reward threshold, required
 host preflight, FX/crypto rejection ownership, diagnostics and offline tests.
