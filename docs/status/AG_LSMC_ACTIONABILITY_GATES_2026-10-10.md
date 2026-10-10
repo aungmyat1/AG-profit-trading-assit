@@ -31,7 +31,7 @@ Large-SMC OPPORTUNITY; INFO rejections are suppressed. Defensive formatting of o
 raw events also replaces an ineligible OPPORTUNITY label with an explicit rejection.
 Valid opportunity snapshots retain identical serialized bytes. Valid Telegram
 text matches the unchanged golden and the formatter on current origin/main
-`d991bb3bef462d9f425ff346d48b6df83fbbe4f1` with identical synthetic input. The golden
+`5b671996ef91934f2e8b58f9748ee78b1804a099` with identical synthetic input. The golden
 was not regenerated (SHA-256: `05a601a88b2cfa97b3b7ea7132d79d6003da2b9ae3e2458210ff180bab1dd52e`).
 
 SESSION_SUMMARY now includes a counts-only Large-SMC section for `REJECT_NO_STOP`,
@@ -55,7 +55,7 @@ authority is granted by this delivery-layer change.
 Validation (rebased follow-up):
 
 - `python -m pytest -q tests/test_lsmc_actionability.py tests/test_canonical_fx_delivery.py tests/test_lsmc_crypto_session_summary.py tests/test_lsmc_delivery_diagnostics.py`: 92 passed.
-- `python -m pytest -q`: 1828 passed, 3 skipped, 37 warnings (Python 3.12, Linux, 2026-10-10; MT5 stubbed).
+- `python -m pytest -q`: 1836 passed, 3 skipped, 45 warnings (Python 3.12, Linux, 2026-10-10; MT5 stubbed).
 - Changed-file Ruff, documentation links and `git diff --check`: PASS.
 - Both rebases completed without conflicts. The prior PR head is preserved as a
   merge parent so the rebased result is pushed normally, with no force-push.
@@ -64,3 +64,12 @@ Existing synthetic detection fixtures lack a causal target and now correctly
 reject. Delivery/lifecycle tests requiring a positive setup inject an explicit
 synthetic target; production detection remains unchanged. The wrong-side-stop
 logic-gate test explicitly constructs an OPPORTUNITY to keep testing its L3 rule.
+
+Merged `origin/main` at `5b67199`; the ledger conflict keeps both sides in date
+order. `test_archived_crypto_inside_fx_window_has_one_crypto_owner` passes on
+that merged tree: two crypto archive identities, zero FX crypto counts, one count
+per crypto identity even after matching #121 journal records are added. The
+targeted ownership/host-delivery/formatter run passed 90 tests, 1 skipped.
+Delivery test fixtures explicitly provide a synthetic host policy so acceptance
+does not depend on an untracked local file (the prior CI failure was six missing-
+policy test cases). Production missing-policy behaviour remains fail-closed.

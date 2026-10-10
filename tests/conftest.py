@@ -184,7 +184,9 @@ def production_ready_authority():
 @pytest.fixture(autouse=True)
 def _owner_lsmc_host_policy(request, tmp_path, monkeypatch):
     """Synthetic LSMC tests explicitly set the owner-authorized operational value."""
-    if "lsmc" not in str(request.node.fspath).lower() and "large_smc" not in str(request.node.fspath).lower():
+    filename = request.node.fspath.basename
+    if ("lsmc" not in filename.lower() and "large_smc" not in filename.lower()
+            and filename not in {"test_host_go_live_kit.py", "test_telegram_message_format.py"}):
         return
     from large_smc_watch import watch
     root = tmp_path / "lsmc_owner_host"
