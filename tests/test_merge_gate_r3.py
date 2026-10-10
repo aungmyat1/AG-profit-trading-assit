@@ -247,3 +247,21 @@ def test_merge_workflow_keeps_owner_gate_and_minimal_permissions():
         assert forbidden not in steps
     ci = yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
     assert ci[True]["workflow_dispatch"]["inputs"]["correlation_id"]["required"] is True
+
+
+def test_post_merge_cli_writes_machine_readable_failure_when_verification_raises(tmp_path, monkeypatch):
+    import post_merge_verify as pmv
+
+    monkeypatch.setattr(pmv, "_token", lambda: "test-token")
+
+    def fail(*_args, **_kwargs):
+        raise RuntimeError("GitHub API unavailable")
+
+    monkeypatch.setattr(pmv, "verify", fail)
+    out = tmp_path / "post-merge-result.json"
+    code = pmv.main(["verify", "--repo", "owner/repo", "--pr", "14", "--expected-head-sha", PR_HEAD,
+                     "--json-out", str(out)])
+    report = json.loads(out.read_text(encoding="utf-8"))
+    assert code == 1
+    assert report["state"] == POST_MERGE_FAILED
+    assert report["failure"] == {"type": "RuntimeError", "detail": "GitHub API unavailable"}

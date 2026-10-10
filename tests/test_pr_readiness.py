@@ -73,6 +73,7 @@ def test_protected_label_spellings_are_held(label):
 @pytest.mark.parametrize("path", [
     "assistant/commands.py", "execution/executor.py", "trade_management/manager.py",
     "src/host_delivery/telegram_confirm.py", "src/authorization/strategy_authority.py",
+    "src/sizing_math/risk.py",
     "config/v1_tickets/ready_authority.yaml", "config/v1_tickets/crypto_cfd_ticket_policy.yaml",
     "config/governance/pr_merge_denylist.json", ".github/workflows/manual-pr-merge.yml",
     ".github/workflows/pr-merge-readiness.yml", "scripts/governance/pr_readiness.py",

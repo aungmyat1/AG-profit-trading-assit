@@ -12,7 +12,7 @@ DEPENDENCY = re.compile(r"(?im)^\s*(?:depends[- ]on|blocked[- ]by|requires)\s*:?
 EXECUTION_PATHS = (
     "assistant/", "execution/", "src/execution/", "mt5/", "src/mt5/", "trade_management/",
     "src/trade_management/", "src/host_delivery/telegram_confirm.py", "src/authorization/",
-    "src/v1_tickets/owner_decision.py", "config/trading.yaml",
+    "src/sizing_math/", "src/v1_tickets/owner_decision.py", "config/trading.yaml",
 )
 OWNER_REVIEW_FILES = {
     "AGENTS.md", "docs/agents/INVARIANTS.md", "config/v1_tickets/ready_authority.yaml",
