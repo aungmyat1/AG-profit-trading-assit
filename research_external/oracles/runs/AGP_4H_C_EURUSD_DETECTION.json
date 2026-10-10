@@ -1,0 +1,225 @@
+{
+  "L1-L6_detection_only": {
+    "checks": {
+      "L1_prefix_invariance": true,
+      "L2_contract_mapping": true,
+      "L3_detection_geometry": true,
+      "L4_deterministic_replay": true,
+      "L5_fixture_integrity": true,
+      "L6_closed_ordered_inputs": true
+    },
+    "difference_classification": {
+      "DATA_DEFECT": 0,
+      "DEFINITION_DIFF": 302,
+      "LOGIC_DEFECT": 0
+    },
+    "logic_verified": true,
+    "scope": "EURUSD detection only; actionability is a separate layer and was not evaluated"
+  },
+  "actionability_evaluated": false,
+  "evaluated_at_utc": "2026-08-03T00:00:00Z",
+  "fixture": "tests/fixtures/large_smc_v111/EURUSD.json",
+  "fixture_classification": "HOST_CAPTURED_DERIVED",
+  "fixture_sha256": "a8bf11a9b8a8237d3c392ed16380c7a407d9f58c73d387d7ca97da7c4c2323d1",
+  "mission": "AGP-4H-C",
+  "point": 1e-05,
+  "point_source": "HOST_CAPTURED",
+  "strategy": "ST_LARGE_SMC_V1@1.1.0",
+  "swing_length": 2,
+  "tie_tolerance_points": 5,
+  "timeframes": {
+    "D1": {
+      "bars": 24,
+      "causal_smc_counts": {
+        "adapter_fvg": 2,
+        "adapter_ob": 2,
+        "bos_choch": 1,
+        "fvg": 2,
+        "liquidity": 1,
+        "ob": 2,
+        "swings": 6
+      },
+      "closed_ordered_input_pass": true,
+      "comparisons": [
+        {
+          "causal_smc_count": 6,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 3,
+          "local_count": 7,
+          "output": "swings",
+          "reason": "local SW-A uses strict k=2 fractals and confirmed pivots; raw SMC also has array-end bookend labels",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27"
+        },
+        {
+          "causal_smc_count": 1,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 2,
+          "local_count": 2,
+          "output": "bos_choch",
+          "reason": "local close breaks use the contract's 5-point tie tolerance and consumed known swings",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29"
+        },
+        {
+          "causal_smc_count": 2,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 1,
+          "local_count": 3,
+          "output": "fvg",
+          "reason": "local three-candle gap is known at the third candle; oracle outputs are delayed by swing_length and end-censored",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138"
+        },
+        {
+          "causal_smc_count": 1,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 3,
+          "local_count": 4,
+          "output": "liquidity",
+          "reason": "local sweep requires wick beyond a previously confirmed swing and close back inside; SMC liquidity clusters equal levels",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29"
+        }
+      ],
+      "determinism_pass": true,
+      "geometry_pass": true,
+      "local_counts": {
+        "bos_choch": 2,
+        "fvg": 3,
+        "liquidity_sweeps": 4,
+        "swings": 7
+      },
+      "prefix_diffs": [],
+      "prefix_pass": true
+    },
+    "H1": {
+      "bars": 120,
+      "causal_smc_counts": {
+        "adapter_fvg": 30,
+        "adapter_ob": 12,
+        "bos_choch": 12,
+        "fvg": 30,
+        "liquidity": 2,
+        "ob": 12,
+        "swings": 30
+      },
+      "closed_ordered_input_pass": true,
+      "comparisons": [
+        {
+          "causal_smc_count": 30,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 7,
+          "local_count": 31,
+          "output": "swings",
+          "reason": "local SW-A uses strict k=2 fractals and confirmed pivots; raw SMC also has array-end bookend labels",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27"
+        },
+        {
+          "causal_smc_count": 12,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 22,
+          "local_count": 14,
+          "output": "bos_choch",
+          "reason": "local close breaks use the contract's 5-point tie tolerance and consumed known swings",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29"
+        },
+        {
+          "causal_smc_count": 30,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 1,
+          "local_count": 31,
+          "output": "fvg",
+          "reason": "local three-candle gap is known at the third candle; oracle outputs are delayed by swing_length and end-censored",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138"
+        },
+        {
+          "causal_smc_count": 2,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 14,
+          "local_count": 17,
+          "output": "liquidity",
+          "reason": "local sweep requires wick beyond a previously confirmed swing and close back inside; SMC liquidity clusters equal levels",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29"
+        },
+        {
+          "causal_smc_count": 12,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 26,
+          "local_count": 14,
+          "output": "ob",
+          "reason": "contract explicitly excludes smc.ob candidates; local AG_ORDER_BLOCK_V1 detection is separate",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28,45-49"
+        }
+      ],
+      "determinism_pass": true,
+      "geometry_pass": true,
+      "local_counts": {
+        "bos_choch": 14,
+        "fvg": 31,
+        "liquidity_sweeps": 17,
+        "ob": 14,
+        "swings": 31
+      },
+      "prefix_diffs": [],
+      "prefix_pass": true
+    },
+    "M5": {
+      "bars": 600,
+      "causal_smc_counts": {
+        "adapter_fvg": 152,
+        "adapter_ob": 14,
+        "bos_choch": 70,
+        "fvg": 152,
+        "liquidity": 31,
+        "ob": 14,
+        "swings": 156
+      },
+      "closed_ordered_input_pass": true,
+      "comparisons": [
+        {
+          "causal_smc_count": 156,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 49,
+          "local_count": 139,
+          "output": "swings",
+          "reason": "local SW-A uses strict k=2 fractals and confirmed pivots; raw SMC also has array-end bookend labels",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27"
+        },
+        {
+          "causal_smc_count": 70,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 92,
+          "local_count": 53,
+          "output": "bos_choch",
+          "reason": "local close breaks use the contract's 5-point tie tolerance and consumed known swings",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29"
+        },
+        {
+          "causal_smc_count": 152,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 5,
+          "local_count": 157,
+          "output": "fvg",
+          "reason": "local three-candle gap is known at the third candle; oracle outputs are delayed by swing_length and end-censored",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138"
+        },
+        {
+          "causal_smc_count": 31,
+          "classification": "DEFINITION_DIFF",
+          "difference_count": 77,
+          "local_count": 70,
+          "output": "liquidity",
+          "reason": "local sweep requires wick beyond a previously confirmed swing and close back inside; SMC liquidity clusters equal levels",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29"
+        }
+      ],
+      "determinism_pass": true,
+      "geometry_pass": true,
+      "local_counts": {
+        "bos_choch": 53,
+        "fvg": 157,
+        "liquidity_sweeps": 70,
+        "swings": 139
+      },
+      "prefix_diffs": [],
+      "prefix_pass": true
+    }
+  }
+}
