@@ -46,6 +46,11 @@ satisfy OD1009-D6, so D6 READY stays OFF. Current strategy bindings, readiness v
 host tasks, and broker state are unchanged. Host-side execution artifacts remain `UNTRACKED_HOST`
 under C11 until brought into the repository through a reviewed PR before G6.
 
+READY admission now requires both the existing READY config switch and a matching approved
+record in the owner decision register bound to exact strategy version, loaded contract SHA256,
+symbol, and session. The production switch remains OFF and no owner record was added; see
+[`READY owner binding`](docs/status/READY_OWNER_BINDING_2026-10-10.md).
+
 Recorded M15 capture (`scripts/capture_recorded_m15.py`, read-only MT5) gained V2 options:
 `--window HH:MM-HH:MM`, `--all-days`, `--offset-method {rollover,reference-symbol:<SYM>}` and
 `--list-gaps`, each of which labels the run `RECORDED_M15_V2` in its provenance; `--with-spread`

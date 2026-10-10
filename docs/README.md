@@ -7,6 +7,11 @@ review_by: 2026-11-07
 # Documentation Index
 
 [AGP-G3-VERIFY manual-ticket risk/cost gate](status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md) records the G3 verification of the OD1009-D2 risk/cost gate (FX, gold, crypto CFD), its four fixed gate defects and the NO_BROKER_MUTATION evidence. It changes no readiness or authorization value.`r`n`r`n[Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
+
+[READY owner binding](status/READY_OWNER_BINDING_2026-10-10.md) records the additional
+owner-register, version, contract-hash, symbol, and session checks for READY admission.
+
+[Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
 records stop/target rejection, the owner-set 50% remaining-reward threshold, required
 host preflight, FX/crypto rejection ownership, diagnostics and offline tests.
 
