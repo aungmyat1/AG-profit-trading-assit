@@ -16,6 +16,9 @@ EVIDENCE = os.path.join(ROOT, "status", "evidence", "host_symbol_info_2026-10-09
 C1_EVIDENCE = os.path.join(ROOT, "status", "evidence", "host_symbol_info_2026-10-09.json")
 EXPECTED = {"EURUSD": "EURUSD-VIP", "GBPUSD": "GBPUSD-VIP", "USDJPY": "USDJPY-VIP",
             "XAUUSD": "XAUUSD-VIP", "BTCUSD": "BTCUSD", "ETHUSD": "ETHUSD"}
+FULL_EXPECTED = {"trade_mode_name": "FULL", "visible": True, "digits": 5, "point": 1e-05,
+                 "trade_contract_size": 100000.0, "volume_min": 0.01, "volume_step": 0.01, "volume_max": 100.0,
+                 "trade_tick_size": 1e-05, "trade_calc_mode": 0}
 
 
 @pytest.fixture(scope="module")
@@ -63,6 +66,14 @@ def test_evidence_is_demo_read_only(evidence):
 def test_prior_c1_capture_derives_the_same_names():
     with open(C1_EVIDENCE, encoding="utf-8") as f:
         c1 = json.load(f)["symbols"]
+    # The C1 capture predates trade_calc_mode, so it cannot pin a complete mapping on its own ...
+    derived = cbm.derive_map(c1)
+    assert {c: e.get("reason") for c, e in derived.items()} == {
+        c: f"{cbm.REASON_INCOMPLETE}: trade_calc_mode" for c in EXPECTED}
+    # ... but its candidate selection agrees with the symmap capture once that field is supplied.
+    for rec in c1.values():
+        if rec is not None:
+            rec.setdefault("trade_calc_mode", 0)
     derived = cbm.derive_map(c1)
     assert {c: e.get("broker_symbol") for c, e in derived.items()} == EXPECTED
 
@@ -121,8 +132,10 @@ def test_unmapped_resolve_is_typed_blocked(tmp_path):
     ({"EURUSD": {"status": "UNMAPPED", "reason": "x", "broker_symbol": "EURUSD"}}, {}),
     ({"EURUSD": {"status": "UNMAPPED"}}, {}),
     ({"EURUSD": {"status": "GUESS", "broker_symbol": "EURUSD"}}, {}),
-    ({"EURUSD": {"status": "MAPPED", "broker_symbol": "X", "expected": {"trade_mode_name": "FULL"}},
-      "GBPUSD": {"status": "MAPPED", "broker_symbol": "X", "expected": {"trade_mode_name": "FULL"}}}, {}),
+    ({"EURUSD": {"status": "MAPPED", "broker_symbol": "X", "expected": FULL_EXPECTED},
+      "GBPUSD": {"status": "MAPPED", "broker_symbol": "X", "expected": FULL_EXPECTED}}, {}),
+    ({"EURUSD": {"status": "MAPPED", "broker_symbol": "X",
+                 "expected": {k: v for k, v in FULL_EXPECTED.items() if k != "volume_step"}}}, {}),
     ({}, {"schema": "OTHER"}),
 ])
 def test_malformed_map_is_rejected(tmp_path, entries, over):
@@ -246,49 +259,229 @@ def test_two_snapshots_ignore_market_ticks(symbols):
     assert smoke.snapshot_mapping_differences(symbols, other) == []
 
 
-# --- MT5 symbol_info error classification (hermetic, no terminal) -------------------------
+def test_complete_pinned_map_loads(tmp_path):
+    m = cbm.load_map(_write_map(tmp_path, {"EURUSD": {"status": "MAPPED", "broker_symbol": "X", "expected": FULL_EXPECTED}}))
+    assert m.resolve("EURUSD") == "X"
 
-@pytest.mark.parametrize("error_code, expect_missing", [
-    (4301, True),    # Current policy: symbol not found (requires host confirmation)
-    (0, False),      # Ambiguous result: do not treat as absent
-    (-1, False),     # Generic API failure
-    (4302, False),   # Not selected / visibility error, not absence
-    (None, False),   # Missing last_error details
+
+def test_incomplete_pinned_metadata_is_unmapped(symbols):
+    symbols["EURUSD-VIP"]["volume_step"] = None
+    entry = cbm.derive_map(symbols)["EURUSD"]
+    assert entry["status"] == cbm.UNMAPPED and entry["reason"] == f"{cbm.REASON_INCOMPLETE}: volume_step"
+
+
+# --- MT5 symbol_info lookup contract (hermetic: fake terminal, no MT5 import) ----------------
+
+def _present(name, rec):
+    from types import SimpleNamespace
+    skip = {"canonical", "trade_mode_name", "trade_calc_mode_name", "swap_mode_name", "tick", "commission"}
+    return SimpleNamespace(name=name, **{f: v for f, v in rec.items() if f not in skip})
+
+
+class FakeTerminal:
+    """Fake MetaTrader5 module built from committed evidence. Every attribute that is not defined
+    here raises, so the proxy can only reach what is listed."""
+    ACCOUNT_TRADE_MODE_DEMO = 0
+    __version__ = "fake"
+
+    def __init__(self, evidence, missing_error=(-4, "Terminal: Not found"), server="VTMarkets-Demo",
+                 inventory_extra=(), total_delta=0):
+        from types import SimpleNamespace
+        self._ns = SimpleNamespace
+        self.records = {n: r for n, r in evidence["symbols"].items() if r is not None}
+        self.missing_error = missing_error
+        self.server = server
+        self.inventory = sorted(self.records) + list(inventory_extra)
+        self.total_delta = total_delta
+        self._error = (1, "Success")
+        self.log = []
+
+    def initialize(self, **kwargs):
+        self.log.append("initialize")
+        return True
+
+    def shutdown(self):
+        self.log.append("shutdown")
+
+    def last_error(self):
+        return self._error
+
+    def account_info(self):
+        return self._ns(server=self.server, trade_mode=0, currency="USD")
+
+    def symbols_get(self):
+        return tuple(self._ns(name=n) for n in self.inventory)
+
+    def symbols_total(self):
+        return len(self.inventory) + self.total_delta
+
+    def symbol_info(self, name):
+        self.log.append(("symbol_info", name))
+        if name in self.records:
+            self._error = (1, "Success")
+            return _present(name, self.records[name])
+        self._error = self.missing_error
+        return None
+
+    def symbol_info_tick(self, name):
+        tick = self.records[name]["tick"]
+        return None if tick is None else self._ns(**tick)
+
+
+@pytest.mark.parametrize("info_name, error, inventory, expected", [
+    ("EURUSD-VIP", None, frozenset({"EURUSD-VIP"}), "SYMBOL_PRESENT"),
+    (None, (-4, "Terminal: Not found"), frozenset({"EURUSD-VIP"}), "SYMBOL_ABSENT_CONFIRMED"),
+    (None, (-4, "Terminal: Not found"), frozenset({"EURUSD.crp"}), "MT5_RESPONSE_AMBIGUOUS"),
+    (None, (-4, "Terminal: Not found"), None, "MT5_RESPONSE_AMBIGUOUS"),
+    (None, (4301, "unknown symbol"), frozenset({"EURUSD-VIP"}), "MT5_RESPONSE_AMBIGUOUS"),
+    (None, (1, "Success"), frozenset({"EURUSD-VIP"}), "MT5_RESPONSE_AMBIGUOUS"),
+    (None, (0, ""), frozenset({"EURUSD-VIP"}), "MT5_RESPONSE_AMBIGUOUS"),
+    (None, (-1, "generic fail"), frozenset({"EURUSD-VIP"}), "MT5_API_ERROR"),
+    (None, (-10004, "No IPC connection"), frozenset({"EURUSD-VIP"}), "MT5_API_ERROR"),
+    (None, (-99, "unknown negative"), frozenset({"EURUSD-VIP"}), "MT5_API_ERROR"),
+    (None, (-10005, "IPC timeout"), frozenset({"EURUSD-VIP"}), "MT5_TIMEOUT"),
+    (None, None, frozenset({"EURUSD-VIP"}), "MT5_RESPONSE_AMBIGUOUS"),
+    (None, (), frozenset({"EURUSD-VIP"}), "MT5_RESPONSE_AMBIGUOUS"),
+    (None, ("-4", "x"), frozenset({"EURUSD-VIP"}), "MT5_RESPONSE_AMBIGUOUS"),
+    (None, (-4,), frozenset({"EURUSD-VIP"}), "MT5_RESPONSE_AMBIGUOUS"),
+    (None, (True, "x"), frozenset({"EURUSD-VIP"}), "MT5_RESPONSE_AMBIGUOUS"),
+    ("EURUSD", None, frozenset({"EURUSD-VIP"}), "MT5_RESPONSE_AMBIGUOUS"),     # record for another name
 ])
-def test_symbol_info_none_error_classification(monkeypatch, error_code, expect_missing):
+def test_symbol_lookup_classification(info_name, error, inventory, expected):
+    from types import SimpleNamespace
     smoke, _ = _load_smoke()
-    monkeypatch.setattr(smoke, "CANONICALS", ("EURUSD",))
-    monkeypatch.setattr(smoke, "candidate_names", lambda _: ["EURUSD"])
-    monkeypatch.setattr(smoke, "call_with_timeout", lambda func, *args: func(*args))
-
-    class Fake:
-        def symbol_info(self, name):
-            assert name == "EURUSD"
-            return None
-
-        def last_error(self):
-            return (error_code, "simulated error") if error_code is not None else None
-
-    if expect_missing:
-        assert smoke.capture_symbols(Fake()) == {"EURUSD": None}
-    else:
-        with pytest.raises(RuntimeError, match="symbol_info"):
-            smoke.capture_symbols(Fake())
+    name = "EURUSD-VIP" if expected == "SYMBOL_PRESENT" or info_name else "EURUSD.crp"
+    info = None if info_name is None else SimpleNamespace(name=info_name)
+    classification, detail = smoke.classify_symbol_lookup(name, info, error, inventory)
+    assert classification == expected, detail
 
 
-def test_symbol_info_timeout_does_not_turn_into_absence(monkeypatch):
+def test_package_result_codes_match_installed_package():
+    mt5 = pytest.importorskip("MetaTrader5")  # import only; no terminal contact
+    mod_path = os.path.normcase(os.path.abspath(mt5.__file__))
+    if mod_path.startswith(os.path.normcase(ROOT) + os.sep) and "site-packages" not in mod_path:
+        pytest.skip("repo MetaTrader5 stub, not the installed package")
     smoke, _ = _load_smoke()
-    monkeypatch.setattr(smoke, "CANONICALS", ("EURUSD",))
-    monkeypatch.setattr(smoke, "candidate_names", lambda _: ["EURUSD"])
+    assert (smoke.RES_S_OK, smoke.RES_E_NOT_FOUND, smoke.RES_E_INTERNAL_FAIL_TIMEOUT) == (
+        mt5.RES_S_OK, mt5.RES_E_NOT_FOUND, mt5.RES_E_INTERNAL_FAIL_TIMEOUT)
+    assert 4301 not in {getattr(mt5, k) for k in dir(mt5) if k.startswith("RES_")}
 
-    def timeout(func, *args):
-        raise TimeoutError("simulated MT5 timeout")
 
-    monkeypatch.setattr(smoke, "call_with_timeout", timeout)
+def test_capture_classifies_every_candidate(evidence):
+    smoke, _ = _load_smoke()
+    lookups = {}
+    out = smoke.capture_symbols(smoke.ReadOnlyMT5(FakeTerminal(evidence)), lookups)
+    assert out.keys() == evidence["symbols"].keys()
+    for name, rec in evidence["symbols"].items():
+        want = "SYMBOL_ABSENT_CONFIRMED" if rec is None else "SYMBOL_PRESENT"
+        assert lookups[name]["classification"] == want
+    assert cbm.diff_map(cbm.load_map(), out) == []
 
-    class Fake:
-        def symbol_info(self, name):
-            raise AssertionError("must be intercepted")
 
-    with pytest.raises(TimeoutError):
-        smoke.capture_symbols(Fake())
+@pytest.mark.parametrize("fake_kwargs, classification", [
+    ({"missing_error": (4301, "unknown symbol")}, "MT5_RESPONSE_AMBIGUOUS"),
+    ({"missing_error": (-1, "fail")}, "MT5_API_ERROR"),
+    ({"missing_error": (-10005, "IPC timeout")}, "MT5_TIMEOUT"),
+    ({"missing_error": None}, "MT5_RESPONSE_AMBIGUOUS"),
+    ({"inventory_extra": ("EURUSD.crp",)}, "MT5_RESPONSE_AMBIGUOUS"),   # -4 but listed in inventory
+    ({"total_delta": 1}, "MT5_RESPONSE_AMBIGUOUS"),                     # incomplete inventory
+])
+def test_capture_blocks_unresolved_lookup(evidence, fake_kwargs, classification):
+    smoke, _ = _load_smoke()
+    with pytest.raises(smoke.SymbolLookupBlocked) as exc:
+        smoke.capture_symbols(smoke.ReadOnlyMT5(FakeTerminal(evidence, **fake_kwargs)))
+    assert exc.value.classification == classification
+
+
+def test_capture_timeout_is_not_absence(evidence, monkeypatch):
+    smoke, _ = _load_smoke()
+    real_call = smoke.call_with_timeout
+
+    def call(fn, *args, **kwargs):
+        if getattr(fn, "__name__", "") == "wrapped" and args == ("EURUSD.crp",):
+            raise smoke.CallTimeout("symbol_info exceeded 10s")
+        return real_call(fn, *args, **kwargs)
+
+    monkeypatch.setattr(smoke, "call_with_timeout", call)
+    lookups = {}
+    with pytest.raises(smoke.SymbolLookupBlocked) as exc:
+        smoke.capture_symbols(smoke.ReadOnlyMT5(FakeTerminal(evidence)), lookups)
+    assert exc.value.classification == "MT5_TIMEOUT" and exc.value.name == "EURUSD.crp"
+    assert lookups["EURUSD.crp"]["classification"] == "MT5_TIMEOUT"
+
+
+def test_demo_constant_must_be_noncallable():
+    smoke, _ = _load_smoke()
+
+    class Probe:
+        def ACCOUNT_TRADE_MODE_DEMO(self):
+            return 0
+
+    with pytest.raises(PermissionError):
+        _ = smoke.ReadOnlyMT5(Probe()).ACCOUNT_TRADE_MODE_DEMO
+
+
+def test_account_gate():
+    from types import SimpleNamespace
+    smoke, _ = _load_smoke()
+    assert smoke.account_gate(SimpleNamespace(server="VTMarkets-Demo"), "VTMarkets-Demo") is None
+    assert smoke.account_gate(SimpleNamespace(server="VTMarkets-Live"), "VTMarkets-Demo").startswith("SERVER_MISMATCH")
+    assert smoke.account_gate(None, "VTMarkets-Demo") == "ACCOUNT_INFO_UNAVAILABLE"
+
+
+def _patch_run(smoke, monkeypatch, fake):
+    import contextlib
+    monkeypatch.setattr(smoke, "import_mt5", lambda: fake)
+    monkeypatch.setattr(smoke, "mt5_access_lock", contextlib.nullcontext)
+
+
+def test_run_smoke_end_to_end_read_only(evidence, monkeypatch, capsys):
+    smoke, _ = _load_smoke()
+    fake = FakeTerminal(evidence)
+    _patch_run(smoke, monkeypatch, fake)
+    assert smoke.run("smoke") == 0
+    out = capsys.readouterr().out
+    assert "DIFF EMPTY" in out and "METADATA_STABILITY PASS" in out
+    counts = json.loads(out.split("SYMBOL_LOOKUP_CLASSIFICATIONS ", 1)[1].splitlines()[0])
+    present = sum(r is not None for r in evidence["symbols"].values())
+    assert counts == {"SYMBOL_ABSENT_CONFIRMED": len(evidence["symbols"]) - present, "SYMBOL_PRESENT": present}
+    guard = json.loads(out.split("READ_ONLY_GUARD ", 1)[1].splitlines()[0])
+    assert guard["forbidden_calls"] == [] and guard["broker_mutations"] == 0
+    assert set(guard["mt5_calls"]) <= smoke.ALLOWED_MT5_CALLS
+
+
+def test_run_server_mismatch_blocks_before_symbol_reads(evidence, monkeypatch, capsys):
+    smoke, _ = _load_smoke()
+    fake = FakeTerminal(evidence, server="VTMarkets-Live")
+    _patch_run(smoke, monkeypatch, fake)
+    for mode in ("smoke", "capture"):
+        assert smoke.run(mode) == 2
+        assert "SERVER_MISMATCH" in capsys.readouterr().out
+    assert not any(isinstance(e, tuple) for e in fake.log)
+
+
+def test_run_blocks_on_ambiguous_lookup(evidence, monkeypatch, capsys):
+    smoke, _ = _load_smoke()
+    fake = FakeTerminal(evidence, missing_error=(4301, "unknown symbol"))
+    _patch_run(smoke, monkeypatch, fake)
+    assert smoke.run("smoke") == 2
+    assert "BLOCKED: MT5_RESPONSE_AMBIGUOUS" in capsys.readouterr().out
+    assert fake.log[-1] == "shutdown"
+
+
+def test_capture_never_overwrites_evidence(evidence, monkeypatch, tmp_path):
+    import datetime as dt
+    smoke, _ = _load_smoke()
+    _patch_run(smoke, monkeypatch, FakeTerminal(evidence))
+    (tmp_path / "status" / "evidence").mkdir(parents=True)
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    fixed = dt.datetime(2026, 10, 9, 18, 0, 0, tzinfo=dt.timezone.utc)
+    monkeypatch.setattr(smoke, "utcnow", lambda: fixed)
+    assert smoke.run("capture") == 0
+    written = list((tmp_path / "status" / "evidence").iterdir())
+    assert [p.name for p in written] == ["host_symbol_info_2026-10-09T180000Z_symmap.json"]
+    doc = json.loads(written[0].read_text(encoding="utf-8"))
+    assert doc["metadata_stability"]["mapping_critical_differences"] == []
+    assert {c: e["broker_symbol"] for c, e in doc["derived_map"].items()} == EXPECTED
+    with pytest.raises(FileExistsError):
+        smoke.run("capture")

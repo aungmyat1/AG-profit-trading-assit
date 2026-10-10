@@ -37,6 +37,7 @@ TERMINAL_STATUS = "BLOCKED"
 REASON_UNMAPPED = "SYMBOL_UNMAPPED"
 REASON_NO_FULL = "NO_VISIBLE_FULL_CANDIDATE"
 REASON_AMBIGUOUS = "AMBIGUOUS_FULL_CANDIDATES"
+REASON_INCOMPLETE = "INCOMPLETE_PINNED_METADATA"
 # Fields pinned per MAPPED entry and re-checked by the host smoke.
 PINNED_FIELDS = ("trade_mode_name", "visible", "digits", "point", "trade_contract_size",
                  "volume_min", "volume_step", "volume_max", "trade_tick_size", "trade_calc_mode")
@@ -106,6 +107,10 @@ def derive_map(symbols: Mapping[str, Optional[Mapping[str, object]]],
                 eligible.append(name)
         if len(eligible) == 1:
             info = symbols[eligible[0]]
+            missing = [k for k in PINNED_FIELDS if info.get(k) is None]
+            if missing:
+                out[canonical] = {"status": UNMAPPED, "reason": f"{REASON_INCOMPLETE}: {', '.join(missing)}"}
+                continue
             out[canonical] = {"status": MAPPED, "broker_symbol": eligible[0],
                               "expected": {k: info.get(k) for k in PINNED_FIELDS}}
         elif not eligible:
@@ -153,6 +158,9 @@ def _parse(raw: dict) -> BrokerSymbolMap:
                 raise SymbolMapError(f"{canonical}: MAPPED needs broker_symbol and expected")
             if item["expected"].get("trade_mode_name") != TRADE_MODE_FULL:
                 raise SymbolMapError(f"{canonical}: MAPPED broker symbol must be trade_mode FULL")
+            missing = [k for k in PINNED_FIELDS if item["expected"].get(k) is None]
+            if missing:
+                raise SymbolMapError(f"{canonical}: MAPPED expected must pin {', '.join(missing)}")
         elif status == UNMAPPED:
             if not item.get("reason") or item.get("broker_symbol"):
                 raise SymbolMapError(f"{canonical}: UNMAPPED needs a reason and no broker_symbol")
