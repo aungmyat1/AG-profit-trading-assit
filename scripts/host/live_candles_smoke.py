@@ -44,8 +44,9 @@ from _host_common import (  # noqa: E402
     mt5_access_lock, mt5_initialize, require_demo_account, single_instance, start_run_watchdog, utcnow,
 )
 from canonical_fx_delivery import (  # noqa: E402
-    active_cycles, build_sender, failure_provider,
-    process_due_session_summaries, run_canonical_fx_cycle,
+    LSMC_CRYPTO_DAY, LSMC_CRYPTO_WEEKEND, active_cycles, build_sender, failure_provider,
+    process_due_lsmc_crypto_summaries, process_due_session_summaries, record_lsmc_crypto_evaluation,
+    run_canonical_fx_cycle,
 )
 
 
@@ -456,6 +457,27 @@ def lsmc_weekend_open(now: dt.datetime) -> bool:
     return u.isoweekday() in LSMC_WEEKEND_DAYS and LSMC_WEEKEND_UTC[0] <= u.time() < LSMC_WEEKEND_UTC[1]
 
 
+def lsmc_weekend_window(day: dt.date):
+    """The Sat/Sun crypto window of `day` in UTC, or None on other days."""
+    if day.isoweekday() not in LSMC_WEEKEND_DAYS:
+        return None
+    return (dt.datetime.combine(day, LSMC_WEEKEND_UTC[0], tzinfo=UTC),
+            dt.datetime.combine(day, LSMC_WEEKEND_UTC[1], tzinfo=UTC))
+
+
+def lsmc_crypto_day_window(day: dt.date):
+    """Weekday `--mode lsmc` crypto summary: the whole UTC day (all crypto evaluations that day)."""
+    start = dt.datetime.combine(day, dt.time(0), tzinfo=UTC)
+    return (start, start + dt.timedelta(days=1))
+
+
+def lsmc_crypto_summary_lines(now: dt.datetime, journal: str, session: str, sender=None) -> List[str]:
+    """Due Large-SMC crypto window summaries (own window, own journal; never the FX summary)."""
+    window_for_day = lsmc_weekend_window if session == LSMC_CRYPTO_WEEKEND else lsmc_crypto_day_window
+    return process_due_lsmc_crypto_summaries(now, journal=journal, session=session, window_for_day=window_for_day,
+                                             sender=sender or build_sender(journal, root=REPO_ROOT))
+
+
 def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, notify: bool = True,
              fx: bool = True, window: Optional[str] = None) -> List[str]:
     tracker = WatchTracker(os.path.join(journal, "large_smc_watch", "state.json"),
@@ -475,29 +497,42 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
         # LSMC 1.1.0 is VT-only: its crypto symbols are the VT broker names (BTCUSD/ETHUSD). The
         # shared feed is keyed by the V1 crypto ticket names, so look up the key mapped to each.
         feed_keys = {b: k for k, b in getattr(crypto_feed, "symbols", {}).items()}
+        session = LSMC_CRYPTO_WEEKEND if window == "WEEKEND" else LSMC_CRYPTO_DAY
+
+        def record(symbol, state, reasons, deliveries=()):
+            # Durable input for the crypto window summary; a journal fault must not stop the watch.
+            try:
+                record_lsmc_crypto_evaluation(journal, now=now, session=session, symbol=symbol, state=state,
+                                              reason_codes=reasons, deliveries=deliveries)
+            except Exception as exc:  # noqa: BLE001
+                lines.append(f"LSMC_CRYPTO_JOURNAL {symbol} FAILED {type(exc).__name__}")
+
         for symbol in LSMC_CRYPTO_SYMBOLS:
             key = feed_keys.get(symbol)
             if key is None:
                 lines.append(f"LSMC {symbol} DATA_ERROR SYMBOL_NOT_FOUND")
+                record(symbol, "DATA_ERROR", ["SYMBOL_NOT_FOUND"])
                 continue
             try:
                 b = crypto_feed.fetch_bundle(key, [("H1", COUNTS["H1"]), ("M5", COUNTS["M5"])])
             except Exception as exc:  # noqa: BLE001
                 lines.append(f"LSMC {symbol} DATA_ERROR {type(exc).__name__}")
+                record(symbol, "DATA_ERROR", [type(exc).__name__])
                 continue
             broker = symbol
             lines += _watch_once(tracker, symbol, {"D1": [], **b.candles}, now, notify, source=b.source,
                                  window=window, ledger=ledger, journal=journal,
-                                 display_broker_symbol=broker)
+                                 display_broker_symbol=broker, record=record)
     return lines
 
 
 def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None,
-                ledger=None, journal=None, display_broker_symbol=None) -> List[str]:
+                ledger=None, journal=None, display_broker_symbol=None, record=None) -> List[str]:
     snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now)
     events = tracker.poll(snap)
     out = [f"LSMC {symbol} data={classify(symbol, bars['M5'], now)} state={snap.state} source={source} "
            f"{f'window={window} ' if window else ''}alerts={[e.to_state + ':' + e.alert_level for e in events]}"]
+    deliveries = []
     if notify:
         for event in events:
             price = bars["M5"][-1].close if bars["M5"] else None
@@ -511,8 +546,11 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
                     "LSMC", e.alert_level, message, REPO_ROOT, journal=journal,
                     ref=e.reference_id, now=now),
             )
+            deliveries.append({"to_state": event.to_state, "status": status, "reference_id": event.reference_id})
             if status not in ("SENT", "NOT_SENT_POLICY"):
                 out.append(f"LSMC_DELIVERY {symbol} {status} reference={event.reference_id}")
+    if record is not None:
+        record(symbol, snap.state, list(snap.reason_codes), deliveries)
     return out
 
 def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config: Optional[dict] = None) -> List[str]:
@@ -629,21 +667,38 @@ def main(argv=None) -> int:
             ticket_source="REPLAY", fx_data_source="NONE", policy_root=REPO_ROOT)
         return failures + process_due_session_summaries(now, journal=journal, sender=canonical_sender)
 
+    def lsmc_failure_lines(reason: str) -> List[str]:
+        # An MT5 failure is a crypto DATA_ERROR evaluation, and due crypto summaries still go out:
+        # an outage never suppresses a summary or later reads as an EMPTY_WINDOW.
+        if args.mode not in ("lsmc", "lsmc-weekend") or crypto_config["venue"]["kind"] != "MT5":
+            return []
+        session = LSMC_CRYPTO_WEEKEND if args.mode == "lsmc-weekend" else LSMC_CRYPTO_DAY
+        lines = []
+        for symbol in LSMC_CRYPTO_SYMBOLS:
+            try:
+                record_lsmc_crypto_evaluation(journal, now=now, session=session, symbol=symbol,
+                                              state="DATA_ERROR", reason_codes=[reason])
+            except Exception as exc:  # noqa: BLE001
+                lines.append(f"LSMC_CRYPTO_JOURNAL {symbol} FAILED {type(exc).__name__}")
+        return lines + lsmc_crypto_summary_lines(now, journal, session)
+
     try:
         with single_instance(log_name):
             if args.mode == "crypto" and crypto_config["venue"]["kind"] != "MT5":
                 lines = run_crypto(now, journal, crypto_feed_for(crypto_config, None), config=crypto_config)
             elif args.mode == "lsmc-weekend" and not lsmc_weekend_open(now):
                 lines = ["LSMC_WEEKEND OUTSIDE_WINDOW (Sat/Sun 20:45-23:15 UTC)"]    # no MT5 access
+                lines += lsmc_crypto_summary_lines(now, journal, LSMC_CRYPTO_WEEKEND)
             elif args.mode == "lsmc-weekend" and crypto_config["venue"]["kind"] != "MT5":
                 lines = ["LSMC_WEEKEND SKIPPED (crypto venue is not VT MT5; public feed not used)"]
             else:
                 mt5 = import_mt5()
                 if mt5 is None:
                     message = "MetaTrader5 package missing -- run scripts/host/diagnose_mt5.py"
-                    lines = (canonical_failure_lines("MT5_PACKAGE_MISSING") if args.canonical else
-                             archive_fx_runtime_failure(now, journal, "MT5_PACKAGE_MISSING", message,
-                                                        cycle_filter=args.cycle)) if args.mode == "fx" else []
+                    lines = ((canonical_failure_lines("MT5_PACKAGE_MISSING") if args.canonical else
+                              archive_fx_runtime_failure(now, journal, "MT5_PACKAGE_MISSING", message,
+                                                         cycle_filter=args.cycle)) if args.mode == "fx"
+                             else lsmc_failure_lines("MT5_PACKAGE_MISSING"))
                     for line in lines:
                         log_line(log_name, line)
                     print(message)
@@ -651,9 +706,10 @@ def main(argv=None) -> int:
                 with mt5_access_lock():
                     ok, err = mt5_initialize(mt5, args.terminal_path)
                     if not ok:
-                        lines = (canonical_failure_lines("MT5_INITIALIZE_FAILED") if args.canonical else
-                                 archive_fx_runtime_failure(now, journal, "MT5_INITIALIZE_FAILED", err,
-                                                            cycle_filter=args.cycle)) if args.mode == "fx" else []
+                        lines = ((canonical_failure_lines("MT5_INITIALIZE_FAILED") if args.canonical else
+                                  archive_fx_runtime_failure(now, journal, "MT5_INITIALIZE_FAILED", err,
+                                                             cycle_filter=args.cycle)) if args.mode == "fx"
+                                 else lsmc_failure_lines("MT5_INITIALIZE_FAILED"))
                         for line in lines:
                             log_line(log_name, line)
                         log_line(log_name, f"MT5_INITIALIZE_FAILED {err}")
@@ -661,9 +717,10 @@ def main(argv=None) -> int:
                     try:
                         demo_ok, demo_status = require_demo_account(mt5)
                         if not demo_ok:
-                            lines = (canonical_failure_lines("DEMO_ACCOUNT_REQUIRED") if args.canonical else
-                                     archive_fx_runtime_failure(now, journal, "DEMO_ACCOUNT_REQUIRED", demo_status,
-                                                                cycle_filter=args.cycle)) if args.mode == "fx" else []
+                            lines = ((canonical_failure_lines("DEMO_ACCOUNT_REQUIRED") if args.canonical else
+                                      archive_fx_runtime_failure(now, journal, "DEMO_ACCOUNT_REQUIRED", demo_status,
+                                                                 cycle_filter=args.cycle)) if args.mode == "fx"
+                                     else lsmc_failure_lines("DEMO_ACCOUNT_REQUIRED"))
                             for line in lines:
                                 log_line(log_name, line)
                             log_line(log_name, f"DEMO_ACCOUNT_REQUIRED {demo_status}")
@@ -695,8 +752,11 @@ def main(argv=None) -> int:
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
                                              fx=False, window="WEEKEND")
+                            lines += lsmc_crypto_summary_lines(now, journal, LSMC_CRYPTO_WEEKEND)
                         else:
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote))
+                            if crypto_config["venue"]["kind"] == "MT5":       # crypto watched (lsmc_crypto_feed)
+                                lines += lsmc_crypto_summary_lines(now, journal, LSMC_CRYPTO_DAY)
                     finally:
                         try:
                             call_with_timeout(mt5.shutdown)
@@ -711,6 +771,8 @@ def main(argv=None) -> int:
                              archive_fx_runtime_failure(now, journal, "MT5_BUSY", str(exc), cycle_filter=args.cycle))
             for line in failure_lines:
                 log_line(log_name, line)
+        for line in lsmc_failure_lines("MT5_BUSY"):
+            log_line(log_name, line)
         log_line(log_name, f"MT5_BUSY {exc}")
         return 0
     for line in lines or [f"{args.mode.upper()} NOTHING_IN_WINDOW"]:

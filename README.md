@@ -1,5 +1,7 @@
 # AG Profit Trading
 
+Market-structure analysis uses fresh computation; [offline byte-comparison evidence](docs/status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md) records the removed replay-cache dependency and session-zone call trace.
+
 Standalone canonical-ticket Telegram delivery is offline tested and disabled by
 default (`TELEGRAM_DELIVERY_ENABLED=false`). See [configuration, schema gaps and
 limits](docs/status/AGP_TG_01_OFFLINE_2026-10-08.md); no live delivery is validated.

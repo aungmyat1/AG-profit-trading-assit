@@ -37,6 +37,14 @@ DELIVERY_DB = os.path.join("ticket_delivery", "canonical_fx", "delivery.sqlite")
 SCHEDULER_START = os.path.join("ticket_delivery", "canonical_fx", "scheduler_start.json")
 CANONICAL_OVERRIDE = "config/local/canonical_ticket_delivery.yaml"   # gitignored host-local recipient authorization
 SUMMARY_GRACE = dt.timedelta(minutes=30)
+# Large-SMC crypto watch (BTCUSD/ETHUSD) gets its own session summaries, journalled beside the FX
+# ones. Session ids never collide with V1_CYCLES; the FX summary never counts these symbols.
+LSMC_CRYPTO_DAY, LSMC_CRYPTO_WEEKEND = "LSMC_CRYPTO_DAY", "LSMC_CRYPTO_WEEKEND"
+LSMC_CRYPTO_SESSIONS = (LSMC_CRYPTO_DAY, LSMC_CRYPTO_WEEKEND)
+# Same tuple as large_smc_watch.contract.CRYPTO_SYMBOLS (pinned by a test); not imported here so this
+# delivery module never loads the watch/MT5 import chain.
+LSMC_CRYPTO_SYMBOLS = ("BTCUSD", "ETHUSD")
+from telegram_delivery.adapter import LSMC_CRYPTO_SUMMARY_SCHEMA  # noqa: E402 -- one schema id
 CANONICAL_DECISIONS = frozenset({
     WATCH_READY, INFO_ONLY_STALE, INFO_ONLY_INSUFFICIENT_REMAINING_R,
     INFO_ONLY_POLICY_UNRESOLVED, INFO_ONLY_SUPPRESSED, NO_TRADE, EXPIRED,
@@ -120,7 +128,7 @@ def _session_event_path(journal: str, session_date: str, session: str) -> str:
         dt.date.fromisoformat(session_date)
     except (TypeError, ValueError) as exc:
         raise ValueError("invalid session_date") from exc
-    if session not in V1_CYCLES:
+    if session not in V1_CYCLES and session not in LSMC_CRYPTO_SESSIONS:
         raise ValueError(f"unknown FX cycle {session!r}")
     return os.path.join(journal, EVENT_SUBDIR, f"{session_date}_{session}.jsonl")
 
@@ -505,13 +513,13 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
         "execution_authorized": False,
     }
 
-def _scheduler_start_path(journal: str) -> str:
-    return os.path.join(journal, SCHEDULER_START)
+def _scheduler_start_path(journal: str, name: str = SCHEDULER_START) -> str:
+    return os.path.join(journal, name)
 
 
-def ensure_scheduler_start(journal: str, now: dt.datetime) -> dt.datetime:
+def ensure_scheduler_start(journal: str, now: dt.datetime, name: str = SCHEDULER_START) -> dt.datetime:
     """Persist the first canonical-task time so catch-up never invents pre-deployment misses."""
-    path = _scheduler_start_path(journal)
+    path = _scheduler_start_path(journal, name)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if os.path.exists(path):
         raw = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -529,7 +537,7 @@ def ensure_scheduler_start(journal: str, now: dt.datetime) -> dt.datetime:
             stream.flush()
             os.fsync(stream.fileno())
     except FileExistsError:
-        return ensure_scheduler_start(journal, now)
+        return ensure_scheduler_start(journal, now, name)
     return started
 
 
@@ -559,63 +567,171 @@ def process_due_session_summaries(now: dt.datetime, *, journal: str, sender: Sen
             end_with_grace = window[1] + SUMMARY_GRACE
             if end_with_grace <= started or now <= end_with_grace:
                 continue
-            day_text = day.isoformat()
-            try:
-                prior_events = _read_session_events(journal, day_text, session)
-                prior = _latest_summary_result(prior_events)
-                if prior is not None:
-                    prior_state = prior.get("delivery_state")
-                    if prior_state in ("sent", "duplicate", "uncertain", "failed", "delivery_exception"):
-                        continue
-                    if prior_state in ("disabled", "blocked"):
-                        if bool(prior.get("sender_enabled")) == bool(sender.config.enabled) or not sender.config.enabled:
-                            continue
-                summary = build_session_summary(journal, session_date=day, session=session, sender=sender)
-            except Exception as exc:  # noqa: BLE001 -- a corrupt store must never produce a summary send
-                blocked_event = {
-                    "event_type": "SESSION_SUMMARY_DELIVERY", "stage": "RESULT",
-                    "recorded_at_utc": now.isoformat(), "session_date": day_text, "session": session,
-                    "delivery_state": "store_read_failed", "sender_enabled": bool(sender.config.enabled),
-                    "error_class": type(exc).__name__, "execution_authorized": False,
-                }
-                try:
-                    append_session_event(journal, blocked_event)
-                except Exception:
-                    pass
-                lines.append(f"FX_SESSION_SUMMARY {day_text} {session} blocked={type(exc).__name__}")
-                continue
-            intent = {
-                "event_type": "SESSION_SUMMARY_DELIVERY", "stage": "INTENT",
-                "recorded_at_utc": now.isoformat(), "session_date": day_text, "session": session,
-                "summary_status": summary["status"], "recorded_evaluations": summary["recorded_evaluations"],
-                "expected_evaluations": summary["expected_evaluations"],
-                "sender_enabled": bool(sender.config.enabled), "delivery_state": "pending",
-                "execution_authorized": False,
-            }
-            try:
-                append_session_event(journal, intent)
-            except Exception as exc:  # noqa: BLE001 -- no message send without a durable intent
-                lines.append(f"FX_SESSION_SUMMARY {day_text} {session} delivery=journal_blocked "
-                             f"error={type(exc).__name__}")
-                continue
-            try:
-                delivery_state = sender.send_session_summary(summary)
-                error_class = None
-            except Exception as exc:  # noqa: BLE001 -- never auto-retry an ambiguous result here
-                delivery_state, error_class = "delivery_exception", type(exc).__name__
-            outcome = {
-                "event_type": "SESSION_SUMMARY_DELIVERY", "stage": "RESULT",
-                "recorded_at_utc": now.isoformat(), "session_date": day_text, "session": session,
-                "summary_status": summary["status"], "recorded_evaluations": summary["recorded_evaluations"],
-                "expected_evaluations": summary["expected_evaluations"],
-                "sender_enabled": bool(sender.config.enabled), "delivery_state": delivery_state,
-                "error_class": error_class, "execution_authorized": False,
-            }
-            try:
-                append_session_event(journal, outcome)
-            except Exception as exc:  # noqa: BLE001 -- adapter SQLite is authoritative for sent attempts
-                error_class = type(exc).__name__
-            suffix = f" journal_error={error_class}" if error_class else ""
-            lines.append(f"FX_SESSION_SUMMARY {day_text} {session} status={summary['status']} "
-                         f"delivery={delivery_state}{suffix}")
+            line = _process_due_summary(
+                journal, now, sender, day.isoformat(), session, label="FX_SESSION_SUMMARY",
+                build=lambda day=day, session=session: build_session_summary(
+                    journal, session_date=day, session=session, sender=sender),
+                fields=lambda summary: {"summary_status": summary["status"],
+                                        "recorded_evaluations": summary["recorded_evaluations"],
+                                        "expected_evaluations": summary["expected_evaluations"]},
+                status=lambda summary: summary["status"])
+            if line:
+                lines.append(line)
+    return lines
+
+
+def _process_due_summary(journal: str, now: dt.datetime, sender: Sender, day_text: str, session: str, *,
+                         label: str, build, fields, status) -> Optional[str]:
+    """Shared once-only summary delivery for one due (date, session): FX cycles and LSMC crypto.
+
+    Successful/uncertain/failed sends are not retried automatically. A previously disabled summary
+    may be sent only after the explicit local+environment owner gates become enabled."""
+    try:
+        prior_events = _read_session_events(journal, day_text, session)
+        prior = _latest_summary_result(prior_events)
+        if prior is not None:
+            prior_state = prior.get("delivery_state")
+            if prior_state in ("sent", "duplicate", "uncertain", "failed", "delivery_exception"):
+                return None
+            if prior_state in ("disabled", "blocked"):
+                if bool(prior.get("sender_enabled")) == bool(sender.config.enabled) or not sender.config.enabled:
+                    return None
+        summary = build()
+    except Exception as exc:  # noqa: BLE001 -- a corrupt store must never produce a summary send
+        blocked_event = {
+            "event_type": "SESSION_SUMMARY_DELIVERY", "stage": "RESULT",
+            "recorded_at_utc": now.isoformat(), "session_date": day_text, "session": session,
+            "delivery_state": "store_read_failed", "sender_enabled": bool(sender.config.enabled),
+            "error_class": type(exc).__name__, "execution_authorized": False,
+        }
+        try:
+            append_session_event(journal, blocked_event)
+        except Exception:
+            pass
+        return f"{label} {day_text} {session} blocked={type(exc).__name__}"
+    intent = {
+        "event_type": "SESSION_SUMMARY_DELIVERY", "stage": "INTENT",
+        "recorded_at_utc": now.isoformat(), "session_date": day_text, "session": session,
+        **fields(summary),
+        "sender_enabled": bool(sender.config.enabled), "delivery_state": "pending",
+        "execution_authorized": False,
+    }
+    try:
+        append_session_event(journal, intent)
+    except Exception as exc:  # noqa: BLE001 -- no message send without a durable intent
+        return f"{label} {day_text} {session} delivery=journal_blocked error={type(exc).__name__}"
+    try:
+        delivery_state = sender.send_session_summary(summary)
+        error_class = None
+    except Exception as exc:  # noqa: BLE001 -- never auto-retry an ambiguous result here
+        delivery_state, error_class = "delivery_exception", type(exc).__name__
+    outcome = {
+        "event_type": "SESSION_SUMMARY_DELIVERY", "stage": "RESULT",
+        "recorded_at_utc": now.isoformat(), "session_date": day_text, "session": session,
+        **fields(summary),
+        "sender_enabled": bool(sender.config.enabled), "delivery_state": delivery_state,
+        "error_class": error_class, "execution_authorized": False,
+    }
+    try:
+        append_session_event(journal, outcome)
+    except Exception as exc:  # noqa: BLE001 -- adapter SQLite is authoritative for sent attempts
+        error_class = type(exc).__name__
+    suffix = f" journal_error={error_class}" if error_class else ""
+    return f"{label} {day_text} {session} status={status(summary)} delivery={delivery_state}{suffix}"
+
+
+# ------------------------------------------------------------------ Large-SMC crypto watch summaries
+
+def record_lsmc_crypto_evaluation(journal: str, *, now: dt.datetime, session: str, symbol: str, state: str,
+                                  reason_codes: Sequence[str] = (),
+                                  deliveries: Sequence[Dict[str, Any]] = ()) -> bool:
+    """Append one durable LSMC crypto evaluation (state, reasons, alert delivery results) to the
+    session journal of its own crypto window. Never written to the FX session journals."""
+    if session not in LSMC_CRYPTO_SESSIONS:
+        raise ValueError(f"unknown LSMC crypto session {session!r}")
+    now = _utc(now)
+    return append_session_event(journal, {
+        "event_type": "LSMC_EVALUATION", "session_date": now.date().isoformat(), "session": session,
+        "evaluated_at_utc": now.isoformat(), "symbol": symbol, "state": state,
+        "reason_codes": list(reason_codes),
+        "deliveries": [{"to_state": d.get("to_state"), "status": d.get("status"),
+                        "reference_id": d.get("reference_id")} for d in deliveries],
+        "execution_authorized": False,
+    })
+
+
+def build_lsmc_crypto_summary(journal: str, *, session_date: dt.date, session: str,
+                              window: Tuple[dt.datetime, dt.datetime], sender: Sender) -> Dict[str, Any]:
+    """Opportunities sent plus per-reason rejection counts for one crypto window, from durable
+    LSMC_EVALUATION events only. An empty window is a valid summary with zero counts."""
+    if session not in LSMC_CRYPTO_SESSIONS:
+        raise ValueError(f"unknown LSMC crypto session {session!r}")
+    day = session_date.isoformat()
+    start, end = _utc(window[0]), _utc(window[1])
+    rows = []
+    for event in _read_session_events(journal, day, session):
+        if event.get("event_type") != "LSMC_EVALUATION" or event.get("symbol") not in LSMC_CRYPTO_SYMBOLS:
+            continue
+        at = dt.datetime.fromisoformat(str(event.get("evaluated_at_utc")))
+        if at.tzinfo is None:
+            raise ValueError("naive evaluation timestamp in LSMC journal")
+        if start <= at.astimezone(UTC) < end:
+            rows.append(event)
+    rejections: Counter = Counter()
+    states: Counter = Counter()
+    sent: set = set()
+    delivery_counts: Counter = Counter()
+    for row in rows:
+        states[row.get("state")] += 1
+        if row.get("state") != "OPPORTUNITY":
+            reasons = row.get("reason_codes") or []
+            rejections[str(reasons[0]) if reasons else "UNSPECIFIED"] += 1
+        for d in row.get("deliveries") or []:
+            delivery_counts[str(d.get("status"))] += 1
+            if d.get("to_state") == "OPPORTUNITY" and d.get("status") == "SENT":
+                sent.add(d.get("reference_id"))
+    return {
+        "schema": LSMC_CRYPTO_SUMMARY_SCHEMA, "session_date": day, "session": session,
+        "window_start_utc": start.isoformat(), "window_end_utc": end.isoformat(),
+        "instruments": list(LSMC_CRYPTO_SYMBOLS), "evaluations": len(rows),
+        "opportunities_sent": len(sent),
+        "rejection_counts": dict(sorted(rejections.items())),
+        "state_counts": dict(sorted(states.items())),
+        "alert_delivery_counts": dict(sorted(delivery_counts.items())),
+        "status": "EMPTY_WINDOW" if not rows else "COMPLETE",
+        "delivery_enabled": bool(sender.config.enabled), "execution_authorized": False,
+    }
+
+
+def process_due_lsmc_crypto_summaries(now: dt.datetime, *, journal: str, sender: Sender, session: str,
+                                      window_for_day) -> List[str]:
+    """Send each due crypto window summary once (catch-up from this session's first run). A window
+    is due after its end plus SUMMARY_GRACE; an empty window still gets a zero-count summary.
+    `window_for_day(date) -> (start, end) | None` defines the window (None: no window that day)."""
+    if session not in LSMC_CRYPTO_SESSIONS:
+        raise ValueError(f"unknown LSMC crypto session {session!r}")
+    now = _utc(now)
+    name = os.path.join(os.path.dirname(SCHEDULER_START), f"{session.lower()}_scheduler_start.json")
+    try:
+        started = ensure_scheduler_start(journal, now, name)
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+        return [f"LSMC_CRYPTO_SUMMARY BLOCKED scheduler_journal={type(exc).__name__}"]
+    lines: List[str] = []
+    for offset in range(max(0, (now.date() - started.date()).days) + 1):
+        day = started.date() + dt.timedelta(days=offset)
+        window = window_for_day(day)
+        if window is None:
+            continue
+        end_with_grace = _utc(window[1]) + SUMMARY_GRACE
+        if end_with_grace <= started or now <= end_with_grace:
+            continue
+        line = _process_due_summary(
+            journal, now, sender, day.isoformat(), session, label="LSMC_CRYPTO_SUMMARY",
+            build=lambda day=day, window=window: build_lsmc_crypto_summary(
+                journal, session_date=day, session=session, window=window, sender=sender),
+            fields=lambda summary: {"summary_status": summary["status"], "evaluations": summary["evaluations"],
+                                    "opportunities_sent": summary["opportunities_sent"]},
+            status=lambda summary: summary["status"])
+        if line:
+            lines.append(line)
     return lines
