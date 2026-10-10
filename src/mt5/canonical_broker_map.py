@@ -188,7 +188,8 @@ def _mentions_fixture(obj: object) -> bool:
     return False
 
 
-def host_capture_error(canonical: str, item: Mapping[str, object], server: str) -> Optional[str]:
+def host_capture_error(canonical: str, item: Mapping[str, object], server: str,
+                       evidence_path: str) -> Optional[str]:
     """None when the MAPPED ``item`` is backed by its verified host capture; else the reason."""
     if _mentions_fixture(item):
         return f"{REASON_FIXTURE_ONLY}: map entry"
@@ -221,6 +222,27 @@ def host_capture_error(canonical: str, item: Mapping[str, object], server: str) 
     for key in CAPTURE_CROSSCHECK_FIELDS:
         if fields.get(key) != item["expected"].get(key):
             return f"{REASON_CAPTURE_MISMATCH}: {key} pinned {item['expected'].get(key)!r} != captured {fields.get(key)!r}"
+    if os.path.isabs(evidence_path) or ".." in evidence_path.replace("\\", "/").split("/"):
+        return f"{REASON_CAPTURE_MISMATCH}: invalid aggregate evidence path {evidence_path!r}"
+    try:
+        with open(os.path.join(_REPO_ROOT, evidence_path), encoding="utf-8") as f:
+            aggregate = json.load(f)
+    except (OSError, ValueError):
+        return f"{REASON_CAPTURE_MISSING}: aggregate evidence {evidence_path!r} unavailable"
+    if not isinstance(aggregate, dict):
+        return f"{REASON_CAPTURE_MISMATCH}: aggregate evidence is not a record"
+    account = aggregate.get("account", {})
+    guard = aggregate.get("read_only_guard", {})
+    symbols = aggregate.get("symbols", {})
+    captured = symbols.get(str(item.get("broker_symbol"))) if isinstance(symbols, dict) else None
+    if (account.get("server") != server or account.get("trade_mode") != "DEMO"
+            or guard.get("broker_mutations") != 0 or guard.get("forbidden_calls") != []
+            or not isinstance(captured, dict) or captured.get("canonical") != canonical):
+        return f"{REASON_CAPTURE_MISMATCH}: aggregate evidence does not verify a read-only DEMO capture"
+    for key in ("visible", "trade_calc_mode"):
+        want = item["expected"].get(key)
+        if captured.get(key) != want:
+            return f"{REASON_CAPTURE_MISMATCH}: {key} pinned {want!r} != aggregate evidence {captured.get(key)!r}"
     return None
 
 
@@ -246,7 +268,7 @@ def _parse(raw: dict) -> BrokerSymbolMap:
                 raise SymbolMapError(f"{canonical}: UNMAPPED needs a reason and no broker_symbol")
         else:
             raise SymbolMapError(f"{canonical}: status must be {MAPPED} or {UNMAPPED}")
-        data_error = host_capture_error(canonical, item, raw["server"]) if status == MAPPED else None
+        data_error = host_capture_error(canonical, item, raw["server"], raw["evidence"]) if status == MAPPED else None
         entries[canonical] = MapEntry(canonical, status, item.get("broker_symbol"), item.get("reason"),
                                       dict(item.get("expected") or {}),
                                       dict(item.get("host_capture") or {}) or None, data_error)
