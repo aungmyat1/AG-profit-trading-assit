@@ -3,12 +3,12 @@
   "fixtures": [
     {
       "bar_counts": {
-        "D1": 24,
+        "D1": 30,
         "H1": 120,
         "M5": 600
       },
       "fixture_file": "tests/fixtures/large_smc_v111/EURUSD.json",
-      "fixture_sha256": "a8bf11a9b8a8237d3c392ed16380c7a407d9f58c73d387d7ca97da7c4c2323d1",
+      "fixture_sha256": "0d6297f097706cf1d0771a2b7c0cfcf870a83bbc5aad9c942d21e127eef77f98",
       "symbol": "EURUSD"
     },
     {
@@ -74,7 +74,7 @@
         "M1": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_M1.csv",
         "manifest": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/dataset_manifest.json"
       },
-      "notes": "Only closed UTC-aligned bars retained; 120 H1, 600 complete M5 derived from captured M1, and 24 complete D1 aggregates.",
+      "notes": "H1 is VT MT5 captured; M5 is derived from captured M1; D1 is rebuilt from complete H1 bars on server-midnight boundaries (NY 17:00) using merged #136 DST rules. Partial terminal Sunday-open day omitted; weekend/Friday-close empty buckets never filled.",
       "package_id": "SSC_V1_0_1_G2_DEV_001",
       "sha256": {
         "H1": "63d8227541909adff009f121e7b3ed1cb4e12c718aaeea53b8e55426917bb55c",
@@ -83,7 +83,7 @@
       },
       "symbol": "EURUSD",
       "timeframes": {
-        "D1": "DERIVED_FROM_24_COMPLETE_UTC_H1_BARS",
+        "D1": "DERIVED_FROM_30_COMPLETE_VT_BROKER_DAYS_OF_H1",
         "H1": "HOST_CAPTURED",
         "M5": "HOST_CAPTURED_M1_RESAMPLED_COMPLETE_5_MINUTES"
       }

@@ -2,7 +2,7 @@
   "mission": "AGP-4H-C",
   "strategy": "ST_LARGE_SMC_V1@1.1.0",
   "fixture": "tests/fixtures/large_smc_v111/EURUSD.json",
-  "fixture_sha256": "a8bf11a9b8a8237d3c392ed16380c7a407d9f58c73d387d7ca97da7c4c2323d1",
+  "fixture_sha256": "0d6297f097706cf1d0771a2b7c0cfcf870a83bbc5aad9c942d21e127eef77f98",
   "fixture_classification": "HOST_CAPTURED_DERIVED",
   "swing_length": 2,
   "point": 1e-05,
@@ -11,12 +11,12 @@
   "actionability_evaluated": false,
   "timeframes": {
     "D1": {
-      "bars": 24,
+      "bars": 30,
       "local_counts": {
-        "swings": 7,
-        "bos_choch": 2,
-        "liquidity_sweeps": 4,
-        "fvg": 3
+        "swings": 8,
+        "bos_choch": 3,
+        "liquidity_sweeps": 5,
+        "fvg": 2
       },
       "causal_smc_counts": {
         "swings": 5,
@@ -37,25 +37,25 @@
           "output": "swings",
           "classification": "DEFINITION_DIFF",
           "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27",
-          "local_count": 7,
+          "local_count": 8,
           "causal_smc_count": 5,
-          "difference_count": 2,
+          "difference_count": 3,
           "reason": "local SW-A uses strict k=2 fractals and confirmed pivots; raw SMC also has array-end bookend labels"
         },
         {
           "output": "fvg",
           "classification": "DEFINITION_DIFF",
           "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138",
-          "local_count": 3,
+          "local_count": 2,
           "causal_smc_count": 2,
-          "difference_count": 1,
+          "difference_count": 0,
           "reason": "local three-candle gap is known at the third candle; oracle outputs are delayed by swing_length and end-censored"
         },
         {
           "output": "BOS",
           "classification": "DEFINITION_DIFF",
           "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29",
-          "difference_count": 0,
+          "difference_count": 1,
           "reason": "close-confirmed structure break; SMC uses its own swing and break labeling"
         },
         {
@@ -69,9 +69,9 @@
           "output": "liquidity",
           "classification": "DEFINITION_DIFF",
           "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29",
-          "local_count": 4,
+          "local_count": 5,
           "causal_smc_count": 1,
-          "difference_count": 3,
+          "difference_count": 4,
           "reason": "local sweep requires wick beyond a previously confirmed swing and close back inside; SMC liquidity clusters equal levels"
         }
       ]
@@ -231,11 +231,11 @@
       "adapter_fvg",
       "adapter_ob"
     ],
-    "implementation": "research_external/oracles/lsmc_detection_run.py:71,81"
+    "implementation": "research_external/oracles/lsmc_detection_run.py:78,88"
   },
   "evaluated_at_utc": "2026-08-03T00:00:00Z",
   "seeded_manual_review": {
-    "seed": 20261011,
+    "seed": 20261012,
     "sample_size": 10,
     "method": "seeded rng.choice per category, then seeded rng.sample from the remaining normalized differences",
     "reviews": [
@@ -243,62 +243,62 @@
         "timeframe": "M5",
         "category": "BOS",
         "side": "SMC_ONLY",
-        "bar_index": 446,
+        "bar_index": 290,
         "raw_bar_ohlc": {
-          "open": 1.15013,
-          "high": 1.15013,
-          "low": 1.14966,
-          "close": 1.14997
+          "open": 1.1525,
+          "high": 1.15285,
+          "low": 1.1525,
+          "close": 1.15285
         },
         "item": [
-          446,
+          290,
           "BOS",
-          "bearish",
-          1.1500500441
+          "bullish",
+          1.1523799896
         ],
-        "raw_check": "bar[446].close=1.14997; compared to reported level=1.1500500441",
+        "raw_check": "bar[290].close=1.15285; compared to reported level=1.1523799896",
         "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30",
         "engine_correct_per_spec": "contract accepts close-confirmed structure breaks with five-point tolerance and its BOS/CHOCH state rule; SMC break labeling differs"
       },
       {
-        "timeframe": "M5",
+        "timeframe": "D1",
         "category": "CHOCH",
-        "side": "SMC_ONLY",
-        "bar_index": 244,
+        "side": "LOCAL_ONLY",
+        "bar_index": 27,
         "raw_bar_ohlc": {
-          "open": 1.1529,
-          "high": 1.15316,
-          "low": 1.15287,
-          "close": 1.15313
+          "open": 1.13885,
+          "high": 1.14702,
+          "low": 1.1374,
+          "close": 1.14665
         },
         "item": [
-          244,
+          27,
           "CHOCH",
           "bullish",
-          1.1529899836
+          1.14352
         ],
-        "raw_check": "bar[244].close=1.15313; compared to reported level=1.1529899836",
+        "raw_check": "bar[27].close=1.14665; compared to reported level=1.14352",
         "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30",
         "engine_correct_per_spec": "contract accepts close-confirmed structure breaks with five-point tolerance and its BOS/CHOCH state rule; SMC break labeling differs"
       },
       {
-        "timeframe": "M5",
+        "timeframe": "H1",
         "category": "FVG",
         "side": "LOCAL_ONLY",
-        "bar_index": 279,
+        "bar_index": 116,
         "raw_bar_ohlc": {
-          "open": 1.15241,
-          "high": 1.15254,
-          "low": 1.15241,
-          "close": 1.15241
+          "open": 1.15307,
+          "high": 1.15464,
+          "low": 1.15232,
+          "close": 1.15303
         },
         "item": [
-          279,
-          "bearish",
-          1.15263,
-          1.15254
+          116,
+          "bullish",
+          1.15423,
+          1.15355
         ],
-        "raw_check": "bar[280].high 1.15254 < bar[278].low 1.15263 = True",
+        "raw_check": "bar[117].low 1.15423 > bar[115].high 1.15355 = True",
         "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138",
         "engine_correct_per_spec": "raw three-candle gap is known on the third candle; local FVG follows that geometry and SMC visibility is delayed two bars"
       },
@@ -306,147 +306,147 @@
         "timeframe": "H1",
         "category": "OB",
         "side": "LOCAL_ONLY",
-        "bar_index": 70,
+        "bar_index": 101,
         "raw_bar_ohlc": {
-          "open": 1.14592,
-          "high": 1.1471,
-          "low": 1.14592,
-          "close": 1.14707
+          "open": 1.15076,
+          "high": 1.15091,
+          "low": 1.15041,
+          "close": 1.15058
         },
         "item": [
-          70,
-          "OB_PIVOT",
-          "SHORT",
-          1.14592,
-          1.1471,
+          101,
+          "OB_SHADOW",
+          "LONG",
+          1.15041,
+          1.15058,
           "AG_ORDER_BLOCK_V1"
         ],
-        "raw_check": "zone origin index=70; raw origin OHLC=1.14592/1.1471/1.14592/1.14707",
+        "raw_check": "zone origin index=101; raw origin OHLC=1.15076/1.15091/1.15041/1.15058",
         "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28,45-49",
         "engine_correct_per_spec": "contract explicitly uses AG_ORDER_BLOCK_V1 candidates and excludes smc.ob() candidates"
       },
       {
         "timeframe": "M5",
         "category": "liquidity",
-        "side": "LOCAL_ONLY",
-        "bar_index": 256,
+        "side": "SMC_ONLY",
+        "bar_index": 73,
         "raw_bar_ohlc": {
-          "open": 1.15347,
-          "high": 1.15351,
-          "low": 1.15327,
-          "close": 1.1533
+          "open": 1.14513,
+          "high": 1.14517,
+          "low": 1.14505,
+          "close": 1.14511
         },
         "item": [
-          256,
-          "bearish",
-          1.15331,
-          "sweep_reclaim"
+          73,
+          "cluster",
+          1.1452499628,
+          "equal_level_cluster"
         ],
-        "raw_check": "bar[256] high/low/close=1.15351/1.15327/1.1533; level=1.15331",
+        "raw_check": "bar[73] high/low/close=1.14517/1.14505/1.14511; level=1.1452499628",
         "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29",
         "engine_correct_per_spec": "contract requires a wick through a previously confirmed swing and close back inside; SMC equal-level clustering is a different output"
       },
       {
-        "timeframe": "H1",
+        "timeframe": "D1",
         "category": "swings",
         "side": "LOCAL_ONLY",
         "bar_index": 4,
         "raw_bar_ohlc": {
-          "open": 1.1403,
-          "high": 1.14046,
-          "low": 1.14015,
-          "close": 1.1403
+          "open": 1.13689,
+          "high": 1.14334,
+          "low": 1.13537,
+          "close": 1.13828
         },
         "item": [
           4,
-          "high",
-          1.14138
+          "low",
+          1.13239
         ],
         "raw_check": "pivot index=2; confirm index=4; k=2",
         "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27",
         "engine_correct_per_spec": "raw bar is a strict k=2 high/low pivot at the delayed confirmation index"
       },
       {
-        "timeframe": "H1",
-        "category": "BOS",
+        "timeframe": "M5",
+        "category": "liquidity",
         "side": "LOCAL_ONLY",
-        "bar_index": 50,
+        "bar_index": 413,
         "raw_bar_ohlc": {
-          "open": 1.13909,
-          "high": 1.13954,
-          "low": 1.13897,
-          "close": 1.13942
+          "open": 1.151,
+          "high": 1.15114,
+          "low": 1.15091,
+          "close": 1.15114
         },
         "item": [
-          50,
-          "BOS",
+          413,
           "bullish",
-          1.13914
+          1.15109,
+          "sweep_reclaim"
         ],
-        "raw_check": "bar[50].close=1.13942; compared to reported level=1.13914",
-        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30",
-        "engine_correct_per_spec": "contract accepts close-confirmed structure breaks with five-point tolerance and its BOS/CHOCH state rule; SMC break labeling differs"
+        "raw_check": "bar[413] high/low/close=1.15114/1.15091/1.15114; level=1.15109",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29",
+        "engine_correct_per_spec": "contract requires a wick through a previously confirmed swing and close back inside; SMC equal-level clustering is a different output"
       },
       {
         "timeframe": "M5",
-        "category": "BOS",
-        "side": "SMC_ONLY",
-        "bar_index": 449,
-        "raw_bar_ohlc": {
-          "open": 1.14979,
-          "high": 1.1498,
-          "low": 1.14934,
-          "close": 1.14938
-        },
-        "item": [
-          449,
-          "BOS",
-          "bearish",
-          1.1496599913
-        ],
-        "raw_check": "bar[449].close=1.14938; compared to reported level=1.1496599913",
-        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30",
-        "engine_correct_per_spec": "contract accepts close-confirmed structure breaks with five-point tolerance and its BOS/CHOCH state rule; SMC break labeling differs"
-      },
-      {
-        "timeframe": "M5",
-        "category": "FVG",
+        "category": "liquidity",
         "side": "LOCAL_ONLY",
-        "bar_index": 289,
+        "bar_index": 305,
         "raw_bar_ohlc": {
-          "open": 1.15236,
-          "high": 1.15237,
-          "low": 1.15235,
-          "close": 1.15235
+          "open": 1.1525,
+          "high": 1.15253,
+          "low": 1.15231,
+          "close": 1.15252
         },
         "item": [
-          289,
+          305,
           "bullish",
           1.1525,
-          1.15237
+          "sweep_reclaim"
         ],
-        "raw_check": "bar[290].low 1.1525 > bar[288].high 1.15237 = True",
-        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138",
-        "engine_correct_per_spec": "raw three-candle gap is known on the third candle; local FVG follows that geometry and SMC visibility is delayed two bars"
+        "raw_check": "bar[305] high/low/close=1.15253/1.15231/1.15252; level=1.1525",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29",
+        "engine_correct_per_spec": "contract requires a wick through a previously confirmed swing and close back inside; SMC equal-level clustering is a different output"
+      },
+      {
+        "timeframe": "M5",
+        "category": "liquidity",
+        "side": "SMC_ONLY",
+        "bar_index": 54,
+        "raw_bar_ohlc": {
+          "open": 1.1453,
+          "high": 1.14536,
+          "low": 1.14511,
+          "close": 1.14517
+        },
+        "item": [
+          54,
+          "cluster",
+          1.1454166174,
+          "equal_level_cluster"
+        ],
+        "raw_check": "bar[54] high/low/close=1.14536/1.14511/1.14517; level=1.1454166174",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29",
+        "engine_correct_per_spec": "contract requires a wick through a previously confirmed swing and close back inside; SMC equal-level clustering is a different output"
       },
       {
         "timeframe": "H1",
-        "category": "BOS",
+        "category": "CHOCH",
         "side": "LOCAL_ONLY",
-        "bar_index": 33,
+        "bar_index": 66,
         "raw_bar_ohlc": {
-          "open": 1.1372,
-          "high": 1.13726,
-          "low": 1.13553,
-          "close": 1.13559
+          "open": 1.13946,
+          "high": 1.14518,
+          "low": 1.13878,
+          "close": 1.14513
         },
         "item": [
-          33,
-          "BOS",
-          "bearish",
-          1.13612
+          66,
+          "CHOCH",
+          "bullish",
+          1.13963
         ],
-        "raw_check": "bar[33].close=1.13559; compared to reported level=1.13612",
+        "raw_check": "bar[66].close=1.14513; compared to reported level=1.13963",
         "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30",
         "engine_correct_per_spec": "contract accepts close-confirmed structure breaks with five-point tolerance and its BOS/CHOCH state rule; SMC break labeling differs"
       }
@@ -455,12 +455,140 @@
   "data_provenance": {
     "H1": "VT MT5 captured",
     "M5": "resampled from VT MT5 captured M1",
-    "D1": "resampled from 24 complete UTC H1 bars",
+    "D1": "rebuilt from captured UTC H1 on VT server-midnight boundaries using merged #136 time conversion",
     "D1_broker_day_anchor": "17:00 America/New_York",
-    "D1_broker_day_alignment_pass": false,
-    "D1_first_fixture_open_utc": "2026-06-22T00:00:00Z",
-    "D1_first_fixture_open_new_york": "2026-06-21T20:00:00-04:00",
-    "source_notes": "Only closed UTC-aligned bars retained; 120 H1, 600 complete M5 derived from captured M1, and 24 complete D1 aggregates."
+    "D1_server_offset_rule": "server wall = New York wall + 7h; UTC offset is New York UTC offset + 7 (UTC+3 DST / UTC+2 standard), delegated to src/host_evidence/symbol_metadata.py",
+    "host_match_gate": "host re-run match (AGP-4H-HOST): compare rebuilt D1 with MT5 copy_rates D1 on identical dates",
+    "D1_broker_day_alignment_pass": true,
+    "D1_rebuild_matches_fixture": true,
+    "D1_rebuild_matches_captured_h1_sha": true,
+    "D1_first_fixture_open_utc": "2026-06-21T21:00:00Z",
+    "D1_first_fixture_open_new_york": "2026-06-21T17:00:00-04:00",
+    "D1_partial_days_excluded": [
+      {
+        "server_day": "2026-08-03",
+        "open_utc": "2026-08-02T21:00:00+00:00",
+        "close_utc": "2026-08-03T21:00:00+00:00",
+        "observed_h1_bars": 3,
+        "expected_h1_bars": 24,
+        "boundary_class": "SUNDAY_OPEN_OR_CAPTURE_EDGE"
+      }
+    ],
+    "D1_friday_close_empty_buckets_not_filled": [
+      {
+        "server_day": "2026-06-27",
+        "open_utc": "2026-06-26T21:00:00+00:00",
+        "close_utc": "2026-06-27T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-04",
+        "open_utc": "2026-07-03T21:00:00+00:00",
+        "close_utc": "2026-07-04T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-11",
+        "open_utc": "2026-07-10T21:00:00+00:00",
+        "close_utc": "2026-07-11T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-18",
+        "open_utc": "2026-07-17T21:00:00+00:00",
+        "close_utc": "2026-07-18T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-25",
+        "open_utc": "2026-07-24T21:00:00+00:00",
+        "close_utc": "2026-07-25T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-08-01",
+        "open_utc": "2026-07-31T21:00:00+00:00",
+        "close_utc": "2026-08-01T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      }
+    ],
+    "D1_empty_server_days_not_filled": [
+      {
+        "server_day": "2026-06-27",
+        "open_utc": "2026-06-26T21:00:00+00:00",
+        "close_utc": "2026-06-27T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-06-28",
+        "open_utc": "2026-06-27T21:00:00+00:00",
+        "close_utc": "2026-06-28T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-04",
+        "open_utc": "2026-07-03T21:00:00+00:00",
+        "close_utc": "2026-07-04T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-05",
+        "open_utc": "2026-07-04T21:00:00+00:00",
+        "close_utc": "2026-07-05T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-11",
+        "open_utc": "2026-07-10T21:00:00+00:00",
+        "close_utc": "2026-07-11T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-12",
+        "open_utc": "2026-07-11T21:00:00+00:00",
+        "close_utc": "2026-07-12T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-18",
+        "open_utc": "2026-07-17T21:00:00+00:00",
+        "close_utc": "2026-07-18T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-19",
+        "open_utc": "2026-07-18T21:00:00+00:00",
+        "close_utc": "2026-07-19T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-25",
+        "open_utc": "2026-07-24T21:00:00+00:00",
+        "close_utc": "2026-07-25T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-07-26",
+        "open_utc": "2026-07-25T21:00:00+00:00",
+        "close_utc": "2026-07-26T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-08-01",
+        "open_utc": "2026-07-31T21:00:00+00:00",
+        "close_utc": "2026-08-01T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      },
+      {
+        "server_day": "2026-08-02",
+        "open_utc": "2026-08-01T21:00:00+00:00",
+        "close_utc": "2026-08-02T21:00:00+00:00",
+        "boundary_class": "WEEKEND_OR_MARKET_CLOSED"
+      }
+    ],
+    "D1_partial_day_policy": "Sunday-open partial source interval and Friday-close/weekend empty intervals are listed and omitted; none are imputed.",
+    "D1_captured_h1_sha256": "63d8227541909adff009f121e7b3ed1cb4e12c718aaeea53b8e55426917bb55c",
+    "source_notes": "H1 is VT MT5 captured; M5 is derived from captured M1; D1 is rebuilt from complete H1 bars on server-midnight boundaries (NY 17:00) using merged #136 DST rules. Partial terminal Sunday-open day omitted; weekend/Friday-close empty buckets never filled."
   },
   "L1-L6_detection_only": {
     "checks": {
@@ -470,19 +598,73 @@
       "L4_deterministic_replay": true,
       "L5_fixture_integrity": true,
       "L6_closed_ordered_inputs": true,
-      "D1_broker_day_alignment": false
+      "D1_broker_day_alignment": true
     },
-    "logic_verified": false,
+    "mismatch_count": 0,
+    "logic_verified": true,
     "difference_classification": {
-      "DEFINITION_DIFF": 322,
+      "DEFINITION_DIFF": 324,
       "LOGIC_DEFECT": 0,
-      "DATA_DEFECT": 1
+      "DATA_DEFECT": 0
     },
     "scope": "EURUSD detection only; actionability is a separate layer and was not evaluated"
   },
   "comparison_reconciliation": {
+    "old_round1_type_counts": {
+      "D1": {
+        "swings": 2,
+        "BOS": 0,
+        "CHOCH": 3,
+        "OB": 0,
+        "FVG": 1,
+        "liquidity": 3
+      },
+      "H1": {
+        "swings": 6,
+        "BOS": 14,
+        "CHOCH": 12,
+        "OB": 26,
+        "FVG": 1,
+        "liquidity": 14
+      },
+      "M5": {
+        "swings": 48,
+        "BOS": 61,
+        "CHOCH": 49,
+        "OB": 0,
+        "FVG": 5,
+        "liquidity": 77
+      }
+    },
+    "old_round1_type_separated_count": 322,
     "prior_aggregate_definition_diff_count": 302,
-    "corrected_type_separated_definition_diff_count": 322,
+    "corrected_type_separated_definition_diff_count": 324,
+    "new_type_counts": {
+      "D1": {
+        "swings": 3,
+        "BOS": 1,
+        "CHOCH": 3,
+        "OB": 0,
+        "FVG": 0,
+        "liquidity": 4
+      },
+      "H1": {
+        "swings": 6,
+        "BOS": 14,
+        "CHOCH": 12,
+        "OB": 26,
+        "FVG": 1,
+        "liquidity": 14
+      },
+      "M5": {
+        "swings": 48,
+        "BOS": 61,
+        "CHOCH": 49,
+        "OB": 0,
+        "FVG": 5,
+        "liquidity": 77
+      }
+    },
     "reason": "The earlier combined BOS/CHOCH normalizer skipped SMC CHOCH rows because it used the library's CHOCH column name as a StructureBreak event label. The corrected split normalizes these independently."
   }
 }

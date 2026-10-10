@@ -6,7 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time, timezone
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -20,10 +20,17 @@ from supply_demand.smc_adapter import fair_value_gaps, order_blocks
 from large_smc_watch.detect import tolerant_breaks, h1_pois
 from large_smc_watch.contract import TIE_TOLERANCE_POINTS, resolve_point
 from .schema import disagreement
+from host_evidence.symbol_metadata import server_time_to_utc, server_bar_close_utc, utc_to_server_time
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "tests/fixtures/large_smc_v111/EURUSD.json"
+H1_SOURCE = ROOT / "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_H1.csv"
 LENGTH = 2
+ROUND1_TYPE_COUNTS = {
+    "D1": {"swings": 2, "BOS": 0, "CHOCH": 3, "OB": 0, "FVG": 1, "liquidity": 3},
+    "H1": {"swings": 6, "BOS": 14, "CHOCH": 12, "OB": 26, "FVG": 1, "liquidity": 14},
+    "M5": {"swings": 48, "BOS": 61, "CHOCH": 49, "OB": 0, "FVG": 5, "liquidity": 77},
+}
 
 
 def _bars(rows):
@@ -242,8 +249,55 @@ def _broker_day_alignment(rows):
     return all(value.hour == 17 and value.minute == 0 for value in parsed)
 
 
+def rebuild_broker_d1(h1_rows):
+    """Aggregate captured UTC H1 rows on the repository's existing VT server-day boundaries.
+
+    Time conversion and DST duration rules are delegated to host_evidence.symbol_metadata
+    (merged PR #136); this research function only buckets and aggregates source bars.
+    """
+    source = sorted(h1_rows, key=lambda row: datetime.fromisoformat(row["timestamp_utc"]).replace(tzinfo=timezone.utc))
+    if not source:
+        return [], {"partial_days": [], "empty_server_days": []}
+    stamps = [datetime.fromisoformat(row["timestamp_utc"]).replace(tzinfo=timezone.utc) for row in source]
+    first_day = utc_to_server_time(stamps[0]).date()
+    last_day = utc_to_server_time(stamps[-1]).date()
+    rows_by_time = dict(zip(stamps, source))
+    complete, partial, empty = [], [], []
+    day = first_day
+    while day <= last_day:
+        start = server_time_to_utc(datetime.combine(day, time.min))
+        end = server_bar_close_utc(start, timedelta(days=1))
+        expected = int((end - start).total_seconds() // 3600)
+        bucket_times = [start + timedelta(hours=i) for i in range(expected)]
+        observed = [rows_by_time[t] for t in bucket_times if t in rows_by_time]
+        if len(observed) == expected:
+            complete.append({
+                "time_utc": start.isoformat().replace("+00:00", "Z"),
+                "open": float(observed[0]["open"]),
+                "high": max(float(row["high"]) for row in observed),
+                "low": min(float(row["low"]) for row in observed),
+                "close": float(observed[-1]["close"]),
+            })
+        elif observed:
+            partial.append({"server_day": day.isoformat(), "open_utc": start.isoformat(),
+                            "close_utc": end.isoformat(), "observed_h1_bars": len(observed),
+                            "expected_h1_bars": expected,
+                            "boundary_class": "SUNDAY_OPEN_OR_CAPTURE_EDGE"})
+        else:
+            empty.append({"server_day": day.isoformat(), "open_utc": start.isoformat(),
+                          "close_utc": end.isoformat(), "boundary_class": "WEEKEND_OR_MARKET_CLOSED"})
+        day += timedelta(days=1)
+    return complete, {"partial_days": partial, "empty_server_days": empty}
+
+
+def load_captured_h1():
+    import csv
+    with H1_SOURCE.open(newline="") as stream:
+        return list(csv.DictReader(stream))
+
+
 def _seeded_manual_review(data, comparisons):
-    rng = random.Random(20261011)
+    rng = random.Random(20261012)
     candidates = []
     for tf, local, oracle in comparisons:
         for category in ("swings", "BOS", "CHOCH", "FVG", "liquidity", "OB"):
@@ -302,7 +356,7 @@ def _seeded_manual_review(data, comparisons):
         reviews.append({"timeframe": tf, "category": category, "side": diff["side"], "bar_index": bar_index,
                         "raw_bar_ohlc": {k: bar[k] for k in ("open", "high", "low", "close")},
                         "item": item, "raw_check": raw_check, "spec_citation": citations[category], "engine_correct_per_spec": why})
-    return {"seed": 20261011, "sample_size": len(reviews), "method": "seeded rng.choice per category, then seeded rng.sample from the remaining normalized differences",
+    return {"seed": 20261012, "sample_size": len(reviews), "method": "seeded rng.choice per category, then seeded rng.sample from the remaining normalized differences",
             "reviews": reviews}
 
 
@@ -311,6 +365,9 @@ def run():
     manifest = json.loads((FIXTURE.parent / "manifest.json").read_text())
     entry = next(x for x in manifest["fixtures"] if x["symbol"] == "EURUSD")
     source = next(x for x in manifest["sources"] if x.get("symbol") == "EURUSD")
+    h1_source_rows = load_captured_h1()
+    rebuilt_d1, d1_edges = rebuild_broker_d1(h1_source_rows)
+    h1_source_sha = hashlib.sha256(H1_SOURCE.read_bytes()).hexdigest()
     sha = hashlib.sha256(FIXTURE.read_bytes()).hexdigest()
     if sha != entry["fixture_sha256"]:
         raise ValueError("EURUSD fixture hash does not match its manifest")
@@ -324,7 +381,7 @@ def run():
               "point": point, "point_source": point_source, "tie_tolerance_points": TIE_TOLERANCE_POINTS,
               "actionability_evaluated": False, "timeframes": {},
               "smc_causal_shift": {"bars": LENGTH, "outputs": ["swings", "BOS", "CHOCH", "FVG", "OB", "liquidity", "adapter_fvg", "adapter_ob"],
-                                   "implementation": "research_external/oracles/lsmc_detection_run.py:71,81"},
+                                   "implementation": "research_external/oracles/lsmc_detection_run.py:78,88"},
               "evaluated_at_utc": data["evaluated_at_utc"]}
     spec_lines = {"swings": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27",
                   "bos_choch": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29",
@@ -390,11 +447,26 @@ def run():
     output["data_provenance"] = {
         "H1": "VT MT5 captured",
         "M5": "resampled from VT MT5 captured M1",
-        "D1": "resampled from 24 complete UTC H1 bars",
+        "D1": "rebuilt from captured UTC H1 on VT server-midnight boundaries using merged #136 time conversion",
         "D1_broker_day_anchor": "17:00 America/New_York",
+        "D1_server_offset_rule": "server wall = New York wall + 7h; UTC offset is New York UTC offset + 7 (UTC+3 DST / UTC+2 standard), delegated to src/host_evidence/symbol_metadata.py",
+        "host_match_gate": "host re-run match (AGP-4H-HOST): compare rebuilt D1 with MT5 copy_rates D1 on identical dates",
+        "D1_server_offset_rule": "server wall = New York wall + 7h; UTC offset is New York UTC offset + 7 (UTC+3 DST / UTC+2 standard), delegated to src/host_evidence/symbol_metadata.py",
+        "host_match_gate": "host re-run match (AGP-4H-HOST): compare rebuilt D1 with MT5 copy_rates D1 on identical dates",
         "D1_broker_day_alignment_pass": _broker_day_alignment(data["D1"]),
+        "D1_rebuild_matches_fixture": data["D1"] == rebuilt_d1,
+        "D1_rebuild_matches_captured_h1_sha": h1_source_sha == source.get("sha256", {}).get("H1"),
         "D1_first_fixture_open_utc": data["D1"][0]["time_utc"],
         "D1_first_fixture_open_new_york": datetime.fromisoformat(data["D1"][0]["time_utc"].replace("Z", "+00:00")).astimezone(ZoneInfo("America/New_York")).isoformat(),
+        "D1_partial_days_excluded": d1_edges["partial_days"],
+        "D1_friday_close_empty_buckets_not_filled": [
+            bucket for bucket in d1_edges["empty_server_days"]
+            if datetime.fromisoformat(bucket["open_utc"]).astimezone(ZoneInfo("America/New_York")).weekday() == 4
+            and datetime.fromisoformat(bucket["open_utc"]).astimezone(ZoneInfo("America/New_York")).hour == 17
+        ],
+        "D1_empty_server_days_not_filled": d1_edges["empty_server_days"],
+        "D1_partial_day_policy": "Sunday-open partial source interval and Friday-close/weekend empty intervals are listed and omitted; none are imputed.",
+        "D1_captured_h1_sha256": h1_source_sha,
         "source_notes": source.get("notes"),
     }
     all_tf = list(output["timeframes"].values())
@@ -411,20 +483,41 @@ def run():
         "L4_deterministic_replay": all(x["determinism_pass"] for x in all_tf),
         "L5_fixture_integrity": (sha == entry["fixture_sha256"] and
                                  source.get("classification") == "HOST_CAPTURED_DERIVED" and
-                                 source.get("cross_timeframe_status") == "PASS"),
+                                 source.get("cross_timeframe_status") == "PASS" and
+                                 output["data_provenance"]["D1_rebuild_matches_fixture"] and
+                                 output["data_provenance"]["D1_rebuild_matches_captured_h1_sha"]),
         "L6_closed_ordered_inputs": all(x["closed_ordered_input_pass"] for x in all_tf),
         "D1_broker_day_alignment": output["data_provenance"]["D1_broker_day_alignment_pass"],
     }
+    data_defect = int(not (output["data_provenance"]["D1_broker_day_alignment_pass"] and
+                           output["data_provenance"]["D1_rebuild_matches_fixture"] and
+                           output["data_provenance"]["D1_rebuild_matches_captured_h1_sha"]))
+    difference_classification = {
+        "DEFINITION_DIFF": sum(c.get("difference_count", 0) for x in all_tf for c in x["comparisons"]),
+        "LOGIC_DEFECT": 0,
+        "DATA_DEFECT": data_defect,
+    }
+    mismatch_count = sum(len(x["prefix_diffs"]) for x in all_tf)
     output["L1-L6_detection_only"] = {
         "checks": gates,
-        "logic_verified": all(gates.values()),
-        "difference_classification": {"DEFINITION_DIFF": sum(c.get("difference_count", 0) for x in all_tf for c in x["comparisons"]),
-                                       "LOGIC_DEFECT": 0, "DATA_DEFECT": int(not output["data_provenance"]["D1_broker_day_alignment_pass"])},
+        "mismatch_count": mismatch_count,
+        "logic_verified": (all(gates.values()) and mismatch_count == 0 and
+                           difference_classification["LOGIC_DEFECT"] == 0 and
+                           difference_classification["DATA_DEFECT"] == 0),
+        "difference_classification": difference_classification,
         "scope": "EURUSD detection only; actionability is a separate layer and was not evaluated",
     }
     output["comparison_reconciliation"] = {
+        "old_round1_type_counts": ROUND1_TYPE_COUNTS,
+        "old_round1_type_separated_count": sum(sum(counts.values()) for counts in ROUND1_TYPE_COUNTS.values()),
         "prior_aggregate_definition_diff_count": 302,
         "corrected_type_separated_definition_diff_count": output["L1-L6_detection_only"]["difference_classification"]["DEFINITION_DIFF"],
+        "new_type_counts": {
+            tf: {category: next((c.get("difference_count", 0) for c in result["comparisons"]
+                                 if c["output"].casefold() == category.casefold()), 0)
+                 for category in ("swings", "BOS", "CHOCH", "OB", "FVG", "liquidity")}
+            for tf, result in output["timeframes"].items()
+        },
         "reason": "The earlier combined BOS/CHOCH normalizer skipped SMC CHOCH rows because it used the library's CHOCH column name as a StructureBreak event label. The corrected split normalizes these independently.",
     }
     return output
