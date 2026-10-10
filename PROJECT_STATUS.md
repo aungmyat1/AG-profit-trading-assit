@@ -8,6 +8,13 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-09)
 
+Large-SMC operational actionability gates (2026-10-10) reject missing/invalid stop or
+target and require at least 50% of the entry-to-target distance to remain. Rejections
+are archived and suppressed by the OPPORTUNITY-only Telegram sender. The parameter
+is owner-set and separate from the unchanged v1.1.0 contract; no R:R minimum is
+authorized. Offline verification is recorded in
+`docs/status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md`; host validation is pending.
+
 OD1009-D1–OD1009-D6 are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`; G1–G6 are
 defined in `docs/PROJECT_OBJECTIVE.md`. The FX/gold manual-ticket risk/cost gate is implemented
 but awaits focused verification. Current strategy bindings, readiness values, demo/live flags,

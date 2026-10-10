@@ -417,3 +417,12 @@ from canonical session windows or other repo conventions at the time of registra
   `docs/status/AGP_C1_LSMC_V110_LOGIC_VERIFICATION_2026-10-09.md`.
 - No change to `proposal_generation_authorized`, `demo_authorized`, `live_authorized` (all
   false) or `economic_status` (`NOT_EVALUATED`). EDGE_VERIFIED is not implied.
+
+## Large-SMC operational opportunity gates (2026-10-10)
+
+- **Large-SMC R:R minimum: OWNER_DECISION_PENDING.** The v1.1.0 contract defines no
+  R:R minimum; none is authorized and no R:R check is added to the delivery layer.
+- **Owner-set operational parameter:** `lsmc_min_remaining_reward_fraction: 0.5`
+  (2026-10-10), not a contract value. Missing/invalid policy fails closed. Missing or
+  invalid stop/target, or insufficient remaining reward, produces `REJECTED` and is
+  suppressed by the existing OPPORTUNITY-only Telegram delivery convention.
