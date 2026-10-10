@@ -413,3 +413,6 @@ from canonical session windows or other repo conventions at the time of registra
   `docs/status/AGP_C1_LSMC_V110_LOGIC_VERIFICATION_2026-10-09.md`.
 - No change to `proposal_generation_authorized`, `demo_authorized`, `live_authorized` (all
   false) or `economic_status` (`NOT_EVALUATED`). EDGE_VERIFIED is not implied.
+
+8100d59 (via #115 merge abb5330) contains upload-derived claims about RANGE and GBPUSD. Those claims are non-evidence and are superseded by 976671e. No upload data is in the repo.
+0ce84fd contains an unredacted host path; redacted in 1c07d70. History not rewritten per AGENTS.md.
