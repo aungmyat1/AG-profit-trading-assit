@@ -10,16 +10,20 @@ import math
 
 import yaml
 
-from crypto_cfd_contract.contract import CONTRACT_ID, CONTRACT_VERSION
 from crypto_cfd_contract import rules
+from crypto_cfd_contract.contract import CONTRACT_ID, CONTRACT_VERSION
 from market_structure.config import load_market_structure_config
-from strategy_engine.sweep_retest.sweep import find_qualified_sweep, SWEEP_LOW, SWEEP_HIGH
 from strategy_engine.sweep_retest.mss import find_mss
 from strategy_engine.sweep_retest.retest import find_retest
-from v1_tickets.authority import REPO_ROOT, logic_identity
-from v1_tickets.logic_gate import _check, _gate, PASS, FAIL, WARN, l6_freshness
-from v1_tickets.manual_ticket import crypto_cfd_cost_gate
+from strategy_engine.sweep_retest.sweep import (
+    SWEEP_HIGH,
+    SWEEP_LOW,
+    find_qualified_sweep,
+)
 from ticket_delivery.renderer import payload_hash
+from v1_tickets.authority import REPO_ROOT, logic_identity
+from v1_tickets.logic_gate import FAIL, PASS, WARN, _check, _gate, l6_freshness
+from v1_tickets.manual_ticket import crypto_cfd_cost_gate
 
 STEPS = {"d1": dt.timedelta(days=1), "h1": dt.timedelta(hours=1),
          "m15": dt.timedelta(minutes=15), "m5": dt.timedelta(minutes=5)}
