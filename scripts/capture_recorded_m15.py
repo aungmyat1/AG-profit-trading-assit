@@ -19,6 +19,20 @@ Per day D (UTC), processed one at a time and appended to the output when clean:
 
 Dropped days are never patched or replaced. Fewer than --min-clean-days clean days
 removes the output and exits non-zero (NOT_EVIDENCED) without writing provenance.
+
+Method RECORDED_M15_V1 is the default above. RECORDED_M15_V2 is any run that uses one of
+the options below; its provenance names the method and every option in effect.
+
+- --window HH:MM-HH:MM: M15 window per day (UTC, last bar open inclusive). M1 bars are
+  read to the last minute of the last M15 bar.
+- --all-days: the day set is contiguous calendar days, not weekdays.
+- --offset-method reference-symbol:<SYM>: the offset is measured with step 1 on <SYM>
+  (never on the captured symbol). Weekdays use <SYM>'s same-day offset. A Saturday or
+  Sunday keeps an offset only if the adjacent Friday and Monday offsets are both measured
+  and agree; otherwise the day is dropped.
+- --list-gaps: a missing M15 or M1 bar does not drop the day; every missing bar is listed
+  in the provenance and never filled. The M1 cross-check compares each present M15 bar
+  with its present M1 bars; an M1 bar without its M15 bar fails the cross-check.
 """
 from __future__ import annotations
 
@@ -39,6 +53,23 @@ WINDOW_BARS_M1 = 960  # 00:00 .. 15:59 UTC
 BREAK_TOLERANCE_S = 10 * 60  # break edge must sit within 10 min of a whole hour
 SEARCH_BEFORE_S = 2 * 3600  # offsets searched: -2h .. +7h
 SEARCH_AFTER_S = 7 * 3600
+DEFAULT_WINDOW = "00:00-15:45"
+METHOD_V2 = "RECORDED_M15_V2"
+
+
+def parse_window(text: str) -> tuple[int, int]:
+    """'HH:MM-HH:MM' -> (first, last) M15 bar open in minutes after 00:00 UTC."""
+    m = re.fullmatch(r"(\d\d):(\d\d)-(\d\d):(\d\d)", text)
+    if not m:
+        raise argparse.ArgumentTypeError(f"window must be HH:MM-HH:MM: {text}")
+    a, b = int(m[1]) * 60 + int(m[2]), int(m[3]) * 60 + int(m[4])
+    if a % 15 or b % 15 or not 0 <= a <= b < 1440:
+        raise argparse.ArgumentTypeError(f"window must be on M15 boundaries within one day: {text}")
+    return a, b
+
+
+def days_ending(end: date, count: int) -> list[date]:
+    return [end - timedelta(days=i) for i in range(count - 1, -1, -1)]
 
 
 def weekdays_ending(end: date, count: int) -> list[date]:
@@ -107,6 +138,14 @@ def aggregate_m1(m1: list[tuple], m15_open: int) -> tuple | None:
     return (bars[0][1], max(b[2] for b in bars), min(b[3] for b in bars), bars[-1][4])
 
 
+def aggregate_present_m1(m1: list[tuple], m15_open: int) -> tuple | None:
+    """--list-gaps: aggregate whatever M1 bars exist in the M15 bar; None if there are none."""
+    bars = [b for b in m1 if m15_open <= b[0] < m15_open + 900]
+    if not bars:
+        return None
+    return (bars[0][1], max(b[2] for b in bars), min(b[3] for b in bars), bars[-1][4])
+
+
 def fmt_price(x: float, digits: int) -> str:
     return repr(round(float(x), digits))
 
@@ -168,50 +207,104 @@ def stable_rates(term: Terminal, symbol: str, tf: str, lo: int, hi: int) -> list
     return a if a == b else None
 
 
-def check_day(term: Terminal, symbol: str, d: date, digits: int) -> dict:
-    res: dict = {"date": d.isoformat(), "kept": False}
-    offsets = {}
+def measure_offset(term: Terminal, symbol: str, d: date) -> dict:
+    """Step 1 on `symbol` for day d: {'open': h|None, 'close': h|None, 'reason'?: str}."""
+    offsets: dict = {}
     for side, anchor in (("open", ny_rollover_epoch(d - timedelta(days=1))),
                          ("close", ny_rollover_epoch(d))):
         lo, hi = anchor - SEARCH_BEFORE_S, anchor + SEARCH_AFTER_S
         m1 = stable_rates(term, symbol, "M1", lo, hi)
         if m1 is None:
-            res["reason"] = f"unstable M1 read around {side} rollover"
-            return res
+            offsets["reason"] = f"unstable M1 read around {side} rollover"
+            return offsets
         brk = largest_break([b[0] for b in m1], lo, hi)
         offsets[side] = offset_from_break(anchor, brk, side)
-    res["offset_open_h"], res["offset_close_h"] = offsets["open"], offsets["close"]
     if offsets["open"] is None or offsets["close"] is None:
-        res["reason"] = "rollover break not located; offset unmeasured"
+        offsets["reason"] = "rollover break not located; offset unmeasured"
+    elif offsets["open"] != offsets["close"]:
+        offsets["reason"] = "open/close rollover offsets disagree"
+    return offsets
+
+
+def reference_offset(term: Terminal, ref: str, d: date) -> dict:
+    """Offset for day d taken from reference symbol `ref` (see module docstring)."""
+    if d.weekday() < 5:
+        o = measure_offset(term, ref, d)
+        o["source"] = f"{ref} {d.isoformat()}"
+        if "reason" in o:
+            o["reason"] = f"reference {ref}: {o['reason']}"
+        return o
+    fri = d - timedelta(days=d.weekday() - 4)
+    mon = d + timedelta(days=7 - d.weekday())
+    of, om = measure_offset(term, ref, fri), measure_offset(term, ref, mon)
+    o = {"open": of.get("open") if "reason" not in of else None,
+         "close": om.get("open") if "reason" not in om else None,
+         "source": f"{ref} Fri {fri.isoformat()} / Mon {mon.isoformat()}"}
+    if "reason" in of or "reason" in om:
+        o["reason"] = f"reference {ref}: adjacent Fri/Mon offset unmeasured"
+    elif o["open"] != o["close"]:
+        o["reason"] = f"reference {ref}: adjacent Fri/Mon offsets disagree"
+    return o
+
+
+def utc_labels(stamps: list[int], off_s: int) -> list[str]:
+    return [datetime.fromtimestamp(t - off_s, UTC).strftime("%H:%M") for t in stamps]
+
+
+def check_day(term: Terminal, symbol: str, d: date, digits: int,
+              window: tuple[int, int] = (0, 945), ref_symbol: str | None = None,
+              list_gaps: bool = False) -> dict:
+    res: dict = {"date": d.isoformat(), "kept": False}
+    offsets = reference_offset(term, ref_symbol, d) if ref_symbol else measure_offset(term, symbol, d)
+    if ref_symbol:
+        res["offset_source"] = offsets["source"]
+    if "open" not in offsets:
+        res["reason"] = offsets["reason"]
         return res
-    if offsets["open"] != offsets["close"]:
-        res["reason"] = "open/close rollover offsets disagree"
+    res["offset_open_h"], res["offset_close_h"] = offsets["open"], offsets["close"]
+    if "reason" in offsets:
+        res["reason"] = offsets["reason"]
         return res
     off_s = offsets["open"] * 3600
     res["offset_h"] = offsets["open"]
 
-    day0 = int(datetime.combine(d, time(0, 0), UTC).timestamp())
-    m15 = stable_rates(term, symbol, "M15", day0 + off_s, day0 + off_s + 15 * 3600 + 45 * 60)
-    m1 = stable_rates(term, symbol, "M1", day0 + off_s, day0 + off_s + 16 * 3600 - 60)
+    n15 = (window[1] - window[0]) // 15 + 1
+    n1 = n15 * 15
+    start = int(datetime.combine(d, time(0, 0), UTC).timestamp()) + off_s + window[0] * 60
+    m15 = stable_rates(term, symbol, "M15", start, start + (n15 - 1) * 900)
+    m1 = stable_rates(term, symbol, "M1", start, start + (n1 - 1) * 60)
     if m15 is None or m1 is None:
         res["reason"] = "unstable M15/M1 read in window"
         return res
     res["m15_bars"], res["m1_bars"] = len(m15), len(m1)
-    exp15 = [day0 + off_s + 900 * i for i in range(WINDOW_BARS_M15)]
-    exp1 = [day0 + off_s + 60 * i for i in range(WINDOW_BARS_M1)]
-    if [b[0] for b in m15] != exp15:
-        res["reason"] = f"M15 gap: {len(m15)}/{WINDOW_BARS_M15} bars"
-        return res
-    if [b[0] for b in m1] != exp1:
-        res["reason"] = f"M1 gap: {len(m1)}/{WINDOW_BARS_M1} bars"
-        return res
+    exp15 = [start + 900 * i for i in range(n15)]
+    exp1 = [start + 60 * i for i in range(n1)]
+    if list_gaps:
+        have15, have1 = {b[0] for b in m15}, {b[0] for b in m1}
+        res["gaps_m15"] = utc_labels([t for t in exp15 if t not in have15], off_s)
+        res["gaps_m1"] = utc_labels([t for t in exp1 if t not in have1], off_s)
+        if not m15:
+            res["reason"] = "no M15 bars in window"
+            return res
+    else:
+        if [b[0] for b in m15] != exp15:
+            res["reason"] = f"M15 gap: {len(m15)}/{n15} bars"
+            return res
+        if [b[0] for b in m1] != exp1:
+            res["reason"] = f"M1 gap: {len(m1)}/{n1} bars"
+            return res
     mismatches = []
     for bar in m15:
-        agg = aggregate_m1(m1, bar[0])
+        agg = aggregate_m1(m1, bar[0]) if not list_gaps else aggregate_present_m1(m1, bar[0])
         got = tuple(round(x, digits) for x in bar[1:])
         if agg is None or tuple(round(x, digits) for x in agg) != got:
             mismatches.append(datetime.fromtimestamp(bar[0] - off_s, UTC).strftime("%H:%M"))
-    res["m1_crosscheck"] = "PASS 64/64" if not mismatches else f"FAIL {len(mismatches)}/64"
+    if list_gaps:
+        orphan = sorted({t - (t - start) % 900 for t in have1} - have15)
+        mismatches += [f"{x} (M1 without M15)" for x in utc_labels(orphan, off_s)]
+    checked = len(m15)
+    res["m1_crosscheck"] = (f"PASS {checked}/{checked}" if not mismatches
+                            else f"FAIL {len(mismatches)}/{checked}")
     if mismatches:
         res["reason"] = "M15 != M1 aggregate at " + ",".join(mismatches[:5])
         return res
@@ -238,8 +331,15 @@ def redact_host_path(raw: str | None) -> str:
     return "<HOST_SCRATCHPAD>/" + re.split(r"[\\/]", raw.rstrip("\\/"))[-1]
 
 
+def is_v2(args) -> bool:
+    return (args.window != DEFAULT_WINDOW or args.all_days or args.list_gaps
+            or args.offset_method != "rollover")
+
+
 def write_note(path: str, args, out: str, digest: str, results: list[dict], captured: datetime,
                peak_mb: float | None) -> None:
+    if is_v2(args):
+        return write_note_v2(path, args, out, digest, results, captured, peak_mb)
     lines = [
         f"# {os.path.basename(out)} provenance",
         "",
@@ -270,6 +370,77 @@ def write_note(path: str, args, out: str, digest: str, results: list[dict], capt
         f.write("\n".join(lines) + "\n")
 
 
+def write_note_v2(path: str, args, out: str, digest: str, results: list[dict], captured: datetime,
+                  peak_mb: float | None) -> None:
+    ref = args.offset_method.split(":", 1)[1] if args.offset_method != "rollover" else None
+    kind = "calendar days" if args.all_days else "weekdays"
+    lines = [
+        f"# {os.path.basename(out)} provenance",
+        "",
+        f"- sha256: `{digest}`",
+        f"- capture date (UTC): {captured.strftime('%Y-%m-%d %H:%M:%SZ')}",
+        f"- terminal/server: {args.server_name} (terminal `{redact_host_path(args.terminal_path)}`)",
+        f"- method: {METHOD_V2} (window {args.window} UTC; day set {kind}; offset method "
+        f"{args.offset_method}; gaps {'listed, never filled' if args.list_gaps else 'drop the day'})",
+        f"- symbol: {args.symbol}; timeframe M15; window {args.window} UTC per day",
+        f"- day set: {len(results)} contiguous {kind} ending {results[-1]['date']}, "
+        "fixed before capture; dropped days are not replaced",
+    ]
+    if ref:
+        lines.append(
+            f"- offset method: measured on {ref}, never on {args.symbol} and never assumed. Per "
+            f"{ref} day, M1 rollover break located at 17:00 America/New_York on both edges "
+            "(open = D-1 17:00 NY, close = D 17:00 NY); offset = server label - UTC, whole hours, "
+            "both edges must agree. Weekdays use the same-day offset; Saturday/Sunday keep an "
+            "offset only if the adjacent Friday and Monday offsets are both measured and agree "
+            "(table shows Fri/Mon), else the day is dropped")
+    else:
+        lines.append(
+            "- offset method: per day, M1 rollover break located at 17:00 America/New_York on "
+            "both edges of the day (open = D-1 17:00 NY, close = D 17:00 NY); "
+            "offset = server label - UTC, whole hours, both edges must agree")
+    lines += [
+        "- M1 cross-check: every M15 bar must equal OHLC aggregated from its "
+        + ("present M1 bars; an M1 bar without its M15 bar fails" if args.list_gaps else "15 M1 bars")
+        + " (exact at symbol digits); every range read twice and must match",
+        f"- capture script: scripts/capture_recorded_m15.py (peak working set {peak_mb} MB)",
+        "",
+        "| date | kept | offset (open/close, h) | offset source | M15 bars | M1 bars | "
+        "M1 cross-check | reason |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for r in results:
+        lines.append(
+            f"| {r['date']} | {'yes' if r['kept'] else 'DROPPED'} | "
+            f"{r.get('offset_open_h')}/{r.get('offset_close_h')} | {r.get('offset_source', 'own')} | "
+            f"{r.get('m15_bars', '-')} | {r.get('m1_bars', '-')} | "
+            f"{r.get('m1_crosscheck', 'NOT_EVALUATED')} | {r.get('reason', '')} |"
+        )
+    if args.list_gaps:
+        lines += ["", "## Gaps (UTC bar opens; missing bars are never filled)", "",
+                  "| date | kept | missing M15 | missing M1 |", "|---|---|---|---|"]
+        for r in results:
+            g15, g1 = r.get("gaps_m15"), r.get("gaps_m1")
+            lines.append(
+                f"| {r['date']} | {'yes' if r['kept'] else 'DROPPED'} | "
+                f"{'NOT_EVALUATED' if g15 is None else (len(g15) and ', '.join(g15)) or 'none'} | "
+                f"{'NOT_EVALUATED' if g1 is None else (len(g1) and compress_minutes(g1)) or 'none'} |")
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(lines) + "\n")
+
+
+def compress_minutes(labels: list[str]) -> str:
+    """'HH:MM' minute labels -> 'HH:MM-HH:MM (n)' runs, so long M1 gaps stay readable."""
+    mins = [int(x[:2]) * 60 + int(x[3:]) for x in labels]
+    runs, a = [], mins[0]
+    for p, q in zip(mins, mins[1:] + [None]):
+        if q != p + 1:
+            runs.append(f"{a // 60:02d}:{a % 60:02d}" + ("" if p == a else
+                        f"-{p // 60:02d}:{p % 60:02d} ({p - a + 1})"))
+            a = q
+    return ", ".join(runs)
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--symbol", default="GBPUSD")
@@ -282,25 +453,42 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--terminal-path", default=os.environ.get("MT5_TERMINAL_PATH"))
     p.add_argument("--server-name", required=True,
                    help="server shown in the terminal journal (not readable via allowed calls)")
+    p.add_argument("--window", default=DEFAULT_WINDOW, help="HH:MM-HH:MM UTC, M15 bar opens")
+    p.add_argument("--all-days", action="store_true", help="calendar days instead of weekdays")
+    p.add_argument("--offset-method", default="rollover",
+                   help="rollover | reference-symbol:<SYM>")
+    p.add_argument("--list-gaps", action="store_true",
+                   help="list missing bars in the provenance instead of dropping the day")
     args = p.parse_args(argv)
+    window = parse_window(args.window)
+    ref_symbol = None
+    if args.offset_method != "rollover":
+        m = re.fullmatch(r"reference-symbol:(\S+)", args.offset_method)
+        if not m:
+            p.error("--offset-method must be rollover or reference-symbol:<SYM>")
+        ref_symbol = m[1]
 
     captured = datetime.now(UTC)
     end = args.end_date or last_completed_weekday(captured)
-    days = weekdays_ending(end, args.days)
+    days = days_ending(end, args.days) if args.all_days else weekdays_ending(end, args.days)
 
     term = Terminal(args.terminal_path)
     results: list[dict] = []
     try:
         digits = term.digits(args.symbol)
+        if ref_symbol:
+            term.digits(ref_symbol)  # fail fast if the reference symbol is absent
         # warm-up read so the terminal syncs history before the per-day reads
         span_lo = ny_rollover_epoch(days[0] - timedelta(days=1)) - SEARCH_BEFORE_S
         span_hi = ny_rollover_epoch(days[-1]) + SEARCH_AFTER_S
         term.rates(args.symbol, "M1", span_lo, span_hi)
         term.rates(args.symbol, "M15", span_lo, span_hi)
+        if ref_symbol:
+            term.rates(ref_symbol, "M1", span_lo - 3 * 86400, span_hi + 3 * 86400)
         with open(args.out, "w", encoding="utf-8", newline="\n") as f:
             f.write(HEADER)
         for d in days:
-            r = check_day(term, args.symbol, d, digits)
+            r = check_day(term, args.symbol, d, digits, window, ref_symbol, args.list_gaps)
             if r["kept"]:
                 with open(args.out, "a", encoding="utf-8", newline="\n") as f:
                     f.write("\n".join(r.pop("rows")) + "\n")
