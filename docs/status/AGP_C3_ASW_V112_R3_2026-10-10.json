@@ -1,0 +1,2012 @@
+{
+  "schema": "AG_LOGIC_VERIFICATION_REPORT_V1",
+  "generated_at": "2026-10-10T00:00:00Z",
+  "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+  "version": "1.1.2",
+  "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+  "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+  "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+  "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+  "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+  "verification_code_sha": "99fc07b1c05265d45a0df9d70c1606bd3de0c68b",
+  "dataset_identity": {
+    "EURUSD": {
+      "path": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv",
+      "sha256": "390fe14944f9eeecffd74771d5516ef0f3702abe2e2a90044e4ed202ea6df3b9",
+      "classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "provenance": null,
+      "provenance_sha256_verified": false
+    },
+    "GBPUSD": {
+      "path": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+      "sha256": "0a48dece178709d8ddb9699a78b102d6a0ec93d1fa624d1e6cae75495e16fd96",
+      "classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "provenance": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.PROVENANCE.md",
+      "provenance_sha256_verified": true
+    },
+    "USDJPY": {
+      "path": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+      "sha256": "378ea1b916401707e0036e59f59ba6c94ca649aa0b3bdce1241a1e8b0c6b723f",
+      "classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "provenance": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.PROVENANCE.md",
+      "provenance_sha256_verified": true
+    },
+    "XAUUSD": {
+      "path": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+      "sha256": "7945d96bc4f4950e643840409b77167137dacad33bb635e0e49d0373cd3047df",
+      "classification": "RECORDED_DEVELOPMENT_FIXTURE",
+      "provenance": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.PROVENANCE.md",
+      "provenance_sha256_verified": true
+    }
+  },
+  "cycles": [
+    "ASIAN_LONDON",
+    "LONDON_NEWYORK"
+  ],
+  "symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "XAUUSD"
+  ],
+  "coverage": {
+    "instruments": {
+      "EURUSD": "LOGIC_VERIFIED",
+      "GBPUSD": "PARTIAL: 20 recorded days; conforming ticket NOT_EVIDENCED in LONDON_NEWYORK",
+      "USDJPY": "NOT_VERIFIED: 10 recorded days; conforming ticket NOT_EVIDENCED in ASIAN_LONDON, LONDON_NEWYORK",
+      "XAUUSD": "NOT_VERIFIED: 10 recorded days; conforming ticket NOT_EVIDENCED in ASIAN_LONDON, LONDON_NEWYORK"
+    },
+    "branches": {
+      "SWEEP": "VERIFIED_RECORDED_FIXTURE",
+      "TREND": "VERIFIED_RECORDED_FIXTURE (fails closed)",
+      "RANGE_REJECTION": "UNIT_ONLY (no recorded day yields Entry 3)"
+    },
+    "day_types": {
+      "EURUSD": {
+        "long-sweep": "EVIDENCED (4)",
+        "short-sweep": "EVIDENCED (3)",
+        "TREND": "EVIDENCED (2)",
+        "no-setup": "EVIDENCED (1)"
+      },
+      "GBPUSD": {
+        "long-sweep": "EVIDENCED (15)",
+        "short-sweep": "EVIDENCED (10)",
+        "TREND": "EVIDENCED (5)",
+        "no-setup": "EVIDENCED (10)"
+      },
+      "USDJPY": {
+        "long-sweep": "EVIDENCED (7)",
+        "short-sweep": "EVIDENCED (4)",
+        "TREND": "EVIDENCED (1)",
+        "no-setup": "EVIDENCED (8)"
+      },
+      "XAUUSD": {
+        "long-sweep": "EVIDENCED (3)",
+        "short-sweep": "EVIDENCED (9)",
+        "TREND": "EVIDENCED (4)",
+        "no-setup": "EVIDENCED (4)"
+      }
+    }
+  },
+  "per_symbol": {
+    "EURUSD": {
+      "cases": 10,
+      "days": 5,
+      "l3_by_first_emitted_setup": {
+        "TREND": {
+          "cases": 2,
+          "revised": 0,
+          "revised_case_ids": []
+        },
+        "SWEEP": {
+          "cases": 7,
+          "revised": 0,
+          "revised_case_ids": []
+        }
+      },
+      "l2_undeclared_cases": [],
+      "conforming_cycles": [
+        "ASIAN_LONDON",
+        "LONDON_NEWYORK"
+      ],
+      "l3": {
+        "cases": 10,
+        "prefix_mismatches": 0,
+        "pre_emission_signals": 0,
+        "streaming_batch_mismatches": 0,
+        "future_mutations": 225,
+        "future_mutation_mismatches": 0
+      },
+      "l4": {
+        "raw_zero_stop": 1,
+        "raw_tp_inversion": 5,
+        "leaked_to_admitted": [],
+        "admitted": 2,
+        "admitted_bad_geometry": 0
+      },
+      "l6_statuses": [
+        "PASS"
+      ],
+      "l6_cases": 9,
+      "edge_verified_false": true,
+      "ticket_ready_cases": 0,
+      "day_types": {
+        "long-sweep": 4,
+        "short-sweep": 3,
+        "TREND": 2,
+        "no-setup": 1,
+        "range-rejection": 0,
+        "insufficient-data": 0
+      },
+      "day_types_by_cycle": {
+        "ASIAN_LONDON": {
+          "long-sweep": 1,
+          "short-sweep": 2,
+          "TREND": 1,
+          "no-setup": 1,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        },
+        "LONDON_NEWYORK": {
+          "long-sweep": 3,
+          "short-sweep": 1,
+          "TREND": 1,
+          "no-setup": 0,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        }
+      }
+    },
+    "GBPUSD": {
+      "cases": 40,
+      "days": 20,
+      "l3_by_first_emitted_setup": {
+        "TREND": {
+          "cases": 5,
+          "revised": 0,
+          "revised_case_ids": []
+        },
+        "SWEEP": {
+          "cases": 25,
+          "revised": 0,
+          "revised_case_ids": []
+        }
+      },
+      "l2_undeclared_cases": [],
+      "conforming_cycles": [
+        "ASIAN_LONDON"
+      ],
+      "l3": {
+        "cases": 40,
+        "prefix_mismatches": 0,
+        "pre_emission_signals": 0,
+        "streaming_batch_mismatches": 0,
+        "future_mutations": 700,
+        "future_mutation_mismatches": 0
+      },
+      "l4": {
+        "raw_zero_stop": 2,
+        "raw_tp_inversion": 19,
+        "leaked_to_admitted": [],
+        "admitted": 2,
+        "admitted_bad_geometry": 0
+      },
+      "l6_statuses": [
+        "PASS"
+      ],
+      "l6_cases": 30,
+      "edge_verified_false": true,
+      "ticket_ready_cases": 0,
+      "day_types": {
+        "long-sweep": 15,
+        "short-sweep": 10,
+        "TREND": 5,
+        "no-setup": 10,
+        "range-rejection": 0,
+        "insufficient-data": 0
+      },
+      "day_types_by_cycle": {
+        "ASIAN_LONDON": {
+          "long-sweep": 7,
+          "short-sweep": 4,
+          "TREND": 3,
+          "no-setup": 6,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        },
+        "LONDON_NEWYORK": {
+          "long-sweep": 8,
+          "short-sweep": 6,
+          "TREND": 2,
+          "no-setup": 4,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        }
+      }
+    },
+    "USDJPY": {
+      "cases": 20,
+      "days": 10,
+      "l3_by_first_emitted_setup": {
+        "SWEEP": {
+          "cases": 11,
+          "revised": 0,
+          "revised_case_ids": []
+        },
+        "TREND": {
+          "cases": 1,
+          "revised": 0,
+          "revised_case_ids": []
+        }
+      },
+      "l2_undeclared_cases": [],
+      "conforming_cycles": [],
+      "l3": {
+        "cases": 20,
+        "prefix_mismatches": 0,
+        "pre_emission_signals": 0,
+        "streaming_batch_mismatches": 0,
+        "future_mutations": 300,
+        "future_mutation_mismatches": 0
+      },
+      "l4": {
+        "raw_zero_stop": 1,
+        "raw_tp_inversion": 10,
+        "leaked_to_admitted": [],
+        "admitted": 0,
+        "admitted_bad_geometry": 0
+      },
+      "l6_statuses": [
+        "PASS"
+      ],
+      "l6_cases": 12,
+      "edge_verified_false": true,
+      "ticket_ready_cases": 0,
+      "day_types": {
+        "long-sweep": 7,
+        "short-sweep": 4,
+        "TREND": 1,
+        "no-setup": 8,
+        "range-rejection": 0,
+        "insufficient-data": 0
+      },
+      "day_types_by_cycle": {
+        "ASIAN_LONDON": {
+          "long-sweep": 1,
+          "short-sweep": 4,
+          "TREND": 1,
+          "no-setup": 4,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        },
+        "LONDON_NEWYORK": {
+          "long-sweep": 6,
+          "short-sweep": 0,
+          "TREND": 0,
+          "no-setup": 4,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        }
+      }
+    },
+    "XAUUSD": {
+      "cases": 20,
+      "days": 10,
+      "l3_by_first_emitted_setup": {
+        "TREND": {
+          "cases": 4,
+          "revised": 0,
+          "revised_case_ids": []
+        },
+        "SWEEP": {
+          "cases": 12,
+          "revised": 0,
+          "revised_case_ids": []
+        }
+      },
+      "l2_undeclared_cases": [],
+      "conforming_cycles": [],
+      "l3": {
+        "cases": 20,
+        "prefix_mismatches": 0,
+        "pre_emission_signals": 0,
+        "streaming_batch_mismatches": 0,
+        "future_mutations": 400,
+        "future_mutation_mismatches": 0
+      },
+      "l4": {
+        "raw_zero_stop": 0,
+        "raw_tp_inversion": 11,
+        "leaked_to_admitted": [],
+        "admitted": 0,
+        "admitted_bad_geometry": 0
+      },
+      "l6_statuses": [
+        "PASS"
+      ],
+      "l6_cases": 16,
+      "edge_verified_false": true,
+      "ticket_ready_cases": 0,
+      "day_types": {
+        "long-sweep": 3,
+        "short-sweep": 9,
+        "TREND": 4,
+        "no-setup": 4,
+        "range-rejection": 0,
+        "insufficient-data": 0
+      },
+      "day_types_by_cycle": {
+        "ASIAN_LONDON": {
+          "long-sweep": 0,
+          "short-sweep": 5,
+          "TREND": 3,
+          "no-setup": 2,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        },
+        "LONDON_NEWYORK": {
+          "long-sweep": 3,
+          "short-sweep": 4,
+          "TREND": 1,
+          "no-setup": 2,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        }
+      }
+    }
+  },
+  "day_types": {
+    "EURUSD": {
+      "counts": {
+        "long-sweep": 4,
+        "short-sweep": 3,
+        "TREND": 2,
+        "no-setup": 1,
+        "range-rejection": 0,
+        "insufficient-data": 0
+      },
+      "by_cycle": {
+        "ASIAN_LONDON": {
+          "long-sweep": 1,
+          "short-sweep": 2,
+          "TREND": 1,
+          "no-setup": 1,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        },
+        "LONDON_NEWYORK": {
+          "long-sweep": 3,
+          "short-sweep": 1,
+          "TREND": 1,
+          "no-setup": 0,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        }
+      },
+      "by_case": {
+        "recorded:EURUSD:ASIAN_LONDON:2026-06-15": "no-setup",
+        "recorded:EURUSD:ASIAN_LONDON:2026-06-16": "TREND",
+        "recorded:EURUSD:ASIAN_LONDON:2026-06-17": "long-sweep",
+        "recorded:EURUSD:ASIAN_LONDON:2026-06-23": "short-sweep",
+        "recorded:EURUSD:ASIAN_LONDON:2026-07-17": "short-sweep",
+        "recorded:EURUSD:LONDON_NEWYORK:2026-06-15": "short-sweep",
+        "recorded:EURUSD:LONDON_NEWYORK:2026-06-16": "TREND",
+        "recorded:EURUSD:LONDON_NEWYORK:2026-06-17": "long-sweep",
+        "recorded:EURUSD:LONDON_NEWYORK:2026-06-23": "long-sweep",
+        "recorded:EURUSD:LONDON_NEWYORK:2026-07-17": "long-sweep"
+      }
+    },
+    "GBPUSD": {
+      "counts": {
+        "long-sweep": 15,
+        "short-sweep": 10,
+        "TREND": 5,
+        "no-setup": 10,
+        "range-rejection": 0,
+        "insufficient-data": 0
+      },
+      "by_cycle": {
+        "ASIAN_LONDON": {
+          "long-sweep": 7,
+          "short-sweep": 4,
+          "TREND": 3,
+          "no-setup": 6,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        },
+        "LONDON_NEWYORK": {
+          "long-sweep": 8,
+          "short-sweep": 6,
+          "TREND": 2,
+          "no-setup": 4,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        }
+      },
+      "by_case": {
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-14": "no-setup",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-15": "TREND",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-16": "TREND",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-17": "short-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-18": "long-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-21": "long-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-22": "long-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-23": "TREND",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-24": "short-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-25": "short-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-28": "no-setup",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-29": "long-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-30": "no-setup",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-10-01": "no-setup",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-10-02": "short-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-10-05": "no-setup",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-10-06": "long-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-10-07": "long-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-10-08": "long-sweep",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-10-09": "no-setup",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-14": "long-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-15": "short-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-16": "no-setup",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-17": "long-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-18": "long-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-21": "short-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-22": "no-setup",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-23": "long-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-24": "long-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-25": "short-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-28": "short-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-29": "short-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-30": "TREND",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-10-01": "no-setup",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-10-02": "long-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-10-05": "long-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-10-06": "no-setup",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-10-07": "TREND",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-10-08": "short-sweep",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-10-09": "long-sweep"
+      }
+    },
+    "USDJPY": {
+      "counts": {
+        "long-sweep": 7,
+        "short-sweep": 4,
+        "TREND": 1,
+        "no-setup": 8,
+        "range-rejection": 0,
+        "insufficient-data": 0
+      },
+      "by_cycle": {
+        "ASIAN_LONDON": {
+          "long-sweep": 1,
+          "short-sweep": 4,
+          "TREND": 1,
+          "no-setup": 4,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        },
+        "LONDON_NEWYORK": {
+          "long-sweep": 6,
+          "short-sweep": 0,
+          "TREND": 0,
+          "no-setup": 4,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        }
+      },
+      "by_case": {
+        "recorded:USDJPY:ASIAN_LONDON:2026-09-28": "no-setup",
+        "recorded:USDJPY:ASIAN_LONDON:2026-09-29": "short-sweep",
+        "recorded:USDJPY:ASIAN_LONDON:2026-09-30": "no-setup",
+        "recorded:USDJPY:ASIAN_LONDON:2026-10-01": "TREND",
+        "recorded:USDJPY:ASIAN_LONDON:2026-10-02": "no-setup",
+        "recorded:USDJPY:ASIAN_LONDON:2026-10-05": "no-setup",
+        "recorded:USDJPY:ASIAN_LONDON:2026-10-06": "short-sweep",
+        "recorded:USDJPY:ASIAN_LONDON:2026-10-07": "long-sweep",
+        "recorded:USDJPY:ASIAN_LONDON:2026-10-08": "short-sweep",
+        "recorded:USDJPY:ASIAN_LONDON:2026-10-09": "short-sweep",
+        "recorded:USDJPY:LONDON_NEWYORK:2026-09-28": "no-setup",
+        "recorded:USDJPY:LONDON_NEWYORK:2026-09-29": "long-sweep",
+        "recorded:USDJPY:LONDON_NEWYORK:2026-09-30": "long-sweep",
+        "recorded:USDJPY:LONDON_NEWYORK:2026-10-01": "long-sweep",
+        "recorded:USDJPY:LONDON_NEWYORK:2026-10-02": "long-sweep",
+        "recorded:USDJPY:LONDON_NEWYORK:2026-10-05": "no-setup",
+        "recorded:USDJPY:LONDON_NEWYORK:2026-10-06": "long-sweep",
+        "recorded:USDJPY:LONDON_NEWYORK:2026-10-07": "no-setup",
+        "recorded:USDJPY:LONDON_NEWYORK:2026-10-08": "long-sweep",
+        "recorded:USDJPY:LONDON_NEWYORK:2026-10-09": "no-setup"
+      }
+    },
+    "XAUUSD": {
+      "counts": {
+        "long-sweep": 3,
+        "short-sweep": 9,
+        "TREND": 4,
+        "no-setup": 4,
+        "range-rejection": 0,
+        "insufficient-data": 0
+      },
+      "by_cycle": {
+        "ASIAN_LONDON": {
+          "long-sweep": 0,
+          "short-sweep": 5,
+          "TREND": 3,
+          "no-setup": 2,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        },
+        "LONDON_NEWYORK": {
+          "long-sweep": 3,
+          "short-sweep": 4,
+          "TREND": 1,
+          "no-setup": 2,
+          "range-rejection": 0,
+          "insufficient-data": 0
+        }
+      },
+      "by_case": {
+        "recorded:XAUUSD:ASIAN_LONDON:2026-09-28": "TREND",
+        "recorded:XAUUSD:ASIAN_LONDON:2026-09-29": "short-sweep",
+        "recorded:XAUUSD:ASIAN_LONDON:2026-09-30": "short-sweep",
+        "recorded:XAUUSD:ASIAN_LONDON:2026-10-01": "no-setup",
+        "recorded:XAUUSD:ASIAN_LONDON:2026-10-02": "short-sweep",
+        "recorded:XAUUSD:ASIAN_LONDON:2026-10-05": "short-sweep",
+        "recorded:XAUUSD:ASIAN_LONDON:2026-10-06": "short-sweep",
+        "recorded:XAUUSD:ASIAN_LONDON:2026-10-07": "TREND",
+        "recorded:XAUUSD:ASIAN_LONDON:2026-10-08": "no-setup",
+        "recorded:XAUUSD:ASIAN_LONDON:2026-10-09": "TREND",
+        "recorded:XAUUSD:LONDON_NEWYORK:2026-09-28": "long-sweep",
+        "recorded:XAUUSD:LONDON_NEWYORK:2026-09-29": "short-sweep",
+        "recorded:XAUUSD:LONDON_NEWYORK:2026-09-30": "short-sweep",
+        "recorded:XAUUSD:LONDON_NEWYORK:2026-10-01": "no-setup",
+        "recorded:XAUUSD:LONDON_NEWYORK:2026-10-02": "short-sweep",
+        "recorded:XAUUSD:LONDON_NEWYORK:2026-10-05": "long-sweep",
+        "recorded:XAUUSD:LONDON_NEWYORK:2026-10-06": "TREND",
+        "recorded:XAUUSD:LONDON_NEWYORK:2026-10-07": "no-setup",
+        "recorded:XAUUSD:LONDON_NEWYORK:2026-10-08": "short-sweep",
+        "recorded:XAUUSD:LONDON_NEWYORK:2026-10-09": "long-sweep"
+      }
+    }
+  },
+  "gates_by_symbol": {
+    "EURUSD": {
+      "L1": "PASS",
+      "L2": "PASS",
+      "L3": "PASS",
+      "L4": "PASS",
+      "L5": "WARN",
+      "L6": "PASS"
+    },
+    "GBPUSD": {
+      "L1": "PASS",
+      "L2": "NOT_EVIDENCED",
+      "L3": "PASS",
+      "L4": "PASS",
+      "L5": "WARN",
+      "L6": "PASS"
+    },
+    "USDJPY": {
+      "L1": "PASS",
+      "L2": "NOT_EVIDENCED",
+      "L3": "PASS",
+      "L4": "PASS",
+      "L5": "BLOCK",
+      "L6": "PASS"
+    },
+    "XAUUSD": {
+      "L1": "PASS",
+      "L2": "NOT_EVIDENCED",
+      "L3": "PASS",
+      "L4": "PASS",
+      "L5": "BLOCK",
+      "L6": "PASS"
+    }
+  },
+  "verdicts": {
+    "EURUSD": "LOGIC_VERIFIED",
+    "GBPUSD": "PARTIAL",
+    "USDJPY": "NOT_VERIFIED",
+    "XAUUSD": "NOT_VERIFIED"
+  },
+  "checks": {
+    "L1_identity_and_contract": {
+      "evidence": {
+        "candidate_contract_sha256": true,
+        "registry_identity_matches": true,
+        "frozen_v1_1_1_contract_unchanged": true,
+        "runtime_binding_v1_1_1": true,
+        "replay_determinism": true,
+        "fixture_provenance_verified": true
+      },
+      "logic_identity": {
+        "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+        "strategy_version": "1.1.2",
+        "engine_identity": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+        "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+        "digest": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5"
+      }
+    },
+    "L2_specification_engine_equivalence": {
+      "reused": "docs/status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md",
+      "rule": "no undeclared/NOT_EVALUABLE check AND a conforming sweep passing L1-L4 in both windows",
+      "evidence": {
+        "EURUSD": {
+          "undeclared_cases": [],
+          "conforming_cycles": [
+            "ASIAN_LONDON",
+            "LONDON_NEWYORK"
+          ],
+          "conforming_not_evidenced": []
+        },
+        "GBPUSD": {
+          "undeclared_cases": [],
+          "conforming_cycles": [
+            "ASIAN_LONDON"
+          ],
+          "conforming_not_evidenced": [
+            "LONDON_NEWYORK"
+          ]
+        },
+        "USDJPY": {
+          "undeclared_cases": [],
+          "conforming_cycles": [],
+          "conforming_not_evidenced": [
+            "ASIAN_LONDON",
+            "LONDON_NEWYORK"
+          ]
+        },
+        "XAUUSD": {
+          "undeclared_cases": [],
+          "conforming_cycles": [],
+          "conforming_not_evidenced": [
+            "ASIAN_LONDON",
+            "LONDON_NEWYORK"
+          ]
+        }
+      }
+    },
+    "L3_temporal_causality": {
+      "evidence": {
+        "cases": 90,
+        "prefix_mismatches": 0,
+        "pre_emission_signals": 0,
+        "streaming_batch_mismatches": 0,
+        "future_mutations": 1625,
+        "future_mutation_mismatches": 0
+      },
+      "by_symbol": {
+        "EURUSD": {
+          "cases": 10,
+          "prefix_mismatches": 0,
+          "pre_emission_signals": 0,
+          "streaming_batch_mismatches": 0,
+          "future_mutations": 225,
+          "future_mutation_mismatches": 0
+        },
+        "GBPUSD": {
+          "cases": 40,
+          "prefix_mismatches": 0,
+          "pre_emission_signals": 0,
+          "streaming_batch_mismatches": 0,
+          "future_mutations": 700,
+          "future_mutation_mismatches": 0
+        },
+        "USDJPY": {
+          "cases": 20,
+          "prefix_mismatches": 0,
+          "pre_emission_signals": 0,
+          "streaming_batch_mismatches": 0,
+          "future_mutations": 300,
+          "future_mutation_mismatches": 0
+        },
+        "XAUUSD": {
+          "cases": 20,
+          "prefix_mismatches": 0,
+          "pre_emission_signals": 0,
+          "streaming_batch_mismatches": 0,
+          "future_mutations": 400,
+          "future_mutation_mismatches": 0
+        }
+      },
+      "seed": 112
+    },
+    "L4_price_geometry": {
+      "recorded_failures": [
+        {
+          "cycle": "ASIAN_LONDON",
+          "session_date": "2026-07-17",
+          "direction": "SHORT",
+          "kind": "ZERO_STOP",
+          "fail_closed_rule": true,
+          "reproduces_in_engine": true,
+          "blocked_by_candidate": true
+        },
+        {
+          "cycle": "ASIAN_LONDON",
+          "session_date": "2026-07-17",
+          "direction": "SHORT",
+          "kind": "TP_ORDER",
+          "fail_closed_rule": true,
+          "reproduces_in_engine": true,
+          "blocked_by_candidate": true
+        },
+        {
+          "cycle": "ASIAN_LONDON",
+          "session_date": "2026-06-17",
+          "direction": "LONG",
+          "kind": "TP_ORDER",
+          "fail_closed_rule": true,
+          "reproduces_in_engine": true,
+          "blocked_by_candidate": true
+        },
+        {
+          "cycle": "LONDON_NEWYORK",
+          "session_date": "2026-06-17",
+          "direction": "LONG",
+          "kind": "TP_ORDER",
+          "fail_closed_rule": true,
+          "reproduces_in_engine": true,
+          "blocked_by_candidate": true
+        },
+        {
+          "cycle": "LONDON_NEWYORK",
+          "session_date": "2026-06-23",
+          "direction": "LONG",
+          "kind": "TP_ORDER",
+          "fail_closed_rule": true,
+          "reproduces_in_engine": true,
+          "blocked_by_candidate": true
+        },
+        {
+          "cycle": "LONDON_NEWYORK",
+          "session_date": "2026-07-17",
+          "direction": "LONG",
+          "kind": "TP_ORDER",
+          "fail_closed_rule": true,
+          "reproduces_in_engine": true,
+          "blocked_by_candidate": true
+        }
+      ],
+      "synthetic": {
+        "sessions": 400,
+        "tickets_with_levels": 285,
+        "raw_zero_stop": 22,
+        "raw_tp_inversion": {
+          "LONG": 94,
+          "SHORT": 111
+        },
+        "admitted_by_gates": 13,
+        "admitted_zero_stop": 0,
+        "admitted_tp_inversion": 0,
+        "undeclared_l2_failures": 0
+      },
+      "by_symbol": {
+        "EURUSD": {
+          "raw_zero_stop": 1,
+          "raw_tp_inversion": 5,
+          "leaked_to_admitted": [],
+          "admitted": 2,
+          "admitted_bad_geometry": 0
+        },
+        "GBPUSD": {
+          "raw_zero_stop": 2,
+          "raw_tp_inversion": 19,
+          "leaked_to_admitted": [],
+          "admitted": 2,
+          "admitted_bad_geometry": 0
+        },
+        "USDJPY": {
+          "raw_zero_stop": 1,
+          "raw_tp_inversion": 10,
+          "leaked_to_admitted": [],
+          "admitted": 0,
+          "admitted_bad_geometry": 0
+        },
+        "XAUUSD": {
+          "raw_zero_stop": 0,
+          "raw_tp_inversion": 11,
+          "leaked_to_admitted": [],
+          "admitted": 0,
+          "admitted_bad_geometry": 0
+        }
+      },
+      "seed": 112,
+      "fix": "no engine change (shared with frozen 1.1.1); 1.1.2 declared fail-closed rules R.stop_loss (risk_distance > 0) and R.target_order block every reproduced case"
+    },
+    "L5_risk_and_friction": {
+      "verdict": "BLOCK",
+      "d2_source": "config/owner_ticket.yaml",
+      "risk_pct": 0.5,
+      "cost_warn_R": 0.1,
+      "cost_block_R": 0.25,
+      "warn_reasons": [
+        "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
+        "SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
+        "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+      ],
+      "block_reasons": [
+        "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['USDJPY', 'XAUUSD']"
+      ],
+      "by_symbol": {
+        "EURUSD": {
+          "verdict": "WARN",
+          "warn_reasons": [
+            "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
+            "SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ],
+          "block_reasons": []
+        },
+        "GBPUSD": {
+          "verdict": "WARN",
+          "warn_reasons": [
+            "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
+            "SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ],
+          "block_reasons": []
+        },
+        "USDJPY": {
+          "verdict": "BLOCK",
+          "warn_reasons": [
+            "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
+            "SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ],
+          "block_reasons": [
+            "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['USDJPY']"
+          ]
+        },
+        "XAUUSD": {
+          "verdict": "BLOCK",
+          "warn_reasons": [
+            "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
+            "SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ],
+          "block_reasons": [
+            "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['XAUUSD']"
+          ]
+        }
+      }
+    },
+    "L6_freshness_fields": {
+      "evidence": {
+        "EURUSD": {
+          "cases": 9,
+          "statuses": [
+            "PASS"
+          ]
+        },
+        "GBPUSD": {
+          "cases": 30,
+          "statuses": [
+            "PASS"
+          ]
+        },
+        "USDJPY": {
+          "cases": 12,
+          "statuses": [
+            "PASS"
+          ]
+        },
+        "XAUUSD": {
+          "cases": 16,
+          "statuses": [
+            "PASS"
+          ]
+        }
+      }
+    }
+  },
+  "edge_status": "NOT_VERIFIED",
+  "edge_verified": false,
+  "economic_status": "NOT_EVALUATED",
+  "admission": "NOT_ADMITTED (runtime loads v1.1.1; owner decision required)",
+  "ready_authority": "OFF (D6; config/v1_tickets/ready_authority.yaml unchanged)",
+  "demo_authorized": false,
+  "live_authorized": false,
+  "broker_calls": 0,
+  "mission": "AGP-C3-ASW-R3",
+  "classification_base_sha": "c2ba6fede5b2b8f6c99bfc997affbf989e95573f",
+  "gbpusd_london_newyork_classification": [
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-14",
+      "setup": "SWEEP",
+      "direction": "LONG",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.34729,
+          "expected": {
+            "body_edge": 1.34729,
+            "close": 1.3476
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            125,
+            126
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              138
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.34729,
+            1.35057,
+            1.34814
+          ],
+          "expected": "entry < TP1 <= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-15",
+      "setup": "SWEEP",
+      "direction": "SHORT",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.34848,
+          "expected": {
+            "body_edge": 1.34848,
+            "close": 1.34818
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            131,
+            132
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              128
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.34848,
+            1.34641,
+            1.34838
+          ],
+          "expected": "entry > TP1 >= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-17",
+      "setup": "SWEEP",
+      "direction": "LONG",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.33697,
+          "expected": {
+            "body_edge": 1.33697,
+            "close": 1.33835
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            125,
+            126
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              138
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.33697,
+            1.34063,
+            1.33757
+          ],
+          "expected": "entry < TP1 <= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-18",
+      "setup": "SWEEP",
+      "direction": "LONG",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.33486,
+          "expected": {
+            "body_edge": 1.33486,
+            "close": 1.33557
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            125,
+            126
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              138
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.33486,
+            1.33749,
+            1.33521
+          ],
+          "expected": "entry < TP1 <= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-21",
+      "setup": "SWEEP",
+      "direction": "SHORT",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.33932,
+          "expected": {
+            "body_edge": 1.33932,
+            "close": 1.33867
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            131,
+            132
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              128
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.33932,
+            1.33686,
+            1.33917
+          ],
+          "expected": "entry > TP1 >= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-23",
+      "setup": "SWEEP",
+      "direction": "LONG",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.3266,
+          "expected": {
+            "body_edge": 1.3266,
+            "close": 1.32877
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            125,
+            126
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              138
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.3266,
+            1.33225,
+            1.3268
+          ],
+          "expected": "entry < TP1 <= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-24",
+      "setup": "SWEEP",
+      "direction": "LONG",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.32118,
+          "expected": {
+            "body_edge": 1.32118,
+            "close": 1.32188
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            125,
+            126
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              138
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.32118,
+            1.3256,
+            1.32148
+          ],
+          "expected": "entry < TP1 <= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-25",
+      "setup": "SWEEP",
+      "direction": "SHORT",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.32505,
+          "expected": {
+            "body_edge": 1.32505,
+            "close": 1.32494
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            131,
+            132
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              128
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.32505,
+            1.32172,
+            1.3238
+          ],
+          "expected": "entry > TP1 >= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-28",
+      "setup": "SWEEP",
+      "direction": "SHORT",
+      "checks": [
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.32688,
+            1.32312,
+            1.32348
+          ],
+          "expected": "entry > TP1 >= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-29",
+      "setup": "SWEEP",
+      "direction": "SHORT",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.32475,
+          "expected": {
+            "body_edge": 1.32475,
+            "close": 1.32388
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            131,
+            132
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              128
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.32475,
+            1.3221,
+            1.32425
+          ],
+          "expected": "entry > TP1 >= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-30",
+      "setup": "TREND",
+      "direction": "LONG",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.32713,
+          "expected": {
+            "body_edge": null,
+            "close": null
+          },
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            80,
+            82,
+            108,
+            109,
+            110
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              93
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              188,
+              189,
+              190,
+              191
+            ]
+          },
+          "reason": "TREND uses session midpoint, not a qualifying sweep candle; the contract explicitly marks TREND FAIL_CLOSED. The secondary entry-level diagnostic does not imply a divergent trade decision.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-02",
+      "setup": "SWEEP",
+      "direction": "LONG",
+      "checks": [
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.31999,
+            1.32215,
+            1.32044
+          ],
+          "expected": "entry < TP1 <= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-05",
+      "setup": "SWEEP",
+      "direction": "LONG",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.31995,
+          "expected": {
+            "body_edge": 1.31995,
+            "close": 1.3206
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            125,
+            126
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              138
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.31995,
+            1.32391,
+            1.32205
+          ],
+          "expected": "entry < TP1 <= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-07",
+      "setup": "TREND",
+      "direction": "SHORT",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.32354,
+          "expected": {
+            "body_edge": null,
+            "close": null
+          },
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            80,
+            82,
+            108,
+            109,
+            110
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              93
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              188,
+              189,
+              190,
+              191
+            ]
+          },
+          "reason": "TREND uses session midpoint, not a qualifying sweep candle; the contract explicitly marks TREND FAIL_CLOSED. The secondary entry-level diagnostic does not imply a divergent trade decision.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-08",
+      "setup": "SWEEP",
+      "direction": "SHORT",
+      "checks": [
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.32119,
+            1.31845,
+            1.32039
+          ],
+          "expected": "entry > TP1 >= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    },
+    {
+      "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-09",
+      "setup": "SWEEP",
+      "direction": "LONG",
+      "checks": [
+        {
+          "id": "R.entry_level",
+          "rule": "SWEEP_CANDLE_BODY_EDGE == close",
+          "value": 1.32162,
+          "expected": {
+            "body_edge": 1.32162,
+            "close": 1.32265
+          },
+          "verdict": "FAIL",
+          "note": "ENTRY_NOT_AVAILABLE_AT_SIGNAL: body edge is the pre-signal open (fail closed)",
+          "contract_lines": [
+            83,
+            84,
+            85,
+            125,
+            126
+          ],
+          "engine_lines": {
+            "src/strategy_engine/session/setups.py": [
+              138
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              183,
+              184,
+              185,
+              186,
+              187,
+              188,
+              189,
+              190,
+              191,
+              192
+            ]
+          },
+          "reason": "Body edge equals pre-signal open rather than close; MARKET entry explicitly fails closed.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        },
+        {
+          "id": "R.target_order",
+          "rule": "FAIL_CLOSED_IF_TP1_BEYOND_TP2",
+          "value": [
+            1.32162,
+            1.32472,
+            1.32162
+          ],
+          "expected": "entry < TP1 <= TP2",
+          "verdict": "FAIL",
+          "note": "",
+          "contract_lines": [
+            86,
+            88,
+            147,
+            151,
+            155,
+            156
+          ],
+          "engine_lines": {
+            "src/v1_tickets/fx.py": [
+              173,
+              174
+            ],
+            "src/v1_tickets/logic_gate.py": [
+              238,
+              239,
+              240,
+              241,
+              242
+            ]
+          },
+          "reason": "TP1 is beyond TP2 in the trade direction; fail-closed is explicitly specified. Zero risk on 2026-10-09 is additionally rejected by line 138.",
+          "classification": "SPEC_CORRECT_REJECTION"
+        }
+      ],
+      "classification": "SPEC_CORRECT_REJECTION"
+    }
+  ],
+  "proposal_v1_1_3": null,
+  "proposal_reason": "No SPEC_AMBIGUOUS or SPEC_ENGINE_DIVERGENCE among these recorded cases.",
+  "coverage_limit": "PARTIAL: fixture evidence only; no expanded coverage claim",
+  "NO_BROKER_MUTATION": true
+}
