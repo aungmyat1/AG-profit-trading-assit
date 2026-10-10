@@ -124,3 +124,39 @@ def test_run_lsmc_journals_each_crypto_evaluation_into_its_window(tmp_path):
 def test_crypto_symbol_set_matches_the_lsmc_contract():
     from large_smc_watch.contract import CRYPTO_SYMBOLS
     assert tuple(cfd.LSMC_CRYPTO_SYMBOLS) == tuple(CRYPTO_SYMBOLS) == lcs.LSMC_CRYPTO_SYMBOLS
+
+
+def test_each_crypto_rejection_appears_in_exactly_one_summary_across_the_utc_day(tmp_path):
+    """Whole UTC day: both FX session summaries plus the crypto day summary. FX summaries are
+    FX-only (canonical_fx_delivery.build_session_summary keeps V1_FX_SYMBOLS rows only), so every
+    crypto rejection -- inside either FX window or outside both -- is counted once, by crypto."""
+    import json
+    journal = tmp_path / "j"
+    send, calls = sender(tmp_path)
+    D = cfd.LSMC_CRYPTO_DAY
+    assert due(journal, at(WED, 0, 5), send, D) == []
+    assert cfd.process_due_session_summaries(at(WED, 0, 5), journal=str(journal), sender=send) == []
+    rejections = [(at(WED, 8, 0), "BTCUSD", "NO_BIAS"),            # inside ASIAN_LONDON trade window
+                  (at(WED, 13, 0), "ETHUSD", "NO_VALID_POI"),      # inside LONDON_NEWYORK trade window
+                  (at(WED, 20, 0), "BTCUSD", "M5_DATA_STALE")]     # outside both FX windows
+    for when, symbol, reason in rejections:
+        record(journal, when, D, symbol, "IDLE" if reason != "M5_DATA_STALE" else "STALE", [reason])
+
+    fx_summaries = [cfd.build_session_summary(str(journal), session_date=WED, session=s, sender=send)
+                    for s in cfd.V1_CYCLES]
+    crypto = cfd.build_lsmc_crypto_summary(str(journal), session_date=WED, session=D,
+                                           window=lcs.lsmc_crypto_day_window(WED), sender=send)
+    for when, symbol, reason in rejections:
+        in_fx = sum(symbol in json.dumps(fx) for fx in fx_summaries)
+        in_crypto = crypto["rejection_counts"].get(reason, 0)
+        assert (in_fx, in_crypto) == (0, 1), (when, symbol, reason)
+    assert crypto["evaluations"] == len(rejections) == sum(crypto["rejection_counts"].values())
+
+    # Delivered messages for the whole day: FX summaries never name a crypto symbol.
+    later = at(WED + dt.timedelta(days=1), 0, 40)
+    cfd.process_due_session_summaries(later, journal=str(journal), sender=send)
+    due(journal, later, send, D)
+    fx_messages = [m for _, m in calls if m.startswith("Canonical FX session summary")]
+    crypto_messages = [m for _, m in calls if m.startswith("Large-SMC crypto watch summary")]
+    assert len(fx_messages) == 2 and len(crypto_messages) == 1
+    assert not any(s in m for m in fx_messages for s in cfd.LSMC_CRYPTO_SYMBOLS)
