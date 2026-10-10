@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[AGP-G3-VERIFY manual-ticket risk/cost gate](status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md) records the G3 verification of the OD1009-D2 risk/cost gate (FX, gold, crypto CFD), its four fixed gate defects and the NO_BROKER_MUTATION evidence. It changes no readiness or authorization value.
+
 [PR #94 follow-up S01/S02](status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md) records the signal-time identity classification (pending owner) and the LIVE/REPLAY digest reason fix.
 
 [TG-SCOPE-POLICY-1](status/AG_TG_SCOPE_POLICY_1_STATUS_2026-10-08.md) records the tracked
@@ -554,6 +556,11 @@ matching status document before assuming a version is active or frozen.
 Files in `status/` are dated evidence snapshots. They preserve the test counts and
 observations from the named milestone; they are not rolling dashboards.
 
+- [`status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md`](status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md)
+  — G3 (cost/risk) focused verification of the manual-ticket gate on FX, gold and crypto CFD:
+  the key × asset-class × verdict matrix, the four defects found and fixed (inclusive 0.10R warn,
+  fail-open 0.25R block on decimal-exact costs, `KeyError` instead of `RISK_CONFIG_MISSING`), what was
+  deliberately not changed, and the offline NO_BROKER_MUTATION evidence.
 - [`status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md`](status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md)
   — repository health audit, test-failure classification, root-file relocation map
   (root MI/V2/validation docs now live under `market_intelligence/`, `v2/`,
