@@ -50,7 +50,8 @@ from canonical session windows or other repo conventions at the time of registra
   NOT_EVIDENCED in LONDON_NEWYORK (no conforming ticket); EURUSD unchanged (LOGIC_VERIFIED). RANGE behaviour
   untested on recorded data (0 RANGE days in fixture). logic_status unchanged:
   `docs/status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md`.
-  2026-10-10 D6 per-symbol gate: registry `candidate_versions."1.1.2".verified_symbols: [EURUSD]` is read by
+  2026-10-10 D6 per-symbol gate: registry `candidate_versions."1.1.2".logic_verified_symbols` (EURUSD, evidence = #108 report; logic
+  verification only, not economic/edge evidence) is read by
   `src/v1_tickets/ready_authority.py`; with D6 ON, READY needs the ticket's symbol listed for its version
   (absent = not verified). D6 stays OFF; no authorization change.
 - **Open gaps found building `execution/` (2026-08-26):**

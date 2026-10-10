@@ -62,11 +62,9 @@ def test_daily_evaluator_never_emits_watch_ready_while_off(production_ready_auth
     assert eur.decision == A.INFO_ONLY_SUPPRESSED
 
 
-def test_switch_on_restores_the_pre_d6_watch_ready(tmp_path, monkeypatch):
+def test_switch_on_restores_the_pre_d6_watch_ready(tmp_path, monkeypatch, stub_symbol_verified):
     on = tmp_path / "on.yaml"
     on.write_text("strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    ready: 'ON'\n")
     monkeypatch.setattr(ra, "CONFIG_PATH", str(on))
-    # Pre-D6 behaviour had no per-symbol verification gate (covered by test_d6_per_symbol_verification.py).
-    monkeypatch.setattr(ra, "symbol_verified", lambda *a, **k: True)
     canon = build_canonical_ticket(_ticket(), now=NOW, current_price=1.1636, policy=SIGNED_POLICY)
     assert canon["decision"] == A.WATCH_READY

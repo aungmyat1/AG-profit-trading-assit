@@ -67,7 +67,7 @@ def test_asian_range_never_includes_bars_after_london_open(day):
 
 
 @pytest.mark.parametrize("day", DATES)
-def test_dst_diagnostics_do_not_change_fixed_utc_eligibility(day):
+def test_dst_diagnostics_do_not_change_fixed_utc_eligibility(stub_symbol_verified, day):
     def c(h, m, o, hi, lo, cl):
         return Candle(dt.datetime.combine(day, dt.time(h, m), UTC), o, hi, lo, cl)
     session = [c(0, 0, 1.1000, 1.1050, 1.0950, 1.1010), c(0, 15, 1.1010, 1.1040, 1.0960, 1.1005)]

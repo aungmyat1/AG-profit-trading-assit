@@ -24,7 +24,7 @@ import manual_ticket_decision as cli  # noqa: E402
 
 
 @pytest.fixture
-def ready(tmp_path, l2_pass):  # noqa: F811
+def ready(stub_symbol_verified, tmp_path, l2_pass):  # noqa: F811
     journal = str(tmp_path / "j")
     t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)
     assert t["state"] == "TICKET_READY"

@@ -103,7 +103,7 @@ def _build_asian_london_sweep(now: dt.datetime, *, long: bool = True,
 
 # ---------------------------------------------------------------- actionability unit tests
 
-def test_fresh_actionable_signal_is_watch_ready():
+def test_fresh_actionable_signal_is_watch_ready(stub_symbol_verified):
     now = dt.datetime(2026, 10, 7, 7, 20, tzinfo=UTC)
     ref, n, post = _build_asian_london_sweep(now, age_minutes=5)
     ticket = v1_fx.build_fx_ticket(
@@ -143,7 +143,7 @@ def test_stale_valid_signal_is_info_only_stale():
     assert "valid at trigger" in text
 
 
-def test_insufficient_remaining_r():
+def test_insufficient_remaining_r(stub_symbol_verified):
     now = dt.datetime(2026, 10, 7, 7, 20, tzinfo=UTC)
     ref, n, post = _build_asian_london_sweep(now, age_minutes=5, entry=1.1634, sl=1.1614)
     ticket = v1_fx.build_fx_ticket(
@@ -158,7 +158,7 @@ def test_insufficient_remaining_r():
     assert canon["presentation"] == "INFO_ONLY"
 
 
-def test_missing_policy_is_never_watch_ready():
+def test_missing_policy_is_never_watch_ready(stub_symbol_verified):
     now = dt.datetime(2026, 10, 7, 7, 20, tzinfo=UTC)
     ref, n, post = _build_asian_london_sweep(now, age_minutes=5)
     ticket = v1_fx.build_fx_ticket(
@@ -178,7 +178,7 @@ def test_missing_policy_is_never_watch_ready():
         canon["actionability"]["reason"].startswith("ACTIONABILITY_POLICY_")
 
 
-def test_malformed_policy_never_watch_ready():
+def test_malformed_policy_never_watch_ready(stub_symbol_verified):
     now = dt.datetime(2026, 10, 7, 7, 20, tzinfo=UTC)
     ref, n, post = _build_asian_london_sweep(now, age_minutes=5)
     ticket = v1_fx.build_fx_ticket(
@@ -193,7 +193,7 @@ def test_malformed_policy_never_watch_ready():
     assert canon["actionability"]["policy_status"] == "ACTIONABILITY_POLICY_INVALID"
 
 
-def test_conflicting_policy_never_watch_ready():
+def test_conflicting_policy_never_watch_ready(stub_symbol_verified):
     now = dt.datetime(2026, 10, 7, 7, 20, tzinfo=UTC)
     ref, n, post = _build_asian_london_sweep(now, age_minutes=5)
     ticket = v1_fx.build_fx_ticket(
@@ -208,7 +208,7 @@ def test_conflicting_policy_never_watch_ready():
     assert canon["actionability"]["policy_status"] == "ACTIONABILITY_POLICY_CONFLICT"
 
 
-def test_expired_opportunity_past_window_end():
+def test_expired_opportunity_past_window_end(stub_symbol_verified):
     # Trade window ends at 11:00 GMT; evaluate at 15:30 GMT.
     now = dt.datetime(2026, 10, 7, 15, 30, tzinfo=UTC)
     ref, n, post = _build_asian_london_sweep(now, age_minutes=5)
@@ -412,7 +412,7 @@ def test_missing_poi_is_not_available():
     assert canon["fact_provenance"]["poi"]["status"] == "NOT_AVAILABLE"
 
 
-def test_supplied_poi_and_context_preserved_exactly():
+def test_supplied_poi_and_context_preserved_exactly(stub_symbol_verified):
     now = dt.datetime(2026, 10, 7, 7, 20, tzinfo=UTC)
     ref, n, post = _build_asian_london_sweep(now, age_minutes=5)
     ticket = v1_fx.build_fx_ticket(

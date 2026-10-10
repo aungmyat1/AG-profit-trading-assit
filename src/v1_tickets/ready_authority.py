@@ -8,8 +8,9 @@ value other than the literal ON means OFF.
 
 Per-symbol verification (owner mission 2026-10-10): with D6 ON, a READY is still downgraded unless the
 ticket's symbol is listed VERIFIED for the emitting strategy version. Authority:
-strategies/registry.yaml -> strategies.<id>.candidate_versions."<version>".verified_symbols. Absent
-version, absent list or absent symbol means not verified (fail closed). D6 OFF behaviour is unchanged.
+strategies/registry.yaml -> strategies.<id>.candidate_versions."<version>".logic_verified_symbols (entries
+`{symbol, evidence}`; logic verification only, not economic/edge evidence). Absent version, list, symbol or
+evidence ref means not verified (fail closed). D6 OFF behaviour is unchanged.
 """
 from __future__ import annotations
 
@@ -47,17 +48,20 @@ def ready_authority(strategy_id: str, path: Optional[str] = None) -> Tuple[bool,
 
 def symbol_verified(strategy_id: str, strategy_version: Any, symbol: Any,
                     registry_path: Optional[str] = None) -> bool:
-    """True only if strategies/registry.yaml lists `symbol` in
-    candidate_versions."<strategy_version>".verified_symbols for `strategy_id`. Anything else is False."""
+    """True only if strategies/registry.yaml lists `symbol` with a non-empty `evidence` ref in
+    candidate_versions."<strategy_version>".logic_verified_symbols for `strategy_id`. Anything else is False."""
     try:
         with open(registry_path or REGISTRY_PATH, encoding="utf-8") as f:
             raw = yaml.safe_load(f) or {}
         entry = (raw.get("strategies") or {}).get(strategy_id) or {}
         version = (entry.get("candidate_versions") or {}).get(str(strategy_version)) or {}
-        listed = version.get("verified_symbols")
+        listed = version.get("logic_verified_symbols")
     except (OSError, ValueError, AttributeError, yaml.YAMLError):
         return False
-    return isinstance(listed, list) and isinstance(symbol, str) and symbol in listed
+    if not isinstance(listed, list) or not isinstance(symbol, str):
+        return False
+    return any(isinstance(e, dict) and e.get("symbol") == symbol and isinstance(e.get("evidence"), str)
+               and e["evidence"].strip() for e in listed)
 
 
 def apply_ready_authority(ticket: Dict[str, Any], path: Optional[str] = None,
