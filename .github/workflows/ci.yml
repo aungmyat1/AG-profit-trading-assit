@@ -62,7 +62,7 @@ jobs:
             echo "Unable to identify the lint diff base" >&2
             exit 1
           fi
-          mapfile -t files < <(git diff --name-only --diff-filter=ACMRT "$base...HEAD" -- 'src/**/*.py' 'tests/**/*.py')
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMRT "$base...HEAD" -- 'src/**/*.py' 'tests/**/*.py' 'tests/*.py')
           if ((${#files[@]})); then
             ruff check "${files[@]}"
           else

@@ -6,15 +6,15 @@ import ast
 import datetime as dt
 from pathlib import Path
 
+from test_host_go_live_kit import smoke  # noqa: E402  (adds scripts/host to sys.path)
+from test_manual_ticket_build import manual
+from test_manual_ticket_logic_gate import CANDLES
+
 from v1_tickets import manual_ticket as mt
 from v1_tickets.manual_report import build_report, previous_trading_day, render_report
 from v1_tickets.outcome import resolve_day
 from v1_tickets.owner_decision import ManualTicketDecision, record_decision
 from v1_tickets.scan_record import read_jsonl
-
-from test_host_go_live_kit import smoke  # noqa: E402  (adds scripts/host to sys.path)
-from test_manual_ticket_build import manual
-from test_manual_ticket_logic_gate import CANDLES
 
 ROOT = Path(__file__).resolve().parent.parent
 UTC = dt.timezone.utc
@@ -40,7 +40,7 @@ def test_daily_report_sections(tmp_path):
     assert {"strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.1", "session": "LONDON_NEWYORK"} in \
         rep["system_health"]["sessions_without_any_run"]                    # never ran today -> visible
     st = {(s["strategy"], s["symbol"]): s for s in rep["session_states"]}
-    assert st[("SESSION_TRADE_V1@1", "EURUSD")]["reason"] == "STRATEGY_ADAPTER_NOT_IMPLEMENTED"
+    assert st[("SESSION_TRADE_V1@1", "EURUSD-VIP")]["reason"] == "STRATEGY_ADAPTER_NOT_IMPLEMENTED"
     assert st[("ST_ASIAN_SWEEP_5R_V1@1.1.1", "EURUSD")]["state"] == "TICKET_BLOCKED"
     y = rep["yesterday_outcomes"]
     assert y["session_date"] == "2026-06-23" and y["tag"] == "VIRTUAL_FORWARD"
