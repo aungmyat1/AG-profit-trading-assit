@@ -9,7 +9,7 @@ review_by: 2026-11-07
 Version: v1
 
 ## Execution firewall
-- `DEMO`/`LIVE` authorization remains false by default; require explicit owner authorization and every separate strategy, configuration, runtime, and per-order user-confirmation gate already defined in `AGENTS.md` and governance. Platform readiness alone never grants trading authority.
+- `DEMO`/`LIVE` authorization remains false by default; require separate, valid owner authorization and every strategy, configuration, runtime, READY, risk and broker gate. For a strategy-specific standing DEMO authorization ratified under C14, per-order owner confirmation is not required; all order-level safety checks still apply. Live remains disabled and outside C14. Platform readiness alone never grants trading authority. See `docs/governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md`.
 - In read-only missions: `ORDER_API_CALLS = 0` and `BROKER_MUTATION_COUNT = 0`. Never call `order_send`, `order_check`, position/pending-order mutation, an execution gateway, or `assistant.commands.execute_command()`.
 
 ## Fail-closed policy

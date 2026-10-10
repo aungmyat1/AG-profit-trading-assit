@@ -230,6 +230,12 @@ research eligibility. Its contract is
 
 - [`governance/OWNER_DECISION_REGISTER.md`](governance/OWNER_DECISION_REGISTER.md) — running owner
   decision register (open rows `PENDING_OWNER`; resolved decisions retain their dated source).
+- [`governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md`](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md)
+  — ratified DEMO-only sequencing, standing authorization and risk limits; no current authorization changes.
+- [`governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md`](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md)
+  — historical proposal retained for traceability; superseded demo-soak and per-order-confirmation requirements are identified.
+- [`governance/AGP_C6_IMPLEMENTATION_GATES_2026-10-10.md`](governance/AGP_C6_IMPLEMENTATION_GATES_2026-10-10.md)
+  — historical implementation plan; C14 leaves host acceptance required and shadow observation optional.
 - [`governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md`](governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md)
   — owner decision record for Large-SMC actionability (brought forward unchanged).
 - [`agents/CONTEXT_PACK.md`](agents/CONTEXT_PACK.md) — generated context pack (objective, invariants

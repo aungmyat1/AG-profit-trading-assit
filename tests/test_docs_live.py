@@ -339,9 +339,10 @@ def test_allowlist_migration_accounts_for_all_original_entries():
     destinations = {entry["origin"] for entry in entries if entry not in data["resolved"]}
     destinations.update(f"resolved/{n}" for n in range(len(data["resolved"])))
     assert {row["destination"] for row in mappings} == destinations
-    assert len(data["never_suppress"]) == 28
+    assert len(data["never_suppress"]) == 27
     assert {(entry["origin"], entry["ref"]) for entry in data["resolved"]} == {
-        ("never_suppress/0", "C15"), ("never_suppress/4", "C2"), ("carve_outs/10/0", "C2")}
+        ("never_suppress/0", "C15"), ("never_suppress/4", "C2"), ("carve_outs/10/0", "C2"),
+        ("never_suppress/29", "C14")}
     assert data["migration"]["merged_entries"] == []
 
 

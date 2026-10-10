@@ -1,6 +1,14 @@
+---
+class: authority
+state: DESIGN
+owner_reviewed: null
+review_by: 2026-11-07
+---
 # AGP-C6 — Three-lane strategy qualification and governed automatic demo trading
 
-Status: PROPOSED — owner-requested objective amendment, 2026-10-10. Base: main 8f803e0 (PR #107 merged). This document is not execution authorization. The existing ratified objective remains authoritative until this amendment is reviewed, recorded in the owner decision register and merged.
+Status: HISTORICAL PROPOSAL — superseded on demo sequencing by ratified C14 (2026-10-11). Retained for traceability; it is not current authority or execution authorization. C14 supersedes the proposed mandatory 10-cycle zero-order soak, post-soak authorization sequence, and per-order Confirm requirement. The proposal's L1–L6, runtime, READY, host, risk, broker, audit and separate strategy-specific authorization safeguards remain relevant to implementation, subject to the current objective and owner-approved policy.
+
+Base: main 8f803e0 (PR #107 merged). Preserve the proposal text below as the historical record of the 2026-10-10 request.
 
 ## Target objective
 Qualify exactly three strategy lanes: (1) FX and gold daily session tickets using ST_ASIAN_SWEEP_5R_V1@1.1.2, (2) VT Markets BTCUSD/ETHUSD CFD tickets using ST_CRYPTO_CFD_SWEEP_RETEST_V1, and (3) six-instrument Large-SMC watch and eligible trades using ST_LARGE_SMC_V1@1.1.0. Each lane must pass L1–L6 with explicit per-instrument coverage and versioned contract/engine hashes. Large-SMC without validated entry, stop and target remains ALERT_ONLY, never auto-traded.
@@ -23,5 +31,5 @@ Owner Telegram controls (verified allowlisted identity only): modify SL, modify 
 ## Invariants and acceptance
 Owner authorizes each strategy for DEMO; qualified tickets may then place demo orders automatically and are reported to Telegram for review/edit/close. This replaces per-entry Confirm only after the new authority is implemented and explicitly activated; until then existing Confirm/Reject remains decision capture only. EDGE_VERIFIED=false is visible on PRE-EDGE tickets. LIVE_AUTHORIZED remains false/out of scope. Every action appends a durable audit chain ticket -> decision -> order_check -> send -> broker reconciliation -> Telegram notification -> edits -> close. G6 requires a separately authorized demo round trip with one correlated order and audit record. No code/config/authorization flags change in this proposal.
 
-## Governance decisions to record before activation
-Proposed decision ID OD1010-OBJ-AUTO-DEMO; resolve C14 only after owner approves this standing authorization model. The numerical limits are resolved by OD1010-C6-RISK; notification failure behavior remains PENDING_OWNER. Preserve OD1009 decisions and the 2026-10-09 ratification history. Implementation PRs must be separately reviewed; this document and numerical limit approval alone cannot authorize execution.
+## Governance decisions to record before activation (historical proposal text)
+At proposal time, the suggested decision ID was OD1010-OBJ-AUTO-DEMO and C14 approval was pending. C14 was subsequently ratified by the owner on 2026-10-11, superseding this proposal's demo sequencing. OD1010-C6-RISK numerical limits are approved; notification-failure behavior remains PENDING_OWNER. Preserve OD1009 decisions and the 2026-10-09 ratification history. Implementation PRs must be separately reviewed; neither this historical proposal nor numerical limit approval alone authorizes execution.
