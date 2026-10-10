@@ -416,3 +416,14 @@ from canonical session windows or other repo conventions at the time of registra
   `docs/status/AGP_C1_LSMC_V110_LOGIC_VERIFICATION_2026-10-09.md`.
 - No change to `proposal_generation_authorized`, `demo_authorized`, `live_authorized` (all
   false) or `economic_status` (`NOT_EVALUATED`). EDGE_VERIFIED is not implied.
+
+
+## Import-resolution technical debt (2026-10-10)
+
+- **TECH_DEBT / DEAD_IMPORT:** 158 importing locations unreachable from the conservative
+  static import graph rooted at `scripts/host/live_candles_smoke.py` for
+  fx/crypto/lsmc/lsmc-weekend on main `7f3e75d8bbb4a7c119a9be7279bf6d2f5badd003`.
+  Full module/importer/line inventory and three separate reachable DEPLOY_BLOCKER
+  imports: [import-resolution audit](../docs/status/IMPORT_RESOLUTION_AUDIT_2026-10-10.md).
+  No dead-import fixes, strategy/config changes, or execution authority changes.
+  DEAD_IMPORT is entry-point-specific; other tooling may still reference these imports.

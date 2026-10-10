@@ -691,3 +691,5 @@ authoritative machine-readable source.
   mapping-decision debt; parity checkpoint `READY_FOR_INDEPENDENT_AUDIT`,
   `SAFE_TO_ADVANCE_TO_V2_4 = NO` pending that audit)
 - [Web-to-Vantage Demo execution bridge](status/AG_WEB_VANTAGE_DEMO_EXECUTION_BRIDGE_V1.md)
+
+- [Import-resolution audit (2026-10-10)](status/IMPORT_RESOLUTION_AUDIT_2026-10-10.md) — all 161 locations, guards/history and ledger tech debt.
