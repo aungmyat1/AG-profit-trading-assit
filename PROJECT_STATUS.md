@@ -286,7 +286,7 @@ required key absent from the owner mapping raised `KeyError` instead of the cano
 Fix: one shared inclusive boundary predicate (`v1_tickets.guards.cost_at_or_above`, relative tolerance
 1e-9 — five orders tighter than the 4-decimal cost the owner is shown) used by FX, gold and crypto, plus
 `.get()` access for the three required keys. Tests: `tests/test_g3_manual_ticket_risk_cost_gate.py`
-**78 passed**; related ticket suites **311 passed**; full suite **1859 passed, 2 skipped, 0 failed**
+**78 passed**; related ticket/sizing/guard suites **615 passed**; full suite **2029 passed, 3 skipped, 0 failed**
 (Linux container, Python 3.11.2, MT5 stubbed). With the three source files reverted to base `5b67199` the new
 suite reports 19 failed, 59 passed, so the tests detect the defects. `broker_mutations = 0`.
 

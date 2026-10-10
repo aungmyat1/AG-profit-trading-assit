@@ -32,7 +32,7 @@ No limit, threshold or reason code that these sources do not contain was added.
 ## Test matrix (key × asset class × verdict)
 
 Suite: `tests/test_g3_manual_ticket_risk_cost_gate.py` — **78 passed** (2026-10-10, Linux container,
-Python 3.11.2, MT5 stubbed). Full suite with the new file: **1859 passed, 2 skipped, 0 failed**.
+Python 3.11.2, MT5 stubbed). Full suite with the new file: **2029 passed, 3 skipped, 0 failed**.
 FX = recorded EURUSD (2026-06-23 SHORT, 5.1-pip stop) and recorded
 GBPUSD (2026-10-06 LONG, 6.2-pip stop); gold = the same recorded EURUSD session price-scaled to a
 $3.00 stop (synthetic gate math, see "Fixtures"); crypto = the frozen
@@ -157,8 +157,8 @@ python -m pytest tests/test_manual_ticket_build.py tests/test_manual_ticket_logi
   tests/test_asian_sweep_v1_1_2_logic_gate_both_cycles.py tests/test_asian_sweep_v1_1_2_l2_closure.py \
   tests/test_v1_tickets.py tests/test_d6_ready_authority.py \
   tests/test_d6_per_symbol_verification.py tests/test_d6_actionability_suppressed.py -q
-                                                                            -> 311 passed
-python -m pytest -q                                                       -> 1859 passed, 2 skipped
+                                                                            -> 615 passed
+python -m pytest -q                                                       -> 2029 passed, 3 skipped
 ```
 
 Environment: Linux cloud container (not the Windows MT5 host), Python 3.11.2, PyYAML 6.0.3,
