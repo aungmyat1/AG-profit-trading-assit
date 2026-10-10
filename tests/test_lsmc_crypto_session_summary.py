@@ -11,6 +11,8 @@ import datetime as dt
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts" / "host"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -160,3 +162,40 @@ def test_each_crypto_rejection_appears_in_exactly_one_summary_across_the_utc_day
     crypto_messages = [m for _, m in calls if m.startswith("Large-SMC crypto watch summary")]
     assert len(fx_messages) == 2 and len(crypto_messages) == 1
     assert not any(s in m for m in fx_messages for s in cfd.LSMC_CRYPTO_SYMBOLS)
+
+
+def _fail_mt5(monkeypatch, failure):
+    from contextlib import contextmanager, nullcontext
+
+    @contextmanager
+    def busy():
+        raise lcs.Mt5Busy("held")
+        yield
+
+    monkeypatch.setattr(lcs, "single_instance", lambda name: nullcontext())
+    monkeypatch.setattr(lcs, "import_mt5", lambda: None if failure == "MT5_PACKAGE_MISSING" else
+                        type("MT5", (), {"shutdown": staticmethod(lambda: None)})())
+    monkeypatch.setattr(lcs, "mt5_access_lock", busy if failure == "MT5_BUSY" else nullcontext)
+    monkeypatch.setattr(lcs, "mt5_initialize", lambda *a: (failure != "MT5_INITIALIZE_FAILED", "init"))
+    monkeypatch.setattr(lcs, "require_demo_account", lambda *a: (failure != "DEMO_ACCOUNT_REQUIRED", "demo"))
+
+
+@pytest.mark.parametrize("failure", ["MT5_PACKAGE_MISSING", "MT5_INITIALIZE_FAILED", "DEMO_ACCOUNT_REQUIRED",
+                                     "MT5_BUSY"])
+@pytest.mark.parametrize("mode,session,now", [("lsmc", cfd.LSMC_CRYPTO_DAY, at(WED, 0, 40)),
+                                              ("lsmc-weekend", cfd.LSMC_CRYPTO_WEEKEND, at(SAT, 21, 0))])
+def test_mt5_failure_still_journals_crypto_data_error_and_processes_due_summaries(monkeypatch, mode, session, now,
+                                                                                  failure):
+    recorded, processed, logged = [], [], []
+    _fail_mt5(monkeypatch, failure)
+    monkeypatch.setattr(lcs, "utcnow", lambda: now)
+    monkeypatch.setattr(lcs, "record_lsmc_crypto_evaluation",
+                        lambda journal, **kw: recorded.append((kw["session"], kw["symbol"], kw["state"],
+                                                               kw["reason_codes"])))
+    monkeypatch.setattr(lcs, "lsmc_crypto_summary_lines",
+                        lambda run_now, journal, s, sender=None: processed.append(s) or [f"SUMMARY {s}"])
+    monkeypatch.setattr(lcs, "log_line", lambda name, message: logged.append(message))
+
+    lcs.main(["--mode", mode])
+    assert recorded == [(session, s, "DATA_ERROR", [failure]) for s in lcs.LSMC_CRYPTO_SYMBOLS]
+    assert processed == [session] and f"SUMMARY {session}" in logged
