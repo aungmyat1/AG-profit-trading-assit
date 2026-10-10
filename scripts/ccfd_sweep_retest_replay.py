@@ -333,6 +333,29 @@ def prefix_invariance_temp(stream: Sequence[tuple]) -> dict:
             "verdict": PASS if not mismatches and not pre_emission else FAIL}
 
 
+SPEC_AMBIGUITY_PERMISSION = "SPEC_AMBIGUITY:DIRECTION_PERMISSION_REEVALUATED_AFTER_EMISSION"
+
+
+def classify_prefix_mismatches(stream: Sequence[tuple], perm_at: Dict[dt.datetime, Optional[str]]) -> Dict[str, str]:
+    """Per UTC day with prefix mismatches: SPEC_AMBIGUITY when every mismatching scan carries a different
+    H1/D1 direction permission than the first emission (the frozen engine re-evaluates permission each
+    scan; the contract does not say whether it locks at the sweep/emission), else UNCLASSIFIED_FAILURE."""
+    by_day: Dict[dt.date, list] = {}
+    for now, sem in stream:
+        by_day.setdefault(now.date(), []).append((now, sem))
+    out = {}
+    for day, rows in by_day.items():
+        first = next((k for k, (_, sem) in enumerate(rows) if sem["result"] == "ENTRY_VALID"), None)
+        if first is None:
+            continue
+        t0, s0 = rows[first]
+        bad = [now for now, sem in rows[first:] if sem != s0]
+        if bad:
+            out[day.isoformat()] = (SPEC_AMBIGUITY_PERMISSION if all(perm_at[t] != perm_at[t0] for t in bad)
+                                    else "UNCLASSIFIED_FAILURE")
+    return out
+
+
 # ------------------------------------------------------------------------------- tickets
 
 def spread_band(ticket: dict) -> str:
@@ -379,6 +402,7 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
 
     _, windows = crypto_cfd._config()
     stream, results, emissions, hits = [], Counter(), [], Counter()
+    perm_at: Dict[dt.datetime, Optional[str]] = {}
     by_day: Dict[str, Counter] = {}
     l2_bad, l4_bad, l4_neg_bad, l2_neg_bad = [], [], [], []
     for day in days:
@@ -397,6 +421,7 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
             bump(now, "L3", leaked)
             sem = semantic(r)
             stream.append((now, sem))
+            perm_at[now] = r["evidence"].get("context", {}).get("direction_permission")
             win = "IN_WINDOW" if crypto_cfd._window(now, windows) else "OUT_OF_WINDOW"
             events = rule_events(r, x, now)
             if k == 287 and r["result"] in ("WAITING_MSS", "WAITING_RETEST"):   # UTC-day rotation kills it
@@ -478,6 +503,7 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
     mism["prefix"], mism["l3_sequence"] = prefix["prefix_mismatches"], len(l3_seq_bad)
     for d, n in prefix["mismatches_by_day"].items():
         dfail.setdefault(d, Counter())["L3"] += n
+    prefix_class = classify_prefix_mismatches(stream, perm_at)
     mism["ticket_determinism"] = sum(s != PASS for s in cycle_l1)
 
     identity = logic_identity(CONTRACT_ID, CONTRACT_VERSION)
@@ -510,7 +536,10 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
         gd = {"L1": v(f["L1"] > 0, True), "L2": v(f["L2"] > 0, pos), "L3": v(f["L3"] > 0, True),
               "L4": v(f["L4"] > 0, pos), "L5": l5_by_day.get(d, INSUFFICIENT), "L6": v(f["L6"] > 0, d in emitted_days),
               "prefix_mismatches": prefix["mismatches_by_day"].get(d, 0)}
-        gd["failure_class"] = "UNCLASSIFIED_FAILURE" if FAIL in gd.values() else None
+        only_prefix = (f["L3"] == prefix["mismatches_by_day"].get(d, 0) > 0
+                       and [k for k in ("L1", "L2", "L3", "L4", "L6") if gd[k] == FAIL] == ["L3"])
+        gd["failure_class"] = (None if FAIL not in gd.values() else
+                               prefix_class.get(d, "UNCLASSIFIED_FAILURE") if only_prefix else "UNCLASSIFIED_FAILURE")
         per_day[d] = {"day_type": day_type(dt.date.fromisoformat(d)), "results": dict(sorted(c.items())), **gd}
     return {
         "symbol": symbol, "fetch_counts": counts, "per_day": per_day, "days": len(days), "scans": len(stream),

@@ -86,22 +86,21 @@ def test_committed_artifact_is_consistent():
         assert sum(rep["symbols"][sym]["mismatches"].values()) == 0
 
 
-def test_btcusd_logic_verified_record_is_bound_to_identity_and_evidence():
+def test_no_logic_verified_record_while_60d_checks_do_not_all_pass():
+    """AGP-LANE-B2: the 14-day run passes, but the 60-day VT run (PR #143) has an L3 prefix failure
+    classified SPEC_AMBIGUITY (owner A/B pending), so -- per the AGP-4H-B rule -- nothing is recorded."""
     import yaml
 
-    from v1_tickets.authority import logic_identity
     from v1_tickets.ready_authority import symbol_verified
 
-    rep = json.loads(ARTIFACT.read_text(encoding="utf-8"))
-    assert rep["logic_verification"]["BTCUSD"]["all_checks_pass"] is True
-    assert all(d["failure_class"] is None for d in rep["symbols"]["BTCUSD"]["per_day"].values())
+    rep14 = json.loads(ARTIFACT.read_text(encoding="utf-8"))
+    rep60 = json.loads((R.DATASETS["recorded_60d"][1] / "replay_report.json").read_text(encoding="utf-8"))
+    assert rep14["logic_verification"]["BTCUSD"]["all_checks_pass"] is True
+    assert rep60["logic_verification"]["BTCUSD"]["all_checks_pass"] is False
+    classes = {d["failure_class"] for d in rep60["symbols"]["BTCUSD"]["per_day"].values()} - {None}
+    assert classes == {R.SPEC_AMBIGUITY_PERMISSION}
     entry = yaml.safe_load((ROOT / "strategies/registry.yaml").read_text(encoding="utf-8"))["strategies"][
         "ST_CRYPTO_CFD_SWEEP_RETEST_V1"]
-    assert entry["active"] is False and entry["research"] is True
-    rec = entry["candidate_versions"]["1.0.0"]
-    digest = logic_identity("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0")["digest"]
-    assert rec["logic_verified_identity"] == digest == rep["logic_verification"]["BTCUSD"]["logic_identity"]["digest"]
-    assert [s["symbol"] for s in rec["logic_verified_symbols"]] == ["BTCUSD"]
-    assert (ROOT / rec["logic_verified_symbols"][0]["evidence"]).is_file()
-    assert symbol_verified("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0", "BTCUSD") is True
-    assert symbol_verified("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0", "ETHUSD") is False
+    assert entry["active"] is False and entry["research"] is True and "candidate_versions" not in entry
+    for sym in ("BTCUSD", "ETHUSD"):
+        assert symbol_verified("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0", sym) is False
