@@ -297,6 +297,8 @@ entry-to-target distance remaining at the latest closed M5 price. The owner-set
 `lsmc_min_remaining_reward_fraction` in `config/policy/actionability_policy.yaml`
 has no code fallback; a host-local actionability policy must also include this key.
 Rejected opportunities are archived and suppressed. No R:R minimum is authorized.
+SESSION_SUMMARY includes Large-SMC rejection counts by reason for that UTC session,
+without setup details; duplicate transition identities are counted once.
 
 The complete scheduled objective is three FX majors (EURUSD, GBPUSD, USDJPY) plus XAUUSD on
 both session cycles, daily-window BTCUSDT and ETHUSDT tickets, and Large-SMC watch/alerts for
