@@ -1,4 +1,467 @@
 {
+  "mission": "AGP-4H-C",
+  "strategy": "ST_LARGE_SMC_V1@1.1.0",
+  "fixture": "tests/fixtures/large_smc_v111/EURUSD.json",
+  "fixture_sha256": "a8bf11a9b8a8237d3c392ed16380c7a407d9f58c73d387d7ca97da7c4c2323d1",
+  "fixture_classification": "HOST_CAPTURED_DERIVED",
+  "swing_length": 2,
+  "point": 1e-05,
+  "point_source": "HOST_CAPTURED",
+  "tie_tolerance_points": 5,
+  "actionability_evaluated": false,
+  "timeframes": {
+    "D1": {
+      "bars": 24,
+      "local_counts": {
+        "swings": 7,
+        "bos_choch": 2,
+        "liquidity_sweeps": 4,
+        "fvg": 3
+      },
+      "causal_smc_counts": {
+        "swings": 5,
+        "bos_choch": 1,
+        "liquidity": 1,
+        "ob": 2,
+        "fvg": 2,
+        "adapter_fvg": 2,
+        "adapter_ob": 2
+      },
+      "prefix_diffs": [],
+      "prefix_pass": true,
+      "geometry_pass": true,
+      "determinism_pass": true,
+      "closed_ordered_input_pass": true,
+      "comparisons": [
+        {
+          "output": "swings",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27",
+          "local_count": 7,
+          "causal_smc_count": 5,
+          "difference_count": 2,
+          "reason": "local SW-A uses strict k=2 fractals and confirmed pivots; raw SMC also has array-end bookend labels"
+        },
+        {
+          "output": "fvg",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138",
+          "local_count": 3,
+          "causal_smc_count": 2,
+          "difference_count": 1,
+          "reason": "local three-candle gap is known at the third candle; oracle outputs are delayed by swing_length and end-censored"
+        },
+        {
+          "output": "BOS",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29",
+          "difference_count": 0,
+          "reason": "close-confirmed structure break; SMC uses its own swing and break labeling"
+        },
+        {
+          "output": "CHOCH",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29",
+          "difference_count": 3,
+          "reason": "close-confirmed structure break; SMC uses its own swing and break labeling"
+        },
+        {
+          "output": "liquidity",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29",
+          "local_count": 4,
+          "causal_smc_count": 1,
+          "difference_count": 3,
+          "reason": "local sweep requires wick beyond a previously confirmed swing and close back inside; SMC liquidity clusters equal levels"
+        }
+      ]
+    },
+    "H1": {
+      "bars": 120,
+      "local_counts": {
+        "swings": 31,
+        "bos_choch": 14,
+        "liquidity_sweeps": 17,
+        "fvg": 31,
+        "ob": 14
+      },
+      "causal_smc_counts": {
+        "swings": 29,
+        "bos_choch": 12,
+        "liquidity": 2,
+        "ob": 12,
+        "fvg": 30,
+        "adapter_fvg": 30,
+        "adapter_ob": 12
+      },
+      "prefix_diffs": [],
+      "prefix_pass": true,
+      "geometry_pass": true,
+      "determinism_pass": true,
+      "closed_ordered_input_pass": true,
+      "comparisons": [
+        {
+          "output": "swings",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27",
+          "local_count": 31,
+          "causal_smc_count": 29,
+          "difference_count": 6,
+          "reason": "local SW-A uses strict k=2 fractals and confirmed pivots; raw SMC also has array-end bookend labels"
+        },
+        {
+          "output": "fvg",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138",
+          "local_count": 31,
+          "causal_smc_count": 30,
+          "difference_count": 1,
+          "reason": "local three-candle gap is known at the third candle; oracle outputs are delayed by swing_length and end-censored"
+        },
+        {
+          "output": "BOS",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29",
+          "difference_count": 14,
+          "reason": "close-confirmed structure break; SMC uses its own swing and break labeling"
+        },
+        {
+          "output": "CHOCH",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29",
+          "difference_count": 12,
+          "reason": "close-confirmed structure break; SMC uses its own swing and break labeling"
+        },
+        {
+          "output": "liquidity",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29",
+          "local_count": 17,
+          "causal_smc_count": 2,
+          "difference_count": 14,
+          "reason": "local sweep requires wick beyond a previously confirmed swing and close back inside; SMC liquidity clusters equal levels"
+        },
+        {
+          "output": "ob",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28,45-49",
+          "local_count": 14,
+          "causal_smc_count": 12,
+          "difference_count": 26,
+          "reason": "contract explicitly excludes smc.ob candidates; local AG_ORDER_BLOCK_V1 detection is separate"
+        }
+      ]
+    },
+    "M5": {
+      "bars": 600,
+      "local_counts": {
+        "swings": 139,
+        "bos_choch": 48,
+        "liquidity_sweeps": 70,
+        "fvg": 157
+      },
+      "causal_smc_counts": {
+        "swings": 155,
+        "bos_choch": 70,
+        "liquidity": 31,
+        "ob": 14,
+        "fvg": 152,
+        "adapter_fvg": 152,
+        "adapter_ob": 14
+      },
+      "prefix_diffs": [],
+      "prefix_pass": true,
+      "geometry_pass": true,
+      "determinism_pass": true,
+      "closed_ordered_input_pass": true,
+      "comparisons": [
+        {
+          "output": "swings",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27",
+          "local_count": 139,
+          "causal_smc_count": 155,
+          "difference_count": 48,
+          "reason": "local SW-A uses strict k=2 fractals and confirmed pivots; raw SMC also has array-end bookend labels"
+        },
+        {
+          "output": "fvg",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138",
+          "local_count": 157,
+          "causal_smc_count": 152,
+          "difference_count": 5,
+          "reason": "local three-candle gap is known at the third candle; oracle outputs are delayed by swing_length and end-censored"
+        },
+        {
+          "output": "BOS",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29",
+          "difference_count": 61,
+          "reason": "close-confirmed structure break; SMC uses its own swing and break labeling"
+        },
+        {
+          "output": "CHOCH",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29",
+          "difference_count": 49,
+          "reason": "close-confirmed structure break; SMC uses its own swing and break labeling"
+        },
+        {
+          "output": "liquidity",
+          "classification": "DEFINITION_DIFF",
+          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29",
+          "local_count": 70,
+          "causal_smc_count": 31,
+          "difference_count": 77,
+          "reason": "local sweep requires wick beyond a previously confirmed swing and close back inside; SMC liquidity clusters equal levels"
+        }
+      ]
+    }
+  },
+  "smc_causal_shift": {
+    "bars": 2,
+    "outputs": [
+      "swings",
+      "BOS",
+      "CHOCH",
+      "FVG",
+      "OB",
+      "liquidity",
+      "adapter_fvg",
+      "adapter_ob"
+    ],
+    "implementation": "research_external/oracles/lsmc_detection_run.py:71,81"
+  },
+  "evaluated_at_utc": "2026-08-03T00:00:00Z",
+  "seeded_manual_review": {
+    "seed": 20261011,
+    "sample_size": 10,
+    "method": "seeded rng.choice per category, then seeded rng.sample from the remaining normalized differences",
+    "reviews": [
+      {
+        "timeframe": "M5",
+        "category": "BOS",
+        "side": "SMC_ONLY",
+        "bar_index": 446,
+        "raw_bar_ohlc": {
+          "open": 1.15013,
+          "high": 1.15013,
+          "low": 1.14966,
+          "close": 1.14997
+        },
+        "item": [
+          446,
+          "BOS",
+          "bearish",
+          1.1500500441
+        ],
+        "raw_check": "bar[446].close=1.14997; compared to reported level=1.1500500441",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30",
+        "engine_correct_per_spec": "contract accepts close-confirmed structure breaks with five-point tolerance and its BOS/CHOCH state rule; SMC break labeling differs"
+      },
+      {
+        "timeframe": "M5",
+        "category": "CHOCH",
+        "side": "SMC_ONLY",
+        "bar_index": 244,
+        "raw_bar_ohlc": {
+          "open": 1.1529,
+          "high": 1.15316,
+          "low": 1.15287,
+          "close": 1.15313
+        },
+        "item": [
+          244,
+          "CHOCH",
+          "bullish",
+          1.1529899836
+        ],
+        "raw_check": "bar[244].close=1.15313; compared to reported level=1.1529899836",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30",
+        "engine_correct_per_spec": "contract accepts close-confirmed structure breaks with five-point tolerance and its BOS/CHOCH state rule; SMC break labeling differs"
+      },
+      {
+        "timeframe": "M5",
+        "category": "FVG",
+        "side": "LOCAL_ONLY",
+        "bar_index": 279,
+        "raw_bar_ohlc": {
+          "open": 1.15241,
+          "high": 1.15254,
+          "low": 1.15241,
+          "close": 1.15241
+        },
+        "item": [
+          279,
+          "bearish",
+          1.15263,
+          1.15254
+        ],
+        "raw_check": "bar[280].high 1.15254 < bar[278].low 1.15263 = True",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138",
+        "engine_correct_per_spec": "raw three-candle gap is known on the third candle; local FVG follows that geometry and SMC visibility is delayed two bars"
+      },
+      {
+        "timeframe": "H1",
+        "category": "OB",
+        "side": "LOCAL_ONLY",
+        "bar_index": 70,
+        "raw_bar_ohlc": {
+          "open": 1.14592,
+          "high": 1.1471,
+          "low": 1.14592,
+          "close": 1.14707
+        },
+        "item": [
+          70,
+          "OB_PIVOT",
+          "SHORT",
+          1.14592,
+          1.1471,
+          "AG_ORDER_BLOCK_V1"
+        ],
+        "raw_check": "zone origin index=70; raw origin OHLC=1.14592/1.1471/1.14592/1.14707",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28,45-49",
+        "engine_correct_per_spec": "contract explicitly uses AG_ORDER_BLOCK_V1 candidates and excludes smc.ob() candidates"
+      },
+      {
+        "timeframe": "M5",
+        "category": "liquidity",
+        "side": "LOCAL_ONLY",
+        "bar_index": 256,
+        "raw_bar_ohlc": {
+          "open": 1.15347,
+          "high": 1.15351,
+          "low": 1.15327,
+          "close": 1.1533
+        },
+        "item": [
+          256,
+          "bearish",
+          1.15331,
+          "sweep_reclaim"
+        ],
+        "raw_check": "bar[256] high/low/close=1.15351/1.15327/1.1533; level=1.15331",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29",
+        "engine_correct_per_spec": "contract requires a wick through a previously confirmed swing and close back inside; SMC equal-level clustering is a different output"
+      },
+      {
+        "timeframe": "H1",
+        "category": "swings",
+        "side": "LOCAL_ONLY",
+        "bar_index": 4,
+        "raw_bar_ohlc": {
+          "open": 1.1403,
+          "high": 1.14046,
+          "low": 1.14015,
+          "close": 1.1403
+        },
+        "item": [
+          4,
+          "high",
+          1.14138
+        ],
+        "raw_check": "pivot index=2; confirm index=4; k=2",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27",
+        "engine_correct_per_spec": "raw bar is a strict k=2 high/low pivot at the delayed confirmation index"
+      },
+      {
+        "timeframe": "H1",
+        "category": "BOS",
+        "side": "LOCAL_ONLY",
+        "bar_index": 50,
+        "raw_bar_ohlc": {
+          "open": 1.13909,
+          "high": 1.13954,
+          "low": 1.13897,
+          "close": 1.13942
+        },
+        "item": [
+          50,
+          "BOS",
+          "bullish",
+          1.13914
+        ],
+        "raw_check": "bar[50].close=1.13942; compared to reported level=1.13914",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30",
+        "engine_correct_per_spec": "contract accepts close-confirmed structure breaks with five-point tolerance and its BOS/CHOCH state rule; SMC break labeling differs"
+      },
+      {
+        "timeframe": "M5",
+        "category": "BOS",
+        "side": "SMC_ONLY",
+        "bar_index": 449,
+        "raw_bar_ohlc": {
+          "open": 1.14979,
+          "high": 1.1498,
+          "low": 1.14934,
+          "close": 1.14938
+        },
+        "item": [
+          449,
+          "BOS",
+          "bearish",
+          1.1496599913
+        ],
+        "raw_check": "bar[449].close=1.14938; compared to reported level=1.1496599913",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30",
+        "engine_correct_per_spec": "contract accepts close-confirmed structure breaks with five-point tolerance and its BOS/CHOCH state rule; SMC break labeling differs"
+      },
+      {
+        "timeframe": "M5",
+        "category": "FVG",
+        "side": "LOCAL_ONLY",
+        "bar_index": 289,
+        "raw_bar_ohlc": {
+          "open": 1.15236,
+          "high": 1.15237,
+          "low": 1.15235,
+          "close": 1.15235
+        },
+        "item": [
+          289,
+          "bullish",
+          1.1525,
+          1.15237
+        ],
+        "raw_check": "bar[290].low 1.1525 > bar[288].high 1.15237 = True",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138",
+        "engine_correct_per_spec": "raw three-candle gap is known on the third candle; local FVG follows that geometry and SMC visibility is delayed two bars"
+      },
+      {
+        "timeframe": "H1",
+        "category": "BOS",
+        "side": "LOCAL_ONLY",
+        "bar_index": 33,
+        "raw_bar_ohlc": {
+          "open": 1.1372,
+          "high": 1.13726,
+          "low": 1.13553,
+          "close": 1.13559
+        },
+        "item": [
+          33,
+          "BOS",
+          "bearish",
+          1.13612
+        ],
+        "raw_check": "bar[33].close=1.13559; compared to reported level=1.13612",
+        "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30",
+        "engine_correct_per_spec": "contract accepts close-confirmed structure breaks with five-point tolerance and its BOS/CHOCH state rule; SMC break labeling differs"
+      }
+    ]
+  },
+  "data_provenance": {
+    "H1": "VT MT5 captured",
+    "M5": "resampled from VT MT5 captured M1",
+    "D1": "resampled from 24 complete UTC H1 bars",
+    "D1_broker_day_anchor": "17:00 America/New_York",
+    "D1_broker_day_alignment_pass": false,
+    "D1_first_fixture_open_utc": "2026-06-22T00:00:00Z",
+    "D1_first_fixture_open_new_york": "2026-06-21T20:00:00-04:00",
+    "source_notes": "Only closed UTC-aligned bars retained; 120 H1, 600 complete M5 derived from captured M1, and 24 complete D1 aggregates."
+  },
   "L1-L6_detection_only": {
     "checks": {
       "L1_prefix_invariance": true,
@@ -6,220 +469,20 @@
       "L3_detection_geometry": true,
       "L4_deterministic_replay": true,
       "L5_fixture_integrity": true,
-      "L6_closed_ordered_inputs": true
+      "L6_closed_ordered_inputs": true,
+      "D1_broker_day_alignment": false
     },
+    "logic_verified": false,
     "difference_classification": {
-      "DATA_DEFECT": 0,
-      "DEFINITION_DIFF": 302,
-      "LOGIC_DEFECT": 0
+      "DEFINITION_DIFF": 322,
+      "LOGIC_DEFECT": 0,
+      "DATA_DEFECT": 1
     },
-    "logic_verified": true,
     "scope": "EURUSD detection only; actionability is a separate layer and was not evaluated"
   },
-  "actionability_evaluated": false,
-  "evaluated_at_utc": "2026-08-03T00:00:00Z",
-  "fixture": "tests/fixtures/large_smc_v111/EURUSD.json",
-  "fixture_classification": "HOST_CAPTURED_DERIVED",
-  "fixture_sha256": "a8bf11a9b8a8237d3c392ed16380c7a407d9f58c73d387d7ca97da7c4c2323d1",
-  "mission": "AGP-4H-C",
-  "point": 1e-05,
-  "point_source": "HOST_CAPTURED",
-  "strategy": "ST_LARGE_SMC_V1@1.1.0",
-  "swing_length": 2,
-  "tie_tolerance_points": 5,
-  "timeframes": {
-    "D1": {
-      "bars": 24,
-      "causal_smc_counts": {
-        "adapter_fvg": 2,
-        "adapter_ob": 2,
-        "bos_choch": 1,
-        "fvg": 2,
-        "liquidity": 1,
-        "ob": 2,
-        "swings": 6
-      },
-      "closed_ordered_input_pass": true,
-      "comparisons": [
-        {
-          "causal_smc_count": 6,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 3,
-          "local_count": 7,
-          "output": "swings",
-          "reason": "local SW-A uses strict k=2 fractals and confirmed pivots; raw SMC also has array-end bookend labels",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27"
-        },
-        {
-          "causal_smc_count": 1,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 2,
-          "local_count": 2,
-          "output": "bos_choch",
-          "reason": "local close breaks use the contract's 5-point tie tolerance and consumed known swings",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29"
-        },
-        {
-          "causal_smc_count": 2,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 1,
-          "local_count": 3,
-          "output": "fvg",
-          "reason": "local three-candle gap is known at the third candle; oracle outputs are delayed by swing_length and end-censored",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138"
-        },
-        {
-          "causal_smc_count": 1,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 3,
-          "local_count": 4,
-          "output": "liquidity",
-          "reason": "local sweep requires wick beyond a previously confirmed swing and close back inside; SMC liquidity clusters equal levels",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29"
-        }
-      ],
-      "determinism_pass": true,
-      "geometry_pass": true,
-      "local_counts": {
-        "bos_choch": 2,
-        "fvg": 3,
-        "liquidity_sweeps": 4,
-        "swings": 7
-      },
-      "prefix_diffs": [],
-      "prefix_pass": true
-    },
-    "H1": {
-      "bars": 120,
-      "causal_smc_counts": {
-        "adapter_fvg": 30,
-        "adapter_ob": 12,
-        "bos_choch": 12,
-        "fvg": 30,
-        "liquidity": 2,
-        "ob": 12,
-        "swings": 30
-      },
-      "closed_ordered_input_pass": true,
-      "comparisons": [
-        {
-          "causal_smc_count": 30,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 7,
-          "local_count": 31,
-          "output": "swings",
-          "reason": "local SW-A uses strict k=2 fractals and confirmed pivots; raw SMC also has array-end bookend labels",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27"
-        },
-        {
-          "causal_smc_count": 12,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 22,
-          "local_count": 14,
-          "output": "bos_choch",
-          "reason": "local close breaks use the contract's 5-point tie tolerance and consumed known swings",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29"
-        },
-        {
-          "causal_smc_count": 30,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 1,
-          "local_count": 31,
-          "output": "fvg",
-          "reason": "local three-candle gap is known at the third candle; oracle outputs are delayed by swing_length and end-censored",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138"
-        },
-        {
-          "causal_smc_count": 2,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 14,
-          "local_count": 17,
-          "output": "liquidity",
-          "reason": "local sweep requires wick beyond a previously confirmed swing and close back inside; SMC liquidity clusters equal levels",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29"
-        },
-        {
-          "causal_smc_count": 12,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 26,
-          "local_count": 14,
-          "output": "ob",
-          "reason": "contract explicitly excludes smc.ob candidates; local AG_ORDER_BLOCK_V1 detection is separate",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28,45-49"
-        }
-      ],
-      "determinism_pass": true,
-      "geometry_pass": true,
-      "local_counts": {
-        "bos_choch": 14,
-        "fvg": 31,
-        "liquidity_sweeps": 17,
-        "ob": 14,
-        "swings": 31
-      },
-      "prefix_diffs": [],
-      "prefix_pass": true
-    },
-    "M5": {
-      "bars": 600,
-      "causal_smc_counts": {
-        "adapter_fvg": 152,
-        "adapter_ob": 14,
-        "bos_choch": 70,
-        "fvg": 152,
-        "liquidity": 31,
-        "ob": 14,
-        "swings": 156
-      },
-      "closed_ordered_input_pass": true,
-      "comparisons": [
-        {
-          "causal_smc_count": 156,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 49,
-          "local_count": 139,
-          "output": "swings",
-          "reason": "local SW-A uses strict k=2 fractals and confirmed pivots; raw SMC also has array-end bookend labels",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:26-27"
-        },
-        {
-          "causal_smc_count": 70,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 92,
-          "local_count": 53,
-          "output": "bos_choch",
-          "reason": "local close breaks use the contract's 5-point tie tolerance and consumed known swings",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:30; src/large_smc_watch/detect.py:27-29"
-        },
-        {
-          "causal_smc_count": 152,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 5,
-          "local_count": 157,
-          "output": "fvg",
-          "reason": "local three-candle gap is known at the third candle; oracle outputs are delayed by swing_length and end-censored",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:28; src/fx_discovery/features.py:127-138"
-        },
-        {
-          "causal_smc_count": 31,
-          "classification": "DEFINITION_DIFF",
-          "difference_count": 77,
-          "local_count": 70,
-          "output": "liquidity",
-          "reason": "local sweep requires wick beyond a previously confirmed swing and close back inside; SMC liquidity clusters equal levels",
-          "spec_citation": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml:29"
-        }
-      ],
-      "determinism_pass": true,
-      "geometry_pass": true,
-      "local_counts": {
-        "bos_choch": 53,
-        "fvg": 157,
-        "liquidity_sweeps": 70,
-        "swings": 139
-      },
-      "prefix_diffs": [],
-      "prefix_pass": true
-    }
+  "comparison_reconciliation": {
+    "prior_aggregate_definition_diff_count": 302,
+    "corrected_type_separated_definition_diff_count": 322,
+    "reason": "The earlier combined BOS/CHOCH normalizer skipped SMC CHOCH rows because it used the library's CHOCH column name as a StructureBreak event label. The corrected split normalizes these independently."
   }
 }
