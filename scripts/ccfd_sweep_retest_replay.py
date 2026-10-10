@@ -205,6 +205,100 @@ def geometry_reject_ok(plan: dict) -> bool:
     return wrong_side or (plan["tp2_r_multiple"] is not None and plan["tp2_r_multiple"] < MIN_TP2_R_MULTIPLE)
 
 
+# ------------------------------------------------------------------------------- rule coverage
+
+# Spec rule ids = YAML paths of strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml. scope: ANY (direction-
+# independent: both direction cells share one status), LONG/SHORT (other direction NOT_APPLICABLE), BOTH.
+RULES = (
+    ("liquidity_contract.levels", "ANY"),
+    ("liquidity_contract.completeness_rule", "ANY"),
+    ("context_contract.direction_permission.h1_unresolved", "ANY"),
+    ("context_contract.direction_permission.d1_confirmed_and_opposes_h1", "BOTH"),
+    ("context_contract.direction_permission.h1_bullish", "LONG"),
+    ("context_contract.direction_permission.h1_bearish", "SHORT"),
+    ("context_contract.direction_permission.d1_unresolved", "BOTH"),
+    ("m5_trigger_contract.sweep.long_candidate", "LONG"),
+    ("m5_trigger_contract.sweep.short_candidate", "SHORT"),
+    ("m5_trigger_contract.sweep.dual_side_candle", "BOTH"),
+    ("m5_trigger_contract.sweep.direction_gate", "BOTH"),
+    ("m5_trigger_contract.mss.confirmation", "BOTH"),
+    ("m5_trigger_contract.retest", "BOTH"),
+    ("signal_expiry_contract.rule_1", "BOTH"),
+    ("signal_expiry_contract.rule_2", "BOTH"),
+    ("targets_contract.geometry_guard", "BOTH"),
+    ("invalidation_contract.INVALID_STOP_DISTANCE", "BOTH"),
+    ("stop_loss_contract.long", "LONG"),
+    ("stop_loss_contract.short", "SHORT"),
+    ("targets_contract.tp1_tp2_min_tp2_r_multiple", "BOTH"),
+    ("entry_timing_contract.actionable_event", "BOTH"),
+)
+WINDOWS = ("IN_WINDOW", "OUT_OF_WINDOW")
+
+
+def rule_events(r: dict, x: Dict[str, List[Candle]], now: dt.datetime) -> set:
+    """(rule_id, LONG|SHORT|ANY) exercised by one scan, read from the engine result and its closed input."""
+    ev, res, out = r["evidence"], r["result"], set()
+    if res == "REFERENCE_INCOMPLETE":
+        return {("liquidity_contract.completeness_rule", "ANY")}
+    out.add(("liquidity_contract.levels", "ANY"))
+    ctx = ev.get("context", {})
+    perm, h1 = ctx.get("direction_permission"), ctx.get("h1_structure")
+    if h1 not in ("BULLISH", "BEARISH"):
+        return out | {("context_contract.direction_permission.h1_unresolved", "ANY")}
+    side = "LONG" if h1 == "BULLISH" else "SHORT"
+    if perm == "NO_DIRECTION":
+        return out | {("context_contract.direction_permission.d1_confirmed_and_opposes_h1", side)}
+    out.add((f"context_contract.direction_permission.h1_{'bullish' if side == 'LONG' else 'bearish'}", side))
+    if ctx.get("d1_structure") not in ("BULLISH", "BEARISH"):
+        out.add(("context_contract.direction_permission.d1_unresolved", side))
+    pdh, pdl = ev["reference"]["high"], ev["reference"]["low"]
+    day0, _ = rules.utc_day_window(now)
+    for c in (c for c in x["M5"] if c.time >= day0):
+        hi, lo = c.high > pdh and c.close < pdh, c.low < pdl and c.close > pdl
+        if hi and lo:
+            out.add(("m5_trigger_contract.sweep.dual_side_candle", side))
+        elif (hi and side == "LONG") or (lo and side == "SHORT"):
+            out.add(("m5_trigger_contract.sweep.direction_gate", side))
+    if "sweep" in ev:
+        out.add((f"m5_trigger_contract.sweep.{side.lower()}_candidate", side))
+    if "mss" in ev:
+        out.add(("m5_trigger_contract.mss.confirmation", side))
+    if res == "SIGNAL_ENTRY_WINDOW_PASSED":
+        out.add(("signal_expiry_contract.rule_1", side))
+    if "retest" in ev:
+        out.add(("m5_trigger_contract.retest", side))
+    if res == "NO_TRADE_TARGET_GEOMETRY":
+        out.add(("targets_contract.geometry_guard", side))
+    if res == "INVALID_STOP_DISTANCE":
+        out.add(("invalidation_contract.INVALID_STOP_DISTANCE", side))
+    if res == "ENTRY_VALID":
+        out |= {(f"stop_loss_contract.{side.lower()}", side), ("targets_contract.tp1_tp2_min_tp2_r_multiple", side),
+                ("entry_timing_contract.actionable_event", side)}
+    return out
+
+
+def coverage_matrix(hits: Counter) -> dict:
+    """hits[(rule, LONG|SHORT|ANY, window)] = scans -> rule x direction x window: EXERCISED / NOT_EXERCISED
+    (NOT_APPLICABLE for the other side of a one-sided rule)."""
+    out = {}
+    for rule, scope in RULES:
+        row = {}
+        for d in ("LONG", "SHORT"):
+            for w in WINDOWS:
+                if scope in ("LONG", "SHORT") and d != scope:
+                    row[f"{d}|{w}"] = {"status": "NOT_APPLICABLE", "scans": 0}
+                    continue
+                n = hits[(rule, "ANY" if scope == "ANY" else d, w)]
+                row[f"{d}|{w}"] = {"status": "EXERCISED" if n else "NOT_EXERCISED", "scans": n}
+        out[rule] = {"scope": scope, "cells": row}
+    return out
+
+
+def coverage_gaps(matrix: dict) -> List[str]:
+    return [f"{rule}|{cell}" for rule, m in matrix.items() for cell, v in m["cells"].items()
+            if v["status"] == "NOT_EXERCISED"]
+
+
 # ------------------------------------------------------------------------------- prefix (TEMP)
 
 # TEMP(AGP-ORACLE): minimal inline prefix-invariance check. Replace with the AGP-ORACLE
@@ -276,7 +370,8 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
     if not counts:
         raise SystemExit(f"{symbol}: no in-window case reached the feed; fetch counts unknown")
 
-    stream, results, emissions = [], Counter(), []
+    _, windows = crypto_cfd._config()
+    stream, results, emissions, hits = [], Counter(), [], Counter()
     by_day: Dict[str, Counter] = {}
     l2_bad, l4_bad, l4_neg_bad, l2_neg_bad = [], [], [], []
     for day in days:
@@ -295,6 +390,12 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
             bump(now, "L3", leaked)
             sem = semantic(r)
             stream.append((now, sem))
+            win = "IN_WINDOW" if crypto_cfd._window(now, windows) else "OUT_OF_WINDOW"
+            events = rule_events(r, x, now)
+            if k == 287 and r["result"] in ("WAITING_MSS", "WAITING_RETEST"):   # UTC-day rotation kills it
+                events.add(("signal_expiry_contract.rule_2",
+                            "LONG" if r["evidence"]["context"]["direction_permission"] == "LONG_ALLOWED" else "SHORT"))
+            hits.update((rule, d, win) for rule, d in events)
             results[r["result"]] += 1
             by_day.setdefault(day.isoformat(), Counter())[r["result"]] += 1
             start, end = rules.previous_utc_day_window(now)
@@ -326,7 +427,6 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
         if er is not None and env["now"] in scan_at:
             mism["ticket_scan_parity"] += semantic(er) != scan_at[env["now"]]
 
-    _, windows = crypto_cfd._config()
     meta, commission = manual_ticket.symbol_meta_from_host(symbol), manual_ticket.crypto_cfd_commission(symbol)
     emission_rows, l3_seq_bad, l5, l6 = [], [], [], []
     for now, r, x in emissions:
@@ -412,6 +512,7 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
                           "l3_sequence_failures": l3_seq_bad,
                           "l5_cost_gates": l5, "l6": l6, "cycle_ticket_l1": dict(Counter(cycle_l1))},
         "prefix_invariance": prefix, "mismatches": dict(sorted(mism.items())),
+        "rule_coverage": coverage_matrix(hits),
         "tickets": tickets,
     }
 
@@ -446,8 +547,26 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
     summary = Counter((t["stream"], t["symbol"], t["day_type"], t["ticket"]["decision"], t["spread_band"])
                       for t in tickets)
     first = out[symbols[0]]
+    cov_path = OUT_DIR / "coverage_only_binance.json"
+    cov_only = json.loads(cov_path.read_text(encoding="utf-8")) if cov_path.exists() else None
+    vt_cov = {sym: r.pop("rule_coverage") for sym, r in out.items()}
+    rule_coverage = {
+        "rule_ids_source": CONTRACT_YAML, "dimensions": "rule_id x LONG/SHORT x IN_WINDOW/OUT_OF_WINDOW",
+        "window_definition": "IN_WINDOW = scan instant inside a v1_tickets crypto window (crypto_cfd._window: "
+                             "WEEKDAY 09:00-12:00 America/New_York Mon-Fri, WEEKEND 21:00-23:00 UTC Sat/Sun)",
+        "vt": vt_cov, "vt_not_exercised": {sym: coverage_gaps(m) for sym, m in vt_cov.items()},
+        "coverage_only_binance": None if cov_only is None else {
+            "label": cov_only["label"], "authoritative": False, "artifact": str(cov_path.relative_to(ROOT)),
+            "sha256": hashlib.sha256(cov_path.read_bytes()).hexdigest(), "not_exercised": cov_only["not_exercised"]},
+        "not_exercised_anywhere": {sym: sorted(set(coverage_gaps(m)) & set(cov_only["not_exercised"]))
+                                   for sym, m in vt_cov.items()} if cov_only else None,
+    }
     return {
-        "schema": "AG_CCFD_V100_REPLAY_V1", "mission": "AGP-LANE-B", "date": date,
+        "schema": "AG_CCFD_V100_REPLAY_V1", "mission": "AGP-LANE-B2", "date": date,
+        "policy_conformance_changes": 1,
+        "policy_conformance_note": "crypto spread band boundary: exactly 10% of stop is OK (owner bands 2026-10-09)",
+        "engine_entry_point": "crypto_cfd_contract.evaluate (guard.evaluate: open-bar guard over frozen rules.evaluate)",
+        "rule_coverage": rule_coverage,
         "strategy": f"{CONTRACT_ID}@{CONTRACT_VERSION}", "contract_path": CONTRACT_YAML,
         "contract_sha256": hashlib.sha256((ROOT / CONTRACT_YAML).read_bytes()).hexdigest(),
         "dataset": {"manifest": str(MANIFEST.relative_to(ROOT)),
