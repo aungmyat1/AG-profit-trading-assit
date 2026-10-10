@@ -186,11 +186,11 @@ def build_fx_ticket(
         ticket.update({"decision": "DATA_ERROR", "reason_code": SIGNAL_TIME_UNAVAILABLE,
                        "engine_reason_code": sig.reason_code, "signal_close_utc": None,
                        "detail": "engine supplied no signal timestamp; no signal age exists"})
-        return apply_ready_authority(ticket)
+        return apply_ready_authority(ticket, contract_path=strategy.source_path)
     gated = gate_ready(ticket, now=evaluated_at, data_close=data_close,
                        signal_close=signal_open + M15 if signal_open is not None else None,
                        spread=spread, risk=sig.risk_distance)
-    return apply_ready_authority(gated)            # D6: READY authority switch (config, fail closed)
+    return apply_ready_authority(gated, contract_path=strategy.source_path)  # D6 + owner-record binding
 
 
 _STATE = {"READY": CYCLE_STATE_READY, "NO_TRADE": CYCLE_STATE_NO_TRADE, "DATA_ERROR": CYCLE_STATE_DATA_ERROR,

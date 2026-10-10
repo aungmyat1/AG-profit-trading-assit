@@ -16,7 +16,9 @@ import os
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from v1_tickets.guards import SIGNAL_STALE  # noqa: F401  (canonical; re-exported for readers)
+from v1_tickets.guards import (
+    SIGNAL_STALE,  # noqa: F401  (canonical; re-exported for readers)
+)
 
 NO_SETUP, WATCH, OPPORTUNITY, TICKET_BLOCKED, TICKET_READY = (
     "NO_SETUP", "WATCH", "OPPORTUNITY", "TICKET_BLOCKED", "TICKET_READY")
@@ -142,12 +144,27 @@ def coverage(records: Iterable[Dict[str, Any]], run_id: str,
 SESSION_TRADE_V1_CONTRACT = "strategies/session_trade/contract.yaml"
 
 
+def _resolve_contract_symbol(label: str, symbol_map: Any) -> Tuple[str, Optional[str]]:
+    """Resolve a contract label through the canonical VT map; never treat labels as broker names."""
+    from mt5.canonical_broker_map import CANONICALS, candidate_names
+
+    canonical = next((name for name in CANONICALS if label in candidate_names(name)), None)
+    if canonical is None:
+        return f"UNMAPPED:{label}", f"UNMAPPED_SYMBOL:{label}"
+    try:
+        return symbol_map.resolve(canonical), None
+    except Exception as exc:
+        return f"UNMAPPED:{label}", f"UNMAPPED_SYMBOL:{label}:{getattr(exc, 'reason_code', type(exc).__name__)}"
+
+
 def adapterless_scan_records(*, run_id: str, cycle: str, now: dt.datetime, root: Optional[str] = None,
                              window: Optional[Tuple[dt.datetime, dt.datetime]] = None) -> List[ScanRecord]:
     """Scanner-visible records for SESSION_TRADE_V1 (owner decision C1): its engine is not in
     this repo, so every ACTIVE-cycle symbol is TICKET_BLOCKED with the authority reason and
     no strategy logic is evaluated, borrowed or inferred."""
     import yaml
+
+    from mt5.canonical_broker_map import DEFAULT_MAP_PATH, load_map
     from v1_tickets.authority import REPO_ROOT, resolve_ticket_authority
 
     base = root or str(REPO_ROOT)
@@ -159,7 +176,13 @@ def adapterless_scan_records(*, run_id: str, cycle: str, now: dt.datetime, root:
     authority = resolve_ticket_authority(sid, version)
     if not authority.scanner_visible or authority.ticket_eligible:
         return []          # ticket-eligible strategies are scanned by their own adapter
-    return [build_scan_record(run_id=run_id, session=cycle, symbol=s, strategy_id=sid, strategy_version=version,
-                              window=window, data_close=None, state=TICKET_BLOCKED, stage="AUTHORITY",
-                              stop_reason=authority.reason, now=now)
-            for s in contract.get("supported_symbols") or ()]
+    symbol_map = load_map(os.path.join(base, "config", "broker_symbol_map", "vt_markets_demo.yaml")
+                          if root else DEFAULT_MAP_PATH)
+    records = []
+    for label in contract.get("supported_symbols") or ():
+        broker_symbol, unmapped_reason = _resolve_contract_symbol(str(label), symbol_map)
+        records.append(build_scan_record(run_id=run_id, session=cycle, symbol=broker_symbol,
+                                         strategy_id=sid, strategy_version=version,
+                                         window=window, data_close=None, state=TICKET_BLOCKED, stage="AUTHORITY",
+                                         stop_reason=unmapped_reason or authority.reason, now=now))
+    return records
