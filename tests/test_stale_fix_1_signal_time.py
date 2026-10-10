@@ -10,15 +10,14 @@ import sys
 import types
 from pathlib import Path
 
-import pytest
-
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "scripts" / "host"))
 
 import canonical_fx_delivery as cfd  # noqa: E402
+from test_canonical_fx_delivery import run, sender  # noqa: E402
+
 from strategy_engine.session import Candle  # noqa: E402
 from v1_tickets import fx  # noqa: E402
-from test_canonical_fx_delivery import run, sender, signal_provider  # noqa: E402
 
 UTC = dt.timezone.utc
 DAY = dt.date(2026, 10, 7)
@@ -52,11 +51,13 @@ def test_signal_without_engine_time_is_data_error_never_ready(monkeypatch):
     assert "suppressed_decision" not in t                                         # not a downgraded READY
 
 
-def test_signal_with_engine_time_keeps_its_engine_signal_close(monkeypatch, tmp_path, stub_symbol_verified):
+def test_signal_with_engine_time_keeps_its_engine_signal_close(monkeypatch, tmp_path, stub_symbol_verified,
+                                                               _owner_ready_record_file):
     on = tmp_path / "on.yaml"
     on.write_text("strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    ready: 'ON'\n")
     import v1_tickets.ready_authority as ra
     monkeypatch.setattr(ra, "CONFIG_PATH", str(on))
+    monkeypatch.setattr(ra, "OWNER_DECISION_REGISTER_PATH", _owner_ready_record_file)
     t = _build(monkeypatch, _sig(dt.datetime(2026, 10, 7, 7, 0, tzinfo=UTC)))
     assert t["signal_time_source"] == fx.SIGNAL_TIME_ENGINE
     assert t["signal_close_utc"] == "2026-10-07T07:15:00+00:00" and t["decision"] == "READY"
@@ -101,6 +102,7 @@ def test_digest_takes_reason_code_from_the_event_row(tmp_path):
     """Event row wins over the stored block_reasons (which may lead with an engine code)."""
     import json
     import os
+
     from ticket_store.store import REPLAY, TicketStore, build_evaluation
     send, _ = sender(tmp_path, enabled=False)
     journal = str(tmp_path / "journal")
@@ -128,6 +130,7 @@ def test_digest_reason_matches_the_selected_live_record_not_a_later_replay_event
     """
     import json
     import os
+
     from ticket_store.store import LIVE, REPLAY, TicketStore, build_evaluation
     send, _ = sender(tmp_path, enabled=False)
     journal = str(tmp_path / "journal")
@@ -156,6 +159,7 @@ def test_digest_without_a_source_matched_event_falls_back_to_the_selected_record
     """S02: a REPLAY-only event never lends its reason to the selected LIVE record."""
     import json
     import os
+
     from ticket_store.store import LIVE, TicketStore, build_evaluation
     send, _ = sender(tmp_path, enabled=False)
     journal = str(tmp_path / "journal")

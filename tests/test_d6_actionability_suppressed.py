@@ -9,8 +9,11 @@ from __future__ import annotations
 import datetime as dt
 
 import pytest
+from test_actionability_and_canonical_ticket import (
+    SIGNED_POLICY,
+    _build_asian_london_sweep,
+)
 
-from test_actionability_and_canonical_ticket import SIGNED_POLICY, _build_asian_london_sweep
 from v1_tickets import actionability as A
 from v1_tickets import daily_evaluator as de
 from v1_tickets import fx as v1_fx
@@ -62,9 +65,11 @@ def test_daily_evaluator_never_emits_watch_ready_while_off(production_ready_auth
     assert eur.decision == A.INFO_ONLY_SUPPRESSED
 
 
-def test_switch_on_restores_the_pre_d6_watch_ready(tmp_path, monkeypatch, stub_symbol_verified):
+def test_switch_on_restores_the_pre_d6_watch_ready(tmp_path, monkeypatch, stub_symbol_verified,
+                                                   _owner_ready_record_file):
     on = tmp_path / "on.yaml"
     on.write_text("strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    ready: 'ON'\n")
     monkeypatch.setattr(ra, "CONFIG_PATH", str(on))
+    monkeypatch.setattr(ra, "OWNER_DECISION_REGISTER_PATH", _owner_ready_record_file)
     canon = build_canonical_ticket(_ticket(), now=NOW, current_price=1.1636, policy=SIGNED_POLICY)
     assert canon["decision"] == A.WATCH_READY

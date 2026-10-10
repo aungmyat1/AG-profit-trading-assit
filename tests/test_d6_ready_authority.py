@@ -101,13 +101,15 @@ def test_switch_fails_closed_and_only_explicit_on_restores_ready(tmp_path):
     assert ra.ready_authority("ST_ASIAN_SWEEP_5R_V1", str(other))[0] is False
     on = tmp_path / "on.yaml"
     on.write_text("strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    ready: 'ON'\n")
-    assert ra.ready_authority("ST_ASIAN_SWEEP_5R_V1", str(on)) == (True, "READY_AUTHORITY_ON")
+    assert ra.ready_authority("ST_ASIAN_SWEEP_5R_V1", str(on), strategy_version="1.1.2",
+                              contract_sha256="a" * 64, symbol="EURUSD", session="ASIAN_LONDON",
+                              owner_register_path=missing) == (False, ra.OWNER_DECISION_RECORD_MISSING)
     assert ra.ready_authority("SOME_OTHER_STRATEGY", str(on))[0] is False
     # A symbol verified for its version in strategies/registry.yaml (per-symbol gate, see
     # test_d6_per_symbol_verification.py); with D6 ON it stays READY.
     ready = {"decision": "READY", "strategy_id": "ST_ASIAN_SWEEP_5R_V1", "reason_code": "X",
              "strategy_version": "1.1.2", "symbol": "EURUSD"}
-    assert ra.apply_ready_authority(ready, str(on)) is ready                       # ON + verified: untouched
+    assert ra.apply_ready_authority(ready, str(on))["reason_code"] == ra.OWNER_DECISION_RECORD_MISSING
     assert ra.apply_ready_authority(ready, missing)["decision"] == ra.SHADOW_INFO_ONLY
     no_trade = {"decision": "NO_TRADE", "strategy_id": "ST_ASIAN_SWEEP_5R_V1"}
     assert ra.apply_ready_authority(no_trade, missing) is no_trade                 # only READY is affected
