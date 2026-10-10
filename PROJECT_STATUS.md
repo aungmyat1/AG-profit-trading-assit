@@ -206,7 +206,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `320beaf218d67c49b619c8ef1c12b066dcd41ea8b1596e600b1c80ab28a15ebd`.
+inputs_sha256: `bad69546ef180f4b96ba4a84310809bb6b7be318e9af5837b1b5d9240c7ce2b8`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -231,7 +231,8 @@ Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#obj
 
 `apply_ready_authority` (`src/v1_tickets/ready_authority.py`) now keeps READY only if D6 READY authority
 is ON **and** the ticket's symbol is listed in `strategies/registry.yaml`
-`candidate_versions."<version>".verified_symbols`. Only EURUSD is listed, for 1.1.2; absent means not
+`candidate_versions."<version>".logic_verified_symbols` (each entry carries an evidence ref; logic
+verification only, not economic/edge evidence). Only EURUSD is listed, for 1.1.2; absent means not
 verified (fail closed), so 1.1.1 and GBPUSD cannot reach READY even with D6 ON. D6 stays OFF in
 `config/v1_tickets/ready_authority.yaml` (unchanged), so production behaviour is unchanged. Tests:
 `tests/test_d6_per_symbol_verification.py`. No demo/live, contract or execution change.

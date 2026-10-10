@@ -45,9 +45,13 @@ strategies:
         # LONDON_NEWYORK); USDJPY/XAUUSD PENDING_AGP-C2-SYMMAP; RANGE_REJECTION branch UNIT_ONLY.
         logic_verification_report: docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md
         logic_verification_report_gbpusd: docs/status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md
-        # Per-symbol verification state read by src/v1_tickets/ready_authority.py (D6 READY gate). Only
-        # symbols listed here are VERIFIED for 1.1.2; any absent symbol is not verified (GBPUSD is PARTIAL).
-        verified_symbols: [EURUSD]
+        # Per-symbol LOGIC verification state read by src/v1_tickets/ready_authority.py (D6 READY gate).
+        # Logic verification only (rule conformance on recorded fixtures) -- NOT economic or edge evidence.
+        # Only symbols listed here, each with its evidence ref, are logic-verified for 1.1.2; any absent
+        # symbol is not verified (GBPUSD is PARTIAL).
+        logic_verified_symbols:
+          - symbol: EURUSD
+            evidence: docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md
 
   SESSION_TRADE_V1:
     registered: true
