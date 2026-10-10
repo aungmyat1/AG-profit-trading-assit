@@ -179,3 +179,18 @@ def stub_symbol_verified(monkeypatch):
 def production_ready_authority():
     import v1_tickets.ready_authority as ready_authority
     return ready_authority.CONFIG_PATH
+
+
+@pytest.fixture(autouse=True)
+def _owner_lsmc_host_policy(request, tmp_path, monkeypatch):
+    """Synthetic LSMC tests explicitly set the owner-authorized operational value."""
+    filename = request.node.fspath.basename
+    if ("lsmc" not in filename.lower() and "large_smc" not in filename.lower()
+            and filename not in {"test_host_go_live_kit.py", "test_telegram_message_format.py"}):
+        return
+    from large_smc_watch import watch
+    root = tmp_path / "lsmc_owner_host"
+    policy = root / "config/local/actionability_policy.yaml"
+    policy.parent.mkdir(parents=True)
+    policy.write_text("lsmc_min_remaining_reward_fraction: 0.5\n", encoding="utf-8")
+    monkeypatch.setattr(watch, "REPO_ROOT", root)

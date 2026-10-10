@@ -210,7 +210,7 @@ def test_smoke_prints_states_and_archives_only(tmp_path):
     # The fixture's box-direction SIGNAL carries no engine signal time: STALE-FIX-1 fails it closed
     # instead of borrowing the first trade-session bar.
     assert "FX EURUSD (EURUSD-VIP) ASIAN_LONDON data=FRESH decision=DATA_ERROR reason=SIGNAL_TIME_UNAVAILABLE" in text
-    assert "LSMC EURUSD data=FRESH state=OPPORTUNITY" in text and "LSMC GBPUSD" in text
+    assert "LSMC EURUSD data=FRESH state=REJECTED" in text and "LSMC GBPUSD" in text
     # Objective symbols are never silently omitted: unavailable metadata/data is visible.
     assert "FX USDJPY" in text and "decision=DATA_ERROR" in text
     assert glob.glob(str(tmp_path / "journal" / "ticket_delivery" / "archive" / "**" / "*.json"), recursive=True)
@@ -346,7 +346,10 @@ def test_crypto_main_outside_window_takes_no_runner_or_mt5_lock_and_never_import
 
     assert smoke.main(["--mode", "crypto"]) == 0
     log = (Path(hc.LOG_DIR) / "ag_v1_crypto.log").read_text(encoding="utf-8").splitlines()
-    assert log == [f"{now.isoformat()} CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)"]
+    assert log == [
+        f"{now.isoformat()} LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction",
+        f"{now.isoformat()} CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)",
+    ]
 
 
 def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
@@ -386,7 +389,10 @@ def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
     assert [call[0] for call in calls] == ["single_instance", "import_mt5", "mt5_access_lock",
                                           "initialize", "demo", "run_crypto", "shutdown"]
     assert calls[-2][1:] == (now, 3, "Mt5CryptoFeed")
-    assert logged == [("ag_v1_crypto", "CRYPTO IN_WINDOW")]
+    assert logged == [
+        ("ag_v1_crypto", "LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction"),
+        ("ag_v1_crypto", "CRYPTO IN_WINDOW"),
+    ]
 
 
 def test_single_instance_lock():
@@ -575,6 +581,7 @@ def test_telegram_default_archive_only_and_scoped_override(tmp_path):
 
 def test_local_delivery_scope_can_only_narrow_tracked_policy(tmp_path):
     import shutil
+
     from telegram_delivery.adapter import Config
     from telegram_delivery.scope_policy import resolve
 
@@ -712,7 +719,23 @@ def test_telegram_validation_proposal_uses_real_renderer_and_is_unambiguous():
     assert "spread_check: PASS" in text and "VALID UNTIL" in text
 
 
+def test_scheduled_lsmc_rejection_never_reaches_transport(tmp_path, monkeypatch):
+    local = tmp_path / "config" / "local"
+    local.mkdir(parents=True)
+    (local / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    sent = []
+    monkeypatch.setattr(tg, "send_message", sent.append)
+    journal = tmp_path / "journal"
+    lines = smoke.run_lsmc(fake_fetch(), NOW, str(journal))
+    assert any("state=REJECTED" in line for line in lines)
+    assert sent == []
+    assert list((journal / "ticket_delivery" / "archive").rglob("*.json"))
+
+
 def test_scheduled_lsmc_run_reports_rendered_opportunity_exactly_once(tmp_path, monkeypatch):
+    monkeypatch.setattr("large_smc_watch.watch.c11_causal_target", lambda *args: 1.12)
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
         "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
@@ -765,6 +788,7 @@ def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, mon
 
 
 def test_scheduled_telegram_send_failure_never_breaks_the_run(tmp_path, monkeypatch):
+    monkeypatch.setattr("large_smc_watch.watch.c11_causal_target", lambda *args: 1.12)
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
         "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
@@ -788,6 +812,7 @@ def test_ambiguous_lsmc_delivery_is_never_auto_resent(tmp_path, monkeypatch, mod
     The legacy JSONL row keeps its frozen FAILED / ERROR vocabulary, but the ledger must never
     treat the ambiguous confirmation as a known failure eligible for a later blind resend.
     """
+    monkeypatch.setattr("large_smc_watch.watch.c11_causal_target", lambda *args: 1.12)
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
         "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
@@ -1205,6 +1230,7 @@ def test_target_heartbeat_args_parse_to_always_on_mode():
     """PR #84 P1: the declared AG-Heartbeat-Local target arguments, parsed by heartbeat.py's own
     CLI, select always_on, so a stopped runner overnight is STALE, never INACTIVE_EXPECTED."""
     import shlex
+
     import heartbeat as hb_module
     _, decl = _host_declarations()
     rest = {d["name"]: d for d in decl}["AG-Heartbeat-Local"]["rest"]

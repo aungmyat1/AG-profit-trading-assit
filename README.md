@@ -294,6 +294,15 @@ signal validity, has all required entry/stop/target fields, uses verified host m
 passes the live-spread gate is copied to `journal/paper_trades`. The paper record is expressed
 in 1R, has no position size, and cannot reach an order API.
 
+Large-SMC OPPORTUNITY alerts require a valid stop and target, with at least 50% of the
+entry-to-target distance remaining at the latest closed M5 price. The owner-set
+`lsmc_min_remaining_reward_fraction` must be set in the host-local
+`config/local/actionability_policy.yaml`; the tracked policy is a template only.
+Deployment must run `scripts/host/preflight_actionability.py` first.
+Rejected opportunities are archived and suppressed. No R:R minimum is authorized.
+SESSION_SUMMARY includes Large-SMC rejection counts by reason for that UTC session,
+without setup details; duplicate transition identities are counted once.
+
 The complete scheduled objective is three FX majors (EURUSD, GBPUSD, USDJPY) plus XAUUSD on
 both session cycles, daily-window BTCUSDT and ETHUSDT tickets, and Large-SMC watch/alerts for
 all six instruments. Verify and install the three Windows host tasks with:

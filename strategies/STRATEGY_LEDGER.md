@@ -418,5 +418,28 @@ from canonical session windows or other repo conventions at the time of registra
 - No change to `proposal_generation_authorized`, `demo_authorized`, `live_authorized` (all
   false) or `economic_status` (`NOT_EVALUATED`). EDGE_VERIFIED is not implied.
 
+## History erratum (2026-10-10)
+
 8100d59 (via #115 merge abb5330) contains upload-derived claims about RANGE and GBPUSD. Those claims are non-evidence and are superseded by 976671e. No upload data is in the repo.
 0ce84fd contains an unredacted host path; redacted in 1c07d70. History not rewritten per AGENTS.md.
+
+## Large-SMC operational opportunity gates (2026-10-10)
+
+- **Large-SMC R:R minimum: OWNER_DECISION_PENDING.** The v1.1.0 contract defines no
+  R:R minimum; none is authorized and no R:R check is added to the delivery layer.
+- **Owner-set operational parameter:** `lsmc_min_remaining_reward_fraction: 0.5`
+  (2026-10-10), not a contract value. Missing/invalid policy fails closed. Missing or
+  invalid stop/target, or insufficient remaining reward, produces `REJECTED` and is
+  suppressed by the existing OPPORTUNITY-only Telegram delivery convention.
+
+
+native_zones.py:31 imports missing assistant.market_data;
+breaks liquidity._session_levels and premium_discount_from_session offline;
+not on any live path (see ANALYZER_FRESH_COMPUTATION_2026-10-10.md).
+OWNER_DECISION_PENDING: rewire to src/mt5/market_data.py or remove.
+
+
+2026-10-10 — VTMarkets-Demo MT5 password rotated
+on owner authority after host audit found it in the MT5 MCP server process command line.
+Old credential invalid. Follow-up: MCP launch must read credentials from env or Windows
+Credential Manager, never argv.

@@ -13,6 +13,18 @@ cache path is removed. Offline byte comparisons against main pass for identical 
 and config. Session-zone import failures are traced but unchanged; none of the four live
 runner modes calls that function. See [evidence](docs/status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md).
 
+Large-SMC operational actionability gates (2026-10-10) reject missing/invalid stop or
+target and require at least 50% of the entry-to-target distance to remain. Rejections
+are archived and suppressed by the OPPORTUNITY-only Telegram sender. SESSION_SUMMARY
+reports per-reason Large-SMC rejection counts from archived transitions inside each
+UTC session, with no setup details. FX summaries exclude crypto; crypto summaries
+count their archived actionability rejections once. Missing host configuration is
+logged and summarized; malformed archives are skipped with an `ARCHIVE_ERROR` count.
+Deployment requires the read-only actionability preflight. The parameter is owner-set and separate from
+the unchanged v1.1.0 contract; no R:R minimum is
+authorized. Offline verification is recorded in
+`docs/status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md`; host validation is pending.
+
 OD1009-D1–OD1009-D6 are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`; G1–G6 are
 defined in `docs/PROJECT_OBJECTIVE.md`. The FX/gold manual-ticket risk/cost gate is implemented
 but awaits focused verification. Current strategy bindings, readiness values, demo/live flags,

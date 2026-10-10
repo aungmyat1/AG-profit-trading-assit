@@ -17,13 +17,13 @@ import argparse
 import datetime as dt
 import os
 import sys
-from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP
+from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal
 from typing import Any, Dict, Optional
 
 import yaml
 
-from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 from host_evidence.symbol_metadata import load_record
+from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 from ticket_delivery.identity import logical_ticket_id
 from v1_tickets.authority import LOGIC_VERIFIED, resolve_ticket_authority
 from v1_tickets.guards import STALE_AFTER
@@ -285,9 +285,16 @@ TIMEFRAME_CHAIN = "D1 context -> H1 bias + POI -> M5 sweep/CHoCH"
 
 
 def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
-    """Formatting only; tick snapping is based on the exact verified broker-symbol capture."""
+    """Render eligible alerts unchanged; label ineligible raw events as rejections."""
     payload = e.get("payload") or {}
     poi, opportunity = payload.get("poi") or {}, payload.get("opportunity") or {}
+    if e.get("to_state") == "OPPORTUNITY":
+        from large_smc_watch.watch import opportunity_rejection
+        reason = opportunity_rejection(opportunity, price)
+        if reason:
+            # Defensive rendering for old/raw events: never present them as OPPORTUNITY.
+            e = {**e, "to_state": "REJECTED", "alert_level": "INFO"}
+            payload = {**payload, "reason_codes": [reason]}
     symbol = e["symbol"]
     direction = opportunity.get("direction") or poi.get("direction") or payload.get("bias") or "n/a"
     entry_reference, stop_c10 = opportunity.get("entry_reference"), opportunity.get("stop_c10")
@@ -307,6 +314,9 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
              f"{e['strategy_id']} v{e['strategy_version']}  economic_status=NOT_EVALUATED",
              f"ref: {e.get('reference_id')}",
              f"timeframes: {TIMEFRAME_CHAIN}"]
+    if e.get("to_state") == "REJECTED":
+        lines[0] = "LARGE-SMC REJECTION -- NOT ACTIONABLE -- NOT A BROKER ORDER"
+        lines.append("rejection: " + ",".join(payload.get("reason_codes") or ["REJECTED"]))
     low, high = poi.get("low"), poi.get("high")
     if low is not None and high is not None:
         lines.append(f"POI zone ({poi.get('kind', 'H1')}): {display(low)} - {display(high)}")
