@@ -174,6 +174,12 @@ def run(manifest_path: Path) -> dict:
         summary["verdict"] = ("SYNTHETIC_ONLY" if not recorded else "LOGIC_VERIFIED"
                               if provenance_ok and complete and set(summary["gates"].values()) == {"PASS"}
                               else "NOT_VERIFIED")
+    # Coverage labels are presentation only: form verdicts from the original gate results first.
+    for summary in per_symbol.values():
+        if recorded and summary["state_counts"].get("ENTRY_VALID", 0) == 0:
+            summary["negative_conformance"] = summary["gates"]["L2"]
+            if summary["negative_conformance"] == "PASS":
+                summary["gates"]["L2"] = "NOT_EVIDENCED_POSITIVE"
     return {"schema": "LOGIC_VERIFICATION_REPORT", "strategy_id": CONTRACT_ID,
             "strategy_version": CONTRACT_VERSION, "verdict": verdict, "head_sha": code_sha(),
             "logic_identity": logic_identity(CONTRACT_ID, CONTRACT_VERSION),
@@ -202,7 +208,7 @@ def main():
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / "LOGIC_VERIFICATION_REPORT.json").write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
     print(json.dumps({k: report[k] for k in ("verdict", "gates", "uncovered_cases", "state_counts",
-                                             "signals_per_day", "NO_BROKER_MUTATION")}))
+                                             "signals_per_day", "per_symbol", "NO_BROKER_MUTATION")}))
     return 0 if report["verdict"] == "LOGIC_VERIFIED" or (report["verdict"] == "SYNTHETIC_ONLY"
                and set(report["gates"].values()) == {"PASS"} and not report["uncovered_cases"]) else 1
 

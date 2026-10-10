@@ -222,4 +222,18 @@ def test_shared_recorded_prefix_accepts_naive_utc_m15(tmp_path):
     assert report['provenance_hashes_valid']
     assert report['gates']['L1'] == report['gates']['L2'] == 'PASS'
     assert report['gates']['L3'] == 'NOT_EVIDENCED'
-    assert report['per_symbol']['BTCUSD']['state_counts'] == {'REFERENCE_INCOMPLETE': 1}
+    symbol = report['per_symbol']['BTCUSD']
+    assert symbol['state_counts'] == {'REFERENCE_INCOMPLETE': 1}
+    assert symbol['gates']['L2'] == 'NOT_EVIDENCED_POSITIVE'
+    assert symbol['negative_conformance'] == 'PASS'
+    assert symbol['gates']['L3'] == 'NOT_EVIDENCED'
+    assert symbol['verdict'] == report['verdict'] == 'NOT_VERIFIED'
+    assert report['gates']['L2'] == 'PASS'  # verdict inputs remain unchanged
+
+
+def test_positive_synthetic_l2_label_is_unchanged():
+    report = runner.run(runner.DEFAULT)
+    for symbol in report['per_symbol'].values():
+        assert symbol['state_counts']['ENTRY_VALID'] > 0
+        assert symbol['gates']['L2'] == 'PASS'
+        assert 'negative_conformance' not in symbol
