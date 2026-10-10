@@ -161,17 +161,59 @@ def test_60d_replay_scans_every_day_through_the_guard():
     partial = verify(RECORDED_60D / "manifest.json")["gaps"]["partial_days_m5_bars"]
     for sym, s in REPORT_60D["symbols"].items():
         assert s["scans"] == 60 * 288
-        # every recorded mismatch is a prefix-persistence mismatch; causal truncation/determinism are clean
-        assert {k for k, v in s["mismatches"].items() if v} <= {"prefix"}
+        # owner ruling 2026-10-11 (A): L3 compares the signal event log -> 0 mismatches of any kind
+        assert not any(s["mismatches"].values()) and s["signal_events"]["event_log_mismatches"] == 0
+        assert s["gates"] == {g: "PASS" for g in ("L1", "L2", "L3", "L4", "L5", "L6")}
         for day in partial[sym]:                       # the day after a partial day: data-incomplete path
             nxt = (dt.date.fromisoformat(day) + dt.timedelta(days=1)).isoformat()
             if nxt in s["per_day"]:
                 assert s["per_day"][nxt]["results"] == {"REFERENCE_INCOMPLETE": 288}
 
 
-def test_60d_failures_are_classified_and_block_logic_verification():
+def test_60d_reissues_older_than_the_expiry_window_are_expired_and_never_actionable():
+    """Item 1b: every REISSUE whose retest bar is older than the signal-expiry window (manual_ticket
+    valid_until = retest open + 20 min) is EXPIRED, its ticket carries SIGNAL_STALE and is never actionable."""
+    totals = {"total": 0, "fresh": 0, "expired": 0}
+    tickets = {json.loads(line)["case_id"]: json.loads(line) for line in
+               (R.DATASETS["recorded_60d"][1] / "tickets.jsonl").read_text(encoding="utf-8").splitlines()}
     for sym, s in REPORT_60D["symbols"].items():
-        failing = {d: v for d, v in s["per_day"].items() if v["failure_class"]}
-        assert failing and all(v["failure_class"] == R.SPEC_AMBIGUITY_PERMISSION for v in failing.values())
-        assert set(failing) == set(s["prefix_invariance"]["mismatches_by_day"])
-        assert REPORT_60D["logic_verification"][sym]["all_checks_pass"] is False
+        reissues = [e for e in s["signal_events"]["log"] if e["type"] == "REISSUE"]
+        assert len(reissues) == len(s["reissues"]) == s["signal_events"]["reissues"]["total"]
+        for e, row in zip(reissues, s["reissues"]):
+            now, retest = (dt.datetime.fromisoformat(e[k]) for k in ("bar_close_utc", "retest_candle_time_utc"))
+            old = now > retest + R.SIGNAL_TTL
+            assert (e["freshness"] == "EXPIRED") == old == row["expiry_rule_fired"]
+            if old:
+                assert row["actionable"] is False and row["ticket_decision"] != "READY"
+            t = tickets[f"{sym}_REISSUE_{now:%Y%m%dT%H%MZ}"]
+            assert t["stream"] == "REISSUE_RESEARCH" and t["signal_event"] == e
+            assert ("SIGNAL_STALE" in t["ticket"]["reason_codes"]) == old
+        for k in totals:
+            totals[k] += s["signal_events"]["reissues"][k]
+    assert totals == {"total": 1, "fresh": 0, "expired": 1}          # ETHUSD 2026-09-09 20:00 (10:55 retest)
+
+
+def test_60d_every_emit_expires_and_no_day_fails():
+    for sym, s in REPORT_60D["symbols"].items():
+        by = s["signal_events"]["events_by_type"]
+        assert by["EMIT"] == by["EXPIRE"] == len(s["emissions"]) and by.get("WITHDRAW", 0) == 0
+        assert all(e["reason"] == "SIGNAL_STALE" for e in s["signal_events"]["log"] if e["type"] == "EXPIRE")
+        assert not any(d["failure_class"] for d in s["per_day"].values())
+        assert REPORT_60D["logic_verification"][sym]["all_checks_pass"] is True
+
+
+def test_60d_coverage_proof_marks_only_rejection_rules_synthetic_and_never_counts_binance():
+    """Item 3: SYNTHETIC_PROVEN only for rejection-only rules with a synthetic unit case; entry-branch cells
+    count only when VT EXERCISED; COVERAGE_ONLY (Binance) cells never verify a branch."""
+    cov = REPORT_60D["rule_coverage"]
+    for sym, proof in cov["proof"].items():
+        for rule, row in proof.items():
+            for cell, st in row.items():
+                vt = cov["vt"][sym][rule]["cells"][cell]["status"]
+                assert st == vt or (vt == "NOT_EXERCISED" and st in ("SYNTHETIC_PROVEN", "COVERAGE_ONLY_EXERCISED"))
+                assert st != "SYNTHETIC_PROVEN" or rule in R.SYNTHETIC_PROOFS
+        for b, v in REPORT_60D["logic_verification"][sym]["branches"].items():
+            open_cells = [g for g in cov["open_gaps"][sym] if g.split("|")[1] == b]
+            assert v["verified"] == (not open_cells and not [x for x in v["blocking"] if not x.startswith("COVERAGE:")])
+    assert cov["open_gaps"]["ETHUSD"] == []
+    assert {g.split("|")[1] for g in cov["open_gaps"]["BTCUSD"]} == {"LONG"}

@@ -14,7 +14,7 @@
     "manifest_sha256": "931bd014a9b21a57be11a3f8825bd2428a21f0c37f734ac2c322049a2c296a9a",
     "source": "MT5_VT_MARKETS_DEMO"
   },
-  "date": "2026-10-10",
+  "date": "2026-10-11",
   "days_run": [
     "2026-09-26",
     "2026-09-27",
@@ -34,10 +34,65 @@
   "demo_authorized": false,
   "edge_verified": false,
   "engine_entry_point": "crypto_cfd_contract.evaluate (guard.evaluate: open-bar guard over frozen rules.evaluate)",
+  "l3_source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
   "live_authorized": false,
   "logic_verification": {
     "BTCUSD": {
       "all_checks_pass": true,
+      "branches": {
+        "LONG": {
+          "blocking": [
+            "L2=INSUFFICIENT",
+            "L3=INSUFFICIENT",
+            "L4=INSUFFICIENT",
+            "L5=INSUFFICIENT",
+            "L6=INSUFFICIENT",
+            "COVERAGE:m5_trigger_contract.sweep.long_candidate|LONG|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:m5_trigger_contract.sweep.long_candidate|LONG|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:m5_trigger_contract.mss.confirmation|LONG|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:m5_trigger_contract.mss.confirmation|LONG|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:m5_trigger_contract.retest|LONG|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:m5_trigger_contract.retest|LONG|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:stop_loss_contract.long|LONG|IN_WINDOW=NOT_EXERCISED",
+            "COVERAGE:stop_loss_contract.long|LONG|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|IN_WINDOW=NOT_EXERCISED",
+            "COVERAGE:targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:entry_timing_contract.actionable_event|LONG|IN_WINDOW=NOT_EXERCISED",
+            "COVERAGE:entry_timing_contract.actionable_event|LONG|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED"
+          ],
+          "emissions": 0,
+          "entry_valid_scans": 0,
+          "gates": {
+            "L1": "PASS",
+            "L2": "INSUFFICIENT",
+            "L3": "INSUFFICIENT",
+            "L4": "INSUFFICIENT",
+            "L5": "INSUFFICIENT",
+            "L6": "INSUFFICIENT"
+          },
+          "verified": false
+        },
+        "SHORT": {
+          "blocking": [
+            "COVERAGE:m5_trigger_contract.mss.confirmation|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:m5_trigger_contract.retest|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:stop_loss_contract.short|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:targets_contract.tp1_tp2_min_tp2_r_multiple|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:entry_timing_contract.actionable_event|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED"
+          ],
+          "emissions": 1,
+          "entry_valid_scans": 63,
+          "gates": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "PASS",
+            "L6": "PASS"
+          },
+          "verified": false
+        }
+      },
       "logic_identity": {
         "contract_hash": "492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e",
         "digest": "b8188dfbb8c7ff3ae278175ec0c482aa8c74b39279a18e9c0b043a231b4b6cd3",
@@ -48,6 +103,58 @@
     },
     "ETHUSD": {
       "all_checks_pass": true,
+      "branches": {
+        "LONG": {
+          "blocking": [
+            "COVERAGE:m5_trigger_contract.sweep.long_candidate|LONG|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:m5_trigger_contract.mss.confirmation|LONG|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:m5_trigger_contract.retest|LONG|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:stop_loss_contract.long|LONG|IN_WINDOW=NOT_EXERCISED",
+            "COVERAGE:targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|IN_WINDOW=NOT_EXERCISED",
+            "COVERAGE:entry_timing_contract.actionable_event|LONG|IN_WINDOW=NOT_EXERCISED"
+          ],
+          "emissions": 1,
+          "entry_valid_scans": 70,
+          "gates": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "PASS",
+            "L6": "PASS"
+          },
+          "verified": false
+        },
+        "SHORT": {
+          "blocking": [
+            "L2=INSUFFICIENT",
+            "L3=INSUFFICIENT",
+            "L4=INSUFFICIENT",
+            "L5=INSUFFICIENT",
+            "L6=INSUFFICIENT",
+            "COVERAGE:m5_trigger_contract.sweep.short_candidate|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:m5_trigger_contract.mss.confirmation|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:m5_trigger_contract.retest|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:stop_loss_contract.short|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:stop_loss_contract.short|SHORT|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:targets_contract.tp1_tp2_min_tp2_r_multiple|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:targets_contract.tp1_tp2_min_tp2_r_multiple|SHORT|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:entry_timing_contract.actionable_event|SHORT|IN_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:entry_timing_contract.actionable_event|SHORT|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED"
+          ],
+          "emissions": 0,
+          "entry_valid_scans": 0,
+          "gates": {
+            "L1": "PASS",
+            "L2": "INSUFFICIENT",
+            "L3": "INSUFFICIENT",
+            "L4": "INSUFFICIENT",
+            "L5": "INSUFFICIENT",
+            "L6": "INSUFFICIENT"
+          },
+          "verified": false
+        }
+      },
       "logic_identity": {
         "contract_hash": "492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e",
         "digest": "b8188dfbb8c7ff3ae278175ec0c482aa8c74b39279a18e9c0b043a231b4b6cd3",
@@ -58,10 +165,15 @@
     }
   },
   "logic_verified_claim": false,
-  "mission": "AGP-LANE-B2",
+  "mission": "AGP-LANE-B3",
+  "owner_rulings": {
+    "L3": "2026-10-11 option A: permission re-checked every scan (rules 1.0.0 frozen); L3 = append-only signal event-log prefix invariance",
+    "L5": "OD1011-L5 with OD1011-COMMISSION (PR #149)",
+    "guard": "open-bar guard stays a wrapper (crypto_cfd_contract.guard)",
+    "scope": "OD1011-SCOPE per symbol x branch"
+  },
   "policy_conformance_changes": 1,
   "policy_conformance_note": "crypto spread band boundary: exactly 10% of stop is OK (owner bands 2026-10-09)",
-  "prefix_invariance_source": "TEMP_INLINE (AGP-ORACLE not merged)",
   "registry": {
     "active": false,
     "modified": false,
@@ -214,7 +326,314 @@
         "targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|IN_WINDOW"
       ]
     },
+    "open_gaps": {
+      "BTCUSD": [
+        "m5_trigger_contract.sweep.long_candidate|LONG|IN_WINDOW",
+        "m5_trigger_contract.sweep.long_candidate|LONG|OUT_OF_WINDOW",
+        "m5_trigger_contract.mss.confirmation|LONG|IN_WINDOW",
+        "m5_trigger_contract.mss.confirmation|LONG|OUT_OF_WINDOW",
+        "m5_trigger_contract.mss.confirmation|SHORT|IN_WINDOW",
+        "m5_trigger_contract.retest|LONG|IN_WINDOW",
+        "m5_trigger_contract.retest|LONG|OUT_OF_WINDOW",
+        "m5_trigger_contract.retest|SHORT|IN_WINDOW",
+        "stop_loss_contract.long|LONG|IN_WINDOW",
+        "stop_loss_contract.long|LONG|OUT_OF_WINDOW",
+        "stop_loss_contract.short|SHORT|IN_WINDOW",
+        "targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|IN_WINDOW",
+        "targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|OUT_OF_WINDOW",
+        "targets_contract.tp1_tp2_min_tp2_r_multiple|SHORT|IN_WINDOW",
+        "entry_timing_contract.actionable_event|LONG|IN_WINDOW",
+        "entry_timing_contract.actionable_event|LONG|OUT_OF_WINDOW",
+        "entry_timing_contract.actionable_event|SHORT|IN_WINDOW"
+      ],
+      "ETHUSD": [
+        "m5_trigger_contract.sweep.long_candidate|LONG|IN_WINDOW",
+        "m5_trigger_contract.sweep.short_candidate|SHORT|IN_WINDOW",
+        "m5_trigger_contract.mss.confirmation|LONG|IN_WINDOW",
+        "m5_trigger_contract.mss.confirmation|SHORT|IN_WINDOW",
+        "m5_trigger_contract.retest|LONG|IN_WINDOW",
+        "m5_trigger_contract.retest|SHORT|IN_WINDOW",
+        "stop_loss_contract.long|LONG|IN_WINDOW",
+        "stop_loss_contract.short|SHORT|IN_WINDOW",
+        "stop_loss_contract.short|SHORT|OUT_OF_WINDOW",
+        "targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|IN_WINDOW",
+        "targets_contract.tp1_tp2_min_tp2_r_multiple|SHORT|IN_WINDOW",
+        "targets_contract.tp1_tp2_min_tp2_r_multiple|SHORT|OUT_OF_WINDOW",
+        "entry_timing_contract.actionable_event|LONG|IN_WINDOW",
+        "entry_timing_contract.actionable_event|SHORT|IN_WINDOW",
+        "entry_timing_contract.actionable_event|SHORT|OUT_OF_WINDOW"
+      ]
+    },
+    "proof": {
+      "BTCUSD": {
+        "context_contract.direction_permission.d1_confirmed_and_opposes_h1": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "context_contract.direction_permission.d1_unresolved": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "context_contract.direction_permission.h1_bearish": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "context_contract.direction_permission.h1_bullish": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "context_contract.direction_permission.h1_unresolved": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "entry_timing_contract.actionable_event": {
+          "LONG|IN_WINDOW": "NOT_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "invalidation_contract.INVALID_STOP_DISTANCE": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "liquidity_contract.completeness_rule": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "liquidity_contract.levels": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.mss.confirmation": {
+          "LONG|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.retest": {
+          "LONG|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.sweep.direction_gate": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.sweep.dual_side_candle": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "m5_trigger_contract.sweep.long_candidate": {
+          "LONG|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "m5_trigger_contract.sweep.short_candidate": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "signal_expiry_contract.rule_1": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "signal_expiry_contract.rule_2": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "stop_loss_contract.long": {
+          "LONG|IN_WINDOW": "NOT_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "stop_loss_contract.short": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "targets_contract.geometry_guard": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "targets_contract.tp1_tp2_min_tp2_r_multiple": {
+          "LONG|IN_WINDOW": "NOT_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        }
+      },
+      "ETHUSD": {
+        "context_contract.direction_permission.d1_confirmed_and_opposes_h1": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "context_contract.direction_permission.d1_unresolved": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "context_contract.direction_permission.h1_bearish": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "context_contract.direction_permission.h1_bullish": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "context_contract.direction_permission.h1_unresolved": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "entry_timing_contract.actionable_event": {
+          "LONG|IN_WINDOW": "NOT_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED"
+        },
+        "invalidation_contract.INVALID_STOP_DISTANCE": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "liquidity_contract.completeness_rule": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "liquidity_contract.levels": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.mss.confirmation": {
+          "LONG|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.retest": {
+          "LONG|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.sweep.direction_gate": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.sweep.dual_side_candle": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "m5_trigger_contract.sweep.long_candidate": {
+          "LONG|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "m5_trigger_contract.sweep.short_candidate": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "signal_expiry_contract.rule_1": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "signal_expiry_contract.rule_2": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "stop_loss_contract.long": {
+          "LONG|IN_WINDOW": "NOT_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "stop_loss_contract.short": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED"
+        },
+        "targets_contract.geometry_guard": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "targets_contract.tp1_tp2_min_tp2_r_multiple": {
+          "LONG|IN_WINDOW": "NOT_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED"
+        }
+      }
+    },
     "rule_ids_source": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml",
+    "synthetic_proofs": {
+      "context_contract.direction_permission.d1_confirmed_and_opposes_h1": "tests/test_ccfd_synthetic_rejections.py::test_d1_conflict_vetoes_direction",
+      "context_contract.direction_permission.h1_unresolved": "tests/test_ccfd_synthetic_rejections.py::test_h1_unresolved_gives_no_direction",
+      "invalidation_contract.INVALID_STOP_DISTANCE": "tests/test_ccfd_synthetic_rejections.py::test_invalid_stop_distance_rejects",
+      "liquidity_contract.completeness_rule": "tests/test_ccfd_synthetic_rejections.py::test_incomplete_reference_fails_closed",
+      "m5_trigger_contract.sweep.direction_gate": "tests/test_ccfd_synthetic_rejections.py::test_wrong_side_sweep_is_ignored",
+      "m5_trigger_contract.sweep.dual_side_candle": "tests/test_ccfd_synthetic_rejections.py::test_dual_side_candle_only_blocks",
+      "signal_expiry_contract.rule_1": "tests/test_ccfd_synthetic_rejections.py::test_rule_1_no_retest_within_ttl_expires",
+      "signal_expiry_contract.rule_2": "tests/test_ccfd_synthetic_rejections.py::test_rule_2_utc_day_rotation_kills_the_sequence",
+      "targets_contract.geometry_guard": "tests/test_ccfd_synthetic_rejections.py::test_geometry_guard_rejects"
+    },
     "vt": {
       "BTCUSD": {
         "context_contract.direction_permission.d1_confirmed_and_opposes_h1": {
@@ -1206,13 +1625,41 @@
   "strategy": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.0.0",
   "symbols": {
     "BTCUSD": {
+      "branches": {
+        "LONG": {
+          "emissions": 0,
+          "entry_valid_scans": 0,
+          "gates": {
+            "L1": "PASS",
+            "L2": "INSUFFICIENT",
+            "L3": "INSUFFICIENT",
+            "L4": "INSUFFICIENT",
+            "L5": "INSUFFICIENT",
+            "L6": "INSUFFICIENT"
+          }
+        },
+        "SHORT": {
+          "emissions": 1,
+          "entry_valid_scans": 63,
+          "gates": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "PASS",
+            "L6": "PASS"
+          }
+        }
+      },
       "days": 14,
       "emission_quote_gaps": [],
       "emissions": [
         {
+          "cost_actionability": "OK",
           "day_type": "WEEKDAY",
           "direction": "SHORT",
           "entry": 82393.84,
+          "l5": "PASS",
           "live_cycle_decision": "BLOCKED",
           "live_cycle_reason_codes": [
             "OUTSIDE_CONFIG_WINDOW"
@@ -1255,7 +1702,7 @@
         "l3_sequence_failures": [],
         "l4_failures": [],
         "l4_reject_failures": [],
-        "l5_cost_gates": [
+        "l5_advisory_cost_gates": [
           {
             "checks": [
               {
@@ -1287,6 +1734,25 @@
             "status": "WARN"
           }
         ],
+        "l5_od1011": [
+          {
+            "actionability": "OK",
+            "commission_R": 0.0,
+            "commission_source": "OD1011-COMMISSION",
+            "cost_R": 0.015,
+            "expected_codes": [],
+            "gate_codes": [],
+            "spread_R": 0.015,
+            "status": "PASS",
+            "thresholds": {
+              "cost_block_R": 0.25,
+              "cost_warn_R": 0.1,
+              "spread_block_pct": 20.0,
+              "spread_ok_pct": 10.0
+            },
+            "ticket_codes": []
+          }
+        ],
         "l6": [
           "PASS"
         ],
@@ -1304,17 +1770,17 @@
         "L2": "PASS",
         "L3": "PASS",
         "L4": "PASS",
-        "L5": "WARN",
+        "L5": "PASS",
         "L6": "PASS"
       },
       "mismatches": {
         "determinism": 0,
+        "event_log": 0,
         "l2_reconstruction": 0,
         "l2_reference_rule": 0,
         "l3_sequence": 0,
         "l4_geometry": 0,
         "manifest_parity": 0,
-        "prefix": 0,
         "ticket_determinism": 0,
         "ticket_scan_parity": 0,
         "truncation": 0
@@ -1328,8 +1794,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1342,8 +1808,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1356,8 +1822,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 24,
             "WAITING_SWEEP": 264
@@ -1371,8 +1837,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1385,8 +1851,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1399,8 +1865,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1413,8 +1879,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1427,8 +1893,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1441,8 +1907,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1455,8 +1921,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_MSS": 72,
             "WAITING_SWEEP": 216
@@ -1470,8 +1936,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1484,8 +1950,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1498,8 +1964,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1509,11 +1975,11 @@
           "L2": "PASS",
           "L3": "PASS",
           "L4": "PASS",
-          "L5": "WARN",
+          "L5": "PASS",
           "L6": "PASS",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "ENTRY_VALID": 63,
             "WAITING_MSS": 82,
@@ -1522,17 +1988,7 @@
           }
         }
       },
-      "prefix_invariance": {
-        "days": 14,
-        "emissions": 1,
-        "mismatch_at": [],
-        "mismatches_by_day": {},
-        "pre_emission_signals": 0,
-        "prefix_mismatches": 0,
-        "prefixes": 4032,
-        "source": "TEMP_INLINE (AGP-ORACLE not merged)",
-        "verdict": "PASS"
-      },
+      "reissues": [],
       "scan_results": {
         "ENTRY_VALID": 63,
         "NO_TRADE_DIRECTION": 24,
@@ -1591,16 +2047,86 @@
         }
       },
       "scans": 4032,
+      "signal_events": {
+        "cuts_checked": 20,
+        "definition": "no signal event at or before t changes when bars after t are added",
+        "event_log_mismatches": 0,
+        "events": 2,
+        "events_by_type": {
+          "EMIT": 1,
+          "EXPIRE": 1
+        },
+        "expiry_rule": "SIGNAL_STALE once now > retest candle open + 5 min + 15 min (manual_ticket valid_until)",
+        "log": [
+          {
+            "bar_close_utc": "2026-10-09T18:45:00+00:00",
+            "direction": "SHORT",
+            "freshness": "FRESH",
+            "reason": "ENTRY_VALID",
+            "retest_candle_time_utc": "2026-10-09T18:40:00+00:00",
+            "seq": 0,
+            "signal_id": "7fb1737ff995efce",
+            "type": "EMIT"
+          },
+          {
+            "bar_close_utc": "2026-10-09T19:05:00+00:00",
+            "direction": "SHORT",
+            "reason": "SIGNAL_STALE",
+            "retest_candle_time_utc": "2026-10-09T18:40:00+00:00",
+            "seq": 1,
+            "signal_id": "7fb1737ff995efce",
+            "type": "EXPIRE"
+          }
+        ],
+        "mismatch_detail": [],
+        "mismatches_by_day": {},
+        "mismatches_by_type": {},
+        "reissues": {
+          "expired": 0,
+          "fresh": 0,
+          "total": 0
+        },
+        "source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
+        "verdict": "PASS"
+      },
       "symbol": "BTCUSD"
     },
     "ETHUSD": {
+      "branches": {
+        "LONG": {
+          "emissions": 1,
+          "entry_valid_scans": 70,
+          "gates": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "PASS",
+            "L6": "PASS"
+          }
+        },
+        "SHORT": {
+          "emissions": 0,
+          "entry_valid_scans": 0,
+          "gates": {
+            "L1": "PASS",
+            "L2": "INSUFFICIENT",
+            "L3": "INSUFFICIENT",
+            "L4": "INSUFFICIENT",
+            "L5": "INSUFFICIENT",
+            "L6": "INSUFFICIENT"
+          }
+        }
+      },
       "days": 14,
       "emission_quote_gaps": [],
       "emissions": [
         {
+          "cost_actionability": "WARN",
           "day_type": "WEEKDAY",
           "direction": "LONG",
           "entry": 2704.74,
+          "l5": "PASS",
           "live_cycle_decision": "BLOCKED",
           "live_cycle_reason_codes": [
             "OUTSIDE_CONFIG_WINDOW"
@@ -1645,7 +2171,7 @@
         "l3_sequence_failures": [],
         "l4_failures": [],
         "l4_reject_failures": [],
-        "l5_cost_gates": [
+        "l5_advisory_cost_gates": [
           {
             "checks": [
               {
@@ -1677,6 +2203,34 @@
             "status": "WARN"
           }
         ],
+        "l5_od1011": [
+          {
+            "actionability": "WARN",
+            "commission_R": 0.0,
+            "commission_source": "OD1011-COMMISSION",
+            "cost_R": 0.1199,
+            "expected_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ],
+            "gate_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ],
+            "spread_R": 0.1199,
+            "status": "PASS",
+            "thresholds": {
+              "cost_block_R": 0.25,
+              "cost_warn_R": 0.1,
+              "spread_block_pct": 20.0,
+              "spread_ok_pct": 10.0
+            },
+            "ticket_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ]
+          }
+        ],
         "l6": [
           "PASS"
         ],
@@ -1694,17 +2248,17 @@
         "L2": "PASS",
         "L3": "PASS",
         "L4": "PASS",
-        "L5": "WARN",
+        "L5": "PASS",
         "L6": "PASS"
       },
       "mismatches": {
         "determinism": 0,
+        "event_log": 0,
         "l2_reconstruction": 0,
         "l2_reference_rule": 0,
         "l3_sequence": 0,
         "l4_geometry": 0,
         "manifest_parity": 0,
-        "prefix": 0,
         "ticket_determinism": 0,
         "ticket_scan_parity": 0,
         "truncation": 0
@@ -1718,8 +2272,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1732,8 +2286,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1746,8 +2300,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_MSS": 58,
             "WAITING_SWEEP": 230
@@ -1761,8 +2315,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1775,8 +2329,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1789,8 +2343,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1803,8 +2357,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_TARGET_GEOMETRY": 60,
             "WAITING_SWEEP": 228
@@ -1818,8 +2372,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1832,8 +2386,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1843,11 +2397,11 @@
           "L2": "PASS",
           "L3": "PASS",
           "L4": "PASS",
-          "L5": "WARN",
+          "L5": "PASS",
           "L6": "PASS",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "ENTRY_VALID": 70,
             "WAITING_MSS": 19,
@@ -1863,8 +2417,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1877,8 +2431,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1891,8 +2445,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1905,24 +2459,14 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
         }
       },
-      "prefix_invariance": {
-        "days": 14,
-        "emissions": 1,
-        "mismatch_at": [],
-        "mismatches_by_day": {},
-        "pre_emission_signals": 0,
-        "prefix_mismatches": 0,
-        "prefixes": 4032,
-        "source": "TEMP_INLINE (AGP-ORACLE not merged)",
-        "verdict": "PASS"
-      },
+      "reissues": [],
       "scan_results": {
         "ENTRY_VALID": 70,
         "NO_TRADE_TARGET_GEOMETRY": 60,
@@ -1981,6 +2525,48 @@
         }
       },
       "scans": 4032,
+      "signal_events": {
+        "cuts_checked": 20,
+        "definition": "no signal event at or before t changes when bars after t are added",
+        "event_log_mismatches": 0,
+        "events": 2,
+        "events_by_type": {
+          "EMIT": 1,
+          "EXPIRE": 1
+        },
+        "expiry_rule": "SIGNAL_STALE once now > retest candle open + 5 min + 15 min (manual_ticket valid_until)",
+        "log": [
+          {
+            "bar_close_utc": "2026-10-05T18:10:00+00:00",
+            "direction": "LONG",
+            "freshness": "FRESH",
+            "reason": "ENTRY_VALID",
+            "retest_candle_time_utc": "2026-10-05T18:05:00+00:00",
+            "seq": 0,
+            "signal_id": "60da3072a5dfc138",
+            "type": "EMIT"
+          },
+          {
+            "bar_close_utc": "2026-10-05T18:30:00+00:00",
+            "direction": "LONG",
+            "reason": "SIGNAL_STALE",
+            "retest_candle_time_utc": "2026-10-05T18:05:00+00:00",
+            "seq": 1,
+            "signal_id": "60da3072a5dfc138",
+            "type": "EXPIRE"
+          }
+        ],
+        "mismatch_detail": [],
+        "mismatches_by_day": {},
+        "mismatches_by_type": {},
+        "reissues": {
+          "expired": 0,
+          "fresh": 0,
+          "total": 0
+        },
+        "source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
+        "verdict": "PASS"
+      },
       "symbol": "ETHUSD"
     }
   },

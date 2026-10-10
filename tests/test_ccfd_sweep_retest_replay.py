@@ -31,9 +31,10 @@ def test_replay_runs_weekend_and_weekday_with_zero_mismatches(eth):
     s = eth["symbols"]["ETHUSD"]
     assert eth["weekend_days"] == ["2026-10-04"] and s["scans"] == 2 * 288
     assert sum(s["mismatches"].values()) == 0
-    assert s["gates"] == {"L1": "PASS", "L2": "PASS", "L3": "PASS", "L4": "PASS", "L5": "WARN", "L6": "PASS"}
+    assert s["gates"] == {"L1": "PASS", "L2": "PASS", "L3": "PASS", "L4": "PASS", "L5": "PASS", "L6": "PASS"}
     assert s["fetch_counts"] == {"D1": 50, "H1": 100, "M15": 96, "M5": 576}   # taken from the live cycle
-    assert s["prefix_invariance"]["source"].startswith("TEMP_INLINE")
+    assert s["signal_events"]["source"].startswith("TEMP_INLINE")          # TEMP until AGP-ORACLE
+    assert s["gate_evidence"]["l5_od1011"][0]["commission_source"] == "OD1011-COMMISSION"
 
 
 def test_emission_ticket_uses_existing_schema_and_owner_band(eth):
@@ -59,14 +60,6 @@ def test_spread_band_changes_ticket_state_not_logic_verdict(eth, monkeypatch):
     assert s["gates"] == eth["symbols"]["ETHUSD"]["gates"]
 
 
-def test_prefix_check_flags_a_revised_emission():
-    t0 = dt.datetime(2026, 10, 5, tzinfo=dt.timezone.utc)
-    entry = {"result": "ENTRY_VALID", "sweep": 1, "mss": 2, "retest": 3, "target_plan": 4}
-    stream = [(t0, {"result": "WAITING_SWEEP"}), (t0 + R.M5, entry), (t0 + 2 * R.M5, {**entry, "target_plan": 5})]
-    out = R.prefix_invariance_temp(stream)
-    assert out["prefix_mismatches"] == 1 and out["verdict"] == "FAIL"
-
-
 def test_registry_untouched_and_no_broker_imports(eth):
     assert eth["registry"] == {"active": False, "research": True, "modified": False}
     tree = ast.parse((ROOT / "scripts/ccfd_sweep_retest_replay.py").read_text(encoding="utf-8"))
@@ -86,21 +79,48 @@ def test_committed_artifact_is_consistent():
         assert sum(rep["symbols"][sym]["mismatches"].values()) == 0
 
 
-def test_no_logic_verified_record_while_60d_checks_do_not_all_pass():
-    """AGP-LANE-B2: the 14-day run passes, but the 60-day VT run (PR #143) has an L3 prefix failure
-    classified SPEC_AMBIGUITY (owner A/B pending), so -- per the AGP-4H-B rule -- nothing is recorded."""
+def test_branch_scoped_logic_verified_record_is_bound_to_identity_and_evidence():
+    """AGP-LANE-B3 (owner rulings 2026-10-11): LOGIC_VERIFIED per symbol x branch (OD1011-SCOPE) only where the
+    60-day VT run verifies the branch (L1-L4/L6 PASS, L5 PASS per OD1011-L5, 0 event-log mismatches, every rule
+    cell VT EXERCISED or SYNTHETIC_PROVEN); the 14-day run must pass too. Nothing else in the entry changes."""
+    import hashlib
+
     import yaml
 
+    from v1_tickets.authority import logic_identity
     from v1_tickets.ready_authority import symbol_verified
 
     rep14 = json.loads(ARTIFACT.read_text(encoding="utf-8"))
-    rep60 = json.loads((R.DATASETS["recorded_60d"][1] / "replay_report.json").read_text(encoding="utf-8"))
-    assert rep14["logic_verification"]["BTCUSD"]["all_checks_pass"] is True
-    assert rep60["logic_verification"]["BTCUSD"]["all_checks_pass"] is False
-    classes = {d["failure_class"] for d in rep60["symbols"]["BTCUSD"]["per_day"].values()} - {None}
-    assert classes == {R.SPEC_AMBIGUITY_PERMISSION}
+    path60 = R.DATASETS["recorded_60d"][1] / "replay_report.json"
+    rep60 = json.loads(path60.read_text(encoding="utf-8"))
     entry = yaml.safe_load((ROOT / "strategies/registry.yaml").read_text(encoding="utf-8"))["strategies"][
         "ST_CRYPTO_CFD_SWEEP_RETEST_V1"]
-    assert entry["active"] is False and entry["research"] is True and "candidate_versions" not in entry
+    assert entry["active"] is False and entry["research"] is True
+    assert entry["demo_authorized"] is False and entry["live_authorized"] is False and "logic_status" not in entry
+    version = entry["candidate_versions"]["1.0.0"]
+    digest = logic_identity("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0")["digest"]
+    assert version["logic_status"] == "LOGIC_VERIFIED" and version["logic_verified_identity"] == digest
+    assert version["edge_verified"] is False
+    listed = {e["symbol"]: e for e in version["logic_verified_symbols"]}
     for sym in ("BTCUSD", "ETHUSD"):
-        assert symbol_verified("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0", sym) is False
+        assert rep14["logic_verification"][sym]["all_checks_pass"] is True
+        assert rep60["logic_verification"][sym]["all_checks_pass"] is True
+        verified = [b for b in R.BRANCHES if rep60["logic_verification"][sym]["branches"][b]["verified"]]
+        assert listed[sym]["branches"] == verified
+        assert listed[sym]["logic_identity"] == digest == rep60["logic_verification"][sym]["logic_identity"]["digest"]
+        assert listed[sym]["evidence"] == path60.relative_to(ROOT).as_posix()
+        assert listed[sym]["evidence_sha256"] == hashlib.sha256(path60.read_bytes()).hexdigest()
+        assert symbol_verified("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0", sym) is True
+    assert listed["BTCUSD"]["branches"] == ["SHORT"] and listed["ETHUSD"]["branches"] == ["LONG", "SHORT"]
+    assert rep60["logic_verification"]["BTCUSD"]["branches"]["LONG"]["entry_valid_scans"] == 0
+
+
+def test_no_crypto_ticket_is_actionable_with_the_record():
+    """The record grants no ticket authority: active:false keeps every ENTRY_VALID ticket BLOCKED with
+    LOGIC_STATUS_NOT_VERIFIED (so the reader not yet enforcing `branches` cannot open BTCUSD LONG)."""
+    for out in (R.OUT_DIR, R.DATASETS["recorded_60d"][1]):
+        for line in (out / "tickets.jsonl").read_text(encoding="utf-8").splitlines():
+            t = json.loads(line)["ticket"]
+            assert t["decision"] != "READY" and t["owner_accept_allowed"] is False
+            if (t.get("engine_result") or {}).get("result") == "ENTRY_VALID":
+                assert "LOGIC_STATUS_NOT_VERIFIED" in t["reason_codes"]

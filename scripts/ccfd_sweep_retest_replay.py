@@ -82,7 +82,6 @@ from v1_tickets.crypto_cfd_policy import load_ticket_policy  # noqa: E402
 from v1_tickets.logic_gate import (  # noqa: E402
     FAIL,
     PASS,
-    WARN,
     l1_determinism,
     l5_cost,
     l6_freshness,
@@ -241,6 +240,24 @@ RULES = (
 )
 WINDOWS = ("IN_WINDOW", "OUT_OF_WINDOW")
 
+# AGP-LANE-B3 (owner ruling 2026-10-11, item 3): rejection-only rules -- every outcome is a non-entry result --
+# may be proven by synthetic unit cases (SYNTHETIC_PROVEN). rules.evaluate takes no window input (the window is a
+# ticket-layer gate), so one synthetic case per direction covers both window cells. Entry-branch rules (the rest)
+# need VT exercise; LOGIC_VERIFIED is per symbol x entry branch (OD1011-SCOPE).
+SYNTHETIC_TESTS = "tests/test_ccfd_synthetic_rejections.py"
+SYNTHETIC_PROOFS = {
+    "liquidity_contract.completeness_rule": "test_incomplete_reference_fails_closed",
+    "context_contract.direction_permission.h1_unresolved": "test_h1_unresolved_gives_no_direction",
+    "context_contract.direction_permission.d1_confirmed_and_opposes_h1": "test_d1_conflict_vetoes_direction",
+    "m5_trigger_contract.sweep.dual_side_candle": "test_dual_side_candle_only_blocks",
+    "m5_trigger_contract.sweep.direction_gate": "test_wrong_side_sweep_is_ignored",
+    "signal_expiry_contract.rule_1": "test_rule_1_no_retest_within_ttl_expires",
+    "signal_expiry_contract.rule_2": "test_rule_2_utc_day_rotation_kills_the_sequence",
+    "targets_contract.geometry_guard": "test_geometry_guard_rejects",
+    "invalidation_contract.INVALID_STOP_DISTANCE": "test_invalid_stop_distance_rejects",
+}
+BRANCHES = ("LONG", "SHORT")
+
 
 def rule_events(r: dict, x: Dict[str, List[Candle]], now: dt.datetime) -> set:
     """(rule_id, LONG|SHORT|ANY) exercised by one scan, read from the engine result and its closed input."""
@@ -306,54 +323,193 @@ def coverage_gaps(matrix: dict) -> List[str]:
             if v["status"] == "NOT_EXERCISED"]
 
 
-# ------------------------------------------------------------------------------- prefix (TEMP)
-
-# TEMP(AGP-ORACLE): minimal inline prefix-invariance check. Replace with the AGP-ORACLE
-# prefix_invariance import once that PR is merged; do not extend this function.
-def prefix_invariance_temp(stream: Sequence[tuple]) -> dict:
-    """stream: (now, semantic) for every M5 close, chronological. Within a UTC day, once ENTRY_VALID is
-    first emitted every longer prefix must carry the identical decision; before it, none."""
-    by_day: Dict[dt.date, list] = {}
-    for now, sem in stream:
-        by_day.setdefault(now.date(), []).append((now, sem))
-    mismatches, pre_emission, emissions, by_day_bad = [], 0, 0, {}
-    for rows in by_day.values():
-        first = next((k for k, (_, s) in enumerate(rows) if s["result"] == "ENTRY_VALID"), None)
-        pre_emission += sum(1 for k, (_, s) in enumerate(rows)
-                            if (first is None or k < first) and s["result"] == "ENTRY_VALID")
-        if first is not None:
-            emissions += 1
-            bad = [now.isoformat() for now, s in rows[first:] if s != rows[first][1]]
-            mismatches += bad
-            if bad:
-                by_day_bad[rows[0][0].date().isoformat()] = len(bad)
-    return {"source": "TEMP_INLINE (AGP-ORACLE not merged)", "days": len(by_day), "prefixes": len(stream),
-            "emissions": emissions, "prefix_mismatches": len(mismatches), "mismatch_at": mismatches[:20],
-            "pre_emission_signals": pre_emission, "mismatches_by_day": by_day_bad,
-            "verdict": PASS if not mismatches and not pre_emission else FAIL}
-
-
-SPEC_AMBIGUITY_PERMISSION = "SPEC_AMBIGUITY:DIRECTION_PERMISSION_REEVALUATED_AFTER_EMISSION"
-
-
-def classify_prefix_mismatches(stream: Sequence[tuple], perm_at: Dict[dt.datetime, Optional[str]]) -> Dict[str, str]:
-    """Per UTC day with prefix mismatches: SPEC_AMBIGUITY when every mismatching scan carries a different
-    H1/D1 direction permission than the first emission (the frozen engine re-evaluates permission each
-    scan; the contract does not say whether it locks at the sweep/emission), else UNCLASSIFIED_FAILURE."""
-    by_day: Dict[dt.date, list] = {}
-    for now, sem in stream:
-        by_day.setdefault(now.date(), []).append((now, sem))
-    out = {}
-    for day, rows in by_day.items():
-        first = next((k for k, (_, sem) in enumerate(rows) if sem["result"] == "ENTRY_VALID"), None)
-        if first is None:
-            continue
-        t0, s0 = rows[first]
-        bad = [now for now, sem in rows[first:] if sem != s0]
-        if bad:
-            out[day.isoformat()] = (SPEC_AMBIGUITY_PERMISSION if all(perm_at[t] != perm_at[t0] for t in bad)
-                                    else "UNCLASSIFIED_FAILURE")
+def proof_matrix(vt: dict, cov_only: Optional[dict]) -> Dict[str, Dict[str, str]]:
+    """Per cell: EXERCISED (VT) / SYNTHETIC_PROVEN (VT gap, rejection-only rule with a synthetic unit case) /
+    COVERAGE_ONLY_EXERCISED (VT gap hit only on Binance bars: non-authoritative, never counts) / NOT_EXERCISED."""
+    binance_gaps = set(cov_only["not_exercised"]) if cov_only else None
+    out: Dict[str, Dict[str, str]] = {}
+    for rule, m in vt.items():
+        row = {}
+        for cell, c in m["cells"].items():
+            st = c["status"]
+            if st == "NOT_EXERCISED" and rule in SYNTHETIC_PROOFS:
+                st = "SYNTHETIC_PROVEN"
+            elif st == "NOT_EXERCISED" and binance_gaps is not None and f"{rule}|{cell}" not in binance_gaps:
+                st = "COVERAGE_ONLY_EXERCISED"
+            row[cell] = st
+        out[rule] = row
     return out
+
+
+def branch_verdict(r: dict, proof: Dict[str, Dict[str, str]], side: str) -> dict:
+    """LOGIC_VERIFIED for symbol x branch only when the branch's L1-L4/L6 PASS, L5 PASS (OD1011-L5), the run is
+    mismatch-free (0 event-log mismatches) and every rule cell of that direction -- both windows -- is VT
+    EXERCISED or (rejection-only) SYNTHETIC_PROVEN. Entry-branch rules can only be VT EXERCISED."""
+    b = r["branches"][side]
+    blocking = [f"{g}={st}" for g, st in b["gates"].items() if st != PASS]
+    if not mismatch_free(r):
+        blocking.append("MISMATCHES")
+    blocking += [f"COVERAGE:{rule}|{cell}={st}" for rule, row in proof.items() for cell, st in row.items()
+                 if cell.startswith(side + "|") and st not in ("EXERCISED", "SYNTHETIC_PROVEN", "NOT_APPLICABLE")]
+    return {"verified": not blocking, "blocking": blocking, **b}
+
+
+# ------------------------------------------------------------------------------- signal event log
+
+# Owner ruling 2026-10-11 (AGP-LANE-B3, option A): direction permission is re-checked on every scan (frozen
+# rules 1.0.0). The replay records signal events append-only and L3 compares the event log, not the scan.
+EVENT_TYPES = ("EMIT", "WITHDRAW", "EXPIRE", "REISSUE")
+# Signal-expiry window of an emitted signal = the ticket freshness rule already in
+# manual_ticket.build_crypto_cfd_manual_ticket: SIGNAL_STALE once now > retest open + M5 + 15 min
+# (valid_until). SIGNAL_TTL above mirrors it; no new time arithmetic.
+EXPIRY_RULE = "SIGNAL_STALE once now > retest candle open + 5 min + 15 min (manual_ticket valid_until)"
+
+
+def _signal_key(sem: dict) -> str:
+    return json.dumps(sem, sort_keys=True, default=str)
+
+
+def _retest_at(sem: dict) -> dt.datetime:
+    return dt.datetime.fromisoformat(sem["retest"]["candle_time_utc"])
+
+
+def signal_events(stream: Sequence[tuple]) -> List[dict]:
+    """Append-only signal event log over the chronological scan stream [(now, semantic)].
+
+    A signal is one ENTRY_VALID payload (sweep, MSS, retest, plan). EMIT = first appearance; WITHDRAW = an
+    active signal is no longer returned (reason = the scan result, or SUPERSEDED); EXPIRE = an active signal
+    passes its expiry window (SIGNAL_STALE) or the UTC day rotates (signal_expiry rule_2); REISSUE = a signal
+    seen before is returned again after it stopped being active. EMIT/REISSUE carry freshness: FRESH when
+    now <= retest open + SIGNAL_TTL, else EXPIRED (never actionable; it never becomes active). An expired
+    signal the engine keeps returning on consecutive scans is a continuation, not a new event."""
+    events: List[dict] = []
+    state: Dict[str, str] = {}
+    sems: Dict[str, dict] = {}
+    active: Optional[str] = None
+    last: Optional[str] = None
+
+    def add(kind: str, now: dt.datetime, key: str, reason: str, freshness: Optional[str] = None) -> None:
+        sem = sems[key]
+        ev = {"seq": len(events), "type": kind, "bar_close_utc": now.isoformat(),
+              "retest_candle_time_utc": sem["retest"]["candle_time_utc"],
+              "direction": sem["target_plan"]["direction"],
+              "signal_id": hashlib.sha256(key.encode()).hexdigest()[:16], "reason": reason}
+        if freshness is not None:
+            ev["freshness"] = freshness
+        events.append(ev)
+
+    for now, sem in stream:
+        if active is not None:
+            retest = _retest_at(sems[active])
+            if now > retest + SIGNAL_TTL or now.date() != retest.date():
+                add("EXPIRE", now, active, "SIGNAL_STALE" if now > retest + SIGNAL_TTL else "UTC_DAY_ROTATION")
+                state[active], active = "EXPIRED", None
+        key = _signal_key(sem) if sem["result"] == "ENTRY_VALID" else None
+        if active is not None and key != active:
+            add("WITHDRAW", now, active, sem["result"] if key is None else "SUPERSEDED")
+            state[active], active = "WITHDRAWN", None
+        if key is not None and active is None and not (key == last and state.get(key) == "EXPIRED"):
+            sems.setdefault(key, sem)
+            fresh = now <= _retest_at(sem) + SIGNAL_TTL
+            add("REISSUE" if key in state else "EMIT", now, key, sem["result"], "FRESH" if fresh else "EXPIRED")
+            state[key] = "ACTIVE" if fresh else "EXPIRED"
+            active = key if fresh else None
+        last = key
+    return events
+
+
+def _diff_events(expected: List[dict], got: List[dict], kind: str) -> List[dict]:
+    out = []
+    for i in range(max(len(expected), len(got))):
+        a = expected[i] if i < len(expected) else None
+        b = got[i] if i < len(got) else None
+        if a != b:
+            out.append({"check": kind, "seq": i,
+                        "mismatch": "ADDED" if a is None else "REMOVED" if b is None else "CHANGED",
+                        "event_type": (a or b)["type"], "bar_close_utc": (a or b)["bar_close_utc"]})
+    return out
+
+
+# TEMP(AGP-ORACLE): inline event-log prefix invariance. Replace with the AGP-ORACLE prefix_invariance
+# import once that PR is merged; do not extend this function.
+def event_log_invariance(stream: Sequence[tuple], future_stream: Sequence[tuple]) -> dict:
+    """L3: no event at or before t may change when bars after t are added.
+
+    (a) PREFIX: the log built from the scans up to every cut t equals the full log's events at or before t
+        (cuts: every UTC-day end and each scan at/just after an event).
+    (b) FUTURE_BARS: the log built from scans that were handed every later bar (guard.evaluate drops them)
+        equals the log built from closed-only input."""
+    full = signal_events(stream)
+    times = [now for now, _ in stream]
+    at = {now: k for k, now in enumerate(times)}
+    cuts = {k + 1 for k in range(len(times)) if k + 1 == len(times) or times[k + 1].date() != times[k].date()}
+    for e in full:
+        k = at[dt.datetime.fromisoformat(e["bar_close_utc"])]
+        cuts |= {k, k + 1, min(k + 2, len(times))}
+    cuts.discard(0)
+    mism: List[dict] = []
+    for k in sorted(cuts):
+        cut = times[k - 1]
+        mism += _diff_events([e for e in full if dt.datetime.fromisoformat(e["bar_close_utc"]) <= cut],
+                             signal_events(stream[:k]), "PREFIX")
+    mism += _diff_events(full, signal_events(future_stream), "FUTURE_BARS")
+    by_type = Counter(f"{m['check']}:{m['mismatch']}:{m['event_type']}" for m in mism)
+    reissues = [e for e in full if e["type"] == "REISSUE"]
+    return {"source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
+            "definition": "no signal event at or before t changes when bars after t are added",
+            "expiry_rule": EXPIRY_RULE, "events": len(full),
+            "events_by_type": dict(sorted(Counter(e["type"] for e in full).items())),
+            "reissues": {"total": len(reissues), "fresh": sum(e["freshness"] == "FRESH" for e in reissues),
+                         "expired": sum(e["freshness"] == "EXPIRED" for e in reissues)},
+            "cuts_checked": len(cuts), "event_log_mismatches": len(mism),
+            "mismatches_by_type": dict(sorted(by_type.items())), "mismatch_detail": mism[:50],
+            "mismatches_by_day": dict(sorted(Counter(m["bar_close_utc"][:10] for m in mism).items())),
+            "verdict": PASS if not mism else FAIL, "log": full}
+
+
+# ------------------------------------------------------------------------------- L5 (OD1011)
+
+# OD1011-COMMISSION (Aung, 2026-10-11; register row + config block in PR #149): commission = 0 is an owner-stated
+# fact of the VT Markets demo Standard STP account, NOT a default. Mirrors the PR #149 `commission` block of
+# config/v1_tickets/crypto_cfd_ticket_policy.yaml; read it from there once #149 merges. Applied only when the
+# dataset provenance names that account's server / source; anything else stays INSUFFICIENT (never 0).
+OD1011_COMMISSION = {"value": 0.0, "source": "OD1011-COMMISSION", "bound_server": "VTMarkets-Demo",
+                     "bound_source": "MT5_VT_MARKETS_DEMO", "bound_account_type": "STANDARD_STP",
+                     "asset_classes": ["CRYPTO_CFD"]}
+COST_CODES = ("SPREAD_TOO_WIDE", "SPREAD_WARN", "COST_TOO_HIGH", "COST_WARN")
+
+
+def commission_binding(provenance: dict) -> Optional[dict]:
+    """OD1011-COMMISSION applies to data captured on the bound VT demo server; else None (INSUFFICIENT)."""
+    server, source = provenance.get("server"), provenance.get("source")
+    if server == OD1011_COMMISSION["bound_server"] or (server is None and source == OD1011_COMMISSION["bound_source"]):
+        return OD1011_COMMISSION
+    return None
+
+
+def l5_od1011(spread: float, risk: Optional[float], ticket: dict, policy: dict, binding: Optional[dict]) -> dict:
+    """OD1011-L5: PASS = spread + commission evidence exist from an accepted source and the cost gate applies
+    them correctly (OD1009-D2 0.10R warn / 0.25R block; owner spread bands). A ticket blocked by cost is an
+    actionability outcome, not a verification failure. Missing cost evidence stays INSUFFICIENT."""
+    if binding is None:
+        return {"status": INSUFFICIENT, "reason": "COMMISSION_EVIDENCE_MISSING"}
+    if spread is None or not risk or risk <= 0:
+        return {"status": INSUFFICIENT, "reason": "SPREAD_OR_STOP_DISTANCE_MISSING"}
+    blocks, warns, _, _ = manual_ticket.crypto_cfd_cost_gate(risk, spread, binding["value"], policy)
+    pct, cost = spread / risk * 100, spread / risk + binding["value"]      # independent re-derivation
+    expected = ({"SPREAD_TOO_WIDE"} if pct > policy["spread_block_pct"] else
+                {"SPREAD_WARN"} if pct > policy["spread_ok_pct"] else set())
+    expected |= ({"COST_TOO_HIGH"} if cost >= policy["cost_block_R"] else
+                 {"COST_WARN"} if cost >= policy["cost_warn_R"] else set())
+    gate = set(blocks) | set(warns)
+    on_ticket = {c for c in COST_CODES if c in ticket["reason_codes"] or c in ticket["warnings"]}
+    return {"status": PASS if gate == expected == on_ticket else FAIL,
+            "commission_R": binding["value"], "commission_source": binding["source"],
+            "spread_R": round(spread / risk, 4), "cost_R": round(cost, 4),
+            "thresholds": {k: policy[k] for k in ("spread_ok_pct", "spread_block_pct", "cost_warn_R", "cost_block_R")},
+            "expected_codes": sorted(expected), "gate_codes": sorted(gate), "ticket_codes": sorted(on_ticket),
+            "actionability": ("BLOCK" if expected & {"SPREAD_TOO_WIDE", "COST_TOO_HIGH"} else
+                              "WARN" if expected else "OK")}
 
 
 # ------------------------------------------------------------------------------- tickets
@@ -376,7 +532,7 @@ def envelope(stream: str, case_id: str, symbol: str, now: dt.datetime, ticket: d
 # ------------------------------------------------------------------------------- run
 
 def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.date], cfg, spec: dict,
-               policy: dict, balance: Optional[float]) -> dict:
+               policy: dict, balance: Optional[float], commission_binding: Optional[dict] = None) -> dict:
     mism = Counter()
     dfail: Dict[str, Counter] = {}       # per UTC day: failed checks by gate (L1..L6)
 
@@ -401,8 +557,8 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
         raise SystemExit(f"{symbol}: no in-window case reached the feed; fetch counts unknown")
 
     _, windows = crypto_cfd._config()
-    stream, results, emissions, hits = [], Counter(), [], Counter()
-    perm_at: Dict[dt.datetime, Optional[str]] = {}
+    stream, future_stream, results, emissions, hits = [], [], Counter(), [], Counter()
+    entry_at: Dict[dt.datetime, dict] = {}
     by_day: Dict[str, Counter] = {}
     l2_bad, l4_bad, l4_neg_bad, l2_neg_bad = [], [], [], []
     for day in days:
@@ -416,12 +572,12 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
             mism["determinism"] += nondet
             bump(now, "L1", nondet)
             future = {tf: x[tf] + data["bars"][tf][bisect.bisect_left(data["times"][tf], now):] for tf in STEP}
-            leaked = semantic(engine(symbol, now, future, cfg)) != semantic(r)
+            fsem, sem = semantic(engine(symbol, now, future, cfg)), semantic(r)
+            leaked = fsem != sem
             mism["truncation"] += leaked
             bump(now, "L3", leaked)
-            sem = semantic(r)
             stream.append((now, sem))
-            perm_at[now] = r["evidence"].get("context", {}).get("direction_permission")
+            future_stream.append((now, fsem))
             win = "IN_WINDOW" if crypto_cfd._window(now, windows) else "OUT_OF_WINDOW"
             events = rule_events(r, x, now)
             if k == 287 and r["result"] in ("WAITING_MSS", "WAITING_RETEST"):   # UTC-day rotation kills it
@@ -436,18 +592,20 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
                 l2_neg_bad.append(now.isoformat())
                 bump(now, "L2")
             if r["result"] == "ENTRY_VALID":
+                entry_at[now] = r
+                side = r["evidence"]["target_plan"]["direction"]
                 bad = reconstruct(r, x, now, spec)
                 if bad:
-                    l2_bad.append({"now": now.isoformat(), "failed": bad})
+                    l2_bad.append({"now": now.isoformat(), "direction": side, "failed": bad})
                     bump(now, "L2")
                 if not geometry_ok(r["evidence"]["target_plan"]):
-                    l4_bad.append(now.isoformat())
+                    l4_bad.append({"now": now.isoformat(), "direction": side})
                     bump(now, "L4")
                 if not emitted:
                     emitted = True
                     emissions.append((now, r, x))
             elif r["result"] == "NO_TRADE_TARGET_GEOMETRY" and not geometry_reject_ok(r["evidence"]["target_plan"]):
-                l4_neg_bad.append(now.isoformat())
+                l4_neg_bad.append({"now": now.isoformat(), "direction": r["evidence"]["target_plan"]["direction"]})
                 bump(now, "L4")
     mism["l2_reconstruction"], mism["l4_geometry"] = len(l2_bad), len(l4_bad) + len(l4_neg_bad)
     mism["l2_reference_rule"] = len(l2_neg_bad)
@@ -460,7 +618,7 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
             mism["ticket_scan_parity"] += semantic(er) != scan_at[env["now"]]
 
     meta, commission = manual_ticket.symbol_meta_from_host(symbol), manual_ticket.crypto_cfd_commission(symbol)
-    emission_rows, l3_seq_bad, l5, l6, quote_gaps = [], [], [], [], []
+    emission_rows, l3_seq_bad, l5, l5_adv, l6, quote_gaps = [], [], [], [], [], []
     for now, r, x in emissions:
         ev, plan = r["evidence"], r["evidence"]["target_plan"]
         sweep_at, mss_at, retest_at = (dt.datetime.fromisoformat(ev[k][f]) for k, f in
@@ -482,7 +640,8 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
         tickets.append(envelope("EMISSION_RESEARCH", f"{symbol}_EMISSION_{now:%Y%m%dT%H%MZ}", symbol, now, ticket,
                                 live_cycle_decision=live["decision"], live_cycle_reason_codes=live["reason_codes"],
                                 local_time=local_time_diagnostics(now)))
-        l5.append(l5_cost(ask - bid, plan["risk_distance"], commission_r=commission, warn_r=policy["cost_warn_R"]))
+        l5_adv.append(l5_cost(ask - bid, plan["risk_distance"], commission_r=commission, warn_r=policy["cost_warn_R"]))
+        l5.append(l5_od1011(ask - bid, plan["risk_distance"], ticket, policy, commission_binding))
         expected_until = (retest_at + SIGNAL_TTL).isoformat()
         gate6 = l6_freshness(ticket["valid_until"], {"rule": "SIGNAL_STALE once now > retest close + 15 min",
                                                      "or_after": ticket["valid_until"]},
@@ -498,12 +657,39 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
                               "spread": round(ask - bid, 2), "spread_pct_of_stop": ticket["spread_pct_of_stop"],
                               "spread_band": spread_band(ticket), "ticket_decision": ticket["decision"],
                               "ticket_reason_codes": ticket["reason_codes"], "ticket_warnings": ticket["warnings"],
-                              "live_cycle_decision": live["decision"], "live_cycle_reason_codes": live["reason_codes"]})
-    prefix = prefix_invariance_temp(stream)
-    mism["prefix"], mism["l3_sequence"] = prefix["prefix_mismatches"], len(l3_seq_bad)
-    for d, n in prefix["mismatches_by_day"].items():
+                              "live_cycle_decision": live["decision"], "live_cycle_reason_codes": live["reason_codes"],
+                              "l5": l5[-1]["status"], "cost_actionability": l5[-1].get("actionability")})
+
+    # L3 (owner ruling 2026-10-11): append-only signal event log, prefix-invariant
+    events = event_log_invariance(stream, future_stream)
+    mism["event_log"], mism["l3_sequence"] = events["event_log_mismatches"], len(l3_seq_bad)
+    for d, n in events["mismatches_by_day"].items():
         dfail.setdefault(d, Counter())["L3"] += n
-    prefix_class = classify_prefix_mismatches(stream, perm_at)
+    # REISSUE: a re-issue whose retest is older than the expiry window must be EXPIRED and never actionable
+    reissue_rows = []
+    for e in (e for e in events["log"] if e["type"] == "REISSUE"):
+        now = dt.datetime.fromisoformat(e["bar_close_utc"])
+        try:
+            bid, ask, quote_time = ReplayFeed(data, now).quote("")
+        except ValueError:
+            quote_gaps.append(now.isoformat())
+            continue
+        ticket = manual_ticket.build_crypto_cfd_manual_ticket(
+            entry_at[now], now=now, window=crypto_cfd._window(now, windows) or "OUTSIDE_WINDOW", spread=ask - bid,
+            balance=balance, meta=meta, commission_r=commission, policy=policy, quote_time=quote_time)
+        tickets.append(envelope("REISSUE_RESEARCH", f"{symbol}_REISSUE_{now:%Y%m%dT%H%MZ}", symbol, now, ticket,
+                                signal_event=e))
+        stale = "SIGNAL_STALE" in ticket["reason_codes"]
+        actionable = ticket["decision"] == "READY" or bool(ticket["owner_accept_allowed"])
+        expired = e["freshness"] == "EXPIRED"
+        ok = expired == stale == (now >= dt.datetime.fromisoformat(ticket["valid_until"])) and not (expired and actionable)
+        mism["reissue_expiry"] += not ok
+        bump(now, "L6", not ok)
+        reissue_rows.append({"now": now.isoformat(), "direction": e["direction"],
+                             "retest_at": e["retest_candle_time_utc"], "freshness": e["freshness"],
+                             "valid_until": ticket["valid_until"], "expiry_rule_fired": stale,
+                             "ticket_decision": ticket["decision"], "actionable": actionable,
+                             "ticket_reason_codes": ticket["reason_codes"], "check": PASS if ok else FAIL})
     mism["ticket_determinism"] = sum(s != PASS for s in cycle_l1)
 
     identity = logic_identity(CONTRACT_ID, CONTRACT_VERSION)
@@ -518,16 +704,31 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
 
     def v(failed: bool, positive: bool) -> str:
         return FAIL if failed else (PASS if positive else INSUFFICIENT)
-    l5_status = INSUFFICIENT if not l5 else (WARN if any(g["status"] != PASS for g in l5) else PASS)
+
+    def l5_of(rows: List[dict]) -> str:
+        st = [g["status"] for g in rows]
+        return FAIL if FAIL in st else INSUFFICIENT if not st or INSUFFICIENT in st else PASS
     gates = {
         "L1": v(identity is None or mism["determinism"] or mism["ticket_determinism"], True),
         "L2": v(not spec_ok or mism["l2_reconstruction"] or mism["l2_reference_rule"], entries > 0),
-        "L3": v(mism["truncation"] or mism["prefix"] or mism["l3_sequence"] or prefix["pre_emission_signals"],
-                bool(emissions)),
+        "L3": v(mism["truncation"] or mism["event_log"] or mism["l3_sequence"], bool(emissions)),
         "L4": v(bool(mism["l4_geometry"]), entries > 0),
-        "L5": l5_status,                       # advisory (logic_gate.l5_cost); spread band NOT consulted
-        "L6": v(FAIL in l6, bool(l6)),
+        "L5": l5_of(l5),                       # OD1011-L5 (commission per OD1011-COMMISSION); band NOT consulted
+        "L6": v(FAIL in l6 or bool(mism["reissue_expiry"]), bool(l6)),
     }
+
+    def branch(side: str) -> dict:           # OD1011-SCOPE: per symbol x entry branch (LONG / SHORT)
+        n = sum(1 for r in entry_at.values() if r["evidence"]["target_plan"]["direction"] == side)
+        em = [k for k, row in enumerate(emission_rows) if row["direction"] == side]
+        mine = lambda rows: any(b.get("direction") == side for b in rows)   # noqa: E731
+        return {"entry_valid_scans": n, "emissions": len(em), "gates": {
+            "L1": gates["L1"],
+            "L2": v(not spec_ok or mine(l2_bad) or bool(l2_neg_bad), n > 0),
+            "L3": v(mism["truncation"] or mism["event_log"] or mism["l3_sequence"], bool(em)),
+            "L4": v(mine(l4_bad) or mine(l4_neg_bad), n > 0),
+            "L5": l5_of([l5[k] for k in em]),
+            "L6": v(any(l6[k] == FAIL for k in em)
+                    or any(x["check"] == FAIL and x["direction"] == side for x in reissue_rows), bool(em))}}
     emitted_days = {e["now"][:10]: e for e in emission_rows}
     l5_by_day = {e["now"][:10]: g["status"] for e, g in zip(emission_rows, l5)}
     per_day = {}
@@ -535,35 +736,42 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
         f, pos = dfail.get(d, Counter()), c["ENTRY_VALID"] > 0
         gd = {"L1": v(f["L1"] > 0, True), "L2": v(f["L2"] > 0, pos), "L3": v(f["L3"] > 0, True),
               "L4": v(f["L4"] > 0, pos), "L5": l5_by_day.get(d, INSUFFICIENT), "L6": v(f["L6"] > 0, d in emitted_days),
-              "prefix_mismatches": prefix["mismatches_by_day"].get(d, 0)}
-        only_prefix = (f["L3"] == prefix["mismatches_by_day"].get(d, 0) > 0
+              "event_log_mismatches": events["mismatches_by_day"].get(d, 0)}
+        only_events = (f["L3"] == events["mismatches_by_day"].get(d, 0) > 0
                        and [k for k in ("L1", "L2", "L3", "L4", "L6") if gd[k] == FAIL] == ["L3"])
-        gd["failure_class"] = (None if FAIL not in gd.values() else
-                               prefix_class.get(d, "UNCLASSIFIED_FAILURE") if only_prefix else "UNCLASSIFIED_FAILURE")
+        gd["failure_class"] = (None if FAIL not in (gd[k] for k in ("L1", "L2", "L3", "L4", "L5", "L6")) else
+                               "LOGIC_DEFECT:EVENT_LOG_MISMATCH" if only_events else "UNCLASSIFIED_FAILURE")
         per_day[d] = {"day_type": day_type(dt.date.fromisoformat(d)), "results": dict(sorted(c.items())), **gd}
     return {
         "symbol": symbol, "fetch_counts": counts, "per_day": per_day, "days": len(days), "scans": len(stream),
         "scan_results": dict(sorted(results.items())), "scan_results_by_day": {d: dict(sorted(c.items()))
                                                                                for d, c in by_day.items()},
         "entry_valid_scans": entries, "emissions": emission_rows, "emission_quote_gaps": quote_gaps, "gates": gates,
+        "branches": {side: branch(side) for side in ("LONG", "SHORT")},
+        "reissues": reissue_rows,
         "gate_evidence": {"logic_identity": identity, "spec_constants_match": spec_ok,
                           "l2_failures": l2_bad[:20], "l2_reference_rule_failures": l2_neg_bad[:20],
                           "l4_failures": l4_bad[:20], "l4_reject_failures": l4_neg_bad[:20],
                           "l3_sequence_failures": l3_seq_bad,
-                          "l5_cost_gates": l5, "l6": l6, "cycle_ticket_l1": dict(Counter(cycle_l1))},
-        "prefix_invariance": prefix, "mismatches": dict(sorted(mism.items())),
+                          "l5_od1011": l5, "l5_advisory_cost_gates": l5_adv, "l6": l6,
+                          "cycle_ticket_l1": dict(Counter(cycle_l1))},
+        "signal_events": events, "mismatches": dict(sorted(mism.items())),
         "rule_coverage": coverage_matrix(hits),
         "tickets": tickets,
     }
 
 
-def all_checks_pass(r: dict) -> bool:
-    """Repo precedent (ASW 1.1.2): L1-L4 and L6 PASS, L5 advisory (WARN allowed, never FAIL), zero
-    mismatches, and no recorded day with a FAIL. INSUFFICIENT on a no-signal day is not a failure."""
-    g = r["gates"]
-    return (all(g[k] == PASS for k in ("L1", "L2", "L3", "L4", "L6")) and g["L5"] in (PASS, WARN)
-            and not any(r["mismatches"].values()) and r["prefix_invariance"]["verdict"] == PASS
+def mismatch_free(r: dict) -> bool:
+    return (not any(r["mismatches"].values()) and r["signal_events"]["verdict"] == PASS
             and not any(d["failure_class"] for d in r["per_day"].values()))
+
+
+def all_checks_pass(r: dict) -> bool:
+    """AGP-LANE-B3 (OD1011-L5): L1-L4 and L6 PASS, L5 PASS (cost evidence incl. OD1011-COMMISSION applied
+    correctly; a cost-blocked ticket is not a failure), zero mismatches incl. 0 event-log mismatches, and no
+    recorded day with a FAIL. INSUFFICIENT on a no-signal day is not a failure."""
+    g = r["gates"]
+    return all(g[k] == PASS for k in ("L1", "L2", "L3", "L4", "L5", "L6")) and mismatch_free(r)
 
 
 def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequence[dt.date]] = None,
@@ -581,11 +789,12 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
         run_days = [d for d in all_days if days is None or d in days]
         cases = [c for c in manifest["cases"] if c["symbol"] == symbol
                  and (days is None or dt.datetime.fromisoformat(c["now"]).date() in days)]
-        out[symbol] = run_symbol(symbol, data, cases, run_days, cfg, spec, policy, balance)
+        provenance = json.loads((base / f"{symbol}_provenance.json").read_text(encoding="utf-8"))
+        out[symbol] = run_symbol(symbol, data, cases, run_days, cfg, spec, policy, balance,
+                                 commission_binding(provenance))
     registry = yaml.safe_load(registry_before)["strategies"][CONTRACT_ID]
     tickets = [t for s in out.values() for t in s.pop("tickets")]
     identity = logic_identity(CONTRACT_ID, CONTRACT_VERSION)
-    verification = {sym: {"all_checks_pass": all_checks_pass(r), "logic_identity": identity} for sym, r in out.items()}
     summary = Counter((t["stream"], t["symbol"], t["day_type"], t["ticket"]["decision"], t["spread_band"])
                       for t in tickets)
     first = out[symbols[0]]
@@ -593,6 +802,10 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
     cov_only = json.loads(cov_path.read_text(encoding="utf-8")) if cov_path.exists() else None
     vt_cov = {sym: r.pop("rule_coverage") for sym, r in out.items()}
     vt_gaps = {sym: coverage_gaps(m) for sym, m in vt_cov.items()}
+    proven = {sym: proof_matrix(m, cov_only) for sym, m in vt_cov.items()}
+    verification = {sym: {"all_checks_pass": all_checks_pass(r), "logic_identity": identity,
+                          "branches": {b: branch_verdict(r, proven[sym], b) for b in BRANCHES}}
+                    for sym, r in out.items()}
     rule_coverage = {
         "rule_ids_source": CONTRACT_YAML, "dimensions": "rule_id x LONG/SHORT x IN_WINDOW/OUT_OF_WINDOW",
         "window_definition": "IN_WINDOW = scan instant inside a v1_tickets crypto window (crypto_cfd._window: "
@@ -606,9 +819,19 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
                                    for cell in gaps} for sym, gaps in vt_gaps.items()}},
         "not_exercised_anywhere": {sym: sorted(set(gaps) & set(cov_only["not_exercised"]))
                                    for sym, gaps in vt_gaps.items()} if cov_only else None,
+        "synthetic_proofs": {rule: f"{SYNTHETIC_TESTS}::{t}" for rule, t in SYNTHETIC_PROOFS.items()},
+        # status per cell: EXERCISED (VT) > SYNTHETIC_PROVEN (rejection-only rule) > COVERAGE_ONLY_EXERCISED
+        # (Binance, non-authoritative, never counts) > NOT_EXERCISED
+        "proof": proven,
+        "open_gaps": {sym: [f"{rule}|{cell}" for rule, row in m.items() for cell, st in row.items()
+                            if st in ("NOT_EXERCISED", "COVERAGE_ONLY_EXERCISED")] for sym, m in proven.items()},
     }
     return {
-        "schema": "AG_CCFD_V100_REPLAY_V1", "mission": "AGP-LANE-B2", "date": date,
+        "schema": "AG_CCFD_V100_REPLAY_V1", "mission": "AGP-LANE-B3", "date": date,
+        "owner_rulings": {"L3": "2026-10-11 option A: permission re-checked every scan (rules 1.0.0 frozen); L3 = "
+                                "append-only signal event-log prefix invariance",
+                          "L5": "OD1011-L5 with OD1011-COMMISSION (PR #149)", "scope": "OD1011-SCOPE per symbol x branch",
+                          "guard": "open-bar guard stays a wrapper (crypto_cfd_contract.guard)"},
         "policy_conformance_changes": 1,
         "policy_conformance_note": "crypto spread band boundary: exactly 10% of stop is OK (owner bands 2026-10-09)",
         "engine_entry_point": "crypto_cfd_contract.evaluate (guard.evaluate: open-bar guard over frozen rules.evaluate)",
@@ -622,7 +845,7 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
         "weekend_days": [d for d in first["scan_results_by_day"] if day_type(dt.date.fromisoformat(d)) == "WEEKEND"],
         "spread_policy": {k: policy[k] for k in ("spread_ok_pct", "spread_block_pct", "cost_warn_R", "cost_block_R")},
         "spread_band_scope": "ticket state only; no L1-L6 check reads the band",
-        "prefix_invariance_source": "TEMP_INLINE (AGP-ORACLE not merged)",
+        "l3_source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
         "balance": balance, "symbols": out, "logic_verification": verification,
         "ticket_summary": [dict(zip(("stream", "symbol", "day_type", "decision", "spread_band"), k), count=n)
                            for k, n in sorted(summary.items())],
@@ -640,9 +863,12 @@ def write(report: dict, out_dir: Path) -> None:
     with (out_dir / "tickets.jsonl").open("w", encoding="utf-8", newline="\n") as f:
         for t in tickets:
             f.write(json.dumps(t, sort_keys=True, default=str) + "\n")
-    prefix = {s: r["prefix_invariance"] for s, r in report["symbols"].items()}
-    (out_dir / "prefix_invariance.json").write_text(json.dumps(prefix, indent=2, sort_keys=True) + "\n",
-                                                    encoding="utf-8", newline="\n")
+    events = {s: r["signal_events"] for s, r in report["symbols"].items()}
+    (out_dir / "signal_events.json").write_text(json.dumps(events, indent=2, sort_keys=True) + "\n",
+                                                encoding="utf-8", newline="\n")
+    stale = out_dir / "prefix_invariance.json"          # superseded by signal_events.json (AGP-LANE-B3)
+    if stale.exists():
+        stale.unlink()
     (out_dir / "replay_report.json").write_text(json.dumps(report, indent=2, sort_keys=True, default=str) + "\n",
                                                 encoding="utf-8", newline="\n")
 

@@ -39,7 +39,7 @@
     "manifest_sha256": "5a58843308cfd6264b74e9c4673bfde102de8866b8feddf1dffa8d9bf2e0bcda",
     "source": "MT5_VT_MARKETS_DEMO"
   },
-  "date": "2026-10-10",
+  "date": "2026-10-11",
   "days_run": [
     "2026-08-11",
     "2026-08-12",
@@ -105,10 +105,53 @@
   "demo_authorized": false,
   "edge_verified": false,
   "engine_entry_point": "crypto_cfd_contract.evaluate (guard.evaluate: open-bar guard over frozen rules.evaluate)",
+  "l3_source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
   "live_authorized": false,
   "logic_verification": {
     "BTCUSD": {
-      "all_checks_pass": false,
+      "all_checks_pass": true,
+      "branches": {
+        "LONG": {
+          "blocking": [
+            "L2=INSUFFICIENT",
+            "L3=INSUFFICIENT",
+            "L4=INSUFFICIENT",
+            "L5=INSUFFICIENT",
+            "L6=INSUFFICIENT",
+            "COVERAGE:stop_loss_contract.long|LONG|IN_WINDOW=NOT_EXERCISED",
+            "COVERAGE:stop_loss_contract.long|LONG|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|IN_WINDOW=NOT_EXERCISED",
+            "COVERAGE:targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED",
+            "COVERAGE:entry_timing_contract.actionable_event|LONG|IN_WINDOW=NOT_EXERCISED",
+            "COVERAGE:entry_timing_contract.actionable_event|LONG|OUT_OF_WINDOW=COVERAGE_ONLY_EXERCISED"
+          ],
+          "emissions": 0,
+          "entry_valid_scans": 0,
+          "gates": {
+            "L1": "PASS",
+            "L2": "INSUFFICIENT",
+            "L3": "INSUFFICIENT",
+            "L4": "INSUFFICIENT",
+            "L5": "INSUFFICIENT",
+            "L6": "INSUFFICIENT"
+          },
+          "verified": false
+        },
+        "SHORT": {
+          "blocking": [],
+          "emissions": 2,
+          "entry_valid_scans": 77,
+          "gates": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "PASS",
+            "L6": "PASS"
+          },
+          "verified": true
+        }
+      },
       "logic_identity": {
         "contract_hash": "492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e",
         "digest": "b8188dfbb8c7ff3ae278175ec0c482aa8c74b39279a18e9c0b043a231b4b6cd3",
@@ -118,7 +161,37 @@
       }
     },
     "ETHUSD": {
-      "all_checks_pass": false,
+      "all_checks_pass": true,
+      "branches": {
+        "LONG": {
+          "blocking": [],
+          "emissions": 3,
+          "entry_valid_scans": 354,
+          "gates": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "PASS",
+            "L6": "PASS"
+          },
+          "verified": true
+        },
+        "SHORT": {
+          "blocking": [],
+          "emissions": 2,
+          "entry_valid_scans": 247,
+          "gates": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "PASS",
+            "L6": "PASS"
+          },
+          "verified": true
+        }
+      },
       "logic_identity": {
         "contract_hash": "492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e",
         "digest": "b8188dfbb8c7ff3ae278175ec0c482aa8c74b39279a18e9c0b043a231b4b6cd3",
@@ -129,13 +202,18 @@
     }
   },
   "logic_verified_claim": false,
-  "mission": "AGP-LANE-B2",
+  "mission": "AGP-LANE-B3",
+  "owner_rulings": {
+    "L3": "2026-10-11 option A: permission re-checked every scan (rules 1.0.0 frozen); L3 = append-only signal event-log prefix invariance",
+    "L5": "OD1011-L5 with OD1011-COMMISSION (PR #149)",
+    "guard": "open-bar guard stays a wrapper (crypto_cfd_contract.guard)",
+    "scope": "OD1011-SCOPE per symbol x branch"
+  },
   "policy_conformance_changes": 1,
   "policy_conformance_note": "crypto spread band boundary: exactly 10% of stop is OK (owner bands 2026-10-09)",
-  "prefix_invariance_source": "TEMP_INLINE (AGP-ORACLE not merged)",
   "registry": {
     "active": false,
-    "modified": true,
+    "modified": false,
     "research": true
   },
   "rule_coverage": {
@@ -224,7 +302,287 @@
         "targets_contract.geometry_guard|SHORT|OUT_OF_WINDOW"
       ]
     },
+    "open_gaps": {
+      "BTCUSD": [
+        "stop_loss_contract.long|LONG|IN_WINDOW",
+        "stop_loss_contract.long|LONG|OUT_OF_WINDOW",
+        "targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|IN_WINDOW",
+        "targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|OUT_OF_WINDOW",
+        "entry_timing_contract.actionable_event|LONG|IN_WINDOW",
+        "entry_timing_contract.actionable_event|LONG|OUT_OF_WINDOW"
+      ],
+      "ETHUSD": []
+    },
+    "proof": {
+      "BTCUSD": {
+        "context_contract.direction_permission.d1_confirmed_and_opposes_h1": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "context_contract.direction_permission.d1_unresolved": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "context_contract.direction_permission.h1_bearish": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "context_contract.direction_permission.h1_bullish": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "context_contract.direction_permission.h1_unresolved": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "entry_timing_contract.actionable_event": {
+          "LONG|IN_WINDOW": "NOT_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "invalidation_contract.INVALID_STOP_DISTANCE": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "liquidity_contract.completeness_rule": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "liquidity_contract.levels": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.mss.confirmation": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.retest": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.sweep.direction_gate": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.sweep.dual_side_candle": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "m5_trigger_contract.sweep.long_candidate": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "m5_trigger_contract.sweep.short_candidate": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "signal_expiry_contract.rule_1": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "signal_expiry_contract.rule_2": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "stop_loss_contract.long": {
+          "LONG|IN_WINDOW": "NOT_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "stop_loss_contract.short": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "targets_contract.geometry_guard": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "targets_contract.tp1_tp2_min_tp2_r_multiple": {
+          "LONG|IN_WINDOW": "NOT_EXERCISED",
+          "LONG|OUT_OF_WINDOW": "COVERAGE_ONLY_EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        }
+      },
+      "ETHUSD": {
+        "context_contract.direction_permission.d1_confirmed_and_opposes_h1": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "context_contract.direction_permission.d1_unresolved": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "context_contract.direction_permission.h1_bearish": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "context_contract.direction_permission.h1_bullish": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "context_contract.direction_permission.h1_unresolved": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "entry_timing_contract.actionable_event": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "invalidation_contract.INVALID_STOP_DISTANCE": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "liquidity_contract.completeness_rule": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "liquidity_contract.levels": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.mss.confirmation": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.retest": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.sweep.direction_gate": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "m5_trigger_contract.sweep.dual_side_candle": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "m5_trigger_contract.sweep.long_candidate": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "m5_trigger_contract.sweep.short_candidate": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "signal_expiry_contract.rule_1": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "signal_expiry_contract.rule_2": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "stop_loss_contract.long": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "NOT_APPLICABLE",
+          "SHORT|OUT_OF_WINDOW": "NOT_APPLICABLE"
+        },
+        "stop_loss_contract.short": {
+          "LONG|IN_WINDOW": "NOT_APPLICABLE",
+          "LONG|OUT_OF_WINDOW": "NOT_APPLICABLE",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        },
+        "targets_contract.geometry_guard": {
+          "LONG|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "LONG|OUT_OF_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|IN_WINDOW": "SYNTHETIC_PROVEN",
+          "SHORT|OUT_OF_WINDOW": "SYNTHETIC_PROVEN"
+        },
+        "targets_contract.tp1_tp2_min_tp2_r_multiple": {
+          "LONG|IN_WINDOW": "EXERCISED",
+          "LONG|OUT_OF_WINDOW": "EXERCISED",
+          "SHORT|IN_WINDOW": "EXERCISED",
+          "SHORT|OUT_OF_WINDOW": "EXERCISED"
+        }
+      }
+    },
     "rule_ids_source": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml",
+    "synthetic_proofs": {
+      "context_contract.direction_permission.d1_confirmed_and_opposes_h1": "tests/test_ccfd_synthetic_rejections.py::test_d1_conflict_vetoes_direction",
+      "context_contract.direction_permission.h1_unresolved": "tests/test_ccfd_synthetic_rejections.py::test_h1_unresolved_gives_no_direction",
+      "invalidation_contract.INVALID_STOP_DISTANCE": "tests/test_ccfd_synthetic_rejections.py::test_invalid_stop_distance_rejects",
+      "liquidity_contract.completeness_rule": "tests/test_ccfd_synthetic_rejections.py::test_incomplete_reference_fails_closed",
+      "m5_trigger_contract.sweep.direction_gate": "tests/test_ccfd_synthetic_rejections.py::test_wrong_side_sweep_is_ignored",
+      "m5_trigger_contract.sweep.dual_side_candle": "tests/test_ccfd_synthetic_rejections.py::test_dual_side_candle_only_blocks",
+      "signal_expiry_contract.rule_1": "tests/test_ccfd_synthetic_rejections.py::test_rule_1_no_retest_within_ttl_expires",
+      "signal_expiry_contract.rule_2": "tests/test_ccfd_synthetic_rejections.py::test_rule_2_utc_day_rotation_kills_the_sequence",
+      "targets_contract.geometry_guard": "tests/test_ccfd_synthetic_rejections.py::test_geometry_guard_rejects"
+    },
     "vt": {
       "BTCUSD": {
         "context_contract.direction_permission.d1_confirmed_and_opposes_h1": {
@@ -1170,13 +1528,41 @@
   "strategy": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.0.0",
   "symbols": {
     "BTCUSD": {
+      "branches": {
+        "LONG": {
+          "emissions": 0,
+          "entry_valid_scans": 0,
+          "gates": {
+            "L1": "PASS",
+            "L2": "INSUFFICIENT",
+            "L3": "INSUFFICIENT",
+            "L4": "INSUFFICIENT",
+            "L5": "INSUFFICIENT",
+            "L6": "INSUFFICIENT"
+          }
+        },
+        "SHORT": {
+          "emissions": 2,
+          "entry_valid_scans": 77,
+          "gates": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "PASS",
+            "L6": "PASS"
+          }
+        }
+      },
       "days": 60,
       "emission_quote_gaps": [],
       "emissions": [
         {
+          "cost_actionability": "WARN",
           "day_type": "WEEKDAY",
           "direction": "SHORT",
           "entry": 79250.39,
+          "l5": "PASS",
           "live_cycle_decision": "BLOCKED",
           "live_cycle_reason_codes": [
             "ACCOUNT_BALANCE_UNAVAILABLE",
@@ -1206,9 +1592,11 @@
           "tp2_r_multiple": 16.16881315633014
         },
         {
+          "cost_actionability": "OK",
           "day_type": "WEEKDAY",
           "direction": "SHORT",
           "entry": 82393.84,
+          "l5": "PASS",
           "live_cycle_decision": "BLOCKED",
           "live_cycle_reason_codes": [
             "OUTSIDE_CONFIG_WINDOW"
@@ -1251,7 +1639,7 @@
         "l3_sequence_failures": [],
         "l4_failures": [],
         "l4_reject_failures": [],
-        "l5_cost_gates": [
+        "l5_advisory_cost_gates": [
           {
             "checks": [
               {
@@ -1313,6 +1701,51 @@
             "status": "WARN"
           }
         ],
+        "l5_od1011": [
+          {
+            "actionability": "WARN",
+            "commission_R": 0.0,
+            "commission_source": "OD1011-COMMISSION",
+            "cost_R": 0.1678,
+            "expected_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ],
+            "gate_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ],
+            "spread_R": 0.1678,
+            "status": "PASS",
+            "thresholds": {
+              "cost_block_R": 0.25,
+              "cost_warn_R": 0.1,
+              "spread_block_pct": 20.0,
+              "spread_ok_pct": 10.0
+            },
+            "ticket_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ]
+          },
+          {
+            "actionability": "OK",
+            "commission_R": 0.0,
+            "commission_source": "OD1011-COMMISSION",
+            "cost_R": 0.015,
+            "expected_codes": [],
+            "gate_codes": [],
+            "spread_R": 0.015,
+            "status": "PASS",
+            "thresholds": {
+              "cost_block_R": 0.25,
+              "cost_warn_R": 0.1,
+              "spread_block_pct": 20.0,
+              "spread_ok_pct": 10.0
+            },
+            "ticket_codes": []
+          }
+        ],
         "l6": [
           "PASS",
           "PASS"
@@ -1329,19 +1762,19 @@
       "gates": {
         "L1": "PASS",
         "L2": "PASS",
-        "L3": "FAIL",
+        "L3": "PASS",
         "L4": "PASS",
-        "L5": "WARN",
+        "L5": "PASS",
         "L6": "PASS"
       },
       "mismatches": {
         "determinism": 0,
+        "event_log": 0,
         "l2_reconstruction": 0,
         "l2_reference_rule": 0,
         "l3_sequence": 0,
         "l4_geometry": 0,
         "manifest_parity": 0,
-        "prefix": 108,
         "ticket_determinism": 0,
         "ticket_scan_parity": 0,
         "truncation": 0
@@ -1355,8 +1788,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1369,8 +1802,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 168,
             "WAITING_SWEEP": 120
@@ -1384,8 +1817,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1398,8 +1831,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1412,8 +1845,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1426,8 +1859,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1440,8 +1873,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1454,8 +1887,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1468,8 +1901,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1482,8 +1915,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1496,8 +1929,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1510,8 +1943,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1524,8 +1957,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "SIGNAL_ENTRY_WINDOW_PASSED": 108,
             "WAITING_MSS": 24,
@@ -1540,8 +1973,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1554,8 +1987,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1568,8 +2001,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1577,13 +2010,13 @@
         "2026-08-27": {
           "L1": "PASS",
           "L2": "PASS",
-          "L3": "FAIL",
+          "L3": "PASS",
           "L4": "PASS",
-          "L5": "WARN",
+          "L5": "PASS",
           "L6": "PASS",
           "day_type": "WEEKDAY",
-          "failure_class": "SPEC_AMBIGUITY:DIRECTION_PERMISSION_REEVALUATED_AFTER_EMISSION",
-          "prefix_mismatches": 108,
+          "event_log_mismatches": 0,
+          "failure_class": null,
           "results": {
             "ENTRY_VALID": 14,
             "WAITING_MSS": 2,
@@ -1599,8 +2032,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_MSS": 117,
             "WAITING_SWEEP": 171
@@ -1614,8 +2047,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1628,8 +2061,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1642,8 +2075,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1656,8 +2089,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1670,8 +2103,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1684,8 +2117,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_TARGET_GEOMETRY": 17,
             "WAITING_MSS": 34,
@@ -1701,8 +2134,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1715,8 +2148,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1729,8 +2162,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_TARGET_GEOMETRY": 12,
             "WAITING_MSS": 5,
@@ -1745,8 +2178,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1759,8 +2192,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1773,8 +2206,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "SIGNAL_ENTRY_WINDOW_PASSED": 48,
             "WAITING_MSS": 19,
@@ -1790,8 +2223,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 132,
             "WAITING_MSS": 22,
@@ -1806,8 +2239,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 168,
             "SIGNAL_ENTRY_WINDOW_PASSED": 120
@@ -1821,8 +2254,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1835,8 +2268,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 132,
             "NO_TRADE_TARGET_GEOMETRY": 48,
@@ -1852,8 +2285,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 36,
             "WAITING_MSS": 252
@@ -1867,8 +2300,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 72,
             "WAITING_MSS": 15,
@@ -1883,8 +2316,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 84,
             "WAITING_SWEEP": 204
@@ -1898,8 +2331,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 288
           }
@@ -1912,8 +2345,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 288
           }
@@ -1926,8 +2359,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -1940,8 +2373,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 228,
             "WAITING_SWEEP": 60
@@ -1955,8 +2388,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 216,
             "WAITING_MSS": 17,
@@ -1971,8 +2404,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -1985,8 +2418,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 168,
             "WAITING_SWEEP": 120
@@ -2000,8 +2433,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 288
           }
@@ -2014,8 +2447,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 132,
             "WAITING_SWEEP": 156
@@ -2029,8 +2462,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -2043,8 +2476,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -2057,8 +2490,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 264,
             "WAITING_MSS": 11,
@@ -2073,8 +2506,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 288
           }
@@ -2087,8 +2520,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 156,
             "WAITING_SWEEP": 132
@@ -2102,8 +2535,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -2116,8 +2549,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -2130,8 +2563,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -2144,8 +2577,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -2158,8 +2591,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 72,
             "WAITING_SWEEP": 216
@@ -2173,8 +2606,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 192,
             "WAITING_SWEEP": 96
@@ -2188,8 +2621,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 264,
             "WAITING_SWEEP": 24
@@ -2203,8 +2636,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 252,
             "WAITING_SWEEP": 36
@@ -2215,11 +2648,11 @@
           "L2": "PASS",
           "L3": "PASS",
           "L4": "PASS",
-          "L5": "WARN",
+          "L5": "PASS",
           "L6": "PASS",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "ENTRY_VALID": 63,
             "WAITING_MSS": 82,
@@ -2228,40 +2661,7 @@
           }
         }
       },
-      "prefix_invariance": {
-        "days": 60,
-        "emissions": 2,
-        "mismatch_at": [
-          "2026-08-27T15:00:00+00:00",
-          "2026-08-27T15:05:00+00:00",
-          "2026-08-27T15:10:00+00:00",
-          "2026-08-27T15:15:00+00:00",
-          "2026-08-27T15:20:00+00:00",
-          "2026-08-27T15:25:00+00:00",
-          "2026-08-27T15:30:00+00:00",
-          "2026-08-27T15:35:00+00:00",
-          "2026-08-27T15:40:00+00:00",
-          "2026-08-27T15:45:00+00:00",
-          "2026-08-27T15:50:00+00:00",
-          "2026-08-27T15:55:00+00:00",
-          "2026-08-27T16:00:00+00:00",
-          "2026-08-27T16:05:00+00:00",
-          "2026-08-27T16:10:00+00:00",
-          "2026-08-27T16:15:00+00:00",
-          "2026-08-27T16:20:00+00:00",
-          "2026-08-27T16:25:00+00:00",
-          "2026-08-27T16:30:00+00:00",
-          "2026-08-27T16:35:00+00:00"
-        ],
-        "mismatches_by_day": {
-          "2026-08-27": 108
-        },
-        "pre_emission_signals": 0,
-        "prefix_mismatches": 108,
-        "prefixes": 17280,
-        "source": "TEMP_INLINE (AGP-ORACLE not merged)",
-        "verdict": "FAIL"
-      },
+      "reissues": [],
       "scan_results": {
         "ENTRY_VALID": 77,
         "NO_TRADE_DIRECTION": 3888,
@@ -2495,16 +2895,105 @@
         }
       },
       "scans": 17280,
+      "signal_events": {
+        "cuts_checked": 72,
+        "definition": "no signal event at or before t changes when bars after t are added",
+        "event_log_mismatches": 0,
+        "events": 4,
+        "events_by_type": {
+          "EMIT": 2,
+          "EXPIRE": 2
+        },
+        "expiry_rule": "SIGNAL_STALE once now > retest candle open + 5 min + 15 min (manual_ticket valid_until)",
+        "log": [
+          {
+            "bar_close_utc": "2026-08-27T13:50:00+00:00",
+            "direction": "SHORT",
+            "freshness": "FRESH",
+            "reason": "ENTRY_VALID",
+            "retest_candle_time_utc": "2026-08-27T13:45:00+00:00",
+            "seq": 0,
+            "signal_id": "50d2257fdb5033b9",
+            "type": "EMIT"
+          },
+          {
+            "bar_close_utc": "2026-08-27T14:10:00+00:00",
+            "direction": "SHORT",
+            "reason": "SIGNAL_STALE",
+            "retest_candle_time_utc": "2026-08-27T13:45:00+00:00",
+            "seq": 1,
+            "signal_id": "50d2257fdb5033b9",
+            "type": "EXPIRE"
+          },
+          {
+            "bar_close_utc": "2026-10-09T18:45:00+00:00",
+            "direction": "SHORT",
+            "freshness": "FRESH",
+            "reason": "ENTRY_VALID",
+            "retest_candle_time_utc": "2026-10-09T18:40:00+00:00",
+            "seq": 2,
+            "signal_id": "7fb1737ff995efce",
+            "type": "EMIT"
+          },
+          {
+            "bar_close_utc": "2026-10-09T19:05:00+00:00",
+            "direction": "SHORT",
+            "reason": "SIGNAL_STALE",
+            "retest_candle_time_utc": "2026-10-09T18:40:00+00:00",
+            "seq": 3,
+            "signal_id": "7fb1737ff995efce",
+            "type": "EXPIRE"
+          }
+        ],
+        "mismatch_detail": [],
+        "mismatches_by_day": {},
+        "mismatches_by_type": {},
+        "reissues": {
+          "expired": 0,
+          "fresh": 0,
+          "total": 0
+        },
+        "source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
+        "verdict": "PASS"
+      },
       "symbol": "BTCUSD"
     },
     "ETHUSD": {
+      "branches": {
+        "LONG": {
+          "emissions": 3,
+          "entry_valid_scans": 354,
+          "gates": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "PASS",
+            "L6": "PASS"
+          }
+        },
+        "SHORT": {
+          "emissions": 2,
+          "entry_valid_scans": 247,
+          "gates": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "PASS",
+            "L6": "PASS"
+          }
+        }
+      },
       "days": 60,
       "emission_quote_gaps": [],
       "emissions": [
         {
+          "cost_actionability": "BLOCK",
           "day_type": "WEEKDAY",
           "direction": "LONG",
           "entry": 1882.36,
+          "l5": "PASS",
           "live_cycle_decision": "BLOCKED",
           "live_cycle_reason_codes": [
             "OUTSIDE_CONFIG_WINDOW"
@@ -2533,9 +3022,11 @@
           "tp2_r_multiple": 3.9990393852065984
         },
         {
+          "cost_actionability": "WARN",
           "day_type": "WEEKDAY",
           "direction": "LONG",
           "entry": 2494.52,
+          "l5": "PASS",
           "live_cycle_decision": "BLOCKED",
           "live_cycle_reason_codes": [
             "OUTSIDE_CONFIG_WINDOW"
@@ -2564,9 +3055,11 @@
           "tp2_r_multiple": 3.8706140350877605
         },
         {
+          "cost_actionability": "BLOCK",
           "day_type": "WEEKEND",
           "direction": "SHORT",
           "entry": 2497.45,
+          "l5": "PASS",
           "live_cycle_decision": "BLOCKED",
           "live_cycle_reason_codes": [
             "OUTSIDE_CONFIG_WINDOW"
@@ -2595,9 +3088,11 @@
           "tp2_r_multiple": 8.920792079207322
         },
         {
+          "cost_actionability": "OK",
           "day_type": "WEEKDAY",
           "direction": "SHORT",
           "entry": 2485.55,
+          "l5": "PASS",
           "live_cycle_decision": "BLOCKED",
           "live_cycle_reason_codes": [
             "OUTSIDE_CONFIG_WINDOW"
@@ -2624,9 +3119,11 @@
           "tp2_r_multiple": 1.6557798165137743
         },
         {
+          "cost_actionability": "WARN",
           "day_type": "WEEKDAY",
           "direction": "LONG",
           "entry": 2704.74,
+          "l5": "PASS",
           "live_cycle_decision": "BLOCKED",
           "live_cycle_reason_codes": [
             "OUTSIDE_CONFIG_WINDOW"
@@ -2671,7 +3168,7 @@
         "l3_sequence_failures": [],
         "l4_failures": [],
         "l4_reject_failures": [],
-        "l5_cost_gates": [
+        "l5_advisory_cost_gates": [
           {
             "checks": [
               {
@@ -2821,6 +3318,129 @@
             ],
             "gate": "L5",
             "status": "WARN"
+          }
+        ],
+        "l5_od1011": [
+          {
+            "actionability": "BLOCK",
+            "commission_R": 0.0,
+            "commission_source": "OD1011-COMMISSION",
+            "cost_R": 0.2354,
+            "expected_codes": [
+              "COST_WARN",
+              "SPREAD_TOO_WIDE"
+            ],
+            "gate_codes": [
+              "COST_WARN",
+              "SPREAD_TOO_WIDE"
+            ],
+            "spread_R": 0.2354,
+            "status": "PASS",
+            "thresholds": {
+              "cost_block_R": 0.25,
+              "cost_warn_R": 0.1,
+              "spread_block_pct": 20.0,
+              "spread_ok_pct": 10.0
+            },
+            "ticket_codes": [
+              "COST_WARN",
+              "SPREAD_TOO_WIDE"
+            ]
+          },
+          {
+            "actionability": "WARN",
+            "commission_R": 0.0,
+            "commission_source": "OD1011-COMMISSION",
+            "cost_R": 0.1343,
+            "expected_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ],
+            "gate_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ],
+            "spread_R": 0.1343,
+            "status": "PASS",
+            "thresholds": {
+              "cost_block_R": 0.25,
+              "cost_warn_R": 0.1,
+              "spread_block_pct": 20.0,
+              "spread_ok_pct": 10.0
+            },
+            "ticket_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ]
+          },
+          {
+            "actionability": "BLOCK",
+            "commission_R": 0.0,
+            "commission_source": "OD1011-COMMISSION",
+            "cost_R": 0.4043,
+            "expected_codes": [
+              "COST_TOO_HIGH",
+              "SPREAD_TOO_WIDE"
+            ],
+            "gate_codes": [
+              "COST_TOO_HIGH",
+              "SPREAD_TOO_WIDE"
+            ],
+            "spread_R": 0.4043,
+            "status": "PASS",
+            "thresholds": {
+              "cost_block_R": 0.25,
+              "cost_warn_R": 0.1,
+              "spread_block_pct": 20.0,
+              "spread_ok_pct": 10.0
+            },
+            "ticket_codes": [
+              "COST_TOO_HIGH",
+              "SPREAD_TOO_WIDE"
+            ]
+          },
+          {
+            "actionability": "OK",
+            "commission_R": 0.0,
+            "commission_source": "OD1011-COMMISSION",
+            "cost_R": 0.0899,
+            "expected_codes": [],
+            "gate_codes": [],
+            "spread_R": 0.0899,
+            "status": "PASS",
+            "thresholds": {
+              "cost_block_R": 0.25,
+              "cost_warn_R": 0.1,
+              "spread_block_pct": 20.0,
+              "spread_ok_pct": 10.0
+            },
+            "ticket_codes": []
+          },
+          {
+            "actionability": "WARN",
+            "commission_R": 0.0,
+            "commission_source": "OD1011-COMMISSION",
+            "cost_R": 0.1199,
+            "expected_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ],
+            "gate_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ],
+            "spread_R": 0.1199,
+            "status": "PASS",
+            "thresholds": {
+              "cost_block_R": 0.25,
+              "cost_warn_R": 0.1,
+              "spread_block_pct": 20.0,
+              "spread_ok_pct": 10.0
+            },
+            "ticket_codes": [
+              "COST_WARN",
+              "SPREAD_WARN"
+            ]
           }
         ],
         "l6": [
@@ -2842,19 +3462,20 @@
       "gates": {
         "L1": "PASS",
         "L2": "PASS",
-        "L3": "FAIL",
+        "L3": "PASS",
         "L4": "PASS",
-        "L5": "WARN",
+        "L5": "PASS",
         "L6": "PASS"
       },
       "mismatches": {
         "determinism": 0,
+        "event_log": 0,
         "l2_reconstruction": 0,
         "l2_reference_rule": 0,
         "l3_sequence": 0,
         "l4_geometry": 0,
         "manifest_parity": 0,
-        "prefix": 288,
+        "reissue_expiry": 0,
         "ticket_determinism": 0,
         "ticket_scan_parity": 0,
         "truncation": 0
@@ -2868,8 +3489,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -2882,8 +3503,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 144,
             "WAITING_SWEEP": 144
@@ -2894,11 +3515,11 @@
           "L2": "PASS",
           "L3": "PASS",
           "L4": "PASS",
-          "L5": "WARN",
+          "L5": "PASS",
           "L6": "PASS",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "ENTRY_VALID": 247,
             "WAITING_MSS": 9,
@@ -2914,8 +3535,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -2928,8 +3549,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -2942,8 +3563,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -2956,8 +3577,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_MSS": 10,
             "WAITING_SWEEP": 278
@@ -2971,8 +3592,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -2985,8 +3606,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -2999,8 +3620,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3013,8 +3634,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3027,8 +3648,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3041,8 +3662,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "SIGNAL_ENTRY_WINDOW_PASSED": 120,
             "WAITING_MSS": 73,
@@ -3057,8 +3678,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3071,8 +3692,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3085,8 +3706,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3099,8 +3720,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3108,13 +3729,13 @@
         "2026-08-28": {
           "L1": "PASS",
           "L2": "PASS",
-          "L3": "FAIL",
+          "L3": "PASS",
           "L4": "PASS",
-          "L5": "WARN",
+          "L5": "PASS",
           "L6": "PASS",
           "day_type": "WEEKDAY",
-          "failure_class": "SPEC_AMBIGUITY:DIRECTION_PERMISSION_REEVALUATED_AFTER_EMISSION",
-          "prefix_mismatches": 180,
+          "event_log_mismatches": 0,
+          "failure_class": null,
           "results": {
             "ENTRY_VALID": 37,
             "WAITING_MSS": 20,
@@ -3130,8 +3751,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -3144,8 +3765,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -3158,8 +3779,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -3172,8 +3793,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3186,8 +3807,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3200,8 +3821,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3214,8 +3835,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "SIGNAL_ENTRY_WINDOW_PASSED": 108,
             "WAITING_SWEEP": 180
@@ -3229,8 +3850,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3238,13 +3859,13 @@
         "2026-09-06": {
           "L1": "PASS",
           "L2": "PASS",
-          "L3": "FAIL",
+          "L3": "PASS",
           "L4": "PASS",
-          "L5": "WARN",
+          "L5": "PASS",
           "L6": "PASS",
           "day_type": "WEEKEND",
-          "failure_class": "SPEC_AMBIGUITY:DIRECTION_PERMISSION_REEVALUATED_AFTER_EMISSION",
-          "prefix_mismatches": 24,
+          "event_log_mismatches": 0,
+          "failure_class": null,
           "results": {
             "ENTRY_VALID": 175,
             "WAITING_MSS": 1,
@@ -3260,8 +3881,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -3274,8 +3895,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3283,13 +3904,13 @@
         "2026-09-09": {
           "L1": "PASS",
           "L2": "PASS",
-          "L3": "FAIL",
+          "L3": "PASS",
           "L4": "PASS",
-          "L5": "WARN",
+          "L5": "PASS",
           "L6": "PASS",
           "day_type": "WEEKDAY",
-          "failure_class": "SPEC_AMBIGUITY:DIRECTION_PERMISSION_REEVALUATED_AFTER_EMISSION",
-          "prefix_mismatches": 84,
+          "event_log_mismatches": 0,
+          "failure_class": null,
           "results": {
             "ENTRY_VALID": 72,
             "WAITING_MSS": 14,
@@ -3304,8 +3925,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3318,8 +3939,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3332,8 +3953,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3346,8 +3967,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "INVALID_STOP_DISTANCE": 17,
             "WAITING_MSS": 1,
@@ -3363,8 +3984,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3377,8 +3998,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3391,8 +4012,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 36,
             "WAITING_SWEEP": 252
@@ -3406,8 +4027,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 204,
             "WAITING_SWEEP": 84
@@ -3421,8 +4042,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3435,8 +4056,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -3449,8 +4070,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 276,
             "WAITING_SWEEP": 12
@@ -3464,8 +4085,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 36,
             "WAITING_SWEEP": 252
@@ -3479,8 +4100,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3493,8 +4114,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 120,
             "WAITING_MSS": 19,
@@ -3509,8 +4130,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 288
           }
@@ -3523,8 +4144,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 120,
             "WAITING_SWEEP": 168
@@ -3538,8 +4159,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -3552,8 +4173,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "REFERENCE_INCOMPLETE": 288
           }
@@ -3566,8 +4187,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 216,
             "WAITING_MSS": 58,
@@ -3582,8 +4203,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 84,
             "WAITING_SWEEP": 204
@@ -3597,8 +4218,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3611,8 +4232,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3625,8 +4246,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 60,
             "WAITING_SWEEP": 228
@@ -3640,8 +4261,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 228,
             "WAITING_SWEEP": 60
@@ -3655,8 +4276,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKEND",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "WAITING_SWEEP": 288
           }
@@ -3666,11 +4287,11 @@
           "L2": "PASS",
           "L3": "PASS",
           "L4": "PASS",
-          "L5": "WARN",
+          "L5": "PASS",
           "L6": "PASS",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "ENTRY_VALID": 70,
             "WAITING_MSS": 19,
@@ -3686,8 +4307,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 60,
             "WAITING_SWEEP": 228
@@ -3701,8 +4322,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 288
           }
@@ -3715,8 +4336,8 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 288
           }
@@ -3729,49 +4350,31 @@
           "L5": "INSUFFICIENT",
           "L6": "INSUFFICIENT",
           "day_type": "WEEKDAY",
+          "event_log_mismatches": 0,
           "failure_class": null,
-          "prefix_mismatches": 0,
           "results": {
             "NO_TRADE_DIRECTION": 288
           }
         }
       },
-      "prefix_invariance": {
-        "days": 60,
-        "emissions": 5,
-        "mismatch_at": [
-          "2026-08-28T09:00:00+00:00",
-          "2026-08-28T09:05:00+00:00",
-          "2026-08-28T09:10:00+00:00",
-          "2026-08-28T09:15:00+00:00",
-          "2026-08-28T09:20:00+00:00",
-          "2026-08-28T09:25:00+00:00",
-          "2026-08-28T09:30:00+00:00",
-          "2026-08-28T09:35:00+00:00",
-          "2026-08-28T09:40:00+00:00",
-          "2026-08-28T09:45:00+00:00",
-          "2026-08-28T09:50:00+00:00",
-          "2026-08-28T09:55:00+00:00",
-          "2026-08-28T10:00:00+00:00",
-          "2026-08-28T10:05:00+00:00",
-          "2026-08-28T10:10:00+00:00",
-          "2026-08-28T10:15:00+00:00",
-          "2026-08-28T10:20:00+00:00",
-          "2026-08-28T10:25:00+00:00",
-          "2026-08-28T10:30:00+00:00",
-          "2026-08-28T10:35:00+00:00"
-        ],
-        "mismatches_by_day": {
-          "2026-08-28": 180,
-          "2026-09-06": 24,
-          "2026-09-09": 84
-        },
-        "pre_emission_signals": 0,
-        "prefix_mismatches": 288,
-        "prefixes": 17280,
-        "source": "TEMP_INLINE (AGP-ORACLE not merged)",
-        "verdict": "FAIL"
-      },
+      "reissues": [
+        {
+          "actionable": false,
+          "check": "PASS",
+          "direction": "SHORT",
+          "expiry_rule_fired": true,
+          "freshness": "EXPIRED",
+          "now": "2026-09-09T20:00:00+00:00",
+          "retest_at": "2026-09-09T10:55:00+00:00",
+          "ticket_decision": "BLOCKED",
+          "ticket_reason_codes": [
+            "SIGNAL_STALE",
+            "ACCOUNT_BALANCE_UNAVAILABLE",
+            "LOGIC_STATUS_NOT_VERIFIED"
+          ],
+          "valid_until": "2026-09-09T11:15:00+00:00"
+        }
+      ],
       "scan_results": {
         "ENTRY_VALID": 601,
         "INVALID_STOP_DISTANCE": 17,
@@ -4000,6 +4603,135 @@
         }
       },
       "scans": 17280,
+      "signal_events": {
+        "cuts_checked": 93,
+        "definition": "no signal event at or before t changes when bars after t are added",
+        "event_log_mismatches": 0,
+        "events": 11,
+        "events_by_type": {
+          "EMIT": 5,
+          "EXPIRE": 5,
+          "REISSUE": 1
+        },
+        "expiry_rule": "SIGNAL_STALE once now > retest candle open + 5 min + 15 min (manual_ticket valid_until)",
+        "log": [
+          {
+            "bar_close_utc": "2026-08-13T03:25:00+00:00",
+            "direction": "LONG",
+            "freshness": "FRESH",
+            "reason": "ENTRY_VALID",
+            "retest_candle_time_utc": "2026-08-13T03:20:00+00:00",
+            "seq": 0,
+            "signal_id": "26abe1465af3f3c2",
+            "type": "EMIT"
+          },
+          {
+            "bar_close_utc": "2026-08-13T03:45:00+00:00",
+            "direction": "LONG",
+            "reason": "SIGNAL_STALE",
+            "retest_candle_time_utc": "2026-08-13T03:20:00+00:00",
+            "seq": 1,
+            "signal_id": "26abe1465af3f3c2",
+            "type": "EXPIRE"
+          },
+          {
+            "bar_close_utc": "2026-08-28T05:55:00+00:00",
+            "direction": "LONG",
+            "freshness": "FRESH",
+            "reason": "ENTRY_VALID",
+            "retest_candle_time_utc": "2026-08-28T05:50:00+00:00",
+            "seq": 2,
+            "signal_id": "4ec0da54c299fcf1",
+            "type": "EMIT"
+          },
+          {
+            "bar_close_utc": "2026-08-28T06:15:00+00:00",
+            "direction": "LONG",
+            "reason": "SIGNAL_STALE",
+            "retest_candle_time_utc": "2026-08-28T05:50:00+00:00",
+            "seq": 3,
+            "signal_id": "4ec0da54c299fcf1",
+            "type": "EXPIRE"
+          },
+          {
+            "bar_close_utc": "2026-09-06T07:25:00+00:00",
+            "direction": "SHORT",
+            "freshness": "FRESH",
+            "reason": "ENTRY_VALID",
+            "retest_candle_time_utc": "2026-09-06T07:20:00+00:00",
+            "seq": 4,
+            "signal_id": "9807c2d2e5edf864",
+            "type": "EMIT"
+          },
+          {
+            "bar_close_utc": "2026-09-06T07:45:00+00:00",
+            "direction": "SHORT",
+            "reason": "SIGNAL_STALE",
+            "retest_candle_time_utc": "2026-09-06T07:20:00+00:00",
+            "seq": 5,
+            "signal_id": "9807c2d2e5edf864",
+            "type": "EXPIRE"
+          },
+          {
+            "bar_close_utc": "2026-09-09T11:00:00+00:00",
+            "direction": "SHORT",
+            "freshness": "FRESH",
+            "reason": "ENTRY_VALID",
+            "retest_candle_time_utc": "2026-09-09T10:55:00+00:00",
+            "seq": 6,
+            "signal_id": "0e2205dc979c0540",
+            "type": "EMIT"
+          },
+          {
+            "bar_close_utc": "2026-09-09T11:20:00+00:00",
+            "direction": "SHORT",
+            "reason": "SIGNAL_STALE",
+            "retest_candle_time_utc": "2026-09-09T10:55:00+00:00",
+            "seq": 7,
+            "signal_id": "0e2205dc979c0540",
+            "type": "EXPIRE"
+          },
+          {
+            "bar_close_utc": "2026-09-09T20:00:00+00:00",
+            "direction": "SHORT",
+            "freshness": "EXPIRED",
+            "reason": "ENTRY_VALID",
+            "retest_candle_time_utc": "2026-09-09T10:55:00+00:00",
+            "seq": 8,
+            "signal_id": "0e2205dc979c0540",
+            "type": "REISSUE"
+          },
+          {
+            "bar_close_utc": "2026-10-05T18:10:00+00:00",
+            "direction": "LONG",
+            "freshness": "FRESH",
+            "reason": "ENTRY_VALID",
+            "retest_candle_time_utc": "2026-10-05T18:05:00+00:00",
+            "seq": 9,
+            "signal_id": "60da3072a5dfc138",
+            "type": "EMIT"
+          },
+          {
+            "bar_close_utc": "2026-10-05T18:30:00+00:00",
+            "direction": "LONG",
+            "reason": "SIGNAL_STALE",
+            "retest_candle_time_utc": "2026-10-05T18:05:00+00:00",
+            "seq": 10,
+            "signal_id": "60da3072a5dfc138",
+            "type": "EXPIRE"
+          }
+        ],
+        "mismatch_detail": [],
+        "mismatches_by_day": {},
+        "mismatches_by_type": {},
+        "reissues": {
+          "expired": 1,
+          "fresh": 0,
+          "total": 1
+        },
+        "source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
+        "verdict": "PASS"
+      },
       "symbol": "ETHUSD"
     }
   },
@@ -4139,9 +4871,17 @@
       "spread_band": "BLOCK",
       "stream": "EMISSION_RESEARCH",
       "symbol": "ETHUSD"
+    },
+    {
+      "count": 1,
+      "day_type": "WEEKDAY",
+      "decision": "BLOCKED",
+      "spread_band": "OK",
+      "stream": "REISSUE_RESEARCH",
+      "symbol": "ETHUSD"
     }
   ],
-  "tickets_total": 1319,
+  "tickets_total": 1320,
   "weekend_days": [
     "2026-08-15",
     "2026-08-16",
