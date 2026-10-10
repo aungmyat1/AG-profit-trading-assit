@@ -210,7 +210,7 @@ def test_smoke_prints_states_and_archives_only(tmp_path):
     # The fixture's box-direction SIGNAL carries no engine signal time: STALE-FIX-1 fails it closed
     # instead of borrowing the first trade-session bar.
     assert "FX EURUSD (EURUSD-VIP) ASIAN_LONDON data=FRESH decision=DATA_ERROR reason=SIGNAL_TIME_UNAVAILABLE" in text
-    assert "LSMC EURUSD data=FRESH state=OPPORTUNITY" in text and "LSMC GBPUSD" in text
+    assert "LSMC EURUSD data=FRESH state=REJECTED" in text and "LSMC GBPUSD" in text
     # Objective symbols are never silently omitted: unavailable metadata/data is visible.
     assert "FX USDJPY" in text and "decision=DATA_ERROR" in text
     assert glob.glob(str(tmp_path / "journal" / "ticket_delivery" / "archive" / "**" / "*.json"), recursive=True)
@@ -712,7 +712,23 @@ def test_telegram_validation_proposal_uses_real_renderer_and_is_unambiguous():
     assert "spread_check: PASS" in text and "VALID UNTIL" in text
 
 
+def test_scheduled_lsmc_rejection_never_reaches_transport(tmp_path, monkeypatch):
+    local = tmp_path / "config" / "local"
+    local.mkdir(parents=True)
+    (local / "delivery_override.yaml").write_text(
+        "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
+    monkeypatch.setattr(smoke, "REPO_ROOT", str(tmp_path))
+    sent = []
+    monkeypatch.setattr(tg, "send_message", sent.append)
+    journal = tmp_path / "journal"
+    lines = smoke.run_lsmc(fake_fetch(), NOW, str(journal))
+    assert any("state=REJECTED" in line for line in lines)
+    assert sent == []
+    assert list((journal / "ticket_delivery" / "archive").rglob("*.json"))
+
+
 def test_scheduled_lsmc_run_reports_rendered_opportunity_exactly_once(tmp_path, monkeypatch):
+    monkeypatch.setattr("large_smc_watch.watch.c11_causal_target", lambda *args: 1.12)
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
         "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
@@ -765,6 +781,7 @@ def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, mon
 
 
 def test_scheduled_telegram_send_failure_never_breaks_the_run(tmp_path, monkeypatch):
+    monkeypatch.setattr("large_smc_watch.watch.c11_causal_target", lambda *args: 1.12)
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
         "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
@@ -788,6 +805,7 @@ def test_ambiguous_lsmc_delivery_is_never_auto_resent(tmp_path, monkeypatch, mod
     The legacy JSONL row keeps its frozen FAILED / ERROR vocabulary, but the ledger must never
     treat the ambiguous confirmation as a known failure eligible for a later blind resend.
     """
+    monkeypatch.setattr("large_smc_watch.watch.c11_causal_target", lambda *args: 1.12)
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
         "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
