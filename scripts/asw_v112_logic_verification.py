@@ -155,16 +155,23 @@ def _spread_points(fixture: str) -> Dict[dt.datetime, int]:
 
 
 def recorded_spread(symbol: str, t: Dict[str, Any]) -> Dict[str, Any]:
-    """L5 spread at the signal bar: recorded spread_points x host_captured point. Absent input -> None, never 0."""
+    """Conservative L5 spread at the signal bar: max(recorded bar spread, host-evidence spread), in points x the
+    host_captured point. MqlRates spread is a per-bar lower bound, so a bar-only value is never used (-> None).
+    Host evidence = the host_captured symbol_info snapshot spread (no tick-derived source exists for this path)."""
     record = symbol_metadata.load_record(symbol, root=str(ROOT))     # sha256-verified committed evidence
-    point = ((record or {}).get("fields") or {}).get("point")
+    fields = (record or {}).get("fields") or {}
+    point, host = fields.get("point"), fields.get("spread")
     ts = t.get("signal_timestamp")
-    pts = _spread_points(SYMBOLS[symbol]["fixture"]).get(dt.datetime.fromisoformat(ts)) if ts else None
-    price = pts * point if pts is not None and point else None
+    bar = _spread_points(SYMBOLS[symbol]["fixture"]).get(dt.datetime.fromisoformat(ts)) if ts else None
+    if bar is None or host is None or not point:
+        pts, source = None, ("BAR_ONLY_LOWER_BOUND" if bar is not None else "NOT_AVAILABLE")
+    else:
+        pts, source = max(bar, host), ("HOST_SNAPSHOT" if host >= bar else "RECORDED_BAR")
+    price = pts * point if pts is not None else None
     risk = t.get("risk_distance")
-    return {"spread_points": pts, "point": point, "spread_price": price,
-            "spread_R": round(price / risk, 4) if price is not None and risk else None,
-            "source": "RECORDED_SPREAD_POINTS x HOST_CAPTURED_POINT" if price is not None else "NOT_AVAILABLE"}
+    return {"bar_spread_points": bar, "host_spread_points": host, "spread_points": pts, "point": point,
+            "spread_price": price, "spread_R": round(price / risk, 4) if price is not None and risk else None,
+            "source": source}
 
 
 def split(candles: List[Candle], cycle: str, day: dt.date):
@@ -462,8 +469,8 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
     unrecorded = sorted({c["case_id"].split(":")[1] for c in cases if c["ticket_gate_blocking_failures"] == []
                          and c["l5_recorded_spread"]["spread_price"] is None})
     if unrecorded:
-        l5_warn.append(f"SPREAD_NOT_RECORDED: no recorded spread at the signal bar for {unrecorded}; cost_in_R not "
-                       "evaluable there (L2 closure uses a 0.2-pip test input only)")
+        l5_warn.append(f"SPREAD_NOT_RECORDED: no conservative spread (bar-only lower bound or missing) for "
+                       f"{unrecorded}; cost_in_R not evaluable there (L2 closure uses a 0.2-pip test input only)")
     pending = sorted(s for s, v in COVERAGE["instruments"].items() if v == "PENDING_AGP-C2-SYMMAP")
     l5_warn.append(f"SYMBOL_METADATA_PENDING: {', '.join(pending)} -> PENDING_AGP-C2-SYMMAP (not invented)")
     l5_block = []

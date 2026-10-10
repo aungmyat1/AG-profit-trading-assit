@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import datetime as dt
 import hashlib
+import importlib
 from collections import defaultdict
 from pathlib import Path
 
@@ -108,8 +109,10 @@ def test_l5_reads_recorded_spread_and_never_assumes_commission():
     w, now, session, post = h.split(by_day["2026-08-31"], CYCLE, day)
     t = h.ticket(CYCLE, day, session, post, now, symbol=SYMBOL)
     rec = h.recorded_spread(SYMBOL, t)
-    assert (rec["spread_points"], rec["point"], rec["source"]) == (1, 1e-05, "RECORDED_SPREAD_POINTS x HOST_CAPTURED_POINT")
-    assert rec["spread_R"] == round(1e-05 / t["risk_distance"], 4)
+    # bar spread (1 pt) is a per-bar lower bound; the host snapshot (15 pt) is the conservative value
+    assert (rec["bar_spread_points"], rec["host_spread_points"], rec["spread_points"], rec["source"]) == \
+        (1, 15, 15, "HOST_SNAPSHOT")
+    assert rec["spread_R"] == round(15 * 1e-05 / t["risk_distance"], 4)
     l5 = h.ticket_gates(h.load_strategy(h.CANDIDATE), CYCLE, day, session, post, now, w, t, h.TEST_SPREAD, 0.10,
                         SYMBOL, l5_spread=rec["spread_price"])["L5"]
     checks = {c["id"]: c for c in l5["checks"]}
@@ -119,3 +122,28 @@ def test_l5_reads_recorded_spread_and_never_assumes_commission():
 
 def test_l5_spread_absent_without_a_signal_bar():
     assert h.recorded_spread(SYMBOL, {"signal_timestamp": None, "risk_distance": 0.001})["spread_price"] is None
+
+
+def test_l5_bar_only_spread_is_insufficient_never_pass(monkeypatch):
+    t = {"signal_timestamp": "2026-08-31T07:15:00+00:00", "risk_distance": 0.00025}
+    monkeypatch.setattr(h.symbol_metadata, "load_record", lambda *a, **k: {"fields": {"point": 1e-05}})
+    rec = h.recorded_spread(SYMBOL, t)
+    assert (rec["bar_spread_points"], rec["spread_price"], rec["source"]) == (1, None, "BAR_ONLY_LOWER_BOUND")
+    drv = importlib.import_module("scripts.asw_v112_60d_replay")
+    kept = [{"l5_recorded_spread": rec}]
+    owner = {"cost_warn_R": 0.10, "cost_block_R": 0.25}
+    assert drv.lane_l5(kept, "WARN", owner)[0] == "INSUFFICIENT(spread)"
+
+
+def test_session_row_with_kept_entries_and_no_owner_fails_closed():
+    drv = importlib.import_module("scripts.asw_v112_60d_replay")
+    kept = {"case_id": "recorded:X:ASIAN_LONDON:2026-08-31", "direction": "SHORT", "day_type": "short-sweep",
+            "ticket_gate_status": {g: "PASS" for g in ("L1", "L2", "L3", "L4", "L5", "L6")},
+            "ticket_gate_blocking_failures": [], "l2_fail_ids": [], "l2_undeclared": [], "owner_ticket_L6": "PASS",
+            "geometry": {"has_levels": True, "positive_stop": True, "target_order": True},
+            "causality": {"prefix_mismatches": 0, "pre_emission_signals": 0, "streaming_hash_parity": True,
+                          "future_mutations": 25, "future_mutation_mismatches": 0},
+            "l5_recorded_spread": {"spread_R": 0.6, "source": "HOST_SNAPSHOT"}}
+    row = drv.session_row("X", "ASIAN_LONDON", [kept], {"L1": "PASS", "L4": "PASS", "L5": "WARN"})
+    assert row["valid_entries"] == 1
+    assert row["gates"]["L5"] == "FAIL" and row["l5_detail"]["reason"].startswith("OWNER_BINDING_MISSING")

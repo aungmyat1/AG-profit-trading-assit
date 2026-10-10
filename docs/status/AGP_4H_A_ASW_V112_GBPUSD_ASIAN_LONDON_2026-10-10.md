@@ -98,6 +98,36 @@ L1–L4 and L6 PASS, 0 mismatches, both directions exercised. L5 is INSUFFICIENT
 below WARN, so **NOT_ADMITTED**. The registry is unchanged. To unblock: an owner-set FX commission
 source for GBPUSD-VIP, or an owner ruling on L5.
 
+## AGP-LANE-A3 addendum (base #142 head 37e2410) — conservative L5 spread
+
+MqlRates `spread` is treated as a per-bar lower bound. L5 now uses spread = max(signal-bar
+`spread_points`, host-evidence spread) × host_captured `point`. Host evidence is the
+`config/symbol_metadata/host_captured/<SYMBOL>.json` snapshot spread. Tick-derived spread evidence in the
+repo (`scripts/collect_eurusd_spread_evidence.py`, Large-SMC friction campaign) covers EURUSD only, so
+GBPUSD has none. A case with only a bar spread is `BAR_ONLY_LOWER_BOUND`, which makes lane L5
+INSUFFICIENT(spread) and never PASS. Each case records `bar_spread_points`, `host_spread_points` and `source`.
+
+GBPUSD × ASIAN_LONDON, 7 kept entries. Source = HOST_SNAPSHOT (15 pt) for all 7; bar spread was 0–1 pt.
+
+| Date | Dir | bar pt | host pt | spread_R |
+|---|---|---|---|---|
+| 2026-07-23 | LONG | 1 | 15 | 0.3191 |
+| 2026-08-21 | LONG | 1 | 15 | 0.2830 |
+| 2026-08-31 | SHORT | 1 | 15 | 0.6000 |
+| 2026-09-03 | SHORT | 1 | 15 | 0.1786 |
+| 2026-09-10 | LONG | 1 | 15 | 0.4545 |
+| 2026-09-22 | LONG | 1 | 15 | 0.2113 |
+| 2026-09-29 | LONG | 0 | 15 | 0.2308 |
+
+spread_R min 0.1786, median 0.2830, max 0.6000. All 7 are at or above cost_warn_R 0.10, and **4 of 7 are at
+or above cost_block_R 0.25 on spread alone**, before commission. Lane L5 stays INSUFFICIENT(commission),
+because commission is unknown and never 0. No L1–L4 verdict changed. Owner binding: `session_row` with kept
+entries and no owner cost binding returns L5 FAIL (`OWNER_BINDING_MISSING`, tested).
+
+**Pending owner decisions (not acted on):** (1) rounding mode A ROUND_HALF_UP / B ROUND_HALF_EVEN;
+(2) the FX commission source for GBPUSD-VIP; (3) branch scope, i.e. whether logic verification is
+SWEEP-only with RANGE_REJECTION and TREND fail-closed (RANGE is NOT_EXERCISED on recorded days).
+
 ## Reproduction
 
 ```sh
