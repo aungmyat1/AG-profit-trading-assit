@@ -48,18 +48,22 @@ def ready(symbol: str, version: str) -> dict:
             "cycle": "ASIAN_LONDON", "reason_code": "SWEEP_V1", "entry": 1.1, "stop_loss": 1.09}
 
 
-def test_verification_source_is_the_registry_and_lists_only_eurusd_for_1_1_2():
+def test_verification_source_is_the_registry_eurusd_suspended_gbpusd_scoped():
     reg = yaml.safe_load(open(ra.REGISTRY_PATH, encoding="utf-8"))["strategies"][SID]
     entries = reg["candidate_versions"]["1.1.2"]["logic_verified_symbols"]
-    assert entries[0] == {"symbol": "EURUSD", "evidence": "docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md"}
+    assert entries[0] == {"symbol": "EURUSD", "status": "SUSPENDED",            # owner ruling 2026-10-11
+                          "suspended_reason": "L3_REPAINT_UNRESOLVED_2026-07-31",
+                          "suspension_evidence": "docs/status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md",
+                          "evidence": "docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md"}
+    assert (root := __import__("pathlib").Path(ra.REGISTRY_PATH).parents[1] / entries[0]["suspension_evidence"]).is_file(), root
     assert [e["symbol"] for e in entries] == ["EURUSD", "GBPUSD"]
     assert (entries[1]["sessions"], entries[1]["branches"], entries[1]["engine_setups"]) == \
         (["ASIAN_LONDON"], ["RANGE_SWEEP"], ["SWEEP"])          # OD1011-SCOPE: branch-scoped
     root = __import__("pathlib").Path(ra.REGISTRY_PATH).parents[1]
     assert all((root / e["evidence"]).is_file() for e in entries)     # evidence ref resolves
     assert "logic_verified_symbols" not in reg and "verified_symbols" not in reg   # runtime 1.1.1: none
-    assert ra.symbol_verified(SID, "1.1.2", "EURUSD") is True
-    for sym, ver in (("GBPUSD", "1.1.2"), ("USDJPY", "1.1.2"), ("XAUUSD", "1.1.2"), ("EURUSD", "1.1.1"),
+    assert ra.symbol_verified(SID, "1.1.2", "GBPUSD", cycle="ASIAN_LONDON", setup="SWEEP") is True
+    for sym, ver in (("EURUSD", "1.1.2"), ("GBPUSD", "1.1.2"), ("USDJPY", "1.1.2"), ("XAUUSD", "1.1.2"), ("EURUSD", "1.1.1"),
                      ("EURUSD", None), ("EURUSD", "9.9.9")):
         assert ra.symbol_verified(SID, ver, sym) is False, (sym, ver)
     assert ra.symbol_verified("UNKNOWN_STRATEGY", "1.1.2", "EURUSD") is False
@@ -73,7 +77,8 @@ def test_unreadable_registry_means_not_verified(tmp_path, d6_on):
     assert out["decision"] == ra.SHADOW_INFO_ONLY
 
 
-@pytest.mark.parametrize("symbol,version", [("GBPUSD", "1.1.2"), ("USDJPY", "1.1.2"), ("EURUSD", "1.1.1")])
+@pytest.mark.parametrize("symbol,version", [("GBPUSD", "1.1.2"), ("USDJPY", "1.1.2"), ("EURUSD", "1.1.1"),
+                                            ("EURUSD", "1.1.2")])     # EURUSD 1.1.2: SUSPENDED
 def test_d6_on_and_unverified_symbol_is_not_ready(d6_on, symbol, version):
     out = ra.apply_ready_authority(ready(symbol, version), d6_on,
                                    contract_path=(str(Path(__file__).resolve().parents[1] / CANDIDATE)
@@ -90,7 +95,7 @@ def test_d6_on_and_unverified_symbol_is_not_ready(d6_on, symbol, version):
 
 
 def test_d6_on_and_verified_symbol_is_ready(d6_on):
-    t = ready("EURUSD", "1.1.2")
+    t = {**ready("GBPUSD", "1.1.2"), "setup": "SWEEP"}       # the only VERIFIED entry (scoped, OD1011-SCOPE)
     assert ra.apply_ready_authority(t, d6_on,
                                    contract_path=str(Path(__file__).resolve().parents[1] / CANDIDATE)) == t
 
@@ -110,7 +115,8 @@ def test_production_d6_is_still_off():
 
 
 @pytest.mark.parametrize("symbol,cycle,expected", [
-    ("EURUSD", "ASIAN_LONDON", "READY"), ("GBPUSD", "ASIAN_LONDON", "READY"),       # GBPUSD: OD1011-SCOPE
+    ("EURUSD", "ASIAN_LONDON", ra.SHADOW_INFO_ONLY),                                 # EURUSD: SUSPENDED
+    ("GBPUSD", "ASIAN_LONDON", "READY"),                                             # GBPUSD: OD1011-SCOPE
     ("USDJPY", "ASIAN_LONDON", ra.SHADOW_INFO_ONLY)])   # out-of-scope sessions: test_scoped_entry_*
 def test_fx_ticket_path_applies_the_symbol_gate(monkeypatch, d6_on, symbol, cycle, expected):
     sig = types.SimpleNamespace(status="SIGNAL", reason_code="SWEEP_V1", regime="RANGE", setup="SWEEP",
@@ -131,7 +137,7 @@ def test_real_symbol_verified_reads_registry_without_any_stub(request):
     assert ra.symbol_verified.__module__ == "v1_tickets.ready_authority"
     assert ra.symbol_verified(SID, "1.1.2", "GBPUSD") is False
     assert ra.symbol_verified(SID, "1.1.1", "EURUSD") is False
-    assert ra.symbol_verified(SID, "1.1.2", "EURUSD") is True
+    assert ra.symbol_verified(SID, "1.1.2", "EURUSD") is False                 # SUSPENDED
 
 
 def test_entry_without_evidence_ref_is_not_verified(tmp_path):
@@ -157,8 +163,8 @@ def test_scoped_entry_covers_only_its_session_and_branch():
                          (None, "SWEEP"), ("ASIAN_LONDON", None)):
         assert ra.symbol_verified(SID, "1.1.2", "GBPUSD", cycle=cycle, setup=setup) is False, (cycle, setup)
     assert ra.symbol_verified(SID, "1.1.1", "GBPUSD", cycle="ASIAN_LONDON", setup="SWEEP") is False
-    # unscoped EURUSD entry keeps covering every session/branch
-    assert ra.symbol_verified(SID, "1.1.2", "EURUSD", cycle="LONDON_NEWYORK", setup="SWEEP") is True
+    # SUSPENDED EURUSD covers no session/branch
+    assert ra.symbol_verified(SID, "1.1.2", "EURUSD", cycle="ASIAN_LONDON", setup="SWEEP") is False
 
 
 def test_malformed_scope_fails_closed(tmp_path):
@@ -187,3 +193,18 @@ def test_apply_ready_authority_passes_ticket_scope(d6_on):
     assert (out["decision"], out["reason_code"]) == ("SHADOW_INFO_ONLY", ra.READY_SYMBOL_NOT_VERIFIED)
     out = ra.apply_ready_authority({**base, "cycle": "LONDON_NEWYORK"}, path=str(cfg), contract_path=contract)
     assert (out["decision"], out["reason_code"]) == ("SHADOW_INFO_ONLY", ra.READY_SYMBOL_NOT_VERIFIED)
+
+
+@pytest.mark.parametrize("status,verified", [("SUSPENDED", False), ("REVOKED", False), ("", False), (None, False),
+                                             ("VERIFIED", True)])
+def test_entry_status_other_than_verified_is_not_verified(tmp_path, status, verified):
+    """Owner ruling 2026-10-11: SUSPENDED (or any non-VERIFIED status) is not verified; no status = VERIFIED."""
+    reg = tmp_path / "registry.yaml"
+    entry = {"symbol": "EURUSD", "evidence": "x.md", "status": status}
+    reg.write_text(yaml.safe_dump({"strategies": {SID: {"candidate_versions": {"1.1.2": {
+        "logic_verified_symbols": [entry]}}}}}), encoding="utf-8")
+    assert ra.symbol_verified(SID, "1.1.2", "EURUSD", registry_path=str(reg)) is verified
+    del entry["status"]
+    reg.write_text(yaml.safe_dump({"strategies": {SID: {"candidate_versions": {"1.1.2": {
+        "logic_verified_symbols": [entry]}}}}}), encoding="utf-8")
+    assert ra.symbol_verified(SID, "1.1.2", "EURUSD", registry_path=str(reg)) is True

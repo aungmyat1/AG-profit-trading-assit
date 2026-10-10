@@ -161,7 +161,8 @@ def symbol_verified(strategy_id: str, strategy_version: Any, symbol: Any,
                     registry_path: Optional[str] = None, *, cycle: Any = None, setup: Any = None) -> bool:
     """True only if strategies/registry.yaml lists `symbol` with a non-empty `evidence` ref in
     candidate_versions."<strategy_version>".logic_verified_symbols for `strategy_id`, and the entry's optional
-    branch scope (`sessions`, `engine_setups`; OD1011-SCOPE) includes the ticket's cycle and setup.
+    branch scope (`sessions`, `engine_setups`; OD1011-SCOPE) includes the ticket's cycle and setup, and its
+    optional `status` is VERIFIED (SUSPENDED or any other value is not verified).
     Anything else is False."""
     try:
         with open(registry_path or REGISTRY_PATH, encoding="utf-8") as f:
@@ -174,7 +175,8 @@ def symbol_verified(strategy_id: str, strategy_version: Any, symbol: Any,
     if not isinstance(listed, list) or not isinstance(symbol, str):
         return False
     return any(isinstance(e, dict) and e.get("symbol") == symbol and isinstance(e.get("evidence"), str)
-               and e["evidence"].strip() and _in_scope(e, "sessions", cycle) and _in_scope(e, "engine_setups", setup)
+               and e["evidence"].strip() and e.get("status", "VERIFIED") == "VERIFIED"
+               and _in_scope(e, "sessions", cycle) and _in_scope(e, "engine_setups", setup)
                for e in listed)
 
 
