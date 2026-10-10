@@ -25,8 +25,8 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 SCHEMA_EVALUATION = "TICKET_STORE_V1_EVALUATION"
 SCHEMA_OUTCOME = "TICKET_STORE_V1_OUTCOME"
-LIVE, REPLAY, LEGACY = "LIVE", "REPLAY", "LEGACY"
-SOURCES = (LIVE, REPLAY, LEGACY)
+LIVE, REPLAY, LEGACY, DEMO = "LIVE", "REPLAY", "LEGACY", "DEMO"
+SOURCES = (LIVE, REPLAY, LEGACY, DEMO)
 
 # Field order is the schema. Every field is always present; absent facts are null, never inferred.
 EVALUATION_FIELDS = (
@@ -143,7 +143,10 @@ class TicketStore:
         return os.path.join(self.outcomes_dir, f"{day}.jsonl")
 
     def files(self, kind: str) -> List[str]:
-        d = self.evaluations_dir if kind == "evaluations" else self.outcomes_dir
+        from ticket_store.v2 import FIELDS
+        if kind not in ("evaluations", "outcomes") and kind not in FIELDS:
+            raise TicketStoreError(f"unknown record kind: {kind}")
+        d = os.path.join(self.root, kind)
         return sorted(os.path.join(d, f) for f in os.listdir(d) if f.endswith(".jsonl")) if os.path.isdir(d) else []
 
     # ------------------------------------------------------------------ writes
@@ -180,6 +183,13 @@ class TicketStore:
     def iter_records(self, kind: str) -> Iterator[Tuple[str, int, Dict[str, Any]]]:
         for path in self.files(kind):
             for n, rec in read_jsonl(path):
+                if kind not in ("evaluations", "outcomes"):
+                    from ticket_store.v2 import build_record
+                    try:
+                        if not isinstance(rec, dict) or build_record(kind, **rec) != rec:
+                            raise TicketStoreError("record seal or identity mismatch")
+                    except (TicketStoreError, TypeError, KeyError) as exc:
+                        raise TicketStoreCorrupt(f"{path}:{n}: {exc}") from exc
                 yield path, n, rec
 
     def evaluations(self) -> List[Dict[str, Any]]:
@@ -187,3 +197,30 @@ class TicketStore:
 
     def outcomes(self, ticket_id: Optional[str] = None) -> List[Dict[str, Any]]:
         return [r for _, _, r in self.iter_records("outcomes") if ticket_id is None or r.get("ticket_id") == ticket_id]
+
+    # V2 records use the V1 writer; their stable reference fixes identity across date files.
+    def _append_event(self, kind: str, record: Dict[str, Any]) -> bool:
+        from ticket_store.v2 import build_record
+        if build_record(kind, **record) != record:
+            raise TicketStoreError("append takes an unmodified sealed V2 builder record")
+        path = os.path.join(self.root, kind, f"{record['recorded_at_utc'][:10]}.jsonl")
+        with _lock(os.path.join(self.root, kind)):
+            scan = sorted(set(self.files(kind) + [path]))
+            for _ in self.iter_records(kind):
+                pass  # Validate existing seals before V1 idempotency checks.
+            return self._append(path, record, "record_id", scan)
+
+    def append_delivery(self, record):
+        return self._append_event('deliveries', record)
+
+    def append_owner_decision(self, record):
+        return self._append_event('owner_decisions', record)
+
+    def append_order_event(self, record):
+        return self._append_event('order_events', record)
+
+    def append_position_close(self, record):
+        return self._append_event('position_closes', record)
+
+    def lifecycle_records(self, kind: str, ticket_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        return [r for _, _, r in self.iter_records(kind) if ticket_id is None or r['ticket_id'] == ticket_id]

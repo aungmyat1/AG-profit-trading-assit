@@ -8,6 +8,8 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-10)
 
+TICKET_STORE_V2 is offline unit-tested storage only: append-only delivery/decision/DEMO-order/close records, V1-compatible JSONL, history and LIVE/DEMO-only statistical views, and CSV/Parquet query/export. No execution integration is added. See [evidence](docs/status/AG_TICKET_STORE_V2_STATUS_2026-10-10.md).
+
 The market-structure analyzer uses fresh computation only; its optional replay-dependent
 cache path is removed. Offline byte comparisons against main pass for identical candles
 and config. Session-zone import failures are traced but unchanged; none of the four live
