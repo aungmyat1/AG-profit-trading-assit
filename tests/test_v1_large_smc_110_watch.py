@@ -69,7 +69,7 @@ def test_positive_near_poi_then_opportunity():
     assert near.state == "NEAR_POI" and near.bias == "LONG"
     assert near.poi["kind"] == "FVG" and near.poi["distance"] <= near.poi["band"]
     opp = snap(NOW)
-    assert opp.state == "OPPORTUNITY"
+    assert opp.state == "REJECTED" and opp.reason_codes[0] == "REJECT_NO_TARGET"
     o = opp.opportunity
     assert o["direction"] == "LONG" and o["economic_status"] == "NOT_EVALUATED"
     assert o["expires_at"] == "2026-01-06T11:00:00+00:00"          # london_am session end
@@ -108,7 +108,7 @@ def test_no_lookahead_future_choch_invisible_before_its_close():
     before = snap(choch_open + dt.timedelta(minutes=4))
     after = snap(choch_open + dt.timedelta(minutes=5))
     assert before.state != "OPPORTUNITY"
-    assert after.state == "OPPORTUNITY"
+    assert after.state == "REJECTED" and after.opportunity is not None
 
 
 def test_deterministic_repeat():
@@ -159,7 +159,8 @@ def test_universe_is_vt_symbols_only():
 def test_point_comes_from_host_capture(symbol, k):
     s = snap(NOW, symbol=symbol, k=k)
     assert s.metadata_source == "HOST_CAPTURED" and s.point == HOST_POINT[symbol]
-    assert s.state == "OPPORTUNITY"
+    assert s.state == "REJECTED"
+    assert s.reason_codes[0] == ("REJECT_NO_TARGET" if symbol in C.C10_PIP_SIZE else "REJECT_NO_STOP")
     if symbol not in C.C10_PIP_SIZE:
         assert s.opportunity["stop_reason"] == "C10_PIP_SIZE_NOT_EVIDENCED"
 
@@ -198,7 +199,8 @@ def test_tracker_emits_mapped_alerts_and_archives_only(tmp_path):
     ev1 = tr.poll(snap(NEAR))
     ev2 = tr.poll(snap(NOW))
     assert [(e.to_state, e.alert_level) for e in ev1] == [("NEAR_POI", "WATCH")]
-    assert [(e.to_state, e.alert_level) for e in ev2] == [("OPPORTUNITY", "OPPORTUNITY")]
+    assert [(e.to_state, e.alert_level) for e in ev2] == [("REJECTED", "INFO")]
+    assert ev2[0].payload["reason_codes"][0] == "REJECT_NO_TARGET"
     assert all(e.delivery_mode == "ARCHIVE_ONLY" and e.proposal_generation_authorized is False for e in ev1 + ev2)
     files = _archived(tmp_path)
     assert len(files) == 2 and all("LSMC_WATCH" in f for f in files)
@@ -223,7 +225,8 @@ def test_replay_after_crash_before_state_save_does_not_duplicate_archive(tmp_pat
     assert len(_archived(tmp_path)) == 1
 
 
-def test_stale_suspends_then_expires(tmp_path):
+def test_stale_suspends_then_expires(tmp_path, monkeypatch):
+    monkeypatch.setattr("large_smc_watch.watch.c11_causal_target", lambda *args: 1.12)
     tr = _tracker(tmp_path)
     tr.poll(snap(NOW))                                    # OPPORTUNITY, expires 11:00
     stale = snap(dt.datetime(2026, 1, 6, 10, 0, tzinfo=UTC))
@@ -235,7 +238,8 @@ def test_stale_suspends_then_expires(tmp_path):
     assert [(e.to_state, e.alert_level) for e in events] == [("EXPIRED", "INFO")]
 
 
-def test_invalidated_alert(tmp_path):
+def test_invalidated_alert(tmp_path, monkeypatch):
+    monkeypatch.setattr("large_smc_watch.watch.c11_causal_target", lambda *args: 1.12)
     tr = _tracker(tmp_path)
     tr.poll(snap(NOW))
     events = tr.poll(snap(NOW + dt.timedelta(minutes=5), break_after=True))
@@ -250,4 +254,4 @@ def test_market_closed_emits_nothing(tmp_path):
 
 def test_choch_exactly_at_window_edge_still_counts():
     edge = snap(dt.datetime(2026, 1, 6, 10, 20, tzinfo=UTC), choch_delay=10)   # sweep -> CHoCH = 12 bars
-    assert edge.state == "OPPORTUNITY"
+    assert edge.state == "REJECTED" and edge.opportunity is not None

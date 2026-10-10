@@ -6,8 +6,8 @@ Read-only by construction: the only MT5 calls are ``symbol_info`` (symbol existe
 Nothing here calls order_send, order_check, symbol_select, positions_*, orders_*, history_*
 or any account function (tests/test_mt5_candles_readonly.py enforces this).
 
-Symbol identity: canonical -> broker symbols come only from the committed host-captured
-metadata (config/symbol_metadata/host_captured/<CANONICAL>.json "broker_symbol"). No suffix is
+Symbol identity: canonical -> broker symbols come only from the versioned
+CANONICAL_TO_BROKER_MAP (mt5.canonical_broker_map, default_symbol_map()). No suffix is
 ever guessed; a missing/mismatched mapping or a broker symbol the terminal does not know is
 SYMBOL_MAPPING_MISSING, never a substitute symbol.
 
@@ -26,13 +26,16 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import logging
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from host_evidence.symbol_metadata import NY, server_time_to_utc
+from host_evidence.symbol_metadata import NY, DstHourError, server_time_to_utc
+from mt5 import canonical_broker_map
 from strategy_engine.session import Candle
 
+_log = logging.getLogger(__name__)
 UTC = dt.timezone.utc
 
 SUPPORTED_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
@@ -48,12 +51,16 @@ CONVERSION_ERROR = "CONVERSION_ERROR"
 DUPLICATE_TIMESTAMP = "DUPLICATE_TIMESTAMP"
 NON_MONOTONIC = "NON_MONOTONIC"
 OFF_GRID_TIMESTAMP = "OFF_GRID_TIMESTAMP"
+# Terminal status for a symbol whose acquisition failed; the other symbols are unaffected.
+DATA_ERROR = "DATA_ERROR"
 
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 DEFAULT_METADATA_DIR = os.path.join(_REPO_ROOT, "config", "symbol_metadata", "host_captured")
 
 
 class CandleAdapterError(RuntimeError):
+    terminal_status = DATA_ERROR
+
     def __init__(self, code: str, detail: str = ""):
         super().__init__(f"{code}: {detail}" if detail else code)
         self.code = code
@@ -111,11 +118,19 @@ def _server_wall(raw_time: int) -> dt.datetime:
 
 def _to_canonical(canonical: str, rates: Any) -> List[CanonicalCandle]:
     try:
-        return [CanonicalCandle(
-            symbol=canonical, time=server_time_to_utc(_server_wall(int(r["time"]))),
-            open=float(r["open"]), high=float(r["high"]), low=float(r["low"]), close=float(r["close"]),
-            tick_volume=int(r["tick_volume"]), spread=int(r["spread"]), real_volume=int(r["real_volume"]),
-        ) for r in rates]
+        out = []
+        for r in rates:
+            try:
+                t = server_time_to_utc(_server_wall(int(r["time"])))
+            except DstHourError as exc:  # repeated/skipped server hour: drop + log, never fold
+                _log.warning("DROPPED_BAR %s %s %s", exc.reason_code, canonical, exc.server_wall_clock.isoformat())
+                continue
+            out.append(CanonicalCandle(
+                symbol=canonical, time=t,
+                open=float(r["open"]), high=float(r["high"]), low=float(r["low"]), close=float(r["close"]),
+                tick_volume=int(r["tick_volume"]), spread=int(r["spread"]), real_volume=int(r["real_volume"]),
+            ))
+        return out
     except (KeyError, IndexError, TypeError, ValueError, OverflowError, OSError) as exc:
         raise CandleAdapterError(CONVERSION_ERROR, f"{canonical}: {type(exc).__name__} {exc}") from exc
 
@@ -225,12 +240,44 @@ def as_rows(candles: List[CanonicalCandle]) -> List[Dict[str, Any]]:
             for c in candles]
 
 
+def symbol_map_status(symbols=SUPPORTED_SYMBOLS):
+    """(mapped, blocked): canonical -> broker for every resolvable entry of the versioned
+    CANONICAL_TO_BROKER_MAP, and canonical -> reason for each UNMAPPED / DATA_ERROR entry.
+    One bad entry blocks only its own symbol."""
+    symbol_map = canonical_broker_map.load_map()
+    mapped: Dict[str, str] = {}
+    blocked: Dict[str, str] = {}
+    for canonical in symbols:
+        try:
+            mapped[canonical] = symbol_map.resolve(canonical)
+        except (canonical_broker_map.SymbolUnmapped, canonical_broker_map.SymbolDataError) as exc:
+            blocked[canonical] = str(exc)
+    return mapped, blocked
+
+
 def default_symbol_map() -> Dict[str, str]:
-    return load_symbol_map(DEFAULT_METADATA_DIR)
+    """Resolvable entries of the versioned CANONICAL_TO_BROKER_MAP for SUPPORTED_SYMBOLS. An
+    UNMAPPED or DATA_ERROR canonical is absent, so resolve_broker_symbol() raises
+    SYMBOL_MAPPING_MISSING for that symbol only."""
+    return symbol_map_status()[0]
+
+
+def fetch_closed_candles_per_symbol(mt5: Any, symbols, timeframe: str, count: int,
+                                    symbol_map: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
+    """fetch_closed_candles for each symbol independently. A failing symbol gets
+    {"status": DATA_ERROR, "code", "detail"}; the others still return {"status": "OK", "candles"}."""
+    out: Dict[str, Dict[str, Any]] = {}
+    for canonical in symbols:
+        try:
+            out[canonical] = {"status": "OK",
+                              "candles": fetch_closed_candles(mt5, canonical, timeframe, count, symbol_map)}
+        except CandleAdapterError as exc:
+            out[canonical] = {"status": DATA_ERROR, "code": exc.code, "detail": exc.detail}
+    return out
 
 
 __all__ = [
-    "ALLOWED_MT5_CALLS", "CANONICAL_FIELDS", "CandleAdapterError", "CanonicalCandle", "SUPPORTED_SYMBOLS",
+    "ALLOWED_MT5_CALLS", "CANONICAL_FIELDS", "CandleAdapterError", "CanonicalCandle", "DATA_ERROR", "SUPPORTED_SYMBOLS",
     "SYMBOL_MAPPING_MISSING", "TIMEFRAME_MINUTES", "as_rows", "default_symbol_map", "fetch_candles_range",
-    "fetch_closed_candles", "load_symbol_map", "resolve_broker_symbol", "series_report", "to_engine_candles",
+    "fetch_closed_candles", "fetch_closed_candles_per_symbol", "load_symbol_map", "resolve_broker_symbol", "series_report", "symbol_map_status", "to_engine_candles",
 ]

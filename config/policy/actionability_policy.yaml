@@ -7,7 +7,7 @@
 # which the loader treats as ACTIONABILITY_POLICY_MISSING → INFO_ONLY_POLICY_UNRESOLVED.
 # No committed code path turns this into WATCH_READY.
 #
-# Production/runtime thresholds live exclusively in the OWNER_RUNTIME_OVERRIDE:
+# The min_remaining_r runtime threshold lives exclusively in the OWNER_RUNTIME_OVERRIDE:
 #   config/local/actionability_policy.yaml   (gitignored; host-local; signed_by != null)
 # When present and correctly signed, that file wins and unlocks WATCH_READY subject to
 # every other gate (freshness, remaining-R, spread, SL/TP geometry, etc.).
@@ -33,3 +33,7 @@ version: 1
 min_remaining_r: null
 signed_by: null
 signed_at: null
+# Owner-set operational parameter, 2026-10-10, not a contract value.
+# At least 50% of the entry-to-target distance must remain; no code fallback.
+# This delivery parameter is independent of the signed WATCH_READY policy above.
+lsmc_min_remaining_reward_fraction: 0.5

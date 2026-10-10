@@ -20,11 +20,19 @@ sys.path.insert(0, str(REPO / "scripts" / "host"))
 sys.path.insert(0, str(REPO / "tests"))
 
 import canonical_fx_delivery as cfd  # noqa: E402
+from test_actionability_and_canonical_ticket import (
+    _build_asian_london_sweep,  # noqa: E402
+)
+
+import v1_tickets.daily_evaluator as de  # noqa: E402
 from telegram_delivery.adapter import Config, Sender  # noqa: E402
 from ticket_store import adapter as store_adapter  # noqa: E402
-from ticket_store.store import REPLAY, TicketStore, build_evaluation, read_jsonl  # noqa: E402
-from test_actionability_and_canonical_ticket import _build_asian_london_sweep  # noqa: E402
-import v1_tickets.daily_evaluator as de  # noqa: E402
+from ticket_store.store import (  # noqa: E402
+    REPLAY,
+    TicketStore,
+    build_evaluation,
+    read_jsonl,
+)
 from v1_tickets.fx import V1_CYCLES, V1_FX_SYMBOLS, session_windows_utc  # noqa: E402
 
 UTC = dt.timezone.utc
@@ -386,6 +394,76 @@ def test_summary_is_deterministic_and_invents_no_levels(tmp_path):
 
 
 # ------------------------------------------------------------------ session summary scheduling
+
+def test_session_summary_counts_archived_lsmc_rejection_reasons_only(tmp_path):
+    from large_smc_watch.watch import Snapshot, WatchTracker, gate_opportunity
+    from telegram_delivery.adapter import render_session_summary
+    send, _ = sender(tmp_path, enabled=False)
+    journal = tmp_path / "journal"
+    archive = journal / "ticket_delivery" / "archive"
+    tracker = WatchTracker(str(journal / "lsmc.json"), str(archive))
+    samples = [("EURUSD", "07:00", {"stop_c10": None}, 100.0),
+               ("GBPUSD", "08:00", {"target_c11": None}, 100.0),
+               ("USDJPY", "10:00", {}, 100.75),
+               ("XAUUSD", "11:00", {}, 100.75)]  # end is exclusive
+    for symbol, time, changes, price in samples:
+        opportunity = {"opp_id": f"SECRET-{symbol}", "poi_id": "SECRET-POI", "direction": "LONG",
+                       "entry_reference": 100.0, "stop_c10": 99.0, "target_c11": 101.0, **changes}
+        snap = gate_opportunity(Snapshot(symbol, f"{NOW.date()}T{time}:00+00:00", "OPPORTUNITY",
+                                        opportunity=opportunity), price)
+        event, = tracker.poll(snap)
+        assert event.payload["reason_codes"][0] == snap.reason_codes[0]
+        assert tracker.poll(snap) == []
+        # Restart also produces no new archived rejection transition.
+        assert WatchTracker(str(journal / "lsmc.json"), str(archive)).poll(snap) == []
+    paths = list(archive.rglob("*.json"))
+    assert len(paths) == 4
+    # Duplicate identity and correction wrappers must not inflate counts.
+    source = paths[0]
+    duplicate = source.parent / (NOW.date() + dt.timedelta(days=1)).isoformat()
+    duplicate.with_suffix(".json").write_bytes(source.read_bytes())
+    source.with_name(f"{NOW.date()}.correction-001.json").write_text('{"new_record": {}}')
+    digest = cfd.build_session_summary(str(journal), session_date=NOW.date(), session="ASIAN_LONDON", sender=send)
+    assert digest["large_smc"]["rejection_counts"] == {
+        "REJECT_NO_STOP": 1, "REJECT_NO_TARGET": 1, "REJECT_STALE": 1}
+    assert "SECRET" not in json.dumps(digest)
+    text = render_session_summary(digest)
+    assert "Large-SMC rejections (archived transitions):" in text
+    assert all(f"- {reason}: 1" in text for reason in digest["large_smc"]["rejection_counts"])
+    assert "SECRET" not in text
+    ny = cfd.build_session_summary(str(journal), session_date=NOW.date(), session="LONDON_NEWYORK", sender=send)
+    assert set(ny["large_smc"]["rejection_counts"].values()) == {0}
+
+
+def test_lsmc_summary_corrupt_archive_is_reported_and_summary_sends(tmp_path):
+    journal = tmp_path / "journal"
+    path = journal / "ticket_delivery/archive/fx_ticket_archive/ST_LARGE_SMC_V1/EURUSD/LSMC_WATCH-t/2026/2026-10-07.json"
+    path.parent.mkdir(parents=True)
+    path.write_text("{")
+    send, calls = sender(tmp_path, enabled=True)
+    digest = cfd.build_session_summary(str(journal), session_date=NOW.date(),
+                                       session="ASIAN_LONDON", sender=send)
+    assert digest["large_smc"]["archive_error_count"] == 1
+    assert send.send_session_summary(digest) == "sent"
+    assert "ARCHIVE_ERROR n=1" in calls[0][1]
+    assert set(digest["large_smc"]["rejection_counts"].values()) == {0}
+
+
+@pytest.mark.parametrize("bad", [-1, True, "1"])
+def test_lsmc_summary_renderer_refuses_invalid_count(tmp_path, bad):
+    from telegram_delivery.adapter import render_session_summary
+    send, _ = sender(tmp_path, enabled=False)
+    digest = cfd.build_session_summary(str(tmp_path / "journal"), session_date=NOW.date(),
+                                       session="ASIAN_LONDON", sender=send)
+    digest["large_smc"]["rejection_counts"]["REJECT_STALE"] = bad
+    with pytest.raises(ValueError, match="Invalid Large-SMC rejection count"):
+        render_session_summary(digest)
+
+
+def test_lsmc_owner_parameter_comment_and_value_are_pinned():
+    text = (REPO / "config/policy/actionability_policy.yaml").read_text()
+    assert "# Owner-set operational parameter, 2026-10-10, not a contract value." in text
+    assert "lsmc_min_remaining_reward_fraction: 0.5" in text
 
 def write_start(journal, at):
     path = cfd._scheduler_start_path(journal)

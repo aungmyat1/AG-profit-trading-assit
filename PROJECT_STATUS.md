@@ -8,16 +8,44 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-10)
 
+DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
+2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
+with the VT server-time rule (server time = New York time + 7h). They no longer use one
+offset per process or per run. A bar stamped in the repeated or skipped server hour is
+dropped and logged with `AMBIGUOUS_DST_HOUR` or `NONEXISTENT_DST_HOUR`. The crypto CFD
+D1 bar is closed only at its rule-based server close (25h or 23h) or when the next D1
+bar opens. Session box definitions (C3) and strategy logic are unchanged. Test:
+`tests/test_dst_transition_2026_11.py`.
+
 The market-structure analyzer uses fresh computation only; its optional replay-dependent
 cache path is removed. Offline byte comparisons against main pass for identical candles
 and config. Session-zone import failures are traced but unchanged; none of the four live
 runner modes calls that function. See [evidence](docs/status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md).
+
+Large-SMC operational actionability gates (2026-10-10) reject missing/invalid stop or
+target and require at least 50% of the entry-to-target distance to remain. Rejections
+are archived and suppressed by the OPPORTUNITY-only Telegram sender. SESSION_SUMMARY
+reports per-reason Large-SMC rejection counts from archived transitions inside each
+UTC session, with no setup details. FX summaries exclude crypto; crypto summaries
+count their archived actionability rejections once. Missing host configuration is
+logged and summarized; malformed archives are skipped with an `ARCHIVE_ERROR` count.
+Deployment requires the read-only actionability preflight. The parameter is owner-set and separate from
+the unchanged v1.1.0 contract; no R:R minimum is
+authorized. Offline verification is recorded in
+`docs/status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md`; host validation is pending.
 
 OD1009-D1–OD1009-D6 are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`; G1–G6 are
 defined in `docs/PROJECT_OBJECTIVE.md`. The FX/gold manual-ticket risk/cost gate is implemented
 but awaits focused verification. Current strategy bindings, readiness values, demo/live flags,
 host tasks, and broker state are unchanged. Host-side execution artifacts remain `UNTRACKED_HOST`
 under C11 until brought into the repository through a reviewed PR before G6.
+
+Recorded M15 capture (`scripts/capture_recorded_m15.py`, read-only MT5) gained V2 options:
+`--window HH:MM-HH:MM`, `--all-days`, `--offset-method {rollover,reference-symbol:<SYM>}` and
+`--list-gaps`, each of which labels the run `RECORDED_M15_V2` in its provenance; `--with-spread`
+adds a `spread_points` column. The default output is byte-identical to the previous script. New recorded
+fixtures live under `tests/fixtures/manual_ticket/` and `tests/fixtures/ccfd_v100/recorded/`,
+each with a PROVENANCE note. This is development evidence only; no readiness or authority changes.
 
 ## Generated facts
 
@@ -211,7 +239,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `bad69546ef180f4b96ba4a84310809bb6b7be318e9af5837b1b5d9240c7ce2b8`.
+inputs_sha256: `81745bef050ea5bceb27c3a724434fe4d073624fac0f280431c08a9e142ee659`.
 <!-- [[[end]]] -->
 
 ### Objective

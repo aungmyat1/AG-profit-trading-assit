@@ -84,10 +84,49 @@ def measured_server_offset_hours(tick_time: float, now_ts: float, tolerance_s: f
     return int(hours) if abs(delta - hours * 3600.0) <= tolerance_s else None
 
 
+AMBIGUOUS_DST_HOUR = "AMBIGUOUS_DST_HOUR"
+NONEXISTENT_DST_HOUR = "NONEXISTENT_DST_HOUR"
+
+
+class DstHourError(ValueError):
+    """A server wall-clock reading inside the US fall-back repeated hour (AMBIGUOUS_DST_HOUR)
+    or the spring-forward skipped hour (NONEXISTENT_DST_HOUR). It cannot be mapped to one UTC
+    instant, so callers drop the bar (and log it) instead of guessing a fold. A ValueError
+    subclass, so existing `except ValueError` paths keep failing closed."""
+
+    def __init__(self, reason_code: str, server_wall_clock: dt.datetime):
+        super().__init__(f"{reason_code}: server wall clock {server_wall_clock.isoformat()}")
+        self.reason_code = reason_code
+        self.server_wall_clock = server_wall_clock
+
+
 def server_time_to_utc(server_wall_clock: dt.datetime) -> dt.datetime:
-    """Naive broker-server wall-clock reading -> aware UTC, under OFFSET_RULE."""
+    """Naive broker-server wall-clock reading -> aware UTC, under OFFSET_RULE. Raises
+    DstHourError for a reading in the repeated (fall) or skipped (spring) New York hour."""
     ny_wall = server_wall_clock.replace(tzinfo=None) - dt.timedelta(hours=SERVER_MINUS_NY_HOURS)
-    return ny_wall.replace(tzinfo=NY).astimezone(dt.timezone.utc)
+    first = ny_wall.replace(tzinfo=NY, fold=0).astimezone(dt.timezone.utc)
+    second = ny_wall.replace(tzinfo=NY, fold=1).astimezone(dt.timezone.utc)
+    if first != second:
+        # zoneinfo signals both cases by fold-dependent results; a skipped wall time does not
+        # survive the UTC round trip, a repeated one does.
+        round_trip = first.astimezone(NY).replace(tzinfo=None)
+        code = AMBIGUOUS_DST_HOUR if round_trip == ny_wall else NONEXISTENT_DST_HOUR
+        raise DstHourError(code, server_wall_clock.replace(tzinfo=None))
+    return first
+
+
+def utc_to_server_time(at_utc: dt.datetime) -> dt.datetime:
+    """Aware UTC instant -> naive broker-server wall clock, under OFFSET_RULE (inverse of
+    server_time_to_utc; total, since every UTC instant has one New York wall time)."""
+    if at_utc.tzinfo is None:
+        raise ValueError("utc_to_server_time requires an aware datetime")
+    return at_utc.astimezone(NY).replace(tzinfo=None) + dt.timedelta(hours=SERVER_MINUS_NY_HOURS)
+
+
+def server_bar_close_utc(open_utc: dt.datetime, step: dt.timedelta) -> dt.datetime:
+    """UTC close of a server-time bar opening at `open_utc` and spanning `step` of server wall
+    clock. A server D1 across a US DST change lasts 25h (fall) or 23h (spring), never open+24h."""
+    return server_time_to_utc(utc_to_server_time(open_utc) + step)
 
 
 def _canonical(payload: Dict[str, Any]) -> str:
