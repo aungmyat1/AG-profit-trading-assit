@@ -19,7 +19,11 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from host_evidence.symbol_metadata import server_time_to_utc, server_utc_offset_hours, utc_to_server_time
+from host_evidence.symbol_metadata import (
+    server_time_to_utc,
+    server_utc_offset_hours,
+    utc_to_server_time,
+)
 
 TIME_GATE_PASS = "PASS"
 TIME_GATE_FAIL = "FAIL"
