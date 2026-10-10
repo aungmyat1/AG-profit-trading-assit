@@ -32,7 +32,7 @@ No limit, threshold or reason code that these sources do not contain was added.
 ## Test matrix (key × asset class × verdict)
 
 Suite: `tests/test_g3_manual_ticket_risk_cost_gate.py` — **78 passed** (2026-10-10, Linux container,
-Python 3.11.2, MT5 stubbed). Full suite with the new file: **1857 passed, 4 skipped, 0 failed**.
+Python 3.11.2, MT5 stubbed). Full suite with the new file: **1859 passed, 2 skipped, 0 failed**.
 FX = recorded EURUSD (2026-06-23 SHORT, 5.1-pip stop) and recorded
 GBPUSD (2026-10-06 LONG, 6.2-pip stop); gold = the same recorded EURUSD session price-scaled to a
 $3.00 stop (synthetic gate math, see "Fixtures"); crypto = the frozen
@@ -158,7 +158,7 @@ python -m pytest tests/test_manual_ticket_build.py tests/test_manual_ticket_logi
   tests/test_v1_tickets.py tests/test_d6_ready_authority.py \
   tests/test_d6_per_symbol_verification.py tests/test_d6_actionability_suppressed.py -q
                                                                             -> 311 passed
-python -m pytest -q                                                       -> 1857 passed, 4 skipped
+python -m pytest -q                                                       -> 1859 passed, 2 skipped
 ```
 
 Environment: Linux cloud container (not the Windows MT5 host), Python 3.11.2, PyYAML 6.0.3,
@@ -171,6 +171,19 @@ is an environment gap, not a regression — with it the run is 0 failed. Also ru
 `scripts/docs/check_drift.py` (0 blocking errors).
 Defect-detection control: with `src/v1_tickets/{guards,logic_gate,manual_ticket}.py` reverted to base
 `5b67199`, the new suite reports **19 failed, 59 passed**.
+
+## Base movement during the mission
+
+`main` advanced from `5b67199` to `cd3d201` (PR #110) while this mission ran. It added the proposed
+AGP-C6 successor objective and register row **OD1010-C6-RISK** (`APPROVED_LIMITS_ONLY`: 0.5% risk per
+trade, position/trade/daily-loss ceilings for a future DEMO execution path). None of it changes this
+mission's scope or authority: the **G3 row text is unchanged**, OD1009-D2 is unchanged, and OD1010-C6-RISK
+grants no execution authorization and is not a manual-ticket carrier value — the numbers verified here stay
+the ones OD1009-D2 and the two carriers contain. The base was merged into this branch (no force-push) and
+the cog-generated `inputs_sha256` line in `PROJECT_STATUS.md` was refreshed, because the generated-file
+policy gate requires an output this PR changes to be byte-exact FRESH. The other three generated outputs
+are left to the post-merge regeneration PR per AG_REGEN_OUTCOME_V1 (their drift is pre-existing on `main`:
+committed `pending_decisions: 14` vs 13 regenerated).
 
 ## OSS-FIRST
 
