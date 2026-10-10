@@ -13,7 +13,7 @@ UTC = dt.timezone.utc
 
 
 @pytest.mark.parametrize("spread,expected_blocks,expected_warns", [
-    (9.99, [], []), (10, [], ["SPREAD_WARN", "COST_WARN"]),
+    (9.99, [], []), (10, [], ["COST_WARN"]),
     (20, [], ["SPREAD_WARN", "COST_WARN"]),
     (20.01, ["SPREAD_TOO_WIDE"], ["COST_WARN"]),
     (25, ["SPREAD_TOO_WIDE", "COST_TOO_HIGH"], []),

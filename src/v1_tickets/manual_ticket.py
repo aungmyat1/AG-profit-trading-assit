@@ -475,14 +475,25 @@ def crypto_cfd_cost_gate(distance: float, spread: float, commission_r: Optional[
     """Owner D4/D2 friction thresholds; unknown commission contributes no invented fee."""
     import math
 
-    if not all(math.isfinite(x) for x in (distance, spread)) or distance <= 0 or spread < 0:
+    required = ("spread_ok_pct", "spread_block_pct", "risk_pct", "cost_warn_R", "cost_block_R")
+    if any(type(policy.get(k)) not in (int, float) or not math.isfinite(policy[k])
+           or policy[k] <= 0 for k in required):
+        return ["RISK_POLICY_AMBIGUOUS", "SPREAD_POLICY_UNDEFINED"], [], float("nan"), float("nan")
+    if (policy["spread_ok_pct"] >= policy["spread_block_pct"]
+            or policy["cost_warn_R"] >= policy["cost_block_R"] or policy["risk_pct"] > 100):
+        return ["RISK_POLICY_AMBIGUOUS", "SPREAD_POLICY_UNDEFINED"], [], float("nan"), float("nan")
+    if commission_r is not None and (type(commission_r) not in (int, float)
+                                    or not math.isfinite(commission_r) or commission_r < 0):
+        return ["COST_NOT_EVALUATED"], [], float("nan"), float("nan")
+    if (type(distance) not in (int, float) or type(spread) not in (int, float)
+            or not all(math.isfinite(x) for x in (distance, spread)) or distance <= 0 or spread < 0):
         return ["SPREAD_NOT_EVALUATED"], [], float("nan"), float("nan")
     pct = spread / distance * 100
     cost = spread / distance + (commission_r if commission_r is not None else 0)
     blocks, warnings = [], []
     if policy["spread_block_pct"] is not None and pct > policy["spread_block_pct"]:
         blocks.append("SPREAD_TOO_WIDE")
-    elif policy["spread_ok_pct"] is not None and pct >= policy["spread_ok_pct"]:
+    elif policy["spread_ok_pct"] is not None and pct > policy["spread_ok_pct"]:
         warnings.append("SPREAD_WARN")
     if cost_at_or_above_block(cost, policy["cost_block_R"]):
         blocks.append("COST_TOO_HIGH")
