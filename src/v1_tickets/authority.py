@@ -51,6 +51,7 @@ ADAPTERS: Dict[str, Tuple[str, Tuple[str, ...]]] = {
     "ST_CRYPTO_CFD_SWEEP_RETEST_V1": (
         "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml",
         ("src/crypto_cfd_contract/contract.py", "src/crypto_cfd_contract/rules.py",
+         "src/crypto_cfd_contract/guard.py", "src/host_evidence/symbol_metadata.py",
          "src/v1_tickets/crypto_cfd.py", "src/v1_tickets/crypto_cfd_policy.py",
          "src/v1_tickets/ccfd_logic_gate.py", "src/v1_tickets/logic_gate.py",
          "config/v1_tickets/crypto_ticket_v2.yaml", "config/v1_tickets/crypto_ticket_v3.yaml",

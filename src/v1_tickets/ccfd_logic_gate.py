@@ -10,7 +10,7 @@ import math
 
 import yaml
 
-from crypto_cfd_contract import rules
+from crypto_cfd_contract import guard, rules
 from crypto_cfd_contract.contract import CONTRACT_ID, CONTRACT_VERSION
 from market_structure.config import load_market_structure_config
 from strategy_engine.sweep_retest.mss import find_mss
@@ -35,7 +35,7 @@ def verify_case(case: dict, candles: dict, policy: dict, *, structure_config=Non
     cfg = structure_config or load_market_structure_config()
     def replay(at=now, rows=candles):
         closed = {k: [c for c in rows[k] if c.time + step <= at] for k, step in STEPS.items()}
-        return rules.evaluate(case["symbol"], at, closed["d1"], closed["h1"],
+        return guard.evaluate(case["symbol"], at, closed["d1"], closed["h1"],
                               closed["m5"], closed["m15"], structure_config=cfg)
     result = replay()
     evidence = result["evidence"]

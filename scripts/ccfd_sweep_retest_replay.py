@@ -3,7 +3,8 @@
 Inputs are the PR #128 / #131 recorded files (tests/fixtures/ccfd_v100/recorded, every sha256 in its
 manifest is verified first). Nothing here adds time or pricing code; it only wires existing modules:
 
-  engine     crypto_cfd_contract.rules.evaluate -- the CFD contract's strategy_engine entry point
+  engine     crypto_cfd_contract.evaluate (guard.evaluate: drops any bar with close_time > now on
+             every timeframe, then the frozen rules.evaluate) -- the CFD contract's entry point
              (strategy_engine.session.Candle input, strategy_engine.sweep_retest primitives).
              strategy_engine.evaluate() is the FX session-box entry; it needs session_pairs, which
              this contract forbids (FX_SESSION_GATE_APPLIED=False), so it is not called.
@@ -52,7 +53,7 @@ if "MetaTrader5" not in sys.modules:
 
 import yaml  # noqa: E402
 
-from crypto_cfd_contract import rules  # noqa: E402
+from crypto_cfd_contract import guard, rules  # noqa: E402
 from crypto_cfd_contract.contract import (  # noqa: E402
     CONTRACT_ID,
     CONTRACT_VERSION,
@@ -135,7 +136,7 @@ def closed_inputs(data, now, counts) -> Dict[str, List[Candle]]:
 
 
 def engine(symbol, now, x, cfg) -> dict:
-    return rules.evaluate(symbol, now, x["D1"], x["H1"], x["M5"], x["M15"], structure_config=cfg)
+    return guard.evaluate(symbol, now, x["D1"], x["H1"], x["M5"], x["M15"], structure_config=cfg)
 
 
 def semantic(r: dict) -> dict:

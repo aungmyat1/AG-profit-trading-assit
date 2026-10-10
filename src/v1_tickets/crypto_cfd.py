@@ -15,7 +15,7 @@ from zoneinfo import ZoneInfo
 import yaml
 
 from crypto_cfd_contract.contract import CONTRACT_ID, CONTRACT_VERSION, INSTRUMENTS
-from crypto_cfd_contract.rules import evaluate
+from crypto_cfd_contract.guard import evaluate
 from host_evidence.symbol_metadata import server_bar_close_utc
 from mt5 import canonical_broker_map
 from strategy_engine.session import Candle
