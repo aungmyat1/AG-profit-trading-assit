@@ -13,15 +13,17 @@ review_by: 2026-11-07
 **Owner ratification:** RATIFIED 2026-10-09 by the owner — register entry `OBJ-RATIFY-2026-10-09` in [`docs/governance/OWNER_DECISION_REGISTER.md`](governance/OWNER_DECISION_REGISTER.md). Ratification is not execution authorization; demo and live execution stay disabled.
 
 
-## Proposed successor objective — AGP-C6 (not yet ratified)
+## Ratified C14 successor demo sequencing (2026-10-11)
 
-Owner-requested on 2026-10-10: qualify three distinct strategy lanes (FX/gold Asian Sweep 1.1.2; VT CFD Crypto Sweep Retest; six-instrument Large-SMC 1.1.0), then permit automatic **DEMO-only** ticket execution after per-strategy L1–L6 verification, broker symbol mapping, real-host acceptance, at least 10 clean shadow cycles and separately recorded standing owner demo authorization. Large-SMC without verified entry/stop/target remains ALERT_ONLY. All orders route through the canonical execution authority and require send-time DEMO, freshness, risk, cost, duplicate and broker checks. Every attempt and result is reported to Telegram; owner may securely edit/close/cancel and halt new orders. Owner caps and notification-failure policy remain PENDING_OWNER; unset limits block execution. This proposed successor does **not** supersede the currently ratified owner-confirm-per-entry requirement or authorize execution until separately approved and merged. Full proposal: [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md).
+Owner-requested on 2026-10-10: qualify three distinct strategy lanes (FX/gold Asian Sweep 1.1.2; VT CFD Crypto Sweep Retest; six-instrument Large-SMC 1.1.0), then permit automatic **DEMO-only** ticket execution after per-strategy L1–L6 verification, broker symbol mapping, real-host acceptance, at least 10 clean shadow cycles and separately recorded standing owner demo authorization. Large-SMC without verified entry/stop/target remains ALERT_ONLY. All orders route through the canonical execution authority and require send-time DEMO, freshness, risk, cost, duplicate and broker checks. Every attempt and result is reported to Telegram; owner may securely edit/close/cancel and halt new orders. Owner caps and notification-failure policy remain PENDING_OWNER; unset limits block execution. The owner's 2026-10-11 C14 decision supersedes per-order confirmation for separately standing-authorized DEMO scopes, removes economic qualification and mandatory 10-cycle shadow soak as DEMO prerequisites, and leaves all execution disabled until remaining gates and separate strategy-specific authorization pass. See [C14 owner decision](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md). Full proposal: [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md).
+
+**Authority note:** The C14 owner decision dated 2026-10-11 supersedes older per-order confirmation and mandatory G5 soak requirements for DEMO only. This document retains historical 2026-10-09 text for traceability; where it conflicts, the [ratified C14 decision](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md) governs future DEMO sequencing. No execution flags change here.
 
 ## Objective
 
 Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
 
-The owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.
+For an individually owner-confirmed ticket, Confirm may reach the canonical demo boundary only after separately recorded authorization. Under ratified C14, a strategy with separate, valid, scoped standing DEMO authorization may submit eligible orders automatically after every runtime, READY, host, risk and broker gate passes; no per-order owner confirmation is required for that authorized scope. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.
 
 `LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority.
 
@@ -89,10 +91,10 @@ implies another authorization state.
 | G2 — Data | VT MT5 `symbol_info` evidence exists for every traded broker symbol; no `FIXTURE_ONLY` value is used as traded-symbol evidence. | Dated host `symbol_info` capture with broker-symbol identities. |
 | G3 — Cost/risk | Required risk and cost keys are present; missing-key and threshold tests prove the gates fail closed. | Owner ticket configuration plus focused test report. |
 | G4 — Host acceptance | Read-only open-window acceptance passes for every scope item and a heartbeat is published. | Per-scope host acceptance report and published heartbeat artifact. |
-| G5 — Shadow soak | At least 10 clean scheduled cycles complete for each admitted strategy. | Append-only scheduled-cycle evidence with zero silent outcomes or duplicates. |
+| G5 — Optional shadow soak | Operational observation and scheduled-cycle evidence are encouraged but are not prerequisites for DEMO authorization under C14. | Optional append-only observation evidence; never substitutes for G1–G4 or broker safety acceptance. |
 | G6 — Demo round trip | After OD1009-D5's separate per-strategy demo authorization: one owner Confirm produces one demo order and one matching audit row. | Confirm record, demo order evidence, and correlated audit row. |
 
-OD1009-D5 requires G1–G5 before demo authorization; G6 is the later demo round-trip acceptance.
+C14 (2026-10-11) supersedes OD1009-D5's mandatory G5 soak prerequisite for DEMO. G1–G4, execution-specific broker/risk/READY controls, and separate strategy-specific standing owner authorization remain required. G6 is the later independently gated demo round-trip acceptance.
 OD1009-D6 permits Asian Sweep READY only after G1 and G3. These conditions do not change current
 authorization or readiness values.
 
@@ -123,7 +125,7 @@ A live acceptance run does **not** require a trade signal. `NO_TRADE`, `INFO_ONL
 - Restart/retry produces no duplicate cycles or duplicate messages.
 - Missing/stale/invalid data cannot be silently converted into `NO_TRADE` or `WATCH_READY`.
 
-### Soak
+### Optional operational soak (not a DEMO authorization prerequisite under C14)
 
 - At least 10 clean scheduled cycles across the admitted FX, crypto and Large-SMC scope.
 - At least 10 clean scheduled cycles **per admitted strategy**.
@@ -178,8 +180,8 @@ These tracks may progress independently but must not be used to bypass this obje
 5. **AGP-LIVE-01** — open-window real-market acceptance of the admitted pipeline, including first live Telegram delivery proof. Requires the canonical-to-broker symbol map (AGP-C2-SYMMAP, pending) and its host acceptance first.
 6. **Scheduler integration** — invoke the accepted pipeline unchanged and prove restart/retry idempotency.
 7. **Telegram Confirm/Reject path, execution flag OFF** — append-only owner decisions through the canonical execution boundary with zero broker mutation.
-8. **≥10-cycle operational soak** — at least 10 clean scheduled cycles per admitted strategy across FX + admitted crypto + admitted Large-SMC scope (see Definition of Done → Soak); no silent cycles or duplicates; broker mutations remain zero.
-9. **Owner demo-authorization decision** — separate post-soak governance decision. Authorization is not implied by successful tickets, logic verification, edge status, Telegram confirmation, or soak completion.
+8. **Optional operational soak** — scheduled shadow observation is encouraged for diagnostics but no fixed number of cycles is required for DEMO authorization under C14. Do not infer readiness from missing soak evidence; rely on independently accepted required gates.
+9. **Owner demo-authorization decision** — separate standing authorization after required logical, runtime, host, READY, risk and broker gates, not dependent on a mandatory soak. Authorization is not implied by successful tickets, logic verification, edge status, Telegram confirmation, or soak completion.
 
 ## Current-State Boundary
 
