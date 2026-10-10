@@ -1,0 +1,163 @@
+{
+  "head_sha": "cc624cd8d07afa7ba2a51c834f53a6323c8b7f94",
+  "logic_identity": {
+    "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+    "strategy_version": "1.0.0",
+    "engine_identity": "dc216b3b8ba3e2d3e4784740d8227d5488b421afa41d47138ea20cd1eb3da955",
+    "contract_hash": "492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e",
+    "digest": "027829d5b9688fba4d27e721b221f510da620c965c377b7612038082c3ffa1d5"
+  },
+  "verdict": "NOT_VERIFIED",
+  "per_symbol": {
+    "BTCUSD": {
+      "gates": {
+        "L1": "PASS",
+        "L2": "NOT_EVIDENCED_POSITIVE",
+        "L3": "NOT_EVIDENCED",
+        "L4": "NOT_EVIDENCED",
+        "L5": "NOT_EVIDENCED",
+        "L6": "NOT_EVIDENCED"
+      },
+      "state_counts": {
+        "REFERENCE_INCOMPLETE": 16,
+        "WAITING_MSS": 12,
+        "WAITING_SWEEP": 124
+      },
+      "scan_days": 14,
+      "scan_points": 152,
+      "signals_per_day": {
+        "2026-09-26": 0,
+        "2026-09-27": 0,
+        "2026-09-28": 0,
+        "2026-09-29": 0,
+        "2026-09-30": 0,
+        "2026-10-01": 0,
+        "2026-10-02": 0,
+        "2026-10-03": 0,
+        "2026-10-04": 0,
+        "2026-10-05": 0,
+        "2026-10-06": 0,
+        "2026-10-07": 0,
+        "2026-10-08": 0,
+        "2026-10-09": 0
+      },
+      "mean_signals_per_scanned_day": 0.0,
+      "signal_definition": "ENTRY_VALID scan points; not deduplicated trades",
+      "verdict": "NOT_VERIFIED",
+      "negative_conformance": "PASS"
+    },
+    "ETHUSD": {
+      "gates": {
+        "L1": "PASS",
+        "L2": "NOT_EVIDENCED_POSITIVE",
+        "L3": "NOT_EVIDENCED",
+        "L4": "NOT_EVIDENCED",
+        "L5": "NOT_EVIDENCED",
+        "L6": "NOT_EVIDENCED"
+      },
+      "state_counts": {
+        "REFERENCE_INCOMPLETE": 16,
+        "WAITING_SWEEP": 136
+      },
+      "scan_days": 14,
+      "scan_points": 152,
+      "signals_per_day": {
+        "2026-09-26": 0,
+        "2026-09-27": 0,
+        "2026-09-28": 0,
+        "2026-09-29": 0,
+        "2026-09-30": 0,
+        "2026-10-01": 0,
+        "2026-10-02": 0,
+        "2026-10-03": 0,
+        "2026-10-04": 0,
+        "2026-10-05": 0,
+        "2026-10-06": 0,
+        "2026-10-07": 0,
+        "2026-10-08": 0,
+        "2026-10-09": 0
+      },
+      "mean_signals_per_scanned_day": 0.0,
+      "signal_definition": "ENTRY_VALID scan points; not deduplicated trades",
+      "verdict": "NOT_VERIFIED",
+      "negative_conformance": "PASS"
+    }
+  },
+  "state_counts": {
+    "BTCUSD": {
+      "REFERENCE_INCOMPLETE": 16,
+      "WAITING_MSS": 12,
+      "WAITING_SWEEP": 124
+    },
+    "ETHUSD": {
+      "REFERENCE_INCOMPLETE": 16,
+      "WAITING_SWEEP": 136
+    }
+  },
+  "data_coverage_gaps": [
+    "BTCUSD_WEEKEND_20260926T2100Z",
+    "BTCUSD_WEEKEND_20260926T2115Z",
+    "BTCUSD_WEEKEND_20260926T2130Z",
+    "BTCUSD_WEEKEND_20260926T2145Z",
+    "BTCUSD_WEEKEND_20260926T2200Z",
+    "BTCUSD_WEEKEND_20260926T2215Z",
+    "BTCUSD_WEEKEND_20260926T2230Z",
+    "BTCUSD_WEEKEND_20260926T2245Z",
+    "BTCUSD_WEEKEND_20260927T2100Z",
+    "BTCUSD_WEEKEND_20260927T2115Z",
+    "BTCUSD_WEEKEND_20260927T2130Z",
+    "BTCUSD_WEEKEND_20260927T2145Z",
+    "BTCUSD_WEEKEND_20260927T2200Z",
+    "BTCUSD_WEEKEND_20260927T2215Z",
+    "BTCUSD_WEEKEND_20260927T2230Z",
+    "BTCUSD_WEEKEND_20260927T2245Z",
+    "ETHUSD_WEEKEND_20260926T2100Z",
+    "ETHUSD_WEEKEND_20260926T2115Z",
+    "ETHUSD_WEEKEND_20260926T2130Z",
+    "ETHUSD_WEEKEND_20260926T2145Z",
+    "ETHUSD_WEEKEND_20260926T2200Z",
+    "ETHUSD_WEEKEND_20260926T2215Z",
+    "ETHUSD_WEEKEND_20260926T2230Z",
+    "ETHUSD_WEEKEND_20260926T2245Z",
+    "ETHUSD_WEEKEND_20260927T2100Z",
+    "ETHUSD_WEEKEND_20260927T2115Z",
+    "ETHUSD_WEEKEND_20260927T2130Z",
+    "ETHUSD_WEEKEND_20260927T2145Z",
+    "ETHUSD_WEEKEND_20260927T2200Z",
+    "ETHUSD_WEEKEND_20260927T2215Z",
+    "ETHUSD_WEEKEND_20260927T2230Z",
+    "ETHUSD_WEEKEND_20260927T2245Z"
+  ],
+  "conformance_only_cases": 304,
+  "distinct_signals": 0,
+  "case_days": 14,
+  "signals_per_day": 0.0,
+  "provenance_hashes_valid": true,
+  "fixture_hashes": {
+    "BTCUSD_d1.csv": "cdd17f4fe707f8984535e3cf905965144838a3191369099665f06b0587c94e24",
+    "BTCUSD_h1.csv": "609a9bb0c276cf0f66888fafaefea584e1ba3202c244c18672faf1044d3f3e45",
+    "../../manual_ticket/BTCUSD_M15_recorded.csv": "f0f8bd079806a9f732443b642c308f4fbc8c6429be8786cba9a121f0797e8efa",
+    "BTCUSD_m5.csv": "b1f6594523f4589415585909230c134d817b2e9b74d0098e39640aa2104a7c34",
+    "ETHUSD_d1.csv": "a958988c74b3086b6f424865915224f7476637b5c174628d98195188d15b3834",
+    "ETHUSD_h1.csv": "be15612750bfec64ddfd560ab9f18480f6a60132abe5f0cc829f7cb84b94d65c",
+    "../../manual_ticket/ETHUSD_M15_recorded.csv": "e28a10aa33919131a479cd3910fa238394ba8155d7500bd5b791c04fbc53a3ff",
+    "ETHUSD_m5.csv": "a09054aaaca244f001d635a49f50d55c8216922516dff7c442087657a23c2a20"
+  },
+  "uncovered_cases": [
+    "BTCUSD/LONG/WEEKDAY",
+    "BTCUSD/LONG/WEEKEND",
+    "BTCUSD/SHORT/WEEKDAY",
+    "BTCUSD/SHORT/WEEKEND",
+    "ETHUSD/LONG/WEEKDAY",
+    "ETHUSD/LONG/WEEKEND",
+    "ETHUSD/SHORT/WEEKDAY",
+    "ETHUSD/SHORT/WEEKEND"
+  ],
+  "NO_BROKER_MUTATION": true,
+  "ORDER_API_CALLS": 0,
+  "BROKER_MUTATION_COUNT": 0,
+  "manifest_sha256": "931bd014a9b21a57be11a3f8825bd2428a21f0c37f734ac2c322049a2c296a9a",
+  "base_sha": "451bcfcd183b7cb56a877a1da71cae031db14585",
+  "test_result": "27 verifier tests passed for final touch; previous affected suite 77 passed",
+  "report_note": "Replay code commit; subsequent commits change only tests and evidence."
+}

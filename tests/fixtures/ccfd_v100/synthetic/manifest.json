@@ -1,0 +1,141 @@
+{
+  "source": "SYNTHETIC",
+  "cases": [
+    {
+      "id": "BTCUSD_LONG_WEEKDAY",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:50:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_LONG_WEEKDAY_d1.csv",
+        "h1": "BTCUSD_LONG_WEEKDAY_h1.csv",
+        "m5": "BTCUSD_LONG_WEEKDAY_m5.csv",
+        "m15": "BTCUSD_LONG_WEEKDAY_m15.csv"
+      },
+      "spread": 1,
+      "commission_R": 0,
+      "quote_time": "2026-10-09T14:50:00+00:00",
+      "expected_result": "ENTRY_VALID",
+      "expected_direction": "LONG"
+    },
+    {
+      "id": "BTCUSD_LONG_WEEKEND",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-10T22:50:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_LONG_WEEKEND_d1.csv",
+        "h1": "BTCUSD_LONG_WEEKEND_h1.csv",
+        "m5": "BTCUSD_LONG_WEEKEND_m5.csv",
+        "m15": "BTCUSD_LONG_WEEKEND_m15.csv"
+      },
+      "spread": 1,
+      "commission_R": 0,
+      "quote_time": "2026-10-10T22:50:00+00:00",
+      "expected_result": "ENTRY_VALID",
+      "expected_direction": "LONG"
+    },
+    {
+      "id": "BTCUSD_SHORT_WEEKDAY",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:50:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_SHORT_WEEKDAY_d1.csv",
+        "h1": "BTCUSD_SHORT_WEEKDAY_h1.csv",
+        "m5": "BTCUSD_SHORT_WEEKDAY_m5.csv",
+        "m15": "BTCUSD_SHORT_WEEKDAY_m15.csv"
+      },
+      "spread": 1,
+      "commission_R": 0,
+      "quote_time": "2026-10-09T14:50:00+00:00",
+      "expected_result": "ENTRY_VALID",
+      "expected_direction": "SHORT"
+    },
+    {
+      "id": "BTCUSD_SHORT_WEEKEND",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-10T22:50:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_SHORT_WEEKEND_d1.csv",
+        "h1": "BTCUSD_SHORT_WEEKEND_h1.csv",
+        "m5": "BTCUSD_SHORT_WEEKEND_m5.csv",
+        "m15": "BTCUSD_SHORT_WEEKEND_m15.csv"
+      },
+      "spread": 1,
+      "commission_R": 0,
+      "quote_time": "2026-10-10T22:50:00+00:00",
+      "expected_result": "ENTRY_VALID",
+      "expected_direction": "SHORT"
+    },
+    {
+      "id": "ETHUSD_LONG_WEEKDAY",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:50:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_LONG_WEEKDAY_d1.csv",
+        "h1": "ETHUSD_LONG_WEEKDAY_h1.csv",
+        "m5": "ETHUSD_LONG_WEEKDAY_m5.csv",
+        "m15": "ETHUSD_LONG_WEEKDAY_m15.csv"
+      },
+      "spread": 1,
+      "commission_R": 0,
+      "quote_time": "2026-10-09T14:50:00+00:00",
+      "expected_result": "ENTRY_VALID",
+      "expected_direction": "LONG"
+    },
+    {
+      "id": "ETHUSD_LONG_WEEKEND",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-10T22:50:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_LONG_WEEKEND_d1.csv",
+        "h1": "ETHUSD_LONG_WEEKEND_h1.csv",
+        "m5": "ETHUSD_LONG_WEEKEND_m5.csv",
+        "m15": "ETHUSD_LONG_WEEKEND_m15.csv"
+      },
+      "spread": 1,
+      "commission_R": 0,
+      "quote_time": "2026-10-10T22:50:00+00:00",
+      "expected_result": "ENTRY_VALID",
+      "expected_direction": "LONG"
+    },
+    {
+      "id": "ETHUSD_SHORT_WEEKDAY",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:50:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_SHORT_WEEKDAY_d1.csv",
+        "h1": "ETHUSD_SHORT_WEEKDAY_h1.csv",
+        "m5": "ETHUSD_SHORT_WEEKDAY_m5.csv",
+        "m15": "ETHUSD_SHORT_WEEKDAY_m15.csv"
+      },
+      "spread": 1,
+      "commission_R": 0,
+      "quote_time": "2026-10-09T14:50:00+00:00",
+      "expected_result": "ENTRY_VALID",
+      "expected_direction": "SHORT"
+    },
+    {
+      "id": "ETHUSD_SHORT_WEEKEND",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-10T22:50:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_SHORT_WEEKEND_d1.csv",
+        "h1": "ETHUSD_SHORT_WEEKEND_h1.csv",
+        "m5": "ETHUSD_SHORT_WEEKEND_m5.csv",
+        "m15": "ETHUSD_SHORT_WEEKEND_m15.csv"
+      },
+      "spread": 1,
+      "commission_R": 0,
+      "quote_time": "2026-10-10T22:50:00+00:00",
+      "expected_result": "ENTRY_VALID",
+      "expected_direction": "SHORT"
+    }
+  ]
+}

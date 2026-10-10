@@ -189,6 +189,34 @@ strategies:
       EDGE_VERIFIED=false, RISK_AUTHORIZED=false. Wiring this contract into the scanner's
       strategy_adapter / Checklist V1.1 phases is a separate, future authority decision
       -- this registration changes no scanner behavior.
+    # AGP-LANE-B3 (2026-10-11): LOGIC verification of the registered version per symbol x entry branch
+    # (OD1011-SCOPE), read by src/v1_tickets/ready_authority.py. Logic only -- NOT economic/edge evidence; grants
+    # no ticket, READY, demo or live authority (active stays false). VT recorded 60d (PR #143, 2026-08-11..10-09,
+    # 17280 M5 scans per symbol) with the open-bar guard: L1-L4/L6 PASS, L5 PASS per OD1011-L5 (commission per
+    # OD1011-COMMISSION), 0 mismatches incl. 0 signal event-log mismatches (L3 per owner ruling 2026-10-11 A);
+    # the 14d run (#128/#131) also passes. Every rule cell of a listed branch is VT EXERCISED or, for
+    # rejection-only rules, SYNTHETIC_PROVEN. BTCUSD LONG is NOT covered (no LONG entry on VT days).
+    # Bound to the identity digest below: any engine/contract/policy file change breaks the match (fail closed).
+    candidate_versions:
+      "1.0.0":
+        config_source: strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml
+        logic_status: LOGIC_VERIFIED
+        logic_verified_identity: b8188dfbb8c7ff3ae278175ec0c482aa8c74b39279a18e9c0b043a231b4b6cd3
+        economic_status: NOT_EVALUATED
+        edge_verified: false
+        logic_verified_symbols:
+          - symbol: BTCUSD
+            branches: [SHORT]
+            contract_hash: 492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e
+            logic_identity: b8188dfbb8c7ff3ae278175ec0c482aa8c74b39279a18e9c0b043a231b4b6cd3
+            evidence: artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0_0/vt_recorded_60d_2026-08-11_2026-10-09/replay_report.json
+            evidence_sha256: b507e116698bf3349144c780f2a00f459dc82a17b7c6247034435d9b917cf5a5
+          - symbol: ETHUSD
+            branches: [LONG, SHORT]
+            contract_hash: 492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e
+            logic_identity: b8188dfbb8c7ff3ae278175ec0c482aa8c74b39279a18e9c0b043a231b4b6cd3
+            evidence: artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0_0/vt_recorded_60d_2026-08-11_2026-10-09/replay_report.json
+            evidence_sha256: b507e116698bf3349144c780f2a00f459dc82a17b7c6247034435d9b917cf5a5
 
   R8_OBM_V1:
     registered: true

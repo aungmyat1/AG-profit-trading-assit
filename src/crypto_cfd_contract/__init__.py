@@ -14,7 +14,7 @@ from .contract import (
     RISK_POLICY_STATUS,
     contract_status,
 )
-from .rules import evaluate
+from .guard import evaluate  # fail-closed open-bar guard over the frozen rules.evaluate
 
 __all__ = [
     "ASSET_CLASS", "CONTRACT_ID", "CONTRACT_VERSION", "INSTRUMENTS",
