@@ -20,7 +20,6 @@ does not replace them. Nothing here authorizes trading or changes a safety gate.
 | ID | Question | Options (as stated by the owner) | Status | Decision / date / source |
 |---|---|---|---|---|
 | C16 | PR #60 Telegram delivery scope | `WATCH_READY` + `INFO_ONLY_*` / `READY` + LSMC `OPPORTUNITY` only | PENDING_OWNER | — |
-| C14 | Canonical objective and demo sequencing | Issue #47 V5 / `docs/PROJECT_OBJECTIVE.md` soak | PENDING_OWNER | — |
 | C1 | Rescission of governance D2 "Telegram is DEFERRED" (`AG_V1_TWO_GOALS_OWNER_DECISIONS.md`) | Not stated | PENDING_OWNER | — |
 | R6 | First-slot strategy/version and the minimum evidence it needs | Not stated | PENDING_OWNER | — |
 | REG-V2-FX | V2 FX integration target | Not stated | PENDING_OWNER | — |
@@ -37,6 +36,7 @@ does not replace them. Nothing here authorizes trading or changes a safety gate.
 
 | ID | Question | Status | Decision / date / source |
 |---|---|---|---|
+| C14 | Canonical objective and demo sequencing | RATIFIED | Aung, 2026-10-11, explicit owner chat: automatic DEMO-only execution after L1–L6, runtime/host/READY/risk/broker gates and separately granted strategy-specific standing authorization; EDGE_VERIFIED and mandatory 10-cycle shadow soak not required. See `AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md`. Policy-only, no trading enabled. |
 | OD1010-C6-RISK | Initial DEMO-only numerical risk limits for FX/Gold, Crypto CFD, and Large-SMC | APPROVED_LIMITS_ONLY | Aung, 2026-10-10, owner chat: risk per trade 0.5% of demo account equity; maximum 1 open position per instrument across all strategies; maximum 5 trades per day per strategy; daily loss limit 1% per strategy; account-wide daily loss limit 2%. Limits are ceilings, not targets or an instruction to place trades. This numerical approval grants no strategy execution authorization: `demo_authorized=false`, `live_authorized=false`; separate per-strategy DEMO_AUTHORIZED approval and applicable evidence/gates remain mandatory. Daily reset timezone and notification-failure behavior remain pending owner policy. |
 | C11 | Untracked host execution layer | RESOLVED | Bring the host execution layer into the repository through a reviewed PR before G6. Aung, 2026-10-09 (OD1009 owner chat). Record-only; no runtime or execution-authority change. Host-side files remain `UNTRACKED_HOST` until reviewed and merged. |
 | OD1009-D1 | Asian Sweep Phase B owner decisions | CONFIRMED | Aung, 2026-10-09; owner chat. Every Phase B row `CONFIRMED_AS_RECOMMENDED`; fixed UTC anchoring; accept packet proposal `SETUP_WINDOW_OPEN`; successor v1.1.2. Candidate confirmation only; no runtime promotion. |
