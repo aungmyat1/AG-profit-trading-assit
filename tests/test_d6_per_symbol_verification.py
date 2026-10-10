@@ -177,10 +177,13 @@ def test_malformed_scope_fails_closed(tmp_path):
                               setup="SWEEP") is False
 
 
-def test_apply_ready_authority_passes_ticket_scope(tmp_path):
-    cfg = tmp_path / "ready.yaml"
-    cfg.write_text(f"strategies:\n  {SID}:\n    ready: ON\n", encoding="utf-8")
+def test_apply_ready_authority_passes_ticket_scope(d6_on):
+    cfg = d6_on
     base = {"decision": "READY", "strategy_id": SID, "strategy_version": "1.1.2", "symbol": "GBPUSD",
             "cycle": "ASIAN_LONDON", "setup": "SWEEP", "reason_code": "X"}
-    assert ra.apply_ready_authority(base, path=str(cfg))["decision"] == "READY"
-    assert ra.apply_ready_authority({**base, "cycle": "LONDON_NEWYORK"}, path=str(cfg))["decision"] == "SHADOW_INFO_ONLY"
+    contract = str(Path(__file__).resolve().parents[1] / CANDIDATE)
+    assert ra.apply_ready_authority(base, path=str(cfg), contract_path=contract)["decision"] == "READY"
+    out = ra.apply_ready_authority({**base, "setup": "TREND"}, path=str(cfg), contract_path=contract)
+    assert (out["decision"], out["reason_code"]) == ("SHADOW_INFO_ONLY", ra.READY_SYMBOL_NOT_VERIFIED)
+    out = ra.apply_ready_authority({**base, "cycle": "LONDON_NEWYORK"}, path=str(cfg), contract_path=contract)
+    assert (out["decision"], out["reason_code"]) == ("SHADOW_INFO_ONLY", ra.READY_SYMBOL_NOT_VERIFIED)

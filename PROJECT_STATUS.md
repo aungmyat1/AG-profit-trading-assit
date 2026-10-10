@@ -8,21 +8,14 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-10)
 
-OD1011 owner decisions (2026-10-11) are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`:
-COMMISSION (VT demo Standard STP, commission_R 0, bound by login suffix; the full login only in gitignored
-local config), ROUNDING (ROUND_HALF_UP), SCOPE (branch-scoped LOGIC_VERIFIED) and L5 (PASS = accepted cost
-evidence applied correctly; a cost block is actionability). This change set records the decisions and the
-config only. Runtime wiring is pending: the FX commission reader is #132, and the verification harness, gate
-rounding and branch-scoped registry reader are #142. Until those merge, missing commission stays INSUFFICIENT
-and L5 stays WARN. OD1011-ROUNDING was amended on 2026-10-11: v1.1.2's frozen rounding is the engine's
-`fx._r` (Python `round()` on IEEE floats), which gates must replicate; versions >= 1.1.3 must use Decimal
-ROUND_HALF_UP (ledger item ROUNDING_V113_HALF_UP).
-AGP-LANE-A3/OD1011 (2026-10-11, recorded-fixture verification only, not host-verified): S1 is only GBPUSD ×
-ASIAN_LONDON × RANGE_SWEEP (engine_setup SWEEP), identity-bound in `logic_verified_scopes`. L1–L6 PASS on
-58 VT recorded days. L5 uses max(bar, host-snapshot) spread plus OD1011-COMMISSION; 4 of 7 kept entries are
-cost-blocked (an actionability outcome). Runtime rejects out-of-scope symbol/session/branch and mismatched
-hashes. D6 READY stays OFF; demo/live/edge flags are unchanged. Evidence:
-`docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json`.
+AGP-LANE-A3/OD1011 (2026-10-11, recorded-fixture verification only, not host-verified):
+`ST_ASIAN_SWEEP_5R_V1@1.1.2` `logic_verified_symbols` gains GBPUSD, scoped to ASIAN_LONDON ×
+RANGE_SWEEP (engine_setup SWEEP) per OD1011-SCOPE. The D6 reader (`ready_authority.symbol_verified`) now
+honours `sessions`/`engine_setups` scope and fails closed outside it; unscoped EURUSD is unchanged. L1–L6
+PASS on 58 VT recorded days. L5 follows OD1011-L5: max(bar, host-snapshot) spread plus OD1011-COMMISSION
+(0, bound to VTMarkets-Demo). 4 of 7 kept entries are cost-blocked (an actionability outcome). The gate rounds
+ROUND_HALF_UP (OD1011-ROUNDING). D6 READY stays OFF; demo/live/edge flags are unchanged. Evidence:
+`docs/status/AGP_4H_A_ASW_V112_GBPUSD_ASIAN_LONDON_2026-10-10.md`.
 
 DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
 2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
@@ -260,7 +253,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `1f327c61d5174bd0b86ef58ecbaa1c14bba0f0e534a0b7eba72236b898edf4be`.
+inputs_sha256: `978d1a0852b0d481d32bfbe3432a689213d65499c0dd0cf0989d16e2e217e66a`.
 <!-- [[[end]]] -->
 
 ### Objective
