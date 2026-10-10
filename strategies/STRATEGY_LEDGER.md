@@ -443,3 +443,13 @@ OWNER_DECISION_PENDING: rewire to src/mt5/market_data.py or remove.
 on owner authority after host audit found it in the MT5 MCP server process command line.
 Old credential invalid. Follow-up: MCP launch must read credentials from env or Windows
 Credential Manager, never argv.
+
+## Import-resolution technical debt (2026-10-10)
+
+- **TECH_DEBT / DEAD_IMPORT:** 158 importing locations unreachable from the conservative
+  static import graph rooted at `scripts/host/live_candles_smoke.py` for
+  fx/crypto/lsmc/lsmc-weekend on main `7f3e75d8bbb4a7c119a9be7279bf6d2f5badd003`.
+  Full module/importer/line inventory and three separate reachable DEPLOY_BLOCKER
+  imports: [import-resolution audit](../docs/status/IMPORT_RESOLUTION_AUDIT_2026-10-10.md).
+  No dead-import fixes, strategy/config changes, or execution authority changes.
+  DEAD_IMPORT is entry-point-specific; other tooling may still reference these imports.

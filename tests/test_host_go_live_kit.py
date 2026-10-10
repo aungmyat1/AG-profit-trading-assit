@@ -782,7 +782,8 @@ def test_scheduled_fx_run_reports_ready_proposals_and_nothing_else(tmp_path, mon
         "EURUSD LONG (ASIAN_LONDON)", "GBPUSD LONG (ASIAN_LONDON)",
         "EURUSD LONG (LONDON_NEWYORK)", "GBPUSD LONG (LONDON_NEWYORK)"]
     for message in after_first:
-        assert "decision=NOT_READY" in message and "ticket_id:" in message and "VALID UNTIL" in message
+        assert "READY" not in message and "decision=RESEARCH" in message
+        assert "ticket_id:" in message and "VALID UNTIL" in message
         assert "logic_status: NOT_VERIFIED" in message and "EDGE_VERIFIED=FALSE" in message
         assert "entry:" in message and "target leg 1" in message and "NOT A BROKER ORDER" in message
 
