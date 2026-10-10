@@ -8,6 +8,10 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-10)
 
+Owner ruling 2026-10-11: the `ST_ASIAN_SWEEP_5R_V1@1.1.2` EURUSD logic-verified entry is SUSPENDED
+(L3_REPAINT_UNRESOLVED_2026-07-31); the D6 reader treats SUSPENDED as not verified. The only verified
+1.1.2 scope is now GBPUSD × ASIAN_LONDON × SWEEP. D6 READY stays OFF.
+
 AGP-LANE-A3/OD1011 (2026-10-11, recorded-fixture verification only, not host-verified):
 `ST_ASIAN_SWEEP_5R_V1@1.1.2` `logic_verified_symbols` gains GBPUSD, scoped to ASIAN_LONDON ×
 RANGE_SWEEP (engine_setup SWEEP) per OD1011-SCOPE. The D6 reader (`ready_authority.symbol_verified`) now
@@ -253,7 +257,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `978d1a0852b0d481d32bfbe3432a689213d65499c0dd0cf0989d16e2e217e66a`.
+inputs_sha256: `51154f98210cb553c67139d769a7ec2db82d575e68a9c1d44c4ddf1759f30144`.
 <!-- [[[end]]] -->
 
 ### Objective

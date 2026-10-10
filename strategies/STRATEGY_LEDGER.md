@@ -62,6 +62,10 @@ from canonical session windows or other repo conventions at the time of registra
    scope; all other tuples fail closed. L1-L6 PASS on 58 VT recorded days. L5 uses host-snapshot spread plus
    OD1011-COMMISSION; 4/7 kept entries are cost-blocked. D6 remains OFF and no authorization flags change:
    `docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json`.
+  2026-10-11 owner ruling: the unscoped EURUSD `logic_verified_symbols` entry is **SUSPENDED** (reason
+  L3_REPAINT_UNRESOLVED_2026-07-31; evidence `docs/status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md`: ASIAN_LONDON
+  2026-07-31, 25 future-mutation mismatches, stop == entry). The D6 reader treats any non-VERIFIED status as
+  not verified. AGP-L3-0731 root cause is pending (after #149 -> #132 merge).
 - **Open gaps found building `execution/` (2026-08-26):**
   - `risk_and_money_management.risk_mode: FIXED_PERCENT_OR_CONTRACT` never states an
     actual risk-per-trade percentage or contract size. `execution/risk.py` currently
