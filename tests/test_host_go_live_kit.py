@@ -346,7 +346,10 @@ def test_crypto_main_outside_window_takes_no_runner_or_mt5_lock_and_never_import
 
     assert smoke.main(["--mode", "crypto"]) == 0
     log = (Path(hc.LOG_DIR) / "ag_v1_crypto.log").read_text(encoding="utf-8").splitlines()
-    assert log == [f"{now.isoformat()} CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)"]
+    assert log == [
+        f"{now.isoformat()} LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction",
+        f"{now.isoformat()} CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)",
+    ]
 
 
 def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
@@ -386,7 +389,10 @@ def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
     assert [call[0] for call in calls] == ["single_instance", "import_mt5", "mt5_access_lock",
                                           "initialize", "demo", "run_crypto", "shutdown"]
     assert calls[-2][1:] == (now, 3, "Mt5CryptoFeed")
-    assert logged == [("ag_v1_crypto", "CRYPTO IN_WINDOW")]
+    assert logged == [
+        ("ag_v1_crypto", "LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction"),
+        ("ag_v1_crypto", "CRYPTO IN_WINDOW"),
+    ]
 
 
 def test_single_instance_lock():
@@ -575,6 +581,7 @@ def test_telegram_default_archive_only_and_scoped_override(tmp_path):
 
 def test_local_delivery_scope_can_only_narrow_tracked_policy(tmp_path):
     import shutil
+
     from telegram_delivery.adapter import Config
     from telegram_delivery.scope_policy import resolve
 
@@ -1223,6 +1230,7 @@ def test_target_heartbeat_args_parse_to_always_on_mode():
     """PR #84 P1: the declared AG-Heartbeat-Local target arguments, parsed by heartbeat.py's own
     CLI, select always_on, so a stopped runner overnight is STALE, never INACTIVE_EXPECTED."""
     import shlex
+
     import heartbeat as hb_module
     _, decl = _host_declarations()
     rest = {d["name"]: d for d in decl}["AG-Heartbeat-Local"]["rest"]

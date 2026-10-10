@@ -40,12 +40,30 @@ from typing import Callable, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _host_common import (  # noqa: E402
-    REPO_ROOT, AlreadyRunning, Mt5Busy, call_with_timeout, host_fetch, host_quote, import_mt5, log_line,
-    mt5_access_lock, mt5_initialize, require_demo_account, single_instance, start_run_watchdog, utcnow,
+    REPO_ROOT,
+    AlreadyRunning,
+    Mt5Busy,
+    call_with_timeout,
+    host_fetch,
+    host_quote,
+    import_mt5,
+    log_line,
+    mt5_access_lock,
+    mt5_initialize,
+    require_demo_account,
+    single_instance,
+    start_run_watchdog,
+    utcnow,
 )
 from canonical_fx_delivery import (  # noqa: E402
-    LSMC_CRYPTO_DAY, LSMC_CRYPTO_WEEKEND, active_cycles, build_sender, failure_provider,
-    process_due_lsmc_crypto_summaries, process_due_session_summaries, record_lsmc_crypto_evaluation,
+    LSMC_CRYPTO_DAY,
+    LSMC_CRYPTO_WEEKEND,
+    active_cycles,
+    build_sender,
+    failure_provider,
+    process_due_lsmc_crypto_summaries,
+    process_due_session_summaries,
+    record_lsmc_crypto_evaluation,
     run_canonical_fx_cycle,
 )
 
@@ -62,21 +80,35 @@ def _argv_mode(argv: List[str]) -> str:
 if __name__ == "__main__":   # bound the whole process, including the heavy imports below (pandas: ~15 s cold)
     start_run_watchdog(f"ag_v1_{_argv_mode(sys.argv[1:])}")
 
-from host_delivery import telegram_message as tg  # noqa: E402
 from host_delivery import telegram_confirm as tg_confirm  # noqa: E402
-from host_delivery.lsmc_alert_dedup import AlertLedger, DELIVERY_UNCERTAIN, deliver_once  # noqa: E402
+from host_delivery import telegram_message as tg  # noqa: E402
+from host_delivery.lsmc_actionability_config import KEY as LSMC_CONFIG_KEY
+from host_delivery.lsmc_actionability_config import remaining_fraction
+from host_delivery.lsmc_alert_dedup import (  # noqa: E402
+    DELIVERY_UNCERTAIN,
+    AlertLedger,
+    deliver_once,
+)
 from large_smc_watch import WatchTracker, evaluate_snapshot  # noqa: E402
 from large_smc_watch.contract import CRYPTO_SYMBOLS as LSMC_CRYPTO_SYMBOLS  # noqa: E402
 from large_smc_watch.watch import fx_market_closed  # noqa: E402
+from mt5.symbol_resolver import SymbolMeta  # noqa: E402
 from runtime_state.store import JsonKeyValueStore  # noqa: E402
 from strategy_engine import load_strategy  # noqa: E402
 from v1_tickets import fx as fx_tickets  # noqa: E402
-from mt5.symbol_resolver import SymbolMeta  # noqa: E402
 from v1_tickets import manual_ticket  # noqa: E402
 from v1_tickets.code_identity import code_sha  # noqa: E402
-from v1_tickets.paper import archive_paper_trade, build_paper_trade, paper_eligibility  # noqa: E402
+from v1_tickets.paper import (  # noqa: E402
+    archive_paper_trade,
+    build_paper_trade,
+    paper_eligibility,
+)
 from v1_tickets.scan_record import (  # noqa: E402
-    adapterless_scan_records, append_jsonl, build_scan_record, classify_fx_ticket, write_scan_record,
+    adapterless_scan_records,
+    append_jsonl,
+    build_scan_record,
+    classify_fx_ticket,
+    write_scan_record,
 )
 
 UTC = dt.timezone.utc
@@ -634,6 +666,8 @@ def main(argv=None) -> int:
     if args.canonical and args.mode != "fx":
         ap.error("--canonical is only valid with --mode fx")
     log_name = f"ag_v1_{args.mode}"
+    if args.mode != "smoke" and remaining_fraction(REPO_ROOT) is None:
+        log_line(log_name, f"LSMC_CONFIG_MISSING key={LSMC_CONFIG_KEY}")
     now = utcnow()
     journal = os.path.join(REPO_ROOT, "journal", "host_smoke" if args.mode == "smoke" else "")
     canonical_sender = (build_sender(journal, root=REPO_ROOT)
@@ -734,7 +768,10 @@ def main(argv=None) -> int:
                         elif args.mode == "fx":
                             manual_lines = run_manual_jobs(fetch, now, journal)
                             if args.canonical:
-                                from live_eval_smoke import GuardedMT5, snapshot_provider
+                                from live_eval_smoke import (
+                                    GuardedMT5,
+                                    snapshot_provider,
+                                )
                                 provider = snapshot_provider(GuardedMT5(mt5))
                                 _, canonical_lines = run_canonical_fx_cycle(
                                     provider, now=now, journal=journal, sender=canonical_sender,

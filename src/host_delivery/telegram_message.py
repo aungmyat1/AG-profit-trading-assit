@@ -17,13 +17,13 @@ import argparse
 import datetime as dt
 import os
 import sys
-from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP
+from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal
 from typing import Any, Dict, Optional
 
 import yaml
 
-from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 from host_evidence.symbol_metadata import load_record
+from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 from ticket_delivery.identity import logical_ticket_id
 from v1_tickets.authority import LOGIC_VERIFIED, resolve_ticket_authority
 from v1_tickets.guards import STALE_AFTER

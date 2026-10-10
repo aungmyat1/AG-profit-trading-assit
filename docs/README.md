@@ -7,7 +7,8 @@ review_by: 2026-11-07
 # Documentation Index
 
 [Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
-records stop/target rejection, the owner-set 50% remaining-reward threshold, and offline tests.
+records stop/target rejection, the owner-set 50% remaining-reward threshold, required
+host preflight, FX/crypto rejection ownership, diagnostics and offline tests.
 
 [PR #94 follow-up S01/S02](status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md) records the signal-time identity classification (pending owner) and the LIVE/REPLAY digest reason fix.
 

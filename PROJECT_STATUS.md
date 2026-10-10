@@ -12,7 +12,10 @@ Large-SMC operational actionability gates (2026-10-10) reject missing/invalid st
 target and require at least 50% of the entry-to-target distance to remain. Rejections
 are archived and suppressed by the OPPORTUNITY-only Telegram sender. SESSION_SUMMARY
 reports per-reason Large-SMC rejection counts from archived transitions inside each
-UTC session, with no setup details. The parameter is owner-set and separate from
+UTC session, with no setup details. FX summaries exclude crypto; crypto summaries
+count their archived actionability rejections once. Missing host configuration is
+logged and summarized; malformed archives are skipped with an `ARCHIVE_ERROR` count.
+Deployment requires the read-only actionability preflight. The parameter is owner-set and separate from
 the unchanged v1.1.0 contract; no R:R minimum is
 authorized. Offline verification is recorded in
 `docs/status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md`; host validation is pending.

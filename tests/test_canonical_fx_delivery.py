@@ -20,11 +20,19 @@ sys.path.insert(0, str(REPO / "scripts" / "host"))
 sys.path.insert(0, str(REPO / "tests"))
 
 import canonical_fx_delivery as cfd  # noqa: E402
+from test_actionability_and_canonical_ticket import (
+    _build_asian_london_sweep,  # noqa: E402
+)
+
+import v1_tickets.daily_evaluator as de  # noqa: E402
 from telegram_delivery.adapter import Config, Sender  # noqa: E402
 from ticket_store import adapter as store_adapter  # noqa: E402
-from ticket_store.store import REPLAY, TicketStore, build_evaluation, read_jsonl  # noqa: E402
-from test_actionability_and_canonical_ticket import _build_asian_london_sweep  # noqa: E402
-import v1_tickets.daily_evaluator as de  # noqa: E402
+from ticket_store.store import (  # noqa: E402
+    REPLAY,
+    TicketStore,
+    build_evaluation,
+    read_jsonl,
+)
 from v1_tickets.fx import V1_CYCLES, V1_FX_SYMBOLS, session_windows_utc  # noqa: E402
 
 UTC = dt.timezone.utc
@@ -416,8 +424,8 @@ def test_session_summary_counts_archived_lsmc_rejection_reasons_only(tmp_path):
     duplicate.with_suffix(".json").write_bytes(source.read_bytes())
     source.with_name(f"{NOW.date()}.correction-001.json").write_text('{"new_record": {}}')
     digest = cfd.build_session_summary(str(journal), session_date=NOW.date(), session="ASIAN_LONDON", sender=send)
-    assert digest["large_smc"] == {"rejection_counts": {
-        "REJECT_NO_STOP": 1, "REJECT_NO_TARGET": 1, "REJECT_STALE": 1}}
+    assert digest["large_smc"]["rejection_counts"] == {
+        "REJECT_NO_STOP": 1, "REJECT_NO_TARGET": 1, "REJECT_STALE": 1}
     assert "SECRET" not in json.dumps(digest)
     text = render_session_summary(digest)
     assert "Large-SMC rejections (archived transitions):" in text
@@ -427,12 +435,18 @@ def test_session_summary_counts_archived_lsmc_rejection_reasons_only(tmp_path):
     assert set(ny["large_smc"]["rejection_counts"].values()) == {0}
 
 
-def test_lsmc_summary_corrupt_archive_blocks_instead_of_inventing_zero(tmp_path):
-    path = tmp_path / "ticket_delivery/archive/fx_ticket_archive/ST_LARGE_SMC_V1/EURUSD/LSMC_WATCH-t/2026/2026-10-07.json"
+def test_lsmc_summary_corrupt_archive_is_reported_and_summary_sends(tmp_path):
+    journal = tmp_path / "journal"
+    path = journal / "ticket_delivery/archive/fx_ticket_archive/ST_LARGE_SMC_V1/EURUSD/LSMC_WATCH-t/2026/2026-10-07.json"
     path.parent.mkdir(parents=True)
     path.write_text("{")
-    with pytest.raises(json.JSONDecodeError):
-        cfd.lsmc_rejection_counts(str(tmp_path), NOW.replace(hour=7), NOW.replace(hour=11))
+    send, calls = sender(tmp_path, enabled=True)
+    digest = cfd.build_session_summary(str(journal), session_date=NOW.date(),
+                                       session="ASIAN_LONDON", sender=send)
+    assert digest["large_smc"]["archive_error_count"] == 1
+    assert send.send_session_summary(digest) == "sent"
+    assert "ARCHIVE_ERROR n=1" in calls[0][1]
+    assert set(digest["large_smc"]["rejection_counts"].values()) == {0}
 
 
 @pytest.mark.parametrize("bad", [-1, True, "1"])

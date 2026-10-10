@@ -1,5 +1,7 @@
 """Operational gates on synthetic opportunities; no broker/Telegram contact."""
 import json
+import subprocess
+import types
 from dataclasses import asdict
 from pathlib import Path
 
@@ -60,7 +62,7 @@ def test_remaining_reward_boundary_and_direction(direction, price, accepted):
 
 @pytest.mark.parametrize("value", [None, True, "0.5", -0.1, 0, 1.1, float("nan")])
 def test_missing_or_invalid_policy_fails_closed(tmp_path, value):
-    path = tmp_path / "config/policy/actionability_policy.yaml"
+    path = tmp_path / "config/local/actionability_policy.yaml"
     path.parent.mkdir(parents=True)
     path.write_text(yaml.safe_dump({"lsmc_min_remaining_reward_fraction": value}))
     assert W.opportunity_rejection(opportunity(), 100.25, root=tmp_path) == "REJECT_STALE"
@@ -68,14 +70,16 @@ def test_missing_or_invalid_policy_fails_closed(tmp_path, value):
 
 def test_missing_file_key_and_malformed_local_policy_fail_closed(tmp_path):
     assert W.opportunity_rejection(opportunity(), 100.25, root=tmp_path) == "REJECT_STALE"
-    path = tmp_path / "config/policy/actionability_policy.yaml"
-    path.parent.mkdir(parents=True)
-    path.write_text("{}")
+    tracked = tmp_path / "config/policy/actionability_policy.yaml"
+    tracked.parent.mkdir(parents=True)
+    tracked.write_text("lsmc_min_remaining_reward_fraction: 0.5")
     assert W.opportunity_rejection(opportunity(), 100.25, root=tmp_path) == "REJECT_STALE"
-    path.write_text("lsmc_min_remaining_reward_fraction: 0.5")
-    assert W.opportunity_rejection(opportunity(), 100.25, root=tmp_path) is None
     local = tmp_path / "config/local/actionability_policy.yaml"
     local.parent.mkdir()
+    local.write_text("{}")
+    assert W.opportunity_rejection(opportunity(), 100.25, root=tmp_path) == "REJECT_STALE"
+    local.write_text("lsmc_min_remaining_reward_fraction: 0.5")
+    assert W.opportunity_rejection(opportunity(), 100.25, root=tmp_path) is None
     local.write_text("[")
     assert W.opportunity_rejection(opportunity(), 100.25, root=tmp_path) == "REJECT_STALE"
 
@@ -109,9 +113,20 @@ def test_complete_fresh_opportunity_and_sent_text_byte_exact(tmp_path, monkeypat
     monkeypatch.setattr(tg, "load_mode", lambda root: {"mode": tg.MESSAGE_DELIVERY,
                                                       "scopes": tg.SCOPES})
     text = tg.format_alert(asdict(event), price=100.25)
-    # Golden captured from origin/main abb5330's formatter, with identical input.
+    # Re-check the unchanged golden against the formatter on the rebase target main.
+    main_sha = "d8ee56a17795aea064b9741f98cbe3fdb00383a3"
+    source = subprocess.run(["git", "show", f"{main_sha}:src/host_delivery/telegram_message.py"],
+                            check=True, capture_output=True, text=True).stdout
+    baseline = types.ModuleType("host_delivery._main_formatter")
+    baseline.__file__ = tg.__file__
+    baseline.__package__ = "host_delivery"
+    exec(compile(source, baseline.__file__, "exec"), baseline.__dict__)
+    monkeypatch.setattr(baseline, "_normalizer", lambda *args: None)
+    monkeypatch.setattr(baseline, "load_mode", tg.load_mode)
+    main_text = baseline.format_alert(asdict(event), price=100.25)
     golden = Path(__file__).parent / "fixtures/lsmc_complete_alert.txt"
-    assert text.encode() == golden.read_bytes()
+    assert main_text.encode() == golden.read_bytes()
+    assert text.encode() == main_text.encode()
     assert tg.should_send("LSMC", event.alert_level)
     class Response:
         status_code = 200

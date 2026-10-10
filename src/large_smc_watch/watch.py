@@ -25,6 +25,7 @@ from zoneinfo import ZoneInfo
 import yaml
 
 from fx_discovery import features as F
+from host_delivery.lsmc_actionability_config import remaining_fraction
 from large_smc_core.c10_stop_policy import C10StopPolicyViolation, compute_c10_stop
 from post_asian_pilot.report_archive import archive_path
 from runtime_state.store import JsonKeyValueStore
@@ -61,19 +62,12 @@ def _finite(value) -> bool:
 
 
 def _remaining_fraction(root: Path) -> Optional[float]:
-    """Host-local policy wins; missing/malformed/null thresholds have no fallback."""
-    local = root / "config/local/actionability_policy.yaml"
-    path = local if local.exists() else root / "config/policy/actionability_policy.yaml"
-    try:
-        raw = yaml.safe_load(path.read_text(encoding="utf-8"))
-        value = raw["lsmc_min_remaining_reward_fraction"]
-        return value if _finite(value) and 0 < value <= 1 else None
-    except (OSError, KeyError, TypeError, ValueError, yaml.YAMLError):
-        return None
+    """Missing/malformed host thresholds have no fallback."""
+    return remaining_fraction(root)
 
 
 def opportunity_rejection(opportunity: dict, current_price: Optional[float], *,
-                          root: Path = REPO_ROOT) -> Optional[str]:
+                          root: Optional[Path] = None) -> Optional[str]:
     """Delivery eligibility only; levels and detection evidence are never repaired.
 
     No R:R minimum is authorized by the 1.1.0 contract. The remaining-reward
@@ -87,7 +81,7 @@ def opportunity_rejection(opportunity: dict, current_price: Optional[float], *,
         return "REJECT_NO_STOP"
     if not _finite(target) or target <= 0 or opportunity.get("target_reason") or sign * (target - entry) <= 0:
         return "REJECT_NO_TARGET"
-    threshold = _remaining_fraction(root)
+    threshold = _remaining_fraction(REPO_ROOT if root is None else root)
     if threshold is None or not _finite(current_price) or current_price <= 0:
         return "REJECT_STALE"
     if sign * (current_price - stop) <= 0 or (target - current_price) / (target - entry) < threshold:
