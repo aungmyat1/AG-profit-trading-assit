@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[AGP-C4-CCFD-LOGIC](status/AGP_C4_CCFD_LOGIC_2026-10-10.md) records synthetic-only CFD v1.0.0 L1–L6 evidence and the DATA-R2 rerun.
+
 [PR #94 follow-up S01/S02](status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md) records the signal-time identity classification (pending owner) and the LIVE/REPLAY digest reason fix.
 
 [TG-SCOPE-POLICY-1](status/AG_TG_SCOPE_POLICY_1_STATUS_2026-10-08.md) records the tracked
