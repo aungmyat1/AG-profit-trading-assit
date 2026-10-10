@@ -251,3 +251,27 @@ def test_window_and_method_parsing():
         raise AssertionError(bad)
     assert m.days_ending(date(2026, 10, 9), 14)[0] == date(2026, 9, 26)
     assert m.compress_minutes(["01:00", "01:01", "01:02", "05:07"]) == "01:00-01:02 (3), 05:07"
+
+
+class SpreadFakeTerminal(FakeTerminal):
+    def point(self, symbol):
+        return 0.00001
+
+    def rates(self, symbol, tf, lo, hi, with_spread=False):
+        bars = super().rates(symbol, tf, lo, hi)
+        return [b + ((b[0] // 900 % 7 + 3,) if with_spread else ()) for b in bars]
+
+
+def test_with_spread_adds_only_a_column_and_note_sections(tmp_path):
+    rc, plain_csv, plain_note = run_capture(_load(), tmp_path, ["--symbol", "GBPUSD"])
+    rc2, csv_b, note_b = run_capture(_load(), tmp_path, ["--symbol", "GBPUSD", "--with-spread"],
+                                     terminal_factory=SpreadFakeTerminal)
+    assert rc == rc2 == 0
+    plain, spread = plain_csv.decode().splitlines(), csv_b.decode().splitlines()
+    assert spread[0] == "timestamp_utc,open,high,low,close,spread_points"
+    assert [r.rsplit(",", 1)[0] for r in spread[1:]] == plain[1:]
+    assert all(r.rsplit(",", 1)[1].isdigit() for r in spread[1:])
+    note = note_b.decode()
+    assert note.split("\n## Spread")[0].split("- capture date")[1].split("\n", 1)[1] == \
+        plain_note.decode().split("- capture date")[1].split("\n", 1)[1].rstrip("\n") + "\n"
+    assert "points; price = spread_points x point" in note and "- none (every kept M15 bar" in note

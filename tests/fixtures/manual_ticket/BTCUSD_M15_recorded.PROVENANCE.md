@@ -54,3 +54,18 @@
 | 2026-10-07 | yes | none | 21:00 |
 | 2026-10-08 | yes | none | none |
 | 2026-10-09 | yes | none | 23:26 |
+
+## PARTIAL_M1_CHECK bars (annotation added by AGP-DATA-R2b; CSV unchanged)
+
+M15 bars with at least one missing M1 bar. Each was compared with the aggregate of its present
+M1 bars and matched exactly (re-verified 2026-10-10 by `scripts/capture_recorded_ccfd_tfs.py`);
+the check is partial because the missing minutes cannot be checked.
+
+| M15 bar open (UTC) |
+|---|
+| 2026-09-26 02:00:00 |
+| 2026-09-27 01:30:00 |
+| 2026-10-02 22:00:00 |
+| 2026-10-02 22:15:00 |
+| 2026-10-07 21:00:00 |
+| 2026-10-09 23:15:00 |

@@ -1,0 +1,5506 @@
+{
+  "source": "MT5_VT_MARKETS_DEMO",
+  "mission": "AGP-DATA-R2",
+  "cases": [
+    {
+      "id": "BTCUSD_WEEKEND_20260926T2100Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T21:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-26T20:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260926T2115Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T21:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-26T21:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260926T2130Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T21:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-26T21:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260926T2145Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T21:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-26T21:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260926T2200Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T22:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-26T21:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260926T2215Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T22:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-26T22:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260926T2230Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T22:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-26T22:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260926T2245Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T22:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-26T22:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260927T2100Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T21:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-27T20:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260927T2115Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T21:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-27T21:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260927T2130Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T21:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-27T21:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260927T2145Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T21:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-27T21:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260927T2200Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T22:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-27T21:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260927T2215Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T22:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-27T22:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260927T2230Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T22:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-27T22:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20260927T2245Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T22:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-27T22:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1300Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T13:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1315Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T13:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1330Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T13:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1345Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T13:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1400Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T14:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1415Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T14:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1430Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T14:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1445Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T14:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1500Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T15:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1515Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T15:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1530Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T15:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260928T1545Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T15:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-28T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1300Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T13:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1315Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T13:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1330Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T13:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1345Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T13:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1400Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T14:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1415Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T14:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1430Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T14:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1445Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T14:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1500Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T15:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1515Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T15:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1530Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T15:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260929T1545Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T15:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-29T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1300Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T13:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1315Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T13:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1330Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T13:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1345Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T13:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1400Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T14:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1415Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T14:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1430Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T14:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1445Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T14:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1500Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T15:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1515Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T15:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1530Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T15:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20260930T1545Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T15:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-09-30T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1300Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T13:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1315Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T13:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1330Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T13:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1345Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T13:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1400Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T14:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1415Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T14:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1430Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T14:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1445Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T14:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1500Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T15:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1515Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T15:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1530Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T15:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261001T1545Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T15:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-01T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1300Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T13:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1315Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T13:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1330Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T13:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1345Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T13:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1400Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T14:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1415Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T14:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1430Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T14:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1445Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T14:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1500Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T15:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1515Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T15:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1530Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T15:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261002T1545Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T15:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-02T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261003T2100Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T21:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-03T20:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261003T2115Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T21:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-03T21:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261003T2130Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T21:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-03T21:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261003T2145Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T21:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-03T21:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261003T2200Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T22:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-03T21:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261003T2215Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T22:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-03T22:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261003T2230Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T22:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-03T22:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261003T2245Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T22:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-03T22:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261004T2100Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T21:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-04T20:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261004T2115Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T21:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-04T21:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261004T2130Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T21:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-04T21:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261004T2145Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T21:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-04T21:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261004T2200Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T22:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-04T21:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261004T2215Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T22:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-04T22:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261004T2230Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T22:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-04T22:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKEND_20261004T2245Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T22:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-04T22:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1300Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T13:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1315Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T13:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1330Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T13:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1345Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T13:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1400Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T14:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1415Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T14:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1430Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T14:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1445Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T14:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1500Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T15:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1515Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T15:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1530Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T15:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261005T1545Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T15:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-05T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1300Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T13:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1315Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T13:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1330Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T13:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1345Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T13:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1400Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T14:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1415Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T14:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1430Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T14:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1445Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T14:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1500Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T15:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1515Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T15:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1530Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T15:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261006T1545Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T15:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-06T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1300Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T13:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1315Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T13:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1330Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T13:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1345Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T13:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1400Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T14:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1415Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T14:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1430Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T14:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1445Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T14:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1500Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T15:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1515Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T15:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1530Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T15:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261007T1545Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T15:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-07T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1300Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T13:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1315Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T13:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1330Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T13:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1345Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T13:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1400Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T14:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1415Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T14:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1430Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T14:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1445Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T14:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1500Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T15:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1515Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T15:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1530Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T15:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261008T1545Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T15:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-08T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1300Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T13:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1315Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T13:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1330Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T13:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1345Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T13:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1400Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1415Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1430Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1445Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1500Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T15:00:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1515Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T15:15:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1530Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T15:30:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "BTCUSD_WEEKDAY_20261009T1545Z",
+      "symbol": "BTCUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T15:45:00+00:00",
+      "paths": {
+        "d1": "BTCUSD_d1.csv",
+        "h1": "BTCUSD_h1.csv",
+        "m5": "BTCUSD_m5.csv",
+        "m15": "../../manual_ticket/BTCUSD_M15_recorded.csv"
+      },
+      "provenance": "BTCUSD_provenance.json",
+      "spread": 16.94,
+      "commission_R": null,
+      "quote_time": "2026-10-09T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260926T2100Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T21:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-26T20:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260926T2115Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T21:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-26T21:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260926T2130Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T21:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-26T21:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260926T2145Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T21:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-26T21:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260926T2200Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T22:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-26T21:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260926T2215Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T22:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-26T22:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260926T2230Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T22:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-26T22:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260926T2245Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-26T22:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-26T22:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260927T2100Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T21:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-27T20:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260927T2115Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T21:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-27T21:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260927T2130Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T21:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-27T21:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260927T2145Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T21:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-27T21:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260927T2200Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T22:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-27T21:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260927T2215Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T22:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-27T22:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260927T2230Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T22:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-27T22:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20260927T2245Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-09-27T22:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-27T22:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1300Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T13:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1315Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T13:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1330Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T13:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1345Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T13:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1400Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T14:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1415Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T14:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1430Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T14:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1445Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T14:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1500Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T15:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1515Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T15:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1530Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T15:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260928T1545Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-28T15:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-28T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1300Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T13:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1315Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T13:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1330Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T13:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1345Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T13:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1400Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T14:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1415Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T14:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1430Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T14:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1445Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T14:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1500Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T15:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1515Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T15:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1530Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T15:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260929T1545Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-29T15:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-29T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1300Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T13:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1315Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T13:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1330Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T13:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1345Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T13:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1400Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T14:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1415Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T14:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1430Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T14:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1445Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T14:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1500Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T15:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1515Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T15:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1530Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T15:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20260930T1545Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-09-30T15:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-09-30T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1300Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T13:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1315Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T13:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1330Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T13:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1345Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T13:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1400Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T14:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1415Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T14:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1430Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T14:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1445Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T14:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1500Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T15:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1515Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T15:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1530Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T15:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261001T1545Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-01T15:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-01T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1300Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T13:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1315Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T13:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1330Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T13:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1345Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T13:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1400Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T14:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1415Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T14:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1430Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T14:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1445Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T14:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1500Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T15:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1515Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T15:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1530Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T15:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261002T1545Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-02T15:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-02T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261003T2100Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T21:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-03T20:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261003T2115Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T21:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-03T21:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261003T2130Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T21:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-03T21:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261003T2145Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T21:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-03T21:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261003T2200Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T22:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-03T21:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261003T2215Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T22:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-03T22:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261003T2230Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T22:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-03T22:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261003T2245Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-03T22:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-03T22:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261004T2100Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T21:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-04T20:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261004T2115Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T21:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-04T21:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261004T2130Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T21:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-04T21:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261004T2145Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T21:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-04T21:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261004T2200Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T22:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-04T21:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261004T2215Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T22:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-04T22:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261004T2230Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T22:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-04T22:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKEND_20261004T2245Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKEND",
+      "now": "2026-10-04T22:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-04T22:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1300Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T13:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1315Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T13:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1330Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T13:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1345Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T13:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1400Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T14:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1415Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T14:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1430Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T14:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1445Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T14:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1500Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T15:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1515Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T15:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1530Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T15:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261005T1545Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-05T15:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-05T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1300Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T13:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1315Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T13:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1330Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T13:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1345Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T13:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1400Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T14:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1415Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T14:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1430Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T14:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1445Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T14:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1500Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T15:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1515Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T15:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1530Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T15:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261006T1545Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-06T15:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-06T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1300Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T13:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1315Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T13:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1330Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T13:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1345Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T13:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1400Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T14:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1415Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T14:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1430Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T14:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1445Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T14:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1500Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T15:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1515Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T15:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1530Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T15:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261007T1545Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-07T15:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-07T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1300Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T13:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1315Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T13:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1330Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T13:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1345Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T13:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1400Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T14:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1415Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T14:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1430Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T14:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1445Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T14:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1500Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T15:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1515Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T15:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1530Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T15:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261008T1545Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-08T15:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-08T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1300Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T13:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T12:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1315Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T13:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T13:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1330Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T13:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T13:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1345Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T13:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T13:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1400Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T13:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1415Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T14:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1430Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T14:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1445Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T14:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T14:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1500Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T15:00:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T14:55:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1515Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T15:15:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T15:10:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1530Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T15:30:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T15:25:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    },
+    {
+      "id": "ETHUSD_WEEKDAY_20261009T1545Z",
+      "symbol": "ETHUSD",
+      "window": "WEEKDAY",
+      "now": "2026-10-09T15:45:00+00:00",
+      "paths": {
+        "d1": "ETHUSD_d1.csv",
+        "h1": "ETHUSD_h1.csv",
+        "m5": "ETHUSD_m5.csv",
+        "m15": "../../manual_ticket/ETHUSD_M15_recorded.csv"
+      },
+      "provenance": "ETHUSD_provenance.json",
+      "spread": 2.45,
+      "commission_R": null,
+      "quote_time": "2026-10-09T15:40:00+00:00",
+      "expected_result": null,
+      "expected_direction": null
+    }
+  ],
+  "gaps": {
+    "commission_R": "commission_R is null for every case: VT crypto CFD commission was not captured (no allowed read-only call exposes it). Explicit gap, never 0."
+  },
+  "files": {
+    "../../manual_ticket/BTCUSD_M15_recorded.csv": "f0f8bd079806a9f732443b642c308f4fbc8c6429be8786cba9a121f0797e8efa",
+    "../../manual_ticket/ETHUSD_M15_recorded.csv": "e28a10aa33919131a479cd3910fa238394ba8155d7500bd5b791c04fbc53a3ff",
+    "BTCUSD_d1.csv": "cdd17f4fe707f8984535e3cf905965144838a3191369099665f06b0587c94e24",
+    "BTCUSD_d1_meta.csv": "5594491e0ea292e9ac82e265d80006a301f90c2ddb180c6fa9cf757c06570e13",
+    "BTCUSD_h1.csv": "609a9bb0c276cf0f66888fafaefea584e1ba3202c244c18672faf1044d3f3e45",
+    "BTCUSD_h1_meta.csv": "1b1b8fb7e65472a5c1d2e9660926b5f5dce398f5d769be3183617d5f59e57b88",
+    "BTCUSD_m1.csv": "70ba9607dfdd31323deea0a35ebfcb946ab3939f88028a75637fab1d03e7ae4a",
+    "BTCUSD_m15_meta.csv": "61c6af30189d79ba42a1041bf3cc27d0fa619d8f460ec331c22c0c9bb0619ab8",
+    "BTCUSD_m1_meta.csv": "ef97c70b81219302f73ee93b8ee7dc44bc1764983f9fed23ab7d20a8130f6739",
+    "BTCUSD_m5.csv": "b1f6594523f4589415585909230c134d817b2e9b74d0098e39640aa2104a7c34",
+    "BTCUSD_m5_meta.csv": "d53301827d23f619b163f42dc54a988a443e4f01599abca2ef690ac8dc291e6b",
+    "BTCUSD_provenance.json": "7ed519cd409338b62936c92a0773a15365d0e71a279f8aaac63f6ca3c2456216",
+    "ETHUSD_d1.csv": "a958988c74b3086b6f424865915224f7476637b5c174628d98195188d15b3834",
+    "ETHUSD_d1_meta.csv": "5b03491a8282f388cf53f1f09f380d6e3610e40f70291555f5890c4bb987e911",
+    "ETHUSD_h1.csv": "be15612750bfec64ddfd560ab9f18480f6a60132abe5f0cc829f7cb84b94d65c",
+    "ETHUSD_h1_meta.csv": "01ebcd46eb724e8c38ffa6342ae47230c2581548b5e113b36ef1df7f37b77aa4",
+    "ETHUSD_m1.csv": "f5cc951e621874dbab710fdad0f5a199b3a13702acbc3bc4a8f9d703c480d412",
+    "ETHUSD_m15_meta.csv": "a8ace51155616c5e694162e81580b608fdd791af3537f6920e82d9572e7f2cfd",
+    "ETHUSD_m1_meta.csv": "e45e2e748267d786566a4060f4b13d01b662b859efbd4ae1c38595ab1d4ba4ce",
+    "ETHUSD_m5.csv": "a09054aaaca244f001d635a49f50d55c8216922516dff7c442087657a23c2a20",
+    "ETHUSD_m5_meta.csv": "5b4296775cd04b4ad35340ef2787eab29acd3e85235c6f2b7675fce86f18837d",
+    "ETHUSD_provenance.json": "12c7da35186ff6d34878b77f5c0260db6d0e3a84a63a6d0b2421fcbf04f774ed",
+    "capture_report.json": "c3e3cbf2bceaa51350e78598e6b5a97b7ecd7b3cdd870c33d80d5a6b9a714df2"
+  }
+}

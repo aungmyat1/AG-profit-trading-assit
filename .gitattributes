@@ -17,3 +17,6 @@ tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv -text
 tests/fixtures/manual_ticket/BTCUSD_M15_recorded.csv -text
 tests/fixtures/manual_ticket/ETHUSD_M15_recorded.csv -text
 tests/fixtures/capture_recorded_m15_golden/* -text
+tests/fixtures/manual_ticket/*_M15_recorded_spread_60d.csv -text
+tests/fixtures/ccfd_v100/recorded/*.csv -text
+tests/fixtures/ccfd_v100/recorded/*.json -text
