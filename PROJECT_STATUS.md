@@ -19,6 +19,13 @@ but awaits focused verification. Current strategy bindings, readiness values, de
 host tasks, and broker state are unchanged. Host-side execution artifacts remain `UNTRACKED_HOST`
 under C11 until brought into the repository through a reviewed PR before G6.
 
+Recorded M15 capture (`scripts/capture_recorded_m15.py`, read-only MT5) gained V2 options:
+`--window HH:MM-HH:MM`, `--all-days`, `--offset-method {rollover,reference-symbol:<SYM>}` and
+`--list-gaps`, each of which labels the run `RECORDED_M15_V2` in its provenance; `--with-spread`
+adds a `spread_points` column. The default output is byte-identical to the previous script. New recorded
+fixtures live under `tests/fixtures/manual_ticket/` and `tests/fixtures/ccfd_v100/recorded/`,
+each with a PROVENANCE note. This is development evidence only; no readiness or authority changes.
+
 ## Generated facts
 
 ### Authority table
