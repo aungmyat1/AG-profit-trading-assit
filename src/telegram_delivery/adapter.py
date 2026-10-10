@@ -123,6 +123,35 @@ def render_summary(tickets, uncertain=()):
     return "\n".join(lines)
 
 
+LSMC_CRYPTO_SUMMARY_SCHEMA = "AGP_HOST_LSMC_CRYPTO_SESSION_SUMMARY_V1"
+
+
+def render_lsmc_crypto_summary(summary):
+    """Render the Large-SMC crypto (BTCUSD/ETHUSD) window digest: opportunities sent and
+    per-reason rejection counts. Zero counts are rendered, never omitted."""
+    if summary.get("schema") != LSMC_CRYPTO_SUMMARY_SCHEMA:
+        raise ValueError("Unsupported LSMC crypto summary schema")
+    session_date, session = summary.get("session_date"), summary.get("session")
+    if not isinstance(session_date, str) or not session_date or not isinstance(session, str) or not session:
+        raise ValueError("SCHEMA_GAP: session identity")
+    counts = {"evaluations": summary.get("evaluations"), "opportunities_sent": summary.get("opportunities_sent")}
+    for key, count in counts.items():
+        if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+            raise ValueError(f"Invalid {key}")
+    rejections = summary.get("rejection_counts") or {}
+    lines = ["Large-SMC crypto watch summary -- INFORMATIONAL",
+             f"Window: {session_date} / {session} "
+             f"({value(summary, 'window_start_utc')} -> {value(summary, 'window_end_utc')})",
+             f"Instruments: {', '.join(summary.get('instruments') or [])}",
+             f"Evaluations: {counts['evaluations']}",
+             f"Opportunities sent: {counts['opportunities_sent']}",
+             "Rejections by reason:"]
+    lines += [f"- {reason}: {n}" for reason, n in sorted(rejections.items())] or ["- none"]
+    lines.append(f"Delivery enabled: {str(bool(summary.get('delivery_enabled', False))).lower()}")
+    lines.append("No broker order. Execution not authorized.")
+    return "\n".join(lines)
+
+
 def render_session_summary(summary):
     """Render one deterministic per-session digest from already-aggregated durable facts."""
     if summary.get("schema") != "AGP_HOST_TICKET_DELIVERY_R1_SESSION_SUMMARY_V1":
@@ -503,7 +532,8 @@ class Sender:
         return self._send("session", identity, "", message)
 
     def send_session_summary(self, summary):
-        message = render_session_summary(summary)
+        message = (render_lsmc_crypto_summary(summary) if summary.get("schema") == LSMC_CRYPTO_SUMMARY_SCHEMA
+                   else render_session_summary(summary))
         identity = json.dumps([summary["session_date"], summary["session"]], separators=(",", ":"))
         return self._send("session_summary", identity, "AGP_HOST_TICKET_DELIVERY_R1", message)
 

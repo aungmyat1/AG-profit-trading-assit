@@ -227,6 +227,16 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
 <!-- [[[end]]] -->
 
+## Large-SMC crypto watch session summary (2026-10-10, branch `agp/lsmc-crypto-session-summary`, not merged)
+
+`--mode lsmc-weekend` (Sat/Sun 20:45–23:15 UTC window) and `--mode lsmc` (per UTC day) now journal every
+BTCUSD/ETHUSD Large-SMC evaluation to their own crypto window and send one `LSMC_CRYPTO_SUMMARY` per
+window: opportunities sent plus per-reason rejection counts; an empty window still sends zero counts.
+Delivery reuses the FX summary path (`_process_due_summary` in `scripts/host/canonical_fx_delivery.py`,
+once-only, same owner gates; archive-only unless enabled). The FX summary is unchanged and never counts
+crypto, so a crypto rejection inside an FX window is counted once, in the crypto summary. Tests:
+`tests/test_lsmc_crypto_session_summary.py`. No strategy, authorization or execution change.
+
 ## D6 READY per-symbol verification gate (2026-10-10, branch `agp/d6-per-symbol-verification`, not merged)
 
 `apply_ready_authority` (`src/v1_tickets/ready_authority.py`) now keeps READY only if D6 READY authority
