@@ -114,7 +114,7 @@ def test_complete_fresh_opportunity_and_sent_text_byte_exact(tmp_path, monkeypat
                                                       "scopes": tg.SCOPES})
     text = tg.format_alert(asdict(event), price=100.25)
     # Re-check the unchanged golden against the formatter on the rebase target main.
-    main_sha = "d8ee56a17795aea064b9741f98cbe3fdb00383a3"
+    main_sha = "d991bb3bef462d9f425ff346d48b6df83fbbe4f1"
     source = subprocess.run(["git", "show", f"{main_sha}:src/host_delivery/telegram_message.py"],
                             check=True, capture_output=True, text=True).stdout
     baseline = types.ModuleType("host_delivery._main_formatter")
