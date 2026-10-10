@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pytest
 
+from strategy_engine.session import Candle
 from v1_tickets.ccfd_logic_gate import verify_case
 from v1_tickets.crypto_cfd_policy import load_ticket_policy
 from v1_tickets.manual_ticket import crypto_cfd_cost_gate
-from strategy_engine.session import Candle
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("ccfd_runner", ROOT / "scripts/ccfd_v100_logic_verification.py")
@@ -53,8 +53,105 @@ def test_relabelled_synthetic_never_verified(tmp_path):
             target.write_bytes(Path(rel).read_bytes())
             case["paths"][tf] = target.name
     path.write_text(json.dumps(data))
-    with pytest.raises(ValueError, match="missing provenance sha256s"):
+    with pytest.raises(runner.ManifestRejected):  # no provenance sha256s at all
         runner.run(path)
+    # Even with complete provenance hashes, synthetic bytes never become recorded evidence.
+    _add_provenance(tmp_path, data)
+    path.write_text(json.dumps(data))
+    report = runner.run(path)
+    assert report["verdict"] == "NOT_VERIFIED"
+    assert not report["provenance_hashes_valid"]
+
+
+def _add_provenance(base, data):
+    import hashlib
+    for case in data["cases"]:
+        name = f"{case['id']}_provenance.json"
+        (base / name).write_text(json.dumps({
+            "source": "MT5_VT_MARKETS_DEMO", "mission": "AGP-DATA-R2", "symbol": case["symbol"],
+            "recorded": True, "captured_at_utc": "2026-10-10T00:00:00+00:00",
+            "sha256": {tf: hashlib.sha256((base / rel).read_bytes()).hexdigest()
+                       for tf, rel in case["paths"].items()}}))
+        case["provenance"] = name
+
+
+def _copy_synthetic(tmp_path, **manifest_over):
+    data = json.loads(runner.DEFAULT.read_text())
+    data.update(manifest_over)
+    for case in data["cases"]:
+        for tf, rel in case["paths"].items():
+            (tmp_path / Path(rel).name).write_bytes((runner.DEFAULT.parent / rel).read_bytes())
+            case["paths"][tf] = Path(rel).name
+    return data
+
+
+@pytest.mark.parametrize("drop", ["file", "m5", "all", "short"])
+def test_recorded_manifest_missing_provenance_sha256_is_rejected(tmp_path, drop, capsys, monkeypatch):
+    data = _copy_synthetic(tmp_path, source="RECORDED", mission="AGP-DATA-R2")
+    _add_provenance(tmp_path, data)
+    prov = tmp_path / data["cases"][0]["provenance"]
+    record = json.loads(prov.read_text())
+    if drop == "file":
+        prov.unlink()
+    elif drop == "all":
+        del record["sha256"]
+    elif drop == "short":
+        record["sha256"]["d1"] = "abc"
+    else:
+        del record["sha256"][drop]
+    if drop != "file":
+        prov.write_text(json.dumps(record))
+    path = tmp_path / "manifest.json"
+    path.write_text(json.dumps(data))
+    with pytest.raises(runner.ManifestRejected, match="provenance"):
+        runner.run(path)
+    monkeypatch.setattr("sys.argv", ["x", "--fixtures", str(path), "--out-dir", str(tmp_path / "out")])
+    assert runner.main() == 2 and "REJECTED" in capsys.readouterr().out
+
+
+def test_null_expected_result_is_conformance_only(tmp_path):
+    data = _copy_synthetic(tmp_path)
+    for case in data["cases"]:
+        case["expected_result"] = None
+        case["expected_direction"] = None
+    path = tmp_path / "manifest.json"
+    path.write_text(json.dumps(data))
+    report = runner.run(path)
+    assert report["conformance_only_cases"] == len(data["cases"])
+    assert set(report["gates"].values()) == {"PASS"}  # L1-L6 still run, no expected-answer failure
+    for row in report["cases"]:
+        assert row["mode"] == "CONFORMANCE_ONLY"
+        assert not {"expected_result", "direction"} & {c["rule"] for c in row["gates"]["L2"]["checks"]}
+        assert {"contract_binding", "production_structure"} <= {c["rule"] for c in row["gates"]["L2"]["checks"]}
+    # No asserted answer, so no coverage claim.
+    assert len(report["uncovered_cases"]) == 8
+
+
+def test_wrong_expected_result_still_fails_l2():
+    case, candles = inputs()
+    case = {**case, "expected_result": "WAITING_SWEEP"}
+    raw = verify_case(case, candles, load_ticket_policy())
+    row = {"result": raw["result"], "gates": raw["gates"]}
+    runner._classify(case, row)
+    assert row["mode"] == "EXPECTED_ANSWER" and row["gates"]["L2"]["status"] == "FAIL"
+
+
+def test_reference_incomplete_is_data_coverage_gap_not_l2_failure():
+    case, candles = inputs()
+    cut = dt.datetime.fromisoformat(case["now"]).replace(hour=0, minute=0, second=0, microsecond=0)
+    # Drop one previous-day M5 bar: the reference grid is incomplete.
+    victim = next(c for c in candles["m5"] if cut - dt.timedelta(hours=12) <= c.time < cut)
+    candles = {**candles, "m5": [c for c in candles["m5"] if c is not victim]}
+    case = {**case, "expected_result": "ENTRY_VALID"}
+    raw = verify_case(case, candles, load_ticket_policy())
+    assert raw["result"]["result"] == "REFERENCE_INCOMPLETE"
+    row = {"result": raw["result"], "gates": raw["gates"]}
+    runner._classify(case, row)
+    assert row["data_coverage_gap"] is True
+    assert row["gates"]["L2"]["status"] == "PASS"
+    assert row["gates"]["L3"]["status"] == "NOT_EVIDENCED"
+    grid = next(c for c in row["gates"]["L3"]["checks"] if c["rule"] == "reference_grid")
+    assert grid["verdict"] == runner.DATA_COVERAGE_GAP
 
 
 @pytest.mark.parametrize("key", ["risk_pct", "cost_warn_R", "cost_block_R", "spread_ok_pct", "spread_block_pct"])
@@ -93,7 +190,7 @@ def test_fixture_rejections(mutation, gate):
     else:
         case["expected_direction"] = "SHORT"
     report = verify_case(case, candles, load_ticket_policy())
-    assert report["gates"][gate]["status"] == ("NOT_EVIDENCED" if mutation == "missing_reference" else "FAIL")
+    assert report["gates"][gate]["status"] == "FAIL"
 
 
 def test_geometry_corruption_is_detected(monkeypatch):
@@ -111,54 +208,17 @@ def test_geometry_corruption_is_detected(monkeypatch):
     assert result["gates"]["L2"]["status"] == result["gates"]["L4"]["status"] == "FAIL"
 
 
-def test_null_expected_answer_is_conformance_only():
-    case, candles = inputs()
-    case.update(expected_result=None, expected_direction=None)
-    row = verify_case(case, candles, load_ticket_policy())
-    assert set(row['gates']) == {'L1', 'L2', 'L3', 'L4', 'L5', 'L6'}
-    assert set(g['status'] for g in row['gates'].values()) == {'PASS'}
-    assert row['gates']['L2']['mode'] == 'CONFORMANCE_ONLY'
-    assert not {'L2.expected_result', 'L2.direction'} & {c['id'] for c in row['gates']['L2']['checks']}
-
-
-@pytest.mark.parametrize('source', ['RECORDED', 'MT5_VT_MARKETS_DEMO'])
-def test_recorded_missing_provenance_hashes_rejected(tmp_path, source):
-    data = json.loads(runner.DEFAULT.read_text())
-    data.update(source=source, mission='AGP-DATA-R2')
-    path = tmp_path / 'manifest.json'
-    path.write_text(json.dumps(data))
-    with pytest.raises(ValueError, match='missing provenance sha256s'):
-        runner.run(path)
-
-
-def test_reference_incomplete_is_data_coverage_gap():
-    case, candles = inputs()
-    case['expected_result'] = None
-    candles['m5'] = candles['m5'][1:]
-    row = verify_case(case, candles, load_ticket_policy())
-    assert row['result']['result'] == 'REFERENCE_INCOMPLETE'
-    assert row['gates']['L2']['status'] == 'PASS'
-    assert row['gates']['L3']['status'] == 'NOT_EVIDENCED'
-    assert row['data_coverage_gaps'] == ['REFERENCE_INCOMPLETE']
-
-
-def test_recorded_partial_provenance_hash_map_rejected(tmp_path):
-    data = json.loads(runner.DEFAULT.read_text())
-    data.update(source='RECORDED', mission='AGP-DATA-R2')
+def test_shared_recorded_prefix_accepts_naive_utc_m15(tmp_path):
+    recorded = ROOT / "tests/fixtures/ccfd_v100/recorded/manifest.json"
+    data = json.loads(recorded.read_text())
     data['cases'] = data['cases'][:1]
-    data['cases'][0]['provenance'] = 'provenance.json'
-    (tmp_path / 'provenance.json').write_text(json.dumps({'sha256': {'m5': 'a' * 64}}))
+    case = data['cases'][0]
+    case['paths'] = {tf: str((recorded.parent / rel).resolve()) for tf, rel in case['paths'].items()}
+    case['provenance'] = str(recorded.parent / case['provenance'])
     path = tmp_path / 'manifest.json'
     path.write_text(json.dumps(data))
-    with pytest.raises(ValueError, match='missing provenance sha256s'):
-        runner.run(path)
-
-
-def test_reference_gap_does_not_mask_invalid_ohlc():
-    case, candles = inputs()
-    case['expected_result'] = None
-    candles['m5'] = candles['m5'][1:]
-    bar = candles['m5'][0]
-    candles['m5'][0] = Candle(bar.time, bar.open, bar.low - 1, bar.low, bar.close)
-    row = verify_case(case, candles, load_ticket_policy())
-    assert row['gates']['L3']['status'] == 'FAIL'
+    report = runner.run(path)
+    assert report['provenance_hashes_valid']
+    assert report['gates']['L1'] == report['gates']['L2'] == 'PASS'
+    assert report['gates']['L3'] == 'NOT_EVIDENCED'
+    assert report['per_symbol']['BTCUSD']['state_counts'] == {'REFERENCE_INCOMPLETE': 1}
