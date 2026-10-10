@@ -248,9 +248,14 @@ def _manual_ticket(cycle, day, session, post, now, symbol: str, spread: Optional
         fx.STRATEGY_PATH, fx.build_fx_ticket = saved
 
 
+VT_DEMO_SERVER = "VTMarkets-Demo"    # the account OD1011-COMMISSION is bound to (owner register row)
+
+
 def bound_commission(symbol: str) -> Optional[float]:
-    """OD1011-COMMISSION: 0 only when config/owner_ticket.yaml binds it to the host-captured server and the
-    symbol's asset class. Any other account, unit-less non-zero value or malformed block -> None (never 0)."""
+    """OD1011-COMMISSION in the runtime schema (#132 reader): `decision_id`, committed `account_login_suffix`,
+    `commission_R`. Offline there is no live login, so 0 is applied only when the block names the decision,
+    carries a 3-4 digit login suffix, commission_R is exactly 0 (valid only at 0; never other R units), and the
+    replayed data's host-captured server is the VT demo server. Anything else -> None (INSUFFICIENT, never 0)."""
     try:
         raw = yaml.safe_load((ROOT / OWNER_CONFIG).read_text(encoding="utf-8")) or {}
     except (OSError, yaml.YAMLError):
@@ -259,10 +264,10 @@ def bound_commission(symbol: str) -> Optional[float]:
     record = symbol_metadata.load_record(symbol, root=str(ROOT))
     if not isinstance(block, dict) or record is None:
         return None
-    value = block.get("value")
-    asset = "GOLD" if symbol.startswith("XAU") else "FX"
-    bound = (block.get("source") == "OD1011-COMMISSION" and type(value) in (int, float) and value == 0
-             and record.get("server") == block.get("bound_server") and asset in (block.get("asset_classes") or []))
+    value, suffix = block.get("commission_R"), block.get("account_login_suffix")
+    bound = (block.get("decision_id") == "OD1011-COMMISSION" and type(value) in (int, float) and value == 0
+             and isinstance(suffix, str) and suffix.isdigit() and 3 <= len(suffix) <= 4
+             and record.get("server") == VT_DEMO_SERVER)
     return 0.0 if bound else None
 
 

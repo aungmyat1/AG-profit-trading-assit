@@ -140,6 +140,24 @@ def test_commission_is_never_zero_for_an_unbound_account(monkeypatch):
     assert h.bound_commission(SYMBOL) is None
 
 
+@pytest.mark.parametrize("block", [
+    {"decision_id": "OD1011-COMMISSION", "account_login_suffix": "985", "commission_R": 0.5},   # non-zero R
+    {"decision_id": "OD1011-COMMISSION", "account_login_suffix": "985", "commission_R": True},
+    {"decision_id": "OD1011-COMMISSION", "commission_R": 0},                                     # no suffix
+    {"decision_id": "OD1011-COMMISSION", "account_login_suffix": "12345678", "commission_R": 0},  # full login
+    {"decision_id": "OTHER", "account_login_suffix": "985", "commission_R": 0},
+    {"value": 0, "source": "OD1011-COMMISSION", "bound_server": "VTMarkets-Demo"},              # old schema
+])
+def test_commission_block_outside_the_runtime_schema_is_never_zero(tmp_path, monkeypatch, block):
+    import yaml
+    (tmp_path / "config").mkdir()
+    (tmp_path / h.OWNER_CONFIG).write_text(yaml.safe_dump({"owner_ticket": {"commission": block}}), encoding="utf-8")
+    real = h.symbol_metadata.load_record
+    monkeypatch.setattr(h.symbol_metadata, "load_record", lambda s, root=None: real(s, root=str(ROOT)))
+    monkeypatch.setattr(h, "ROOT", tmp_path)
+    assert h.bound_commission(SYMBOL) is None
+
+
 def test_l5_spread_absent_without_a_signal_bar():
     assert h.recorded_spread(SYMBOL, {"signal_timestamp": None, "risk_distance": 0.001})["spread_price"] is None
 
