@@ -227,7 +227,7 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
 <!-- [[[end]]] -->
 
-## Large-SMC crypto watch session summary (2026-10-10, branch `agp/lsmc-crypto-session-summary`, not merged)
+## Large-SMC crypto watch session summary (2026-10-10, #121 merged; MT5-failure path on branch `agp/lsmc-mt5-failure-summaries`, not merged)
 
 `--mode lsmc-weekend` (Sat/Sun 20:45–23:15 UTC window) and `--mode lsmc` (per UTC day) now journal every
 BTCUSD/ETHUSD Large-SMC evaluation to their own crypto window and send one `LSMC_CRYPTO_SUMMARY` per
@@ -236,6 +236,15 @@ Delivery reuses the FX summary path (`_process_due_summary` in `scripts/host/can
 once-only, same owner gates; archive-only unless enabled). The FX summary is unchanged and never counts
 crypto, so a crypto rejection inside an FX window is counted once, in the crypto summary. Tests:
 `tests/test_lsmc_crypto_session_summary.py`. No strategy, authorization or execution change.
+
+MT5 failure path (branch `agp/lsmc-mt5-failure-summaries`): when a `--mode lsmc` / `--mode lsmc-weekend`
+run hits `MT5_PACKAGE_MISSING`, `MT5_INITIALIZE_FAILED`, `DEMO_ACCOUNT_REQUIRED` or `MT5_BUSY`, it now
+journals a `DATA_ERROR` evaluation per crypto symbol (reason = the failure code) and still processes due
+crypto summaries, so an outage is reported as such rather than suppressed or later shown as
+`EMPTY_WINDOW` (`lsmc_failure_lines` in `scripts/host/live_candles_smoke.py`). Unit-tested only
+(`test_mt5_failure_still_journals_crypto_data_error_and_processes_due_summaries`, 8 cases;
+`pytest tests -q` -> 1773 passed, 2 skipped, 2026-10-10, Linux CI container, MT5 stubbed). Host validation
+on the Windows MT5 runtime is deferred: not live-verified.
 
 ## D6 READY per-symbol verification gate (2026-10-10, branch `agp/d6-per-symbol-verification`, not merged)
 
