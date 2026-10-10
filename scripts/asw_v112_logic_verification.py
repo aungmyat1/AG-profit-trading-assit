@@ -87,6 +87,15 @@ R2_SYMBOLS = {
                "provenance": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.PROVENANCE.md",
                "l4_failures": None, "seed": "112:XAUUSD"},
 }
+# CCW-P1-REPLAY-01 fixture routing: the AGP-DATA-R3 60-weekday recorded files (verification basis).
+# The 5-day EURUSD, 10-day and 20-day fixtures stay as historical evidence only. EURUSD has no
+# historical L4 recorded-failure list here: those dates (June-July) are not in the 60-day window.
+D60_SYMBOLS = {
+    sym: {"fixture": f"tests/fixtures/manual_ticket/{sym}_M15_recorded_spread_60d.csv",
+          "provenance": f"tests/fixtures/manual_ticket/{sym}_M15_recorded_spread_60d.PROVENANCE.md",
+          "l4_failures": None, "seed": None if sym == "EURUSD" else f"112:{sym}"}
+    for sym in ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
+}
 FIXTURE = SYMBOLS["EURUSD"]["fixture"]
 L4_FAILURES = SYMBOLS["EURUSD"]["l4_failures"]
 DAY_TYPES = ("long-sweep", "short-sweep", "TREND", "no-setup")
@@ -394,7 +403,8 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
     # EURUSD first on the shared stream, then the synthetic L4 sessions (unchanged order), then other symbols.
     rng = random.Random(SEED)
     by_symbol = {"EURUSD": _run_symbol("EURUSD", strategy, owner, rng)}
-    recorded_fail = json.loads((ROOT / L4_FAILURES).read_text())["cases"]
+    l4_failures = SYMBOLS["EURUSD"]["l4_failures"]       # None: route has no historical failure list
+    recorded_fail = json.loads((ROOT / l4_failures).read_text())["cases"] if l4_failures else []
     eur = {(c["cycle"], c["session_date"]): c for c in by_symbol["EURUSD"]}
     rec = []
     for f in recorded_fail:
