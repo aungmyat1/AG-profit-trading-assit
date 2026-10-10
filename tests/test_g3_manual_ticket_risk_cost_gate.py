@@ -31,6 +31,7 @@ from __future__ import annotations
 import csv
 import datetime as dt
 import json
+import re
 from decimal import Decimal
 from pathlib import Path
 
@@ -242,7 +243,7 @@ def test_host_local_carrier_wins_and_is_never_merged(tmp_path):
 
 def test_owner_risk_pct_reaches_sizing_fx(l2_conforming, sizing_spy):
     """The carrier's 0.5 -- not config/trading.yaml's 1.0 -- is the number sizing receives."""
-    t = ticket("EURUSD", CANDLES, meta=EUR_META, spread=0.00002)
+    t = ticket("EURUSD", CANDLES, meta=EUR_META, spread=0.00002, commission_r=EVIDENCED_COMMISSION_R)
     assert t["risk"]["risk_pct"] == D2_RISK_PCT and t["risk_status"] == "OK"
     assert [c["risk_pct"] for c in sizing_spy] == [D2_RISK_PCT]                  # one call, at 0.5%
     assert sizing_spy[0]["balance"] == BALANCE and sizing_spy[0]["meta"] is EUR_META
@@ -256,7 +257,7 @@ def test_owner_risk_pct_reaches_sizing_fx(l2_conforming, sizing_spy):
 
 def test_owner_risk_pct_reaches_sizing_gbpusd(l2_conforming, sizing_spy):
     """Second FX symbol, second recorded session: the same carrier value, a different lot."""
-    t = ticket("GBPUSD", GBP_CANDLES, meta=GBP_META, spread=0.00002, day=GBP_DAY)
+    t = ticket("GBPUSD", GBP_CANDLES, meta=GBP_META, spread=0.00002, day=GBP_DAY, commission_r=EVIDENCED_COMMISSION_R)
     assert t["risk"]["risk_pct"] == D2_RISK_PCT and [c["risk_pct"] for c in sizing_spy] == [D2_RISK_PCT]
     # 0.5% of 10k = $50 on a 6.2-pip stop -> 0.80 lots / $49.60. The 1.0% account default: 1.60 lots.
     assert t["lot_size"] == pytest.approx(0.80) and t["risk"]["risk_amount"] == pytest.approx(49.6)
@@ -355,7 +356,7 @@ def test_absent_carrier_files_block(tmp_path, l2_conforming, sizing_spy):
     """No carrier file at all (repo or host-local) -> BLOCK; nothing is inferred."""
     owner = mt.load_owner_config(tmp_path)
     assert owner == {"risk_pct": None, "risk_status": mt.RISK_CONFIG_MISSING, "cost_warn_R": None,
-                     "cost_block_R": None, "warn_status": "NOT_SET"}
+                     "cost_block_R": None, "warn_status": "NOT_SET", "policy_status": "OK"}
     t = ticket("EURUSD", CANDLES, meta=EUR_META, spread=0.00002, owner=owner)
     assert t["state"] == TICKET_BLOCKED and t["primary_block_reason"] == mt.RISK_CONFIG_MISSING
     assert sizing_spy == []
@@ -607,3 +608,78 @@ def test_risk_cost_gate_stays_read_only(l2_conforming, sizing_spy, btc_result, g
     assert crypto_t["execution_authorized"] is False and crypto_t["edge_verified"] is False
     assert {c["meta"] for c in sizing_spy} <= {EUR_META, GOLD_META, BTC_META}
     assert all(c["risk_pct"] == D2_RISK_PCT for c in sizing_spy)
+
+
+# ============================================  6. follow-up: fail-closed boundary, unknowns, display
+
+def test_near_boundary_float_slack_is_decided_as_the_boundary():
+    """cost = 0.25 - 5e-10 is inside the 1e-9 relative slack -> BLOCK; 0.10 - 5e-10 -> WARN (never PASS).
+
+    The predicate: cost >= threshold - COST_R_TOL * max(1, |threshold|), with COST_R_TOL = 1e-9.
+    """
+    cost_block, cost_warn = 0.25 - 5e-10, 0.10 - 5e-10
+    assert mt.cost_at_or_above_block(cost_block, D2_BLOCK_R) is True
+    assert mt.cost_at_or_above_block(cost_warn, D2_BLOCK_R) is False
+    assert guards.cost_at_or_above(cost_warn, D2_WARN_R) is True
+    # the same verdict in the crypto carrier path
+    blocks, _, _, _ = mt.crypto_cfd_cost_gate(1.0, cost_block, None, load_ticket_policy())
+    assert "COST_TOO_HIGH" in blocks
+    blocks, warns, _, _ = mt.crypto_cfd_cost_gate(1.0, cost_warn, None, load_ticket_policy())
+    assert "COST_TOO_HIGH" not in blocks and "COST_WARN" in warns
+
+
+def test_unknown_cost_is_not_a_pass_and_blocks_the_ticket(gold_ticket):
+    """Predicate: None -> False (no owner trigger, never zero). Ticket: an unknown cost BLOCKS."""
+    assert guards.cost_at_or_above(None, D2_BLOCK_R) is False
+    t = gold_ticket(None)                                   # spread unknown -> cost unknown
+    assert t["cost_in_R"] is None                           # never 0
+    assert "SPREAD_NOT_EVALUATED" in t["block_reasons"] and t["state"] == TICKET_BLOCKED
+
+
+@pytest.mark.parametrize("commission,reason", [
+    (None, "COMMISSION_INSUFFICIENT"),
+    (-0.01, "COMMISSION_INVALID"),
+    (float("nan"), "COMMISSION_INVALID"),
+    (float("inf"), "COMMISSION_INVALID"),
+])
+def test_fx_commission_missing_or_invalid_blocks_and_is_never_zero(gold_ticket, commission, reason):
+    t = gold_ticket(0.27, commission_r=commission)
+    assert reason in t["block_reasons"] and t["state"] == TICKET_BLOCKED
+    assert t["cost_in_R"] is None                           # never the spread alone, never 0
+    assert t["owner_accept_allowed"] is False
+
+
+def test_fx_zero_commission_is_a_real_value_not_missing(gold_ticket):
+    t = gold_ticket(0.27, commission_r=0.0)
+    assert t["cost_in_R"] == pytest.approx(0.09, abs=5e-5)
+    assert not {"COST_UNKNOWN", "COMMISSION_INSUFFICIENT", "COMMISSION_INVALID"} & set(t["block_reasons"])
+
+
+def test_fx_warn_not_below_block_is_ambiguous_like_crypto(tmp_path, l2_conforming, sizing_spy):
+    """cost_warn_R >= cost_block_R: FX/gold use RISK_POLICY_AMBIGUOUS, the same code crypto raises."""
+    cfg = tmp_path / mt.OWNER_CONFIG
+    cfg.parent.mkdir(parents=True, exist_ok=True)
+    cfg.write_text("owner_ticket:\n  risk_pct: 0.5\n  cost_warn_R: 0.25\n  cost_block_R: 0.25\n", encoding="utf-8")
+    owner = mt.load_owner_config(tmp_path)
+    t = ticket("EURUSD", CANDLES, meta=EUR_META, spread=0.00002, owner=owner, commission_r=EVIDENCED_COMMISSION_R)
+    assert "RISK_POLICY_AMBIGUOUS" in t["block_reasons"] and t["primary_block_reason"] == "RISK_POLICY_AMBIGUOUS"
+    assert t["state"] == TICKET_BLOCKED and sizing_spy == []
+    # crypto carrier with the same inverted pair: the loader raises the same open authority
+    inverted = re.sub(r"(cost_warn_R:\s*)[0-9.]+", r"\g<1>0.25", CRYPTO_POLICY_BODY)
+    inverted = re.sub(r"(cost_block_R:\s*)[0-9.]+", r"\g<1>0.25", inverted)
+    crypto_path = tmp_path / "crypto_cfd_ticket_policy.yaml"
+    crypto_path.write_text(inverted, encoding="utf-8")
+    assert "RISK_POLICY_AMBIGUOUS" in load_ticket_policy(crypto_path)["open_authorities"]
+
+
+def test_displayed_cost_names_the_decision_side_at_the_boundary(gold_ticket):
+    """4dp shows 0.2500 but the exact cost is below the 0.25R block -> WARN side, stated explicitly."""
+    below = gold_ticket(0.7499)                             # exact 0.249966... -> shown 0.2500
+    assert below["cost_in_R"] == 0.25
+    assert mt.COST_ABOVE_BLOCK_R not in below["block_reasons"]
+    assert below["cost_in_R_display"] == "0.2500 (<0.25, WARN)"
+    assert "0.2500 (<0.25, WARN)" in mt.render_text(below)
+    at = gold_ticket(0.69, commission_r=0.02)              # exact 0.25 -> BLOCK side
+    assert at["cost_in_R_display"] == "0.2500 (>=0.25, BLOCK)"
+    plain = gold_ticket(0.27)                              # 0.09R: no threshold shown -> bare value
+    assert plain["cost_in_R_display"] == "0.0900"

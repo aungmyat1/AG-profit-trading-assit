@@ -387,7 +387,8 @@ def reason_severity(reason: str) -> int:
         return 0
     if reason.startswith("DATA_ERROR:") or reason in DATA_METADATA_REASONS:
         return 1
-    if reason in ("RISK_CONFIG_MISSING", "COST_ABOVE_BLOCK_R"):
+    if reason in ("RISK_CONFIG_MISSING", "COST_ABOVE_BLOCK_R", "RISK_POLICY_AMBIGUOUS",
+                  "COMMISSION_INSUFFICIENT", "COMMISSION_INVALID"):
         return 2
     if reason == L5_WARN:
         return 5

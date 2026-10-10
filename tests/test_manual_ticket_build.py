@@ -34,7 +34,7 @@ def _no_repo_evidence(tmp_path, monkeypatch):
 def manual(day="2026-06-17", at="07:20", owner=UNSET, spread=0.00002, **kw):
     d, w, now, session, post, _ = replay(day, at)
     return mt.build_manual_ticket("EURUSD", "ASIAN_LONDON", d, session, 24, post, now=now, data_close=now,
-                                  spread=spread, owner=owner, **kw)     # 0.2 pip: inside the existing 15% gate
+                                  spread=spread, owner=owner, **{"commission_r": 0.0, **kw})  # 0.2 pip; commission supplied (no FX source)
 
 
 @pytest.fixture
@@ -82,7 +82,7 @@ def test_unset_owner_risk_blocks_with_explicit_not_set(l2_pass):
 
 
 def test_owner_risk_set_gives_manual_ticket_ready(stub_symbol_verified, l2_pass):
-    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)
+    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META, commission_r=0.10)
     assert t["state"] == "TICKET_READY" and t["owner_accept_allowed"] is True and t["ticket_status"] == "READY"
     assert t["primary_block_reason"] is None and t["block_reasons"] == [] and t["warnings"] == ["L5_WARN"]
     assert t["lot_size"] == pytest.approx(0.98) and t["risk"]["risk_amount"] <= 50.0
@@ -178,7 +178,7 @@ def test_scheduled_run_archives_manual_ticket_and_records_its_state(tmp_path, mo
 def test_pass_b_shape_l2_primary_with_signal_stale_secondary():
     """A2: a stale-signal sweep that also fails L2 reports L2 as primary, SIGNAL_STALE secondary
     (previously the single stop_reason was STALE_SIGNAL and hid the logic failure)."""
-    t = manual(READY_DAY, "07:40", owner=OWNER, balance=10000.0, meta=META)
+    t = manual(READY_DAY, "07:40", owner=OWNER, balance=10000.0, meta=META, commission_r=0.10)
     assert t["state"] == "TICKET_BLOCKED" and t["primary_block_reason"] == "LOGIC_GATE_FAIL:L2"
     assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "SIGNAL_STALE", "TICKET_EXPIRED"]
     assert t["warnings"] == ["L5_WARN"]
@@ -197,7 +197,7 @@ def test_block_reason_precedence_tiers():
 
 def test_ticket_ready_has_no_block_reasons_and_l5_warning_only_in_warnings(stub_symbol_verified, l2_pass):
     """Owner decision 3 (2026-10-06): warnings[] is separate; TICKET_READY => block_reasons == []."""
-    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)       # cost_warn_R 0.10, no commission
+    t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META, commission_r=0.10)  # cost 0.10R: warn, not block
     assert t["state"] == "TICKET_READY" and t["logic_gate"]["L5"]["status"] == "WARN"
     assert t["block_reasons"] == [] and t["primary_block_reason"] is None and t["stop_reason"] is None
     assert t["warnings"] == ["L5_WARN"] and "warn: L5_WARN" in mt.render_text(t)
@@ -245,7 +245,7 @@ def test_spread_too_wide_survives_the_stale_guard_in_its_tier():
     SIGNAL_STALE). Recorded 2026-06-23 at 07:40 with a 1.0-pip spread on a 5.1-pip stop (19.6% > 15%)."""
     d, w, now, session, post, _ = replay(READY_DAY, "07:40")
     t = mt.build_manual_ticket("EURUSD", "ASIAN_LONDON", d, session, 24, post, now=now, data_close=now,
-                               spread=0.00010, owner=OWNER, balance=10000.0, meta=META)
+                               spread=0.00010, owner=OWNER, balance=10000.0, meta=META, commission_r=0.0)
     assert t["decision"] == "STALE" and t["reason_code"] == LEGACY_STALE_SIGNAL      # legacy: stale wins
     assert t["spread_check"] == "SPREAD_TOO_WIDE"
     assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "SPREAD_TOO_WIDE", "SIGNAL_STALE", "TICKET_EXPIRED"]
