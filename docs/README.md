@@ -10,7 +10,7 @@ review_by: 2026-11-07
 records stop/target rejection, the owner-set 50% remaining-reward threshold, required
 host preflight, FX/crypto rejection ownership, diagnostics and offline tests.
 
-[AGP-C3-ASW-R2](status/AGP_C3_ASW_V112_R2_2026-10-10.md) records the GBPUSD 20-day and USDJPY/XAUUSD fixture replay, partial coverage and unchanged authority.
+[AGP-C3-ASW-R2 60-day](status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md) records the ST_ASIAN_SWEEP_5R_V1@1.1.2 replay on the 60-weekday recorded files, with a per-session gate matrix and unchanged authority; the [10/20-day R2 report](status/AGP_C3_ASW_V112_R2_2026-10-10.md) is historical only.
 
 [PR #94 follow-up S01/S02](status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md) records the signal-time identity classification (pending owner) and the LIVE/REPLAY digest reason fix.
 
