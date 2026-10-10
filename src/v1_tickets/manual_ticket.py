@@ -92,10 +92,16 @@ def resolve_commission(owner: Dict[str, Any], account_login: Any) -> Any:
     c = owner.get("commission")
     if not isinstance(c, dict) or c.get("decision_id") != COMMISSION_DECISION_ID:
         return None
-    if account_login is None or c.get("account_login") is None:
+    if account_login is None:
         return None
-    if str(account_login) != str(c.get("account_login")):
-        return None
+    login = str(account_login)
+    if c.get("account_login") is not None:                    # local-only full login: exact match
+        if login != str(c["account_login"]):
+            return None
+    else:                                                     # committed form: login suffix (AGENTS.md)
+        suffix = c.get("account_login_suffix")
+        if suffix is None or len(str(suffix)) < 3 or not login.endswith(str(suffix)):
+            return None
     return c.get("commission_R")
 
 
@@ -526,7 +532,9 @@ def crypto_cfd_commission(symbol: str, root: Path = REPO_ROOT) -> Optional[float
 
 
 def _valid_commission(value: Any) -> bool:
-    return type(value) in (int, float) and math.isfinite(value) and value >= 0
+    """commission_R is valid only at 0 (OD1011-COMMISSION). A non-zero value is never R units:
+    a non-zero commission needs a per-lot field (future)."""
+    return type(value) in (int, float) and math.isfinite(value) and value == 0
 
 
 def cost_display(cost_r: Optional[float], warn_r: Optional[float], block_r: Optional[float]) -> Optional[str]:

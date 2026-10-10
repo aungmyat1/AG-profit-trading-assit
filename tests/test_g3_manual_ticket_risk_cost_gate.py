@@ -414,7 +414,6 @@ FX_ROWS = [
     (0.11, 0.11, EVIDENCED_COMMISSION_R, "ABOVE_WARN"),
     (0.2499, 0.2499, EVIDENCED_COMMISSION_R, "BELOW_BLOCK"),
     (0.25, 0.25, EVIDENCED_COMMISSION_R, "AT_BLOCK"),      # 0.25R boundary -> BLOCK
-    (0.25, 0.23, 0.02, "AT_BLOCK"),                        # spread 0.23R + commission 0.02R
 ]
 
 
@@ -440,11 +439,9 @@ def test_fx_cost_thresholds(l2_conforming, symbol, candles, meta, day, cost_r, s
 GOLD_ROWS = [
     (0.27, EVIDENCED_COMMISSION_R, 0.09, "BELOW_WARN"),
     (0.30, EVIDENCED_COMMISSION_R, 0.10, "AT_WARN"),       # 0.30/3.00: decimal 0.10R, float 1 ulp below
-    (0.45, 0.05, 0.20, "ABOVE_WARN"),
+    (0.60, EVIDENCED_COMMISSION_R, 0.20, "ABOVE_WARN"),     # 0.20R spread-only (commission must be 0)
     (0.74, EVIDENCED_COMMISSION_R, 0.2467, "BELOW_BLOCK"),
     (0.75, EVIDENCED_COMMISSION_R, 0.25, "AT_BLOCK"),      # 0.75/3.00 == 0.25R exactly
-    (0.69, 0.02, 0.25, "AT_BLOCK"),                        # 0.23R + 0.02R: decimal 0.25R, float 1 ulp below
-    (0.57, 0.06, 0.25, "AT_BLOCK"),                        # 0.19R + 0.06R: decimal 0.25R, float 1 ulp below
 ]
 
 
@@ -541,7 +538,7 @@ def test_fx_warn_boundary_with_a_known_commission(spread, risk, commission, warn
 
 def test_displayed_cost_and_block_decision_agree_at_the_boundary(gold_ticket):
     """The owner-visible cost_in_R and the block decision are the same number at the boundary."""
-    blocked = gold_ticket(0.69, commission_r=0.02)
+    blocked = gold_ticket(0.75)
     assert blocked["cost_in_R"] == 0.25 and blocked["cost_block_R"] == D2_BLOCK_R
     assert mt.COST_ABOVE_BLOCK_R in blocked["block_reasons"]
     below = gold_ticket(0.72)
@@ -679,17 +676,19 @@ def test_displayed_cost_names_the_decision_side_at_the_boundary(gold_ticket):
     assert mt.COST_ABOVE_BLOCK_R not in below["block_reasons"]
     assert below["cost_in_R_display"] == "0.2500 (<0.25, WARN)"
     assert "0.2500 (<0.25, WARN)" in mt.render_text(below)
-    at = gold_ticket(0.69, commission_r=0.02)              # exact 0.25 -> BLOCK side
+    at = gold_ticket(0.75)                                 # exact 0.25 -> BLOCK side
     assert at["cost_in_R_display"] == "0.2500 (>=0.25, BLOCK)"
     plain = gold_ticket(0.27)                              # 0.09R: no threshold shown -> bare value
     assert plain["cost_in_R_display"] == "0.0900"
 
 
-# ===============================  7. OD1011-COMMISSION: commission read from the owner config, bound to the account
+# ===============================  7. OD1011-COMMISSION: suffix-bound commission, commission_R valid only at 0
 
+LOGIN = 12345                                   # runtime terminal account; the committed config holds only "345"
 OD1011_BLOCK = (
     "owner_ticket:\n  risk_pct: 0.5\n  cost_warn_R: 0.10\n  cost_block_R: 0.25\n"
-    "  commission:\n    decision_id: OD1011-COMMISSION\n    account_login: 12345\n    commission_R: {value}\n"
+    "  commission:\n    decision_id: OD1011-COMMISSION\n    account_login_suffix: \"345\"\n"
+    "    commission_R: {value}\n"
 )
 
 
@@ -700,27 +699,36 @@ def _owner_with_commission(tmp_path: Path, body: str) -> dict:
     return mt.load_owner_config(tmp_path)
 
 
-@pytest.mark.parametrize("login", [12345, "12345"])
-def test_commission_bound_to_this_account_is_read_from_config(tmp_path, l2_conforming, login):
-    owner = _owner_with_commission(tmp_path, OD1011_BLOCK.format(value="0.0"))
+@pytest.mark.parametrize("login", [LOGIN, str(LOGIN)])
+def test_suffix_bound_commission_matches_the_running_account(tmp_path, l2_conforming, login):
+    owner = _owner_with_commission(tmp_path, OD1011_BLOCK.format(value="0"))
     commission = mt.resolve_commission(owner, login)
-    assert commission == 0.0 and commission is not None         # the configured value, not an invented zero
+    assert commission == 0 and commission is not None           # the configured value, not an invented zero
     t = ticket("EURUSD", CANDLES, meta=EUR_META, spread=0.00002, owner=owner, commission_r=commission)
     assert not {"COMMISSION_INSUFFICIENT", "COMMISSION_INVALID"} & set(t["block_reasons"])
     assert t["cost_in_R"] == pytest.approx(0.00002 / t["stop_distance"], abs=5e-5)
 
 
+def test_full_login_in_local_config_is_an_exact_match(tmp_path):
+    body = OD1011_BLOCK.format(value="0").replace('    account_login_suffix: "345"\n', "    account_login: 12345\n")
+    owner = _owner_with_commission(tmp_path, body)
+    assert mt.resolve_commission(owner, LOGIN) == 0
+    assert mt.resolve_commission(owner, 12346) is None           # same suffix family, different account
+
+
 @pytest.mark.parametrize("case,body,login,reason", [
-    ("account_mismatch", OD1011_BLOCK.format(value="0.0"), 99999, "COMMISSION_INSUFFICIENT"),
-    ("runtime_account_unknown", OD1011_BLOCK.format(value="0.0"), None, "COMMISSION_INSUFFICIENT"),
-    ("key_absent", "owner_ticket:\n  risk_pct: 0.5\n  cost_warn_R: 0.10\n  cost_block_R: 0.25\n", 12345,
+    ("suffix_mismatch", OD1011_BLOCK.format(value="0"), 99999, "COMMISSION_INSUFFICIENT"),
+    ("runtime_account_unknown", OD1011_BLOCK.format(value="0"), None, "COMMISSION_INSUFFICIENT"),
+    ("suffix_too_short", OD1011_BLOCK.format(value="0").replace('"345"', '"45"'), LOGIN, "COMMISSION_INSUFFICIENT"),
+    ("key_absent", "owner_ticket:\n  risk_pct: 0.5\n  cost_warn_R: 0.10\n  cost_block_R: 0.25\n", LOGIN,
      "COMMISSION_INSUFFICIENT"),
-    ("commission_R_absent", OD1011_BLOCK.replace("    commission_R: {value}\n", "").format(value=""), 12345,
+    ("commission_R_absent", OD1011_BLOCK.replace("    commission_R: {value}\n", "").format(value=""), LOGIN,
      "COMMISSION_INSUFFICIENT"),
-    ("other_decision_id", OD1011_BLOCK.format(value="0.0").replace("OD1011-COMMISSION", "OD9999"), 12345,
+    ("other_decision_id", OD1011_BLOCK.format(value="0").replace("OD1011-COMMISSION", "OD9999"), LOGIN,
      "COMMISSION_INSUFFICIENT"),
-    ("negative", OD1011_BLOCK.format(value="-0.01"), 12345, "COMMISSION_INVALID"),
-    ("non_numeric", OD1011_BLOCK.format(value="'abc'"), 12345, "COMMISSION_INVALID"),
+    ("non_zero_is_not_R_units", OD1011_BLOCK.format(value="0.02"), LOGIN, "COMMISSION_INVALID"),
+    ("negative", OD1011_BLOCK.format(value="-0.01"), LOGIN, "COMMISSION_INVALID"),
+    ("non_numeric", OD1011_BLOCK.format(value="'abc'"), LOGIN, "COMMISSION_INVALID"),
 ])
 def test_unbound_or_invalid_commission_blocks_and_is_never_zero(tmp_path, l2_conforming, case, body, login, reason):
     owner = _owner_with_commission(tmp_path, body)
