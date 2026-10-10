@@ -59,20 +59,19 @@ EQ_EPS_POINTS = 1e-6   # float-noise slack, in points; never a price tolerance
 
 
 def _eq(a: Optional[float], b: Optional[float], digits: Optional[int]) -> bool:
-    """`a` equals expectation `b` on the ticket's point grid, or to float precision when unrounded.
+    """`a` equals expectation `b` rounded to the ticket's point grid, or to float precision when unrounded.
 
-    `b` is snapped to the nearest point; only EQ_EPS_POINTS x point of float noise is tolerated, so a
-    half-point or one-point error fails. On an exact half-point tie either neighbour is accepted: the
-    spec declares no rounding mode (SPEC_AMBIGUITY, owner decision pending)."""
+    `b` is rounded ROUND_HALF_UP (ties away from zero, OD1011-ROUNDING); only EQ_EPS_POINTS x point of
+    float noise is tolerated, so a half-point error, a one-point error or the other tie neighbour fails."""
     if a is None or b is None:
         return False
     if digits is None:
         return abs(a - b) <= 1e-9 * max(1.0, abs(a), abs(b))
     point = _point(digits)
-    k = b / point
+    k = abs(b) / point
     base = math.floor(k)
-    grid = (base, base + 1) if abs(k - base - 0.5) <= EQ_EPS_POINTS else (round(k),)
-    return any(abs(a - g * point) <= EQ_EPS_POINTS * point for g in grid)
+    g = base + 1 if k - base >= 0.5 - EQ_EPS_POINTS else base
+    return abs(a - math.copysign(g * point, b)) <= EQ_EPS_POINTS * point
 
 
 def _signal_candle(ticket: Dict[str, Any], post: Sequence[Candle]) -> Optional[Candle]:

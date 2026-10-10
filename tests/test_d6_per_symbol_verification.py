@@ -38,7 +38,10 @@ def ready(symbol: str, version: str) -> dict:
 def test_verification_source_is_the_registry_and_lists_only_eurusd_for_1_1_2():
     reg = yaml.safe_load(open(ra.REGISTRY_PATH, encoding="utf-8"))["strategies"][SID]
     entries = reg["candidate_versions"]["1.1.2"]["logic_verified_symbols"]
-    assert entries == [{"symbol": "EURUSD", "evidence": "docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md"}]
+    assert entries[0] == {"symbol": "EURUSD", "evidence": "docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md"}
+    assert [e["symbol"] for e in entries] == ["EURUSD", "GBPUSD"]
+    assert (entries[1]["sessions"], entries[1]["branches"], entries[1]["engine_setups"]) == \
+        (["ASIAN_LONDON"], ["RANGE_SWEEP"], ["SWEEP"])          # OD1011-SCOPE: branch-scoped
     root = __import__("pathlib").Path(ra.REGISTRY_PATH).parents[1]
     assert all((root / e["evidence"]).is_file() for e in entries)     # evidence ref resolves
     assert "logic_verified_symbols" not in reg and "verified_symbols" not in reg   # runtime 1.1.1: none
@@ -85,8 +88,10 @@ def test_production_d6_is_still_off():
     assert ra.ready_authority(SID) == (False, ra.READY_AUTHORITY_OFF)
 
 
-@pytest.mark.parametrize("symbol,expected", [("EURUSD", "READY"), ("GBPUSD", ra.SHADOW_INFO_ONLY)])
-def test_fx_ticket_path_applies_the_symbol_gate(monkeypatch, d6_on, symbol, expected):
+@pytest.mark.parametrize("symbol,cycle,expected", [
+    ("EURUSD", "ASIAN_LONDON", "READY"), ("GBPUSD", "ASIAN_LONDON", "READY"),       # GBPUSD: OD1011-SCOPE
+    ("USDJPY", "ASIAN_LONDON", ra.SHADOW_INFO_ONLY)])   # out-of-scope sessions: test_scoped_entry_*
+def test_fx_ticket_path_applies_the_symbol_gate(monkeypatch, d6_on, symbol, cycle, expected):
     sig = types.SimpleNamespace(status="SIGNAL", reason_code="SWEEP_V1", regime="RANGE", setup="SWEEP",
                                 signal_id="s1", box_high=1.1720, box_low=1.1660, box_mid=1.1690,
                                 signal_timestamp=dt.datetime(2026, 10, 7, 7, 0, tzinfo=UTC), direction="LONG",
@@ -94,7 +99,7 @@ def test_fx_ticket_path_applies_the_symbol_gate(monkeypatch, d6_on, symbol, expe
     monkeypatch.setattr(fx_tickets, "evaluate", lambda *a, **k: sig)
     monkeypatch.setattr(ra, "CONFIG_PATH", d6_on)
     bar = Candle(dt.datetime(2026, 10, 7, 7, 0, tzinfo=UTC), 1.1665, 1.1670, 1.1660, 1.1666)
-    t = fx_tickets.build_fx_ticket(symbol, "ASIAN_LONDON", DAY, [], 2, [bar], data_source="MT5_VT_MARKETS_DEMO",
+    t = fx_tickets.build_fx_ticket(symbol, cycle, DAY, [], 2, [bar], data_source="MT5_VT_MARKETS_DEMO",
                                    evaluated_at=AT, data_close=AT, spread=0.00015, strategy_path=CANDIDATE)
     assert (t["strategy_version"], t["decision"]) == ("1.1.2", expected)
 
@@ -122,3 +127,39 @@ def test_entry_without_evidence_ref_is_not_verified(tmp_path):
 """, encoding="utf-8")
     for sym in ("EURUSD", "GBPUSD", "USDJPY"):
         assert ra.symbol_verified(SID, "1.1.2", sym, registry_path=str(reg)) is False
+
+
+def test_scoped_entry_covers_only_its_session_and_branch():
+    """OD1011-SCOPE: GBPUSD is verified for ASIAN_LONDON x SWEEP only; anything else fails closed."""
+    assert ra.symbol_verified(SID, "1.1.2", "GBPUSD", cycle="ASIAN_LONDON", setup="SWEEP") is True
+    for cycle, setup in (("LONDON_NEWYORK", "SWEEP"), ("ASIAN_LONDON", "TREND"), ("ASIAN_LONDON", "RANGE"),
+                         (None, "SWEEP"), ("ASIAN_LONDON", None)):
+        assert ra.symbol_verified(SID, "1.1.2", "GBPUSD", cycle=cycle, setup=setup) is False, (cycle, setup)
+    assert ra.symbol_verified(SID, "1.1.1", "GBPUSD", cycle="ASIAN_LONDON", setup="SWEEP") is False
+    # unscoped EURUSD entry keeps covering every session/branch
+    assert ra.symbol_verified(SID, "1.1.2", "EURUSD", cycle="LONDON_NEWYORK", setup="SWEEP") is True
+
+
+def test_malformed_scope_fails_closed(tmp_path):
+    reg = tmp_path / "registry.yaml"
+    reg.write_text(f"""strategies:
+  {SID}:
+    candidate_versions:
+      "1.1.2":
+        logic_verified_symbols:
+          - symbol: GBPUSD
+            sessions: ASIAN_LONDON
+            engine_setups: [SWEEP]
+            evidence: x.md
+""", encoding="utf-8")
+    assert ra.symbol_verified(SID, "1.1.2", "GBPUSD", registry_path=str(reg), cycle="ASIAN_LONDON",
+                              setup="SWEEP") is False
+
+
+def test_apply_ready_authority_passes_ticket_scope(tmp_path):
+    cfg = tmp_path / "ready.yaml"
+    cfg.write_text(f"strategies:\n  {SID}:\n    ready: ON\n", encoding="utf-8")
+    base = {"decision": "READY", "strategy_id": SID, "strategy_version": "1.1.2", "symbol": "GBPUSD",
+            "cycle": "ASIAN_LONDON", "setup": "SWEEP", "reason_code": "X"}
+    assert ra.apply_ready_authority(base, path=str(cfg))["decision"] == "READY"
+    assert ra.apply_ready_authority({**base, "cycle": "LONDON_NEWYORK"}, path=str(cfg))["decision"] == "SHADOW_INFO_ONLY"

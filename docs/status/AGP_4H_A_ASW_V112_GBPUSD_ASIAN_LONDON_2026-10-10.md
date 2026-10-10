@@ -1,7 +1,7 @@
 # AGP-4H-A — ST_ASIAN_SWEEP_5R_V1@1.1.2, lane GBPUSD × ASIAN_LONDON (2026-10-10)
 
 Logic verification only (rule conformance on recorded fixtures). No edge, demo or live authority.
-ORDER_API_CALLS 0, broker calls 0. Registry **not** modified.
+ORDER_API_CALLS 0, broker calls 0. Registry modified only by the OD1011 resume (scoped GBPUSD entry; see below).
 
 ## Lane choice
 
@@ -127,6 +127,31 @@ entries and no owner cost binding returns L5 FAIL (`OWNER_BINDING_MISSING`, test
 **Pending owner decisions (not acted on):** (1) rounding mode A ROUND_HALF_UP / B ROUND_HALF_EVEN;
 (2) the FX commission source for GBPUSD-VIP; (3) branch scope, i.e. whether logic verification is
 SWEEP-only with RANGE_REJECTION and TREND fail-closed (RANGE is NOT_EXERCISED on recorded days).
+
+## OD1011 resume (2026-10-11, base #142 head f257a9d) — owner decisions applied
+
+Decisions: OD1011-COMMISSION, -ROUNDING, -SCOPE, -L5 (`docs/governance/OWNER_DECISION_REGISTER.md`, also #149).
+
+- **Rounding:** `_eq` rounds the expectation ROUND_HALF_UP (ties away from zero) to the point grid. Slack is
+  `EQ_EPS_POINTS` = 1e-6 point. The other tie neighbour, a half-point error and a one-point error all fail (tested).
+- **Rounding finding (owner info, not fixed):** with tie acceptance removed, `R.target_leg2` now also fails on 8
+  TREND cases (EURUSD AL 5, GBPUSD LN 3). The engine derives TREND TP2 from the **unrounded** box mid
+  (e.g. 1.351395 + 5R = 1.35927 exactly). The gate rebuilds it from the rounded ticket entry (1.3514) and so
+  sees a false half-point tie. It is TREND-only, TREND stays spec FAIL_CLOSED via `R.regime_branch`, and no lane
+  verdict or kept entry changed. SWEEP levels are bar prices on the grid and are unaffected. Proposed follow-up:
+  if TREND is ever verified, the gate should rebuild TREND TP2 from the box mid, not the ticket entry.
+- **Commission:** the harness applies `commission: 0` from `config/owner_ticket.yaml` only when `source:
+  OD1011-COMMISSION`, the value is exactly 0, `bound_server` equals the host-captured `server` (VTMarkets-Demo)
+  and the symbol's asset class is listed. Otherwise it is None (INSUFFICIENT, tested). The account type
+  (STANDARD_STP) is owner-stated and not in host evidence. The first demo deals' commission field must confirm it.
+- **L5 (OD1011-L5):** lane PASS needs, for every kept entry, the conservative spread, a bound commission, and the
+  owner-ticket cost gate (`build_manual_ticket`) reproducing cost_in_R and the 0.10 R warn / 0.25 R block.
+
+GBPUSD × ASIAN_LONDON (58 days): L1 PASS · L2 PASS · L3 PASS (0 prefix/mutation mismatches) · L4 PASS ·
+**L5 PASS** (7/7 cost-gate correct; actionability COST_BLOCKED 4, COST_WARN 3) · L6 PASS. Kept entries:
+SWEEP LONG 5 / SHORT 2. **Verdict: LOGIC_VERIFIED for ASIAN_LONDON × RANGE_SWEEP (SWEEP) only.** The registry
+entry is bound to contract `941dec55…`, logic identity `d7a8ebe5…` and this evidence. TREND and RANGE_REJECTION
+stay fail-closed; LONDON_NEWYORK is not covered. No demo, live or edge authority; D6 READY stays OFF.
 
 ## Reproduction
 

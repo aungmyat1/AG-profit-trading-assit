@@ -8,6 +8,15 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-10)
 
+AGP-LANE-A3/OD1011 (2026-10-11, recorded-fixture verification only, not host-verified):
+`ST_ASIAN_SWEEP_5R_V1@1.1.2` `logic_verified_symbols` gains GBPUSD, scoped to ASIAN_LONDON ×
+RANGE_SWEEP (engine_setup SWEEP) per OD1011-SCOPE. The D6 reader (`ready_authority.symbol_verified`) now
+honours `sessions`/`engine_setups` scope and fails closed outside it; unscoped EURUSD is unchanged. L1–L6
+PASS on 58 VT recorded days. L5 follows OD1011-L5: max(bar, host-snapshot) spread plus OD1011-COMMISSION
+(0, bound to VTMarkets-Demo). 4 of 7 kept entries are cost-blocked (an actionability outcome). The gate rounds
+ROUND_HALF_UP (OD1011-ROUNDING). D6 READY stays OFF; demo/live/edge flags are unchanged. Evidence:
+`docs/status/AGP_4H_A_ASW_V112_GBPUSD_ASIAN_LONDON_2026-10-10.md`.
+
 DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
 2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
 with the VT server-time rule (server time = New York time + 7h). They no longer use one
