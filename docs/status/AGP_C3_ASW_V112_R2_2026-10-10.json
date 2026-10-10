@@ -1,0 +1,3994 @@
+{
+  "BROKER_MUTATION_COUNT": 0,
+  "NO_BROKER_MUTATION": true,
+  "ORDER_API_CALLS": 0,
+  "READY": "UNCHANGED_OFF",
+  "admission": "NOT_ADMITTED",
+  "base_sha": "ad216802f480b18705f24929697eb66279c723b5",
+  "broker_calls": 0,
+  "combined_run": {
+    "L5": {
+      "block_reasons": [
+        "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['USDJPY', 'XAUUSD']"
+      ],
+      "cost_block_R": 0.25,
+      "cost_warn_R": 0.1,
+      "d2_source": "config/owner_ticket.yaml",
+      "risk_pct": 0.5,
+      "verdict": "BLOCK",
+      "warn_reasons": [
+        "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
+        "SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
+        "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+      ]
+    },
+    "gates_by_symbol": {
+      "EURUSD": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "BLOCK",
+        "L6": "PASS"
+      },
+      "GBPUSD": {
+        "L1": "PASS",
+        "L2": "NOT_EVIDENCED",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "BLOCK",
+        "L6": "PASS"
+      },
+      "USDJPY": {
+        "L1": "PASS",
+        "L2": "NOT_EVIDENCED",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "BLOCK",
+        "L6": "PASS"
+      },
+      "XAUUSD": {
+        "L1": "PASS",
+        "L2": "NOT_EVIDENCED",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "BLOCK",
+        "L6": "PASS"
+      }
+    },
+    "reason_for_scoped_runs": "Unchanged L5 globally blocks all included symbols if any lacks pip evidence; each requested symbol was also replayed with the mandatory EURUSD baseline.",
+    "symbols": [
+      "EURUSD",
+      "GBPUSD",
+      "USDJPY",
+      "XAUUSD"
+    ],
+    "verdicts": {
+      "EURUSD": "NOT_VERIFIED",
+      "GBPUSD": "NOT_VERIFIED",
+      "USDJPY": "NOT_VERIFIED",
+      "XAUUSD": "NOT_VERIFIED"
+    }
+  },
+  "coverage": "PARTIAL",
+  "coverage_cap": "Fixture-only evidence cannot exceed PARTIAL; PASS denotes the scoped check only.",
+  "cycles": [
+    "ASIAN_LONDON",
+    "LONDON_NEWYORK"
+  ],
+  "date": "2026-10-10",
+  "edge_verified": false,
+  "execution_code_sha": "ad216802f480b18705f24929697eb66279c723b5",
+  "execution_provenance": "Base checkout plus fixture-routing data only. Final PR head is reported separately.",
+  "generated_status_modified": false,
+  "harness_functions_unchanged_from_base": true,
+  "harness_rule_edits": 0,
+  "harness_source_sha256": "20cf70412d2164ffdc029ff1157e7272e05a03afd4188577505bd9cfe82a74a2",
+  "identity": {
+    "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+    "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+    "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5"
+  },
+  "per_symbol": {
+    "GBPUSD": {
+      "cases": [
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-14",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-09-14",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-15",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 0,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "DATA_ERROR",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.34912,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.entry_trigger",
+            "R.regime_branch",
+            "R.stop_loss"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-15",
+          "setup": "TREND",
+          "stop_loss": 1.35011,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-16",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 0,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "DATA_ERROR",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.34801,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.entry_trigger",
+            "R.regime_branch",
+            "R.stop_loss"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-16",
+          "setup": "TREND",
+          "stop_loss": 1.34655,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-17",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 5,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.33887,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": false,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.stop_loss",
+            "R.target_leg2",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-17",
+          "setup": "SWEEP",
+          "stop_loss": 1.33887,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-18",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 16,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "SHADOW_INFO_ONLY",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.33547,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-18",
+          "setup": "SWEEP",
+          "stop_loss": 1.33498,
+          "ticket_gate_blocking_failures": [
+            "L2"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-21",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 2,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.33726,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-21",
+          "setup": "SWEEP",
+          "stop_loss": 1.33719,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-22",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 3,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.33644,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "ACCOUNT_BALANCE_UNAVAILABLE",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-22",
+          "setup": "SWEEP",
+          "stop_loss": 1.33573,
+          "ticket_gate_blocking_failures": [],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-23",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 0,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "DATA_ERROR",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.33276,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.entry_trigger",
+            "R.regime_branch",
+            "R.stop_loss"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-23",
+          "setup": "TREND",
+          "stop_loss": 1.33443,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-24",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.32446,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-24",
+          "setup": "SWEEP",
+          "stop_loss": 1.32467,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-25",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.32245,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-25",
+          "setup": "SWEEP",
+          "stop_loss": 1.32274,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-28",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-09-28",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-29",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 3,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.32337,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "ACCOUNT_BALANCE_UNAVAILABLE",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-29",
+          "setup": "SWEEP",
+          "stop_loss": 1.32272,
+          "ticket_gate_blocking_failures": [],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-30",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-09-30",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-10-01",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-01",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-10-02",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 2,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.32147,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-02",
+          "setup": "SWEEP",
+          "stop_loss": 1.32155,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-10-05",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-05",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-10-06",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.32164,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-06",
+          "setup": "SWEEP",
+          "stop_loss": 1.32102,
+          "ticket_gate_blocking_failures": [
+            "L2"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-10-07",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 2,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.32477,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-07",
+          "setup": "SWEEP",
+          "stop_loss": 1.32411,
+          "ticket_gate_blocking_failures": [
+            "L2"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-10-08",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.31957,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-08",
+          "setup": "SWEEP",
+          "stop_loss": 1.31874,
+          "ticket_gate_blocking_failures": [
+            "L2"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-10-09",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-09",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-14",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 6,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.34729,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-14",
+          "setup": "SWEEP",
+          "stop_loss": 1.34712,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-15",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 2,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.34848,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-15",
+          "setup": "SWEEP",
+          "stop_loss": 1.3485,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-16",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-09-16",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-17",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.33697,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-17",
+          "setup": "SWEEP",
+          "stop_loss": 1.33685,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-18",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 11,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "SPREAD_TOO_WIDE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.33486,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-18",
+          "setup": "SWEEP",
+          "stop_loss": 1.33479,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-21",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 7,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.33932,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-21",
+          "setup": "SWEEP",
+          "stop_loss": 1.33935,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-22",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-09-22",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-23",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 6,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.3266,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-23",
+          "setup": "SWEEP",
+          "stop_loss": 1.32656,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-24",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 12,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "SPREAD_TOO_WIDE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.32118,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-24",
+          "setup": "SWEEP",
+          "stop_loss": 1.32112,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-25",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.32505,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-25",
+          "setup": "SWEEP",
+          "stop_loss": 1.3253,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-28",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 9,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.32688,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-28",
+          "setup": "SWEEP",
+          "stop_loss": 1.32756,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-29",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 2,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.32475,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-29",
+          "setup": "SWEEP",
+          "stop_loss": 1.32485,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-09-30",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 0,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "DATA_ERROR",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.32713,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.entry_trigger",
+            "R.regime_branch",
+            "R.stop_loss",
+            "R.target_leg2"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-30",
+          "setup": "TREND",
+          "stop_loss": 1.32423,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-01",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-01",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-02",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.31999,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.max_spread_fraction",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-02",
+          "setup": "SWEEP",
+          "stop_loss": 1.3199,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-05",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 9,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.31995,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-05",
+          "setup": "SWEEP",
+          "stop_loss": 1.31953,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-06",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-06",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-07",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 0,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "DATA_ERROR",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.32354,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.entry_trigger",
+            "R.regime_branch",
+            "R.stop_loss",
+            "R.target_leg2"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-07",
+          "setup": "TREND",
+          "stop_loss": 1.32544,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-08",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 2,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 1.32119,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-08",
+          "setup": "SWEEP",
+          "stop_loss": 1.32135,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:GBPUSD:LONDON_NEWYORK:2026-10-09",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 8,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 1.32162,
+          "fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": false,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread_fraction",
+            "R.stop_loss",
+            "R.target_leg2",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-09",
+          "setup": "SWEEP",
+          "stop_loss": 1.32162,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        }
+      ],
+      "cases_count": 40,
+      "coverage": "PARTIAL",
+      "dataset": {
+        "classification": "RECORDED_DEVELOPMENT_FIXTURE",
+        "path": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+        "provenance": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "sha256": "0a48dece178709d8ddb9699a78b102d6a0ec93d1fa624d1e6cae75495e16fd96"
+      },
+      "gate_reasons": {
+        "L1": "Exact unchanged contract/engine identity; replay determinism and fixture SHA256 provenance PASS.",
+        "L2": {
+          "by_cycle": {
+            "ASIAN_LONDON": {
+              "conforming_cases": [
+                {
+                  "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-22",
+                  "cycle": "ASIAN_LONDON",
+                  "direction": "LONG"
+                },
+                {
+                  "case_id": "recorded:GBPUSD:ASIAN_LONDON:2026-09-29",
+                  "cycle": "ASIAN_LONDON",
+                  "direction": "LONG"
+                }
+              ],
+              "day_types": {
+                "TREND": 3,
+                "insufficient-data": 0,
+                "long-sweep": 7,
+                "no-setup": 6,
+                "range-rejection": 0,
+                "short-sweep": 4
+              },
+              "fail_check_counts": {
+                "R.entry_level": 12,
+                "R.entry_trigger": 3,
+                "R.max_spread_fraction": 3,
+                "R.regime_branch": 3,
+                "R.stop_loss": 4,
+                "R.target_leg2": 1,
+                "R.target_order": 5
+              }
+            },
+            "LONDON_NEWYORK": {
+              "conforming_cases": [],
+              "day_types": {
+                "TREND": 2,
+                "insufficient-data": 0,
+                "long-sweep": 8,
+                "no-setup": 4,
+                "range-rejection": 0,
+                "short-sweep": 6
+              },
+              "fail_check_counts": {
+                "R.entry_level": 13,
+                "R.entry_trigger": 2,
+                "R.max_spread_fraction": 9,
+                "R.regime_branch": 2,
+                "R.stop_loss": 3,
+                "R.target_leg2": 3,
+                "R.target_order": 14
+              }
+            }
+          },
+          "not_evidenced_cycles": [
+            "LONDON_NEWYORK"
+          ],
+          "undeclared_cases": []
+        },
+        "L3": {
+          "cases": 40,
+          "future_mutation_mismatches": 0,
+          "future_mutations": 700,
+          "pre_emission_signals": 0,
+          "prefix_mismatches": 0,
+          "streaming_batch_mismatches": 0
+        },
+        "L4": {
+          "admitted": 2,
+          "admitted_bad_geometry": 0,
+          "leaked_to_admitted": [],
+          "raw_tp_inversion": 19,
+          "raw_zero_stop": 2
+        },
+        "L5": {
+          "block_reasons": [],
+          "cost_block_R": 0.25,
+          "cost_warn_R": 0.1,
+          "d2_source": "config/owner_ticket.yaml",
+          "risk_pct": 0.5,
+          "verdict": "WARN",
+          "warn_reasons": [
+            "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
+            "SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ]
+        },
+        "L6": {
+          "signal_cases": 30,
+          "source": "Unchanged manual-ticket logic_gate.l6_freshness",
+          "statuses": [
+            "PASS"
+          ]
+        }
+      },
+      "gates": {
+        "L1": "PASS",
+        "L2": "NOT_EVIDENCED",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      },
+      "recorded_days": 20,
+      "symbol_scope": [
+        "EURUSD",
+        "GBPUSD"
+      ],
+      "uncovered_cases": [
+        "L2 conforming sweep: LONDON_NEWYORK",
+        "RANGE_REJECTION: no recorded case",
+        "Measured recorded spread/commission and cost_in_R",
+        "Live/demo execution and READY admission",
+        "ASIAN_LONDON conforming SHORT",
+        "LONDON_NEWYORK conforming LONG and SHORT"
+      ],
+      "verdict": "PARTIAL"
+    },
+    "USDJPY": {
+      "cases": [
+        {
+          "case_id": "recorded:USDJPY:ASIAN_LONDON:2026-09-28",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-09-28",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:USDJPY:ASIAN_LONDON:2026-09-29",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 14,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 157.665,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-29",
+          "setup": "SWEEP",
+          "stop_loss": 157.683,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:ASIAN_LONDON:2026-09-30",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-09-30",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:USDJPY:ASIAN_LONDON:2026-10-01",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 0,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "DATA_ERROR",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 157.9795,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.entry_trigger",
+            "R.max_spread",
+            "R.regime_branch",
+            "R.stop_loss"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-01",
+          "setup": "TREND",
+          "stop_loss": 157.559,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:ASIAN_LONDON:2026-10-02",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-02",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:USDJPY:ASIAN_LONDON:2026-10-05",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-05",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:USDJPY:ASIAN_LONDON:2026-10-06",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 158.154,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.max_spread"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-06",
+          "setup": "SWEEP",
+          "stop_loss": 158.232,
+          "ticket_gate_blocking_failures": [
+            "L2"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:ASIAN_LONDON:2026-10-07",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 3,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 158.306,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-07",
+          "setup": "SWEEP",
+          "stop_loss": 158.267,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:ASIAN_LONDON:2026-10-08",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 12,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 158.272,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-08",
+          "setup": "SWEEP",
+          "stop_loss": 158.289,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:ASIAN_LONDON:2026-10-09",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 8,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 158.287,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-09",
+          "setup": "SWEEP",
+          "stop_loss": 158.291,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:LONDON_NEWYORK:2026-09-28",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-09-28",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:USDJPY:LONDON_NEWYORK:2026-09-29",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 2,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 157.13,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-29",
+          "setup": "SWEEP",
+          "stop_loss": 157.104,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:LONDON_NEWYORK:2026-09-30",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 4,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 156.676,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-30",
+          "setup": "SWEEP",
+          "stop_loss": 156.651,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:LONDON_NEWYORK:2026-10-01",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 9,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 157.91,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-01",
+          "setup": "SWEEP",
+          "stop_loss": 157.892,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:LONDON_NEWYORK:2026-10-02",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 7,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 157.426,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": false,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.max_spread_fraction",
+            "R.stop_loss",
+            "R.target_leg2",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-02",
+          "setup": "SWEEP",
+          "stop_loss": 157.426,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:LONDON_NEWYORK:2026-10-05",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-05",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:USDJPY:LONDON_NEWYORK:2026-10-06",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 158.002,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-06",
+          "setup": "SWEEP",
+          "stop_loss": 157.985,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:LONDON_NEWYORK:2026-10-07",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-07",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:USDJPY:LONDON_NEWYORK:2026-10-08",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 11,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "SHADOW_INFO_ONLY",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 158.063,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-08",
+          "setup": "SWEEP",
+          "stop_loss": 158.05,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:USDJPY:LONDON_NEWYORK:2026-10-09",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-09",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        }
+      ],
+      "cases_count": 20,
+      "coverage": "PARTIAL",
+      "dataset": {
+        "classification": "RECORDED_DEVELOPMENT_FIXTURE",
+        "path": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+        "provenance": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "sha256": "378ea1b916401707e0036e59f59ba6c94ca649aa0b3bdce1241a1e8b0c6b723f"
+      },
+      "gate_reasons": {
+        "L1": "Exact unchanged contract/engine identity; replay determinism and fixture SHA256 provenance PASS.",
+        "L2": {
+          "by_cycle": {
+            "ASIAN_LONDON": {
+              "conforming_cases": [],
+              "day_types": {
+                "TREND": 1,
+                "insufficient-data": 0,
+                "long-sweep": 1,
+                "no-setup": 4,
+                "range-rejection": 0,
+                "short-sweep": 4
+              },
+              "fail_check_counts": {
+                "R.entry_level": 3,
+                "R.entry_trigger": 1,
+                "R.max_spread": 6,
+                "R.regime_branch": 1,
+                "R.stop_loss": 1,
+                "R.target_order": 4
+              }
+            },
+            "LONDON_NEWYORK": {
+              "conforming_cases": [],
+              "day_types": {
+                "TREND": 0,
+                "insufficient-data": 0,
+                "long-sweep": 6,
+                "no-setup": 4,
+                "range-rejection": 0,
+                "short-sweep": 0
+              },
+              "fail_check_counts": {
+                "R.entry_level": 6,
+                "R.max_spread": 6,
+                "R.max_spread_fraction": 1,
+                "R.stop_loss": 1,
+                "R.target_leg2": 1,
+                "R.target_order": 6
+              }
+            }
+          },
+          "not_evidenced_cycles": [
+            "ASIAN_LONDON",
+            "LONDON_NEWYORK"
+          ],
+          "undeclared_cases": []
+        },
+        "L3": {
+          "cases": 20,
+          "future_mutation_mismatches": 0,
+          "future_mutations": 300,
+          "pre_emission_signals": 0,
+          "prefix_mismatches": 0,
+          "streaming_batch_mismatches": 0
+        },
+        "L4": {
+          "admitted": 0,
+          "admitted_bad_geometry": 0,
+          "leaked_to_admitted": [],
+          "raw_tp_inversion": 10,
+          "raw_zero_stop": 1
+        },
+        "L5": {
+          "block_reasons": [
+            "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['USDJPY']"
+          ],
+          "cost_block_R": 0.25,
+          "cost_warn_R": 0.1,
+          "d2_source": "config/owner_ticket.yaml",
+          "risk_pct": 0.5,
+          "verdict": "BLOCK",
+          "warn_reasons": [
+            "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
+            "SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ]
+        },
+        "L6": {
+          "signal_cases": 12,
+          "source": "Unchanged manual-ticket logic_gate.l6_freshness",
+          "statuses": [
+            "PASS"
+          ]
+        }
+      },
+      "gates": {
+        "L1": "PASS",
+        "L2": "NOT_EVIDENCED",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "BLOCK",
+        "L6": "PASS"
+      },
+      "recorded_days": 10,
+      "symbol_scope": [
+        "EURUSD",
+        "USDJPY"
+      ],
+      "uncovered_cases": [
+        "L2 conforming sweep: ASIAN_LONDON",
+        "L2 conforming sweep: LONDON_NEWYORK",
+        "RANGE_REJECTION: no recorded case",
+        "Measured recorded spread/commission and cost_in_R",
+        "Live/demo execution and READY admission",
+        "LONDON_NEWYORK SHORT sweep and TREND branch",
+        "Authorized pip-size evidence in unchanged gate"
+      ],
+      "verdict": "NOT_VERIFIED"
+    },
+    "XAUUSD": {
+      "cases": [
+        {
+          "case_id": "recorded:XAUUSD:ASIAN_LONDON:2026-09-28",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 0,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "DATA_ERROR",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4219.925,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.entry_trigger",
+            "R.max_spread",
+            "R.regime_branch",
+            "R.stop_loss"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-28",
+          "setup": "TREND",
+          "stop_loss": 4260.93,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:ASIAN_LONDON:2026-09-29",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4143.89,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-29",
+          "setup": "SWEEP",
+          "stop_loss": 4145.19,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:ASIAN_LONDON:2026-09-30",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 10,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4190.59,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-30",
+          "setup": "SWEEP",
+          "stop_loss": 4190.9,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:ASIAN_LONDON:2026-10-01",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-01",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:XAUUSD:ASIAN_LONDON:2026-10-02",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 4,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4187.34,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-02",
+          "setup": "SWEEP",
+          "stop_loss": 4192.09,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:ASIAN_LONDON:2026-10-05",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 4,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4160.3,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-05",
+          "setup": "SWEEP",
+          "stop_loss": 4166.25,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:ASIAN_LONDON:2026-10-06",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 9,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4155.41,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-06",
+          "setup": "SWEEP",
+          "stop_loss": 4156.68,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:ASIAN_LONDON:2026-10-07",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 0,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "DATA_ERROR",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4149.110000000001,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.entry_trigger",
+            "R.max_spread",
+            "R.regime_branch",
+            "R.stop_loss"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-07",
+          "setup": "TREND",
+          "stop_loss": 4169.6,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:ASIAN_LONDON:2026-10-08",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-08",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:XAUUSD:ASIAN_LONDON:2026-10-09",
+          "causality": {
+            "bars": 16,
+            "first_emission_prefix_len": 0,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "ASIAN_LONDON",
+          "decision": "DATA_ERROR",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 4174.51,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.entry_trigger",
+            "R.max_spread",
+            "R.regime_branch",
+            "R.stop_loss"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-09",
+          "setup": "TREND",
+          "stop_loss": 4141.55,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:LONDON_NEWYORK:2026-09-28",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 7,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 4142.09,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-28",
+          "setup": "SWEEP",
+          "stop_loss": 4136.47,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:LONDON_NEWYORK:2026-09-29",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 1,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4153.44,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-29",
+          "setup": "SWEEP",
+          "stop_loss": 4158.67,
+          "ticket_gate_blocking_failures": [
+            "L2"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:LONDON_NEWYORK:2026-09-30",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 6,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4202.59,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-09-30",
+          "setup": "SWEEP",
+          "stop_loss": 4203.78,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:LONDON_NEWYORK:2026-10-01",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-01",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:XAUUSD:LONDON_NEWYORK:2026-10-02",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 5,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4217.65,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-02",
+          "setup": "SWEEP",
+          "stop_loss": 4225.27,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:LONDON_NEWYORK:2026-10-05",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 8,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 4135.6,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-05",
+          "setup": "SWEEP",
+          "stop_loss": 4131.36,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:LONDON_NEWYORK:2026-10-06",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 0,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "DATA_ERROR",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 4137.03,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.entry_trigger",
+            "R.max_spread",
+            "R.regime_branch",
+            "R.stop_loss"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-06",
+          "setup": "TREND",
+          "stop_loss": 4113.33,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:LONDON_NEWYORK:2026-10-07",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": null,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 0,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "NO_TRADE",
+          "direction": null,
+          "edge_verified": false,
+          "entry": null,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": false,
+            "positive_stop": true,
+            "target_order": true
+          },
+          "l2_fail_ids": [],
+          "l2_undeclared": [],
+          "owner_ticket_L6": null,
+          "owner_ticket_primary_block_reason": "NO_SETUP_BY_WINDOW_END",
+          "owner_ticket_state": "NO_SETUP",
+          "session_date": "2026-10-07",
+          "setup": "NONE",
+          "stop_loss": null,
+          "ticket_gate_blocking_failures": null,
+          "ticket_gate_status": null
+        },
+        {
+          "case_id": "recorded:XAUUSD:LONDON_NEWYORK:2026-10-08",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 8,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "SHORT",
+          "edge_verified": false,
+          "entry": 4129.99,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-08",
+          "setup": "SWEEP",
+          "stop_loss": 4133.77,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        },
+        {
+          "case_id": "recorded:XAUUSD:LONDON_NEWYORK:2026-10-09",
+          "causality": {
+            "bars": 12,
+            "first_emission_prefix_len": 5,
+            "future_mutation_mismatches": 0,
+            "future_mutations": 25,
+            "pre_emission_signals": 0,
+            "prefix_mismatches": 0,
+            "streaming_hash_parity": true
+          },
+          "cycle": "LONDON_NEWYORK",
+          "decision": "STALE",
+          "direction": "LONG",
+          "edge_verified": false,
+          "entry": 4175.39,
+          "fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+          "fixture_classification": "RECORDED_DEVELOPMENT_FIXTURE",
+          "geometry": {
+            "has_levels": true,
+            "positive_stop": true,
+            "target_order": false
+          },
+          "l2_fail_ids": [
+            "R.entry_level",
+            "R.max_spread",
+            "R.target_order"
+          ],
+          "l2_undeclared": [],
+          "owner_ticket_L6": "PASS",
+          "owner_ticket_primary_block_reason": "LOGIC_GATE_FAIL:L2",
+          "owner_ticket_state": "TICKET_BLOCKED",
+          "session_date": "2026-10-09",
+          "setup": "SWEEP",
+          "stop_loss": 4174.11,
+          "ticket_gate_blocking_failures": [
+            "L2",
+            "L3"
+          ],
+          "ticket_gate_status": {
+            "L1": "PASS",
+            "L2": "FAIL",
+            "L3": "FAIL",
+            "L4": "PASS",
+            "L5": "WARN",
+            "L6": "PASS"
+          }
+        }
+      ],
+      "cases_count": 20,
+      "coverage": "PARTIAL",
+      "dataset": {
+        "classification": "RECORDED_DEVELOPMENT_FIXTURE",
+        "path": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+        "provenance": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "sha256": "7945d96bc4f4950e643840409b77167137dacad33bb635e0e49d0373cd3047df"
+      },
+      "gate_reasons": {
+        "L1": "Exact unchanged contract/engine identity; replay determinism and fixture SHA256 provenance PASS.",
+        "L2": {
+          "by_cycle": {
+            "ASIAN_LONDON": {
+              "conforming_cases": [],
+              "day_types": {
+                "TREND": 3,
+                "insufficient-data": 0,
+                "long-sweep": 0,
+                "no-setup": 2,
+                "range-rejection": 0,
+                "short-sweep": 5
+              },
+              "fail_check_counts": {
+                "R.entry_level": 5,
+                "R.entry_trigger": 3,
+                "R.max_spread": 8,
+                "R.regime_branch": 3,
+                "R.stop_loss": 3,
+                "R.target_order": 5
+              }
+            },
+            "LONDON_NEWYORK": {
+              "conforming_cases": [],
+              "day_types": {
+                "TREND": 1,
+                "insufficient-data": 0,
+                "long-sweep": 3,
+                "no-setup": 2,
+                "range-rejection": 0,
+                "short-sweep": 4
+              },
+              "fail_check_counts": {
+                "R.entry_level": 6,
+                "R.entry_trigger": 1,
+                "R.max_spread": 8,
+                "R.regime_branch": 1,
+                "R.stop_loss": 1,
+                "R.target_order": 6
+              }
+            }
+          },
+          "not_evidenced_cycles": [
+            "ASIAN_LONDON",
+            "LONDON_NEWYORK"
+          ],
+          "undeclared_cases": []
+        },
+        "L3": {
+          "cases": 20,
+          "future_mutation_mismatches": 0,
+          "future_mutations": 400,
+          "pre_emission_signals": 0,
+          "prefix_mismatches": 0,
+          "streaming_batch_mismatches": 0
+        },
+        "L4": {
+          "admitted": 0,
+          "admitted_bad_geometry": 0,
+          "leaked_to_admitted": [],
+          "raw_tp_inversion": 11,
+          "raw_zero_stop": 0
+        },
+        "L5": {
+          "block_reasons": [
+            "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['XAUUSD']"
+          ],
+          "cost_block_R": 0.25,
+          "cost_warn_R": 0.1,
+          "d2_source": "config/owner_ticket.yaml",
+          "risk_pct": 0.5,
+          "verdict": "BLOCK",
+          "warn_reasons": [
+            "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0",
+            "SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded data (L2 closure uses a 0.2-pip test input only)",
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ]
+        },
+        "L6": {
+          "signal_cases": 16,
+          "source": "Unchanged manual-ticket logic_gate.l6_freshness",
+          "statuses": [
+            "PASS"
+          ]
+        }
+      },
+      "gates": {
+        "L1": "PASS",
+        "L2": "NOT_EVIDENCED",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "BLOCK",
+        "L6": "PASS"
+      },
+      "recorded_days": 10,
+      "symbol_scope": [
+        "EURUSD",
+        "XAUUSD"
+      ],
+      "uncovered_cases": [
+        "L2 conforming sweep: ASIAN_LONDON",
+        "L2 conforming sweep: LONDON_NEWYORK",
+        "RANGE_REJECTION: no recorded case",
+        "Measured recorded spread/commission and cost_in_R",
+        "Live/demo execution and READY admission",
+        "ASIAN_LONDON LONG sweep",
+        "Authorized pip-size evidence in unchanged gate"
+      ],
+      "verdict": "NOT_VERIFIED"
+    }
+  },
+  "registry_modified": false,
+  "registry_proposal": {
+    "additions": [],
+    "applied": false,
+    "path": "strategies.ST_ASIAN_SWEEP_5R_V1.candidate_versions.1.1.2.logic_verified_symbols",
+    "reason": "No requested symbol passes L2 in both cycles; USDJPY/XAUUSD also have L5 BLOCK. Retain existing EURUSD entry without edits."
+  },
+  "schema": "AGP_C3_ASW_V112_R2_EVIDENCE_V1",
+  "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+  "tests": {
+    "command": "python -m pytest -q tests/test_asian_sweep_v1_1_2_logic_gate_both_cycles.py tests/test_asian_sweep_v1_1_2_l2_closure.py tests/test_manual_ticket_logic_gate.py",
+    "failed": 0,
+    "passed": 80
+  }
+}
