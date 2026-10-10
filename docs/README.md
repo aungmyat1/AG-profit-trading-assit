@@ -691,3 +691,5 @@ authoritative machine-readable source.
   mapping-decision debt; parity checkpoint `READY_FOR_INDEPENDENT_AUDIT`,
   `SAFE_TO_ADVANCE_TO_V2_4 = NO` pending that audit)
 - [Web-to-Vantage Demo execution bridge](status/AG_WEB_VANTAGE_DEMO_EXECUTION_BRIDGE_V1.md)
+
+- [Fresh analyzer computation (2026-10-10)](status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md) — main byte equivalence and session-zone call trace.

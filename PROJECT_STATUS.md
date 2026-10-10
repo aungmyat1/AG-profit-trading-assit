@@ -6,7 +6,12 @@ review_by: 2026-11-07
 ---
 # Project Status — AG Profit Trading
 
-## Current snapshot (2026-10-09)
+## Current snapshot (2026-10-10)
+
+The market-structure analyzer uses fresh computation only; its optional replay-dependent
+cache path is removed. Offline byte comparisons against main pass for identical candles
+and config. Session-zone import failures are traced but unchanged; none of the four live
+runner modes calls that function. See [evidence](docs/status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md).
 
 OD1009-D1–OD1009-D6 are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`; G1–G6 are
 defined in `docs/PROJECT_OBJECTIVE.md`. The FX/gold manual-ticket risk/cost gate is implemented
