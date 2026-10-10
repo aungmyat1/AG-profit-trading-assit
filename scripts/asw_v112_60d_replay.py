@@ -59,12 +59,15 @@ def rejection_reason(c: dict) -> str:
 
 
 def lane_l5(valid: list, symbol_l5: str, owner: dict) -> tuple:
-    """Lane L5 from recorded spread on kept entries. No FX commission source exists, so commission is
+    """Lane L5 from the conservative spread on kept entries (bar-only -> INSUFFICIENT(spread)). Kept entries
+    without an owner cost binding fail closed. No FX commission source exists, so commission is
     INSUFFICIENT (never assumed 0); spread is still evaluated and reported."""
     if symbol_l5 == "BLOCK":
         return "FAIL", {}
     if not valid:
         return INSUFFICIENT, {"kept_entries": 0}
+    if not owner or owner.get("cost_warn_R") is None or owner.get("cost_block_R") is None:
+        return "FAIL", {"kept_entries": len(valid), "reason": "OWNER_BINDING_MISSING: cost_warn_R/cost_block_R unset"}
     spread_r = [c["l5_recorded_spread"]["spread_R"] for c in valid]
     known = sorted(r for r in spread_r if r is not None)
     detail = {"kept_entries": len(valid), "spread_R_evaluated": len(known),
@@ -73,6 +76,7 @@ def lane_l5(valid: list, symbol_l5: str, owner: dict) -> tuple:
               "spread_R_at_or_above_warn": sum(r >= owner["cost_warn_R"] for r in known),
               "spread_R_at_or_above_block": sum(r >= owner["cost_block_R"] for r in known),
               "cost_warn_R": owner["cost_warn_R"], "cost_block_R": owner["cost_block_R"],
+              "spread_sources": dict(sorted(Counter(c["l5_recorded_spread"]["source"] for c in valid).items())),
               "commission": "NOT_AVAILABLE: no FX commission source configured; not assumed 0"}
     if len(known) < len(valid):
         return f"{INSUFFICIENT}(spread)", detail
@@ -137,8 +141,8 @@ def build(date: str) -> dict:
                             "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv (10 days)",
                             "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv (10 days)",
                             "tests/fixtures/asian_sweep_v1_1_2/l4_recorded_failures.json (June-July dates)"],
-        "spread_input": "L2 uses the harness TEST_SPREAD (0.2 pip); L5 uses the recorded spread_points of the "
-                        "signal bar x host_captured point; FX commission has no source (INSUFFICIENT, never 0)",
+        "spread_input": "L2 uses the harness TEST_SPREAD (0.2 pip); L5 uses max(signal-bar spread_points, host_captured "
+                        "snapshot spread) x host_captured point; FX commission has no source (INSUFFICIENT, never 0)",
         "dataset_identity": dataset, "scopes": scopes, "symbol_gates": symbol_gates, "matrix": matrix,
         "cases": cases, "edge_verified": False, "registry_modified": False, "demo_authorized": False,
         "live_authorized": False, "broker_calls": 0, "ORDER_API_CALLS": 0, "BROKER_MUTATION_COUNT": 0,
