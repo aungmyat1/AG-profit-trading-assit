@@ -482,7 +482,7 @@ def crypto_cfd_cost_gate(distance: float, spread: float, commission_r: Optional[
     blocks, warnings = [], []
     if policy["spread_block_pct"] is not None and pct > policy["spread_block_pct"]:
         blocks.append("SPREAD_TOO_WIDE")
-    elif policy["spread_ok_pct"] is not None and pct >= policy["spread_ok_pct"]:
+    elif policy["spread_ok_pct"] is not None and pct > policy["spread_ok_pct"]:  # owner band: <=10% of stop is OK
         warnings.append("SPREAD_WARN")
     if cost_at_or_above_block(cost, policy["cost_block_R"]):
         blocks.append("COST_TOO_HIGH")
