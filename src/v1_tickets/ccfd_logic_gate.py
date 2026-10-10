@@ -60,10 +60,10 @@ def verify_case(case: dict, candles: dict, policy: dict, *, structure_config=Non
                "3 completed M5 candles", str(spec["m5_trigger_contract"]["retest"]["max_bars_after_mss"]).startswith("3 completed M5 candles")),
               ("M15_observation", spec["timeframe_responsibilities"]["m15"], "OBSERVATION_ONLY_STRUCTURE_RECORD",
                spec["timeframe_responsibilities"]["m15"] == "OBSERVATION_ONLY_STRUCTURE_RECORD"),
-              ("expected_result", result["result"], expected_result,
-               expected_result is not None and result["result"] == expected_result),
               ("production_structure", [cfg.swing_length, cfg.close_break], [5, True],
                cfg.swing_length == 5 and cfg.close_break is True)]
+    if expected_result is not None:
+        checks.append(("expected_result", result["result"], expected_result, result["result"] == expected_result))
     plan = evidence.get("target_plan") or {}
     if result["result"] == "ENTRY_VALID" and reference:
         long = plan["direction"] == "LONG"
@@ -79,8 +79,6 @@ def verify_case(case: dict, candles: dict, policy: dict, *, structure_config=Non
                                                     rules.confirmed_direction(candles["h1"], cfg))
         checks += [("context_permission", evidence["context"]["direction_permission"], permission,
                     evidence["context"]["direction_permission"] == permission),
-                   ("direction", plan["direction"], case.get("expected_direction"),
-                    plan["direction"] == case.get("expected_direction")),
                    ("permission", evidence["context"]["direction_permission"],
                     "LONG_ALLOWED" if long else "SHORT_ALLOWED",
                     evidence["context"]["direction_permission"] == ("LONG_ALLOWED" if long else "SHORT_ALLOWED")),
@@ -101,7 +99,11 @@ def verify_case(case: dict, candles: dict, policy: dict, *, structure_config=Non
                     plan["tp1"] == reference.session_mid and plan["tp2"] ==
                     (reference.session_high if long else reference.session_low)),
                    ("split", plan["tp1_volume_pct"], 0.5, plan["tp1_volume_pct"] == spec["targets_contract"]["tp1_volume_pct"] == 0.5)]
+    if expected_result is not None and result["result"] == "ENTRY_VALID":
+        checks.append(("direction", plan["direction"], case.get("expected_direction"),
+                       plan["direction"] == case.get("expected_direction")))
     gate("L2", checks)
+    gates["L2"]["mode"] = "CONFORMANCE_ONLY" if expected_result is None else "EXPECTED_ANSWER_AND_CONFORMANCE"
     # Check each input's full close, ordering, OHLC, and exact previous-day grid.
     valid_rows = all(rows and all(c.time.utcoffset() == dt.timedelta(0)
                      and c.time + STEPS[k] <= now and all(math.isfinite(v) for v in
@@ -128,6 +130,13 @@ def verify_case(case: dict, candles: dict, policy: dict, *, structure_config=Non
                 ("reference_grid", len(grid), 288, exact),
                 ("future_invariance", unchanged, True, unchanged),
                 ("sequence_causality", timing, True, timing)])
+    coverage_gaps = []
+    if result["result"] == "REFERENCE_INCOMPLETE":
+        coverage_gaps.append("REFERENCE_INCOMPLETE")
+        for check in gates["L3"]["checks"]:
+            if check["id"] == "L3.reference_grid":
+                check["verdict"] = "NOT_EVIDENCED"
+        gates["L3"]["status"] = FAIL if any(c["verdict"] == FAIL for c in gates["L3"]["checks"]) else "NOT_EVIDENCED"
     if plan and result["result"] == "ENTRY_VALID":
         entry, sl, tp1, tp2, risk = (plan[k] for k in ("entry", "stop_loss", "tp1", "tp2", "risk_distance"))
         long = plan["direction"] == "LONG"
@@ -156,5 +165,5 @@ def verify_case(case: dict, candles: dict, policy: dict, *, structure_config=Non
     else:
         for name in ("L4", "L5", "L6"):
             gates[name] = {"gate": name, "status": "NOT_EVIDENCED", "checks": []}
-    return {"result": result, "gates": gates, "logic_identity": identity,
+    return {"result": result, "gates": gates, "data_coverage_gaps": coverage_gaps, "logic_identity": identity,
             "execution_authorized": False, "edge_verified": False}

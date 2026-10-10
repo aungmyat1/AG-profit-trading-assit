@@ -53,9 +53,8 @@ def test_relabelled_synthetic_never_verified(tmp_path):
             target.write_bytes(Path(rel).read_bytes())
             case["paths"][tf] = target.name
     path.write_text(json.dumps(data))
-    report = runner.run(path)
-    assert report["verdict"] == "NOT_VERIFIED"
-    assert not report["provenance_hashes_valid"]
+    with pytest.raises(ValueError, match="missing provenance sha256s"):
+        runner.run(path)
 
 
 @pytest.mark.parametrize("key", ["risk_pct", "cost_warn_R", "cost_block_R", "spread_ok_pct", "spread_block_pct"])
@@ -94,7 +93,7 @@ def test_fixture_rejections(mutation, gate):
     else:
         case["expected_direction"] = "SHORT"
     report = verify_case(case, candles, load_ticket_policy())
-    assert report["gates"][gate]["status"] == "FAIL"
+    assert report["gates"][gate]["status"] == ("NOT_EVIDENCED" if mutation == "missing_reference" else "FAIL")
 
 
 def test_geometry_corruption_is_detected(monkeypatch):
@@ -110,3 +109,56 @@ def test_geometry_corruption_is_detected(monkeypatch):
     case, candles = inputs()
     result = verify_case(case, candles, load_ticket_policy())
     assert result["gates"]["L2"]["status"] == result["gates"]["L4"]["status"] == "FAIL"
+
+
+def test_null_expected_answer_is_conformance_only():
+    case, candles = inputs()
+    case.update(expected_result=None, expected_direction=None)
+    row = verify_case(case, candles, load_ticket_policy())
+    assert set(row['gates']) == {'L1', 'L2', 'L3', 'L4', 'L5', 'L6'}
+    assert set(g['status'] for g in row['gates'].values()) == {'PASS'}
+    assert row['gates']['L2']['mode'] == 'CONFORMANCE_ONLY'
+    assert not {'L2.expected_result', 'L2.direction'} & {c['id'] for c in row['gates']['L2']['checks']}
+
+
+@pytest.mark.parametrize('source', ['RECORDED', 'MT5_VT_MARKETS_DEMO'])
+def test_recorded_missing_provenance_hashes_rejected(tmp_path, source):
+    data = json.loads(runner.DEFAULT.read_text())
+    data.update(source=source, mission='AGP-DATA-R2')
+    path = tmp_path / 'manifest.json'
+    path.write_text(json.dumps(data))
+    with pytest.raises(ValueError, match='missing provenance sha256s'):
+        runner.run(path)
+
+
+def test_reference_incomplete_is_data_coverage_gap():
+    case, candles = inputs()
+    case['expected_result'] = None
+    candles['m5'] = candles['m5'][1:]
+    row = verify_case(case, candles, load_ticket_policy())
+    assert row['result']['result'] == 'REFERENCE_INCOMPLETE'
+    assert row['gates']['L2']['status'] == 'PASS'
+    assert row['gates']['L3']['status'] == 'NOT_EVIDENCED'
+    assert row['data_coverage_gaps'] == ['REFERENCE_INCOMPLETE']
+
+
+def test_recorded_partial_provenance_hash_map_rejected(tmp_path):
+    data = json.loads(runner.DEFAULT.read_text())
+    data.update(source='RECORDED', mission='AGP-DATA-R2')
+    data['cases'] = data['cases'][:1]
+    data['cases'][0]['provenance'] = 'provenance.json'
+    (tmp_path / 'provenance.json').write_text(json.dumps({'sha256': {'m5': 'a' * 64}}))
+    path = tmp_path / 'manifest.json'
+    path.write_text(json.dumps(data))
+    with pytest.raises(ValueError, match='missing provenance sha256s'):
+        runner.run(path)
+
+
+def test_reference_gap_does_not_mask_invalid_ohlc():
+    case, candles = inputs()
+    case['expected_result'] = None
+    candles['m5'] = candles['m5'][1:]
+    bar = candles['m5'][0]
+    candles['m5'][0] = Candle(bar.time, bar.open, bar.low - 1, bar.low, bar.close)
+    row = verify_case(case, candles, load_ticket_policy())
+    assert row['gates']['L3']['status'] == 'FAIL'
