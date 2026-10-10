@@ -10,3 +10,12 @@ spread_block_pct: 20  # exactly 20 is WARN; only >20 is BLOCKED
 risk_pct: 0.5
 cost_warn_R: 0.10
 cost_block_R: 0.25
+# OD1011-COMMISSION (Aung, 2026-10-11): owner-stated account fact, NOT a default. Bound to the VT Markets
+# demo Standard STP account only (cost carried in the spread); crypto CFD. Any other server/account has no
+# commission value (INSUFFICIENT, never 0). A non-zero commission on the first demo deals invalidates it.
+commission:
+  value: 0
+  source: OD1011-COMMISSION
+  bound_server: VTMarkets-Demo
+  bound_account_type: STANDARD_STP
+  asset_classes: [CRYPTO_CFD]
