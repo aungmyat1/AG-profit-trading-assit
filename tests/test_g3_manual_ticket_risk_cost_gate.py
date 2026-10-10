@@ -356,7 +356,7 @@ def test_absent_carrier_files_block(tmp_path, l2_conforming, sizing_spy):
     """No carrier file at all (repo or host-local) -> BLOCK; nothing is inferred."""
     owner = mt.load_owner_config(tmp_path)
     assert owner == {"risk_pct": None, "risk_status": mt.RISK_CONFIG_MISSING, "cost_warn_R": None,
-                     "cost_block_R": None, "warn_status": "NOT_SET", "policy_status": "OK"}
+                     "cost_block_R": None, "warn_status": "NOT_SET", "policy_status": "OK", "commission": None}
     t = ticket("EURUSD", CANDLES, meta=EUR_META, spread=0.00002, owner=owner)
     assert t["state"] == TICKET_BLOCKED and t["primary_block_reason"] == mt.RISK_CONFIG_MISSING
     assert sizing_spy == []
@@ -683,3 +683,56 @@ def test_displayed_cost_names_the_decision_side_at_the_boundary(gold_ticket):
     assert at["cost_in_R_display"] == "0.2500 (>=0.25, BLOCK)"
     plain = gold_ticket(0.27)                              # 0.09R: no threshold shown -> bare value
     assert plain["cost_in_R_display"] == "0.0900"
+
+
+# ===============================  7. OD1011-COMMISSION: commission read from the owner config, bound to the account
+
+OD1011_BLOCK = (
+    "owner_ticket:\n  risk_pct: 0.5\n  cost_warn_R: 0.10\n  cost_block_R: 0.25\n"
+    "  commission:\n    decision_id: OD1011-COMMISSION\n    account_login: 12345\n    commission_R: {value}\n"
+)
+
+
+def _owner_with_commission(tmp_path: Path, body: str) -> dict:
+    cfg = tmp_path / mt.OWNER_CONFIG
+    cfg.parent.mkdir(parents=True, exist_ok=True)
+    cfg.write_text(body, encoding="utf-8")
+    return mt.load_owner_config(tmp_path)
+
+
+@pytest.mark.parametrize("login", [12345, "12345"])
+def test_commission_bound_to_this_account_is_read_from_config(tmp_path, l2_conforming, login):
+    owner = _owner_with_commission(tmp_path, OD1011_BLOCK.format(value="0.0"))
+    commission = mt.resolve_commission(owner, login)
+    assert commission == 0.0 and commission is not None         # the configured value, not an invented zero
+    t = ticket("EURUSD", CANDLES, meta=EUR_META, spread=0.00002, owner=owner, commission_r=commission)
+    assert not {"COMMISSION_INSUFFICIENT", "COMMISSION_INVALID"} & set(t["block_reasons"])
+    assert t["cost_in_R"] == pytest.approx(0.00002 / t["stop_distance"], abs=5e-5)
+
+
+@pytest.mark.parametrize("case,body,login,reason", [
+    ("account_mismatch", OD1011_BLOCK.format(value="0.0"), 99999, "COMMISSION_INSUFFICIENT"),
+    ("runtime_account_unknown", OD1011_BLOCK.format(value="0.0"), None, "COMMISSION_INSUFFICIENT"),
+    ("key_absent", "owner_ticket:\n  risk_pct: 0.5\n  cost_warn_R: 0.10\n  cost_block_R: 0.25\n", 12345,
+     "COMMISSION_INSUFFICIENT"),
+    ("commission_R_absent", OD1011_BLOCK.replace("    commission_R: {value}\n", "").format(value=""), 12345,
+     "COMMISSION_INSUFFICIENT"),
+    ("other_decision_id", OD1011_BLOCK.format(value="0.0").replace("OD1011-COMMISSION", "OD9999"), 12345,
+     "COMMISSION_INSUFFICIENT"),
+    ("negative", OD1011_BLOCK.format(value="-0.01"), 12345, "COMMISSION_INVALID"),
+    ("non_numeric", OD1011_BLOCK.format(value="'abc'"), 12345, "COMMISSION_INVALID"),
+])
+def test_unbound_or_invalid_commission_blocks_and_is_never_zero(tmp_path, l2_conforming, case, body, login, reason):
+    owner = _owner_with_commission(tmp_path, body)
+    commission = mt.resolve_commission(owner, login)
+    t = ticket("EURUSD", CANDLES, meta=EUR_META, spread=0.00002, owner=owner, commission_r=commission)
+    assert reason in t["block_reasons"] and t["state"] == TICKET_BLOCKED, case
+    assert t["cost_in_R"] is None, case                          # never the spread alone, never 0
+
+
+def test_live_path_passes_the_resolved_commission_explicitly_and_never_a_literal_zero():
+    """scripts/host/live_candles_smoke.py: commission flows from resolve_commission(owner, login)."""
+    src = (REPO_ROOT / "scripts/host/live_candles_smoke.py").read_text(encoding="utf-8")
+    assert src.count("resolve_commission(owner, login)") == 1
+    assert "commission_r=commission" in src and "login=lambda: account_login(mt5)" in src
+    assert not re.search(r"commission_r\s*=\s*0(\.0+)?\b", src)

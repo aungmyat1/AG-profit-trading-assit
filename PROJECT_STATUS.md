@@ -243,9 +243,9 @@ import json
 from pathlib import Path
 facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
-cog.outl(f"inputs_sha256: `81745bef050ea5bceb27c3a724434fe4d073624fac0f280431c08a9e142ee659`.")
+cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `81745bef050ea5bceb27c3a724434fe4d073624fac0f280431c08a9e142ee659`.
+inputs_sha256: `b1e9077d4710e7a21cd25a970d72992e1a467dbce3947cf6e97e063ee1ecd4ff`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -286,9 +286,9 @@ required key absent from the owner mapping raised `KeyError` instead of the cano
 Fix: one shared inclusive boundary predicate (`v1_tickets.guards.cost_at_or_above`, relative tolerance
 1e-9 — five orders tighter than the 4-decimal cost the owner is shown) used by FX, gold and crypto, plus
 `.get()` access for the three required keys. Tests: `tests/test_g3_manual_ticket_risk_cost_gate.py`
-**78 passed**; related ticket/sizing/guard suites **615 passed**; full suite **2039 passed, 3 skipped, 1 failed** (`test_docs_live` cog-freshness test; owner-hardcoded fingerprint line, see follow-up)
+**78 passed**; related ticket/sizing/guard suites **615 passed**; full suite **2050 passed, 3 skipped, 0 failed** (cog fingerprint computed live)
 (Linux container, Python 3.11.2, MT5 stubbed). With the three source files reverted to base `5b67199` the new
-suite reports 19 failed, 59 passed, so the tests detect the defects. `broker_mutations = 0`. Follow-up: commission_r missing or invalid now BLOCKS (COMMISSION_INSUFFICIENT / COMMISSION_INVALID, never 0); an inverted owner pair (warn >= block) blocks as RISK_POLICY_AMBIGUOUS; a cost that displays at a threshold names its decision side (e.g. "0.2500 (<0.25, WARN)"). The live caller `scripts/host/live_candles_smoke.py` supplies no FX commission, so FX tickets block until a commission source is owner-approved.
+suite reports 19 failed, 59 passed, so the tests detect the defects. `broker_mutations = 0`. Follow-up: commission_r missing or invalid now BLOCKS (COMMISSION_INSUFFICIENT / COMMISSION_INVALID, never 0); an inverted owner pair (warn >= block) blocks as RISK_POLICY_AMBIGUOUS; a cost that displays at a threshold names its decision side (e.g. "0.2500 (<0.25, WARN)"). FX commission is read only from the `OD1011-COMMISSION` block bound to the terminal's account (`resolve_commission`); absent, unbound, or invalid -> `COMMISSION_INSUFFICIENT` / `COMMISSION_INVALID`. The block itself is added by AGP-OD1011 (separate PR).
 
 G3 passing does **not** establish G1, so OD1009-D6 is not satisfied and
 `config/v1_tickets/ready_authority.yaml` stays `ready: OFF`; crypto admission (OD1009-D3), demo/live

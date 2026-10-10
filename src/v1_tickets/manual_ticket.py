@@ -77,6 +77,28 @@ _MARK = {PASS: "✓", FAIL: "✗", WARN: "⚠"}
 
 # ------------------------------------------------------------------------- owner config (C4)
 
+COMMISSION_DECISION_ID = "OD1011-COMMISSION"
+
+
+def resolve_commission(owner: Dict[str, Any], account_login: Any) -> Any:
+    """Commission in R for this account from owner_ticket.commission (decision OD1011-COMMISSION).
+
+    Returns the configured raw value only when the block is present, names OD1011-COMMISSION, is bound
+    to the same account as the running terminal. Anything else -- no block, other decision id, unknown
+    runtime account, or an account mismatch -- returns None, which the builder reports as
+    COMMISSION_INSUFFICIENT. Never returns 0 and never invents a value; a non-numeric or negative
+    value is returned raw so the builder classifies it as COMMISSION_INVALID.
+    """
+    c = owner.get("commission")
+    if not isinstance(c, dict) or c.get("decision_id") != COMMISSION_DECISION_ID:
+        return None
+    if account_login is None or c.get("account_login") is None:
+        return None
+    if str(account_login) != str(c.get("account_login")):
+        return None
+    return c.get("commission_R")
+
+
 def _positive(value: Any) -> Optional[float]:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
@@ -110,7 +132,9 @@ def load_owner_config(root: Path = REPO_ROOT) -> Dict[str, Any]:
     return {"risk_pct": risk, "risk_status": config_status,
             "cost_warn_R": warn, "cost_block_R": cost_block,
             "warn_status": "SET" if warn is not None else "NOT_SET",
-            "policy_status": "AMBIGUOUS" if inverted else "OK"}
+            "policy_status": "AMBIGUOUS" if inverted else "OK",
+            # OD1011-COMMISSION block, raw; validated by resolve_commission / build_manual_ticket.
+            "commission": block.get("commission") if isinstance(block.get("commission"), dict) else None}
 
 
 def symbol_meta_from_host(symbol: str) -> Optional[SymbolMeta]:

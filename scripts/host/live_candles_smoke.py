@@ -36,7 +36,7 @@ import hashlib
 import json
 import os
 import sys
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _host_common import (  # noqa: E402
@@ -172,14 +172,18 @@ def fx_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_clo
 
 
 def manual_ticket_for(symbol: str, cycle: str, m15: list, now: dt.datetime, data_close: Optional[dt.datetime],
-                      spread: Optional[float], balance: Optional[float], live_meta: Optional[SymbolMeta] = None) -> dict:
+                      spread: Optional[float], balance: Optional[float], live_meta: Optional[SymbolMeta] = None,
+                      login: Any = None) -> dict:
     """Manual Trade Ticket V1: same inputs as fx_ticket_for, plus owner risk, read-only balance and
     sizing metadata (live symbol_info first, captured snapshot only as a stamped fallback)."""
     day, session, expected, post = _fx_inputs(cycle, m15, now)
     meta, provenance = manual_ticket.resolve_symbol_meta(symbol, live_meta, now)
+    owner = manual_ticket.load_owner_config()
+    # OD1011-COMMISSION bound to this terminal's account; None (COMMISSION_INSUFFICIENT) when unbound.
+    commission = manual_ticket.resolve_commission(owner, login)
     return manual_ticket.build_manual_ticket(
         symbol, cycle, day, session, expected, post, now=now, data_close=data_close, spread=spread,
-        owner=manual_ticket.load_owner_config(), balance=balance, meta=meta, meta_provenance=provenance)
+        owner=owner, balance=balance, meta=meta, meta_provenance=provenance, commission_r=commission)
 
 
 def live_symbol_meta(mt5, broker: str) -> Optional[SymbolMeta]:
@@ -193,6 +197,15 @@ def live_symbol_meta(mt5, broker: str) -> Optional[SymbolMeta]:
                           volume_max=float(i.volume_max), volume_step=float(i.volume_step), digits=int(i.digits),
                           point=float(i.point), trade_stops_level=int(i.trade_stops_level),
                           trade_freeze_level=int(i.trade_freeze_level))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def account_login(mt5) -> Any:
+    """Read-only account_info().login of the terminal actually connected; None on any failure."""
+    try:
+        info = call_with_timeout(mt5.account_info)
+        return info.login if info is not None and getattr(info, "login", None) is not None else None
     except Exception:  # noqa: BLE001
         return None
 
@@ -336,6 +349,7 @@ def archive_fx_runtime_failure(now: dt.datetime, journal: str, reason: str, deta
 def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bool = True,
            quote: Optional[Quote] = None, cycle_filter: Optional[str] = None,
            balance: Optional[Callable[[], Optional[float]]] = None,
+           login: Optional[Callable[[], Any]] = None,
            symbol_meta: Optional[Callable[[str], Optional[SymbolMeta]]] = None) -> List[str]:
     lines = []
     balance_value: List[Optional[float]] = []
@@ -385,7 +399,8 @@ def run_fx(fetch: Fetch, now: dt.datetime, journal: str, gated: bool, notify: bo
             if not balance_value:
                 balance_value.append(balance() if balance is not None else None)
             manual = manual_ticket_for(symbol, cycle, m15, now, data_close, spread, balance_value[0],
-                                       symbol_meta(broker) if symbol_meta is not None else None)
+                                       symbol_meta(broker) if symbol_meta is not None else None,
+                                       login=login() if login is not None else None)
             manual_new = archive_if_changed(state, f"manual:{manual['ticket_id']}", manual,
                                             lambda x: manual_ticket.archive_manual_ticket(journal, x))
             write_scan_record(journal, build_scan_record(
@@ -784,7 +799,7 @@ def main(argv=None) -> int:
                             else:
                                 lines = manual_lines + run_fx(
                                     fetch, now, journal, gated=True, quote=quote, cycle_filter=args.cycle,
-                                    balance=lambda: account_balance(mt5),
+                                    balance=lambda: account_balance(mt5), login=lambda: account_login(mt5),
                                     symbol_meta=lambda broker: live_symbol_meta(mt5, broker))
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
