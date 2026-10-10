@@ -118,7 +118,10 @@ def test_ready_day_with_proposal(monkeypatch):
     _patch_cycle(monkeypatch, report)
 
     result = daily_report.build_btc_daily_report(_FakeFeed(), OBS_DATE, **_base_kwargs())
-    assert result["decision"] == "READY"
+    assert daily_report._decision_from_cycle_report(report)["decision"] == "READY"
+    assert result["decision"] == "RESEARCH"
+    assert result["strategy_id"] == "ST_LIQUIDITY_SWEEP_RETEST_V1"
+    assert result["strategy_version"] == "2.0.0"
     assert result["proposal_count"] == 1
     occ = result["occurrences"][0]
     assert occ["strategy_qualified"] is True
@@ -192,7 +195,7 @@ def test_archive_correction_on_real_change_preserves_original(tmp_path, monkeypa
         assert json.load(f)["decision"] == "WATCH"  # original untouched
     with open(path2, encoding="utf-8") as f:
         record = json.load(f)
-    assert record["new_record"]["decision"] == "READY"
+    assert record["new_record"]["decision"] == "RESEARCH"
     assert record["supersedes"] == path1
 
 
@@ -252,6 +255,24 @@ def test_human_report_renders_informational_ticket_only_for_proposal(monkeypatch
     assert "ENTRY PROPOSAL TICKET" in text
     assert "NOT A BROKER TICKET" in text
     assert "Execution authority: DISABLED" in text
+    assert "READY" not in text
+    assert "ST_LIQUIDITY_SWEEP_RETEST_V1@2.0.0 RESEARCH" in text
+
+
+def test_admitted_fixture_preserves_ready_report_rendering(monkeypatch):
+    proposal = _proposal()
+    qualified = ResearchCycleResult(
+        setup_state=_setup_state(STATE_ENTRY_READY, strategy_qualified=True, reason_code="QUALIFIED"),
+        proposal=proposal, ledger_new_row=True, trading_day=OBS_DATE,
+    )
+    report_cycle = ResearchCycleReport(trading_day=OBS_DATE, container_state=None, occurrences=(qualified,))
+    _patch_cycle(monkeypatch, report_cycle)
+    monkeypatch.setattr(daily_report, "registry_display_status", lambda *_args, **_kwargs: "ADMITTED")
+    report = daily_report.build_btc_daily_report(_FakeFeed(), OBS_DATE, **_base_kwargs())
+    assert report["decision"] == "READY"
+    text = daily_report.human_readable_btc_daily_report(report)
+    assert "Decision: READY" in text
+    assert "Strategy: " not in text
 
 
 class _CompleteObservationFeed:

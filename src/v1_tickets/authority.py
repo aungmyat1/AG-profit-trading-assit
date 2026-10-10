@@ -111,6 +111,35 @@ def load_registry(root: Path = REPO_ROOT) -> Dict[str, Any]:
     return (data or {}).get("strategies") or {}
 
 
+def registry_display_status(strategy_id: str, strategy_version: Optional[str], *,
+                            registry: Optional[Dict[str, Any]] = None,
+                            root: Path = REPO_ROOT) -> str:
+    """Return a fail-closed output label based only on registry admission metadata."""
+    try:
+        entry = (registry if registry is not None else load_registry(root)).get(strategy_id)
+    except Exception:  # noqa: BLE001 -- a broken/missing registry must suppress READY rendering
+        return "RESEARCH"
+    if not isinstance(entry, dict) or entry.get("registered") is not True:
+        return "RESEARCH"
+    status = str(entry.get("status", "")).upper()
+    if "SHADOW" in status:
+        return "SHADOW"
+    if entry.get("research") is True or status in {"RESEARCH_ONLY", "RESEARCH_DRAFT", "ACTIVE_INCUBATION"}:
+        return "RESEARCH"
+    version = entry.get("version")
+    if version is None and entry.get("config_source"):
+        try:
+            contract = yaml.safe_load((root / str(entry["config_source"])).read_text(encoding="utf-8"))
+            version = contract.get("version") if isinstance(contract, dict) else None
+        except (OSError, ValueError, yaml.YAMLError):
+            return "RESEARCH"
+    if strategy_version is None or version is None or str(version) != str(strategy_version):
+        return "RESEARCH"
+    if entry.get("admitted") is True or status in {"ADMITTED", "DEMO_ADMITTED", "LIVE_ADMITTED"}:
+        return "ADMITTED"
+    return "RESEARCH"
+
+
 def resolve_ticket_authority(strategy_id: str, strategy_version: Optional[str] = None, *,
                              registry: Optional[Dict[str, Any]] = None, root: Path = REPO_ROOT) -> TicketAuthority:
     entry = (registry if registry is not None else load_registry(root)).get(strategy_id)

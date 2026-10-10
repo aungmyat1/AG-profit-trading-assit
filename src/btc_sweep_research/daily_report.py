@@ -31,6 +31,7 @@ from strategy_engine.sweep_retest.models import (
     STATE_WAITING_SWEEP,
     STATE_WAITING_WINDOW,
 )
+from v1_tickets.authority import registry_display_status
 
 from . import pipeline
 from .pipeline import ResearchCycleReport
@@ -365,6 +366,12 @@ def build_btc_daily_report(
         }
 
     classification = _decision_from_cycle_report(cycle_report)
+    registry_status = registry_display_status(STRATEGY_ID, STRATEGY_VERSION)
+    report_decision = classification["decision"]
+    if registry_status != "ADMITTED" and report_decision == DECISION_READY:
+        # Strategy evaluation remains READY internally; the persisted/reporting label is
+        # registry-gated so a research or unadmitted strategy never publishes READY.
+        report_decision = registry_status
     occurrences = [_occurrence_summary(o) for o in cycle_report.occurrences]
     proposal_count = sum(1 for o in cycle_report.occurrences if o.proposal is not None)
 
@@ -378,7 +385,7 @@ def build_btc_daily_report(
         "provider_symbol": provider_symbol, "market_type": market_type,
         "strategy_id": STRATEGY_ID, "strategy_version": STRATEGY_VERSION,
         "data_quality": audit,
-        "decision": classification["decision"], "reason_codes": classification["reason_codes"],
+        "decision": report_decision, "reason_codes": classification["reason_codes"],
         "occurrences": occurrences, "proposal_count": proposal_count,
         "execution_authority": {"automatic_execution": "DISABLED", "demo_execution": "DISABLED",
                                 "live_execution": "DISABLED", "research_only": True},
@@ -395,9 +402,17 @@ def archive_btc_daily_report(observation_date: dt.date, report: Dict[str, Any], 
 
 def human_readable_btc_daily_report(report: Dict[str, Any]) -> str:
     """Compact operator output; proposals are informational, never broker tickets."""
+    strategy_id = report.get("strategy_id", STRATEGY_ID)
+    strategy_version = report.get("strategy_version", STRATEGY_VERSION)
+    registry_status = registry_display_status(strategy_id, strategy_version)
+    decision = report["decision"]
+    if registry_status != "ADMITTED" and decision in {DECISION_READY, "NOT_READY"}:
+        decision = registry_status
     lines = [
         f"BTC DAILY DECISION -- {report['observation_date']}",
-        f"Decision: {report['decision']}",
+        *((f"Strategy: {strategy_id}@{strategy_version} {registry_status}",)
+          if registry_status != "ADMITTED" else ()),
+        f"Decision: {decision}",
         f"Data quality: {report['data_quality']['status']}",
         f"Reasons: {', '.join(report.get('reason_codes') or []) or 'NONE'}",
         f"Qualified proposals: {report.get('proposal_count', 0)}",
