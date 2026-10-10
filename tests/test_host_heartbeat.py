@@ -4,17 +4,18 @@ from __future__ import annotations
 import ast
 import contextlib
 import datetime as dt
-import re
-from collections import namedtuple
 import json
+import re
 import subprocess
 import sys
+from collections import namedtuple
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts" / "host"))
 
 import heartbeat as hb  # noqa: E402
+
 from host_evidence.symbol_metadata import NY, SERVER_MINUS_NY_HOURS  # noqa: E402
 
 UTC = dt.timezone.utc
@@ -254,6 +255,29 @@ def test_host_ref_on_main_and_detached(tmp_path):
 
 def test_main_refuses_output_inside_host_repo(tmp_path):
     assert hb.main(["--host-repo", str(tmp_path), "--out", str(tmp_path / "x.json"), "--no-broker-history"]) == 2
+
+
+def test_out_on_other_drive_is_not_inside_repo():
+    import ntpath
+    assert hb._is_inside(r"D:\hb\heartbeat.json", r"C:\host\repo", ntpath) is False
+    assert hb._is_inside(r"C:\host\repo\status\hb.json", r"C:\host\repo", ntpath) is True
+    assert hb._is_inside(r"C:\host\other\hb.json", r"C:\host\repo", ntpath) is False
+
+
+def test_mixed_case_drive_and_dir_is_inside_repo():
+    import ntpath
+    assert hb._is_inside(r"c:\Host\REPO\status\hb.json", r"C:\host\repo", ntpath) is True
+
+
+def test_main_cross_drive_out_is_written_not_refused(tmp_path, monkeypatch, capsys):
+    def cross_drive(paths):
+        raise ValueError("Paths don't have the same drive")
+    monkeypatch.setattr(hb.os.path, "commonpath", cross_drive)
+    monkeypatch.setattr(hb, "build", lambda *a, **k: {"ok": True})
+    monkeypatch.setattr(hb, "write", lambda payload, out: out)
+    out = str(tmp_path / "hb.json")
+    assert hb.main(["--host-repo", "C:/repo", "--out", out, "--no-broker-history"]) == 0
+    assert f"HEARTBEAT_WRITTEN {out}" in capsys.readouterr().out
     assert not (tmp_path / "x.json").exists()
 
 

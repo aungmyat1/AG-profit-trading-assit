@@ -54,7 +54,7 @@ def test_wrong_side_stop_fails_l3():
     c = case()
     snap = evaluate_snapshot("EURUSD", c["D1"], c["H1"], c["M5"], NOW)
     o = dict(snap.opportunity, stop_c10=snap.opportunity["entry_reference"] + 0.001)
-    assert G.l3(c, dataclasses.replace(snap, opportunity=o))["status"] == "FAIL"
+    assert G.l3(c, dataclasses.replace(snap, state="OPPORTUNITY", opportunity=o))["status"] == "FAIL"
 
 
 def test_stale_data_fails_l4():

@@ -1,0 +1,8 @@
+# AGP-C2-SYMMAP host smoke -- `python scripts/host/symbol_map_smoke.py smoke`, exit 0
+# Host: Windows MT5 terminal (VTMarkets-Demo, DEMO account), branch agp/c2-symmap, 2026-10-09.
+# Historical evidence correction: this run occurred while R1_GATE=BLOCKED_RESOURCE and lock acquisition returned ACQUIRED=False; it was a policy deviation. See the aggregate capture's resource_governance_note.
+# The following is verbatim output for the earlier map v1; it does not establish a live host smoke of committed map v2.
+MAP v1 VT_MARKETS/VTMarkets-Demo evidence=status/evidence/host_symbol_info_2026-10-09_symmap.json
+LIVE_SERVER VTMarkets-Demo
+DIFF EMPTY
+READ_ONLY_GUARD {"broker_mutations": 0, "forbidden_calls": [], "market_watch_visibility_unchanged": true, "mt5_calls": {"account_info": 2, "initialize": 1, "last_error": 1, "shutdown": 1, "symbol_info": 120, "symbol_info_tick": 20}}

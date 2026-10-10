@@ -136,6 +136,65 @@ def test_missing_mapping_fails_loudly_without_substitution(tmp_path):
     assert fake.calls == []  # no lookup of any guessed symbol
 
 
+def _mixed_map(tmp_path, monkeypatch, entries):
+    """Point the canonical map loader at a temp map holding ``entries`` (canonical -> item)."""
+    import yaml
+
+    from mt5 import canonical_broker_map as cbm
+    raw = yaml.safe_load(open(cbm.DEFAULT_MAP_PATH, encoding="utf-8"))
+    raw["entries"].update(entries)
+    path = tmp_path / "map.yaml"
+    path.write_text(yaml.safe_dump(raw), encoding="utf-8")
+    real = cbm.load_map
+    monkeypatch.setattr(cbm, "load_map", lambda p=str(path): real(p))
+
+
+@pytest.mark.parametrize("bad", [
+    {"GBPUSD": {"status": "UNMAPPED", "reason": "NO_VISIBLE_FULL_CANDIDATE"}},
+    {"USDJPY": "no_capture"},
+    {"GBPUSD": {"status": "UNMAPPED", "reason": "NO_VISIBLE_FULL_CANDIDATE"}, "XAUUSD": "no_capture"},
+])
+def test_unmapped_or_data_error_blocks_only_that_symbol(tmp_path, monkeypatch, bad):
+    import copy
+
+    import yaml
+
+    from mt5 import canonical_broker_map as cbm
+    raw = yaml.safe_load(open(cbm.DEFAULT_MAP_PATH, encoding="utf-8"))
+    entries = {}
+    for sym, item in bad.items():
+        if item == "no_capture":  # MAPPED but its host-capture citation is missing -> DATA_ERROR
+            item = copy.deepcopy(raw["entries"][sym])
+            item["host_capture"]["path"] = f"config/symbol_metadata/host_captured/missing/{sym}.json"
+        entries[sym] = item
+    _mixed_map(tmp_path, monkeypatch, entries)
+    mapped, blocked = adapter.symbol_map_status()
+    assert set(blocked) == set(bad)
+    assert mapped == {k: v for k, v in MAP.items() if k not in bad}
+    assert adapter.default_symbol_map() == mapped
+    start = dt.datetime(2026, 10, 7, 8, 0, tzinfo=UTC)
+    fake = FakeMT5([_rate(t) for t in _bars(start, 4, 15)])
+    out = adapter.fetch_closed_candles_per_symbol(fake, adapter.SUPPORTED_SYMBOLS, "M15", 3, mapped)
+    for sym in adapter.SUPPORTED_SYMBOLS:
+        if sym in bad:
+            assert out[sym]["status"] == adapter.DATA_ERROR
+            assert out[sym]["code"] == adapter.SYMBOL_MAPPING_MISSING
+        else:
+            assert out[sym]["status"] == "OK" and len(out[sym]["candles"]) == 3
+    # No terminal lookup for a blocked symbol, under any spelling.
+    looked_up = {c[1] for c in fake.calls}
+    assert looked_up == {MAP[s] for s in MAP if s not in bad}
+
+
+def test_absent_broker_symbol_is_data_error_for_that_symbol_only():
+    start = dt.datetime(2026, 10, 7, 8, 0, tzinfo=UTC)
+    fake = FakeMT5([_rate(t) for t in _bars(start, 4, 15)], known=set(MAP.values()) - {"XAUUSD-VIP"})
+    out = adapter.fetch_closed_candles_per_symbol(fake, adapter.SUPPORTED_SYMBOLS, "M15", 3, MAP)
+    assert out["XAUUSD"]["status"] == adapter.DATA_ERROR
+    assert out["XAUUSD"]["code"] == adapter.SYMBOL_MAPPING_MISSING
+    assert all(out[s]["status"] == "OK" for s in ("EURUSD", "GBPUSD", "USDJPY"))
+
+
 def test_broker_symbol_unknown_to_terminal_fails_loudly():
     fake = FakeMT5([], known=set())
     with pytest.raises(adapter.CandleAdapterError) as e:

@@ -322,3 +322,42 @@ def test_report_per_symbol_gates_and_verdicts_without_edge(report):
     assert "verdict" not in report
     assert report["edge_verified"] is False and report["economic_status"] == "NOT_EVALUATED"
     assert all(c["edge_verified"] is False and c["owner_ticket_state"] != "TICKET_READY" for c in report["cases"])
+
+
+# --- CCW-P1-REPLAY-01: 60-day routing and per-session matrix rules --------------------------------
+
+_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_script(name: str, rel: str):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(name, _ROOT / rel)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_d60_routing_points_at_60d_files_with_matching_provenance():
+    import hashlib
+    import re
+    mod = _load_script("asw_v112_logic_verification_d60", "scripts/asw_v112_logic_verification.py")
+    for sym, spec in mod.D60_SYMBOLS.items():
+        assert spec["fixture"].endswith(f"{sym}_M15_recorded_spread_60d.csv") and spec["l4_failures"] is None
+        note = (_ROOT / spec["provenance"]).read_text(encoding="utf-8")
+        want = re.search(r"^- sha256: `([0-9a-f]{64})`", note, re.M).group(1)
+        assert hashlib.sha256((_ROOT / spec["fixture"]).read_bytes()).hexdigest() == want
+
+
+def test_d60_session_row_reports_insufficient_without_positive_examples():
+    drv = _load_script("asw_v112_60d_replay", "scripts/asw_v112_60d_replay.py")
+    case = {"case_id": "recorded:X:ASIAN_LONDON:2026-08-03", "direction": None, "day_type": "no-setup",
+            "ticket_gate_status": None, "ticket_gate_blocking_failures": None, "l2_fail_ids": [],
+            "l2_undeclared": [], "owner_ticket_L6": None,
+            "geometry": {"has_levels": False, "positive_stop": True, "target_order": True},
+            "causality": {"prefix_mismatches": 0, "pre_emission_signals": 0, "streaming_hash_parity": True,
+                          "future_mutations": 0, "future_mutation_mismatches": 0}}
+    row = drv.session_row("X", "ASIAN_LONDON", [case], {"L1": "PASS", "L4": "PASS", "L5": "WARN"})
+    assert row["valid_entries"] == 0 and row["rejections_by_reason"] == {"NO_SIGNAL:no-setup": 1}
+    assert row["gates"] == {"L1": "PASS", "L2": "INSUFFICIENT", "L3": "INSUFFICIENT", "L4": "INSUFFICIENT",
+                            "L5": "INSUFFICIENT", "L6": "INSUFFICIENT"}
+    assert "PASS" not in {row["gates"][k] for k in ("L2", "L3", "L4", "L5", "L6")}

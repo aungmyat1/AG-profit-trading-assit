@@ -28,6 +28,26 @@ paper-ledger behavior is not part of the canonical scheduled path.
 Run every step from the repo root, in this order. Stop at the first step that does not show
 its expected output.
 
+## Required actionability preflight (before diagnosis or task installation)
+
+The host-local `config/local/actionability_policy.yaml` must explicitly contain:
+
+```yaml
+# owner-set operational parameter, 2026-10-10, not a contract value.
+lsmc_min_remaining_reward_fraction: 0.5
+```
+
+Preserve the host policy's other fields. The tracked policy is a template, not a
+runtime fallback. Run this read-only check before proceeding:
+
+```
+.venv\Scripts\python.exe scripts\host\preflight_actionability.py
+```
+
+Expected: `PASS lsmc_min_remaining_reward_fraction=0.5`, exit 0. Missing or invalid
+values exit nonzero and name the key; stop deployment. The emitter otherwise fails
+closed and logs `LSMC_CONFIG_MISSING` once per run; summaries show `CONFIG_MISSING`.
+
 ## 1. Diagnose
 
 ```

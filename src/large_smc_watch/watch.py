@@ -1,8 +1,8 @@
-"""ST_LARGE_SMC_V1@1.1.0 watch -- pure snapshot, persistent tracker, ARCHIVE_ONLY alert journal.
+"""ST_LARGE_SMC_V1@1.1.0 watch -- operational snapshot, persistent tracker, ARCHIVE_ONLY alert journal.
 
-evaluate_snapshot() is a pure function of closed candles plus `now_utc`. Candles that
-close after `now_utc` are dropped before anything is computed, so the result cannot use
-future data.
+evaluate_snapshot() uses closed candles, `now_utc` and the configured operational
+remaining-reward threshold. Candles that close after `now_utc` are dropped before
+anything is computed, so the result cannot use future data.
 
 WatchTracker persists the last watch state per symbol and turns snapshot changes into
 alert transitions. Each transition has a deterministic id. It is archived through the
@@ -15,14 +15,17 @@ from __future__ import annotations
 
 import datetime as dt
 import hashlib
+import math
 import os
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
+from pathlib import Path
 from typing import Dict, List, Optional, Sequence
 from zoneinfo import ZoneInfo
 
 import yaml
 
 from fx_discovery import features as F
+from host_delivery.lsmc_actionability_config import remaining_fraction
 from large_smc_core.c10_stop_policy import C10StopPolicyViolation, compute_c10_stop
 from post_asian_pilot.report_archive import archive_path
 from runtime_state.store import JsonKeyValueStore
@@ -51,6 +54,46 @@ NY = ZoneInfo(C.DAY_BOUNDARY_TZ)
 UTC = dt.timezone.utc
 ACTIVE_STATES = ("DEVELOPING", "NEAR_POI", "OPPORTUNITY")
 DELIVERY_MODE = "ARCHIVE_ONLY"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _finite(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def _remaining_fraction(root: Path) -> Optional[float]:
+    """Missing/malformed host thresholds have no fallback."""
+    return remaining_fraction(root)
+
+
+def opportunity_rejection(opportunity: dict, current_price: Optional[float], *,
+                          root: Optional[Path] = None) -> Optional[str]:
+    """Delivery eligibility only; levels and detection evidence are never repaired.
+
+    No R:R minimum is authorized by the 1.1.0 contract. The remaining-reward
+    fraction is a separate owner-set operational parameter, not an R:R rule.
+    """
+    entry, stop, target = (opportunity.get(k) for k in ("entry_reference", "stop_c10", "target_c11"))
+    sign = {"LONG": 1, "SHORT": -1}.get(opportunity.get("direction"))
+    if sign is None or not _finite(entry) or entry <= 0:
+        return "REJECT_NO_STOP"
+    if not _finite(stop) or stop <= 0 or opportunity.get("stop_reason") or sign * (entry - stop) <= 0:
+        return "REJECT_NO_STOP"
+    if not _finite(target) or target <= 0 or opportunity.get("target_reason") or sign * (target - entry) <= 0:
+        return "REJECT_NO_TARGET"
+    threshold = _remaining_fraction(REPO_ROOT if root is None else root)
+    if threshold is None or not _finite(current_price) or current_price <= 0:
+        return "REJECT_STALE"
+    if sign * (current_price - stop) <= 0 or (target - current_price) / (target - entry) < threshold:
+        return "REJECT_STALE"
+    return None
+
+
+def gate_opportunity(snap: "Snapshot", current_price: Optional[float]) -> "Snapshot":
+    if snap.state != "OPPORTUNITY":
+        return snap
+    reason = opportunity_rejection(snap.opportunity or {}, current_price)
+    return replace(snap, state="REJECTED", reason_codes=(reason,) + snap.reason_codes) if reason else snap
 
 
 def trading_date(t: dt.datetime) -> dt.date:
@@ -199,7 +242,7 @@ def evaluate_snapshot(
             stop_reason = "C10_PIP_SIZE_NOT_EVIDENCED"
         target = c11_causal_target(m5c, o.direction, o.entry_reference, len(m5c) - 1)
         poi = next(p for p in known if p.poi_id == o.poi_id)
-        return Snapshot(
+        return gate_opportunity(Snapshot(
             state="OPPORTUNITY", reason_codes=("D30_BADGE_ECONOMICS_NOT_EVALUATED",), **base, **common,
             poi=_poi_dict(poi), opportunity={
                 **{k: (v.isoformat() if isinstance(v, dt.datetime) else v) for k, v in asdict(o).items()},
@@ -207,7 +250,7 @@ def evaluate_snapshot(
                 "target_c11": target, "target_reason": None if target is not None else "REJECT_NO_TARGET",
                 "target_tier": "C11_FALLBACK_M5_SWING_CAUSAL", "economic_status": C.ECONOMIC_STATUS,
             },
-        )
+        ), m5c[-1].close)
 
     live = [p for p in known if p.direction == bias and valid_at(p, now)]
     if bias is None or not live:
@@ -250,7 +293,8 @@ class AlertEvent:
 
 
 _ARCHIVE_STATE = {"DEVELOPING": CYCLE_STATE_WATCH, "NEAR_POI": CYCLE_STATE_WATCH, "OPPORTUNITY": CYCLE_STATE_WATCH,
-                  "INVALIDATED": CYCLE_STATE_NO_TRADE, "EXPIRED": CYCLE_STATE_NO_TRADE}
+                  "INVALIDATED": CYCLE_STATE_NO_TRADE, "EXPIRED": CYCLE_STATE_NO_TRADE,
+                  "REJECTED": CYCLE_STATE_NO_TRADE}
 
 
 class WatchTracker:
@@ -288,8 +332,11 @@ class WatchTracker:
         new_ref = (snap.opportunity or {}).get("opp_id") or (snap.poi or {}).get("poi_id")
         current_state = transitions[-1][0] if transitions else prev_state
         current_ref = transitions[-1][1] if transitions else ref
-        if snap.state in ACTIVE_STATES and (snap.state != current_state or new_ref != current_ref):
-            transitions.append((snap.state, new_ref, {"poi": snap.poi, "opportunity": snap.opportunity}))
+        if snap.state in ACTIVE_STATES + ("REJECTED",) and (snap.state != current_state or new_ref != current_ref):
+            payload = {"poi": snap.poi, "opportunity": snap.opportunity}
+            if snap.state == "REJECTED":
+                payload["reason_codes"] = list(snap.reason_codes)
+            transitions.append((snap.state, new_ref, payload))
         elif snap.state == "IDLE" and current_state in ACTIVE_STATES + ("SUSPENDED",):
             self._save(snap.symbol, {**prev, "state": "IDLE", "reference_id": None})
         return self._emit(snap, prev, transitions)
@@ -304,7 +351,8 @@ class WatchTracker:
             tid = hashlib.sha256(
                 f"{C.STRATEGY_ID}|{C.STRATEGY_VERSION}|{snap.symbol}|{seq}|{from_state}|{to_state}|{ref}".encode()
             ).hexdigest()[:24]
-            ev = AlertEvent(tid, snap.symbol, from_state, to_state, C.ALERT_LEVEL[to_state], ref,
+            ev = AlertEvent(tid, snap.symbol, from_state, to_state,
+                            "INFO" if to_state == "REJECTED" else C.ALERT_LEVEL[to_state], ref,
                             snap.evaluated_at, trading_date(now).isoformat(),
                             payload={**payload, "bias": snap.bias, "d1_context": snap.d1_context,
                                      "metadata_source": snap.metadata_source})
