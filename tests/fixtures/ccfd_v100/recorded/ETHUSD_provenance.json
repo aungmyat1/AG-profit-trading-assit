@@ -1,0 +1,18 @@
+{
+  "source": "MT5_VT_MARKETS_DEMO",
+  "mission": "AGP-DATA-R2",
+  "symbol": "ETHUSD",
+  "recorded": true,
+  "captured_at_utc": "2026-10-10T10:47:27.243268+00:00",
+  "m15_captured_in": "PR #128 (AGP-DATA-R2)",
+  "other_tfs_captured_in": "AGP-DATA-R2b",
+  "sha256": {
+    "d1": "a958988c74b3086b6f424865915224f7476637b5c174628d98195188d15b3834",
+    "h1": "be15612750bfec64ddfd560ab9f18480f6a60132abe5f0cc829f7cb84b94d65c",
+    "m5": "a09054aaaca244f001d635a49f50d55c8216922516dff7c442087657a23c2a20",
+    "m15": "e28a10aa33919131a479cd3910fa238394ba8155d7500bd5b791c04fbc53a3ff"
+  },
+  "sha256_scope": "shared 14-day files; materialized per-case slices carry their own hashes",
+  "commission_R": null,
+  "commission_gap": "commission_R is null for every case: VT crypto CFD commission was not captured (no allowed read-only call exposes it). Explicit gap, never 0."
+}

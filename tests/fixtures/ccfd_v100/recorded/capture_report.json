@@ -1,0 +1,1078 @@
+{
+ "captured_at_utc": "2026-10-10T10:47:27.243268+00:00",
+ "peak_working_set_mb": 47.6,
+ "server": "VTMarkets-Demo",
+ "symbols": [
+  {
+   "d1": [
+    {
+     "close_utc": "2026-09-26T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-25T21:00:00+00:00",
+     "server_date": "2026-09-26",
+     "status": "NOT_EVALUATED_OUTSIDE_M1_RANGE"
+    },
+    {
+     "close_utc": "2026-09-27T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-26T21:00:00+00:00",
+     "server_date": "2026-09-27",
+     "status": "PARTIAL_M1_CHECK"
+    },
+    {
+     "close_utc": "2026-09-28T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-27T21:00:00+00:00",
+     "server_date": "2026-09-28",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-09-29T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-28T21:00:00+00:00",
+     "server_date": "2026-09-29",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-09-30T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-29T21:00:00+00:00",
+     "server_date": "2026-09-30",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-01T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-30T21:00:00+00:00",
+     "server_date": "2026-10-01",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-02T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-01T21:00:00+00:00",
+     "server_date": "2026-10-02",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-03T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-02T21:00:00+00:00",
+     "server_date": "2026-10-03",
+     "status": "PARTIAL_M1_CHECK"
+    },
+    {
+     "close_utc": "2026-10-04T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-03T21:00:00+00:00",
+     "server_date": "2026-10-04",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-05T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-04T21:00:00+00:00",
+     "server_date": "2026-10-05",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-06T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-05T21:00:00+00:00",
+     "server_date": "2026-10-06",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-07T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-06T21:00:00+00:00",
+     "server_date": "2026-10-07",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-08T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-07T21:00:00+00:00",
+     "server_date": "2026-10-08",
+     "status": "PARTIAL_M1_CHECK"
+    },
+    {
+     "close_utc": "2026-10-09T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-08T21:00:00+00:00",
+     "server_date": "2026-10-09",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-10T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-09T21:00:00+00:00",
+     "server_date": "2026-10-10",
+     "status": "EXCLUDED_NOT_CLOSED_AT_CAPTURE"
+    }
+   ],
+   "days": [
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 23,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 95,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 286,
+       "bars": 287,
+       "missing": [
+        "2026-09-26T02:05:00+00:00"
+       ]
+      }
+     },
+     "date": "2026-09-26",
+     "kept": true,
+     "m1_gaps": "02:05-02:11 (7)",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 23,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 95,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 2,
+       "PASS": 286,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-09-27",
+     "kept": true,
+     "m1_gaps": "01:39-01:40 (2)",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-09-28",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-09-29",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-09-30",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-01",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 23,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 2,
+       "PASS": 94,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 2,
+       "PASS": 286,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-02",
+     "kept": true,
+     "m1_gaps": "22:14-22:16 (3)",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-03",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-04",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-05",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-06",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 23,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 95,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 287,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-07",
+     "kept": true,
+     "m1_gaps": "21:00",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-08",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 23,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 95,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 287,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-09",
+     "kept": true,
+     "m1_gaps": "23:26",
+     "offset_h": 3
+    }
+   ],
+   "digits": 2,
+   "files": {
+    "BTCUSD_d1.csv": "cdd17f4fe707f8984535e3cf905965144838a3191369099665f06b0587c94e24",
+    "BTCUSD_d1_meta.csv": "5594491e0ea292e9ac82e265d80006a301f90c2ddb180c6fa9cf757c06570e13",
+    "BTCUSD_h1.csv": "609a9bb0c276cf0f66888fafaefea584e1ba3202c244c18672faf1044d3f3e45",
+    "BTCUSD_h1_meta.csv": "1b1b8fb7e65472a5c1d2e9660926b5f5dce398f5d769be3183617d5f59e57b88",
+    "BTCUSD_m1.csv": "70ba9607dfdd31323deea0a35ebfcb946ab3939f88028a75637fab1d03e7ae4a",
+    "BTCUSD_m15_meta.csv": "61c6af30189d79ba42a1041bf3cc27d0fa619d8f460ec331c22c0c9bb0619ab8",
+    "BTCUSD_m1_meta.csv": "ef97c70b81219302f73ee93b8ee7dc44bc1764983f9fed23ab7d20a8130f6739",
+    "BTCUSD_m5.csv": "b1f6594523f4589415585909230c134d817b2e9b74d0098e39640aa2104a7c34",
+    "BTCUSD_m5_meta.csv": "d53301827d23f619b163f42dc54a988a443e4f01599abca2ef690ac8dc291e6b"
+   },
+   "m15_reference_sha256": "f0f8bd079806a9f732443b642c308f4fbc8c6429be8786cba9a121f0797e8efa",
+   "point_host": 0.01,
+   "point_live": 0.01,
+   "symbol": "BTCUSD"
+  },
+  {
+   "d1": [
+    {
+     "close_utc": "2026-09-26T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-25T21:00:00+00:00",
+     "server_date": "2026-09-26",
+     "status": "NOT_EVALUATED_OUTSIDE_M1_RANGE"
+    },
+    {
+     "close_utc": "2026-09-27T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-26T21:00:00+00:00",
+     "server_date": "2026-09-27",
+     "status": "PARTIAL_M1_CHECK"
+    },
+    {
+     "close_utc": "2026-09-28T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-27T21:00:00+00:00",
+     "server_date": "2026-09-28",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-09-29T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-28T21:00:00+00:00",
+     "server_date": "2026-09-29",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-09-30T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-29T21:00:00+00:00",
+     "server_date": "2026-09-30",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-01T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-09-30T21:00:00+00:00",
+     "server_date": "2026-10-01",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-02T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-01T21:00:00+00:00",
+     "server_date": "2026-10-02",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-03T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-02T21:00:00+00:00",
+     "server_date": "2026-10-03",
+     "status": "PARTIAL_M1_CHECK"
+    },
+    {
+     "close_utc": "2026-10-04T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-03T21:00:00+00:00",
+     "server_date": "2026-10-04",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-05T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-04T21:00:00+00:00",
+     "server_date": "2026-10-05",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-06T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-05T21:00:00+00:00",
+     "server_date": "2026-10-06",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-07T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-06T21:00:00+00:00",
+     "server_date": "2026-10-07",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-08T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-07T21:00:00+00:00",
+     "server_date": "2026-10-08",
+     "status": "PARTIAL_M1_CHECK"
+    },
+    {
+     "close_utc": "2026-10-09T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-08T21:00:00+00:00",
+     "server_date": "2026-10-09",
+     "status": "PASS"
+    },
+    {
+     "close_utc": "2026-10-10T21:00:00+00:00",
+     "open_is_17_ny": true,
+     "open_utc": "2026-10-09T21:00:00+00:00",
+     "server_date": "2026-10-10",
+     "status": "EXCLUDED_NOT_CLOSED_AT_CAPTURE"
+    }
+   ],
+   "days": [
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 23,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 95,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 286,
+       "bars": 287,
+       "missing": [
+        "2026-09-26T02:05:00+00:00"
+       ]
+      }
+     },
+     "date": "2026-09-26",
+     "kept": true,
+     "m1_gaps": "02:05-02:11 (7)",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 23,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 95,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 2,
+       "PASS": 286,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-09-27",
+     "kept": true,
+     "m1_gaps": "01:39-01:40 (2)",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-09-28",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-09-29",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-09-30",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-01",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 23,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 2,
+       "PASS": 94,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 2,
+       "PASS": 286,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-02",
+     "kept": true,
+     "m1_gaps": "22:14-22:16 (3)",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-03",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-04",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-05",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-06",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 23,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 95,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 287,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-07",
+     "kept": true,
+     "m1_gaps": "21:00",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 24,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 96,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 0,
+       "PASS": 288,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-08",
+     "kept": true,
+     "m1_gaps": "none",
+     "offset_h": 3
+    },
+    {
+     "counts": {
+      "H1": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 23,
+       "bars": 24,
+       "missing": []
+      },
+      "M15": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 95,
+       "bars": 96,
+       "missing": []
+      },
+      "M5": {
+       "FAIL": 0,
+       "PARTIAL_M1_CHECK": 1,
+       "PASS": 287,
+       "bars": 288,
+       "missing": []
+      }
+     },
+     "date": "2026-10-09",
+     "kept": true,
+     "m1_gaps": "23:26",
+     "offset_h": 3
+    }
+   ],
+   "digits": 2,
+   "files": {
+    "ETHUSD_d1.csv": "a958988c74b3086b6f424865915224f7476637b5c174628d98195188d15b3834",
+    "ETHUSD_d1_meta.csv": "5b03491a8282f388cf53f1f09f380d6e3610e40f70291555f5890c4bb987e911",
+    "ETHUSD_h1.csv": "be15612750bfec64ddfd560ab9f18480f6a60132abe5f0cc829f7cb84b94d65c",
+    "ETHUSD_h1_meta.csv": "01ebcd46eb724e8c38ffa6342ae47230c2581548b5e113b36ef1df7f37b77aa4",
+    "ETHUSD_m1.csv": "f5cc951e621874dbab710fdad0f5a199b3a13702acbc3bc4a8f9d703c480d412",
+    "ETHUSD_m15_meta.csv": "a8ace51155616c5e694162e81580b608fdd791af3537f6920e82d9572e7f2cfd",
+    "ETHUSD_m1_meta.csv": "e45e2e748267d786566a4060f4b13d01b662b859efbd4ae1c38595ab1d4ba4ce",
+    "ETHUSD_m5.csv": "a09054aaaca244f001d635a49f50d55c8216922516dff7c442087657a23c2a20",
+    "ETHUSD_m5_meta.csv": "5b4296775cd04b4ad35340ef2787eab29acd3e85235c6f2b7675fce86f18837d"
+   },
+   "m15_reference_sha256": "e28a10aa33919131a479cd3910fa238394ba8155d7500bd5b791c04fbc53a3ff",
+   "point_host": 0.01,
+   "point_live": 0.01,
+   "symbol": "ETHUSD"
+  }
+ ],
+ "terminal": "<HOST_SCRATCHPAD>/terminal64.exe"
+}
