@@ -257,10 +257,6 @@ python -m pip install -r requirements.txt
 python -m pytest -q
 ```
 
-Windows installs include `MetaTrader5==5.0.5735` (Python 3.11 wheel verified); Linux skips
-that package. dotenv and matplotlib have no imports in src/, scripts/, or tests/.
-
-
 Safe read-only examples:
 
 ```powershell

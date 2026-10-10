@@ -6,12 +6,7 @@ review_by: 2026-11-07
 ---
 # Project Status — AG Profit Trading
 
-## Current snapshot (2026-10-10)
-
-Dependency reconciliation restores the Windows-only MetaTrader5 pin in requirements.
-The import/declaration regression covers installed third-party distributions; a universal
-resolution check remains blocked by absent project modules. See
-[dependency evidence](docs/status/DEPENDENCY_IMPORT_RECONCILIATION_2026-10-10.md).
+## Current snapshot (2026-10-09)
 
 OD1009-D1–OD1009-D6 are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`; G1–G6 are
 defined in `docs/PROJECT_OBJECTIVE.md`. The FX/gold manual-ticket risk/cost gate is implemented
