@@ -189,6 +189,22 @@ strategies:
       EDGE_VERIFIED=false, RISK_AUTHORIZED=false. Wiring this contract into the scanner's
       strategy_adapter / Checklist V1.1 phases is a separate, future authority decision
       -- this registration changes no scanner behavior.
+    # AGP-4H-B (2026-10-10): per-symbol LOGIC verification of the registered version, read by
+    # src/v1_tickets/ready_authority.py. Logic only (rule conformance on VT recorded fixtures #128/#131,
+    # 14 days incl. weekends, 4032 M5 scans, 0 mismatches) -- NOT economic/edge evidence, and grants no
+    # ticket, READY, demo or live authority (active stays false). Bound to the identity digest below;
+    # any engine/contract/policy file change breaks the match (fail closed). Positive coverage is one
+    # SHORT setup (2026-10-09); the LONG branch is not evidenced for BTCUSD. ETHUSD is not recorded.
+    candidate_versions:
+      "1.0.0":
+        config_source: strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml
+        logic_status: LOGIC_VERIFIED
+        logic_verified_identity: bb87c444fcf7af205234da5fcc96f2958c9c3e0ab046ba4072b2f0f83a9077dd
+        economic_status: NOT_EVALUATED
+        edge_verified: false
+        logic_verified_symbols:
+          - symbol: BTCUSD
+            evidence: artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0_0/vt_recorded_2026-09-26_2026-10-09/replay_report.json
 
   R8_OBM_V1:
     registered: true

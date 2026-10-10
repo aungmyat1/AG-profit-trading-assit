@@ -1,0 +1,926 @@
+{
+  "BROKER_MUTATION_COUNT": 0,
+  "ORDER_API_CALLS": 0,
+  "balance": null,
+  "contract_path": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml",
+  "contract_sha256": "395ede3926272cfe611285e84202a9961f2ad33eb3f48c40066ba4944f6bae84",
+  "dataset": {
+    "file_hashes_verified": true,
+    "gaps": {
+      "commission_R": "commission_R is null for every case: VT crypto CFD commission was not captured (no allowed read-only call exposes it). Explicit gap, never 0."
+    },
+    "manifest": "tests/fixtures/ccfd_v100/recorded/manifest.json",
+    "manifest_sha256": "931bd014a9b21a57be11a3f8825bd2428a21f0c37f734ac2c322049a2c296a9a",
+    "source": "MT5_VT_MARKETS_DEMO"
+  },
+  "date": "2026-10-10",
+  "days_run": [
+    "2026-09-26",
+    "2026-09-27",
+    "2026-09-28",
+    "2026-09-29",
+    "2026-09-30",
+    "2026-10-01",
+    "2026-10-02",
+    "2026-10-03",
+    "2026-10-04",
+    "2026-10-05",
+    "2026-10-06",
+    "2026-10-07",
+    "2026-10-08",
+    "2026-10-09"
+  ],
+  "demo_authorized": false,
+  "edge_verified": false,
+  "live_authorized": false,
+  "logic_verification": {
+    "BTCUSD": {
+      "all_checks_pass": true,
+      "logic_identity": {
+        "contract_hash": "492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e",
+        "digest": "bb87c444fcf7af205234da5fcc96f2958c9c3e0ab046ba4072b2f0f83a9077dd",
+        "engine_identity": "effd0ce5ed429cfabd138b2b1553e0ba3309b3af04f6fdd7ed09a397bae420a4",
+        "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+        "strategy_version": "1.0.0"
+      }
+    },
+    "ETHUSD": {
+      "all_checks_pass": true,
+      "logic_identity": {
+        "contract_hash": "492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e",
+        "digest": "bb87c444fcf7af205234da5fcc96f2958c9c3e0ab046ba4072b2f0f83a9077dd",
+        "engine_identity": "effd0ce5ed429cfabd138b2b1553e0ba3309b3af04f6fdd7ed09a397bae420a4",
+        "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+        "strategy_version": "1.0.0"
+      }
+    }
+  },
+  "logic_verified_claim": false,
+  "mission": "AGP-LANE-B",
+  "prefix_invariance_source": "TEMP_INLINE (AGP-ORACLE not merged)",
+  "registry": {
+    "active": false,
+    "modified": false,
+    "research": true
+  },
+  "schema": "AG_CCFD_V100_REPLAY_V1",
+  "spread_band_scope": "ticket state only; no L1-L6 check reads the band",
+  "spread_policy": {
+    "cost_block_R": 0.25,
+    "cost_warn_R": 0.1,
+    "spread_block_pct": 20.0,
+    "spread_ok_pct": 10.0
+  },
+  "strategy": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.0.0",
+  "symbols": {
+    "BTCUSD": {
+      "days": 14,
+      "emissions": [
+        {
+          "day_type": "WEEKDAY",
+          "direction": "SHORT",
+          "entry": 82393.84,
+          "live_cycle_decision": "BLOCKED",
+          "live_cycle_reason_codes": [
+            "OUTSIDE_CONFIG_WINDOW"
+          ],
+          "mss_at": "2026-10-09T18:35:00+00:00",
+          "now": "2026-10-09T18:45:00+00:00",
+          "retest_at": "2026-10-09T18:40:00+00:00",
+          "risk_distance": 1126.449999999997,
+          "spread": 16.94,
+          "spread_band": "OK",
+          "spread_pct_of_stop": 1.5038394957612298,
+          "stop_loss": 83520.29,
+          "sweep_at": "2026-10-09T11:45:00+00:00",
+          "ticket_decision": "BLOCKED",
+          "ticket_reason_codes": [
+            "ACCOUNT_BALANCE_UNAVAILABLE",
+            "LOGIC_STATUS_NOT_VERIFIED"
+          ],
+          "ticket_warnings": [
+            "COMMISSION_UNKNOWN"
+          ],
+          "tp1": 81948.13500000001,
+          "tp2": 80385.58,
+          "tp2_r_multiple": 1.7828221403524347
+        }
+      ],
+      "entry_valid_scans": 63,
+      "fetch_counts": {
+        "D1": 50,
+        "H1": 100,
+        "M15": 96,
+        "M5": 576
+      },
+      "gate_evidence": {
+        "cycle_ticket_l1": {
+          "PASS": 152
+        },
+        "l2_failures": [],
+        "l2_reference_rule_failures": [],
+        "l3_sequence_failures": [],
+        "l4_failures": [],
+        "l4_reject_failures": [],
+        "l5_cost_gates": [
+          {
+            "checks": [
+              {
+                "expected": null,
+                "id": "L5.spread_R",
+                "note": "",
+                "rule": "spread / stop distance",
+                "value": 0.015,
+                "verdict": "PASS"
+              },
+              {
+                "expected": null,
+                "id": "L5.commission_R",
+                "note": "COMMISSION NOT AVAILABLE",
+                "rule": "commission in R",
+                "value": null,
+                "verdict": "WARN"
+              },
+              {
+                "expected": 0.1,
+                "id": "L5.cost_vs_warn_level",
+                "note": "COST INCOMPLETE",
+                "rule": "cost_in_R <= owner_ticket.cost_warn_R",
+                "value": 0.015,
+                "verdict": "WARN"
+              }
+            ],
+            "gate": "L5",
+            "status": "WARN"
+          }
+        ],
+        "l6": [
+          "PASS"
+        ],
+        "logic_identity": {
+          "contract_hash": "492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e",
+          "digest": "bb87c444fcf7af205234da5fcc96f2958c9c3e0ab046ba4072b2f0f83a9077dd",
+          "engine_identity": "effd0ce5ed429cfabd138b2b1553e0ba3309b3af04f6fdd7ed09a397bae420a4",
+          "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+          "strategy_version": "1.0.0"
+        },
+        "spec_constants_match": true
+      },
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      },
+      "mismatches": {
+        "determinism": 0,
+        "l2_reconstruction": 0,
+        "l2_reference_rule": 0,
+        "l3_sequence": 0,
+        "l4_geometry": 0,
+        "manifest_parity": 0,
+        "prefix": 0,
+        "ticket_determinism": 0,
+        "ticket_scan_parity": 0,
+        "truncation": 0
+      },
+      "per_day": {
+        "2026-09-26": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKEND",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "REFERENCE_INCOMPLETE": 288
+          }
+        },
+        "2026-09-27": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKEND",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "REFERENCE_INCOMPLETE": 288
+          }
+        },
+        "2026-09-28": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "NO_TRADE_DIRECTION": 24,
+            "WAITING_SWEEP": 264
+          }
+        },
+        "2026-09-29": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-09-30": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-01": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-02": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-03": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKEND",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-04": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKEND",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-05": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_MSS": 72,
+            "WAITING_SWEEP": 216
+          }
+        },
+        "2026-10-06": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-07": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-08": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-09": {
+          "L1": "PASS",
+          "L2": "PASS",
+          "L3": "PASS",
+          "L4": "PASS",
+          "L5": "WARN",
+          "L6": "PASS",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "ENTRY_VALID": 63,
+            "WAITING_MSS": 82,
+            "WAITING_RETEST": 1,
+            "WAITING_SWEEP": 142
+          }
+        }
+      },
+      "prefix_invariance": {
+        "days": 14,
+        "emissions": 1,
+        "mismatch_at": [],
+        "mismatches_by_day": {},
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "prefixes": 4032,
+        "source": "TEMP_INLINE (AGP-ORACLE not merged)",
+        "verdict": "PASS"
+      },
+      "scan_results": {
+        "ENTRY_VALID": 63,
+        "NO_TRADE_DIRECTION": 24,
+        "REFERENCE_INCOMPLETE": 576,
+        "WAITING_MSS": 154,
+        "WAITING_RETEST": 1,
+        "WAITING_SWEEP": 3214
+      },
+      "scan_results_by_day": {
+        "2026-09-26": {
+          "REFERENCE_INCOMPLETE": 288
+        },
+        "2026-09-27": {
+          "REFERENCE_INCOMPLETE": 288
+        },
+        "2026-09-28": {
+          "NO_TRADE_DIRECTION": 24,
+          "WAITING_SWEEP": 264
+        },
+        "2026-09-29": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-09-30": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-01": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-02": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-03": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-04": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-05": {
+          "WAITING_MSS": 72,
+          "WAITING_SWEEP": 216
+        },
+        "2026-10-06": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-07": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-08": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-09": {
+          "ENTRY_VALID": 63,
+          "WAITING_MSS": 82,
+          "WAITING_RETEST": 1,
+          "WAITING_SWEEP": 142
+        }
+      },
+      "scans": 4032,
+      "symbol": "BTCUSD"
+    },
+    "ETHUSD": {
+      "days": 14,
+      "emissions": [
+        {
+          "day_type": "WEEKDAY",
+          "direction": "LONG",
+          "entry": 2704.74,
+          "live_cycle_decision": "BLOCKED",
+          "live_cycle_reason_codes": [
+            "OUTSIDE_CONFIG_WINDOW"
+          ],
+          "mss_at": "2026-10-05T18:00:00+00:00",
+          "now": "2026-10-05T18:10:00+00:00",
+          "retest_at": "2026-10-05T18:05:00+00:00",
+          "risk_distance": 20.429999999999836,
+          "spread": 2.45,
+          "spread_band": "WARN",
+          "spread_pct_of_stop": 11.99216837983501,
+          "stop_loss": 2684.31,
+          "sweep_at": "2026-10-05T16:25:00+00:00",
+          "ticket_decision": "BLOCKED",
+          "ticket_reason_codes": [
+            "ACCOUNT_BALANCE_UNAVAILABLE",
+            "LOGIC_STATUS_NOT_VERIFIED"
+          ],
+          "ticket_warnings": [
+            "COMMISSION_UNKNOWN",
+            "SPREAD_WARN",
+            "COST_WARN"
+          ],
+          "tp1": 2711.815,
+          "tp2": 2738.32,
+          "tp2_r_multiple": 1.643661282427834
+        }
+      ],
+      "entry_valid_scans": 70,
+      "fetch_counts": {
+        "D1": 50,
+        "H1": 100,
+        "M15": 96,
+        "M5": 576
+      },
+      "gate_evidence": {
+        "cycle_ticket_l1": {
+          "PASS": 152
+        },
+        "l2_failures": [],
+        "l2_reference_rule_failures": [],
+        "l3_sequence_failures": [],
+        "l4_failures": [],
+        "l4_reject_failures": [],
+        "l5_cost_gates": [
+          {
+            "checks": [
+              {
+                "expected": null,
+                "id": "L5.spread_R",
+                "note": "",
+                "rule": "spread / stop distance",
+                "value": 0.1199,
+                "verdict": "PASS"
+              },
+              {
+                "expected": null,
+                "id": "L5.commission_R",
+                "note": "COMMISSION NOT AVAILABLE",
+                "rule": "commission in R",
+                "value": null,
+                "verdict": "WARN"
+              },
+              {
+                "expected": 0.1,
+                "id": "L5.cost_vs_warn_level",
+                "note": "COST INCOMPLETE",
+                "rule": "cost_in_R <= owner_ticket.cost_warn_R",
+                "value": 0.1199,
+                "verdict": "WARN"
+              }
+            ],
+            "gate": "L5",
+            "status": "WARN"
+          }
+        ],
+        "l6": [
+          "PASS"
+        ],
+        "logic_identity": {
+          "contract_hash": "492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e",
+          "digest": "bb87c444fcf7af205234da5fcc96f2958c9c3e0ab046ba4072b2f0f83a9077dd",
+          "engine_identity": "effd0ce5ed429cfabd138b2b1553e0ba3309b3af04f6fdd7ed09a397bae420a4",
+          "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+          "strategy_version": "1.0.0"
+        },
+        "spec_constants_match": true
+      },
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      },
+      "mismatches": {
+        "determinism": 0,
+        "l2_reconstruction": 0,
+        "l2_reference_rule": 0,
+        "l3_sequence": 0,
+        "l4_geometry": 0,
+        "manifest_parity": 0,
+        "prefix": 0,
+        "ticket_determinism": 0,
+        "ticket_scan_parity": 0,
+        "truncation": 0
+      },
+      "per_day": {
+        "2026-09-26": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKEND",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "REFERENCE_INCOMPLETE": 288
+          }
+        },
+        "2026-09-27": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKEND",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "REFERENCE_INCOMPLETE": 288
+          }
+        },
+        "2026-09-28": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_MSS": 58,
+            "WAITING_SWEEP": 230
+          }
+        },
+        "2026-09-29": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-09-30": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-01": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-02": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "NO_TRADE_TARGET_GEOMETRY": 60,
+            "WAITING_SWEEP": 228
+          }
+        },
+        "2026-10-03": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKEND",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-04": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKEND",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-05": {
+          "L1": "PASS",
+          "L2": "PASS",
+          "L3": "PASS",
+          "L4": "PASS",
+          "L5": "WARN",
+          "L6": "PASS",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "ENTRY_VALID": 70,
+            "WAITING_MSS": 19,
+            "WAITING_RETEST": 1,
+            "WAITING_SWEEP": 198
+          }
+        },
+        "2026-10-06": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-07": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-08": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        },
+        "2026-10-09": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "INSUFFICIENT",
+          "L6": "INSUFFICIENT",
+          "day_type": "WEEKDAY",
+          "failure_class": null,
+          "prefix_mismatches": 0,
+          "results": {
+            "WAITING_SWEEP": 288
+          }
+        }
+      },
+      "prefix_invariance": {
+        "days": 14,
+        "emissions": 1,
+        "mismatch_at": [],
+        "mismatches_by_day": {},
+        "pre_emission_signals": 0,
+        "prefix_mismatches": 0,
+        "prefixes": 4032,
+        "source": "TEMP_INLINE (AGP-ORACLE not merged)",
+        "verdict": "PASS"
+      },
+      "scan_results": {
+        "ENTRY_VALID": 70,
+        "NO_TRADE_TARGET_GEOMETRY": 60,
+        "REFERENCE_INCOMPLETE": 576,
+        "WAITING_MSS": 77,
+        "WAITING_RETEST": 1,
+        "WAITING_SWEEP": 3248
+      },
+      "scan_results_by_day": {
+        "2026-09-26": {
+          "REFERENCE_INCOMPLETE": 288
+        },
+        "2026-09-27": {
+          "REFERENCE_INCOMPLETE": 288
+        },
+        "2026-09-28": {
+          "WAITING_MSS": 58,
+          "WAITING_SWEEP": 230
+        },
+        "2026-09-29": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-09-30": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-01": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-02": {
+          "NO_TRADE_TARGET_GEOMETRY": 60,
+          "WAITING_SWEEP": 228
+        },
+        "2026-10-03": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-04": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-05": {
+          "ENTRY_VALID": 70,
+          "WAITING_MSS": 19,
+          "WAITING_RETEST": 1,
+          "WAITING_SWEEP": 198
+        },
+        "2026-10-06": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-07": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-08": {
+          "WAITING_SWEEP": 288
+        },
+        "2026-10-09": {
+          "WAITING_SWEEP": 288
+        }
+      },
+      "scans": 4032,
+      "symbol": "ETHUSD"
+    }
+  },
+  "ticket_summary": [
+    {
+      "count": 120,
+      "day_type": "WEEKDAY",
+      "decision": "NO_TRADE",
+      "spread_band": "NOT_EVALUATED",
+      "stream": "CYCLE",
+      "symbol": "BTCUSD"
+    },
+    {
+      "count": 16,
+      "day_type": "WEEKEND",
+      "decision": "DATA_ERROR",
+      "spread_band": "NOT_EVALUATED",
+      "stream": "CYCLE",
+      "symbol": "BTCUSD"
+    },
+    {
+      "count": 16,
+      "day_type": "WEEKEND",
+      "decision": "NO_TRADE",
+      "spread_band": "NOT_EVALUATED",
+      "stream": "CYCLE",
+      "symbol": "BTCUSD"
+    },
+    {
+      "count": 120,
+      "day_type": "WEEKDAY",
+      "decision": "NO_TRADE",
+      "spread_band": "NOT_EVALUATED",
+      "stream": "CYCLE",
+      "symbol": "ETHUSD"
+    },
+    {
+      "count": 16,
+      "day_type": "WEEKEND",
+      "decision": "DATA_ERROR",
+      "spread_band": "NOT_EVALUATED",
+      "stream": "CYCLE",
+      "symbol": "ETHUSD"
+    },
+    {
+      "count": 16,
+      "day_type": "WEEKEND",
+      "decision": "NO_TRADE",
+      "spread_band": "NOT_EVALUATED",
+      "stream": "CYCLE",
+      "symbol": "ETHUSD"
+    },
+    {
+      "count": 1,
+      "day_type": "WEEKDAY",
+      "decision": "BLOCKED",
+      "spread_band": "OK",
+      "stream": "EMISSION_RESEARCH",
+      "symbol": "BTCUSD"
+    },
+    {
+      "count": 1,
+      "day_type": "WEEKDAY",
+      "decision": "BLOCKED",
+      "spread_band": "WARN",
+      "stream": "EMISSION_RESEARCH",
+      "symbol": "ETHUSD"
+    }
+  ],
+  "tickets_total": 306,
+  "weekend_days": [
+    "2026-09-26",
+    "2026-09-27",
+    "2026-10-03",
+    "2026-10-04"
+  ]
+}
