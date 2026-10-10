@@ -206,7 +206,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `7045d72cd57c60e727f67b2e29cd2b2468d7120f04cc35759b5b19b007b36b6d`.
+inputs_sha256: `320beaf218d67c49b619c8ef1c12b066dcd41ea8b1596e600b1c80ab28a15ebd`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -226,6 +226,15 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 
 Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
 <!-- [[[end]]] -->
+
+## D6 READY per-symbol verification gate (2026-10-10, branch `agp/d6-per-symbol-verification`, not merged)
+
+`apply_ready_authority` (`src/v1_tickets/ready_authority.py`) now keeps READY only if D6 READY authority
+is ON **and** the ticket's symbol is listed in `strategies/registry.yaml`
+`candidate_versions."<version>".verified_symbols`. Only EURUSD is listed, for 1.1.2; absent means not
+verified (fail closed), so 1.1.1 and GBPUSD cannot reach READY even with D6 ON. D6 stays OFF in
+`config/v1_tickets/ready_authority.yaml` (unchanged), so production behaviour is unchanged. Tests:
+`tests/test_d6_per_symbol_verification.py`. No demo/live, contract or execution change.
 
 ## AGP-C3-ASW GBPUSD — ST_ASIAN_SWEEP_5R_V1@1.1.2 second symbol (2026-10-09, branch `agp/c3-asw-gbpusd`, not merged)
 
