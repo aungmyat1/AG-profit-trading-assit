@@ -36,6 +36,7 @@ if "MetaTrader5" not in sys.modules:
         _spec.loader.exec_module(importlib.util.module_from_spec(_spec))
 
 
+from host_evidence import symbol_metadata  # noqa: E402
 from strategy_engine import load_strategy  # noqa: E402
 from strategy_engine.session import Candle  # noqa: E402
 from v1_tickets import fx  # noqa: E402
@@ -142,6 +143,30 @@ def fixture_days(candles: List[Candle]) -> List[str]:
     return sorted({c.time.date().isoformat() for c in candles})
 
 
+@functools.lru_cache(maxsize=None)
+def _spread_points(fixture: str) -> Dict[dt.datetime, int]:
+    """Per-bar MqlRates spread (integer points) from a --with-spread fixture; {} when the column is absent."""
+    with (ROOT / fixture).open() as fh:
+        rows = csv.DictReader(fh)
+        if "spread_points" not in (rows.fieldnames or []):
+            return {}
+        return {dt.datetime.fromisoformat(r["timestamp_utc"]).replace(tzinfo=UTC): int(r["spread_points"])
+                for r in rows}
+
+
+def recorded_spread(symbol: str, t: Dict[str, Any]) -> Dict[str, Any]:
+    """L5 spread at the signal bar: recorded spread_points x host_captured point. Absent input -> None, never 0."""
+    record = symbol_metadata.load_record(symbol, root=str(ROOT))     # sha256-verified committed evidence
+    point = ((record or {}).get("fields") or {}).get("point")
+    ts = t.get("signal_timestamp")
+    pts = _spread_points(SYMBOLS[symbol]["fixture"]).get(dt.datetime.fromisoformat(ts)) if ts else None
+    price = pts * point if pts is not None and point else None
+    risk = t.get("risk_distance")
+    return {"spread_points": pts, "point": point, "spread_price": price,
+            "spread_R": round(price / risk, 4) if price is not None and risk else None,
+            "source": "RECORDED_SPREAD_POINTS x HOST_CAPTURED_POINT" if price is not None else "NOT_AVAILABLE"}
+
+
 def split(candles: List[Candle], cycle: str, day: dt.date):
     w = fx.session_windows_utc(day)[cycle]
     now = w["trade"][1]
@@ -185,7 +210,7 @@ def geometry_ok(t: Dict[str, Any]) -> Dict[str, bool]:
 
 
 def ticket_gates(strategy, cycle, day, session, post, now, w, t, spread, warn_r,
-                 symbol: str) -> Optional[Dict[str, Any]]:
+                 symbol: str, l5_spread: Optional[float] = None) -> Optional[Dict[str, Any]]:
     if t.get("direction") is None:
         return None
     ref_name, bars = CYCLES[cycle]
@@ -195,7 +220,7 @@ def ticket_gates(strategy, cycle, day, session, post, now, w, t, spread, warn_r,
         "L3": l3_geometry(t, post, digits=5, declared_rr=5.0),
         "L4": l4_data_session(t, ref_window=w["ref"], trade_window=w["trade"], reference_name=ref_name,
                               session=session, expected_bar_count=bars, post=post, data_close=now, now=now),
-        "L5": l5_cost(spread, t.get("risk_distance"), commission_r=None, warn_r=warn_r),
+        "L5": l5_cost(l5_spread, t.get("risk_distance"), commission_r=None, warn_r=warn_r),
         "L6": l6_freshness(t.get("valid_until") or "set", {"x": 1}, {"y": 1}),
     }
 
@@ -302,8 +327,9 @@ def _run_symbol(symbol: str, strategy, owner, rng: random.Random) -> List[Dict[s
             day = dt.date.fromisoformat(ds)
             w, now, session, post = split(by_day[ds], cycle, day)
             t = ticket(cycle, day, session, post, now, symbol=symbol)
+            l5 = recorded_spread(symbol, t) if t.get("direction") is not None else None
             gates = ticket_gates(strategy, cycle, day, session, post, now, w, t, TEST_SPREAD, owner["cost_warn_R"],
-                                 symbol)
+                                 symbol, l5_spread=(l5 or {}).get("spread_price"))
             l2_fail = sorted({c["id"] for c in gates["L2"]["checks"] if c["verdict"] in (FAIL, NOT_EVALUABLE)}) if gates else []
             c3 = causality(cycle, day, session, post, now, rng, symbol)
             m6 = manual_l6(cycle, day, session, post, now, symbol)
@@ -315,7 +341,7 @@ def _run_symbol(symbol: str, strategy, owner, rng: random.Random) -> List[Dict[s
                 "ticket_gate_status": {k: v["status"] for k, v in gates.items()} if gates else None,
                 "ticket_gate_blocking_failures": blocking_failures(gates) if gates else None,
                 "l2_fail_ids": l2_fail, "l2_undeclared": sorted(set(l2_fail) - DECLARED_FAIL_CLOSED),
-                "geometry": geometry_ok(t), "causality": c3,
+                "geometry": geometry_ok(t), "causality": c3, "l5_recorded_spread": l5,
                 "owner_ticket_state": m6["state"], "owner_ticket_primary_block_reason": m6["primary_block_reason"],
                 "edge_verified": m6["edge_verified"],
                 "owner_ticket_L6": m6["L6"]["status"] if m6["L6"] else None,
@@ -433,8 +459,11 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
     # L5 risk and friction from the single D2 carrier; absent inputs are WARN with a reason, never 0.
     l5_warn = [
         "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0"]
-    l5_warn.append("SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded "
-                   "data (L2 closure uses a 0.2-pip test input only)")
+    unrecorded = sorted({c["case_id"].split(":")[1] for c in cases if c["ticket_gate_blocking_failures"] == []
+                         and c["l5_recorded_spread"]["spread_price"] is None})
+    if unrecorded:
+        l5_warn.append(f"SPREAD_NOT_RECORDED: no recorded spread at the signal bar for {unrecorded}; cost_in_R not "
+                       "evaluable there (L2 closure uses a 0.2-pip test input only)")
     pending = sorted(s for s, v in COVERAGE["instruments"].items() if v == "PENDING_AGP-C2-SYMMAP")
     l5_warn.append(f"SYMBOL_METADATA_PENDING: {', '.join(pending)} -> PENDING_AGP-C2-SYMMAP (not invented)")
     l5_block = []

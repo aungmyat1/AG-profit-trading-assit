@@ -29,9 +29,9 @@ pip-size block.
 | `R.regime_branch`, `R.entry_trigger`, `R.stop_loss` (TREND) | 5 | EXPECTED_NO_TRADE | TREND branch is `FAIL_CLOSED` (ENTRY_LEVEL_NOT_MARKET_AT_SIGNAL) |
 | `R.target_leg2` on TREND 2026-08-25 | 1 | LOGIC_DEFECT (gate) — fixed | `logic_gate._eq` half-point bound used `max()` with float slack, so a half-up rounded TP2 (1.35851 vs 1.358505) failed by float noise (diff 5.0000000001e-06) |
 
-No SPEC_GAP / SPEC_AMBIGUITY found; no owner question raised. The frozen strategy and engine are unchanged.
+No SPEC_GAP found. One SPEC_AMBIGUITY (price rounding mode) was raised in the AGP-LANE-A2 addendum below. The frozen strategy and engine are unchanged.
 
-**Fix:** `src/v1_tickets/logic_gate.py::_eq` now adds the float slack to the half-point bound.
+**Fix (4H-A, superseded by the A2 bound below):** `_eq` added float slack to the half-point bound.
 Effect on the 60-day replay: `R.target_leg2` cleared on 15 TREND cases (EURUSD 8, GBPUSD 7) that
 all still fail closed via `R.regime_branch`; no valid-entry count or gate verdict changed in any lane.
 
@@ -47,6 +47,57 @@ matches the existing decision not to adopt the harness's LOGIC_VERIFIED verdict 
 To unblock: consume `spread_points` in the harness and supply commission metadata, or have the owner
 rule L5 non-blocking for logic verification.
 
+## AGP-LANE-A2 addendum (base #142 head e4a00bd)
+
+### 1. `_eq` bound
+
+`_eq` snaps the expected price to the point grid and allows `EQ_EPS_POINTS = 1e-6` points of float
+slack (1e-11 for GBPUSD, point 1e-05). Observed float noise is ~1e-16, five orders of magnitude below.
+A half-point error against an on-grid expectation fails, and so does a one-point error (tested). On an exact
+half-point tie (e.g. TP2 = 1.358505), either grid neighbour (1.35850 or 1.35851) is accepted, because the spec
+declares no rounding mode. Re-run effect: 0 L2 verdict, valid-entry or rejection-label changes in any lane
+compared with e4a00bd.
+
+**SPEC_AMBIGUITY (owner decision; not chosen here):** `ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml` declares no
+rounding mode for derived prices (TP2 = entry ± 5 × risk; TREND mid entry). Proposed rule text:
+
+- **A — ROUND_HALF_UP:** "Derived prices are rounded to the symbol point with ROUND_HALF_UP (ties away
+  from zero)." This matches the engine's current output (2026-08-25: 1.358505 → 1.35851).
+- **B — ROUND_HALF_EVEN:** "Derived prices are rounded to the symbol point with ROUND_HALF_EVEN (ties to
+  the even point)." 1.358505 → 1.35850, so the engine would need a new candidate version.
+
+Until the owner decides, the gate accepts either tie neighbour and nothing else.
+
+### 2. L5 on recorded spread
+
+L5 now reads the signal bar's `spread_points` from `*_M15_recorded_spread_60d.csv` and multiplies it by
+`point` from `config/symbol_metadata/host_captured/<SYMBOL>.json` (sha256-verified via `load_record`).
+L2 still uses the 0.2-pip harness test input. No FX commission source is configured, because only crypto
+CFD has one, so commission is `NOT_AVAILABLE` and never 0.
+
+GBPUSD × ASIAN_LONDON: 7 kept entries, 7 evaluated. spread_R min 0.0 / median 0.0189 / max 0.04; 0
+entries at or above cost_warn_R 0.10 or cost_block_R 0.25. Lane L5 = **INSUFFICIENT(commission)**.
+Data caveat: recorded per-bar spreads are 0–1 point, against 15 points in the host `symbol_info`
+snapshot. One kept entry (2026-09-29) records 0 points. MqlRates `spread` is a per-bar field, not a
+quote at a known instant, so cost_in_R may be understated.
+
+### 3. Coverage (GBPUSD × ASIAN_LONDON, 58 VT recorded days; 11 no-signal)
+
+| Direction | SWEEP kept | SWEEP blocked | TREND kept | TREND blocked | RANGE kept | RANGE blocked |
+|---|---|---|---|---|---|---|
+| LONG | 5 | 18 | NOT_EXERCISED (spec FAIL_CLOSED) | 2 | NOT_EXERCISED | NOT_EXERCISED |
+| SHORT | 2 | 17 | NOT_EXERCISED (spec FAIL_CLOSED) | 3 | NOT_EXERCISED | NOT_EXERCISED |
+
+NOT_EXERCISED: the RANGE_REJECTION branch, in both directions, kept and blocked, is not reached on any
+recorded day (UNIT_ONLY, as before). TREND kept cannot occur by spec. Both directions are exercised on
+the eligible SWEEP branch.
+
+### 4. Verdict
+
+L1–L4 and L6 PASS, 0 mismatches, both directions exercised. L5 is INSUFFICIENT(commission), which is
+below WARN, so **NOT_ADMITTED**. The registry is unchanged. To unblock: an owner-set FX commission
+source for GBPUSD-VIP, or an owner ruling on L5.
+
 ## Reproduction
 
 ```sh
@@ -55,4 +106,5 @@ python -m pytest -q tests/test_asw_v112_gbpusd_asian_london_lane.py tests/test_a
   tests/test_asian_sweep_v1_1_2_logic_gate_both_cycles.py tests/test_manual_ticket_logic_gate.py tests/test_lsmc_v110_logic_gate.py
 ```
 
-OSS-FIRST: L2 gate tolerance | existing `logic_gate._eq` | REUSED (one-line bound fix) | no new algorithm or dependency.
+OSS-FIRST: L2 gate tolerance | existing `logic_gate._eq` | REUSED (bounded grid compare) | no new algorithm or dependency.
+OSS-FIRST: L5 spread input | existing fixture column + `host_evidence.symbol_metadata.load_record` | REUSED | no new dependency.

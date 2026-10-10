@@ -18,6 +18,7 @@ fail-closed rules, so its L2 evaluates those instead.
 from __future__ import annotations
 
 import datetime as dt
+import math
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 import yaml
@@ -54,12 +55,24 @@ def _point(digits: Optional[int]) -> float:
     return 10.0 ** -digits if digits is not None else 0.0
 
 
+EQ_EPS_POINTS = 1e-6   # float-noise slack, in points; never a price tolerance
+
+
 def _eq(a: Optional[float], b: Optional[float], digits: Optional[int]) -> bool:
-    """Equal up to the ticket's own price rounding (half a point), or float precision when unrounded."""
+    """`a` equals expectation `b` on the ticket's point grid, or to float precision when unrounded.
+
+    `b` is snapped to the nearest point; only EQ_EPS_POINTS x point of float noise is tolerated, so a
+    half-point or one-point error fails. On an exact half-point tie either neighbour is accepted: the
+    spec declares no rounding mode (SPEC_AMBIGUITY, owner decision pending)."""
     if a is None or b is None:
         return False
-    # Float slack is added (not maxed) so a value rounded half-up sits inside the half-point bound.
-    return abs(a - b) <= _point(digits) / 2.0 + 1e-9 * max(1.0, abs(a), abs(b))
+    if digits is None:
+        return abs(a - b) <= 1e-9 * max(1.0, abs(a), abs(b))
+    point = _point(digits)
+    k = b / point
+    base = math.floor(k)
+    grid = (base, base + 1) if abs(k - base - 0.5) <= EQ_EPS_POINTS else (round(k),)
+    return any(abs(a - g * point) <= EQ_EPS_POINTS * point for g in grid)
 
 
 def _signal_candle(ticket: Dict[str, Any], post: Sequence[Candle]) -> Optional[Candle]:
