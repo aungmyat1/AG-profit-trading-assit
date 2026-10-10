@@ -746,7 +746,7 @@ def _is_inside(path: str, root: str, pathmod=os.path) -> bool:
     commonpath ValueError) are not inside the repo."""
     path, root = pathmod.abspath(path), pathmod.abspath(root)
     try:
-        return pathmod.commonpath([path, root]) == root
+        return pathmod.normcase(pathmod.commonpath([path, root])) == pathmod.normcase(root)
     except ValueError:
         return False
 

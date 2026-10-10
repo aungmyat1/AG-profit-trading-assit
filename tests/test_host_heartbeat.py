@@ -264,6 +264,11 @@ def test_out_on_other_drive_is_not_inside_repo():
     assert hb._is_inside(r"C:\host\other\hb.json", r"C:\host\repo", ntpath) is False
 
 
+def test_mixed_case_drive_and_dir_is_inside_repo():
+    import ntpath
+    assert hb._is_inside(r"c:\Host\REPO\status\hb.json", r"C:\host\repo", ntpath) is True
+
+
 def test_main_cross_drive_out_is_written_not_refused(tmp_path, monkeypatch, capsys):
     def cross_drive(paths):
         raise ValueError("Paths don't have the same drive")
