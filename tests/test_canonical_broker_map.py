@@ -9,7 +9,8 @@ import sys
 import pytest
 import yaml
 
-from mt5 import broker_symbol_resolver, canonical_broker_map as cbm, mt5_candles_readonly
+from mt5 import broker_symbol_resolver, mt5_candles_readonly
+from mt5 import canonical_broker_map as cbm
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 EVIDENCE = os.path.join(ROOT, "status", "evidence", "host_symbol_info_2026-10-09_symmap.json")
@@ -44,7 +45,7 @@ def _write_map(tmp_path, entries, **over):
 
 def test_committed_map_maps_all_six(evidence):
     m = cbm.load_map()
-    assert m.version == 1 and m.broker == cbm.BROKER and m.server == evidence["account"]["server"]
+    assert m.version == 2 and m.broker == cbm.BROKER and m.server == evidence["account"]["server"]
     assert m.evidence == os.path.relpath(EVIDENCE, ROOT).replace(os.sep, "/")
     assert m.mapped_symbols() == EXPECTED
 
@@ -259,9 +260,135 @@ def test_two_snapshots_ignore_market_ticks(symbols):
     assert smoke.snapshot_mapping_differences(symbols, other) == []
 
 
-def test_complete_pinned_map_loads(tmp_path):
+def test_uncited_mapped_entry_is_data_error(tmp_path):
     m = cbm.load_map(_write_map(tmp_path, {"EURUSD": {"status": "MAPPED", "broker_symbol": "X", "expected": FULL_EXPECTED}}))
-    assert m.resolve("EURUSD") == "X"
+    with pytest.raises(cbm.SymbolDataError) as exc:
+        m.resolve("EURUSD")
+    assert exc.value.terminal_status == "DATA_ERROR" and exc.value.reason_code == cbm.REASON_CAPTURE_MISSING
+
+
+# --- host-capture citation (config/symbol_metadata/host_captured/<SYM>.json sha256) ---------
+
+HOST_DIR = os.path.join(ROOT, "config", "symbol_metadata", "host_captured")
+
+
+def _capture(sym):
+    with open(os.path.join(HOST_DIR, f"{sym}.json"), encoding="utf-8") as f:
+        return json.load(f)
+
+
+def test_committed_map_cites_each_host_capture_sha():
+    raw = yaml.safe_load(open(cbm.DEFAULT_MAP_PATH, encoding="utf-8"))
+    m = cbm.load_map()
+    for sym, broker in EXPECTED.items():
+        cite = raw["entries"][sym]["host_capture"]
+        assert cite["path"] == f"config/symbol_metadata/host_captured/{sym}.json"
+        record = _capture(sym)
+        assert cite["sha256"] == record["sha256"] and record["broker_symbol"] == broker
+        assert record["source"] == cbm.HOST_CAPTURE_SOURCE  # G2: host capture, not FIXTURE_ONLY
+        assert m.entries[sym].data_error is None
+
+
+def _cited_map(tmp_path, sym="EURUSD", record=None, write_file=True, entry_over=None, cite_over=None):
+    record = copy.deepcopy(_capture(sym)) if record is None else record
+    cap_dir = tmp_path / "config" / "symbol_metadata" / "host_captured"
+    cap_dir.mkdir(parents=True, exist_ok=True)
+    cap = cap_dir / f"{sym}.json"
+    if write_file:
+        cap.write_text(json.dumps(record), encoding="utf-8")
+    raw = yaml.safe_load(open(cbm.DEFAULT_MAP_PATH, encoding="utf-8"))
+    entry = raw["entries"][sym]
+    entry["host_capture"] = {"path": str(cap), "sha256": _capture(sym)["sha256"], **(cite_over or {})}
+    entry.update(entry_over or {})
+    return cbm.load_map(_write_map(tmp_path, {sym: entry}))
+
+
+def _rehash(record):
+    payload = {k: v for k, v in record.items() if k != "sha256"}
+    record["sha256"] = __import__("hashlib").sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
+    return record
+
+
+def test_cited_valid_capture_resolves(tmp_path):
+    assert _cited_map(tmp_path).resolve("EURUSD") == "EURUSD-VIP"
+
+
+def _mut(field, value):
+    def f(r):
+        r["fields"][field] = value
+    return f
+
+
+@pytest.mark.parametrize("mutate, rehash, reason", [
+    (_mut("digits", 4), False, cbm.REASON_CAPTURE_MISMATCH),                    # tamper, stale hash
+    (_mut("digits", 4), True, cbm.REASON_CAPTURE_MISMATCH),                     # re-hashed: sha != cited
+    (lambda r: r.update(sha256="0" * 64), False, cbm.REASON_CAPTURE_MISMATCH),  # sha rewritten in file
+    (lambda r: r.update(source="FIXTURE_ONLY"), True, cbm.REASON_FIXTURE_ONLY),
+    (lambda r: r.update(metadata_source="FIXTURE_ONLY"), True, cbm.REASON_FIXTURE_ONLY),
+])
+def test_tampered_capture_is_data_error(tmp_path, mutate, rehash, reason):
+    record = copy.deepcopy(_capture("EURUSD"))
+    mutate(record)
+    if rehash:
+        _rehash(record)
+    m = _cited_map(tmp_path, record=record)
+    with pytest.raises(cbm.SymbolDataError) as exc:
+        m.resolve("EURUSD")
+    assert exc.value.reason_code == reason and exc.value.terminal_status == cbm.DATA_ERROR
+
+
+@pytest.mark.parametrize("mutate, field", [
+    (lambda r: r.update(broker_symbol="EURUSD"), "broker_symbol"),
+    (lambda r: r.update(canonical_symbol="GBPUSD"), "canonical_symbol"),
+    (lambda r: r.update(server="VTMarkets-Live"), "server"),
+    (lambda r: r.update(trade_mode="CLOSEONLY"), "trade_mode"),
+    (_mut("volume_step", 0.1), "volume_step"),
+])
+def test_capture_mismatch_with_pinned_entry_is_data_error(tmp_path, mutate, field):
+    record = copy.deepcopy(_capture("EURUSD"))
+    mutate(record)
+    _rehash(record)
+    m = _cited_map(tmp_path, record=record, cite_over={"sha256": record["sha256"]})
+    with pytest.raises(cbm.SymbolDataError) as exc:
+        m.resolve("EURUSD")
+    assert exc.value.reason_code == cbm.REASON_CAPTURE_MISMATCH and field in exc.value.reason
+
+
+@pytest.mark.parametrize("kwargs, reason", [
+    ({"write_file": False}, cbm.REASON_CAPTURE_MISSING),
+    ({"cite_over": {"sha256": ""}}, cbm.REASON_CAPTURE_MISSING),
+    ({"cite_over": {"sha256": "f" * 64}}, cbm.REASON_CAPTURE_MISMATCH),
+    ({"cite_over": {"path": "status/evidence/EURUSD.json"}}, cbm.REASON_CAPTURE_MISMATCH),
+    ({"entry_over": {"evidence_class": "FIXTURE_ONLY"}}, cbm.REASON_FIXTURE_ONLY),
+])
+def test_missing_or_miscited_capture_is_data_error(tmp_path, kwargs, reason):
+    m = _cited_map(tmp_path, **kwargs)
+    with pytest.raises(cbm.SymbolDataError) as exc:
+        m.resolve("EURUSD")
+    assert exc.value.reason_code == reason
+
+
+def test_malformed_capture_json_is_data_error(tmp_path):
+    cap_dir = tmp_path / "config" / "symbol_metadata" / "host_captured"
+    cap_dir.mkdir(parents=True)
+    (cap_dir / "EURUSD.json").write_text("{not json", encoding="utf-8")
+    m = _cited_map(tmp_path, write_file=False)
+    with pytest.raises(cbm.SymbolDataError) as exc:
+        m.resolve("EURUSD")
+    assert exc.value.reason_code == cbm.REASON_CAPTURE_MISMATCH
+
+
+def test_data_error_fails_closed_through_consumers(tmp_path, monkeypatch):
+    path = os.path.join(str(tmp_path), "map.yaml")
+    _cited_map(tmp_path, write_file=False)
+    monkeypatch.setattr(cbm, "DEFAULT_MAP_PATH", path)
+    monkeypatch.setattr(cbm.load_map, "__defaults__", (path,))
+    monkeypatch.setattr(cbm.resolve, "__defaults__", (path,))
+    with pytest.raises(cbm.SymbolDataError):
+        cbm.load_map().mapped_symbols()
+    with pytest.raises(broker_symbol_resolver.BrokerSymbolMapError):
+        broker_symbol_resolver.resolve_broker_symbol("EURUSD", cbm.BROKER)
 
 
 def test_incomplete_pinned_metadata_is_unmapped(symbols):

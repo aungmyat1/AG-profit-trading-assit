@@ -10,15 +10,25 @@ Consumers resolve only through ``resolve()`` / ``mapped_symbols()``. An ``UNMAPP
 canonical raises ``SymbolUnmapped`` carrying ``terminal_status = "BLOCKED"`` and a
 ``reason_code`` so a caller can emit a typed terminal decision instead of going silent.
 
+Every MAPPED entry cites its host capture (``host_capture.path`` =
+config/symbol_metadata/host_captured/<CANONICAL>.json, ``host_capture.sha256``). The cited file
+must exist, hash-verify, carry the cited sha256, name the same canonical/broker symbol/server,
+come from MetaTrader5.symbol_info and agree with the pinned fields. Anything else ->
+``SymbolDataError`` (``terminal_status = "DATA_ERROR"``) on resolve: a FIXTURE_ONLY or unverified
+value is never accepted as traded-symbol evidence (G2).
+
 Pure: no MT5 import. Host re-validation lives in scripts/host/symbol_map_smoke.py.
 """
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Mapping, Optional
 
 import yaml
+
+from host_evidence import symbol_metadata
 
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 DEFAULT_MAP_PATH = os.path.join(_REPO_ROOT, "config", "broker_symbol_map", "vt_markets_demo.yaml")
@@ -39,12 +49,32 @@ REASON_NO_FULL = "NO_VISIBLE_FULL_CANDIDATE"
 REASON_AMBIGUOUS = "AMBIGUOUS_FULL_CANDIDATES"
 REASON_INCOMPLETE = "INCOMPLETE_PINNED_METADATA"
 # Fields pinned per MAPPED entry and re-checked by the host smoke.
+HOST_CAPTURE_DIR = ("config", "symbol_metadata", "host_captured")
+HOST_CAPTURE_SOURCE = "MetaTrader5.symbol_info (read-only)"
+DATA_ERROR = "DATA_ERROR"
+REASON_CAPTURE_MISSING = "HOST_CAPTURE_MISSING"
+REASON_CAPTURE_MISMATCH = "HOST_CAPTURE_MISMATCH"
+REASON_FIXTURE_ONLY = "FIXTURE_ONLY_EVIDENCE"
+# Pinned fields that the host capture also records (trade_mode_name <-> trade_mode).
+CAPTURE_CROSSCHECK_FIELDS = ("digits", "point", "trade_contract_size", "volume_min", "volume_step",
+                             "volume_max", "trade_tick_size")
 PINNED_FIELDS = ("trade_mode_name", "visible", "digits", "point", "trade_contract_size",
                  "volume_min", "volume_step", "volume_max", "trade_tick_size", "trade_calc_mode")
 
 
 class SymbolMapError(RuntimeError):
     """Malformed / wrong-schema map file."""
+
+
+class SymbolDataError(SymbolMapError):
+    """A MAPPED entry whose host-capture evidence is missing, tampered or mismatched."""
+    terminal_status = DATA_ERROR
+
+    def __init__(self, canonical: str, reason: str):
+        super().__init__(f"{DATA_ERROR}: {canonical!r}: {reason}")
+        self.canonical = canonical
+        self.reason = reason
+        self.reason_code = reason.split(":", 1)[0]
 
 
 class SymbolUnmapped(RuntimeError):
@@ -68,6 +98,8 @@ class MapEntry:
     broker_symbol: Optional[str]
     reason: Optional[str]
     expected: Mapping[str, object]
+    host_capture: Optional[Mapping[str, str]] = None
+    data_error: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -84,6 +116,8 @@ class BrokerSymbolMap:
             raise SymbolUnmapped(canonical, "NOT_IN_MAP")
         if entry.status != MAPPED or not entry.broker_symbol:
             raise SymbolUnmapped(canonical, entry.reason or "UNMAPPED")
+        if entry.data_error:
+            raise SymbolDataError(canonical, entry.data_error)
         return entry.broker_symbol
 
     def mapped_symbols(self, canonicals: Optional[Iterable[str]] = None) -> Dict[str, str]:
@@ -144,6 +178,52 @@ def diff_map(symbol_map: BrokerSymbolMap, symbols: Mapping[str, Optional[Mapping
     return diffs
 
 
+def _mentions_fixture(obj: object) -> bool:
+    if isinstance(obj, str):
+        return "FIXTURE_ONLY" in obj
+    if isinstance(obj, Mapping):
+        return any(_mentions_fixture(k) or _mentions_fixture(v) for k, v in obj.items())
+    if isinstance(obj, (list, tuple)):
+        return any(_mentions_fixture(v) for v in obj)
+    return False
+
+
+def host_capture_error(canonical: str, item: Mapping[str, object], server: str) -> Optional[str]:
+    """None when the MAPPED ``item`` is backed by its verified host capture; else the reason."""
+    if _mentions_fixture(item):
+        return f"{REASON_FIXTURE_ONLY}: map entry"
+    cite = item.get("host_capture")
+    if not isinstance(cite, Mapping) or not cite.get("path") or not cite.get("sha256"):
+        return f"{REASON_CAPTURE_MISSING}: no host_capture path/sha256 cited"
+    rel = os.path.normpath(str(cite["path"]))
+    if not rel.endswith(os.path.join(*HOST_CAPTURE_DIR, f"{canonical}.json")):
+        return f"{REASON_CAPTURE_MISMATCH}: path {cite['path']!r} is not host_captured/{canonical}.json"
+    try:
+        with open(os.path.join(_REPO_ROOT, rel), encoding="utf-8") as f:
+            record = json.load(f)
+    except OSError:
+        return f"{REASON_CAPTURE_MISSING}: {cite['path']} not found"
+    except ValueError:
+        return f"{REASON_CAPTURE_MISMATCH}: {cite['path']} is not valid JSON"
+    if not isinstance(record, dict):
+        return f"{REASON_CAPTURE_MISMATCH}: {cite['path']} is not a record"
+    if _mentions_fixture(record) or record.get("source") != HOST_CAPTURE_SOURCE:
+        return f"{REASON_FIXTURE_ONLY}: {cite['path']} is not a MetaTrader5 host capture"
+    if record.get("sha256") != cite["sha256"]:
+        return f"{REASON_CAPTURE_MISMATCH}: sha256 cited {cite['sha256']} != file {record.get('sha256')}"
+    if not symbol_metadata.verify(record):
+        return f"{REASON_CAPTURE_MISMATCH}: {cite['path']} fails hash/schema verification"
+    for key, want in (("canonical_symbol", canonical), ("broker_symbol", item.get("broker_symbol")),
+                      ("server", server), ("trade_mode", item["expected"].get("trade_mode_name"))):
+        if record.get(key) != want:
+            return f"{REASON_CAPTURE_MISMATCH}: {key} {want!r} != captured {record.get(key)!r}"
+    fields = record["fields"]
+    for key in CAPTURE_CROSSCHECK_FIELDS:
+        if fields.get(key) != item["expected"].get(key):
+            return f"{REASON_CAPTURE_MISMATCH}: {key} pinned {item['expected'].get(key)!r} != captured {fields.get(key)!r}"
+    return None
+
+
 def _parse(raw: dict) -> BrokerSymbolMap:
     if not isinstance(raw, dict) or raw.get("schema") != SCHEMA:
         raise SymbolMapError(f"schema must be {SCHEMA}")
@@ -166,8 +246,10 @@ def _parse(raw: dict) -> BrokerSymbolMap:
                 raise SymbolMapError(f"{canonical}: UNMAPPED needs a reason and no broker_symbol")
         else:
             raise SymbolMapError(f"{canonical}: status must be {MAPPED} or {UNMAPPED}")
+        data_error = host_capture_error(canonical, item, raw["server"]) if status == MAPPED else None
         entries[canonical] = MapEntry(canonical, status, item.get("broker_symbol"), item.get("reason"),
-                                      dict(item.get("expected") or {}))
+                                      dict(item.get("expected") or {}),
+                                      dict(item.get("host_capture") or {}) or None, data_error)
     mapped = [e.broker_symbol for e in entries.values() if e.status == MAPPED]
     if len(mapped) != len(set(mapped)):
         raise SymbolMapError("one broker symbol mapped to more than one canonical")
