@@ -699,3 +699,4 @@ authoritative machine-readable source.
 - [Web-to-Vantage Demo execution bridge](status/AG_WEB_VANTAGE_DEMO_EXECUTION_BRIDGE_V1.md)
 
 - [Fresh analyzer computation (2026-10-10)](status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md) — main byte equivalence and session-zone call trace.
+- [Import-resolution audit (2026-10-10)](status/IMPORT_RESOLUTION_AUDIT_2026-10-10.md) — all 161 locations, guards/history and ledger tech debt.
