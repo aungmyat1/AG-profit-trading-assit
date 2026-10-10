@@ -741,6 +741,16 @@ def write(hb: Dict[str, Any], out: str = DEFAULT_OUT) -> str:
     return out
 
 
+def _is_inside(path: str, root: str, pathmod=os.path) -> bool:
+    """True when ``path`` is ``root`` or under it. Paths on different drives (Windows
+    commonpath ValueError) are not inside the repo."""
+    path, root = pathmod.abspath(path), pathmod.abspath(root)
+    try:
+        return pathmod.commonpath([path, root]) == root
+    except ValueError:
+        return False
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--host-repo", default=DEFAULT_HOST_REPO)
@@ -754,7 +764,7 @@ def main(argv=None) -> int:
                          "2026-10-08; always_on = the SCHED-R1-B target, where retired wake/sleep "
                          "tasks mean overnight runner silence is STALE, never INACTIVE_EXPECTED")
     args = ap.parse_args(argv)
-    if os.path.commonpath([os.path.abspath(args.out), os.path.abspath(args.host_repo)]) == os.path.abspath(args.host_repo):
+    if _is_inside(args.out, args.host_repo):
         print("REFUSED --out is inside the host repo")
         return 2
     backend = "none" if args.no_broker_history else args.history_backend
