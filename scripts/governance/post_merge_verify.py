@@ -225,6 +225,8 @@ def main(argv=None) -> int:
     parser.add_argument("--expected-head-sha")
     parser.add_argument("--timeout-seconds", type=int, default=2700)
     parser.add_argument("--poll-seconds", type=int, default=20)
+    parser.add_argument("--json-out", type=Path,
+                        help="write the complete post-merge result to this path for artifact retention")
     args = parser.parse_args(argv)
     api = GitHubAPI(_token(), args.repo)
     if args.command == "preflight":
@@ -232,6 +234,8 @@ def main(argv=None) -> int:
         print(json.dumps({"head_sha": args.head_sha, "failures": failures}))
         return 1 if failures else 0
     report = verify(api, args.pr, args.expected_head_sha, args.timeout_seconds, args.poll_seconds)
+    if args.json_out:
+        args.json_out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:

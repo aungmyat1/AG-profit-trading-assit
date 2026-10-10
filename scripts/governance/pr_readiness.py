@@ -4,15 +4,24 @@ from __future__ import annotations
 import re
 
 HOLD_LANGUAGE = re.compile(
-    r"\b(?:do not merge|don't merge|hold|parked|park this|await(?:ing)? owner|owner authorization)\b",
+    r"\b(?:do[\s_-]+not[\s_-]+merge|don't[\s_-]+merge|hold|parked|park[\s_-]+this|"
+    r"await(?:ing)?[\s_-]+owner|owner[\s_-]+authorization)\b",
     re.IGNORECASE,
 )
 DEPENDENCY = re.compile(r"(?im)^\s*(?:depends[- ]on|blocked[- ]by|requires)\s*:?\s*#(\d+)\b")
 EXECUTION_PATHS = (
-    "execution/", "src/execution/", "mt5/", "src/mt5/", "trade_management/",
-    "src/trade_management/", "config/trading.yaml",
+    "assistant/", "execution/", "src/execution/", "mt5/", "src/mt5/", "trade_management/",
+    "src/trade_management/", "src/host_delivery/telegram_confirm.py", "src/authorization/",
+    "src/v1_tickets/owner_decision.py", "config/trading.yaml",
 )
+OWNER_REVIEW_FILES = {
+    "AGENTS.md", "docs/agents/INVARIANTS.md", "config/v1_tickets/ready_authority.yaml",
+    ".github/workflows/manual-pr-merge.yml", ".github/workflows/pr-merge-readiness.yml",
+    "config/owner_ticket.yaml", "config/ticket_delivery.yaml",
+}
+OWNER_REVIEW_DIRS = ("config/governance/", "config/broker_symbol_map/", "scripts/governance/")
 STRATEGY_EVIDENCE_PATHS = ("strategies/", "artifacts/validation/")
+PROTECTED_LABELS = {"do-not-merge", "hold", "owner-gated", "owner-authorization", "execution"}
 GREEN_CONCLUSIONS = {"success", "neutral", "skipped"}
 # GitHub review semantics: only APPROVED, CHANGES_REQUESTED, or a dismissal changes a
 # reviewer's standing decision. COMMENTED/PENDING reviews never clear CHANGES_REQUESTED.
@@ -22,6 +31,19 @@ NON_DECISIVE_REVIEW_STATES = {"COMMENTED", "PENDING"}
 
 def explicit_dependencies(title: str, body: str) -> list[int]:
     return sorted({int(match) for match in DEPENDENCY.findall(f"{title}\n{body or ''}")})
+
+
+def _normalized_label(label: str) -> str:
+    return re.sub(r"[\s_-]+", "-", str(label).strip().casefold()).strip("-")
+
+
+def _owner_review_path(path: str) -> bool:
+    if path in OWNER_REVIEW_FILES or path.startswith(OWNER_REVIEW_DIRS):
+        return True
+    if path.startswith("config/v1_tickets/"):
+        name = path.rsplit("/", 1)[-1].casefold()
+        return name.endswith((".yaml", ".yml")) and ("policy" in name or "authority" in name)
+    return False
 
 
 def review_decision(reviews: list[dict]) -> tuple[bool | None, int | None]:
@@ -49,6 +71,18 @@ def review_decision(reviews: list[dict]) -> tuple[bool | None, int | None]:
     return "CHANGES_REQUESTED" in values, values.count("APPROVED")
 
 
+def owner_approved(reviews: list[dict], owner_login: str = "aungmyat1") -> bool:
+    """Whether the named owner's latest decisive review is APPROVED."""
+    ordered = sorted(enumerate(reviews), key=lambda item: (str(item[1].get("submitted_at") or ""), item[0]))
+    state = None
+    for _, review in ordered:
+        reviewer = (review.get("user") or {}).get("login")
+        review_state = str(review.get("state") or "").upper()
+        if reviewer and reviewer.casefold() == owner_login.casefold() and review_state in DECISIVE_REVIEW_STATES:
+            state = None if review_state == "DISMISSED" else review_state
+    return state == "APPROVED"
+
+
 def checks_state(check_runs: list[dict], statuses: list[dict]) -> str:
     results = [str(row.get("conclusion") or row.get("status") or "").lower() for row in check_runs]
     results += [str(row.get("state") or "").lower() for row in statuses]
@@ -72,10 +106,16 @@ def classify_pull_request(pr: dict, peers: list[dict]) -> dict:
     if not pr.get("data_complete", False):
         reasons.append("PR_DATA_INCOMPLETE")
 
-    labels = {str(value).strip().lower() for value in pr.get("labels", [])}
+    raw_labels = pr.get("labels")
+    if not isinstance(raw_labels, list) or pr.get("label_data_complete", True) is not True:
+        reasons.append("PR_LABEL_DATA_INCOMPLETE")
+        raw_labels = []
+    labels = {_normalized_label(value) for value in raw_labels}
     title, body = str(pr.get("title", "")), str(pr.get("body", "") or "")
     if any("park" in label for label in labels) or re.search(r"\bparked\b", title + "\n" + body, re.I):
         return {"number": number, "classification": "PARKED", "reasons": ["PARKED_BY_LABEL_OR_TEXT"], "merge_authorized": False}
+    if labels & PROTECTED_LABELS:
+        reasons.append("PROTECTED_LABEL_HOLD:" + ",".join(sorted(labels & PROTECTED_LABELS)))
     if pr.get("draft"):
         reasons.append("DRAFT_PR")
     issue_comments = "\n".join(pr.get("issue_comments", []))
@@ -84,7 +124,9 @@ def classify_pull_request(pr: dict, peers: list[dict]) -> dict:
 
     paths = sorted(set(pr.get("paths", [])))
     if any(path.startswith(EXECUTION_PATHS) for path in paths):
-        reasons.append("EXECUTION_OR_TRADE_MANAGEMENT_PATH")
+        reasons.append("PROTECTED_EXECUTION_PATH_REQUIRES_OWNER_GATED_REVIEW")
+    if any(_owner_review_path(path) for path in paths):
+        reasons.append("PROTECTED_AUTHORITY_PATH_REQUIRES_OWNER_GATED_REVIEW")
     if any(path.startswith(STRATEGY_EVIDENCE_PATHS) for path in paths):
         reasons.append("STRATEGY_OR_VALIDATION_AUTHORITY_REQUIRES_OWNER_REVIEW")
 
@@ -155,7 +197,12 @@ def validate_dispatch(pr: dict, requested_number: int, expected_head_sha: str,
     denylist = denylist or {}
     if requested_number in denylist.get("blocked_pr_numbers", []):
         reasons.append("PR_NUMBER_DENYLISTED")
-    denied_labels = {str(label).strip().casefold() for label in denylist.get("blocked_labels", [])}
-    pr_labels = {str(label).strip().casefold() for label in (pr or {}).get("labels", [])}
+    denied_labels = {_normalized_label(label) for label in denylist.get("blocked_labels", [])}
+    raw_labels = (pr or {}).get("labels")
+    if not isinstance(raw_labels, list) or (pr or {}).get("label_data_complete", True) is not True:
+        reasons.append("PR_LABEL_DATA_INCOMPLETE")
+        raw_labels = []
+    pr_labels = {_normalized_label(label) for label in raw_labels}
     reasons.extend(f"PR_LABEL_DENYLISTED:{label}" for label in sorted(pr_labels & denied_labels))
+    reasons.extend(f"PROTECTED_LABEL_HOLD:{label}" for label in sorted(pr_labels & PROTECTED_LABELS))
     return reasons

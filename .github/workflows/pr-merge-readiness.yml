@@ -1,3 +1,4 @@
+# Safe dry-run: workflow_dispatch only collects and classifies evidence; it never writes PRs or merges.
 name: PR merge readiness audit
 
 on:
