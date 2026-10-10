@@ -58,7 +58,8 @@ def _eq(a: Optional[float], b: Optional[float], digits: Optional[int]) -> bool:
     """Equal up to the ticket's own price rounding (half a point), or float precision when unrounded."""
     if a is None or b is None:
         return False
-    return abs(a - b) <= max(_point(digits) / 2.0, 1e-9 * max(1.0, abs(a), abs(b)))
+    # Float slack is added (not maxed) so a value rounded half-up sits inside the half-point bound.
+    return abs(a - b) <= _point(digits) / 2.0 + 1e-9 * max(1.0, abs(a), abs(b))
 
 
 def _signal_candle(ticket: Dict[str, Any], post: Sequence[Candle]) -> Optional[Candle]:
