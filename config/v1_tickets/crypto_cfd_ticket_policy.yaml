@@ -11,11 +11,10 @@ risk_pct: 0.5
 cost_warn_R: 0.10
 cost_block_R: 0.25
 # OD1011-COMMISSION (Aung, 2026-10-11): owner-stated account fact, NOT a default. Bound to the VT Markets
-# demo Standard STP account only (cost carried in the spread); crypto CFD. Any other server/account has no
-# commission value (INSUFFICIENT, never 0). A non-zero commission on the first demo deals invalidates it.
+# demo Standard STP account (cost carried in the spread); crypto CFD. Only the login suffix is committed
+# (AGENTS.md); the full login goes only in gitignored config/local/. commission_R is valid only at 0; a
+# non-zero commission needs a per-lot field (future), never R units. Any other account: INSUFFICIENT, never 0.
 commission:
-  value: 0
-  source: OD1011-COMMISSION
-  bound_server: VTMarkets-Demo
-  bound_account_type: STANDARD_STP
-  asset_classes: [CRYPTO_CFD]
+  decision_id: OD1011-COMMISSION
+  account_login_suffix: "985"
+  commission_R: 0
