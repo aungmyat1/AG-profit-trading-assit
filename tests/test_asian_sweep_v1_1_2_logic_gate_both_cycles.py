@@ -7,9 +7,9 @@ Spread values are test inputs, not recorded data. LOGIC_VERIFIED never implies E
 from __future__ import annotations
 
 import csv
-import json
-import functools
 import datetime as dt
+import functools
+import json
 from pathlib import Path
 
 import pytest
@@ -20,8 +20,18 @@ from v1_tickets import fx
 from v1_tickets.authority import load_registry
 from v1_tickets.fx import STRATEGY_PATH, build_fx_ticket, session_windows_utc
 from v1_tickets.logic_gate import (
-    FAIL, NOT_APPLICABLE, NOT_EVALUABLE, PASS, WARN, blocking_failures, l1_determinism, l2_rule_conformance,
-    l3_geometry, l4_data_session, l5_cost, l6_freshness,
+    FAIL,
+    NOT_APPLICABLE,
+    NOT_EVALUABLE,
+    PASS,
+    WARN,
+    blocking_failures,
+    l1_determinism,
+    l2_rule_conformance,
+    l3_geometry,
+    l4_data_session,
+    l5_cost,
+    l6_freshness,
 )
 from v1_tickets.manual_ticket import build_manual_ticket, load_owner_config
 
