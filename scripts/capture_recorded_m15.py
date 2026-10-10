@@ -63,6 +63,8 @@ def parse_window(text: str) -> tuple[int, int]:
     m = re.fullmatch(r"(\d\d):(\d\d)-(\d\d):(\d\d)", text)
     if not m:
         raise argparse.ArgumentTypeError(f"window must be HH:MM-HH:MM: {text}")
+    if any(int(h) > 23 for h in (m[1], m[3])) or any(int(mm) > 59 for mm in (m[2], m[4])):
+        raise argparse.ArgumentTypeError(f"window times must be valid HH:MM clock times: {text}")
     a, b = int(m[1]) * 60 + int(m[2]), int(m[3]) * 60 + int(m[4])
     if a % 15 or b % 15 or not 0 <= a <= b < 1440:
         raise argparse.ArgumentTypeError(f"window must be on M15 boundaries within one day: {text}")
@@ -271,7 +273,8 @@ def check_day(term: Terminal, symbol: str, d: date, digits: int,
     if "open" not in offsets:
         res["reason"] = offsets["reason"]
         return res
-    res["offset_open_h"], res["offset_close_h"] = offsets["open"], offsets["close"]
+    # An unstable close-edge read returns no 'close' key; record the drop instead of raising.
+    res["offset_open_h"], res["offset_close_h"] = offsets["open"], offsets.get("close")
     if "reason" in offsets:
         res["reason"] = offsets["reason"]
         return res
