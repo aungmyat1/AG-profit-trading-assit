@@ -44,7 +44,7 @@ def l2_pass(monkeypatch):
     monkeypatch.setattr(mt, "l2_rule_conformance", lambda *a, **k: {"gate": "L2", "status": PASS, "checks": []})
 
 
-def test_real_v1_1_1_ticket_is_blocked_by_l2_and_renders_not_set_fields():
+def test_real_v1_1_1_ticket_is_blocked_by_l2_and_renders_not_set_fields(stub_symbol_verified):
     t = manual()
     assert t["state"] == "TICKET_BLOCKED" and t["primary_block_reason"] == "LOGIC_GATE_FAIL:L2"
     assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "LOGIC_GATE_FAIL:L3", "RISK_CONFIG_MISSING"]
@@ -81,7 +81,7 @@ def test_unset_owner_risk_blocks_with_explicit_not_set(l2_pass):
     assert t["lot_size"] == "OWNER RISK % NOT SET"
 
 
-def test_owner_risk_set_gives_manual_ticket_ready(l2_pass):
+def test_owner_risk_set_gives_manual_ticket_ready(stub_symbol_verified, l2_pass):
     t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)
     assert t["state"] == "TICKET_READY" and t["owner_accept_allowed"] is True and t["ticket_status"] == "READY"
     assert t["primary_block_reason"] is None and t["block_reasons"] == [] and t["warnings"] == ["L5_WARN"]
@@ -122,7 +122,7 @@ def test_expired_ticket_cannot_be_accepted(l2_pass):
     assert t["ticket_status"] == "EXPIRED" and t["owner_accept_allowed"] is False and t["state"] != "TICKET_READY"
 
 
-def test_strategy_without_manual_authority_is_opportunity_only(l2_pass):
+def test_strategy_without_manual_authority_is_opportunity_only(stub_symbol_verified, l2_pass):
     other = resolve_ticket_authority("ST_LARGE_SMC_V1", "1.0.7")
     t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META, authority=other)
     assert t["state"] == "OPPORTUNITY" and t["owner_accept_allowed"] is False
@@ -195,7 +195,7 @@ def test_block_reason_precedence_tiers():
     assert not is_blocking("L5_WARN") and is_blocking("SIGNAL_STALE")
 
 
-def test_ticket_ready_has_no_block_reasons_and_l5_warning_only_in_warnings(l2_pass):
+def test_ticket_ready_has_no_block_reasons_and_l5_warning_only_in_warnings(stub_symbol_verified, l2_pass):
     """Owner decision 3 (2026-10-06): warnings[] is separate; TICKET_READY => block_reasons == []."""
     t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)       # cost_warn_R 0.10, no commission
     assert t["state"] == "TICKET_READY" and t["logic_gate"]["L5"]["status"] == "WARN"
@@ -203,7 +203,7 @@ def test_ticket_ready_has_no_block_reasons_and_l5_warning_only_in_warnings(l2_pa
     assert t["warnings"] == ["L5_WARN"] and "warn: L5_WARN" in mt.render_text(t)
 
 
-def test_ticket_ready_always_carries_usable_freshness_fields(l2_pass):
+def test_ticket_ready_always_carries_usable_freshness_fields(stub_symbol_verified, l2_pass):
     """Host acceptance Phase 7: L6 is advisory, so READY must not depend on it -- every
     TICKET_READY carries a parseable valid_until in the future plus non-empty stale_if/invalid_if."""
     t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)

@@ -52,13 +52,11 @@ def test_signal_without_engine_time_is_data_error_never_ready(monkeypatch):
     assert "suppressed_decision" not in t                                         # not a downgraded READY
 
 
-def test_signal_with_engine_time_keeps_its_engine_signal_close(monkeypatch, tmp_path):
+def test_signal_with_engine_time_keeps_its_engine_signal_close(monkeypatch, tmp_path, stub_symbol_verified):
     on = tmp_path / "on.yaml"
     on.write_text("strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    ready: 'ON'\n")
     import v1_tickets.ready_authority as ra
     monkeypatch.setattr(ra, "CONFIG_PATH", str(on))
-    # Signal-time provenance only; the per-symbol READY gate is covered by test_d6_per_symbol_verification.py.
-    monkeypatch.setattr(ra, "symbol_verified", lambda *a, **k: True)
     t = _build(monkeypatch, _sig(dt.datetime(2026, 10, 7, 7, 0, tzinfo=UTC)))
     assert t["signal_time_source"] == fx.SIGNAL_TIME_ENGINE
     assert t["signal_close_utc"] == "2026-10-07T07:15:00+00:00" and t["decision"] == "READY"

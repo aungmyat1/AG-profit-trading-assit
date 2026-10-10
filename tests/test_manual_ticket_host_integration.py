@@ -40,7 +40,7 @@ def test_no_live_and_no_capture_fails_closed(monkeypatch, tmp_path):
     assert mt.lot_size(1.1, 1.099, OWNER, 1000.0, meta)["status"] == "SYMBOL_METADATA_MISSING"
 
 
-def test_ticket_exposes_sizing_metadata_provenance(l2_pass):  # noqa: F811
+def test_ticket_exposes_sizing_metadata_provenance(stub_symbol_verified, l2_pass):  # noqa: F811
     prov = {"source": mt.META_CAPTURE_FALLBACK, "broker_symbol": "EURUSD-VIP",
             "captured_at": "2026-09-30T08:37:24+00:00", "capture_age_h": 143, "live_unavailable": True}
     t = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META, meta_provenance=prov)

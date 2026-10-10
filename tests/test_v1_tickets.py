@@ -51,7 +51,7 @@ def _fx(symbol, cycle):
 
 @pytest.mark.parametrize("symbol", V1_FX_SYMBOLS)
 @pytest.mark.parametrize("cycle", V1_CYCLES)
-def test_fx_ticket_ready_with_frozen_contract_targets(symbol, cycle):
+def test_fx_ticket_ready_with_frozen_contract_targets(stub_symbol_verified, symbol, cycle):
     session, post = _fx(symbol, cycle)
     at = dt.datetime(2026, 1, 5, REF_HOUR[cycle][1], 35, tzinfo=UTC)      # signal bar (h:15) closed 5 min ago
     t = build_fx_ticket(symbol, cycle, DAY, session, 2, post, data_source="FIXTURE", evaluated_at=at,
@@ -65,7 +65,7 @@ def test_fx_ticket_ready_with_frozen_contract_targets(symbol, cycle):
     assert t["spread_risk_fraction"] <= 0.15
 
 
-def test_fx_ready_is_withheld_when_stale_or_spread_fails():
+def test_fx_ready_is_withheld_when_stale_or_spread_fails(stub_symbol_verified):
     session, post = _fx("EURUSD", "ASIAN_LONDON")
     at = dt.datetime(2026, 1, 5, 7, 35, tzinfo=UTC)
     build = lambda **kw: build_fx_ticket("EURUSD", "ASIAN_LONDON", DAY, session, 2, post,  # noqa: E731
@@ -85,7 +85,7 @@ def test_fx_ready_is_withheld_when_stale_or_spread_fails():
     assert not any(t["decision"] == "READY" for t in (old, stale_data, wide, no_quote))
 
 
-def test_stale_is_measured_from_signal_bar_close_not_open():
+def test_stale_is_measured_from_signal_bar_close_not_open(stub_symbol_verified):
     """signal_timestamp is the M15 bar OPEN; STALE only when now - (open + 15m) > 15 min."""
     session, _ = _fx("EURUSD", "ASIAN_LONDON")
     post = [_c(7, 0, 1.1005, 1.1060, 1.1000, 1.1048, 1.0)]               # signal bar opens 07:00, closes 07:15
@@ -131,7 +131,7 @@ def test_fx_archive_is_idempotent_archive_only(tmp_path):
     assert p1 == p2 and len(glob.glob(str(tmp_path / "**" / "*.json"), recursive=True)) == 1
 
 
-def test_paper_trade_requires_fresh_complete_host_ready_ticket(tmp_path):
+def test_paper_trade_requires_fresh_complete_host_ready_ticket(stub_symbol_verified, tmp_path):
     from v1_tickets.paper import (
         archive_paper_trade,
         build_paper_trade,

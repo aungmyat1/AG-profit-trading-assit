@@ -164,7 +164,14 @@ def _pre_d6_ready_authority_on(request, monkeypatch):
         return
     import v1_tickets.ready_authority as ready_authority
     monkeypatch.setattr(ready_authority, "CONFIG_PATH", request.getfixturevalue("_ready_authority_on_file"))
-    # Pre-D6 behaviour had no per-symbol verification gate; these tests pin engine/gate READY logic only.
+
+
+@pytest.fixture
+def stub_symbol_verified(monkeypatch):
+    """OPT-IN by name only (never autouse): treat every symbol as logic-verified for the D6 per-symbol
+    READY gate. For tests that pin engine/gate READY logic of 1.1.1 tickets, which predate the gate
+    (2026-10-10). The real gate is covered by tests/test_d6_per_symbol_verification.py."""
+    import v1_tickets.ready_authority as ready_authority
     monkeypatch.setattr(ready_authority, "symbol_verified", lambda *a, **k: True)
 
 
