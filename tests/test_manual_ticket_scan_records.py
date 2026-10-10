@@ -55,7 +55,7 @@ def test_missing_record_is_not_run_not_no_setup(tmp_path):
 
 def test_session_trade_v1_records_are_blocked_by_missing_adapter():
     recs = adapterless_scan_records(run_id="r", cycle="ASIAN_LONDON", now=NOW)
-    assert {r.symbol for r in recs} == {"EURUSD", "GBPUSD", "USDJPY", "XAUUSD.crp"}
+    assert {r.symbol for r in recs} == {"EURUSD-VIP", "GBPUSD-VIP", "USDJPY-VIP", "XAUUSD-VIP"}
     assert all(r.state == TICKET_BLOCKED and r.stop_reason == "STRATEGY_ADAPTER_NOT_IMPLEMENTED"
                and r.stage_reached == "AUTHORITY" and r.strategy == "SESSION_TRADE_V1@1" for r in recs)
     assert adapterless_scan_records(run_id="r", cycle="LONDON_NEWYORK", now=NOW) == []     # UNSIGNED cycle
@@ -68,10 +68,26 @@ def test_every_scheduled_run_records_every_configured_symbol(tmp_path):
     run_id = smoke.fx_run_id(NOW)
     expected = [("ST_ASIAN_SWEEP_5R_V1@1.1.1", c, s) for c in ("ASIAN_LONDON", "LONDON_NEWYORK")
                 for s in smoke.fx_symbols()]
-    expected += [("SESSION_TRADE_V1@1", "ASIAN_LONDON", s) for s in ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD.crp")]
+    expected += [("SESSION_TRADE_V1@1", "ASIAN_LONDON", s) for s in ("EURUSD-VIP", "GBPUSD-VIP", "USDJPY-VIP", "XAUUSD-VIP")]
     cov = coverage(rows, run_id, expected)
     assert NOT_RUN not in cov.values() and len(rows) == len(expected)
     assert all(r["state"] == TICKET_BLOCKED for r in rows)
+
+
+def test_session_trade_unknown_symbol_is_explicitly_unmapped(tmp_path):
+    import yaml
+    from pathlib import Path
+
+    source = Path(__file__).resolve().parent.parent / "strategies/session_trade/contract.yaml"
+    contract = yaml.safe_load(source.read_text(encoding="utf-8"))
+    contract["supported_symbols"] = ["NOT_A_MARKET"]
+    (tmp_path / "strategies/session_trade").mkdir(parents=True)
+    (tmp_path / "strategies/session_trade/contract.yaml").write_text(yaml.safe_dump(contract), encoding="utf-8")
+    import shutil
+    shutil.copytree(source.parents[2] / "config/broker_symbol_map", tmp_path / "config/broker_symbol_map")
+    records = adapterless_scan_records(run_id="r", cycle="ASIAN_LONDON", now=NOW, root=str(tmp_path))
+    assert records[0].symbol == "UNMAPPED:NOT_A_MARKET"
+    assert records[0].stop_reason == "UNMAPPED_SYMBOL:NOT_A_MARKET"
 
 
 def test_scan_record_carries_ordered_block_reasons():

@@ -40,7 +40,7 @@ def test_daily_report_sections(tmp_path):
     assert {"strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.1", "session": "LONDON_NEWYORK"} in \
         rep["system_health"]["sessions_without_any_run"]                    # never ran today -> visible
     st = {(s["strategy"], s["symbol"]): s for s in rep["session_states"]}
-    assert st[("SESSION_TRADE_V1@1", "EURUSD")]["reason"] == "STRATEGY_ADAPTER_NOT_IMPLEMENTED"
+    assert st[("SESSION_TRADE_V1@1", "EURUSD-VIP")]["reason"] == "STRATEGY_ADAPTER_NOT_IMPLEMENTED"
     assert st[("ST_ASIAN_SWEEP_5R_V1@1.1.1", "EURUSD")]["state"] == "TICKET_BLOCKED"
     y = rep["yesterday_outcomes"]
     assert y["session_date"] == "2026-06-23" and y["tag"] == "VIRTUAL_FORWARD"
