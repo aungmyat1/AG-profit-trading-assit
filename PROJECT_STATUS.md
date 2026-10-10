@@ -6,7 +6,12 @@ review_by: 2026-11-07
 ---
 # Project Status — AG Profit Trading
 
-## Current snapshot (2026-10-09)
+## Current snapshot (2026-10-10)
+
+The market-structure analyzer uses fresh computation only; its optional replay-dependent
+cache path is removed. Offline byte comparisons against main pass for identical candles
+and config. Session-zone import failures are traced but unchanged; none of the four live
+runner modes calls that function. See [evidence](docs/status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md).
 
 Large-SMC operational actionability gates (2026-10-10) reject missing/invalid stop or
 target and require at least 50% of the entry-to-target distance to remain. Rejections
