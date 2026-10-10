@@ -8,32 +8,25 @@ future data source, so the engine never needs to know where a candle came from.
 from __future__ import annotations
 
 import calendar
+import logging
 import math
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from functools import lru_cache
 from typing import List, Optional
 
 import MetaTrader5 as mt5
 from shared_cache.bounded_cache import BoundedCache
 from strategy_engine.session import Candle
 
-from .broker_time import (
-    BrokerTimeError,
-    NoWeekendGapError,
-    detect_broker_utc_offset_hours,
-)
+from host_evidence.symbol_metadata import DstHourError, server_time_to_utc, utc_to_server_time
 
-# A 24/7 instrument (crypto CFDs: BTCUSD/ETHUSD on Vantage) has no weekly reopen gap for
-# detect_broker_utc_offset_hours() to derive an offset from -- see AG_VANTAGE_MT5_CRYPTO_VENUE_V1
-# follow-up, 2026-09-13. The broker's UTC offset is a property of the connected MT5
-# SERVER, not of any one traded instrument: every symbol on a single terminal connection
-# shares one server wall clock, so a 24/7 instrument's offset is re-derived from a
-# reference FX symbol on that same connection instead of being assumed or hardcoded as a
-# number. EURUSD/GBPUSD are the two FX symbols this repository's Vantage config
-# (config/mt5.yaml) already knows to be tradable on this account; tried in order, first
-# success wins.
-_REFERENCE_SYMBOLS_FOR_24_7_OFFSET = ("EURUSD", "GBPUSD")
+# Broker server time -> UTC is converted PER BAR with the owner-stated VT rule (server wall
+# clock = America/New_York wall clock + 7h; host_evidence.symbol_metadata.OFFSET_RULE), not
+# with one detected offset per process. A process-cached offset went stale across a US DST
+# change, and a single offset mis-converted every bar on the far side of the change inside
+# one lookback (CS-DST-AUDIT-01 A1). A bar stamped inside the repeated (fall) / skipped
+# (spring) New York hour has no single UTC instant: it is dropped and logged, never folded.
+_log = logging.getLogger(__name__)
 
 _TIMEFRAMES = {
     "M1": mt5.TIMEFRAME_M1, "M5": mt5.TIMEFRAME_M5, "M15": mt5.TIMEFRAME_M15,
@@ -117,26 +110,24 @@ def _require_symbol(symbol: str) -> None:
             raise MarketDataError("SYMBOL_NOT_FOUND", f"{symbol!r} not visible and symbol_select failed")
 
 
-@lru_cache(maxsize=32)
-def _broker_offset_hours(symbol: str) -> int:
-    try:
-        return detect_broker_utc_offset_hours(symbol)
-    except NoWeekendGapError as exc:
-        for reference_symbol in _REFERENCE_SYMBOLS_FOR_24_7_OFFSET:
-            if reference_symbol == symbol:
-                continue
-            try:
-                return detect_broker_utc_offset_hours(reference_symbol)
-            except BrokerTimeError:
-                continue
-        raise MarketDataError(
-            "TIME_NORMALIZATION_ERROR",
-            f"{symbol}: no weekly reopen gap (24/7 instrument) and no reference FX symbol "
-            f"in {_REFERENCE_SYMBOLS_FOR_24_7_OFFSET} could establish the broker's UTC offset "
-            f"on this connection",
-        ) from exc
-    except BrokerTimeError as exc:
-        raise MarketDataError("TIME_NORMALIZATION_ERROR", str(exc)) from exc
+def _server_raw_to_utc(raw_time: int) -> datetime:
+    """MT5 'time' (server wall clock encoded as epoch seconds) -> aware UTC under the rule."""
+    return server_time_to_utc(datetime.fromtimestamp(int(raw_time), timezone.utc).replace(tzinfo=None))
+
+
+def _rates_to_candles(rates, symbol: str, timeframe: str) -> List[Candle]:
+    candles = []
+    for r in rates:
+        try:
+            time_utc = _server_raw_to_utc(r["time"])
+        except DstHourError as exc:
+            _log.warning("DROPPED_BAR %s %s %s %s", exc.reason_code, symbol, timeframe, exc.server_wall_clock.isoformat())
+            continue
+        candles.append(Candle(time=time_utc, open=float(r["open"]), high=float(r["high"]), low=float(r["low"]),
+                              close=float(r["close"]), volume=float(r["tick_volume"])))
+    if not candles:
+        raise MarketDataError("DATA_MISSING", f"{symbol}/{timeframe}: every returned bar fell in a DST hour")
+    return candles
 
 
 def get_candles(symbol: str, timeframe: str, start_utc: datetime, end_utc: datetime) -> List[Candle]:
@@ -148,31 +139,20 @@ def get_candles(symbol: str, timeframe: str, start_utc: datetime, end_utc: datet
     if start_utc.tzinfo is None or end_utc.tzinfo is None:
         raise MarketDataError("NAIVE_DATETIME_REJECTED", "start_utc/end_utc must be timezone-aware UTC")
 
-    offset = _broker_offset_hours(symbol)
     # Deliberately epoch INTEGERS, not datetime objects: the MetaTrader5 python module
     # converts a naive datetime passed to copy_rates_range via this machine's *system*
     # local timezone (confirmed empirically -- on a UTC+6:30 system it silently shifted
     # every query by 6.5h), not as literal broker-wall-clock digits. Passing an int
     # sidesteps that reinterpretation entirely -- see tests/test_market_data.py.
-    start_epoch = _to_broker_epoch(start_utc, offset)
-    end_epoch = _to_broker_epoch(end_utc, offset) - 1  # half-open: exclude a bar opening exactly at end_utc
+    start_epoch = _to_broker_epoch(start_utc)
+    end_epoch = _to_broker_epoch(end_utc) - 1  # half-open: exclude a bar opening exactly at end_utc
 
     rates = mt5.copy_rates_range(symbol, _TIMEFRAMES[timeframe], start_epoch, end_epoch)
     if rates is None or len(rates) == 0:
         code, message = mt5.last_error()
         raise MarketDataError("DATA_MISSING", f"copy_rates_range({symbol!r}, {timeframe}) returned no data: ({code}) {message}")
 
-    candles = [
-        Candle(
-            time=(datetime.utcfromtimestamp(int(r["time"])) - timedelta(hours=offset)).replace(tzinfo=timezone.utc),
-            open=float(r["open"]),
-            high=float(r["high"]),
-            low=float(r["low"]),
-            close=float(r["close"]),
-            volume=float(r["tick_volume"]),
-        )
-        for r in rates
-    ]
+    candles = _rates_to_candles(rates, symbol, timeframe)
 
     _validate_monotonic(candles, symbol)
     _validate_ohlc(candles, symbol)
@@ -205,7 +185,6 @@ def get_latest_candles(symbol: str, timeframe: str, count: int) -> List[Candle]:
     if timeframe not in _TIMEFRAMES:
         raise MarketDataError("UNSUPPORTED_TIMEFRAME", f"{timeframe!r} not in {list(_TIMEFRAMES)}")
 
-    offset = _broker_offset_hours(symbol)
     rates = mt5.copy_rates_from_pos(symbol, _TIMEFRAMES[timeframe], 1, count)
     if rates is None or len(rates) == 0:
         code, message = mt5.last_error()
@@ -213,17 +192,7 @@ def get_latest_candles(symbol: str, timeframe: str, count: int) -> List[Candle]:
     if len(rates) < count:
         raise MarketDataError("INSUFFICIENT_CANDLES", f"{symbol}: requested {count}, got {len(rates)}")
 
-    candles = [
-        Candle(
-            time=(datetime.utcfromtimestamp(int(r["time"])) - timedelta(hours=offset)).replace(tzinfo=timezone.utc),
-            open=float(r["open"]),
-            high=float(r["high"]),
-            low=float(r["low"]),
-            close=float(r["close"]),
-            volume=float(r["tick_volume"]),
-        )
-        for r in rates
-    ]
+    candles = _rates_to_candles(rates, symbol, timeframe)
     _validate_monotonic(candles, symbol)
     _validate_ohlc(candles, symbol)
 
@@ -262,8 +231,10 @@ def get_tick(symbol: str) -> Tick:
             f"Market Watch and not yet quoting",
         )
 
-    offset = _broker_offset_hours(symbol)
-    time_utc = (datetime.utcfromtimestamp(int(tick.time)) - timedelta(hours=offset)).replace(tzinfo=timezone.utc)
+    try:
+        time_utc = _server_raw_to_utc(tick.time)
+    except DstHourError as exc:  # a tick cannot be dropped: fail closed for that hour
+        raise MarketDataError(exc.reason_code, f"{symbol}: {exc}") from exc
     info = mt5.symbol_info(symbol)
     return Tick(symbol=symbol, time_utc=time_utc, bid=float(tick.bid), ask=float(tick.ask),
                 spread_points=(info.spread if info is not None else None))
@@ -280,8 +251,8 @@ def check_freshness(as_of_utc: datetime, now_utc: datetime, max_age_seconds: flo
     return None
 
 
-def _to_broker_epoch(true_utc: datetime, offset_hours: int) -> int:
-    broker_wall_clock = true_utc.astimezone(timezone.utc).replace(tzinfo=None) + timedelta(hours=offset_hours)
+def _to_broker_epoch(true_utc: datetime) -> int:
+    broker_wall_clock = utc_to_server_time(true_utc)
     return calendar.timegm(broker_wall_clock.timetuple())
 
 

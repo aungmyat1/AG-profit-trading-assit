@@ -4,12 +4,17 @@ Nothing here repairs, fills, or synthesizes bars. A series is VALID, or it is no
 """
 from __future__ import annotations
 
+import logging
 import time as _time
 from dataclasses import dataclass, replace
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, timezone
 from typing import Callable, List, Optional, Sequence, Tuple
 
+from host_evidence.symbol_metadata import DstHourError
+
 from .timebase import TimeAuthority, parse_server_wallclock
+
+_log = logging.getLogger(__name__)
 
 VALID = "VALID"
 STALE = "STALE"
@@ -80,7 +85,12 @@ class SyncedSeries:
 def normalize_bars(raw: Sequence[dict], ta: TimeAuthority) -> List[Bar]:
     out = []
     for r in raw:
-        out.append(Bar(time_utc=ta.server_to_utc(parse_server_wallclock(str(r["time"]))),
+        try:
+            time_utc = ta.server_to_utc(parse_server_wallclock(str(r["time"])))
+        except DstHourError as exc:  # no single UTC instant: drop + log, never fold
+            _log.warning("DROPPED_BAR %s %s", exc.reason_code, exc.server_wall_clock.isoformat())
+            continue
+        out.append(Bar(time_utc=time_utc,
                        open=float(r["open"]), high=float(r["high"]), low=float(r["low"]), close=float(r["close"]),
                        tick_volume=float(r.get("tick_volume") or 0.0),
                        spread_points=int(r["spread"]) if r.get("spread") is not None else None))
@@ -119,7 +129,13 @@ def _floor_server(server_dt: datetime, timeframe: str) -> datetime:
 def expected_last_closed(now_utc: datetime, timeframe: str, ta: TimeAuthority,
                          daily_break_server: Optional[tuple]) -> datetime:
     step = timedelta(minutes=TF_MINUTES[timeframe])
-    candidate = ta.server_to_utc(_floor_server(ta.utc_to_server(now_utc), timeframe)) - step
+    if TF_MINUTES[timeframe] <= 60:
+        # Whole-hour offset: an intraday server-bar boundary is the same boundary in UTC, and
+        # flooring in UTC never lands on a repeated/skipped server hour.
+        epoch = int(now_utc.timestamp()) // (TF_MINUTES[timeframe] * 60) * TF_MINUTES[timeframe] * 60
+        candidate = datetime.fromtimestamp(epoch, timezone.utc) - step
+    else:
+        candidate = ta.server_to_utc(_floor_server(ta.utc_to_server(now_utc), timeframe)) - step
     for _ in range(4 * 24 * 12):  # bounded walk back over at most a long weekend
         if not is_expected_closure(candidate, timeframe, ta, daily_break_server):
             return candidate
@@ -242,7 +258,11 @@ def assess_quote(broker_symbol: str, tick: Optional[dict], ta: TimeAuthority, no
                  source: str = "TERMINAL_MCP.get_chart_ticks_history") -> Optional[Quote]:
     if not tick:
         return None
-    t = ta.server_to_utc(parse_server_wallclock(str(tick["time_ms"])))
+    try:
+        t = ta.server_to_utc(parse_server_wallclock(str(tick["time_ms"])))
+    except DstHourError as exc:  # a quote in the repeated/skipped hour is unusable: no quote
+        _log.warning("DROPPED_QUOTE %s %s %s", exc.reason_code, broker_symbol, exc.server_wall_clock.isoformat())
+        return None
     bid, ask = float(tick["bid"]), float(tick["ask"])
     age = (now_utc - t).total_seconds()
     spread = ask - bid
