@@ -16,6 +16,7 @@ import yaml
 
 from crypto_cfd_contract.contract import CONTRACT_ID, CONTRACT_VERSION, INSTRUMENTS
 from crypto_cfd_contract.rules import evaluate
+from mt5 import canonical_broker_map
 from strategy_engine.session import Candle
 from ticket_delivery.archive import CycleDecisionRecord, archive_cycle_decision
 from ticket_delivery.renderer import render_informational_ticket
@@ -95,8 +96,11 @@ def build_crypto_cfd_cycle(symbol: str, now: dt.datetime, *, feed: ReadOnlyCrypt
             return {**base, "decision": "BLOCKED", "reason_codes": missing}
         if name is None:
             return {**base, "decision": "BLOCKED", "reason_codes": ["OUTSIDE_CONFIG_WINDOW"]}
-        broker = next((b for b in venue["symbols"].values() if b == symbol), None)
-        if broker is None:
+        try:  # the versioned CANONICAL_TO_BROKER_MAP is the resolution authority
+            broker = canonical_broker_map.resolve(symbol)
+        except (canonical_broker_map.SymbolUnmapped, canonical_broker_map.SymbolMapError):
+            broker = None
+        if broker is None or broker not in venue["symbols"].values():
             raise ValueError("SYMBOL_MAPPING_MISSING")
         if feed is None:
             raise ValueError("FEED_UNAVAILABLE")

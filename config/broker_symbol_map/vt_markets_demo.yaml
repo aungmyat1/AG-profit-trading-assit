@@ -1,0 +1,98 @@
+# CANONICAL_TO_BROKER_MAP for VT Markets Demo (mission AGP-C2-SYMMAP).
+# Loader: src/mt5/canonical_broker_map.py -- the only resolution path for canonical -> broker names.
+# Generated from the evidence capture by the map rule (exactly one present, visible, trade_mode FULL
+# candidate per canonical; otherwise UNMAPPED with a reason -- never a guessed fallback).
+# `expected` pins the captured symbol_info fields; scripts/host/symbol_map_smoke.py re-derives the map
+# from live symbol_info and must print an empty diff. Bump map_version on any change to entries.
+# Crypto contract fields are recorded as captured only; sizing semantics are out of scope here.
+schema: AG_CANONICAL_TO_BROKER_MAP_V1
+map_version: 1
+broker: VT_MARKETS
+server: VTMarkets-Demo
+evidence: status/evidence/host_symbol_info_2026-10-09_symmap.json
+captured_at_utc: '2026-10-09T17:09:33+00:00'
+entries:
+  EURUSD:
+    status: MAPPED
+    broker_symbol: EURUSD-VIP
+    expected:
+      trade_mode_name: FULL
+      visible: true
+      digits: 5
+      point: 1.0e-05
+      trade_contract_size: 100000.0
+      volume_min: 0.01
+      volume_step: 0.01
+      volume_max: 100.0
+      trade_tick_size: 1.0e-05
+      trade_calc_mode: 0
+  GBPUSD:
+    status: MAPPED
+    broker_symbol: GBPUSD-VIP
+    expected:
+      trade_mode_name: FULL
+      visible: true
+      digits: 5
+      point: 1.0e-05
+      trade_contract_size: 100000.0
+      volume_min: 0.01
+      volume_step: 0.01
+      volume_max: 100.0
+      trade_tick_size: 1.0e-05
+      trade_calc_mode: 0
+  USDJPY:
+    status: MAPPED
+    broker_symbol: USDJPY-VIP
+    expected:
+      trade_mode_name: FULL
+      visible: true
+      digits: 3
+      point: 0.001
+      trade_contract_size: 100000.0
+      volume_min: 0.01
+      volume_step: 0.01
+      volume_max: 100.0
+      trade_tick_size: 0.001
+      trade_calc_mode: 0
+  XAUUSD:
+    status: MAPPED
+    broker_symbol: XAUUSD-VIP
+    expected:
+      trade_mode_name: FULL
+      visible: true
+      digits: 2
+      point: 0.01
+      trade_contract_size: 100.0
+      volume_min: 0.01
+      volume_step: 0.01
+      volume_max: 100.0
+      trade_tick_size: 0.01
+      trade_calc_mode: 4
+  BTCUSD:
+    status: MAPPED
+    broker_symbol: BTCUSD
+    expected:
+      trade_mode_name: FULL
+      visible: true
+      digits: 2
+      point: 0.01
+      trade_contract_size: 1.0
+      volume_min: 0.01
+      volume_step: 0.01
+      volume_max: 100.0
+      trade_tick_size: 0.01
+      trade_calc_mode: 5
+  ETHUSD:
+    status: MAPPED
+    broker_symbol: ETHUSD
+    expected:
+      trade_mode_name: FULL
+      visible: true
+      digits: 2
+      point: 0.01
+      trade_contract_size: 1.0
+      volume_min: 0.01
+      volume_step: 0.01
+      volume_max: 100.0
+      trade_tick_size: 0.01
+      trade_calc_mode: 5
