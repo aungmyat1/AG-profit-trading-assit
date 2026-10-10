@@ -1,0 +1,18 @@
+{
+  "source": "MT5_VT_MARKETS_DEMO",
+  "mission": "AGP-DATA-R2",
+  "symbol": "BTCUSD",
+  "recorded": true,
+  "captured_at_utc": "2026-10-10T10:47:27.243268+00:00",
+  "m15_captured_in": "PR #128 (AGP-DATA-R2)",
+  "other_tfs_captured_in": "AGP-DATA-R2b",
+  "sha256": {
+    "d1": "cdd17f4fe707f8984535e3cf905965144838a3191369099665f06b0587c94e24",
+    "h1": "609a9bb0c276cf0f66888fafaefea584e1ba3202c244c18672faf1044d3f3e45",
+    "m5": "b1f6594523f4589415585909230c134d817b2e9b74d0098e39640aa2104a7c34",
+    "m15": "f0f8bd079806a9f732443b642c308f4fbc8c6429be8786cba9a121f0797e8efa"
+  },
+  "sha256_scope": "shared 14-day files; materialized per-case slices carry their own hashes",
+  "commission_R": null,
+  "commission_gap": "commission_R is null for every case: VT crypto CFD commission was not captured (no allowed read-only call exposes it). Explicit gap, never 0."
+}

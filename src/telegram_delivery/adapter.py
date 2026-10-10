@@ -127,6 +127,18 @@ def render_summary(tickets, uncertain=()):
 LSMC_CRYPTO_SUMMARY_SCHEMA = "AGP_HOST_LSMC_CRYPTO_SESSION_SUMMARY_V1"
 
 
+def lsmc_diagnostic_lines(section):
+    lines = []
+    if section.get("config_missing"):
+        lines.append("CONFIG_MISSING key=lsmc_min_remaining_reward_fraction")
+    errors = section.get("archive_error_count", 0)
+    if not isinstance(errors, int) or isinstance(errors, bool) or errors < 0:
+        raise ValueError("Invalid Large-SMC archive error count")
+    if errors:
+        lines.append(f"ARCHIVE_ERROR n={errors}")
+    return lines
+
+
 def render_lsmc_crypto_summary(summary):
     """Render the Large-SMC crypto (BTCUSD/ETHUSD) window digest: opportunities sent and
     per-reason rejection counts. Zero counts are rendered, never omitted."""
@@ -148,6 +160,7 @@ def render_lsmc_crypto_summary(summary):
              f"Opportunities sent: {counts['opportunities_sent']}",
              "Rejections by reason:"]
     lines += [f"- {reason}: {n}" for reason, n in sorted(rejections.items())] or ["- none"]
+    lines += lsmc_diagnostic_lines(summary.get("large_smc") or {})
     lines.append(f"Delivery enabled: {str(bool(summary.get('delivery_enabled', False))).lower()}")
     lines.append("No broker order. Execution not authorized.")
     return "\n".join(lines)
@@ -205,6 +218,15 @@ def render_session_summary(summary):
         lines.append("Possibly undelivered (no automatic retry):")
         for item in sorted(uncertain, key=lambda x: (str(x.get("identity", "")), str(x.get("status", "")))):
             lines.append(f"- {item.get('identity', 'SCHEMA_GAP')} | {item.get('status', STATE_UNCERTAIN)}")
+    if "large_smc" in summary:
+        counts = summary["large_smc"]["rejection_counts"]
+        lines.append("Large-SMC rejections (archived transitions):")
+        lines += lsmc_diagnostic_lines(summary["large_smc"])
+        for reason in ("REJECT_NO_STOP", "REJECT_NO_TARGET", "REJECT_STALE"):
+            count = counts[reason]
+            if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+                raise ValueError("Invalid Large-SMC rejection count")
+            lines.append(f"- {reason}: {count}")
     lines.append("EXECUTION: DISABLED")
     return "\n".join(lines)
 

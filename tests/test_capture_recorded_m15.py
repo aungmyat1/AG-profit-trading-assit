@@ -240,6 +240,25 @@ def test_reference_offset_weekend_requires_agreeing_fri_and_mon():
     assert "unmeasured" in m.reference_offset(None, "EURUSD", sat)["reason"]
 
 
+def test_window_rejects_non_clock_times():
+    m = _load()
+    for bad in ("00:75-02:00", "01:60-03:00", "24:00-24:15", "00:00-23:60"):
+        try:
+            m.parse_window(bad)
+        except m.argparse.ArgumentTypeError as exc:
+            assert "clock" in str(exc), bad
+            continue
+        raise AssertionError(bad)
+
+
+def test_unstable_close_edge_is_dropped_not_keyerror():
+    m = _load()
+    m.measure_offset = lambda term, sym, d: {"open": 3, "reason": "unstable M1 read around close rollover"}
+    res = m.check_day(None, "GBPUSD", date(2026, 10, 9), 5)
+    assert res["kept"] is False and res["offset_close_h"] is None
+    assert res["reason"] == "unstable M1 read around close rollover"
+
+
 def test_window_and_method_parsing():
     m = _load()
     assert m.parse_window("00:00-15:45") == (0, 945) and m.parse_window("00:00-23:45") == (0, 1425)
@@ -251,3 +270,27 @@ def test_window_and_method_parsing():
         raise AssertionError(bad)
     assert m.days_ending(date(2026, 10, 9), 14)[0] == date(2026, 9, 26)
     assert m.compress_minutes(["01:00", "01:01", "01:02", "05:07"]) == "01:00-01:02 (3), 05:07"
+
+
+class SpreadFakeTerminal(FakeTerminal):
+    def point(self, symbol):
+        return 0.00001
+
+    def rates(self, symbol, tf, lo, hi, with_spread=False):
+        bars = super().rates(symbol, tf, lo, hi)
+        return [b + ((b[0] // 900 % 7 + 3,) if with_spread else ()) for b in bars]
+
+
+def test_with_spread_adds_only_a_column_and_note_sections(tmp_path):
+    rc, plain_csv, plain_note = run_capture(_load(), tmp_path, ["--symbol", "GBPUSD"])
+    rc2, csv_b, note_b = run_capture(_load(), tmp_path, ["--symbol", "GBPUSD", "--with-spread"],
+                                     terminal_factory=SpreadFakeTerminal)
+    assert rc == rc2 == 0
+    plain, spread = plain_csv.decode().splitlines(), csv_b.decode().splitlines()
+    assert spread[0] == "timestamp_utc,open,high,low,close,spread_points"
+    assert [r.rsplit(",", 1)[0] for r in spread[1:]] == plain[1:]
+    assert all(r.rsplit(",", 1)[1].isdigit() for r in spread[1:])
+    note = note_b.decode()
+    assert note.split("\n## Spread")[0].split("- capture date")[1].split("\n", 1)[1] == \
+        plain_note.decode().split("- capture date")[1].split("\n", 1)[1].rstrip("\n") + "\n"
+    assert "points; price = spread_points x point" in note and "- none (every kept M15 bar" in note

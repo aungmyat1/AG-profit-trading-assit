@@ -1,0 +1,11 @@
+LARGE-SMC ALERT -- INFORMATIONAL -- NOT A BROKER ORDER
+EURUSD OPPORTUNITY (OPPORTUNITY)  direction: LONG
+ST_LARGE_SMC_V1 v1.1.0  economic_status=NOT_EVALUATED
+ref: setup
+timeframes: D1 context -> H1 bias + POI -> M5 sweep/CHoCH
+liquidity target: 101.0
+stop (C10): 99.0
+entry reference (CHoCH close): 100.0
+current price: 100.25
+prices (unnormalized: no verified symbol metadata)
+expires_at: 17:30 MMT / 11:00 UTC (2026-01-06)

@@ -1,0 +1,7 @@
+# AGP-C2-SYMMAP host smoke -- `python scripts/host/symbol_map_smoke.py smoke`, exit 0
+# Host: Windows MT5 terminal (VTMarkets-Demo, DEMO account), branch agp/c2-symmap, 2026-10-09.
+# Run under resource_guard R1 lock (CLAUDE_CODE / AGP-C2-SYMMAP). Output verbatim:
+MAP v1 VT_MARKETS/VTMarkets-Demo evidence=status/evidence/host_symbol_info_2026-10-09_symmap.json
+LIVE_SERVER VTMarkets-Demo
+DIFF EMPTY
+READ_ONLY_GUARD {"broker_mutations": 0, "forbidden_calls": [], "market_watch_visibility_unchanged": true, "mt5_calls": {"account_info": 2, "initialize": 1, "last_error": 1, "shutdown": 1, "symbol_info": 120, "symbol_info_tick": 20}}

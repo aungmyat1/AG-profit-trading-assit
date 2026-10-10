@@ -17,17 +17,27 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import yaml
 
+from host_delivery.lsmc_actionability_config import remaining_fraction
 from telegram_delivery.adapter import Config, Sender
 from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 from ticket_store.store import SCHEMA_EVALUATION, TicketStore, evaluation_id, read_jsonl
 from v1_tickets.actionability import (
-    BLOCKED, EXPIRED, INFO_ONLY_INSUFFICIENT_REMAINING_R, INFO_ONLY_POLICY_UNRESOLVED,
-    INFO_ONLY_STALE, INFO_ONLY_SUPPRESSED, INSUFFICIENT_DATA, MISSED, NO_TRADE,
-    OUT_OF_SESSION, WATCH_READY,
+    BLOCKED,
+    EXPIRED,
+    INFO_ONLY_INSUFFICIENT_REMAINING_R,
+    INFO_ONLY_POLICY_UNRESOLVED,
+    INFO_ONLY_STALE,
+    INFO_ONLY_SUPPRESSED,
+    INSUFFICIENT_DATA,
+    MISSED,
+    NO_TRADE,
+    OUT_OF_SESSION,
+    WATCH_READY,
 )
 from v1_tickets.daily_evaluator import EvalResult, run_daily_evaluation
 from v1_tickets.fx import V1_CYCLES, V1_FX_SYMBOLS, session_windows_utc
 
+POLICY_ROOT = Path(__file__).resolve().parents[2]
 UTC = dt.timezone.utc
 EVENT_SCHEMA = "AGP_HOST_TICKET_DELIVERY_R1_EVENT_V1"
 SUMMARY_SCHEMA = "AGP_HOST_TICKET_DELIVERY_R1_SESSION_SUMMARY_V1"
@@ -44,7 +54,10 @@ LSMC_CRYPTO_SESSIONS = (LSMC_CRYPTO_DAY, LSMC_CRYPTO_WEEKEND)
 # Same tuple as large_smc_watch.contract.CRYPTO_SYMBOLS (pinned by a test); not imported here so this
 # delivery module never loads the watch/MT5 import chain.
 LSMC_CRYPTO_SYMBOLS = ("BTCUSD", "ETHUSD")
-from telegram_delivery.adapter import LSMC_CRYPTO_SUMMARY_SCHEMA  # noqa: E402 -- one schema id
+from telegram_delivery.adapter import (
+    LSMC_CRYPTO_SUMMARY_SCHEMA,  # noqa: E402 -- one schema id
+)
+
 CANONICAL_DECISIONS = frozenset({
     WATCH_READY, INFO_ONLY_STALE, INFO_ONLY_INSUFFICIENT_REMAINING_R,
     INFO_ONLY_POLICY_UNRESOLVED, INFO_ONLY_SUPPRESSED, NO_TRADE, EXPIRED,
@@ -349,6 +362,53 @@ def _delivery_bucket(state: str) -> str:
     return "not_attempted"
 
 
+LSMC_REJECTION_REASONS = ("REJECT_NO_STOP", "REJECT_NO_TARGET", "REJECT_STALE")
+
+
+def lsmc_archive_report(journal: str, start: dt.datetime, end: dt.datetime, *,
+                        symbols: Sequence[str] = V1_FX_SYMBOLS) -> Dict[str, Any]:
+    """Primary archived transitions in [start,end); bad files are counted and skipped.
+
+    Ownership is explicit: FX summaries scan four FX/Gold symbol directories;
+    crypto summaries own BTCUSD/ETHUSD. Correction wrappers are never transitions.
+    """
+    counts = {reason: 0 for reason in LSMC_REJECTION_REASONS}
+    root = Path(journal) / "ticket_delivery/archive/fx_ticket_archive/ST_LARGE_SMC_V1"
+    seen = set()
+    errors = 0
+    for symbol in symbols:
+        for path in sorted((root / symbol).glob("LSMC_WATCH-*/*/????-??-??.json")):
+            try:
+                record = json.loads(path.read_text(encoding="utf-8"))
+                event = record["payload"]
+                if record["strategy_id"] != "ST_LARGE_SMC_V1" or event["to_state"] != "REJECTED":
+                    continue
+                at = dt.datetime.fromisoformat(record["evaluation_time_utc"])
+                if at.tzinfo is None:
+                    raise ValueError("naive Large-SMC rejection timestamp")
+                if not start <= at.astimezone(UTC) < end:
+                    continue
+                transition_id = event["transition_id"]
+                if not isinstance(transition_id, str) or not transition_id:
+                    raise ValueError("missing Large-SMC rejection identity")
+                reason = next((r for r in record["reason_codes"] if r in counts), None)
+                if reason is None:
+                    raise ValueError("missing Large-SMC rejection reason")
+            except (OSError, ValueError, TypeError, KeyError, AttributeError):
+                errors += 1
+                continue
+            if transition_id not in seen:
+                counts[reason] += 1
+                seen.add(transition_id)
+    return {"rejection_counts": counts, "archive_error_count": errors,
+            "config_missing": remaining_fraction(POLICY_ROOT) is None}
+
+
+def lsmc_rejection_counts(journal: str, start: dt.datetime, end: dt.datetime) -> Dict[str, int]:
+    """FX-only archived rejection counts; crypto has its own summary owner."""
+    return lsmc_archive_report(journal, start, end)["rejection_counts"]
+
+
 def build_session_summary(journal: str, *, session_date: dt.date, session: str,
                           sender: Sender) -> Dict[str, Any]:
     """Build a deterministic digest from durable store/journal facts; never fabricate prices."""
@@ -496,6 +556,7 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
         "status": status, "expected_instruments": list(expected_symbols),
         "expected_evaluations": len(expected_symbols), "recorded_evaluations": recorded,
         "terminal_counts": dict(sorted(terminal_counts.items())),
+        "large_smc": lsmc_archive_report(journal, *windows),
         "source_counts": dict(sorted(source_counts.items())),
         "data_failure_count": sum(terminal_counts[state] for state in (BLOCKED, INSUFFICIENT_DATA)),
         "persistence_failure_count": sum(row.get("ticket_store_status") == "FAILED"
@@ -663,7 +724,8 @@ def record_lsmc_crypto_evaluation(journal: str, *, now: dt.datetime, session: st
 def build_lsmc_crypto_summary(journal: str, *, session_date: dt.date, session: str,
                               window: Tuple[dt.datetime, dt.datetime], sender: Sender) -> Dict[str, Any]:
     """Opportunities sent plus per-reason rejection counts for one crypto window, from durable
-    LSMC_EVALUATION events only. An empty window is a valid summary with zero counts."""
+    LSMC_EVALUATION events plus uniquely archived actionability rejections. An empty
+    window is a valid summary with zero counts."""
     if session not in LSMC_CRYPTO_SESSIONS:
         raise ValueError(f"unknown LSMC crypto session {session!r}")
     day = session_date.isoformat()
@@ -677,7 +739,8 @@ def build_lsmc_crypto_summary(journal: str, *, session_date: dt.date, session: s
             raise ValueError("naive evaluation timestamp in LSMC journal")
         if start <= at.astimezone(UTC) < end:
             rows.append(event)
-    rejections: Counter = Counter()
+    archive = lsmc_archive_report(journal, start, end, symbols=LSMC_CRYPTO_SYMBOLS)
+    rejections: Counter = Counter({r: n for r, n in archive["rejection_counts"].items() if n})
     states: Counter = Counter()
     sent: set = set()
     delivery_counts: Counter = Counter()
@@ -685,7 +748,9 @@ def build_lsmc_crypto_summary(journal: str, *, session_date: dt.date, session: s
         states[row.get("state")] += 1
         if row.get("state") != "OPPORTUNITY":
             reasons = row.get("reason_codes") or []
-            rejections[str(reasons[0]) if reasons else "UNSPECIFIED"] += 1
+            reason = str(reasons[0]) if reasons else "UNSPECIFIED"
+            if reason not in LSMC_REJECTION_REASONS:
+                rejections[reason] += 1
         for d in row.get("deliveries") or []:
             delivery_counts[str(d.get("status"))] += 1
             if d.get("to_state") == "OPPORTUNITY" and d.get("status") == "SENT":
@@ -696,9 +761,10 @@ def build_lsmc_crypto_summary(journal: str, *, session_date: dt.date, session: s
         "instruments": list(LSMC_CRYPTO_SYMBOLS), "evaluations": len(rows),
         "opportunities_sent": len(sent),
         "rejection_counts": dict(sorted(rejections.items())),
+        "large_smc": archive,
         "state_counts": dict(sorted(states.items())),
         "alert_delivery_counts": dict(sorted(delivery_counts.items())),
-        "status": "EMPTY_WINDOW" if not rows else "COMPLETE",
+        "status": "EMPTY_WINDOW" if not rows and not sum(archive["rejection_counts"].values()) else "COMPLETE",
         "delivery_enabled": bool(sender.config.enabled), "execution_authorized": False,
     }
 

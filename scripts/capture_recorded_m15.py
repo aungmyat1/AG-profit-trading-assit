@@ -48,6 +48,7 @@ from zoneinfo import ZoneInfo
 NY = ZoneInfo("America/New_York")
 UTC = timezone.utc
 HEADER = "timestamp_utc,open,high,low,close\n"
+HEADER_SPREAD = "timestamp_utc,open,high,low,close,spread_points\n"
 WINDOW_BARS_M15 = 64  # 00:00 .. 15:45 UTC
 WINDOW_BARS_M1 = 960  # 00:00 .. 15:59 UTC
 BREAK_TOLERANCE_S = 10 * 60  # break edge must sit within 10 min of a whole hour
@@ -62,6 +63,8 @@ def parse_window(text: str) -> tuple[int, int]:
     m = re.fullmatch(r"(\d\d):(\d\d)-(\d\d):(\d\d)", text)
     if not m:
         raise argparse.ArgumentTypeError(f"window must be HH:MM-HH:MM: {text}")
+    if any(int(h) > 23 for h in (m[1], m[3])) or any(int(mm) > 59 for mm in (m[2], m[4])):
+        raise argparse.ArgumentTypeError(f"window times must be valid HH:MM clock times: {text}")
     a, b = int(m[1]) * 60 + int(m[2]), int(m[3]) * 60 + int(m[4])
     if a % 15 or b % 15 or not 0 <= a <= b < 1440:
         raise argparse.ArgumentTypeError(f"window must be on M15 boundaries within one day: {text}")
@@ -188,22 +191,31 @@ class Terminal:
             raise SystemExit(f"symbol not found: {symbol}")
         return int(info.digits)
 
-    def rates(self, symbol: str, tf: str, lo: int, hi: int) -> list[tuple]:
+    def point(self, symbol: str) -> float:
+        info = self.mt5.symbol_info(symbol)
+        if info is None:
+            raise SystemExit(f"symbol not found: {symbol}")
+        return float(info.point)
+
+    def rates(self, symbol: str, tf: str, lo: int, hi: int, with_spread: bool = False) -> list[tuple]:
         frame = {"M1": self.mt5.TIMEFRAME_M1, "M15": self.mt5.TIMEFRAME_M15}[tf]
         r = self.mt5.copy_rates_range(symbol, frame, datetime.fromtimestamp(lo, UTC),
                                       datetime.fromtimestamp(hi, UTC))
         if r is None:
             return []
         return [(int(b["time"]), float(b["open"]), float(b["high"]), float(b["low"]),
-                 float(b["close"])) for b in r if lo <= int(b["time"]) <= hi]
+                 float(b["close"])) + ((int(b["spread"]),) if with_spread else ())
+                for b in r if lo <= int(b["time"]) <= hi]
 
     def close(self) -> None:
         self.mt5.shutdown()
 
 
-def stable_rates(term: Terminal, symbol: str, tf: str, lo: int, hi: int) -> list[tuple] | None:
-    a = term.rates(symbol, tf, lo, hi)
-    b = term.rates(symbol, tf, lo, hi)
+def stable_rates(term: Terminal, symbol: str, tf: str, lo: int, hi: int,
+                 with_spread: bool = False) -> list[tuple] | None:
+    kw = {"with_spread": True} if with_spread else {}
+    a = term.rates(symbol, tf, lo, hi, **kw)
+    b = term.rates(symbol, tf, lo, hi, **kw)
     return a if a == b else None
 
 
@@ -253,7 +265,7 @@ def utc_labels(stamps: list[int], off_s: int) -> list[str]:
 
 def check_day(term: Terminal, symbol: str, d: date, digits: int,
               window: tuple[int, int] = (0, 945), ref_symbol: str | None = None,
-              list_gaps: bool = False) -> dict:
+              list_gaps: bool = False, with_spread: bool = False) -> dict:
     res: dict = {"date": d.isoformat(), "kept": False}
     offsets = reference_offset(term, ref_symbol, d) if ref_symbol else measure_offset(term, symbol, d)
     if ref_symbol:
@@ -261,7 +273,8 @@ def check_day(term: Terminal, symbol: str, d: date, digits: int,
     if "open" not in offsets:
         res["reason"] = offsets["reason"]
         return res
-    res["offset_open_h"], res["offset_close_h"] = offsets["open"], offsets["close"]
+    # An unstable close-edge read returns no 'close' key; record the drop instead of raising.
+    res["offset_open_h"], res["offset_close_h"] = offsets["open"], offsets.get("close")
     if "reason" in offsets:
         res["reason"] = offsets["reason"]
         return res
@@ -271,7 +284,7 @@ def check_day(term: Terminal, symbol: str, d: date, digits: int,
     n15 = (window[1] - window[0]) // 15 + 1
     n1 = n15 * 15
     start = int(datetime.combine(d, time(0, 0), UTC).timestamp()) + off_s + window[0] * 60
-    m15 = stable_rates(term, symbol, "M15", start, start + (n15 - 1) * 900)
+    m15 = stable_rates(term, symbol, "M15", start, start + (n15 - 1) * 900, with_spread)
     m1 = stable_rates(term, symbol, "M1", start, start + (n1 - 1) * 60)
     if m15 is None or m1 is None:
         res["reason"] = "unstable M15/M1 read in window"
@@ -296,7 +309,7 @@ def check_day(term: Terminal, symbol: str, d: date, digits: int,
     mismatches = []
     for bar in m15:
         agg = aggregate_m1(m1, bar[0]) if not list_gaps else aggregate_present_m1(m1, bar[0])
-        got = tuple(round(x, digits) for x in bar[1:])
+        got = tuple(round(x, digits) for x in bar[1:5])
         if agg is None or tuple(round(x, digits) for x in agg) != got:
             mismatches.append(datetime.fromtimestamp(bar[0] - off_s, UTC).strftime("%H:%M"))
     if list_gaps:
@@ -309,9 +322,11 @@ def check_day(term: Terminal, symbol: str, d: date, digits: int,
         res["reason"] = "M15 != M1 aggregate at " + ",".join(mismatches[:5])
         return res
     res["kept"] = True
+    res["partial_m1"] = [datetime.fromtimestamp(b[0] - off_s, UTC).strftime("%H:%M") for b in m15
+                         if sum(b[0] <= x[0] < b[0] + 900 for x in m1) != 15]
     res["rows"] = [
         ",".join([datetime.fromtimestamp(b[0] - off_s, UTC).strftime("%Y-%m-%d %H:%M:%S")]
-                 + [fmt_price(x, digits) for x in b[1:]])
+                 + [fmt_price(x, digits) for x in b[1:5]] + [str(x) for x in b[5:]])
         for b in m15
     ]
     return res
@@ -429,6 +444,24 @@ def write_note_v2(path: str, args, out: str, digest: str, results: list[dict], c
         f.write("\n".join(lines) + "\n")
 
 
+def append_spread_note(path: str, symbol: str, point: float, results: list[dict]) -> None:
+    """--with-spread: spread units and the PARTIAL_M1_CHECK bar list, after the standard note."""
+    partial = [f"{r['date']} {t}" for r in results if r["kept"] for t in r.get("partial_m1", [])]
+    lines = [
+        "", "## Spread (--with-spread)", "",
+        "- column `spread_points`: the MqlRates `spread` field of each M15 bar, an integer in "
+        f"points; price = spread_points x point. Point for {symbol} read with symbol_info at "
+        f"capture: {point!r}. The value is the terminal's per-bar spread field; it is not a quote "
+        "observed at a known instant.",
+        "", "## PARTIAL_M1_CHECK bars", "",
+        "M15 bars of kept days whose M1 cross-check covered fewer than 15 M1 bars:",
+        "",
+    ]
+    lines += [f"- {x}" for x in partial] or ["- none (every kept M15 bar was checked against all 15 M1 bars)"]
+    with open(path, "a", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(lines) + "\n")
+
+
 def compress_minutes(labels: list[str]) -> str:
     """'HH:MM' minute labels -> 'HH:MM-HH:MM (n)' runs, so long M1 gaps stay readable."""
     mins = [int(x[:2]) * 60 + int(x[3:]) for x in labels]
@@ -457,6 +490,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--all-days", action="store_true", help="calendar days instead of weekdays")
     p.add_argument("--offset-method", default="rollover",
                    help="rollover | reference-symbol:<SYM>")
+    p.add_argument("--with-spread", action="store_true",
+                   help="add the MqlRates spread (points) as a spread_points column")
     p.add_argument("--list-gaps", action="store_true",
                    help="list missing bars in the provenance instead of dropping the day")
     args = p.parse_args(argv)
@@ -476,6 +511,7 @@ def main(argv: list[str] | None = None) -> int:
     results: list[dict] = []
     try:
         digits = term.digits(args.symbol)
+        point = term.point(args.symbol) if args.with_spread else None
         if ref_symbol:
             term.digits(ref_symbol)  # fail fast if the reference symbol is absent
         # warm-up read so the terminal syncs history before the per-day reads
@@ -486,9 +522,10 @@ def main(argv: list[str] | None = None) -> int:
         if ref_symbol:
             term.rates(ref_symbol, "M1", span_lo - 3 * 86400, span_hi + 3 * 86400)
         with open(args.out, "w", encoding="utf-8", newline="\n") as f:
-            f.write(HEADER)
+            f.write(HEADER_SPREAD if args.with_spread else HEADER)
         for d in days:
-            r = check_day(term, args.symbol, d, digits, window, ref_symbol, args.list_gaps)
+            r = check_day(term, args.symbol, d, digits, window, ref_symbol, args.list_gaps,
+                          args.with_spread)
             if r["kept"]:
                 with open(args.out, "a", encoding="utf-8", newline="\n") as f:
                     f.write("\n".join(r.pop("rows")) + "\n")
@@ -507,6 +544,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     digest = sha256_file(args.out)
     write_note(args.note, args, args.out, digest, results, captured, peak_mb)
+    if args.with_spread:
+        append_spread_note(args.note, args.symbol, point, results)
     print("SHA256", digest)
     return 0
 
