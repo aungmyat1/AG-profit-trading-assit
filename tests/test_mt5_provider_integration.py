@@ -69,7 +69,7 @@ def one(tmp_path, reader=None, policy=SIGNED_TEST_POLICY):
         archive_root=str(tmp_path), policy=policy)
 
 
-def test_provider_conversion_reaches_evaluator(tmp_path, monkeypatch):
+def test_provider_conversion_reaches_evaluator(stub_symbol_verified, tmp_path, monkeypatch):
     from v1_tickets import daily_evaluator
     reader = FakeReader()
     real = daily_evaluator.v1_fx.build_fx_ticket
@@ -107,14 +107,14 @@ def test_missing_required_candles_never_no_trade(tmp_path, missing):
     assert result.canonical["prices"]["entry_reference_raw"] is None
 
 
-def test_unsigned_production_style_policy(tmp_path):
+def test_unsigned_production_style_policy(stub_symbol_verified, tmp_path):
     from v1_tickets.policy_loader import load_policy
     result = one(tmp_path, policy=load_policy(str(ROOT)))
     assert result.decision == "INFO_ONLY_POLICY_UNRESOLVED"
     assert result.canonical["actionability"]["min_remaining_r"] is None
 
 
-def test_signed_test_policy_watch_ready_without_authority(tmp_path):
+def test_signed_test_policy_watch_ready_without_authority(stub_symbol_verified, tmp_path):
     result = one(tmp_path)
     assert result.decision == "WATCH_READY"
     assert result.canonical["execution_authorization"] is False
@@ -256,7 +256,7 @@ def test_london_history_is_twenty_reference_bars():
     assert reader.requests[0][2:4] == (later.replace(hour=6, minute=0), later.replace(hour=10, minute=45))
 
 
-def test_real_adapter_shaped_rates_reach_evaluator(tmp_path, monkeypatch):
+def test_real_adapter_shaped_rates_reach_evaluator(stub_symbol_verified, tmp_path, monkeypatch):
     from host_evidence.symbol_metadata import server_time_to_utc, server_utc_offset_hours
     fixture = FakeReader()
     class FakeMT5:

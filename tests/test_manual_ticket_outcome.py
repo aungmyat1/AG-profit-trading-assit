@@ -65,7 +65,7 @@ def test_unresolvable_inputs_fail_closed():
     assert unclosed["result"] == DATA_INSUFFICIENT                                       # no look-ahead
 
 
-def test_resolve_day_covers_taken_and_shadow_tickets_idempotently(tmp_path, l2_pass):  # noqa: F811
+def test_resolve_day_covers_taken_and_shadow_tickets_idempotently(stub_symbol_verified, tmp_path, l2_pass):  # noqa: F811
     journal = str(tmp_path / "j")
     ready = manual(READY_DAY, "07:20", owner=OWNER, balance=10000.0, meta=META)
     mt.archive_manual_ticket(journal, ready)
