@@ -28,8 +28,8 @@ def test_registry_records_only_eurusd_detection_verdict():
     from pathlib import Path
     root = Path(__file__).resolve().parents[1]
     record = yaml.safe_load((root / "strategies/registry.yaml").read_text())["strategies"]["ST_LARGE_SMC_V1"]["detection_logic_verification"]
-    assert record["status"] == "LOGIC_VERIFIED"
-    assert "reason" not in record
+    assert record["status"] == "NOT_VERIFIED"
+    assert "round 4 attribution" in record["reason"]
     assert record["merge_gate"] == "host re-run match (AGP-4H-HOST)"
     assert "MT5 copy_rates D1 for the same dates" in record["merge_gate_detail"]
     assert record["identity"] == "ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY"

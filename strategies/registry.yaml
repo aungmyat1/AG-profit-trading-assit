@@ -89,7 +89,8 @@ strategies:
     demo_authorized: false
     live_authorized: false
     detection_logic_verification:
-      status: LOGIC_VERIFIED
+      status: NOT_VERIFIED
+      reason: "PR #144 round 4 attribution and required green CI are not confirmed; remote checks endpoint returns Forbidden. Detection outputs remain diagnostic pending semantic INDEX_SHIFT/PRICE_DELTA attribution and CI green."
       mismatch_count: 0
       logic_defect_count: 0
       data_defect_count: 0

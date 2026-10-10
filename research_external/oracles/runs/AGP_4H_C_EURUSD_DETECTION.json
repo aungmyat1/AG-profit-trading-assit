@@ -554,13 +554,15 @@
       "D1_broker_day_alignment": true
     },
     "mismatch_count": 0,
-    "logic_verified": true,
+    "logic_verified": false,
     "difference_classification": {
       "DEFINITION_DIFF": 322,
       "LOGIC_DEFECT": 0,
       "DATA_DEFECT": 0
     },
-    "scope": "EURUSD detection only; actionability is a separate layer and was not evaluated"
+    "scope": "EURUSD detection only; actionability is a separate layer and was not evaluated",
+    "status": "NOT_VERIFIED",
+    "blocking_reason": "Round 4 requires zero UNEXPLAINED output deltas and green PR CI; attribution is not yet proven and GitHub checks could not be retrieved (Forbidden)."
   },
   "comparison_reconciliation": {
     "old_round1_type_counts": {
@@ -13904,5 +13906,6 @@
         }
       }
     }
-  }
+  },
+  "round4_ci_status": "UNAVAILABLE_GITHUB_API_FORBIDDEN"
 }
