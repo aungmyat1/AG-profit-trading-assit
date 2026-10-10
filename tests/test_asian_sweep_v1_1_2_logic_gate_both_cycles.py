@@ -258,7 +258,9 @@ def test_report_l5_reads_the_single_d2_carrier_and_absent_costs_warn_never_zero(
     assert (l5["risk_pct"], l5["cost_warn_R"], l5["cost_block_R"]) == (0.5, 0.10, 0.25)
     assert l5["verdict"] == WARN and l5["block_reasons"] == []
     reasons = " ".join(l5["warn_reasons"])
-    assert "COMMISSION_NOT_AVAILABLE" in reasons and "SPREAD_NOT_RECORDED" in reasons
+    # OD1011-COMMISSION binds commission 0 to the VT demo server, so it is sourced, not absent; the old
+    # fixtures carry no spread column, so spread still warns (never 0).
+    assert "COMMISSION_NOT_AVAILABLE" not in reasons and "SPREAD_NOT_RECORDED" in reasons
     assert "USDJPY" in reasons and "XAUUSD" in reasons and "PENDING_AGP-C2-SYMMAP" in reasons
     assert "AUDUSD" not in reasons
 

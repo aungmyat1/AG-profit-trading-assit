@@ -11,7 +11,7 @@ records stop/target rejection, the owner-set 50% remaining-reward threshold, req
 host preflight, FX/crypto rejection ownership, diagnostics and offline tests.
 
 [AGP-C3-ASW-R2 60-day](status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md) records the ST_ASIAN_SWEEP_5R_V1@1.1.2 replay on the 60-weekday recorded files, with a per-session gate matrix and unchanged authority; the [10/20-day R2 report](status/AGP_C3_ASW_V112_R2_2026-10-10.md) is historical only.
-[AGP-4H-A GBPUSD × ASIAN_LONDON](status/AGP_4H_A_ASW_V112_GBPUSD_ASIAN_LONDON_2026-10-10.md) classifies every L2 failure in that lane, fixes the L2 half-point rounding bound, and records the lane as not admitted (L5 INSUFFICIENT).
+[AGP-4H-A GBPUSD × ASIAN_LONDON](status/AGP_4H_A_ASW_V112_GBPUSD_ASIAN_LONDON_2026-10-10.md) classifies every L2 failure in that lane, fixes the L2 half-point rounding bound, and, after OD1011, records it LOGIC_VERIFIED for the SWEEP branch only (scoped registry entry).
 
 [PR #94 follow-up S01/S02](status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md) records the signal-time identity classification (pending owner) and the LIVE/REPLAY digest reason fix.
 

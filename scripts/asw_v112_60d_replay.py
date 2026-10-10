@@ -59,28 +59,37 @@ def rejection_reason(c: dict) -> str:
 
 
 def lane_l5(valid: list, symbol_l5: str, owner: dict) -> tuple:
-    """Lane L5 from the conservative spread on kept entries (bar-only -> INSUFFICIENT(spread)). Kept entries
-    without an owner cost binding fail closed. No FX commission source exists, so commission is
-    INSUFFICIENT (never assumed 0); spread is still evaluated and reported."""
+    """Lane L5 per OD1011-L5: PASS only when every kept entry has cost evidence from an accepted source
+    (conservative spread; OD1011-bound commission) and the owner-ticket cost gate applies it and the
+    warn/block thresholds correctly. A cost-blocked ticket is an actionability outcome, not a failure.
+    Missing evidence is INSUFFICIENT (bar-only spread or unbound commission, never 0). Kept entries
+    without an owner cost binding fail closed."""
     if symbol_l5 == "BLOCK":
         return "FAIL", {}
     if not valid:
         return INSUFFICIENT, {"kept_entries": 0}
     if not owner or owner.get("cost_warn_R") is None or owner.get("cost_block_R") is None:
         return "FAIL", {"kept_entries": len(valid), "reason": "OWNER_BINDING_MISSING: cost_warn_R/cost_block_R unset"}
-    spread_r = [c["l5_recorded_spread"]["spread_R"] for c in valid]
-    known = sorted(r for r in spread_r if r is not None)
+    rec = [c["l5_recorded_spread"] for c in valid]
+    known = sorted(r["spread_R"] for r in rec if r.get("spread_R") is not None)
+    gates = [r.get("cost_gate") for r in rec]
     detail = {"kept_entries": len(valid), "spread_R_evaluated": len(known),
               "spread_R_min": known[0] if known else None, "spread_R_max": known[-1] if known else None,
               "spread_R_median": known[len(known) // 2] if known else None,
               "spread_R_at_or_above_warn": sum(r >= owner["cost_warn_R"] for r in known),
               "spread_R_at_or_above_block": sum(r >= owner["cost_block_R"] for r in known),
               "cost_warn_R": owner["cost_warn_R"], "cost_block_R": owner["cost_block_R"],
-              "spread_sources": dict(sorted(Counter(c["l5_recorded_spread"]["source"] for c in valid).items())),
-              "commission": "NOT_AVAILABLE: no FX commission source configured; not assumed 0"}
+              "spread_sources": dict(sorted(Counter(r.get("source") for r in rec).items())),
+              "commission_sources": dict(sorted(Counter(r.get("commission_source") for r in rec).items())),
+              "cost_gate_correct": sum(bool(g and g["gate_correct"]) for g in gates),
+              "actionability": dict(sorted(Counter(g["actionability"] for g in gates if g).items()))}
     if len(known) < len(valid):
         return f"{INSUFFICIENT}(spread)", detail
-    return f"{INSUFFICIENT}(commission)", detail
+    if any(r.get("commission_R") is None for r in rec):
+        return f"{INSUFFICIENT}(commission)", detail
+    if not all(g and g["gate_correct"] for g in gates):
+        return "FAIL", detail
+    return "PASS", detail
 
 
 def session_row(symbol: str, cycle: str, cases: list, symbol_gates: dict, owner: Optional[dict] = None) -> dict:
@@ -106,6 +115,7 @@ def session_row(symbol: str, cycle: str, cases: list, symbol_gates: dict, owner:
             "valid_entry_case_ids": [c["case_id"] for c in valid],
             "rejections_by_reason": dict(sorted(Counter(rejection_reason(c) for c in rejected).items())),
             "gates": gates, "l5_detail": l5_detail,
+            "kept_by_branch_direction": dict(sorted(Counter(f"{c['setup']}:{c['direction']}" for c in valid).items())),
             "l3_revised_case_ids": [c["case_id"] for c in cases if _revised(c)]}
 
 
@@ -142,7 +152,8 @@ def build(date: str) -> dict:
                             "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv (10 days)",
                             "tests/fixtures/asian_sweep_v1_1_2/l4_recorded_failures.json (June-July dates)"],
         "spread_input": "L2 uses the harness TEST_SPREAD (0.2 pip); L5 uses max(signal-bar spread_points, host_captured "
-                        "snapshot spread) x host_captured point; FX commission has no source (INSUFFICIENT, never 0)",
+                        "snapshot spread) x host_captured point; commission from OD1011-COMMISSION only when bound to the "
+                        "host-captured server (else INSUFFICIENT, never 0)",
         "dataset_identity": dataset, "scopes": scopes, "symbol_gates": symbol_gates, "matrix": matrix,
         "cases": cases, "edge_verified": False, "registry_modified": False, "demo_authorized": False,
         "live_authorized": False, "broker_calls": 0, "ORDER_API_CALLS": 0, "BROKER_MUTATION_COUNT": 0,

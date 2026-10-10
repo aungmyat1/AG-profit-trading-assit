@@ -17,6 +17,12 @@ rounding and branch-scoped registry reader are #142. Until those merge, missing 
 and L5 stays WARN. OD1011-ROUNDING was amended on 2026-10-11: v1.1.2's frozen rounding is the engine's
 `fx._r` (Python `round()` on IEEE floats), which gates must replicate; versions >= 1.1.3 must use Decimal
 ROUND_HALF_UP (ledger item ROUNDING_V113_HALF_UP).
+AGP-LANE-A3/OD1011 (2026-10-11, recorded-fixture verification only, not host-verified): S1 is only GBPUSD ×
+ASIAN_LONDON × RANGE_SWEEP (engine_setup SWEEP), identity-bound in `logic_verified_scopes`. L1–L6 PASS on
+58 VT recorded days. L5 uses max(bar, host-snapshot) spread plus OD1011-COMMISSION; 4 of 7 kept entries are
+cost-blocked (an actionability outcome). Runtime rejects out-of-scope symbol/session/branch and mismatched
+hashes. D6 READY stays OFF; demo/live/edge flags are unchanged. Evidence:
+`docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json`.
 
 DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
 2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar

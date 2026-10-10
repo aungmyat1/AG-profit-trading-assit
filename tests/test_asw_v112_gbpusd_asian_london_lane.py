@@ -58,8 +58,15 @@ def test_fixture_sha256_pinned():
 def test_eq_slack_is_float_noise_only():
     assert EQ_EPS_POINTS <= 1e-6                 # slack <= 1e-6 x point
     assert _eq(1.35851, 1.358505, 5)             # exact half-point tie: half-up neighbour
-    assert _eq(1.35850, 1.358505, 5)             # exact half-point tie: half-even neighbour (mode undeclared)
     assert _eq(1.34466, 1.34466 + 1e-16, 5)      # float noise on an on-grid expectation
+
+
+def test_eq_rounds_ties_half_up_only():
+    """OD1011-ROUNDING: ROUND_HALF_UP; the other tie neighbour (half-even/half-down) fails."""
+    assert _eq(1.35851, 1.358505, 5)
+    assert not _eq(1.35850, 1.358505, 5)
+    assert _eq(1.35849, 1.358485, 5) and not _eq(1.35848, 1.358485, 5)   # odd/even base: still up
+    assert _eq(1.3585, 1.3585049, 5) and not _eq(1.35851, 1.3585049, 5)  # below the tie rounds down
 
 
 def test_eq_true_half_point_and_one_point_errors_fail():
@@ -118,6 +125,19 @@ def test_l5_reads_recorded_spread_and_never_assumes_commission():
     checks = {c["id"]: c for c in l5["checks"]}
     assert checks["L5.spread_R"]["verdict"] == PASS
     assert checks["L5.commission_R"]["value"] is None and checks["L5.commission_R"]["note"] == "COMMISSION NOT AVAILABLE"
+    # OD1011-COMMISSION: 0 only when bound to the host-captured server; the cost gate applies it and the thresholds
+    assert h.bound_commission(SYMBOL) == 0.0
+    probe = h.cost_probe(CYCLE, day, session, post, now, SYMBOL, rec["spread_price"], 0.0)
+    assert probe["gate_correct"] and probe["actionability"] == "COST_BLOCKED" and probe["cost_in_R"] == 0.6
+
+
+def test_commission_is_never_zero_for_an_unbound_account(monkeypatch):
+    real = h.symbol_metadata.load_record
+    monkeypatch.setattr(h.symbol_metadata, "load_record",
+                        lambda *a, **k: {**real(*a, **k), "server": "OtherBroker-Live"})
+    assert h.bound_commission(SYMBOL) is None
+    monkeypatch.setattr(h.symbol_metadata, "load_record", lambda *a, **k: None)
+    assert h.bound_commission(SYMBOL) is None
 
 
 def test_l5_spread_absent_without_a_signal_bar():
@@ -137,7 +157,8 @@ def test_l5_bar_only_spread_is_insufficient_never_pass(monkeypatch):
 
 def test_session_row_with_kept_entries_and_no_owner_fails_closed():
     drv = importlib.import_module("scripts.asw_v112_60d_replay")
-    kept = {"case_id": "recorded:X:ASIAN_LONDON:2026-08-31", "direction": "SHORT", "day_type": "short-sweep",
+    kept = {"case_id": "recorded:X:ASIAN_LONDON:2026-08-31", "direction": "SHORT", "setup": "SWEEP",
+            "day_type": "short-sweep",
             "ticket_gate_status": {g: "PASS" for g in ("L1", "L2", "L3", "L4", "L5", "L6")},
             "ticket_gate_blocking_failures": [], "l2_fail_ids": [], "l2_undeclared": [], "owner_ticket_L6": "PASS",
             "geometry": {"has_levels": True, "positive_stop": True, "target_order": True},
