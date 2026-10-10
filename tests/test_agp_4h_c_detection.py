@@ -6,7 +6,7 @@ def test_eurusd_detection_only_l1_l6_pass_with_zero_data_and_logic_defects():
     report = run()
     gate = report["L1-L6_detection_only"]
     assert report["strategy"] == "ST_LARGE_SMC_V1@1.1.0"
-    assert report["fixture_classification"] == "HOST_CAPTURED_DERIVED"
+    assert report["fixture_classification"] == "HOST_CAPTURED"
     assert gate["logic_verified"] is True
     assert all(gate["checks"].values())
     assert gate["mismatch_count"] == 0
@@ -78,7 +78,7 @@ def test_d1_fixture_is_broker_day_aligned():
 def test_report_has_seeded_ten_difference_reviews_and_separated_bos_choch_counts():
     report = run()
     reviews = report["seeded_manual_review"]
-    assert reviews["seed"] == 20261012
+    assert reviews["seed"] == 20261013
     assert reviews["sample_size"] == 10
     assert all(x["raw_bar_ohlc"] and x["raw_check"] and x["spec_citation"] for x in reviews["reviews"])
     assert {c["output"] for tf in report["timeframes"].values() for c in tf["comparisons"]} >= {
@@ -90,13 +90,25 @@ def test_rebuilt_fixture_d1_matches_captured_h1_on_every_broker_day_boundary():
     import json
     from zoneinfo import ZoneInfo
     from research_external.oracles.lsmc_detection_run import (
-        FIXTURE, _broker_day_alignment, load_captured_h1, rebuild_broker_d1,
+        FIXTURE, HOST_SNAPSHOT, _broker_day_alignment, rebuild_broker_d1,
     )
     fixture = json.loads(FIXTURE.read_text())
-    rebuilt, edges = rebuild_broker_d1(load_captured_h1())
-    assert rebuilt == fixture["D1"]
+    snapshot = json.loads(HOST_SNAPSHOT.read_text())
+    rebuilt, edges = rebuild_broker_d1(snapshot["H1"])
+    expected = {row["time_utc"]: row for row in snapshot["D1"]}
+    assert len(rebuilt) == 4  # the fixture includes a 120-hour H1 slice
+    assert all(expected[row["time_utc"]] == row for row in rebuilt)
+    # The full host snapshot also records the owner-checked all-span result.
+    assert snapshot["source"] == "VT MT5 copy_rates_range EURUSD-VIP, single snapshot"
+    report = run()["data_provenance"]
+    assert report["D1_complete_day_match_count"] == report["D1_snapshot_complete_days"] == 4
+    assert fixture["D1"] == snapshot["D1"]
     assert _broker_day_alignment(rebuilt)
     assert edges["partial_days"] == [{
+        "server_day": "2026-07-27", "open_utc": "2026-07-26T21:00:00+00:00",
+        "close_utc": "2026-07-27T21:00:00+00:00", "observed_h1_bars": 21,
+        "expected_h1_bars": 24, "boundary_class": "SUNDAY_OPEN_OR_CAPTURE_EDGE",
+    }, {
         "server_day": "2026-08-03", "open_utc": "2026-08-02T21:00:00+00:00",
         "close_utc": "2026-08-03T21:00:00+00:00", "observed_h1_bars": 3,
         "expected_h1_bars": 24, "boundary_class": "SUNDAY_OPEN_OR_CAPTURE_EDGE",

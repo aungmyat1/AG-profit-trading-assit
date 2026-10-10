@@ -96,7 +96,8 @@ strategies:
       identity: ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY
       report: research_external/oracles/runs/AGP_4H_C_EURUSD_DETECTION.json
       scope: "EURUSD detection only; actionability is a separate layer and was not evaluated"
-      completed_utc: 2026-10-10
+      host_fixture: "single VT MT5 EURUSD-VIP D1/H1/M5 snapshot; data/eurusd-d1-mt5@a44437e; SHA256 ff77c9338f6fcc74079cf88d69d103b0c5e4e5a19856b6d4dce8a28333e5701e"
+      completed_utc: 2026-10-11
       merge_gate: "host re-run match (AGP-4H-HOST)"
       merge_gate_detail: "Host compares rebuilt D1 to MT5 copy_rates D1 for the same dates."
     config_source: strategies/ST_LARGE_SMC_V1.yaml

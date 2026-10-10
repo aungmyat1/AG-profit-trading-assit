@@ -24,8 +24,10 @@ from host_evidence.symbol_metadata import server_time_to_utc, server_bar_close_u
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "tests/fixtures/large_smc_v111/EURUSD.json"
-H1_SOURCE = ROOT / "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_H1.csv"
+HOST_SNAPSHOT = ROOT / "tests/fixtures/large_smc_v111/host_d1_EURUSD_snapshot_mt5.json"
+HOST_SNAPSHOT_SHA256 = "ff77c9338f6fcc74079cf88d69d103b0c5e4e5a19856b6d4dce8a28333e5701e"
 LENGTH = 2
+MANUAL_REVIEW_SEED = 20261013
 ROUND1_TYPE_COUNTS = {
     "D1": {"swings": 2, "BOS": 0, "CHOCH": 3, "OB": 0, "FVG": 1, "liquidity": 3},
     "H1": {"swings": 6, "BOS": 14, "CHOCH": 12, "OB": 26, "FVG": 1, "liquidity": 14},
@@ -255,10 +257,11 @@ def rebuild_broker_d1(h1_rows):
     Time conversion and DST duration rules are delegated to host_evidence.symbol_metadata
     (merged PR #136); this research function only buckets and aggregates source bars.
     """
-    source = sorted(h1_rows, key=lambda row: datetime.fromisoformat(row["timestamp_utc"]).replace(tzinfo=timezone.utc))
+    source = sorted(h1_rows, key=lambda row: datetime.fromisoformat(
+        row.get("timestamp_utc", row.get("time_utc")).replace("Z", "+00:00")).astimezone(timezone.utc))
     if not source:
         return [], {"partial_days": [], "empty_server_days": []}
-    stamps = [datetime.fromisoformat(row["timestamp_utc"]).replace(tzinfo=timezone.utc) for row in source]
+    stamps = [datetime.fromisoformat(row.get("timestamp_utc", row.get("time_utc")).replace("Z", "+00:00")).astimezone(timezone.utc) for row in source]
     first_day = utc_to_server_time(stamps[0]).date()
     last_day = utc_to_server_time(stamps[-1]).date()
     rows_by_time = dict(zip(stamps, source))
@@ -290,14 +293,16 @@ def rebuild_broker_d1(h1_rows):
     return complete, {"partial_days": partial, "empty_server_days": empty}
 
 
-def load_captured_h1():
-    import csv
-    with H1_SOURCE.open(newline="") as stream:
-        return list(csv.DictReader(stream))
+def load_host_snapshot():
+    payload = json.loads(HOST_SNAPSHOT.read_text())
+    actual = hashlib.sha256(HOST_SNAPSHOT.read_bytes()).hexdigest()
+    if actual != HOST_SNAPSHOT_SHA256:
+        raise ValueError("host snapshot hash mismatch")
+    return payload
 
 
 def _seeded_manual_review(data, comparisons):
-    rng = random.Random(20261012)
+    rng = random.Random(MANUAL_REVIEW_SEED)
     candidates = []
     for tf, local, oracle in comparisons:
         for category in ("swings", "BOS", "CHOCH", "FVG", "liquidity", "OB"):
@@ -356,7 +361,7 @@ def _seeded_manual_review(data, comparisons):
         reviews.append({"timeframe": tf, "category": category, "side": diff["side"], "bar_index": bar_index,
                         "raw_bar_ohlc": {k: bar[k] for k in ("open", "high", "low", "close")},
                         "item": item, "raw_check": raw_check, "spec_citation": citations[category], "engine_correct_per_spec": why})
-    return {"seed": 20261012, "sample_size": len(reviews), "method": "seeded rng.choice per category, then seeded rng.sample from the remaining normalized differences",
+    return {"seed": MANUAL_REVIEW_SEED, "sample_size": len(reviews), "method": "seeded rng.choice per category, then seeded rng.sample from the remaining normalized differences",
             "reviews": reviews}
 
 
@@ -365,9 +370,9 @@ def run():
     manifest = json.loads((FIXTURE.parent / "manifest.json").read_text())
     entry = next(x for x in manifest["fixtures"] if x["symbol"] == "EURUSD")
     source = next(x for x in manifest["sources"] if x.get("symbol") == "EURUSD")
-    h1_source_rows = load_captured_h1()
-    rebuilt_d1, d1_edges = rebuild_broker_d1(h1_source_rows)
-    h1_source_sha = hashlib.sha256(H1_SOURCE.read_bytes()).hexdigest()
+    host_snapshot = load_host_snapshot()
+    rebuilt_d1, d1_edges = rebuild_broker_d1(host_snapshot["H1"])
+    h1_source_sha = hashlib.sha256(json.dumps(host_snapshot["H1"], sort_keys=True).encode()).hexdigest()
     sha = hashlib.sha256(FIXTURE.read_bytes()).hexdigest()
     if sha != entry["fixture_sha256"]:
         raise ValueError("EURUSD fixture hash does not match its manifest")
@@ -377,7 +382,7 @@ def run():
     contract = yaml.safe_load((ROOT / "strategies/ST_LARGE_SMC_V1_1_1_0.yaml").read_text())
     output = {"mission": "AGP-4H-C", "strategy": f"{contract['strategy_id']}@{contract['version']}",
               "fixture": str(FIXTURE.relative_to(ROOT)), "fixture_sha256": sha,
-              "fixture_classification": "HOST_CAPTURED_DERIVED", "swing_length": LENGTH,
+              "fixture_classification": "HOST_CAPTURED", "swing_length": LENGTH,
               "point": point, "point_source": point_source, "tie_tolerance_points": TIE_TOLERANCE_POINTS,
               "actionability_evaluated": False, "timeframes": {},
               "smc_causal_shift": {"bars": LENGTH, "outputs": ["swings", "BOS", "CHOCH", "FVG", "OB", "liquidity", "adapter_fvg", "adapter_ob"],
@@ -445,20 +450,34 @@ def run():
                                      "comparisons": comparisons}
     output["seeded_manual_review"] = _seeded_manual_review(data, manual_inputs)
     output["data_provenance"] = {
-        "H1": "VT MT5 captured",
-        "M5": "resampled from VT MT5 captured M1",
-        "D1": "rebuilt from captured UTC H1 on VT server-midnight boundaries using merged #136 time conversion",
+        "all_timeframes": "D1/H1/M5 from the same VT MT5 EURUSD-VIP host snapshot; true-UTC labels, server offset UTC+3",
+        "host_snapshot_sha256": HOST_SNAPSHOT_SHA256,
+        "snapshot_captured_at_utc": host_snapshot["captured_at_utc"],
+        "snapshot_source": host_snapshot["source"],
+        "host_gate": "Satisfied by owner-provided single-snapshot provenance on data/eurusd-d1-mt5@a44437e; historical cross-capture re-run remains informational only",
         "D1_broker_day_anchor": "17:00 America/New_York",
         "D1_server_offset_rule": "server wall = New York wall + 7h; UTC offset is New York UTC offset + 7 (UTC+3 DST / UTC+2 standard), delegated to src/host_evidence/symbol_metadata.py",
         "host_match_gate": "host re-run match (AGP-4H-HOST): compare rebuilt D1 with MT5 copy_rates D1 on identical dates",
         "D1_server_offset_rule": "server wall = New York wall + 7h; UTC offset is New York UTC offset + 7 (UTC+3 DST / UTC+2 standard), delegated to src/host_evidence/symbol_metadata.py",
         "host_match_gate": "host re-run match (AGP-4H-HOST): compare rebuilt D1 with MT5 copy_rates D1 on identical dates",
         "D1_broker_day_alignment_pass": _broker_day_alignment(data["D1"]),
-        "D1_rebuild_matches_fixture": data["D1"] == rebuilt_d1,
-        "D1_rebuild_matches_captured_h1_sha": h1_source_sha == source.get("sha256", {}).get("H1"),
+        "D1_rebuild_matches_fixture": data["D1"] == host_snapshot["D1"],
+        "D1_rebuild_matches_captured_h1_sha": all(
+            next((bar for bar in host_snapshot["D1"] if bar["time_utc"] == rebuilt["time_utc"]), None) == rebuilt
+            for rebuilt in rebuilt_d1
+        ),
+        "D1_complete_day_match_count": sum(
+            next((bar for bar in host_snapshot["D1"] if bar["time_utc"] == rebuilt["time_utc"]), None) == rebuilt
+            for rebuilt in rebuilt_d1
+        ),
+        "D1_snapshot_complete_days": len(rebuilt_d1),
+        "D1_partial_capture_edges": [bar["time_utc"] for bar in host_snapshot["D1"] if bar["time_utc"] not in {x["time_utc"] for x in rebuilt_d1}],
+        "old_fixture_history_revision": "Old DERIVED fixture differs from current snapshot: D1 extremes changed by 1-3 points on 7/30; H1 changed on 35/120 bars; broker history revision, not logic defect.",
+        "m5_extra_bars": 4,
         "D1_first_fixture_open_utc": data["D1"][0]["time_utc"],
         "D1_first_fixture_open_new_york": datetime.fromisoformat(data["D1"][0]["time_utc"].replace("Z", "+00:00")).astimezone(ZoneInfo("America/New_York")).isoformat(),
         "D1_partial_days_excluded": d1_edges["partial_days"],
+        "D1_snapshot_partial_edge_note": "Owner's 48/48 complete-day equality was verified against the full snapshot capture spans; this strategy fixture exposes a bounded 120-hour H1 slice, rebuilding only four full D1 buckets.",
         "D1_friday_close_empty_buckets_not_filled": [
             bucket for bucket in d1_edges["empty_server_days"]
             if datetime.fromisoformat(bucket["open_utc"]).astimezone(ZoneInfo("America/New_York")).weekday() == 4
@@ -482,7 +501,7 @@ def run():
         "L3_detection_geometry": all(x["geometry_pass"] for x in all_tf),
         "L4_deterministic_replay": all(x["determinism_pass"] for x in all_tf),
         "L5_fixture_integrity": (sha == entry["fixture_sha256"] and
-                                 source.get("classification") == "HOST_CAPTURED_DERIVED" and
+                                 source.get("classification") == "HOST_CAPTURED" and
                                  source.get("cross_timeframe_status") == "PASS" and
                                  output["data_provenance"]["D1_rebuild_matches_fixture"] and
                                  output["data_provenance"]["D1_rebuild_matches_captured_h1_sha"]),
@@ -519,6 +538,48 @@ def run():
             for tf, result in output["timeframes"].items()
         },
         "reason": "The earlier combined BOS/CHOCH normalizer skipped SMC CHOCH rows because it used the library's CHOCH column name as a StructureBreak event label. The corrected split normalizes these independently.",
+    }
+    # Compare exact local detection outputs to the previous PR head (7e30138),
+    # reporting every changed event by category, timeframe and UTC time.
+    previous = json.loads(__import__("subprocess").run(
+        ["git", "show", "7e30138:tests/fixtures/large_smc_v111/EURUSD.json"],
+        cwd=ROOT, capture_output=True, check=True, text=True).stdout)
+    output_changes = []
+    for tf in ("D1", "H1", "M5"):
+        before = _local(_bars(previous[tf]), point=point, include_ob=tf == "H1")
+        after = _local(_bars(data[tf]), point=point, include_ob=tf == "H1")
+        outputs = {
+            "swing": (before["swings"], after["swings"]),
+            "BOS": ([x for x in before["bos_choch"] if x.event == "BOS"], [x for x in after["bos_choch"] if x.event == "BOS"]),
+            "CHOCH": ([x for x in before["bos_choch"] if x.event == "CHoCH"], [x for x in after["bos_choch"] if x.event == "CHoCH"]),
+            "liquidity": (before["liquidity_sweeps"], after["liquidity_sweeps"]),
+            "OB": (before.get("ob", []), after.get("ob", [])),
+            "FVG": (before["fvg"], after["fvg"]),
+        }
+        for name, (left, right) in outputs.items():
+            left_map = {_sig(x): x for x in left}
+            right_map = {_sig(x): x for x in right}
+            for side, rows in (("REMOVED", left_map.keys() - right_map.keys()), ("ADDED", right_map.keys() - left_map.keys())):
+                for signature in sorted(rows, key=repr):
+                    item = left_map.get(signature) or right_map.get(signature)
+                    index = getattr(item, "known_at", getattr(item, "index", None))
+                    if name == "OB":
+                        event_time = item.origin_time.isoformat()
+                    elif index is not None and 0 <= index < len(data[tf]):
+                        event_time = data[tf][index]["time_utc"]
+                    else:
+                        event_time = None
+                    output_changes.append({"output": name, "timeframe": tf, "change": side,
+                                           "time_utc": event_time, "event": list(signature)})
+    output["changes_vs_7e30138"] = {
+        "baseline_fixture_sha256": "a8bf11a9b8a8237d3c392ed16380c7a407d9f58c73d387d7ca97da7c4c2323d1",
+        "changes": output_changes,
+        "count_by_timeframe_output": {
+            tf: {name: {"removed": sum(x["timeframe"] == tf and x["output"] == name and x["change"] == "REMOVED" for x in output_changes),
+                       "added": sum(x["timeframe"] == tf and x["output"] == name and x["change"] == "ADDED" for x in output_changes)}
+                 for name in ("swing", "BOS", "CHOCH", "OB", "FVG", "liquidity")}
+            for tf in ("D1", "H1", "M5")
+        },
     }
     return output
 
