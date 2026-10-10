@@ -7,9 +7,9 @@ Spread values are test inputs, not recorded data. LOGIC_VERIFIED never implies E
 from __future__ import annotations
 
 import csv
-import json
-import functools
 import datetime as dt
+import functools
+import json
 from pathlib import Path
 
 import pytest
@@ -20,8 +20,18 @@ from v1_tickets import fx
 from v1_tickets.authority import load_registry
 from v1_tickets.fx import STRATEGY_PATH, build_fx_ticket, session_windows_utc
 from v1_tickets.logic_gate import (
-    FAIL, NOT_APPLICABLE, NOT_EVALUABLE, PASS, WARN, blocking_failures, l1_determinism, l2_rule_conformance,
-    l3_geometry, l4_data_session, l5_cost, l6_freshness,
+    FAIL,
+    NOT_APPLICABLE,
+    NOT_EVALUABLE,
+    PASS,
+    WARN,
+    blocking_failures,
+    l1_determinism,
+    l2_rule_conformance,
+    l3_geometry,
+    l4_data_session,
+    l5_cost,
+    l6_freshness,
 )
 from v1_tickets.manual_ticket import build_manual_ticket, load_owner_config
 
@@ -258,7 +268,9 @@ def test_report_l5_reads_the_single_d2_carrier_and_absent_costs_warn_never_zero(
     assert (l5["risk_pct"], l5["cost_warn_R"], l5["cost_block_R"]) == (0.5, 0.10, 0.25)
     assert l5["verdict"] == WARN and l5["block_reasons"] == []
     reasons = " ".join(l5["warn_reasons"])
-    assert "COMMISSION_NOT_AVAILABLE" in reasons and "SPREAD_NOT_RECORDED" in reasons
+    # OD1011-COMMISSION binds commission 0 to the VT demo server, so it is sourced, not absent; the old
+    # fixtures carry no spread column, so spread still warns (never 0).
+    assert "COMMISSION_NOT_AVAILABLE" not in reasons and "SPREAD_NOT_RECORDED" in reasons
     assert "USDJPY" in reasons and "XAUUSD" in reasons and "PENDING_AGP-C2-SYMMAP" in reasons
     assert "AUDUSD" not in reasons
 
@@ -289,7 +301,10 @@ def test_report_eurusd_results_byte_identical_to_the_108_report(report):
     old = json.loads((root / "docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.json").read_text())
     dump = lambda x: json.dumps(x, sort_keys=True, default=str)  # noqa: E731
     new = json.loads(dump(report))
-    assert dump([c for c in new["cases"] if c["case_id"].startswith("recorded:EURUSD:")]) == dump(old["cases"])
+    additive = ("l5_recorded_spread",)    # AGP-LANE-A2: new L5 input field; every pre-existing field unchanged
+    cases = [{k: v for k, v in c.items() if k not in additive}
+             for c in new["cases"] if c["case_id"].startswith("recorded:EURUSD:")]
+    assert dump(cases) == dump(old["cases"])
     for key in ("recorded_failures", "synthetic"):
         assert dump(new["checks"]["L4_price_geometry"][key]) == dump(old["checks"]["L4_price_geometry"][key])
     assert dump(new["checks"]["L3_temporal_causality"]["by_symbol"]["EURUSD"]) == \

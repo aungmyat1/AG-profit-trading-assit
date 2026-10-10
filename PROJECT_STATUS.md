@@ -8,6 +8,19 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-10)
 
+Owner ruling 2026-10-11: the `ST_ASIAN_SWEEP_5R_V1@1.1.2` EURUSD logic-verified entry is SUSPENDED
+(L3_REPAINT_UNRESOLVED_2026-07-31); the D6 reader treats SUSPENDED as not verified. The only verified
+1.1.2 scope is now GBPUSD × ASIAN_LONDON × SWEEP. D6 READY stays OFF.
+
+AGP-LANE-A3/OD1011 (2026-10-11, recorded-fixture verification only, not host-verified):
+`ST_ASIAN_SWEEP_5R_V1@1.1.2` `logic_verified_symbols` gains GBPUSD, scoped to ASIAN_LONDON ×
+RANGE_SWEEP (engine_setup SWEEP) per OD1011-SCOPE. The D6 reader (`ready_authority.symbol_verified`) now
+honours `sessions`/`engine_setups` scope and fails closed outside it; unscoped EURUSD is unchanged. L1–L6
+PASS on 58 VT recorded days. L5 follows OD1011-L5: max(bar, host-snapshot) spread plus OD1011-COMMISSION
+(0, bound to VTMarkets-Demo). 4 of 7 kept entries are cost-blocked (an actionability outcome). The gate rounds
+ROUND_HALF_UP (OD1011-ROUNDING). D6 READY stays OFF; demo/live/edge flags are unchanged. Evidence:
+`docs/status/AGP_4H_A_ASW_V112_GBPUSD_ASIAN_LONDON_2026-10-10.md`.
+
 DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
 2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
 with the VT server-time rule (server time = New York time + 7h). They no longer use one
@@ -244,7 +257,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `81745bef050ea5bceb27c3a724434fe4d073624fac0f280431c08a9e142ee659`.
+inputs_sha256: `51154f98210cb553c67139d769a7ec2db82d575e68a9c1d44c4ddf1759f30144`.
 <!-- [[[end]]] -->
 
 ### Objective

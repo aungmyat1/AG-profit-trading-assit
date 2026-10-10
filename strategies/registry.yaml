@@ -48,10 +48,26 @@ strategies:
         # Per-symbol LOGIC verification state read by src/v1_tickets/ready_authority.py (D6 READY gate).
         # Logic verification only (rule conformance on recorded fixtures) -- NOT economic or edge evidence.
         # Only symbols listed here, each with its evidence ref, are logic-verified for 1.1.2; any absent
-        # symbol is not verified (GBPUSD is PARTIAL).
+        # symbol is not verified. An entry may be branch-scoped (OD1011-SCOPE): `sessions` and `engine_setups`
+        # restrict it; a ticket outside them is not verified. An entry whose `status` is not VERIFIED (e.g.
+        # SUSPENDED) is not verified.
         logic_verified_symbols:
+          # Owner ruling 2026-10-11: the unscoped EURUSD entry was fail-open given unresolved 60d L3 evidence
+          # (ASIAN_LONDON 2026-07-31: 25 future-mutation mismatches, stop == entry). SUSPENDED = not verified.
           - symbol: EURUSD
+            status: SUSPENDED
+            suspended_reason: L3_REPAINT_UNRESOLVED_2026-07-31
+            suspension_evidence: docs/status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md
             evidence: docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md
+          # AGP-LANE-A3/OD1011 (2026-10-11): GBPUSD x ASIAN_LONDON, branch RANGE_SWEEP (engine_setup SWEEP)
+          # only. TREND (spec FAIL_CLOSED) and RANGE_REJECTION (never exercised on VT days) are not covered.
+          - symbol: GBPUSD
+            sessions: [ASIAN_LONDON]
+            branches: [RANGE_SWEEP]
+            engine_setups: [SWEEP]
+            contract_hash: 941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69
+            logic_identity: d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5
+            evidence: docs/status/AGP_4H_A_ASW_V112_GBPUSD_ASIAN_LONDON_2026-10-10.md
 
   SESSION_TRADE_V1:
     registered: true

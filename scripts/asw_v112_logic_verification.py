@@ -25,6 +25,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 os.environ.setdefault("AG_EVIDENCE_ROOT", str(ROOT / ".no_evidence"))
@@ -36,6 +38,7 @@ if "MetaTrader5" not in sys.modules:
         _spec.loader.exec_module(importlib.util.module_from_spec(_spec))
 
 
+from host_evidence import symbol_metadata  # noqa: E402
 from strategy_engine import load_strategy  # noqa: E402
 from strategy_engine.session import Candle  # noqa: E402
 from v1_tickets import fx  # noqa: E402
@@ -142,6 +145,37 @@ def fixture_days(candles: List[Candle]) -> List[str]:
     return sorted({c.time.date().isoformat() for c in candles})
 
 
+@functools.lru_cache(maxsize=None)
+def _spread_points(fixture: str) -> Dict[dt.datetime, int]:
+    """Per-bar MqlRates spread (integer points) from a --with-spread fixture; {} when the column is absent."""
+    with (ROOT / fixture).open() as fh:
+        rows = csv.DictReader(fh)
+        if "spread_points" not in (rows.fieldnames or []):
+            return {}
+        return {dt.datetime.fromisoformat(r["timestamp_utc"]).replace(tzinfo=UTC): int(r["spread_points"])
+                for r in rows}
+
+
+def recorded_spread(symbol: str, t: Dict[str, Any]) -> Dict[str, Any]:
+    """Conservative L5 spread at the signal bar: max(recorded bar spread, host-evidence spread), in points x the
+    host_captured point. MqlRates spread is a per-bar lower bound, so a bar-only value is never used (-> None).
+    Host evidence = the host_captured symbol_info snapshot spread (no tick-derived source exists for this path)."""
+    record = symbol_metadata.load_record(symbol, root=str(ROOT))     # sha256-verified committed evidence
+    fields = (record or {}).get("fields") or {}
+    point, host = fields.get("point"), fields.get("spread")
+    ts = t.get("signal_timestamp")
+    bar = _spread_points(SYMBOLS[symbol]["fixture"]).get(dt.datetime.fromisoformat(ts)) if ts else None
+    if bar is None or host is None or not point:
+        pts, source = None, ("BAR_ONLY_LOWER_BOUND" if bar is not None else "NOT_AVAILABLE")
+    else:
+        pts, source = max(bar, host), ("HOST_SNAPSHOT" if host >= bar else "RECORDED_BAR")
+    price = pts * point if pts is not None else None
+    risk = t.get("risk_distance")
+    return {"bar_spread_points": bar, "host_spread_points": host, "spread_points": pts, "point": point,
+            "spread_price": price, "spread_R": round(price / risk, 4) if price is not None and risk else None,
+            "source": source}
+
+
 def split(candles: List[Candle], cycle: str, day: dt.date):
     w = fx.session_windows_utc(day)[cycle]
     now = w["trade"][1]
@@ -185,7 +219,8 @@ def geometry_ok(t: Dict[str, Any]) -> Dict[str, bool]:
 
 
 def ticket_gates(strategy, cycle, day, session, post, now, w, t, spread, warn_r,
-                 symbol: str) -> Optional[Dict[str, Any]]:
+                 symbol: str, l5_spread: Optional[float] = None,
+                 commission_r: Optional[float] = None) -> Optional[Dict[str, Any]]:
     if t.get("direction") is None:
         return None
     ref_name, bars = CYCLES[cycle]
@@ -195,22 +230,73 @@ def ticket_gates(strategy, cycle, day, session, post, now, w, t, spread, warn_r,
         "L3": l3_geometry(t, post, digits=5, declared_rr=5.0),
         "L4": l4_data_session(t, ref_window=w["ref"], trade_window=w["trade"], reference_name=ref_name,
                               session=session, expected_bar_count=bars, post=post, data_close=now, now=now),
-        "L5": l5_cost(spread, t.get("risk_distance"), commission_r=None, warn_r=warn_r),
+        "L5": l5_cost(l5_spread, t.get("risk_distance"), commission_r=commission_r, warn_r=warn_r),
         "L6": l6_freshness(t.get("valid_until") or "set", {"x": 1}, {"y": 1}),
     }
 
 
-def manual_l6(cycle, day, session, post, now, symbol: str) -> Optional[Dict[str, Any]]:
-    """L6 exactly as the owner ticket computes it (logic_gate.l6_freshness), candidate replayed test-locally."""
+def _manual_ticket(cycle, day, session, post, now, symbol: str, spread: Optional[float],
+                   commission_r: Optional[float] = None) -> Dict[str, Any]:
     from v1_tickets.manual_ticket import build_manual_ticket, load_owner_config
     saved = fx.STRATEGY_PATH, fx.build_fx_ticket
     fx.STRATEGY_PATH, fx.build_fx_ticket = CANDIDATE, functools.partial(saved[1], strategy_path=CANDIDATE)
     try:
-        t = build_manual_ticket(symbol, cycle, day, session, CYCLES[cycle][1], post, now=now, data_close=now,
-                                spread=TEST_SPREAD, owner=load_owner_config(ROOT),
-                                data_source="FIXTURE")
+        return build_manual_ticket(symbol, cycle, day, session, CYCLES[cycle][1], post, now=now, data_close=now,
+                                   spread=spread, owner=load_owner_config(ROOT), commission_r=commission_r,
+                                   data_source="FIXTURE")
     finally:
         fx.STRATEGY_PATH, fx.build_fx_ticket = saved
+
+
+VT_DEMO_SERVER = "VTMarkets-Demo"    # the account OD1011-COMMISSION is bound to (owner register row)
+
+
+def bound_commission(symbol: str) -> Optional[float]:
+    """OD1011-COMMISSION in the runtime schema (#132 reader): `decision_id`, committed `account_login_suffix`,
+    `commission_R`. Offline there is no live login, so 0 is applied only when the block names the decision,
+    carries a 3-4 digit login suffix, commission_R is exactly 0 (valid only at 0; never other R units), and the
+    replayed data's host-captured server is the VT demo server. Anything else -> None (INSUFFICIENT, never 0)."""
+    try:
+        raw = yaml.safe_load((ROOT / OWNER_CONFIG).read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError):
+        return None
+    block = ((raw.get("owner_ticket") or {}) if isinstance(raw, dict) else {}).get("commission")
+    record = symbol_metadata.load_record(symbol, root=str(ROOT))
+    if not isinstance(block, dict) or record is None:
+        return None
+    value, suffix = block.get("commission_R"), block.get("account_login_suffix")
+    bound = (block.get("decision_id") == "OD1011-COMMISSION" and type(value) in (int, float) and value == 0
+             and isinstance(suffix, str) and suffix.isdigit() and 3 <= len(suffix) <= 4
+             and record.get("server") == VT_DEMO_SERVER)
+    return 0.0 if bound else None
+
+
+def cost_probe(cycle, day, session, post, now, symbol: str, spread: Optional[float],
+               commission_r: Optional[float]) -> Optional[Dict[str, Any]]:
+    """OD1011-L5: does the owner-ticket cost gate apply spread + commission and the warn/block thresholds
+    correctly? Expected values are recomputed here and compared with what the ticket path reports."""
+    from v1_tickets.manual_ticket import load_owner_config
+    if spread is None or commission_r is None:
+        return None
+    t = _manual_ticket(cycle, day, session, post, now, symbol, spread, commission_r)
+    owner = load_owner_config(ROOT)
+    risk = t.get("stop_distance")
+    if not risk:
+        return None
+    want = spread / risk + commission_r
+    blocked = "COST_ABOVE_BLOCK_R" in (t.get("block_reasons") or [])
+    warn_check = {c["id"]: c for c in t["logic_gate"]["L5"]["checks"]}["L5.cost_vs_warn_level"]["verdict"]
+    correct = (t.get("cost_in_R") is not None and abs(t["cost_in_R"] - want) <= 1e-4
+               and blocked == (want >= owner["cost_block_R"])
+               and (warn_check == WARN) == (want >= owner["cost_warn_R"]))   # OD1009-D2: warn on reaching
+    return {"cost_in_R": t.get("cost_in_R"), "expected_cost_in_R": round(want, 4), "cost_blocked": blocked,
+            "cost_warn": warn_check == WARN, "gate_correct": correct,
+            "actionability": "COST_BLOCKED" if blocked else ("COST_WARN" if warn_check == WARN else "COST_OK")}
+
+
+def manual_l6(cycle, day, session, post, now, symbol: str) -> Optional[Dict[str, Any]]:
+    """L6 exactly as the owner ticket computes it (logic_gate.l6_freshness), candidate replayed test-locally."""
+    t = _manual_ticket(cycle, day, session, post, now, symbol, TEST_SPREAD)
     return {"state": t["state"], "primary_block_reason": t.get("primary_block_reason"),
             "edge_verified": t["invariants"]["edge_verified"],
             "L6": (t.get("logic_gate") or {}).get("L6")}
@@ -302,8 +388,15 @@ def _run_symbol(symbol: str, strategy, owner, rng: random.Random) -> List[Dict[s
             day = dt.date.fromisoformat(ds)
             w, now, session, post = split(by_day[ds], cycle, day)
             t = ticket(cycle, day, session, post, now, symbol=symbol)
+            l5 = recorded_spread(symbol, t) if t.get("direction") is not None else None
+            commission = bound_commission(symbol)
             gates = ticket_gates(strategy, cycle, day, session, post, now, w, t, TEST_SPREAD, owner["cost_warn_R"],
-                                 symbol)
+                                 symbol, l5_spread=(l5 or {}).get("spread_price"), commission_r=commission)
+            if l5 is not None:
+                l5["commission_R"] = commission
+                l5["commission_source"] = "OD1011-COMMISSION" if commission is not None else "NOT_AVAILABLE"
+                l5["cost_gate"] = (cost_probe(cycle, day, session, post, now, symbol, l5["spread_price"], commission)
+                                   if not blocking_failures(gates) else None)
             l2_fail = sorted({c["id"] for c in gates["L2"]["checks"] if c["verdict"] in (FAIL, NOT_EVALUABLE)}) if gates else []
             c3 = causality(cycle, day, session, post, now, rng, symbol)
             m6 = manual_l6(cycle, day, session, post, now, symbol)
@@ -315,7 +408,7 @@ def _run_symbol(symbol: str, strategy, owner, rng: random.Random) -> List[Dict[s
                 "ticket_gate_status": {k: v["status"] for k, v in gates.items()} if gates else None,
                 "ticket_gate_blocking_failures": blocking_failures(gates) if gates else None,
                 "l2_fail_ids": l2_fail, "l2_undeclared": sorted(set(l2_fail) - DECLARED_FAIL_CLOSED),
-                "geometry": geometry_ok(t), "causality": c3,
+                "geometry": geometry_ok(t), "causality": c3, "l5_recorded_spread": l5,
                 "owner_ticket_state": m6["state"], "owner_ticket_primary_block_reason": m6["primary_block_reason"],
                 "edge_verified": m6["edge_verified"],
                 "owner_ticket_L6": m6["L6"]["status"] if m6["L6"] else None,
@@ -431,10 +524,14 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
     }
     l3 = {k: sum(p["l3"][k] for p in per_symbol.values()) for k in per_symbol["EURUSD"]["l3"]}
     # L5 risk and friction from the single D2 carrier; absent inputs are WARN with a reason, never 0.
-    l5_warn = [
-        "COMMISSION_NOT_AVAILABLE: no commission metadata for the FX ticket path; not assumed 0"]
-    l5_warn.append("SPREAD_NOT_RECORDED: the recorded fixtures carry no bid/ask; cost_in_R not evaluable on recorded "
-                   "data (L2 closure uses a 0.2-pip test input only)")
+    unbound = sorted(s for s in SYMBOLS if bound_commission(s) is None)
+    l5_warn = ([f"COMMISSION_NOT_AVAILABLE: no OD1011-bound commission for {unbound}; not assumed 0"]
+               if unbound else [])
+    unrecorded = sorted({c["case_id"].split(":")[1] for c in cases if c["ticket_gate_blocking_failures"] == []
+                         and c["l5_recorded_spread"]["spread_price"] is None})
+    if unrecorded:
+        l5_warn.append(f"SPREAD_NOT_RECORDED: no conservative spread (bar-only lower bound or missing) for "
+                       f"{unrecorded}; cost_in_R not evaluable there (L2 closure uses a 0.2-pip test input only)")
     pending = sorted(s for s, v in COVERAGE["instruments"].items() if v == "PENDING_AGP-C2-SYMMAP")
     l5_warn.append(f"SYMBOL_METADATA_PENDING: {', '.join(pending)} -> PENDING_AGP-C2-SYMMAP (not invented)")
     l5_block = []

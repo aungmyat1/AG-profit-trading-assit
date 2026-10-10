@@ -13,8 +13,9 @@ include the ticket. The YAML record block is delimited by READY_AUTHORITY_RECORD
 Per-symbol verification (owner mission 2026-10-10): with D6 ON and the owner record matched, a READY
 is still downgraded unless the ticket's symbol is listed VERIFIED for the emitting strategy version. Authority:
 strategies/registry.yaml -> strategies.<id>.candidate_versions."<version>".logic_verified_symbols (entries
-`{symbol, evidence}`; logic verification only, not economic/edge evidence). Absent version, list, symbol or
-evidence ref means not verified (fail closed). D6 OFF behaviour is unchanged.
+`{symbol, evidence}`, optionally scoped by `sessions` / `engine_setups` per OD1011-SCOPE; logic verification
+only, not economic/edge evidence). Absent version, list, symbol, evidence ref, or a ticket outside the entry's
+scope means not verified (fail closed). D6 OFF behaviour is unchanged.
 """
 from __future__ import annotations
 
@@ -148,10 +149,21 @@ def ready_authority(strategy_id: str, path: Optional[str] = None, *, strategy_ve
     return False, OWNER_DECISION_VERSION_MISMATCH
 
 
+def _in_scope(entry: Dict[str, Any], key: str, value: Any) -> bool:
+    """An unscoped entry (no `key`) covers every value; a scoped one must list `value` (malformed -> False)."""
+    if key not in entry:
+        return True
+    scope = entry[key]
+    return isinstance(scope, list) and isinstance(value, str) and value in scope
+
+
 def symbol_verified(strategy_id: str, strategy_version: Any, symbol: Any,
-                    registry_path: Optional[str] = None) -> bool:
+                    registry_path: Optional[str] = None, *, cycle: Any = None, setup: Any = None) -> bool:
     """True only if strategies/registry.yaml lists `symbol` with a non-empty `evidence` ref in
-    candidate_versions."<strategy_version>".logic_verified_symbols for `strategy_id`. Anything else is False."""
+    candidate_versions."<strategy_version>".logic_verified_symbols for `strategy_id`, and the entry's optional
+    branch scope (`sessions`, `engine_setups`; OD1011-SCOPE) includes the ticket's cycle and setup, and its
+    optional `status` is VERIFIED (SUSPENDED or any other value is not verified).
+    Anything else is False."""
     try:
         with open(registry_path or REGISTRY_PATH, encoding="utf-8") as f:
             raw = yaml.safe_load(f) or {}
@@ -163,7 +175,9 @@ def symbol_verified(strategy_id: str, strategy_version: Any, symbol: Any,
     if not isinstance(listed, list) or not isinstance(symbol, str):
         return False
     return any(isinstance(e, dict) and e.get("symbol") == symbol and isinstance(e.get("evidence"), str)
-               and e["evidence"].strip() for e in listed)
+               and e["evidence"].strip() and e.get("status", "VERIFIED") == "VERIFIED"
+               and _in_scope(e, "sessions", cycle) and _in_scope(e, "engine_setups", setup)
+               for e in listed)
 
 
 def apply_ready_authority(ticket: Dict[str, Any], path: Optional[str] = None,
@@ -185,7 +199,7 @@ def apply_ready_authority(ticket: Dict[str, Any], path: Optional[str] = None,
                 "engine_reason_code": ticket.get("reason_code"), "reason_code": reason,
                 "ready_authority": "OFF"}
     if symbol_verified(str(ticket.get("strategy_id")), ticket.get("strategy_version"), ticket.get("symbol"),
-                       registry_path):
+                       registry_path, cycle=ticket.get("cycle"), setup=ticket.get("setup")):
         return ticket
     return {**ticket, "decision": SHADOW_INFO_ONLY, "suppressed_decision": "READY", "label": SYMBOL_UNVERIFIED_LABEL,
             "engine_reason_code": ticket.get("reason_code"), "reason_code": READY_SYMBOL_NOT_VERIFIED,

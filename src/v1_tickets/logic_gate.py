@@ -18,6 +18,7 @@ fail-closed rules, so its L2 evaluates those instead.
 from __future__ import annotations
 
 import datetime as dt
+import math
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 import yaml
@@ -54,11 +55,23 @@ def _point(digits: Optional[int]) -> float:
     return 10.0 ** -digits if digits is not None else 0.0
 
 
+EQ_EPS_POINTS = 1e-6   # float-noise slack, in points; never a price tolerance
+
+
 def _eq(a: Optional[float], b: Optional[float], digits: Optional[int]) -> bool:
-    """Equal up to the ticket's own price rounding (half a point), or float precision when unrounded."""
+    """`a` equals expectation `b` rounded to the ticket's point grid, or to float precision when unrounded.
+
+    `b` is rounded ROUND_HALF_UP (ties away from zero, OD1011-ROUNDING); only EQ_EPS_POINTS x point of
+    float noise is tolerated, so a half-point error, a one-point error or the other tie neighbour fails."""
     if a is None or b is None:
         return False
-    return abs(a - b) <= max(_point(digits) / 2.0, 1e-9 * max(1.0, abs(a), abs(b)))
+    if digits is None:
+        return abs(a - b) <= 1e-9 * max(1.0, abs(a), abs(b))
+    point = _point(digits)
+    k = abs(b) / point
+    base = math.floor(k)
+    g = base + 1 if k - base >= 0.5 - EQ_EPS_POINTS else base
+    return abs(a - math.copysign(g * point, b)) <= EQ_EPS_POINTS * point
 
 
 def _signal_candle(ticket: Dict[str, Any], post: Sequence[Candle]) -> Optional[Candle]:

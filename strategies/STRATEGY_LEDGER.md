@@ -54,6 +54,15 @@ from canonical session windows or other repo conventions at the time of registra
   verification only, not economic/edge evidence) is read by
   `src/v1_tickets/ready_authority.py`; with D6 ON, READY needs the ticket's symbol listed for its version
   (absent = not verified). D6 stays OFF; no authorization change.
+  2026-10-11 AGP-LANE-A3/OD1011: `logic_verified_symbols` gains GBPUSD scoped to ASIAN_LONDON x RANGE_SWEEP
+  (engine_setup SWEEP) only (OD1011-SCOPE); the D6 reader now honours `sessions`/`engine_setups` scope. L1-L6
+  PASS on 58 VT recorded days (L5 per OD1011-L5: host-snapshot spread + OD1011-COMMISSION; 4/7 kept entries
+  cost-blocked = actionability, not failure). TREND and RANGE_REJECTION stay fail-closed. D6 stays OFF; no
+  demo/live/edge change: `docs/status/AGP_4H_A_ASW_V112_GBPUSD_ASIAN_LONDON_2026-10-10.md`.
+  2026-10-11 owner ruling: the unscoped EURUSD `logic_verified_symbols` entry is **SUSPENDED** (reason
+  L3_REPAINT_UNRESOLVED_2026-07-31; evidence `docs/status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md`: ASIAN_LONDON
+  2026-07-31, 25 future-mutation mismatches, stop == entry). The D6 reader treats any non-VERIFIED status as
+  not verified. AGP-L3-0731 root cause is pending (after #149 -> #132 merge).
 - **Open gaps found building `execution/` (2026-08-26):**
   - `risk_and_money_management.risk_mode: FIXED_PERCENT_OR_CONTRACT` never states an
     actual risk-per-trade percentage or contract size. `execution/risk.py` currently
