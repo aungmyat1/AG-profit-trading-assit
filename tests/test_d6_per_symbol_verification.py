@@ -7,7 +7,9 @@ each entry with an evidence ref). Absent anything means not verified. D6 OFF beh
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import types
+from pathlib import Path
 
 import pytest
 import yaml
@@ -24,15 +26,26 @@ SID = "ST_ASIAN_SWEEP_5R_V1"
 
 
 @pytest.fixture
-def d6_on(tmp_path):
+def d6_on(tmp_path, monkeypatch):
     path = tmp_path / "ready_authority.yaml"
     path.write_text(f"strategies:\n  {SID}:\n    ready: 'ON'\n", encoding="utf-8")
+    contract = Path(__file__).resolve().parents[1] / CANDIDATE
+    digest = hashlib.sha256(contract.read_bytes()).hexdigest()
+    record = {"decision_id": "TEST-FIXTURE-D6-1", "status": "CONFIRMED", "strategy_id": SID,
+              "version": "1.1.2", "contract_sha256": digest,
+              "symbol_scope": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD"],
+              "session_scope": ["ASIAN_LONDON", "LONDON_NEWYORK"], "date": "2026-10-10"}
+    owner_register = tmp_path / "owner-register.md"
+    owner_register.write_text("<!-- READY_AUTHORITY_RECORDS_START -->\n" + yaml.safe_dump(
+        {"ready_authority_records": [record]}, sort_keys=False) + "<!-- READY_AUTHORITY_RECORDS_END -->\n",
+        encoding="utf-8")
+    monkeypatch.setattr(ra, "OWNER_DECISION_REGISTER_PATH", str(owner_register))
     return str(path)
 
 
 def ready(symbol: str, version: str) -> dict:
     return {"decision": "READY", "strategy_id": SID, "strategy_version": version, "symbol": symbol,
-            "reason_code": "SWEEP_V1", "entry": 1.1, "stop_loss": 1.09}
+            "cycle": "ASIAN_LONDON", "reason_code": "SWEEP_V1", "entry": 1.1, "stop_loss": 1.09}
 
 
 def test_verification_source_is_the_registry_and_lists_only_eurusd_for_1_1_2():
@@ -55,23 +68,31 @@ def test_verification_source_is_the_registry_and_lists_only_eurusd_for_1_1_2():
 def test_unreadable_registry_means_not_verified(tmp_path, d6_on):
     missing = str(tmp_path / "nope.yaml")
     assert ra.symbol_verified(SID, "1.1.2", "EURUSD", registry_path=missing) is False
-    out = ra.apply_ready_authority(ready("EURUSD", "1.1.2"), d6_on, registry_path=missing)
+    out = ra.apply_ready_authority(ready("EURUSD", "1.1.2"), d6_on, registry_path=missing,
+                                   contract_path=str(Path(__file__).resolve().parents[1] / CANDIDATE))
     assert out["decision"] == ra.SHADOW_INFO_ONLY
 
 
 @pytest.mark.parametrize("symbol,version", [("GBPUSD", "1.1.2"), ("USDJPY", "1.1.2"), ("EURUSD", "1.1.1")])
 def test_d6_on_and_unverified_symbol_is_not_ready(d6_on, symbol, version):
-    out = ra.apply_ready_authority(ready(symbol, version), d6_on)
+    out = ra.apply_ready_authority(ready(symbol, version), d6_on,
+                                   contract_path=(str(Path(__file__).resolve().parents[1] / CANDIDATE)
+                                                  if version == "1.1.2" else str(
+                                                      Path(__file__).resolve().parents[1] / "strategies/ST_ASIAN_SWEEP_5R_V1.yaml")))
     assert out["decision"] == ra.SHADOW_INFO_ONLY != "READY"
+    expected_reason = (ra.READY_SYMBOL_NOT_VERIFIED if version == "1.1.2"
+                       else ra.OWNER_DECISION_VERSION_MISMATCH)
+    expected_authority = "ON_SYMBOL_NOT_VERIFIED" if version == "1.1.2" else "OFF"
     assert (out["suppressed_decision"], out["reason_code"], out["engine_reason_code"], out["ready_authority"]) == (
-        "READY", ra.READY_SYMBOL_NOT_VERIFIED, "SWEEP_V1", "ON_SYMBOL_NOT_VERIFIED")
+        "READY", expected_reason, "SWEEP_V1", expected_authority)
     assert (out["entry"], out["stop_loss"]) == (1.1, 1.09)         # levels kept for audit
     assert "NOT ACTIONABLE" in out["label"]
 
 
 def test_d6_on_and_verified_symbol_is_ready(d6_on):
     t = ready("EURUSD", "1.1.2")
-    assert ra.apply_ready_authority(t, d6_on) == t                  # untouched
+    assert ra.apply_ready_authority(t, d6_on,
+                                   contract_path=str(Path(__file__).resolve().parents[1] / CANDIDATE)) == t
 
 
 @pytest.mark.parametrize("symbol,version", [("EURUSD", "1.1.2"), ("GBPUSD", "1.1.2"), ("EURUSD", "1.1.1")])
