@@ -4,6 +4,7 @@ import csv
 import datetime as dt
 import importlib.util
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -213,7 +214,7 @@ def test_shared_recorded_prefix_accepts_naive_utc_m15(tmp_path):
     data = json.loads(recorded.read_text())
     data['cases'] = data['cases'][:1]
     case = data['cases'][0]
-    case['paths'] = {tf: str((recorded.parent / rel).resolve()) for tf, rel in case['paths'].items()}
+    case['paths'] = {tf: os.path.relpath((recorded.parent / rel).resolve(), tmp_path) for tf, rel in case['paths'].items()}
     case['provenance'] = str(recorded.parent / case['provenance'])
     path = tmp_path / 'manifest.json'
     path.write_text(json.dumps(data))
