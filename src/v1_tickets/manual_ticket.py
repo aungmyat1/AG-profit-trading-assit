@@ -28,7 +28,7 @@ from ticket_delivery.identity import logical_ticket_id
 from v1_tickets import fx
 from v1_tickets.authority import REPO_ROOT, TicketAuthority, resolve_ticket_authority
 from v1_tickets.code_identity import code_sha
-from v1_tickets.guards import SPREAD_TOO_WIDE, STALE_AFTER
+from v1_tickets.guards import SPREAD_TOO_WIDE, STALE_AFTER, cost_at_or_above
 from v1_tickets.logic_gate import (
     FAIL,
     L5_WARN,
@@ -144,16 +144,20 @@ def resolve_symbol_meta(symbol: str, live: Optional[SymbolMeta], now: dt.datetim
 
 def lot_size(entry: Optional[float], sl: Optional[float], owner: Dict[str, Any], balance: Optional[float],
              meta: Optional[SymbolMeta]) -> Dict[str, Any]:
-    if owner["risk_pct"] is None:
+    # `.get`, never `[]`: a required owner key that is absent has the same fail-closed meaning as one
+    # that is present and unusable -- RISK_CONFIG_MISSING and no sizing at all. No other value, and
+    # specifically no account-wide execution-runtime risk default, is ever substituted here.
+    risk_pct = owner.get("risk_pct")
+    if risk_pct is None:
         return {"lot": RISK_NOT_SET_TEXT, "status": RISK_CONFIG_MISSING, "risk_pct": None}
     if balance is None or not balance > 0:
-        return {"lot": None, "status": "ACCOUNT_BALANCE_UNAVAILABLE", "risk_pct": owner["risk_pct"]}
+        return {"lot": None, "status": "ACCOUNT_BALANCE_UNAVAILABLE", "risk_pct": risk_pct}
     if meta is None or not meta.tick_size > 0 or not meta.tick_value > 0 or not meta.volume_step > 0:
-        return {"lot": None, "status": "SYMBOL_METADATA_MISSING", "risk_pct": owner["risk_pct"]}
+        return {"lot": None, "status": "SYMBOL_METADATA_MISSING", "risk_pct": risk_pct}
     if entry is None or sl is None:
-        return {"lot": None, "status": "INVALID_STOP_DISTANCE", "risk_pct": owner["risk_pct"]}
-    volume, risk_amount, reason = size_position(entry, sl, balance, owner["risk_pct"], meta)
-    return {"lot": volume, "status": reason or "OK", "risk_pct": owner["risk_pct"],
+        return {"lot": None, "status": "INVALID_STOP_DISTANCE", "risk_pct": risk_pct}
+    volume, risk_amount, reason = size_position(entry, sl, balance, risk_pct, meta)
+    return {"lot": volume, "status": reason or "OK", "risk_pct": risk_pct,
             "risk_amount": round(risk_amount, 2) if risk_amount is not None else None, "balance": balance}
 
 
@@ -249,10 +253,11 @@ def build_manual_ticket(
             "L4": l4_data_session(base, ref_window=windows["ref"], trade_window=windows["trade"],
                                   reference_name=pair.reference_session.name, session=session,
                                   expected_bar_count=expected_bar_count, post=post, data_close=data_close, now=now),
-            "L5": l5_cost(spread, risk, commission_r=commission_r, warn_r=owner["cost_warn_R"]),
+            "L5": l5_cost(spread, risk, commission_r=commission_r, warn_r=owner.get("cost_warn_R")),
             "L6": l6_freshness(_iso(valid_until), stale_if, invalid_if),
         }
         lot = lot_size(entry, sl, owner, balance, meta)
+        warn_r = owner.get("cost_warn_R")
         owner_config_missing = any(_positive(owner.get(key)) is None for key in REQUIRED_OWNER_KEYS)
         lot["symbol_meta"] = meta_provenance or {"source": "CALLER_SUPPLIED" if meta is not None else META_NONE,
                                                  "broker_symbol": meta.symbol if meta is not None else None}
@@ -269,7 +274,7 @@ def build_manual_ticket(
             "stop_distance": risk, "lot_size": lot["lot"],
             "risk_status": RISK_CONFIG_MISSING if owner_config_missing else lot["status"], "risk": lot,
             "cost_in_R": round(cost_r, 4) if cost_r is not None else None,
-            "cost_warn_R": owner["cost_warn_R"] if owner["cost_warn_R"] is not None else WARN_NOT_SET_TEXT,
+            "cost_warn_R": warn_r if warn_r is not None else WARN_NOT_SET_TEXT,
             "cost_block_R": cost_block_r if cost_block_r is not None else RISK_CONFIG_MISSING,
             "logic_gate": gates, "valid_until": _iso(valid_until), "stale_if": stale_if, "invalid_if": invalid_if,
             "signal_close_utc": _iso(signal_close),
@@ -466,8 +471,12 @@ def crypto_cfd_commission(symbol: str, root: Path = REPO_ROOT) -> Optional[float
 
 
 def cost_at_or_above_block(cost_r: Optional[float], block_r: Optional[float]) -> bool:
-    """Shared FX/crypto threshold predicate: the configured boundary itself blocks."""
-    return cost_r is not None and block_r is not None and cost_r >= block_r
+    """Shared FX/crypto threshold predicate: the configured boundary itself blocks (OD1009-D2).
+
+    Delegates to guards.cost_at_or_above so a cost whose exact decimal value IS cost_block_R blocks
+    even when binary division lands one ulp below it -- and so FX, gold and crypto cannot drift apart.
+    """
+    return cost_at_or_above(cost_r, block_r)
 
 
 def crypto_cfd_cost_gate(distance: float, spread: float, commission_r: Optional[float],
@@ -486,7 +495,7 @@ def crypto_cfd_cost_gate(distance: float, spread: float, commission_r: Optional[
         warnings.append("SPREAD_WARN")
     if cost_at_or_above_block(cost, policy["cost_block_R"]):
         blocks.append("COST_TOO_HIGH")
-    elif policy["cost_warn_R"] is not None and cost >= policy["cost_warn_R"]:
+    elif cost_at_or_above(cost, policy["cost_warn_R"]):
         warnings.append("COST_WARN")
     return blocks, warnings, pct, cost
 
