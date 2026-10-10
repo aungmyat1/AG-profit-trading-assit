@@ -1,8 +1,8 @@
 """D6 READY requires per-symbol verification (owner mission 2026-10-10).
 
 READY survives only if D6 READY authority is ON AND the ticket's symbol is listed VERIFIED for the
-emitting strategy version in strategies/registry.yaml (candidate_versions."<v>".verified_symbols).
-Absent anything means not verified. D6 OFF behaviour is unchanged. Production D6 stays OFF.
+emitting strategy version in strategies/registry.yaml (candidate_versions."<v>".logic_verified_symbols,
+each entry with an evidence ref). Absent anything means not verified. D6 OFF behaviour is unchanged. Production D6 stays OFF.
 """
 from __future__ import annotations
 
@@ -37,8 +37,11 @@ def ready(symbol: str, version: str) -> dict:
 
 def test_verification_source_is_the_registry_and_lists_only_eurusd_for_1_1_2():
     reg = yaml.safe_load(open(ra.REGISTRY_PATH, encoding="utf-8"))["strategies"][SID]
-    assert reg["candidate_versions"]["1.1.2"]["verified_symbols"] == ["EURUSD"]
-    assert "verified_symbols" not in reg                         # runtime 1.1.1: nothing verified
+    entries = reg["candidate_versions"]["1.1.2"]["logic_verified_symbols"]
+    assert entries == [{"symbol": "EURUSD", "evidence": "docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md"}]
+    root = __import__("pathlib").Path(ra.REGISTRY_PATH).parents[1]
+    assert all((root / e["evidence"]).is_file() for e in entries)     # evidence ref resolves
+    assert "logic_verified_symbols" not in reg and "verified_symbols" not in reg   # runtime 1.1.1: none
     assert ra.symbol_verified(SID, "1.1.2", "EURUSD") is True
     for sym, ver in (("GBPUSD", "1.1.2"), ("USDJPY", "1.1.2"), ("XAUUSD", "1.1.2"), ("EURUSD", "1.1.1"),
                      ("EURUSD", None), ("EURUSD", "9.9.9")):
@@ -94,3 +97,28 @@ def test_fx_ticket_path_applies_the_symbol_gate(monkeypatch, d6_on, symbol, expe
     t = fx_tickets.build_fx_ticket(symbol, "ASIAN_LONDON", DAY, [], 2, [bar], data_source="MT5_VT_MARKETS_DEMO",
                                    evaluated_at=AT, data_close=AT, spread=0.00015, strategy_path=CANDIDATE)
     assert (t["strategy_version"], t["decision"]) == ("1.1.2", expected)
+
+
+def test_real_symbol_verified_reads_registry_without_any_stub(request):
+    # No stub is active here: the opt-in `stub_symbol_verified` fixture is not requested.
+    assert "stub_symbol_verified" not in request.fixturenames
+    assert ra.symbol_verified.__module__ == "v1_tickets.ready_authority"
+    assert ra.symbol_verified(SID, "1.1.2", "GBPUSD") is False
+    assert ra.symbol_verified(SID, "1.1.1", "EURUSD") is False
+    assert ra.symbol_verified(SID, "1.1.2", "EURUSD") is True
+
+
+def test_entry_without_evidence_ref_is_not_verified(tmp_path):
+    reg = tmp_path / "registry.yaml"
+    reg.write_text(f"""strategies:
+  {SID}:
+    candidate_versions:
+      "1.1.2":
+        logic_verified_symbols:
+          - symbol: EURUSD
+          - symbol: GBPUSD
+            evidence: "  "
+          - USDJPY
+""", encoding="utf-8")
+    for sym in ("EURUSD", "GBPUSD", "USDJPY"):
+        assert ra.symbol_verified(SID, "1.1.2", sym, registry_path=str(reg)) is False
