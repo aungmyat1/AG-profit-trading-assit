@@ -65,6 +65,7 @@ from crypto_cfd_contract.contract import (  # noqa: E402
 from market_structure.config import load_market_structure_config  # noqa: E402
 from scripts.ccfd_recorded_cases import (  # noqa: E402
     RECORDED,
+    RECORDED_60D,
     parse_ts,
     read_rows,
     shared_paths,
@@ -95,17 +96,23 @@ M5 = STEP["M5"]
 SIGNAL_TTL = M5 + dt.timedelta(minutes=15)   # manual_ticket.build_crypto_cfd_manual_ticket valid_until
 MANIFEST = RECORDED / "manifest.json"
 REGISTRY = ROOT / "strategies/registry.yaml"
-OUT_DIR = ROOT / "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0_0/vt_recorded_2026-09-26_2026-10-09"
+ARTIFACTS = ROOT / "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0_0"
+OUT_DIR = ARTIFACTS / "vt_recorded_2026-09-26_2026-10-09"
+DATASETS = {"recorded": (RECORDED, OUT_DIR),                                   # PR #128/#131, 14 days
+            "recorded_60d": (RECORDED_60D, ARTIFACTS / "vt_recorded_60d_2026-08-11_2026-10-09")}   # PR #143
+COVERAGE_ONLY = OUT_DIR / "coverage_only_binance.json"     # scripts/ccfd_coverage_binance.py (dataset-independent)
 
 
 # ------------------------------------------------------------------------------- data / feed
 
-def load_symbol(symbol: str) -> Dict[str, Any]:
-    paths = shared_paths(symbol)
+def load_symbol(symbol: str, base: Path = RECORDED) -> Dict[str, Any]:
+    """Recorded rows exactly as committed: a missing bar stays missing (never filled or interpolated),
+    so an incomplete day reaches the contract's own REFERENCE_INCOMPLETE / data-incomplete path."""
+    paths = shared_paths(symbol, base)
     bars = {tf: [Candle(parse_ts(r["timestamp_utc"]), float(r["open"]), float(r["high"]), float(r["low"]),
-                        float(r["close"])) for r in read_rows(RECORDED / paths[tf.lower()])] for tf in STEP}
+                        float(r["close"])) for r in read_rows(base / paths[tf.lower()])] for tf in STEP}
     spread = {parse_ts(r["timestamp_utc"]): float(r["spread_price"])
-              for r in read_rows(RECORDED / f"{symbol}_m5_meta.csv")}
+              for r in read_rows(base / f"{symbol}_m5_meta.csv")}
     return {"bars": bars, "times": {tf: [c.time for c in rows] for tf, rows in bars.items()}, "spread": spread}
 
 
@@ -428,7 +435,7 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
             mism["ticket_scan_parity"] += semantic(er) != scan_at[env["now"]]
 
     meta, commission = manual_ticket.symbol_meta_from_host(symbol), manual_ticket.crypto_cfd_commission(symbol)
-    emission_rows, l3_seq_bad, l5, l6 = [], [], [], []
+    emission_rows, l3_seq_bad, l5, l6, quote_gaps = [], [], [], [], []
     for now, r, x in emissions:
         ev, plan = r["evidence"], r["evidence"]["target_plan"]
         sweep_at, mss_at, retest_at = (dt.datetime.fromisoformat(ev[k][f]) for k, f in
@@ -438,7 +445,11 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
         if not (sweep_at < mss_at < retest_at and retest_at + M5 <= now and before["result"] != "ENTRY_VALID"):
             l3_seq_bad.append(now.isoformat())
             bump(now, "L3")
-        bid, ask, quote_time = ReplayFeed(data, now).quote("")
+        try:
+            bid, ask, quote_time = ReplayFeed(data, now).quote("")
+        except ValueError:                       # missing M5 quote bar: no ticket, no invented quote
+            quote_gaps.append(now.isoformat())
+            continue
         ticket = manual_ticket.build_crypto_cfd_manual_ticket(
             r, now=now, window=crypto_cfd._window(now, windows) or "OUTSIDE_WINDOW", spread=ask - bid,
             balance=balance, meta=meta, commission_r=commission, policy=policy, quote_time=quote_time)
@@ -505,7 +516,7 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
         "symbol": symbol, "fetch_counts": counts, "per_day": per_day, "days": len(days), "scans": len(stream),
         "scan_results": dict(sorted(results.items())), "scan_results_by_day": {d: dict(sorted(c.items()))
                                                                                for d, c in by_day.items()},
-        "entry_valid_scans": entries, "emissions": emission_rows, "gates": gates,
+        "entry_valid_scans": entries, "emissions": emission_rows, "emission_quote_gaps": quote_gaps, "gates": gates,
         "gate_evidence": {"logic_identity": identity, "spec_constants_match": spec_ok,
                           "l2_failures": l2_bad[:20], "l2_reference_rule_failures": l2_neg_bad[:20],
                           "l4_failures": l4_bad[:20], "l4_reject_failures": l4_neg_bad[:20],
@@ -527,14 +538,16 @@ def all_checks_pass(r: dict) -> bool:
 
 
 def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequence[dt.date]] = None,
-          balance: Optional[float] = None) -> dict:
-    manifest = verify(MANIFEST)              # every listed sha256, else SystemExit before any replay
+          balance: Optional[float] = None, dataset: str = "recorded") -> dict:
+    base = DATASETS[dataset][0]
+    manifest_path = base / "manifest.json"
+    manifest = verify(manifest_path)         # every listed sha256, else SystemExit before any replay
     registry_before = REGISTRY.read_bytes()
     spec = yaml.safe_load((ROOT / CONTRACT_YAML).read_text(encoding="utf-8"))
     cfg, policy = load_market_structure_config(), load_ticket_policy()
     out: Dict[str, Any] = {}
     for symbol in symbols:
-        data = load_symbol(symbol)
+        data = load_symbol(symbol, base)
         all_days = sorted({c.time.date() for c in data["bars"]["M5"]})
         run_days = [d for d in all_days if days is None or d in days]
         cases = [c for c in manifest["cases"] if c["symbol"] == symbol
@@ -547,19 +560,23 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
     summary = Counter((t["stream"], t["symbol"], t["day_type"], t["ticket"]["decision"], t["spread_band"])
                       for t in tickets)
     first = out[symbols[0]]
-    cov_path = OUT_DIR / "coverage_only_binance.json"
+    cov_path = COVERAGE_ONLY
     cov_only = json.loads(cov_path.read_text(encoding="utf-8")) if cov_path.exists() else None
     vt_cov = {sym: r.pop("rule_coverage") for sym, r in out.items()}
+    vt_gaps = {sym: coverage_gaps(m) for sym, m in vt_cov.items()}
     rule_coverage = {
         "rule_ids_source": CONTRACT_YAML, "dimensions": "rule_id x LONG/SHORT x IN_WINDOW/OUT_OF_WINDOW",
         "window_definition": "IN_WINDOW = scan instant inside a v1_tickets crypto window (crypto_cfd._window: "
                              "WEEKDAY 09:00-12:00 America/New_York Mon-Fri, WEEKEND 21:00-23:00 UTC Sat/Sun)",
-        "vt": vt_cov, "vt_not_exercised": {sym: coverage_gaps(m) for sym, m in vt_cov.items()},
+        "vt": vt_cov, "vt_not_exercised": vt_gaps,
+        # COVERAGE_ONLY is consulted only for the cells VT left NOT_EXERCISED; it never overrides a VT cell.
         "coverage_only_binance": None if cov_only is None else {
             "label": cov_only["label"], "authoritative": False, "artifact": str(cov_path.relative_to(ROOT)),
-            "sha256": hashlib.sha256(cov_path.read_bytes()).hexdigest(), "not_exercised": cov_only["not_exercised"]},
-        "not_exercised_anywhere": {sym: sorted(set(coverage_gaps(m)) & set(cov_only["not_exercised"]))
-                                   for sym, m in vt_cov.items()} if cov_only else None,
+            "sha256": hashlib.sha256(cov_path.read_bytes()).hexdigest(),
+            "vt_gap_cells": {sym: {cell: ("NOT_EXERCISED" if cell in cov_only["not_exercised"] else "EXERCISED")
+                                   for cell in gaps} for sym, gaps in vt_gaps.items()}},
+        "not_exercised_anywhere": {sym: sorted(set(gaps) & set(cov_only["not_exercised"]))
+                                   for sym, gaps in vt_gaps.items()} if cov_only else None,
     }
     return {
         "schema": "AG_CCFD_V100_REPLAY_V1", "mission": "AGP-LANE-B2", "date": date,
@@ -569,8 +586,8 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
         "rule_coverage": rule_coverage,
         "strategy": f"{CONTRACT_ID}@{CONTRACT_VERSION}", "contract_path": CONTRACT_YAML,
         "contract_sha256": hashlib.sha256((ROOT / CONTRACT_YAML).read_bytes()).hexdigest(),
-        "dataset": {"manifest": str(MANIFEST.relative_to(ROOT)),
-                    "manifest_sha256": hashlib.sha256(MANIFEST.read_bytes()).hexdigest(),
+        "dataset": {"id": dataset, "manifest": str(manifest_path.relative_to(ROOT)),
+                    "manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
                     "file_hashes_verified": True, "source": manifest["source"], "gaps": manifest["gaps"]},
         "days_run": sorted(first["scan_results_by_day"]),
         "weekend_days": [d for d in first["scan_results_by_day"] if day_type(dt.date.fromisoformat(d)) == "WEEKEND"],
@@ -604,12 +621,13 @@ def write(report: dict, out_dir: Path) -> None:
 def main(argv: Optional[List[str]] = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--date", required=True)
-    p.add_argument("--out-dir", type=Path, default=OUT_DIR)
+    p.add_argument("--dataset", choices=sorted(DATASETS), default="recorded")
+    p.add_argument("--out-dir", type=Path, default=None)
     p.add_argument("--balance", type=float, default=None)
     p.add_argument("--symbols", nargs="+", default=list(INSTRUMENTS), choices=list(INSTRUMENTS))
     args = p.parse_args(argv)
-    report = build(args.date, symbols=tuple(args.symbols), balance=args.balance)
-    write(report, args.out_dir)
+    report = build(args.date, symbols=tuple(args.symbols), balance=args.balance, dataset=args.dataset)
+    write(report, args.out_dir or DATASETS[args.dataset][1])
     for s, r in report["symbols"].items():
         print(s, r["days"], "days", r["scans"], "scans", r["gates"], "mismatches", sum(r["mismatches"].values()))
     return 0
