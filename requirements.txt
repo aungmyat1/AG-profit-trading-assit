@@ -40,6 +40,8 @@ iniconfig==2.3.0
     # via pytest
 llvmlite==0.50.0
     # via numba
+MetaTrader5==5.0.5735 ; sys_platform == "win32"
+    # Windows/Python 3.11 wheel verified; imported by src/mt5 and host scripts.
 numba==0.68.0
     # via smartmoneyconcepts
 numpy==2.2.6
