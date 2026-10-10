@@ -9,6 +9,8 @@ review_by: 2026-11-07
 [READY owner binding](status/READY_OWNER_BINDING_2026-10-10.md) records the additional
 owner-register, version, contract-hash, symbol, and session checks for READY admission.
 
+[AGP-C4-CCFD-LOGIC](status/AGP_C4_CCFD_LOGIC_2026-10-10.md) records synthetic-only CFD v1.0.0 L1–L6 evidence and the DATA-R2 rerun.
+
 [Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
 records stop/target rejection, the owner-set 50% remaining-reward threshold, required
 host preflight, FX/crypto rejection ownership, diagnostics and offline tests.
