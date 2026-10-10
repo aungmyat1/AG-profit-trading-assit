@@ -12,8 +12,8 @@ Base PR131: `451bcfcd183b7cb56a877a1da71cae031db14585`. Concurrent PR126 changes
 
 | Symbol | L1 | L2 | L3 | L4 | L5 | L6 | Verdict |
 |---|---|---|---|---|---|---|---|
-| BTCUSD | PASS | PASS | NOT_EVIDENCED | NOT_EVIDENCED | NOT_EVIDENCED | NOT_EVIDENCED | NOT_VERIFIED |
-| ETHUSD | PASS | PASS | NOT_EVIDENCED | NOT_EVIDENCED | NOT_EVIDENCED | NOT_EVIDENCED | NOT_VERIFIED |
+| BTCUSD | PASS | NOT_EVIDENCED_POSITIVE | NOT_EVIDENCED | NOT_EVIDENCED | NOT_EVIDENCED | NOT_EVIDENCED | NOT_VERIFIED |
+| ETHUSD | PASS | NOT_EVIDENCED_POSITIVE | NOT_EVIDENCED | NOT_EVIDENCED | NOT_EVIDENCED | NOT_EVIDENCED | NOT_VERIFIED |
 
 | Symbol | WAITING_SWEEP | WAITING_MSS | REFERENCE_INCOMPLETE | ENTRY_VALID | Other states | Signals/day |
 |---|---|---|---|---|---|---|
@@ -34,3 +34,5 @@ python scripts/ccfd_v100_logic_verification.py --fixtures tests/fixtures/ccfd_v1
 OSS-FIRST: recorded replay | existing CCFD evaluator/gates and PR131 UTC parser | REUSED | no new strategy or data-acquisition logic.
 
 Frozen contracts, registry, READY, scheduler and generated status files are unchanged. NO_BROKER_MUTATION: ORDER_API_CALLS=0; BROKER_MUTATION_COUNT=0.
+
+Final touch: zero ENTRY_VALID recorded cases label each symbol’s L2 NOT_EVIDENCED_POSITIVE with negative_conformance=PASS. L3 is aggregated independently across every case for that symbol. Verdict formation still uses original gate statuses before presentation labels; both symbol and overall verdicts remain NOT_VERIFIED. The aggregate raw L2 remains PASS as an unchanged verdict input, not positive coverage. 27 verifier tests passed, pinning zero-signal labels and unchanged positive/synthetic labels. Replay code SHA: `cc624cd8d07afa7ba2a51c834f53a6323c8b7f94`.

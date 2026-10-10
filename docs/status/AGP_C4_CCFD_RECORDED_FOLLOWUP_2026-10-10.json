@@ -1,5 +1,5 @@
 {
-  "head_sha": "dae1d4097e2e0ece2df5973e6148c1c90bbf6fe5",
+  "head_sha": "cc624cd8d07afa7ba2a51c834f53a6323c8b7f94",
   "logic_identity": {
     "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
     "strategy_version": "1.0.0",
@@ -12,7 +12,7 @@
     "BTCUSD": {
       "gates": {
         "L1": "PASS",
-        "L2": "PASS",
+        "L2": "NOT_EVIDENCED_POSITIVE",
         "L3": "NOT_EVIDENCED",
         "L4": "NOT_EVIDENCED",
         "L5": "NOT_EVIDENCED",
@@ -43,12 +43,13 @@
       },
       "mean_signals_per_scanned_day": 0.0,
       "signal_definition": "ENTRY_VALID scan points; not deduplicated trades",
-      "verdict": "NOT_VERIFIED"
+      "verdict": "NOT_VERIFIED",
+      "negative_conformance": "PASS"
     },
     "ETHUSD": {
       "gates": {
         "L1": "PASS",
-        "L2": "PASS",
+        "L2": "NOT_EVIDENCED_POSITIVE",
         "L3": "NOT_EVIDENCED",
         "L4": "NOT_EVIDENCED",
         "L5": "NOT_EVIDENCED",
@@ -78,7 +79,8 @@
       },
       "mean_signals_per_scanned_day": 0.0,
       "signal_definition": "ENTRY_VALID scan points; not deduplicated trades",
-      "verdict": "NOT_VERIFIED"
+      "verdict": "NOT_VERIFIED",
+      "negative_conformance": "PASS"
     }
   },
   "state_counts": {
@@ -156,6 +158,6 @@
   "BROKER_MUTATION_COUNT": 0,
   "manifest_sha256": "931bd014a9b21a57be11a3f8825bd2428a21f0c37f734ac2c322049a2c296a9a",
   "base_sha": "451bcfcd183b7cb56a877a1da71cae031db14585",
-  "test_result": "77 passed",
+  "test_result": "27 verifier tests passed for final touch; previous affected suite 77 passed",
   "report_note": "Replay code commit; subsequent commits change only tests and evidence."
 }
