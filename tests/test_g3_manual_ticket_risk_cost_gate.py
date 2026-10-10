@@ -493,6 +493,17 @@ def test_shared_cost_predicate_boundary_semantics():
     assert guards.cost_at_or_above(D2_BLOCK_R, None) is False
 
 
+@pytest.mark.parametrize("threshold", [0.25, 0.10])
+def test_predicate_treats_one_ulp_below_the_boundary_as_the_boundary(threshold):
+    """cost_at_or_above(nextafter(T, 0), T) is True: 0.25 -> BLOCK, 0.10 -> WARN (owner boundaries).
+    A cost materially below the boundary stays False."""
+    import math
+    below = math.nextafter(threshold, 0)
+    assert below < threshold
+    assert guards.cost_at_or_above(below, threshold) is True
+    assert guards.cost_at_or_above(threshold - 1e-3, threshold) is False
+
+
 @pytest.mark.parametrize("distance,spread,commission", [
     (3.00, 0.69, 0.02),      # gold: 0.23R + 0.02R = 0.25R in decimal
     (3.00, 0.30, None),      # gold: 0.10R in decimal
@@ -699,9 +710,18 @@ def _owner_with_commission(tmp_path: Path, body: str) -> dict:
     return mt.load_owner_config(tmp_path)
 
 
+def _local(value: str) -> str:
+    """OD1011 block with the gitignored full login present (the only form that can bind)."""
+    return OD1011_BLOCK.format(value=value).replace('    account_login_suffix: "345"\n',
+                                                    '    account_login: 12345\n    account_login_suffix: "345"\n')
+
+
+LOCAL_FULL = _local("0")
+
+
 @pytest.mark.parametrize("login", [LOGIN, str(LOGIN)])
-def test_suffix_bound_commission_matches_the_running_account(tmp_path, l2_conforming, login):
-    owner = _owner_with_commission(tmp_path, OD1011_BLOCK.format(value="0"))
+def test_commission_binds_only_with_full_local_login_matching_runtime_and_suffix(tmp_path, l2_conforming, login):
+    owner = _owner_with_commission(tmp_path, LOCAL_FULL)
     commission = mt.resolve_commission(owner, login)
     assert commission == 0 and commission is not None           # the configured value, not an invented zero
     t = ticket("EURUSD", CANDLES, meta=EUR_META, spread=0.00002, owner=owner, commission_r=commission)
@@ -710,10 +730,22 @@ def test_suffix_bound_commission_matches_the_running_account(tmp_path, l2_confor
 
 
 def test_full_login_in_local_config_is_an_exact_match(tmp_path):
-    body = OD1011_BLOCK.format(value="0").replace('    account_login_suffix: "345"\n', "    account_login: 12345\n")
-    owner = _owner_with_commission(tmp_path, body)
+    owner = _owner_with_commission(tmp_path, LOCAL_FULL)
     assert mt.resolve_commission(owner, LOGIN) == 0
     assert mt.resolve_commission(owner, 12346) is None           # same suffix family, different account
+
+
+def test_suffix_only_without_local_login_never_binds(tmp_path):
+    """Committed suffix alone (no gitignored full login) fails closed -- even for the matching account."""
+    owner = _owner_with_commission(tmp_path, OD1011_BLOCK.format(value="0"))
+    assert mt.resolve_commission(owner, LOGIN) is None
+    assert mt.resolve_commission(owner, str(LOGIN)) is None
+
+
+def test_full_login_must_also_end_with_the_committed_suffix(tmp_path):
+    bad = LOCAL_FULL.replace('account_login_suffix: "345"', 'account_login_suffix: "999"')
+    assert mt.resolve_commission(_owner_with_commission(tmp_path, LOCAL_FULL), LOGIN) == 0
+    assert mt.resolve_commission(_owner_with_commission(tmp_path, bad), LOGIN) is None
 
 
 @pytest.mark.parametrize("case,body,login,reason", [
@@ -726,9 +758,9 @@ def test_full_login_in_local_config_is_an_exact_match(tmp_path):
      "COMMISSION_INSUFFICIENT"),
     ("other_decision_id", OD1011_BLOCK.format(value="0").replace("OD1011-COMMISSION", "OD9999"), LOGIN,
      "COMMISSION_INSUFFICIENT"),
-    ("non_zero_is_not_R_units", OD1011_BLOCK.format(value="0.02"), LOGIN, "COMMISSION_INVALID"),
-    ("negative", OD1011_BLOCK.format(value="-0.01"), LOGIN, "COMMISSION_INVALID"),
-    ("non_numeric", OD1011_BLOCK.format(value="'abc'"), LOGIN, "COMMISSION_INVALID"),
+    ("non_zero_is_not_R_units", _local("0.02"), LOGIN, "COMMISSION_INVALID"),
+    ("negative", _local("-0.01"), LOGIN, "COMMISSION_INVALID"),
+    ("non_numeric", _local("'abc'"), LOGIN, "COMMISSION_INVALID"),
 ])
 def test_unbound_or_invalid_commission_blocks_and_is_never_zero(tmp_path, l2_conforming, case, body, login, reason):
     owner = _owner_with_commission(tmp_path, body)

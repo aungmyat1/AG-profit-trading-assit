@@ -95,13 +95,14 @@ def resolve_commission(owner: Dict[str, Any], account_login: Any) -> Any:
     if account_login is None:
         return None
     login = str(account_login)
-    if c.get("account_login") is not None:                    # local-only full login: exact match
-        if login != str(c["account_login"]):
-            return None
-    else:                                                     # committed form: login suffix (AGENTS.md)
-        suffix = c.get("account_login_suffix")
-        if suffix is None or len(str(suffix)) < 3 or not login.endswith(str(suffix)):
-            return None
+    # Binding needs BOTH: a full login from gitignored config/local (exact runtime match) that also
+    # ends with the committed account_login_suffix. Suffix alone (no local login) fails closed.
+    full = c.get("account_login")
+    suffix = c.get("account_login_suffix")
+    if full is None or suffix is None or len(str(suffix)) < 3:
+        return None
+    if login != str(full) or not login.endswith(str(suffix)):
+        return None
     return c.get("commission_R")
 
 
