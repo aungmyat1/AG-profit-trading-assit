@@ -73,6 +73,20 @@ SYMBOLS = {
                "provenance": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded.PROVENANCE.md",
                "l4_failures": None, "seed": "112:GBPUSD"},
 }
+# AGP-C3-ASW-R2 fixture routing only; select R2_SYMBOLS explicitly for replay.
+R2_SYMBOLS = {
+    "EURUSD": {"fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv", "provenance": None,
+               "l4_failures": "tests/fixtures/asian_sweep_v1_1_2/l4_recorded_failures.json", "seed": None},
+    "GBPUSD": {"fixture": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.csv",
+               "provenance": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_20d.PROVENANCE.md",
+               "l4_failures": None, "seed": "112:GBPUSD"},
+    "USDJPY": {"fixture": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv",
+               "provenance": "tests/fixtures/manual_ticket/USDJPY_M15_recorded.PROVENANCE.md",
+               "l4_failures": None, "seed": "112:USDJPY"},
+    "XAUUSD": {"fixture": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv",
+               "provenance": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.PROVENANCE.md",
+               "l4_failures": None, "seed": "112:XAUUSD"},
+}
 FIXTURE = SYMBOLS["EURUSD"]["fixture"]
 L4_FAILURES = SYMBOLS["EURUSD"]["l4_failures"]
 DAY_TYPES = ("long-sweep", "short-sweep", "TREND", "no-setup")
