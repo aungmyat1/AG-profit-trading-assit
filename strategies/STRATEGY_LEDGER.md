@@ -54,6 +54,10 @@ from canonical session windows or other repo conventions at the time of registra
   verification only, not economic/edge evidence) is read by
   `src/v1_tickets/ready_authority.py`; with D6 ON, READY needs the ticket's symbol listed for its version
   (absent = not verified). D6 stays OFF; no authorization change.
+  Open spec item ROUNDING_V113_HALF_UP (OD1011-ROUNDING as amended 2026-10-11): v1.1.2's frozen rounding is the
+  engine's `fx._r` (Python round() on IEEE floats, ties as stored) and verification gates replicate it exactly. Any
+  next candidate version (>= 1.1.3) must round derived prices with Decimal ROUND_HALF_UP to the point grid and be
+  re-verified; v1.1.2 is not changed in place.
 - **Open gaps found building `execution/` (2026-08-26):**
   - `risk_and_money_management.risk_mode: FIXED_PERCENT_OR_CONTRACT` never states an
     actual risk-per-trade percentage or contract size. `execution/risk.py` currently
