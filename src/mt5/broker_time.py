@@ -48,9 +48,10 @@ class NoWeekendGapError(BrokerTimeError):
     """Raised specifically when no weekly reopen gap exists in the lookback window --
     the expected, non-exceptional case for a 24/7 instrument (e.g. crypto), distinct from
     every other BrokerTimeError (which mean "a gap was found but couldn't be resolved
-    unambiguously" or "no data at all"). Callers that want a 24/7-safe fallback (see
-    mt5.market_data._broker_offset_hours) catch this type specifically rather than
-    string-matching the message."""
+    unambiguously" or "no data at all"). Callers that want a 24/7-safe fallback catch
+    this type specifically rather than string-matching the message. (mt5.market_data no
+    longer detects an offset; it converts per bar with the OFFSET_RULE in
+    host_evidence.symbol_metadata.)"""
 
 
 def us_eastern_utc_offset_hours(d: date) -> int:

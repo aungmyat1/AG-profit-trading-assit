@@ -1,8 +1,12 @@
 """Time authority: UTC is the scanner's only internal clock.
 
-MT5 stamps bars/ticks in broker SERVER wall-clock time. The offset is derived at runtime
-(never hard-coded) from the Terminal's own get_time_information, corroborated by the
-freshest broker tick when available, and rounded to the broker-offset granularity.
+MT5 stamps bars/ticks in broker SERVER wall-clock time. The live offset is derived at runtime
+from the Terminal's own get_time_information, corroborated by the freshest broker tick when
+available, and rounded to the broker-offset granularity; it is a GATE only. Bars and ticks are
+converted PER TIMESTAMP with the VT rule (server wall clock = New York wall clock + 7h,
+host_evidence.symbol_metadata.OFFSET_RULE), so a lookback spanning a US DST change is not
+shifted by one run-wide offset (CS-DST-AUDIT-01 A1). A live offset that disagrees with the
+rule at `utc_now` fails the gate.
 
 mt5ReadOnly labels server wall-clock times with a "Z"/"+00:00" suffix although they are
 not UTC; parse_server_wallclock() deliberately discards any such label so a wrong label
@@ -14,6 +18,12 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+
+from host_evidence.symbol_metadata import (
+    server_time_to_utc,
+    server_utc_offset_hours,
+    utc_to_server_time,
+)
 
 TIME_GATE_PASS = "PASS"
 TIME_GATE_FAIL = "FAIL"
@@ -32,10 +42,11 @@ class TimeAuthority:
     reason: str = ""
 
     def server_to_utc(self, server_wallclock: datetime) -> datetime:
-        return (server_wallclock.replace(tzinfo=None) - self.broker_utc_offset).replace(tzinfo=timezone.utc)
+        """Per-timestamp rule conversion; raises DstHourError inside the repeated/skipped hour."""
+        return server_time_to_utc(server_wallclock.replace(tzinfo=None))
 
     def utc_to_server(self, utc_dt: datetime) -> datetime:
-        return (utc_dt.astimezone(timezone.utc) + self.broker_utc_offset).replace(tzinfo=None)
+        return utc_to_server_time(utc_dt.astimezone(timezone.utc))
 
     def as_dict(self) -> dict:
         return {
@@ -115,6 +126,8 @@ def derive_time_authority(
         return fail("BROKER_OFFSET_SOURCES_DISAGREE")
 
     offset = accepted[0][1]
+    if offset != timedelta(hours=server_utc_offset_hours(utc_now)):
+        return fail("BROKER_OFFSET_RULE_MISMATCH")
     confidence = "HIGH" if len(accepted) >= 2 else "MEDIUM"
     source = "+".join(s for s, _ in accepted)
     return TimeAuthority(TIME_GATE_PASS, utc_now, (utc_now + offset).replace(tzinfo=None), offset, source, confidence)

@@ -8,6 +8,15 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-10)
 
+DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
+2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
+with the VT server-time rule (server time = New York time + 7h). They no longer use one
+offset per process or per run. A bar stamped in the repeated or skipped server hour is
+dropped and logged with `AMBIGUOUS_DST_HOUR` or `NONEXISTENT_DST_HOUR`. The crypto CFD
+D1 bar is closed only at its rule-based server close (25h or 23h) or when the next D1
+bar opens. Session box definitions (C3) and strategy logic are unchanged. Test:
+`tests/test_dst_transition_2026_11.py`.
+
 The market-structure analyzer uses fresh computation only; its optional replay-dependent
 cache path is removed. Offline byte comparisons against main pass for identical candles
 and config. Session-zone import failures are traced but unchanged; none of the four live

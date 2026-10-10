@@ -26,14 +26,16 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import logging
 import os
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
-from host_evidence.symbol_metadata import NY, server_time_to_utc
+from host_evidence.symbol_metadata import NY, DstHourError, server_time_to_utc
 from mt5 import canonical_broker_map
 from strategy_engine.session import Candle
 
+_log = logging.getLogger(__name__)
 UTC = dt.timezone.utc
 
 SUPPORTED_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
@@ -116,11 +118,19 @@ def _server_wall(raw_time: int) -> dt.datetime:
 
 def _to_canonical(canonical: str, rates: Any) -> List[CanonicalCandle]:
     try:
-        return [CanonicalCandle(
-            symbol=canonical, time=server_time_to_utc(_server_wall(int(r["time"]))),
-            open=float(r["open"]), high=float(r["high"]), low=float(r["low"]), close=float(r["close"]),
-            tick_volume=int(r["tick_volume"]), spread=int(r["spread"]), real_volume=int(r["real_volume"]),
-        ) for r in rates]
+        out = []
+        for r in rates:
+            try:
+                t = server_time_to_utc(_server_wall(int(r["time"])))
+            except DstHourError as exc:  # repeated/skipped server hour: drop + log, never fold
+                _log.warning("DROPPED_BAR %s %s %s", exc.reason_code, canonical, exc.server_wall_clock.isoformat())
+                continue
+            out.append(CanonicalCandle(
+                symbol=canonical, time=t,
+                open=float(r["open"]), high=float(r["high"]), low=float(r["low"]), close=float(r["close"]),
+                tick_volume=int(r["tick_volume"]), spread=int(r["spread"]), real_volume=int(r["real_volume"]),
+            ))
+        return out
     except (KeyError, IndexError, TypeError, ValueError, OverflowError, OSError) as exc:
         raise CandleAdapterError(CONVERSION_ERROR, f"{canonical}: {type(exc).__name__} {exc}") from exc
 
