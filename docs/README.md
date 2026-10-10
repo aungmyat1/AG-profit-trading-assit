@@ -691,3 +691,5 @@ authoritative machine-readable source.
   mapping-decision debt; parity checkpoint `READY_FOR_INDEPENDENT_AUDIT`,
   `SAFE_TO_ADVANCE_TO_V2_4 = NO` pending that audit)
 - [Web-to-Vantage Demo execution bridge](status/AG_WEB_VANTAGE_DEMO_EXECUTION_BRIDGE_V1.md)
+
+- [Dependency import reconciliation (2026-10-10)](status/DEPENDENCY_IMPORT_RECONCILIATION_2026-10-10.md) — Windows pin and audit limits.
