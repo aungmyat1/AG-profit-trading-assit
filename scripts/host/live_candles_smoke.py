@@ -667,6 +667,21 @@ def main(argv=None) -> int:
             ticket_source="REPLAY", fx_data_source="NONE", policy_root=REPO_ROOT)
         return failures + process_due_session_summaries(now, journal=journal, sender=canonical_sender)
 
+    def lsmc_failure_lines(reason: str) -> List[str]:
+        # An MT5 failure is a crypto DATA_ERROR evaluation, and due crypto summaries still go out:
+        # an outage never suppresses a summary or later reads as an EMPTY_WINDOW.
+        if args.mode not in ("lsmc", "lsmc-weekend") or crypto_config["venue"]["kind"] != "MT5":
+            return []
+        session = LSMC_CRYPTO_WEEKEND if args.mode == "lsmc-weekend" else LSMC_CRYPTO_DAY
+        lines = []
+        for symbol in LSMC_CRYPTO_SYMBOLS:
+            try:
+                record_lsmc_crypto_evaluation(journal, now=now, session=session, symbol=symbol,
+                                              state="DATA_ERROR", reason_codes=[reason])
+            except Exception as exc:  # noqa: BLE001
+                lines.append(f"LSMC_CRYPTO_JOURNAL {symbol} FAILED {type(exc).__name__}")
+        return lines + lsmc_crypto_summary_lines(now, journal, session)
+
     try:
         with single_instance(log_name):
             if args.mode == "crypto" and crypto_config["venue"]["kind"] != "MT5":
@@ -680,9 +695,10 @@ def main(argv=None) -> int:
                 mt5 = import_mt5()
                 if mt5 is None:
                     message = "MetaTrader5 package missing -- run scripts/host/diagnose_mt5.py"
-                    lines = (canonical_failure_lines("MT5_PACKAGE_MISSING") if args.canonical else
-                             archive_fx_runtime_failure(now, journal, "MT5_PACKAGE_MISSING", message,
-                                                        cycle_filter=args.cycle)) if args.mode == "fx" else []
+                    lines = ((canonical_failure_lines("MT5_PACKAGE_MISSING") if args.canonical else
+                              archive_fx_runtime_failure(now, journal, "MT5_PACKAGE_MISSING", message,
+                                                         cycle_filter=args.cycle)) if args.mode == "fx"
+                             else lsmc_failure_lines("MT5_PACKAGE_MISSING"))
                     for line in lines:
                         log_line(log_name, line)
                     print(message)
@@ -690,9 +706,10 @@ def main(argv=None) -> int:
                 with mt5_access_lock():
                     ok, err = mt5_initialize(mt5, args.terminal_path)
                     if not ok:
-                        lines = (canonical_failure_lines("MT5_INITIALIZE_FAILED") if args.canonical else
-                                 archive_fx_runtime_failure(now, journal, "MT5_INITIALIZE_FAILED", err,
-                                                            cycle_filter=args.cycle)) if args.mode == "fx" else []
+                        lines = ((canonical_failure_lines("MT5_INITIALIZE_FAILED") if args.canonical else
+                                  archive_fx_runtime_failure(now, journal, "MT5_INITIALIZE_FAILED", err,
+                                                             cycle_filter=args.cycle)) if args.mode == "fx"
+                                 else lsmc_failure_lines("MT5_INITIALIZE_FAILED"))
                         for line in lines:
                             log_line(log_name, line)
                         log_line(log_name, f"MT5_INITIALIZE_FAILED {err}")
@@ -700,9 +717,10 @@ def main(argv=None) -> int:
                     try:
                         demo_ok, demo_status = require_demo_account(mt5)
                         if not demo_ok:
-                            lines = (canonical_failure_lines("DEMO_ACCOUNT_REQUIRED") if args.canonical else
-                                     archive_fx_runtime_failure(now, journal, "DEMO_ACCOUNT_REQUIRED", demo_status,
-                                                                cycle_filter=args.cycle)) if args.mode == "fx" else []
+                            lines = ((canonical_failure_lines("DEMO_ACCOUNT_REQUIRED") if args.canonical else
+                                      archive_fx_runtime_failure(now, journal, "DEMO_ACCOUNT_REQUIRED", demo_status,
+                                                                 cycle_filter=args.cycle)) if args.mode == "fx"
+                                     else lsmc_failure_lines("DEMO_ACCOUNT_REQUIRED"))
                             for line in lines:
                                 log_line(log_name, line)
                             log_line(log_name, f"DEMO_ACCOUNT_REQUIRED {demo_status}")
@@ -753,6 +771,8 @@ def main(argv=None) -> int:
                              archive_fx_runtime_failure(now, journal, "MT5_BUSY", str(exc), cycle_filter=args.cycle))
             for line in failure_lines:
                 log_line(log_name, line)
+        for line in lsmc_failure_lines("MT5_BUSY"):
+            log_line(log_name, line)
         log_line(log_name, f"MT5_BUSY {exc}")
         return 0
     for line in lines or [f"{args.mode.upper()} NOTHING_IN_WINDOW"]:
