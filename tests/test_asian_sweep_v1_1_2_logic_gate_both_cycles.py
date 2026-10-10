@@ -289,7 +289,10 @@ def test_report_eurusd_results_byte_identical_to_the_108_report(report):
     old = json.loads((root / "docs/status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.json").read_text())
     dump = lambda x: json.dumps(x, sort_keys=True, default=str)  # noqa: E731
     new = json.loads(dump(report))
-    assert dump([c for c in new["cases"] if c["case_id"].startswith("recorded:EURUSD:")]) == dump(old["cases"])
+    additive = ("l5_recorded_spread",)    # AGP-LANE-A2: new L5 input field; every pre-existing field unchanged
+    cases = [{k: v for k, v in c.items() if k not in additive}
+             for c in new["cases"] if c["case_id"].startswith("recorded:EURUSD:")]
+    assert dump(cases) == dump(old["cases"])
     for key in ("recorded_failures", "synthetic"):
         assert dump(new["checks"]["L4_price_geometry"][key]) == dump(old["checks"]["L4_price_geometry"][key])
     assert dump(new["checks"]["L3_temporal_causality"]["by_symbol"]["EURUSD"]) == \
