@@ -440,6 +440,7 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
     l5_block = []
     if owner["risk_status"] != "SET":
         l5_block.append("RISK_CONFIG_MISSING: owner_ticket risk_pct/cost_warn_R/cost_block_R incomplete")
+    shared_l5_block = list(l5_block)
     missing_pip = sorted(set(SYMBOLS) - set(EVIDENCED_PIP))
     if missing_pip:
         l5_block.append(f"SYMBOL_EVIDENCE_MISSING: pip size not evidenced for {missing_pip}")
@@ -454,6 +455,13 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
     # No cross-symbol verdict is formed: each symbol stands on its own evidence.
     l1_global = all(v for k, v in l1_checks.items() if k not in ("replay_determinism", "fixture_provenance_verified"))
     l5_verdict = "BLOCK" if l5_block else (WARN if l5_warn else PASS)
+    l5_by_symbol = {}
+    for sym in SYMBOLS:
+        reasons = list(shared_l5_block)
+        if sym not in EVIDENCED_PIP:
+            reasons.append(f"SYMBOL_EVIDENCE_MISSING: pip size not evidenced for {[sym]}")
+        l5_by_symbol[sym] = {"verdict": "BLOCK" if reasons else (WARN if l5_warn else PASS),
+                             "warn_reasons": list(l5_warn), "block_reasons": reasons}
     gates_by_symbol, verdicts, l2_evidence = {}, {}, {}
     for sym, p in per_symbol.items():
         sym_cases = by_symbol[sym]
@@ -474,7 +482,7 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
                                or p["l3"]["streaming_batch_mismatches"] or p["l3"]["future_mutation_mismatches"])
             and p["l3"]["future_mutations"] > 0 else FAIL,
             "L4": PASS if l4_ok else FAIL,
-            "L5": l5_verdict,
+            "L5": l5_by_symbol[sym]["verdict"],
             "L6": PASS if p["l6_statuses"] == [PASS] else FAIL,
         }
         gates_by_symbol[sym] = g
@@ -518,6 +526,10 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
         "L6_freshness_fields": {"evidence": {sym: {"cases": p["l6_cases"], "statuses": p["l6_statuses"]}
                                              for sym, p in per_symbol.items()}},
     }
+    # Preserve the default report bytes (apart from its intentional code identity).
+    # Mixed evidence needs an explicit per-symbol breakdown; the legacy verdict is aggregate only.
+    if missing_pip:
+        checks["L5_risk_and_friction"]["by_symbol"] = l5_by_symbol
     return {
         "schema": "AG_LOGIC_VERIFICATION_REPORT_V1", "generated_at": generated_at,
         "strategy_id": STRATEGY_ID, "version": VERSION, "strategy": f"{STRATEGY_ID}@{VERSION}",
