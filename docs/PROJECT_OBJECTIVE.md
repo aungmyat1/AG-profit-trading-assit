@@ -12,6 +12,11 @@ review_by: 2026-11-07
 **Product phase:** PRE-EDGE  
 **Owner ratification:** RATIFIED 2026-10-09 by the owner — register entry `OBJ-RATIFY-2026-10-09` in [`docs/governance/OWNER_DECISION_REGISTER.md`](governance/OWNER_DECISION_REGISTER.md). Ratification is not execution authorization; demo and live execution stay disabled.
 
+
+## Proposed successor objective — AGP-C6 (not yet ratified)
+
+Owner-requested on 2026-10-10: qualify three distinct strategy lanes (FX/gold Asian Sweep 1.1.2; VT CFD Crypto Sweep Retest; six-instrument Large-SMC 1.1.0), then permit automatic **DEMO-only** ticket execution after per-strategy L1–L6 verification, broker symbol mapping, real-host acceptance, at least 10 clean shadow cycles and separately recorded standing owner demo authorization. Large-SMC without verified entry/stop/target remains ALERT_ONLY. All orders route through the canonical execution authority and require send-time DEMO, freshness, risk, cost, duplicate and broker checks. Every attempt and result is reported to Telegram; owner may securely edit/close/cancel and halt new orders. Owner caps and notification-failure policy remain PENDING_OWNER; unset limits block execution. This proposed successor does **not** supersede the currently ratified owner-confirm-per-entry requirement or authorize execution until separately approved and merged. Full proposal: [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md).
+
 ## Objective
 
 Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
@@ -22,7 +27,7 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 
 ## Scope
 
-**Logical instruments:** EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSD, ETHUSD. These canonical names are the objective's identities. Host-observed VT Markets broker symbols are recorded in [`status/evidence/host_symbol_info_2026-10-09.json`](../status/evidence/host_symbol_info_2026-10-09.json). That read-only capture (mission AGP-C1-HOST, `VTMarkets-Demo`, 2026-10-09T11:50:34Z) observed `EURUSD-VIP`, `GBPUSD-VIP`, `USDJPY-VIP` and `XAUUSD-VIP` at `trade_mode` FULL; unsuffixed `EURUSD`, `GBPUSD` and `USDJPY` at DISABLED; `XAUUSD.crp` hidden and DISABLED; and `BTCUSD` and `ETHUSD` at FULL. These are observations, not a mapping. `CANONICAL_TO_BROKER_MAP = PENDING_AGP-C2-SYMMAP`: the map is neither implemented nor verified, and no broker symbol is implied here.
+**Logical instruments:** EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSD, ETHUSD. These canonical names are the objective's identities. Host-observed VT Markets broker symbols are recorded in [`status/evidence/host_symbol_info_2026-10-09.json`](../status/evidence/host_symbol_info_2026-10-09.json). That read-only capture (mission AGP-C1-HOST, `VTMarkets-Demo`, 2026-10-09T11:50:34Z) observed `EURUSD-VIP`, `GBPUSD-VIP`, `USDJPY-VIP` and `XAUUSD-VIP` at `trade_mode` FULL; unsuffixed `EURUSD`, `GBPUSD` and `USDJPY` at DISABLED; `XAUUSD.crp` hidden and DISABLED; and `BTCUSD` and `ETHUSD` at FULL. These host observations are evidence, not execution authorization. The separate versioned canonical-to-broker configuration is `config/broker_symbol_map/vt_markets_demo.yaml` (map version 1), proposed by AGP-C2-SYMMAP in [PR #109](https://github.com/aungmyat1/AG-profit-trading-assit/pull/109); evidence [`status/evidence/host_symbol_info_2026-10-09_symmap.json`](../status/evidence/host_symbol_info_2026-10-09_symmap.json), [`status/evidence/host_symbol_map_smoke_2026-10-09.txt`](../status/evidence/host_symbol_map_smoke_2026-10-09.txt).
 
 1. **Session tickets — FX + Gold**
    - EURUSD

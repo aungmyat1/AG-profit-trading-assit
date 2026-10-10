@@ -28,15 +28,6 @@ symbol_map:
     GBPUSD: GBPUSD
     BTCUSDT: BTCUSD
     ETHUSDT: ETHUSD
-  # VT_MARKETS entries captured read-only via the Terminal MCP get_marketwatch_symbols
-  # (AG_MT5_MCP_TERMINAL_R2_VERIFICATION, 2026-10-02, Demo account). Plain EURUSD/GBPUSD/
-  # USDJPY exist but are trade_mode=disabled reference feeds with ~0 spread; plain XAUUSD
-  # does not exist and XAUUSD.crp is "not for trading purposes, currency conversion
-  # displays only". The -VIP symbols are the only trade_mode=full feeds.
-  VT_MARKETS:
-    EURUSD: EURUSD-VIP
-    GBPUSD: GBPUSD-VIP
-    USDJPY: USDJPY-VIP
-    XAUUSD: XAUUSD-VIP
-    BTCUSD: BTCUSD
-    ETHUSD: ETHUSD
+  # VT_MARKETS is NOT listed here: it resolves only through the versioned
+  # CANONICAL_TO_BROKER_MAP, config/broker_symbol_map/vt_markets_demo.yaml
+  # (src/mt5/canonical_broker_map.py, mission AGP-C2-SYMMAP).
