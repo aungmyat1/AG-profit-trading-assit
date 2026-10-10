@@ -10,8 +10,10 @@ review_by: 2026-11-07
 
 Large-SMC operational actionability gates (2026-10-10) reject missing/invalid stop or
 target and require at least 50% of the entry-to-target distance to remain. Rejections
-are archived and suppressed by the OPPORTUNITY-only Telegram sender. The parameter
-is owner-set and separate from the unchanged v1.1.0 contract; no R:R minimum is
+are archived and suppressed by the OPPORTUNITY-only Telegram sender. SESSION_SUMMARY
+reports per-reason Large-SMC rejection counts from archived transitions inside each
+UTC session, with no setup details. The parameter is owner-set and separate from
+the unchanged v1.1.0 contract; no R:R minimum is
 authorized. Offline verification is recorded in
 `docs/status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md`; host validation is pending.
 

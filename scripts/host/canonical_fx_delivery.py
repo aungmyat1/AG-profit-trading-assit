@@ -349,6 +349,38 @@ def _delivery_bucket(state: str) -> str:
     return "not_attempted"
 
 
+def lsmc_rejection_counts(journal: str, start: dt.datetime, end: dt.datetime) -> Dict[str, int]:
+    """Count durable rejection transitions within [start, end), without setup details.
+
+    Archive filenames use the NY trading date; the event UTC time determines the
+    session. Primary records only: correction wrappers are not extra transitions.
+    An unreadable/malformed archive blocks the summary rather than inventing zeros.
+    """
+    counts = {reason: 0 for reason in ("REJECT_NO_STOP", "REJECT_NO_TARGET", "REJECT_STALE")}
+    root = Path(journal) / "ticket_delivery/archive/fx_ticket_archive/ST_LARGE_SMC_V1"
+    seen = set()
+    for path in sorted(root.glob("*/LSMC_WATCH-*/*/????-??-??.json")):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        event = record["payload"]
+        if record["strategy_id"] != "ST_LARGE_SMC_V1" or event["to_state"] != "REJECTED":
+            continue
+        at = dt.datetime.fromisoformat(record["evaluation_time_utc"])
+        if at.tzinfo is None:
+            raise ValueError("naive Large-SMC rejection timestamp")
+        if not start <= at.astimezone(UTC) < end:
+            continue
+        transition_id = event["transition_id"]
+        if not isinstance(transition_id, str) or not transition_id:
+            raise ValueError("missing Large-SMC rejection identity")
+        reason = next((r for r in record["reason_codes"] if r in counts), None)
+        if reason is None:
+            raise ValueError("missing Large-SMC rejection reason")
+        if transition_id not in seen:
+            counts[reason] += 1
+            seen.add(transition_id)
+    return counts
+
+
 def build_session_summary(journal: str, *, session_date: dt.date, session: str,
                           sender: Sender) -> Dict[str, Any]:
     """Build a deterministic digest from durable store/journal facts; never fabricate prices."""
@@ -496,6 +528,7 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
         "status": status, "expected_instruments": list(expected_symbols),
         "expected_evaluations": len(expected_symbols), "recorded_evaluations": recorded,
         "terminal_counts": dict(sorted(terminal_counts.items())),
+        "large_smc": {"rejection_counts": lsmc_rejection_counts(journal, *windows)},
         "source_counts": dict(sorted(source_counts.items())),
         "data_failure_count": sum(terminal_counts[state] for state in (BLOCKED, INSUFFICIENT_DATA)),
         "persistence_failure_count": sum(row.get("ticket_store_status") == "FAILED"

@@ -28,6 +28,17 @@ raw events also replaces an ineligible OPPORTUNITY label with an explicit reject
 Valid opportunity snapshots retain identical serialized bytes. Valid Telegram
 text matches a golden captured from origin/main `abb5330` with the same synthetic input.
 
+SESSION_SUMMARY now includes a counts-only Large-SMC section for `REJECT_NO_STOP`,
+`REJECT_NO_TARGET` and `REJECT_STALE`. Its source is the rejection transition archive:
+`<journal>/ticket_delivery/archive/fx_ticket_archive/ST_LARGE_SMC_V1/<symbol>/LSMC_WATCH-<transition_id>/<year>/<trading_date>.json`.
+`WatchTracker._emit` stores the reason in top-level `reason_codes` and in
+`payload.payload.reason_codes`; the summary reads top-level reasons. It counts
+unique transition IDs evaluated inside the session's half-open UTC trade window.
+The NY trading-date filename does not determine membership; correction wrappers
+and duplicate transition IDs never add counts. Unreadable/malformed archives block
+the summary rather than silently reporting zero. No Large-SMC setup details are
+included in the summary dictionary or Telegram section.
+
 Offline synthetic tests only, Linux, 2026-10-10; no broker calls or Telegram requests.
 Host acceptance and deployment are pending. No logic/edge verification or trading
 authority is granted by this delivery-layer change.
@@ -39,6 +50,7 @@ Validation:
 - `python -m pytest -q tests/test_host_go_live_kit.py -k scheduled_lsmc_rejection --tb=short`: 1 passed, 84 deselected.
 - `python -m pytest -q tests/test_docs_live.py tests/test_context_pack.py tests/test_generated_files_ci.py --tb=short`: 36 passed, 1 skipped.
 - `python scripts/check_docs_links.py`: PASS; `git diff --check`: PASS.
+- Summary follow-up: `python -m pytest -q tests/test_canonical_fx_delivery.py tests/test_telegram_delivery_adapter.py --tb=short`: 111 passed.
 
 Existing synthetic detection fixtures lack a causal target and now correctly
 reject. Delivery/lifecycle tests requiring a positive setup inject an explicit

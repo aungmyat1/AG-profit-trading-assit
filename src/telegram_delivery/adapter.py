@@ -205,6 +205,14 @@ def render_session_summary(summary):
         lines.append("Possibly undelivered (no automatic retry):")
         for item in sorted(uncertain, key=lambda x: (str(x.get("identity", "")), str(x.get("status", "")))):
             lines.append(f"- {item.get('identity', 'SCHEMA_GAP')} | {item.get('status', STATE_UNCERTAIN)}")
+    if "large_smc" in summary:
+        counts = summary["large_smc"]["rejection_counts"]
+        lines.append("Large-SMC rejections (archived transitions):")
+        for reason in ("REJECT_NO_STOP", "REJECT_NO_TARGET", "REJECT_STALE"):
+            count = counts[reason]
+            if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+                raise ValueError("Invalid Large-SMC rejection count")
+            lines.append(f"- {reason}: {count}")
     lines.append("EXECUTION: DISABLED")
     return "\n".join(lines)
 
