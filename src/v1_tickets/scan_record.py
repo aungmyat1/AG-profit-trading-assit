@@ -16,7 +16,9 @@ import os
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from v1_tickets.guards import SIGNAL_STALE  # noqa: F401  (canonical; re-exported for readers)
+from v1_tickets.guards import (
+    SIGNAL_STALE,  # noqa: F401  (canonical; re-exported for readers)
+)
 
 NO_SETUP, WATCH, OPPORTUNITY, TICKET_BLOCKED, TICKET_READY = (
     "NO_SETUP", "WATCH", "OPPORTUNITY", "TICKET_BLOCKED", "TICKET_READY")
@@ -161,8 +163,9 @@ def adapterless_scan_records(*, run_id: str, cycle: str, now: dt.datetime, root:
     this repo, so every ACTIVE-cycle symbol is TICKET_BLOCKED with the authority reason and
     no strategy logic is evaluated, borrowed or inferred."""
     import yaml
-    from v1_tickets.authority import REPO_ROOT, resolve_ticket_authority
+
     from mt5.canonical_broker_map import DEFAULT_MAP_PATH, load_map
+    from v1_tickets.authority import REPO_ROOT, resolve_ticket_authority
 
     base = root or str(REPO_ROOT)
     with open(os.path.join(base, SESSION_TRADE_V1_CONTRACT), "r", encoding="utf-8") as f:

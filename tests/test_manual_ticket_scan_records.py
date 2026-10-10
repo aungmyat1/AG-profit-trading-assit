@@ -9,8 +9,18 @@ from pathlib import Path
 import pytest
 
 from v1_tickets.scan_record import (
-    NO_SETUP, NOT_RUN, TICKET_BLOCKED, TICKET_READY, WATCH, adapterless_scan_records, build_scan_record,
-    classify_fx_ticket, coverage, read_jsonl, scan_path, write_scan_record,
+    NO_SETUP,
+    NOT_RUN,
+    TICKET_BLOCKED,
+    TICKET_READY,
+    WATCH,
+    adapterless_scan_records,
+    build_scan_record,
+    classify_fx_ticket,
+    coverage,
+    read_jsonl,
+    scan_path,
+    write_scan_record,
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts" / "host"))
@@ -75,8 +85,9 @@ def test_every_scheduled_run_records_every_configured_symbol(tmp_path):
 
 
 def test_session_trade_unknown_symbol_is_explicitly_unmapped(tmp_path):
-    import yaml
     from pathlib import Path
+
+    import yaml
 
     source = Path(__file__).resolve().parent.parent / "strategies/session_trade/contract.yaml"
     contract = yaml.safe_load(source.read_text(encoding="utf-8"))
@@ -106,7 +117,9 @@ def test_scan_record_carries_ordered_block_reasons():
 def test_telegram_failure_never_hides_scan_records_and_is_traced(tmp_path, monkeypatch, raiser, status, error):
     """A4 / TELEGRAM_DELIVERY_TRACE_R1: scan records persist first; a delivery failure is recorded
     separately, never raised, and carries no token/URL/message text."""
-    from test_manual_ticket_logic_gate import CANDLES     # recorded EURUSD M15; used only to drive the loop
+    from test_manual_ticket_logic_gate import (
+        CANDLES,  # recorded EURUSD M15; used only to drive the loop
+    )
     monkeypatch.delenv("AG_EVIDENCE_ROOT")                 # committed host metadata -> tickets, not DATA_ERROR
     now = dt.datetime(2026, 6, 23, 7, 20, tzinfo=UTC)
     fetch = lambda symbol, tf, n: CANDLES                  # noqa: E731
