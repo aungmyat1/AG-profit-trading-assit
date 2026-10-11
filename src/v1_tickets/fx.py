@@ -37,9 +37,14 @@ from ticket_delivery.archive import (
     archive_cycle_decision,
 )
 from v1_tickets.guards import gate_ready
-from v1_tickets.ready_authority import SHADOW_INFO_ONLY, apply_ready_authority
+from v1_tickets.ready_authority import (
+    SHADOW_INFO_ONLY,
+    apply_ready_authority,
+    symbol_scope_verified,
+)
 
 STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
+SCOPED_CANDIDATE_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml"
 V1_FX_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
 V1_CYCLES = ("ASIAN_LONDON", "LONDON_NEWYORK")
 REFERENCE_NOT_READY = "REFERENCE_NOT_READY"   # evaluated before the reference window closed (lifecycle)
@@ -91,14 +96,14 @@ def _r(symbol: str, value: Optional[float]) -> Optional[float]:
     return value if digits is None else round(value, digits)
 
 
-def session_windows_utc(day: dt.date) -> Dict[str, Dict[str, tuple]]:
+def session_windows_utc(day: dt.date, *, strategy_path: str = STRATEGY_PATH) -> Dict[str, Dict[str, tuple]]:
     """Fixed-UTC windows of the frozen session pairs (GMT in the YAML), half-open [start, end).
     Never DST-shifted (owner decision C3); local time is display-only via session_clock."""
     def at(t: str) -> dt.datetime:
         return dt.datetime.combine(day, dt.time(*map(int, str(t).split(":"))), tzinfo=dt.timezone.utc)
     return {p.pair_id: {"ref": (at(p.reference_session.start_time_gmt), at(p.reference_session.end_time_gmt)),
                         "trade": (at(p.trade_session.start_time_gmt), at(p.trade_session.end_time_gmt))}
-            for p in load_strategy(STRATEGY_PATH).session_pairs}
+            for p in load_strategy(strategy_path).session_pairs}
 
 
 def build_fx_error_ticket(
@@ -135,13 +140,31 @@ def build_fx_ticket(
     symbol: str, cycle: str, session_date: dt.date, session_candles: Sequence[Candle], expected_bar_count: int,
     post_session_candles: Sequence[Candle], *, data_source: str, evaluated_at: dt.datetime,
     data_close: Optional[dt.datetime] = None, spread: Optional[float] = None,
-    strategy_path: str = STRATEGY_PATH,
+    strategy_path: Optional[str] = None, runtime_scope: bool = False,
 ) -> Dict[str, Any]:
     """`data_close`: close time of the latest live bar (None = no data-age gate); `spread`: live
-    ask - bid in price units (None = SPREAD_NOT_EVALUATED, no READY). `strategy_path`: offline
-    logic-gate replay of a registered candidate version only; runtime callers keep the default."""
+    ask - bid in price units (None = SPREAD_NOT_EVALUATED, no READY). Runtime callers set runtime_scope;
+    offline replays may explicitly select a historical or candidate contract."""
     if symbol not in V1_FX_SYMBOLS or cycle not in V1_CYCLES:
         raise ValueError(f"{symbol}/{cycle} is not a V1 FX ticket cycle")
+    strategy_path = strategy_path or STRATEGY_PATH
+    if runtime_scope:
+        candidate = load_strategy(SCOPED_CANDIDATE_PATH)
+        if not symbol_scope_verified(candidate.strategy_id, candidate.version, symbol, cycle,
+                                     setup="SWEEP", branch="RANGE_SWEEP",
+                                     contract_path=candidate.source_path):
+            return {"label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
+                    "strategy_id": candidate.strategy_id, "strategy_version": candidate.version,
+                    "symbol": symbol, "cycle": cycle, "session_date": session_date.isoformat(),
+                    "data_source": data_source,
+                    "evaluated_at": evaluated_at.astimezone(dt.timezone.utc).isoformat(),
+                    "metadata_status": metadata_status(symbol), "delivery_mode": "ARCHIVE_ONLY",
+                    "decision": "BLOCKED", "reason_code": "LOGIC_SCOPE_NOT_VERIFIED",
+                    "detail": "strategy scope or identity is not verified",
+                    "signal_time_source": SIGNAL_TIME_NOT_APPLICABLE,
+                    "primary_block_reason": "LOGIC_SCOPE_NOT_VERIFIED",
+                    "block_reasons": ["LOGIC_SCOPE_NOT_VERIFIED"]}
+        strategy_path = SCOPED_CANDIDATE_PATH
     strategy = load_strategy(strategy_path)
     base: Dict[str, Any] = {
         "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER", "strategy_id": strategy.strategy_id,
@@ -151,7 +174,7 @@ def build_fx_ticket(
         "metadata_status": metadata_status(symbol), "delivery_mode": "ARCHIVE_ONLY",
         "signal_time_source": SIGNAL_TIME_NOT_APPLICABLE,
     }
-    ref_end = session_windows_utc(session_date)[cycle]["ref"][1]
+    ref_end = session_windows_utc(session_date, strategy_path=strategy_path)[cycle]["ref"][1]
     if evaluated_at < ref_end:
         # Lifecycle, not a data fault: the reference box cannot be complete before its window
         # closes. Decided on the clock alone, so missing/corrupt bars after ref_end still reach
@@ -167,6 +190,9 @@ def build_fx_ticket(
               "regime": sig.regime, "setup": sig.setup, "signal_id": sig.signal_id,
               "box": {"high": _r(symbol, sig.box_high), "low": _r(symbol, sig.box_low), "mid": _r(symbol, sig.box_mid)},
               "signal_timestamp": sig.signal_timestamp.isoformat() if sig.signal_timestamp else None}
+    if runtime_scope and (sig.setup != "SWEEP" or sig.regime != "RANGE"):
+        return {**ticket, "decision": "BLOCKED", "reason_code": "LOGIC_SCOPE_NOT_VERIFIED",
+                "detail": f"emitted branch {sig.regime}_{sig.setup} is outside verified S1 scope"}
     if sig.status == "SIGNAL":
         ticket["signal_time_source"] = SIGNAL_TIME_ENGINE if sig.signal_timestamp else SIGNAL_TIME_MISSING
         long = sig.direction == "LONG"
@@ -186,11 +212,11 @@ def build_fx_ticket(
         ticket.update({"decision": "DATA_ERROR", "reason_code": SIGNAL_TIME_UNAVAILABLE,
                        "engine_reason_code": sig.reason_code, "signal_close_utc": None,
                        "detail": "engine supplied no signal timestamp; no signal age exists"})
-        return apply_ready_authority(ticket)
+        return apply_ready_authority(ticket, contract_path=strategy.source_path)
     gated = gate_ready(ticket, now=evaluated_at, data_close=data_close,
                        signal_close=signal_open + M15 if signal_open is not None else None,
                        spread=spread, risk=sig.risk_distance)
-    return apply_ready_authority(gated)            # D6: READY authority switch (config, fail closed)
+    return apply_ready_authority(gated, contract_path=strategy.source_path)  # D6 + owner-record binding
 
 
 _STATE = {"READY": CYCLE_STATE_READY, "NO_TRADE": CYCLE_STATE_NO_TRADE, "DATA_ERROR": CYCLE_STATE_DATA_ERROR,

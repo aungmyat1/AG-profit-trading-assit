@@ -54,6 +54,18 @@ from canonical session windows or other repo conventions at the time of registra
   verification only, not economic/edge evidence) is read by
   `src/v1_tickets/ready_authority.py`; with D6 ON, READY needs the ticket's symbol listed for its version
   (absent = not verified). D6 stays OFF; no authorization change.
+  Open spec item ROUNDING_V113_HALF_UP (OD1011-ROUNDING as amended 2026-10-11): v1.1.2's frozen rounding is the
+  engine's `fx._r` (Python round() on IEEE floats, ties as stored) and verification gates replicate it exactly. Any
+  next candidate version (>= 1.1.3) must round derived prices with Decimal ROUND_HALF_UP to the point grid and be
+  re-verified; v1.1.2 is not changed in place.
+   2026-10-11 AGP-LANE-A3: S1 is GBPUSD × ASIAN_LONDON × RANGE_SWEEP (engine_setup SWEEP), exact identity-bound
+   scope; all other tuples fail closed. L1-L6 PASS on 58 VT recorded days. L5 uses host-snapshot spread plus
+   OD1011-COMMISSION; 4/7 kept entries are cost-blocked. D6 remains OFF and no authorization flags change:
+   `docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json`.
+  2026-10-11 owner ruling: the unscoped EURUSD `logic_verified_symbols` entry is **SUSPENDED** (reason
+  L3_REPAINT_UNRESOLVED_2026-07-31; evidence `docs/status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md`: ASIAN_LONDON
+  2026-07-31, 25 future-mutation mismatches, stop == entry). The D6 reader treats any non-VERIFIED status as
+  not verified. AGP-L3-0731 root cause is pending (after #149 -> #132 merge).
 - **Open gaps found building `execution/` (2026-08-26):**
   - `risk_and_money_management.risk_mode: FIXED_PERCENT_OR_CONTRACT` never states an
     actual risk-per-trade percentage or contract size. `execution/risk.py` currently
@@ -443,3 +455,13 @@ OWNER_DECISION_PENDING: rewire to src/mt5/market_data.py or remove.
 on owner authority after host audit found it in the MT5 MCP server process command line.
 Old credential invalid. Follow-up: MCP launch must read credentials from env or Windows
 Credential Manager, never argv.
+
+## Import-resolution technical debt (2026-10-10)
+
+- **TECH_DEBT / DEAD_IMPORT:** 158 importing locations unreachable from the conservative
+  static import graph rooted at `scripts/host/live_candles_smoke.py` for
+  fx/crypto/lsmc/lsmc-weekend on main `7f3e75d8bbb4a7c119a9be7279bf6d2f5badd003`.
+  Full module/importer/line inventory and three separate reachable DEPLOY_BLOCKER
+  imports: [import-resolution audit](../docs/status/IMPORT_RESOLUTION_AUDIT_2026-10-10.md).
+  No dead-import fixes, strategy/config changes, or execution authority changes.
+  DEAD_IMPORT is entry-point-specific; other tooling may still reference these imports.

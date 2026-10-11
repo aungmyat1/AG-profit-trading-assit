@@ -16,6 +16,7 @@ import yaml
 
 from crypto_cfd_contract.contract import CONTRACT_ID, CONTRACT_VERSION, INSTRUMENTS
 from crypto_cfd_contract.rules import evaluate
+from host_evidence.symbol_metadata import server_bar_close_utc
 from mt5 import canonical_broker_map
 from strategy_engine.session import Candle
 from ticket_delivery.archive import CycleDecisionRecord, archive_cycle_decision
@@ -60,10 +61,19 @@ def _window(now: dt.datetime, windows: list[dict]) -> str | None:
     return None
 
 
+def _is_closed(c: Candle, next_open: dt.datetime | None, now: dt.datetime, step: dt.timedelta) -> bool:
+    if step < dt.timedelta(days=1):
+        return c.time + step <= now
+    # A server D1 spans 25h/23h across a US DST change: closed only once the next D1 open is
+    # observed or the rule-based server close has passed -- never at open+24h.
+    return (next_open is not None and c.time < next_open <= now) or server_bar_close_utc(c.time, step) <= now
+
+
 def _closed(rows: list[Candle], now: dt.datetime, step: dt.timedelta) -> list[Candle]:
     if any(c.time.tzinfo is None for c in rows):
         raise ValueError("NAIVE_CANDLE_TIME")
-    closed = [c for c in rows if c.time + step <= now]
+    nexts = [b.time for b in rows[1:]] + [None]
+    closed = [c for c, n in zip(rows, nexts) if _is_closed(c, n, now, step)]
     if any(c.time.utcoffset() != dt.timedelta(0) for c in closed):
         raise ValueError("NON_UTC_CANDLE")
     if any(a.time >= b.time for a, b in zip(closed, closed[1:])):

@@ -35,7 +35,7 @@ def symbols(evidence):
 
 def _write_map(tmp_path, entries, **over):
     raw = {"schema": cbm.SCHEMA, "map_version": 1, "broker": "VT_MARKETS", "server": "VTMarkets-Demo",
-           "evidence": "x.json", "entries": entries, **over}
+           "evidence": os.path.relpath(EVIDENCE, ROOT).replace(os.sep, "/"), "entries": entries, **over}
     p = tmp_path / "map.yaml"
     p.write_text(yaml.safe_dump(raw), encoding="utf-8")
     return str(p)
@@ -314,6 +314,17 @@ def test_cited_valid_capture_resolves(tmp_path):
     assert _cited_map(tmp_path).resolve("EURUSD") == "EURUSD-VIP"
 
 
+@pytest.mark.parametrize("field, value", [("visible", False), ("trade_calc_mode", 4)])
+def test_qualification_fields_match_aggregate_capture(tmp_path, field, value):
+    expected = dict(FULL_EXPECTED)
+    expected[field] = value
+    m = _cited_map(tmp_path, entry_over={"expected": expected})
+    with pytest.raises(cbm.SymbolDataError) as exc:
+        m.resolve("EURUSD")
+    assert exc.value.reason_code == cbm.REASON_CAPTURE_MISMATCH
+    assert field in exc.value.reason
+
+
 def _mut(field, value):
     def f(r):
         r["fields"][field] = value
@@ -485,7 +496,10 @@ def test_symbol_lookup_classification(info_name, error, inventory, expected):
 
 def test_package_result_codes_match_installed_package():
     mt5 = pytest.importorskip("MetaTrader5")  # import only; no terminal contact
-    mod_path = os.path.normcase(os.path.abspath(mt5.__file__))
+    mod_file = getattr(mt5, "__file__", None)
+    if mod_file is None:
+        pytest.skip("repo MetaTrader5 portability stub, not the installed package")
+    mod_path = os.path.normcase(os.path.abspath(mod_file))
     if mod_path.startswith(os.path.normcase(ROOT) + os.sep) and "site-packages" not in mod_path:
         pytest.skip("repo MetaTrader5 stub, not the installed package")
     smoke, _ = _load_smoke()

@@ -323,7 +323,7 @@ def host_fetch(mt5):
     detection, which misreads XAUUSD (+4) and fails on a late first USDJPY bar. Read-only:
     copy_rates_from_pos plus symbol_select for Market Watch visibility."""
     from host_evidence.symbol_metadata import (
-        CONVERSION_ERROR, INCOMPLETE_CANDLES, SYMBOL_NOT_FOUND, HostDataError, server_time_to_utc,
+        CONVERSION_ERROR, INCOMPLETE_CANDLES, SYMBOL_NOT_FOUND, DstHourError, HostDataError, server_time_to_utc,
     )
     from strategy_engine.session import Candle
 
@@ -338,9 +338,17 @@ def host_fetch(mt5):
             raise HostDataError(INCOMPLETE_CANDLES,
                                 f"{symbol}/{timeframe} {got}<{count}: {call_with_timeout(mt5.last_error)}")
         try:
-            return [Candle(time=server_time_to_utc(_mt5_server_wall(int(r["time"]))),
-                           open=float(r["open"]), high=float(r["high"]), low=float(r["low"]),
-                           close=float(r["close"]), volume=float(r["tick_volume"])) for r in rates]
+            out = []
+            for r in rates:
+                try:
+                    t = server_time_to_utc(_mt5_server_wall(int(r["time"])))
+                except DstHourError as exc:  # repeated/skipped server hour: drop + log, never fold
+                    print(f"DROPPED_BAR {exc.reason_code} {symbol}/{timeframe} {exc.server_wall_clock.isoformat()}",
+                          file=sys.stderr)
+                    continue
+                out.append(Candle(time=t, open=float(r["open"]), high=float(r["high"]), low=float(r["low"]),
+                                  close=float(r["close"]), volume=float(r["tick_volume"])))
+            return out
         except (KeyError, TypeError, ValueError, OverflowError, OSError) as exc:
             raise HostDataError(CONVERSION_ERROR, f"{symbol}/{timeframe}: {type(exc).__name__} {exc}") from exc
     return fetch

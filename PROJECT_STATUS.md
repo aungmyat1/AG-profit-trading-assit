@@ -6,7 +6,18 @@ review_by: 2026-11-07
 ---
 # Project Status — AG Profit Trading
 
-## Current snapshot (2026-10-10)
+## Current snapshot (2026-10-11)
+
+OD1011 owner decisions (2026-10-11) are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`. OD1011-ROUNDING was amended: v1.1.2 uses its frozen engine `fx._r` (Python `round()` on IEEE floats); versions >=1.1.3 use Decimal ROUND_HALF_UP. Runtime verification for `ST_ASIAN_SWEEP_5R_V1@1.1.2` is scoped to GBPUSD × ASIAN_LONDON × SWEEP; EURUSD remains suspended and other branches fail closed. The D60 replay reports S1 L1–L6 PASS; evidence is `docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json`. D6 READY remains OFF.
+
+DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
+2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
+with the VT server-time rule (server time = New York time + 7h). They no longer use one
+offset per process or per run. A bar stamped in the repeated or skipped server hour is
+dropped and logged with `AMBIGUOUS_DST_HOUR` or `NONEXISTENT_DST_HOUR`. The crypto CFD
+D1 bar is closed only at its rule-based server close (25h or 23h) or when the next D1
+bar opens. Session box definitions (C3) and strategy logic are unchanged. Test:
+`tests/test_dst_transition_2026_11.py`.
 
 The market-structure analyzer uses fresh computation only; its optional replay-dependent
 cache path is removed. Offline byte comparisons against main pass for identical candles
@@ -25,11 +36,19 @@ the unchanged v1.1.0 contract; no R:R minimum is
 authorized. Offline verification is recorded in
 `docs/status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md`; host validation is pending.
 
-OD1009-D1–OD1009-D6 are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`; G1–G6 are
-defined in `docs/PROJECT_OBJECTIVE.md`. The FX/gold manual-ticket risk/cost gate is implemented
+OD1009-D1–OD1009-D6 and C14 are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`; G1–G6 are
+defined in `docs/PROJECT_OBJECTIVE.md`. C14 ratifies automatic DEMO-only execution under separate
+strategy-specific standing authorization after logical, runtime, READY, host, risk and broker gates.
+EDGE_VERIFIED and a mandatory 10-cycle soak are not prerequisites. This policy-only change leaves
+`demo_authorized=false`, `live_authorized=false`, and READY OFF. The FX/gold manual-ticket risk/cost gate is implemented
 but awaits focused verification. Current strategy bindings, readiness values, demo/live flags,
 host tasks, and broker state are unchanged. Host-side execution artifacts remain `UNTRACKED_HOST`
 under C11 until brought into the repository through a reviewed PR before G6.
+
+READY admission now requires both the existing READY config switch and a matching approved
+record in the owner decision register bound to exact strategy version, loaded contract SHA256,
+symbol, and session. The production switch remains OFF and no owner record was added; see
+[`READY owner binding`](docs/status/READY_OWNER_BINDING_2026-10-10.md).
 
 Recorded M15 capture (`scripts/capture_recorded_m15.py`, read-only MT5) gained V2 options:
 `--window HH:MM-HH:MM`, `--all-days`, `--offset-method {rollover,reference-symbol:<SYM>}` and
@@ -230,7 +249,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `81745bef050ea5bceb27c3a724434fe4d073624fac0f280431c08a9e142ee659`.
+inputs_sha256: `7175b47649e83c2f1f2215c4803a100a6354ebb5746248cb3ec6e5cbfcab5802`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -244,7 +263,7 @@ cog.outl("Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECT
 ]]] -->
 Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
 
-The owner decides every entry. A confirmed ticket may reach the canonical **demo execution boundary only after separately recorded owner demo authorization**. Until `demo_authorized=true` is explicitly established through the governed authorization path, Confirm/Reject is decision capture only and broker execution remains a no-op/blocked path. Live real-money execution is outside this objective.
+Under ratified C14, a strategy with separate, valid, scoped standing DEMO authorization may submit eligible orders automatically after every runtime, READY, host, risk and broker gate passes; no per-order owner confirmation is required for that authorized scope. Confirm/Reject remains optional decision capture and cannot grant or extend authorization. Until `demo_authorized=true` is explicitly established through the governed authorization path, broker execution remains blocked. Live real-money execution is outside this objective.
 
 `LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority.
 

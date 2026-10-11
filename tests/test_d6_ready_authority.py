@@ -85,7 +85,7 @@ def test_no_symbol_or_cycle_can_emit_ready(production_ready_authority, engine_si
 def test_manual_ticket_cannot_reach_ticket_ready(production_ready_authority, engine_signal):
     bar = Candle(dt.datetime(2026, 10, 7, 7, 0, tzinfo=UTC), 1.1665, 1.1670, 1.1660, 1.1666)
     m = manual_ticket.build_manual_ticket("EURUSD", "ASIAN_LONDON", DAY, [], 2, [bar], now=AT, data_close=AT,
-                                          spread=0.00015, owner=manual_ticket.load_owner_config(), balance=10000.0)
+                                          spread=0.00015, owner=manual_ticket.load_owner_config(), balance=10000.0, commission_r=0.0)
     assert m["state"] != TICKET_READY and m["legacy_informational_ready"] is False
     assert m["legacy_informational_decision"] == ra.SHADOW_INFO_ONLY
 
@@ -101,13 +101,15 @@ def test_switch_fails_closed_and_only_explicit_on_restores_ready(tmp_path):
     assert ra.ready_authority("ST_ASIAN_SWEEP_5R_V1", str(other))[0] is False
     on = tmp_path / "on.yaml"
     on.write_text("strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    ready: 'ON'\n")
-    assert ra.ready_authority("ST_ASIAN_SWEEP_5R_V1", str(on)) == (True, "READY_AUTHORITY_ON")
+    assert ra.ready_authority("ST_ASIAN_SWEEP_5R_V1", str(on), strategy_version="1.1.2",
+                              contract_sha256="a" * 64, symbol="EURUSD", session="ASIAN_LONDON",
+                              owner_register_path=missing) == (False, ra.OWNER_DECISION_RECORD_MISSING)
     assert ra.ready_authority("SOME_OTHER_STRATEGY", str(on))[0] is False
     # A symbol verified for its version in strategies/registry.yaml (per-symbol gate, see
     # test_d6_per_symbol_verification.py); with D6 ON it stays READY.
     ready = {"decision": "READY", "strategy_id": "ST_ASIAN_SWEEP_5R_V1", "reason_code": "X",
              "strategy_version": "1.1.2", "symbol": "EURUSD"}
-    assert ra.apply_ready_authority(ready, str(on)) is ready                       # ON + verified: untouched
+    assert ra.apply_ready_authority(ready, str(on))["reason_code"] == ra.OWNER_DECISION_RECORD_MISSING
     assert ra.apply_ready_authority(ready, missing)["decision"] == ra.SHADOW_INFO_ONLY
     no_trade = {"decision": "NO_TRADE", "strategy_id": "ST_ASIAN_SWEEP_5R_V1"}
     assert ra.apply_ready_authority(no_trade, missing) is no_trade                 # only READY is affected

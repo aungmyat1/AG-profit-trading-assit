@@ -25,7 +25,11 @@ import yaml
 from host_evidence.symbol_metadata import load_record
 from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
 from ticket_delivery.identity import logical_ticket_id
-from v1_tickets.authority import LOGIC_VERIFIED, resolve_ticket_authority
+from v1_tickets.authority import (
+    LOGIC_VERIFIED,
+    registry_display_status,
+    resolve_ticket_authority,
+)
 from v1_tickets.guards import STALE_AFTER
 
 OVERRIDE_PATH = os.path.join("config", "local", "delivery_override.yaml")
@@ -225,8 +229,13 @@ def format_ticket(t: Dict[str, Any]) -> str:
     except Exception:  # noqa: BLE001 -- display status fails closed
         logic_status = "NOT_VERIFIED"
     display_decision = t.get("decision", "NOT_AVAILABLE")
+    registry_status = ("ADMITTED" if simulated else registry_display_status(
+        t.get("strategy_id", ""), t.get("strategy_version"),
+    ))
+    if registry_status != "ADMITTED" and display_decision in {"READY", "NOT_READY"}:
+        display_decision = registry_status
     if display_decision == "READY" and logic_status != LOGIC_VERIFIED and not simulated:
-        display_decision = "NOT_READY"
+        display_decision = "RESEARCH"
     raw_entry, raw_stop, engine_risk = t.get("entry"), t.get("stop_loss"), t.get("risk_distance")
     raw_risk = engine_risk or (abs(raw_entry - raw_stop)
                                if raw_entry is not None and raw_stop is not None else None)

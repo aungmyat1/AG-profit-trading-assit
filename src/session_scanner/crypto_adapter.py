@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from host_evidence.symbol_metadata import DstHourError
 from market_structure import structural_breaks_for_candles
 from market_structure.models import STATE_BEARISH, STATE_BULLISH
 
@@ -53,10 +54,15 @@ def scan_crypto_instruments(source, cfg: dict, ta, now, server_now, source_label
             ticks = source.ticks(record.broker_symbol, server_now - timedelta(minutes=5),
                                  server_now + timedelta(minutes=1))
             tick = ticks[-1] if ticks else None
+            tick_time = None
+            if tick:
+                try:
+                    tick_time = ta.server_to_utc(parse_server_wallclock(str(tick["time_ms"])))
+                except DstHourError:  # repeated/skipped server hour: treat as no quote
+                    tick = None
             if tick:
                 bid, ask = float(tick["bid"]), float(tick["ask"])
                 spread = ask - bid
-                tick_time = ta.server_to_utc(parse_server_wallclock(str(tick["time_ms"])))
                 tick_age = (now - tick_time).total_seconds()
                 quote = {"bid": bid, "ask": ask, "spread_points": int(round(spread / record.point)),
                          "spread_price": spread, "spread_pct": spread / bid * 100 if bid else None,
