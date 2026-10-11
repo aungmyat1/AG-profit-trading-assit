@@ -37,7 +37,7 @@ def test_candidate_fixtures_are_per_symbol_and_have_no_reused_ohlc_values() -> N
     manifest = fixture_manifest()
     classifications = {item["symbol"]: item["classification"] for item in manifest["sources"]}
     assert classifications == {
-        "EURUSD": "HOST_CAPTURED_DERIVED",
+        "EURUSD": "HOST_CAPTURED",
         "GBPUSD": "MIXED_HOST_CONTEXT_AND_SYNTHETIC",
         "USDJPY": "SYNTHETIC",
         "XAUUSD": "SYNTHETIC",
@@ -59,7 +59,8 @@ def test_candidate_fixtures_are_per_symbol_and_have_no_reused_ohlc_values() -> N
 
 def test_candidate_records_c11_primary_and_h1_fallback_per_ticket() -> None:
     rows = {row["symbol"]: row for row in audit.run()}
-    assert rows["EURUSD"]["state"] == "NEAR_POI"
+    # The single-snapshot fixture was captured Sunday during the canonical FX close.
+    assert rows["EURUSD"]["state"] == "MARKET_CLOSED"
     assert rows["EURUSD"]["C11_source"] == "NO_TICKET"
     assert rows["GBPUSD"]["C11_source"] == "NO_TICKET"
     broker_symbols = {

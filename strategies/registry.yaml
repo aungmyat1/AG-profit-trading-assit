@@ -88,6 +88,19 @@ strategies:
     research: true
     demo_authorized: false
     live_authorized: false
+    detection_logic_verification:
+      status: LOGIC_VERIFIED
+      verification_basis: "Single-snapshot fixture bound to EURUSD.json SHA256 b5e1e524e1b912d15032650881edb000906d6d875657332be90fa3997a191c11 and host snapshot data/eurusd-d1-mt5@a44437e; L1-L6, prefix-invariance and classified oracle diffs passed. Old-vs-new output attribution is diagnostic only."
+      mismatch_count: 0
+      logic_defect_count: 0
+      data_defect_count: 0
+      identity: ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY
+      report: research_external/oracles/runs/AGP_4H_C_EURUSD_DETECTION.json
+      scope: "EURUSD detection only; actionability is a separate layer and was not evaluated"
+      host_fixture: "single VT MT5 EURUSD-VIP D1/H1/M5 snapshot; data/eurusd-d1-mt5@a44437e; SHA256 ff77c9338f6fcc74079cf88d69d103b0c5e4e5a19856b6d4dce8a28333e5701e"
+      completed_utc: 2026-10-11
+      merge_gate: "host re-run match (AGP-4H-HOST)"
+      merge_gate_detail: "Host compares rebuilt D1 to MT5 copy_rates D1 for the same dates."
     config_source: strategies/ST_LARGE_SMC_V1.yaml
     engine: "src/large_smc_research/engine.py (RESEARCH_ONLY -- no proposal/demo/live/execution/risk-sizing authority; C10 stop-loss SIGNED and implemented as of v1.0.7 (c10_stop_policy.py, 2026-09-07), RESEARCH_QUALIFIED now reachable; pending-entry expiry RESOLVED_BY_REUSE as of v1.0.6, see historical_replay/fill_simulator.py). AG-EGSVF lifecycle stage (recorded only in src/validation_framework/adapters/large_smc_adapter.py -- this registry has no lifecycle_stage/version field): owner-promoted OFFLINE_RESEARCH -> FORWARD_RESEARCH 2026-09-07, see strategies/STRATEGY_LEDGER.md's AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_V1 entry. Next transition (FORWARD_RESEARCH -> OPERATIONAL_SHADOW) is evaluated, not executed, and blocks on an unresolved shadow-entry-evidence gate."
     note: >-
