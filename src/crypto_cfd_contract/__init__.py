@@ -9,9 +9,9 @@ from .contract import (
     CONTRACT_ID,
     CONTRACT_VERSION,
     INSTRUMENTS,
+    RISK_POLICY_STATUS,
     SESSION_POLICY,
     SPREAD_POLICY,
-    RISK_POLICY_STATUS,
     contract_status,
 )
 from .guard import evaluate  # fail-closed open-bar guard over the frozen rules.evaluate
