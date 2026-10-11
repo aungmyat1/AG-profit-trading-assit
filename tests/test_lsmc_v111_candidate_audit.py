@@ -13,7 +13,11 @@ sys.path.insert(0, str(ROOT / "tests"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import audit_lsmc_v111_candidate as audit  # noqa: E402
-from _lsmc_v111_fixtures import fixture_manifest, fixture_symbols, load_fixture  # noqa: E402
+from _lsmc_v111_fixtures import (  # noqa: E402
+    fixture_manifest,
+    fixture_symbols,
+    load_fixture,
+)
 
 
 def _price_values(symbol: str) -> set[float]:
@@ -37,7 +41,7 @@ def test_candidate_fixtures_are_per_symbol_and_have_no_reused_ohlc_values() -> N
     manifest = fixture_manifest()
     classifications = {item["symbol"]: item["classification"] for item in manifest["sources"]}
     assert classifications == {
-        "EURUSD": "HOST_CAPTURED_DERIVED",
+        "EURUSD": "HOST_CAPTURED",
         "GBPUSD": "MIXED_HOST_CONTEXT_AND_SYNTHETIC",
         "USDJPY": "SYNTHETIC",
         "XAUUSD": "SYNTHETIC",
@@ -59,7 +63,8 @@ def test_candidate_fixtures_are_per_symbol_and_have_no_reused_ohlc_values() -> N
 
 def test_candidate_records_c11_primary_and_h1_fallback_per_ticket() -> None:
     rows = {row["symbol"]: row for row in audit.run()}
-    assert rows["EURUSD"]["state"] == "NEAR_POI"
+    # The single-snapshot fixture was captured Sunday during the canonical FX close.
+    assert rows["EURUSD"]["state"] == "MARKET_CLOSED"
     assert rows["EURUSD"]["C11_source"] == "NO_TICKET"
     assert rows["GBPUSD"]["C11_source"] == "NO_TICKET"
     broker_symbols = {
@@ -248,10 +253,10 @@ def test_synthetic_labelled_fixtures_are_blocked_from_qualification_and_evidence
         ELIGIBILITY_BLOCKED,
         MARKET_DATA_MODE_REPLAY,
         MARKET_DATA_MODE_SYNTHETIC,
-        CandidateGeometry,
-        OpportunityCandidate,
         REPLAY_DATA_NOT_BROKER_EXECUTABLE,
         SYNTHETIC_DATA_NOT_PROPOSAL_ELIGIBLE,
+        CandidateGeometry,
+        OpportunityCandidate,
     )
     from opportunity.proposal_eligibility import evaluate_proposal_eligibility
     from opportunity.registry_binding import StrategyBinding
