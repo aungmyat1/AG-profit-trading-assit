@@ -5,6 +5,8 @@
 # the selected base's registry and READY owner binding to verify this exact symbol.
 schema: AGP_C14_DEMO_SCOPE_V1
 enabled: false
+# Fail closed: a missing or malformed value is interpreted as true by the loader.
+per_order_confirm_required: true
 scope:
   strategy_id: ST_ASIAN_SWEEP_5R_V1
   strategy_version: "1.1.2"

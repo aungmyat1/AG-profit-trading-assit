@@ -6,6 +6,7 @@ import json
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any
 
 import pytest
 import yaml
@@ -20,6 +21,7 @@ from demo_execution.admission import (
     prepare_canonical_handoff,
 )
 from demo_execution.authorization import load_standing_authorization
+from demo_execution.confirmation import append_owner_confirmation
 from demo_execution.idempotency import ExecutionLedger
 from demo_execution.risk import OpenPosition, RiskSnapshot, evaluate_risk_caps
 from demo_execution.scope import load_scope_policy
@@ -40,9 +42,20 @@ def _write_yaml(path: Path, data) -> None:
     path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
 
 
-def _fixture_scope(tmp_path: Path, *, enabled: bool = True, ready_on: bool = True):
+def _fixture_scope(
+    tmp_path: Path,
+    *,
+    enabled: bool = True,
+    ready_on: bool = True,
+    per_order_confirm_required: Any = True,
+    include_confirm_flag: bool = True,
+):
     config = _yaml(SCOPE_CONFIG)
     config["enabled"] = enabled
+    if include_confirm_flag:
+        config["per_order_confirm_required"] = per_order_confirm_required
+    else:
+        config.pop("per_order_confirm_required", None)
     scope_path = tmp_path / "demo_execution_s1.yaml"
     _write_yaml(scope_path, config)
 
@@ -120,6 +133,7 @@ def _ticket(scope, now: datetime, **updates):
         "spread_check": "PASS",
         "evaluated_at": (now - timedelta(minutes=2)).isoformat(),
         "signal_close_utc": (now - timedelta(minutes=2)).isoformat(),
+        "valid_until": (now + timedelta(minutes=10)).isoformat(),
     }
     ticket.update(updates)
     return ticket
@@ -188,13 +202,33 @@ def _risk(scope, now: datetime, **updates) -> RiskSnapshot:
     return RiskSnapshot(**data)
 
 
-def _pre_send_inputs(tmp_path: Path, *, now=None, enabled=True, ready_on=True):
+def _pre_send_inputs(
+    tmp_path: Path,
+    *,
+    now=None,
+    enabled=True,
+    ready_on=True,
+    per_order_confirm_required: Any = True,
+    include_confirm_flag: bool = True,
+    write_confirm: bool = True,
+):
     now = now or datetime(2026, 10, 11, 12, 0, tzinfo=timezone.utc)
     scope, registry_path, ready_path, owner_path = _fixture_scope(
-        tmp_path, enabled=enabled, ready_on=ready_on,
+        tmp_path,
+        enabled=enabled,
+        ready_on=ready_on,
+        per_order_confirm_required=per_order_confirm_required,
+        include_confirm_flag=include_confirm_flag,
     )
     ticket = _ticket(scope, now)
     auth_path = _auth_file(tmp_path, scope, ticket, now)
+    ticket_store = TicketStore(str(tmp_path / "ticket_store"))
+    if write_confirm and scope.per_order_confirm_required:
+        append_owner_confirmation(
+            ticket_store,
+            ticket,
+            confirmed_at_utc=now - timedelta(minutes=1),
+        )
     return {
         "scope": scope,
         "ticket": ticket,
@@ -205,6 +239,7 @@ def _pre_send_inputs(tmp_path: Path, *, now=None, enabled=True, ready_on=True):
         "registry_path": registry_path,
         "ready_path": ready_path,
         "owner_path": owner_path,
+        "ticket_store": ticket_store,
     }
 
 
@@ -217,6 +252,7 @@ def test_repo_scope_is_off_and_resolves_identity_magic_and_symbol_dynamically():
     assert scope.broker_symbol == "GBPUSD-VIP"
     assert scope.magic_number == contract["magic_number"]
     assert (scope.daily_reset_basis, scope.daily_reset_owner_confirm) == ("VT_SERVER_DAY", True)
+    assert scope.per_order_confirm_required is True
     assert scope.notification_failure_policy == "PENDING_OWNER"
 
 
@@ -225,13 +261,158 @@ def test_pre_send_happy_path_passes_only_broker_free_gates(tmp_path):
     result = evaluate_pre_send_gates(
         inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
         now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
     )
     assert result.admitted is True
     assert result.reason_code == "ADMITTED_PRE_SEND"
     assert result.ticket_id == inputs["ticket"]["ticket_id"]
     assert result.volume is not None and result.volume > 0
     assert result.details["risk_pct"] <= 0.5
+    assert result.details["owner_confirmation_id"]
+    assert result.block_reasons == ()
+    assert [row["outcome_kind"] for row in inputs["ticket_store"].outcomes(inputs["ticket"]["ticket_id"])] == [
+        "DEMO_OWNER_ORDER_CONFIRM",
+        "DEMO_OWNER_ORDER_CONFIRM_USED",
+    ]
     # A pre-send admission is not a broker order or a DEMO authorization grant.
+
+
+def test_missing_owner_confirmation_blocks_with_required_reason(tmp_path):
+    inputs = _pre_send_inputs(tmp_path, write_confirm=False)
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
+        now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
+    )
+    assert result.admitted is False
+    assert result.reason_code == "OWNER_CONFIRM_REQUIRED"
+    assert "OWNER_CONFIRM_REQUIRED" in result.block_reasons
+
+
+def test_confirmation_for_another_ticket_id_does_not_authorize_ticket(tmp_path):
+    inputs = _pre_send_inputs(tmp_path, write_confirm=False)
+    other_ticket = dict(inputs["ticket"], ticket_id="AG-S1-OTHER-TICKET")
+    append_owner_confirmation(
+        inputs["ticket_store"],
+        other_ticket,
+        confirmed_at_utc=inputs["now"] - timedelta(minutes=1),
+    )
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
+        now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
+    )
+    assert result.reason_code == "OWNER_CONFIRM_REQUIRED"
+    assert "OWNER_CONFIRM_TICKET_MISMATCH" in result.block_reasons
+
+
+def test_owner_confirmation_binds_the_ticket_branch_and_validity_window(tmp_path):
+    inputs = _pre_send_inputs(tmp_path)
+    inputs["ticket"]["branch"] = "SWEEP:CHANGED_AFTER_CONFIRM"
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
+        now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
+    )
+    assert result.reason_code == "OWNER_CONFIRM_REQUIRED"
+    assert "OWNER_CONFIRM_BINDING_MISMATCH" in result.block_reasons
+
+
+def test_owner_confirmation_binds_the_ticket_validity_window(tmp_path):
+    inputs = _pre_send_inputs(tmp_path)
+    inputs["ticket"]["valid_until"] = (inputs["now"] + timedelta(minutes=11)).isoformat()
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
+        now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
+    )
+    assert result.reason_code == "OWNER_CONFIRM_REQUIRED"
+    assert "OWNER_CONFIRM_BINDING_MISMATCH" in result.block_reasons
+
+
+def test_expired_ticket_cannot_use_its_prior_owner_confirmation(tmp_path):
+    inputs = _pre_send_inputs(tmp_path)
+    later = inputs["now"] + timedelta(minutes=11)
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], _market(inputs["scope"], later), _risk(inputs["scope"], later),
+        now_utc=later, authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
+    )
+    assert result.reason_code == "OWNER_CONFIRM_REQUIRED"
+    assert "TICKET_EXPIRED" in result.block_reasons
+
+
+def test_owner_confirmation_is_single_use(tmp_path):
+    inputs = _pre_send_inputs(tmp_path)
+    first = evaluate_pre_send_gates(
+        inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
+        now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
+    )
+    reused = evaluate_pre_send_gates(
+        inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
+        now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
+    )
+    assert first.admitted is True
+    assert reused.reason_code == "OWNER_CONFIRM_REQUIRED"
+    assert "OWNER_CONFIRM_REUSED" in reused.block_reasons
+
+
+@pytest.mark.parametrize(("flag_value", "include_flag"), [(True, False), ("false", True)])
+def test_missing_or_invalid_confirmation_flag_defaults_to_required(tmp_path, flag_value, include_flag):
+    inputs = _pre_send_inputs(
+        tmp_path,
+        per_order_confirm_required=flag_value,
+        include_confirm_flag=include_flag,
+        write_confirm=False,
+    )
+    assert inputs["scope"].per_order_confirm_required is True
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
+        now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
+    )
+    assert result.reason_code == "OWNER_CONFIRM_REQUIRED"
+
+
+def test_false_confirmation_flag_skips_only_that_gate(tmp_path):
+    inputs = _pre_send_inputs(tmp_path, per_order_confirm_required=False, write_confirm=False)
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], None, None,
+        now_utc=inputs["now"], authorization_path=str(tmp_path / "missing-auth.json"),
+        scope=inputs["scope"], ticket_store=inputs["ticket_store"],
+    )
+    assert inputs["scope"].per_order_confirm_required is False
+    assert result.reason_code == "AUTHORIZATION_MISSING"
+    assert "OWNER_CONFIRM_REQUIRED" not in result.block_reasons
+    assert "RISK_SNAPSHOT_MISSING" in result.block_reasons
+    assert "COST_EVIDENCE_MISSING" in result.block_reasons
+    assert "FRESHNESS_EVIDENCE_MISSING" in result.block_reasons
+    assert result.details["gate_details"]["owner_confirmation"]["status"] == "SKIPPED_BY_CONFIG"
+
+
+def test_false_confirmation_flag_can_pass_other_valid_gates_without_confirmation(tmp_path):
+    inputs = _pre_send_inputs(tmp_path, per_order_confirm_required=False, write_confirm=False)
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
+        now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
+    )
+    assert result.admitted is True
+    assert result.details["gate_details"]["owner_confirmation"]["status"] == "SKIPPED_BY_CONFIG"
+
+
+def test_false_confirmation_flag_does_not_skip_ticket_expiry_freshness_gate(tmp_path):
+    inputs = _pre_send_inputs(tmp_path, per_order_confirm_required=False, write_confirm=False)
+    later = inputs["now"] + timedelta(minutes=11)
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], _market(inputs["scope"], later), _risk(inputs["scope"], later),
+        now_utc=later, authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
+    )
+    assert result.reason_code == "TICKET_EXPIRED"
+    assert result.details["gate_details"]["owner_confirmation"]["status"] == "SKIPPED_BY_CONFIG"
 
 
 def test_default_disabled_scope_blocks_before_any_other_gate(tmp_path):
@@ -239,6 +420,7 @@ def test_default_disabled_scope_blocks_before_any_other_gate(tmp_path):
     result = evaluate_pre_send_gates(
         inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
         now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
     )
     assert (result.admitted, result.reason_code) == (False, "EXECUTION_DISABLED")
 
@@ -260,6 +442,7 @@ def test_scope_mismatch_has_a_canonical_block_reason(tmp_path, changes, reason):
     result = evaluate_pre_send_gates(
         inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
         now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
     )
     assert (result.admitted, result.reason_code) == (False, reason)
 
@@ -272,6 +455,7 @@ def test_scope_is_primary_and_records_other_available_risk_and_cost_blocks(tmp_p
     result = evaluate_pre_send_gates(
         inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
         now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
     )
     assert result.reason_code == "SYMBOL_SCOPE_MISMATCH"
     assert result.details["primary_block_reason"] == "SYMBOL_SCOPE_MISMATCH"
@@ -279,11 +463,41 @@ def test_scope_is_primary_and_records_other_available_risk_and_cost_blocks(tmp_p
     assert "BROKER_SYMBOL_SCOPE_MISMATCH" in result.details["block_reasons"]
 
 
+def test_all_applicable_gate_reasons_are_reported_with_scope_primary(tmp_path):
+    inputs = _pre_send_inputs(tmp_path)
+    inputs["ticket"].update(symbol="EURUSD", direction="NEUTRAL")
+    ExecutionLedger(inputs["ticket_store"]).reserve_before_send(
+        inputs["ticket"]["ticket_id"],
+        strategy_id=inputs["scope"].strategy_id,
+        symbol=inputs["scope"].symbol,
+        logic_identity=inputs["scope"].logic_identity,
+        now_utc=inputs["now"],
+    )
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], None, None,
+        now_utc=inputs["now"], authorization_path=str(tmp_path / "missing-auth.json"),
+        scope=inputs["scope"], ticket_store=inputs["ticket_store"],
+    )
+    assert result.reason_code == "SYMBOL_SCOPE_MISMATCH"
+    expected_order = [
+        "SYMBOL_SCOPE_MISMATCH",
+        "AUTHORIZATION_MISSING",
+        "OWNER_CONFIRM_REQUIRED",
+        "RISK_SNAPSHOT_MISSING",
+        "COST_EVIDENCE_MISSING",
+        "FRESHNESS_EVIDENCE_MISSING",
+        "HALT_UNCERTAIN_SEND",
+    ]
+    positions = [result.block_reasons.index(reason) for reason in expected_order]
+    assert positions == sorted(positions)
+
+
 def test_owner_ready_binding_must_be_on_and_record_bound(tmp_path):
     inputs = _pre_send_inputs(tmp_path, ready_on=False)
     result = evaluate_pre_send_gates(
         inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
         now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
     )
     assert (result.admitted, result.reason_code) == (False, "READY_AUTHORITY_OFF_D6")
 
@@ -293,6 +507,7 @@ def test_missing_host_authorization_blocks(tmp_path):
     result = evaluate_pre_send_gates(
         inputs["ticket"], inputs["market"], inputs["risk_snapshot"], now_utc=inputs["now"],
         authorization_path=str(tmp_path / "not-installed.json"), scope=inputs["scope"],
+        ticket_store=inputs["ticket_store"],
     )
     assert (result.admitted, result.reason_code) == (False, "AUTHORIZATION_MISSING")
 
@@ -432,9 +647,11 @@ def test_reconciled_attempt_is_append_only_and_same_ticket_cannot_retry(tmp_path
     )
     assert terminal.reason_code == "DUPLICATE_TICKET_ID"
     outcomes = store.outcomes(inputs["ticket"]["ticket_id"])
-    assert [row["outcome_kind"] for row in outcomes] == [
+    assert [row["outcome_kind"] for row in outcomes
+            if row["outcome_kind"].startswith("DEMO_EXECUTION_")] == [
         "DEMO_EXECUTION_SENDING", "DEMO_EXECUTION_RECONCILED",
     ]
+    assert any(row["outcome_kind"] == "DEMO_OWNER_ORDER_CONFIRM" for row in outcomes)
     assert ExecutionLedger(TicketStore(store.root)).inspect(inputs["ticket"]["ticket_id"]).reason_code \
         == "DUPLICATE_TICKET_ID"
 
@@ -463,7 +680,7 @@ def test_pending_notification_policy_blocks_new_orders(tmp_path):
 def test_final_handoff_fails_live_account_then_pending_notification_without_broker(tmp_path, monkeypatch):
     import MetaTrader5 as mt5
 
-    inputs = _pre_send_inputs(tmp_path)
+    inputs = _pre_send_inputs(tmp_path, per_order_confirm_required=False)
     calls = []
 
     def forbidden(name):
@@ -474,7 +691,7 @@ def test_final_handoff_fails_live_account_then_pending_notification_without_brok
 
     for operation in ("order_check", "order_send", "positions_get", "account_info"):
         monkeypatch.setattr(mt5, operation, forbidden(operation), raising=False)
-    store = TicketStore(str(tmp_path / "ticket_store"))
+    store = inputs["ticket_store"]
     live = prepare_canonical_handoff(
         inputs["ticket"], inputs["market"], inputs["risk_snapshot"], account_mode="LIVE",
         ticket_store=store, now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]),
