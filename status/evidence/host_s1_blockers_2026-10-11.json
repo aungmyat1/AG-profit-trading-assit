@@ -335,7 +335,8 @@
    "AG scheduled tasks (live_candles_smoke.py read-only; run_btc_daily_report.py no order_send call sites)"
   ],
   "comment_string_search": "No match in D: code trees, MQL5 sources, C:/Users/<user> code dirs, or Claude/Codex transcripts.",
-  "other_authorizations": "Account also authorized from 34.60.12.236 and 103.57.207.11 (other terminals/hosts) - owner to identify.",
+  "other_authorizations": "Account also authorized from <OWNER_IP_CLOUD> and <OWNER_IP_RESIDENTIAL> (other terminals/hosts) - owner to identify.",
+  "other_authorizations_finding": "both login sources owner-confirmed as owner's own (2026-10-11)",
   "order_capable_now": {
    "processes": [
     {
@@ -649,6 +650,16 @@
     "placeholder": "<HOST_ROOT>",
     "kind": "host path (live runtime tree)",
     "occurrences": 2
+   },
+   {
+    "placeholder": "<OWNER_IP_RESIDENTIAL>",
+    "kind": "external login source IP (owner ruling 2026-10-11)",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<OWNER_IP_CLOUD>",
+    "kind": "external login source IP (owner ruling 2026-10-11)",
+    "occurrences": 1
    }
   ]
  }
