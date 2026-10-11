@@ -104,7 +104,7 @@ for row in facts["strategies"]:
 | `SMC_3R_V1` | `unspecified` | unknown | unknown | false |
 | `ST_ASIAN_SWEEP_5R_V1` | `1.1.1` | unknown | unknown | false |
 | `ST_CRYPTO_CFD_SWEEP_RETEST_V1` | `1.0.0` | unknown | unknown | false |
-| `ST_LARGE_SMC_V1` | `1.0.7` | unknown | unknown | false |
+| `ST_LARGE_SMC_V1` | `1.1.0` | unknown | unknown | false |
 | `ST_LIQUIDITY_SWEEP_RETEST_V1` | `2.0.0` | unknown | unknown | false |
 | `ST_SESSION_SWEEP_CONTINUATION_V1` | `1.0.1` | unknown | unknown | false |
 <!-- [[[end]]] -->
@@ -249,7 +249,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `7175b47649e83c2f1f2215c4803a100a6354ebb5746248cb3ec6e5cbfcab5802`.
+inputs_sha256: `8502fe63113359ec0fcec6ead6de42b44774bb35c3f77317df1778882e1a6e1b`.
 <!-- [[[end]]] -->
 
 ### Objective
