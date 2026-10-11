@@ -10,11 +10,10 @@ Owner-record binding: with D6 ON, a READY is still downgraded unless the owner d
 contains an approved, exact-version, exact-contract-hash record whose symbol and session scopes
 include the ticket. The YAML record block is delimited by READY_AUTHORITY_RECORDS markers.
 
-Per-symbol verification (owner mission 2026-10-10): with D6 ON and the owner record matched, a READY
-is still downgraded unless the ticket's symbol is listed VERIFIED for the emitting strategy version. Authority:
-strategies/registry.yaml -> strategies.<id>.candidate_versions."<version>".logic_verified_symbols (entries
-`{symbol, evidence}`; logic verification only, not economic/edge evidence). Absent version, list, symbol or
-evidence ref means not verified (fail closed). D6 OFF behaviour is unchanged.
+Scope verification (AGP-142): a READY is downgraded unless the exact symbol, session, branch, and setup tuple
+is in `logic_verified_scopes` and its contract, engine, and identity hashes match the candidate. The runtime
+loader uses the same tuple before evaluation. Missing or mismatched identity/scope fails closed. D6 remains OFF
+and owner binding is still required before READY can be retained.
 """
 from __future__ import annotations
 
@@ -148,22 +147,65 @@ def ready_authority(strategy_id: str, path: Optional[str] = None, *, strategy_ve
     return False, OWNER_DECISION_VERSION_MISMATCH
 
 
-def symbol_verified(strategy_id: str, strategy_version: Any, symbol: Any,
-                    registry_path: Optional[str] = None) -> bool:
-    """True only if strategies/registry.yaml lists `symbol` with a non-empty `evidence` ref in
-    candidate_versions."<strategy_version>".logic_verified_symbols for `strategy_id`. Anything else is False."""
+def _in_scope(entry: Dict[str, Any], key: str, value: Any) -> bool:
+    """An unscoped entry (no `key`) covers every value; a scoped one must list `value` (malformed -> False)."""
+    if key not in entry:
+        return True
+    scope = entry[key]
+    return isinstance(scope, list) and isinstance(value, str) and value in scope
+
+
+def logic_scope_verified(strategy_id: str, strategy_version: Any, symbol: Any,
+                         registry_path: Optional[str] = None, *, cycle: Any = None, setup: Any = None,
+                         branch: Any = None, contract_path: Optional[str] = None) -> bool:
+    """True only for an exact, identity-matched scope in logic_verified_scopes."""
     try:
         with open(registry_path or REGISTRY_PATH, encoding="utf-8") as f:
             raw = yaml.safe_load(f) or {}
         entry = (raw.get("strategies") or {}).get(strategy_id) or {}
         version = (entry.get("candidate_versions") or {}).get(str(strategy_version)) or {}
-        listed = version.get("logic_verified_symbols")
+        listed = version.get("logic_verified_scopes")
     except (OSError, ValueError, AttributeError, yaml.YAMLError):
         return False
     if not isinstance(listed, list) or not isinstance(symbol, str):
         return False
-    return any(isinstance(e, dict) and e.get("symbol") == symbol and isinstance(e.get("evidence"), str)
-               and e["evidence"].strip() for e in listed)
+    candidate_source = version.get("config_source")
+    if not isinstance(candidate_source, str) or not candidate_source:
+        return False
+    expected_path = Path(_ROOT) / candidate_source
+    if contract_path is not None and Path(contract_path).resolve() != expected_path.resolve():
+        return False
+    try:
+        from v1_tickets.authority import logic_identity
+        identity = logic_identity(strategy_id, str(strategy_version))
+        candidate = yaml.safe_load(expected_path.read_text(encoding="utf-8")) or {}
+    except (OSError, ValueError, AttributeError, yaml.YAMLError):
+        return False
+    if not identity or candidate.get("version") != str(strategy_version):
+        return False
+    return any(isinstance(e, dict) and e.get("symbol") == symbol
+               and isinstance(e.get("evidence"), str) and e["evidence"].strip()
+               and e.get("status") == "LOGIC_VERIFIED" and e.get("config_source") == candidate_source
+               and e.get("contract_hash") == identity["contract_hash"]
+               and e.get("engine_hash") == identity["engine_identity"]
+               and e.get("identity_hash") == identity["digest"]
+               and e.get("session") == cycle and e.get("engine_setup") == setup and e.get("branch") == branch
+               for e in listed)
+
+
+def symbol_scope_verified(strategy_id: str, strategy_version: Any, symbol: Any, cycle: Any, *,
+                          setup: Any, branch: Any, contract_path: Optional[str] = None,
+                          registry_path: Optional[str] = None) -> bool:
+    return logic_scope_verified(strategy_id, strategy_version, symbol, registry_path, cycle=cycle, setup=setup,
+                                branch=branch, contract_path=contract_path)
+
+
+def symbol_verified(strategy_id: str, strategy_version: Any, symbol: Any,
+                    registry_path: Optional[str] = None, *, cycle: Any = None, setup: Any = None,
+                    branch: Any = None, contract_path: Optional[str] = None) -> bool:
+    """Compatibility name for the strict scope identity check."""
+    return logic_scope_verified(strategy_id, strategy_version, symbol, registry_path, cycle=cycle, setup=setup,
+                                branch=branch, contract_path=contract_path)
 
 
 def apply_ready_authority(ticket: Dict[str, Any], path: Optional[str] = None,
@@ -184,8 +226,11 @@ def apply_ready_authority(ticket: Dict[str, Any], path: Optional[str] = None,
         return {**ticket, "decision": SHADOW_INFO_ONLY, "suppressed_decision": "READY", "label": SHADOW_LABEL,
                 "engine_reason_code": ticket.get("reason_code"), "reason_code": reason,
                 "ready_authority": "OFF"}
-    if symbol_verified(str(ticket.get("strategy_id")), ticket.get("strategy_version"), ticket.get("symbol"),
-                       registry_path):
+    regime, setup = ticket.get("regime"), ticket.get("setup")
+    branch = f"{regime}_{setup}" if regime and setup else None
+    if logic_scope_verified(str(ticket.get("strategy_id")), ticket.get("strategy_version"), ticket.get("symbol"),
+                            registry_path, cycle=ticket.get("cycle"), setup=setup, branch=branch,
+                            contract_path=contract_path):
         return ticket
     return {**ticket, "decision": SHADOW_INFO_ONLY, "suppressed_decision": "READY", "label": SYMBOL_UNVERIFIED_LABEL,
             "engine_reason_code": ticket.get("reason_code"), "reason_code": READY_SYMBOL_NOT_VERIFIED,

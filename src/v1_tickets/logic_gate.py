@@ -55,11 +55,16 @@ def _point(digits: Optional[int]) -> float:
     return 10.0 ** -digits if digits is not None else 0.0
 
 
+EQ_EPS_POINTS = 1e-6   # float-noise slack, in points; never a price tolerance
+
+
 def _eq(a: Optional[float], b: Optional[float], digits: Optional[int]) -> bool:
-    """Equal up to the ticket's own price rounding (half a point), or float precision when unrounded."""
+    """`a` equals `b` rounded exactly as the v1.1.2 engine's fx._r (Python float round())."""
     if a is None or b is None:
         return False
-    return abs(a - b) <= max(_point(digits) / 2.0, 1e-9 * max(1.0, abs(a), abs(b)))
+    if digits is None:
+        return abs(a - b) <= 1e-9 * max(1.0, abs(a), abs(b))
+    return abs(a - round(b, digits)) <= EQ_EPS_POINTS * _point(digits)
 
 
 def _signal_candle(ticket: Dict[str, Any], post: Sequence[Candle]) -> Optional[Candle]:

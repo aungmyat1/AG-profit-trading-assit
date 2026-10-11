@@ -16,19 +16,17 @@ from __future__ import annotations
 
 import datetime as dt
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
-from strategy_engine import evaluate as engine_evaluate, load_strategy
+from strategy_engine import load_strategy
 from strategy_engine.session import Candle
 from v1_tickets import fx as v1_fx
 from v1_tickets.canonical_ticket import append_archive, build_canonical_ticket
-from v1_tickets.actionability import (
-    BLOCKED, EXPIRED, INSUFFICIENT_DATA, NO_TRADE, OUT_OF_SESSION, WATCH_READY,
-)
 from v1_tickets.policy_loader import ActionabilityPolicy, load_policy
 
 STRATEGY_PATH = v1_fx.STRATEGY_PATH
+SCOPED_CANDIDATE_PATH = v1_fx.SCOPED_CANDIDATE_PATH
 
 FX_PAIRS: List[Tuple[str, str]] = [
     (sym, cyc) for cyc in v1_fx.V1_CYCLES for sym in v1_fx.V1_FX_SYMBOLS
@@ -121,7 +119,24 @@ def evaluate_fx_pair(
     """Evaluate one FX (symbol, cycle) deterministically. On missing data returns a
     BLOCKED/INSUFFICIENT_DATA record rather than raising."""
     now = now if now.tzinfo else now.replace(tzinfo=dt.timezone.utc)
-    strategy = load_strategy(STRATEGY_PATH)
+    runtime_scope = ticket_source == "LIVE"
+    if runtime_scope and (symbol, cycle) != ("GBPUSD", "ASIAN_LONDON"):
+        blocked = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now,
+            reason_code="LOGIC_SCOPE_NOT_VERIFIED", detail=f"{symbol}/{cycle} outside S1",
+            decision="BLOCKED", data_source=data_source)
+        blocked["strategy_version"] = "1.1.2"
+        return _finalize(blocked, now=now, current_price=None, window_end=None, archive_root=archive_root,
+                         venue=data_source, policy=policy, ticket_source=ticket_source)
+    strategy_path = SCOPED_CANDIDATE_PATH if runtime_scope else STRATEGY_PATH
+    strategy = load_strategy(strategy_path)
+    if runtime_scope and (not v1_fx.symbol_scope_verified(strategy.strategy_id, strategy.version, symbol, cycle,
+            setup="SWEEP", branch="RANGE_SWEEP", contract_path=strategy.source_path)):
+        blocked = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now,
+            reason_code="LOGIC_SCOPE_NOT_VERIFIED", detail="S1 contract or engine identity mismatch",
+            decision="BLOCKED", data_source=data_source)
+        blocked["strategy_version"] = strategy.version
+        return _finalize(blocked, now=now, current_price=None, window_end=None, archive_root=archive_root,
+                         venue=data_source, policy=policy, ticket_source=ticket_source)
     windows = v1_fx.session_windows_utc(day)[cycle]
     trade_end = windows["trade"][1]
     try:
@@ -151,6 +166,8 @@ def evaluate_fx_pair(
         symbol, cycle, day, list(bundle.session_candles), bundle.expected_bar_count,
         list(bundle.post_session_candles), data_source=data_source,
         evaluated_at=now, data_close=bundle.data_close, spread=bundle.spread,
+        strategy_path=strategy_path,
+        runtime_scope=(ticket_source == "LIVE"),
     )
     return _finalize(ticket, now=now, current_price=bundle.current_price,
                      window_end=trade_end, archive_root=archive_root, venue=data_source, policy=policy,
@@ -172,8 +189,9 @@ def evaluate_crypto_symbol(
 ) -> EvalResult:
     """Evaluate one crypto symbol deterministically.  feed_provider must return a
     FallbackPublicCryptoFeed-compatible feed (or None, which yields a BLOCKED record)."""
-    from v1_tickets import crypto as v1_crypto
     import yaml
+
+    from v1_tickets import crypto as v1_crypto
     now = now if now.tzinfo else now.replace(tzinfo=dt.timezone.utc)
     cfg = None
     if config_path is not None:
