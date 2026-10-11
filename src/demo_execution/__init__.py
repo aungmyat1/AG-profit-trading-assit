@@ -13,6 +13,11 @@ from demo_execution.authorization import (
     AuthorizationResult,
     load_standing_authorization,
 )
+from demo_execution.confirmation import (
+    OwnerConfirmationCheck,
+    append_owner_confirmation,
+    check_and_consume_owner_confirmation,
+)
 from demo_execution.idempotency import ExecutionLedger, LedgerCheck
 from demo_execution.risk import (
     OpenPosition,
@@ -29,10 +34,13 @@ __all__ = [
     "LedgerCheck",
     "MarketEvidence",
     "OpenPosition",
+    "OwnerConfirmationCheck",
     "RiskAssessment",
     "RiskSnapshot",
     "ScopePolicy",
     "ScopePolicyError",
+    "append_owner_confirmation",
+    "check_and_consume_owner_confirmation",
     "evaluate_pre_send_gates",
     "evaluate_risk_caps",
     "load_scope_policy",

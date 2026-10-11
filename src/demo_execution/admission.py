@@ -1,4 +1,4 @@
-"""Pure S1/READY/auth/risk/cost/freshness admission; never accesses a broker."""
+"""Broker-free S1/READY/auth/owner-confirm/risk/cost/freshness/idempotency admission."""
 from __future__ import annotations
 
 import math
@@ -10,6 +10,7 @@ from demo_execution.authorization import (
     AuthorizationResult,
     load_standing_authorization,
 )
+from demo_execution.confirmation import check_and_consume_owner_confirmation
 from demo_execution.idempotency import ExecutionLedger
 from demo_execution.risk import RiskSnapshot, evaluate_risk_caps
 from demo_execution.scope import ScopePolicy, ScopePolicyError, load_scope_policy
@@ -35,6 +36,7 @@ class AdmissionResult:
     volume: Optional[float] = None
     risk_amount: Optional[float] = None
     details: Mapping[str, Any] = field(default_factory=dict)
+    block_reasons: tuple[str, ...] = ()
 
 
 def _as_utc(value: Any) -> Optional[datetime]:
@@ -52,38 +54,61 @@ def _as_utc(value: Any) -> Optional[datetime]:
     return parsed.astimezone(timezone.utc)
 
 
-def _blocked(reason: str, ticket: Optional[Mapping[str, Any]] = None, **details: Any) -> AdmissionResult:
+def _blocked(
+    reason: str,
+    ticket: Optional[Mapping[str, Any]] = None,
+    *,
+    block_reasons: Optional[list[str] | tuple[str, ...]] = None,
+    **details: Any,
+) -> AdmissionResult:
     ticket_id = ticket.get("ticket_id") if isinstance(ticket, Mapping) else None
-    return AdmissionResult(False, reason, ticket_id if isinstance(ticket_id, str) else None, details=details)
+    reasons = tuple(dict.fromkeys((reason, *(block_reasons or ()))))
+    details["primary_block_reason"] = reason
+    details["block_reasons"] = list(reasons)
+    return AdmissionResult(
+        False,
+        reason,
+        ticket_id if isinstance(ticket_id, str) else None,
+        details=details,
+        block_reasons=reasons,
+    )
 
 
-def check_ticket_scope_and_ready(ticket: Mapping[str, Any], scope: ScopePolicy) -> tuple[Optional[str], dict[str, Any]]:
-    """Bind S1, candidate identity and the existing D6/owner READY gate exactly."""
+def check_ticket_scope(ticket: Mapping[str, Any], scope: ScopePolicy) -> tuple[list[str], dict[str, Any]]:
+    """Check every scope identity field, preserving their primary/order precedence."""
+    reasons: list[str] = []
+    details: dict[str, Any] = {}
     ticket_id = ticket.get("ticket_id")
     if not isinstance(ticket_id, str) or not ticket_id.strip():
-        return "TICKET_ID_MISSING", {}
+        reasons.append("TICKET_ID_MISSING")
     if ticket.get("strategy_id") != scope.strategy_id:
-        return "STRATEGY_SCOPE_MISMATCH", {}
+        reasons.append("STRATEGY_SCOPE_MISMATCH")
     if str(ticket.get("strategy_version")) != scope.strategy_version:
-        return "STRATEGY_VERSION_SCOPE_MISMATCH", {}
+        reasons.append("STRATEGY_VERSION_SCOPE_MISMATCH")
     if ticket.get("symbol") != scope.symbol:
-        return "SYMBOL_SCOPE_MISMATCH", {}
+        reasons.append("SYMBOL_SCOPE_MISMATCH")
     if ticket.get("cycle", ticket.get("session")) != scope.session:
-        return "SESSION_SCOPE_MISMATCH", {}
+        reasons.append("SESSION_SCOPE_MISMATCH")
     branch = ticket.get("setup")
     if branch is None:
         branch = str(ticket.get("branch") or "").split(":", 1)[0]
     if branch != scope.setup_branch:
-        return "LOGIC_SCOPE_NOT_VERIFIED", {"setup_branch": branch}
+        reasons.append("LOGIC_SCOPE_NOT_VERIFIED")
+        details["setup_branch"] = branch
     if ticket.get("direction") not in scope.directions:
-        return "DIRECTION_SCOPE_MISMATCH", {}
+        reasons.append("DIRECTION_SCOPE_MISMATCH")
     if ticket.get("logic_identity") != scope.logic_identity:
-        return "LOGIC_IDENTITY_MISMATCH", {}
+        reasons.append("LOGIC_IDENTITY_MISMATCH")
     declared_broker_symbol = ticket.get("broker_symbol")
     if declared_broker_symbol is None and isinstance(ticket.get("symbol_meta"), Mapping):
         declared_broker_symbol = ticket["symbol_meta"].get("broker_symbol")
     if declared_broker_symbol is not None and declared_broker_symbol != scope.broker_symbol:
-        return "BROKER_SYMBOL_SCOPE_MISMATCH", {}
+        reasons.append("BROKER_SYMBOL_SCOPE_MISMATCH")
+    return reasons, details
+
+
+def check_ticket_ready(ticket: Mapping[str, Any], scope: ScopePolicy) -> tuple[Optional[str], dict[str, Any]]:
+    """Apply the existing D6/owner READY gate separately from S1 scope."""
     if ticket.get("decision") != "READY":
         return str(ticket.get("reason_code") or "TICKET_NOT_READY"), {
             "ticket_decision": ticket.get("decision"),
@@ -107,6 +132,14 @@ def check_ticket_scope_and_ready(ticket: Mapping[str, Any], scope: ScopePolicy) 
             "ready_authority": checked.get("ready_authority"),
         }
     return None, {"ready_owner_binding": "PASS"}
+
+
+def check_ticket_scope_and_ready(ticket: Mapping[str, Any], scope: ScopePolicy) -> tuple[Optional[str], dict[str, Any]]:
+    """Compatibility helper that reports scope before READY, as the gate order requires."""
+    scope_reasons, scope_details = check_ticket_scope(ticket, scope)
+    if scope_reasons:
+        return scope_reasons[0], scope_details
+    return check_ticket_ready(ticket, scope)
 
 
 def check_cost_gate(ticket: Mapping[str, Any], market: Optional[MarketEvidence],
@@ -157,10 +190,16 @@ def check_freshness(ticket: Mapping[str, Any], market: Optional[MarketEvidence],
     evaluated_at = _as_utc(ticket.get("evaluated_at"))
     observed_at = _as_utc(market.observed_at_utc)
     data_close = _as_utc(market.data_close_utc)
+    raw_valid_until = ticket.get("valid_until", ticket.get("valid_until_utc"))
+    valid_until = _as_utc(raw_valid_until) if raw_valid_until is not None else None
     if any(value is None for value in (now, ticket_close, evaluated_at, observed_at, data_close)):
+        return "FRESHNESS_TIMESTAMP_MISSING_OR_INVALID", {}
+    if raw_valid_until is not None and valid_until is None:
         return "FRESHNESS_TIMESTAMP_MISSING_OR_INVALID", {}
     assert now is not None and ticket_close is not None and evaluated_at is not None
     assert observed_at is not None and data_close is not None
+    if valid_until is not None and now >= valid_until:
+        return "TICKET_EXPIRED", {"valid_until_utc": valid_until.isoformat()}
     if any(value > now for value in (ticket_close, evaluated_at, observed_at, data_close)):
         return "FRESHNESS_TIMESTAMP_IN_FUTURE", {}
     ttl = timedelta(minutes=scope.signal_expiry_minutes)
@@ -186,8 +225,9 @@ def evaluate_pre_send_gates(
     broker_symbol_map_path: Optional[str] = None,
     ready_authority_config_path: Optional[str] = None,
     owner_decision_register_path: Optional[str] = None,
+    ticket_store: Optional[TicketStore] = None,
 ) -> AdmissionResult:
-    """Return ADMITTED_PRE_SEND only; this function cannot call a broker or reserve a send."""
+    """Evaluate ordered broker-free gates and report every applicable block reason."""
     try:
         policy = scope or load_scope_policy(
             scope_config_path,
@@ -203,43 +243,116 @@ def evaluate_pre_send_gates(
         return _blocked("EXECUTION_DISABLED", ticket)
     if not isinstance(ticket, Mapping):
         return _blocked("TICKET_INVALID")
-    scope_reason, scope_details = check_ticket_scope_and_ready(ticket, policy)
+
+    block_reasons: list[str] = []
+    gate_details: dict[str, Any] = {}
+
+    def add_reasons(*reasons: Optional[str]) -> None:
+        for reason in reasons:
+            if reason and reason not in block_reasons:
+                block_reasons.append(reason)
+
+    # 1. Scope: keep every mismatch, in deterministic scope-check order, at the front.
+    scope_reasons, scope_details = check_ticket_scope(ticket, policy)
+    add_reasons(*scope_reasons)
+    gate_details["scope"] = {
+        "status": "BLOCKED" if scope_reasons else "PASS",
+        **scope_details,
+    }
+
+    # 2. READY / owner binding.
+    ready_reason, ready_details = check_ticket_ready(ticket, policy)
+    add_reasons(ready_reason)
+    gate_details["ready"] = {
+        "status": "BLOCKED" if ready_reason else "PASS",
+        **ready_details,
+    }
+
+    # 3. Standing authorization is independently evaluated even when an earlier gate blocks.
     authorization: AuthorizationResult = load_standing_authorization(
         policy, ticket, path=authorization_path, now_utc=now_utc,
     )
-    risk = evaluate_risk_caps(ticket, policy, risk_snapshot, now_utc=now_utc)
-    cost_reason, cost_details = check_cost_gate(ticket, market, policy)
-    freshness_reason, freshness_details = check_freshness(ticket, market, policy, now_utc=now_utc)
-
-    # Preserve one stable primary reason (scope first), while recording every independent
-    # gate result for which this call supplied enough inputs to evaluate it.
-    block_reasons = []
-    if scope_reason:
-        block_reasons.append(scope_reason)
     if not authorization.authorized:
-        block_reasons.append(authorization.reason_code)
-    if not risk.allowed:
-        block_reasons.append(risk.reason_code)
-    if cost_reason:
-        block_reasons.append(cost_reason)
-    if freshness_reason:
-        block_reasons.append(freshness_reason)
-    if block_reasons:
-        details = {
-            "primary_block_reason": block_reasons[0],
-            "block_reasons": block_reasons,
-            "scope_details": scope_details,
-            "authorization_decision_id": authorization.decision_id,
-            "risk_snapshot": {
-            "server_day": risk.server_day.isoformat() if risk.server_day else None,
-            "daily_reset_owner_confirm": risk.daily_reset_owner_confirm,
-            "own_positions_on_symbol": risk.own_positions_on_symbol,
-            "foreign_positions_on_symbol": risk.foreign_positions_on_symbol,
-            },
-            **cost_details,
-            **freshness_details,
+        add_reasons(authorization.reason_code)
+    gate_details["authorization"] = {
+        "status": "PASS" if authorization.authorized else "BLOCKED",
+        "reason_code": authorization.reason_code,
+        "decision_id": authorization.decision_id,
+    }
+
+    # 4. Per-order confirmation. A valid record is consumed once only after all earlier
+    # gates pass; when they fail, confirmation is inspected read-only for full diagnostics.
+    confirmation_id: Optional[str] = None
+    gate_details["per_order_confirm_required"] = policy.per_order_confirm_required
+    if policy.per_order_confirm_required:
+        confirmation = check_and_consume_owner_confirmation(
+            ticket_store,
+            ticket,
+            now_utc=now_utc,
+            consume=not block_reasons,
+        )
+        add_reasons(*confirmation.reason_codes)
+        confirmation_id = confirmation.confirmation_id
+        gate_details["owner_confirmation"] = {
+            "status": confirmation.status,
+            "confirmation_id": confirmation.confirmation_id,
         }
-        return _blocked(block_reasons[0], ticket, **details)
+    else:
+        gate_details["owner_confirmation"] = {"status": "SKIPPED_BY_CONFIG"}
+
+    # 5. Risk, cost and freshness are all evaluated, even when an earlier gate blocks.
+    risk = evaluate_risk_caps(ticket, policy, risk_snapshot, now_utc=now_utc)
+    if not risk.allowed:
+        add_reasons(risk.reason_code)
+    gate_details["risk"] = {
+        "status": "PASS" if risk.allowed else "BLOCKED",
+        "reason_code": risk.reason_code,
+        "risk_pct": risk.planned_risk_pct,
+        "server_day": risk.server_day.isoformat() if risk.server_day else None,
+        "daily_reset_owner_confirm": risk.daily_reset_owner_confirm,
+        "own_positions_on_symbol": risk.own_positions_on_symbol,
+        "foreign_positions_on_symbol": risk.foreign_positions_on_symbol,
+    }
+
+    cost_reason, cost_details = check_cost_gate(ticket, market, policy)
+    add_reasons(cost_reason)
+    gate_details["cost"] = {
+        "status": "BLOCKED" if cost_reason else "PASS",
+        "reason_code": cost_reason,
+        **cost_details,
+    }
+
+    freshness_reason, freshness_details = check_freshness(ticket, market, policy, now_utc=now_utc)
+    add_reasons(freshness_reason)
+    gate_details["freshness"] = {
+        "status": "BLOCKED" if freshness_reason else "PASS",
+        "reason_code": freshness_reason,
+        **freshness_details,
+    }
+
+    # 6. Idempotency is last in the requested admission order.
+    if ticket_store is None:
+        idempotency_reason = "TICKET_STORE_UNAVAILABLE"
+        prior_state = None
+    else:
+        duplicate = ExecutionLedger(ticket_store).inspect(str(ticket.get("ticket_id") or ""))
+        idempotency_reason = None if duplicate.available else duplicate.reason_code
+        prior_state = duplicate.prior_state
+    add_reasons(idempotency_reason)
+    gate_details["idempotency"] = {
+        "status": "PASS" if idempotency_reason is None else "BLOCKED",
+        "reason_code": idempotency_reason or "IDEMPOTENCY_KEY_AVAILABLE",
+        "prior_state": prior_state,
+    }
+
+    if block_reasons:
+        return _blocked(
+            block_reasons[0],
+            ticket,
+            block_reasons=block_reasons,
+            gate_details=gate_details,
+        )
+
     return AdmissionResult(
         True,
         "ADMITTED_PRE_SEND",
@@ -251,6 +364,10 @@ def evaluate_pre_send_gates(
             "daily_reset_basis": policy.daily_reset_basis,
             "daily_reset_owner_confirm": policy.daily_reset_owner_confirm,
             "authorization_decision_id": authorization.decision_id,
+            "owner_confirmation_id": confirmation_id,
+            "per_order_confirm_required": policy.per_order_confirm_required,
+            "block_reasons": [],
+            "gate_details": gate_details,
             **cost_details,
             **freshness_details,
         },
@@ -298,20 +415,30 @@ def prepare_canonical_handoff(
     if not isinstance(ticket, Mapping):
         return _blocked("TICKET_INVALID")
     evaluated = evaluate_pre_send_gates(
-        ticket, market, risk_snapshot, now_utc=now_utc, authorization_path=authorization_path,
+        ticket,
+        market,
+        risk_snapshot,
+        now_utc=now_utc,
+        authorization_path=authorization_path,
         scope=policy,
+        ticket_store=ticket_store,
     )
     if not evaluated.admitted:
         return evaluated
-    if ticket_store is None:
-        return _blocked("TICKET_STORE_UNAVAILABLE", ticket)
-    duplicate = ExecutionLedger(ticket_store).inspect(evaluated.ticket_id or "")
-    if not duplicate.available:
-        return _blocked(duplicate.reason_code, ticket, prior_state=duplicate.prior_state)
+
+    # These are later send-time assertions, not substitutes for the ordered admission gates.
     account_reason = check_account_mode(account_mode)
-    if account_reason:
-        return _blocked(account_reason, ticket)
     notification_reason = check_notification_failure_policy(policy.notification_failure_policy)
-    if notification_reason:
-        return _blocked(notification_reason, ticket)
+    send_reasons = [reason for reason in (account_reason, notification_reason) if reason]
+    if send_reasons:
+        return _blocked(
+            send_reasons[0],
+            ticket,
+            block_reasons=send_reasons,
+            gate_details={
+                **evaluated.details.get("gate_details", {}),
+                "account_mode": "BLOCKED" if account_reason else "PASS",
+                "notification_failure_policy": "BLOCKED" if notification_reason else "PASS",
+            },
+        )
     return _blocked("CANONICAL_EXECUTION_ADAPTER_NOT_IMPLEMENTED", ticket)

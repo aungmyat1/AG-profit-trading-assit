@@ -56,6 +56,7 @@ class ScopePolicy:
     broker_symbol_map_path: Path
     ready_authority_config_path: Path
     owner_decision_register_path: Path
+    per_order_confirm_required: bool = True
 
 
 def _as_path(value: str | Path, root: Path) -> Path:
@@ -123,6 +124,10 @@ def load_scope_policy(
     raw = _load_yaml(cfg_path, "EXECUTION_SCOPE_UNREADABLE")
     if raw.get("schema") != "AGP_C14_DEMO_SCOPE_V1" or type(raw.get("enabled")) is not bool:
         raise ScopePolicyError("EXECUTION_SCOPE_INVALID", "schema/enabled missing or malformed")
+    confirm_required_value = raw.get("per_order_confirm_required", True)
+    per_order_confirm_required = (
+        confirm_required_value if type(confirm_required_value) is bool else True
+    )
     scope = raw.get("scope")
     if not isinstance(scope, dict):
         raise ScopePolicyError("EXECUTION_SCOPE_INVALID", "scope mapping missing")
@@ -219,6 +224,7 @@ def load_scope_policy(
 
     return ScopePolicy(
         enabled=raw["enabled"],
+        per_order_confirm_required=per_order_confirm_required,
         strategy_id=strategy_id,
         strategy_version=version,
         symbol=symbol,
