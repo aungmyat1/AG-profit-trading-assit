@@ -1,0 +1,72 @@
+{
+  "record": "host_s1_clean",
+  "date": "2026-10-11",
+  "captured_at_local": "2026-10-11T18:41:01+06:30",
+  "mode": "READ_ONLY",
+  "order_api_calls": 0,
+  "broker_mutation_count": 0,
+  "probe": "MetaTrader5 Python package: initialize(path=main terminal), account_info, terminal_info, positions_total, orders_total, history_orders_get, history_deals_get, shutdown. No order_check/order_send.",
+  "preceding_actions_2026-10-11": {
+    "18:14:19 +06:30": "Stopped metatrader-mcp-server (pid 10916) and 4x node start_mt5_mcp.mjs (pids 14128, 13080, 8076, 6560); not restarted.",
+    "18:14:45-18:15:07 +06:30": "Consolidate-MT5.ps1 -Apply: portable terminal exe renamed .disabled; main terminal closed and restarted unelevated; ContinuationBreakout_EA .ex5/.mq5 (2 data folders) moved to <HOST_SCRATCHPAD>/mt5_quarantine/20261011_1814/.",
+    "18:22:08-18:22:10 +06:30": "Owner cancelled 2 pending orders (ETHUSD sell stop ...535, BTCUSD buy stop ...559) from the terminal UI.",
+    "18:22:19 +06:30": "Owner switched Algo Trading OFF (terminal log: 'automated trading is disabled').",
+    "18:31 +06:30": "Owner changed account password (one 'Invalid account' auth failure, then re-authorized).",
+    "later": "Owner ran Free-CDisk.ps1 elevated; removed EA reference from 'Market Overview' chart02."
+  },
+  "checks": [
+    {
+      "id": "A1",
+      "item": "Account DEMO, logged in on main terminal only; positions=0, pending orders=0",
+      "result": "PASS",
+      "evidence": {"login_suffix": "985", "server": "VTMarkets-Demo", "trade_mode": "DEMO", "terminal_path": "C:\\Program Files\\MetaTrader 5", "positions": 0, "orders": 0}
+    },
+    {
+      "id": "A2",
+      "item": "No terminal64.exe except C:\\Program Files\\MetaTrader 5; portable exe still .disabled",
+      "result": "PASS",
+      "evidence": {"terminal_processes": ["C:\\Program Files\\MetaTrader 5\\terminal64.exe"], "portable_exe_present": false, "portable_exe_disabled_present": true}
+    },
+    {
+      "id": "A3",
+      "item": "No metatrader-mcp-server / start_mt5_mcp.mjs process; no secret in any process command line",
+      "result": "PASS",
+      "evidence": {"mcp_process_count": 0, "cmdlines_matching_secret_patterns": 0, "patterns": "--password|passwd|api_key|secret|token followed by [ =:]"},
+      "note": "Main terminal build 6230 logs its own built-in 'MCP started on 127.0.0.1:<port>' listener; this is not metatrader-mcp-server and holds no credential in a command line."
+    },
+    {
+      "id": "A4",
+      "item": "No EA on any chart; Algo Trading OFF",
+      "result": "PASS",
+      "evidence": {"chart_files_with_expert_block": 0, "terminal_log_expert_loaded_since_restart": 0, "terminal_log_last_algo_event": "18:22:19 automated trading is disabled", "terminal_info_trade_allowed": false},
+      "note": "Algo Trading OFF read directly from terminal_info.trade_allowed, not owner-asserted."
+    },
+    {
+      "id": "A5",
+      "item": "History since 2026-10-11 18:14 +06:30: zero new orders/deals",
+      "result": "PASS",
+      "evidence": {
+        "broker_server_offset": "UTC+3 (derived: owner cancel at 18:22:08 +06:30 = 14:52:04 server)",
+        "cutoff_server_time": "14:44",
+        "history_orders_returned": [
+          {"ticket_suffix": "829", "symbol": "BTCUSD", "type": "BUY_STOP", "state": "CANCELED", "setup_server": "13:21:15", "done_server": "14:00:03"},
+          {"ticket_suffix": "843", "symbol": "ETHUSD", "type": "SELL_STOP", "state": "CANCELED", "setup_server": "13:21:50", "done_server": "14:00:00"},
+          {"ticket_suffix": "535", "symbol": "ETHUSD", "type": "SELL_STOP", "state": "CANCELED", "setup_server": "14:00:01", "done_server": "14:52:04"},
+          {"ticket_suffix": "559", "symbol": "BTCUSD", "type": "BUY_STOP", "state": "CANCELED", "setup_server": "14:00:03", "done_server": "14:52:06"}
+        ],
+        "orders_set_up_after_cutoff": 0,
+        "deals_after_cutoff": 0
+      },
+      "note": "All 4 orders were placed before the cutoff; 535/559 are the owner's 18:22 cancels. Pre-cutoff foreign order origin is recorded in host_s1_blockers_2026-10-11.json (PR #154)."
+    },
+    {
+      "id": "A6",
+      "item": "C: free GB (target >= 8), free RAM",
+      "result": "PASS",
+      "evidence": {"c_free_gb": 13.5, "ram_free_gb": 1.3, "ram_total_gb": 7.21},
+      "note": "C: was 1.71 GB before cleanup. RAM is informational (no target set)."
+    }
+  ],
+  "verdict": "PASS",
+  "host_runtime_pre_part_b": {"tree": "<HOST_SCRATCHPAD>/prod", "head": "1b063a7", "contains_e317267": false, "note": "behind origin/main; Part B pull required"}
+}
