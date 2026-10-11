@@ -8,6 +8,16 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-10)
 
+OD1011 owner decisions (2026-10-11) are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`:
+COMMISSION (VT demo Standard STP, commission_R 0, bound by login suffix; the full login only in gitignored
+local config), ROUNDING (ROUND_HALF_UP), SCOPE (branch-scoped LOGIC_VERIFIED) and L5 (PASS = accepted cost
+evidence applied correctly; a cost block is actionability). This change set records the decisions and the
+config only. Runtime wiring is pending: the FX commission reader is #132, and the verification harness, gate
+rounding and branch-scoped registry reader are #142. Until those merge, missing commission stays INSUFFICIENT
+and L5 stays WARN. OD1011-ROUNDING was amended on 2026-10-11: v1.1.2's frozen rounding is the engine's
+`fx._r` (Python `round()` on IEEE floats), which gates must replicate; versions >= 1.1.3 must use Decimal
+ROUND_HALF_UP (ledger item ROUNDING_V113_HALF_UP).
+
 DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
 2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
 with the VT server-time rule (server time = New York time + 7h). They no longer use one
@@ -35,14 +45,8 @@ authorized. Offline verification is recorded in
 `docs/status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md`; host validation is pending.
 
 OD1009-D1–OD1009-D6 are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`; G1–G6 are
-defined in `docs/PROJECT_OBJECTIVE.md`. The FX/gold/crypto manual-ticket risk/cost gate (**G3**) is
-verified offline by mission AGP-G3-VERIFY: 78 focused tests over both carriers, four gate defects
-fixed (the 0.10R warn boundary was exclusive, the 0.25R block boundary failed open on decimal-exact
-costs, and an absent owner key raised `KeyError` instead of `RISK_CONFIG_MISSING`). No owner value,
-strategy rule or authorization changed, and `config/trading.yaml`'s account default is provably never
-a sizing fallback — see
-[evidence](docs/status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md). G3 alone does not
-satisfy OD1009-D6, so D6 READY stays OFF. Current strategy bindings, readiness values, demo/live flags,
+defined in `docs/PROJECT_OBJECTIVE.md`. The FX/gold manual-ticket risk/cost gate is implemented
+but awaits focused verification. Current strategy bindings, readiness values, demo/live flags,
 host tasks, and broker state are unchanged. Host-side execution artifacts remain `UNTRACKED_HOST`
 under C11 until brought into the repository through a reviewed PR before G6.
 
@@ -250,7 +254,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `b1e9077d4710e7a21cd25a970d72992e1a467dbce3947cf6e97e063ee1ecd4ff`.
+inputs_sha256: `1f327c61d5174bd0b86ef58ecbaa1c14bba0f0e534a0b7eba72236b898edf4be`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -270,36 +274,6 @@ The owner decides every entry. A confirmed ticket may reach the canonical **demo
 
 Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).
 <!-- [[[end]]] -->
-
-## AGP-G3-VERIFY — manual-ticket risk/cost gate verified (2026-10-10, branch `arena/f50ff77c-ag-profit-trading-assit`, not merged)
-
-Definition-of-Done gate **G3** is verified offline for the manual-ticket risk/cost gate on all three
-asset classes: FX (recorded EURUSD + GBPUSD), gold (a price-scaled $3.00-stop geometry) and crypto CFD
-(frozen BTCUSD contract result), against OD1009-D2 and the two owner carriers
-(`config/owner_ticket.yaml`, `config/v1_tickets/crypto_cfd_ticket_policy.yaml`). Proven: `risk_pct: 0.5`
-reaches `sizing_math.risk.size_position` (0.98 / 0.80 / 0.16 / 0.05 lots — never the 1.96 / 1.60 /
-0.33 / 0.10 that `config/trading.yaml`'s 1.0% account default would give); every required risk/cost key
-absent or unusable → `TICKET_BLOCKED` with `RISK_CONFIG_MISSING` (`RISK_POLICY_AMBIGUOUS` for crypto) and
-no sizing call at all; cost at 0.10R → WARN only; cost at 0.25R → BLOCK, as the primary reason.
-
-Four gate defects found and fixed, no owner value or strategy rule changed: **G3-D1** the FX/gold warn
-boundary was exclusive (`cost_in_R <= cost_warn_R` passed), so exactly 0.10R raised no `L5_WARN` while
-crypto warned at `>=`; **G3-D2** the 0.25R block boundary failed open on decimal-exact costs
-(XAUUSD $0.69 spread on a $3.00 stop + 0.02R commission → `0.24999999999999997`, not blocked, yet the
-ticket displayed `cost_in_R 0.25`); **G3-D3** the same float-noise fail-open at 0.10R; **G3-D4** a
-required key absent from the owner mapping raised `KeyError` instead of the canonical block reason.
-Fix: one shared inclusive boundary predicate (`v1_tickets.guards.cost_at_or_above`, relative tolerance
-1e-9 — five orders tighter than the 4-decimal cost the owner is shown) used by FX, gold and crypto, plus
-`.get()` access for the three required keys. Tests: `tests/test_g3_manual_ticket_risk_cost_gate.py`
-**78 passed**; related ticket/sizing/guard suites **615 passed**; full suite **2050 passed, 3 skipped, 0 failed** (cog fingerprint computed live)
-(Linux container, Python 3.11.2, MT5 stubbed). With the three source files reverted to base `5b67199` the new
-suite reports 19 failed, 59 passed, so the tests detect the defects. `broker_mutations = 0`. Follow-up: commission_r missing or invalid now BLOCKS (COMMISSION_INSUFFICIENT / COMMISSION_INVALID, never 0); an inverted owner pair (warn >= block) blocks as RISK_POLICY_AMBIGUOUS; a cost that displays at a threshold names its decision side (e.g. "0.2500 (<0.25, WARN)"). FX commission is read only from the `OD1011-COMMISSION` block bound to the terminal's account (`resolve_commission`); absent, unbound, or invalid -> `COMMISSION_INSUFFICIENT` / `COMMISSION_INVALID`. The block itself is added by AGP-OD1011 (separate PR).
-
-G3 passing does **not** establish G1, so OD1009-D6 is not satisfied and
-`config/v1_tickets/ready_authority.yaml` stays `ready: OFF`; crypto admission (OD1009-D3), demo/live
-flags, registry entries, host tasks and broker state are unchanged. Offline unit-tested only — not
-host-verified, not live-verified. Evidence:
-[`docs/status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md`](docs/status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md).
 
 ## Large-SMC crypto watch session summary (2026-10-10, #121 merged; MT5-failure path on branch `agp/lsmc-mt5-failure-summaries`, not merged)
 
