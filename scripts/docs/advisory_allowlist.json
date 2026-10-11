@@ -2534,28 +2534,6 @@
           "end_anchor": "engine_runtime_status: UNSIGNED_BLOCKED   # unchanged -- still fails closed until implemented"
         }
       ]
-    },
-    {
-      "file": "docs/PROJECT_OBJECTIVE.md",
-      "ref": "C14",
-      "reason": "Soak gate (>=10 cycles, broker_mutations=0) precedes demo authorization, conflicting with ISSUE #47 R5/R6 sequencing. Also line 139.",
-      "origin": "never_suppress/29",
-      "labels": [
-        "LOGIC_VERIFIED",
-        "EDGE_VERIFIED",
-        "DEMO_AUTHORIZED",
-        "LIVE_AUTHORIZED"
-      ],
-      "coordinate_correction": "Original related line 139 exceeded cf0ce0f file length; anchored the soak and post-soak demo decision named in the original reason.",
-      "anchors": [
-        {
-          "anchor": "### Soak",
-          "end_anchor": "- `broker_mutations = 0` throughout the PRE-EDGE/read-only soak."
-        },
-        {
-          "anchor": "9. **Owner demo-authorization decision** — separate post-soak governance decision. Authorization is not implied by successful tickets, logic verification, edge status, Telegram confirmation, or soak completion."
-        }
-      ]
     }
   ],
   "verification": {
@@ -2651,6 +2629,30 @@
       "status": "RESOLVED",
       "resolved_by": "PR #75",
       "resolution": "SESSION_TRADE_V1 is demo_authorized: false per D3"
+    },
+    {
+      "file": "docs/PROJECT_OBJECTIVE.md",
+      "ref": "C14",
+      "reason": "Historical objective sequencing contradiction: C14 ratification replaces the former mandatory G5 soak and post-soak demo authorization sequence.",
+      "origin": "never_suppress/29",
+      "labels": [
+        "LOGIC_VERIFIED",
+        "EDGE_VERIFIED",
+        "DEMO_AUTHORIZED",
+        "LIVE_AUTHORIZED"
+      ],
+      "coordinate_correction": "Original related line 139 exceeded cf0ce0f file length; anchored the soak and post-soak demo decision named in the original reason.",
+      "anchors": [
+        {
+          "anchor": "### Optional operational soak (not a DEMO authorization prerequisite under C14)"
+        },
+        {
+          "anchor": "9. **Owner demo-authorization decision** — separate standing authorization after required logical, runtime, host, READY, risk and broker gates, not dependent on a mandatory soak."
+        }
+      ],
+      "status": "RESOLVED",
+      "resolved_by": "PR #148",
+      "resolution": "C14 makes shadow soak optional and preserves G1–G4, runtime/READY/risk/broker gates, and separate standing authorization."
     }
   ],
   "migration": {
@@ -3798,7 +3800,7 @@
           139
         ],
         "id_or_ref": "C14",
-        "destination": "never_suppress/29"
+        "destination": "resolved/3"
       },
       {
         "original": "disambiguation_notes/0",
