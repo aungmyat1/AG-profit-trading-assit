@@ -72,3 +72,16 @@ unchanged. The generated rolling status is intentionally not edited under the
 mission's explicit restriction; this hand-authored evidence is indexed in docs.
 
 **NO_BROKER_MUTATION** — ORDER_API_CALLS=0, BROKER_MUTATION_COUNT=0.
+
+## STALE_IDENTITY (owner ruling 2026-10-11)
+
+The AGP-LANE-B3 LOGIC_VERIFIED record for `ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.0.0` (BTCUSD [SHORT], ETHUSD [LONG, SHORT])
+was bound to logic identity `b8188dfb…`. After merging main into PR #141, the identity set computes a different digest
+because main changed three non-rule files in it: `src/v1_tickets/logic_gate.py` (#142),
+`src/v1_tickets/manual_ticket.py` and `config/v1_tickets/crypto_cfd_ticket_policy.yaml` (OD1011/#132 cost gate). No
+strategy rule file (`crypto_cfd_contract/*`, `strategy_engine/sweep_retest/*`, the strategy YAML) changed.
+
+Per the owner ruling the registry record is marked `logic_status: STALE_IDENTITY` (recorded status and identity kept as
+history) and is not re-recorded. The runtime fails closed: `symbol_verified` is false for every listed symbol and the
+ticket path carries no LOGIC_VERIFIED status. A new verification run at the current identity is required before any
+LOGIC_VERIFIED claim. `active: false` is unchanged.

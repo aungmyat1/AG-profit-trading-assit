@@ -82,7 +82,8 @@ def test_committed_artifact_is_consistent():
 def test_branch_scoped_logic_verified_record_is_bound_to_identity_and_evidence():
     """AGP-LANE-B3 (owner rulings 2026-10-11): LOGIC_VERIFIED per symbol x branch (OD1011-SCOPE) only where the
     60-day VT run verifies the branch (L1-L4/L6 PASS, L5 PASS per OD1011-L5, 0 event-log mismatches, every rule
-    cell VT EXERCISED or SYNTHETIC_PROVEN); the 14-day run must pass too. Nothing else in the entry changes."""
+    cell VT EXERCISED or SYNTHETIC_PROVEN); the 14-day run must pass too. Nothing else in the entry changes.
+    Owner ruling 2026-10-11: the record is now STALE_IDENTITY and every runtime reader fails closed."""
     import hashlib
 
     import yaml
@@ -98,8 +99,11 @@ def test_branch_scoped_logic_verified_record_is_bound_to_identity_and_evidence()
     assert entry["active"] is False and entry["research"] is True
     assert entry["demo_authorized"] is False and entry["live_authorized"] is False and "logic_status" not in entry
     version = entry["candidate_versions"]["1.0.0"]
-    digest = logic_identity("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0")["digest"]
-    assert version["logic_status"] == "LOGIC_VERIFIED" and version["logic_verified_identity"] == digest
+    # Owner ruling 2026-10-11: the record is STALE_IDENTITY (identity-set files changed on main); the recorded
+    # identity stays as history and the runtime must fail closed on the mismatch.
+    digest = version["logic_verified_identity"]
+    assert version["logic_status"] == "STALE_IDENTITY" and version["logic_status_recorded"] == "LOGIC_VERIFIED"
+    assert logic_identity("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0")["digest"] != digest
     assert version["edge_verified"] is False
     listed = {e["symbol"]: e for e in version["logic_verified_symbols"]}
     for sym in ("BTCUSD", "ETHUSD"):
@@ -110,9 +114,14 @@ def test_branch_scoped_logic_verified_record_is_bound_to_identity_and_evidence()
         assert listed[sym]["logic_identity"] == digest == rep60["logic_verification"][sym]["logic_identity"]["digest"]
         assert listed[sym]["evidence"] == path60.relative_to(ROOT).as_posix()
         assert listed[sym]["evidence_sha256"] == hashlib.sha256(path60.read_bytes()).hexdigest()
-        assert symbol_verified("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0", sym) is True
+        for branch in listed[sym]["branches"]:
+            assert symbol_verified("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0", sym, branch=branch) is False
+        assert symbol_verified("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0", sym) is False
     assert listed["BTCUSD"]["branches"] == ["SHORT"] and listed["ETHUSD"]["branches"] == ["LONG", "SHORT"]
     assert rep60["logic_verification"]["BTCUSD"]["branches"]["LONG"]["entry_valid_scans"] == 0
+    from v1_tickets.authority import NOT_VERIFIED, resolve_ticket_authority
+    auth = resolve_ticket_authority("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0")
+    assert auth.logic_status_effective == NOT_VERIFIED and auth.ticket_eligible is False
 
 
 def test_no_crypto_ticket_is_actionable_with_the_record():

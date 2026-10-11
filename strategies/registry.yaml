@@ -208,10 +208,16 @@ strategies:
     # the 14d run (#128/#131) also passes. Every rule cell of a listed branch is VT EXERCISED or, for
     # rejection-only rules, SYNTHETIC_PROVEN. BTCUSD LONG is NOT covered (no LONG entry on VT days).
     # Bound to the identity digest below: any engine/contract/policy file change breaks the match (fail closed).
+    # STALE_IDENTITY (owner ruling 2026-10-11): merging main changed identity-set files (src/v1_tickets/logic_gate.py,
+    # src/v1_tickets/manual_ticket.py, config/v1_tickets/crypto_cfd_ticket_policy.yaml); no strategy rule file changed.
+    # The recorded identity is kept as history, not re-recorded; runtime treats the record as not verified.
     candidate_versions:
       "1.0.0":
         config_source: strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml
-        logic_status: LOGIC_VERIFIED
+        logic_status: STALE_IDENTITY
+        logic_status_recorded: LOGIC_VERIFIED
+        stale_identity_since: "2026-10-11"
+        stale_identity_note: docs/status/AGP_C4_CCFD_LOGIC_2026-10-10.md
         logic_verified_identity: b8188dfbb8c7ff3ae278175ec0c482aa8c74b39279a18e9c0b043a231b4b6cd3
         economic_status: NOT_EVALUATED
         edge_verified: false
