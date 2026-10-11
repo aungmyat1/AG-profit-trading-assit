@@ -6,6 +6,7 @@ run-name: ${{ github.event_name == 'workflow_dispatch' && format('CI dispatch {0
 on:
   push:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   # Dispatched by manual-pr-merge.yml: its GITHUB_TOKEN merge emits no push-triggered runs.
   workflow_dispatch:
     inputs:

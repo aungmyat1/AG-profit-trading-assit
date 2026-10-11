@@ -26,6 +26,7 @@ import sys
 import tempfile
 import time
 import uuid
+from pathlib import Path
 
 from audit_pr_readiness import GitHubAPI, _token
 from regen_contract import (
@@ -225,13 +226,26 @@ def main(argv=None) -> int:
     parser.add_argument("--expected-head-sha")
     parser.add_argument("--timeout-seconds", type=int, default=2700)
     parser.add_argument("--poll-seconds", type=int, default=20)
+    parser.add_argument("--json-out", type=Path,
+                        help="write the complete post-merge result to this path for artifact retention")
     args = parser.parse_args(argv)
-    api = GitHubAPI(_token(), args.repo)
     if args.command == "preflight":
+        api = GitHubAPI(_token(), args.repo)
         failures = preflight(api, args.head_sha)
         print(json.dumps({"head_sha": args.head_sha, "failures": failures}))
         return 1 if failures else 0
-    report = verify(api, args.pr, args.expected_head_sha, args.timeout_seconds, args.poll_seconds)
+    try:
+        api = GitHubAPI(_token(), args.repo)
+        report = verify(api, args.pr, args.expected_head_sha, args.timeout_seconds, args.poll_seconds)
+    except Exception as exc:
+        report = {
+            "pr": args.pr,
+            "expected_head_sha": args.expected_head_sha,
+            "state": POST_MERGE_FAILED,
+            "failure": {"type": type(exc).__name__, "detail": str(exc)[:500]},
+        }
+    if args.json_out:
+        args.json_out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:

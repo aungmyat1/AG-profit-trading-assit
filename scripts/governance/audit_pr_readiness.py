@@ -12,7 +12,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-from pr_readiness import checks_state, classify_pull_request, explicit_dependencies, review_decision
+from pr_readiness import checks_state, classify_pull_request, explicit_dependencies, owner_approved, review_decision
 
 MAX_COUNTED_PAGES = 50
 
@@ -126,9 +126,16 @@ def audit(repo: str) -> dict:
     errors = []
     for item in listed:
         number = item.get("number")
+        raw_labels = item.get("labels")
+        label_data_complete = isinstance(raw_labels, list) and all(
+            isinstance(label, dict) and isinstance(label.get("name"), str) and bool(label["name"].strip())
+            for label in raw_labels
+        )
         record = {
             "number": number, "title": item.get("title"), "body": item.get("body"),
-            "draft": item.get("draft"), "labels": [x.get("name", "") for x in item.get("labels", [])],
+            "draft": item.get("draft"), "labels": [x.get("name", "") for x in raw_labels or []
+                                                       if isinstance(x, dict)],
+            "label_data_complete": label_data_complete,
             "base_ref": (item.get("base") or {}).get("ref"),
             "base_sha": (item.get("base") or {}).get("sha"),
             "main_sha": main_sha,
@@ -148,11 +155,13 @@ def audit(repo: str) -> dict:
             comments = api.paged(f"/repos/{repo}/issues/{number}/comments")
             record["issue_comments"] = [str(comment.get("body") or "") for comment in comments]
             changes_requested, approvals = review_decision(reviews)
+            owner_approval = owner_approved(reviews)
             record["data"] = {
                 "mergeable": detail.get("mergeable"), "mergeable_state": detail.get("mergeable_state"),
                 "unresolved_review_threads": api.review_thread_count(number),
                 "changes_requested": changes_requested,
                 "approvals": approvals,
+                "owner_approval_evidence": {"owner_login": "aungmyat1", "approved": owner_approval},
             }
             check_runs = api.counted(f"/repos/{repo}/commits/{record['head_sha']}/check-runs", "check_runs")
             statuses = api.counted(f"/repos/{repo}/commits/{record['head_sha']}/status", "statuses")
@@ -176,6 +185,8 @@ def audit(repo: str) -> dict:
         result.update({"title": record.get("title"), "url": f"https://github.com/{repo}/pull/{record['number']}",
                        "head_sha": record.get("head_sha"), "base_ref": record.get("base_ref"), "base_sha": record.get("base_sha"),
                        "paths": record.get("paths", []), "labels": record.get("labels", []),
+                       "label_data_complete": record.get("label_data_complete", False),
+                       "owner_approval_evidence": (record.get("data") or {}).get("owner_approval_evidence"),
                        "error": record.get("error")})
         report_prs.append(result)
     main_after = api.request("GET", f"/repos/{repo}/git/ref/heads/main")["object"]["sha"]
