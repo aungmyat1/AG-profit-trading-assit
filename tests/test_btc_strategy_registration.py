@@ -18,9 +18,9 @@ def test_st_liquidity_sweep_retest_v1_registered_research_only():
     assert entry["demo_authorized"] is False
     assert entry["live_authorized"] is False
     assert entry["config_source"] == "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml"
-    # Registry preserves its existing schema exactly -- no unsupported fields added.
+    # Version/hash fields pin scheduled runtime identity to its contract.
     allowed_fields = {"registered", "active", "research", "demo_authorized", "live_authorized",
-                      "config_source", "engine", "note"}
+                      "config_source", "version", "contract_sha256", "historical_versions", "engine", "note"}
     assert set(entry.keys()) <= allowed_fields
 
 

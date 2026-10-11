@@ -9,13 +9,13 @@
     "scripts/host/install_tasks.ps1",
     "strategies/ST_ASIAN_SWEEP_5R_V1.yaml",
     "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml",
-    "strategies/ST_LARGE_SMC_V1.yaml",
+    "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
     "strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml",
     "strategies/ST_SESSION_SWEEP_CONTINUATION_V1.yaml",
     "strategies/registry.yaml",
     "strategies/session_trade/contract.yaml"
   ],
-  "inputs_sha256": "a8fe01910d19f313ccaaaac0b083a4933248cb70b7714c5639e4ccd641aabad7",
+  "inputs_sha256": "a010be4dcdfcddc0fc02355e61170ba155afd414876e71ef43bd146292ac0179",
   "objective": {
     "source": "docs/PROJECT_OBJECTIVE.md#objective",
     "text": "Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.\n\nUnder ratified C14, a strategy with separate, valid, scoped standing DEMO authorization may submit eligible orders automatically after every runtime, READY, host, risk and broker gate passes; no per-order owner confirmation is required for that authorized scope. Confirm/Reject remains optional decision capture and cannot grant or extend authorization. Until `demo_authorized=true` is explicitly established through the governed authorization path, broker execution remains blocked. Live real-money execution is outside this objective.\n\n`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
@@ -642,7 +642,7 @@
         "evidence_source": null,
         "value": null
       },
-      "version": "1.0.7"
+      "version": "1.1.0"
     },
     {
       "demo_authorized": {
