@@ -1,0 +1,666 @@
+{
+ "schema": "AG_HOST_S1_BLOCKERS_V1",
+ "date": "2026-10-11",
+ "host_repo": "<HOST_ROOT>",
+ "host_head_sha": "deb85d0036ec648acc3504b84a8dd7d2ab5d298b",
+ "broker_mutation": "NONE (history/positions/orders reads only; no order_check/order_send)",
+ "deleted": "NOTHING",
+ "account": {
+  "type": "DEMO",
+  "login_suffix": "985",
+  "server": "VTMarkets-Demo"
+ },
+ "1_foreign_orders": {
+  "window": "last 72h to 2026-10-11T07:51Z",
+  "history_orders": [
+   {
+    "ticket": 798328269,
+    "time_setup_utc": "2026-10-08T10:43:53Z",
+    "time_done_utc": "2026-10-08T10:44:16Z",
+    "symbol": "GBPUSD-VIP",
+    "type": "SELL_LIMIT",
+    "volume_initial": 0.01,
+    "price_open": 1.31955,
+    "price_current": 1.31956,
+    "sl": 1.32077,
+    "tp": 1.31867,
+    "magic": 0,
+    "comment": "SMC SHORT IOC",
+    "reason": "EXPERT",
+    "position_id": 798328269,
+    "state": 4,
+    "external_id": ""
+   },
+   {
+    "ticket": 798595791,
+    "time_setup_utc": "2026-10-08T12:06:39Z",
+    "time_done_utc": "2026-10-08T12:06:39Z",
+    "symbol": "GBPUSD-VIP",
+    "type": "BUY",
+    "volume_initial": 0.01,
+    "price_open": 1.32077,
+    "price_current": 1.32077,
+    "sl": 0.0,
+    "tp": 0.0,
+    "magic": 0,
+    "comment": "[sl 1.32077]",
+    "reason": "SL",
+    "position_id": 798328269,
+    "state": 4,
+    "external_id": ""
+   },
+   {
+    "ticket": 802393463,
+    "time_setup_utc": "2026-10-09T05:00:59Z",
+    "time_done_utc": "2026-10-09T05:02:46Z",
+    "symbol": "USDJPY-VIP",
+    "type": "SELL_LIMIT",
+    "volume_initial": 0.01,
+    "price_open": 158.09,
+    "price_current": 158.09,
+    "sl": 158.129,
+    "tp": 157.51,
+    "magic": 0,
+    "comment": "SMC SHORT IOC",
+    "reason": "EXPERT",
+    "position_id": 802393463,
+    "state": 4,
+    "external_id": ""
+   },
+   {
+    "ticket": 802733323,
+    "time_setup_utc": "2026-10-09T05:51:48Z",
+    "time_done_utc": "2026-10-09T05:51:48Z",
+    "symbol": "USDJPY-VIP",
+    "type": "BUY",
+    "volume_initial": 0.01,
+    "price_open": 158.129,
+    "price_current": 158.129,
+    "sl": 0.0,
+    "tp": 0.0,
+    "magic": 0,
+    "comment": "[sl 158.129]",
+    "reason": "SL",
+    "position_id": 802393463,
+    "state": 4,
+    "external_id": ""
+   },
+   {
+    "ticket": 805862244,
+    "time_setup_utc": "2026-10-10T15:04:39Z",
+    "time_done_utc": "2026-10-11T03:52:32Z",
+    "symbol": "BTCUSD",
+    "type": "BUY_LIMIT",
+    "volume_initial": 0.01,
+    "price_open": 82860.0,
+    "price_current": 82854.17,
+    "sl": 81860.0,
+    "tp": 83520.0,
+    "magic": 0,
+    "comment": "Buy Limit Retest",
+    "reason": "EXPERT",
+    "position_id": 805862244,
+    "state": 4,
+    "external_id": ""
+   },
+   {
+    "ticket": 805862250,
+    "time_setup_utc": "2026-10-10T15:04:45Z",
+    "time_done_utc": "2026-10-10T17:37:25Z",
+    "symbol": "BTCUSD",
+    "type": "SELL_LIMIT",
+    "volume_initial": 0.01,
+    "price_open": 83120.0,
+    "price_current": 83120.7,
+    "sl": 84120.0,
+    "tp": 82850.0,
+    "magic": 0,
+    "comment": "Sell Limit Sweep",
+    "reason": "EXPERT",
+    "position_id": 805862250,
+    "state": 4,
+    "external_id": ""
+   },
+   {
+    "ticket": 805918432,
+    "time_setup_utc": "2026-10-11T03:53:47Z",
+    "time_done_utc": "2026-10-11T03:53:47Z",
+    "symbol": "BTCUSD",
+    "type": "BUY",
+    "volume_initial": 0.01,
+    "price_open": 82850.0,
+    "price_current": 82850.0,
+    "sl": 0.0,
+    "tp": 0.0,
+    "magic": 0,
+    "comment": "[tp 82850.00]",
+    "reason": "TP",
+    "position_id": 805862250,
+    "state": 4,
+    "external_id": ""
+   }
+  ],
+  "history_deals": [
+   {
+    "ticket": 587172446,
+    "order": 798328269,
+    "time_utc": "2026-10-08T10:44:16Z",
+    "symbol": "GBPUSD-VIP",
+    "type": "SELL",
+    "entry": "IN",
+    "volume": 0.01,
+    "price": 1.31955,
+    "profit": 0.0,
+    "commission": 0.0,
+    "swap": 0.0,
+    "magic": 0,
+    "comment": "SMC SHORT IOC",
+    "reason": "EXPERT",
+    "position_id": 798328269
+   },
+   {
+    "ticket": 587354325,
+    "order": 798595791,
+    "time_utc": "2026-10-08T12:06:39Z",
+    "symbol": "GBPUSD-VIP",
+    "type": "BUY",
+    "entry": "OUT",
+    "volume": 0.01,
+    "price": 1.32077,
+    "profit": -1.22,
+    "commission": 0.0,
+    "swap": 0.0,
+    "magic": 0,
+    "comment": "[sl 1.32077]",
+    "reason": "SL",
+    "position_id": 798328269
+   },
+   {
+    "ticket": 589232305,
+    "order": 802393463,
+    "time_utc": "2026-10-09T05:02:46Z",
+    "symbol": "USDJPY-VIP",
+    "type": "SELL",
+    "entry": "IN",
+    "volume": 0.01,
+    "price": 158.09,
+    "profit": 0.0,
+    "commission": 0.0,
+    "swap": 0.0,
+    "magic": 0,
+    "comment": "SMC SHORT IOC",
+    "reason": "EXPERT",
+    "position_id": 802393463
+   },
+   {
+    "ticket": 589357211,
+    "order": 802733323,
+    "time_utc": "2026-10-09T05:51:48Z",
+    "symbol": "USDJPY-VIP",
+    "type": "BUY",
+    "entry": "OUT",
+    "volume": 0.01,
+    "price": 158.129,
+    "profit": -0.25,
+    "commission": 0.0,
+    "swap": 0.0,
+    "magic": 0,
+    "comment": "[sl 158.129]",
+    "reason": "SL",
+    "position_id": 802393463
+   },
+   {
+    "ticket": 590991866,
+    "order": 805862250,
+    "time_utc": "2026-10-10T17:37:25Z",
+    "symbol": "BTCUSD",
+    "type": "SELL",
+    "entry": "IN",
+    "volume": 0.01,
+    "price": 83120.0,
+    "profit": 0.0,
+    "commission": 0.0,
+    "swap": 0.0,
+    "magic": 0,
+    "comment": "Sell Limit Sweep",
+    "reason": "EXPERT",
+    "position_id": 805862250
+   },
+   {
+    "ticket": 591029566,
+    "order": 805862244,
+    "time_utc": "2026-10-11T03:52:32Z",
+    "symbol": "BTCUSD",
+    "type": "BUY",
+    "entry": "IN",
+    "volume": 0.01,
+    "price": 82860.0,
+    "profit": 0.0,
+    "commission": 0.0,
+    "swap": 0.0,
+    "magic": 0,
+    "comment": "Buy Limit Retest",
+    "reason": "EXPERT",
+    "position_id": 805862244
+   },
+   {
+    "ticket": 591029774,
+    "order": 805918432,
+    "time_utc": "2026-10-11T03:53:47Z",
+    "symbol": "BTCUSD",
+    "type": "BUY",
+    "entry": "OUT",
+    "volume": 0.01,
+    "price": 82850.0,
+    "profit": 2.7,
+    "commission": 0.0,
+    "swap": 0.0,
+    "magic": 0,
+    "comment": "[tp 82850.00]",
+    "reason": "TP",
+    "position_id": 805862250
+   }
+  ],
+  "positions_now": [
+   {
+    "ticket": 805862244,
+    "time_utc": "2026-10-11T03:52:32Z",
+    "symbol": "BTCUSD",
+    "type": "BUY",
+    "volume": 0.01,
+    "price_open": 82860.0,
+    "sl": 81860.0,
+    "tp": 83520.0,
+    "magic": 0,
+    "comment": "Buy Limit Retest",
+    "reason": "EXPERT"
+   }
+  ],
+  "orders_now": [
+   {
+    "ticket": 805883884,
+    "time_setup_utc": "2026-10-10T18:42:33Z",
+    "symbol": "ETHUSD",
+    "type": "BUY_LIMIT",
+    "volume": 0.01,
+    "price_open": 2497.0,
+    "magic": 0,
+    "comment": "ETH Retest Long 1%",
+    "reason": "EXPERT"
+   },
+   {
+    "ticket": 805883885,
+    "time_setup_utc": "2026-10-10T18:42:37Z",
+    "symbol": "ETHUSD",
+    "type": "SELL_LIMIT",
+    "volume": 0.01,
+    "price_open": 2522.0,
+    "magic": 0,
+    "comment": "ETH Sweep Short 1%",
+    "reason": "EXPERT"
+   }
+  ],
+  "summary": "4 entry orders + 2 pending ETH limits, all magic 0, reason EXPERT; GBPUSD SL -1.22, USDJPY SL -0.25, BTC short TP +2.70; BTC long OPEN; 2 ETH limits PENDING.",
+  "order_routing_evidence": "Roaming-terminal journal (Logs/20261008-11) logs each as '127.0.0.1 send pending order ...' = local MetaTrader5 Python/IPC API client. Program-Files terminal only mirrors resulting deals.",
+  "attribution": [
+   {
+    "tickets": [
+     798328269,
+     802393463
+    ],
+    "comment": "SMC SHORT IOC",
+    "likely_source": "UNIDENTIFIED local API client on ROAMING terminal"
+   },
+   {
+    "tickets": [
+     805862244,
+     805862250
+    ],
+    "comment": "Buy Limit Retest / Sell Limit Sweep",
+    "likely_source": "UNIDENTIFIED local API client on ROAMING terminal"
+   },
+   {
+    "tickets": [
+     805883884,
+     805883885
+    ],
+    "comment": "ETH Retest Long/Sweep Short 1%",
+    "likely_source": "UNIDENTIFIED local API client on ROAMING terminal"
+   }
+  ],
+  "excluded_sources": [
+   "AG execution/mt5_gateway.py (MARKET/TRADE_ACTION_DEAL only)",
+   "all inventoried EAs (non-zero magics)",
+   "metatrader-mcp-server 0.5.1 place_pending_order (no comment arg)",
+   "AG scheduled tasks (live_candles_smoke.py read-only; run_btc_daily_report.py no order_send call sites)"
+  ],
+  "comment_string_search": "No match in D: code trees, MQL5 sources, C:/Users/<user> code dirs, or Claude/Codex transcripts.",
+  "other_authorizations": "Account also authorized from <OWNER_IP_CLOUD> and <OWNER_IP_RESIDENTIAL> (other terminals/hosts) - owner to identify.",
+  "other_authorizations_finding": "both login sources owner-confirmed as owner's own (2026-10-11)",
+  "order_capable_now": {
+   "processes": [
+    {
+     "pid": 12692,
+     "name": "terminal64.exe",
+     "path": "<MT5_TERMINAL_DIR_ROAMING>",
+     "started_local": "2026-10-10 20:14",
+     "note": "ROAMING terminal; foreign orders routed here via local API"
+    },
+    {
+     "pid": 1832,
+     "name": "terminal64.exe",
+     "path": "<MT5_TERMINAL_DIR>",
+     "started_local": "2026-10-11 07:30",
+     "note": "ContinuationBreakout_EA (EURUSD,M15, magic 102233) loaded"
+    },
+    {
+     "pid": 1864,
+     "name": "node.exe",
+     "cmd": "node web/scripts/start_mt5_mcp.mjs",
+     "note": "read-only MCP proxy (isReadOnlyMt5Tool allowlist)"
+    }
+   ],
+   "installed_unrestricted": "<HOST_USER_PYTHON_SCRIPTS>/metatrader-mcp-server.exe 0.5.1 (has place_market_order/place_pending_order); not running at capture",
+   "enabled_trading_tasks": [
+    "AG Profit Trading - BTC Daily Decision -> <TASK_PYTHON> <TASK_SCRIPT:scripts/run_btc_daily_report.py> --json",
+    "AG-V1-Crypto-Daily / AG-V1-FX-Cycles / AG-V1-LSMC-Watch / AG-V1-LSMC-Crypto-Weekend -> live_candles_smoke.py (read-only)",
+    "EdgeLab/VT Friction Daily Capture -> <TASK_SCRIPT:run_daily_friction_capture.cmd> (not inspected)",
+    "AGX-HealthExport -> <TASK_SCRIPT:export-ag-health.ps1> (not inspected)"
+   ],
+   "custom_eas_present": "see status/evidence/host_c11_inventory_2026-10-11.json (PR #153)"
+  }
+ },
+ "2_disk": {
+  "C_free_gb": 0.0,
+  "C_total_gb": 168,
+  "D_free_gb": 7.2,
+  "method": "robocopy /L list-only byte totals; System Volume Information/restore points not measurable without admin",
+  "mt5_data_path": "C: (both terminals: <MT5_DATA_DIR_1>, <MT5_DATA_DIR_2>); nothing on D:",
+  "top_consumers": [
+   {
+    "path": "<USERPROFILE>/AppData/Local (total)",
+    "size_gb": 33.68
+   },
+   {
+    "path": "<USERPROFILE>/AppData/Roaming (total)",
+    "size_gb": 29.47
+   },
+   {
+    "path": "C:/Windows (total)",
+    "size_gb": 25.21
+   },
+   {
+    "path": "C:/pagefile.sys",
+    "size_gb": 15.8
+   },
+   {
+    "path": "C:/Program Files (x86)",
+    "size_gb": 11.64
+   },
+   {
+    "path": "<USERPROFILE>/AppData/Roaming/Claude/vm_bundles",
+    "size_gb": 10.37
+   },
+   {
+    "path": "C:/Windows/WinSxS",
+    "size_gb": 8.27
+   },
+   {
+    "path": "<USERPROFILE>/AppData/Local/Android",
+    "size_gb": 7.94
+   },
+   {
+    "path": "C:/Program Files",
+    "size_gb": 6.62
+   },
+   {
+    "path": "C:/ProgramData",
+    "size_gb": 6.47
+   },
+   {
+    "path": "<USERPROFILE>/AppData/Local/Packages",
+    "size_gb": 4.21
+   },
+   {
+    "path": "MT5 PROGRAM_FILES data Bases",
+    "size_gb": 4.09
+   },
+   {
+    "path": "<USERPROFILE>/AppData/Roaming/Code",
+    "size_gb": 3.95
+   },
+   {
+    "path": "<USERPROFILE>/AppData/Local/Google",
+    "size_gb": 3.78
+   },
+   {
+    "path": "MT5 ROAMING data Bases",
+    "size_gb": 3.04
+   },
+   {
+    "path": "<USERPROFILE>/AppData/Local/npm-cache",
+    "size_gb": 2.26
+   },
+   {
+    "path": "<USERPROFILE>/AppData/Local/ms-playwright",
+    "size_gb": 2.17
+   },
+   {
+    "path": "<USERPROFILE>/AppData/Local/Programs",
+    "size_gb": 1.98
+   },
+   {
+    "path": "<USERPROFILE>/.vscode",
+    "size_gb": 1.75
+   },
+   {
+    "path": "<USERPROFILE>/.antigravity-ide",
+    "size_gb": 1.64
+   }
+  ],
+  "other_measured": [
+   {
+    "path": "C:/Windows/Installer",
+    "size_gb": 1.59
+   },
+   {
+    "path": "<USERPROFILE>/.codex",
+    "size_gb": 1.41
+   },
+   {
+    "path": "<USERPROFILE>/.cache",
+    "size_gb": 1.4
+   },
+   {
+    "path": "<USERPROFILE>/AppData/Local/pnpm",
+    "size_gb": 1.33
+   },
+   {
+    "path": "<USERPROFILE>/.claude",
+    "size_gb": 1.18
+   },
+   {
+    "path": "%TEMP%",
+    "size_gb": 0.75
+   },
+   {
+    "path": "pip cache",
+    "size_gb": 0.32
+   },
+   {
+    "path": "C:/Windows/SoftwareDistribution",
+    "size_gb": 0.06
+   },
+   {
+    "path": "MT5 Logs/Tester (both)",
+    "size_gb": 0.0
+   },
+   {
+    "path": "C:/DiskGenius_WinPE",
+    "size_gb": 0.58
+   },
+   {
+    "path": "C:/AMD (Catalyst 15.7.1 installer)",
+    "size_gb": 0.45
+   },
+   {
+    "path": "MT5 install dirs (each)",
+    "size_gb": 0.37
+   },
+   {
+    "path": "hiberfil.sys",
+    "size_gb": 0,
+    "note": "absent"
+   }
+  ],
+  "cleanup_proposal_NOT_EXECUTED": {
+   "SAFE": [
+    {
+     "path": "%TEMP% (files not in use)",
+     "size_gb": 0.75
+    },
+    {
+     "path": "pip cache (pip cache purge)",
+     "size_gb": 0.32
+    },
+    {
+     "path": "npm-cache (npm cache clean --force)",
+     "size_gb": 2.26
+    },
+    {
+     "path": "pnpm store (pnpm store prune)",
+     "size_gb": 1.33
+    },
+    {
+     "path": "<USERPROFILE>/.cache (tool caches)",
+     "size_gb": 1.4
+    },
+    {
+     "path": "WinSxS superseded components",
+     "size_gb": "up to ~2",
+     "action": "Dism /Online /Cleanup-Image /StartComponentCleanup"
+    },
+    {
+     "path": "Windows/SoftwareDistribution/Download",
+     "size_gb": 0.06
+    }
+   ],
+   "OWNER_DECIDES": [
+    {
+     "path": "Claude vm_bundles (Cowork VM image; re-downloads if used)",
+     "size_gb": 10.37
+    },
+    {
+     "path": "Android SDK/AVDs",
+     "size_gb": 7.94
+    },
+    {
+     "path": "pagefile.sys -> move to D: or cap size",
+     "size_gb": 15.8
+    },
+    {
+     "path": "MT5 Bases history caches (both terminals; re-downloaded on demand)",
+     "size_gb": 7.13
+    },
+    {
+     "path": "second MT5 terminal (ROAMING portable)",
+     "note": "routes foreign orders; consolidate to one terminal"
+    },
+    {
+     "path": "ms-playwright browsers",
+     "size_gb": 2.17
+    },
+    {
+     "path": "C:/DiskGenius_WinPE",
+     "size_gb": 0.58
+    },
+    {
+     "path": "C:/AMD Catalyst 15.7.1 installer",
+     "size_gb": 0.45
+    },
+    {
+     "path": "AppData/Local/Packages (Store apps)",
+     "size_gb": 4.21
+    },
+    {
+     "path": "ProgramData/IObit, iTop, Opera/Hasleo autoupdate tasks",
+     "note": "bloatware candidates"
+    },
+    {
+     "path": "Claude local-agent-mode-sessions",
+     "size_gb": 0.89
+    }
+   ]
+  }
+ },
+ "3_resource_guard": {
+  "verdict": "MISSING_CODE (not stale doc)",
+  "facts": [
+   "scripts/resource_guard.py + tests/test_resource_guard.py exist only on origin/research/edge-program-v1 (commit 82e6e5c, 2026-10-05), never merged to main",
+   "origin/main references it: AGENTS.md:124 (resource_guard classes), docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md:170, two dated evidence files (2026-10-09)",
+   "Parent-level AGENTS.md (<HOST_DEV_ROOT>, branch research/edge-program-v1) mandates `python scripts/resource_guard.py status` and has the helper + policy docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md",
+   "Host <HOST_ROOT> (main): file absent"
+  ],
+  "next": "Owner: merge resource_guard.py + policy from research/edge-program-v1 into main, or drop the main references."
+ },
+ "redactions": {
+  "ruling": "owner 2026-10-11: host paths -> <HOST_ROOT>, terminal/task paths -> placeholders (edited in-PR after capture)",
+  "applied": [
+   {
+    "placeholder": "<TASK_PYTHON> <TASK_SCRIPT:scripts/run_btc_daily_report.py>",
+    "kind": "task action path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<TASK_SCRIPT:run_daily_friction_capture.cmd>",
+    "kind": "task action path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<TASK_SCRIPT:export-ag-health.ps1>",
+    "kind": "task action path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<HOST_USER_PYTHON_SCRIPTS>/metatrader-mcp-server.exe",
+    "kind": "host tool path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<MT5_DATA_DIR_1>, <MT5_DATA_DIR_2>",
+    "kind": "terminal data path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<MT5_TERMINAL_DIR_ROAMING>",
+    "kind": "terminal path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<MT5_TERMINAL_DIR>",
+    "kind": "terminal path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<HOST_DEV_ROOT>",
+    "kind": "host path (non-runtime checkout)",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<HOST_ROOT>",
+    "kind": "host path (live runtime tree)",
+    "occurrences": 2
+   },
+   {
+    "placeholder": "<OWNER_IP_RESIDENTIAL>",
+    "kind": "external login source IP (owner ruling 2026-10-11)",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<OWNER_IP_CLOUD>",
+    "kind": "external login source IP (owner ruling 2026-10-11)",
+    "occurrences": 1
+   }
+  ]
+ }
+}
