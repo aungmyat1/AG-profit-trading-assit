@@ -138,8 +138,8 @@
     "BTCUSD": {
       "logic_identity": {
         "contract_hash": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
-        "digest": "3343790a95e3b1033fcbe0eb0d8694de9479f8e3fd6ab97546aa925d169293e1",
-        "engine_identity": "f4ed7f2362dd47e3c0e9b4cb0559e14e1f844ef01196f8e49d570915d7b14c37",
+        "digest": "bcb5d1255dc6e62aee16e7e9f9aa5956ca6772972176cea5e78ff3e280cb09d2",
+        "engine_identity": "3117c510c7a9a95ec59c5d1f4a85b9104b0bd73c472dc5632763004311d69f97",
         "runtime_engine_hash": "a089001c22273f7c8f06ec419881abea83b87c522da8bec6647bfbd9a428e18e",
         "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
         "strategy_version": "1.1.0"
@@ -243,8 +243,8 @@
     "ETHUSD": {
       "logic_identity": {
         "contract_hash": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
-        "digest": "3343790a95e3b1033fcbe0eb0d8694de9479f8e3fd6ab97546aa925d169293e1",
-        "engine_identity": "f4ed7f2362dd47e3c0e9b4cb0559e14e1f844ef01196f8e49d570915d7b14c37",
+        "digest": "bcb5d1255dc6e62aee16e7e9f9aa5956ca6772972176cea5e78ff3e280cb09d2",
+        "engine_identity": "3117c510c7a9a95ec59c5d1f4a85b9104b0bd73c472dc5632763004311d69f97",
         "runtime_engine_hash": "a089001c22273f7c8f06ec419881abea83b87c522da8bec6647bfbd9a428e18e",
         "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
         "strategy_version": "1.1.0"
@@ -1911,32 +1911,6 @@
   "strategy": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0",
   "symbols": {
     "BTCUSD": {
-      "branches": {
-        "LONG": {
-          "emissions": 0,
-          "entry_valid_scans": 0,
-          "gates": {
-            "L1": "PASS",
-            "L2": "INSUFFICIENT",
-            "L3": "INSUFFICIENT",
-            "L4": "INSUFFICIENT",
-            "L5": "INSUFFICIENT",
-            "L6": "INSUFFICIENT"
-          }
-        },
-        "SHORT": {
-          "emissions": 2,
-          "entry_valid_scans": 77,
-          "gates": {
-            "L1": "PASS",
-            "L2": "PASS",
-            "L3": "PASS",
-            "L4": "PASS",
-            "L5": "PASS",
-            "L6": "PASS"
-          }
-        }
-      },
       "commission_binding": {
         "account_login_suffix": "985",
         "asset_classes": [
@@ -2155,21 +2129,13 @@
         ],
         "logic_identity": {
           "contract_hash": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
-          "digest": "3343790a95e3b1033fcbe0eb0d8694de9479f8e3fd6ab97546aa925d169293e1",
-          "engine_identity": "f4ed7f2362dd47e3c0e9b4cb0559e14e1f844ef01196f8e49d570915d7b14c37",
+          "digest": "bcb5d1255dc6e62aee16e7e9f9aa5956ca6772972176cea5e78ff3e280cb09d2",
+          "engine_identity": "3117c510c7a9a95ec59c5d1f4a85b9104b0bd73c472dc5632763004311d69f97",
           "runtime_engine_hash": "a089001c22273f7c8f06ec419881abea83b87c522da8bec6647bfbd9a428e18e",
           "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
           "strategy_version": "1.1.0"
         },
         "spec_constants_match": true
-      },
-      "gates": {
-        "L1": "PASS",
-        "L2": "PASS",
-        "L3": "PASS",
-        "L4": "PASS",
-        "L5": "PASS",
-        "L6": "PASS"
       },
       "mismatches": {
         "determinism": 0,
@@ -3431,32 +3397,6 @@
       "symbol": "BTCUSD"
     },
     "ETHUSD": {
-      "branches": {
-        "LONG": {
-          "emissions": 3,
-          "entry_valid_scans": 354,
-          "gates": {
-            "L1": "PASS",
-            "L2": "PASS",
-            "L3": "PASS",
-            "L4": "PASS",
-            "L5": "PASS",
-            "L6": "PASS"
-          }
-        },
-        "SHORT": {
-          "emissions": 2,
-          "entry_valid_scans": 247,
-          "gates": {
-            "L1": "PASS",
-            "L2": "PASS",
-            "L3": "PASS",
-            "L4": "PASS",
-            "L5": "PASS",
-            "L6": "PASS"
-          }
-        }
-      },
       "commission_binding": {
         "account_login_suffix": "985",
         "asset_classes": [
@@ -3940,21 +3880,13 @@
         ],
         "logic_identity": {
           "contract_hash": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
-          "digest": "3343790a95e3b1033fcbe0eb0d8694de9479f8e3fd6ab97546aa925d169293e1",
-          "engine_identity": "f4ed7f2362dd47e3c0e9b4cb0559e14e1f844ef01196f8e49d570915d7b14c37",
+          "digest": "bcb5d1255dc6e62aee16e7e9f9aa5956ca6772972176cea5e78ff3e280cb09d2",
+          "engine_identity": "3117c510c7a9a95ec59c5d1f4a85b9104b0bd73c472dc5632763004311d69f97",
           "runtime_engine_hash": "a089001c22273f7c8f06ec419881abea83b87c522da8bec6647bfbd9a428e18e",
           "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
           "strategy_version": "1.1.0"
         },
         "spec_constants_match": true
-      },
-      "gates": {
-        "L1": "PASS",
-        "L2": "PASS",
-        "L3": "PASS",
-        "L4": "PASS",
-        "L5": "PASS",
-        "L6": "PASS"
       },
       "mismatches": {
         "determinism": 0,
