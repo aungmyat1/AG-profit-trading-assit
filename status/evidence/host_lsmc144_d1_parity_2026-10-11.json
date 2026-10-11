@@ -1,0 +1,57 @@
+{
+ "schema": "AG_HOST_LSMC_D1_PARITY_V1",
+ "pr": 144,
+ "pr_head": "d9325c3c25965c5d00995bff2e75aa55f1bcc946",
+ "captured_on_host": true,
+ "host_repo": "D:/wp3-main-integ",
+ "host_head_sha": "1d8891392fc522e9b979008e6f4be0091d9309b2",
+ "host_update": "git pull --ff-only origin main (pull-only)",
+ "broker_mutation": "NONE (no order_check/order_send/symbol_select/position calls)",
+ "account_guard": "DEMO_ACCOUNT_VERIFIED",
+ "environment": "Windows 10 host, VT Markets MT5 terminal build 6230, .venv python",
+ "broker_symbol": "EURUSD-VIP",
+ "verdict": "PASS",
+ "mt5_d1_export": {
+  "range_utc": [
+   "2026-06-15",
+   "2026-08-25"
+  ],
+  "bars": 52,
+  "conversion": "per-bar server_time_to_utc (NY+7 rule)"
+ },
+ "vs_pr_fixture_EURUSD_json_D1": {
+  "ref": "tests/fixtures/large_smc_v111/EURUSD.json",
+  "compared": 30,
+  "missing_in_mt5": [],
+  "mismatches": []
+ },
+ "vs_pr_host_snapshot_D1": {
+  "ref": "tests/fixtures/large_smc_v111/host_d1_EURUSD_snapshot_mt5.json",
+  "compared": 30,
+  "missing_in_mt5": [],
+  "mismatches": []
+ },
+ "fresh_h1_broker_day_rebuild_vs_mt5_d1": {
+  "mismatches_complete_days": 0,
+  "partial_edge_excluded": [
+   {
+    "time_utc": "2026-08-24T21:00:00Z",
+    "h1_bars": 1,
+    "h1_rebuild": {
+     "open": 1.16616,
+     "high": 1.16643,
+     "low": 1.166,
+     "close": 1.16622
+    },
+    "mt5_d1": {
+     "open": 1.16616,
+     "high": 1.1679,
+     "low": 1.16506,
+     "close": 1.16744
+    }
+   }
+  ],
+  "note": "Only mismatch is the query-edge day 2026-08-24T21:00Z with 1 H1 bar (partial bucket), not a data mismatch."
+ },
+ "tolerance": 5e-06
+}
