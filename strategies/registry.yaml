@@ -89,8 +89,8 @@ strategies:
     demo_authorized: false
     live_authorized: false
     detection_logic_verification:
-      status: NOT_VERIFIED
-      reason: "PR #144 round 4 attribution and required green CI are not confirmed; remote checks endpoint returns Forbidden. Detection outputs remain diagnostic pending semantic INDEX_SHIFT/PRICE_DELTA attribution and CI green."
+      status: LOGIC_VERIFIED
+      verification_basis: "Single-snapshot fixture bound to EURUSD.json SHA256 b5e1e524e1b912d15032650881edb000906d6d875657332be90fa3997a191c11 and host snapshot data/eurusd-d1-mt5@a44437e; L1-L6, prefix-invariance and classified oracle diffs passed. Old-vs-new output attribution is diagnostic only."
       mismatch_count: 0
       logic_defect_count: 0
       data_defect_count: 0

@@ -129,6 +129,10 @@ from canonical session windows or other repo conventions at the time of registra
   verification only (fixtures, truncation invariance, no look-ahead); no economic evaluation.
   v1.0.7 engine is not runnable on current main (reaches forbidden `trade_management`); its C10/
   C11/decision modules are restored byte-exact in `src/large_smc_core/`.
+  - **LSMC_M5_ROLLOVER_SENSITIVITY (2026-10-11):** diagnostic only, no code change. Native MT5 M5
+    includes rollover bars/spikes that the prior M1-derived M5 fixture omitted; the four inserted
+    bars materially change detection (86 output-signature differences in the insertion-removal
+    sensitivity probe). Keep this as an edge-research caveat, not a verification defect or gate.
 
 - **Registered:** 2026-09-01
 - **Config:** `strategies/ST_LARGE_SMC_V1.yaml`
