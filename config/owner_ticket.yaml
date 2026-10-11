@@ -16,5 +16,5 @@ owner_ticket:
   # no commission (INSUFFICIENT, never 0). A non-zero commission on the first demo deals invalidates it.
   commission:
     decision_id: OD1011-COMMISSION
-    account_login_suffix: "985"
+    account_login_suffix: "999"   # OD1012-ACCOUNT (2026-10-12): AG evidence/demo account …999
     commission_R: 0
