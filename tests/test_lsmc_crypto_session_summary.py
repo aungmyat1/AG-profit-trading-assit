@@ -178,10 +178,12 @@ def _fail_mt5(monkeypatch, failure):
     monkeypatch.setattr(lcs, "mt5_access_lock", busy if failure == "MT5_BUSY" else nullcontext)
     monkeypatch.setattr(lcs, "mt5_initialize", lambda *a: (failure != "MT5_INITIALIZE_FAILED", "init"))
     monkeypatch.setattr(lcs, "require_demo_account", lambda *a: (failure != "DEMO_ACCOUNT_REQUIRED", "demo"))
+    monkeypatch.setattr(lcs, "require_pinned_demo_account",
+                        lambda *a: (failure != "ACCOUNT_PIN_MISMATCH", "ACCOUNT_PIN_MISMATCH SERVER"))
 
 
 @pytest.mark.parametrize("failure", ["MT5_PACKAGE_MISSING", "MT5_INITIALIZE_FAILED", "DEMO_ACCOUNT_REQUIRED",
-                                     "MT5_BUSY"])
+                                     "ACCOUNT_PIN_MISMATCH", "MT5_BUSY"])
 @pytest.mark.parametrize("mode,session,now", [("lsmc", cfd.LSMC_CRYPTO_DAY, at(WED, 0, 40)),
                                               ("lsmc-weekend", cfd.LSMC_CRYPTO_WEEKEND, at(SAT, 21, 0))])
 def test_mt5_failure_still_journals_crypto_data_error_and_processes_due_summaries(monkeypatch, mode, session, now,

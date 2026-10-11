@@ -3,7 +3,7 @@
 
     DECISION (2026-08-17)
       The existing 'metatrader' MCP works. It returns account state and OHLC:
-          account 1144985 · balance 987.82 USD
+          account …985 · balance 987.82 USD
           EURUSD M15 2026-08-17 07:45  1.15866 / 1.15869 / 1.15861 / 1.15866
       Every failure earlier in the session was MetaTrader 5 being CLOSED, not a
       configuration fault. MBT was installed to solve a problem that did not exist,

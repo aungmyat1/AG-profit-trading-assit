@@ -277,6 +277,20 @@ def require_demo_account(mt5) -> "tuple[bool, str]":
     return True, "DEMO_ACCOUNT_VERIFIED"
 
 
+def require_pinned_demo_account(mt5, root=None) -> "tuple[bool, str]":
+    """OD1012-ACCOUNT: fail closed unless the connected terminal is the pinned DEMO account
+    (server, login suffix, trade mode; config/account_pin.yaml). Read-only; the status never
+    carries the login, balance or equity."""
+    from host_evidence.account_pin import ACCOUNT_PIN_MISMATCH, check_account, load_pin
+
+    try:
+        account = call_with_timeout(mt5.account_info)
+    except Exception as exc:  # noqa: BLE001
+        return False, f"{ACCOUNT_PIN_MISMATCH} ACCOUNT_INFO_UNAVAILABLE {type(exc).__name__}"
+    pin = load_pin(root) if root is not None else load_pin()
+    return check_account(account, pin, getattr(mt5, "ACCOUNT_TRADE_MODE_DEMO", 0))
+
+
 def mt5_initialize(mt5, terminal_path: str = "") -> "tuple[bool, str]":
     """initialize() against the VT Markets demo terminal. Credentials come only from the
     environment (VTMARKETS-DEMO-LOGIN / VTMARKETS_DEMO_LOGIN / MT5_LOGIN, etc.). The

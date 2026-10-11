@@ -51,6 +51,7 @@ from _host_common import (  # noqa: E402
     mt5_access_lock,
     mt5_initialize,
     require_demo_account,
+    require_pinned_demo_account,
     single_instance,
     start_run_watchdog,
     utcnow,
@@ -707,6 +708,7 @@ def main(argv=None) -> int:
             "MT5_PACKAGE_MISSING": "MetaTrader5 package unavailable",
             "MT5_INITIALIZE_FAILED": "MT5 initialization failed",
             "DEMO_ACCOUNT_REQUIRED": "verified Demo account not confirmed",
+            "ACCOUNT_PIN_MISMATCH": "connected account is not the pinned AG demo account (OD1012-ACCOUNT)",
             "MT5_BUSY": "host-wide MT5 data lock unavailable",
         }
         _, failures = run_canonical_fx_cycle(
@@ -773,6 +775,16 @@ def main(argv=None) -> int:
                             for line in lines:
                                 log_line(log_name, line)
                             log_line(log_name, f"DEMO_ACCOUNT_REQUIRED {demo_status}")
+                            return 1
+                        pin_ok, pin_status = require_pinned_demo_account(mt5)
+                        if not pin_ok:   # OD1012-ACCOUNT: wrong server/suffix/mode -> no tickets
+                            lines = ((canonical_failure_lines("ACCOUNT_PIN_MISMATCH") if args.canonical else
+                                      archive_fx_runtime_failure(now, journal, "ACCOUNT_PIN_MISMATCH", pin_status,
+                                                                 cycle_filter=args.cycle)) if args.mode == "fx"
+                                     else lsmc_failure_lines("ACCOUNT_PIN_MISMATCH"))
+                            for line in lines:
+                                log_line(log_name, line)
+                            log_line(log_name, pin_status)
                             return 1
                         fetch, quote = host_fetch(mt5), host_quote(mt5)
                         if args.mode == "crypto":

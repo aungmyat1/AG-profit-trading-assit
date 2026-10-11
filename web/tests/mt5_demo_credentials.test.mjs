@@ -4,13 +4,13 @@ import test from 'node:test';
 import { resolveDemoCredentials, isStrippedChildEnvKey } from '../scripts/mt5_demo_credentials.mjs';
 import { startSetupErrorServer } from '../scripts/readonly_mcp_proxy.mjs';
 
-const VT = { MT5_ENVIRONMENT: 'DEMO', VTMARKETS_DEMO_LOGIN: '1144985', VTMARKETS_DEMO_PASSWORD: 'secret', VTMARKETS_DEMO_SERVER: 'VTMarkets-Demo' };
+const VT = { MT5_ENVIRONMENT: 'DEMO', VTMARKETS_DEMO_LOGIN: '1234567', VTMARKETS_DEMO_PASSWORD: 'secret', VTMARKETS_DEMO_SERVER: 'VTMarkets-Demo' };
 
 test('defaults to the VT Markets demo account', () => {
   const result = resolveDemoCredentials(VT);
   assert.equal(result.ok, true);
   assert.equal(result.broker, 'VTMARKETS');
-  assert.equal(result.login, '1144985');
+  assert.equal(result.login, '1234567');
   assert.equal(result.server, 'VTMarkets-Demo');
 });
 
