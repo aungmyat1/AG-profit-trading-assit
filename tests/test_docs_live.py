@@ -57,7 +57,7 @@ def test_untracked_supersession_sidecar_does_not_change_digest_or_suppress(tmp_p
         "demo_authorized": True, "manager_dispatchable": True
     }}}), encoding="utf-8")
     run("git", "add", manifest_rel, cwd=root)
-    before = run(sys.executable, "scripts/docs/collect_facts.py", "--repo-root", str(root), "--output", str(root / "facts.json"), cwd=root)
+    run(sys.executable, "scripts/docs/collect_facts.py", "--repo-root", str(root), "--output", str(root / "facts.json"), cwd=root)
     digest_before = json.loads((root / "facts.json").read_text())["inputs_sha256"]
     sidecar = target.with_suffix(".supersession.yaml")
     sidecar.write_text(
