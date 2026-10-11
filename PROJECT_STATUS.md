@@ -8,8 +8,6 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
-C14 execution-path gap audit (2026-10-11, docs-only, audited at #148 head `7532e6f`): no complete, reachable C14 automatic DEMO execution chain exists. Canonical execution modules, scoped standing authority, unified five-limit enforcement, send-time gates, broker reconciliation, lifecycle writers and correlated Telegram results are MISSING. READY stays OFF and all demo/live flags stay false. Evidence: `docs/status/AGP_C14_EXEC_GAP_2026-10-11.md`.
-
 OD1011 owner decisions (2026-10-11) are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`:
 COMMISSION (VT demo Standard STP, commission_R 0, bound by login suffix; the full login only in gitignored
 local config), ROUNDING (ROUND_HALF_UP), SCOPE (branch-scoped LOGIC_VERIFIED) and L5 (PASS = accepted cost
