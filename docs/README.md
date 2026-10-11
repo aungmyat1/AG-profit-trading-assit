@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[AGP C14 execution-path gap audit](status/AGP_C14_EXEC_GAP_2026-10-11.md) traces ticket → READY → standing DEMO authority → risk/cost → order → reconciliation → audit → Telegram at #148's pre-merge head `7532e6f` (historical where #132 later changed commission handling). Verdict: no complete C14 automatic DEMO execution chain exists. Nine integrations are MISSING, and no authority changed.
+
 [AGP-G3-VERIFY manual-ticket risk/cost gate](status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md) records the G3 verification of the OD1009-D2 risk/cost gate (FX, gold, crypto CFD), its four fixed gate defects and the NO_BROKER_MUTATION evidence. It changes no readiness or authorization value.`r`n`r`n[Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
 
 [READY owner binding](status/READY_OWNER_BINDING_2026-10-10.md) records the additional
