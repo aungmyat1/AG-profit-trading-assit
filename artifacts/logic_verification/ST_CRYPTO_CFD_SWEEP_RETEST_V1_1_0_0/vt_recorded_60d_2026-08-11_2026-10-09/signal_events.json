@@ -1,0 +1,192 @@
+{
+  "BTCUSD": {
+    "cuts_checked": 72,
+    "definition": "no signal event at or before t changes when bars after t are added",
+    "event_log_mismatches": 0,
+    "events": 4,
+    "events_by_type": {
+      "EMIT": 2,
+      "EXPIRE": 2
+    },
+    "expiry_rule": "SIGNAL_STALE once now > retest candle open + 5 min + 15 min (manual_ticket valid_until)",
+    "log": [
+      {
+        "bar_close_utc": "2026-08-27T13:50:00+00:00",
+        "direction": "SHORT",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-08-27T13:45:00+00:00",
+        "seq": 0,
+        "signal_id": "50d2257fdb5033b9",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-08-27T14:10:00+00:00",
+        "direction": "SHORT",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-08-27T13:45:00+00:00",
+        "seq": 1,
+        "signal_id": "50d2257fdb5033b9",
+        "type": "EXPIRE"
+      },
+      {
+        "bar_close_utc": "2026-10-09T18:45:00+00:00",
+        "direction": "SHORT",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-10-09T18:40:00+00:00",
+        "seq": 2,
+        "signal_id": "7fb1737ff995efce",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-10-09T19:05:00+00:00",
+        "direction": "SHORT",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-10-09T18:40:00+00:00",
+        "seq": 3,
+        "signal_id": "7fb1737ff995efce",
+        "type": "EXPIRE"
+      }
+    ],
+    "mismatch_detail": [],
+    "mismatches_by_day": {},
+    "mismatches_by_type": {},
+    "reissues": {
+      "expired": 0,
+      "fresh": 0,
+      "total": 0
+    },
+    "source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
+    "verdict": "PASS"
+  },
+  "ETHUSD": {
+    "cuts_checked": 93,
+    "definition": "no signal event at or before t changes when bars after t are added",
+    "event_log_mismatches": 0,
+    "events": 11,
+    "events_by_type": {
+      "EMIT": 5,
+      "EXPIRE": 5,
+      "REISSUE": 1
+    },
+    "expiry_rule": "SIGNAL_STALE once now > retest candle open + 5 min + 15 min (manual_ticket valid_until)",
+    "log": [
+      {
+        "bar_close_utc": "2026-08-13T03:25:00+00:00",
+        "direction": "LONG",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-08-13T03:20:00+00:00",
+        "seq": 0,
+        "signal_id": "26abe1465af3f3c2",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-08-13T03:45:00+00:00",
+        "direction": "LONG",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-08-13T03:20:00+00:00",
+        "seq": 1,
+        "signal_id": "26abe1465af3f3c2",
+        "type": "EXPIRE"
+      },
+      {
+        "bar_close_utc": "2026-08-28T05:55:00+00:00",
+        "direction": "LONG",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-08-28T05:50:00+00:00",
+        "seq": 2,
+        "signal_id": "4ec0da54c299fcf1",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-08-28T06:15:00+00:00",
+        "direction": "LONG",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-08-28T05:50:00+00:00",
+        "seq": 3,
+        "signal_id": "4ec0da54c299fcf1",
+        "type": "EXPIRE"
+      },
+      {
+        "bar_close_utc": "2026-09-06T07:25:00+00:00",
+        "direction": "SHORT",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-09-06T07:20:00+00:00",
+        "seq": 4,
+        "signal_id": "9807c2d2e5edf864",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-09-06T07:45:00+00:00",
+        "direction": "SHORT",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-09-06T07:20:00+00:00",
+        "seq": 5,
+        "signal_id": "9807c2d2e5edf864",
+        "type": "EXPIRE"
+      },
+      {
+        "bar_close_utc": "2026-09-09T11:00:00+00:00",
+        "direction": "SHORT",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-09-09T10:55:00+00:00",
+        "seq": 6,
+        "signal_id": "0e2205dc979c0540",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-09-09T11:20:00+00:00",
+        "direction": "SHORT",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-09-09T10:55:00+00:00",
+        "seq": 7,
+        "signal_id": "0e2205dc979c0540",
+        "type": "EXPIRE"
+      },
+      {
+        "bar_close_utc": "2026-09-09T20:00:00+00:00",
+        "direction": "SHORT",
+        "freshness": "EXPIRED",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-09-09T10:55:00+00:00",
+        "seq": 8,
+        "signal_id": "0e2205dc979c0540",
+        "type": "REISSUE"
+      },
+      {
+        "bar_close_utc": "2026-10-05T18:10:00+00:00",
+        "direction": "LONG",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-10-05T18:05:00+00:00",
+        "seq": 9,
+        "signal_id": "60da3072a5dfc138",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-10-05T18:30:00+00:00",
+        "direction": "LONG",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-10-05T18:05:00+00:00",
+        "seq": 10,
+        "signal_id": "60da3072a5dfc138",
+        "type": "EXPIRE"
+      }
+    ],
+    "mismatch_detail": [],
+    "mismatches_by_day": {},
+    "mismatches_by_type": {},
+    "reissues": {
+      "expired": 1,
+      "fresh": 0,
+      "total": 1
+    },
+    "source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
+    "verdict": "PASS"
+  }
+}

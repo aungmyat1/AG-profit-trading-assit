@@ -2,6 +2,9 @@
 
 build        tests/fixtures/ccfd_v100/recorded/manifest.json + <SYM>_provenance.json from the
              committed shared per-TF CSVs (M15 is the PR #128 file, referenced by sha256).
+             --dataset recorded_60d builds the same manifest/provenance for the PR #143 60-day
+             capture (tests/fixtures/ccfd_v100/recorded_60d, own M15 file); partial days are
+             listed in provenance and the manifest, never filled.
              One case per M15 bar close inside the crypto window gate (config/v1_tickets
              crypto_ticket_v2/v3 WEEKDAY/WEEKEND, same rule as v1_tickets.crypto_cfd._window).
 materialize  verify every listed sha256, then write per-case CSVs holding only bars closed at
@@ -27,12 +30,14 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 RECORDED = ROOT / "tests/fixtures/ccfd_v100/recorded"
+RECORDED_60D = ROOT / "tests/fixtures/ccfd_v100/recorded_60d"
 UTC = timezone.utc
 SYMBOLS = ("BTCUSD", "ETHUSD")
 STEP = {"d1": timedelta(days=1), "h1": timedelta(hours=1), "m15": timedelta(minutes=15),
         "m5": timedelta(minutes=5)}
-COMMISSION_GAP = ("commission_R is null for every case: VT crypto CFD commission was not "
-                  "captured (no allowed read-only call exposes it). Explicit gap, never 0.")
+COMMISSION_GAP = ("raw capture has no commission field; OD1011-COMMISSION supplies effective commission_R=0 only "
+                  "when its authoritative policy block and captured VTMarkets-Demo server/source match; otherwise "
+                  "L5 is INSUFFICIENT(commission).")
 
 
 def sha(path: Path) -> str:
@@ -65,9 +70,53 @@ def read_rows(path: Path) -> list[dict]:
         return list(csv.DictReader(f))
 
 
-def shared_paths(sym: str) -> dict[str, str]:
-    return {"d1": f"{sym}_d1.csv", "h1": f"{sym}_h1.csv", "m5": f"{sym}_m5.csv",
-            "m15": f"../../manual_ticket/{sym}_M15_recorded.csv"}
+def shared_paths(sym: str, out_dir: Path = RECORDED) -> dict[str, str]:
+    m15 = f"{sym}_M15_recorded.csv" if out_dir == RECORDED_60D else f"../../manual_ticket/{sym}_M15_recorded.csv"
+    return {"d1": f"{sym}_d1.csv", "h1": f"{sym}_h1.csv", "m5": f"{sym}_m5.csv", "m15": m15}
+
+
+def partial_days(out_dir: Path, sym: str) -> dict[str, int]:
+    """UTC days whose M5 file holds fewer than 288 bars -> bar count. Listed, never filled."""
+    counts: dict[str, int] = {}
+    for r in read_rows(out_dir / f"{sym}_m5.csv"):
+        day = parse_ts(r["timestamp_utc"]).date().isoformat()
+        counts[day] = counts.get(day, 0) + 1
+    return {d: n for d, n in sorted(counts.items()) if n != 288}
+
+
+def provenance_60d(out_dir: Path, sym: str, report: dict, files: dict, paths: dict) -> dict:
+    """PR #143 (AGP-HOST-CRYPTO60) provenance, read from its PROVENANCE.md table, never assumed."""
+    md_name = f"{sym}_M15_recorded.PROVENANCE.md"
+    rows = [line.split("|")[1:-1] for line in (out_dir / md_name).read_text(encoding="utf-8").splitlines()
+            if line.startswith("| 20") and line.count("|") == 9]
+    offsets = sorted({r[2].strip() for r in rows})
+    files[md_name] = sha(out_dir / md_name)
+    raw_policy = yaml.safe_load((ROOT / "config/v1_tickets/crypto_cfd_ticket_policy.yaml").read_text(encoding="utf-8"))
+    commission_policy = raw_policy.get("commission", {}) if isinstance(raw_policy, dict) else {}
+    bound = (commission_policy.get("decision_id") == "OD1011-COMMISSION"
+             and type(commission_policy.get("commission_R")) in (int, float)
+             and commission_policy.get("commission_R") == 0
+             and isinstance(commission_policy.get("account_login_suffix"), str)
+             and commission_policy["account_login_suffix"].isdigit()
+             and 3 <= len(commission_policy["account_login_suffix"]) <= 4
+             and report.get("server") == "VTMarkets-Demo")
+    return {"source": "MT5_VT_MARKETS_DEMO", "mission": "AGP-HOST-CRYPTO60", "symbol": sym,
+            "recorded": True, "captured_at_utc": report["captured_at_utc"], "server": report["server"],
+            "captured_in": "PR #143 (data/ccfd-recorded-60d)",
+            "days": [r[0].strip() for r in rows], "days_kept": sum(r[1].strip() == "yes" for r in rows),
+            "server_utc_offset_hours": offsets, "offset_method": "measured on EURUSD per day (17:00 "
+            "America/New_York rollover, both edges agree); weekends keep an offset only if Fri and Mon agree",
+            "offset_source": md_name, "partial_days_m5_bars": partial_days(out_dir, sym),
+            "gap_policy": "missing bars are listed, never filled or interpolated",
+            "sha256": {tf: files[rel] for tf, rel in paths.items()},
+            "sha256_scope": "shared 60-day files; materialized per-case slices carry their own hashes",
+            "captured_commission_R": None,
+            "commission_R": 0 if bound else None,
+            "commission_source": "OD1011-COMMISSION" if bound else None,
+            "commission_binding_server": report.get("server") if bound else None,
+            "commission_gap": ("Raw capture omitted commission; effective commission_R=0 supplied by "
+                               "OD1011-COMMISSION because the captured server matches VTMarkets-Demo."
+                               if bound else COMMISSION_GAP)}
 
 
 def build(out_dir: Path = RECORDED) -> Path:
@@ -77,14 +126,15 @@ def build(out_dir: Path = RECORDED) -> Path:
     files["capture_report.json"] = sha(out_dir / "capture_report.json")
     cases = []
     for sym in SYMBOLS:
-        paths = shared_paths(sym)
+        paths = shared_paths(sym, out_dir)
         files[paths["m15"]] = sha(out_dir / paths["m15"])
-        prov = {"source": "MT5_VT_MARKETS_DEMO", "mission": "AGP-DATA-R2", "symbol": sym,
+        prov = provenance_60d(out_dir, sym, report, files, paths) if out_dir == RECORDED_60D else {"source": "MT5_VT_MARKETS_DEMO", "mission": "AGP-DATA-R2", "symbol": sym,
                 "recorded": True, "captured_at_utc": report["captured_at_utc"],
                 "m15_captured_in": "PR #128 (AGP-DATA-R2)", "other_tfs_captured_in": "AGP-DATA-R2b",
                 "sha256": {tf: files[rel] for tf, rel in paths.items()},
-                "sha256_scope": "shared 14-day files; materialized per-case slices carry their own hashes",
-                "commission_R": None, "commission_gap": COMMISSION_GAP}
+                          "sha256_scope": "shared 14-day files; materialized per-case slices carry their own hashes",
+                "captured_commission_R": None, "commission_R": None, "commission_source": None,
+                "commission_binding_server": None, "commission_gap": COMMISSION_GAP}
         prov_name = f"{sym}_provenance.json"
         (out_dir / prov_name).write_text(json.dumps(prov, indent=2) + "\n", encoding="utf-8", newline="\n")
         files[prov_name] = sha(out_dir / prov_name)
@@ -101,12 +151,19 @@ def build(out_dir: Path = RECORDED) -> Path:
                 raise SystemExit(f"{sym} {now}: no M5 bar for the case spread; refusing to invent one")
             cases.append({"id": f"{sym}_{name}_{now:%Y%m%dT%H%M}Z", "symbol": sym, "window": name,
                           "now": now.isoformat(), "paths": paths, "provenance": prov_name,
-                          "spread": float(meta["spread_price"]), "commission_R": None,
+                          "spread": float(meta["spread_price"]), "commission_R": prov["commission_R"],
                           "quote_time": quote_bar.isoformat(), "expected_result": None,
                           "expected_direction": None})
+    commission_gap = ("OD1011-COMMISSION=0 bound to captured VTMarkets-Demo server/source"
+                      if out_dir == RECORDED_60D and all(c["commission_R"] == 0 for c in cases)
+                      else COMMISSION_GAP)
     manifest = {"source": "MT5_VT_MARKETS_DEMO", "mission": "AGP-DATA-R2", "cases": cases,
-                "gaps": {"commission_R": COMMISSION_GAP},
+                "gaps": {"commission_R": commission_gap},
                 "files": dict(sorted(files.items()))}
+    if out_dir == RECORDED_60D:
+        manifest["mission"] = "AGP-HOST-CRYPTO60"
+        manifest["gaps"]["partial_days_m5_bars"] = {sym: partial_days(out_dir, sym) for sym in SYMBOLS}
+        manifest["gaps"]["policy"] = "missing bars are listed, never filled or interpolated"
     path = out_dir / "manifest.json"
     path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
     return path
@@ -156,14 +213,15 @@ def materialize(manifest_path: Path, out_dir: Path, limit: int | None = None) ->
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("build")
+    b = sub.add_parser("build")
+    b.add_argument("--dataset", choices=("recorded", "recorded_60d"), default="recorded")
     m = sub.add_parser("materialize")
     m.add_argument("--manifest", type=Path, default=RECORDED / "manifest.json")
     m.add_argument("--out-dir", type=Path, required=True)
     m.add_argument("--limit", type=int, default=None)
     args = p.parse_args(argv)
     if args.cmd == "build":
-        path = build()
+        path = build(RECORDED_60D if args.dataset == "recorded_60d" else RECORDED)
         data = json.loads(path.read_text(encoding="utf-8"))
         print("MANIFEST", path.relative_to(ROOT), "cases", len(data["cases"]), "sha256", sha(path))
     else:

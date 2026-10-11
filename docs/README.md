@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[AGP-C4-CCFD-LOGIC](status/AGP_C4_CCFD_LOGIC_2026-10-10.md) records synthetic-only CFD v1.0.0 L1–L6 evidence and the DATA-R2 rerun.
+
 [Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
 records stop/target rejection, the owner-set 50% remaining-reward threshold, required
 host preflight, FX/crypto rejection ownership, diagnostics and offline tests.
