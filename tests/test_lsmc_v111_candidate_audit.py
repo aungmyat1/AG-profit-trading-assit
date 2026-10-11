@@ -13,7 +13,11 @@ sys.path.insert(0, str(ROOT / "tests"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import audit_lsmc_v111_candidate as audit  # noqa: E402
-from _lsmc_v111_fixtures import fixture_manifest, fixture_symbols, load_fixture  # noqa: E402
+from _lsmc_v111_fixtures import (  # noqa: E402
+    fixture_manifest,
+    fixture_symbols,
+    load_fixture,
+)
 
 
 def _price_values(symbol: str) -> set[float]:
@@ -249,10 +253,10 @@ def test_synthetic_labelled_fixtures_are_blocked_from_qualification_and_evidence
         ELIGIBILITY_BLOCKED,
         MARKET_DATA_MODE_REPLAY,
         MARKET_DATA_MODE_SYNTHETIC,
-        CandidateGeometry,
-        OpportunityCandidate,
         REPLAY_DATA_NOT_BROKER_EXECUTABLE,
         SYNTHETIC_DATA_NOT_PROPOSAL_ELIGIBLE,
+        CandidateGeometry,
+        OpportunityCandidate,
     )
     from opportunity.proposal_eligibility import evaluate_proposal_eligibility
     from opportunity.registry_binding import StrategyBinding

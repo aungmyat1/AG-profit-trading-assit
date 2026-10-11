@@ -24,8 +24,9 @@ def test_every_sm_conformance_difference_is_classified_with_spec_citation():
 
 
 def test_registry_records_only_eurusd_detection_verdict():
-    import yaml
     from pathlib import Path
+
+    import yaml
     root = Path(__file__).resolve().parents[1]
     record = yaml.safe_load((root / "strategies/registry.yaml").read_text())["strategies"]["ST_LARGE_SMC_V1"]["detection_logic_verification"]
     assert record["status"] == "LOGIC_VERIFIED"
@@ -38,8 +39,14 @@ def test_registry_records_only_eurusd_detection_verdict():
 
 
 def test_smc_oracle_outputs_are_delayed_by_swing_length():
-    from research_external.oracles.lsmc_detection_run import LENGTH, _bars, _smc_causal, FIXTURE
     import json
+
+    from research_external.oracles.lsmc_detection_run import (
+        FIXTURE,
+        LENGTH,
+        _bars,
+        _smc_causal,
+    )
     data = json.loads(FIXTURE.read_text())
     output = _smc_causal(_bars(data["H1"]))
     for key in ("swings", "bos_choch", "liquidity", "ob", "fvg"):
@@ -50,10 +57,17 @@ def test_smc_oracle_outputs_are_delayed_by_swing_length():
 
 def test_raw_smc_swing_labels_leak_future_but_wrapper_hides_unconfirmed_bookends():
     import json
+
     import pandas as pd
     from smartmoneyconcepts import smc
-    from research_external.oracles.lsmc_detection_run import FIXTURE, LENGTH, _bars, _smc_causal
+
     from market_structure.smc_adapter import candles_to_dataframe
+    from research_external.oracles.lsmc_detection_run import (
+        FIXTURE,
+        LENGTH,
+        _bars,
+        _smc_causal,
+    )
     rows = json.loads(FIXTURE.read_text())["H1"]
     bars = _bars(rows)
     full_raw = smc.swing_highs_lows(candles_to_dataframe(bars), swing_length=LENGTH)
@@ -69,7 +83,11 @@ def test_raw_smc_swing_labels_leak_future_but_wrapper_hides_unconfirmed_bookends
 
 def test_d1_fixture_is_broker_day_aligned():
     import json
-    from research_external.oracles.lsmc_detection_run import FIXTURE, _broker_day_alignment
+
+    from research_external.oracles.lsmc_detection_run import (
+        FIXTURE,
+        _broker_day_alignment,
+    )
     rows = json.loads(FIXTURE.read_text())["D1"]
     assert _broker_day_alignment(rows) is True
     # A valid D1 open at 17:00 New York is accepted across the DST offset.
@@ -90,8 +108,12 @@ def test_report_has_seeded_ten_difference_reviews_and_separated_bos_choch_counts
 def test_rebuilt_fixture_d1_matches_captured_h1_on_every_broker_day_boundary():
     import json
     from zoneinfo import ZoneInfo
+
     from research_external.oracles.lsmc_detection_run import (
-        FIXTURE, HOST_SNAPSHOT, _broker_day_alignment, rebuild_broker_d1,
+        FIXTURE,
+        HOST_SNAPSHOT,
+        _broker_day_alignment,
+        rebuild_broker_d1,
     )
     fixture = json.loads(FIXTURE.read_text())
     snapshot = json.loads(HOST_SNAPSHOT.read_text())
@@ -126,8 +148,12 @@ def test_rebuilt_fixture_d1_matches_captured_h1_on_every_broker_day_boundary():
 
 def test_synthetic_broker_d1_bucket_crosses_2026_11_01_dst_with_25h_boundary():
     from datetime import datetime, timedelta, timezone
-    from research_external.oracles.lsmc_detection_run import _broker_day_alignment, rebuild_broker_d1
-    from host_evidence.symbol_metadata import server_time_to_utc, server_bar_close_utc
+
+    from host_evidence.symbol_metadata import server_bar_close_utc, server_time_to_utc
+    from research_external.oracles.lsmc_detection_run import (
+        _broker_day_alignment,
+        rebuild_broker_d1,
+    )
     start = server_time_to_utc(datetime(2026, 11, 1, 0, 0))
     first_close = server_bar_close_utc(start, timedelta(days=1))
     second_close = server_bar_close_utc(first_close, timedelta(days=1))
