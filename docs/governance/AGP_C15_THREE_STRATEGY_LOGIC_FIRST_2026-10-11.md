@@ -20,7 +20,7 @@ A passing scope must bind strategy ID/version, instrument, session/timeframe, br
 - C14 does **not** require EDGE_VERIFIED or a 10-cycle zero-order shadow soak for Demo. Soak may be performed as optional observation, not presented as a mandatory G gate.
 - Preserve approved risk limits: 0.5% per trade; at most one open position per pair; five trades/day/strategy; 1% daily loss/strategy; 2% account-wide daily loss. These are ceilings, not trade quotas. All other existing safety checks remain.
 - No `demo_authorized`, `live_authorized`, READY or broker mutation changes in this governance PR.
-- Preserve S1 host freeze through Monday 2026-10-12 Part C (~18:00 MMT): no pull to `D:\wp3-main-integ`, no scheduled task, Telegram, MT5, or host-setting changes. Off-host PR work and merges to main are allowed. Host stays pinned at host HEAD recorded in `status/evidence/host_s1_2026-10-11.json` (`deb85d0`) — M3 to confirm in Part C until the authorized transition.
+- Preserve S1 host freeze through Monday 2026-10-12 Part C (~18:00 MMT): no pull to `D:\wp3-main-integ`, no scheduled task, Telegram, MT5, or host-setting changes. Off-host PR work and merges to main are allowed. Host stays pinned at 0773a55 (host HEAD confirmed by M3 read-only report, PR #157; deb85d0 is an older ancestor) until the authorized transition.
 - Investigate foreign magic-0 orders and host disk/RAM/resource_guard blockers read-only first. Do not disable unrelated EA or modify accounts without separate owner-approved host action.
 - One writer per branch, separate PR per mission, evidence filed as PR, reviewed merge gate, no generated status-file churn. No unapproved horizontal orchestration project.
 
