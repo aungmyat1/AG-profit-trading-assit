@@ -38,7 +38,9 @@ REPO = Path(__file__).resolve().parents[1]
 #   550055     SMC_Sniper_EA
 #   20260713   SMC_LSS_v1_EA
 #   1120250714 MT5_EA_1BullBear_ICT_SMC
-HOST_MAGICS_IN_USE = (0, 102233, 18152023, 550055, 20260713, 1120250714)
+#   112201     Crypto_VBO_EA (BTC/ETH stop orders, canceled 2026-10-11)
+#   112202     Crypto_VBO_EA (BTC/ETH stop orders, canceled 2026-10-11)
+HOST_MAGICS_IN_USE = (0, 102233, 18152023, 550055, 20260713, 1120250714, 112201, 112202)
 
 
 def _registry(tmp_path: Path, magics, *, schema: str = "AGP_C14_HOST_MAGIC_REGISTRY_V1",
@@ -73,6 +75,19 @@ def test_the_reserved_s1_magic_is_not_any_magic_in_use_on_the_host():
     assert scope.magic_number not in HOST_MAGICS_IN_USE
     assert reserved_magic_conflict(scope.magic_number, HOST_MAGICS_IN_USE) is None
     assert scope.host_magic_registry_path == HOST_MAGIC_REGISTRY
+
+
+def test_crypto_vbo_magics_are_inventory_only_and_do_not_authorize_execution(tmp_path):
+    fixture = boundary(tmp_path, enabled=False)
+    assert {112201, 112202}.issubset(load_host_magics())
+    assert fixture["scope"].account_login_suffix == "985"
+    assert fixture["scope"].magic_number not in (112201, 112202)
+    decision = fixture["guard"].authorize_order_check(
+        authority=fixture["authority"], ticket=fixture["ticket"], market=fixture["market"],
+        risk_snapshot=fixture["risk_snapshot"], now_utc=NOW,
+    )
+    assert (decision.admitted, decision.reason_code) == (False, "EXECUTION_DISABLED")
+    assert fixture["reader"].calls == 0
 
 
 @pytest.mark.parametrize("magic", [magic for magic in HOST_MAGICS_IN_USE if magic != 0])

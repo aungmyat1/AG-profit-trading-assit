@@ -124,12 +124,16 @@ the magics in use on the VT Markets DEMO host with per-magic provenance:
 | 550055 | `SMC_Sniper_EA` |
 | 20260713 | `SMC_LSS_v1_EA` |
 | 1120250714 | `MT5_EA_1BullBear_ICT_SMC` |
+| 112201 | `Crypto_VBO_EA`; BTCUSD/ETHUSD stop orders, set up 2026-10-11 13:21/14:00 server time, canceled |
+| 112202 | `Crypto_VBO_EA`; BTCUSD/ETHUSD stop orders, set up 2026-10-11 13:21/14:00 server time, canceled |
 
 The reserved S1 magic is not a literal in the check: `load_scope_policy` resolves it from
 the registered `ST_ASIAN_SWEEP_5R_V1@1.1.2` contract (`777001`) and refuses to load the
 scope at all if it collides with any registry entry, if the registry is missing, unreadable,
 malformed, duplicated, unstamped, unattributed, or omits magic `0`. `777001` collides with
-none of the six. `tests/test_demo_execution_host_magics.py` pins the six-magic list
+none of the eight. The two Crypto_VBO_EA values are inventory only and do not enable the
+execution lane. The account remains pinned to owner sandbox login suffix `985` in the S1
+scope, which stays disabled. `tests/test_demo_execution_host_magics.py` pins the eight-magic list
 literally and asserts the reserved magic differs from each of them, so a future contract
 change that collides fails closed instead of sharing a magic with another order source.
 `.ex5` binaries on the host were inventoried, not decompiled; their magics are recorded as

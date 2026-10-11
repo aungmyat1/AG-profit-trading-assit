@@ -9,12 +9,17 @@
 # carry it, and 0 is also the "no magic" default of every MT5 order.
 #
 # Provenance (evidence, not authority; nothing here authorizes an order):
+#   - Owner sandbox account: VTMarkets-Demo, login suffix 985 (the separate S1 scope pin).
 #   - status/evidence/host_s1_2026-10-11.json  (merged, PR #152) -- DEMO account identity and
 #     broker_history_24h.manual_or_zero_magic = 3 with an empty by_magic map.
 #   - C11 host inventory status/evidence/host_c11_inventory_2026-10-11.json (draft PR #153,
 #     DO-NOT-ENABLE) -- per-EA magic inputs and which EA is loaded now.
 #   - S1 blocker evidence status/evidence/host_s1_blockers_2026-10-11.json (PR #154) -- the
 #     72h foreign order/deal history attributed to magic 0, reason EXPERT, source 127.0.0.1.
+#
+#   - status/evidence/host_s1_contain_2026-10-11.json -- magic 112201/112202 belong to
+#     Crypto_VBO_EA; BTCUSD/ETHUSD stop orders were set up 2026-10-11 at 13:21 and 14:00
+#     VT server time (UTC+3), and all were canceled. Both magic values are recorded below.
 #
 # Known gap: the six compiled .ex5 binaries on the host were inventoried, not decompiled, so
 # their effective magics are UNKNOWN_BINARY. This list is the owner-stated set of magics in use
@@ -35,3 +40,7 @@ magics_in_use_on_host:
     source: "SMC_LSS_v1_EA.mq5 InpMagic -- not running"
   - magic: 1120250714
     source: "MT5_EA_1BullBear_ICT_SMC.mq5 InpMagic -- not running"
+  - magic: 112201
+    source: "Crypto_VBO_EA; BTCUSD/ETHUSD stop orders set up 2026-10-11 13:21 and 14:00 server time (UTC+3), all CANCELED; owner sandbox login suffix 985"
+  - magic: 112202
+    source: "Crypto_VBO_EA; BTCUSD/ETHUSD stop orders set up 2026-10-11 13:21 and 14:00 server time (UTC+3), all CANCELED; owner sandbox login suffix 985"
