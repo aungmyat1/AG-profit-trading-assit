@@ -18,7 +18,6 @@ import functools
 import hashlib
 import importlib.util
 import json
-import os
 import random
 import re
 import sys
@@ -27,8 +26,6 @@ from typing import Any, Dict, List, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
-os.environ.setdefault("AG_EVIDENCE_ROOT", str(ROOT / ".no_evidence"))
-
 # Import-only Linux MetaTrader5 portability shim (raises on any real MT5 call).
 if "MetaTrader5" not in sys.modules:
     _spec = importlib.util.spec_from_file_location("asw_gate_test_conftest", ROOT / "tests/conftest.py")

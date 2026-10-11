@@ -7,9 +7,11 @@ Spread values are test inputs, not recorded data. LOGIC_VERIFIED never implies E
 from __future__ import annotations
 
 import csv
-import json
-import functools
 import datetime as dt
+import functools
+import importlib.util
+import json
+import os
 from pathlib import Path
 
 import pytest
@@ -20,8 +22,18 @@ from v1_tickets import fx
 from v1_tickets.authority import load_registry
 from v1_tickets.fx import STRATEGY_PATH, build_fx_ticket, session_windows_utc
 from v1_tickets.logic_gate import (
-    FAIL, NOT_APPLICABLE, NOT_EVALUABLE, PASS, WARN, blocking_failures, l1_determinism, l2_rule_conformance,
-    l3_geometry, l4_data_session, l5_cost, l6_freshness,
+    FAIL,
+    NOT_APPLICABLE,
+    NOT_EVALUABLE,
+    PASS,
+    WARN,
+    blocking_failures,
+    l1_determinism,
+    l2_rule_conformance,
+    l3_geometry,
+    l4_data_session,
+    l5_cost,
+    l6_freshness,
 )
 from v1_tickets.manual_ticket import build_manual_ticket, load_owner_config
 
@@ -209,6 +221,23 @@ def test_registry_keeps_runtime_on_v1_1_1_and_candidate_unadmitted():
 
 
 # ------------------------------------------------------------- AGP-C3-ASW-RATIFY v2: LOGIC_VERIFICATION report
+
+
+def test_verification_module_import_and_exception_preserve_explicit_evidence_root(tmp_path, monkeypatch):
+    root = tmp_path / "explicit-evidence"
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(root))
+    script = Path(__file__).resolve().parents[1] / "scripts/asw_v112_logic_verification.py"
+    spec = importlib.util.spec_from_file_location("asw_v112_logic_verification_isolation", script)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert os.environ["AG_EVIDENCE_ROOT"] == str(root)
+
+    tampered = tmp_path / "GBPUSD_M15_recorded.csv"
+    tampered.write_text("tampered", encoding="utf-8")
+    monkeypatch.setitem(mod.SYMBOLS["GBPUSD"], "fixture", str(tampered))
+    with pytest.raises(RuntimeError, match="PROVENANCE_MISMATCH"):
+        mod.verify_provenance("GBPUSD")
+    assert os.environ["AG_EVIDENCE_ROOT"] == str(root)
 
 @pytest.fixture(scope="module")
 def report():
