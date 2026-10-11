@@ -17,6 +17,8 @@ review_by: 2026-11-07
 
 After a strategy passes L1–L6 for its exact frozen identity and completes runtime binding, READY, host acceptance, execution-safety and broker gates, it may become eligible for automatic **DEMO-only** orders after separate, valid, revocable, strategy-specific standing owner authorization. Each order must independently pass current account, signal, freshness, geometry, spread/cost, sizing, duplicate, broker `order_check`, reconciliation and emergency-stop checks. No per-order owner Confirm is required within that authorized scope. Economic qualification (`EDGE_VERIFIED`) and a 10-cycle scheduled zero-order shadow soak are optional; neither is a DEMO prerequisite. G1–G4 remain required, G5 is optional observation, and G6 is the independently gated demo round trip. Live trading remains disabled and out of scope. See [C14 owner decision](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md).
 
+Sequencing: see [C15](governance/AGP_C15_THREE_STRATEGY_LOGIC_FIRST_2026-10-11.md) (logic-first, three families in parallel); does not alter C14 gates.
+
 The [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md) remains available as historical proposal evidence. Its mandatory soak and post-soak/per-order requirements were superseded by C14 and are not current policy.
 
 ## Objective
