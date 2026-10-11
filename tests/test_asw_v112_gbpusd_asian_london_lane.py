@@ -4,10 +4,10 @@ Pins the fixture sha256, the L2 half-point rounding regression (2026-08-25 TREND
 declared-fail-closed classification of every L2 failure, and prefix invariance. Logic only; no edge."""
 from __future__ import annotations
 
+import csv
 import datetime as dt
 import hashlib
 import importlib
-import csv
 from collections import defaultdict
 from pathlib import Path
 

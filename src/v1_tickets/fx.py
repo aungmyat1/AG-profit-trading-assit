@@ -37,7 +37,11 @@ from ticket_delivery.archive import (
     archive_cycle_decision,
 )
 from v1_tickets.guards import gate_ready
-from v1_tickets.ready_authority import SHADOW_INFO_ONLY, apply_ready_authority, symbol_scope_verified
+from v1_tickets.ready_authority import (
+    SHADOW_INFO_ONLY,
+    apply_ready_authority,
+    symbol_scope_verified,
+)
 
 STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
 SCOPED_CANDIDATE_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml"

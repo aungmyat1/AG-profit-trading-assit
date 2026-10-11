@@ -19,11 +19,11 @@ from strategy_engine.session import Candle
 from v1_tickets.crypto import archive_crypto_ticket, build_crypto_ticket
 from v1_tickets.fx import (
     HOST_METADATA_FIELDS,
+    STRATEGY_PATH,
     V1_CYCLES,
     V1_FX_SYMBOLS,
     archive_fx_ticket,
     build_fx_ticket,
-    STRATEGY_PATH,
 )
 
 UTC = dt.timezone.utc

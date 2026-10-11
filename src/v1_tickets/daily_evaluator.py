@@ -16,16 +16,13 @@ from __future__ import annotations
 
 import datetime as dt
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
-from strategy_engine import evaluate as engine_evaluate, load_strategy
+from strategy_engine import load_strategy
 from strategy_engine.session import Candle
 from v1_tickets import fx as v1_fx
 from v1_tickets.canonical_ticket import append_archive, build_canonical_ticket
-from v1_tickets.actionability import (
-    BLOCKED, EXPIRED, INSUFFICIENT_DATA, NO_TRADE, OUT_OF_SESSION, WATCH_READY,
-)
 from v1_tickets.policy_loader import ActionabilityPolicy, load_policy
 
 STRATEGY_PATH = v1_fx.STRATEGY_PATH
@@ -192,8 +189,9 @@ def evaluate_crypto_symbol(
 ) -> EvalResult:
     """Evaluate one crypto symbol deterministically.  feed_provider must return a
     FallbackPublicCryptoFeed-compatible feed (or None, which yields a BLOCKED record)."""
-    from v1_tickets import crypto as v1_crypto
     import yaml
+
+    from v1_tickets import crypto as v1_crypto
     now = now if now.tzinfo else now.replace(tzinfo=dt.timezone.utc)
     cfg = None
     if config_path is not None:

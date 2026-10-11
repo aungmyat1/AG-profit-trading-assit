@@ -18,7 +18,6 @@ fail-closed rules, so its L2 evaluates those instead.
 from __future__ import annotations
 
 import datetime as dt
-import math
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 import yaml
