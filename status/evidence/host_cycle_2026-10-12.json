@@ -1,0 +1,107 @@
+{
+  "record": "host_cycle",
+  "date": "2026-10-12",
+  "captured_at_local": "2026-10-12T00:45+06:30",
+  "host_tree": "<HOST_SCRATCHPAD>/prod @ 0773a55",
+  "order_api_calls": 0,
+  "position_api_calls": 0,
+  "broker_mutation_count": 0,
+  "terminal_restart": false,
+  "config_changes": "none (step 1 process stop attempted and denied)",
+  "mt5_api_calls": "account_info, terminal_info, positions_total, orders_total, symbol_info x6, symbol_info_tick x6 (R0 probe; no symbol_select)",
+  "items": [
+    {
+      "id": "1",
+      "item": "Stop 4x metatester64; RAM before/after; resource class >= R1 (1200 MB)",
+      "result": "FAIL",
+      "cause": "Access denied. The four testers are Windows services MetaTester-1..4 (StartMode Auto, parent services.exe), so stopping them needs an elevated Stop-Service. They use only ~41 MB working set in total; Chrome (29 processes, ~3.4 GB) is the main consumer.",
+      "evidence": {"available_ram_mb_before": 1050, "available_ram_mb_after": 1020, "r1_gate": "BLOCKED_RESOURCE", "r2_gate": "BLOCKED_RESOURCE", "thresholds_mb": {"R1": 1200, "R2": 2500, "R3": 3000}, "metatester64_running": 4, "tester_settings_changed": false}
+    },
+    {
+      "id": "2a",
+      "item": "Does the mt5ReadOnly proxy forward to 127.0.0.1:22346?",
+      "result": "PASS",
+      "cause": "No. start_mt5_mcp.mjs spawns metatrader-mcp-server as a stdio child (MetaTrader5 Python package, terminal path), wrapped by readonly_mcp_proxy.mjs (read-only tool allowlist). No MT5_READONLY_MCP_URL exists in either tree or the environment. No proxy process is running and nothing is connected to 22346; 22346 is still LISTENING (main terminal)."
+    },
+    {
+      "id": "2b",
+      "item": "Scheduled-task env: MT5_READONLY_MCP_URL / MT5_APP_MCP_TOKEN (names only)",
+      "result": "PASS",
+      "evidence": {"MT5_READONLY_MCP_URL": "unset (User and Machine)", "MT5_READONLY_MCP_TOKEN": "unset", "MT5_APP_MCP_TOKEN": "set (User)", "METATRADER_MARKETDATA_MCP_TOKEN": "set (User)", "MT5_LOGIN/MT5_SERVER/MT5_PASSWORD/VTMARKETS_DEMO_*": "unset"},
+      "note": "MT5_APP_MCP_TOKEN at User scope is visible to every user-scope scheduled task; it is the bearer for the order-capable terminal MCP (22346)."
+    },
+    {
+      "id": "2c",
+      "item": "Tasks running run_session_scan/session_scanner; working dirs; MetaTrader5.py stub-shadow risk",
+      "result": "PASS",
+      "cause": "No scheduled task runs scripts/run_session_scan.py (only manual). The only enabled AG task is AG-V1-FX-Cycles (wd = prod root). The prod root has a tracked MetaTrader5.py stub. The FX runner's import_mt5() rejects the repo stub (MT5StubOperationAttempted / _is_repo_module check) and fails closed, and the FX log shows real MT5 reads (decision=BLOCKED reason=MARKET_CLOSED on 2026-10-11). Residual risk: python -c / -m invoked with cwd = repo root imports the stub (seen in this session from the dev checkout; it raised, it did not emulate).",
+      "evidence": {"scanner_config": "config/session_scanner_v1.yaml primary TERMINAL_MCP url http://127.0.0.1:22346/mcp token_env MT5_APP_MCP_TOKEN; secondary MT5_READONLY url null token_env MT5_READONLY_MCP_TOKEN", "stub_tracked": {"prod": true, "dev": true, "parent_repo": false}}
+    },
+    {
+      "id": "2d",
+      "item": "Which source served bars in the latest scan evidence?",
+      "result": "FAIL",
+      "cause": "No session-scan evidence found: run_session_scan.py writes only with --json, and no scan output exists under status/, artifacts/, logs/ or work/ in the prod tree, or in tracked docs/status. If a scan ran, the configured primary would be TERMINAL_MCP (22346)."
+    },
+    {
+      "id": "2e",
+      "item": "Can terminal MCP trade tools be disabled while keeping market data?",
+      "result": "FAIL",
+      "cause": "UNKNOWN from repository evidence. docs/setup/MT5_MCP_SETUP.md documents the MT5 app MCP only as MT5 > Tools > Options > AI/MCP with a token, with no per-tool or trade-tool setting. Needs an owner check of that options page on build 6230. Not guessed."
+    },
+    {
+      "id": "3a",
+      "item": "account_info on ...999",
+      "result": "PASS",
+      "evidence": {"server": "VTMarkets-Demo", "company": "VT Markets (Pty) Ltd", "login_suffix": "999", "trade_mode": "DEMO", "currency": "USD", "balance": 10000.0, "leverage": 500, "margin_mode": "RETAIL_HEDGING", "terminal_trade_allowed": false, "authorized_at_local": "2026-10-12 00:28:41"}
+    },
+    {
+      "id": "3b",
+      "item": "symbol_map_smoke for all 6 symbols",
+      "result": "BLOCKED",
+      "cause": "BLOCKED_RESOURCE: symbol_map_smoke is R1 work (the 2026-10-09 run under a blocked R1 gate is recorded as a policy deviation) and R1_GATE is BLOCKED_RESOURCE (1020 MB < 1200 MB). FULL_WORKLOAD_STARTED = FALSE. The R0 snapshot below is not a smoke.",
+      "r0_snapshot": {
+        "EURUSD": {"broker": "EURUSD-VIP", "visible": false, "trade_mode": "FULL", "digits": 5, "point": 1e-05, "volume_min": 0.01, "volume_step": 0.01, "stops_level": 0},
+        "GBPUSD": {"broker": "GBPUSD-VIP", "visible": false, "trade_mode": "FULL", "digits": 5, "point": 1e-05, "volume_min": 0.01, "volume_step": 0.01, "stops_level": 0},
+        "USDJPY": {"broker": "USDJPY-VIP", "visible": false, "trade_mode": "FULL", "digits": 3, "point": 0.001, "volume_min": 0.01, "volume_step": 0.01, "stops_level": 0},
+        "XAUUSD": {"broker": "XAUUSD-VIP", "visible": false, "trade_mode": "FULL", "digits": 2, "point": 0.01, "volume_min": 0.01, "volume_step": 0.01, "stops_level": 20},
+        "BTCUSD": {"broker": "BTCUSD", "visible": true, "trade_mode": "FULL", "digits": 2, "point": 0.01, "volume_min": 0.01, "volume_step": 0.01, "stops_level": 0},
+        "ETHUSD": {"broker": "ETHUSD", "visible": false, "trade_mode": "FULL", "digits": 2, "point": 0.01, "volume_min": 0.01, "volume_step": 0.01, "stops_level": 0}
+      },
+      "symbol_name_differences_vs_map_v2": "none: all 6 broker names exist on ...999 with the same names (FX/gold -VIP; crypto unsuffixed), and every pinned 'expected' field matches except visible.",
+      "map_v2_risk": "5 of 6 symbols are not in Market Watch on ...999 (visible=false; map v2 pins visible=true for all 6, and its rule requires visible). A smoke would likely report a diff on visible, and GBPUSD-VIP (S1) has no tick. Adding them needs symbol_select or the Market Watch UI; not done (freeze)."
+    },
+    {
+      "id": "3c",
+      "item": "Spread snapshot vs ...985 (2026-10-09 capture, points)",
+      "result": "FAIL",
+      "cause": "Not comparable for 5 of 6: the FX market is closed (Sunday) and the symbols are not in Market Watch, so they have no current tick (spread 0/None). USDJPY-VIP shows a stale Friday tick (48 vs 17). BTCUSD only: 1712 now vs 1707 on ...985 (+0.3%).",
+      "evidence": {"EURUSD-VIP": {"now": null, "985": 13}, "GBPUSD-VIP": {"now": null, "985": 15}, "USDJPY-VIP": {"now_stale": 48, "985": 17}, "XAUUSD-VIP": {"now": null, "985": 27}, "BTCUSD": {"now": 1712, "985": 1707}, "ETHUSD": {"now": null, "985": 250}}
+    },
+    {
+      "id": "3d",
+      "item": "Open positions/orders on ...999 = 0",
+      "result": "PASS",
+      "evidence": {"positions": 0, "orders": 0}
+    },
+    {
+      "id": "3e",
+      "item": "No EA attached to any chart on ...999",
+      "result": "PASS",
+      "evidence": {"chart_profile_files_with_expert_block": 0, "terminal_trade_allowed": false}
+    },
+    {
+      "id": "3f",
+      "item": "Local gitignored config binds ...999",
+      "result": "FAIL",
+      "cause": "Nothing binds ...999. AG MT5 env login vars are unset, so the runtime attaches to whatever account the terminal shows. config/local/ has only canonical_ticket_delivery.yaml and delivery_override.yaml (no owner_ticket.yaml). The tracked config/owner_ticket.yaml still pins account_login_suffix \"985\"."
+    },
+    {
+      "id": "3g",
+      "item": "git grep: no credential in tracked files",
+      "result": "PASS",
+      "cause": "No password, token or ...999 login in tracked files (prod and dev). Password-pattern matches are test placeholders ('secret', 'sample-secret').",
+      "note": "The full ...985 login number (identifier, not a credential) is tracked in docs/setup/MT5_MCP_SETUP.md, scripts/cleanup_mbt.ps1 and web/tests/mt5_demo_credentials.test.mjs, contrary to the suffix-only evidence rule."
+    }
+  ]
+}
