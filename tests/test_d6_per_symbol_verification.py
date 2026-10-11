@@ -131,12 +131,12 @@ def test_fx_ticket_path_applies_the_symbol_gate(monkeypatch, symbol, cycle, expe
     bar = Candle(dt.datetime(2026, 10, 7, 7, 0, tzinfo=UTC), 1.1665, 1.1670, 1.1660, 1.1666)
     if expected == "LOGIC_SCOPE_NOT_VERIFIED":
         t = fx_tickets.build_fx_ticket(symbol, cycle, DAY, [], 2, [bar], data_source="MT5_VT_MARKETS_DEMO",
-                                       evaluated_at=AT, data_close=AT, spread=0.00015)
+                                       evaluated_at=AT, data_close=AT, spread=0.00015, runtime_scope=True)
         assert t["decision"] == "BLOCKED"
         assert t["reason_code"] == "LOGIC_SCOPE_NOT_VERIFIED"
     else:
         t = fx_tickets.build_fx_ticket(symbol, cycle, DAY, [], 2, [bar], data_source="MT5_VT_MARKETS_DEMO",
-                                       evaluated_at=AT, data_close=AT, spread=0.00015)
+                                       evaluated_at=AT, data_close=AT, spread=0.00015, runtime_scope=True)
         assert t["strategy_version"] == "1.1.2"
         assert t["regime"] == "RANGE" and t["setup"] == "SWEEP"
         assert t["reason_code"] == ra.READY_AUTHORITY_OFF

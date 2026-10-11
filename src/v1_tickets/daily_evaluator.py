@@ -170,6 +170,7 @@ def evaluate_fx_pair(
         list(bundle.post_session_candles), data_source=data_source,
         evaluated_at=now, data_close=bundle.data_close, spread=bundle.spread,
         strategy_path=strategy_path,
+        runtime_scope=(ticket_source == "LIVE"),
     )
     return _finalize(ticket, now=now, current_price=bundle.current_price,
                      window_end=trade_end, archive_root=archive_root, venue=data_source, policy=policy,

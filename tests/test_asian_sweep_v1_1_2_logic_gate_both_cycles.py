@@ -9,7 +9,9 @@ from __future__ import annotations
 import csv
 import datetime as dt
 import functools
+import importlib.util
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -219,6 +221,24 @@ def test_registry_keeps_runtime_on_v1_1_1_and_candidate_unadmitted():
 
 
 # ------------------------------------------------------------- AGP-C3-ASW-RATIFY v2: LOGIC_VERIFICATION report
+
+
+def test_verification_module_import_and_exception_preserve_explicit_evidence_root(tmp_path, monkeypatch):
+    root = tmp_path / "explicit-evidence"
+    monkeypatch.setenv("AG_EVIDENCE_ROOT", str(root))
+    script = Path(__file__).resolve().parents[1] / "scripts/asw_v112_logic_verification.py"
+    spec = importlib.util.spec_from_file_location("asw_v112_logic_verification_isolation", script)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert os.environ["AG_EVIDENCE_ROOT"] == str(root)
+
+    tampered = tmp_path / "GBPUSD_M15_recorded.csv"
+    tampered.write_text("tampered", encoding="utf-8")
+    monkeypatch.setitem(mod.SYMBOLS["GBPUSD"], "fixture", str(tampered))
+    with pytest.raises(RuntimeError, match="PROVENANCE_MISMATCH"):
+        mod.verify_provenance("GBPUSD")
+    assert os.environ["AG_EVIDENCE_ROOT"] == str(root)
+
 
 @pytest.fixture(scope="module")
 def report():

@@ -7,12 +7,14 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import importlib
+import csv
 from collections import defaultdict
 from pathlib import Path
 
 import pytest
 
 import scripts.asw_v112_logic_verification as h
+from v1_tickets import fx
 from v1_tickets.logic_gate import (
     EQ_EPS_POINTS,
     FAIL,
@@ -37,14 +39,22 @@ def _no_repo_evidence(tmp_path, monkeypatch):
 
 def _days():
     by_day = defaultdict(list)
-    for c in h.load_candles(SYMBOL):
+    with (ROOT / FIXTURE).open(encoding="utf-8") as source:
+        candles = [h.Candle(dt.datetime.fromisoformat(row["timestamp_utc"]).replace(tzinfo=h.UTC),
+                            float(row["open"]), float(row["high"]), float(row["low"]), float(row["close"]))
+                   for row in csv.DictReader(source)]
+    for c in candles:
         by_day[c.time.date().isoformat()].append(c)
     return by_day
 
 
 def _l2(ds: str, by_day):
     day = dt.date.fromisoformat(ds)
-    _, now, session, post = h.split(by_day[ds], CYCLE, day)
+    windows = fx.session_windows_utc(day, strategy_path=h.CANDIDATE)[CYCLE]
+    now = windows["trade"][1]
+    session = [c for c in by_day[ds] if windows["ref"][0] <= c.time < windows["ref"][1]]
+    post = [c for c in by_day[ds] if windows["trade"][0] <= c.time < windows["trade"][1]
+            and c.time + dt.timedelta(minutes=15) <= now]
     t = h.ticket(CYCLE, day, session, post, now, symbol=SYMBOL)
     l2 = l2_rule_conformance(h.load_strategy(h.CANDIDATE), t, session, h.CYCLES[CYCLE][1], post, digits=5,
                              spread=h.TEST_SPREAD)
@@ -57,29 +67,27 @@ def test_fixture_sha256_pinned():
 
 def test_eq_slack_is_float_noise_only():
     assert EQ_EPS_POINTS <= 1e-6                 # slack <= 1e-6 x point
-    assert _eq(1.35851, 1.358505, 5)             # exact half-point tie: half-up neighbour
+    assert _eq(round(1.358505, 5), 1.358505, 5)  # exact v1.1.2 fx._r rounding
     assert _eq(1.34466, 1.34466 + 1e-16, 5)      # float noise on an on-grid expectation
 
 
-def test_eq_rounds_ties_half_up_only():
-    """OD1011-ROUNDING: ROUND_HALF_UP; the other tie neighbour (half-even/half-down) fails."""
-    assert _eq(1.35851, 1.358505, 5)
-    assert not _eq(1.35850, 1.358505, 5)
-    assert _eq(1.35849, 1.358485, 5) and not _eq(1.35848, 1.358485, 5)   # odd/even base: still up
-    assert _eq(1.3585, 1.3585049, 5) and not _eq(1.35851, 1.3585049, 5)  # below the tie rounds down
+def test_eq_matches_engine_python_rounding():
+    """v1.1.2 uses fx._r: binary float round(), including its observed tie behavior."""
+    assert _eq(1.35850, 1.358505, 5) == (round(1.358505, 5) == 1.35850)
+    assert _eq(1.35851, 1.358505, 5) == (round(1.358505, 5) == 1.35851)
+    assert _eq(1.35849, 1.358485, 5) == (round(1.358485, 5) == 1.35849)
+    assert _eq(1.35848, 1.358485, 5) == (round(1.358485, 5) == 1.35848)
 
 
 def test_eq_true_half_point_and_one_point_errors_fail():
-    assert not _eq(1.358505, 1.35850, 5)         # half-point error against an on-grid expectation
-    assert not _eq(1.35850, 1.358505 + 0.02e-5, 5)   # just past the tie: only 1.35851 conforms
     assert not _eq(1.35851, 1.35850, 5)          # one-point error
     assert not _eq(1.35852, 1.358505, 5)         # one point beyond the tie neighbour
 
 
-def test_2026_08_25_trend_tp2_conforms_and_branch_still_fails_closed():
+def test_2026_08_25_trend_tp2_mismatch_is_classified_and_branch_still_fails_closed():
     t, v = _l2("2026-08-25", _days())
     assert (t["setup"], t["direction"]) == ("TREND", "SHORT")
-    assert v["R.target_leg2"] == PASS
+    assert v["R.target_leg2"] == FAIL
     assert v["R.regime_branch"] == FAIL      # TREND remains FAIL_CLOSED (ENTRY_LEVEL_NOT_MARKET_AT_SIGNAL)
 
 

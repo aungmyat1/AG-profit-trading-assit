@@ -1,0 +1,23 @@
+# Narrow S1 admission scope only. This file grants no order authority.
+# `enabled` deliberately defaults to false; the host-local, revocable standing
+# DEMO authorization record is separate and is not committed to this repository.
+# GBPUSD/SWEEP logic evidence is referenced in PR #142; admission still requires
+# the selected base's registry and READY owner binding to verify this exact symbol.
+schema: AGP_C14_DEMO_SCOPE_V1
+enabled: false
+scope:
+  strategy_id: ST_ASIAN_SWEEP_5R_V1
+  strategy_version: "1.1.2"
+  symbol: GBPUSD
+  session: ASIAN_LONDON
+  setup_branch: SWEEP
+  directions: [LONG, SHORT]
+  registry_path: strategies/registry.yaml
+  broker_symbol_map_path: config/broker_symbol_map/vt_markets_demo.yaml
+  ready_authority_config_path: config/v1_tickets/ready_authority.yaml
+  owner_decision_register_path: docs/governance/OWNER_DECISION_REGISTER.md
+  authorization_path_env: AGP_STANDING_DEMO_AUTHORIZATION_PATH
+  evidence_pull_request: 142
+  daily_reset_basis: VT_SERVER_DAY
+  daily_reset_owner_confirm: true
+  notification_failure_policy: PENDING_OWNER

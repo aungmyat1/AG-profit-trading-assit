@@ -6,20 +6,11 @@ review_by: 2026-11-07
 ---
 # Project Status — AG Profit Trading
 
-## Current snapshot (2026-10-10)
+## Current snapshot (2026-10-11)
 
-Owner ruling 2026-10-11: the `ST_ASIAN_SWEEP_5R_V1@1.1.2` EURUSD logic-verified entry is SUSPENDED
-(L3_REPAINT_UNRESOLVED_2026-07-31); the D6 reader treats SUSPENDED as not verified. The only verified
-1.1.2 scope is now GBPUSD × ASIAN_LONDON × SWEEP. D6 READY stays OFF.
+OD1011 owner decisions (2026-10-11) and C14 are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`. OD1011-ROUNDING was amended: v1.1.2 uses its frozen engine `fx._r` (Python `round()` on IEEE floats); versions >=1.1.3 use Decimal ROUND_HALF_UP. Runtime verification for `ST_ASIAN_SWEEP_5R_V1@1.1.2` is scoped to GBPUSD × ASIAN_LONDON × SWEEP; EURUSD remains suspended and other branches fail closed. The D60 replay reports S1 L1–L6 PASS; evidence is `docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json`. D6 READY remains OFF.
 
-AGP-LANE-A3/OD1011 (2026-10-11, recorded-fixture verification only, not host-verified):
-`ST_ASIAN_SWEEP_5R_V1@1.1.2` `logic_verified_symbols` gains GBPUSD, scoped to ASIAN_LONDON ×
-RANGE_SWEEP (engine_setup SWEEP) per OD1011-SCOPE. The D6 reader (`ready_authority.symbol_verified`) now
-honours `sessions`/`engine_setups` scope and fails closed outside it; unscoped EURUSD is unchanged. L1–L6
-PASS on 58 VT recorded days. L5 follows OD1011-L5: max(bar, host-snapshot) spread plus OD1011-COMMISSION
-(0, bound to VTMarkets-Demo). 4 of 7 kept entries are cost-blocked (an actionability outcome). The gate rounds
-ROUND_HALF_UP (OD1011-ROUNDING). D6 READY stays OFF; demo/live/edge flags are unchanged. Evidence:
-`docs/status/AGP_4H_A_ASW_V112_GBPUSD_ASIAN_LONDON_2026-10-10.md`.
+C14 ratifies automatic DEMO-only execution under separate strategy-specific standing authorization after logical, runtime, READY, host, risk and broker gates. EDGE_VERIFIED and a mandatory 10-cycle soak are not prerequisites. This policy-only change leaves `demo_authorized=false`, `live_authorized=false`, and READY OFF. The FX/gold manual-ticket risk/cost gate is implemented; its focused and full test suite pass. Current strategy bindings, readiness values, demo/live flags, host tasks, and broker state remain unchanged. Host-side execution artifacts remain `UNTRACKED_HOST` under C11 until brought into the repository through a reviewed PR before G6.
 
 DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
 2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
