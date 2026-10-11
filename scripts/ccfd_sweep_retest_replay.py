@@ -533,7 +533,9 @@ COST_CODES = ("SPREAD_TOO_WIDE", "SPREAD_WARN", "COST_TOO_HIGH", "COST_WARN")
 def commission_binding(provenance: dict) -> Optional[dict]:
     """OD1011-COMMISSION applies to data captured on the bound VT demo server; else None (INSUFFICIENT)."""
     server, source = provenance.get("server"), provenance.get("source")
-    if server == OD1011_COMMISSION["bound_server"] or (server is None and source == OD1011_COMMISSION["bound_source"]):
+    # OD1011-L5 requires an explicit captured-server match. A source label alone
+    # cannot prove that the commission policy applies to this account.
+    if server == OD1011_COMMISSION["bound_server"] and source == OD1011_COMMISSION["bound_source"]:
         return OD1011_COMMISSION
     return None
 
