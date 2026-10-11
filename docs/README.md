@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[AGP-C15-LSMC BTCUSD](status/AGP_C15_LSMC_BTCUSD_2026-10-11.md) records the ST_LARGE_SMC_V1@1.1.0 BTCUSD replay on recorded VT data: signal-layer L1–L4/L6 PASS, L5 WARN, stop geometry not evaluable (no C10 pip evidence), engine identity drift vs registry.
+
 [Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
 records stop/target rejection, the owner-set 50% remaining-reward threshold, required
 host preflight, FX/crypto rejection ownership, diagnostics and offline tests.
