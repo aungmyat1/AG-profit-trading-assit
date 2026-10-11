@@ -107,7 +107,8 @@ def main(argv=None):
     # Import terminal lifecycle helpers only in the live entrypoint, never on import.
     sys.path.insert(0, str(ROOT / "scripts/host"))
     from _host_common import (AlreadyRunning, import_mt5, mt5_access_lock, mt5_initialize,
-                              require_demo_account, single_instance, utcnow)
+                              require_demo_account, require_pinned_demo_account, single_instance,
+                              utcnow)
 
     mt5 = import_mt5()
     if mt5 is None:
@@ -123,6 +124,10 @@ def main(argv=None):
                 demo_ok, _ = require_demo_account(mt5)
                 if not demo_ok:
                     print("BLOCKER = DEMO_ACCOUNT_REQUIRED")
+                    return 2
+                pin_ok, _ = require_pinned_demo_account(mt5)
+                if not pin_ok:
+                    print("BLOCKER = ACCOUNT_PIN_MISMATCH")
                     return 2
                 guard = GuardedMT5(mt5)
                 provider = snapshot_provider(guard)
