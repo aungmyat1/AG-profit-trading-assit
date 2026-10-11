@@ -19,6 +19,9 @@ strategies:
     live_authorized: false   #   independently by strategies/STRATEGY_LEDGER.md's own open gaps
                               #   (entry_order_type undefined, risk_per_trade_pct unspecified)
     config_source: strategies/ST_ASIAN_SWEEP_5R_V1.yaml
+    version: "1.1.1"
+    contract_sha256: baed22b718e9017f291808063c62d3eda6d00ceb3b8ea89cc071919b8530f9cf
+    historical_versions: {}
     engine: strategy_engine (this repo)
     # Manual Trade Ticket V1 (owner decisions 2026-10-06, docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md).
     # Read by src/v1_tickets/authority.py; unknown/missing values fail closed (no tickets).
@@ -84,12 +87,20 @@ strategies:
 
   ST_LARGE_SMC_V1:
     registered: true
-    active: false
+    active: true
     research: true
     demo_authorized: false
     live_authorized: false
-    config_source: strategies/ST_LARGE_SMC_V1.yaml
-    engine: "src/large_smc_research/engine.py (RESEARCH_ONLY -- no proposal/demo/live/execution/risk-sizing authority; C10 stop-loss SIGNED and implemented as of v1.0.7 (c10_stop_policy.py, 2026-09-07), RESEARCH_QUALIFIED now reachable; pending-entry expiry RESOLVED_BY_REUSE as of v1.0.6, see historical_replay/fill_simulator.py). AG-EGSVF lifecycle stage (recorded only in src/validation_framework/adapters/large_smc_adapter.py -- this registry has no lifecycle_stage/version field): owner-promoted OFFLINE_RESEARCH -> FORWARD_RESEARCH 2026-09-07, see strategies/STRATEGY_LEDGER.md's AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_V1 entry. Next transition (FORWARD_RESEARCH -> OPERATIONAL_SHADOW) is evaluated, not executed, and blocks on an unresolved shadow-entry-evidence gate."
+    config_source: strategies/ST_LARGE_SMC_V1_1_1_0.yaml
+    version: "1.1.0"
+    contract_sha256: 78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4
+    engine_sha256: ec0b2f3dc6ed2b02df3f643b38beac1c0e88630413c74e0f55e3d8aa5f5570d4
+    historical_versions:
+      "1.0.7":
+        config_source: strategies/ST_LARGE_SMC_V1.yaml
+        contract_sha256: b1c4d8d10dd453a11f1bdff4a9b45398955554594e8036b00dd738acfd94c7bd
+        status: HISTORICAL
+    engine: "src/large_smc_watch/ (SHADOW_ALERTS_ONLY; no proposal/demo/live/execution/risk-sizing authority)."
     note: >-
       Independent Large-SMC research contract. Shares advisory capabilities with other
       strategies but does not inherit ST_ASIAN_SWEEP_5R_V1, SMC_3R_V1, or
@@ -112,6 +123,9 @@ strategies:
     demo_authorized: false
     live_authorized: false
     config_source: strategies/ST_LIQUIDITY_SWEEP_RETEST_V1.yaml
+    version: "2.0.0"
+    contract_sha256: 9bfc25153c6be0f264088756a90d7060f9b0f789fc0b269d4d76ceb5139b584c
+    historical_versions: {}
     engine: "RESEARCH_ONLY -- src/strategy_engine/sweep_retest/ (signal engine, asset-independent, both FOREX and CRYPTO_PERP profiles); BTC daily research/reporting orchestration: src/btc_sweep_research/ (pipeline.py -> daily_report.py); BTC market data: src/execution_runtime/bybit_linear_perp_feed.py (Bybit V5 linear perpetual, public/read-only, owner-approved AG_V1_0_3_BYBIT_QUALIFICATION_EXCEPTION scope) and src/execution_runtime/binance_usdtm_feed.py (Binance USDT-M, environment-blocked HTTP 451, retained as an alternate implementation of the same CryptoCandleFeed interface)"
     note: >-
       Version 2.0.0, ACTIVE_INCUBATION (see strategies/STRATEGY_LEDGER.md for full
