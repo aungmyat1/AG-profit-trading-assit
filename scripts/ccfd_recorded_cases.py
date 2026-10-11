@@ -35,8 +35,9 @@ UTC = timezone.utc
 SYMBOLS = ("BTCUSD", "ETHUSD")
 STEP = {"d1": timedelta(days=1), "h1": timedelta(hours=1), "m15": timedelta(minutes=15),
         "m5": timedelta(minutes=5)}
-COMMISSION_GAP = ("commission_R is null for every case: VT crypto CFD commission was not "
-                  "captured (no allowed read-only call exposes it). Explicit gap, never 0.")
+COMMISSION_GAP = ("raw capture has no commission field; OD1011-COMMISSION supplies effective commission_R=0 only "
+                  "when its authoritative policy block and captured VTMarkets-Demo server/source match; otherwise "
+                  "L5 is INSUFFICIENT(commission).")
 
 
 def sha(path: Path) -> str:
@@ -90,6 +91,15 @@ def provenance_60d(out_dir: Path, sym: str, report: dict, files: dict, paths: di
             if line.startswith("| 20") and line.count("|") == 9]
     offsets = sorted({r[2].strip() for r in rows})
     files[md_name] = sha(out_dir / md_name)
+    raw_policy = yaml.safe_load((ROOT / "config/v1_tickets/crypto_cfd_ticket_policy.yaml").read_text(encoding="utf-8"))
+    commission_policy = raw_policy.get("commission", {}) if isinstance(raw_policy, dict) else {}
+    bound = (commission_policy.get("decision_id") == "OD1011-COMMISSION"
+             and type(commission_policy.get("commission_R")) in (int, float)
+             and commission_policy.get("commission_R") == 0
+             and isinstance(commission_policy.get("account_login_suffix"), str)
+             and commission_policy["account_login_suffix"].isdigit()
+             and 3 <= len(commission_policy["account_login_suffix"]) <= 4
+             and report.get("server") == "VTMarkets-Demo")
     return {"source": "MT5_VT_MARKETS_DEMO", "mission": "AGP-HOST-CRYPTO60", "symbol": sym,
             "recorded": True, "captured_at_utc": report["captured_at_utc"], "server": report["server"],
             "captured_in": "PR #143 (data/ccfd-recorded-60d)",
@@ -100,7 +110,13 @@ def provenance_60d(out_dir: Path, sym: str, report: dict, files: dict, paths: di
             "gap_policy": "missing bars are listed, never filled or interpolated",
             "sha256": {tf: files[rel] for tf, rel in paths.items()},
             "sha256_scope": "shared 60-day files; materialized per-case slices carry their own hashes",
-            "commission_R": None, "commission_gap": COMMISSION_GAP}
+            "captured_commission_R": None,
+            "commission_R": 0 if bound else None,
+            "commission_source": "OD1011-COMMISSION" if bound else None,
+            "commission_binding_server": report.get("server") if bound else None,
+            "commission_gap": ("Raw capture omitted commission; effective commission_R=0 supplied by "
+                               "OD1011-COMMISSION because the captured server matches VTMarkets-Demo."
+                               if bound else COMMISSION_GAP)}
 
 
 def build(out_dir: Path = RECORDED) -> Path:
@@ -116,8 +132,9 @@ def build(out_dir: Path = RECORDED) -> Path:
                 "recorded": True, "captured_at_utc": report["captured_at_utc"],
                 "m15_captured_in": "PR #128 (AGP-DATA-R2)", "other_tfs_captured_in": "AGP-DATA-R2b",
                 "sha256": {tf: files[rel] for tf, rel in paths.items()},
-                "sha256_scope": "shared 14-day files; materialized per-case slices carry their own hashes",
-                "commission_R": None, "commission_gap": COMMISSION_GAP}
+                          "sha256_scope": "shared 14-day files; materialized per-case slices carry their own hashes",
+                "captured_commission_R": None, "commission_R": None, "commission_source": None,
+                "commission_binding_server": None, "commission_gap": COMMISSION_GAP}
         prov_name = f"{sym}_provenance.json"
         (out_dir / prov_name).write_text(json.dumps(prov, indent=2) + "\n", encoding="utf-8", newline="\n")
         files[prov_name] = sha(out_dir / prov_name)
@@ -134,11 +151,14 @@ def build(out_dir: Path = RECORDED) -> Path:
                 raise SystemExit(f"{sym} {now}: no M5 bar for the case spread; refusing to invent one")
             cases.append({"id": f"{sym}_{name}_{now:%Y%m%dT%H%M}Z", "symbol": sym, "window": name,
                           "now": now.isoformat(), "paths": paths, "provenance": prov_name,
-                          "spread": float(meta["spread_price"]), "commission_R": None,
+                          "spread": float(meta["spread_price"]), "commission_R": prov["commission_R"],
                           "quote_time": quote_bar.isoformat(), "expected_result": None,
                           "expected_direction": None})
+    commission_gap = ("OD1011-COMMISSION=0 bound to captured VTMarkets-Demo server/source"
+                      if out_dir == RECORDED_60D and all(c["commission_R"] == 0 for c in cases)
+                      else COMMISSION_GAP)
     manifest = {"source": "MT5_VT_MARKETS_DEMO", "mission": "AGP-DATA-R2", "cases": cases,
-                "gaps": {"commission_R": COMMISSION_GAP},
+                "gaps": {"commission_R": commission_gap},
                 "files": dict(sorted(files.items()))}
     if out_dir == RECORDED_60D:
         manifest["mission"] = "AGP-HOST-CRYPTO60"

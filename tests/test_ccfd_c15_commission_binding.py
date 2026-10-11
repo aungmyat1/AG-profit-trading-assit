@@ -1,5 +1,5 @@
 """C15: OD1011 commission binding must fail closed outside the captured VT demo server."""
-from scripts.ccfd_sweep_retest_replay import commission_binding, l5_od1011, INSUFFICIENT
+from scripts.ccfd_sweep_retest_replay import INSUFFICIENT, commission_binding, l5_od1011
 
 
 def test_commission_requires_matching_server_and_source():

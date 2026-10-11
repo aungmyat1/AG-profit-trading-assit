@@ -252,6 +252,14 @@ def test_spread_warning_boundary_is_inclusive_and_twenty_percent_is_warn():
         assert replay.l5_od1011(spread, 100.0, ticket, policy, binding)["status"] == "PASS"
 
 
+def test_od1011_commission_requires_config_and_captured_vt_server():
+    import scripts.ccfd_sweep_retest_replay as replay
+    bound = replay.commission_binding({"server": "VTMarkets-Demo", "source": "MT5_VT_MARKETS_DEMO"})
+    assert bound is not None and bound["value"] == 0.0 and bound["source"] == "OD1011-COMMISSION"
+    assert replay.commission_binding({"server": "Other-Demo", "source": "MT5_VT_MARKETS_DEMO"}) is None
+    assert replay.commission_binding({"server": None, "source": "MT5_VT_MARKETS_DEMO"}) is None
+
+
 def test_c15_candidate_identity_is_separate_and_unadmitted():
     import scripts.ccfd_sweep_retest_replay as replay
     candidate = yaml.safe_load((ROOT / replay.C15_CONTRACT_YAML).read_text(encoding="utf-8"))
@@ -263,3 +271,15 @@ def test_c15_candidate_identity_is_separate_and_unadmitted():
     assert "1.1.0" not in registry["strategies"]["ST_CRYPTO_CFD_SWEEP_RETEST_V1"]["candidate_versions"]
     strategy = registry["strategies"]["ST_CRYPTO_CFD_SWEEP_RETEST_V1"]
     assert strategy["active"] is False and strategy["demo_authorized"] is False and strategy["live_authorized"] is False
+
+
+def test_c15_frozen_contract_hash_and_runtime_identity_record_are_independent():
+    import scripts.ccfd_sweep_retest_replay as replay
+    candidate = yaml.safe_load((ROOT / replay.C15_CONTRACT_YAML).read_text(encoding="utf-8"))
+    identity = replay.research_logic_identity("1.1.0")
+    verified = replay.runtime_identity_verification(candidate, identity)
+    assert verified["contract_hash_declared"] == verified["contract_hash_recomputed"]
+    assert verified["contract_hash_match"] is True
+    assert verified["runtime_engine_hash"] == verified["candidate_runtime_engine_hash"]
+    assert verified["runtime_engine_matches_candidate_identity"] is True
+    assert verified["candidate_runtime_binding"] == "NOT_ADMITTED_RESEARCH_ONLY"

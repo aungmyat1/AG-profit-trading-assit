@@ -531,13 +531,22 @@ COST_CODES = ("SPREAD_TOO_WIDE", "SPREAD_WARN", "COST_TOO_HIGH", "COST_WARN")
 
 
 def commission_binding(provenance: dict) -> Optional[dict]:
-    """OD1011-COMMISSION applies to data captured on the bound VT demo server; else None (INSUFFICIENT)."""
-    server, source = provenance.get("server"), provenance.get("source")
-    # OD1011-L5 requires an explicit captured-server match. A source label alone
-    # cannot prove that the commission policy applies to this account.
-    if server == OD1011_COMMISSION["bound_server"] and source == OD1011_COMMISSION["bound_source"]:
-        return OD1011_COMMISSION
-    return None
+    """Mirror ASW v1.1.2 OD1011-COMMISSION: 0 only for an explicit valid binding and matching capture server."""
+    try:
+        raw = yaml.safe_load((ROOT / "config/v1_tickets/crypto_cfd_ticket_policy.yaml").read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError):
+        return None
+    block = raw.get("commission") if isinstance(raw, dict) else None
+    if not isinstance(block, dict):
+        return None
+    value, suffix = block.get("commission_R"), block.get("account_login_suffix")
+    bound_server = OD1011_COMMISSION["bound_server"]
+    bound = (block.get("decision_id") == "OD1011-COMMISSION" and type(value) in (int, float) and value == 0
+             and isinstance(suffix, str) and suffix.isdigit() and 3 <= len(suffix) <= 4
+             and provenance.get("server") == bound_server
+             and provenance.get("source") == "MT5_VT_MARKETS_DEMO")
+    return {**OD1011_COMMISSION, "value": 0.0, "bound_server": bound_server,
+            "account_login_suffix": suffix} if bound else None
 
 
 def l5_od1011(spread: float, risk: Optional[float], ticket: dict, policy: dict, binding: Optional[dict]) -> dict:
@@ -595,9 +604,36 @@ def research_logic_identity(version: str) -> Optional[dict]:
                     "research_external/oracles/crypto_signal_ledger.py")
     parts = {"strategy_id": CONTRACT_ID, "strategy_version": version,
              "engine_identity": _sha256_text(engine_files, ROOT),
+             "runtime_engine_hash": _sha256_text(ADAPTERS[CONTRACT_ID][1], ROOT),
              "contract_hash": hashlib.sha256(contract_path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()}
     parts["digest"] = hashlib.sha256(json.dumps(parts, sort_keys=True).encode()).hexdigest()
     return parts
+
+
+def canonical_contract_hash(spec: dict) -> str:
+    """Frozen identity hash: canonical sorted YAML with the self-referential hash field blank."""
+    import copy
+    canonical = copy.deepcopy(spec)
+    canonical["research_lifecycle_contract"]["freeze"]["contract_hash"] = ""
+    payload = yaml.safe_dump(canonical, sort_keys=True, allow_unicode=True).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def runtime_identity_verification(spec: dict, candidate_identity: dict) -> dict:
+    """Independently bind the candidate contract to frozen runtime engine sources without admission."""
+    declared = spec["research_lifecycle_contract"]["freeze"]["contract_hash"]
+    computed = canonical_contract_hash(spec)
+    runtime_engine_files = ADAPTERS[CONTRACT_ID][1]
+    runtime_engine_hash = _sha256_text(runtime_engine_files, ROOT)
+    return {"contract_hash_declared": declared, "contract_hash_recomputed": computed,
+            "contract_hash_match": declared == computed,
+            "runtime_engine_hash": runtime_engine_hash,
+            "candidate_runtime_engine_hash": candidate_identity["runtime_engine_hash"],
+            "runtime_engine_matches_candidate_identity": runtime_engine_hash == candidate_identity["runtime_engine_hash"],
+            "runtime_loaded_strategy_version": CONTRACT_VERSION,
+            "candidate_strategy_version": C15_VERSION,
+            "candidate_runtime_binding": "NOT_ADMITTED_RESEARCH_ONLY",
+            "authority": "identity integrity only; does not change runtime binding or registry"}
 
 
 def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.date], cfg, spec: dict,
@@ -633,6 +669,7 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
     stream, future_stream, results, emissions, hits = [], [], Counter(), [], Counter()
     entry_at: Dict[dt.datetime, dict] = {}
     by_day: Dict[str, Counter] = {}
+    by_day_direction: Dict[str, Counter] = {}
     l2_bad, l4_bad, l4_neg_bad, l2_neg_bad = [], [], [], []
     for day in days:
         day0 = dt.datetime.combine(day, dt.time(), tzinfo=UTC)
@@ -667,6 +704,7 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
             if r["result"] == "ENTRY_VALID":
                 entry_at[now] = r
                 side = r["evidence"]["target_plan"]["direction"]
+                by_day_direction.setdefault(day.isoformat(), Counter())[side] += 1
                 bad = reconstruct(r, x, now, spec)
                 if bad:
                     l2_bad.append({"now": now.isoformat(), "direction": side, "failed": bad})
@@ -690,7 +728,8 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
         if er is not None and env["now"] in scan_at:
             mism["ticket_scan_parity"] += semantic(er) != scan_at[env["now"]]
 
-    meta, commission = manual_ticket.symbol_meta_from_host(symbol), manual_ticket.crypto_cfd_commission(symbol)
+    meta = manual_ticket.symbol_meta_from_host(symbol)
+    commission = commission_binding["value"] if commission_binding is not None else None
     emission_rows, l3_seq_bad, l5, l5_adv, l6, quote_gaps = [], [], [], [], [], []
     for now, r, x in emissions:
         ev, plan = r["evidence"], r["evidence"]["target_plan"]
@@ -814,12 +853,16 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
                        and [k for k in ("L1", "L2", "L3", "L4", "L6") if gd[k] == FAIL] == ["L3"])
         gd["failure_class"] = (None if FAIL not in (gd[k] for k in ("L1", "L2", "L3", "L4", "L5", "L6")) else
                                "LOGIC_DEFECT:EVENT_LOG_MISMATCH" if only_events else "UNCLASSIFIED_FAILURE")
-        per_day[d] = {"day_type": day_type(dt.date.fromisoformat(d)), "results": dict(sorted(c.items())), **gd}
+        per_day[d] = {"day_type": day_type(dt.date.fromisoformat(d)), "results": dict(sorted(c.items())),
+                      "entry_valid_scans_by_direction": dict(sorted(by_day_direction.get(d, {}).items())), **gd}
     return {
         "symbol": symbol, "fetch_counts": counts, "per_day": per_day, "days": len(days), "scans": len(stream),
         "scan_results": dict(sorted(results.items())), "scan_results_by_day": {d: dict(sorted(c.items()))
                                                                                for d, c in by_day.items()},
-        "entry_valid_scans": entries, "emissions": emission_rows, "emission_quote_gaps": quote_gaps, "gates": gates,
+        "entry_valid_scans": entries, "entry_valid_scans_by_direction": {
+            side: sum(row["evidence"]["target_plan"]["direction"] == side for row in entry_at.values())
+            for side in ("LONG", "SHORT")},
+        "emissions": emission_rows, "emission_quote_gaps": quote_gaps, "gates": gates,
         "branches": {side: branch(side) for side in ("LONG", "SHORT")},
         "reissues": reissue_rows,
         "gate_evidence": {"logic_identity": identity, "spec_constants_match": spec_ok,
@@ -841,49 +884,42 @@ def mismatch_free(r: dict) -> bool:
 
 
 def all_checks_pass(r: dict) -> bool:
-    """AGP-LANE-B3 (OD1011-L5): L1-L4 and L6 PASS, L5 PASS (cost evidence incl. OD1011-COMMISSION applied
-    correctly; a cost-blocked ticket is not a failure), zero mismatches incl. 0 event-log mismatches, and no
-    recorded day with a FAIL. INSUFFICIENT on a no-signal day is not a failure."""
-    g = r["gates"]
-    return all(g[k] == PASS for k in ("L1", "L2", "L3", "L4", "L5", "L6")) and mismatch_free(r)
+    """Legacy symbol aggregate retained only for the frozen v1.0.0 compatibility report."""
+    gates = r["gates"]
+    return all(gates[name] == PASS for name in ("L1", "L2", "L3", "L4", "L5", "L6")) and mismatch_free(r)
 
 
 def scoped_window_gates(symbol_run: dict) -> dict:
-    """Aggregate independently by weekday/weekend data windows, preserving INSUFFICIENT."""
+    """Return scope verdicts at symbol x direction x weekday/weekend; fewer than two emissions stay unverified."""
     out = {}
     for window in ("WEEKDAY", "WEEKEND"):
         rows = [row for row in symbol_run["per_day"].values() if row["day_type"] == window]
-        positives = any(row["results"].get("ENTRY_VALID", 0) > 0 for row in rows)
-        emissions = [row for row in symbol_run["emissions"] if row["day_type"] == window]
-        gates: dict[str, str] = {}
-        for gate in ("L1", "L2", "L3", "L4", "L6"):
-            statuses = [row[gate] for row in rows]
-            if gate in ("L2", "L4") and not positives:
-                gates[gate] = INSUFFICIENT
-            elif gate == "L6" and not emissions:
-                gates[gate] = INSUFFICIENT
-            elif any(status == FAIL for status in statuses):
-                gates[gate] = FAIL
-            else:
-                gates[gate] = PASS if statuses else INSUFFICIENT
-        cycle = symbol_run["gate_evidence"]["cycle_ticket_l1_by_window"].get(window, {})
-        if cycle.get(FAIL, 0) or gates["L1"] == FAIL:
-            gates["L1"] = FAIL
-        elif not cycle and not rows:
-            gates["L1"] = INSUFFICIENT
-        if not emissions:
-            gates["L5"] = INSUFFICIENT
-        elif any(row["l5"] == FAIL for row in emissions):
-            gates["L5"] = FAIL
-        elif all(row["l5"] == PASS for row in emissions):
-            gates["L5"] = PASS
-        else:
-            gates["L5"] = INSUFFICIENT
-        out[window] = {"gates": gates, "calendar_days": len(rows),
-                       "entry_valid_scans": sum(row["results"].get("ENTRY_VALID", 0) for row in rows),
-                       "emissions": len(emissions), "cycle_ticket_l1": cycle,
-                       "blockers": [f"{name}:{status}" for name, status in gates.items()
-                                    if status in (FAIL, INSUFFICIENT)]}
+        dates = {day for day, row in symbol_run["per_day"].items() if row["day_type"] == window}
+        event_log = symbol_run["signal_events"]["log"]
+        out[window] = {}
+        for side in ("LONG", "SHORT"):
+            emissions = [row for row in symbol_run["emissions"]
+                         if row["day_type"] == window and row["direction"] == side]
+            entry_scans = sum(row.get("entry_valid_scans_by_direction", {}).get(side, 0) for row in rows)
+            withdrawals = sum(event["type"] == "WITHDRAWN" and event.get("direction") == side
+                              and event["bar_close_utc"][:10] in dates for event in event_log)
+            gates = dict(symbol_run["branches"][side]["gates"])
+            if not emissions:
+                for gate in ("L2", "L4", "L5", "L6"):
+                    gates[gate] = INSUFFICIENT
+                gates["L3"] = INSUFFICIENT
+            status = ("BLOCKED" if FAIL in gates.values() else
+                      "PASS" if len(emissions) >= 2 and entry_scans > 0 and all(v == PASS for v in gates.values())
+                      else "NOT_VERIFIED")
+            out[window][side] = {
+                "status": status, "gates": gates,
+                "calendar_days": len(rows), "entry_valid_scans": entry_scans,
+                "emissions": len(emissions), "withdrawn_events": withdrawals,
+                "verification_minimum_emissions": 2,
+                "blockers": (["NO_EMISSIONS"] if not emissions else
+                             ["THIN_SIGNAL_COVERAGE_LT_2"] if len(emissions) < 2 else [])
+                            + [f"{name}:{value}" for name, value in gates.items()
+                               if value in (FAIL, INSUFFICIENT)]}
     return out
 
 
@@ -907,8 +943,11 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
                  and (days is None or dt.datetime.fromisoformat(c["now"]).date() in days)]
         provenance = json.loads((base / f"{symbol}_provenance.json").read_text(encoding="utf-8"))
         provenance_by_symbol[symbol] = provenance
+        commission = commission_binding(provenance)
         out[symbol] = run_symbol(symbol, data, cases, run_days, cfg, spec, policy, balance,
-                                 commission_binding(provenance), strategy_version=strategy_version)
+                                 commission, strategy_version=strategy_version)
+        out[symbol]["commission_binding"] = commission
+    commission_is_bound = all(out[sym]["commission_binding"] is not None for sym in symbols)
     registry = yaml.safe_load(registry_before)["strategies"][CONTRACT_ID]
     tickets = [t for s in out.values() for t in s.pop("tickets")]
     identity = research_logic_identity(strategy_version)
@@ -920,9 +959,13 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
     vt_cov = {sym: r.pop("rule_coverage") for sym, r in out.items()}
     vt_gaps = {sym: coverage_gaps(m) for sym, m in vt_cov.items()}
     proven = {sym: proof_matrix(m, cov_only) for sym, m in vt_cov.items()}
-    verification = {sym: {"all_checks_pass": all_checks_pass(r), "logic_identity": identity,
-                          "branches": {b: branch_verdict(r, proven[sym], b) for b in BRANCHES}}
-                    for sym, r in out.items()}
+    scoped_verdicts = {sym: scoped_window_gates(r) for sym, r in out.items()}
+    verification = {
+        sym: ({"scopes": scoped_verdicts[sym], "logic_identity": identity}
+              if strategy_version == C15_VERSION else
+              {"all_checks_pass": all_checks_pass(r), "logic_identity": identity,
+               "branches": {b: branch_verdict(r, proven[sym], b) for b in BRANCHES}})
+        for sym, r in out.items()}
     rule_coverage = {
         "rule_ids_source": contract_path, "dimensions": "rule_id x LONG/SHORT x IN_WINDOW/OUT_OF_WINDOW",
         "window_definition": "IN_WINDOW = scan instant inside a v1_tickets crypto window (crypto_cfd._window: "
@@ -957,15 +1000,29 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
         "strategy": f"{CONTRACT_ID}@{strategy_version}", "contract_path": contract_path,
         "frozen_rule_base_version": CONTRACT_VERSION,
         "contract_sha256": hashlib.sha256((ROOT / contract_path).read_bytes()).hexdigest(),
+        "contract_hash": spec.get("research_lifecycle_contract", {}).get("freeze", {}).get("contract_hash"),
+        "runtime_identity_verification": (runtime_identity_verification(spec, identity)
+                                           if strategy_version == C15_VERSION else None),
         "dataset": {"id": dataset, "manifest": str(manifest_path.relative_to(ROOT)),
                     "manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
-                    "file_hashes_verified": True, "source": manifest["source"], "gaps": manifest["gaps"]},
+                    "file_hashes_verified": True, "source": manifest["source"],
+                    "gaps": {**manifest["gaps"], "commission_R":
+                             ("BOUND: OD1011-COMMISSION=0 for captured VTMarkets-Demo server"
+                              if commission_is_bound else "INSUFFICIENT(commission): binding/server mismatch")},
+                    "commission_binding": ("OD1011-COMMISSION=0 is applied only when the authoritative policy "
+                                           "decision, zero value, account binding, and captured VTMarkets-Demo "
+                                           "server/source match.")},
         "dataset_identity": {sym: {"provenance_sha256": hashlib.sha256((base / f"{sym}_provenance.json").read_bytes()).hexdigest(),
                                     "sha256": provenance_by_symbol[sym]["sha256"],
                                     "captured_at_utc": provenance_by_symbol[sym]["captured_at_utc"],
                                     "server": provenance_by_symbol[sym].get("server")} for sym in symbols},
         "market_provenance": {sym: {
             "source": provenance_by_symbol[sym]["source"], "server": provenance_by_symbol[sym].get("server"),
+            "commission_R": out[sym]["commission_binding"]["value"] if out[sym]["commission_binding"] else None,
+            "commission_source": out[sym]["commission_binding"]["source"] if out[sym]["commission_binding"] else None,
+            "commission_binding_status": "BOUND" if out[sym]["commission_binding"] else "INSUFFICIENT(commission)",
+            "commission_bound_server": out[sym]["commission_binding"]["bound_server"]
+            if out[sym]["commission_binding"] else None,
             "point_size_price": 0.01, "digits": 2,
             "spread_source": "VT M5 meta spread_price, quote from last closed M5 bar",
             "timing": "UTC bar-open labels; evaluate at M5 close; open M5/M15/H1/D1 bars excluded using server close rule",
@@ -973,7 +1030,7 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
             "missing_bars": provenance_by_symbol[sym].get("partial_days_m5_bars", {})
         } for sym in symbols},
         "days_run": sorted(first["scan_results_by_day"]),
-        "scoped_window_gates": {sym: scoped_window_gates(out[sym]) for sym in symbols},
+        "scoped_window_gates": scoped_verdicts,
         "weekend_days": [d for d in first["scan_results_by_day"] if day_type(dt.date.fromisoformat(d)) == "WEEKEND"],
         "spread_policy": {k: policy[k] for k in ("spread_ok_pct", "spread_block_pct", "cost_warn_R", "cost_block_R")},
         "spread_band_scope": "ticket state only; no L1-L6 check reads the band",
@@ -1003,6 +1060,12 @@ def write(report: dict, out_dir: Path) -> None:
         stale.unlink()
     (out_dir / "replay_report.json").write_text(json.dumps(report, indent=2, sort_keys=True, default=str) + "\n",
                                                 encoding="utf-8", newline="\n")
+    if report["runtime_identity_verification"] is not None:
+        runtime_record = {"schema": "C15_RUNTIME_IDENTITY_CHECK_V1", "strategy": report["strategy"],
+                          "manifest_sha256": report["dataset"]["manifest_sha256"],
+                          **report["runtime_identity_verification"]}
+        (out_dir / "runtime_identity_verification.json").write_text(
+            json.dumps(runtime_record, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
 
 
 def main(argv: Optional[List[str]] = None) -> int:

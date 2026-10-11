@@ -93,6 +93,9 @@
     "m15": "1b4097ab0943fb5c08ed828b1063a7245cfa1aed42e7102e5bd786843dddfac5"
   },
   "sha256_scope": "shared 60-day files; materialized per-case slices carry their own hashes",
-  "commission_R": null,
-  "commission_gap": "commission_R is null for every case: VT crypto CFD commission was not captured (no allowed read-only call exposes it). Explicit gap, never 0."
+  "captured_commission_R": null,
+  "commission_R": 0,
+  "commission_source": "OD1011-COMMISSION",
+  "commission_binding_server": "VTMarkets-Demo",
+  "commission_gap": "Raw capture omitted commission; effective commission_R=0 supplied by OD1011-COMMISSION because the captured server matches VTMarkets-Demo."
 }

@@ -31,10 +31,16 @@ def test_replay_runs_weekend_and_weekday_with_zero_mismatches(eth):
     s = eth["symbols"]["ETHUSD"]
     assert eth["weekend_days"] == ["2026-10-04"] and s["scans"] == 2 * 288
     assert sum(s["mismatches"].values()) == 0
-    assert s["gates"] == {"L1": "PASS", "L2": "PASS", "L3": "PASS", "L4": "PASS", "L5": "PASS", "L6": "PASS"}
+    assert s["gates"] == {"L1": "PASS", "L2": "PASS", "L3": "PASS", "L4": "PASS",
+                          "L5": "INSUFFICIENT", "L6": "PASS"}  # this older provenance has no captured server
     assert s["fetch_counts"] == {"D1": 50, "H1": 100, "M15": 96, "M5": 576}   # taken from the live cycle
     assert s["signal_events"]["source"].startswith("TEMP_INLINE")          # TEMP until AGP-ORACLE
-    assert s["gate_evidence"]["l5_od1011"][0]["commission_source"] == "OD1011-COMMISSION"
+    assert s["gate_evidence"]["l5_od1011"][0]["status"] == "INSUFFICIENT"
+    assert eth["scoped_window_gates"]["ETHUSD"]["WEEKEND"]["LONG"]["status"] == "NOT_VERIFIED"
+    btc = R.build("2026-10-10", symbols=("BTCUSD",), days=[dt.date(2026, 10, 4)])
+    weekend = btc["scoped_window_gates"]["BTCUSD"]["WEEKEND"]["LONG"]
+    assert weekend["status"] == "NOT_VERIFIED" and weekend["emissions"] == 0
+    assert weekend["emissions"] == 0 and weekend["entry_valid_scans"] == 0
 
 
 def test_emission_ticket_uses_existing_schema_and_owner_band(eth):

@@ -106,7 +106,10 @@ def test_event_log_duplicate_retry_is_idempotent_and_restart_replays_state():
 
 
 def test_event_log_rejects_out_of_order_events():
-    from research_external.oracles.crypto_signal_ledger import EventOrderError, SignalEventLedger
+    from research_external.oracles.crypto_signal_ledger import (
+        EventOrderError,
+        SignalEventLedger,
+    )
     ledger = SignalEventLedger()
     ledger.append("EMIT", at(11), "signal-1", "ENTRY_VALID", freshness="FRESH")
     with pytest.raises(EventOrderError, match="out-of-order"):
@@ -131,7 +134,10 @@ def test_duplicate_scan_retry_is_idempotent_and_conflicting_duplicate_rejected()
 
 
 def test_filled_signal_cannot_be_withdrawn_during_ledger_replay():
-    from research_external.oracles.crypto_signal_ledger import EventOrderError, SignalEventLedger
+    from research_external.oracles.crypto_signal_ledger import (
+        EventOrderError,
+        SignalEventLedger,
+    )
     ledger = SignalEventLedger()
     ledger.append("EMIT", at(11), "signal-1", "ENTRY_VALID", freshness="FRESH")
     ledger.append("FILL", at(11, 2), "signal-1", "FILL_RECORDED")

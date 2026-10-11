@@ -243,3 +243,20 @@ research_lifecycle_contract:
   direction_permission: recheck on every later scan
   invalidated_unfilled_signal: append-only WITHDRAWN event
   filled_signal: immutable; never withdraw after fill
+  spread_warning_boundary: SPREAD_WARN at or above 10 percent of stop; exactly 10 percent remains allowed
+  owner_ruling_traceability:
+    - ruling: Re-check direction permission on each later scan
+      rule_id: C15.L3.DIRECTION_RECHECK
+      test: tests/test_ccfd_signal_events.py::test_withdraw_inside_the_expiry_window_then_fresh_reissue
+    - ruling: Invalidated unfilled signal appends WITHDRAWN
+      rule_id: C15.L3.UNFILLED_WITHDRAWAL
+      test: tests/test_ccfd_signal_events.py::test_withdraw_inside_the_expiry_window_then_fresh_reissue
+    - ruling: Never withdraw a signal after fill
+      rule_id: C15.L3.FILLED_IMMUTABLE
+      test: tests/test_ccfd_signal_events.py::test_fill_then_invalidate_never_appends_withdrawn
+    - ruling: SPREAD_WARN boundary is at least 10 percent of stop
+      rule_id: C15.L5.SPREAD_WARN_10_PERCENT
+      test: tests/test_ccfd_v100_logic_verification.py::test_spread_warning_boundary_is_inclusive_and_twenty_percent_is_warn
+  freeze:
+    contract_hash: "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7"
+    hash_method: SHA256 of this YAML mapping serialized with sorted keys after removing freeze.contract_hash
