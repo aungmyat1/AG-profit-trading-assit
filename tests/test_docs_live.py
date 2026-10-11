@@ -57,7 +57,7 @@ def test_untracked_supersession_sidecar_does_not_change_digest_or_suppress(tmp_p
         "demo_authorized": True, "manager_dispatchable": True
     }}}), encoding="utf-8")
     run("git", "add", manifest_rel, cwd=root)
-    before = run(sys.executable, "scripts/docs/collect_facts.py", "--repo-root", str(root), "--output", str(root / "facts.json"), cwd=root)
+    run(sys.executable, "scripts/docs/collect_facts.py", "--repo-root", str(root), "--output", str(root / "facts.json"), cwd=root)
     digest_before = json.loads((root / "facts.json").read_text())["inputs_sha256"]
     sidecar = target.with_suffix(".supersession.yaml")
     sidecar.write_text(
@@ -339,9 +339,10 @@ def test_allowlist_migration_accounts_for_all_original_entries():
     destinations = {entry["origin"] for entry in entries if entry not in data["resolved"]}
     destinations.update(f"resolved/{n}" for n in range(len(data["resolved"])))
     assert {row["destination"] for row in mappings} == destinations
-    assert len(data["never_suppress"]) == 28
+    assert len(data["never_suppress"]) == 27
     assert {(entry["origin"], entry["ref"]) for entry in data["resolved"]} == {
-        ("never_suppress/0", "C15"), ("never_suppress/4", "C2"), ("carve_outs/10/0", "C2")}
+        ("never_suppress/0", "C15"), ("never_suppress/4", "C2"), ("carve_outs/10/0", "C2"),
+        ("never_suppress/29", "C14")}
     assert data["migration"]["merged_entries"] == []
 
 

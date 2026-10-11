@@ -6,16 +6,13 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
-[AGP-G3-VERIFY manual-ticket risk/cost gate](status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md) records the G3 verification of the OD1009-D2 risk/cost gate (FX, gold, crypto CFD), its four fixed gate defects and the NO_BROKER_MUTATION evidence. It changes no readiness or authorization value.`r`n`r`n[Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
-
-[READY owner binding](status/READY_OWNER_BINDING_2026-10-10.md) records the additional
-owner-register, version, contract-hash, symbol, and session checks for READY admission.
-
 [Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
 records stop/target rejection, the owner-set 50% remaining-reward threshold, required
 host preflight, FX/crypto rejection ownership, diagnostics and offline tests.
 
-[AGP-C3-ASW-R2 60-day](status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md) records the ST_ASIAN_SWEEP_5R_V1@1.1.2 replay on the 60-weekday recorded files, with a per-session gate matrix and unchanged authority; the [10/20-day R2 report](status/AGP_C3_ASW_V112_R2_2026-10-10.md) is historical only.`r`n
+[AGP-C3-ASW-R2 60-day](status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md) records the ST_ASIAN_SWEEP_5R_V1@1.1.2 replay on the 60-weekday recorded files, with a per-session gate matrix and unchanged authority; the [10/20-day R2 report](status/AGP_C3_ASW_V112_R2_2026-10-10.md) is historical only.
+[AGP-4H-A GBPUSD × ASIAN_LONDON](status/AGP_4H_A_ASW_V112_GBPUSD_ASIAN_LONDON_2026-10-10.md) classifies every L2 failure in that lane, fixes the L2 half-point rounding bound, and, after OD1011, records it LOGIC_VERIFIED for the SWEEP branch only (scoped registry entry).
+
 [PR #94 follow-up S01/S02](status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md) records the signal-time identity classification (pending owner) and the LIVE/REPLAY digest reason fix.
 
 [TG-SCOPE-POLICY-1](status/AG_TG_SCOPE_POLICY_1_STATUS_2026-10-08.md) records the tracked
@@ -231,6 +228,12 @@ research eligibility. Its contract is
 
 - [`governance/OWNER_DECISION_REGISTER.md`](governance/OWNER_DECISION_REGISTER.md) — running owner
   decision register (open rows `PENDING_OWNER`; resolved decisions retain their dated source).
+- [`governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md`](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md)
+  — ratified DEMO-only sequencing, standing authorization and risk limits; no current authorization changes.
+- [`governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md`](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md)
+  — historical proposal retained for traceability; superseded demo-soak and per-order-confirmation requirements are identified.
+- [`governance/AGP_C6_IMPLEMENTATION_GATES_2026-10-10.md`](governance/AGP_C6_IMPLEMENTATION_GATES_2026-10-10.md)
+  — historical implementation plan; C14 leaves host acceptance required and shadow observation optional.
 - [`governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md`](governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md)
   — owner decision record for Large-SMC actionability (brought forward unchanged).
 - [`agents/CONTEXT_PACK.md`](agents/CONTEXT_PACK.md) — generated context pack (objective, invariants
@@ -564,11 +567,6 @@ matching status document before assuming a version is active or frozen.
 Files in `status/` are dated evidence snapshots. They preserve the test counts and
 observations from the named milestone; they are not rolling dashboards.
 
-- [`status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md`](status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md)
-  — G3 (cost/risk) focused verification of the manual-ticket gate on FX, gold and crypto CFD:
-  the key × asset-class × verdict matrix, the four defects found and fixed (inclusive 0.10R warn,
-  fail-open 0.25R block on decimal-exact costs, `KeyError` instead of `RISK_CONFIG_MISSING`), what was
-  deliberately not changed, and the offline NO_BROKER_MUTATION evidence.
 - [`status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md`](status/AG_PROJECT_AUDIT_AND_CLEANUP_2026-09-25.md)
   — repository health audit, test-failure classification, root-file relocation map
   (root MI/V2/validation docs now live under `market_intelligence/`, `v2/`,
