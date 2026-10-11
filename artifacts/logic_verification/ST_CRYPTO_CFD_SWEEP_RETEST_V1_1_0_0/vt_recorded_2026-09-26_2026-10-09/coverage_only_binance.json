@@ -1,0 +1,588 @@
+{
+  "ORDER_API_CALLS": 0,
+  "authoritative": false,
+  "derivation": "edge_discovery.replay_c001._resample (UTC buckets; D1 = UTC day)",
+  "feeds_logic_verdict": false,
+  "feeds_registry": false,
+  "feeds_tickets": false,
+  "freqtrade_commit": "9a2f03a6bf8408f155591304c78aab20ca5c44cc",
+  "instrument_note": "Binance spot pairs evaluated under a contract symbol only to run the rules; never a substitute for VT BTCUSD/ETHUSD CFD evidence",
+  "interval_note": "requested Binance 1m: one 1m-derived source; Binance endpoints unreachable, the other sources are the finest reachable Binance klines (5m)",
+  "label": "COVERAGE_ONLY",
+  "not_exercised": [
+    "context_contract.direction_permission.d1_confirmed_and_opposes_h1|LONG|IN_WINDOW",
+    "context_contract.direction_permission.d1_confirmed_and_opposes_h1|LONG|OUT_OF_WINDOW",
+    "context_contract.direction_permission.d1_confirmed_and_opposes_h1|SHORT|IN_WINDOW",
+    "context_contract.direction_permission.d1_confirmed_and_opposes_h1|SHORT|OUT_OF_WINDOW",
+    "m5_trigger_contract.sweep.dual_side_candle|LONG|IN_WINDOW",
+    "m5_trigger_contract.sweep.dual_side_candle|LONG|OUT_OF_WINDOW",
+    "m5_trigger_contract.sweep.dual_side_candle|SHORT|IN_WINDOW",
+    "m5_trigger_contract.sweep.dual_side_candle|SHORT|OUT_OF_WINDOW",
+    "signal_expiry_contract.rule_1|LONG|IN_WINDOW",
+    "signal_expiry_contract.rule_1|LONG|OUT_OF_WINDOW",
+    "signal_expiry_contract.rule_2|LONG|IN_WINDOW",
+    "signal_expiry_contract.rule_2|LONG|OUT_OF_WINDOW",
+    "signal_expiry_contract.rule_2|SHORT|IN_WINDOW",
+    "targets_contract.geometry_guard|SHORT|IN_WINDOW",
+    "targets_contract.geometry_guard|SHORT|OUT_OF_WINDOW",
+    "invalidation_contract.INVALID_STOP_DISTANCE|LONG|IN_WINDOW",
+    "invalidation_contract.INVALID_STOP_DISTANCE|LONG|OUT_OF_WINDOW",
+    "invalidation_contract.INVALID_STOP_DISTANCE|SHORT|IN_WINDOW",
+    "invalidation_contract.INVALID_STOP_DISTANCE|SHORT|OUT_OF_WINDOW",
+    "stop_loss_contract.long|LONG|IN_WINDOW",
+    "targets_contract.tp1_tp2_min_tp2_r_multiple|LONG|IN_WINDOW",
+    "entry_timing_contract.actionable_event|LONG|IN_WINDOW"
+  ],
+  "raw_data_committed": false,
+  "rule_coverage": {
+    "context_contract.direction_permission.d1_confirmed_and_opposes_h1": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "context_contract.direction_permission.d1_unresolved": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 552,
+          "status": "EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 4512,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 444,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 3576,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "context_contract.direction_permission.h1_bearish": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 444,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 3576,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "SHORT"
+    },
+    "context_contract.direction_permission.h1_bullish": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 552,
+          "status": "EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 4512,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "scope": "LONG"
+    },
+    "context_contract.direction_permission.h1_unresolved": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 108,
+          "status": "EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 600,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 108,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 600,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "ANY"
+    },
+    "entry_timing_contract.actionable_event": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 12,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 24,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 56,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "invalidation_contract.INVALID_STOP_DISTANCE": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "liquidity_contract.completeness_rule": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 108,
+          "status": "EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 756,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 108,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 756,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "ANY"
+    },
+    "liquidity_contract.levels": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 1104,
+          "status": "EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 8688,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 1104,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 8688,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "ANY"
+    },
+    "m5_trigger_contract.mss.confirmation": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 36,
+          "status": "EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 164,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 48,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 189,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "m5_trigger_contract.retest": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 36,
+          "status": "EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 163,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 24,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 56,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "m5_trigger_contract.sweep.direction_gate": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 337,
+          "status": "EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 2312,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 228,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 1097,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "m5_trigger_contract.sweep.dual_side_candle": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "m5_trigger_contract.sweep.long_candidate": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 36,
+          "status": "EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 218,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "scope": "LONG"
+    },
+    "m5_trigger_contract.sweep.short_candidate": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 140,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 462,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "SHORT"
+    },
+    "signal_expiry_contract.rule_1": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 24,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 132,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "signal_expiry_contract.rule_2": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 2,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "stop_loss_contract.long": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 12,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "scope": "LONG"
+    },
+    "stop_loss_contract.short": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_APPLICABLE"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 24,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 56,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "SHORT"
+    },
+    "targets_contract.geometry_guard": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 36,
+          "status": "EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 151,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    },
+    "targets_contract.tp1_tp2_min_tp2_r_multiple": {
+      "cells": {
+        "LONG|IN_WINDOW": {
+          "scans": 0,
+          "status": "NOT_EXERCISED"
+        },
+        "LONG|OUT_OF_WINDOW": {
+          "scans": 12,
+          "status": "EXERCISED"
+        },
+        "SHORT|IN_WINDOW": {
+          "scans": 24,
+          "status": "EXERCISED"
+        },
+        "SHORT|OUT_OF_WINDOW": {
+          "scans": 56,
+          "status": "EXERCISED"
+        }
+      },
+      "scope": "BOTH"
+    }
+  },
+  "scans": 10656,
+  "sources": [
+    {
+      "contract_symbol_used": "BTCUSD",
+      "days_scanned": [
+        "2017-11-06",
+        "2017-11-07",
+        "2017-11-08",
+        "2017-11-09",
+        "2017-11-10",
+        "2017-11-11",
+        "2017-11-12",
+        "2017-11-13"
+      ],
+      "exercised_cells": 30,
+      "first_bar_utc": "2017-11-04T23:00:00+00:00",
+      "id": "BINANCE_1M_DERIVED",
+      "interval": "1m",
+      "last_bar_utc": "2017-11-14T22:55:00+00:00",
+      "pair": "UNITTEST/BTC (alt/BTC)",
+      "scan_results": {
+        "ENTRY_VALID": 80,
+        "REFERENCE_INCOMPLETE": 288,
+        "SIGNAL_ENTRY_WINDOW_PASSED": 156,
+        "WAITING_MSS": 1,
+        "WAITING_RETEST": 1,
+        "WAITING_SWEEP": 1778
+      },
+      "scans": 2304,
+      "sha256": "8471f9f9bb972f9398c3183d7b7cfe43773b717b54a3ce19194b55918b5615e4",
+      "url": "https://api.github.com/repos/freqtrade/freqtrade/contents/tests/testdata/UNITTEST_BTC-1m.json?ref=9a2f03a6bf8408f155591304c78aab20ca5c44cc",
+      "venue": "BINANCE_SPOT"
+    },
+    {
+      "contract_symbol_used": "BTCUSD",
+      "days_scanned": [
+        "2025-11-24",
+        "2025-11-25",
+        "2025-11-26",
+        "2025-11-27",
+        "2025-11-28",
+        "2025-11-29",
+        "2025-11-30",
+        "2025-12-01",
+        "2025-12-02",
+        "2025-12-03"
+      ],
+      "exercised_cells": 19,
+      "first_bar_utc": "2025-11-24T00:00:00+00:00",
+      "id": "BINANCE_BTCUSDT_5M",
+      "interval": "5m",
+      "last_bar_utc": "2025-12-04T18:45:00+00:00",
+      "pair": "BTC/USDT",
+      "scan_results": {
+        "NO_TRADE_DIRECTION": 504,
+        "REFERENCE_INCOMPLETE": 288,
+        "WAITING_MSS": 6,
+        "WAITING_SWEEP": 2082
+      },
+      "scans": 2880,
+      "sha256": "38f89dd1e8a116e5f451e24f7022e1213ab17336da98ef9abc1c38f9bf1850cc",
+      "url": "https://api.github.com/repos/freqtrade/freqtrade/contents/tests/testdata/BTC_USDT-5m.feather?ref=9a2f03a6bf8408f155591304c78aab20ca5c44cc",
+      "venue": "BINANCE_SPOT"
+    },
+    {
+      "contract_symbol_used": "ETHUSD",
+      "days_scanned": [
+        "2018-01-11",
+        "2018-01-12",
+        "2018-01-13",
+        "2018-01-14",
+        "2018-01-15",
+        "2018-01-16",
+        "2018-01-17",
+        "2018-01-18",
+        "2018-01-19",
+        "2018-01-20",
+        "2018-01-21",
+        "2018-01-22",
+        "2018-01-23",
+        "2018-01-24",
+        "2018-01-25",
+        "2018-01-26",
+        "2018-01-27",
+        "2018-01-28",
+        "2018-01-29"
+      ],
+      "exercised_cells": 32,
+      "first_bar_utc": "2018-01-10T04:55:00+00:00",
+      "id": "BINANCE_ETHBTC_5M",
+      "interval": "5m",
+      "last_bar_utc": "2018-01-30T04:50:00+00:00",
+      "pair": "ETH/BTC",
+      "scan_results": {
+        "ENTRY_VALID": 12,
+        "NO_TRADE_DIRECTION": 204,
+        "NO_TRADE_TARGET_GEOMETRY": 187,
+        "REFERENCE_INCOMPLETE": 288,
+        "WAITING_MSS": 412,
+        "WAITING_RETEST": 1,
+        "WAITING_SWEEP": 4368
+      },
+      "scans": 5472,
+      "sha256": "f9c807156e870d73d57fa48493ebe38a1a9afc0cc379893888eb7dd07c0c5667",
+      "url": "https://api.github.com/repos/freqtrade/freqtrade/contents/tests/testdata/ETH_BTC-5m.feather?ref=9a2f03a6bf8408f155591304c78aab20ca5c44cc",
+      "venue": "BINANCE_SPOT"
+    }
+  ]
+}

@@ -5476,7 +5476,7 @@
     }
   ],
   "gaps": {
-    "commission_R": "commission_R is null for every case: VT crypto CFD commission was not captured (no allowed read-only call exposes it). Explicit gap, never 0."
+    "commission_R": "raw capture has no commission field; OD1011-COMMISSION supplies effective commission_R=0 only when its authoritative policy block and captured VTMarkets-Demo server/source match; otherwise L5 is INSUFFICIENT(commission)."
   },
   "files": {
     "../../manual_ticket/BTCUSD_M15_recorded.csv": "f0f8bd079806a9f732443b642c308f4fbc8c6429be8786cba9a121f0797e8efa",
@@ -5490,7 +5490,7 @@
     "BTCUSD_m1_meta.csv": "ef97c70b81219302f73ee93b8ee7dc44bc1764983f9fed23ab7d20a8130f6739",
     "BTCUSD_m5.csv": "b1f6594523f4589415585909230c134d817b2e9b74d0098e39640aa2104a7c34",
     "BTCUSD_m5_meta.csv": "d53301827d23f619b163f42dc54a988a443e4f01599abca2ef690ac8dc291e6b",
-    "BTCUSD_provenance.json": "7ed519cd409338b62936c92a0773a15365d0e71a279f8aaac63f6ca3c2456216",
+    "BTCUSD_provenance.json": "eca69fd3212b2cc3d6a915e90b2b910d0e6a96f4de78c0cb32e47608d9ccce28",
     "ETHUSD_d1.csv": "a958988c74b3086b6f424865915224f7476637b5c174628d98195188d15b3834",
     "ETHUSD_d1_meta.csv": "5b03491a8282f388cf53f1f09f380d6e3610e40f70291555f5890c4bb987e911",
     "ETHUSD_h1.csv": "be15612750bfec64ddfd560ab9f18480f6a60132abe5f0cc829f7cb84b94d65c",
@@ -5500,7 +5500,7 @@
     "ETHUSD_m1_meta.csv": "e45e2e748267d786566a4060f4b13d01b662b859efbd4ae1c38595ab1d4ba4ce",
     "ETHUSD_m5.csv": "a09054aaaca244f001d635a49f50d55c8216922516dff7c442087657a23c2a20",
     "ETHUSD_m5_meta.csv": "5b4296775cd04b4ad35340ef2787eab29acd3e85235c6f2b7675fce86f18837d",
-    "ETHUSD_provenance.json": "12c7da35186ff6d34878b77f5c0260db6d0e3a84a63a6d0b2421fcbf04f774ed",
+    "ETHUSD_provenance.json": "7435aadcf301f642270314e11e940eede9dfbaeaeeb20805a8c5bdd42cd432ef",
     "capture_report.json": "c3e3cbf2bceaa51350e78598e6b5a97b7ecd7b3cdd870c33d80d5a6b9a714df2"
   }
 }
