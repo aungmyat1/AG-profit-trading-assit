@@ -77,7 +77,7 @@ from strategy_engine.sweep_retest.retest import ENTRY_TTL_M5_BARS  # noqa: E402
 from strategy_engine.sweep_retest.targets import MIN_TP2_R_MULTIPLE  # noqa: E402
 from ticket_delivery.renderer import payload_hash  # noqa: E402
 from v1_tickets import crypto_cfd, manual_ticket  # noqa: E402
-from v1_tickets.authority import logic_identity  # noqa: E402
+from v1_tickets.authority import ADAPTERS, _sha256_text, logic_identity  # noqa: E402
 from v1_tickets.crypto_cfd_policy import load_ticket_policy  # noqa: E402
 from v1_tickets.logic_gate import (  # noqa: E402
     FAIL,
@@ -93,6 +93,8 @@ STEP = {"D1": dt.timedelta(days=1), "H1": dt.timedelta(hours=1), "M15": dt.timed
         "M5": dt.timedelta(minutes=5)}
 M5 = STEP["M5"]
 SIGNAL_TTL = M5 + dt.timedelta(minutes=15)   # manual_ticket.build_crypto_cfd_manual_ticket valid_until
+C15_VERSION = "1.1.0"
+C15_CONTRACT_YAML = "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml"
 MANIFEST = RECORDED / "manifest.json"
 REGISTRY = ROOT / "strategies/registry.yaml"
 ARTIFACTS = ROOT / "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0_0"
@@ -358,7 +360,7 @@ def branch_verdict(r: dict, proof: Dict[str, Dict[str, str]], side: str) -> dict
 
 # Owner ruling 2026-10-11 (AGP-LANE-B3, option A): direction permission is re-checked on every scan (frozen
 # rules 1.0.0). The replay records signal events append-only and L3 compares the event log, not the scan.
-EVENT_TYPES = ("EMIT", "WITHDRAW", "EXPIRE", "REISSUE")
+EVENT_TYPES = ("EMIT", "WITHDRAWN", "EXPIRE", "REISSUE", "FILL")
 # Signal-expiry window of an emitted signal = the ticket freshness rule already in
 # manual_ticket.build_crypto_cfd_manual_ticket: SIGNAL_STALE once now > retest open + M5 + 15 min
 # (valid_until). SIGNAL_TTL above mirrors it; no new time arithmetic.
@@ -373,49 +375,98 @@ def _retest_at(sem: dict) -> dt.datetime:
     return dt.datetime.fromisoformat(sem["retest"]["candle_time_utc"])
 
 
-def signal_events(stream: Sequence[tuple]) -> List[dict]:
-    """Append-only signal event log over the chronological scan stream [(now, semantic)].
+def signal_events(stream: Sequence[tuple], fill_events: Sequence[tuple] = ()) -> List[dict]:
+    """Append-only signal event log over chronological scans and optional fills.
 
-    A signal is one ENTRY_VALID payload (sweep, MSS, retest, plan). EMIT = first appearance; WITHDRAW = an
-    active signal is no longer returned (reason = the scan result, or SUPERSEDED); EXPIRE = an active signal
-    passes its expiry window (SIGNAL_STALE) or the UTC day rotates (signal_expiry rule_2); REISSUE = a signal
-    seen before is returned again after it stopped being active. EMIT/REISSUE carry freshness: FRESH when
-    now <= retest open + SIGNAL_TTL, else EXPIRED (never actionable; it never becomes active). An expired
-    signal the engine keeps returning on consecutive scans is a continuation, not a new event."""
-    events: List[dict] = []
+    Direction permission is re-evaluated by each scan. A changed/invalidated active
+    unfilled signal appends WITHDRAWN; a filled signal can never be withdrawn.
+    Duplicate event retries are idempotent through the research ledger event id.
+    """
+    from research_external.oracles.crypto_signal_ledger import SignalEventLedger
+
+    ledger = SignalEventLedger()
     state: Dict[str, str] = {}
     sems: Dict[str, dict] = {}
     active: Optional[str] = None
     last: Optional[str] = None
+    fills = list(fill_events)
+    if any(a[0] > b[0] for a, b in zip(fills, fills[1:])):
+        raise ValueError("out-of-order fill events")
+    normalized_stream = []
+    seen_scans: Dict[dt.datetime, str] = {}
+    last_scan_time: Optional[dt.datetime] = None
+    for scan_time, scan_semantic in stream:
+        if last_scan_time is not None and scan_time < last_scan_time:
+            raise ValueError("out-of-order scan events")
+        fingerprint = _signal_key(scan_semantic)
+        if scan_time in seen_scans:
+            if seen_scans[scan_time] != fingerprint:
+                raise ValueError("conflicting duplicate scan event")
+            continue
+        seen_scans[scan_time] = fingerprint
+        normalized_stream.append((scan_time, scan_semantic))
+        last_scan_time = scan_time
+    stream = normalized_stream
+    fill_index = 0
 
     def add(kind: str, now: dt.datetime, key: str, reason: str, freshness: Optional[str] = None) -> None:
         sem = sems[key]
-        ev = {"seq": len(events), "type": kind, "bar_close_utc": now.isoformat(),
-              "retest_candle_time_utc": sem["retest"]["candle_time_utc"],
-              "direction": sem["target_plan"]["direction"],
-              "signal_id": hashlib.sha256(key.encode()).hexdigest()[:16], "reason": reason}
+        fields = {"retest_candle_time_utc": sem["retest"]["candle_time_utc"],
+                  "direction": sem["target_plan"]["direction"]}
         if freshness is not None:
-            ev["freshness"] = freshness
-        events.append(ev)
+            fields["freshness"] = freshness
+        sid = hashlib.sha256(key.encode()).hexdigest()[:16]
+        ledger.append(kind, now, sid, reason, **fields)
 
     for now, sem in stream:
+        while fill_index < len(fills) and fills[fill_index][0] <= now:
+            fill_at, fill_sem = fills[fill_index]
+            fill_key = _signal_key(fill_sem)
+            sems.setdefault(fill_key, fill_sem)
+            sid = hashlib.sha256(fill_key.encode()).hexdigest()[:16]
+            if state.get(fill_key) != "ACTIVE":
+                raise ValueError("fill does not reference an active signal")
+            ledger.append("FILL", fill_at, sid, "FILL_RECORDED",
+                          retest_candle_time_utc=fill_sem["retest"]["candle_time_utc"],
+                          direction=fill_sem["target_plan"]["direction"])
+            state[fill_key] = "FILLED"
+            fill_index += 1
+
         if active is not None:
             retest = _retest_at(sems[active])
             if now > retest + SIGNAL_TTL or now.date() != retest.date():
-                add("EXPIRE", now, active, "SIGNAL_STALE" if now > retest + SIGNAL_TTL else "UTC_DAY_ROTATION")
-                state[active], active = "EXPIRED", None
+                if state.get(active) != "FILLED":
+                    add("EXPIRE", now, active, "SIGNAL_STALE" if now > retest + SIGNAL_TTL else "UTC_DAY_ROTATION")
+                    state[active] = "EXPIRED"
+                active = None
         key = _signal_key(sem) if sem["result"] == "ENTRY_VALID" else None
         if active is not None and key != active:
-            add("WITHDRAW", now, active, sem["result"] if key is None else "SUPERSEDED")
-            state[active], active = "WITHDRAWN", None
-        if key is not None and active is None and not (key == last and state.get(key) == "EXPIRED"):
+            if state.get(active) != "FILLED":
+                add("WITHDRAWN", now, active, sem["result"] if key is None else "SUPERSEDED")
+                state[active] = "WITHDRAWN"
+            active = None
+        if key is not None and active is None and state.get(key) != "FILLED" \
+                and not (key == last and state.get(key) == "EXPIRED"):
             sems.setdefault(key, sem)
             fresh = now <= _retest_at(sem) + SIGNAL_TTL
             add("REISSUE" if key in state else "EMIT", now, key, sem["result"], "FRESH" if fresh else "EXPIRED")
             state[key] = "ACTIVE" if fresh else "EXPIRED"
             active = key if fresh else None
         last = key
-    return events
+
+    while fill_index < len(fills):
+        fill_at, fill_sem = fills[fill_index]
+        fill_key = _signal_key(fill_sem)
+        sems.setdefault(fill_key, fill_sem)
+        sid = hashlib.sha256(fill_key.encode()).hexdigest()[:16]
+        if state.get(fill_key) != "ACTIVE":
+            raise ValueError("fill does not reference an active signal")
+        ledger.append("FILL", fill_at, sid, "FILL_RECORDED",
+                      retest_candle_time_utc=fill_sem["retest"]["candle_time_utc"],
+                      direction=fill_sem["target_plan"]["direction"])
+        state[fill_key] = "FILLED"
+        fill_index += 1
+    return ledger.snapshot()
 
 
 def _diff_events(expected: List[dict], got: List[dict], kind: str) -> List[dict]:
@@ -498,7 +549,7 @@ def l5_od1011(spread: float, risk: Optional[float], ticket: dict, policy: dict, 
     blocks, warns, _, _ = manual_ticket.crypto_cfd_cost_gate(risk, spread, binding["value"], policy)
     pct, cost = spread / risk * 100, spread / risk + binding["value"]      # independent re-derivation
     expected = ({"SPREAD_TOO_WIDE"} if pct > policy["spread_block_pct"] else
-                {"SPREAD_WARN"} if pct > policy["spread_ok_pct"] else set())
+                {"SPREAD_WARN"} if pct >= policy["spread_ok_pct"] else set())
     expected |= ({"COST_TOO_HIGH"} if cost >= policy["cost_block_R"] else
                  {"COST_WARN"} if cost >= policy["cost_warn_R"] else set())
     gate = set(blocks) | set(warns)
@@ -531,14 +582,32 @@ def envelope(stream: str, case_id: str, symbol: str, now: dt.datetime, ticket: d
 
 # ------------------------------------------------------------------------------- run
 
+def research_logic_identity(version: str) -> Optional[dict]:
+    """Identity for the research-only lifecycle candidate; never registry admission."""
+    if version == CONTRACT_VERSION:
+        return logic_identity(CONTRACT_ID, version)
+    if version != C15_VERSION:
+        return None
+    contract_path = ROOT / C15_CONTRACT_YAML
+    engine_files = (*ADAPTERS[CONTRACT_ID][1], "scripts/ccfd_sweep_retest_replay.py",
+                    "research_external/oracles/crypto_signal_ledger.py")
+    parts = {"strategy_id": CONTRACT_ID, "strategy_version": version,
+             "engine_identity": _sha256_text(engine_files, ROOT),
+             "contract_hash": hashlib.sha256(contract_path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()}
+    parts["digest"] = hashlib.sha256(json.dumps(parts, sort_keys=True).encode()).hexdigest()
+    return parts
+
+
 def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.date], cfg, spec: dict,
-               policy: dict, balance: Optional[float], commission_binding: Optional[dict] = None) -> dict:
+               policy: dict, balance: Optional[float], commission_binding: Optional[dict] = None,
+               strategy_version: str = CONTRACT_VERSION) -> dict:
     mism = Counter()
     dfail: Dict[str, Counter] = {}       # per UTC day: failed checks by gate (L1..L6)
 
     def bump(t: dt.datetime, gate: str, failed: bool = True) -> None:
         dfail.setdefault(t.date().isoformat(), Counter())[gate] += int(failed)
     tickets, cycle_l1 = [], []
+    cycle_l1_by_window: Dict[str, list[str]] = {"WEEKDAY": [], "WEEKEND": []}
     counts: Dict[str, int] = {}
     for case in cases:                                    # live-cycle tickets (manifest cases)
         now = dt.datetime.fromisoformat(case["now"])
@@ -548,7 +617,9 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
         ticket = crypto_cfd.build_crypto_cfd_cycle(symbol, now, feed=feed, balance=balance)
         counts = counts or dict(feed.requests)
         x = closed_inputs(data, now, dict(feed.requests)) if feed.requests else {"M5": []}
-        cycle_l1.append(l1_determinism(build, x["M5"], now, bar=M5)["status"])
+        cycle_status = l1_determinism(build, x["M5"], now, bar=M5)["status"]
+        cycle_l1.append(cycle_status)
+        cycle_l1_by_window.setdefault(case["window"], []).append(cycle_status)
         bid, ask, quote_time = ReplayFeed(data, now).quote("")
         mism["manifest_parity"] += (ticket["cycle"] != case["window"] or quote_time.isoformat() != case["quote_time"]
                                     or round(ask - bid, 2) != case["spread"])
@@ -692,8 +763,8 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
                              "ticket_reason_codes": ticket["reason_codes"], "check": PASS if ok else FAIL})
     mism["ticket_determinism"] = sum(s != PASS for s in cycle_l1)
 
-    identity = logic_identity(CONTRACT_ID, CONTRACT_VERSION)
-    spec_ok = (spec["strategy_id"] == CONTRACT_ID and str(spec["version"]) == CONTRACT_VERSION
+    identity = research_logic_identity(strategy_version)
+    spec_ok = (spec["strategy_id"] == CONTRACT_ID and str(spec["version"]) == strategy_version
                and spec["targets_contract"]["tp1_volume_pct"] == TP1_VOLUME_PCT
                and spec["targets_contract"]["min_tp2_r_multiple"] == MIN_TP2_R_MULTIPLE
                and str(spec["m5_trigger_contract"]["retest"]["max_bars_after_mss"]).startswith(f"{ENTRY_TTL_M5_BARS} ")
@@ -754,7 +825,8 @@ def run_symbol(symbol: str, data: dict, cases: List[dict], days: Sequence[dt.dat
                           "l4_failures": l4_bad[:20], "l4_reject_failures": l4_neg_bad[:20],
                           "l3_sequence_failures": l3_seq_bad,
                           "l5_od1011": l5, "l5_advisory_cost_gates": l5_adv, "l6": l6,
-                          "cycle_ticket_l1": dict(Counter(cycle_l1))},
+                          "cycle_ticket_l1": dict(Counter(cycle_l1)),
+                          "cycle_ticket_l1_by_window": {k: dict(Counter(v)) for k, v in cycle_l1_by_window.items()}},
         "signal_events": events, "mismatches": dict(sorted(mism.items())),
         "rule_coverage": coverage_matrix(hits),
         "tickets": tickets,
@@ -774,15 +846,57 @@ def all_checks_pass(r: dict) -> bool:
     return all(g[k] == PASS for k in ("L1", "L2", "L3", "L4", "L5", "L6")) and mismatch_free(r)
 
 
+def scoped_window_gates(symbol_run: dict) -> dict:
+    """Aggregate independently by weekday/weekend data windows, preserving INSUFFICIENT."""
+    out = {}
+    for window in ("WEEKDAY", "WEEKEND"):
+        rows = [row for row in symbol_run["per_day"].values() if row["day_type"] == window]
+        positives = any(row["results"].get("ENTRY_VALID", 0) > 0 for row in rows)
+        emissions = [row for row in symbol_run["emissions"] if row["day_type"] == window]
+        gates: dict[str, str] = {}
+        for gate in ("L1", "L2", "L3", "L4", "L6"):
+            statuses = [row[gate] for row in rows]
+            if gate in ("L2", "L4") and not positives:
+                gates[gate] = INSUFFICIENT
+            elif gate == "L6" and not emissions:
+                gates[gate] = INSUFFICIENT
+            elif any(status == FAIL for status in statuses):
+                gates[gate] = FAIL
+            else:
+                gates[gate] = PASS if statuses else INSUFFICIENT
+        cycle = symbol_run["gate_evidence"]["cycle_ticket_l1_by_window"].get(window, {})
+        if cycle.get(FAIL, 0) or gates["L1"] == FAIL:
+            gates["L1"] = FAIL
+        elif not cycle and not rows:
+            gates["L1"] = INSUFFICIENT
+        if not emissions:
+            gates["L5"] = INSUFFICIENT
+        elif any(row["l5"] == FAIL for row in emissions):
+            gates["L5"] = FAIL
+        elif all(row["l5"] == PASS for row in emissions):
+            gates["L5"] = PASS
+        else:
+            gates["L5"] = INSUFFICIENT
+        out[window] = {"gates": gates, "calendar_days": len(rows),
+                       "entry_valid_scans": sum(row["results"].get("ENTRY_VALID", 0) for row in rows),
+                       "emissions": len(emissions), "cycle_ticket_l1": cycle,
+                       "blockers": [f"{name}:{status}" for name, status in gates.items()
+                                    if status in (FAIL, INSUFFICIENT)]}
+    return out
+
+
 def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequence[dt.date]] = None,
-          balance: Optional[float] = None, dataset: str = "recorded") -> dict:
+          balance: Optional[float] = None, dataset: str = "recorded",
+          strategy_version: str = CONTRACT_VERSION) -> dict:
     base = DATASETS[dataset][0]
     manifest_path = base / "manifest.json"
     manifest = verify(manifest_path)         # every listed sha256, else SystemExit before any replay
     registry_before = REGISTRY.read_bytes()
-    spec = yaml.safe_load((ROOT / CONTRACT_YAML).read_text(encoding="utf-8"))
+    contract_path = C15_CONTRACT_YAML if strategy_version == C15_VERSION else CONTRACT_YAML
+    spec = yaml.safe_load((ROOT / contract_path).read_text(encoding="utf-8"))
     cfg, policy = load_market_structure_config(), load_ticket_policy()
     out: Dict[str, Any] = {}
+    provenance_by_symbol: Dict[str, dict] = {}
     for symbol in symbols:
         data = load_symbol(symbol, base)
         all_days = sorted({c.time.date() for c in data["bars"]["M5"]})
@@ -790,11 +904,12 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
         cases = [c for c in manifest["cases"] if c["symbol"] == symbol
                  and (days is None or dt.datetime.fromisoformat(c["now"]).date() in days)]
         provenance = json.loads((base / f"{symbol}_provenance.json").read_text(encoding="utf-8"))
+        provenance_by_symbol[symbol] = provenance
         out[symbol] = run_symbol(symbol, data, cases, run_days, cfg, spec, policy, balance,
-                                 commission_binding(provenance))
+                                 commission_binding(provenance), strategy_version=strategy_version)
     registry = yaml.safe_load(registry_before)["strategies"][CONTRACT_ID]
     tickets = [t for s in out.values() for t in s.pop("tickets")]
-    identity = logic_identity(CONTRACT_ID, CONTRACT_VERSION)
+    identity = research_logic_identity(strategy_version)
     summary = Counter((t["stream"], t["symbol"], t["day_type"], t["ticket"]["decision"], t["spread_band"])
                       for t in tickets)
     first = out[symbols[0]]
@@ -807,7 +922,7 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
                           "branches": {b: branch_verdict(r, proven[sym], b) for b in BRANCHES}}
                     for sym, r in out.items()}
     rule_coverage = {
-        "rule_ids_source": CONTRACT_YAML, "dimensions": "rule_id x LONG/SHORT x IN_WINDOW/OUT_OF_WINDOW",
+        "rule_ids_source": contract_path, "dimensions": "rule_id x LONG/SHORT x IN_WINDOW/OUT_OF_WINDOW",
         "window_definition": "IN_WINDOW = scan instant inside a v1_tickets crypto window (crypto_cfd._window: "
                              "WEEKDAY 09:00-12:00 America/New_York Mon-Fri, WEEKEND 21:00-23:00 UTC Sat/Sun)",
         "vt": vt_cov, "vt_not_exercised": vt_gaps,
@@ -827,7 +942,8 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
                             if st in ("NOT_EXERCISED", "COVERAGE_ONLY_EXERCISED")] for sym, m in proven.items()},
     }
     return {
-        "schema": "AG_CCFD_V100_REPLAY_V1", "mission": "AGP-LANE-B3", "date": date,
+        "schema": "AG_C15_CRYPTO_REPLAY_V1" if strategy_version == C15_VERSION else "AG_CCFD_V100_REPLAY_V1",
+        "mission": "C15-CRYPTO" if strategy_version == C15_VERSION else "AGP-LANE-B3", "date": date,
         "owner_rulings": {"L3": "2026-10-11 option A: permission re-checked every scan (rules 1.0.0 frozen); L3 = "
                                 "append-only signal event-log prefix invariance",
                           "L5": "OD1011-L5 with OD1011-COMMISSION (PR #149)", "scope": "OD1011-SCOPE per symbol x branch",
@@ -836,16 +952,30 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
         "policy_conformance_note": "crypto spread band boundary: exactly 10% of stop is OK (owner bands 2026-10-09)",
         "engine_entry_point": "crypto_cfd_contract.evaluate (guard.evaluate: open-bar guard over frozen rules.evaluate)",
         "rule_coverage": rule_coverage,
-        "strategy": f"{CONTRACT_ID}@{CONTRACT_VERSION}", "contract_path": CONTRACT_YAML,
-        "contract_sha256": hashlib.sha256((ROOT / CONTRACT_YAML).read_bytes()).hexdigest(),
+        "strategy": f"{CONTRACT_ID}@{strategy_version}", "contract_path": contract_path,
+        "frozen_rule_base_version": CONTRACT_VERSION,
+        "contract_sha256": hashlib.sha256((ROOT / contract_path).read_bytes()).hexdigest(),
         "dataset": {"id": dataset, "manifest": str(manifest_path.relative_to(ROOT)),
                     "manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
                     "file_hashes_verified": True, "source": manifest["source"], "gaps": manifest["gaps"]},
+        "dataset_identity": {sym: {"provenance_sha256": hashlib.sha256((base / f"{sym}_provenance.json").read_bytes()).hexdigest(),
+                                    "sha256": provenance_by_symbol[sym]["sha256"],
+                                    "captured_at_utc": provenance_by_symbol[sym]["captured_at_utc"],
+                                    "server": provenance_by_symbol[sym].get("server")} for sym in symbols},
+        "market_provenance": {sym: {
+            "source": provenance_by_symbol[sym]["source"], "server": provenance_by_symbol[sym].get("server"),
+            "point_size_price": 0.01, "digits": 2,
+            "spread_source": "VT M5 meta spread_price, quote from last closed M5 bar",
+            "timing": "UTC bar-open labels; evaluate at M5 close; open M5/M15/H1/D1 bars excluded using server close rule",
+            "server_utc_offset_hours": provenance_by_symbol[sym].get("server_utc_offset_hours"),
+            "missing_bars": provenance_by_symbol[sym].get("partial_days_m5_bars", {})
+        } for sym in symbols},
         "days_run": sorted(first["scan_results_by_day"]),
+        "scoped_window_gates": {sym: scoped_window_gates(out[sym]) for sym in symbols},
         "weekend_days": [d for d in first["scan_results_by_day"] if day_type(dt.date.fromisoformat(d)) == "WEEKEND"],
         "spread_policy": {k: policy[k] for k in ("spread_ok_pct", "spread_block_pct", "cost_warn_R", "cost_block_R")},
         "spread_band_scope": "ticket state only; no L1-L6 check reads the band",
-        "l3_source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
+        "l3_source": "C15 append-only signal event ledger with WITHDRAWN/FILL and prefix invariance",
         "balance": balance, "symbols": out, "logic_verification": verification,
         "ticket_summary": [dict(zip(("stream", "symbol", "day_type", "decision", "spread_band"), k), count=n)
                            for k, n in sorted(summary.items())],
@@ -877,12 +1007,17 @@ def main(argv: Optional[List[str]] = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--date", required=True)
     p.add_argument("--dataset", choices=sorted(DATASETS), default="recorded")
+    p.add_argument("--strategy-version", choices=(CONTRACT_VERSION, C15_VERSION), default=CONTRACT_VERSION)
     p.add_argument("--out-dir", type=Path, default=None)
     p.add_argument("--balance", type=float, default=None)
     p.add_argument("--symbols", nargs="+", default=list(INSTRUMENTS), choices=list(INSTRUMENTS))
     args = p.parse_args(argv)
-    report = build(args.date, symbols=tuple(args.symbols), balance=args.balance, dataset=args.dataset)
-    write(report, args.out_dir or DATASETS[args.dataset][1])
+    report = build(args.date, symbols=tuple(args.symbols), balance=args.balance, dataset=args.dataset,
+                   strategy_version=args.strategy_version)
+    default_out = (ROOT / "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/"
+                   / "vt_recorded_60d_2026-08-11_2026-10-09" if args.strategy_version == C15_VERSION
+                   else DATASETS[args.dataset][1])
+    write(report, args.out_dir or default_out)
     for s, r in report["symbols"].items():
         print(s, r["days"], "days", r["scans"], "scans", r["gates"], "mismatches", sum(r["mismatches"].values()))
     return 0

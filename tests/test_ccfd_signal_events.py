@@ -1,10 +1,12 @@
-"""AGP-LANE-B3 (owner ruling 2026-10-11, item 1): append-only signal event log (EMIT / WITHDRAW / EXPIRE /
+"""AGP-LANE-B3 (owner ruling 2026-10-11, item 1): append-only signal event log (EMIT / WITHDRAWN / EXPIRE /
 REISSUE) and the L3 event-log prefix-invariance check of the ST_CRYPTO_CFD_SWEEP_RETEST_V1 replay."""
 from __future__ import annotations
 
 import datetime as dt
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -60,7 +62,7 @@ def test_withdraw_inside_the_expiry_window_then_fresh_reissue():
          (at(11, 20), sig), (at(11, 25), sig)]
     ev = R.signal_events(s)
     assert [(e["type"], e["bar_close_utc"][11:16], e["reason"], e.get("freshness")) for e in ev] == [
-        ("EMIT", "11:00", "ENTRY_VALID", "FRESH"), ("WITHDRAW", "11:05", "NO_TRADE_DIRECTION", None),
+        ("EMIT", "11:00", "ENTRY_VALID", "FRESH"), ("WITHDRAWN", "11:05", "NO_TRADE_DIRECTION", None),
         ("REISSUE", "11:10", "ENTRY_VALID", "FRESH"), ("EXPIRE", "11:20", "SIGNAL_STALE", None)]
 
 
@@ -72,7 +74,7 @@ def test_superseded_signal_and_utc_day_rotation():
                                                      ("EMIT", "ENTRY_VALID")]
     s2 = [(at(10, 0), entry(at(9, 55))), (at(10, 5), entry(at(9, 55), entry_price=99.0))]
     ev2 = R.signal_events(s2)
-    assert [e["type"] for e in ev2] == ["EMIT", "WITHDRAW", "EMIT"] and ev2[1]["reason"] == "SUPERSEDED"
+    assert [e["type"] for e in ev2] == ["EMIT", "WITHDRAWN", "EMIT"] and ev2[1]["reason"] == "SUPERSEDED"
 
 
 def test_event_log_invariance_passes_for_a_causal_stream():
@@ -89,3 +91,52 @@ def test_event_log_invariance_flags_a_scan_that_changes_when_later_bars_are_adde
     out = R.event_log_invariance(s, leaked)
     assert out["verdict"] == "FAIL" and out["event_log_mismatches"] > 0
     assert any(k.startswith("FUTURE_BARS:") for k in out["mismatches_by_type"])
+
+
+def test_event_log_duplicate_retry_is_idempotent_and_restart_replays_state():
+    from research_external.oracles.crypto_signal_ledger import SignalEventLedger
+    ledger = SignalEventLedger()
+    first = ledger.append("EMIT", at(11), "signal-1", "ENTRY_VALID", freshness="FRESH")
+    assert ledger.append("EMIT", at(11), "signal-1", "ENTRY_VALID", freshness="FRESH") == first
+    assert len(ledger.snapshot()) == 1
+    restarted = SignalEventLedger.replay(ledger.snapshot())
+    assert restarted.state("signal-1") == "ACTIVE"
+    restarted.append("WITHDRAWN", at(11, 5), "signal-1", "NO_TRADE_DIRECTION")
+    assert [e["type"] for e in restarted.snapshot()] == ["EMIT", "WITHDRAWN"]
+
+
+def test_event_log_rejects_out_of_order_events():
+    from research_external.oracles.crypto_signal_ledger import EventOrderError, SignalEventLedger
+    ledger = SignalEventLedger()
+    ledger.append("EMIT", at(11), "signal-1", "ENTRY_VALID", freshness="FRESH")
+    with pytest.raises(EventOrderError, match="out-of-order"):
+        ledger.append("WITHDRAWN", at(10, 59), "signal-1", "NO_TRADE_DIRECTION")
+    with pytest.raises(ValueError, match="out-of-order scan"):
+        R.signal_events([(at(11), entry(at(10, 55))), (at(10, 59), wait())])
+
+
+def test_fill_then_invalidate_never_appends_withdrawn():
+    sig = entry(at(10, 55))
+    stream = [(at(11), sig), (at(11, 5), wait("NO_TRADE_DIRECTION"))]
+    events = R.signal_events(stream, fill_events=[(at(11, 2), sig)])
+    assert [e["type"] for e in events] == ["EMIT", "FILL"]
+    assert events[-1]["bar_close_utc"] == at(11, 2).isoformat()
+
+
+def test_duplicate_scan_retry_is_idempotent_and_conflicting_duplicate_rejected():
+    sig = entry(at(10, 55))
+    assert R.signal_events([(at(11), sig), (at(11), sig)]) == R.signal_events([(at(11), sig)])
+    with pytest.raises(ValueError, match="conflicting duplicate scan"):
+        R.signal_events([(at(11), sig), (at(11), entry(at(10, 55), entry_price=99.0))])
+
+
+def test_filled_signal_cannot_be_withdrawn_during_ledger_replay():
+    from research_external.oracles.crypto_signal_ledger import EventOrderError, SignalEventLedger
+    ledger = SignalEventLedger()
+    ledger.append("EMIT", at(11), "signal-1", "ENTRY_VALID", freshness="FRESH")
+    ledger.append("FILL", at(11, 2), "signal-1", "FILL_RECORDED")
+    with pytest.raises(EventOrderError, match="filled signal cannot be withdrawn"):
+        SignalEventLedger.replay(ledger.snapshot() + [{
+            "seq": 2, "event_id": "bad-event", "type": "WITHDRAWN",
+            "bar_close_utc": at(11, 5).isoformat(), "signal_id": "signal-1", "reason": "INVALIDATED",
+        }])

@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 import pytest
+import yaml
 
 from strategy_engine.session import Candle
 from v1_tickets.ccfd_logic_gate import verify_case
@@ -237,3 +238,28 @@ def test_positive_synthetic_l2_label_is_unchanged():
         assert symbol['state_counts']['ENTRY_VALID'] > 0
         assert symbol['gates']['L2'] == 'PASS'
         assert 'negative_conformance' not in symbol
+
+
+def test_spread_warning_boundary_is_inclusive_and_twenty_percent_is_warn():
+    import scripts.ccfd_sweep_retest_replay as replay
+    policy = load_ticket_policy()
+    binding = {"value": 0.0, "source": "OD1011-COMMISSION"}
+    for spread, expected in ((10.0, ["COST_WARN", "SPREAD_WARN"]),
+                             (20.0, ["COST_WARN", "SPREAD_WARN"]),
+                             (20.01, ["COST_WARN", "SPREAD_TOO_WIDE"])):
+        blocks, warnings, *_ = crypto_cfd_cost_gate(100.0, spread, 0.0, policy)
+        ticket = {"reason_codes": blocks, "warnings": warnings}
+        assert replay.l5_od1011(spread, 100.0, ticket, policy, binding)["status"] == "PASS"
+
+
+def test_c15_candidate_identity_is_separate_and_unadmitted():
+    import scripts.ccfd_sweep_retest_replay as replay
+    candidate = yaml.safe_load((ROOT / replay.C15_CONTRACT_YAML).read_text(encoding="utf-8"))
+    identity = replay.research_logic_identity("1.1.0")
+    registry = yaml.safe_load((ROOT / "strategies/registry.yaml").read_text(encoding="utf-8"))
+    old = registry["strategies"]["ST_CRYPTO_CFD_SWEEP_RETEST_V1"]["candidate_versions"]["1.0.0"]
+    assert candidate["version"] == "1.1.0" and identity["digest"]
+    assert old["logic_status"] == "STALE_IDENTITY"
+    assert "1.1.0" not in registry["strategies"]["ST_CRYPTO_CFD_SWEEP_RETEST_V1"]["candidate_versions"]
+    strategy = registry["strategies"]["ST_CRYPTO_CFD_SWEEP_RETEST_V1"]
+    assert strategy["active"] is False and strategy["demo_authorized"] is False and strategy["live_authorized"] is False
