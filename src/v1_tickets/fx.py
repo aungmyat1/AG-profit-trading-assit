@@ -37,9 +37,10 @@ from ticket_delivery.archive import (
     archive_cycle_decision,
 )
 from v1_tickets.guards import gate_ready
-from v1_tickets.ready_authority import SHADOW_INFO_ONLY, apply_ready_authority
+from v1_tickets.ready_authority import SHADOW_INFO_ONLY, apply_ready_authority, symbol_scope_verified
 
 STRATEGY_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
+SCOPED_CANDIDATE_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml"
 V1_FX_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
 V1_CYCLES = ("ASIAN_LONDON", "LONDON_NEWYORK")
 REFERENCE_NOT_READY = "REFERENCE_NOT_READY"   # evaluated before the reference window closed (lifecycle)
@@ -135,13 +136,22 @@ def build_fx_ticket(
     symbol: str, cycle: str, session_date: dt.date, session_candles: Sequence[Candle], expected_bar_count: int,
     post_session_candles: Sequence[Candle], *, data_source: str, evaluated_at: dt.datetime,
     data_close: Optional[dt.datetime] = None, spread: Optional[float] = None,
-    strategy_path: str = STRATEGY_PATH,
+    strategy_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     """`data_close`: close time of the latest live bar (None = no data-age gate); `spread`: live
-    ask - bid in price units (None = SPREAD_NOT_EVALUATED, no READY). `strategy_path`: offline
-    logic-gate replay of a registered candidate version only; runtime callers keep the default."""
+    ask - bid in price units (None = SPREAD_NOT_EVALUATED, no READY). Omitted `strategy_path` selects
+    the exact S1 candidate only for verified runtime scope; explicit paths support offline replay."""
     if symbol not in V1_FX_SYMBOLS or cycle not in V1_CYCLES:
         raise ValueError(f"{symbol}/{cycle} is not a V1 FX ticket cycle")
+    runtime_contract = strategy_path is None
+    strategy_path = strategy_path or STRATEGY_PATH
+    if runtime_contract:
+        candidate = load_strategy(SCOPED_CANDIDATE_PATH)
+        if symbol_scope_verified(candidate.strategy_id, candidate.version, symbol, cycle,
+                                 setup="SWEEP", branch="RANGE_SWEEP", contract_path=candidate.source_path):
+            strategy_path = SCOPED_CANDIDATE_PATH
+        else:
+            strategy_path = SCOPED_CANDIDATE_PATH
     strategy = load_strategy(strategy_path)
     base: Dict[str, Any] = {
         "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER", "strategy_id": strategy.strategy_id,
@@ -152,6 +162,11 @@ def build_fx_ticket(
         "signal_time_source": SIGNAL_TIME_NOT_APPLICABLE,
     }
     ref_end = session_windows_utc(session_date)[cycle]["ref"][1]
+    if runtime_contract and not symbol_scope_verified(strategy.strategy_id, strategy.version, symbol, cycle,
+                                                      setup="SWEEP", branch="RANGE_SWEEP",
+                                                      contract_path=strategy.source_path):
+        return {**base, "decision": "BLOCKED", "reason_code": "LOGIC_SCOPE_NOT_VERIFIED",
+                "detail": "strategy scope or identity is not verified"}
     if evaluated_at < ref_end:
         # Lifecycle, not a data fault: the reference box cannot be complete before its window
         # closes. Decided on the clock alone, so missing/corrupt bars after ref_end still reach
@@ -167,6 +182,9 @@ def build_fx_ticket(
               "regime": sig.regime, "setup": sig.setup, "signal_id": sig.signal_id,
               "box": {"high": _r(symbol, sig.box_high), "low": _r(symbol, sig.box_low), "mid": _r(symbol, sig.box_mid)},
               "signal_timestamp": sig.signal_timestamp.isoformat() if sig.signal_timestamp else None}
+    if runtime_contract and (sig.setup != "SWEEP" or sig.regime != "RANGE"):
+        return {**ticket, "decision": "BLOCKED", "reason_code": "LOGIC_SCOPE_NOT_VERIFIED",
+                "detail": f"emitted branch {sig.regime}_{sig.setup} is outside verified S1 scope"}
     if sig.status == "SIGNAL":
         ticket["signal_time_source"] = SIGNAL_TIME_ENGINE if sig.signal_timestamp else SIGNAL_TIME_MISSING
         long = sig.direction == "LONG"
