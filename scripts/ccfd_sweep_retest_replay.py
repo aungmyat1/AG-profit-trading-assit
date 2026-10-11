@@ -966,6 +966,10 @@ def build(date: str, symbols: Sequence[str] = INSTRUMENTS, days: Optional[Sequen
               {"all_checks_pass": all_checks_pass(r), "logic_identity": identity,
                "branches": {b: branch_verdict(r, proven[sym], b) for b in BRANCHES}})
         for sym, r in out.items()}
+    if strategy_version == C15_VERSION:
+        for result in out.values():
+            result.pop("gates", None)
+            result.pop("branches", None)
     rule_coverage = {
         "rule_ids_source": contract_path, "dimensions": "rule_id x LONG/SHORT x IN_WINDOW/OUT_OF_WINDOW",
         "window_definition": "IN_WINDOW = scan instant inside a v1_tickets crypto window (crypto_cfd._window: "
@@ -1084,7 +1088,10 @@ def main(argv: Optional[List[str]] = None) -> int:
                    else DATASETS[args.dataset][1])
     write(report, args.out_dir or default_out)
     for s, r in report["symbols"].items():
-        print(s, r["days"], "days", r["scans"], "scans", r["gates"], "mismatches", sum(r["mismatches"].values()))
+        summary = (report["logic_verification"][s]["scopes"] if args.strategy_version == C15_VERSION
+                   else r["gates"])
+        print(s, r["days"], "days", r["scans"], "scans", summary,
+              "mismatches", sum(r["mismatches"].values()))
     return 0
 
 
