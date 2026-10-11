@@ -1,7 +1,7 @@
 {
  "schema": "AG_HOST_S1_V1",
  "date": "2026-10-11",
- "host_repo": "D:/wp3-main-integ",
+ "host_repo": "<HOST_ROOT>",
  "host_head_sha": "deb85d0036ec648acc3504b84a8dd7d2ab5d298b",
  "host_update": "git pull --ff-only origin main (pull-only)",
  "broker_mutation": "NONE (no order_check/order_send/symbol_select/position calls)",
@@ -285,7 +285,7 @@
      "connection": {
       "terminal_connected": true,
       "account_attached": true,
-      "terminal_path": "C:\\Program Files\\MetaTrader 5"
+      "terminal_path": "<MT5_TERMINAL_DIR>"
      }
     },
     "broker_history_error": null,
@@ -293,7 +293,7 @@
     "observed_broker_order_calls": 0,
     "execution_paths": [
      {
-      "path": "D:/wp3-main-integ scheduled AG-V1 runners (scripts/host/*)",
+      "path": "<HOST_ROOT> scheduled AG-V1 runners (scripts/host/*)",
       "order_capable": false,
       "logged": true,
       "note": "no order/position call sites in host HEAD; tests/test_host_go_live_kit.py guards it"
@@ -339,9 +339,9 @@
    "install_tasks_whatif_exit_code": 0,
    "install_tasks_whatif_stdout": [
     "profile loaded in 922 ms",
-    "AG-V1-FX-Cycles: every 15 min from 00:01:00 daily -> \"D:\\wp3-main-integ\\.venv\\Scripts\\pythonw.exe\" \"D:\\wp3-main-integ\\scripts\\host\\live_candles_smoke.py\" --mode fx --canonical",
-    "AG-V1-Crypto-Daily: every 15 min from 00:02:30 daily -> \"D:\\wp3-main-integ\\.venv\\Scripts\\pythonw.exe\" \"D:\\wp3-main-integ\\scripts\\host\\live_candles_smoke.py\" --mode crypto",
-    "AG-V1-LSMC-Watch: every 5 min from 00:04:15 daily -> \"D:\\wp3-main-integ\\.venv\\Scripts\\pythonw.exe\" \"D:\\wp3-main-integ\\scripts\\host\\live_candles_smoke.py\" --mode lsmc",
+    "AG-V1-FX-Cycles: every 15 min from 00:01:00 daily -> <TASK_PYTHONW> <TASK_SCRIPT:scripts/host/live_candles_smoke.py> --mode fx --canonical",
+    "AG-V1-Crypto-Daily: every 15 min from 00:02:30 daily -> <TASK_PYTHONW> <TASK_SCRIPT:scripts/host/live_candles_smoke.py> --mode crypto",
+    "AG-V1-LSMC-Watch: every 5 min from 00:04:15 daily -> <TASK_PYTHONW> <TASK_SCRIPT:scripts/host/live_candles_smoke.py> --mode lsmc",
     "=== HOST TASK DECLARATIONS vs REGISTERED (MMT, UTC+06:30; 17 declared; -Apply acts only on INSTALLER/RETIRE) ===",
     "\\AG-V1-FX-Cycles [INSTALLER/ACTIVE] CHANGE Exe: REDACTED (host path not committed); Args: REDACTED (host path not committed)",
     "\\AG-V1-Crypto-Daily [INSTALLER/ACTIVE] CHANGE Exe: REDACTED (host path not committed); Args: REDACTED (host path not committed); Start: 00:02:00 -> 00:02:30",
@@ -391,5 +391,25 @@
    "status": "NOT_EVALUATED",
    "reason": "Precondition unmet: M2 PR not merged (likely #142, OPEN at 2026-10-11T06:45Z); next Asian->London window not yet reached. No S1 run, no Telegram message id."
   }
+ },
+ "redactions": {
+  "ruling": "owner 2026-10-11: host paths -> <HOST_ROOT>, terminal/task paths -> placeholders (edited in-PR after capture)",
+  "applied": [
+   {
+    "placeholder": "<TASK_PYTHONW> <TASK_SCRIPT:scripts/host/live_candles_smoke.py>",
+    "kind": "task action path",
+    "occurrences": 3
+   },
+   {
+    "placeholder": "<MT5_TERMINAL_DIR>",
+    "kind": "terminal path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<HOST_ROOT>",
+    "kind": "host path (live runtime tree)",
+    "occurrences": 2
+   }
+  ]
  }
 }
