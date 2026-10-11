@@ -139,9 +139,11 @@ def run(symbol: str, limit: int | None = None) -> dict:
     if limit:
         scan_idx = scan_idx[:limit]
 
-    gate_counts = {g: Counter() for g in ("L1", "L2", "L3", "L4", "L5", "L6")}
-    states = {"signal": Counter(), "operational": Counter()}
-    reasons_operational = Counter()
+    windows = ("full_d1", "short_d1")
+    gate_counts = {w: {g: Counter() for g in ("L1", "L2", "L3", "L4", "L5", "L6")} for w in windows}
+    states = {w: {"signal": Counter(), "operational": Counter()} for w in windows}
+    reasons_operational = {w: Counter() for w in windows}
+    scan_counts = Counter()
     failures, opportunities, d1_short = [], {}, 0
     snaps = {"signal": [], "operational": []}
     for i in scan_idx:
@@ -151,17 +153,19 @@ def run(symbol: str, limit: int | None = None) -> dict:
                 "D1": window(bars, times, "D1", now), "H1": window(bars, times, "H1", now),
                 "M5": window(bars, times, "M5", now)}
         d1_short += len(case["D1"]) < HOST_COUNTS["D1"]
+        cls = "full_d1" if len(case["D1"]) >= HOST_COUNTS["D1"] else "short_d1"
+        scan_counts[cls] += 1
         W.gate_opportunity = REAL_GATE
         op = W.evaluate_snapshot(symbol, case["D1"], case["H1"], case["M5"], now)
-        states["operational"][op.state] += 1
+        states[cls]["operational"][op.state] += 1
         if op.state == "REJECTED":
-            reasons_operational[op.reason_codes[0]] += 1
+            reasons_operational[cls][op.reason_codes[0]] += 1
         snaps["operational"].append(op)
         W.gate_opportunity = lambda snap, price: snap
         res = G.evaluate_case(spec, case)
         snap = W.evaluate_snapshot(symbol, case["D1"], case["H1"], case["M5"], now)
         snaps["signal"].append(snap)
-        states["signal"][res["state"]] += 1
+        states[cls]["signal"][res["state"]] += 1
         if res["state"] == "OPPORTUNITY":
             res["gates"]["L5"] = l5_evidence(snap.opportunity, now, spread, host_spread)
             res["gate_status"]["L5"] = res["gates"]["L5"]["status"]
@@ -171,11 +175,11 @@ def run(symbol: str, limit: int | None = None) -> dict:
                 "first_seen": now.isoformat(), "direction": o["direction"], "entry_reference": o["entry_reference"],
                 "stop_c10": o.get("stop_c10"), "stop_reason": o.get("stop_reason"), "target_c11": o.get("target_c11"),
                 "target_reason": o.get("target_reason"), "sweep_extreme": o.get("sweep_extreme"),
-                "expires_at": o.get("expires_at"), "scans": 0,
+                "expires_at": o.get("expires_at"), "scans": 0, "first_seen_window": cls,
                 "operational_state": op.state, "operational_reason": (op.reason_codes or [None])[0]})
             opportunities[key]["scans"] += 1
         for g, status in res["gate_status"].items():
-            gate_counts[g][status] += 1
+            gate_counts[cls][g][status] += 1
         if res["blocking_failures"] and len(failures) < 50:
             failures.append({"case_id": res["case_id"], "state": res["state"], "failures": res["blocking_failures"],
                              "gates": {g: res["gates"][g] for g in res["blocking_failures"]}})
@@ -183,8 +187,11 @@ def run(symbol: str, limit: int | None = None) -> dict:
 
     parity = streaming_parity(symbol, snaps)
     scans = len(scan_idx)
-    blocking_pass = all(gate_counts[g][PASS] + gate_counts[g][NOT_APPLICABLE] == scans
-                        for g in ("L1", "L2", "L3", "L4"))
+    def l1_l4_pass(w):
+        return all(gate_counts[w][g][PASS] + gate_counts[w][g][NOT_APPLICABLE] == scan_counts[w]
+                   for g in ("L1", "L2", "L3", "L4"))
+    blocking_pass = scan_counts["full_d1"] > 0 and all(l1_l4_pass(w) for w in windows)
+    full_opps = [o for o in opportunities.values() if o["first_seen_window"] == "full_d1"]
     directions = Counter(o["direction"] for o in opportunities.values())
     stop_defined = sum(1 for o in opportunities.values() if o["stop_c10"] is not None)
     return {
@@ -203,7 +210,9 @@ def run(symbol: str, limit: int | None = None) -> dict:
             "host_window_counts": HOST_COUNTS, "cadence": "every M5 close",
             "first_scan_utc": (m5[scan_idx[0]].time + dt.timedelta(minutes=5)).isoformat(),
             "last_scan_utc": (m5[scan_idx[-1]].time + dt.timedelta(minutes=5)).isoformat(),
-            "scans": scans, "scans_with_short_d1_window": d1_short,
+            "scans": scans, "scans_full_d1_window": scan_counts["full_d1"],
+            "scans_with_short_d1_window": d1_short,
+            "headline_scope": "full_d1 scans only (30 D1 bars, as on the host); short_d1 scans reported separately",
             "d1_window_note": "D1 feeds only the informational d1_context (watch.evaluate_snapshot); bias is H1.",
         },
         "spread_provenance": {
@@ -213,12 +222,25 @@ def run(symbol: str, limit: int | None = None) -> dict:
             "host_snapshot_spread_price": host_spread, "point": point,
             "rule": "conservative spread = max(bar spread, host snapshot spread); bar spread alone is a lower bound",
         },
-        "states": {k: dict(v) for k, v in states.items()},
-        "operational_rejection_reasons": dict(reasons_operational),
-        "gate_status_counts": {g: dict(c) for g, c in gate_counts.items()},
+        "verdict": "NOT_VERIFIED",
+        "verdict_reasons": ["L5 WARN (OD1011-L5: no stop distance, commission unbound off-host, no cost gate)",
+                            "stop geometry NOT_APPLICABLE: C10_PIP_SIZE_NOT_EVIDENCED for " + symbol,
+                            f"operational REJECT_NO_STOP on {sum(r['REJECT_NO_STOP'] for r in reasons_operational.values())}"
+                            f"/{sum(states[w]['signal']['OPPORTUNITY'] for w in windows)} OPPORTUNITY scans"],
+        "states": {k: dict(v) for k, v in states["full_d1"].items()},
+        "operational_rejection_reasons": dict(reasons_operational["full_d1"]),
+        "gate_status_counts": {g: dict(c) for g, c in gate_counts["full_d1"].items()},
+        "short_d1_window": {"scans": scan_counts["short_d1"],
+                            "states": {k: dict(v) for k, v in states["short_d1"].items()},
+                            "operational_rejection_reasons": dict(reasons_operational["short_d1"]),
+                            "gate_status_counts": {g: dict(c) for g, c in gate_counts["short_d1"].items()},
+                            "blocking_L1_L4_pass": l1_l4_pass("short_d1")},
+        "blocking_L1_L4_pass_full_d1": l1_l4_pass("full_d1"),
         "blocking_L1_L4_pass": blocking_pass,
         "blocking_failures_sample": failures,
         "opportunities": {"distinct": len(opportunities), "by_direction": dict(directions),
+                          "distinct_full_d1": len(full_opps),
+                          "by_direction_full_d1": dict(Counter(o["direction"] for o in full_opps)),
                           "with_c10_stop": stop_defined, "items": opportunities},
         "streaming_parity": parity,
         "delivery_mode": W.DELIVERY_MODE,

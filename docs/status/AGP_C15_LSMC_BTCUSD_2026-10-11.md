@@ -3,9 +3,10 @@
 Mission C15-LSMC (`docs/governance/AGP_C15_THREE_STRATEGY_LOGIC_FIRST_2026-10-11.md`, PR #156). Off-host,
 read-only. No rule, registry, READY, demo or live change. Alerts stay ARCHIVE_ONLY.
 
-**Result:** signal-layer L1–L4/L6 PASS on every scan; **L5 WARN**; **stop geometry NOT_EVALUABLE**. In the
-operational lane every OPPORTUNITY is REJECTED (`REJECT_NO_STOP`), so BTCUSD cannot emit a deliverable
-opportunity under 1.1.0. Not recorded as LOGIC_VERIFIED; the owner decides how to treat the WARNs below.
+**Verdict: BTCUSD = NOT_VERIFIED.** Signal-layer L1–L4/L6 pass on every scan, but L5 is WARN, stop geometry is
+NOT_APPLICABLE (no C10 pip evidence), and the operational lane rejects every OPPORTUNITY scan with `REJECT_NO_STOP`
+(2,923/2,923), so BTCUSD cannot emit a deliverable opportunity under 1.1.0. Headline counts use only the 8,961 scans
+with a full 30-bar D1 window (as on the host); the 5,572 earlier short-window scans are reported separately.
 
 ## Symbol choice (made before running)
 
@@ -23,24 +24,27 @@ so BTCUSD was taken as first in the 1.1.0 contract's instrument list.
 | Engine sha256 (gate method) | `88dd9f1f…` ≠ registry `ec0b2f3d…` (**drift**, see WARN 1) |
 | Symbol / venue | BTCUSD, VT Markets MT5 CFD, server VTMarkets-Demo, point 0.01 (host capture `d6db9283…`) |
 | Timeframes / cadence | D1/H1/M5, host windows D1 30 / H1 200 / M5 300 incl. the forming bar; every M5 close |
-| Scans | 14,533 (2026-08-20 01:00 → 2026-10-10 00:00 UTC); 5,572 with a D1 window < 30 (D1 feeds only `d1_context`) |
-| Branches exercised | LONG 33, SHORT 57 distinct opportunities (90) |
+| Scans | 14,533 (2026-08-20 01:00 → 2026-10-10 00:00 UTC): **8,961 full 30-bar D1 window (headline)**, 5,572 short D1 window (separate) |
+| Branches exercised (full window) | LONG 21, SHORT 37 distinct opportunities (58); all scans: LONG 33, SHORT 57 (90) |
 
 Dataset sha256: `BTCUSD_m5.csv` `60a9b5a4…`, `BTCUSD_h1.csv` `f1d7ba4b…`, `BTCUSD_d1.csv` `85110e81…`,
 `BTCUSD_m5_meta.csv` `3d1b7559…`, `BTCUSD_h1_meta.csv` `e629f826…`, `BTCUSD_d1_meta.csv` `8ea6e7f2…`
 (full values in the report).
 
-## L1–L6 (scope: BTCUSD × D1/H1/M5 watch × LONG/SHORT, signal lane)
+## L1–L6 (scope: BTCUSD × D1/H1/M5 watch × LONG/SHORT, signal lane, full 30-bar D1 windows)
 
-| Gate | Result | Basis |
-|---|---|---|
-| L1 determinism + causality | PASS 14,533/14,533 | two builds hash equal; forming-bar/future-OHLC input gives the same snapshot as closed-only input |
-| L2 contract conformance | PASS 14,533/14,533 | identity, no authority, VT universe, swing k, POI age, tie tolerance, sweep window, ATR band, day boundary, alert mapping, point source, C10 stop rule (`C10_PIP_SIZE_NOT_EVIDENCED`), C11 target / `REJECT_NO_TARGET` (4) |
-| L3 geometry | PASS 14,533/14,533 | entry inside CHoCH bar, sweep extreme on loss side, target in trade direction; **stop checks NOT_APPLICABLE** (no stop) |
-| L4 data/state | PASS 14,533/14,533 | evaluated, H1/M5 history, M5 freshness, STALE consistency |
-| L5 cost (OD1011-L5) | **WARN** | spread evidence present; stop distance undefined; commission unbound off-host; no cost gate in the 1.1.0 alert path |
-| L6 freshness fields | PASS | `expires_at`, stale/invalid rules set on every OPPORTUNITY |
-| Streaming/prefix parity | PASS | WatchTracker streaming vs 7 prefix cuts: 0 mismatches (signal 1,350 events, operational 1,261) |
+| Gate | Full D1 window (8,961 scans) | Short D1 window (5,572 scans) | Basis |
+|---|---|---|---|
+| L1 determinism + causality | PASS 8,961 | PASS 5,572 | two builds hash equal; forming-bar/future-OHLC input gives the same snapshot as closed-only input |
+| L2 contract conformance | PASS 8,961 | PASS 5,572 | identity, no authority, VT universe, swing k, POI age, tie tolerance, sweep window, ATR band, day boundary, alert mapping, point source, C10 stop rule (`C10_PIP_SIZE_NOT_EVIDENCED`), C11 target / `REJECT_NO_TARGET` |
+| L3 geometry | PASS 8,961 | PASS 5,572 | entry inside CHoCH bar, sweep extreme on loss side, target in trade direction; **stop checks NOT_APPLICABLE** |
+| L4 data/state | PASS 8,961 | PASS 5,572 | evaluated, H1/M5 history, M5 freshness, STALE consistency |
+| L5 cost (OD1011-L5) | **WARN** 8,961 | WARN 5,572 | spread evidence present; stop distance undefined; commission unbound off-host; no cost gate |
+| L6 freshness fields | PASS 8,961 | PASS 5,572 | `expires_at`, stale/invalid rules set on every OPPORTUNITY |
+| OPPORTUNITY scans → operational | 2,040 → `REJECT_NO_STOP` 2,040 | 883 → `REJECT_NO_STOP` 883 | |
+
+Streaming/prefix parity (whole run): WatchTracker streaming vs 7 prefix cuts, 0 mismatches (signal 1,350 events,
+operational 1,261).
 
 Spread provenance: every M5 bar carries the recorded MqlRates spread (16,932/16,932) from VTMarkets-Demo; the host
 `symbol_info` snapshot spread is 17.02 (1,702 points × 0.01). Conservative spread = max(bar, host snapshot); the bar
@@ -59,8 +63,17 @@ value alone is a lower bound.
    evidence (a contract input), not a code change.
 3. **L5.** Missing: stop distance (WARN 2); OD1011-COMMISSION binding off-host (needs the host-local account login);
    a cost gate applying 0.10R warn / 0.25R block in the Large-SMC alert path (none exists in 1.1.0).
-4. **D1 window.** 5,572 early scans had fewer than 30 D1 bars (dataset starts 2026-08-10); D1 feeds only the
-   informational `d1_context`.
+4. **D1 window.** 5,572 early scans had fewer than 30 D1 bars (dataset starts 2026-08-10); they are excluded from
+   the headline counts. D1 feeds only the informational `d1_context`.
+
+## Note: #144 baseline label (docs only; evidence not rewritten)
+
+`research_external/oracles/runs/AGP_4H_C_EURUSD_DETECTION.json` `changes_vs_7e30138.baseline_fixture_sha256` reads
+`a8bf11a9…`, which is the EURUSD fixture at 2908228, while the code compares against 7e30138 (`0d6297f0…`, vendored in
+#160). The two fixtures differ: H1 (120) and M5 (600) are identical, but D1 differs (7e30138: 30 broker-day bars opening
+21:00Z; 2908228: 24 bars opening 00:00Z, no common timestamps). #144's change attribution and its parity statements
+("D1 extremes shifted 1–3 points on 7/30 days", "H1 changed on 35/120 bars") hold for **7e30138**; the H1 statement also
+holds for 2908228. The label is a labelling error; correcting the evidence file needs owner approval.
 
 ## Reproduce
 

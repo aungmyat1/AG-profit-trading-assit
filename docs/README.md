@@ -6,7 +6,7 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
-[AGP-C15-LSMC BTCUSD](status/AGP_C15_LSMC_BTCUSD_2026-10-11.md) records the ST_LARGE_SMC_V1@1.1.0 BTCUSD replay on recorded VT data: signal-layer L1–L4/L6 PASS, L5 WARN, stop geometry not evaluable (no C10 pip evidence), engine identity drift vs registry.
+[AGP-C15-LSMC BTCUSD](status/AGP_C15_LSMC_BTCUSD_2026-10-11.md) records the ST_LARGE_SMC_V1@1.1.0 BTCUSD replay on recorded VT data: NOT_VERIFIED (L5 WARN, stop geometry not evaluable, operational REJECT_NO_STOP on every opportunity); L1–L4/L6 pass; engine identity drift vs registry.
 
 [Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
 records stop/target rejection, the owner-set 50% remaining-reward threshold, required

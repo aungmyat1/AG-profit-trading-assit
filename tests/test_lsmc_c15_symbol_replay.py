@@ -26,9 +26,11 @@ def test_committed_report_is_bound_to_the_recorded_dataset_and_contract():
 
 def test_committed_report_verdicts():
     report = json.loads(REPORT.read_text(encoding="utf-8"))
-    counts = report["gate_status_counts"]
-    scans = report["replay"]["scans"]
-    assert report["blocking_L1_L4_pass"] is True
+    counts = report["gate_status_counts"]   # headline: full 30-bar D1 windows only
+    scans = report["replay"]["scans_full_d1_window"]
+    assert scans + report["short_d1_window"]["scans"] == report["replay"]["scans"]
+    assert report["blocking_L1_L4_pass"] is True and report["blocking_L1_L4_pass_full_d1"] is True
+    assert report["verdict"] == "NOT_VERIFIED"
     for gate in ("L1", "L2", "L3", "L4"):
         assert counts[gate].get("PASS", 0) + counts[gate].get("NOT_APPLICABLE", 0) == scans
     # OD1011-L5: no cost gate and no bound commission off-host -> WARN, never PASS.
@@ -37,10 +39,11 @@ def test_committed_report_verdicts():
     # No C10 pip evidence for BTCUSD: no stop, and the operational lane rejects every opportunity.
     assert report["opportunities"]["with_c10_stop"] == 0
     assert "OPPORTUNITY" not in report["states"]["operational"]
+    assert "OPPORTUNITY" not in report["short_d1_window"]["states"]["operational"]
 
 
 def test_short_rerun_matches_gate_contract():
-    report = R.run("BTCUSD", limit=40)
-    assert report["blocking_L1_L4_pass"] is True
+    report = R.run("BTCUSD", limit=40)   # early scans: short D1 windows only
+    assert report["short_d1_window"]["blocking_L1_L4_pass"] is True
     assert report["streaming_parity"]["signal"]["prefix_mismatches"] == 0
     assert report["spread_provenance"]["m5_bars_with_spread"] == report["spread_provenance"]["m5_bars"]
