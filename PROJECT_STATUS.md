@@ -8,6 +8,16 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-10)
 
+OD1011 owner decisions (2026-10-11) are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`:
+COMMISSION (VT demo Standard STP, commission_R 0, bound by login suffix; the full login only in gitignored
+local config), ROUNDING (ROUND_HALF_UP), SCOPE (branch-scoped LOGIC_VERIFIED) and L5 (PASS = accepted cost
+evidence applied correctly; a cost block is actionability). This change set records the decisions and the
+config only. Runtime wiring is pending: the FX commission reader is #132, and the verification harness, gate
+rounding and branch-scoped registry reader are #142. Until those merge, missing commission stays INSUFFICIENT
+and L5 stays WARN. OD1011-ROUNDING was amended on 2026-10-11: v1.1.2's frozen rounding is the engine's
+`fx._r` (Python `round()` on IEEE floats), which gates must replicate; versions >= 1.1.3 must use Decimal
+ROUND_HALF_UP (ledger item ROUNDING_V113_HALF_UP).
+
 DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
 2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
 with the VT server-time rule (server time = New York time + 7h). They no longer use one
@@ -39,6 +49,11 @@ defined in `docs/PROJECT_OBJECTIVE.md`. The FX/gold manual-ticket risk/cost gate
 but awaits focused verification. Current strategy bindings, readiness values, demo/live flags,
 host tasks, and broker state are unchanged. Host-side execution artifacts remain `UNTRACKED_HOST`
 under C11 until brought into the repository through a reviewed PR before G6.
+
+READY admission now requires both the existing READY config switch and a matching approved
+record in the owner decision register bound to exact strategy version, loaded contract SHA256,
+symbol, and session. The production switch remains OFF and no owner record was added; see
+[`READY owner binding`](docs/status/READY_OWNER_BINDING_2026-10-10.md).
 
 Recorded M15 capture (`scripts/capture_recorded_m15.py`, read-only MT5) gained V2 options:
 `--window HH:MM-HH:MM`, `--all-days`, `--offset-method {rollover,reference-symbol:<SYM>}` and
@@ -239,7 +254,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `81745bef050ea5bceb27c3a724434fe4d073624fac0f280431c08a9e142ee659`.
+inputs_sha256: `1f327c61d5174bd0b86ef58ecbaa1c14bba0f0e534a0b7eba72236b898edf4be`.
 <!-- [[[end]]] -->
 
 ### Objective

@@ -158,12 +158,35 @@ def _ready_authority_on_file(tmp_path_factory):
     return str(path)
 
 
+@pytest.fixture(scope="session")
+def _owner_ready_record_file(tmp_path_factory):
+    import hashlib
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    contract = root / "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"
+    digest = hashlib.sha256(contract.read_bytes()).hexdigest()
+    record = {"decision_id": "TEST-FIXTURE-READY-AUTHORITY", "status": "CONFIRMED",
+              "strategy_id": "ST_ASIAN_SWEEP_5R_V1", "version": "1.1.1", "contract_sha256": digest,
+              "symbol_scope": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD"],
+              "session_scope": ["ASIAN_LONDON", "LONDON_NEWYORK"], "date": "2026-10-10"}
+    import yaml
+    path = tmp_path_factory.mktemp("owner_ready") / "register.md"
+    path.write_text("<!-- READY_AUTHORITY_RECORDS_START -->\n" + yaml.safe_dump(
+        {"ready_authority_records": [record]}, sort_keys=False) + "<!-- READY_AUTHORITY_RECORDS_END -->\n",
+        encoding="utf-8")
+    return str(path)
+
+
 @pytest.fixture(autouse=True)
 def _pre_d6_ready_authority_on(request, monkeypatch):
     if request.node.path.name not in PRE_D6_READY_ON_FILES:
         return
     import v1_tickets.ready_authority as ready_authority
     monkeypatch.setattr(ready_authority, "CONFIG_PATH", request.getfixturevalue("_ready_authority_on_file"))
+    monkeypatch.setattr(ready_authority, "OWNER_DECISION_REGISTER_PATH",
+                        request.getfixturevalue("_owner_ready_record_file"))
+    monkeypatch.setattr(ready_authority, "symbol_verified", lambda *a, **k: True)
 
 
 @pytest.fixture
