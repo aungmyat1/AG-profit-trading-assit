@@ -8,3 +8,13 @@ owner_ticket:
   risk_pct: 0.5        # percent of account balance per manual ticket
   cost_warn_R: 0.10    # warn when spread + commission reaches this many R
   cost_block_R: 0.25  # block when spread + commission reaches this many R
+  # OD1011-COMMISSION (Aung, 2026-10-11): owner-stated account fact, NOT a default. Bound to the VT Markets
+  # demo Standard STP account (cost carried in the spread); FX and gold. Only the login suffix is committed
+  # (AGENTS.md; evidence docs/status/evidence/pass_b_replay_b92f529_0740Z/run_result.json, VTMarkets-Demo);
+  # the full `account_login` goes only in gitignored config/local/owner_ticket.yaml. commission_R is valid
+  # only at 0; a non-zero commission needs a per-lot field (future), never R units. Any other account has
+  # no commission (INSUFFICIENT, never 0). A non-zero commission on the first demo deals invalidates it.
+  commission:
+    decision_id: OD1011-COMMISSION
+    account_login_suffix: "985"
+    commission_R: 0

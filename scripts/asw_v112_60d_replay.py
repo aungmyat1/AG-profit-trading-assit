@@ -16,6 +16,7 @@ import json
 import sys
 from collections import Counter
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -27,7 +28,7 @@ INSUFFICIENT = "INSUFFICIENT"
 CASE_FIELDS = ("case_id", "cycle", "session_date", "fixture", "fixture_sha256", "setup", "direction", "entry",
                "stop_loss", "decision", "ticket_gate_status", "ticket_gate_blocking_failures", "l2_fail_ids",
                "l2_undeclared", "geometry", "causality", "owner_ticket_state",
-               "owner_ticket_primary_block_reason", "owner_ticket_L6", "edge_verified", "day_type")
+               "owner_ticket_primary_block_reason", "owner_ticket_L6", "edge_verified", "day_type", "l5_recorded_spread")
 
 
 def file_sha256(rel: str) -> str:
@@ -57,10 +58,45 @@ def rejection_reason(c: dict) -> str:
     return f"GATE:{fails}" + (f"({rules})" if rules else "")
 
 
-def session_row(symbol: str, cycle: str, cases: list, symbol_gates: dict) -> dict:
+def lane_l5(valid: list, symbol_l5: str, owner: dict) -> tuple:
+    """Lane L5 per OD1011-L5: PASS only when every kept entry has cost evidence from an accepted source
+    (conservative spread; OD1011-bound commission) and the owner-ticket cost gate applies it and the
+    warn/block thresholds correctly. A cost-blocked ticket is an actionability outcome, not a failure.
+    Missing evidence is INSUFFICIENT (bar-only spread or unbound commission, never 0). Kept entries
+    without an owner cost binding fail closed."""
+    if symbol_l5 == "BLOCK":
+        return "FAIL", {}
+    if not valid:
+        return INSUFFICIENT, {"kept_entries": 0}
+    if not owner or owner.get("cost_warn_R") is None or owner.get("cost_block_R") is None:
+        return "FAIL", {"kept_entries": len(valid), "reason": "OWNER_BINDING_MISSING: cost_warn_R/cost_block_R unset"}
+    rec = [c["l5_recorded_spread"] for c in valid]
+    known = sorted(r["spread_R"] for r in rec if r.get("spread_R") is not None)
+    gates = [r.get("cost_gate") for r in rec]
+    detail = {"kept_entries": len(valid), "spread_R_evaluated": len(known),
+              "spread_R_min": known[0] if known else None, "spread_R_max": known[-1] if known else None,
+              "spread_R_median": known[len(known) // 2] if known else None,
+              "spread_R_at_or_above_warn": sum(r >= owner["cost_warn_R"] for r in known),
+              "spread_R_at_or_above_block": sum(r >= owner["cost_block_R"] for r in known),
+              "cost_warn_R": owner["cost_warn_R"], "cost_block_R": owner["cost_block_R"],
+              "spread_sources": dict(sorted(Counter(r.get("source") for r in rec).items())),
+              "commission_sources": dict(sorted(Counter(r.get("commission_source") for r in rec).items())),
+              "cost_gate_correct": sum(bool(g and g["gate_correct"]) for g in gates),
+              "actionability": dict(sorted(Counter(g["actionability"] for g in gates if g).items()))}
+    if len(known) < len(valid):
+        return f"{INSUFFICIENT}(spread)", detail
+    if any(r.get("commission_R") is None for r in rec):
+        return f"{INSUFFICIENT}(commission)", detail
+    if not all(g and g["gate_correct"] for g in gates):
+        return "FAIL", detail
+    return "PASS", detail
+
+
+def session_row(symbol: str, cycle: str, cases: list, symbol_gates: dict, owner: Optional[dict] = None) -> dict:
     valid = [c for c in cases if c["ticket_gate_blocking_failures"] == []]
     rejected = [c for c in cases if c not in valid]
     l6 = [c["owner_ticket_L6"] for c in cases if c["owner_ticket_L6"]]
+    l5, l5_detail = lane_l5(valid, symbol_gates["L5"], owner)
     mutations = sum(c["causality"]["future_mutations"] for c in cases)
     l4_bad = [c for c in cases if c["geometry"]["has_levels"]
               and not (c["geometry"]["positive_stop"] and c["geometry"]["target_order"])
@@ -72,13 +108,14 @@ def session_row(symbol: str, cycle: str, cases: list, symbol_gates: dict) -> dic
         "L3": "FAIL" if any(_revised(c) for c in cases) else (INSUFFICIENT if not mutations else "PASS"),
         "L4": "FAIL" if l4_bad or symbol_gates["L4"] == "FAIL" else (INSUFFICIENT if not valid else "PASS"),
         # Harness L5: BLOCK (missing pip evidence) -> FAIL; WARN (cost not measurable) -> INSUFFICIENT.
-        "L5": {"BLOCK": "FAIL", "WARN": INSUFFICIENT}.get(symbol_gates["L5"], symbol_gates["L5"]),
+        "L5": l5,
         "L6": INSUFFICIENT if not l6 else ("PASS" if set(l6) == {"PASS"} else "FAIL"),
     }
     return {"symbol": symbol, "session": cycle, "cases": len(cases), "valid_entries": len(valid),
             "valid_entry_case_ids": [c["case_id"] for c in valid],
             "rejections_by_reason": dict(sorted(Counter(rejection_reason(c) for c in rejected).items())),
-            "gates": gates,
+            "gates": gates, "l5_detail": l5_detail,
+            "kept_by_branch_direction": dict(sorted(Counter(f"{c['setup']}:{c['direction']}" for c in valid).items())),
             "l3_revised_case_ids": [c["case_id"] for c in cases if _revised(c)]}
 
 
@@ -101,7 +138,8 @@ def build(date: str) -> dict:
         symbol_gates[sym] = rep["gates_by_symbol"][sym]
         cases += [{k: c.get(k) for k in CASE_FIELDS} for c in own]
         for cycle in h.CYCLES:
-            matrix.append(session_row(sym, cycle, [c for c in own if c["cycle"] == cycle], symbol_gates[sym]))
+            matrix.append(session_row(sym, cycle, [c for c in own if c["cycle"] == cycle], symbol_gates[sym],
+                                      rep["checks"]["L5_risk_and_friction"]))
         if sym == "EURUSD":
             ident = {k: rep[k] for k in ("strategy", "contract_path", "contract_hash", "engine_hash", "logic_identity")}
     return {
@@ -113,8 +151,9 @@ def build(date: str) -> dict:
                             "tests/fixtures/manual_ticket/USDJPY_M15_recorded.csv (10 days)",
                             "tests/fixtures/manual_ticket/XAUUSD_M15_recorded.csv (10 days)",
                             "tests/fixtures/asian_sweep_v1_1_2/l4_recorded_failures.json (June-July dates)"],
-        "spread_input": "harness TEST_SPREAD (0.2 pip); the 60d spread_points column is not consumed by the "
-                        "unchanged harness, so cost-in-R stays unmeasured",
+        "spread_input": "L2 uses the harness TEST_SPREAD (0.2 pip); L5 uses max(signal-bar spread_points, host_captured "
+                        "snapshot spread) x host_captured point; commission from OD1011-COMMISSION only when bound to the "
+                        "host-captured server (else INSUFFICIENT, never 0)",
         "dataset_identity": dataset, "scopes": scopes, "symbol_gates": symbol_gates, "matrix": matrix,
         "cases": cases, "edge_verified": False, "registry_modified": False, "demo_authorized": False,
         "live_authorized": False, "broker_calls": 0, "ORDER_API_CALLS": 0, "BROKER_MUTATION_COUNT": 0,

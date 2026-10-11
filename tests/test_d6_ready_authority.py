@@ -85,7 +85,7 @@ def test_no_symbol_or_cycle_can_emit_ready(production_ready_authority, engine_si
 def test_manual_ticket_cannot_reach_ticket_ready(production_ready_authority, engine_signal):
     bar = Candle(dt.datetime(2026, 10, 7, 7, 0, tzinfo=UTC), 1.1665, 1.1670, 1.1660, 1.1666)
     m = manual_ticket.build_manual_ticket("EURUSD", "ASIAN_LONDON", DAY, [], 2, [bar], now=AT, data_close=AT,
-                                          spread=0.00015, owner=manual_ticket.load_owner_config(), balance=10000.0)
+                                          spread=0.00015, owner=manual_ticket.load_owner_config(), balance=10000.0, commission_r=0.0)
     assert m["state"] != TICKET_READY and m["legacy_informational_ready"] is False
     assert m["legacy_informational_decision"] == ra.SHADOW_INFO_ONLY
 

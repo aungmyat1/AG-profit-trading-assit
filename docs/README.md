@@ -6,9 +6,6 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
-[READY owner binding](status/READY_OWNER_BINDING_2026-10-10.md) records the additional
-owner-register, version, contract-hash, symbol, and session checks for READY admission.
-
 [AGP-C4-CCFD-LOGIC](status/AGP_C4_CCFD_LOGIC_2026-10-10.md) records synthetic-only CFD v1.0.0 L1–L6 evidence and the DATA-R2 rerun.
 
 [Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
@@ -16,6 +13,7 @@ records stop/target rejection, the owner-set 50% remaining-reward threshold, req
 host preflight, FX/crypto rejection ownership, diagnostics and offline tests.
 
 [AGP-C3-ASW-R2 60-day](status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md) records the ST_ASIAN_SWEEP_5R_V1@1.1.2 replay on the 60-weekday recorded files, with a per-session gate matrix and unchanged authority; the [10/20-day R2 report](status/AGP_C3_ASW_V112_R2_2026-10-10.md) is historical only.
+[AGP-4H-A GBPUSD × ASIAN_LONDON](status/AGP_4H_A_ASW_V112_GBPUSD_ASIAN_LONDON_2026-10-10.md) classifies every L2 failure in that lane, fixes the L2 half-point rounding bound, and, after OD1011, records it LOGIC_VERIFIED for the SWEEP branch only (scoped registry entry).
 
 [PR #94 follow-up S01/S02](status/AGP_PR94_FOLLOWUP_S01_S02_2026-10-09.md) records the signal-time identity classification (pending owner) and the LIVE/REPLAY digest reason fix.
 
@@ -232,6 +230,12 @@ research eligibility. Its contract is
 
 - [`governance/OWNER_DECISION_REGISTER.md`](governance/OWNER_DECISION_REGISTER.md) — running owner
   decision register (open rows `PENDING_OWNER`; resolved decisions retain their dated source).
+- [`governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md`](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md)
+  — ratified DEMO-only sequencing, standing authorization and risk limits; no current authorization changes.
+- [`governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md`](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md)
+  — historical proposal retained for traceability; superseded demo-soak and per-order-confirmation requirements are identified.
+- [`governance/AGP_C6_IMPLEMENTATION_GATES_2026-10-10.md`](governance/AGP_C6_IMPLEMENTATION_GATES_2026-10-10.md)
+  — historical implementation plan; C14 leaves host acceptance required and shadow observation optional.
 - [`governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md`](governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md)
   — owner decision record for Large-SMC actionability (brought forward unchanged).
 - [`agents/CONTEXT_PACK.md`](agents/CONTEXT_PACK.md) — generated context pack (objective, invariants
