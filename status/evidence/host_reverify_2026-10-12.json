@@ -1,0 +1,31 @@
+{
+  "record": "host_reverify",
+  "date": "2026-10-12",
+  "captured_at_local": "2026-10-12T01:10+06:30",
+  "scope": "re-verify items 1 and 4 of host_restart_verify_2026-10-12.json, plus account state",
+  "order_api_calls": 0,
+  "position_api_calls": 0,
+  "broker_mutation_count": 0,
+  "config_changes": 0,
+  "items": [
+    {
+      "id": "1",
+      "item": "127.0.0.1:22346 not listening; MT5_APP_MCP_TOKEN absent at User scope",
+      "result": "FAIL",
+      "cause": "Unchanged: the main terminal is the same process started 2026-10-11 20:01:07 +06:30 (not restarted) and 22346 is LISTENING. MT5_APP_MCP_TOKEN is present in HKCU\\Environment (the source for new processes) and absent at Machine scope."
+    },
+    {
+      "id": "4",
+      "item": "symbol_map_smoke full run: all 6 MAPPED + visible",
+      "result": "BLOCKED",
+      "cause": "BLOCKED_RESOURCE: R1 acquire refused (available 904 MB < 1200 MB, ACQUIRED=False). FULL_WORKLOAD_STARTED = FALSE; not retried.",
+      "precheck_r0": {"visible_in_market_watch": {"EURUSD-VIP": true, "GBPUSD-VIP": true, "USDJPY-VIP": true, "XAUUSD-VIP": true, "BTCUSD": true, "ETHUSD": true}, "note": "The visibility cause of the earlier 5-item diff is resolved; mapping still needs the smoke."}
+    },
+    {
+      "id": "3",
+      "item": "Re-confirm ...999 DEMO, Algo Trading OFF, 0 positions/orders",
+      "result": "PASS",
+      "evidence": {"server": "VTMarkets-Demo", "login_suffix": "999", "trade_mode": "DEMO", "terminal_trade_allowed": false, "positions": 0, "orders": 0}
+    }
+  ]
+}
