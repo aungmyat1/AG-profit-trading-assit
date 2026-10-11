@@ -4,7 +4,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE_ROOT = REPO_ROOT / "archive" / "host_import"
 EVIDENCE = REPO_ROOT / "status" / "evidence" / "host_c11_inventory_2026-10-11.json"
