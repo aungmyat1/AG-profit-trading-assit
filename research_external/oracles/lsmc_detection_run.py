@@ -26,6 +26,8 @@ ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "tests/fixtures/large_smc_v111/EURUSD.json"
 HOST_SNAPSHOT = ROOT / "tests/fixtures/large_smc_v111/host_d1_EURUSD_snapshot_mt5.json"
 HOST_SNAPSHOT_SHA256 = "ff77c9338f6fcc74079cf88d69d103b0c5e4e5a19856b6d4dce8a28333e5701e"
+BASELINE_7E30138 = ROOT / "tests/fixtures/large_smc_v111/EURUSD_baseline_7e30138.json"
+BASELINE_7E30138_SHA256 = "0d6297f097706cf1d0771a2b7c0cfcf870a83bbc5aad9c942d21e127eef77f98"
 LENGTH = 2
 MANUAL_REVIEW_SEED = 20261013
 ROUND1_TYPE_COUNTS = {
@@ -541,9 +543,10 @@ def run():
     }
     # Compare exact local detection outputs to the previous PR head (7e30138),
     # reporting every changed event by category, timeframe and UTC time.
-    previous = json.loads(__import__("subprocess").run(
-        ["git", "show", "7e30138:tests/fixtures/large_smc_v111/EURUSD.json"],
-        cwd=ROOT, capture_output=True, check=True, text=True).stdout)
+    # 7e30138 exists only on the squash-merged #144 branch, so its fixture bytes are vendored.
+    if hashlib.sha256(BASELINE_7E30138.read_bytes()).hexdigest() != BASELINE_7E30138_SHA256:
+        raise ValueError("7e30138 baseline fixture hash mismatch")
+    previous = json.loads(BASELINE_7E30138.read_text())
     output_changes = []
     for tf in ("D1", "H1", "M5"):
         before = _local(_bars(previous[tf]), point=point, include_ob=tf == "H1")
