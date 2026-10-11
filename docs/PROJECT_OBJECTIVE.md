@@ -61,6 +61,20 @@ Under ratified C14, a strategy with separate, valid, scoped standing DEMO author
    - Demo execution remains disabled/no-op unless separately recorded owner authorization enables it.
    - No Telegram control may independently bypass execution/risk/authorization gates.
 
+### Issue #47 V5 requirement reconciliation (C14 authority)
+
+Issue [#47](https://github.com/aungmyat1/AG-profit-trading-assit/issues/47) is retained as a historical delivery specification, not an independent execution authorization. The following requirements remain targets and may not be claimed implemented without accepted evidence:
+
+- **FX/gold:** EURUSD, GBPUSD, USDJPY and XAUUSD; ASIAN_LONDON and LONDON_NEWYORK. Produce qualified deterministic tickets or explicit terminal reasons (including NO_TRADE and BLOCKED), never a forced trade.
+- **Crypto CFDs:** BTCUSD and ETHUSD on the VT Markets DEMO CFD venue. Up to two qualified crypto tickets per day is a planning ceiling, not a trade quota and not an authorization cap. Never substitute BTCUSDT/ETHUSDT perpetual evidence, sizing or contract semantics for these CFDs.
+- **Large-SMC:** watch and entry-confirmation alerts for all six instruments only from a contract/engine whose exact identity and entry/stop/target rules pass the required Logic Gate. WATCH or ALERT_ONLY is not execution authority.
+- **Canonical provenance:** decision products must bind the current runtime code SHA, frozen strategy ID/version, canonical and broker symbol, account/venue, source and market-data timestamp, ticket identity, generation and expiry time. Telegram watch, proposals and daily summaries include side, entry/zone, invalidation/SL, TP(s), risk, logic/economic qualification states and explicit block reasons as applicable. Missing values are marked unavailable and block trading when execution-critical; never invent them.
+- **Order identity and safety:** stale, replaced, expired or replayed tickets cannot execute; authorization applies to the immutable proposal identity and an approved strategy-version/symbol/account scope. Every automatic order must pass the canonical deterministic execution/risk authority (the `assistant.commands.execute_command()` boundary where implemented), DEMO account identity, freshness, geometry, broker `order_check`, risk/cost, duplicate prevention and broker-state reconciliation. No AI, LSMC watch, Telegram notification or callback may bypass this chain.
+- **Auditable order lifecycle:** preserve proposal -> applicable standing owner authorization -> execution decision -> broker check -> order submission (only when authorized) -> confirmed, rejected or uncertain broker result -> reconciliation, with timestamps, immutable identities and Telegram reporting. Unknown broker outcomes must not be silently retried or presented as fills.
+- **C14 supersession:** a separate scoped, revocable DEMO standing authorization replaces #47's *per-order owner confirmation* for that approved scope; EDGE_VERIFIED/economic qualification and mandatory 10-cycle shadow soak are not DEMO prerequisites. The applicable technical safety gates remain mandatory. No standing authorization is granted by this objective or a Telegram Confirm.
+
+**Current status:** These are acceptance requirements, not proof of completion. R0–R6 operational acceptance, L1–L6 strategy admission and G6 broker round-trip require separately verified dated evidence. No strategy is granted demo/live authority by this reconciliation.
+
 ## Owner decisions OD1009-D1–OD1009-D6 (2026-10-09)
 
 Source for all six decisions: owner chat, Aung, 2026-10-09; register entries `OD1009-D1` through
