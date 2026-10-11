@@ -13,7 +13,7 @@ UTC = dt.timezone.utc
 
 
 @pytest.mark.parametrize("spread,expected_blocks,expected_warns", [
-    (9.99, [], []), (10, [], ["COST_WARN"]),      # owner band: <=10% OK; 0.10R still meets cost_warn_R
+    (9.99, [], []), (10, [], ["SPREAD_WARN", "COST_WARN"]),   # main gate (OD1011/#132): spread_ok_pct boundary warns
     (10.01, [], ["SPREAD_WARN", "COST_WARN"]),
     (20, [], ["SPREAD_WARN", "COST_WARN"]),
     (20.01, ["SPREAD_TOO_WIDE"], ["COST_WARN"]),

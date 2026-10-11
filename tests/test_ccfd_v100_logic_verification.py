@@ -164,7 +164,7 @@ def test_cost_gate_missing_key_blocks(key):
 
 
 @pytest.mark.parametrize("spread,commission,block,warn", [
-    (10, 0, [], ["COST_WARN"]), (10.01, 0, [], ["SPREAD_WARN", "COST_WARN"]),
+    (10, 0, [], ["SPREAD_WARN", "COST_WARN"]), (10.01, 0, [], ["SPREAD_WARN", "COST_WARN"]),
     (20, 0, [], ["SPREAD_WARN", "COST_WARN"]),
     (20.01, 0, ["SPREAD_TOO_WIDE"], ["COST_WARN"]),
     (1, 0.24, ["COST_TOO_HIGH"], []),
