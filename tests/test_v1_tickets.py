@@ -19,6 +19,7 @@ from strategy_engine.session import Candle
 from v1_tickets.crypto import archive_crypto_ticket, build_crypto_ticket
 from v1_tickets.fx import (
     HOST_METADATA_FIELDS,
+    STRATEGY_PATH,
     V1_CYCLES,
     V1_FX_SYMBOLS,
     archive_fx_ticket,
@@ -55,7 +56,7 @@ def test_fx_ticket_ready_with_frozen_contract_targets(stub_symbol_verified, symb
     session, post = _fx(symbol, cycle)
     at = dt.datetime(2026, 1, 5, REF_HOUR[cycle][1], 35, tzinfo=UTC)      # signal bar (h:15) closed 5 min ago
     t = build_fx_ticket(symbol, cycle, DAY, session, 2, post, data_source="FIXTURE", evaluated_at=at,
-                        data_close=at, spread=0.0001 * SCALE[symbol])
+                        data_close=at, spread=0.0001 * SCALE[symbol], strategy_path=STRATEGY_PATH)
     assert t["decision"] == "READY" and t["direction"] == "SHORT" and t["strategy_version"] == "1.1.1"
     assert t["targets"][0]["type"] == "OPPOSITE_SESSION_BOUNDARY" and t["targets"][1]["type"] == "FIXED_R_MULTIPLE_5"
     assert t["targets"][0]["price"] < t["entry"] < t["stop_loss"]          # SHORT geometry
@@ -69,7 +70,7 @@ def test_fx_ready_is_withheld_when_stale_or_spread_fails(stub_symbol_verified):
     session, post = _fx("EURUSD", "ASIAN_LONDON")
     at = dt.datetime(2026, 1, 5, 7, 35, tzinfo=UTC)
     build = lambda **kw: build_fx_ticket("EURUSD", "ASIAN_LONDON", DAY, session, 2, post,  # noqa: E731
-                                         data_source="FIXTURE", **kw)
+                                         data_source="FIXTURE", strategy_path=STRATEGY_PATH, **kw)
     old = build(evaluated_at=at + dt.timedelta(minutes=11), data_close=at, spread=0.0001)       # signal closed 16 min ago
     assert (old["decision"], old["reason_code"], old["suppressed_decision"]) == ("STALE", "STALE_SIGNAL", "READY")
     stale_data = build(evaluated_at=at, data_close=at - dt.timedelta(minutes=16), spread=0.0001)
@@ -90,7 +91,8 @@ def test_stale_is_measured_from_signal_bar_close_not_open(stub_symbol_verified):
     session, _ = _fx("EURUSD", "ASIAN_LONDON")
     post = [_c(7, 0, 1.1005, 1.1060, 1.1000, 1.1048, 1.0)]               # signal bar opens 07:00, closes 07:15
     build = lambda at: build_fx_ticket("EURUSD", "ASIAN_LONDON", DAY, session, 2, post,  # noqa: E731
-                                       data_source="FIXTURE", evaluated_at=at, data_close=at, spread=0.0001)
+                                       data_source="FIXTURE", evaluated_at=at, data_close=at, spread=0.0001,
+                                       strategy_path=STRATEGY_PATH)
     fresh, late = build(dt.datetime(2026, 1, 5, 7, 16, tzinfo=UTC)), build(dt.datetime(2026, 1, 5, 7, 31, tzinfo=UTC))
     assert fresh["signal_timestamp"] == "2026-01-05T07:00:00+00:00"
     assert fresh["signal_close_utc"] == "2026-01-05T07:15:00+00:00"
@@ -113,10 +115,10 @@ def test_crypto_stale_gate_uses_mss_bar_close():
 def test_fx_ticket_no_trade_and_data_error_never_invent_a_setup():
     session, post = _fx("EURUSD", "ASIAN_LONDON")
     no_trade = build_fx_ticket("EURUSD", "ASIAN_LONDON", DAY, session, 2, post[:1], data_source="FIXTURE",
-                               evaluated_at=dt.datetime(2026, 1, 5, 9, tzinfo=UTC))
+                               evaluated_at=dt.datetime(2026, 1, 5, 9, tzinfo=UTC), strategy_path=STRATEGY_PATH)
     assert no_trade["decision"] == "NO_TRADE" and "entry" not in no_trade
     broken = build_fx_ticket("EURUSD", "ASIAN_LONDON", DAY, [], 2, [], data_source="FIXTURE",
-                             evaluated_at=dt.datetime(2026, 1, 5, 9, tzinfo=UTC))
+                             evaluated_at=dt.datetime(2026, 1, 5, 9, tzinfo=UTC), strategy_path=STRATEGY_PATH)
     assert broken["decision"] in ("DATA_ERROR", "NO_TRADE") and "entry" not in broken
     with pytest.raises(ValueError):
         build_fx_ticket("AUDUSD", "ASIAN_LONDON", DAY, session, 2, post, data_source="X", evaluated_at=dt.datetime.now(UTC))
@@ -142,7 +144,7 @@ def test_paper_trade_requires_fresh_complete_host_ready_ticket(stub_symbol_verif
     now = dt.datetime(2026, 1, 5, 7, 35, tzinfo=UTC)
     ticket = build_fx_ticket("EURUSD", "ASIAN_LONDON", DAY, session, 2, post,
                              data_source="MT5_VT_MARKETS_DEMO", evaluated_at=now,
-                             data_close=now, spread=0.0001)
+                             data_close=now, spread=0.0001, strategy_path=STRATEGY_PATH)
     ticket["metadata_status"] = "HOST_CAPTURED"       # isolate this pure projection from host evidence
     eligible, reasons, valid_until = paper_eligibility(ticket, now)
     assert eligible and not reasons and valid_until == dt.datetime(2026, 1, 5, 7, 45, tzinfo=UTC)

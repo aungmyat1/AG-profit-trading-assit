@@ -186,7 +186,7 @@ def _pre_d6_ready_authority_on(request, monkeypatch):
     monkeypatch.setattr(ready_authority, "CONFIG_PATH", request.getfixturevalue("_ready_authority_on_file"))
     monkeypatch.setattr(ready_authority, "OWNER_DECISION_REGISTER_PATH",
                         request.getfixturevalue("_owner_ready_record_file"))
-    monkeypatch.setattr(ready_authority, "symbol_verified", lambda *a, **k: True)
+    monkeypatch.setattr(ready_authority, "logic_scope_verified", lambda *a, **k: True)
 
 
 @pytest.fixture
@@ -195,7 +195,7 @@ def stub_symbol_verified(monkeypatch):
     READY gate. For tests that pin engine/gate READY logic of 1.1.1 tickets, which predate the gate
     (2026-10-10). The real gate is covered by tests/test_d6_per_symbol_verification.py."""
     import v1_tickets.ready_authority as ready_authority
-    monkeypatch.setattr(ready_authority, "symbol_verified", lambda *a, **k: True)
+    monkeypatch.setattr(ready_authority, "logic_scope_verified", lambda *a, **k: True)
 
 
 @pytest.fixture

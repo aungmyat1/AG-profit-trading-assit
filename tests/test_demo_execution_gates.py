@@ -49,9 +49,15 @@ def _fixture_scope(tmp_path: Path, *, enabled: bool = True, ready_on: bool = Tru
     registry = _yaml(REGISTRY)
     strategy = registry["strategies"]["ST_ASIAN_SWEEP_5R_V1"]
     candidate = strategy["candidate_versions"]["1.1.2"]
-    # Test-only representation of #142's GBPUSD/SWEEP verification; production uses
-    # the selected-base registry verbatim and stays blocked until its own evidence lands.
-    candidate["logic_verified_symbols"] = [{"symbol": "GBPUSD", "evidence": "TEST_ONLY_PR142_FIXTURE"}]
+    # Test-only identity-pinned S1 row, matching the registry schema enforced by #142.
+    from v1_tickets.authority import logic_identity
+    identity = logic_identity("ST_ASIAN_SWEEP_5R_V1", "1.1.2")
+    candidate["logic_verified_scopes"] = [{
+        "scope_id": "S1", "symbol": "GBPUSD", "session": "ASIAN_LONDON", "branch": "RANGE_SWEEP",
+        "engine_setup": "SWEEP", "status": "LOGIC_VERIFIED", "config_source": candidate["config_source"],
+        "contract_hash": identity["contract_hash"], "engine_hash": identity["engine_identity"],
+        "identity_hash": identity["digest"], "evidence": "TEST_ONLY_PR142_FIXTURE",
+    }]
     registry_path = tmp_path / "registry.yaml"
     _write_yaml(registry_path, registry)
 
@@ -102,6 +108,7 @@ def _ticket(scope, now: datetime, **updates):
         "logic_identity": scope.logic_identity,
         "symbol": scope.symbol,
         "cycle": scope.session,
+        "regime": "RANGE",
         "setup": scope.setup_branch,
         "branch": "SWEEP:TEST_ONLY",
         "direction": "LONG",
@@ -255,6 +262,21 @@ def test_scope_mismatch_has_a_canonical_block_reason(tmp_path, changes, reason):
         now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
     )
     assert (result.admitted, result.reason_code) == (False, reason)
+
+
+def test_scope_is_primary_and_records_other_available_risk_and_cost_blocks(tmp_path):
+    inputs = _pre_send_inputs(tmp_path)
+    inputs["ticket"]["symbol"] = "EURUSD"
+    inputs["risk_snapshot"] = replace(inputs["risk_snapshot"], strategy_trades_today=5)
+    inputs["market"] = replace(inputs["market"], broker_symbol="WRONG-SYMBOL")
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], inputs["market"], inputs["risk_snapshot"],
+        now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]), scope=inputs["scope"],
+    )
+    assert result.reason_code == "SYMBOL_SCOPE_MISMATCH"
+    assert result.details["primary_block_reason"] == "SYMBOL_SCOPE_MISMATCH"
+    assert "STRATEGY_DAILY_TRADE_LIMIT" in result.details["block_reasons"]
+    assert "BROKER_SYMBOL_SCOPE_MISMATCH" in result.details["block_reasons"]
 
 
 def test_owner_ready_binding_must_be_on_and_record_bound(tmp_path):

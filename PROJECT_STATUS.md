@@ -8,15 +8,7 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
-OD1011 owner decisions (2026-10-11) are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`:
-COMMISSION (VT demo Standard STP, commission_R 0, bound by login suffix; the full login only in gitignored
-local config), ROUNDING (ROUND_HALF_UP), SCOPE (branch-scoped LOGIC_VERIFIED) and L5 (PASS = accepted cost
-evidence applied correctly; a cost block is actionability). This change set records the decisions and the
-config only. Runtime wiring is pending: the FX commission reader is #132, and the verification harness, gate
-rounding and branch-scoped registry reader are #142. Until those merge, missing commission stays INSUFFICIENT
-and L5 stays WARN. OD1011-ROUNDING was amended on 2026-10-11: v1.1.2's frozen rounding is the engine's
-`fx._r` (Python `round()` on IEEE floats), which gates must replicate; versions >= 1.1.3 must use Decimal
-ROUND_HALF_UP (ledger item ROUNDING_V113_HALF_UP).
+OD1011 owner decisions (2026-10-11) are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`. OD1011-ROUNDING was amended: v1.1.2 uses its frozen engine `fx._r` (Python `round()` on IEEE floats); versions >=1.1.3 use Decimal ROUND_HALF_UP. Runtime verification for `ST_ASIAN_SWEEP_5R_V1@1.1.2` is scoped to GBPUSD × ASIAN_LONDON × SWEEP; EURUSD remains suspended and other branches fail closed. The D60 replay reports S1 L1–L6 PASS; evidence is `docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json`. D6 READY remains OFF.
 
 DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
 2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
@@ -257,7 +249,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `6262952aa18c12e9be6ba9348c43f15adb33a048a6fd15672953971f865ea1e6`.
+inputs_sha256: `7175b47649e83c2f1f2215c4803a100a6354ebb5746248cb3ec6e5cbfcab5802`.
 <!-- [[[end]]] -->
 
 ### Objective
