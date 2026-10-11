@@ -8,6 +8,16 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+OD1011 owner decisions (2026-10-11) are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`:
+COMMISSION (VT demo Standard STP, commission_R 0, bound by login suffix; the full login only in gitignored
+local config), ROUNDING (ROUND_HALF_UP), SCOPE (branch-scoped LOGIC_VERIFIED) and L5 (PASS = accepted cost
+evidence applied correctly; a cost block is actionability). This change set records the decisions and the
+config only. Runtime wiring is pending: the FX commission reader is #132, and the verification harness, gate
+rounding and branch-scoped registry reader are #142. Until those merge, missing commission stays INSUFFICIENT
+and L5 stays WARN. OD1011-ROUNDING was amended on 2026-10-11: v1.1.2's frozen rounding is the engine's
+`fx._r` (Python `round()` on IEEE floats), which gates must replicate; versions >= 1.1.3 must use Decimal
+ROUND_HALF_UP (ledger item ROUNDING_V113_HALF_UP).
+
 DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
 2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
 with the VT server-time rule (server time = New York time + 7h). They no longer use one
@@ -247,7 +257,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `c8788d3b81d4bf5df8ce9979a07b419b9b1d1d967e01a6b7f84fd1e7c3c997eb`.
+inputs_sha256: `415ed5de9be7ce87c0ab4d6e278efacec63797d4a3f01525d744dd921782e120`.
 <!-- [[[end]]] -->
 
 ### Objective

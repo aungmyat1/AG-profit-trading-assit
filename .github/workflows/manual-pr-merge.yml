@@ -74,4 +74,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr_number }}
           EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
-        run: python scripts/governance/post_merge_verify.py verify --repo "$GITHUB_REPOSITORY" --pr "$PR_NUMBER" --expected-head-sha "$EXPECTED_HEAD_SHA" --timeout-seconds 2700 --poll-seconds 20
+        run: python scripts/governance/post_merge_verify.py verify --repo "$GITHUB_REPOSITORY" --pr "$PR_NUMBER" --expected-head-sha "$EXPECTED_HEAD_SHA" --timeout-seconds 2700 --poll-seconds 20 --json-out "$RUNNER_TEMP/post-merge-result.json"
+      - name: Upload pre-merge audit and post-merge result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manual-pr-merge-${{ inputs.pr_number }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/audit.json
+            ${{ runner.temp }}/audit.md
+            ${{ runner.temp }}/post-merge-result.json
+          if-no-files-found: warn

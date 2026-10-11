@@ -1,3 +1,4 @@
+# Safe dry-run: workflow_dispatch only collects and classifies evidence; it never writes PRs or merges.
 name: PR merge readiness audit
 
 on:
@@ -5,6 +6,7 @@ on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
   schedule:
     - cron: "17 3 * * 1-5"

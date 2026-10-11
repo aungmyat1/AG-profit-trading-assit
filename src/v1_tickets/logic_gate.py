@@ -30,6 +30,7 @@ from v1_tickets.guards import (
     MAX_SPREAD_RISK_FRACTION,
     SIGNAL_STALE,
     STALE_AFTER,
+    cost_at_or_above,
 )
 
 PASS, FAIL, WARN, NOT_EVALUABLE = "PASS", "FAIL", "WARN", "NOT_EVALUABLE"
@@ -324,7 +325,12 @@ def l4_data_session(ticket: Dict[str, Any], *, ref_window, trade_window, referen
 
 def l5_cost(spread: Optional[float], risk: Optional[float], *, commission_r: Optional[float],
             warn_r: Optional[float]) -> Dict[str, Any]:
-    """Cost in R. Advisory only: never blocks. Owner warn level has no default."""
+    """Cost in R. Advisory only: never blocks. Owner warn level has no default.
+
+    The warn level triggers when the cost REACHES it (`config/owner_ticket.yaml`: "warn when spread +
+    commission reaches this many R"), the same inclusive boundary the crypto CFD gate and the
+    cost_block_R decision use -- so one owner threshold means one verdict in every asset class.
+    """
     spread_r = spread / risk if spread is not None and risk else None
     cost_r = spread_r + commission_r if spread_r is not None and commission_r is not None else spread_r
     complete = spread_r is not None and commission_r is not None
@@ -333,9 +339,9 @@ def l5_cost(spread: Optional[float], risk: Optional[float], *, commission_r: Opt
                PASS if spread_r is not None else WARN, "" if spread_r is not None else "SPREAD NOT AVAILABLE"),
         _check("L5.commission_R", "commission in R", commission_r, None,
                PASS if commission_r is not None else WARN, "" if commission_r is not None else "COMMISSION NOT AVAILABLE"),
-        _check("L5.cost_vs_warn_level", "cost_in_R <= owner_ticket.cost_warn_R",
+        _check("L5.cost_vs_warn_level", "cost_in_R < owner_ticket.cost_warn_R",
                round(cost_r, 4) if cost_r is not None else None, warn_r,
-               PASS if complete and warn_r is not None and cost_r <= warn_r else WARN,
+               PASS if complete and warn_r is not None and not cost_at_or_above(cost_r, warn_r) else WARN,
                "WARN LEVEL NOT SET" if warn_r is None else ("" if complete else "COST INCOMPLETE")),
     ]
     return _gate("L5", checks, advisory=True)
@@ -381,7 +387,8 @@ def reason_severity(reason: str) -> int:
         return 0
     if reason.startswith("DATA_ERROR:") or reason in DATA_METADATA_REASONS:
         return 1
-    if reason in ("RISK_CONFIG_MISSING", "COST_ABOVE_BLOCK_R"):
+    if reason in ("RISK_CONFIG_MISSING", "COST_ABOVE_BLOCK_R", "RISK_POLICY_AMBIGUOUS",
+                  "COMMISSION_INSUFFICIENT", "COMMISSION_INVALID"):
         return 2
     if reason == L5_WARN:
         return 5

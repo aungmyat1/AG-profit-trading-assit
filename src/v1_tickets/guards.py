@@ -28,6 +28,23 @@ def is_stale(close_time: Optional[dt.datetime], now: dt.datetime) -> bool:
     return close_time is None or now - close_time > STALE_AFTER
 
 
+# Owner cost thresholds (owner_ticket.cost_warn_R / cost_block_R, OD1009-D2) are decimal policy
+# values compared against a float quotient (spread / stop distance, plus commission). A cost whose
+# exact decimal value IS the threshold must trigger it: one ulp of binary division noise
+# (0.69 / 3.00 + 0.02 == 0.24999999999999997) must not turn an owner BLOCK into a pass, or an owner
+# WARN into silence. The tolerance is relative and five orders of magnitude tighter than the
+# 4-decimal cost_in_R the owner is shown, so it can never change a ticket-visible decision; it adds
+# no threshold and moves none.
+COST_R_TOL = 1e-9
+
+
+def cost_at_or_above(cost_r: Optional[float], threshold_r: Optional[float]) -> bool:
+    """True when a known cost_in_R reaches a known owner threshold. Unknown -> False, never zero."""
+    if cost_r is None or threshold_r is None:
+        return False
+    return cost_r >= threshold_r - COST_R_TOL * max(1.0, abs(threshold_r))
+
+
 def spread_check(spread: Optional[float], risk: Optional[float]) -> Dict[str, Any]:
     if spread is None or risk is None or not risk > 0 or spread < 0:
         return {"spread_check": "NOT_EVALUATED", "spread": spread}
