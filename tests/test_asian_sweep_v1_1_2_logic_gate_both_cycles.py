@@ -205,7 +205,7 @@ def test_every_owner_ticket_path_carries_edge_verified_false(monkeypatch, cycle,
     _, bars = CYCLES[cycle]
     d, _, now, session, post = windows(cycle, day)
     t = build_manual_ticket("EURUSD", cycle, d, session, bars, post, now=now, data_close=now, spread=TIGHT,
-                            owner=load_owner_config(), data_source="FIXTURE")
+                            owner=load_owner_config(), data_source="FIXTURE", commission_r=0.0)
     assert t["strategy_version"] == "1.1.2"
     assert t["invariants"]["edge_verified"] is False and t["invariants"]["orders_sent_by_system"] == 0
     assert t["state"] != "TICKET_READY" and t["owner_accept_allowed"] is False

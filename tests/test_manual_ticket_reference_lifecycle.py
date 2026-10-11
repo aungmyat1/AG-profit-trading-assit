@@ -129,7 +129,7 @@ def test_manual_ticket_before_reference_close_has_no_block_reasons_or_warnings()
     closed = [c for c in CANDLES if c.time + dt.timedelta(minutes=15) <= now]
     box = [c for c in closed if REF_START <= c.time < REF_END]
     t = mt.build_manual_ticket("EURUSD", "ASIAN_LONDON", DAY, box, 24, [], now=now, data_close=now,
-                               spread=0.00002, owner=owner)
+                               spread=0.00002, owner=owner, commission_r=0.0)
     assert t["state"] == REFERENCE_NOT_READY and t["ticket_status"] == REFERENCE_NOT_READY
     assert t["block_reasons"] == [] and t["warnings"] == [] and t["primary_block_reason"] is None
     assert t["owner_accept_allowed"] is False
