@@ -1,0 +1,65 @@
+{
+  "record": "host_s1_contain",
+  "date": "2026-10-11",
+  "captured_at_local": "2026-10-12T00:17+06:30",
+  "authorization": "owner-approved containment; terminal read-only; agent-config edit only",
+  "order_api_calls": 0,
+  "position_api_calls": 0,
+  "broker_mutation_count": 0,
+  "mt5_api_calls": ["initialize", "account_info", "terminal_info", "symbol_info(GBPUSD-VIP)", "history_orders_get", "history_deals_get", "positions_total", "orders_total", "shutdown"],
+  "steps": [
+    {
+      "id": "1",
+      "item": "MT5 built-in MCP disabled; Algo Trading OFF; demo account; AG read-only data path",
+      "result": "FAIL",
+      "cause": "127.0.0.1:22346 is still LISTENING, owned by the main terminal (started 2026-10-11 20:01:18; its log shows 'MCP started on 127.0.0.1:22346'). The owner's setting change has not taken effect in the running process. A terminal restart is not authorized under the freeze, so this was not changed.",
+      "sub_checks": [
+        {"check": "port 127.0.0.1:22346 not listening", "result": "FAIL", "evidence": "LISTEN 127.0.0.1:22346, owner = main terminal process; 22345 not listening"},
+        {"check": "Algo Trading OFF in all terminals logged into ...985", "result": "PASS", "evidence": "one terminal running (C:\\Program Files\\MetaTrader 5); terminal_info.trade_allowed=false; account_info.trade_expert=true (account-side permission only)"},
+        {"check": "terminal on VTMarkets-Demo ...985", "result": "PASS", "evidence": {"login_suffix": "985", "server": "VTMarkets-Demo", "trade_mode": "DEMO", "positions": 0, "orders": 0}},
+        {"check": "AG read-only data path (one symbol_info read)", "result": "PASS", "evidence": {"symbol": "GBPUSD-VIP", "visible": true, "digits": 5, "bid_gt_0": true}}
+      ]
+    },
+    {
+      "id": "2",
+      "item": "Remove MT5 order-capable MCP entries from host agent configs",
+      "result": "PASS",
+      "before": [
+        "~/.claude.json [top-level mcpServers] terminal: url=http://127.0.0.1:22346/mcp (Authorization header; value not captured)  <-- removed",
+        "~/.claude.json [top-level mcpServers] marketdata: url=https://www.metatrader.com/mcp (public market data, kept)",
+        "Claude desktop config mt5ReadOnly: node start_mt5_mcp.mjs (kept)",
+        "parent repo .mcp.json mt5ReadOnly: node web/scripts/start_mt5_mcp.mjs (kept)",
+        "~/.codex/config.toml mt5_servers.mt5ReadOnly: node start_mt5_mcp.mjs (kept)",
+        "VS Code user mcp.json chrome-devtools-mcp (unrelated, kept)"
+      ],
+      "after": [
+        "~/.claude.json: no reference to 127.0.0.1:22345/22346; 'terminal' absent",
+        "all other entries unchanged"
+      ],
+      "kept_rationale": "mt5ReadOnly goes through readonly_mcp_proxy.mjs (allowTool = isReadOnlyMt5Tool), so only read tools are exposed to the agent. The '\"mt5-trading\"' key in ~/.claude.json is a skill usage counter, not an MCP server.",
+      "backup": "<HOST_SCRATCHPAD>/mcp_backup/.claude.json.bak",
+      "repo_side": "the dev repo .mcp.json 'terminal' (22346) and 'metaeditor' (22345) entries are removed in a separate PR (fix/mcp-no-order-capable)"
+    },
+    {
+      "id": "3",
+      "item": "ContinuationBreakout_EA (magic 102233) orders last 7 days; free RAM; metatester64 count",
+      "result": "PASS",
+      "evidence": {
+        "magic_102233_orders_7d": 0,
+        "magic_102233_deals_7d": 0,
+        "history_orders_7d_by_magic": {"0": 10, "112201": 2, "112202": 2},
+        "magic_112201_112202": "Crypto_VBO_EA (comments 'Crypto VBO Long'/'Crypto VBO Short'), BTCUSD/ETHUSD stop orders set up 2026-10-11 13:21 and 14:00 server time (UTC+3), all CANCELED. Crypto_VBO_EA is still attached in the portable terminal's Default profile (chart06 BTCUSD); that terminal is not running and its exe is .disabled.",
+        "magic_0_orders": "10: the 2 SMC SHORT IOC orders (owner via MT5 AI Assistant), their 2 SL fills, and 6 BTC/ETH orders on 2026-10-10/11 (comments 'Buy Limit Retest', 'Sell Limit Sweep', 'ETH Retest Long 1%', 'ETH Sweep Short 1%', plus a TP fill and a close)",
+        "ram_free_gb": 1.09,
+        "ram_total_gb": 7.21,
+        "metatester64_count": 4
+      }
+    },
+    {
+      "id": "4",
+      "item": "PR #157 evidence update",
+      "result": "PASS",
+      "evidence": "host_s1_freeze_audit_2026-10-11.json item 2 -> ATTRIBUTED (owner via MT5 AI Assistant, orders 798328269/802393463); item 2b -> OWNER_CONFIRMED (manual live login, no trades)"
+    }
+  ]
+}
