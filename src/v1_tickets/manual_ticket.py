@@ -14,6 +14,7 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
@@ -28,7 +29,7 @@ from ticket_delivery.identity import logical_ticket_id
 from v1_tickets import fx
 from v1_tickets.authority import REPO_ROOT, TicketAuthority, resolve_ticket_authority
 from v1_tickets.code_identity import code_sha
-from v1_tickets.guards import SPREAD_TOO_WIDE, STALE_AFTER
+from v1_tickets.guards import SPREAD_TOO_WIDE, STALE_AFTER, cost_at_or_above
 from v1_tickets.logic_gate import (
     FAIL,
     L5_WARN,
@@ -62,6 +63,11 @@ RISK_NOT_SET_TEXT = "OWNER RISK % NOT SET"
 WARN_NOT_SET_TEXT = "WARN LEVEL NOT SET"
 COST_ABOVE_BLOCK_R = "COST_ABOVE_BLOCK_R"
 REQUIRED_OWNER_KEYS = ("risk_pct", "cost_warn_R", "cost_block_R")
+# Reason codes for the FX/gold gate. RISK_POLICY_AMBIGUOUS is the code crypto_cfd_policy raises for the
+# same inverted pair (cost_warn_R >= cost_block_R); the others fail closed on commission_r.
+RISK_POLICY_AMBIGUOUS = "RISK_POLICY_AMBIGUOUS"
+COMMISSION_INSUFFICIENT = "COMMISSION_INSUFFICIENT"   # commission_r not supplied: cost not established
+COMMISSION_INVALID = "COMMISSION_INVALID"             # commission_r negative or non-finite
 OWNER_CONFIG = "config/owner_ticket.yaml"
 OWNER_CONFIG_LOCAL = "config/local/owner_ticket.yaml"
 TICKET_DIR = os.path.join("ticket_delivery", "manual", "tickets")
@@ -70,6 +76,35 @@ _MARK = {PASS: "✓", FAIL: "✗", WARN: "⚠"}
 
 
 # ------------------------------------------------------------------------- owner config (C4)
+
+COMMISSION_DECISION_ID = "OD1011-COMMISSION"
+
+
+def resolve_commission(owner: Dict[str, Any], account_login: Any) -> Any:
+    """Commission in R for this account from owner_ticket.commission (decision OD1011-COMMISSION).
+
+    Returns the configured raw value only when the block is present, names OD1011-COMMISSION, is bound
+    to the same account as the running terminal. Anything else -- no block, other decision id, unknown
+    runtime account, or an account mismatch -- returns None, which the builder reports as
+    COMMISSION_INSUFFICIENT. Never returns 0 and never invents a value; a non-numeric or negative
+    value is returned raw so the builder classifies it as COMMISSION_INVALID.
+    """
+    c = owner.get("commission")
+    if not isinstance(c, dict) or c.get("decision_id") != COMMISSION_DECISION_ID:
+        return None
+    if account_login is None:
+        return None
+    login = str(account_login)
+    # Binding needs BOTH: a full login from gitignored config/local (exact runtime match) that also
+    # ends with the committed account_login_suffix. Suffix alone (no local login) fails closed.
+    full = c.get("account_login")
+    suffix = c.get("account_login_suffix")
+    if full is None or suffix is None or len(str(suffix)) < 3:
+        return None
+    if login != str(full) or not login.endswith(str(suffix)):
+        return None
+    return c.get("commission_R")
+
 
 def _positive(value: Any) -> Optional[float]:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
@@ -93,10 +128,20 @@ def load_owner_config(root: Path = REPO_ROOT) -> Dict[str, Any]:
     risk = _positive(block.get("risk_pct"))
     warn = _positive(block.get("cost_warn_R"))
     cost_block = _positive(block.get("cost_block_R"))
-    config_status = "SET" if all(x is not None for x in (risk, warn, cost_block)) else RISK_CONFIG_MISSING
+    # OD1009-D2 inverted pair: warn must sit strictly below block. Same code crypto raises; no sizing.
+    inverted = warn is not None and cost_block is not None and warn >= cost_block
+    if inverted:
+        warn = cost_block = None
+    if inverted:
+        config_status = RISK_POLICY_AMBIGUOUS
+    else:
+        config_status = "SET" if all(x is not None for x in (risk, warn, cost_block)) else RISK_CONFIG_MISSING
     return {"risk_pct": risk, "risk_status": config_status,
             "cost_warn_R": warn, "cost_block_R": cost_block,
-            "warn_status": "SET" if warn is not None else "NOT_SET"}
+            "warn_status": "SET" if warn is not None else "NOT_SET",
+            "policy_status": "AMBIGUOUS" if inverted else "OK",
+            # OD1011-COMMISSION block, raw; validated by resolve_commission / build_manual_ticket.
+            "commission": block.get("commission") if isinstance(block.get("commission"), dict) else None}
 
 
 def symbol_meta_from_host(symbol: str) -> Optional[SymbolMeta]:
@@ -144,23 +189,30 @@ def resolve_symbol_meta(symbol: str, live: Optional[SymbolMeta], now: dt.datetim
 
 def lot_size(entry: Optional[float], sl: Optional[float], owner: Dict[str, Any], balance: Optional[float],
              meta: Optional[SymbolMeta]) -> Dict[str, Any]:
-    if owner["risk_pct"] is None:
+    # `.get`, never `[]`: a required owner key that is absent has the same fail-closed meaning as one
+    # that is present and unusable -- RISK_CONFIG_MISSING and no sizing at all. No other value, and
+    # specifically no account-wide execution-runtime risk default, is ever substituted here.
+    risk_pct = owner.get("risk_pct")
+    if owner.get("policy_status") == "AMBIGUOUS":
+        return {"lot": RISK_NOT_SET_TEXT, "status": RISK_POLICY_AMBIGUOUS, "risk_pct": None}
+    if risk_pct is None:
         return {"lot": RISK_NOT_SET_TEXT, "status": RISK_CONFIG_MISSING, "risk_pct": None}
     if balance is None or not balance > 0:
-        return {"lot": None, "status": "ACCOUNT_BALANCE_UNAVAILABLE", "risk_pct": owner["risk_pct"]}
+        return {"lot": None, "status": "ACCOUNT_BALANCE_UNAVAILABLE", "risk_pct": risk_pct}
     if meta is None or not meta.tick_size > 0 or not meta.tick_value > 0 or not meta.volume_step > 0:
-        return {"lot": None, "status": "SYMBOL_METADATA_MISSING", "risk_pct": owner["risk_pct"]}
+        return {"lot": None, "status": "SYMBOL_METADATA_MISSING", "risk_pct": risk_pct}
     if entry is None or sl is None:
-        return {"lot": None, "status": "INVALID_STOP_DISTANCE", "risk_pct": owner["risk_pct"]}
-    volume, risk_amount, reason = size_position(entry, sl, balance, owner["risk_pct"], meta)
-    return {"lot": volume, "status": reason or "OK", "risk_pct": owner["risk_pct"],
+        return {"lot": None, "status": "INVALID_STOP_DISTANCE", "risk_pct": risk_pct}
+    volume, risk_amount, reason = size_position(entry, sl, balance, risk_pct, meta)
+    return {"lot": volume, "status": reason or "OK", "risk_pct": risk_pct,
             "risk_amount": round(risk_amount, 2) if risk_amount is not None else None, "balance": balance}
 
 
 def collect_block_reasons(*, failed_gates: Sequence[str], base_state: str, base_reason: Optional[str],
                           lot_status: str, spread_check: Optional[str], expired: bool,
                           l5_status: str, owner_config_missing: bool = False,
-                          cost_blocked: bool = False) -> "tuple[List[str], List[str]]":
+                          cost_blocked: bool = False,
+                          cost_unknown_reasons: Sequence[str] = ()) -> "tuple[List[str], List[str]]":
     """(block_reasons, warnings) for a ticket with a signal. Pure; ordered by severity (A2)."""
     reasons: List[Optional[str]] = ["LOGIC_GATE_FAIL:" + g for g in failed_gates]
     if base_state != TICKET_READY:
@@ -171,6 +223,7 @@ def collect_block_reasons(*, failed_gates: Sequence[str], base_state: str, base_
         reasons.append(lot_status)
     if cost_blocked:
         reasons.append(COST_ABOVE_BLOCK_R)
+    reasons.extend(cost_unknown_reasons)                    # unknown cost / commission: fail closed
     # The legacy guard returns one decision (stale fires before spread), but it records the
     # spread result first; a too-wide spread is a block reason in its own tier either way.
     if spread_check == SPREAD_TOO_WIDE:
@@ -228,6 +281,14 @@ def build_manual_ticket(
     if has_signal:
         digits = fx._digits(symbol)
         entry, sl, risk = base["entry"], base["stop_loss"], base["risk_distance"]
+        # commission_r: missing -> INSUFFICIENT, negative/non-finite -> BLOCK. Never defaulted to 0.
+        if commission_r is None:
+            commission_reasons = [COMMISSION_INSUFFICIENT]
+        elif not _valid_commission(commission_r):
+            commission_reasons = [COMMISSION_INVALID]
+        else:
+            commission_reasons = []
+        commission_ok = None if commission_reasons else float(commission_r)
         targets = {t["leg"]: t["price"] for t in base["targets"]}
         sig_open = (dt.datetime.fromisoformat(base["signal_timestamp"]) if base.get("signal_timestamp")
                     else (post[0].time if post else None))
@@ -249,17 +310,22 @@ def build_manual_ticket(
             "L4": l4_data_session(base, ref_window=windows["ref"], trade_window=windows["trade"],
                                   reference_name=pair.reference_session.name, session=session,
                                   expected_bar_count=expected_bar_count, post=post, data_close=data_close, now=now),
-            "L5": l5_cost(spread, risk, commission_r=commission_r, warn_r=owner["cost_warn_R"]),
+            "L5": l5_cost(spread, risk, commission_r=commission_ok, warn_r=owner.get("cost_warn_R")),
             "L6": l6_freshness(_iso(valid_until), stale_if, invalid_if),
         }
         lot = lot_size(entry, sl, owner, balance, meta)
-        owner_config_missing = any(_positive(owner.get(key)) is None for key in REQUIRED_OWNER_KEYS)
+        warn_r = owner.get("cost_warn_R")
+        # An inverted pair is reported as RISK_POLICY_AMBIGUOUS (via lot status), not as a missing key.
+        owner_config_missing = (owner.get("policy_status") != "AMBIGUOUS"
+                                and any(_positive(owner.get(key)) is None for key in REQUIRED_OWNER_KEYS))
         lot["symbol_meta"] = meta_provenance or {"source": "CALLER_SUPPLIED" if meta is not None else META_NONE,
                                                  "broker_symbol": meta.symbol if meta is not None else None}
         spread_r = spread / risk if spread is not None and risk else None
-        cost_r = spread_r + (commission_r or 0.0) if spread_r is not None else None
+        # Unknown spread or commission -> cost_r None (never 0); the ticket then blocks via reason codes.
+        cost_r = spread_r + commission_ok if spread_r is not None and commission_ok is not None else None
         cost_block_r = _positive(owner.get("cost_block_R"))
         cost_blocked = cost_at_or_above_block(cost_r, cost_block_r)
+        cost_unknown = commission_reasons
         ticket.update({
             "branch": f"{base['setup']}:{base['reason_code'] if base['decision'] == 'READY' else base.get('engine_reason_code', base['reason_code'])}",
             "rule_evidence": gates["L2"]["checks"],
@@ -269,7 +335,8 @@ def build_manual_ticket(
             "stop_distance": risk, "lot_size": lot["lot"],
             "risk_status": RISK_CONFIG_MISSING if owner_config_missing else lot["status"], "risk": lot,
             "cost_in_R": round(cost_r, 4) if cost_r is not None else None,
-            "cost_warn_R": owner["cost_warn_R"] if owner["cost_warn_R"] is not None else WARN_NOT_SET_TEXT,
+            "cost_in_R_display": cost_display(cost_r, owner.get("cost_warn_R"), cost_block_r),
+            "cost_warn_R": warn_r if warn_r is not None else WARN_NOT_SET_TEXT,
             "cost_block_R": cost_block_r if cost_block_r is not None else RISK_CONFIG_MISSING,
             "logic_gate": gates, "valid_until": _iso(valid_until), "stale_if": stale_if, "invalid_if": invalid_if,
             "signal_close_utc": _iso(signal_close),
@@ -278,7 +345,7 @@ def build_manual_ticket(
             failed_gates=blocking_failures(gates), base_state=state, base_reason=reason,
             lot_status=lot["status"], spread_check=base.get("spread_check"), expired=now >= valid_until,
             l5_status=gates["L5"]["status"], owner_config_missing=owner_config_missing,
-            cost_blocked=cost_blocked)
+            cost_blocked=cost_blocked, cost_unknown_reasons=cost_unknown)
         warnings.extend(gate_warnings)
         if block_reasons:
             state, reason = TICKET_BLOCKED, block_reasons[0]
@@ -369,7 +436,7 @@ def render_text(t: Dict[str, Any]) -> str:
         f"TP1 {_p(t['tp1'])} ({_p(t['rr_tp1'])}R), TP2 {_p(t['tp2'])} ({_p(t['rr_tp2'])}R)",
         f"RISK: stop {_p(t['stop_distance'])}, lot {_p(t['lot_size'])} @ "
         f"{_p(t['risk']['risk_pct']) + ' %' if t['risk']['risk_pct'] is not None else RISK_NOT_SET_TEXT}"
-        f" [{t['risk_status']}], cost {_p(t['cost_in_R'])} R"
+        f" [{t['risk_status']}], cost {t.get('cost_in_R_display') or _p(t['cost_in_R'])} R"
         f" (warn {t['cost_warn_R']}; {l5['L5.commission_R']['note'] or 'commission incl.'})"
         + _meta_note(t['risk'].get('symbol_meta')),
         f"VALID UNTIL {t['valid_until']} / STALE IF {t['stale_if']['rule']} / "
@@ -465,9 +532,36 @@ def crypto_cfd_commission(symbol: str, root: Path = REPO_ROOT) -> Optional[float
     return float(value) if type(value) in (int, float) and math.isfinite(value) and value >= 0 else None
 
 
+def _valid_commission(value: Any) -> bool:
+    """commission_R is valid only at 0 (OD1011-COMMISSION). A non-zero value is never R units:
+    a non-zero commission needs a per-lot field (future)."""
+    return type(value) in (int, float) and math.isfinite(value) and value == 0
+
+
+def cost_display(cost_r: Optional[float], warn_r: Optional[float], block_r: Optional[float]) -> Optional[str]:
+    """Owner-visible cost. When the 4dp value equals a threshold, name the side the exact value decided.
+
+    e.g. exact 0.24996 shows "0.2500 (<0.25, WARN)": displayed at the block level, decided as WARN.
+    """
+    if cost_r is None:
+        return None
+    text = f"{round(cost_r, 4):.4f}"
+    side = "BLOCK" if cost_at_or_above(cost_r, block_r) else (
+        "WARN" if cost_at_or_above(cost_r, warn_r) else "PASS")
+    for threshold in (block_r, warn_r):
+        if threshold is not None and round(threshold, 4) == round(cost_r, 4):
+            above = cost_at_or_above(cost_r, threshold)
+            return f"{text} ({'>=' if above else '<'}{threshold:g}, {side})"
+    return text
+
+
 def cost_at_or_above_block(cost_r: Optional[float], block_r: Optional[float]) -> bool:
-    """Shared FX/crypto threshold predicate: the configured boundary itself blocks."""
-    return cost_r is not None and block_r is not None and cost_r >= block_r
+    """Shared FX/crypto threshold predicate: the configured boundary itself blocks (OD1009-D2).
+
+    Delegates to guards.cost_at_or_above so a cost whose exact decimal value IS cost_block_R blocks
+    even when binary division lands one ulp below it -- and so FX, gold and crypto cannot drift apart.
+    """
+    return cost_at_or_above(cost_r, block_r)
 
 
 def crypto_cfd_cost_gate(distance: float, spread: float, commission_r: Optional[float],
@@ -486,7 +580,7 @@ def crypto_cfd_cost_gate(distance: float, spread: float, commission_r: Optional[
         warnings.append("SPREAD_WARN")
     if cost_at_or_above_block(cost, policy["cost_block_R"]):
         blocks.append("COST_TOO_HIGH")
-    elif policy["cost_warn_R"] is not None and cost >= policy["cost_warn_R"]:
+    elif cost_at_or_above(cost, policy["cost_warn_R"]):
         warnings.append("COST_WARN")
     return blocks, warnings, pct, cost
 

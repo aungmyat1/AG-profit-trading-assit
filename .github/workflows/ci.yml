@@ -6,6 +6,7 @@ run-name: ${{ github.event_name == 'workflow_dispatch' && format('CI dispatch {0
 on:
   push:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   # Dispatched by manual-pr-merge.yml: its GITHUB_TOKEN merge emits no push-triggered runs.
   workflow_dispatch:
     inputs:
@@ -62,7 +63,7 @@ jobs:
             echo "Unable to identify the lint diff base" >&2
             exit 1
           fi
-          mapfile -t files < <(git diff --name-only --diff-filter=ACMRT "$base...HEAD" -- 'src/**/*.py' 'tests/**/*.py')
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMRT "$base...HEAD" -- 'src/**/*.py' 'tests/**/*.py' 'tests/*.py')
           if ((${#files[@]})); then
             ruff check "${files[@]}"
           else

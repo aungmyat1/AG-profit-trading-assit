@@ -5,6 +5,9 @@ Market-structure analysis uses fresh computation; [offline byte-comparison evide
 Standalone canonical-ticket Telegram delivery is offline tested and disabled by
 default (`TELEGRAM_DELIVERY_ENABLED=false`). See [configuration, schema gaps and
 limits](docs/status/AGP_TG_01_OFFLINE_2026-10-08.md); no live delivery is validated.
+An `ON` value in the READY switch alone does not authorize READY tickets: the runtime also
+requires a matching owner decision record bound to the loaded contract, strategy version,
+symbol, and session. Production READY remains OFF.
 The canonical ticket's `trigger` block carries `signal_time_source`. It is `ENGINE` when the
 engine stamped the signal bar, `MISSING` when a signal has no engine time (that ticket is
 `DATA_ERROR` / `SIGNAL_TIME_UNAVAILABLE`), and `NOT_APPLICABLE` for non-signal outcomes. Tickets
@@ -316,7 +319,10 @@ powershell -ExecutionPolicy Bypass -File scripts\host\verify_tasks.ps1
 
 The same FX task also builds MANUAL trade tickets (owner decides; never an order), writes a
 scan record for every symbol, resolves `VIRTUAL_FORWARD` outcomes once a day, and archives a
-daily report. Owner risk % has no default: set it in `config/local/owner_ticket.yaml`.
+daily report. Owner risk % has no default: set it in `config/local/owner_ticket.yaml`. The cost
+thresholds in that file are inclusive boundaries: a cost that reaches `cost_warn_R` warns, a cost
+that reaches `cost_block_R` blocks, and a missing key blocks the ticket
+([G3 verification](docs/status/AGP_G3_VERIFY_MANUAL_TICKET_RISK_COST_GATE_2026-10-10.md)).
 When delivery is explicitly enabled, `TICKET_READY` manual tickets include inline Accept /
 Reject controls. Accept records owner intent and remains blocked from execution by the
 default-off authority gates; Reject records without a handoff. Telegram callback handling

@@ -235,8 +235,33 @@ def test_merge_workflow_keeps_owner_gate_and_minimal_permissions():
     steps = "\n".join(str(step.get("run", "")) for step in job["steps"])
     assert "--match-head-commit" in steps and "validate_dispatch" in steps
     assert steps.index("post_merge_verify.py', 'preflight'") < steps.index("gh', 'pr', 'merge'")
-    assert "post_merge_verify.py verify" in steps
+    assert "post_merge_verify.py verify" in steps and "--json-out" in steps
+    artifacts = [step for step in job["steps"] if step.get("uses") == "actions/upload-artifact@v4"]
+    assert artifacts and artifacts[-1].get("if") == "always()"
+    artifact_paths = artifacts[-1]["with"]["path"]
+    assert "audit.json" in artifact_paths and "audit.md" in artifact_paths
+    assert "post-merge-result.json" in artifact_paths
+    audit_workflow = (ROOT / ".github/workflows/pr-merge-readiness.yml").read_text(encoding="utf-8")
+    assert "Safe dry-run" in audit_workflow
     for forbidden in ("order_send", "order_check", "execute_command", "mt5"):
         assert forbidden not in steps
     ci = yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
     assert ci[True]["workflow_dispatch"]["inputs"]["correlation_id"]["required"] is True
+
+
+def test_post_merge_cli_writes_machine_readable_failure_when_verification_raises(tmp_path, monkeypatch):
+    import post_merge_verify as pmv
+
+    monkeypatch.setattr(pmv, "_token", lambda: "test-token")
+
+    def fail(*_args, **_kwargs):
+        raise RuntimeError("GitHub API unavailable")
+
+    monkeypatch.setattr(pmv, "verify", fail)
+    out = tmp_path / "post-merge-result.json"
+    code = pmv.main(["verify", "--repo", "owner/repo", "--pr", "14", "--expected-head-sha", PR_HEAD,
+                     "--json-out", str(out)])
+    report = json.loads(out.read_text(encoding="utf-8"))
+    assert code == 1
+    assert report["state"] == POST_MERGE_FAILED
+    assert report["failure"] == {"type": "RuntimeError", "detail": "GitHub API unavailable"}

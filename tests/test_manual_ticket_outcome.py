@@ -73,7 +73,7 @@ def test_resolve_day_covers_taken_and_shadow_tickets_idempotently(stub_symbol_ve
     record_decision(journal, stored, ManualTicketDecision(
         ticket_id=ready["ticket_id"], decision="TAKEN", recorded_at="2026-06-23T08:00:00+00:00",
         fill_time="2026-06-23T07:22:00+00:00", actual_fill=1.14295, actual_sl=1.14351))
-    shadow = manual("2026-06-17", "07:20")                    # real v1.1.1 ticket: blocked, no decision
+    shadow = manual("2026-06-17", "07:20", commission_r=None)  # real v1.1.1 ticket: blocked, no commission
     mt.archive_manual_ticket(journal, shadow)
 
     m15 = dt.timedelta(minutes=15)
@@ -89,7 +89,8 @@ def test_resolve_day_covers_taken_and_shadow_tickets_idempotently(stub_symbol_ve
     assert taken["virtual_outcome"]["result"] in (TP1, SL, EXPIRY, AMBIGUOUS) and "owner_trade_outcome" in taken
     sh = read_jsonl(outcome_path(journal, dt.date(2026, 6, 17)))[0]
     assert sh["owner_decision"] is None and sh["raw_proposal"]["state"] == "TICKET_BLOCKED"
-    assert sh["cost_basis"] == "SPREAD_ONLY_COMMISSION_NOT_AVAILABLE"
+    # commission unknown -> cost unknown (fail closed): NOT_AVAILABLE, never a spread-only partial cost
+    assert sh["cost_basis"] == "NOT_AVAILABLE"
     from ticket_store.store import TicketStore, REPLAY
     stored_outcomes = TicketStore(str(__import__("os").path.join(journal, "ticket_store"))).outcomes()
     assert {o["source"] for o in stored_outcomes} == {REPLAY}
