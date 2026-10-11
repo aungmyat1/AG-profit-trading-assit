@@ -1,0 +1,749 @@
+{
+ "schema": "AG_HOST_DST_ROLLOVER_V1",
+ "mission": "CS-DST-FIX-01 host verification",
+ "captured_on_host": true,
+ "host_repo": "D:/wp3-main-integ",
+ "host_head_sha": "1d8891392fc522e9b979008e6f4be0091d9309b2",
+ "host_update": "git pull --ff-only origin main (pull-only)",
+ "broker_mutation": "NONE (no order_check/order_send/symbol_select/position calls)",
+ "account_guard": "DEMO_ACCOUNT_VERIFIED",
+ "environment": "Windows 10 host, VT Markets MT5 terminal build 6230, .venv python",
+ "verdict": "PASS_WITH_LIMITATION",
+ "verdict_detail": "Per-bar server wall clock = America/New_York + 7h on all 6 symbols across the Sun 2026-10-04 -> Mon 2026-10-05 rollover; FX/crypto server Mon 00:00 bar = NY Sun 17:00 (UTC 21:00Z); no gaps, 0 DST-hour drops. Live-tick offset cross-check NOT_EVALUABLE: FX closed (weekend) and VT crypto ticks stale (last tick server wall 2026-10-11T06:59:57 vs host 06:35Z, NTP-synced). AMBIGUOUS/NONEXISTENT_DST_HOUR path not exercisable until the 2026-11-01 US DST end; remains unit-tested only (tests/test_dst_transition_2026_11.py).",
+ "checks": {
+  "all_bars_server_eq_ny_plus_7": true,
+  "fx_week_open_at_ny_1700": true,
+  "live_tick_offset_eq_rule": "NOT_EVALUABLE_STALE_TICKS"
+ },
+ "rule_offset_now_h": 3,
+ "offset_rule": "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700: server_utc_offset_hours = America/New_York UTC offset + 7",
+ "rollover_sunday": "2026-10-04",
+ "server_window": [
+  "2026-10-04T12:00:00",
+  "2026-10-05T12:00:00"
+ ],
+ "live_tick_offsets": {
+  "EURUSD": {
+   "tick_server_wall": "2026-10-09T23:56:59",
+   "measured_offset_h": null
+  },
+  "GBPUSD": {
+   "tick_server_wall": "2026-10-09T23:56:59",
+   "measured_offset_h": null
+  },
+  "USDJPY": {
+   "tick_server_wall": "2026-10-09T23:56:57",
+   "measured_offset_h": null
+  },
+  "XAUUSD": {
+   "tick_server_wall": "2026-10-09T23:56:59",
+   "measured_offset_h": null
+  },
+  "BTCUSD": {
+   "tick_server_wall": "2026-10-11T06:59:57",
+   "measured_offset_h": null
+  },
+  "ETHUSD": {
+   "tick_server_wall": "2026-10-11T06:59:59",
+   "measured_offset_h": null
+  }
+ },
+ "dst_hour_handling": {
+  "ambiguous_dst_hour_drops": 0,
+  "nonexistent_dst_hour_drops": 0,
+  "note": "No US DST transition inside this window (next: 2026-11-01 06:00Z); AMBIGUOUS/NONEXISTENT_DST_HOUR drop path not exercisable live here, unit-tested only."
+ },
+ "symbols": {
+  "EURUSD": {
+   "broker_symbol": "EURUSD-VIP",
+   "bar_count": 13,
+   "per_bar_server_minus_ny_mismatch": 0,
+   "dst_hour_errors": [],
+   "gaps": [],
+   "monday_server_0000_bar": {
+    "server_wall": "2026-10-05T00:00:00",
+    "utc": "2026-10-04T21:00:00Z",
+    "ny_wall": "2026-10-04T17:00:00",
+    "server_minus_ny_h": 7.0
+   },
+   "bars": [
+    {
+     "server_wall": "2026-10-05T00:00:00",
+     "utc": "2026-10-04T21:00:00Z",
+     "ny_wall": "2026-10-04T17:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T01:00:00",
+     "utc": "2026-10-04T22:00:00Z",
+     "ny_wall": "2026-10-04T18:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T02:00:00",
+     "utc": "2026-10-04T23:00:00Z",
+     "ny_wall": "2026-10-04T19:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T03:00:00",
+     "utc": "2026-10-05T00:00:00Z",
+     "ny_wall": "2026-10-04T20:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T04:00:00",
+     "utc": "2026-10-05T01:00:00Z",
+     "ny_wall": "2026-10-04T21:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T05:00:00",
+     "utc": "2026-10-05T02:00:00Z",
+     "ny_wall": "2026-10-04T22:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T06:00:00",
+     "utc": "2026-10-05T03:00:00Z",
+     "ny_wall": "2026-10-04T23:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T07:00:00",
+     "utc": "2026-10-05T04:00:00Z",
+     "ny_wall": "2026-10-05T00:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T08:00:00",
+     "utc": "2026-10-05T05:00:00Z",
+     "ny_wall": "2026-10-05T01:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T09:00:00",
+     "utc": "2026-10-05T06:00:00Z",
+     "ny_wall": "2026-10-05T02:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T10:00:00",
+     "utc": "2026-10-05T07:00:00Z",
+     "ny_wall": "2026-10-05T03:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T11:00:00",
+     "utc": "2026-10-05T08:00:00Z",
+     "ny_wall": "2026-10-05T04:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T12:00:00",
+     "utc": "2026-10-05T09:00:00Z",
+     "ny_wall": "2026-10-05T05:00:00",
+     "server_minus_ny_h": 7.0
+    }
+   ]
+  },
+  "GBPUSD": {
+   "broker_symbol": "GBPUSD-VIP",
+   "bar_count": 13,
+   "per_bar_server_minus_ny_mismatch": 0,
+   "dst_hour_errors": [],
+   "gaps": [],
+   "monday_server_0000_bar": {
+    "server_wall": "2026-10-05T00:00:00",
+    "utc": "2026-10-04T21:00:00Z",
+    "ny_wall": "2026-10-04T17:00:00",
+    "server_minus_ny_h": 7.0
+   },
+   "bars": [
+    {
+     "server_wall": "2026-10-05T00:00:00",
+     "utc": "2026-10-04T21:00:00Z",
+     "ny_wall": "2026-10-04T17:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T01:00:00",
+     "utc": "2026-10-04T22:00:00Z",
+     "ny_wall": "2026-10-04T18:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T02:00:00",
+     "utc": "2026-10-04T23:00:00Z",
+     "ny_wall": "2026-10-04T19:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T03:00:00",
+     "utc": "2026-10-05T00:00:00Z",
+     "ny_wall": "2026-10-04T20:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T04:00:00",
+     "utc": "2026-10-05T01:00:00Z",
+     "ny_wall": "2026-10-04T21:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T05:00:00",
+     "utc": "2026-10-05T02:00:00Z",
+     "ny_wall": "2026-10-04T22:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T06:00:00",
+     "utc": "2026-10-05T03:00:00Z",
+     "ny_wall": "2026-10-04T23:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T07:00:00",
+     "utc": "2026-10-05T04:00:00Z",
+     "ny_wall": "2026-10-05T00:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T08:00:00",
+     "utc": "2026-10-05T05:00:00Z",
+     "ny_wall": "2026-10-05T01:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T09:00:00",
+     "utc": "2026-10-05T06:00:00Z",
+     "ny_wall": "2026-10-05T02:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T10:00:00",
+     "utc": "2026-10-05T07:00:00Z",
+     "ny_wall": "2026-10-05T03:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T11:00:00",
+     "utc": "2026-10-05T08:00:00Z",
+     "ny_wall": "2026-10-05T04:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T12:00:00",
+     "utc": "2026-10-05T09:00:00Z",
+     "ny_wall": "2026-10-05T05:00:00",
+     "server_minus_ny_h": 7.0
+    }
+   ]
+  },
+  "USDJPY": {
+   "broker_symbol": "USDJPY-VIP",
+   "bar_count": 13,
+   "per_bar_server_minus_ny_mismatch": 0,
+   "dst_hour_errors": [],
+   "gaps": [],
+   "monday_server_0000_bar": {
+    "server_wall": "2026-10-05T00:00:00",
+    "utc": "2026-10-04T21:00:00Z",
+    "ny_wall": "2026-10-04T17:00:00",
+    "server_minus_ny_h": 7.0
+   },
+   "bars": [
+    {
+     "server_wall": "2026-10-05T00:00:00",
+     "utc": "2026-10-04T21:00:00Z",
+     "ny_wall": "2026-10-04T17:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T01:00:00",
+     "utc": "2026-10-04T22:00:00Z",
+     "ny_wall": "2026-10-04T18:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T02:00:00",
+     "utc": "2026-10-04T23:00:00Z",
+     "ny_wall": "2026-10-04T19:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T03:00:00",
+     "utc": "2026-10-05T00:00:00Z",
+     "ny_wall": "2026-10-04T20:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T04:00:00",
+     "utc": "2026-10-05T01:00:00Z",
+     "ny_wall": "2026-10-04T21:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T05:00:00",
+     "utc": "2026-10-05T02:00:00Z",
+     "ny_wall": "2026-10-04T22:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T06:00:00",
+     "utc": "2026-10-05T03:00:00Z",
+     "ny_wall": "2026-10-04T23:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T07:00:00",
+     "utc": "2026-10-05T04:00:00Z",
+     "ny_wall": "2026-10-05T00:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T08:00:00",
+     "utc": "2026-10-05T05:00:00Z",
+     "ny_wall": "2026-10-05T01:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T09:00:00",
+     "utc": "2026-10-05T06:00:00Z",
+     "ny_wall": "2026-10-05T02:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T10:00:00",
+     "utc": "2026-10-05T07:00:00Z",
+     "ny_wall": "2026-10-05T03:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T11:00:00",
+     "utc": "2026-10-05T08:00:00Z",
+     "ny_wall": "2026-10-05T04:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T12:00:00",
+     "utc": "2026-10-05T09:00:00Z",
+     "ny_wall": "2026-10-05T05:00:00",
+     "server_minus_ny_h": 7.0
+    }
+   ]
+  },
+  "XAUUSD": {
+   "broker_symbol": "XAUUSD-VIP",
+   "bar_count": 12,
+   "per_bar_server_minus_ny_mismatch": 0,
+   "dst_hour_errors": [],
+   "gaps": [],
+   "monday_server_0000_bar": null,
+   "bars": [
+    {
+     "server_wall": "2026-10-05T01:00:00",
+     "utc": "2026-10-04T22:00:00Z",
+     "ny_wall": "2026-10-04T18:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T02:00:00",
+     "utc": "2026-10-04T23:00:00Z",
+     "ny_wall": "2026-10-04T19:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T03:00:00",
+     "utc": "2026-10-05T00:00:00Z",
+     "ny_wall": "2026-10-04T20:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T04:00:00",
+     "utc": "2026-10-05T01:00:00Z",
+     "ny_wall": "2026-10-04T21:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T05:00:00",
+     "utc": "2026-10-05T02:00:00Z",
+     "ny_wall": "2026-10-04T22:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T06:00:00",
+     "utc": "2026-10-05T03:00:00Z",
+     "ny_wall": "2026-10-04T23:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T07:00:00",
+     "utc": "2026-10-05T04:00:00Z",
+     "ny_wall": "2026-10-05T00:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T08:00:00",
+     "utc": "2026-10-05T05:00:00Z",
+     "ny_wall": "2026-10-05T01:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T09:00:00",
+     "utc": "2026-10-05T06:00:00Z",
+     "ny_wall": "2026-10-05T02:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T10:00:00",
+     "utc": "2026-10-05T07:00:00Z",
+     "ny_wall": "2026-10-05T03:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T11:00:00",
+     "utc": "2026-10-05T08:00:00Z",
+     "ny_wall": "2026-10-05T04:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T12:00:00",
+     "utc": "2026-10-05T09:00:00Z",
+     "ny_wall": "2026-10-05T05:00:00",
+     "server_minus_ny_h": 7.0
+    }
+   ]
+  },
+  "BTCUSD": {
+   "broker_symbol": "BTCUSD",
+   "bar_count": 25,
+   "per_bar_server_minus_ny_mismatch": 0,
+   "dst_hour_errors": [],
+   "gaps": [],
+   "monday_server_0000_bar": {
+    "server_wall": "2026-10-05T00:00:00",
+    "utc": "2026-10-04T21:00:00Z",
+    "ny_wall": "2026-10-04T17:00:00",
+    "server_minus_ny_h": 7.0
+   },
+   "bars": [
+    {
+     "server_wall": "2026-10-04T12:00:00",
+     "utc": "2026-10-04T09:00:00Z",
+     "ny_wall": "2026-10-04T05:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T13:00:00",
+     "utc": "2026-10-04T10:00:00Z",
+     "ny_wall": "2026-10-04T06:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T14:00:00",
+     "utc": "2026-10-04T11:00:00Z",
+     "ny_wall": "2026-10-04T07:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T15:00:00",
+     "utc": "2026-10-04T12:00:00Z",
+     "ny_wall": "2026-10-04T08:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T16:00:00",
+     "utc": "2026-10-04T13:00:00Z",
+     "ny_wall": "2026-10-04T09:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T17:00:00",
+     "utc": "2026-10-04T14:00:00Z",
+     "ny_wall": "2026-10-04T10:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T18:00:00",
+     "utc": "2026-10-04T15:00:00Z",
+     "ny_wall": "2026-10-04T11:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T19:00:00",
+     "utc": "2026-10-04T16:00:00Z",
+     "ny_wall": "2026-10-04T12:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T20:00:00",
+     "utc": "2026-10-04T17:00:00Z",
+     "ny_wall": "2026-10-04T13:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T21:00:00",
+     "utc": "2026-10-04T18:00:00Z",
+     "ny_wall": "2026-10-04T14:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T22:00:00",
+     "utc": "2026-10-04T19:00:00Z",
+     "ny_wall": "2026-10-04T15:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T23:00:00",
+     "utc": "2026-10-04T20:00:00Z",
+     "ny_wall": "2026-10-04T16:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T00:00:00",
+     "utc": "2026-10-04T21:00:00Z",
+     "ny_wall": "2026-10-04T17:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T01:00:00",
+     "utc": "2026-10-04T22:00:00Z",
+     "ny_wall": "2026-10-04T18:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T02:00:00",
+     "utc": "2026-10-04T23:00:00Z",
+     "ny_wall": "2026-10-04T19:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T03:00:00",
+     "utc": "2026-10-05T00:00:00Z",
+     "ny_wall": "2026-10-04T20:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T04:00:00",
+     "utc": "2026-10-05T01:00:00Z",
+     "ny_wall": "2026-10-04T21:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T05:00:00",
+     "utc": "2026-10-05T02:00:00Z",
+     "ny_wall": "2026-10-04T22:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T06:00:00",
+     "utc": "2026-10-05T03:00:00Z",
+     "ny_wall": "2026-10-04T23:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T07:00:00",
+     "utc": "2026-10-05T04:00:00Z",
+     "ny_wall": "2026-10-05T00:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T08:00:00",
+     "utc": "2026-10-05T05:00:00Z",
+     "ny_wall": "2026-10-05T01:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T09:00:00",
+     "utc": "2026-10-05T06:00:00Z",
+     "ny_wall": "2026-10-05T02:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T10:00:00",
+     "utc": "2026-10-05T07:00:00Z",
+     "ny_wall": "2026-10-05T03:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T11:00:00",
+     "utc": "2026-10-05T08:00:00Z",
+     "ny_wall": "2026-10-05T04:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T12:00:00",
+     "utc": "2026-10-05T09:00:00Z",
+     "ny_wall": "2026-10-05T05:00:00",
+     "server_minus_ny_h": 7.0
+    }
+   ]
+  },
+  "ETHUSD": {
+   "broker_symbol": "ETHUSD",
+   "bar_count": 25,
+   "per_bar_server_minus_ny_mismatch": 0,
+   "dst_hour_errors": [],
+   "gaps": [],
+   "monday_server_0000_bar": {
+    "server_wall": "2026-10-05T00:00:00",
+    "utc": "2026-10-04T21:00:00Z",
+    "ny_wall": "2026-10-04T17:00:00",
+    "server_minus_ny_h": 7.0
+   },
+   "bars": [
+    {
+     "server_wall": "2026-10-04T12:00:00",
+     "utc": "2026-10-04T09:00:00Z",
+     "ny_wall": "2026-10-04T05:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T13:00:00",
+     "utc": "2026-10-04T10:00:00Z",
+     "ny_wall": "2026-10-04T06:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T14:00:00",
+     "utc": "2026-10-04T11:00:00Z",
+     "ny_wall": "2026-10-04T07:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T15:00:00",
+     "utc": "2026-10-04T12:00:00Z",
+     "ny_wall": "2026-10-04T08:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T16:00:00",
+     "utc": "2026-10-04T13:00:00Z",
+     "ny_wall": "2026-10-04T09:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T17:00:00",
+     "utc": "2026-10-04T14:00:00Z",
+     "ny_wall": "2026-10-04T10:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T18:00:00",
+     "utc": "2026-10-04T15:00:00Z",
+     "ny_wall": "2026-10-04T11:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T19:00:00",
+     "utc": "2026-10-04T16:00:00Z",
+     "ny_wall": "2026-10-04T12:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T20:00:00",
+     "utc": "2026-10-04T17:00:00Z",
+     "ny_wall": "2026-10-04T13:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T21:00:00",
+     "utc": "2026-10-04T18:00:00Z",
+     "ny_wall": "2026-10-04T14:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T22:00:00",
+     "utc": "2026-10-04T19:00:00Z",
+     "ny_wall": "2026-10-04T15:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-04T23:00:00",
+     "utc": "2026-10-04T20:00:00Z",
+     "ny_wall": "2026-10-04T16:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T00:00:00",
+     "utc": "2026-10-04T21:00:00Z",
+     "ny_wall": "2026-10-04T17:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T01:00:00",
+     "utc": "2026-10-04T22:00:00Z",
+     "ny_wall": "2026-10-04T18:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T02:00:00",
+     "utc": "2026-10-04T23:00:00Z",
+     "ny_wall": "2026-10-04T19:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T03:00:00",
+     "utc": "2026-10-05T00:00:00Z",
+     "ny_wall": "2026-10-04T20:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T04:00:00",
+     "utc": "2026-10-05T01:00:00Z",
+     "ny_wall": "2026-10-04T21:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T05:00:00",
+     "utc": "2026-10-05T02:00:00Z",
+     "ny_wall": "2026-10-04T22:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T06:00:00",
+     "utc": "2026-10-05T03:00:00Z",
+     "ny_wall": "2026-10-04T23:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T07:00:00",
+     "utc": "2026-10-05T04:00:00Z",
+     "ny_wall": "2026-10-05T00:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T08:00:00",
+     "utc": "2026-10-05T05:00:00Z",
+     "ny_wall": "2026-10-05T01:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T09:00:00",
+     "utc": "2026-10-05T06:00:00Z",
+     "ny_wall": "2026-10-05T02:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T10:00:00",
+     "utc": "2026-10-05T07:00:00Z",
+     "ny_wall": "2026-10-05T03:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T11:00:00",
+     "utc": "2026-10-05T08:00:00Z",
+     "ny_wall": "2026-10-05T04:00:00",
+     "server_minus_ny_h": 7.0
+    },
+    {
+     "server_wall": "2026-10-05T12:00:00",
+     "utc": "2026-10-05T09:00:00Z",
+     "ny_wall": "2026-10-05T05:00:00",
+     "server_minus_ny_h": 7.0
+    }
+   ]
+  }
+ }
+}

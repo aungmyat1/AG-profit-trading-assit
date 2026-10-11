@@ -1,0 +1,103 @@
+{
+ "schema": "AG_HOST_SYMBOL_MAP_V2_SMOKE_V1",
+ "captured_on_host": true,
+ "host_repo": "D:/wp3-main-integ",
+ "host_head_sha": "1d8891392fc522e9b979008e6f4be0091d9309b2",
+ "host_update": "git pull --ff-only origin main (pull-only)",
+ "broker_mutation": "NONE (no order_check/order_send/symbol_select/position calls)",
+ "account_guard": "DEMO_ACCOUNT_VERIFIED",
+ "environment": "Windows 10 host, VT Markets MT5 terminal build 6230, .venv python",
+ "map": "config/broker_symbol_map/vt_markets_demo.yaml",
+ "map_version": 2,
+ "verdict": "PASS",
+ "smoke_command": "python scripts/host/symbol_map_smoke.py smoke",
+ "smoke_exit_code": 0,
+ "smoke_stdout": [
+  "MT5_PACKAGE_VERSION 5.0.5735",
+  "ACCOUNT server=VTMarkets-Demo trade_mode=DEMO",
+  "SYMBOL_LOOKUP_CLASSIFICATIONS {\"SYMBOL_ABSENT_CONFIRMED\": 50, \"SYMBOL_PRESENT\": 10}",
+  "MAP v2 VT_MARKETS/VTMarkets-Demo evidence=status/evidence/host_symbol_info_2026-10-09_symmap.json",
+  "METADATA_STABILITY PASS (2 snapshots, no mapping-critical differences)",
+  "  EURUSD: MAPPED EURUSD-VIP",
+  "  GBPUSD: MAPPED GBPUSD-VIP",
+  "  USDJPY: MAPPED USDJPY-VIP",
+  "  XAUUSD: MAPPED XAUUSD-VIP",
+  "  BTCUSD: MAPPED BTCUSD",
+  "  ETHUSD: MAPPED ETHUSD",
+  "DIFF EMPTY",
+  "READ_ONLY_GUARD {\"broker_mutations\": 0, \"forbidden_calls\": [], \"market_watch_visibility_unchanged\": true, \"mt5_calls\": {\"account_info\": 2, \"initialize\": 1, \"last_error\": 101, \"shutdown\": 1, \"symbol_info\": 120, \"symbol_info_tick\": 20, \"symbols_get\": 2, \"symbols_total\": 2}}"
+ ],
+ "digits_point_match_map_expected": true,
+ "all_trade_mode_full": true,
+ "trade_mode_legend": {
+  "4": "SYMBOL_TRADE_MODE_FULL"
+ },
+ "symbol_info": {
+  "EURUSD": {
+   "broker_symbol": "EURUSD-VIP",
+   "trade_mode": 4,
+   "digits": 5,
+   "point": 1e-05,
+   "trade_tick_value": 1.0,
+   "trade_tick_size": 1e-05,
+   "trade_stops_level": 0,
+   "trade_freeze_level": 0,
+   "visible": true
+  },
+  "GBPUSD": {
+   "broker_symbol": "GBPUSD-VIP",
+   "trade_mode": 4,
+   "digits": 5,
+   "point": 1e-05,
+   "trade_tick_value": 1.0,
+   "trade_tick_size": 1e-05,
+   "trade_stops_level": 0,
+   "trade_freeze_level": 0,
+   "visible": true
+  },
+  "USDJPY": {
+   "broker_symbol": "USDJPY-VIP",
+   "trade_mode": 4,
+   "digits": 3,
+   "point": 0.001,
+   "trade_tick_value": 0.6316161794800534,
+   "trade_tick_size": 0.001,
+   "trade_stops_level": 0,
+   "trade_freeze_level": 0,
+   "visible": true
+  },
+  "XAUUSD": {
+   "broker_symbol": "XAUUSD-VIP",
+   "trade_mode": 4,
+   "digits": 2,
+   "point": 0.01,
+   "trade_tick_value": 1.0,
+   "trade_tick_size": 0.01,
+   "trade_stops_level": 20,
+   "trade_freeze_level": 0,
+   "visible": true
+  },
+  "BTCUSD": {
+   "broker_symbol": "BTCUSD",
+   "trade_mode": 4,
+   "digits": 2,
+   "point": 0.01,
+   "trade_tick_value": 0.01,
+   "trade_tick_size": 0.01,
+   "trade_stops_level": 0,
+   "trade_freeze_level": 0,
+   "visible": true
+  },
+  "ETHUSD": {
+   "broker_symbol": "ETHUSD",
+   "trade_mode": 4,
+   "digits": 2,
+   "point": 0.01,
+   "trade_tick_value": 0.01,
+   "trade_tick_size": 0.01,
+   "trade_stops_level": 0,
+   "trade_freeze_level": 0,
+   "visible": true
+  }
+ }
+}

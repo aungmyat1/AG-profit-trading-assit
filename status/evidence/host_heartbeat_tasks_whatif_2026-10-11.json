@@ -1,0 +1,293 @@
+{
+ "schema": "AG_HOST_HEARTBEAT_AND_TASKS_WHATIF_V1",
+ "captured_on_host": true,
+ "host_repo": "D:/wp3-main-integ",
+ "host_head_sha": "1d8891392fc522e9b979008e6f4be0091d9309b2",
+ "host_update": "git pull --ff-only origin main (pull-only)",
+ "broker_mutation": "NONE (no order_check/order_send/symbol_select/position calls)",
+ "account_guard": "DEMO_ACCOUNT_VERIFIED",
+ "environment": "Windows 10 host, VT Markets MT5 terminal build 6230, .venv python",
+ "verdict": "PASS",
+ "heartbeat_command": "python scripts/host/heartbeat.py --out <HOST_SCRATCHPAD>/out/heartbeat.json",
+ "heartbeat_exit_code": 0,
+ "heartbeat": {
+  "schema": "ag.host.heartbeat.v1",
+  "status": "DEGRADED_RESOURCES",
+  "status_reasons": [
+   "DEGRADED_RESOURCES"
+  ],
+  "observed_at_utc": "2026-10-11T06:36:13.220555+00:00",
+  "host_power_mode": "wake_sleep",
+  "host_power_mode_source": "observed host state 2026-10-08: AG-Wake-MT5 / AG-Sleep-Night still registered",
+  "reader_rule": "age_seconds = now - observed_at_utc; > 7200 while the host is scheduled awake -> STALE (wake_sleep: asleep between AG-Sleep-Night and AG-Wake-MT5)",
+  "host_head_sha": "1d8891392fc522e9b979008e6f4be0091d9309b2",
+  "host_ref": "main",
+  "host_on_main": true,
+  "mt5_connected": {
+   "value": "UNKNOWN",
+   "as_of_utc": "2026-10-11T01:01:27.273851+00:00"
+  },
+  "host_resources": {
+   "free_ram_mb": 994,
+   "free_disk_gb": {
+    "C": 0.0,
+    "D": 7.2
+   },
+   "thresholds": {
+    "free_ram_mb": 1200,
+    "free_disk_gb": 10,
+    "state": "PROPOSED_OWNER_CONFIRM"
+   },
+   "status": "DEGRADED_RESOURCES",
+   "reasons": [
+    "RAM<1200MB",
+    "C:<10GB",
+    "D:<10GB"
+   ]
+  },
+  "tasks": {
+   "AG-Sleep-Night": {
+    "LastTaskResult": 0,
+    "LastRunTime": "2026-10-08T18:15:15.0000000Z",
+    "NextRunTime": "2026-10-11T18:15:15.0000000Z"
+   },
+   "AG-Sleep-Weekend-Crypto": {
+    "LastTaskResult": 0,
+    "LastRunTime": "2026-10-04T23:15:15.0000000Z",
+    "NextRunTime": "2026-10-11T23:15:15.0000000Z"
+   },
+   "AG-V1-Crypto-Daily": {
+    "LastTaskResult": 0,
+    "LastRunTime": "2026-10-11T06:32:32.0000000Z",
+    "NextRunTime": "2026-10-11T06:47:47.0000000Z"
+   },
+   "AG-V1-FX-Cycles": {
+    "LastTaskResult": 0,
+    "LastRunTime": "2026-10-11T06:31:31.0000000Z",
+    "NextRunTime": "2026-10-11T06:46:46.0000000Z"
+   },
+   "AG-V1-LSMC-Crypto-Weekend": {
+    "LastTaskResult": 0,
+    "LastRunTime": "2026-10-10T23:13:13.0000000Z",
+    "NextRunTime": "2026-10-11T20:48:48.0000000Z"
+   },
+   "AG-V1-LSMC-Watch": {
+    "LastTaskResult": 0,
+    "LastRunTime": "2026-10-10T15:59:59.0000000Z",
+    "NextRunTime": "2026-10-11T17:33:33.0000000Z"
+   },
+   "AG-Wake-MT5": {
+    "LastTaskResult": 0,
+    "LastRunTime": "2026-10-09T05:55:55.0000000Z",
+    "NextRunTime": "2026-10-12T05:55:55.0000000Z"
+   },
+   "AG-Wake-Weekend-Crypto": {
+    "LastTaskResult": 0,
+    "LastRunTime": "2026-10-04T20:40:40.0000000Z",
+    "NextRunTime": "2026-10-11T20:40:40.0000000Z"
+   }
+  },
+  "source_windows": {
+   "fx": [
+    "AWAKE_DAILY",
+    "WEEKEND_CRYPTO"
+   ],
+   "crypto": [
+    "AWAKE_DAILY",
+    "WEEKEND_CRYPTO"
+   ],
+   "lsmc": [
+    "AWAKE_DAILY",
+    "WEEKEND_CRYPTO"
+   ],
+   "lsmc-weekend": [
+    "WEEKEND_CRYPTO"
+   ]
+  },
+  "sources": {
+   "ag_v1_fx.log": {
+    "status": "OK",
+    "power_mode": "wake_sleep",
+    "last_line_utc": "2026-10-11T06:31:20.216556+00:00"
+   },
+   "ag_v1_crypto.log": {
+    "status": "OK",
+    "power_mode": "wake_sleep",
+    "last_line_utc": "2026-10-11T06:32:10.066693+00:00"
+   },
+   "ag_v1_lsmc.log": {
+    "status": "OK",
+    "power_mode": "wake_sleep",
+    "last_line_utc": "2026-10-10T16:00:46.162995+00:00"
+   },
+   "ag_v1_lsmc-weekend.log": {
+    "status": "INACTIVE_EXPECTED",
+    "power_mode": "wake_sleep",
+    "last_line_utc": "2026-10-10T23:13:04.182857+00:00"
+   }
+  },
+  "last_24h": {
+   "fx_by_window_per_cycle": {},
+   "lsmc_states_per_cycle": {
+    "MARKET_CLOSED": 4,
+    "NEAR_POI": 1,
+    "DEVELOPING": 1
+   },
+   "lsmc_unique_opportunities_24h": {
+    "count": 0,
+    "by_symbol": {}
+   },
+   "crypto_decisions_per_cycle": {
+    "OUTSIDE_WINDOW": 38,
+    "(BEFORE_WINDOW)": 48,
+    "WATCH": 16,
+    "(AFTER_WINDOW)": 4
+   },
+   "runner_errors": {
+    "fx": {
+     "TIMEOUT": 0,
+     "MT5_INITIALIZE_FAILED": 1,
+     "MT5_BUSY": 0,
+     "DEMO_ACCOUNT_REQUIRED": 0,
+     "MT5_PACKAGE_MISSING": 0
+    },
+    "crypto": {
+     "TIMEOUT": 0,
+     "MT5_INITIALIZE_FAILED": 0,
+     "MT5_BUSY": 0,
+     "DEMO_ACCOUNT_REQUIRED": 0,
+     "MT5_PACKAGE_MISSING": 0
+    },
+    "lsmc": {
+     "TIMEOUT": 0,
+     "MT5_INITIALIZE_FAILED": 0,
+     "MT5_BUSY": 0,
+     "DEMO_ACCOUNT_REQUIRED": 0,
+     "MT5_PACKAGE_MISSING": 0
+    },
+    "lsmc-weekend": {
+     "TIMEOUT": 0,
+     "MT5_INITIALIZE_FAILED": 0,
+     "MT5_BUSY": 0,
+     "DEMO_ACCOUNT_REQUIRED": 0,
+     "MT5_PACKAGE_MISSING": 0
+    }
+   }
+  },
+  "duplicates": {
+   "fx_archive": {
+    "ready_ticket_duplicates": 0,
+    "non_ready_rearchives": 0
+   },
+   "telegram_same_ref_sends": 0
+  },
+  "missed_windows": [],
+  "broker_history_24h": {
+   "source": "LIVE_ATTACH",
+   "orders": 3,
+   "deals": 3,
+   "by_magic": {},
+   "manual_or_zero_magic": 3,
+   "connection": {
+    "terminal_connected": true,
+    "account_attached": true,
+    "terminal_path": "C:\\Program Files\\MetaTrader 5"
+   }
+  },
+  "broker_history_error": null,
+  "broker_order_calls": 3,
+  "observed_broker_order_calls": 0,
+  "execution_paths": [
+   {
+    "path": "D:/wp3-main-integ scheduled AG-V1 runners (scripts/host/*)",
+    "order_capable": false,
+    "logged": true,
+    "note": "no order/position call sites in host HEAD; tests/test_host_go_live_kit.py guards it"
+   },
+   {
+    "path": "dev checkout src/execution/mt5_gateway.py (assistant.commands.execute_command)",
+    "order_capable": true,
+    "logged": false,
+    "note": "calls mt5.order_send; writes nothing to the AG-V1 runner logs"
+   },
+   {
+    "path": "dev checkout src/mt5/management_gateway.py (trade_management.manager)",
+    "order_capable": true,
+    "logged": false,
+    "note": "calls mt5.order_send for SL modify / partial / close; not in runner logs"
+   },
+   {
+    "path": "dev checkout web/server.ts -> management_gateway",
+    "order_capable": true,
+    "logged": false,
+    "note": "server-side bridge to the management gateway; not in runner logs"
+   },
+   {
+    "path": "MT5 terminal manual trading (owner)",
+    "order_capable": true,
+    "logged": false,
+    "note": "terminal journal only; not read by this script"
+   },
+   {
+    "path": "MT5 Expert Advisors (MQL5/Experts, e.g. ContinuationBreakout_EA.ex5)",
+    "order_capable": true,
+    "logged": false,
+    "note": "attachment state not observable here"
+   },
+   {
+    "path": "mt5ReadOnly MCP proxy",
+    "order_capable": false,
+    "logged": true,
+    "note": "read-only proxy refuses order_send (web/tests/readonly_mcp_proxy.test.mjs)"
+   }
+  ]
+ },
+ "install_tasks_command": "install_tasks.ps1 -WhatIf",
+ "install_tasks_exit_code": 0,
+ "install_tasks_whatif_stdout": [
+  "AG-V1-FX-Cycles: every 15 min from 00:01:00 daily -> \"D:\\wp3-main-integ\\.venv\\Scripts\\pythonw.exe\" \"D:\\wp3-main-integ\\scripts\\host\\live_candles_smoke.py\" --mode fx --canonical",
+  "AG-V1-Crypto-Daily: every 15 min from 00:02:30 daily -> \"D:\\wp3-main-integ\\.venv\\Scripts\\pythonw.exe\" \"D:\\wp3-main-integ\\scripts\\host\\live_candles_smoke.py\" --mode crypto",
+  "AG-V1-LSMC-Watch: every 5 min from 00:04:15 daily -> \"D:\\wp3-main-integ\\.venv\\Scripts\\pythonw.exe\" \"D:\\wp3-main-integ\\scripts\\host\\live_candles_smoke.py\" --mode lsmc",
+  "=== HOST TASK DECLARATIONS vs REGISTERED (MMT, UTC+06:30; 17 declared; -Apply acts only on INSTALLER/RETIRE) ===",
+  "\\AG-V1-FX-Cycles [INSTALLER/ACTIVE] CHANGE Exe: REDACTED (host path not committed); Args: REDACTED (host path not committed)",
+  "\\AG-V1-Crypto-Daily [INSTALLER/ACTIVE] CHANGE Exe: REDACTED (host path not committed); Args: REDACTED (host path not committed); Start: 00:02:00 -> 00:02:30",
+  "\\AG-V1-LSMC-Watch [INSTALLER/ACTIVE] CHANGE Exe: REDACTED (host path not committed); Args: REDACTED (host path not committed); Days: Mon,Tue,Wed,Thu,Fri -> DAILY; Start: 00:03:00 -> 00:04:15",
+  "\\AG-V1-LSMC-Crypto-Weekend [RETIRE/RETIRED] CHANGE State: ENABLED -> ABSENT",
+  "\\AG-Wake-MT5 [HOST_ONLY/RETIRED] CHANGE State: DISABLED -> ABSENT",
+  "\\AG-Wake-Weekend-Crypto [HOST_ONLY/RETIRED] CHANGE State: DISABLED -> ABSENT",
+  "\\AG-Sleep-Night [HOST_ONLY/RETIRED] CHANGE State: DISABLED -> ABSENT",
+  "\\AG-Sleep-Weekend-Crypto [HOST_ONLY/RETIRED] CHANGE State: DISABLED -> ABSENT",
+  "\\AG Profit Trading - BTC Daily Decision [HOST_ONLY/DISABLE_AFTER_PARITY] CHANGE Args: REDACTED (host path not committed)",
+  "\\AGX-HealthExport [HOST_ONLY/ACTIVE] MATCHES TARGET",
+  "\\AG_FX_ASIAN_LONDON_SHADOW [HOST_ONLY/REMOVE] CHANGE State: DISABLED -> ABSENT",
+  "\\AG_FX_LONDON_NEWYORK_SHADOW [HOST_ONLY/REMOVE] CHANGE State: DISABLED -> ABSENT",
+  "\\AG_LSMC_Friction_Campaign\\AG_LSMC_EURUSD_Friction_WindowA_AsianRef [HOST_ONLY/DISABLED] MATCHES TARGET",
+  "\\AG_LSMC_Friction_Campaign\\AG_LSMC_EURUSD_Friction_WindowB_PreLondon [HOST_ONLY/DISABLED] MATCHES TARGET",
+  "\\AG_LSMC_Friction_Campaign\\AG_LSMC_EURUSD_Friction_WindowC_London [HOST_ONLY/DISABLED] MATCHES TARGET",
+  "\\AG_LSMC_Friction_Campaign\\AG_LSMC_EURUSD_Friction_WindowD_LondonNY [HOST_ONLY/DISABLED] MATCHES TARGET",
+  "\\AG-Heartbeat-Local [HOST_ONLY/NEW] CHANGE State: ABSENT -> ENABLED",
+  "=== HOST TASK DECLARATIONS (MMT, UTC+06:30; 17 tasks, -Apply manages only INSTALLER/RETIRE) ===",
+  "\\AG-V1-FX-Cycles [INSTALLER, DISABLED] ",
+  "\\AG-V1-Crypto-Daily [INSTALLER, DISABLED] ",
+  "\\AG-V1-LSMC-Watch [INSTALLER, DISABLED] ",
+  "\\AG-V1-LSMC-Crypto-Weekend [RETIRE, DISABLED] ",
+  "\\AG-Wake-MT5 [HOST_ONLY, DISABLED] ",
+  "\\AG-Wake-Weekend-Crypto [HOST_ONLY, DISABLED] ",
+  "\\AG-Sleep-Night [HOST_ONLY, DISABLED] ",
+  "\\AG-Sleep-Weekend-Crypto [HOST_ONLY, DISABLED] ",
+  "\\AG Profit Trading - BTC Daily Decision [HOST_ONLY, DISABLED] ",
+  "\\AGX-HealthExport [HOST_ONLY, DISABLED] ",
+  "\\AG_FX_ASIAN_LONDON_SHADOW [HOST_ONLY, DISABLED] ",
+  "\\AG_FX_LONDON_NEWYORK_SHADOW [HOST_ONLY, DISABLED] ",
+  "\\AG_LSMC_Friction_Campaign\\AG_LSMC_EURUSD_Friction_WindowA_AsianRef [HOST_ONLY, DISABLED] ",
+  "\\AG_LSMC_Friction_Campaign\\AG_LSMC_EURUSD_Friction_WindowB_PreLondon [HOST_ONLY, DISABLED] ",
+  "\\AG_LSMC_Friction_Campaign\\AG_LSMC_EURUSD_Friction_WindowC_London [HOST_ONLY, DISABLED] ",
+  "\\AG_LSMC_Friction_Campaign\\AG_LSMC_EURUSD_Friction_WindowD_LondonNY [HOST_ONLY, DISABLED] ",
+  "\\AG-Heartbeat-Local [HOST_ONLY, DISABLED] ",
+  "WhatIf: no changes made. Re-run with -Apply to install."
+ ],
+ "notes": [
+  "heartbeat status reflects host resources (DEGRADED_RESOURCES: RAM<1200MB, C:<10GB, D:<10GB).",
+  "broker_order_calls is the 24h account order-history count; this mission made no order calls."
+ ]
+}
