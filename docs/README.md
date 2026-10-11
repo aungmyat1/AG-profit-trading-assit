@@ -6,7 +6,7 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
-[TICKET_STORE_V2](status/AG_TICKET_STORE_V2_STATUS_2026-10-10.md) documents append-only lifecycle records, source-filtered statistics and read-only query/export.
+[AGP-C4-CCFD-LOGIC](status/AGP_C4_CCFD_LOGIC_2026-10-10.md) records synthetic-only CFD v1.0.0 L1–L6 evidence and the DATA-R2 rerun.
 
 [Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
 records stop/target rejection, the owner-set 50% remaining-reward threshold, required

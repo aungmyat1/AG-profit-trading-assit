@@ -9,12 +9,12 @@ from .contract import (
     CONTRACT_ID,
     CONTRACT_VERSION,
     INSTRUMENTS,
+    RISK_POLICY_STATUS,
     SESSION_POLICY,
     SPREAD_POLICY,
-    RISK_POLICY_STATUS,
     contract_status,
 )
-from .rules import evaluate
+from .guard import evaluate  # fail-closed open-bar guard over the frozen rules.evaluate
 
 __all__ = [
     "ASSET_CLASS", "CONTRACT_ID", "CONTRACT_VERSION", "INSTRUMENTS",

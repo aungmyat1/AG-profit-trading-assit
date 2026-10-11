@@ -1,0 +1,158 @@
+{
+  "record": "host_s1_freeze_audit",
+  "date": "2026-10-11",
+  "captured_at_local": "2026-10-11T22:05+06:30",
+  "host_tree": "<HOST_SCRATCHPAD>/prod",
+  "mode": "READ_ONLY (FREEZE)",
+  "order_api_calls": 0,
+  "broker_mutation_count": 0,
+  "mt5_api_calls": 0,
+  "note_mt5_access": "This audit read MT5 terminal log/profile files only; no MetaTrader5 package initialize, no symbol_select, no order_check/order_send.",
+  "items": [
+    {
+      "id": "1",
+      "item": "Actual host HEAD (deb85d0 vs 0773a55)",
+      "result": "PASS",
+      "cause": "Host HEAD is 0773a55 (fast-forwarded from 1b063a7 at ~18:41 +06:30); deb85d0 is an older ancestor (#140 merge, 2026-10-11 13:05 +06:30).",
+      "evidence": {
+        "head": "0773a5595c22e38f74e363f4b46a5b4fcaaffa7e",
+        "deb85d0": "ancestor of main (Merge PR #140 fix/ci-draft-pr-triggers)",
+        "contains_e317267": true,
+        "worktree_untracked": [
+          "work/"
+        ],
+        "gitignored_local_config": [
+          "config/local/canonical_ticket_delivery.yaml"
+        ]
+      }
+    },
+    {
+      "id": "2",
+      "item": "Foreign order attribution (798328269, 802393463; comment 'SMC SHORT IOC', magic 0, reason EXPERT)",
+      "result": "ATTRIBUTED",
+      "cause": "Owner-attributed (2026-10-12): orders 798328269 and 802393463 were placed by the owner via the MT5 built-in AI Assistant MCP (127.0.0.1:22346) on the portable terminal. Log trail below is consistent with that attribution.",
+      "evidence": {
+        "terminal": "portable terminal, data dir 8EFB2DF5 (origin %APPDATA%/MetaTrader 5); exe renamed .disabled on 2026-10-11 18:14 +06:30",
+        "2026-10-08": [
+          "17:03-17:08 127.0.0.1 get account info / symbols / positions",
+          "17:08:30 127.0.0.1 send market order sell 0.01 GBPUSD-VIP -> failed #10030 Invalid fill",
+          "17:08:49 127.0.0.1 returned 21 available scripts; 17:08:55 list of charts requested",
+          "17:13:37 127.0.0.1 MQL5/Scripts/ExecuteSMCOrder.mq5 created (2072 bytes; CTrade PositionOpen sell, comment 'SMC SHORT', filling IOC with RETURN fallback)",
+          "17:13:54 127.0.0.1 send pending sell stop 0.01 GBPUSD-VIP @1.31950 -> failed #10015 Invalid price",
+          "17:13:58 127.0.0.1 send pending sell limit 0.01 GBPUSD-VIP @1.31955 sl 1.32077 tp 1.31867 -> order #798328269 accepted",
+          "17:14:21 deal #587172446 sell 0.01 GBPUSD-VIP @1.31955 (from #798328269)"
+        ],
+        "2026-10-09": [
+          "11:24-11:30 127.0.0.1 get symbols / positions / USDJPY-VIP M5 history",
+          "11:31:04 127.0.0.1 send pending sell limit 0.01 USDJPY-VIP @158.090 sl 158.129 tp 157.510 -> order #802393463 accepted",
+          "11:32:51 deal #589232305 sell 0.01 USDJPY-VIP @158.090 (from #802393463)",
+          "12:21:55 deal #589357211 buy 0.01 USDJPY-VIP @158.129 (from #802733323; price equals the SL)"
+        ],
+        "script_role": "ExecuteSMCOrder.mq5 was created via MCP and compiled (.ex5 written 2026-10-09 22:29:48), but neither accepted order is logged as a script run; both are logged as MCP 'send pending order' calls.",
+        "configured_mcp_clients_for_127.0.0.1:22346": [
+          "%USERPROFILE%/.claude.json server 'terminal' (url http://127.0.0.1:22346/mcp)",
+          "AG-profit-trading-assit/.mcp.json servers 'terminal' (127.0.0.1:22346) and 'metaeditor' (127.0.0.1:22345)"
+        ],
+        "client_identity": "NOT_DETERMINED: the terminal logs the source only as 127.0.0.1 and does not name the client process. Any local agent session with the 'terminal' MCP server configured could have sent them.",
+        "attached_eas_now": {
+          "portable_8EFB2DF5_profile_Default_chart06": "BTCUSD Crypto_VBO_EA (portable terminal not running; exe .disabled)",
+          "main_D0E8209F": "no <expert> block in any chart profile"
+        },
+        "other_order_capable_processes_now": "none (no metatrader-mcp-server, no start_mt5_mcp.mjs, no other python bot; 4x metatester64.exe Strategy Tester agents running, which cannot trade the account)",
+        "enabled_tasks_now": [
+          "\\AG-V1-FX-Cycles (pythonw live_candles_smoke.py --mode fx --canonical)",
+          "\\AGX-HealthExport (powershell export-ag-health.ps1)"
+        ]
+      },
+      "open_risk": "The main terminal still starts its built-in MCP listener on 127.0.0.1:22346 (logged 20:01:18). It is the same order-capable endpoint that sent the foreign orders. Not changed (FREEZE).",
+      "attribution": {
+        "source": "OWNER_VIA_MT5_AI_ASSISTANT",
+        "orders": [
+          798328269,
+          802393463
+        ],
+        "confirmed_by": "owner",
+        "confirmed_on": "2026-10-12"
+      }
+    },
+    {
+      "id": "2b",
+      "item": "Unplanned account switch on main terminal (observed during item 2)",
+      "result": "OWNER_CONFIRMED",
+      "cause": "Owner-confirmed manual login to VTMarkets-Live ...600 at 19:56 +06:30 (0 positions, 0 orders, no trades logged), then back to VTMarkets-Demo ...985.",
+      "evidence": {
+        "live_session_window": "19:56:00-19:56:57 +06:30",
+        "trades_logged": 0,
+        "current_account": "…985 VTMarkets-Demo, demo account (20:01:30)"
+      }
+    },
+    {
+      "id": "3",
+      "item": "Disk free, free RAM, resource_guard verdict with thresholds",
+      "result": "BLOCKED",
+      "cause": "RAM: 306 MB available. R1/R2/R3 are BLOCKED_RESOURCE; only R0 passes.",
+      "evidence": {
+        "c_free_gb": 11.8,
+        "d_free_gb": 7.0,
+        "ram_free_gb": 0.37,
+        "ram_total_gb": 7.21,
+        "resource_guard": {
+          "AVAILABLE_RAM_MB": 306,
+          "TOTAL_RAM_MB": 7378,
+          "R0_GATE": "PASS",
+          "R1_GATE": "BLOCKED_RESOURCE",
+          "R2_GATE": "BLOCKED_RESOURCE",
+          "R3_GATE": "BLOCKED_RESOURCE",
+          "LOCK_STATUS": "NO_LOCK",
+          "OTHER_HEAVY_JOB_DETECTED": "NONE_REGISTERED"
+        },
+        "thresholds_mb": {
+          "R0": 0,
+          "R1": 1200,
+          "R2": 2500,
+          "R3": 3000
+        },
+        "likely_consumers": "4x metatester64.exe (Strategy Tester agents), VS Code, MT5 terminal"
+      }
+    },
+    {
+      "id": "4",
+      "item": "S1 Part C checklist",
+      "result": "BLOCKED",
+      "cause": "Date gate: audit taken Sunday 2026-10-11 22:05 +06:30; the S1 window is Mon 2026-10-12 07:00-11:00 UTC (13:30-17:30 MMT).",
+      "sub_items": [
+        {
+          "id": "4a",
+          "item": "runtime identity",
+          "result": "PASS",
+          "cause": "HEAD 0773a55; LIVE ticket_source routes GBPUSD x ASIAN_LONDON to strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml (ST_ASIAN_SWEEP_5R_V1 1.1.2); symbol_scope_verified(S1)=True (identity d7a8ebe5…)."
+        },
+        {
+          "id": "4b",
+          "item": "symbol map v2",
+          "result": "BLOCKED",
+          "cause": "No symbol-map v2 artifact or version marker found in the host tree's src/config/scripts; needs an authority pointer."
+        },
+        {
+          "id": "4c",
+          "item": "DST parity",
+          "result": "BLOCKED",
+          "cause": "Not evaluated: no DST-parity check or artifact found in the host tree; the host is MMT (no DST) and runner gating is UTC, so parity needs the next in-window run."
+        },
+        {
+          "id": "4d",
+          "item": "GBPUSD ASIAN_LONDON ticket generation",
+          "result": "BLOCKED",
+          "cause": "Window not reached (date gate)."
+        },
+        {
+          "id": "4e",
+          "item": "Telegram delivery proof",
+          "result": "BLOCKED",
+          "cause": "S1 summary not yet produced. Pre-window evidence: build_sender config.enabled=True; first canonical summary sent 2026-10-11T15:32:04Z (LONDON_NEWYORK status=COMPLETE delivery=sent; all FX evaluations BLOCKED, summary_only)."
+        }
+      ]
+    }
+  ],
+  "amended": "2026-10-12: items 2/2b updated with owner attribution; see host_s1_contain_2026-10-11.json"
+}

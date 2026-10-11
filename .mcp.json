@@ -18,20 +18,6 @@
         "NODE_USE_ENV_PROXY": "1"
       }
     },
-    "metaeditor": {
-      "type": "http",
-      "url": "http://127.0.0.1:22345/mcp",
-      "headers": {
-        "Authorization": "Bearer ${MT5_APP_MCP_TOKEN:-}"
-      }
-    },
-    "terminal": {
-      "type": "http",
-      "url": "http://127.0.0.1:22346/mcp",
-      "headers": {
-        "Authorization": "Bearer ${MT5_APP_MCP_TOKEN:-}"
-      }
-    },
     "marketdata": {
       "type": "http",
       "url": "https://www.metatrader.com/mcp",
