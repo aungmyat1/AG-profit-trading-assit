@@ -53,7 +53,7 @@ standing authorization record, and the per-order owner confirmation while that g
 DEMO account identity (login suffix, server, `trade_mode`) is read live inside the call immediately
 before `order_check`, never from a cached source. The duplicate-ticket ledger is checked before
 `order_check`, not only before send. The scope refuses to load when the reserved S1 magic `777001`
-collides with any of the six magics recorded as in use on the host. Every transition appends one
+collides with any of the eight magics recorded as in use on the host. Every transition appends one
 `DEMO_LIFECYCLE_EVIDENCE` record (`AUTHORIZED → CHECKED → SENT → BROKER_ACK → POSITION_TRACKED →
 CLOSED → RECONCILED`) with ticket id, broker order/deal/position ids where applicable and UTC
 timestamps, and an unknown outcome halts and reconciles without ever resubmitting. No broker API call
@@ -265,7 +265,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `6e3dd7dd4976ff3e2ca3ceb112a1d468827fc2ac406bdaddfe01825ab0b3fc1d`.
+inputs_sha256: `956307a87dae60db9284f85f73d962a5e1433a62f70b205e8691bc00d3e019e2`.
 <!-- [[[end]]] -->
 
 ### Objective

@@ -539,9 +539,10 @@ def test_daily_risk_happy_path_sizes_at_or_below_half_percent(tmp_path):
     assert result.daily_reset_owner_confirm is True
 
 
-def test_foreign_position_on_instrument_blocks_despite_other_magic_number(tmp_path):
+@pytest.mark.parametrize("foreign_magic", [0, 999999])
+def test_foreign_position_on_instrument_blocks_despite_other_magic_number(tmp_path, foreign_magic):
     inputs = _pre_send_inputs(tmp_path)
-    snapshot = replace(inputs["risk_snapshot"], open_positions=[OpenPosition("GBPUSD-VIP", 999999)])
+    snapshot = replace(inputs["risk_snapshot"], open_positions=[OpenPosition("GBPUSD-VIP", foreign_magic)])
     result = evaluate_risk_caps(inputs["ticket"], inputs["scope"], snapshot, now_utc=inputs["now"])
     assert result.reason_code == "INSTRUMENT_POSITION_LIMIT"
     assert result.foreign_positions_on_symbol == 1

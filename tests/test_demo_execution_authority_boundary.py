@@ -60,7 +60,7 @@ from demo_execution.lifecycle import (
 from ticket_store.store import TicketStore
 
 REPO = Path(__file__).resolve().parents[1]
-CHECKED_ORDER = {"retcode": 10009, "volume": 0.5, "price": 1.3001, "order": 111}
+CHECKED_ORDER = {"retcode": 0, "volume": 0.5, "price": 1.3001, "order": 111}
 SEND_RESULT = {"retcode": 10009, "order": 111, "deal": 222}
 
 
@@ -810,6 +810,20 @@ def test_a_transition_without_its_required_evidence_is_refused(tmp_path, method,
     assert reason in decision.reason_codes
 
 
+@pytest.mark.parametrize("retcode", [10004, 10009, None, True])
+def test_rejected_or_malformed_order_check_result_cannot_be_recorded_as_checked(tmp_path, retcode):
+    fixture = boundary(tmp_path)
+    assert _check(fixture).admitted is True
+    result = dict(CHECKED_ORDER, retcode=retcode)
+    decision = fixture["guard"].record_order_checked(
+        authority=authority_for(fixture, now=_seconds(1)), ticket=fixture["ticket"],
+        checked_order=result, now_utc=_seconds(1),
+    )
+    assert decision.admitted is False
+    assert decision.reason_code == "ORDER_CHECK_RESULT_REJECTED"
+    assert _trail(fixture["guard"]) == [AUTHORIZED]
+
+
 def test_a_tampered_evidence_row_is_a_conflict_not_a_silent_pass(tmp_path):
     fixture = boundary(tmp_path)
     guard, store = fixture["guard"], fixture["store"]
@@ -869,6 +883,36 @@ def test_an_unknown_send_outcome_halts_and_is_never_resubmitted(tmp_path):
     after = guard.record_position_tracked(authority=authority_for(fixture, now=_seconds(7)),
                                           broker_position_id="111", now_utc=_seconds(7))
     assert (after.admitted, after.reason_code) == (False, "LIFECYCLE_ALREADY_RECONCILED")
+
+
+@pytest.mark.parametrize(("send_result", "halt_reason"), [
+    ({"retcode": 10009, "order": 0, "deal": 0}, "BROKER_ACK_IDENTIFIER_MISSING"),
+    ({"retcode": 10009, "order": "0", "deal": "000"}, "BROKER_ACK_IDENTIFIER_MISSING"),
+    ({"retcode": 10004, "order": 123, "deal": 456}, "BROKER_SEND_NOT_ACCEPTED"),
+])
+def test_failed_send_result_cannot_be_recorded_as_broker_ack(tmp_path, send_result, halt_reason):
+    fixture = boundary(tmp_path)
+    _walk_to_send(fixture)
+    decision = fixture["guard"].record_broker_ack(
+        authority=authority_for(fixture, now=_seconds(3)), send_result=send_result, now_utc=_seconds(3),
+    )
+    assert (decision.admitted, decision.reason_code) == (False, "HALT_UNKNOWN_RESULT")
+    assert decision.details["halt_reason"] == halt_reason
+    assert _trail(fixture["guard"])[-1] == HALT
+    assert BROKER_ACK not in _trail(fixture["guard"])
+
+
+def test_halt_cannot_write_a_different_ticket_than_its_authority(tmp_path):
+    fixture = boundary(tmp_path)
+    _walk_to_send(fixture)
+    other_ticket = f"{TICKET_ID}-other"
+    decision = fixture["guard"].halt(
+        authority=authority_for(fixture, now=_seconds(3)), ticket_id=other_ticket,
+        reason_code="TRANSPORT_TIMEOUT", now_utc=_seconds(3),
+    )
+    assert (decision.admitted, decision.reason_code) == (False, "HALT_TICKET_MISMATCH")
+    assert _trail(fixture["guard"])[-1] == SENT
+    assert _trail(fixture["guard"], other_ticket) == []
 
 
 def test_a_send_window_that_closes_without_a_reported_outcome_halts(tmp_path):

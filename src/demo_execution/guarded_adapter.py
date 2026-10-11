@@ -81,19 +81,23 @@ ACCOUNT_IDENTITY_UNAVAILABLE = "ACCOUNT_IDENTITY_UNAVAILABLE"
 AUTHORIZATION_ID_MISMATCH = "AUTHORIZATION_ID_MISMATCH"
 ORDER_CHECK_AUTHORIZATION_EXPIRED = "ORDER_CHECK_AUTHORIZATION_EXPIRED"
 ORDER_CHECK_EVIDENCE_MISSING = "ORDER_CHECK_EVIDENCE_MISSING"
+ORDER_CHECK_RESULT_REJECTED = "ORDER_CHECK_RESULT_REJECTED"
 ORDER_SEND_AUTHORIZATION_EXPIRED = "ORDER_SEND_AUTHORIZATION_EXPIRED"
 CHECKED_ORDER_MISMATCH = "CHECKED_ORDER_MISMATCH"
 BROKER_ACK_EVIDENCE_MISSING = "BROKER_ACK_EVIDENCE_MISSING"
+BROKER_SEND_NOT_ACCEPTED = "BROKER_SEND_NOT_ACCEPTED"
 POSITION_EVIDENCE_MISSING = "POSITION_EVIDENCE_MISSING"
 CLOSE_EVIDENCE_MISSING = "CLOSE_EVIDENCE_MISSING"
 RECONCILIATION_EVIDENCE_INVALID = "RECONCILIATION_EVIDENCE_INVALID"
 TICKET_ID_MISSING = "TICKET_ID_MISSING"
+HALT_TICKET_MISMATCH = "HALT_TICKET_MISMATCH"
 GUARD_REFUSED = "GUARD_REFUSED"
 
 # Broker identifier spellings the canonical host adapter may return. The guard never invents an
 # identifier: when none of these is present the outcome is unknown, so it HALTs.
 _ORDER_ID_KEYS = ("broker_order_id", "order_id", "order")
 _DEAL_ID_KEYS = ("broker_deal_id", "deal_id", "deal")
+_ORDER_SEND_ACCEPTED_RETCODES = frozenset({10008, 10009, 10010})
 
 
 @dataclass(frozen=True)
@@ -119,8 +123,14 @@ def _first_identifier(source: Mapping[str, Any], keys: tuple[str, ...]) -> Optio
     for key in keys:
         value = source.get(key)
         if isinstance(value, str) and value.strip():
-            return value.strip()
-        if isinstance(value, int) and not isinstance(value, bool):
+            identifier = value.strip()
+            try:
+                if int(identifier, 10) <= 0:
+                    continue
+            except ValueError:
+                pass
+            return identifier
+        if isinstance(value, int) and not isinstance(value, bool) and value > 0:
             return str(value)
     return None
 
@@ -403,6 +413,8 @@ class GuardedCanonicalAdapter:
                 reasons.append(ORDER_CHECK_AUTHORIZATION_EXPIRED)
         if not isinstance(checked_order, Mapping) or not checked_order:
             reasons.append(ORDER_CHECK_EVIDENCE_MISSING)
+        elif type(checked_order.get("retcode")) is not int or checked_order.get("retcode") != 0:
+            reasons.append(ORDER_CHECK_RESULT_REJECTED)
         reasons.extend(self._revalidate_pre_trade(
             authority, scope, ticket=ticket, market=None, risk_snapshot=None, now_utc=now_utc,
             require_gates=False, require_consumed_confirmation=False, details=details,
@@ -539,6 +551,10 @@ class GuardedCanonicalAdapter:
             # The broker was asked to submit and no order identifier came back: unknown outcome.
             return self.halt(authority=authority, ticket_id=authority.ticket_id,
                              reason_code="BROKER_ACK_IDENTIFIER_MISSING", now_utc=now_utc)
+        retcode = send_result.get("retcode") if isinstance(send_result, Mapping) else None
+        if type(retcode) is not int or retcode not in _ORDER_SEND_ACCEPTED_RETCODES:
+            return self.halt(authority=authority, ticket_id=authority.ticket_id,
+                             reason_code=BROKER_SEND_NOT_ACCEPTED, now_utc=now_utc)
         evidence = {**evidence_id_map(authority),
                     "retcode": send_result.get("retcode") if isinstance(send_result, Mapping) else None,
                     "send_result_sha256": evidence_digest(dict(send_result or {}))}
@@ -679,8 +695,12 @@ class GuardedCanonicalAdapter:
             authority, ticket=None, now_utc=now_utc, phase="HALT", require_trail_evidence=False,
             allow_halted=True,
         )
-        resolved_ticket = ticket_id if isinstance(ticket_id, str) and ticket_id.strip() \
-            else getattr(authority, "ticket_id", None)
+        authority_ticket = getattr(authority, "ticket_id", None)
+        requested_ticket = ticket_id.strip() if isinstance(ticket_id, str) and ticket_id.strip() else None
+        if requested_ticket is not None and requested_ticket != authority_ticket:
+            reasons.append(HALT_TICKET_MISMATCH)
+        resolved_ticket = authority_ticket if isinstance(authority_ticket, str) and authority_ticket.strip() \
+            else requested_ticket
         if not (isinstance(resolved_ticket, str) and resolved_ticket.strip()):
             return _refused(tuple(reasons) + (TICKET_ID_MISSING,), details)
         if not (isinstance(reason_code, str) and reason_code.strip()):
