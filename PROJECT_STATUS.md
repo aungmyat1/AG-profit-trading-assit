@@ -45,6 +45,22 @@ but awaits focused verification. Current strategy bindings, readiness values, de
 host tasks, and broker state are unchanged. Host-side execution artifacts remain `UNTRACKED_HOST`
 under C11 until brought into the repository through a reviewed PR before G6.
 
+C14 DEMO execution boundary hardening (2026-10-11, unit-tested offline, not live-verified) adds the
+refusal side of that future lane. Every guarded adapter call requires an execution-authority object
+and re-validates it inside the adapter: the committed scope re-loaded from disk, the ticket binding,
+single-use authority, READY/risk/freshness evidence ids recomputed from the facts handed over, the
+standing authorization record, and the per-order owner confirmation while that gate is in force. The
+DEMO account identity (login suffix, server, `trade_mode`) is read live inside the call immediately
+before `order_check`, never from a cached source. The duplicate-ticket ledger is checked before
+`order_check`, not only before send. The scope refuses to load when the reserved S1 magic `777001`
+collides with any of the six magics recorded as in use on the host. Every transition appends one
+`DEMO_LIFECYCLE_EVIDENCE` record (`AUTHORIZED → CHECKED → SENT → BROKER_ACK → POSITION_TRACKED →
+CLOSED → RECONCILED`) with ticket id, broker order/deal/position ids where applicable and UTC
+timestamps, and an unknown outcome halts and reconciles without ever resubmitting. No broker API call
+site exists in this repository: `ORDER_API_CALLS = 0`, `BROKER_MUTATION_COUNT = 0`. The committed
+scope remains `enabled: false`, D6 READY remains OFF, and all `demo_authorized` flags remain false.
+Evidence: [`C14 boundary hardening`](docs/status/AGP_C14_DEMO_EXECUTION_BOUNDARY_HARDENING_2026-10-11.md).
+
 READY admission now requires both the existing READY config switch and a matching approved
 record in the owner decision register bound to exact strategy version, loaded contract SHA256,
 symbol, and session. The production switch remains OFF and no owner record was added; see

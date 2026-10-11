@@ -1,0 +1,37 @@
+# Magics already in use on the VT Markets DEMO host terminal, as observed 2026-10-11.
+#
+# Why this file exists: the reserved S1 magic is not a runtime literal -- it is resolved from
+# the registered strategy contract (strategies/registry.yaml -> candidate_versions["1.1.2"]
+# config_source -> magic_number). Sharing a magic with another order source on the same account
+# would make "own position" vs "foreign position" undecidable, so demo_execution.scope fails
+# closed (STRATEGY_MAGIC_COLLIDES_WITH_HOST) when the reserved magic equals any value listed
+# here. Magic 0 is listed permanently: unattributed manual/local-API orders on this account
+# carry it, and 0 is also the "no magic" default of every MT5 order.
+#
+# Provenance (evidence, not authority; nothing here authorizes an order):
+#   - status/evidence/host_s1_2026-10-11.json  (merged, PR #152) -- DEMO account identity and
+#     broker_history_24h.manual_or_zero_magic = 3 with an empty by_magic map.
+#   - C11 host inventory status/evidence/host_c11_inventory_2026-10-11.json (draft PR #153,
+#     DO-NOT-ENABLE) -- per-EA magic inputs and which EA is loaded now.
+#   - S1 blocker evidence status/evidence/host_s1_blockers_2026-10-11.json (PR #154) -- the
+#     72h foreign order/deal history attributed to magic 0, reason EXPERT, source 127.0.0.1.
+#
+# Known gap: the six compiled .ex5 binaries on the host were inventoried, not decompiled, so
+# their effective magics are UNKNOWN_BINARY. This list is the owner-stated set of magics in use
+# and must be re-verified against the live terminal before any DEMO order authority is enabled.
+schema: AGP_C14_HOST_MAGIC_REGISTRY_V1
+observed_at_utc: "2026-10-11"
+account: VTMarkets-Demo (login suffix only; see config/owner_ticket.yaml OD1011-COMMISSION)
+magics_in_use_on_host:
+  - magic: 0
+    source: "unattributed manual / local MT5 API orders (reason EXPERT, journal source 127.0.0.1)"
+  - magic: 102233
+    source: "ContinuationBreakout_EA.mq5 InpMagicNumber -- LOADED now (PROGRAM_FILES terminal, EURUSD M15)"
+  - magic: 18152023
+    source: "asian_session_ea.mq5 InpMagic -- not running"
+  - magic: 550055
+    source: "SMC_Sniper_EA.mq5 InpMagic -- not running"
+  - magic: 20260713
+    source: "SMC_LSS_v1_EA.mq5 InpMagic -- not running"
+  - magic: 1120250714
+    source: "MT5_EA_1BullBear_ICT_SMC.mq5 InpMagic -- not running"
