@@ -1,7 +1,7 @@
 {
  "schema": "AG_HOST_S1_BLOCKERS_V1",
  "date": "2026-10-11",
- "host_repo": "D:/wp3-main-integ",
+ "host_repo": "<HOST_ROOT>",
  "host_head_sha": "deb85d0036ec648acc3504b84a8dd7d2ab5d298b",
  "broker_mutation": "NONE (history/positions/orders reads only; no order_check/order_send)",
  "deleted": "NOTHING",
@@ -341,14 +341,14 @@
     {
      "pid": 12692,
      "name": "terminal64.exe",
-     "path": "<USERPROFILE>/AppData/Roaming/MetaTrader 5",
+     "path": "<MT5_TERMINAL_DIR_ROAMING>",
      "started_local": "2026-10-10 20:14",
      "note": "ROAMING terminal; foreign orders routed here via local API"
     },
     {
      "pid": 1832,
      "name": "terminal64.exe",
-     "path": "C:/Program Files/MetaTrader 5",
+     "path": "<MT5_TERMINAL_DIR>",
      "started_local": "2026-10-11 07:30",
      "note": "ContinuationBreakout_EA (EURUSD,M15, magic 102233) loaded"
     },
@@ -359,12 +359,12 @@
      "note": "read-only MCP proxy (isReadOnlyMt5Tool allowlist)"
     }
    ],
-   "installed_unrestricted": "<USERPROFILE>/AppData/Roaming/Python/Python314/Scripts/metatrader-mcp-server.exe 0.5.1 (has place_market_order/place_pending_order); not running at capture",
+   "installed_unrestricted": "<HOST_USER_PYTHON_SCRIPTS>/metatrader-mcp-server.exe 0.5.1 (has place_market_order/place_pending_order); not running at capture",
    "enabled_trading_tasks": [
-    "AG Profit Trading - BTC Daily Decision -> C:/Python314/python.exe D:/ddev/AG profit trading/scripts/run_btc_daily_report.py --json",
+    "AG Profit Trading - BTC Daily Decision -> <TASK_PYTHON> <TASK_SCRIPT:scripts/run_btc_daily_report.py> --json",
     "AG-V1-Crypto-Daily / AG-V1-FX-Cycles / AG-V1-LSMC-Watch / AG-V1-LSMC-Crypto-Weekend -> live_candles_smoke.py (read-only)",
-    "EdgeLab/VT Friction Daily Capture -> D:/ddev/Edge lab/ag-edgelab-friction/scripts/run_daily_friction_capture.cmd (not inspected)",
-    "AGX-HealthExport -> <USERPROFILE>/Scripts/export-ag-health.ps1 (not inspected)"
+    "EdgeLab/VT Friction Daily Capture -> <TASK_SCRIPT:run_daily_friction_capture.cmd> (not inspected)",
+    "AGX-HealthExport -> <TASK_SCRIPT:export-ag-health.ps1> (not inspected)"
    ],
    "custom_eas_present": "see status/evidence/host_c11_inventory_2026-10-11.json (PR #153)"
   }
@@ -374,7 +374,7 @@
   "C_total_gb": 168,
   "D_free_gb": 7.2,
   "method": "robocopy /L list-only byte totals; System Volume Information/restore points not measurable without admin",
-  "mt5_data_path": "C: (both terminals: <USERPROFILE>/AppData/Roaming/MetaQuotes/Terminal/{8EFB...,D0E8...}); nothing on D:",
+  "mt5_data_path": "C: (both terminals: <MT5_DATA_DIR_1>, <MT5_DATA_DIR_2>); nothing on D:",
   "top_consumers": [
    {
     "path": "<USERPROFILE>/AppData/Local (total)",
@@ -597,9 +597,59 @@
   "facts": [
    "scripts/resource_guard.py + tests/test_resource_guard.py exist only on origin/research/edge-program-v1 (commit 82e6e5c, 2026-10-05), never merged to main",
    "origin/main references it: AGENTS.md:124 (resource_guard classes), docs/status/AG_MANUAL_TRADE_TICKET_V1_STATUS.md:170, two dated evidence files (2026-10-09)",
-   "Parent-level AGENTS.md (D:/ddev/AG profit trading, branch research/edge-program-v1) mandates `python scripts/resource_guard.py status` and has the helper + policy docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md",
-   "Host D:/wp3-main-integ (main): file absent"
+   "Parent-level AGENTS.md (<HOST_DEV_ROOT>, branch research/edge-program-v1) mandates `python scripts/resource_guard.py status` and has the helper + policy docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md",
+   "Host <HOST_ROOT> (main): file absent"
   ],
   "next": "Owner: merge resource_guard.py + policy from research/edge-program-v1 into main, or drop the main references."
+ },
+ "redactions": {
+  "ruling": "owner 2026-10-11: host paths -> <HOST_ROOT>, terminal/task paths -> placeholders (edited in-PR after capture)",
+  "applied": [
+   {
+    "placeholder": "<TASK_PYTHON> <TASK_SCRIPT:scripts/run_btc_daily_report.py>",
+    "kind": "task action path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<TASK_SCRIPT:run_daily_friction_capture.cmd>",
+    "kind": "task action path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<TASK_SCRIPT:export-ag-health.ps1>",
+    "kind": "task action path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<HOST_USER_PYTHON_SCRIPTS>/metatrader-mcp-server.exe",
+    "kind": "host tool path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<MT5_DATA_DIR_1>, <MT5_DATA_DIR_2>",
+    "kind": "terminal data path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<MT5_TERMINAL_DIR_ROAMING>",
+    "kind": "terminal path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<MT5_TERMINAL_DIR>",
+    "kind": "terminal path",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<HOST_DEV_ROOT>",
+    "kind": "host path (non-runtime checkout)",
+    "occurrences": 1
+   },
+   {
+    "placeholder": "<HOST_ROOT>",
+    "kind": "host path (live runtime tree)",
+    "occurrences": 2
+   }
+  ]
  }
 }
