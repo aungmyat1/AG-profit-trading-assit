@@ -2,7 +2,7 @@
  "schema": "AG_HOST_DST_ROLLOVER_V1",
  "mission": "CS-DST-FIX-01 host verification",
  "captured_on_host": true,
- "host_repo": "D:/wp3-main-integ",
+ "host_repo": "<HOST_ROOT>",
  "host_head_sha": "1d8891392fc522e9b979008e6f4be0091d9309b2",
  "host_update": "git pull --ff-only origin main (pull-only)",
  "broker_mutation": "NONE (no order_check/order_send/symbol_select/position calls)",
@@ -10,6 +10,7 @@
  "environment": "Windows 10 host, VT Markets MT5 terminal build 6230, .venv python",
  "verdict": "PASS_WITH_LIMITATION",
  "verdict_detail": "Per-bar server wall clock = America/New_York + 7h on all 6 symbols across the Sun 2026-10-04 -> Mon 2026-10-05 rollover; FX/crypto server Mon 00:00 bar = NY Sun 17:00 (UTC 21:00Z); no gaps, 0 DST-hour drops. Live-tick offset cross-check NOT_EVALUABLE: FX closed (weekend) and VT crypto ticks stale (last tick server wall 2026-10-11T06:59:57 vs host 06:35Z, NTP-synced). AMBIGUOUS/NONEXISTENT_DST_HOUR path not exercisable until the 2026-11-01 US DST end; remains unit-tested only (tests/test_dst_transition_2026_11.py).",
+ "status_line": "DST offset host-verified on 10-04/05 rollover; ambiguous-hour handling unit-tested only until 11-01.",
  "checks": {
   "all_bars_server_eq_ny_plus_7": true,
   "fx_week_open_at_ny_1700": true,
@@ -745,5 +746,15 @@
     }
    ]
   }
+ },
+ "redactions": {
+  "ruling": "owner 2026-10-11: host paths -> <HOST_ROOT>, terminal/task paths -> placeholders (edited in-PR after capture)",
+  "applied": [
+   {
+    "placeholder": "<HOST_ROOT>",
+    "kind": "host path (live runtime tree)",
+    "occurrences": 1
+   }
+  ]
  }
 }

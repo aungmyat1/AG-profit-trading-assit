@@ -1,7 +1,7 @@
 {
  "schema": "AG_HOST_SYMBOL_MAP_V2_SMOKE_V1",
  "captured_on_host": true,
- "host_repo": "D:/wp3-main-integ",
+ "host_repo": "<HOST_ROOT>",
  "host_head_sha": "1d8891392fc522e9b979008e6f4be0091d9309b2",
  "host_update": "git pull --ff-only origin main (pull-only)",
  "broker_mutation": "NONE (no order_check/order_send/symbol_select/position calls)",
@@ -99,5 +99,15 @@
    "trade_freeze_level": 0,
    "visible": true
   }
+ },
+ "redactions": {
+  "ruling": "owner 2026-10-11: host paths -> <HOST_ROOT>, terminal/task paths -> placeholders (edited in-PR after capture)",
+  "applied": [
+   {
+    "placeholder": "<HOST_ROOT>",
+    "kind": "host path (live runtime tree)",
+    "occurrences": 1
+   }
+  ]
  }
 }
