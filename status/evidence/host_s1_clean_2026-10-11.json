@@ -8,7 +8,7 @@
   "probe": "MetaTrader5 Python package: initialize(path=main terminal), account_info, terminal_info, positions_total, orders_total, history_orders_get, history_deals_get, shutdown. No order_check/order_send.",
   "preceding_actions_2026-10-11": {
     "18:14:19 +06:30": "Stopped metatrader-mcp-server (pid 10916) and 4x node start_mt5_mcp.mjs (pids 14128, 13080, 8076, 6560); not restarted.",
-    "18:14:45-18:15:07 +06:30": "Consolidate-MT5.ps1 -Apply: portable terminal exe renamed .disabled; main terminal closed and restarted unelevated; ContinuationBreakout_EA .ex5/.mq5 (2 data folders) moved to D:\\mt5_quarantine\\20261011_1814\\.",
+    "18:14:45-18:15:07 +06:30": "Consolidate-MT5.ps1 -Apply: portable terminal exe renamed .disabled; main terminal closed and restarted unelevated; ContinuationBreakout_EA .ex5/.mq5 (2 data folders) moved to <HOST_SCRATCHPAD>/mt5_quarantine/20261011_1814/.",
     "18:22:08-18:22:10 +06:30": "Owner cancelled 2 pending orders (ETHUSD sell stop ...535, BTCUSD buy stop ...559) from the terminal UI.",
     "18:22:19 +06:30": "Owner switched Algo Trading OFF (terminal log: 'automated trading is disabled').",
     "18:31 +06:30": "Owner changed account password (one 'Invalid account' auth failure, then re-authorized).",
@@ -68,5 +68,5 @@
     }
   ],
   "verdict": "PASS",
-  "host_runtime_pre_part_b": {"tree": "D:\\wp3-main-integ", "head": "1b063a7", "contains_e317267": false, "note": "behind origin/main; Part B pull required"}
+  "host_runtime_pre_part_b": {"tree": "<HOST_SCRATCHPAD>/prod", "head": "1b063a7", "contains_e317267": false, "note": "behind origin/main; Part B pull required"}
 }
