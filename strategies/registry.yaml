@@ -102,6 +102,19 @@ strategies:
     research: true
     demo_authorized: false
     live_authorized: false
+    detection_logic_verification:
+      status: LOGIC_VERIFIED
+      verification_basis: "Single-snapshot fixture bound to EURUSD.json SHA256 b5e1e524e1b912d15032650881edb000906d6d875657332be90fa3997a191c11 and host snapshot data/eurusd-d1-mt5@a44437e; L1-L6, prefix-invariance and classified oracle diffs passed. Old-vs-new output attribution is diagnostic only."
+      mismatch_count: 0
+      logic_defect_count: 0
+      data_defect_count: 0
+      identity: ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY
+      report: research_external/oracles/runs/AGP_4H_C_EURUSD_DETECTION.json
+      scope: "EURUSD detection only; actionability is a separate layer and was not evaluated"
+      host_fixture: "single VT MT5 EURUSD-VIP D1/H1/M5 snapshot; data/eurusd-d1-mt5@a44437e; SHA256 ff77c9338f6fcc74079cf88d69d103b0c5e4e5a19856b6d4dce8a28333e5701e"
+      completed_utc: 2026-10-11
+      merge_gate: "host re-run match (AGP-4H-HOST)"
+      merge_gate_detail: "Host compares rebuilt D1 to MT5 copy_rates D1 for the same dates."
     config_source: strategies/ST_LARGE_SMC_V1_1_1_0.yaml
     version: "1.1.0"
     contract_sha256: 78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4
