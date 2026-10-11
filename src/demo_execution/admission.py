@@ -203,30 +203,43 @@ def evaluate_pre_send_gates(
         return _blocked("EXECUTION_DISABLED", ticket)
     if not isinstance(ticket, Mapping):
         return _blocked("TICKET_INVALID")
-    reason, details = check_ticket_scope_and_ready(ticket, policy)
-    if reason:
-        return _blocked(reason, ticket, **details)
-
+    scope_reason, scope_details = check_ticket_scope_and_ready(ticket, policy)
     authorization: AuthorizationResult = load_standing_authorization(
         policy, ticket, path=authorization_path, now_utc=now_utc,
     )
-    if not authorization.authorized:
-        return _blocked(authorization.reason_code, ticket, decision_id=authorization.decision_id)
-
     risk = evaluate_risk_caps(ticket, policy, risk_snapshot, now_utc=now_utc)
+    cost_reason, cost_details = check_cost_gate(ticket, market, policy)
+    freshness_reason, freshness_details = check_freshness(ticket, market, policy, now_utc=now_utc)
+
+    # Preserve one stable primary reason (scope first), while recording every independent
+    # gate result for which this call supplied enough inputs to evaluate it.
+    block_reasons = []
+    if scope_reason:
+        block_reasons.append(scope_reason)
+    if not authorization.authorized:
+        block_reasons.append(authorization.reason_code)
     if not risk.allowed:
-        return _blocked(risk.reason_code, ticket, risk_snapshot={
+        block_reasons.append(risk.reason_code)
+    if cost_reason:
+        block_reasons.append(cost_reason)
+    if freshness_reason:
+        block_reasons.append(freshness_reason)
+    if block_reasons:
+        details = {
+            "primary_block_reason": block_reasons[0],
+            "block_reasons": block_reasons,
+            "scope_details": scope_details,
+            "authorization_decision_id": authorization.decision_id,
+            "risk_snapshot": {
             "server_day": risk.server_day.isoformat() if risk.server_day else None,
             "daily_reset_owner_confirm": risk.daily_reset_owner_confirm,
             "own_positions_on_symbol": risk.own_positions_on_symbol,
             "foreign_positions_on_symbol": risk.foreign_positions_on_symbol,
-        })
-    cost_reason, cost_details = check_cost_gate(ticket, market, policy)
-    if cost_reason:
-        return _blocked(cost_reason, ticket, **cost_details)
-    freshness_reason, freshness_details = check_freshness(ticket, market, policy, now_utc=now_utc)
-    if freshness_reason:
-        return _blocked(freshness_reason, ticket, **freshness_details)
+            },
+            **cost_details,
+            **freshness_details,
+        }
+        return _blocked(block_reasons[0], ticket, **details)
     return AdmissionResult(
         True,
         "ADMITTED_PRE_SEND",
