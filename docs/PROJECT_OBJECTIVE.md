@@ -21,39 +21,54 @@ The [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-1
 
 ## Ticket lanes & execution routing (2026-10-12)
 
-**Status:** owner-directed amendment, DESIGN. Documentation and SPEC only. It enables no code path, flips no scope to `PASSED`, changes no READY flag, and leaves `demo_authorized=false`, `live_authorized=false` and all execution flags OFF. Spec (SPEC ONLY, not read by any code): [`docs/schemas/ticket_verification_routing.yaml`](schemas/ticket_verification_routing.yaml). Decision record: [`governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md`](governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md).
+**Status:** owner-directed amendment, DESIGN. Documentation and SPEC only. It enables no code path, changes no READY flag, and leaves `demo_authorized=false`, `live_authorized=false` and all execution flags OFF. Spec (SPEC ONLY, not read by any code): [`docs/schemas/ticket_verification_routing.yaml`](schemas/ticket_verification_routing.yaml). Decision record: [`governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md`](governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md).
 
-**Intent.** During logical verification the system produces trade tickets from **all three strategy families** — Asian Sweep session FX/gold (`ST_ASIAN_SWEEP_5R_V1`), Crypto CFD sweep-retest (`ST_CRYPTO_CFD_SWEEP_RETEST_V1`) and Large-SMC (`ST_LARGE_SMC_V1`) — for every relevant pair. Each ticket is stamped with the current verification status of its **strategy scope**:
+**Intent.** During logical verification the system produces trade tickets from **all three strategy families** — Asian Sweep session FX/gold (`ST_ASIAN_SWEEP_5R_V1`), Crypto CFD sweep-retest (`ST_CRYPTO_CFD_SWEEP_RETEST_V1`) and Large-SMC (`ST_LARGE_SMC_V1`) — for every relevant pair. Every relevant scope is reported with its current status. Each ticket is stamped with its scope's `verification_status`, `eligibility` and `execution_route`.
 
-- Scope status `PASSED` → ticket is routed `DEMO_ORDER`: a VT Markets DEMO order is placed and a Telegram report is sent.
-- Scope status other than `PASSED` → ticket is routed `REPORT_ONLY`: Telegram report only, labelled `REPORT-ONLY: <status>`.
-- On a scope's transition to `PASSED`, subsequent tickets for that scope may auto-place DEMO orders. **No backfill:** tickets generated before the transition are never placed retroactively.
+**Scope.** A verification scope is the tuple **strategy × pair × session × branch** (for example `ST_ASIAN_SWEEP_5R_V1@1.1.2` × GBPUSD × ASIAN_LONDON × SWEEP). A passing scope verifies no other branch, symbol, session or venue (AGP-C15).
 
-**Scope.** A verification scope is the tuple **strategy × pair × session/branch** (for example `ST_ASIAN_SWEEP_5R_V1@1.1.2` × GBPUSD × ASIAN_LONDON × SWEEP). A passing scope verifies no other branch, symbol, session or venue (AGP-C15).
+### States
 
-### PASSED (scope-level definition)
+Three independent axes replace any single "PASSED" state:
 
-`PASSED` is a scope-level state meaning **every** existing per-strategy gate is green for that exact scope:
+| Axis | Values | Meaning |
+|---|---|---|
+| `verification_status` | `UNVERIFIED` \| `IN_VERIFICATION` \| `LOGIC_VERIFIED` \| `STALE_IDENTITY` | `LOGIC_VERIFIED` = the exact scope passed **L1–L6**, with frozen identity, causality and deterministic replay. |
+| `eligibility` | `NOT_ELIGIBLE` \| `EXECUTION_ELIGIBLE` | `EXECUTION_ELIGIBLE` = `LOGIC_VERIFIED` **+** data (G2 `symbol_info`) **+** cost (G3 risk/cost keys and threshold tests) **+** host acceptance (G4) **+** an owner per-scope **standing DEMO authorization** (C14). |
+| `execution_route` | `REPORT_ONLY` \| `DEMO_ORDER` | `DEMO_ORDER` = `EXECUTION_ELIGIBLE` **AND** every per-ticket guard passes **at send time**. Otherwise `REPORT_ONLY`. |
 
-1. **Logic L1–L6** recorded as passing, as required for ticket authority under Strategy admission (the owner's shorthand "L1–L5" is not used because L6 is already mandatory in this objective) with frozen identity, causality and deterministic replay (`LOGIC_VERIFICATION_REPORT`).
-2. **Data:** VT MT5 `symbol_info` evidence for the traded broker symbol (G2).
-3. **Cost:** required risk and cost keys present and threshold tests passing (G3).
-4. **Host acceptance:** read-only open-window acceptance and published heartbeat for the scope (G4).
+- **PASSED makes a scope eligible; owner standing authorization makes it routable.** `LOGIC_VERIFIED` alone is never eligible.
+- **Shadow soak** is an optional diagnostic and may be cited as host-acceptance evidence. It is **not** an eligibility gate (C14, OD1009-D5).
+- Routing reads a single per-scope registry. That runtime registry does not exist yet (see Current state). Missing, unknown or malformed status fails closed to `REPORT_ONLY`. Live accounts are never routable.
+- `route_reason` is required and non-empty whenever `execution_route=REPORT_ONLY`.
 
-The optional shadow soak is **not** a `PASSED` requirement. C14 and OD1009-D5 govern; a soak may be run as optional observation (G5) but does not gate `PASSED`.
+`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED` and `LIVE_AUTHORIZED` remain independent states. Neither `LOGIC_VERIFIED` nor `EXECUTION_ELIGIBLE` implies `EDGE_VERIFIED` or `LIVE_AUTHORIZED`.
 
-**Logic-only is not PASSED.** `LOGIC_VERIFIED` alone never yields `PASSED`, and `PASSED` does not by itself confer DEMO authority (see Routing rules).
+### Ticket lanes
 
-### Per-ticket guards (apply even when PASSED)
+- **All three families report every relevant scope**, with its status stamped on the ticket.
+- **Non-eligible tickets** (`NOT_ELIGIBLE`, or any non-`DEMO_ORDER` route) carry the header **`REPORT ONLY — NON-ACTIONABLE`**. A hypothetical entry, SL and TP may be shown only when clearly labelled as hypothetical. Such tickets **never enter the order queue**.
+- **Large-SMC:** detection verification is **not** entry verification. A Large-SMC scope is eligible only after its entry/proposal scope passes L1–L6 and carries the required authorization. Watch and alert behaviour is unchanged.
+- **No retroactive execution.** Tickets issued before a scope became `EXECUTION_ELIGIBLE` are never placed.
 
-A ticket for a `PASSED` scope is still blocked, and is then routed `REPORT_ONLY` with the block reason recorded, if any of these hold:
+### Per-ticket guards (apply even when EXECUTION_ELIGIBLE)
 
-| Guard | Rule |
-|---|---|
-| Risk | `risk_pct` = 0.5 (owner ticket config; no fallback to strategy or `trading.yaml` risk). |
-| Cost | Spread + commission ≥ **0.25R** blocks (`cost_block_R`, OD1009-D2). |
-| Crypto spread | Crypto CFD spread > **20%** of the stop/risk distance blocks. *Owner instruction 2026-10-12; no recorded config key exists yet, so until one is recorded this guard fails closed.* |
-| Large-SMC reward | `lsmc_min_remaining_reward_fraction` = 0.5 (at least 50% of entry-to-target distance remaining). |
+A ticket is blocked, and routed `REPORT_ONLY` with the block reason, if any of these fail. Guards are referenced here and are not altered by this section.
+
+| Guard | Rule | Source |
+|---|---|---|
+| Risk | `risk_pct` = 0.5 (owner ticket config; no fallback to strategy or `trading.yaml` risk). | OD1009-D2, OD1010-C6-RISK |
+| Cost | Spread + commission ≥ **0.25R** blocks (`cost_block_R`). | OD1009-D2 |
+| Crypto spread | Crypto CFD spread > **20%** blocks. Config key is missing, so the guard **fails closed** until the key is recorded. | Owner-stated 2026-10-09 per owner mission; repo record not yet located (follow-up b) |
+| Large-SMC reward | `lsmc_min_remaining_reward_fraction` = 0.5 (≥ 50% of entry-to-target distance remaining). | `config/policy/actionability_policy.yaml` |
+
+Cadence and session guards that apply to the same routing lanes:
+
+- **15-minute cadence**, with **8 durable session outcomes** per applicable FX day (`AGP-OD1012-SESSION-CRYPTO`).
+- **OD1012-S1-ACCEPT:** S1 acceptance is the open-window run; the optional soak is not a gate.
+- **Combined crypto cap:** at most **2** combined crypto entries per day, enforced at the execution boundary.
+- **Crypto day boundary** `00:00 Asia/Yangon` is separate from, and cumulative with, the broker-server-day risk reset (`VT_SERVER_DAY`). The strictest limit binds. This boundary is in PR #175, which is not yet on `main`.
+- **No live routing ever.**
 
 Any guard failure, missing execution-critical input, stale or expired ticket, or unknown status produces `execution_route=REPORT_ONLY` with a populated `route_reason`.
 
@@ -61,35 +76,29 @@ Any guard failure, missing execution-critical input, stale or expired ticket, or
 
 | Field | Type | Values / rule |
 |---|---|---|
-| `verification_status` | enum | `UNVERIFIED` \| `IN_VERIFICATION` \| `LOGIC_VERIFIED` \| `PASSED` \| `STALE_IDENTITY`. Read from the routing registry for the ticket's scope; never inferred from the ticket itself. |
-| `execution_route` | enum | `DEMO_ORDER` \| `REPORT_ONLY`. Default and fail-closed value is `REPORT_ONLY`. |
-| `route_reason` | string | Required whenever `execution_route=REPORT_ONLY`: the status (for example `REPORT-ONLY: LOGIC_VERIFIED`) or the first failing guard/block reason. Required and non-empty. |
-
-`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED` and `LIVE_AUTHORIZED` remain independent states. `verification_status=PASSED` is not `DEMO_AUTHORIZED`.
-
-### Routing rules
-
-**PASSED makes a scope eligible; owner standing authorization makes it routable.**
-
-1. `DEMO_ORDER` requires **all** of: scope `verification_status=PASSED` in the routing registry; every per-ticket guard passing; and a **separate, valid, revocable, strategy-specific standing DEMO authorization** covering the exact strategy version and scope (C14 gate 5). Without that authorization, a `PASSED` scope routes `REPORT_ONLY` with reason `DEMO_AUTHORIZATION_ABSENT`.
-2. Every other case routes `REPORT_ONLY`.
-3. Routing reads a **single per-scope status registry**. That runtime registry does not exist yet and is created in a later, separately authorized PR; until then every scope is absent and routes `REPORT_ONLY`. Missing, unknown or malformed status fails closed to `REPORT_ONLY`. Live accounts are never routable.
-4. The crypto daily ceiling of two combined entries (AGP-OD1012-SESSION-CRYPTO) and the existing risk ceilings (1 open position per instrument, 5 trades per strategy per day, 1% daily loss per strategy, 2% account-wide) still bind at the execution boundary and are not relaxed by `PASSED`.
+| `verification_status` | enum | `UNVERIFIED` \| `IN_VERIFICATION` \| `LOGIC_VERIFIED` \| `STALE_IDENTITY`. Read from the registry for the ticket's scope; never inferred from the ticket. |
+| `eligibility` | enum | `NOT_ELIGIBLE` \| `EXECUTION_ELIGIBLE`. |
+| `execution_route` | enum | `DEMO_ORDER` \| `REPORT_ONLY`. Fail-closed default is `REPORT_ONLY`. |
+| `route_reason` | string | Required when `execution_route=REPORT_ONLY`: the failing status, guard or block reason (for example `REPORT-ONLY: LOGIC_VERIFIED` or `DEMO_AUTHORIZATION_ABSENT`). |
 
 ### Execution path and Telegram controls
 
 - Every automatic order passes the canonical execution/risk authority (`assistant.commands.execute_command()` boundary where implemented), with `order_check`, duplicate prevention, reconciliation and emergency stop. No ticket generator, Telegram message or callback may place an order directly.
-- The owner may **edit or close** demo orders from Telegram. Such actions are broker mutations and must pass through the same canonical executor, with an append-only audit record. They may not bypass routing, guards, authorization or the Live exclusion.
+- The owner may **edit or close** demo orders from Telegram. Such actions are broker mutations and must pass through the same canonical executor, with an append-only audit record. They may not bypass routing, guards, authorization or the live exclusion.
 
 ### Supersession of the 2026-10-09 owner-approval order flow
 
-The 2026-10-09 flow in which an owner Confirm places an order (Issue #47 V5 per-order confirmation, OD1009-D5) is **superseded for `PASSED` scopes**. Per-order Confirm is no longer the placement trigger for those scopes. Owner Confirm/Reject remains decision capture for other scopes and never grants or extends authorization.
+The 2026-10-09 flow in which an owner Confirm places an order (Issue #47 V5 per-order confirmation, OD1009-D5) is **superseded for `EXECUTION_ELIGIBLE` scopes**. Per-order Confirm is no longer the placement trigger for those scopes. Owner Confirm/Reject remains decision capture for other scopes and never grants or extends authorization.
 
-**Activation caveat (not changed by this amendment):** the per-order `user_confirmed` gate in `AGENTS.md` stays in force until the reviewed executor change and matching `AGENTS.md` update have landed together (see `docs/agents/INVARIANTS.md`). Until then, no `PASSED` scope can route `DEMO_ORDER` in practice.
+**Activation caveat (not changed by this amendment):** the per-order `user_confirmed` gate in `AGENTS.md` stays in force until the reviewed executor change and matching `AGENTS.md` update have landed together (see `docs/agents/INVARIANTS.md`). Until then, no scope can route `DEMO_ORDER` in practice.
 
 ### Current state
 
-No scope is `PASSED`. No runtime routing registry exists yet, so every ticket is `REPORT_ONLY` with reason `REGISTRY_ENTRY_MISSING` until the separately authorized registry PR lands. Strategy admission, READY, runtime binding and host acceptance are unchanged. This section sets target policy only and is not evidence that any gate has passed.
+No scope is `LOGIC_VERIFIED` or `EXECUTION_ELIGIBLE` by this section. No runtime routing registry exists, so every ticket is `REPORT_ONLY` with reason `REGISTRY_ENTRY_MISSING` until the separately authorized registry PR lands. Strategy admission, READY, runtime binding and host acceptance are unchanged. This section sets target policy only and is not evidence that any gate has passed.
+
+### Follow-ups (not in this PR)
+
+(a) Executor change replacing per-order `user_confirmed` for `EXECUTION_ELIGIBLE` scopes. (b) Config key for the crypto spread >20% block. (c) Runtime scope registry and loader. (d) Read-only all-family Telegram status reports, the next implementation priority.
 
 ## Objective
 

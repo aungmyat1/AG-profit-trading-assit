@@ -15,7 +15,7 @@ Version: v1
 
 ## Ticket routing (2026-10-12)
 - Demo routing reads a single per-scope status registry (runtime registry not yet created; spec in `docs/schemas/ticket_verification_routing.yaml`); missing/unknown status fails closed to `REPORT_ONLY`. Live account never routable.
-- A scope `PASSED` status does not by itself authorize a DEMO order; a separate standing DEMO authorization is also required. The 2026-10-09 owner-Confirm order placement is superseded only for `PASSED` scopes, and only once the executor change lands (see `docs/PROJECT_OBJECTIVE.md`).
+- Routing to `DEMO_ORDER` requires `EXECUTION_ELIGIBLE` (`LOGIC_VERIFIED` + data + cost + host acceptance) **and** a per-scope owner standing DEMO authorization. Eligibility alone never authorizes an order. The 2026-10-09 owner-Confirm order placement is superseded only for `EXECUTION_ELIGIBLE` scopes, and only once the executor change lands (see `docs/PROJECT_OBJECTIVE.md`).
 
 ## Fail-closed policy
 - Missing, unsigned, malformed, or conflicting actionability policy never authorizes `WATCH_READY`; use the existing fail-closed state and never invent a numeric threshold.
