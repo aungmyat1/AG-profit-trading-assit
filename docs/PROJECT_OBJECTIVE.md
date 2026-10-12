@@ -1,16 +1,16 @@
 ---
 class: authority
 state: DESIGN
-owner_reviewed: 2026-10-11
+owner_reviewed: 2026-10-12
 review_by: 2026-11-07
 ---
-# AG Profit Trading — Project Objective (rev 2026-10-11)
+# AG Profit Trading — Project Objective (rev 2026-10-12)
 
 **Repository:** `aungmyat1/AG-profit-trading-assit`  
 **Target branch:** `main`  
 **Venue:** VT Markets MT5 Demo  
 **Product phase:** PRE-EDGE  
-**Owner ratification:** Original objective RATIFIED 2026-10-09 by the owner — register entry `OBJ-RATIFY-2026-10-09`. C14 sequencing amendment RATIFIED 2026-10-11 — register entry `C14` and [owner decision](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md). Policy ratification is not strategy-specific execution authorization; `demo_authorized=false`, `live_authorized=false`, and READY remains OFF.
+**Owner ratification:** Original objective RATIFIED 2026-10-09 by the owner — register entry `OBJ-RATIFY-2026-10-09`. C14 sequencing amendment RATIFIED 2026-10-11 — register entry `C14` and [owner decision](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md). FX/Gold session coverage and crypto entry ceiling OWNER_APPROVED 2026-10-12 — register entry `AGP-OD1012-SESSION-CRYPTO` and [owner decision](governance/AGP_OD1012_SESSION_CRYPTO_OWNER_DECISION_2026-10-12.md). Policy ratification is not strategy-specific execution authorization; `demo_authorized=false`, `live_authorized=false`, and READY remains OFF.
 
 
 ## C14 demo sequencing (ratified 2026-10-11)
@@ -22,6 +22,8 @@ The [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-1
 ## Objective
 
 Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
+
+On each applicable FX trading day, EURUSD, GBPUSD, USDJPY and XAUUSD are each evaluated once for ASIAN_LONDON and once for LONDON_NEWYORK: eight scheduled instrument-session evaluations, each with a deterministic auditable terminal outcome. A scheduled evaluation is not a trade quota. BTCUSD and ETHUSD are scanned dynamically, only qualified current opportunities are ranked, and at most two combined crypto entries are taken per defined trading day; zero or one is acceptable (AGP-OD1012-SESSION-CRYPTO).
 
 Under ratified C14, a strategy with separate, valid, scoped standing DEMO authorization may submit eligible orders automatically after every runtime, READY, host, risk and broker gate passes; no per-order owner confirmation is required for that authorized scope. Confirm/Reject remains optional decision capture and cannot grant or extend authorization. Until `demo_authorized=true` is explicitly established through the governed authorization path, broker execution remains blocked. Live real-money execution is outside this objective.
 
@@ -39,11 +41,18 @@ Under ratified C14, a strategy with separate, valid, scoped standing DEMO author
    - ASIAN → LONDON and LONDON → NEW YORK.
    - Owner-defined session windows are authoritative.
    - Each scheduled instrument/session evaluation must end in an explicit canonical terminal outcome; no forced trade is required.
+   - Per applicable FX trading day: each instrument is evaluated once for `ASIAN_LONDON` and once for `LONDON_NEWYORK`, which is **exactly eight** scheduled instrument-session evaluations, using the existing authoritative session definitions and DST policy (AGP-OD1012-SESSION-CRYPTO).
+   - A scheduled evaluation is not a trade quota: no mandatory trade and no forced READY. Two evaluations per instrument do not imply two executions; only a genuinely qualified setup that passes every applicable authorization and safety gate may execute.
 
 2. **Crypto tickets — VT Markets CFDs (target capability)**
    - BTCUSD
    - ETHUSD
    - Daily, including weekends, at strategy-defined times.
+   - Venue: VT Markets MT5 Demo CFDs; perpetual-futures (BTCUSDT/ETHUSDT) evidence is never substituted.
+   - Both instruments are scanned dynamically; only qualified, current, non-expired opportunities are ranked (AGP-OD1012-SESSION-CRYPTO).
+   - **Maximum two combined crypto entries per defined trading day** across both instruments and all strategies (not two per instrument). Zero or one is acceptable. Two may be on the same instrument when each is independently qualified and every other control permits it. No trade is generated to meet a daily target.
+   - The ceiling is an execution-level limit at the canonical DEMO execution boundary. It is not satisfied by limiting Telegram messages, tickets or proposals.
+   - Day boundary, scan cadence, ranking weights, tie-breaking and broker order-counting semantics (partial fills, retries, uncertain submissions) are pending implementation design and fail closed until separately approved and implemented. The dynamic scan, ranking and ceiling enforcement are **not implemented**.
    - This is a target production capability, not a claim that the current crypto runtime is already accepted. Venue/contract identity, market-data semantics, sizing and strategy admission must be validated before operational acceptance.
    - Intended runtime strategy (OD1009-D3): `ST_CRYPTO_CFD_SWEEP_RETEST_V1`. Admission requires Logic Gate L1–L6 evidence; it is **not admitted** today and the existing runtime binding is unchanged (see `strategies/registry.yaml`).
 
@@ -51,6 +60,7 @@ Under ratified C14, a strategy with separate, valid, scoped standing DEMO author
    - Use a separately versioned `ST_LARGE_SMC` strategy only after its contract/engine passes the required Logic Gate and is admitted for ticketing.
    - Delivery freshness, remaining-R and send-time usability belong to the post-signal actionability layer and must not alter frozen strategy market logic.
    - Current research/draft status does not constitute logical verification or ticket authority.
+   - Large-SMC remains a separate six-instrument watch capability; its alerts are not entries and do not consume the crypto entry ceiling.
 
 4. **Telegram owner interface**
    - Canonical-ticket delivery.
@@ -66,7 +76,7 @@ Under ratified C14, a strategy with separate, valid, scoped standing DEMO author
 Issue [#47](https://github.com/aungmyat1/AG-profit-trading-assit/issues/47) is retained as a historical delivery specification, not an independent execution authorization. The following requirements remain targets and may not be claimed implemented without accepted evidence:
 
 - **FX/gold:** EURUSD, GBPUSD, USDJPY and XAUUSD; ASIAN_LONDON and LONDON_NEWYORK. Produce qualified deterministic tickets or explicit terminal reasons (including NO_TRADE and BLOCKED), never a forced trade.
-- **Crypto CFDs:** BTCUSD and ETHUSD on the VT Markets DEMO CFD venue. Up to two qualified crypto tickets per day is a planning ceiling, not a trade quota and not an authorization cap. Never substitute BTCUSDT/ETHUSDT perpetual evidence, sizing or contract semantics for these CFDs.
+- **Crypto CFDs:** BTCUSD and ETHUSD on the VT Markets DEMO CFD venue. At most two combined crypto entries per defined trading day is an execution-level ceiling (AGP-OD1012-SESSION-CRYPTO, superseding the earlier "two qualified tickets per day planning ceiling"); it is not a trade quota and grants no authorization. Never substitute BTCUSDT/ETHUSDT perpetual evidence, sizing or contract semantics for these CFDs.
 - **Large-SMC:** watch and entry-confirmation alerts for all six instruments only from a contract/engine whose exact identity and entry/stop/target rules pass the required Logic Gate. WATCH or ALERT_ONLY is not execution authority.
 - **Canonical provenance:** decision products must bind the current runtime code SHA, frozen strategy ID/version, canonical and broker symbol, account/venue, source and market-data timestamp, ticket identity, generation and expiry time. Telegram watch, proposals and daily summaries include side, entry/zone, invalidation/SL, TP(s), risk, logic/economic qualification states and explicit block reasons as applicable. Missing values are marked unavailable and block trading when execution-critical; never invent them.
 - **Order identity and safety:** stale, replaced, expired or replayed tickets cannot execute; authorization applies to the immutable proposal identity and an approved strategy-version/symbol/account scope. Every automatic order must pass the canonical deterministic execution/risk authority (the `assistant.commands.execute_command()` boundary where implemented), DEMO account identity, freshness, geometry, broker `order_check`, risk/cost, duplicate prevention and broker-state reconciliation. No AI, LSMC watch, Telegram notification or callback may bypass this chain.
@@ -124,7 +134,7 @@ These approved initial DEMO limits must be enforced by the execution system. The
 | Daily loss per strategy | 1% |
 | Account-wide daily loss | 2% |
 
-Daily reset timezone and notification-failure behavior remain pending owner policy; unset execution-critical inputs block orders.
+Daily reset timezone and notification-failure behavior remain pending owner policy; unset execution-critical inputs block orders. The AGP-OD1012-SESSION-CRYPTO crypto ceiling (two combined crypto entries per defined day) is additional to these limits; where they overlap, the stricter binds.
 
 ### Strategy admission
 
