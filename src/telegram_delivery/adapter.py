@@ -131,6 +131,49 @@ def render_summary(tickets, uncertain=()):
 
 
 LSMC_CRYPTO_SUMMARY_SCHEMA = "AGP_HOST_LSMC_CRYPTO_SESSION_SUMMARY_V1"
+CRYPTO_STRATEGY_SUMMARY_SCHEMA = "AGP_HOST_CRYPTO_STRATEGY_SESSION_SUMMARY_V1"
+SCOPE_ROUTES = frozenset({"REPORT_ONLY"})   # the only route a status report may show (OD1012-ROUTING)
+
+
+def scope_status_lines(statuses):
+    """Per-scope verification status lines (pre-resolved upstream). Any non-REPORT_ONLY route is
+    rejected: this renderer is report-only and never presents a scope as routable."""
+    statuses = list(statuses or ())
+    if not statuses:
+        return []
+    lines = ["REPORT ONLY — NON-ACTIONABLE", "Scope verification status:"]
+    for item in statuses:
+        if item.get("route") not in SCOPE_ROUTES:
+            raise ValueError("Unsupported scope route")
+        detail = f" [{item['detail']}]" if item.get("detail") else ""
+        lines.append(f"- {item.get('symbol', 'SCHEMA_GAP')}: {item.get('verification_status', 'SCHEMA_GAP')} | "
+                     f"{item['route']} ({item.get('route_reason', 'SCHEMA_GAP')}){detail}")
+    return lines
+
+
+def render_crypto_strategy_summary(summary):
+    """Render the crypto-strategy (BTCUSD/ETHUSD) window digest: per-instrument verification status
+    and the latest archived outcome of each strategy source. Missing records render as NO_RECORD."""
+    if summary.get("schema") != CRYPTO_STRATEGY_SUMMARY_SCHEMA:
+        raise ValueError("Unsupported crypto strategy summary schema")
+    session_date, session = summary.get("session_date"), summary.get("session")
+    if not isinstance(session_date, str) or not session_date or not isinstance(session, str) or not session:
+        raise ValueError("SCHEMA_GAP: session identity")
+    lines = ["Crypto strategy summary -- INFORMATIONAL",
+             f"Window: {session_date} / {session} "
+             f"({value(summary, 'window_start_utc')} -> {value(summary, 'window_end_utc')})",
+             f"Summary status: {value(summary, 'status')}"]
+    lines += scope_status_lines(summary.get("scope_statuses"))
+    lines.append("Latest outcomes:")
+    for item in summary.get("per_instrument") or ():
+        for label, key in (("CCFD", "ccfd"), ("RESEARCH", "research")):
+            outcome = item.get(key) or {}
+            reasons = ",".join(outcome.get("reason_codes") or []) or "-"
+            lines.append(f"- {item.get('symbol', 'SCHEMA_GAP')} {label} {outcome.get('strategy', 'SCHEMA_GAP')}: "
+                         f"{outcome.get('decision', 'NO_RECORD')} ({reasons})")
+    lines.append(f"Delivery enabled: {str(bool(summary.get('delivery_enabled', False))).lower()}")
+    lines.append("No broker order. Execution not authorized.")
+    return "\n".join(lines)
 
 
 def lsmc_diagnostic_lines(section):
@@ -189,7 +232,9 @@ def render_session_summary(summary):
     lines = ["Canonical FX session summary -- INFORMATIONAL",
              f"Session: {session_date} / {session}",
              f"Durable evaluations: {recorded}/{expected}",
-             f"Session status: {value(summary, 'status')}", "Terminal outcomes:"]
+             f"Session status: {value(summary, 'status')}"]
+    lines += scope_status_lines(summary.get("scope_statuses"))
+    lines.append("Terminal outcomes:")
     nonzero = [(state, terminal.get(state, 0)) for state in sorted(STATUSES) if terminal.get(state, 0)]
     compatibility_count = summary.get("compatibility_error_count", terminal.get("COMPATIBILITY_ERROR", 0))
     if compatibility_count:
@@ -608,7 +653,9 @@ class Sender:
         return self._send("session", identity, "", message)
 
     def send_session_summary(self, summary):
-        message = (render_lsmc_crypto_summary(summary) if summary.get("schema") == LSMC_CRYPTO_SUMMARY_SCHEMA
+        schema = summary.get("schema")
+        message = (render_lsmc_crypto_summary(summary) if schema == LSMC_CRYPTO_SUMMARY_SCHEMA
+                   else render_crypto_strategy_summary(summary) if schema == CRYPTO_STRATEGY_SUMMARY_SCHEMA
                    else render_session_summary(summary))
         identity = json.dumps([summary["session_date"], summary["session"]], separators=(",", ":"))
         return self._send("session_summary", identity, "AGP_HOST_TICKET_DELIVERY_R1", message)

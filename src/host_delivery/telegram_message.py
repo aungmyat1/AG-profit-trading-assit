@@ -306,6 +306,18 @@ def format_ticket(t: Dict[str, Any]) -> str:
 TIMEFRAME_CHAIN = "D1 context -> H1 bias + POI -> M5 sweep/CHoCH"
 
 
+def _lsmc_status_line(symbol: str) -> str:
+    """Scope verification stamp for a Large-SMC alert (OD1012-ROUTING); fails closed to UNVERIFIED."""
+    try:
+        from v1_tickets.scope_status import LARGE_SMC, WATCH, scope_status
+        s = scope_status(LARGE_SMC, symbol, WATCH)
+        status, reason, detail = s.verification_status, s.route_reason, s.detail
+    except Exception:  # noqa: BLE001 -- an unknown symbol or registry fault never blocks the alert text
+        status, reason, detail = "UNVERIFIED", "REGISTRY_ENTRY_MISSING", ""
+    return (f"STATUS: {status} ({reason}{'; ' + detail if detail else ''}) "
+            "· REPORT ONLY — NOT AN ENTRY")
+
+
 def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
     """Render eligible alerts unchanged; label ineligible raw events as rejections."""
     payload = e.get("payload") or {}
@@ -334,7 +346,8 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
              f"{symbol} {e['to_state']} ({e['alert_level']})  direction: {direction}",
              f"{e['strategy_id']} v{e['strategy_version']}  economic_status=NOT_EVALUATED",
              f"ref: {e.get('reference_id')}",
-             f"timeframes: {TIMEFRAME_CHAIN}"]
+             f"timeframes: {TIMEFRAME_CHAIN}",
+             _lsmc_status_line(symbol)]
     if e.get("to_state") == "REJECTED":
         lines[0] = "LARGE-SMC REJECTION -- NOT ACTIONABLE -- NOT A BROKER ORDER"
         lines.append("rejection: " + ",".join(payload.get("reason_codes") or ["REJECTED"]))
