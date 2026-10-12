@@ -1,0 +1,33 @@
+{
+ "record": "host_terminal_pin_attempt",
+ "mission": "AGP-HOST-TERMINAL-PIN (rev 9cdb407)",
+ "date": "2026-10-12",
+ "status": "ROLLED_BACK",
+ "order_api_calls": 0,
+ "broker_mutation_count": 0,
+ "step1_before": {
+  "host_head": "0773a5595c22e38f74e363f4b46a5b4fcaaffa7e",
+  "fx_task_action": "<HOST_SCRATCHPAD>/prod/.venv/Scripts/pythonw.exe \"<HOST_SCRATCHPAD>/prod/scripts/host/live_candles_smoke.py\" --mode fx --canonical (wd <HOST_SCRATCHPAD>/prod)",
+  "fx_task_xml_sha256": "881b5c11e458db3c2bbfd22af25cca6ea9c59223c11c36e0492fb603de5adf61",
+  "MT5_TERMINAL_PATH": {"User": "unset", "Machine": "unset"},
+  "enabled_ag_tasks": ["AG-V1-FX-Cycles", "AGX-HealthExport"],
+  "flags": {"demo_authorized": false, "live_authorized": false, "demo_order_authority": "NONE", "1.1.2.ticket_ready": "PAUSED_PENDING_OWNER_CONFIRM", "trading.mode": "ANALYSIS", "allow_live_trading": false},
+  "config_local_sha256": {"actionability_policy.yaml": "0843e79bce935fffd612e06b00a7656a422990d4654b813b4340541fade961d8", "canonical_ticket_delivery.yaml": "849ebf9de3649455fdf85da712e01dc01fc8f1bfe99640ca99ddf83d325b141a", "delivery_override.yaml": "bdacabc74d1b8b101359d780bc13142e2fcd02d442d17b50561a2282dd277432"}
+ },
+ "step2_pull": {
+  "started_after_run": "18:31:01 run finished 18:31:33",
+  "result": "FAIL_SPEC",
+  "detail": "origin/main had advanced to 39ed85f (4 commits past 9cdb407: #156 docs, #170 telegram message identifiers, #172 LSMC alert dedup, #174 docs). git pull --ff-only moved the host to 39ed85f, which includes runtime changes outside the approved rev (scripts/host/canonical_fx_delivery.py, src/telegram_delivery/adapter.py, src/host_delivery/lsmc_alert_dedup.py, telegram_message.py).",
+  "config_local_unchanged": true
+ },
+ "rollback": {
+  "at_local": "18:33:26",
+  "method": "git reset --keep 0773a55 (no runner active; untracked work/ kept)",
+  "host_head_after": "0773a5595c22e38f74e363f4b46a5b4fcaaffa7e",
+  "fx_task_modified": false,
+  "fx_task_xml_identical_to_before": true,
+  "config_local_unchanged": true
+ },
+ "steps_3_to_5": "NOT_EVALUATED",
+ "owner_decision_needed": "Deploy current origin/main 39ed85f (git pull), or exactly 9cdb407 (requires git checkout/reset to a non-tip commit, not a pull)."
+}
