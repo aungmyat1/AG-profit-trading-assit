@@ -28,9 +28,8 @@ Primary documents:
 
 | Item | Value |
 |---|---|
-| Branch | `arena/b50fb2fa-ag-profit-trading-assit` → `main` |
-| Pull request | PENDING_DELIVERY_COMMIT |
-| Delivery commit (HEAD when the PR was opened) | PENDING_DELIVERY_COMMIT |
+| Pull request | [#189](https://github.com/aungmyat1/AG-profit-trading-assit/pull/189) — `arena/b50fb2fa-ag-profit-trading-assit` → `main` |
+| Delivery commit (HEAD when the PR was opened) | `1b350018ecf8aa240e2d881b326a2473975865a7` |
 | Strategy version audited | `ST_LARGE_SMC_V1@1.1.0` — frozen; **no contract or engine byte edited** |
 | Contract SHA-256 | `78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4` (= the registry pin) |
 | Engine SHA-256 (`src/large_smc_watch/`) | `88dd9f1fb970f7811b437cb3b4c7341e0d1f84320238890eab3381eb0f51b689` |
@@ -71,8 +70,8 @@ The 60-day replays themselves were **not** re-run (owner scope decision `audit_o
 | `scripts/check_docs_links.py` | `DOCS_LINK_CHECK = PASS`, 0 broken links |
 | `scripts/docs/check_drift.py` | `docs-drift blocking: 0 error(s)` (2 pre-existing ADVISORY allowlist anchors, untouched by this PR) |
 | `scripts/check_skill_mirror_drift.py` | `NO_DRIFT` |
-| `scripts/docs/check_generated_files.py --mode strict` | PENDING_FULL_SUITE |
-| GitHub Actions | PENDING_DELIVERY_COMMIT |
+| `scripts/docs/check_generated_files.py --mode strict` (post-commit) | all four generated outputs **FRESH**; `failures=0 warnings=0` |
+| GitHub Actions | `python-tests`, `docs-drift`, `frontend-checks`, `stale-check`, `audit` triggered on the delivery commit ([run 38320383634](https://github.com/aungmyat1/AG-profit-trading-assit/actions/runs/38320383634)); results are recorded on the PR — this document does not assert a verdict it has not observed |
 
 ## Phase A — completing the audit
 
