@@ -7,6 +7,12 @@ schema: AGP_C14_DEMO_SCOPE_V1
 enabled: false
 # Fail closed: a missing or malformed value is interpreted as true by the loader.
 per_order_confirm_required: true
+# DEMO account identity pin: only the login SUFFIX is committed (AGENTS.md redaction rule);
+# the full login stays host-local. Owner-stated account fact, corroborated by
+# config/owner_ticket.yaml (OD1011-COMMISSION) and status/evidence/host_s1_2026-10-11.json
+# (account.login_suffix / account.server / account.trade_mode_name). The guarded boundary
+# re-reads the live account and refuses any other suffix, server or trade_mode.
+account_login_suffix: "985"
 scope:
   strategy_id: ST_ASIAN_SWEEP_5R_V1
   strategy_version: "1.1.2"
@@ -16,6 +22,8 @@ scope:
   directions: [LONG, SHORT]
   registry_path: strategies/registry.yaml
   broker_symbol_map_path: config/broker_symbol_map/vt_markets_demo.yaml
+  # Magics already in use on the host terminal; the reserved contract magic must not equal one.
+  host_magic_registry_path: config/demo_execution_host_magics.yaml
   ready_authority_config_path: config/v1_tickets/ready_authority.yaml
   owner_decision_register_path: docs/governance/OWNER_DECISION_REGISTER.md
   authorization_path_env: AGP_STANDING_DEMO_AUTHORIZATION_PATH

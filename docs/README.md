@@ -7,6 +7,13 @@ review_by: 2026-11-07
 # Documentation Index
 
 [AGP-C4-CCFD-LOGIC](status/AGP_C4_CCFD_LOGIC_2026-10-10.md) records synthetic-only CFD v1.0.0 L1–L6 evidence and the DATA-R2 rerun.
+[C14 DEMO execution boundary hardening](status/AGP_C14_DEMO_EXECUTION_BOUNDARY_HARDENING_2026-10-11.md)
+records the refusal-side boundary for the future automatic DEMO execution lane: an
+execution-authority object re-validated inside every guarded call, a live DEMO account read
+taken immediately before `order_check`, a duplicate-ticket ledger check before `order_check`,
+the reserved S1 magic checked against every magic in use on the host, one evidence record per
+lifecycle transition, and HALT-then-reconcile on any unknown outcome. Unit-tested offline;
+grants no execution authority and leaves the scope `enabled: false`.
 
 [Large-SMC actionability gates](status/AG_LSMC_ACTIONABILITY_GATES_2026-10-10.md)
 records stop/target rejection, the owner-set 50% remaining-reward threshold, required
@@ -373,6 +380,10 @@ research eligibility. Its contract is
   — v1.1.2 LOGIC_VERIFICATION_REPORT (L1–L6) on both windows, L4 failure→test map; not admitted, READY OFF.
 - [`status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md`](status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md)
   — v1.1.2 per symbol: EURUSD LOGIC_VERIFIED (unchanged), GBPUSD PARTIAL (10 recorded days; LONDON_NEWYORK L2 NOT_EVIDENCED).
+- [`status/AGP_C14_DEMO_EXECUTION_BOUNDARY_HARDENING_2026-10-11.md`](status/AGP_C14_DEMO_EXECUTION_BOUNDARY_HARDENING_2026-10-11.md)
+  — C14 execution-authority boundary, host magic registry (reserved S1 magic `777001` versus the six
+  magics in use on the host), lifecycle evidence chain, and HALT/reconcile on unknown outcome;
+  offline unit tests only, no broker mutation, scope still `enabled: false`.
 - [`proposals/l2-absence-semantics.md`](proposals/l2-absence-semantics.md)
   — proposal (OWNER_DECISION_PENDING, not implemented): how L2 reports a window with no conforming ticket.
 - [`status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md)

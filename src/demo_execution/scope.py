@@ -3,6 +3,12 @@
 The logic identity, candidate contract, magic number, spread limits and broker
 symbol are all resolved from the current registry/contracts/maps. No strategy
 identity or broker symbol is duplicated as a runtime literal here.
+
+The reserved magic is additionally checked against the committed registry of magics
+already in use on the host terminal (config/demo_execution_host_magics.yaml); a
+collision fails closed, because "own" and "foreign" positions on one account are only
+distinguishable by magic. The DEMO account identity pin (login suffix) is owner-stated
+evidence, not a default: only the suffix is committed, never a full login.
 """
 from __future__ import annotations
 
@@ -13,6 +19,12 @@ from typing import Any, Mapping, Optional
 
 import yaml
 
+from demo_execution.host_magics import (
+    HOST_MAGIC_REGISTRY_PATH,
+    HostMagicRegistryError,
+    load_host_magics,
+    reserved_magic_conflict,
+)
 from mt5.canonical_broker_map import SymbolMapError, load_map
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -56,6 +68,10 @@ class ScopePolicy:
     broker_symbol_map_path: Path
     ready_authority_config_path: Path
     owner_decision_register_path: Path
+    broker_server: str
+    account_login_suffix: str
+    host_magic_registry_path: Path
+    # Defaulted last: the three pins above are required fields and must precede any default.
     per_order_confirm_required: bool = True
 
 
@@ -113,6 +129,7 @@ def load_scope_policy(
     broker_symbol_map_path: Optional[str | Path] = None,
     ready_authority_config_path: Optional[str | Path] = None,
     owner_decision_register_path: Optional[str | Path] = None,
+    host_magic_registry_path: Optional[str | Path] = None,
 ) -> ScopePolicy:
     """Resolve the narrow S1 scope and fail closed on missing or inconsistent inputs.
 
@@ -128,6 +145,11 @@ def load_scope_policy(
     per_order_confirm_required = (
         confirm_required_value if type(confirm_required_value) is bool else True
     )
+    login_suffix = raw.get("account_login_suffix")
+    if (not isinstance(login_suffix, str) or not login_suffix.isascii() or not login_suffix.isdigit()
+            or len(login_suffix) < 3):
+        raise ScopePolicyError("ACCOUNT_IDENTITY_UNPINNED",
+                               "account_login_suffix must be a committed digit suffix of at least 3 digits")
     scope = raw.get("scope")
     if not isinstance(scope, dict):
         raise ScopePolicyError("EXECUTION_SCOPE_INVALID", "scope mapping missing")
@@ -172,9 +194,22 @@ def load_scope_policy(
     contract = _load_yaml(contract_file, "STRATEGY_CONTRACT_UNREADABLE")
     if str(contract.get("version")) != version:
         raise ScopePolicyError("STRATEGY_CONTRACT_VERSION_MISMATCH")
+    configured_magic_registry = scope.get("host_magic_registry_path")
+    if host_magic_registry_path is not None:
+        magic_file = Path(host_magic_registry_path).expanduser().resolve()
+    elif configured_magic_registry:
+        magic_file = _under_root(_as_path(configured_magic_registry, root), root,
+                                 "host_magic_registry_path")
+    else:
+        magic_file = HOST_MAGIC_REGISTRY_PATH
+    try:
+        host_magics = load_host_magics(magic_file)
+    except HostMagicRegistryError as exc:
+        raise ScopePolicyError(exc.reason_code, str(exc)) from None
     magic_number = contract.get("magic_number")
-    if isinstance(magic_number, bool) or not isinstance(magic_number, int) or magic_number <= 0:
-        raise ScopePolicyError("STRATEGY_MAGIC_NUMBER_UNAVAILABLE")
+    magic_conflict = reserved_magic_conflict(magic_number, host_magics)
+    if magic_conflict is not None:
+        raise ScopePolicyError(magic_conflict, f"magic_number={magic_number!r}")
     cost = contract.get("risk_and_money_management")
     if not isinstance(cost, dict):
         raise ScopePolicyError("STRATEGY_COST_POLICY_UNAVAILABLE")
@@ -191,7 +226,8 @@ def load_scope_policy(
         broker_symbol = symbol_map.resolve(symbol)
     except (OSError, SymbolMapError, ValueError, yaml.YAMLError) as exc:
         raise ScopePolicyError("BROKER_SYMBOL_MAP_UNAVAILABLE", str(exc)) from None
-    if symbol_map.broker != "VT_MARKETS" or "demo" not in symbol_map.server.lower():
+    if (symbol_map.broker != "VT_MARKETS" or not isinstance(symbol_map.server, str)
+            or not symbol_map.server.strip() or "demo" not in symbol_map.server.lower()):
         raise ScopePolicyError("BROKER_SYMBOL_MAP_NOT_DEMO")
     map_entry = symbol_map.entries[symbol]
     expected = map_entry.expected
@@ -250,4 +286,7 @@ def load_scope_policy(
         broker_symbol_map_path=map_file,
         ready_authority_config_path=ready_file,
         owner_decision_register_path=owner_file,
+        broker_server=symbol_map.server,
+        account_login_suffix=login_suffix,
+        host_magic_registry_path=magic_file,
     )
