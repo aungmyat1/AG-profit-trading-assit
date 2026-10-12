@@ -1,0 +1,66 @@
+{
+  "record": "host_restart_verify",
+  "date": "2026-10-12",
+  "captured_at_local": "2026-10-12T00:52+06:30",
+  "host_tree": "<HOST_SCRATCHPAD>/prod @ 0773a55",
+  "order_api_calls": 0,
+  "position_api_calls": 0,
+  "broker_mutation_count": 0,
+  "config_changes": 0,
+  "items": [
+    {
+      "id": "1",
+      "item": "127.0.0.1:22346 not listening; MT5_APP_MCP_TOKEN absent at User scope",
+      "result": "FAIL",
+      "cause": "The terminal was not restarted: same main terminal process as 2026-10-11 20:01:07 +06:30, and 22346 is still LISTENING (22345 is not). MT5_APP_MCP_TOKEN is still present at User scope (name only)."
+    },
+    {
+      "id": "2",
+      "item": "Free RAM >= 1200 MB; resource_guard class",
+      "result": "PASS",
+      "evidence": {"available_ram_mb": 1537, "r1_gate": "PASS", "r2_gate": "BLOCKED_RESOURCE", "lock_status": "NO_LOCK", "class_reached": "R1"}
+    },
+    {
+      "id": "3",
+      "item": "Terminal on VTMarkets-Demo ...999, DEMO, Algo Trading OFF, 0 positions/orders, no EA on charts",
+      "result": "PASS",
+      "evidence": {"server": "VTMarkets-Demo", "login_suffix": "999", "trade_mode": "DEMO", "terminal_trade_allowed": false, "positions": 0, "orders": 0, "chart_profile_expert_blocks": 0}
+    },
+    {
+      "id": "4",
+      "item": "symbol_map_smoke all 6 (full run): MAPPED + visible; metadata stability",
+      "result": "FAIL",
+      "cause": "Map v2 diff of 5: EURUSD, GBPUSD, USDJPY, XAUUSD and ETHUSD resolve UNMAPPED (NO_VISIBLE_FULL_CANDIDATE) because their broker symbols are not in Market Watch on ...999. Only BTCUSD is MAPPED. Metadata stability PASS.",
+      "run": {
+        "command": "<HOST_SCRATCHPAD>/prod/.venv/Scripts/python.exe scripts/host/symbol_map_smoke.py smoke",
+        "exit_code": 1,
+        "resource_governance": {"class": "R1", "agent": "CLAUDE_CODE", "mission": "host_restart_verify_2026-10-12", "acquired": true, "available_ram_mb_at_acquire": 1505, "required_ram_mb": 1200, "released": true},
+        "output": {
+          "mt5_package_version": "5.0.5735",
+          "account": "server=VTMarkets-Demo trade_mode=DEMO",
+          "symbol_lookup_classifications": {"SYMBOL_ABSENT_CONFIRMED": 50, "SYMBOL_PRESENT": 10},
+          "map": "v2 VT_MARKETS/VTMarkets-Demo",
+          "metadata_stability": "PASS (2 snapshots, no mapping-critical differences)",
+          "derived": {"EURUSD": "UNMAPPED NO_VISIBLE_FULL_CANDIDATE", "GBPUSD": "UNMAPPED NO_VISIBLE_FULL_CANDIDATE", "USDJPY": "UNMAPPED NO_VISIBLE_FULL_CANDIDATE", "XAUUSD": "UNMAPPED NO_VISIBLE_FULL_CANDIDATE", "BTCUSD": "MAPPED BTCUSD", "ETHUSD": "UNMAPPED NO_VISIBLE_FULL_CANDIDATE"},
+          "diff_items": 5,
+          "read_only_guard": {"broker_mutations": 0, "forbidden_calls": [], "market_watch_visibility_unchanged": true, "mt5_calls": {"account_info": 2, "initialize": 1, "last_error": 101, "shutdown": 1, "symbol_info": 120, "symbol_info_tick": 20, "symbols_get": 2, "symbols_total": 2}}
+        }
+      },
+      "remedy": "Owner adds EURUSD-VIP, GBPUSD-VIP, USDJPY-VIP, XAUUSD-VIP and ETHUSD to Market Watch on ...999 (terminal UI), then re-run the smoke."
+    },
+    {
+      "id": "5",
+      "item": "AG FX runner read: one symbol_info + tick for GBPUSD-VIP via the runtime path (not the stub)",
+      "result": "PASS",
+      "evidence": {
+        "import_path": "scripts/host/_host_common.import_mt5 -> .venv/Lib/site-packages/MetaTrader5/__init__.py (is_root_stub=false), version 5.0.5735",
+        "initialize": "mt5_initialize (no env credentials; attaches to the running terminal)",
+        "demo_guard": "DEMO_ACCOUNT_VERIFIED",
+        "symbol_info": {"visible": false, "digits": 5, "trade_mode": "FULL"},
+        "tick": {"bid_gt_0": true, "ask_gt_0": true, "time_server": "2026-10-09 23:56:59 (UTC+3 server; Friday close, FX market closed)"},
+        "last_error": "(1, 'Success')"
+      },
+      "note": "The read works, but the tick is the weekend close and the symbol is not in Market Watch, so the S1 runtime would see the same UNMAPPED status as item 4 until it is added."
+    }
+  ]
+}

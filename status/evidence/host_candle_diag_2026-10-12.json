@@ -1,0 +1,66 @@
+{
+  "record": "host_candle_diag",
+  "mission": "AGP-HOST-CANDLE-DIAG-1012",
+  "captured_utc": ["2026-10-12T08:05:56+00:00", "2026-10-12T08:06:57+00:00"],
+  "order_api_calls": 0,
+  "broker_mutation_count": 0,
+  "target": {"pid": 15800, "terminal_path": "C:\\Program Files\\MetaTrader 5", "server": "VTMarkets-Demo", "login_suffix": "999", "trade_mode": "DEMO", "only_terminal_running": true},
+  "mt5_api_calls": "initialize(path=AG exe), account_info, terminal_info, symbol_info, copy_rates_from_pos, copy_rates_range, last_error, shutdown (via the runner's MT5ReadOnlyCandleAdapter/MT5CandleProvider; no symbol_select, no login, no order calls)",
+  "free_ram_mb_at_probe": [1620, 1605],
+  "items": [
+    {
+      "id": "1",
+      "item": "symbol_info GBPUSD-VIP; terminal_info",
+      "result": "PASS",
+      "evidence": {"GBPUSD-VIP": {"exists": true, "visible": true, "select": true, "trade_mode": 4, "digits": 5}, "terminal": {"connected": true, "trade_allowed": false}, "symbol_map_v2_resolved": {"EURUSD": "EURUSD-VIP", "GBPUSD": "GBPUSD-VIP", "USDJPY": "USDJPY-VIP", "XAUUSD": "XAUUSD-VIP"}}
+    },
+    {
+      "id": "2-3",
+      "item": "copy_rates_from_pos M15 N=28 (runner reference count 24 + 4 post bars), 100, 1000; runner range call; repeated after 60 s; EURUSD-VIP, XAUUSD-VIP, BTCUSD control",
+      "result": "PASS",
+      "evidence": {
+        "asian_london_windows_utc": {"ref": ["2026-10-12T00:00:00+00:00", "2026-10-12T06:00:00+00:00"], "trade": ["2026-10-12T07:00:00+00:00", "2026-10-12T11:00:00+00:00"]},
+        "t0_08_05_56Z": {
+          "GBPUSD-VIP": {"from_pos": {"N28": 28, "N100": 100, "N1000": 1000}, "range_rows": 45, "runner_provider": "OK session 24/24, post 4, quote age 8 s"},
+          "EURUSD-VIP": {"from_pos": {"N28": 28, "N100": 100, "N1000": 1000}, "range_rows": 0, "last_error": [1, "Success"], "runner_provider": "DATA_MISSING: M15_WINDOW_INCOMPLETE"},
+          "XAUUSD-VIP": {"from_pos": {"N28": 28, "N100": 100, "N1000": 1000}, "range_rows": 1, "last_error": [1, "Success"], "runner_provider": "DATA_MISSING: M15_WINDOW_INCOMPLETE"},
+          "BTCUSD": {"from_pos": {"N28": 28, "N100": 100, "N1000": 1000}, "range_rows": 129}
+        },
+        "t0_plus_60s_08_06_57Z": {
+          "GBPUSD-VIP": {"range_rows": 45, "runner_provider": "OK 24/24 + 4"},
+          "EURUSD-VIP": {"range_rows": 45, "runner_provider": "OK 24/24 + 4"},
+          "XAUUSD-VIP": {"range_rows": 41, "runner_provider": "OK 24/24 + 4"},
+          "BTCUSD": {"range_rows": 129}
+        },
+        "all_last_error": "(1, 'Success') on every call, including the empty/partial range results"
+      }
+    },
+    {
+      "id": "4",
+      "item": "Runner CandleAdapterError path",
+      "result": "PASS",
+      "evidence": {
+        "provider_call": "src/v1_tickets/mt5_provider.py:79-82 -> _window() for ref [00:00,06:00) and trade [07:00, floor(now,15m)) UTC",
+        "fetch": "src/mt5/mt5_candles_readonly.py:181-182 copy_rates_range(broker, M15, start-1d, end+1d), then UTC filter (:185)",
+        "failure_points": [
+          "mt5_candles_readonly.py:159-160 symbol_info None -> SYMBOL_MAPPING_MISSING",
+          "mt5_candles_readonly.py:183-184 rates None -> DATA_MISSING",
+          "mt5_provider.py:64-65 bars != every expected M15 open -> DATA_MISSING M15_WINDOW_INCOMPLETE",
+          "mt5_provider.py:84-89 quote missing, or older than 15 min -> DATA_MISSING QUOTE_*"
+        ],
+        "requested_n": "reference 24 bars (6 h of M15) + post bars up to the last closed M15; count from mt5_provider.py:75",
+        "timeout_retry": "none: one copy_rates_range call per window, no wait for history sync, no retry; empty/partial results with last_error Success fail closed as M15_WINDOW_INCOMPLETE"
+      }
+    }
+  ],
+  "verdict": "HISTORY_NOT_SYNCED",
+  "verdict_evidence": "The AG terminal restarted at 14:05:26 +06:30 and its FX symbols were newly synced on ...999. At 08:05:56Z copy_rates_range returned 0 (EURUSD-VIP) and 1 (XAUUSD-VIP) rows with last_error Success, so the runner raised M15_WINDOW_INCOMPLETE; 60 s later both returned full windows. GBPUSD-VIP was already complete at probe time. The 14:16 run (07:46Z), 11 minutes after the restart, hit the same condition for GBPUSD-VIP (CandleAdapterError). Not SYMBOL_MAPPING (map resolves; symbol_info OK), not RANGE/DST (same request succeeds once synced), not RESOURCE (1.6 GB free; probe calls immediate).",
+  "next_runs": {
+    "14:31 (08:01Z)": "Already ran unchanged on ...999 and acquired candles: GBPUSD decision INFO_ONLY_STALE / FRESHNESS_EXCEEDED, strategy_version 1.1.2 (strategy outcome, not a data error).",
+    "14:46 (08:16Z)": "Expected to acquire GBPUSD-VIP data unchanged; the decision depends on strategy/freshness gates."
+  },
+  "findings": [
+    "Runner has no history-sync wait/retry after a terminal restart; the first runs after a restart can fail closed with CandleAdapterError although the symbol is mapped.",
+    "On the CandleAdapterError path the evaluation is recorded under strategy_version 1.1.1; runs with data record 1.1.2 (see host_recheck_2026-10-12_1416.json)."
+  ]
+}
