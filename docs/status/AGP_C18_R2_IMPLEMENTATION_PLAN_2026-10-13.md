@@ -137,9 +137,10 @@ C18 is not reported complete until all three families show end-to-end read-only 
 
 | Item | State |
 |---|---|
-| PR A code (`resolve_ticket_scope`, canonical fields, footer) | Implemented on `feat/c18-scope-canonical-ticket`. Existing canonical/delivery/S1 suites: 240 passed. New field tests written; their run is waiting on the R1 resource gate (BLOCKED_RESOURCE, 1118 < 1200 MB). |
-| PR B, PR C | Not started |
-| Host acceptance | Not started (owner go-ahead and open windows required) |
+| PR A (#187) scope-aware canonical ticket | Open; CI green except one pending run when checked |
+| PR B (#188) ASW/LSMC/CCFD read-only lanes | Open; `tests/test_report_lanes.py` 21 passed |
+| PR C delivery policy, `send_report`, daily summary | Implemented; `tests/test_report_delivery.py` 7 passed; regression 263+ passed |
+| Host acceptance (real Windows/MT5/Telegram) | NOT_RUN: needs merge, owner go-ahead and open windows |
 
 ## 8. Out of scope (owner-gated)
 

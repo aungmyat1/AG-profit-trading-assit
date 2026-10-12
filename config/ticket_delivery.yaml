@@ -57,6 +57,10 @@ immediate_send_scope:
   enabled:
     - TICKET_READY
     - LSMC_OPPORTUNITY
+    # OD1013-C18-REPORT-SCOPE (Aung, 2026-10-13): REPORT_ONLY observations; never an order.
+    - REPORT_CANDIDATE
+    - REPORT_BLOCKED
+    - REPORT_WATCH
   disabled:
     WATCH_READY: "PENDING_OWNER_DECISION C16"
     INFO_ONLY_*: "PENDING_OWNER_DECISION C16"
