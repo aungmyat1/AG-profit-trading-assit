@@ -1,0 +1,24 @@
+{
+  "mission": "AGP-C16-CODEX-WEB-FINAL-L1L6",
+  "status": "C16_LOGIC_VERIFICATION_BLOCKED",
+  "reason": "BLOCKED_RESOURCE_AUTHORITY",
+  "main_sha": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
+  "captured_at_utc": "2026-10-12 16:13:12 UTC",
+  "full_workload_started": false,
+  "planned_workers": 1,
+  "planned_class": "R3",
+  "cpu_count": 3,
+  "total_ram_mb": 9968,
+  "available_ram_mb": 9340,
+  "disk_available": "30G",
+  "python": "3.12.14",
+  "policy_on_main": "ABSENT",
+  "lock_status": "NOT_EVALUATED",
+  "historical_commit": "82e6e5cca329d1247f8a81aa308f25a80584c5fd",
+  "historical_commit_in_main_ancestry": false,
+  "blobs": {
+    "policy": "249127ab95330b770df8d050a032bc03f34d2b52",
+    "guard": "1c6c833109a770f1f8dac68b04b4a63ff09c531c",
+    "tests": "5465cf2c125721200550c7d8ddbd7c996d9e0193"
+  }
+}

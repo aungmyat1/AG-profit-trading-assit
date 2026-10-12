@@ -1,0 +1,17 @@
+{
+  "mission": "AGP-C16-CODEX-WEB-FINAL-L1L6",
+  "status": "C16_LOGIC_VERIFICATION_BLOCKED",
+  "reason": "BLOCKED_RESOURCE_AUTHORITY",
+  "main_sha": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
+  "captured_at_utc": "2026-10-12 16:13:12 UTC",
+  "verifier_runs": 0,
+  "repeat_runs": 0,
+  "tests_executed": 0,
+  "determinism": "NOT_EVALUATED",
+  "broker_mutation_count": 0,
+  "order_api_calls": 0,
+  "registry_changes": 0,
+  "ready_changes": 0,
+  "demo_authorization_changes": 0,
+  "live_authorization_changes": 0
+}
