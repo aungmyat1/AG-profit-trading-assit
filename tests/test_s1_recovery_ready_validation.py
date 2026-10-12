@@ -1,6 +1,6 @@
 """Temporary S1 owner records validate READY without activating committed authority."""
-from pathlib import Path
 import hashlib
+from pathlib import Path
 
 import pytest
 import yaml
