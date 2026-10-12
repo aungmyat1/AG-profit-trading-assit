@@ -602,8 +602,8 @@ def test_summary_result_captures_message_delivery_identity(
                          owner_chat_ids=frozenset({"123456789"})), transport=transport)
     if transport_result is not None:
         send.require_api_receipt = True
-    lines = cfd.process_due_session_summaries(dt.datetime(2026, 10, 7, 11, 40, tzinfo=UTC),
-                                              journal=journal, sender=send)
+    cfd.process_due_session_summaries(dt.datetime(2026, 10, 7, 11, 40, tzinfo=UTC),
+                                      journal=journal, sender=send)
     row = next(e for e in events(journal, dt.date(2026, 10, 7), "ASIAN_LONDON")
                if e["event_type"] == "SESSION_SUMMARY_DELIVERY" and e["stage"] == "RESULT")
     assert row["delivery_state"] == expected_state
