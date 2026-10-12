@@ -26,11 +26,14 @@ Decision status `OWNER_APPROVED`; implementation status `NOT_IMPLEMENTED`; execu
 - **FX/Gold:** EURUSD, GBPUSD, USDJPY and XAUUSD in both `ASIAN_LONDON` and `LONDON_NEWYORK`. The existing 15-minute intra-window evaluation cadence is preserved. Every instrument × session pair requires one durable session-level terminal outcome: eight per applicable FX trading day. These are not eight scanner invocations. Each `SESSION_SUMMARY` reports its four instrument-level outcomes with existing semantics (`Durable evaluations: 4/4`). The current canonical outcome taxonomy applies unchanged. A session outcome is not a mandatory order. Intra-window scheduled cycles remain the unit for S1 acceptance and soak accounting, as in `OD1012-S1-ACCEPT` (PR #169). The only reported verified scope remains GBPUSD × ASIAN_LONDON × SWEEP.
 - **Crypto:** BTCUSD and ETHUSD on VT Markets MT5 Demo CFDs are scanned dynamically at strategy-appropriate times. Qualified opportunities are ranked by a deterministic, versioned selection policy. At most **two combined crypto entries across both instruments per MMT trading day**; zero, one or two are acceptable and no trade is forced. Perpetual-futures contracts or evidence are never substituted.
 - **Crypto trading day:** `Asia/Yangon` (UTC+06:30), reset at 00:00:00 MMT, which is 17:30:00 UTC on the preceding UTC calendar date. Use timezone-aware timestamps and one canonical MMT trading-day identifier. The entry counter resets at the MMT boundary, not at UTC or broker-server midnight.
+- **Separate, cumulative limits:** the MMT crypto entry cap and the existing broker-server-day risk resets (for example S1 `daily_reset_basis: VT_SERVER_DAY`) are independent restrictions. Neither resets, replaces or relaxes the other, and every applicable limit must pass.
 - Later runtime enforcement must be durable, account-scoped, concurrency-safe and reconciled with the broker, and must fail closed. Two Telegram messages never equal two executed entries. C14, G1–G4, L1–L6, the live prohibition, existing execution flags and the OD1010-C6-RISK ceilings are unchanged. The crypto ceiling is an additional restriction. No standing authorization is granted.
 
 ## Objective
 
 Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
+
+On each applicable FX trading day, EURUSD, GBPUSD, USDJPY and XAUUSD each receive one durable session-level terminal outcome for ASIAN_LONDON and one for LONDON_NEWYORK. That makes eight session-level outcomes, produced through the existing 15-minute intra-window evaluation cadence; they are not eight scanner invocations. A session outcome is not a trade quota. BTCUSD and ETHUSD are scanned dynamically and qualified opportunities are ranked by a deterministic, versioned selection policy. At most two combined crypto entries are taken per MMT trading day (`Asia/Yangon`, reset 00:00:00 MMT); zero, one or two is acceptable (AGP-OD1012-SESSION-CRYPTO).
 
 Under ratified C14, a strategy with separate, valid, scoped standing DEMO authorization may submit eligible orders automatically after every runtime, READY, host, risk and broker gate passes; no per-order owner confirmation is required for that authorized scope. Confirm/Reject remains optional decision capture and cannot grant or extend authorization. Until `demo_authorized=true` is explicitly established through the governed authorization path, broker execution remains blocked. Live real-money execution is outside this objective.
 
@@ -50,12 +53,16 @@ Under ratified C14, a strategy with separate, valid, scoped standing DEMO author
    - Each scheduled instrument/session evaluation must end in an explicit canonical terminal outcome; no forced trade is required.
    - The existing 15-minute intra-window evaluation cadence is preserved (AGP-OD1012-SESSION-CRYPTO).
    - Each instrument × session requires one durable session-level terminal outcome, eight per applicable FX trading day, reported in each `SESSION_SUMMARY` as `Durable evaluations: 4/4`. These are session-level outcomes, not scanner invocations, and none is a mandatory order.
+   - A session outcome is not a trade quota: no mandatory trade and no forced READY. Two sessions per instrument do not imply two executions; only a genuinely qualified setup that passes every applicable authorization and safety gate may execute.
 
 2. **Crypto tickets — VT Markets CFDs (target capability)**
    - BTCUSD
    - ETHUSD
-   - Daily, including weekends, at strategy-defined times; dynamic scan of both instruments with a deterministic, versioned selection policy (AGP-OD1012-SESSION-CRYPTO).
-   - At most two combined crypto entries across both instruments per MMT trading day (`Asia/Yangon`, reset 00:00:00 MMT = 17:30:00 UTC on the preceding UTC date). Zero, one or two entries are acceptable. The ceiling is not yet implemented.
+   - Daily, including weekends, at strategy-defined times; dynamic scan of both instruments with a deterministic, versioned selection policy (AGP-OD1012-SESSION-CRYPTO). Only qualified, current, non-expired opportunities are ranked.
+   - Venue: VT Markets MT5 Demo CFDs; perpetual-futures (BTCUSDT/ETHUSDT) evidence is never substituted.
+   - **Maximum two combined crypto entries per MMT trading day** across both instruments and all applicable strategies (not two per instrument). The day is `Asia/Yangon`, reset at 00:00:00 MMT, which is 17:30:00 UTC on the preceding UTC date. Zero, one or two entries are acceptable. Two may be on the same instrument only when each is independently qualified and every other control permits it. No trade is generated to meet a daily target.
+   - The ceiling is an execution-level limit at the canonical DEMO execution boundary. Limiting Telegram messages, tickets or proposals does not satisfy it.
+   - Scan cadence, the versioned selection and tie-break policy, and broker order-counting semantics (partial fills, retries, uncertain submissions) are runtime implementation design. They fail closed until implemented. The dynamic scan, ranking and ceiling enforcement are **not implemented**.
    - This is a target production capability, not a claim that the current crypto runtime is already accepted. Venue/contract identity, market-data semantics, sizing and strategy admission must be validated before operational acceptance.
    - Intended runtime strategy (OD1009-D3): `ST_CRYPTO_CFD_SWEEP_RETEST_V1`. Admission requires Logic Gate L1–L6 evidence; it is **not admitted** today and the existing runtime binding is unchanged (see `strategies/registry.yaml`).
 
@@ -63,6 +70,7 @@ Under ratified C14, a strategy with separate, valid, scoped standing DEMO author
    - Use a separately versioned `ST_LARGE_SMC` strategy only after its contract/engine passes the required Logic Gate and is admitted for ticketing.
    - Delivery freshness, remaining-R and send-time usability belong to the post-signal actionability layer and must not alter frozen strategy market logic.
    - Current research/draft status does not constitute logical verification or ticket authority.
+   - Large-SMC remains a separate six-instrument watch capability; its alerts are not entries and do not consume the crypto entry ceiling.
 
 4. **Telegram owner interface**
    - Canonical-ticket delivery.
@@ -137,7 +145,7 @@ These approved initial DEMO limits must be enforced by the execution system. The
 | Account-wide daily loss | 2% |
 | Combined crypto entries | Maximum 2 per MMT trading day, once implemented (AGP-OD1012-SESSION-CRYPTO) |
 
-The crypto entry ceiling is an additional restriction and does not replace or weaken any other limit. Its counter resets at 00:00:00 `Asia/Yangon` (17:30:00 UTC on the preceding UTC date). The general daily reset timezone for the other limits and notification-failure behavior remain pending owner policy. Unset execution-critical inputs block orders.
+The combined crypto entry ceiling and the daily risk limits above are **separate, cumulative restrictions** (AGP-OD1012-SESSION-CRYPTO). The crypto entry counter resets at 00:00:00 `Asia/Yangon` (17:30:00 UTC on the preceding UTC date). Existing broker-server-day risk resets are unchanged; for example, the S1 DEMO scope keeps `daily_reset_basis: VT_SERVER_DAY` in `config/demo_execution_s1.yaml`. The MMT boundary does not move any risk-limit reset, and a broker-server reset never resets the crypto entry counter. An order must pass every applicable limit under that limit's own reset basis, and the most restrictive result binds. Where no reset basis is configured, the reset timezone and notification-failure behavior remain pending owner policy, and unset execution-critical inputs block orders.
 
 ### Strategy admission
 

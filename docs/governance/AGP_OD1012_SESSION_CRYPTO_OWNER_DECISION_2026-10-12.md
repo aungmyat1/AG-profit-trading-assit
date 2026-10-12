@@ -14,7 +14,8 @@ review_by: 2026-11-07
 | Implementation status | `NOT_IMPLEMENTED` |
 | Execution authorization | `UNCHANGED` |
 | Scope | Objective and governance only |
-| Recorded against | `origin/main` `f6afc0e8e4173d3a8a8571e84423ee22ade3c732` |
+| First recorded | PR #174, merge commit `39ed85f` (earlier wording; see §6) |
+| Reconciled to final terms | PR #175, merged with `origin/main` `39ed85f3d3cb7eb7ddfc615843a378f7e5478c7f` |
 
 **NO EXECUTION AUTHORIZATION CHANGE.** This decision grants no standing DEMO authorization and does not change `demo_authorized`, `live_authorized`, READY, `ticket_ready`, strategy admission, `logic_verified_scopes`, risk ceilings, strategy contracts, scheduler definitions, broker settings, MT5 configuration or runtime code. Ratified C14 ([owner decision](AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md)) stays authoritative.
 
@@ -81,7 +82,17 @@ review_by: 2026-11-07
 - Implementations must use timezone-aware timestamps and one canonical MMT trading-day identifier, for example the ISO date `YYYY-MM-DD` of the MMT calendar day. Do not hard-code a bare integer offset. This follows the existing `config/ag_scheduler_v2.yaml` rule.
 - The maximum-two-entry counter resets at **00:00:00 MMT**. It does not reset at UTC midnight or broker-server midnight.
 - The boundary applies every calendar day, including weekends.
-- Scope of this boundary: it defines the **combined crypto entry counter** only. It does not change the daily-reset basis of other OD1010-C6-RISK limits. For example, `config/demo_execution_s1.yaml` keeps its existing `daily_reset_basis: VT_SERVER_DAY` for the S1 scope. The general OD1010-C6-RISK reset timezone stays pending owner policy, as recorded in `docs/PROJECT_OBJECTIVE.md`.
+- Scope of this boundary: it defines the **combined crypto entry counter** only. It does not change the daily-reset basis of any OD1010-C6-RISK limit.
+
+### 2.2a Separate, cumulative restrictions
+
+The MMT crypto entry cap and the existing broker-server-day risk limits are **separate, cumulative restrictions**:
+
+- Existing broker-server risk resets are **unchanged**. For example, `config/demo_execution_s1.yaml` keeps `daily_reset_basis: VT_SERVER_DAY`, with owner confirmation, for the S1 scope.
+- The MMT boundary resets **only** the combined crypto entry counter. It never resets, extends or relaxes a per-strategy trade count, a strategy daily-loss limit or the account-wide daily-loss limit.
+- A broker-server-day reset never resets the crypto entry counter.
+- Each limit is evaluated on its own reset basis, and an order must pass **every** applicable limit. Between 00:00 MMT and the next broker-server midnight, the two "days" overlap differently. In that window, a fresh MMT day does not restore risk-limit capacity, and a fresh broker-server day does not restore crypto-entry capacity.
+- Where no reset basis is configured for a limit, the reset timezone stays pending owner policy as recorded in `docs/PROJECT_OBJECTIVE.md`, and unset execution-critical inputs block orders.
 
 This is an approved governance requirement. It does not authorize runtime changes in this PR.
 
@@ -122,7 +133,7 @@ Approved risk ceilings:
 | Account-wide daily loss | Maximum 2% |
 | Combined crypto entries | Maximum 2 per MMT trading day, once implemented |
 
-The crypto entry ceiling is an **additional** restriction. It does not replace or weaken any existing control. Where limits overlap, every limit applies and the most restrictive one binds. For example, two same-instrument crypto entries are only possible when the one-open-position-per-instrument limit also permits it.
+The crypto entry ceiling is an **additional** restriction with its own MMT reset (§2.2a). It does not replace or weaken any existing control, and existing broker-server-day risk resets are unchanged. Where limits overlap, every limit applies and the most restrictive one binds. For example, two same-instrument crypto entries are only possible when the one-open-position-per-instrument limit also permits it.
 
 ## 4. Reconciliation with earlier wording
 
@@ -135,3 +146,13 @@ The crypto entry ceiling is an **additional** restriction. It does not replace o
 2. A deterministic, versioned crypto selection (ranking and tie-break) policy, with a scan schedule at strategy-appropriate times. No profitability score is implied or authorized.
 3. FX/Gold coverage audit: verify against durable records that each applicable day yields eight session-level outcomes (`Durable evaluations: 4/4` per session), using the existing scheduler and summary semantics.
 4. Dated, accepted evidence before any status claims implementation.
+
+## 6. Revision note (2026-10-12)
+
+PR #174 merged first (merge commit `39ed85f`) with an earlier text of this decision. That text said "each instrument is evaluated once … **exactly eight** scheduled instrument-session evaluations" and left the crypto day boundary as `PENDING_OWNER`. PR #175 reconciles this record to the owner's final terms for the same decision ID:
+
+- Eight durable **session-level outcomes** per applicable FX trading day, not eight scheduled evaluations. The 15-minute intra-window cadence and the OD1012-S1-ACCEPT scheduled-cycle unit are unchanged.
+- The approved crypto day boundary is `Asia/Yangon` 00:00:00 MMT (17:30:00 UTC on the preceding UTC date).
+- The MMT crypto cap and the unchanged broker-server-day risk resets are separate, cumulative restrictions (§2.2a).
+
+This revision keeps everything from #174 that is consistent with those terms: venue specificity, the combined cap across all strategies, same-instrument entries only when other controls permit, an execution-level ceiling rather than a message limit, and Large-SMC alerts not counting as entries. It makes no implementation or authorization change.
