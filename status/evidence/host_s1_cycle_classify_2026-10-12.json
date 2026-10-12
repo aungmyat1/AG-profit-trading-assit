@@ -1,0 +1,47 @@
+{
+  "record": "host_s1_cycle_classify",
+  "mission": "AGP-HOST-S1-CYCLE-CLASSIFY-1012",
+  "captured_at_local": "2026-10-12T14:47+06:30",
+  "scope": "S1 = ST_ASIAN_SWEEP_5R_V1 1.1.2, GBPUSD x ASIAN_LONDON, SWEEP; AG terminal VTMarkets-Demo ...999",
+  "order_api_calls": 0,
+  "broker_mutation_count": 0,
+  "freshness_code_path": {
+    "rule": "src/v1_tickets/actionability.py:222-245: trigger_close = _trigger_bar_close(ticket) (:108, priority signal_close_utc -> signal_timestamp + 1 TF -> data_close); age = now - trigger_close; FRESHNESS_EXCEEDED when age > FRESHNESS_BARS (2, :65) x TRIGGER_TF (M15 for ST_ASIAN_SWEEP_5R_V1, :60) = 1800 s",
+    "measures": "signal (trigger bar) age, not latest-bar lag"
+  },
+  "classifications": [
+    {
+      "run_local": "14:31", "run_utc": "08:01:17", "terminal": "AG ...999 (only terminal running)",
+      "data_complete": true, "strategy_version": "1.1.2",
+      "decision": "INFO_ONLY_STALE", "reason_code": "FRESHNESS_EXCEEDED",
+      "timestamps_utc": {"trigger_timestamp": "07:00:00", "trigger_bar_close": "07:15:00", "run": "08:01:17", "latest_closed_bar": "08:00:00 (floor(now, M15); not stored in the record)", "expires_at": "07:45:00"},
+      "freshness": {"age_s": 2777.3, "limit_s": 1800, "policy": "OWNER_FRESHNESS_2xBAR"},
+      "classification": "CLEAN_STRATEGY_OUTCOME",
+      "rationale": "Freshness is computed from the trigger-bar close (07:15Z), not from latest-bar lag; the run acquired a complete window on ...999."
+    },
+    {
+      "run_local": "14:46", "run_utc": "08:16:09", "terminal": "AG ...999 (only terminal running)",
+      "data_complete": true, "strategy_version": "1.1.2",
+      "decision": "INFO_ONLY_STALE", "reason_code": "FRESHNESS_EXCEEDED",
+      "timestamps_utc": {"trigger_timestamp": "07:00:00", "trigger_bar_close": "07:15:00", "run": "08:16:09", "latest_closed_bar": "08:15:00 (floor(now, M15); not stored in the record)", "expires_at": "07:45:00"},
+      "freshness": {"age_s": 3669.4, "limit_s": 1800, "policy": "OWNER_FRESHNESS_2xBAR"},
+      "classification": "CLEAN_STRATEGY_OUTCOME",
+      "rationale": "Same signal (trigger bar close 07:15Z); age-based staleness; complete data on ...999."
+    }
+  ],
+  "caveat_for_owner": "The 07:15Z SWEEP signal was only fresh (age <= 1800 s, i.e. until 07:45Z) during the 13:46 and 14:01 runs, both on the wrong account (sandbox ...985), and the 14:16 run failed on history sync. On ...999 the first run with complete data (14:31) already found the signal stale. The two CLEAN outcomes are therefore correct engine behaviour, but no run on ...999 observed this signal while it was actionable.",
+  "s1_tally_2026-10-12": {
+    "window_local": "13:30-17:30 +06:30 (07:00-11:00 UTC), task every 15 min",
+    "runs": [
+      {"run_local": "13:31", "gbpusd": "INSUFFICIENT_DATA / CandleAdapterError (1.1.1)", "status": "WRONG_ACCOUNT_EXCLUDED", "cause": "AG terminal closed; runner attached to sandbox ...985"},
+      {"run_local": "13:46", "gbpusd": "BLOCKED / SPREAD_TOO_WIDE (1.1.2)", "status": "WRONG_ACCOUNT_EXCLUDED", "cause": "AG terminal closed; runner attached to sandbox ...985"},
+      {"run_local": "14:01", "gbpusd": "INFO_ONLY_STALE / STALE_SIGNAL (1.1.2)", "status": "WRONG_ACCOUNT_EXCLUDED", "cause": "AG terminal closed until 14:01:42; sandbox ...985 still open"},
+      {"run_local": "14:16", "gbpusd": "INSUFFICIENT_DATA / CandleAdapterError (1.1.1)", "status": "DATA_ERROR_EXCLUDED", "cause": "HISTORY_NOT_SYNCED after the 14:05 AG restart (host_candle_diag_2026-10-12.json)"},
+      {"run_local": "14:31", "gbpusd": "INFO_ONLY_STALE / FRESHNESS_EXCEEDED (1.1.2)", "status": "CLEAN_STRATEGY_OUTCOME"},
+      {"run_local": "14:46", "gbpusd": "INFO_ONLY_STALE / FRESHNESS_EXCEEDED (1.1.2)", "status": "CLEAN_STRATEGY_OUTCOME"}
+    ],
+    "clean_cycles": 2,
+    "excluded": 4,
+    "as_of_local": "14:47"
+  }
+}
