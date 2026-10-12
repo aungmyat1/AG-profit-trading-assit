@@ -65,7 +65,10 @@ def check_server_offset(mt5, now_ts: "float | None" = None) -> dict:
     """Live check: the offset measured from a fresh tick (MT5 tick.time is broker SERVER wall
     clock as epoch seconds) must equal the owner-rule offset used by the single conversion
     server_time_to_utc. Mismatch or no fresh tick = FAIL."""
-    from host_evidence.symbol_metadata import measured_server_offset_hours, server_utc_offset_hours
+    from host_evidence.symbol_metadata import (
+        measured_server_offset_hours,
+        server_utc_offset_hours,
+    )
     now_ts = time.time() if now_ts is None else now_ts
     rule = server_utc_offset_hours(dt.datetime.fromtimestamp(now_ts, dt.timezone.utc))
     for symbol in OFFSET_PROBES:
@@ -98,7 +101,8 @@ def check_mt5(mt5, terminal_path: str) -> list:
     else:
         demo = int(getattr(acct, "trade_mode", -1)) == int(getattr(mt5, "ACCOUNT_TRADE_MODE_DEMO", 0))
         out.append({"check": "account_info", "ok": True,
-                    "detail": f"login={acct.login} server={acct.server} trade_mode={acct.trade_mode}", "fix": None})
+                    "detail": redact(f"login={acct.login} server={acct.server} trade_mode={acct.trade_mode}"),
+                    "fix": None})
         out.append({"check": "demo_account", "ok": demo, "detail": "DEMO" if demo else "NOT DEMO",
                     "fix": None if demo else FIXES["NOT_DEMO"]})
     out.append(check_server_offset(mt5))

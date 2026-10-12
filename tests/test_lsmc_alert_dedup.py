@@ -4,7 +4,12 @@ from __future__ import annotations
 import datetime as dt
 
 from host_delivery.lsmc_alert_dedup import (
-    AlertLedger, DELIVERY_UNCERTAIN, DUPLICATE_UNCERTAIN, PENDING, confirmation_key, deliver_once,
+    DELIVERY_UNCERTAIN,
+    DUPLICATE_UNCERTAIN,
+    PENDING,
+    AlertLedger,
+    confirmation_key,
+    deliver_once,
 )
 from large_smc_watch.watch import Snapshot, WatchTracker
 

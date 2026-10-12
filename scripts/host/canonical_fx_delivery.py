@@ -217,7 +217,8 @@ def _verify_persisted_result(journal: str, result: EvalResult, ticket_source: st
 def _event_for_result(result: EvalResult, now: dt.datetime, *, stage: str, delivery_state: str,
                       ticket_source: str, error_class: Optional[str] = None,
                       store_status: Optional[str] = None,
-                      store_error_class: Optional[str] = None) -> Dict[str, Any]:
+                      store_error_class: Optional[str] = None,
+                      delivery_metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     ticket = result.canonical
     ticket_id = result.ticket_id
     session_date = ticket.get("session_date") or ticket_id.rsplit("|", 1)[-1]
@@ -238,6 +239,9 @@ def _event_for_result(result: EvalResult, now: dt.datetime, *, stage: str, deliv
                                       if result.ticket_store_error else None)),
         "venue": result.venue, "source": ticket_source,
         "delivery_state": delivery_state, "delivery_error_class": error_class,
+        "telegram_message_id": (delivery_metadata or {}).get("message_id"),
+        "telegram_chat_suffix": (delivery_metadata or {}).get("chat_suffix"),
+        "delivery_error_code": (delivery_metadata or {}).get("result_error_code"),
         "execution_authorized": False,
     }
 
@@ -246,7 +250,7 @@ def run_canonical_fx_cycle(
     provider, *, now: dt.datetime, journal: str, sender: Sender,
     cycles: Optional[Sequence[str]] = None, cycle_filter: Optional[str] = None,
     ticket_source: str = "LIVE", fx_data_source: str = "MT5_VT_MARKETS_DEMO",
-    policy_root: str,
+    policy_root: str, strategy_path: Optional[str] = None,
 ) -> Tuple[List[EvalResult], List[str]]:
     """Evaluate only active selected FX cycles; persist before delivery; journal every result."""
     now = _utc(now)
@@ -265,7 +269,7 @@ def run_canonical_fx_cycle(
     results = run_daily_evaluation(
         now=now, day=now.date(), candle_provider=provider, archive_root=journal,
         include_crypto=False, fx_data_source=fx_data_source, policy_root=policy_root,
-        ticket_source=ticket_source, cycles=selected)
+        ticket_source=ticket_source, cycles=selected, strategy_path=strategy_path)
     lines: List[str] = []
     for result in results:
         verify_error_class = None
@@ -296,9 +300,15 @@ def run_canonical_fx_cycle(
                 error_class = None
             except Exception as exc:  # noqa: BLE001 -- classify only; never blind-retry here
                 delivery_state, error_class = "delivery_exception", type(exc).__name__
+        attempts = sender.delivery_attempts("ticket", [result.ticket_id])
+        delivery_metadata = attempts[-1] if attempts else {}
+        if delivery_state == "sent" and not delivery_metadata.get("message_id"):
+            delivery_state = "failed"
+            delivery_metadata = {**delivery_metadata, "result_error_code": "MISSING_MESSAGE_ID"}
         event = _event_for_result(result, now, stage="RESULT", delivery_state=delivery_state,
                                   ticket_source=ticket_source, error_class=error_class,
-                                  store_status=store_state, store_error_class=verify_error_class)
+                                  store_status=store_state, store_error_class=verify_error_class,
+                                  delivery_metadata=delivery_metadata)
         try:
             append_session_event(journal, event)
         except Exception as exc:  # noqa: BLE001 -- sender SQLite is the fallback for network attempts
@@ -558,7 +568,10 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
         "terminal_counts": dict(sorted(terminal_counts.items())),
         "large_smc": lsmc_archive_report(journal, *windows),
         "source_counts": dict(sorted(source_counts.items())),
-        "data_failure_count": sum(terminal_counts[state] for state in (BLOCKED, INSUFFICIENT_DATA)),
+        # Preserve the prior combined total while separating policy/scope blocks from
+        # unavailable or invalid market data.
+        "scope_blocked_count": terminal_counts[BLOCKED],
+        "data_failure_count": terminal_counts[INSUFFICIENT_DATA],
         "persistence_failure_count": sum(row.get("ticket_store_status") == "FAILED"
                                           for row in latest.values()),
         "compatibility_error_count": len(compatibility_errors),
@@ -686,11 +699,20 @@ def _process_due_summary(journal: str, now: dt.datetime, sender: Sender, day_tex
         error_class = None
     except Exception as exc:  # noqa: BLE001 -- never auto-retry an ambiguous result here
         delivery_state, error_class = "delivery_exception", type(exc).__name__
+    identity = json.dumps([day_text, session], separators=(",", ":"))
+    attempts = sender.delivery_attempts("session_summary", [identity])
+    delivery_metadata = attempts[-1] if attempts else {}
+    if delivery_state == "sent" and not delivery_metadata.get("message_id"):
+        delivery_state = "failed"
+        delivery_metadata = {**delivery_metadata, "result_error_code": "MISSING_MESSAGE_ID"}
     outcome = {
         "event_type": "SESSION_SUMMARY_DELIVERY", "stage": "RESULT",
         "recorded_at_utc": now.isoformat(), "session_date": day_text, "session": session,
         **fields(summary),
         "sender_enabled": bool(sender.config.enabled), "delivery_state": delivery_state,
+        "telegram_message_id": delivery_metadata.get("message_id"),
+        "telegram_chat_suffix": delivery_metadata.get("chat_suffix"),
+        "delivery_error_code": delivery_metadata.get("result_error_code"),
         "error_class": error_class, "execution_authorized": False,
     }
     try:

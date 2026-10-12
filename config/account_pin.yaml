@@ -1,0 +1,9 @@
+# OD1012-ACCOUNT (Aung, 2026-10-12): the only account AG ticket/scan runtime may evaluate on.
+# Only the login suffix is committed (AGENTS.md); the full login stays in host-local env/config.
+# Read by src/host_evidence/account_pin.py; any mismatch or missing value fails closed with
+# ACCOUNT_PIN_MISMATCH (no tickets). Changing it needs an owner decision row.
+account_pin:
+  decision_id: OD1012-ACCOUNT
+  server: VTMarkets-Demo
+  login_suffix: "999"
+  trade_mode: DEMO

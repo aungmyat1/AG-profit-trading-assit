@@ -35,6 +35,12 @@ STATE_FAILED = "DELIVERY_FAILED"
 
 class DeliveryInProgress(Exception):
     """Another process holds the delivery-key lock."""
+
+
+class TelegramAPIError(RuntimeError):
+    def __init__(self, error_code):
+        super().__init__(f"Telegram API error {error_code}")
+        self.error_code = str(error_code)
 DELIVERED_STATES = frozenset({STATE_SENT, STATE_DELIVERED})
 
 
@@ -201,6 +207,7 @@ def render_session_summary(summary):
     for item in out_of_session:
         lines.append(f"- OUT_OF_SESSION {item.get('symbol', 'SCHEMA_GAP')} | "
                      f"{item.get('reason_code', 'SCHEMA_GAP')}")
+    lines.append(f"Scope blocked: {summary.get('scope_blocked_count', 0)}")
     lines.append(f"Data failures: {summary.get('data_failure_count', 0)}")
     lines.append(f"Delivery enabled: {str(bool(summary.get('delivery_enabled', False))).lower()}")
     lines.append(f"TICKET_STORE persistence failures: {summary.get('persistence_failure_count', 0)}")
@@ -271,12 +278,21 @@ def bot_api(token, chat_id, message):
         with urllib.request.urlopen(request, timeout=15) as response:
             result = json.load(response)
         if result.get("ok") is not True:
-            raise urllib.error.HTTPError("<redacted>", result.get("error_code", 500),
-                                         "Telegram rejected message", {},
-                                         io.BytesIO(json.dumps(result).encode()))
+            raise TelegramAPIError(result.get("error_code", "UNKNOWN"))
+        sent_message = result.get("result") or {}
+        message_id = sent_message.get("message_id")
+        if message_id is None:
+            raise TelegramAPIError("MISSING_MESSAGE_ID")
+        return {"ok": True, "message_id": message_id,
+                "chat_id": (sent_message.get("chat") or {}).get("id", chat_id)}
 
     try:
-        post("<pre>" + html.escape(message, quote=False) + "</pre>", "HTML")
+        return post("<pre>" + html.escape(message, quote=False) + "</pre>", "HTML")
+    except TelegramAPIError as error:
+        if error.error_code != "400":
+            raise
+        LOG.warning("Telegram HTML rejected; falling back to plain text")
+        return post(message)
     except urllib.error.HTTPError as error:
         # Telegram explicitly rejects malformed/unsupported HTML with HTTP 400.
         # Do not downgrade authorization, chat, length, rate-limit or server errors.
@@ -291,7 +307,7 @@ def bot_api(token, chat_id, message):
                 "parse_mode", "parse mode")):
             raise
         LOG.warning("Telegram HTML rejected; falling back to plain text")
-        post(message)
+        return post(message)
 
 
 def _utc_now():
@@ -307,6 +323,7 @@ class Sender:
         self.path = Path(store_path)
         self.config = config if config is not None else Config.from_env()
         self.transport, self.sleep, self.attempts = transport, sleep, attempts
+        self.require_api_receipt = transport is bot_api or bool(getattr(transport, "returns_telegram_receipt", False))
 
     def _connect(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -321,6 +338,9 @@ class Sender:
             db.execute("ALTER TABLE sent ADD COLUMN actor TEXT")
         if "updated_at" not in cols:
             db.execute("ALTER TABLE sent ADD COLUMN updated_at TEXT")
+        for column in ("message_id", "chat_suffix", "result_error_code"):
+            if column not in cols:
+                db.execute(f"ALTER TABLE sent ADD COLUMN {column} TEXT")
         db.execute(
             "CREATE TABLE IF NOT EXISTS compatibility_errors ("
             "kind TEXT NOT NULL, identity TEXT NOT NULL, error_code TEXT NOT NULL, "
@@ -421,17 +441,21 @@ class Sender:
             if identities:
                 marks = ",".join("?" for _ in identities)
                 rows = db.execute(
-                    f"SELECT identity, status, state, error_class, updated_at FROM sent "
+                    f"SELECT identity, status, state, error_class, updated_at, message_id, chat_suffix, "
+                    f"result_error_code FROM sent "
                     f"WHERE kind=? AND identity IN ({marks}) ORDER BY identity, status",
                     (kind, *identities),
                 ).fetchall()
             else:
                 rows = db.execute(
-                    "SELECT identity, status, state, error_class, updated_at FROM sent "
+                    "SELECT identity, status, state, error_class, updated_at, message_id, chat_suffix, "
+                    "result_error_code FROM sent "
                     "WHERE kind=? ORDER BY identity, status", (kind,)
                 ).fetchall()
-        return [{"identity": i, "status": s, "state": state, "error_class": error, "updated_at": at}
-                for i, s, state, error, at in rows]
+        return [{"identity": i, "status": s, "state": state, "error_class": error, "updated_at": at,
+                 "message_id": message_id, "chat_suffix": chat_suffix,
+                 "result_error_code": result_error_code}
+                for i, s, state, error, at, message_id, chat_suffix, result_error_code in rows]
 
     def _send(self, kind, identity, status, message, *, force=False, actor="", allow_duplicate=False):
         cfg = self.config
@@ -463,7 +487,8 @@ class Sender:
                                   row[0], identity, actor or "unspecified", _utc_now())
                         return "refused"
                     else:
-                        LOG.info("Telegram dedupe: %s", row[0])
+                        LOG.info("DUPLICATE_SUPPRESSED kind=%s identity=%s state=%s",
+                                 kind, identity, row[0])
                         return "duplicate"
                 else:
                     if force:
@@ -484,14 +509,34 @@ class Sender:
                 db.commit()
                 for attempt in range(self.attempts):
                     try:
-                        self.transport(cfg.token, cfg.chat_id, message)
+                        response = self.transport(cfg.token, cfg.chat_id, message)
+                        message_id = response.get("message_id") if isinstance(response, dict) else None
+                        if self.require_api_receipt and (message_id is None or response.get("ok") is not True):
+                            code = (response.get("error_code", "INVALID_SUCCESS_RESPONSE")
+                                    if isinstance(response, dict) else "MISSING_MESSAGE_ID")
+                            db.execute("UPDATE sent SET state=?, updated_at=?, error_class=?, result_error_code=? "
+                                       "WHERE kind=? AND identity=? AND status=?",
+                                       (STATE_FAILED, _utc_now(), "TelegramAPIError", str(code), kind, identity, status))
+                            db.commit()
+                            return "failed"
+                        response_chat = (response.get("chat_id", cfg.chat_id)
+                                         if isinstance(response, dict) else cfg.chat_id)
                         db.execute("UPDATE sent SET state=?, actor=?, updated_at=?, error_class=? "
                                    "WHERE kind=? AND identity=? AND status=?",
                                    (STATE_DELIVERED, actor, _utc_now(), None, kind, identity, status))
+                        db.execute("UPDATE sent SET message_id=?, chat_suffix=?, result_error_code=NULL "
+                                   "WHERE kind=? AND identity=? AND status=?",
+                                   (str(message_id) if message_id is not None else None,
+                                    str(response_chat)[-4:] if message_id is not None else None,
+                                    kind, identity, status))
                         db.commit()
                         return "sent"
                     except urllib.error.HTTPError as error:
                         LOG.error("Telegram HTTP failure: status=%s attempt=%s", error.code, attempt + 1)
+                        db.execute("UPDATE sent SET result_error_code=? WHERE kind=? AND identity=? AND status=?",
+                                   (str(error.code), kind, identity, status))
+                        db.execute("UPDATE sent SET result_error_code=? WHERE kind=? AND identity=? AND status=?",
+                                   (str(error.code), kind, identity, status))
                         # A 5xx may follow acceptance: preserve ambiguity without another send.
                         if error.code >= 500:
                             db.execute("UPDATE sent SET state=?, updated_at=?, error_class=? "
@@ -502,12 +547,20 @@ class Sender:
                         if error.code != 429 or attempt + 1 == self.attempts:
                             break
                         self.sleep(2 ** attempt)
-                    except Exception as error:
-                        # Persist class name only — never the message (may contain token URL).
-                        LOG.error("Telegram delivery ambiguous; automatic resend suppressed")
-                        db.execute("UPDATE sent SET state=?, actor=?, updated_at=?, error_class=? "
+                    except TelegramAPIError as error:
+                        db.execute("UPDATE sent SET state=?, updated_at=?, error_class=?, result_error_code=? "
                                    "WHERE kind=? AND identity=? AND status=?",
-                                   (STATE_UNCERTAIN, actor, _utc_now(), type(error).__name__,
+                                   (STATE_FAILED, _utc_now(), type(error).__name__, error.error_code,
+                                    kind, identity, status))
+                        db.commit()
+                        return "failed"
+                    except Exception as error:
+                        # Persist only a safe type code; token-bearing URLs and exception bodies stay private.
+                        LOG.error("Telegram delivery ambiguous; automatic resend suppressed")
+                        code = "TIMEOUT" if isinstance(error, TimeoutError) else type(error).__name__.upper()
+                        db.execute("UPDATE sent SET state=?, actor=?, updated_at=?, error_class=?, result_error_code=? "
+                                   "WHERE kind=? AND identity=? AND status=?",
+                                   (STATE_UNCERTAIN, actor, _utc_now(), type(error).__name__, code,
                                     kind, identity, status))
                         db.commit()
                         return "uncertain"

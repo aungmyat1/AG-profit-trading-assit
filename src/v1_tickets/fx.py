@@ -109,15 +109,17 @@ def session_windows_utc(day: dt.date, *, strategy_path: str = STRATEGY_PATH) -> 
 def build_fx_error_ticket(
     symbol: str, cycle: str, session_date: dt.date, *, evaluated_at: dt.datetime,
     reason_code: str, detail: str = "", decision: str = "DATA_ERROR",
-    data_source: str = "MT5_VT_MARKETS_DEMO",
+    data_source: str = "MT5_VT_MARKETS_DEMO", strategy_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Create an archivable fail-closed result when acquisition/runtime fails before
-    the strategy engine can run.  It deliberately contains no entry or price levels."""
+    the strategy engine can run.  It deliberately contains no entry or price levels.
+    `strategy_path` is the run's bound contract, so a failure carries the same strategy
+    identity as a successful evaluation of that binding (default: the frozen contract)."""
     if symbol not in V1_FX_SYMBOLS or cycle not in V1_CYCLES:
         raise ValueError(f"{symbol}/{cycle} is not a V1 FX ticket cycle")
     if decision not in ("DATA_ERROR", "BLOCKED"):
         raise ValueError("external failure decision must be DATA_ERROR or BLOCKED")
-    strategy = load_strategy(STRATEGY_PATH)
+    strategy = load_strategy(strategy_path or STRATEGY_PATH)
     return {
         "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER",
         "strategy_id": strategy.strategy_id,

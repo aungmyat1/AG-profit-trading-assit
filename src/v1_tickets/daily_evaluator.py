@@ -104,6 +104,11 @@ def _data_error_provenance(exc: BaseException) -> Dict[str, str]:
     return {"code": code, "detail": detail, "layer": layer}
 
 
+def _bound_strategy_path(ticket_source: str) -> str:
+    """LIVE (scheduled) runs are bound to the scoped S1 candidate; replays to the frozen contract."""
+    return SCOPED_CANDIDATE_PATH if ticket_source == "LIVE" else STRATEGY_PATH
+
+
 def evaluate_fx_pair(
     symbol: str,
     cycle: str,
@@ -115,26 +120,28 @@ def evaluate_fx_pair(
     data_source: str = "MT5_VT_MARKETS_DEMO",
     policy=None,
     ticket_source: str = "REPLAY",
+    strategy_path: Optional[str] = None,
 ) -> EvalResult:
     """Evaluate one FX (symbol, cycle) deterministically. On missing data returns a
-    BLOCKED/INSUFFICIENT_DATA record rather than raising."""
+    BLOCKED/INSUFFICIENT_DATA record rather than raising. `strategy_path` overrides the
+    binding implied by `ticket_source` (a host failure run labelled REPLAY still belongs to
+    the scheduled LIVE binding)."""
     now = now if now.tzinfo else now.replace(tzinfo=dt.timezone.utc)
     runtime_scope = ticket_source == "LIVE"
+    # The scheduled binding: every record of this run, success or failure, carries its identity.
+    strategy_path = strategy_path or _bound_strategy_path(ticket_source)
     if runtime_scope and (symbol, cycle) != ("GBPUSD", "ASIAN_LONDON"):
         blocked = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now,
             reason_code="LOGIC_SCOPE_NOT_VERIFIED", detail=f"{symbol}/{cycle} outside S1",
-            decision="BLOCKED", data_source=data_source)
-        blocked["strategy_version"] = "1.1.2"
+            decision="BLOCKED", data_source=data_source, strategy_path=strategy_path)
         return _finalize(blocked, now=now, current_price=None, window_end=None, archive_root=archive_root,
                          venue=data_source, policy=policy, ticket_source=ticket_source)
-    strategy_path = SCOPED_CANDIDATE_PATH if runtime_scope else STRATEGY_PATH
     strategy = load_strategy(strategy_path)
     if runtime_scope and (not v1_fx.symbol_scope_verified(strategy.strategy_id, strategy.version, symbol, cycle,
             setup="SWEEP", branch="RANGE_SWEEP", contract_path=strategy.source_path)):
         blocked = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now,
             reason_code="LOGIC_SCOPE_NOT_VERIFIED", detail="S1 contract or engine identity mismatch",
-            decision="BLOCKED", data_source=data_source)
-        blocked["strategy_version"] = strategy.version
+            decision="BLOCKED", data_source=data_source, strategy_path=strategy_path)
         return _finalize(blocked, now=now, current_price=None, window_end=None, archive_root=archive_root,
                          venue=data_source, policy=policy, ticket_source=ticket_source)
     windows = v1_fx.session_windows_utc(day)[cycle]
@@ -145,6 +152,7 @@ def evaluate_fx_pair(
         ticket = v1_fx.build_fx_error_ticket(
             symbol, cycle, day, evaluated_at=now, reason_code=type(exc).__name__,
             detail=str(exc)[:300], decision="DATA_ERROR", data_source=data_source,
+            strategy_path=strategy_path,
         )
         ticket["data_error"] = _data_error_provenance(exc)
         return _finalize(ticket, now=now, current_price=None, window_end=trade_end,
@@ -156,7 +164,7 @@ def evaluate_fx_pair(
         ticket = v1_fx.build_fx_error_ticket(
             symbol, cycle, day, evaluated_at=now, reason_code="NO_CANDLE_DATA",
             detail="candle provider returned no data", decision="BLOCKED",
-            data_source=data_source,
+            data_source=data_source, strategy_path=strategy_path,
         )
         return _finalize(ticket, now=now, current_price=None, window_end=trade_end,
                          archive_root=archive_root, venue=data_source, policy=policy,
@@ -309,6 +317,7 @@ def run_daily_evaluation(
     policy_override_dict: Optional[Dict] = None,
     ticket_source: str = "REPLAY",
     cycles: Optional[Sequence[str]] = None,
+    strategy_path: Optional[str] = None,
 ) -> List[EvalResult]:
     """Run every required (instrument, session) pair deterministically.
 
@@ -343,12 +352,13 @@ def run_daily_evaluation(
                                             candle_provider=provider,
                                             archive_root=archive_root,
                                             data_source=fx_data_source,
-                                            policy=policy, ticket_source=ticket_source))
+                                            policy=policy, ticket_source=ticket_source,
+                                            strategy_path=strategy_path))
         except Exception as exc:  # noqa: BLE001 — emergency fail-closed: still produce a record
             ticket = v1_fx.build_fx_error_ticket(
                 sym, cyc, day, evaluated_at=now, reason_code="EVALUATION_EXCEPTION",
                 detail=f"{type(exc).__name__}: {exc!s}"[:300], decision="DATA_ERROR",
-                data_source=fx_data_source)
+                data_source=fx_data_source, strategy_path=strategy_path or _bound_strategy_path(ticket_source))
             results.append(_finalize(ticket, now=now, current_price=None, window_end=None,
                                      archive_root=archive_root, venue=fx_data_source,
                                      policy=policy, exc=exc, ticket_source=ticket_source))

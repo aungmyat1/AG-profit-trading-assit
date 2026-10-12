@@ -54,6 +54,8 @@ def sender(tmp_path, *, enabled=True, calls=None, transport=None):
 
     def fake(token, chat_id, message):
         calls.append((chat_id, message))
+        return {"ok": True, "message_id": 1, "chat_id": chat_id}
+    fake.returns_telegram_receipt = True
 
     cfg = (Config(enabled=True, token="fake-token", chat_id="123", owner_chat_ids=frozenset({"123"}),
                   watch_info_scope=True)
@@ -254,8 +256,55 @@ def test_host_prerequisite_failure_records_replay_none_not_live(tmp_path):
     assert {e["source"] for e in result_events} == {"REPLAY"}
     assert all("delivery=" in ln for ln in lines)
     digest = cfd.build_session_summary(journal, session_date=NOW.date(), session="ASIAN_LONDON", sender=send)
-    assert digest["status"] == "COMPLETE" and digest["data_failure_count"] == 4
+    assert digest["status"] == "COMPLETE"
+    assert digest["scope_blocked_count"] == 0 and digest["data_failure_count"] == 4
     assert {row["acquisition_error_code"] for row in digest["per_instrument"]} == {"MT5_PACKAGE_MISSING"}
+
+
+def test_2026_10_11_london_newyork_scope_blocks_are_not_data_failures(tmp_path):
+    from telegram_delivery.adapter import render_session_summary
+
+    day = dt.date(2026, 10, 11)
+    send, _ = sender(tmp_path, enabled=False)
+    journal = str(tmp_path / "journal")
+    store = TicketStore(os.path.join(journal, "ticket_store"))
+    for symbol in V1_FX_SYMBOLS:
+        store.append_evaluation(build_evaluation(
+            ticket_id=f"ST_ASIAN_SWEEP_5R_V1|1.1.2|{symbol}|LONDON_NEWYORK|{day.isoformat()}",
+            strategy="ST_ASIAN_SWEEP_5R_V1@1.1.2", source=REPLAY, symbol=symbol,
+            session="LONDON_NEWYORK", evaluated_at_utc=f"{day.isoformat()}T08:00:00+00:00",
+            state="BLOCKED", block_reasons=["LOGIC_SCOPE_NOT_VERIFIED"]))
+
+    digest = cfd.build_session_summary(journal, session_date=day,
+                                       session="LONDON_NEWYORK", sender=send)
+    assert digest["terminal_counts"] == {"BLOCKED": 4}
+    assert digest["scope_blocked_count"] == 4
+    assert digest["data_failure_count"] == 0
+    assert digest["scope_blocked_count"] + digest["data_failure_count"] == (
+        digest["terminal_counts"].get("BLOCKED", 0)
+        + digest["terminal_counts"].get("INSUFFICIENT_DATA", 0))
+    text = render_session_summary(digest)
+    assert "Scope blocked: 4" in text and "Data failures: 0" in text
+
+
+def test_summary_counts_typed_acquisition_failures_as_data_failures(tmp_path):
+    day = dt.date(2026, 10, 12)
+    send, _ = sender(tmp_path, enabled=False)
+    journal = str(tmp_path / "journal")
+    store = TicketStore(os.path.join(journal, "ticket_store"))
+    codes = ("CandleAdapterError", "M15_WINDOW_INCOMPLETE", "HISTORY_NOT_SYNCED",
+             "MT5_INITIALIZE_FAILED")
+    for symbol, code in zip(V1_FX_SYMBOLS, codes):
+        store.append_evaluation(build_evaluation(
+            ticket_id=f"ST_ASIAN_SWEEP_5R_V1|1.1.2|{symbol}|ASIAN_LONDON|{day.isoformat()}",
+            strategy="ST_ASIAN_SWEEP_5R_V1@1.1.2", source=REPLAY, symbol=symbol,
+            session="ASIAN_LONDON", evaluated_at_utc=f"{day.isoformat()}T08:00:00+00:00",
+            state="INSUFFICIENT_DATA", block_reasons=[code]))
+
+    digest = cfd.build_session_summary(journal, session_date=day,
+                                       session="ASIAN_LONDON", sender=send)
+    assert digest["terminal_counts"] == {"INSUFFICIENT_DATA": 4}
+    assert digest["scope_blocked_count"] == 0 and digest["data_failure_count"] == 4
 
 
 def test_invalid_ticket_source_is_refused(tmp_path):
@@ -492,6 +541,7 @@ def test_due_summaries_are_sent_once_and_never_before_grace(tmp_path):
             if e["event_type"] == "SESSION_SUMMARY_DELIVERY"]
     assert [e["stage"] for e in rows] == ["INTENT", "RESULT"]
     assert rows[1]["delivery_state"] == "sent" and rows[1]["sender_enabled"] is True
+    assert rows[1]["telegram_message_id"] == "1"
 
     # Restart: the delivered summary is not re-sent.
     again = cfd.process_due_session_summaries(dt.datetime(2026, 10, 7, 12, 10, tzinfo=UTC),
@@ -530,6 +580,38 @@ def test_uncertain_and_failed_summaries_are_never_auto_retried(tmp_path):
     assert len(attempts) == 1
     uncertain = send.list_uncertain()
     assert [row["kind"] for row in uncertain] == ["session_summary"]
+
+
+@pytest.mark.parametrize(("transport_result", "transport_error", "expected_state", "expected_code"), [
+    ({"ok": True, "message_id": 4321, "chat_id": -123456789}, None, "sent", None),
+    (None, __import__("telegram_delivery.adapter", fromlist=["TelegramAPIError"]).TelegramAPIError(403), "failed", "403"),
+    (None, TimeoutError("private token detail"), "uncertain", "TIMEOUT"),
+])
+def test_summary_result_captures_message_delivery_identity(
+        tmp_path, transport_result, transport_error, expected_state, expected_code):
+    journal = str(tmp_path / "journal")
+    write_start(journal, dt.datetime(2026, 10, 7, 6, 0, tzinfo=UTC))
+
+    def transport(*_args):
+        if transport_error:
+            raise transport_error
+        return transport_result
+
+    send = Sender(tmp_path / "delivery.sqlite",
+                  Config(enabled=True, token="fake-token", chat_id="123456789",
+                         owner_chat_ids=frozenset({"123456789"})), transport=transport)
+    if transport_result is not None:
+        send.require_api_receipt = True
+    lines = cfd.process_due_session_summaries(dt.datetime(2026, 10, 7, 11, 40, tzinfo=UTC),
+                                              journal=journal, sender=send)
+    row = next(e for e in events(journal, dt.date(2026, 10, 7), "ASIAN_LONDON")
+               if e["event_type"] == "SESSION_SUMMARY_DELIVERY" and e["stage"] == "RESULT")
+    assert row["delivery_state"] == expected_state
+    assert row["delivery_error_code"] == expected_code
+    if expected_state == "sent":
+        assert row["telegram_message_id"] == "4321" and row["telegram_chat_suffix"] == "6789"
+    else:
+        assert row["telegram_message_id"] is None and row["telegram_chat_suffix"] is None
 
 
 def test_disabled_summary_may_send_once_the_owner_gates_open(tmp_path):

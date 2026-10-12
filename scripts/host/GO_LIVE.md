@@ -23,7 +23,19 @@ paper-ledger behavior is not part of the canonical scheduled path.
 2. Credentials go in persistent user environment variables, never in git:
    `VTMARKETS-DEMO-LOGIN`, `VTMARKETS-DEMO-PASSWORD`, `VTMARKETS-DEMO-SERVER`.
    The underscore forms `VTMARKETS_DEMO_*` also work.
-3. Optionally set `MT5_TERMINAL_PATH` to the VT Markets `terminal64.exe`.
+3. Set `MT5_TERMINAL_PATH` to the `terminal64.exe` of the terminal logged in to the pinned AG
+   account (OD1012-ACCOUNT, `config/account_pin.yaml`: `VTMarkets-Demo`, login suffix `999`, DEMO).
+   It is required whenever another terminal (e.g. the owner's …985 sandbox) runs on the host.
+   When set (or `--terminal-path` is passed), the runners check `terminal_info().path` after
+   `initialize()`; any other attached terminal fails closed with `ACCOUNT_PIN_MISMATCH TERMINAL_PATH`.
+   A wrong server, login suffix or trade mode fails closed with `ACCOUNT_PIN_MISMATCH
+   SERVER|LOGIN_SUFFIX|TRADE_MODE`; no tickets are produced.
+4. Every runner invocation logs one line, whatever its outcome:
+   `RUN_IDENTITY requested_terminal_path=… terminal_path=… server=… login_suffix=…`
+   (suffix only; a user-profile prefix is shown as `<USER_HOME>`; unread values are
+   `NOT_AVAILABLE`). Decide whether a run belongs to AG evidence from this line, never by
+   elimination. Every FX record of a scheduled run, including MT5/candle failures, carries the
+   scheduled binding's identity (`ST_ASIAN_SWEEP_5R_V1` 1.1.2 and its contract SHA256).
 
 Run every step from the repo root, in this order. Stop at the first step that does not show
 its expected output.
