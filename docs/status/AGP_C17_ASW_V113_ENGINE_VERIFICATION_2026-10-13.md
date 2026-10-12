@@ -56,7 +56,7 @@ and the v1.1.2 S1 identity `d7a8ebe5…` is unchanged. The v1.1.3 contract file 
 | v1.1.3 logic identity | `628f6100f673ed25772f3e8cd0cd754c14c45be9133aa44c244c3ac30555656a` |
 | v1.1.2 S1 identity (unchanged) | `d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5` |
 
-## Results — v1.1.3, 60 weekdays (run 1 = run 2, sha256 `319f1a11…`)
+## Results — v1.1.3, 60 weekdays (run 1 = run 2, committed LF sha256 `bc672105…`)
 
 | Pair | Session | Valid | L1 | L2 | L3 | L4 | L5 | L6 |
 |---|---|---|---|---|---|---|---|---|
@@ -80,13 +80,13 @@ once the owner records identity `628f6100…`.
 | Prefix mismatches | 5 | **0** |
 | First emission | — (rewritten) | RANGE 09:45, stable for every longer prefix (STALE at evaluation; RANGE tickets fail closed) |
 
-`l3_repro_eurusd_asian_london_2026-07-31_v113.json` sha256 `bb115eed…`.
+`l3_repro_eurusd_asian_london_2026-07-31_v113.json` committed LF sha256 `9eedc857…`.
 
 ## v1.1.2 regression
 
 The v1.1.2 rerun with the C16 date has a verdict matrix identical to C16. One case differs,
 GBPUSD ASIAN_LONDON 2026-09-18: `SHADOW_INFO_ONLY` → `READY`. That is #184 (OD1012-S1-READY),
-merged after C16, and is unrelated to this change. File sha256: `edea7416…`.
+merged after C16, and is unrelated to this change. File committed LF sha256: `5923dac5…`.
 
 ## Owner decisions needed
 
@@ -98,6 +98,8 @@ merged after C16, and is unrelated to this change. File sha256: `edea7416…`.
    evidence.
 
 ## Evidence and commands
+
+Hashes are of the committed (LF-normalized) files; the generator writes CRLF on Windows.
 
 - Evidence directory: `artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_3/c17_2026-10-13/`.
 - Environment and resources: Windows workstation, Python 3.14, offline (no MT5/broker/network).
