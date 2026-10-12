@@ -60,7 +60,9 @@ def test_fx_live_s1_path_loads_scoped_candidate_bound_to_registry_identity():
     source = inspect.getsource(daily_evaluator.evaluate_fx_pair)
     assert 'runtime_scope = ticket_source == "LIVE"' in source
     assert '("GBPUSD", "ASIAN_LONDON")' in source
-    assert "SCOPED_CANDIDATE_PATH if runtime_scope else STRATEGY_PATH" in source
+    assert "strategy_path or _bound_strategy_path(ticket_source)" in source
+    assert ('SCOPED_CANDIDATE_PATH if ticket_source == "LIVE" else STRATEGY_PATH'
+            in inspect.getsource(daily_evaluator._bound_strategy_path))
     assert v1_fx.SCOPED_CANDIDATE_PATH == "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml"
 
     strategy = load_strategy(v1_fx.SCOPED_CANDIDATE_PATH)

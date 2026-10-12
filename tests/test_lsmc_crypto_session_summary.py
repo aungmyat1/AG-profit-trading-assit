@@ -179,7 +179,7 @@ def _fail_mt5(monkeypatch, failure):
     monkeypatch.setattr(lcs, "mt5_initialize", lambda *a: (failure != "MT5_INITIALIZE_FAILED", "init"))
     monkeypatch.setattr(lcs, "require_demo_account", lambda *a: (failure != "DEMO_ACCOUNT_REQUIRED", "demo"))
     monkeypatch.setattr(lcs, "require_pinned_demo_account",
-                        lambda *a: (failure != "ACCOUNT_PIN_MISMATCH", "ACCOUNT_PIN_MISMATCH SERVER"))
+                        lambda *a, **k: (failure != "ACCOUNT_PIN_MISMATCH", "ACCOUNT_PIN_MISMATCH SERVER"))
 
 
 @pytest.mark.parametrize("failure", ["MT5_PACKAGE_MISSING", "MT5_INITIALIZE_FAILED", "DEMO_ACCOUNT_REQUIRED",

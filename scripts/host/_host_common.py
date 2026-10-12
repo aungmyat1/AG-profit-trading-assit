@@ -8,6 +8,7 @@ statically). Secrets are never printed. redact() masks any value taken from a *T
 from __future__ import annotations
 
 import datetime as dt
+import json
 import os
 import sys
 import tempfile
@@ -277,12 +278,76 @@ def require_demo_account(mt5) -> "tuple[bool, str]":
     return True, "DEMO_ACCOUNT_VERIFIED"
 
 
-def require_pinned_demo_account(mt5, root=None) -> "tuple[bool, str]":
+def _norm_terminal_dir(path: str) -> str:
+    """MT5_TERMINAL_PATH may name terminal64.exe; terminal_info().path is its directory."""
+    p = str(path or "").strip().strip('"').replace("\\", "/").rstrip("/")
+    if p.lower().endswith(".exe"):
+        p = p.rsplit("/", 1)[0] if "/" in p else ""
+    return p.casefold()
+
+
+def _redact_home(path: str) -> str:
+    home = os.path.expanduser("~")
+    if path and home and home != "~" and _norm_terminal_dir(path).startswith(_norm_terminal_dir(home) + "/"):
+        return "<USER_HOME>" + str(path)[len(home):]
+    return path
+
+
+def requested_terminal_path(terminal_path: str = "") -> str:
+    return terminal_path or os.environ.get("MT5_TERMINAL_PATH", "")
+
+
+def run_identity(mt5, terminal_path: str = "") -> dict:
+    """Read-only evidence of the terminal/account a run actually attached to: requested and
+    connected terminal path, server and login suffix only (never the full login). Never raises;
+    a value that could not be read is NOT_AVAILABLE, so exclusions are decided from evidence."""
+    from host_evidence.account_pin import load_pin
+
+    requested = requested_terminal_path(terminal_path)
+    ident = {"requested_terminal_path": _redact_home(requested) or "AUTO",
+             "terminal_path": "NOT_AVAILABLE", "server": "NOT_AVAILABLE", "login_suffix": "NOT_AVAILABLE"}
+    if mt5 is None:
+        return ident
+    try:
+        term = call_with_timeout(mt5.terminal_info)
+        if term is not None and getattr(term, "path", None):
+            ident["terminal_path"] = _redact_home(str(term.path))
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        info = call_with_timeout(mt5.account_info)
+        if info is not None:
+            if getattr(info, "server", None):
+                ident["server"] = str(info.server)
+            if getattr(info, "login", None) is not None:
+                pin = load_pin()
+                n = len(pin["login_suffix"]) if pin else 3
+                ident["login_suffix"] = str(info.login)[-n:]
+    except Exception:  # noqa: BLE001
+        pass
+    return ident
+
+
+def format_run_identity(ident: dict) -> str:
+    return "RUN_IDENTITY " + " ".join(f"{k}={json.dumps(v)}" for k, v in ident.items())
+
+
+def require_pinned_demo_account(mt5, root=None, terminal_path: str = "") -> "tuple[bool, str]":
     """OD1012-ACCOUNT: fail closed unless the connected terminal is the pinned DEMO account
-    (server, login suffix, trade mode; config/account_pin.yaml). Read-only; the status never
-    carries the login, balance or equity."""
+    (server, login suffix, trade mode; config/account_pin.yaml) and, when MT5_TERMINAL_PATH /
+    --terminal-path names a terminal, the attached terminal is that one. Read-only; the status
+    never carries the login, balance or equity."""
     from host_evidence.account_pin import ACCOUNT_PIN_MISMATCH, check_account, load_pin
 
+    requested = requested_terminal_path(terminal_path)
+    if requested:
+        try:
+            term = call_with_timeout(mt5.terminal_info)
+        except Exception:  # noqa: BLE001
+            term = None
+        actual = getattr(term, "path", None) if term is not None else None
+        if not actual or _norm_terminal_dir(actual) != _norm_terminal_dir(requested):
+            return False, f"{ACCOUNT_PIN_MISMATCH} TERMINAL_PATH"
     try:
         account = call_with_timeout(mt5.account_info)
     except Exception as exc:  # noqa: BLE001

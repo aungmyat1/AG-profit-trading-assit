@@ -106,47 +106,52 @@ def main(argv=None):
     args = parser.parse_args(argv)
     # Import terminal lifecycle helpers only in the live entrypoint, never on import.
     sys.path.insert(0, str(ROOT / "scripts/host"))
-    from _host_common import (AlreadyRunning, import_mt5, mt5_access_lock, mt5_initialize,
-                              require_demo_account, require_pinned_demo_account, single_instance,
-                              utcnow)
+    from _host_common import (AlreadyRunning, format_run_identity, import_mt5, mt5_access_lock,
+                              mt5_initialize, require_demo_account, require_pinned_demo_account,
+                              run_identity, single_instance, utcnow)
 
-    mt5 = import_mt5()
-    if mt5 is None:
-        print("BLOCKER = MT5_PACKAGE_UNAVAILABLE")
-        return 2
+    identity = run_identity(None)
     try:
-        with single_instance("ag_v1_fx"), mt5_access_lock():
-            ok, _ = mt5_initialize(mt5)
-            if not ok:
-                print("BLOCKER = MT5_INITIALIZE_FAILED")
-                return 2
-            try:
-                demo_ok, _ = require_demo_account(mt5)
-                if not demo_ok:
-                    print("BLOCKER = DEMO_ACCOUNT_REQUIRED")
+        mt5 = import_mt5()
+        if mt5 is None:
+            print("BLOCKER = MT5_PACKAGE_UNAVAILABLE")
+            return 2
+        try:
+            with single_instance("ag_v1_fx"), mt5_access_lock():
+                ok, _ = mt5_initialize(mt5)
+                identity = run_identity(mt5)
+                if not ok:
+                    print("BLOCKER = MT5_INITIALIZE_FAILED")
                     return 2
-                pin_ok, _ = require_pinned_demo_account(mt5)
-                if not pin_ok:
-                    print("BLOCKER = ACCOUNT_PIN_MISMATCH")
-                    return 2
-                guard = GuardedMT5(mt5)
-                provider = snapshot_provider(guard)
-                report = evaluate_report(provider, now=utcnow(), archive_root=ROOT / "journal",
-                                         ticket_source="LIVE")     # real MT5 snapshot provider only
-                report["refused_mt5_calls"] = guard.refused
-                report["broker_mutation_attempts"] = len(guard.refused)
-            finally:
-                mt5.shutdown()
-    except AlreadyRunning:
-        print("BLOCKER = FX_STORE_WRITER_ACTIVE")
-        return 2
-    save_report(report, args.out)
-    for row in report["results"]:
-        print(json.dumps(row, sort_keys=True))
-    print(json.dumps({"terminal_counts": report["terminal_counts"],
-                      "matrix_complete": report["matrix_complete"],
-                      "broker_mutation_attempts": report["broker_mutation_attempts"]}, sort_keys=True))
-    return 0 if report["matrix_complete"] and not guard.refused else 1
+                try:
+                    demo_ok, _ = require_demo_account(mt5)
+                    if not demo_ok:
+                        print("BLOCKER = DEMO_ACCOUNT_REQUIRED")
+                        return 2
+                    pin_ok, _ = require_pinned_demo_account(mt5)
+                    if not pin_ok:
+                        print("BLOCKER = ACCOUNT_PIN_MISMATCH")
+                        return 2
+                    guard = GuardedMT5(mt5)
+                    provider = snapshot_provider(guard)
+                    report = evaluate_report(provider, now=utcnow(), archive_root=ROOT / "journal",
+                                             ticket_source="LIVE")     # real MT5 snapshot provider only
+                    report["refused_mt5_calls"] = guard.refused
+                    report["broker_mutation_attempts"] = len(guard.refused)
+                finally:
+                    mt5.shutdown()
+        except AlreadyRunning:
+            print("BLOCKER = FX_STORE_WRITER_ACTIVE")
+            return 2
+        save_report(report, args.out)
+        for row in report["results"]:
+            print(json.dumps(row, sort_keys=True))
+        print(json.dumps({"terminal_counts": report["terminal_counts"],
+                          "matrix_complete": report["matrix_complete"],
+                          "broker_mutation_attempts": report["broker_mutation_attempts"]}, sort_keys=True))
+        return 0 if report["matrix_complete"] and not guard.refused else 1
+    finally:   # every run records what it attached to, whatever the outcome
+        print(format_run_identity(identity))
 
 
 if __name__ == "__main__":

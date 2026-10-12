@@ -51,7 +51,9 @@ from _host_common import (  # noqa: E402
     mt5_access_lock,
     mt5_initialize,
     require_demo_account,
+    format_run_identity,
     require_pinned_demo_account,
+    run_identity,
     single_instance,
     start_run_watchdog,
     utcnow,
@@ -668,6 +670,19 @@ def run_smoke(fetch: Fetch, now: dt.datetime, journal: str, crypto_config: Optio
 
 
 def main(argv=None) -> int:
+    """Every run that got past argument parsing logs one RUN_IDENTITY line (requested and
+    attached terminal path, server, login suffix only), whatever the outcome."""
+    identity: Dict[str, Any] = {}
+    try:
+        return _main(argv, identity)
+    finally:
+        log_name = identity.pop("_log", None)
+        if log_name:
+            ident = identity.pop("_ident", None) or run_identity(None, identity.pop("_req", ""))
+            log_line(log_name, format_run_identity(ident))
+
+
+def _main(argv, identity: Dict[str, Any]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--mode", choices=("smoke", "fx", "crypto", "lsmc", "lsmc-weekend"), default="smoke")
     ap.add_argument("--terminal-path", default=os.environ.get("MT5_TERMINAL_PATH", ""))
@@ -682,6 +697,7 @@ def main(argv=None) -> int:
     if args.canonical and args.mode != "fx":
         ap.error("--canonical is only valid with --mode fx")
     log_name = f"ag_v1_{args.mode}"
+    identity.update(_log=log_name, _req=args.terminal_path)
     if args.mode != "smoke" and remaining_fraction(REPO_ROOT) is None:
         log_line(log_name, f"LSMC_CONFIG_MISSING key={LSMC_CONFIG_KEY}")
     now = utcnow()
@@ -715,7 +731,8 @@ def main(argv=None) -> int:
             failure_provider(reason, details.get(reason, "host prerequisite unavailable")),
             now=now, journal=journal, sender=canonical_sender,
             cycles=active_cycles(now, args.cycle), cycle_filter=args.cycle,
-            ticket_source="REPLAY", fx_data_source="NONE", policy_root=REPO_ROOT)
+            ticket_source="REPLAY", fx_data_source="NONE", policy_root=REPO_ROOT,
+            strategy_path=fx_tickets.SCOPED_CANDIDATE_PATH)   # the scheduled binding, not the frozen default
         return failures + process_due_session_summaries(now, journal=journal, sender=canonical_sender)
 
     def lsmc_failure_lines(reason: str) -> List[str]:
@@ -756,6 +773,7 @@ def main(argv=None) -> int:
                     return 1
                 with mt5_access_lock():
                     ok, err = mt5_initialize(mt5, args.terminal_path)
+                    identity["_ident"] = run_identity(mt5, args.terminal_path)
                     if not ok:
                         lines = ((canonical_failure_lines("MT5_INITIALIZE_FAILED") if args.canonical else
                                   archive_fx_runtime_failure(now, journal, "MT5_INITIALIZE_FAILED", err,
@@ -776,7 +794,7 @@ def main(argv=None) -> int:
                                 log_line(log_name, line)
                             log_line(log_name, f"DEMO_ACCOUNT_REQUIRED {demo_status}")
                             return 1
-                        pin_ok, pin_status = require_pinned_demo_account(mt5)
+                        pin_ok, pin_status = require_pinned_demo_account(mt5, terminal_path=args.terminal_path)
                         if not pin_ok:   # OD1012-ACCOUNT: wrong server/suffix/mode -> no tickets
                             lines = ((canonical_failure_lines("ACCOUNT_PIN_MISMATCH") if args.canonical else
                                       archive_fx_runtime_failure(now, journal, "ACCOUNT_PIN_MISMATCH", pin_status,

@@ -246,7 +246,7 @@ def run_canonical_fx_cycle(
     provider, *, now: dt.datetime, journal: str, sender: Sender,
     cycles: Optional[Sequence[str]] = None, cycle_filter: Optional[str] = None,
     ticket_source: str = "LIVE", fx_data_source: str = "MT5_VT_MARKETS_DEMO",
-    policy_root: str,
+    policy_root: str, strategy_path: Optional[str] = None,
 ) -> Tuple[List[EvalResult], List[str]]:
     """Evaluate only active selected FX cycles; persist before delivery; journal every result."""
     now = _utc(now)
@@ -265,7 +265,7 @@ def run_canonical_fx_cycle(
     results = run_daily_evaluation(
         now=now, day=now.date(), candle_provider=provider, archive_root=journal,
         include_crypto=False, fx_data_source=fx_data_source, policy_root=policy_root,
-        ticket_source=ticket_source, cycles=selected)
+        ticket_source=ticket_source, cycles=selected, strategy_path=strategy_path)
     lines: List[str] = []
     for result in results:
         verify_error_class = None
