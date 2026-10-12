@@ -201,6 +201,18 @@ def _normalizer(symbol: str, risk: Optional[float], broker_symbol: Optional[str]
     return snap
 
 
+def _digits_display(symbol: str, broker_symbol: Optional[str] = None):
+    """Fallback when no tick snap applies: round to the verified symbol digits, else leave the
+    value unrounded (labelled UNNORMALIZED by the caller; digits are never invented)."""
+    _tick, digits = _tick_digits(symbol, broker_symbol)
+
+    def display(value, _mode="nearest"):
+        if value is None:
+            return None
+        return round(float(value), digits) if digits is not None else round(float(value), 10)
+    return display
+
+
 def _rounding_modes(direction: Optional[str]):
     """(stop, target): conservative display rounding, away from entry for stops."""
     if direction == "LONG":
@@ -243,7 +255,8 @@ def format_ticket(t: Dict[str, Any]) -> str:
     snap = _normalizer(sym, raw_risk, broker_symbol)
     stop_mode, target_mode = _rounding_modes(t.get("direction"))
     if snap is None:
-        entry, stop, target = raw_entry, raw_stop, lambda value: value
+        fallback = _digits_display(sym, broker_symbol)
+        entry, stop, target = fallback(raw_entry), fallback(raw_stop), fallback
     else:
         entry, stop = snap(raw_entry), snap(raw_stop, stop_mode)
         target = lambda value: snap(value, target_mode)
@@ -312,8 +325,7 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
     snap = _normalizer(symbol, raw_risk, broker_symbol)
     stop_mode, target_mode = _rounding_modes(direction)
     if snap is None:
-        def display(value, _mode="nearest"):
-            return None if value is None else round(float(value), 10)
+        display = _digits_display(symbol, broker_symbol)
     else:
         def display(value, mode="nearest"):
             return snap(value, mode)
