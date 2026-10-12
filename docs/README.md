@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 16036)
+Total output lines: 736
+
 ---
 class: authority
 state: DESIGN
@@ -5,6 +8,10 @@ owner_reviewed: null
 review_by: 2026-11-07
 ---
 # Documentation Index
+
+[AG Resource Management Policy V1](governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md)
+restores the owner-issued R0–R3 resource gates and fail-closed runtime lock from
+`82e6e5cca329d1247f8a81aa308f25a80584c5fd`; strategy verification remains separate.
 
 [AGP-C4-CCFD-LOGIC](status/AGP_C4_CCFD_LOGIC_2026-10-10.md) records synthetic-only CFD v1.0.0 L1–L6 evidence and the DATA-R2 rerun.
 [C14 DEMO execution boundary hardening](status/AGP_C14_DEMO_EXECUTION_BOUNDARY_HARDENING_2026-10-11.md)
@@ -358,47 +365,7 @@ research eligibility. Its contract is
 - [`status/AG_SVOS_HISTORICAL_TO_VIRTUAL_FORWARD_V1_STATUS.md`](status/AG_SVOS_HISTORICAL_TO_VIRTUAL_FORWARD_V1_STATUS.md)
   — SVOS historical→optimization→virtual-forward flow implementation and verification.
 - [`status/AG_AGENT_CONTEXT_V1_FREEZE_STATUS.md`](status/AG_AGENT_CONTEXT_V1_FREEZE_STATUS.md)
-  — agent context V1 freeze and routing manifest.
-- [`status/AG_DAILY_OPPORTUNITY_SCHEDULER_V2_STATUS.md`](status/AG_DAILY_OPPORTUNITY_SCHEDULER_V2_STATUS.md)
-  — daily opportunity scheduler V2 status.
-- [`status/AG_POST_ASIAN_LONDON_PILOT_V1_STATUS.md`](status/AG_POST_ASIAN_LONDON_PILOT_V1_STATUS.md)
-  — post-Asian London pilot V1 status.
-- [`status/AG_MULTI_STRATEGY_OPERATIONAL_BASELINE_AND_VERSION_PROMOTION_V1_STATUS.md`](status/AG_MULTI_STRATEGY_OPERATIONAL_BASELINE_AND_VERSION_PROMOTION_V1_STATUS.md)
-  and [`status/AG_MULTI_STRATEGY_OPERATIONAL_BASELINE_FREEZE_AND_BOUNDARY_HARDENING_V1_STATUS.md`](status/AG_MULTI_STRATEGY_OPERATIONAL_BASELINE_FREEZE_AND_BOUNDARY_HARDENING_V1_STATUS.md)
-  — multi-strategy operational baseline and version promotion.
-- [`status/AG_TWO_STAGE_GOLDEN_VERTICAL_SLICE_V1_STATUS.md`](status/AG_TWO_STAGE_GOLDEN_VERTICAL_SLICE_V1_STATUS.md)
-  — two-stage golden vertical slice V1 status.
-- [`status/AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION_STATUS.md`](status/AG_ST_ASIAN_SWEEP_V1_1_2_GOVERNED_SL_GEOMETRY_RECONCILIATION_STATUS.md)
-  — ST_ASIAN_SWEEP_V1 governed SL geometry reconciliation.
-- [`status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_RECONCILIATION_2026-10-06.md`](status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_RECONCILIATION_2026-10-06.md)
-  — ST_ASIAN_SWEEP_5R_V1@1.1.1 Phase B spec/engine reconciliation table (owner decision packet;
-  no behavior change), TP1>TP2 geometry counts, evidence lineage, session anchoring options.
-- [`status/AG_TICKET_STORE_V1_STATUS_2026-10-08.md`](status/AG_TICKET_STORE_V1_STATUS_2026-10-08.md)
-  — TICKET_STORE_V1: store audit, append-only evaluation/outcome schema, SQLite reindex, LEGACY migration.
-- [`status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md`](status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_PHASE_B_OWNER_DECISIONS.md)
-  — Phase B owner decision record, confirmed by OD1009-D1 on 2026-10-09.
-- [`status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md`](status/AG_ST_ASIAN_SWEEP_5R_V1_1_1_2_L2_CLOSURE_2026-10-07.md)
-  — v1.1.2 candidate L2 closure and L1–L6 fixture results; owner confirmation recorded, READY
-  remains paused and v1.1.1 remains unchanged.
-- [`status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md`](status/AGP_C3_ASW_V112_LOGIC_VERIFICATION_2026-10-09.md)
-  — v1.1.2 LOGIC_VERIFICATION_REPORT (L1–L6) on both windows, L4 failure→test map; not admitted, READY OFF.
-- [`status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md`](status/AGP_C3_ASW_V112_GBPUSD_LOGIC_VERIFICATION_2026-10-09.md)
-  — v1.1.2 per symbol: EURUSD LOGIC_VERIFIED (unchanged), GBPUSD PARTIAL (10 recorded days; LONDON_NEWYORK L2 NOT_EVIDENCED).
-- [`status/AGP_C14_DEMO_EXECUTION_BOUNDARY_HARDENING_2026-10-11.md`](status/AGP_C14_DEMO_EXECUTION_BOUNDARY_HARDENING_2026-10-11.md)
-  — C14 execution-authority boundary, host magic registry (reserved S1 magic `777001` versus the six
-  magics in use on the host), lifecycle evidence chain, and HALT/reconcile on unknown outcome;
-  offline unit tests only, no broker mutation, scope still `enabled: false`.
-- [`status/AGP_SCOPE_STATUS_REPORTS_2026-10-12.md`](status/AGP_SCOPE_STATUS_REPORTS_2026-10-12.md)
-  — read-only Telegram scope-status reporting for all three families (OD1012-ROUTING follow-up (d)):
-  FX session summaries stamped per symbol, new crypto CRYPTO_DAY/CRYPTO_WEEKEND summaries, and Large-SMC
-  alert status lines. Every route is REPORT_ONLY; unit-tested only, not host-verified.
-- [`proposals/l2-absence-semantics.md`](proposals/l2-absence-semantics.md)
-  — proposal (OWNER_DECISION_PENDING, not implemented): how L2 reports a window with no conforming ticket.
-- [`status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md)
-  and [`status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_EVIDENCE_WP3A_STATUS.md)
-  — Large-SMC EURUSD friction campaign WP3A/3A.1 evidence.
-- [`status/AG_LARGE_SMC_V1_FORWARD_OBSERVATION_RUNNER_IMPLEMENTATION_PLAN_STATUS.md`](status/AG_LARGE_SMC_V1_FORWARD_OBSERVATION_RUNNER_IMPLEMENTATION_PLAN_STATUS.md)
-  and [`status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md`](status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md)
+  — agent context V1 freeze and routing man…1036 tokens truncated…SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md`](status/AG_LARGE_SMC_V1_FORWARD_RESEARCH_PROMOTION_STATUS.md)
   — Large-SMC forward observation runner and research promotion.
 - [`status/AG_LARGE_SMC_V1_FORWARD_TO_SHADOW_EVIDENCE_CONTRACT_V1_STATUS.md`](status/AG_LARGE_SMC_V1_FORWARD_TO_SHADOW_EVIDENCE_CONTRACT_V1_STATUS.md)
   — Large-SMC forward-to-shadow evidence contract.
