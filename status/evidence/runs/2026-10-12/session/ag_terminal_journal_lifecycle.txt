@@ -1,0 +1,20 @@
+QM	0	14:01:52.937	Terminal	MetaTrader 5 x64 build 6230 started for MetaQuotes Ltd.
+MG	3	14:01:52.960	MCP	bind error on 127.0.0.1:22346 [Only one usage of each socket address (protocol/network address/port) is normally permitted. (10048)]
+KO	0	14:02:04.284	Experts	expert Crypto_VBO_EA (BTCUSD,H1) loaded successfully
+FE	0	14:02:04.595	Experts	expert Crypto_VBO_EA (ETHUSD,H1) loaded successfully
+DL	0	14:02:06.637	Network	'…999': authorized on VTMarkets-Demo through AS02 (ping: 274.92 ms, build 6063)
+JI	0	14:03:35.664	Experts	expert Crypto_VBO_EA (ETHUSD,H1) removed
+QQ	0	14:03:37.957	Experts	expert Crypto_VBO_EA (BTCUSD,H1) removed
+CI	0	14:05:25.418	Terminal	exit with code 0
+PH	0	14:05:25.431	Network	'…999': disconnected from VTMarkets-Demo
+ND	0	14:05:25.729	Terminal	stopped with 0
+NG	0	14:05:25.748	Terminal	shutdown with 0
+CR	0	14:05:29.335	Terminal	MetaTrader 5 x64 build 6230 started for MetaQuotes Ltd.
+OG	0	14:05:29.338	MCP	started on 127.0.0.1:22346
+DM	0	14:05:35.492	Network	'…999': authorized on VTMarkets-Demo through AS02 (ping: 274.92 ms, build 6063)
+QH	0	14:57:38.794	Terminal	exit with code 0
+ME	0	14:57:39.238	Network	'…999': disconnected from VTMarkets-Demo
+CF	0	14:57:40.315	Terminal	stopped with 0
+PF	0	14:57:40.324	Terminal	shutdown with 0
+IL	0	14:57:58.824	Terminal	MetaTrader 5 x64 build 6230 started for MetaQuotes Ltd.
+OE	0	14:58:08.488	Network	'…999': authorized on VTMarkets-Demo through AS02 (ping: 274.92 ms, build 6063)
