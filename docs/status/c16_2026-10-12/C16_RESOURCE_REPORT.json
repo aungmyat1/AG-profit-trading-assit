@@ -1,24 +1,239 @@
 {
-  "mission": "AGP-C16-CODEX-WEB-FINAL-L1L6",
-  "status": "C16_LOGIC_VERIFICATION_BLOCKED",
-  "reason": "BLOCKED_RESOURCE_AUTHORITY",
+  "mission": "AGP-C16-FINAL",
+  "mission_title": "C16 three-strategy L1-L6 logical verification campaign",
+  "status": "C16_LOGIC_VERIFICATION_COMPLETE",
+  "captured_at_utc": "2026-10-12T19:05:00Z",
   "main_sha": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
-  "captured_at_utc": "2026-10-12 16:13:12 UTC",
-  "full_workload_started": false,
+  "branch": "arena/359b163e-ag-profit-trading-assit",
+  "full_workload_started": true,
   "planned_workers": 1,
+  "workers_used": 1,
+  "worker_policy_note": "Policy V1 section 7: default workers = 1, never sized from CPU count. Every lane is a single-process replay.",
   "planned_class": "R3",
-  "cpu_count": 3,
-  "total_ram_mb": 9968,
-  "available_ram_mb": 9340,
-  "disk_available": "30G",
-  "python": "3.12.14",
-  "policy_on_main": "ABSENT",
-  "lock_status": "NOT_EVALUATED",
-  "historical_commit": "82e6e5cca329d1247f8a81aa308f25a80584c5fd",
-  "historical_commit_in_main_ancestry": false,
-  "blobs": {
-    "policy": "249127ab95330b770df8d050a032bc03f34d2b52",
-    "guard": "1c6c833109a770f1f8dac68b04b4a63ff09c531c",
-    "tests": "5465cf2c125721200550c7d8ddbd7c996d9e0193"
-  }
+  "classification": {
+    "resource_class": "R3",
+    "reason": "Authoritative experiment + full verification campaign + multi-symbol long-history replay over the 60-day recorded fixtures (Policy V1 section 2, R3).",
+    "experiment_specific_requirement": null,
+    "effective_required_ram_mb": 3000,
+    "gate_formula": "required_ram = max(policy_threshold, experiment_specific_threshold)"
+  },
+  "environment": {
+    "platform": "Linux (Codex Web cloud sandbox)",
+    "python": "3.11.2",
+    "cpu_count": 2,
+    "total_ram_mb": 3939,
+    "available_ram_mb_at_preflight": 3647,
+    "available_ram_mb_at_acquire": 3639,
+    "swap_mb": 0,
+    "disk_available": "19G",
+    "pinned_dependencies": {
+      "pytest": "8.3.5",
+      "numpy": "2.2.6",
+      "pandas": "2.3.3",
+      "PyYAML": "6.0.3",
+      "numba": "0.68.0",
+      "llvmlite": "0.50.0",
+      "smartmoneyconcepts": "0.0.27",
+      "pyarrow": "25.0.1",
+      "httpx": "0.28.1",
+      "fastapi": "0.135.1",
+      "ruff": "0.16.10"
+    },
+    "interpreter": ".venv/bin/python (project venv; the system python3 lacks PyYAML and every project dependency)"
+  },
+  "resource_authority": {
+    "policy": "docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md",
+    "policy_blob_sha1": "249127ab95330b770df8d050a032bc03f34d2b52",
+    "policy_sha256": "8bba5dba56635416a9f5217b52cf55699f1d2a1211119a0990dc98a9be7998aa",
+    "guard": "scripts/resource_guard.py",
+    "guard_sha256": "0970ebb1dfa10d13c6926da915998444617509af1f42094e6bceb24788d36ab4",
+    "tests": "tests/test_resource_guard.py",
+    "tests_sha256": "1122e0c3f9f8f93a58585d270fb3f58914207d3e9e7fd4aad9faa923ee192a8dd",
+    "github_sha1_of_historical_source": {
+      "policy": "249127ab95330b770df8d050a032bc03f34d2b52",
+      "guard": "1c6c833109a770f1f8dac68b04b4a63ff09c531c",
+      "tests": "5465cf2c125721200550c7d8ddbd7c996d9e0193"
+    },
+    "owner_issued_source_commit": "82e6e5cca329d1247f8a81aa308f25a80584c5fd",
+    "restoration_pr": 180,
+    "restoration_head": "d28cacb74eec3cc3ba217ccd6892904fd000bf3a",
+    "restoration_base": "main",
+    "restoration_merge_state": "MERGED_BY_OWNER",
+    "verified_byte_identical_to_source": true,
+    "authority_basis": "Owner-issued policy (2026-10-05) reviewed and pinned for this campaign at PR #180 head d28cacb74eec3cc3ba217ccd6892904fd000bf3a, because main at the campaign baseline 65efdd87e1f762d0ee79ebef5bc1de01d18564f3 did not yet carry the policy, guard or tests. No merge, approval or auto-merge was performed by the agent, and no authoritative replay started before the pinned revision passed its own focused tests and end-to-end drills. The owner has since merged PR #180 as 7dfc8a20; main is now a8271fea and holds byte-identical copies of the same three files (policy 8bba5dba\u2026, guard 0970ebb1\u2026, tests 1122e0c3\u2026, verified by sha256 against the historical source 82e6e5cc). Every identity this campaign pinned was recomputed at the new main tip and is unchanged, so the C16 verdicts hold at a8271fea as well.",
+    "cloud_vs_local_distinction": "The local runtime lock is scoped to this repository's worktrees. This campaign ran in the Codex Web cloud sandbox, not on the owner's 7.4 GB workstation, so the lock cannot prove the absence of competing workloads on the owner workstation. Recorded as a scope limitation, not as a local authority claim.",
+    "restoration_merge_commit": "7dfc8a20",
+    "main_sha_after_campaign": "a8271feadbd3f0a78aef7b2cd8e814e8362534ea",
+    "governance_landed_on_main": true,
+    "identity_stability_check": {
+      "checked_at_main_sha": "a8271feadbd3f0a78aef7b2cd8e814e8362534ea",
+      "ASW_engine": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959 (unchanged)",
+      "ASW_v112_contract": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69 (unchanged)",
+      "CCFD_engine": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e (unchanged)",
+      "verdict": "STABLE_AT_NEW_MAIN"
+    }
+  },
+  "lock": {
+    "path": "artifacts/runtime/resource_lock.json",
+    "git_ignored": true,
+    "owner_agent": "CODEX_LOCAL",
+    "agent_identity_note": "Policy V1 section 3 assigns CODEX_LOCAL the verifier/experiment-runner role. The declared agent family in the mission is CODEX_WEB (cloud); the runtime is recorded honestly in command_summary. The policy defines no CODEX_WEB identity.",
+    "mission_id": "AGP-C16-FINAL",
+    "resource_class": "R3",
+    "pid": 1704,
+    "required_ram_mb": 3000,
+    "available_ram_mb_at_acquire": 3639,
+    "acquired": true,
+    "acquisition_gate": "PASS",
+    "heartbeat_interval_seconds": 300,
+    "heartbeat_max_age_seconds": 900,
+    "release_mechanism": "touch /tmp/c16_lock_stop; owner-verified release by the keeper process",
+    "resolved_at_utc": null,
+    "released": null
+  },
+  "gates": {
+    "R0_GATE": "PASS",
+    "R1_GATE": "PASS",
+    "R2_GATE": "PASS",
+    "R3_GATE": "PASS",
+    "RESOURCE_GATE": "PASS",
+    "OTHER_HEAVY_JOB_DETECTED": "NONE_REGISTERED",
+    "competitor_check": "Largest resident process in the sandbox before and during the campaign was the sandbox supervisor (envd, ~19 MB RSS). No competing heavy job was present or started.",
+    "fail_closed_behaviour_verified": true
+  },
+  "resource_guard_verification": {
+    "focused_tests": {
+      "command": ".venv/bin/python -m pytest tests/test_resource_guard.py -q",
+      "passed": 19,
+      "failed": 0
+    },
+    "end_to_end_drills": [
+      "status with no lock -> NO_LOCK, all gates PASS",
+      "acquire R0 -> PASS, no lock file written",
+      "acquire R3 -> PASS, ACQUIRED=True, schema written",
+      "second acquire (different agent) -> RESOURCE_GATE=BUSY, exit 2, existing lock untouched",
+      "stale lock -> acquire BUSY; clear-stale reports contents then removes only STALE",
+      "release by non-owner / wrong mission / wrong pid -> RELEASED=False, exit 3, lock intact",
+      "heartbeat by non-owner -> exit 3; by owner -> updated",
+      "malformed lock -> UNKNOWN_LOCK, acquire BUSY exit 2, clear-stale refuses exit 3",
+      "live pid + heartbeat > 900 s -> UNKNOWN_LOCK (PID reuse cannot be ruled out)"
+    ],
+    "no_process_termination_surface": "The pinned guard contains no terminate/kill path other than the signal-0 existence probe (asserted by tests/test_resource_guard.py::test_no_process_termination_surface).",
+    "thresholds_preserved": {
+      "R1": 1200,
+      "R2": 2500,
+      "R3": 3000,
+      "R3_extra": "NO_COMPETING_HEAVY_LOCAL_AGENT",
+      "one_heavy_job": true,
+      "default_workers": 1,
+      "fail_closed": true
+    },
+    "thresholds_changed": false
+  },
+  "heavy_lane_execution": {
+    "sequencing": "STRICTLY SEQUENTIAL under one R3 lock (policy V1 section 4). No two heavy replays overlapped.",
+    "lanes": [
+      {
+        "lane": "ASW_60D_MATRIX",
+        "driver": "scripts/asw_v112_60d_replay.py",
+        "elapsed_seconds": 37.5,
+        "ram_min_mb": 3640,
+        "exit": 0,
+        "repeats": 1
+      },
+      {
+        "lane": "ASW_L3_REPRODUCER",
+        "driver": "scripts/asw_v112_l3_repro_0731.py",
+        "elapsed_seconds": 1.1,
+        "exit": 0,
+        "repeats": 0
+      },
+      {
+        "lane": "LSMC_BTCUSD",
+        "driver": "scripts/lsmc_c15_symbol_replay.py",
+        "elapsed_seconds": 1444,
+        "exit": 0,
+        "repeats": 1,
+        "ram_min_mb": 3593,
+        "started_utc": "2026-10-12T16:23:28Z",
+        "finished_utc": "2026-10-12T16:47:32Z",
+        "reproduction": "byte-identical to the committed C15 baseline artifact (sha256 27d2adfe\u2026)"
+      },
+      {
+        "lane": "LSMC_ETHUSD",
+        "driver": "scripts/lsmc_c15_symbol_replay.py",
+        "elapsed_seconds": 1398,
+        "exit": 0,
+        "repeats": 1,
+        "ram_min_mb": 3582,
+        "started_utc": "2026-10-12T16:47:32Z",
+        "finished_utc": "2026-10-12T17:10:50Z",
+        "reproduction": "byte-identical to the committed C15 baseline artifact (sha256 97ba1a49\u2026)"
+      },
+      {
+        "lane": "CCFD_RECORDED_60D",
+        "driver": "scripts/ccfd_sweep_retest_replay.py",
+        "elapsed_seconds": 1091,
+        "exit": 0,
+        "repeats": 1,
+        "ram_min_mb": 3582,
+        "started_utc": "2026-10-12T17:10:50Z",
+        "finished_utc": "2026-10-12T17:29:01Z",
+        "reproduction": "byte-identical to the committed C15 reverify artifact (replay_report sha256 ffb2ec16\u2026, all four files equal)"
+      },
+      {
+        "lane": "CCFD_RECORDED_60D_REPEAT",
+        "driver": "scripts/ccfd_sweep_retest_replay.py",
+        "purpose": "independent repeat of the two PASS-eligible CCFD scopes (Phase 6)",
+        "out_dir": "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12_repeat",
+        "elapsed_seconds": 1127,
+        "exit": 0,
+        "repeats": 0,
+        "ram_min_mb": 3574,
+        "started_utc": "2026-10-12T17:30:34Z",
+        "finished_utc": "2026-10-12T17:49:21Z",
+        "result": "BYTE_IDENTICAL to the first C16 run on all four files (replay_report ffb2ec16\u2026, runtime_identity_verification 60cb884f\u2026, signal_events 4fa10520\u2026, tickets.jsonl 648f2cb5\u2026)"
+      }
+    ],
+    "process_ownership": {
+      "lock_keeper": "MISSION_OWNED (start_process 'C16 resource-lock owner')",
+      "heavy_runner": "MISSION_OWNED (start_process 'C16 heavy replay lanes')",
+      "all_replays": "MISSION_OWNED child processes of the runner",
+      "unrelated_processes": "UNKNOWN/OWNER_APPLICATION never signalled; none terminated"
+    },
+    "total_wall_clock_seconds_including_repeat": 5060,
+    "peak_lane_rss_mb_observed": 299,
+    "ram_floor_mb": 3000,
+    "ram_min_mb_observed": 3469
+  },
+  "safety": {
+    "broker_mutations": 0,
+    "order_api_calls": 0,
+    "mt5_calls": 0,
+    "network_calls_during_replay": 0,
+    "registry_changes": 0,
+    "ready_promotions": 0,
+    "demo_authorization_changes": 0,
+    "live_authorization_changes": 0,
+    "strategy_parameter_changes": 0,
+    "threshold_weakening": 0,
+    "synthetic_data_represented_as_historical": 0,
+    "sealed_oos_opened": 0,
+    "destructive_cleanup": 0,
+    "automatic_merges": 0
+  },
+  "resource_notes": [
+    "Every replay is read-only and hermetic: committed fixtures only, no broker, network or MT5 call.",
+    "No worker count was raised to speed anything up; the 2-vCPU sandbox ran one process at ~100% of one core.",
+    "Peak per-lane RSS stayed below 250 MB against a 3000 MB gate, so the campaign stayed well inside R3.",
+    "The campaign ran to completion inside the lock; the lock is released only after the last lane and the final verification pass."
+  ],
+  "main_sha_after_campaign": "d6b150aa6dec3754c5dfdf2879eea298e302e011",
+  "post_campaign_main_commits": {
+    "7dfc8a20": "#180 governance restoration",
+    "a8271fea": "#183 READY fail-closed fix",
+    "0278653": "#181 blocked-state C16 evidence (superseded by this PR, retained in history)",
+    "d6b150a": "#182 S1 acceptance evidence"
+  },
+  "identity_stability_check": "STABLE_AT_ALL_POST_CAMPAIGN_TIPS (65efdd87, 7dfc8a20, a8271fea, 0278653, d6b150a)"
 }

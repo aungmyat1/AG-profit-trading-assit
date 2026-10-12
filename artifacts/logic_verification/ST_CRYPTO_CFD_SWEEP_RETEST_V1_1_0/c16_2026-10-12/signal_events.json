@@ -1,0 +1,207 @@
+{
+  "BTCUSD": {
+    "cuts_checked": 72,
+    "definition": "no signal event at or before t changes when bars after t are added",
+    "event_log_mismatches": 0,
+    "events": 4,
+    "events_by_type": {
+      "EMIT": 2,
+      "EXPIRE": 2
+    },
+    "expiry_rule": "SIGNAL_STALE once now > retest candle open + 5 min + 15 min (manual_ticket valid_until)",
+    "log": [
+      {
+        "bar_close_utc": "2026-08-27T13:50:00+00:00",
+        "direction": "SHORT",
+        "event_id": "9a71ec395de5e1ef05df58d41b18b96f3c2916a32c3bd9563b54bcf22a126fe8",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-08-27T13:45:00+00:00",
+        "seq": 0,
+        "signal_id": "50d2257fdb5033b9",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-08-27T14:10:00+00:00",
+        "direction": "SHORT",
+        "event_id": "0b9557029c25121a969c7a30cc98739bf952468e52b36d5350c549bac2a9c865",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-08-27T13:45:00+00:00",
+        "seq": 1,
+        "signal_id": "50d2257fdb5033b9",
+        "type": "EXPIRE"
+      },
+      {
+        "bar_close_utc": "2026-10-09T18:45:00+00:00",
+        "direction": "SHORT",
+        "event_id": "db3c2639c899af40e1bc70952cfbd4515f56fdc344be19af7e34a34893a7da90",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-10-09T18:40:00+00:00",
+        "seq": 2,
+        "signal_id": "7fb1737ff995efce",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-10-09T19:05:00+00:00",
+        "direction": "SHORT",
+        "event_id": "56cb57cded0b3651193331ce683852b77d14260178326b8ead15ad15a38edb08",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-10-09T18:40:00+00:00",
+        "seq": 3,
+        "signal_id": "7fb1737ff995efce",
+        "type": "EXPIRE"
+      }
+    ],
+    "mismatch_detail": [],
+    "mismatches_by_day": {},
+    "mismatches_by_type": {},
+    "reissues": {
+      "expired": 0,
+      "fresh": 0,
+      "total": 0
+    },
+    "source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
+    "verdict": "PASS"
+  },
+  "ETHUSD": {
+    "cuts_checked": 93,
+    "definition": "no signal event at or before t changes when bars after t are added",
+    "event_log_mismatches": 0,
+    "events": 11,
+    "events_by_type": {
+      "EMIT": 5,
+      "EXPIRE": 5,
+      "REISSUE": 1
+    },
+    "expiry_rule": "SIGNAL_STALE once now > retest candle open + 5 min + 15 min (manual_ticket valid_until)",
+    "log": [
+      {
+        "bar_close_utc": "2026-08-13T03:25:00+00:00",
+        "direction": "LONG",
+        "event_id": "a9f5ce1a454f52143e9531181bea42d89279e6dbfe8fc3e8cb85f732aafef36e",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-08-13T03:20:00+00:00",
+        "seq": 0,
+        "signal_id": "26abe1465af3f3c2",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-08-13T03:45:00+00:00",
+        "direction": "LONG",
+        "event_id": "a4f9415b30539a363fbb38322e3356bdebb98bf2d903805a9df175605340838a",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-08-13T03:20:00+00:00",
+        "seq": 1,
+        "signal_id": "26abe1465af3f3c2",
+        "type": "EXPIRE"
+      },
+      {
+        "bar_close_utc": "2026-08-28T05:55:00+00:00",
+        "direction": "LONG",
+        "event_id": "4d26221b3a101cbb67b55a926c0fa108f99d8f7cd122d36b6cb7daf00bacbc52",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-08-28T05:50:00+00:00",
+        "seq": 2,
+        "signal_id": "4ec0da54c299fcf1",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-08-28T06:15:00+00:00",
+        "direction": "LONG",
+        "event_id": "25c46e817900b219023a5d4d6a2cb6cece6c79f89b120028e72cf996af4454de",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-08-28T05:50:00+00:00",
+        "seq": 3,
+        "signal_id": "4ec0da54c299fcf1",
+        "type": "EXPIRE"
+      },
+      {
+        "bar_close_utc": "2026-09-06T07:25:00+00:00",
+        "direction": "SHORT",
+        "event_id": "61f55b0ae3ad8760f51e73feee16d798c95d5f10757384843fcc726461fec537",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-09-06T07:20:00+00:00",
+        "seq": 4,
+        "signal_id": "9807c2d2e5edf864",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-09-06T07:45:00+00:00",
+        "direction": "SHORT",
+        "event_id": "328a50dd0a16a50fcb7aef076d52f1c7a05db1a24bde1b35019cb56203e1fcf9",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-09-06T07:20:00+00:00",
+        "seq": 5,
+        "signal_id": "9807c2d2e5edf864",
+        "type": "EXPIRE"
+      },
+      {
+        "bar_close_utc": "2026-09-09T11:00:00+00:00",
+        "direction": "SHORT",
+        "event_id": "f51f4bcd615dc3cee6c9742e79e56b3bb403dfd44468a92d5a167bfab9c5252e",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-09-09T10:55:00+00:00",
+        "seq": 6,
+        "signal_id": "0e2205dc979c0540",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-09-09T11:20:00+00:00",
+        "direction": "SHORT",
+        "event_id": "81122553dca11e559867e78f69b372d94f833b25549965f63e9942a515dfac3d",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-09-09T10:55:00+00:00",
+        "seq": 7,
+        "signal_id": "0e2205dc979c0540",
+        "type": "EXPIRE"
+      },
+      {
+        "bar_close_utc": "2026-09-09T20:00:00+00:00",
+        "direction": "SHORT",
+        "event_id": "47368854f295ea5beaec4a46d4eb35e93f16c1b30cef34ba6240a9620d5eaf3e",
+        "freshness": "EXPIRED",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-09-09T10:55:00+00:00",
+        "seq": 8,
+        "signal_id": "0e2205dc979c0540",
+        "type": "REISSUE"
+      },
+      {
+        "bar_close_utc": "2026-10-05T18:10:00+00:00",
+        "direction": "LONG",
+        "event_id": "7b7d9bee2abcb1e49566ebf01651f24af1bc53dd57e9f396536d55f75bee36b9",
+        "freshness": "FRESH",
+        "reason": "ENTRY_VALID",
+        "retest_candle_time_utc": "2026-10-05T18:05:00+00:00",
+        "seq": 9,
+        "signal_id": "60da3072a5dfc138",
+        "type": "EMIT"
+      },
+      {
+        "bar_close_utc": "2026-10-05T18:30:00+00:00",
+        "direction": "LONG",
+        "event_id": "dd256afef378c8a1f98aa690bfea6c752bbe41ede03bb9dcb14afb6f453ec152",
+        "reason": "SIGNAL_STALE",
+        "retest_candle_time_utc": "2026-10-05T18:05:00+00:00",
+        "seq": 10,
+        "signal_id": "60da3072a5dfc138",
+        "type": "EXPIRE"
+      }
+    ],
+    "mismatch_detail": [],
+    "mismatches_by_day": {},
+    "mismatches_by_type": {},
+    "reissues": {
+      "expired": 1,
+      "fresh": 0,
+      "total": 1
+    },
+    "source": "TEMP_INLINE event-log check (AGP-ORACLE not merged)",
+    "verdict": "PASS"
+  }
+}

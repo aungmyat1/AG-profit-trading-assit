@@ -1,0 +1,15 @@
+{
+  "authority": "identity integrity only; does not change runtime binding or registry",
+  "candidate_runtime_binding": "NOT_ADMITTED_RESEARCH_ONLY",
+  "candidate_runtime_engine_hash": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e",
+  "candidate_strategy_version": "1.1.0",
+  "contract_hash_declared": "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7",
+  "contract_hash_match": true,
+  "contract_hash_recomputed": "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7",
+  "manifest_sha256": "b2a5b8ec8ade615a82527dc72d223fb140322fd614aa220550918955628b86a7",
+  "runtime_engine_hash": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e",
+  "runtime_engine_matches_candidate_identity": true,
+  "runtime_loaded_strategy_version": "1.0.0",
+  "schema": "C15_RUNTIME_IDENTITY_CHECK_V1",
+  "strategy": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0"
+}

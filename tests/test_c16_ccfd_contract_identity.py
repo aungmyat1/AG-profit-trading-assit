@@ -1,0 +1,300 @@
+"""C16 root-cause tests for the ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0 contract-hash discrepancy.
+
+C15 reported that the canonical frozen contract hash recomputed by the replay
+(`ac116e0a…`) "does not match the `9a1f6759…` value requested in the original PR
+handoff". These tests prove, from committed inputs only, that:
+
+1. the canonical identity is well defined and reproducible — identical contract content
+   always produces the expected canonical identity (the mission's required proof);
+2. the declared `freeze.contract_hash` equals that canonical identity, so the contract is
+   self-consistent;
+3. the identity is content-sensitive: a rule change always changes it;
+4. `9a1f6759…` is not reachable from *this* contract under any serialization variant, because
+   it belongs to an earlier revision: it is the raw-bytes sha256 of the contract as it stood
+   before PR #162 added the `freeze` block, which is also the metric the replay driver reports as
+   `contract_sha256`. Its provenance is therefore fully explained, and it is still never a live
+   identity;
+5. the one real (documentation-only) divergence found: `freeze.hash_method` says the
+   self-reference field is *removed*, while the implementation *blanks* it.
+
+Nothing here changes a rule, threshold, contract or authority. Read-only.
+"""
+from __future__ import annotations
+
+import copy
+import hashlib
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+import scripts.ccfd_sweep_retest_replay as R  # noqa: E402
+
+CONTRACT = ROOT / "strategies" / "ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml"
+
+# The canonical identity C15 recomputed and this mission re-verified.
+CANONICAL = "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7"
+# The value C15 could not resolve. It is NOT a stray citation: it is the raw-bytes sha256 of the
+# contract revision that predates PR #162 (`559fa9e`), which added the `freeze` block.
+UNRESOLVED_HANDOFF_PREFIX = "9a1f6759"
+UNRESOLVED_HANDOFF = (
+    "9a1f6759d35cbb50fbb89dd41899f4d970b0cece6df5a40e682698a590d05968")
+# The same raw-file metric over the current (post-#162) revision, i.e. what C16 records.
+CURRENT_RAW_PREFIX = "6daa590b"
+# The last revision of the contract before PR #162 introduced `freeze.contract_hash`.
+PRE_FREEZE_REVISION = "89f1fa6c"  # "feat: add C15 crypto signal lifecycle verification".
+
+
+def spec() -> dict:
+    return yaml.safe_load(CONTRACT.read_text(encoding="utf-8"))
+
+
+# --------------------------------------------------------------------- 1. reproducibility
+
+
+def test_identical_content_produces_the_expected_canonical_identity():
+    """The mission's required proof: same content -> same canonical identity, every time."""
+    first = R.canonical_contract_hash(spec())
+    second = R.canonical_contract_hash(spec())
+    assert first == second == CANONICAL
+
+
+def test_canonical_identity_is_key_order_independent():
+    """sort_keys=True means a re-serialized mapping with reordered keys is the same identity."""
+    original = spec()
+    reordered = {k: original[k] for k in sorted(original, reverse=True)}
+    assert list(reordered) != list(original)
+    assert R.canonical_contract_hash(reordered) == CANONICAL
+
+
+def test_canonical_identity_is_line_ending_independent():
+    """The frozen identity is a mapping identity, not a file-bytes identity."""
+    text_lf = CONTRACT.read_text(encoding="utf-8")
+    as_crlf_text = text_lf.replace("\n", "\r\n")
+    assert R.canonical_contract_hash(yaml.safe_load(as_crlf_text)) == CANONICAL
+    # The raw file hash is a *different* quantity and must not be confused with it.
+    assert hashlib.sha256(text_lf.encode()).hexdigest() != CANONICAL
+
+
+def test_declared_freeze_hash_equals_the_canonical_identity():
+    """The contract self-reference is consistent: what it declares is what it computes."""
+    declared = spec()["research_lifecycle_contract"]["freeze"]["contract_hash"]
+    assert declared == CANONICAL == R.canonical_contract_hash(spec())
+
+
+# --------------------------------------------------------------------- 2. content sensitivity
+
+
+def test_identity_changes_when_any_rule_content_changes():
+    """A content change must move the identity, or the identity would carry no meaning."""
+    mutated = copy.deepcopy(spec())
+    mutated["liquidity_contract"]["minimum_penetration"] = "invented tolerance"
+    assert R.canonical_contract_hash(mutated) != CANONICAL
+
+    mutated2 = copy.deepcopy(spec())
+    mutated2["targets_contract"]["min_tp2_r_multiple"] = 1.6
+    assert R.canonical_contract_hash(mutated2) != CANONICAL
+
+    mutated3 = copy.deepcopy(spec())
+    mutated3["instrument_authority"]["broker_point"] = 0.1
+    assert R.canonical_contract_hash(mutated3) != CANONICAL
+
+
+def test_identity_is_stable_across_a_subprocess_with_a_different_hash_seed():
+    """No dependence on PYTHONHASHSEED or dict iteration order at run time."""
+    code = (
+        "import sys,yaml;sys.path.insert(0,%r);"
+        "import scripts.ccfd_sweep_retest_replay as R;"
+        "print(R.canonical_contract_hash(yaml.safe_load(open(%r,encoding='utf-8').read())))"
+    ) % (str(ROOT), str(CONTRACT))
+    def digest_from_subprocess(seed: str) -> str:
+        # smartmoneyconcepts prints a support banner on import, so read the last non-empty line.
+        out = subprocess.run([sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True,
+                             env={**os.environ, "PYTHONHASHSEED": seed})
+        assert out.returncode == 0, out.stderr
+        lines = [line.strip() for line in out.stdout.splitlines() if line.strip()]
+        return lines[-1]
+
+    assert digest_from_subprocess("12345") == CANONICAL
+    assert digest_from_subprocess("987654") == CANONICAL
+
+
+# --------------------------------------------------------------------- 3. the discrepancy
+
+
+def _variant_hashes() -> dict:
+    """Every serialization of this contract that could plausibly have produced a hash."""
+    base = spec()
+    blanked = copy.deepcopy(base)
+    blanked["research_lifecycle_contract"]["freeze"]["contract_hash"] = ""
+
+    removed = copy.deepcopy(base)
+    del removed["research_lifecycle_contract"]["freeze"]["contract_hash"]
+
+    dropped = copy.deepcopy(base)
+    del dropped["research_lifecycle_contract"]["freeze"]
+
+    text = CONTRACT.read_text(encoding="utf-8")
+    return {
+        "canonical_sorted_self_ref_blanked": hashlib.sha256(
+            yaml.safe_dump(blanked, sort_keys=True, allow_unicode=True).encode()).hexdigest(),
+        "sorted_self_ref_removed": hashlib.sha256(
+            yaml.safe_dump(removed, sort_keys=True, allow_unicode=True).encode()).hexdigest(),
+        "sorted_freeze_removed": hashlib.sha256(
+            yaml.safe_dump(dropped, sort_keys=True, allow_unicode=True).encode()).hexdigest(),
+        "sorted_self_ref_kept": hashlib.sha256(
+            yaml.safe_dump(base, sort_keys=True, allow_unicode=True).encode()).hexdigest(),
+        "unsorted_self_ref_blanked": hashlib.sha256(
+            yaml.safe_dump(blanked, sort_keys=False, allow_unicode=True).encode()).hexdigest(),
+        "raw_file_bytes": hashlib.sha256(text.encode()).hexdigest(),
+        "raw_file_bytes_crlf_normalised": hashlib.sha256(
+            text.replace("\r\n", "\n").encode()).hexdigest(),
+        "source_yaml_1_0_0_raw": hashlib.sha256(
+            (ROOT / "strategies" / "ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml").read_bytes()
+            .replace(b"\r\n", b"\n")).hexdigest(),
+    }
+
+
+def test_no_documented_serialization_variant_reaches_the_unresolved_handoff_value():
+    """Root cause: `9a1f6759…` is not derivable from this contract by any tested method."""
+    variants = _variant_hashes()
+    assert not any(h.startswith(UNRESOLVED_HANDOFF_PREFIX) for h in variants.values()), variants
+    # And the documented canonical method reproduces exactly one of them.
+    assert variants["canonical_sorted_self_ref_blanked"] == CANONICAL
+
+    serializations = {k: v for k, v in variants.items() if k != "raw_file_bytes_crlf_normalised"}
+    assert len(set(serializations.values())) == len(serializations), serializations
+
+    # The raw-file identity is a *different kind* of identity from the mapping identity. On an
+    # LF-committed file the two raw variants coincide by construction; neither is canonical.
+    assert variants["raw_file_bytes"] == variants["raw_file_bytes_crlf_normalised"]
+    assert variants["raw_file_bytes"] != CANONICAL
+
+
+def test_handoff_value_is_the_raw_hash_of_the_pre_162_contract_revision():
+    """Where `9a1f6759…` actually comes from, checked against the historical blob.
+
+    C15 read it as an unreproducible handoff citation. It is reproducible: it is the sha256 of
+    the contract's *raw bytes* as they stood before PR #162 added the `freeze` block, i.e. the
+    metric the replay driver records in its own `contract_sha256` field. It cannot be reproduced
+    against today's file because the file changed — not because the number is meaningless.
+    """
+    probe = subprocess.run(["git", "cat-file", "-e", f"{PRE_FREEZE_REVISION}^{{commit}}"],
+                           cwd=ROOT, capture_output=True)
+    if probe.returncode != 0:  # pragma: no cover - checkout without that ref
+        pytest.skip(f"{PRE_FREEZE_REVISION} not present in this checkout")
+    blob = subprocess.run(
+        ["git", "show", f"{PRE_FREEZE_REVISION}:strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml"],
+        cwd=ROOT, capture_output=True)
+    assert blob.returncode == 0
+    assert hashlib.sha256(blob.stdout).hexdigest() == UNRESOLVED_HANDOFF
+    # and the current file is a different revision with a different raw hash
+    assert hashlib.sha256(CONTRACT.read_bytes()).hexdigest() != UNRESOLVED_HANDOFF
+    # The replay driver's own identity for the 1.1.0 candidate is exactly this metric: raw bytes
+    # of C15_CONTRACT_YAML, CRLF-normalized — NOT the canonical sorted mapping hash.
+    src = (ROOT / "scripts" / "ccfd_sweep_retest_replay.py").read_text(encoding="utf-8")
+    assert 'hashlib.sha256(contract_path.read_bytes().replace(b"\\r\\n", b"\\n")).hexdigest()' in src
+    assert 'hashlib.sha256((ROOT / contract_path).read_bytes()).hexdigest()' in src
+    # ... and that metric over the *current* file is what the C16 artifacts record.
+    current_raw = hashlib.sha256(CONTRACT.read_bytes()).hexdigest()
+    assert current_raw == R.canonical_contract_hash(spec()) or current_raw != UNRESOLVED_HANDOFF
+    assert current_raw.startswith(CURRENT_RAW_PREFIX)
+
+
+def test_handoff_value_never_reaches_a_live_surface_on_the_authoritative_lines():
+    """The value may be *reported* by status records; it must never be a live identity.
+
+    Scanned over the authoritative lines only (`origin/main` and this commit). A scan over every
+    fetched ref is not reproducible — it depends on which branches a clone has — and it is also
+    not the invariant that matters: the frozen contract, the engine, the registry, the config and
+    the emitted artifacts must never carry it.
+    """
+    allowed_prefixes = ("docs/status/c16_2026-10-12/",)
+    allowed = {
+        "docs/status/AGP_C15_CRYPTO_60D_RESEARCH_STATUS_2026-10-11.md",
+        "docs/status/AGP_C15_THREE_LANE_RERUN_2026-10-12.md",
+        "tests/test_c16_ccfd_contract_identity.py",
+    }
+    forbidden_roots = ("strategies/", "src/", "config/", "artifacts/", "tests/fixtures/",
+                       "scripts/")
+    revisions = [r for r in ("origin/main", "HEAD")
+                 if subprocess.run(["git", "rev-parse", "--verify", "--quiet", r],
+                                   cwd=ROOT, capture_output=True).returncode == 0]
+    assert revisions, "no authoritative revision available to scan"
+    out = subprocess.run(["git", "log", "--format=%H", "-S", UNRESOLVED_HANDOFF_PREFIX,
+                          *revisions], cwd=ROOT, capture_output=True, text=True)
+    assert out.returncode == 0
+    commits = [line for line in out.stdout.split() if line]
+    assert commits, "the C15 records that report the value are expected on the authoritative lines"
+    for sha in commits:
+        show = subprocess.run(["git", "grep", "-l", UNRESOLVED_HANDOFF_PREFIX, sha],
+                              cwd=ROOT, capture_output=True, text=True)
+        carriers = {line.split(":", 1)[1] for line in show.stdout.splitlines() if ":" in line}
+        assert carriers, f"{sha}: commit matched the value but carried it nowhere"
+        unallowed = [c for c in carriers
+                     if c not in allowed and not c.startswith(allowed_prefixes)]
+        assert not unallowed, f"{sha}: {sorted(unallowed)!r}"
+        assert not [c for c in carriers if c.startswith(forbidden_roots)], f"{sha}: {sorted(carriers)!r}"
+
+    # And in the live tree it is absent from every strategy/engine/registry/artifact surface.
+    probe = subprocess.run(["git", "grep", "-l", UNRESOLVED_HANDOFF_PREFIX, "--",
+                            "strategies", "src", "config", "artifacts", "tests/fixtures", "scripts"],
+                           cwd=ROOT, capture_output=True, text=True)
+    assert probe.stdout.strip() == "", probe.stdout
+
+
+def test_c15_evidence_files_agree_with_the_canonical_identity():
+    """The committed replay + runtime-identity artifacts carry the same canonical value."""
+    base = ROOT / "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0"
+    reports = sorted(base.glob("*/replay_report.json"))
+    assert reports, "no committed CCFD replay report found"
+    for report in reports:
+        data = json.loads(report.read_text(encoding="utf-8"))
+        assert data["contract_hash"] == CANONICAL, report
+
+        riv = json.loads((report.parent / "runtime_identity_verification.json").read_text(encoding="utf-8"))
+        assert riv["contract_hash_declared"] == CANONICAL
+        assert riv["contract_hash_recomputed"] == CANONICAL
+        assert riv["contract_hash_match"] is True
+        assert data["runtime_identity_verification"]["contract_hash_recomputed"] == CANONICAL
+
+        # DEFECT D-CCFD-2 (documented, unresolved at C16): one artifact carries the mapping
+        # identity and the raw-file identity side by side under the same field name
+        # `contract_hash`. Both are legitimate; naming them identically is what makes the
+        # identity ambiguous to a reader comparing hashes by hand.
+        raw_file = hashlib.sha256(CONTRACT.read_text(encoding="utf-8").encode()).hexdigest()
+        for sym in ("BTCUSD", "ETHUSD"):
+            assert data["logic_verification"][sym]["logic_identity"]["contract_hash"] == raw_file
+        assert raw_file != data["contract_hash"]
+
+
+# --------------------------------------------------------------------- 4. the one real defect
+
+
+def test_hash_method_text_diverges_from_the_implementation():
+    """DOCUMENTED DEFECT D-CCFD-1 (documentation only; no rule and no hash value changes).
+
+    `freeze.hash_method` says the self-reference is *removed* before serialization; the
+    implementation blanks it to "". The two are not equivalent (removing a key changes the
+    mapping; blanking it keeps the key). The declared *value* follows the implementation,
+    so the contract is self-consistent — but the prose is wrong and is the plausible origin
+    of a competing hand-computed hash.
+    """
+    declared_method = spec()["research_lifecycle_contract"]["freeze"]["hash_method"]
+    assert "after removing freeze.contract_hash" in declared_method
+    blanked = R.canonical_contract_hash(spec())
+
+    removed_spec = copy.deepcopy(spec())
+    del removed_spec["research_lifecycle_contract"]["freeze"]["contract_hash"]
+    removed = hashlib.sha256(
+        yaml.safe_dump(removed_spec, sort_keys=True, allow_unicode=True).encode()).hexdigest()
+
+    assert blanked == CANONICAL                    # implementation + declared value agree
+    assert removed != blanked                      # literal reading of the prose disagrees

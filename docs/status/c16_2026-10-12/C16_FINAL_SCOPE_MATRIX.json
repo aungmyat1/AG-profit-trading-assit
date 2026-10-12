@@ -1,11 +1,2291 @@
 {
-  "mission": "AGP-C16-CODEX-WEB-FINAL-L1L6",
-  "status": "C16_LOGIC_VERIFICATION_BLOCKED",
-  "reason": "BLOCKED_RESOURCE_AUTHORITY",
-  "main_sha": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
-  "captured_at_utc": "2026-10-12 16:13:12 UTC",
-  "matrix_complete": false,
-  "scopes": [],
-  "all_later_gates": "NOT_EVALUATED",
-  "pass_claims": 0
+  "mission": "AGP-C16-FINAL",
+  "status": "C16_LOGIC_VERIFICATION_COMPLETE",
+  "pending_lanes": [],
+  "generated_at_utc": "2026-10-12T17:33:13Z",
+  "repository": {
+    "main_sha": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
+    "verification_code_sha": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
+    "session_branch": "arena/359b163e-ag-profit-trading-assit"
+  },
+  "governance": {
+    "policy_authority_sha256": "8bba5dba56635416a9f5217b52cf55699f1d2a1211119a0990dc98a9be7998aa",
+    "guard_sha256": "0970ebb1dfa10d13c6926da915998444617509af1f42094e6bceb24788d36ab4",
+    "tests_sha256": "1122e0c3f9f8f93a58585d270fb3f58914207d3e9e7fd4aad9faa923ee192a8dd",
+    "restoration_pr": 180,
+    "restoration_status": "MERGED BY THE OWNER as commit 7dfc8a20 after the campaign began; the agent pinned the byte-identical historical revision and never merged or approved anything",
+    "restoration_head_at_review": "d28cacb74eec3cc3ba217ccd6892904fd000bf3a",
+    "governance_merge_commit": "7dfc8a20",
+    "main_sha_at_campaign": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
+    "main_sha_after_campaign": "a8271feadbd3f0a78aef7b2cd8e814e8362534ea",
+    "policy_bytes_on_main_now": true,
+    "identities_unchanged_at_new_main": true,
+    "resource_class": "R3",
+    "resource_gate": "PASS",
+    "competing_heavy_agent": false,
+    "workers": 1
+  },
+  "scope_definitions": {
+    "ASW": "instruments[] (5) x session_pairs[] (2) = 10 declared scopes; 8 replayable",
+    "LSMC": "instruments[] (6) x single lane = 6 declared scopes; 2 replayable",
+    "CCFD": "instruments[] (2) x direction (2) x day_type (2) = 8 declared scopes; 8 replayable",
+    "total_declared_cartesian_scopes": 24
+  },
+  "verdict_vocabulary": {
+    "LOGIC_VERIFIED": "every applicable L1-L6 gate PASS on authoritative data",
+    "NOT_VERIFIED": "evidence exists but at least one gate is not PASS (incl. thin coverage)",
+    "INSUFFICIENT": "no authoritative dataset exists; the scope cannot be replayed"
+  },
+  "post_campaign_main_commits": {
+    "7dfc8a20": "PR #180 merge: governance policy, guard, tests (the bytes this campaign pinned)",
+    "a8271fea": "PR #183 'fix(s1): fail closed on malformed READY owner status and prepare scope tests' \u2014 touches src/v1_tickets/ready_authority.py, docs and one new test. Not part of any engine identity list, so no C16 identity moved; it tightens the READY authorization path, which remains NOT_READY for all three families.",
+    "0278653": "PR #181 merge: the five C16 deliverables in their BLOCKED state (scopes: [], 0 pass claims). Superseded by this PR's populated deliverables as an ordinary reviewable diff; the blocked record stays in main history.",
+    "d6b150a": "PR #182 merge: S1 acceptance evidence, docs only.",
+    "identity_impact": "NONE (recomputed at 7dfc8a20, a8271fea, 0278653 and d6b150a: ASW engine 243c4ff1\u2026, ASW v1.1.2 contract 941dec55\u2026, CCFD engine 0a3886eb\u2026 unchanged)",
+    "contract_or_registry_impact": "NONE (strategies/ frozen contracts and config/ are untouched by #180, #181, #182 and #183)"
+  },
+  "revision_recording": {
+    "ASW": "the artifact self-records verification_code_sha = 65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
+    "LSMC": "the driver emits no git-revision field; revision identity is carried by the C16 output path and this report",
+    "CCFD": "the driver emits no git-revision field; it self-records the contract hash, the runtime engine hash and the dataset manifest, which is what it binds to",
+    "note": "Where an artifact does not self-record a revision, the run is bound instead by the artifact path, the fixture hashes it does record, and this report."
+  },
+  "matrix_complete": true,
+  "totals": {
+    "declared_scopes": 24,
+    "logic_verified": 5,
+    "not_verified": 13,
+    "insufficient": 6
+  },
+  "families": {
+    "ST_ASIAN_SWEEP_5R_V1@1.1.2": {
+      "total_scopes_declared": 10,
+      "logic_verified": 3,
+      "not_verified": 5,
+      "insufficient": 2,
+      "family_verdict": "PARTIALLY_LOGIC_VERIFIED",
+      "distinguish": {
+        "logical_verification": "PARTIALLY_LOGIC_VERIFIED",
+        "economic_verification": "NOT_EVALUATED / no edge claim",
+        "runtime_ready": "NOT_READY (no registry promotion)",
+        "demo_authorization": "NOT_GRANTED",
+        "live_authorization": "NOT_GRANTED"
+      }
+    },
+    "ST_LARGE_SMC_V1@1.1.0": {
+      "total_scopes_declared": 6,
+      "logic_verified": 0,
+      "not_verified": 2,
+      "insufficient": 4,
+      "family_verdict": "BLOCKED_OR_INSUFFICIENT",
+      "distinguish": {
+        "logical_verification": "BLOCKED_OR_INSUFFICIENT",
+        "economic_verification": "NOT_EVALUATED / no edge claim",
+        "runtime_ready": "NOT_READY (no registry promotion)",
+        "demo_authorization": "NOT_GRANTED",
+        "live_authorization": "NOT_GRANTED"
+      }
+    },
+    "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0": {
+      "total_scopes_declared": 8,
+      "logic_verified": 2,
+      "not_verified": 6,
+      "insufficient": 0,
+      "family_verdict": "PARTIALLY_LOGIC_VERIFIED",
+      "distinguish": {
+        "logical_verification": "PARTIALLY_LOGIC_VERIFIED",
+        "economic_verification": "NOT_EVALUATED / no edge claim",
+        "runtime_ready": "NOT_READY (no registry promotion)",
+        "demo_authorization": "NOT_GRANTED",
+        "live_authorization": "NOT_GRANTED"
+      }
+    }
+  },
+  "identity_change_attribution": {
+    "finding": "The C15 original CCFD evidence (date 2026-10-11) records runtime_engine_hash a089001c\u2026, while the C15 reverify (2026-10-12) and C16 both record 0a3886eb\u2026. Both are legitimate historical values.",
+    "root_cause": "commit 1eb4cb57 'OD1012-PIN-LAND \u2026 (#168)' changed config/v1_tickets/crypto_cfd_ticket_policy.yaml account_login_suffix \"985\" -> \"999\" under owner decision OD1012-ACCOUNT. That config file is one of the 21 files in the ST_CRYPTO_CFD_SWEEP_RETEST_V1 engine identity list, so the identity hash moved with it.",
+    "verification": "Recomputed _sha256_text(ADAPTERS['ST_CRYPTO_CFD_SWEEP_RETEST_V1'][1]) over all 80 recent revisions: exactly one file differs between the two states \u2014 the account-pin line in that config \u2014 and no engine source file changed.",
+    "not_a_defect": true,
+    "c15_original_vs_c16_diffs": {
+      "total": 17,
+      "replay_date_argument": 1,
+      "owner_decision_OD1012_ACCOUNT": 16,
+      "unexplained": 0
+    },
+    "c16_vs_c15_reverify": "BYTE_IDENTICAL (all four output files)"
+  },
+  "authority": {
+    "demo_authorized": false,
+    "live_authorized": false,
+    "edge_verified": false,
+    "registry_changes": 0,
+    "ready_promotions": 0,
+    "note": "Logical L1-L6 verification is independent of economic-edge verification, runtime READY promotion, and demo/live authorization; it grants none of them."
+  },
+  "scopes": [
+    {
+      "scope_id": "ASW:EURUSD:ASIAN_LONDON",
+      "family": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.2",
+      "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+      "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+      "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+      "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+      "symbol": "EURUSD",
+      "directions": [
+        "LONG",
+        "SHORT"
+      ],
+      "direction_branch_counts": {
+        "SWEEP:LONG": 1,
+        "SWEEP:SHORT": 2
+      },
+      "session": "ASIAN_LONDON",
+      "sessions_evaluated": 58,
+      "dataset_identity": {
+        "path": "tests/fixtures/manual_ticket/EURUSD_M15_recorded_spread_60d.csv",
+        "sha256": "31f941f3c19f6cc797e4003e5bb14f23448ac23f77a3e19b8fcf68dce63fa1ec",
+        "provenance": "tests/fixtures/manual_ticket/EURUSD_M15_recorded_spread_60d.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "coverage": "AGP-DATA-R3 60-weekday recorded M15 file"
+      },
+      "emissions": 3,
+      "valid_entry_case_ids": [
+        "recorded:EURUSD:ASIAN_LONDON:2026-08-04",
+        "recorded:EURUSD:ASIAN_LONDON:2026-08-12",
+        "recorded:EURUSD:ASIAN_LONDON:2026-08-31"
+      ],
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "FAIL",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "l5_detail": {
+        "block_reasons": [],
+        "cost_block_R": 0.25,
+        "cost_warn_R": 0.1,
+        "d2_source": "config/owner_ticket.yaml",
+        "risk_pct": 0.5,
+        "verdict": "WARN",
+        "warn_reasons": [
+          "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+        ]
+      },
+      "declared_scope_verdicts": {
+        "EURUSD": "NOT_VERIFIED"
+      },
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "REPRODUCED_CAUSAL_FAILURE",
+        "gate_failures": [
+          "L3"
+        ],
+        "l3_revised_case_ids": [
+          "recorded:EURUSD:ASIAN_LONDON:2026-07-31"
+        ],
+        "detail": "an emission inside the scope violates the L3 causality contract; reproduced from recorded bars"
+      },
+      "evidence": [
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run1.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run2.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/l3_repro_eurusd_asian_london_2026-07-31_c16.json"
+      ]
+    },
+    {
+      "scope_id": "ASW:EURUSD:LONDON_NEWYORK",
+      "family": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.2",
+      "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+      "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+      "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+      "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+      "symbol": "EURUSD",
+      "directions": [
+        "LONG",
+        "SHORT"
+      ],
+      "direction_branch_counts": {
+        "SWEEP:LONG": 1,
+        "SWEEP:SHORT": 4
+      },
+      "session": "LONDON_NEWYORK",
+      "sessions_evaluated": 58,
+      "dataset_identity": {
+        "path": "tests/fixtures/manual_ticket/EURUSD_M15_recorded_spread_60d.csv",
+        "sha256": "31f941f3c19f6cc797e4003e5bb14f23448ac23f77a3e19b8fcf68dce63fa1ec",
+        "provenance": "tests/fixtures/manual_ticket/EURUSD_M15_recorded_spread_60d.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "coverage": "AGP-DATA-R3 60-weekday recorded M15 file"
+      },
+      "emissions": 5,
+      "valid_entry_case_ids": [
+        "recorded:EURUSD:LONDON_NEWYORK:2026-07-22",
+        "recorded:EURUSD:LONDON_NEWYORK:2026-08-11",
+        "recorded:EURUSD:LONDON_NEWYORK:2026-08-21",
+        "recorded:EURUSD:LONDON_NEWYORK:2026-09-02",
+        "recorded:EURUSD:LONDON_NEWYORK:2026-09-03"
+      ],
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "l5_detail": {
+        "block_reasons": [],
+        "cost_block_R": 0.25,
+        "cost_warn_R": 0.1,
+        "d2_source": "config/owner_ticket.yaml",
+        "risk_pct": 0.5,
+        "verdict": "WARN",
+        "warn_reasons": [
+          "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+        ]
+      },
+      "declared_scope_verdicts": {
+        "EURUSD": "NOT_VERIFIED"
+      },
+      "final_verdict": "LOGIC_VERIFIED",
+      "reason": null,
+      "evidence": [
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run1.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run2.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/l3_repro_eurusd_asian_london_2026-07-31_c16.json"
+      ]
+    },
+    {
+      "scope_id": "ASW:GBPUSD:ASIAN_LONDON",
+      "family": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.2",
+      "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+      "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+      "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+      "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+      "symbol": "GBPUSD",
+      "directions": [
+        "LONG",
+        "SHORT"
+      ],
+      "direction_branch_counts": {
+        "SWEEP:LONG": 5,
+        "SWEEP:SHORT": 2
+      },
+      "session": "ASIAN_LONDON",
+      "sessions_evaluated": 58,
+      "dataset_identity": {
+        "path": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_spread_60d.csv",
+        "sha256": "aeaf0ba504569f1fa8b9867f2ac8992e8b33fc143a247644e48a34be16cf2a33",
+        "provenance": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_spread_60d.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "coverage": "AGP-DATA-R3 60-weekday recorded M15 file"
+      },
+      "emissions": 7,
+      "valid_entry_case_ids": [
+        "recorded:GBPUSD:ASIAN_LONDON:2026-07-23",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-08-21",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-08-31",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-03",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-10",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-22",
+        "recorded:GBPUSD:ASIAN_LONDON:2026-09-29"
+      ],
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "l5_detail": {
+        "block_reasons": [],
+        "cost_block_R": 0.25,
+        "cost_warn_R": 0.1,
+        "d2_source": "config/owner_ticket.yaml",
+        "risk_pct": 0.5,
+        "verdict": "WARN",
+        "warn_reasons": [
+          "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+        ]
+      },
+      "declared_scope_verdicts": {
+        "EURUSD": "NOT_VERIFIED",
+        "GBPUSD": "LOGIC_VERIFIED"
+      },
+      "final_verdict": "LOGIC_VERIFIED",
+      "reason": null,
+      "evidence": [
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run1.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run2.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/l3_repro_eurusd_asian_london_2026-07-31_c16.json"
+      ]
+    },
+    {
+      "scope_id": "ASW:GBPUSD:LONDON_NEWYORK",
+      "family": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.2",
+      "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+      "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+      "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+      "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+      "symbol": "GBPUSD",
+      "directions": [
+        "LONG",
+        "SHORT"
+      ],
+      "direction_branch_counts": {
+        "SWEEP:LONG": 2,
+        "SWEEP:SHORT": 2
+      },
+      "session": "LONDON_NEWYORK",
+      "sessions_evaluated": 58,
+      "dataset_identity": {
+        "path": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_spread_60d.csv",
+        "sha256": "aeaf0ba504569f1fa8b9867f2ac8992e8b33fc143a247644e48a34be16cf2a33",
+        "provenance": "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_spread_60d.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "coverage": "AGP-DATA-R3 60-weekday recorded M15 file"
+      },
+      "emissions": 4,
+      "valid_entry_case_ids": [
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-08-18",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-08-21",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-08-25",
+        "recorded:GBPUSD:LONDON_NEWYORK:2026-09-11"
+      ],
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "l5_detail": {
+        "block_reasons": [],
+        "cost_block_R": 0.25,
+        "cost_warn_R": 0.1,
+        "d2_source": "config/owner_ticket.yaml",
+        "risk_pct": 0.5,
+        "verdict": "WARN",
+        "warn_reasons": [
+          "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+        ]
+      },
+      "declared_scope_verdicts": {
+        "EURUSD": "NOT_VERIFIED",
+        "GBPUSD": "LOGIC_VERIFIED"
+      },
+      "final_verdict": "LOGIC_VERIFIED",
+      "reason": null,
+      "evidence": [
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run1.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run2.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/l3_repro_eurusd_asian_london_2026-07-31_c16.json"
+      ]
+    },
+    {
+      "scope_id": "ASW:USDJPY:ASIAN_LONDON",
+      "family": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.2",
+      "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+      "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+      "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+      "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+      "symbol": "USDJPY",
+      "directions": [],
+      "direction_branch_counts": {},
+      "session": "ASIAN_LONDON",
+      "sessions_evaluated": 57,
+      "dataset_identity": {
+        "path": "tests/fixtures/manual_ticket/USDJPY_M15_recorded_spread_60d.csv",
+        "sha256": "bbf37c8cd04e13e424419dc3fb3a3629ec5c8cea49229e25ee662d558ebbc918",
+        "provenance": "tests/fixtures/manual_ticket/USDJPY_M15_recorded_spread_60d.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "coverage": "AGP-DATA-R3 60-weekday recorded M15 file"
+      },
+      "emissions": 0,
+      "valid_entry_case_ids": [],
+      "gates": {
+        "L1": "PASS",
+        "L2": "INSUFFICIENT",
+        "L3": "PASS",
+        "L4": "INSUFFICIENT",
+        "L5": "FAIL",
+        "L6": "PASS"
+      },
+      "l5_detail": {
+        "block_reasons": [
+          "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['USDJPY']"
+        ],
+        "cost_block_R": 0.25,
+        "cost_warn_R": 0.1,
+        "d2_source": "config/owner_ticket.yaml",
+        "risk_pct": 0.5,
+        "verdict": "BLOCK",
+        "warn_reasons": [
+          "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+        ]
+      },
+      "declared_scope_verdicts": {
+        "EURUSD": "NOT_VERIFIED",
+        "USDJPY": "NOT_VERIFIED"
+      },
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "THIN_SIGNAL_COVERAGE",
+        "gate_status": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "FAIL",
+          "L6": "PASS"
+        },
+        "detail": "no valid entry exists for this symbol x session across 57 sessions, so the entry-gate rule cells are unexercised and there is no positive example to verify",
+        "symbol_evidence": {
+          "l5_verdict": "BLOCK",
+          "block_reasons": [
+            "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['USDJPY']"
+          ],
+          "warn_reasons": [
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ]
+        }
+      },
+      "evidence": [
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run1.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run2.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/l3_repro_eurusd_asian_london_2026-07-31_c16.json"
+      ]
+    },
+    {
+      "scope_id": "ASW:USDJPY:LONDON_NEWYORK",
+      "family": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.2",
+      "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+      "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+      "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+      "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+      "symbol": "USDJPY",
+      "directions": [],
+      "direction_branch_counts": {},
+      "session": "LONDON_NEWYORK",
+      "sessions_evaluated": 57,
+      "dataset_identity": {
+        "path": "tests/fixtures/manual_ticket/USDJPY_M15_recorded_spread_60d.csv",
+        "sha256": "bbf37c8cd04e13e424419dc3fb3a3629ec5c8cea49229e25ee662d558ebbc918",
+        "provenance": "tests/fixtures/manual_ticket/USDJPY_M15_recorded_spread_60d.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "coverage": "AGP-DATA-R3 60-weekday recorded M15 file"
+      },
+      "emissions": 0,
+      "valid_entry_case_ids": [],
+      "gates": {
+        "L1": "PASS",
+        "L2": "INSUFFICIENT",
+        "L3": "PASS",
+        "L4": "INSUFFICIENT",
+        "L5": "FAIL",
+        "L6": "PASS"
+      },
+      "l5_detail": {
+        "block_reasons": [
+          "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['USDJPY']"
+        ],
+        "cost_block_R": 0.25,
+        "cost_warn_R": 0.1,
+        "d2_source": "config/owner_ticket.yaml",
+        "risk_pct": 0.5,
+        "verdict": "BLOCK",
+        "warn_reasons": [
+          "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+        ]
+      },
+      "declared_scope_verdicts": {
+        "EURUSD": "NOT_VERIFIED",
+        "USDJPY": "NOT_VERIFIED"
+      },
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "THIN_SIGNAL_COVERAGE",
+        "gate_status": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "FAIL",
+          "L6": "PASS"
+        },
+        "detail": "no valid entry exists for this symbol x session across 57 sessions, so the entry-gate rule cells are unexercised and there is no positive example to verify",
+        "symbol_evidence": {
+          "l5_verdict": "BLOCK",
+          "block_reasons": [
+            "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['USDJPY']"
+          ],
+          "warn_reasons": [
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ]
+        }
+      },
+      "evidence": [
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run1.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run2.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/l3_repro_eurusd_asian_london_2026-07-31_c16.json"
+      ]
+    },
+    {
+      "scope_id": "ASW:XAUUSD:ASIAN_LONDON",
+      "family": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.2",
+      "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+      "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+      "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+      "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+      "symbol": "XAUUSD",
+      "directions": [],
+      "direction_branch_counts": {},
+      "session": "ASIAN_LONDON",
+      "sessions_evaluated": 58,
+      "dataset_identity": {
+        "path": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded_spread_60d.csv",
+        "sha256": "ef91b43aa6823379856827f8b28b1575800950dedad2ceb71cc7562e34238fff",
+        "provenance": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded_spread_60d.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "coverage": "AGP-DATA-R3 60-weekday recorded M15 file"
+      },
+      "emissions": 0,
+      "valid_entry_case_ids": [],
+      "gates": {
+        "L1": "PASS",
+        "L2": "INSUFFICIENT",
+        "L3": "PASS",
+        "L4": "INSUFFICIENT",
+        "L5": "FAIL",
+        "L6": "PASS"
+      },
+      "l5_detail": {
+        "block_reasons": [
+          "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['XAUUSD']"
+        ],
+        "cost_block_R": 0.25,
+        "cost_warn_R": 0.1,
+        "d2_source": "config/owner_ticket.yaml",
+        "risk_pct": 0.5,
+        "verdict": "BLOCK",
+        "warn_reasons": [
+          "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+        ]
+      },
+      "declared_scope_verdicts": {
+        "EURUSD": "NOT_VERIFIED",
+        "XAUUSD": "NOT_VERIFIED"
+      },
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "THIN_SIGNAL_COVERAGE",
+        "gate_status": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "FAIL",
+          "L6": "PASS"
+        },
+        "detail": "no valid entry exists for this symbol x session across 58 sessions, so the entry-gate rule cells are unexercised and there is no positive example to verify",
+        "symbol_evidence": {
+          "l5_verdict": "BLOCK",
+          "block_reasons": [
+            "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['XAUUSD']"
+          ],
+          "warn_reasons": [
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ]
+        }
+      },
+      "evidence": [
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run1.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run2.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/l3_repro_eurusd_asian_london_2026-07-31_c16.json"
+      ]
+    },
+    {
+      "scope_id": "ASW:XAUUSD:LONDON_NEWYORK",
+      "family": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.2",
+      "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+      "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+      "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+      "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+      "symbol": "XAUUSD",
+      "directions": [],
+      "direction_branch_counts": {},
+      "session": "LONDON_NEWYORK",
+      "sessions_evaluated": 58,
+      "dataset_identity": {
+        "path": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded_spread_60d.csv",
+        "sha256": "ef91b43aa6823379856827f8b28b1575800950dedad2ceb71cc7562e34238fff",
+        "provenance": "tests/fixtures/manual_ticket/XAUUSD_M15_recorded_spread_60d.PROVENANCE.md",
+        "provenance_sha256_verified": true,
+        "coverage": "AGP-DATA-R3 60-weekday recorded M15 file"
+      },
+      "emissions": 0,
+      "valid_entry_case_ids": [],
+      "gates": {
+        "L1": "PASS",
+        "L2": "INSUFFICIENT",
+        "L3": "PASS",
+        "L4": "INSUFFICIENT",
+        "L5": "FAIL",
+        "L6": "PASS"
+      },
+      "l5_detail": {
+        "block_reasons": [
+          "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['XAUUSD']"
+        ],
+        "cost_block_R": 0.25,
+        "cost_warn_R": 0.1,
+        "d2_source": "config/owner_ticket.yaml",
+        "risk_pct": 0.5,
+        "verdict": "BLOCK",
+        "warn_reasons": [
+          "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+        ]
+      },
+      "declared_scope_verdicts": {
+        "EURUSD": "NOT_VERIFIED",
+        "XAUUSD": "NOT_VERIFIED"
+      },
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "THIN_SIGNAL_COVERAGE",
+        "gate_status": {
+          "L1": "PASS",
+          "L2": "INSUFFICIENT",
+          "L3": "PASS",
+          "L4": "INSUFFICIENT",
+          "L5": "FAIL",
+          "L6": "PASS"
+        },
+        "detail": "no valid entry exists for this symbol x session across 58 sessions, so the entry-gate rule cells are unexercised and there is no positive example to verify",
+        "symbol_evidence": {
+          "l5_verdict": "BLOCK",
+          "block_reasons": [
+            "SYMBOL_EVIDENCE_MISSING: pip size not evidenced for ['XAUUSD']"
+          ],
+          "warn_reasons": [
+            "SYMBOL_METADATA_PENDING: USDJPY, XAUUSD -> PENDING_AGP-C2-SYMMAP (not invented)"
+          ]
+        }
+      },
+      "evidence": [
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run1.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run2.json",
+        "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/l3_repro_eurusd_asian_london_2026-07-31_c16.json"
+      ]
+    },
+    {
+      "scope_id": "ASW:AUDUSD:ASIAN_LONDON",
+      "family": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.2",
+      "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+      "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+      "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+      "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+      "symbol": "AUDUSD",
+      "directions": [],
+      "session": "ASIAN_LONDON",
+      "sessions_evaluated": 0,
+      "dataset_identity": {
+        "path": null,
+        "sha256": null,
+        "coverage": "NONE"
+      },
+      "emissions": 0,
+      "gates": {
+        "L1": "INSUFFICIENT",
+        "L2": "INSUFFICIENT",
+        "L3": "INSUFFICIENT",
+        "L4": "INSUFFICIENT",
+        "L5": "INSUFFICIENT",
+        "L6": "INSUFFICIENT"
+      },
+      "final_verdict": "INSUFFICIENT",
+      "reason": {
+        "class": "NO_AUTHORITATIVE_DATASET",
+        "detail": "declared in instruments[] but the repository holds no authoritative 60-weekday recorded fixture for this symbol, so the scope cannot be replayed at all"
+      },
+      "evidence": []
+    },
+    {
+      "scope_id": "ASW:AUDUSD:LONDON_NEWYORK",
+      "family": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
+      "strategy_id": "ST_ASIAN_SWEEP_5R_V1",
+      "strategy_version": "1.1.2",
+      "contract_hash": "941dec5529f7e5008db9e5b0ae2e7417f7a95c5fe5f29752dd324bb7d4737d69",
+      "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+      "engine_hash": "243c4ff13b1aabe6a5ccdd3fad0b847f15cbfae99e1608ee1636c4d31c07e959",
+      "logic_identity": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
+      "symbol": "AUDUSD",
+      "directions": [],
+      "session": "LONDON_NEWYORK",
+      "sessions_evaluated": 0,
+      "dataset_identity": {
+        "path": null,
+        "sha256": null,
+        "coverage": "NONE"
+      },
+      "emissions": 0,
+      "gates": {
+        "L1": "INSUFFICIENT",
+        "L2": "INSUFFICIENT",
+        "L3": "INSUFFICIENT",
+        "L4": "INSUFFICIENT",
+        "L5": "INSUFFICIENT",
+        "L6": "INSUFFICIENT"
+      },
+      "final_verdict": "INSUFFICIENT",
+      "reason": {
+        "class": "NO_AUTHORITATIVE_DATASET",
+        "detail": "declared in instruments[] but the repository holds no authoritative 60-weekday recorded fixture for this symbol, so the scope cannot be replayed at all"
+      },
+      "evidence": []
+    },
+    {
+      "scope_id": "LSMC:BTCUSD",
+      "family": "ST_LARGE_SMC_V1@1.1.0",
+      "strategy_id": "ST_LARGE_SMC_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+      "contract_path": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
+      "contract_matches_registry": true,
+      "engine_hash": "88dd9f1fb970f7811b437cb3b4c7341e0d1f84320238890eab3381eb0f51b689",
+      "registry_engine_hash": "ec0b2f3dc6ed2b02df3f643b38beac1c0e88630413c74e0f55e3d8aa5f5570d4",
+      "engine_matches_registry": false,
+      "logic_identity": null,
+      "logic_identity_note": "src/v1_tickets/authority.py ADAPTERS exposes no ST_LARGE_SMC_V1 adapter, so logic_identity() cannot be computed (D-LSMC-4)",
+      "symbol": "BTCUSD",
+      "directions": [
+        "LONG",
+        "SHORT"
+      ],
+      "session": "NONE (crypto CFD, 24h observation)",
+      "sessions_evaluated": 8961,
+      "dataset_identity": {
+        "path": "tests/fixtures/ccfd_v100/recorded_60d",
+        "server": "VTMarkets-Demo",
+        "bars": {
+          "D1": 60,
+          "H1": 1412,
+          "M5": 16932
+        },
+        "first_bar_utc": "2026-08-11T00:00:00+00:00",
+        "last_bar_utc": "2026-10-09T23:55:00+00:00",
+        "sha256": {
+          "BTCUSD_d1.csv": "85110e81326dba871db5c935c5b352c53a1dc1ebf220f544ad7d295a56546559",
+          "BTCUSD_d1_meta.csv": "8ea6e7f2926c73022a94d41f994bf4da1140354aa4572e78b336463fc1715a0f",
+          "BTCUSD_h1.csv": "f1d7ba4b6abfe949288bde914969daac61657a33e0b2b832c0596d2418e63127",
+          "BTCUSD_h1_meta.csv": "e629f82611878845d5a97a98a81d5b4341df42b1b40db000ec1816016b673b3d",
+          "BTCUSD_m5.csv": "60a9b5a485d9b70ddf507e8fa27e206236fb14ed836cd20618b7b39377d505bb",
+          "BTCUSD_m5_meta.csv": "3d1b7559aa18d8566abe7896b256f7377556c4fe7c0e9a89ade39271a416d4ec"
+        },
+        "capture_report_sha256": "2d59d235ad094c219c9e74d25b5b974b0e251bd9799c283e817e459653265ef8",
+        "coverage": "VT Markets Demo recorded D1/H1/M5, host-window replay"
+      },
+      "emissions": 2040,
+      "distinct_opportunities": 90,
+      "opportunities_with_c10_stop": 0,
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      },
+      "gates_blocking_L1_L4_pass": true,
+      "stop_geometry": {
+        "status": "NOT_APPLICABLE",
+        "reason": "C10_PIP_SIZE_NOT_EVIDENCED for BTCUSD",
+        "rule_exists": true,
+        "rule_contract": "strategies/ST_LARGE_SMC_V1.yaml::stop_loss_contract",
+        "rule_id": "C10_STRUCTURAL_INVALIDATION_V1",
+        "implementation": "src/large_smc_core/c10_stop_policy.py",
+        "missing_input": "src/large_smc_watch/contract.py C10_PIP_SIZE maps only EURUSD/GBPUSD; the contract's own comment states a pip is only evidenced for 5-digit FX majors",
+        "action_taken": "REJECT_NO_STOP (fail-closed); no stop was invented"
+      },
+      "operational_rejection_reasons": {
+        "REJECT_NO_STOP": 2040
+      },
+      "operational_stop_reasons": [
+        "C10_PIP_SIZE_NOT_EVIDENCED"
+      ],
+      "operational_reasons": [
+        "REJECT_NO_STOP"
+      ],
+      "states": {
+        "operational": {
+          "DEVELOPING": 4014,
+          "IDLE": 167,
+          "NEAR_POI": 2740,
+          "REJECTED": 2040
+        },
+        "signal": {
+          "DEVELOPING": 4014,
+          "IDLE": 167,
+          "NEAR_POI": 2740,
+          "OPPORTUNITY": 2040
+        }
+      },
+      "streaming_parity": {
+        "operational": {
+          "events": 1261,
+          "prefix_cuts": [
+            1816,
+            3633,
+            5449,
+            7266,
+            9083,
+            10899,
+            12716
+          ],
+          "prefix_mismatches": 0,
+          "verdict": "PASS"
+        },
+        "signal": {
+          "events": 1350,
+          "prefix_cuts": [
+            1816,
+            3633,
+            5449,
+            7266,
+            9083,
+            10899,
+            12716
+          ],
+          "prefix_mismatches": 0,
+          "verdict": "PASS"
+        }
+      },
+      "short_d1_window": {
+        "blocking_L1_L4_pass": true,
+        "gate_status_counts": {
+          "L1": {
+            "PASS": 5572
+          },
+          "L2": {
+            "PASS": 5572
+          },
+          "L3": {
+            "PASS": 5572
+          },
+          "L4": {
+            "PASS": 5572
+          },
+          "L5": {
+            "WARN": 5572
+          },
+          "L6": {
+            "PASS": 5572
+          }
+        },
+        "operational_rejection_reasons": {
+          "REJECT_NO_STOP": 883
+        },
+        "scans": 5572,
+        "states": {
+          "operational": {
+            "DEVELOPING": 2557,
+            "IDLE": 144,
+            "NEAR_POI": 1988,
+            "REJECTED": 883
+          },
+          "signal": {
+            "DEVELOPING": 2557,
+            "IDLE": 144,
+            "NEAR_POI": 1988,
+            "OPPORTUNITY": 883
+          }
+        }
+      },
+      "delivery_mode": "ARCHIVE_ONLY",
+      "authority": "none: logic evidence only; no registry, READY, demo or live change",
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "OPERATIONAL_REJECT_NO_STOP",
+        "detail": "every OPPORTUNITY scan is operationally rejected (['REJECT_NO_STOP'], ['C10_PIP_SIZE_NOT_EVIDENCED']) because C10's pip-size input is unevidenced for BTCUSD; logical detection L1-L4/L6 passes on every scan"
+      },
+      "verdicts_reported_separately": {
+        "logical_detection": "PASS (L1/L2/L3/L4/L6 on all scans; L5 WARN on all scans)",
+        "ticket_validity": "OPERATIONALLY_REJECTED - REJECT_NO_STOP / C10_PIP_SIZE_NOT_EVIDENCED (fail-closed by design)",
+        "economic_verification": "NOT_EVALUATED (no cost model bound for this symbol)"
+      },
+      "evidence": [
+        "artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c16_2026-10-12/lsmc_btcusd_vt_recorded_60d.json"
+      ]
+    },
+    {
+      "scope_id": "LSMC:ETHUSD",
+      "family": "ST_LARGE_SMC_V1@1.1.0",
+      "strategy_id": "ST_LARGE_SMC_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+      "contract_path": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
+      "contract_matches_registry": true,
+      "engine_hash": "88dd9f1fb970f7811b437cb3b4c7341e0d1f84320238890eab3381eb0f51b689",
+      "registry_engine_hash": "ec0b2f3dc6ed2b02df3f643b38beac1c0e88630413c74e0f55e3d8aa5f5570d4",
+      "engine_matches_registry": false,
+      "logic_identity": null,
+      "logic_identity_note": "src/v1_tickets/authority.py ADAPTERS exposes no ST_LARGE_SMC_V1 adapter, so logic_identity() cannot be computed (D-LSMC-4)",
+      "symbol": "ETHUSD",
+      "directions": [
+        "LONG",
+        "SHORT"
+      ],
+      "session": "NONE (crypto CFD, 24h observation)",
+      "sessions_evaluated": 8961,
+      "dataset_identity": {
+        "path": "tests/fixtures/ccfd_v100/recorded_60d",
+        "server": "VTMarkets-Demo",
+        "bars": {
+          "D1": 60,
+          "H1": 1412,
+          "M5": 16932
+        },
+        "first_bar_utc": "2026-08-11T00:00:00+00:00",
+        "last_bar_utc": "2026-10-09T23:55:00+00:00",
+        "sha256": {
+          "ETHUSD_d1.csv": "72734a143dc2e57667beff4947f3e7607799860f87d5493d6f184ca68d071fec",
+          "ETHUSD_d1_meta.csv": "5c5f7d6655775cded5eeed8488c78c143f61d6acb51ebf9f666690c6e7238e1e",
+          "ETHUSD_h1.csv": "4159be1dd6a0c8683f4a5f142e648803158cc6485965612a22dbd80502e58aeb",
+          "ETHUSD_h1_meta.csv": "786ed5a9688fbee6293c0ab715c8a836538f23857c7d2cfa4ba63524801e1d4b",
+          "ETHUSD_m5.csv": "7ad856027947482a30e71202b6cc5118e8188cd9ef7746512fa166c064115561",
+          "ETHUSD_m5_meta.csv": "3788e8e53f857ff041ac785a87c59e8b7673ea06078afa394045ea6ff30290d4"
+        },
+        "capture_report_sha256": "2d59d235ad094c219c9e74d25b5b974b0e251bd9799c283e817e459653265ef8",
+        "coverage": "VT Markets Demo recorded D1/H1/M5, host-window replay"
+      },
+      "emissions": 848,
+      "distinct_opportunities": 71,
+      "opportunities_with_c10_stop": 0,
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "WARN",
+        "L6": "PASS"
+      },
+      "gates_blocking_L1_L4_pass": true,
+      "stop_geometry": {
+        "status": "NOT_APPLICABLE",
+        "reason": "C10_PIP_SIZE_NOT_EVIDENCED for ETHUSD",
+        "rule_exists": true,
+        "rule_contract": "strategies/ST_LARGE_SMC_V1.yaml::stop_loss_contract",
+        "rule_id": "C10_STRUCTURAL_INVALIDATION_V1",
+        "implementation": "src/large_smc_core/c10_stop_policy.py",
+        "missing_input": "src/large_smc_watch/contract.py C10_PIP_SIZE maps only EURUSD/GBPUSD; the contract's own comment states a pip is only evidenced for 5-digit FX majors",
+        "action_taken": "REJECT_NO_STOP (fail-closed); no stop was invented"
+      },
+      "operational_rejection_reasons": {
+        "REJECT_NO_STOP": 848
+      },
+      "operational_stop_reasons": [
+        "C10_PIP_SIZE_NOT_EVIDENCED"
+      ],
+      "operational_reasons": [
+        "REJECT_NO_STOP"
+      ],
+      "states": {
+        "operational": {
+          "DEVELOPING": 4634,
+          "IDLE": 169,
+          "NEAR_POI": 3310,
+          "REJECTED": 848
+        },
+        "signal": {
+          "DEVELOPING": 4634,
+          "IDLE": 169,
+          "NEAR_POI": 3310,
+          "OPPORTUNITY": 848
+        }
+      },
+      "streaming_parity": {
+        "operational": {
+          "events": 1338,
+          "prefix_cuts": [
+            1816,
+            3633,
+            5449,
+            7266,
+            9083,
+            10899,
+            12716
+          ],
+          "prefix_mismatches": 0,
+          "verdict": "PASS"
+        },
+        "signal": {
+          "events": 1412,
+          "prefix_cuts": [
+            1816,
+            3633,
+            5449,
+            7266,
+            9083,
+            10899,
+            12716
+          ],
+          "prefix_mismatches": 0,
+          "verdict": "PASS"
+        }
+      },
+      "short_d1_window": {
+        "blocking_L1_L4_pass": true,
+        "gate_status_counts": {
+          "L1": {
+            "PASS": 5572
+          },
+          "L2": {
+            "PASS": 5572
+          },
+          "L3": {
+            "PASS": 5572
+          },
+          "L4": {
+            "PASS": 5572
+          },
+          "L5": {
+            "WARN": 5572
+          },
+          "L6": {
+            "PASS": 5572
+          }
+        },
+        "operational_rejection_reasons": {
+          "REJECT_NO_STOP": 1092
+        },
+        "scans": 5572,
+        "states": {
+          "operational": {
+            "DEVELOPING": 2151,
+            "IDLE": 164,
+            "NEAR_POI": 2165,
+            "REJECTED": 1092
+          },
+          "signal": {
+            "DEVELOPING": 2151,
+            "IDLE": 164,
+            "NEAR_POI": 2165,
+            "OPPORTUNITY": 1092
+          }
+        }
+      },
+      "delivery_mode": "ARCHIVE_ONLY",
+      "authority": "none: logic evidence only; no registry, READY, demo or live change",
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "OPERATIONAL_REJECT_NO_STOP",
+        "detail": "every OPPORTUNITY scan is operationally rejected (['REJECT_NO_STOP'], ['C10_PIP_SIZE_NOT_EVIDENCED']) because C10's pip-size input is unevidenced for ETHUSD; logical detection L1-L4/L6 passes on every scan"
+      },
+      "verdicts_reported_separately": {
+        "logical_detection": "PASS (L1/L2/L3/L4/L6 on all scans; L5 WARN on all scans)",
+        "ticket_validity": "OPERATIONALLY_REJECTED - REJECT_NO_STOP / C10_PIP_SIZE_NOT_EVIDENCED (fail-closed by design)",
+        "economic_verification": "NOT_EVALUATED (no cost model bound for this symbol)"
+      },
+      "evidence": [
+        "artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c16_2026-10-12/lsmc_ethusd_vt_recorded_60d.json"
+      ]
+    },
+    {
+      "scope_id": "LSMC:EURUSD",
+      "family": "ST_LARGE_SMC_V1@1.1.0",
+      "strategy_id": "ST_LARGE_SMC_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+      "contract_path": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
+      "engine_hash": "88dd9f1fb970f7811b437cb3b4c7341e0d1f84320238890eab3381eb0f51b689",
+      "registry_engine_hash": "ec0b2f3dc6ed2b02df3f643b38beac1c0e88630413c74e0f55e3d8aa5f5570d4",
+      "engine_matches_registry": false,
+      "logic_identity": null,
+      "symbol": "EURUSD",
+      "directions": [],
+      "session": "N/A",
+      "sessions_evaluated": 0,
+      "dataset_identity": {
+        "path": null,
+        "sha256": null,
+        "coverage": "NONE (no authoritative recorded 60-day dataset for this symbol)"
+      },
+      "emissions": 0,
+      "gates": {
+        "L1": "INSUFFICIENT",
+        "L2": "INSUFFICIENT",
+        "L3": "INSUFFICIENT",
+        "L4": "INSUFFICIENT",
+        "L5": "INSUFFICIENT",
+        "L6": "INSUFFICIENT"
+      },
+      "final_verdict": "INSUFFICIENT",
+      "reason": {
+        "class": "NO_AUTHORITATIVE_DATASET",
+        "detail": "declared in the 1.1.0 instruments[] but the repository's authoritative recorded dataset carries BTCUSD/ETHUSD only, so no replay is possible"
+      },
+      "evidence": []
+    },
+    {
+      "scope_id": "LSMC:GBPUSD",
+      "family": "ST_LARGE_SMC_V1@1.1.0",
+      "strategy_id": "ST_LARGE_SMC_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+      "contract_path": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
+      "engine_hash": "88dd9f1fb970f7811b437cb3b4c7341e0d1f84320238890eab3381eb0f51b689",
+      "registry_engine_hash": "ec0b2f3dc6ed2b02df3f643b38beac1c0e88630413c74e0f55e3d8aa5f5570d4",
+      "engine_matches_registry": false,
+      "logic_identity": null,
+      "symbol": "GBPUSD",
+      "directions": [],
+      "session": "N/A",
+      "sessions_evaluated": 0,
+      "dataset_identity": {
+        "path": null,
+        "sha256": null,
+        "coverage": "NONE (no authoritative recorded 60-day dataset for this symbol)"
+      },
+      "emissions": 0,
+      "gates": {
+        "L1": "INSUFFICIENT",
+        "L2": "INSUFFICIENT",
+        "L3": "INSUFFICIENT",
+        "L4": "INSUFFICIENT",
+        "L5": "INSUFFICIENT",
+        "L6": "INSUFFICIENT"
+      },
+      "final_verdict": "INSUFFICIENT",
+      "reason": {
+        "class": "NO_AUTHORITATIVE_DATASET",
+        "detail": "declared in the 1.1.0 instruments[] but the repository's authoritative recorded dataset carries BTCUSD/ETHUSD only, so no replay is possible"
+      },
+      "evidence": []
+    },
+    {
+      "scope_id": "LSMC:USDJPY",
+      "family": "ST_LARGE_SMC_V1@1.1.0",
+      "strategy_id": "ST_LARGE_SMC_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+      "contract_path": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
+      "engine_hash": "88dd9f1fb970f7811b437cb3b4c7341e0d1f84320238890eab3381eb0f51b689",
+      "registry_engine_hash": "ec0b2f3dc6ed2b02df3f643b38beac1c0e88630413c74e0f55e3d8aa5f5570d4",
+      "engine_matches_registry": false,
+      "logic_identity": null,
+      "symbol": "USDJPY",
+      "directions": [],
+      "session": "N/A",
+      "sessions_evaluated": 0,
+      "dataset_identity": {
+        "path": null,
+        "sha256": null,
+        "coverage": "NONE (no authoritative recorded 60-day dataset for this symbol)"
+      },
+      "emissions": 0,
+      "gates": {
+        "L1": "INSUFFICIENT",
+        "L2": "INSUFFICIENT",
+        "L3": "INSUFFICIENT",
+        "L4": "INSUFFICIENT",
+        "L5": "INSUFFICIENT",
+        "L6": "INSUFFICIENT"
+      },
+      "final_verdict": "INSUFFICIENT",
+      "reason": {
+        "class": "NO_AUTHORITATIVE_DATASET",
+        "detail": "declared in the 1.1.0 instruments[] but the repository's authoritative recorded dataset carries BTCUSD/ETHUSD only, so no replay is possible"
+      },
+      "evidence": []
+    },
+    {
+      "scope_id": "LSMC:XAUUSD",
+      "family": "ST_LARGE_SMC_V1@1.1.0",
+      "strategy_id": "ST_LARGE_SMC_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+      "contract_path": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
+      "engine_hash": "88dd9f1fb970f7811b437cb3b4c7341e0d1f84320238890eab3381eb0f51b689",
+      "registry_engine_hash": "ec0b2f3dc6ed2b02df3f643b38beac1c0e88630413c74e0f55e3d8aa5f5570d4",
+      "engine_matches_registry": false,
+      "logic_identity": null,
+      "symbol": "XAUUSD",
+      "directions": [],
+      "session": "N/A",
+      "sessions_evaluated": 0,
+      "dataset_identity": {
+        "path": null,
+        "sha256": null,
+        "coverage": "NONE (no authoritative recorded 60-day dataset for this symbol)"
+      },
+      "emissions": 0,
+      "gates": {
+        "L1": "INSUFFICIENT",
+        "L2": "INSUFFICIENT",
+        "L3": "INSUFFICIENT",
+        "L4": "INSUFFICIENT",
+        "L5": "INSUFFICIENT",
+        "L6": "INSUFFICIENT"
+      },
+      "final_verdict": "INSUFFICIENT",
+      "reason": {
+        "class": "NO_AUTHORITATIVE_DATASET",
+        "detail": "declared in the 1.1.0 instruments[] but the repository's authoritative recorded dataset carries BTCUSD/ETHUSD only, so no replay is possible"
+      },
+      "evidence": []
+    },
+    {
+      "scope_id": "CCFD:BTCUSD:LONG:WEEKDAY",
+      "family": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0",
+      "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7",
+      "contract_hash_kind": "canonical mapping identity (freeze.contract_hash; the self-referential field is blanked before hashing)",
+      "contract_raw_file_sha256": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
+      "contract_path": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml",
+      "engine_hash": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e",
+      "runtime_binding": "NOT_ADMITTED_RESEARCH_ONLY",
+      "symbol": "BTCUSD",
+      "directions": [
+        "LONG"
+      ],
+      "session": "WEEKDAY",
+      "sessions_evaluated": 44,
+      "dataset_identity": {
+        "path": "tests/fixtures/ccfd_v100/recorded_60d",
+        "dataset": {
+          "captured_at_utc": "2026-10-10T17:20:37.180406+00:00",
+          "provenance_sha256": "c3b21053e52f0078c598fc0139e3b1790b4c6bf3c082834a0631e3dab1941903",
+          "server": "VTMarkets-Demo",
+          "sha256": {
+            "d1": "85110e81326dba871db5c935c5b352c53a1dc1ebf220f544ad7d295a56546559",
+            "h1": "f1d7ba4b6abfe949288bde914969daac61657a33e0b2b832c0596d2418e63127",
+            "m15": "1b4097ab0943fb5c08ed828b1063a7245cfa1aed42e7102e5bd786843dddfac5",
+            "m5": "60a9b5a485d9b70ddf507e8fa27e206236fb14ed836cd20618b7b39377d505bb"
+          }
+        },
+        "days_run": [
+          "2026-08-11",
+          "2026-08-12",
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-15",
+          "2026-08-16",
+          "2026-08-17",
+          "2026-08-18",
+          "2026-08-19",
+          "2026-08-20",
+          "2026-08-21",
+          "2026-08-22",
+          "2026-08-23",
+          "2026-08-24",
+          "2026-08-25",
+          "2026-08-26",
+          "2026-08-27",
+          "2026-08-28",
+          "2026-08-29",
+          "2026-08-30",
+          "2026-08-31",
+          "2026-09-01",
+          "2026-09-02",
+          "2026-09-03",
+          "2026-09-04",
+          "2026-09-05",
+          "2026-09-06",
+          "2026-09-07",
+          "2026-09-08",
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11",
+          "2026-09-12",
+          "2026-09-13",
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20",
+          "2026-09-21",
+          "2026-09-22",
+          "2026-09-23",
+          "2026-09-24",
+          "2026-09-25",
+          "2026-09-26",
+          "2026-09-27",
+          "2026-09-28",
+          "2026-09-29",
+          "2026-09-30",
+          "2026-10-01",
+          "2026-10-02",
+          "2026-10-03",
+          "2026-10-04",
+          "2026-10-05",
+          "2026-10-06",
+          "2026-10-07",
+          "2026-10-08",
+          "2026-10-09"
+        ],
+        "coverage": "VT Markets Demo recorded_60d (D1/H1/M15, 2026-08-11 -> 2026-10-09)"
+      },
+      "emissions": 0,
+      "entry_valid_scans": 0,
+      "withdrawn_events": 0,
+      "verification_minimum_emissions": 2,
+      "gates": {
+        "L1": "PASS",
+        "L2": "INSUFFICIENT",
+        "L3": "INSUFFICIENT",
+        "L4": "INSUFFICIENT",
+        "L5": "INSUFFICIENT",
+        "L6": "INSUFFICIENT"
+      },
+      "blockers": [
+        "NO_EMISSIONS",
+        "L2:INSUFFICIENT",
+        "L3:INSUFFICIENT",
+        "L4:INSUFFICIENT",
+        "L5:INSUFFICIENT",
+        "L6:INSUFFICIENT"
+      ],
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "THIN_OR_ZERO_EMISSION_SCOPE",
+        "detail": "0 emission(s) over 44 calendar days vs declared minimum 2",
+        "blockers": [
+          "NO_EMISSIONS",
+          "L2:INSUFFICIENT",
+          "L3:INSUFFICIENT",
+          "L4:INSUFFICIENT",
+          "L5:INSUFFICIENT",
+          "L6:INSUFFICIENT"
+        ]
+      },
+      "window_definition": "WEEKDAY Mon-Fri 09:00-12:00 America/New_York; WEEKEND Sat/Sun 21:00-23:00 UTC",
+      "registry_status": "not registered (1.1.0 candidate is research-only)",
+      "evidence": [
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/replay_report.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/runtime_identity_verification.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/signal_events.json"
+      ]
+    },
+    {
+      "scope_id": "CCFD:BTCUSD:SHORT:WEEKDAY",
+      "family": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0",
+      "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7",
+      "contract_hash_kind": "canonical mapping identity (freeze.contract_hash; the self-referential field is blanked before hashing)",
+      "contract_raw_file_sha256": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
+      "contract_path": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml",
+      "engine_hash": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e",
+      "runtime_binding": "NOT_ADMITTED_RESEARCH_ONLY",
+      "symbol": "BTCUSD",
+      "directions": [
+        "SHORT"
+      ],
+      "session": "WEEKDAY",
+      "sessions_evaluated": 44,
+      "dataset_identity": {
+        "path": "tests/fixtures/ccfd_v100/recorded_60d",
+        "dataset": {
+          "captured_at_utc": "2026-10-10T17:20:37.180406+00:00",
+          "provenance_sha256": "c3b21053e52f0078c598fc0139e3b1790b4c6bf3c082834a0631e3dab1941903",
+          "server": "VTMarkets-Demo",
+          "sha256": {
+            "d1": "85110e81326dba871db5c935c5b352c53a1dc1ebf220f544ad7d295a56546559",
+            "h1": "f1d7ba4b6abfe949288bde914969daac61657a33e0b2b832c0596d2418e63127",
+            "m15": "1b4097ab0943fb5c08ed828b1063a7245cfa1aed42e7102e5bd786843dddfac5",
+            "m5": "60a9b5a485d9b70ddf507e8fa27e206236fb14ed836cd20618b7b39377d505bb"
+          }
+        },
+        "days_run": [
+          "2026-08-11",
+          "2026-08-12",
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-15",
+          "2026-08-16",
+          "2026-08-17",
+          "2026-08-18",
+          "2026-08-19",
+          "2026-08-20",
+          "2026-08-21",
+          "2026-08-22",
+          "2026-08-23",
+          "2026-08-24",
+          "2026-08-25",
+          "2026-08-26",
+          "2026-08-27",
+          "2026-08-28",
+          "2026-08-29",
+          "2026-08-30",
+          "2026-08-31",
+          "2026-09-01",
+          "2026-09-02",
+          "2026-09-03",
+          "2026-09-04",
+          "2026-09-05",
+          "2026-09-06",
+          "2026-09-07",
+          "2026-09-08",
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11",
+          "2026-09-12",
+          "2026-09-13",
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20",
+          "2026-09-21",
+          "2026-09-22",
+          "2026-09-23",
+          "2026-09-24",
+          "2026-09-25",
+          "2026-09-26",
+          "2026-09-27",
+          "2026-09-28",
+          "2026-09-29",
+          "2026-09-30",
+          "2026-10-01",
+          "2026-10-02",
+          "2026-10-03",
+          "2026-10-04",
+          "2026-10-05",
+          "2026-10-06",
+          "2026-10-07",
+          "2026-10-08",
+          "2026-10-09"
+        ],
+        "coverage": "VT Markets Demo recorded_60d (D1/H1/M15, 2026-08-11 -> 2026-10-09)"
+      },
+      "emissions": 2,
+      "entry_valid_scans": 77,
+      "withdrawn_events": 0,
+      "verification_minimum_emissions": 2,
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "blockers": [],
+      "final_verdict": "LOGIC_VERIFIED",
+      "reason": null,
+      "window_definition": "WEEKDAY Mon-Fri 09:00-12:00 America/New_York; WEEKEND Sat/Sun 21:00-23:00 UTC",
+      "registry_status": "not registered (1.1.0 candidate is research-only)",
+      "evidence": [
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/replay_report.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/runtime_identity_verification.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/signal_events.json"
+      ]
+    },
+    {
+      "scope_id": "CCFD:BTCUSD:LONG:WEEKEND",
+      "family": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0",
+      "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7",
+      "contract_hash_kind": "canonical mapping identity (freeze.contract_hash; the self-referential field is blanked before hashing)",
+      "contract_raw_file_sha256": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
+      "contract_path": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml",
+      "engine_hash": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e",
+      "runtime_binding": "NOT_ADMITTED_RESEARCH_ONLY",
+      "symbol": "BTCUSD",
+      "directions": [
+        "LONG"
+      ],
+      "session": "WEEKEND",
+      "sessions_evaluated": 16,
+      "dataset_identity": {
+        "path": "tests/fixtures/ccfd_v100/recorded_60d",
+        "dataset": {
+          "captured_at_utc": "2026-10-10T17:20:37.180406+00:00",
+          "provenance_sha256": "c3b21053e52f0078c598fc0139e3b1790b4c6bf3c082834a0631e3dab1941903",
+          "server": "VTMarkets-Demo",
+          "sha256": {
+            "d1": "85110e81326dba871db5c935c5b352c53a1dc1ebf220f544ad7d295a56546559",
+            "h1": "f1d7ba4b6abfe949288bde914969daac61657a33e0b2b832c0596d2418e63127",
+            "m15": "1b4097ab0943fb5c08ed828b1063a7245cfa1aed42e7102e5bd786843dddfac5",
+            "m5": "60a9b5a485d9b70ddf507e8fa27e206236fb14ed836cd20618b7b39377d505bb"
+          }
+        },
+        "days_run": [
+          "2026-08-11",
+          "2026-08-12",
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-15",
+          "2026-08-16",
+          "2026-08-17",
+          "2026-08-18",
+          "2026-08-19",
+          "2026-08-20",
+          "2026-08-21",
+          "2026-08-22",
+          "2026-08-23",
+          "2026-08-24",
+          "2026-08-25",
+          "2026-08-26",
+          "2026-08-27",
+          "2026-08-28",
+          "2026-08-29",
+          "2026-08-30",
+          "2026-08-31",
+          "2026-09-01",
+          "2026-09-02",
+          "2026-09-03",
+          "2026-09-04",
+          "2026-09-05",
+          "2026-09-06",
+          "2026-09-07",
+          "2026-09-08",
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11",
+          "2026-09-12",
+          "2026-09-13",
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20",
+          "2026-09-21",
+          "2026-09-22",
+          "2026-09-23",
+          "2026-09-24",
+          "2026-09-25",
+          "2026-09-26",
+          "2026-09-27",
+          "2026-09-28",
+          "2026-09-29",
+          "2026-09-30",
+          "2026-10-01",
+          "2026-10-02",
+          "2026-10-03",
+          "2026-10-04",
+          "2026-10-05",
+          "2026-10-06",
+          "2026-10-07",
+          "2026-10-08",
+          "2026-10-09"
+        ],
+        "coverage": "VT Markets Demo recorded_60d (D1/H1/M15, 2026-08-11 -> 2026-10-09)"
+      },
+      "emissions": 0,
+      "entry_valid_scans": 0,
+      "withdrawn_events": 0,
+      "verification_minimum_emissions": 2,
+      "gates": {
+        "L1": "PASS",
+        "L2": "INSUFFICIENT",
+        "L3": "INSUFFICIENT",
+        "L4": "INSUFFICIENT",
+        "L5": "INSUFFICIENT",
+        "L6": "INSUFFICIENT"
+      },
+      "blockers": [
+        "NO_EMISSIONS",
+        "L2:INSUFFICIENT",
+        "L3:INSUFFICIENT",
+        "L4:INSUFFICIENT",
+        "L5:INSUFFICIENT",
+        "L6:INSUFFICIENT"
+      ],
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "THIN_OR_ZERO_EMISSION_SCOPE",
+        "detail": "0 emission(s) over 16 calendar days vs declared minimum 2",
+        "blockers": [
+          "NO_EMISSIONS",
+          "L2:INSUFFICIENT",
+          "L3:INSUFFICIENT",
+          "L4:INSUFFICIENT",
+          "L5:INSUFFICIENT",
+          "L6:INSUFFICIENT"
+        ]
+      },
+      "window_definition": "WEEKDAY Mon-Fri 09:00-12:00 America/New_York; WEEKEND Sat/Sun 21:00-23:00 UTC",
+      "registry_status": "not registered (1.1.0 candidate is research-only)",
+      "evidence": [
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/replay_report.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/runtime_identity_verification.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/signal_events.json"
+      ]
+    },
+    {
+      "scope_id": "CCFD:BTCUSD:SHORT:WEEKEND",
+      "family": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0",
+      "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7",
+      "contract_hash_kind": "canonical mapping identity (freeze.contract_hash; the self-referential field is blanked before hashing)",
+      "contract_raw_file_sha256": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
+      "contract_path": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml",
+      "engine_hash": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e",
+      "runtime_binding": "NOT_ADMITTED_RESEARCH_ONLY",
+      "symbol": "BTCUSD",
+      "directions": [
+        "SHORT"
+      ],
+      "session": "WEEKEND",
+      "sessions_evaluated": 16,
+      "dataset_identity": {
+        "path": "tests/fixtures/ccfd_v100/recorded_60d",
+        "dataset": {
+          "captured_at_utc": "2026-10-10T17:20:37.180406+00:00",
+          "provenance_sha256": "c3b21053e52f0078c598fc0139e3b1790b4c6bf3c082834a0631e3dab1941903",
+          "server": "VTMarkets-Demo",
+          "sha256": {
+            "d1": "85110e81326dba871db5c935c5b352c53a1dc1ebf220f544ad7d295a56546559",
+            "h1": "f1d7ba4b6abfe949288bde914969daac61657a33e0b2b832c0596d2418e63127",
+            "m15": "1b4097ab0943fb5c08ed828b1063a7245cfa1aed42e7102e5bd786843dddfac5",
+            "m5": "60a9b5a485d9b70ddf507e8fa27e206236fb14ed836cd20618b7b39377d505bb"
+          }
+        },
+        "days_run": [
+          "2026-08-11",
+          "2026-08-12",
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-15",
+          "2026-08-16",
+          "2026-08-17",
+          "2026-08-18",
+          "2026-08-19",
+          "2026-08-20",
+          "2026-08-21",
+          "2026-08-22",
+          "2026-08-23",
+          "2026-08-24",
+          "2026-08-25",
+          "2026-08-26",
+          "2026-08-27",
+          "2026-08-28",
+          "2026-08-29",
+          "2026-08-30",
+          "2026-08-31",
+          "2026-09-01",
+          "2026-09-02",
+          "2026-09-03",
+          "2026-09-04",
+          "2026-09-05",
+          "2026-09-06",
+          "2026-09-07",
+          "2026-09-08",
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11",
+          "2026-09-12",
+          "2026-09-13",
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20",
+          "2026-09-21",
+          "2026-09-22",
+          "2026-09-23",
+          "2026-09-24",
+          "2026-09-25",
+          "2026-09-26",
+          "2026-09-27",
+          "2026-09-28",
+          "2026-09-29",
+          "2026-09-30",
+          "2026-10-01",
+          "2026-10-02",
+          "2026-10-03",
+          "2026-10-04",
+          "2026-10-05",
+          "2026-10-06",
+          "2026-10-07",
+          "2026-10-08",
+          "2026-10-09"
+        ],
+        "coverage": "VT Markets Demo recorded_60d (D1/H1/M15, 2026-08-11 -> 2026-10-09)"
+      },
+      "emissions": 0,
+      "entry_valid_scans": 0,
+      "withdrawn_events": 0,
+      "verification_minimum_emissions": 2,
+      "gates": {
+        "L1": "PASS",
+        "L2": "INSUFFICIENT",
+        "L3": "INSUFFICIENT",
+        "L4": "INSUFFICIENT",
+        "L5": "INSUFFICIENT",
+        "L6": "INSUFFICIENT"
+      },
+      "blockers": [
+        "NO_EMISSIONS",
+        "L2:INSUFFICIENT",
+        "L3:INSUFFICIENT",
+        "L4:INSUFFICIENT",
+        "L5:INSUFFICIENT",
+        "L6:INSUFFICIENT"
+      ],
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "THIN_OR_ZERO_EMISSION_SCOPE",
+        "detail": "0 emission(s) over 16 calendar days vs declared minimum 2",
+        "blockers": [
+          "NO_EMISSIONS",
+          "L2:INSUFFICIENT",
+          "L3:INSUFFICIENT",
+          "L4:INSUFFICIENT",
+          "L5:INSUFFICIENT",
+          "L6:INSUFFICIENT"
+        ]
+      },
+      "window_definition": "WEEKDAY Mon-Fri 09:00-12:00 America/New_York; WEEKEND Sat/Sun 21:00-23:00 UTC",
+      "registry_status": "not registered (1.1.0 candidate is research-only)",
+      "evidence": [
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/replay_report.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/runtime_identity_verification.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/signal_events.json"
+      ]
+    },
+    {
+      "scope_id": "CCFD:ETHUSD:LONG:WEEKDAY",
+      "family": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0",
+      "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7",
+      "contract_hash_kind": "canonical mapping identity (freeze.contract_hash; the self-referential field is blanked before hashing)",
+      "contract_raw_file_sha256": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
+      "contract_path": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml",
+      "engine_hash": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e",
+      "runtime_binding": "NOT_ADMITTED_RESEARCH_ONLY",
+      "symbol": "ETHUSD",
+      "directions": [
+        "LONG"
+      ],
+      "session": "WEEKDAY",
+      "sessions_evaluated": 44,
+      "dataset_identity": {
+        "path": "tests/fixtures/ccfd_v100/recorded_60d",
+        "dataset": {
+          "captured_at_utc": "2026-10-10T17:20:37.180406+00:00",
+          "provenance_sha256": "6dce7228040a0a316eeb275a2f576857565283760f7700705209addd90800d28",
+          "server": "VTMarkets-Demo",
+          "sha256": {
+            "d1": "72734a143dc2e57667beff4947f3e7607799860f87d5493d6f184ca68d071fec",
+            "h1": "4159be1dd6a0c8683f4a5f142e648803158cc6485965612a22dbd80502e58aeb",
+            "m15": "52b311f848cbd21cbaa0909fc151b483c814e2c47f23b362ea018f9daf93408a",
+            "m5": "7ad856027947482a30e71202b6cc5118e8188cd9ef7746512fa166c064115561"
+          }
+        },
+        "days_run": [
+          "2026-08-11",
+          "2026-08-12",
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-15",
+          "2026-08-16",
+          "2026-08-17",
+          "2026-08-18",
+          "2026-08-19",
+          "2026-08-20",
+          "2026-08-21",
+          "2026-08-22",
+          "2026-08-23",
+          "2026-08-24",
+          "2026-08-25",
+          "2026-08-26",
+          "2026-08-27",
+          "2026-08-28",
+          "2026-08-29",
+          "2026-08-30",
+          "2026-08-31",
+          "2026-09-01",
+          "2026-09-02",
+          "2026-09-03",
+          "2026-09-04",
+          "2026-09-05",
+          "2026-09-06",
+          "2026-09-07",
+          "2026-09-08",
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11",
+          "2026-09-12",
+          "2026-09-13",
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20",
+          "2026-09-21",
+          "2026-09-22",
+          "2026-09-23",
+          "2026-09-24",
+          "2026-09-25",
+          "2026-09-26",
+          "2026-09-27",
+          "2026-09-28",
+          "2026-09-29",
+          "2026-09-30",
+          "2026-10-01",
+          "2026-10-02",
+          "2026-10-03",
+          "2026-10-04",
+          "2026-10-05",
+          "2026-10-06",
+          "2026-10-07",
+          "2026-10-08",
+          "2026-10-09"
+        ],
+        "coverage": "VT Markets Demo recorded_60d (D1/H1/M15, 2026-08-11 -> 2026-10-09)"
+      },
+      "emissions": 3,
+      "entry_valid_scans": 354,
+      "withdrawn_events": 0,
+      "verification_minimum_emissions": 2,
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "blockers": [],
+      "final_verdict": "LOGIC_VERIFIED",
+      "reason": null,
+      "window_definition": "WEEKDAY Mon-Fri 09:00-12:00 America/New_York; WEEKEND Sat/Sun 21:00-23:00 UTC",
+      "registry_status": "not registered (1.1.0 candidate is research-only)",
+      "evidence": [
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/replay_report.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/runtime_identity_verification.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/signal_events.json"
+      ]
+    },
+    {
+      "scope_id": "CCFD:ETHUSD:SHORT:WEEKDAY",
+      "family": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0",
+      "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7",
+      "contract_hash_kind": "canonical mapping identity (freeze.contract_hash; the self-referential field is blanked before hashing)",
+      "contract_raw_file_sha256": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
+      "contract_path": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml",
+      "engine_hash": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e",
+      "runtime_binding": "NOT_ADMITTED_RESEARCH_ONLY",
+      "symbol": "ETHUSD",
+      "directions": [
+        "SHORT"
+      ],
+      "session": "WEEKDAY",
+      "sessions_evaluated": 44,
+      "dataset_identity": {
+        "path": "tests/fixtures/ccfd_v100/recorded_60d",
+        "dataset": {
+          "captured_at_utc": "2026-10-10T17:20:37.180406+00:00",
+          "provenance_sha256": "6dce7228040a0a316eeb275a2f576857565283760f7700705209addd90800d28",
+          "server": "VTMarkets-Demo",
+          "sha256": {
+            "d1": "72734a143dc2e57667beff4947f3e7607799860f87d5493d6f184ca68d071fec",
+            "h1": "4159be1dd6a0c8683f4a5f142e648803158cc6485965612a22dbd80502e58aeb",
+            "m15": "52b311f848cbd21cbaa0909fc151b483c814e2c47f23b362ea018f9daf93408a",
+            "m5": "7ad856027947482a30e71202b6cc5118e8188cd9ef7746512fa166c064115561"
+          }
+        },
+        "days_run": [
+          "2026-08-11",
+          "2026-08-12",
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-15",
+          "2026-08-16",
+          "2026-08-17",
+          "2026-08-18",
+          "2026-08-19",
+          "2026-08-20",
+          "2026-08-21",
+          "2026-08-22",
+          "2026-08-23",
+          "2026-08-24",
+          "2026-08-25",
+          "2026-08-26",
+          "2026-08-27",
+          "2026-08-28",
+          "2026-08-29",
+          "2026-08-30",
+          "2026-08-31",
+          "2026-09-01",
+          "2026-09-02",
+          "2026-09-03",
+          "2026-09-04",
+          "2026-09-05",
+          "2026-09-06",
+          "2026-09-07",
+          "2026-09-08",
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11",
+          "2026-09-12",
+          "2026-09-13",
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20",
+          "2026-09-21",
+          "2026-09-22",
+          "2026-09-23",
+          "2026-09-24",
+          "2026-09-25",
+          "2026-09-26",
+          "2026-09-27",
+          "2026-09-28",
+          "2026-09-29",
+          "2026-09-30",
+          "2026-10-01",
+          "2026-10-02",
+          "2026-10-03",
+          "2026-10-04",
+          "2026-10-05",
+          "2026-10-06",
+          "2026-10-07",
+          "2026-10-08",
+          "2026-10-09"
+        ],
+        "coverage": "VT Markets Demo recorded_60d (D1/H1/M15, 2026-08-11 -> 2026-10-09)"
+      },
+      "emissions": 1,
+      "entry_valid_scans": 72,
+      "withdrawn_events": 0,
+      "verification_minimum_emissions": 2,
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "blockers": [
+        "THIN_SIGNAL_COVERAGE_LT_2"
+      ],
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "THIN_OR_ZERO_EMISSION_SCOPE",
+        "detail": "1 emission(s) over 44 calendar days vs declared minimum 2",
+        "blockers": [
+          "THIN_SIGNAL_COVERAGE_LT_2"
+        ]
+      },
+      "window_definition": "WEEKDAY Mon-Fri 09:00-12:00 America/New_York; WEEKEND Sat/Sun 21:00-23:00 UTC",
+      "registry_status": "not registered (1.1.0 candidate is research-only)",
+      "evidence": [
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/replay_report.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/runtime_identity_verification.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/signal_events.json"
+      ]
+    },
+    {
+      "scope_id": "CCFD:ETHUSD:LONG:WEEKEND",
+      "family": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0",
+      "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7",
+      "contract_hash_kind": "canonical mapping identity (freeze.contract_hash; the self-referential field is blanked before hashing)",
+      "contract_raw_file_sha256": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
+      "contract_path": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml",
+      "engine_hash": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e",
+      "runtime_binding": "NOT_ADMITTED_RESEARCH_ONLY",
+      "symbol": "ETHUSD",
+      "directions": [
+        "LONG"
+      ],
+      "session": "WEEKEND",
+      "sessions_evaluated": 16,
+      "dataset_identity": {
+        "path": "tests/fixtures/ccfd_v100/recorded_60d",
+        "dataset": {
+          "captured_at_utc": "2026-10-10T17:20:37.180406+00:00",
+          "provenance_sha256": "6dce7228040a0a316eeb275a2f576857565283760f7700705209addd90800d28",
+          "server": "VTMarkets-Demo",
+          "sha256": {
+            "d1": "72734a143dc2e57667beff4947f3e7607799860f87d5493d6f184ca68d071fec",
+            "h1": "4159be1dd6a0c8683f4a5f142e648803158cc6485965612a22dbd80502e58aeb",
+            "m15": "52b311f848cbd21cbaa0909fc151b483c814e2c47f23b362ea018f9daf93408a",
+            "m5": "7ad856027947482a30e71202b6cc5118e8188cd9ef7746512fa166c064115561"
+          }
+        },
+        "days_run": [
+          "2026-08-11",
+          "2026-08-12",
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-15",
+          "2026-08-16",
+          "2026-08-17",
+          "2026-08-18",
+          "2026-08-19",
+          "2026-08-20",
+          "2026-08-21",
+          "2026-08-22",
+          "2026-08-23",
+          "2026-08-24",
+          "2026-08-25",
+          "2026-08-26",
+          "2026-08-27",
+          "2026-08-28",
+          "2026-08-29",
+          "2026-08-30",
+          "2026-08-31",
+          "2026-09-01",
+          "2026-09-02",
+          "2026-09-03",
+          "2026-09-04",
+          "2026-09-05",
+          "2026-09-06",
+          "2026-09-07",
+          "2026-09-08",
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11",
+          "2026-09-12",
+          "2026-09-13",
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20",
+          "2026-09-21",
+          "2026-09-22",
+          "2026-09-23",
+          "2026-09-24",
+          "2026-09-25",
+          "2026-09-26",
+          "2026-09-27",
+          "2026-09-28",
+          "2026-09-29",
+          "2026-09-30",
+          "2026-10-01",
+          "2026-10-02",
+          "2026-10-03",
+          "2026-10-04",
+          "2026-10-05",
+          "2026-10-06",
+          "2026-10-07",
+          "2026-10-08",
+          "2026-10-09"
+        ],
+        "coverage": "VT Markets Demo recorded_60d (D1/H1/M15, 2026-08-11 -> 2026-10-09)"
+      },
+      "emissions": 0,
+      "entry_valid_scans": 0,
+      "withdrawn_events": 0,
+      "verification_minimum_emissions": 2,
+      "gates": {
+        "L1": "PASS",
+        "L2": "INSUFFICIENT",
+        "L3": "INSUFFICIENT",
+        "L4": "INSUFFICIENT",
+        "L5": "INSUFFICIENT",
+        "L6": "INSUFFICIENT"
+      },
+      "blockers": [
+        "NO_EMISSIONS",
+        "L2:INSUFFICIENT",
+        "L3:INSUFFICIENT",
+        "L4:INSUFFICIENT",
+        "L5:INSUFFICIENT",
+        "L6:INSUFFICIENT"
+      ],
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "THIN_OR_ZERO_EMISSION_SCOPE",
+        "detail": "0 emission(s) over 16 calendar days vs declared minimum 2",
+        "blockers": [
+          "NO_EMISSIONS",
+          "L2:INSUFFICIENT",
+          "L3:INSUFFICIENT",
+          "L4:INSUFFICIENT",
+          "L5:INSUFFICIENT",
+          "L6:INSUFFICIENT"
+        ]
+      },
+      "window_definition": "WEEKDAY Mon-Fri 09:00-12:00 America/New_York; WEEKEND Sat/Sun 21:00-23:00 UTC",
+      "registry_status": "not registered (1.1.0 candidate is research-only)",
+      "evidence": [
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/replay_report.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/runtime_identity_verification.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/signal_events.json"
+      ]
+    },
+    {
+      "scope_id": "CCFD:ETHUSD:SHORT:WEEKEND",
+      "family": "ST_CRYPTO_CFD_SWEEP_RETEST_V1@1.1.0",
+      "strategy_id": "ST_CRYPTO_CFD_SWEEP_RETEST_V1",
+      "strategy_version": "1.1.0",
+      "contract_hash": "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7",
+      "contract_hash_kind": "canonical mapping identity (freeze.contract_hash; the self-referential field is blanked before hashing)",
+      "contract_raw_file_sha256": "6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b",
+      "contract_path": "strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml",
+      "engine_hash": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e",
+      "runtime_binding": "NOT_ADMITTED_RESEARCH_ONLY",
+      "symbol": "ETHUSD",
+      "directions": [
+        "SHORT"
+      ],
+      "session": "WEEKEND",
+      "sessions_evaluated": 16,
+      "dataset_identity": {
+        "path": "tests/fixtures/ccfd_v100/recorded_60d",
+        "dataset": {
+          "captured_at_utc": "2026-10-10T17:20:37.180406+00:00",
+          "provenance_sha256": "6dce7228040a0a316eeb275a2f576857565283760f7700705209addd90800d28",
+          "server": "VTMarkets-Demo",
+          "sha256": {
+            "d1": "72734a143dc2e57667beff4947f3e7607799860f87d5493d6f184ca68d071fec",
+            "h1": "4159be1dd6a0c8683f4a5f142e648803158cc6485965612a22dbd80502e58aeb",
+            "m15": "52b311f848cbd21cbaa0909fc151b483c814e2c47f23b362ea018f9daf93408a",
+            "m5": "7ad856027947482a30e71202b6cc5118e8188cd9ef7746512fa166c064115561"
+          }
+        },
+        "days_run": [
+          "2026-08-11",
+          "2026-08-12",
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-15",
+          "2026-08-16",
+          "2026-08-17",
+          "2026-08-18",
+          "2026-08-19",
+          "2026-08-20",
+          "2026-08-21",
+          "2026-08-22",
+          "2026-08-23",
+          "2026-08-24",
+          "2026-08-25",
+          "2026-08-26",
+          "2026-08-27",
+          "2026-08-28",
+          "2026-08-29",
+          "2026-08-30",
+          "2026-08-31",
+          "2026-09-01",
+          "2026-09-02",
+          "2026-09-03",
+          "2026-09-04",
+          "2026-09-05",
+          "2026-09-06",
+          "2026-09-07",
+          "2026-09-08",
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11",
+          "2026-09-12",
+          "2026-09-13",
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20",
+          "2026-09-21",
+          "2026-09-22",
+          "2026-09-23",
+          "2026-09-24",
+          "2026-09-25",
+          "2026-09-26",
+          "2026-09-27",
+          "2026-09-28",
+          "2026-09-29",
+          "2026-09-30",
+          "2026-10-01",
+          "2026-10-02",
+          "2026-10-03",
+          "2026-10-04",
+          "2026-10-05",
+          "2026-10-06",
+          "2026-10-07",
+          "2026-10-08",
+          "2026-10-09"
+        ],
+        "coverage": "VT Markets Demo recorded_60d (D1/H1/M15, 2026-08-11 -> 2026-10-09)"
+      },
+      "emissions": 1,
+      "entry_valid_scans": 175,
+      "withdrawn_events": 0,
+      "verification_minimum_emissions": 2,
+      "gates": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "blockers": [
+        "THIN_SIGNAL_COVERAGE_LT_2"
+      ],
+      "final_verdict": "NOT_VERIFIED",
+      "reason": {
+        "class": "THIN_OR_ZERO_EMISSION_SCOPE",
+        "detail": "1 emission(s) over 16 calendar days vs declared minimum 2",
+        "blockers": [
+          "THIN_SIGNAL_COVERAGE_LT_2"
+        ]
+      },
+      "window_definition": "WEEKDAY Mon-Fri 09:00-12:00 America/New_York; WEEKEND Sat/Sun 21:00-23:00 UTC",
+      "registry_status": "not registered (1.1.0 candidate is research-only)",
+      "evidence": [
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/replay_report.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/runtime_identity_verification.json",
+        "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/signal_events.json"
+      ]
+    }
+  ],
+  "ccfd_contract_identity_attribution": {
+    "finding": "The C15 sentence 'canonical hash ac116e0a\u2026 does not match the 9a1f6759\u2026 value requested in the original PR handoff' compares two different kinds of identity taken at two different revisions.",
+    "root_cause": "9a1f6759\u2026 is the raw-bytes sha256 (CRLF-normalized) of strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml at revision 89f1fa6c, i.e. before PR #162 (559fa9e) appended the research_lifecycle_contract.freeze block. That is exactly the metric the replay driver computes for the 1.1.0 candidate in research_logic_identity (contract_path.read_bytes() over C15_CONTRACT_YAML), and it is what the C15 artifact on branch feat/c15-crypto-verification records in contract_sha256 / logic_identity.contract_hash. Over the current revision that same metric is 6daa590b\u2026, while the canonical sorted mapping identity declared in freeze.contract_hash stays ac116e0a\u2026.",
+    "verification": "Reconstructed the pre-#162 blob with git show and hashed it: 9a1f6759d35cbb50fbb89dd41899f4d970b0cece6df5a40e682698a590d05968, bit-for-bit; the same metric over the current revision is 6daa590b9a8bf0ba\u2026, matching the C16 artifact. Read the committed artifact on feat/c15-crypto-verification: the value is its contract_sha256/logic_identity.contract_hash, and it is absent from that file's current revision. Read the driver source to confirm the metric it uses for 1.1.0 (raw bytes, not the canonical mapping hash). Eight serializations of the current contract were computed; none reproduces the value from the current file.",
+    "canonical_identity_unchanged": true,
+    "hash_overwritten": false,
+    "residual_documentation_defect": "D-CCFD-2b: one field name (contract_hash) carries two kinds of identity across blocks \u2014 canonical mapping identity vs raw-file identity \u2014 which makes any by-hand comparison across revisions ambiguous."
+  }
 }
