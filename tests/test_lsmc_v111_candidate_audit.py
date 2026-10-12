@@ -63,8 +63,15 @@ def test_candidate_fixtures_are_per_symbol_and_have_no_reused_ohlc_values() -> N
 
 def test_candidate_records_c11_primary_and_h1_fallback_per_ticket() -> None:
     rows = {row["symbol"]: row for row in audit.run()}
-    # The single-snapshot fixture was captured Sunday during the canonical FX close.
-    assert rows["EURUSD"]["state"] == "MARKET_CLOSED"
+    # EURUSD is the only HOST_CAPTURED fixture, so it must actually be evaluated. Its
+    # evaluated_at_utc was regenerated on 2026-10-10 with that wall-clock stamp (Saturday
+    # 15:45 New York = inside the FX weekend close, and 68 days after the fixture's own last
+    # bar), which pinned this row to MARKET_CLOSED / L4 FAIL and made the closed-input and
+    # freshness checks unable to fail. Corrected 2026-10-13 to the manifest decision_time_utc
+    # (2026-08-03T00:00:00Z = Sunday 20:00 New York, market open); all 754 bars unchanged.
+    # `_lsmc_v111_fixtures.check_decision_time` now fails closed on any recurrence.
+    assert rows["EURUSD"]["state"] == "NEAR_POI"
+    assert rows["EURUSD"]["L4"] == "PASS"
     assert rows["EURUSD"]["C11_source"] == "NO_TICKET"
     assert rows["GBPUSD"]["C11_source"] == "NO_TICKET"
     broker_symbols = {
