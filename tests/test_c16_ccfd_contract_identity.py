@@ -169,28 +169,40 @@ def test_no_documented_serialization_variant_reaches_the_unresolved_handoff_valu
 
 
 def test_unresolved_handoff_value_has_no_provenance_in_repository_history():
-    """The value appears only in the C15 sentences that declare it — nowhere else, ever."""
+    """The value appears only in status records that *report* it (and in this test) — never in a
+    strategy, engine, registry, config, fixture or replay artifact."""
+    # Kinds of file permitted to carry the literal, by construction:
+    allowed = {
+        # C15 status records that declare the discrepancy
+        "docs/status/AGP_C15_CRYPTO_60D_RESEARCH_STATUS_2026-10-11.md",
+        "docs/status/AGP_C15_THREE_LANE_RERUN_2026-10-12.md",
+        # the C16 status record that root-causes it
+        "docs/status/c16_2026-10-12/C16_DEFECT_REGISTER.md",
+        # this test, which must name the value it pins as unreachable
+        "tests/test_c16_ccfd_contract_identity.py",
+    }
+    # Never permitted, anywhere, in any revision: the strategy's own live surfaces.
+    forbidden_roots = ("strategies/", "src/", "config/", "artifacts/", "tests/fixtures/",
+                       "scripts/")
+
     out = subprocess.run(["git", "log", "--all", "--format=%H", "-S", UNRESOLVED_HANDOFF_PREFIX],
                          cwd=ROOT, capture_output=True, text=True)
     if out.returncode != 0:                       # pragma: no cover - shallow checkout
         return
-    allowed = {
-        "docs/status/AGP_C15_CRYPTO_60D_RESEARCH_STATUS_2026-10-11.md",
-        "docs/status/AGP_C15_THREE_LANE_RERUN_2026-10-12.md",
-    }
     commits = [line for line in out.stdout.split() if line]
+    assert commits, "history should at least contain the C15 records that declare the value"
     for sha in commits:
         show = subprocess.run(["git", "grep", "-l", UNRESOLVED_HANDOFF_PREFIX, sha],
                               cwd=ROOT, capture_output=True, text=True)
         carriers = {line.split(":", 1)[1] for line in show.stdout.splitlines() if ":" in line}
-        # The only permitted carriers are C15 status records that report the discrepancy.
         assert carriers and carriers <= allowed, f"{sha}: {carriers!r}"
+        assert not [c for c in carriers if c.startswith(forbidden_roots)], f"{sha}: {carriers!r}"
 
-    # It is absent from every live artifact of the strategy itself.
-    for path in ("strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml",
-                 "strategies/registry.yaml",
-                 "src/v1_tickets/authority.py"):
-        assert UNRESOLVED_HANDOFF_PREFIX not in (ROOT / path).read_text(encoding="utf-8")
+    # And in the live tree it is absent from every strategy/engine/registry/artifact surface.
+    probe = subprocess.run(["git", "grep", "-l", UNRESOLVED_HANDOFF_PREFIX, "--",
+                            "strategies", "src", "config", "artifacts", "tests/fixtures", "scripts"],
+                           cwd=ROOT, capture_output=True, text=True)
+    assert probe.stdout.strip() == "", probe.stdout
 
 
 def test_c15_evidence_files_agree_with_the_canonical_identity():

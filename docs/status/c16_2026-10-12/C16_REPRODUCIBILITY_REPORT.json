@@ -1,0 +1,161 @@
+{
+  "mission": "AGP-C16-FINAL",
+  "status": "C16_LOGIC_VERIFICATION_COMPLETE",
+  "generated_at_utc": "2026-10-12T17:49:37Z",
+  "main_sha": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
+  "verification_code_sha": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
+  "python_hash_seed": "0 (exported for every lane)",
+  "environment": {
+    "python": "3.11.2",
+    "cpu_count": 2,
+    "total_ram_mb": 3939,
+    "swap_mb": 0,
+    "workers": 1,
+    "platform": "Linux cloud sandbox",
+    "resource_class": "R3",
+    "resource_gate": "PASS"
+  },
+  "verifier_runs": 3,
+  "repeat_runs": 3,
+  "tests_executed": 41,
+  "runs": {
+    "ASW_60D_run1": {
+      "command": "python scripts/asw_v112_60d_replay.py --date 2026-10-12 --out .../ST_ASIAN_SWEEP_5R_V1_1_1_2/c16_2026-10-12/asw_v112_60d_c16_run1.json",
+      "sha256": "8a529ae4592404b60c3197cf7aeea5fbdd1a74ebbb134ba1caf30d96862ad0cc",
+      "exit": 0,
+      "elapsed_seconds": 37.5
+    },
+    "ASW_60D_run2_repeat": {
+      "sha256": "8a529ae4592404b60c3197cf7aeea5fbdd1a74ebbb134ba1caf30d96862ad0cc",
+      "exit": 0,
+      "elapsed_seconds": 37.5,
+      "note": "independent repeat, isolated output path"
+    },
+    "ASW_L3_reproducer": {
+      "sha256": "a84a0a4dc6d6b7e4e0b050bcf5ba63ba8f9fcc13ec9ceceaf0dac00541c9d293",
+      "exit": 0,
+      "elapsed_seconds": 1.1
+    },
+    "LSMC_BTCUSD": {
+      "artifact": "artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c16_2026-10-12/lsmc_btcusd_vt_recorded_60d.json",
+      "sha256": "27d2adfe2c6bec491ff4d86f297d0d88006f7021dacd70b55814a711c8c6a67c",
+      "exit": 0,
+      "elapsed_seconds": 1444,
+      "c15_baseline": "artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c15_btcusd_vt_recorded_60d/replay_report.json",
+      "c15_sha256": "27d2adfe2c6bec491ff4d86f297d0d88006f7021dacd70b55814a711c8c6a67c",
+      "byte_identical_to_c15": true,
+      "rank_of_reproduction": "independent rerun in a different sandbox (2 vCPU vs C15 host)"
+    },
+    "LSMC_ETHUSD": {
+      "artifact": "artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c16_2026-10-12/lsmc_ethusd_vt_recorded_60d.json",
+      "sha256": "97ba1a4942b5a30c7091a3a654e9a451998e08793c8a8536968e0ccb561387fc",
+      "exit": 0,
+      "elapsed_seconds": 1398,
+      "c15_baseline": "artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c15_ethusd_vt_recorded_60d/replay_report.json",
+      "c15_sha256": "97ba1a4942b5a30c7091a3a654e9a451998e08793c8a8536968e0ccb561387fc",
+      "byte_identical_to_c15": true,
+      "rank_of_reproduction": "independent rerun in a different sandbox (2 vCPU vs C15 host)"
+    },
+    "CCFD_60D": {
+      "command": "python scripts/ccfd_sweep_retest_replay.py --date 2026-10-12 --dataset recorded_60d --strategy-version 1.1.0 --out-dir .../ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12",
+      "files": {
+        "replay_report.json": {
+          "sha256": "ffb2ec1635328abb5fc57ef93fd750ac15637d1feea33df44a108514386ad36a",
+          "present": true
+        },
+        "runtime_identity_verification.json": {
+          "sha256": "60cb884f870034f8c353981add0f6026fb195f6b5c5cc7f362c48521cd3ba889",
+          "present": true
+        },
+        "signal_events.json": {
+          "sha256": "4fa10520a55a9c4d531676136480c49e22a4cc52f0d00760c049e51c602d2695",
+          "present": true
+        },
+        "tickets.jsonl": {
+          "sha256": "648f2cb529175659535df3d496fc989c805729777bf7129034087fc6f1921f35",
+          "present": true
+        }
+      },
+      "exit": 0,
+      "elapsed_seconds": 1091
+    },
+    "CCFD_60D_repeat": {
+      "command": "same command, isolated output dir .../c16_2026-10-12_repeat",
+      "exit": 0,
+      "elapsed_seconds": 1127,
+      "files_byte_identical_to_first_run": true
+    }
+  },
+  "determinism": {
+    "ASW_run1_vs_run2": "BYTE_IDENTICAL",
+    "ASW_C16_vs_C15": "SEMANTICALLY_EQUAL: exactly 4 field differences, all scopes.*.verification_code_sha (39ed85f3 -> 65efdd87); every gate, verdict, emission, case row and dataset hash identical",
+    "LSMC_C16_vs_C15": {
+      "BTCUSD": "BYTE_IDENTICAL",
+      "ETHUSD": "BYTE_IDENTICAL"
+    },
+    "CCFD_C16_vs_C15": "BYTE_IDENTICAL to the C15 reverify evidence (vt_recorded_60d_reverify_2026-10-12): all four output files equal. Against the C15 ORIGINAL dir (2026-10-11) there are exactly 17 field differences: 1 replay-date argument + 16 derived from owner decision OD1012-ACCOUNT (account suffix 985->999 and the engine identity hash over that config file); 0 unexplained (see identity_change_attribution)",
+    "CCFD_run1_vs_repeat": "BYTE_IDENTICAL"
+  },
+  "reproduced_scopes": {
+    "ASW:EURUSD:LONDON_NEWYORK": "run2 byte-identical to run1",
+    "ASW:GBPUSD:ASIAN_LONDON": "run2 byte-identical to run1",
+    "ASW:GBPUSD:LONDON_NEWYORK": "run2 byte-identical to run1",
+    "ASW:EURUSD:ASIAN_LONDON": "L3 reproducer byte-equal to the C15 reproducer",
+    "CCFD:BTCUSD:SHORT:WEEKDAY": "PASS reproduced in an independent repeat run (2 emissions / 77 entry-valid scans, byte-identical report)",
+    "CCFD:ETHUSD:LONG:WEEKDAY": "PASS reproduced in an independent repeat run (3 emissions / 354 entry-valid scans, byte-identical report)",
+    "LSMC:BTCUSD": "byte-identical to the committed C15 baseline artifact; no PASS-eligible scope (detection PASS, tickets operationally rejected)",
+    "LSMC:ETHUSD": "byte-identical to the committed C15 baseline artifact; no PASS-eligible scope (detection PASS, tickets operationally rejected)"
+  },
+  "skipped_reproductions": [
+    {
+      "scope": "ASW:AUDUSD:*",
+      "reason": "no authoritative 60-weekday fixture exists"
+    },
+    {
+      "scope": "ASW:USDJPY:*, ASW:XAUUSD:*",
+      "reason": "no valid entry to reproduce; zero emissions means there is no PASS claim to reproduce"
+    },
+    {
+      "scope": "LSMC:EURUSD/GBPUSD/USDJPY/XAUUSD",
+      "reason": "no authoritative recorded 60-day dataset for these symbols"
+    },
+    {
+      "scope": "CCFD:*:WEEKEND, CCFD:ETHUSD:SHORT:WEEKDAY, CCFD:BTCUSD:LONG:WEEKDAY",
+      "reason": "thin or zero emission scopes stay NOT_VERIFIED; there is no PASS claim to independently reproduce"
+    }
+  ],
+  "safety_counters": {
+    "broker_mutations": 0,
+    "order_api_calls": 0,
+    "mt5_calls": 0,
+    "network_calls_during_replay": 0,
+    "registry_changes": 0,
+    "ready_promotions": 0,
+    "demo_authorization_changes": 0,
+    "live_authorization_changes": 0,
+    "strategy_parameter_changes": 0,
+    "threshold_weakenings": 0,
+    "sealed_oos_opened": 0,
+    "synthetic_as_historical": 0,
+    "destructive_cleanups": 0,
+    "automatic_merges": 0
+  },
+  "tests": {
+    "resource_guard_pinned_pr180": {
+      "file": "tests/test_resource_guard.py",
+      "passed": 19,
+      "failed": 0
+    },
+    "ccfd_contract_identity": {
+      "file": "tests/test_c16_ccfd_contract_identity.py",
+      "passed": 10,
+      "failed": 0
+    },
+    "asw_v113_zero_risk_append_only": {
+      "file": "tests/test_asw_v113_zero_risk_append_only.py",
+      "passed": 12,
+      "failed": 0
+    }
+  },
+  "note": "Every replay is read-only and hermetic; no broker, registry, READY, demo or live surface is touched. sha256 values are computed from the files, never transcribed. The LSMC driver emits no git revision field, so its revision identity is carried by the C16 output path and this report rather than inside the artifact."
+}

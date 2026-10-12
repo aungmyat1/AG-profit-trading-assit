@@ -16,7 +16,7 @@ states.
 
 | ID | Severity | Strategy | Class | Status |
 |---|---|---|---|---|
-| `GOVERNANCE-180` | BLOCKER (authority) | — | process / governance | OPEN — ready for owner |
+| `GOVERNANCE-180` | BLOCKER (authority) | — | process / governance | **CLOSED — owner merged #180 (`7dfc8a20`)** |
 | `D-ASW-1` | HIGH | ASW 1.1.2 | implementation vs declaration | OPEN — v1.1.3 proposed |
 | `D-ASW-2` | HIGH | ASW 1.1.2 | implementation (identity/causality) | OPEN — v1.1.3 proposed |
 | `D-ASW-3` | MEDIUM | ASW 1.1.2 | missing host evidence | OPEN — owner input |
@@ -28,18 +28,26 @@ states.
 | `D-CCFD-1` | LOW | CCFD 1.1.0 | documentation vs implementation | ROOT-CAUSED — doc fix available |
 | `D-CCFD-2` | LOW (investigation) | CCFD 1.1.0 | unverifiable citation / hash-name ambiguity | **RESOLVED BY ROOT CAUSE** |
 | `D-CCFD-3` | MEDIUM | CCFD 1.0.0 | identity staleness (pre-existing C15) | OPEN — owner input |
+| `OBS-CCFD-1` | — (observation) | CCFD 1.1.0 | C15-original vs C16 engine identity | **EXPLAINED BY ROOT CAUSE** |
 
 ---
 
-## GOVERNANCE-180 — resource authority restored but unmerged
+## GOVERNANCE-180 — resource authority restored; now on main
 
-`RESOURCE-AUTHORITY-01` from PR #181 is resolved as far as an agent may resolve it: the
-owner-issued policy, guard and tests are restored byte-identically from
-`82e6e5cca329d1247f8a81aa308f25a80584c5fd` on PR #180 (head
-`d28cacb74eec3cc3ba217ccd6892904fd000bf3a`), the guard passes 19/19 focused tests plus nine
-end-to-end behaviour drills, and CI is green. The policy is **not on main** and **no owner
-approval is recorded**, so #180 was left reviewable and unmerged. Verdict:
-`GOVERNANCE_READY_FOR_OWNER_APPROVAL`. This campaign ran under the pinned policy.
+`RESOURCE-AUTHORITY-01` from PR #181 is resolved. The owner-issued policy, guard and tests were
+restored byte-identically from `82e6e5cca329d1247f8a81aa308f25a80584c5fd` on PR #180 (head
+`d28cacb74eec3cc3ba217ccd6892904fd000bf3a`); the guard passed 19/19 focused tests plus nine
+end-to-end behaviour drills, and CI was green. At that point the policy was **not on main** and
+**no owner approval was recorded**, so the agent left #180 reviewable and unmerged and reported
+`GOVERNANCE_READY_FOR_OWNER_APPROVAL`, pinning those exact bytes for the campaign.
+
+**Update:** the owner has since merged PR #180 as `7dfc8a20`. Main is now
+`a8271feadbd3f0a78aef7b2cd8e814e8362534ea` and holds byte-identical copies of all three files
+(policy `8bba5dba…`, guard `0970ebb1…`, tests `1122e0c3…`, verified by sha256 against the
+historical source). The merge landed after the C16 replays had started, so no replay was
+retro-fitted to it. Every identity the campaign pinned was recomputed at the new main tip and is
+unchanged (`ASW engine 243c4ff1…`, `ASW v1.1.2 contract 941dec55…`, `CCFD engine 0a3886eb…`),
+so the C16 verdicts hold at `a8271fea` too. Status: **CLOSED — governance on main.**
 
 ## D-ASW-1 — zero (and negative) risk distance emitted as `VALID`
 
@@ -207,6 +215,32 @@ Both are legitimate; naming them identically is what makes a by-hand comparison 
 `logic_verified_identity: b8188dfb…`). Unchanged by C16; re-recording or re-verification is a
 separate owner-governed change. The 1.1.0 candidate is not registered at all and stays
 `NOT_ADMITTED_RESEARCH_ONLY`.
+
+## OBS-CCFD-1 — C15-original vs C16 engine identity: EXPLAINED, not a defect
+
+The C15 *original* CCFD evidence (`vt_recorded_60d_2026-08-11_2026-10-09`, `date`
+`2026-10-11`) records `runtime_engine_hash` `a089001c…`; the C15 *reverify*
+(`vt_recorded_60d_reverify_2026-10-12`) and C16 both record `0a3886eb…`. Both are legitimate
+historical values of the same identity function.
+
+Root cause: commit `1eb4cb57` — *OD1012-PIN-LAND: account pin on main + terminal-path pin,
+RUN_IDENTITY, binding identity on failure records (#168)* — changed
+`config/v1_tickets/crypto_cfd_ticket_policy.yaml` `account_login_suffix: "985"` →
+`"999"` under owner decision **OD1012-ACCOUNT (2026-10-12)**. That config file is one of the
+21 files in the `ST_CRYPTO_CFD_SWEEP_RETEST_V1` engine identity list
+(`src/v1_tickets/authority.py::ADAPTERS`), so the identity hash moved with it.
+
+Evidence: recomputing `_sha256_text(ADAPTERS["ST_CRYPTO_CFD_SWEEP_RETEST_V1"][1])` over the
+80 most recent revisions flips exactly at that one-line config change; no engine *source* file
+differs between the two states. The C15-original → C16 difference set is 17 fields: 1 replay
+date argument + 16 OD1012-ACCOUNT derivations (2 account suffixes, 14 identity-hash echoes).
+Zero unexplained differences. C16 is byte-identical to the C15 reverify on all four output
+files (`replay_report.json` `ffb2ec16…`, `runtime_identity_verification.json` `60cb884f…`,
+`signal_events.json` `4fa10520…`, `tickets.jsonl` `648f2cb5…`).
+
+Classification: **not a defect, not a hash to overwrite** — an owner-approved account migration
+that is correctly reflected in the identity hash. Recorded here so the C15→C16 difference is
+never mistaken for drift.
 
 ---
 
