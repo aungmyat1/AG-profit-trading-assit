@@ -1,0 +1,72 @@
+# SPEC ONLY — not read by code.
+#
+# Ticket verification and execution-route SPEC for docs/PROJECT_OBJECTIVE.md, section
+# "Ticket lanes & execution routing (2026-10-12)". Mission AGP-PR177-RECONCILE.
+# No file under config/ is part of this spec. The runtime per-scope registry and loader are
+# NOT created here; they belong to a later, separately authorized PR. Until then no code reads
+# this file and no scope has a status.
+#
+# Fail-closed rules (target behaviour once the runtime registry exists):
+#   - missing scope, unknown status or malformed entry => execution_route=REPORT_ONLY
+#   - live accounts are never routable
+#   - EXECUTION_ELIGIBLE requires LOGIC_VERIFIED + data + cost + host acceptance + owner standing DEMO authorization
+#   - DEMO_ORDER requires EXECUTION_ELIGIBLE AND per-ticket guards passing at send time
+#   - setting any scope's status is a governed owner action, not an agent action
+schema_version: "1"
+policy_id: TICKET_VERIFICATION_ROUTING_V1
+status: SPEC_ONLY
+
+# Family -> pair scope map (owner-stated target universe, 2026-10-12). Canonical names only;
+# broker symbols resolve only via config/broker_symbol_map/vt_markets_demo.yaml.
+# AUDUSD is outside the target universe and is not a reported scope.
+families:
+  session_fx_gold:
+    strategy: ST_ASIAN_SWEEP_5R_V1
+    pairs: [EURUSD, GBPUSD, USDJPY, XAUUSD]
+    sessions: [ASIAN_LONDON, LONDON_NEWYORK]
+  crypto_cfd:
+    strategy: ST_CRYPTO_CFD_SWEEP_RETEST_V1
+    pairs: [BTCUSD, ETHUSD]
+    sessions: [daily_incl_weekends_strategy_defined_times]
+  large_smc:
+    strategy: ST_LARGE_SMC_V1
+    pairs: [EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSD, ETHUSD]
+    sessions: [continuous_watch]
+excluded_from_reporting: [AUDUSD]
+
+axes:
+  verification_status:
+    enum: [UNVERIFIED, IN_VERIFICATION, LOGIC_VERIFIED, STALE_IDENTITY]
+    default: UNVERIFIED
+  eligibility:
+    enum: [NOT_ELIGIBLE, EXECUTION_ELIGIBLE]
+    default: NOT_ELIGIBLE
+  execution_route:
+    enum: [REPORT_ONLY, DEMO_ORDER]
+    default: REPORT_ONLY
+route_reason_required_when: execution_route=REPORT_ONLY
+report_only_label_format: "REPORT ONLY — NON-ACTIONABLE"
+
+# LOGIC_VERIFIED = exact scope (strategy x pair x session x branch) passed L1-L6.
+# EXECUTION_ELIGIBLE requirements (each an evidence reference, not a boolean):
+eligibility_requirements:
+  verification_status: LOGIC_VERIFIED
+  data: G2_symbol_info
+  cost: G3_risk_cost_keys
+  host_acceptance: G4
+  owner_standing_demo_authorization: C14_per_scope_revocable
+# Shadow soak: optional diagnostic; may be cited as host-acceptance evidence; NOT an eligibility gate.
+
+# Per-ticket guards applied at send time (referenced from the objective; not altered here).
+per_ticket_guards:
+  risk_pct: 0.5
+  cost_block_R: 0.25
+  crypto_spread_block_fraction: 0.20   # owner-stated; config key missing => fail closed (follow-up b)
+  lsmc_min_remaining_reward_fraction: 0.5
+
+# Shape of a future runtime registry entry (illustrative only; no entries exist):
+#   <strategy_id>@<semantic_version>|<instrument>|<session>|<branch>:
+#     verification_status: <enum>
+#     eligibility: <enum>
+#     standing_demo_authorization_ref: <id or null>   # null => DEMO_AUTHORIZATION_ABSENT
+#     evidence_refs: [...]

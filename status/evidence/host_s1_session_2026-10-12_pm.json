@@ -1,0 +1,980 @@
+{
+ "record": "host_s1_session",
+ "date": "2026-10-12",
+ "session": "ASIAN_LONDON",
+ "scope": "S1 = ST_ASIAN_SWEEP_5R_V1 1.1.2, GBPUSD x ASIAN_LONDON x SWEEP; pinned account VTMarkets-Demo ...999 (OD1012-ACCOUNT)",
+ "order_api_calls": 0,
+ "broker_mutation_count": 0,
+ "redaction": "full MT5 logins -> ...<last3>; token-like secrets -> <REDACTED>; nothing else changed",
+ "runs": [
+  {
+   "run_local": "13:31",
+   "run_utc": "07:01",
+   "classification": "WRONG_ACCOUNT",
+   "account_identity": "identity by elimination (AG terminal closed 12:48:55-14:01:42; only sandbox ...985 logged in; sandbox GBPUSD-VIP history written 13:31:05)",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INSUFFICIENT_DATA",
+    "reason_code": "CandleAdapterError",
+    "strategy_version": "1.1.1",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.1|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": null,
+    "freshness_status": "FAIL",
+    "freshness_age_s": null
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1331/runner_log.txt",
+     "lines": 5,
+     "sha256": "e68f7b02159f8b8c39bb3ed8df8df167374778cd32eef777037ddab3f7b5c82b"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1331/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "69228fdfafbc492815b7bc9cc0c5d81a6be8fd7bf47b71eecb3ee956f433f01d"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1331/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "1e940e301ab375a17830195a10b043d5b76efe7ece40482c4ff01a5d9a6706d5"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1331/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "8b932773d9cf3ad39206756055178302476a96b8221cadbaf61484fc4f330e5b"
+    }
+   }
+  },
+  {
+   "run_local": "13:46",
+   "run_utc": "07:16",
+   "classification": "WRONG_ACCOUNT",
+   "account_identity": "identity by elimination (AG terminal closed 12:48:55-14:01:42; only sandbox ...985 logged in; sandbox GBPUSD-VIP history written 13:31:05)",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "BLOCKED",
+    "reason_code": "SPREAD_TOO_WIDE",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "PASS",
+    "freshness_age_s": 64.8
+   },
+   "fresh_signal": true,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1346/runner_log.txt",
+     "lines": 5,
+     "sha256": "d6d853dee159bdd6e1ed762ef71dabc85a6094a0705f57c7b9ff15f1052d0990"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1346/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "f9c38011acf5429c9f9de3aba1ce9e917bf556fd21243d95f8572a39fc9e0c66"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1346/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "3cc6d287392e30b28d4e2cdbbaa81c61ec611ea3072485992702835158898662"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1346/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "b97973805c146a353c6e0d9ccf73ecc91827389f136ac52ecb843e4de17cc696"
+    }
+   }
+  },
+  {
+   "run_local": "14:01",
+   "run_utc": "07:31",
+   "classification": "WRONG_ACCOUNT",
+   "account_identity": "identity by elimination (AG terminal closed 12:48:55-14:01:42; only sandbox ...985 logged in; sandbox GBPUSD-VIP history written 13:31:05)",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "STALE_SIGNAL",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "PASS",
+    "freshness_age_s": 969.0
+   },
+   "fresh_signal": true,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1401/runner_log.txt",
+     "lines": 5,
+     "sha256": "3dc2bb4f57bbac206dbee512c58d2f2e3e8aed34fe801e4dd425db06e3132b67"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1401/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "6b113d4c00b21561adf24aeca88eea73e0e4c0bf1703e08cd74813ad49039b71"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1401/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "6c67d577051f233c3ea45ad48c00367c5a32c75a461e64e15953a70fb670861e"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1401/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "21d398a48662bddb94c09a71aea09d80121a37c686d787cafe6b79bafa36c6fe"
+    }
+   }
+  },
+  {
+   "run_local": "14:16",
+   "run_utc": "07:46",
+   "classification": "DATA_ERROR",
+   "account_identity": "identity by elimination (only AG pid 15800 after 14:09:08 stop of sandbox pid 1228)",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INSUFFICIENT_DATA",
+    "reason_code": "CandleAdapterError",
+    "strategy_version": "1.1.1",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.1|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": null,
+    "freshness_status": "FAIL",
+    "freshness_age_s": null
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1416/runner_log.txt",
+     "lines": 5,
+     "sha256": "7677f130b883bbbf0ca324c1366b284f1d8cc7bde7c922cdb9e11ab67ffeb173"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1416/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "51fedc58569ea810f37ba3957db88bc5ea006c9181d157571adec4872b34c18d"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1416/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "2ddac108ca0807723cddbe8d08c3e3e93bf3bfbde501b5687147cbd78586a8ac"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1416/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "43105009b85851f54010d48c2de120ef507378997e258653c7e3e6b298d63d2b"
+    }
+   }
+  },
+  {
+   "run_local": "14:31",
+   "run_utc": "08:01",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "identity by terminal lifecycle logs: AG journal start 14:05:29 / authorized ...999 14:05:35 / exit 14:57:38, no other start/login/stop between; sandbox last exit 14:03:57; recheck process snapshot 14:20:25 (PR #166 status/evidence/host_recheck_2026-10-12_1416.json, git blob c42c9ecc48c9a7bc270bf3cce2be0066d8ec264d): only pid 15800 C:\\Program Files\\MetaTrader 5 ...999",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 2777.3
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1431/runner_log.txt",
+     "lines": 5,
+     "sha256": "da3c139739ec59137b05bf715eba221560b74b5794d16480f573a4feb47d7fc8"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1431/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "7f9e4344f7f6a50e9087906900e100fbf1bdf103cbe6f0eaced9ff644582dba8"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1431/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "ec31d0c4a6c34b30541b2857f9afa9fd8731a8ea1941ac39a5d493160cdbede5"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1431/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "8c62c14460c6efdc1baa481f9d70a02ae42b80dcb0e28d7b97d7086c374f5a2a"
+    }
+   }
+  },
+  {
+   "run_local": "14:46",
+   "run_utc": "08:16",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "identity by terminal lifecycle logs: AG journal start 14:05:29 / authorized ...999 14:05:35 / exit 14:57:38, no other start/login/stop between; sandbox last exit 14:03:57; recheck process snapshot 14:20:25 (PR #166 status/evidence/host_recheck_2026-10-12_1416.json, git blob c42c9ecc48c9a7bc270bf3cce2be0066d8ec264d): only pid 15800 C:\\Program Files\\MetaTrader 5 ...999",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 3669.4
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1446/runner_log.txt",
+     "lines": 5,
+     "sha256": "23a73b8774495990ac69d9b8e295c1ccf45bcb37c87d434d0c850b936ba64a0e"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1446/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "e2ad5f0d70c17b5644c76c143aaf7117ae2bd53b75ff7c3c2922f7269f6c99c1"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1446/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "1198a2984776fc7b4e3526f00083bc2d306e2f4c8019a33ffb1374e3ae205d03"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1446/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "bacc53c07f9f4fac20335993287a3cd457258d512b8148aba6a82598552b4080"
+    }
+   }
+  },
+  {
+   "run_local": "15:01",
+   "run_utc": "08:31",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 4567.8
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1501/runner_log.txt",
+     "lines": 5,
+     "sha256": "36e222dc492db822d795c3a4fe2c396742e9a2f2db01e5cada9ea6cfb3013666"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1501/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "e8d45fd2fe192039ee275ae523e9e55c7e39477bfd5aa50b2a590202254511c2"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1501/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "bfe5b1c842c3ebeabbbfc5646f26342a6185867ae0c06650aad4515db4737d59"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1501/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "a3d3824fb74eb3a5935d69659dad43f7083636642dad5c4692e34c8051efe620"
+    }
+   }
+  },
+  {
+   "run_local": "15:16",
+   "run_utc": "08:46",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 5472.5
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1516/runner_log.txt",
+     "lines": 5,
+     "sha256": "1d9bcd6a820244a4fe87b72055451407f43db3148b3ddc0485e6d59c6b9ae018"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1516/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "5a33aa079bd6f0d3199868fbfc60bdb8a5ef8c58a5d505342440ccab3cb1353b"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1516/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "5d6d993d9bbea668d9490e0a3a957da73bce7fa6494e525620d0795404d85a4c"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1516/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "4250537427bfe573180841a5784f858551a51ee8d786adda0d378c9ea5fdf4be"
+    }
+   }
+  },
+  {
+   "run_local": "15:31",
+   "run_utc": "09:01",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 6371.7
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1531/runner_log.txt",
+     "lines": 5,
+     "sha256": "7c8091e23257f107902403f6a0fa9f78e55b7ab94c0e9a0327c114150da4c897"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1531/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "08a254c71507100b41a19db672d395140a88b6861f70631e7d02c65307f247b6"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1531/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "ae0804fb072070dbdba2ad259d6867bcf90d2d0bb96b6ecc4851065711cc94b6"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1531/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "1e57712c5a25469993f9c21e0e350a6d81883406f62dc63c0912305a5b7ca31c"
+    }
+   }
+  },
+  {
+   "run_local": "15:46",
+   "run_utc": "09:16",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 7272.5
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1546/runner_log.txt",
+     "lines": 5,
+     "sha256": "cd2bfca698e4e971e57c90d56422c8c9db62a4e2bd71e156209ea5011adbdc0d"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1546/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "0290025dd3a09e246887fc35ddaeba96fa0da792f352d43583612a2cfdedac0d"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1546/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "07c2921c232a3f59eabeae78bd0fd244460f2b7e333c2b45ce7a6c498d936904"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1546/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "88a31715280975780eb386d76c14b7d6d04656b7c11b81ee3f6cd050a6a386ab"
+    }
+   }
+  },
+  {
+   "run_local": "16:01",
+   "run_utc": "09:31",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 8168.5
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1601/runner_log.txt",
+     "lines": 5,
+     "sha256": "93af22ec496441633d57a3bbd6c3ac33205e2e8709a26d6f2dfdc1088834f032"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1601/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "745ebce7cdf3012eec64ace52e4dc6b640935035f36761f27b25e2fe98f141ca"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1601/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "dcfb8a166583be662314451d4065e29c93d7de1d8898ceb7fb7489cf42c20f5b"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1601/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "95ccfcd9bd1cbb90611cb8189cb792b123f45767960be9910a7c1456a78640dc"
+    }
+   }
+  },
+  {
+   "run_local": "16:16",
+   "run_utc": "09:46",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 9080.6
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1616/runner_log.txt",
+     "lines": 5,
+     "sha256": "b1bb2552fc4311e8d49e8e60ce26dfc07ec67f90d423d343f919b8ff2fe848be"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1616/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "0c61346a0a29fcd5f427d8f0e50f8c83d075629155359361f9bfe5277444c538"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1616/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "82a1bb3dea0df6096e513a01d413b4c76eb89fa75c23a88a7a5981b86f0f94b0"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1616/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "db88ba02d82f22c80128dff978f27b1bcc1c90d2a615683f96605fcc40295b06"
+    }
+   }
+  },
+  {
+   "run_local": "16:31",
+   "run_utc": "10:01",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 9982.5
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1631/runner_log.txt",
+     "lines": 5,
+     "sha256": "f9b72c68576f1c5e180983c1168068f55ddf857a30e7d8514125e6f18fa04283"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1631/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "7c566ddac9bd8902943b76135cfa835dfeaab91cd3b0d802c090cb732d862ac6"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1631/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "e4c82db2466172f4a3f218b03562c6232dfd29ce7aaa8366c28f07d30c525f54"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1631/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "3de9a8a73c38485c9bd275bd1f5f6b47f94f809cf3f7d67dfa54157239bc7df8"
+    }
+   }
+  },
+  {
+   "run_local": "16:46",
+   "run_utc": "10:16",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 10868.3
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1646/runner_log.txt",
+     "lines": 5,
+     "sha256": "dcabefba30a83ca87e119ca1923a4d42f6a4845b41d757406699ea6be26a696a"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1646/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "73e393f5a27a2da6529d39cd6a5cf870df70a1cddfc9f7dabb7012d46c896706"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1646/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "ec56fc0ae095c6d6bdcf279fff12ac66c1207aa12e5bb6b3a739e210a5cbf3b3"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1646/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "4b27c0999bbc7765bc57d31393c6f3c1dc75a0048fe6a7ec42641228984c886d"
+    }
+   }
+  },
+  {
+   "run_local": "17:01",
+   "run_utc": "10:31",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 11764.8
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1701/runner_log.txt",
+     "lines": 5,
+     "sha256": "58a1e2eb85db115e2e5ce0dd67f5ca8cc79f3521184a7cd6b46c1e00fa4ad523"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1701/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "71eccb74a06988f59cb6fb452e433c9febf9304ac70544ae06ed2fc147236eac"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1701/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "319f66b16a9066946a9aaa535b4d53144fbfbdf726af4118763e9191e1ebdbb9"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1701/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "ab828d7192876fcbebeedbfd04efe2d94ac153681654309ee3ed9c1c11f999dc"
+    }
+   }
+  },
+  {
+   "run_local": "17:16",
+   "run_utc": "10:46",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "INFO_ONLY_STALE",
+    "reason_code": "FRESHNESS_EXCEEDED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 12664.7
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1716/runner_log.txt",
+     "lines": 5,
+     "sha256": "002e0859b334751db3fab2f64296eefba1ad7050cbc9ebd83d1bb9a2a22cb3c2"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1716/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "6020a866f0abd71b7e953f60d84254bef8a2a51c1dd01d94d16b6c8c8eb9aa0c"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1716/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "e6dea221525b80c1a7e1d0f9bf0be468a8d79a4d301296e3000eaff9140491d2"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1716/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "065d2c1fe22e952a393c53e433792aef7244052ffa0b4d26d6193c013947da86"
+    }
+   }
+  },
+  {
+   "run_local": "17:31",
+   "run_utc": "11:01",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "EXPIRED",
+    "reason_code": "TRADE_WINDOW_CLOSED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 13566.2
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1731/runner_log.txt",
+     "lines": 5,
+     "sha256": "1c01efc361aab652cd86a9b74123cc0f15b5b27e28d6f2cd9b12d37014771ed5"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1731/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "fc12d48f27335618bb7edbb082675e8a7590785498e157951bd1ad45e943c980"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1731/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "5b1acb6e51e03d2fcb346dabcc927dc8aa32dc129c6fe32974e61449bb5c2242"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1731/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "04ec29f20c908a6a28d923b1a52fca4f90b8e7db3f53c22a2ed65f0e9833ac9b"
+    }
+   }
+  },
+  {
+   "run_local": "17:46",
+   "run_utc": "11:16",
+   "classification": "CLEAN_STRATEGY_OUTCOME",
+   "account_identity": "observed: watcher snapshot 14:58:59 pid 2852 C:\\Program Files\\MetaTrader 5 ...999 single terminal, unchanged at every 30-s sample until 17:31:03 (change-only log); AG journal: last start 14:57:58, authorized ...999 14:58:08, no later start/login/stop through 18:10; after watcher end (17:31:03) identity rests on the AG journal only",
+   "tally_bucket": "PRE_DEPLOY (host HEAD 0773a55; no RUN_IDENTITY line)",
+   "gbpusd": {
+    "decision": "EXPIRED",
+    "reason_code": "TRADE_WINDOW_CLOSED",
+    "strategy_version": "1.1.2",
+    "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.2|GBPUSD|ASIAN_LONDON|2026-10-12",
+    "trigger_bar_close_utc": "2026-10-12T07:15:00+00:00",
+    "freshness_status": "FAIL",
+    "freshness_age_s": 14468.8
+   },
+   "fresh_signal": false,
+   "ticket_ready_immediate": false,
+   "per_run_telegram": [
+    "summary_only"
+   ],
+   "all_expected_evaluations_terminal": true,
+   "other_pairs": {
+    "EURUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "USDJPY": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED",
+    "XAUUSD": "BLOCKED/LOGIC_SCOPE_NOT_VERIFIED"
+   },
+   "raw_records": {
+    "runner_log.txt": {
+     "path": "status/evidence/runs/2026-10-12/1746/runner_log.txt",
+     "lines": 5,
+     "sha256": "ac207d0544bcb0bcb3df373aa637440609a934f559dbe2468c9fb124cd30c327"
+    },
+    "daily_evaluator.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1746/daily_evaluator.jsonl",
+     "lines": 4,
+     "sha256": "2def327846ef5c0983d09eb519011ee4512bfa364bfe69d6238df41fe2ec4012"
+    },
+    "ticket_store_evaluations.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1746/ticket_store_evaluations.jsonl",
+     "lines": 4,
+     "sha256": "6e0667cb12c91cf600d18855243c22587442ef394abee7bdd0d6c42b9c40cbdc"
+    },
+    "session_delivery_events.jsonl": {
+     "path": "status/evidence/runs/2026-10-12/1746/session_delivery_events.jsonl",
+     "lines": 8,
+     "sha256": "2a48a5bfe1d676251a6a11ebb1eea6d9e851e9637dd460688d57868a263cad7e"
+    }
+   }
+  }
+ ],
+ "lifecycle_and_snapshot_evidence": {
+  "ag_terminal_journal_lifecycle.txt": {
+   "path": "status/evidence/runs/2026-10-12/session/ag_terminal_journal_lifecycle.txt",
+   "lines": 20,
+   "sha256": "cd1e8d5f9e9bfe29de32742c792f91877042485e5dc2280a69aae08069b5fc7a"
+  },
+  "sandbox_terminal_journal_lifecycle.txt": {
+   "path": "status/evidence/runs/2026-10-12/session/sandbox_terminal_journal_lifecycle.txt",
+   "lines": 4,
+   "sha256": "558eb51570e5452ae0abf0cd6a0a3df0e9af547cffe37cc4e365a1e25d649f09"
+  },
+  "watcher_snapshots.jsonl": {
+   "path": "status/evidence/runs/2026-10-12/session/watcher_snapshots.jsonl",
+   "lines": 6,
+   "sha256": "19218c9d64facd96db45369909692ffa9cbb2394c80523909a805ea84cbc1976"
+  }
+ },
+ "session_summary_delivery": {
+  "raw_records": {
+   "summary_delivery_events.jsonl": {
+    "path": "status/evidence/runs/2026-10-12/session/summary_delivery_events.jsonl",
+    "lines": 2,
+    "sha256": "6de50a2c7e5bfd672779d29503277607542b2c5bbac0cf154bb59368869b2c2b"
+   },
+   "summary_runner_log.txt": {
+    "path": "status/evidence/runs/2026-10-12/session/summary_runner_log.txt",
+    "lines": 1,
+    "sha256": "8bd7562dddf16e1d49d471174be61dcf93f48aa4892bbbce9b402b9a77329959"
+   }
+  },
+  "intent": "stage=INTENT delivery_state=pending recorded_at_utc 11:31:07.261975Z",
+  "result": "stage=RESULT delivery_state=sent error_class=null summary_status=COMPLETE expected=4 recorded=4",
+  "runner_log": "2026-10-12T11:31:14Z FX_SESSION_SUMMARY 2026-10-12 ASIAN_LONDON status=COMPLETE delivery=sent",
+  "code_path_verification": {
+   "intent_before_send": "scripts/host/canonical_fx_delivery.py:673-683 (INTENT, delivery_state=pending, durable before any send)",
+   "result_from_sender": "scripts/host/canonical_fx_delivery.py:684-697 (RESULT delivery_state = sender.send_session_summary(...))",
+   "sent_only_after_transport_success": "src/telegram_delivery/adapter.py:485-492 (_send returns 'sent' only after transport returns without raising)",
+   "transport_requires_ok_true": "src/telegram_delivery/adapter.py:263-276 (bot_api raises unless result['ok'] is True)",
+   "scheduled_runner_uses_real_transport": "scripts/host/canonical_fx_delivery.py:131-136 (no transport override from live_candles_smoke)",
+   "uncertain_no_resend": "adapter.py:473-484 claim before network; :496-501/:505-513 uncertain without retry; :454-467 duplicate on re-attempt; canonical_fx_delivery.py:655 skips prior uncertain; test PR #171",
+   "verdict": "delivery_state=sent implies Telegram ok:true"
+  },
+  "message_id_recorded": false,
+  "summary_content_source": "latest terminal decision per symbol (canonical_fx_delivery.py:512-516, 531-552) = 17:46 run on ...999",
+  "delivery": "PASS",
+  "duplicate_owner_messages": "0 (one INTENT + one RESULT for identity [2026-10-12, ASIAN_LONDON])"
+ },
+ "s1_tally": {
+  "bucket": "PRE_DEPLOY",
+  "clean_cycles": 14,
+  "excluded": [
+   {
+    "run_local": "13:31",
+    "class": "WRONG_ACCOUNT"
+   },
+   {
+    "run_local": "13:46",
+    "class": "WRONG_ACCOUNT"
+   },
+   {
+    "run_local": "14:01",
+    "class": "WRONG_ACCOUNT"
+   },
+   {
+    "run_local": "14:16",
+    "class": "DATA_ERROR"
+   }
+  ],
+  "fresh_signal_runs": [
+   "13:46",
+   "14:01"
+  ],
+  "note": "The only S1 signal (SWEEP, trigger bar close 07:15Z) was fresh until 07:45Z; it was observed fresh only by the 13:46 and 14:01 runs, both reading sandbox ...985 (WRONG_ACCOUNT). No ...999 run saw it fresh. No TICKET_READY; no immediate ticket message."
+ },
+ "acceptance_against_PROJECT_OBJECTIVE_137": {
+  "criteria": {
+   "real_venue_data": "PASS for the summarised (latest) evaluations and every CLEAN run (VT MT5 ...999); 3 runs read sandbox ...985 and are excluded",
+   "all_expected_evaluations_terminal": "PASS (4/4 in every run; summary expected=4 recorded=4, status COMPLETE)",
+   "silent_outcomes": "PASS (0)",
+   "invented_context": "PASS (0; fact_provenance fields NOT_AVAILABLE/None, no synthesised POI)",
+   "telegram_delivery": "PASS (RESULT sent; code path requires ok:true)",
+   "duplicate_owner_messages": "PASS (0)",
+   "broker_mutation": "PASS (0)"
+  },
+  "verdict": "ACCEPTANCE_RUN_PASS",
+  "qualification": "The session-level run passes every :137-146 criterion. Account binding (OD1012-ACCOUNT ...999) is not a :137 criterion; 4 of 18 runs are excluded from the S1 clean-cycle tally (3 WRONG_ACCOUNT, 1 DATA_ERROR) and identities are PRE_DEPLOY (no RUN_IDENTITY line). Owner decides whether the wrong-account interval disqualifies the session."
+ }
+}

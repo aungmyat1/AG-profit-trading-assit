@@ -19,6 +19,109 @@ After a strategy passes L1–L6 for its exact frozen identity and completes runt
 
 The [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md) remains available as historical proposal evidence. Its mandatory soak and post-soak/per-order requirements were superseded by C14 and are not current policy.
 
+## Ticket lanes & execution routing (2026-10-12)
+
+**Status:** owner-directed amendment, DESIGN. Documentation and SPEC only. It enables no code path, changes no READY flag, and leaves `demo_authorized=false`, `live_authorized=false` and all execution flags OFF. Spec (SPEC ONLY, not read by any code): [`docs/schemas/ticket_verification_routing.yaml`](schemas/ticket_verification_routing.yaml). Decision record: [`governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md`](governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md).
+
+**Intent.** During logical verification the system produces trade tickets from **all three strategy families** — Asian Sweep session FX/gold (`ST_ASIAN_SWEEP_5R_V1`), Crypto CFD sweep-retest (`ST_CRYPTO_CFD_SWEEP_RETEST_V1`) and Large-SMC (`ST_LARGE_SMC_V1`) — for every relevant pair. Every relevant scope is reported with its current status. Each ticket is stamped with its scope's `verification_status`, `eligibility` and `execution_route`.
+
+**Scope.** A verification scope is the tuple **strategy × pair × session × branch** (for example `ST_ASIAN_SWEEP_5R_V1@1.1.2` × GBPUSD × ASIAN_LONDON × SWEEP). A passing scope verifies no other branch, symbol, session or venue (AGP-C15).
+
+### Family → pair scope map (owner-stated target universe, 2026-10-12)
+
+Canonical names only. Broker symbols resolve solely through `config/broker_symbol_map/vt_markets_demo.yaml`.
+
+| Family | Strategy | Pairs | Sessions / cycle |
+|---|---|---|---|
+| Session FX/gold | `ST_ASIAN_SWEEP_5R_V1` | EURUSD, GBPUSD, USDJPY, XAUUSD | ASIAN_LONDON, LONDON_NEWYORK |
+| Crypto CFD | `ST_CRYPTO_CFD_SWEEP_RETEST_V1` | BTCUSD, ETHUSD | daily incl. weekends, strategy-defined times |
+| Large-SMC | `ST_LARGE_SMC_V1` | EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSD, ETHUSD | continuous watch |
+
+- **AUDUSD is outside the owner's target universe and is not a reported scope.** It appears in the `ST_ASIAN_SWEEP_5R_V1` v1.0.0 and v1.1.2 contract `instruments` lists and is excluded in v2.0.0. This amendment does not edit any strategy contract.
+- A scope is a (family, strategy, pair, session/branch) tuple. "Every relevant pair" means the pairs in this table for that family.
+
+### Pass semantics (owner reading confirmed 2026-10-12)
+
+- A scope that passes L1–L6 is `LOGIC_VERIFIED` only.
+- It becomes `EXECUTION_ELIGIBLE` after G2–G4.
+- It becomes `DEMO_ORDER`-routable only with the owner's separate, scope-specific standing DEMO authorization (C14).
+- Passing L1–L6 alone never routes an order.
+- Non-passing scopes: Telegram REPORT ONLY.
+- Passing scopes: demo order (once routable) plus a Telegram report.
+
+### States
+
+Three independent axes replace any single "PASSED" state:
+
+| Axis | Values | Meaning |
+|---|---|---|
+| `verification_status` | `UNVERIFIED` \| `IN_VERIFICATION` \| `LOGIC_VERIFIED` \| `STALE_IDENTITY` | `LOGIC_VERIFIED` = the exact scope passed **L1–L6**, with frozen identity, causality and deterministic replay. |
+| `eligibility` | `NOT_ELIGIBLE` \| `EXECUTION_ELIGIBLE` | `EXECUTION_ELIGIBLE` = `LOGIC_VERIFIED` **+** data (G2 `symbol_info`) **+** cost (G3 risk/cost keys and threshold tests) **+** host acceptance (G4) **+** an owner per-scope **standing DEMO authorization** (C14). |
+| `execution_route` | `REPORT_ONLY` \| `DEMO_ORDER` | `DEMO_ORDER` = `EXECUTION_ELIGIBLE` **AND** every per-ticket guard passes **at send time**. Otherwise `REPORT_ONLY`. |
+
+- **PASSED makes a scope eligible; owner standing authorization makes it routable.** `LOGIC_VERIFIED` alone is never eligible.
+- **Shadow soak** is an optional diagnostic and may be cited as host-acceptance evidence. It is **not** an eligibility gate (C14, OD1009-D5).
+- Routing reads a single per-scope registry. That runtime registry does not exist yet (see Current state). Missing, unknown or malformed status fails closed to `REPORT_ONLY`. Live accounts are never routable.
+- `route_reason` is required and non-empty whenever `execution_route=REPORT_ONLY`.
+
+`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED` and `LIVE_AUTHORIZED` remain independent states. Neither `LOGIC_VERIFIED` nor `EXECUTION_ELIGIBLE` implies `EDGE_VERIFIED` or `LIVE_AUTHORIZED`.
+
+### Ticket lanes
+
+- **All three families report every relevant scope**, with its status stamped on the ticket.
+- **Non-eligible tickets** (`NOT_ELIGIBLE`, or any non-`DEMO_ORDER` route) carry the header **`REPORT ONLY — NON-ACTIONABLE`**. A hypothetical entry, SL and TP may be shown only when clearly labelled as hypothetical. Such tickets **never enter the order queue**.
+- **Large-SMC:** Large-SMC detection verification ≠ entry/proposal verification; eligible only after entry scope passes L1–L6 + owner authorization. Detection verification alone never makes a Large-SMC scope eligible. Watch and alert behaviour is unchanged.
+- **No retroactive execution.** Tickets issued before a scope became `EXECUTION_ELIGIBLE` are never placed.
+
+### Per-ticket guards (apply even when EXECUTION_ELIGIBLE)
+
+A ticket is blocked, and routed `REPORT_ONLY` with the block reason, if any of these fail. Guards are referenced here and are not altered by this section.
+
+| Guard | Rule | Source |
+|---|---|---|
+| Risk | `risk_pct` = 0.5 (owner ticket config; no fallback to strategy or `trading.yaml` risk). | OD1009-D2, OD1010-C6-RISK |
+| Cost | Spread + commission ≥ **0.25R** blocks (`cost_block_R`). | OD1009-D2 |
+| Crypto spread | Crypto CFD spread > **20%** blocks. Config key is missing, so the guard **fails closed** until the key is added. | Owner ratification 2026-10-09 as stated by the owner (register `OD1009-CRYPTO-SPREAD`); config key pending (follow-up b) |
+| Large-SMC reward | `lsmc_min_remaining_reward_fraction` = 0.5 (≥ 50% of entry-to-target distance remaining). | `config/policy/actionability_policy.yaml` |
+
+Cadence and session guards that apply to the same routing lanes:
+
+- **15-minute cadence**, with **8 durable session outcomes** per applicable FX day (`AGP-OD1012-SESSION-CRYPTO`).
+- **OD1012-S1-ACCEPT:** S1 acceptance is the open-window run; the optional soak is not a gate.
+- **Combined crypto cap:** at most **2** combined crypto entries per day, enforced at the execution boundary.
+- **Crypto day boundary** `00:00 Asia/Yangon` is separate from, and cumulative with, the broker-server-day risk reset (`VT_SERVER_DAY`). The strictest limit binds. This boundary is in PR #175, which is not yet on `main`.
+- **No live routing ever.**
+
+Any guard failure, missing execution-critical input, stale or expired ticket, or unknown status produces `execution_route=REPORT_ONLY` with a populated `route_reason`.
+
+### Ticket schema additions
+
+| Field | Type | Values / rule |
+|---|---|---|
+| `verification_status` | enum | `UNVERIFIED` \| `IN_VERIFICATION` \| `LOGIC_VERIFIED` \| `STALE_IDENTITY`. Read from the registry for the ticket's scope; never inferred from the ticket. |
+| `eligibility` | enum | `NOT_ELIGIBLE` \| `EXECUTION_ELIGIBLE`. |
+| `execution_route` | enum | `DEMO_ORDER` \| `REPORT_ONLY`. Fail-closed default is `REPORT_ONLY`. |
+| `route_reason` | string | Required when `execution_route=REPORT_ONLY`: the failing status, guard or block reason (for example `REPORT-ONLY: LOGIC_VERIFIED` or `DEMO_AUTHORIZATION_ABSENT`). |
+
+### Execution path and Telegram controls
+
+- Every automatic order passes the canonical execution/risk authority (`assistant.commands.execute_command()` boundary where implemented), with `order_check`, duplicate prevention, reconciliation and emergency stop. No ticket generator, Telegram message or callback may place an order directly.
+- The owner may **edit or close** demo orders from Telegram. Such actions are broker mutations and must pass through the same canonical executor, with an append-only audit record. They may not bypass routing, guards, authorization or the live exclusion.
+
+### Supersession of the 2026-10-09 owner-approval order flow
+
+The 2026-10-09 flow in which an owner Confirm places an order (Issue #47 V5 per-order confirmation, OD1009-D5) is **superseded for `EXECUTION_ELIGIBLE` scopes**. Per-order Confirm is no longer the placement trigger for those scopes. Owner Confirm/Reject remains decision capture for other scopes and never grants or extends authorization.
+
+**Activation caveat (not changed by this amendment):** the per-order `user_confirmed` gate in `AGENTS.md` stays in force until the reviewed executor change and matching `AGENTS.md` update have landed together (see `docs/agents/INVARIANTS.md`). Until then, no scope can route `DEMO_ORDER` in practice.
+
+### Current state
+
+No scope is `LOGIC_VERIFIED` or `EXECUTION_ELIGIBLE` by this section. No runtime routing registry exists, so every ticket is `REPORT_ONLY` with reason `REGISTRY_ENTRY_MISSING` until the separately authorized registry PR lands. Strategy admission, READY, runtime binding and host acceptance are unchanged. This section sets target policy only and is not evidence that any gate has passed.
+
+### Follow-ups (not in this PR)
+
+(a) Executor change replacing per-order `user_confirmed` for `EXECUTION_ELIGIBLE` scopes. (b) Config key for the crypto spread >20% block. (c) Runtime scope registry and loader. (d) Read-only all-family Telegram status reports, the next implementation priority.
+
 ## Objective
 
 Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
