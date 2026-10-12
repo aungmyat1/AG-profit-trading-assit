@@ -27,6 +27,28 @@ The [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-1
 
 **Scope.** A verification scope is the tuple **strategy × pair × session × branch** (for example `ST_ASIAN_SWEEP_5R_V1@1.1.2` × GBPUSD × ASIAN_LONDON × SWEEP). A passing scope verifies no other branch, symbol, session or venue (AGP-C15).
 
+### Family → pair scope map (owner-stated target universe, 2026-10-12)
+
+Canonical names only. Broker symbols resolve solely through `config/broker_symbol_map/vt_markets_demo.yaml`.
+
+| Family | Strategy | Pairs | Sessions / cycle |
+|---|---|---|---|
+| Session FX/gold | `ST_ASIAN_SWEEP_5R_V1` | EURUSD, GBPUSD, USDJPY, XAUUSD | ASIAN_LONDON, LONDON_NEWYORK |
+| Crypto CFD | `ST_CRYPTO_CFD_SWEEP_RETEST_V1` | BTCUSD, ETHUSD | daily incl. weekends, strategy-defined times |
+| Large-SMC | `ST_LARGE_SMC_V1` | EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSD, ETHUSD | continuous watch |
+
+- **AUDUSD is outside the owner's target universe and is not a reported scope.** It appears in the `ST_ASIAN_SWEEP_5R_V1` v1.0.0 and v1.1.2 contract `instruments` lists and is excluded in v2.0.0. This amendment does not edit any strategy contract.
+- A scope is a (family, strategy, pair, session/branch) tuple. "Every relevant pair" means the pairs in this table for that family.
+
+### Pass semantics (owner reading confirmed 2026-10-12)
+
+- A scope that passes L1–L6 is `LOGIC_VERIFIED` only.
+- It becomes `EXECUTION_ELIGIBLE` after G2–G4.
+- It becomes `DEMO_ORDER`-routable only with the owner's separate, scope-specific standing DEMO authorization (C14).
+- Passing L1–L6 alone never routes an order.
+- Non-passing scopes: Telegram REPORT ONLY.
+- Passing scopes: demo order (once routable) plus a Telegram report.
+
 ### States
 
 Three independent axes replace any single "PASSED" state:

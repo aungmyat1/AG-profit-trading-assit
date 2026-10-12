@@ -27,6 +27,14 @@ Tickets from all three strategy families report every relevant scope with its st
 
 **PASSED makes a scope eligible; owner standing authorization makes it routable.**
 
+## 1a. Pass semantics (owner confirmed 2026-10-12)
+
+The owner confirmed this conservative reading on 2026-10-12: a scope that passes L1–L6 is `LOGIC_VERIFIED` only; it becomes `EXECUTION_ELIGIBLE` after G2–G4; it becomes `DEMO_ORDER`-routable only with the owner's separate, scope-specific standing DEMO authorization (C14). Passing L1–L6 alone never routes an order. Non-passing scopes receive a Telegram REPORT ONLY; passing scopes receive a demo order (once routable) plus a Telegram report.
+
+## 1b. Family → pair scope map
+
+Recorded in `PROJECT_OBJECTIVE.md` and `docs/schemas/ticket_verification_routing.yaml`. Target universe: session FX/gold `ST_ASIAN_SWEEP_5R_V1` on EURUSD, GBPUSD, USDJPY, XAUUSD; crypto CFD `ST_CRYPTO_CFD_SWEEP_RETEST_V1` on BTCUSD, ETHUSD; Large-SMC `ST_LARGE_SMC_V1` on all six. AUDUSD is outside the owner's target universe and is not a reported scope.
+
 ## 2. Rulings
 
 - **R0 — base.** Branch base is `origin/main` at `39ed85f`. #175 and its regeneration PR are **not on main**. No merge-in was required because main has not moved. A follow-up merge is expected when #175 lands.

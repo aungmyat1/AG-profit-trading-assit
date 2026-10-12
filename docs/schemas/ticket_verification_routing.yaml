@@ -16,6 +16,24 @@ schema_version: "1"
 policy_id: TICKET_VERIFICATION_ROUTING_V1
 status: SPEC_ONLY
 
+# Family -> pair scope map (owner-stated target universe, 2026-10-12). Canonical names only;
+# broker symbols resolve only via config/broker_symbol_map/vt_markets_demo.yaml.
+# AUDUSD is outside the target universe and is not a reported scope.
+families:
+  session_fx_gold:
+    strategy: ST_ASIAN_SWEEP_5R_V1
+    pairs: [EURUSD, GBPUSD, USDJPY, XAUUSD]
+    sessions: [ASIAN_LONDON, LONDON_NEWYORK]
+  crypto_cfd:
+    strategy: ST_CRYPTO_CFD_SWEEP_RETEST_V1
+    pairs: [BTCUSD, ETHUSD]
+    sessions: [daily_incl_weekends_strategy_defined_times]
+  large_smc:
+    strategy: ST_LARGE_SMC_V1
+    pairs: [EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSD, ETHUSD]
+    sessions: [continuous_watch]
+excluded_from_reporting: [AUDUSD]
+
 axes:
   verification_status:
     enum: [UNVERIFIED, IN_VERIFICATION, LOGIC_VERIFIED, STALE_IDENTITY]
