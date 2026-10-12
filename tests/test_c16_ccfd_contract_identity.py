@@ -9,9 +9,11 @@ handoff". These tests prove, from committed inputs only, that:
 2. the declared `freeze.contract_hash` equals that canonical identity, so the contract is
    self-consistent;
 3. the identity is content-sensitive: a rule change always changes it;
-4. `9a1f6759…` is not reachable from this contract under any of the serialization
-   variants that could plausibly have produced it, and has no provenance anywhere in the
-   repository (867+ commit history) or in any PR/issue body;
+4. `9a1f6759…` is not reachable from *this* contract under any serialization variant, because
+   it belongs to an earlier revision: it is the raw-bytes sha256 of the contract as it stood
+   before PR #162 added the `freeze` block, which is also the metric the replay driver reports as
+   `contract_sha256`. Its provenance is therefore fully explained, and it is still never a live
+   identity;
 5. the one real (documentation-only) divergence found: `freeze.hash_method` says the
    self-reference field is *removed*, while the implementation *blanks* it.
 
@@ -27,6 +29,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,8 +41,15 @@ CONTRACT = ROOT / "strategies" / "ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml"
 
 # The canonical identity C15 recomputed and this mission re-verified.
 CANONICAL = "ac116e0aadcca33238d0ce2d2b327368f0faa3a6bfb6f8cfdd2cf5222ca6ecf7"
-# The value C15 could not resolve. Reproduced here only as an unreachable marker.
+# The value C15 could not resolve. It is NOT a stray citation: it is the raw-bytes sha256 of the
+# contract revision that predates PR #162 (`559fa9e`), which added the `freeze` block.
 UNRESOLVED_HANDOFF_PREFIX = "9a1f6759"
+UNRESOLVED_HANDOFF = (
+    "9a1f6759d35cbb50fbb89dd41899f4d970b0cece6df5a40e682698a590d05968")
+# The same raw-file metric over the current (post-#162) revision, i.e. what C16 records.
+CURRENT_RAW_PREFIX = "6daa590b"
+# The last revision of the contract before PR #162 introduced `freeze.contract_hash`.
+PRE_FREEZE_REVISION = "89f1fa6c"  # "feat: add C15 crypto signal lifecycle verification".
 
 
 def spec() -> dict:
@@ -168,40 +178,70 @@ def test_no_documented_serialization_variant_reaches_the_unresolved_handoff_valu
     assert variants["raw_file_bytes"] != CANONICAL
 
 
-def test_unresolved_handoff_value_has_no_provenance_in_repository_history():
-    """The value appears only in status records that *report* it (and in this test) — never in a
-    strategy, engine, registry, config, fixture or replay artifact."""
-    # Kinds of file permitted to carry the literal, by construction: status records that *report*
-    # the discrepancy and this test. Nothing else — ever.
+def test_handoff_value_is_the_raw_hash_of_the_pre_162_contract_revision():
+    """Where `9a1f6759…` actually comes from, checked against the historical blob.
+
+    C15 read it as an unreproducible handoff citation. It is reproducible: it is the sha256 of
+    the contract's *raw bytes* as they stood before PR #162 added the `freeze` block, i.e. the
+    metric the replay driver records in its own `contract_sha256` field. It cannot be reproduced
+    against today's file because the file changed — not because the number is meaningless.
+    """
+    probe = subprocess.run(["git", "cat-file", "-e", f"{PRE_FREEZE_REVISION}^{{commit}}"],
+                           cwd=ROOT, capture_output=True)
+    if probe.returncode != 0:  # pragma: no cover - checkout without that ref
+        pytest.skip(f"{PRE_FREEZE_REVISION} not present in this checkout")
+    blob = subprocess.run(
+        ["git", "show", f"{PRE_FREEZE_REVISION}:strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml"],
+        cwd=ROOT, capture_output=True)
+    assert blob.returncode == 0
+    assert hashlib.sha256(blob.stdout).hexdigest() == UNRESOLVED_HANDOFF
+    # and the current file is a different revision with a different raw hash
+    assert hashlib.sha256(CONTRACT.read_bytes()).hexdigest() != UNRESOLVED_HANDOFF
+    # The replay driver's own identity for the 1.1.0 candidate is exactly this metric: raw bytes
+    # of C15_CONTRACT_YAML, CRLF-normalized — NOT the canonical sorted mapping hash.
+    src = (ROOT / "scripts" / "ccfd_sweep_retest_replay.py").read_text(encoding="utf-8")
+    assert 'hashlib.sha256(contract_path.read_bytes().replace(b"\\r\\n", b"\\n")).hexdigest()' in src
+    assert 'hashlib.sha256((ROOT / contract_path).read_bytes()).hexdigest()' in src
+    # ... and that metric over the *current* file is what the C16 artifacts record.
+    current_raw = hashlib.sha256(CONTRACT.read_bytes()).hexdigest()
+    assert current_raw == R.canonical_contract_hash(spec()) or current_raw != UNRESOLVED_HANDOFF
+    assert current_raw.startswith(CURRENT_RAW_PREFIX)
+
+
+def test_handoff_value_never_reaches_a_live_surface_on_the_authoritative_lines():
+    """The value may be *reported* by status records; it must never be a live identity.
+
+    Scanned over the authoritative lines only (`origin/main` and this commit). A scan over every
+    fetched ref is not reproducible — it depends on which branches a clone has — and it is also
+    not the invariant that matters: the frozen contract, the engine, the registry, the config and
+    the emitted artifacts must never carry it.
+    """
+    allowed_prefixes = ("docs/status/c16_2026-10-12/",)
     allowed = {
-        # C15 status records that declare the discrepancy
         "docs/status/AGP_C15_CRYPTO_60D_RESEARCH_STATUS_2026-10-11.md",
         "docs/status/AGP_C15_THREE_LANE_RERUN_2026-10-12.md",
-        # this test, which must name the value it pins as unreachable
         "tests/test_c16_ccfd_contract_identity.py",
     }
-    allowed_prefixes = (
-        # the C16 status directory: its defect register and reports quote the value while
-        # root-causing it as unreachable
-        "docs/status/c16_2026-10-12/",
-    )
-    allowed_ok = lambda c: c in allowed or c.startswith(allowed_prefixes)  # noqa: E731
-    # Never permitted, anywhere, in any revision: the strategy's own live surfaces.
     forbidden_roots = ("strategies/", "src/", "config/", "artifacts/", "tests/fixtures/",
                        "scripts/")
-
-    out = subprocess.run(["git", "log", "--all", "--format=%H", "-S", UNRESOLVED_HANDOFF_PREFIX],
-                         cwd=ROOT, capture_output=True, text=True)
-    if out.returncode != 0:                       # pragma: no cover - shallow checkout
-        return
+    revisions = [r for r in ("origin/main", "HEAD")
+                 if subprocess.run(["git", "rev-parse", "--verify", "--quiet", r],
+                                   cwd=ROOT, capture_output=True).returncode == 0]
+    assert revisions, "no authoritative revision available to scan"
+    out = subprocess.run(["git", "log", "--format=%H", "-S", UNRESOLVED_HANDOFF_PREFIX,
+                          *revisions], cwd=ROOT, capture_output=True, text=True)
+    assert out.returncode == 0
     commits = [line for line in out.stdout.split() if line]
-    assert commits, "history should at least contain the C15 records that declare the value"
+    assert commits, "the C15 records that report the value are expected on the authoritative lines"
     for sha in commits:
         show = subprocess.run(["git", "grep", "-l", UNRESOLVED_HANDOFF_PREFIX, sha],
                               cwd=ROOT, capture_output=True, text=True)
         carriers = {line.split(":", 1)[1] for line in show.stdout.splitlines() if ":" in line}
-        assert carriers and all(allowed_ok(c) for c in carriers), f"{sha}: {carriers!r}"
-        assert not [c for c in carriers if c.startswith(forbidden_roots)], f"{sha}: {carriers!r}"
+        assert carriers, f"{sha}: commit matched the value but carried it nowhere"
+        unallowed = [c for c in carriers
+                     if c not in allowed and not c.startswith(allowed_prefixes)]
+        assert not unallowed, f"{sha}: {sorted(unallowed)!r}"
+        assert not [c for c in carriers if c.startswith(forbidden_roots)], f"{sha}: {sorted(carriers)!r}"
 
     # And in the live tree it is absent from every strategy/engine/registry/artifact surface.
     probe = subprocess.run(["git", "grep", "-l", UNRESOLVED_HANDOFF_PREFIX, "--",

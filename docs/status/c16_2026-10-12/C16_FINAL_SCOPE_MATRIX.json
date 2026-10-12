@@ -2279,5 +2279,13 @@
         "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/c16_2026-10-12/signal_events.json"
       ]
     }
-  ]
+  ],
+  "ccfd_contract_identity_attribution": {
+    "finding": "The C15 sentence 'canonical hash ac116e0a\u2026 does not match the 9a1f6759\u2026 value requested in the original PR handoff' compares two different kinds of identity taken at two different revisions.",
+    "root_cause": "9a1f6759\u2026 is the raw-bytes sha256 (CRLF-normalized) of strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml at revision 89f1fa6c, i.e. before PR #162 (559fa9e) appended the research_lifecycle_contract.freeze block. That is exactly the metric the replay driver computes for the 1.1.0 candidate in research_logic_identity (contract_path.read_bytes() over C15_CONTRACT_YAML), and it is what the C15 artifact on branch feat/c15-crypto-verification records in contract_sha256 / logic_identity.contract_hash. Over the current revision that same metric is 6daa590b\u2026, while the canonical sorted mapping identity declared in freeze.contract_hash stays ac116e0a\u2026.",
+    "verification": "Reconstructed the pre-#162 blob with git show and hashed it: 9a1f6759d35cbb50fbb89dd41899f4d970b0cece6df5a40e682698a590d05968, bit-for-bit; the same metric over the current revision is 6daa590b9a8bf0ba\u2026, matching the C16 artifact. Read the committed artifact on feat/c15-crypto-verification: the value is its contract_sha256/logic_identity.contract_hash, and it is absent from that file's current revision. Read the driver source to confirm the metric it uses for 1.1.0 (raw bytes, not the canonical mapping hash). Eight serializations of the current contract were computed; none reproduces the value from the current file.",
+    "canonical_identity_unchanged": true,
+    "hash_overwritten": false,
+    "residual_documentation_defect": "D-CCFD-2b: one field name (contract_hash) carries two kinds of identity across blocks \u2014 canonical mapping identity vs raw-file identity \u2014 which makes any by-hand comparison across revisions ambiguous."
+  }
 }

@@ -27,8 +27,9 @@ states.
 | `D-LSMC-4` | MEDIUM | LSMC 1.1.0 | missing authority adapter | OPEN — owner input |
 | `D-LSMC-5` | MEDIUM | LSMC 1.1.0 | L5 cost evidence | OPEN — owner input |
 | `D-CCFD-1` | LOW | CCFD 1.1.0 | documentation vs implementation | ROOT-CAUSED — doc fix available |
-| `D-CCFD-2` | LOW (investigation) | CCFD 1.1.0 | unverifiable citation / hash-name ambiguity | **RESOLVED BY ROOT CAUSE** |
+| `D-CCFD-2` | MEDIUM (identity bookkeeping) | CCFD 1.1.0 | cross-revision raw-file vs canonical identity | **RESOLVED BY ROOT CAUSE** |
 | `D-CCFD-3` | MEDIUM | CCFD 1.0.0 | identity staleness (pre-existing C15) | OPEN — owner input |
+| `D-CCFD-2b` | MEDIUM (documentation) | — | documentation / identity naming | OPEN — bounded docs fix; canonical identity untouched |
 | `OBS-CCFD-1` | — (observation) | CCFD 1.1.0 | C15-original vs C16 engine identity | **EXPLAINED BY ROOT CAUSE** |
 
 ---
@@ -186,15 +187,38 @@ documentation fix available; **the canonical value is not changed**.
 C15 recorded that the canonical hash it recomputed (`ac116e0a…`) "does not match the
 `9a1f6759…` value requested in the original PR handoff". Root-cause result:
 
-1. **No such handoff exists.** The clone was shallow; after `git fetch --unshallow origin`
-   (1 → 877 commits), `git log --all -S 9a1f6759` matches exactly two commits: `559fa9e5`
-   (PR #162, which *introduced* the sentence) and `65efdd87` (PR #179, which repeats it).
-   `git grep 9a1f6759 <sha>` in each resolves to the same two status documents that *assert*
-   the discrepancy and to nothing else.
-2. **GitHub has no other carrier.** Every PR body/comment and every issue body/comment in the
-   repository was scanned; only PR #179 mentions it.
-3. **It is not derivable from the contract.** Eight serializations were computed; none starts
-   with `9a1f6759`. The documented canonical method reproduces the declared value exactly:
+1. **It is not a stray citation — it is a real, recorded identity.** `9a1f6759…` is the
+   **raw-bytes sha256 of an earlier revision of the contract file**, taken before PR #162
+   (`559fa9e`, *fix(crypto): C15 L5 commission evidence and frozen-rule verification*) appended
+   the `research_lifecycle_contract.freeze` block:
+
+   | Revision | raw-bytes sha256 of `strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml` |
+   |---|---|
+   | `89f1fa6c` (*feat: add C15 crypto signal lifecycle verification*) | `9a1f6759d35cbb50fbb89dd41899f4d970b0cece6df5a40e682698a590d05968` |
+   | `559fa9e` / `origin/main` / this commit | `6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b` |
+
+2. **It is exactly the metric the replay driver itself reports for the 1.1.0 candidate.**
+   `scripts/ccfd_sweep_retest_replay.py::research_logic_identity` computes, for
+   `version == C15_VERSION` (1.1.0), `contract_hash = sha256(contract_path.read_bytes()
+   .replace(b"\\r\\n", b"\\n"))` over `C15_CONTRACT_YAML`
+   (`strategies/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0.yaml`) — i.e. the raw-file metric, **not** the
+   canonical sorted mapping hash. Recomputed against the historical blob, that metric is
+   `9a1f6759…` bit-for-bit; against the current revision it is `6daa590b…`. That value is what the
+   artifact's `contract_sha256` / `logic_identity.contract_hash` fields record — see
+   `artifacts/.../ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0/vt_recorded_60d_2026-08-11_2026-10-09/replay_report.json`
+   as committed on branch `feat/c15-crypto-verification` (commit `89f1fa6c`). It does **not**
+   appear in that file's current revision. The artifact is self-consistent: it is the raw-file
+   metric, not a competing canonical identity.
+3. **So the two hash kinds are both legitimate and mean different things.** The canonical
+   *mapping* identity (sorted serialization with the self-reference blanked) is `ac116e0a…` and is
+   what `freeze.contract_hash` declares. The raw-file identity of the pre-#162 revision is
+   `9a1f6759…`; of the current revision, `6daa590b…`. **Nothing needs overwriting and no rule is
+   affected** — but C15's prose compared a raw-file hash taken before #162 against a canonical
+   hash taken after it, which is the whole of the "mismatch". That is `D-CCFD-2b` below, a
+   documentation defect, not an identity conflict.
+4. **Neither value is reachable from the current contract as a canonical identity.** Eight
+   serializations were computed; none equals `9a1f6759…`. The documented canonical method
+   reproduces the declared value exactly:
 
    | Method | sha256 |
    |---|---|
@@ -203,22 +227,18 @@ C15 recorded that the canonical hash it recomputed (`ac116e0a…`) "does not mat
    | sorted, whole `freeze` mapping removed | `77e6534d36bf6fa66462d71b50489aa91985dbf65738aea8e376bb8b765b2846` |
    | sorted, self-reference kept | `a245641d8dec077ad79c…` |
    | unsorted, self-reference blanked | `42789dbb7e7b8c6b9d72…` |
-   | raw file bytes | `6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b` |
+   | raw file bytes, current revision (= driver's 1.1.0 `contract_hash` today) | `6daa590b9a8bf0ba3427c718b12c2f23d414aaca9973cf5fd2b32694b1fca90b` |
+   | raw file bytes, pre-#162 revision (= driver's 1.1.0 `contract_hash` then) | `9a1f6759d35cbb50fbb89dd41899f4d970b0cece6df5a40e682698a590d05968` |
    | `ST_CRYPTO_CFD_SWEEP_RETEST_V1.yaml` (1.0.0 base) raw | `395ede3926272cfe6112…` |
 
-**Conclusion: there is no contract-identity conflict.** `ac116e0a…` is authoritative and
-self-consistent (declared in `freeze.contract_hash`, reproduced by the documented canonical
-method, independently recomputed by both the replay report and
-`runtime_identity_verification.json`). `9a1f6759…` is an **unverifiable citation** with no
-provenance in any commit, PR or issue; it must be reported as unresolvable rather than
-overwritten. No hash was overwritten, and no hash was changed to make the mismatch disappear.
-Pinned by `tests/test_c16_ccfd_contract_identity.py` (10 tests).
-
-**Contributing ambiguity (still open, `D-CCFD-2b`):** a single CCFD artifact carries two
-different *kinds* of identity under the same field name in different blocks —
-`contract_hash` = `ac116e0a…` (canonical mapping identity) at the top level, while
-`logic_verification.<SYM>.logic_identity.contract_hash` = `6daa590b…` (raw-file identity).
-Both are legitimate; naming them identically is what makes a by-hand comparison ambiguous.
+**Conclusion:** `9a1f6759…` is fully explained, and no contract-identity conflict exists.
+`ac116e0a…` remains the authoritative canonical identity and is self-consistent (declared in
+`freeze.contract_hash`, reproduced by the documented canonical method, independently recomputed by
+both the replay report and `runtime_identity_verification.json`). **No hash was overwritten and no
+hash was changed to make the discrepancy disappear.** The residual documentation defect is that two
+different kinds of identity travel under one field name — a by-hand comparison across revisions
+silently compares unlike things. Pinned by `tests/test_c16_ccfd_contract_identity.py` (11 tests),
+including one that recomputes `9a1f6759…` from the historical blob.
 
 ## D-CCFD-3 — registered 1.0.0 still `STALE_IDENTITY` (pre-existing, from C15)
 

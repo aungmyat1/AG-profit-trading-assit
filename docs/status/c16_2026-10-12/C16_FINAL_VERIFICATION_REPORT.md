@@ -108,6 +108,17 @@ Logical vs economic vs authorization: logical = PARTIALLY_LOGIC_VERIFIED; econom
 - `CCFD:ETHUSD:SHORT:WEEKEND`: {"class": "THIN_OR_ZERO_EMISSION_SCOPE", "detail": "1 emission(s) over 16 calendar days vs declared minimum 2", "blockers": ["THIN_SIGNAL_COVERAGE_LT_2"]}
 
 
+**Crypto CFD identity, corrected:** the `9a1f6759…` value C15 could not resolve is **not a stray
+citation** — it is the raw-bytes sha256 of the contract revision `89f1fa6c`, i.e. before PR #162
+appended the `freeze` block, and it is precisely the metric the replay driver computes for the
+1.1.0 candidate (`research_logic_identity` hashes the contract's raw bytes) and records as
+`contract_sha256`/`logic_identity.contract_hash` (present in the C15 artifact on branch
+`feat/c15-crypto-verification` and absent from that file's current revision). C15's sentence
+compared that raw-file hash, taken before #162, against the canonical mapping hash `ac116e0a…`
+taken after it. Both are legitimate; neither was overwritten; the canonical identity is unchanged
+and self-consistent. The residual issue is documentation (`D-CCFD-2b`): one field name carries two
+kinds of identity, so a by-hand comparison across revisions silently compares unlike things.
+
 ## C. Evidence
 
 Every verdict above is derived from a committed artifact; the generator recomputes hashes from the files and never transcribes them.
