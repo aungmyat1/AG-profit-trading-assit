@@ -497,6 +497,24 @@ def test_server_error_consumes_uncertain_without_retry(tmp_path, code):
     assert sender.send_ticket(watch()) == 'duplicate'
 
 
+@pytest.mark.parametrize('code', [500, 502, 503, 504])
+def test_session_summary_5xx_after_delivery_never_sends_second_owner_message(tmp_path, code):
+    # Telegram accepted the message (owner inbox has it) but the API answered 5xx.
+    inbox, delays = [], []
+    def transport(token, chat_id, message):
+        inbox.append(message)
+        raise urllib.error.HTTPError('secret', code, 'server error', {}, None)
+    path = tmp_path / 'dedupe.sqlite'
+    assert Sender(path, config(), transport, delays.append).send_session_summary(session_digest()) == 'uncertain'
+    assert len(inbox) == 1 and delays == []
+    # Same summary identity after a scheduler restart: deduped on (session_date, session), no resend.
+    restarted = Sender(path, config(), transport, delays.append)
+    assert restarted.send_session_summary(session_digest()) == 'duplicate'
+    assert restarted.list_uncertain()[0]['identity'] == json.dumps(['2026-10-08', 'ASIAN_LONDON'],
+                                                                   separators=(',', ':'))
+    assert len(inbox) == 1
+
+
 def test_network_does_not_hold_global_journal_lock(tmp_path):
     path = tmp_path / 'dedupe.sqlite'
     other = dict(watch(), ticket_id='another-ticket')
