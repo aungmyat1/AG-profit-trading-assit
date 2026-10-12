@@ -1,0 +1,102 @@
+{
+ "record": "host_lsmc_rrf",
+ "mission": "AGP-HOST-LSMC-RRF",
+ "date": "2026-10-12",
+ "authorization": "owner-authorized 2026-10-12: template copy (byte copy of config/policy/actionability_policy.yaml)",
+ "order_api_calls": 0,
+ "broker_mutation_count": 0,
+ "terminal_restart": false,
+ "scheduler_change": false,
+ "file": {
+  "created": "<HOST_SCRATCHPAD>/prod/config/local/actionability_policy.yaml",
+  "existed_before": false,
+  "backup": "not applicable (file absent)",
+  "template": "config/policy/actionability_policy.yaml",
+  "sha256_template": "0843e79bce935fffd612e06b00a7656a422990d4654b813b4340541fade961d8",
+  "sha256_local": "0843e79bce935fffd612e06b00a7656a422990d4654b813b4340541fade961d8",
+  "byte_identical": true,
+  "tracked_policy_edited": false
+ },
+ "loader_resolution": "src/host_delivery/lsmc_actionability_config.py:8 HOST_POLICY=config/local/actionability_policy.yaml, :14 read; also read by src/v1_tickets/policy_loader.py:70-72 (FX actionability override)",
+ "preflight": {
+  "command": ".venv\\\\Scripts\\\\python.exe scripts\\\\host\\\\preflight_actionability.py",
+  "output": "PASS lsmc_min_remaining_reward_fraction=0.5",
+  "exit": 0
+ },
+ "offline_reevaluation": {
+  "method": "evaluate_actionability(stored latest S1 GBPUSD ASIAN_LONDON record, now=record send_timestamp, policy_root=host tree); no MT5, no journal writes; strategy_id restored from ticket_id. Differential check: identical input before/after (does not reproduce the recorded EXPIRED because the stored row is not the evaluator input).",
+  "before": {
+   "record_created_at": "2026-10-12T11:16:08.818728+00:00",
+   "record_decision": "EXPIRED",
+   "record_reason": "TRADE_WINDOW_CLOSED",
+   "policy_status": "ACTIONABILITY_POLICY_MISSING",
+   "policy_reason": "policy is unsigned (signed_by is null)",
+   "policy_source": "config\\policy\\actionability_policy.yaml",
+   "policy_usable": false,
+   "min_remaining_r": null,
+   "out_decision_fields": {
+    "actionability_decision": "INSUFFICIENT_DATA",
+    "actionability_reason": "TRIGGER_TIMEFRAME_UNKNOWN",
+    "freshness_status": "FAIL"
+   },
+   "out_policy_fields": {
+    "policy_version": "OWNER_FRESHNESS_2xBAR",
+    "actionability_policy_id": "LSMC_ACTIONABILITY_POLICY_V1",
+    "actionability_policy_version": 1,
+    "policy_source_identity": "<HOST_SCRATCHPAD>/prod\\config\\policy\\actionability_policy.yaml",
+    "policy_status": "ACTIONABILITY_POLICY_MISSING",
+    "policy_reason": "policy is unsigned (signed_by is null)",
+    "policy_signed_by": null,
+    "policy_signed_at": null
+   },
+   "out_sha256": "55ebd71dbc2f91b96af058e7ddbd1db3f5c338ff5c17d4d8acd119ca00d0b441"
+  },
+  "after": {
+   "record_created_at": "2026-10-12T11:16:08.818728+00:00",
+   "record_decision": "EXPIRED",
+   "record_reason": "TRADE_WINDOW_CLOSED",
+   "policy_status": "ACTIONABILITY_POLICY_MISSING",
+   "policy_reason": "policy is unsigned (signed_by is null)",
+   "policy_source": "config\\local\\actionability_policy.yaml",
+   "policy_usable": false,
+   "min_remaining_r": null,
+   "out_decision_fields": {
+    "actionability_decision": "INSUFFICIENT_DATA",
+    "actionability_reason": "TRIGGER_TIMEFRAME_UNKNOWN",
+    "freshness_status": "FAIL"
+   },
+   "out_policy_fields": {
+    "policy_version": "OWNER_FRESHNESS_2xBAR",
+    "actionability_policy_id": "LSMC_ACTIONABILITY_POLICY_V1",
+    "actionability_policy_version": 1,
+    "policy_source_identity": "<HOST_SCRATCHPAD>/prod\\config\\local\\actionability_policy.yaml",
+    "policy_status": "ACTIONABILITY_POLICY_MISSING",
+    "policy_reason": "policy is unsigned (signed_by is null)",
+    "policy_signed_by": null,
+    "policy_signed_at": null
+   },
+   "out_sha256": "f10c9c312c7727949569e3c67f00fc7b2d01d39d1810857a492f40d56e68981d"
+  },
+  "result": {
+   "decision_fields_equal": true,
+   "policy_status_equal": true,
+   "policy_status": "ACTIONABILITY_POLICY_MISSING",
+   "only_difference": "policy_source_identity config/policy -> config/local (inherent to a host-local file)"
+  },
+  "verdict": "UNCHANGED; local file kept"
+ },
+ "next_fx_run": {
+  "run": "18:16 local (11:46:11Z)",
+  "lsmc_config_missing_logged": false,
+  "last_LSMC_CONFIG_MISSING": "2026-10-12T11:31:07Z (18:01 run, before the file existed)",
+  "log_tail": [
+   "2026-10-12T11:16:15.155785+00:00 FX_CANONICAL USDJPY ASIAN_LONDON decision=BLOCKED ticket_store=VERIFIED delivery=summary_only",
+   "2026-10-12T11:16:15.157738+00:00 FX_CANONICAL XAUUSD ASIAN_LONDON decision=BLOCKED ticket_store=VERIFIED delivery=summary_only",
+   "2026-10-12T11:31:07.255805+00:00 LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction",
+   "2026-10-12T11:31:14.378985+00:00 FX_CANONICAL NOTHING_IN_WINDOW",
+   "2026-10-12T11:31:14.379971+00:00 FX_SESSION_SUMMARY 2026-10-12 ASIAN_LONDON status=COMPLETE delivery=sent",
+   "2026-10-12T11:46:11.939769+00:00 FX_CANONICAL NOTHING_IN_WINDOW"
+  ]
+ },
+ "reject_counters": "DEFERRED until owner re-enables AG-V1-LSMC-Watch (currently Disabled)"
+}
