@@ -1,0 +1,65 @@
+"""Shared fail-closed helpers for the observational report lanes (AGP-C18-R2).
+
+An observation is built with the existing canonical ticket builder, but only after any engine READY
+has been converted to a non-executable SHADOW decision, so a report lane can never yield WATCH_READY.
+Observations are archived under `<archive_root>/report_lane/` -- never in TICKET_STORE, the canonical
+daily_evaluator archive or any execution path.
+"""
+from __future__ import annotations
+
+import copy
+import datetime as dt
+import os
+from typing import Any, Dict, Optional
+
+from v1_tickets.canonical_ticket import append_archive, build_canonical_ticket
+
+REPORT_LANE = "REPORT_ONLY_EVALUATION"
+REPORT_LANE_SUBDIR = "report_lane"
+OBSERVATIONAL_CLASSES = frozenset({"WATCH", "CANDIDATE", "BLOCKED", "NO_OPPORTUNITY", "DATA_ERROR",
+                                   "OUT_OF_SESSION"})
+_EXECUTABLE_DECISIONS = frozenset({"READY", "TICKET_READY", "WATCH_READY"})
+
+
+class ReportLaneViolation(RuntimeError):
+    """An observational lane produced something that could be read as executable."""
+
+
+def non_executable(raw: Dict[str, Any]) -> Dict[str, Any]:
+    """Copy of the raw ticket in which an engine READY is an explicit, non-executable observation."""
+    ticket = copy.deepcopy(raw)
+    if ticket.get("decision") in _EXECUTABLE_DECISIONS:
+        ticket["suppressed_decision"] = ticket["decision"]
+        ticket["decision"] = "SHADOW_INFO_ONLY"
+        ticket["ready_authority"] = "OFF"
+        ticket["reason_code"] = "REPORT_ONLY_OBSERVATION"
+    return ticket
+
+
+def observational_canonical(raw: Dict[str, Any], *, now: dt.datetime, current_price: Optional[float] = None,
+                            window_end: Optional[dt.datetime] = None, report_class: Optional[str] = None,
+                            policy=None) -> Dict[str, Any]:
+    """Canonical ticket for an observation. Raises ReportLaneViolation instead of ever returning an
+    executable-looking record; `report_class` may only name an observational class."""
+    canonical = build_canonical_ticket(non_executable(raw), now=now, current_price=current_price,
+                                       window_end=window_end, policy=policy)
+    if canonical.get("decision") == "WATCH_READY" or canonical.get("report_class") == "READY_TICKET":
+        raise ReportLaneViolation(f"report lane produced {canonical.get('decision')}")
+    if report_class is not None:
+        if report_class not in OBSERVATIONAL_CLASSES:
+            raise ReportLaneViolation(f"unsupported report_class {report_class!r}")
+        canonical["report_class"] = report_class
+    if canonical.get("report_class") not in OBSERVATIONAL_CLASSES or canonical.get("scope_route") != "REPORT_ONLY":
+        raise ReportLaneViolation("observation is not REPORT_ONLY")
+    if canonical.get("execution_authorization") or canonical.get("demo_authorized") or canonical.get("live_authorized"):
+        raise ReportLaneViolation("observation carries an execution authority flag")
+    canonical["lane"] = REPORT_LANE
+    return canonical
+
+
+def archive_observation(archive_root: str, family: str, canonical: Dict[str, Any]) -> str:
+    """Append-only JSONL per family and day under report_lane/ (never the canonical evaluator archive)."""
+    day = str(canonical.get("session_date") or canonical.get("created_at") or "")[:10] or "unknown-date"
+    path = os.path.join(archive_root, REPORT_LANE_SUBDIR, f"{day}_{family}.jsonl")
+    append_archive(path, canonical)
+    return path

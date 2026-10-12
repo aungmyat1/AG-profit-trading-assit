@@ -794,7 +794,7 @@ def test_scheduled_fx_task_uses_canonical_once_and_preserves_other_modes():
     assert "run_fx(" in legacy
     # Crypto and Large-SMC scheduled modes are untouched by the canonical FX branch.
     assert runner.count("lines = run_crypto(now, journal, crypto_feed_for(crypto_config, fetch, quote),") == 1
-    assert runner.count("run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote))") == 1
+    assert runner.count("run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),\n") == 2
 
 
 def test_canonical_module_never_imports_a_broker_or_execution_surface():
