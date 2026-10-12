@@ -254,8 +254,55 @@ def test_host_prerequisite_failure_records_replay_none_not_live(tmp_path):
     assert {e["source"] for e in result_events} == {"REPLAY"}
     assert all("delivery=" in ln for ln in lines)
     digest = cfd.build_session_summary(journal, session_date=NOW.date(), session="ASIAN_LONDON", sender=send)
-    assert digest["status"] == "COMPLETE" and digest["data_failure_count"] == 4
+    assert digest["status"] == "COMPLETE"
+    assert digest["scope_blocked_count"] == 0 and digest["data_failure_count"] == 4
     assert {row["acquisition_error_code"] for row in digest["per_instrument"]} == {"MT5_PACKAGE_MISSING"}
+
+
+def test_2026_10_11_london_newyork_scope_blocks_are_not_data_failures(tmp_path):
+    from telegram_delivery.adapter import render_session_summary
+
+    day = dt.date(2026, 10, 11)
+    send, _ = sender(tmp_path, enabled=False)
+    journal = str(tmp_path / "journal")
+    store = TicketStore(os.path.join(journal, "ticket_store"))
+    for symbol in V1_FX_SYMBOLS:
+        store.append_evaluation(build_evaluation(
+            ticket_id=f"ST_ASIAN_SWEEP_5R_V1|1.1.2|{symbol}|LONDON_NEWYORK|{day.isoformat()}",
+            strategy="ST_ASIAN_SWEEP_5R_V1@1.1.2", source=REPLAY, symbol=symbol,
+            session="LONDON_NEWYORK", evaluated_at_utc=f"{day.isoformat()}T08:00:00+00:00",
+            state="BLOCKED", block_reasons=["LOGIC_SCOPE_NOT_VERIFIED"]))
+
+    digest = cfd.build_session_summary(journal, session_date=day,
+                                       session="LONDON_NEWYORK", sender=send)
+    assert digest["terminal_counts"] == {"BLOCKED": 4}
+    assert digest["scope_blocked_count"] == 4
+    assert digest["data_failure_count"] == 0
+    assert digest["scope_blocked_count"] + digest["data_failure_count"] == (
+        digest["terminal_counts"].get("BLOCKED", 0)
+        + digest["terminal_counts"].get("INSUFFICIENT_DATA", 0))
+    text = render_session_summary(digest)
+    assert "Scope blocked: 4" in text and "Data failures: 0" in text
+
+
+def test_summary_counts_typed_acquisition_failures_as_data_failures(tmp_path):
+    day = dt.date(2026, 10, 12)
+    send, _ = sender(tmp_path, enabled=False)
+    journal = str(tmp_path / "journal")
+    store = TicketStore(os.path.join(journal, "ticket_store"))
+    codes = ("CandleAdapterError", "M15_WINDOW_INCOMPLETE", "HISTORY_NOT_SYNCED",
+             "MT5_INITIALIZE_FAILED")
+    for symbol, code in zip(V1_FX_SYMBOLS, codes):
+        store.append_evaluation(build_evaluation(
+            ticket_id=f"ST_ASIAN_SWEEP_5R_V1|1.1.2|{symbol}|ASIAN_LONDON|{day.isoformat()}",
+            strategy="ST_ASIAN_SWEEP_5R_V1@1.1.2", source=REPLAY, symbol=symbol,
+            session="ASIAN_LONDON", evaluated_at_utc=f"{day.isoformat()}T08:00:00+00:00",
+            state="INSUFFICIENT_DATA", block_reasons=[code]))
+
+    digest = cfd.build_session_summary(journal, session_date=day,
+                                       session="ASIAN_LONDON", sender=send)
+    assert digest["terminal_counts"] == {"INSUFFICIENT_DATA": 4}
+    assert digest["scope_blocked_count"] == 0 and digest["data_failure_count"] == 4
 
 
 def test_invalid_ticket_source_is_refused(tmp_path):
