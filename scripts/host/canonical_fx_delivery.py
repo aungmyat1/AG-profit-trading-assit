@@ -54,9 +54,30 @@ LSMC_CRYPTO_SESSIONS = (LSMC_CRYPTO_DAY, LSMC_CRYPTO_WEEKEND)
 # Same tuple as large_smc_watch.contract.CRYPTO_SYMBOLS (pinned by a test); not imported here so this
 # delivery module never loads the watch/MT5 import chain.
 LSMC_CRYPTO_SYMBOLS = ("BTCUSD", "ETHUSD")
-from telegram_delivery.adapter import (
-    LSMC_CRYPTO_SUMMARY_SCHEMA,  # noqa: E402 -- one schema id
+from telegram_delivery.adapter import (  # noqa: E402 -- one schema id each
+    CRYPTO_STRATEGY_SUMMARY_SCHEMA,
+    LSMC_CRYPTO_SUMMARY_SCHEMA,
 )
+from ticket_delivery.archive_reader import latest_cycle_decision  # noqa: E402
+from v1_tickets.scope_status import (  # noqa: E402 -- read-only scope status (OD1012-ROUTING)
+    CRYPTO_CFD,
+    CRYPTO_DAY,
+    CRYPTO_WEEKEND,
+    SESSION_FX_GOLD,
+    family_statuses,
+)
+
+# Crypto strategy (not Large-SMC) window summaries: one per weekday window (CRYPTO_DAY) and one per
+# weekend window (CRYPTO_WEEKEND) of the active crypto ticket config. Session ids never collide
+# with V1_CYCLES or LSMC_CRYPTO_SESSIONS.
+CRYPTO_STRATEGY_SESSIONS = (CRYPTO_DAY, CRYPTO_WEEKEND)
+CRYPTO_CONFIG_WINDOW = {CRYPTO_DAY: "WEEKDAY", CRYPTO_WEEKEND: "WEEKEND"}
+CRYPTO_STRATEGY_SYMBOLS = ("BTCUSD", "ETHUSD")
+# Runtime crypto ticket runner (research engine): its archive keys use the V1 ticket names, mapped
+# to the VT broker names by the active crypto ticket config (pinned by a test).
+CRYPTO_RESEARCH_STRATEGY, CRYPTO_RESEARCH_CYCLE = "ST_LIQUIDITY_SWEEP_RETEST_V1", "DAILY_WINDOW"
+CRYPTO_RESEARCH_SYMBOL = {"BTCUSD": "BTCUSDT", "ETHUSD": "ETHUSDT"}
+CRYPTO_CFD_STRATEGY = "ST_CRYPTO_CFD_SWEEP_RETEST_V1"
 
 CANONICAL_DECISIONS = frozenset({
     WATCH_READY, INFO_ONLY_STALE, INFO_ONLY_INSUFFICIENT_REMAINING_R,
@@ -141,7 +162,8 @@ def _session_event_path(journal: str, session_date: str, session: str) -> str:
         dt.date.fromisoformat(session_date)
     except (TypeError, ValueError) as exc:
         raise ValueError("invalid session_date") from exc
-    if session not in V1_CYCLES and session not in LSMC_CRYPTO_SESSIONS:
+    if (session not in V1_CYCLES and session not in LSMC_CRYPTO_SESSIONS
+            and session not in CRYPTO_STRATEGY_SESSIONS):
         raise ValueError(f"unknown FX cycle {session!r}")
     return os.path.join(journal, EVENT_SUBDIR, f"{session_date}_{session}.jsonl")
 
@@ -564,6 +586,7 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
         "schema": SUMMARY_SCHEMA, "session_date": day, "session": session,
         "session_start_utc": windows[0].isoformat(), "session_end_utc": windows[1].isoformat(),
         "status": status, "expected_instruments": list(expected_symbols),
+        "scope_statuses": family_statuses(SESSION_FX_GOLD, session),
         "expected_evaluations": len(expected_symbols), "recorded_evaluations": recorded,
         "terminal_counts": dict(sorted(terminal_counts.items())),
         "large_smc": lsmc_archive_report(journal, *windows),
@@ -819,6 +842,109 @@ def process_due_lsmc_crypto_summaries(now: dt.datetime, *, journal: str, sender:
                 journal, session_date=day, session=session, window=window, sender=sender),
             fields=lambda summary: {"summary_status": summary["status"], "evaluations": summary["evaluations"],
                                     "opportunities_sent": summary["opportunities_sent"]},
+            status=lambda summary: summary["status"])
+        if line:
+            lines.append(line)
+    return lines
+
+
+# ------------------------------------------------------------------ crypto strategy window summaries
+
+def crypto_strategy_window(config: Dict[str, Any], day: dt.date,
+                           session: str) -> Optional[Tuple[dt.datetime, dt.datetime]]:
+    """UTC (start, end) of the active crypto ticket config's WEEKDAY/WEEKEND window on `day`
+    (local date in the window's own timezone), or None when that window does not run that day."""
+    from zoneinfo import ZoneInfo
+    if session not in CRYPTO_STRATEGY_SESSIONS:
+        raise ValueError(f"unknown crypto strategy session {session!r}")
+    window = config.get("window") or {}
+    named = window.get("windows") if window.get("kind") == "MULTI" else (
+        [{**window, "name": "WEEKDAY"}] if window.get("kind") == "LOCAL_WEEKDAY" else [])
+    match = next((w for w in named if w.get("name") == CRYPTO_CONFIG_WINDOW[session]), None)
+    if match is None or day.isoweekday() not in match["weekdays"]:
+        return None
+    zone = ZoneInfo(match["timezone"])
+    start, end = (dt.datetime.combine(day, dt.time.fromisoformat(match[key]), tzinfo=zone).astimezone(UTC)
+                  for key in ("start", "end"))
+    return start, end
+
+
+def _crypto_outcome(record: Optional[Dict[str, Any]], strategy: str, session: str,
+                    start: dt.datetime, end: dt.datetime) -> Dict[str, Any]:
+    """Archived decision inside [start, end) for this window, else NO_RECORD (never inferred)."""
+    if record is not None:
+        named = (record.get("payload") or {}).get("window")
+        at = dt.datetime.fromisoformat(str(record.get("evaluation_time_utc")))
+        if at.tzinfo is None:
+            raise ValueError("naive evaluation timestamp in crypto archive")
+        if named in (None, CRYPTO_CONFIG_WINDOW[session]) and start <= at.astimezone(UTC) < end:
+            return {"strategy": strategy, "decision": record.get("cycle_state"),
+                    "reason_codes": list(record.get("reason_codes") or []),
+                    "evaluated_at_utc": at.astimezone(UTC).isoformat()}
+    return {"strategy": strategy, "decision": "NO_RECORD", "reason_codes": []}
+
+
+def build_crypto_strategy_summary(journal: str, *, session_date: dt.date, session: str,
+                                  window: Tuple[dt.datetime, dt.datetime], sender: Sender) -> Dict[str, Any]:
+    """Per-instrument verification status (crypto CFD family) plus the latest archived outcome of
+    each crypto strategy source inside the window. Report only; prices are never fabricated."""
+    if session not in CRYPTO_STRATEGY_SESSIONS:
+        raise ValueError(f"unknown crypto strategy session {session!r}")
+    start, end = _utc(window[0]), _utc(window[1])
+    root = os.path.join(journal, "ticket_delivery", "archive")
+    per_instrument = []
+    for symbol in CRYPTO_STRATEGY_SYMBOLS:
+        # The research runner archives under its observation date (evaluation date - 1).
+        research = latest_cycle_decision(root, CRYPTO_RESEARCH_STRATEGY, CRYPTO_RESEARCH_SYMBOL[symbol],
+                                         CRYPTO_RESEARCH_CYCLE, start.date() - dt.timedelta(days=1))
+        ccfd = latest_cycle_decision(root, CRYPTO_CFD_STRATEGY, symbol, CRYPTO_CONFIG_WINDOW[session],
+                                     start.date())
+        per_instrument.append({
+            "symbol": symbol,
+            "ccfd": _crypto_outcome(ccfd, CRYPTO_CFD_STRATEGY, session, start, end),
+            "research": _crypto_outcome(research, CRYPTO_RESEARCH_STRATEGY, session, start, end),
+        })
+    recorded = sum(1 for item in per_instrument
+                   if item["ccfd"]["decision"] != "NO_RECORD" or item["research"]["decision"] != "NO_RECORD")
+    return {
+        "schema": CRYPTO_STRATEGY_SUMMARY_SCHEMA, "session_date": session_date.isoformat(), "session": session,
+        "window_start_utc": start.isoformat(), "window_end_utc": end.isoformat(),
+        "instruments": list(CRYPTO_STRATEGY_SYMBOLS),
+        "scope_statuses": family_statuses(CRYPTO_CFD, session),
+        "per_instrument": per_instrument, "recorded_instruments": recorded,
+        "status": "COMPLETE" if recorded == len(CRYPTO_STRATEGY_SYMBOLS) else "INCOMPLETE_NO_RECORD",
+        "delivery_enabled": bool(sender.config.enabled), "execution_authorized": False,
+    }
+
+
+def process_due_crypto_strategy_summaries(now: dt.datetime, *, journal: str, sender: Sender, session: str,
+                                          window_for_day) -> List[str]:
+    """Send each due crypto strategy window summary once (catch-up from this session's first run).
+    Due after the window end plus SUMMARY_GRACE; a window with no record still gets a summary.
+    `window_for_day(date) -> (start, end) | None` (None: no window that day)."""
+    if session not in CRYPTO_STRATEGY_SESSIONS:
+        raise ValueError(f"unknown crypto strategy session {session!r}")
+    now = _utc(now)
+    name = os.path.join(os.path.dirname(SCHEDULER_START), f"{session.lower()}_scheduler_start.json")
+    try:
+        started = ensure_scheduler_start(journal, now, name)
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+        return [f"CRYPTO_STRATEGY_SUMMARY BLOCKED scheduler_journal={type(exc).__name__}"]
+    lines: List[str] = []
+    for offset in range(max(0, (now.date() - started.date()).days) + 1):
+        day = started.date() + dt.timedelta(days=offset)
+        window = window_for_day(day)
+        if window is None:
+            continue
+        end_with_grace = _utc(window[1]) + SUMMARY_GRACE
+        if end_with_grace <= started or now <= end_with_grace:
+            continue
+        line = _process_due_summary(
+            journal, now, sender, day.isoformat(), session, label="CRYPTO_STRATEGY_SUMMARY",
+            build=lambda day=day, window=window: build_crypto_strategy_summary(
+                journal, session_date=day, session=session, window=window, sender=sender),
+            fields=lambda summary: {"summary_status": summary["status"],
+                                    "recorded_instruments": summary["recorded_instruments"]},
             status=lambda summary: summary["status"])
         if line:
             lines.append(line)

@@ -59,11 +59,14 @@ from _host_common import (  # noqa: E402
     utcnow,
 )
 from canonical_fx_delivery import (  # noqa: E402
+    CRYPTO_STRATEGY_SESSIONS,
     LSMC_CRYPTO_DAY,
     LSMC_CRYPTO_WEEKEND,
     active_cycles,
     build_sender,
+    crypto_strategy_window,
     failure_provider,
+    process_due_crypto_strategy_summaries,
     process_due_lsmc_crypto_summaries,
     process_due_session_summaries,
     record_lsmc_crypto_evaluation,
@@ -521,6 +524,20 @@ def lsmc_crypto_day_window(day: dt.date):
     return (start, start + dt.timedelta(days=1))
 
 
+def crypto_strategy_summary_lines(now: dt.datetime, journal: str, config: dict, sender=None) -> List[str]:
+    """Due crypto strategy (CRYPTO_DAY / CRYPTO_WEEKEND) window summaries; report only, no MT5 access."""
+    try:
+        sender = sender or build_sender(journal, root=REPO_ROOT)
+    except Exception as exc:  # noqa: BLE001 -- a summary fault never breaks the crypto runner
+        return [f"CRYPTO_STRATEGY_SUMMARY BLOCKED sender={type(exc).__name__}"]
+    lines: List[str] = []
+    for session in CRYPTO_STRATEGY_SESSIONS:
+        lines += process_due_crypto_strategy_summaries(
+            now, journal=journal, sender=sender, session=session,
+            window_for_day=lambda day, session=session: crypto_strategy_window(config, day, session))
+    return lines
+
+
 def lsmc_crypto_summary_lines(now: dt.datetime, journal: str, session: str, sender=None) -> List[str]:
     """Due Large-SMC crypto window summaries (own window, own journal; never the FX summary)."""
     window_for_day = lsmc_weekend_window if session == LSMC_CRYPTO_WEEKEND else lsmc_crypto_day_window
@@ -715,6 +732,9 @@ def _main(argv, identity: Dict[str, Any]) -> int:
         if status != "IN_WINDOW":
             line = f"CRYPTO OUTSIDE_WINDOW ({status})"
             log_line(log_name, line)
+            # Due crypto strategy window summaries (report only) need no MT5 access.
+            for summary_line in crypto_strategy_summary_lines(now, journal, crypto_config):
+                log_line(log_name, summary_line)
             return 0
 
     def canonical_failure_lines(reason: str) -> List[str]:

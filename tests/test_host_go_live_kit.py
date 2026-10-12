@@ -362,12 +362,21 @@ def test_crypto_main_outside_window_takes_no_runner_or_mt5_lock_and_never_import
     monkeypatch.setattr(smoke, "mt5_access_lock", forbidden)
     monkeypatch.setattr(smoke, "import_mt5", forbidden)
     monkeypatch.setattr(smoke, "mt5_initialize", forbidden)
+    summaries = []
+
+    def crypto_summaries(run_now, journal, config, sender=None):
+        summaries.append((run_now, config["version"]))
+        return ["CRYPTO_STRATEGY_SUMMARY 2026-11-01 CRYPTO_WEEKEND status=COMPLETE delivery=disabled"]
+
+    monkeypatch.setattr(smoke, "crypto_strategy_summary_lines", crypto_summaries)
 
     assert smoke.main(["--mode", "crypto"]) == 0
+    assert summaries == [(now, 3)]   # due report-only summaries run outside the window, without MT5
     log = (Path(hc.LOG_DIR) / "ag_v1_crypto.log").read_text(encoding="utf-8").splitlines()
     assert log == [
         f"{now.isoformat()} LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction",
         f"{now.isoformat()} CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)",
+        f"{now.isoformat()} CRYPTO_STRATEGY_SUMMARY 2026-11-01 CRYPTO_WEEKEND status=COMPLETE delivery=disabled",
         f'{now.isoformat()} RUN_IDENTITY requested_terminal_path="AUTO" terminal_path="NOT_AVAILABLE" '
         'server="NOT_AVAILABLE" login_suffix="NOT_AVAILABLE"',
     ]

@@ -126,7 +126,12 @@ def test_complete_fresh_opportunity_and_sent_text_byte_exact(tmp_path, monkeypat
     main_text = baseline.format_alert(asdict(event), price=100.25)
     golden = Path(__file__).parent / "fixtures/lsmc_complete_alert.txt"
     assert main_text.encode() == golden.read_bytes()
-    assert text.encode() == main_text.encode()
+    # The only intended difference: the OD1012-ROUTING scope-status line after the timeframe chain.
+    lines = main_text.split("\n")
+    at = next(i for i, line in enumerate(lines) if line.startswith("timeframes: ")) + 1
+    expected = "\n".join(lines[:at] + [tg._lsmc_status_line("EURUSD")] + lines[at:])
+    assert text.encode() == expected.encode()
+    assert tg._lsmc_status_line("EURUSD").endswith("REPORT ONLY — NOT AN ENTRY")
     assert tg.should_send("LSMC", event.alert_level)
     class Response:
         status_code = 200
@@ -140,7 +145,7 @@ def test_complete_fresh_opportunity_and_sent_text_byte_exact(tmp_path, monkeypat
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "TEST")
     monkeypatch.setenv("TELEGRAM_CHAT_ID", "TEST")
     tg.send_message(text, session=Transport())
-    assert sent[0].encode() == golden.read_bytes()
+    assert sent[0].encode() == expected.encode()
 
 
 def test_defensive_formatter_never_labels_raw_stale_event_opportunity(monkeypatch):

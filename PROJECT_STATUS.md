@@ -8,6 +8,14 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+Scope-status Telegram reports (2026-10-12, unit-tested only, not host-verified):
+- **What it does:** every relevant scope of the three strategy families is now reported to Telegram with its verification status, and every route is `REPORT_ONLY` (OD1012-ROUTING follow-up (d)).
+- **Session FX/gold:** the FX session summaries are stamped per symbol.
+- **Crypto:** new crypto strategy summaries go out after each `CRYPTO_DAY` / `CRYPTO_WEEKEND` window.
+- **Large-SMC:** alerts carry a status line.
+- **Unchanged:** READY, demo/live flags and order paths. Delivery stays gated by the existing local and environment gates.
+- **Evidence:** `docs/status/AGP_SCOPE_STATUS_REPORTS_2026-10-12.md` (311 tests passed).
+
 OD1011 owner decisions (2026-10-11) are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`. OD1011-ROUNDING was amended: v1.1.2 uses its frozen engine `fx._r` (Python `round()` on IEEE floats); versions >=1.1.3 use Decimal ROUND_HALF_UP. Runtime verification for `ST_ASIAN_SWEEP_5R_V1@1.1.2` is scoped to GBPUSD × ASIAN_LONDON × SWEEP; EURUSD remains suspended and other branches fail closed. The D60 replay reports S1 L1–L6 PASS; evidence is `docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json`. D6 READY remains OFF.
 
 OD1012-ACCOUNT (2026-10-12): the AG evidence/demo account is VTMarkets-Demo …999 (suffix pins updated); …985 is the owner sandbox and is excluded from AG evidence. The scheduled ticket/scan runner (`scripts/host/live_candles_smoke.py`, `live_eval_smoke.py`) now reads `account_info` at start and fails closed with `ACCOUNT_PIN_MISMATCH` unless server, login suffix and DEMO trade mode match `config/account_pin.yaml`, and, when `MT5_TERMINAL_PATH`/`--terminal-path` is set, the attached terminal is that one (`ACCOUNT_PIN_MISMATCH TERMINAL_PATH`). Every run logs `RUN_IDENTITY` (terminal path, server, login suffix) whatever the outcome, and FX failure records now carry the scheduled binding's identity (1.1.2 + contract SHA256; previously failures were stamped 1.1.1) (unit-tested offline; not host-verified).
@@ -269,7 +277,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `03689e7a7c847863c44c05bb60b5b201eb326f6a75840dc217c54c1b1f9f4b89`.
+inputs_sha256: `1ea20c2b577bdd9e488c40c5ca952e68947f21039e47270dac9a1899b31c9cab`.
 <!-- [[[end]]] -->
 
 ### Objective

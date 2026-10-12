@@ -388,6 +388,10 @@ research eligibility. Its contract is
   — C14 execution-authority boundary, host magic registry (reserved S1 magic `777001` versus the six
   magics in use on the host), lifecycle evidence chain, and HALT/reconcile on unknown outcome;
   offline unit tests only, no broker mutation, scope still `enabled: false`.
+- [`status/AGP_SCOPE_STATUS_REPORTS_2026-10-12.md`](status/AGP_SCOPE_STATUS_REPORTS_2026-10-12.md)
+  — read-only Telegram scope-status reporting for all three families (OD1012-ROUTING follow-up (d)):
+  FX session summaries stamped per symbol, new crypto CRYPTO_DAY/CRYPTO_WEEKEND summaries, and Large-SMC
+  alert status lines. Every route is REPORT_ONLY; unit-tested only, not host-verified.
 - [`proposals/l2-absence-semantics.md`](proposals/l2-absence-semantics.md)
   — proposal (OWNER_DECISION_PENDING, not implemented): how L2 reports a window with no conforming ticket.
 - [`status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md`](status/AG_LARGE_SMC_EURUSD_FRICTION_CAMPAIGN_WP3A1_STATUS.md)
