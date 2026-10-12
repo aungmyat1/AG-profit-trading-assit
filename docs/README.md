@@ -6,6 +6,9 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[S1 recovery R2](status/AGP_S1_RECOVERY_R2_2026-10-12.md) records prepared
+READY validation, missing owner authority and resource validation pending.
+
 [AG Resource Management Policy V1](governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md)
 restores the owner-issued R0–R3 resource gates and fail-closed runtime lock from
 `82e6e5cca329d1247f8a81aa308f25a80584c5fd`; strategy verification remains separate.
