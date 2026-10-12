@@ -76,7 +76,8 @@ def test_config_missing_logged_once_per_runner_invocation(tmp_path, monkeypatch,
     monkeypatch.setattr(crypto, "load_ticket_config", stop)
     with pytest.raises(StopBeforeBroker):
         runner.main(["--mode", mode])
-    assert logs == [(f"ag_v1_{mode}", "LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction")]
+    assert [ln for ln in logs if not ln[1].startswith("RUN_IDENTITY ")] == [
+        (f"ag_v1_{mode}", "LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction")]
 
 
 def rejected_archive(journal, symbol, reason, at, identity):

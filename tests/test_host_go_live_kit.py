@@ -349,6 +349,8 @@ def test_crypto_main_outside_window_takes_no_runner_or_mt5_lock_and_never_import
     assert log == [
         f"{now.isoformat()} LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction",
         f"{now.isoformat()} CRYPTO OUTSIDE_WINDOW (BEFORE_WINDOW)",
+        f'{now.isoformat()} RUN_IDENTITY requested_terminal_path="AUTO" terminal_path="NOT_AVAILABLE" '
+        'server="NOT_AVAILABLE" login_suffix="NOT_AVAILABLE"',
     ]
 
 
@@ -369,12 +371,17 @@ def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
         calls.append(("mt5_access_lock",))
         yield
 
-    mt5 = types.SimpleNamespace(shutdown=lambda: calls.append(("shutdown",)))
+    mt5 = types.SimpleNamespace(
+        shutdown=lambda: calls.append(("shutdown",)),
+        terminal_info=lambda: types.SimpleNamespace(path="C:/Program Files/VT Markets MT5 Terminal"),
+        account_info=lambda: types.SimpleNamespace(server="VTMarkets-Demo", login=1234999))
     monkeypatch.setattr(smoke, "single_instance", single_lock)
     monkeypatch.setattr(smoke, "mt5_access_lock", mt5_lock)
     monkeypatch.setattr(smoke, "import_mt5", lambda: calls.append(("import_mt5",)) or mt5)
     monkeypatch.setattr(smoke, "mt5_initialize", lambda *_: calls.append(("initialize",)) or (True, "ok"))
     monkeypatch.setattr(smoke, "require_demo_account", lambda *_: calls.append(("demo",)) or (True, "ok"))
+    monkeypatch.setattr(smoke, "require_pinned_demo_account",
+                        lambda *_, **__: calls.append(("account_pin",)) or (True, "ACCOUNT_PIN_VERIFIED"))
     monkeypatch.setattr(smoke, "host_fetch", lambda _: lambda *_: [])
     monkeypatch.setattr(smoke, "host_quote", lambda _: lambda *_: None)
 
@@ -387,12 +394,16 @@ def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
 
     assert smoke.main(["--mode", "crypto"]) == 0
     assert [call[0] for call in calls] == ["single_instance", "import_mt5", "mt5_access_lock",
-                                          "initialize", "demo", "run_crypto", "shutdown"]
+                                          "initialize", "demo", "account_pin", "run_crypto", "shutdown"]
     assert calls[-2][1:] == (now, 3, "Mt5CryptoFeed")
     assert logged == [
         ("ag_v1_crypto", "LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction"),
         ("ag_v1_crypto", "CRYPTO IN_WINDOW"),
+        ("ag_v1_crypto", 'RUN_IDENTITY requested_terminal_path="AUTO" '
+                         'terminal_path="C:/Program Files/VT Markets MT5 Terminal" '
+                         'server="VTMarkets-Demo" login_suffix="999"'),
     ]
+    assert not any("1234999" in message for _, message in logged)
 
 
 def test_single_instance_lock():

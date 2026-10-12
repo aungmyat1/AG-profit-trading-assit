@@ -10,6 +10,8 @@ review_by: 2026-11-07
 
 OD1011 owner decisions (2026-10-11) are recorded in `docs/governance/OWNER_DECISION_REGISTER.md`. OD1011-ROUNDING was amended: v1.1.2 uses its frozen engine `fx._r` (Python `round()` on IEEE floats); versions >=1.1.3 use Decimal ROUND_HALF_UP. Runtime verification for `ST_ASIAN_SWEEP_5R_V1@1.1.2` is scoped to GBPUSD × ASIAN_LONDON × SWEEP; EURUSD remains suspended and other branches fail closed. The D60 replay reports S1 L1–L6 PASS; evidence is `docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json`. D6 READY remains OFF.
 
+OD1012-ACCOUNT (2026-10-12): the AG evidence/demo account is VTMarkets-Demo …999 (suffix pins updated); …985 is the owner sandbox and is excluded from AG evidence. The scheduled ticket/scan runner (`scripts/host/live_candles_smoke.py`, `live_eval_smoke.py`) now reads `account_info` at start and fails closed with `ACCOUNT_PIN_MISMATCH` unless server, login suffix and DEMO trade mode match `config/account_pin.yaml`, and, when `MT5_TERMINAL_PATH`/`--terminal-path` is set, the attached terminal is that one (`ACCOUNT_PIN_MISMATCH TERMINAL_PATH`). Every run logs `RUN_IDENTITY` (terminal path, server, login suffix) whatever the outcome, and FX failure records now carry the scheduled binding's identity (1.1.2 + contract SHA256; previously failures were stamped 1.1.1) (unit-tested offline; not host-verified).
+
 DST fix CS-DST-FIX-01 (2026-10-10, unit-tested only, not host-verified) addresses the
 2026-11-01 US DST end. `mt5.market_data` and `session_scanner` now convert each bar
 with the VT server-time rule (server time = New York time + 7h). They no longer use one
@@ -267,7 +269,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `956307a87dae60db9284f85f73d962a5e1433a62f70b205e8691bc00d3e019e2`.
+inputs_sha256: `59ccc0bfa740855e2654eeb9a40ac6bd1c6bcc30accc3eaecb1fc92290b427ec`.
 <!-- [[[end]]] -->
 
 ### Objective
