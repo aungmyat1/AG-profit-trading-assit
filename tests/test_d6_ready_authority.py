@@ -1,9 +1,7 @@
 """D6 hotfix (owner decision 2026-10-07): ST_ASIAN_SWEEP_5R_V1 READY authority OFF.
 
-Every test here requests `production_ready_authority`, so it runs against the real
-config/v1_tickets/ready_authority.yaml (tests/conftest.py switches READY ON only for tests written
-before D6). The engine is stubbed to return a SIGNAL that the gates would pass as READY: the
-switch must still prevent any READY, on the legacy ticket and on the manual ticket.
+Historical OFF scenarios use a temporary READY-OFF config after OD1012-S1-READY.
+The engine is stubbed to isolate suppression; production S1 ON is tested separately.
 """
 from __future__ import annotations
 
@@ -42,12 +40,11 @@ def _build(symbol="EURUSD", cycle="ASIAN_LONDON"):
                                       evaluated_at=AT, data_close=AT, spread=0.00015)
 
 
-def test_production_config_turns_asian_sweep_ready_authority_off(production_ready_authority):
-    assert production_ready_authority.replace("\\", "/").endswith("config/v1_tickets/ready_authority.yaml")
+def test_temporary_off_config_turns_asian_sweep_ready_authority_off(d6_ready_off):
     assert ra.ready_authority("ST_ASIAN_SWEEP_5R_V1") == (False, "READY_AUTHORITY_OFF_D6")
 
 
-def test_no_ready_ticket_is_emitted_and_shadow_is_clearly_labelled(production_ready_authority, engine_signal):
+def test_no_ready_ticket_is_emitted_and_shadow_is_clearly_labelled(d6_ready_off, engine_signal):
     t = _build()
     assert t["decision"] == ra.SHADOW_INFO_ONLY != "READY"
     assert (t["suppressed_decision"], t["reason_code"], t["engine_reason_code"]) == (
@@ -63,7 +60,7 @@ def test_no_ready_ticket_is_emitted_and_shadow_is_clearly_labelled(production_re
     assert (state, reason) == (TICKET_BLOCKED, "READY_AUTHORITY_OFF_D6")
 
 
-def test_telegram_ticket_scope_never_carries_the_shadow_decision(tmp_path, production_ready_authority):
+def test_telegram_ticket_scope_never_carries_the_shadow_decision(tmp_path, d6_ready_off):
     (tmp_path / "config" / "local").mkdir(parents=True)
     (tmp_path / "config" / "local" / "delivery_override.yaml").write_text(
         "mode: MESSAGE_DELIVERY\nscopes: [TICKET_READY, LSMC_OPPORTUNITY]\n")
@@ -73,7 +70,7 @@ def test_telegram_ticket_scope_never_carries_the_shadow_decision(tmp_path, produ
 
 @pytest.mark.parametrize("symbol", fx_tickets.V1_FX_SYMBOLS)
 @pytest.mark.parametrize("cycle", fx_tickets.V1_CYCLES)
-def test_no_symbol_or_cycle_can_emit_ready(production_ready_authority, engine_signal, symbol, cycle):
+def test_no_symbol_or_cycle_can_emit_ready(d6_ready_off, engine_signal, symbol, cycle):
     windows = fx_tickets.session_windows_utc(DAY)[cycle]
     at = windows["trade"][0] + dt.timedelta(minutes=16)
     bar = Candle(windows["trade"][0], 1.1665, 1.1670, 1.1660, 1.1666)
@@ -82,7 +79,7 @@ def test_no_symbol_or_cycle_can_emit_ready(production_ready_authority, engine_si
     assert t["decision"] != "READY"
 
 
-def test_manual_ticket_cannot_reach_ticket_ready(production_ready_authority, engine_signal):
+def test_manual_ticket_cannot_reach_ticket_ready(d6_ready_off, engine_signal):
     bar = Candle(dt.datetime(2026, 10, 7, 7, 0, tzinfo=UTC), 1.1665, 1.1670, 1.1660, 1.1666)
     m = manual_ticket.build_manual_ticket("EURUSD", "ASIAN_LONDON", DAY, [], 2, [bar], now=AT, data_close=AT,
                                           spread=0.00015, owner=manual_ticket.load_owner_config(), balance=10000.0, commission_r=0.0)

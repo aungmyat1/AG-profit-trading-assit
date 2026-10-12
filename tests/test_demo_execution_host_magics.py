@@ -80,7 +80,7 @@ def test_the_reserved_s1_magic_is_not_any_magic_in_use_on_the_host():
 def test_crypto_vbo_magics_are_inventory_only_and_do_not_authorize_execution(tmp_path):
     fixture = boundary(tmp_path, enabled=False)
     assert {112201, 112202}.issubset(load_host_magics())
-    assert fixture["scope"].account_login_suffix == "985"
+    assert fixture["scope"].account_login_suffix == "999"
     assert fixture["scope"].magic_number not in (112201, 112202)
     decision = fixture["guard"].authorize_order_check(
         authority=fixture["authority"], ticket=fixture["ticket"], market=fixture["market"],
@@ -179,5 +179,6 @@ def test_the_guard_refuses_a_call_when_the_reserved_magic_collides_with_the_host
     assert decision.admitted is False
     assert decision.reason_code == "STRATEGY_MAGIC_COLLIDES_WITH_HOST"
     assert fixture["reader"].calls == 0
-    assert [row["outcome_kind"] for row in fixture["store"].outcomes(TICKET_ID)] \
+    assert [row["outcome_kind"] for row in fixture["store"].outcomes(TICKET_ID)
+            if row["outcome_kind"] != "S1_PRE_ORDER_TELEGRAM_NOTICE"] \
         == ["DEMO_OWNER_ORDER_CONFIRM"]          # no lifecycle evidence was written

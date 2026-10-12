@@ -217,3 +217,13 @@ def _owner_lsmc_host_policy(request, tmp_path, monkeypatch):
     policy.parent.mkdir(parents=True)
     policy.write_text("lsmc_min_remaining_reward_fraction: 0.5\n", encoding="utf-8")
     monkeypatch.setattr(watch, "REPO_ROOT", root)
+
+
+@pytest.fixture
+def d6_ready_off(tmp_path, monkeypatch):
+    """Preserve historical D6 OFF negatives without changing approved production authority."""
+    import v1_tickets.ready_authority as ra
+    path = tmp_path / "ready_authority.yaml"
+    path.write_text("strategies:\n  ST_ASIAN_SWEEP_5R_V1:\n    ready: 'OFF'\n")
+    monkeypatch.setattr(ra, "CONFIG_PATH", str(path))
+    return str(path)

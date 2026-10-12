@@ -38,7 +38,7 @@ HOST_MAGIC_REGISTRY = REPO / "config" / "demo_execution_host_magics.yaml"
 
 NOW = datetime(2026, 10, 11, 12, 0, tzinfo=timezone.utc)
 # The committed DEMO account pin (config/demo_execution_s1.yaml account_login_suffix).
-ACCOUNT = AccountIdentity(login_suffix="985", server="VTMarkets-Demo", trade_mode="DEMO")
+ACCOUNT = AccountIdentity(login_suffix="999", server="VTMarkets-Demo", trade_mode="DEMO")
 DECISION_ID = "TEST_ONLY_NOT_OWNER_AUTHORITY"
 CONFIRM_ID = "TEST-ONLY-CONFIRM-0001"
 TICKET_ID = "AG-S1-TEST-20261011-GBPUSD-ASIAN_LONDON-001"
@@ -300,6 +300,8 @@ def boundary(tmp_path: Path, *, enabled: bool = True, ready_on: bool = True,
     quote = market(scope, now)
     risk = risk_snapshot(scope, now)
     store = TicketStore(str(tmp_path / "ticket_store"))
+    from _s1_notice_fixture import append_notice
+    append_notice(store, ready_ticket, now)
     reader = account_read or LiveAccountRead()
     if confirm:
         append_confirmation(store, scope, ready_ticket, consumed=consumed)

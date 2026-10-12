@@ -61,3 +61,29 @@ does not replace them. Nothing here authorizes trading or changes a safety gate.
 | AGP-OD1012-SESSION-CRYPTO | FX/Gold daily session coverage and combined crypto entry ceiling | OWNER_APPROVED | Aung, 2026-10-12, explicit owner approval. FX/Gold: EURUSD, GBPUSD, USDJPY, XAUUSD are each evaluated once for ASIAN_LONDON and once for LONDON_NEWYORK, exactly eight scheduled instrument-session evaluations per applicable FX day, each with a deterministic auditable terminal outcome; not a trade quota, no forced READY. Crypto: BTCUSD/ETHUSD on VT Markets MT5 Demo CFDs (no perpetual substitution) are dynamically scanned at strategy-defined times; only qualified, current, non-expired opportunities are ranked; maximum **two combined crypto entries per defined trading day** across both instruments and all strategies, enforced at execution level (not by limiting Telegram messages/tickets/proposals); zero or one is acceptable; no trade to meet a target. Supersedes the "two qualified crypto tickets per day = planning ceiling" wording. C14 and OD1010-C6-RISK preserved unchanged; Large-SMC remains a separate six-instrument watch. Day boundary, scan cadence, ranking/tie-break and order-counting semantics are pending design and fail closed until approved. **NO EXECUTION AUTHORIZATION CHANGE**: `demo_authorized=false`, `live_authorized=false`, READY and admission unchanged. Implementation status: `NOT_IMPLEMENTED`. Record: [`AGP_OD1012_SESSION_CRYPTO_OWNER_DECISION_2026-10-12.md`](AGP_OD1012_SESSION_CRYPTO_OWNER_DECISION_2026-10-12.md). |
 | OD1012-ROUTING | Ticket lanes and execution routing: scope states, eligibility, owner standing DEMO authorization for routability; soak not an eligibility gate | OWNER_APPROVED | Aung, 2026-10-12, owner rulings on PR #177 (AGP-PR177-RECONCILE). Spec: `docs/schemas/ticket_verification_routing.yaml` (SPEC ONLY). Record: `docs/governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md`. EXECUTION_ELIGIBLE makes a scope eligible; owner standing authorization makes it routable. Owner confirmed on 2026-10-12 this reading: a scope passing L1–L6 is LOGIC_VERIFIED only; passing L1–L6 alone never routes an order. Family→pair scope map recorded; AUDUSD is not a reported scope. No scope eligible; no flags changed. |
 | OD1009-CRYPTO-SPREAD | Crypto CFD spread block threshold (>20%) | RECORDED — CONFIG KEY PENDING | Owner ratification recorded 2026-10-09 as stated by the owner in the AGP-PR177 mission (2026-10-12). No earlier repo record located, so the date is owner-asserted. Blocks a ticket when the crypto CFD spread exceeds 20% of the stop/risk distance. Fails closed until a config key is added (follow-up b of OD1012-ROUTING). |
+
+## OD1012 S1 activation decisions — owner Aung, 2026-10-12
+
+Approved explicitly in mission AGP-OD1012-S1-ACTIVATION-R3. READY is ticket authority only, not execution authorization. OD1012-S1-NOTIFY resolves the notification-policy question for S1 only; broader pending policies remain pending.
+
+| Decision | Scope | Status | Owner terms |
+|---|---|---|---|
+| OD1012-S1-READY | ST_ASIAN_SWEEP_5R_V1@1.1.2, GBPUSD × ASIAN_LONDON only | APPROVED | Raw contract SHA256 4f936bbe17f4aa4fd3cd9fc85640bed57b6786f43c52e8e2d69aabb7234b14cf. Existing registry S1 RANGE_SWEEP identity also required. |
+| OD1012-S1-NOTIFY | Future S1 pre-order Telegram notice | APPROVED | BLOCK_NEW_ORDERS; require confirmed delivery. Failed/missing/unknown/invalid evidence blocks. |
+| OD1012-ACCOUNT (S1 implementation) | VTMarkets-Demo, DEMO, suffix 999 | APPROVED | Existing owner decision applies to S1. Historical suffix 985 evidence preserved. |
+
+Restrictions: enabled false; per_order_confirm_required true; no standing DEMO authorization, order_check/order_send, orders, broker mutation, host deployment or activation-PR merge. Owner authorizes upstream #180/#183 merge only after checks pass.
+
+<!-- READY_AUTHORITY_RECORDS_START -->
+```yaml
+ready_authority_records:
+  - decision_id: OD1012-S1-READY
+    status: APPROVED
+    strategy_id: ST_ASIAN_SWEEP_5R_V1
+    version: "1.1.2"
+    contract_sha256: 4f936bbe17f4aa4fd3cd9fc85640bed57b6786f43c52e8e2d69aabb7234b14cf
+    symbol_scope: [GBPUSD]
+    session_scope: [ASIAN_LONDON]
+    date: "2026-10-12"
+```
+<!-- READY_AUTHORITY_RECORDS_END -->

@@ -6,6 +6,9 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[S1 activation R3](status/AGP_OD1012_S1_ACTIVATION_R3_2026-10-12.md) records exact owner
+authority, scope and receipt gates, offline validation and Windows preview instructions.
+
 [S1 recovery R2](status/AGP_S1_RECOVERY_R2_2026-10-12.md) records prepared
 READY validation, missing owner authority and resource validation pending.
 

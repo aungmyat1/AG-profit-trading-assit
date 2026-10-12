@@ -10,7 +10,7 @@ review_by: 2026-11-07
 **Target branch:** `main`  
 **Venue:** VT Markets MT5 Demo  
 **Product phase:** PRE-EDGE  
-**Owner ratification:** Original objective RATIFIED 2026-10-09 by the owner — register entry `OBJ-RATIFY-2026-10-09`. C14 sequencing amendment RATIFIED 2026-10-11 — register entry `C14` and [owner decision](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md). FX/Gold session coverage and crypto entry ceiling OWNER_APPROVED 2026-10-12 — register entry `AGP-OD1012-SESSION-CRYPTO` and [owner decision](governance/AGP_OD1012_SESSION_CRYPTO_OWNER_DECISION_2026-10-12.md). Policy ratification is not strategy-specific execution authorization; `demo_authorized=false`, `live_authorized=false`, and READY remains OFF.
+**Owner ratification:** Original objective RATIFIED 2026-10-09 by the owner — register entry `OBJ-RATIFY-2026-10-09`. C14 sequencing amendment RATIFIED 2026-10-11 — register entry `C14` and [owner decision](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md). FX/Gold session coverage and crypto entry ceiling OWNER_APPROVED 2026-10-12 — register entry `AGP-OD1012-SESSION-CRYPTO` and [owner decision](governance/AGP_OD1012_SESSION_CRYPTO_OWNER_DECISION_2026-10-12.md). Policy ratification is not strategy-specific execution authorization; `demo_authorized=false` and `live_authorized=false`. OD1012-S1-READY (owner Aung, 2026-10-12, AGP-OD1012-S1-ACTIVATION-R3) separately approves READY only for v1.1.2 GBPUSD × ASIAN_LONDON, bound to raw SHA256 `4f936bbe17f4aa4fd3cd9fc85640bed57b6786f43c52e8e2d69aabb7234b14cf`; OD1012-S1-NOTIFY requires confirmed pre-order Telegram delivery under BLOCK_NEW_ORDERS. Neither grants order authority or deployment. See the [S1 implementation record](status/AGP_OD1012_S1_ACTIVATION_R3_2026-10-12.md).
 
 
 ## C14 demo sequencing (ratified 2026-10-11)
@@ -203,7 +203,7 @@ records do not silently promote strategies or change demo/live authorization.
 | OD1009-D4 | Target `AG-V1-LSMC-Watch` daily at 00:04:15 UTC and retire `AG-V1-LSMC-Crypto-Weekend`. | Register-only schedule decision; no host task or installer change is made here. |
 | OD1009-D5 | Historical 2026-10-09 decision required G1–G5 before per-strategy authorization and placed G6 after authorization. C14 supersedes its mandatory G5 prerequisite and per-order-confirmation requirement for DEMO; G1–G4, order-level safety gates, and separate strategy-specific authorization remain. | `demo_authorized=false`; this record does not authorize a demo order. See ratified C14. |
 | OD1009-D5-ECONOMIC-STANDARD | No economic edge evidence is required for demo authorization in PRE-EDGE; `EDGE_VERIFIED=false` is accepted for demo. | Confirmed and unchanged by C14. Live trading remains out of scope; no demo flags change. |
-| OD1009-D6 | `ST_ASIAN_SWEEP_5R_V1` READY may be ON only after G1 and G3 pass. | `ticket_ready` and [`ready_authority.yaml`](../config/v1_tickets/ready_authority.yaml) remain unchanged; current READY remains OFF. |
+| OD1009-D6 | `ST_ASIAN_SWEEP_5R_V1` READY may be ON only after G1 and G3 pass. | Historical OFF state is superseded only for the exact S1 owner record by OD1012-S1-READY; all other scopes remain excluded. No execution authorization. |
 
 The 2026-09-30 D2 ("Telegram is DEFERRED") stays subject to rescission row C1. Open rows stay in [`OWNER_DECISION_REGISTER.md`](governance/OWNER_DECISION_REGISTER.md) until the owner records them.
 

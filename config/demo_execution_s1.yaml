@@ -9,10 +9,11 @@ enabled: false
 per_order_confirm_required: true
 # DEMO account identity pin: only the login SUFFIX is committed (AGENTS.md redaction rule);
 # the full login stays host-local. Owner-stated account fact, corroborated by
-# config/owner_ticket.yaml (OD1011-COMMISSION) and status/evidence/host_s1_2026-10-11.json
+# OD1012-ACCOUNT / OD1012-S1-READY / OD1012-S1-NOTIFY; historical …985 evidence
+# stays attributed to its original account. status/evidence/host_s1_2026-10-11.json
 # (account.login_suffix / account.server / account.trade_mode_name). The guarded boundary
 # re-reads the live account and refuses any other suffix, server or trade_mode.
-account_login_suffix: "985"
+account_login_suffix: "999"
 scope:
   strategy_id: ST_ASIAN_SWEEP_5R_V1
   strategy_version: "1.1.2"
@@ -30,4 +31,4 @@ scope:
   evidence_pull_request: 142
   daily_reset_basis: VT_SERVER_DAY
   daily_reset_owner_confirm: true
-  notification_failure_policy: PENDING_OWNER
+  notification_failure_policy: BLOCK_NEW_ORDERS

@@ -69,7 +69,8 @@ def _seconds(value: int):
 
 
 def _kinds(store, ticket_id: str = TICKET_ID) -> list[str]:
-    return [row["outcome_kind"] for row in store.outcomes(ticket_id)]
+    return [row["outcome_kind"] for row in store.outcomes(ticket_id)
+            if row["outcome_kind"] != "S1_PRE_ORDER_TELEGRAM_NOTICE"]
 
 
 def _trail(guard, ticket_id: str = TICKET_ID) -> list[str]:
@@ -334,15 +335,15 @@ def test_the_demo_account_is_read_live_inside_the_guard_before_the_check_is_auth
 
 
 @pytest.mark.parametrize(("payload", "reason"), [
-    ({"login_suffix": "986", "server": "VTMarkets-Demo", "trade_mode": "DEMO"},
+    ({"login_suffix": "985", "server": "VTMarkets-Demo", "trade_mode": "DEMO"},
      "ACCOUNT_LOGIN_SUFFIX_MISMATCH"),
-    ({"login_suffix": "985", "server": "VTMarkets-Live", "trade_mode": "DEMO"},
+    ({"login_suffix": "999", "server": "VTMarkets-Live", "trade_mode": "DEMO"},
      "ACCOUNT_SERVER_MISMATCH"),
-    ({"login_suffix": "985", "server": "VTMarkets-Demo", "trade_mode": 2}, "ACCOUNT_NOT_DEMO"),
-    ({"login_suffix": "985", "server": "VTMarkets-Demo", "trade_mode": "REAL"}, "ACCOUNT_NOT_DEMO"),
-    ({"login_suffix": "985", "server": "VTMarkets-Demo", "trade_mode": None},
+    ({"login_suffix": "999", "server": "VTMarkets-Demo", "trade_mode": 2}, "ACCOUNT_NOT_DEMO"),
+    ({"login_suffix": "999", "server": "VTMarkets-Demo", "trade_mode": "REAL"}, "ACCOUNT_NOT_DEMO"),
+    ({"login_suffix": "999", "server": "VTMarkets-Demo", "trade_mode": None},
      "ACCOUNT_MODE_UNAVAILABLE"),
-    ({"login_suffix": "985", "server": "VTMarkets-Demo"}, "ACCOUNT_MODE_UNAVAILABLE"),
+    ({"login_suffix": "999", "server": "VTMarkets-Demo"}, "ACCOUNT_MODE_UNAVAILABLE"),
     ({"server": "VTMarkets-Demo", "trade_mode": "DEMO"}, "ACCOUNT_IDENTITY_UNAVAILABLE"),
     ({"login_suffix": "98", "server": "VTMarkets-Demo", "trade_mode": "DEMO"},
      "ACCOUNT_IDENTITY_UNAVAILABLE"),

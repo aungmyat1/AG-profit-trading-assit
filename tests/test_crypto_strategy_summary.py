@@ -142,7 +142,7 @@ def test_fx_session_summary_stamps_scope_status_within_telegram_limit(tmp_path):
     assert {s["route"] for s in summary["scope_statuses"]} == {"REPORT_ONLY"}
     text = render_session_summary(summary)
     assert "REPORT ONLY — NON-ACTIONABLE" in text
-    assert "- GBPUSD: LOGIC_VERIFIED | REPORT_ONLY (READY_AUTHORITY_OFF_D6) [branch=RANGE_SWEEP]" in text
+    assert "- GBPUSD: LOGIC_VERIFIED | REPORT_ONLY (DEMO_AUTHORIZATION_ABSENT) [branch=RANGE_SWEEP]" in text
     assert "- EURUSD: SUSPENDED | REPORT_ONLY (L3_REPAINT_UNRESOLVED_2026-07-31)" in text
     assert len(text.encode("utf-16-le")) // 2 <= 4096
 
