@@ -1,5 +1,7 @@
 # AG Profit Trading
 
+Ticket lifecycle storage has a read-only history/statistics CLI and CSV/Parquet export; see [TICKET_STORE_V2](docs/status/AG_TICKET_STORE_V2_STATUS_2026-10-10.md). This storage capability does not authorize execution.
+
 Market-structure analysis uses fresh computation; [offline byte-comparison evidence](docs/status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md) records the removed replay-cache dependency and session-zone call trace.
 
 Standalone canonical-ticket Telegram delivery is offline tested and disabled by
