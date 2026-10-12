@@ -201,6 +201,7 @@ def render_session_summary(summary):
     for item in out_of_session:
         lines.append(f"- OUT_OF_SESSION {item.get('symbol', 'SCHEMA_GAP')} | "
                      f"{item.get('reason_code', 'SCHEMA_GAP')}")
+    lines.append(f"Scope blocked: {summary.get('scope_blocked_count', 0)}")
     lines.append(f"Data failures: {summary.get('data_failure_count', 0)}")
     lines.append(f"Delivery enabled: {str(bool(summary.get('delivery_enabled', False))).lower()}")
     lines.append(f"TICKET_STORE persistence failures: {summary.get('persistence_failure_count', 0)}")

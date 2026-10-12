@@ -10,6 +10,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
+import re
 import sys
 import tempfile
 import threading
@@ -32,6 +33,9 @@ LOG_DIR = os.path.join(REPO_ROOT, "logs")
 MT5_LOCK_DIR = os.environ.get("AG_HOST_LOCK_DIR") or os.path.join(
     os.environ.get("PROGRAMDATA") or tempfile.gettempdir(), "AG", "locks")
 _SECRET_MARKERS = ("TOKEN", "PASSWORD", "SECRET", "KEY")
+_MT5_LOGIN_RE = re.compile(
+    r"(?i)(\b(?:login|account(?:_login|_info)?)['\"]?\s*(?:[:=]\s*|\s+))(['\"]?)(\d{6,10})(?!\d)"
+)
 
 # Hard bounds for scheduled runs (a hung MT5 IPC call or interpreter exit once kept tasks alive
 # until Task Scheduler killed them, blocking the next cycle).
@@ -50,7 +54,7 @@ def redact(text: str) -> str:
     for name, value in os.environ.items():
         if value and len(value) >= 6 and any(m in name.upper() for m in _SECRET_MARKERS):
             text = text.replace(value, "***")
-    return text
+    return _MT5_LOGIN_RE.sub(lambda match: f"{match.group(1)}{match.group(2)}…{match.group(3)[-3:]}", text)
 
 
 def log_line(name: str, message: str) -> None:
@@ -402,7 +406,12 @@ def host_fetch(mt5):
     detection, which misreads XAUUSD (+4) and fails on a late first USDJPY bar. Read-only:
     copy_rates_from_pos plus symbol_select for Market Watch visibility."""
     from host_evidence.symbol_metadata import (
-        CONVERSION_ERROR, INCOMPLETE_CANDLES, SYMBOL_NOT_FOUND, DstHourError, HostDataError, server_time_to_utc,
+        CONVERSION_ERROR,
+        INCOMPLETE_CANDLES,
+        SYMBOL_NOT_FOUND,
+        DstHourError,
+        HostDataError,
+        server_time_to_utc,
     )
     from strategy_engine.session import Candle
 
