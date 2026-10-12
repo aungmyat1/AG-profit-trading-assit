@@ -47,7 +47,7 @@ The owner may still **edit or close** demo orders from Telegram. Such actions go
 ## 4. Follow-ups (not in this decision)
 
 - (a) Executor change replacing per-order `user_confirmed` for `EXECUTION_ELIGIBLE` scopes.
-- (b) Config key for the crypto spread >20% block. The repo record for this guard has not been located.
+- (b) Record 2026-10-09 owner ratification of the crypto spread >20% block in the register (`OD1009-CRYPTO-SPREAD`, done in this PR) and add its config key. The config key is not yet added.
 - (c) Runtime scope registry and loader.
 - (d) Read-only all-family Telegram status reports. This is the next implementation priority.
 

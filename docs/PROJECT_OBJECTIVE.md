@@ -48,7 +48,7 @@ Three independent axes replace any single "PASSED" state:
 
 - **All three families report every relevant scope**, with its status stamped on the ticket.
 - **Non-eligible tickets** (`NOT_ELIGIBLE`, or any non-`DEMO_ORDER` route) carry the header **`REPORT ONLY — NON-ACTIONABLE`**. A hypothetical entry, SL and TP may be shown only when clearly labelled as hypothetical. Such tickets **never enter the order queue**.
-- **Large-SMC:** detection verification is **not** entry verification. A Large-SMC scope is eligible only after its entry/proposal scope passes L1–L6 and carries the required authorization. Watch and alert behaviour is unchanged.
+- **Large-SMC:** Large-SMC detection verification ≠ entry/proposal verification; eligible only after entry scope passes L1–L6 + owner authorization. Detection verification alone never makes a Large-SMC scope eligible. Watch and alert behaviour is unchanged.
 - **No retroactive execution.** Tickets issued before a scope became `EXECUTION_ELIGIBLE` are never placed.
 
 ### Per-ticket guards (apply even when EXECUTION_ELIGIBLE)
@@ -59,7 +59,7 @@ A ticket is blocked, and routed `REPORT_ONLY` with the block reason, if any of t
 |---|---|---|
 | Risk | `risk_pct` = 0.5 (owner ticket config; no fallback to strategy or `trading.yaml` risk). | OD1009-D2, OD1010-C6-RISK |
 | Cost | Spread + commission ≥ **0.25R** blocks (`cost_block_R`). | OD1009-D2 |
-| Crypto spread | Crypto CFD spread > **20%** blocks. Config key is missing, so the guard **fails closed** until the key is recorded. | Owner-stated 2026-10-09 per owner mission; repo record not yet located (follow-up b) |
+| Crypto spread | Crypto CFD spread > **20%** blocks. Config key is missing, so the guard **fails closed** until the key is added. | Owner ratification 2026-10-09 as stated by the owner (register `OD1009-CRYPTO-SPREAD`); config key pending (follow-up b) |
 | Large-SMC reward | `lsmc_min_remaining_reward_fraction` = 0.5 (≥ 50% of entry-to-target distance remaining). | `config/policy/actionability_policy.yaml` |
 
 Cadence and session guards that apply to the same routing lanes:
