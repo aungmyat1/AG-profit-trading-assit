@@ -9,7 +9,9 @@ default (`TELEGRAM_DELIVERY_ENABLED=false`). See [configuration, schema gaps and
 limits](docs/status/AGP_TG_01_OFFLINE_2026-10-08.md); no live delivery is validated.
 An `ON` value in the READY switch alone does not authorize READY tickets: the runtime also
 requires a matching owner decision record bound to the loaded contract, strategy version,
-symbol, and session. Production READY remains OFF.
+symbol, and session. OD1012-S1-READY enables only v1.1.2 GBPUSD × ASIAN_LONDON;
+other scopes remain informational. S1 execution stays disabled. See the
+[S1 activation and read-only acceptance report](docs/status/AGP_OD1012_S1_ACTIVATION_R3_2026-10-12.md).
 The canonical ticket's `trigger` block carries `signal_time_source`. It is `ENGINE` when the
 engine stamped the signal bar, `MISSING` when a signal has no engine time (that ticket is
 `DATA_ERROR` / `SIGNAL_TIME_UNAVAILABLE`), and `NOT_APPLICABLE` for non-signal outcomes. Tickets

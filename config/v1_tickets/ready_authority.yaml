@@ -1,3 +1,6 @@
+# OD1012-S1-READY (Aung, 2026-10-12): ON only with the exact owner record and
+# existing registry S1 scope. Historical D6 explanation below is superseded only
+# for v1.1.2 GBPUSD ASIAN_LONDON. No execution authorization is granted.
 # READY authority switch for V1 informational tickets -- READY_AUTHORITY_V1, version 1.
 # Authority: owner decision D6 (2026-10-07), docs/governance/OWNER_DECISIONS_2026-10-07_LSMC_ACTIONABILITY_V1.md:
 #   "ST_ASIAN_SWEEP_5R_V1: READY authority is OFF until logical verification (R4B) passes.
@@ -14,5 +17,5 @@ config_id: READY_AUTHORITY_V1
 version: 1
 strategies:
   ST_ASIAN_SWEEP_5R_V1:
-    ready: OFF
-    reason: READY_AUTHORITY_OFF_D6
+    ready: ON
+    reason: OD1012-S1-READY

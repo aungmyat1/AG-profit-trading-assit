@@ -249,7 +249,7 @@ def load_scope_policy(
 
     if scope["daily_reset_basis"] != "VT_SERVER_DAY" or scope["daily_reset_owner_confirm"] is not True:
         raise ScopePolicyError("DAILY_RESET_POLICY_UNCONFIRMED")
-    if scope["notification_failure_policy"] != "PENDING_OWNER":
+    if scope["notification_failure_policy"] not in ("PENDING_OWNER", "BLOCK_NEW_ORDERS"):
         raise ScopePolicyError("NOTIFICATION_FAILURE_POLICY_UNSUPPORTED")
     auth_env = scope["authorization_path_env"]
     if not isinstance(auth_env, str) or not auth_env.isidentifier():

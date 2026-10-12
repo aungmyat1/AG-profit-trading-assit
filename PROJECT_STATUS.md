@@ -277,7 +277,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `1ea20c2b577bdd9e488c40c5ca952e68947f21039e47270dac9a1899b31c9cab`.
+inputs_sha256: `7223b356a226c697aecea5937a175cd0b6f4b3642a168c18e73b79838342bfcd`.
 <!-- [[[end]]] -->
 
 ### Objective

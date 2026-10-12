@@ -223,6 +223,8 @@ def _pre_send_inputs(
     ticket = _ticket(scope, now)
     auth_path = _auth_file(tmp_path, scope, ticket, now)
     ticket_store = TicketStore(str(tmp_path / "ticket_store"))
+    from _s1_notice_fixture import append_notice
+    append_notice(ticket_store, ticket, now)
     if write_confirm and scope.per_order_confirm_required:
         append_owner_confirmation(
             ticket_store,
@@ -253,7 +255,7 @@ def test_repo_scope_is_off_and_resolves_identity_magic_and_symbol_dynamically():
     assert scope.magic_number == contract["magic_number"]
     assert (scope.daily_reset_basis, scope.daily_reset_owner_confirm) == ("VT_SERVER_DAY", True)
     assert scope.per_order_confirm_required is True
-    assert scope.notification_failure_policy == "PENDING_OWNER"
+    assert scope.notification_failure_policy == "BLOCK_NEW_ORDERS"
 
 
 def test_pre_send_happy_path_passes_only_broker_free_gates(tmp_path):
@@ -270,7 +272,8 @@ def test_pre_send_happy_path_passes_only_broker_free_gates(tmp_path):
     assert result.details["risk_pct"] <= 0.5
     assert result.details["owner_confirmation_id"]
     assert result.block_reasons == ()
-    assert [row["outcome_kind"] for row in inputs["ticket_store"].outcomes(inputs["ticket"]["ticket_id"])] == [
+    assert [row["outcome_kind"] for row in inputs["ticket_store"].outcomes(inputs["ticket"]["ticket_id"])
+            if row["outcome_kind"] != "S1_PRE_ORDER_TELEGRAM_NOTICE"] == [
         "DEMO_OWNER_ORDER_CONFIRM",
         "DEMO_OWNER_ORDER_CONFIRM_USED",
     ]
@@ -704,6 +707,7 @@ def test_final_handoff_fails_live_account_then_pending_notification_without_brok
         ticket_store=store, now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]),
         scope=inputs["scope"],
     )
-    assert demo.reason_code == "NOTIFICATION_FAILURE_POLICY_PENDING_OWNER"
+    assert demo.reason_code == "CANONICAL_EXECUTION_ADAPTER_NOT_IMPLEMENTED"
     assert calls == []
-    assert store.outcomes(inputs["ticket"]["ticket_id"]) == []
+    assert [r for r in store.outcomes(inputs["ticket"]["ticket_id"])
+            if r["outcome_kind"] != "S1_PRE_ORDER_TELEGRAM_NOTICE"] == []

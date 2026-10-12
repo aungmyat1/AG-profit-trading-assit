@@ -1,7 +1,7 @@
 """D6 port to main: a READY-suppressed Asian Sweep ticket is terminal INFO_ONLY_SUPPRESSED in
 actionability -- never WATCH_READY, even under an owner-signed policy with ample remaining R.
 
-Runs against the production config/v1_tickets/ready_authority.yaml (READY OFF). The scenario is
+Runs against a temporary READY-OFF configuration; production S1 approval stays intact. The scenario is
 the one tests/test_actionability_and_canonical_ticket.py::test_fresh_actionable_signal_is_watch_ready
 uses; with the switch OFF it must not reach WATCH_READY (before this guard it did)."""
 from __future__ import annotations
@@ -30,11 +30,11 @@ def _ticket(now=NOW):
                                  evaluated_at=now, data_close=post[-1].time + dt.timedelta(minutes=15), spread=0.0001)
 
 
-def test_production_switch_is_off(production_ready_authority):
+def test_temporary_switch_is_off(d6_ready_off):
     assert ra.ready_authority("ST_ASIAN_SWEEP_5R_V1") == (False, "READY_AUTHORITY_OFF_D6")
 
 
-def test_signed_policy_cannot_turn_suppressed_ready_into_watch_ready(production_ready_authority):
+def test_signed_policy_cannot_turn_suppressed_ready_into_watch_ready(d6_ready_off):
     t = _ticket()
     assert (t["decision"], t["suppressed_decision"]) == (ra.SHADOW_INFO_ONLY, "READY")
     act = A.evaluate_actionability(t, now=NOW, current_price=1.1636, policy=SIGNED_POLICY)
@@ -45,7 +45,7 @@ def test_signed_policy_cannot_turn_suppressed_ready_into_watch_ready(production_
 
 
 @pytest.mark.parametrize("minutes_after", [0, 5, 25, 200])
-def test_suppressed_is_terminal_at_any_time(production_ready_authority, minutes_after):
+def test_suppressed_is_terminal_at_any_time(d6_ready_off, minutes_after):
     t = _ticket()
     now = NOW + dt.timedelta(minutes=minutes_after)
     for policy in (SIGNED_POLICY, None):
@@ -54,7 +54,7 @@ def test_suppressed_is_terminal_at_any_time(production_ready_authority, minutes_
         assert act["actionability_decision"] == A.INFO_ONLY_SUPPRESSED
 
 
-def test_daily_evaluator_never_emits_watch_ready_while_off(production_ready_authority, tmp_path):
+def test_daily_evaluator_never_emits_watch_ready_while_off(d6_ready_off, tmp_path):
     ref, n, post = _build_asian_london_sweep(NOW, age_minutes=5)
     provider = de.fixture_candle_provider(ref, n, post, spread=0.0001, current_price=1.1636,
                                           data_close=post[-1].time + dt.timedelta(minutes=15))

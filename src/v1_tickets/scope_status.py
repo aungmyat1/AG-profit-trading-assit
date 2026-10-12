@@ -71,10 +71,22 @@ def _candidate(entry: Dict[str, Any], version: str) -> Dict[str, Any]:
     return candidate
 
 
-def _verified_route_reason(strategy_id: str, entry: Dict[str, Any]) -> str:
+def _verified_route_reason(strategy_id: str, entry: Dict[str, Any], version: str, symbol: str,
+                           session: str) -> str:
     """Why a verified scope still routes REPORT_ONLY: READY authority first, then demo authority."""
+    import hashlib
+    from pathlib import Path
+
     from v1_tickets.ready_authority import ready_authority
-    ready_on, reason = ready_authority(strategy_id)
+
+    source = _candidate(entry, version).get("config_source")
+    try:
+        root = Path(__file__).resolve().parents[2]
+        raw_hash = hashlib.sha256((root / source).read_bytes()).hexdigest()
+    except (OSError, TypeError):
+        return "OWNER_DECISION_RECORD_MISSING"
+    ready_on, reason = ready_authority(strategy_id, strategy_version=version,
+                                       contract_sha256=raw_hash, symbol=symbol, session=session)
     if not ready_on:
         return reason
     return DEMO_AUTHORIZATION_ABSENT if entry.get("demo_authorized") is not True else REGISTRY_ENTRY_MISSING
@@ -88,7 +100,7 @@ def _asw(entry: Dict[str, Any], strategy_id: str, version: str, symbol: str,
         if isinstance(item, dict) and item.get("symbol") == symbol and item.get("session", session) == session:
             return SUSPENDED, str(item.get("reason") or "SUSPENDED"), str(item.get("evidence") or "")
     if logic_scope_verified(strategy_id, version, symbol, cycle=session, setup=_ASW_SETUP, branch=_ASW_BRANCH):
-        return LOGIC_VERIFIED, _verified_route_reason(strategy_id, entry), f"branch={_ASW_BRANCH}"
+        return LOGIC_VERIFIED, _verified_route_reason(strategy_id, entry, version, symbol, session), f"branch={_ASW_BRANCH}"
     listed = [item for item in candidate.get("logic_verified_scopes") or []
               if isinstance(item, dict) and item.get("symbol") == symbol and item.get("session") == session]
     if listed:   # recorded for this scope, but the current contract/engine identity no longer matches
@@ -96,7 +108,7 @@ def _asw(entry: Dict[str, Any], strategy_id: str, version: str, symbol: str,
     return UNVERIFIED, LOGIC_NOT_VERIFIED, ""
 
 
-def _ccfd(entry: Dict[str, Any], strategy_id: str, version: str, symbol: str) -> Tuple[str, str, str]:
+def _ccfd(entry: Dict[str, Any], strategy_id: str, version: str, symbol: str, session: str) -> Tuple[str, str, str]:
     from v1_tickets.authority import logic_identity
     candidate = _candidate(entry, version)
     listed = [item for item in candidate.get("logic_verified_symbols") or []
@@ -109,7 +121,7 @@ def _ccfd(entry: Dict[str, Any], strategy_id: str, version: str, symbol: str) ->
     if (status == LOGIC_VERIFIED and identity is not None
             and candidate.get("logic_verified_identity") == identity["digest"]
             and listed[0].get("logic_identity") == identity["digest"]):
-        return LOGIC_VERIFIED, _verified_route_reason(strategy_id, entry), f"branches={branches}"
+        return LOGIC_VERIFIED, _verified_route_reason(strategy_id, entry, version, symbol, session), f"branches={branches}"
     if status in (LOGIC_VERIFIED, STALE_IDENTITY):
         return STALE_IDENTITY, STALE_IDENTITY, f"branches={branches}"
     return UNVERIFIED, LOGIC_NOT_VERIFIED, ""
@@ -143,7 +155,7 @@ def scope_status(family: str, symbol: str, session: str, *,
         if family == SESSION_FX_GOLD:
             status, reason, detail = _asw(entry, strategy_id, version, symbol, session)
         elif family == CRYPTO_CFD:
-            status, reason, detail = _ccfd(entry, strategy_id, version, symbol)
+            status, reason, detail = _ccfd(entry, strategy_id, version, symbol, session)
         else:
             status, reason, detail = _lsmc(entry, symbol)
     except Exception:  # noqa: BLE001 -- status display fails closed, never raises into a runner

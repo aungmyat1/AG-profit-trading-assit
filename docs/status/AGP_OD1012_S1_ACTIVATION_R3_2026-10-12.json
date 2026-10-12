@@ -1,0 +1,902 @@
+{
+  "activation_pr_merge": "NOT_PERFORMED",
+  "actual_order_api_calls": 0,
+  "base_sha": "a8271feadbd3f0a78aef7b2cd8e814e8362534ea",
+  "broker_mutations": 0,
+  "captured_at_utc": "2026-10-12T17:26:49.286899+00:00",
+  "ci": "See exact-head GitHub checks; not inferred from local results",
+  "environment": {
+    "available_ram_mb_at_full_acquire": 9236,
+    "full_resource_class": "R2",
+    "lock_released": true,
+    "python": "3.12.14",
+    "required_ram_mb": 2500,
+    "workers": 1
+  },
+  "final_notification_preview_tests": {
+    "passed": 43,
+    "seconds": 2.25
+  },
+  "host_deployment": "NOT_PERFORMED",
+  "input_hashes": {
+    "docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md": "8bba5dba56635416a9f5217b52cf55699f1d2a1211119a0990dc98a9be7998aa",
+    "scripts/resource_guard.py": "0970ebb1dfa10d13c6926da915998444617509af1f42094e6bceb24788d36ab4",
+    "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml": "4f936bbe17f4aa4fd3cd9fc85640bed57b6786f43c52e8e2d69aabb7234b14cf",
+    "tests/fixtures/manual_ticket/GBPUSD_M15_recorded_spread_60d.csv": "aeaf0ba504569f1fa8b9867f2ac8992e8b33fc143a247644e48a34be16cf2a33"
+  },
+  "local_full_initial": {
+    "failed": 1,
+    "failure": "cog executable absent from PATH; documentation tests subsequently passed with venv PATH",
+    "passed": 2644,
+    "seconds": 220.53,
+    "skipped": 5
+  },
+  "local_windows_acceptance": "NOT_RUN",
+  "mission": "AGP-OD1012-S1-ACTIVATION-R3",
+  "owner_decisions": [
+    "OD1012-S1-READY",
+    "OD1012-S1-NOTIFY",
+    "OD1012-ACCOUNT"
+  ],
+  "raw_contract_sha256": "4f936bbe17f4aa4fd3cd9fc85640bed57b6786f43c52e8e2d69aabb7234b14cf",
+  "ready_scope_matrix": [
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+      "session": "ASIAN_LONDON",
+      "symbol": "EURUSD"
+    },
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+      "session": "LONDON_NEWYORK",
+      "symbol": "EURUSD"
+    },
+    {
+      "ready_authority": true,
+      "reason": "READY_AUTHORITY_ON_OWNER_RECORD",
+      "session": "ASIAN_LONDON",
+      "symbol": "GBPUSD"
+    },
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SESSION_OUT_OF_SCOPE",
+      "session": "LONDON_NEWYORK",
+      "symbol": "GBPUSD"
+    },
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+      "session": "ASIAN_LONDON",
+      "symbol": "USDJPY"
+    },
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+      "session": "LONDON_NEWYORK",
+      "symbol": "USDJPY"
+    },
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+      "session": "ASIAN_LONDON",
+      "symbol": "XAUUSD"
+    },
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+      "session": "LONDON_NEWYORK",
+      "symbol": "XAUUSD"
+    },
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+      "session": "ASIAN_LONDON",
+      "symbol": "BTCUSD"
+    },
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+      "session": "LONDON_NEWYORK",
+      "symbol": "BTCUSD"
+    },
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+      "session": "ASIAN_LONDON",
+      "symbol": "ETHUSD"
+    },
+    {
+      "ready_authority": false,
+      "reason": "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+      "session": "LONDON_NEWYORK",
+      "symbol": "ETHUSD"
+    }
+  ],
+  "real_demo_order_authorized": false,
+  "real_live_order_authorized": false,
+  "related_baseline": {
+    "passed": 602,
+    "seconds": 48.65,
+    "skipped": 1
+  },
+  "related_final": {
+    "passed": 645,
+    "seconds": 36.92,
+    "skipped": 1
+  },
+  "simulation": [
+    {
+      "actual_admission_reason": "ADMITTED_PRE_SEND",
+      "block_reasons": [
+        "ACCOUNT_LOGIN_SUFFIX_MISMATCH"
+      ],
+      "broker_mutations": 0,
+      "case": "account",
+      "expected_reason": "ACCOUNT_LOGIN_SUFFIX_MISMATCH",
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": null,
+          "status": "PASS"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "CONSUMED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_owner_binding": "PASS",
+          "status": "PASS"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "C14_RISK_CAPS_PASS",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "PASS"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "AUTHORIZATION_MISSING",
+      "block_reasons": [
+        "AUTHORIZATION_MISSING"
+      ],
+      "broker_mutations": 0,
+      "case": "authorization",
+      "expected_reason": "AUTHORIZATION_MISSING",
+      "gate_details": {
+        "authorization": {
+          "decision_id": null,
+          "reason_code": "AUTHORIZATION_MISSING",
+          "status": "BLOCKED"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": null,
+          "status": "PASS"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "MATCHED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_owner_binding": "PASS",
+          "status": "PASS"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "C14_RISK_CAPS_PASS",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "PASS"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "ADMITTED_PRE_SEND",
+      "block_reasons": [
+        "ACCOUNT_IDENTITY_UNAVAILABLE"
+      ],
+      "broker_mutations": 0,
+      "case": "broker",
+      "expected_reason": "ACCOUNT_IDENTITY_UNAVAILABLE",
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": null,
+          "status": "PASS"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "CONSUMED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_owner_binding": "PASS",
+          "status": "PASS"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "C14_RISK_CAPS_PASS",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "PASS"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "HALT_UNCERTAIN_SEND",
+      "block_reasons": [
+        "HALT_UNCERTAIN_SEND"
+      ],
+      "broker_mutations": 0,
+      "case": "duplicate",
+      "expected_reason": "HALT_UNCERTAIN_SEND",
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": "DEMO_EXECUTION_SENDING",
+          "reason_code": "HALT_UNCERTAIN_SEND",
+          "status": "BLOCKED"
+        },
+        "notification": {
+          "reason_code": null,
+          "status": "PASS"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "CONSUMED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_owner_binding": "PASS",
+          "status": "PASS"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "C14_RISK_CAPS_PASS",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "PASS"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "OWNER_DECISION_CONTRACT_HASH_MISMATCH",
+      "block_reasons": [
+        "OWNER_DECISION_CONTRACT_HASH_MISMATCH"
+      ],
+      "broker_mutations": 0,
+      "case": "hash",
+      "expected_reason": "OWNER_DECISION_CONTRACT_HASH_MISMATCH",
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": null,
+          "status": "PASS"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "MATCHED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_authority": "OFF",
+          "status": "BLOCKED",
+          "suppressed_decision": "READY"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "C14_RISK_CAPS_PASS",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "PASS"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "PRE_ORDER_NOTIFICATION_NOT_DELIVERED",
+      "block_reasons": [
+        "PRE_ORDER_NOTIFICATION_NOT_DELIVERED"
+      ],
+      "broker_mutations": 0,
+      "case": "notice",
+      "expected_reason": "PRE_ORDER_NOTIFICATION_NOT_DELIVERED",
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": "PRE_ORDER_NOTIFICATION_NOT_DELIVERED",
+          "status": "BLOCKED"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "MATCHED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_owner_binding": "PASS",
+          "status": "PASS"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "C14_RISK_CAPS_PASS",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "PASS"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "STRATEGY_DAILY_LOSS_LIMIT",
+      "block_reasons": [
+        "STRATEGY_DAILY_LOSS_LIMIT"
+      ],
+      "broker_mutations": 0,
+      "case": "risk",
+      "expected_reason": "STRATEGY_DAILY_LOSS_LIMIT",
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": null,
+          "status": "PASS"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "CONSUMED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_owner_binding": "PASS",
+          "status": "PASS"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "STRATEGY_DAILY_LOSS_LIMIT",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "BLOCKED"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "SYMBOL_SCOPE_MISMATCH",
+      "block_reasons": [
+        "SYMBOL_SCOPE_MISMATCH",
+        "OWNER_DECISION_SYMBOL_OUT_OF_SCOPE",
+        "OWNER_CONFIRM_REQUIRED",
+        "OWNER_CONFIRM_BINDING_MISMATCH",
+        "PRE_ORDER_NOTIFICATION_TICKET_MISMATCH"
+      ],
+      "broker_mutations": 0,
+      "case": "scope",
+      "expected_reason": "SYMBOL_SCOPE_MISMATCH",
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": "PRE_ORDER_NOTIFICATION_TICKET_MISMATCH",
+          "status": "BLOCKED"
+        },
+        "owner_confirmation": {
+          "confirmation_id": null,
+          "status": "MISSING_OR_INVALID"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_authority": "OFF",
+          "status": "BLOCKED",
+          "suppressed_decision": "READY"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "C14_RISK_CAPS_PASS",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "PASS"
+        },
+        "scope": {
+          "status": "BLOCKED"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "ADMITTED_PRE_SEND",
+      "block_reasons": [
+        "ACCOUNT_SERVER_MISMATCH"
+      ],
+      "broker_mutations": 0,
+      "case": "server",
+      "expected_reason": "ACCOUNT_SERVER_MISMATCH",
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": null,
+          "status": "PASS"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "CONSUMED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_owner_binding": "PASS",
+          "status": "PASS"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "C14_RISK_CAPS_PASS",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "PASS"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "MARKET_DATA_STALE",
+      "block_reasons": [
+        "MARKET_DATA_STALE"
+      ],
+      "broker_mutations": 0,
+      "case": "stale",
+      "expected_reason": "MARKET_DATA_STALE",
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "reason_code": "MARKET_DATA_STALE",
+          "status": "BLOCKED"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": null,
+          "status": "PASS"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "CONSUMED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_owner_binding": "PASS",
+          "status": "PASS"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "C14_RISK_CAPS_PASS",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "PASS"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "RISK_TICKET_GEOMETRY_INVALID",
+      "block_reasons": [
+        "RISK_TICKET_GEOMETRY_INVALID",
+        "PRE_ORDER_NOTIFICATION_TICKET_MISMATCH"
+      ],
+      "broker_mutations": 0,
+      "case": "stop",
+      "expected_reason": "RISK_TICKET_GEOMETRY_INVALID",
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "reason_code": "RISK_TICKET_GEOMETRY_INVALID",
+          "status": "BLOCKED"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": "PRE_ORDER_NOTIFICATION_TICKET_MISMATCH",
+          "status": "BLOCKED"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "MATCHED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_owner_binding": "PASS",
+          "status": "PASS"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "RISK_TICKET_GEOMETRY_INVALID",
+          "risk_pct": null,
+          "server_day": "2026-10-11",
+          "status": "BLOCKED"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    },
+    {
+      "actual_admission_reason": "ADMITTED_PRE_SEND",
+      "block_reasons": [],
+      "broker_mutations": 0,
+      "case": "valid",
+      "expected_reason": null,
+      "gate_details": {
+        "authorization": {
+          "decision_id": "TEST_ONLY_NOT_OWNER_AUTHORITY",
+          "reason_code": "STANDING_DEMO_AUTHORIZATION_MATCHED",
+          "status": "PASS"
+        },
+        "cost": {
+          "cost_basis": "CURRENT_SPREAD_ONLY_PER_REGISTERED_S1_CONTRACT",
+          "reason_code": null,
+          "slippage_points": 0.0,
+          "spread_pips": 0.9999999999998899,
+          "spread_risk_fraction": 0.0999999999999778,
+          "status": "PASS"
+        },
+        "freshness": {
+          "quote_age_seconds": 21.0,
+          "reason_code": null,
+          "signal_age_seconds": 121.0,
+          "status": "PASS"
+        },
+        "idempotency": {
+          "prior_state": null,
+          "reason_code": "IDEMPOTENCY_KEY_AVAILABLE",
+          "status": "PASS"
+        },
+        "notification": {
+          "reason_code": null,
+          "status": "PASS"
+        },
+        "owner_confirmation": {
+          "confirmation_id": "TEST-ONLY-CONFIRM-0001",
+          "status": "CONSUMED"
+        },
+        "per_order_confirm_required": true,
+        "ready": {
+          "ready_owner_binding": "PASS",
+          "status": "PASS"
+        },
+        "risk": {
+          "daily_reset_owner_confirm": true,
+          "foreign_positions_on_symbol": 0,
+          "own_positions_on_symbol": 0,
+          "reason_code": "C14_RISK_CAPS_PASS",
+          "risk_pct": 0.5,
+          "server_day": "2026-10-11",
+          "status": "PASS"
+        },
+        "scope": {
+          "status": "PASS"
+        }
+      },
+      "order_api_calls": 0,
+      "route": "NO_ORDER_SUBMISSION",
+      "source": "SYNTHETIC_TEST_ONLY",
+      "verdict": "PASS"
+    }
+  ],
+  "telegram_sends": 0,
+  "upstream_merges": {
+    "180": "7dfc8a2079f46d6cfd5097a344249603b13339d2",
+    "183": "a8271feadbd3f0a78aef7b2cd8e814e8362534ea"
+  }
+}

@@ -1,7 +1,7 @@
 """D6 READY requires exact identity-bound logic scope.
 
 READY survives only if D6 is ON, an owner record binds it, and the exact scope tuple plus identity hashes
-are present in strategies/registry.yaml. Production D6 stays OFF.
+are present in strategies/registry.yaml. Production allows only the approved S1 owner binding; OFF negatives use temporary config.
 """
 from __future__ import annotations
 
@@ -104,7 +104,7 @@ def test_d6_on_and_verified_symbol_is_ready(d6_on):
 
 
 @pytest.mark.parametrize("symbol,version", [("EURUSD", "1.1.2"), ("GBPUSD", "1.1.2"), ("EURUSD", "1.1.1")])
-def test_d6_off_behaviour_is_unchanged(production_ready_authority, symbol, version):
+def test_d6_off_behaviour_is_unchanged(d6_ready_off, symbol, version):
     t = ready(symbol, version)
     assert ra.apply_ready_authority(t) == {
         **t, "decision": ra.SHADOW_INFO_ONLY, "suppressed_decision": "READY", "label": ra.SHADOW_LABEL,
@@ -113,7 +113,7 @@ def test_d6_off_behaviour_is_unchanged(production_ready_authority, symbol, versi
     assert ra.apply_ready_authority(non_ready) is non_ready
 
 
-def test_production_d6_is_still_off():
+def test_temporary_d6_is_still_off(d6_ready_off):
     assert ra.ready_authority(SID) == (False, ra.READY_AUTHORITY_OFF)
 
 
@@ -139,7 +139,7 @@ def test_fx_ticket_path_applies_the_symbol_gate(monkeypatch, symbol, cycle, expe
                                        evaluated_at=AT, data_close=AT, spread=0.00015, runtime_scope=True)
         assert t["strategy_version"] == "1.1.2"
         assert t["regime"] == "RANGE" and t["setup"] == "SWEEP"
-        assert t["reason_code"] == ra.READY_AUTHORITY_OFF
+        assert t["decision"] == "READY" and t["reason_code"] == "SWEEP_V1"
     assert t["strategy_version"] == "1.1.2"
 
 

@@ -12,6 +12,12 @@ from demo_execution.authorization import (
 )
 from demo_execution.confirmation import check_and_consume_owner_confirmation
 from demo_execution.idempotency import ExecutionLedger
+from demo_execution.notification import (
+    check_notification_failure_policy as check_notification_failure_policy,
+)
+from demo_execution.notification import (
+    notification_gate,
+)
 from demo_execution.risk import RiskSnapshot, evaluate_risk_caps
 from demo_execution.scope import ScopePolicy, ScopePolicyError, load_scope_policy
 from ticket_store.store import TicketStore
@@ -280,6 +286,10 @@ def evaluate_pre_send_gates(
         "decision_id": authorization.decision_id,
     }
 
+    notification_reason = notification_gate(policy.notification_failure_policy, ticket_store, ticket, now_utc)
+    gate_details["notification"] = {"status": "BLOCKED" if notification_reason else "PASS",
+                                    "reason_code": notification_reason}
+
     # 4. Per-order confirmation. A valid record is consumed once only after all earlier
     # gates pass; when they fail, confirmation is inspected read-only for full diagnostics.
     confirmation_id: Optional[str] = None
@@ -289,7 +299,7 @@ def evaluate_pre_send_gates(
             ticket_store,
             ticket,
             now_utc=now_utc,
-            consume=not block_reasons,
+            consume=not block_reasons and notification_reason is None,
         )
         add_reasons(*confirmation.reason_codes)
         confirmation_id = confirmation.confirmation_id
@@ -329,6 +339,8 @@ def evaluate_pre_send_gates(
         "reason_code": freshness_reason,
         **freshness_details,
     }
+
+    add_reasons(notification_reason)
 
     # 6. Idempotency is last in the requested admission order.
     if ticket_store is None:
@@ -381,13 +393,6 @@ def check_account_mode(account_mode: Optional[str]) -> Optional[str]:
     return None if account_mode == "DEMO" else "ACCOUNT_NOT_DEMO"
 
 
-def check_notification_failure_policy(policy: Optional[str]) -> Optional[str]:
-    """PENDING_OWNER blocks every new order; no outage behavior is guessed."""
-    if policy == "PENDING_OWNER":
-        return "NOTIFICATION_FAILURE_POLICY_PENDING_OWNER"
-    return "NOTIFICATION_FAILURE_POLICY_UNRESOLVED"
-
-
 def prepare_canonical_handoff(
     ticket: Mapping[str, Any],
     market: Optional[MarketEvidence],
@@ -428,7 +433,7 @@ def prepare_canonical_handoff(
 
     # These are later send-time assertions, not substitutes for the ordered admission gates.
     account_reason = check_account_mode(account_mode)
-    notification_reason = check_notification_failure_policy(policy.notification_failure_policy)
+    notification_reason = notification_gate(policy.notification_failure_policy, ticket_store, ticket, now_utc)
     send_reasons = [reason for reason in (account_reason, notification_reason) if reason]
     if send_reasons:
         return _blocked(

@@ -20,8 +20,7 @@ geometry derived from that same recorded session (see `gold_candles`), and the f
 contract fixtures. No market-data claim is made here: G2 symbol_info acceptance is a separate gate,
 and the gold fixture is synthetic gate math, not XAUUSD evidence.
 
-D6/D3 note: production `config/v1_tickets/ready_authority.yaml` keeps `ST_ASIAN_SWEEP_5R_V1` READY
-OFF, so a fully conforming FX/gold ticket is TICKET_BLOCKED with READY_AUTHORITY_OFF_D6 whatever the
+D6/D3 note: these legacy v1.1.1 gate-math fixtures use a temporary READY-OFF config, so a fully conforming FX/gold ticket is TICKET_BLOCKED with READY_AUTHORITY_OFF_D6 whatever the
 cost gate says; the crypto CFD contract is not admitted (OD1009-D3), so its ticket is BLOCKED with
 LOGIC_STATUS_NOT_VERIFIED. G3 verdicts are therefore asserted on the risk/cost gate's own outputs
 (`block_reasons[]`, `warnings[]`, `risk`, `cost_in_R`), never on the ticket state alone.
@@ -48,6 +47,12 @@ from mt5.symbol_resolver import SymbolMeta
 from sizing_math import risk as sizing_risk
 from strategy_engine.session import Candle
 from v1_tickets import guards, logic_gate, ready_authority
+
+
+@pytest.fixture(autouse=True)
+def _preserve_d6_off_gate_math(d6_ready_off):
+    """Legacy v1.1.1 gate-math fixtures explicitly retain their D6 OFF context."""
+
 from v1_tickets import manual_ticket as mt
 from v1_tickets.crypto_cfd_policy import POLICY_PATH, load_ticket_policy
 from v1_tickets.fx import session_windows_utc

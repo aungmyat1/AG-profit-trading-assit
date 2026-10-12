@@ -46,7 +46,7 @@ def test_every_scope_resolves_report_only_with_reason(family, symbol, session):
 
 def test_current_registry_statuses():
     s1 = ss.scope_status(ss.SESSION_FX_GOLD, "GBPUSD", "ASIAN_LONDON")
-    assert (s1.verification_status, s1.route_reason) == (ss.LOGIC_VERIFIED, "READY_AUTHORITY_OFF_D6")
+    assert (s1.verification_status, s1.route_reason) == (ss.LOGIC_VERIFIED, "DEMO_AUTHORIZATION_ABSENT")
     assert ss.scope_status(ss.SESSION_FX_GOLD, "GBPUSD", "LONDON_NEWYORK").verification_status == ss.UNVERIFIED
     eur = ss.scope_status(ss.SESSION_FX_GOLD, "EURUSD", "ASIAN_LONDON")
     assert (eur.verification_status, eur.route_reason) == (ss.SUSPENDED, "L3_REPAINT_UNRESOLVED_2026-07-31")

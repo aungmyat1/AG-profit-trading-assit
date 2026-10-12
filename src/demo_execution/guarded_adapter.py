@@ -71,6 +71,7 @@ from demo_execution.lifecycle import (
     LifecycleTrail,
     TransitionResult,
 )
+from demo_execution.notification import notification_gate
 from demo_execution.risk import RiskSnapshot
 from demo_execution.scope import ScopePolicy, ScopePolicyError, load_scope_policy
 from ticket_store.store import TicketStore
@@ -260,6 +261,10 @@ class GuardedCanonicalAdapter:
     ) -> list[str]:
         """Live account, per-order confirmation, evidence, the gates, standing authorization."""
         reasons: list[str] = []
+        notification_reason = notification_gate(scope.notification_failure_policy, self._store, ticket, now_utc)
+        if notification_reason:
+            reasons.append(notification_reason)
+        details["notification"] = notification_reason or "PASS"
         live = self._read_live_account()
         if live is None:
             reasons.append(ACCOUNT_IDENTITY_UNAVAILABLE)

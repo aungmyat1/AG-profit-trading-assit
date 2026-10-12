@@ -9,7 +9,7 @@
 # carry it, and 0 is also the "no magic" default of every MT5 order.
 #
 # Provenance (evidence, not authority; nothing here authorizes an order):
-#   - Owner sandbox account: VTMarkets-Demo, login suffix 985 (the separate S1 scope pin).
+#   - Owner sandbox account: VTMarkets-Demo, login suffix 985 (historical sandbox inventory; S1 is now pinned to 999).
 #   - status/evidence/host_s1_2026-10-11.json  (merged, PR #152) -- DEMO account identity and
 #     broker_history_24h.manual_or_zero_magic = 3 with an empty by_magic map.
 #   - C11 host inventory status/evidence/host_c11_inventory_2026-10-11.json (draft PR #153,
