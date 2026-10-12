@@ -241,6 +241,8 @@ research eligibility. Its contract is
   — ratified DEMO-only sequencing, standing authorization and risk limits; no current authorization changes.
 - [`governance/AGP_OD1012_SESSION_CRYPTO_OWNER_DECISION_2026-10-12.md`](governance/AGP_OD1012_SESSION_CRYPTO_OWNER_DECISION_2026-10-12.md)
   — owner-approved eight daily FX/Gold session evaluations and two-combined-entry crypto ceiling; not implemented; no authorization change.
+- [`governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md`](governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md)
+  — ticket lanes and execution routing (PASSED makes a scope eligible; owner standing authorization makes it routable); SPEC ONLY, no scope PASSED, no authorization change.
 - [`governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md`](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md)
   — historical proposal retained for traceability; superseded demo-soak and per-order-confirmation requirements are identified.
 - [`governance/AGP_C6_IMPLEMENTATION_GATES_2026-10-10.md`](governance/AGP_C6_IMPLEMENTATION_GATES_2026-10-10.md)

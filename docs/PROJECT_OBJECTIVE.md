@@ -21,7 +21,7 @@ The [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-1
 
 ## Ticket lanes & execution routing (2026-10-12)
 
-**Status:** owner-directed amendment, DESIGN. Documentation and configuration schema only. It enables no code path, flips no scope to `PASSED`, changes no READY flag, and leaves `demo_authorized=false`, `live_authorized=false` and all execution flags OFF. Schema: [`config/governance/ticket_verification_routing.yaml`](../config/governance/ticket_verification_routing.yaml).
+**Status:** owner-directed amendment, DESIGN. Documentation and SPEC only. It enables no code path, flips no scope to `PASSED`, changes no READY flag, and leaves `demo_authorized=false`, `live_authorized=false` and all execution flags OFF. Spec (SPEC ONLY, not read by any code): [`docs/schemas/ticket_verification_routing.yaml`](schemas/ticket_verification_routing.yaml). Decision record: [`governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md`](governance/AGP_OD1012_ROUTING_OWNER_DECISION_2026-10-12.md).
 
 **Intent.** During logical verification the system produces trade tickets from **all three strategy families** — Asian Sweep session FX/gold (`ST_ASIAN_SWEEP_5R_V1`), Crypto CFD sweep-retest (`ST_CRYPTO_CFD_SWEEP_RETEST_V1`) and Large-SMC (`ST_LARGE_SMC_V1`) — for every relevant pair. Each ticket is stamped with the current verification status of its **strategy scope**:
 
@@ -39,11 +39,10 @@ The [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-1
 2. **Data:** VT MT5 `symbol_info` evidence for the traded broker symbol (G2).
 3. **Cost:** required risk and cost keys present and threshold tests passing (G3).
 4. **Host acceptance:** read-only open-window acceptance and published heartbeat for the scope (G4).
-5. **Shadow soak:** at least **10 clean cycles** for the scope, each meeting every acceptance criterion in the Optional operational soak section (zero broker mutations).
+
+The optional shadow soak is **not** a `PASSED` requirement. C14 and OD1009-D5 govern; a soak may be run as optional observation (G5) but does not gate `PASSED`.
 
 **Logic-only is not PASSED.** `LOGIC_VERIFIED` alone never yields `PASSED`, and `PASSED` does not by itself confer DEMO authority (see Routing rules).
-
-> **OWNER DECISION REQUIRED — conflict with ratified C14.** Requirement 5 makes a 10-cycle shadow soak a DEMO-routing prerequisite. Ratified C14 (2026-10-11) and OD1009-D5 state that the mandatory 10-cycle zero-order soak is **not** a DEMO prerequisite. This amendment keeps the soak in the `PASSED` definition as directed for the routing registry; this applies only to DEMO routing and does not reinstate it as a general authorization gate. The owner must confirm which applies before any scope is set to `PASSED`. Until confirmed, no scope may be set to `PASSED`.
 
 ### Per-ticket guards (apply even when PASSED)
 
@@ -70,9 +69,11 @@ Any guard failure, missing execution-critical input, stale or expired ticket, or
 
 ### Routing rules
 
+**PASSED makes a scope eligible; owner standing authorization makes it routable.**
+
 1. `DEMO_ORDER` requires **all** of: scope `verification_status=PASSED` in the routing registry; every per-ticket guard passing; and a **separate, valid, revocable, strategy-specific standing DEMO authorization** covering the exact strategy version and scope (C14 gate 5). Without that authorization, a `PASSED` scope routes `REPORT_ONLY` with reason `DEMO_AUTHORIZATION_ABSENT`.
 2. Every other case routes `REPORT_ONLY`.
-3. Routing reads a **single per-scope status registry** (`config/governance/ticket_verification_routing.yaml`). Missing, unknown or malformed status fails closed to `REPORT_ONLY`. Live accounts are never routable.
+3. Routing reads a **single per-scope status registry**. That runtime registry does not exist yet and is created in a later, separately authorized PR; until then every scope is absent and routes `REPORT_ONLY`. Missing, unknown or malformed status fails closed to `REPORT_ONLY`. Live accounts are never routable.
 4. The crypto daily ceiling of two combined entries (AGP-OD1012-SESSION-CRYPTO) and the existing risk ceilings (1 open position per instrument, 5 trades per strategy per day, 1% daily loss per strategy, 2% account-wide) still bind at the execution boundary and are not relaxed by `PASSED`.
 
 ### Execution path and Telegram controls
@@ -88,7 +89,7 @@ The 2026-10-09 flow in which an owner Confirm places an order (Issue #47 V5 per-
 
 ### Current state
 
-No scope is `PASSED`. The routing registry is empty, so every ticket is `REPORT_ONLY` with reason `REGISTRY_ENTRY_MISSING`. Strategy admission, READY, runtime binding and host acceptance are unchanged. This section sets target policy only and is not evidence that any gate has passed.
+No scope is `PASSED`. No runtime routing registry exists yet, so every ticket is `REPORT_ONLY` with reason `REGISTRY_ENTRY_MISSING` until the separately authorized registry PR lands. Strategy admission, READY, runtime binding and host acceptance are unchanged. This section sets target policy only and is not evidence that any gate has passed.
 
 ## Objective
 
