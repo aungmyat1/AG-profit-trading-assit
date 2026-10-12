@@ -13,6 +13,10 @@ Version: v1
 - No AI assistant (MT5 built-in or coding agent) has order capability on the AG demo account …985; the only broker writer is the C14-gated executor (src/demo_execution).
 - In read-only missions: `ORDER_API_CALLS = 0` and `BROKER_MUTATION_COUNT = 0`. Never call `order_send`, `order_check`, position/pending-order mutation, an execution gateway, or `assistant.commands.execute_command()`.
 
+## Ticket routing (2026-10-12)
+- Demo routing reads a single per-scope status registry (`config/governance/ticket_verification_routing.yaml`); missing/unknown status fails closed to `REPORT_ONLY`. Live account never routable.
+- A scope `PASSED` status does not by itself authorize a DEMO order; a separate standing DEMO authorization is also required. The 2026-10-09 owner-Confirm order placement is superseded only for `PASSED` scopes, and only once the executor change lands (see `docs/PROJECT_OBJECTIVE.md`).
+
 ## Fail-closed policy
 - Missing, unsigned, malformed, or conflicting actionability policy never authorizes `WATCH_READY`; use the existing fail-closed state and never invent a numeric threshold.
 

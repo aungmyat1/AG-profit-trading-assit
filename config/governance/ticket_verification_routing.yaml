@@ -1,0 +1,43 @@
+# Ticket verification status registry and execution-route schema (docs/PROJECT_OBJECTIVE.md,
+# "Ticket lanes & execution routing (2026-10-12)"). SCHEMA ONLY: no scope is PASSED here and
+# no execution flag is enabled by this file. Routing reads this single per-scope registry.
+#
+# Fail-closed rules:
+#   - a missing scope, unknown status or malformed entry => execution_route=REPORT_ONLY
+#   - live accounts are never routable
+#   - PASSED alone does not authorize DEMO orders; a separate, valid, revocable,
+#     strategy-specific standing DEMO authorization is also required (C14 gate 5)
+#   - setting any scope to PASSED is a governed owner action, not an agent action
+schema_version: "1"
+policy_id: TICKET_VERIFICATION_ROUTING_V1
+status: SCHEMA_ONLY
+
+verification_status_enum: [UNVERIFIED, IN_VERIFICATION, LOGIC_VERIFIED, PASSED, STALE_IDENTITY]
+execution_route_enum: [DEMO_ORDER, REPORT_ONLY]
+default_verification_status: UNVERIFIED
+default_execution_route: REPORT_ONLY
+report_only_label_format: "REPORT-ONLY: <verification_status>"
+
+# PASSED scope requirements (all must be green; recorded as evidence references, not booleans).
+passed_requirements:
+  logic: L1-L6
+  data: G2_symbol_info
+  cost: G3_risk_cost_keys
+  host_acceptance: G4
+  shadow_soak_min_clean_cycles: 10   # OWNER DECISION REQUIRED: conflicts with C14 (see objective)
+  broker_mutations_during_soak: 0
+
+# Per-ticket guards applied even when PASSED. A failing guard => REPORT_ONLY with the reason.
+per_ticket_guards:
+  risk_pct: 0.5
+  cost_block_R: 0.25
+  crypto_spread_block_fraction: 0.20   # owner instruction 2026-10-12; no recorded config key yet => fail closed
+  lsmc_min_remaining_reward_fraction: 0.5
+
+# Per-scope status registry. Empty by design: every scope is absent => REPORT_ONLY
+# (REGISTRY_ENTRY_MISSING). Entry shape when populated by governed action:
+#   <strategy_id>@<semantic_version>|<instrument>|<session_or_branch>:
+#     verification_status: <enum>
+#     standing_demo_authorization_ref: <id or null>   # null => DEMO_AUTHORIZATION_ABSENT
+#     evidence_refs: [...]
+scopes: {}

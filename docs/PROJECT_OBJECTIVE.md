@@ -19,6 +19,77 @@ After a strategy passes L1–L6 for its exact frozen identity and completes runt
 
 The [AGP-C6 amendment](governance/AGP_C6_AUTO_DEMO_OBJECTIVE_AMENDMENT_2026-10-10.md) remains available as historical proposal evidence. Its mandatory soak and post-soak/per-order requirements were superseded by C14 and are not current policy.
 
+## Ticket lanes & execution routing (2026-10-12)
+
+**Status:** owner-directed amendment, DESIGN. Documentation and configuration schema only. It enables no code path, flips no scope to `PASSED`, changes no READY flag, and leaves `demo_authorized=false`, `live_authorized=false` and all execution flags OFF. Schema: [`config/governance/ticket_verification_routing.yaml`](../config/governance/ticket_verification_routing.yaml).
+
+**Intent.** During logical verification the system produces trade tickets from **all three strategy families** — Asian Sweep session FX/gold (`ST_ASIAN_SWEEP_5R_V1`), Crypto CFD sweep-retest (`ST_CRYPTO_CFD_SWEEP_RETEST_V1`) and Large-SMC (`ST_LARGE_SMC_V1`) — for every relevant pair. Each ticket is stamped with the current verification status of its **strategy scope**:
+
+- Scope status `PASSED` → ticket is routed `DEMO_ORDER`: a VT Markets DEMO order is placed and a Telegram report is sent.
+- Scope status other than `PASSED` → ticket is routed `REPORT_ONLY`: Telegram report only, labelled `REPORT-ONLY: <status>`.
+- On a scope's transition to `PASSED`, subsequent tickets for that scope may auto-place DEMO orders. **No backfill:** tickets generated before the transition are never placed retroactively.
+
+**Scope.** A verification scope is the tuple **strategy × pair × session/branch** (for example `ST_ASIAN_SWEEP_5R_V1@1.1.2` × GBPUSD × ASIAN_LONDON × SWEEP). A passing scope verifies no other branch, symbol, session or venue (AGP-C15).
+
+### PASSED (scope-level definition)
+
+`PASSED` is a scope-level state meaning **every** existing per-strategy gate is green for that exact scope:
+
+1. **Logic L1–L6** recorded as passing, as required for ticket authority under Strategy admission (the owner's shorthand "L1–L5" is not used because L6 is already mandatory in this objective) with frozen identity, causality and deterministic replay (`LOGIC_VERIFICATION_REPORT`).
+2. **Data:** VT MT5 `symbol_info` evidence for the traded broker symbol (G2).
+3. **Cost:** required risk and cost keys present and threshold tests passing (G3).
+4. **Host acceptance:** read-only open-window acceptance and published heartbeat for the scope (G4).
+5. **Shadow soak:** at least **10 clean cycles** for the scope, each meeting every acceptance criterion in the Optional operational soak section (zero broker mutations).
+
+**Logic-only is not PASSED.** `LOGIC_VERIFIED` alone never yields `PASSED`, and `PASSED` does not by itself confer DEMO authority (see Routing rules).
+
+> **OWNER DECISION REQUIRED — conflict with ratified C14.** Requirement 5 makes a 10-cycle shadow soak a DEMO-routing prerequisite. Ratified C14 (2026-10-11) and OD1009-D5 state that the mandatory 10-cycle zero-order soak is **not** a DEMO prerequisite. This amendment keeps the soak in the `PASSED` definition as directed for the routing registry; this applies only to DEMO routing and does not reinstate it as a general authorization gate. The owner must confirm which applies before any scope is set to `PASSED`. Until confirmed, no scope may be set to `PASSED`.
+
+### Per-ticket guards (apply even when PASSED)
+
+A ticket for a `PASSED` scope is still blocked, and is then routed `REPORT_ONLY` with the block reason recorded, if any of these hold:
+
+| Guard | Rule |
+|---|---|
+| Risk | `risk_pct` = 0.5 (owner ticket config; no fallback to strategy or `trading.yaml` risk). |
+| Cost | Spread + commission ≥ **0.25R** blocks (`cost_block_R`, OD1009-D2). |
+| Crypto spread | Crypto CFD spread > **20%** of the stop/risk distance blocks. *Owner instruction 2026-10-12; no recorded config key exists yet, so until one is recorded this guard fails closed.* |
+| Large-SMC reward | `lsmc_min_remaining_reward_fraction` = 0.5 (at least 50% of entry-to-target distance remaining). |
+
+Any guard failure, missing execution-critical input, stale or expired ticket, or unknown status produces `execution_route=REPORT_ONLY` with a populated `route_reason`.
+
+### Ticket schema additions
+
+| Field | Type | Values / rule |
+|---|---|---|
+| `verification_status` | enum | `UNVERIFIED` \| `IN_VERIFICATION` \| `LOGIC_VERIFIED` \| `PASSED` \| `STALE_IDENTITY`. Read from the routing registry for the ticket's scope; never inferred from the ticket itself. |
+| `execution_route` | enum | `DEMO_ORDER` \| `REPORT_ONLY`. Default and fail-closed value is `REPORT_ONLY`. |
+| `route_reason` | string | Required whenever `execution_route=REPORT_ONLY`: the status (for example `REPORT-ONLY: LOGIC_VERIFIED`) or the first failing guard/block reason. Required and non-empty. |
+
+`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED` and `LIVE_AUTHORIZED` remain independent states. `verification_status=PASSED` is not `DEMO_AUTHORIZED`.
+
+### Routing rules
+
+1. `DEMO_ORDER` requires **all** of: scope `verification_status=PASSED` in the routing registry; every per-ticket guard passing; and a **separate, valid, revocable, strategy-specific standing DEMO authorization** covering the exact strategy version and scope (C14 gate 5). Without that authorization, a `PASSED` scope routes `REPORT_ONLY` with reason `DEMO_AUTHORIZATION_ABSENT`.
+2. Every other case routes `REPORT_ONLY`.
+3. Routing reads a **single per-scope status registry** (`config/governance/ticket_verification_routing.yaml`). Missing, unknown or malformed status fails closed to `REPORT_ONLY`. Live accounts are never routable.
+4. The crypto daily ceiling of two combined entries (AGP-OD1012-SESSION-CRYPTO) and the existing risk ceilings (1 open position per instrument, 5 trades per strategy per day, 1% daily loss per strategy, 2% account-wide) still bind at the execution boundary and are not relaxed by `PASSED`.
+
+### Execution path and Telegram controls
+
+- Every automatic order passes the canonical execution/risk authority (`assistant.commands.execute_command()` boundary where implemented), with `order_check`, duplicate prevention, reconciliation and emergency stop. No ticket generator, Telegram message or callback may place an order directly.
+- The owner may **edit or close** demo orders from Telegram. Such actions are broker mutations and must pass through the same canonical executor, with an append-only audit record. They may not bypass routing, guards, authorization or the Live exclusion.
+
+### Supersession of the 2026-10-09 owner-approval order flow
+
+The 2026-10-09 flow in which an owner Confirm places an order (Issue #47 V5 per-order confirmation, OD1009-D5) is **superseded for `PASSED` scopes**. Per-order Confirm is no longer the placement trigger for those scopes. Owner Confirm/Reject remains decision capture for other scopes and never grants or extends authorization.
+
+**Activation caveat (not changed by this amendment):** the per-order `user_confirmed` gate in `AGENTS.md` stays in force until the reviewed executor change and matching `AGENTS.md` update have landed together (see `docs/agents/INVARIANTS.md`). Until then, no `PASSED` scope can route `DEMO_ORDER` in practice.
+
+### Current state
+
+No scope is `PASSED`. The routing registry is empty, so every ticket is `REPORT_ONLY` with reason `REGISTRY_ENTRY_MISSING`. Strategy admission, READY, runtime binding and host acceptance are unchanged. This section sets target policy only and is not evidence that any gate has passed.
+
 ## Objective
 
 Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
