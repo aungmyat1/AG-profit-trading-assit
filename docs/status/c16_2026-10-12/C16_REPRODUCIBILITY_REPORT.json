@@ -157,5 +157,13 @@
       "failed": 0
     }
   },
-  "note": "Every replay is read-only and hermetic; no broker, registry, READY, demo or live surface is touched. sha256 values are computed from the files, never transcribed. The LSMC driver emits no git revision field, so its revision identity is carried by the C16 output path and this report rather than inside the artifact."
+  "note": "Every replay is read-only and hermetic; no broker, registry, READY, demo or live surface is touched. sha256 values are computed from the files, never transcribed. The LSMC driver emits no git revision field, so its revision identity is carried by the C16 output path and this report rather than inside the artifact. Main moved four times after the campaign (7dfc8a20, a8271fea, 0278653, d6b150a); every identity this campaign pinned was recomputed at each tip and is unchanged, and PR #181's blocked-state records remain in main history.",
+  "post_campaign_main_commits": {
+    "7dfc8a20": "PR #180 merge: governance policy, guard, tests (the bytes this campaign pinned)",
+    "a8271fea": "PR #183 'fix(s1): fail closed on malformed READY owner status and prepare scope tests' \u2014 touches src/v1_tickets/ready_authority.py, docs and one new test. Not part of any engine identity list, so no C16 identity moved; it tightens the READY authorization path, which remains NOT_READY for all three families.",
+    "0278653": "PR #181 merge: the five C16 deliverables in their BLOCKED state (scopes: [], 0 pass claims). Superseded by this PR's populated deliverables as an ordinary reviewable diff; the blocked record stays in main history.",
+    "d6b150a": "PR #182 merge: S1 acceptance evidence, docs only.",
+    "identity_impact": "NONE (recomputed at 7dfc8a20, a8271fea, 0278653 and d6b150a: ASW engine 243c4ff1\u2026, ASW v1.1.2 contract 941dec55\u2026, CCFD engine 0a3886eb\u2026 unchanged)",
+    "contract_or_registry_impact": "NONE (strategies/ frozen contracts and config/ are untouched by #180, #181, #182 and #183)"
+  }
 }

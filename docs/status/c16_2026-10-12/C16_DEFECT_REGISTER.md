@@ -17,6 +17,7 @@ states.
 | ID | Severity | Strategy | Class | Status |
 |---|---|---|---|---|
 | `GOVERNANCE-180` | BLOCKER (authority) | — | process / governance | **CLOSED — owner merged #180 (`7dfc8a20`)** |
+| `GOVERNANCE-181` | — (record) | — | process / governance | **CLOSED — owner merged #181 (`0278653`); blocked state retained in main history** |
 | `D-ASW-1` | HIGH | ASW 1.1.2 | implementation vs declaration | OPEN — v1.1.3 proposed |
 | `D-ASW-2` | HIGH | ASW 1.1.2 | implementation (identity/causality) | OPEN — v1.1.3 proposed |
 | `D-ASW-3` | MEDIUM | ASW 1.1.2 | missing host evidence | OPEN — owner input |
@@ -48,6 +49,17 @@ historical source). The merge landed after the C16 replays had started, so no re
 retro-fitted to it. Every identity the campaign pinned was recomputed at the new main tip and is
 unchanged (`ASW engine 243c4ff1…`, `ASW v1.1.2 contract 941dec55…`, `CCFD engine 0a3886eb…`),
 so the C16 verdicts hold at `a8271fea` too. Status: **CLOSED — governance on main.**
+
+## GOVERNANCE-181 — blocked-state evidence landed on main
+
+PR #181 (`codex/c16-blocked-verification-evidence`, head `666035d7…`) carried the C16 deliverables
+in their **blocked** state and was merged by the owner as `0278653`; PR #182 followed as
+`d6b150a`. That record was deliberately left untouched: it documents, accurately, that at
+16:13:12 UTC the campaign could not proceed because resource authority was not yet established,
+and its `scopes: []` matrix is the honest state for that moment. The completed campaign arrives in
+a **separate, reviewable PR** that rewrites nothing retroactively — the diff between the two states
+is the evidence that the blocker was cleared rather than the blocker being edited away. No
+strategy rule, contract, threshold, registry entry or authorization changed in either landing.
 
 ## D-ASW-1 — zero (and negative) risk distance emitted as `VALID`
 

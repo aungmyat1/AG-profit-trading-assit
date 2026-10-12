@@ -171,16 +171,21 @@ def test_no_documented_serialization_variant_reaches_the_unresolved_handoff_valu
 def test_unresolved_handoff_value_has_no_provenance_in_repository_history():
     """The value appears only in status records that *report* it (and in this test) — never in a
     strategy, engine, registry, config, fixture or replay artifact."""
-    # Kinds of file permitted to carry the literal, by construction:
+    # Kinds of file permitted to carry the literal, by construction: status records that *report*
+    # the discrepancy and this test. Nothing else — ever.
     allowed = {
         # C15 status records that declare the discrepancy
         "docs/status/AGP_C15_CRYPTO_60D_RESEARCH_STATUS_2026-10-11.md",
         "docs/status/AGP_C15_THREE_LANE_RERUN_2026-10-12.md",
-        # the C16 status record that root-causes it
-        "docs/status/c16_2026-10-12/C16_DEFECT_REGISTER.md",
         # this test, which must name the value it pins as unreachable
         "tests/test_c16_ccfd_contract_identity.py",
     }
+    allowed_prefixes = (
+        # the C16 status directory: its defect register and reports quote the value while
+        # root-causing it as unreachable
+        "docs/status/c16_2026-10-12/",
+    )
+    allowed_ok = lambda c: c in allowed or c.startswith(allowed_prefixes)  # noqa: E731
     # Never permitted, anywhere, in any revision: the strategy's own live surfaces.
     forbidden_roots = ("strategies/", "src/", "config/", "artifacts/", "tests/fixtures/",
                        "scripts/")
@@ -195,7 +200,7 @@ def test_unresolved_handoff_value_has_no_provenance_in_repository_history():
         show = subprocess.run(["git", "grep", "-l", UNRESOLVED_HANDOFF_PREFIX, sha],
                               cwd=ROOT, capture_output=True, text=True)
         carriers = {line.split(":", 1)[1] for line in show.stdout.splitlines() if ":" in line}
-        assert carriers and carriers <= allowed, f"{sha}: {carriers!r}"
+        assert carriers and all(allowed_ok(c) for c in carriers), f"{sha}: {carriers!r}"
         assert not [c for c in carriers if c.startswith(forbidden_roots)], f"{sha}: {carriers!r}"
 
     # And in the live tree it is absent from every strategy/engine/registry/artifact surface.

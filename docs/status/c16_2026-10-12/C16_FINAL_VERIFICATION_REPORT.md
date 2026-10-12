@@ -13,7 +13,7 @@ Generated 2026-10-12T17:33:13Z · matrix complete: True
 ## A. Repository and governance
 
 - main = requested C15 baseline = `65efdd87e1f762d0ee79ebef5bc1de01d18564f3`. Revision binding: ASW: the artifact self-records verification_code_sha = 65efdd87e1f762d0ee79ebef5bc1de01d18564f3; LSMC: the driver emits no git-revision field; revision identity is carried by the C16 output path and this report; CCFD: the driver emits no git-revision field; it self-records the contract hash, the runtime engine hash and the dataset manifest, which is what it binds to.
-- Resource authority: historical owner-issued commit `82e6e5cc…` restores `docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md` (sha256 `8bba5dba56635416a9f5217b52cf55699f1d2a1211119a0990dc98a9be7998aa`), `scripts/resource_guard.py` (sha256 `0970ebb1dfa10d13c6926da915998444617509af1f42094e6bceb24788d36ab4`) and `tests/test_resource_guard.py` (sha256 `1122e0c3f9f8f93a58585d270fb3f58914207d3e9e7fd4aad9faa923ee192a8dd`). At campaign start these bytes were on main only as draft PR #180 (head `d28cacb7…`), so the agent pinned that exact revision and ran the guard tests and end-to-end drills first. **MERGED BY THE OWNER as commit 7dfc8a20 after the campaign began; the agent pinned the byte-identical historical revision and never merged or approved anything** — main is now `a8271fea…` and carries the same bytes (verified by sha256). The campaign itself ran at `65efdd87…`; every identity the campaign pinned was recomputed at the new main tip and is unchanged, so the verdicts below hold at `a8271fea…` too.
+- Resource authority: historical owner-issued commit `82e6e5cc…` restores `docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md` (sha256 `8bba5dba56635416a9f5217b52cf55699f1d2a1211119a0990dc98a9be7998aa`), `scripts/resource_guard.py` (sha256 `0970ebb1dfa10d13c6926da915998444617509af1f42094e6bceb24788d36ab4`) and `tests/test_resource_guard.py` (sha256 `1122e0c3f9f8f93a58585d270fb3f58914207d3e9e7fd4aad9faa923ee192a8dd`). At campaign start these bytes were on main only as draft PR #180 (head `d28cacb7…`), so the agent pinned that exact revision and ran the guard tests and end-to-end drills first. **MERGED BY THE OWNER as commit 7dfc8a20 after the campaign began; the agent pinned the byte-identical historical revision and never merged or approved anything** — main is now `a8271fea…` (later `0278653`, `d6b150a`) and carries the same bytes (verified by sha256). The campaign itself ran at `65efdd87…`; every identity the campaign pinned was recomputed at the new main tip and is unchanged, so the verdicts below hold at `a8271fea…` too.
 - No authoritative replay was started before resource authority was established: the guard revision was pinned and its tests + end-to-end drills passed first.
 - Resource classification **R3** (authoritative experiment + full verification campaign + long-history replay), required RAM 3000 MB floor met, gate **PASS**, competing heavy job: none, workers = 1 (policy default).
 - Resource lock held for the whole campaign by a single registered owner; released at the end. Lock file is runtime state and is never committed.
@@ -125,11 +125,33 @@ Every verdict above is derived from a committed artifact; the generator recomput
 
 ## D. GitHub deliverables
 
-- PR #180 — resource-governance restoration: reviewed as GOVERNANCE_READY_FOR_OWNER_APPROVAL (19/19 guard tests, 9 end-to-end drills, CI green); the agent did not merge it. **The owner merged it** as `7dfc8a20`; main is now `a8271fea`, and the policy/guard/tests bytes are byte-identical to the pinned revision. The merge happened after the campaign's replays had started, so no C16 replay was retro-fitted to it.
-- PR #181 — C16 blocked-state evidence: the blocked-state report stays in git history and was not rewritten. The five deliverables are repopulated in `docs/status/c16_2026-10-12/` on this session branch, together with `C16_PR181_REPOPULATION.patch` — a tree-to-tree patch against the PR #181 tip (`666035d7…`) that the owner can `git apply` on `codex/c16-blocked-verification-evidence`. This session is pinned to `arena/359b163e-ag-profit-trading-assit` and must not push to another branch, so the branch push itself is the one step left to the owner. No duplicate evidence PR was created; nothing was merged.
-- Main advanced during the campaign: `7dfc8a20` — PR #180 merge: governance policy, guard, tests (the bytes this campaign pinned); `a8271fea` — PR #183 'fix(s1): fail closed on malformed READY owner status and prepare scope tests' — touches src/v1_tickets/ready_authority.py, docs and one new test. Not part of any engine identity list, so no C16 identity moved; it tightens the READY authorization path, which remains NOT_READY for all three families.. Identity impact: NONE (recomputed at a8271fea); contract/registry impact: NONE (strategies/ and config/ untouched). The C16 artifacts therefore record `65efdd87…` as the revision they ran at, and this report states explicitly which verdicts were re-checked against the newer tip.
-- Strategy-rule corrections travel in separate commits/PRs; the v1.1.3 Asian Sweep successor contract is declaration-only and unregistered.
-
+- PR #180 — resource-governance restoration: reviewed as GOVERNANCE_READY_FOR_OWNER_APPROVAL
+  (19/19 guard tests, 9 end-to-end drills, CI green); the agent did not merge it. **The owner
+  merged it** as `7dfc8a20`; the policy/guard/tests bytes on main are byte-identical to the pinned
+  revision. The merge happened after the campaign's replays had started, so no C16 replay was
+  retro-fitted to it.
+- PR #181 — C16 blocked-state evidence: **also merged by the owner**, as `0278653`
+  (`evidence(c16): record resource-authority blocker without replay claims`). The blocked-state
+  text therefore remains a permanent record on main and was not rewritten by this campaign.
+- PR #182 — S1 acceptance evidence — merged by the owner as `d6b150a`; docs only.
+- **This PR** carries the completed campaign. It supersedes the five blocked-state deliverables
+  that #181 landed, as an ordinary reviewable diff over them: `C16_FINAL_VERIFICATION_REPORT.md`
+  (blocked → `C16_LOGIC_VERIFICATION_COMPLETE`), `C16_FINAL_SCOPE_MATRIX.json`
+  (`scopes: []` → 24 decided scopes), `C16_REPRODUCIBILITY_REPORT.json` (0 runs → 3 verifier runs
+  plus 3 repeats with hashes), `C16_RESOURCE_REPORT.json` (authority absent → R3 gate PASS and
+  per-lane timing) and `C16_DEFECT_REGISTER.md` (one blocker → 12 root-caused defects plus one
+  explained observation). The transition is visible in the diff rather than hidden by a rewrite.
+- `docs/status/c16_2026-10-12/C16_ASW_V113_CORRECTION_PROPOSAL.md` records the proposed strategy
+  correction; the v1.1.3 contract itself is declaration-only (all authority flags false) and is
+  not registered, so merging this PR confers no authority on it.
+- Main advanced during the campaign: `7dfc8a20` (#180), `a8271fea` (#183), `0278653` (#181),
+  `d6b150a` (#182). Identity impact: NONE (recomputed at each tip — `ASW engine 243c4ff1…`,
+  `ASW v1.1.2 contract 941dec55…`, `CCFD engine 0a3886eb…` are unchanged); contract/registry
+  impact: NONE (`strategies/` frozen files and `config/` are untouched by all four). The C16
+  artifacts record `65efdd87…` as the revision they ran at, and the verdicts were re-checked
+  against the newer tips.
+- Strategy-rule corrections travel in separate PRs; nothing in this PR changes a rule, threshold,
+  contract, registry entry or authorization.
 ## E. Execution safeguards
 
 All counters are read from the artifacts, not asserted:

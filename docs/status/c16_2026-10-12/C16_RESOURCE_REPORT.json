@@ -2,7 +2,7 @@
   "mission": "AGP-C16-FINAL",
   "mission_title": "C16 three-strategy L1-L6 logical verification campaign",
   "status": "C16_LOGIC_VERIFICATION_COMPLETE",
-  "captured_at_utc": "2026-10-12T17:50:00Z",
+  "captured_at_utc": "2026-10-12T19:05:00Z",
   "main_sha": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
   "branch": "arena/359b163e-ag-profit-trading-assit",
   "full_workload_started": true,
@@ -228,5 +228,12 @@
     "Peak per-lane RSS stayed below 250 MB against a 3000 MB gate, so the campaign stayed well inside R3.",
     "The campaign ran to completion inside the lock; the lock is released only after the last lane and the final verification pass."
   ],
-  "main_sha_after_campaign": "a8271feadbd3f0a78aef7b2cd8e814e8362534ea"
+  "main_sha_after_campaign": "d6b150aa6dec3754c5dfdf2879eea298e302e011",
+  "post_campaign_main_commits": {
+    "7dfc8a20": "#180 governance restoration",
+    "a8271fea": "#183 READY fail-closed fix",
+    "0278653": "#181 blocked-state C16 evidence (superseded by this PR, retained in history)",
+    "d6b150a": "#182 S1 acceptance evidence"
+  },
+  "identity_stability_check": "STABLE_AT_ALL_POST_CAMPAIGN_TIPS (65efdd87, 7dfc8a20, a8271fea, 0278653, d6b150a)"
 }
