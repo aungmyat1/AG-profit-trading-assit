@@ -65,13 +65,13 @@ The 60-day replays themselves were **not** re-run (owner scope decision `audit_o
 | `pytest -q tests/test_lsmc_v110_logic_audit.py` (new) | **21 passed** |
 | Focused LSMC + docs suite | **201 passed, 1 skipped, 1 known-environment failure** in 22.5 s (`tests/test_*lsmc*.py`, `tests/test_*large_smc*.py`, `test_agp_4h_c_detection.py`, `test_docs_live.py`, `test_context_pack.py`, `test_generated_files_ci.py`) |
 | Full applicable suite (`pytest -q`, `-m "not slow"` per `pyproject.toml`) | **2,686 passed, 8 skipped, 1 failed** in 215.9 s (Python 3.11, `pyarrow` installed per `requirements.txt`); the single failure is the known environment artifact below |
-| Known environment failure (1) | `tests/test_lsmc_actionability.py::test_complete_fresh_opportunity_and_sent_text_byte_exact` needs `git show 5b671996ef91934f2e8b58f9748ee78b1804a099:src/host_delivery/telegram_message.py`, which does not exist in this depth-1 squashed checkout (exit 128) — an artifact of how the workspace was delivered, not a defect. Three further failures seen on the first full run were a missing optional `pyarrow` in the local venv and disappeared once it was installed |
+| Known environment failure (1) | `tests/test_lsmc_actionability.py::test_complete_fresh_opportunity_and_sent_text_byte_exact` needs `git show 5b671996ef91934f2e8b58f9748ee78b1804a099:src/host_delivery/telegram_message.py`, which does not exist in this depth-1 squashed checkout (exit 128) — an artifact of how the workspace was delivered, not a defect — **CI runs this test green** (`python-tests` SUCCESS on `b7d7b23`), which is the confirmation that the commit exists in the repository's real history. Three further failures seen on the first local full run were a missing optional `pyarrow` in the local venv and disappeared once it was installed |
 | `ruff check` (F, I) on every file this PR touches | **All checks passed** (`scripts/lsmc_v110_logic_audit.py`, `src/v1_tickets/lsmc_logic_gate.py`, `tests/_lsmc_v111_fixtures.py`, `tests/test_lsmc_v111_candidate_audit.py`, `tests/test_lsmc_v110_logic_audit.py`) |
 | `scripts/check_docs_links.py` | `DOCS_LINK_CHECK = PASS`, 0 broken links |
 | `scripts/docs/check_drift.py` | `docs-drift blocking: 0 error(s)` (2 pre-existing ADVISORY allowlist anchors, untouched by this PR) |
 | `scripts/check_skill_mirror_drift.py` | `NO_DRIFT` |
 | `scripts/docs/check_generated_files.py --mode strict` (post-commit) | all four generated outputs **FRESH**; `failures=0 warnings=0` |
-| GitHub Actions | `python-tests`, `docs-drift`, `frontend-checks`, `stale-check`, `audit` triggered on the delivery commit ([run 38320383634](https://github.com/aungmyat1/AG-profit-trading-assit/actions/runs/38320383634)); results are recorded on the PR — this document does not assert a verdict it has not observed |
+| GitHub Actions on PR [#189](https://github.com/aungmyat1/AG-profit-trading-assit/pull/189) | **all checks SUCCESS** on commit `b7d7b231e7b76dd18e513af91f3a48272558b20b` ([run 38320431340](https://github.com/aungmyat1/AG-profit-trading-assit/actions/runs/38320431340)): `python-tests` 5m35s, `docs-drift` 17s, `frontend-checks` 19s, `stale-check` 14s, `audit` 17s, plus the CodeRabbit review pass. CI's full-history checkout also runs `test_complete_fresh_opportunity_and_sent_text_byte_exact` green, which confirms the single local failure is a shallow-checkout artifact. The commit that records this row changes only this document |
 
 ## Phase A — completing the audit
 
@@ -250,6 +250,7 @@ repository**, no OSS code path imports a broker or order module, and no OSS resu
    needed before their scope verdicts can strengthen.
 9. **Reward/risk minimum** — 1.1.0 declares none; the only fully-costed FX opportunity in the repository
    measures RR `0.99`, so the candidate's proposed `minimum_rr: 2.0` would reject it. Confirm, restate or drop.
-10. **Host/CI** — the depth-1 squashed checkout cannot satisfy
-    `tests/test_lsmc_actionability.py::test_complete_fresh_opportunity_and_sent_text_byte_exact`
-    (it needs `git show 5b671996…`); a full-history checkout or an owner waiver is required for that one test.
+10. **Host/CI** — no action needed: CI runs the whole suite green, including
+    `tests/test_lsmc_actionability.py::test_complete_fresh_opportunity_and_sent_text_byte_exact`. Only this
+    sandbox's depth-1 squashed checkout cannot satisfy it (it needs `git show 5b671996…`); a full-history
+    local checkout removes the last local failure.
