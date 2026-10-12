@@ -223,9 +223,10 @@ def test_successor_differs_from_v112_only_in_the_declared_corrections():
 
 
 def test_successor_is_inert_in_every_authority_surface():
-    """No adapter, no candidate registration, no registry entry, no READY/demo/live path."""
+    """Identity-only candidate contract (so logic_identity hashes the v1.1.3 file, not v1.1.1), but no
+    registry entry and no READY/demo/live path (strategy_engine.append_only, AGP-C17)."""
     from v1_tickets.authority import CANDIDATE_CONTRACTS, logic_identity
-    assert ("ST_ASIAN_SWEEP_5R_V1", "1.1.3") not in CANDIDATE_CONTRACTS
+    assert CANDIDATE_CONTRACTS[("ST_ASIAN_SWEEP_5R_V1", "1.1.3")] == "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml"
     assert "ST_ASIAN_SWEEP_5R_V1_1_1_3" not in \
         (ROOT / "strategies" / "registry.yaml").read_text(encoding="utf-8")
     # identity is derivable for the record, but is deliberately not registered anywhere

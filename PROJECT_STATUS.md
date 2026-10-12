@@ -8,6 +8,15 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+ASW v1.1.3 engine (2026-10-13, offline evidence only, nothing registered or admitted):
+- **What:** D-ASW-1/D-ASW-2 are implemented behind v1.1.3 only, in `strategy_engine/append_only.py`
+  (owner choice: BY_EMISSION_TIME). The v1.1.2 S1 identity is unchanged.
+- **Replay:** on 60 recorded weekdays, EURUSD×ASIAN_LONDON L3 is now PASS (0/25 mutations). L2–L6 pass
+  for EURUSD and GBPUSD in both sessions.
+- **Blocked:** L1 waits for owner registration of identity `628f6100…`. USDJPY and XAUUSD stay
+  data-blocked.
+- **Evidence:** `docs/status/AGP_C17_ASW_V113_ENGINE_VERIFICATION_2026-10-13.md`.
+
 Scope-status Telegram reports (2026-10-12, unit-tested only, not host-verified):
 - **What it does:** every relevant scope of the three strategy families is now reported to Telegram with its verification status, and every route is `REPORT_ONLY` (OD1012-ROUTING follow-up (d)).
 - **Session FX/gold:** the FX session summaries are stamped per symbol.

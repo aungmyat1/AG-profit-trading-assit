@@ -69,6 +69,13 @@ ADAPTERS: Dict[str, Tuple[str, Tuple[str, ...]]] = {
 # contract the runtime loads, so it cannot by itself make a ticket READY.
 CANDIDATE_CONTRACTS: Dict[Tuple[str, str], str] = {
     ("ST_ASIAN_SWEEP_5R_V1", "1.1.2"): "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
+    ("ST_ASIAN_SWEEP_5R_V1", "1.1.3"): "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml",
+}
+
+# Engine files a candidate version adds to its strategy's shared engine identity. v1.1.3's append-only
+# router lives outside the shared files, so the v1.1.1/v1.1.2 identities (and the S1 record) never move.
+CANDIDATE_ENGINE_FILES: Dict[Tuple[str, str], Tuple[str, ...]] = {
+    ("ST_ASIAN_SWEEP_5R_V1", "1.1.3"): ("src/strategy_engine/append_only.py",),
 }
 
 
@@ -86,6 +93,7 @@ def logic_identity(strategy_id: str, strategy_version: str, root: Path = REPO_RO
         return None
     contract, engine_files = ADAPTERS[strategy_id]
     contract = CANDIDATE_CONTRACTS.get((strategy_id, strategy_version), contract)
+    engine_files = engine_files + CANDIDATE_ENGINE_FILES.get((strategy_id, strategy_version), ())
     parts = {"strategy_id": strategy_id, "strategy_version": strategy_version,
              "engine_identity": _sha256_text(engine_files, root),
              "contract_hash": _sha256_text((contract,), root)}

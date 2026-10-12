@@ -398,6 +398,9 @@ research eligibility. Its contract is
   — C14 execution-authority boundary, host magic registry (reserved S1 magic `777001` versus the six
   magics in use on the host), lifecycle evidence chain, and HALT/reconcile on unknown outcome;
   offline unit tests only, no broker mutation, scope still `enabled: false`.
+- [`status/AGP_C17_ASW_V113_ENGINE_VERIFICATION_2026-10-13.md`](status/AGP_C17_ASW_V113_ENGINE_VERIFICATION_2026-10-13.md)
+  — v1.1.3 append-only engine (D-ASW-1/D-ASW-2, BY_EMISSION_TIME) and 60-day L1–L6 replay: EURUSD×ASIAN_LONDON
+  L3 now PASS (0/25 mutations); L1 pending owner identity registration; nothing registered or admitted.
 - [`status/AGP_SCOPE_STATUS_REPORTS_2026-10-12.md`](status/AGP_SCOPE_STATUS_REPORTS_2026-10-12.md)
   — read-only Telegram scope-status reporting for all three families (OD1012-ROUTING follow-up (d)):
   FX session summaries stamped per symbol, new crypto CRYPTO_DAY/CRYPTO_WEEKEND summaries, and Large-SMC

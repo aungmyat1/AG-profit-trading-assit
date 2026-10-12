@@ -164,7 +164,10 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", required=True)
     ap.add_argument("--out", help="write the evidence JSON here")
+    ap.add_argument("--contract", default=h.CANDIDATE, help="candidate contract path (default v1.1.2)")
+    ap.add_argument("--version", default=h.VERSION, help="candidate version; must match the contract")
     args = ap.parse_args(argv)
+    h.use_candidate(args.contract, args.version)
     report = build(args.date)
     if args.out:
         cases = report.pop("cases")
