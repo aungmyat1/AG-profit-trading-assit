@@ -16,7 +16,7 @@ Qualify exactly three strategy lanes: (1) FX and gold daily session tickets usin
 ## Required sequential gates, independently per strategy
 1. LOGIC_VERIFIED L1–L6 and exact strategy/engine identity; never infer EDGE_VERIFIED.
 2. Host acceptance with approved AGP-C2-SYMMAP, live VT Markets MT5 DEMO data, geometry, risk and cost validation, deterministic terminal states and Telegram proof.
-3. At least 10 clean scheduled shadow cycles per admitted strategy, zero broker mutations, zero silent outcomes, zero duplicate messages; cover relevant FX sessions and crypto weekends.
+3. At least 10 clean scheduled shadow cycles per admitted strategy, zero broker mutations, zero silent outcomes, zero duplicate messages; cover relevant FX sessions and crypto weekends. *Reconciled 2026-10-12 (OD1012-S1-ACCEPT, owner reaffirmed `docs/PROJECT_OBJECTIVE.md:137-163`): acceptance = the :137 open-window acceptance run, one per scope item, no signal required per :148; "≥10 clean cycles" is the optional soak of :160-163, not a DEMO prerequisite under C14.*
 4. Separate owner-recorded per-strategy DEMO_AUTHORIZED after G1–G5; never infer from this objective, a Telegram Confirm, or logic verification. No live trading.
 5. AUTO_DEMO_EXECUTION only when the exact immutable ticket, strategy version, code SHA, broker symbol, expiry, account identity, risk and cost checks pass at send time. Execute only through assistant.commands.execute_command() and canonical execution authority, with broker order_check before order_send. Reject stale, duplicate, mismatched, incomplete and unauthorized orders; reconcile uncertain sends before retry.
 
