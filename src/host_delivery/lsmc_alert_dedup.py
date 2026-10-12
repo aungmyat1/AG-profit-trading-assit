@@ -6,6 +6,12 @@ OPPORTUNITY after STALE or a sibling sweep changes its reference parameters.
 
 A durable PENDING claim is written before the transport call.  If the process dies during the
 request, the next run upgrades that claim to DELIVERY_UNCERTAIN and never blindly retries it.
+Every other delivered transition (DEVELOPING / NEAR_POI / INVALIDATED / EXPIRED / REJECTED) is
+deduplicated on (strategy, version, symbol, to_state, reference_id): the same state for the same
+reference is sent at most once, and a repeat returns DUPLICATE_SUPPRESSED. A new state or a new
+reference is the only material change that re-alerts; a parameter change (e.g. a recomputed
+target) under an unchanged reference never does.
+
 This uses the host runner's existing single-instance lock; it never holds a TICKET_STORE or other
 main journal transaction across network I/O.
 """
@@ -23,6 +29,7 @@ DELIVERY_UNCERTAIN = "DELIVERY_UNCERTAIN"
 RETRYABLE_STATES = frozenset({"NOT_SENT_POLICY", "BLOCKED", "FAILED", "DELIVERY_FAILED", "RETRYABLE_REJECTED", "ERROR"})
 DUPLICATE_SENT = "SUPPRESSED_DUPLICATE_CONFIRMATION"
 DUPLICATE_UNCERTAIN = "SUPPRESSED_UNCERTAIN_CONFIRMATION"
+DUPLICATE_SUPPRESSED = "DUPLICATE_SUPPRESSED"
 
 
 def _now() -> str:
@@ -89,20 +96,31 @@ class AlertLedger:
         return sorted(rows, key=lambda row: row["identity"])
 
 
+def transition_key(event: Dict[str, Any]) -> Optional[str]:
+    """Identity of a non-OPPORTUNITY alert: same state for the same reference; None when incomplete."""
+    parts = (event.get("strategy_id"), event.get("strategy_version"), event.get("symbol"),
+             event.get("to_state"), event.get("reference_id"))
+    if not all(value is not None and str(value) for value in parts):
+        return None
+    return "transition|" + "|".join(str(value) for value in parts)
+
+
 def deliver_once(event: Dict[str, Any], ledger: Optional[AlertLedger], send: Callable[[], str]) -> str:
     """Deliver one OPPORTUNITY unless it is sent, ambiguous, unidentifiable, or unjournaled.
 
-    Non-OPPORTUNITY transitions and `ledger=None` retain the legacy caller behavior. For an
-    OPPORTUNITY with a ledger, identity and durable claim are mandatory before invoking `send`.
+    `ledger=None` retains the legacy caller behavior. For an OPPORTUNITY with a ledger, identity
+    and durable claim are mandatory before invoking `send`. Other transitions are claimed on
+    `transition_key`; one without a reference keeps the legacy behavior.
     """
-    if ledger is None or event.get("to_state") != "OPPORTUNITY":
+    opportunity = event.get("to_state") == "OPPORTUNITY"
+    key = None if ledger is None else (confirmation_key(event) if opportunity else transition_key(event))
+    if key is None:
+        if ledger is not None and opportunity:
+            return "IDENTITY_UNAVAILABLE"
         try:
             return send()
         except Exception:  # noqa: BLE001 -- unknown transport result is never retried blindly
             return DELIVERY_UNCERTAIN
-    key = confirmation_key(event)
-    if key is None:
-        return "IDENTITY_UNAVAILABLE"
     record = {"reference_id": event.get("reference_id"),
               "transition_id": event.get("transition_id"),
               "evaluated_at": event.get("evaluated_at")}
@@ -111,7 +129,7 @@ def deliver_once(event: Dict[str, Any], ledger: Optional[AlertLedger], send: Cal
     except Exception:  # noqa: BLE001 -- a failed durable claim must prevent untracked delivery
         return "LEDGER_UNAVAILABLE"
     if claim != "CLAIMED":
-        return claim
+        return DUPLICATE_SUPPRESSED if not opportunity and claim == DUPLICATE_SENT else claim
     try:
         status = send()
     except Exception:  # noqa: BLE001 -- unknown result is ambiguous

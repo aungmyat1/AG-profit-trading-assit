@@ -4,7 +4,12 @@ from __future__ import annotations
 import datetime as dt
 
 from host_delivery.lsmc_alert_dedup import (
-    AlertLedger, DELIVERY_UNCERTAIN, DUPLICATE_UNCERTAIN, PENDING, confirmation_key, deliver_once,
+    DELIVERY_UNCERTAIN,
+    DUPLICATE_UNCERTAIN,
+    PENDING,
+    AlertLedger,
+    confirmation_key,
+    deliver_once,
 )
 from large_smc_watch.watch import Snapshot, WatchTracker
 
@@ -111,3 +116,26 @@ def test_opportunity_without_stable_confirmation_identity_fails_closed(tmp_path)
     assert deliver_once(event, AlertLedger(str(tmp_path / "ledger.json")),
                         lambda: calls.append("request") or "SENT") == "IDENTITY_UNAVAILABLE"
     assert calls == []
+
+
+def test_same_state_same_reference_is_sent_once_and_new_ref_or_state_realerts(tmp_path):
+    from host_delivery.lsmc_alert_dedup import DUPLICATE_SUPPRESSED
+    ledger, sent = AlertLedger(str(tmp_path / "ledger.json")), []
+    near = {"to_state": "NEAR_POI", "symbol": "GBPUSD", "strategy_id": "ST_LARGE_SMC_V1", "strategy_version": "1.1.0",
+            "reference_id": POI}
+    send = lambda: sent.append(1) or "SENT"  # noqa: E731
+    assert deliver_once(near, ledger, send) == "SENT"
+    assert deliver_once({**near, "transition_id": "later"}, ledger, send) == DUPLICATE_SUPPRESSED
+    restarted = AlertLedger(str(tmp_path / "ledger.json"))
+    assert deliver_once(near, restarted, send) == DUPLICATE_SUPPRESSED      # durable across restart
+    assert deliver_once({**near, "to_state": "DEVELOPING"}, ledger, send) == "SENT"     # new state
+    assert deliver_once({**near, "reference_id": POI + "-2"}, ledger, send) == "SENT"   # new reference
+    assert len(sent) == 3
+
+
+def test_policy_rejected_transition_stays_retryable(tmp_path):
+    ledger = AlertLedger(str(tmp_path / "ledger.json"))
+    near = {"to_state": "NEAR_POI", "symbol": "GBPUSD", "strategy_id": "ST_LARGE_SMC_V1", "strategy_version": "1.1.0",
+            "reference_id": POI}
+    assert deliver_once(near, ledger, lambda: "NOT_SENT_POLICY") == "NOT_SENT_POLICY"
+    assert deliver_once(near, ledger, lambda: "SENT") == "SENT"

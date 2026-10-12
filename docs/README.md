@@ -498,6 +498,8 @@ research eligibility. Its contract is
 - [`status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_C10_STOP_LOSS_DECISION_PACKET.md)
   and [`status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_PENDING_ENTRY_EXPIRY_DECISION_PACKET.md)
   — Large-SMC C10 stop-loss and pending-entry expiry decision packets.
+- [`status/ST_LARGE_SMC_V1_1_1_0_TARGET_FREEZE_DECISION_PACKET.md`](status/ST_LARGE_SMC_V1_1_1_0_TARGET_FREEZE_DECISION_PACKET.md)
+  — Large-SMC 1.1.0 C11 target recomputed after OPPORTUNITY vs C11 STATIC (unsigned decision packet).
 - [`status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md`](status/ST_LARGE_SMC_V1_OUTCOME_LIFECYCLE_V1_STATUS.md)
   — Large-SMC outcome lifecycle V1.
 - [`status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md`](status/ST_LARGE_SMC_V1_MT5_SYMBOL_METADATA_REPLAY_GAP.md)

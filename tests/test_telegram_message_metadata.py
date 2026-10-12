@@ -92,3 +92,30 @@ def test_mismatched_broker_metadata_is_not_used(monkeypatch):
     text = tg.format_ticket(ticket())
     assert "entry: 65000.13  stop: 64999.81" in text
     assert tg.UNNORMALIZED in text
+
+
+def test_prices_round_to_symbol_digits_when_tick_snap_does_not_apply(monkeypatch):
+    # risk (0.004) is below the tick (0.01): no tick snap, but output still uses the verified 2 digits.
+    monkeypatch.setattr(tg, "load_record", lambda symbol, **_kw: record("BTCUSD", tick=0.01, digits=2)
+                        if symbol == "BTCUSD" else None)
+    event = {
+        "symbol": "BTCUSD", "display_broker_symbol": "BTCUSD", "to_state": "OPPORTUNITY",
+        "alert_level": "OPPORTUNITY", "strategy_id": "ST_LARGE_SMC_V1", "strategy_version": "1.1.0",
+        "reference_id": "ref-1",
+        "payload": {
+            "poi": {"kind": "H1", "low": 65000.1234567, "high": 65000.6187654},
+            "opportunity": {"direction": "LONG", "entry_reference": 65000.1312345,
+                            "stop_c10": 65000.1272222, "sweep_extreme": 64999.9123456,
+                            "target_c11": 65001.1398765, "expires_at": "2026-10-08T11:00:00+00:00"},
+        },
+    }
+    text = tg.format_alert(event, price=65000.4049999)
+    for expected in ("POI zone (H1): 65000.12 - 65000.62", "invalidation: M5 close below 64999.91",
+                     "liquidity target: 65001.14", "entry reference (CHoCH close): 65000.13",
+                     "current price: 65000.4", "stop (C10): 65000.13"):
+        assert expected in text
+    assert "65000.1234567" not in text and "65001.1398765" not in text
+    t = {**ticket(), "symbol": "BTCUSD", "display_broker_symbol": "BTCUSD", "entry": 65000.1312345,
+         "stop_loss": 65000.1272222, "risk_distance": 0.0040123, "tp1": 65001.1398765}
+    shown = tg.format_ticket(t)
+    assert "entry: 65000.13  stop: 65000.13" in shown and "tp1: 65001.14" in shown
