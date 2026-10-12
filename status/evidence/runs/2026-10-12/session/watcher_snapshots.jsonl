@@ -1,0 +1,6 @@
+{"token_user":true,"port_22346":[15800],"t":"14:50:23","kind":"state","terminals":[{"pid":15800,"exe":"C:\\Program Files\\MetaTrader 5\\terminal64.exe","started":"14:05:26","title_suffix":"…999"}]}
+{"token_user":true,"port_22346":[],"t":"14:58:05","kind":"state","terminals":[{"pid":2852,"exe":"C:\\Program Files\\MetaTrader 5\\terminal64.exe","started":"14:57:55","title_suffix":""}]}
+{"old_pid":15800,"t":"14:58:05","kind":"ag_restart","new_pid":2852}
+{"t":"14:58:27","kind":"warmup","result":"{\"started_utc\": \"2026-10-12T08:28:25+00:00\", \"account\": {\"server\": \"VTMarkets-Demo\", \"login_suffix\": \"999\", \"trade_mode\": 0, \"terminal_path\": \"C:\\\\Program Files\\\\MetaTrader 5\"}, \"seconds_to_complete\": {\"EURUSD-VIP\": 0.1, \"GBPUSD-VIP\": 0.1, \"USDJPY-VIP\": 0.2, \"XAUUSD-VIP\": 0.2, \"BTCUSD\": 0.2, \"ETHUSD\": 2.7}, \"attempts\": {\"EURUSD-VIP\": 1, \"GBPUSD-VIP\": 1, \"USDJPY-VIP\": 1, \"XAUUSD-VIP\": 1, \"BTCUSD\": 1, \"ETHUSD\": 1}}"}
+{"token_user":true,"port_22346":[],"t":"14:58:59","kind":"state","terminals":[{"pid":2852,"exe":"C:\\Program Files\\MetaTrader 5\\terminal64.exe","started":"14:57:55","title_suffix":"…999"}]}
+{"t":"17:31:03","kind":"end"}

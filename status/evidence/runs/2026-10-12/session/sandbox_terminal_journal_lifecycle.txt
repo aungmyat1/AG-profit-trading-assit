@@ -1,0 +1,4 @@
+IP	0	14:03:57.091	Terminal	exit with code 0
+HJ	0	14:03:57.208	Network	'…985': disconnected from VTMarkets-Demo
+IN	0	14:03:57.444	Terminal	stopped with 0
+ON	0	14:03:57.467	Terminal	shutdown with 0
