@@ -217,7 +217,8 @@ def _verify_persisted_result(journal: str, result: EvalResult, ticket_source: st
 def _event_for_result(result: EvalResult, now: dt.datetime, *, stage: str, delivery_state: str,
                       ticket_source: str, error_class: Optional[str] = None,
                       store_status: Optional[str] = None,
-                      store_error_class: Optional[str] = None) -> Dict[str, Any]:
+                      store_error_class: Optional[str] = None,
+                      delivery_metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     ticket = result.canonical
     ticket_id = result.ticket_id
     session_date = ticket.get("session_date") or ticket_id.rsplit("|", 1)[-1]
@@ -238,6 +239,9 @@ def _event_for_result(result: EvalResult, now: dt.datetime, *, stage: str, deliv
                                       if result.ticket_store_error else None)),
         "venue": result.venue, "source": ticket_source,
         "delivery_state": delivery_state, "delivery_error_class": error_class,
+        "telegram_message_id": (delivery_metadata or {}).get("message_id"),
+        "telegram_chat_suffix": (delivery_metadata or {}).get("chat_suffix"),
+        "delivery_error_code": (delivery_metadata or {}).get("result_error_code"),
         "execution_authorized": False,
     }
 
@@ -296,9 +300,15 @@ def run_canonical_fx_cycle(
                 error_class = None
             except Exception as exc:  # noqa: BLE001 -- classify only; never blind-retry here
                 delivery_state, error_class = "delivery_exception", type(exc).__name__
+        attempts = sender.delivery_attempts("ticket", [result.ticket_id])
+        delivery_metadata = attempts[-1] if attempts else {}
+        if delivery_state == "sent" and not delivery_metadata.get("message_id"):
+            delivery_state = "failed"
+            delivery_metadata = {**delivery_metadata, "result_error_code": "MISSING_MESSAGE_ID"}
         event = _event_for_result(result, now, stage="RESULT", delivery_state=delivery_state,
                                   ticket_source=ticket_source, error_class=error_class,
-                                  store_status=store_state, store_error_class=verify_error_class)
+                                  store_status=store_state, store_error_class=verify_error_class,
+                                  delivery_metadata=delivery_metadata)
         try:
             append_session_event(journal, event)
         except Exception as exc:  # noqa: BLE001 -- sender SQLite is the fallback for network attempts
@@ -689,11 +699,20 @@ def _process_due_summary(journal: str, now: dt.datetime, sender: Sender, day_tex
         error_class = None
     except Exception as exc:  # noqa: BLE001 -- never auto-retry an ambiguous result here
         delivery_state, error_class = "delivery_exception", type(exc).__name__
+    identity = json.dumps([day_text, session], separators=(",", ":"))
+    attempts = sender.delivery_attempts("session_summary", [identity])
+    delivery_metadata = attempts[-1] if attempts else {}
+    if delivery_state == "sent" and not delivery_metadata.get("message_id"):
+        delivery_state = "failed"
+        delivery_metadata = {**delivery_metadata, "result_error_code": "MISSING_MESSAGE_ID"}
     outcome = {
         "event_type": "SESSION_SUMMARY_DELIVERY", "stage": "RESULT",
         "recorded_at_utc": now.isoformat(), "session_date": day_text, "session": session,
         **fields(summary),
         "sender_enabled": bool(sender.config.enabled), "delivery_state": delivery_state,
+        "telegram_message_id": delivery_metadata.get("message_id"),
+        "telegram_chat_suffix": delivery_metadata.get("chat_suffix"),
+        "delivery_error_code": delivery_metadata.get("result_error_code"),
         "error_class": error_class, "execution_authorized": False,
     }
     try:
