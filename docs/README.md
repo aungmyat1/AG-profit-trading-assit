@@ -6,6 +6,9 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[S1 recovery R2](status/AGP_S1_RECOVERY_R2_2026-10-12.md) records prepared
+READY validation, missing owner authority and resource validation pending.
+
 [AGP-C4-CCFD-LOGIC](status/AGP_C4_CCFD_LOGIC_2026-10-10.md) records synthetic-only CFD v1.0.0 L1–L6 evidence and the DATA-R2 rerun.
 [C14 DEMO execution boundary hardening](status/AGP_C14_DEMO_EXECUTION_BOUNDARY_HARDENING_2026-10-11.md)
 records the refusal-side boundary for the future automatic DEMO execution lane: an

@@ -72,7 +72,8 @@ def _validate_record(record: dict) -> bool:
     required = ("decision_id", "strategy_id", "version", "contract_sha256")
     if any(not isinstance(record.get(key), str) or not record[key].strip() for key in required):
         return False
-    if record.get("status") not in {"APPROVED", "CONFIRMED", "AUTHORIZED", "RATIFIED", "RESOLVED"}:
+    status = record.get("status")
+    if not isinstance(status, str) or status not in {"APPROVED", "CONFIRMED", "AUTHORIZED", "RATIFIED", "RESOLVED"}:
         return False
     if not re.fullmatch(r"[0-9a-f]{64}", record["contract_sha256"]):
         return False
