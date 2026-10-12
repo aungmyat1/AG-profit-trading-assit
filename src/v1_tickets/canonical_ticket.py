@@ -15,8 +15,17 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from ticket_delivery.identity import logical_ticket_id
 from v1_tickets.actionability import (
-    BLOCKED, EXPIRED, INSUFFICIENT_DATA, INFO_ONLY_INSUFFICIENT_REMAINING_R, INFO_ONLY_STALE, INFO_ONLY_SUPPRESSED,
-    MISSED, NO_TRADE, OUT_OF_SESSION, WATCH_READY, evaluate_actionability,
+    BLOCKED,
+    EXPIRED,
+    INFO_ONLY_INSUFFICIENT_REMAINING_R,
+    INFO_ONLY_STALE,
+    INFO_ONLY_SUPPRESSED,
+    INSUFFICIENT_DATA,
+    MISSED,
+    NO_TRADE,
+    OUT_OF_SESSION,
+    WATCH_READY,
+    evaluate_actionability,
 )
 from v1_tickets.authority import resolve_ticket_authority
 
@@ -290,9 +299,61 @@ def build_canonical_ticket(
             "detail": str(ticket["data_error"].get("detail", ""))[:300],
             "layer": str(ticket["data_error"].get("layer", "OTHER"))[:80],
         }
+    canonical.update(_scope_fields(canonical))
     canonical["structure_visual"] = render_structure_visual(canonical)
     canonical["checklist"] = _checklist_summary(ticket, canonical)
     return canonical
+
+
+# AGP-C18-R2 report classes (additive to AG_CANONICAL_TICKET_V1; observational, never an authority).
+REPORT_READY = "READY_TICKET"            # WATCH_READY: only reachable through the existing READY authority
+REPORT_CANDIDATE = "CANDIDATE"           # priced, non-executable observation
+REPORT_BLOCKED = "BLOCKED"
+REPORT_NO_OPPORTUNITY = "NO_OPPORTUNITY"
+REPORT_DATA_ERROR = "DATA_ERROR"
+REPORT_OUT_OF_SESSION = "OUT_OF_SESSION"
+
+
+def _report_class(canonical: Dict[str, Any]) -> str:
+    decision = canonical.get("decision")
+    if decision == WATCH_READY:
+        return REPORT_READY
+    if decision == BLOCKED:
+        return REPORT_BLOCKED
+    if decision == INSUFFICIENT_DATA:
+        return REPORT_DATA_ERROR
+    if decision == OUT_OF_SESSION:
+        return REPORT_OUT_OF_SESSION
+    prices = canonical.get("prices") or {}
+    priced = (prices.get("entry_reference_raw") is not None and prices.get("sl_raw") is not None
+              and canonical.get("direction"))
+    return REPORT_CANDIDATE if priced and decision != NO_TRADE else REPORT_NO_OPPORTUNITY
+
+
+def _scope_fields(canonical: Dict[str, Any]) -> Dict[str, Any]:
+    """Exact scope verification (v1_tickets.scope_status.resolve_ticket_scope) plus a deterministic
+    per-signal id and the report class. Fails closed to UNVERIFIED; the route is always REPORT_ONLY."""
+    try:
+        from v1_tickets.scope_status import resolve_ticket_scope
+        scope = resolve_ticket_scope(canonical.get("strategy_id"), canonical.get("strategy_version"),
+                                     canonical.get("instrument"), canonical.get("session"),
+                                     canonical.get("direction"))
+    except Exception:  # noqa: BLE001 -- never invent a verified status
+        scope = {"scope_verification_status": "UNVERIFIED", "scope_reason": "SCOPE_RESOLUTION_FAILED",
+                 "verification_identity": None}
+    signal_time = (canonical.get("trigger") or {}).get("trigger_timestamp")
+    candidate_signal_id = (
+        f"{canonical.get('strategy_id')}@{canonical.get('strategy_version')}|{canonical.get('instrument')}|"
+        f"{canonical.get('session')}|{canonical.get('direction')}|{signal_time}"
+        if canonical.get("direction") and signal_time else None)
+    return {
+        "scope_verification_status": scope["scope_verification_status"],
+        "scope_route": "REPORT_ONLY",
+        "scope_reason": scope["scope_reason"],
+        "verification_identity": scope.get("verification_identity"),
+        "candidate_signal_id": candidate_signal_id,
+        "report_class": _report_class(canonical),
+    }
 
 
 def _safe_get(d: Dict[str, Any], keys: Sequence[str]) -> Any:
@@ -359,7 +420,6 @@ _CHECKLIST_PHASES = (
 
 
 def _checklist_summary(ticket: Dict[str, Any], canonical: Dict[str, Any]) -> List[Dict[str, Any]]:
-    decision = canonical["decision"]
     has_signal = ticket.get("direction") is not None
     out: List[Dict[str, Any]] = []
     status_map: Dict[str, str] = {}
@@ -396,7 +456,6 @@ def render_structure_visual(canonical: Dict[str, Any], *, width: int = 32) -> st
     """
     p = canonical.get("prices") or {}
     direction = canonical.get("direction")
-    decision = canonical.get("decision")
     entry, sl, tp1, tp2 = (p.get("entry_reference_raw"), p.get("sl_raw"),
                            p.get("tp1_raw"), p.get("tp2_raw"))
     current = p.get("current_send_raw")

@@ -398,6 +398,9 @@ research eligibility. Its contract is
   — C14 execution-authority boundary, host magic registry (reserved S1 magic `777001` versus the six
   magics in use on the host), lifecycle evidence chain, and HALT/reconcile on unknown outcome;
   offline unit tests only, no broker mutation, scope still `enabled: false`.
+- [`status/AGP_C18_R2_IMPLEMENTATION_PLAN_2026-10-13.md`](status/AGP_C18_R2_IMPLEMENTATION_PLAN_2026-10-13.md)
+  — AGP-C18-R2 plan: scope-aware canonical ticket, read-only ASW/LSMC/CCFD report lanes, governed REPORT_ONLY
+  Telegram policy; owner decisions D1-D4; no READY/demo/live/registry change.
 - [`status/AGP_SCOPE_STATUS_REPORTS_2026-10-12.md`](status/AGP_SCOPE_STATUS_REPORTS_2026-10-12.md)
   — read-only Telegram scope-status reporting for all three families (OD1012-ROUTING follow-up (d)):
   FX session summaries stamped per symbol, new crypto CRYPTO_DAY/CRYPTO_WEEKEND summaries, and Large-SMC
