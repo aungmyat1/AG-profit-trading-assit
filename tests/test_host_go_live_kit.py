@@ -62,7 +62,7 @@ class FakeMT5(types.SimpleNamespace):
         return (1, "Success") if self.init_ok else (-6, "Terminal: Authorization failed")
 
     def account_info(self):
-        return types.SimpleNamespace(login=123456, server="VTMarkets-Demo", trade_mode=self._mode,
+        return types.SimpleNamespace(login=1234567, server="VTMarkets-Demo", trade_mode=self._mode,
                                      balance=98765.43, equity=98765.43) if self._account else None
 
     def symbols_get(self, group=None):
@@ -107,8 +107,16 @@ def test_diagnose_all_ok_prints_no_balances(tmp_path, capsys):
     results = diag.run(FakeMT5(), "", _appdata(tmp_path))
     by = {r["check"]: r for r in results}
     assert by["initialize"]["ok"] and by["demo_account"]["ok"] and by["claude_desktop_mt5ReadOnly"]["ok"]
-    assert "login=123456 server=VTMarkets-Demo trade_mode=0" == by["account_info"]["detail"]
+    assert "login=…567 server=VTMarkets-Demo trade_mode=0" == by["account_info"]["detail"]
     assert "98765" not in json.dumps(results)
+
+
+def test_log_line_redacts_mt5_login_from_console_and_file(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(hc, "LOG_DIR", str(tmp_path))
+    hc.log_line("identity", "attached account login=1234567")
+    assert "login=…567" in capsys.readouterr().out
+    logged = (tmp_path / "identity.log").read_text(encoding="utf-8")
+    assert "login=…567" in logged and "1234567" not in logged
 
 
 @pytest.mark.parametrize("mt5,key", [
@@ -134,6 +142,17 @@ def test_initialize_passes_credentials_but_never_prints_password(monkeypatch):
     ok, detail = hc.mt5_initialize(fake)
     assert ok and fake.calls[0] == ("initialize", ["login", "password", "server", "timeout"])
     assert "s3cretPass!" not in detail and hc.redact("pw=s3cretPass!") == "pw=***"
+
+
+@pytest.mark.parametrize(("text", "redacted"), [
+    ("login=123456", "login=…456"),
+    ("login=1234567", "login=…567"),
+    ("login=1234567890", "login=…890"),
+    ('{"login": "7654321"}', '{"login": "…321"}'),
+    ("account 9876543 connected", "account …543 connected"),
+])
+def test_redact_mt5_login_suffix_in_host_output(text, redacted):
+    assert hc.redact(text) == redacted
 
 
 # ------------------------------------------------------------------ 2 capture metadata

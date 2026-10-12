@@ -558,7 +558,10 @@ def build_session_summary(journal: str, *, session_date: dt.date, session: str,
         "terminal_counts": dict(sorted(terminal_counts.items())),
         "large_smc": lsmc_archive_report(journal, *windows),
         "source_counts": dict(sorted(source_counts.items())),
-        "data_failure_count": sum(terminal_counts[state] for state in (BLOCKED, INSUFFICIENT_DATA)),
+        # Preserve the prior combined total while separating policy/scope blocks from
+        # unavailable or invalid market data.
+        "scope_blocked_count": terminal_counts[BLOCKED],
+        "data_failure_count": terminal_counts[INSUFFICIENT_DATA],
         "persistence_failure_count": sum(row.get("ticket_store_status") == "FAILED"
                                           for row in latest.values()),
         "compatibility_error_count": len(compatibility_errors),
