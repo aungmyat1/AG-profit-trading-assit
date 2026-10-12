@@ -90,6 +90,14 @@ Agent skills  -> ADVISORY ONLY
 - Never edit files in D:/wp3-main-integ (live runtime tree). Develop in a separate worktree;
   update the live tree only via git pull after tests pass.
 
+## Local resource governance — MANDATORY
+
+Before substantial execution, classify R0–R3 and follow
+[AG Resource Management Policy V1](docs/governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md).
+R1–R3 require fail-closed resource_guard acquisition and release; at most one
+local R2/R3 workload, one worker by default. Resource classes do not alter
+strategy or execution authority.
+
 ## Frozen strategy version preservation
 
 Do not modify a frozen production or current-authority strategy version in place. A

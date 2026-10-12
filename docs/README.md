@@ -6,6 +6,10 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[AG Resource Management Policy V1](governance/AG_RESOURCE_MANAGEMENT_POLICY_V1.md)
+restores the owner-issued R0–R3 resource gates and fail-closed runtime lock from
+`82e6e5cca329d1247f8a81aa308f25a80584c5fd`; strategy verification remains separate.
+
 [AGP-C4-CCFD-LOGIC](status/AGP_C4_CCFD_LOGIC_2026-10-10.md) records synthetic-only CFD v1.0.0 L1–L6 evidence and the DATA-R2 rerun.
 [C14 DEMO execution boundary hardening](status/AGP_C14_DEMO_EXECUTION_BOUNDARY_HARDENING_2026-10-11.md)
 records the refusal-side boundary for the future automatic DEMO execution lane: an
