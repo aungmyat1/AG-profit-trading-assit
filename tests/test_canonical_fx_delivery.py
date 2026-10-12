@@ -54,6 +54,8 @@ def sender(tmp_path, *, enabled=True, calls=None, transport=None):
 
     def fake(token, chat_id, message):
         calls.append((chat_id, message))
+        return {"ok": True, "message_id": 1, "chat_id": chat_id}
+    fake.returns_telegram_receipt = True
 
     cfg = (Config(enabled=True, token="fake-token", chat_id="123", owner_chat_ids=frozenset({"123"}),
                   watch_info_scope=True)
@@ -492,6 +494,7 @@ def test_due_summaries_are_sent_once_and_never_before_grace(tmp_path):
             if e["event_type"] == "SESSION_SUMMARY_DELIVERY"]
     assert [e["stage"] for e in rows] == ["INTENT", "RESULT"]
     assert rows[1]["delivery_state"] == "sent" and rows[1]["sender_enabled"] is True
+    assert rows[1]["telegram_message_id"] == "1"
 
     # Restart: the delivered summary is not re-sent.
     again = cfd.process_due_session_summaries(dt.datetime(2026, 10, 7, 12, 10, tzinfo=UTC),
@@ -525,11 +528,43 @@ def test_uncertain_and_failed_summaries_are_never_auto_retried(tmp_path):
                   transport=ambiguous)
     at = dt.datetime(2026, 10, 7, 11, 40, tzinfo=UTC)
     lines = cfd.process_due_session_summaries(at, journal=journal, sender=send)
-    assert "delivery=uncertain" in lines[0]
+    assert "delivery=failed" in lines[0]
     assert cfd.process_due_session_summaries(at + dt.timedelta(hours=1), journal=journal, sender=send) == []
     assert len(attempts) == 1
     uncertain = send.list_uncertain()
     assert [row["kind"] for row in uncertain] == ["session_summary"]
+
+
+@pytest.mark.parametrize(("transport_result", "transport_error", "expected_state", "expected_code"), [
+    ({"ok": True, "message_id": 4321, "chat_id": -123456789}, None, "sent", None),
+    (None, __import__("telegram_delivery.adapter", fromlist=["TelegramAPIError"]).TelegramAPIError(403), "failed", "403"),
+    (None, TimeoutError("private token detail"), "failed", "TIMEOUT"),
+])
+def test_summary_result_captures_message_delivery_identity(
+        tmp_path, transport_result, transport_error, expected_state, expected_code):
+    journal = str(tmp_path / "journal")
+    write_start(journal, dt.datetime(2026, 10, 7, 6, 0, tzinfo=UTC))
+
+    def transport(*_args):
+        if transport_error:
+            raise transport_error
+        return transport_result
+
+    send = Sender(tmp_path / "delivery.sqlite",
+                  Config(enabled=True, token="fake-token", chat_id="123456789",
+                         owner_chat_ids=frozenset({"123456789"})), transport=transport)
+    if transport_result is not None:
+        send.require_api_receipt = True
+    lines = cfd.process_due_session_summaries(dt.datetime(2026, 10, 7, 11, 40, tzinfo=UTC),
+                                              journal=journal, sender=send)
+    row = next(e for e in events(journal, dt.date(2026, 10, 7), "ASIAN_LONDON")
+               if e["event_type"] == "SESSION_SUMMARY_DELIVERY" and e["stage"] == "RESULT")
+    assert row["delivery_state"] == expected_state
+    assert row["delivery_error_code"] == expected_code
+    if expected_state == "sent":
+        assert row["telegram_message_id"] == "4321" and row["telegram_chat_suffix"] == "6789"
+    else:
+        assert row["telegram_message_id"] is None and row["telegram_chat_suffix"] is None
 
 
 def test_disabled_summary_may_send_once_the_owner_gates_open(tmp_path):

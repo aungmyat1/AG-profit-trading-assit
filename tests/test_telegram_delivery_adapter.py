@@ -85,6 +85,29 @@ def test_session_digest_sender_restart_uses_stable_session_key(tmp_path):
     assert len(calls) == 1
 
 
+@pytest.mark.parametrize(("response", "raised", "expected", "error_code"), [
+    ({"ok": True, "message_id": 987, "chat_id": -123456789}, None, "sent", None),
+    (None, __import__("telegram_delivery.adapter", fromlist=["TelegramAPIError"]).TelegramAPIError(403), "failed", "403"),
+    (None, TimeoutError("token-bearing timeout"), "uncertain", "TIMEOUT"),
+])
+def test_delivery_attempt_records_telegram_result_metadata(tmp_path, response, raised, expected, error_code):
+    def transport(*_args):
+        if raised:
+            raise raised
+        return response
+
+    sender = Sender(tmp_path / "delivery.sqlite", config(), transport=transport)
+    if response is not None:
+        sender.require_api_receipt = True
+    assert sender.send_session_summary(session_digest()) == expected
+    attempt = sender.delivery_attempts("session_summary")[0]
+    if expected == "sent":
+        assert (attempt["message_id"], attempt["chat_suffix"]) == ("987", "6789")
+    else:
+        assert attempt["message_id"] is None and attempt["chat_suffix"] is None
+        assert attempt["result_error_code"] == error_code
+
+
 def config(**overrides):
     # C16 scope flag is ON here so the pre-existing informational tests keep exercising the
     # enabled path; default-OFF behaviour is pinned separately below.
@@ -277,7 +300,7 @@ def test_bot_api_plain_payload(monkeypatch):
     class Response:
         def __enter__(self): return self
         def __exit__(self, *args): pass
-        def read(self): return b'{"ok": true}'
+        def read(self): return b'{"ok": true, "result": {"message_id": 1, "chat": {"id": 123}}}'
     def open_request(request, timeout):
         captured.append((request, timeout))
         return Response()
@@ -298,7 +321,7 @@ def test_bot_api_html_escapes_source_text(monkeypatch):
     class Response:
         def __enter__(self): return self
         def __exit__(self, *args): pass
-        def read(self): return b'{"ok": true}'
+        def read(self): return b'{"ok": true, "result": {"message_id": 1, "chat": {"id": 123}}}'
     def open_request(request, timeout):
         captured.append((request, timeout))
         return Response()
@@ -365,7 +388,7 @@ def test_html_escape_and_plain_fallback(monkeypatch, caplog):
     class Response:
         def __enter__(self): return self
         def __exit__(self, *args): pass
-        def read(self): return b'{"ok": true}'
+        def read(self): return b'{"ok": true, "result": {"message_id": 1, "chat": {"id": 123}}}'
     def transport(request, timeout):
         payloads.append(json.loads(request.data))
         if len(payloads) == 1:
@@ -390,7 +413,7 @@ def test_html_ambiguous_dispatched_consumed_and_next_summary(tmp_path, monkeypat
     class Response:
         def __enter__(self): return self
         def __exit__(self, *args): pass
-        def read(self): return b'{"ok": true}'
+        def read(self): return b'{"ok": true, "result": {"message_id": 1, "chat": {"id": 123}}}'
     def transport(request, timeout):
         payloads.append(json.loads(request.data))  # request dispatched
         if len(payloads) == 1:
@@ -434,7 +457,7 @@ def test_html_json_rejection_fallback(monkeypatch):
         def __exit__(self, *args): pass
         def read(self):
             return (b'{"ok": false, "error_code": 400, "description": "cannot parse entities"}'
-                    if len(payloads) == 1 else b'{"ok": true}')
+                    if len(payloads) == 1 else b'{"ok": true, "result": {"message_id": 1, "chat": {"id": 123}}}')
     def transport(request, timeout):
         payloads.append(json.loads(request.data))
         return Response()
