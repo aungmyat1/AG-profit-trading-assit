@@ -305,10 +305,6 @@ def run_canonical_fx_cycle(
         if delivery_state == "sent" and not delivery_metadata.get("message_id"):
             delivery_state = "failed"
             delivery_metadata = {**delivery_metadata, "result_error_code": "MISSING_MESSAGE_ID"}
-        if delivery_state == "uncertain":
-            delivery_state = "failed"
-            delivery_metadata = {**delivery_metadata,
-                                 "result_error_code": delivery_metadata.get("result_error_code") or "DELIVERY_UNCONFIRMED"}
         event = _event_for_result(result, now, stage="RESULT", delivery_state=delivery_state,
                                   ticket_source=ticket_source, error_class=error_class,
                                   store_status=store_state, store_error_class=verify_error_class,
@@ -706,10 +702,6 @@ def _process_due_summary(journal: str, now: dt.datetime, sender: Sender, day_tex
     if delivery_state == "sent" and not delivery_metadata.get("message_id"):
         delivery_state = "failed"
         delivery_metadata = {**delivery_metadata, "result_error_code": "MISSING_MESSAGE_ID"}
-    if delivery_state == "uncertain":
-        delivery_state = "failed"
-        delivery_metadata = {**delivery_metadata,
-                             "result_error_code": delivery_metadata.get("result_error_code") or "DELIVERY_UNCONFIRMED"}
     outcome = {
         "event_type": "SESSION_SUMMARY_DELIVERY", "stage": "RESULT",
         "recorded_at_utc": now.isoformat(), "session_date": day_text, "session": session,

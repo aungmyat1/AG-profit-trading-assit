@@ -528,7 +528,7 @@ def test_uncertain_and_failed_summaries_are_never_auto_retried(tmp_path):
                   transport=ambiguous)
     at = dt.datetime(2026, 10, 7, 11, 40, tzinfo=UTC)
     lines = cfd.process_due_session_summaries(at, journal=journal, sender=send)
-    assert "delivery=failed" in lines[0]
+    assert "delivery=uncertain" in lines[0]
     assert cfd.process_due_session_summaries(at + dt.timedelta(hours=1), journal=journal, sender=send) == []
     assert len(attempts) == 1
     uncertain = send.list_uncertain()
@@ -538,7 +538,7 @@ def test_uncertain_and_failed_summaries_are_never_auto_retried(tmp_path):
 @pytest.mark.parametrize(("transport_result", "transport_error", "expected_state", "expected_code"), [
     ({"ok": True, "message_id": 4321, "chat_id": -123456789}, None, "sent", None),
     (None, __import__("telegram_delivery.adapter", fromlist=["TelegramAPIError"]).TelegramAPIError(403), "failed", "403"),
-    (None, TimeoutError("private token detail"), "failed", "TIMEOUT"),
+    (None, TimeoutError("private token detail"), "uncertain", "TIMEOUT"),
 ])
 def test_summary_result_captures_message_delivery_identity(
         tmp_path, transport_result, transport_error, expected_state, expected_code):

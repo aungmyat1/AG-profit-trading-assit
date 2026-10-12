@@ -486,7 +486,8 @@ class Sender:
                                   row[0], identity, actor or "unspecified", _utc_now())
                         return "refused"
                     else:
-                        LOG.info("Telegram dedupe: %s", row[0])
+                        LOG.info("DUPLICATE_SUPPRESSED kind=%s identity=%s state=%s",
+                                 kind, identity, row[0])
                         return "duplicate"
                 else:
                     if force:

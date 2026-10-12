@@ -242,6 +242,24 @@ def test_timeout_after_send_uncertain_listed_no_autoresend_force_once(tmp_path, 
     assert sender.list_uncertain() == []
 
 
+def test_5xx_after_remote_delivery_suppresses_same_identity(tmp_path, caplog):
+    caplog.set_level("INFO")
+    calls = []
+
+    def transport(*args):
+        calls.append(args)
+        # Simulate Telegram accepting the message, then returning an ambiguous server error.
+        raise urllib.error.HTTPError("redacted", 502, "gateway error", {}, None)
+
+    sender = Sender(tmp_path / "dedupe.sqlite", config(), transport)
+    assert sender.send_ticket(watch()) == "uncertain"
+    assert sender.list_uncertain()[0]["identity"] == watch()["ticket_id"]
+    assert sender.send_ticket(watch()) == "duplicate"
+    assert len(calls) == 1
+    assert "DUPLICATE_SUPPRESSED" in caplog.text
+    assert watch()["ticket_id"] in caplog.text
+
+
 def test_force_resend_uncertain_vs_delivered(tmp_path, caplog):
     caplog.set_level('INFO')
     calls = []
