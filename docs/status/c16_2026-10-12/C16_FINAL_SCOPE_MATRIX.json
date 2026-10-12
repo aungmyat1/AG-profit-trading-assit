@@ -1,0 +1,11 @@
+{
+  "mission": "AGP-C16-CODEX-WEB-FINAL-L1L6",
+  "status": "C16_LOGIC_VERIFICATION_BLOCKED",
+  "reason": "BLOCKED_RESOURCE_AUTHORITY",
+  "main_sha": "65efdd87e1f762d0ee79ebef5bc1de01d18564f3",
+  "captured_at_utc": "2026-10-12 16:13:12 UTC",
+  "matrix_complete": false,
+  "scopes": [],
+  "all_later_gates": "NOT_EVALUATED",
+  "pass_claims": 0
+}
