@@ -20,8 +20,14 @@ import live_candles_smoke as lcs  # noqa: E402
 from test_canonical_fx_delivery import events, sender  # noqa: E402
 
 from host_delivery import telegram_message as tg  # noqa: E402
-from telegram_delivery.adapter import render_crypto_strategy_summary, render_session_summary  # noqa: E402
-from ticket_delivery.archive import CycleDecisionRecord, archive_cycle_decision  # noqa: E402
+from telegram_delivery.adapter import (  # noqa: E402
+    render_crypto_strategy_summary,
+    render_session_summary,
+)
+from ticket_delivery.archive import (  # noqa: E402
+    CycleDecisionRecord,
+    archive_cycle_decision,
+)
 from ticket_delivery.archive_reader import latest_cycle_decision  # noqa: E402
 from v1_tickets.crypto import ACTIVE_CONFIG, load_ticket_config  # noqa: E402
 
