@@ -1,0 +1,67 @@
+{
+  "record": "host_recheck",
+  "mission": "AGP-HOST-RECHECK-1012-1416",
+  "captured_at_local": "2026-10-12T14:20:25+06:30",
+  "host_tree": "<HOST_SCRATCHPAD>/prod @ 0773a55",
+  "order_api_calls": 0,
+  "broker_mutation_count": 0,
+  "config_env_scheduler_changes": 0,
+  "mt5_api_calls": "initialize(path=C:\\Program Files\\MetaTrader 5\\terminal64.exe), account_info, terminal_info, positions_total, orders_total, shutdown",
+  "items": [
+    {
+      "id": "1",
+      "item": "Exactly one terminal64: AG install, VTMarkets-Demo ...999, DEMO, Algo Trading OFF, 0 positions/orders",
+      "result": "PASS",
+      "evidence": {"terminals": [{"pid": 15800, "exe": "C:\\Program Files\\MetaTrader 5\\terminal64.exe", "started_local": "2026-10-12 14:05:26"}], "server": "VTMarkets-Demo", "login_suffix": "999", "trade_mode": "DEMO", "terminal_trade_allowed": false, "positions": 0, "orders": 0},
+      "note": "Leftover non-portable sandbox (pid 1228, C:\\MT5\\VT-Sandbox) was stopped at 14:09:08 on owner instruction after verifying its path; the portable sandbox (...985) had been closed earlier."
+    },
+    {
+      "id": "2",
+      "item": "FX task 14:16:46 run: exit code; terminal/account read; GBPUSD-VIP outputs after 14:16 sourced from the AG terminal",
+      "result": "FAIL",
+      "cause": "The run exited 0 and could only attach to the AG terminal (...999), the sole terminal running. But the S1 GBPUSD candle read failed (CandleAdapterError -> INSUFFICIENT_DATA), so no GBPUSD-VIP data was sourced. No GBPUSD-VIP base file in the AG data folder changed after 14:16 (newest ticks.dat 14:05:25).",
+      "evidence": {
+        "task_last_run_local": "2026-10-12 14:16:46", "task_result": 0,
+        "fx_log_utc_07_46": "EURUSD BLOCKED; GBPUSD INSUFFICIENT_DATA; USDJPY BLOCKED; XAUUSD BLOCKED (all delivery=summary_only)",
+        "terminal_attribution": "by elimination: only pid 15800 (AG, ...999) running from 14:09:08; the runner does not log account identity",
+        "outputs_mtime_local": {
+          "<HOST_SCRATCHPAD>/prod/journal/ticket_delivery/daily_evaluator/2026-10-12_GBPUSD_ASIAN_LONDON.jsonl": "14:16:17",
+          "<HOST_SCRATCHPAD>/prod/journal/ticket_delivery/canonical_fx/sessions/2026-10-12_ASIAN_LONDON.jsonl": "14:16:19"
+        },
+        "gbpusd_record_07_46Z": {"decision": "INSUFFICIENT_DATA", "reason_code": "CandleAdapterError", "strategy_version": "1.1.1", "evaluation_id": "ST_ASIAN_SWEEP_5R_V1|1.1.1|GBPUSD|ASIAN_LONDON|2026-10-12", "actionability_policy": "unsigned (signed_by null)"},
+        "ag_gbpusd_vip_files_newest": "%APPDATA%/MetaQuotes/Terminal/D0E8209F.../bases/VTMarkets-Demo/ticks/GBPUSD-VIP/ticks.dat 14:05:25"
+      },
+      "finding": "On the CandleAdapterError path the evaluation is recorded under strategy_version 1.1.1 (base config), while the runs that obtained candles recorded 1.1.2. S1 version attribution therefore depends on data success; needs code review."
+    },
+    {
+      "id": "3",
+      "item": "Port 22346 listener; MT5_APP_MCP_TOKEN presence (name only)",
+      "result": "INFO",
+      "evidence": {"port_22346_listener_pid": 15800, "listener_is": "AG terminal built-in MCP (AI/MCP option still enabled)", "MT5_APP_MCP_TOKEN": {"User": "present", "Machine": "absent"}}
+    },
+    {
+      "id": "4",
+      "item": "Free RAM; resource_guard R1 (>=1200 MB)",
+      "result": "FAIL",
+      "evidence": {"available_ram_mb": 692, "r1_gate": "BLOCKED_RESOURCE"}
+    },
+    {
+      "id": "5",
+      "item": "S1 clean-cycle count exclusions",
+      "result": "RECORDED",
+      "excluded_runs": [
+        {"run_local": "13:31", "run_utc": "07:01", "gbpusd": "INSUFFICIENT_DATA / CandleAdapterError (1.1.1)", "status": "WRONG_ACCOUNT_EXCLUDED"},
+        {"run_local": "13:46", "run_utc": "07:16", "gbpusd": "BLOCKED / SPREAD_TOO_WIDE (1.1.2)", "status": "WRONG_ACCOUNT_EXCLUDED"},
+        {"run_local": "14:01", "run_utc": "07:31", "gbpusd": "INFO_ONLY_STALE / STALE_SIGNAL (1.1.2)", "status": "WRONG_ACCOUNT_EXCLUDED"}
+      ],
+      "cause": "The AG terminal (...999) was closed from 12:48:55 to 14:01:42 (and restarted again 14:05:26). The FX runner calls mt5.initialize() without a terminal path (MT5_TERMINAL_PATH unset) and attached to the only logged-in terminal, the portable sandbox C:\\MT5\\VT-Sandbox on VTMarkets-Demo ...985; the DEMO guard passed because ...985 is also demo. Evidence: sandbox GBPUSD-VIP history written 13:31:05 while the AG terminal's last write was 12:48:57. Session summaries sent from these runs carry ...985 data.",
+      "not_excluded_but_not_clean": {"run_local": "14:16", "status": "AG_TERMINAL_DATA_ERROR", "cause": "CandleAdapterError on ...999"}
+    }
+  ],
+  "open_actions_owner": [
+    "Pin the FX task's MT5_TERMINAL_PATH to the AG exe before any second terminal runs (scheduler/env change; owner approval required).",
+    "Investigate CandleAdapterError on ...999 for GBPUSD-VIP.",
+    "Disable the AG terminal's built-in AI/MCP (22346) and remove MT5_APP_MCP_TOKEN from User scope.",
+    "Free RAM to restore R1."
+  ]
+}
