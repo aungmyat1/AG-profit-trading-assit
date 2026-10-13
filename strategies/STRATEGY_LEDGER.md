@@ -469,3 +469,12 @@ Credential Manager, never argv.
   imports: [import-resolution audit](../docs/status/IMPORT_RESOLUTION_AUDIT_2026-10-10.md).
   No dead-import fixes, strategy/config changes, or execution authority changes.
   DEAD_IMPORT is entry-point-specific; other tooling may still reference these imports.
+
+## OD1014-FAST D5 — EURUSD v1.1.2 suspension narrowed to ASIAN_LONDON (2026-10-14)
+
+- `strategies/registry.yaml` `ST_ASIAN_SWEEP_5R_V1` candidate 1.1.2 `logic_suspended_scopes` EURUSD record gains
+  `session: ASIAN_LONDON` (owner decision OD1014-FAST D5). Evidence:
+  [AGP_C3_ASW_V112_R2_60D_2026-10-10](../docs/status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md) — L3 FAIL Asian→London
+  only; London→NY L3 PASS. EURUSD × LONDON_NEWYORK now resolves UNVERIFIED (not suspended, not verified).
+- No other registry change. S1 (GBPUSD × ASIAN_LONDON) and the v1.1.2 identity
+  `d7a8ebe5…` are unchanged (`registry.yaml` is not in any logic-identity file set). No READY, demo or live change.
