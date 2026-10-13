@@ -9,5 +9,5 @@
   "src/large_smc_watch/watch.py": "86ac9cdcfa864b36a06b795920bd333f8fa9cfdd81efa5eb422e1d746bc2c63d",
   "src/v1_tickets/lsmc_logic_gate.py": "e3133071f126d744b34cd8feae6379bdd41b9474cf9e9775991d4d75ae3ac799",
   "strategies/ST_LARGE_SMC_V1_1_1_0.yaml": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
-  "strategies/registry.yaml": "80317057a42dc4fb0543ea999f3375efc3c4fde3843ea5dab58250d6c5cfcd94"
+  "strategies/registry.yaml": "8955c1b5716ee3d0e990e51a36c4e7a9133e01461cfaf9f478352af204791133"
 }
