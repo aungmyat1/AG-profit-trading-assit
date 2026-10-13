@@ -133,7 +133,7 @@ crypto config, Large-SMC coverage, all three scheduler bindings (including `--ca
 FX), the ARCHIVE_ONLY default, and the legacy READY/OPPORTUNITY scopes. Canonical FX messages
 remain disabled unless a host-local authorized-recipient file and the environment gates agree. Expected from the installer:
 three plan lines (`AG-V1-FX-Cycles` every 15 min at +1 min daily, `AG-V1-Crypto-Daily`
-every 5 min at +2 min daily, and `AG-V1-LSMC-Watch` every 5 min at +3 min daily;
+every 5 min at +2 min daily, and `AG-V1-LSMC-Watch` every 15 min at +3 min daily;
 staggered starts, 4-minute task limit, runner self-exits after 120 s), then
 `WhatIf: no changes made.` The daily Large-SMC task watches crypto throughout weekends and
 returns `MARKET_CLOSED` for FX while its market is shut.
