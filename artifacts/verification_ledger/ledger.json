@@ -1,5 +1,5 @@
 {
-  "registry_sha256": "e4341bdc9935bc01441137e68181d92e1e0b1336c8549b491ac603cebc504887",
+  "registry_sha256": "80317057a42dc4fb0543ea999f3375efc3c4fde3843ea5dab58250d6c5cfcd94",
   "row_count": 18,
   "rows": [
     {
@@ -300,13 +300,13 @@
       "symbol": "EURUSD"
     },
     {
-      "blocking_finding_id": "L3_REPAINT_UNRESOLVED_2026-07-31",
+      "blocking_finding_id": "LOGIC_NOT_VERIFIED",
       "branch": "RANGE_SWEEP",
       "contract_hash_recorded": "UNKNOWN",
       "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml",
       "contract_sha256": "4f936bbe17f4aa4fd3cd9fc85640bed57b6786f43c52e8e2d69aabb7234b14cf",
-      "evidence_path": "docs/status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md",
-      "evidence_sha256": "5bcb6d0414c986e0d4d9de6cbafc561052de4b6cecf7534c9d3787490abce060",
+      "evidence_path": "UNKNOWN",
+      "evidence_sha256": "UNKNOWN",
       "evidence_sha256_recorded": "UNKNOWN",
       "family": "session_fx_gold",
       "gates": {
@@ -321,7 +321,7 @@
       "logic_identity_current": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
       "logic_identity_recorded": "d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5",
       "next_action_owner": "ENGINEERING",
-      "registry_status": "SUSPENDED",
+      "registry_status": "UNVERIFIED",
       "session": "LONDON_NEWYORK",
       "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.2",
       "symbol": "EURUSD"
@@ -493,7 +493,7 @@
   "status_counts": {
     "LOGIC_VERIFIED": 1,
     "STALE_IDENTITY": 3,
-    "SUSPENDED": 2,
-    "UNVERIFIED": 12
+    "SUSPENDED": 1,
+    "UNVERIFIED": 13
   }
 }

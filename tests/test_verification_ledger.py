@@ -35,9 +35,10 @@ def test_ledger_counts_match_the_registry_records():
     rows = vl.build()["rows"]
     lv = [r for r in rows if r["registry_status"] == "LOGIC_VERIFIED"]
     assert [(r["symbol"], r["session"], r["branch"]) for r in lv] == [("GBPUSD", "ASIAN_LONDON", "RANGE_SWEEP")]
-    # the one suspended record carries no session, so it covers both EURUSD sessions
-    assert {(r["symbol"], r["session"]) for r in rows if r["registry_status"] == "SUSPENDED"} == {
-        ("EURUSD", "ASIAN_LONDON"), ("EURUSD", "LONDON_NEWYORK")}
+    # OD1014-FAST D5: the one suspended record is scoped to EURUSD x ASIAN_LONDON
+    assert [(r["symbol"], r["session"]) for r in rows if r["registry_status"] == "SUSPENDED"] == [
+        ("EURUSD", "ASIAN_LONDON")]
+    assert vl.build()["status_counts"] == {"LOGIC_VERIFIED": 1, "STALE_IDENTITY": 3, "SUSPENDED": 1, "UNVERIFIED": 13}
     assert sorted((r["symbol"], r["branch"]) for r in rows if r["registry_status"] == "STALE_IDENTITY") == sorted(stale)
 
 
