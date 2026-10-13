@@ -418,6 +418,7 @@ def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
         return ["CRYPTO IN_WINDOW"]
 
     monkeypatch.setattr(smoke, "run_crypto", run_crypto)
+    monkeypatch.setattr(smoke, "report_lane_lines", lambda label, run: [])   # C18 lanes tested separately
     monkeypatch.setattr(smoke, "log_line", lambda name, message: logged.append((name, message)))
 
     assert smoke.main(["--mode", "crypto"]) == 0

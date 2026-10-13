@@ -46,6 +46,7 @@ from _host_common import (  # noqa: E402
     call_with_timeout,
     host_fetch,
     host_quote,
+    host_quote_observed,
     import_mt5,
     log_line,
     mt5_access_lock,
@@ -546,7 +547,7 @@ def lsmc_crypto_summary_lines(now: dt.datetime, journal: str, session: str, send
 
 
 def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, notify: bool = True,
-             fx: bool = True, window: Optional[str] = None) -> List[str]:
+             fx: bool = True, window: Optional[str] = None, quote: Optional[Quote] = None) -> List[str]:
     tracker = WatchTracker(os.path.join(journal, "large_smc_watch", "state.json"),
                            os.path.join(journal, "ticket_delivery", "archive"))
     ledger = AlertLedger(os.path.join(journal, "large_smc_watch", "delivered_confirmations.json"))
@@ -559,7 +560,7 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
             lines.append(f"LSMC {symbol} DATA_ERROR {_reason(exc)}")
             continue
         lines += _watch_once(tracker, symbol, bars, now, notify, ledger=ledger, journal=journal,
-                             display_broker_symbol=broker)
+                             display_broker_symbol=broker, quote=quote)
     if crypto_feed is not None:
         # LSMC 1.1.0 is VT-only: its crypto symbols are the VT broker names (BTCUSD/ETHUSD). The
         # shared feed is keyed by the V1 crypto ticket names, so look up the key mapped to each.
@@ -589,14 +590,34 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
             broker = symbol
             lines += _watch_once(tracker, symbol, {"D1": [], **b.candles}, now, notify, source=b.source,
                                  window=window, ledger=ledger, journal=journal,
-                                 display_broker_symbol=broker, record=record)
+                                 display_broker_symbol=broker, record=record,
+                                 quote=getattr(crypto_feed, "quote", None),
+                                 quote_symbol=getattr(crypto_feed, "symbols", {}).get(key, broker))
     return lines
 
 
+def _bid_ask(quote, broker):
+    """(bid, ask) from a read-only quote callable; None when unavailable (the engine then fails closed)."""
+    try:
+        q = quote(broker) if quote is not None and broker else None
+    except Exception:  # noqa: BLE001 -- a quote fault is a missing spread, never a guess
+        q = None
+    return (q[0], q[1]) if q else (None, None)
+
+
 def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None,
-                ledger=None, journal=None, display_broker_symbol=None, record=None) -> List[str]:
-    snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now)
+                ledger=None, journal=None, display_broker_symbol=None, record=None, quote=None,
+                quote_symbol=None) -> List[str]:
+    bid, ask = _bid_ask(quote, quote_symbol or display_broker_symbol)        # AGP-C18-R2 D4
+    snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now, bid=bid, ask=ask)
     events = tracker.poll(snap)
+    if journal is not None and events:
+        from reporting.lsmc_lane import observe_events
+        price = bars["M5"][-1].close if bars["M5"] else None
+        report_lane = report_lane_lines(f"LSMC {symbol}", lambda: observe_events(
+            events, now=now, price=price, archive_root=os.path.join(journal, "ticket_delivery", "archive")))
+    else:
+        report_lane = []
     out = [f"LSMC {symbol} data={classify(symbol, bars['M5'], now)} state={snap.state} source={source} "
            f"{f'window={window} ' if window else ''}alerts={[e.to_state + ':' + e.alert_level for e in events]}"]
     deliveries = []
@@ -618,7 +639,7 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
                 out.append(f"LSMC_DELIVERY {symbol} {status} reference={event.reference_id}")
     if record is not None:
         record(symbol, snap.state, list(snap.reason_codes), deliveries)
-    return out
+    return out + report_lane
 
 def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config: Optional[dict] = None) -> List[str]:
     from v1_tickets.crypto import archive_crypto_ticket, build_crypto_ticket
@@ -642,6 +663,30 @@ def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config
             _notify("TICKET", t["decision"], tg.format_ticket(t), REPO_ROOT, journal=journal,
                     ref=f"crypto:{symbol}:{obs.isoformat()}{window}", now=now)
     return lines
+
+
+def report_lane_lines(label: str, run) -> List[str]:
+    """Run one observational (REPORT_ONLY) lane; a lane fault is logged and never stops the runner."""
+    try:
+        observations = run()
+    except Exception as exc:  # noqa: BLE001 -- observational lanes never affect the authorized paths
+        return [f"REPORT_LANE {label} FAILED {type(exc).__name__}: {str(exc)[:160]}"]
+    classes = ",".join(sorted({str(o.get('report_class')) for o in observations})) or "-"
+    return [f"REPORT_LANE {label} observations={len(observations)} classes={classes}"]
+
+
+class CcfdFeed:
+    """ReadOnlyCryptoFeed for the CCFD lane: closed bars from host_fetch, (bid, ask, observed) from
+    host_quote_observed. Read-only; no order, position or account call."""
+
+    def __init__(self, fetch: Fetch, quote_observed):
+        self._fetch, self._quote = fetch, quote_observed
+
+    def fetch(self, broker_symbol: str, timeframe: str, count: int):
+        return self._fetch(broker_symbol, timeframe, count)
+
+    def quote(self, broker_symbol: str):
+        return self._quote(broker_symbol)
 
 
 def lsmc_crypto_feed(config: dict, fetch: Fetch, quote: Optional[Quote] = None):
@@ -828,6 +873,10 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                         if args.mode == "crypto":
                             lines = run_crypto(now, journal, crypto_feed_for(crypto_config, fetch, quote),
                                                config=crypto_config)
+                            from reporting.ccfd_lane import run_ccfd_lane
+                            lines += report_lane_lines("CCFD", lambda: run_ccfd_lane(
+                                now, feed=CcfdFeed(fetch, host_quote_observed(mt5)),
+                                archive_root=os.path.join(journal, "ticket_delivery", "archive")))
                         elif args.mode == "smoke":
                             lines = run_smoke(fetch, now, journal, crypto_config, quote)
                         elif args.mode == "fx":
@@ -843,6 +892,11 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                                     cycles=active_cycles(now, args.cycle), cycle_filter=args.cycle,
                                     ticket_source="LIVE", fx_data_source="MT5_VT_MARKETS_DEMO",
                                     policy_root=REPO_ROOT)
+                                from reporting.asw_lane import run_asw_lane
+                                canonical_lines += report_lane_lines("ASW", lambda: run_asw_lane(
+                                    now=now, day=now.date(), cycles=active_cycles(now, args.cycle),
+                                    candle_provider=provider,
+                                    archive_root=os.path.join(journal, "ticket_delivery", "archive")))
                                 summary_lines = process_due_session_summaries(
                                     now, journal=journal, sender=canonical_sender)
                                 lines = manual_lines + canonical_lines + summary_lines
@@ -853,10 +907,11 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                                     symbol_meta=lambda broker: live_symbol_meta(mt5, broker))
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
-                                             fx=False, window="WEEKEND")
+                                             fx=False, window="WEEKEND", quote=quote)
                             lines += lsmc_crypto_summary_lines(now, journal, LSMC_CRYPTO_WEEKEND)
                         else:
-                            lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote))
+                            lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
+                                             quote=quote)
                             if crypto_config["venue"]["kind"] == "MT5":       # crypto watched (lsmc_crypto_feed)
                                 lines += lsmc_crypto_summary_lines(now, journal, LSMC_CRYPTO_DAY)
                     finally:

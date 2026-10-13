@@ -602,8 +602,8 @@ def test_summary_result_captures_message_delivery_identity(
                          owner_chat_ids=frozenset({"123456789"})), transport=transport)
     if transport_result is not None:
         send.require_api_receipt = True
-    lines = cfd.process_due_session_summaries(dt.datetime(2026, 10, 7, 11, 40, tzinfo=UTC),
-                                              journal=journal, sender=send)
+    cfd.process_due_session_summaries(dt.datetime(2026, 10, 7, 11, 40, tzinfo=UTC),
+                                      journal=journal, sender=send)
     row = next(e for e in events(journal, dt.date(2026, 10, 7), "ASIAN_LONDON")
                if e["event_type"] == "SESSION_SUMMARY_DELIVERY" and e["stage"] == "RESULT")
     assert row["delivery_state"] == expected_state
@@ -794,7 +794,7 @@ def test_scheduled_fx_task_uses_canonical_once_and_preserves_other_modes():
     assert "run_fx(" in legacy
     # Crypto and Large-SMC scheduled modes are untouched by the canonical FX branch.
     assert runner.count("lines = run_crypto(now, journal, crypto_feed_for(crypto_config, fetch, quote),") == 1
-    assert runner.count("run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote))") == 1
+    assert runner.count("run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),\n") == 2
 
 
 def test_canonical_module_never_imports_a_broker_or_execution_surface():
