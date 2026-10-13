@@ -19,7 +19,7 @@ Tasks. All run the repo venv windowless: .venv\Scripts\pythonw.exe scripts\host\
                       checks its active window before MT5 attach. The runner acts only inside the active crypto ticket config
                       windows (V3: weekdays 09:00-12:00 America/New_York + Sat/Sun 21:00-23:00 UTC;
                       V2: weekdays only; V1: 06:30-06:45 UTC).
-  AG-V1-LSMC-Watch    every 15 min, daily (owner decision 2026-10-13). ST_LARGE_SMC_V1@1.1.0 watches the complete six-
+  AG-V1-LSMC-Watch    every 15 min, daily (owner-approved 2026-10-13). ST_LARGE_SMC_V1@1.1.0 watches the complete six-
                       instrument universe. FX evaluates to MARKET_CLOSED during its weekend;
                       BTCUSDT/ETHUSDT remain watched. Alerts are ARCHIVE_ONLY by default.
 

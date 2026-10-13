@@ -234,7 +234,7 @@ if drift:
 else:
     cog.outl("No registered-vs-target difference is stated by the declaration.")
 ]]] -->
-Source: [`scripts/host/install_tasks.ps1`](scripts/host/install_tasks.ps1), captured 2026-10-13. Live host state: scripts/host/heartbeat.py output (not yet published).
+Source: [`scripts/host/install_tasks.ps1`](scripts/host/install_tasks.ps1), captured 2026-10-08. Live host state: scripts/host/heartbeat.py output (not yet published).
 
 The four layers below are deliberately kept apart: a repository declaration is not a registration, a registration is not an observed run, and a target is not a fact.
 
@@ -318,7 +318,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `6ab653fe8bb62978d6fbe9f370f376c2de057be6a932150a5f83d4add24fecf8`.
+inputs_sha256: `f0dd1fac2e29e6d1a8e08bda983919302ed50627c036361f359977fa3af556be`.
 <!-- [[[end]]] -->
 
 ### Objective
