@@ -58,11 +58,11 @@ def test_tracked_policy_enables_report_scopes_and_local_override_only_narrows(tm
     assert "REPORT_CANDIDATE" not in narrowed["effective"] and narrowed["error"] is None
 
 
-@pytest.mark.parametrize("cls,needle", [("CANDIDATE", "ENTRY 150.100"), ("BLOCKED", "blocked: C10_PIP_SIZE"),
+@pytest.mark.parametrize("cls,needle", [("CANDIDATE", "entry: 150.100  stop: 149.900"), ("BLOCKED", "blocked: C10_PIP_SIZE"),
                                         ("WATCH", "state: REPORT_ONLY_OBSERVATION")])
 def test_render_report_is_ascii_and_report_only(cls, needle):
     text = render_report(obs(cls))
-    assert text.isascii() and text.startswith("REPORT ONLY - NOT AN ORDER") and needle in text
+    assert text.isascii() and "REPORT ONLY -- NOT A BROKER ORDER" in text.splitlines()[0] and needle in text
     assert text.endswith("EXECUTION: DISABLED")
     with pytest.raises(ValueError):
         render_report(obs(cls, scope_route="DEMO_ORDER"))
@@ -120,3 +120,17 @@ def test_daily_report_summary_counts_distinct_and_flags_no_opportunity(tmp_path)
         "DAILY_REPORT_SUMMARY 2026-10-13 DAILY_REPORT status=COMPLETE delivery=sent"]
     assert cfd.process_due_daily_report_summaries(due, journal=str(tmp_path), sender=s) == []    # once
     assert "crypto_cfd: NO OPPORTUNITY" in calls[-1].replace("- ", "") and calls[-1].isascii()
+
+
+def test_candidate_layout_matches_owner_example():
+    c = obs("CANDIDATE", risk={"risk_distance": 0.2, "initial_R_tp1": 2.5, "initial_R_tp2": None},
+            expires_at="2026-10-13T08:15:00+00:00", created_at="2026-10-13T08:00:00+00:00",
+            venue="MT5_VT_MARKETS_DEMO", trigger={"trigger_bar_close_utc": "2026-10-13T07:45:00+00:00"})
+    lines = render_report(c).splitlines()
+    assert lines[:3] == ["INFORMATIONAL REPORT -- REPORT ONLY -- NOT A BROKER ORDER", "USDJPY LONG (ASIAN_LONDON)",
+                         "ST_ASIAN_SWEEP_5R_V1 v1.1.2  report=CANDIDATE  scope=UNVERIFIED (LOGIC_NOT_VERIFIED)"]
+    assert "signal close: 14:15 MMT / 07:45 UTC (2026-10-13)" in lines
+    assert "entry: 150.100  stop: 149.900  risk: 20.0 pips" in lines
+    assert "target leg 1 (OPPOSITE_SESSION_BOUNDARY, 75%): 150.600  = +2.50R" in lines
+    assert "VALID UNTIL 14:45 MMT / 08:15 UTC (2026-10-13) -- STALE after; re-check before acting." in lines
+    assert lines[-1] == "REPORT ONLY - NOT AN ORDER | EXECUTION: DISABLED" and "decision=READY" not in "\n".join(lines)
