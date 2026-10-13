@@ -130,7 +130,7 @@ def test_watch_once_forwards_tick_to_snapshot_and_lane(monkeypatch, tmp_path):
         return []
 
     monkeypatch.setattr(lcs, "evaluate_snapshot", fake_eval)
-    monkeypatch.setattr("reporting.lsmc_lane.observe_events", fake_observe)
+    monkeypatch.setattr("reporting.lsmc_version.observe_selected", fake_observe)
     monkeypatch.setattr(lcs, "classify", lambda *a: "OK")
     quote = lambda b: (1.1600, 1.1601, NOW - dt.timedelta(minutes=1))  # noqa: E731
     lcs._watch_once(Tracker(), "EURUSD", {"D1": [], "H1": [], "M5": _m5()}, NOW, False, journal=str(tmp_path),
@@ -401,3 +401,29 @@ def test_usdjpy_converts_from_the_live_mid_already_read():
 def test_usdjpy_without_a_usable_mid_is_n_a(kw, reason):
     p = sizing_preview(_host_cand("USDJPY", 150.000, 149.800, **kw), OWNER)
     assert p["lot"] is None and p["lot_reason"] == reason
+
+
+@pytest.mark.parametrize('content', [None, "strategy_version: 'unknown'"])
+def test_watch_once_invalid_version_is_blocked_without_events(monkeypatch, tmp_path, content):
+    import json
+    from types import SimpleNamespace
+
+    import live_candles_smoke as lcs
+
+    from reporting import lsmc_version
+    config=tmp_path/'config/lsmc_report_lane.yaml'
+    config.parent.mkdir()
+    if content is not None:
+        config.write_text(content)
+    monkeypatch.setattr(lsmc_version,'ROOT',tmp_path)
+    monkeypatch.setattr(lcs,'evaluate_snapshot',lambda *a,**kw:SimpleNamespace(state='DATA_ERROR',reason_codes=()))
+    monkeypatch.setattr(lcs,'classify',lambda *a:'OK')
+    tracker=SimpleNamespace(poll=lambda snap:[])
+    lines=lcs._watch_once(tracker,'EURUSD',{'D1':[],'H1':[],'M5':[]},NOW,False,journal=str(tmp_path))
+    assert any('BLOCKED' in line for line in lines)
+    archive=next((tmp_path/'ticket_delivery/archive/report_lane').glob('*_large_smc.jsonl'))
+    record=json.loads(archive.read_text().splitlines()[0])
+    assert record['report_class']=='BLOCKED'
+    assert record['reason_code']=='LSMC_REPORT_VERSION_NOT_EVIDENCED'
+    assert record['strategy_version']=='UNKNOWN'
+    assert record['verification_status']=='NOT_VERIFIED'

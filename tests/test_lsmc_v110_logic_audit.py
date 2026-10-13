@@ -363,7 +363,7 @@ def test_candidate_1_1_2_carries_exactly_the_rule_change_diff_it_declares():
     assert cand["verdict"] == PASS, cand["verdict_reasons"]
     assert all(cand["checks"].values()), sorted(k for k, v in cand["checks"].items() if not v)
     assert cand["candidate_contract"] == "strategies/ST_LARGE_SMC_V1_1_1_2.yaml"
-    assert cand["candidate_contract_sha256"] == A.sha256(ROOT / cand["candidate_contract"])
+    assert cand["candidate_contract_sha256"] == A.sha256(A.CANDIDATE_1_1_2_PATH)
     # The candidate chain is bound byte-for-byte: 1.1.2 -> committed 1.1.1 -> frozen 1.1.0.
     assert cand["based_on_candidate_sha256"] == A.sha256(A.CANDIDATE_1_1_1_PATH)
     assert A.sha256(G.CONTRACT_PATH) == FROZEN_CONTRACT_SHA256
@@ -450,6 +450,10 @@ def test_report_doc_cites_the_hashes_of_the_files_it_cites():
         else:
             assert re.fullmatch(r"[0-9a-f]{64}", cited), f"{path}: cited sha is not a full 64-hex digest"
             target = ROOT / path
+            if path == "strategies/ST_LARGE_SMC_V1_1_1_2.yaml":
+                # The dated C15 document cites the pre-D2 bytes. Re-hash the preserved snapshot;
+                # current C21 rule-diff tests independently bind the new candidate bytes.
+                target = A.CANDIDATE_1_1_2_PATH
             if target.is_file():
                 assert A.sha256(target) == cited, f"stale sha256 cited for {path}"
             else:                                  # the engine composite is a directory

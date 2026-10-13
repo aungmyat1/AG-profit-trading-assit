@@ -1,17 +1,11 @@
-# ST_LARGE_SMC_V1 version 1.1.2 -- non-authoritative candidate specification.
-# Based on the committed 1.1.1 candidate bytes (SHA-256 52203c8bfd463f37f7591e7127e982101259c4670dd7af155347434fbb143fdb), which are themselves based on
-# committed 1.1.0 bytes (SHA-256 15e13a628752eabb01b8072973bede4974feec918a0def71755ce76570591ebd).
-# Created by AGP-C17-LSMC-LOGIC-COMPLETION-R1 to carry ONE rule-change diff (D-LSMC-6, the POI-age
-# unit) plus the byte-level duplicate-key fix; see candidate_rule_changes below. Nothing here is
-# wired into the watch/runtime engine, and no 1.1.0 byte was edited.
 strategy_id: ST_LARGE_SMC_V1
-version: "1.1.2"
+version: 1.1.2
 status: CANDIDATE_PENDING_OWNER_CONFIRM
-candidate_created_local_date: "2026-10-13"
+candidate_created_local_date: '2026-10-13'
 based_on: strategies/ST_LARGE_SMC_V1_1_1_1.yaml
 based_on_sha256: 52203c8bfd463f37f7591e7127e982101259c4670dd7af155347434fbb143fdb
-supersedes: null                     # candidate does not replace 1.1.0 until separately approved
-implementation: SPEC_ONLY_NOT_WIRED
+supersedes: null
+implementation: APPEND_ONLY_REPORT_ONLY_ENGINE
 registered: false
 active: false
 proposal_generation_authorized: false
@@ -19,47 +13,42 @@ demo_authorized: false
 live_authorized: false
 economic_status: NOT_EVALUATED
 owner_confirmation: PENDING_OWNER_CONFIRM
-parameter_provenance: "assistant-recommended under owner delegation, PENDING_OWNER_CONFIRM, 2026-10-08"
+parameter_provenance: assistant-recommended under owner delegation, PENDING_OWNER_CONFIRM,
+  2026-10-08
 candidate_provenance:
   source_main_commit: 7060e33b0a62f39b9faf7d506b32801b6463a64c
-  broker_symbol_aliases: "ported from uncommitted 1.1.0 worktree diff 3673bad3"
-  host_captured_metadata_status: "ported from uncommitted 1.1.0 worktree diff 3673bad3"
+  broker_symbol_aliases: ported from uncommitted 1.1.0 worktree diff 3673bad3
+  host_captured_metadata_status: ported from uncommitted 1.1.0 worktree diff 3673bad3
   host_metadata_file_set: config/symbol_metadata/host_captured
   rule_change_mission: AGP-C17-LSMC-LOGIC-COMPLETION-R1
   rule_change_evidence:
-    - docs/status/AGP_C15_LSMC_V110_LOGIC_AUDIT_2026-10-13.md
-    - artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c15_lsmc_audit_2026-10-13/lsmc_v110_logic_audit.json
-
-instruments: [EURUSD, GBPUSD, USDJPY, XAUUSD, BTCUSDT, ETHUSDT]
-# Broker-symbol -> canonical strategy-symbol aliases, ported as documented above.
-broker_symbol_aliases: {BTCUSD: BTCUSDT, ETHUSD: ETHUSDT}
+  - docs/status/AGP_C15_LSMC_V110_LOGIC_AUDIT_2026-10-13.md
+  - artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c15_lsmc_audit_2026-10-13/lsmc_v110_logic_audit.json
+instruments:
+- EURUSD
+- GBPUSD
+- USDJPY
+- XAUUSD
+- BTCUSDT
+- ETHUSDT
+broker_symbol_aliases:
+  BTCUSD: BTCUSDT
+  ETHUSD: ETHUSDT
 pip_size_rules:
-  status: PENDING_OWNER_CONFIRM
-  provenance: "assistant-recommended under owner delegation, PENDING_OWNER_CONFIRM, 2026-10-08"
-  proposals:
-    FX_5_OR_3_DIGIT:
-      symbols: [EURUSD, GBPUSD, USDJPY]
-      proposed_formula: "pip_size = 10 * host_captured_point"
-      status: PENDING_OWNER_CONFIRM
-      apply_formula_before_owner_confirmation: false
-    XAUUSD:
-      proposed_pip_size: 0.1
-      status: PENDING_OWNER_CONFIRM
-      apply_before_owner_confirmation: false
-    BTCUSD:
-      proposed_price_unit: 1.0
-      status: PENDING_OWNER_CONFIRM
-      apply_before_owner_confirmation: false
-    ETHUSD:
-      proposed_price_unit: 0.1
-      status: PENDING_OWNER_CONFIRM
-      apply_before_owner_confirmation: false
-
-timeframes:                            # 1.1.1 declared this key twice; PyYAML kept the last one
+  status: OWNER_CONFIRMED_OD1014_FAST_D2
+  formula: pip_size = 10 * host_captured_point
+  symbols:
+  - EURUSD
+  - GBPUSD
+  - USDJPY
+  - XAUUSD
+  - BTCUSD
+  - ETHUSD
+  provenance: Owner convention OD1014-FAST D2 amended 2026-10-14; host-evidenced point
+timeframes:
   D1: TRADING_DAY_CONTEXT
   H1: BIAS_AND_POI
   M5: SWEEP_CHOCH_TRIGGER
-
 rules:
   swings:
     model: SW-A_STRICT_FRACTAL
@@ -68,23 +57,19 @@ rules:
     k: 2
     smartmoneyconcepts_signal_authority: false
   poi:
-    models: [AG_ORDER_BLOCK_V1, FVG]
+    models:
+    - AG_ORDER_BLOCK_V1
+    - FVG
     timeframe: H1
-    max_age_trading_days: 5            # unchanged number: only the unit is pinned below (D-LSMC-6)
+    max_age_trading_days: 5
     max_age_unit: DISTINCT_NY1700_TRADING_DATES
-    max_age_unit_status: PENDING_OWNER_CONFIRM
+    max_age_unit_status: OWNER_CONFIRMED_C21_R2
     expiry_instant: START_OF_THE_TRADING_DATE_AFTER_THE_LAST_VALID_TRADING_DATE
     expiry_session_basis: config/canonical_sessions.yaml new-york 17:00 local (watch.trading_date)
     weekend_and_holiday_dates_excluded: true
-    implementation_requirement: >-
-      count distinct NY-17:00 trading dates from the POI origin bar time to the snapshot time and
-      expire at the start of the trading date after the fifth distinct one. This is the semantics of
-      the dead helper large_smc_watch.watch._poi_age_days; the frozen 1.1.0 engine instead counts
-      calendar NY-17:00 boundaries (watch.evaluate_snapshot -> watch._expiry), which also counts
-      Saturday and Sunday and therefore expires every FX POI earlier than this rule declares
-      (measured: 600 of 723 committed EURUSD H1 POI origins, always in the early direction).
-      Activating this candidate requires either wiring _poi_age_days into the expiry path or an
-      owner-confirmed restatement of the declared unit to calendar boundaries.
+    implementation_requirement: Use _poi_age_days over observed closed H1 NY-17 trading
+      dates; expire when age exceeds max_age_trading_days. Preserve seven-day crypto
+      expiry.
   sweep:
     model: A
     source: fx_discovery.features.sweeps
@@ -103,32 +88,24 @@ rules:
     mode: BY_REFERENCE
     price: CHOCH_BAR_CLOSE
     order: NEVER_CREATED_BY_THIS_CONTRACT
-
   stop:
     id: C10
     status: CANDIDATE_RULE_RETAINED_WITH_CONFIGURED_UNITS
     implementation_reference: large_smc_core.c10_stop_policy.compute_c10_stop
     structural_anchor: opportunity.sweep_extreme
     pip_size:
-      source_id: candidate.pip_size_rules
-      lookup: canonical_symbol_to_owner_confirmed_pip_size
-      runtime_value_source: owner_confirmed_pip_size_only
-      point_evidence_path: config/symbol_metadata/host_captured/<broker_symbol>.json
-      point_capture_status: HOST_CAPTURED_FOR_ALL_SIX_STRATEGY_SYMBOLS_ON_MAIN
-      no_point_or_digits_conversion_before_owner_confirmation: true
-      no_asset_class_or_broker_convention_fallback: true
-      no_c10_eurusd_default_fallback: true
-      no_host_capture_point_substitution_for_pip_size: true
-      missing_point_capture_result: C10_PIP_SIZE_NOT_EVIDENCED
-      captured_point_with_pending_pip_rule_result: PIP_SIZE_UNCONFIRMED
-      missing_or_invalid_pip_size_result: PIP_SIZE_UNCONFIRMED
-      owner_confirmation: PENDING_OWNER_CONFIRM
-      parameter_provenance: "assistant-recommended under owner delegation, PENDING_OWNER_CONFIRM, 2026-10-08"
+      runtime_value_source: 10 * fields.point
+      point_evidence_path: config/symbol_metadata/host_captured/<SYMBOL>.json
+      schema: AG_HOST_SYMBOL_METADATA_V2
+      server: VTMarkets-Demo
+      symbol_map: config/broker_symbol_map/vt_markets_demo.yaml
+      on_missing_or_invalid: C10_PIP_SIZE_NOT_EVIDENCED
+      pip_source: 10*point host_captured <captured_at_utc>
+      owner_confirmation: OD1014-FAST D2 amended 2026-10-14
     point_size:
-      use_in_c10_formula: false
-      may_be_used_as_pip_size: false
-      proposed_conversion_rules: PENDING_OWNER_CONFIRM
-      runtime_conversion_before_owner_confirmation: PROHIBITED
+      use_in_c10_formula: true
+      conversion: 10 * fields.point
+      owner_confirmation: OD1014-FAST D2 amended 2026-10-14
     buffer:
       formula: max(1.5 * pip_size, 0.35 * ATR14_M5)
       atr_timeframe: M5
@@ -156,7 +133,6 @@ rules:
       invalid_direction: INVALID_DIRECTION
       invalid_atr: INVALID_ATR
       min_stop_distance_without_entry: MISSING_ENTRY_FOR_MIN_STOP_CHECK
-
   targets:
     id: C11
     selection_mode: STATIC_AT_OPPORTUNITY_EVALUATION
@@ -200,22 +176,20 @@ rules:
       no_ticket_value: NO_TICKET
     retarget_after_selection: false
     synthetic_fixed_r_target: PROHIBITED
-
   reward_risk:
     formula: abs(target_price - entry_price) / abs(entry_price - stop_price)
     minimum_rr_source: rules.reward_risk.minimum_rr
     minimum_rr: 2.0
-    minimum_rr_status: PENDING_OWNER_CONFIRM
-    owner_confirmation: PENDING_OWNER_CONFIRM
-    minimum_rr_provenance: "assistant-recommended under owner delegation, PENDING_OWNER_CONFIRM, 2026-10-08"
+    minimum_rr_status: CONFIRMED
+    owner_confirmation: OD1014-FAST D6, 2026-10-14
+    minimum_rr_provenance: Owner confirmed OD1014-FAST D6, 2026-10-14
     acceptance: computed_rr_must_be_greater_than_or_equal_to_minimum_rr
     below_minimum: FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM
     missing_minimum: FAIL_CLOSED_RR_MINIMUM_UNCONFIRMED
     missing_target_or_stop_or_zero_risk: FAIL_CLOSED_RR_UNDEFINED
     threshold_value_inferred: false
-
   day_boundary:
-    time: "17:00"
+    time: '17:00'
     timezone: America/New_York
     dst: IANA
   opportunity_expiry: SESSION_END
@@ -229,7 +203,6 @@ rules:
   POI_age:
     unit: distinct_NY_17_00_trading_dates
     maximum: 5
-
 alerts:
   delivery_mode: ARCHIVE_ONLY
   mapping:
@@ -238,151 +211,242 @@ alerts:
     OPPORTUNITY: OPPORTUNITY
     INVALIDATED: INFO
     EXPIRED: INFO
-
 candidate_gates:
   all_fixture_rows: PENDING_OWNER_CONFIRM
   missing_point_capture_gate: C10_PIP_SIZE_NOT_EVIDENCED
-  captured_point_with_pending_pip_rule_gate: PIP_SIZE_UNCONFIRMED
-  missing_pip_size_gate: PIP_SIZE_UNCONFIRMED
+  captured_point_with_pending_pip_rule_gate: OWNER_CONFIRMED_OD1014_FAST_D2
+  missing_pip_size_gate: C10_PIP_SIZE_NOT_EVIDENCED
   missing_rr_minimum_gate: FAIL_CLOSED_RR_MINIMUM_UNCONFIRMED
   c11_tie_gate: FAIL_CLOSED_AMBIGUOUS_TARGET
   no_target_gate: FAIL_CLOSED_TARGET_UNAVAILABLE
-  runtime_activation: PROHIBITED_UNTIL_SEPARATE_OWNER_APPROVAL
+  runtime_activation: REPORT_ONLY_NOT_VERIFIED_OWNER_MISSION_C21_R2
   orders_or_execution: OUT_OF_SCOPE_AND_UNCHANGED
-
 candidate_rule_changes:
-  mission: AGP-C17-LSMC-LOGIC-COMPLETION-R1
-  diff_scope: "strategies/ST_LARGE_SMC_V1_1_1_1.yaml -> this file (1.1.1 -> 1.1.2)"
+  mission: AGP-C21-LSMC-V112-ENGINE-R2 (extends C17 declared diff)
+  diff_scope: strategies/ST_LARGE_SMC_V1_1_1_1.yaml -> this file (1.1.1 -> 1.1.2)
   frozen_versions_untouched:
-    - path: strategies/ST_LARGE_SMC_V1_1_1_0.yaml
-      sha256: 78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4
-      note: "frozen v1.1.0 bytes and its historical verdict are preserved; C001-PRE-RESULT-CORCTION"
-    - path: src/large_smc_watch
-      note: "no engine byte was edited by this mission"
+  - path: strategies/ST_LARGE_SMC_V1_1_1_0.yaml
+    sha256: 78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4
+    note: frozen v1.1.0 bytes and its historical verdict are preserved; C001-PRE-RESULT-CORCTION
+  - path: src/large_smc_watch
+    note: no engine byte was edited by this mission
   changes:
-    - id: C17-D-LSMC-6
-      defect: D-LSMC-6
-      defect_class: IMPLEMENTATION_AGAINST_A_DECLARED_CONTRACT_RULE
-      gate: L2.expiry_session_end
-      rule_in_1_1_0_and_1_1_1: "poi.max_age_trading_days: 5 (unit never defined; the frozen engine counts calendar NY-17:00 boundaries)"
-      rule_in_1_1_2: "poi.max_age_trading_days: 5 with max_age_unit DISTINCT_NY1700_TRADING_DATES and an explicit implementation requirement"
-      number_changed: false
-      unit_changed: true
-      evidence:
-        - "artifacts/.../lsmc_v110_logic_audit.json properties.poi_age_semantics"
-        - "EURUSD committed H1 export: 723 POI origins, 600 divergent, 1080 trading dates expired early"
-        - "synthetic FX calendar (4 weeks, 481 instants): 358 divergent, 646 early, direction always ENGINE_EXPIRES_EARLIER"
-        - "BTCUSD recorded 60d: 0 divergent (crypto trades every calendar date on this venue)"
-        - "dead helper large_smc_watch.watch._poi_age_days implements the declared unit and has 0 callers"
-      expected_effect: "FX POIs live longer than under 1.1.0 (later expiry), so more NEAR_POI/OPPORTUNITY windows survive the weekend; no crypto change"
-      owner_decision_required: PENDING_OWNER_CONFIRM
-      activation_blocked_until: "owner confirms the unit AND an engine change is authorized as a new registered version"
-      verification_required_before_activation:
-        - "a fresh L1-L6 replay of the changed candidate on real FX H1 (1.1.0 evidence may not be reused)"
-        - "the D-LSMC-6 property check re-run and turned PASS by the corrected implementation"
-    - id: C17-SPEC-HYGIENE
-      defect: null
-      defect_class: SPECIFICATION_HYGIENE
-      change: "removed the duplicated top-level `timeframes:` key declared twice in 1.1.1"
-      byte_level_only: true
-      parsed_structure_changed: false
-      reason: "PyYAML silently keeps the last duplicate key; a duplicate mapping key is not a valid spec artifact"
-    - id: C17-D-LSMC-1-NOT-A-RULE-CHANGE
-      defect: D-LSMC-1
-      defect_class: METADATA_MISSING_OWNER_CONFIRMED_BROKER_PIP_EVIDENCE
-      change: none
-      reason: >-
-        D-LSMC-1 is not a rule defect: pip_size_rules already proposes FX 10 x host-captured point,
-        XAUUSD 0.1, BTCUSD 1.0 and ETHUSD 0.1, all PENDING_OWNER_CONFIRM with
-        apply_before_owner_confirmation false. Inventing a pip size to make C10 evaluable would be
-        fabricating broker metadata, which the fail-closed gate exists to prevent. The route is owner
-        confirmation of pip_size_rules (and host capture for the four symbols without it), not a new
-        rule; this candidate therefore changes nothing for D-LSMC-1.
-  # Machine-checked: scripts/lsmc_v110_logic_audit.py::candidate_rule_change_diff recomputes
-  # this list from the two parsed contracts and fails on any undeclared rule drift.
+  - id: C17-D-LSMC-6
+    defect: D-LSMC-6
+    defect_class: IMPLEMENTATION_AGAINST_A_DECLARED_CONTRACT_RULE
+    gate: L2.expiry_session_end
+    rule_in_1_1_0_and_1_1_1: 'poi.max_age_trading_days: 5 (unit never defined; the
+      frozen engine counts calendar NY-17:00 boundaries)'
+    rule_in_1_1_2: 'poi.max_age_trading_days: 5 with max_age_unit DISTINCT_NY1700_TRADING_DATES
+      and an explicit implementation requirement'
+    number_changed: false
+    unit_changed: true
+    evidence:
+    - artifacts/.../lsmc_v110_logic_audit.json properties.poi_age_semantics
+    - 'EURUSD committed H1 export: 723 POI origins, 600 divergent, 1080 trading dates
+      expired early'
+    - 'synthetic FX calendar (4 weeks, 481 instants): 358 divergent, 646 early, direction
+      always ENGINE_EXPIRES_EARLIER'
+    - 'BTCUSD recorded 60d: 0 divergent (crypto trades every calendar date on this
+      venue)'
+    - dead helper large_smc_watch.watch._poi_age_days implements the declared unit
+      and has 0 callers
+    expected_effect: FX POIs live longer than under 1.1.0 (later expiry), so more
+      NEAR_POI/OPPORTUNITY windows survive the weekend; no crypto change
+    owner_decision_required: PENDING_OWNER_CONFIRM
+    activation_blocked_until: owner confirms the unit AND an engine change is authorized
+      as a new registered version
+    verification_required_before_activation:
+    - a fresh L1-L6 replay of the changed candidate on real FX H1 (1.1.0 evidence
+      may not be reused)
+    - the D-LSMC-6 property check re-run and turned PASS by the corrected implementation
+  - id: C17-SPEC-HYGIENE
+    defect: null
+    defect_class: SPECIFICATION_HYGIENE
+    change: removed the duplicated top-level `timeframes:` key declared twice in 1.1.1
+    byte_level_only: true
+    parsed_structure_changed: false
+    reason: PyYAML silently keeps the last duplicate key; a duplicate mapping key
+      is not a valid spec artifact
+  - id: C17-D-LSMC-1-NOT-A-RULE-CHANGE
+    defect: D-LSMC-1
+    defect_class: METADATA_MISSING_OWNER_CONFIRMED_BROKER_PIP_EVIDENCE
+    change: 'OD1014-FAST D2 amended: pip = 10 * fields.point for all six host-captured
+      VT symbols'
+    reason: OD1014-FAST D2 amended 2026-10-14 confirms 10 * fields.point for all six
+      validated VT host records, replacing the historical pending proposals. No literal
+      pip or asset-class fallback is invented; missing or invalid evidence remains
+      C10_PIP_SIZE_NOT_EVIDENCED.
   declared_diff_paths:
-    - "based_on"
-    - "based_on_sha256"
-    - "candidate_created_local_date"
-    - "candidate_provenance.rule_change_evidence"
-    - "candidate_provenance.rule_change_mission"
-    - "candidate_rule_changes"
-    - "implementation_choices_flagged"
-    - "not_specified"
-    - "rules.poi.expiry_instant"
-    - "rules.poi.expiry_session_basis"
-    - "rules.poi.implementation_requirement"
-    - "rules.poi.max_age_unit"
-    - "rules.poi.max_age_unit_status"
-    - "rules.poi.weekend_and_holiday_dates_excluded"
-    - "version"
-
+  - based_on
+  - based_on_sha256
+  - candidate_created_local_date
+  - candidate_gates.captured_point_with_pending_pip_rule_gate
+  - candidate_gates.missing_pip_size_gate
+  - candidate_gates.runtime_activation
+  - candidate_provenance.rule_change_evidence
+  - candidate_provenance.rule_change_mission
+  - candidate_rule_changes
+  - implementation
+  - implementation_choices_flagged
+  - not_specified
+  - pip_size_rules.formula
+  - pip_size_rules.proposals
+  - pip_size_rules.provenance
+  - pip_size_rules.status
+  - pip_size_rules.symbols
+  - rules.poi.expiry_instant
+  - rules.poi.expiry_session_basis
+  - rules.poi.implementation_requirement
+  - rules.poi.max_age_unit
+  - rules.poi.max_age_unit_status
+  - rules.poi.weekend_and_holiday_dates_excluded
+  - rules.reward_risk.minimum_rr_provenance
+  - rules.reward_risk.minimum_rr_status
+  - rules.reward_risk.owner_confirmation
+  - rules.stop.pip_size.captured_point_with_pending_pip_rule_result
+  - rules.stop.pip_size.lookup
+  - rules.stop.pip_size.missing_or_invalid_pip_size_result
+  - rules.stop.pip_size.missing_point_capture_result
+  - rules.stop.pip_size.no_asset_class_or_broker_convention_fallback
+  - rules.stop.pip_size.no_c10_eurusd_default_fallback
+  - rules.stop.pip_size.no_host_capture_point_substitution_for_pip_size
+  - rules.stop.pip_size.no_point_or_digits_conversion_before_owner_confirmation
+  - rules.stop.pip_size.on_missing_or_invalid
+  - rules.stop.pip_size.owner_confirmation
+  - rules.stop.pip_size.parameter_provenance
+  - rules.stop.pip_size.pip_source
+  - rules.stop.pip_size.point_capture_status
+  - rules.stop.pip_size.point_evidence_path
+  - rules.stop.pip_size.runtime_value_source
+  - rules.stop.pip_size.schema
+  - rules.stop.pip_size.server
+  - rules.stop.pip_size.source_id
+  - rules.stop.pip_size.symbol_map
+  - rules.stop.point_size.conversion
+  - rules.stop.point_size.may_be_used_as_pip_size
+  - rules.stop.point_size.owner_confirmation
+  - rules.stop.point_size.proposed_conversion_rules
+  - rules.stop.point_size.runtime_conversion_before_owner_confirmation
+  - rules.stop.point_size.use_in_c10_formula
+  - runtime_symbols
+  - symbol_metadata.BTCUSD.pip_size_rule_ref
+  - symbol_metadata.BTCUSD.pip_size_source
+  - symbol_metadata.BTCUSD.pip_size_status
+  - symbol_metadata.BTCUSDT.pip_size_rule_ref
+  - symbol_metadata.BTCUSDT.pip_size_source
+  - symbol_metadata.BTCUSDT.pip_size_status
+  - symbol_metadata.ETHUSD.pip_size_rule_ref
+  - symbol_metadata.ETHUSD.pip_size_source
+  - symbol_metadata.ETHUSD.pip_size_status
+  - symbol_metadata.ETHUSDT.pip_size_rule_ref
+  - symbol_metadata.ETHUSDT.pip_size_source
+  - symbol_metadata.ETHUSDT.pip_size_status
+  - symbol_metadata.EURUSD.pip_size_rule_ref
+  - symbol_metadata.EURUSD.pip_size_source
+  - symbol_metadata.EURUSD.pip_size_status
+  - symbol_metadata.GBPUSD.pip_size_rule_ref
+  - symbol_metadata.GBPUSD.pip_size_source
+  - symbol_metadata.GBPUSD.pip_size_status
+  - symbol_metadata.USDJPY.pip_size_rule_ref
+  - symbol_metadata.USDJPY.pip_size_source
+  - symbol_metadata.USDJPY.pip_size_status
+  - symbol_metadata.XAUUSD.pip_size_rule_ref
+  - symbol_metadata.XAUUSD.pip_size_source
+  - symbol_metadata.XAUUSD.pip_size_status
+  - version
 implementation_choices_flagged:
-  - "SW-A fractal width k=2 is reused from the 1.1.0 contract (fx_discovery.features.SWING_K)."
-  - "H1 bias remains the direction of the latest close-confirmed H1 break; D1 break direction remains context only."
-  - "OB origin search remains the last opposing candle within 3 bars before displacement; FLIP_OB remains unidentified."
-  - "smartmoneyconcepts OB candidates remain unused; AG_ORDER_BLOCK_V1 is applied over causal fx_discovery primitives and the frozen zone classifier."
-  - "C10 retains the current 1.1.0 formula, requires host-captured point provenance, and passes only an independently owner-confirmed pip_size; a missing capture returns C10_PIP_SIZE_NOT_EVIDENCED and a present capture with a pending pip rule returns PIP_SIZE_UNCONFIRMED."
-  - "C11 accepts only the existing core model's PRIMARY_EXTERNAL_LIQUIDITY result; its legacy M5 fallback is ignored, then the nearest confirmed opposing H1 SW-A swing is used."
-  - "A tie between equally near H1 fallback swings fails closed; the owner has not confirmed a tie-break."
-  - "The current 1.1.0 watch does not call the core primary target model; this candidate spec is not runtime-wired."
-  - "The 1.1.0 contract/spec had no RR minimum; this candidate declares minimum_rr=2.0 as PENDING_OWNER_CONFIRM and fails closed below it."
-  - "1.1.2 pins the POI-age unit to distinct NY-17:00 trading dates (D-LSMC-6); the frozen 1.1.0 engine still counts calendar boundaries and this candidate is not wired, so nothing changes at runtime until an owner-approved version is cut."
-  - "Stale = no closed M5 bar for more than 15 minutes; FX market closed Friday 17:00 through Sunday 17:00 New York."
-  - "FX expiry uses config/canonical_sessions.yaml; BTC/ETH expiry uses the active crypto ticket-window config and next configured window end when outside a window."
-
+- SW-A fractal width k=2 is reused from the 1.1.0 contract (fx_discovery.features.SWING_K).
+- H1 bias remains the direction of the latest close-confirmed H1 break; D1 break direction
+  remains context only.
+- OB origin search remains the last opposing candle within 3 bars before displacement;
+  FLIP_OB remains unidentified.
+- smartmoneyconcepts OB candidates remain unused; AG_ORDER_BLOCK_V1 is applied over
+  causal fx_discovery primitives and the frozen zone classifier.
+- C10 retains the current 1.1.0 formula, requires host-captured point provenance,
+  and passes only an independently owner-confirmed pip_size; a missing capture returns
+  C10_PIP_SIZE_NOT_EVIDENCED and a malformed or mismatched capture returns C10_PIP_SIZE_NOT_EVIDENCED.
+- C11 accepts only the existing core model's PRIMARY_EXTERNAL_LIQUIDITY result; its
+  legacy M5 fallback is ignored, then the nearest confirmed opposing H1 SW-A swing
+  is used.
+- A tie between equally near H1 fallback swings fails closed; the owner has not confirmed
+  a tie-break.
+- The current 1.1.0 watch does not call the core primary target model; this candidate
+  is wired only to the REPORT_ONLY engine.
+- The 1.1.0 contract/spec had no RR minimum; this candidate declares minimum_rr=2.0
+  as CONFIRMED by OD1014-FAST D6 (2026-10-14) and fails closed below it.
+- 1.1.2 pins the POI-age unit to distinct NY-17:00 trading dates (D-LSMC-6); the frozen
+  1.1.0 engine still counts calendar boundaries and this candidate is wired only to
+  the optional REPORT_ONLY engine path, stamped NOT_VERIFIED.
+- Stale = no closed M5 bar for more than 15 minutes; FX market closed Friday 17:00
+  through Sunday 17:00 New York.
+- FX expiry uses config/canonical_sessions.yaml; BTC/ETH expiry uses the active crypto
+  ticket-window config and next configured window end when outside a window.
 not_specified:
-  - "1.1.2 specifies no holiday calendar: the trading-date count excludes weekend dates only, which is what watch.trading_date derives from config/canonical_sessions.yaml. Broker holiday calendars remain unspecified."
-  - "Host-captured points are available from main for all six candidate instruments (BTCUSDT/ETHUSDT through BTCUSD/ETHUSD aliases), but the proposed pip rules remain PENDING_OWNER_CONFIRM and are not applied to pip_size."
-  - "The candidate RR minimum of 2.0 is PENDING_OWNER_CONFIRM; it is not represented as a confirmed 1.1.0 rule."
-  - "The H1 fallback sweep-state filter and equal-distance tie-break have no owner-signed value; the candidate specifies no sweep filter and fails closed on a tie."
-  - "Every other D-item of the unpushed RMR-A catalogue remains outside this candidate."
-
+- '1.1.2 specifies no holiday calendar: the trading-date count excludes weekend dates
+  only, which is what watch.trading_date derives from config/canonical_sessions.yaml.
+  Broker holiday calendars remain unspecified.'
+- OD1014-FAST D2 amended 2026-10-14 confirms C10 pip = 10 * fields.point from validated
+  host-captured records for all six VT symbols; missing or invalid evidence remains
+  fail closed.
+- OD1014-FAST D6, 2026-10-14 confirms the candidate RR minimum of 2.0. This candidate
+  confirmation does not amend the frozen 1.1.0 contract or promote verification/authorization.
+- The H1 fallback sweep-state filter and equal-distance tie-break have no owner-signed
+  value; the candidate specifies no sweep filter and fails closed on a tie.
+- Every other D-item of the unpushed RMR-A catalogue remains outside this candidate.
 symbol_metadata:
   EURUSD:
-    point: 0.00001
+    point: 1.0e-05
     point_source: config/symbol_metadata/host_captured/EURUSD.json
     point_status: HOST_CAPTURED
     status: HOST_CAPTURED
     broker_symbol: EURUSD-VIP
-    captured_at_utc: "2026-09-30T08:37:24.649828+00:00"
+    captured_at_utc: '2026-09-30T08:37:24.649828+00:00'
     point_record_sha256: cd7992b8dfc0135f77bc33cdf108955c0b08055a5ddfc7a80acc37d5a3f40197
     pip_size: null
-    pip_size_status: PIP_SIZE_UNCONFIRMED
-    pip_size_rule_ref: pip_size_rules.proposals.FX_5_OR_3_DIGIT
+    pip_size_status: DERIVED_AT_RUNTIME_OD1014_FAST_D2
+    pip_size_rule_ref: pip_size_rules.formula
+    pip_size_source: 10 * fields.point; validated host capture and canonical broker
+      map
   GBPUSD:
-    point: 0.00001
+    point: 1.0e-05
     point_source: config/symbol_metadata/host_captured/GBPUSD.json
     point_status: HOST_CAPTURED
     status: HOST_CAPTURED
     broker_symbol: GBPUSD-VIP
-    captured_at_utc: "2026-09-30T08:37:26.354340+00:00"
+    captured_at_utc: '2026-09-30T08:37:26.354340+00:00'
     point_record_sha256: 836bd3f0d1d1f0f256420b6f6206d2e23b792fbcf061b806e000a64eee56a617
     pip_size: null
-    pip_size_status: PIP_SIZE_UNCONFIRMED
-    pip_size_rule_ref: pip_size_rules.proposals.FX_5_OR_3_DIGIT
+    pip_size_status: DERIVED_AT_RUNTIME_OD1014_FAST_D2
+    pip_size_rule_ref: pip_size_rules.formula
+    pip_size_source: 10 * fields.point; validated host capture and canonical broker
+      map
   USDJPY:
     point: 0.001
     point_source: config/symbol_metadata/host_captured/USDJPY.json
     point_status: HOST_CAPTURED
     status: HOST_CAPTURED
     broker_symbol: USDJPY-VIP
-    captured_at_utc: "2026-09-30T08:37:27.947974+00:00"
+    captured_at_utc: '2026-09-30T08:37:27.947974+00:00'
     point_record_sha256: ef1dca4799de0261dddc02d024aa5f60e7df31753c02e85ebf014231b49795b7
     pip_size: null
-    pip_size_status: PIP_SIZE_UNCONFIRMED
-    pip_size_rule_ref: pip_size_rules.proposals.FX_5_OR_3_DIGIT
+    pip_size_status: DERIVED_AT_RUNTIME_OD1014_FAST_D2
+    pip_size_rule_ref: pip_size_rules.formula
+    pip_size_source: 10 * fields.point; validated host capture and canonical broker
+      map
   XAUUSD:
     point: 0.01
     point_source: config/symbol_metadata/host_captured/XAUUSD.json
     point_status: HOST_CAPTURED
     status: HOST_CAPTURED
     broker_symbol: XAUUSD-VIP
-    captured_at_utc: "2026-09-30T08:37:29.590817+00:00"
+    captured_at_utc: '2026-09-30T08:37:29.590817+00:00'
     point_record_sha256: 6da2e37881679bdf8b1f83dc247328ef1424a53766986c82e0e85d1e1ca20ef2
     pip_size: null
-    pip_size_status: PIP_SIZE_UNCONFIRMED
-    pip_size_rule_ref: pip_size_rules.proposals.XAUUSD
+    pip_size_status: DERIVED_AT_RUNTIME_OD1014_FAST_D2
+    pip_size_rule_ref: pip_size_rules.formula
+    pip_size_source: 10 * fields.point; validated host capture and canonical broker
+      map
   BTCUSDT:
     point: 0.1
     point_source: src/strategy_engine/sweep_retest/crypto_symbols.py
@@ -392,11 +456,13 @@ symbol_metadata:
     broker_metadata_status: HOST_CAPTURED
     broker_point: 0.01
     broker_point_source: config/symbol_metadata/host_captured/BTCUSD.json
-    broker_metadata_captured_at_utc: "2026-09-30T15:12:03.313685+00:00"
+    broker_metadata_captured_at_utc: '2026-09-30T15:12:03.313685+00:00'
     broker_metadata_record_sha256: d6db928384ee017c465d4d7c0f607efa1901b9d7766c4667a0da674f2b99b666
     pip_size: null
-    pip_size_status: PIP_SIZE_UNCONFIRMED
-    pip_size_rule_ref: pip_size_rules.proposals.BTCUSD
+    pip_size_status: DERIVED_AT_RUNTIME_OD1014_FAST_D2
+    pip_size_rule_ref: pip_size_rules.formula
+    pip_size_source: 10 * fields.point; validated host capture and canonical broker
+      map
   ETHUSDT:
     point: 0.01
     point_source: src/strategy_engine/sweep_retest/crypto_symbols.py
@@ -406,11 +472,13 @@ symbol_metadata:
     broker_metadata_status: HOST_CAPTURED
     broker_point: 0.01
     broker_point_source: config/symbol_metadata/host_captured/ETHUSD.json
-    broker_metadata_captured_at_utc: "2026-09-30T15:12:06.104988+00:00"
+    broker_metadata_captured_at_utc: '2026-09-30T15:12:06.104988+00:00'
     broker_metadata_record_sha256: 4f60c0bd201ac6f183f4f673cfffc3360c9c2ff1f1e3a240b1d49321ddd72ef9
     pip_size: null
-    pip_size_status: PIP_SIZE_UNCONFIRMED
-    pip_size_rule_ref: pip_size_rules.proposals.ETHUSD
+    pip_size_status: DERIVED_AT_RUNTIME_OD1014_FAST_D2
+    pip_size_rule_ref: pip_size_rules.formula
+    pip_size_source: 10 * fields.point; validated host capture and canonical broker
+      map
   BTCUSD:
     point: 0.01
     point_source: config/symbol_metadata/host_captured/BTCUSD.json
@@ -418,11 +486,13 @@ symbol_metadata:
     status: HOST_CAPTURED
     alias_of: BTCUSDT
     broker_symbol: BTCUSD
-    captured_at_utc: "2026-09-30T15:12:03.313685+00:00"
+    captured_at_utc: '2026-09-30T15:12:03.313685+00:00'
     point_record_sha256: d6db928384ee017c465d4d7c0f607efa1901b9d7766c4667a0da674f2b99b666
     pip_size: null
-    pip_size_status: PIP_SIZE_UNCONFIRMED
-    pip_size_rule_ref: pip_size_rules.proposals.BTCUSD
+    pip_size_status: DERIVED_AT_RUNTIME_OD1014_FAST_D2
+    pip_size_rule_ref: pip_size_rules.formula
+    pip_size_source: 10 * fields.point; validated host capture and canonical broker
+      map
   ETHUSD:
     point: 0.01
     point_source: config/symbol_metadata/host_captured/ETHUSD.json
@@ -430,8 +500,13 @@ symbol_metadata:
     status: HOST_CAPTURED
     alias_of: ETHUSDT
     broker_symbol: ETHUSD
-    captured_at_utc: "2026-09-30T15:12:06.104988+00:00"
+    captured_at_utc: '2026-09-30T15:12:06.104988+00:00'
     point_record_sha256: 4f60c0bd201ac6f183f4f673cfffc3360c9c2ff1f1e3a240b1d49321ddd72ef9
     pip_size: null
-    pip_size_status: PIP_SIZE_UNCONFIRMED
-    pip_size_rule_ref: pip_size_rules.proposals.ETHUSD
+    pip_size_status: DERIVED_AT_RUNTIME_OD1014_FAST_D2
+    pip_size_rule_ref: pip_size_rules.formula
+    pip_size_source: 10 * fields.point; validated host capture and canonical broker
+      map
+runtime_symbols:
+  BTCUSDT: BTCUSD
+  ETHUSDT: ETHUSD

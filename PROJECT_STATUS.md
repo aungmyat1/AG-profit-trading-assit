@@ -8,6 +8,15 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+C21 Large-SMC 1.1.2 candidate (2026-10-14, off-host): separate append-only engine and report-version
+selection; D7 selects report engine 1.1.2, failing closed to BLOCKED for missing/unknown configuration.
+D6 confirms minimum RR 2.0; OD1014-FAST D2 derives C10 pip as 10 × validated
+host-captured point for all six VT symbols; FX POI age counts observed H1 trading dates.
+Candidate reports are stamped NOT_VERIFIED. Off-host default suite after merging `e884b86`: 2924 passed, 5 skipped;
+R1 replay and frozen 1.1.0 full audit byte parity passed. Scope/evidence and proposed registry diff (none applied):
+[registration proposal](docs/proposals/C21_LSMC_V112_REGISTRATION.md). Frozen 1.1.0 and scheduler
+bytes remain unchanged; no broker contact or authorization change.
+
 OD1014 opportunity lanes (2026-10-13, unit-tested only, not host-verified; OD1014 owner-directed, pending
 ratification): on the REPORT_ONLY lane a CCFD row blocked only by `LOGIC_STATUS_NOT_VERIFIED` with a complete
 priced plan is reported as a non-executable `OPPORTUNITY` CANDIDATE stamped with its own 1.0.0 registry status;
@@ -328,7 +337,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `f0dd1fac2e29e6d1a8e08bda983919302ed50627c036361f359977fa3af556be`.
+inputs_sha256: `9df0c2cf1f86feda7fe34d8df0945bc325e873fd169a92d8ddc0b8165ec70cb4`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -340,7 +349,7 @@ cog.outl(body.strip())
 cog.outl("")
 cog.outl("Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).")
 ]]] -->
-Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
+Every trading day, AG Profit Trading reads real market data and evaluates the three target strategy families; logically verified scopes may progress to execution routing, and all other scopes report their complete priced plans as OPPORTUNITY tickets as REPORT_ONLY (OD1014) across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
 
 On each applicable FX trading day, EURUSD, GBPUSD, USDJPY and XAUUSD are each evaluated once for ASIAN_LONDON and once for LONDON_NEWYORK: eight scheduled instrument-session evaluations, each with a deterministic auditable terminal outcome. A scheduled evaluation is not a trade quota. BTCUSD and ETHUSD are scanned dynamically, only qualified current opportunities are ranked, and at most two combined crypto entries are taken per defined trading day; zero or one is acceptable (AGP-OD1012-SESSION-CRYPTO).
 

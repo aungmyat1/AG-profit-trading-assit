@@ -1,0 +1,8 @@
+{
+  "verdict": "PASS",
+  "bytes_identical": true,
+  "bytes": 110526,
+  "sha256": "c21e5201163e0c2103753e59fafb733b1d3a2fc5471bd2623d69d89d33ed147a",
+  "base_sha": "e884b8605739b64d229f848c99ed4a23d8b4ae45",
+  "comparison": "full default 120 crypto scans / every EURUSD M5 close; current main and candidate output at explicitly identical current-main code_sha provenance (only git identity overridden in candidate comparison)"
+}

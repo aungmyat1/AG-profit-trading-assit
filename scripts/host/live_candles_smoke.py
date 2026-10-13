@@ -44,6 +44,7 @@ from _host_common import (  # noqa: E402
     AlreadyRunning,
     Mt5Busy,
     call_with_timeout,
+    format_run_identity,
     host_fetch,
     host_quote,
     host_quote_observed,
@@ -52,7 +53,6 @@ from _host_common import (  # noqa: E402
     mt5_access_lock,
     mt5_initialize,
     require_demo_account,
-    format_run_identity,
     require_pinned_demo_account,
     run_identity,
     single_instance,
@@ -643,11 +643,13 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
     bid, ask = _bid_ask(quote, quote_symbol or display_broker_symbol, now)   # AGP-C18-R2 D4
     snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now, bid=bid, ask=ask)
     events = tracker.poll(snap)
-    if journal is not None and events:
-        from reporting.lsmc_lane import observe_events
+    from reporting.lsmc_lane import version_selection
+    if journal is not None and (events or version_selection() != "1.1.0"):
+        from reporting.lsmc_version import observe_selected
         price = bars["M5"][-1].close if bars["M5"] else None
-        report_lane = report_lane_lines(f"LSMC {symbol}", lambda: observe_events(
-            events, now=now, price=price, archive_root=os.path.join(journal, "ticket_delivery", "archive"),
+        report_lane = report_lane_lines(f"LSMC {symbol}", lambda: observe_selected(
+            events, symbol=symbol, bars=bars, journal=journal, now=now, price=price,
+            archive_root=os.path.join(journal, "ticket_delivery", "archive"),
             bid=bid, ask=ask, account=account),
             journal=journal, now=now)
     else:
@@ -708,6 +710,7 @@ def install_mt5_guard(mt5, run_id: str):
 def mt5_guard_evidence(guard, journal: str, started: dt.datetime, mode: str) -> Dict[str, Any]:
     """Machine-readable guard counters + timestamp-bounded broker history for this run (read-only)."""
     from _host_common import _mt5_server_wall
+
     from host_evidence.symbol_metadata import server_time_to_utc
     from mt5.readonly_guard import broker_history_window, counters_of
     ended = utcnow()
