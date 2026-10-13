@@ -160,7 +160,7 @@ The installer creates or replaces:
 |---|---:|---|
 | `AG-V1-FX-Cycles` | Every 15 minutes, daily | Self-gated Asian-London and London-New York tickets |
 | `AG-V1-Crypto-Daily` | Every 5 minutes, daily | Self-gated BTCUSDT and ETHUSDT ticket windows |
-| `AG-V1-LSMC-Watch` | Every 5 minutes, daily | Six-instrument Large-SMC watch and alerts |
+| `AG-V1-LSMC-Watch` | Every 15 minutes, daily | Six-instrument Large-SMC watch and alerts |
 
 It also removes the superseded duplicate `AG-V1-LSMC-Crypto-Weekend` task. The Large-SMC task
 continues watching crypto on weekends while FX returns `MARKET_CLOSED` when appropriate.

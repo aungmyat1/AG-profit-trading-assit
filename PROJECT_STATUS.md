@@ -234,7 +234,7 @@ if drift:
 else:
     cog.outl("No registered-vs-target difference is stated by the declaration.")
 ]]] -->
-Source: [`scripts/host/install_tasks.ps1`](scripts/host/install_tasks.ps1), captured 2026-10-08. Live host state: scripts/host/heartbeat.py output (not yet published).
+Source: [`scripts/host/install_tasks.ps1`](scripts/host/install_tasks.ps1), captured 2026-10-13. Live host state: scripts/host/heartbeat.py output (not yet published).
 
 The four layers below are deliberately kept apart: a repository declaration is not a registration, a registration is not an observed run, and a target is not a fact.
 
@@ -244,7 +244,7 @@ The four layers below are deliberately kept apart: a repository declaration is n
 |---|---|---|---|---|
 | `AG-V1-FX-Cycles` | every 15 minutes, daily for 24 hours | 00:01:00 | Daily trigger with a repeated interval | UNPARSED |
 | `AG-V1-Crypto-Daily` | every 15 minutes, daily for 24 hours | 00:02:30 | Daily trigger with a repeated interval | UNPARSED |
-| `AG-V1-LSMC-Watch` | every 5 minutes, daily for 24 hours | 00:04:15 | Daily trigger with a repeated interval | UNPARSED |
+| `AG-V1-LSMC-Watch` | every 15 minutes, daily for 24 hours | 00:04:15 | Daily trigger with a repeated interval | UNPARSED |
 
 #### 2. REGISTERED - what Task Scheduler actually held on the capture date
 
@@ -252,7 +252,7 @@ The four layers below are deliberately kept apart: a repository declaration is n
 |---|---|---|---|
 | `AG-V1-FX-Cycles` | INSTALLER | ACTIVE | ENABLED; pythonw; daily 00:01 every 15 min; action --mode fx (no --canonical) |
 | `AG-V1-Crypto-Daily` | INSTALLER | ACTIVE | ENABLED; pythonw; daily 00:02 every 15 min |
-| `AG-V1-LSMC-Watch` | INSTALLER | ACTIVE | ENABLED; pythonw; Mon-Fri 00:03 every 5 min |
+| `AG-V1-LSMC-Watch` | INSTALLER | ACTIVE | ENABLED; pythonw; Mon-Fri 00:03 every 15 min |
 | `AG-V1-LSMC-Crypto-Weekend` | RETIRE | RETIRED | ENABLED; pythonw; Sun,Mon 03:18 every 5 min for 2 h 26 min |
 | `AG-Wake-MT5` | HOST_ONLY | RETIRED | ENABLED; WakeToRun; Mon-Fri 12:25; starts the MT5 terminal |
 | `AG-Wake-Weekend-Crypto` | HOST_ONLY | RETIRED | ENABLED; WakeToRun; Sun,Mon 03:10; starts the MT5 terminal |
@@ -278,7 +278,7 @@ The four layers below are deliberately kept apart: a repository declaration is n
 |---|---|---|---|---|
 | `AG-V1-FX-Cycles` | ENABLED | DAILY | 00:01:00 | 15 |
 | `AG-V1-Crypto-Daily` | ENABLED | DAILY | 00:02:30 | 15 |
-| `AG-V1-LSMC-Watch` | ENABLED | DAILY | 00:04:15 | 5 |
+| `AG-V1-LSMC-Watch` | ENABLED | DAILY | 00:04:15 | 15 |
 | `AG-V1-LSMC-Crypto-Weekend` | ABSENT | - | - | - |
 | `AG-Wake-MT5` | ABSENT | - | - | - |
 | `AG-Wake-Weekend-Crypto` | ABSENT | - | - | - |
@@ -318,7 +318,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `0f16b1d1538fa7658290e89dbebc03c2c8cddd0a2e529bb6975edba8d7768572`.
+inputs_sha256: `6ab653fe8bb62978d6fbe9f370f376c2de057be6a932150a5f83d4add24fecf8`.
 <!-- [[[end]]] -->
 
 ### Objective
