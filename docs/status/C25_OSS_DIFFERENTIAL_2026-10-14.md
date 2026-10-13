@@ -5,7 +5,7 @@ recorded days only (amend); extended replays (step 4) dropped. Oracle results ar
 authority (AGENTS.md OSS-FIRST).
 
 Command: `TQDM_DISABLE=1 python scripts/c25_oss_differential.py --out artifacts/oss_differential/c25_report.json`
-(seed 20261014; byte-reproducible, sha256 `2d52d68e269aea77cf87312e305b054cca4b06e0e6ed8bb311e2827fd88161e2`). Harness history and first-run divergences:
+(seed 20261014; byte-reproducible, sha256 `a370fbe65e1d721ccf50f8bae049d184c39c415f4afb21c4b14c7509e4195221`). Harness history and first-run divergences:
 [C25_HARNESS_CHANGE_LOG](C25_HARNESS_CHANGE_LOG.md).
 Oracle pins: `research_external/requirements-oracle.txt`. Environment: Linux web sandbox, no network, no MT5.
 
@@ -16,8 +16,8 @@ Oracle pins: `research_external/requirements-oracle.txt`. Environment: Linux web
 | Outcome oracle (backtesting.py, identical entry/SL/TP1/horizon/bar path) | 54/55 AGREE (98.2%), 1 SPEC_DIFFERENCE | 6/7 AGREE (85.7%), 1 SPEC_DIFFERENCE |
 | Range cross-check (pandas-ta donchian) | session box 55/55 | previous-UTC-day reference 7/7 |
 | Sweep oracle (smartmoneyconcepts) | n/a | sweep level 7/7 (100%), MSS broken swing 7/7 (100%) |
-| L3 fuzz, owner definition (truncate at signal close / future perturb / signal-bar perturb) | 274 cases, **172 FAIL** (all signal-bar level changes; truncation 0, future 0) | 7 cases, 0 FAIL |
-| L3 supplementary (latest bar after the signal bar perturbed) | 269 IDENTICAL, 5 N/A | 3 IDENTICAL, 4 N/A |
+| L3 (owner/PM ruling): (a) truncate after the signal close, (b) perturb every bar strictly after it incl. the forming bar | 274 cases, **0 FAIL** | 7 cases, **0 FAIL** |
+| L4: signal bar perturbed, levels vs contract formulas on the perturbed OHLC | 274 cases, **0 FAIL** (69 SWEEP formulas, 116 RANGE_REJECTION branch formulas [fail-closed], 89 absent with the sweep trigger no longer met) | not applied (ASW formulas); 5 identical, 2 absent |
 
 ## ASW: the 219 excluded tickets
 
@@ -64,10 +64,19 @@ Defects: none (no ENGINE_DEFECT, no ORACLE_DEFECT).
 
 Proposals (owner decisions; no engine or contract change is made here):
 
-- **P1. L3 signal-bar perturbation.** Under the owner definition, 172 ASW cases FAIL because shrinking the
-  signal candle moves the levels the contract derives from that candle (stop, entry, targets). Direction and
-  signal time never change, and truncation and future perturbation never change a signal. The owner rules
-  whether this counts as repaint or as a fuzz-definition SPEC_DIFFERENCE.
+- **P1. Resolved by the owner/PM ruling (2026-10-14).** The signal-bar perturbation is an L4 formula check,
+  not L3. All 274 ASW cases pass L4.
+  - The 103 cases where entry moved all switch to the RANGE_REJECTION branch. On the perturbed bar the sweep
+    has risk <= 0, so there is no sweep setup (yaml:171). The engine's entry (box boundary) and stop (candle
+    extreme) equal that branch's formulas (yaml:147-150, `src/strategy_engine/session/setups.py:149-177`).
+    The contract declares that branch ticket FAIL_CLOSED, so none of the 103 is tradable.
+  - None of the 103 is among the 55 compared signals.
+  - The other 69 changed cases keep the SWEEP formulas: entry = body edge, stop = wick extreme, TP1 = opposite
+    boundary, TP2 = 5R (yaml:158/163/170/181).
+- **Finding: RANGE-branch tickets in the emitted set.** 13 of the 274 emitted ASW tickets are RANGE_REJECTION
+  branch tickets that the contract declares FAIL_CLOSED (`ENTRY_LEVEL_NOT_MARKET_AT_SIGNAL`). 4 of them are
+  among the 55 compared signals (EURUSD LONDON_NEWYORK 2026-07-21, GBPUSD LONDON_NEWYORK 2026-07-31 and
+  2026-10-09, USDJPY LONDON_NEWYORK 2026-09-01). They are compared as geometry only, never as trades.
 - **P2. Geometry-invalid rate.** About 80% of ASW v1.1.3 signals are blocked by
   `FAIL_CLOSED_IF_TP1_BEYOND_TP2` (TP1 at the opposite session boundary lies beyond the 5R TP2). Review this
   in the next candidate version's target model, not in the frozen v1.1.3.

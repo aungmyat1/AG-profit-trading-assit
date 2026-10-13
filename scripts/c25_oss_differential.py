@@ -9,10 +9,10 @@ contract, registry or flag. Inputs are committed recorded fixtures only; no netw
    session box, CCFD previous-UTC-day reference) is cross-checked with pandas-ta donchian.
 2. Sweep oracle (CCFD): smartmoneyconcepts previous_high_low("1D") / swing_highs_lows vs our sweep and MSS
    evidence.
-3. Causality (L3) fuzz, owner definition: per emitted signal, (a) bars after the signal close removed ->
-   identical to the emitted signal, (b) future bars perturbed -> identical, (c) the last bar of the truncated
-   input (the signal bar) perturbed -> identical or absent. Any change is a FAIL. Supplementary, not the
-   verdict: the latest bar after the signal bar perturbed. Harness history: docs/status/C25_HARNESS_CHANGE_LOG.md.
+3. Causality fuzz, owner/PM ruling 2026-10-14: L3 = (a) bars after the signal close removed -> identical to the
+   emitted signal, (b) bars strictly after the signal close perturbed, incl. the forming bar -> identical.
+   (c) signal bar perturbed is L4, not L3: recomputed levels must equal the contract formulas on the perturbed
+   OHLC (ASW). Harness history: docs/status/C25_HARNESS_CHANGE_LOG.md.
 
     python scripts/c25_oss_differential.py --out artifacts/oss_differential/c25_report.json
 """
@@ -219,8 +219,20 @@ def _asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng) -> Dict
                for c in mutated]
     future = h.ticket(cycle, day, session, upto + mutated, h.split([], cycle, day)[1], symbol=symbol)
     b = _signal_key(future) == key
-    # (c) owner definition (C25 step 3): perturb the last bar of the truncated input -- the signal bar itself --
-    # by shrinking its range 25%; the signal must be identical or absent. Any other change is a FAIL.
+    # (b) also covers the latest (forming) bar: perturb the last bar of the full input when it opens after the
+    # signal bar close (owner/PM ruling 2026-10-14).
+    full_now = h.split([], cycle, day)[1]
+    if post[-1].time <= signal_open:
+        post_cls = "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST"
+    else:
+        lb = post[-1]
+        k = 1 + rng.uniform(-0.002, 0.002)
+        o, c = lb.open * k, lb.close * (1 + rng.uniform(-0.002, 0.002))
+        lp = Candle(lb.time, o, max(o, c, lb.high * k), min(o, c, lb.low * k), c)
+        post_cls = ("IDENTICAL" if _signal_key(h.ticket(cycle, day, session, post[:-1] + [lp], full_now,
+                                                         symbol=symbol)) == key else "CHANGED")
+    # (c) signal bar perturbed (range shrunk 25%): not an L3 test (owner/PM ruling). L4: the recomputed levels must
+    # equal the contract formulas applied to the perturbed OHLC.
     last = upto[-1]
     shrink = (last.high - last.low) * 0.25
     pert = Candle(last.time, last.open, last.high - shrink, last.low + shrink, last.close)
@@ -231,21 +243,58 @@ def _asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng) -> Dict
     sig_cls = "IDENTICAL" if pk == key else ("ABSENT" if not perturbed.get("direction") else "CHANGED")
     names = ("direction", "signal_timestamp", "entry", "stop_loss", "targets")
     changed = [n for n, x, y in zip(names, key, pk) if x != y] if sig_cls == "CHANGED" else []
-    # Supplementary (not the verdict): perturb the last bar of the full input when it closes after the signal bar.
-    full_now = h.split([], cycle, day)[1]
-    if post[-1].time <= signal_open:
-        c_cls = "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST"
-    else:
-        last = post[-1]
-        k = 1 + rng.uniform(-0.002, 0.002)
-        o, c = last.open * k, last.close * (1 + rng.uniform(-0.002, 0.002))
-        pert = Candle(last.time, o, max(o, c, last.high * k), min(o, c, last.low * k), c)
-        c_cls = ("IDENTICAL" if _signal_key(h.ticket(cycle, day, session, post[:-1] + [pert], full_now,
-                                                      symbol=symbol)) == key else "CHANGED")
+    l4 = _asw_formula_check(t, perturbed, pert, symbol)
+    l3 = a and b and post_cls != "CHANGED"
     return {"case": f"{symbol}:{cycle}:{day}", "truncation_identical": a, "future_perturbation_identical": b,
-            "signal_bar_perturbation": sig_cls, "signal_bar_changed_fields": changed,
-            "post_signal_bar_perturbation": c_cls,
-            "verdict": "PASS" if a and b and sig_cls != "CHANGED" else "FAIL"}
+            "forming_bar_perturbation": post_cls, "l3_verdict": "PASS" if l3 else "FAIL",
+            "signal_bar_perturbation": sig_cls, "signal_bar_changed_fields": changed, "signal_bar_l4": l4,
+            "verdict": "PASS" if l3 and l4["status"] == "PASS" else "FAIL"}
+
+
+def _asw_formula_check(base: Dict[str, Any], t: Dict[str, Any], bar: Any, symbol: str) -> Dict[str, Any]:
+    """L4 on the perturbed signal bar: contract formulas (ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml) on its OHLC.
+    entry = SWEEP_CANDLE_BODY_EDGE (:158/:163), stop = SWEEP_CANDLE_WICK_EXTREME (:170), risk > 0 (:171),
+    TP1 = OPPOSITE_SESSION_BOUNDARY, TP2 = entry +/- 5R (:181-:191); trigger = entry_rules condition (:156/:161)."""
+    from v1_tickets.fx import _digits
+    direction = base["direction"]
+    long = direction == "LONG"
+    hi, lo = base["box"]["high"], base["box"]["low"]
+    trigger = (bar.low < lo and bar.close > lo) if long else (bar.high > hi and bar.close < hi)
+    entry_f = min(bar.open, bar.close) if long else max(bar.open, bar.close)
+    sl_f = bar.low if long else bar.high
+    risk_f = (entry_f - sl_f) if long else (sl_f - entry_f)
+    if not t.get("direction"):
+        if not trigger:
+            return {"status": "PASS", "outcome": "ABSENT", "reason": "TRIGGER_NOT_MET_ON_PERTURBED_BAR"}
+        if risk_f <= 0:
+            return {"status": "PASS", "outcome": "ABSENT", "reason": "NON_POSITIVE_RISK_ON_PERTURBED_BAR"}
+        return {"status": "FAIL", "outcome": "ABSENT", "reason": "ABSENT_BUT_CONTRACT_TRIGGER_HOLDS"}
+    digits = _digits(symbol)
+    tol = 0.5 * 10.0 ** -digits + 1e-9 if digits is not None else 1e-9    # result is the formula rounded to digits
+    same = t.get("direction") == direction and t.get("signal_timestamp") == base.get("signal_timestamp")
+    if t.get("setup") == "RANGE":
+        # No qualified sweep on the perturbed bar (risk <= 0 is no setup, :171), so the engine evaluates the
+        # RANGE_REJECTION branch (:147-:150; entry = box boundary, stop = candle extreme), which the contract
+        # declares ticket FAIL_CLOSED (ENTRY_LEVEL_NOT_MARKET_AT_SIGNAL): no tradable ticket, targets not defined.
+        rejection = ((bar.low <= lo and bar.close > lo and bar.close > bar.open) if long
+                     else (bar.high >= hi and bar.close < hi and bar.close < bar.open))
+        expected = {"entry": lo if long else hi, "stop_loss": bar.low if long else bar.high}
+        got = {"entry": t.get("entry"), "stop_loss": t.get("stop_loss")}
+        checks = {k: got[k] is not None and abs(got[k] - expected[k]) <= tol for k in expected}
+        checks.update(sweep_not_qualified=not trigger or risk_f <= 0, range_rejection_holds=rejection,
+                      direction_and_time_unchanged=same)
+        return {"status": "PASS" if all(checks.values()) else "FAIL", "outcome": "RANGE_BRANCH_FAIL_CLOSED",
+                "checks": checks, "expected": {k: round(v, 8) for k, v in expected.items()}, "got": got}
+    tp = {x["leg"]: x["price"] for x in t.get("targets") or []}
+    expected = {"entry": entry_f, "stop_loss": sl_f, "tp1": hi if long else lo,
+                "tp2": entry_f + (5.0 if long else -5.0) * risk_f}
+    got = {"entry": t.get("entry"), "stop_loss": t.get("stop_loss"), "tp1": tp.get(1), "tp2": tp.get(2)}
+    checks = {k: got[k] is not None and abs(got[k] - expected[k]) <= tol * (5 if k == "tp2" else 1)
+              for k in expected}
+    checks["direction_and_time_unchanged"] = same
+    checks["trigger_holds"] = trigger
+    return {"status": "PASS" if all(checks.values()) else "FAIL", "outcome": "PRESENT", "checks": checks,
+            "expected": {k: round(v, 8) for k, v in expected.items()}, "got": got}
 
 
 # ----------------------------------------------------------------------------------------- CCFD
@@ -410,8 +459,10 @@ def _ccfd_fuzz(g, data: Dict[str, Any], s: Dict[str, Any], rng: random.Random) -
         c_cls = "IDENTICAL" if sig(per, ticket_now) == sig(data, ticket_now) else "CHANGED"
     return {"signal": f"{s['symbol']}:{s['direction']}:{s['retest_time']}", "base_result": base_sig[0],
             "ticket_now": s["now"], "truncation_identical": a, "future_perturbation_identical": b_ok,
-            "signal_bar_perturbation": sig_cls, "post_signal_bar_perturbation": c_cls,
-            "verdict": "PASS" if a and b_ok and sig_cls != "CHANGED" else "FAIL"}
+            "forming_bar_perturbation": c_cls, "l3_verdict": "PASS" if a and b_ok and c_cls != "CHANGED" else "FAIL",
+            # (c) not an L3 test (owner/PM ruling); the ASW level formulas do not apply to CCFD -- outcome recorded only
+            "signal_bar_perturbation": sig_cls, "signal_bar_l4": {"status": "NOT_APPLIED", "outcome": sig_cls},
+            "verdict": "PASS" if a and b_ok and c_cls != "CHANGED" else "FAIL"}
 
 
 # ------------------------------------------------------------------------------------------ main
@@ -441,21 +492,25 @@ def _asw_signal_breakdown(asw: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _fuzz_summary(cases: List[Dict[str, Any]]) -> Dict[str, Any]:
-    def count(key):
+    def count(key, sub=None):
         out: Dict[str, int] = {}
         for f in cases:
-            out[str(f.get(key))] = out.get(str(f.get(key)), 0) + 1
+            v = str((f.get(key) or {}).get(sub) if sub else f.get(key))
+            out[v] = out.get(v, 0) + 1
         return dict(sorted(out.items()))
     fields: Dict[str, int] = {}
     for f in cases:
         for n in f.get("signal_bar_changed_fields") or []:
             fields[n] = fields.get(n, 0) + 1
-    return {"cases": len(cases), "fail": sum(f["verdict"] == "FAIL" for f in cases),
+    return {"cases": len(cases),
+            "l3_fail": sum(f["l3_verdict"] == "FAIL" for f in cases),
             "truncation_not_identical": sum(not f["truncation_identical"] for f in cases),
             "future_perturbation_not_identical": sum(not f["future_perturbation_identical"] for f in cases),
+            "forming_bar_perturbation": count("forming_bar_perturbation"),
             "signal_bar_perturbation": count("signal_bar_perturbation"),
             "signal_bar_changed_fields": dict(sorted(fields.items())),
-            "post_signal_bar_perturbation_supplementary": count("post_signal_bar_perturbation")}
+            "signal_bar_l4": count("signal_bar_l4", "status"),
+            "signal_bar_l4_fail": sum((f.get("signal_bar_l4") or {}).get("status") == "FAIL" for f in cases)}
 
 
 def summarize(asw: Dict[str, Any], ccfd: Dict[str, Any]) -> Dict[str, Any]:

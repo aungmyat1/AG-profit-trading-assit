@@ -21,18 +21,22 @@ def report():
     return json.loads(REPORT.read_text(encoding="utf-8"))
 
 
-def test_l3_fuzz_owner_definition(report):
-    """Owner L3 definition: truncation and future perturbation never change a signal (no look-ahead); the ASW
-    signal-bar perturbation FAILs are recorded as such, and every one keeps direction and signal time (only levels
-    the contract derives from the perturbed bar move)."""
+def test_l3_and_signal_bar_l4_owner_ruling(report):
+    """Owner/PM ruling 2026-10-14: L3 = truncation + perturbation strictly after the signal close (incl. the forming
+    bar) leave the signal identical; the signal-bar perturbation is an L4 contract-formula check."""
     fuzz = report["summary"]["l3_fuzz"]
     for fam in ("ASW", "CCFD"):
+        assert fuzz[fam]["l3_fail"] == 0
         assert fuzz[fam]["truncation_not_identical"] == 0 and fuzz[fam]["future_perturbation_not_identical"] == 0
-    assert fuzz["CCFD"]["fail"] == 0
-    fails = [f for f in report["asw"]["fuzz"] if f["verdict"] == "FAIL"]
-    assert len(fails) == fuzz["ASW"]["fail"] == fuzz["ASW"]["signal_bar_perturbation"].get("CHANGED", 0)
-    assert all(f["signal_bar_perturbation"] == "CHANGED" and f["signal_bar_changed_fields"]
-               and not {"direction", "signal_timestamp"} & set(f["signal_bar_changed_fields"]) for f in fails)
+        assert "CHANGED" not in fuzz[fam]["forming_bar_perturbation"]
+    assert fuzz["ASW"]["signal_bar_l4_fail"] == 0
+    for f in report["asw"]["fuzz"]:
+        l4 = f["signal_bar_l4"]
+        assert (l4["status"] == "PASS") == (f["verdict"] == "PASS" or f["l3_verdict"] == "FAIL")
+        if l4["outcome"] != "ABSENT":
+            assert all(l4["checks"].values()) and l4["checks"]["direction_and_time_unchanged"]
+    entry_moved = [f for f in report["asw"]["fuzz"] if "entry" in f["signal_bar_changed_fields"]]
+    assert entry_moved and all(f["signal_bar_l4"]["outcome"] == "RANGE_BRANCH_FAIL_CLOSED" for f in entry_moved)
 
 
 def test_asw_excluded_tickets_are_unique_geometry_blocked_signals(report):
