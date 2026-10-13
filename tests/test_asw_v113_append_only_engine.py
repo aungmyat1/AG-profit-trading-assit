@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from session_scanner.strategy_adapter import AsianSweepAdapter
 from strategy_engine import evaluate, load_strategy
 from strategy_engine.append_only import (
     NON_POSITIVE_RISK,
@@ -20,6 +21,12 @@ from strategy_engine.append_only import (
 from strategy_engine.session import Candle
 from strategy_engine.session.classifier import Regime
 from strategy_engine.session.reference_box import build_reference_box
+from strategy_engine.session.setups import (
+    DecisionStatus,
+    Direction,
+    SetupDecision,
+    SetupType,
+)
 from v1_tickets import fx
 from v1_tickets.authority import logic_identity
 
@@ -58,11 +65,18 @@ def test_only_v113_uses_the_append_only_path():
     assert evaluate_for(frozen) is evaluate
 
 
+def test_scanner_adapter_uses_version_dispatch():
+    adapter = AsianSweepAdapter(str(ROOT / "strategies" / "ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml"), {})
+    assert evaluate_for(adapter.strategy) is evaluate_append_only
+    frozen = AsianSweepAdapter(str(ROOT / "strategies" / "ST_ASIAN_SWEEP_5R_V1_1_1_2.yaml"), {})
+    assert evaluate_for(frozen.strategy) is evaluate
+
+
 def test_s1_identity_is_unchanged_and_v113_has_its_own():
     assert logic_identity("ST_ASIAN_SWEEP_5R_V1", "1.1.2", ROOT)["digest"] == S1_IDENTITY
     v113 = logic_identity("ST_ASIAN_SWEEP_5R_V1", "1.1.3", ROOT)
     v112 = logic_identity("ST_ASIAN_SWEEP_5R_V1", "1.1.2", ROOT)
-    assert v113["engine_identity"] != v112["engine_identity"]       # includes append_only.py
+    assert v113["engine_identity"] != v112["engine_identity"]       # includes candidate engine + dispatch
     raw = (ROOT / "strategies" / "ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml").read_bytes().replace(b"\r\n", b"\n")
     expected = hashlib.sha256(b"strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml\0" + raw + b"\0").hexdigest()
     assert v113["contract_hash"] == expected
@@ -100,7 +114,50 @@ def test_later_qualifications_are_appended_not_substituted():
     assert [e.signal_timestamp for e in emissions] == [OPEN_AT_LOW.time, CLEAN_SWEEP.time]
     assert [e.setup_type.value for e in emissions] == ["RANGE", "SWEEP"]
     assert all(e.risk_distance > 0 for e in emissions)
-    assert [r.reason_code for r in rejected] == ["LOWER_BOUNDARY_REJECTION", "LOWER_SWEEP_STRICT_PENETRATION"]
+    assert [r.reason_code for r in rejected] == [NON_POSITIVE_RISK, NON_POSITIVE_RISK]
+    assert all(r.decision_status.value == "NO_SETUP" for r in rejected)
+    assert [r.evidence["rejected_reason_code"] for r in rejected] == [
+        "LOWER_BOUNDARY_REJECTION", "LOWER_SWEEP_STRICT_PENETRATION"]
+
+
+def test_append_only_requires_unique_chronological_candles():
+    box = build_reference_box("Asian", REFERENCE, 24)
+    with pytest.raises(ValueError, match="duplicate candle timestamp"):
+        emission_stream("ST_ASIAN_SWEEP_5R_V1", "EURUSD", box, Regime.RANGE, DAY, [TOUCH, TOUCH])
+    with pytest.raises(ValueError, match="chronological"):
+        emission_stream("ST_ASIAN_SWEEP_5R_V1", "EURUSD", box, Regime.RANGE, DAY,
+                        [CLEAN_SWEEP, OPEN_AT_LOW])
+
+
+def test_same_bar_entry_2_precedes_entry_3_deterministically(monkeypatch):
+    box = build_reference_box("Asian", REFERENCE, 24)
+    e2 = SetupDecision(strategy_id="ST_ASIAN_SWEEP_5R_V1", symbol="EURUSD", reference_session="Asian",
+                       session_date=DAY, regime=Regime.RANGE, setup_type=SetupType.SWEEP,
+                       decision_status=DecisionStatus.VALID, reason_code="E2", direction=Direction.LONG,
+                       signal_timestamp=OPEN_AT_LOW.time, entry_reference=1.0, stop_reference=0.9,
+                       risk_distance=0.1)
+    e3 = SetupDecision(strategy_id="ST_ASIAN_SWEEP_5R_V1", symbol="EURUSD", reference_session="Asian",
+                       session_date=DAY, regime=Regime.RANGE, setup_type=SetupType.RANGE,
+                       decision_status=DecisionStatus.VALID, reason_code="E3", direction=Direction.LONG,
+                       signal_timestamp=OPEN_AT_LOW.time, entry_reference=1.0, stop_reference=0.9,
+                       risk_distance=0.1)
+    # append_only imports detector functions by name, so patch those exact bindings.
+    monkeypatch.setattr("strategy_engine.append_only.entry_2_sweep", lambda *args: e2)
+    monkeypatch.setattr("strategy_engine.append_only.entry_3_range", lambda *args: e3)
+    emissions, rejected = emission_stream("ST_ASIAN_SWEEP_5R_V1", "EURUSD", box, Regime.RANGE,
+                                          DAY, [OPEN_AT_LOW])
+    assert not rejected and len(emissions) == 1
+    assert emissions[0].reason_code == "E2"
+
+
+def test_prefix_emission_stream_matches_full_run_prefixes():
+    box = build_reference_box("Asian", REFERENCE, 24)
+    candles = [TOUCH, OPEN_AT_LOW, CLEAN_SWEEP]
+    full, _ = emission_stream("ST_ASIAN_SWEEP_5R_V1", "EURUSD", box, Regime.RANGE, DAY, candles)
+    for end in range(1, len(candles) + 1):
+        prefix, _ = emission_stream("ST_ASIAN_SWEEP_5R_V1", "EURUSD", box, Regime.RANGE, DAY,
+                                    candles[:end])
+        assert prefix == [item for item in full if item.signal_timestamp <= candles[end - 1].time]
 
 
 def test_signal_id_is_per_qualifying_bar():

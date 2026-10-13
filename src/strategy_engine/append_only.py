@@ -58,10 +58,22 @@ def emission_stream(strategy_id: str, symbol: str, box: ReferenceBox, regime: Re
                     post_session_candles: Sequence[Candle]) -> Tuple[List[SetupDecision], List[SetupDecision]]:
     """(emissions, rejected): emissions in bar order (VALID or AMBIGUOUS, positive risk only);
     rejected = per-bar VALID candidates dropped by D-ASW-1. Causal: bar i depends only on bars <= i."""
+    seen = {}
+    previous = None
+    for candle in post_session_candles:
+        if previous is not None and candle.time < previous:
+            raise ValueError("post-session candles must be chronological")
+        prior = seen.get(candle.time)
+        if prior is not None:
+            if prior != candle:
+                raise ValueError(f"conflicting candles share timestamp {candle.time.isoformat()}")
+            raise ValueError(f"duplicate candle timestamp {candle.time.isoformat()}")
+        seen[candle.time] = candle
+        previous = candle.time
     if regime is Regime.TREND:
         decision = entry_1_trend(strategy_id, symbol, box, session_date)
         if _non_positive(decision):
-            return [], [decision]
+            return [], [_rejected(decision)]
         return ([decision] if decision.decision_status is DecisionStatus.VALID else []), []
     emissions: List[SetupDecision] = []
     rejected: List[SetupDecision] = []
@@ -74,7 +86,7 @@ def emission_stream(strategy_id: str, symbol: str, box: ReferenceBox, regime: Re
             if candidate.decision_status is DecisionStatus.NO_SETUP:
                 continue
             if _non_positive(candidate):
-                rejected.append(candidate)
+                rejected.append(_rejected(candidate))
                 continue
             emitted = candidate
             break
@@ -97,7 +109,7 @@ def route_append_only(strategy_id: str, symbol: str, session_name: str, session_
     if emissions:
         return box, regime, emissions[0]
     if rejected:
-        return box, regime, _rejected(rejected[0])
+        return box, regime, rejected[0]
     if regime is Regime.TREND:
         return box, regime, entry_1_trend(strategy_id, symbol, box, session_date)
     return box, regime, entry_3_range(strategy_id, symbol, box, session_date, ())   # NO_SETUP_BY_WINDOW_END
@@ -131,6 +143,6 @@ def evaluate_append_only(strategy: StrategyConfig, pair_id: str, symbol: str, se
     )
 
 
-def evaluate_for(strategy: StrategyConfig):
+def evaluate_for(strategy: StrategyConfig, *, frozen_evaluate=None):
     """The evaluate() callable a ticket builder must use for this exact strategy version."""
-    return evaluate_append_only if uses_append_only(strategy) else _frozen_evaluate
+    return evaluate_append_only if uses_append_only(strategy) else (frozen_evaluate or _frozen_evaluate)

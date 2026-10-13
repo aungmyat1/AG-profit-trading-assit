@@ -28,7 +28,7 @@ from host_evidence.symbol_metadata import (
     load_record,
 )
 from strategy_engine import evaluate, load_strategy
-from strategy_engine.append_only import evaluate_append_only, uses_append_only
+from strategy_engine.append_only import evaluate_for
 from strategy_engine.session import Candle
 from ticket_delivery.archive import (
     CYCLE_STATE_BLOCKED,
@@ -204,8 +204,8 @@ def build_fx_ticket(
         return {**base, "decision": REFERENCE_NOT_READY, "reason_code": REFERENCE_NOT_READY,
                 "detail": f"reference window closes {ref_end.isoformat()}"}
     try:
-        # v1.1.3+ append-only routing (D-ASW-1/D-ASW-2); frozen versions keep the module-level evaluate seam.
-        engine = evaluate_append_only if uses_append_only(strategy) else evaluate
+        # Version-specific routing (D-ASW-1/D-ASW-2); frozen versions retain the shared engine.
+        engine = evaluate_for(strategy, frozen_evaluate=evaluate)
         sig = engine(strategy, cycle, symbol, session_date, session_candles, expected_bar_count,
                        post_session_candles)
     except Exception as exc:  # noqa: BLE001 -- any engine/data failure is a DATA_ERROR ticket, never a guess

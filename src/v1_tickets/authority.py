@@ -75,7 +75,11 @@ CANDIDATE_CONTRACTS: Dict[Tuple[str, str], str] = {
 # Engine files a candidate version adds to its strategy's shared engine identity. v1.1.3's append-only
 # router lives outside the shared files, so the v1.1.1/v1.1.2 identities (and the S1 record) never move.
 CANDIDATE_ENGINE_FILES: Dict[Tuple[str, str], Tuple[str, ...]] = {
-    ("ST_ASIAN_SWEEP_5R_V1", "1.1.3"): ("src/strategy_engine/append_only.py",),
+    ("ST_ASIAN_SWEEP_5R_V1", "1.1.3"): (
+        "src/strategy_engine/append_only.py",
+        "src/v1_tickets/fx.py",
+        "src/session_scanner/strategy_adapter.py",
+    ),
 }
 
 
