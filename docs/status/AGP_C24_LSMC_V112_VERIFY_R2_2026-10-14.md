@@ -90,6 +90,20 @@ cluster sweeps. Every local event, including matches, is checked for required
 geometry/confirmation conditions; the checker does not claim exhaustive model
 equivalence. Oracle outputs never alter runtime decisions.
 
+## Oracle divergence counts by element (C24-R3 completion)
+
+| Element | SPEC_DIFFERENCE | ORACLE_DEFECT | ENGINE_DEFECT |
+|---|---:|---:|---:|
+| BOS_CHOCH | 6992 | 0 | 0 |
+| FVG | 19 | 0 | 0 |
+| OB | 318 | 0 | 0 |
+| liquidity_sweeps | 6683 | 0 | 0 |
+| swings | 2360 | 0 | 0 |
+
+The separate C11 target-selection defect has three native adjacent-scan witnesses;
+it is not an oracle detection divergence. Replay remains **PARTIAL / NOT_RUN_RESOURCE**.
+Per-symbol counts are in `p2_oracle/divergence_counts_by_element.json`.
+
 ## ENGINE_DEFECT: C24-C11-STATIC-ROLLING-WINDOW
 
 Rule: `strategies/ST_LARGE_SMC_V1_1_1_2.yaml:138,177`,
