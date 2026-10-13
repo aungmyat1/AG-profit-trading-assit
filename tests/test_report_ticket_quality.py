@@ -74,7 +74,8 @@ def test_render_has_timestamps_and_no_schema_gap_for_absent_direction():
                "scope_verification_status": "SUSPENDED", "scope_reason": "L3", "created_at": NOW.isoformat(),
                "reason_codes": ["SUSPENDED_L3_REPAINT"], "trigger": {}}
     text = render_report(blocked)
-    assert "SCHEMA_GAP" not in text and "| n/a" in text and f"evaluated: {NOW.isoformat()}" in text
+    assert "SCHEMA_GAP" not in text and "EURUSD n/a (ASIAN_LONDON)" in text
+    assert "evaluated: 15:16 MMT / 08:46 UTC (2026-10-13)" in text and "blocked: SUSPENDED_L3_REPAINT" in text
     assert text.isascii()
 
 
@@ -94,7 +95,9 @@ def test_lsmc_watch_is_identified_per_setup_and_carries_the_transition():
     assert report_identity(a) == report_identity(b)                    # churn on one setup reports once
     assert report_identity(c) != report_identity(a)                    # independent setup reports anew
     assert (a["setup_id"], a["transition"]) == (short_ref, "OPPORTUNITY->NEAR_POI")
-    assert f"setup: {long_ref} | NEAR_POI->DEVELOPING" in render_report(c)
+    text = render_report(c)
+    assert f"ref: {long_ref}" in text and "transition: NEAR_POI->DEVELOPING" in text
+    assert text.splitlines()[0] == "LARGE-SMC WATCH -- INFORMATIONAL -- REPORT ONLY -- NOT A BROKER ORDER"
 
 
 def test_lsmc_summary_counts_only_rejection_states(tmp_path):

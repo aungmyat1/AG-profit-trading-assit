@@ -232,30 +232,84 @@ def report_identity(c):
     return c.get("candidate_signal_id") or "|".join(str(c.get(k)) for k in ("ticket_id", "report_class", "reason_code"))
 
 
-def render_report(c):
-    """ASCII REPORT_ONLY observation: compact for WATCH, priced levels for CANDIDATE, reasons for BLOCKED."""
-    if c.get("scope_route") != "REPORT_ONLY":
-        raise ValueError("Unsupported scope route")
-    lines = ["REPORT ONLY - NOT AN ORDER",
-             f"{value(c, 'strategy_id')}@{value(c, 'strategy_version')} | {value(c, 'report_class')}",
-             f"{value(c, 'instrument')} | {value(c, 'session')} | {c.get('direction') or 'n/a'}",
-             f"scope: {value(c, 'scope_verification_status')} ({value(c, 'scope_reason')})",
-             f"evaluated: {c.get('created_at') or 'n/a'} | bar close: "
-             f"{(c.get('trigger') or {}).get('trigger_bar_close_utc') or 'n/a'}"]
-    if c.get("setup_id"):
-        lines.append(f"setup: {c['setup_id']} | {c.get('transition') or 'n/a'}")
+def _r(c, key):
+    value_r = (c.get("risk") or {}).get(key)
+    return f"+{value_r:.2f}R" if isinstance(value_r, (int, float)) else "n/a"
+
+
+_ASW_LEGS = {"tp1": "OPPOSITE_SESSION_BOUNDARY, 75%", "tp2": "FIXED_R_MULTIPLE_5, 25%"}
+
+
+def _report_ticket_lines(c, sym, direction, scope, ts, dist):
+    """ASW / CCFD layout (owner example 2026-10-07 tickets), REPORT_ONLY header, never decision=READY."""
+    prices = c.get("prices") or {}
+    asw = c.get("strategy_id") == "ST_ASIAN_SWEEP_5R_V1"
+    trigger = c.get("trigger") or {}
+    lines = ["INFORMATIONAL REPORT -- REPORT ONLY -- NOT A BROKER ORDER",
+             f"{sym} {direction} ({value(c, 'session')})",
+             f"{value(c, 'strategy_id')} v{value(c, 'strategy_version')}  report={value(c, 'report_class')}  {scope}",
+             f"ticket_id: {c.get('ticket_id') or 'n/a'}"]
+    if asw:
+        lines.append(f"window: {value(c, 'session')} trade session  time invalidation 15:00 GMT")
+    lines += [f"signal close: {ts(trigger.get('trigger_bar_close_utc'))}", f"expires_at: {ts(c.get('expires_at'))}"]
     if c.get("report_class") == "CANDIDATE":
-        prices = c.get("prices") or {}
-        lines += [f"signal: {value(c, 'trigger', 'trigger_timestamp')}"]
-        lines += [f"{label:<5} {prices.get(key) if prices.get(key) is not None else 'n/a'}"
-                  for label, key in (("ENTRY", "entry_reference"), ("SL", "sl"), ("TP1", "tp1"), ("TP2", "tp2"))]
+        risk = (c.get("risk") or {}).get("risk_distance")
+        lines.append(f"entry: {prices.get('entry_reference') or 'n/a'}  stop: {prices.get('sl') or 'n/a'}  "
+                     f"risk: {dist(sym, risk) if isinstance(risk, (int, float)) else 'n/a'}")
+        for leg, key, r_key in ((1, "tp1", "initial_R_tp1"), (2, "tp2", "initial_R_tp2")):
+            if prices.get(key) is not None:
+                label = f" ({_ASW_LEGS[key]})" if asw else ""
+                lines.append(f"target leg {leg}{label}: {prices[key]}  = {_r(c, r_key)}")
+        lines.append(f"data source: {c.get('venue') or 'n/a'}")
+        lines.append(f"VALID UNTIL {ts(c.get('expires_at'))} -- STALE after; re-check before acting.")
     elif c.get("report_class") == "BLOCKED":
         lines.append("blocked: " + ",".join(str(r) for r in (c.get("reason_codes") or [c.get("reason_code")])))
+        lines.append(f"data source: {c.get('venue') or 'n/a'}")
     else:
         lines.append(f"state: {value(c, 'reason_code')}")
-    lines.append("EXECUTION: DISABLED")
-    text = "\n".join(lines)
-    return text.encode("ascii", "replace").decode("ascii")
+    return lines
+
+
+def _report_lsmc_lines(c, sym, direction, scope, ts, dist):
+    """Large-SMC layout (owner example 2026-10-09 alerts), REPORT_ONLY header."""
+    prices, lsmc = c.get("prices") or {}, c.get("lsmc") or {}
+    to_state = str(c.get("transition") or "->").split("->")[-1] or "n/a"
+    cls = value(c, "report_class")
+    lines = [f"LARGE-SMC {cls} -- INFORMATIONAL -- REPORT ONLY -- NOT A BROKER ORDER",
+             f"{sym} {to_state} ({cls})  direction: {direction}",
+             f"{value(c, 'strategy_id')} v{value(c, 'strategy_version')}  economic_status=NOT_EVALUATED  {scope}",
+             f"ref: {c.get('setup_id') or 'n/a'}",
+             f"transition: {c.get('transition') or 'n/a'}",
+             "timeframes: D1 context -> H1 bias + POI -> M5 sweep/CHoCH"]
+    if lsmc.get("poi_low") and lsmc.get("poi_high"):
+        lines.append(f"POI zone ({lsmc.get('poi_kind') or 'H1'}): {lsmc['poi_low']} - {lsmc['poi_high']}")
+    if c.get("report_class") == "CANDIDATE":
+        lines += [f"liquidity target: {prices.get('tp1') or 'n/a'}", f"stop (C10): {prices.get('sl') or 'n/a'}",
+                  f"entry reference (CHoCH close): {prices.get('entry_reference') or 'n/a'}"]
+    elif c.get("report_class") == "BLOCKED":
+        lines.append("blocked: " + ",".join(str(r) for r in (c.get("reason_codes") or [c.get("reason_code")])))
+    if prices.get("current_send") is not None:
+        lines.append(f"current price: {prices['current_send']}")
+    if lsmc.get("distance_to_poi") is not None:
+        lines.append("distance to POI: inside zone" if lsmc["distance_to_poi"] == 0
+                     else f"distance to POI: {dist(sym, lsmc['distance_to_poi'])}")
+    lines.append(f"expires_at: {ts(lsmc.get('expires_at'))}")
+    return lines
+
+
+def render_report(c):
+    """ASCII REPORT_ONLY observation in the owner-approved ticket / Large-SMC alert layouts. Rejects any
+    route other than REPORT_ONLY; shows the report class, never an executable decision."""
+    if c.get("scope_route") != "REPORT_ONLY":
+        raise ValueError("Unsupported scope route")
+    from host_delivery.telegram_message import _dist, _ts
+    sym, direction = value(c, "instrument"), c.get("direction") or "n/a"
+    scope = f"scope={value(c, 'scope_verification_status')} ({value(c, 'scope_reason')})"
+    build = _report_lsmc_lines if c.get("strategy_id") == "ST_LARGE_SMC_V1" else _report_ticket_lines
+    lines = build(c, sym, direction, scope, _ts, _dist)
+    lines.append(f"evaluated: {_ts(c.get('created_at'))}")
+    lines.append("REPORT ONLY - NOT AN ORDER | EXECUTION: DISABLED")
+    return "\n".join(lines).encode("ascii", "replace").decode("ascii")
 
 
 def render_daily_report_summary(summary):

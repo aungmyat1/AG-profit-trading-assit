@@ -42,10 +42,26 @@ def from_event(event: Dict[str, Any], *, now: dt.datetime, price: Optional[float
     reference = event.get("reference_id")
     canonical["setup_id"] = reference
     canonical["transition"] = f"{event.get('from_state')}->{event.get('to_state')}"
+    canonical["lsmc"] = _lsmc_details(event, canonical, price)
     if canonical.get("report_class") == "WATCH" and reference:
         canonical["candidate_signal_id"] = (f"{event.get('strategy_id')}@{event.get('strategy_version')}|"
                                             f"{event.get('symbol')}|{CYCLE}|SETUP|{reference}")
     return canonical
+
+
+def _lsmc_details(event: Dict[str, Any], canonical: Dict[str, Any], price: Optional[float]) -> Dict[str, Any]:
+    """POI zone / expiry / distance for the owner-approved alert layout (formatted to the symbol digits)."""
+    from v1_tickets.canonical_ticket import _fmt
+    payload = event.get("payload") or {}
+    poi, opportunity = payload.get("poi") or {}, payload.get("opportunity") or {}
+    symbol = canonical.get("instrument")
+    low, high = poi.get("low"), poi.get("high")
+    distance = None
+    if price is not None and low is not None and high is not None:
+        distance = 0.0 if low <= price <= high else (price - high if price > high else low - price)
+    return {"poi_kind": poi.get("kind"), "poi_low": _fmt(low, symbol) if low is not None else None,
+            "poi_high": _fmt(high, symbol) if high is not None else None, "distance_to_poi": distance,
+            "expires_at": opportunity.get("expires_at") or payload.get("expires_at")}
 
 
 def _from_event(event: Dict[str, Any], *, now: dt.datetime, price: Optional[float] = None,
