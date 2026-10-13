@@ -62,7 +62,10 @@ strategies:
             identity_hash: d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5
             evidence: docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json
         logic_suspended_scopes:
+          # OD1014-FAST D5 (owner, 2026-10-14): suspension narrowed to ASIAN_LONDON -- the evidence below shows
+          # L3 FAIL Asian->London only (London->NY L3 PASS). LONDON_NEWYORK is no longer suspended (not verified).
           - symbol: EURUSD
+            session: ASIAN_LONDON
             status: SUSPENDED
             reason: L3_REPAINT_UNRESOLVED_2026-07-31
             evidence: docs/status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md
