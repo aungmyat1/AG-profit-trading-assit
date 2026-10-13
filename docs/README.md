@@ -402,6 +402,9 @@ research eligibility. Its contract is
   — C14 execution-authority boundary, host magic registry (reserved S1 magic `777001` versus the six
   magics in use on the host), lifecycle evidence chain, and HALT/reconcile on unknown outcome;
   offline unit tests only, no broker mutation, scope still `enabled: false`.
+- [`status/AGP_C18_R4_RUNTIME_MT5_GUARD_2026-10-13.md`](status/AGP_C18_R4_RUNTIME_MT5_GUARD_2026-10-13.md)
+  — process-wide read-only MT5 guard for the reporting runner (order_* refused before MT5, per-run counters,
+  timestamp-bounded broker-history check); synthetic tier only.
 - [`status/AGP_C18_R2_IMPLEMENTATION_PLAN_2026-10-13.md`](status/AGP_C18_R2_IMPLEMENTATION_PLAN_2026-10-13.md)
   — AGP-C18-R2 plan: scope-aware canonical ticket, read-only ASW/LSMC/CCFD report lanes, governed REPORT_ONLY
   Telegram policy; owner decisions D1-D4; no READY/demo/live/registry change.
