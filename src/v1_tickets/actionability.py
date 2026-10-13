@@ -50,11 +50,15 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any, Dict, Optional
 
-from v1_tickets.ready_authority import SHADOW_INFO_ONLY
 from v1_tickets.policy_loader import (
-    POLICY_CONFLICT, POLICY_INVALID, POLICY_MISSING, POLICY_OK, ActionabilityPolicy,
+    POLICY_CONFLICT,
+    POLICY_INVALID,
+    POLICY_MISSING,
+    POLICY_OK,
+    ActionabilityPolicy,
     load_policy,
 )
+from v1_tickets.ready_authority import SHADOW_INFO_ONLY
 
 # Trigger timeframe for each supported strategy -> timedelta of one bar.
 TRIGGER_TF: Dict[str, dt.timedelta] = {
@@ -232,6 +236,14 @@ def evaluate_actionability(
     prices = _prices(ticket)
     geom = _r_distances(prices, current_price)
 
+    # AGP-TQ-D1: invalid / incomplete / zero-risk / inverted-target geometry can never reach WATCH_READY
+    # (frozen contract rule FAIL_CLOSED_IF_TP1_BEYOND_TP2; v1_tickets.target_geometry).
+    from v1_tickets.target_geometry import geometry_violation
+    violation = geometry_violation(prices["entry"], prices["sl"], prices["tp1"], prices["tp2"], prices["direction"])
+    if violation is not None:
+        return _out(BLOCKED, violation, ticket, now, current_price, window_end,
+                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
+
     # Session expiry: past the trade window invalidation (15:00 GMT for FX).
     win_end = window_end or _trade_window_end(ticket)
     if win_end is not None and now >= win_end:
@@ -249,7 +261,7 @@ def evaluate_actionability(
         return _out(INSUFFICIENT_DATA, "CURRENT_PRICE_MISSING", ticket, now, current_price, window_end,
                     trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
 
-    entry, sl = prices["entry"], prices["sl"]
+    sl = prices["sl"]
     long = prices["direction"] == "LONG"
     # MISSED: price has already blown through SL (invalidated before we could watch).
     if sl is not None and ((long and current_price <= sl) or (not long and current_price >= sl)):

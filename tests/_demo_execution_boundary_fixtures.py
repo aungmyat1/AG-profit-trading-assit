@@ -133,6 +133,7 @@ def ticket(scope: ScopePolicy, now: datetime = NOW, **updates: Any) -> dict[str,
         "entry": 1.3001,
         "stop_loss": 1.2991,
         "risk_distance": 0.001,
+        "targets": [{"leg": 1, "price": 1.3021}, {"leg": 2, "price": 1.3051}],   # AGP-TQ-D1 valid geometry
         "spread_check": "PASS",
         "created_at": (now - timedelta(minutes=3)).isoformat(),
         "evaluated_at": (now - timedelta(minutes=2)).isoformat(),
