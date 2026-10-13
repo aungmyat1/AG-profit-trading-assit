@@ -98,7 +98,8 @@ session_pairs:
 #               beyond the wick extreme already implies the wick-extreme stop was hit.
 #   Agreeing rows unchanged: B-REF, B-TRADE, B-SWEEP, B-DIR, B-SPLIT, B-MAXENTRY, B-INSTR.
 # ---------------------------------------------------------------------------------------
-# v1.1.3 CANDIDATE (2026-10-12) -- AGP-C16-FINAL successor proposal. NOT IMPLEMENTED, NOT
+# v1.1.3 CANDIDATE (2026-10-13) -- AGP-C16-FINAL successor proposal. Implemented in the
+# version-isolated append-only candidate engine, NOT
 # REGISTERED, NO AUTHORITY. Closes the two bounded defects C15/C16 reproduced at
 # `recorded:EURUSD:ASIAN_LONDON:2026-07-31`. v1.1.2 is left byte-identical: per AGENTS.md a
 # behaviour-changing correction lands in a new candidate version and only replaces the
@@ -123,11 +124,12 @@ session_pairs:
 #               unfilled one), but they may never rewrite a published emission's content.
 #               Cross-branch precedence is therefore temporal, not "last evaluation wins".
 #
-# Implementation is deliberately NOT part of this candidate: `strategy_engine/session/*` is
-# shared with the frozen v1.1.1 authority and with the v1.1.2 candidate, so changing it moves
-# the registry-bound S1 identity `d7a8ebe5…`. Enforcing these two rules therefore requires an
-# owner decision plus a new identity record; until then this file is a declaration only and
-# every v1.1.2 scope stays NOT_VERIFIED (see evidence_policy below).
+# The implementation is isolated in `strategy_engine/append_only.py` and selected only for
+# this exact candidate version through the FX ticket and scanner adapters. Frozen shared
+# `strategy_engine/session/*` code is unchanged, so the registry-bound v1.1.2 S1 identity
+# `d7a8ebe5…` remains unchanged. The owner-approved BY_EMISSION_TIME precedence is recorded
+# in `docs/governance/OWNER_DECISION_REGISTER.md` (2026-10-13). This candidate remains
+# unregistered, unadmitted and authority-free; v1.1.2 scopes do not transfer (see evidence_policy).
 # ---------------------------------------------------------------------------------------
 
 # Applies independently to each session_pairs entry, evaluated against that pair's own
@@ -219,9 +221,8 @@ corrections:
     origin: C15 + C16 reproduction at recorded:EURUSD:ASIAN_LONDON:2026-07-31
     observed: 25/25 future mutations changed the semantic, 5 prefix mismatches, signal_id reused
     note: >-
-      Temporal append-only semantics; the owner may instead choose to define an explicit
-      static cross-branch precedence. Either choice is a rule the owner must sign; the
-      defect is the silent replacement, not the Branch order itself.
+      Approved precedence is BY_EMISSION_TIME: the earliest qualifying emission remains the
+      routed decision and later qualifications append with their own signal identity.
 
 successor_of:
   strategy_id: ST_ASIAN_SWEEP_5R_V1
@@ -246,6 +247,5 @@ authority:
   edge_verified: false
   economic_status: NOT_EVALUATED
   note: >-
-    Declaration only. The runtime still loads strategies/ST_ASIAN_SWEEP_5R_V1.yaml (v1.1.1).
-    This file grants no ticket, READY, demo or live authority and must not be registered
-    until an owner decision and a full independent reverification exist.
+    The runtime default still loads strategies/ST_ASIAN_SWEEP_5R_V1.yaml (v1.1.1); this
+    candidate is not registered or admitted. It grants no ticket, READY, demo or live authority.

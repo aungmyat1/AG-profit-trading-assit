@@ -15,7 +15,7 @@
     "strategies/registry.yaml",
     "strategies/session_trade/contract.yaml"
   ],
-  "inputs_sha256": "a286b0c42a2f4b1dd66193c06617723f815f4822080cb39a254b3d4eb61e49d9",
+  "inputs_sha256": "0f16b1d1538fa7658290e89dbebc03c2c8cddd0a2e529bb6975edba8d7768572",
   "objective": {
     "source": "docs/PROJECT_OBJECTIVE.md#objective",
     "text": "Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.\n\nOn each applicable FX trading day, EURUSD, GBPUSD, USDJPY and XAUUSD are each evaluated once for ASIAN_LONDON and once for LONDON_NEWYORK: eight scheduled instrument-session evaluations, each with a deterministic auditable terminal outcome. A scheduled evaluation is not a trade quota. BTCUSD and ETHUSD are scanned dynamically, only qualified current opportunities are ranked, and at most two combined crypto entries are taken per defined trading day; zero or one is acceptable (AGP-OD1012-SESSION-CRYPTO).\n\nUnder ratified C14, a strategy with separate, valid, scoped standing DEMO authorization may submit eligible orders automatically after every runtime, READY, host, risk and broker gate passes; no per-order owner confirmation is required for that authorized scope. Confirm/Reject remains optional decision capture and cannot grant or extend authorization. Until `demo_authorized=true` is explicitly established through the governed authorization path, broker execution remains blocked. Live real-money execution is outside this objective.\n\n`LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority."
@@ -680,7 +680,10 @@
   "telegram_scope": {
     "immediate_send_enabled": [
       "TICKET_READY",
-      "LSMC_OPPORTUNITY"
+      "LSMC_OPPORTUNITY",
+      "REPORT_CANDIDATE",
+      "REPORT_BLOCKED",
+      "REPORT_WATCH"
     ],
     "informational_disabled": {
       "INFO_ONLY_*": "PENDING_OWNER_DECISION C16",

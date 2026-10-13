@@ -100,6 +100,31 @@ def test_entry_2_bar_opening_at_its_low_yields_zero_risk_but_valid():
     assert d.risk_distance == 0.0
 
 
+def test_v113_negative_risk_is_rejected_at_detection_before_emission(monkeypatch):
+    from strategy_engine.append_only import emission_stream
+    from strategy_engine.session.setups import (
+        DecisionStatus,
+        Direction,
+        SetupDecision,
+        SetupType,
+    )
+
+    negative = SetupDecision(strategy_id="ST_ASIAN_SWEEP_5R_V1", symbol="EURUSD", reference_session="Asian",
+                             session_date=DAY, regime=Regime.RANGE, setup_type=SetupType.SWEEP,
+                             decision_status=DecisionStatus.VALID, reason_code="NEGATIVE_RISK",
+                             direction=Direction.LONG, signal_timestamp=OPEN_AT_LOW_BAR.time,
+                             entry_reference=1.0, stop_reference=1.001, risk_distance=-0.001)
+    monkeypatch.setattr("strategy_engine.append_only.entry_2_sweep", lambda *args: negative)
+    monkeypatch.setattr("strategy_engine.append_only.entry_3_range", lambda *args: negative)
+    emitted, rejected = emission_stream("ST_ASIAN_SWEEP_5R_V1", "EURUSD", _box(), Regime.RANGE,
+                                        DAY, [OPEN_AT_LOW_BAR])
+    assert emitted == []
+    assert len(rejected) == 2
+    assert all(item.risk_distance is None and item.decision_status is DecisionStatus.NO_SETUP for item in rejected)
+    assert all(item.reason_code == "NON_POSITIVE_RISK_DISTANCE" for item in rejected)
+    assert all(item.evidence["rejected_risk_distance"] == -0.001 for item in rejected)
+
+
 def test_negative_risk_is_also_unreachable_in_the_frozen_detectors():
     """The detectors cannot produce a negative distance either, so `<= 0` is the exact rule
     surface that v1.1.2 declares and the engine does not enforce."""

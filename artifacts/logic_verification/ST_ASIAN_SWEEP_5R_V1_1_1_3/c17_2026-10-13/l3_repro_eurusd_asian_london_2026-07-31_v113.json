@@ -14,7 +14,7 @@
   "streaming_hash_parity": true
  },
  "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml",
- "contract_sha256": "1b3efe20131453af25d07f23c77dd6adce0cb69ae84afc8d3395b3426b2dc5be",
+ "contract_sha256": "143c1848abdad3ef669c48e581131114927e470be3b1957b57b175b44752e545",
  "cycle": "ASIAN_LONDON",
  "dataset": {
   "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded_spread_60d.csv",

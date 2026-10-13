@@ -14,7 +14,8 @@ from typing import Dict, List, Optional
 import yaml
 
 from post_asian_pilot.pilot_config import PilotConfig, load_pilot_config
-from strategy_engine.engine import evaluate
+from strategy_engine import evaluate
+from strategy_engine.append_only import evaluate_for
 from strategy_engine.loader import load_strategy
 from strategy_engine.models import StrategyConfig, TradeSignal
 
@@ -131,7 +132,8 @@ class AsianSweepAdapter:
         if now_utc < ref[1]:
             return AdapterResult(ADAPTER_REFERENCE_OPEN, signal=None, **base)
         try:
-            sig = evaluate(self.strategy, pair_id, canonical_symbol, day, to_engine_candles(session), expected,
+            sig = evaluate_for(self.strategy, frozen_evaluate=evaluate)(self.strategy, pair_id, canonical_symbol, day,
+                           to_engine_candles(session), expected,
                            post_session_candles=to_engine_candles(post))
         except ValueError as exc:
             return AdapterResult(ADAPTER_BOX_INCOMPLETE, signal=None, reason=str(exc), **base)

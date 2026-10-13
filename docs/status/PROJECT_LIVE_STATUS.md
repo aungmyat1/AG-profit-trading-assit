@@ -2,7 +2,7 @@
 # Project Live Status
 
 Schema: `AG_PROJECT_LIVE_STATUS_V4`
-inputs_sha256: `a286b0c42a2f4b1dd66193c06617723f815f4822080cb39a254b3d4eb61e49d9`
+inputs_sha256: `0f16b1d1538fa7658290e89dbebc03c2c8cddd0a2e529bb6975edba8d7768572`
 
 ## Strategy authority
 

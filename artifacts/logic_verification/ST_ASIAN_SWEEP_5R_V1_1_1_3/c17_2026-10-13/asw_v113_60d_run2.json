@@ -2,7 +2,7 @@
  "BROKER_MUTATION_COUNT": 0,
  "ORDER_API_CALLS": 0,
  "broker_calls": 0,
- "contract_hash": "ffaf054e26d8360d48e5ed3835c0149c33b01e37a0dae4621c43c75333a765cf",
+ "contract_hash": "b3623a6296a0b8b04a011583ba1d4016852a59057ad65acfd6307e92c8fff20d",
  "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml",
  "dataset_identity": {
   "EURUSD": {
@@ -33,7 +33,7 @@
  "date": "2026-10-13",
  "demo_authorized": false,
  "edge_verified": false,
- "engine_hash": "641ff5ec6be39eaf048e95bf831bb75e5c5e685c20325f70351e6c3458158bf5",
+ "engine_hash": "8938f407ea45f53dbf82cd76439147c3553c4d3808b61046117f4e493952c228",
  "historical_only": [
   "tests/fixtures/manual_ticket/EURUSD_M15_recorded.csv (5 days)",
   "tests/fixtures/manual_ticket/GBPUSD_M15_recorded.csv (10 days)",
@@ -43,7 +43,7 @@
   "tests/fixtures/asian_sweep_v1_1_2/l4_recorded_failures.json (June-July dates)"
  ],
  "live_authorized": false,
- "logic_identity": "628f6100f673ed25772f3e8cd0cd754c14c45be9133aa44c244c3ac30555656a",
+ "logic_identity": "7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9",
  "matrix": [
   {
    "cases": 58,
@@ -434,7 +434,7 @@
    "verdicts": {
     "EURUSD": "NOT_VERIFIED"
    },
-   "verification_code_sha": "761f00fa4594ee5598e810d925bbda51bf3f2985"
+   "verification_code_sha": "387038bdaf1fb589059b8a2694f31541b360f820"
   },
   "GBPUSD": {
    "gates_by_symbol": {
@@ -483,7 +483,7 @@
     "EURUSD": "NOT_VERIFIED",
     "GBPUSD": "NOT_VERIFIED"
    },
-   "verification_code_sha": "761f00fa4594ee5598e810d925bbda51bf3f2985"
+   "verification_code_sha": "387038bdaf1fb589059b8a2694f31541b360f820"
   },
   "USDJPY": {
    "gates_by_symbol": {
@@ -534,7 +534,7 @@
     "EURUSD": "NOT_VERIFIED",
     "USDJPY": "NOT_VERIFIED"
    },
-   "verification_code_sha": "761f00fa4594ee5598e810d925bbda51bf3f2985"
+   "verification_code_sha": "387038bdaf1fb589059b8a2694f31541b360f820"
   },
   "XAUUSD": {
    "gates_by_symbol": {
@@ -585,7 +585,7 @@
     "EURUSD": "NOT_VERIFIED",
     "XAUUSD": "NOT_VERIFIED"
    },
-   "verification_code_sha": "761f00fa4594ee5598e810d925bbda51bf3f2985"
+   "verification_code_sha": "387038bdaf1fb589059b8a2694f31541b360f820"
   }
  },
  "spread_input": "L2 uses the harness TEST_SPREAD (0.2 pip); L5 uses max(signal-bar spread_points, host_captured snapshot spread) x host_captured point; commission from OD1011-COMMISSION only when bound to the host-captured server (else INSUFFICIENT, never 0)",
