@@ -18,6 +18,7 @@ is stamped FIXTURE_ONLY; EURUSD/GBPUSD prices still round to the owner-approved 
 from __future__ import annotations
 
 import datetime as dt
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Dict, Optional, Sequence
 
 from host_evidence.symbol_metadata import (
@@ -27,6 +28,7 @@ from host_evidence.symbol_metadata import (
     load_record,
 )
 from strategy_engine import evaluate, load_strategy
+from strategy_engine.append_only import evaluate_append_only, uses_append_only
 from strategy_engine.session import Candle
 from ticket_delivery.archive import (
     CYCLE_STATE_BLOCKED,
@@ -94,6 +96,23 @@ def broker_symbol(symbol: str) -> str:
 def _r(symbol: str, value: Optional[float]) -> Optional[float]:
     digits = _digits(symbol) if value is not None else None
     return value if digits is None else round(value, digits)
+
+
+def _r_half_up(symbol: str, value: Optional[float]) -> Optional[float]:
+    """OD1011-ROUNDING: versions >= 1.1.3 round to the point grid with Decimal ROUND_HALF_UP."""
+    digits = _digits(symbol) if value is not None else None
+    if digits is None:
+        return value
+    return float(Decimal(repr(value)).quantize(Decimal(1).scaleb(-digits), rounding=ROUND_HALF_UP))
+
+
+def _rounder(strategy):
+    """v1.1.2 keeps its frozen Python round(); ST_ASIAN_SWEEP_5R_V1 >= 1.1.3 uses ROUND_HALF_UP."""
+    try:
+        newer = tuple(int(x) for x in str(strategy.version).split(".")) >= (1, 1, 3)
+    except ValueError:
+        newer = False
+    return _r_half_up if strategy.strategy_id == "ST_ASIAN_SWEEP_5R_V1" and newer else _r
 
 
 def session_windows_utc(day: dt.date, *, strategy_path: str = STRATEGY_PATH) -> Dict[str, Dict[str, tuple]]:
@@ -168,6 +187,7 @@ def build_fx_ticket(
                     "block_reasons": ["LOGIC_SCOPE_NOT_VERIFIED"]}
         strategy_path = SCOPED_CANDIDATE_PATH
     strategy = load_strategy(strategy_path)
+    _round = _rounder(strategy)
     base: Dict[str, Any] = {
         "label": "INFORMATIONAL TICKET -- NOT A BROKER ORDER", "strategy_id": strategy.strategy_id,
         "strategy_version": strategy.version, "symbol": symbol, "cycle": cycle,
@@ -184,13 +204,15 @@ def build_fx_ticket(
         return {**base, "decision": REFERENCE_NOT_READY, "reason_code": REFERENCE_NOT_READY,
                 "detail": f"reference window closes {ref_end.isoformat()}"}
     try:
-        sig = evaluate(strategy, cycle, symbol, session_date, session_candles, expected_bar_count,
+        # v1.1.3+ append-only routing (D-ASW-1/D-ASW-2); frozen versions keep the module-level evaluate seam.
+        engine = evaluate_append_only if uses_append_only(strategy) else evaluate
+        sig = engine(strategy, cycle, symbol, session_date, session_candles, expected_bar_count,
                        post_session_candles)
     except Exception as exc:  # noqa: BLE001 -- any engine/data failure is a DATA_ERROR ticket, never a guess
         return {**base, "decision": "DATA_ERROR", "reason_code": type(exc).__name__, "detail": str(exc)[:300]}
     ticket = {**base, "decision": "READY" if sig.status == "SIGNAL" else "NO_TRADE", "reason_code": sig.reason_code,
               "regime": sig.regime, "setup": sig.setup, "signal_id": sig.signal_id,
-              "box": {"high": _r(symbol, sig.box_high), "low": _r(symbol, sig.box_low), "mid": _r(symbol, sig.box_mid)},
+              "box": {"high": _round(symbol, sig.box_high), "low": _round(symbol, sig.box_low), "mid": _round(symbol, sig.box_mid)},
               "signal_timestamp": sig.signal_timestamp.isoformat() if sig.signal_timestamp else None}
     if runtime_scope and (sig.setup != "SWEEP" or sig.regime != "RANGE"):
         return {**ticket, "decision": "BLOCKED", "reason_code": "LOGIC_SCOPE_NOT_VERIFIED",
@@ -201,10 +223,10 @@ def build_fx_ticket(
         tp1 = sig.box_high if long else sig.box_low
         tp2 = sig.entry + (5.0 if long else -5.0) * sig.risk_distance
         ticket.update({
-            "direction": sig.direction, "entry_order_type": "MARKET", "entry": _r(symbol, sig.entry),
-            "stop_loss": _r(symbol, sig.stop_loss), "risk_distance": sig.risk_distance,
-            "targets": [{"leg": 1, "volume_pct": 0.75, "type": "OPPOSITE_SESSION_BOUNDARY", "price": _r(symbol, tp1)},
-                        {"leg": 2, "volume_pct": 0.25, "type": "FIXED_R_MULTIPLE_5", "price": _r(symbol, tp2)}],
+            "direction": sig.direction, "entry_order_type": "MARKET", "entry": _round(symbol, sig.entry),
+            "stop_loss": _round(symbol, sig.stop_loss), "risk_distance": sig.risk_distance,
+            "targets": [{"leg": 1, "volume_pct": 0.75, "type": "OPPOSITE_SESSION_BOUNDARY", "price": _round(symbol, tp1)},
+                        {"leg": 2, "volume_pct": 0.25, "type": "FIXED_R_MULTIPLE_5", "price": _round(symbol, tp2)}],
             "time_invalidation_gmt": "15:00", "spread_check": "NOT_EVALUATED", "position_size": "NOT_SPECIFIED",
         })
     # entry_2/entry_3 stamp the qualifying M15 bar's open. A SIGNAL without that engine time

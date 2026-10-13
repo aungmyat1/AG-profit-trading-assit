@@ -1,0 +1,777 @@
+{
+ "BROKER_MUTATION_COUNT": 0,
+ "ORDER_API_CALLS": 0,
+ "authority": "none: logic evidence only; no registry, READY, demo, live or rule change",
+ "broker_calls": 0,
+ "causality": {
+  "_first_setup": "RANGE",
+  "bars": 16,
+  "first_emission_prefix_len": 12,
+  "future_mutation_mismatches": 0,
+  "future_mutations": 25,
+  "pre_emission_signals": 0,
+  "prefix_mismatches": 0,
+  "streaming_hash_parity": true
+ },
+ "contract_path": "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml",
+ "contract_sha256": "1b3efe20131453af25d07f23c77dd6adce0cb69ae84afc8d3395b3426b2dc5be",
+ "cycle": "ASIAN_LONDON",
+ "dataset": {
+  "fixture": "tests/fixtures/manual_ticket/EURUSD_M15_recorded_spread_60d.csv",
+  "id": "d60",
+  "sha256": "31f941f3c19f6cc797e4003e5bb14f23448ac23f77a3e19b8fcf68dce63fa1ec"
+ },
+ "demo_authorized": false,
+ "differing_fields": {},
+ "emission_semantic": {
+  "box": {
+   "high": 1.15266,
+   "low": 1.15044,
+   "mid": 1.15155
+  },
+  "decision": "STALE",
+  "direction": "LONG",
+  "entry": 1.15044,
+  "reason_code": "STALE_SIGNAL",
+  "regime": "RANGE",
+  "risk_distance": 8.999999999992347e-05,
+  "setup": "RANGE",
+  "signal_id": "ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-07-31:2026-07-31T09:45:00+00:00",
+  "signal_timestamp": "2026-07-31T09:45:00+00:00",
+  "stop_loss": 1.15035,
+  "targets": [
+   {
+    "leg": 1,
+    "price": 1.15266,
+    "type": "OPPOSITE_SESSION_BOUNDARY",
+    "volume_pct": 0.75
+   },
+   {
+    "leg": 2,
+    "price": 1.15089,
+    "type": "FIXED_R_MULTIPLE_5",
+    "volume_pct": 0.25
+   }
+  ]
+ },
+ "first_emission_prefix_k": 12,
+ "full_semantic": {
+  "box": {
+   "high": 1.15266,
+   "low": 1.15044,
+   "mid": 1.15155
+  },
+  "decision": "STALE",
+  "direction": "LONG",
+  "entry": 1.15044,
+  "reason_code": "STALE_SIGNAL",
+  "regime": "RANGE",
+  "risk_distance": 8.999999999992347e-05,
+  "setup": "RANGE",
+  "signal_id": "ST_ASIAN_SWEEP_5R_V1:ASIAN_LONDON:EURUSD:2026-07-31:2026-07-31T09:45:00+00:00",
+  "signal_timestamp": "2026-07-31T09:45:00+00:00",
+  "stop_loss": 1.15035,
+  "targets": [
+   {
+    "leg": 1,
+    "price": 1.15266,
+    "type": "OPPOSITE_SESSION_BOUNDARY",
+    "volume_pct": 0.75
+   },
+   {
+    "leg": 2,
+    "price": 1.15089,
+    "type": "FIXED_R_MULTIPLE_5",
+    "volume_pct": 0.25
+   }
+  ]
+ },
+ "live_authorized": false,
+ "per_candle": [
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15171,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15176,
+   "low": 1.15138,
+   "open": 1.1517,
+   "time": "2026-07-31T07:00:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.1514,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15173,
+   "low": 1.15124,
+   "open": 1.15171,
+   "time": "2026-07-31T07:15:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15187,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15194,
+   "low": 1.15115,
+   "open": 1.15139,
+   "time": "2026-07-31T07:30:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15145,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15249,
+   "low": 1.15122,
+   "open": 1.15186,
+   "time": "2026-07-31T07:45:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15106,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.1516,
+   "low": 1.15083,
+   "open": 1.15144,
+   "time": "2026-07-31T08:00:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15075,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15131,
+   "low": 1.15075,
+   "open": 1.15106,
+   "time": "2026-07-31T08:15:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15092,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "VALID",
+    "direction": "LONG",
+    "entry_reference": 1.15044,
+    "reason_code": "LOWER_BOUNDARY_REJECTION",
+    "regime": "RANGE",
+    "risk_distance": 0.0,
+    "setup": "RANGE",
+    "signal_timestamp": "2026-07-31T08:30:00+00:00",
+    "stop_reference": 1.15044
+   },
+   "high": 1.15101,
+   "low": 1.15044,
+   "open": 1.15075,
+   "time": "2026-07-31T08:30:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15219,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15263,
+   "low": 1.15091,
+   "open": 1.15091,
+   "time": "2026-07-31T08:45:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15165,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.1525,
+   "low": 1.15148,
+   "open": 1.15211,
+   "time": "2026-07-31T09:00:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15092,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15185,
+   "low": 1.15092,
+   "open": 1.15165,
+   "time": "2026-07-31T09:15:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15035,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15123,
+   "low": 1.15032,
+   "open": 1.15092,
+   "time": "2026-07-31T09:30:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15055,
+   "entry_2_sweep": {
+    "decision_status": "VALID",
+    "direction": "LONG",
+    "entry_reference": 1.15035,
+    "reason_code": "LOWER_SWEEP_STRICT_PENETRATION",
+    "regime": "RANGE",
+    "risk_distance": 0.0,
+    "setup": "SWEEP",
+    "signal_timestamp": "2026-07-31T09:45:00+00:00",
+    "stop_reference": 1.15035
+   },
+   "entry_3_range": {
+    "decision_status": "VALID",
+    "direction": "LONG",
+    "entry_reference": 1.15044,
+    "reason_code": "LOWER_BOUNDARY_REJECTION",
+    "regime": "RANGE",
+    "risk_distance": 8.999999999992347e-05,
+    "setup": "RANGE",
+    "signal_timestamp": "2026-07-31T09:45:00+00:00",
+    "stop_reference": 1.15035
+   },
+   "high": 1.15092,
+   "low": 1.15035,
+   "open": 1.15035,
+   "time": "2026-07-31T09:45:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.1507,
+   "entry_2_sweep": {
+    "decision_status": "VALID",
+    "direction": "LONG",
+    "entry_reference": 1.15055,
+    "reason_code": "LOWER_SWEEP_STRICT_PENETRATION",
+    "regime": "RANGE",
+    "risk_distance": 0.00018999999999991246,
+    "setup": "SWEEP",
+    "signal_timestamp": "2026-07-31T10:00:00+00:00",
+    "stop_reference": 1.15036
+   },
+   "entry_3_range": {
+    "decision_status": "VALID",
+    "direction": "LONG",
+    "entry_reference": 1.15044,
+    "reason_code": "LOWER_BOUNDARY_REJECTION",
+    "regime": "RANGE",
+    "risk_distance": 7.999999999985796e-05,
+    "setup": "RANGE",
+    "signal_timestamp": "2026-07-31T10:00:00+00:00",
+    "stop_reference": 1.15036
+   },
+   "high": 1.15082,
+   "low": 1.15036,
+   "open": 1.15055,
+   "time": "2026-07-31T10:00:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.1502,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15071,
+   "low": 1.15015,
+   "open": 1.1507,
+   "time": "2026-07-31T10:15:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15029,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15046,
+   "low": 1.15011,
+   "open": 1.1502,
+   "time": "2026-07-31T10:30:00+00:00"
+  },
+  {
+   "box_high": 1.15266,
+   "box_low": 1.15044,
+   "close": 1.15019,
+   "entry_2_sweep": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_QUALIFIED_SWEEP_IN_WINDOW",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "entry_3_range": {
+    "decision_status": "NO_SETUP",
+    "direction": null,
+    "entry_reference": null,
+    "reason_code": "NO_SETUP_BY_WINDOW_END",
+    "regime": "RANGE",
+    "risk_distance": null,
+    "setup": "NONE",
+    "signal_timestamp": null,
+    "stop_reference": null
+   },
+   "high": 1.15042,
+   "low": 1.15013,
+   "open": 1.1503,
+   "time": "2026-07-31T10:45:00+00:00"
+  }
+ ],
+ "prefixes": [
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 0,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": null,
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 1,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": null,
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 2,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": null,
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 3,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": null,
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 4,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": null,
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 5,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": null,
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 6,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": null,
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 7,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": "2026-07-31T08:30:00+00:00",
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 8,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": "2026-07-31T08:30:00+00:00",
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 9,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": "2026-07-31T08:30:00+00:00",
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 10,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": "2026-07-31T08:30:00+00:00",
+   "stop_loss": null
+  },
+  {
+   "decision": "NO_TRADE",
+   "direction": null,
+   "entry": null,
+   "k": 11,
+   "risk_distance": null,
+   "setup": "NONE",
+   "signal_timestamp": "2026-07-31T08:30:00+00:00",
+   "stop_loss": null
+  },
+  {
+   "decision": "STALE",
+   "direction": "LONG",
+   "entry": 1.15044,
+   "k": 12,
+   "risk_distance": 8.999999999992347e-05,
+   "setup": "RANGE",
+   "signal_timestamp": "2026-07-31T09:45:00+00:00",
+   "stop_loss": 1.15035
+  },
+  {
+   "decision": "STALE",
+   "direction": "LONG",
+   "entry": 1.15044,
+   "k": 13,
+   "risk_distance": 8.999999999992347e-05,
+   "setup": "RANGE",
+   "signal_timestamp": "2026-07-31T09:45:00+00:00",
+   "stop_loss": 1.15035
+  },
+  {
+   "decision": "STALE",
+   "direction": "LONG",
+   "entry": 1.15044,
+   "k": 14,
+   "risk_distance": 8.999999999992347e-05,
+   "setup": "RANGE",
+   "signal_timestamp": "2026-07-31T09:45:00+00:00",
+   "stop_loss": 1.15035
+  },
+  {
+   "decision": "STALE",
+   "direction": "LONG",
+   "entry": 1.15044,
+   "k": 15,
+   "risk_distance": 8.999999999992347e-05,
+   "setup": "RANGE",
+   "signal_timestamp": "2026-07-31T09:45:00+00:00",
+   "stop_loss": 1.15035
+  },
+  {
+   "decision": "STALE",
+   "direction": "LONG",
+   "entry": 1.15044,
+   "k": 16,
+   "risk_distance": 8.999999999992347e-05,
+   "setup": "RANGE",
+   "signal_timestamp": "2026-07-31T09:45:00+00:00",
+   "stop_loss": 1.15035
+  }
+ ],
+ "registry_modified": false,
+ "schema": "AG_L3_DECISION_REVISION_REPRODUCER_V1",
+ "session_date": "2026-07-31",
+ "strategy": "ST_ASIAN_SWEEP_5R_V1@1.1.3",
+ "symbol": "EURUSD",
+ "window": {
+  "evaluated_at": "2026-07-31T11:00:00+00:00",
+  "post_bars": 16,
+  "reference": [
+   "2026-07-31T00:00:00+00:00",
+   "2026-07-31T06:00:00+00:00"
+  ],
+  "trade": [
+   "2026-07-31T07:00:00+00:00",
+   "2026-07-31T11:00:00+00:00"
+  ]
+ }
+}

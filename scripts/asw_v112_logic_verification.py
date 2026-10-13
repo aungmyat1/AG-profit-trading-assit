@@ -110,6 +110,17 @@ DECLARED_FAIL_CLOSED = {"R.regime_branch", "R.entry_trigger", "R.entry_level", "
                         "R.max_spread", "R.max_spread_fraction", "R.target_order"}
 
 
+def use_candidate(contract: str, version: str) -> None:
+    """Replay another registered-identity candidate (e.g. v1.1.3) through this unchanged harness.
+    Identity comes from v1_tickets.authority.logic_identity(STRATEGY_ID, version); the contract's own
+    `version` must match, so a mislabelled run fails instead of recording the wrong identity."""
+    global CANDIDATE, VERSION
+    declared = str(load_strategy(contract).version)
+    if declared != str(version):
+        raise ValueError(f"{contract} declares version {declared}, not {version}")
+    CANDIDATE, VERSION = contract, str(version)
+
+
 def sha256_file(path: str) -> str:
     return hashlib.sha256((ROOT / path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
@@ -513,7 +524,9 @@ def _build_report(generated_at: str) -> Dict[str, Any]:
     # L1 identity
     l1_checks = {
         "candidate_contract_sha256": ident["contract_hash"] == _sha256_text((CANDIDATE,), ROOT),
-        "registry_identity_matches": registry["candidate_versions"][VERSION]["logic_verified_identity"] == ident["digest"],
+        # An unregistered candidate (e.g. v1.1.3 before any owner decision) has no recorded identity: False.
+        "registry_identity_matches": ((registry.get("candidate_versions") or {}).get(VERSION) or {}).get(
+            "logic_verified_identity") == ident["digest"],
         "frozen_v1_1_1_contract_unchanged": _sha256_text((FROZEN,), ROOT) == FROZEN_CONTRACT_HASH,
         "runtime_binding_v1_1_1": registry["config_source"] == FROZEN and fx.STRATEGY_PATH == FROZEN,
         "replay_determinism": all(c["ticket_gate_status"] is None or c["ticket_gate_status"]["L1"] == PASS for c in cases),
