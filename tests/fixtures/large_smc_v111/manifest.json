@@ -8,7 +8,7 @@
         "M5": 604
       },
       "fixture_file": "tests/fixtures/large_smc_v111/EURUSD.json",
-      "fixture_sha256": "b5e1e524e1b912d15032650881edb000906d6d875657332be90fa3997a191c11",
+      "fixture_sha256": "2ce91ea1c0eecf2debda0bd6bfb34e37d0f49cd66ccbb00ed199f7f78da6425d",
       "symbol": "EURUSD"
     },
     {

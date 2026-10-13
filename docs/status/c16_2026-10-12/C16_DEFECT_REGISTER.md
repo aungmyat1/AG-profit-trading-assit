@@ -14,6 +14,17 @@ threshold, editing a frozen contract, or touching a registry/READY/demo/live sur
 verification, runtime READY, demo authorization and live authorization remain independent
 states.
 
+`D-LSMC-6` … `D-LSMC-10` were added on 2026-10-13 by the C15-LSMC follow-up independent logic
+audit, completed the same day under **AGP-C17-LSMC-LOGIC-COMPLETION-R1**
+(`docs/status/AGP_C15_LSMC_V110_LOGIC_AUDIT_2026-10-13.md`, machine report
+`artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c15_lsmc_audit_2026-10-13/lsmc_v110_logic_audit.json`,
+delivery record `docs/status/AGP_C17_LSMC_LOGIC_COMPLETION_R1_2026-10-13.md`). Each of the eight open
+`D-LSMC-*` entries now carries a classification against the five mission classes (implementation /
+strategy-contract / data / metadata / verification-harness) and a route — see `phase_b.rows` in the machine
+report and §3 of the audit document.
+They continue this register's `D-LSMC-*` id space so it stays the single index; every C16 entry
+above is unchanged, and no committed C15/C16 evidence file was rewritten.
+
 | ID | Severity | Strategy | Class | Status |
 |---|---|---|---|---|
 | `GOVERNANCE-180` | BLOCKER (authority) | — | process / governance | **CLOSED — owner merged #180 (`7dfc8a20`)** |
@@ -21,11 +32,16 @@ states.
 | `D-ASW-1` | HIGH | ASW 1.1.2 | implementation vs declaration | OPEN — v1.1.3 proposed |
 | `D-ASW-2` | HIGH | ASW 1.1.2 | implementation (identity/causality) | OPEN — v1.1.3 proposed |
 | `D-ASW-3` | MEDIUM | ASW 1.1.2 | missing host evidence | OPEN — owner input |
-| `D-LSMC-1` | MEDIUM (by design) | LSMC 1.1.0 | missing host/broker evidence | OPEN — owner input |
+| `D-LSMC-1` | MEDIUM (by design) | LSMC 1.1.0 | missing host/broker evidence (**METADATA**) | OPEN — owner input; no fix is proposed that would invent a pip size |
 | `D-LSMC-2` | LOW | LSMC 1.1.0 | stale contract pointer | OPEN — bounded fix available |
 | `D-LSMC-3` | MEDIUM | LSMC 1.1.0 | identity-record staleness | OPEN — owner input |
 | `D-LSMC-4` | MEDIUM | LSMC 1.1.0 | missing authority adapter | OPEN — owner input |
 | `D-LSMC-5` | MEDIUM | LSMC 1.1.0 | L5 cost evidence | OPEN — owner input |
+| `D-LSMC-6` | MEDIUM | LSMC 1.1.0 | declaration vs implementation (unit of a frozen rule) (**IMPLEMENTATION**) | OPEN — owner decision; candidate `1.1.2` prepared, FX-only, conservative direction |
+| `D-LSMC-7` | MEDIUM | LSMC 1.1.0 | harness vacuity + undeclared contract state | **HALF FIXED 2026-10-13** (harness); `REJECTED` state still undeclared |
+| `D-LSMC-8` | MEDIUM | LSMC 1.1.0 | evidence fixture defect | **FIXED 2026-10-13** (bars byte-identical; guard added) |
+| `D-LSMC-9` | LOW | LSMC 1.1.0 | reporting (gate status read as coverage) | ROOT-CAUSED — fresh reports carry `check_coverage`; committed evidence untouched |
+| `D-LSMC-10` | LOW | LSMC 1.1.0 | import boundary / packaging | OPEN — bounded packaging fix; owner decision |
 | `D-CCFD-1` | LOW | CCFD 1.1.0 | documentation vs implementation | ROOT-CAUSED — doc fix available |
 | `D-CCFD-2` | MEDIUM (identity bookkeeping) | CCFD 1.1.0 | cross-revision raw-file vs canonical identity | **RESOLVED BY ROOT CAUSE** |
 | `D-CCFD-3` | MEDIUM | CCFD 1.0.0 | identity staleness (pre-existing C15) | OPEN — owner input |
@@ -127,6 +143,28 @@ CFD contract itself forbids importing FX pip conventions or perp tick models
 (`spread_cost_policy.units: [BROKER_POINTS, PRICE, PERCENT]`, `FX pip conventions FORBIDDEN`),
 so the value must come from verified broker symbol metadata.
 
+**2026-10-13 follow-up (C15-LSMC audit).** Still OPEN and still blocking, with two clarifications.
+(a) New FX-side evidence that the rule *works* where a pip is evidenced: on 575 rolling scans of the
+host-captured EURUSD fixture the engine produced three distinct opportunities, two with computed C10
+stops sitting exactly `MIN_BUFFER_PIPS × PIP_SIZE_EURUSD` = 1.5 pips beyond the sweep extreme and passing
+`L3.stop_side` / `L3.stop_beyond_sweep`, and one SHORT whose stop is `None` with `MISSING_SPREAD` — the
+side-aware verified-live-spread requirement failing closed rather than guessing
+(`findings[D-LSMC-1].evidence.eurusd_lane_b`). (b) Point 3 above cites "detection L1–L4/L6 pass
+8,961/8,961 per symbol"; read that with **D-LSMC-9** — those are gate statuses, and on 6,921 (BTCUSD) /
+8,113 (ETHUSD) of those scans every opportunity rule was NOT_APPLICABLE. The C16 text is left as written.
+
+**2026-10-13 AGP-C17 classification: METADATA.** Not an implementation defect and not a contract defect:
+`large_smc_core.c10_stop_policy.compute_c10_stop` is correct, and `contract.C10_PIP_SIZE` is deliberately
+restricted to owner-evidenced pips. No fix is applied and none is proposed that would invent a pip size —
+that would fabricate broker metadata, which is exactly what the fail-closed gate exists to prevent.
+`strategies/ST_LARGE_SMC_V1_1_1_1.yaml::pip_size_rules` already proposes FX `10 × host_captured_point`,
+XAUUSD `0.1`, BTCUSD `1.0` and ETHUSD `0.1`, each `PENDING_OWNER_CONFIRM` with
+`apply_before_owner_confirmation: false`; the audit's positive control measures exactly `10 × point` for
+EURUSD, i.e. what the FX proposal would produce once confirmed. Owner route: confirm the pip rules, or
+supply host captures for USDJPY/XAUUSD/BTCUSD/ETHUSD. Until then those four cannot emit a deliverable
+opportunity, and their scope verdicts stay `NOT_VERIFIED`. Pinned by
+`tests/test_lsmc_v110_logic_audit.py::test_metadata_fails_closed_and_the_positive_control_still_resolves`.
+
 ## D-LSMC-2 — stale C10 implementation pointer in the frozen contract
 
 `strategies/ST_LARGE_SMC_V1.yaml::stop_loss_contract.governance.implementation` names
@@ -156,6 +194,14 @@ therefore stale for the engine component only. Resolution is an owner choice (re
 identity, or move the gate back out of the engine) — C16 does not re-record an identity on its
 own authority.
 
+**2026-10-13 follow-up (C15-LSMC audit).** Reproduced unchanged: tree `88dd9f1f…`, registry
+`ec0b2f3d…`, drift isolated to `watch.py` (`86ac9cdcfa864b36a06b795920bd333f8fa9cfdd81efa5eb422e1d746bc2c63d`),
+`__init__`/`contract`/`detect` and both dependencies unchanged. The audit **left the pin stale on
+purpose**: re-recording an identity on agent authority would reattribute the 2026-10-09/11
+`LOGIC_VERIFIED` record. The one registry edit in that PR is prose only
+(`detection_logic_verification.verification_basis`, see D-LSMC-8), which names both the
+pre-correction bytes the historical record ran on and the corrected in-tree bytes.
+
 ## D-LSMC-4 — no `logic_identity` adapter for `ST_LARGE_SMC_V1`
 
 `v1_tickets/authority.py::ADAPTERS` has entries only for `ST_ASIAN_SWEEP_5R_V1` and
@@ -170,6 +216,168 @@ reported, not gated.
 Large-SMC L5 is `WARN` for every scan: no accepted spread/commission evidence is bound and the
 1.1.0 alert path has no cost gate. Per OD1011-L5 the verdict is `WARN` naming the missing
 source rather than an invented value.
+
+**2026-10-13 follow-up (C15-LSMC audit).** Reproduced in all four lanes: L5 `WARN` on 18/18 fixture
+cases, 575/575 EURUSD scans and 240/240 bounded crypto scans. Related environment fact now measured:
+`OD1012-LSMC-RRF`'s `lsmc_min_remaining_reward_fraction: 0.5` lives in the host-local policy only, so
+off-host `watch._remaining_fraction` returns `None` and every fully-costed opportunity is rejected
+`REJECT_STALE` (11 of 34 rejected scans in lane B). That is an operational actionability parameter, not
+a contract rule and not a cost gate.
+
+## D-LSMC-6 — POI max age declared in trading days, implemented in calendar dates
+
+Added 2026-10-13 (C15-LSMC follow-up audit). **Blocking for the audit verdict; not fixable on agent
+authority.**
+
+Declared: `strategies/ST_LARGE_SMC_V1_1_1_0.yaml` `rules.poi.max_age_trading_days: 5`, the flagged
+contract choice "distinct NY-17:00 trading dates", `docs/specs/LSMC_SPEC_V2_FROZEN.md` §4.2 and
+`docs/specs/LSMC_SPEC_V1_FROZEN.md:259` (both "trading days").
+Implemented: `src/large_smc_watch/watch.py::expires_at` applies `next_day_boundary`
+`POI_MAX_AGE_TRADING_DAYS + 1` = 6 times, i.e. six consecutive **calendar** NY-17:00 dates, counting
+Saturday and Sunday. `watch._poi_age_days` (line 164) implements the declared unit and has **zero
+callers in the repository**.
+
+Measured (audit lane `property_checks.poi_age_semantics`, every distinct POI origin):
+
+| Calendar | Origins evaluated | Divergent | Trading-day instances expired early | Direction |
+|---|---|---|---|---|
+| Synthetic FX, 4 weeks (contract's own weekend rule) | 481 | 358 | 646 | 100% `ENGINE_EXPIRES_EARLIER` |
+| EURUSD H1 committed export `SSC_V1_0_1_G2_DEV_001` | 723 | 600 | 1,080 | 100% `ENGINE_EXPIRES_EARLIER` |
+| BTCUSD H1 VT-recorded 60d | 1,412 | **0** | 0 | — |
+
+Worked example: a POI born Sun 2026-06-21T21:00Z (trading date Mon 2026-06-22) is declared valid
+through Mon 2026-06-29 (`2026-06-29T17:00-04:00`); the engine expires it `2026-06-27T21:00Z`
+(Sat 17:00 New York), losing that whole Monday. Origins late in the week lose two trading dates.
+
+Materiality: conservative, and measured rather than assumed — trading dates are a subset of calendar
+dates, so six calendar boundaries land at or before six trading dates; no `ENGINE_EXPIRES_LATER`
+origin exists. The engine can suppress an opportunity or hold `NEAR_POI`/`DEVELOPING`; it can never
+keep a POI alive longer than declared. **Scope is FX only**: BTCUSD/ETHUSD trade every calendar date
+on this venue, so C15/C16 could not observe it, and the 18-case harness cannot either (its H1 windows
+span fewer than six trading dates).
+
+Why not fixed: an engine rule change is an owner decision, and `C001-PRE-RESULT-CORCTION` makes a
+rule-byte change to a frozen candidate a *new candidate identity*. Owner options: amend the declared
+wording to the implemented calendar unit, or ship a new version wiring `_poi_age_days`. It is also not
+gated in `lsmc_logic_gate.py` — a new blocking check would silently change committed C15/C16 lane
+distributions on re-run, and the choice is not the auditor's.
+
+Reproduce: `python scripts/lsmc_v110_logic_audit.py --skip-crypto` → `property_checks.poi_age_semantics`
+(FAIL) and `findings[D-LSMC-6]`.
+
+**2026-10-13 AGP-C17 classification: IMPLEMENTATION against a declared contract rule, candidate prepared.**
+The declaration is consistent across `strategies/ST_LARGE_SMC_V1_1_1_0.yaml`,
+`docs/specs/LSMC_SPEC_V2_FROZEN.md` §4.2 and `docs/specs/LSMC_SPEC_V1_FROZEN.md:259`; the frozen engine
+diverges from all three, and `watch._poi_age_days` (0 callers) already implements the declared unit. Because
+1.1.0 is frozen, the correction is prepared as a **new candidate** instead of an edit:
+`strategies/ST_LARGE_SMC_V1_1_1_2.yaml` (sha256 `5931b616f2048dd20c79bc2938ebd71a77b133c5b51b2c2d986664044b58d52f`, based on the committed 1.1.1 bytes `52203c8b…43fdb`,
+`SPEC_ONLY_NOT_WIRED`, `CANDIDATE_PENDING_OWNER_CONFIRM`, `registered: false`, `active: false`, every
+authority flag `false`, `economic_status: NOT_EVALUATED`). It keeps `max_age_trading_days: 5` — the number is
+not the defect — and adds `max_age_unit: DISTINCT_NY1700_TRADING_DATES`, `expiry_instant`,
+`weekend_and_holiday_dates_excluded: true` and an explicit implementation requirement naming `_poi_age_days`.
+Its declared structural diff (15 paths, 1.1.1 → 1.1.2) is recomputed and compared by
+`property_checks.candidate_rule_change_diff`, so an undeclared rule change fails the audit; the duplicated
+`timeframes:` key inherited from 1.1.1 is removed as a byte-level-only fix (parsed structure identical).
+No gate was weakened and no emission suppressed to reach any verdict here: `property_checks.gate_integrity`
+computes that claim row by row (11/11). Activation still requires the owner's unit decision, a new registered
+version, and a **fresh L1–L6 replay** of the changed candidate — 1.1.0 evidence may not be reused for it.
+Details: `docs/status/AGP_C15_LSMC_V110_LOGIC_AUDIT_2026-10-13.md` §3.2, and the per-symbol scope matrix in §4.
+
+## D-LSMC-7 — delivery gate blanked every opportunity rule in the shipped harness (half fixed)
+
+Added 2026-10-13. `watch.gate_opportunity` (2026-10-10) renames the state to `REJECTED` off-host,
+where the owner threshold `config/local/actionability_policy.yaml` is absent and
+`watch._remaining_fraction` has no fallback. `v1_tickets.lsmc_logic_gate` keyed its opportunity checks
+on `state == "OPPORTUNITY"`, so between 2026-10-10 and 2026-10-13 **156 per-check verdicts degraded to
+NOT_APPLICABLE while L2/L3/L6 still printed PASS**: `opportunity_symbols_covered` `[]`,
+`c10_stop_geometry_symbols` `[]`, L2's six opportunity rules, all of L3 geometry and all of L6 freshness
+unevaluated on 18/18 cases. Same defect class as the 2026-10-09 → 2026-10-13 diff of the C1 report.
+
+**Fixed 2026-10-13** in `src/v1_tickets/lsmc_logic_gate.py`: `signal_snapshot` inverts the delivery gate
+exactly, the opportunity checks run on the detection lane, the shipped state stays in every case record,
+`L2.delivery_gate_preserves_detection` asserts the inversion loses nothing (PASS 10/10 opportunity
+cases), and `check_coverage` reports `checks_evaluated` / `checks_not_applicable` /
+`never_exercised_checks` / `structural_na_markers` so future vacuity is visible. `L2.point_source` was
+split into `L2.point_source_declared` (the rule) and `L2.point_source` (measured), because a
+pre-metadata short-circuit (`MARKET_CLOSED`, `DATA_ERROR`) was being reported as a point-source failure.
+After the fix: 542 checks evaluated, 78 NOT_APPLICABLE, 0 never-exercised, verdict `LOGIC_VERIFIED`.
+No rule, threshold or case was loosened.
+
+**Still open (not fixed):** `REJECTED` is a sixth state that the frozen contract's `alerts.mapping` does
+not declare (it lists `DEVELOPING`, `NEAR_POI`, `OPPORTUNITY`, `INVALIDATED`, `EXPIRED`; `SUSPENDED`,
+`IDLE`, `DATA_ERROR`, `MARKET_CLOSED` emit nothing). `watch.WatchTracker._emit` special-cases it to alert
+level `INFO`. Needs a contract note or an owner decision.
+
+Reproduce: `property_checks.harness_regressions.delivery_gate_does_not_blank_the_opportunity_rules` and
+`.short_circuit_is_not_reported_as_a_point_source_failure` in the audit report.
+
+## D-LSMC-8 — HOST_CAPTURED FX fixture evaluated 68 days after its own data, in the weekend (fixed)
+
+Added and fixed 2026-10-13. `tests/fixtures/large_smc_v111/EURUSD.json` carried
+`evaluated_at_utc = 2026-10-10T19:45:53.895829Z` — its own regeneration wall-clock — instead of the
+manifest `decision_time_utc = 2026-08-03T00:00:00Z` carried by all five sibling fixtures. That instant is
+**Saturday 15:45 America/New_York**, inside the FX weekend close, 68.8 days after the fixture's last M5
+bar (`2026-08-02T23:55Z`).
+
+Consequences, all reproduced: (1) the 18-case harness returned `LOGIC_NOT_VERIFIED` (L2 + L4 FAIL) purely
+from the timestamp; (2) `scripts/audit_lsmc_v111_candidate.py`'s only `HOST_CAPTURED` row was pinned to
+`MARKET_CLOSED` / `L4 FAIL`, and `tests/test_lsmc_v111_candidate_audit.py` asserted that state under a
+comment claiming the snapshot was "captured Sunday", which the timestamp contradicts; (3) the AGP-4H-C
+oracle's `L6_closed_ordered_inputs` check had 68 days of slack and could not fail.
+
+Fix: `evaluated_at_utc` = manifest decision time; **all 754 bars (D1 30 / H1 120 / M5 604) byte-identical**
+(0 changed), so no detection comparison resting on those bars is affected; manifest pin
+`b5e1e524…` → `2ce91ea1c0eecf2debda0bd6bfb34e37d0f49cd66ccbb00ed199f7f78da6425d`;
+`tests/_lsmc_v111_fixtures.check_decision_time` fails closed on any recurrence in either harness; the
+candidate-audit expectations were corrected (EURUSD now `NEAR_POI` / `L4 PASS`, matching the 2026-10-09 C1
+result); `strategies/registry.yaml::detection_logic_verification.verification_basis` records the correction
+while keeping that historical record attributed to the pre-correction bytes it ran on.
+`research_external/oracles/runs/AGP_4H_C_EURUSD_DETECTION.json` is frozen historical evidence and was
+**not** rewritten; with the corrected fixture its L6 check is boundary-exact and
+`pytest tests/test_agp_4h_c_detection.py` passes 9/9.
+
+Reproduce: `property_checks.harness_regressions.fixture_decision_time_guard` and `findings[D-LSMC-8]`.
+
+## D-LSMC-9 — a gate PASS on every scan is not coverage
+
+Added 2026-10-13, LOW. Both committed C16 artifacts report `gate_status_counts` PASS on **8,961/8,961**
+full-D1 scans for L1–L4 and L6. True, and not coverage: on 6,921 (BTCUSD) and 8,113 (ETHUSD) of those
+scans the snapshot was not an `OPPORTUNITY`, so L2's six opportunity rules and all of L3/L6's opportunity
+checks were NOT_APPLICABLE — and with `opportunities.with_c10_stop = 0`, `L3.stop_side` and
+`L3.stop_beyond_sweep` were NOT_APPLICABLE on **every scan of both 60-day replays**. The committed
+`NOT_VERIFIED` verdicts already rest on the missing stop evidence (D-LSMC-1); what was missing is the
+explicit statement of how little of the gate those headlines evaluated. The bounded lane-C window shows
+the same at small scale: BTCUSD 0 opportunity scans in 120, ETHUSD 13.
+
+Committed artifacts are historical evidence and are **not** rewritten. Fresh reports now carry
+`check_coverage`, with the three structural NOT_APPLICABLE markers (`L3.geometry`, `L3.stop_geometry`,
+`L6.freshness` — ids that can never take a verdict) listed separately from real gaps, so the metric cannot
+be misread in either direction. Lane C re-derives the committed counts from the artifacts instead of
+trusting the headline (16 boolean checks per symbol, all pass).
+
+Reproduce: `findings[D-LSMC-9].evidence.committed_c16_rederived_from_the_artifacts`.
+
+## D-LSMC-10 — no transport or order path, but the import closure reaches the MT5 broker API
+
+Added 2026-10-13, LOW. Statically and at runtime, nothing reachable from `large_smc_watch` imports
+Telegram, `requests`, `httpx`, `aiohttp`, `urllib`, `smtplib`, `socket`, `fastapi`, `uvicorn`,
+`execution.*`, `trade_management`, `authorization`, `owner_decision`, `svos`, `notifications`, `api` or
+`mt5.management_gateway`: 48 repo modules in the closure, zero hits; 561 modules loaded by
+`import large_smc_watch`, none of them a transport. The closure does contain `src/mt5/market_data.py:17`
+and `src/mt5/symbol_resolver.py:12`, which import `MetaTrader5` unconditionally, via
+`large_smc_watch.detect` → `from supply_demand.ob_config import …` → `supply_demand/__init__.py`'s eager
+`.analyzer` re-export (`market_structure/__init__.py` likewise). The engine never *calls* MT5
+(`tests/test_v1_large_smc_import_boundary.py` asserts no `order_send`/`order_check`/`positions_get`/
+`position_close` and exempts `MetaTrader5` from its runtime check by design; `tests/conftest.py` documents
+the same chain and installs an import-only stub whose every operation raises
+`MT5StubOperationAttempted`).
+
+Consequence: the `ARCHIVE_ONLY` alert engine is not import-independent of the broker API package —
+off-host it is importable only through that stub. Bounded packaging fix (lazy re-exports in the two
+`__init__.py` files); owner decision, not made here; no rule or gate changes.
+
+Reproduce: `property_checks.no_transport_boundary` (PASS, with `broker_api_imports` and the runtime probe
+recorded) and `findings[D-LSMC-10]`.
 
 ## D-CCFD-1 — `hash_method` prose contradicts the implementation
 
@@ -283,3 +491,11 @@ never mistaken for drift.
   to their pre-C16 state (`941dec55…` / `78285f9f…`).
 - No registry entry was added, edited or re-recorded; no READY, demo or live flag moved.
 - No sealed OOS material was opened; no DEV fixture was used as authoritative 60-day evidence.
+
+**2026-10-13 C15-LSMC follow-up (the `D-LSMC-6` … `D-LSMC-10` entries above):** the same exclusions hold for
+strategy rules and evidence — `strategies/ST_LARGE_SMC_V1_1_1_0.yaml` is still byte-identical (`78285f9f…`),
+no READY/demo/live flag moved, no sealed OOS material opened, and no committed C15/C16 evidence file was
+rewritten. Two exceptions, both in the verification layer and both recorded above: one evidence-fixture
+timestamp (`D-LSMC-8`; all 754 bars byte-identical) and one registry *annotation* —
+`ST_LARGE_SMC_V1.detection_logic_verification.verification_basis` prose only. No registry status, authority,
+version or identity-hash field was edited, and `engine_sha256` was deliberately left stale (`D-LSMC-3`).

@@ -8,14 +8,25 @@ the engine does not implement FAILS (fail closed) instead of being interpreted.
 
 L1-L4 block; L5 (cost) and L6 (freshness fields) are advisory, as in v1_tickets.logic_gate.
 Checks that need an OPPORTUNITY are NOT_APPLICABLE on a non-opportunity snapshot.
+
+Detection is verified on the PRE-delivery-gate snapshot (`signal_snapshot`). Since the
+2026-10-10 actionability gates, `watch.gate_opportunity` turns every OPPORTUNITY into the
+delivery state REJECTED whenever the host-only owner threshold
+(`config/local/actionability_policy.yaml`) or a stop/target is absent -- off-host that is
+always. Keying the opportunity checks on the shipped state therefore made L2's six
+opportunity rules, all of L3 geometry and L6 freshness NOT_APPLICABLE while the gates still
+printed PASS (156 check verdicts silently degraded between the 2026-10-09 LOGIC_VERIFIED
+report and 2026-10-13). Delivery is a separate layer from detection, so the gate inverts it
+exactly instead of losing the checks; the shipped state stays in the case record.
 """
 from __future__ import annotations
 
 import dataclasses
 import datetime as dt
 import hashlib
+from collections import Counter
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import yaml
 
@@ -28,7 +39,9 @@ from v1_tickets.logic_gate import (
     BLOCKING,
     FAIL,
     NOT_APPLICABLE,
+    NOT_EVALUABLE,
     PASS,
+    WARN,
     _check,
     _gate,
     blocking_failures,
@@ -44,6 +57,28 @@ DEPENDENCY_FILES = ("src/large_smc_core/c10_stop_policy.py", "src/fx_discovery/f
 REPORT_SCHEMA = "LOGIC_VERIFICATION_REPORT"
 LOGIC_VERIFIED, LOGIC_NOT_VERIFIED = "LOGIC_VERIFIED", "LOGIC_NOT_VERIFIED"
 TF = {"D1": dt.timedelta(days=1), "H1": dt.timedelta(hours=1), "M5": dt.timedelta(minutes=5)}
+OPPORTUNITY, REJECTED = "OPPORTUNITY", "REJECTED"
+# Snapshot states that return BEFORE watch.evaluate_snapshot resolves the point size, so a
+# MISSING metadata_source there is the short circuit, not a point-source failure.
+PRE_METADATA_REASONS = ("FX_WEEKEND", "SYMBOL_NOT_IN_V1_UNIVERSE")
+
+
+def signal_snapshot(snap):
+    """The pre-delivery-gate (detection) snapshot for a shipped snapshot.
+
+    `watch.gate_opportunity` is `replace(snap, state="REJECTED", reason_codes=(reason,) +
+    snap.reason_codes)`: it changes the state and prepends exactly one delivery reason, and
+    never touches `opportunity`, `poi` or any id. Inverting it is therefore exact, needs no
+    engine change and no monkeypatching, and leaves every other state untouched.
+    """
+    if snap.state == REJECTED and snap.opportunity and snap.reason_codes:
+        return dataclasses.replace(snap, state=OPPORTUNITY, reason_codes=tuple(snap.reason_codes[1:]))
+    return snap
+
+
+def short_circuited_before_metadata(snap) -> bool:
+    """True when the snapshot returned before the point-size rule could be evaluated."""
+    return snap.point is None and any(code in PRE_METADATA_REASONS for code in snap.reason_codes)
 
 
 def file_sha256(rel: str) -> Optional[str]:
@@ -57,6 +92,31 @@ def engine_sha256() -> str:
     for rel in ENGINE_FILES:
         h.update(f"{rel}\0{file_sha256(rel)}\n".encode("utf-8"))
     return h.hexdigest()
+
+
+def registry_identity(registry_path: Optional[Path] = None) -> Dict[str, Any]:
+    """This tree's identity against the pins in strategies/registry.yaml.
+
+    Recorded, never gated: re-recording a registry identity is an owner decision
+    (C16 defect register D-LSMC-3/D-LSMC-4), so a mismatch is reported with its exact
+    values and left for the owner. A missing registry or entry fails closed to False.
+    """
+    path = registry_path or (REPO_ROOT / "strategies" / "registry.yaml")
+    contract = file_sha256(str(CONTRACT_PATH.relative_to(REPO_ROOT)))
+    engine = engine_sha256()
+    try:
+        entry = (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("strategies", {}).get(C.STRATEGY_ID) or {}
+    except (OSError, yaml.YAMLError):
+        entry = {}
+    return {
+        "registry_path": str(path.relative_to(REPO_ROOT)) if path.is_absolute() else str(path),
+        "registry_version": entry.get("version"),
+        "contract_sha256": contract, "registry_contract_sha256": entry.get("contract_sha256"),
+        "contract_matches_registry": contract is not None and contract == entry.get("contract_sha256"),
+        "engine_sha256": engine, "registry_engine_sha256": entry.get("engine_sha256"),
+        "engine_matches_registry": engine == entry.get("engine_sha256"),
+        "registry_detection_logic_verification": (entry.get("detection_logic_verification") or {}).get("identity"),
+    }
 
 
 def _na(cid: str, note: str = "no OPPORTUNITY in this case") -> Dict[str, Any]:
@@ -87,6 +147,9 @@ def l1(case: Dict[str, Any]) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------------- L2
 
 def l2(spec: Dict[str, Any], case: Dict[str, Any], snap) -> Dict[str, Any]:
+    """Contract-vs-engine rule conformance. `snap` is the DETECTION (pre-delivery-gate)
+    snapshot -- see `signal_snapshot`; passing the shipped snapshot instead silently
+    NOT_APPLICABLEs every opportunity rule whenever delivery rejects it."""
     rules = spec.get("rules") or {}
     meta = spec.get("symbol_metadata") or {}
     checks = [
@@ -129,10 +192,21 @@ def l2(spec: Dict[str, Any], case: Dict[str, Any], snap) -> Dict[str, Any]:
                and (rules.get("day_boundary") or {}).get("tz") == C.DAY_BOUNDARY_TZ else FAIL),
         _check("L2.alert_mapping", "alert level mapping", (spec.get("alerts") or {}).get("mapping"), C.ALERT_LEVEL,
                PASS if (spec.get("alerts") or {}).get("mapping") == C.ALERT_LEVEL else FAIL),
+        _check("L2.point_source_declared", "contract declares the host capture as the only point source and "
+                                            "DATA_ERROR on missing",
+               [meta.get("source"), meta.get("on_missing")],
+               ["config/symbol_metadata/host_captured/<SYMBOL>.json", "DATA_ERROR"],
+               PASS if meta.get("source") == "config/symbol_metadata/host_captured/<SYMBOL>.json"
+               and meta.get("on_missing") == "DATA_ERROR" else FAIL),
+        # Attributed, not assumed: a snapshot that returned before the point rule ran (MARKET_CLOSED,
+        # symbol outside the V1 universe) has metadata_source MISSING by construction. Reporting that
+        # as a point-source FAIL names the wrong cause; L4.evaluated still fails the case closed.
         _check("L2.point_source", "point from verified host MT5 capture; missing -> DATA_ERROR",
                snap.metadata_source, "HOST_CAPTURED",
-               PASS if meta.get("on_missing") == "DATA_ERROR" and snap.metadata_source == "HOST_CAPTURED"
-               and snap.point is not None else FAIL),
+               NOT_APPLICABLE if short_circuited_before_metadata(snap)
+               else (PASS if snap.metadata_source == "HOST_CAPTURED" and snap.point is not None else FAIL),
+               "snapshot returned before point resolution: " + ",".join(snap.reason_codes)
+               if short_circuited_before_metadata(snap) else ""),
     ]
     o = snap.opportunity
     if snap.state != "OPPORTUNITY" or not o:
@@ -172,6 +246,7 @@ def l2(spec: Dict[str, Any], case: Dict[str, Any], snap) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------------- L3
 
 def l3(case: Dict[str, Any], snap) -> Dict[str, Any]:
+    """Level geometry. `snap` is the DETECTION (pre-delivery-gate) snapshot."""
     o = snap.opportunity
     if snap.state != "OPPORTUNITY" or not o:
         return _gate("L3", [_na("L3.geometry")])
@@ -226,20 +301,37 @@ def l4(case: Dict[str, Any], snap) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------------- run
 
 def evaluate_case(spec: Dict[str, Any], case: Dict[str, Any]) -> Dict[str, Any]:
+    """One case, both lanes: `state` is the shipped (delivery-gated) snapshot state and
+    `signal_state` is the detection state the rule checks are evaluated on."""
     snap = evaluate_snapshot(case["symbol"], case["D1"], case["H1"], case["M5"], case["now"])
-    o = snap.opportunity or {}
+    sig = signal_snapshot(snap)
+    o = sig.opportunity or {}
+    l2_gate = l2(spec, case, sig)
+    if sig is not snap:
+        # The delivery gate must change ONLY the state and prepend exactly one reason: if it ever
+        # touched detection output, the two lanes would disagree and this fails closed.
+        l2_gate = _gate("L2", l2_gate["checks"] + [_check(
+            "L2.delivery_gate_preserves_detection",
+            "watch.gate_opportunity changes only state + one prepended reason (detection output identical)",
+            [snap.opportunity == sig.opportunity, snap.poi == sig.poi, len(snap.reason_codes)],
+            [True, True, len(sig.reason_codes) + 1],
+            PASS if (snap.opportunity == sig.opportunity and snap.poi == sig.poi
+                     and len(snap.reason_codes) == len(sig.reason_codes) + 1) else FAIL,
+            f"{sig.state} -> {snap.state}: {snap.reason_codes[0]}")])
     gates = {
-        "L1": l1(case), "L2": l2(spec, case, snap), "L3": l3(case, snap), "L4": l4(case, snap),
+        "L1": l1(case), "L2": l2_gate, "L3": l3(case, sig), "L4": l4(case, snap),
         # Fixtures carry no bid/ask or commission: L5 stays advisory WARN (never blocks).
         "L5": l5_cost(None, None, commission_r=None, warn_r=None),
         "L6": (l6_freshness(o.get("expires_at"), f"no closed M5 bar for > {C.STALE_AFTER_MINUTES} min",
                             "POI invalidated / opportunity invalidated or expired")
-               if snap.state == "OPPORTUNITY" else _gate("L6", [_na("L6.freshness")])),
+               if sig.state == OPPORTUNITY else _gate("L6", [_na("L6.freshness")])),
     }
     failures = blocking_failures(gates)
     return {"case_id": case["case_id"], "symbol": case["symbol"], "fixture": case["fixture"],
             "fixture_classification": case["classification"], "evaluated_at": case["now"].isoformat(),
-            "state": snap.state, "reason_codes": list(snap.reason_codes), "point": snap.point,
+            "state": snap.state, "signal_state": sig.state,
+            "delivery_rejection": snap.reason_codes[0] if sig is not snap else None,
+            "reason_codes": list(snap.reason_codes), "point": snap.point,
             "metadata_source": snap.metadata_source, "direction": o.get("direction"),
             "entry_reference": o.get("entry_reference"), "stop_c10": o.get("stop_c10"),
             "stop_reason": o.get("stop_reason"), "target_c11": o.get("target_c11"),
@@ -247,27 +339,73 @@ def evaluate_case(spec: Dict[str, Any], case: Dict[str, Any]) -> Dict[str, Any]:
             "blocking_failures": failures, "gates": gates}
 
 
+#: Check ids that exist ONLY as the NOT_APPLICABLE marker of a whole branch: L3 on a
+#: non-opportunity snapshot, L3's stop geometry when the contract yields no stop, and L6 on a
+#: non-opportunity snapshot. They can never take a PASS/FAIL/WARN verdict, so listing them
+#: among the never-exercised checks would bury real coverage gaps next to structural ones.
+STRUCTURAL_NA_MARKERS: Tuple[str, ...] = ("L3.geometry", "L3.stop_geometry", "L6.freshness")
+
+
+def check_coverage(results: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """How much of the gate was actually exercised: per-check verdict counts across cases.
+
+    A gate status of PASS says nothing about coverage -- a check that never ran is
+    NOT_APPLICABLE and still leaves its gate PASS. This makes the vacuous-PASS failure mode
+    (every opportunity rule NOT_APPLICABLE while L2/L3/L6 print PASS) visible in the report.
+    """
+    per_gate: Dict[str, Counter] = {}
+    per_check: Dict[str, Counter] = {}
+    for r in results:
+        for name, gate in (r.get("gates") or {}).items():
+            per_gate.setdefault(name, Counter())[gate["status"]] += 1
+            for check in gate["checks"]:
+                per_check.setdefault(check["id"], Counter())[check["verdict"]] += 1
+    evaluated = sum(c[v] for c in per_check.values() for v in (PASS, FAIL, WARN, NOT_EVALUABLE))
+    not_applicable = sum(c[NOT_APPLICABLE] for c in per_check.values())
+    return {
+        "cases": len(results),
+        "gate_status_counts": {g: dict(sorted(c.items())) for g, c in sorted(per_gate.items())},
+        "check_verdict_counts": {k: dict(sorted(c.items())) for k, c in sorted(per_check.items())},
+        "checks_evaluated": evaluated,
+        "checks_not_applicable": not_applicable,
+        "never_exercised_checks": sorted(
+            k for k, c in per_check.items()
+            if k not in STRUCTURAL_NA_MARKERS
+            and not any(c[v] for v in (PASS, FAIL, WARN, NOT_EVALUABLE))),
+        "structural_na_markers": sorted(k for k in per_check if k in STRUCTURAL_NA_MARKERS),
+    }
+
+
 def build_report(cases: Sequence[Dict[str, Any]], *, code_sha: str, generated_at: str) -> Dict[str, Any]:
     spec = yaml.safe_load(CONTRACT_PATH.read_text(encoding="utf-8"))
     results = [evaluate_case(spec, c) for c in cases]
     verified = bool(results) and all(not r["blocking_failures"] for r in results)
-    covered = sorted({r["symbol"] for r in results if r["state"] == "OPPORTUNITY"})
+    covered = sorted({r["symbol"] for r in results if r["signal_state"] == OPPORTUNITY})
     return {
         "schema": REPORT_SCHEMA,
         "strategy": f"{C.STRATEGY_ID}@{C.STRATEGY_VERSION}",
         "verdict": LOGIC_VERIFIED if verified else LOGIC_NOT_VERIFIED,
         "verdict_scope": "rule conformance and internal consistency only; not economic edge, "
                          "not proposal/demo/live authority (all remain false)",
+        "lane_semantics": "state = shipped snapshot (delivery-gated); signal_state = detection lane the "
+                          "opportunity rules are checked on; opportunity_symbols_covered counts signal_state",
         "contract_path": str(CONTRACT_PATH.relative_to(REPO_ROOT)),
         "contract_sha256": hashlib.sha256(CONTRACT_PATH.read_bytes()).hexdigest(),
         "engine_files": list(ENGINE_FILES),
         "engine_sha256": engine_sha256(),
         "engine_file_sha256": {f: file_sha256(f) for f in ENGINE_FILES},
         "dependency_sha256": {f: file_sha256(f) for f in DEPENDENCY_FILES},
+        "registry_identity": registry_identity(),
         "code_sha": code_sha,
         "generated_at_utc": generated_at,
         "blocking_gates": list(BLOCKING),
         "opportunity_symbols_covered": covered,
-        "c10_stop_geometry_symbols": sorted(s for s in covered if s in C.C10_PIP_SIZE),
+        "operational_opportunity_symbols": sorted(
+            {r["symbol"] for r in results if r["state"] == OPPORTUNITY}),
+        "c10_stop_geometry_symbols": sorted(
+            {r["symbol"] for r in results if r["signal_state"] == OPPORTUNITY} & set(C.C10_PIP_SIZE)),
+        "c10_stop_price_symbols": sorted(
+            {r["symbol"] for r in results if r["signal_state"] == OPPORTUNITY and r.get("stop_c10") is not None}),
+        "check_coverage": check_coverage(results),
         "cases": results,
     }
