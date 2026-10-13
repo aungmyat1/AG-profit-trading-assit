@@ -82,7 +82,7 @@ def test_weekday_summary_due_once_after_window_end_plus_grace(tmp_path):
     assert due(tmp_path, end + dt.timedelta(hours=3), send) == []            # never re-sent
     assert len(calls) == 1
     text = calls[0][1]
-    assert "REPORT ONLY — NON-ACTIONABLE" in text
+    assert "REPORT ONLY -- NON-ACTIONABLE" in text
     assert "- BTCUSD: STALE_IDENTITY | REPORT_ONLY (STALE_IDENTITY) [branches=SHORT]" in text
     assert "- BTCUSD RESEARCH ST_LIQUIDITY_SWEEP_RETEST_V1: NO_TRADE (NO_SWEEP)" in text
     assert "- ETHUSD RESEARCH ST_LIQUIDITY_SWEEP_RETEST_V1: NO_RECORD (-)" in text
@@ -141,7 +141,7 @@ def test_fx_session_summary_stamps_scope_status_within_telegram_limit(tmp_path):
     assert [s["symbol"] for s in summary["scope_statuses"]] == ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD"]
     assert {s["route"] for s in summary["scope_statuses"]} == {"REPORT_ONLY"}
     text = render_session_summary(summary)
-    assert "REPORT ONLY — NON-ACTIONABLE" in text
+    assert "REPORT ONLY -- NON-ACTIONABLE" in text
     assert "- GBPUSD: LOGIC_VERIFIED | REPORT_ONLY (DEMO_AUTHORIZATION_ABSENT) [branch=RANGE_SWEEP]" in text
     assert "- EURUSD: SUSPENDED | REPORT_ONLY (L3_REPAINT_UNRESOLVED_2026-07-31)" in text
     assert len(text.encode("utf-16-le")) // 2 <= 4096

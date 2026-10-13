@@ -67,7 +67,8 @@ def block(canonical: Dict[str, Any], reason: str) -> Dict[str, Any]:
     canonical["report_class"] = "BLOCKED"
     canonical["reason_code"] = reason
     canonical["reason_codes"] = list(dict.fromkeys(list(canonical.get("reason_codes") or []) + [reason]))
-    canonical["candidate_signal_id"] = None
+    # The signal id is kept so delivery identity stays per signal: the same signal blocked for another
+    # reason later (e.g. SPREAD_TOO_WIDE, then TARGET_ORDER_INVALID) is not reported twice.
     return canonical
 
 
