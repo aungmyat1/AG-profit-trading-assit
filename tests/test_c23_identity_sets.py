@@ -1,6 +1,12 @@
 """AGP-C23: applying D8/D9 to strategies/registry.yaml cannot move any logic identity (registry is outside every
 identity set), and each re-recorded / registered identity equals the identity computed from the tree."""
-from v1_tickets.authority import ADAPTERS, CANDIDATE_CONTRACTS, CANDIDATE_ENGINE_FILES, load_registry, logic_identity
+from v1_tickets.authority import (
+    ADAPTERS,
+    CANDIDATE_CONTRACTS,
+    CANDIDATE_ENGINE_FILES,
+    load_registry,
+    logic_identity,
+)
 
 REGISTRY = "strategies/registry.yaml"
 
