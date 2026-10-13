@@ -420,3 +420,7 @@ python -m pytest -q tests/test_historical_replay_no_lookahead.py tests/test_repl
 
 Live MT5 tests are environment-aware and may skip when the FX session is closed. They
 never fabricate fresh candles or weaken production stale-data checks.
+
+Large-SMC REPORT_ONLY candidate selection: `config/lsmc_report_lane.yaml` defaults to `1.1.0`;
+`1.1.2` selects the append-only engine and stamps observations `NOT_VERIFIED`. See
+[the C21 registration proposal](docs/proposals/C21_LSMC_V112_REGISTRATION.md) for fixture scope.

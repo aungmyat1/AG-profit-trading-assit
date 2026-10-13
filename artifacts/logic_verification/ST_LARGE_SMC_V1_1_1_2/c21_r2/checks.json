@@ -1,0 +1,48 @@
+{
+  "mission": "AGP-C21-LSMC-V112-ENGINE-R2",
+  "client_date": "2026-10-14",
+  "environment": "managed Linux, Python 3.12, off-host",
+  "base_sha": "5e686f376b7be06c0372fdadde3c9c6617ef58af",
+  "full_suite": {
+    "command": "python -m pytest -q",
+    "verdict": "PASS",
+    "passed": 2909,
+    "skipped": 6,
+    "elapsed_seconds": 589.68,
+    "profile": "shipped default; not slow",
+    "new_candidate_regressions": 37,
+    "resource_class": "R2",
+    "workers": 1,
+    "lock_released": true
+  },
+  "replay": {
+    "command": "python scripts/lsmc_v110_logic_audit.py --version 1.1.2 --out artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_2/c21_r2/audit.json",
+    "resource_class": "R1",
+    "workers": 1,
+    "lock_released": true,
+    "status": "NOT_VERIFIED",
+    "lane_failures": []
+  },
+  "lint": "PASS",
+  "docs_links": "PASS",
+  "skill_mirrors": "PASS",
+  "host_broker_live_acceptance": "NOT_RUN",
+  "slow_profile": "NOT_RUN",
+  "full_60d_reexecution": "NOT_RUN",
+  "broker_contacts": 0,
+  "registry_changes": 0,
+  "scheduler_changes": 0,
+  "authority_changes": 0,
+  "pre_rebase_suite": {
+    "base_sha": "b588eb6455d4f5f8ef9512450b4b572304b669e4",
+    "passed": 2874,
+    "skipped": 6,
+    "elapsed_seconds": 809.87
+  },
+  "latest_main_interface_tests": {
+    "passed": 128
+  },
+  "rebase_conflicts": {
+    "scripts/host/live_candles_smoke.py": "RESOLVED: retained new main account inputs and candidate selection"
+  }
+}

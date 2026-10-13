@@ -8,7 +8,7 @@ owner_reviewed: null
 Off-host Linux/Python 3.12, committed data only. Base main
 `5e686f376b7be06c0372fdadde3c9c6617ef58af` includes PR #200 and report-interface follow-ups.
 Proposal-only PR #202 merged before the code push; implementation is on
-`feat/lsmc-v112-engine-r2`, with a new PR to follow verified results.
+`feat/lsmc-v112-engine-r2`, draft PR #209.
 [Registration proposal](../proposals/C21_LSMC_V112_REGISTRATION.md) contains identity, scope,
 D2 convention, declared 74-path diff, R1 replay and unchanged registry proposal.
 

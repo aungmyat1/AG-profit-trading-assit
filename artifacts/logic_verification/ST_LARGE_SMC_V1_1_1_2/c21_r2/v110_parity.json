@@ -1,0 +1,8 @@
+{
+  "verdict": "PASS",
+  "bytes_identical": true,
+  "bytes": 110526,
+  "sha256": "36538131735c3a6011b07da0afaebda89511ec83456bd225a5b82cf5b704fc03",
+  "base_sha": "5e686f376b7be06c0372fdadde3c9c6617ef58af",
+  "comparison": "full default 120 crypto scans / every EURUSD M5 close; same latest-base code identity before implementation commit"
+}

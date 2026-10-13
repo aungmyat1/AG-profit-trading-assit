@@ -630,3 +630,10 @@ OSS-FIRST: the audit driver reuses the shipped harness, gate, engine, tracker, f
 `v1_tickets.code_identity` unchanged (REUSED); it adds one new off-host analysis script and no trading,
 indicator or rule logic; `smartmoneyconcepts` is reached only through the repository's existing adapters, and
 no third-party package was added for this mission.
+
+C21 R2 historical-input note (2026-10-14): the 1.1.2 candidate cited above is the pre-D2
+specification, preserved byte-for-byte at `tests/fixtures/c21/v112_pre_d2.yaml` with SHA-256
+`5931b616f2048dd20c79bc2938ebd71a77b133c5b51b2c2d986664044b58d52f`. The default 1.1.0
+audit retains that input and its original output. `--version 1.1.2` reads the current amended
+candidate; [C21 registration proposal](../proposals/C21_LSMC_V112_REGISTRATION.md) records
+its separate evidence. The historical C15 findings and authority remain unchanged.

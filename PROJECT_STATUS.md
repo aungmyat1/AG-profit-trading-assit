@@ -8,6 +8,14 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+C21 Large-SMC 1.1.2 candidate (2026-10-14, off-host): separate append-only engine and report-version
+selection; default report engine remains 1.1.0. OD1014-FAST D2 derives C10 pip as 10 × validated
+host-captured point for all six VT symbols; FX POI age counts observed H1 trading dates.
+Candidate reports are stamped NOT_VERIFIED. Off-host default suite on `5e686f3`: 2909 passed, 6 skipped;
+R1 replay and frozen 1.1.0 full audit byte parity passed. Scope/evidence and proposed registry diff (none applied):
+[registration proposal](docs/proposals/C21_LSMC_V112_REGISTRATION.md). Frozen 1.1.0 and scheduler
+bytes remain unchanged; no broker contact or authorization change.
+
 OD1014 opportunity lanes (2026-10-13, unit-tested only, not host-verified; OD1014 owner-directed, pending
 ratification): on the REPORT_ONLY lane a CCFD row blocked only by `LOGIC_STATUS_NOT_VERIFIED` with a complete
 priced plan is reported as a non-executable `OPPORTUNITY` CANDIDATE stamped with its own 1.0.0 registry status;
