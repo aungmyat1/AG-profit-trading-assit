@@ -6,6 +6,10 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[C18 R3 host acceptance (2026-10-13)](status/AGP_C18_R3_HOST_ACCEPTANCE_2026-10-13.md)
+records that C18 PRs #187, #188, and #190 are merged and synthetic checks pass, while real
+Windows/MT5/Telegram host acceptance is blocked at preflight; no host zero-order proof is claimed.
+
 [S1 activation R3](status/AGP_OD1012_S1_ACTIVATION_R3_2026-10-12.md) records exact owner
 authority, scope and receipt gates, offline validation and Windows preview instructions.
 
