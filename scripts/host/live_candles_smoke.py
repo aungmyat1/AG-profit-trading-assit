@@ -68,6 +68,7 @@ from canonical_fx_delivery import (  # noqa: E402
     crypto_strategy_window,
     failure_provider,
     process_due_crypto_strategy_summaries,
+    process_due_daily_report_summaries,
     process_due_lsmc_crypto_summaries,
     process_due_session_summaries,
     record_lsmc_crypto_evaluation,
@@ -615,7 +616,8 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
         from reporting.lsmc_lane import observe_events
         price = bars["M5"][-1].close if bars["M5"] else None
         report_lane = report_lane_lines(f"LSMC {symbol}", lambda: observe_events(
-            events, now=now, price=price, archive_root=os.path.join(journal, "ticket_delivery", "archive")))
+            events, now=now, price=price, archive_root=os.path.join(journal, "ticket_delivery", "archive")),
+            journal=journal, now=now)
     else:
         report_lane = []
     out = [f"LSMC {symbol} data={classify(symbol, bars['M5'], now)} state={snap.state} source={source} "
@@ -665,14 +667,23 @@ def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config
     return lines
 
 
-def report_lane_lines(label: str, run) -> List[str]:
-    """Run one observational (REPORT_ONLY) lane; a lane fault is logged and never stops the runner."""
+def report_lane_lines(label: str, run, journal: Optional[str] = None, sender=None, now=None) -> List[str]:
+    """Run one observational (REPORT_ONLY) lane and deliver its archived observations (PR C); a lane or
+    delivery fault is logged and never stops the runner."""
     try:
         observations = run()
     except Exception as exc:  # noqa: BLE001 -- observational lanes never affect the authorized paths
         return [f"REPORT_LANE {label} FAILED {type(exc).__name__}: {str(exc)[:160]}"]
     classes = ",".join(sorted({str(o.get('report_class')) for o in observations})) or "-"
-    return [f"REPORT_LANE {label} observations={len(observations)} classes={classes}"]
+    lines = [f"REPORT_LANE {label} observations={len(observations)} classes={classes}"]
+    if journal is not None and observations:
+        try:
+            from reporting.deliver import deliver_observations
+            lines += deliver_observations(observations, sender=sender or build_sender(journal, root=REPO_ROOT),
+                                          journal=journal, now=now or utcnow(), label=label)
+        except Exception as exc:  # noqa: BLE001 -- delivery faults never stop the runner
+            lines.append(f"REPORT_DELIVERY {label} FAILED {type(exc).__name__}")
+    return lines
 
 
 class CcfdFeed:
@@ -876,7 +887,8 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                             from reporting.ccfd_lane import run_ccfd_lane
                             lines += report_lane_lines("CCFD", lambda: run_ccfd_lane(
                                 now, feed=CcfdFeed(fetch, host_quote_observed(mt5)),
-                                archive_root=os.path.join(journal, "ticket_delivery", "archive")))
+                                archive_root=os.path.join(journal, "ticket_delivery", "archive")),
+                                journal=journal, now=now)
                         elif args.mode == "smoke":
                             lines = run_smoke(fetch, now, journal, crypto_config, quote)
                         elif args.mode == "fx":
@@ -896,8 +908,11 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                                 canonical_lines += report_lane_lines("ASW", lambda: run_asw_lane(
                                     now=now, day=now.date(), cycles=active_cycles(now, args.cycle),
                                     candle_provider=provider,
-                                    archive_root=os.path.join(journal, "ticket_delivery", "archive")))
+                                    archive_root=os.path.join(journal, "ticket_delivery", "archive")),
+                                    journal=journal, sender=canonical_sender, now=now)
                                 summary_lines = process_due_session_summaries(
+                                    now, journal=journal, sender=canonical_sender)
+                                summary_lines += process_due_daily_report_summaries(
                                     now, journal=journal, sender=canonical_sender)
                                 lines = manual_lines + canonical_lines + summary_lines
                             else:
