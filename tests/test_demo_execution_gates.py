@@ -130,6 +130,7 @@ def _ticket(scope, now: datetime, **updates):
         "entry": 1.3001,
         "stop_loss": 1.2991,
         "risk_distance": 0.001,
+        "targets": [{"leg": 1, "price": 1.3021}, {"leg": 2, "price": 1.3051}],   # AGP-TQ-D1 valid geometry
         "spread_check": "PASS",
         "evaluated_at": (now - timedelta(minutes=2)).isoformat(),
         "signal_close_utc": (now - timedelta(minutes=2)).isoformat(),

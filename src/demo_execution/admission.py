@@ -334,6 +334,12 @@ def evaluate_pre_send_gates(
 
     freshness_reason, freshness_details = check_freshness(ticket, market, policy, now_utc=now_utc)
     add_reasons(freshness_reason)
+    # AGP-TQ-D1 defence in depth: the same fail-closed target geometry as the canonical READY boundary.
+    from v1_tickets.target_geometry import ticket_geometry_violation, ticket_levels
+    geometry_reason = ticket_geometry_violation(ticket)
+    add_reasons(geometry_reason)
+    gate_details["target_geometry"] = {"status": "BLOCKED" if geometry_reason else "PASS",
+                                       "reason_code": geometry_reason, **ticket_levels(ticket)}
     gate_details["freshness"] = {
         "status": "BLOCKED" if freshness_reason else "PASS",
         "reason_code": freshness_reason,

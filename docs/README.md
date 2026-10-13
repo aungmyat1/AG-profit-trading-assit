@@ -402,6 +402,9 @@ research eligibility. Its contract is
   — C14 execution-authority boundary, host magic registry (reserved S1 magic `777001` versus the six
   magics in use on the host), lifecycle evidence chain, and HALT/reconcile on unknown outcome;
   offline unit tests only, no broker mutation, scope still `enabled: false`.
+- [`status/AGP_TQ_D1_S1_TARGET_ORDER_2026-10-13.md`](status/AGP_TQ_D1_S1_TARGET_ORDER_2026-10-13.md)
+  — FAIL_CLOSED_IF_TP1_BEYOND_TP2 enforced at the canonical READY boundary (actionability) and the demo
+  admission handoff; before/after trace.
 - [`status/AGP_C18_TICKET_QUALITY_R1_2026-10-13.md`](status/AGP_C18_TICKET_QUALITY_R1_2026-10-13.md)
   — audit of the real 2026-10-13 Telegram messages: report-lane target-order/stale fixes, LSMC setup identity,
   summary diagnostics; owner decisions TQ-D1..D3.
