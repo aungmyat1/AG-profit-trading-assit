@@ -180,6 +180,8 @@ def _fail_mt5(monkeypatch, failure):
     monkeypatch.setattr(lcs, "require_demo_account", lambda *a: (failure != "DEMO_ACCOUNT_REQUIRED", "demo"))
     monkeypatch.setattr(lcs, "require_pinned_demo_account",
                         lambda *a, **k: (failure != "ACCOUNT_PIN_MISMATCH", "ACCOUNT_PIN_MISMATCH SERVER"))
+    monkeypatch.setattr(lcs, "mt5_guard_evidence", lambda guard, journal, started, mode: {   # C18-R4, tested separately
+        "PROHIBITED_ORDER_API_ATTEMPTS": 0, "summary_line": "MT5_GUARD GUARD_COVERAGE_STATUS=COMPLETE"})
 
 
 @pytest.mark.parametrize("failure", ["MT5_PACKAGE_MISSING", "MT5_INITIALIZE_FAILED", "DEMO_ACCOUNT_REQUIRED",
