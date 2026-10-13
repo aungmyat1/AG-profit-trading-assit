@@ -828,17 +828,30 @@ class Sender:
         if REPORT_SCOPES[report_class] not in self.config.immediate_scopes:
             return "summary_only"
         identity = report_identity(canonical)
-        if identity == canonical.get("candidate_signal_id") and self._signal_already_reported(identity, report_class):
+        if identity == canonical.get("candidate_signal_id") and self._signal_already_reported(canonical, identity):
             return "duplicate"
         return self._send("report", identity, report_class, render_report(canonical))
 
-    def _signal_already_reported(self, identity, report_class):
-        """One message per signal (OD1014-FAST D4): once a per-signal report was sent or claimed under any
-        class (e.g. a CANDIDATE with a spread verdict), the same signal's later re-report under another class
-        (e.g. BLOCKED STALE next cycle) is a duplicate, never a second message. Failed attempts don't count."""
-        return any(row.get("status") != report_class
-                   and row.get("state") in DELIVERED_STATES | {STATE_PENDING, STATE_UNCERTAIN}
-                   for row in self.delivery_attempts("report", [identity]))
+    def _signal_already_reported(self, canonical, identity):
+        """One message per signal (OD1014-FAST D4, C22 E2). Prior per-signal reports count when sent, pending
+        or uncertain (failed attempts don't). Same class repeats are deduped by `_send` itself. Across classes
+        the only send allowed is exactly ONE upgrade BLOCKED -> CANDIDATE while the signal is still fresh;
+        every other change (CANDIDATE -> anything, a stale CANDIDATE after BLOCKED) is a duplicate."""
+        report_class = canonical.get("report_class")
+        live = DELIVERED_STATES | {STATE_PENDING, STATE_UNCERTAIN}
+        prior = {row.get("status") for row in self.delivery_attempts("report", [identity])
+                 if row.get("state") in live and row.get("status") != report_class}
+        if not prior:
+            return False
+        return not (report_class == "CANDIDATE" and prior == {"BLOCKED"} and self._fresh_signal(canonical))
+
+    @staticmethod
+    def _fresh_signal(canonical):
+        """Fresh = the observation's own freshness verdict passed and it is not STALE/MISSED/EXPIRED."""
+        return ((canonical.get("freshness") or {}).get("status") == "PASS"
+                and canonical.get("decision") not in ("STALE", "INFO_ONLY_STALE", "MISSED", "EXPIRED")
+                and not {"STALE_SIGNAL", "INFO_ONLY_STALE", "MISSED", "EXPIRED"}
+                & set(canonical.get("reason_codes") or []))
 
     def send_session_summary(self, summary):
         schema = summary.get("schema")
