@@ -27,10 +27,21 @@ def _base(event: Dict[str, Any]) -> Dict[str, Any]:
             "transition_id": event.get("transition_id")}
 
 
+# Informational engine badges (e.g. D30: economics not evaluated) are notes, never blocking reasons.
+INFORMATIONAL_CODES = frozenset({"D30_BADGE_ECONOMICS_NOT_EVALUATED"})
+
+
 def _blocked_reasons(payload: Dict[str, Any], opportunity: Dict[str, Any], gate: Optional[str]) -> List[str]:
-    reasons = [r for r in (gate, opportunity.get("stop_reason"), opportunity.get("target_reason")) if r]
+    """Specific evidence gap (stop / target reason) first, then the generic gate code, then other engine
+    reasons; informational badges are excluded (see _notes)."""
+    reasons = [r for r in (opportunity.get("stop_reason"), opportunity.get("target_reason"), gate) if r]
     reasons += [str(r) for r in payload.get("reason_codes") or [] if r]
-    return list(dict.fromkeys(reasons)) or ["REJECTED"]
+    reasons = [r for r in dict.fromkeys(reasons) if r not in INFORMATIONAL_CODES]
+    return reasons or ["REJECTED"]
+
+
+def _notes(payload: Dict[str, Any]) -> List[str]:
+    return [str(r) for r in payload.get("reason_codes") or [] if r in INFORMATIONAL_CODES]
 
 
 def from_event(event: Dict[str, Any], *, now: dt.datetime, price: Optional[float] = None,
@@ -89,7 +100,9 @@ def _from_event(event: Dict[str, Any], *, now: dt.datetime, price: Optional[floa
     raw = {**base, "decision": "BLOCKED", "reason_code": reasons[0], "block_reasons": reasons,
            "direction": opportunity.get("direction")}
     canonical = observational_canonical(raw, now=now, report_class="BLOCKED", policy=policy)
-    canonical["reason_codes"] = list(dict.fromkeys(list(canonical.get("reason_codes") or []) + reasons))
+    canonical["reason_code"] = reasons[0]
+    canonical["reason_codes"] = reasons
+    canonical["notes"] = _notes(payload)
     return canonical
 
 
