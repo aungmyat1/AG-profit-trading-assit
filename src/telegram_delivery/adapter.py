@@ -85,7 +85,13 @@ def footer(ticket):
     actionability_reason = value(ticket, 'actionability', 'reason')
     if logic_status != "LOGIC_VERIFIED" and actionability_decision in {"READY", "TICKET_READY", "WATCH_READY"}:
         actionability_decision, actionability_reason = "NOT_READY", "LOGIC_STATUS_NOT_VERIFIED"
-    return [f"logic_status: {logic_status}",
+    scope = []
+    if "scope_verification_status" in ticket:   # AGP-C18-R2 additive fields; absent on older tickets
+        if ticket.get("scope_route") != "REPORT_ONLY":
+            raise ValueError("Unsupported scope route")
+        scope = [f"scope: {ticket['scope_verification_status']} | REPORT_ONLY ({value(ticket, 'scope_reason')})",
+                 f"report_class: {value(ticket, 'report_class')}"]
+    return scope + [f"logic_status: {logic_status}",
             f"Edge: {value(ticket, 'economic_edge')} ({value(ticket, 'economic_status')})",
             f"Actionability: {actionability_decision} / {actionability_reason}",
             "EDGE_VERIFIED=FALSE", "EXECUTION: DISABLED"]
