@@ -1,0 +1,45 @@
+{
+  "schema": "AGP_C20_RERUN_SUMMARY_V1",
+  "t2_ccfd_1_0_0_recorded_60d": {
+    "command": "python scripts/ccfd_sweep_retest_replay.py --date 2026-10-11 --dataset recorded_60d --strategy-version 1.0.0 --out-dir <scratch>",
+    "environment": "Claude Code web sandbox, offline, resource_guard R1 (lock owner PID went stale mid-run because it was registered to a short-lived shell; released after the run). Shared checkout; branch switches during the run touched no CCFD contract, engine or identity-set file.",
+    "peak_rss_mb": 152,
+    "elapsed_s": 1513,
+    "recorded_evidence": "artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0_0/vt_recorded_60d_2026-08-11_2026-10-09/replay_report.json",
+    "recorded_evidence_sha256": "b507e116698bf3349144c780f2a00f459dc82a17b7c6247034435d9b917cf5a5",
+    "rerun_sha256": {"replay_report.json": "389d1f2f3c7bae55c13915080c090d45fb96b9a63f1af1cc07186a6f664dda6f",
+                     "signal_events.json": "4fa10520a55a9c4d531676136480c49e22a4cc52f0d00760c049e51c602d2695",
+                     "tickets.jsonl": "648f2cb529175659535df3d496fc989c805729777bf7129034087fc6f1921f35"},
+    "verdicts": {
+      "BTCUSD": {"LONG": {"verified": false, "emissions": 0, "identical": true},
+                 "SHORT": {"verified": true, "emissions": 2, "identical": true}},
+      "ETHUSD": {"LONG": {"verified": true, "emissions": 3, "identical": true},
+                 "SHORT": {"verified": true, "emissions": 2, "identical": true}}
+    },
+    "gates_L1_L6": {"BTCUSD": "PASS x6", "ETHUSD": "PASS x6"},
+    "mismatches": {"BTCUSD": 0, "ETHUSD": 0},
+    "tickets": {"count_recorded": 1320, "count_rerun": 1320, "decision_and_reason_codes_identical": true},
+    "signal_event_log": {"verdict": "PASS both", "event_log_mismatches": 0,
+                         "difference": "SCHEMA_ADDITION: rerun entries carry an added event_id field; all other fields identical"},
+    "report_differences": "SCHEMA_ADDITION only: dataset_identity, market_provenance, scoped_window_gates, frozen_rule_base_version and a richer dataset/l3_source description",
+    "identity": {"recorded_digest": "b8188dfbb8c7ff3ae278175ec0c482aa8c74b39279a18e9c0b043a231b4b6cd3",
+                 "recomputed_digest": "7a0946e41b2e1e79ea5ee8c47df1eb3e99fe94181f29cd36f30eb6ce797dc2a2",
+                 "contract_hash_unchanged": "492efaf563093e2df8e70eef50ac98fee61c99d074d0835e7687318e0071865e",
+                 "engine_identity_recorded": "119c6a4d6453eb62c872035358ce4da37b5f08da8e9d6dd0eafd56f35f00dfd8",
+                 "engine_identity_recomputed": "0a3886ebc0174f93eb11bbbaa8569223c44a29d9cb03069a9cb550a71323eb6e"},
+    "classification": "VERDICTS_IDENTICAL"
+  },
+  "t3_asw_1_1_3_60d": {
+    "command": "python scripts/asw_v112_60d_replay.py --date 2026-10-13 --contract strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml --version 1.1.3 --out <scratch>",
+    "environment": "clean git worktree at main 5e686f376b7be06c0372fdadde3c9c6617ef58af, offline, resource_guard R3 acquired and released by the running shell",
+    "peak_rss_mb": 36,
+    "elapsed_s": 63,
+    "recorded_evidence": "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_3/c17_2026-10-13/asw_v113_60d_run1.json",
+    "rerun_sha256": "1242141158669d70d61cbce9bfc350493b36c27d057ed686f5c3af5bbea81e69",
+    "difference_vs_recorded": "only scopes/<symbol>/verification_code_sha (git HEAD of the run); all 8 matrix gate rows identical",
+    "l1_false_checks_per_symbol": {"EURUSD": ["registry_identity_matches"], "GBPUSD": ["registry_identity_matches"],
+                                   "USDJPY": ["registry_identity_matches"], "XAUUSD": ["registry_identity_matches"]},
+    "logic_identity": "7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9",
+    "classification": "IDENTICAL_TO_PR186_PR193"
+  }
+}

@@ -1,0 +1,188 @@
+"""AGP-C20 T1: per-scope verification ledger (read-only, byte-reproducible).
+
+One row per family x symbol x session/cycle x branch of the OD1012 universe (v1_tickets.scope_status.FAMILIES;
+AUDUSD excluded there). Every value is read from strategies/registry.yaml (via the canonical scope resolver),
+the identity code (v1_tickets.authority.logic_identity) or a committed evidence file; anything not recorded is
+UNKNOWN -- never inferred. No timestamps: the same tree always yields the same bytes.
+
+    python scripts/verification_ledger.py            # writes the two outputs
+    python scripts/verification_ledger.py --check    # exit 1 if the committed outputs are stale
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+JSON_OUT = "artifacts/verification_ledger/ledger.json"
+MD_OUT = "docs/status/VERIFICATION_LEDGER.md"
+UNKNOWN = "UNKNOWN"
+GATES = ("L1", "L2", "L3", "L4", "L5", "L6")
+
+# Branch vocabulary per family, as recorded by the registry / scope resolver (never the contract text):
+# ASW scopes are recorded per RANGE_SWEEP branch only (scope_status._ASW_BRANCH); CCFD per direction; LSMC
+# records detection vs entry, not a direction.
+BRANCHES = {"session_fx_gold": ("RANGE_SWEEP",), "crypto_cfd": ("LONG", "SHORT"), "large_smc": ("ENTRY",)}
+# CCFD registry records no weekday/weekend window, so one row covers both config windows.
+CCFD_SESSION_LABEL = "ALL_WINDOWS"
+
+# Deterministic next-action owner by (status, reason). Documented, not inferred per row.
+NEXT_ACTION = {
+    "LOGIC_VERIFIED": "OWNER_DECISION",           # standing DEMO authorization is the owner's call
+    "STALE_IDENTITY": "OWNER_DECISION",           # re-record the identity (C20 T2 proposal)
+    "SUSPENDED": "ENGINEERING",                   # fix lives in a candidate version (v1.1.3, C20 T3)
+    "DIRECTION_NOT_IN_SCOPE": "DATA_INSUFFICIENT",  # branch never exercised on the recorded dataset
+    "ENTRY_LOGIC_NOT_VERIFIED": "ENGINEERING",    # entry/proposal layer has no verification yet
+    "LOGIC_NOT_VERIFIED": "ENGINEERING",          # L1-L6 not passed for this scope
+}
+
+
+def sha256_file(rel: Optional[str]) -> Optional[str]:
+    if not rel:
+        return None
+    path = ROOT / rel
+    return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+
+
+def _load_json(rel: str) -> Optional[Dict[str, Any]]:
+    path = ROOT / rel
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def _asw_gates(evidence: Optional[Dict[str, Any]], symbol: str, session: str) -> Dict[str, str]:
+    for cell in (evidence or {}).get("matrix") or []:
+        if cell.get("symbol") == symbol and cell.get("session") == session:
+            return {g: str((cell.get("gates") or {}).get(g, UNKNOWN)) for g in GATES}
+    return {g: UNKNOWN for g in GATES}
+
+
+def _ccfd_gates(evidence: Optional[Dict[str, Any]], symbol: str, branch: str) -> Dict[str, str]:
+    cell = (((evidence or {}).get("logic_verification") or {}).get(symbol) or {}).get("branches", {}).get(branch)
+    gates = (cell or {}).get("gates") or {}
+    return {g: str(gates.get(g, UNKNOWN)) for g in GATES}
+
+
+def build() -> Dict[str, Any]:
+    from v1_tickets.authority import load_registry, logic_identity
+    from v1_tickets.scope_status import FAMILIES, resolve_ticket_scope
+
+    registry = load_registry()
+    asw_ev_path = "docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json"
+    asw_ev = _load_json(asw_ev_path)
+    rows: List[Dict[str, Any]] = []
+    for family in sorted(FAMILIES):
+        spec = FAMILIES[family]
+        sid, version = spec["strategy_id"], spec["strategy_version"]
+        entry = registry.get(sid) or {}
+        candidate = (entry.get("candidate_versions") or {}).get(version) or {}
+        source = candidate.get("config_source") or entry.get("config_source")
+        identity = logic_identity(sid, version)
+        sessions = (CCFD_SESSION_LABEL,) if family == "crypto_cfd" else tuple(spec["sessions"])
+        for symbol in spec["pairs"]:
+            for session in sessions:
+                for branch in BRANCHES[family]:
+                    resolve_session = spec["sessions"][0] if family == "crypto_cfd" else session
+                    direction = branch if branch in ("LONG", "SHORT") else None
+                    scope = resolve_ticket_scope(sid, version, symbol, resolve_session, direction, registry=registry)
+                    status, reason = scope["scope_verification_status"], scope["scope_reason"]
+                    evidence_path, recorded_sha, gates = None, None, {g: UNKNOWN for g in GATES}
+                    recorded_contract = None
+                    gates_source = None
+                    if family == "session_fx_gold":
+                        # Gates: the committed 60d matrix for this version/identity. Evidence: what the registry
+                        # records for this scope (verified or suspended); none recorded -> UNKNOWN.
+                        gates_source, gates = asw_ev_path, _asw_gates(asw_ev, symbol, session)
+                        for item in candidate.get("logic_verified_scopes") or []:
+                            if item.get("symbol") == symbol and item.get("session") == session:
+                                evidence_path, recorded_contract = item.get("evidence"), item.get("contract_hash")
+                        for item in candidate.get("logic_suspended_scopes") or []:
+                            if item.get("symbol") == symbol and item.get("session", session) == session:
+                                evidence_path = item.get("evidence")
+                    elif family == "crypto_cfd":
+                        for item in candidate.get("logic_verified_symbols") or []:
+                            if item.get("symbol") == symbol:
+                                evidence_path, recorded_sha = item.get("evidence"), item.get("evidence_sha256")
+                                recorded_contract = item.get("contract_hash")
+                        gates_source = evidence_path
+                        gates = _ccfd_gates(_load_json(evidence_path) if evidence_path else None, symbol, branch)
+                    else:
+                        det = entry.get("detection_logic_verification") or {}
+                        parts = str(det.get("identity") or "").split("/")
+                        if len(parts) >= 2 and parts[1] == symbol:     # detection-only, one symbol
+                            evidence_path = det.get("report")
+                    rows.append({
+                        "family": family, "strategy": f"{sid}@{version}", "symbol": symbol, "session": session,
+                        "branch": branch,
+                        "contract_path": source or UNKNOWN,
+                        "contract_sha256": sha256_file(source) or UNKNOWN,
+                        "contract_hash_recorded": recorded_contract or UNKNOWN,
+                        "logic_identity_current": identity["digest"] if identity else UNKNOWN,
+                        "logic_identity_recorded": scope.get("verification_identity") or UNKNOWN,
+                        "gates": gates,
+                        "gates_source": gates_source or UNKNOWN,
+                        "registry_status": status,
+                        "blocking_finding_id": None if status == "LOGIC_VERIFIED" else reason,
+                        "evidence_path": evidence_path or UNKNOWN,
+                        "evidence_sha256": sha256_file(evidence_path) or UNKNOWN,
+                        "evidence_sha256_recorded": recorded_sha or UNKNOWN,
+                        "next_action_owner": NEXT_ACTION.get(status, NEXT_ACTION.get(str(reason).split(":")[0],
+                                                                                       UNKNOWN)),
+                    })
+    counts: Dict[str, int] = {}
+    for row in rows:
+        counts[row["registry_status"]] = counts.get(row["registry_status"], 0) + 1
+    return {"schema": "AGP_C20_VERIFICATION_LEDGER_V1",
+            "registry_sha256": sha256_file("strategies/registry.yaml"),
+            "row_count": len(rows), "status_counts": dict(sorted(counts.items())), "rows": rows}
+
+
+def render_md(ledger: Dict[str, Any]) -> str:
+    out = ["# Verification ledger (AGP-C20 T1)", "",
+           "Generated by `scripts/verification_ledger.py` from `strategies/registry.yaml`, the identity code and "
+           "committed evidence only; `UNKNOWN` means not recorded. Read-only: no status here grants READY, demo "
+           "or live authority.", "",
+           f"Registry SHA256 `{ledger['registry_sha256']}`; rows {ledger['row_count']}; status counts "
+           + ", ".join(f"{k}={v}" for k, v in ledger["status_counts"].items()) + ".", "",
+           "| Strategy | Symbol | Session | Branch | L1-L6 | Registry status | Blocking finding | Next action | "
+           "Evidence (sha256 prefix) |",
+           "|---|---|---|---|---|---|---|---|---|"]
+    for r in ledger["rows"]:
+        gates = " ".join(f"{g}:{r['gates'][g]}" for g in GATES)
+        sha = r["evidence_sha256"][:12] if r["evidence_sha256"] != UNKNOWN else UNKNOWN
+        out.append(f"| {r['strategy']} | {r['symbol']} | {r['session']} | {r['branch']} | {gates} | "
+                   f"{r['registry_status']} | {r['blocking_finding_id'] or '-'} | {r['next_action_owner']} | "
+                   f"`{r['evidence_path']}` ({sha}) |")
+    out += ["", "Full fields (contract and identity hashes, recorded vs current) are in "
+            f"`{JSON_OUT}`.", ""]
+    return "\n".join(out)
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--check", action="store_true")
+    args = ap.parse_args(argv)
+    ledger = build()
+    outputs = {JSON_OUT: json.dumps(ledger, indent=2, sort_keys=True) + "\n", MD_OUT: render_md(ledger)}
+    if args.check:
+        stale = [p for p, text in outputs.items()
+                 if not (ROOT / p).is_file() or (ROOT / p).read_text(encoding="utf-8") != text]
+        print("STALE: " + ", ".join(stale) if stale else "UP_TO_DATE")
+        return 1 if stale else 0
+    for p, text in outputs.items():
+        (ROOT / p).parent.mkdir(parents=True, exist_ok=True)
+        (ROOT / p).write_text(text, encoding="utf-8", newline="\n")
+    print(json.dumps(ledger["status_counts"], sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
