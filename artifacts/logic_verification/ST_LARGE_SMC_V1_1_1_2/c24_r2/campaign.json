@@ -6,9 +6,37 @@
   "base_sha": "726b16a40d79fa84ed2848bfecba4576a9db6a3f",
   "broker_contact": 0,
   "changed_paths": [],
+  "checks": {
+    "default_suite": {
+      "command": "python -m pytest -q",
+      "elapsed_seconds": 513.03,
+      "environment": "Linux managed sandbox Python3.12",
+      "passed": 2944,
+      "resource_class": "R1",
+      "resource_lock_released": true,
+      "skipped": 5,
+      "warnings": 5,
+      "workers": 1
+    },
+    "diff_check": "PASS",
+    "new_harness_tests": {
+      "elapsed_seconds": 3.74,
+      "passed": 9
+    },
+    "new_test_lint": "PASS",
+    "remote_CI": "See final head of PR213",
+    "slow_live_host": "NOT_RUN"
+  },
   "declared_rule_paths": 77,
   "engine_contract_config_registry_flags_unchanged": true,
   "engine_defect": "C24-C11-STATIC-ROLLING-WINDOW",
+  "evidence_tool_sha256": {
+    "research_external/oracles/lsmc_c24_recorded.py": "a0d7cea5bb1b820836bc1b4a605cb08e529aba2aa0ec918d193aa3bac85c4861",
+    "research_external/oracles/lsmc_detection_run.py": "8403599d4560cb11dd64a61f0fa6fc1961e94b4e94f8ba41de87b5d6f9d53b5f",
+    "scripts/lsmc_v112_60d_replay.py": "4e464986e65064d9e53fd4588a6a0adf59d8073812bd88d359b8a13766d078ce",
+    "scripts/lsmc_v112_c24_static_target_repro.py": "0b1a389d58a7cd880e4795faa8d7f71d7d5aa04132abdb795289500c1a94eb99",
+    "scripts/lsmc_v112_logic_audit.py": "85b49f1d8161051ac229fea7e1ff9c3c9cf2b763390a7b0360fc458e705aee34"
+  },
   "oracle_engine_defects": 0,
   "order_api_calls": 0,
   "protected_paths": 361,

@@ -6,6 +6,10 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[C24 60-day Large-SMC verification](status/AGP_C24_LSMC_V112_VERIFY_R2_2026-10-14.md)
+records interrupted crypto replay (NOT_RUN_RESOURCE), the completed pinned detection oracle,
+one reproduced static-C11 engine defect, FX PENDING_D1 and no qualifying registration proposal.
+
 [C21 R2 dated evidence](status/AGP_C21_LSMC_V112_ENGINE_R2_2026-10-14.md) and
 [C21 Large-SMC 1.1.2 registration proposal](proposals/C21_LSMC_V112_REGISTRATION.md) records the append-only REPORT_ONLY candidate, OD1014 D2 pip convention and replay scope; it grants no registration or execution authority.
 

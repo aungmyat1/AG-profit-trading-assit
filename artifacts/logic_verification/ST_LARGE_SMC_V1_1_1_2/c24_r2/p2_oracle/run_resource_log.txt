@@ -1,0 +1,24 @@
+AGENT = CODEX_LOCAL
+MISSION = AGP-C24-LSMC-V112-VERIFY-R2
+RESOURCE_CLASS = R1
+TOTAL_RAM_MB = 9991
+AVAILABLE_RAM_MB = 9312
+REQUIRED_RAM_MB = 1200
+LOCK_STATUS_BEFORE = NO_LOCK
+LOCK_REASON = lock file absent
+RESOURCE_GATE = PASS
+ACQUIRED = True
+LOCK_PATH = /workspace/AG-profit-trading-assit/artifacts/runtime/resource_lock.json
+LOCK_PID = 29667
+[1;33mThank you for using SmartMoneyConcepts! ⭐ Please show your support by giving a star on the GitHub repository: [4;34mhttps://github.com/joshyattridge/smart-money-concepts[0m
+ORACLE BTCUSD D1: 60 bars completed
+ORACLE BTCUSD H1: 1412 bars completed
+ORACLE BTCUSD M5: 16932 bars completed
+ORACLE ETHUSD D1: 60 bars completed
+ORACLE ETHUSD H1: 1412 bars completed
+ORACLE ETHUSD M5: 16932 bars completed
+AGENT = CODEX_LOCAL
+MISSION = AGP-C24-LSMC-V112-VERIFY-R2
+LOCK_PATH = /workspace/AG-profit-trading-assit/artifacts/runtime/resource_lock.json
+REASON = owner verified
+RELEASED = True

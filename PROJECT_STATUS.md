@@ -8,6 +8,15 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+C24 Large-SMC 1.1.2 verification (2026-10-14, off-host, owner scope 60 days): the managed
+environment terminated the crypto replay; BTCUSD/ETHUSD full L1–L6 are NOT_RUN_RESOURCE.
+Pinned smartmoneyconcepts 0.0.27 comparison completed on all recorded crypto D1/H1/M5 bars;
+16,372 detection divergences are classified SPEC_DIFFERENCE. Native adjacent-scan repros
+establish one ENGINE_DEFECT: C11's selected static target changes when its source leaves
+the rolling input window (three BTC witnesses). FX is PENDING_D1 for the committed
+`tests/fixtures/vt_recorded_60d_fx` data PR. No scope qualifies for a C24 registration proposal;
+engine, contracts, registry, READY and flags are unchanged. [Dated evidence](docs/status/AGP_C24_LSMC_V112_VERIFY_R2_2026-10-14.md).
+
 C21 Large-SMC 1.1.2 candidate (2026-10-14, off-host): separate append-only engine and report-version
 selection; D7 selects report engine 1.1.2, failing closed to BLOCKED for missing/unknown configuration.
 D6 confirms minimum RR 2.0; OD1014-FAST D2 derives C10 pip as 10 × validated

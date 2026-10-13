@@ -153,8 +153,11 @@ neither engine repair nor replay PASS is inferred here.
 
 Focused `python -m pytest -q tests/test_lsmc_v112_60d_replay.py tests/test_lsmc_c24_oracle.py`:
 **9 passed**, 3.74s, Linux/off-host, R1 lock released.
-Final default suite and remote CI: pending at document creation; final result
-will be recorded before handoff. Slow/live-host checks are NOT_RUN.
+Final default suite `python -m pytest -q`: **2,944 passed, 5 skipped**,
+5 warnings, 513.03s, Linux/off-host, one worker, R1 lock released. New-test lint
+and `git diff --check`: PASS. Remote CI is attributed to the final head on
+[PR #213](https://github.com/aungmyat1/AG-profit-trading-assit/pull/213), not to the replay verdict.
+Explicit slow/live-host checks are NOT_RUN; default-suite skips remain visible.
 Artifact root: `artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_2/c24_r2/`.
 Per-phase logs, divergence inventory, branch matrix, signal events, scan plans,
 resource interruption/release and machine campaign summary remain attributable
