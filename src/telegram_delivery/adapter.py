@@ -291,7 +291,7 @@ def _report_ticket_lines(c, sym, direction, scope, ts, dist):
     if c.get("report_class") == "CANDIDATE":
         risk = (c.get("risk") or {}).get("risk_distance")
         lines.append(f"entry: {prices.get('entry_reference') or 'n/a'}  stop: {prices.get('sl') or 'n/a'}  "
-                     f"risk: {dist(c.get("instrument"), risk) if isinstance(risk, (int, float)) else 'n/a'}")
+                     f"risk: {dist(c.get('instrument'), risk) if isinstance(risk, (int, float)) else 'n/a'}")
         for leg, key, r_key in ((1, "tp1", "initial_R_tp1"), (2, "tp2", "initial_R_tp2")):
             if prices.get(key) is not None:
                 label = f" ({_ASW_LEGS[key]})" if asw else ""
@@ -328,7 +328,7 @@ def _report_lsmc_lines(c, sym, direction, scope, ts, dist):
         lines.append(f"current price: {prices['current_send']}")
     if lsmc.get("distance_to_poi") is not None:
         lines.append("distance to POI: inside zone" if lsmc["distance_to_poi"] == 0
-                     else f"distance to POI: {dist(c.get("instrument"), lsmc['distance_to_poi'])}")
+                     else f"distance to POI: {dist(c.get('instrument'), lsmc['distance_to_poi'])}")
     lines.append(f"expires_at: {ts(lsmc.get('expires_at'))}")
     return lines
 
