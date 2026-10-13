@@ -10,6 +10,11 @@ This change implements the two v1.1.3 corrections (D-ASW-1, D-ASW-2) from the C1
 v1.1.3 only, then replays L1–L6 on the AGP-DATA-R3 60-weekday recorded VT fixtures for EURUSD,
 GBPUSD, USDJPY and XAUUSD, both sessions.
 
+**Integration update:** PR #186 was merged as `827faf62938addef215f1318134908aea8bee9c9` before its
+three review findings were resolved. This follow-up carries the resolutions on current main
+`363e5d490233dcf131399fb163d16b6ae0f01f74`; the v1.1.3 implementation bytes are the same as the
+tested source commit `65bc7227f594110182d89202c6a79b0581493cc1`.
+
 **What does not change:** no registry entry, READY, demo, live, runtime-binding or broker change,
 and the v1.1.2 S1 identity `d7a8ebe5…` is unchanged. The candidate contract records the approved
 BY_EMISSION_TIME decision and remains unregistered and unadmitted.
