@@ -12,7 +12,9 @@ OD1014 opportunity lanes (2026-10-13, unit-tested only, not host-verified; OD101
 ratification): on the REPORT_ONLY lane a CCFD row blocked only by `LOGIC_STATUS_NOT_VERIFIED` with a complete
 priced plan is reported as a non-executable `OPPORTUNITY` CANDIDATE stamped with its own 1.0.0 registry status;
 any other reason stays BLOCKED. LSMC runs pass the fresh read-only MT5 tick (stale/missing -> `MISSING_SPREAD`).
-CANDIDATE reports show a display-only lot preview / cost-in-R or `sizing: n/a (<reason>)`. Unchanged: READY,
+CANDIDATE reports show a display-only lot preview / cost-in-R (host-captured metadata, balance from the
+account-pin read) or `sizing: n/a (<reason>)`. EURUSD x ASIAN_LONDON is evaluated on the report lane only with
+v1.1.3 (NOT_VERIFIED); its registry suspension and S1 are unchanged. Unchanged: READY,
 manual/canonical ticket gating, registry, contracts, demo/live flags, order paths. Tests:
 `tests/test_od1014_opportunity_lanes.py`.
 

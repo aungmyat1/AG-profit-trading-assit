@@ -548,7 +548,8 @@ def lsmc_crypto_summary_lines(now: dt.datetime, journal: str, session: str, send
 
 
 def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, notify: bool = True,
-             fx: bool = True, window: Optional[str] = None, quote: Optional[Quote] = None) -> List[str]:
+             fx: bool = True, window: Optional[str] = None, quote: Optional[Quote] = None,
+             account: Optional[dict] = None) -> List[str]:
     tracker = WatchTracker(os.path.join(journal, "large_smc_watch", "state.json"),
                            os.path.join(journal, "ticket_delivery", "archive"))
     ledger = AlertLedger(os.path.join(journal, "large_smc_watch", "delivered_confirmations.json"))
@@ -561,7 +562,7 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
             lines.append(f"LSMC {symbol} DATA_ERROR {_reason(exc)}")
             continue
         lines += _watch_once(tracker, symbol, bars, now, notify, ledger=ledger, journal=journal,
-                             display_broker_symbol=broker, quote=quote)
+                             display_broker_symbol=broker, quote=quote, account=account)
     if crypto_feed is not None:
         # LSMC 1.1.0 is VT-only: its crypto symbols are the VT broker names (BTCUSD/ETHUSD). The
         # shared feed is keyed by the V1 crypto ticket names, so look up the key mapped to each.
@@ -593,8 +594,29 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
                                  window=window, ledger=ledger, journal=journal,
                                  display_broker_symbol=broker, record=record,
                                  quote=getattr(crypto_feed, "quote", None),
-                                 quote_symbol=getattr(crypto_feed, "symbols", {}).get(key, broker))
+                                 quote_symbol=getattr(crypto_feed, "symbols", {}).get(key, broker),
+                                 account=account)
     return lines
+
+
+def report_account(account_info) -> dict:
+    """Read-only facts for the display-only sizing preview (OD1014 B2), taken from the account_info object
+    the account-pin check already read (no extra MT5 call): balance, and the owner commission bound to that
+    login (resolve_commission; None when unbound). Any fault -> None (the preview says n/a)."""
+    from v1_tickets.manual_ticket import load_owner_config, resolve_commission
+    balance = getattr(account_info, "balance", None) if account_info is not None else None
+    login = getattr(account_info, "login", None) if account_info is not None else None
+    try:
+        commission = resolve_commission(load_owner_config(REPO_ROOT), login)
+    except Exception:  # noqa: BLE001 -- unknown commission omits cost-in-R, never 0
+        commission = None
+    try:
+        balance = float(balance) if balance is not None else None
+    except (TypeError, ValueError):
+        balance = None
+    currency = getattr(account_info, "currency", None) if account_info is not None else None
+    return {"balance": balance, "commission_R": commission,
+            "currency": currency if isinstance(currency, str) and currency else None}
 
 
 def _bid_ask(quote, broker, now: Optional[dt.datetime] = None):
@@ -617,7 +639,7 @@ def _bid_ask(quote, broker, now: Optional[dt.datetime] = None):
 
 def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None,
                 ledger=None, journal=None, display_broker_symbol=None, record=None, quote=None,
-                quote_symbol=None) -> List[str]:
+                quote_symbol=None, account=None) -> List[str]:
     bid, ask = _bid_ask(quote, quote_symbol or display_broker_symbol, now)   # AGP-C18-R2 D4
     snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now, bid=bid, ask=ask)
     events = tracker.poll(snap)
@@ -626,7 +648,7 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
         price = bars["M5"][-1].close if bars["M5"] else None
         report_lane = report_lane_lines(f"LSMC {symbol}", lambda: observe_events(
             events, now=now, price=price, archive_root=os.path.join(journal, "ticket_delivery", "archive"),
-            bid=bid, ask=ask),
+            bid=bid, ask=ask, account=account),
             journal=journal, now=now)
     else:
         report_lane = []
@@ -911,7 +933,9 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                                 log_line(log_name, line)
                             log_line(log_name, f"DEMO_ACCOUNT_REQUIRED {demo_status}")
                             return 1
-                        pin_ok, pin_status = require_pinned_demo_account(mt5, terminal_path=args.terminal_path)
+                        pin_capture: Dict[str, Any] = {}
+                        pin_ok, pin_status = require_pinned_demo_account(mt5, terminal_path=args.terminal_path,
+                                                                         capture=pin_capture)
                         if not pin_ok:   # OD1012-ACCOUNT: wrong server/suffix/mode -> no tickets
                             lines = ((canonical_failure_lines("ACCOUNT_PIN_MISMATCH") if args.canonical else
                                       archive_fx_runtime_failure(now, journal, "ACCOUNT_PIN_MISMATCH", pin_status,
@@ -928,7 +952,8 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                             from reporting.ccfd_lane import run_ccfd_lane
                             lines += report_lane_lines("CCFD", lambda: run_ccfd_lane(
                                 now, feed=CcfdFeed(fetch, host_quote_observed(mt5)),
-                                archive_root=os.path.join(journal, "ticket_delivery", "archive")),
+                                archive_root=os.path.join(journal, "ticket_delivery", "archive"),
+                                balance=report_account(pin_capture.get("account"))["balance"]),
                                 journal=journal, now=now)
                         elif args.mode == "smoke":
                             lines = run_smoke(fetch, now, journal, crypto_config, quote)
@@ -948,7 +973,7 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                                 from reporting.asw_lane import run_asw_lane
                                 canonical_lines += report_lane_lines("ASW", lambda: run_asw_lane(
                                     now=now, day=now.date(), cycles=active_cycles(now, args.cycle),
-                                    candle_provider=provider,
+                                    candle_provider=provider, account=report_account(pin_capture.get("account")),
                                     archive_root=os.path.join(journal, "ticket_delivery", "archive")),
                                     journal=journal, sender=canonical_sender, now=now)
                                 summary_lines = process_due_session_summaries(
@@ -964,12 +989,13 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
                             quote = host_quote_observed(mt5)    # OD1014 A2: stale tick -> no spread
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
-                                             fx=False, window="WEEKEND", quote=quote)
+                                             fx=False, window="WEEKEND", quote=quote,
+                                             account=report_account(pin_capture.get("account")))
                             lines += lsmc_crypto_summary_lines(now, journal, LSMC_CRYPTO_WEEKEND)
                         else:
                             quote = host_quote_observed(mt5)    # OD1014 A2: stale tick -> no spread
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
-                                             quote=quote)
+                                             quote=quote, account=report_account(pin_capture.get("account")))
                             if crypto_config["venue"]["kind"] == "MT5":       # crypto watched (lsmc_crypto_feed)
                                 lines += lsmc_crypto_summary_lines(now, journal, LSMC_CRYPTO_DAY)
                     finally:
