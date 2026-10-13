@@ -13,8 +13,11 @@ GBPUSD, USDJPY and XAUUSD, both sessions.
 **Integration update:** PR #186 was merged as `827faf62938addef215f1318134908aea8bee9c9` before its
 three review findings were resolved. This follow-up carries the resolutions on current main
 `6ebe5b9d49111768a2f7d7ebbbe0b9ce9845d0bc`, including C18's process-wide read-only MT5 guard (#192).
-The v1.1.3 implementation bytes match tested source commit `65bc7227f594110182d89202c6a79b0581493cc1`;
-the integrated full suite was rerun on merge commit `b731def6321d505258a3e3f2d00d86b7171c0f33` after #192.
+The replay artifacts below were regenerated from exact source snapshot `387038bdaf1fb589059b8a2694f31541b360f820`;
+each scope row records that same `verification_code_sha`. The integrated full suite was rerun on merge
+commit `b731def6321d505258a3e3f2d00d86b7171c0f33` after #192. Replaying the 60-day matrix twice on
+the regenerated snapshot produced byte-identical outputs; removing only `verification_code_sha`, the
+scope results match the prior replay.
 
 **What does not change:** no registry entry, READY, demo, live, runtime-binding or broker change,
 and the v1.1.2 S1 identity `d7a8ebe5…` is unchanged. The candidate contract records the approved
@@ -71,7 +74,7 @@ BY_EMISSION_TIME decision and remains unregistered and unadmitted.
 | v1.1.3 engine identity | `8938f407ea45f53dbf82cd76439147c3553c4d3808b61046117f4e493952c228` |
 | v1.1.2 S1 identity (unchanged) | `d7a8ebe5b176e8089905c75a6b0223eebd893c2b9324ca61865aa135d2eec7d5` |
 
-## Results — v1.1.3, 60 weekdays (run 1 = run 2, committed LF sha256 `bc672105…`)
+## Results — v1.1.3, 60 weekdays (run 1 = run 2, SHA256 `5b5053a32fea2f1ffb29ebe8b699a80ac84b7a8b831884c882659c19c6b61e0c`)
 
 | Pair | Session | Valid | L1 | L2 | L3 | L4 | L5 | L6 |
 |---|---|---|---|---|---|---|---|---|

@@ -434,7 +434,7 @@
    "verdicts": {
     "EURUSD": "NOT_VERIFIED"
    },
-   "verification_code_sha": "cb1a6fa07b951c1aca7e3ab35abca58e5e1f6e37"
+   "verification_code_sha": "387038bdaf1fb589059b8a2694f31541b360f820"
   },
   "GBPUSD": {
    "gates_by_symbol": {
@@ -483,7 +483,7 @@
     "EURUSD": "NOT_VERIFIED",
     "GBPUSD": "NOT_VERIFIED"
    },
-   "verification_code_sha": "cb1a6fa07b951c1aca7e3ab35abca58e5e1f6e37"
+   "verification_code_sha": "387038bdaf1fb589059b8a2694f31541b360f820"
   },
   "USDJPY": {
    "gates_by_symbol": {
@@ -534,7 +534,7 @@
     "EURUSD": "NOT_VERIFIED",
     "USDJPY": "NOT_VERIFIED"
    },
-   "verification_code_sha": "cb1a6fa07b951c1aca7e3ab35abca58e5e1f6e37"
+   "verification_code_sha": "387038bdaf1fb589059b8a2694f31541b360f820"
   },
   "XAUUSD": {
    "gates_by_symbol": {
@@ -585,7 +585,7 @@
     "EURUSD": "NOT_VERIFIED",
     "XAUUSD": "NOT_VERIFIED"
    },
-   "verification_code_sha": "cb1a6fa07b951c1aca7e3ab35abca58e5e1f6e37"
+   "verification_code_sha": "387038bdaf1fb589059b8a2694f31541b360f820"
   }
  },
  "spread_input": "L2 uses the harness TEST_SPREAD (0.2 pip); L5 uses max(signal-bar spread_points, host_captured snapshot spread) x host_captured point; commission from OD1011-COMMISSION only when bound to the host-captured server (else INSUFFICIENT, never 0)",
