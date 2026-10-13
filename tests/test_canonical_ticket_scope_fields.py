@@ -55,7 +55,7 @@ def test_other_version_never_borrows_the_scope_status():
 
 
 @pytest.mark.parametrize("symbol,cycle,status", [
-    ("EURUSD", "ASIAN_LONDON", "SUSPENDED"), ("EURUSD", "LONDON_NEWYORK", "SUSPENDED"),
+    ("EURUSD", "ASIAN_LONDON", "SUSPENDED"), ("EURUSD", "LONDON_NEWYORK", "UNVERIFIED"),   # OD1014-FAST D5
     ("GBPUSD", "LONDON_NEWYORK", "UNVERIFIED"), ("USDJPY", "ASIAN_LONDON", "UNVERIFIED"),
     ("XAUUSD", "LONDON_NEWYORK", "UNVERIFIED"), ("AUDUSD", "ASIAN_LONDON", "UNVERIFIED"),
 ])

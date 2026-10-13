@@ -135,7 +135,7 @@ Rules:
 - **Sizing and cost:** a display-only lot preview and cost-in-R are shown only when every input is valid; otherwise the ticket says `sizing: n/a (<reason>)`. Zero, NaN and estimated values are never shown.
 - **Incomplete plans:** a missing entry, SL or required target makes the ticket BLOCKED, with no prices.
 - **Schedule unchanged:** eight FX evaluations per day are eight evaluations, not eight opportunities; crypto runs in its configured windows; the Large-SMC watch runs every 15 minutes.
-- **Still BLOCKED:** suspended scopes, stale identities and stale, MISSED or EXPIRED signals are never presented as opportunities.
+- **Still BLOCKED:** suspended scopes and stale signals (STALE, MISSED or EXPIRED) are never presented as opportunities. A scope's `STALE_IDENTITY` verification status is not a stale signal: it is shown in the header like any other status.
 - **Never queued, never retroactive, not evidence:** an OPPORTUNITY never enters the order queue, is never placed after a scope later becomes eligible, and is not verification or edge evidence.
 
 ### Coverage (against `main` @ `b588eb6`, 2026-10-14)
@@ -157,7 +157,7 @@ Classes: `IMPLEMENTED_AND_EVIDENCED` / `IMPLEMENTED_NOT_HOST_VERIFIED` / `NOT_IM
 
 ## Objective
 
-Every trading day, AG Profit Trading reads real market data and evaluates the three target strategy families; logically verified scopes may progress to execution routing, and all other scopes report OPPORTUNITY tickets as REPORT_ONLY (OD1014) across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
+Every trading day, AG Profit Trading reads real market data and evaluates the three target strategy families; logically verified scopes may progress to execution routing, and all other scopes report their complete priced plans as OPPORTUNITY tickets as REPORT_ONLY (OD1014) across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
 
 On each applicable FX trading day, EURUSD, GBPUSD, USDJPY and XAUUSD are each evaluated once for ASIAN_LONDON and once for LONDON_NEWYORK: eight scheduled instrument-session evaluations, each with a deterministic auditable terminal outcome. A scheduled evaluation is not a trade quota. BTCUSD and ETHUSD are scanned dynamically, only qualified current opportunities are ranked, and at most two combined crypto entries are taken per defined trading day; zero or one is acceptable (AGP-OD1012-SESSION-CRYPTO).
 
