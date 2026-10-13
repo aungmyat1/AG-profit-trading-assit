@@ -4,7 +4,7 @@ state: DESIGN
 owner_reviewed: 2026-10-12
 review_by: 2026-11-07
 ---
-# AG Profit Trading — Project Objective (rev 2026-10-12)
+# AG Profit Trading — Project Objective (rev 2026-10-14)
 
 **Repository:** `aungmyat1/AG-profit-trading-assit`  
 **Target branch:** `main`  
@@ -69,7 +69,7 @@ Three independent axes replace any single "PASSED" state:
 ### Ticket lanes
 
 - **All three families report every relevant scope**, with its status stamped on the ticket.
-- **Non-eligible tickets** (`NOT_ELIGIBLE`, or any non-`DEMO_ORDER` route) carry the header **`REPORT ONLY — NON-ACTIONABLE`**. A hypothetical entry, SL and TP may be shown only when clearly labelled as hypothetical. Such tickets **never enter the order queue**.
+- **Non-eligible tickets** (`NOT_ELIGIBLE`, or any non-`DEMO_ORDER` route) carry the header **`REPORT ONLY — NON-ACTIONABLE`**. Prices on such tickets follow [Verification-phase opportunity tickets (OD1014)](#verification-phase-opportunity-tickets-od1014-2026-10-14). Such tickets **never enter the order queue**.
 - **Large-SMC:** Large-SMC detection verification ≠ entry/proposal verification; eligible only after entry scope passes L1–L6 + owner authorization. Detection verification alone never makes a Large-SMC scope eligible. Watch and alert behaviour is unchanged.
 - **No retroactive execution.** Tickets issued before a scope became `EXECUTION_ELIGIBLE` are never placed.
 
@@ -118,28 +118,46 @@ The 2026-10-09 flow in which an owner Confirm places an order (Issue #47 V5 per-
 
 No scope is `LOGIC_VERIFIED` or `EXECUTION_ELIGIBLE` by this section. No runtime routing registry exists, so every ticket is `REPORT_ONLY` with reason `REGISTRY_ENTRY_MISSING` until the separately authorized registry PR lands. Strategy admission, READY, runtime binding and host acceptance are unchanged. This section sets target policy only and is not evidence that any gate has passed.
 
-### OD1014 opportunity tickets (owner-directed, pending ratification, 2026-10-13)
-
-Register entries `OD1014` and `OD1014-FAST` (`OWNER_DIRECTED_PENDING_RATIFICATION`). On the `REPORT_ONLY` lane, verification status no longer suppresses a priced plan: all three families send priced **OPPORTUNITY** tickets stamped with their scope's verification status, fail closed on missing inputs and are never executable. READY, the registry, contracts and demo/live flags are unchanged.
-
-| Item | State | Where |
-|---|---|---|
-| ASW priced CANDIDATE on unverified scopes | IMPLEMENTED | `src/reporting/asw_lane.py` (v1.1.2 `SCOPED_CANDIDATE_PATH`) |
-| CCFD unverified-only row → CANDIDATE (1.0.0 identity stamp) | IMPLEMENTED_NOT_HOST_VERIFIED | PR #200 |
-| LSMC SHORT C10 stop from the read-only MT5 tick | IMPLEMENTED_NOT_HOST_VERIFIED | PR #200 |
-| Display-only lot preview / cost-in-R on CANDIDATE | IMPLEMENTED_NOT_HOST_VERIFIED | PR #200 |
-| `OPPORTUNITY -- REPORT ONLY -- NON-ACTIONABLE (verification: <status>)` headers | IMPLEMENTED_NOT_HOST_VERIFIED | PR #200 |
-| EURUSD × ASIAN_LONDON report lane on v1.1.3, `NOT_VERIFIED` (OD1014-FAST D3) | IMPLEMENTED_NOT_HOST_VERIFIED | PR #200 |
-
-PR #200: https://github.com/aungmyat1/AG-profit-trading-assit/pull/200
-
 ### Follow-ups (not in this PR)
 
 (a) Executor change replacing per-order `user_confirmed` for `EXECUTION_ELIGIBLE` scopes. (c) Runtime scope registry and loader. (d) Read-only all-family Telegram status reports, the next implementation priority.
 
+## Verification-phase opportunity tickets (OD1014, 2026-10-14)
+
+This section is an additive reporting-policy clarification; it does not override any authorization, risk, guard or routing rule above. Register entries `OD1014` and `OD1014-FAST` (`OWNER_DIRECTED_PENDING_RATIFICATION`).
+
+A priced OPPORTUNITY contains strategy-generated prices calculated from validated VT Markets MT5 market data. These are observational strategy outputs, not fabricated examples, but their trading correctness has not necessarily been verified. They are non-actionable and carry no execution authority.
+
+Rules:
+
+- **Headers (ASCII, as implemented):** a priced CANDIDATE is headed `OPPORTUNITY -- REPORT ONLY -- NON-ACTIONABLE (verification: <status>)`; a Large-SMC CANDIDATE `LARGE-SMC OPPORTUNITY -- REPORT ONLY -- NON-ACTIONABLE (verification: <status>)`. Every other class keeps `REPORT ONLY -- NON-ACTIONABLE`. `<status>` is read from the registry for the ticket's own strategy version, never borrowed from another version.
+- **Targets:** contract-defined targets only; a target the contract does not define (for example an uncontracted TP2) is never shown.
+- **Sizing and cost:** a display-only lot preview and cost-in-R are shown only when every input is valid; otherwise the ticket says `sizing: n/a (<reason>)`. Zero, NaN and estimated values are never shown.
+- **Incomplete plans:** a missing entry, SL or required target makes the ticket BLOCKED, with no prices.
+- **Schedule unchanged:** eight FX evaluations per day are eight evaluations, not eight opportunities; crypto runs in its configured windows; the Large-SMC watch runs every 15 minutes.
+- **Still BLOCKED:** suspended scopes, stale identities and stale, MISSED or EXPIRED signals are never presented as opportunities.
+- **Never queued, never retroactive, not evidence:** an OPPORTUNITY never enters the order queue, is never placed after a scope later becomes eligible, and is not verification or edge evidence.
+
+### Coverage (against `main` @ `b588eb6`, 2026-10-14)
+
+Classes: `IMPLEMENTED_AND_EVIDENCED` / `IMPLEMENTED_NOT_HOST_VERIFIED` / `NOT_IMPLEMENTED` / `BLOCKED_BY_POLICY` / `UNKNOWN_PENDING_INSPECTION`. Items that exist only on `feat/od1014-r2-followup` are `NOT_IMPLEMENTED` (pending PR #203).
+
+| Family | Symbol | Session / cycle | OPPORTUNITY ticket on main | Sizing preview on main |
+|---|---|---|---|---|
+| Session FX/gold (v1.1.2) | EURUSD | ASIAN_LONDON | BLOCKED_BY_POLICY (v1.1.2 scope SUSPENDED; v1.1.3 report-lane evaluation NOT_IMPLEMENTED, pending PR #203) | NOT_IMPLEMENTED (pending PR #203) |
+| Session FX/gold (v1.1.2) | EURUSD | LONDON_NEWYORK | IMPLEMENTED_NOT_HOST_VERIFIED | NOT_IMPLEMENTED (pending PR #203) |
+| Session FX/gold (v1.1.2) | GBPUSD | ASIAN_LONDON | UNKNOWN_PENDING_INSPECTION (S1 canonical path; outside the report lane) | UNKNOWN_PENDING_INSPECTION |
+| Session FX/gold (v1.1.2) | GBPUSD | LONDON_NEWYORK | IMPLEMENTED_NOT_HOST_VERIFIED | NOT_IMPLEMENTED (pending PR #203) |
+| Session FX/gold (v1.1.2) | USDJPY | ASIAN_LONDON, LONDON_NEWYORK | IMPLEMENTED_NOT_HOST_VERIFIED | NOT_IMPLEMENTED (pending PR #203) |
+| Session FX/gold (v1.1.2) | XAUUSD | ASIAN_LONDON, LONDON_NEWYORK | IMPLEMENTED_NOT_HOST_VERIFIED | NOT_IMPLEMENTED (pending PR #203) |
+| Crypto CFD (1.0.0) | BTCUSD | WEEKDAY, WEEKEND | IMPLEMENTED_NOT_HOST_VERIFIED (SHORT `STALE_IDENTITY`, LONG `UNVERIFIED`) | NOT_IMPLEMENTED (pending PR #203) |
+| Crypto CFD (1.0.0) | ETHUSD | WEEKDAY, WEEKEND | IMPLEMENTED_NOT_HOST_VERIFIED (LONG and SHORT `STALE_IDENTITY`) | NOT_IMPLEMENTED (pending PR #203) |
+| Large-SMC (1.1.0) | EURUSD, GBPUSD | continuous watch | IMPLEMENTED_NOT_HOST_VERIFIED (SHORT C10 stop from the read-only MT5 tick) | NOT_IMPLEMENTED (pending PR #203) |
+| Large-SMC (1.1.0) | USDJPY, XAUUSD, BTCUSD, ETHUSD | continuous watch | NOT_IMPLEMENTED (C10 pip = 10 × host-captured point per OD1014-FAST D2 is not in the engine; stays BLOCKED `C10_PIP_SIZE_NOT_EVIDENCED`) | NOT_IMPLEMENTED |
+
 ## Objective
 
-Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
+Every trading day, AG Profit Trading reads real market data and evaluates the three target strategy families; logically verified scopes may progress to execution routing, and all other scopes report OPPORTUNITY tickets as REPORT_ONLY (OD1014) across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
 
 On each applicable FX trading day, EURUSD, GBPUSD, USDJPY and XAUUSD are each evaluated once for ASIAN_LONDON and once for LONDON_NEWYORK: eight scheduled instrument-session evaluations, each with a deterministic auditable terminal outcome. A scheduled evaluation is not a trade quota. BTCUSD and ETHUSD are scanned dynamically, only qualified current opportunities are ranked, and at most two combined crypto entries are taken per defined trading day; zero or one is acceptable (AGP-OD1012-SESSION-CRYPTO).
 
