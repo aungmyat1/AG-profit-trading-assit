@@ -395,6 +395,8 @@ def _delivery_bucket(state: str) -> str:
 
 
 LSMC_REJECTION_REASONS = ("REJECT_NO_STOP", "REJECT_NO_TARGET", "REJECT_STALE")
+# A reasonless DEVELOPING / NEAR_POI evaluation is a watch state, not an UNSPECIFIED rejection (AGP-C18-TQ).
+LSMC_WATCH_STATES = frozenset({"DEVELOPING", "NEAR_POI"})
 
 
 def lsmc_archive_report(journal: str, start: dt.datetime, end: dt.datetime, *,
@@ -791,7 +793,8 @@ def build_lsmc_crypto_summary(journal: str, *, session_date: dt.date, session: s
     delivery_counts: Counter = Counter()
     for row in rows:
         states[row.get("state")] += 1
-        if row.get("state") != "OPPORTUNITY":
+        if row.get("state") != "OPPORTUNITY" and not (row.get("state") in LSMC_WATCH_STATES
+                                                      and not row.get("reason_codes")):
             reasons = row.get("reason_codes") or []
             reason = str(reasons[0]) if reasons else "UNSPECIFIED"
             if reason not in LSMC_REJECTION_REASONS:

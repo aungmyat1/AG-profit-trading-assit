@@ -35,6 +35,21 @@ def _blocked_reasons(payload: Dict[str, Any], opportunity: Dict[str, Any], gate:
 
 def from_event(event: Dict[str, Any], *, now: dt.datetime, price: Optional[float] = None,
                policy=None) -> Dict[str, Any]:
+    """Observation plus a stable setup identity (the tracker's reference id) and the transition. A WATCH
+    is identified per setup, so NEAR_POI <-> DEVELOPING churn on one setup reports once; a different
+    setup (new reference, e.g. a SHORT POI followed by a LONG POI) is a new observation."""
+    canonical = _from_event(event, now=now, price=price, policy=policy)
+    reference = event.get("reference_id")
+    canonical["setup_id"] = reference
+    canonical["transition"] = f"{event.get('from_state')}->{event.get('to_state')}"
+    if canonical.get("report_class") == "WATCH" and reference:
+        canonical["candidate_signal_id"] = (f"{event.get('strategy_id')}@{event.get('strategy_version')}|"
+                                            f"{event.get('symbol')}|{CYCLE}|SETUP|{reference}")
+    return canonical
+
+
+def _from_event(event: Dict[str, Any], *, now: dt.datetime, price: Optional[float] = None,
+                policy=None) -> Dict[str, Any]:
     payload = event.get("payload") or {}
     opportunity = payload.get("opportunity") or {}
     base = _base(event)
