@@ -146,11 +146,12 @@ def scope_status_lines(statuses):
     statuses = list(statuses or ())
     if not statuses:
         return []
-    lines = ["REPORT ONLY — NON-ACTIONABLE", "Scope verification status:"]
+    lines = ["REPORT ONLY -- NON-ACTIONABLE", "Scope verification status:"]
     for item in statuses:
         if item.get("route") not in SCOPE_ROUTES:
             raise ValueError("Unsupported scope route")
-        detail = f" [{item['detail']}]" if item.get("detail") else ""
+        detail = item.get("detail") or ""
+        detail = f" [{detail}]" if detail and "/" not in detail else ""      # evidence paths stay in the archive
         lines.append(f"- {item.get('symbol', 'SCHEMA_GAP')}: {item.get('verification_status', 'SCHEMA_GAP')} | "
                      f"{item['route']} ({item.get('route_reason', 'SCHEMA_GAP')}){detail}")
     return lines
@@ -252,6 +253,11 @@ BLOCK_EXPLANATIONS = {
     "INFO_ONLY_STALE": "signal older than its freshness window",
     "MISSED": "price already reached the stop or TP1",
     "EXPIRED": "trade window closed",
+    "SPREAD_TOO_WIDE": "live spread above 15% of the stop distance (or the 2.0-pip cap)",
+    "SCOPE_SUSPENDED": "scope suspended in the registry for this strategy version; observation only",
+    "STALE": "market data or signal older than 15 minutes",
+    "LOGIC_SCOPE_NOT_VERIFIED": "scope not logic-verified for this strategy version",
+    "SPREAD_NOT_EVALUATED": "no live spread available",
 }
 
 

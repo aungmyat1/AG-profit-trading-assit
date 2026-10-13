@@ -43,7 +43,7 @@ def test_real_12760_inverted_targets_fail_closed_without_relabelling():
     assert c["report_class"] == "BLOCKED"
     assert "TARGET_ORDER_INVALID:FAIL_CLOSED_IF_TP1_BEYOND_TP2" in c["reason_codes"]
     assert (c["prices"]["tp1_raw"], c["prices"]["tp2_raw"]) == (158.524, 158.487)   # never swapped
-    assert c["candidate_signal_id"] is None
+    assert c["candidate_signal_id"] == "sig"                        # kept: one BLOCKED message per signal
     risk = 158.182 - 158.121
     assert round((158.524 - 158.182) / risk, 3) == 5.607 and round((158.487 - 158.182) / risk, 3) == 5.0
 
@@ -145,3 +145,32 @@ def test_real_xauusd_blocked_report_puts_the_evidence_gap_first_and_badges_in_no
     assert "blocked by: C10_PIP_SIZE_NOT_EVIDENCED -- no verified pip size" in text
     assert "also: REJECT_NO_STOP" in text and "note: D30_BADGE_ECONOMICS_NOT_EVALUATED" in text
     assert text.splitlines()[1].startswith("XAUUSD-VIP OPPORTUNITY (BLOCKED)")
+
+
+def test_real_eurusd_londonny_short_inverted_and_suspended_is_blocked_once_per_signal():
+    """2026-10-13 13:16 UTC: SHORT ENTRY 1.11952 SL 1.11968 TP1 1.11714 (14.9R) TP2 1.11872 (5R), scope SUSPENDED;
+    the same signal was BLOCKED SPREAD_TOO_WIDE at 13:01 and then sent as a CANDIDATE."""
+    base = {"report_class": "CANDIDATE", "direction": "SHORT", "decision": "INFO_ONLY_SUPPRESSED",
+            "reason_codes": [], "scope_verification_status": "SUSPENDED", "ticket_id": "t",
+            "candidate_signal_id": "ASW@1.1.2|EURUSD|LONDON_NEWYORK|SHORT|2026-10-13T12:45:00+00:00",
+            "prices": {"entry_reference_raw": 1.11952, "sl_raw": 1.11968, "tp1_raw": 1.11714, "tp2_raw": 1.11872}}
+    c = asw_lane.finalize_candidate(dict(base, prices=dict(base["prices"])))
+    assert c["report_class"] == "BLOCKED" and c["reason_code"] == "TARGET_ORDER_INVALID:FAIL_CLOSED_IF_TP1_BEYOND_TP2"
+    valid = asw_lane.finalize_candidate(dict(base, prices={**base["prices"], "tp1_raw": 1.11900, "tp2_raw": 1.11872}))
+    assert valid["report_class"] == "BLOCKED" and valid["reason_code"] == "SCOPE_SUSPENDED"
+    earlier = dict(base, report_class="BLOCKED", reason_code="SPREAD_TOO_WIDE", reason_codes=["SPREAD_TOO_WIDE"])
+    assert report_identity(earlier) == report_identity(c)                  # same signal -> one BLOCKED message
+    assert "blocked by: SPREAD_TOO_WIDE -- live spread above 15%" in render_report(
+        dict(earlier, scope_route="REPORT_ONLY", instrument="EURUSD", session="LONDON_NEWYORK"))
+
+
+def test_session_summary_scope_lines_are_ascii_and_hide_evidence_paths():
+    from telegram_delivery.adapter import scope_status_lines
+    lines = scope_status_lines([
+        {"symbol": "EURUSD", "verification_status": "SUSPENDED", "route": "REPORT_ONLY",
+         "route_reason": "L3_REPAINT_UNRESOLVED_2026-07-31", "detail": "docs/status/AGP_C3_ASW_V112_R2_60D_2026-10-10.md"},
+        {"symbol": "GBPUSD", "verification_status": "LOGIC_VERIFIED", "route": "REPORT_ONLY",
+         "route_reason": "DEMO_AUTHORIZATION_ABSENT", "detail": "branch=RANGE_SWEEP"}])
+    assert lines[0] == "REPORT ONLY -- NON-ACTIONABLE" and all(line.isascii() for line in lines)
+    assert lines[2] == "- EURUSD: SUSPENDED | REPORT_ONLY (L3_REPAINT_UNRESOLVED_2026-07-31)"
+    assert lines[3].endswith("[branch=RANGE_SWEEP]")

@@ -54,7 +54,15 @@ def evaluate_scope(symbol: str, cycle: str, *, now: dt.datetime, day: dt.date,
                                 runtime_scope=False)
     canonical = observational_canonical(raw, now=now, current_price=bundle.current_price, window_end=trade_end,
                                         policy=policy)
-    return enforce_target_order(canonical, STRATEGY_PATH)
+    return finalize_candidate(canonical)
+
+
+def finalize_candidate(canonical: Dict[str, Any]) -> Dict[str, Any]:
+    """Contract target order first, then: a SUSPENDED scope is never presented as a candidate."""
+    canonical = enforce_target_order(canonical, STRATEGY_PATH)
+    if canonical.get("report_class") == "CANDIDATE" and canonical.get("scope_verification_status") == "SUSPENDED":
+        block(canonical, "SCOPE_SUSPENDED")
+    return canonical
 
 
 def contract_target_order_rule(strategy_path: str) -> Optional[str]:
