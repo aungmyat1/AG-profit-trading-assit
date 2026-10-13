@@ -59,3 +59,10 @@ The validation worktree head is merge commit `932f34dc7be1ce930f339776ea97f70c17
 artifact engine/spec hashes bind the staged continuation source. PR #209 remains draft
 until remote CI on the final pushed head is green.
 Full 60-day replay, broker/host/demo/live acceptance: NOT_RUN, separate mission.
+
+Initial remote CI on `8e0a784`: docs-drift rejected the stale generated objective block in
+PROJECT_STATUS.md (this PR edits the file, so its generated sections must be exact).
+Refreshed that block and fingerprint from current authoritative inputs; other generated
+outputs remain deferred. The corrected policy is validated in GitHub PR merge context.
+No engine, rule, registry or scheduler changes in this documentation fix; the passing
+full suite and frozen byte-parity source remain unchanged.

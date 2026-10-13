@@ -337,7 +337,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `f0dd1fac2e29e6d1a8e08bda983919302ed50627c036361f359977fa3af556be`.
+inputs_sha256: `9df0c2cf1f86feda7fe34d8df0945bc325e873fd169a92d8ddc0b8165ec70cb4`.
 <!-- [[[end]]] -->
 
 ### Objective
@@ -349,7 +349,7 @@ cog.outl(body.strip())
 cog.outl("")
 cog.outl("Source: [`docs/PROJECT_OBJECTIVE.md` § Objective](docs/PROJECT_OBJECTIVE.md#objective).")
 ]]] -->
-Every trading day, AG Profit Trading reads real market data and evaluates **logically verified** strategies across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
+Every trading day, AG Profit Trading reads real market data and evaluates the three target strategy families; logically verified scopes may progress to execution routing, and all other scopes report their complete priced plans as OPPORTUNITY tickets as REPORT_ONLY (OD1014) across the six target instruments. For each scheduled evaluation, it delivers to the owner on Telegram either an actionable informational trade/watch ticket or a deterministic terminal reason.
 
 On each applicable FX trading day, EURUSD, GBPUSD, USDJPY and XAUUSD are each evaluated once for ASIAN_LONDON and once for LONDON_NEWYORK: eight scheduled instrument-session evaluations, each with a deterministic auditable terminal outcome. A scheduled evaluation is not a trade quota. BTCUSD and ETHUSD are scanned dynamically, only qualified current opportunities are ranked, and at most two combined crypto entries are taken per defined trading day; zero or one is acceptable (AGP-OD1012-SESSION-CRYPTO).
 

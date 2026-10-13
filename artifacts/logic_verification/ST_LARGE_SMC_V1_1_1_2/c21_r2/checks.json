@@ -92,6 +92,13 @@
     "pipeline": "collect_facts.py -> generate_live_status.py -> cog PROJECT_STATUS.md -> build_context_pack.py -> generated_files.py -> check_generated_files.py --mode pr -> check_drift.py",
     "isolated_worktree": true,
     "generated_file_policy_failures": 0,
-    "note": "Current-main objective facts required CI-style regeneration; source PR policy defers generated outputs to the post-merge regeneration PR"
+    "note": "Current-main objective facts required CI-style regeneration; source PR policy defers generated outputs to the post-merge regeneration PR",
+    "initial_remote_failure": {
+      "head": "8e0a784a3596114938f948e50f606d5c1e01160b",
+      "run_id": 38472827392,
+      "job_id": 115556016270,
+      "reason": "PROJECT_STATUS.md edited by PR but generated objective block stale; local initial gate used feature merge parents instead of GitHub PR merge context"
+    },
+    "generated_outputs": "PROJECT_STATUS.md regenerated because edited by this PR; other outputs deferred"
   }
 }
