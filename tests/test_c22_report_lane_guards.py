@@ -169,3 +169,48 @@ def test_ccfd_spread_and_cost_guards_are_candidates_with_verdicts():
 def test_ccfd_guard_verdict_needs_a_complete_measured_plan(reasons, extra):
     c = _ccfd(reasons, **extra)
     assert c["report_class"] == "BLOCKED" and not c.get("guard_verdicts")
+
+
+# ------------------------------------------------------------ E2: one fresh BLOCKED -> CANDIDATE upgrade
+
+def _blocked_missing_spread(first):
+    return dict(first, report_class="BLOCKED", reason_code="MISSING_SPREAD", reason_codes=["MISSING_SPREAD"],
+                guard_verdicts=None)
+
+
+def test_blocked_then_fresh_candidate_sends_exactly_once_more(tmp_path):
+    from test_report_delivery import sender
+    candidate = _lane(LANE_CLOCK, Reader(quote=WIDE))
+    assert candidate["freshness"]["status"] == "PASS"
+    s, calls = sender(tmp_path)
+    assert s.send_report(_blocked_missing_spread(candidate)) == "sent"
+    assert s.send_report(candidate) == "sent"                      # the one allowed upgrade
+    assert s.send_report(candidate) == "duplicate"                 # same class again
+    assert s.send_report(_blocked_missing_spread(candidate)) == "duplicate"   # back to BLOCKED
+    assert len(calls) == 2
+
+
+def test_blocked_then_stale_candidate_is_a_duplicate(tmp_path):
+    from test_report_delivery import sender
+    candidate = _lane(LANE_CLOCK, Reader(quote=WIDE))
+    stale = dict(candidate, freshness={**candidate["freshness"], "status": "FAIL"}, decision="INFO_ONLY_STALE")
+    s, calls = sender(tmp_path)
+    assert s.send_report(_blocked_missing_spread(candidate)) == "sent"
+    assert s.send_report(stale) == "duplicate" and len(calls) == 1
+
+
+def test_candidate_then_blocked_is_a_duplicate(tmp_path):
+    from test_report_delivery import sender
+    candidate = _lane(LANE_CLOCK, Reader(quote=WIDE))
+    s, calls = sender(tmp_path)
+    assert s.send_report(candidate) == "sent"
+    assert s.send_report(_blocked_missing_spread(candidate)) == "duplicate" and len(calls) == 1
+
+
+def test_blocked_then_blocked_is_a_duplicate(tmp_path):
+    from test_report_delivery import sender
+    candidate = _lane(LANE_CLOCK, Reader(quote=WIDE))
+    s, calls = sender(tmp_path)
+    assert s.send_report(_blocked_missing_spread(candidate)) == "sent"
+    other = dict(_blocked_missing_spread(candidate), reason_code="SIGNAL_STALE", reason_codes=["SIGNAL_STALE"])
+    assert s.send_report(other) == "duplicate" and len(calls) == 1
