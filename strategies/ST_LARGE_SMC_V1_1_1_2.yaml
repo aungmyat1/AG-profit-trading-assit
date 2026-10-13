@@ -273,13 +273,10 @@ candidate_rule_changes:
     defect_class: METADATA_MISSING_OWNER_CONFIRMED_BROKER_PIP_EVIDENCE
     change: 'OD1014-FAST D2 amended: pip = 10 * fields.point for all six host-captured
       VT symbols'
-    reason: 'D-LSMC-1 is not a rule defect: pip_size_rules already proposes FX 10
-      x host-captured point, XAUUSD 0.1, BTCUSD 1.0 and ETHUSD 0.1, all PENDING_OWNER_CONFIRM
-      with apply_before_owner_confirmation false. Inventing a pip size to make C10
-      evaluable would be fabricating broker metadata, which the fail-closed gate exists
-      to prevent. The route is owner confirmation of pip_size_rules (and host capture
-      for the four symbols without it), not a new rule; this candidate therefore changes
-      nothing for D-LSMC-1.'
+    reason: OD1014-FAST D2 amended 2026-10-14 confirms 10 * fields.point for all six
+      validated VT host records, replacing the historical pending proposals. No literal
+      pip or asset-class fallback is invented; missing or invalid evidence remains
+      C10_PIP_SIZE_NOT_EVIDENCED.
   declared_diff_paths:
   - based_on
   - based_on_sha256
@@ -389,11 +386,11 @@ not_specified:
 - '1.1.2 specifies no holiday calendar: the trading-date count excludes weekend dates
   only, which is what watch.trading_date derives from config/canonical_sessions.yaml.
   Broker holiday calendars remain unspecified.'
-- Host-captured points are available from main for all six candidate instruments (BTCUSDT/ETHUSDT
-  through BTCUSD/ETHUSD aliases), but the proposed pip rules remain PENDING_OWNER_CONFIRM
-  and are not applied to pip_size.
-- The candidate RR minimum of 2.0 is PENDING_OWNER_CONFIRM; it is not represented
-  as a confirmed 1.1.0 rule.
+- OD1014-FAST D2 amended 2026-10-14 confirms C10 pip = 10 * fields.point from validated
+  host-captured records for all six VT symbols; missing or invalid evidence remains
+  fail closed.
+- OD1014-FAST D6, 2026-10-14 confirms the candidate RR minimum of 2.0. This candidate
+  confirmation does not amend the frozen 1.1.0 contract or promote verification/authorization.
 - The H1 fallback sweep-state filter and equal-distance tie-break have no owner-signed
   value; the candidate specifies no sweep filter and fails closed on a tie.
 - Every other D-item of the unpushed RMR-A catalogue remains outside this candidate.

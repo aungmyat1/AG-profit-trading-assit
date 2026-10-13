@@ -162,8 +162,8 @@
   },
   "frozen_v110_bytes_unchanged": true,
   "identity": {
-    "base_sha": "932f34dc7be1ce930f339776ea97f70c1703c5fc",
-    "contract_sha256": "c47f54a4d923d71b8b6e85be215475d6a6e38bd7dfc5c4d86f2343ea6531a387",
+    "base_sha": "1978605808e7b66ab071645e135e9117893c4a2a",
+    "contract_sha256": "1f9b6cace2e1be33e5b3572e2c13e3e526b992478f91c8f09955b0f44b73024f",
     "engine_file_sha256": {
       "src/large_smc_v112/__init__.py": "5c2e9e5205d83618e7bf2b4783d818c19c98dbf50c9deede2b5ee43e4816a228",
       "src/large_smc_v112/contract.py": "85e61615b4c64b3bf9d3f0eb5d3941bbb89d22070cf674b97797b6a9f9249820",

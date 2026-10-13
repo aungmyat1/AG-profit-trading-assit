@@ -100,5 +100,13 @@
       "reason": "PROJECT_STATUS.md edited by PR but generated objective block stale; local initial gate used feature merge parents instead of GitHub PR merge context"
     },
     "generated_outputs": "PROJECT_STATUS.md regenerated because edited by this PR; other outputs deferred"
+  },
+  "notes_only_consistency_fix": {
+    "executable_rules_unchanged": true,
+    "pip_size_rules_unchanged": true,
+    "audit_rerun": "NOT_VERIFIED",
+    "rule_diff": "PASS",
+    "declared_paths": 77,
+    "frozen_bytes_unchanged": true
   }
 }

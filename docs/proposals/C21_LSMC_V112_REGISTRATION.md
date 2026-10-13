@@ -23,7 +23,7 @@ stamped `NOT_VERIFIED`. `lsmc_lane.py` only adds version selection; mapping/form
 OD1014-FAST D6 confirms the RR minimum of 2.0; below-minimum RR blocks report qualification, never pricing
 geometry or the six-symbol evidence below. No READY, broker, registry, scheduler or authorization change.
 
-Contract SHA-256: `c47f54a4d923d71b8b6e85be215475d6a6e38bd7dfc5c4d86f2343ea6531a387`.
+Contract SHA-256: `1f9b6cace2e1be33e5b3572e2c13e3e526b992478f91c8f09955b0f44b73024f`.
 Candidate engine SHA-256: `7f218a9001cb7ffa069e02a101accd53ab86b2b2c8989c73939671fb624f0d7a` (ordered path + file-hash identity, including metadata/targets/windows).
 Detailed per-file identity is in [the audit](../../artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_2/c21_r2/audit.json).
 
@@ -103,7 +103,7 @@ an independently attributed candidate record with these values, **without replac
 version: '1.1.2'
 config_source: strategies/ST_LARGE_SMC_V1_1_1_2.yaml
 engine: src/large_smc_v112/ (REPORT_ONLY)
-contract_sha256: c47f54a4d923d71b8b6e85be215475d6a6e38bd7dfc5c4d86f2343ea6531a387
+contract_sha256: 1f9b6cace2e1be33e5b3572e2c13e3e526b992478f91c8f09955b0f44b73024f
 engine_sha256: 7f218a9001cb7ffa069e02a101accd53ab86b2b2c8989c73939671fb624f0d7a
 status: NOT_VERIFIED
 active: false
@@ -119,7 +119,7 @@ versioning schema and any promotion require a separate owner decision after miss
 
 Final local suite result is recorded in [the dated status](../status/AGP_C21_LSMC_V112_ENGINE_R2_2026-10-14.md).
 Host/broker/live checks and slow tests excluded by the shipped default pytest profile are NOT_RUN.
-Open: owner confirmation of the candidate RR minimum; accepted cost evidence (L5); broader real per-symbol
+D6 closes owner confirmation of the candidate RR minimum. Open: accepted cost evidence (L5); broader real per-symbol
 geometry evidence, especially the vacuous recorded BTC slice. No host or broker contact occurred.
 
 | Component | OSS candidate | Decision | Reason |

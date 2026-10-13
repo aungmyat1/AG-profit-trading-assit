@@ -66,3 +66,8 @@ Refreshed that block and fingerprint from current authoritative inputs; other ge
 outputs remain deferred. The corrected policy is validated in GitHub PR merge context.
 No engine, rule, registry or scheduler changes in this documentation fix; the passing
 full suite and frozen byte-parity source remain unchanged.
+
+Notes-only consistency fix: D2/D6 confirmations replace the stale not-specified notes;
+the registration proposal's RR open question is closed. Executable rules and pip-size rules
+compare equal to the previously passing source. Repeated bounded R1 audit: zero lane
+failures, exact 77-path diff, frozen hashes unchanged; all six scopes remain NOT_VERIFIED.
