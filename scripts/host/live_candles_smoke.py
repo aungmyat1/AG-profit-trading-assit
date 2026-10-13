@@ -597,26 +597,36 @@ def run_lsmc(fetch: Fetch, now: dt.datetime, journal: str, crypto_feed=None, not
     return lines
 
 
-def _bid_ask(quote, broker):
-    """(bid, ask) from a read-only quote callable; None when unavailable (the engine then fails closed)."""
+def _bid_ask(quote, broker, now: Optional[dt.datetime] = None):
+    """(bid, ask) from a read-only quote callable; None when unavailable (the engine then fails closed).
+    A quote that carries its observed time (host_quote_observed) older than STALE_MIN, or in the future,
+    is missing (OD1014 A2) -- never a synthetic spread."""
     try:
         q = quote(broker) if quote is not None and broker else None
     except Exception:  # noqa: BLE001 -- a quote fault is a missing spread, never a guess
         q = None
-    return (q[0], q[1]) if q else (None, None)
+    if not q:
+        return None, None
+    if len(q) > 2 and now is not None:
+        observed = q[2]
+        if (not isinstance(observed, dt.datetime) or observed.tzinfo is None
+                or not dt.timedelta(0) <= now - observed <= dt.timedelta(minutes=STALE_MIN)):
+            return None, None
+    return q[0], q[1]
 
 
 def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO", window=None,
                 ledger=None, journal=None, display_broker_symbol=None, record=None, quote=None,
                 quote_symbol=None) -> List[str]:
-    bid, ask = _bid_ask(quote, quote_symbol or display_broker_symbol)        # AGP-C18-R2 D4
+    bid, ask = _bid_ask(quote, quote_symbol or display_broker_symbol, now)   # AGP-C18-R2 D4
     snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now, bid=bid, ask=ask)
     events = tracker.poll(snap)
     if journal is not None and events:
         from reporting.lsmc_lane import observe_events
         price = bars["M5"][-1].close if bars["M5"] else None
         report_lane = report_lane_lines(f"LSMC {symbol}", lambda: observe_events(
-            events, now=now, price=price, archive_root=os.path.join(journal, "ticket_delivery", "archive")),
+            events, now=now, price=price, archive_root=os.path.join(journal, "ticket_delivery", "archive"),
+            bid=bid, ask=ask),
             journal=journal, now=now)
     else:
         report_lane = []
@@ -763,7 +773,7 @@ def run_smoke(fetch: Fetch, now: dt.datetime, journal: str, crypto_config: Optio
         last = {tf: (b[-1].time.isoformat() if b else None) for tf, b in got.items()}
         lines.append(f"BARS {symbol} ({broker}) status={classify(symbol, got['M5'], now)} last_closed={last}")
     lines += run_fx(fetch, now, journal, gated=False, notify=False, quote=quote)
-    lines += run_lsmc(fetch, now, journal, crypto_feed=None, notify=False)
+    lines += run_lsmc(fetch, now, journal, crypto_feed=None, notify=False, quote=quote)
     if crypto_map:
         lines += run_crypto(now, journal, crypto_feed_for(crypto_config, fetch, quote), notify=False, config=crypto_config)
     return lines
@@ -952,10 +962,12 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                                     balance=lambda: account_balance(mt5), login=lambda: account_login(mt5),
                                     symbol_meta=lambda broker: live_symbol_meta(mt5, broker))
                         elif args.mode == "lsmc-weekend":      # BTCUSD/ETHUSD only, VT MT5 data
+                            quote = host_quote_observed(mt5)    # OD1014 A2: stale tick -> no spread
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
                                              fx=False, window="WEEKEND", quote=quote)
                             lines += lsmc_crypto_summary_lines(now, journal, LSMC_CRYPTO_WEEKEND)
                         else:
+                            quote = host_quote_observed(mt5)    # OD1014 A2: stale tick -> no spread
                             lines = run_lsmc(fetch, now, journal, crypto_feed=lsmc_crypto_feed(crypto_config, fetch, quote),
                                              quote=quote)
                             if crypto_config["venue"]["kind"] == "MT5":       # crypto watched (lsmc_crypto_feed)

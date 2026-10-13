@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from telegram_delivery.scope_policy import resolve as resolve_immediate_scope
+from v1_tickets.scope_status import REPORT_ONLY_HEADER, report_header
 
 LOG = logging.getLogger(__name__)
 STATUSES = frozenset({"WATCH_READY", "INFO_ONLY_STALE", "INFO_ONLY_INSUFFICIENT_REMAINING_R",
@@ -146,7 +147,7 @@ def scope_status_lines(statuses):
     statuses = list(statuses or ())
     if not statuses:
         return []
-    lines = ["REPORT ONLY -- NON-ACTIONABLE", "Scope verification status:"]
+    lines = [REPORT_ONLY_HEADER, "Scope verification status:"]
     for item in statuses:
         if item.get("route") not in SCOPE_ROUTES:
             raise ValueError("Unsupported scope route")
@@ -287,8 +288,7 @@ def _report_ticket_lines(c, sym, direction, scope, ts, dist):
     prices = c.get("prices") or {}
     asw = c.get("strategy_id") == "ST_ASIAN_SWEEP_5R_V1"
     trigger = c.get("trigger") or {}
-    lines = ["INFORMATIONAL REPORT -- REPORT ONLY -- NOT A BROKER ORDER",
-             f"{sym} {direction} ({value(c, 'session')})",
+    lines = [f"{sym} {direction} ({value(c, 'session')})",
              f"{value(c, 'strategy_id')} v{value(c, 'strategy_version')}  report={value(c, 'report_class')}  {scope}",
              f"ticket_id: {c.get('ticket_id') or 'n/a'}"]
     if asw:
@@ -302,6 +302,7 @@ def _report_ticket_lines(c, sym, direction, scope, ts, dist):
             if prices.get(key) is not None:
                 label = f" ({_ASW_LEGS[key]})" if asw else ""
                 lines.append(f"target leg {leg}{label}: {prices[key]}  = {_r(c, r_key)}")
+        lines += _sizing_lines(c)
         lines.append(f"data source: {c.get('venue') or 'n/a'}")
         lines.append(f"VALID UNTIL {ts(c.get('expires_at'))} -- STALE after; re-check before acting.")
     elif c.get("report_class") == "BLOCKED":
@@ -317,8 +318,7 @@ def _report_lsmc_lines(c, sym, direction, scope, ts, dist):
     prices, lsmc = c.get("prices") or {}, c.get("lsmc") or {}
     to_state = str(c.get("transition") or "->").split("->")[-1] or "n/a"
     cls = value(c, "report_class")
-    lines = [f"LARGE-SMC {cls} -- INFORMATIONAL -- REPORT ONLY -- NOT A BROKER ORDER",
-             f"{sym} {to_state} ({cls})  direction: {direction}",
+    lines = [f"{sym} {to_state} ({cls})  direction: {direction}",
              f"{value(c, 'strategy_id')} v{value(c, 'strategy_version')}  economic_status=NOT_EVALUATED  {scope}",
              f"ref: {c.get('setup_id') or 'n/a'}",
              f"transition: {c.get('transition') or 'n/a'}",
@@ -328,6 +328,7 @@ def _report_lsmc_lines(c, sym, direction, scope, ts, dist):
     if c.get("report_class") == "CANDIDATE":
         lines += [f"liquidity target: {prices.get('tp1') or 'n/a'}", f"stop (C10): {prices.get('sl') or 'n/a'}",
                   f"entry reference (CHoCH close): {prices.get('entry_reference') or 'n/a'}"]
+        lines += _sizing_lines(c)
     elif c.get("report_class") == "BLOCKED":
         lines += _blocked_lines(c)
     if prices.get("current_send") is not None:
@@ -339,6 +340,15 @@ def _report_lsmc_lines(c, sym, direction, scope, ts, dist):
     return lines
 
 
+def _sizing_lines(c):
+    """OD1014 A3: display-only lot preview / cost-in-R, or `sizing: n/a (<reason>)`; never 0 or an estimate."""
+    try:
+        from reporting.sizing_preview import sizing_lines
+        return sizing_lines(c)
+    except Exception as exc:  # noqa: BLE001 -- display only; a fault omits the preview, never the report
+        return [f"sizing: n/a (PREVIEW_FAILED:{type(exc).__name__})"]
+
+
 def render_report(c):
     """ASCII REPORT_ONLY observation in the owner-approved ticket / Large-SMC alert layouts. Rejects any
     route other than REPORT_ONLY; shows the report class, never an executable decision."""
@@ -348,7 +358,10 @@ def render_report(c):
     sym, direction = _broker_symbol(c), c.get("direction") or "n/a"
     scope = f"scope={value(c, 'scope_verification_status')} ({value(c, 'scope_reason')})"
     build = _report_lsmc_lines if c.get("strategy_id") == "ST_LARGE_SMC_V1" else _report_ticket_lines
-    lines = build(c, sym, direction, scope, _ts, _dist)
+    lsmc = c.get("strategy_id") == "ST_LARGE_SMC_V1"
+    lines = [report_header(c.get("report_class"), large_smc=lsmc,
+                           verification_status=c.get("verification_status") or c.get("scope_verification_status"))]
+    lines += build(c, sym, direction, scope, _ts, _dist)
     lines.append(f"evaluated: {_ts(c.get('created_at'))}")
     lines.append("REPORT ONLY - NOT AN ORDER | EXECUTION: DISABLED")
     return "\n".join(lines).encode("ascii", "replace").decode("ascii")

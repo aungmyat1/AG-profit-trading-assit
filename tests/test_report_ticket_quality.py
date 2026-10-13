@@ -97,7 +97,7 @@ def test_lsmc_watch_is_identified_per_setup_and_carries_the_transition():
     assert (a["setup_id"], a["transition"]) == (short_ref, "OPPORTUNITY->NEAR_POI")
     text = render_report(c)
     assert f"ref: {long_ref}" in text and "transition: NEAR_POI->DEVELOPING" in text
-    assert text.splitlines()[0] == "LARGE-SMC WATCH -- INFORMATIONAL -- REPORT ONLY -- NOT A BROKER ORDER"
+    assert text.splitlines()[0] == "REPORT ONLY -- NON-ACTIONABLE"
 
 
 def test_lsmc_summary_counts_only_rejection_states(tmp_path):
