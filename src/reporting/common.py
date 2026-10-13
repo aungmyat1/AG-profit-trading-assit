@@ -19,6 +19,8 @@ REPORT_LANE_SUBDIR = "report_lane"
 OBSERVATIONAL_CLASSES = frozenset({"WATCH", "CANDIDATE", "BLOCKED", "NO_OPPORTUNITY", "DATA_ERROR",
                                    "OUT_OF_SESSION"})
 _EXECUTABLE_DECISIONS = frozenset({"READY", "TICKET_READY", "WATCH_READY"})
+# AGP-C18-TICKET-QUALITY: a signal past its freshness window / already touched / expired is a diagnostic.
+UNACTIONABLE_DECISIONS = frozenset({"INFO_ONLY_STALE", "MISSED", "EXPIRED"})
 
 
 class ReportLaneViolation(RuntimeError):
@@ -53,7 +55,19 @@ def observational_canonical(raw: Dict[str, Any], *, now: dt.datetime, current_pr
         raise ReportLaneViolation("observation is not REPORT_ONLY")
     if canonical.get("execution_authorization") or canonical.get("demo_authorized") or canonical.get("live_authorized"):
         raise ReportLaneViolation("observation carries an execution authority flag")
+    if canonical.get("report_class") == "CANDIDATE" and canonical.get("decision") in UNACTIONABLE_DECISIONS:
+        block(canonical, str(canonical["decision"]))
     canonical["lane"] = REPORT_LANE
+    return canonical
+
+
+def block(canonical: Dict[str, Any], reason: str) -> Dict[str, Any]:
+    """Demote an observation to a BLOCKED diagnostic with an explicit reason (levels kept for audit only;
+    the BLOCKED rendering never presents them as a trade). Never swaps or relabels prices."""
+    canonical["report_class"] = "BLOCKED"
+    canonical["reason_code"] = reason
+    canonical["reason_codes"] = list(dict.fromkeys(list(canonical.get("reason_codes") or []) + [reason]))
+    canonical["candidate_signal_id"] = None
     return canonical
 
 

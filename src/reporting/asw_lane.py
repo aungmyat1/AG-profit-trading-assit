@@ -11,7 +11,9 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
-from reporting.common import archive_observation, observational_canonical
+import yaml
+
+from reporting.common import archive_observation, block, observational_canonical
 from v1_tickets import fx as v1_fx
 
 FAMILY = "session_fx_gold"
@@ -50,8 +52,31 @@ def evaluate_scope(symbol: str, cycle: str, *, now: dt.datetime, day: dt.date,
                                 list(bundle.post_session_candles), data_source=data_source, evaluated_at=now,
                                 data_close=bundle.data_close, spread=bundle.spread, strategy_path=STRATEGY_PATH,
                                 runtime_scope=False)
-    return observational_canonical(raw, now=now, current_price=bundle.current_price, window_end=trade_end,
-                                   policy=policy)
+    canonical = observational_canonical(raw, now=now, current_price=bundle.current_price, window_end=trade_end,
+                                        policy=policy)
+    return enforce_target_order(canonical, STRATEGY_PATH)
+
+
+def contract_target_order_rule(strategy_path: str) -> Optional[str]:
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[2]
+    spec = yaml.safe_load((root / strategy_path).read_text(encoding="utf-8")) or {}
+    return (spec.get("position_split_and_targets") or {}).get("target_order_rule")
+
+
+def enforce_target_order(canonical: Dict[str, Any], strategy_path: str) -> Dict[str, Any]:
+    """The frozen contract's own rule: TP1 beyond TP2 fails closed. Reporting-only; prices are never
+    swapped or relabelled, and a missing rule leaves the observation unchanged."""
+    if canonical.get("report_class") != "CANDIDATE":
+        return canonical
+    rule = contract_target_order_rule(strategy_path)
+    prices = canonical.get("prices") or {}
+    tp1, tp2, direction = prices.get("tp1_raw"), prices.get("tp2_raw"), canonical.get("direction")
+    if rule != "FAIL_CLOSED_IF_TP1_BEYOND_TP2" or tp1 is None or tp2 is None:
+        return canonical
+    if (direction == "LONG" and tp1 > tp2) or (direction == "SHORT" and tp1 < tp2):
+        return block(canonical, "TARGET_ORDER_INVALID:FAIL_CLOSED_IF_TP1_BEYOND_TP2")
+    return canonical
 
 
 def run_asw_lane(*, now: dt.datetime, day: dt.date, cycles: Sequence[str], candle_provider: Callable[..., Any],

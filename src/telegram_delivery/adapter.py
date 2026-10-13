@@ -215,6 +215,9 @@ def render_lsmc_crypto_summary(summary):
              "Rejections by reason:"]
     lines += [f"- {reason}: {n}" for reason, n in sorted(rejections.items())] or ["- none"]
     lines += lsmc_diagnostic_lines(summary.get("large_smc") or {})
+    if counts["evaluations"] == 0:
+        lines.append("NOTE: no evaluations recorded in this window (runner not running or no data); "
+                     "not a market observation")
     lines.append(f"Delivery enabled: {str(bool(summary.get('delivery_enabled', False))).lower()}")
     lines.append("No broker order. Execution not authorized.")
     return "\n".join(lines)
@@ -235,8 +238,12 @@ def render_report(c):
         raise ValueError("Unsupported scope route")
     lines = ["REPORT ONLY - NOT AN ORDER",
              f"{value(c, 'strategy_id')}@{value(c, 'strategy_version')} | {value(c, 'report_class')}",
-             f"{value(c, 'instrument')} | {value(c, 'session')} | {value(c, 'direction')}",
-             f"scope: {value(c, 'scope_verification_status')} ({value(c, 'scope_reason')})"]
+             f"{value(c, 'instrument')} | {value(c, 'session')} | {c.get('direction') or 'n/a'}",
+             f"scope: {value(c, 'scope_verification_status')} ({value(c, 'scope_reason')})",
+             f"evaluated: {c.get('created_at') or 'n/a'} | bar close: "
+             f"{(c.get('trigger') or {}).get('trigger_bar_close_utc') or 'n/a'}"]
+    if c.get("setup_id"):
+        lines.append(f"setup: {c['setup_id']} | {c.get('transition') or 'n/a'}")
     if c.get("report_class") == "CANDIDATE":
         prices = c.get("prices") or {}
         lines += [f"signal: {value(c, 'trigger', 'trigger_timestamp')}"]
