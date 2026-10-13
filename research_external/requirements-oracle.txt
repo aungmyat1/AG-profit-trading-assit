@@ -1,0 +1,6 @@
+# AGP-C25 OSS differential oracles -- research-only, never installed on the MT5 host or imported by runtime
+# code (src/). Used only by scripts/c25_oss_differential.py; results are REFERENCE evidence, never authority.
+# backtesting.py is AGPL-3.0: wrapped as an isolated research tool, no code copied into runtime packages.
+backtesting==0.6.5          # AGPL-3.0
+pandas-ta==0.4.71b0         # MIT
+smartmoneyconcepts==0.0.27  # MIT
