@@ -205,7 +205,7 @@ class EvidenceEvaluator:
         result,snap=captured_evaluator(spec,case,self.snapshot,self.l1)
         h1=tuple((b.time,b.open,b.high,b.low,b.close,b.volume) for b in G._closed(case['H1'],'H1',case['now']))
         o=snap.opportunity or {}
-        plan=tuple(o.get(k) for k in ('opp_id','entry_reference','stop_c10','target_c11','expires_at','reward_risk_reason'))
+        plan=tuple(o.get(k) for k in ('opp_id','entry_reference','target_c11','c11_source','expires_at','reward_risk_reason'))
         if h1!=self.last_h1 or plan!=self.last_plan:
             reference=G.evaluate_snapshot(case['symbol'],case['D1'],case['H1'],case['M5'],case['now'],target_history=case.get('target_history'))
             self.reference_checks+=1
@@ -219,6 +219,7 @@ class EvidenceEvaluator:
                 'creation_fact_cache_hits':self.target_hits,'creation_fact_cache_misses':self.target_misses,
                 'uncached_snapshot_reference_checks':self.reference_checks,
                 'engine_globals_modified':False,'snapshot_or_check_cache':False,
+                'native_reference_schedule':'Every closed H1 window change and new opportunity/C11/eligibility plan; C10 is always recomputed, never memoized.',
                 'reference_parity':'PASS'}
 
 
