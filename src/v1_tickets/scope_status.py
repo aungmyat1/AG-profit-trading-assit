@@ -39,6 +39,16 @@ STALE_IDENTITY, SUSPENDED = "STALE_IDENTITY", "SUSPENDED"
 REPORT_ONLY = "REPORT_ONLY"          # the only route this module can produce
 REPORT_ONLY_HEADER = "REPORT ONLY -- NON-ACTIONABLE"
 
+
+def report_header(report_class: Optional[str], *, large_smc: bool = False,
+                  verification_status: Optional[str] = None) -> str:
+    """ASCII first line of a REPORT_ONLY message (OD1014 A4). Only a CANDIDATE is an OPPORTUNITY, and it
+    always names its verification status; every other class keeps the plain REPORT_ONLY header."""
+    if report_class != "CANDIDATE":
+        return REPORT_ONLY_HEADER
+    prefix = "LARGE-SMC OPPORTUNITY" if large_smc else "OPPORTUNITY"
+    return f"{prefix} -- {REPORT_ONLY_HEADER} (verification: {verification_status or UNVERIFIED})"
+
 REGISTRY_ENTRY_MISSING = "REGISTRY_ENTRY_MISSING"
 LOGIC_NOT_VERIFIED = "LOGIC_NOT_VERIFIED"
 ENTRY_LOGIC_NOT_VERIFIED = "ENTRY_LOGIC_NOT_VERIFIED"

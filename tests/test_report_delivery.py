@@ -62,7 +62,7 @@ def test_tracked_policy_enables_report_scopes_and_local_override_only_narrows(tm
                                         ("WATCH", "state: REPORT_ONLY_OBSERVATION")])
 def test_render_report_is_ascii_and_report_only(cls, needle):
     text = render_report(obs(cls))
-    assert text.isascii() and "REPORT ONLY -- NOT A BROKER ORDER" in text.splitlines()[0] and needle in text
+    assert text.isascii() and "REPORT ONLY -- NON-ACTIONABLE" in text.splitlines()[0] and needle in text
     assert text.endswith("EXECUTION: DISABLED")
     with pytest.raises(ValueError):
         render_report(obs(cls, scope_route="DEMO_ORDER"))
@@ -127,7 +127,8 @@ def test_candidate_layout_matches_owner_example():
             expires_at="2026-10-13T08:15:00+00:00", created_at="2026-10-13T08:00:00+00:00",
             venue="MT5_VT_MARKETS_DEMO", trigger={"trigger_bar_close_utc": "2026-10-13T07:45:00+00:00"})
     lines = render_report(c).splitlines()
-    assert lines[:3] == ["INFORMATIONAL REPORT -- REPORT ONLY -- NOT A BROKER ORDER", "USDJPY-VIP LONG (ASIAN_LONDON)",
+    assert lines[:3] == ["OPPORTUNITY -- REPORT ONLY -- NON-ACTIONABLE (verification: UNVERIFIED)",
+                         "USDJPY-VIP LONG (ASIAN_LONDON)",
                          "ST_ASIAN_SWEEP_5R_V1 v1.1.2  report=CANDIDATE  scope=UNVERIFIED (LOGIC_NOT_VERIFIED)"]
     assert "signal close: 14:15 MMT / 07:45 UTC (2026-10-13)" in lines
     assert "entry: 150.100  stop: 149.900  risk: 20.0 pips" in lines

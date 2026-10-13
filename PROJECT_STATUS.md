@@ -8,6 +8,14 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+OD1014 opportunity lanes (2026-10-13, unit-tested only, not host-verified; OD1014 owner-directed, pending
+ratification): on the REPORT_ONLY lane a CCFD row blocked only by `LOGIC_STATUS_NOT_VERIFIED` with a complete
+priced plan is reported as a non-executable `OPPORTUNITY` CANDIDATE stamped with its own 1.0.0 registry status;
+any other reason stays BLOCKED. LSMC runs pass the fresh read-only MT5 tick (stale/missing -> `MISSING_SPREAD`).
+CANDIDATE reports show a display-only lot preview / cost-in-R or `sizing: n/a (<reason>)`. Unchanged: READY,
+manual/canonical ticket gating, registry, contracts, demo/live flags, order paths. Tests:
+`tests/test_od1014_opportunity_lanes.py`.
+
 Large-SMC v1.1.0 independent logic audit (2026-10-13, off-host, committed inputs only): a new C15-LSMC
 follow-up driver (`scripts/lsmc_v110_logic_audit.py`, four lanes + eleven property checks, byte-reproducible,
 50 s / 120 MB peak, resource class R1, byte-identical across three runs) returns **`NOT_VERIFIED`** for rule conformance, causality and
