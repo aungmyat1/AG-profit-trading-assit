@@ -106,23 +106,21 @@ def _from_event(event: Dict[str, Any], *, now: dt.datetime, price: Optional[floa
     return canonical
 
 
-def _quote_inputs(symbol: Optional[str], bid: Optional[float], ask: Optional[float]) -> Dict[str, Any]:
-    """Read-only MT5 tick (bid, ask) as evidence for the report (OD1014 A2/A3); pip size only where the
-    contract evidences it. The C10 SHORT stop itself is computed by the watch from the same tick."""
-    from large_smc_watch.contract import C10_PIP_SIZE
-    return {"bid": bid, "ask": ask, "pip_size": C10_PIP_SIZE.get(symbol or ""), "commission_R": None}
-
-
 def observe_events(events, *, now: dt.datetime, price: Optional[float], archive_root: str,
-                   policy=None, bid: Optional[float] = None, ask: Optional[float] = None) -> List[Dict[str, Any]]:
+                   policy=None, bid: Optional[float] = None, ask: Optional[float] = None,
+                   account: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
     """Archive one observation per WatchTracker transition (the tracker already dedupes transitions).
     `bid`/`ask` are the fresh read-only MT5 tick the snapshot was evaluated with (None when missing or
-    stale: a SHORT then stays BLOCKED MISSING_SPREAD; no synthetic spread)."""
+    stale: a SHORT then stays BLOCKED MISSING_SPREAD; no synthetic spread). `account` = read-only
+    {"balance", "commission_R"} for the display-only sizing preview."""
+    from reporting.sizing_preview import attach_inputs
+    account = account or {}
     out = []
     for event in events:
         canonical = from_event(event if isinstance(event, dict) else dict(event.__dict__), now=now, price=price,
                                policy=policy)
-        canonical["sizing_inputs"] = _quote_inputs(canonical.get("instrument"), bid, ask)
+        attach_inputs(canonical, bid=bid, ask=ask, commission_R=account.get("commission_R"),
+                      balance=account.get("balance"))
         if canonical.get("report_class") == "CANDIDATE":
             canonical["verification_status"] = canonical.get("scope_verification_status") or "UNVERIFIED"
             if canonical["verification_status"] == "SUSPENDED":

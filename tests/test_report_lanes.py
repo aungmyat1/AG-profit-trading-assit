@@ -70,14 +70,17 @@ def test_asw_s1_is_left_to_the_canonical_path():
                                    policy=SIGNED_POLICY) is None
 
 
-def test_asw_suspended_scope_is_blocked_without_evaluation():
-    def forbidden(*_):
-        raise AssertionError("suspended scope must not be evaluated")
-    c = asw_lane.evaluate_scope("EURUSD", "ASIAN_LONDON", now=NOW, day=DAY, candle_provider=forbidden,
+def test_asw_eurusd_asian_london_uses_v113_on_the_lane_only():
+    """OD1014-FAST D3: evaluated with the v1.1.3 identity, stamped NOT_VERIFIED; the registry still
+    records the v1.1.2 scope as SUSPENDED (never presented as verified)."""
+    from v1_tickets.scope_status import resolve_ticket_scope
+    c = asw_lane.evaluate_scope("EURUSD", "ASIAN_LONDON", now=NOW, day=DAY, candle_provider=provider(),
                                 policy=SIGNED_POLICY)
-    assert (c["report_class"], c["reason_code"] if c["reason_code"] != "BLOCKED" else c["reason_codes"]) is not None
-    assert c["report_class"] == "BLOCKED" and "SUSPENDED_L3_REPAINT" in c["reason_codes"]
-    assert c["prices"]["entry_reference_raw"] is None and c["scope_verification_status"] == "SUSPENDED"
+    assert c["strategy_version"] == "1.1.3" and c["verification_status"] == "NOT_VERIFIED"
+    assert c["scope_route"] == "REPORT_ONLY" and c["decision"] != "WATCH_READY"
+    assert c["execution_authorization"] is False and "SUSPENDED_L3_REPAINT" not in c["reason_codes"]
+    registry = resolve_ticket_scope("ST_ASIAN_SWEEP_5R_V1", "1.1.2", "EURUSD", "ASIAN_LONDON", "LONG")
+    assert registry["scope_verification_status"] == "SUSPENDED"
 
 
 def test_asw_unverified_scope_reports_a_priced_non_executable_candidate():
