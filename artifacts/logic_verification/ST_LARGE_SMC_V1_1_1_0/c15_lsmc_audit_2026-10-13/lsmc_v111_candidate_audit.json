@@ -1,0 +1,1472 @@
+[
+  {
+    "C10": "NOT_APPLICABLE_NO_TICKET",
+    "C11_legacy_m5_fallback_ignored": false,
+    "C11_selector_reason": null,
+    "C11_selector_tier": null,
+    "C11_source": "NO_TICKET",
+    "C11_status_at_selection": null,
+    "C11_target_price": null,
+    "C11_target_reason": "NO_OPPORTUNITY_TICKET",
+    "C11_target_source_id": null,
+    "C11_target_tier": null,
+    "L1": "PASS",
+    "L2": "NOT_APPLICABLE_NO_TICKET",
+    "L3": "NOT_APPLICABLE_NO_TICKET",
+    "L4": "PASS",
+    "L5": "WARN",
+    "L6": "NOT_APPLICABLE_NO_TICKET",
+    "RR": "NOT_APPLICABLE_NO_TICKET",
+    "RR_minimum": 2.0,
+    "RR_minimum_status": "PENDING_OWNER_CONFIRM",
+    "broker_symbol": "EURUSD",
+    "computed_RR": null,
+    "direction": null,
+    "entry": null,
+    "fixture_classification": "HOST_CAPTURED",
+    "fixture_file": "tests/fixtures/large_smc_v111/EURUSD.json",
+    "gate_notes": {
+      "L1": [],
+      "L2": [],
+      "L3": [],
+      "L4": [],
+      "L5": [
+        "L5.spread_R:SPREAD NOT AVAILABLE",
+        "L5.commission_R:COMMISSION NOT AVAILABLE",
+        "L5.cost_vs_warn_level:WARN LEVEL NOT SET"
+      ],
+      "L6": []
+    },
+    "gates": {
+      "L1": {
+        "checks": [
+          {
+            "expected": "fce9105917244d57af18414d123237c90900006dc890497a448076aa3fb46910",
+            "id": "L1.replay_hash",
+            "note": "",
+            "rule": "two builds from identical inputs hash identically",
+            "value": "fce9105917244d57af18414d123237c90900006dc890497a448076aa3fb46910",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "<= 2026-08-03T00:00:00+00:00",
+            "id": "L1.closed_bars_only",
+            "note": "",
+            "rule": "every input bar closed at decision time (no look-ahead)",
+            "value": "2026-08-03T00:00:00+00:00",
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L1",
+        "status": "PASS"
+      },
+      "L2": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L2.ticket_rules",
+            "note": "No OPPORTUNITY ticket in this fixture.",
+            "value": null,
+            "verdict": "NOT_APPLICABLE"
+          }
+        ],
+        "gate": "L2",
+        "status": "NOT_APPLICABLE_NO_TICKET"
+      },
+      "L3": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L3.ticket_geometry",
+            "note": "No OPPORTUNITY ticket in this fixture.",
+            "value": null,
+            "verdict": "NOT_APPLICABLE"
+          }
+        ],
+        "gate": "L3",
+        "status": "NOT_APPLICABLE_NO_TICKET"
+      },
+      "L4": {
+        "checks": [
+          {
+            "expected": "closed D1/H1/M5 bars",
+            "id": "L4.closed_d1_h1_m5",
+            "note": "",
+            "value": {
+              "D1": 30,
+              "H1": 120,
+              "M5": 604
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": 900,
+            "id": "L4.m5_fresh",
+            "note": "",
+            "value": 0.0,
+            "verdict": "PASS"
+          },
+          {
+            "expected": null,
+            "id": "L4.ticket_window_expiry",
+            "note": "No OPPORTUNITY ticket.",
+            "value": null,
+            "verdict": "NOT_APPLICABLE"
+          }
+        ],
+        "gate": "L4",
+        "status": "PASS"
+      },
+      "L5": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L5.spread_R",
+            "note": "SPREAD NOT AVAILABLE",
+            "rule": "spread / stop distance",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.commission_R",
+            "note": "COMMISSION NOT AVAILABLE",
+            "rule": "commission in R",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.cost_vs_warn_level",
+            "note": "WARN LEVEL NOT SET",
+            "rule": "cost_in_R < owner_ticket.cost_warn_R",
+            "value": null,
+            "verdict": "WARN"
+          }
+        ],
+        "gate": "L5",
+        "status": "WARN"
+      },
+      "L6": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L6.ticket_freshness",
+            "note": "No OPPORTUNITY ticket.",
+            "value": null,
+            "verdict": "NOT_APPLICABLE"
+          }
+        ],
+        "gate": "L6",
+        "status": "NOT_APPLICABLE_NO_TICKET"
+      }
+    },
+    "opportunity_ticket": false,
+    "owner_confirmation": "PENDING_OWNER_CONFIRM",
+    "pip_size_status": "PIP_SIZE_UNCONFIRMED",
+    "point_source": "config/symbol_metadata/host_captured/EURUSD.json",
+    "point_status": "HOST_CAPTURED",
+    "state": "NEAR_POI",
+    "symbol": "EURUSD",
+    "ticket_c11_source": "NO_TICKET",
+    "ticket_signal_timestamp": null,
+    "timeframe_sources": {
+      "D1": "HOST_CAPTURED",
+      "H1": "HOST_CAPTURED",
+      "M5": "HOST_CAPTURED"
+    }
+  },
+  {
+    "C10": "NOT_APPLICABLE_NO_TICKET",
+    "C11_legacy_m5_fallback_ignored": false,
+    "C11_selector_reason": null,
+    "C11_selector_tier": null,
+    "C11_source": "NO_TICKET",
+    "C11_status_at_selection": null,
+    "C11_target_price": null,
+    "C11_target_reason": "NO_OPPORTUNITY_TICKET",
+    "C11_target_source_id": null,
+    "C11_target_tier": null,
+    "L1": "PASS",
+    "L2": "NOT_APPLICABLE_NO_TICKET",
+    "L3": "NOT_APPLICABLE_NO_TICKET",
+    "L4": "PASS",
+    "L5": "WARN",
+    "L6": "NOT_APPLICABLE_NO_TICKET",
+    "RR": "NOT_APPLICABLE_NO_TICKET",
+    "RR_minimum": 2.0,
+    "RR_minimum_status": "PENDING_OWNER_CONFIRM",
+    "broker_symbol": "GBPUSD",
+    "computed_RR": null,
+    "direction": null,
+    "entry": null,
+    "fixture_classification": "MIXED_HOST_CONTEXT_AND_SYNTHETIC",
+    "fixture_file": "tests/fixtures/large_smc_v111/GBPUSD.json",
+    "gate_notes": {
+      "L1": [],
+      "L2": [],
+      "L3": [],
+      "L4": [],
+      "L5": [
+        "L5.spread_R:SPREAD NOT AVAILABLE",
+        "L5.commission_R:COMMISSION NOT AVAILABLE",
+        "L5.cost_vs_warn_level:WARN LEVEL NOT SET"
+      ],
+      "L6": []
+    },
+    "gates": {
+      "L1": {
+        "checks": [
+          {
+            "expected": "79fbf65e5e8aa246acd1a425cbb2c6b5dbe70a815542657cbb3c5ec7160ba2f8",
+            "id": "L1.replay_hash",
+            "note": "",
+            "rule": "two builds from identical inputs hash identically",
+            "value": "79fbf65e5e8aa246acd1a425cbb2c6b5dbe70a815542657cbb3c5ec7160ba2f8",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "<= 2026-08-03T00:00:00+00:00",
+            "id": "L1.closed_bars_only",
+            "note": "",
+            "rule": "every input bar closed at decision time (no look-ahead)",
+            "value": "2026-08-03T00:00:00+00:00",
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L1",
+        "status": "PASS"
+      },
+      "L2": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L2.ticket_rules",
+            "note": "No OPPORTUNITY ticket in this fixture.",
+            "value": null,
+            "verdict": "NOT_APPLICABLE"
+          }
+        ],
+        "gate": "L2",
+        "status": "NOT_APPLICABLE_NO_TICKET"
+      },
+      "L3": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L3.ticket_geometry",
+            "note": "No OPPORTUNITY ticket in this fixture.",
+            "value": null,
+            "verdict": "NOT_APPLICABLE"
+          }
+        ],
+        "gate": "L3",
+        "status": "NOT_APPLICABLE_NO_TICKET"
+      },
+      "L4": {
+        "checks": [
+          {
+            "expected": "closed D1/H1/M5 bars",
+            "id": "L4.closed_d1_h1_m5",
+            "note": "",
+            "value": {
+              "D1": 10,
+              "H1": 120,
+              "M5": 220
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": 900,
+            "id": "L4.m5_fresh",
+            "note": "",
+            "value": 0.0,
+            "verdict": "PASS"
+          },
+          {
+            "expected": null,
+            "id": "L4.ticket_window_expiry",
+            "note": "No OPPORTUNITY ticket.",
+            "value": null,
+            "verdict": "NOT_APPLICABLE"
+          }
+        ],
+        "gate": "L4",
+        "status": "PASS"
+      },
+      "L5": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L5.spread_R",
+            "note": "SPREAD NOT AVAILABLE",
+            "rule": "spread / stop distance",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.commission_R",
+            "note": "COMMISSION NOT AVAILABLE",
+            "rule": "commission in R",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.cost_vs_warn_level",
+            "note": "WARN LEVEL NOT SET",
+            "rule": "cost_in_R < owner_ticket.cost_warn_R",
+            "value": null,
+            "verdict": "WARN"
+          }
+        ],
+        "gate": "L5",
+        "status": "WARN"
+      },
+      "L6": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L6.ticket_freshness",
+            "note": "No OPPORTUNITY ticket.",
+            "value": null,
+            "verdict": "NOT_APPLICABLE"
+          }
+        ],
+        "gate": "L6",
+        "status": "NOT_APPLICABLE_NO_TICKET"
+      }
+    },
+    "opportunity_ticket": false,
+    "owner_confirmation": "PENDING_OWNER_CONFIRM",
+    "pip_size_status": "PIP_SIZE_UNCONFIRMED",
+    "point_source": "config/symbol_metadata/host_captured/GBPUSD.json",
+    "point_status": "HOST_CAPTURED",
+    "state": "DEVELOPING",
+    "symbol": "GBPUSD",
+    "ticket_c11_source": "NO_TICKET",
+    "ticket_signal_timestamp": null,
+    "timeframe_sources": {
+      "D1": "SYNTHETIC",
+      "H1": "HOST_CAPTURED_WARMUP_CONTEXT_ONLY",
+      "M5": "SYNTHETIC"
+    }
+  },
+  {
+    "C10": "PIP_SIZE_UNCONFIRMED",
+    "C11_legacy_m5_fallback_ignored": false,
+    "C11_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+    "C11_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "C11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "C11_status_at_selection": "UNSWEPT",
+    "C11_target_price": 151.5,
+    "C11_target_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+    "C11_target_source_id": "USDJPY:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:151.50000000",
+    "C11_target_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "L1": "PASS",
+    "L2": "FAIL",
+    "L3": "FAIL",
+    "L4": "PASS",
+    "L5": "WARN",
+    "L6": "PASS",
+    "RR": "RR_UNDEFINED_C10_STOP_UNAVAILABLE",
+    "RR_minimum": 2.0,
+    "RR_minimum_status": "PENDING_OWNER_CONFIRM",
+    "broker_symbol": "USDJPY",
+    "computed_RR": null,
+    "direction": "LONG",
+    "entry": 150.91,
+    "fixture_classification": "SYNTHETIC",
+    "fixture_file": "tests/fixtures/large_smc_v111/USDJPY.json",
+    "gate_notes": {
+      "L1": [],
+      "L2": [
+        "L2.c10_pip_size_and_stop:PIP_SIZE_UNCONFIRMED"
+      ],
+      "L3": [
+        "L3.stop_loss_side:PIP_SIZE_UNCONFIRMED",
+        "L3.stop_beyond_sweep_anchor",
+        "L3.rr_minimum:RR_UNDEFINED_C10_STOP_UNAVAILABLE"
+      ],
+      "L4": [],
+      "L5": [
+        "L5.spread_R:SPREAD NOT AVAILABLE",
+        "L5.commission_R:COMMISSION NOT AVAILABLE",
+        "L5.cost_vs_warn_level:WARN LEVEL NOT SET"
+      ],
+      "L6": []
+    },
+    "gates": {
+      "L1": {
+        "checks": [
+          {
+            "expected": "918a5816ae05f3722e6c80a0d15a2f237a029061731114ae6af93ad7b9856112",
+            "id": "L1.replay_hash",
+            "note": "",
+            "rule": "two builds from identical inputs hash identically",
+            "value": "918a5816ae05f3722e6c80a0d15a2f237a029061731114ae6af93ad7b9856112",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "<= 2026-08-03T00:00:00+00:00",
+            "id": "L1.closed_bars_only",
+            "note": "",
+            "rule": "every input bar closed at decision time (no look-ahead)",
+            "value": "2026-08-03T00:00:00+00:00",
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L1",
+        "status": "PASS"
+      },
+      "L2": {
+        "checks": [
+          {
+            "expected": "ST_LARGE_SMC_V1@1.1.1",
+            "id": "L2.candidate_identity",
+            "note": "",
+            "value": "ST_LARGE_SMC_V1@1.1.1",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "closed D1/H1/M5 inputs",
+            "id": "L2.closed_declared_timeframes",
+            "note": "",
+            "value": {
+              "D1": 10,
+              "H1": 33,
+              "M5": 220
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": "LONG",
+            "id": "L2.h1_bias_direction",
+            "note": "",
+            "value": "LONG",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "CHoCH bar close",
+            "id": "L2.entry_by_reference",
+            "note": "",
+            "value": 150.91,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "host-captured point provenance plus owner-confirmed pip_size",
+            "id": "L2.c10_pip_size_and_stop",
+            "note": "PIP_SIZE_UNCONFIRMED",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": "core PRIMARY_EXTERNAL_LIQUIDITY or confirmed opposing H1 swing",
+            "id": "L2.c11_target",
+            "note": "PRIMARY_EXTERNAL_LIQUIDITY",
+            "value": 151.5,
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L2",
+        "status": "FAIL"
+      },
+      "L3": {
+        "checks": [
+          {
+            "expected": 150.91,
+            "id": "L3.entry_matches_choch_close",
+            "note": "",
+            "value": 150.91,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "loss side of entry",
+            "id": "L3.stop_loss_side",
+            "note": "PIP_SIZE_UNCONFIRMED",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": 150.524,
+            "id": "L3.stop_beyond_sweep_anchor",
+            "note": "",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": "strictly in trade direction",
+            "id": "L3.target_direction",
+            "note": "",
+            "value": 151.5,
+            "verdict": "PASS"
+          },
+          {
+            "expected": {
+              "minimum_rr": 2.0,
+              "status": "PENDING_OWNER_CONFIRM"
+            },
+            "id": "L3.rr_minimum",
+            "note": "RR_UNDEFINED_C10_STOP_UNAVAILABLE",
+            "value": null,
+            "verdict": "FAIL"
+          }
+        ],
+        "gate": "L3",
+        "status": "FAIL"
+      },
+      "L4": {
+        "checks": [
+          {
+            "expected": "closed D1/H1/M5 bars",
+            "id": "L4.closed_d1_h1_m5",
+            "note": "",
+            "value": {
+              "D1": 10,
+              "H1": 33,
+              "M5": 220
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": 900,
+            "id": "L4.m5_fresh",
+            "note": "",
+            "value": 0.0,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "2026-08-03T21:00:00+00:00",
+            "id": "L4.ticket_window_expiry",
+            "note": "",
+            "value": "2026-08-03T21:00:00+00:00",
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L4",
+        "status": "PASS"
+      },
+      "L5": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L5.spread_R",
+            "note": "SPREAD NOT AVAILABLE",
+            "rule": "spread / stop distance",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.commission_R",
+            "note": "COMMISSION NOT AVAILABLE",
+            "rule": "commission in R",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.cost_vs_warn_level",
+            "note": "WARN LEVEL NOT SET",
+            "rule": "cost_in_R < owner_ticket.cost_warn_R",
+            "value": null,
+            "verdict": "WARN"
+          }
+        ],
+        "gate": "L5",
+        "status": "WARN"
+      },
+      "L6": {
+        "checks": [
+          {
+            "expected": "set",
+            "id": "L6.valid_until",
+            "note": "",
+            "rule": "valid_until set",
+            "value": "2026-08-03T21:00:00+00:00",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "set",
+            "id": "L6.stale_if",
+            "note": "",
+            "rule": "stale_if set",
+            "value": {
+              "action": "SUSPEND_THEN_EXPIRE",
+              "no_closed_m5_bar_for_more_than_minutes": 15
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": "set",
+            "id": "L6.invalid_if",
+            "note": "",
+            "rule": "invalid_if set",
+            "value": {
+              "after_choch_close_beyond_sweep_extreme": {
+                "direction": "LONG",
+                "operator": "<",
+                "price": 150.524
+              }
+            },
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L6",
+        "status": "PASS"
+      }
+    },
+    "opportunity_ticket": true,
+    "owner_confirmation": "PENDING_OWNER_CONFIRM",
+    "pip_size_status": "PIP_SIZE_UNCONFIRMED",
+    "point_source": "config/symbol_metadata/host_captured/USDJPY.json",
+    "point_status": "HOST_CAPTURED",
+    "state": "REJECTED",
+    "symbol": "USDJPY",
+    "ticket_c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "ticket_signal_timestamp": "2026-08-02T23:20:00+00:00",
+    "timeframe_sources": {
+      "D1": "SYNTHETIC",
+      "H1": "SYNTHETIC",
+      "M5": "SYNTHETIC"
+    }
+  },
+  {
+    "C10": "PIP_SIZE_UNCONFIRMED",
+    "C11_legacy_m5_fallback_ignored": false,
+    "C11_selector_reason": "REJECT_NO_TARGET",
+    "C11_selector_tier": null,
+    "C11_source": "CONFIRMED_OPPOSING_H1_SWING",
+    "C11_status_at_selection": null,
+    "C11_target_price": 2702.5,
+    "C11_target_reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+    "C11_target_source_id": null,
+    "C11_target_tier": "FALLBACK_H1_SWING",
+    "L1": "PASS",
+    "L2": "FAIL",
+    "L3": "FAIL",
+    "L4": "PASS",
+    "L5": "WARN",
+    "L6": "PASS",
+    "RR": "RR_UNDEFINED_C10_STOP_UNAVAILABLE",
+    "RR_minimum": 2.0,
+    "RR_minimum_status": "PENDING_OWNER_CONFIRM",
+    "broker_symbol": "XAUUSD",
+    "computed_RR": null,
+    "direction": "LONG",
+    "entry": 2697.75,
+    "fixture_classification": "SYNTHETIC",
+    "fixture_file": "tests/fixtures/large_smc_v111/XAUUSD.json",
+    "gate_notes": {
+      "L1": [],
+      "L2": [
+        "L2.c10_pip_size_and_stop:PIP_SIZE_UNCONFIRMED"
+      ],
+      "L3": [
+        "L3.stop_loss_side:PIP_SIZE_UNCONFIRMED",
+        "L3.stop_beyond_sweep_anchor",
+        "L3.rr_minimum:RR_UNDEFINED_C10_STOP_UNAVAILABLE"
+      ],
+      "L4": [],
+      "L5": [
+        "L5.spread_R:SPREAD NOT AVAILABLE",
+        "L5.commission_R:COMMISSION NOT AVAILABLE",
+        "L5.cost_vs_warn_level:WARN LEVEL NOT SET"
+      ],
+      "L6": []
+    },
+    "gates": {
+      "L1": {
+        "checks": [
+          {
+            "expected": "5946d6001d0b892a77339c8a8cbb5ef37c6a973c4baed911bcd1f3e156fd36e3",
+            "id": "L1.replay_hash",
+            "note": "",
+            "rule": "two builds from identical inputs hash identically",
+            "value": "5946d6001d0b892a77339c8a8cbb5ef37c6a973c4baed911bcd1f3e156fd36e3",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "<= 2026-08-03T00:00:00+00:00",
+            "id": "L1.closed_bars_only",
+            "note": "",
+            "rule": "every input bar closed at decision time (no look-ahead)",
+            "value": "2026-08-03T00:00:00+00:00",
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L1",
+        "status": "PASS"
+      },
+      "L2": {
+        "checks": [
+          {
+            "expected": "ST_LARGE_SMC_V1@1.1.1",
+            "id": "L2.candidate_identity",
+            "note": "",
+            "value": "ST_LARGE_SMC_V1@1.1.1",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "closed D1/H1/M5 inputs",
+            "id": "L2.closed_declared_timeframes",
+            "note": "",
+            "value": {
+              "D1": 10,
+              "H1": 33,
+              "M5": 220
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": "LONG",
+            "id": "L2.h1_bias_direction",
+            "note": "",
+            "value": "LONG",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "CHoCH bar close",
+            "id": "L2.entry_by_reference",
+            "note": "",
+            "value": 2697.75,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "host-captured point provenance plus owner-confirmed pip_size",
+            "id": "L2.c10_pip_size_and_stop",
+            "note": "PIP_SIZE_UNCONFIRMED",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": "core PRIMARY_EXTERNAL_LIQUIDITY or confirmed opposing H1 swing",
+            "id": "L2.c11_target",
+            "note": "CONFIRMED_OPPOSING_H1_SWING",
+            "value": 2702.5,
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L2",
+        "status": "FAIL"
+      },
+      "L3": {
+        "checks": [
+          {
+            "expected": 2697.75,
+            "id": "L3.entry_matches_choch_close",
+            "note": "",
+            "value": 2697.75,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "loss side of entry",
+            "id": "L3.stop_loss_side",
+            "note": "PIP_SIZE_UNCONFIRMED",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": 2688.1,
+            "id": "L3.stop_beyond_sweep_anchor",
+            "note": "",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": "strictly in trade direction",
+            "id": "L3.target_direction",
+            "note": "",
+            "value": 2702.5,
+            "verdict": "PASS"
+          },
+          {
+            "expected": {
+              "minimum_rr": 2.0,
+              "status": "PENDING_OWNER_CONFIRM"
+            },
+            "id": "L3.rr_minimum",
+            "note": "RR_UNDEFINED_C10_STOP_UNAVAILABLE",
+            "value": null,
+            "verdict": "FAIL"
+          }
+        ],
+        "gate": "L3",
+        "status": "FAIL"
+      },
+      "L4": {
+        "checks": [
+          {
+            "expected": "closed D1/H1/M5 bars",
+            "id": "L4.closed_d1_h1_m5",
+            "note": "",
+            "value": {
+              "D1": 10,
+              "H1": 33,
+              "M5": 220
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": 900,
+            "id": "L4.m5_fresh",
+            "note": "",
+            "value": 0.0,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "2026-08-03T21:00:00+00:00",
+            "id": "L4.ticket_window_expiry",
+            "note": "",
+            "value": "2026-08-03T21:00:00+00:00",
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L4",
+        "status": "PASS"
+      },
+      "L5": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L5.spread_R",
+            "note": "SPREAD NOT AVAILABLE",
+            "rule": "spread / stop distance",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.commission_R",
+            "note": "COMMISSION NOT AVAILABLE",
+            "rule": "commission in R",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.cost_vs_warn_level",
+            "note": "WARN LEVEL NOT SET",
+            "rule": "cost_in_R < owner_ticket.cost_warn_R",
+            "value": null,
+            "verdict": "WARN"
+          }
+        ],
+        "gate": "L5",
+        "status": "WARN"
+      },
+      "L6": {
+        "checks": [
+          {
+            "expected": "set",
+            "id": "L6.valid_until",
+            "note": "",
+            "rule": "valid_until set",
+            "value": "2026-08-03T21:00:00+00:00",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "set",
+            "id": "L6.stale_if",
+            "note": "",
+            "rule": "stale_if set",
+            "value": {
+              "action": "SUSPEND_THEN_EXPIRE",
+              "no_closed_m5_bar_for_more_than_minutes": 15
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": "set",
+            "id": "L6.invalid_if",
+            "note": "",
+            "rule": "invalid_if set",
+            "value": {
+              "after_choch_close_beyond_sweep_extreme": {
+                "direction": "LONG",
+                "operator": "<",
+                "price": 2688.1
+              }
+            },
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L6",
+        "status": "PASS"
+      }
+    },
+    "opportunity_ticket": true,
+    "owner_confirmation": "PENDING_OWNER_CONFIRM",
+    "pip_size_status": "PIP_SIZE_UNCONFIRMED",
+    "point_source": "config/symbol_metadata/host_captured/XAUUSD.json",
+    "point_status": "HOST_CAPTURED",
+    "state": "REJECTED",
+    "symbol": "XAUUSD",
+    "ticket_c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+    "ticket_signal_timestamp": "2026-08-02T23:20:00+00:00",
+    "timeframe_sources": {
+      "D1": "SYNTHETIC",
+      "H1": "SYNTHETIC",
+      "M5": "SYNTHETIC"
+    }
+  },
+  {
+    "C10": "PIP_SIZE_UNCONFIRMED",
+    "C11_legacy_m5_fallback_ignored": false,
+    "C11_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+    "C11_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "C11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "C11_status_at_selection": "UNSWEPT",
+    "C11_target_price": 62000.0,
+    "C11_target_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+    "C11_target_source_id": "BTCUSDT:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:62000.00000000",
+    "C11_target_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "L1": "PASS",
+    "L2": "FAIL",
+    "L3": "FAIL",
+    "L4": "PASS",
+    "L5": "WARN",
+    "L6": "PASS",
+    "RR": "RR_UNDEFINED_C10_STOP_UNAVAILABLE",
+    "RR_minimum": 2.0,
+    "RR_minimum_status": "PENDING_OWNER_CONFIRM",
+    "broker_symbol": "BTCUSD",
+    "computed_RR": null,
+    "direction": "LONG",
+    "entry": 61705.0,
+    "fixture_classification": "SYNTHETIC",
+    "fixture_file": "tests/fixtures/large_smc_v111/BTCUSDT.json",
+    "gate_notes": {
+      "L1": [],
+      "L2": [
+        "L2.c10_pip_size_and_stop:PIP_SIZE_UNCONFIRMED"
+      ],
+      "L3": [
+        "L3.stop_loss_side:PIP_SIZE_UNCONFIRMED",
+        "L3.stop_beyond_sweep_anchor",
+        "L3.rr_minimum:RR_UNDEFINED_C10_STOP_UNAVAILABLE"
+      ],
+      "L4": [],
+      "L5": [
+        "L5.spread_R:SPREAD NOT AVAILABLE",
+        "L5.commission_R:COMMISSION NOT AVAILABLE",
+        "L5.cost_vs_warn_level:WARN LEVEL NOT SET"
+      ],
+      "L6": []
+    },
+    "gates": {
+      "L1": {
+        "checks": [
+          {
+            "expected": "5838fc02cc1038e45d4756866ff262c2e8119e6b9ad5231cf7375b9ae77d6ade",
+            "id": "L1.replay_hash",
+            "note": "",
+            "rule": "two builds from identical inputs hash identically",
+            "value": "5838fc02cc1038e45d4756866ff262c2e8119e6b9ad5231cf7375b9ae77d6ade",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "<= 2026-08-03T00:00:00+00:00",
+            "id": "L1.closed_bars_only",
+            "note": "",
+            "rule": "every input bar closed at decision time (no look-ahead)",
+            "value": "2026-08-03T00:00:00+00:00",
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L1",
+        "status": "PASS"
+      },
+      "L2": {
+        "checks": [
+          {
+            "expected": "ST_LARGE_SMC_V1@1.1.1",
+            "id": "L2.candidate_identity",
+            "note": "",
+            "value": "ST_LARGE_SMC_V1@1.1.1",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "closed D1/H1/M5 inputs",
+            "id": "L2.closed_declared_timeframes",
+            "note": "",
+            "value": {
+              "D1": 10,
+              "H1": 33,
+              "M5": 220
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": "LONG",
+            "id": "L2.h1_bias_direction",
+            "note": "",
+            "value": "LONG",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "CHoCH bar close",
+            "id": "L2.entry_by_reference",
+            "note": "",
+            "value": 61705.0,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "host-captured point provenance plus owner-confirmed pip_size",
+            "id": "L2.c10_pip_size_and_stop",
+            "note": "PIP_SIZE_UNCONFIRMED",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": "core PRIMARY_EXTERNAL_LIQUIDITY or confirmed opposing H1 swing",
+            "id": "L2.c11_target",
+            "note": "PRIMARY_EXTERNAL_LIQUIDITY",
+            "value": 62000.0,
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L2",
+        "status": "FAIL"
+      },
+      "L3": {
+        "checks": [
+          {
+            "expected": 61705.0,
+            "id": "L3.entry_matches_choch_close",
+            "note": "",
+            "value": 61705.0,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "loss side of entry",
+            "id": "L3.stop_loss_side",
+            "note": "PIP_SIZE_UNCONFIRMED",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": 61512.0,
+            "id": "L3.stop_beyond_sweep_anchor",
+            "note": "",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": "strictly in trade direction",
+            "id": "L3.target_direction",
+            "note": "",
+            "value": 62000.0,
+            "verdict": "PASS"
+          },
+          {
+            "expected": {
+              "minimum_rr": 2.0,
+              "status": "PENDING_OWNER_CONFIRM"
+            },
+            "id": "L3.rr_minimum",
+            "note": "RR_UNDEFINED_C10_STOP_UNAVAILABLE",
+            "value": null,
+            "verdict": "FAIL"
+          }
+        ],
+        "gate": "L3",
+        "status": "FAIL"
+      },
+      "L4": {
+        "checks": [
+          {
+            "expected": "closed D1/H1/M5 bars",
+            "id": "L4.closed_d1_h1_m5",
+            "note": "",
+            "value": {
+              "D1": 10,
+              "H1": 33,
+              "M5": 220
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": 900,
+            "id": "L4.m5_fresh",
+            "note": "",
+            "value": 0.0,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "2026-08-03T16:00:00+00:00",
+            "id": "L4.ticket_window_expiry",
+            "note": "",
+            "value": "2026-08-03T16:00:00+00:00",
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L4",
+        "status": "PASS"
+      },
+      "L5": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L5.spread_R",
+            "note": "SPREAD NOT AVAILABLE",
+            "rule": "spread / stop distance",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.commission_R",
+            "note": "COMMISSION NOT AVAILABLE",
+            "rule": "commission in R",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.cost_vs_warn_level",
+            "note": "WARN LEVEL NOT SET",
+            "rule": "cost_in_R < owner_ticket.cost_warn_R",
+            "value": null,
+            "verdict": "WARN"
+          }
+        ],
+        "gate": "L5",
+        "status": "WARN"
+      },
+      "L6": {
+        "checks": [
+          {
+            "expected": "set",
+            "id": "L6.valid_until",
+            "note": "",
+            "rule": "valid_until set",
+            "value": "2026-08-03T16:00:00+00:00",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "set",
+            "id": "L6.stale_if",
+            "note": "",
+            "rule": "stale_if set",
+            "value": {
+              "action": "SUSPEND_THEN_EXPIRE",
+              "no_closed_m5_bar_for_more_than_minutes": 15
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": "set",
+            "id": "L6.invalid_if",
+            "note": "",
+            "rule": "invalid_if set",
+            "value": {
+              "after_choch_close_beyond_sweep_extreme": {
+                "direction": "LONG",
+                "operator": "<",
+                "price": 61512.0
+              }
+            },
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L6",
+        "status": "PASS"
+      }
+    },
+    "opportunity_ticket": true,
+    "owner_confirmation": "PENDING_OWNER_CONFIRM",
+    "pip_size_status": "PIP_SIZE_UNCONFIRMED",
+    "point_source": "src/strategy_engine/sweep_retest/crypto_symbols.py",
+    "point_status": "HOST_CAPTURED",
+    "state": "REJECTED",
+    "symbol": "BTCUSDT",
+    "ticket_c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "ticket_signal_timestamp": "2026-08-02T23:20:00+00:00",
+    "timeframe_sources": {
+      "D1": "SYNTHETIC",
+      "H1": "SYNTHETIC",
+      "M5": "SYNTHETIC"
+    }
+  },
+  {
+    "C10": "PIP_SIZE_UNCONFIRMED",
+    "C11_legacy_m5_fallback_ignored": false,
+    "C11_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+    "C11_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "C11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "C11_status_at_selection": "UNSWEPT",
+    "C11_target_price": 3735.0,
+    "C11_target_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+    "C11_target_source_id": "ETHUSDT:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:3735.00000000",
+    "C11_target_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "L1": "PASS",
+    "L2": "FAIL",
+    "L3": "FAIL",
+    "L4": "PASS",
+    "L5": "WARN",
+    "L6": "PASS",
+    "RR": "RR_UNDEFINED_C10_STOP_UNAVAILABLE",
+    "RR_minimum": 2.0,
+    "RR_minimum_status": "PENDING_OWNER_CONFIRM",
+    "broker_symbol": "ETHUSD",
+    "computed_RR": null,
+    "direction": "LONG",
+    "entry": 3705.5,
+    "fixture_classification": "SYNTHETIC",
+    "fixture_file": "tests/fixtures/large_smc_v111/ETHUSDT.json",
+    "gate_notes": {
+      "L1": [],
+      "L2": [
+        "L2.c10_pip_size_and_stop:PIP_SIZE_UNCONFIRMED"
+      ],
+      "L3": [
+        "L3.stop_loss_side:PIP_SIZE_UNCONFIRMED",
+        "L3.stop_beyond_sweep_anchor",
+        "L3.rr_minimum:RR_UNDEFINED_C10_STOP_UNAVAILABLE"
+      ],
+      "L4": [],
+      "L5": [
+        "L5.spread_R:SPREAD NOT AVAILABLE",
+        "L5.commission_R:COMMISSION NOT AVAILABLE",
+        "L5.cost_vs_warn_level:WARN LEVEL NOT SET"
+      ],
+      "L6": []
+    },
+    "gates": {
+      "L1": {
+        "checks": [
+          {
+            "expected": "18b047bd062653dc7d09f38189957664f437a5a9c325cae9e1a064e10da8df0d",
+            "id": "L1.replay_hash",
+            "note": "",
+            "rule": "two builds from identical inputs hash identically",
+            "value": "18b047bd062653dc7d09f38189957664f437a5a9c325cae9e1a064e10da8df0d",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "<= 2026-08-03T00:00:00+00:00",
+            "id": "L1.closed_bars_only",
+            "note": "",
+            "rule": "every input bar closed at decision time (no look-ahead)",
+            "value": "2026-08-03T00:00:00+00:00",
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L1",
+        "status": "PASS"
+      },
+      "L2": {
+        "checks": [
+          {
+            "expected": "ST_LARGE_SMC_V1@1.1.1",
+            "id": "L2.candidate_identity",
+            "note": "",
+            "value": "ST_LARGE_SMC_V1@1.1.1",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "closed D1/H1/M5 inputs",
+            "id": "L2.closed_declared_timeframes",
+            "note": "",
+            "value": {
+              "D1": 10,
+              "H1": 33,
+              "M5": 220
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": "LONG",
+            "id": "L2.h1_bias_direction",
+            "note": "",
+            "value": "LONG",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "CHoCH bar close",
+            "id": "L2.entry_by_reference",
+            "note": "",
+            "value": 3705.5,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "host-captured point provenance plus owner-confirmed pip_size",
+            "id": "L2.c10_pip_size_and_stop",
+            "note": "PIP_SIZE_UNCONFIRMED",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": "core PRIMARY_EXTERNAL_LIQUIDITY or confirmed opposing H1 swing",
+            "id": "L2.c11_target",
+            "note": "PRIMARY_EXTERNAL_LIQUIDITY",
+            "value": 3735.0,
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L2",
+        "status": "FAIL"
+      },
+      "L3": {
+        "checks": [
+          {
+            "expected": 3705.5,
+            "id": "L3.entry_matches_choch_close",
+            "note": "",
+            "value": 3705.5,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "loss side of entry",
+            "id": "L3.stop_loss_side",
+            "note": "PIP_SIZE_UNCONFIRMED",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": 3686.2,
+            "id": "L3.stop_beyond_sweep_anchor",
+            "note": "",
+            "value": null,
+            "verdict": "FAIL"
+          },
+          {
+            "expected": "strictly in trade direction",
+            "id": "L3.target_direction",
+            "note": "",
+            "value": 3735.0,
+            "verdict": "PASS"
+          },
+          {
+            "expected": {
+              "minimum_rr": 2.0,
+              "status": "PENDING_OWNER_CONFIRM"
+            },
+            "id": "L3.rr_minimum",
+            "note": "RR_UNDEFINED_C10_STOP_UNAVAILABLE",
+            "value": null,
+            "verdict": "FAIL"
+          }
+        ],
+        "gate": "L3",
+        "status": "FAIL"
+      },
+      "L4": {
+        "checks": [
+          {
+            "expected": "closed D1/H1/M5 bars",
+            "id": "L4.closed_d1_h1_m5",
+            "note": "",
+            "value": {
+              "D1": 10,
+              "H1": 33,
+              "M5": 220
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": 900,
+            "id": "L4.m5_fresh",
+            "note": "",
+            "value": 0.0,
+            "verdict": "PASS"
+          },
+          {
+            "expected": "2026-08-03T16:00:00+00:00",
+            "id": "L4.ticket_window_expiry",
+            "note": "",
+            "value": "2026-08-03T16:00:00+00:00",
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L4",
+        "status": "PASS"
+      },
+      "L5": {
+        "checks": [
+          {
+            "expected": null,
+            "id": "L5.spread_R",
+            "note": "SPREAD NOT AVAILABLE",
+            "rule": "spread / stop distance",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.commission_R",
+            "note": "COMMISSION NOT AVAILABLE",
+            "rule": "commission in R",
+            "value": null,
+            "verdict": "WARN"
+          },
+          {
+            "expected": null,
+            "id": "L5.cost_vs_warn_level",
+            "note": "WARN LEVEL NOT SET",
+            "rule": "cost_in_R < owner_ticket.cost_warn_R",
+            "value": null,
+            "verdict": "WARN"
+          }
+        ],
+        "gate": "L5",
+        "status": "WARN"
+      },
+      "L6": {
+        "checks": [
+          {
+            "expected": "set",
+            "id": "L6.valid_until",
+            "note": "",
+            "rule": "valid_until set",
+            "value": "2026-08-03T16:00:00+00:00",
+            "verdict": "PASS"
+          },
+          {
+            "expected": "set",
+            "id": "L6.stale_if",
+            "note": "",
+            "rule": "stale_if set",
+            "value": {
+              "action": "SUSPEND_THEN_EXPIRE",
+              "no_closed_m5_bar_for_more_than_minutes": 15
+            },
+            "verdict": "PASS"
+          },
+          {
+            "expected": "set",
+            "id": "L6.invalid_if",
+            "note": "",
+            "rule": "invalid_if set",
+            "value": {
+              "after_choch_close_beyond_sweep_extreme": {
+                "direction": "LONG",
+                "operator": "<",
+                "price": 3686.2
+              }
+            },
+            "verdict": "PASS"
+          }
+        ],
+        "gate": "L6",
+        "status": "PASS"
+      }
+    },
+    "opportunity_ticket": true,
+    "owner_confirmation": "PENDING_OWNER_CONFIRM",
+    "pip_size_status": "PIP_SIZE_UNCONFIRMED",
+    "point_source": "src/strategy_engine/sweep_retest/crypto_symbols.py",
+    "point_status": "HOST_CAPTURED",
+    "state": "REJECTED",
+    "symbol": "ETHUSDT",
+    "ticket_c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+    "ticket_signal_timestamp": "2026-08-02T23:20:00+00:00",
+    "timeframe_sources": {
+      "D1": "SYNTHETIC",
+      "H1": "SYNTHETIC",
+      "M5": "SYNTHETIC"
+    }
+  }
+]

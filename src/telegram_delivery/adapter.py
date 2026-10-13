@@ -85,7 +85,13 @@ def footer(ticket):
     actionability_reason = value(ticket, 'actionability', 'reason')
     if logic_status != "LOGIC_VERIFIED" and actionability_decision in {"READY", "TICKET_READY", "WATCH_READY"}:
         actionability_decision, actionability_reason = "NOT_READY", "LOGIC_STATUS_NOT_VERIFIED"
-    return [f"logic_status: {logic_status}",
+    scope = []
+    if "scope_verification_status" in ticket:   # AGP-C18-R2 additive fields; absent on older tickets
+        if ticket.get("scope_route") != "REPORT_ONLY":
+            raise ValueError("Unsupported scope route")
+        scope = [f"scope: {ticket['scope_verification_status']} | REPORT_ONLY ({value(ticket, 'scope_reason')})",
+                 f"report_class: {value(ticket, 'report_class')}"]
+    return scope + [f"logic_status: {logic_status}",
             f"Edge: {value(ticket, 'economic_edge')} ({value(ticket, 'economic_status')})",
             f"Actionability: {actionability_decision} / {actionability_reason}",
             "EDGE_VERIFIED=FALSE", "EXECUTION: DISABLED"]
@@ -209,6 +215,51 @@ def render_lsmc_crypto_summary(summary):
              "Rejections by reason:"]
     lines += [f"- {reason}: {n}" for reason, n in sorted(rejections.items())] or ["- none"]
     lines += lsmc_diagnostic_lines(summary.get("large_smc") or {})
+    lines.append(f"Delivery enabled: {str(bool(summary.get('delivery_enabled', False))).lower()}")
+    lines.append("No broker order. Execution not authorized.")
+    return "\n".join(lines)
+
+
+REPORT_SCOPES = {"CANDIDATE": "REPORT_CANDIDATE", "BLOCKED": "REPORT_BLOCKED", "WATCH": "REPORT_WATCH"}
+DAILY_REPORT_SUMMARY_SCHEMA = "AGP_HOST_DAILY_REPORT_SUMMARY_V1"
+
+
+def report_identity(c):
+    """Ledger identity of one observation: the per-signal id, else the scope/day ticket id + class + reason."""
+    return c.get("candidate_signal_id") or "|".join(str(c.get(k)) for k in ("ticket_id", "report_class", "reason_code"))
+
+
+def render_report(c):
+    """ASCII REPORT_ONLY observation: compact for WATCH, priced levels for CANDIDATE, reasons for BLOCKED."""
+    if c.get("scope_route") != "REPORT_ONLY":
+        raise ValueError("Unsupported scope route")
+    lines = ["REPORT ONLY - NOT AN ORDER",
+             f"{value(c, 'strategy_id')}@{value(c, 'strategy_version')} | {value(c, 'report_class')}",
+             f"{value(c, 'instrument')} | {value(c, 'session')} | {value(c, 'direction')}",
+             f"scope: {value(c, 'scope_verification_status')} ({value(c, 'scope_reason')})"]
+    if c.get("report_class") == "CANDIDATE":
+        prices = c.get("prices") or {}
+        lines += [f"signal: {value(c, 'trigger', 'trigger_timestamp')}"]
+        lines += [f"{label:<5} {prices.get(key) if prices.get(key) is not None else 'n/a'}"
+                  for label, key in (("ENTRY", "entry_reference"), ("SL", "sl"), ("TP1", "tp1"), ("TP2", "tp2"))]
+    elif c.get("report_class") == "BLOCKED":
+        lines.append("blocked: " + ",".join(str(r) for r in (c.get("reason_codes") or [c.get("reason_code")])))
+    else:
+        lines.append(f"state: {value(c, 'reason_code')}")
+    lines.append("EXECUTION: DISABLED")
+    text = "\n".join(lines)
+    return text.encode("ascii", "replace").decode("ascii")
+
+
+def render_daily_report_summary(summary):
+    if summary.get("schema") != DAILY_REPORT_SUMMARY_SCHEMA:
+        raise ValueError("Unsupported daily report summary schema")
+    lines = [f"Daily strategy report -- REPORT ONLY -- {summary.get('session_date')}"]
+    for family, row in sorted((summary.get("families") or {}).items()):
+        counts = row.get("counts") or {}
+        lines.append(f"{family}: " + (", ".join(f"{k}={v}" for k, v in sorted(counts.items())) or "no records"))
+        if not counts.get("CANDIDATE"):
+            lines.append(f"- {family}: NO OPPORTUNITY")
     lines.append(f"Delivery enabled: {str(bool(summary.get('delivery_enabled', False))).lower()}")
     lines.append("No broker order. Execution not authorized.")
     return "\n".join(lines)
@@ -651,10 +702,21 @@ class Sender:
         identity = json.dumps([tickets[0]["session_date"], tickets[0]["session"]], separators=(",", ":"))
         return self._send("session", identity, "", message)
 
+    def send_report(self, canonical):
+        """AGP-C18-R2: one REPORT_ONLY observation (OD1013-C18-REPORT-SCOPE). Sent only when its scope
+        REPORT_<class> is in the effective tracked scope; an empty scope set fails closed."""
+        report_class = canonical.get("report_class")
+        if canonical.get("scope_route") != "REPORT_ONLY" or report_class not in REPORT_SCOPES:
+            return "summary_only"
+        if REPORT_SCOPES[report_class] not in self.config.immediate_scopes:
+            return "summary_only"
+        return self._send("report", report_identity(canonical), report_class, render_report(canonical))
+
     def send_session_summary(self, summary):
         schema = summary.get("schema")
         message = (render_lsmc_crypto_summary(summary) if schema == LSMC_CRYPTO_SUMMARY_SCHEMA
                    else render_crypto_strategy_summary(summary) if schema == CRYPTO_STRATEGY_SUMMARY_SCHEMA
+                   else render_daily_report_summary(summary) if schema == DAILY_REPORT_SUMMARY_SCHEMA
                    else render_session_summary(summary))
         identity = json.dumps([summary["session_date"], summary["session"]], separators=(",", ":"))
         return self._send("session_summary", identity, "AGP_HOST_TICKET_DELIVERY_R1", message)

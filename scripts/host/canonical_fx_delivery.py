@@ -163,7 +163,7 @@ def _session_event_path(journal: str, session_date: str, session: str) -> str:
     except (TypeError, ValueError) as exc:
         raise ValueError("invalid session_date") from exc
     if (session not in V1_CYCLES and session not in LSMC_CRYPTO_SESSIONS
-            and session not in CRYPTO_STRATEGY_SESSIONS):
+            and session not in CRYPTO_STRATEGY_SESSIONS and session != DAILY_REPORT):
         raise ValueError(f"unknown FX cycle {session!r}")
     return os.path.join(journal, EVENT_SUBDIR, f"{session_date}_{session}.jsonl")
 
@@ -945,6 +945,63 @@ def process_due_crypto_strategy_summaries(now: dt.datetime, *, journal: str, sen
                 journal, session_date=day, session=session, window=window, sender=sender),
             fields=lambda summary: {"summary_status": summary["status"],
                                     "recorded_instruments": summary["recorded_instruments"]},
+            status=lambda summary: summary["status"])
+        if line:
+            lines.append(line)
+    return lines
+
+
+# ------------------------------------------------------------------ daily per-strategy report (AGP-C18-R2)
+
+DAILY_REPORT = "DAILY_REPORT"
+REPORT_FAMILIES = ("session_fx_gold", "large_smc", "crypto_cfd")
+
+
+def build_daily_report_summary(journal: str, *, session_date: dt.date, sender: Sender) -> Dict[str, Any]:
+    """Distinct REPORT_ONLY observations of one UTC day per family and report class, from the lane
+    archives (report_lane/<day>_<family>.jsonl). Repeated evaluations of the same observation count once."""
+    from telegram_delivery.adapter import DAILY_REPORT_SUMMARY_SCHEMA
+    day = session_date.isoformat()
+    families: Dict[str, Any] = {}
+    for family in REPORT_FAMILIES:
+        path = os.path.join(journal, "ticket_delivery", "archive", "report_lane", f"{day}_{family}.jsonl")
+        seen = set()
+        counts: Counter = Counter()
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as stream:
+                for line in stream:
+                    if not line.strip():
+                        continue
+                    row = json.loads(line)
+                    key = (row.get("instrument"), row.get("session"), row.get("report_class"),
+                           row.get("candidate_signal_id") or row.get("reason_code"))
+                    if key not in seen:
+                        seen.add(key)
+                        counts[str(row.get("report_class"))] += 1
+        families[family] = {"counts": dict(sorted(counts.items()))}
+    return {"schema": DAILY_REPORT_SUMMARY_SCHEMA, "session_date": day, "session": DAILY_REPORT,
+            "families": families, "status": "COMPLETE", "delivery_enabled": bool(sender.config.enabled),
+            "execution_authorized": False}
+
+
+def process_due_daily_report_summaries(now: dt.datetime, *, journal: str, sender: Sender) -> List[str]:
+    """One daily report per UTC day, due after midnight plus SUMMARY_GRACE; sent once (shared engine)."""
+    now = _utc(now)
+    name = os.path.join(os.path.dirname(SCHEDULER_START), "daily_report_scheduler_start.json")
+    try:
+        started = ensure_scheduler_start(journal, now, name)
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+        return [f"DAILY_REPORT_SUMMARY BLOCKED scheduler_journal={type(exc).__name__}"]
+    lines: List[str] = []
+    for offset in range(max(0, (now.date() - started.date()).days) + 1):
+        day = started.date() + dt.timedelta(days=offset)
+        end_with_grace = dt.datetime.combine(day + dt.timedelta(days=1), dt.time(0), tzinfo=UTC) + SUMMARY_GRACE
+        if end_with_grace <= started or now <= end_with_grace:
+            continue
+        line = _process_due_summary(
+            journal, now, sender, day.isoformat(), DAILY_REPORT, label="DAILY_REPORT_SUMMARY",
+            build=lambda day=day: build_daily_report_summary(journal, session_date=day, sender=sender),
+            fields=lambda summary: {"summary_status": summary["status"]},
             status=lambda summary: summary["status"])
         if line:
             lines.append(line)

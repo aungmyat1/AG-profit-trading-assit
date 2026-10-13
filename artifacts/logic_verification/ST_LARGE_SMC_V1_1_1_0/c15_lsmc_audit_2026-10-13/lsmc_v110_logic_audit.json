@@ -1,0 +1,3322 @@
+{
+ "authority": "none: logic evidence only; no registry status, READY, demo or live change",
+ "environment": {
+  "dependency_pins": "pyyaml 6.0.3 / numpy 2.2.6 / pandas 2.3.3 / smartmoneyconcepts 0.0.27",
+  "platform": "linux",
+  "python": "3.11.2"
+ },
+ "findings": [
+  {
+   "blocking": false,
+   "cause": "The 2026-10-10 delivery-gate change to watch.py moved the engine hash; the registry pin was never re-recorded. Detection files (contract.py, detect.py) and both dependencies are unchanged.",
+   "class": "identity-record staleness",
+   "evidence": {
+    "contract_matches_registry": true,
+    "drifted_file": "src/large_smc_watch/watch.py",
+    "drifted_file_sha256": "86ac9cdcfa864b36a06b795920bd333f8fa9cfdd81efa5eb422e1d746bc2c63d",
+    "registry_engine_sha256": "ec0b2f3dc6ed2b02df3f643b38beac1c0e88630413c74e0f55e3d8aa5f5570d4",
+    "tree_engine_sha256": "88dd9f1fb970f7811b437cb3b4c7341e0d1f84320238890eab3381eb0f51b689"
+   },
+   "headline": "registry engine_sha256 pin does not match the tree",
+   "id": "D-LSMC-3",
+   "resolution": "Owner choice, unchanged from C16: re-record the identity for the current engine, or move the delivery gate out of the frozen engine. Not done here -- re-recording an identity on agent authority would reattribute the 2026-10-09/11 LOGIC_VERIFIED record.",
+   "severity": "MEDIUM",
+   "status": "REPRODUCED (already registered by C16)"
+  },
+  {
+   "blocking": true,
+   "cause": "watch.expires_at applies next_day_boundary POI_MAX_AGE_TRADING_DAYS + 1 times, which counts Saturday and Sunday. The helper that implements the declared unit (_poi_age_days, distinct NY-17:00 trading dates) exists in the same file and is never called.",
+   "class": "declaration vs implementation (unit of a frozen rule)",
+   "evidence": {
+    "dead_code": {
+     "callers_in_repository": 0,
+     "implements": "distinct NY-17:00 trading dates since the POI origin (the declared unit)",
+     "line": 164,
+     "note": "defined and never called; the declared semantics exist in the file but are unwired",
+     "symbol": "large_smc_watch.watch._poi_age_days"
+    },
+    "declared": "LSMC_SPEC_V2_FROZEN 4.2 / contract rules.poi.max_age_trading_days = 5 trading days",
+    "examples": [
+     {
+      "declared_expiry_utc": "2026-03-09T17:00:00-04:00",
+      "direction": "ENGINE_EXPIRES_EARLIER",
+      "engine_expiry_utc": "2026-03-07T22:00:00+00:00",
+      "origin_utc": "2026-03-02T00:00:00+00:00",
+      "trading_dates_expired_early": [
+       "2026-03-09"
+      ]
+     },
+     {
+      "declared_expiry_utc": "2026-03-09T17:00:00-04:00",
+      "direction": "ENGINE_EXPIRES_EARLIER",
+      "engine_expiry_utc": "2026-03-07T22:00:00+00:00",
+      "origin_utc": "2026-03-02T01:00:00+00:00",
+      "trading_dates_expired_early": [
+       "2026-03-09"
+      ]
+     },
+     {
+      "declared_expiry_utc": "2026-03-09T17:00:00-04:00",
+      "direction": "ENGINE_EXPIRES_EARLIER",
+      "engine_expiry_utc": "2026-03-07T22:00:00+00:00",
+      "origin_utc": "2026-03-02T02:00:00+00:00",
+      "trading_dates_expired_early": [
+       "2026-03-09"
+      ]
+     },
+     {
+      "declared_expiry_utc": "2026-06-29T17:00:00-04:00",
+      "direction": "ENGINE_EXPIRES_EARLIER",
+      "engine_expiry_utc": "2026-06-27T21:00:00+00:00",
+      "origin_utc": "2026-06-21T21:00:00+00:00",
+      "trading_dates_expired_early": [
+       "2026-06-29"
+      ]
+     }
+    ],
+    "implemented": "watch.expires_at: POI_MAX_AGE_TRADING_DAYS + 1 applications of next_day_boundary = 6 consecutive CALENDAR NY-17:00 dates from the POI origin",
+    "materiality": "Conservative direction, MEASURED not assumed: every divergent origin on every calendar is ENGINE_EXPIRES_EARLIER (see `directions`), because the trading-date set is a subset of the calendar-date set, so six calendar boundaries land at or before six trading dates. The engine therefore suppresses POI life -- it can drop an opportunity or hold a state at NEAR_POI/DEVELOPING -- but it never keeps a POI alive longer than the contract allows. No ENGINE_EXPIRES_LATER origin exists.",
+    "measured": {
+     "EURUSD_H1_COMMITTED_EXPORT": {
+      "calendar_instants": 723,
+      "directions": {
+       "ENGINE_EXPIRES_EARLIER": 600
+      },
+      "distinct_trading_dates": 31,
+      "origins_divergent": 600,
+      "origins_evaluated": 723,
+      "trading_dates_expired_early_total": 1080,
+      "verdict": "FAIL"
+     },
+     "SYNTHETIC_FX_4WEEKS": {
+      "calendar_instants": 481,
+      "directions": {
+       "ENGINE_EXPIRES_EARLIER": 358
+      },
+      "distinct_trading_dates": 21,
+      "origins_divergent": 358,
+      "origins_evaluated": 481,
+      "trading_dates_expired_early_total": 646,
+      "verdict": "FAIL"
+     }
+    },
+    "scope": "FX instruments only: BTCUSD/ETHUSD trade every calendar date on this venue, so both clocks coincide there (measured above). EURUSD/GBPUSD/USDJPY/XAUUSD lose trading-day life whenever the FX weekend falls inside the 5-day window."
+   },
+   "headline": "POI max age is declared in TRADING days and implemented in CALENDAR NY-17:00 dates",
+   "id": "D-LSMC-6",
+   "resolution": "Owner decision, not an agent edit: either amend the contract/frozen-spec wording to the implemented calendar-date unit, or ship a new strategy version that wires the trading-date count. The frozen 1.1.0 engine must not be edited in place. Direction of the error is conservative (POIs expire early), so no POI is ever kept alive longer than declared.",
+   "severity": "MEDIUM",
+   "status": "NEW (this audit)",
+   "why_not_gated_in_lsmc_logic_gate": "A new blocking L2 check would also change the committed C15/C16 lane distributions on re-run, and the resolution is an owner decision; the measurement lives here until then. The 18-case harness cannot see it at all: its H1 windows span fewer than six trading dates."
+  },
+  {
+   "blocking": false,
+   "cause": "watch.gate_opportunity (2026-10-10) renames the state to REJECTED off-host, where the owner threshold config/local/actionability_policy.yaml is absent and fails closed; the gate keyed its opportunity checks on state == OPPORTUNITY.",
+   "class": "harness vacuity (fixed here) + contract state coverage",
+   "evidence": {
+    "after_fix": {
+     "c10_stop_price_symbols": [
+      "EURUSD",
+      "GBPUSD"
+     ],
+     "checks_evaluated": 542,
+     "checks_not_applicable": 78,
+     "never_exercised_checks": [],
+     "opportunity_symbols_covered_signal_lane": [
+      "BTCUSD",
+      "ETHUSD",
+      "EURUSD",
+      "GBPUSD",
+      "USDJPY",
+      "XAUUSD"
+     ]
+    },
+    "before_fix": "L2's six opportunity rules, all of L3 geometry and L6 freshness were NOT_APPLICABLE on 18/18 cases while L2/L3/L6 still printed PASS; opportunity_symbols_covered was [] and c10_stop_geometry_symbols was []",
+    "before_fix_check_verdict_changes": 156,
+    "rejected_state_not_in_contract": "watch emits REJECTED; the frozen contract's alerts.mapping declares only DEVELOPING/NEAR_POI/OPPORTUNITY/INVALIDATED/EXPIRED and says SUSPENDED/IDLE/DATA_ERROR/MARKET_CLOSED emit nothing. REJECTED is undeclared (alert level INFO by a code special case)."
+   },
+   "headline": "the delivery gate blanked every opportunity rule in the shipped fixture harness",
+   "id": "D-LSMC-7",
+   "resolution": "Fixed in this PR for the harness: v1_tickets.lsmc_logic_gate.signal_snapshot inverts the delivery gate exactly, the checks run on the detection lane, and check_coverage makes any future vacuity visible. The undeclared REJECTED state needs a contract note or an owner decision; no rule was changed.",
+   "severity": "MEDIUM",
+   "status": "NEW (this audit)"
+  },
+  {
+   "blocking": false,
+   "cause": "the fixture was regenerated with its generation wall-clock instead of the manifest decision time",
+   "class": "evidence fixture defect (fixed here)",
+   "evidence": {
+    "bars_changed": 0,
+    "bars_total": 754,
+    "consequences": [
+     "18-case harness verdict LOGIC_NOT_VERIFIED (L2 + L4 FAIL) since 2026-10-10",
+     "v1.1.1 candidate audit's only HOST_CAPTURED row pinned to MARKET_CLOSED / L4 FAIL by tests/test_lsmc_v111_candidate_audit.py",
+     "the AGP-4H-C oracle's L6 closed-ordered-input check had 68 days of slack and could not fail; it is boundary-exact after the correction"
+    ],
+    "evaluated_at_utc_before": "2026-10-10T19:45:53.895829Z",
+    "evaluated_at_utc_before_local": "Saturday 15:45 America/New_York (FX weekend close)",
+    "fixture": "tests/fixtures/large_smc_v111/EURUSD.json",
+    "last_m5_bar_utc": "2026-08-02T23:55:00Z",
+    "manifest_decision_time_utc": "2026-08-03T00:00:00Z",
+    "sha256_after": "2ce91ea1c0eecf2debda0bd6bfb34e37d0f49cd66ccbb00ed199f7f78da6425d",
+    "sha256_before": "b5e1e524e1b912d15032650881edb000906d6d875657332be90fa3997a191c11",
+    "sibling_fixtures_at_decision_time": 5,
+    "staleness_before_days": 68.8
+   },
+   "headline": "the only HOST_CAPTURED FX fixture was evaluated 68 days after its own data, in the FX weekend",
+   "id": "D-LSMC-8",
+   "resolution": "Fixed in this PR: evaluated_at_utc = manifest decision_time_utc (all 754 bars byte-identical), manifest pin updated, registry verification_basis annotated (the historical record stays attributed to the bytes it ran on), and _lsmc_v111_fixtures.check_decision_time now fails closed on any recurrence.",
+   "severity": "MEDIUM",
+   "status": "NEW (this audit)"
+  },
+  {
+   "blocking": false,
+   "cause": "Both committed C16 artifacts report gate_status_counts of PASS on 8,961/8,961 full-D1 scans for L1-L4 and L6. That is true and it is not coverage: on 6,921 (BTCUSD) and 8,113 (ETHUSD) of those scans the snapshot was not an OPPORTUNITY, so L2's six opportunity rules and all of L3/L6's opportunity checks were NOT_APPLICABLE, and because opportunities.with_c10_stop = 0 the two stop-geometry assertions (L3.stop_side, L3.stop_beyond_sweep) were NOT_APPLICABLE on every scan of both 60-day replays. The committed NOT_VERIFIED verdicts already rest on the missing stop evidence; what was missing is the explicit statement of how little of the gate those headlines actually evaluated.",
+   "class": "reporting (gate status read as coverage)",
+   "evidence": {
+    "committed_c16_rederived_from_the_artifacts": {
+     "BTCUSD_committed_c16": {
+      "full_d1_scans": 8961,
+      "headline_in_artifact": "gate_status_counts L1-L4 + L6 = PASS on every full-D1 scan",
+      "l3_stop_geometry_assertions_evaluable": false,
+      "opportunities_with_c10_stop": 0,
+      "opportunity_scans_full_d1": 2040,
+      "reading": "A gate status of PASS counts the gate, not the checks inside it. On this 60-day replay L2's six opportunity rules were evaluable on 2040 of 8961 full-D1 scans, and L3.stop_side / L3.stop_beyond_sweep on 0 of them (with_c10_stop = 0, C10_PIP_SIZE_NOT_EVIDENCED). The committed NOT_VERIFIED verdict already says the second half; this makes the first half explicit.",
+      "scans_where_every_opportunity_rule_was_not_applicable": 6921
+     },
+     "ETHUSD_committed_c16": {
+      "full_d1_scans": 8961,
+      "headline_in_artifact": "gate_status_counts L1-L4 + L6 = PASS on every full-D1 scan",
+      "l3_stop_geometry_assertions_evaluable": false,
+      "opportunities_with_c10_stop": 0,
+      "opportunity_scans_full_d1": 848,
+      "reading": "A gate status of PASS counts the gate, not the checks inside it. On this 60-day replay L2's six opportunity rules were evaluable on 848 of 8961 full-D1 scans, and L3.stop_side / L3.stop_beyond_sweep on 0 of them (with_c10_stop = 0, C10_PIP_SIZE_NOT_EVIDENCED). The committed NOT_VERIFIED verdict already says the second half; this makes the first half explicit.",
+      "scans_where_every_opportunity_rule_was_not_applicable": 8113
+     }
+    },
+    "lane_c_bounded_window": {
+     "BTCUSD": {
+      "never_exercised_checks": [
+       "L2.c10_stop",
+       "L2.c11_target",
+       "L2.direction_matches_bias",
+       "L2.entry_by_reference",
+       "L2.expiry_session_end",
+       "L2.sweep_window_measured"
+      ],
+      "opportunity_scans_signal_lane": 0,
+      "opportunity_stop_reasons": {},
+      "scans": 120,
+      "scans_where_opportunity_rules_were_not_applicable": 120,
+      "window_utc": [
+       "2026-09-08T21:00:00+00:00",
+       "2026-09-09T06:55:00+00:00"
+      ]
+     },
+     "ETHUSD": {
+      "never_exercised_checks": [],
+      "opportunity_scans_signal_lane": 13,
+      "opportunity_stop_reasons": {
+       "C10_PIP_SIZE_NOT_EVIDENCED": 13
+      },
+      "scans": 120,
+      "scans_where_opportunity_rules_were_not_applicable": 107,
+      "window_utc": [
+       "2026-09-08T21:00:00+00:00",
+       "2026-09-09T06:55:00+00:00"
+      ]
+     }
+    },
+    "same_defect_class_as": "D-LSMC-7 (the harness keyed its opportunity checks on a state the delivery gate had already renamed)"
+   },
+   "headline": "a gate PASS on every scan is not coverage: across the committed 60-day crypto replays no stop-geometry check was ever evaluable",
+   "id": "D-LSMC-9",
+   "resolution": "Committed C16 artifacts are historical evidence and are NOT rewritten. Fresh reports now carry check_coverage (checks_evaluated / checks_not_applicable / never_exercised_checks, with the structural NOT_APPLICABLE markers listed separately), and lane C of this audit re-derives the committed counts from the artifacts instead of trusting the headline. Any future replay report that states a gate PASS count should state the evaluated-check count next to it.",
+   "severity": "LOW",
+   "status": "NEW (this audit)"
+  },
+  {
+   "blocking": false,
+   "cause": "large_smc_watch.detect does `from supply_demand.ob_config import ...` and `from supply_demand.ob_contract import ...`, which executes supply_demand/__init__.py; that file eagerly re-exports .analyzer, and analyzer imports mt5.market_data, which imports MetaTrader5 unconditionally. market_structure/__init__.py does the same. The engine itself never calls MT5 -- it evaluates candles handed to it -- but its import closure is not broker-independent.",
+   "class": "import boundary / packaging",
+   "evidence": {
+    "broker_api_import_sites": [
+     {
+      "file": "src/mt5/market_data.py",
+      "import": "MetaTrader5",
+      "line": 17,
+      "module": "mt5.market_data"
+     },
+     {
+      "file": "src/mt5/symbol_resolver.py",
+      "import": "MetaTrader5",
+      "line": 12,
+      "module": "mt5.symbol_resolver"
+     }
+    ],
+    "modules_loaded_by_import": 561,
+    "no_forbidden_calls": "tests/test_v1_large_smc_import_boundary.py asserts no order_send/order_check/positions_get/position_close in large_smc_core, large_smc_watch or fx_discovery; 9 passed on this tree",
+    "repo_modules_in_closure": 48,
+    "runtime_mt5_modules_loaded": [
+     "mt5",
+     "mt5.market_data",
+     "mt5.symbol_resolver"
+    ],
+    "runtime_transport_deny_loaded": [],
+    "static_transport_deny_hits": []
+   },
+   "headline": "the ARCHIVE_ONLY engine has no transport or order path, but importing it does load the MT5 broker-API modules",
+   "id": "D-LSMC-10",
+   "resolution": "Packaging change, owner decision, not made here: lazy re-exports in supply_demand/__init__.py and market_structure/__init__.py (or direct submodule imports without package side effects) would make the alert engine importable without the MT5 package. No rule, contract or gate changes. Off-host this costs nothing today because tests/conftest.py installs an import-only stub whose every operation raises MT5StubOperationAttempted, so a real broker call could not silently succeed.",
+   "severity": "LOW",
+   "status": "NEW (this audit); the import chain itself is already documented in tests/conftest.py"
+  },
+  {
+   "blocking": true,
+   "cause": "contract.C10_PIP_SIZE evidences a pip only for EURUSD/GBPUSD; C10's hard floor is expressed in pips, so every other instrument takes stop_reason = C10_PIP_SIZE_NOT_EVIDENCED and the delivery gate rejects with REJECT_NO_STOP.",
+   "class": "missing host/broker evidence",
+   "evidence": {
+    "c10_pip_evidenced_symbols": [
+     "EURUSD",
+     "GBPUSD"
+    ],
+    "crypto_lane_c": {
+     "BTCUSD": {
+      "opportunity_stop_reasons": {},
+      "opportunity_target_reasons": {},
+      "states_shipped": {
+       "DEVELOPING": 102,
+       "NEAR_POI": 18
+      }
+     },
+     "ETHUSD": {
+      "opportunity_stop_reasons": {
+       "C10_PIP_SIZE_NOT_EVIDENCED": 13
+      },
+      "opportunity_target_reasons": {
+       "TARGET_COMPUTED": 13
+      },
+      "states_shipped": {
+       "DEVELOPING": 24,
+       "NEAR_POI": 83,
+       "REJECTED": 13
+      }
+     }
+    },
+    "eurusd_lane_b": {
+     "delivery_rejection_reasons": {
+      "REJECT_NO_STOP": 16,
+      "REJECT_NO_TARGET": 7,
+      "REJECT_STALE": 11
+     },
+     "distinct_opportunities": 3,
+     "stop_reasons": {
+      "MISSING_SPREAD": 1
+     },
+     "with_c10_stop_price": 2
+    },
+    "not_evaluable_symbols": [
+     "BTCUSD",
+     "ETHUSD",
+     "USDJPY",
+     "XAUUSD"
+    ]
+   },
+   "headline": "C10 stop geometry is evaluable on 2 of 6 instruments; the other 4 fail closed",
+   "id": "D-LSMC-1",
+   "resolution": "Owner input, unchanged from C16: evidenced pip/stop geometry for USDJPY, XAUUSD, BTCUSD and ETHUSD. Lane B is new evidence that where a pip IS evidenced the C10 stop and the L3 stop geometry do compute and do pass on recorded FX bars.",
+   "severity": "MEDIUM (by design)",
+   "status": "REPRODUCED with FX-side evidence (already registered by C16)"
+  },
+  {
+   "blocking": false,
+   "cause": "the 1.1.0 alert path has no cost gate and no bound commission/spread source off-host",
+   "class": "L5 cost evidence",
+   "evidence": {
+    "lane_a_L5": {
+     "WARN": 18
+    },
+    "lane_b_L5": {
+     "WARN": 575
+    },
+    "note": "OD1012-LSMC-RRF authorizes lsmc_min_remaining_reward_fraction = 0.5 in the host-local policy only; it is an operational actionability parameter, not a contract rule and not a cost gate, and off-host its absence fails closed as REJECT_STALE.",
+    "od1011_l5": "missing cost evidence stays WARN naming the missing source, never an invented value"
+   },
+   "headline": "L5 stays WARN in every lane: no accepted spread/commission evidence and no cost gate",
+   "id": "D-LSMC-5",
+   "resolution": "Owner input, unchanged from C16.",
+   "severity": "MEDIUM",
+   "status": "REPRODUCED (already registered by C16)"
+  }
+ ],
+ "harness_scope_verdict": {
+  "scope": "18 fixture cases, L1-L4 blocking; this is the shipped LOGIC_VERIFICATION_REPORT verdict and it is necessary but not sufficient -- it cannot see the POI-age unit divergence (its windows are shorter than six trading dates) or the missing crypto stop evidence.",
+  "value": "LOGIC_VERIFIED"
+ },
+ "identity": {
+  "authority_flags": {
+   "all_authority_false": true,
+   "contract_demo_authorized": false,
+   "contract_live_authorized": false,
+   "contract_proposal_generation_authorized": false,
+   "delivery_mode": "ARCHIVE_ONLY",
+   "economic_status": "NOT_EVALUATED",
+   "proposal_generation_authorized": false
+  },
+  "code_sha": "761f00fa4594ee5598e810d925bbda51bf3f2985",
+  "contract_path": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
+  "contract_sha256": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+  "dependency_sha256": {
+   "src/fx_discovery/features.py": "c6ef006348c692bbee13a08ede290c65ce89351aa928fc22dd98eadd1d496731",
+   "src/large_smc_core/c10_stop_policy.py": "383143bc0c3e0687b2a4032652e800111482f7fe9e76b3536d01f1540dc641da"
+  },
+  "engine_file_sha256": {
+   "src/large_smc_watch/__init__.py": "ebbca3c124487c79a41912b6bbf75688d06529257bdc4ee53d0ffe2df789950f",
+   "src/large_smc_watch/contract.py": "51f9a0d088e750399b7ef4d98c978c6974b0b9ef2814f1c4251bbed79a9a5e1c",
+   "src/large_smc_watch/detect.py": "e3fd5e1fe699046c8b4c552e68d6a19a6f4abc51ea9cec3c4734c02db4e27973",
+   "src/large_smc_watch/watch.py": "86ac9cdcfa864b36a06b795920bd333f8fa9cfdd81efa5eb422e1d746bc2c63d"
+  },
+  "engine_sha256": "88dd9f1fb970f7811b437cb3b4c7341e0d1f84320238890eab3381eb0f51b689",
+  "fixture_set": {
+   "eurusd_fixture_sha256": "2ce91ea1c0eecf2debda0bd6bfb34e37d0f49cd66ccbb00ed199f7f78da6425d",
+   "every_fixture_evaluated_at_is_the_decision_time": true,
+   "manifest_decision_time_utc": "2026-08-03T00:00:00Z",
+   "manifest_pins_match_files": true
+  },
+  "fx_h1_export": {
+   "dataset_manifest_sha256": "cc87303fe36369c3db8c4787d38d6315410cebaa01984245f82caa41959c9d96",
+   "path": "data/research/ssc_fresh_dev/SSC_V1_0_1_G2_DEV_001/raw/EURUSD_H1.csv",
+   "provenance": "committed MT5 export; broker/server/account per its own dataset_manifest.json",
+   "sha256": "63d8227541909adff009f121e7b3ed1cb4e12c718aaeea53b8e55426917bb55c"
+  },
+  "gate_file_sha256": {
+   "src/v1_tickets/logic_gate.py": "e912068adbdbf0c91348c182ec39d375d4e8de7055d5bdeca540a4cf3068cabe",
+   "src/v1_tickets/lsmc_logic_gate.py": "e3133071f126d744b34cd8feae6379bdd41b9474cf9e9775991d4d75ae3ac799"
+  },
+  "registry_identity": {
+   "contract_matches_registry": true,
+   "contract_sha256": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+   "engine_matches_registry": false,
+   "engine_sha256": "88dd9f1fb970f7811b437cb3b4c7341e0d1f84320238890eab3381eb0f51b689",
+   "registry_contract_sha256": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+   "registry_detection_logic_verification": "ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY",
+   "registry_engine_sha256": "ec0b2f3dc6ed2b02df3f643b38beac1c0e88630413c74e0f55e3d8aa5f5570d4",
+   "registry_path": "strategies/registry.yaml",
+   "registry_version": "1.1.0"
+  },
+  "strategy": "ST_LARGE_SMC_V1@1.1.0"
+ },
+ "lane_verdicts": {
+  "A_fixture_harness": "LOGIC_VERIFIED",
+  "B_eurusd_host_captured_replay": "PASS",
+  "C_crypto_recorded_60d_bounded": "PASS",
+  "D_rule_semantics": "PASS"
+ },
+ "lanes": {
+  "A_fixture_harness": {
+   "blocking_failures": {},
+   "c10_stop_price_symbols": [
+    "EURUSD",
+    "GBPUSD"
+   ],
+   "cases": 18,
+   "check_coverage": {
+    "cases": 18,
+    "check_verdict_counts": {
+     "L1.closed_bars_only": {
+      "PASS": 18
+     },
+     "L1.replay_hash": {
+      "PASS": 18
+     },
+     "L1.truncation_invariance": {
+      "PASS": 18
+     },
+     "L2.alert_mapping": {
+      "PASS": 18
+     },
+     "L2.c10_stop": {
+      "NOT_APPLICABLE": 8,
+      "PASS": 10
+     },
+     "L2.c11_target": {
+      "NOT_APPLICABLE": 8,
+      "PASS": 10
+     },
+     "L2.day_boundary": {
+      "PASS": 18
+     },
+     "L2.delivery_gate_preserves_detection": {
+      "PASS": 10
+     },
+     "L2.direction_matches_bias": {
+      "NOT_APPLICABLE": 8,
+      "PASS": 10
+     },
+     "L2.entry_by_reference": {
+      "NOT_APPLICABLE": 8,
+      "PASS": 10
+     },
+     "L2.expiry_session_end": {
+      "NOT_APPLICABLE": 8,
+      "PASS": 10
+     },
+     "L2.identity": {
+      "PASS": 18
+     },
+     "L2.instruments_vt_only": {
+      "PASS": 18
+     },
+     "L2.near_poi_band": {
+      "PASS": 18
+     },
+     "L2.no_authority": {
+      "PASS": 18
+     },
+     "L2.poi_max_age": {
+      "PASS": 18
+     },
+     "L2.point_source": {
+      "PASS": 18
+     },
+     "L2.point_source_declared": {
+      "PASS": 18
+     },
+     "L2.sweep_choch_window": {
+      "PASS": 18
+     },
+     "L2.sweep_window_measured": {
+      "NOT_APPLICABLE": 8,
+      "PASS": 10
+     },
+     "L2.swing_k": {
+      "PASS": 18
+     },
+     "L2.tie_tolerance": {
+      "PASS": 18
+     },
+     "L2.timeframes": {
+      "PASS": 18
+     },
+     "L3.entry_in_choch_bar": {
+      "PASS": 10
+     },
+     "L3.geometry": {
+      "NOT_APPLICABLE": 8
+     },
+     "L3.stop_beyond_sweep": {
+      "PASS": 2
+     },
+     "L3.stop_geometry": {
+      "NOT_APPLICABLE": 8
+     },
+     "L3.stop_side": {
+      "PASS": 2
+     },
+     "L3.sweep_extreme_side": {
+      "PASS": 10
+     },
+     "L3.target_direction": {
+      "NOT_APPLICABLE": 6,
+      "PASS": 4
+     },
+     "L4.evaluated": {
+      "PASS": 18
+     },
+     "L4.history": {
+      "PASS": 18
+     },
+     "L4.m5_fresh": {
+      "PASS": 18
+     },
+     "L4.stale_state_consistent": {
+      "PASS": 18
+     },
+     "L5.commission_R": {
+      "WARN": 18
+     },
+     "L5.cost_vs_warn_level": {
+      "WARN": 18
+     },
+     "L5.spread_R": {
+      "WARN": 18
+     },
+     "L6.freshness": {
+      "NOT_APPLICABLE": 8
+     },
+     "L6.invalid_if": {
+      "PASS": 10
+     },
+     "L6.stale_if": {
+      "PASS": 10
+     },
+     "L6.valid_until": {
+      "PASS": 10
+     }
+    },
+    "checks_evaluated": 542,
+    "checks_not_applicable": 78,
+    "gate_status_counts": {
+     "L1": {
+      "PASS": 18
+     },
+     "L2": {
+      "PASS": 18
+     },
+     "L3": {
+      "PASS": 18
+     },
+     "L4": {
+      "PASS": 18
+     },
+     "L5": {
+      "WARN": 18
+     },
+     "L6": {
+      "PASS": 18
+     }
+    },
+    "never_exercised_checks": [],
+    "structural_na_markers": [
+     "L3.geometry",
+     "L3.stop_geometry",
+     "L6.freshness"
+    ]
+   },
+   "delivery_rejections": {
+    "REJECT_NO_STOP": 8,
+    "REJECT_NO_TARGET": 2
+   },
+   "driver": "scripts/lsmc_v110_logic_verification.py::cases (unchanged case list)",
+   "gate": "v1_tickets.lsmc_logic_gate.evaluate_case",
+   "opportunity_symbols_covered_shipped_state": [],
+   "opportunity_symbols_covered_signal_lane": [
+    "BTCUSD",
+    "ETHUSD",
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "XAUUSD"
+   ],
+   "per_symbol_cases": {
+    "BTCUSD": 3,
+    "ETHUSD": 3,
+    "EURUSD": 3,
+    "GBPUSD": 3,
+    "USDJPY": 3,
+    "XAUUSD": 3
+   },
+   "per_symbol_classifications": {
+    "BTCUSD": [
+     "SYNTHETIC"
+    ],
+    "ETHUSD": [
+     "SYNTHETIC"
+    ],
+    "EURUSD": [
+     "HOST_CAPTURED",
+     "SYNTHETIC"
+    ],
+    "GBPUSD": [
+     "MIXED_HOST_CONTEXT_AND_SYNTHETIC",
+     "SYNTHETIC"
+    ],
+    "USDJPY": [
+     "SYNTHETIC"
+    ],
+    "XAUUSD": [
+     "SYNTHETIC"
+    ]
+   },
+   "per_symbol_gates": {
+    "BTCUSD": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    },
+    "ETHUSD": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    },
+    "EURUSD": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    },
+    "GBPUSD": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    },
+    "USDJPY": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    },
+    "XAUUSD": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    }
+   },
+   "per_symbol_states": {
+    "BTCUSD": {
+     "shipped": {
+      "NEAR_POI": 1,
+      "REJECTED": 2
+     },
+     "signal": {
+      "NEAR_POI": 1,
+      "OPPORTUNITY": 2
+     }
+    },
+    "ETHUSD": {
+     "shipped": {
+      "NEAR_POI": 1,
+      "REJECTED": 2
+     },
+     "signal": {
+      "NEAR_POI": 1,
+      "OPPORTUNITY": 2
+     }
+    },
+    "EURUSD": {
+     "shipped": {
+      "NEAR_POI": 2,
+      "REJECTED": 1
+     },
+     "signal": {
+      "NEAR_POI": 2,
+      "OPPORTUNITY": 1
+     }
+    },
+    "GBPUSD": {
+     "shipped": {
+      "DEVELOPING": 1,
+      "NEAR_POI": 1,
+      "REJECTED": 1
+     },
+     "signal": {
+      "DEVELOPING": 1,
+      "NEAR_POI": 1,
+      "OPPORTUNITY": 1
+     }
+    },
+    "USDJPY": {
+     "shipped": {
+      "NEAR_POI": 1,
+      "REJECTED": 2
+     },
+     "signal": {
+      "NEAR_POI": 1,
+      "OPPORTUNITY": 2
+     }
+    },
+    "XAUUSD": {
+     "shipped": {
+      "NEAR_POI": 1,
+      "REJECTED": 2
+     },
+     "signal": {
+      "NEAR_POI": 1,
+      "OPPORTUNITY": 2
+     }
+    }
+   },
+   "states": {
+    "shipped": {
+     "DEVELOPING": 1,
+     "NEAR_POI": 7,
+     "REJECTED": 10
+    },
+    "signal": {
+     "DEVELOPING": 1,
+     "NEAR_POI": 7,
+     "OPPORTUNITY": 10
+    }
+   },
+   "verdict": "LOGIC_VERIFIED"
+  },
+  "B_eurusd_host_captured_replay": {
+   "bars": {
+    "D1": 30,
+    "H1": 120,
+    "M5": 604
+   },
+   "blocking_gates_not_pass": {
+    "L4": {
+     "FAIL": 1,
+     "PASS": 574
+    }
+   },
+   "check_coverage": {
+    "cases": 575,
+    "check_verdict_counts": {
+     "L1.closed_bars_only": {
+      "PASS": 575
+     },
+     "L1.replay_hash": {
+      "PASS": 575
+     },
+     "L1.truncation_invariance": {
+      "PASS": 575
+     },
+     "L2.alert_mapping": {
+      "PASS": 575
+     },
+     "L2.c10_stop": {
+      "NOT_APPLICABLE": 541,
+      "PASS": 34
+     },
+     "L2.c11_target": {
+      "NOT_APPLICABLE": 541,
+      "PASS": 34
+     },
+     "L2.day_boundary": {
+      "PASS": 575
+     },
+     "L2.delivery_gate_preserves_detection": {
+      "PASS": 34
+     },
+     "L2.direction_matches_bias": {
+      "NOT_APPLICABLE": 541,
+      "PASS": 34
+     },
+     "L2.entry_by_reference": {
+      "NOT_APPLICABLE": 541,
+      "PASS": 34
+     },
+     "L2.expiry_session_end": {
+      "NOT_APPLICABLE": 541,
+      "PASS": 34
+     },
+     "L2.identity": {
+      "PASS": 575
+     },
+     "L2.instruments_vt_only": {
+      "PASS": 575
+     },
+     "L2.near_poi_band": {
+      "PASS": 575
+     },
+     "L2.no_authority": {
+      "PASS": 575
+     },
+     "L2.poi_max_age": {
+      "PASS": 575
+     },
+     "L2.point_source": {
+      "NOT_APPLICABLE": 1,
+      "PASS": 574
+     },
+     "L2.point_source_declared": {
+      "PASS": 575
+     },
+     "L2.sweep_choch_window": {
+      "PASS": 575
+     },
+     "L2.sweep_window_measured": {
+      "NOT_APPLICABLE": 541,
+      "PASS": 34
+     },
+     "L2.swing_k": {
+      "PASS": 575
+     },
+     "L2.tie_tolerance": {
+      "PASS": 575
+     },
+     "L2.timeframes": {
+      "PASS": 575
+     },
+     "L3.entry_in_choch_bar": {
+      "PASS": 34
+     },
+     "L3.geometry": {
+      "NOT_APPLICABLE": 541
+     },
+     "L3.stop_beyond_sweep": {
+      "PASS": 18
+     },
+     "L3.stop_geometry": {
+      "NOT_APPLICABLE": 16
+     },
+     "L3.stop_side": {
+      "PASS": 18
+     },
+     "L3.sweep_extreme_side": {
+      "PASS": 34
+     },
+     "L3.target_direction": {
+      "NOT_APPLICABLE": 10,
+      "PASS": 24
+     },
+     "L4.evaluated": {
+      "FAIL": 1,
+      "PASS": 574
+     },
+     "L4.history": {
+      "PASS": 575
+     },
+     "L4.m5_fresh": {
+      "PASS": 575
+     },
+     "L4.stale_state_consistent": {
+      "PASS": 575
+     },
+     "L5.commission_R": {
+      "WARN": 575
+     },
+     "L5.cost_vs_warn_level": {
+      "WARN": 575
+     },
+     "L5.spread_R": {
+      "WARN": 575
+     },
+     "L6.freshness": {
+      "NOT_APPLICABLE": 541
+     },
+     "L6.invalid_if": {
+      "PASS": 34
+     },
+     "L6.stale_if": {
+      "PASS": 34
+     },
+     "L6.valid_until": {
+      "PASS": 34
+     }
+    },
+    "checks_evaluated": 13692,
+    "checks_not_applicable": 4355,
+    "gate_status_counts": {
+     "L1": {
+      "PASS": 575
+     },
+     "L2": {
+      "PASS": 575
+     },
+     "L3": {
+      "PASS": 575
+     },
+     "L4": {
+      "FAIL": 1,
+      "PASS": 574
+     },
+     "L5": {
+      "WARN": 575
+     },
+     "L6": {
+      "PASS": 575
+     }
+    },
+    "never_exercised_checks": [],
+    "structural_na_markers": [
+     "L3.geometry",
+     "L3.stop_geometry",
+     "L6.freshness"
+    ]
+   },
+   "classification": "HOST_CAPTURED",
+   "delivery_rejection_reasons": {
+    "REJECT_NO_STOP": 16,
+    "REJECT_NO_TARGET": 7,
+    "REJECT_STALE": 11
+   },
+   "driver": "this script (rolling host windows D1 30 / H1 200 / M5 300, cadence = every M5 close)",
+   "fixture_evaluated_at_utc": "2026-08-03T00:00:00Z",
+   "fixture_sha256": "2ce91ea1c0eecf2debda0bd6bfb34e37d0f49cd66ccbb00ed199f7f78da6425d",
+   "gate_status_counts": {
+    "L1": {
+     "PASS": 575
+    },
+    "L2": {
+     "PASS": 575
+    },
+    "L3": {
+     "PASS": 575
+    },
+    "L4": {
+     "FAIL": 1,
+     "PASS": 574
+    },
+    "L5": {
+     "WARN": 575
+    },
+    "L6": {
+     "PASS": 575
+    }
+   },
+   "l4_fail_equals_market_closed": true,
+   "market_closed_scans": 1,
+   "note": "state = the shipped snapshot (detection + the 2026-10-10 delivery gate); signal_state = detection only. Off-host the delivery gate rejects every detected opportunity: REJECT_NO_STOP / REJECT_NO_TARGET where C10 or C11 legitimately produced no level, and REJECT_STALE for the fully-costed ones, because the owner remaining-reward threshold config/local/actionability_policy.yaml is host-only and has no fallback (watch._remaining_fraction). REJECT_STALE counts are therefore an environment fact, not a rule failure.",
+   "opportunities": {
+    "by_direction": {
+     "LONG": 2,
+     "SHORT": 1
+    },
+    "distinct": 3,
+    "items": {
+     "EURUSD:H1:FVG:LONG:2026-07-31T06:00:00+00:00|2026-07-31T08:40:00+00:00|2026-07-31T08:45:00+00:00": {
+      "choch_time": "2026-07-31T08:45:00+00:00",
+      "delivery_rejection": "REJECT_STALE",
+      "direction": "LONG",
+      "entry_reference": 1.15141,
+      "expires_at": "2026-07-31T11:00:00+00:00",
+      "first_seen_utc": "2026-07-31T08:50:00+00:00",
+      "poi_kind": "FVG",
+      "scans": 11,
+      "shipped_state": "REJECTED",
+      "stop_c10": 1.15038,
+      "stop_reason": null,
+      "sweep_extreme": 1.15053,
+      "target_c11": 1.15243,
+      "target_reason": null,
+      "target_tier": "C11_FALLBACK_M5_SWING_CAUSAL"
+     },
+     "EURUSD:H1:FVG:LONG:2026-07-31T17:00:00+00:00|2026-07-31T20:10:00+00:00|2026-07-31T20:20:00+00:00": {
+      "choch_time": "2026-07-31T20:20:00+00:00",
+      "delivery_rejection": "REJECT_NO_TARGET",
+      "direction": "LONG",
+      "entry_reference": 1.15368,
+      "expires_at": "2026-07-31T21:00:00+00:00",
+      "first_seen_utc": "2026-07-31T20:25:00+00:00",
+      "poi_kind": "FVG",
+      "scans": 7,
+      "shipped_state": "REJECTED",
+      "stop_c10": 1.15218,
+      "stop_reason": null,
+      "sweep_extreme": 1.15233,
+      "target_c11": null,
+      "target_reason": "REJECT_NO_TARGET",
+      "target_tier": "C11_FALLBACK_M5_SWING_CAUSAL"
+     },
+     "EURUSD:H1:FVG:SHORT:2026-07-31T11:00:00+00:00|2026-07-31T13:30:00+00:00|2026-07-31T13:35:00+00:00": {
+      "choch_time": "2026-07-31T13:35:00+00:00",
+      "delivery_rejection": "REJECT_NO_STOP",
+      "direction": "SHORT",
+      "entry_reference": 1.1458,
+      "expires_at": "2026-07-31T15:00:00+00:00",
+      "first_seen_utc": "2026-07-31T13:40:00+00:00",
+      "poi_kind": "FVG",
+      "scans": 16,
+      "shipped_state": "REJECTED",
+      "stop_c10": null,
+      "stop_reason": "MISSING_SPREAD",
+      "sweep_extreme": 1.15007,
+      "target_c11": null,
+      "target_reason": "REJECT_NO_TARGET",
+      "target_tier": "C11_FALLBACK_M5_SWING_CAUSAL"
+     }
+    },
+    "stop_reasons": {
+     "MISSING_SPREAD": 1
+    },
+    "target_reasons": {
+     "REJECT_NO_TARGET": 2
+    },
+    "with_c10_stop_price": 2
+   },
+   "point": 1e-05,
+   "point_source": "HOST_CAPTURED",
+   "positive_risk_geometry": {
+    "candidate_rr_status": "rules.reward_risk.minimum_rr = 2.0, PENDING_OWNER_CONFIRM in 1.1.1/1.1.2; the frozen 1.1.0 contract declares no RR minimum, so this is measured, not gated",
+    "checks": {
+     "at_least_one_opportunity_was_evaluable": true,
+     "every_evaluable_opportunity_has_positive_risk_and_reward": true,
+     "no_level_was_invented_for_a_non_evaluable_opportunity": true,
+     "non_evaluable_opportunities_carry_the_engine_reason": true,
+     "reward_risk_is_measured_for_every_evaluable_opportunity": true,
+     "stop_and_target_are_on_the_correct_side_of_entry": true,
+     "stop_respects_the_c10_hard_floor_beyond_the_sweep": true
+    },
+    "evaluable": 1,
+    "min_buffer_pips": 1.5,
+    "not_evaluable": 2,
+    "note": "Off-host every evaluable opportunity is still rejected by the delivery gate (REJECT_STALE: the owner remaining-reward threshold config is host-only), so this geometry is evidence about detection, not a tradable signal.",
+    "opportunities": 3,
+    "opportunities_meeting_candidate_minimum_rr_2_0": 0,
+    "pip_provenance": "contract.C10_PIP_SIZE (owner-evidenced)",
+    "pip_size": 0.0001,
+    "reward_risk_values": [
+     0.990291
+    ],
+    "rows": [
+     {
+      "delivery_rejection": "REJECT_STALE",
+      "direction": "LONG",
+      "entry_reference": 1.15141,
+      "evaluable": true,
+      "geometry_side_consistent": true,
+      "meets_candidate_minimum_rr_2_0": false,
+      "opportunity": "EURUSD:H1:FVG:LONG:2026-07-31T06:00:00+00:00|2026-07-31T08:40:00+00:00|2026-07-31T08:45:00+00:00",
+      "positive_reward": true,
+      "positive_risk": true,
+      "reason": null,
+      "reward_pips": 10.2,
+      "reward_price_distance": 0.00102,
+      "reward_risk": 0.990291,
+      "risk_pips": 10.3,
+      "risk_price_distance": 0.00103,
+      "stop_at_least_the_c10_floor_beyond_the_sweep": true,
+      "stop_c10": 1.15038,
+      "sweep_extreme": 1.15053,
+      "target_c11": 1.15243,
+      "target_tier": "C11_FALLBACK_M5_SWING_CAUSAL"
+     },
+     {
+      "delivery_rejection": "REJECT_NO_TARGET",
+      "direction": "LONG",
+      "evaluable": false,
+      "opportunity": "EURUSD:H1:FVG:LONG:2026-07-31T17:00:00+00:00|2026-07-31T20:10:00+00:00|2026-07-31T20:20:00+00:00",
+      "reason": "REJECT_NO_TARGET",
+      "stop_c10": 1.15218,
+      "target_c11": null
+     },
+     {
+      "delivery_rejection": "REJECT_NO_STOP",
+      "direction": "SHORT",
+      "evaluable": false,
+      "opportunity": "EURUSD:H1:FVG:SHORT:2026-07-31T11:00:00+00:00|2026-07-31T13:30:00+00:00|2026-07-31T13:35:00+00:00",
+      "reason": "MISSING_SPREAD",
+      "stop_c10": null,
+      "target_c11": null
+     }
+    ],
+    "symbol": "EURUSD",
+    "verdict": "PASS",
+    "verdict_reasons": []
+   },
+   "states_shipped": {
+    "DEVELOPING": 396,
+    "IDLE": 5,
+    "MARKET_CLOSED": 1,
+    "NEAR_POI": 139,
+    "REJECTED": 34
+   },
+   "symbol": "EURUSD",
+   "verdict": "PASS",
+   "verdict_reasons": [],
+   "window": {
+    "first_scan_utc": "2026-07-30T00:10:00+00:00",
+    "last_scan_utc": "2026-08-03T00:00:00+00:00",
+    "scans": 575
+   }
+  },
+  "C_crypto_recorded_60d_bounded": {
+   "BTCUSD": {
+    "c10_pip_evidenced": false,
+    "c10_stop_geometry_evaluable": false,
+    "check_coverage": {
+     "cases": 120,
+     "checks_evaluated": 2760,
+     "checks_not_applicable": 960,
+     "gate_status_counts": {
+      "L1": {
+       "PASS": 120
+      },
+      "L2": {
+       "PASS": 120
+      },
+      "L3": {
+       "PASS": 120
+      },
+      "L4": {
+       "PASS": 120
+      },
+      "L5": {
+       "WARN": 120
+      },
+      "L6": {
+       "PASS": 120
+      }
+     },
+     "never_exercised_checks": [
+      "L2.c10_stop",
+      "L2.c11_target",
+      "L2.direction_matches_bias",
+      "L2.entry_by_reference",
+      "L2.expiry_session_end",
+      "L2.sweep_window_measured"
+     ],
+     "structural_na_markers": [
+      "L3.geometry",
+      "L6.freshness"
+     ]
+    },
+    "delivery_rejection_reasons": {},
+    "first_scan_utc": "2026-09-08T21:00:00+00:00",
+    "gate_status_counts": {
+     "L1": {
+      "PASS": 120
+     },
+     "L2": {
+      "PASS": 120
+     },
+     "L3": {
+      "PASS": 120
+     },
+     "L4": {
+      "PASS": 120
+     },
+     "L5": {
+      "WARN": 120
+     },
+     "L6": {
+      "PASS": 120
+     }
+    },
+    "last_scan_utc": "2026-09-09T06:55:00+00:00",
+    "opportunity_check_verdicts": {
+     "L2.c10_stop": {
+      "NOT_APPLICABLE": 120
+     },
+     "L2.c11_target": {
+      "NOT_APPLICABLE": 120
+     },
+     "L2.direction_matches_bias": {
+      "NOT_APPLICABLE": 120
+     },
+     "L2.entry_by_reference": {
+      "NOT_APPLICABLE": 120
+     },
+     "L2.expiry_session_end": {
+      "NOT_APPLICABLE": 120
+     },
+     "L2.sweep_window_measured": {
+      "NOT_APPLICABLE": 120
+     },
+     "L3.geometry": {
+      "NOT_APPLICABLE": 120
+     },
+     "L6.freshness": {
+      "NOT_APPLICABLE": 120
+     }
+    },
+    "opportunity_scans_signal_lane": 0,
+    "opportunity_stop_reasons": {},
+    "opportunity_target_reasons": {},
+    "scans": 120,
+    "scans_where_opportunity_rules_were_not_applicable": 120,
+    "scope": "first N full-D1-window scans (the C16 headline scope)",
+    "states_shipped": {
+     "DEVELOPING": 102,
+     "NEAR_POI": 18
+    },
+    "verdict": "PASS",
+    "verdict_reasons": []
+   },
+   "BTCUSD_committed_c16": {
+    "all_pass": true,
+    "artifact": "artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c16_2026-10-12/lsmc_btcusd_vt_recorded_60d.json",
+    "checks": {
+     "artifact_sha256": "27d2adfe2c6bec491ff4d86f297d0d88006f7021dacd70b55814a711c8c6a67c",
+     "by_direction_sums_to_distinct": true,
+     "capture_report_sha256_matches_file": true,
+     "contract_sha256_matches_tree": true,
+     "dataset_bar_counts_match_files": true,
+     "dataset_sha256_matches_files": true,
+     "engine_file_sha256_matches_tree": true,
+     "engine_sha256_matches_tree": true,
+     "gate_counts_sum_to_full_d1_scans": true,
+     "operational_states_sum_to_full_d1_scans": true,
+     "opportunity_items_match_distinct": true,
+     "opportunity_items_sum_matches_distinct": true,
+     "opportunity_scans_equal_operational_rejections": true,
+     "registry_engine_pin_still_differs": true,
+     "scans_split_is_exhaustive": true,
+     "signal_states_sum_to_full_d1_scans": true,
+     "verdict_is_not_verified": true
+    },
+    "committed_verdict": "NOT_VERIFIED",
+    "committed_verdict_reasons": [
+     "L5 WARN (OD1011-L5: no stop distance, commission unbound off-host, no cost gate)",
+     "stop geometry NOT_APPLICABLE: C10_PIP_SIZE_NOT_EVIDENCED for BTCUSD",
+     "operational REJECT_NO_STOP on 2923/2923 OPPORTUNITY scans"
+    ],
+    "coverage_derived_from_artifact": {
+     "full_d1_scans": 8961,
+     "headline_in_artifact": "gate_status_counts L1-L4 + L6 = PASS on every full-D1 scan",
+     "l3_stop_geometry_assertions_evaluable": false,
+     "opportunities_with_c10_stop": 0,
+     "opportunity_scans_full_d1": 2040,
+     "reading": "A gate status of PASS counts the gate, not the checks inside it. On this 60-day replay L2's six opportunity rules were evaluable on 2040 of 8961 full-D1 scans, and L3.stop_side / L3.stop_beyond_sweep on 0 of them (with_c10_stop = 0, C10_PIP_SIZE_NOT_EVIDENCED). The committed NOT_VERIFIED verdict already says the second half; this makes the first half explicit.",
+     "scans_where_every_opportunity_rule_was_not_applicable": 6921
+    }
+   },
+   "ETHUSD": {
+    "c10_pip_evidenced": false,
+    "c10_stop_geometry_evaluable": false,
+    "check_coverage": {
+     "cases": 120,
+     "checks_evaluated": 2929,
+     "checks_not_applicable": 869,
+     "gate_status_counts": {
+      "L1": {
+       "PASS": 120
+      },
+      "L2": {
+       "PASS": 120
+      },
+      "L3": {
+       "PASS": 120
+      },
+      "L4": {
+       "PASS": 120
+      },
+      "L5": {
+       "WARN": 120
+      },
+      "L6": {
+       "PASS": 120
+      }
+     },
+     "never_exercised_checks": [],
+     "structural_na_markers": [
+      "L3.geometry",
+      "L3.stop_geometry",
+      "L6.freshness"
+     ]
+    },
+    "delivery_rejection_reasons": {
+     "REJECT_NO_STOP": 13
+    },
+    "first_scan_utc": "2026-09-08T21:00:00+00:00",
+    "gate_status_counts": {
+     "L1": {
+      "PASS": 120
+     },
+     "L2": {
+      "PASS": 120
+     },
+     "L3": {
+      "PASS": 120
+     },
+     "L4": {
+      "PASS": 120
+     },
+     "L5": {
+      "WARN": 120
+     },
+     "L6": {
+      "PASS": 120
+     }
+    },
+    "last_scan_utc": "2026-09-09T06:55:00+00:00",
+    "opportunity_check_verdicts": {
+     "L2.c10_stop": {
+      "NOT_APPLICABLE": 107,
+      "PASS": 13
+     },
+     "L2.c11_target": {
+      "NOT_APPLICABLE": 107,
+      "PASS": 13
+     },
+     "L2.direction_matches_bias": {
+      "NOT_APPLICABLE": 107,
+      "PASS": 13
+     },
+     "L2.entry_by_reference": {
+      "NOT_APPLICABLE": 107,
+      "PASS": 13
+     },
+     "L2.expiry_session_end": {
+      "NOT_APPLICABLE": 107,
+      "PASS": 13
+     },
+     "L2.sweep_window_measured": {
+      "NOT_APPLICABLE": 107,
+      "PASS": 13
+     },
+     "L3.entry_in_choch_bar": {
+      "PASS": 13
+     },
+     "L3.geometry": {
+      "NOT_APPLICABLE": 107
+     },
+     "L3.stop_geometry": {
+      "NOT_APPLICABLE": 13
+     },
+     "L3.sweep_extreme_side": {
+      "PASS": 13
+     },
+     "L3.target_direction": {
+      "PASS": 13
+     },
+     "L6.freshness": {
+      "NOT_APPLICABLE": 107
+     },
+     "L6.invalid_if": {
+      "PASS": 13
+     },
+     "L6.stale_if": {
+      "PASS": 13
+     },
+     "L6.valid_until": {
+      "PASS": 13
+     }
+    },
+    "opportunity_scans_signal_lane": 13,
+    "opportunity_stop_reasons": {
+     "C10_PIP_SIZE_NOT_EVIDENCED": 13
+    },
+    "opportunity_target_reasons": {
+     "TARGET_COMPUTED": 13
+    },
+    "scans": 120,
+    "scans_where_opportunity_rules_were_not_applicable": 107,
+    "scope": "first N full-D1-window scans (the C16 headline scope)",
+    "states_shipped": {
+     "DEVELOPING": 24,
+     "NEAR_POI": 83,
+     "REJECTED": 13
+    },
+    "verdict": "PASS",
+    "verdict_reasons": []
+   },
+   "ETHUSD_committed_c16": {
+    "all_pass": true,
+    "artifact": "artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c16_2026-10-12/lsmc_ethusd_vt_recorded_60d.json",
+    "checks": {
+     "artifact_sha256": "97ba1a4942b5a30c7091a3a654e9a451998e08793c8a8536968e0ccb561387fc",
+     "by_direction_sums_to_distinct": true,
+     "capture_report_sha256_matches_file": true,
+     "contract_sha256_matches_tree": true,
+     "dataset_bar_counts_match_files": true,
+     "dataset_sha256_matches_files": true,
+     "engine_file_sha256_matches_tree": true,
+     "engine_sha256_matches_tree": true,
+     "gate_counts_sum_to_full_d1_scans": true,
+     "operational_states_sum_to_full_d1_scans": true,
+     "opportunity_items_match_distinct": true,
+     "opportunity_items_sum_matches_distinct": true,
+     "opportunity_scans_equal_operational_rejections": true,
+     "registry_engine_pin_still_differs": true,
+     "scans_split_is_exhaustive": true,
+     "signal_states_sum_to_full_d1_scans": true,
+     "verdict_is_not_verified": true
+    },
+    "committed_verdict": "NOT_VERIFIED",
+    "committed_verdict_reasons": [
+     "L5 WARN (OD1011-L5: no stop distance, commission unbound off-host, no cost gate)",
+     "stop geometry NOT_APPLICABLE: C10_PIP_SIZE_NOT_EVIDENCED for ETHUSD",
+     "operational REJECT_NO_STOP on 1940/1940 OPPORTUNITY scans"
+    ],
+    "coverage_derived_from_artifact": {
+     "full_d1_scans": 8961,
+     "headline_in_artifact": "gate_status_counts L1-L4 + L6 = PASS on every full-D1 scan",
+     "l3_stop_geometry_assertions_evaluable": false,
+     "opportunities_with_c10_stop": 0,
+     "opportunity_scans_full_d1": 848,
+     "reading": "A gate status of PASS counts the gate, not the checks inside it. On this 60-day replay L2's six opportunity rules were evaluable on 848 of 8961 full-D1 scans, and L3.stop_side / L3.stop_beyond_sweep on 0 of them (with_c10_stop = 0, C10_PIP_SIZE_NOT_EVIDENCED). The committed NOT_VERIFIED verdict already says the second half; this makes the first half explicit.",
+     "scans_where_every_opportunity_rule_was_not_applicable": 8113
+    }
+   }
+  },
+  "D_rule_semantics": {
+   "h1_breaks": {
+    "closes_within_tolerance_of_a_known_level": 6,
+    "event_counts": {
+     "BOS": 6,
+     "CHoCH": 8
+    },
+    "every_break_strictly_beyond_tolerance": true,
+    "first_break_out_of_neutral_is_choch": true,
+    "suppressed_by_tolerance": 0,
+    "verdict": "PASS",
+    "with_tolerance": 14,
+    "without_tolerance": 14
+   },
+   "m5_sweeps": {
+    "count": 72,
+    "directions": {
+     "bearish": 36,
+     "bullish": 36
+    },
+    "swing_known_strictly_before_bar": true,
+    "verdict": "PASS",
+    "violation_count": 0,
+    "violations": []
+   },
+   "opportunities_recomputed_from_primitives": {
+    "c11_target_examples": [
+     {
+      "beyond_entry": true,
+      "engine_target_at_last_bar": 1.14966,
+      "opp": "EURUSD:H1:FVG:SHORT:2026-07-31T00:00:00+00:00|20"
+     },
+     {
+      "beyond_entry": true,
+      "engine_target_at_last_bar": 1.15454,
+      "opp": "EURUSD:H1:FVG:LONG:2026-07-31T06:00:00+00:00|202"
+     },
+     {
+      "beyond_entry": true,
+      "engine_target_at_last_bar": 1.15454,
+      "opp": "EURUSD:H1:FVG:LONG:2026-07-31T06:00:00+00:00|202"
+     }
+    ],
+    "c11_targets_beyond_entry": true,
+    "contract_window": 12,
+    "count": 6,
+    "entry_equals_choch_bar_close_all": true,
+    "sweep_to_choch_window_bars": {
+     "1": 2,
+     "2": 1,
+     "3": 1,
+     "5": 1,
+     "6": 1
+    },
+    "verdict": "PASS",
+    "window_within_contract": true
+   },
+   "point": 1e-05,
+   "symbol": "EURUSD",
+   "tie_tolerance_price": 5e-05,
+   "tie_tolerance_rule": "5 points x point size, per symbol",
+   "verdict": "PASS"
+  }
+ },
+ "mission": "AGP-C17-LSMC-LOGIC-COMPLETION-R1 Phase A/C, continuing the C15-LSMC follow-up (docs/governance/AGP_C15_THREE_STRATEGY_LOGIC_FIRST_2026-10-11.md); independent logic audit, 2026-10-13",
+ "phase_b": {
+  "checks": {
+   "blocking_rows_are_owner_or_host_routes_not_agent_fixes": true,
+   "every_class_is_one_of_the_five_mission_classes": true,
+   "every_reported_finding_is_classified": true,
+   "frozen_v110_contract_and_engine_are_untouched": true,
+   "genuine_strategy_defect_goes_to_a_candidate_not_to_1_1_0": true,
+   "no_fix_weakened_a_gate_or_suppressed_an_emission": true
+  },
+  "class_counts": {
+   "DATA": 1,
+   "IMPLEMENTATION": 1,
+   "METADATA": 2,
+   "VERIFICATION_HARNESS": 4
+  },
+  "mission_classes": [
+   "IMPLEMENTATION",
+   "STRATEGY_CONTRACT",
+   "DATA",
+   "METADATA",
+   "VERIFICATION_HARNESS"
+  ],
+  "rows": {
+   "D-LSMC-1": {
+    "blocking": true,
+    "class": "METADATA",
+    "class_detail": "missing owner-confirmed broker pip evidence; the fail-closed gate is behaving correctly",
+    "fix_applied_in_this_pr": "none; inventing a pip size would fabricate broker metadata",
+    "outcome_after": "unchanged. The route is 1.1.1's pip_size_rules proposals (FX 10 x point, XAUUSD 0.1, BTCUSD 1.0, ETHUSD 0.1), all PENDING_OWNER_CONFIRM with apply_before_owner_confirmation false; the audit's positive control measures exactly 10 x point for EURUSD",
+    "outcome_before": "USDJPY, XAUUSD, BTCUSD and ETHUSD have a HOST_CAPTURED point but no pip size, so C10 returns C10_PIP_SIZE_NOT_EVIDENCED and every opportunity is rejected without a stop",
+    "owner_decision_required": true,
+    "prepared_artifact": null,
+    "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_metadata_fails_closed_and_the_positive_control_still_resolves",
+    "route": "OWNER_DECISION_REQUIRED_AND_HOST_CAPTURE"
+   },
+   "D-LSMC-10": {
+    "blocking": false,
+    "class": "VERIFICATION_HARNESS",
+    "class_detail": "boundary evidence: the import closure reaches src/mt5 modules that import the MetaTrader5 broker API, while no transport/order/authorization path exists",
+    "fix_applied_in_this_pr": "the boundary check was rewritten from a vacuous one-module scan into an ast graph over 48 repo modules plus a runtime probe with a positive control",
+    "outcome_after": "48 modules reachable, 0 transport hits statically and at runtime (561 modules loaded), positive control reaches all 5 pinned modules, MT5 import sites recorded",
+    "outcome_before": "no_transport_boundary passed vacuously (it never traversed children)",
+    "owner_decision_required": false,
+    "prepared_artifact": null,
+    "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_boundary_check_reaches_the_engine_and_finds_no_transport",
+    "route": "RECORDED_NO_ACTION"
+   },
+   "D-LSMC-3": {
+    "blocking": false,
+    "class": "METADATA",
+    "class_detail": "repository identity metadata: strategies/registry.yaml pins an engine sha256 that the working tree has not matched since the 2026-10-10 delivery-gate change to watch.py",
+    "fix_applied_in_this_pr": "prose only (verification_basis); the stale pin was left stale on purpose so the divergence stays visible instead of being papered over",
+    "outcome_after": "unchanged and still reported as engine_matches_registry=false; re-pinning is an owner identity decision, not an audit action",
+    "outcome_before": "registry engine_sha256 ec0b2f3d... vs tree 88dd9f1f..., drift isolated to watch.py",
+    "owner_decision_required": true,
+    "prepared_artifact": null,
+    "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_frozen_strategy_and_data_identities_are_unchanged",
+    "route": "OWNER_DECISION_REQUIRED"
+   },
+   "D-LSMC-5": {
+    "blocking": false,
+    "class": "DATA",
+    "class_detail": "no accepted spread/commission evidence exists off-host, so trading friction cannot be verified in this environment",
+    "fix_applied_in_this_pr": "none; L5 stays WARN in every lane rather than being forced to PASS",
+    "outcome_after": "unchanged: L5 WARN everywhere, recorded in the scope matrix as an advisory gate",
+    "outcome_before": "L5 WARN on all 18 harness cases and all 575 EURUSD scans",
+    "owner_decision_required": true,
+    "prepared_artifact": null,
+    "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_verdict_is_not_verified_with_exactly_two_blocking_findings",
+    "route": "HOST_EVIDENCE_REQUIRED"
+   },
+   "D-LSMC-6": {
+    "blocking": true,
+    "class": "IMPLEMENTATION",
+    "class_detail": "the frozen engine implements a different unit than its own contract declares (calendar NY-17:00 boundaries instead of distinct trading dates)",
+    "fix_applied_in_this_pr": "none at runtime; the frozen 1.1.0 bytes and its historical verdict are preserved",
+    "outcome_after": "unchanged at runtime (frozen). The candidate pins max_age_unit DISTINCT_NY1700_TRADING_DATES, keeps the number 5, and states the implementation requirement; activation needs owner confirmation plus a fresh L1-L6 replay",
+    "outcome_before": "declared 5 trading days, implemented 5 calendar days; 600 of 723 committed EURUSD H1 POI origins expire early, always in the early direction",
+    "owner_decision_required": true,
+    "prepared_artifact": "strategies/ST_LARGE_SMC_V1_1_1_2.yaml",
+    "prepared_artifact_sha256": "5931b616f2048dd20c79bc2938ebd71a77b133c5b51b2c2d986664044b58d52f",
+    "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_poi_age_divergence_reproduces_and_is_conservative + ::test_declared_trading_day_rule_is_what_the_candidate_must_implement",
+    "route": "CANDIDATE_1_1_2_RULE_DIFF",
+    "strategy_contract_also_involved": true
+   },
+   "D-LSMC-7": {
+    "blocking": false,
+    "class": "VERIFICATION_HARNESS",
+    "class_detail": "the delivery gate blanked six opportunity rules, so a green verdict carried no coverage",
+    "fix_applied_in_this_pr": "src/v1_tickets/lsmc_logic_gate.py now evaluates the opportunity rules on the detection lane and records coverage; the engine was not touched",
+    "outcome_after": "542 checks evaluated, all 6 distinct opportunity-rule checks exercised (10 PASS cases each), never_exercised_checks empty, 156 check verdicts moved, same LOGIC_VERIFIED verdict but now with coverage; the undeclared REJECTED shipped state is recorded",
+    "outcome_before": "541 checks evaluated, 0 opportunity-rule checks exercised: LOGIC_VERIFIED was vacuous",
+    "owner_decision_required": false,
+    "prepared_artifact": null,
+    "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_harness_lane_evaluates_the_opportunity_rules_it_once_blanked + ::test_archive_only_stays_exactly_once",
+    "route": "FIX_APPLIED_IN_THIS_PR"
+   },
+   "D-LSMC-8": {
+    "blocking": false,
+    "class": "VERIFICATION_HARNESS",
+    "class_detail": "a fixture was evaluated at a time other than the manifest decision time",
+    "fix_applied_in_this_pr": "tests/fixtures/large_smc_v111/EURUSD.json re-pinned to the manifest decision time and a check_decision_time guard added to tests/_lsmc_v111_fixtures.py",
+    "outcome_after": "all six fixtures are evaluated at 2026-08-03T00:00:00Z, every manifest pin recomputes from the file, and the guard raises on any divergence",
+    "outcome_before": "EURUSD fixture sha256 b5e1e524e1b912d1... with an evaluated_at_utc that did not match the manifest decision time",
+    "owner_decision_required": false,
+    "prepared_artifact": null,
+    "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_every_fixture_is_pinned_and_evaluated_at_the_manifest_decision_time",
+    "route": "FIX_APPLIED_IN_THIS_PR"
+   },
+   "D-LSMC-9": {
+    "blocking": false,
+    "class": "VERIFICATION_HARNESS",
+    "class_detail": "the committed C16 60-day evidence records no check coverage and no C10 stop geometry, so 2040 + 848 full-D1 opportunities cannot be shown to have had their rules evaluated",
+    "fix_applied_in_this_pr": "the audit re-derives every committed C16 count from the artifacts' own bytes and measures the gap (6921/8961 BTCUSD scans had every opportunity rule NOT_APPLICABLE); the 60-day replays were not re-run (audit-only scope)",
+    "outcome_after": "same committed bytes, now re-derived and qualified: with_c10_stop=0 for both crypto symbols, and the coverage gap is explicit in lane C",
+    "outcome_before": "committed headline PASS on 8961/8961 full-D1 scans with no coverage field",
+    "owner_decision_required": false,
+    "prepared_artifact": null,
+    "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_committed_c16_artifacts_still_rederive_from_their_own_bytes",
+    "route": "RECORDED_NO_RERUN"
+   }
+  },
+  "severity_and_blocking_come_from": "findings[] in this same report",
+  "verdict": "PASS",
+  "verdict_reasons": []
+ },
+ "property_checks": {
+  "archive_only_exactly_once": {
+   "alert_level_mapping_matches_contract": true,
+   "decision_time_snapshot_state": "NEAR_POI",
+   "rejected_alert_level_used": "INFO (watch.WatchTracker._emit special case)",
+   "rejected_is_not_a_contract_alert_state": true,
+   "rows": [
+    {
+     "archive_files_after": 1,
+     "archive_files_before": 1,
+     "events": 0,
+     "step": "duplicate_poll_on_identical_snapshot",
+     "verdict": "PASS"
+    },
+    {
+     "archived_files": [
+      "fx_ticket_archive/ST_LARGE_SMC_V1/EURUSD/LSMC_WATCH-26efd9e65758ba2730528ce1/2026/2026-08-03.json"
+     ],
+     "events": 1,
+     "guard_paths": [
+      "fx_ticket_archive/ST_LARGE_SMC_V1/EURUSD/LSMC_WATCH-26efd9e65758ba2730528ce1/2026/2026-08-03.json"
+     ],
+     "note": null,
+     "step": "archive_path_matches_the_exactly_once_guard",
+     "verdict": "PASS"
+    },
+    {
+     "archive_files_after": 1,
+     "archive_files_before": 1,
+     "archive_not_rewritten": true,
+     "step": "restart_after_crash_between_archive_and_state_save",
+     "transition_ids_identical": true,
+     "verdict": "PASS"
+    },
+    {
+     "events": 0,
+     "saved_state": "SUSPENDED",
+     "step": "stale_while_active_suspends_without_an_event",
+     "suspended_from": "NEAR_POI",
+     "verdict": "PASS"
+    },
+    {
+     "alert_levels": [
+      "INFO"
+     ],
+     "events": 1,
+     "step": "suspended_past_expiry_emits_expired",
+     "to_states": [
+      "EXPIRED"
+     ],
+     "verdict": "PASS"
+    },
+    {
+     "events": 0,
+     "state_unchanged": true,
+     "step": "market_closed_emits_nothing_and_preserves_state",
+     "verdict": "PASS"
+    }
+   ],
+   "rows_evaluated": 6,
+   "rows_not_applicable": 0,
+   "verdict": "PASS"
+  },
+  "calendar_and_sessions": {
+   "canonical_sessions": [
+    [
+     "asian",
+     "00:00",
+     "06:00"
+    ],
+    [
+     "london_am",
+     "06:00",
+     "11:00"
+    ],
+    [
+     "new_york_am",
+     "12:00",
+     "15:00"
+    ]
+   ],
+   "crypto_market_closed_bypass": {
+    "measured": {
+     "BTCUSD": "DATA_ERROR",
+     "EURUSD": "MARKET_CLOSED"
+    },
+    "note": "a weekend crypto snapshot cannot be MARKET_CLOSED; it fails closed as STALE/DATA_ERROR instead",
+    "rule": "watch.evaluate_snapshot skips the FX weekend check for contract.CRYPTO_SYMBOLS",
+    "verdict": "PASS"
+   },
+   "day_boundary_dst": [
+    {
+     "boundary_is_1700_local": true,
+     "boundary_local": "17:00 EST",
+     "boundary_utc": "2026-03-07T22:00:00+00:00",
+     "case": "DST_START_2026-03-08",
+     "next_boundary_utc": "2026-03-08T21:00:00+00:00",
+     "trading_date_at_boundary": "2026-03-08",
+     "trading_date_before": "2026-03-07",
+     "trading_day_length_hours": 23.0,
+     "verdict": "PASS"
+    },
+    {
+     "boundary_is_1700_local": true,
+     "boundary_local": "17:00 EST",
+     "boundary_utc": "2026-11-01T22:00:00+00:00",
+     "case": "DST_END_2026-11-01",
+     "next_boundary_utc": "2026-11-02T22:00:00+00:00",
+     "trading_date_at_boundary": "2026-11-02",
+     "trading_date_before": "2026-11-01",
+     "trading_day_length_hours": 24.0,
+     "verdict": "PASS"
+    }
+   ],
+   "fx_weekend_window": [
+    {
+     "case": "FRI_1659_NY_OPEN",
+     "closed_expected": false,
+     "closed_measured": false,
+     "local": "Fri 16:59 EDT",
+     "utc": "2026-10-09T20:59:00+00:00",
+     "verdict": "PASS"
+    },
+    {
+     "case": "FRI_1700_NY_CLOSED",
+     "closed_expected": true,
+     "closed_measured": true,
+     "local": "Fri 17:00 EDT",
+     "utc": "2026-10-09T21:00:00+00:00",
+     "verdict": "PASS"
+    },
+    {
+     "case": "SAT_NOON_CLOSED",
+     "closed_expected": true,
+     "closed_measured": true,
+     "local": "Sat 12:00 EDT",
+     "utc": "2026-10-10T16:00:00+00:00",
+     "verdict": "PASS"
+    },
+    {
+     "case": "SUN_1659_NY_CLOSED",
+     "closed_expected": true,
+     "closed_measured": true,
+     "local": "Sun 16:59 EDT",
+     "utc": "2026-10-11T20:59:00+00:00",
+     "verdict": "PASS"
+    },
+    {
+     "case": "SUN_1700_NY_OPEN",
+     "closed_expected": false,
+     "closed_measured": false,
+     "local": "Sun 17:00 EDT",
+     "utc": "2026-10-11T21:00:00+00:00",
+     "verdict": "PASS"
+    }
+   ],
+   "gap_handling": "contract opportunity_expiry = SESSION_END; outside every session -> next NY 17:00 boundary",
+   "opportunity_expiry": [
+    {
+     "case": "ASIAN_0300",
+     "expected_kind": "SESSION_END",
+     "expected_utc": "2026-10-13T06:00:00+00:00",
+     "measured_utc": "2026-10-13T06:00:00+00:00",
+     "utc": "2026-10-13T03:00:00+00:00",
+     "verdict": "PASS"
+    },
+    {
+     "case": "LONDON_AM_0930",
+     "expected_kind": "SESSION_END",
+     "expected_utc": "2026-10-13T11:00:00+00:00",
+     "measured_utc": "2026-10-13T11:00:00+00:00",
+     "utc": "2026-10-13T09:30:00+00:00",
+     "verdict": "PASS"
+    },
+    {
+     "case": "LONDON_AM_END_1100_HALF_OPEN",
+     "expected_kind": "NEXT_DAY_BOUNDARY",
+     "expected_utc": "2026-10-13T21:00:00+00:00",
+     "measured_utc": "2026-10-13T21:00:00+00:00",
+     "utc": "2026-10-13T11:00:00+00:00",
+     "verdict": "PASS"
+    },
+    {
+     "case": "GAP_1130",
+     "expected_kind": "NEXT_DAY_BOUNDARY",
+     "expected_utc": "2026-10-13T21:00:00+00:00",
+     "measured_utc": "2026-10-13T21:00:00+00:00",
+     "utc": "2026-10-13T11:30:00+00:00",
+     "verdict": "PASS"
+    },
+    {
+     "case": "NEW_YORK_AM_1300",
+     "expected_kind": "SESSION_END",
+     "expected_utc": "2026-10-13T15:00:00+00:00",
+     "measured_utc": "2026-10-13T15:00:00+00:00",
+     "utc": "2026-10-13T13:00:00+00:00",
+     "verdict": "PASS"
+    },
+    {
+     "case": "AFTER_1500_HALF_OPEN",
+     "expected_kind": "NEXT_DAY_BOUNDARY",
+     "expected_utc": "2026-10-13T21:00:00+00:00",
+     "measured_utc": "2026-10-13T21:00:00+00:00",
+     "utc": "2026-10-13T15:00:00+00:00",
+     "verdict": "PASS"
+    },
+    {
+     "case": "EVENING_2000",
+     "expected_kind": "NEXT_DAY_BOUNDARY",
+     "expected_utc": "2026-10-13T21:00:00+00:00",
+     "measured_utc": "2026-10-13T21:00:00+00:00",
+     "utc": "2026-10-13T20:00:00+00:00",
+     "verdict": "PASS"
+    }
+   ],
+   "session_gaps_utc": [
+    "11:00-12:00",
+    "15:00-24:00"
+   ],
+   "verdict": "PASS"
+  },
+  "candidate_rule_change_diff": {
+   "based_on_candidate_sha256": "52203c8bfd463f37f7591e7127e982101259c4670dd7af155347434fbb143fdb",
+   "candidate_contract": "strategies/ST_LARGE_SMC_V1_1_1_2.yaml",
+   "candidate_contract_sha256": "5931b616f2048dd20c79bc2938ebd71a77b133c5b51b2c2d986664044b58d52f",
+   "changes": [
+    {
+     "defect": "D-LSMC-6",
+     "defect_class": "IMPLEMENTATION_AGAINST_A_DECLARED_CONTRACT_RULE",
+     "gate": "L2.expiry_session_end",
+     "id": "C17-D-LSMC-6",
+     "number_changed": false,
+     "owner_decision_required": "PENDING_OWNER_CONFIRM",
+     "unit_changed": true
+    },
+    {
+     "defect": null,
+     "defect_class": "SPECIFICATION_HYGIENE",
+     "id": "C17-SPEC-HYGIENE"
+    },
+    {
+     "defect": "D-LSMC-1",
+     "defect_class": "METADATA_MISSING_OWNER_CONFIRMED_BROKER_PIP_EVIDENCE",
+     "id": "C17-D-LSMC-1-NOT-A-RULE-CHANGE"
+    }
+   ],
+   "checks": {
+    "authority_surfaces_stay_false_in_the_candidate": true,
+    "candidate_is_bound_to_the_committed_1_1_1_bytes": true,
+    "candidate_is_not_registered_in_the_registry": true,
+    "d_lsmc_1_carries_no_rule_change": true,
+    "declared_diff_paths_match_the_computed_structural_diff": true,
+    "declared_number_is_unchanged": true,
+    "declared_unit_matches_the_dead_helper_semantics": true,
+    "duplicate_timeframes_key_was_byte_level_only": true,
+    "frozen_1_1_0_contract_bytes_unchanged": true,
+    "frozen_1_1_0_engine_bytes_unchanged": true,
+    "no_gate_is_weakened_and_no_emission_is_suppressed": true,
+    "unit_is_now_explicit": true
+   },
+   "computed_structural_diff_1_1_1_to_1_1_2": [
+    "based_on",
+    "based_on_sha256",
+    "candidate_created_local_date",
+    "candidate_provenance.rule_change_evidence",
+    "candidate_provenance.rule_change_mission",
+    "candidate_rule_changes",
+    "implementation_choices_flagged",
+    "not_specified",
+    "rules.poi.expiry_instant",
+    "rules.poi.expiry_session_basis",
+    "rules.poi.implementation_requirement",
+    "rules.poi.max_age_unit",
+    "rules.poi.max_age_unit_status",
+    "rules.poi.weekend_and_holiday_dates_excluded",
+    "version"
+   ],
+   "declared_diff_paths": [
+    "based_on",
+    "based_on_sha256",
+    "candidate_created_local_date",
+    "candidate_provenance.rule_change_evidence",
+    "candidate_provenance.rule_change_mission",
+    "candidate_rule_changes",
+    "implementation_choices_flagged",
+    "not_specified",
+    "rules.poi.expiry_instant",
+    "rules.poi.expiry_session_basis",
+    "rules.poi.implementation_requirement",
+    "rules.poi.max_age_unit",
+    "rules.poi.max_age_unit_status",
+    "rules.poi.weekend_and_holiday_dates_excluded",
+    "version"
+   ],
+   "note": "Phase B classification: D-LSMC-6 = implementation defect against a declared contract rule (route: this candidate + owner confirmation + a fresh L1-L6 replay); D-LSMC-1 = metadata defect, missing owner-confirmed broker pip evidence (route: confirm 1.1.1's pip_size_rules proposals and capture the four missing symbols -- never invent a pip size); D-LSMC-7/8 = verification-harness defects, already fixed in this PR with the engine untouched; D-LSMC-3/5/9/10 = evidence/owner-decision items, unfixable off-host.",
+   "stale_declared_paths": [],
+   "undeclared_rule_drift": [],
+   "verdict": "PASS",
+   "verdict_reasons": []
+  },
+  "causality": {
+   "forming_bars_in_input_range": [
+    1,
+    1
+   ],
+   "rows": [
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-30T01:55:00+00:00",
+     "state": "DEVELOPING",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-30T06:05:00+00:00",
+     "state": "DEVELOPING",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-30T10:15:00+00:00",
+     "state": "DEVELOPING",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-30T14:25:00+00:00",
+     "state": "DEVELOPING",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-30T18:35:00+00:00",
+     "state": "DEVELOPING",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-30T22:45:00+00:00",
+     "state": "DEVELOPING",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-31T02:55:00+00:00",
+     "state": "DEVELOPING",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-31T07:05:00+00:00",
+     "state": "DEVELOPING",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-31T11:15:00+00:00",
+     "state": "DEVELOPING",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-31T15:25:00+00:00",
+     "state": "DEVELOPING",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-07-31T19:35:00+00:00",
+     "state": "NEAR_POI",
+     "truncation_invariant": true
+    },
+    {
+     "forming_bars_present_in_input": 1,
+     "future_bars_do_not_change_output": true,
+     "future_mutation_invariant": true,
+     "replay_hash_stable": true,
+     "scan_utc": "2026-08-02T23:45:00+00:00",
+     "state": "NEAR_POI",
+     "truncation_invariant": true
+    }
+   ],
+   "samples": 12,
+   "symbol": "EURUSD",
+   "tests": {
+    "L1.replay_hash (determinism)": true,
+    "future_bars_appended_do_not_change_output": true,
+    "future_mutation_invariance (forming/future OHLC rewritten)": true,
+    "truncation_invariance (unclosed bars dropped)": true
+   },
+   "verdict": "PASS"
+  },
+  "fail_closed_symbol_metadata": {
+   "c10_not_evaluable_symbols": [
+    "BTCUSD",
+    "ETHUSD",
+    "USDJPY",
+    "XAUUSD"
+   ],
+   "c10_pip_evidenced_symbols": [
+    "EURUSD",
+    "GBPUSD"
+   ],
+   "per_symbol_point_resolution": {
+    "BTCUSD": {
+     "c10_pip_evidenced": false,
+     "point": 0.01,
+     "source": "HOST_CAPTURED"
+    },
+    "ETHUSD": {
+     "c10_pip_evidenced": false,
+     "point": 0.01,
+     "source": "HOST_CAPTURED"
+    },
+    "EURUSD": {
+     "c10_pip_evidenced": true,
+     "point": 1e-05,
+     "source": "HOST_CAPTURED"
+    },
+    "GBPUSD": {
+     "c10_pip_evidenced": true,
+     "point": 1e-05,
+     "source": "HOST_CAPTURED"
+    },
+    "USDJPY": {
+     "c10_pip_evidenced": false,
+     "point": 0.001,
+     "source": "HOST_CAPTURED"
+    },
+    "XAUUSD": {
+     "c10_pip_evidenced": false,
+     "point": 0.01,
+     "source": "HOST_CAPTURED"
+    }
+   },
+   "rows": [
+    {
+     "case": "MISSING_FILE",
+     "metadata_source": "MISSING",
+     "point": null,
+     "snapshot_reasons": [
+      "SYMBOL_METADATA_MISSING"
+     ],
+     "snapshot_state": "DATA_ERROR",
+     "verdict": "PASS"
+    },
+    {
+     "case": "MALFORMED_JSON",
+     "metadata_source": "MISSING",
+     "point": null,
+     "snapshot_reasons": [
+      "SYMBOL_METADATA_MISSING"
+     ],
+     "snapshot_state": "DATA_ERROR",
+     "verdict": "PASS"
+    },
+    {
+     "case": "HASH_MISMATCH",
+     "metadata_source": "MISSING",
+     "point": null,
+     "snapshot_reasons": [
+      "SYMBOL_METADATA_MISSING"
+     ],
+     "snapshot_state": "DATA_ERROR",
+     "verdict": "PASS"
+    },
+    {
+     "case": "WRONG_SCHEMA",
+     "metadata_source": "MISSING",
+     "point": null,
+     "snapshot_reasons": [
+      "SYMBOL_METADATA_MISSING"
+     ],
+     "snapshot_state": "DATA_ERROR",
+     "verdict": "PASS"
+    },
+    {
+     "c10_pip_is_10_points": true,
+     "c10_pip_size": 0.0001,
+     "case": "COMMITTED_CAPTURE",
+     "metadata_source": "HOST_CAPTURED",
+     "point": 1e-05,
+     "snapshot_reasons": [],
+     "snapshot_state": null,
+     "verdict": "PASS"
+    }
+   ],
+   "verdict": "PASS"
+  },
+  "gate_integrity": {
+   "checks": {
+    "alert_level_mapping_is_still_the_contract_mapping": true,
+    "blocking_gate_set_is_unchanged": true,
+    "coverage_did_not_shrink": true,
+    "emissions_are_still_produced_in_every_lane": true,
+    "every_coverage_gap_is_disclosed_not_hidden": true,
+    "every_emitted_transition_is_archived_exactly_once": true,
+    "fail_closed_metadata_paths_still_fail_closed": true,
+    "l5_stays_advisory_and_is_never_silently_dropped": true,
+    "no_declared_check_is_never_exercised_where_the_rules_are_reachable": true,
+    "no_engine_byte_was_edited_by_this_pr": true,
+    "opportunity_rules_are_now_exercised": true
+   },
+   "coverage_now": {
+    "checks_evaluated": 542,
+    "checks_not_applicable": 78,
+    "never_exercised_checks": []
+   },
+   "l5_check_status_counts": {
+    "L5.commission_R": {
+     "WARN": 593
+    },
+    "L5.cost_vs_warn_level": {
+     "WARN": 593
+    },
+    "L5.spread_R": {
+     "WARN": 593
+    }
+   },
+   "note": "The harness fixes in this PR moved 156 check verdicts and turned six previously blanked opportunity rules into evaluated checks. Nothing was suppressed: the blocking gate set, the alert-level mapping and the fail-closed metadata paths are byte-identical in behaviour, and the frozen 1.1.0 engine and contract were not edited at all.",
+   "opportunity_rule_checks": [
+    "L2.c10_stop",
+    "L2.c11_target",
+    "L2.direction_matches_bias",
+    "L2.entry_by_reference",
+    "L2.expiry_session_end",
+    "L2.sweep_window_measured"
+   ],
+   "opportunity_rule_checks_exercised": 6,
+   "opportunity_rule_checks_with_a_pass": {
+    "L2.c10_stop": 10,
+    "L2.c11_target": 10,
+    "L2.direction_matches_bias": 10,
+    "L2.entry_by_reference": 10,
+    "L2.expiry_session_end": 10,
+    "L2.sweep_window_measured": 10
+   },
+   "pre_fix_baseline": {
+    "check_verdicts_changed_by_the_fix": 156,
+    "checks_evaluated": 541,
+    "checks_not_applicable": 79,
+    "eurusd_fixture_sha256": "b5e1e524e1b912d15032650881edb000906d6d875657332be90fa3997a191c11",
+    "opportunity_rule_checks_exercised": 0
+   },
+   "shipped_state_counts_per_lane": {
+    "A": 18,
+    "B": 575,
+    "C_BTCUSD": 120,
+    "C_ETHUSD": 120
+   },
+   "verdict": "PASS",
+   "verdict_reasons": []
+  },
+  "harness_regressions": {
+   "delivery_gate_does_not_blank_the_opportunity_rules": {
+    "opportunity_check_verdicts": {
+     "L2.c10_stop": "PASS",
+     "L2.c11_target": "PASS",
+     "L2.direction_matches_bias": "PASS",
+     "L2.entry_by_reference": "PASS",
+     "L2.expiry_session_end": "PASS",
+     "L2.sweep_window_measured": "PASS",
+     "L3.entry_in_choch_bar": "PASS",
+     "L3.sweep_extreme_side": "PASS",
+     "L6.valid_until": "PASS"
+    },
+    "opportunity_checks_evaluated": true,
+    "shipped_state": "REJECTED",
+    "signal_state": "OPPORTUNITY",
+    "verdict": "PASS"
+   },
+   "fixture_decision_time_guard": {
+    "conformant_time_accepted": true,
+    "divergent_time_raises": true,
+    "error_message": "EURUSD: fixture evaluated_at_utc '2026-10-10T19:45:53.895829Z' != manifest decision_time_utc '2026-08-03T00:00:00Z'; the fixture would be evaluated outside its own recorded data window",
+    "guard": "tests/_lsmc_v111_fixtures.check_decision_time, called from load_fixture",
+    "manifest_decision_time_utc": "2026-08-03T00:00:00Z",
+    "message_names_manifest_time": true,
+    "verdict": "PASS"
+   },
+   "short_circuit_is_not_reported_as_a_point_source_failure": {
+    "L2.point_source": "NOT_APPLICABLE",
+    "L2.point_source_declared": "PASS",
+    "L4.evaluated": [
+     "FAIL"
+    ],
+    "blocking_failures": [
+     "L4"
+    ],
+    "reason_codes": [
+     "FX_WEEKEND"
+    ],
+    "state": "MARKET_CLOSED",
+    "verdict": "PASS"
+   },
+   "verdict": "PASS"
+  },
+  "no_transport_boundary": {
+   "broker_api_observation": "RECORDED, NOT GATED: the closure does reach the MT5 broker-API modules. src/mt5/market_data.py -> src/mt5/symbol_resolver.py import MetaTrader5 unconditionally, and they are pulled in by the eager re-exports in supply_demand/__init__.py and market_structure/__init__.py, which large_smc_watch.detect triggers via `from supply_demand.ob_config import ...`. No LSMC module calls MT5 (tests/test_v1_large_smc_import_boundary.py asserts no order_send/order_check/positions_get/position_close and exempts MetaTrader5 from its runtime check by design; tests/conftest.py documents the same chain and installs an import-only Linux stub). Consequence: the ARCHIVE_ONLY alert engine is not import-independent of the broker API package -- off-host it is importable only through that stub. See D-LSMC-10.",
+   "delivery_mode": "ARCHIVE_ONLY",
+   "proposal_generation_authorized": false,
+   "runtime": {
+    "modules_loaded_by_import": 561,
+    "mt5_modules_loaded": [
+     "mt5",
+     "mt5.market_data",
+     "mt5.symbol_resolver"
+    ],
+    "mt5_stub_installed_by_conftest": true,
+    "socket_loaded": true,
+    "transport_deny_loaded": [],
+    "transport_deny_loaded_excluding_stdlib_socket": []
+   },
+   "scope": "static transitive import graph over REPO modules reachable from large_smc_watch (third-party/stdlib are leaves) + a clean-subprocess runtime import probe",
+   "static": {
+    "broker_api_imports": [
+     {
+      "file": "src/mt5/market_data.py",
+      "import": "MetaTrader5",
+      "line": 17,
+      "module": "mt5.market_data"
+     },
+     {
+      "file": "src/mt5/symbol_resolver.py",
+      "import": "MetaTrader5",
+      "line": 12,
+      "module": "mt5.symbol_resolver"
+     }
+    ],
+    "external_roots": [
+     "MetaTrader5",
+     "__future__",
+     "assistant",
+     "calendar",
+     "collections",
+     "copy",
+     "dataclasses",
+     "datetime",
+     "enum",
+     "functools",
+     "hashlib",
+     "importlib",
+     "json",
+     "logging",
+     "math",
+     "os",
+     "pandas",
+     "pathlib",
+     "re",
+     "smartmoneyconcepts",
+     "statistics",
+     "threading",
+     "time",
+     "typing",
+     "yaml",
+     "zoneinfo"
+    ],
+    "positive_control_missing": [],
+    "positive_control_reached": true,
+    "repo_modules_reachable": 48,
+    "transport_deny_hits": [],
+    "unresolved": []
+   },
+   "verdict": "PASS",
+   "verdict_reasons": []
+  },
+  "phase_b_classification": {
+   "checks": {
+    "blocking_rows_are_owner_or_host_routes_not_agent_fixes": true,
+    "every_class_is_one_of_the_five_mission_classes": true,
+    "every_reported_finding_is_classified": true,
+    "frozen_v110_contract_and_engine_are_untouched": true,
+    "genuine_strategy_defect_goes_to_a_candidate_not_to_1_1_0": true,
+    "no_fix_weakened_a_gate_or_suppressed_an_emission": true
+   },
+   "class_counts": {
+    "DATA": 1,
+    "IMPLEMENTATION": 1,
+    "METADATA": 2,
+    "VERIFICATION_HARNESS": 4
+   },
+   "mission_classes": [
+    "IMPLEMENTATION",
+    "STRATEGY_CONTRACT",
+    "DATA",
+    "METADATA",
+    "VERIFICATION_HARNESS"
+   ],
+   "rows": {
+    "D-LSMC-1": {
+     "blocking": true,
+     "class": "METADATA",
+     "class_detail": "missing owner-confirmed broker pip evidence; the fail-closed gate is behaving correctly",
+     "fix_applied_in_this_pr": "none; inventing a pip size would fabricate broker metadata",
+     "outcome_after": "unchanged. The route is 1.1.1's pip_size_rules proposals (FX 10 x point, XAUUSD 0.1, BTCUSD 1.0, ETHUSD 0.1), all PENDING_OWNER_CONFIRM with apply_before_owner_confirmation false; the audit's positive control measures exactly 10 x point for EURUSD",
+     "outcome_before": "USDJPY, XAUUSD, BTCUSD and ETHUSD have a HOST_CAPTURED point but no pip size, so C10 returns C10_PIP_SIZE_NOT_EVIDENCED and every opportunity is rejected without a stop",
+     "owner_decision_required": true,
+     "prepared_artifact": null,
+     "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_metadata_fails_closed_and_the_positive_control_still_resolves",
+     "route": "OWNER_DECISION_REQUIRED_AND_HOST_CAPTURE"
+    },
+    "D-LSMC-10": {
+     "blocking": false,
+     "class": "VERIFICATION_HARNESS",
+     "class_detail": "boundary evidence: the import closure reaches src/mt5 modules that import the MetaTrader5 broker API, while no transport/order/authorization path exists",
+     "fix_applied_in_this_pr": "the boundary check was rewritten from a vacuous one-module scan into an ast graph over 48 repo modules plus a runtime probe with a positive control",
+     "outcome_after": "48 modules reachable, 0 transport hits statically and at runtime (561 modules loaded), positive control reaches all 5 pinned modules, MT5 import sites recorded",
+     "outcome_before": "no_transport_boundary passed vacuously (it never traversed children)",
+     "owner_decision_required": false,
+     "prepared_artifact": null,
+     "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_boundary_check_reaches_the_engine_and_finds_no_transport",
+     "route": "RECORDED_NO_ACTION"
+    },
+    "D-LSMC-3": {
+     "blocking": false,
+     "class": "METADATA",
+     "class_detail": "repository identity metadata: strategies/registry.yaml pins an engine sha256 that the working tree has not matched since the 2026-10-10 delivery-gate change to watch.py",
+     "fix_applied_in_this_pr": "prose only (verification_basis); the stale pin was left stale on purpose so the divergence stays visible instead of being papered over",
+     "outcome_after": "unchanged and still reported as engine_matches_registry=false; re-pinning is an owner identity decision, not an audit action",
+     "outcome_before": "registry engine_sha256 ec0b2f3d... vs tree 88dd9f1f..., drift isolated to watch.py",
+     "owner_decision_required": true,
+     "prepared_artifact": null,
+     "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_frozen_strategy_and_data_identities_are_unchanged",
+     "route": "OWNER_DECISION_REQUIRED"
+    },
+    "D-LSMC-5": {
+     "blocking": false,
+     "class": "DATA",
+     "class_detail": "no accepted spread/commission evidence exists off-host, so trading friction cannot be verified in this environment",
+     "fix_applied_in_this_pr": "none; L5 stays WARN in every lane rather than being forced to PASS",
+     "outcome_after": "unchanged: L5 WARN everywhere, recorded in the scope matrix as an advisory gate",
+     "outcome_before": "L5 WARN on all 18 harness cases and all 575 EURUSD scans",
+     "owner_decision_required": true,
+     "prepared_artifact": null,
+     "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_verdict_is_not_verified_with_exactly_two_blocking_findings",
+     "route": "HOST_EVIDENCE_REQUIRED"
+    },
+    "D-LSMC-6": {
+     "blocking": true,
+     "class": "IMPLEMENTATION",
+     "class_detail": "the frozen engine implements a different unit than its own contract declares (calendar NY-17:00 boundaries instead of distinct trading dates)",
+     "fix_applied_in_this_pr": "none at runtime; the frozen 1.1.0 bytes and its historical verdict are preserved",
+     "outcome_after": "unchanged at runtime (frozen). The candidate pins max_age_unit DISTINCT_NY1700_TRADING_DATES, keeps the number 5, and states the implementation requirement; activation needs owner confirmation plus a fresh L1-L6 replay",
+     "outcome_before": "declared 5 trading days, implemented 5 calendar days; 600 of 723 committed EURUSD H1 POI origins expire early, always in the early direction",
+     "owner_decision_required": true,
+     "prepared_artifact": "strategies/ST_LARGE_SMC_V1_1_1_2.yaml",
+     "prepared_artifact_sha256": "5931b616f2048dd20c79bc2938ebd71a77b133c5b51b2c2d986664044b58d52f",
+     "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_poi_age_divergence_reproduces_and_is_conservative + ::test_declared_trading_day_rule_is_what_the_candidate_must_implement",
+     "route": "CANDIDATE_1_1_2_RULE_DIFF",
+     "strategy_contract_also_involved": true
+    },
+    "D-LSMC-7": {
+     "blocking": false,
+     "class": "VERIFICATION_HARNESS",
+     "class_detail": "the delivery gate blanked six opportunity rules, so a green verdict carried no coverage",
+     "fix_applied_in_this_pr": "src/v1_tickets/lsmc_logic_gate.py now evaluates the opportunity rules on the detection lane and records coverage; the engine was not touched",
+     "outcome_after": "542 checks evaluated, all 6 distinct opportunity-rule checks exercised (10 PASS cases each), never_exercised_checks empty, 156 check verdicts moved, same LOGIC_VERIFIED verdict but now with coverage; the undeclared REJECTED shipped state is recorded",
+     "outcome_before": "541 checks evaluated, 0 opportunity-rule checks exercised: LOGIC_VERIFIED was vacuous",
+     "owner_decision_required": false,
+     "prepared_artifact": null,
+     "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_harness_lane_evaluates_the_opportunity_rules_it_once_blanked + ::test_archive_only_stays_exactly_once",
+     "route": "FIX_APPLIED_IN_THIS_PR"
+    },
+    "D-LSMC-8": {
+     "blocking": false,
+     "class": "VERIFICATION_HARNESS",
+     "class_detail": "a fixture was evaluated at a time other than the manifest decision time",
+     "fix_applied_in_this_pr": "tests/fixtures/large_smc_v111/EURUSD.json re-pinned to the manifest decision time and a check_decision_time guard added to tests/_lsmc_v111_fixtures.py",
+     "outcome_after": "all six fixtures are evaluated at 2026-08-03T00:00:00Z, every manifest pin recomputes from the file, and the guard raises on any divergence",
+     "outcome_before": "EURUSD fixture sha256 b5e1e524e1b912d1... with an evaluated_at_utc that did not match the manifest decision time",
+     "owner_decision_required": false,
+     "prepared_artifact": null,
+     "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_every_fixture_is_pinned_and_evaluated_at_the_manifest_decision_time",
+     "route": "FIX_APPLIED_IN_THIS_PR"
+    },
+    "D-LSMC-9": {
+     "blocking": false,
+     "class": "VERIFICATION_HARNESS",
+     "class_detail": "the committed C16 60-day evidence records no check coverage and no C10 stop geometry, so 2040 + 848 full-D1 opportunities cannot be shown to have had their rules evaluated",
+     "fix_applied_in_this_pr": "the audit re-derives every committed C16 count from the artifacts' own bytes and measures the gap (6921/8961 BTCUSD scans had every opportunity rule NOT_APPLICABLE); the 60-day replays were not re-run (audit-only scope)",
+     "outcome_after": "same committed bytes, now re-derived and qualified: with_c10_stop=0 for both crypto symbols, and the coverage gap is explicit in lane C",
+     "outcome_before": "committed headline PASS on 8961/8961 full-D1 scans with no coverage field",
+     "owner_decision_required": false,
+     "prepared_artifact": null,
+     "regression_test": "tests/test_lsmc_v110_logic_audit.py::test_committed_c16_artifacts_still_rederive_from_their_own_bytes",
+     "route": "RECORDED_NO_RERUN"
+    }
+   },
+   "severity_and_blocking_come_from": "findings[] in this same report",
+   "verdict": "PASS",
+   "verdict_reasons": []
+  },
+  "poi_age_semantics": {
+   "BTCUSD_H1_VT_RECORDED_60D": {
+    "calendar_instants": 1412,
+    "directions": {},
+    "distinct_trading_dates": 61,
+    "examples": [],
+    "origins_divergent": 0,
+    "origins_evaluated": 1412,
+    "trading_dates_expired_early_total": 0,
+    "verdict": "PASS"
+   },
+   "EURUSD_H1_COMMITTED_EXPORT": {
+    "calendar_instants": 723,
+    "directions": {
+     "ENGINE_EXPIRES_EARLIER": 600
+    },
+    "distinct_trading_dates": 31,
+    "examples": [
+     {
+      "declared_expiry_utc": "2026-06-29T17:00:00-04:00",
+      "direction": "ENGINE_EXPIRES_EARLIER",
+      "engine_expiry_utc": "2026-06-27T21:00:00+00:00",
+      "origin_utc": "2026-06-21T21:00:00+00:00",
+      "trading_dates_expired_early": [
+       "2026-06-29"
+      ]
+     },
+     {
+      "declared_expiry_utc": "2026-06-29T17:00:00-04:00",
+      "direction": "ENGINE_EXPIRES_EARLIER",
+      "engine_expiry_utc": "2026-06-27T21:00:00+00:00",
+      "origin_utc": "2026-06-21T22:00:00+00:00",
+      "trading_dates_expired_early": [
+       "2026-06-29"
+      ]
+     },
+     {
+      "declared_expiry_utc": "2026-06-29T17:00:00-04:00",
+      "direction": "ENGINE_EXPIRES_EARLIER",
+      "engine_expiry_utc": "2026-06-27T21:00:00+00:00",
+      "origin_utc": "2026-06-21T23:00:00+00:00",
+      "trading_dates_expired_early": [
+       "2026-06-29"
+      ]
+     }
+    ],
+    "origins_divergent": 600,
+    "origins_evaluated": 723,
+    "trading_dates_expired_early_total": 1080,
+    "verdict": "FAIL"
+   },
+   "SYNTHETIC_FX_4WEEKS": {
+    "calendar_instants": 481,
+    "directions": {
+     "ENGINE_EXPIRES_EARLIER": 358
+    },
+    "distinct_trading_dates": 21,
+    "examples": [
+     {
+      "declared_expiry_utc": "2026-03-09T17:00:00-04:00",
+      "direction": "ENGINE_EXPIRES_EARLIER",
+      "engine_expiry_utc": "2026-03-07T22:00:00+00:00",
+      "origin_utc": "2026-03-02T00:00:00+00:00",
+      "trading_dates_expired_early": [
+       "2026-03-09"
+      ]
+     },
+     {
+      "declared_expiry_utc": "2026-03-09T17:00:00-04:00",
+      "direction": "ENGINE_EXPIRES_EARLIER",
+      "engine_expiry_utc": "2026-03-07T22:00:00+00:00",
+      "origin_utc": "2026-03-02T01:00:00+00:00",
+      "trading_dates_expired_early": [
+       "2026-03-09"
+      ]
+     },
+     {
+      "declared_expiry_utc": "2026-03-09T17:00:00-04:00",
+      "direction": "ENGINE_EXPIRES_EARLIER",
+      "engine_expiry_utc": "2026-03-07T22:00:00+00:00",
+      "origin_utc": "2026-03-02T02:00:00+00:00",
+      "trading_dates_expired_early": [
+       "2026-03-09"
+      ]
+     }
+    ],
+    "origins_divergent": 358,
+    "origins_evaluated": 481,
+    "trading_dates_expired_early_total": 646,
+    "verdict": "FAIL"
+   },
+   "dead_code": {
+    "callers_in_repository": 0,
+    "implements": "distinct NY-17:00 trading dates since the POI origin (the declared unit)",
+    "line": 164,
+    "note": "defined and never called; the declared semantics exist in the file but are unwired",
+    "symbol": "large_smc_watch.watch._poi_age_days"
+   },
+   "declared_rule": "LSMC_SPEC_V2_FROZEN 4.2 / contract rules.poi.max_age_trading_days = 5 trading days",
+   "implemented_rule": "watch.expires_at: POI_MAX_AGE_TRADING_DAYS + 1 applications of next_day_boundary = 6 consecutive CALENDAR NY-17:00 dates from the POI origin",
+   "materiality": "Conservative direction, MEASURED not assumed: every divergent origin on every calendar is ENGINE_EXPIRES_EARLIER (see `directions`), because the trading-date set is a subset of the calendar-date set, so six calendar boundaries land at or before six trading dates. The engine therefore suppresses POI life -- it can drop an opportunity or hold a state at NEAR_POI/DEVELOPING -- but it never keeps a POI alive longer than the contract allows. No ENGINE_EXPIRES_LATER origin exists.",
+   "scope": "FX instruments only: BTCUSD/ETHUSD trade every calendar date on this venue, so both clocks coincide there (measured above). EURUSD/GBPUSD/USDJPY/XAUUSD lose trading-day life whenever the FX weekend falls inside the 5-day window.",
+   "verdict": "FAIL"
+  },
+  "window_sensitivity": {
+   "evaluated_at_utc": "2026-08-03T00:00:00+00:00",
+   "identical_across_windows": true,
+   "note": "Recorded, not gated: bias/POI/opportunity are window-dependent by construction (the host supplies fixed rolling counts). C15/C16 report the same effect as separate short_d1 and full_d1 lanes; a shorter D1/H1 window can change which POI or opportunity is selected.",
+   "rows": [
+    {
+     "bars": {
+      "D1": 30,
+      "H1": 120,
+      "M5": 300
+     },
+     "bias": "LONG",
+     "d1_context": "LONG",
+     "opportunity": null,
+     "poi_id": "EURUSD:H1:FVG:LONG:2026-07-31T20:00:00+00:00",
+     "state": "NEAR_POI",
+     "window": "host_D1_30_H1_200_M5_300"
+    },
+    {
+     "bars": {
+      "D1": 15,
+      "H1": 100,
+      "M5": 150
+     },
+     "bias": "LONG",
+     "d1_context": "LONG",
+     "opportunity": null,
+     "poi_id": "EURUSD:H1:FVG:LONG:2026-07-31T20:00:00+00:00",
+     "state": "NEAR_POI",
+     "window": "half_D1_15_H1_100_M5_150"
+    },
+    {
+     "bars": {
+      "D1": 30,
+      "H1": 120,
+      "M5": 604
+     },
+     "bias": "LONG",
+     "d1_context": "LONG",
+     "opportunity": null,
+     "poi_id": "EURUSD:H1:FVG:LONG:2026-07-31T20:00:00+00:00",
+     "state": "NEAR_POI",
+     "window": "all_available_bars"
+    }
+   ],
+   "symbol": "EURUSD",
+   "verdict": "PASS"
+  }
+ },
+ "property_verdicts": {
+  "archive_only_exactly_once": "PASS",
+  "calendar_and_sessions": "PASS",
+  "candidate_rule_change_diff": "PASS",
+  "causality": "PASS",
+  "fail_closed_symbol_metadata": "PASS",
+  "gate_integrity": "PASS",
+  "harness_regressions": "PASS",
+  "no_transport_boundary": "PASS",
+  "phase_b_classification": "PASS",
+  "poi_age_semantics": "FAIL",
+  "window_sensitivity": "PASS"
+ },
+ "reproducibility": "byte-reproducible: no wall-clock field, no run id, no hostname; fixed rng seed 20261013. The only run-dependent value is identity.code_sha = `git rev-parse HEAD` resolved at import (v1_tickets.code_identity), so two runs on the same commit are byte-identical; every other hash is over working-tree bytes actually exercised.",
+ "schema": "AGP_C15_LSMC_V110_LOGIC_AUDIT_V1",
+ "scope_matrix": {
+  "candidate_scopes": [
+   "_candidate_1_1_2"
+  ],
+  "economics": "no scope is EDGE_VERIFIED; economic_status stays NOT_EVALUATED everywhere",
+  "logic_verified_scopes": [],
+  "not_verified_scopes": [
+   "BTCUSD",
+   "ETHUSD",
+   "EURUSD",
+   "GBPUSD",
+   "USDJPY",
+   "XAUUSD"
+  ],
+  "rule": "LOGIC_VERIFIED requires every required gate (L1-L4, L6) to PASS on evidence covering that symbol and no blocking finding to apply to it; L5 is advisory (OD1011-L5). No scope qualifies today.",
+  "scopes": {
+   "BTCUSD": {
+    "advisory_gates": {
+     "L5": "WARN in every lane: OD1011-L5, no accepted spread/commission evidence and no cost gate in the 1.1.0 alert path (D-LSMC-5)"
+    },
+    "blocking_findings_applying_to_this_scope": [
+     "D-LSMC-1"
+    ],
+    "c10_pip_evidenced": false,
+    "c10_stop_geometry_evaluable": false,
+    "emissions": {
+     "alert_level_mapping_matches_contract": true,
+     "delivery_mode": "ARCHIVE_ONLY",
+     "exactly_once_archive_verified": false,
+     "transport_or_order_path_reachable": false,
+     "undeclared_state_emitted": "REJECTED"
+    },
+    "evidence": [
+     {
+      "cases": 3,
+      "classifications": [
+       "SYNTHETIC"
+      ],
+      "lane": "A_fixture_harness",
+      "states": {
+       "shipped": {
+        "NEAR_POI": 1,
+        "REJECTED": 2
+       },
+       "signal": {
+        "NEAR_POI": 1,
+        "OPPORTUNITY": 2
+       }
+      }
+     },
+     {
+      "classifications": [
+       "VT_RECORDED"
+      ],
+      "lane": "C_crypto_recorded_60d_bounded",
+      "opportunity_scans_signal_lane": 0,
+      "opportunity_stop_reasons": {},
+      "scans": 120,
+      "states": {
+       "shipped": {
+        "DEVELOPING": 102,
+        "NEAR_POI": 18
+       }
+      },
+      "window_utc": [
+       "2026-09-08T21:00:00+00:00",
+       "2026-09-09T06:55:00+00:00"
+      ]
+     },
+     {
+      "all_counts_and_hashes_rederive": true,
+      "artifact": "artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c16_2026-10-12/lsmc_btcusd_vt_recorded_60d.json",
+      "committed_verdict": "NOT_VERIFIED",
+      "lane": "C_committed_c16_rederivation",
+      "note": "60-day replay evidence re-derived from its own bytes, not re-run"
+     }
+    ],
+    "gate_status_counts": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    },
+    "gates": {
+     "L1": "PASS",
+     "L2": "PASS",
+     "L3": "PASS",
+     "L4": "PASS",
+     "L5": "WARN",
+     "L6": "PASS"
+    },
+    "l4_note": null,
+    "poi_age_unit_divergent": false,
+    "required_gate_note": "stricter than the shipped gate on purpose: v1_tickets.logic_gate.BLOCKING is (L1, L2, L3, L4) and L5 + L6 are advisory there. This matrix additionally requires L6 to PASS, and keeps L5 advisory per OD1011-L5.",
+    "required_gates": [
+     "L1",
+     "L2",
+     "L3",
+     "L4",
+     "L6"
+    ],
+    "required_gates_pass": true,
+    "scope_verdict": "NOT_VERIFIED",
+    "scope_verdict_reasons": [
+     "D-LSMC-1: C10 stop geometry is evaluable on 2 of 6 instruments; the other 4 fail closed"
+    ],
+    "strategy_version": "1.1.0"
+   },
+   "ETHUSD": {
+    "advisory_gates": {
+     "L5": "WARN in every lane: OD1011-L5, no accepted spread/commission evidence and no cost gate in the 1.1.0 alert path (D-LSMC-5)"
+    },
+    "blocking_findings_applying_to_this_scope": [
+     "D-LSMC-1"
+    ],
+    "c10_pip_evidenced": false,
+    "c10_stop_geometry_evaluable": false,
+    "emissions": {
+     "alert_level_mapping_matches_contract": true,
+     "delivery_mode": "ARCHIVE_ONLY",
+     "exactly_once_archive_verified": false,
+     "transport_or_order_path_reachable": false,
+     "undeclared_state_emitted": "REJECTED"
+    },
+    "evidence": [
+     {
+      "cases": 3,
+      "classifications": [
+       "SYNTHETIC"
+      ],
+      "lane": "A_fixture_harness",
+      "states": {
+       "shipped": {
+        "NEAR_POI": 1,
+        "REJECTED": 2
+       },
+       "signal": {
+        "NEAR_POI": 1,
+        "OPPORTUNITY": 2
+       }
+      }
+     },
+     {
+      "classifications": [
+       "VT_RECORDED"
+      ],
+      "lane": "C_crypto_recorded_60d_bounded",
+      "opportunity_scans_signal_lane": 13,
+      "opportunity_stop_reasons": {
+       "C10_PIP_SIZE_NOT_EVIDENCED": 13
+      },
+      "scans": 120,
+      "states": {
+       "shipped": {
+        "DEVELOPING": 24,
+        "NEAR_POI": 83,
+        "REJECTED": 13
+       }
+      },
+      "window_utc": [
+       "2026-09-08T21:00:00+00:00",
+       "2026-09-09T06:55:00+00:00"
+      ]
+     },
+     {
+      "all_counts_and_hashes_rederive": true,
+      "artifact": "artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c16_2026-10-12/lsmc_ethusd_vt_recorded_60d.json",
+      "committed_verdict": "NOT_VERIFIED",
+      "lane": "C_committed_c16_rederivation",
+      "note": "60-day replay evidence re-derived from its own bytes, not re-run"
+     }
+    ],
+    "gate_status_counts": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    },
+    "gates": {
+     "L1": "PASS",
+     "L2": "PASS",
+     "L3": "PASS",
+     "L4": "PASS",
+     "L5": "WARN",
+     "L6": "PASS"
+    },
+    "l4_note": null,
+    "poi_age_unit_divergent": false,
+    "required_gate_note": "stricter than the shipped gate on purpose: v1_tickets.logic_gate.BLOCKING is (L1, L2, L3, L4) and L5 + L6 are advisory there. This matrix additionally requires L6 to PASS, and keeps L5 advisory per OD1011-L5.",
+    "required_gates": [
+     "L1",
+     "L2",
+     "L3",
+     "L4",
+     "L6"
+    ],
+    "required_gates_pass": true,
+    "scope_verdict": "NOT_VERIFIED",
+    "scope_verdict_reasons": [
+     "D-LSMC-1: C10 stop geometry is evaluable on 2 of 6 instruments; the other 4 fail closed"
+    ],
+    "strategy_version": "1.1.0"
+   },
+   "EURUSD": {
+    "advisory_gates": {
+     "L5": "WARN in every lane: OD1011-L5, no accepted spread/commission evidence and no cost gate in the 1.1.0 alert path (D-LSMC-5)"
+    },
+    "blocking_findings_applying_to_this_scope": [
+     "D-LSMC-6"
+    ],
+    "c10_pip_evidenced": true,
+    "c10_stop_geometry_evaluable": true,
+    "emissions": {
+     "alert_level_mapping_matches_contract": true,
+     "delivery_mode": "ARCHIVE_ONLY",
+     "exactly_once_archive_verified": true,
+     "transport_or_order_path_reachable": false,
+     "undeclared_state_emitted": "REJECTED"
+    },
+    "evidence": [
+     {
+      "cases": 3,
+      "classifications": [
+       "HOST_CAPTURED",
+       "SYNTHETIC"
+      ],
+      "lane": "A_fixture_harness",
+      "states": {
+       "shipped": {
+        "NEAR_POI": 2,
+        "REJECTED": 1
+       },
+       "signal": {
+        "NEAR_POI": 2,
+        "OPPORTUNITY": 1
+       }
+      }
+     },
+     {
+      "classifications": [
+       "HOST_CAPTURED"
+      ],
+      "distinct_opportunities": 3,
+      "l4_fail_equals_market_closed": true,
+      "lane": "B_eurusd_host_captured_replay",
+      "opportunities_with_c10_stop": 2,
+      "positive_risk_geometry": {
+       "candidate_rr_status": "rules.reward_risk.minimum_rr = 2.0, PENDING_OWNER_CONFIRM in 1.1.1/1.1.2; the frozen 1.1.0 contract declares no RR minimum, so this is measured, not gated",
+       "evaluable": 1,
+       "not_evaluable": 2,
+       "opportunities": 3,
+       "opportunities_meeting_candidate_minimum_rr_2_0": 0,
+       "reward_risk_values": [
+        0.990291
+       ],
+       "verdict": "PASS"
+      },
+      "scans": 575,
+      "states": {
+       "shipped": {
+        "DEVELOPING": 396,
+        "IDLE": 5,
+        "MARKET_CLOSED": 1,
+        "NEAR_POI": 139,
+        "REJECTED": 34
+       }
+      },
+      "window_utc": [
+       "2026-07-30T00:10:00+00:00",
+       "2026-08-03T00:00:00+00:00"
+      ]
+     }
+    ],
+    "gate_status_counts": {
+     "L1": {
+      "PASS": 578
+     },
+     "L2": {
+      "PASS": 578
+     },
+     "L3": {
+      "PASS": 578
+     },
+     "L4": {
+      "FAIL": 1,
+      "PASS": 577
+     },
+     "L5": {
+      "WARN": 578
+     },
+     "L6": {
+      "PASS": 578
+     }
+    },
+    "gates": {
+     "L1": "PASS",
+     "L2": "PASS",
+     "L3": "PASS",
+     "L4": "FAIL",
+     "L5": "WARN",
+     "L6": "PASS"
+    },
+    "l4_note": "L4 FAIL on 1 MARKET_CLOSED scan(s) only: a weekend snapshot is not an evaluable trading instant, which is what L4 asserts",
+    "poi_age_unit_divergent": true,
+    "required_gate_note": "stricter than the shipped gate on purpose: v1_tickets.logic_gate.BLOCKING is (L1, L2, L3, L4) and L5 + L6 are advisory there. This matrix additionally requires L6 to PASS, and keeps L5 advisory per OD1011-L5.",
+    "required_gates": [
+     "L1",
+     "L2",
+     "L3",
+     "L4",
+     "L6"
+    ],
+    "required_gates_pass": false,
+    "scope_verdict": "NOT_VERIFIED",
+    "scope_verdict_reasons": [
+     "D-LSMC-6: POI max age is declared in TRADING days and implemented in CALENDAR NY-17:00 dates",
+     "required gates not all PASS: L4"
+    ],
+    "strategy_version": "1.1.0"
+   },
+   "GBPUSD": {
+    "advisory_gates": {
+     "L5": "WARN in every lane: OD1011-L5, no accepted spread/commission evidence and no cost gate in the 1.1.0 alert path (D-LSMC-5)"
+    },
+    "blocking_findings_applying_to_this_scope": [
+     "D-LSMC-6"
+    ],
+    "c10_pip_evidenced": true,
+    "c10_stop_geometry_evaluable": true,
+    "emissions": {
+     "alert_level_mapping_matches_contract": true,
+     "delivery_mode": "ARCHIVE_ONLY",
+     "exactly_once_archive_verified": false,
+     "transport_or_order_path_reachable": false,
+     "undeclared_state_emitted": "REJECTED"
+    },
+    "evidence": [
+     {
+      "cases": 3,
+      "classifications": [
+       "MIXED_HOST_CONTEXT_AND_SYNTHETIC",
+       "SYNTHETIC"
+      ],
+      "lane": "A_fixture_harness",
+      "states": {
+       "shipped": {
+        "DEVELOPING": 1,
+        "NEAR_POI": 1,
+        "REJECTED": 1
+       },
+       "signal": {
+        "DEVELOPING": 1,
+        "NEAR_POI": 1,
+        "OPPORTUNITY": 1
+       }
+      }
+     }
+    ],
+    "gate_status_counts": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    },
+    "gates": {
+     "L1": "PASS",
+     "L2": "PASS",
+     "L3": "PASS",
+     "L4": "PASS",
+     "L5": "WARN",
+     "L6": "PASS"
+    },
+    "l4_note": null,
+    "poi_age_unit_divergent": true,
+    "required_gate_note": "stricter than the shipped gate on purpose: v1_tickets.logic_gate.BLOCKING is (L1, L2, L3, L4) and L5 + L6 are advisory there. This matrix additionally requires L6 to PASS, and keeps L5 advisory per OD1011-L5.",
+    "required_gates": [
+     "L1",
+     "L2",
+     "L3",
+     "L4",
+     "L6"
+    ],
+    "required_gates_pass": true,
+    "scope_verdict": "NOT_VERIFIED",
+    "scope_verdict_reasons": [
+     "D-LSMC-6: POI max age is declared in TRADING days and implemented in CALENDAR NY-17:00 dates"
+    ],
+    "strategy_version": "1.1.0"
+   },
+   "USDJPY": {
+    "advisory_gates": {
+     "L5": "WARN in every lane: OD1011-L5, no accepted spread/commission evidence and no cost gate in the 1.1.0 alert path (D-LSMC-5)"
+    },
+    "blocking_findings_applying_to_this_scope": [
+     "D-LSMC-6",
+     "D-LSMC-1"
+    ],
+    "c10_pip_evidenced": false,
+    "c10_stop_geometry_evaluable": false,
+    "emissions": {
+     "alert_level_mapping_matches_contract": true,
+     "delivery_mode": "ARCHIVE_ONLY",
+     "exactly_once_archive_verified": false,
+     "transport_or_order_path_reachable": false,
+     "undeclared_state_emitted": "REJECTED"
+    },
+    "evidence": [
+     {
+      "cases": 3,
+      "classifications": [
+       "SYNTHETIC"
+      ],
+      "lane": "A_fixture_harness",
+      "states": {
+       "shipped": {
+        "NEAR_POI": 1,
+        "REJECTED": 2
+       },
+       "signal": {
+        "NEAR_POI": 1,
+        "OPPORTUNITY": 2
+       }
+      }
+     }
+    ],
+    "gate_status_counts": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    },
+    "gates": {
+     "L1": "PASS",
+     "L2": "PASS",
+     "L3": "PASS",
+     "L4": "PASS",
+     "L5": "WARN",
+     "L6": "PASS"
+    },
+    "l4_note": null,
+    "poi_age_unit_divergent": true,
+    "required_gate_note": "stricter than the shipped gate on purpose: v1_tickets.logic_gate.BLOCKING is (L1, L2, L3, L4) and L5 + L6 are advisory there. This matrix additionally requires L6 to PASS, and keeps L5 advisory per OD1011-L5.",
+    "required_gates": [
+     "L1",
+     "L2",
+     "L3",
+     "L4",
+     "L6"
+    ],
+    "required_gates_pass": true,
+    "scope_verdict": "NOT_VERIFIED",
+    "scope_verdict_reasons": [
+     "D-LSMC-6: POI max age is declared in TRADING days and implemented in CALENDAR NY-17:00 dates",
+     "D-LSMC-1: C10 stop geometry is evaluable on 2 of 6 instruments; the other 4 fail closed"
+    ],
+    "strategy_version": "1.1.0"
+   },
+   "XAUUSD": {
+    "advisory_gates": {
+     "L5": "WARN in every lane: OD1011-L5, no accepted spread/commission evidence and no cost gate in the 1.1.0 alert path (D-LSMC-5)"
+    },
+    "blocking_findings_applying_to_this_scope": [
+     "D-LSMC-6",
+     "D-LSMC-1"
+    ],
+    "c10_pip_evidenced": false,
+    "c10_stop_geometry_evaluable": false,
+    "emissions": {
+     "alert_level_mapping_matches_contract": true,
+     "delivery_mode": "ARCHIVE_ONLY",
+     "exactly_once_archive_verified": false,
+     "transport_or_order_path_reachable": false,
+     "undeclared_state_emitted": "REJECTED"
+    },
+    "evidence": [
+     {
+      "cases": 3,
+      "classifications": [
+       "SYNTHETIC"
+      ],
+      "lane": "A_fixture_harness",
+      "states": {
+       "shipped": {
+        "NEAR_POI": 1,
+        "REJECTED": 2
+       },
+       "signal": {
+        "NEAR_POI": 1,
+        "OPPORTUNITY": 2
+       }
+      }
+     }
+    ],
+    "gate_status_counts": {
+     "L1": {
+      "PASS": 3
+     },
+     "L2": {
+      "PASS": 3
+     },
+     "L3": {
+      "PASS": 3
+     },
+     "L4": {
+      "PASS": 3
+     },
+     "L5": {
+      "WARN": 3
+     },
+     "L6": {
+      "PASS": 3
+     }
+    },
+    "gates": {
+     "L1": "PASS",
+     "L2": "PASS",
+     "L3": "PASS",
+     "L4": "PASS",
+     "L5": "WARN",
+     "L6": "PASS"
+    },
+    "l4_note": null,
+    "poi_age_unit_divergent": true,
+    "required_gate_note": "stricter than the shipped gate on purpose: v1_tickets.logic_gate.BLOCKING is (L1, L2, L3, L4) and L5 + L6 are advisory there. This matrix additionally requires L6 to PASS, and keeps L5 advisory per OD1011-L5.",
+    "required_gates": [
+     "L1",
+     "L2",
+     "L3",
+     "L4",
+     "L6"
+    ],
+    "required_gates_pass": true,
+    "scope_verdict": "NOT_VERIFIED",
+    "scope_verdict_reasons": [
+     "D-LSMC-6: POI max age is declared in TRADING days and implemented in CALENDAR NY-17:00 dates",
+     "D-LSMC-1: C10 stop geometry is evaluable on 2 of 6 instruments; the other 4 fail closed"
+    ],
+    "strategy_version": "1.1.0"
+   },
+   "_candidate_1_1_2": {
+    "authority": {
+     "active": false,
+     "demo_authorized": false,
+     "economic_status": "NOT_EVALUATED",
+     "live_authorized": false,
+     "proposal_generation_authorized": false,
+     "registered": false
+    },
+    "contract": "strategies/ST_LARGE_SMC_V1_1_1_2.yaml",
+    "gates": {
+     "L1": "NOT_APPLICABLE",
+     "L2": "NOT_APPLICABLE",
+     "L3": "NOT_APPLICABLE",
+     "L4": "NOT_APPLICABLE",
+     "L5": "NOT_APPLICABLE",
+     "L6": "NOT_APPLICABLE"
+    },
+    "implementation": "SPEC_ONLY_NOT_WIRED",
+    "rule_change_diff": "see the candidate contract's candidate_rule_changes block",
+    "scope_verdict": "NOT_VERIFIED",
+    "scope_verdict_reasons": [
+     "no runtime: the candidate is specification-only and is not wired into src/large_smc_watch",
+     "1.1.0 evidence must not be reused as proof for a changed candidate (AGP-C17 Phase C)",
+     "the D-LSMC-6 rule-change diff it carries needs owner confirmation before any engine change"
+    ],
+    "status": "CANDIDATE_PENDING_OWNER_CONFIRM",
+    "strategy_version": "1.1.2"
+   }
+  }
+ },
+ "strategy": "ST_LARGE_SMC_V1@1.1.0",
+ "verdict": "NOT_VERIFIED",
+ "verdict_reasons": [
+  "D-LSMC-6: POI max age is declared in TRADING days and implemented in CALENDAR NY-17:00 dates",
+  "D-LSMC-1: C10 stop geometry is evaluable on 2 of 6 instruments; the other 4 fail closed"
+ ],
+ "verdict_semantics": "LOGIC verification of rule conformance, causality and internal consistency only. Not economic edge, not READY, not demo/live authority; all remain false."
+}

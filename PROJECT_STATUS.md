@@ -8,14 +8,46 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
-ASW v1.1.3 engine (2026-10-13, offline evidence only, nothing registered or admitted):
-- **What:** D-ASW-1/D-ASW-2 are implemented behind v1.1.3 only, in `strategy_engine/append_only.py`
-  (owner choice: BY_EMISSION_TIME). The v1.1.2 S1 identity is unchanged.
-- **Replay:** on 60 recorded weekdays, EURUSD×ASIAN_LONDON L3 is now PASS (0/25 mutations). L2–L6 pass
-  for EURUSD and GBPUSD in both sessions.
-- **Blocked:** L1 waits for owner registration of identity `628f6100…`. USDJPY and XAUUSD stay
-  data-blocked.
-- **Evidence:** `docs/status/AGP_C17_ASW_V113_ENGINE_VERIFICATION_2026-10-13.md`.
+Large-SMC v1.1.0 independent logic audit (2026-10-13, off-host, committed inputs only): a new C15-LSMC
+follow-up driver (`scripts/lsmc_v110_logic_audit.py`, four lanes + eleven property checks, byte-reproducible,
+50 s / 120 MB peak, resource class R1, byte-identical across three runs) returns **`NOT_VERIFIED`** for rule conformance, causality and
+internal consistency, while the shipped 18-case harness returns **`LOGIC_VERIFIED`** (18/18 cases, L1–L4 + L6
+PASS, L5 WARN). Two blocking findings, both owner decisions: **D-LSMC-6** — the contract declares POI max age
+in *trading* days (`rules.poi.max_age_trading_days: 5`, both frozen specs agree) while `watch.expires_at`
+counts six *calendar* NY-17:00 dates, so FX POIs lose one to two trading days of life whenever a weekend falls
+inside the window (600 of 723 origins diverge on the committed EURUSD H1 export; the dead `_poi_age_days`
+helper implements the declared unit and has no callers; crypto is unaffected because it trades every calendar
+date), and **D-LSMC-1** — C10 stop geometry remains unevaluable on USDJPY/XAUUSD/BTCUSD/ETHUSD. Four
+verification-layer defects were found and three are fixed in the same PR: the delivery gate had blanked every
+opportunity rule in the harness since 2026-10-10 (156 check verdicts silently NOT_APPLICABLE behind green
+L2/L3/L6 — now a detection signal lane, a new `L2.delivery_gate_preserves_detection` check and
+`check_coverage`), the only HOST_CAPTURED FX fixture was evaluated 68 days after its own data inside the FX
+weekend close (one timestamp corrected, all 754 bars byte-identical, now guarded fail-closed by
+`tests/_lsmc_v111_fixtures.check_decision_time`), and a gate PASS on every scan was being read as coverage.
+Lane B adds the first FX-side C10/C11 evidence in the repository: 575 rolling EURUSD scans, three distinct
+opportunities, two computed stops exactly 1.5 pips beyond the sweep extreme passing `L3.stop_side` /
+`L3.stop_beyond_sweep`, one SHORT failing closed with `MISSING_SPREAD`. No frozen rule, contract byte,
+threshold, registry status, identity hash, READY, demo or live surface changed; the registry `engine_sha256`
+pin was deliberately left stale (D-LSMC-3). Logic verification is not edge verification and grants no
+execution authority.
+
+The audit was completed the same day under **AGP-C17-LSMC-LOGIC-COMPLETION-R1**: all eight open `D-LSMC-*`
+entries are now classified against the five mission classes (IMPLEMENTATION 1, METADATA 2, DATA 1,
+VERIFICATION_HARNESS 4) and routed; a per-symbol L1–L6 scope matrix records **`NOT_VERIFIED` for all six
+instruments** (a blocking finding applies to every one, and EURUSD additionally fails L4 closed on its single
+`MARKET_CLOSED` scan); and D-LSMC-6, the only genuine strategy defect, is prepared as a new
+specification-only candidate `strategies/ST_LARGE_SMC_V1_1_1_2.yaml` (`SPEC_ONLY_NOT_WIRED`, unregistered,
+authority-free) whose declared 15-path rule-change diff is recomputed and compared on every run, so undeclared
+rule drift fails the audit. `property_checks.gate_integrity` computes — rather than asserts — that no fix in
+this work hides a failure: the blocking gate set is unchanged, L5 is still emitted as `WARN` 1,779× and never
+as PASS or FAIL, coverage grew (541 → 542 checks evaluated, 0 never-exercised), emissions survive in every
+lane, every emitted transition is archived exactly once, and the frozen contract and engine bytes are
+re-hashed and unchanged. Evidence:
+[`delivery record`](docs/status/AGP_C17_LSMC_LOGIC_COMPLETION_R1_2026-10-13.md),
+[`audit report`](docs/status/AGP_C15_LSMC_V110_LOGIC_AUDIT_2026-10-13.md), machine report
+`artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_0/c15_lsmc_audit_2026-10-13/lsmc_v110_logic_audit.json`,
+register `docs/status/c16_2026-10-12/C16_DEFECT_REGISTER.md` (D-LSMC-6 … D-LSMC-10), regression tests
+`tests/test_lsmc_v110_logic_audit.py` (21 tests).
 
 Scope-status Telegram reports (2026-10-12, unit-tested only, not host-verified):
 - **What it does:** every relevant scope of the three strategy families is now reported to Telegram with its verification status, and every route is `REPORT_ONLY` (OD1012-ROUTING follow-up (d)).
@@ -286,7 +318,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `7223b356a226c697aecea5937a175cd0b6f4b3642a168c18e73b79838342bfcd`.
+inputs_sha256: `a286b0c42a2f4b1dd66193c06617723f815f4822080cb39a254b3d4eb61e49d9`.
 <!-- [[[end]]] -->
 
 ### Objective

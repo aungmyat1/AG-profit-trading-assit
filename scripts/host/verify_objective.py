@@ -172,11 +172,13 @@ def verify(root: Path = REPO_ROOT) -> dict[str, Any]:
                         and "resolve_immediate_scope(root, sender=\"canonical\")" in canonical_src)
     checks.append(_check(
         "telegram_report_scope",
-        policy_enabled == ("TICKET_READY", "LSMC_OPPORTUNITY")
+        # OD1013-C18-REPORT-SCOPE adds the REPORT_ONLY observation scopes (canonical sender only).
+        policy_enabled == ("TICKET_READY", "LSMC_OPPORTUNITY", "REPORT_CANDIDATE", "REPORT_BLOCKED",
+                           "REPORT_WATCH")
         and policy_disabled.get("WATCH_READY") == "PENDING_OWNER_DECISION C16"
         and policy_disabled.get("INFO_ONLY_*") == "PENDING_OWNER_DECISION C16"
         and set(legacy_scope["effective"]).issubset(policy_enabled) and legacy_scope["error"] is None
-        and probe_scope["effective"] == policy_enabled and probe_scope["error"] is None
+        and probe_scope["effective"] == ("TICKET_READY", "LSMC_OPPORTUNITY") and probe_scope["error"] is None
         and set(canonical_scope).issubset(policy_enabled) and canonical_config.scope_error is None
         and canonical_send_ok
         and scoped == {"TICKET": ("READY",), "LSMC": ("OPPORTUNITY",)}

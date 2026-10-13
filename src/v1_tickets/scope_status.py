@@ -175,3 +175,71 @@ def family_statuses(family: str, session: str, *,
             registry = {}
     return [scope_status(family, symbol, session, registry=registry).as_dict()
             for symbol in FAMILIES[family]["pairs"]]
+
+
+# ------------------------------------------------------------------ per-ticket scope (AGP-C18-R2)
+
+SCOPE_NOT_DECLARED = "SCOPE_NOT_DECLARED"
+VERSION_NOT_IN_SCOPE = "VERSION_NOT_IN_SCOPE"
+DIRECTION_NOT_IN_SCOPE = "DIRECTION_NOT_IN_SCOPE"
+WINDOW_NOT_IN_SCOPE = "WINDOW_NOT_IN_SCOPE"
+
+_FAMILY_BY_STRATEGY = {spec["strategy_id"]: family for family, spec in FAMILIES.items()}
+# Ticket cycle labels -> scope session labels (CCFD tickets carry the config window name).
+_SESSION_ALIASES = {CRYPTO_CFD: {"WEEKDAY": CRYPTO_DAY, "WEEKEND": CRYPTO_WEEKEND}}
+
+
+def _session_for(family: str, session: Any) -> Optional[str]:
+    text = str(session or "")
+    if family == LARGE_SMC:
+        return WATCH if text == WATCH or text.startswith("LSMC_WATCH") else None
+    text = _SESSION_ALIASES.get(family, {}).get(text, text)
+    return text if text in FAMILIES[family]["sessions"] else None
+
+
+def _recorded_identity(family: str, strategy_id: str, version: str, registry: Dict[str, Any]) -> Optional[str]:
+    entry = registry.get(strategy_id) if isinstance(registry, dict) else None
+    if not isinstance(entry, dict):
+        return None
+    if family == LARGE_SMC:
+        return (entry.get("detection_logic_verification") or {}).get("identity")
+    candidate = (entry.get("candidate_versions") or {}).get(version) or {}
+    return candidate.get("logic_verified_identity") if isinstance(candidate, dict) else None
+
+
+def resolve_ticket_scope(strategy_id: Any, strategy_version: Any, symbol: Any, session: Any,
+                         direction: Any = None, *, registry: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Exact per-ticket scope status: strategy id AND version, symbol, session and (where the registry
+    records it) direction. A version, symbol or session outside the pinned scope is UNVERIFIED -- the
+    family's status is never borrowed. The route is always REPORT_ONLY; this never grants authority."""
+    family = _FAMILY_BY_STRATEGY.get(str(strategy_id))
+    out = {"scope_family": family, "scope_verification_status": UNVERIFIED, "scope_route": REPORT_ONLY,
+           "scope_reason": SCOPE_NOT_DECLARED, "verification_identity": None, "scope_detail": ""}
+    if family is None:
+        return out
+    spec = FAMILIES[family]
+    scope_session = _session_for(family, session)
+    if symbol not in spec["pairs"] or scope_session is None:
+        return out
+    if registry is None:
+        try:
+            from v1_tickets.authority import load_registry
+            registry = load_registry()
+        except Exception:  # noqa: BLE001 -- fails closed below
+            registry = {}
+    if str(strategy_version) != spec["strategy_version"]:
+        out["scope_reason"] = f"{VERSION_NOT_IN_SCOPE}:{strategy_version}"
+        return out
+    status = scope_status(family, symbol, scope_session, registry=registry)
+    out.update(scope_verification_status=status.verification_status, scope_reason=status.route_reason,
+               scope_detail=status.detail,
+               verification_identity=_recorded_identity(family, spec["strategy_id"], spec["strategy_version"],
+                                                        registry))
+    if family == CRYPTO_CFD and status.verification_status in (LOGIC_VERIFIED, STALE_IDENTITY):
+        branches = status.detail.split("=", 1)[1].split(",") if "=" in status.detail else []
+        if direction is not None and direction not in branches:
+            out.update(scope_verification_status=UNVERIFIED, scope_reason=DIRECTION_NOT_IN_SCOPE)
+        elif status.verification_status == LOGIC_VERIFIED:
+            # The registry records no weekday/weekend window for CCFD scopes: never assume one.
+            out.update(scope_verification_status=UNVERIFIED, scope_reason=WINDOW_NOT_IN_SCOPE)
+    return out

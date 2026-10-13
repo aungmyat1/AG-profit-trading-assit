@@ -442,6 +442,24 @@ def host_fetch(mt5):
     return fetch
 
 
+def host_quote_observed(mt5):
+    """quote(broker_symbol) -> (bid, ask, observed_utc) or None. Read-only. The tick time is converted with
+    the same owner-stated server-time rule as host_fetch; an ambiguous/skipped DST hour or a missing tick is
+    None (the caller's quote-freshness gate then fails closed) -- the evaluation time is never substituted."""
+    from host_evidence.symbol_metadata import DstHourError, server_time_to_utc
+
+    def quote(symbol: str):
+        tick = call_with_timeout(mt5.symbol_info_tick, symbol)
+        if tick is None or not getattr(tick, "bid", 0) or not getattr(tick, "ask", 0) or not getattr(tick, "time", 0):
+            return None
+        try:
+            observed = server_time_to_utc(_mt5_server_wall(int(tick.time)))
+        except (DstHourError, TypeError, ValueError, OverflowError, OSError):
+            return None
+        return float(tick.bid), float(tick.ask), observed
+    return quote
+
+
 def host_quote(mt5):
     """quote(broker_symbol) -> (bid, ask) from symbol_info_tick, or None. Read-only."""
     def quote(symbol: str):
