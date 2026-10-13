@@ -303,6 +303,7 @@ def _report_ticket_lines(c, sym, direction, scope, ts, dist):
                 label = f" ({_ASW_LEGS[key]})" if asw else ""
                 lines.append(f"target leg {leg}{label}: {prices[key]}  = {_r(c, r_key)}")
         lines += _sizing_lines(c)
+        lines += [f"guard: {v}" for v in c.get("guard_verdicts") or []]      # OD1014-FAST D4
         lines.append(f"data source: {c.get('venue') or 'n/a'}")
         lines.append(f"VALID UNTIL {ts(c.get('expires_at'))} -- STALE after; re-check before acting.")
     elif c.get("report_class") == "BLOCKED":
@@ -826,7 +827,18 @@ class Sender:
             return "summary_only"
         if REPORT_SCOPES[report_class] not in self.config.immediate_scopes:
             return "summary_only"
-        return self._send("report", report_identity(canonical), report_class, render_report(canonical))
+        identity = report_identity(canonical)
+        if identity == canonical.get("candidate_signal_id") and self._signal_already_reported(identity, report_class):
+            return "duplicate"
+        return self._send("report", identity, report_class, render_report(canonical))
+
+    def _signal_already_reported(self, identity, report_class):
+        """One message per signal (OD1014-FAST D4): once a per-signal report was sent or claimed under any
+        class (e.g. a CANDIDATE with a spread verdict), the same signal's later re-report under another class
+        (e.g. BLOCKED STALE next cycle) is a duplicate, never a second message. Failed attempts don't count."""
+        return any(row.get("status") != report_class
+                   and row.get("state") in DELIVERED_STATES | {STATE_PENDING, STATE_UNCERTAIN}
+                   for row in self.delivery_attempts("report", [identity]))
 
     def send_session_summary(self, summary):
         schema = summary.get("schema")

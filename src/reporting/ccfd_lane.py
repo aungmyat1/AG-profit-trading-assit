@@ -43,6 +43,8 @@ def _class_for(row: Dict[str, Any]) -> str:
     priced = row.get("direction") and row.get("entry") is not None and row.get("stop_loss") is not None
     if decision == "READY" and priced:
         return "CANDIDATE"
+    if guard_verdicts(row):
+        return "CANDIDATE"
     if unverified_opportunity(row):
         return "CANDIDATE"
     if row.get("cycle") == "OUTSIDE_WINDOW":
@@ -50,18 +52,49 @@ def _class_for(row: Dict[str, Any]) -> str:
     return "BLOCKED"
 
 
+GUARD_REASONS = frozenset({"SPREAD_TOO_WIDE", "COST_TOO_HIGH"})
+
+
+def guard_verdicts(row: Dict[str, Any]) -> List[str]:
+    """OD1014-FAST D4: verdict lines for a priced row blocked only by spread/cost guards (plus, per OD1014, the
+    unverified logic status). Any other reason, or a guard without its measured value, -> [] (stays BLOCKED)."""
+    reasons = set(row.get("reason_codes") or [])
+    if row.get("decision") != "BLOCKED" or not reasons & GUARD_REASONS or not _complete_plan(row):
+        return []
+    if reasons - GUARD_REASONS - {UNVERIFIED_ONLY}:
+        return []
+    from v1_tickets.crypto_cfd_policy import load_ticket_policy
+    policy = load_ticket_policy()
+    out = []
+    if "SPREAD_TOO_WIDE" in reasons:
+        pct, limit = row.get("spread_pct_of_stop"), policy.get("spread_block_pct")
+        if not isinstance(pct, (int, float)) or limit is None:
+            return []
+        out.append(f"spread {pct:.0f}% of risk > {limit:g}% -- NOT ACTIONABLE")
+    if "COST_TOO_HIGH" in reasons:
+        cost, limit = row.get("cost_in_R"), policy.get("cost_block_R")
+        if not isinstance(cost, (int, float)) or limit is None:
+            return []
+        out.append(f"cost {cost:.2f}R >= {limit:g}R -- NOT ACTIONABLE")
+    return out
+
+
 def observe_row(row: Dict[str, Any], *, now: dt.datetime, policy=None) -> Dict[str, Any]:
     report_class = _class_for(row)
     raw = dict(row)
     if report_class in ("BLOCKED", "OUT_OF_SESSION") and raw.get("decision") == "READY":
         raw["decision"] = "BLOCKED"          # a READY without a complete priced plan is never a candidate
-    unverified = report_class == "CANDIDATE" and unverified_opportunity(row)
+    verdicts = guard_verdicts(row) if report_class == "CANDIDATE" else []
+    unverified = report_class == "CANDIDATE" and (unverified_opportunity(row) or bool(verdicts))
     if unverified:
         raw["decision"] = "SHADOW_INFO_ONLY"  # observation only; the source row stays BLOCKED in its archive
         raw["reason_code"] = "REPORT_ONLY_OBSERVATION"
     canonical = observational_canonical(raw, now=now, report_class=report_class, policy=policy)
     if unverified:
-        canonical["opportunity_basis"] = "OD1014_UNVERIFIED_NOT_BLOCKED"
+        canonical["opportunity_basis"] = ("OD1014_FAST_D4_GUARD_VERDICT" if verdicts
+                                          else "OD1014_UNVERIFIED_NOT_BLOCKED")
+    if verdicts:
+        canonical["guard_verdicts"] = verdicts
     if canonical.get("report_class") == "CANDIDATE":
         # Registry status of the ticket's own identity (resolve_ticket_scope, version-bound); never borrowed.
         canonical["verification_status"] = canonical.get("scope_verification_status") or "UNVERIFIED"

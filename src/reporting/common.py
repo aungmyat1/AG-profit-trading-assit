@@ -61,6 +61,19 @@ def observational_canonical(raw: Dict[str, Any], *, now: dt.datetime, current_pr
     return canonical
 
 
+def guard_candidate(canonical: Dict[str, Any], verdicts) -> Dict[str, Any]:
+    """OD1014-FAST D4 (report lane only): a complete priced plan that fails only a spread/cost guard is a
+    non-executable CANDIDATE that shows the guard verdict(s), not a price-less BLOCKED. Callers check the plan
+    is complete and that no other reason applies; missing/invalid inputs never reach here."""
+    prices = canonical.get("prices") or {}
+    if (not verdicts or not canonical.get("direction") or prices.get("entry_reference_raw") is None
+            or prices.get("sl_raw") is None or prices.get("tp1_raw") is None):
+        return canonical
+    canonical["report_class"] = "CANDIDATE"
+    canonical["guard_verdicts"] = list(verdicts)
+    return canonical
+
+
 def block(canonical: Dict[str, Any], reason: str) -> Dict[str, Any]:
     """Demote an observation to a BLOCKED diagnostic with an explicit reason (levels kept for audit only;
     the BLOCKED rendering never presents them as a trade). Never swaps or relabels prices."""

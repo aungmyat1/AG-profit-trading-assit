@@ -13,7 +13,13 @@ from typing import Any, Callable, Dict, List, Optional, Sequence
 
 import yaml
 
-from reporting.common import archive_observation, block, observational_canonical
+from reporting.common import (
+    UNACTIONABLE_DECISIONS,
+    archive_observation,
+    block,
+    guard_candidate,
+    observational_canonical,
+)
 from v1_tickets import fx as v1_fx
 
 FAMILY = "session_fx_gold"
@@ -42,7 +48,10 @@ def evaluate_scope(symbol: str, cycle: str, *, now: dt.datetime, day: dt.date,
         raw = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now, reason_code=type(exc).__name__,
                                           detail=str(exc)[:300], decision="DATA_ERROR", data_source=data_source,
                                           strategy_path=STRATEGY_PATH)
-        return observational_canonical(raw, now=now, window_end=trade_end, report_class="DATA_ERROR", policy=policy)
+        canonical = observational_canonical(raw, now=now, window_end=trade_end, report_class="DATA_ERROR",
+                                            policy=policy)
+        canonical["data_error_diagnostics"] = data_error_diagnostics(exc, symbol=symbol, cycle=cycle, now=now)
+        return canonical
     if bundle is None:
         raw = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now, reason_code="NO_CANDLE_DATA",
                                           detail="candle provider returned no data", decision="DATA_ERROR",
@@ -54,7 +63,32 @@ def evaluate_scope(symbol: str, cycle: str, *, now: dt.datetime, day: dt.date,
                                 runtime_scope=False)
     canonical = observational_canonical(raw, now=now, current_price=bundle.current_price, window_end=trade_end,
                                         policy=policy)
+    post = list(bundle.post_session_candles) or list(bundle.session_candles)
+    canonical["last_m15_bar_utc"] = post[-1].time.isoformat() if post else None     # C22-R2 item 3
+    if raw.get("decision") == "SPREAD_TOO_WIDE" and canonical.get("decision") not in UNACTIONABLE_DECISIONS:
+        canonical = guard_candidate(canonical, [spread_verdict(raw)])
     return finalize_candidate(canonical)
+
+
+def spread_verdict(raw: Dict[str, Any]) -> str:
+    """The guard's own numbers (guards.spread_check); the threshold is never restated here."""
+    frac, limit = raw.get("spread_risk_fraction"), raw.get("spread_max_risk_fraction")
+    return f"spread {frac * 100:.0f}% of risk > {limit * 100:.0f}% -- NOT ACTIONABLE"
+
+
+def data_error_diagnostics(exc: BaseException, *, symbol: str, cycle: str, now: dt.datetime) -> Dict[str, Any]:
+    """Machine-readable acquisition failure (C22 item 4): code, detail, broker symbol, requested range, requested
+    vs returned bars, the MT5 last_error already in the adapter's message, and the cycle time. Never a guess:
+    anything the provider did not record is None."""
+    extra = dict(getattr(exc, "diagnostics", None) or {})
+    return {"code": str(getattr(exc, "code", type(exc).__name__)), "detail": str(getattr(exc, "detail", exc))[:300],
+            "symbol": symbol, "cycle": cycle, "cycle_time_utc": now.isoformat(),
+            "broker_symbol": extra.get("broker_symbol"), "requested_range_utc": extra.get("requested_range_utc"),
+            "requested_bars": extra.get("requested_bars"), "returned_bars": extra.get("returned_bars"),
+            "mt5_last_error": extra.get("mt5_last_error"),
+            "last_returned_bar_utc": extra.get("last_returned_bar_utc"),
+            "quote_observed_utc": extra.get("quote_observed_utc"),
+            "evaluation_time_utc": extra.get("evaluation_time_utc")}
 
 
 def finalize_candidate(canonical: Dict[str, Any]) -> Dict[str, Any]:

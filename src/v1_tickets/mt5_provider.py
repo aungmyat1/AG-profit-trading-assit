@@ -9,8 +9,8 @@ import datetime as dt
 import math
 from typing import Any, Mapping, Protocol, Sequence
 
-from mt5 import mt5_candles_readonly as adapter
 from host_evidence.symbol_metadata import server_time_to_utc
+from mt5 import mt5_candles_readonly as adapter
 from v1_tickets.daily_evaluator import CandleBundle
 from v1_tickets.fx import M15, session_windows_utc
 
@@ -49,20 +49,38 @@ class MT5ReadOnlyCandleAdapter:
             raise adapter.CandleAdapterError(adapter.DATA_MISSING, "QUOTE_MISSING") from exc
 
 
+def _diagnosed(exc, broker, start, end, counts):
+    """Attach acquisition diagnostics (OD-C22 item 4) without changing the error or its message."""
+    exc.diagnostics = {"broker_symbol": broker, "requested_range_utc": [start.isoformat(), (end - M15).isoformat()],
+                       "requested_bars": counts[0] if counts else None,
+                       "returned_bars": counts[1] if counts else None,
+                       "mt5_last_error": getattr(exc, "detail", None) if counts is None else None}
+    return exc
+
+
 class MT5CandleProvider:
     def __init__(self, reader: CandleRangeReader, *,
                  quote_snapshot: Mapping[str, tuple[float, float, dt.datetime] | None] | None = None):
         self._reader = reader
         self._quotes = dict(quote_snapshot) if quote_snapshot is not None else None
 
+    def _broker(self, symbol):
+        return (getattr(self._reader, "_symbol_map", None) or {}).get(symbol)
+
     def _window(self, symbol, start, end):
         """Require every requested closed bar, without filling or dropping gaps."""
         if end <= start:
             return []
-        rows = list(self._reader.fetch_range(symbol, "M15", start, end - M15))
+        try:
+            rows = list(self._reader.fetch_range(symbol, "M15", start, end - M15))
+        except adapter.CandleAdapterError as exc:
+            raise _diagnosed(exc, self._broker(symbol), start, end, None) from None
         expected = [start + i * M15 for i in range(int((end - start) / M15))]
         if [row.time for row in rows] != expected or any(row.symbol != symbol for row in rows):
-            raise adapter.CandleAdapterError(adapter.DATA_MISSING, "M15_WINDOW_INCOMPLETE")
+            exc = _diagnosed(adapter.CandleAdapterError(adapter.DATA_MISSING, "M15_WINDOW_INCOMPLETE"),
+                             self._broker(symbol), start, end, (len(expected), len(rows)))
+            exc.diagnostics["last_returned_bar_utc"] = rows[-1].time.isoformat() if rows else None
+            raise exc
         return [row.to_engine_candle() for row in rows]
 
     def __call__(self, symbol, cycle, day, now) -> CandleBundle:
@@ -86,7 +104,11 @@ class MT5CandleProvider:
         bid, ask, observed = quote
         if (not all(math.isfinite(p) and p > 0 for p in (bid, ask)) or ask < bid
                 or observed.tzinfo is None or not dt.timedelta(0) <= now - observed <= M15):
-            raise adapter.CandleAdapterError(adapter.DATA_MISSING, "QUOTE_INVALID_OR_STALE")
+            exc = adapter.CandleAdapterError(adapter.DATA_MISSING, "QUOTE_INVALID_OR_STALE")
+            exc.diagnostics = {"broker_symbol": self._broker(symbol),
+                               "quote_observed_utc": observed.isoformat() if observed.tzinfo else None,
+                               "evaluation_time_utc": now.isoformat()}
+            raise exc
         # Never substitute the last candle close for a current quote. Midpoint is
         # direction-independent; spread is the observed ask-bid, in price units.
         return CandleBundle(reference, count, post,
