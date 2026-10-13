@@ -248,15 +248,27 @@ def test_successor_differs_from_v112_only_in_the_declared_corrections():
 
 
 def test_successor_is_inert_in_every_authority_surface():
-    """Identity-only candidate contract (so logic_identity hashes the v1.1.3 file, not v1.1.1), but no
-    registry entry and no READY/demo/live path (strategy_engine.append_only, AGP-C17)."""
-    from v1_tickets.authority import CANDIDATE_CONTRACTS, logic_identity
+    """Identity-bound candidate contract (logic_identity hashes the v1.1.3 file, not v1.1.1). OD1014-FAST D9
+    registers it as a candidate only: no runtime binding and no READY/demo/live path (AGP-C17)."""
+    import hashlib
+
+    from v1_tickets.authority import CANDIDATE_CONTRACTS, load_registry, logic_identity
+    from v1_tickets.ready_authority import ready_authority
     assert CANDIDATE_CONTRACTS[("ST_ASIAN_SWEEP_5R_V1", "1.1.3")] == "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml"
-    assert "ST_ASIAN_SWEEP_5R_V1_1_1_3" not in \
-        (ROOT / "strategies" / "registry.yaml").read_text(encoding="utf-8")
-    # identity is derivable for the record, but is deliberately not registered anywhere
     ident = logic_identity("ST_ASIAN_SWEEP_5R_V1", "1.1.3", ROOT)
     assert ident is not None and ident["contract_hash"] != V112_CANONICAL_CONTRACT_HASH
+    entry = load_registry(ROOT)["ST_ASIAN_SWEEP_5R_V1"]
+    candidate = entry["candidate_versions"]["1.1.3"]
+    assert entry["config_source"] == "strategies/ST_ASIAN_SWEEP_5R_V1.yaml"      # runtime binding unchanged
+    assert candidate["logic_verified_identity"] == ident["digest"]
+    assert (candidate["status"], candidate["ticket_ready"]) == ("CANDIDATE_PENDING_OWNER_CONFIRM",
+                                                                "PAUSED_PENDING_OWNER_CONFIRM")
+    assert candidate["edge_verified"] is False and entry["demo_authorized"] is False and not entry["live_authorized"]
+    raw = hashlib.sha256((ROOT / "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml").read_bytes()).hexdigest()
+    for symbol in ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD"):
+        for session in ("ASIAN_LONDON", "LONDON_NEWYORK"):
+            assert ready_authority("ST_ASIAN_SWEEP_5R_V1", strategy_version="1.1.3", contract_sha256=raw,
+                                   symbol=symbol, session=session)[0] is False
 
 
 def test_successor_evidence_instructions_forbid_transferring_v112_passes():

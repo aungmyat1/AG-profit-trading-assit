@@ -53,7 +53,7 @@ def test_current_registry_statuses():
     for symbol in ("USDJPY", "XAUUSD"):
         assert ss.scope_status(ss.SESSION_FX_GOLD, symbol, "ASIAN_LONDON").route_reason == ss.LOGIC_NOT_VERIFIED
     btc = ss.scope_status(ss.CRYPTO_CFD, "BTCUSD", ss.CRYPTO_DAY)
-    assert (btc.verification_status, btc.detail) == (ss.STALE_IDENTITY, "branches=SHORT")
+    assert (btc.verification_status, btc.detail) == (ss.LOGIC_VERIFIED, "branches=SHORT")    # OD1014-FAST D8
     eur_lsmc = ss.scope_status(ss.LARGE_SMC, "EURUSD", ss.WATCH)
     assert (eur_lsmc.verification_status, eur_lsmc.route_reason, eur_lsmc.detail) == (
         ss.UNVERIFIED, ss.ENTRY_LOGIC_NOT_VERIFIED, "detection=LOGIC_VERIFIED")
@@ -70,7 +70,10 @@ def test_missing_or_malformed_registry_fails_closed(registry):
 
 def test_ccfd_verified_claim_with_stale_identity_is_not_verified():
     registry = copy.deepcopy(load_registry())
-    registry["ST_CRYPTO_CFD_SWEEP_RETEST_V1"]["candidate_versions"]["1.0.0"]["logic_status"] = ss.LOGIC_VERIFIED
+    entry = registry["ST_CRYPTO_CFD_SWEEP_RETEST_V1"]["candidate_versions"]["1.0.0"]
+    entry["logic_verified_identity"] = entry["previous_logic_verified_identity"]     # pre-D8 digest
+    for item in entry["logic_verified_symbols"]:
+        item["logic_identity"] = entry["previous_logic_verified_identity"]
     status = ss.scope_status(ss.CRYPTO_CFD, "ETHUSD", ss.CRYPTO_WEEKEND, registry=registry)
     assert status.verification_status == ss.STALE_IDENTITY   # recorded digest no longer matches the code
 
