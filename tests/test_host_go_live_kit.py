@@ -419,6 +419,8 @@ def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
 
     monkeypatch.setattr(smoke, "run_crypto", run_crypto)
     monkeypatch.setattr(smoke, "report_lane_lines", lambda label, run, **kw: [])   # C18 lanes tested separately
+    monkeypatch.setattr(smoke, "mt5_guard_evidence", lambda guard, journal, started, mode: {   # C18-R4, tested separately
+        "PROHIBITED_ORDER_API_ATTEMPTS": 0, "summary_line": "MT5_GUARD GUARD_COVERAGE_STATUS=COMPLETE"})
     monkeypatch.setattr(smoke, "log_line", lambda name, message: logged.append((name, message)))
 
     assert smoke.main(["--mode", "crypto"]) == 0
@@ -427,6 +429,7 @@ def test_crypto_main_inside_window_keeps_mt5_runner_path(monkeypatch):
     assert calls[-2][1:] == (now, 3, "Mt5CryptoFeed")
     assert logged == [
         ("ag_v1_crypto", "LSMC_CONFIG_MISSING key=lsmc_min_remaining_reward_fraction"),
+        ("ag_v1_crypto", "MT5_GUARD GUARD_COVERAGE_STATUS=COMPLETE"),
         ("ag_v1_crypto", "CRYPTO IN_WINDOW"),
         ("ag_v1_crypto", 'RUN_IDENTITY requested_terminal_path="AUTO" '
                          'terminal_path="C:/Program Files/VT Markets MT5 Terminal" '

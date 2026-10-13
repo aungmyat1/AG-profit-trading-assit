@@ -667,6 +667,33 @@ def run_crypto(now: dt.datetime, journal: str, feed, notify: bool = True, config
     return lines
 
 
+def install_mt5_guard(mt5, run_id: str):
+    """AGP-C18-R4: wrap the real MetaTrader5 module process-wide before any MT5 call."""
+    from mt5.readonly_guard import install
+    return install(mt5, run_id)
+
+
+def mt5_guard_evidence(guard, journal: str, started: dt.datetime, mode: str) -> Dict[str, Any]:
+    """Machine-readable guard counters + timestamp-bounded broker history for this run (read-only)."""
+    from _host_common import _mt5_server_wall
+    from host_evidence.symbol_metadata import server_time_to_utc
+    from mt5.readonly_guard import broker_history_window, counters_of
+    ended = utcnow()
+    counters = counters_of(guard)
+    record = {"schema": "AGP_C18_MT5_GUARD_EVIDENCE_V1", "mode": mode, "started_utc": started.isoformat(),
+              "ended_utc": ended.isoformat(), **(counters.as_dict() if counters else
+                                                 {"GUARD_COVERAGE_STATUS": "NOT_INSTALLED"}),
+              "broker_history": broker_history_window(
+                  guard, started, ended, to_utc=lambda epoch: server_time_to_utc(_mt5_server_wall(epoch)))}
+    path = os.path.join(journal, "ticket_delivery", "mt5_guard", f"{started.date().isoformat()}.jsonl")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "a", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(record, sort_keys=True, default=str) + "\n")
+    record["summary_line"] = (counters.summary_line() if counters else "MT5_GUARD GUARD_COVERAGE_STATUS=NOT_INSTALLED") \
+        + f" BROKER_HISTORY={record['broker_history']['status']}"
+    return record
+
+
 def report_lane_lines(label: str, run, journal: Optional[str] = None, sender=None, now=None) -> List[str]:
     """Run one observational (REPORT_ONLY) lane and deliver its archived observations (PR C); a lane or
     delivery fault is logged and never stops the runner."""
@@ -826,6 +853,7 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                 lines.append(f"LSMC_CRYPTO_JOURNAL {symbol} FAILED {type(exc).__name__}")
         return lines + lsmc_crypto_summary_lines(now, journal, session)
 
+    guard_state: Dict[str, Any] = {}      # AGP-C18-R4 runtime MT5 guard (set when MT5 is attached)
     try:
         with single_instance(log_name):
             if args.mode == "crypto" and crypto_config["venue"]["kind"] != "MT5":
@@ -847,6 +875,9 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                         log_line(log_name, line)
                     print(message)
                     return 1
+                run_id = f"{args.mode}-{now.strftime('%Y%m%dT%H%M%SZ')}-{os.getpid()}"
+                mt5 = install_mt5_guard(mt5, run_id)            # AGP-C18-R4: before any MT5 call
+                guard_state["guard"] = mt5
                 with mt5_access_lock():
                     ok, err = mt5_initialize(mt5, args.terminal_path)
                     identity["_ident"] = run_identity(mt5, args.terminal_path)
@@ -931,6 +962,12 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                                 lines += lsmc_crypto_summary_lines(now, journal, LSMC_CRYPTO_DAY)
                     finally:
                         try:
+                            evidence = mt5_guard_evidence(mt5, journal, now, args.mode)
+                            guard_state["attempts"] = evidence.get("PROHIBITED_ORDER_API_ATTEMPTS", 0)
+                            log_line(log_name, evidence["summary_line"])
+                        except Exception as exc:  # noqa: BLE001 -- missing evidence is reported, never PASS
+                            log_line(log_name, f"MT5_GUARD EVIDENCE_FAILED {type(exc).__name__}")
+                        try:
                             call_with_timeout(mt5.shutdown)
                         except Exception:  # noqa: BLE001 -- a stuck shutdown must not hold the run
                             pass
@@ -949,6 +986,9 @@ def _main(argv, identity: Dict[str, Any]) -> int:
         return 0
     for line in lines or [f"{args.mode.upper()} NOTHING_IN_WINDOW"]:
         log_line(f"ag_v1_{args.mode}", line)
+    if guard_state.get("attempts"):
+        log_line(f"ag_v1_{args.mode}", f"MT5_GUARD RUN_FAILED prohibited_attempts={guard_state['attempts']}")
+        return 3
     return 0
 
 
