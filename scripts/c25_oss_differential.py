@@ -1,0 +1,412 @@
+"""AGP-C25 OSS differential verification (evidence only; 60 committed recorded days).
+
+Oracles are REFERENCE evidence, never authority (AGENTS.md OSS-FIRST). Nothing here changes an engine,
+contract, registry or flag. Inputs are committed recorded fixtures only; no network, no MT5.
+
+1. Geometry/outcome oracle: every emitted ASW v1.1.3 and CCFD 1.0.0 signal is resolved twice on the same bar
+   path with identical entry / SL / TP1 / horizon -- by the repo resolver (v1_tickets.outcome.resolve_levels)
+   and by backtesting.py (AGPL-3.0, research-only, never imported by runtime code). Range geometry (ASW
+   session box, CCFD previous-UTC-day reference) is cross-checked with pandas-ta donchian.
+2. Sweep oracle (CCFD): smartmoneyconcepts previous_high_low("1D") / swing_highs_lows vs our sweep and MSS
+   evidence.
+3. Causality (L3) fuzz: per emitted signal, (a) bars after the signal close removed -> identical, (b) future
+   bars perturbed -> identical, (c) the last input bar perturbed when it closes after the signal bar ->
+   identical (NOT_APPLICABLE when the signal bar is the last bar). Any change is a repaint FAIL.
+
+    python scripts/c25_oss_differential.py --out artifacts/oss_differential/c25_report.json
+"""
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import json
+import math
+import random
+import runpy
+import sys
+from pathlib import Path
+from typing import Any, Dict, List
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT))
+
+UTC = dt.timezone.utc
+M5, M15 = dt.timedelta(minutes=5), dt.timedelta(minutes=15)
+SEED = 20261014
+V113 = "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml"
+ASW_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
+CCFD_SYMBOLS = ("BTCUSD", "ETHUSD")
+CCFD_COUNTS = {"D1": 50, "H1": 100, "M15": 96, "M5": 576}
+CCFD_HORIZON = dt.timedelta(hours=24)        # identical on both sides; the contract defines no trade horizon
+REL_TOL = 1e-9
+DATA_INSUFFICIENT_60D = [
+    {"family": "ASW v1.1.3", "scope": "USDJPY x ASIAN_LONDON/LONDON_NEWYORK"},
+    {"family": "ASW v1.1.3", "scope": "XAUUSD x ASIAN_LONDON/LONDON_NEWYORK"},
+    {"family": "CCFD 1.0.0", "scope": "BTCUSD LONG"},
+]
+
+
+# ------------------------------------------------------------------------------------ shared oracle
+
+def oracle_outcome(direction: str, entry: float, sl: float, tp: float, entry_time: dt.datetime,
+                   bars: List[Any], horizon: dt.datetime, tf: dt.timedelta) -> Dict[str, Any]:
+    """backtesting.py resolution. Bar 0 is a synthetic anchor O=H=L=C=entry at the entry time (identical
+    entry by construction; trade_on_close fills there), then the real bars with open in (entry_time, horizon)."""
+    import pandas as pd
+    from backtesting import Backtest, Strategy
+
+    path = [b for b in bars if entry_time < b.time < horizon]
+    # backtesting.py never calls next() on the first bar, so two identical anchor bars are used: the order is
+    # placed on the first next() call and filled at the anchor close (= entry) via trade_on_close.
+    rows = [{"time": entry_time - dt.timedelta(seconds=2), "Open": entry, "High": entry, "Low": entry, "Close": entry},
+            {"time": entry_time - dt.timedelta(seconds=1), "Open": entry, "High": entry, "Low": entry, "Close": entry}]
+    rows += [{"time": b.time, "Open": b.open, "High": b.high, "Low": b.low, "Close": b.close} for b in path]
+    if path:   # backtesting.py never processes its final row: a flat terminal row at the horizon lets
+        last_close = path[-1].close   # finalize_trades exit at the last real bar's close (= repo EXPIRY price)
+        rows.append({"time": horizon, "Open": last_close, "High": last_close, "Low": last_close, "Close": last_close})
+    if len(rows) < 3:
+        return {"result": "DATA_INSUFFICIENT"}
+    frame = pd.DataFrame(rows).set_index("time")
+    frame.index = pd.DatetimeIndex(frame.index)
+    long = direction == "LONG"
+
+    class Once(Strategy):
+        def init(self):
+            self.rejected, self.placed = None, False
+
+        def next(self):
+            if not self.placed:
+                self.placed = True
+                try:
+                    (self.buy if long else self.sell)(size=1, sl=sl, tp=tp)
+                except ValueError as exc:
+                    self.rejected = str(exc)
+            # no manual exit: finalize_trades closes an open trade at the last bar's close (= horizon expiry)
+
+    bt = Backtest(frame, Once, cash=1e12, commission=0.0, spread=0.0, trade_on_close=True,
+                  exclusive_orders=True, finalize_trades=True)
+    stats = bt.run()
+    trades = stats["_trades"]
+    if trades.empty:
+        return {"result": "ORACLE_REJECT", "reason": getattr(stats["_strategy"], "rejected", None)}
+    t = trades.iloc[0]
+    exit_price, entry_price = float(t["ExitPrice"]), float(t["EntryPrice"])
+    risk = abs(entry - sl)
+    sign = 1.0 if long else -1.0
+    if math.isclose(exit_price, tp, rel_tol=REL_TOL):
+        result = "TP1"
+    elif math.isclose(exit_price, sl, rel_tol=REL_TOL):
+        result = "SL"
+    else:
+        result = "EXPIRY"
+    return {"result": result, "entry_price": entry_price, "exit_price": exit_price,
+            "exit_time": pd.Timestamp(t["ExitTime"]).isoformat(), "gross_R": round(sign * (exit_price - entry) / risk, 4)}
+
+
+def compare(engine: Dict[str, Any], oracle: Dict[str, Any], *, direction: str = "", tp: float = 0.0) -> Dict[str, Any]:
+    e, o = engine.get("result"), oracle.get("result")
+    gap_tp = (e == "TP1" and o == "EXPIRY" and oracle.get("exit_time", "")[:16] == (engine.get("bar") or "")[:16]
+              and ((oracle.get("exit_price", tp) > tp) if direction == "LONG" else (oracle.get("exit_price", tp) < tp)))
+    if gap_tp:
+        return {"class": "SPEC_DIFFERENCE",
+                "note": "bar gapped through TP1: backtesting.py fills at the bar open, repo resolver books TP1"}
+    if e == "DATA_INSUFFICIENT" and engine.get("reason") == "BARS_END_BEFORE_HORIZON":
+        return {"class": "SPEC_DIFFERENCE",
+                "note": "dataset ends before the horizon: repo resolver refuses, backtesting.py finalizes at last bar"}
+    if e == "AMBIGUOUS":
+        cls = "SPEC_DIFFERENCE"       # repo resolver never guesses a same-bar TP/SL; backtesting.py picks one
+        note = "TP1 and SL in the same bar: repo=AMBIGUOUS (by design), oracle=" + str(o)
+    elif e == o and (e not in ("TP1", "SL", "EXPIRY")
+                     or math.isclose(engine.get("gross_R") or 0.0, oracle.get("gross_R") or 0.0, abs_tol=1e-3)):
+        cls, note = "AGREE", ""
+    elif o == "ORACLE_REJECT":
+        cls, note = "ORACLE_DEFECT", f"backtesting.py rejected the bracket: {oracle.get('reason')}"
+    else:
+        cls, note = "UNCLASSIFIED_DIVERGENCE", f"repo={e} oracle={o}"
+    return {"class": cls, "note": note}
+
+
+def donchian(highs: List[float], lows: List[float]) -> Dict[str, float]:
+    import pandas as pd
+    import pandas_ta as ta
+    frame = ta.donchian(pd.Series(highs, dtype=float), pd.Series(lows, dtype=float),
+                        lower_length=len(lows), upper_length=len(highs))
+    row = frame.iloc[-1]
+    return {"high": float(row.filter(like="DCU").iloc[0]), "low": float(row.filter(like="DCL").iloc[0])}
+
+
+# ------------------------------------------------------------------------------------------ ASW
+
+def _asw_harness():
+    g = runpy.run_path(str(ROOT / "scripts" / "asw_v112_60d_replay.py"), run_name="c25_asw")
+    h = g["h"]
+    h.use_candidate(V113, "1.1.3")
+    h.SYMBOLS = dict(h.D60_SYMBOLS)
+    return h
+
+
+def _signal_key(t: Dict[str, Any]) -> tuple:
+    return (t.get("direction"), t.get("signal_timestamp"), t.get("entry"), t.get("stop_loss"),
+            tuple(x["price"] for x in t.get("targets") or []))
+
+
+def run_asw(rng: random.Random) -> Dict[str, Any]:
+    from v1_tickets.outcome import resolve_levels
+    h = _asw_harness()
+    rows, fuzz, gated = [], [], []
+    for symbol in ASW_SYMBOLS:
+        candles = h.load_candles(symbol)
+        by_day: Dict[str, list] = {}
+        for c in candles:
+            by_day.setdefault(c.time.date().isoformat(), []).append(c)
+        for cycle in h.CYCLES:
+            for ds in h.fixture_days(candles):
+                day = dt.date.fromisoformat(ds)
+                w, now, session, post = h.split(by_day[ds], cycle, day)
+                t = h.ticket(cycle, day, session, post, now, symbol=symbol)
+                if not (t.get("direction") and t.get("entry") is not None and t.get("stop_loss") is not None
+                        and t.get("targets") and t.get("signal_timestamp")):
+                    continue
+                signal_open = dt.datetime.fromisoformat(t["signal_timestamp"])
+                signal_close = signal_open + M15
+                tp1 = t["targets"][0]["price"]
+                if not all(h.geometry_ok(t).values()):     # the engine's own L2/L4 gates block this ticket
+                    gated.append({"symbol": symbol, "cycle": cycle, "day": ds, "geometry": h.geometry_ok(t)})
+                    fuzz.append(_asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng))
+                    continue
+                horizon = dt.datetime.combine(day, dt.time(15, 0), tzinfo=UTC)   # time_invalidation_gmt 15:00
+                engine = resolve_levels(direction=t["direction"], entry=t["entry"], sl=t["stop_loss"], tp1=tp1,
+                                        start=signal_close, horizon=horizon, bars=candles, tf=M15,
+                                        now=horizon + M15, cost_r=None)
+                oracle = oracle_outcome(t["direction"], t["entry"], t["stop_loss"], tp1, signal_open, candles,
+                                        horizon, M15)
+                box = donchian([c.high for c in session], [c.low for c in session])
+                box_ok = (math.isclose(box["high"], t["box"]["high"], abs_tol=1e-9)
+                          and math.isclose(box["low"], t["box"]["low"], abs_tol=1e-9))
+                rows.append({"symbol": symbol, "cycle": cycle, "day": ds, "direction": t["direction"],
+                             "entry": t["entry"], "sl": t["stop_loss"], "tp1": tp1, "engine": engine,
+                             "oracle": oracle,
+                             "comparison": compare(engine, oracle, direction=t["direction"], tp=tp1),
+                             "box_engine": t["box"], "box_pandas_ta": box, "box_agree": box_ok})
+                fuzz.append(_asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng))
+    return {"rows": rows, "fuzz": fuzz, "engine_gated_geometry": gated}
+
+
+def _asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng) -> Dict[str, Any]:
+    from strategy_engine.session import Candle
+    key = _signal_key(t)
+    signal_close = signal_open + M15
+    upto = [c for c in post if c.time <= signal_open]
+    truncated = h.ticket(cycle, day, session, upto, signal_close, symbol=symbol)
+    a = _signal_key(truncated) == key
+    later = [c for c in post if c.time > signal_open]
+    mutated = [Candle(c.time, *(round(p * (1 + rng.uniform(-0.002, 0.002)), 6) for p in (c.open, c.high, c.low, c.close)))
+               for c in later]
+    mutated = [Candle(c.time, c.open, max(c.open, c.high, c.low, c.close), min(c.open, c.high, c.low, c.close), c.close)
+               for c in mutated]
+    future = h.ticket(cycle, day, session, upto + mutated, h.split([], cycle, day)[1], symbol=symbol)
+    b = _signal_key(future) == key
+    full_now = h.split([], cycle, day)[1]
+    if post[-1].time <= signal_open:
+        c_cls = "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST"
+    else:
+        last = post[-1]
+        k = 1 + rng.uniform(-0.002, 0.002)
+        o, c = last.open * k, last.close * (1 + rng.uniform(-0.002, 0.002))
+        pert = Candle(last.time, o, max(o, c, last.high * k), min(o, c, last.low * k), c)
+        c_cls = ("IDENTICAL" if _signal_key(h.ticket(cycle, day, session, post[:-1] + [pert], full_now,
+                                                      symbol=symbol)) == key else "CHANGED")
+    return {"case": f"{symbol}:{cycle}:{day}", "truncation_identical": a, "future_perturbation_identical": b,
+            "last_bar_perturbation": c_cls,
+            "verdict": "PASS" if a and b and c_cls != "CHANGED" else "FAIL"}
+
+
+# ----------------------------------------------------------------------------------------- CCFD
+
+def _ccfd():
+    g = runpy.run_path(str(ROOT / "scripts" / "ccfd_sweep_retest_replay.py"), run_name="c25_ccfd")
+    return g
+
+
+def ccfd_signals(g) -> List[Dict[str, Any]]:
+    path = g["DATASETS"]["recorded_60d"][1] / "tickets.jsonl"
+    seen, out = set(), []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        tk = json.loads(line).get("ticket") or {}
+        ev = (tk.get("engine_result") or {}).get("evidence") or {}
+        if tk.get("entry") is None or not ev.get("retest") or (tk.get("engine_result") or {}).get("result") != "ENTRY_VALID":
+            continue
+        key = (tk["symbol"], tk["direction"], ev["retest"]["candle_time_utc"])
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"symbol": tk["symbol"], "direction": tk["direction"], "entry": tk["entry"],
+                    "now": json.loads(line).get("now") or tk.get("evaluated_at"),
+                    "sl": tk["stop_loss"], "tp1": tk["tp1"], "retest_time": ev["retest"]["candle_time_utc"],
+                    "evidence": ev})
+    return sorted(out, key=lambda s: (s["symbol"], s["retest_time"]))
+
+
+def run_ccfd(rng: random.Random) -> Dict[str, Any]:
+    from v1_tickets.outcome import resolve_levels
+    g = _ccfd()
+    base = g["DATASETS"]["recorded_60d"][0]
+    data = {s: g["load_symbol"](s, base) for s in CCFD_SYMBOLS}
+    rows, sweeps, fuzz = [], [], []
+    for s in ccfd_signals(g):
+        bars = data[s["symbol"]]["bars"]["M5"]
+        retest = dt.datetime.fromisoformat(s["retest_time"])
+        start = retest + M5
+        horizon = start + CCFD_HORIZON
+        engine = resolve_levels(direction=s["direction"], entry=s["entry"], sl=s["sl"], tp1=s["tp1"], start=start,
+                                horizon=horizon, bars=bars, tf=M5, now=horizon + M5, cost_r=None)
+        oracle = oracle_outcome(s["direction"], s["entry"], s["sl"], s["tp1"], retest, bars, horizon, M5)
+        ref = s["evidence"]["reference"]
+        day = dt.datetime.combine(retest.date() - dt.timedelta(days=1), dt.time(0), tzinfo=UTC)
+        prev = [b for b in bars if day <= b.time < day + dt.timedelta(days=1)]
+        dc = donchian([b.high for b in prev], [b.low for b in prev])
+        rows.append({**{k: s[k] for k in ("symbol", "direction", "entry", "sl", "tp1", "retest_time")},
+                     "engine": engine, "oracle": oracle,
+                     "comparison": compare(engine, oracle, direction=s["direction"], tp=s["tp1"]),
+                     "reference_engine": {"high": ref["high"], "low": ref["low"]}, "reference_pandas_ta": dc,
+                     "reference_agree": math.isclose(dc["high"], ref["high"], abs_tol=1e-9)
+                     and math.isclose(dc["low"], ref["low"], abs_tol=1e-9)})
+        sweeps.append(_smc_sweep(s, bars))
+        fuzz.append(_ccfd_fuzz(g, data[s["symbol"]], s, rng))
+    return {"rows": rows, "sweeps": sweeps, "fuzz": fuzz}
+
+
+def _smc_sweep(s: Dict[str, Any], bars: List[Any]) -> Dict[str, Any]:
+    import pandas as pd
+    from smartmoneyconcepts import smc
+    sweep, mss = s["evidence"]["sweep"], s["evidence"]["mss"]
+    st = dt.datetime.fromisoformat(sweep["candle_time_utc"])
+    window = [b for b in bars if st - dt.timedelta(days=2) <= b.time <= st + dt.timedelta(hours=6)]
+    df = pd.DataFrame([{"open": b.open, "high": b.high, "low": b.low, "close": b.close, "volume": 0.0}
+                       for b in window], index=pd.DatetimeIndex([b.time for b in window]))
+    phl = smc.previous_high_low(df, time_frame="1D")
+    i = list(df.index).index(pd.Timestamp(st))
+    high_sweep = sweep["direction"] == "HIGH_SWEEP"
+    level = float(phl["PreviousHigh" if high_sweep else "PreviousLow"].iloc[i])
+    broken = bool(phl["BrokenHigh" if high_sweep else "BrokenLow"].iloc[i])
+    level_agree = math.isclose(level, sweep["swept_level"], rel_tol=1e-6)   # smc returns float32 levels
+    shl = smc.swing_highs_lows(df, swing_length=5)
+    mss_t = dt.datetime.fromisoformat(mss["confirmed_at_utc"])
+    swings = [float(v) for t, v in zip(df.index, shl["Level"]) if not pd.isna(v) and t <= pd.Timestamp(mss_t)]
+    mss_agree = any(math.isclose(v, mss["broken_swing_price"], rel_tol=1e-6) for v in swings)
+    if level_agree and broken:
+        cls = "AGREE"
+    elif not level_agree:
+        cls = "SPEC_DIFFERENCE"     # smc previous-day boundary/resample vs our PREVIOUS_UTC_DAY 288-bar reference
+    else:
+        cls = "SPEC_DIFFERENCE"     # smc BrokenHigh/Low flags a break from the day's open, not per-bar sweep
+    return {"signal": f"{s['symbol']}:{s['direction']}:{s['retest_time']}", "sweep_level_engine": sweep["swept_level"],
+            "sweep_level_smc": level, "smc_broken_flag": broken, "sweep_class": cls,
+            "mss_swing_in_smc_swings": mss_agree,
+            "mss_class": "AGREE" if mss_agree else "SPEC_DIFFERENCE"}   # swing_length/definition differ by design
+
+
+def _ccfd_fuzz(g, data: Dict[str, Any], s: Dict[str, Any], rng: random.Random) -> Dict[str, Any]:
+    import copy
+
+    from market_structure.config import load_market_structure_config
+    from strategy_engine.session import Candle
+    cfg = load_market_structure_config()
+    retest = dt.datetime.fromisoformat(s["retest_time"])
+    now = dt.datetime.fromisoformat(s["now"])          # the evaluation time that emitted this ticket
+
+    def sig(d):
+        x = g["closed_inputs"](d, now, CCFD_COUNTS)
+        r = g["engine"](s["symbol"], now, x, cfg)
+        plan = (r.get("evidence") or {}).get("target_plan") or {}
+        rt = ((r.get("evidence") or {}).get("retest") or {}).get("candle_time_utc")
+        return (r.get("result"), plan.get("direction"), plan.get("entry"), plan.get("stop_loss"), plan.get("tp1"),
+                plan.get("tp2"), rt)
+
+    base_sig = sig(data)
+    trunc = copy.deepcopy(data)
+    for tf in trunc["bars"]:
+        keep = [b for b in trunc["bars"][tf] if b.time < now]
+        trunc["bars"][tf], trunc["times"][tf] = keep, [b.time for b in keep]
+    a = sig(trunc) == base_sig
+    fut = copy.deepcopy(data)
+    for tf in fut["bars"]:
+        out = []
+        for b in fut["bars"][tf]:
+            if b.time >= now:
+                k = 1 + rng.uniform(-0.01, 0.01)
+                o, c = b.open * k, b.close * (1 + rng.uniform(-0.01, 0.01))
+                out.append(Candle(b.time, o, max(o, c, b.high * k), min(o, c, b.low * k), c))
+            else:
+                out.append(b)
+        fut["bars"][tf] = out
+    b_ok = sig(fut) == base_sig
+    per = copy.deepcopy(data)
+    closed = [j for j, t in enumerate(per["times"]["M5"]) if t + M5 <= now]
+    i = closed[-1]
+    if per["times"]["M5"][i] <= retest:
+        c_cls = "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST"
+    else:
+        bar = per["bars"]["M5"][i]
+        k = 1 + rng.uniform(-0.01, 0.01)
+        o, c = bar.open * k, bar.close * (1 + rng.uniform(-0.01, 0.01))
+        per["bars"]["M5"][i] = Candle(bar.time, o, max(o, c, bar.high * k), min(o, c, bar.low * k), c)
+        c_cls = "IDENTICAL" if sig(per) == base_sig else "CHANGED"
+    return {"signal": f"{s['symbol']}:{s['direction']}:{s['retest_time']}", "base_result": base_sig[0],
+            "truncation_identical": a, "future_perturbation_identical": b_ok, "last_bar_perturbation": c_cls,
+            "verdict": ("NOT_EVALUABLE" if base_sig[0] != "ENTRY_VALID"
+                        else "PASS" if a and b_ok and c_cls != "CHANGED" else "FAIL")}
+
+
+# ------------------------------------------------------------------------------------------ main
+
+def summarize(asw: Dict[str, Any], ccfd: Dict[str, Any]) -> Dict[str, Any]:
+    def agree(rows):
+        n = len(rows)
+        classes: Dict[str, int] = {}
+        for r in rows:
+            classes[r["comparison"]["class"]] = classes.get(r["comparison"]["class"], 0) + 1
+        return {"signals": n, "classes": dict(sorted(classes.items())),
+                "agreement_pct": round(100.0 * classes.get("AGREE", 0) / n, 1) if n else None}
+    sweeps = ccfd["sweeps"]
+    return {
+        "outcome_oracle": {"ASW_v1.1.3": agree(asw["rows"]), "CCFD_1.0.0": agree(ccfd["rows"]),
+                           "ASW_engine_gated_geometry_excluded": len(asw["engine_gated_geometry"])},
+        "range_crosscheck_pandas_ta": {"ASW_box_agree": sum(r["box_agree"] for r in asw["rows"]),
+                                       "ASW_rows": len(asw["rows"]),
+                                       "CCFD_reference_agree": sum(r["reference_agree"] for r in ccfd["rows"]),
+                                       "CCFD_rows": len(ccfd["rows"])},
+        "sweep_oracle_smc": {"signals": len(sweeps),
+                             "sweep_level_agree_pct": round(100.0 * sum(s["sweep_class"] == "AGREE" for s in sweeps)
+                                                            / len(sweeps), 1) if sweeps else None,
+                             "mss_swing_agree_pct": round(100.0 * sum(s["mss_class"] == "AGREE" for s in sweeps)
+                                                          / len(sweeps), 1) if sweeps else None},
+        "l3_fuzz": {"ASW": {"cases": len(asw["fuzz"]), "fail": sum(f["verdict"] == "FAIL" for f in asw["fuzz"])},
+                    "CCFD": {"cases": len(ccfd["fuzz"]), "fail": sum(f["verdict"] == "FAIL" for f in ccfd["fuzz"]),
+                             "not_evaluable": sum(f["verdict"] == "NOT_EVALUABLE" for f in ccfd["fuzz"])}},
+        "data_insufficient_60d": DATA_INSUFFICIENT_60D,
+    }
+
+
+def main(argv=None) -> int:
+    import importlib.metadata as md
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default="artifacts/oss_differential/c25_report.json")
+    args = ap.parse_args(argv)
+    rng = random.Random(SEED)
+    asw, ccfd = run_asw(rng), run_ccfd(rng)
+    report = {"schema": "AGP_C25_OSS_DIFFERENTIAL_V1", "seed": SEED, "scope": "60 committed recorded days only",
+              "oss_versions": {p: md.version(p) for p in ("backtesting", "pandas-ta", "smartmoneyconcepts", "pandas")},
+              "summary": summarize(asw, ccfd), "asw": asw, "ccfd": ccfd}
+    out = ROOT / args.out
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(report, indent=1, sort_keys=True, default=str) + "\n", encoding="utf-8")
+    print(json.dumps(report["summary"], indent=1, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
