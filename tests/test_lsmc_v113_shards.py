@@ -25,7 +25,10 @@ def test_six_shards_cover_exactly_all_recorded_rows_with_real_overlap():
 def test_declared_diff_is_exact_and_mutation_fails(monkeypatch):
     assert replay.audit.rule_diff()['verdict']=='PASS'
     original=replay.audit.A._spec_diff
-    monkeypatch.setattr(replay.audit.A,'_spec_diff',lambda a,b:original(a,b)+['rules.UNDECLARED_DRIFT'])
+    def extra_path(a,b,path=''):
+        actual=original(a,b,path)
+        return actual+['rules.UNDECLARED_DRIFT'] if not path else actual
+    monkeypatch.setattr(replay.audit.A,'_spec_diff',extra_path)
     assert replay.audit.rule_diff()['verdict']=='FAIL'
 
 
