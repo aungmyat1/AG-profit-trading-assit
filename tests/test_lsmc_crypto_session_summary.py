@@ -201,5 +201,6 @@ def test_mt5_failure_still_journals_crypto_data_error_and_processes_due_summarie
     monkeypatch.setattr(lcs, "log_line", lambda name, message: logged.append(message))
 
     lcs.main(["--mode", mode])
-    assert recorded == [(session, s, "DATA_ERROR", [failure]) for s in lcs.LSMC_CRYPTO_SYMBOLS]
+    codes = [failure] + (["PIN_FIELD:SERVER"] if failure == "ACCOUNT_PIN_MISMATCH" else [])   # C22-R2 item 4
+    assert recorded == [(session, s, "DATA_ERROR", codes) for s in lcs.LSMC_CRYPTO_SYMBOLS]
     assert processed == [session] and f"SUMMARY {session}" in logged

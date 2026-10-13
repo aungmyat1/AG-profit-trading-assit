@@ -726,6 +726,15 @@ def mt5_guard_evidence(guard, journal: str, started: dt.datetime, mode: str) -> 
     return record
 
 
+PIN_FIELDS = ("SERVER", "LOGIN_SUFFIX", "TRADE_MODE", "TERMINAL_PATH", "ACCOUNT_INFO_UNAVAILABLE", "PIN_UNAVAILABLE")
+
+
+def pin_mismatch_field(pin_status: str) -> Optional[str]:
+    """Which pin field mismatched, from the pin check's own status (field names only; no login/server value)."""
+    words = str(pin_status or "").split()
+    return next((w for w in words[1:] if w in PIN_FIELDS), None)
+
+
 def report_lane_lines(label: str, run, journal: Optional[str] = None, sender=None, now=None) -> List[str]:
     """Run one observational (REPORT_ONLY) lane and deliver its archived observations (PR C); a lane or
     delivery fault is logged and never stops the runner."""
@@ -852,7 +861,7 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                 log_line(log_name, summary_line)
             return 0
 
-    def canonical_failure_lines(reason: str) -> List[str]:
+    def canonical_failure_lines(reason: str, pin_field: Optional[str] = None) -> List[str]:
         if canonical_sender is None:
             return []
         details = {
@@ -863,14 +872,15 @@ def _main(argv, identity: Dict[str, Any]) -> int:
             "MT5_BUSY": "host-wide MT5 data lock unavailable",
         }
         _, failures = run_canonical_fx_cycle(
-            failure_provider(reason, details.get(reason, "host prerequisite unavailable")),
+            failure_provider(reason, details.get(reason, "host prerequisite unavailable")
+                             + (f"; mismatched pin field: {pin_field}" if pin_field else "")),
             now=now, journal=journal, sender=canonical_sender,
             cycles=active_cycles(now, args.cycle), cycle_filter=args.cycle,
             ticket_source="REPLAY", fx_data_source="NONE", policy_root=REPO_ROOT,
             strategy_path=fx_tickets.SCOPED_CANDIDATE_PATH)   # the scheduled binding, not the frozen default
         return failures + process_due_session_summaries(now, journal=journal, sender=canonical_sender)
 
-    def lsmc_failure_lines(reason: str) -> List[str]:
+    def lsmc_failure_lines(reason: str, pin_field: Optional[str] = None) -> List[str]:
         # An MT5 failure is a crypto DATA_ERROR evaluation, and due crypto summaries still go out:
         # an outage never suppresses a summary or later reads as an EMPTY_WINDOW.
         if args.mode not in ("lsmc", "lsmc-weekend") or crypto_config["venue"]["kind"] != "MT5":
@@ -880,7 +890,8 @@ def _main(argv, identity: Dict[str, Any]) -> int:
         for symbol in LSMC_CRYPTO_SYMBOLS:
             try:
                 record_lsmc_crypto_evaluation(journal, now=now, session=session, symbol=symbol,
-                                              state="DATA_ERROR", reason_codes=[reason])
+                                              state="DATA_ERROR",
+                                              reason_codes=[reason] + ([f"PIN_FIELD:{pin_field}"] if pin_field else []))
             except Exception as exc:  # noqa: BLE001
                 lines.append(f"LSMC_CRYPTO_JOURNAL {symbol} FAILED {type(exc).__name__}")
         return lines + lsmc_crypto_summary_lines(now, journal, session)
@@ -937,10 +948,11 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                         pin_ok, pin_status = require_pinned_demo_account(mt5, terminal_path=args.terminal_path,
                                                                          capture=pin_capture)
                         if not pin_ok:   # OD1012-ACCOUNT: wrong server/suffix/mode -> no tickets
-                            lines = ((canonical_failure_lines("ACCOUNT_PIN_MISMATCH") if args.canonical else
-                                      archive_fx_runtime_failure(now, journal, "ACCOUNT_PIN_MISMATCH", pin_status,
-                                                                 cycle_filter=args.cycle)) if args.mode == "fx"
-                                     else lsmc_failure_lines("ACCOUNT_PIN_MISMATCH"))
+                            pin_field = pin_mismatch_field(pin_status)
+                            lines = ((canonical_failure_lines("ACCOUNT_PIN_MISMATCH", pin_field) if args.canonical
+                                      else archive_fx_runtime_failure(now, journal, "ACCOUNT_PIN_MISMATCH",
+                                                                      pin_status, cycle_filter=args.cycle))
+                                     if args.mode == "fx" else lsmc_failure_lines("ACCOUNT_PIN_MISMATCH", pin_field))
                             for line in lines:
                                 log_line(log_name, line)
                             log_line(log_name, pin_status)
