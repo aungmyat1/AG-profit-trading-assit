@@ -588,5 +588,10 @@ def run():
 
 
 if __name__ == "__main__":
-    result = run()
-    print(json.dumps(result, default=str, indent=2))
+    import sys
+    if '--c24-recorded' in sys.argv:
+        from .lsmc_c24_recorded import cli
+        raise SystemExit(cli([arg for arg in sys.argv[1:] if arg != '--c24-recorded']))
+    else:
+        result = run()
+        print(json.dumps(result, default=str, indent=2))

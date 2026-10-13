@@ -1,0 +1,17 @@
+{
+  "P1": "NOT_RUN_RESOURCE",
+  "P2": "COMPLETED_REFERENCE_DIVERGENT",
+  "P3": "PENDING_D1",
+  "P4": "NO_PROPOSAL",
+  "base_sha": "726b16a40d79fa84ed2848bfecba4576a9db6a3f",
+  "broker_contact": 0,
+  "changed_paths": [],
+  "declared_rule_paths": 77,
+  "engine_contract_config_registry_flags_unchanged": true,
+  "engine_defect": "C24-C11-STATIC-ROLLING-WINDOW",
+  "oracle_engine_defects": 0,
+  "order_api_calls": 0,
+  "protected_paths": 361,
+  "rule_diff": "PASS",
+  "scope_days": 60
+}
