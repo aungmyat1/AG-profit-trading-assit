@@ -21,11 +21,29 @@ def report():
     return json.loads(REPORT.read_text(encoding="utf-8"))
 
 
-def test_l3_fuzz_has_no_fail(report):
+def test_l3_and_signal_bar_l4_owner_ruling(report):
+    """Owner/PM ruling 2026-10-14: L3 = truncation + perturbation strictly after the signal close (incl. the forming
+    bar) leave the signal identical; the signal-bar perturbation is an L4 contract-formula check."""
     fuzz = report["summary"]["l3_fuzz"]
-    assert fuzz["ASW"]["fail"] == 0 and fuzz["CCFD"]["fail"] == 0
-    assert fuzz["ASW"]["cases"] == len(report["asw"]["fuzz"]) > 0
-    assert all(f["verdict"] == "PASS" for f in report["asw"]["fuzz"])
+    for fam in ("ASW", "CCFD"):
+        assert fuzz[fam]["l3_fail"] == 0
+        assert fuzz[fam]["truncation_not_identical"] == 0 and fuzz[fam]["future_perturbation_not_identical"] == 0
+        assert "CHANGED" not in fuzz[fam]["forming_bar_perturbation"]
+    assert fuzz["ASW"]["signal_bar_l4_fail"] == 0
+    for f in report["asw"]["fuzz"]:
+        l4 = f["signal_bar_l4"]
+        assert (l4["status"] == "PASS") == (f["verdict"] == "PASS" or f["l3_verdict"] == "FAIL")
+        if l4["outcome"] != "ABSENT":
+            assert all(l4["checks"].values()) and l4["checks"]["direction_and_time_unchanged"]
+    entry_moved = [f for f in report["asw"]["fuzz"] if "entry" in f["signal_bar_changed_fields"]]
+    assert entry_moved and all(f["signal_bar_l4"]["outcome"] == "RANGE_BRANCH_FAIL_CLOSED" for f in entry_moved)
+
+
+def test_asw_excluded_tickets_are_unique_geometry_blocked_signals(report):
+    asw = report["summary"]["asw_emitted_signals"]
+    assert asw["signals"] == asw["unique_signals"] == len(report["asw"]["rows"]) + asw["geometry_invalid"]
+    assert sum(asw["geometry_invalid_by_guard_reason"].values()) == asw["geometry_invalid"]
+    assert set(asw["geometry_invalid_oracle_supplementary"]) <= {"AGREE", "SPEC_DIFFERENCE"}
 
 
 def test_every_divergence_is_classified_and_none_is_a_defect(report):
@@ -52,3 +70,26 @@ def test_compare_classifier():
               {"result": "EXPIRY", "exit_time": "2026-08-26T12:45:00+00:00", "exit_price": 1.2},
               direction="LONG", tp=1.1)
     assert gap["class"] == "SPEC_DIFFERENCE"
+
+
+
+def test_oracle_packages_are_research_only():
+    """backtesting.py (AGPL) and pandas-ta appear only in research_external/requirements-oracle.txt: never in a
+    runtime requirement and never imported by src/."""
+    import re
+
+    import tomllib
+    pins = (ROOT / "research_external/requirements-oracle.txt").read_text(encoding="utf-8")
+    assert "backtesting==" in pins and "pandas-ta==" in pins
+    req = (ROOT / "requirements.txt").read_text(encoding="utf-8").lower()
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+    deps = list(project.get("dependencies") or []) + [
+        d for group in (project.get("optional-dependencies") or {}).values() for d in group]
+    names = {re.split(r"[=<>!~;\[ ]", d, maxsplit=1)[0].strip().lower().replace("_", "-") for d in deps}
+    for pkg in ("backtesting", "pandas-ta"):
+        assert pkg not in names
+        assert not re.search(rf"(?m)^\s*{re.escape(pkg)}\b", req.replace("_", "-"))
+    pattern = re.compile(r"(?m)^\s*(?:from|import)\s+(?:backtesting|pandas_ta)\b")
+    offenders = [str(p.relative_to(ROOT)) for p in (ROOT / "src").rglob("*.py")
+                 if pattern.search(p.read_text(encoding="utf-8", errors="ignore"))]
+    assert offenders == []

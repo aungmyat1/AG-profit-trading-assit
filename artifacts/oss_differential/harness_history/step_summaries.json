@@ -1,0 +1,352 @@
+{
+ "S0": {
+  "l3_fuzz": {
+   "ASW": {
+    "cases": 274,
+    "fail": 172
+   },
+   "CCFD": {
+    "cases": 8,
+    "fail": 1
+   }
+  },
+  "outcome_oracle": {
+   "ASW_v1.1.3": {
+    "agreement_pct": 1.1,
+    "classes": {
+     "AGREE": 3,
+     "ORACLE_DEFECT": 270,
+     "SPEC_DIFFERENCE": 1
+    },
+    "signals": 274
+   },
+   "CCFD_1.0.0": {
+    "agreement_pct": 0.0,
+    "classes": {
+     "ORACLE_DEFECT": 8
+    },
+    "signals": 8
+   }
+  },
+  "range_crosscheck_pandas_ta": {
+   "ASW_box_agree": 274,
+   "ASW_rows": 274,
+   "CCFD_reference_agree": 8,
+   "CCFD_rows": 8
+  },
+  "sweep_oracle_smc": {
+   "mss_swing_agree_pct": 100.0,
+   "signals": 8,
+   "sweep_level_agree_pct": 12.5
+  }
+ },
+ "S1": {
+  "l3_fuzz": {
+   "ASW": {
+    "cases": 274,
+    "fail": 172
+   },
+   "CCFD": {
+    "cases": 8,
+    "fail": 1
+   }
+  },
+  "outcome_oracle": {
+   "ASW_v1.1.3": {
+    "agreement_pct": 83.2,
+    "classes": {
+     "AGREE": 228,
+     "ORACLE_DEFECT": 2,
+     "SPEC_DIFFERENCE": 1,
+     "UNCLASSIFIED_DIVERGENCE": 43
+    },
+    "signals": 274
+   },
+   "CCFD_1.0.0": {
+    "agreement_pct": 75.0,
+    "classes": {
+     "AGREE": 6,
+     "ORACLE_DEFECT": 1,
+     "UNCLASSIFIED_DIVERGENCE": 1
+    },
+    "signals": 8
+   }
+  },
+  "range_crosscheck_pandas_ta": {
+   "ASW_box_agree": 274,
+   "ASW_rows": 274,
+   "CCFD_reference_agree": 8,
+   "CCFD_rows": 8
+  },
+  "sweep_oracle_smc": {
+   "mss_swing_agree_pct": 100.0,
+   "signals": 8,
+   "sweep_level_agree_pct": 12.5
+  }
+ },
+ "S2": {
+  "l3_fuzz": {
+   "ASW": {
+    "cases": 274,
+    "fail": 172
+   },
+   "CCFD": {
+    "cases": 8,
+    "fail": 1
+   }
+  },
+  "outcome_oracle": {
+   "ASW_v1.1.3": {
+    "agreement_pct": 83.2,
+    "classes": {
+     "AGREE": 228,
+     "ORACLE_DEFECT": 2,
+     "SPEC_DIFFERENCE": 1,
+     "UNCLASSIFIED_DIVERGENCE": 43
+    },
+    "signals": 274
+   },
+   "CCFD_1.0.0": {
+    "agreement_pct": 75.0,
+    "classes": {
+     "AGREE": 6,
+     "ORACLE_DEFECT": 1,
+     "UNCLASSIFIED_DIVERGENCE": 1
+    },
+    "signals": 8
+   }
+  },
+  "range_crosscheck_pandas_ta": {
+   "ASW_box_agree": 274,
+   "ASW_rows": 274,
+   "CCFD_reference_agree": 8,
+   "CCFD_rows": 8
+  },
+  "sweep_oracle_smc": {
+   "mss_swing_agree_pct": 100.0,
+   "signals": 8,
+   "sweep_level_agree_pct": 100.0
+  }
+ },
+ "S3": {
+  "l3_fuzz": {
+   "ASW": {
+    "cases": 274,
+    "fail": 172
+   },
+   "CCFD": {
+    "cases": 8,
+    "fail": 1
+   }
+  },
+  "outcome_oracle": {
+   "ASW_v1.1.3": {
+    "agreement_pct": 83.2,
+    "classes": {
+     "AGREE": 228,
+     "ORACLE_DEFECT": 2,
+     "SPEC_DIFFERENCE": 1,
+     "UNCLASSIFIED_DIVERGENCE": 43
+    },
+    "signals": 274
+   },
+   "CCFD_1.0.0": {
+    "agreement_pct": 75.0,
+    "classes": {
+     "AGREE": 6,
+     "ORACLE_DEFECT": 1,
+     "UNCLASSIFIED_DIVERGENCE": 1
+    },
+    "signals": 8
+   }
+  },
+  "range_crosscheck_pandas_ta": {
+   "ASW_box_agree": 274,
+   "ASW_rows": 274,
+   "CCFD_reference_agree": 8,
+   "CCFD_rows": 8
+  },
+  "sweep_oracle_smc": {
+   "mss_swing_agree_pct": 100.0,
+   "signals": 8,
+   "sweep_level_agree_pct": 100.0
+  }
+ },
+ "S4": {
+  "l3_fuzz": {
+   "ASW": {
+    "cases": 274,
+    "fail": 0
+   },
+   "CCFD": {
+    "cases": 8,
+    "fail": 0,
+    "not_evaluable": 1
+   }
+  },
+  "outcome_oracle": {
+   "ASW_v1.1.3": {
+    "agreement_pct": 83.2,
+    "classes": {
+     "AGREE": 228,
+     "ORACLE_DEFECT": 2,
+     "SPEC_DIFFERENCE": 1,
+     "UNCLASSIFIED_DIVERGENCE": 43
+    },
+    "signals": 274
+   },
+   "CCFD_1.0.0": {
+    "agreement_pct": 75.0,
+    "classes": {
+     "AGREE": 6,
+     "ORACLE_DEFECT": 1,
+     "UNCLASSIFIED_DIVERGENCE": 1
+    },
+    "signals": 8
+   }
+  },
+  "range_crosscheck_pandas_ta": {
+   "ASW_box_agree": 274,
+   "ASW_rows": 274,
+   "CCFD_reference_agree": 8,
+   "CCFD_rows": 8
+  },
+  "sweep_oracle_smc": {
+   "mss_swing_agree_pct": 100.0,
+   "signals": 8,
+   "sweep_level_agree_pct": 100.0
+  }
+ },
+ "S5": {
+  "l3_fuzz": {
+   "ASW": {
+    "cases": 274,
+    "fail": 0
+   },
+   "CCFD": {
+    "cases": 8,
+    "fail": 0,
+    "not_evaluable": 1
+   }
+  },
+  "outcome_oracle": {
+   "ASW_v1.1.3": {
+    "agreement_pct": 98.2,
+    "classes": {
+     "AGREE": 269,
+     "ORACLE_DEFECT": 2,
+     "SPEC_DIFFERENCE": 1,
+     "UNCLASSIFIED_DIVERGENCE": 2
+    },
+    "signals": 274
+   },
+   "CCFD_1.0.0": {
+    "agreement_pct": 75.0,
+    "classes": {
+     "AGREE": 6,
+     "ORACLE_DEFECT": 1,
+     "UNCLASSIFIED_DIVERGENCE": 1
+    },
+    "signals": 8
+   }
+  },
+  "range_crosscheck_pandas_ta": {
+   "ASW_box_agree": 274,
+   "ASW_rows": 274,
+   "CCFD_reference_agree": 8,
+   "CCFD_rows": 8
+  },
+  "sweep_oracle_smc": {
+   "mss_swing_agree_pct": 100.0,
+   "signals": 8,
+   "sweep_level_agree_pct": 100.0
+  }
+ },
+ "S6": {
+  "l3_fuzz": {
+   "ASW": {
+    "cases": 274,
+    "fail": 0
+   },
+   "CCFD": {
+    "cases": 8,
+    "fail": 0,
+    "not_evaluable": 1
+   }
+  },
+  "outcome_oracle": {
+   "ASW_v1.1.3": {
+    "agreement_pct": 98.2,
+    "classes": {
+     "AGREE": 269,
+     "ORACLE_DEFECT": 2,
+     "SPEC_DIFFERENCE": 3
+    },
+    "signals": 274
+   },
+   "CCFD_1.0.0": {
+    "agreement_pct": 75.0,
+    "classes": {
+     "AGREE": 6,
+     "ORACLE_DEFECT": 1,
+     "SPEC_DIFFERENCE": 1
+    },
+    "signals": 8
+   }
+  },
+  "range_crosscheck_pandas_ta": {
+   "ASW_box_agree": 274,
+   "ASW_rows": 274,
+   "CCFD_reference_agree": 8,
+   "CCFD_rows": 8
+  },
+  "sweep_oracle_smc": {
+   "mss_swing_agree_pct": 100.0,
+   "signals": 8,
+   "sweep_level_agree_pct": 100.0
+  }
+ },
+ "S7": {
+  "l3_fuzz": {
+   "ASW": {
+    "cases": 274,
+    "fail": 0
+   },
+   "CCFD": {
+    "cases": 7,
+    "fail": 0,
+    "not_evaluable": 0
+   }
+  },
+  "outcome_oracle": {
+   "ASW_engine_gated_geometry_excluded": 219,
+   "ASW_v1.1.3": {
+    "agreement_pct": 98.2,
+    "classes": {
+     "AGREE": 54,
+     "SPEC_DIFFERENCE": 1
+    },
+    "signals": 55
+   },
+   "CCFD_1.0.0": {
+    "agreement_pct": 85.7,
+    "classes": {
+     "AGREE": 6,
+     "SPEC_DIFFERENCE": 1
+    },
+    "signals": 7
+   }
+  },
+  "range_crosscheck_pandas_ta": {
+   "ASW_box_agree": 55,
+   "ASW_rows": 55,
+   "CCFD_reference_agree": 7,
+   "CCFD_rows": 7
+  },
+  "sweep_oracle_smc": {
+   "mss_swing_agree_pct": 100.0,
+   "signals": 7,
+   "sweep_level_agree_pct": 100.0
+  }
+ }
+}

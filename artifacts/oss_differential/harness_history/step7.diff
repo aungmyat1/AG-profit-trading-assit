@@ -1,0 +1,50 @@
+--- S6.py
++++ S7.py
+@@ -154,7 +154,7 @@
+ def run_asw(rng: random.Random) -> Dict[str, Any]:
+     from v1_tickets.outcome import resolve_levels
+     h = _asw_harness()
+-    rows, fuzz = [], []
++    rows, fuzz, gated = [], [], []
+     for symbol in ASW_SYMBOLS:
+         candles = h.load_candles(symbol)
+         by_day: Dict[str, list] = {}
+@@ -171,6 +171,10 @@
+                 signal_open = dt.datetime.fromisoformat(t["signal_timestamp"])
+                 signal_close = signal_open + M15
+                 tp1 = t["targets"][0]["price"]
++                if not all(h.geometry_ok(t).values()):     # the engine's own L2/L4 gates block this ticket
++                    gated.append({"symbol": symbol, "cycle": cycle, "day": ds, "geometry": h.geometry_ok(t)})
++                    fuzz.append(_asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng))
++                    continue
+                 horizon = dt.datetime.combine(day, dt.time(15, 0), tzinfo=UTC)   # time_invalidation_gmt 15:00
+                 engine = resolve_levels(direction=t["direction"], entry=t["entry"], sl=t["stop_loss"], tp1=tp1,
+                                         start=signal_close, horizon=horizon, bars=candles, tf=M15,
+@@ -186,7 +190,7 @@
+                              "comparison": compare(engine, oracle, direction=t["direction"], tp=tp1),
+                              "box_engine": t["box"], "box_pandas_ta": box, "box_agree": box_ok})
+                 fuzz.append(_asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng))
+-    return {"rows": rows, "fuzz": fuzz}
++    return {"rows": rows, "fuzz": fuzz, "engine_gated_geometry": gated}
+ 
+ 
+ def _asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng) -> Dict[str, Any]:
+@@ -233,7 +237,7 @@
+             continue
+         tk = json.loads(line).get("ticket") or {}
+         ev = (tk.get("engine_result") or {}).get("evidence") or {}
+-        if tk.get("entry") is None or not ev.get("retest"):
++        if tk.get("entry") is None or not ev.get("retest") or (tk.get("engine_result") or {}).get("result") != "ENTRY_VALID":
+             continue
+         key = (tk["symbol"], tk["direction"], ev["retest"]["candle_time_utc"])
+         if key in seen:
+@@ -369,7 +373,8 @@
+                 "agreement_pct": round(100.0 * classes.get("AGREE", 0) / n, 1) if n else None}
+     sweeps = ccfd["sweeps"]
+     return {
+-        "outcome_oracle": {"ASW_v1.1.3": agree(asw["rows"]), "CCFD_1.0.0": agree(ccfd["rows"])},
++        "outcome_oracle": {"ASW_v1.1.3": agree(asw["rows"]), "CCFD_1.0.0": agree(ccfd["rows"]),
++                           "ASW_engine_gated_geometry_excluded": len(asw["engine_gated_geometry"])},
+         "range_crosscheck_pandas_ta": {"ASW_box_agree": sum(r["box_agree"] for r in asw["rows"]),
+                                        "ASW_rows": len(asw["rows"]),
+                                        "CCFD_reference_agree": sum(r["reference_agree"] for r in ccfd["rows"]),
