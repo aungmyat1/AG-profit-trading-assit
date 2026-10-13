@@ -403,6 +403,7 @@ research eligibility. Its contract is
   magics in use on the host), lifecycle evidence chain, and HALT/reconcile on unknown outcome;
   offline unit tests only, no broker mutation, scope still `enabled: false`.
 - [`status/AGP_TQ_D1_S1_TARGET_ORDER_2026-10-13.md`](status/AGP_TQ_D1_S1_TARGET_ORDER_2026-10-13.md)
+- [`status/AGP_OD1013_HOST_DEPLOY_CC14ADC_2026-10-13.md`](status/AGP_OD1013_HOST_DEPLOY_CC14ADC_2026-10-13.md)
   — FAIL_CLOSED_IF_TP1_BEYOND_TP2 enforced at the canonical READY boundary (actionability) and the demo
   admission handoff; before/after trace.
 - [`status/AGP_C18_TICKET_QUALITY_R1_2026-10-13.md`](status/AGP_C18_TICKET_QUALITY_R1_2026-10-13.md)
