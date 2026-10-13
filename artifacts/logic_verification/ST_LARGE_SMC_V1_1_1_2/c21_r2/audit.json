@@ -162,8 +162,8 @@
   },
   "frozen_v110_bytes_unchanged": true,
   "identity": {
-    "base_sha": "5e686f376b7be06c0372fdadde3c9c6617ef58af",
-    "contract_sha256": "b3f16c6eede7ab384e1f9061e79621b74b27e0b8f71cf7c3c944565d1d9fb972",
+    "base_sha": "932f34dc7be1ce930f339776ea97f70c1703c5fc",
+    "contract_sha256": "c47f54a4d923d71b8b6e85be215475d6a6e38bd7dfc5c4d86f2343ea6531a387",
     "engine_file_sha256": {
       "src/large_smc_v112/__init__.py": "5c2e9e5205d83618e7bf2b4783d818c19c98dbf50c9deede2b5ee43e4816a228",
       "src/large_smc_v112/contract.py": "85e61615b4c64b3bf9d3f0eb5d3941bbb89d22070cf674b97797b6a9f9249820",
@@ -816,11 +816,11 @@
         "L1": {
           "checks": [
             {
-              "expected": "6b25dea1b9d340ad9319ef9c0065e9f6985200e904ddd41312c8fbe876ba10a7",
+              "expected": "e3bdae74606c2297a334cf7ffcd429447078a8fed640ddb7ced02c083d8d3b37",
               "id": "L1.replay_hash",
               "note": "",
               "rule": "two builds from identical inputs hash identically",
-              "value": "6b25dea1b9d340ad9319ef9c0065e9f6985200e904ddd41312c8fbe876ba10a7",
+              "value": "e3bdae74606c2297a334cf7ffcd429447078a8fed640ddb7ced02c083d8d3b37",
               "verdict": "PASS"
             },
             {
@@ -1664,11 +1664,11 @@
         "L1": {
           "checks": [
             {
-              "expected": "bbf175ebb9bc6d7943ac59751571067314d5113671887b25e11f62647f94b31e",
+              "expected": "223425f6d14944e6de77b4aea9119bf99eaee78000d0eb50dba79f33e1dcba5a",
               "id": "L1.replay_hash",
               "note": "",
               "rule": "two builds from identical inputs hash identically",
-              "value": "bbf175ebb9bc6d7943ac59751571067314d5113671887b25e11f62647f94b31e",
+              "value": "223425f6d14944e6de77b4aea9119bf99eaee78000d0eb50dba79f33e1dcba5a",
               "verdict": "PASS"
             },
             {
@@ -2512,11 +2512,11 @@
         "L1": {
           "checks": [
             {
-              "expected": "9b2871c94678d9d74727792a4503c455875484b5732658bfeb79300be811dc1d",
+              "expected": "e61a33f69ca4ff27bad02f7f13a810289279dad8004236904416390cd33b92f9",
               "id": "L1.replay_hash",
               "note": "",
               "rule": "two builds from identical inputs hash identically",
-              "value": "9b2871c94678d9d74727792a4503c455875484b5732658bfeb79300be811dc1d",
+              "value": "e61a33f69ca4ff27bad02f7f13a810289279dad8004236904416390cd33b92f9",
               "verdict": "PASS"
             },
             {
@@ -3360,11 +3360,11 @@
         "L1": {
           "checks": [
             {
-              "expected": "5ccdf0d45b207f291073eb3188d1958713c1ff89041a55a760efc390061375c9",
+              "expected": "9f69c2580f3d3c8d042dc249fad718118f671155fc8072b858d5d299a15dfc3c",
               "id": "L1.replay_hash",
               "note": "",
               "rule": "two builds from identical inputs hash identically",
-              "value": "5ccdf0d45b207f291073eb3188d1958713c1ff89041a55a760efc390061375c9",
+              "value": "9f69c2580f3d3c8d042dc249fad718118f671155fc8072b858d5d299a15dfc3c",
               "verdict": "PASS"
             },
             {
@@ -4208,11 +4208,11 @@
         "L1": {
           "checks": [
             {
-              "expected": "b621832ed2daa489cdf16606d5da6fe972665a1e7fa30a258eb3e3942f34ef70",
+              "expected": "5282cfebe5325935134adab12fec30fc77de79bd4d79bfe7837f97fffad11cd7",
               "id": "L1.replay_hash",
               "note": "",
               "rule": "two builds from identical inputs hash identically",
-              "value": "b621832ed2daa489cdf16606d5da6fe972665a1e7fa30a258eb3e3942f34ef70",
+              "value": "5282cfebe5325935134adab12fec30fc77de79bd4d79bfe7837f97fffad11cd7",
               "verdict": "PASS"
             },
             {
@@ -5056,11 +5056,11 @@
         "L1": {
           "checks": [
             {
-              "expected": "511163878a33ee2a1f6afed67add2c8b8eeeb762907450a5d691158a23997566",
+              "expected": "6567b0227ec2356bfee414d1dec27a875333b75a692b22e91e2837366a85ba94",
               "id": "L1.replay_hash",
               "note": "",
               "rule": "two builds from identical inputs hash identically",
-              "value": "511163878a33ee2a1f6afed67add2c8b8eeeb762907450a5d691158a23997566",
+              "value": "6567b0227ec2356bfee414d1dec27a875333b75a692b22e91e2837366a85ba94",
               "verdict": "PASS"
             },
             {
@@ -6668,11 +6668,11 @@
         "L1": {
           "checks": [
             {
-              "expected": "4bcf6c00ffeff607e6b5b28a2d58e2cbe75f6f04ed557097a7cf1e21f1b2a56d",
+              "expected": "1fa2e7d75bd371036124149bd1ba547512b4dd13d64812e0fc637f06955b2cde",
               "id": "L1.replay_hash",
               "note": "",
               "rule": "two builds from identical inputs hash identically",
-              "value": "4bcf6c00ffeff607e6b5b28a2d58e2cbe75f6f04ed557097a7cf1e21f1b2a56d",
+              "value": "1fa2e7d75bd371036124149bd1ba547512b4dd13d64812e0fc637f06955b2cde",
               "verdict": "PASS"
             },
             {
@@ -7134,11 +7134,11 @@
         "L1": {
           "checks": [
             {
-              "expected": "efae04ee373b9922a4280f4b6299b3522f747ea45992a16586937784e87b5893",
+              "expected": "55046b0ef66b404e3bda196b94dc080c3892ee52e5a5041e6501719cc57101e8",
               "id": "L1.replay_hash",
               "note": "",
               "rule": "two builds from identical inputs hash identically",
-              "value": "efae04ee373b9922a4280f4b6299b3522f747ea45992a16586937784e87b5893",
+              "value": "55046b0ef66b404e3bda196b94dc080c3892ee52e5a5041e6501719cc57101e8",
               "verdict": "PASS"
             },
             {
@@ -7600,11 +7600,11 @@
         "L1": {
           "checks": [
             {
-              "expected": "ed5149f2ce24a853190d6de7587e2d049beab039d21f44a6377fef4e50694ed4",
+              "expected": "809dea6a61de983b6f714538774b0b84409fc96bdecdfa26f1c5c3ea27736585",
               "id": "L1.replay_hash",
               "note": "",
               "rule": "two builds from identical inputs hash identically",
-              "value": "ed5149f2ce24a853190d6de7587e2d049beab039d21f44a6377fef4e50694ed4",
+              "value": "809dea6a61de983b6f714538774b0b84409fc96bdecdfa26f1c5c3ea27736585",
               "verdict": "PASS"
             },
             {
@@ -8066,11 +8066,11 @@
         "L1": {
           "checks": [
             {
-              "expected": "ce39b9691be1601ece61a614fe70d99fe0a176032ddadcfc803c54df014e12f2",
+              "expected": "a5da78babd7ec86b88b4b34bf5533e8fca690fd607974dbf5bec65ea084a5f79",
               "id": "L1.replay_hash",
               "note": "",
               "rule": "two builds from identical inputs hash identically",
-              "value": "ce39b9691be1601ece61a614fe70d99fe0a176032ddadcfc803c54df014e12f2",
+              "value": "a5da78babd7ec86b88b4b34bf5533e8fca690fd607974dbf5bec65ea084a5f79",
               "verdict": "PASS"
             },
             {
@@ -8537,6 +8537,9 @@
       "rules.poi.max_age_unit",
       "rules.poi.max_age_unit_status",
       "rules.poi.weekend_and_holiday_dates_excluded",
+      "rules.reward_risk.minimum_rr_provenance",
+      "rules.reward_risk.minimum_rr_status",
+      "rules.reward_risk.owner_confirmation",
       "rules.stop.pip_size.captured_point_with_pending_pip_rule_result",
       "rules.stop.pip_size.lookup",
       "rules.stop.pip_size.missing_or_invalid_pip_size_result",
@@ -8613,6 +8616,9 @@
       "rules.poi.max_age_unit",
       "rules.poi.max_age_unit_status",
       "rules.poi.weekend_and_holiday_dates_excluded",
+      "rules.reward_risk.minimum_rr_provenance",
+      "rules.reward_risk.minimum_rr_status",
+      "rules.reward_risk.owner_confirmation",
       "rules.stop.pip_size.captured_point_with_pending_pip_rule_result",
       "rules.stop.pip_size.lookup",
       "rules.stop.pip_size.missing_or_invalid_pip_size_result",

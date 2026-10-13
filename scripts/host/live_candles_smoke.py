@@ -644,7 +644,7 @@ def _watch_once(tracker, symbol, bars, now, notify, source="MT5_VT_MARKETS_DEMO"
     snap = evaluate_snapshot(symbol, bars["D1"], bars["H1"], bars["M5"], now, bid=bid, ask=ask)
     events = tracker.poll(snap)
     from reporting.lsmc_lane import version_selection
-    if journal is not None and (events or version_selection() == "1.1.2"):
+    if journal is not None and (events or version_selection() != "1.1.0"):
         from reporting.lsmc_version import observe_selected
         price = bars["M5"][-1].close if bars["M5"] else None
         report_lane = report_lane_lines(f"LSMC {symbol}", lambda: observe_selected(

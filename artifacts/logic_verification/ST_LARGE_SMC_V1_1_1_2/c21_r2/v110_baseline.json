@@ -363,7 +363,7 @@
    "economic_status": "NOT_EVALUATED",
    "proposal_generation_authorized": false
   },
-  "code_sha": "5e686f376b7be06c0372fdadde3c9c6617ef58af",
+  "code_sha": "e884b8605739b64d229f848c99ed4a23d8b4ae45",
   "contract_path": "strategies/ST_LARGE_SMC_V1_1_1_0.yaml",
   "contract_sha256": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
   "dependency_sha256": {

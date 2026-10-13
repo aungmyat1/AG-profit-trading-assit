@@ -2,17 +2,18 @@
   "mission": "AGP-C21-LSMC-V112-ENGINE-R2",
   "client_date": "2026-10-14",
   "environment": "managed Linux, Python 3.12, off-host",
-  "base_sha": "5e686f376b7be06c0372fdadde3c9c6617ef58af",
+  "base_sha": "e884b8605739b64d229f848c99ed4a23d8b4ae45",
   "full_suite": {
     "command": "python -m pytest -q",
     "verdict": "PASS",
-    "passed": 2909,
-    "skipped": 6,
-    "elapsed_seconds": 589.68,
-    "profile": "shipped default; not slow",
-    "new_candidate_regressions": 37,
     "resource_class": "R2",
     "workers": 1,
+    "passed": 2924,
+    "skipped": 5,
+    "elapsed_seconds": 550.18,
+    "profile": "shipped default; not slow",
+    "new_candidate_regressions": 46,
+    "host_invalid_version_regressions": 2,
     "lock_released": true
   },
   "replay": {
@@ -44,5 +45,53 @@
   },
   "rebase_conflicts": {
     "scripts/host/live_candles_smoke.py": "RESOLVED: retained new main account inputs and candidate selection"
+  },
+  "initial_r2_suite": {
+    "command": "python -m pytest -q",
+    "verdict": "PASS",
+    "passed": 2909,
+    "skipped": 6,
+    "elapsed_seconds": 589.68,
+    "profile": "shipped default; not slow",
+    "new_candidate_regressions": 37,
+    "resource_class": "R2",
+    "workers": 1,
+    "lock_released": true,
+    "base_sha": "5e686f376b7be06c0372fdadde3c9c6617ef58af"
+  },
+  "tested_worktree_head": "932f34dc7be1ce930f339776ea97f70c1703c5fc",
+  "owner_decisions": {
+    "D6": "minimum_rr=2.0 CONFIRMED; OD1014-FAST D6, 2026-10-14",
+    "D7": "REPORT_ONLY strategy_version=1.1.2; NOT_VERIFIED"
+  },
+  "continuation_first_full_suite": {
+    "failed": 1,
+    "passed": 2920,
+    "skipped": 6,
+    "elapsed_seconds": 464.37,
+    "failure": "legacy host-wiring mock intercepted observe_events instead of the version-selected adapter; updated mock and added no-event invalid-version regressions"
+  },
+  "focused_candidate_regressions": {
+    "passed": 46,
+    "elapsed_seconds": 3.02
+  },
+  "focused_host_and_candidate": {
+    "command": "python -m pytest -q tests/test_od1014_opportunity_lanes.py tests/test_lsmc_v112_engine.py",
+    "passed": 102,
+    "elapsed_seconds": 8.23
+  },
+  "continuation_main_merge": {
+    "base_sha": "e884b8605739b64d229f848c99ed4a23d8b4ae45",
+    "conflicts": [],
+    "registry_diff_against_base": "NONE",
+    "registry_pin": "Updated only to inherited current-main D4/D5 bytes; frozen engine pins unchanged"
+  },
+  "docs_drift": {
+    "verdict": "PASS",
+    "blocking_errors": 0,
+    "pipeline": "collect_facts.py -> generate_live_status.py -> cog PROJECT_STATUS.md -> build_context_pack.py -> generated_files.py -> check_generated_files.py --mode pr -> check_drift.py",
+    "isolated_worktree": true,
+    "generated_file_policy_failures": 0,
+    "note": "Current-main objective facts required CI-style regeneration; source PR policy defers generated outputs to the post-merge regeneration PR"
   }
 }

@@ -7,17 +7,28 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def selected_version(path=None):
     path = Path(path) if path is not None else ROOT / 'config/lsmc_report_lane.yaml'
-    if not path.exists():
-        return '1.1.0'
-    raw = yaml.safe_load(path.read_text())
-    version = str(raw['strategy_version'])
-    if version not in ('1.1.0', '1.1.2'):
-        raise ValueError('unsupported LSMC report version')
-    return version
+    try:
+        raw = yaml.safe_load(path.read_text())
+        version = raw.get('strategy_version') if isinstance(raw, dict) else None
+    except (OSError, UnicodeError, yaml.YAMLError):
+        return None
+    return version if version in ('1.1.0', '1.1.2') else None
 
 def observe_selected(events, *, symbol, bars, journal, now, price, archive_root, bid=None, ask=None, account=None):
     from reporting.lsmc_lane import observe_events
     version = selected_version()
+    if version is None:
+        from reporting.common import archive_observation, observational_canonical
+        from reporting.lsmc_lane import FAMILY
+        canonical = observational_canonical(
+            {'strategy_id': 'ST_LARGE_SMC_V1', 'strategy_version': 'UNKNOWN',
+             'symbol': symbol, 'cycle': 'LSMC_WATCH', 'session_date': now.date().isoformat(),
+             'decision': 'BLOCKED', 'reason_code': 'LSMC_REPORT_VERSION_NOT_EVIDENCED'},
+            now=now, report_class='BLOCKED')
+        canonical['verification_status'] = 'NOT_VERIFIED'
+        canonical['scope_verification_status'] = 'NOT_VERIFIED'
+        archive_observation(archive_root, FAMILY, canonical)
+        return [canonical]
     if version == '1.1.0':
         return observe_events(events, now=now, price=price, archive_root=archive_root, bid=bid, ask=ask, account=account)
     from large_smc_v112 import WatchTracker, evaluate_snapshot

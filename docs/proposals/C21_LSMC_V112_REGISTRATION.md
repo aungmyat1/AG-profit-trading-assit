@@ -6,7 +6,7 @@ owner_reviewed: null
 # C21 Large-SMC 1.1.2 registration proposal
 
 Mission `AGP-C21-LSMC-V112-ENGINE-R2`, 2026-10-14. Base main:
-`5e686f376b7be06c0372fdadde3c9c6617ef58af`, which contains PR #200 and the newer report interfaces.
+`e884b8605739b64d229f848c99ed4a23d8b4ae45`, which contains PR #200 and the newer report interfaces.
 Branch `feat/lsmc-v112-engine-r2`; implementation draft PR #209. Proposal-only PR #202 was merged before the implementation push; its merged branch is not reused. No merge or registration is proposed by this mission.
 
 ## Identity and wiring
@@ -16,13 +16,14 @@ The frozen detector, C10 calculation and structure/target selectors are reused; 
 implements trading-date FX POI expiry and candidate C11 primary/H1 fallback. C11 is selected from
 candles closed at the trigger, so later bars cannot retarget. Crypto POI expiry retains the frozen
 seven-day calendar behavior; opportunity expiry follows the candidate's committed crypto windows.
-`config/lsmc_report_lane.yaml` selects the observational engine; its default remains `1.1.0`.
+`config/lsmc_report_lane.yaml` selects the observational engine; OD1014-FAST D7 selects `1.1.2` (REPORT_ONLY only).
+Missing, malformed or unknown version configuration returns a BLOCKED, NOT_VERIFIED report (`LSMC_REPORT_VERSION_NOT_EVIDENCED`), with no engine fallback.
 Candidate tracker/journal paths are separate from the frozen watch. Every candidate observation is
 stamped `NOT_VERIFIED`. `lsmc_lane.py` only adds version selection; mapping/formatting remain unchanged.
-The existing pending RR minimum remains unconfirmed and blocks report qualification, never pricing
+OD1014-FAST D6 confirms the RR minimum of 2.0; below-minimum RR blocks report qualification, never pricing
 geometry or the six-symbol evidence below. No READY, broker, registry, scheduler or authorization change.
 
-Contract SHA-256: `b3f16c6eede7ab384e1f9061e79621b74b27e0b8f71cf7c3c944565d1d9fb972`.
+Contract SHA-256: `c47f54a4d923d71b8b6e85be215475d6a6e38bd7dfc5c4d86f2343ea6531a387`.
 Candidate engine SHA-256: `7f218a9001cb7ffa069e02a101accd53ab86b2b2c8989c73939671fb624f0d7a` (ordered path + file-hash identity, including metadata/targets/windows).
 Detailed per-file identity is in [the audit](../../artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_2/c21_r2/audit.json).
 
@@ -75,34 +76,34 @@ replay, undeclared drift, engine/spec artifact binding and the frozen hash manif
 
 ## Declared rule diff and frozen audit
 
-The pre-D2 15-path declaration did not cover the pip-source change. It is expanded to **74 paths**,
+The pre-D2 15-path declaration did not cover the pip-source change. It is expanded to **77 paths**,
 including D2 source/metadata provenance, report-only wiring and explicit runtime fixture-symbol aliases;
 [the audit](../../artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_2/c21_r2/audit.json) recomputes the exact structural diff from 1.1.1 and rejects any
-undeclared or stale path. The 1.1.1 source hash remains pinned. All pending non-D2 owner decisions remain
+undeclared or stale path. The 1.1.1 source hash remains pinned. D6 confirms RR status/owner provenance (included in the exact declared diff); other pending owner decisions remain
 pending; no validation or authority state is promoted.
 
 The default 1.1.0 audit uses a byte-preserved pre-D2 candidate snapshot at
 `tests/fixtures/c21/v112_pre_d2.yaml`, retaining its original 15-path historical output. Only
 `--version 1.1.2` reads the amended candidate. Full default before/after runs (120 crypto scans,
-every EURUSD M5 close) were compared at the same base code identity **before the implementation commit**:
-**110526 bytes identical**, SHA-256 `36538131735c3a6011b07da0afaebda89511ec83456bd225a5b82cf5b704fc03`.
+every EURUSD M5 close) were compared at the same base code identity with git provenance explicitly set to the same current-main identity (only `identity.code_sha` normalized):
+**110526 bytes identical**, SHA-256 `c21e5201163e0c2103753e59fafb733b1d3a2fc5471bd2623d69d89d33ed147a`.
 [Parity record](../../artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_2/c21_r2/v110_parity.json) and
 [unaltered 1.1.0 baseline output](../../artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_2/c21_r2/v110_baseline.json) retain that identity explicitly;
-a later commit naturally changes `code_sha`, not the frozen engine output. No old evidence is rewritten
+the comparison runner normalizes only `identity.code_sha`; all runtime results remain unmodified. No old evidence is rewritten
 or attributed to 1.1.2. The dated C15 document only adds a historical-input pointer. The re-hash manifest
-also pins the frozen watch/core dependencies, contract, gate, registry and scheduler configuration.
+also pins the frozen watch/core dependencies, contract, gate and scheduler configuration. The registry pin is updated only to the current-main D4/D5 bytes; the mission makes no registry edit.
 
 ## Registry diff (proposal only; none applied)
 
 Current registry stays registered version **1.1.0**, `active: false`, with its existing historical evidence
-and pins. `strategies/registry.yaml` is byte-identical. A future owner-reviewed registration could add
+and pins. `strategies/registry.yaml` is byte-identical to current main; its upstream D4/D5 change is preserved. A future owner-reviewed registration could add
 an independently attributed candidate record with these values, **without replacing 1.1.0**:
 
 ```yaml
 version: '1.1.2'
 config_source: strategies/ST_LARGE_SMC_V1_1_1_2.yaml
 engine: src/large_smc_v112/ (REPORT_ONLY)
-contract_sha256: b3f16c6eede7ab384e1f9061e79621b74b27e0b8f71cf7c3c944565d1d9fb972
+contract_sha256: c47f54a4d923d71b8b6e85be215475d6a6e38bd7dfc5c4d86f2343ea6531a387
 engine_sha256: 7f218a9001cb7ffa069e02a101accd53ab86b2b2c8989c73939671fb624f0d7a
 status: NOT_VERIFIED
 active: false

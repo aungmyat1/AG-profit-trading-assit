@@ -1,4 +1,3 @@
-# Append-only 1.1.2 REPORT_ONLY candidate; OD1014-FAST D2 amended 2026-10-14.
 strategy_id: ST_LARGE_SMC_V1
 version: 1.1.2
 status: CANDIDATE_PENDING_OWNER_CONFIRM
@@ -181,10 +180,9 @@ rules:
     formula: abs(target_price - entry_price) / abs(entry_price - stop_price)
     minimum_rr_source: rules.reward_risk.minimum_rr
     minimum_rr: 2.0
-    minimum_rr_status: PENDING_OWNER_CONFIRM
-    owner_confirmation: PENDING_OWNER_CONFIRM
-    minimum_rr_provenance: assistant-recommended under owner delegation, PENDING_OWNER_CONFIRM,
-      2026-10-08
+    minimum_rr_status: CONFIRMED
+    owner_confirmation: OD1014-FAST D6, 2026-10-14
+    minimum_rr_provenance: Owner confirmed OD1014-FAST D6, 2026-10-14
     acceptance: computed_rr_must_be_greater_than_or_equal_to_minimum_rr
     below_minimum: FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM
     missing_minimum: FAIL_CLOSED_RR_MINIMUM_UNCONFIRMED
@@ -306,6 +304,9 @@ candidate_rule_changes:
   - rules.poi.max_age_unit
   - rules.poi.max_age_unit_status
   - rules.poi.weekend_and_holiday_dates_excluded
+  - rules.reward_risk.minimum_rr_provenance
+  - rules.reward_risk.minimum_rr_status
+  - rules.reward_risk.owner_confirmation
   - rules.stop.pip_size.captured_point_with_pending_pip_rule_result
   - rules.stop.pip_size.lookup
   - rules.stop.pip_size.missing_or_invalid_pip_size_result
@@ -374,9 +375,9 @@ implementation_choices_flagged:
 - A tie between equally near H1 fallback swings fails closed; the owner has not confirmed
   a tie-break.
 - The current 1.1.0 watch does not call the core primary target model; this candidate
-  spec is not runtime-wired.
+  is wired only to the REPORT_ONLY engine.
 - The 1.1.0 contract/spec had no RR minimum; this candidate declares minimum_rr=2.0
-  as PENDING_OWNER_CONFIRM and fails closed below it.
+  as CONFIRMED by OD1014-FAST D6 (2026-10-14) and fails closed below it.
 - 1.1.2 pins the POI-age unit to distinct NY-17:00 trading dates (D-LSMC-6); the frozen
   1.1.0 engine still counts calendar boundaries and this candidate is wired only to
   the optional REPORT_ONLY engine path, stamped NOT_VERIFIED.

@@ -68,11 +68,13 @@ def test_trading_age_skips_missing_weekend_and_holiday_dates():
     assert _poi_age_days(poi,h1,times[1])==1 # future dates excluded
 
 def test_default_report_version_and_explicit_candidate(tmp_path):
-    assert selected_version()=='1.1.0'
+    assert selected_version()=='1.1.2'
     p=tmp_path/'selection.yaml';p.write_text("strategy_version: '1.1.2'\n")
     assert selected_version(p)=='1.1.2'
+    p.write_text("strategy_version: '1.1.0'\n")
+    assert selected_version(p)=='1.1.0'
     p.write_text("strategy_version: '2.0'\n")
-    with pytest.raises(ValueError): selected_version(p)
+    assert selected_version(p) is None
 
 def test_declared_diff_exact():
     import sys
@@ -173,13 +175,16 @@ def test_snapshot_missing_host_metadata_names_c10_gate(tmp_path,monkeypatch):
     assert snap.reason_codes==('C10_PIP_SIZE_NOT_EVIDENCED',)
 
 
-def test_candidate_rr_pending_does_not_qualify():
+def test_candidate_rr_owner_confirmed_threshold():
     from _lsmc_v110_fixtures import NOW, d1_bars, h1_bars, m5_bars
 
     from large_smc_v112 import evaluate_snapshot
     snap=evaluate_snapshot('EURUSD',d1_bars(),h1_bars(),m5_bars(),NOW)
     assert snap.opportunity['reward_risk']>0
-    assert snap.opportunity['reward_risk_reason']=='FAIL_CLOSED_RR_MINIMUM_UNCONFIRMED'
+    assert snap.opportunity['reward_risk_reason'] == ('FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM' if snap.opportunity['reward_risk'] < 2.0 else None)
+    from large_smc_v112 import contract
+    assert contract.SPEC['rules']['reward_risk']['minimum_rr_status']=='CONFIRMED'
+    assert contract.SPEC['rules']['reward_risk']['minimum_rr']==2.0
 
 
 def test_candidate_crypto_expiry_uses_committed_window():
@@ -270,11 +275,12 @@ def test_candidate_report_retains_new_main_account_inputs(tmp_path,monkeypatch):
     from _lsmc_v110_fixtures import NOW, d1_bars, h1_bars, m5_bars
 
     from reporting import lsmc_version
-    monkeypatch.setattr(lsmc_version,'selected_version',lambda:'1.1.2')
     rows=lsmc_version.observe_selected([],symbol='EURUSD',
          bars={'D1':d1_bars(),'H1':h1_bars(),'M5':m5_bars()},journal=str(tmp_path),now=NOW,
          price=m5_bars()[-1].close,archive_root=str(tmp_path/'archive'),
          account={'balance':2500.,'commission_R':.01,'currency':'USD'})
+    assert rows[0]['strategy_version']=='1.1.2'
+    assert rows[0]['verification_status']=='NOT_VERIFIED'
     assert rows[0]['sizing_inputs']['balance']==2500.
     assert rows[0]['sizing_inputs']['commission_R']==.01
     assert rows[0]['sizing_inputs']['account_currency']=='USD'
@@ -286,3 +292,46 @@ def test_fx_age_never_counts_closed_weekend_dates_even_in_synthetic_input():
     times=[dt.datetime(2026,10,d,12,tzinfo=dt.timezone.utc) for d in (9,10,11,12)]
     poi=SimpleNamespace(origin_time=times[0])
     assert _poi_age_days(poi,[SimpleNamespace(time=t) for t in times],times[-1]+dt.timedelta(hours=1))==1
+
+
+@pytest.mark.parametrize('content', [None, '', '{}', "strategy_version: '2.0'", 'strategy_version: null', '[invalid'])
+def test_invalid_report_version_blocks_without_engine_fallback(tmp_path, monkeypatch, content):
+    from reporting import lsmc_lane, lsmc_version
+    config = tmp_path/'config/lsmc_report_lane.yaml'
+    config.parent.mkdir()
+    if content is not None:
+        config.write_text(content)
+    monkeypatch.setattr(lsmc_version, 'ROOT', tmp_path)
+    def forbidden(*args, **kwargs):
+        raise AssertionError('invalid selection must not evaluate an engine')
+    monkeypatch.setattr(lsmc_lane, 'observe_events', forbidden)
+    import large_smc_v112
+    monkeypatch.setattr(large_smc_v112, 'evaluate_snapshot', forbidden)
+    assert lsmc_lane.version_selection() is None
+    rows = lsmc_version.observe_selected([], symbol='EURUSD', bars={}, journal=str(tmp_path),
+        now=dt.datetime(2026,10,14,tzinfo=dt.timezone.utc), price=None, archive_root=str(tmp_path/'archive'))
+    assert len(rows)==1
+    row=rows[0]
+    assert row['report_class']=='BLOCKED'
+    assert row['scope_route']=='REPORT_ONLY'
+    assert row['reason_code']=='LSMC_REPORT_VERSION_NOT_EVIDENCED'
+    assert row['verification_status']=='NOT_VERIFIED'
+    assert row['strategy_version']=='UNKNOWN'
+    assert not row['execution_authorization']
+
+
+@pytest.mark.parametrize('rr,reason', [(1.5,'FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM'), (2.0,None), (2.5,None)])
+def test_confirmed_rr_boundary(rr, reason, monkeypatch):
+    from types import SimpleNamespace
+
+    from _lsmc_v110_fixtures import NOW, d1_bars, h1_bars, m5_bars
+
+    from large_smc_v112 import watch
+    snap=watch.evaluate_snapshot('EURUSD',d1_bars(),h1_bars(),m5_bars(),NOW)
+    entry=snap.opportunity['entry_reference']
+    sign=1 if snap.opportunity['direction']=='LONG' else -1
+    monkeypatch.setattr(watch,'compute_c10_stop',lambda *a,**kw:SimpleNamespace(stop_price=entry-sign*.125))
+    monkeypatch.setattr(watch,'_candidate_target',lambda *a,**kw:{'price':entry+sign*.125*rr})
+    result=watch.evaluate_snapshot('EURUSD',d1_bars(),h1_bars(),m5_bars(),NOW)
+    assert result.opportunity['reward_risk']==rr
+    assert result.opportunity['reward_risk_reason']==reason
