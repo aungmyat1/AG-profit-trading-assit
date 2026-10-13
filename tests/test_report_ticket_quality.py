@@ -74,8 +74,8 @@ def test_render_has_timestamps_and_no_schema_gap_for_absent_direction():
                "scope_verification_status": "SUSPENDED", "scope_reason": "L3", "created_at": NOW.isoformat(),
                "reason_codes": ["SUSPENDED_L3_REPAINT"], "trigger": {}}
     text = render_report(blocked)
-    assert "SCHEMA_GAP" not in text and "EURUSD n/a (ASIAN_LONDON)" in text
-    assert "evaluated: 15:16 MMT / 08:46 UTC (2026-10-13)" in text and "blocked: SUSPENDED_L3_REPAINT" in text
+    assert "SCHEMA_GAP" not in text and "EURUSD-VIP n/a (ASIAN_LONDON)" in text
+    assert "evaluated: 15:16 MMT / 08:46 UTC (2026-10-13)" in text and "blocked by: SUSPENDED_L3_REPAINT -- scope suspended" in text
     assert text.isascii()
 
 
@@ -119,3 +119,29 @@ def test_empty_window_summary_is_labelled_not_a_market_observation(tmp_path):
     summary = cfd.build_lsmc_crypto_summary(str(tmp_path), session_date=NOW.date(), session=cfd.LSMC_CRYPTO_DAY,
                                             window=(NOW.replace(hour=0), NOW.replace(hour=1)), sender=send)
     assert "not a market observation" in render_lsmc_crypto_summary(summary)
+
+
+@pytest.mark.parametrize("canonical,broker", [("EURUSD", "EURUSD-VIP"), ("GBPUSD", "GBPUSD-VIP"),
+                                              ("USDJPY", "USDJPY-VIP"), ("XAUUSD", "XAUUSD-VIP"),
+                                              ("BTCUSD", "BTCUSD"), ("ETHUSD", "ETHUSD")])
+def test_reports_show_the_mt5_broker_symbol_for_all_six_instruments(canonical, broker):
+    c = {"scope_route": "REPORT_ONLY", "report_class": "WATCH", "strategy_id": "ST_LARGE_SMC_V1",
+         "strategy_version": "1.1.0", "instrument": canonical, "direction": "LONG", "reason_code": "LSMC_NEAR_POI",
+         "scope_verification_status": "UNVERIFIED", "scope_reason": "ENTRY_LOGIC_NOT_VERIFIED"}
+    assert render_report(c).splitlines()[1].startswith(f"{broker} ")
+
+
+def test_real_xauusd_blocked_report_puts_the_evidence_gap_first_and_badges_in_notes():
+    """The 2026-10-13 XAUUSD message listed REJECT_NO_STOP,C10_PIP_SIZE_NOT_EVIDENCED,D30_BADGE_... as blockers."""
+    event = lsmc_event("OPPORTUNITY", "XAUUSD:H1:OB:LONG:x", "LONG", "NEAR_POI")
+    event["symbol"] = "XAUUSD"
+    event["payload"].update(reason_codes=["D30_BADGE_ECONOMICS_NOT_EVALUATED"],
+                            opportunity={"direction": "LONG", "entry_reference": 4100.0, "stop_c10": None,
+                                         "stop_reason": "C10_PIP_SIZE_NOT_EVIDENCED", "target_c11": 4120.0})
+    c = lsmc_lane.from_event(event, now=NOW, price=4105.2, policy=SIGNED_POLICY)
+    assert c["reason_codes"] == ["C10_PIP_SIZE_NOT_EVIDENCED", "REJECT_NO_STOP"]
+    assert c["notes"] == ["D30_BADGE_ECONOMICS_NOT_EVALUATED"]
+    text = render_report(c)
+    assert "blocked by: C10_PIP_SIZE_NOT_EVIDENCED -- no verified pip size" in text
+    assert "also: REJECT_NO_STOP" in text and "note: D30_BADGE_ECONOMICS_NOT_EVALUATED" in text
+    assert text.splitlines()[1].startswith("XAUUSD-VIP OPPORTUNITY (BLOCKED)")

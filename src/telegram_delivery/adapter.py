@@ -240,6 +240,42 @@ def _r(c, key):
 _ASW_LEGS = {"tp1": "OPPOSITE_SESSION_BOUNDARY, 75%", "tp2": "FIXED_R_MULTIPLE_5, 25%"}
 
 
+# Plain-English explanation of the most common blocking evidence gaps (reporting only).
+BLOCK_EXPLANATIONS = {
+    "C10_PIP_SIZE_NOT_EVIDENCED": "no verified pip size for this symbol; C10 stop not computed (owner input TQ-D3)",
+    "MISSING_SPREAD": "no live spread; C10 SHORT stop not computed",
+    "REJECT_NO_STOP": "no valid C10 stop",
+    "REJECT_NO_TARGET": "no C11 liquidity target",
+    "REJECT_STALE": "remaining reward below the owner threshold",
+    "SUSPENDED_L3_REPAINT": "scope suspended for this strategy version (L3 repaint); not evaluated",
+    "TARGET_ORDER_INVALID:FAIL_CLOSED_IF_TP1_BEYOND_TP2": "TP1 lies beyond TP2; the frozen contract fails closed",
+    "INFO_ONLY_STALE": "signal older than its freshness window",
+    "MISSED": "price already reached the stop or TP1",
+    "EXPIRED": "trade window closed",
+}
+
+
+def _blocked_lines(c):
+    reasons = [str(r) for r in (c.get("reason_codes") or [c.get("reason_code")]) if r]
+    primary = reasons[0] if reasons else "UNSPECIFIED"
+    lines = [f"blocked by: {primary}" + (f" -- {BLOCK_EXPLANATIONS[primary]}" if primary in BLOCK_EXPLANATIONS else "")]
+    if reasons[1:]:
+        lines.append("also: " + ",".join(reasons[1:]))
+    if c.get("notes"):
+        lines.append("note: " + ",".join(str(n) for n in c["notes"]))
+    return lines
+
+
+def _broker_symbol(c):
+    """MT5 broker symbol (e.g. GBPUSD-VIP) from the versioned canonical-to-broker map; canonical on failure."""
+    sym = c.get("instrument")
+    try:
+        from mt5.canonical_broker_map import resolve
+        return resolve(sym) if sym else "n/a"
+    except Exception:  # noqa: BLE001 -- display only; never blocks a report
+        return sym or "n/a"
+
+
 def _report_ticket_lines(c, sym, direction, scope, ts, dist):
     """ASW / CCFD layout (owner example 2026-10-07 tickets), REPORT_ONLY header, never decision=READY."""
     prices = c.get("prices") or {}
@@ -255,7 +291,7 @@ def _report_ticket_lines(c, sym, direction, scope, ts, dist):
     if c.get("report_class") == "CANDIDATE":
         risk = (c.get("risk") or {}).get("risk_distance")
         lines.append(f"entry: {prices.get('entry_reference') or 'n/a'}  stop: {prices.get('sl') or 'n/a'}  "
-                     f"risk: {dist(sym, risk) if isinstance(risk, (int, float)) else 'n/a'}")
+                     f"risk: {dist(c.get("instrument"), risk) if isinstance(risk, (int, float)) else 'n/a'}")
         for leg, key, r_key in ((1, "tp1", "initial_R_tp1"), (2, "tp2", "initial_R_tp2")):
             if prices.get(key) is not None:
                 label = f" ({_ASW_LEGS[key]})" if asw else ""
@@ -263,7 +299,7 @@ def _report_ticket_lines(c, sym, direction, scope, ts, dist):
         lines.append(f"data source: {c.get('venue') or 'n/a'}")
         lines.append(f"VALID UNTIL {ts(c.get('expires_at'))} -- STALE after; re-check before acting.")
     elif c.get("report_class") == "BLOCKED":
-        lines.append("blocked: " + ",".join(str(r) for r in (c.get("reason_codes") or [c.get("reason_code")])))
+        lines += _blocked_lines(c)
         lines.append(f"data source: {c.get('venue') or 'n/a'}")
     else:
         lines.append(f"state: {value(c, 'reason_code')}")
@@ -287,12 +323,12 @@ def _report_lsmc_lines(c, sym, direction, scope, ts, dist):
         lines += [f"liquidity target: {prices.get('tp1') or 'n/a'}", f"stop (C10): {prices.get('sl') or 'n/a'}",
                   f"entry reference (CHoCH close): {prices.get('entry_reference') or 'n/a'}"]
     elif c.get("report_class") == "BLOCKED":
-        lines.append("blocked: " + ",".join(str(r) for r in (c.get("reason_codes") or [c.get("reason_code")])))
+        lines += _blocked_lines(c)
     if prices.get("current_send") is not None:
         lines.append(f"current price: {prices['current_send']}")
     if lsmc.get("distance_to_poi") is not None:
         lines.append("distance to POI: inside zone" if lsmc["distance_to_poi"] == 0
-                     else f"distance to POI: {dist(sym, lsmc['distance_to_poi'])}")
+                     else f"distance to POI: {dist(c.get("instrument"), lsmc['distance_to_poi'])}")
     lines.append(f"expires_at: {ts(lsmc.get('expires_at'))}")
     return lines
 
@@ -303,7 +339,7 @@ def render_report(c):
     if c.get("scope_route") != "REPORT_ONLY":
         raise ValueError("Unsupported scope route")
     from host_delivery.telegram_message import _dist, _ts
-    sym, direction = value(c, "instrument"), c.get("direction") or "n/a"
+    sym, direction = _broker_symbol(c), c.get("direction") or "n/a"
     scope = f"scope={value(c, 'scope_verification_status')} ({value(c, 'scope_reason')})"
     build = _report_lsmc_lines if c.get("strategy_id") == "ST_LARGE_SMC_V1" else _report_ticket_lines
     lines = build(c, sym, direction, scope, _ts, _dist)
