@@ -236,14 +236,6 @@ def evaluate_actionability(
     prices = _prices(ticket)
     geom = _r_distances(prices, current_price)
 
-    # AGP-TQ-D1: invalid / incomplete / zero-risk / inverted-target geometry can never reach WATCH_READY
-    # (frozen contract rule FAIL_CLOSED_IF_TP1_BEYOND_TP2; v1_tickets.target_geometry).
-    from v1_tickets.target_geometry import geometry_violation
-    violation = geometry_violation(prices["entry"], prices["sl"], prices["tp1"], prices["tp2"], prices["direction"])
-    if violation is not None:
-        return _out(BLOCKED, violation, ticket, now, current_price, window_end,
-                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
-
     # Session expiry: past the trade window invalidation (15:00 GMT for FX).
     win_end = window_end or _trade_window_end(ticket)
     if win_end is not None and now >= win_end:
@@ -254,6 +246,15 @@ def evaluate_actionability(
     # signal was valid at trigger time.
     if age > freshness_limit:
         return _out(INFO_ONLY_STALE, "FRESHNESS_EXCEEDED", ticket, now, current_price, window_end,
+                    trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
+
+    # AGP-TQ-D1: invalid / incomplete / zero-risk / inverted-target geometry can never reach WATCH_READY. Placed after the EXPIRED / STALE exits (already
+    # non-actionable, reasons preserved) and before every path that can still become WATCH_READY
+    # (frozen contract rule FAIL_CLOSED_IF_TP1_BEYOND_TP2; v1_tickets.target_geometry).
+    from v1_tickets.target_geometry import geometry_violation
+    violation = geometry_violation(prices["entry"], prices["sl"], prices["tp1"], prices["tp2"], prices["direction"])
+    if violation is not None:
+        return _out(BLOCKED, violation, ticket, now, current_price, window_end,
                     trigger_close=trigger_close, prices=prices, geom=geom, age_s=age_s, policy=policy)
 
     # Need live current_price for remaining-R geometry; without it we cannot declare WATCH_READY.
