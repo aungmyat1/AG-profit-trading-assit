@@ -67,7 +67,8 @@ def evaluate_scope(symbol: str, cycle: str, *, now: dt.datetime, day: dt.date,
     from reporting.sizing_preview import attach_inputs
     account = account or {}
     attach_inputs(canonical, spread=bundle.spread, commission_R=account.get("commission_R"),
-                  balance=account.get("balance"))
+                  balance=account.get("balance"), account_currency=account.get("currency"),
+                  mid=bundle.current_price, quote_time=now.isoformat())   # provider quote is <= 15 min old
     return finalize_candidate(canonical, path)
 
 

@@ -120,7 +120,8 @@ def observe_events(events, *, now: dt.datetime, price: Optional[float], archive_
         canonical = from_event(event if isinstance(event, dict) else dict(event.__dict__), now=now, price=price,
                                policy=policy)
         attach_inputs(canonical, bid=bid, ask=ask, commission_R=account.get("commission_R"),
-                      balance=account.get("balance"))
+                      balance=account.get("balance"), account_currency=account.get("currency"),
+                      quote_time=now.isoformat())      # the tick passed here is <= STALE_MIN old
         if canonical.get("report_class") == "CANDIDATE":
             canonical["verification_status"] = canonical.get("scope_verification_status") or "UNVERIFIED"
             if canonical["verification_status"] == "SUSPENDED":

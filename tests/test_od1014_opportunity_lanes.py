@@ -189,7 +189,6 @@ def test_sizing_preview_with_all_inputs_uses_the_sizing_authority():
     ({"symbol_meta": None}, "SYMBOL_METADATA_MISSING"),
     ({"symbol_meta": {**META, "volume_step": 0}}, "SYMBOL_METADATA_MISSING"),
     ({"symbol_meta": {**META, "metadata_source": "SYNTHETIC_RESEARCH"}}, "SYMBOL_METADATA_MISSING"),
-    ({"pip_size": None}, "PIP_EVIDENCE_MISSING"),
     ({"bid": None}, "QUOTE_MISSING"),
     ({"ask": float("nan")}, "QUOTE_MISSING"),
     ({"ask": 1.1597}, "SPREAD_INVALID"),
@@ -328,7 +327,7 @@ def test_asw_eurusd_v113_sized_from_host_capture_and_account():
         "OPPORTUNITY -- REPORT ONLY -- NON-ACTIONABLE (verification: NOT_VERIFIED)"
 
 
-@pytest.mark.parametrize("symbol,reason", [("USDJPY", "PIP_EVIDENCE_MISSING"),
+@pytest.mark.parametrize("symbol,reason", [("USDJPY", "CONVERSION_UNAVAILABLE"),   # account currency unknown
                                            ("AUDUSD", "SYMBOL_METADATA_MISSING")])
 def test_host_capture_gaps_omit_sizing(symbol, reason):
     from reporting.sizing_preview import attach_inputs
@@ -345,7 +344,7 @@ def test_runner_reuses_the_pin_account_read():
         balance, login = 2500.0, 12345
 
     assert lcs.report_account(Account())["balance"] == 2500.0
-    assert lcs.report_account(None) == {"balance": None, "commission_R": None}
+    assert lcs.report_account(None) == {"balance": None, "commission_R": None, "currency": None}
 
     class MT5:
         calls = 0
@@ -360,3 +359,44 @@ def test_runner_reuses_the_pin_account_read():
     assert MT5.calls == 1 and capture["account"].balance == 2500.0
     runner = (ROOT / "scripts" / "host" / "live_candles_smoke.py").read_text(encoding="utf-8")
     assert "report_account(mt5)" not in runner and 'report_account(pin_capture.get("account"))' in runner
+
+
+# ------------------------------------------------- C2 no pip requirement / C3 live-mid conversion
+
+def _host_cand(symbol, entry, sl, **kw):
+    from reporting.sizing_preview import attach_inputs
+    return attach_inputs({"instrument": symbol, "prices": {"entry_reference_raw": entry, "sl_raw": sl}},
+                         commission_R=0, balance=10000.0, **kw)
+
+
+def test_pip_is_never_a_sizing_input():
+    c = _cand(pip_size=None)
+    assert sizing_preview(c, OWNER)["lot"] == pytest.approx(0.2)
+
+
+def test_xauusd_sizes_from_tick_size_and_value_with_display_pip_from_point():
+    c = _host_cand("XAUUSD", 2400.00, 2390.00, bid=2399.80, ask=2400.00)
+    assert c["sizing_inputs"]["pip_size"] == pytest.approx(0.1)          # 10 x point 0.01
+    p = sizing_preview(c, OWNER)
+    assert p["lot"] == pytest.approx(0.05) and p["cost_in_R"] == pytest.approx(0.02)   # 50 / (10 * 100)
+    assert p["sizing_source"] == "host_captured tick_value"
+
+
+def test_usdjpy_converts_from_the_live_mid_already_read():
+    c = _host_cand("USDJPY", 150.000, 149.800, bid=149.99, ask=150.01, account_currency="USD",
+                   quote_time="2026-10-07T07:19:00+00:00")
+    p = sizing_preview(c, OWNER)
+    # tick_value = 0.001 * 100000 / 150.0 = 0.6667 USD; loss/lot = 0.2 / 0.001 * 0.6667 = 133.33; 50 / 133.33
+    assert p["lot"] == pytest.approx(0.37) and p["cost_in_R"] == pytest.approx(0.1)
+    assert p["sizing_source"] == "live-mid conversion 2026-10-07T07:19:00+00:00"
+    assert "sizing source: live-mid conversion 2026-10-07T07:19:00+00:00" in sizing_lines(c, OWNER)
+
+
+@pytest.mark.parametrize("kw,reason", [
+    ({"account_currency": "USD"}, "QUOTE_MISSING"),                                   # no live quote at all
+    ({"account_currency": "USD", "spread": 0.02}, "CONVERSION_MID_MISSING"),          # spread but no mid
+    ({"account_currency": "EUR", "bid": 149.99, "ask": 150.01}, "CONVERSION_UNAVAILABLE"),
+])
+def test_usdjpy_without_a_usable_mid_is_n_a(kw, reason):
+    p = sizing_preview(_host_cand("USDJPY", 150.000, 149.800, **kw), OWNER)
+    assert p["lot"] is None and p["lot_reason"] == reason

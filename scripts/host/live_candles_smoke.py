@@ -614,7 +614,9 @@ def report_account(account_info) -> dict:
         balance = float(balance) if balance is not None else None
     except (TypeError, ValueError):
         balance = None
-    return {"balance": balance, "commission_R": commission}
+    currency = getattr(account_info, "currency", None) if account_info is not None else None
+    return {"balance": balance, "commission_R": commission,
+            "currency": currency if isinstance(currency, str) and currency else None}
 
 
 def _bid_ask(quote, broker, now: Optional[dt.datetime] = None):
